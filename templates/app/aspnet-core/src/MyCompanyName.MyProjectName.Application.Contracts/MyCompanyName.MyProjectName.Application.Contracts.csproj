@@ -1,0 +1,45 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup><LangVersion>latest</LangVersion>
+    <TargetFramework>net10.0</TargetFramework>
+    <RootNamespace>MyCompanyName.MyProjectName</RootNamespace>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <TEMPLATE-REMOVE>
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\..\..\src\modules\tenant-management\src\SufiChain.SufiAbp.TenantManagement.Application.Contracts\SufiChain.SufiAbp.TenantManagement.Application.Contracts.csproj" />
+    <ProjectReference Include="..\MyCompanyName.MyProjectName.Domain.Shared\MyCompanyName.MyProjectName.Domain.Shared.csproj" />
+    <ProjectReference Include="..\..\..\..\..\src\modules\account\src\SufiChain.SufiAbp.Account.Application.Contracts\SufiChain.SufiAbp.Account.Application.Contracts.csproj" />
+    <ProjectReference Include="..\..\..\..\..\src\modules\permission-management\src\SufiChain.SufiAbp.PermissionManagement.Application.Contracts\SufiChain.SufiAbp.PermissionManagement.Application.Contracts.csproj" />
+    <ProjectReference Include="..\..\..\..\..\src\modules\feature-management\src\SufiChain.SufiAbp.FeatureManagement.Application.Contracts\SufiChain.SufiAbp.FeatureManagement.Application.Contracts.csproj" />
+    <ProjectReference Include="..\..\..\..\..\src\modules\setting-management\src\SufiChain.SufiAbp.SettingManagement.Application.Contracts\SufiChain.SufiAbp.SettingManagement.Application.Contracts.csproj" />
+    <ProjectReference Include="..\..\..\..\..\src\modules\identity\src\SufiChain.SufiAbp.Identity.Application.Contracts\SufiChain.SufiAbp.Identity.Application.Contracts.csproj" />
+  </ItemGroup>
+  </TEMPLATE-REMOVE>
+
+  <TEMPLATE-ONLY>
+  <ItemGroup>
+    <PackageReference Include="SufiChain.SufiAbp.TenantManagement.Application.Contracts" Version="$(SufiVersion)" />
+    <ProjectReference Include="..\MyCompanyName.MyProjectName.Domain.Shared\MyCompanyName.MyProjectName.Domain.Shared.csproj" />
+    <PackageReference Include="SufiChain.SufiAbp.Account.Application.Contracts" Version="$(SufiVersion)" />
+    <PackageReference Include="SufiChain.SufiAbp.PermissionManagement.Application.Contracts" Version="$(SufiVersion)" />
+    <PackageReference Include="SufiChain.SufiAbp.FeatureManagement.Application.Contracts" Version="$(SufiVersion)" />
+    <PackageReference Include="SufiChain.SufiAbp.SettingManagement.Application.Contracts" Version="$(SufiVersion)" />
+    <PackageReference Include="SufiChain.SufiAbp.Identity.Application.Contracts" Version="$(SufiVersion)" />
+  </ItemGroup>
+  </TEMPLATE-ONLY>
+
+  <TEMPLATE-REMOVE>
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\..\..\src\framework\SufiChain.SufiAbp.ObjectExtending\SufiChain.SufiAbp.ObjectExtending.csproj" />
+  </ItemGroup>
+  </TEMPLATE-REMOVE>
+
+  <TEMPLATE-ONLY>
+  <ItemGroup>
+    <PackageReference Include="SufiChain.SufiAbp.ObjectExtending" Version="$(SufiVersion)" />
+  </ItemGroup>
+  </TEMPLATE-ONLY>
+
+</Project>

@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>netstandard2.0;netstandard2.1;net10.0</TargetFrameworks>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <RootNamespace>SufiChain.SufiAbp.Ddd</RootNamespace>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <PackageId>SufiChain.SufiAbp.Ddd.Domain.Shared</PackageId>
+    <Description>Sufi Platform DDD domain shared layer - base types for domain shared layer (enums, constants, DTOs).</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Volo.Abp.Ddd.Domain.Shared" Version="$(AbpVersion)"/>
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,188 @@
+@page "/short-link/short-links"
+@attribute [Authorize(ShortLinkGeneratorPermissions.ShortLinks.Default)]
+@inherits ShortLinkManagementBase
+
+<SufiAbpPageToolbar>
+    @if (HasCreatePermission)
+    {
+        <SbButton Color="SbColor.Primary" OnClick="OpenCreateModalAsync">
+            <StartIcon><SbIcon Name="plus" /></StartIcon>
+            <ChildContent>@L["CreateShortLink"]</ChildContent>
+        </SbButton>
+    }
+
+    <SbButton Variant="SbButtonVariant.Outline" OnClick="RefreshAsync">
+        <StartIcon><SbIcon Name="refresh" /></StartIcon>
+        <ChildContent>@L["Refresh"]</ChildContent>
+    </SbButton>
+</SufiAbpPageToolbar>
+
+<SbStack Direction="SbStackDirection.Column" Gap="4">
+    <SbCard>
+        <ChildContent>
+            <SbStack Gap="4">
+                <SbTextField @bind-Value="FilterText"
+                             Label="@L["Filter"]"
+                             Placeholder="@L["SearchByCodeOrUrl"]"
+                             Clearable="true">
+                    <StartAdornment>
+                        <SbIcon Name="search" />
+                    </StartAdornment>
+                </SbTextField>
+
+                <SbStack Direction="SbStackDirection.Row" Gap="2" Justify="SbJustify.End">
+                    <SbButton Variant="SbButtonVariant.Outline" OnClick="ClearFiltersAsync">
+                        @L["Clear"]
+                    </SbButton>
+                    <SbButton Color="SbColor.Primary" OnClick="ApplyFiltersAsync">
+                        <StartIcon><SbIcon Name="search" /></StartIcon>
+                        <ChildContent>@L["Apply"]</ChildContent>
+                    </SbButton>
+                </SbStack>
+            </SbStack>
+        </ChildContent>
+    </SbCard>
+
+    <SbCard>
+        <ChildContent>
+            <SbDataGrid TItem="ShortUrlDto"
+                        Items="ShortUrlList"
+                        Loading="IsLoading"
+                        Striped="true"
+                        Hoverable="true"
+                        PageIndex="PageIndex"
+                        PageSize="PageSize"
+                        TotalCount="TotalCount"
+                        PageIndexChanged="OnPageIndexChangedAsync"
+                        OnSortChanged="OnSortChangedAsync"
+                        KeySelector="@(item => item.Id.ToString())">
+                <EmptyTemplate>
+                    <SbEmptyState Class="text-center p-5"
+                                  Title="@L["ShortLinks"]"
+                                  Description="@L["SearchByCodeOrUrl"]">
+                        <Icon>
+                            <SbIcon Name="link" Size="SbSize.Xl" />
+                        </Icon>
+                    </SbEmptyState>
+                </EmptyTemplate>
+                <ChildContent>
+                    <SbColumn TItem="ShortUrlDto" Title="@L["Actions"]" Width="160px" Sortable="false">
+                        <CellTemplate Context="cellContext">
+                            <SbStack Direction="SbStackDirection.Row" Gap="1">
+                                @if (HasEditPermission)
+                                {
+                                    <SbTooltip Text="@L["Edit"]">
+                                        <SbIconButton Size="SbSize.Sm" AriaLabel="@L["Edit"]" OnClick="@(() => OpenEditModalAsync(cellContext.Item))">
+                                            <Icon><SbIcon Name="edit" /></Icon>
+                                        </SbIconButton>
+                                    </SbTooltip>
+                                }
+
+                                <SbTooltip Text="@L["CopyLink"]">
+                                    <SbIconButton Size="SbSize.Sm" AriaLabel="@L["CopyLink"]" OnClick="@(() => CopyShortLinkAsync(cellContext.Item.FullShortUrl))">
+                                        <Icon><SbIcon Name="copy" /></Icon>
+                                    </SbIconButton>
+                                </SbTooltip>
+
+                                @if (HasDeletePermission)
+                                {
+                                    <SbTooltip Text="@L["Delete"]">
+                                        <SbIconButton Size="SbSize.Sm" Color="SbColor.Danger" AriaLabel="@L["Delete"]" OnClick="@(() => PromptDeleteAsync(cellContext.Item))">
+                                            <Icon><SbIcon Name="trash" /></Icon>
+                                        </SbIconButton>
+                                    </SbTooltip>
+                                }
+                            </SbStack>
+                        </CellTemplate>
+                    </SbColumn>
+
+                    <SbColumn TItem="ShortUrlDto" Field="ShortCode" Title="@L["ShortCode"]" Sortable="true">
+                        <CellTemplate Context="cellContext">
+                            <SbStack Gap="1">
+                                <SbText Class="fw-semibold">@cellContext.Item.ShortCode</SbText>
+                                @if (!string.IsNullOrWhiteSpace(cellContext.Item.FullShortUrl))
+                                {
+                                    <SbLink Href="@cellContext.Item.FullShortUrl" Target="_blank">@cellContext.Item.FullShortUrl</SbLink>
+                                }
+                            </SbStack>
+                        </CellTemplate>
+                    </SbColumn>
+
+                    <SbColumn TItem="ShortUrlDto" Field="DestinationUrl" Title="@L["DestinationUrl"]">
+                        <CellTemplate Context="cellContext">
+                            @GetTrimmedUrl(cellContext.Item.DestinationUrl)
+                        </CellTemplate>
+                    </SbColumn>
+
+                    <SbColumn TItem="ShortUrlDto" Field="ClickCount" Title="@L["ClickCount"]" Sortable="true" Width="120px">
+                        <CellTemplate Context="cellContext">
+                            <SbBadge Color="SbColor.Primary">@cellContext.Item.ClickCount</SbBadge>
+                        </CellTemplate>
+                    </SbColumn>
+
+                    <SbColumn TItem="ShortUrlDto" Field="IsActive" Title="@L["IsActive"]" Sortable="true" Width="120px">
+                        <CellTemplate Context="cellContext">
+                            <SbBadge Color="@(cellContext.Item.IsActive ? SbColor.Success : SbColor.Secondary)">
+                                @(cellContext.Item.IsActive ? L["Yes"] : L["No"])
+                            </SbBadge>
+                        </CellTemplate>
+                    </SbColumn>
+
+                    <SbColumn TItem="ShortUrlDto" Field="CreationTime" Title="@L["CreatedAt"]" Sortable="true" Width="180px" Format="yyyy-MM-dd HH:mm" />
+                </ChildContent>
+            </SbDataGrid>
+        </ChildContent>
+    </SbCard>
+</SbStack>
+
+<SbDialog @bind-Open="IsCreateDialogOpen" OnCloseButtonClick="CloseCreateModalAsync" Size="SbDialogSize.Lg" Title="@L["CreateShortLink"]">
+    <ChildContent>
+        <SbForm Model="NewEntity" OnValidSubmit="CreateShortUrlAsync">
+            <SbStack Gap="3">
+                <SbTextField @bind-Value="NewEntity.DestinationUrl" Label="@L["DestinationUrl"]" Placeholder="@L["EnterDestinationUrl"]" Required="true" />
+                <SbTextArea @bind-Value="NewEntity.Description" Label="@L["Description"]" Rows="3" HelperText="@L["DescriptionHelp"]" />
+                <SbDatePicker Value="NewEntityExpiresAt" ValueChanged="OnNewEntityExpiresAtChanged" Label="@L["ExpiresAt"]" Placeholder="@L["ExpiresAt"]" />
+                <SbTextField @bind-Value="NewEntity.CreatedByModule" Label="@L["CreatedByModule"]" />
+            </SbStack>
+        </SbForm>
+    </ChildContent>
+    <Footer>
+        <SbStack Direction="SbStackDirection.Row" Gap="2" Justify="SbJustify.End">
+            <SbButton Variant="SbButtonVariant.Outline" OnClick="CloseCreateModalAsync">@L["Cancel"]</SbButton>
+            <SbButton Color="SbColor.Primary" OnClick="CreateShortUrlAsync">@L["Save"]</SbButton>
+        </SbStack>
+    </Footer>
+</SbDialog>
+
+<SbDialog @bind-Open="IsEditDialogOpen" OnCloseButtonClick="CloseEditModalAsync" Size="SbDialogSize.Lg" Title="@L["EditShortLink"]">
+    <ChildContent>
+        <SbForm Model="EditingEntity" OnValidSubmit="UpdateShortUrlAsync">
+            <SbStack Gap="3">
+                <SbTextField @bind-Value="EditingEntityDto.ShortCode" Label="@L["ShortCode"]" ReadOnly="true" />
+                <SbTextField @bind-Value="EditingEntity.DestinationUrl" Label="@L["DestinationUrl"]" Required="true" />
+                <SbTextArea @bind-Value="EditingEntity.Description" Label="@L["Description"]" Rows="3" HelperText="@L["DescriptionHelp"]" />
+                <SbDatePicker Value="EditingEntityExpiresAt" ValueChanged="OnEditingEntityExpiresAtChanged" Label="@L["ExpiresAt"]" Placeholder="@L["ExpiresAt"]" />
+                <SbCheckbox @bind-Value="EditingEntity.IsActive" Label="@L["IsActive"]" />
+            </SbStack>
+        </SbForm>
+    </ChildContent>
+    <Footer>
+        <SbStack Direction="SbStackDirection.Row" Gap="2" Justify="SbJustify.End">
+            <SbButton Variant="SbButtonVariant.Outline" OnClick="CloseEditModalAsync">@L["Cancel"]</SbButton>
+            <SbButton Color="SbColor.Primary" OnClick="UpdateShortUrlAsync">@L["Save"]</SbButton>
+        </SbStack>
+    </Footer>
+</SbDialog>
+
+<SbDialog Open="IsDeleteDialogOpen" OpenChanged="OnDeleteDialogOpenChanged" Size="SbDialogSize.Sm" Title="@L["Delete"]">
+    <ChildContent>
+        <SbText>@L["AreYouSureToDelete"]</SbText>
+        <SbText Color="SbColor.Muted">@L["ThisActionCannotBeUndone"]</SbText>
+    </ChildContent>
+    <Footer>
+        <SbStack Direction="SbStackDirection.Row" Gap="2" Justify="SbJustify.End">
+            <SbButton Variant="SbButtonVariant.Outline" OnClick="CancelDelete">@L["Cancel"]</SbButton>
+            <SbButton Color="SbColor.Danger" OnClick="DeleteConfirmedAsync">@L["Delete"]</SbButton>
+        </SbStack>
+    </Footer>
+</SbDialog>

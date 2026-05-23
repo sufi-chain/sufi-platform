@@ -1,0 +1,92 @@
+version: '3.8'
+
+services:
+  # <TEMPLATE-REMOVE IF-NOT="db:efcore">
+  # <TEMPLATE-REPLACE key="EF_DATABASE_SERVICE">
+  postgres:
+    image: postgres:16-alpine
+    container_name: sufiplatform-layered-postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: DemoApp_Layered
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_layered_data:/var/lib/postgresql/data
+    networks:
+      - sufiplatform-layered-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+  # </TEMPLATE-REPLACE>
+  # </TEMPLATE-REMOVE>
+
+  # <TEMPLATE-REMOVE IF-NOT="db:mongodb">
+  mongodb:
+    image: mongo:7
+    container_name: sufiplatform-layered-mongodb
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: admin
+      MONGO_INITDB_DATABASE: DemoApp_Layered
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_layered_data:/data/db
+    networks:
+      - sufiplatform-layered-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+  # </TEMPLATE-REMOVE>
+
+  # Database migrator - runs once and exits
+  db-migrator:
+    image: sufiplatform/demoapp-layered-dbmigrator:latest
+    container_name: sufiplatform-layered-dbmigrator
+    build:
+      context: ../../..
+      dockerfile: .dev/hosts/layered/src/SufiPlatform.DemoApp.DbMigrator/Dockerfile
+    environment:
+      # <TEMPLATE-REMOVE IF-NOT="db:efcore">
+      - ConnectionStrings__Default=Host=postgres;Port=5432;Database=DemoApp_Layered;Username=postgres;Password=postgres
+      # </TEMPLATE-REMOVE>
+      # <TEMPLATE-REMOVE IF-NOT="db:mongodb">
+      - ConnectionStrings__Default=mongodb://admin:admin@mongodb:27017/DemoApp_Layered?authSource=admin
+      # </TEMPLATE-REMOVE>
+    depends_on:
+      # <TEMPLATE-REMOVE IF-NOT="db:efcore">
+      postgres:
+        condition: service_healthy
+      # </TEMPLATE-REMOVE>
+      # <TEMPLATE-REMOVE IF-NOT="db:mongodb">
+      mongodb:
+        condition: service_healthy
+      # </TEMPLATE-REMOVE>
+    networks:
+      - sufiplatform-layered-network
+    restart: "no"
+
+volumes:
+  # <TEMPLATE-REMOVE IF-NOT="db:efcore">
+  postgres_layered_data:
+    name: sufiplatform_layered_postgres_data
+    driver: local
+  # </TEMPLATE-REMOVE>
+  # <TEMPLATE-REMOVE IF-NOT="db:mongodb">
+  mongodb_layered_data:
+    name: sufiplatform_layered_mongodb_data
+    driver: local
+  # </TEMPLATE-REMOVE>
+
+networks:
+  sufiplatform-layered-network:
+    name: sufiplatform-layered-network
+    driver: bridge

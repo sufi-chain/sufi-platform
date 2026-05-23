@@ -1,0 +1,78 @@
+@using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.AspNetCore.Components.Routing
+@using Microsoft.Extensions.Localization
+@using Microsoft.Extensions.Options
+@using SufiChain.SufiAbp.UI.Blazor.Components
+@using SufiChain.SufiAbp.UI.Routing
+@using SufiChain.KomTheme
+@using SufiChain.SufiBlazor.Components
+@using SufiChain.SufiBlazor.Components.Actions
+@using SufiChain.KomTheme.Blazor.Layouts
+@using MyCompanyName.MyProjectName.Shared
+@using MyCompanyName.MyProjectName.Localization
+@inject IOptions<SufiAbpRouterOptions> RouterOptions
+@inject IOptions<KomThemeBlazorOptions> ThemeOptions
+@inject IStringLocalizer<DemoAppResource> L
+@inject NavigationManager Navigation
+
+<CascadingAuthenticationState>
+    <Router AppAssembly="typeof(Routes).Assembly" AdditionalAssemblies="RouterOptions.Value.AdditionalAssemblies">
+        <Found Context="routeData">
+            <ErrorBoundary>
+                <ChildContent>
+                    <AuthorizeRouteView RouteData="routeData" DefaultLayout="ThemeOptions.Value.Layout">
+                        <NotAuthorized>
+                    @if (context.User.Identity?.IsAuthenticated != true)
+                    {
+                        <RedirectToLogin />
+                    }
+                    else
+                    {
+                        <LayoutView Layout="ThemeOptions.Value.Layout">
+                            <SpErrorPage StatusCode="403" Title="@L["NotAuthorized"]" Message="@L["NotAuthorizedMessage"]" />
+                        </LayoutView>
+                    }
+                </NotAuthorized>
+                    </AuthorizeRouteView>
+                </ChildContent>
+                <ErrorContent Context="error">
+                    <div class="error-modal-overlay" role="alertdialog" aria-modal="true" aria-labelledby="error-modal-title">
+                        <div class="error-modal-backdrop"></div>
+                        <div class="error-modal">
+                            <div class="error-modal__icon" aria-hidden="true">⚠</div>
+                            <h1 id="error-modal-title" class="error-modal__title">@L["AnErrorOccurred"]</h1>
+                            <p class="error-modal__message">@error.Message</p>
+                            <div class="error-modal__actions">
+                                <SbButton OnClick="ReloadPage" Variant="SbButtonVariant.Solid" Color="SbColor.Primary">
+                                    @L["Refresh"]
+                                </SbButton>
+                                <SbButton OnClick="GoHome" Variant="SbButtonVariant.Outline" Color="SbColor.Secondary">
+                                    @L["BackToHome"]
+                                </SbButton>
+                            </div>
+                        </div>
+                    </div>
+                </ErrorContent>
+            </ErrorBoundary>
+            <FocusOnNavigate RouteData="routeData" Selector="h1" />
+        </Found>
+        <NotFound>
+            <PageTitle>@L["PageNotFound"]</PageTitle>
+            <LayoutView Layout="ThemeOptions.Value.Layout">
+                <SpErrorPage StatusCode="404" Title="@L["PageNotFound"]" Message="@L["PageNotFoundMessage"]" />
+            </LayoutView>
+        </NotFound>
+    </Router>
+</CascadingAuthenticationState>
+
+@code {
+    private void ReloadPage()
+    {
+        Navigation.NavigateTo(Navigation.Uri, forceLoad: true);
+    }
+
+    private void GoHome()
+    {
+        Navigation.NavigateTo("/", forceLoad: true);
+    }
+}

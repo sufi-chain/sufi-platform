@@ -1,0 +1,12 @@
+using MyCompanyName.MyProjectName.Localization;
+using Volo.Abp.AspNetCore.Components;
+
+namespace MyCompanyName.MyProjectName;
+
+public abstract class DemoAppComponentBase : AbpComponentBase
+{
+    protected DemoAppComponentBase()
+    {
+        LocalizationResource = typeof(DemoAppResource);
+    }
+}

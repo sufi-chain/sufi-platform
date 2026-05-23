@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk.Razor">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <RootNamespace>SufiChain.SufiAbp.AIManagement.Blazor</RootNamespace>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Resolve version conflict with SufiBlazor -->
+    <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="$(MicrosoftAspNetCoreComponentsWebVersion)" />
+    <!-- Blazor Authorization -->
+    <PackageReference Include="Microsoft.AspNetCore.Components.Authorization" Version="$(AspNetCoreVersion)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- SufiAbp Framework (transitively provides SufiChain.SufiAbp.UI.Abstractions and SufiChain.SufiBlazor) -->
+    <ProjectReference Include="..\..\..\..\framework\SufiChain.SufiAbp.UI.Blazor\SufiChain.SufiAbp.UI.Blazor.csproj" />
+    <!-- SufiAbp AIManagement Domain.Shared for localization -->
+    <ProjectReference Include="..\SufiChain.SufiAbp.AIManagement.Domain.Shared\SufiChain.SufiAbp.AIManagement.Domain.Shared.csproj" />
+    <!-- SufiAbp AIManagement Application Contracts -->
+    <ProjectReference Include="..\SufiChain.SufiAbp.AIManagement.Application.Contracts\SufiChain.SufiAbp.AIManagement.Application.Contracts.csproj" />
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,11 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <RootNamespace>SufiChain.SufiAbp.PermissionManagement.OpenIddict</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\permission-management\src\SufiChain.SufiAbp.PermissionManagement.Domain\SufiChain.SufiAbp.PermissionManagement.Domain.csproj" />
+    <ProjectReference Include="..\SufiChain.SufiAbp.OpenIddict.Domain.Shared\SufiChain.SufiAbp.OpenIddict.Domain.Shared.csproj" />
+  </ItemGroup>
+</Project>

@@ -1,0 +1,43 @@
+.file-thumbnail {
+    display: inline-block;
+}
+
+.thumbnail-container {
+    position: relative;
+}
+
+.thumbnail-image {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 1;
+    object-fit: cover;
+    background: var(--sb-color-background);
+}
+
+.video-thumbnail {
+    position: relative;
+}
+
+.video-overlay {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: white;
+    opacity: 0.75;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+}
+
+.document-thumbnail,
+.placeholder-thumbnail {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    aspect-ratio: 1;
+    background: var(--sb-color-background);
+    color: var(--sb-color-text-muted);
+}
+
+.thumbnail-title {
+    text-align: center;
+}

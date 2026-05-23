@@ -1,0 +1,37 @@
+/* Short Link Management Page Styles */
+
+.short-link-wrapper {
+    padding: var(--bs-spacer-3);
+}
+
+.filter-row {
+    margin-bottom: var(--bs-spacer-3);
+}
+
+.actions-dropdown {
+    min-width: 120px;
+}
+
+.short-code-display {
+    font-family: monospace;
+    font-weight: 600;
+    color: var(--bs-primary);
+}
+
+.url-truncate {
+    max-width: 300px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.modal-form-field {
+    margin-bottom: var(--bs-spacer-2);
+}
+
+@media (max-width: 768px) {
+    .url-truncate {
+        max-width: 150px;
+    }
+}
+

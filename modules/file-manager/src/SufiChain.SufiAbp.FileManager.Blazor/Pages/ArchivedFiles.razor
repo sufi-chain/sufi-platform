@@ -1,0 +1,313 @@
+@page "/admin/file-manager/archived"
+@attribute [Authorize(FileManagerPermissions.FileItems.Default)]
+@inherits FileManagerComponentBase
+@inject IFileItemAppService FileItemAppService
+@inject IFileStructureAppService FileStructureAppService
+
+<SufiAbpPageToolbar>
+	<SbStack Direction="SbStackDirection.Row" Gap="2">
+		<SbButton Color="SbColor.Primary" Variant="SbButtonVariant.Outline" OnClick="@LoadArchivedFilesAsync">
+			<StartIcon><SbIcon Name="refresh" /></StartIcon>
+			<ChildContent>@L["Refresh"]</ChildContent>
+		</SbButton>
+		<SbButton Color="SbColor.Success" 
+				  Variant="SbButtonVariant.Outline" 
+				  OnClick="@RestoreSelectedAsync"
+				  Disabled="@(!_selectedFiles.Any())"
+				  Loading="@_isRestoring">
+			<StartIcon><SbIcon Name="arrow-up" /></StartIcon>
+			<ChildContent>@L["RestoreSelected"]</ChildContent>
+		</SbButton>
+	</SbStack>
+</SufiAbpPageToolbar>
+
+<SbStack Direction="SbStackDirection.Column" Gap="4">
+
+	<!-- Filters -->
+	<SbCard>
+		<ChildContent>
+			<SbStack Direction="SbStackDirection.Row" Gap="3" Wrap="true">
+				<div style="min-width: 200px;">
+					<SbTextField @bind-Value="_searchText" 
+								 Placeholder="@L["SearchFiles"]"
+								 @bind-Value:after="@LoadArchivedFilesAsync">
+						<EndAdornment>
+							<SbIcon Name="search" />
+						</EndAdornment>
+					</SbTextField>
+				</div>
+				<div style="min-width: 220px;">
+					<SbSimpleSelect TValue="string?"
+									Value="@_structureKeyFilter"
+									ValueChanged="@OnStructureKeyFilterChanged"
+									Label="@L["FileStructure"]">
+						<SbSelectOption TValue="string?" Value="@(null)">@L["AllStructures"]</SbSelectOption>
+						@foreach (var structure in _structureFilterOptions)
+						{
+							<SbSelectOption TValue="string?" Value="@structure.Key">@structure.DisplayName</SbSelectOption>
+						}
+					</SbSimpleSelect>
+				</div>
+			</SbStack>
+		</ChildContent>
+	</SbCard>
+
+	<!-- Archived Files Table -->
+	<SbCard>
+		<Header>
+			<SbStack Direction="SbStackDirection.Row" Align="@SbAlign.Center" Justify="@SbJustify.SpaceBetween">
+				<h5 class="m-0">@L["ArchivedFiles"] (@_totalCount)</h5>
+			</SbStack>
+		</Header>
+		<ChildContent>
+			@if (_isLoading)
+			{
+				<div class="text-center p-4">
+					<SbSpinner />
+				</div>
+			}
+			else if (!_archivedFiles.Any())
+			{
+				<div class="text-center p-4">
+					<SbIcon Name="archive" Size="SbSize.Xl" Color="SbColor.Muted" />
+					<p class="text-muted mt-3">@L["NoArchivedFiles"]</p>
+				</div>
+			}
+			else
+			{
+				<SbTable TItem="FileItemDto" Items="@_archivedFiles" Hover>
+					<HeaderContent>
+						<tr>
+							<th style="width: 5%;">
+								<SbCheckbox @bind-Value="_selectAll" @bind-Value:after="@ToggleSelectAll" />
+							</th>
+							<th style="width: 5%;"></th>
+							<th style="width: 30%;">@L["Name"]</th>
+							<th style="width: 15%;">@L["FileStructure"]</th>
+							<th style="width: 10%;">@L["Size"]</th>
+							<th style="width: 15%;">@L["ArchivedAt"]</th>
+							<th style="width: 10%;">@L["Actions"]</th>
+						</tr>
+					</HeaderContent>
+					<RowTemplate Context="file">
+						<td>
+							<SbCheckbox Value="@_selectedFiles.Contains(file.Id)" 
+										ValueChanged="@(v => ToggleFileSelection(file.Id, v))" />
+						</td>
+						<td>
+							<SbIcon Name="@GetFileIcon(file)" />
+						</td>
+						<td>
+							<div>@file.OriginalName</div>
+							@* Path not available in DTO *@
+						</td>
+						<td>
+							@if (!string.IsNullOrEmpty(file.StructureKey))
+							{
+								<SbChip Color="SbColor.Primary" Size="SbSize.Sm">@file.StructureKey</SbChip>
+							}
+						</td>
+						<td>@FormatFileSize(file.Size)</td>
+						<td>
+							@if (file.ArchivedAt.HasValue)
+							{
+								@file.ArchivedAt.Value.ToString("yyyy-MM-dd HH:mm")
+							}
+						</td>
+						<td>
+							<SbStack Direction="SbStackDirection.Row" Gap="1">
+								<SbIconButton Color="SbColor.Success" 
+											  Size="SbSize.Sm" 
+											  OnClick="@(() => RestoreFileAsync(file.Id))"
+											  Title="@L["Restore"]">
+									<Icon><SbIcon Name="arrow-up" /></Icon>
+								</SbIconButton>
+							</SbStack>
+						</td>
+					</RowTemplate>
+				</SbTable>
+
+				<!-- Pagination -->
+				@if (_totalCount > _pageSize)
+				{
+					<div class="d-flex justify-content-center mt-3">
+						<SbPagination CurrentPage="@_currentPage"
+									  TotalPages="@((_totalCount + _pageSize - 1) / _pageSize)"
+									  OnPageChanged="@OnPageChangedAsync" />
+					</div>
+				}
+			}
+		</ChildContent>
+	</SbCard>
+
+</SbStack>
+
+@code {
+	private List<FileItemDto> _archivedFiles = new();
+	private HashSet<Guid> _selectedFiles = new();
+	private bool _selectAll;
+	private bool _isLoading;
+	private bool _isRestoring;
+	private int _totalCount;
+	private int _currentPage = 1;
+	private int _pageSize = 20;
+	private string _searchText = "";
+	private string? _structureKeyFilter;
+	private List<StructureFilterOption> _structureFilterOptions = new();
+
+	private record StructureFilterOption(string Key, string DisplayName);
+
+	protected override async Task OnInitializedAsync()
+	{
+		await base.OnInitializedAsync();
+		await LoadStructureFilterOptionsAsync();
+		await LoadArchivedFilesAsync();
+	}
+
+	private async Task LoadStructureFilterOptionsAsync()
+	{
+		try
+		{
+			var result = await FileStructureAppService.GetListAsync(new SufiChain.SufiAbp.Application.Dtos.PagedAndSortedResultRequestDto
+			{
+				MaxResultCount = 100,
+				Sorting = "DisplayName"
+			});
+
+			_structureFilterOptions = result.Items
+				.Select(s => new StructureFilterOption(s.Key, L[s.DisplayName].Value!))
+				.ToList();
+		}
+		catch (Exception ex)
+		{
+			await HandleErrorAsync(ex);
+			_structureFilterOptions = new();
+		}
+	}
+
+	private async Task LoadArchivedFilesAsync()
+	{
+		_isLoading = true;
+		try
+		{
+			var input = new GetArchivedFilesInput
+			{
+				FileName = _searchText,
+				StructureKey = string.IsNullOrEmpty(_structureKeyFilter) ? null : _structureKeyFilter,
+				SkipCount = (_currentPage - 1) * _pageSize,
+				MaxResultCount = _pageSize
+			};
+
+			var result = await FileItemAppService.GetArchivedFilesAsync(input);
+			_archivedFiles = result.Items.ToList();
+			_totalCount = (int)result.TotalCount;
+			_selectedFiles.Clear();
+			_selectAll = false;
+		}
+		catch (Exception ex)
+		{
+			await HandleErrorAsync(ex);
+		}
+		finally
+		{
+			_isLoading = false;
+		}
+	}
+
+	private async Task OnStructureKeyFilterChanged(string? value)
+	{
+		_structureKeyFilter = value;
+		_currentPage = 1;
+		await LoadArchivedFilesAsync();
+	}
+
+	private async Task OnPageChangedAsync(int page)
+	{
+		_currentPage = page;
+		await LoadArchivedFilesAsync();
+	}
+
+	private Task ToggleFileSelection(Guid fileId, bool selected)
+	{
+		if (selected)
+			_selectedFiles.Add(fileId);
+		else
+			_selectedFiles.Remove(fileId);
+
+		_selectAll = _selectedFiles.Count == _archivedFiles.Count;
+		return Task.CompletedTask;
+	}
+
+	private void ToggleSelectAll()
+	{
+		if (_selectAll)
+		{
+			_selectedFiles = _archivedFiles.Select(f => f.Id).ToHashSet();
+		}
+		else
+		{
+			_selectedFiles.Clear();
+		}
+	}
+
+	private async Task RestoreFileAsync(Guid fileId)
+	{
+		try
+		{
+			await FileItemAppService.RestoreFromArchiveAsync(fileId);
+			await Message.SuccessAsync(L["FileRestored"]);
+			await LoadArchivedFilesAsync();
+		}
+		catch (Exception ex)
+		{
+			await HandleErrorAsync(ex);
+		}
+	}
+
+	private async Task RestoreSelectedAsync()
+	{
+		if (!_selectedFiles.Any())
+			return;
+
+		_isRestoring = true;
+		try
+		{
+			foreach (var fileId in _selectedFiles)
+			{
+				await FileItemAppService.RestoreFromArchiveAsync(fileId);
+			}
+			await Message.SuccessAsync(L["FilesRestored"].Value.Replace("{0}", _selectedFiles.Count.ToString()));
+			await LoadArchivedFilesAsync();
+		}
+		catch (Exception ex)
+		{
+			await HandleErrorAsync(ex);
+		}
+		finally
+		{
+			_isRestoring = false;
+		}
+	}
+
+	private string GetFileIcon(FileItemDto file) => file.FileType switch
+	{
+		FileType.Image => "file-image",
+		FileType.Video => "file-video",
+		FileType.Audio => "file-audio",
+		FileType.Document => "file-text",
+		_ => "file"
+	};
+
+	private string FormatFileSize(long bytes)
+	{
+		string[] sizes = { "B", "KB", "MB", "GB", "TB" };
+		double len = bytes;
+		int order = 0;
+		while (len >= 1024 && order < sizes.Length - 1)
+		{
+			order++;
+			len = len / 1024;
+		}
+		return $"{len:0.##} {sizes[order]}";
+	}
+}

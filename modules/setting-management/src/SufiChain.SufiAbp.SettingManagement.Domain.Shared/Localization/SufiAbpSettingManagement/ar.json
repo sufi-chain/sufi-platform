@@ -1,0 +1,10 @@
+{
+  "culture": "ar",
+  "texts": {
+    "Feature:SettingManagementGroup": "إدارة الإعدادات",
+    "Feature:SettingManagementEnable": "تمكين إدارة الإعدادات",
+    "Feature:SettingManagementEnableDescription": "تمكين نظام إدارة الإعدادات في التطبيق.",
+    "Feature:AllowChangingEmailSettings": "السماح بتغيير إعدادات البريد الإلكتروني",
+    "Feature:AllowChangingEmailSettingsDescription": "السماح بتغيير إعدادات البريد الإلكتروني."
+  }
+}

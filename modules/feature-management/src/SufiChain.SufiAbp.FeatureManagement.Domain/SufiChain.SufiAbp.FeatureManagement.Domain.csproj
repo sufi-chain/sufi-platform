@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <RootNamespace>SufiChain.SufiAbp.FeatureManagement</RootNamespace>
+  </PropertyGroup>
+  
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\..\framework\SufiChain.SufiAbp.Ddd.Domain\SufiChain.SufiAbp.Ddd.Domain.csproj" />
+    <ProjectReference Include="..\..\..\..\framework\SufiChain.SufiAbp.Features\SufiChain.SufiAbp.Features.csproj" />
+    <ProjectReference Include="..\..\..\..\framework\SufiChain.SufiAbp.Caching\SufiChain.SufiAbp.Caching.csproj" />
+    <ProjectReference Include="..\..\..\..\framework\SufiChain.SufiAbp.Data\SufiChain.SufiAbp.Data.csproj" />
+    <ProjectReference Include="..\..\..\..\framework\SufiChain.SufiAbp.Localization\SufiChain.SufiAbp.Localization.csproj" />
+    <ProjectReference Include="..\SufiChain.SufiAbp.FeatureManagement.Domain.Shared\SufiChain.SufiAbp.FeatureManagement.Domain.Shared.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Polly" Version="8.6.3" />
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,852 @@
+@implements IDisposable
+@inject IFolderAppService FolderAppService
+@inject IFileManagerAppService FileManagerAppService
+@inject IFileItemAppService FileItemAppService
+@inject IFileItemUrlProvider FileItemUrlProvider
+@inject NavigationManager NavigationManager
+@inherits FileManagerComponentBase
+
+<div class="file-manager @Class">
+    <div class="file-manager-toolbar">
+        <FileManagerToolbar 
+            State="@_state"
+            ShowFolderTree="@ShowFolderTree"
+            OnNavigateBack="@HandleNavigateBack"
+            OnNavigateForward="@HandleNavigateForward"
+            OnNavigateUp="@HandleNavigateUp"
+            OnRefresh="@RefreshAsync"
+            OnNewFolder="@HandleNewFolder"
+            OnUpload="@HandleUpload"
+            OnDelete="@HandleDelete"
+            OnCut="@HandleCut"
+            OnCopy="@HandleCopy"
+            OnPaste="@HandlePaste"
+            OnViewModeChanged="@HandleViewModeChanged"
+            OnSearch="@HandleSearch"
+            FilterStructureKey="@_filterStructureKey"
+            OnStructureFilterChanged="@HandleStructureFilterChanged"
+            ShowPropertiesPanel="@ShowPropertiesPanel"
+            OnTogglePropertiesPanel="@HandleShowProperties"
+            OnOpenFoldersDrawer="@HandleOpenFoldersDrawer" />
+    </div>
+    
+    <div class="file-manager-breadcrumb">
+        <FileManagerBreadcrumb
+            Breadcrumbs="@(_state.Contents?.Breadcrumbs ?? new())"
+            OnNavigate="@HandleBreadcrumbNavigate" />
+    </div>
+
+    <div class="file-manager-content">
+        @if (ShowFolderTree)
+        {
+            @* Desktop: inline tree *@
+            <div class="file-manager-tree fm-tree-desktop">
+                <FolderTree 
+                    SelectedFolderId="@_state.CurrentFolderId"
+                    OnFolderSelected="@HandleFolderSelected"
+                    ShowTenantRoots="@ShowTenantTree"
+                    RefreshTrigger="@_treeRefreshTrigger" />
+            </div>
+        }
+
+        @* Mobile: tree in drawer *@
+        @if (ShowFolderTree)
+        {
+            <SbDrawer @bind-Open="_foldersDrawerOpen"
+                      Placement="SbDrawerPlacement.Start"
+                      Width="280px"
+                      Title="@L["Folders"]">
+                <div class="fm-folders-drawer-content">
+                    @if (AllowCreateFolders)
+                    {
+                        <div class="fm-folders-drawer-toolbar">
+                            <SbButton Color="SbColor.Primary" Size="SbSize.Sm" FullWidth="true" OnClick="@HandleNewFolderInDrawer">
+                                <StartIcon><SbIcon Name="folder-open" /></StartIcon>
+                                <ChildContent>@L["NewFolder"]</ChildContent>
+                            </SbButton>
+                        </div>
+                    }
+                    <div class="fm-folders-drawer-tree">
+                        <FolderTree 
+                            SelectedFolderId="@_state.CurrentFolderId"
+                            OnFolderSelected="@HandleFolderSelectedFromDrawer"
+                            ShowTenantRoots="@ShowTenantTree"
+                            RefreshTrigger="@_treeRefreshTrigger" />
+                    </div>
+                </div>
+            </SbDrawer>
+        }
+
+        <div class="file-manager-view @(ShowFolderTree ? "with-tree" : "")">
+            @if (_state.IsLoading)
+            {
+                <div class="file-manager-loading">
+                    <SbProgress Type="SbProgressType.Circular" />
+                </div>
+            }
+            else
+            {
+                <FileView 
+                    State="@_state"
+                    OnFolderOpen="@HandleFolderOpen"
+                    OnFileOpen="@HandleFileOpen"
+                    OnSelectionChanged="@HandleSelectionChanged"
+                    OnContextMenu="@HandleContextMenu"
+                    OnRename="@HandleRename"
+                    OnDrop="@HandleDrop" />
+            }
+        </div>
+
+        @if (ShowPropertiesPanel && _state.HasSelection)
+        {
+            <div class="file-manager-properties">
+                <PropertiesPanel
+                    SelectedFiles="@GetSelectedFiles()"
+                    SelectedFolders="@GetSelectedFolderNodes()" />
+            </div>
+        }
+    </div>
+
+    <div class="file-manager-statusbar">
+        <span class="status-item-count">
+            @GetStatusText()
+        </span>
+        @if (_state.HasSelection)
+        {
+            <span class="status-selection">
+                @L["ItemsSelected", _state.SelectionCount]
+            </span>
+        }
+    </div>
+
+    @* Context Menu *@
+    <FileManagerContextMenu 
+        @ref="_contextMenu"
+        OnOpen="@HandleContextMenuOpen"
+        OnCut="@HandleCut"
+        OnCopy="@HandleCopy"
+        OnPaste="@HandlePaste"
+        OnDelete="@HandleDelete"
+        OnRename="@(() => StartRename())"
+        OnNewFolder="@HandleNewFolder"
+        OnDownload="@HandleDownload"
+        OnQuickShare="@HandleQuickShare"
+        OnEdit="@HandleEditFile"
+        OnEditImage="@HandleEditImage"
+        QuickShareLabel="@L["QuickShare"]"
+        IsImageFile="@(GetSelectedFiles().Count == 1 && GetSelectedFiles().FirstOrDefault()?.FileType == FileType.Image)"
+        EditImageLabel="@L["EditImage"]"
+        CanPaste="@_state.CanPaste" />
+
+    @* New Folder Modal *@
+    <SbDialog @bind-Open="_newFolderModalOpen" Title="@L["NewFolder"]">
+        <ChildContent>
+            <SbFormField Label="@L["FolderName"]">
+                <SbTextField @bind-Value="@_newFolderName" Placeholder="@L["EnterFolderName"]" />
+            </SbFormField>
+        </ChildContent>
+        <Footer>
+            <SbStack Direction="SbStackDirection.Row" Gap="2" Justify="SbJustify.End">
+                <SbButton Color="SbColor.Default" OnClick="@(() => _newFolderModalOpen = false)">@L["Cancel"]</SbButton>
+                <SbButton Color="SbColor.Primary" OnClick="@CreateNewFolder">@L["Create"]</SbButton>
+            </SbStack>
+        </Footer>
+    </SbDialog>
+
+    @* Upload Modal *@
+    <SbDialog @bind-Open="_uploadModalOpen" Title="@L["UploadFiles"]" Size="SbDialogSize.Lg">
+        <ChildContent>
+            <FileUploader 
+                FolderPath="@(string.IsNullOrEmpty(_state.CurrentPath) || _state.CurrentPath == "/" ? null : _state.CurrentPath)"
+                ShowStructureSelector="true"
+                StructureKey="@(_filterStructureKey ?? SufiChain.SufiAbp.FileManager.Configuration.FileStructureKeys.General)"
+                AutoConfirm="true"
+                OnUploadCompleted="@OnUploadCompleted" />
+        </ChildContent>
+    </SbDialog>
+
+    @* Delete Confirmation Modal *@
+    <SbDialog @bind-Open="_deleteModalOpen" Title="@L["ConfirmDelete"]">
+        <ChildContent>
+            <p>@L["ConfirmDeleteItems", _state.SelectionCount]</p>
+            <p class="text-muted">@L["ActionCannotBeUndone"]</p>
+        </ChildContent>
+        <Footer>
+            <SbStack Direction="SbStackDirection.Row" Gap="2" Justify="SbJustify.End">
+                <SbButton Color="SbColor.Default" OnClick="@(() => _deleteModalOpen = false)">@L["Cancel"]</SbButton>
+                <SbButton Color="SbColor.Danger" OnClick="@ConfirmDelete">@L["Delete"]</SbButton>
+            </SbStack>
+        </Footer>
+    </SbDialog>
+
+    @* Edit File Modal *@
+    <SbDialog @bind-Open="_editModalOpen" Title="@L["EditFileProperties"]" Size="SbDialogSize.Lg">
+        <ChildContent>
+            @if (_editingFile != null)
+            {
+                <SbStack Direction="SbStackDirection.Row" Gap="4">
+                    <div class="text-center" style="width: 200px;">
+                        @if (_editingFile.FileType == FileType.Image && !string.IsNullOrEmpty(_editingFile.ThumbnailBlobName))
+                        {
+                            <img src="@FileItemUrlProvider.GetThumbnailUrl(_editingFile.Id, (_editingFile.LastModificationTime ?? _editingFile.CreationTime).Ticks, _editingFile.StructureBaseUrl, _editingFile.StructureIsPublicAccess, _editingFile.ThumbnailBlobName, _editingFile.TenantId, _editingFile.StructureStorageProvider)" 
+                                 alt="@_editingFile.Alt" 
+                                 style="max-height: 200px; max-width: 100%;" />
+                        }
+                        else
+                        {
+                            <SbIcon Name="file" Size="SbSize.Xl" />
+                        }
+                        <div class="small text-muted mt-2">@_editingFile.MimeType</div>
+                        <div class="small text-muted">@FormatFileSize(_editingFile.Size)</div>
+                    </div>
+                    <div style="flex: 1;">
+                        <SbStack Gap="3">
+                            <SbFormField Label="@L["DisplayName"]">
+                                <SbTextField @bind-Value="@_editFileName" Placeholder="@L["EnterDisplayName"]" />
+                            </SbFormField>
+                            <SbFormField Label="@L["AltTextForImages"]">
+                                <SbTextField @bind-Value="@_editFileAlt" Placeholder="@L["EnterAltText"]" />
+                            </SbFormField>
+                            <SbFormField Label="@L["TagsCommaSeparated"]">
+                                <SbTextField @bind-Value="@_editFileTags" Placeholder="@L["EnterTagsPlaceholder"]" />
+                            </SbFormField>
+                            <div class="small text-muted">
+                                <span>@L["Created"]: @_editingFile.CreationTime.ToString("yyyy-MM-dd HH:mm")</span>
+                                @if (_editingFile.LastModificationTime.HasValue)
+                                {
+                                    <span><br />@L["Modified"]: @_editingFile.LastModificationTime.Value.ToString("yyyy-MM-dd HH:mm")</span>
+                                }
+                                @if (_editingFile.Width.HasValue && _editingFile.Height.HasValue)
+                                {
+                                    <span><br />@L["Dimensions"]: @_editingFile.Width x @_editingFile.Height px</span>
+                                }
+                            </div>
+                        </SbStack>
+                    </div>
+                </SbStack>
+            }
+        </ChildContent>
+        <Footer>
+            <SbStack Direction="SbStackDirection.Row" Gap="2" Justify="SbJustify.End">
+                <SbButton Color="SbColor.Default" OnClick="@(() => _editModalOpen = false)">@L["Cancel"]</SbButton>
+                <SbButton Color="SbColor.Primary" OnClick="@SaveFileEdit">@L["Save"]</SbButton>
+            </SbStack>
+        </Footer>
+    </SbDialog>
+
+    <QuickShareModal Open="_quickShareModalOpen" OpenChanged="@OnQuickShareModalClosed" FileId="_quickShareFileId" />
+</div>
+
+@code {
+    [Parameter] public bool ShowTenantTree { get; set; } = false;
+    [Parameter] public bool ShowFolderTree { get; set; } = true;
+    [Parameter] public bool ShowPropertiesPanel { get; set; } = false;
+    [Parameter] public EventCallback<bool> ShowPropertiesPanelChanged { get; set; }
+    [Parameter] public bool AllowCreateFolders { get; set; } = true;
+    [Parameter] public bool AllowDragDrop { get; set; } = true;
+    [Parameter] public bool AllowMultiSelect { get; set; } = true;
+    [Parameter] public FileViewMode InitialViewMode { get; set; } = FileViewMode.LargeIcons;
+    [Parameter] public string? Class { get; set; }
+    [Parameter] public string? StructureKey { get; set; }
+    [Parameter] public EventCallback<FileItemDto> OnFileOpen { get; set; }
+    [Parameter] public EventCallback<List<FileItemDto>> OnSelectionChanged { get; set; }
+    [Parameter] public EventCallback<FileItemDto> OnEditImage { get; set; }
+    [Parameter] public int RefreshTrigger { get; set; }
+
+    private FileManagerState _state = new();
+    private FileManagerContextMenu? _contextMenu;
+    private bool _foldersDrawerOpen;
+    private bool _newFolderModalOpen;
+    private bool _uploadModalOpen;
+    private bool _deleteModalOpen;
+    private bool _editModalOpen;
+    private string _newFolderName = "";
+    private readonly CancellationTokenSource _cts = new();
+    private bool _disposed = false;
+    private int _lastRefreshTrigger;
+    private int _treeRefreshTrigger;
+    private string? _filterStructureKey;
+
+    // Edit file fields
+    private FileItemDto? _editingFile;
+    private string _editFileName = "";
+    private string _editFileAlt = "";
+    private string _editFileTags = "";
+
+    // Quick Share fields
+    private bool _quickShareModalOpen;
+    private Guid? _quickShareFileId;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _state.ViewMode = InitialViewMode;
+        _filterStructureKey = StructureKey;
+        _state.NavigateTo(null, "/");
+        await RefreshAsync();
+        await LoadClipboardState();
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (RefreshTrigger != _lastRefreshTrigger)
+        {
+            _lastRefreshTrigger = RefreshTrigger;
+            if (RefreshTrigger > 0)
+            {
+                await RefreshAsync();
+                await LoadClipboardState();
+            }
+        }
+    }
+
+    private async Task RefreshAsync()
+    {
+        _state.IsLoading = true;
+        StateHasChanged();
+
+        try
+        {
+            var input = new GetFolderContentsInput
+            {
+                FolderId = _state.CurrentFolderId,
+                VirtualPath = _state.CurrentPath,
+                Sorting = $"{_state.SortField} {(_state.SortDescending ? "DESC" : "ASC")}",
+                Filter = _state.SearchFilter,
+                StructureKey = _filterStructureKey
+            };
+
+            _state.Contents = await FolderAppService.GetContentsAsync(input);
+        }
+        catch (Exception ex)
+        {
+            await Notify.ErrorAsync($"Failed to load folder contents: {ex.Message}");
+        }
+        finally
+        {
+            _state.IsLoading = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task LoadClipboardState()
+    {
+        try
+        {
+            _state.Clipboard = await FileManagerAppService.GetClipboardStateAsync();
+        }
+        catch
+        {
+            _state.Clipboard = new ClipboardStateDto { HasContent = false };
+        }
+    }
+
+    private async Task HandleStructureFilterChanged(string? newValue)
+    {
+        _filterStructureKey = newValue;
+        await RefreshAsync();
+    }
+
+    #region Navigation
+
+    private async Task HandleNavigateBack()
+    {
+        _state.GoBack();
+        await RefreshAsync();
+    }
+
+    private async Task HandleNavigateForward()
+    {
+        _state.GoForward();
+        await RefreshAsync();
+    }
+
+    private async Task HandleNavigateUp()
+    {
+        if (_state.Contents?.ParentFolder != null)
+        {
+            _state.NavigateTo(_state.Contents.ParentFolder.Id, _state.Contents.ParentFolder.Path);
+            await RefreshAsync();
+        }
+    }
+
+    private async Task HandleFolderSelected(FolderTreeNodeDto folder)
+    {
+        _state.NavigateTo(folder.Id, folder.Path);
+        await RefreshAsync();
+    }
+
+    private async Task HandleFolderSelectedFromDrawer(FolderTreeNodeDto folder)
+    {
+        _foldersDrawerOpen = false;
+        _state.NavigateTo(folder.Id, folder.Path);
+        await RefreshAsync();
+    }
+
+    private void HandleOpenFoldersDrawer()
+    {
+        _foldersDrawerOpen = true;
+    }
+
+    private async Task HandleFolderOpen(FolderTreeNodeDto folder)
+    {
+        _state.NavigateTo(folder.Id, folder.Path);
+        await RefreshAsync();
+    }
+
+    private async Task HandleFileOpen(FileItemDto file)
+    {
+        await OnFileOpen.InvokeAsync(file);
+    }
+
+    private async Task HandleBreadcrumbNavigate(BreadcrumbItemDto item)
+    {
+        _state.NavigateTo(item.Id, item.Path);
+        await RefreshAsync();
+    }
+
+    #endregion
+
+    #region Selection
+
+    private async Task HandleSelectionChanged((HashSet<Guid> files, HashSet<Guid> folders) selection)
+    {
+        _state.SelectedFiles = selection.files;
+        _state.SelectedFolders = selection.folders;
+        StateHasChanged();
+
+        var selectedFiles = GetSelectedFiles();
+        await OnSelectionChanged.InvokeAsync(selectedFiles);
+    }
+
+    private List<FileItemDto> GetSelectedFiles()
+    {
+        if (_state.Contents == null) return new();
+        return _state.Contents.Files.Where(f => _state.SelectedFiles.Contains(f.Id)).ToList();
+    }
+
+    private List<FolderTreeNodeDto> GetSelectedFolderNodes()
+    {
+        if (_state.Contents == null) return new();
+        return _state.Contents.Folders.Where(f => f.Id.HasValue && _state.SelectedFolders.Contains(f.Id.Value)).ToList();
+    }
+
+    #endregion
+
+    #region Clipboard Operations
+
+    private async Task HandleCut()
+    {
+        if (!_state.HasSelection) return;
+
+        try
+        {
+            var result = await FileManagerAppService.CutAsync(new ClipboardOperationInput
+            {
+                FileIds = _state.SelectedFiles.ToList(),
+                FolderIds = _state.SelectedFolders.ToList()
+            });
+
+            await LoadClipboardState();
+            await Notify.SuccessAsync(result.Message ?? "Items cut to clipboard");
+        }
+        catch (Exception ex)
+        {
+            await Notify.ErrorAsync($"Cut failed: {ex.Message}");
+        }
+    }
+
+    private async Task HandleCopy()
+    {
+        if (!_state.HasSelection) return;
+
+        try
+        {
+            var result = await FileManagerAppService.CopyAsync(new ClipboardOperationInput
+            {
+                FileIds = _state.SelectedFiles.ToList(),
+                FolderIds = _state.SelectedFolders.ToList()
+            });
+
+            await LoadClipboardState();
+            await Notify.SuccessAsync(result.Message ?? "Items copied to clipboard");
+        }
+        catch (Exception ex)
+        {
+            await Notify.ErrorAsync($"Copy failed: {ex.Message}");
+        }
+    }
+
+    private async Task HandlePaste()
+    {
+        if (!_state.CanPaste) return;
+
+        try
+        {
+            var result = await FileManagerAppService.PasteAsync(new PasteInput
+            {
+                TargetFolderId = _state.CurrentFolderId,
+                TargetPath = _state.CurrentPath
+            });
+
+            await LoadClipboardState();
+            await RefreshAsync();
+
+            if (result.Success)
+            {
+                await Notify.SuccessAsync(L["PastedSuccessfully", result.FilesCopied + result.FilesMoved, result.FoldersCopied + result.FoldersMoved]);
+            }
+            else
+            {
+                await Notify.WarnAsync(L["PasteCompletedWithErrors", string.Join(", ", result.Errors)]);
+            }
+        }
+        catch (Exception ex)
+        {
+            await Notify.ErrorAsync(L["PasteFailed", ex.Message]);
+        }
+    }
+
+    #endregion
+
+    #region Folder Operations
+
+    private void HandleNewFolderInDrawer()
+    {
+        HandleNewFolder();
+    }
+
+    private void HandleNewFolder()
+    {
+        if (!AllowCreateFolders) return;
+        _newFolderName = "New Folder";
+        _newFolderModalOpen = true;
+    }
+
+    private async Task CreateNewFolder()
+    {
+        if (string.IsNullOrWhiteSpace(_newFolderName))
+        {
+            await Notify.WarnAsync(L["PleaseEnterFolderName"]);
+            return;
+        }
+
+        try
+        {
+            await FolderAppService.CreateAsync(new CreateFolderInput
+            {
+                Name = _newFolderName,
+                ParentId = _state.CurrentFolderId,
+                ParentPath = _state.CurrentPath
+            });
+
+            _newFolderModalOpen = false;
+            _treeRefreshTrigger++;
+            await RefreshAsync();
+            await Notify.SuccessAsync(L["FolderCreatedSuccessfully"]);
+        }
+        catch (Exception ex)
+        {
+            await Notify.ErrorAsync(L["FailedToCreateFolder", ex.Message]);
+        }
+    }
+
+    #endregion
+
+    #region Delete Operations
+
+    private void HandleDelete()
+    {
+        if (!_state.HasSelection) return;
+        _deleteModalOpen = true;
+    }
+
+    private async Task ConfirmDelete()
+    {
+        try
+        {
+            var result = await FileManagerAppService.DeleteItemsAsync(new BulkDeleteInput
+            {
+                FileIds = _state.SelectedFiles.ToList(),
+                FolderIds = _state.SelectedFolders.ToList()
+            });
+
+            _deleteModalOpen = false;
+            _state.ClearSelection();
+            if (result.Success && result.SuccessCount > 0)
+                _treeRefreshTrigger++;
+            await RefreshAsync();
+
+            if (result.Success)
+            {
+                await Notify.SuccessAsync(L["DeletedItemsCount", result.SuccessCount]);
+            }
+            else
+            {
+                await Notify.WarnAsync(L["DeletedWithFailures", result.SuccessCount, result.FailedCount]);
+            }
+        }
+        catch (Exception ex)
+        {
+            await Notify.ErrorAsync(L["DeleteFailed", ex.Message]);
+        }
+    }
+
+    #endregion
+
+    #region Other Operations
+
+    private void HandleUpload()
+    {
+        _uploadModalOpen = true;
+    }
+
+    private async Task OnUploadCompleted(List<FileItemDto> uploadedItems)
+    {
+        _uploadModalOpen = false;
+        await RefreshAsync();
+        
+        if (uploadedItems.Count > 0)
+        {
+            await Notify.SuccessAsync(L["UploadedFilesSuccessfully", uploadedItems.Count]);
+        }
+    }
+
+    private void HandleViewModeChanged(FileViewMode mode)
+    {
+        _state.ViewMode = mode;
+        StateHasChanged();
+    }
+
+    private async Task HandleSearch(string query)
+    {
+        _state.SearchFilter = query;
+        await RefreshAsync();
+    }
+
+    private void HandleContextMenu((double x, double y, Guid? fileId, Guid? folderId) args)
+    {
+        _contextMenu?.Show(args.x, args.y, args.fileId, args.folderId);
+    }
+
+    private async Task HandleContextMenuOpen()
+    {
+        if (_state.SelectedFiles.Count == 1)
+        {
+            var file = _state.Contents?.Files.FirstOrDefault(f => _state.SelectedFiles.Contains(f.Id));
+            if (file != null)
+            {
+                await HandleFileOpen(file);
+            }
+        }
+        else if (_state.SelectedFolders.Count == 1)
+        {
+            var folder = _state.Contents?.Folders.FirstOrDefault(f => f.Id.HasValue && _state.SelectedFolders.Contains(f.Id.Value));
+            if (folder != null)
+            {
+                await HandleFolderOpen(folder);
+            }
+        }
+    }
+
+    private void StartRename()
+    {
+        if (_state.SelectionCount == 1)
+        {
+            _state.IsRenaming = true;
+            _state.RenamingItemId = _state.SelectedFiles.FirstOrDefault() != default 
+                ? _state.SelectedFiles.First() 
+                : _state.SelectedFolders.FirstOrDefault();
+            StateHasChanged();
+        }
+    }
+
+    private async Task HandleRename((Guid id, string newName, bool isFolder) args)
+    {
+        try
+        {
+            if (args.isFolder)
+            {
+                await FolderAppService.RenameAsync(args.id, new RenameFolderInput { NewName = args.newName });
+                _treeRefreshTrigger++;
+            }
+            else
+            {
+                await FileItemAppService.UpdateMetadataAsync(args.id, new UpdateFileMetadataInput { Name = args.newName });
+            }
+
+            _state.IsRenaming = false;
+            _state.RenamingItemId = null;
+            await RefreshAsync();
+        }
+        catch (Exception ex)
+        {
+            await Notify.ErrorAsync($"Rename failed: {ex.Message}");
+        }
+    }
+
+    private async Task HandleEditImage(Guid fileId)
+    {
+        var file = _state.Contents?.Files?.FirstOrDefault(f => f.Id == fileId);
+        if (file != null)
+        {
+            await OnEditImage.InvokeAsync(file);
+        }
+        else
+        {
+            var loaded = await FileItemAppService.GetAsync(fileId);
+            await OnEditImage.InvokeAsync(loaded);
+        }
+    }
+
+    private async Task HandleEditFile(Guid fileId)
+    {
+        try
+        {
+            _editingFile = _state.Contents?.Files?.FirstOrDefault(f => f.Id == fileId);
+            if (_editingFile == null)
+            {
+                _editingFile = await FileItemAppService.GetAsync(fileId);
+            }
+            if (_editingFile != null)
+            {
+                _editFileName = _editingFile.Name ?? _editingFile.OriginalName;
+                _editFileAlt = _editingFile.Alt ?? "";
+                _editFileTags = _editingFile.Tags != null ? string.Join(", ", _editingFile.Tags) : "";
+                _editModalOpen = true;
+            }
+        }
+        catch (Exception ex)
+        {
+            await Notify.ErrorAsync($"Failed to load file: {ex.Message}");
+        }
+    }
+
+    private async Task SaveFileEdit()
+    {
+        if (_editingFile == null) return;
+
+        try
+        {
+            var tags = string.IsNullOrWhiteSpace(_editFileTags) 
+                ? null 
+                : _editFileTags.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+            
+            await FileItemAppService.UpdateMetadataAsync(_editingFile.Id, new UpdateFileMetadataInput
+            {
+                Name = _editFileName,
+                Alt = _editFileAlt,
+                Tags = tags
+            });
+
+            _editModalOpen = false;
+            await RefreshAsync();
+            await Notify.SuccessAsync("File updated successfully");
+        }
+        catch (Exception ex)
+        {
+            await Notify.ErrorAsync($"Failed to update file: {ex.Message}");
+        }
+    }
+
+    private async Task HandleDrop(DragDropEventArgs args)
+    {
+        if (!AllowDragDrop) return;
+
+        try
+        {
+            var result = await FileManagerAppService.MoveItemsAsync(new BulkMoveInput
+            {
+                FileIds = args.FileIds,
+                FolderIds = args.FolderIds,
+                TargetFolderId = args.TargetFolderId,
+                TargetPath = args.TargetPath
+            });
+
+            await RefreshAsync();
+
+            if (result.Success)
+            {
+                await Notify.SuccessAsync($"Moved {result.SuccessCount} item(s)");
+            }
+        }
+        catch (Exception ex)
+        {
+            await Notify.ErrorAsync($"Move failed: {ex.Message}");
+        }
+    }
+
+    private async Task HandleDownload()
+    {
+        if (_state.SelectedFiles.Count == 1 && _state.Contents != null)
+        {
+            var fileId = _state.SelectedFiles.First();
+            var file = _state.Contents.Files?.FirstOrDefault(f => f.Id == fileId);
+            var url = file != null
+                ? FileItemUrlProvider.GetDownloadUrl(file.Id, file.StructureBaseUrl, file.StructureIsPublicAccess, file.BlobName, file.TenantId, file.StructureStorageProvider)
+                : FileItemUrlProvider.GetDownloadUrl(fileId);
+            NavigationManager.NavigateTo(url, forceLoad: true);
+        }
+        else if (_state.HasSelection)
+        {
+            await Notify.WarnAsync("Multi-file download not yet implemented");
+        }
+    }
+
+    private void HandleQuickShare()
+    {
+        if (_state.SelectedFiles.Count != 1) return;
+        _quickShareFileId = _state.SelectedFiles.First();
+        _quickShareModalOpen = true;
+    }
+
+    private void OnQuickShareModalClosed(bool open)
+    {
+        _quickShareModalOpen = open;
+        if (!open) _quickShareFileId = null;
+    }
+
+    private async Task HandleShowProperties()
+    {
+        var newValue = !ShowPropertiesPanel;
+        await ShowPropertiesPanelChanged.InvokeAsync(newValue);
+    }
+
+    private string GetStatusText()
+    {
+        if (_state.Contents == null) return "";
+        var folders = _state.Contents.Folders.Count;
+        var files = _state.Contents.TotalFileCount;
+        return L["FoldersAndFilesCount", folders, files].Value!;
+    }
+
+    private string FormatFileSize(long bytes)
+    {
+        string[] sizes = { "B", "KB", "MB", "GB" };
+        double len = bytes;
+        int order = 0;
+        while (len >= 1024 && order < sizes.Length - 1)
+        {
+            order++;
+            len /= 1024;
+        }
+        return $"{len:0.##} {sizes[order]}";
+    }
+
+    #endregion
+
+
+    public void Dispose()
+    {
+        if (_disposed) return;
+        _disposed = true;
+        try
+        {
+            _cts.Cancel();
+            _cts.Dispose();
+        }
+        catch (ObjectDisposedException)
+        {
+            // CTS already disposed (e.g. multiple Dispose calls), ignore
+        }
+    }
+}

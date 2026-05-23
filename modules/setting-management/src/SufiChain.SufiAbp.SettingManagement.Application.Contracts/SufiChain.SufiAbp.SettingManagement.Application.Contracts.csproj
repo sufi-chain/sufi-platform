@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>netstandard2.0;netstandard2.1;net10.0</TargetFrameworks>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>SufiChain.SufiAbp.SettingManagement</RootNamespace>
+    <IsPackable>true</IsPackable>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <PackageId>SufiChain.SufiAbp.SettingManagement.Application.Contracts</PackageId>
+    <Description>Setting management module application contracts for Sufi Platform - wraps ABP contracts and registers SufiAbp localization.</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../../../../framework/SufiChain.SufiAbp.Ddd.Application.Contracts/SufiChain.SufiAbp.Ddd.Application.Contracts.csproj" />
+    <ProjectReference Include="../../../../framework/SufiChain.SufiAbp.Authorization/SufiChain.SufiAbp.Authorization.csproj" />
+    <ProjectReference Include="../../../../framework/SufiChain.SufiAbp.Localization/SufiChain.SufiAbp.Localization.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\SufiChain.SufiAbp.SettingManagement.Domain.Shared\SufiChain.SufiAbp.SettingManagement.Domain.Shared.csproj" />
+  </ItemGroup>
+
+</Project>

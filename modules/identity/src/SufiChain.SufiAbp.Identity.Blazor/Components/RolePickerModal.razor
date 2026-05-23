@@ -1,0 +1,85 @@
+@inherits IdentityComponentBase
+
+<SbDialog Open="@Open" OnCloseButtonClick="Hide" OpenChanged="OnDialogOpenChanged" Size="SbDialogSize.Md" Title="@L["AssignRoles"]">
+    <ChildContent>
+        <SbStack Gap="3">
+            <SbAlert Severity="@SbAlertSeverity.Info" Class="mb-2">
+                @L["OrganizationUnitRolesInfo"]
+            </SbAlert>
+
+            <SbTextField @bind-Value="_filter" 
+                         @bind-Value:after="OnFilterChangedAsync"
+                         Placeholder="@L["SearchRoles"]"
+                         Clearable="true">
+                <StartAdornment>
+                    <SbIcon Name="search" />
+                </StartAdornment>
+            </SbTextField>
+
+            @if (!string.IsNullOrEmpty(_errorMessage))
+            {
+                <SbAlert Severity="@SbAlertSeverity.Danger">
+                    @_errorMessage
+                </SbAlert>
+            }
+            else if (IsOperationLoading(LoadingKeys.LoadRoles))
+            {
+                <SbStack Justify="SbJustify.Center" Align="SbAlign.Center" Class="p-8">
+                    <SbProgress Type="SbProgressType.Circular" />
+                    <span>@L["Loading"]...</span>
+                </SbStack>
+            }
+            else if (_availableRoles.Count == 0)
+            {
+                <SbStack Justify="SbJustify.Center" Align="SbAlign.Center" Class="p-8 text-muted">
+                    <SbIcon Name="shield" Size="SbSize.Xl" />
+                    <span>@L["NoAvailableRolesFound"]</span>
+                </SbStack>
+            }
+            else
+            {
+                <SbDataGrid TItem="OrganizationUnitRoleDto"
+                            Items="_availableRoles"
+                            Striped="true"
+                            Hoverable="true"
+                            PageIndex="_pageIndex"
+                            PageSize="_pageSize"
+                            TotalCount="_totalCount"
+                            PageIndexChanged="OnPageIndexChangedAsync">
+                    <SbColumn TItem="OrganizationUnitRoleDto" Title="" Width="50px">
+                        <CellTemplate Context="cellContext">
+                            <SbCheckbox Value="@_selectedRoleIds.Contains(cellContext.Item.RoleId)"
+                                        ValueChanged="@(v => OnRoleToggled(cellContext.Item.RoleId, v))" />
+                        </CellTemplate>
+                    </SbColumn>
+                    <SbColumn TItem="OrganizationUnitRoleDto" Title="@L["RoleName"]">
+                        <CellTemplate Context="cellContext">
+                            <SbStack Direction="SbStackDirection.Row" Gap="2" Align="SbAlign.Center">
+                                <SbIcon Name="shield" />
+                                @cellContext.Item.RoleName
+                            </SbStack>
+                        </CellTemplate>
+                    </SbColumn>
+                </SbDataGrid>
+            }
+
+            @if (_selectedRoleIds.Count > 0)
+            {
+                <SbAlert Severity="SbAlertSeverity.Info">
+                    @L["SelectedRolesCount", _selectedRoleIds.Count]
+                </SbAlert>
+            }
+        </SbStack>
+    </ChildContent>
+    <Footer>
+        <SbStack Direction="SbStackDirection.Row" Gap="2" Justify="SbJustify.End">
+            <SbButton Variant="SbButtonVariant.Outline" OnClick="Hide">@L["Cancel"]</SbButton>
+            <SbButton Color="SbColor.Primary" 
+                      Loading="IsOperationLoading(LoadingKeys.AddRoles)" 
+                      Disabled="@(_selectedRoleIds.Count == 0)"
+                      OnClick="AddRolesAsync">
+                @L["AssignSelected"]
+            </SbButton>
+        </SbStack>
+    </Footer>
+</SbDialog>

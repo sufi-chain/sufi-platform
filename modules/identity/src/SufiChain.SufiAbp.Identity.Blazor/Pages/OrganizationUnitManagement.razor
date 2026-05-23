@@ -1,0 +1,421 @@
+@page "/admin/identity/organization-units"
+@using SufiChain.SufiAbp.Identity.Blazor.Components
+@using SufiChain.SufiAbp.UI.Blazor.Components
+@using SufiChain.SufiBlazor.Components.Forms
+@using SufiChain.SufiBlazor.Components.Navigation
+@attribute [Authorize(Policy = SufiChain.SufiAbp.Identity.IdentityPermissions.OrganizationUnits.Default)]
+@inherits IdentityComponentBase
+
+<SufiAbpPageToolbar>
+	<AuthorizeView Policy="@SufiChain.SufiAbp.Identity.IdentityPermissions.OrganizationUnits.Create">
+		<SbButton Color="SbColor.Primary" OnClick="ShowCreateRootModal">
+			<StartIcon><SbIcon Name="plus" /></StartIcon>
+			<ChildContent>@L["NewOrganizationUnit"]</ChildContent>
+		</SbButton>
+	</AuthorizeView>
+</SufiAbpPageToolbar>
+
+<SbStack Direction="SbStackDirection.Column" Gap="4">
+
+	<!-- Desktop: Split view (tree left, details right). Hidden on mobile. -->
+	<div class="ou-layout ou-layout-desktop">
+		<SbStack Direction="SbStackDirection.Row" Gap="4">
+
+			<!-- Left Panel: Tree View -->
+			<SbCard Class="ou-tree-card">
+				<Header>
+					<SbStack Direction="SbStackDirection.Row" Justify="SbJustify.SpaceBetween" Align="SbAlign.Center">
+						<span>@L["OrganizationUnits"]</span>
+						<SbIconButton Size="SbSize.Sm" AriaLabel="@L["Refresh"]" OnClick="@LoadTreeAsync">
+							<Icon><SbIcon Name="refresh-cw" /></Icon>
+						</SbIconButton>
+					</SbStack>
+				</Header>
+				<ChildContent>
+					@if (IsOperationLoading(LoadingKeys.LoadTree))
+					{
+						<SbStack Justify="SbJustify.Center" Align="SbAlign.Center" Class="p-8">
+							<SbProgress Type="SbProgressType.Circular" />
+						</SbStack>
+					}
+					else if (_organizationUnits.Count == 0)
+					{
+						<SbStack Justify="SbJustify.Center" Align="SbAlign.Center" Class="p-8 text-muted">
+							<SbIcon Name="folder-tree" Size="SbSize.Xl" />
+							<span>@L["NoOrganizationUnits"]</span>
+						</SbStack>
+					}
+					else
+					{
+						<SbTreeView TItem="OrganizationUnitDto"
+									Items="_organizationUnits"
+									ChildSelector="@(ou => ou.Children)"
+									TextSelector="@(ou => ou.DisplayName)"
+									IconSelector="@(_ => "folder")"
+									SelectedItem="_selectedUnit"
+									SelectedItemChanged="OnUnitSelectedAsync" />
+					}
+				</ChildContent>
+			</SbCard>
+
+			<!-- Right Panel: Details -->
+			@if (_selectedUnit == null)
+			{
+				<SbCard Class="flex-grow-1" Style="min-height: 500px;">
+					<ChildContent>
+						<SbStack Justify="SbJustify.Center" Align="SbAlign.Center" Class="p-8 h-100 text-muted">
+							<SbIcon Name="hand-pointer" Size="SbSize.Xl" />
+							<span>@L["SelectOrganizationUnitToViewDetails"]</span>
+						</SbStack>
+					</ChildContent>
+				</SbCard>
+			}
+			else
+			{
+				<SbCard Class="flex-grow-1" Style="min-height: 500px;">
+					<Header>
+						<SbStack Direction="SbStackDirection.Row" Justify="SbJustify.SpaceBetween" Align="SbAlign.Center">
+							<SbStack Direction="SbStackDirection.Row" Gap="2" Align="SbAlign.Center" Class="ou-unit-name-container">
+								<SbIcon Name="folder" />
+								<span class="ou-unit-name fw-semibold" title="@_selectedUnit.DisplayName">@_selectedUnit.DisplayName</span>
+							</SbStack>
+							<SbStack Direction="SbStackDirection.Row" Gap="1">
+								<AuthorizeView Policy="@SufiChain.SufiAbp.Identity.IdentityPermissions.OrganizationUnits.Create">
+									<SbIconButton Size="SbSize.Sm" AriaLabel="@L["AddSubUnit"]"
+												  OnClick="ShowCreateChildModal">
+										<Icon><SbIcon Name="folder-plus" /></Icon>
+									</SbIconButton>
+								</AuthorizeView>
+								<AuthorizeView Policy="@SufiChain.SufiAbp.Identity.IdentityPermissions.OrganizationUnits.Update">
+									<SbIconButton Size="SbSize.Sm" AriaLabel="@L["Edit"]"
+												  OnClick="ShowEditModal">
+										<Icon><SbIcon Name="edit" /></Icon>
+									</SbIconButton>
+								</AuthorizeView>
+								<AuthorizeView Policy="@SufiChain.SufiAbp.Identity.IdentityPermissions.OrganizationUnits.Delete">
+									<SbIconButton Size="SbSize.Sm" Color="SbColor.Danger" AriaLabel="@L["Delete"]"
+												  OnClick="DeleteUnitAsync">
+										<Icon><SbIcon Name="trash" /></Icon>
+									</SbIconButton>
+								</AuthorizeView>
+							</SbStack>
+						</SbStack>
+					</Header>
+					<ChildContent>
+						<SbTabs @bind-ActiveIndex="_activeTab">
+							<!-- Overview Tab -->
+							<SbTab Label="@L["Overview"]">
+								<SbStack Gap="4">
+									<SbStack Direction="SbStackDirection.Column" Gap="4">
+										<SbStack Direction="SbStackDirection.Row" Gap="2" Align="SbAlign.Center">
+											<span class="text-muted">@L["Code"]:</span>
+											<span class="fw-medium">@_selectedUnit.Code</span>
+										</SbStack>
+										<SbStack Direction="SbStackDirection.Row" Gap="2" Align="SbAlign.Center">
+											<span class="text-muted">@L["Members"]:</span>
+											<SbBadge Color="SbColor.Primary" Style="width: max-content">@_selectedUnitDetails?.MemberCount</SbBadge>
+										</SbStack>
+										<SbStack Direction="SbStackDirection.Row" Gap="2" Align="SbAlign.Center">
+											<span class="text-muted">@L["Roles"]:</span>
+											<SbBadge Color="SbColor.Info" Style="width: max-content">@_selectedUnitDetails?.RoleCount</SbBadge>
+										</SbStack>
+									</SbStack>
+								</SbStack>
+							</SbTab>
+
+							<!-- Members Tab -->
+							<SbTab Label="@L["Members"]">
+								<SbStack Gap="3">
+									<SbStack Direction="SbStackDirection.Row" Justify="SbJustify.SpaceBetween" Align="SbAlign.Center">
+										<SbTextField @bind-Value="_memberFilter"
+													 Placeholder="@L["SearchMembers"]"
+													 Clearable="true"
+													 Style="width: 300px;">
+											<StartAdornment>
+												<SbIcon Name="search" />
+											</StartAdornment>
+										</SbTextField>
+										<AuthorizeView Policy="@SufiChain.SufiAbp.Identity.IdentityPermissions.OrganizationUnits.ManageMembers">
+											<SbButton Color="SbColor.Primary" Size="SbSize.Sm" OnClick="ShowMemberPickerModal">
+												<StartIcon><SbIcon Name="user-plus" /></StartIcon>
+												<ChildContent>@L["AddMembers"]</ChildContent>
+											</SbButton>
+										</AuthorizeView>
+									</SbStack>
+
+									<SbDataGrid TItem="OrganizationUnitMemberDto"
+												Items="_members"
+												Loading="IsOperationLoading(LoadingKeys.LoadMembers)"
+												Striped="true"
+												Hoverable="true"
+												PageIndex="_memberPageIndex"
+												PageSize="_memberPageSize"
+												TotalCount="_memberTotalCount"
+												PageIndexChanged="OnMemberPageIndexChangedAsync">
+										<SbColumn TItem="OrganizationUnitMemberDto" Title="@L["UserName"]">
+											<CellTemplate Context="cellContext">
+												@cellContext.Item.UserName
+											</CellTemplate>
+										</SbColumn>
+										<SbColumn TItem="OrganizationUnitMemberDto" Title="@L["Email"]">
+											<CellTemplate Context="cellContext">
+												@cellContext.Item.Email
+											</CellTemplate>
+										</SbColumn>
+										<SbColumn TItem="OrganizationUnitMemberDto" Title="@L["Name"]">
+											<CellTemplate Context="cellContext">
+												@($"{cellContext.Item.Name} {cellContext.Item.Surname}".Trim())
+											</CellTemplate>
+										</SbColumn>
+										<SbColumn TItem="OrganizationUnitMemberDto" Title="@L["Actions"]" Width="80px">
+											<CellTemplate Context="cellContext">
+												<AuthorizeView Policy="@SufiChain.SufiAbp.Identity.IdentityPermissions.OrganizationUnits.ManageMembers">
+													<SbIconButton Size="SbSize.Sm" Color="SbColor.Danger" AriaLabel="@L["Remove"]"
+																  OnClick="@(() => RemoveMemberAsync(cellContext.Item))">
+														<Icon><SbIcon Name="user-minus" /></Icon>
+													</SbIconButton>
+												</AuthorizeView>
+											</CellTemplate>
+										</SbColumn>
+									</SbDataGrid>
+								</SbStack>
+							</SbTab>
+
+							<!-- Roles Tab -->
+							<SbTab Label="@L["Roles"]">
+								<SbStack Gap="3">
+									<SbStack Direction="SbStackDirection.Row" Justify="SbJustify.SpaceBetween" Align="SbAlign.Center">
+										<SbAlert Severity="@SbAlertSeverity.Info" Class="mb-0 flex-grow-1">
+											@L["OrganizationUnitRolesInfo"]
+										</SbAlert>
+										<AuthorizeView Policy="@SufiChain.SufiAbp.Identity.IdentityPermissions.OrganizationUnits.ManageRoles">
+											<SbButton Color="SbColor.Primary" Size="SbSize.Sm" OnClick="ShowRolePickerModal">
+												<StartIcon><SbIcon Name="shield-check" /></StartIcon>
+												<ChildContent>@L["AssignRoles"]</ChildContent>
+											</SbButton>
+										</AuthorizeView>
+									</SbStack>
+
+									<SbDataGrid TItem="OrganizationUnitRoleDto"
+												Items="_roles"
+												Loading="IsOperationLoading(LoadingKeys.LoadRoles)"
+												Striped="true"
+												Hoverable="true"
+												PageIndex="_rolePageIndex"
+												PageSize="_rolePageSize"
+												TotalCount="_roleTotalCount"
+												PageIndexChanged="OnRolePageIndexChangedAsync">
+										<SbColumn TItem="OrganizationUnitRoleDto" Title="@L["RoleName"]">
+											<CellTemplate Context="cellContext">
+												<SbStack Direction="SbStackDirection.Row" Gap="2" Align="SbAlign.Center">
+													<SbIcon Name="shield" />
+													@cellContext.Item.RoleName
+												</SbStack>
+											</CellTemplate>
+										</SbColumn>
+										<SbColumn TItem="OrganizationUnitRoleDto" Title="@L["Actions"]" Width="80px">
+											<CellTemplate Context="cellContext">
+												<AuthorizeView Policy="@SufiChain.SufiAbp.Identity.IdentityPermissions.OrganizationUnits.ManageRoles">
+													<SbIconButton Size="SbSize.Sm" Color="SbColor.Danger" AriaLabel="@L["Remove"]"
+																  OnClick="@(() => RemoveRoleAsync(cellContext.Item))">
+														<Icon><SbIcon Name="trash" /></Icon>
+													</SbIconButton>
+												</AuthorizeView>
+											</CellTemplate>
+										</SbColumn>
+									</SbDataGrid>
+								</SbStack>
+							</SbTab>
+						</SbTabs>
+					</ChildContent>
+				</SbCard>
+			}
+		</SbStack>
+	</div>
+
+	<!-- Mobile: Master-detail (tree or details full-width, with back button when viewing details). Hidden on desktop. -->
+	<div class="ou-layout ou-layout-mobile">
+		@if (_selectedUnit == null)
+		{
+			<SbCard Class="ou-tree-card" Style="min-height: 400px;">
+				<Header>
+					<SbStack Direction="SbStackDirection.Row" Justify="SbJustify.SpaceBetween" Align="SbAlign.Center">
+						<span>@L["OrganizationUnits"]</span>
+						<SbIconButton Size="SbSize.Sm" AriaLabel="@L["Refresh"]" OnClick="@LoadTreeAsync">
+							<Icon><SbIcon Name="refresh-cw" /></Icon>
+						</SbIconButton>
+					</SbStack>
+				</Header>
+				<ChildContent>
+					@if (IsOperationLoading(LoadingKeys.LoadTree))
+					{
+						<SbStack Justify="SbJustify.Center" Align="SbAlign.Center" Class="p-8">
+							<SbProgress Type="SbProgressType.Circular" />
+						</SbStack>
+					}
+					else if (_organizationUnits.Count == 0)
+					{
+						<SbStack Justify="SbJustify.Center" Align="SbAlign.Center" Class="p-8 text-muted">
+							<SbIcon Name="folder-tree" Size="SbSize.Xl" />
+							<span>@L["NoOrganizationUnits"]</span>
+						</SbStack>
+					}
+					else
+					{
+						<SbTreeView TItem="OrganizationUnitDto"
+									Items="_organizationUnits"
+									ChildSelector="@(ou => ou.Children)"
+									TextSelector="@(ou => ou.DisplayName)"
+									IconSelector="@(_ => "folder")"
+									SelectedItem="_selectedUnit"
+									SelectedItemChanged="OnUnitSelectedAsync" />
+					}
+				</ChildContent>
+			</SbCard>
+		}
+		else
+		{
+			<SbCard Class="ou-details-card" Style="min-height: 400px;">
+				<Header>
+					<SbStack Direction="SbStackDirection.Column" Gap="2" Class="ou-mobile-details-header">
+						@* Line 1: Back button + unit name *@
+						<SbStack Direction="SbStackDirection.Row" Gap="2" Align="SbAlign.Center" Class="ou-unit-name-container">
+							<SbIconButton Size="SbSize.Sm" AriaLabel="@L["Back"]" OnClick="@(() => OnUnitSelectedAsync(null))">
+								<Icon><SbIcon Name="arrow-left" /></Icon>
+							</SbIconButton>
+							<SbIcon Name="folder" />
+							<span class="ou-unit-name fw-semibold" title="@_selectedUnit.DisplayName">@_selectedUnit.DisplayName</span>
+						</SbStack>
+						@* Line 2: 3 action buttons *@
+						<SbStack Direction="SbStackDirection.Row" Gap="1" Justify="SbJustify.End">
+							<AuthorizeView Policy="@SufiChain.SufiAbp.Identity.IdentityPermissions.OrganizationUnits.Create">
+								<SbIconButton Size="SbSize.Sm" AriaLabel="@L["AddSubUnit"]" OnClick="ShowCreateChildModal">
+									<Icon><SbIcon Name="folder-plus" /></Icon>
+								</SbIconButton>
+							</AuthorizeView>
+							<AuthorizeView Policy="@SufiChain.SufiAbp.Identity.IdentityPermissions.OrganizationUnits.Update">
+								<SbIconButton Size="SbSize.Sm" AriaLabel="@L["Edit"]" OnClick="ShowEditModal">
+									<Icon><SbIcon Name="edit" /></Icon>
+								</SbIconButton>
+							</AuthorizeView>
+							<AuthorizeView Policy="@SufiChain.SufiAbp.Identity.IdentityPermissions.OrganizationUnits.Delete">
+								<SbIconButton Size="SbSize.Sm" Color="SbColor.Danger" AriaLabel="@L["Delete"]" OnClick="DeleteUnitAsync">
+									<Icon><SbIcon Name="trash" /></Icon>
+								</SbIconButton>
+							</AuthorizeView>
+						</SbStack>
+					</SbStack>
+				</Header>
+				<ChildContent>
+					<SbTabs @bind-ActiveIndex="_activeTab">
+						<SbTab Label="@L["Overview"]">
+							<SbStack Gap="4">
+								<SbStack Direction="SbStackDirection.Column" Gap="4" Wrap="true">
+									<SbStack Gap="1">
+										<span class="text-muted">@L["Code"]</span>
+										<span class="fw-medium">@_selectedUnit.Code</span>
+									</SbStack>
+									<SbStack Gap="1">
+										<span class="text-muted">@L["Members"]</span>
+										<SbBadge Color="SbColor.Primary" Style="width: max-content">@_selectedUnitDetails?.MemberCount</SbBadge>
+									</SbStack>
+									<SbStack Gap="1">
+										<span class="text-muted">@L["Roles"]</span>
+										<SbBadge Color="SbColor.Info" Style="width: max-content">@_selectedUnitDetails?.RoleCount</SbBadge>
+									</SbStack>
+								</SbStack>
+							</SbStack>
+						</SbTab>
+						<SbTab Label="@L["Members"]">
+							<SbStack Gap="3">
+								<SbStack Direction="SbStackDirection.Column" DirectionSm="SbStackDirection.Row" Justify="SbJustify.SpaceBetween" Align="SbAlign.Center" Gap="2">
+									<SbTextField @bind-Value="_memberFilter" Placeholder="@L["SearchMembers"]" Clearable="true" Class="ou-mobile-search">
+										<StartAdornment><SbIcon Name="search" /></StartAdornment>
+								</SbTextField>
+									<AuthorizeView Policy="@SufiChain.SufiAbp.Identity.IdentityPermissions.OrganizationUnits.ManageMembers">
+										<SbButton Color="SbColor.Primary" Size="SbSize.Sm" OnClick="ShowMemberPickerModal">
+											<StartIcon><SbIcon Name="user-plus" /></StartIcon>
+											<ChildContent>@L["AddMembers"]</ChildContent>
+										</SbButton>
+									</AuthorizeView>
+								</SbStack>
+								<SbDataGrid TItem="OrganizationUnitMemberDto" Items="_members" Loading="IsOperationLoading(LoadingKeys.LoadMembers)" Striped="true" Hoverable="true"
+											PageIndex="_memberPageIndex" PageSize="_memberPageSize" TotalCount="_memberTotalCount" PageIndexChanged="OnMemberPageIndexChangedAsync">
+									<SbColumn TItem="OrganizationUnitMemberDto" Title="@L["UserName"]">
+										<CellTemplate Context="cellContext">@cellContext.Item.UserName</CellTemplate>
+									</SbColumn>
+									<SbColumn TItem="OrganizationUnitMemberDto" Title="@L["Email"]">
+										<CellTemplate Context="cellContext">@cellContext.Item.Email</CellTemplate>
+									</SbColumn>
+									<SbColumn TItem="OrganizationUnitMemberDto" Title="@L["Name"]">
+										<CellTemplate Context="cellContext">@($"{cellContext.Item.Name} {cellContext.Item.Surname}".Trim())</CellTemplate>
+									</SbColumn>
+									<SbColumn TItem="OrganizationUnitMemberDto" Title="@L["Actions"]" Width="80px">
+										<CellTemplate Context="cellContext">
+											<AuthorizeView Policy="@SufiChain.SufiAbp.Identity.IdentityPermissions.OrganizationUnits.ManageMembers">
+												<SbIconButton Size="SbSize.Sm" Color="SbColor.Danger" AriaLabel="@L["Remove"]" OnClick="@(() => RemoveMemberAsync(cellContext.Item))">
+													<Icon><SbIcon Name="user-minus" /></Icon>
+												</SbIconButton>
+											</AuthorizeView>
+										</CellTemplate>
+									</SbColumn>
+								</SbDataGrid>
+							</SbStack>
+						</SbTab>
+						<SbTab Label="@L["Roles"]">
+							<SbStack Gap="3">
+								<SbStack Direction="SbStackDirection.Column" DirectionSm="SbStackDirection.Row" Justify="SbJustify.SpaceBetween" Align="SbAlign.Center" Gap="2">
+									<SbAlert Severity="@SbAlertSeverity.Info" Class="mb-0 flex-grow-1">@L["OrganizationUnitRolesInfo"]</SbAlert>
+									<AuthorizeView Policy="@SufiChain.SufiAbp.Identity.IdentityPermissions.OrganizationUnits.ManageRoles">
+										<SbButton Color="SbColor.Primary" Size="SbSize.Sm" OnClick="ShowRolePickerModal">
+											<StartIcon><SbIcon Name="shield-check" /></StartIcon>
+											<ChildContent>@L["AssignRoles"]</ChildContent>
+										</SbButton>
+									</AuthorizeView>
+								</SbStack>
+								<SbDataGrid TItem="OrganizationUnitRoleDto" Items="_roles" Loading="IsOperationLoading(LoadingKeys.LoadRoles)" Striped="true" Hoverable="true"
+											PageIndex="_rolePageIndex" PageSize="_rolePageSize" TotalCount="_roleTotalCount" PageIndexChanged="OnRolePageIndexChangedAsync">
+									<SbColumn TItem="OrganizationUnitRoleDto" Title="@L["RoleName"]">
+										<CellTemplate Context="cellContext">
+											<SbStack Direction="SbStackDirection.Row" Gap="2" Align="SbAlign.Center">
+												<SbIcon Name="shield" />
+												@cellContext.Item.RoleName
+											</SbStack>
+										</CellTemplate>
+									</SbColumn>
+									<SbColumn TItem="OrganizationUnitRoleDto" Title="@L["Actions"]" Width="80px">
+										<CellTemplate Context="cellContext">
+											<AuthorizeView Policy="@SufiChain.SufiAbp.Identity.IdentityPermissions.OrganizationUnits.ManageRoles">
+												<SbIconButton Size="SbSize.Sm" Color="SbColor.Danger" AriaLabel="@L["Remove"]" OnClick="@(() => RemoveRoleAsync(cellContext.Item))">
+													<Icon><SbIcon Name="trash" /></Icon>
+												</SbIconButton>
+											</AuthorizeView>
+										</CellTemplate>
+									</SbColumn>
+								</SbDataGrid>
+							</SbStack>
+						</SbTab>
+					</SbTabs>
+				</ChildContent>
+			</SbCard>
+		}
+	</div>
+
+</SbStack>
+
+<!-- Modals -->
+<OUCreateModal @bind-Open="_showCreateModal"
+			   ParentId="_createParentId"
+			   OnCreated="OnUnitCreatedAsync" />
+
+<OUEditModal @bind-Open="_showEditModal"
+			 OrganizationUnit="_selectedUnit"
+			 OnUpdated="OnUnitUpdatedAsync" />
+
+<MemberPickerModal @bind-Open="_showMemberPickerModal"
+				   OrganizationUnitId="_selectedUnit?.Id ?? Guid.Empty"
+				   OnMembersAdded="OnMembersAddedAsync" />
+
+<RolePickerModal @bind-Open="_showRolePickerModal"
+				 OrganizationUnitId="_selectedUnit?.Id ?? Guid.Empty"
+				 OnRolesAdded="OnRolesAddedAsync" />

@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <RootNamespace>SufiChain.SufiAbp.BlobStoring.S3Provider</RootNamespace>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <PackageId>SufiChain.SufiAbp.BlobStoring.S3Provider</PackageId>
+    <Description>S3-compatible blob storage provider for Sufi Platform using AWS SDK for .NET.</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Volo.Abp.BlobStoring" Version="$(AbpVersion)"/>
+    <PackageReference Include="Volo.Abp.Caching" Version="$(AbpVersion)"/>
+    <PackageReference Include="Volo.Abp.Security" Version="$(AbpVersion)"/>
+    <PackageReference Include="AWSSDK.S3" Version="$(AwsSdkS3Version)" />
+    <PackageReference Include="AWSSDK.SecurityToken" Version="$(AwsSdkSecurityTokenVersion)" />
+  </ItemGroup>
+
+</Project>

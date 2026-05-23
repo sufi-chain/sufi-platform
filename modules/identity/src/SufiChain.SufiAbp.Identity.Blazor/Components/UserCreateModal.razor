@@ -1,0 +1,57 @@
+@inherits IdentityComponentBase
+
+<SbDialog @bind-Open="Open" OnCloseButtonClick="Hide" Size="SbDialogSize.Md" Title="@L["CreateUser"]">
+	<ChildContent>
+		<SbForm Model="_model" OnValidSubmit="OnValidSubmitAsync">
+			<SbTabs @bind-ActiveIndex="_activeTab">
+				<SbTab Label="@L["UserInformation"]">
+					<SbStack Gap="3">
+						<SbGrid Columns="1" ColumnsMd="2" Gap="4">
+							<SbTextField @bind-Value="_model.Name" Label="@L["Name"]" />
+
+							<SbTextField @bind-Value="_model.Surname" Label="@L["Surname"]" />
+
+							<SbTextField @bind-Value="_model.UserName"
+										 Label="@L["Username"]"
+										 Required="true" />
+
+							<SbTextField @bind-Value="_model.Password"
+										 Label="@L["Password"]"
+										 Type="password"
+										 AutoComplete="new-password"
+										 Required="true" />
+
+							<SbTextField @bind-Value="_model.Email"
+										 Label="@L["Email"]"
+										 Type="email"
+										 Required="true" />
+
+							<SbTextField @bind-Value="_model.PhoneNumber" Label="@L["PhoneNumber"]" />
+						</SbGrid>
+
+						<SbStack Direction="SbStackDirection.Row" Gap="4">
+							<SbCheckbox @bind-Value="_model.IsActive" Label="@L["Active"]" />
+							<SbCheckbox @bind-Value="_model.LockoutEnabled" Label="@L["LockoutEnabled"]" />
+						</SbStack>
+					</SbStack>
+				</SbTab>
+				<SbTab Label="@L["Roles"]">
+					<SbStack Gap="2">
+						@foreach (var role in Roles)
+						{
+							<SbCheckbox Value="@_selectedRoles.Contains(role.Name)"
+										ValueChanged="@(v => OnRoleToggled(role.Name, v))"
+										Label="@role.Name" />
+						}
+					</SbStack>
+				</SbTab>
+			</SbTabs>
+		</SbForm>
+	</ChildContent>
+	<Footer>
+		<SbStack Direction="SbStackDirection.Row" Gap="2" Justify="SbJustify.End">
+			<SbButton Variant="SbButtonVariant.Outline" OnClick="Hide">@L["Cancel"]</SbButton>
+			<SbButton Color="SbColor.Primary" Loading="IsOperationLoading(LoadingKeys.Create)" OnClick="OnValidSubmitAsync">@L["Create"]</SbButton>
+		</SbStack>
+	</Footer>
+</SbDialog>

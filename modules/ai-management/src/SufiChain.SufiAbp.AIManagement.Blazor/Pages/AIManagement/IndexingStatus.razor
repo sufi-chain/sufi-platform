@@ -1,0 +1,135 @@
+@page "/admin/ai-management/indexing-status"
+@attribute [Authorize(Policy = AIManagementPermissions.RAG.Default)]
+@inherits AIManagementComponentBase
+
+<SufiAbpPageToolbar>
+	<SbButton Color="SbColor.Primary" Variant="SbButtonVariant.Outline" OnClick="@RefreshStatusAsync">
+		<StartIcon><SbIcon Name="refresh" /></StartIcon>
+		<ChildContent>@L["Refresh"]</ChildContent>
+	</SbButton>
+</SufiAbpPageToolbar>
+
+<SbStack Direction="SbStackDirection.Column" Gap="4">
+
+	<!-- Workspace Selection -->
+	<WorkspaceSelector Value="_selectedWorkspaceId"
+					   ValueChanged="@OnWorkspaceChangedAsync"
+					   Workspaces="_workspaces"
+					   Loading="@IsOperationLoading(LoadingKeys.LoadWorkspaces)" />
+
+	<!-- Document Sources Grid -->
+	@if (_selectedWorkspaceId.HasValue)
+	{
+		<SbCard>
+			<ChildContent>
+				<SbDataGrid TItem="DocumentSourceDto"
+							@ref="_gridRef"
+							ItemsProvider="LoadDocumentSourcesDataAsync"
+							Loading="IsOperationLoading(LoadingKeys.LoadSources)"
+							Striped="true"
+							Hoverable="true"
+							PageIndex="_pageIndex"
+							PageSize="_pageSize"
+							TotalCount="_totalCount"
+							PageIndexChanged="OnPageIndexChangedAsync"
+							PageSizeChanged="OnPageSizeChangedAsync"
+							KeySelector="@(item => item.Id.ToString())">
+					<SbColumn TItem="DocumentSourceDto" Title="@L["Actions"]" Width="120px">
+						<CellTemplate Context="cellContext">
+							<AuthorizeView Policy="@AIManagementPermissions.RAG.Index">
+								<SbButton Size="SbSize.Sm" 
+										  Color="SbColor.Primary"
+										  OnClick="@(() => StartIndexingAsync(cellContext.Item))"
+										  Disabled="cellContext.Item.Status == IndexingStatusType.Indexing"
+										  Loading="@IsOperationLoading($"{LoadingKeys.StartIndexing}-{cellContext.Item.Id}")">
+									<StartIcon><SbIcon Name="play" /></StartIcon>
+									<ChildContent>@L["StartIndexing"]</ChildContent>
+								</SbButton>
+							</AuthorizeView>
+						</CellTemplate>
+					</SbColumn>
+					<SbColumn TItem="DocumentSourceDto" Field="Name" Title="@L["SourceName"]" Width="200px">
+						<CellTemplate Context="cellContext">
+							<strong>@cellContext.Item.Name</strong>
+						</CellTemplate>
+					</SbColumn>
+					<SbColumn TItem="DocumentSourceDto" Title="@L["Status"]" Width="150px">
+						<CellTemplate Context="cellContext">
+							<SbBadge Color="@GetStatusColor(cellContext.Item.Status)">
+								@GetStatusText(cellContext.Item.Status)
+							</SbBadge>
+						</CellTemplate>
+					</SbColumn>
+					<SbColumn TItem="DocumentSourceDto" Title="@L["Progress"]" Width="200px">
+						<CellTemplate Context="cellContext">
+							@if (cellContext.Item.Status == IndexingStatusType.Indexing && cellContext.Item.Progress.HasValue)
+							{
+								<SbStack Direction="SbStackDirection.Row" Gap="2" Align="SbAlign.Center">
+									<SbProgress Value="@cellContext.Item.Progress.Value" style="flex: 1;" />
+									<SbText Variant="SbTextVariant.Caption">
+										@cellContext.Item.Progress.Value%
+									</SbText>
+								</SbStack>
+							}
+							else if (cellContext.Item.Status == IndexingStatusType.Complete)
+							{
+								<SbText Variant="SbTextVariant.BodySmall" Color="SbColor.Success">
+									@L["Complete"]
+								</SbText>
+							}
+							else
+							{
+								<SbText Variant="SbTextVariant.BodySmall" Color="SbColor.Muted">
+									-
+								</SbText>
+							}
+						</CellTemplate>
+					</SbColumn>
+					<SbColumn TItem="DocumentSourceDto" Field="DocumentCount" Title="@L["DocumentCount"]" Width="120px">
+						<CellTemplate Context="cellContext">
+							@cellContext.Item.DocumentCount.ToString("N0")
+						</CellTemplate>
+					</SbColumn>
+					<SbColumn TItem="DocumentSourceDto" Title="@L["LastIndexed"]" Width="180px">
+						<CellTemplate Context="cellContext">
+							@if (cellContext.Item.LastIndexedAt.HasValue)
+							{
+								@cellContext.Item.LastIndexedAt.Value.ToString("yyyy-MM-dd HH:mm")
+							}
+							else
+							{
+								<SbText Variant="SbTextVariant.BodySmall" Color="SbColor.Muted">
+									@L["Never"]
+								</SbText>
+							}
+						</CellTemplate>
+					</SbColumn>
+					<SbColumn TItem="DocumentSourceDto" Title="@L["Error"]" Width="200px">
+						<CellTemplate Context="cellContext">
+							@if (!string.IsNullOrEmpty(cellContext.Item.ErrorMessage))
+							{
+								<SbText Variant="SbTextVariant.BodySmall" Color="SbColor.Danger">
+									@cellContext.Item.ErrorMessage
+								</SbText>
+							}
+						</CellTemplate>
+					</SbColumn>
+				</SbDataGrid>
+			</ChildContent>
+		</SbCard>
+	}
+	else
+	{
+		<SbCard>
+			<ChildContent>
+				<SbStack Direction="SbStackDirection.Column" Gap="2" Align="SbAlign.Center" style="padding: 4rem 0;">
+					<SbIcon Name="folder" Size="SbSize.Xl" Color="SbColor.Muted" />
+					<SbText Variant="SbTextVariant.Body" Color="SbColor.Muted">
+						@L["SelectWorkspaceToViewSources"]
+					</SbText>
+				</SbStack>
+			</ChildContent>
+		</SbCard>
+	}
+
+</SbStack>

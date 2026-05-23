@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <RootNamespace>SufiChain.SufiAbp.Identity</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="../../../../framework/SufiChain.SufiAbp.EntityFrameworkCore/SufiChain.SufiAbp.EntityFrameworkCore.csproj" />
+    <ProjectReference Include="..\..\..\users\src\SufiChain.SufiAbp.Users.EntityFrameworkCore\SufiChain.SufiAbp.Users.EntityFrameworkCore.csproj" />
+    <ProjectReference Include="..\SufiChain.SufiAbp.Identity.Domain\SufiChain.SufiAbp.Identity.Domain.csproj" />
+  </ItemGroup>
+</Project>

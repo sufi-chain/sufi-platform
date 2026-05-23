@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <RootNamespace>SufiChain.SufiAbp.OpenIddict</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    
+    <ProjectReference Include="../../../../framework/SufiChain.SufiAbp.Ddd.Domain/SufiChain.SufiAbp.Ddd.Domain.csproj" />
+    <ProjectReference Include="../../../../framework/SufiChain.SufiAbp.Caching/SufiChain.SufiAbp.Caching.csproj" />
+    <ProjectReference Include="../../../../framework/SufiChain.SufiAbp.DistributedLocking.Abstractions/SufiChain.SufiAbp.DistributedLocking.Abstractions.csproj" />
+    <ProjectReference Include="../../../../framework/SufiChain.SufiAbp.Guids/SufiChain.SufiAbp.Guids.csproj" />
+    <ProjectReference Include="../../../../framework/SufiChain.SufiAbp.BackgroundWorkers/SufiChain.SufiAbp.BackgroundWorkers.csproj" />
+    <ProjectReference Include="../../../../framework/SufiChain.SufiAbp.Threading/SufiChain.SufiAbp.Threading.csproj" />
+    <ProjectReference Include="../../../users/src/SufiChain.SufiAbp.Users/SufiChain.SufiAbp.Users.csproj" />
+    <ProjectReference Include="../../../../framework/SufiChain.SufiAbp.Mapperly/SufiChain.SufiAbp.Mapperly.csproj" />
+    <ProjectReference Include="..\SufiChain.SufiAbp.OpenIddict.Domain.Shared\SufiChain.SufiAbp.OpenIddict.Domain.Shared.csproj" />
+    <ProjectReference Include="../../../identity/src/SufiChain.SufiAbp.Identity.Domain/SufiChain.SufiAbp.Identity.Domain.csproj" />
+  </ItemGroup>
+
+</Project>

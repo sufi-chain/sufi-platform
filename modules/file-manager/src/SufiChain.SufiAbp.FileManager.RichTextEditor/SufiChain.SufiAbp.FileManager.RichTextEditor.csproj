@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk.Razor">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <RootNamespace>SufiChain.SufiAbp.FileManager.RichTextEditor</RootNamespace>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <PackageId>SufiChain.SufiAbp.FileManager.RichTextEditor</PackageId>
+    <Description>File manager rich text editor integration for Sufi Platform - media picker plugin for text editors.</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="$(MicrosoftAspNetCoreComponentsWebVersion)" />
+    <ProjectReference Include="../../../../framework/SufiChain.SufiAbp.AspNetCore.Components.Web/SufiChain.SufiAbp.AspNetCore.Components.Web.csproj" />
+    <ProjectReference Include="../../../../framework/SufiChain.SufiAbp.Mapperly/SufiChain.SufiAbp.Mapperly.csproj" />
+    <ProjectReference Include="..\SufiChain.SufiAbp.FileManager.Application.Contracts\SufiChain.SufiAbp.FileManager.Application.Contracts.csproj" />
+    <ProjectReference Include="..\SufiChain.SufiAbp.FileManager.Blazor\SufiChain.SufiAbp.FileManager.Blazor.csproj" />
+  </ItemGroup>
+
+</Project>

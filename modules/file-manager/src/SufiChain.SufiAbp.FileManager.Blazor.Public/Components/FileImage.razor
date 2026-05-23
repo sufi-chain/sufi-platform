@@ -1,0 +1,43 @@
+@if (_isLoading)
+{
+    <div class="file-image file-image--loading @Class" style="@GetContainerStyle()">
+        <div class="file-image__placeholder">
+            @if (LoadingTemplate != null)
+            {
+                @LoadingTemplate
+            }
+            else
+            {
+                <span class="file-image__spinner"></span>
+            }
+        </div>
+    </div>
+}
+else if (_hasError || string.IsNullOrEmpty(_imageUrl))
+{
+    <div class="file-image file-image--error @Class" style="@GetContainerStyle()">
+        @if (ErrorTemplate != null)
+        {
+            @ErrorTemplate
+        }
+        else
+        {
+            <div class="file-image__placeholder file-image__placeholder--error">
+                <span>Image not available</span>
+            </div>
+        }
+    </div>
+}
+else
+{
+    <img src="@_imageUrl"
+         srcset="@_srcset"
+         sizes="@Sizes"
+         alt="@GetAltText()"
+         class="file-image @Class"
+         style="@Style"
+         loading="@(LazyLoad ? "lazy" : "eager")"
+         @onerror="HandleImageError"
+         width="@(Width > 0 ? Width.ToString() : null)"
+         height="@(Height > 0 ? Height.ToString() : null)" />
+}

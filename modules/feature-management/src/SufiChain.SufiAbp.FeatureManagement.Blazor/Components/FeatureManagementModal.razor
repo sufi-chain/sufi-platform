@@ -1,0 +1,143 @@
+@using Volo.Abp.Validation.StringValues
+@inherits FeatureManagementComponentBase
+
+<SbDialog @bind-Open="_isOpen" OnCloseButtonClick="Hide" Size="SbDialogSize.Lg" Title="@($"{L["Features"]} - {_entityDisplayName}")">
+	<ChildContent>
+		<SbStack Gap="3">
+			@* Search and Select All Row *@
+			<SbStack Direction="SbStackDirection.Column" DirectionSm="SbStackDirection.Row"
+					 Align="SbAlign.Stretch" AlignMd="SbAlign.Center" Gap="3">
+				<SbTextField @bind-Value="SearchText"
+							 Placeholder="@L["SearchFeatures"]"
+							 Clearable="true"
+							 Style="flex: 1;">
+					<StartAdornment><SbIcon Name="search" /></StartAdornment>
+				</SbTextField>
+				<SbCheckbox Value="@EnableAll"
+							ValueChanged="OnEnableAllChanged"
+							Disabled="@_selectAllDisabled"
+							Label="@L["SelectAllInAllTabs"]" />
+			</SbStack>
+
+			@* Feature Groups - Vertical Layout *@
+			@if (IsOperationLoading(LoadingKeys.LoadFeatures))
+			{
+				<div class="p-5 text-center">
+					<SbProgress Type="SbProgressType.Circular" />
+					<p class="mt-3 text-muted">@L["LoadingFeatures"]</p>
+				</div>
+			}
+			else if (_groups.Any())
+			{
+				<div class="feature-management-layout border rounded">
+					<SbTabs Vertical="true" Class="feature-modal__tabs" @bind-ActiveTab="_selectedTabId" LazyLoad="true">
+						@foreach (var group in _groups)
+						{
+							var tabId = GetNormalizedGroupName(group.Name);
+							var enabledCount = GetEnabledCount(group);
+
+							<SbTab Id="@tabId" Label="@group.DisplayName">
+								<Badge>
+									<span class="group-count">(@enabledCount)</span>
+								</Badge>
+								<ChildContent>
+									<SbStack Gap="2">
+										@* Select All in This Group (only for toggle features) *@
+										@if (HasToggleFeatures(group))
+										{
+											<SbCheckbox Value="@(AreAllToggleFeaturesEnabled(group))"
+														ValueChanged="@(v => OnGroupEnableAllChanged(v, group))"
+														Disabled="@(IsFeatureGroupDisabled(group))"
+														Label="@L["SelectAllInThisTab"]" />
+
+											<hr class="my-2" />
+										}
+
+										@* Individual Features *@
+										@foreach (var feature in group.Features)
+										{
+											var depth = GetFeatureDepth(feature.Name);
+											var marginStart = depth * 24;
+											var isDisabled = IsFeatureDisabled(feature);
+
+											<div style="margin-inline-start: @(marginStart)px;">
+												@if (feature.ValueType is ToggleStringValueType)
+												{
+													<SbCheckbox Value="@_toggleValues.GetValueOrDefault(feature.Name)"
+																ValueChanged="@(v => OnToggleFeatureChanged(v, group, feature))"
+																Disabled="@isDisabled"
+																Label="@GetFeatureDisplayName(feature)" />
+													@if (!string.IsNullOrEmpty(feature.Description))
+													{
+														<small class="text-muted d-block" style="margin-inline-start: 24px;">@feature.Description</small>
+													}
+												}
+												else if (feature.ValueType is SelectionStringValueType selectionType)
+												{
+													<SbSimpleSelect TValue="string"
+																	Value="@_selectValues.GetValueOrDefault(feature.Name)"
+																	ValueChanged="@((string? v) => _selectValues[feature.Name] = v)"
+																	Label="@GetFeatureDisplayName(feature)"
+																	Disabled="@isDisabled">
+														@if (selectionType.ItemSource?.Items != null)
+														{
+															@foreach (var item in selectionType.ItemSource.Items)
+															{
+																<SbSelectOption TValue="string" Value="@item.Value" Text="@GetLocalizedSelectionItemText(item)" />
+															}
+														}
+													</SbSimpleSelect>
+													@if (!string.IsNullOrEmpty(feature.Description))
+													{
+														<small class="text-muted d-block mt-1">@feature.Description</small>
+													}
+												}
+												else
+												{
+													var featureName = feature.Name;
+													<SbTextField Value="@_textValues.GetValueOrDefault(featureName)"
+																 ValueChanged="@((string? v) => _textValues[featureName] = v)"
+																 Label="@(string.IsNullOrEmpty(GetFeatureDisplayName(feature)) ? null : GetFeatureDisplayName(feature))"
+																 Disabled="@isDisabled" />
+													@if (!string.IsNullOrEmpty(feature.Description))
+													{
+														<small class="text-muted d-block mt-1">@feature.Description</small>
+													}
+												}
+											</div>
+										}
+									</SbStack>
+								</ChildContent>
+							</SbTab>
+						}
+					</SbTabs>
+				</div>
+			}
+			else
+			{
+				<SbAlert Severity="SbAlertSeverity.Info">
+					@L["NoFeaturesAvailable"]
+				</SbAlert>
+			}
+		</SbStack>
+	</ChildContent>
+	<Footer>
+		<SbStack Direction="SbStackDirection.Row" Gap="2" Justify="SbJustify.SpaceBetween" class="w-100">
+			<SbButton Variant="SbButtonVariant.Outline" Color="SbColor.Warning"
+					  OnClick="@ResetToDefaultAsync"
+					  Loading="IsOperationLoading(LoadingKeys.ResetFeatures)"
+					  Disabled="@(!_groups.Any())">
+				@L["ResetToDefault"]
+			</SbButton>
+			<SbStack Direction="SbStackDirection.Row" Gap="2">
+				<SbButton Variant="SbButtonVariant.Outline" OnClick="Hide">@L["Cancel"]</SbButton>
+				<SbButton Color="SbColor.Primary"
+						  OnClick="@SaveAsync"
+						  Loading="IsOperationLoading(LoadingKeys.SaveFeatures)"
+						  Disabled="@(!_groups.Any())">
+					@L["Save"]
+				</SbButton>
+			</SbStack>
+		</SbStack>
+	</Footer>
+</SbDialog>

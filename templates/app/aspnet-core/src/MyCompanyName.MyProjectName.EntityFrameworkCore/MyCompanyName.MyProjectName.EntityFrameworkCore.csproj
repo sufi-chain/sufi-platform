@@ -1,0 +1,92 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <RootNamespace>MyCompanyName.MyProjectName</RootNamespace>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <!-- Internal project references (always present in both dev and generated) -->
+  <ItemGroup>
+    <ProjectReference Include="..\MyCompanyName.MyProjectName.Application.Contracts\MyCompanyName.MyProjectName.Application.Contracts.csproj" />
+    <ProjectReference Include="..\MyCompanyName.MyProjectName.Domain\MyCompanyName.MyProjectName.Domain.csproj" />
+  </ItemGroup>
+
+  <TEMPLATE-REMOVE>
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\..\..\src\framework\SufiChain.SufiAbp.Data\SufiChain.SufiAbp.Data.csproj" />
+    <ProjectReference Include="..\..\..\..\..\src\framework\SufiChain.SufiAbp.EntityFrameworkCore.SqlServer\SufiChain.SufiAbp.EntityFrameworkCore.SqlServer.csproj" />
+    <ProjectReference Include="..\..\..\..\..\src\framework\SufiChain.SufiAbp.EntityFrameworkCore.PostgreSql\SufiChain.SufiAbp.EntityFrameworkCore.PostgreSql.csproj" />
+    <ProjectReference Include="..\..\..\..\..\src\framework\SufiChain.SufiAbp.EntityFrameworkCore.MySQL\SufiChain.SufiAbp.EntityFrameworkCore.MySQL.csproj" />
+    <ProjectReference Include="..\..\..\..\..\src\framework\SufiChain.SufiAbp.EntityFrameworkCore.Sqlite\SufiChain.SufiAbp.EntityFrameworkCore.Sqlite.csproj" />
+  </ItemGroup>
+  </TEMPLATE-REMOVE>
+
+  <TEMPLATE-ONLY>
+  <ItemGroup>
+    <PackageReference Include="SufiChain.SufiAbp.Data" Version="$(SufiVersion)" />
+    <TEMPLATE-REMOVE IF-NOT="efp:sqlserver">
+    <PackageReference Include="SufiChain.SufiAbp.EntityFrameworkCore.SqlServer" Version="$(SufiVersion)" />
+    </TEMPLATE-REMOVE>
+    <TEMPLATE-REMOVE IF-NOT="efp:postgresql">
+    <PackageReference Include="SufiChain.SufiAbp.EntityFrameworkCore.PostgreSql" Version="$(SufiVersion)" />
+    </TEMPLATE-REMOVE>
+    <TEMPLATE-REMOVE IF-NOT="efp:mysql">
+    <PackageReference Include="SufiChain.SufiAbp.EntityFrameworkCore.MySQL" Version="$(SufiVersion)" />
+    </TEMPLATE-REMOVE>
+    <TEMPLATE-REMOVE IF-NOT="efp:sqlite">
+    <PackageReference Include="SufiChain.SufiAbp.EntityFrameworkCore.Sqlite" Version="$(SufiVersion)" />
+    </TEMPLATE-REMOVE>
+  </ItemGroup>
+  </TEMPLATE-ONLY>
+
+  <ItemGroup>
+
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="$(MicrosoftEntityFrameworkCoreVersion)" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="$(MicrosoftEntityFrameworkCoreVersion)">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
+
+  <TEMPLATE-REMOVE>
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\..\..\src\modules\permission-management\src\SufiChain.SufiAbp.PermissionManagement.EntityFrameworkCore\SufiChain.SufiAbp.PermissionManagement.EntityFrameworkCore.csproj" />
+    <ProjectReference Include="..\..\..\..\..\src\modules\setting-management\src\SufiChain.SufiAbp.SettingManagement.EntityFrameworkCore\SufiChain.SufiAbp.SettingManagement.EntityFrameworkCore.csproj" />
+    <ProjectReference Include="..\..\..\..\..\src\modules\feature-management\src\SufiChain.SufiAbp.FeatureManagement.EntityFrameworkCore\SufiChain.SufiAbp.FeatureManagement.EntityFrameworkCore.csproj" />
+    <ProjectReference Include="..\..\..\..\..\src\modules\audit-logging\src\SufiChain.SufiAbp.AuditLogging.EntityFrameworkCore\SufiChain.SufiAbp.AuditLogging.EntityFrameworkCore.csproj" />
+    <ProjectReference Include="..\..\..\..\..\src\modules\background-jobs\src\SufiChain.SufiAbp.BackgroundJobs.EntityFrameworkCore\SufiChain.SufiAbp.BackgroundJobs.EntityFrameworkCore.csproj" />
+    <ProjectReference Include="..\..\..\..\..\src\modules\identity\src\SufiChain.SufiAbp.Identity.EntityFrameworkCore\SufiChain.SufiAbp.Identity.EntityFrameworkCore.csproj" />
+    <ProjectReference Include="..\..\..\..\..\src\modules\users\src\SufiChain.SufiAbp.Users.EntityFrameworkCore\SufiChain.SufiAbp.Users.EntityFrameworkCore.csproj" />
+    <ProjectReference Include="..\..\..\..\..\src\modules\tenant-management\src\SufiChain.SufiAbp.TenantManagement.EntityFrameworkCore\SufiChain.SufiAbp.TenantManagement.EntityFrameworkCore.csproj" />
+    <ProjectReference Include="..\..\..\..\..\src\modules\openiddict\src\SufiChain.SufiAbp.OpenIddict.EntityFrameworkCore\SufiChain.SufiAbp.OpenIddict.EntityFrameworkCore.csproj" />
+    
+    <ProjectReference Include="..\..\..\..\..\src\modules\blob-storing-database\src\SufiChain.SufiAbp.BlobStoring.Database.EntityFrameworkCore\SufiChain.SufiAbp.BlobStoring.Database.EntityFrameworkCore.csproj" />
+    <ProjectReference Include="..\..\..\..\..\src\modules\file-manager\src\SufiChain.SufiAbp.FileManager.EntityFrameworkCore\SufiChain.SufiAbp.FileManager.EntityFrameworkCore.csproj" />
+    <ProjectReference Include="..\..\..\..\..\src\modules\localization-management\src\SufiChain.SufiAbp.LocalizationManagement.EntityFrameworkCore\SufiChain.SufiAbp.LocalizationManagement.EntityFrameworkCore.csproj" />
+    <ProjectReference Include="..\..\..\..\..\src\modules\short-link-generator\src\SufiChain.SufiAbp.ShortLinkGenerator.EntityFrameworkCore\SufiChain.SufiAbp.ShortLinkGenerator.EntityFrameworkCore.csproj" />
+    <ProjectReference Include="..\..\..\..\..\src\modules\ai-management\src\SufiChain.SufiAbp.AIManagement.EntityFrameworkCore\SufiChain.SufiAbp.AIManagement.EntityFrameworkCore.csproj" />
+  </ItemGroup>
+  </TEMPLATE-REMOVE>
+
+  <TEMPLATE-ONLY>
+  <ItemGroup>
+    <PackageReference Include="SufiChain.SufiAbp.PermissionManagement.EntityFrameworkCore" Version="$(SufiVersion)" />
+    <PackageReference Include="SufiChain.SufiAbp.SettingManagement.EntityFrameworkCore" Version="$(SufiVersion)" />
+    <PackageReference Include="SufiChain.SufiAbp.FeatureManagement.EntityFrameworkCore" Version="$(SufiVersion)" />
+    <PackageReference Include="SufiChain.SufiAbp.AuditLogging.EntityFrameworkCore" Version="$(SufiVersion)" />
+    <PackageReference Include="SufiChain.SufiAbp.BackgroundJobs.EntityFrameworkCore" Version="$(SufiVersion)" />
+    <PackageReference Include="SufiChain.SufiAbp.Identity.EntityFrameworkCore" Version="$(SufiVersion)" />
+    <PackageReference Include="SufiChain.SufiAbp.Users.EntityFrameworkCore" Version="$(SufiVersion)" />
+    <PackageReference Include="SufiChain.SufiAbp.TenantManagement.EntityFrameworkCore" Version="$(SufiVersion)" />
+    <PackageReference Include="SufiChain.SufiAbp.OpenIddict.EntityFrameworkCore" Version="$(SufiVersion)" />
+    <PackageReference Include="SufiChain.SufiAbp.BlobStoring.Database.EntityFrameworkCore" Version="$(SufiVersion)" />
+    <PackageReference Include="SufiChain.SufiAbp.FileManager.EntityFrameworkCore" Version="$(SufiVersion)" />
+    <PackageReference Include="SufiChain.SufiAbp.LocalizationManagement.EntityFrameworkCore" Version="$(SufiVersion)" />
+    <PackageReference Include="SufiChain.SufiAbp.ShortLinkGenerator.EntityFrameworkCore" Version="$(SufiVersion)" />
+    <PackageReference Include="SufiChain.SufiAbp.AIManagement.EntityFrameworkCore" Version="$(SufiVersion)" />
+  </ItemGroup>
+  </TEMPLATE-ONLY>
+
+</Project>

@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <RootNamespace>SufiChain.SufiAbp.AI</RootNamespace>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <PackageId>SufiChain.SufiAbp.AI.Abstractions</PackageId>
+    <Description>Sufi Platform AI abstractions - core interfaces for AI workspace management and Semantic Kernel integration.</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Volo.Abp.Core" Version="$(AbpVersion)" />
+    <PackageReference Include="Microsoft.Extensions.AI.Abstractions" Version="10.5.2" />
+    <PackageReference Include="Microsoft.SemanticKernel.Abstractions" Version="1.76.0" />
+  </ItemGroup>
+
+</Project>

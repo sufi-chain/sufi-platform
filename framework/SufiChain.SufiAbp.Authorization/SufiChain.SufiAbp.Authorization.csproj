@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>netstandard2.0;netstandard2.1;net10.0</TargetFrameworks>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <RootNamespace>SufiChain.SufiAbp.Authorization</RootNamespace>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <PackageId>SufiChain.SufiAbp.Authorization</PackageId>
+    <Description>Sufi Platform authorization abstractions - authorization policies, permissions, security.</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Volo.Abp.Authorization" Version="$(AbpVersion)"/>
+    <PackageReference Include="Volo.Abp.Security" Version="$(AbpVersion)"/>
+  </ItemGroup>
+
+</Project>

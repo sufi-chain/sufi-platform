@@ -1,0 +1,31 @@
+.fm-uploader-config-btn {
+	position: absolute;
+	top: var(--sb-space-2);
+	right: var(--sb-space-2);
+	z-index: 2;
+	padding: 4px;
+	background: white;
+	border: 1px solid var(--sb-color-border, #dee2e6);
+	border-radius: var(--sb-radius-md, 6px);
+	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+.upload-area {
+	position: relative;
+	border: 2px dashed var(--sb-color-border);
+    border-radius: var(--sb-radius-lg);
+    padding: var(--sb-space-4);
+    transition: all 0.2s;
+    cursor: pointer;
+}
+
+.upload-area.dragging {
+    border-color: var(--sb-color-primary);
+    background: var(--sb-color-primary-50);
+}
+
+.upload-preview-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: var(--sb-space-3);
+}

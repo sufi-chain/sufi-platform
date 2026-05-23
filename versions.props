@@ -1,0 +1,95 @@
+<Project>
+    <PropertyGroup>
+        <LangVersion>latest</LangVersion>
+        <!-- Independent module versions (own repos, consumed via project or package ref) -->
+        <SufiBlazorVersion>1.0.0-alpha.1.0</SufiBlazorVersion>
+        <SufiChainSufiAbpAIVersion>0.0.0-rc.3.0</SufiChainSufiAbpAIVersion>
+    </PropertyGroup>
+
+    <!-- ABP Framework Package Versions -->
+    <PropertyGroup>
+        <AbpVersion>10.3.0</AbpVersion>
+    </PropertyGroup>
+
+    <!-- Logging Package Versions -->
+    <PropertyGroup>
+        <SerilogAspNetCoreVersion>9.0.0</SerilogAspNetCoreVersion>
+        <SerilogSinksAsyncVersion>2.1.0</SerilogSinksAsyncVersion>
+        <SerilogExtensionsLoggingVersion>9.0.2</SerilogExtensionsLoggingVersion>
+        <SerilogSinksConsoleVersion>6.0.0</SerilogSinksConsoleVersion>
+        <SerilogSinksFileVersion>7.0.0</SerilogSinksFileVersion>
+    </PropertyGroup>
+
+    <!-- ASP.NET Core Package Versions -->
+    <PropertyGroup>
+        <AspNetCoreVersion>10.0.2</AspNetCoreVersion>
+    </PropertyGroup>
+
+    <!-- Microsoft Package Versions -->
+    <PropertyGroup>
+        <MicrosoftExtensionsLocalizationVersion>10.0.2</MicrosoftExtensionsLocalizationVersion>
+        <MicrosoftExtensionsFileProvidersEmbeddedVersion>10.0.2</MicrosoftExtensionsFileProvidersEmbeddedVersion>
+        <MicrosoftExtensionsConfigurationBinderVersion>10.0.2</MicrosoftExtensionsConfigurationBinderVersion>
+        <MicrosoftExtensionsHostingVersion>10.0.0</MicrosoftExtensionsHostingVersion>
+        <MicrosoftNetTestSdkVersion>17.14.1</MicrosoftNetTestSdkVersion>
+        <MicrosoftAspNetCoreComponentsWebVersion>10.0.2</MicrosoftAspNetCoreComponentsWebVersion>
+        <MicrosoftAspNetCoreComponentsWebAssemblyVersion>10.0.2</MicrosoftAspNetCoreComponentsWebAssemblyVersion>
+        <MicrosoftExtensionsConfigurationJsonVersion>10.0.2</MicrosoftExtensionsConfigurationJsonVersion>
+    </PropertyGroup>
+
+    <!-- AI and Semantic Kernel Package Versions -->
+    <PropertyGroup>
+        <MicrosoftSemanticKernelVersion>1.76.0</MicrosoftSemanticKernelVersion>
+        <MicrosoftSemanticKernelAbstractionsVersion>1.76.0</MicrosoftSemanticKernelAbstractionsVersion>
+        <MicrosoftSemanticKernelConnectorsOpenAIVersion>1.76.0</MicrosoftSemanticKernelConnectorsOpenAIVersion>
+        <MicrosoftSemanticKernelConnectorsOllamaVersion>1.76.0-alpha</MicrosoftSemanticKernelConnectorsOllamaVersion>
+        <MicrosoftExtensionsAIVersion>10.5.2</MicrosoftExtensionsAIVersion>
+        <MicrosoftExtensionsAIOpenAIVersion>10.5.2</MicrosoftExtensionsAIOpenAIVersion>
+        <MicrosoftExtensionsAIOllamaVersion>10.5.2</MicrosoftExtensionsAIOllamaVersion>
+    </PropertyGroup>
+
+    <!-- Entity Framework Core Package Versions -->
+    <PropertyGroup>
+        <MicrosoftEntityFrameworkCoreVersion>10.0.2</MicrosoftEntityFrameworkCoreVersion>
+    </PropertyGroup>
+
+    <!-- Testing Package Versions -->
+    <PropertyGroup>
+        <NSubstituteVersion>5.3.0</NSubstituteVersion>
+        <NSubstituteAnalyzersCSharpVersion>1.0.17</NSubstituteAnalyzersCSharpVersion>
+        <ShouldlyVersion>4.3.0</ShouldlyVersion>
+        <XunitVersion>2.9.3</XunitVersion>
+        <XunitExtensibilityExecutionVersion>2.9.3</XunitExtensibilityExecutionVersion>
+        <XunitRunnerVisualStudioVersion>3.1.4</XunitRunnerVisualStudioVersion>
+    </PropertyGroup>
+
+    <!-- Fody Package Versions -->
+    <PropertyGroup>
+        <ConfigureAwaitFodyVersion>3.3.1</ConfigureAwaitFodyVersion>
+        <FodyVersion>6.5.3</FodyVersion>
+    </PropertyGroup>
+
+    <!-- AutoMapper Package Versions -->
+    <PropertyGroup>
+        <AutoMapperVersion>16.1.1</AutoMapperVersion>
+    </PropertyGroup>
+
+    <!-- Third-Party Package Versions -->
+    <PropertyGroup>
+        <RiokMapperlyVersion>4.3.1</RiokMapperlyVersion>
+        <SixLaborsImageSharpVersion>3.1.12</SixLaborsImageSharpVersion>
+        <SixLaborsImageSharpDrawingVersion>2.1.7</SixLaborsImageSharpDrawingVersion>
+        <SixLaborsFontsVersion>2.1.3</SixLaborsFontsVersion>
+        <FFMpegCoreVersion>5.4.0</FFMpegCoreVersion>
+        <SpectreConsoleVersion>0.49.1</SpectreConsoleVersion>
+        <BunitVersion>2.4.2</BunitVersion>
+        <CoverletCollectorVersion>6.0.2</CoverletCollectorVersion>
+        <ShortidVersion>5.0.0</ShortidVersion>
+        <AwsSdkS3Version>3.7.400</AwsSdkS3Version>
+        <AwsSdkSecurityTokenVersion>3.7.400</AwsSdkSecurityTokenVersion>
+        <MicrosoftDataSqlClientVersion>5.2.2</MicrosoftDataSqlClientVersion>
+        <MicrosoftIdentityModelJsonWebTokensVersion>8.16.0</MicrosoftIdentityModelJsonWebTokensVersion>
+        <OpenIddictVersion>7.5.0</OpenIddictVersion>
+    </PropertyGroup>
+
+</Project>

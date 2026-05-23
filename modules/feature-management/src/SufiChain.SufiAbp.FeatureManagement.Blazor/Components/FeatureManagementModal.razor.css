@@ -1,0 +1,100 @@
+/* Feature Management Modal - Vertical Tabs Layout */
+
+.feature-management-layout {
+    display: flex;
+    min-height: 400px;
+}
+
+/* SbTabs vertical layout inside feature management */
+.feature-management-layout ::deep .feature-modal__tabs {
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
+}
+
+.feature-management-layout ::deep .sb-tabs__list {
+    width: 220px;
+    flex-shrink: 0;
+    background-color: var(--sb-bg-subtle, #f8f9fa);
+}
+
+.feature-management-layout ::deep .sb-tabs__tab {
+    justify-content: flex-start;
+    width: 100%;
+    text-align: start;
+}
+
+.feature-management-layout ::deep .sb-tabs__tab .group-count {
+    font-size: 0.75rem;
+    color: var(--sb-text-muted, #6c757d);
+}
+
+.feature-management-layout ::deep .sb-tabs__tab--active .group-count {
+    color: var(--sb-primary, #0d6efd);
+    opacity: 0.8;
+}
+
+/* Active tab indicator: at start (left in LTR) to match original design */
+.feature-management-layout ::deep .sb-tabs__tab--active::after {
+    inset-inline-start: -1px;
+    inset-inline-end: auto;
+}
+
+.feature-management-layout ::deep .sb-tabs__panel {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    max-height: 400px;
+    padding: 1rem;
+    background-color: var(--sb-bg, #fff);
+}
+
+/* Mobile: horizontal scrollable tab header, content always visible below */
+@media (max-width: 767px) {
+    .feature-management-layout {
+        flex-direction: column;
+        min-height: 300px;
+    }
+
+    .feature-management-layout ::deep .feature-modal__tabs {
+        flex-direction: column;
+    }
+
+    .feature-management-layout ::deep .sb-tabs__list {
+        display: flex;
+        flex-direction: row;
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        overflow-y: hidden;
+        width: 100%;
+        min-width: 0;
+        flex-shrink: 0;
+        border-inline-end: none;
+        border-block-end: 1px solid var(--sb-border-color, #dee2e6);
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: thin;
+    }
+
+    .feature-management-layout ::deep .sb-tabs__tab {
+        flex-shrink: 0;
+        width: auto;
+        min-width: max-content;
+        white-space: nowrap;
+    }
+
+    /* Mobile: active indicator at bottom (horizontal tabs) */
+    .feature-management-layout ::deep .sb-tabs__tab--active::after {
+        inset-inline-start: 0;
+        inset-inline-end: 0;
+        top: auto;
+        bottom: -1px;
+        width: 100%;
+        height: 2px;
+    }
+
+    .feature-management-layout ::deep .sb-tabs__panel {
+        flex: 1;
+        min-height: 0;
+        max-height: none;
+    }
+}

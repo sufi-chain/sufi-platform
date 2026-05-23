@@ -1,0 +1,29 @@
+version: '3.8'
+
+# SQLite uses local file database - no database container needed
+# Connection string in appsettings.json: "Data Source=MyProjectName.db"
+
+services:
+  db-migrator:
+    image: mycompanyname/myprojectname-dbmigrator:latest
+    container_name: mycompanyname-myprojectname-dbmigrator
+    build:
+      context: .
+      dockerfile: src/MyCompanyName.MyProjectName.DbMigrator/Dockerfile
+    environment:
+      - ConnectionStrings__Default=Data Source=/app/data/MyProjectName.db
+    volumes:
+      - sqlite_data:/app/data
+    networks:
+      - mycompanyname-myprojectname-network
+    restart: "no"
+
+volumes:
+  sqlite_data:
+    name: mycompanyname_myprojectname_sqlite_data
+    driver: local
+
+networks:
+  mycompanyname-myprojectname-network:
+    name: mycompanyname-myprojectname-network
+    driver: bridge

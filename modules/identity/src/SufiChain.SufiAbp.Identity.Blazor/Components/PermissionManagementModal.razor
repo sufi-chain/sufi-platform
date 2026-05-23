@@ -1,0 +1,81 @@
+@inherits IdentityComponentBase
+
+<SbDialog @bind-Open="_isOpen" OnCloseButtonClick="Hide" Size="SbDialogSize.Lg" Title="@($"{L["Permissions"]} - {_entityDisplayName}")" Class="permission-management-dialog">
+	<ChildContent>
+		<div class="permission-modal__body">
+			@* Search and Select All Row *@
+			<SbStack Direction="SbStackDirection.Column" DirectionMd="SbStackDirection.Row" Gap="3" Align="SbAlign.Center" Class="permission-modal__search">
+				<SbTextField @bind-Value="SearchText"
+							 Placeholder="@L["SearchPermissions"]"
+							 Clearable="true"
+							 Style="flex: 1;">
+					<StartAdornment><SbIcon Name="search" /></StartAdornment>
+				</SbTextField>
+				<SbCheckbox Value="@GrantAll"
+							ValueChanged="OnGrantAllChanged"
+							Disabled="@_selectAllDisabled"
+							Label="@L["SelectAllInAllTabs"]" />
+			</SbStack>
+
+			@* Permission Groups - Vertical Layout *@
+			@if (_groups.Any())
+			{
+				<div class="permission-modal__panes border rounded">
+					<SbTabs Vertical="true" Class="permission-modal__tabs" @bind-ActiveTab="_selectedTabId" LazyLoad="true">
+						@foreach (var group in _groups)
+						{
+							var tabId = GetNormalizedGroupName(group.Name);
+							var grantedCount = GetGrantedCount(group);
+
+							<SbTab Id="@tabId" Label="@group.DisplayName">
+								<Badge>
+									<span class="group-count">(@grantedCount)</span>
+								</Badge>
+								<ChildContent>
+									<SbStack Gap="2">
+										@* Select All in This Group *@
+										<SbCheckbox Value="@(group.Permissions.All(x => x.IsGranted))"
+													ValueChanged="@(v => OnGroupGrantAllChanged(v, group))"
+													Disabled="@(IsPermissionGroupDisabled(group))"
+													Label="@L["SelectAllInThisTab"]" />
+
+										<hr class="my-2" />
+
+										@* Individual Permissions *@
+										@foreach (var permission in group.Permissions)
+										{
+											var depth = GetPermissionDepth(permission.Name);
+											var marginStart = depth * 24;
+											var isDisabled = IsPermissionDisabled(permission);
+
+											<div style="margin-inline-start: @(marginStart)px;">
+												<SbCheckbox Value="@permission.IsGranted"
+															ValueChanged="@(v => OnPermissionChanged(v, group, permission))"
+															Disabled="@isDisabled"
+															Label="@GetPermissionDisplayName(permission)" />
+											</div>
+										}
+									</SbStack>
+								</ChildContent>
+							</SbTab>
+						}
+					</SbTabs>
+				</div>
+			}
+			else
+			{
+				<SbAlert Severity="SbAlertSeverity.Info">
+					@L["NoPermissionsFound"]
+				</SbAlert>
+			}
+		</div>
+	</ChildContent>
+	<Footer>
+		<SbStack Direction="SbStackDirection.Row" Gap="2" Justify="SbJustify.End">
+			<SbButton Variant="SbButtonVariant.Outline" OnClick="Hide">@L["Cancel"]</SbButton>
+			<SbButton Color="SbColor.Primary"
+					  Loading="IsOperationLoading(LoadingKeys.Save)"
+					  OnClick="SaveAsync">@L["Save"]</SbButton>
+		</SbStack>
+	</Footer>
+</SbDialog>

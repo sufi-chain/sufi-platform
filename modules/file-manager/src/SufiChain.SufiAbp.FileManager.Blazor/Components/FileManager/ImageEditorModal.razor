@@ -1,0 +1,561 @@
+@using SufiChain.SufiAbp.UI.Timing
+@inject ImageEditorInterop ImageEditorInterop
+@inject IFileItemAppService FileItemAppService
+@inject IFileItemUrlProvider FileItemUrlProvider
+@inject IClock Clock
+@inherits FileManagerComponentBase
+
+<SbDialog Open="Open" OpenChanged="OpenChanged" OnCloseButtonClick="CancelAsync" Size="SbDialogSize.FullScreen" AllowDropdownOverflow="true" Class="fm-image-editor-modal">
+    <Header>
+        <div class="fm-image-editor-header">
+            <SbSurface Elevation="0" Padding="10px 16px" Class="fm-image-editor-toolbar">
+                @* Desktop toolbar: full inline controls + scroll + Adjustments popover *@
+                <div class="fm-editor-toolbar-desktop">
+                <div class="fm-editor-toolbar-row">
+                    <div class="fm-editor-toolbar-scroll">
+                    <div class="fm-editor-toolbar-group">
+                        <span class="fm-editor-toolbar-group__label">@L["Transform"]</span>
+                        <div class="fm-editor-toolbar-buttons">
+                            <SbIconButton Size="SbSize.Sm" OnClick="@(() => RotateAsync(90))" Title="@L["RotateRight"]"><SbIcon Name="rotate-right" /></SbIconButton>
+                            <SbIconButton Size="SbSize.Sm" OnClick="@(() => RotateAsync(-90))" Title="@L["RotateLeft"]"><SbIcon Name="rotate-left" /></SbIconButton>
+                            <SbIconButton Size="SbSize.Sm" OnClick="FlipXAsync" Title="@L["FlipHorizontal"]"><SbIcon Name="flip-horizontal" /></SbIconButton>
+                            <SbIconButton Size="SbSize.Sm" OnClick="FlipYAsync" Title="@L["FlipVertical"]"><SbIcon Name="flip-vertical" /></SbIconButton>
+                            <SbButton Size="SbSize.Sm" Color="SbColor.Default" OnClick="ResetAsync" Title="@L["Reset"]">
+                                <SbIcon Name="refresh" /><span class="fm-editor-btn-label">@L["Reset"]</span>
+                            </SbButton>
+                        </div>
+                    </div>
+                    <div class="fm-editor-toolbar-divider" aria-hidden="true"></div>
+                    <div class="fm-editor-toolbar-group">
+                        <div class="fm-editor-toolbar-buttons">
+                            <SbIconButton Size="SbSize.Sm" OnClick="UndoAsync" Disabled="@(!_canUndo)" Title="@L["Undo"]"><SbIcon Name="undo" /></SbIconButton>
+                            <SbIconButton Size="SbSize.Sm" OnClick="RedoAsync" Disabled="@(!_canRedo)" Title="@L["Redo"]"><SbIcon Name="redo" /></SbIconButton>
+                            <SbIconButton Size="SbSize.Sm" OnClick="@(() => ZoomAsync(0.1))" Title="@L["Zoom"]"><SbIcon Name="zoom-in" /></SbIconButton>
+                            <SbIconButton Size="SbSize.Sm" OnClick="@(() => ZoomAsync(-0.1))" Title="@L["Zoom"]"><SbIcon Name="zoom-out" /></SbIconButton>
+                        </div>
+                    </div>
+                    <div class="fm-editor-toolbar-divider" aria-hidden="true"></div>
+                    <div class="fm-editor-toolbar-group">
+                        <span class="fm-editor-toolbar-group__label">@L["Crop"]</span>
+                        <div class="fm-editor-toolbar-buttons">
+                            <SbButton Size="SbSize.Sm" Color="SbColor.Default" OnClick="ToggleCropBoxAsync" Title="@(_cropBoxVisible? L["HideCropBox"] : L["ShowCropBox"])">
+                                <SbIcon Name="@(_cropBoxVisible ? "crop" : "expand")" /><span class="fm-editor-btn-label">@(_cropBoxVisible? L["HideCropBox"] : L["ShowCropBox"])</span>
+                            </SbButton>
+                        </div>
+                    </div>
+                    <div class="fm-editor-toolbar-divider" aria-hidden="true"></div>
+                    <div class="fm-editor-toolbar-group">
+                        <span class="fm-editor-toolbar-group__label">@L["AspectRatio"]</span>
+                        <div class="fm-editor-toolbar-buttons">
+                            <SbFormField Class="fm-editor-form-field-inline">
+                                <SbSimpleSelect TValue="string" Value="_aspectRatioKey" ValueChanged="OnAspectRatioChanged" Style="min-width: 90px;">
+                                    <SbSelectOption TValue="string" Value="@("free")">@L["FreeCrop"]</SbSelectOption>
+                                    <SbSelectOption TValue="string" Value="@("1")">1:1</SbSelectOption>
+                                    <SbSelectOption TValue="string" Value="@("4:3")">4:3</SbSelectOption>
+                                    <SbSelectOption TValue="string" Value="@("16:9")">16:9</SbSelectOption>
+                                </SbSimpleSelect>
+                            </SbFormField>
+                        </div>
+                    </div>
+                    <div class="fm-editor-toolbar-divider" aria-hidden="true"></div>
+                    <div class="fm-editor-toolbar-group">
+                        <span class="fm-editor-toolbar-group__label">@L["Format"]</span>
+                        <div class="fm-editor-toolbar-buttons">
+                            <SbSimpleSelect TValue="string" @bind-Value="_saveFormat" Style="min-width: 90px;">
+                                <SbSelectOption TValue="string" Value="@("image/png")">PNG</SbSelectOption>
+                                <SbSelectOption TValue="string" Value="@("image/jpeg")">JPEG</SbSelectOption>
+                                <SbSelectOption TValue="string" Value="@("image/webp")">WebP</SbSelectOption>
+                            </SbSimpleSelect>
+                            @if (_saveFormat != "image/png")
+                            {
+                                <SbFormField Label="@L["Quality"]" Class="fm-editor-form-field-inline fm-editor-slider-field">
+                                    <SbStack Direction="SbStackDirection.Row" Gap="2" Style="align-items: center; min-width: 100px;">
+                                        <SbSlider TNumber="double" Value="_saveQuality" ValueChanged="OnSaveQualityChanged" Min="0.1" Max="1" Step="0.1" Style="flex: 1;" />
+                                        <SbText Variant="SbTextVariant.Caption" Color="SbColor.Secondary">@((int)(_saveQuality * 100))%</SbText>
+                                    </SbStack>
+                                </SbFormField>
+                            }
+                        </div>
+                    </div>
+                    </div>
+                    <div class="fm-editor-toolbar-divider" aria-hidden="true"></div>
+                    @* Adjustments + Effects: outside scroll area so popover extends beyond toolbar boundary *@
+                    <div class="fm-editor-toolbar-group fm-editor-toolbar-group--fixed">
+                        <SbPopover @bind-Open="_moreMenuOpen" Placement="SbPlacement.BottomStart" Class="fm-editor-more-popover">
+                            <AnchorContent>
+                                <SbButton Size="SbSize.Sm" Color="SbColor.Default" OnClick="@(() => _moreMenuOpen = !_moreMenuOpen)" Class="fm-editor-more-btn">
+                                    <StartIcon><SbIcon Name="sliders" /></StartIcon>
+                                    <ChildContent><span class="fm-editor-btn-label">@L["Adjustments"]</span></ChildContent>
+                                    <EndIcon><SbIcon Name="chevron-down" Size="SbSize.Sm" /></EndIcon>
+                                </SbButton>
+                            </AnchorContent>
+                            <ChildContent>
+                                <SbSurface Elevation="1" Padding="16" Class="fm-editor-more-panel">
+                                    <SbStack Gap="3">
+                                        <SbText Weight="@SbFontWeight.Semibold" Size="@SbSize.Xs">@L["Adjustments"]</SbText>
+                                        <SbFormField Label="@L["Brightness"]">
+                                            <SbSlider TNumber="int" Value="_brightness" ValueChanged="OnBrightnessChanged" Min="-100" Max="100" />
+                                        </SbFormField>
+                                        <SbFormField Label="@L["Contrast"]">
+                                            <SbSlider TNumber="int" Value="_contrast" ValueChanged="OnContrastChanged" Min="-100" Max="100" />
+                                        </SbFormField>
+                                        <SbFormField Label="@L["Saturation"]">
+                                            <SbSlider TNumber="int" Value="_saturation" ValueChanged="OnSaturationChanged" Min="-100" Max="100" />
+                                        </SbFormField>
+                                        <SbDivider />
+                                        <SbText Weight="@SbFontWeight.Semibold" Size="@SbSize.Xs">@L["Effects"]</SbText>
+                                        <SbStack Direction="SbStackDirection.Row" Gap="2">
+                                            <SbCheckbox Value="_grayscale" ValueChanged="OnGrayscaleChanged" Label="@L["Grayscale"]" />
+                                            <SbCheckbox Value="_sepia" ValueChanged="OnSepiaChanged" Label="@L["Sepia"]" />
+                                        </SbStack>
+                                    </SbStack>
+                                </SbSurface>
+                            </ChildContent>
+                        </SbPopover>
+                    </div>
+                </div>
+                </div>
+
+                @* Mobile toolbar: Row 1 = Crop + Adjustments + Overflow, Row 2 = Format + Aspect Ratio (compact) *@
+                <div class="fm-editor-toolbar-mobile">
+                    <SbStack Direction="SbStackDirection.Column" Gap="2" Class="fm-editor-toolbar-mobile__stack">
+                        <SbStack Direction="SbStackDirection.Row" Gap="2" Align="SbAlign.Center">
+                            <SbButton Size="SbSize.Sm" Color="SbColor.Default" OnClick="ToggleCropBoxAsync" Title="@(_cropBoxVisible ? L["HideCropBox"] : L["ShowCropBox"])">
+                                <StartIcon><SbIcon Name="@(_cropBoxVisible ? "crop" : "expand")" /></StartIcon>
+                                <ChildContent>@L["Crop"]</ChildContent>
+                            </SbButton>
+                            <SbButton Size="SbSize.Sm" Color="SbColor.Default" OnClick="@(() => _moreMenuOpen = true)" Title="@L["Adjustments"]">
+                                <StartIcon><SbIcon Name="sliders" /></StartIcon>
+                                <ChildContent>@L["Adjustments"]</ChildContent>
+                            </SbButton>
+                            <div class="fm-editor-toolbar-spacer"></div>
+                            <SbMenu @bind-Open="_mobileEditorMenuOpen" Placement="SbPlacement.BottomEnd" Class="fm-editor-toolbar-mobile-menu">
+                                <AnchorContent>
+                                    <SbButton Color="SbColor.Default" Size="SbSize.Sm" AriaLabel="@L["MoreActions"]" OnClick="@(() => _mobileEditorMenuOpen = !_mobileEditorMenuOpen)">
+                                        <StartIcon><SbIcon Name="more-horizontal" /></StartIcon>
+                                    </SbButton>
+                                </AnchorContent>
+                                <ChildContent>
+                                    <SbMenuItem OnClick="@(() => RotateAsync(90))"><SbIcon Name="rotate-right" Class="me-2" />@L["RotateRight"]</SbMenuItem>
+                                    <SbMenuItem OnClick="@(() => RotateAsync(-90))"><SbIcon Name="rotate-left" Class="me-2" />@L["RotateLeft"]</SbMenuItem>
+                                    <SbMenuItem OnClick="FlipXAsync"><SbIcon Name="flip-horizontal" Class="me-2" />@L["FlipHorizontal"]</SbMenuItem>
+                                    <SbMenuItem OnClick="FlipYAsync"><SbIcon Name="flip-vertical" Class="me-2" />@L["FlipVertical"]</SbMenuItem>
+                                    <SbMenuItem OnClick="ResetAsync"><SbIcon Name="refresh" Class="me-2" />@L["Reset"]</SbMenuItem>
+                                    <div class="fm-menu-divider"></div>
+                                    <SbMenuItem OnClick="UndoAsync" Disabled="@(!_canUndo)"><SbIcon Name="undo" Class="me-2" />@L["Undo"]</SbMenuItem>
+                                    <SbMenuItem OnClick="RedoAsync" Disabled="@(!_canRedo)"><SbIcon Name="redo" Class="me-2" />@L["Redo"]</SbMenuItem>
+                                    <SbMenuItem OnClick="@(() => ZoomAsync(0.1))"><SbIcon Name="zoom-in" Class="me-2" />@L["Zoom"] +</SbMenuItem>
+                                    <SbMenuItem OnClick="@(() => ZoomAsync(-0.1))"><SbIcon Name="zoom-out" Class="me-2" />@L["Zoom"] -</SbMenuItem>
+                                    <div class="fm-menu-divider"></div>
+                                    <SbMenuItem OnClick="@(() => OnAspectRatioChanged("free"))"><SbIcon Name="crop" Class="me-2" />@L["FreeCrop"]</SbMenuItem>
+                                    <SbMenuItem OnClick="@(() => OnAspectRatioChanged("1"))">1:1</SbMenuItem>
+                                    <SbMenuItem OnClick="@(() => OnAspectRatioChanged("4:3"))">4:3</SbMenuItem>
+                                    <SbMenuItem OnClick="@(() => OnAspectRatioChanged("16:9"))">16:9</SbMenuItem>
+                                    <div class="fm-menu-divider"></div>
+                                    <SbMenuItem OnClick="@(() => { _saveFormat = "image/png"; StateHasChanged(); })">PNG</SbMenuItem>
+                                    <SbMenuItem OnClick="@(() => { _saveFormat = "image/jpeg"; StateHasChanged(); })">JPEG</SbMenuItem>
+                                    <SbMenuItem OnClick="@(() => { _saveFormat = "image/webp"; StateHasChanged(); })">WebP</SbMenuItem>
+                                </ChildContent>
+                            </SbMenu>
+                        </SbStack>
+                        <div class="fm-editor-toolbar-mobile-row2">
+                            <SbFormField Class="fm-editor-form-field-inline fm-editor-form-field--mobile">
+                                <SbSimpleSelect TValue="string" Value="_aspectRatioKey" ValueChanged="OnAspectRatioChanged" Style="min-width: 0;">
+                                    <SbSelectOption TValue="string" Value="@("free")">@L["FreeCrop"]</SbSelectOption>
+                                    <SbSelectOption TValue="string" Value="@("1")">1:1</SbSelectOption>
+                                    <SbSelectOption TValue="string" Value="@("4:3")">4:3</SbSelectOption>
+                                    <SbSelectOption TValue="string" Value="@("16:9")">16:9</SbSelectOption>
+                                </SbSimpleSelect>
+                            </SbFormField>
+                            <SbFormField Class="fm-editor-form-field-inline fm-editor-form-field--mobile">
+                                <SbSimpleSelect TValue="string" @bind-Value="_saveFormat" Style="min-width: 0;">
+                                    <SbSelectOption TValue="string" Value="@("image/png")">PNG</SbSelectOption>
+                                    <SbSelectOption TValue="string" Value="@("image/jpeg")">JPEG</SbSelectOption>
+                                    <SbSelectOption TValue="string" Value="@("image/webp")">WebP</SbSelectOption>
+                                </SbSimpleSelect>
+                            </SbFormField>
+                        </div>
+                    </SbStack>
+                    @* Adjustments: bottom drawer on mobile so panel is never clipped *@
+                    <SbDrawer @bind-Open="_moreMenuOpen" Placement="SbDrawerPlacement.Bottom" Title="@L["Adjustments"]" Height="280px" Class="fm-editor-adjustments-drawer">
+                        <ChildContent>
+                            <SbStack Gap="3" Class="fm-editor-adjustments-drawer-body">
+                                <SbFormField Label="@L["Brightness"]">
+                                    <SbSlider TNumber="int" Value="_brightness" ValueChanged="OnBrightnessChanged" Min="-100" Max="100" />
+                                </SbFormField>
+                                <SbFormField Label="@L["Contrast"]">
+                                    <SbSlider TNumber="int" Value="_contrast" ValueChanged="OnContrastChanged" Min="-100" Max="100" />
+                                </SbFormField>
+                                <SbFormField Label="@L["Saturation"]">
+                                    <SbSlider TNumber="int" Value="_saturation" ValueChanged="OnSaturationChanged" Min="-100" Max="100" />
+                                </SbFormField>
+                                <SbDivider />
+                                <SbText Weight="@SbFontWeight.Semibold" Size="@SbSize.Xs">@L["Effects"]</SbText>
+                                <SbStack Direction="SbStackDirection.Row" Gap="2">
+                                    <SbCheckbox Value="_grayscale" ValueChanged="OnGrayscaleChanged" Label="@L["Grayscale"]" />
+                                    <SbCheckbox Value="_sepia" ValueChanged="OnSepiaChanged" Label="@L["Sepia"]" />
+                                </SbStack>
+                            </SbStack>
+                        </ChildContent>
+                    </SbDrawer>
+                </div>
+            </SbSurface>
+        </div>
+    </Header>
+    <ChildContent>
+         <div class="fm-image-editor-body">
+            @if (File != null)
+            {
+                <SbStack Gap="0" Class="fm-image-editor-layout" @key="File.Id">
+                    <div class="fm-image-editor-canvas">
+                        <div class="fm-cropper-wrapper">
+                            <img id="imageEditorImg"
+                                 src="@_imageSrc"
+                                 alt="@File.OriginalName"
+                                 @ref="_imageElement"
+                                 style="max-width: 100%; max-height: 100%; display: block; @(_isLoading ? "opacity: 0;" : "")"
+                                 @onload="OnImageLoaded"
+                                 @onerror="OnImageError" />
+                        </div>
+                        @if (_isLoading)
+                        {
+                            <SbStack Justify="SbJustify.Center" Align="SbAlign.Center" Class="fm-image-editor-loading">
+                                <SbProgress Type="SbProgressType.Circular" />
+                            </SbStack>
+                        }
+                    </div>
+                </SbStack>
+            }
+         </div>
+    </ChildContent>
+    <Footer>
+        <SbStack Direction="SbStackDirection.Row" Gap="2" Justify="SbJustify.End">
+            <SbButton Color="SbColor.Default" OnClick="CancelAsync">@L["Cancel"]</SbButton>
+            <SbButton Color="SbColor.Secondary" OnClick="OpenSaveAsDialog">@L["SaveAs"]</SbButton>
+            <SbButton Color="SbColor.Primary" OnClick="SaveAsync" Loading="_isSaving">@L["Save"]</SbButton>
+        </SbStack>
+    </Footer>
+</SbDialog>
+
+@* Save As filename dialog *@
+<SbDialog @bind-Open="_saveAsDialogOpen" Title="@L["SaveAs"]" Size="SbDialogSize.Sm">
+    <ChildContent>
+        <SbFormField Label="@L["FileName"]">
+            <SbTextField @bind-Value="_saveAsFileName" Placeholder="@L["EnterFileName"]" />
+        </SbFormField>
+    </ChildContent>
+    <Footer>
+        <SbStack Direction="SbStackDirection.Row" Gap="2" Justify="SbJustify.End">
+            <SbButton Color="SbColor.Default" OnClick="@(() => _saveAsDialogOpen = false)">@L["Cancel"]</SbButton>
+            <SbButton Color="SbColor.Primary" OnClick="SaveAsAsync">@L["Save"]</SbButton>
+        </SbStack>
+    </Footer>
+</SbDialog>
+
+@code {
+    [Parameter] public FileItemDto? File { get; set; }
+    [Parameter] public bool Open { get; set; }
+    [Parameter] public EventCallback<bool> OpenChanged { get; set; }
+    [Parameter] public EventCallback<FileItemDto> OnSaved { get; set; }
+    [Parameter] public Guid? CurrentFolderId { get; set; }
+
+    private ElementReference _imageElement;
+    private string? _editorId;
+    private string _imageSrc = "";
+    private bool _isLoading = true;
+    private bool _isSaving = false;
+    private bool _canUndo = false;
+    private bool _canRedo = false;
+    private string _aspectRatioKey = "free";
+    private int _brightness = 0;
+    private int _contrast = 0;
+    private int _saturation = 0;
+    private bool _grayscale = false;
+    private bool _sepia = false;
+    private bool _cropBoxVisible = false;
+    private string _saveFormat = "image/png";
+    private double _saveQuality = 0.92;
+    private bool _moreMenuOpen;
+    private bool _mobileEditorMenuOpen;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (Open && File != null)
+        {
+            // Per-open cache bust so the browser always loads the correct image when switching files
+            _imageSrc = FileItemUrlProvider.GetStreamUrl(File.Id, Clock.Now.Ticks, File.StructureBaseUrl, File.StructureIsPublicAccess, File.BlobName, File.TenantId, File.StructureStorageProvider);
+            _isLoading = true;
+            _editorId = null;
+            _cropBoxVisible = false;
+            _moreMenuOpen = false;
+            _mobileEditorMenuOpen = false;
+            _aspectRatioKey = "free";
+            _brightness = _contrast = _saturation = 0;
+            _grayscale = _sepia = false;
+            _saveFormat = "image/png";
+            _saveQuality = 0.92;
+            StateHasChanged();
+        }
+    }
+
+    private async Task OnImageLoaded()
+    {
+        if (File == null || string.IsNullOrEmpty(_imageSrc)) return;
+
+        _isLoading = false;
+        try
+        {
+            _editorId = await ImageEditorInterop.InitAsync(_imageElement, options: null); // null = free aspect ratio
+            await UpdateCanUndoRedoAsync();
+        }
+        catch (Exception ex)
+        {
+            await Notify.ErrorAsync(L["FailedToLoadImageEditor", ex.Message].Value ?? ex.Message);
+        }
+        StateHasChanged();
+    }
+
+    private async Task OnImageError()
+    {
+        _isLoading = false;
+        await Notify.ErrorAsync(L["FailedToLoadImage"].Value ?? "Failed to load image.");
+        StateHasChanged();
+    }
+
+    private async Task UpdateCanUndoRedoAsync()
+    {
+        if (string.IsNullOrEmpty(_editorId)) return;
+        _canUndo = await ImageEditorInterop.CanUndoAsync(_editorId);
+        _canRedo = await ImageEditorInterop.CanRedoAsync(_editorId);
+    }
+
+    private async Task RotateAsync(double deg)
+    {
+        if (string.IsNullOrEmpty(_editorId)) return;
+        await ImageEditorInterop.RotateAsync(_editorId, deg);
+        await UpdateCanUndoRedoAsync();
+    }
+
+    private async Task FlipXAsync()
+    {
+        if (string.IsNullOrEmpty(_editorId)) return;
+        await ImageEditorInterop.FlipXAsync(_editorId);
+        await UpdateCanUndoRedoAsync();
+    }
+
+    private async Task FlipYAsync()
+    {
+        if (string.IsNullOrEmpty(_editorId)) return;
+        await ImageEditorInterop.FlipYAsync(_editorId);
+        await UpdateCanUndoRedoAsync();
+    }
+
+    private async Task ResetAsync()
+    {
+        if (string.IsNullOrEmpty(_editorId)) return;
+        await ImageEditorInterop.ResetAsync(_editorId);
+        _brightness = _contrast = _saturation = 0;
+        _grayscale = _sepia = false;
+        await UpdateCanUndoRedoAsync();
+        StateHasChanged();
+    }
+
+    private async Task UndoAsync()
+    {
+        if (string.IsNullOrEmpty(_editorId)) return;
+        await ImageEditorInterop.UndoAsync(_editorId);
+        await UpdateCanUndoRedoAsync();
+    }
+
+    private async Task RedoAsync()
+    {
+        if (string.IsNullOrEmpty(_editorId)) return;
+        await ImageEditorInterop.RedoAsync(_editorId);
+        await UpdateCanUndoRedoAsync();
+    }
+
+    private async Task ZoomAsync(double ratio)
+    {
+        if (string.IsNullOrEmpty(_editorId)) return;
+        await ImageEditorInterop.ZoomAsync(_editorId, ratio);
+    }
+
+    private async Task ToggleCropBoxAsync()
+    {
+        if (string.IsNullOrEmpty(_editorId)) return;
+        _cropBoxVisible = await ImageEditorInterop.ToggleCropBoxAsync(_editorId);
+        StateHasChanged();
+    }
+
+    private async Task OnAspectRatioChanged(string? value)
+    {
+        _aspectRatioKey = value ?? "free";
+        StateHasChanged();
+        if (string.IsNullOrEmpty(_editorId)) return;
+        var ratio = _aspectRatioKey switch { "1" => 1.0, "4:3" => 4.0 / 3, "16:9" => 16.0 / 9, _ => double.NaN };
+        await ImageEditorInterop.SetAspectRatioAsync(_editorId, ratio);
+        await UpdateCanUndoRedoAsync();
+    }
+
+    private async Task OnFilterChanged()
+    {
+        if (string.IsNullOrEmpty(_editorId)) return;
+        await ImageEditorInterop.ApplyFilterAsync(_editorId, "brightness", _brightness);
+        await ImageEditorInterop.ApplyFilterAsync(_editorId, "contrast", _contrast);
+        await ImageEditorInterop.ApplyFilterAsync(_editorId, "saturation", _saturation);
+        await UpdateCanUndoRedoAsync();
+    }
+
+    private async Task OnBrightnessChanged(int? value)
+    {
+        _brightness = value ?? 0;
+        await OnFilterChanged();
+    }
+
+    private async Task OnContrastChanged(int? value)
+    {
+        _contrast = value ?? 0;
+        await OnFilterChanged();
+    }
+
+    private async Task OnSaturationChanged(int? value)
+    {
+        _saturation = value ?? 0;
+        await OnFilterChanged();
+    }
+
+    private void OnSaveQualityChanged(double? value)
+    {
+        _saveQuality = value ?? 0.92;
+    }
+
+    private async Task OnGrayscaleChanged(bool value)
+    {
+        _grayscale = value;
+        if (string.IsNullOrEmpty(_editorId)) return;
+        await ImageEditorInterop.ApplyFilterAsync(_editorId, "grayscale", value);
+        await UpdateCanUndoRedoAsync();
+    }
+
+    private async Task OnSepiaChanged(bool value)
+    {
+        _sepia = value;
+        if (string.IsNullOrEmpty(_editorId)) return;
+        await ImageEditorInterop.ApplyFilterAsync(_editorId, "sepia", value);
+        await UpdateCanUndoRedoAsync();
+    }
+
+    private async Task SaveAsync()
+    {
+        if (File == null || string.IsNullOrEmpty(_editorId)) return;
+
+        _isSaving = true;
+        try
+        {
+            await ImageEditorInterop.ApplyFilterAsync(_editorId, "brightness", _brightness);
+            await ImageEditorInterop.ApplyFilterAsync(_editorId, "contrast", _contrast);
+            await ImageEditorInterop.ApplyFilterAsync(_editorId, "saturation", _saturation);
+            await ImageEditorInterop.ApplyFilterAsync(_editorId, "grayscale", _grayscale);
+            await ImageEditorInterop.ApplyFilterAsync(_editorId, "sepia", _sepia);
+
+            var dataUrl = await ImageEditorInterop.GetCroppedDataUrlAsync(_editorId, _saveFormat, _saveQuality);
+            var base64 = dataUrl.Contains(",") ? dataUrl.Split(',', 2)[1] : dataUrl;
+            var content = Convert.FromBase64String(base64);
+
+            var ext = _saveFormat switch { "image/jpeg" => ".jpg", "image/webp" => ".webp", _ => ".png" };
+            var fileName = Path.ChangeExtension(File.OriginalName, ext);
+
+            var updated = await FileItemAppService.ReplaceContentAsync(File.Id, new ReplaceFileContentInput
+            {
+                Content = content,
+                FileName = fileName,
+                MimeType = _saveFormat
+            });
+
+            await OpenChanged.InvokeAsync(false);
+            await OnSaved.InvokeAsync(updated);
+            await Notify.SuccessAsync(L["SavedSuccessfully"].Value ?? "Saved");
+        }
+        catch (Exception ex)
+        {
+            await Notify.ErrorAsync(L["SaveFailed", ex.Message].Value ?? ex.Message);
+        }
+        finally
+        {
+            _isSaving = false;
+        }
+    }
+
+    private bool _saveAsDialogOpen;
+    private string _saveAsFileName = "";
+
+    private void OpenSaveAsDialog()
+    {
+        var ext = _saveFormat switch { "image/jpeg" => ".jpg", "image/webp" => ".webp", _ => ".png" };
+        _saveAsFileName = Path.ChangeExtension(Path.GetFileNameWithoutExtension(File?.OriginalName ?? "") + (L["CopySuffix"].Value ?? " - Copy"), ext);
+        _saveAsDialogOpen = true;
+    }
+
+    private async Task SaveAsAsync()
+    {
+        if (File == null || string.IsNullOrEmpty(_editorId)) return;
+
+        if (!_saveAsDialogOpen)
+        {
+            OpenSaveAsDialog();
+            return;
+        }
+
+        var newName = _saveAsFileName?.Trim() ?? "";
+        if (string.IsNullOrWhiteSpace(newName)) return;
+
+        var ext = _saveFormat switch { "image/jpeg" => ".jpg", "image/webp" => ".webp", _ => ".png" };
+        if (!newName.EndsWith(ext, StringComparison.OrdinalIgnoreCase))
+            newName += ext;
+
+        _saveAsDialogOpen = false;
+        _isSaving = true;
+        try
+        {
+            await ImageEditorInterop.ApplyFilterAsync(_editorId, "brightness", _brightness);
+            await ImageEditorInterop.ApplyFilterAsync(_editorId, "contrast", _contrast);
+            await ImageEditorInterop.ApplyFilterAsync(_editorId, "saturation", _saturation);
+            await ImageEditorInterop.ApplyFilterAsync(_editorId, "grayscale", _grayscale);
+            await ImageEditorInterop.ApplyFilterAsync(_editorId, "sepia", _sepia);
+            var dataUrl = await ImageEditorInterop.GetCroppedDataUrlAsync(_editorId, _saveFormat, _saveQuality);
+            var base64 = dataUrl.Contains(",") ? dataUrl.Split(',', 2)[1] : dataUrl;
+            var content = Convert.FromBase64String(base64);
+
+            var newFile = await FileItemAppService.SaveAsAsync(File.Id, new SaveAsFileInput
+            {
+                SourceId = File.Id,
+                FileName = newName,
+                Content = content,
+                MimeType = _saveFormat,
+                FolderId = CurrentFolderId
+            });
+
+            await OpenChanged.InvokeAsync(false);
+            await OnSaved.InvokeAsync(newFile);
+            await Notify.SuccessAsync(L["SavedSuccessfully"].Value ?? "Saved");
+        }
+        catch (Exception ex)
+        {
+            await Notify.ErrorAsync(L["SaveFailed", ex.Message].Value ?? ex.Message);
+        }
+        finally
+        {
+            _isSaving = false;
+        }
+    }
+
+    private async Task CancelAsync()
+    {
+        if (!string.IsNullOrEmpty(_editorId))
+        {
+            await ImageEditorInterop.DestroyAsync(_editorId);
+        }
+        await OpenChanged.InvokeAsync(false);
+    }
+
+}

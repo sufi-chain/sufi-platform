@@ -1,0 +1,25 @@
+@* 
+    PublicLayout.razor - Placeholder for dynamic CMS layout rendering
+    
+    In the future CMS implementation, this layout will:
+    1. Accept a layout definition from the CMS (stored in the database)
+    2. Dynamically render layout sections (header, footer, sidebars, content areas)
+    3. Support nested layouts and layout inheritance
+    4. Allow content editors to configure layouts via the Admin panel
+    
+    For now, this is a simple wrapper that uses the default KomTheme layout.
+    The actual layout switching is done via KomThemeBlazorOptions in the module.
+*@
+
+@inherits LayoutComponentBase
+
+<div class="public-layout">
+    @Body
+</div>
+
+@code {
+    // TODO: In CMS implementation, inject ICmsLayoutService to:
+    // 1. Fetch layout definition for current page/route
+    // 2. Resolve layout components dynamically
+    // 3. Pass section content to appropriate placeholders
+}

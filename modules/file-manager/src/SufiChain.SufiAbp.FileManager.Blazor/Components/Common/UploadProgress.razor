@@ -1,0 +1,36 @@
+<div class="upload-progress @CssClass">
+    <SbStack Direction="SbStackDirection.Row" Justify="SbJustify.SpaceBetween" Align="SbAlign.Center" Class="mb-2">
+        <div>
+            <strong>@FileName</strong>
+            @if (ShowSize)
+            {
+                <small class="text-muted ms-2">(@FormatFileSize(FileSize))</small>
+            }
+        </div>
+        @if (ShowCancel && !IsCompleted)
+        {
+            <SbIconButton Color="SbColor.Danger" Size="SbSize.Sm" OnClick="@OnCancel" AriaLabel="Cancel upload">
+                <Icon><SbIcon Name="x" /></Icon>
+            </SbIconButton>
+        }
+    </SbStack>
+
+    <SbProgress Value="@Progress" Color="@GetProgressColor()">
+        @if (ShowPercentage)
+        {
+            <span>@Progress%</span>
+        }
+    </SbProgress>
+
+    @if (!string.IsNullOrEmpty(StatusMessage))
+    {
+        <small class="text-muted d-block mt-1">@StatusMessage</small>
+    }
+
+    @if (!string.IsNullOrEmpty(ErrorMessage))
+    {
+        <SbAlert Severity="SbAlertSeverity.Danger" Class="mt-2 mb-0">
+            @ErrorMessage
+        </SbAlert>
+    }
+</div>

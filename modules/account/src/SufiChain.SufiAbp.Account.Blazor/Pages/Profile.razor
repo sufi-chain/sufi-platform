@@ -1,0 +1,108 @@
+@page "/account/profile"
+@attribute [Authorize]
+@inject IProfileAppService ProfileAppService
+@inject IStringLocalizer<SufiAbpIdentityResource> L
+
+<SbCard>
+    <ChildContent>
+        @if (_loading)
+        {
+            <SbStack Align="SbAlign.Center" class="p-4">
+                <SbProgress Type="SbProgressType.Circular" />
+            </SbStack>
+        }
+        else if (_profile != null)
+        {
+            <EditForm Model="_profile" OnValidSubmit="OnSaveAsync">
+                <DataAnnotationsValidator />
+                
+                <SbStack Gap="3" class="p-4">
+                    <SbTextField @bind-Value="_profile.UserName" 
+                                 Label="@L["UserName"]" 
+                                 Required="true" />
+                    
+                    <SbStack Direction="SbStackDirection.Row" Gap="3">
+                        <SbTextField @bind-Value="_profile.Name" Label="@L["Name"]" />
+                        <SbTextField @bind-Value="_profile.Surname" Label="@L["Surname"]" />
+                    </SbStack>
+                    
+                    <SbTextField @bind-Value="_profile.Email" 
+                                 Label="@L["Email"]" 
+                                 Type="email"
+                                 Required="true" />
+                    
+                    <SbTextField @bind-Value="_profile.PhoneNumber" Label="@L["PhoneNumber"]" />
+
+                    @if (!string.IsNullOrEmpty(_successMessage))
+                    {
+                        <SbAlert Severity="SbAlertSeverity.Success">@_successMessage</SbAlert>
+                    }
+
+                    @if (!string.IsNullOrEmpty(_errorMessage))
+                    {
+                        <SbAlert Severity="SbAlertSeverity.Danger">@_errorMessage</SbAlert>
+                    }
+
+                    <SbStack Direction="SbStackDirection.Row" Justify="SbJustify.End">
+                        <SbButton Type="submit" Color="SbColor.Primary" Loading="_saving">
+                            @L["Save"]
+                        </SbButton>
+                    </SbStack>
+                </SbStack>
+            </EditForm>
+        }
+    </ChildContent>
+</SbCard>
+
+@code {
+    private ProfileDto? _profile;
+    private bool _loading = true;
+    private bool _saving;
+    private string? _successMessage;
+    private string? _errorMessage;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            _profile = await ProfileAppService.GetAsync();
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private async Task OnSaveAsync()
+    {
+        if (_profile == null) return;
+        
+        _saving = true;
+        _successMessage = null;
+        _errorMessage = null;
+        
+        try
+        {
+            var input = new UpdateProfileDto
+            {
+                UserName = _profile.UserName,
+                Name = _profile.Name,
+                Surname = _profile.Surname,
+                Email = _profile.Email,
+                PhoneNumber = _profile.PhoneNumber,
+                ConcurrencyStamp = _profile.ConcurrencyStamp
+            };
+            
+            _profile = await ProfileAppService.UpdateAsync(input);
+            _successMessage = L["ProfileUpdatedSuccessfully"];
+        }
+        catch (Exception ex)
+        {
+            _errorMessage = ex.Message;
+        }
+        finally
+        {
+            _saving = false;
+        }
+    }
+}

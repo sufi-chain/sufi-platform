@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <RootNamespace>SufiChain.SufiAbp.Emailing</RootNamespace>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <PackageId>SufiChain.SufiAbp.Emailing</PackageId>
+    <Description>Sufi Platform email sending abstractions.</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Volo.Abp.Emailing" Version="$(AbpVersion)"/>
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Localization\SufiAbpEmailing\*.json" />
+    <Content Remove="Localization\SufiAbpEmailing\*.json" />
+  </ItemGroup>
+
+</Project>

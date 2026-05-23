@@ -1,0 +1,11 @@
+using System;
+
+namespace SufiChain.SufiAbp.MultiTenancy;
+
+public interface IMultiTenant
+{
+    /// <summary>
+    /// Id of the related tenant.
+    /// </summary>
+    Guid? TenantId { get; }
+}

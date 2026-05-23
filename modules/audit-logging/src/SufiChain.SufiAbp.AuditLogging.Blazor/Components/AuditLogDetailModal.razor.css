@@ -1,0 +1,28 @@
+/* Audit log detail fields - label above value, consistent with form controls */
+.audit-detail-field {
+    display: flex;
+    flex-direction: column;
+    gap: var(--sb-space-1);
+    min-width: 0;
+}
+
+.audit-detail-field__label {
+    font-size: var(--sb-font-size-xs);
+    font-weight: var(--sb-font-weight-medium);
+    color: var(--sb-color-text-secondary);
+    line-height: var(--sb-line-height-tight);
+}
+
+.audit-detail-field__value {
+    font-size: var(--sb-font-size-sm);
+    color: var(--sb-color-text);
+    line-height: var(--sb-line-height-normal);
+}
+
+.audit-detail-field__value--break {
+    word-break: break-all;
+}
+
+.audit-detail-field__value--empty {
+    color: var(--sb-color-text-muted);
+}

@@ -1,0 +1,27 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>SufiChain.SufiAbp.Account</RootNamespace>
+    <IsPackable>true</IsPackable>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <PackageId>SufiChain.SufiAbp.Account.HttpApi</PackageId>
+    <Description>Account module HTTP API controllers for Sufi Platform.</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- ABP Dependencies -->
+    <ProjectReference Include="../../../../framework/SufiChain.SufiAbp.AspNetCore.Mvc/SufiChain.SufiAbp.AspNetCore.Mvc.csproj" />
+    <ProjectReference Include="../SufiChain.SufiAbp.Account.Application.Contracts/SufiChain.SufiAbp.Account.Application.Contracts.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Project References -->
+    <ProjectReference Include="..\SufiChain.SufiAbp.Account.Application.Contracts\SufiChain.SufiAbp.Account.Application.Contracts.csproj" />
+  </ItemGroup>
+
+</Project>

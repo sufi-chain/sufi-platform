@@ -1,0 +1,24 @@
+<Solution>
+  <Folder Name="/host/">
+    <Project Path="host/SufiChain.SufiAbp.AIManagement.Blazor.Host/SufiChain.SufiAbp.AIManagement.Blazor.Host.csproj" />
+  </Folder>
+  <Folder Name="/src/">
+    <Project Path="src/SufiChain.SufiAbp.AIManagement.Application.Contracts/SufiChain.SufiAbp.AIManagement.Application.Contracts.csproj" />
+    <Project Path="src/SufiChain.SufiAbp.AIManagement.Application/SufiChain.SufiAbp.AIManagement.Application.csproj" />
+    <Project Path="src/SufiChain.SufiAbp.AIManagement.Blazor.WebAssembly/SufiChain.SufiAbp.AIManagement.Blazor.WebAssembly.csproj" />
+    <Project Path="src/SufiChain.SufiAbp.AIManagement.Blazor/SufiChain.SufiAbp.AIManagement.Blazor.csproj" />
+    <Project Path="src/SufiChain.SufiAbp.AIManagement.Domain.Shared/SufiChain.SufiAbp.AIManagement.Domain.Shared.csproj" />
+    <Project Path="src/SufiChain.SufiAbp.AIManagement.Domain/SufiChain.SufiAbp.AIManagement.Domain.csproj" />
+    <Project Path="src/SufiChain.SufiAbp.AIManagement.EntityFrameworkCore/SufiChain.SufiAbp.AIManagement.EntityFrameworkCore.csproj" />
+    <Project Path="src/SufiChain.SufiAbp.AIManagement.HttpApi.Client/SufiChain.SufiAbp.AIManagement.HttpApi.Client.csproj" />
+    <Project Path="src/SufiChain.SufiAbp.AIManagement.HttpApi/SufiChain.SufiAbp.AIManagement.HttpApi.csproj" />
+    <Project Path="src/SufiChain.SufiAbp.AIManagement.MongoDB/SufiChain.SufiAbp.AIManagement.MongoDB.csproj" />
+  </Folder>
+  <Folder Name="/test/">
+    <Project Path="test/SufiChain.SufiAbp.AIManagement.Application.Tests/SufiChain.SufiAbp.AIManagement.Application.Tests.csproj" />
+    <Project Path="test/SufiChain.SufiAbp.AIManagement.Domain.Tests/SufiChain.SufiAbp.AIManagement.Domain.Tests.csproj" />
+    <Project Path="test/SufiChain.SufiAbp.AIManagement.EntityFrameworkCore.Tests/SufiChain.SufiAbp.AIManagement.EntityFrameworkCore.Tests.csproj" />
+    <Project Path="test/SufiChain.SufiAbp.AIManagement.MongoDB.Tests/SufiChain.SufiAbp.AIManagement.MongoDB.Tests.csproj" />
+    <Project Path="test/SufiChain.SufiAbp.AIManagement.TestBase/SufiChain.SufiAbp.AIManagement.TestBase.csproj" />
+  </Folder>
+</Solution>

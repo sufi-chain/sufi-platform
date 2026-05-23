@@ -1,0 +1,91 @@
+@using SufiChain.SufiAbp.AIManagement.Workspaces
+@inherits AIManagementComponentBase
+
+<SbCard>
+	<ChildContent>
+		@if (Loading)
+		{
+			<SbStack Direction="SbStackDirection.Row" Gap="4" style="overflow-x: auto; padding: 8px;">
+				@for (int i = 0; i < 3; i++)
+				{
+					<SbCard Elevation="1" style="min-width: 280px; max-width: 320px; padding: 16px; opacity: 0.6;">
+						<ChildContent>
+							<SbStack Direction="SbStackDirection.Column" Gap="2">
+								<SbText Variant="SbTextVariant.Body" Color="SbColor.Muted">@L["Loading"]...</SbText>
+							</SbStack>
+						</ChildContent>
+					</SbCard>
+				}
+			</SbStack>
+		}
+		else if (!Workspaces.Any())
+		{
+			<SbStack Direction="SbStackDirection.Column" Gap="2" Align="SbAlign.Center" style="padding: 3rem 0;">
+				<SbIcon Name="folder" Size="SbSize.Xl" Color="SbColor.Muted" />
+				<SbText Variant="SbTextVariant.Body" Color="SbColor.Muted">
+					@(EmptyMessage ?? L["NoWorkspacesAvailable"])
+				</SbText>
+			</SbStack>
+		}
+		else
+		{
+			<SbStack Direction="SbStackDirection.Row" Gap="4" style="overflow-x: auto; padding: 8px;">
+				@foreach (var workspace in FilteredWorkspaces)
+				{
+					var isSelected = Value.HasValue && Value.Value == workspace.Id;
+					var borderColor = isSelected ? "var(--sb-color-primary)" : "var(--sb-color-border)";
+					var borderWidth = isSelected ? "2px" : "1px";
+					var backgroundColor = isSelected ? "var(--sb-color-primary-light)" : "transparent";
+					
+					<SbCard Elevation="@(isSelected ? 2 : 1)" 
+							style="@($"min-width: 280px; max-width: 320px; padding: 16px; cursor: pointer; border: {borderWidth} solid {borderColor}; background-color: {backgroundColor}; transition: all 0.2s ease;")"
+							@onclick="@(() => OnWorkspaceClickAsync(workspace.Id))"
+							@key="workspace.Id">
+						<ChildContent>
+							<SbStack Direction="SbStackDirection.Column" Gap="2">
+								<!-- Header with Icon and Name -->
+								<SbStack Direction="SbStackDirection.Row" Gap="2" Align="SbAlign.Center" Justify="SbJustify.SpaceBetween">
+									<SbStack Direction="SbStackDirection.Row" Gap="2" Align="SbAlign.Center" style="flex: 1; min-width: 0;">
+										<SbIcon Name="@GetProviderIcon(workspace.Provider)" 
+												Color="@GetProviderColor(workspace.Provider)" 
+												Size="SbSize.Lg" />
+										<SbText Variant="SbTextVariant.Body" 
+												Weight="SbFontWeight.Medium"
+												style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+											@workspace.Name
+										</SbText>
+									</SbStack>
+									@if (isSelected)
+									{
+										<SbIcon Name="check-circle" Color="SbColor.Primary" Size="SbSize.Md" />
+									}
+								</SbStack>
+
+								<!-- Provider and Model Info -->
+								<SbStack Direction="SbStackDirection.Row" Gap="1" Align="SbAlign.Center">
+									<SbText Variant="SbTextVariant.BodySmall" Color="SbColor.Muted">
+										@GetProviderDisplayName(workspace.Provider)
+									</SbText>
+									<SbText Variant="SbTextVariant.BodySmall" Color="SbColor.Muted">•</SbText>
+									<SbText Variant="SbTextVariant.BodySmall" 
+											Color="SbColor.Muted"
+											style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+										@workspace.Model
+									</SbText>
+								</SbStack>
+
+								<!-- Status Badge -->
+								<div>
+									<SbBadge Color="@(workspace.IsActive ? SbColor.Success : SbColor.Default)" 
+											 Size="SbSize.Sm">
+										@(workspace.IsActive ? L["Active"] : L["Inactive"])
+									</SbBadge>
+								</div>
+							</SbStack>
+						</ChildContent>
+					</SbCard>
+				}
+			</SbStack>
+		}
+	</ChildContent>
+</SbCard>

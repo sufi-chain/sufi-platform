@@ -1,0 +1,22 @@
+using System;
+using Microsoft.Extensions.AI;
+using Microsoft.Extensions.DependencyInjection;
+
+namespace SufiChain.SufiAbp.AI;
+
+public class TypedChatClient<TWorkSpace> : DelegatingChatClient, IChatClient<TWorkSpace>
+    where TWorkSpace : class
+{
+    public TypedChatClient(IServiceProvider serviceProvider)
+        : base(
+            serviceProvider.GetKeyedService<IChatClient>(
+                SufiAbpAIWorkspaceOptions.GetChatClientServiceKeyName(
+                    WorkspaceNameAttribute.GetWorkspaceName<TWorkSpace>()))
+                ??
+            serviceProvider.GetRequiredKeyedService<IChatClient>(
+                SufiAbpAIWorkspaceOptions.GetChatClientServiceKeyName(
+                    SufiAbpAIModule.DefaultWorkspaceName))
+        )
+    {
+    }
+}

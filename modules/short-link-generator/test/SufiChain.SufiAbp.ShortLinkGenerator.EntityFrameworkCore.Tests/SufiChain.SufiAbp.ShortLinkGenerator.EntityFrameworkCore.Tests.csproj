@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <RootNamespace>SufiChain.SufiAbp.ShortLinkGenerator</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="$(MicrosoftNetTestSdkVersion)" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Proxies" Version="$(MicrosoftEntityFrameworkCoreVersion)" />
+    <ProjectReference Include="..\..\src\SufiChain.SufiAbp.ShortLinkGenerator.EntityFrameworkCore\SufiChain.SufiAbp.ShortLinkGenerator.EntityFrameworkCore.csproj" />
+    <ProjectReference Include="..\SufiChain.SufiAbp.ShortLinkGenerator.Application.Tests\SufiChain.SufiAbp.ShortLinkGenerator.Application.Tests.csproj" />
+    <ProjectReference Include="../../../../framework/SufiChain.SufiAbp.EntityFrameworkCore.Sqlite/SufiChain.SufiAbp.EntityFrameworkCore.Sqlite.csproj" />
+  </ItemGroup>
+
+</Project>

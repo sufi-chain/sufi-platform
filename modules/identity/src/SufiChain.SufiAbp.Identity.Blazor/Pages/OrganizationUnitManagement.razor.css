@@ -1,0 +1,56 @@
+/* Organization Unit Management - responsive layout */
+
+/* Unit name in detail header: truncate with ellipsis to keep single line */
+.ou-unit-name-container {
+    min-width: 0;
+    flex: 1;
+}
+
+.ou-unit-name {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    display: block;
+}
+
+/* Desktop: side-by-side. Hidden on mobile. */
+.ou-layout-desktop {
+    display: block;
+}
+
+.ou-layout-mobile {
+    display: none;
+}
+
+@media (max-width: 767px) {
+    .ou-layout-desktop {
+        display: none !important;
+    }
+
+    .ou-layout-mobile {
+        display: block !important;
+    }
+}
+
+@media (min-width: 768px) {
+    .ou-layout-mobile {
+        display: none !important;
+    }
+}
+
+/* Mobile: search field full width */
+.ou-layout-desktop ::deep .ou-mobile-search {
+    width: 100%;
+}
+
+@media (min-width: 640px) {
+    .ou-layout-desktop ::deep .ou-mobile-search {
+        width: 300px;
+    }
+}
+
+.ou-layout-desktop ::deep .ou-tree-card {
+    width: 320px;
+    min-height: 500px;
+    flex-shrink: 0;
+}

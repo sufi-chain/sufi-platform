@@ -1,0 +1,20 @@
+.asset-manager-full-height {
+    height: calc(100vh - 60px - 50px - 48px - 8px);
+    min-height: 500px;
+}
+
+.asset-manager-page {
+    display: flex;
+    flex-direction: column;
+    height: calc(100vh - 100px);
+    padding: var(--sb-space-4);
+}
+
+.asset-manager-page-header {
+    margin-bottom: var(--sb-space-4);
+}
+
+.asset-manager-page-content {
+    flex: 1;
+    min-height: 0;
+}

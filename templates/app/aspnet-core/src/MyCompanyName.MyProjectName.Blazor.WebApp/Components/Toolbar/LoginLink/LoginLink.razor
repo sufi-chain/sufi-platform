@@ -1,0 +1,27 @@
+@using SufiChain.SufiBlazor.Components
+@using SufiChain.SufiBlazor.Components.Actions
+@using SufiChain.SufiBlazor.Components.Common
+@inject NavigationManager NavigationManager
+
+@* 
+    Login link toolbar component for unauthenticated users.
+    Redirects to local login page (self-hosted auth).
+*@
+
+<SbButton Variant="SbButtonVariant.Outline" Color="SbColor.Primary" OnClick="Login">
+    <SbIcon Name="log-in" />
+    Login
+</SbButton>
+
+@code {
+    private void Login()
+    {
+        // Get current URL for return after login
+        var currentUrl = NavigationManager.Uri;
+        var uri = new Uri(currentUrl);
+        var returnUrl = Uri.EscapeDataString(uri.PathAndQuery);
+        
+        // Navigate to login with return URL
+        NavigationManager.NavigateTo($"Account/Login?returnUrl={returnUrl}", forceLoad: true);
+    }
+}

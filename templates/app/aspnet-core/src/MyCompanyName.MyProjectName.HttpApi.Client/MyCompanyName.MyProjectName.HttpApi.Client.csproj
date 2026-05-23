@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<LangVersion>latest</LangVersion>
+		<TargetFramework>net10.0</TargetFramework>
+		<RootNamespace>MyCompanyName.MyProjectName</RootNamespace>
+		<IsPackable>false</IsPackable>
+	</PropertyGroup>
+	<ItemGroup>
+		<PackageReference Include="SufiChain.SufiAbp.Http.Client" Version="$(SufiVersion)" />
+		<ProjectReference Include="..\MyCompanyName.MyProjectName.Application.Contracts\MyCompanyName.MyProjectName.Application.Contracts.csproj" />
+	</ItemGroup>
+	<ItemGroup>
+		<EmbeddedResource Include="**\*generate-proxy.json" />
+		<Content Remove="**\*generate-proxy.json" />
+	</ItemGroup>
+</Project>

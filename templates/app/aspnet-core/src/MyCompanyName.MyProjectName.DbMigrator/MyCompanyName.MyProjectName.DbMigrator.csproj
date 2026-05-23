@@ -1,0 +1,116 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <RootNamespace>MyCompanyName.MyProjectName.DbMigrator</RootNamespace>
+    <LangVersion>latest</LangVersion>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Serilog.Extensions.Logging" Version="$(SerilogExtensionsLoggingVersion)" />
+    <PackageReference Include="Serilog.Sinks.Async" Version="$(SerilogSinksAsyncVersion)" />
+    <PackageReference Include="Serilog.Sinks.File" Version="$(SerilogSinksFileVersion)" />
+    <PackageReference Include="Serilog.Sinks.Console" Version="$(SerilogSinksConsoleVersion)" />
+    <PackageReference Include="Microsoft.Extensions.Hosting" Version="$(MicrosoftExtensionsHostingVersion)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="SufiChain.SufiAbp.Autofac" Version="$(SufiVersion)" />
+    <ProjectReference Include="..\MyCompanyName.MyProjectName.Application\MyCompanyName.MyProjectName.Application.csproj" />
+    <ProjectReference Include="..\MyCompanyName.MyProjectName.Application.Contracts\MyCompanyName.MyProjectName.Application.Contracts.csproj" />
+    <!-- <TEMPLATE-REMOVE IF-NOT="db:efcore"> -->
+    <ProjectReference Include="..\MyCompanyName.MyProjectName.EntityFrameworkCore\MyCompanyName.MyProjectName.EntityFrameworkCore.csproj" />
+    <!-- </TEMPLATE-REMOVE> -->
+    <!-- <TEMPLATE-REMOVE IF-NOT="db:mongodb"> -->
+    <ProjectReference Include="..\MyCompanyName.MyProjectName.MongoDB\MyCompanyName.MyProjectName.MongoDB.csproj" />
+    <!-- </TEMPLATE-REMOVE> -->
+  </ItemGroup>
+
+  <!-- ====================================================================== -->
+  <!-- Development: SufiAbp module references (removed when generating templates) -->
+  <!-- <TEMPLATE-REMOVE> -->
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\..\..\src\modules\file-manager\src\SufiChain.SufiAbp.FileManager.Application\SufiChain.SufiAbp.FileManager.Application.csproj" />
+    <!-- <TEMPLATE-REMOVE IF-NOT="db:efcore"> -->
+    <ProjectReference Include="..\..\..\..\..\src\modules\file-manager\src\SufiChain.SufiAbp.FileManager.EntityFrameworkCore\SufiChain.SufiAbp.FileManager.EntityFrameworkCore.csproj" />
+    <!-- </TEMPLATE-REMOVE> -->
+    <!-- <TEMPLATE-REMOVE IF-NOT="db:mongodb"> -->
+    <ProjectReference Include="..\..\..\..\..\src\modules\file-manager\src\SufiChain.SufiAbp.FileManager.MongoDB\SufiChain.SufiAbp.FileManager.MongoDB.csproj" />
+    <!-- </TEMPLATE-REMOVE> -->
+    <ProjectReference Include="..\..\..\..\..\src\modules\audit-logging\src\SufiChain.SufiAbp.AuditLogging.Application\SufiChain.SufiAbp.AuditLogging.Application.csproj" />
+    <ProjectReference Include="..\..\..\..\..\src\modules\background-jobs\src\SufiChain.SufiAbp.BackgroundJobs.Application\SufiChain.SufiAbp.BackgroundJobs.Application.csproj" />
+    <ProjectReference Include="..\..\..\..\..\src\modules\identity\src\SufiChain.SufiAbp.Identity.Application\SufiChain.SufiAbp.Identity.Application.csproj" />
+    <ProjectReference Include="..\..\..\..\..\src\modules\tenant-management\src\SufiChain.SufiAbp.TenantManagement.Application\SufiChain.SufiAbp.TenantManagement.Application.csproj" />
+    <ProjectReference Include="..\..\..\..\..\src\modules\localization-management\src\SufiChain.SufiAbp.LocalizationManagement.Application\SufiChain.SufiAbp.LocalizationManagement.Application.csproj" />
+    <!-- <TEMPLATE-REMOVE IF-NOT="db:efcore"> -->
+    <ProjectReference Include="..\..\..\..\..\src\modules\localization-management\src\SufiChain.SufiAbp.LocalizationManagement.EntityFrameworkCore\SufiChain.SufiAbp.LocalizationManagement.EntityFrameworkCore.csproj" />
+    <!-- </TEMPLATE-REMOVE> -->
+    <!-- <TEMPLATE-REMOVE IF-NOT="db:mongodb"> -->
+    <ProjectReference Include="..\..\..\..\..\src\modules\localization-management\src\SufiChain.SufiAbp.LocalizationManagement.MongoDB\SufiChain.SufiAbp.LocalizationManagement.MongoDB.csproj" />
+    <!-- </TEMPLATE-REMOVE> -->
+    <ProjectReference Include="..\..\..\..\..\src\modules\short-link-generator\src\SufiChain.SufiAbp.ShortLinkGenerator.Application\SufiChain.SufiAbp.ShortLinkGenerator.Application.csproj" />
+    <ProjectReference Include="..\..\..\..\..\src\modules\ai-management\src\SufiChain.SufiAbp.AIManagement.Application\SufiChain.SufiAbp.AIManagement.Application.csproj" />
+    <!-- <TEMPLATE-REMOVE IF-NOT="db:efcore"> -->
+    <ProjectReference Include="..\..\..\..\..\src\modules\short-link-generator\src\SufiChain.SufiAbp.ShortLinkGenerator.EntityFrameworkCore\SufiChain.SufiAbp.ShortLinkGenerator.EntityFrameworkCore.csproj" />
+    <!-- </TEMPLATE-REMOVE> -->
+    <!-- <TEMPLATE-REMOVE IF-NOT="db:mongodb"> -->
+    <ProjectReference Include="..\..\..\..\..\src\modules\short-link-generator\src\SufiChain.SufiAbp.ShortLinkGenerator.MongoDB\SufiChain.SufiAbp.ShortLinkGenerator.MongoDB.csproj" />
+    <!-- </TEMPLATE-REMOVE> -->
+  </ItemGroup>
+  <!-- </TEMPLATE-REMOVE> -->
+
+  <!-- <TEMPLATE-ONLY>
+  <ItemGroup>
+    <PackageReference Include="SufiChain.SufiAbp.FileManager.Application" Version="$(SufiVersion)" />
+    <!-- <TEMPLATE-REMOVE IF-NOT="db:efcore"> -->
+    <PackageReference Include="SufiChain.SufiAbp.FileManager.EntityFrameworkCore" Version="$(SufiVersion)" />
+    <!-- </TEMPLATE-REMOVE> -->
+    <!-- <TEMPLATE-REMOVE IF-NOT="db:mongodb"> -->
+    <PackageReference Include="SufiChain.SufiAbp.FileManager.MongoDB" Version="$(SufiVersion)" />
+    <!-- </TEMPLATE-REMOVE> -->
+    <PackageReference Include="SufiChain.SufiAbp.AuditLogging.Application" Version="$(SufiVersion)" />
+    <PackageReference Include="SufiChain.SufiAbp.BackgroundJobs.Application" Version="$(SufiVersion)" />
+    <PackageReference Include="SufiChain.SufiAbp.Identity.Application" Version="$(SufiVersion)" />
+    <PackageReference Include="SufiChain.SufiAbp.TenantManagement.Application" Version="$(SufiVersion)" />
+    <PackageReference Include="SufiChain.SufiAbp.LocalizationManagement.Application" Version="$(SufiVersion)" />
+    <!-- <TEMPLATE-REMOVE IF-NOT="db:efcore"> -->
+    <PackageReference Include="SufiChain.SufiAbp.LocalizationManagement.EntityFrameworkCore" Version="$(SufiVersion)" />
+    <!-- </TEMPLATE-REMOVE> -->
+    <!-- <TEMPLATE-REMOVE IF-NOT="db:mongodb"> -->
+    <PackageReference Include="SufiChain.SufiAbp.LocalizationManagement.MongoDB" Version="$(SufiVersion)" />
+    <!-- </TEMPLATE-REMOVE> -->
+    <PackageReference Include="SufiChain.SufiAbp.ShortLinkGenerator.Application" Version="$(SufiVersion)" />
+    <PackageReference Include="SufiChain.SufiAbp.AIManagement.Application" Version="$(SufiVersion)" />
+    <!-- <TEMPLATE-REMOVE IF-NOT="db:efcore"> -->
+    <PackageReference Include="SufiChain.SufiAbp.ShortLinkGenerator.EntityFrameworkCore" Version="$(SufiVersion)" />
+    <!-- </TEMPLATE-REMOVE> -->
+    <!-- <TEMPLATE-REMOVE IF-NOT="db:mongodb"> -->
+    <PackageReference Include="SufiChain.SufiAbp.ShortLinkGenerator.MongoDB" Version="$(SufiVersion)" />
+    <!-- </TEMPLATE-REMOVE> -->
+  </ItemGroup>
+  </TEMPLATE-ONLY> -->
+
+  <ItemGroup>
+    <Compile Remove="Logs\**" />
+    <Content Remove="Logs\**" />
+    <EmbeddedResource Remove="Logs\**" />
+    <None Remove="Logs\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Remove="appsettings.json" />
+    <Content Include="appsettings.json">
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <None Remove="appsettings.secrets.json" />
+    <Content Include="appsettings.secrets.json">
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+</Project>

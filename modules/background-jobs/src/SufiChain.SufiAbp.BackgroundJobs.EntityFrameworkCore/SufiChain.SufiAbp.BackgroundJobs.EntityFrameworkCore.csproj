@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <RootNamespace>SufiChain.SufiAbp.BackgroundJobs</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\..\framework\SufiChain.SufiAbp.EntityFrameworkCore\SufiChain.SufiAbp.EntityFrameworkCore.csproj" />
+    <ProjectReference Include="..\SufiChain.SufiAbp.BackgroundJobs.Domain\SufiChain.SufiAbp.BackgroundJobs.Domain.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <!-- Exclude old Abp-prefixed files -->
+    <Compile Remove="EntityFrameworkCore\AbpBackgroundJobsEntityFrameworkCoreModule.cs" />
+    <Compile Remove="EntityFrameworkCore\AbpBackgroundJobsEntityFrameworkCoreModule.cs.bak" />
+  </ItemGroup>
+</Project>

@@ -1,0 +1,11 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <RootNamespace>SufiChain.SufiAbp.OpenIddict</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="../../../../framework/SufiChain.SufiAbp.EntityFrameworkCore/SufiChain.SufiAbp.EntityFrameworkCore.csproj" />
+    <ProjectReference Include="..\SufiChain.SufiAbp.OpenIddict.Domain\SufiChain.SufiAbp.OpenIddict.Domain.csproj" />
+  </ItemGroup>
+</Project>

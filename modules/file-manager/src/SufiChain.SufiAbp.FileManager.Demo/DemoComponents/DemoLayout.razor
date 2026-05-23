@@ -1,0 +1,15 @@
+@* Layout component for demo pages *@
+
+<div class="demo-layout">
+    <div class="demo-layout__content">
+        @ChildContent
+    </div>
+</div>
+
+@code {
+    /// <summary>
+    /// The content to display in the layout.
+    /// </summary>
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+}

@@ -1,0 +1,21 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>netstandard2.0;netstandard2.1;net10.0</TargetFrameworks>
+    <Nullable>enable</Nullable>
+    <RootNamespace>SufiChain.SufiAbp.Users</RootNamespace>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <PackageId>SufiChain.SufiAbp.Users.Abstractions</PackageId>
+    <Description>Users abstractions for Sufi Platform - interfaces and base classes for user management.</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\..\framework\SufiChain.SufiAbp.Data\SufiChain.SufiAbp.Data.csproj" />
+    <ProjectReference Include="..\..\..\..\framework\SufiChain.SufiAbp.EventBus\SufiChain.SufiAbp.EventBus.csproj" />
+    <ProjectReference Include="..\..\..\..\framework\SufiChain.SufiAbp.MultiTenancy\SufiChain.SufiAbp.MultiTenancy.csproj" />
+    <ProjectReference Include="..\..\..\..\framework\SufiChain.SufiAbp.ObjectExtending\SufiChain.SufiAbp.ObjectExtending.csproj" />
+  </ItemGroup>
+
+</Project>

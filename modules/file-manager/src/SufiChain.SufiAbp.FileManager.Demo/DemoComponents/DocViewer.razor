@@ -1,0 +1,73 @@
+@* Loads and renders markdown documentation from RCL wwwroot/docs *@
+
+@if (DocName is { Length: > 0 })
+{
+    <div class="demo-docs-block" dir="ltr" lang="en">
+        <SbHeading Level="2" Size="4" Class="demo-docs-block__heading">Documentation</SbHeading>
+        <div class="demo-docs-block__scroll">
+            @if (loading)
+            {
+                <SbText Color="SbColor.Muted">Loading documentation…</SbText>
+            }
+            else if (!string.IsNullOrEmpty(markdownContent))
+            {
+                <SbMarkdownViewer Content="@markdownContent" Class="demo-docs-block__content" />
+            }
+            else if (error is { Length: > 0 })
+            {
+                <SbText Color="SbColor.Danger">@error</SbText>
+            }
+        </div>
+    </div>
+}
+
+@code {
+    private string? markdownContent;
+    private string? error;
+    private bool loading = true;
+
+    /// <summary>
+    /// Name of the doc file (without .md), e.g. "SbButton". Loaded from wwwroot/docs/{DocName}.md.
+    /// </summary>
+    [Parameter]
+    public string? DocName { get; set; }
+
+    /// <summary>
+    /// Assembly name for docs content. Defaults to "SufiChain.SufiBlazor.Demo". Use "SufiChain.SufiAbp.FileManager.Blazor" for File Manager docs.
+    /// </summary>
+    [Parameter]
+    public string? ContentAssembly { get; set; }
+
+    [Inject]
+    private HttpClient Http { get; set; } = null!;
+
+    [Inject]
+    private NavigationManager Navigation { get; set; } = null!;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (string.IsNullOrWhiteSpace(DocName))
+        {
+            loading = false;
+            return;
+        }
+        loading = true;
+        error = null;
+        markdownContent = null;
+        try
+        {
+            var assembly = string.IsNullOrWhiteSpace(ContentAssembly) ? "SufiChain.SufiBlazor.Demo" : ContentAssembly.Trim();
+            var baseUri = new Uri(Navigation.BaseUri);
+            var docsUri = new Uri(baseUri, $"_content/{assembly}/docs/{DocName.Trim()}.md");
+            markdownContent = await Http.GetStringAsync(docsUri).ConfigureAwait(false);
+        }
+        catch (Exception ex)
+        {
+            error = $"Could not load documentation: {ex.Message}";
+        }
+        finally
+        {
+            loading = false;
+        }
+    }
+}

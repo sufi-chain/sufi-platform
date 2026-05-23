@@ -1,0 +1,11 @@
+@namespace MyCompanyName.MyProjectName.Shared
+@inject NavigationManager NavigationManager
+
+@code {
+    protected override void OnInitialized()
+    {
+        var currentUrl = NavigationManager.Uri;
+        var returnUrl = Uri.EscapeDataString(new Uri(currentUrl).PathAndQuery);
+        NavigationManager.NavigateTo($"account/login?returnUrl={returnUrl}", forceLoad: true);
+    }
+}

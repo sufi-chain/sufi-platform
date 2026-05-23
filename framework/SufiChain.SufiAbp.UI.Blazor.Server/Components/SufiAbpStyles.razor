@@ -1,0 +1,93 @@
+@implements IDisposable
+@inject IComponentBundleManager BundleManager
+@inject PersistentComponentState ApplicationState
+
+@if (StyleFiles != null)
+{
+    foreach (var file in StyleFiles)
+    {
+        var href = file;
+        if (!string.IsNullOrWhiteSpace(AppBasePath))
+        {
+            href = AppBasePath.TrimEnd('/') + "/" + file.TrimStart('/');
+        }
+        <link rel="stylesheet" href="@href" />
+    }
+}
+
+@code {
+    private const string PrerenderedKey = "sp_style_prerendered";
+
+    /// <summary>
+    /// Style files to use in WebAssembly mode (for future WASM support).
+    /// </summary>
+    [Parameter]
+    public List<string>? WebAssemblyStyleFiles { get; set; }
+
+    /// <summary>
+    /// The bundle name to load styles from.
+    /// </summary>
+    [Parameter]
+    public string? BundleName { get; set; }
+
+    /// <summary>
+    /// Base path for the application (used for path resolution).
+    /// </summary>
+    [Parameter]
+    public string? AppBasePath { get; set; }
+
+    private List<string>? StyleFiles { get; set; }
+
+    private PersistingComponentStateSubscription _persistingSubscription;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _persistingSubscription = ApplicationState.RegisterOnPersisting(PersistState);
+        
+        if (!ApplicationState.TryTakeFromJson<List<string>>(PrerenderedKey, out var persistedFiles))
+        {
+            // We are in prerendering mode - fetch from bundle manager
+            if (!string.IsNullOrWhiteSpace(BundleName))
+            {
+                StyleFiles = (await BundleManager.GetStyleBundleFilesAsync(BundleName!)).ToList();
+            }
+        }
+        else
+        {
+            StyleFiles = persistedFiles;
+            if (OperatingSystem.IsBrowser() && StyleFiles != null && WebAssemblyStyleFiles != null)
+            {
+                // Add WebAssembly-specific files if not already present
+                foreach (var file in WebAssemblyStyleFiles)
+                {
+                    if (!StyleFiles.Contains(file))
+                    {
+                        StyleFiles.Add(file);
+                    }
+                }
+            }
+        }
+    }
+
+    private bool _hasRemovedServerStyles = false;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        // In WebAssembly mode, switch to WebAssembly-specific styles after initial render
+        if (!_hasRemovedServerStyles && OperatingSystem.IsBrowser() && WebAssemblyStyleFiles != null)
+        {
+            _hasRemovedServerStyles = true;
+            await Task.Delay(3000);
+            StyleFiles = WebAssemblyStyleFiles;
+            StateHasChanged();
+        }
+    }
+
+    private Task PersistState()
+    {
+        ApplicationState.PersistAsJson(PrerenderedKey, StyleFiles);
+        return Task.CompletedTask;
+    }
+
+    public void Dispose() => _persistingSubscription.Dispose();
+}

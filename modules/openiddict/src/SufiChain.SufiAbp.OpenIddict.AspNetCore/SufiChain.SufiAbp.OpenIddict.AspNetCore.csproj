@@ -1,0 +1,20 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <OutputType>Library</OutputType>
+    <IsPackable>true</IsPackable>
+    <Nullable>enable</Nullable>
+    <RootNamespace>SufiChain.SufiAbp.OpenIddict</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\SufiChain.SufiAbp.OpenIddict.Domain\SufiChain.SufiAbp.OpenIddict.Domain.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="../../../../framework/SufiChain.SufiAbp.AspNetCore.MultiTenancy/SufiChain.SufiAbp.AspNetCore.MultiTenancy.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="OpenIddict.Server.AspNetCore" Version="$(OpenIddictVersion)"/>
+    <PackageReference Include="OpenIddict.Validation.AspNetCore" Version="$(OpenIddictVersion)"/>
+    <PackageReference Include="OpenIddict.Validation.ServerIntegration" Version="$(OpenIddictVersion)"/>
+  </ItemGroup>
+</Project>

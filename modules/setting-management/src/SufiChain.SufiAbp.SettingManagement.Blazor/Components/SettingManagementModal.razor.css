@@ -1,0 +1,51 @@
+/* Setting Management Modal - Vertical Tabs Layout */
+/* Matches the pattern used by PermissionManagementModal and FeatureManagementModal */
+
+.setting-groups-nav {
+    background-color: var(--sb-bg-subtle, #f8f9fa);
+    width: 220px;
+    border-inline-end: 1px solid var(--sb-border-color, #dee2e6);
+    overflow-y: auto;
+    flex-shrink: 0;
+}
+
+.setting-group-item {
+    display: block;
+    width: 100%;
+    padding: 0.75rem 1rem;
+    text-align: start;
+    border: none;
+    background: transparent;
+    color: inherit;
+    cursor: pointer;
+    transition: background-color 0.15s ease-in-out, color 0.15s ease-in-out;
+    border-inline-start: 3px solid transparent;
+}
+
+.setting-group-item:hover {
+    background-color: var(--sb-hover-bg, #e9ecef);
+}
+
+.setting-group-item.active {
+    background-color: var(--sb-primary-light, #e7f1ff);
+    color: var(--sb-primary, #0d6efd);
+    border-inline-start-color: var(--sb-primary, #0d6efd);
+}
+
+.setting-group-item .group-name {
+    font-size: 0.875rem;
+    display: block;
+}
+
+.setting-content {
+    background-color: var(--sb-bg, #fff);
+    flex: 1;
+    overflow-y: auto;
+    max-height: 500px;
+}
+
+/* RTL Support - CSS logical properties handle this automatically */
+[dir="rtl"] .setting-groups-nav {
+    border-inline-end: 1px solid var(--sb-border-color, #dee2e6);
+    border-inline-start: none;
+}

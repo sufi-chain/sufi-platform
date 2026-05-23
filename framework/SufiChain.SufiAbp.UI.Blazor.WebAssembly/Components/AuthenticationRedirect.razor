@@ -1,0 +1,23 @@
+@using Microsoft.AspNetCore.Components.WebAssembly.Authentication
+@inject NavigationManager Navigation
+
+<RemoteAuthenticatorView Action="@Action">
+    <LogInFailed>
+        <div class="alert alert-danger">
+            There was an error logging you in. Please try again.
+        </div>
+    </LogInFailed>
+    <LogOutFailed>
+        <div class="alert alert-danger">
+            There was an error logging you out. Please try again.
+        </div>
+    </LogOutFailed>
+</RemoteAuthenticatorView>
+
+@code {
+    /// <summary>
+    /// The authentication action (login, logout, callback, etc.).
+    /// </summary>
+    [Parameter]
+    public string? Action { get; set; }
+}

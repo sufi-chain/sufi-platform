@@ -1,0 +1,195 @@
+<div class="fm-context-menu @(_isVisible ? "visible" : "")" style="left: @(_posX)px; top: @(_posY)px;" @onclick:stopPropagation>
+    @if (_isVisible)
+    {
+        <div class="fm-context-menu-content">
+            @if (_hasSelection)
+            {
+                <div class="fm-menu-item" @onclick="@HandleOpen">
+                    <SbIcon Name="folder-open" />
+                    <span>Open</span>
+                </div>
+                <div class="fm-menu-divider"></div>
+                <div class="fm-menu-item" @onclick="@HandleCut">
+                    <SbIcon Name="cut" />
+                    <span>Cut</span>
+                    <span class="fm-shortcut">Ctrl+X</span>
+                </div>
+                <div class="fm-menu-item" @onclick="@HandleCopy">
+                    <SbIcon Name="copy" />
+                    <span>Copy</span>
+                    <span class="fm-shortcut">Ctrl+C</span>
+                </div>
+            }
+            <div class="fm-menu-item @(CanPaste ? "" : "disabled")" @onclick="@HandlePaste">
+                <SbIcon Name="paste" />
+                <span>Paste</span>
+                <span class="fm-shortcut">Ctrl+V</span>
+            </div>
+            @if (_hasSelection)
+            {
+                <div class="fm-menu-divider"></div>
+                <div class="fm-menu-item" @onclick="@HandleDelete">
+                    <SbIcon Name="trash" />
+                    <span>Delete</span>
+                    <span class="fm-shortcut">Del</span>
+                </div>
+                <div class="fm-menu-item" @onclick="@HandleRename">
+                    <SbIcon Name="edit" />
+                    <span>Rename</span>
+                    <span class="fm-shortcut">F2</span>
+                </div>
+            }
+            <div class="fm-menu-divider"></div>
+            <div class="fm-menu-item" @onclick="@HandleNewFolder">
+                <SbIcon Name="plus" />
+                <span>New Folder</span>
+                <span class="fm-shortcut">Ctrl+Shift+N</span>
+            </div>
+            @if (_isFile)
+            {
+                <div class="fm-menu-divider"></div>
+                @if (IsImageFile)
+                {
+                    <div class="fm-menu-item" @onclick="@HandleEditImage">
+                        <SbIcon Name="image" />
+                        <span>@EditImageLabel</span>
+                    </div>
+                }
+                <div class="fm-menu-item" @onclick="@HandleEdit">
+                    <SbIcon Name="edit" />
+                    <span>Edit Properties</span>
+                </div>
+                <div class="fm-menu-item" @onclick="@HandleDownload">
+                    <SbIcon Name="download" />
+                    <span>Download</span>
+                </div>
+                <div class="fm-menu-item" @onclick="@HandleQuickShare">
+                    <SbIcon Name="share" />
+                    <span>@QuickShareLabel</span>
+                </div>
+            }
+        </div>
+    }
+</div>
+
+@* Click outside to close *@
+@if (_isVisible)
+{
+    <div class="fm-context-menu-backdrop" @onclick="@Hide"></div>
+}
+
+@code {
+    [Parameter] public EventCallback OnOpen { get; set; }
+    [Parameter] public EventCallback OnCut { get; set; }
+    [Parameter] public EventCallback OnCopy { get; set; }
+    [Parameter] public EventCallback OnPaste { get; set; }
+    [Parameter] public EventCallback OnDelete { get; set; }
+    [Parameter] public EventCallback OnRename { get; set; }
+    [Parameter] public EventCallback OnNewFolder { get; set; }
+    [Parameter] public EventCallback OnDownload { get; set; }
+    [Parameter] public EventCallback OnQuickShare { get; set; }
+    [Parameter] public EventCallback<Guid> OnEdit { get; set; }
+    [Parameter] public string QuickShareLabel { get; set; } = "Quick Share";
+    [Parameter] public EventCallback<Guid> OnEditImage { get; set; }
+    [Parameter] public bool IsImageFile { get; set; }
+    [Parameter] public string EditImageLabel { get; set; } = "Edit Image";
+    [Parameter] public bool CanPaste { get; set; }
+
+    private bool _isVisible = false;
+    private double _posX = 0;
+    private double _posY = 0;
+    private Guid? _fileId;
+    private Guid? _folderId;
+    private bool _hasSelection => _fileId.HasValue || _folderId.HasValue;
+    private bool _isFile => _fileId.HasValue;
+
+    public void Show(double x, double y, Guid? fileId, Guid? folderId)
+    {
+        _posX = x;
+        _posY = y;
+        _fileId = fileId;
+        _folderId = folderId;
+        _isVisible = true;
+        StateHasChanged();
+    }
+
+    public void Hide()
+    {
+        _isVisible = false;
+        StateHasChanged();
+    }
+
+    private async Task HandleOpen()
+    {
+        Hide();
+        await OnOpen.InvokeAsync();
+    }
+
+    private async Task HandleCut()
+    {
+        Hide();
+        await OnCut.InvokeAsync();
+    }
+
+    private async Task HandleCopy()
+    {
+        Hide();
+        await OnCopy.InvokeAsync();
+    }
+
+    private async Task HandlePaste()
+    {
+        if (!CanPaste) return;
+        Hide();
+        await OnPaste.InvokeAsync();
+    }
+
+    private async Task HandleDelete()
+    {
+        Hide();
+        await OnDelete.InvokeAsync();
+    }
+
+    private async Task HandleRename()
+    {
+        Hide();
+        await OnRename.InvokeAsync();
+    }
+
+    private async Task HandleNewFolder()
+    {
+        Hide();
+        await OnNewFolder.InvokeAsync();
+    }
+
+    private async Task HandleDownload()
+    {
+        Hide();
+        await OnDownload.InvokeAsync();
+    }
+
+    private async Task HandleQuickShare()
+    {
+        Hide();
+        await OnQuickShare.InvokeAsync();
+    }
+
+    private async Task HandleEdit()
+    {
+        if (_fileId.HasValue)
+        {
+            Hide();
+            await OnEdit.InvokeAsync(_fileId.Value);
+        }
+    }
+
+    private async Task HandleEditImage()
+    {
+        if (_fileId.HasValue)
+        {
+            Hide();
+            await OnEditImage.InvokeAsync(_fileId.Value);
+        }
+    }
+
+}

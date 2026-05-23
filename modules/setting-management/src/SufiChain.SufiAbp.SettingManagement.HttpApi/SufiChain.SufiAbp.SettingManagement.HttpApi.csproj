@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>SufiChain.SufiAbp.SettingManagement</RootNamespace>
+    <IsPackable>true</IsPackable>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <PackageId>SufiChain.SufiAbp.SettingManagement.HttpApi</PackageId>
+    <Description>Setting management module HTTP API controllers for Sufi Platform.</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../../../../framework/SufiChain.SufiAbp.AspNetCore.Mvc/SufiChain.SufiAbp.AspNetCore.Mvc.csproj" />
+    <ProjectReference Include="../SufiChain.SufiAbp.SettingManagement.Application.Contracts/SufiChain.SufiAbp.SettingManagement.Application.Contracts.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\SufiChain.SufiAbp.SettingManagement.Application.Contracts\SufiChain.SufiAbp.SettingManagement.Application.Contracts.csproj" />
+  </ItemGroup>
+
+</Project>

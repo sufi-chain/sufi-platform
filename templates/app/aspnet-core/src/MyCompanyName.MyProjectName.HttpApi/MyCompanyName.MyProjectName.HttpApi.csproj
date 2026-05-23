@@ -1,0 +1,38 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup><LangVersion>latest</LangVersion>
+    <TargetFramework>net10.0</TargetFramework>
+    <RootNamespace>MyCompanyName.MyProjectName</RootNamespace>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+	<ItemGroup>
+	  <Compile Remove="Controllers\**" />
+	  <EmbeddedResource Remove="Controllers\**" />
+	  <None Remove="Controllers\**" />
+	</ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\MyCompanyName.MyProjectName.Application.Contracts\MyCompanyName.MyProjectName.Application.Contracts.csproj" />
+  </ItemGroup>
+
+  <!-- <TEMPLATE-REMOVE> -->
+  <ItemGroup>
+    <!-- SufiAbp Application.Contracts (wrap ABP contracts with SufiAbp localization) -->
+    <ProjectReference Include="..\..\..\..\..\src\modules\account\src\SufiChain.SufiAbp.Account.Application.Contracts\SufiChain.SufiAbp.Account.Application.Contracts.csproj" />
+    <ProjectReference Include="..\..\..\..\..\src\modules\permission-management\src\SufiChain.SufiAbp.PermissionManagement.Application.Contracts\SufiChain.SufiAbp.PermissionManagement.Application.Contracts.csproj" />
+    <ProjectReference Include="..\..\..\..\..\src\modules\feature-management\src\SufiChain.SufiAbp.FeatureManagement.Application.Contracts\SufiChain.SufiAbp.FeatureManagement.Application.Contracts.csproj" />
+    <ProjectReference Include="..\..\..\..\..\src\modules\setting-management\src\SufiChain.SufiAbp.SettingManagement.Application.Contracts\SufiChain.SufiAbp.SettingManagement.Application.Contracts.csproj" />
+  </ItemGroup>
+  <!-- </TEMPLATE-REMOVE> -->
+
+  <!-- <TEMPLATE-ONLY>
+  <ItemGroup>
+    <PackageReference Include="SufiChain.SufiAbp.Account.Application.Contracts" Version="$(SufiVersion)" />
+    <PackageReference Include="SufiChain.SufiAbp.PermissionManagement.Application.Contracts" Version="$(SufiVersion)" />
+    <PackageReference Include="SufiChain.SufiAbp.FeatureManagement.Application.Contracts" Version="$(SufiVersion)" />
+    <PackageReference Include="SufiChain.SufiAbp.SettingManagement.Application.Contracts" Version="$(SufiVersion)" />
+  </ItemGroup>
+  </TEMPLATE-ONLY> -->
+
+</Project>

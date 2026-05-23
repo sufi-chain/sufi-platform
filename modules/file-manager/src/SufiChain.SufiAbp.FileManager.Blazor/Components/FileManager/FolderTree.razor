@@ -1,0 +1,132 @@
+@inject IFolderAppService FolderAppService
+
+<div class="fm-folder-tree">
+    @if (_isLoading)
+    {
+        <div class="text-center p-3">
+            <div class="spinner-border spinner-border-sm" role="status"></div>
+        </div>
+    }
+    else
+    {
+        <ul class="fm-tree-root">
+            <FolderTreeNode 
+                Node="@_rootNode"
+                SelectedFolderId="@SelectedFolderId"
+                OnSelect="@HandleNodeSelect"
+                OnToggle="@HandleNodeToggle"
+                OnLoadChildren="@LoadChildrenAsync" />
+        </ul>
+    }
+</div>
+
+@code {
+    [Parameter] public Guid? SelectedFolderId { get; set; }
+    [Parameter] public bool ShowTenantRoots { get; set; } = false;
+    [Parameter] public EventCallback<FolderTreeNodeDto> OnFolderSelected { get; set; }
+    /// <summary>
+    /// When this value changes, the tree reloads (e.g. after creating/renaming/deleting a folder).
+    /// </summary>
+    [Parameter] public int RefreshTrigger { get; set; }
+
+    private FolderTreeNodeDto _rootNode = new();
+    private bool _isLoading = true;
+    private int _lastRefreshTrigger = -1;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadTreeAsync();
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (RefreshTrigger != _lastRefreshTrigger)
+        {
+            _lastRefreshTrigger = RefreshTrigger;
+            await LoadTreeAsync();
+        }
+    }
+
+    private async Task LoadTreeAsync()
+    {
+        _isLoading = true;
+        try
+        {
+            var rootFolders = await FolderAppService.GetTreeAsync();
+            _rootNode = new FolderTreeNodeDto
+            {
+                Id = null,
+                Name = "Root",
+                Path = "/",
+                Type = FolderTypeDto.TenantRoot,
+                Icon = "home",
+                IsVirtual = true,
+                CanWrite = true,
+                CanDelete = false,
+                HasChildren = true,
+                IsExpanded = true,
+                Children = rootFolders
+            };
+        }
+        catch (Exception)
+        {
+            _rootNode = new FolderTreeNodeDto
+            {
+                Id = null,
+                Name = "Root",
+                Path = "/",
+                Type = FolderTypeDto.TenantRoot,
+                Icon = "home",
+                IsVirtual = true,
+                CanWrite = true,
+                CanDelete = false,
+                HasChildren = true,
+                IsExpanded = true,
+                Children = new List<FolderTreeNodeDto>()
+            };
+        }
+        finally
+        {
+            _isLoading = false;
+        }
+    }
+
+    private async Task LoadChildrenAsync(FolderTreeNodeDto node)
+    {
+        if (node.Children != null && node.Children.Any())
+        {
+            return; // Already loaded
+        }
+
+        try
+        {
+            // Root node (Id == null): get root-level folders via (null, null)
+            var children = node.Id == null
+                ? await FolderAppService.GetChildrenAsync(null, null)
+                : await FolderAppService.GetChildrenAsync(node.Id, node.Path);
+            node.Children = children;
+            StateHasChanged();
+        }
+        catch (Exception)
+        {
+            node.Children = new List<FolderTreeNodeDto>();
+        }
+    }
+
+    private async Task HandleNodeSelect(FolderTreeNodeDto node)
+    {
+        await OnFolderSelected.InvokeAsync(node);
+    }
+
+    private async Task HandleNodeToggle(FolderTreeNodeDto node)
+    {
+        node.IsExpanded = !node.IsExpanded;
+        
+        if (node.IsExpanded && node.HasChildren && (node.Children == null || !node.Children.Any()))
+        {
+            await LoadChildrenAsync(node);
+        }
+
+        StateHasChanged();
+    }
+}

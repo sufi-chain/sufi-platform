@@ -1,0 +1,39 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <RootNamespace>SufiChain.SufiAbp.FileManager</RootNamespace>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <PackageId>SufiChain.SufiAbp.FileManager.Application</PackageId>
+    <Description>File manager module application services for Sufi Platform - file operations and image processing.</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+    <ProjectReference Include="../../../../framework/SufiChain.SufiAbp.Core/SufiChain.SufiAbp.Core.csproj" />
+    <ProjectReference Include="../../../../framework/SufiChain.SufiAbp.Mapperly/SufiChain.SufiAbp.Mapperly.csproj" />
+    <ProjectReference Include="../../../../framework/SufiChain.SufiAbp.Caching/SufiChain.SufiAbp.Caching.csproj" />
+    <ProjectReference Include="../../../../framework/SufiChain.SufiAbp.BackgroundWorkers/SufiChain.SufiAbp.BackgroundWorkers.csproj" />
+    <ProjectReference Include="../../../tenant-management/src/SufiChain.SufiAbp.TenantManagement.Domain/SufiChain.SufiAbp.TenantManagement.Domain.csproj" />
+    <ProjectReference Include="../../../../framework/SufiChain.SufiAbp.Ddd.Application/SufiChain.SufiAbp.Ddd.Application.csproj" />
+    <ProjectReference Include="../../../../framework/SufiChain.SufiAbp.BlobStoring/SufiChain.SufiAbp.BlobStoring.csproj" />
+    <ProjectReference Include="../../../../framework/SufiChain.SufiAbp.BlobStoring.FileSystem/SufiChain.SufiAbp.BlobStoring.FileSystem.csproj" />
+    <ProjectReference Include="../../../../framework/SufiChain.SufiAbp.BlobStoring.Minio/SufiChain.SufiAbp.BlobStoring.Minio.csproj" />
+    <ProjectReference Include="..\..\..\..\framework\SufiChain.SufiAbp.BlobStoring.S3Provider\SufiChain.SufiAbp.BlobStoring.S3Provider.csproj" />
+    <ProjectReference Include="../../../../framework/SufiChain.SufiAbp.Security/SufiChain.SufiAbp.Security.csproj" />
+    <ProjectReference Include="../../../setting-management/src/SufiChain.SufiAbp.SettingManagement.Domain/SufiChain.SufiAbp.SettingManagement.Domain.csproj" />
+    <PackageReference Include="Microsoft.Data.SqlClient" Version="$(MicrosoftDataSqlClientVersion)" />
+    <ProjectReference Include="../../../../framework/SufiChain.SufiAbp.Threading/SufiChain.SufiAbp.Threading.csproj" />
+    <ProjectReference Include="../../../../framework/SufiChain.SufiAbp.Data/SufiChain.SufiAbp.Data.csproj" />
+    <ProjectReference Include="../../../../framework/SufiChain.SufiAbp.Guids/SufiChain.SufiAbp.Guids.csproj" />
+    <PackageReference Include="SixLabors.ImageSharp" Version="$(SixLaborsImageSharpVersion)" />
+    <PackageReference Include="FFMpegCore" Version="$(FFMpegCoreVersion)" />
+    <ProjectReference Include="..\SufiChain.SufiAbp.FileManager.Application.Contracts\SufiChain.SufiAbp.FileManager.Application.Contracts.csproj" />
+    <ProjectReference Include="..\SufiChain.SufiAbp.FileManager.Domain.Shared\SufiChain.SufiAbp.FileManager.Domain.Shared.csproj" />
+    <ProjectReference Include="..\SufiChain.SufiAbp.FileManager.Domain\SufiChain.SufiAbp.FileManager.Domain.csproj" />
+  </ItemGroup>
+
+</Project>

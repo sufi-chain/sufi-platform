@@ -1,0 +1,16 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/MyCompanyName.MyProjectName.Domain.Shared/MyCompanyName.MyProjectName.Domain.Shared.csproj" />
+    <Project Path="src/MyCompanyName.MyProjectName.Domain/MyCompanyName.MyProjectName.Domain.csproj" />
+    <Project Path="src/MyCompanyName.MyProjectName.Application.Contracts/MyCompanyName.MyProjectName.Application.Contracts.csproj" />
+    <Project Path="src/MyCompanyName.MyProjectName.Application/MyCompanyName.MyProjectName.Application.csproj" />
+    <Project Path="src/MyCompanyName.MyProjectName.EntityFrameworkCore/MyCompanyName.MyProjectName.EntityFrameworkCore.csproj" />
+    <Project Path="src/MyCompanyName.MyProjectName.MongoDB/MyCompanyName.MyProjectName.MongoDB.csproj" />
+    <Project Path="src/MyCompanyName.MyProjectName.HttpApi/MyCompanyName.MyProjectName.HttpApi.csproj" />
+    <Project Path="src/MyCompanyName.MyProjectName.HttpApi.Client/MyCompanyName.MyProjectName.HttpApi.Client.csproj" />
+    <Project Path="src/MyCompanyName.MyProjectName.HttpApi.Host/MyCompanyName.MyProjectName.HttpApi.Host.csproj" />
+    <Project Path="src/MyCompanyName.MyProjectName.Blazor.WebApp/MyCompanyName.MyProjectName.Blazor.WebApp.csproj" />
+    <Project Path="src/MyCompanyName.MyProjectName.Blazor.WebApp.Client/MyCompanyName.MyProjectName.Blazor.WebApp.Client.csproj" />
+    <Project Path="src/MyCompanyName.MyProjectName.DbMigrator/MyCompanyName.MyProjectName.DbMigrator.csproj" />
+  </Folder>
+</Solution>

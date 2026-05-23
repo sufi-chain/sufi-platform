@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk.Razor">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>SufiChain.SufiAbp.FileManager.Demo</RootNamespace>
+
+    <PackageId>SufiChain.SufiAbp.FileManager.Demo</PackageId>
+    <Description>File Manager Demo - A demo library for SufiChain.SufiAbp.FileManager components.</Description>
+    <PackageTags>blazor;file-manager;demo</PackageTags>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <SupportedPlatform Include="browser" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\..\framework\SufiChain.SufiAbp.UI.Abstractions\SufiChain.SufiAbp.UI.Abstractions.csproj" />
+    <ProjectReference Include="..\..\..\..\framework\SufiChain.SufiAbp.UI.Domain.Shared\SufiChain.SufiAbp.UI.Domain.Shared.csproj" />
+    <ProjectReference Include="..\SufiChain.SufiAbp.FileManager.Blazor\SufiChain.SufiAbp.FileManager.Blazor.csproj" />
+    <ProjectReference Include="..\SufiChain.SufiAbp.FileManager.RichTextEditor\SufiChain.SufiAbp.FileManager.RichTextEditor.csproj" />
+  </ItemGroup>
+
+</Project>

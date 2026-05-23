@@ -1,0 +1,450 @@
+@inherits FileManagerComponentBase
+<div class="fm-file-view fm-view-@State.ViewMode.ToString().ToLower()" 
+     @oncontextmenu="@HandleBackgroundContextMenu" 
+     @oncontextmenu:preventDefault
+     @onclick="@HandleBackgroundClick">
+    
+    @if (State.Contents == null || (!State.Contents.Folders.Any() && !State.Contents.Files.Any()))
+    {
+        <div class="fm-empty-folder">
+            <SbIcon Name="folder-open" Size="SbSize.Xl" Class="text-muted" />
+            <p class="text-muted mt-3">This folder is empty</p>
+        </div>
+    }
+    else
+    {
+        @switch (State.ViewMode)
+        {
+            case FileViewMode.LargeIcons:
+            case FileViewMode.SmallIcons:
+            case FileViewMode.Tiles:
+                <div class="fm-icon-grid">
+                    @* Folders first *@
+                    @foreach (var folder in State.Contents.Folders)
+                    {
+                        <div class="fm-item fm-folder @(IsFolderSelected(folder) ? "selected" : "")"
+                             @onclick="@(e => HandleItemClick(e, null, folder.Id))"
+                             @onclick:stopPropagation
+                             @ondblclick="@(() => OnFolderOpen.InvokeAsync(folder))"
+                             @oncontextmenu="@(e => HandleContextMenu(e, null, folder.Id))"
+                             @oncontextmenu:preventDefault
+                             @oncontextmenu:stopPropagation
+                             draggable="true"
+                             @ondragstart="@(e => HandleDragStart(e, null, folder.Id))">
+                            <div class="fm-item-icon">
+                                <span style="@GetFolderIconStyle(folder)"><SbIcon Name="@GetFolderIconName(folder)" /></span>
+                            </div>
+                            <div class="fm-item-name" title="@folder.Name">
+                                @if (State.IsRenaming && State.RenamingItemId == folder.Id)
+                                {
+                                    <input type="text" class="fm-rename-input" 
+                                           @bind="@_renameText" 
+                                           @onblur="@(() => FinishRename(folder.Id!.Value, true))"
+                                           @onkeyup="@(e => HandleRenameKeyUp(e, folder.Id!.Value, true))"
+                                           autofocus />
+                                }
+                                else
+                                {
+                                    @folder.Name
+                                }
+                            </div>
+                            @if (State.ViewMode == FileViewMode.Tiles && folder.FileCount > 0)
+                            {
+                                <div class="fm-item-details">@folder.FileCount files</div>
+                            }
+                        </div>
+                    }
+                    
+                    @* Then files *@
+                    @foreach (var file in State.Contents.Files)
+                    {
+                        <div class="fm-item fm-file @(IsFileSelected(file) ? "selected" : "")"
+                             @onclick="@(e => HandleItemClick(e, file.Id, null))"
+                             @onclick:stopPropagation
+                             @ondblclick="@(() => OnFileOpen.InvokeAsync(file))"
+                             @oncontextmenu="@(e => HandleContextMenu(e, file.Id, null))"
+                             @oncontextmenu:preventDefault
+                             @oncontextmenu:stopPropagation
+                             draggable="true"
+                             @ondragstart="@(e => HandleDragStart(e, file.Id, null))">
+                            <div class="fm-item-icon">
+                                @if (file.FileType == FileType.Image && !string.IsNullOrEmpty(file.ThumbnailBlobName))
+                                {
+                                    <img src="@GetThumbnailUrl(file)" alt="@file.Alt" class="fm-thumbnail" />
+                                }
+                                else
+                                {
+                                    <SbIcon Name="@GetFileIconName(file)" />
+                                }
+                            </div>
+                            <div class="fm-item-name" title="@GetFileDisplayName(file)">
+                                @if (State.IsRenaming && State.RenamingItemId == file.Id)
+                                {
+                                    <input type="text" class="fm-rename-input" 
+                                           @bind="@_renameText" 
+                                           @onblur="@(() => FinishRename(file.Id, false))"
+                                           @onkeyup="@(e => HandleRenameKeyUp(e, file.Id, false))"
+                                           autofocus />
+                                }
+                                else
+                                {
+                                    @GetFileDisplayName(file)
+                                    @if (file.IsTemp)
+                                    {
+                                        <SbChip Color="SbColor.Warning" Size="SbSize.Sm" Class="ms-1">@L["Temporary"]</SbChip>
+                                    }
+                                }
+                            </div>
+                            @if (State.ViewMode == FileViewMode.Tiles)
+                            {
+                                <div class="fm-item-details">@FormatFileSize(file.Size)</div>
+                            }
+                        </div>
+                    }
+                </div>
+                break;
+                
+            case FileViewMode.List:
+                <div class="fm-list-view">
+                    @foreach (var folder in State.Contents.Folders)
+                    {
+                        <div class="fm-list-item fm-folder @(IsFolderSelected(folder) ? "selected" : "")"
+                             @onclick="@(e => HandleItemClick(e, null, folder.Id))"
+                             @onclick:stopPropagation
+                             @ondblclick="@(() => OnFolderOpen.InvokeAsync(folder))"
+                             @oncontextmenu="@(e => HandleContextMenu(e, null, folder.Id))"
+                             @oncontextmenu:preventDefault
+                             @oncontextmenu:stopPropagation>
+                            <span style="@GetFolderIconStyle(folder)"><SbIcon Name="@GetFolderIconName(folder)" /></span>
+                            <span class="fm-list-name">@folder.Name</span>
+                        </div>
+                    }
+                    @foreach (var file in State.Contents.Files)
+                    {
+                        <div class="fm-list-item fm-file @(IsFileSelected(file) ? "selected" : "")"
+                             @onclick="@(e => HandleItemClick(e, file.Id, null))"
+                             @onclick:stopPropagation
+                             @ondblclick="@(() => OnFileOpen.InvokeAsync(file))"
+                             @oncontextmenu="@(e => HandleContextMenu(e, file.Id, null))"
+                             @oncontextmenu:preventDefault
+                             @oncontextmenu:stopPropagation>
+                            <SbIcon Name="@GetFileIconName(file)" />
+                            <span class="fm-list-name">@GetFileDisplayName(file)</span>
+                            @if (file.IsTemp) { <SbChip Color="SbColor.Warning" Size="SbSize.Sm" Class="ms-1">@L["Temporary"]</SbChip> }
+                        </div>
+                    }
+                </div>
+                break;
+                
+            case FileViewMode.Details:
+                <table class="fm-details-table">
+                    <thead>
+                        <tr>
+                            <th class="fm-col-icon"></th>
+                            <th class="fm-col-name" @onclick="@(() => SortBy("Name"))">
+                                Name @GetSortIndicator("Name")
+                            </th>
+                            <th class="fm-col-status">@L["Status"]</th>
+                            <th class="fm-col-date" @onclick="@(() => SortBy("CreationTime"))">
+                                Date Modified @GetSortIndicator("CreationTime")
+                            </th>
+                            <th class="fm-col-type" @onclick="@(() => SortBy("FileType"))">
+                                Type @GetSortIndicator("FileType")
+                            </th>
+                            <th class="fm-col-size" @onclick="@(() => SortBy("Size"))">
+                                Size @GetSortIndicator("Size")
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var folder in State.Contents.Folders)
+                        {
+                            <tr class="fm-row fm-folder @(IsFolderSelected(folder) ? "selected" : "")"
+                                @onclick="@(e => HandleItemClick(e, null, folder.Id))"
+                                @onclick:stopPropagation
+                                @ondblclick="@(() => OnFolderOpen.InvokeAsync(folder))"
+                                @oncontextmenu="@(e => HandleContextMenu(e, null, folder.Id))"
+                                @oncontextmenu:preventDefault
+                                @oncontextmenu:stopPropagation>
+                                <td class="fm-col-icon">
+                                    <span style="@GetFolderIconStyle(folder)"><SbIcon Name="@GetFolderIconName(folder)" /></span>
+                                </td>
+                                <td class="fm-col-name">@folder.Name</td>
+                                <td class="fm-col-status">-</td>
+                                <td class="fm-col-date">-</td>
+                                <td class="fm-col-type">Folder</td>
+                                <td class="fm-col-size">-</td>
+                            </tr>
+                        }
+                        @foreach (var file in State.Contents.Files)
+                        {
+                            <tr class="fm-row fm-file @(IsFileSelected(file) ? "selected" : "")"
+                                @onclick="@(e => HandleItemClick(e, file.Id, null))"
+                                @onclick:stopPropagation
+                                @ondblclick="@(() => OnFileOpen.InvokeAsync(file))"
+                                @oncontextmenu="@(e => HandleContextMenu(e, file.Id, null))"
+                                @oncontextmenu:preventDefault
+                                @oncontextmenu:stopPropagation>
+                                <td class="fm-col-icon">
+                                    <SbIcon Name="@GetFileIconName(file)" />
+                                </td>
+                                <td class="fm-col-name">@GetFileDisplayName(file)</td>
+                                <td class="fm-col-status">@if (file.IsTemp) { <SbChip Color="SbColor.Warning" Size="SbSize.Sm">@L["Temporary"]</SbChip> } else { <span class="text-muted">-</span> }</td>
+                                <td class="fm-col-date">@file.CreationTime.ToString("yyyy-MM-dd HH:mm")</td>
+                                <td class="fm-col-type">@GetFileType(file)</td>
+                                <td class="fm-col-size">@FormatFileSize(file.Size)</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+                break;
+        }
+    }
+</div>
+
+@code {
+    [Parameter] public FileManagerState State { get; set; } = new();
+    [Parameter] public EventCallback<FolderTreeNodeDto> OnFolderOpen { get; set; }
+    [Parameter] public EventCallback<FileItemDto> OnFileOpen { get; set; }
+    [Parameter] public EventCallback<(HashSet<Guid> files, HashSet<Guid> folders)> OnSelectionChanged { get; set; }
+    [Parameter] public EventCallback<(double x, double y, Guid? fileId, Guid? folderId)> OnContextMenu { get; set; }
+    [Parameter] public EventCallback<(Guid id, string newName, bool isFolder)> OnRename { get; set; }
+    [Parameter] public EventCallback<DragDropEventArgs> OnDrop { get; set; }
+
+    private string _renameText = "";
+    private Guid? _lastRenamingItemId;
+
+    private bool IsFileSelected(FileItemDto file) => State.SelectedFiles.Contains(file.Id);
+    private bool IsFolderSelected(FolderTreeNodeDto folder) => folder.Id.HasValue && State.SelectedFolders.Contains(folder.Id.Value);
+
+    /// <summary>
+    /// Display name for the file: user-editable Name when set, otherwise OriginalName (filename at upload).
+    /// </summary>
+    private static string GetFileDisplayName(FileItemDto file) =>
+        string.IsNullOrWhiteSpace(file.Name) ? file.OriginalName : file.Name;
+
+    protected override void OnParametersSet()
+    {
+        if (State.IsRenaming && State.RenamingItemId != _lastRenamingItemId)
+        {
+            _lastRenamingItemId = State.RenamingItemId;
+            if (State.RenamingItemId.HasValue && State.Contents != null)
+            {
+                var file = State.Contents.Files?.FirstOrDefault(f => f.Id == State.RenamingItemId.Value);
+                if (file != null)
+                    _renameText = GetFileDisplayName(file);
+                else
+                {
+                    var folder = State.Contents.Folders?.FirstOrDefault(f => f.Id == State.RenamingItemId.Value);
+                    _renameText = folder?.Name ?? "";
+                }
+            }
+            else
+                _renameText = "";
+        }
+        if (!State.IsRenaming)
+            _lastRenamingItemId = null;
+    }
+
+    private async Task HandleItemClick(MouseEventArgs e, Guid? fileId, Guid? folderId)
+    {
+        if (e.CtrlKey)
+        {
+            // Toggle selection
+            if (fileId.HasValue)
+            {
+                if (State.SelectedFiles.Contains(fileId.Value))
+                    State.SelectedFiles.Remove(fileId.Value);
+                else
+                    State.SelectedFiles.Add(fileId.Value);
+            }
+            else if (folderId.HasValue)
+            {
+                if (State.SelectedFolders.Contains(folderId.Value))
+                    State.SelectedFolders.Remove(folderId.Value);
+                else
+                    State.SelectedFolders.Add(folderId.Value);
+            }
+        }
+        else if (e.ShiftKey)
+        {
+            // Range selection (simplified - just add to selection)
+            if (fileId.HasValue)
+                State.SelectedFiles.Add(fileId.Value);
+            else if (folderId.HasValue)
+                State.SelectedFolders.Add(folderId.Value);
+        }
+        else
+        {
+            // Single selection
+            State.ClearSelection();
+            if (fileId.HasValue)
+                State.SelectedFiles.Add(fileId.Value);
+            else if (folderId.HasValue)
+                State.SelectedFolders.Add(folderId.Value);
+        }
+
+        await OnSelectionChanged.InvokeAsync((State.SelectedFiles, State.SelectedFolders));
+    }
+
+    private void HandleBackgroundClick(MouseEventArgs e)
+    {
+        // Clear selection when clicking background
+        State.ClearSelection();
+        OnSelectionChanged.InvokeAsync((State.SelectedFiles, State.SelectedFolders));
+    }
+
+    private async Task HandleContextMenu(MouseEventArgs e, Guid? fileId, Guid? folderId)
+    {
+        // Select item if not already selected
+        if (fileId.HasValue && !State.SelectedFiles.Contains(fileId.Value))
+        {
+            State.ClearSelection();
+            State.SelectedFiles.Add(fileId.Value);
+        }
+        else if (folderId.HasValue && !State.SelectedFolders.Contains(folderId.Value))
+        {
+            State.ClearSelection();
+            State.SelectedFolders.Add(folderId.Value);
+        }
+
+        await OnContextMenu.InvokeAsync((e.ClientX, e.ClientY, fileId, folderId));
+    }
+
+    private async Task HandleBackgroundContextMenu(MouseEventArgs e)
+    {
+        State.ClearSelection();
+        await OnContextMenu.InvokeAsync((e.ClientX, e.ClientY, null, null));
+    }
+
+    private void HandleDragStart(DragEventArgs e, Guid? fileId, Guid? folderId)
+    {
+        // Add to selection if not selected
+        if (fileId.HasValue && !State.SelectedFiles.Contains(fileId.Value))
+        {
+            State.SelectedFiles.Add(fileId.Value);
+        }
+        else if (folderId.HasValue && !State.SelectedFolders.Contains(folderId.Value))
+        {
+            State.SelectedFolders.Add(folderId.Value);
+        }
+    }
+
+    private async Task HandleRenameKeyUp(KeyboardEventArgs e, Guid id, bool isFolder)
+    {
+        if (e.Key == "Enter")
+        {
+            await FinishRename(id, isFolder);
+        }
+        else if (e.Key == "Escape")
+        {
+            State.IsRenaming = false;
+            State.RenamingItemId = null;
+        }
+    }
+
+    private async Task FinishRename(Guid id, bool isFolder)
+    {
+        if (!string.IsNullOrWhiteSpace(_renameText))
+        {
+            await OnRename.InvokeAsync((id, _renameText, isFolder));
+        }
+        State.IsRenaming = false;
+        State.RenamingItemId = null;
+    }
+
+    private void SortBy(string field)
+    {
+        if (State.SortField == field)
+        {
+            State.SortDescending = !State.SortDescending;
+        }
+        else
+        {
+            State.SortField = field;
+            State.SortDescending = false;
+        }
+    }
+
+    private string GetSortIndicator(string field)
+    {
+        if (State.SortField != field) return "";
+        return State.SortDescending ? " ↓" : " ↑";
+    }
+
+    [Inject] protected IFileItemUrlProvider FileItemUrlProvider { get; set; } = default!;
+    private string GetThumbnailUrl(FileItemDto file) => FileItemUrlProvider.GetThumbnailUrl(file.Id, (file.LastModificationTime ?? file.CreationTime).Ticks, file.StructureBaseUrl, file.StructureIsPublicAccess, file.ThumbnailBlobName, file.TenantId, file.StructureStorageProvider);
+
+    private static string GetFolderIconName(FolderTreeNodeDto folder)
+    {
+        var icon = folder.Icon ?? "folder";
+        return NormalizeSufiIconName(icon);
+    }
+
+    private static string GetFileIconName(FileItemDto file) => file.FileType switch
+    {
+        FileType.Image => "file-image",
+        FileType.Video => "file-video",
+        FileType.Audio => "file-audio",
+        FileType.Document when file.MimeType.Contains("pdf") => "file-pdf",
+        FileType.Document when file.MimeType.Contains("word") || file.MimeType.Contains("msword") || file.MimeType.Contains("opendocument.text") => "file-doc",
+        FileType.Document when file.MimeType.Contains("excel") || file.MimeType.Contains("spreadsheet") || file.MimeType.Contains("opendocument.spreadsheet") => "file-excel",
+        FileType.Document when file.MimeType.Contains("powerpoint") || file.MimeType.Contains("presentation") || file.MimeType.Contains("opendocument.presentation") => "file-ppt",
+        FileType.Document when file.MimeType.Contains("csv") => "file-csv",
+        FileType.Document when file.MimeType.Contains("json") => "file-json",
+        FileType.Document when file.MimeType.Contains("xml") => "file-xml",
+        FileType.Document => "file-text",
+        _ when file.MimeType.Contains("zip") || file.MimeType.Contains("archive") || file.MimeType.Contains("x-rar") || file.MimeType.Contains("x-7z") => "file-archive",
+        _ => "file"
+    };
+
+    private static string NormalizeSufiIconName(string icon)
+    {
+        if (string.IsNullOrEmpty(icon)) return "folder";
+        var name = icon.StartsWith("fa-", StringComparison.OrdinalIgnoreCase) ? icon[3..] : icon;
+        return name switch
+        {
+            "folder-open" => "folder-open",
+            "folder" => "folder",
+            "building" => "building",
+            "layer-group" => "layers",
+            "calendar" => "calendar",
+            "home" => "home",
+            _ => SufiIcons.Exists(name) ? name : "folder"
+        };
+    }
+
+    private string GetFolderIconStyle(FolderTreeNodeDto folder)
+    {
+        var color = folder.Color ?? folder.Type switch
+        {
+            FolderTypeDto.TenantRoot => "#6366f1",
+            FolderTypeDto.Structure => "#8b5cf6",
+            FolderTypeDto.YearMonth => "#06b6d4",
+            _ => "#f59e0b"
+        };
+        return $"color: {color};";
+    }
+
+    private string GetFileType(FileItemDto file) => file.FileType switch
+    {
+        FileType.Image => "Image",
+        FileType.Video => "Video",
+        FileType.Audio => "Audio",
+        FileType.Document => "Document",
+        _ => "File"
+    };
+
+    private string FormatFileSize(long bytes)
+    {
+        string[] sizes = { "B", "KB", "MB", "GB" };
+        double len = bytes;
+        int order = 0;
+        while (len >= 1024 && order < sizes.Length - 1)
+        {
+            order++;
+            len /= 1024;
+        }
+        return $"{len:0.##} {sizes[order]}";
+    }
+}

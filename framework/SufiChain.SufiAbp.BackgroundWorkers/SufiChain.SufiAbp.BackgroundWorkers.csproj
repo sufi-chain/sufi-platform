@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <RootNamespace>SufiChain.SufiAbp.BackgroundWorkers</RootNamespace>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <PackageId>SufiChain.SufiAbp.BackgroundWorkers</PackageId>
+    <Description>Sufi Platform background job abstractions.</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Volo.Abp.BackgroundWorkers" Version="$(AbpVersion)"/>
+    <PackageReference Include="Volo.Abp.Threading" Version="$(AbpVersion)"/>
+  </ItemGroup>
+
+</Project>

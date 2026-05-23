@@ -1,0 +1,120 @@
+/* Permission Management Modal - Vertical Tabs Layout */
+/* Single scroll region: only permission-content scrolls; dialog body does not scroll */
+.permission-management-dialog ::deep .sb-dialog__body {
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+}
+
+.permission-modal__body {
+    display: flex;
+    flex-direction: column;
+    gap: var(--sb-space-3);
+    flex: 1;
+    min-height: 0;
+}
+
+.permission-modal__body ::deep .permission-modal__search {
+    flex-shrink: 0;
+}
+
+.permission-modal__body ::deep .permission-modal__panes {
+    display: flex;
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
+}
+
+/* SbTabs vertical layout inside permission panes */
+.permission-modal__body ::deep .permission-modal__panes .permission-modal__tabs {
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
+}
+
+.permission-modal__body ::deep .permission-modal__panes .sb-tabs__list {
+    width: 270px;
+    flex-shrink: 0;
+    background-color: var(--sb-bg-subtle, #f8f9fa);
+}
+
+.permission-modal__body ::deep .permission-modal__panes .sb-tabs__tab {
+    justify-content: flex-start;
+    width: 100%;
+    text-align: start;
+}
+
+.permission-modal__body ::deep .permission-modal__panes .sb-tabs__tab .group-count {
+    font-size: 0.75rem;
+    color: var(--sb-text-muted, #6c757d);
+}
+
+.permission-modal__body ::deep .permission-modal__panes .sb-tabs__tab--active .group-count {
+    color: var(--sb-primary, #0d6efd);
+    opacity: 0.8;
+}
+
+/* Active tab indicator: at start (left in LTR, right in RTL) to match original design */
+.permission-modal__body ::deep .permission-modal__panes .sb-tabs__tab--active::after {
+    inset-inline-start: -1px;
+    inset-inline-end: auto;
+}
+
+.permission-modal__body ::deep .permission-modal__panes .sb-tabs__panel {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    padding: 1rem;
+    background-color: var(--sb-bg, #fff);
+}
+
+/* Mobile: horizontal scrollable tab header, content below */
+@media (max-width: 767px) {
+    .permission-modal__body ::deep .permission-modal__panes {
+        flex-direction: column;
+        min-height: 300px;
+        overflow: auto;
+    }
+
+    .permission-modal__body ::deep .permission-modal__panes .permission-modal__tabs {
+        flex-direction: column;
+    }
+
+    .permission-modal__body ::deep .permission-modal__panes .sb-tabs__list {
+        display: flex;
+        flex-direction: row;
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        overflow-y: hidden;
+        width: 100%;
+        min-width: 0;
+        flex-shrink: 0;
+        border-inline-end: none;
+        border-block-end: 1px solid var(--sb-border-color, #dee2e6);
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: thin;
+    }
+
+    .permission-modal__body ::deep .permission-modal__panes .sb-tabs__tab {
+        flex-shrink: 0;
+        width: auto;
+        min-width: max-content;
+        white-space: nowrap;
+    }
+
+    /* Mobile: active indicator at bottom (horizontal tabs) */
+    .permission-modal__body ::deep .permission-modal__panes .sb-tabs__tab--active::after {
+        inset-inline-start: 0;
+        inset-inline-end: 0;
+        top: auto;
+        bottom: -1px;
+        width: 100%;
+        height: 2px;
+    }
+
+    .permission-modal__body ::deep .permission-modal__panes .sb-tabs__panel {
+        flex: 1;
+        min-height: 0;
+    }
+}

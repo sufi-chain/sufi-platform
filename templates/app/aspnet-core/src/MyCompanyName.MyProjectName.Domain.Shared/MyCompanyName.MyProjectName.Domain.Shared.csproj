@@ -1,0 +1,66 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup><LangVersion>latest</LangVersion>
+    <TargetFramework>net10.0</TargetFramework>
+    <RootNamespace>MyCompanyName.MyProjectName</RootNamespace>
+    <GenerateEmbeddedFilesManifest>true</GenerateEmbeddedFilesManifest>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <!-- <TEMPLATE-REMOVE> -->
+    <ItemGroup>
+      <ProjectReference Include="..\..\..\..\..\src\framework\SufiChain.SufiAbp.UI.Domain.Shared\SufiChain.SufiAbp.UI.Domain.Shared.csproj" />
+    </ItemGroup>
+  <!-- </TEMPLATE-REMOVE> -->
+
+  <!-- <TEMPLATE-ONLY>
+  <ItemGroup>
+    <PackageReference Include="SufiChain.SufiAbp.UI.Domain.Shared" Version="$(SufiVersion)" />
+  </ItemGroup>
+  </TEMPLATE-ONLY> -->
+
+  <!--<ItemGroup>
+    --><!-- OpenIddict still uses ABP directly (no SufiAbp wrapper yet) --><!--
+    <PackageReference Include="SufiChain.SufiAbp.OpenIddict.Domain.Shared" Version="$(SufiVersion)" />
+  </ItemGroup>-->
+
+  <!-- ====================================================================== -->
+  <!-- Development: SufiAbp module references (removed when generating templates) -->
+  <!-- <TEMPLATE-REMOVE> -->
+  <ItemGroup>
+    <!-- SufiAbp Infrastructure Modules - Domain.Shared -->
+    <ProjectReference Include="..\..\..\..\..\src\modules\openiddict\src\SufiChain.SufiAbp.OpenIddict.Domain.Shared\SufiChain.SufiAbp.OpenIddict.Domain.Shared.csproj" />
+    <ProjectReference Include="..\..\..\..\..\src\modules\permission-management\src\SufiChain.SufiAbp.PermissionManagement.Domain.Shared\SufiChain.SufiAbp.PermissionManagement.Domain.Shared.csproj" />
+    <ProjectReference Include="..\..\..\..\..\src\modules\setting-management\src\SufiChain.SufiAbp.SettingManagement.Domain.Shared\SufiChain.SufiAbp.SettingManagement.Domain.Shared.csproj" />
+    <ProjectReference Include="..\..\..\..\..\src\modules\feature-management\src\SufiChain.SufiAbp.FeatureManagement.Domain.Shared\SufiChain.SufiAbp.FeatureManagement.Domain.Shared.csproj" />
+    <ProjectReference Include="..\..\..\..\..\src\modules\audit-logging\src\SufiChain.SufiAbp.AuditLogging.Domain.Shared\SufiChain.SufiAbp.AuditLogging.Domain.Shared.csproj" />
+    <ProjectReference Include="..\..\..\..\..\src\modules\background-jobs\src\SufiChain.SufiAbp.BackgroundJobs.Domain.Shared\SufiChain.SufiAbp.BackgroundJobs.Domain.Shared.csproj" />
+    <ProjectReference Include="..\..\..\..\..\src\modules\identity\src\SufiChain.SufiAbp.Identity.Domain.Shared\SufiChain.SufiAbp.Identity.Domain.Shared.csproj" />
+    <ProjectReference Include="..\..\..\..\..\src\modules\tenant-management\src\SufiChain.SufiAbp.TenantManagement.Domain.Shared\SufiChain.SufiAbp.TenantManagement.Domain.Shared.csproj" />
+  </ItemGroup>
+  <!-- </TEMPLATE-REMOVE> -->
+
+  <!-- <TEMPLATE-ONLY> -->
+  <!--
+  <ItemGroup>
+    <PackageReference Include="SufiChain.SufiAbp.PermissionManagement.Domain.Shared" Version="$(SufiVersion)" />
+    <PackageReference Include="SufiChain.SufiAbp.SettingManagement.Domain.Shared" Version="$(SufiVersion)" />
+    <PackageReference Include="SufiChain.SufiAbp.FeatureManagement.Domain.Shared" Version="$(SufiVersion)" />
+    <PackageReference Include="SufiChain.SufiAbp.AuditLogging.Domain.Shared" Version="$(SufiVersion)" />
+    <PackageReference Include="SufiChain.SufiAbp.BackgroundJobs.Domain.Shared" Version="$(SufiVersion)" />
+    <PackageReference Include="SufiChain.SufiAbp.Identity.Domain.Shared" Version="$(SufiVersion)" />
+    <PackageReference Include="SufiChain.SufiAbp.TenantManagement.Domain.Shared" Version="$(SufiVersion)" />
+  </ItemGroup>
+  -->
+  <!-- </TEMPLATE-ONLY> -->
+
+  <ItemGroup>
+    <EmbeddedResource Include="Localization\DemoApp\*.json" />
+    <Content Remove="Localization\DemoApp\*.json" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.FileProviders.Embedded" Version="$(MicrosoftExtensionsFileProvidersEmbeddedVersion)" />
+  </ItemGroup>
+
+</Project>

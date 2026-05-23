@@ -1,0 +1,81 @@
+/* Global Blazor styles for DemoApp single-layer template */
+
+/* Blazor error bar: hidden by default; framework shows it (display: block) when an error occurs. */
+#blazor-error-ui {
+    background: lightyellow;
+    bottom: 0;
+    box-shadow: 0 -1px 2px rgba(0, 0, 0, 0.2);
+    display: none;
+    left: 0;
+    padding: 0.6rem 1.25rem 0.7rem 1.25rem;
+    position: fixed;
+    width: 100%;
+    z-index: 1000;
+}
+
+#blazor-error-ui .dismiss {
+    cursor: pointer;
+    position: absolute;
+    right: 0.75rem;
+    top: 0.5rem;
+}
+
+/* Error modal: full-screen blocking overlay (sidebar/top bar inactive until user acts) */
+.error-modal-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 99999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1.5rem;
+    pointer-events: auto;
+}
+
+.error-modal-backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(6px);
+    pointer-events: auto;
+}
+
+.error-modal {
+    position: relative;
+    z-index: 1;
+    max-width: 28rem;
+    width: 100%;
+    padding: 1.75rem 2rem;
+    background: var(--sb-color-surface, #fff);
+    border-radius: var(--sb-radius-xl, 1rem);
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    text-align: center;
+}
+
+.error-modal__icon {
+    font-size: 2.5rem;
+    line-height: 1;
+    margin-bottom: 1rem;
+    color: var(--sb-color-error, #dc2626);
+}
+
+.error-modal__title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--sb-color-text, #1e293b);
+    margin: 0 0 0.5rem 0;
+}
+
+.error-modal__message {
+    font-size: 0.875rem;
+    color: var(--sb-color-text-muted, #64748b);
+    margin: 0 0 1.5rem 0;
+    line-height: 1.5;
+}
+
+.error-modal__actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.75rem;
+}

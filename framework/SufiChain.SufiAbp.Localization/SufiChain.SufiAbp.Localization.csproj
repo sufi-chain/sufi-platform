@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>netstandard2.0;netstandard2.1;net10.0</TargetFrameworks>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <RootNamespace>SufiChain.SufiAbp.Localization</RootNamespace>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <PackageId>SufiChain.SufiAbp.Localization</PackageId>
+    <Description>Sufi Platform localization abstractions - localization resources, virtual file system.</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Volo.Abp.Localization" Version="$(AbpVersion)"/>
+    <PackageReference Include="Volo.Abp.VirtualFileSystem" Version="$(AbpVersion)"/>
+  </ItemGroup>
+
+</Project>

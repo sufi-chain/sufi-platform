@@ -1,0 +1,72 @@
+@implements IDisposable
+@inject IComponentBundleManager BundleManager
+@inject PersistentComponentState ApplicationState
+
+@if (ScriptFiles != null)
+{
+    foreach (var file in ScriptFiles)
+    {
+        var src = file;
+        if (!string.IsNullOrWhiteSpace(AppBasePath))
+        {
+            src = AppBasePath.TrimEnd('/') + "/" + file.TrimStart('/');
+        }
+        <script src="@src"></script>
+    }
+}
+
+@code {
+    private const string PrerenderedKey = "sp_script_prerendered";
+
+    /// <summary>
+    /// Script files to use in WebAssembly mode (for future WASM support).
+    /// </summary>
+    [Parameter]
+    public List<string>? WebAssemblyScriptFiles { get; set; }
+
+    /// <summary>
+    /// The bundle name to load scripts from.
+    /// </summary>
+    [Parameter]
+    public string? BundleName { get; set; }
+
+    /// <summary>
+    /// Base path for the application (used for path resolution).
+    /// </summary>
+    [Parameter]
+    public string? AppBasePath { get; set; }
+
+    private List<string>? ScriptFiles { get; set; }
+
+    private PersistingComponentStateSubscription _persistingSubscription;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _persistingSubscription = ApplicationState.RegisterOnPersisting(PersistState);
+        
+        if (!ApplicationState.TryTakeFromJson<string>(PrerenderedKey, out _))
+        {
+            // We are in prerendering mode - fetch from bundle manager
+            if (!string.IsNullOrWhiteSpace(BundleName))
+            {
+                ScriptFiles = (await BundleManager.GetScriptBundleFilesAsync(BundleName!)).ToList();
+            }
+        }
+        else
+        {
+            // In interactive mode, use WebAssembly-specific scripts if available
+            if (OperatingSystem.IsBrowser() && WebAssemblyScriptFiles != null)
+            {
+                ScriptFiles = WebAssemblyScriptFiles;
+            }
+        }
+    }
+
+    private Task PersistState()
+    {
+        ApplicationState.PersistAsJson(PrerenderedKey, PrerenderedKey);
+        return Task.CompletedTask;
+    }
+
+    public void Dispose() => _persistingSubscription.Dispose();
+}

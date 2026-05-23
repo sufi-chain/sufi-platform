@@ -1,0 +1,30 @@
+<Project Sdk="Microsoft.NET.Sdk.Razor">
+
+  <PropertyGroup>
+    <LangVersion>latest</LangVersion>
+    <TargetFramework>net10.0</TargetFramework>
+    <RootNamespace>SufiChain.SufiAbp.FileManager.Blazor.WebAssembly</RootNamespace>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <IsPackable>true</IsPackable>
+    <OutputType>Library</OutputType>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <PackageId>SufiChain.SufiAbp.FileManager.Blazor.WebAssembly</PackageId>
+    <Description>File manager module Blazor WebAssembly components for Sufi Platform - client-side authentication and file operations.</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- ABP Core for module system -->
+    <ProjectReference Include="../../../../framework/SufiChain.SufiAbp.Core/SufiChain.SufiAbp.Core.csproj" />
+    <!-- Standard ASP.NET Core WebAssembly Authentication for IAccessTokenProvider -->
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Authentication" Version="$(MicrosoftAspNetCoreComponentsWebAssemblyVersion)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Shared FileManager Blazor components -->
+    <ProjectReference Include="..\SufiChain.SufiAbp.FileManager.Blazor\SufiChain.SufiAbp.FileManager.Blazor.csproj" />
+  </ItemGroup>
+
+</Project>

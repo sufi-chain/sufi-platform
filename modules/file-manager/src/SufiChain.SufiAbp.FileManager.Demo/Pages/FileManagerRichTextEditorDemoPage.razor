@@ -1,0 +1,49 @@
+@page "/demo/file-manager/rich-text-editor"
+@using SufiChain.SufiBlazor.Components.Surfaces
+@using SufiChain.SufiBlazor.Components.Typography
+@using SufiChain.SufiAbp.FileManager.RichTextEditor.Components
+@inherits FileManagerComponentBase
+
+<PageTitle>@(L["Menu:FileManagerDemoRichTextEditor"] + " - " + L["Menu:FileManagerDemo"])</PageTitle>
+
+<FileGalleryHost />
+
+<DemoLayout>
+    <SbHeading Level="1">@L["Menu:FileManagerDemoRichTextEditor"]</SbHeading>
+    <SbText Color="SbColor.Muted">@L["Menu:FileManagerDemoRichTextEditor"]</SbText>
+
+    <SbDivider />
+
+    <DemoSection
+        Title="@L["Menu:FileManagerDemoRichTextEditor"]"
+        SourceCode="@rteCode"
+        RelatedCode="@rteCodeBehind">
+        <ExampleContent>
+            <SbStack Gap="4">
+                <SbFormField Label="@L["Menu:FileManagerDemoRichTextEditor"]">
+                    <SbRichTextEditor @bind-Value="_content"
+                                     Height="500px"
+                                     UseToolbarContributors="true" />
+                </SbFormField>
+            </SbStack>
+        </ExampleContent>
+    </DemoSection>
+
+    <SbDivider />
+
+    <DocViewer DocName="FileManagerRichTextEditorIntegration" ContentAssembly="SufiChain.SufiAbp.FileManager.Blazor" />
+</DemoLayout>
+
+@code {
+    private string? _content;
+
+    private const string rteCodeBehind = @"private string? _content;";
+
+    private const string rteCode = @"<FileGalleryHost />
+
+<SbFormField Label=""Content"">
+    <SbRichTextEditor @bind-Value=""_content""
+                     Height=""500px""
+                     UseToolbarContributors=""true"" />
+</SbFormField>";
+}

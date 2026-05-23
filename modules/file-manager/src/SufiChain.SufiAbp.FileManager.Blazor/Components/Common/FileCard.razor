@@ -1,0 +1,72 @@
+<SbCard Class="@($"file-card {CssClass}")" Style="@Style">
+    <ChildContent>
+        <div class="card-image-wrapper">
+            <img src="@GetImageUrl()" alt="@(FileItem.Alt ?? FileItem.OriginalName)" class="card-image" />
+            @if (Selectable && IsSelected)
+            {
+                <div class="selection-overlay">
+                    <SbIcon Name="check" Size="SbSize.Lg" Color="SbColor.Primary" />
+                </div>
+            }
+            @if (FileItem.FileType == FileType.Video)
+            {
+                <div class="video-badge">
+                    <SbIcon Name="eye" />
+                </div>
+            }
+        </div>
+        
+        @if (ShowDetails)
+        {
+            <div class="card-details p-3">
+                <h6 class="mb-1 text-truncate">@FileItem.OriginalName</h6>
+                @if (ShowMetadata)
+                {
+                    <small class="text-muted">
+                        @if (FileItem.Width.HasValue && FileItem.Height.HasValue)
+                        {
+                            <span>@FileItem.Width x @FileItem.Height</span>
+                            <br />
+                        }
+                        @if (FileItem.Duration.HasValue)
+                        {
+                            <span>Duration: @FormatDuration(FileItem.Duration.Value)</span>
+                            <br />
+                        }
+                        <span>@FormatFileSize(FileItem.Size)</span>
+                        <br />
+                        <span>@FileItem.CreationTime.ToString("g")</span>
+                    </small>
+                }
+            </div>
+        }
+    </ChildContent>
+    <Footer>
+        @if (ShowActions)
+        {
+            <SbStack Direction="SbStackDirection.Row" Justify="SbJustify.SpaceBetween" Gap="2">
+                @if (OnView.HasDelegate)
+                {
+                    <SbButton Color="SbColor.Primary" Size="SbSize.Sm" OnClick="@(() => OnView.InvokeAsync(FileItem))">
+                        <StartIcon><SbIcon Name="eye" /></StartIcon>
+                        <ChildContent>View</ChildContent>
+                    </SbButton>
+                }
+                @if (OnEdit.HasDelegate)
+                {
+                    <SbButton Color="SbColor.Default" Size="SbSize.Sm" OnClick="@(() => OnEdit.InvokeAsync(FileItem))">
+                        <StartIcon><SbIcon Name="edit" /></StartIcon>
+                        <ChildContent>Edit</ChildContent>
+                    </SbButton>
+                }
+                @if (OnDelete.HasDelegate)
+                {
+                    <SbButton Color="SbColor.Danger" Size="SbSize.Sm" OnClick="@(() => OnDelete.InvokeAsync(FileItem))">
+                        <StartIcon><SbIcon Name="trash" /></StartIcon>
+                        <ChildContent>Delete</ChildContent>
+                    </SbButton>
+                }
+            </SbStack>
+        }
+    </Footer>
+</SbCard>

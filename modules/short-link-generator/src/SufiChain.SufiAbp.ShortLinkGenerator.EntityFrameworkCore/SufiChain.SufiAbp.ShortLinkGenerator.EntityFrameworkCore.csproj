@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+
+    <PropertyGroup>
+        <TargetFramework>net10.0</TargetFramework>
+        <Nullable>enable</Nullable>
+        <RootNamespace>SufiChain.SufiAbp.ShortLinkGenerator.EntityFrameworkCore</RootNamespace>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="../../../../framework/SufiChain.SufiAbp.EntityFrameworkCore/SufiChain.SufiAbp.EntityFrameworkCore.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\SufiChain.SufiAbp.ShortLinkGenerator.Domain\SufiChain.SufiAbp.ShortLinkGenerator.Domain.csproj" />
+    </ItemGroup>
+
+</Project>
+

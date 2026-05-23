@@ -1,0 +1,7 @@
+@if (DynamicLayoutComponentOptions.Value.Components.Any())
+{
+    foreach (var (componentType, parameters) in DynamicLayoutComponentOptions.Value.Components)
+    {
+        <DynamicComponent Type="@componentType" Parameters="@parameters" />
+    }
+}

@@ -1,0 +1,29 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>netstandard2.0;netstandard2.1;net10.0</TargetFrameworks>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <RootNamespace>SufiChain.SufiAbp.Ddd</RootNamespace>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <PackageId>SufiChain.SufiAbp.Ddd.Application.Contracts</PackageId>
+    <Description>Sufi Platform DDD application contracts layer - application service interfaces, DTOs, permissions.</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Volo.Abp.Ddd.Application.Contracts" Version="10.3.0" />
+  </ItemGroup>
+
+
+  <ItemGroup>
+    <ProjectReference Include="..\SufiChain.SufiAbp.Ddd.Domain.Shared\SufiChain.SufiAbp.Ddd.Domain.Shared.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Localization\SufiAbpDddApplicationContracts\*.json" />
+    <Content Remove="Localization\SufiAbpDddApplicationContracts\*.json" />
+  </ItemGroup>
+
+</Project>

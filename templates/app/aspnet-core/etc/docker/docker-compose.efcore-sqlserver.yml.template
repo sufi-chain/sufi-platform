@@ -1,0 +1,47 @@
+version: '3.8'
+
+services:
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: mycompanyname-myprojectname-sqlserver
+    environment:
+      ACCEPT_EULA: "Y"
+      SA_PASSWORD: "YourStrong@Passw0rd"
+      MSSQL_PID: "Developer"
+    ports:
+      - "1433:1433"
+    volumes:
+      - sqlserver_data:/var/opt/mssql
+    networks:
+      - mycompanyname-myprojectname-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "/opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P YourStrong@Passw0rd -Q 'SELECT 1'"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  db-migrator:
+    image: mycompanyname/myprojectname-dbmigrator:latest
+    container_name: mycompanyname-myprojectname-dbmigrator
+    build:
+      context: .
+      dockerfile: src/MyCompanyName.MyProjectName.DbMigrator/Dockerfile
+    environment:
+      - ConnectionStrings__Default=Server=sqlserver,1433;Database=MyProjectName;User Id=sa;Password=YourStrong@Passw0rd;TrustServerCertificate=True
+    depends_on:
+      sqlserver:
+        condition: service_healthy
+    networks:
+      - mycompanyname-myprojectname-network
+    restart: "no"
+
+volumes:
+  sqlserver_data:
+    name: mycompanyname_myprojectname_sqlserver_data
+    driver: local
+
+networks:
+  mycompanyname-myprojectname-network:
+    name: mycompanyname-myprojectname-network
+    driver: bridge

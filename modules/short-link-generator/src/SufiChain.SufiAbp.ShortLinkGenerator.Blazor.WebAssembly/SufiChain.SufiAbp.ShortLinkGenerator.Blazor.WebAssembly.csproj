@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk.Razor">
+
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../../../../framework/SufiChain.SufiAbp.AspNetCore.Components.WebAssembly.Theming/SufiChain.SufiAbp.AspNetCore.Components.WebAssembly.Theming.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\SufiChain.SufiAbp.ShortLinkGenerator.Blazor\SufiChain.SufiAbp.ShortLinkGenerator.Blazor.csproj"/>
+    <ProjectReference Include="..\SufiChain.SufiAbp.ShortLinkGenerator.HttpApi.Client\SufiChain.SufiAbp.ShortLinkGenerator.HttpApi.Client.csproj"/>
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,85 @@
+@page "/admin/tenant-management/tenants"
+@attribute [Authorize(Policy = TenantManagementPermissions.Tenants.Default)]
+@inherits TenantManagementComponentBase
+
+<SufiAbpPageToolbar>
+	<AuthorizeView Policy="@TenantManagementPermissions.Tenants.Create">
+		<SbButton Color="SbColor.Primary" OnClick="@ShowCreateModal">
+			<StartIcon><SbIcon Name="plus" /></StartIcon>
+			<ChildContent>@L["NewTenant"]</ChildContent>
+		</SbButton>
+	</AuthorizeView>
+	<AuthorizeView Policy="@FeatureManagementPermissions.Features.ManageHostFeatures">
+		<SbButton Color="SbColor.Primary" Variant="SbButtonVariant.Outline" OnClick="@ShowHostFeaturesModal">
+			<StartIcon><SbIcon Name="sliders" /></StartIcon>
+			<ChildContent>@L["ManageHostFeatures"]</ChildContent>
+		</SbButton>
+	</AuthorizeView>
+</SufiAbpPageToolbar>
+
+<SbStack Direction="SbStackDirection.Column" Gap="4">
+
+	<!-- Tenants Content -->
+	<SbCard>
+		<ChildContent>
+			<SbStack Gap="4">
+				<SbTextField @bind-Value="_filter"
+							 Placeholder="@L["SearchTenants"]"
+							 Clearable="true">
+					<StartAdornment>
+						<SbIcon Name="search" />
+					</StartAdornment>
+				</SbTextField>
+
+				<SbDataGrid TItem="TenantDto"
+							Items="_tenants"
+							Loading="IsOperationLoading(LoadingKeys.LoadTenants)"
+							Striped="true"
+							Hoverable="true"
+							PageIndex="_pageIndex"
+							PageSize="_pageSize"
+							TotalCount="_totalCount"
+							PageIndexChanged="OnPageIndexChangedAsync">
+					<SbColumn TItem="TenantDto" Title="@L["Actions"]" Width="180px">
+						<CellTemplate Context="cellContext">
+							<SbStack Direction="SbStackDirection.Row" Gap="1">
+								<AuthorizeView Policy="@TenantManagementPermissions.Tenants.Update" Context="authContext">
+									<SbTooltip Text="@L["Edit"]">
+										<SbIconButton Size="SbSize.Sm" AriaLabel="@L["Edit"]"
+													  OnClick="@(() => ShowEditModal(cellContext.Item))">
+											<Icon><SbIcon Name="edit" /></Icon>
+										</SbIconButton>
+									</SbTooltip>
+								</AuthorizeView>
+								<AuthorizeView Policy="@TenantManagementPermissions.Tenants.ManageFeatures" Context="authContext2">
+									<SbTooltip Text="@L["Features"]">
+										<SbIconButton Size="SbSize.Sm" AriaLabel="@L["Features"]"
+													  OnClick="@(() => ShowTenantFeaturesModal(cellContext.Item))">
+											<Icon><SbIcon Name="sliders" /></Icon>
+										</SbIconButton>
+									</SbTooltip>
+								</AuthorizeView>
+
+								<AuthorizeView Policy="@TenantManagementPermissions.Tenants.Delete" Context="authContext3">
+									<SbTooltip Text="@L["Delete"]">
+										<SbIconButton Size="SbSize.Sm" Color="SbColor.Danger" AriaLabel="@L["Delete"]"
+													  OnClick="@(() => DeleteTenantAsync(cellContext.Item))">
+											<Icon><SbIcon Name="trash" /></Icon>
+										</SbIconButton>
+									</SbTooltip>
+								</AuthorizeView>
+							</SbStack>
+						</CellTemplate>
+					</SbColumn>
+					<SbColumn TItem="TenantDto" Field="Name" Title="@L["TenantName"]" Sortable="true" />
+				</SbDataGrid>
+			</SbStack>
+		</ChildContent>
+	</SbCard>
+
+</SbStack>
+
+<TenantCreateModal @bind-Open="_showCreateModal" OnTenantCreated="OnTenantCreatedAsync" />
+<TenantEditModal @bind-Open="_showEditModal" Tenant="_selectedTenant" OnTenantUpdated="OnTenantUpdatedAsync" />
+<FeatureManagementModal @ref="_featureManagementModal" />
+<SettingManagementModal @ref="_settingManagementModal" />

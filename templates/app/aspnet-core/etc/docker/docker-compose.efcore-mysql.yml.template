@@ -1,0 +1,46 @@
+version: '3.8'
+
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: mycompanyname-myprojectname-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: MyProjectName
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - mycompanyname-myprojectname-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-proot"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  db-migrator:
+    image: mycompanyname/myprojectname-dbmigrator:latest
+    container_name: mycompanyname-myprojectname-dbmigrator
+    build:
+      context: .
+      dockerfile: src/MyCompanyName.MyProjectName.DbMigrator/Dockerfile
+    environment:
+      - ConnectionStrings__Default=Server=mysql;Port=3306;Database=MyProjectName;Uid=root;Pwd=root
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - mycompanyname-myprojectname-network
+    restart: "no"
+
+volumes:
+  mysql_data:
+    name: mycompanyname_myprojectname_mysql_data
+    driver: local
+
+networks:
+  mycompanyname-myprojectname-network:
+    name: mycompanyname-myprojectname-network
+    driver: bridge

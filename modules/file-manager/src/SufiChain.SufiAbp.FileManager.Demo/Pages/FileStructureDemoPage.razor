@@ -1,0 +1,142 @@
+@page "/demo/file-manager/file-structure"
+@using SufiChain.SufiAbp.Application.Dtos
+@using SufiChain.SufiAbp.FileManager.FileStructures
+@inherits FileManagerComponentBase
+@inject IFileStructureAppService FileStructureAppService
+
+<PageTitle>@(L["Menu:FileManagerDemoFileStructure"] + " - " + L["Menu:FileManagerDemo"])</PageTitle>
+
+<DemoLayout>
+    <SbHeading Level="1">@L["Menu:FileManagerDemoFileStructure"]</SbHeading>
+    <SbText Color="SbColor.Muted">@L["Demo:FileStructureIntro"]</SbText>
+
+    <SbDivider />
+
+    <SbHeading Level="3">@L["Demo:FileStructureWhatIs"]</SbHeading>
+    <SbText Class="mb-3">@L["Demo:FileStructureWhatIsDescription"]</SbText>
+
+    <SbHeading Level="4">@L["Demo:FileStructureWellKnownKeys"]</SbHeading>
+    <SbText Class="mb-3">@L["Demo:FileStructureWellKnownKeysDescription"]</SbText>
+
+    <SbHeading Level="4">@L["Demo:FileStructureComponents"]</SbHeading>
+    <SbText Class="mb-4">@L["Demo:FileStructureComponentsDescription"]</SbText>
+
+    <SbDivider />
+
+    <DemoSection
+        Title="@L["Demo:FileStructureUploaderWithSelector"]"
+        Description="@L["Demo:FileStructureUploaderWithSelectorDescription"]"
+        SourceCode="@uploaderWithSelectorCode">
+        <ExampleContent>
+            <div class="upload-demo-container">
+                <FileUploader
+                    StructureKey="@FileStructureKeys.General"
+                    AllowMultiple="true"
+                    ShowStorageQuota="true"
+                    ShowStructureSelector="true" />
+            </div>
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection
+        Title="@L["Demo:FileStructureCompareStructures"]"
+        Description="@L["Demo:FileStructureCompareStructuresDescription"]"
+        SourceCode="@compareCode">
+        <ExampleContent>
+            <SbGrid Columns="1" ColumnsMd="2" Gap="4">
+                <SbGridItem>
+                    <SbText Class="mb-2"><strong>@L["Demo:FileStructureGeneral"]</strong></SbText>
+                    <FileUploader
+                        StructureKey="@FileStructureKeys.General"
+                        AllowMultiple="true"
+                        ShowStorageQuota="false"
+                        ShowStructureSelector="false" />
+                </SbGridItem>
+                <SbGridItem>
+                    <SbText Class="mb-2"><strong>@L["Demo:FileStructureSingleImage"]</strong></SbText>
+                    <QuickImageUploader
+                        StructureKey="@FileStructureKeys.General"
+                        Placeholder="@L["Demo:FileStructureProfilePicturePlaceholder"]"
+                        ShowStructureSelector="false" />
+                </SbGridItem>
+            </SbGrid>
+        </ExampleContent>
+    </DemoSection>
+
+    @if (_structures.Any())
+    {
+        <DemoSection
+            Title="@L["Demo:FileStructureAvailableStructures"]"
+            Description="@L["Demo:FileStructureAvailableStructuresDescription"]">
+            <ExampleContent>
+                <SbTable TItem="FileStructureDto" Items="@_structures" Hover>
+                    <HeaderContent>
+                        <tr>
+                            <th>@L["Key"]</th>
+                            <th>@L["DisplayName"]</th>
+                            <th>@L["FileTypes"]</th>
+                            <th>@L["MaxSize"]</th>
+                        </tr>
+                    </HeaderContent>
+                    <RowTemplate Context="s">
+                        <td><code>@s.Key</code></td>
+                        <td>@L[s.DisplayName]</td>
+                        <td>@(s.AllowedFileTypes.ToString())</td>
+                        <td>@FormatSize(s.MaxFileSize)</td>
+                    </RowTemplate>
+                </SbTable>
+            </ExampleContent>
+        </DemoSection>
+    }
+
+    <SbDivider />
+
+    <DocViewer DocName="FileStructure" ContentAssembly="SufiChain.SufiAbp.FileManager.Blazor" />
+</DemoLayout>
+
+<style>
+    .upload-demo-container {
+        min-width: 320px;
+    }
+</style>
+
+@code {
+    private List<FileStructureDto> _structures = new();
+
+    private const string uploaderWithSelectorCode = @"<FileUploader
+    StructureKey=""General""
+    ShowStorageQuota=""true""
+    ShowStructureSelector=""true"" />";
+
+    private const string compareCode = @"<FileUploader StructureKey=""General"" AllowMultiple=""true"" />
+<QuickImageUploader StructureKey=""General"" />";
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var result = await FileStructureAppService.GetListAsync(new PagedAndSortedResultRequestDto
+            {
+                MaxResultCount = 50
+            });
+            _structures = result.Items?.ToList() ?? new();
+        }
+        catch
+        {
+            _structures = new();
+        }
+    }
+
+    private static string FormatSize(long bytes)
+    {
+        string[] sizes = { "B", "KB", "MB", "GB" };
+        double len = bytes;
+        int order = 0;
+        while (len >= 1024 && order < sizes.Length - 1)
+        {
+            order++;
+            len /= 1024;
+        }
+        return $"{len:0.##} {sizes[order]}";
+    }
+}

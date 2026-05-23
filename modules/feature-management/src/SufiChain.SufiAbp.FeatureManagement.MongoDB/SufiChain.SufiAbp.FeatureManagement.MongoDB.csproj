@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <RootNamespace>SufiChain.SufiAbp.FeatureManagement</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    
+    <ProjectReference Include="..\..\..\..\framework\SufiChain.SufiAbp.MongoDB\SufiChain.SufiAbp.MongoDB.csproj" />
+    <ProjectReference Include="..\SufiChain.SufiAbp.FeatureManagement.Domain\SufiChain.SufiAbp.FeatureManagement.Domain.csproj" />
+  </ItemGroup>
+</Project>

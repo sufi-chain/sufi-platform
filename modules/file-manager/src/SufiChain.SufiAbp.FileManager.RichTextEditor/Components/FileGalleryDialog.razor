@@ -1,0 +1,394 @@
+@using SufiChain.SufiAbp.FileManager.FileItems
+@using SufiChain.SufiAbp.FileManager.FileTypes
+@using SufiChain.SufiAbp.FileManager.Localization
+@using SufiChain.SufiAbp.FileManager.Blazor.Components.Upload
+@using SufiChain.SufiAbp.FileManager.Configuration
+@using SufiChain.SufiAbp.UI.Blazor
+@inject IFileItemAppService FileItemAppService
+@inject IFileItemUrlProvider FileItemUrlProvider
+@inherits FileManagerComponentBase
+
+<SbDialog Open="@IsOpen" OpenChanged="@IsOpenChanged" Title="@(Title ?? L["SelectFile"].Value)" Size="SbDialogSize.Lg">
+    <ChildContent>
+        <div class="file-gallery-dialog">
+            @if (!string.IsNullOrEmpty(Description))
+            {
+                <p class="text-muted mb-3">@Description</p>
+            }
+            @if (ImagesOnly && AllowUpload)
+            {
+                <div class="gallery-upload mb-3">
+                    <QuickImageUploader
+                        @ref="_quickImageUploaderRef"
+                        StructureKey="@(StructureKey ?? FileStructureKeys.General)"
+                        Placeholder="@L["ImageUploaderPlaceholder"]"
+                        CssClass="gallery-uploader-compact"
+                        OnImageUploaded="@OnNewImageUploaded" />
+                </div>
+            }
+            <!-- Search -->
+            <div class="gallery-search mb-3">
+                <SbTextField Placeholder="@L["SearchFilesPlaceholder"]" @bind-Value="@_searchKeyword" />
+                <SbButton Color="SbColor.Primary" Size="SbSize.Sm" OnClick="@SearchFiles">
+                    <ChildContent>@L["Search"]</ChildContent>
+                </SbButton>
+            </div>
+
+            <!-- Content -->
+            @if (_isLoading)
+            {
+                <div class="text-center py-5">
+                    <p>@L["LoadingFiles"]</p>
+                </div>
+            }
+            else if (_fileItems == null || !_fileItems.Any())
+            {
+                <div class="text-center py-5">
+                    <p class="text-muted">@L["NoFilesFound"]</p>
+                </div>
+            }
+            else
+            {
+                <div class="gallery-grid">
+                    @foreach (var item in _fileItems)
+                    {
+                        <div @key="item.Id" 
+                             class="gallery-item @(_selectedItem?.Id == item.Id ? "selected" : "")" 
+                             @onclick="@(() => SelectItem(item))">
+                            <div class="gallery-item-content">
+                                @if (item.FileType == FileType.Image)
+                                {
+                                    <img src="@GetThumbnailUrl(item)" alt="@(item.Alt ?? item.OriginalName)" class="gallery-thumbnail" />
+                                }
+                                else
+                                {
+                                    <div class="file-icon">
+                                        <span>@GetFileIcon(item.FileType)</span>
+                                    </div>
+                                }
+                                <div class="gallery-item-info">
+                                    <span class="gallery-item-name" title="@item.OriginalName">@TruncateName(item.OriginalName)</span>
+                                    <span class="gallery-item-size">@FormatFileSize(item.Size)</span>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+
+                <!-- Pagination -->
+                @if (_totalPages > 1)
+                {
+                    <div class="gallery-pagination mt-3">
+                        <SbButton Color="SbColor.Default" Size="SbSize.Sm" Disabled="@(_currentPage <= 1)" OnClick="@PrevPage">
+                            <ChildContent>@L["Previous"]</ChildContent>
+                        </SbButton>
+                        <span class="mx-3">@L["PageOfTotal", _currentPage, _totalPages]</span>
+                        <SbButton Color="SbColor.Default" Size="SbSize.Sm" Disabled="@(_currentPage >= _totalPages)" OnClick="@NextPage">
+                            <ChildContent>@L["Next"]</ChildContent>
+                        </SbButton>
+                    </div>
+                }
+            }
+        </div>
+    </ChildContent>
+    <Footer>
+        <div class="d-flex justify-content-end gap-2">
+            <SbButton Color="SbColor.Default" OnClick="@Cancel">
+                <ChildContent>@L["Cancel"]</ChildContent>
+            </SbButton>
+            <SbButton Color="SbColor.Primary" OnClick="@Confirm" Disabled="@(_selectedItem == null)">
+                <ChildContent>@L["SelectFile"]</ChildContent>
+            </SbButton>
+        </div>
+    </Footer>
+</SbDialog>
+
+<style>
+    .file-gallery-dialog {
+        min-height: 300px;
+    }
+
+    .gallery-search {
+        display: flex;
+        gap: 0.5rem;
+    }
+
+    .gallery-search > :first-child {
+        flex: 1;
+    }
+
+    .gallery-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+        gap: 1rem;
+        max-height: 350px;
+        overflow-y: auto;
+        padding: 0.5rem;
+    }
+
+    .gallery-item {
+        border: 2px solid #e0e0e0;
+        border-radius: 8px;
+        overflow: hidden;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        background: #fff;
+    }
+
+    .gallery-item:hover {
+        border-color: #007bff;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+
+    .gallery-item.selected {
+        border-color: #007bff;
+        box-shadow: 0 0 0 3px rgba(0,123,255,0.25);
+    }
+
+    .gallery-item-content {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .gallery-thumbnail {
+        width: 100%;
+        height: 80px;
+        object-fit: cover;
+    }
+
+    .file-icon {
+        width: 100%;
+        height: 80px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #f5f5f5;
+        font-size: 2rem;
+    }
+
+    .gallery-item-info {
+        padding: 0.5rem;
+        width: 100%;
+        text-align: center;
+    }
+
+    .gallery-item-name {
+        display: block;
+        font-size: 0.75rem;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .gallery-item-size {
+        display: block;
+        font-size: 0.65rem;
+        color: #888;
+    }
+
+    .gallery-pagination {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .gallery-upload {
+        padding: 0.5rem 0;
+        border-bottom: 1px solid #eee;
+    }
+
+    .gallery-uploader-compact .preview-container {
+        min-height: 60px;
+    }
+
+    .gallery-uploader-compact .upload-placeholder {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.5rem;
+        margin: 0;
+        cursor: pointer;
+        border: 1px dashed #ccc;
+        border-radius: 6px;
+        min-height: 50px;
+    }
+
+    .gallery-uploader-compact .upload-placeholder p {
+        margin: 0;
+        font-size: 0.875rem;
+    }
+
+    .gallery-uploader-compact .upload-placeholder small {
+        display: none;
+    }
+
+    .gallery-uploader-compact .image-preview {
+        max-height: 60px;
+        max-width: 80px;
+    }
+
+    .gallery-uploader-compact .image-preview img {
+        max-height: 60px;
+        max-width: 80px;
+        object-fit: cover;
+    }
+</style>
+
+@code {
+    [Parameter] public bool IsOpen { get; set; }
+    [Parameter] public EventCallback<bool> IsOpenChanged { get; set; }
+    [Parameter] public string? Title { get; set; }
+    [Parameter] public string? Description { get; set; }
+    [Parameter] public bool ImagesOnly { get; set; } = false;
+    [Parameter] public bool AllowUpload { get; set; } = true;
+    [Parameter] public string? StructureKey { get; set; }
+    [Parameter] public EventCallback<FileItemDto?> OnFileSelected { get; set; }
+
+    private QuickImageUploader? _quickImageUploaderRef;
+    private List<FileItemDto> _fileItems = new();
+    private FileItemDto? _selectedItem;
+    private bool _isLoading = false;
+    private string? _searchKeyword;
+    private int _currentPage = 1;
+    private int _totalCount = 0;
+    private int _totalPages = 0;
+    private const int PageSize = 12;
+
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (IsOpen && !_fileItems.Any())
+        {
+            await LoadFileItems();
+        }
+    }
+
+    private async Task LoadFileItems()
+    {
+        _isLoading = true;
+        StateHasChanged();
+
+        try
+        {
+            var input = new GetFileListInput
+            {
+                Keyword = _searchKeyword,
+                FileType = ImagesOnly ? FileType.Image : null,
+                StructureKey = StructureKey ?? FileStructureKeys.General,
+                IsTemp = false,
+                SkipCount = (_currentPage - 1) * PageSize,
+                MaxResultCount = PageSize,
+                Sorting = "CreationTime DESC"
+            };
+
+            var result = await FileItemAppService.GetListAsync(input);
+            _fileItems = result.Items.ToList();
+            _totalCount = (int)result.TotalCount;
+            _totalPages = (int)Math.Ceiling((double)_totalCount / PageSize);
+        }
+        catch
+        {
+            _fileItems = new();
+        }
+        finally
+        {
+            _isLoading = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task SearchFiles()
+    {
+        _currentPage = 1;
+        await LoadFileItems();
+    }
+
+    private async Task OnNewImageUploaded(FileItemDto uploadedFile)
+    {
+        _currentPage = 1;
+        await LoadFileItems();
+        _selectedItem = uploadedFile;
+        _quickImageUploaderRef?.Clear();
+        StateHasChanged();
+    }
+
+    private async Task PrevPage()
+    {
+        if (_currentPage > 1)
+        {
+            _currentPage--;
+            await LoadFileItems();
+        }
+    }
+
+    private async Task NextPage()
+    {
+        if (_currentPage < _totalPages)
+        {
+            _currentPage++;
+            await LoadFileItems();
+        }
+    }
+
+    private void SelectItem(FileItemDto item)
+    {
+        _selectedItem = item;
+    }
+
+    private async Task Cancel()
+    {
+        _selectedItem = null;
+        _fileItems.Clear();
+        await IsOpenChanged.InvokeAsync(false);
+        await OnFileSelected.InvokeAsync(null);
+    }
+
+    private async Task Confirm()
+    {
+        var selected = _selectedItem;
+        _selectedItem = null;
+        _fileItems.Clear();
+        await IsOpenChanged.InvokeAsync(false);
+        await OnFileSelected.InvokeAsync(selected);
+    }
+
+    private string GetThumbnailUrl(FileItemDto item) =>
+        !string.IsNullOrEmpty(item.ThumbnailBlobName)
+            ? FileItemUrlProvider.GetThumbnailUrl(item.Id, null, item.StructureBaseUrl, item.StructureIsPublicAccess, item.ThumbnailBlobName, item.TenantId, item.StructureStorageProvider)
+            : FileItemUrlProvider.GetDownloadUrl(item.Id, item.StructureBaseUrl, item.StructureIsPublicAccess, item.BlobName, item.TenantId, item.StructureStorageProvider);
+
+    private string GetFileIcon(FileType fileType) => fileType switch
+    {
+        FileType.Image => "🖼️",
+        FileType.Video => "🎬",
+        FileType.Document => "📄",
+        FileType.Audio => "🎵",
+        _ => "📁"
+    };
+
+    private string TruncateName(string name)
+    {
+        if (name.Length <= 15) return name;
+        return name.Substring(0, 12) + "...";
+    }
+
+    private string FormatFileSize(long bytes)
+    {
+        if (bytes == 0) return "0 B";
+        string[] sizes = { "B", "KB", "MB", "GB" };
+        double len = bytes;
+        int order = 0;
+        while (len >= 1024 && order < sizes.Length - 1)
+        {
+            order++;
+            len /= 1024;
+        }
+        return $"{len:0.#} {sizes[order]}";
+    }
+}

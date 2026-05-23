@@ -1,0 +1,107 @@
+@namespace SufiChain.SufiAbp.UI.Blazor.Components.LanguageSwitch
+@using Microsoft.AspNetCore.Components
+@using Microsoft.JSInterop
+@using Microsoft.Extensions.Localization
+@using SufiChain.SufiBlazor.Components
+@using SufiChain.SufiBlazor.Components.Actions
+@using SufiChain.SufiBlazor.Components.Common
+@using SufiChain.SufiBlazor.Components.Overlays
+@using SufiChain.SufiAbp.UI.Browser
+@using SufiChain.SufiAbp.UI.Localization
+
+@inject ILanguageProvider LanguageProvider
+@inject ICookieService CookieService
+@inject IJSRuntime JSRuntime
+@inject IStringLocalizer<SufiAbpFrameworkResource> L
+
+@* Language/culture switcher for account layout and standalone use. *@
+@if (_languages != null && _languages.Count > 1)
+{
+    <SbMenu Open="@_menuOpen" OpenChanged="@OnMenuOpenChanged" Class="language-menu" Placement="@Placement">
+        <AnchorContent>
+            <SbButton Variant="@SbButtonVariant.Ghost" Size="@SbSize.Sm"
+                      OnClick="ToggleMenu"
+                      title="@(_currentLanguage != null ? $"{L["Language"]}: {_currentLanguage.DisplayName}" : L["Language"].Value)">
+                <span dir="ltr" style="display: inline-flex; align-items: center; gap: var(--sb-space-1);">
+                    <span style="flex-shrink: 0; display: inline-flex; align-items: center;"><SbIcon Name="globe" Size="@SbSize.Md" /></span>
+                    @if (_currentLanguage != null)
+                    {
+                        <span style="font-family: var(--sb-font-family-latin, system-ui, sans-serif); font-size: var(--sb-font-size-sm); font-weight: var(--sb-font-weight-medium); line-height: 1; display: inline-flex; align-items: center;">@GetLanguageCode(_currentLanguage.CultureName)</span>
+                    }
+                </span>
+            </SbButton>
+        </AnchorContent>
+        <ChildContent>
+            @foreach (var language in _languages)
+            {
+                <SbMenuItem OnClick="() => ChangeLanguageAsync(language)"
+                            Class="@(language.CultureName == _currentLanguage?.CultureName ? "language-item--active" : "")">
+                    <span class="language-code">@GetLanguageCode(language.CultureName)</span>
+                    <span class="language-name">@language.DisplayName</span>
+                    @if (language.CultureName == _currentLanguage?.CultureName)
+                    {
+                        <SbIcon Name="check" Size="@SbSize.Sm" Class="language-check" />
+                    }
+                </SbMenuItem>
+            }
+        </ChildContent>
+    </SbMenu>
+}
+
+@code {
+    /// <summary>
+    /// Optional text to display next to the globe icon (e.g. language code).
+    /// </summary>
+    [Parameter]
+    public string? AnchorText { get; set; }
+
+    /// <summary>
+    /// Menu placement relative to the anchor. Default is BottomEnd for top-right positioning.
+    /// </summary>
+    [Parameter]
+    public SbPlacement Placement { get; set; } = SbPlacement.BottomEnd;
+
+    private IReadOnlyList<LanguageInfo>? _languages;
+    private LanguageInfo? _currentLanguage;
+    private bool _menuOpen;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _languages = await LanguageProvider.GetLanguagesAsync();
+        var cultureName = System.Globalization.CultureInfo.CurrentCulture.Name;
+        var uiCultureName = System.Globalization.CultureInfo.CurrentUICulture.Name;
+
+        _currentLanguage = _languages.FirstOrDefault(l =>
+            l.CultureName == cultureName || l.UiCultureName == uiCultureName)
+            ?? _languages.FirstOrDefault();
+    }
+
+    private void OnMenuOpenChanged(bool open)
+    {
+        _menuOpen = open;
+    }
+
+    private void ToggleMenu()
+    {
+        _menuOpen = !_menuOpen;
+    }
+
+    private async Task ChangeLanguageAsync(LanguageInfo language)
+    {
+        await CookieService.SetAsync(
+            ".AspNetCore.Culture",
+            $"c={language.CultureName}|uic={language.UiCultureName}",
+            new CookieOptions { Path = "/", MaxAge = (int)TimeSpan.FromDays(365).TotalSeconds }
+        );
+
+        await JSRuntime.InvokeVoidAsync("location.reload");
+    }
+
+    private static string GetLanguageCode(string? cultureName)
+    {
+        if (string.IsNullOrEmpty(cultureName))
+            return "??";
+        var langCode = cultureName.Split('-')[0].ToUpperInvariant();
+        return langCode;
+    }
+}

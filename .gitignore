@@ -1,0 +1,146 @@
+######################################################################
+# .NET / Visual Studio - comprehensive
+######################################################################
+
+# Build outputs (ignore everywhere)
+**/bin/
+**/obj/
+**/out/
+**/TestResults/
+**/BenchmarkDotNet.Artifacts/
+**/artifacts/
+**/publish/
+**/PubTmp/
+**/AppPackages/
+**/x64/
+**/x86/
+**/ARM/
+**/ARM64/
+**/[Dd]ebug*/
+**/[Rr]elease*/
+**/*.appx
+**/*.appxbundle
+**/*.msix
+**/*.msixbundle
+
+# Generated files
+**/*.dll
+**/*.exe
+**/*.pdb
+**/*.cache
+**/*.tmp
+**/*.temp
+
+######################################################################
+# Logs - folders + files (all depths)
+######################################################################
+**/logs/
+**/Logs/
+**/log/
+**/Log/
+**/*.log
+**/*.logs
+**/*.trace
+**/*.trc
+**/*.etl
+**/*.svclog
+
+######################################################################
+# Visual Studio (Windows)
+######################################################################
+.vs/
+**/.vs/
+
+# User / machine-specific files
+**/*.user
+**/*.rsuser
+**/*.suo
+**/*.userosscache
+**/*.sln.docstates
+
+# VS caches / DBs
+**/.cache/
+**/*.VC.db
+**/*.VC.VC.opendb
+**/*.opendb
+**/*.dbmdl
+**/*.jfm
+**/*.pidb
+**/*.sdf
+**/*.ipch
+**/*.aps
+**/*.ncb
+**/*.cachefile
+
+# ClickOnce / publish
+**/*.publish.xml
+**/*.pfx
+**/*.publishsettings
+**/*.pubxml
+**/*.pubxml.user
+
+######################################################################
+# NuGet
+######################################################################
+**/packages/
+**/*.nupkg
+**/*.snupkg
+**/project.assets.json
+**/project.lock.json
+**/packages.lock.json
+
+######################################################################
+# .NET tooling / dotnet CLI
+######################################################################
+**/.dotnet/
+**/.nuget/
+**/msbuild.binlog
+
+######################################################################
+# ASP.NET Core / local dev secrets
+######################################################################
+# Local settings (keep your real appsettings tracked)
+**/appsettings.*.json
+!**/appsettings.json
+!**/appsettings.Development.json
+
+# User secrets / local secrets
+**/secrets.json
+**/*.secrets.json
+
+######################################################################
+# Test coverage
+######################################################################
+**/coverage/
+**/coverage.*.xml
+**/coverage.*.json
+**/TestResults/
+
+######################################################################
+# Frontend / node (if you have any)
+######################################################################
+**/node_modules/
+**/dist/
+# Build output directories (frontend)
+**/build/
+# Exception: keep our build scripts directory
+!/build/
+!/build/**
+
+######################################################################
+# Local dev
+######################################################################
+.dev/
+
+######################################################################
+# IDEs (Rider / VS Code) & OS
+######################################################################
+.idea/
+**/.idea/
+.vscode/
+**/.vscode/
+
+# OS junk
+.DS_Store
+Thumbs.db
+Desktop.ini

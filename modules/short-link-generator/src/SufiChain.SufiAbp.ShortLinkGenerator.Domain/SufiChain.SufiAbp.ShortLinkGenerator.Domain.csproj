@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+
+    <PropertyGroup>
+		<TargetFramework>net10.0</TargetFramework>
+        <Nullable>enable</Nullable>
+        <RootNamespace>SufiChain.SufiAbp.ShortLinkGenerator</RootNamespace>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="shortid" Version="$(ShortidVersion)" />
+        <ProjectReference Include="../../../../framework/SufiChain.SufiAbp.Core/SufiChain.SufiAbp.Core.csproj" />
+        <ProjectReference Include="../../../../framework/SufiChain.SufiAbp.Ddd.Domain/SufiChain.SufiAbp.Ddd.Domain.csproj" />
+        <ProjectReference Include="../../../../framework/SufiChain.SufiAbp.Caching/SufiChain.SufiAbp.Caching.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\SufiChain.SufiAbp.ShortLinkGenerator.Domain.Shared\SufiChain.SufiAbp.ShortLinkGenerator.Domain.Shared.csproj" />
+    </ItemGroup>
+
+</Project>
+

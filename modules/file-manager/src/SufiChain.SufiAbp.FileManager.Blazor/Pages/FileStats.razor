@@ -1,0 +1,264 @@
+@page "/admin/file-manager/stats"
+@attribute [Authorize(FileManagerPermissions.FileItems.Default)]
+@inherits FileManagerComponentBase
+
+<SufiAbpPageToolbar>
+	<SbStack Direction="SbStackDirection.Row" Gap="2">
+		<SbButton Color="SbColor.Primary" Variant="SbButtonVariant.Outline" OnClick="@RefreshStats">
+			<StartIcon><SbIcon Name="refresh" /></StartIcon>
+			<ChildContent>@L["Statistics"]</ChildContent>
+		</SbButton>
+	</SbStack>
+</SufiAbpPageToolbar>
+
+<SbStack Direction="SbStackDirection.Column" Gap="4">
+
+	<!-- Statistics Dashboard -->
+	<SbStack Direction="SbStackDirection.Row" Gap="4" Wrap="true">
+		<SbStatCard Label="@L["TotalFiles"]" Value="@_statistics.TotalCount.ToString()" Class="flex-1">
+			<Icon><SbIcon Name="folder" Size="SbSize.Lg" Color="SbColor.Primary" /></Icon>
+		</SbStatCard>
+		<SbStatCard Label="@L["Images"]" Value="@_statistics.ImageCount.ToString()" Class="flex-1">
+			<Icon><SbIcon Name="file" Size="SbSize.Lg" Color="SbColor.Success" /></Icon>
+		</SbStatCard>
+		<SbStatCard Label="@L["Videos"]" Value="@_statistics.VideoCount.ToString()" Class="flex-1">
+			<Icon><SbIcon Name="file" Size="SbSize.Lg" Color="SbColor.Info" /></Icon>
+		</SbStatCard>
+		<SbStatCard Label="@L["StorageUsed"]" Value="@FormatSize(_statistics.TotalSize)" Class="flex-1">
+			<Icon><SbIcon Name="folder" Size="SbSize.Lg" Color="SbColor.Warning" /></Icon>
+		</SbStatCard>
+	</SbStack>
+
+	<!-- File Browser -->
+	@* <FileBrowser @ref="_fileBrowserRef" /> *@
+
+	<!-- File Structures -->
+	<SbCard>
+		<Header>
+			<SbStack Direction="SbStackDirection.Row" Align="@SbAlign.Center" Justify="@SbJustify.SpaceBetween">
+				<h5 class="m-0">@L["FileStructures"]</h5>
+				<SbButton Href="/admin/file-manager/structures">
+					@L["AddStructure"]
+				</SbButton>
+			</SbStack>
+		</Header>
+		<ChildContent>
+			@if (_structures.Any())
+			{
+				@* Desktop: table layout *@
+				<div class="file-structures-desktop">
+					<SbTable TItem="FileStructureDto" Items="@_structures" Hover>
+						<HeaderContent>
+							<tr>
+								<th style="width: 10%;">@L["Key"]</th>
+								<th style="width: 10%;">@L["DisplayName"]</th>
+								<th style="width: 20%;">@L["Type"]</th>
+								<th style="width: 10%;">@L["MaxSize"]</th>
+								<th style="width: 50%;">@L["Extensions"]</th>
+							</tr>
+						</HeaderContent>
+						<RowTemplate Context="structure">
+							<td><code>@structure.Key</code></td>
+							<td>@L[structure.DisplayName]</td>
+							<td>
+								<SbStack Direction="SbStackDirection.Row" Gap="1" Wrap="true">
+									@foreach (var type in GetFileTypes(structure.AllowedFileTypes))
+									{
+										<SbChip Color="@GetFileTypeColor(type)" Size="SbSize.Sm">@type</SbChip>
+									}
+								</SbStack>
+							</td>
+							<td>@FormatSize(structure.MaxFileSize)</td>
+							<td>
+								<SbStack Direction="SbStackDirection.Row" Gap="1" Wrap="true">
+									@foreach (var ext in GetExtensions(structure.AllowedExtensions))
+									{
+										<SbChip Color="SbColor.Default" Size="SbSize.Sm">.@ext</SbChip>
+									}
+								</SbStack>
+							</td>
+						</RowTemplate>
+					</SbTable>
+				</div>
+
+				@* Mobile: card layout *@
+				<div class="file-structures-mobile">
+					<SbStack Direction="SbStackDirection.Column" Gap="3">
+						@foreach (var structure in _structures)
+						{
+							<div class="file-structure-card">
+								<div class="file-structure-card__header">
+									<code>@structure.Key</code>
+									<span class="file-structure-card__title">@L[structure.DisplayName]</span>
+								</div>
+								<div class="file-structure-card__body">
+									<div class="file-structure-card__row">
+										<span class="file-structure-card__label">@L["Type"]</span>
+										<SbStack Direction="SbStackDirection.Row" Gap="1" Wrap="true">
+											@foreach (var type in GetFileTypes(structure.AllowedFileTypes))
+											{
+												<SbChip Color="@GetFileTypeColor(type)" Size="SbSize.Sm">@type</SbChip>
+											}
+										</SbStack>
+									</div>
+									<div class="file-structure-card__row">
+										<span class="file-structure-card__label">@L["MaxSize"]</span>
+										<span>@FormatSize(structure.MaxFileSize)</span>
+									</div>
+									<div class="file-structure-card__row">
+										<span class="file-structure-card__label">@L["Extensions"]</span>
+										<div class="file-structure-card__extensions">
+											<SbStack Direction="SbStackDirection.Row" Gap="1" Wrap="true">
+												@foreach (var ext in GetExtensions(structure.AllowedExtensions))
+												{
+													<SbChip Color="SbColor.Default" Size="SbSize.Sm">.@ext</SbChip>
+												}
+											</SbStack>
+										</div>
+									</div>
+								</div>
+							</div>
+						}
+					</SbStack>
+				</div>
+			}
+			else
+			{
+				<SbEmptyState>
+					<SbIcon Name="folder" Size="SbSize.Xl" />
+					<p>@L["NoFileStructuresConfigured"]</p>
+				</SbEmptyState>
+			}
+		</ChildContent>
+	</SbCard>
+
+	<!-- Recent Activity -->
+	<SbCard>
+		<Header>
+			<h5 class="m-0">@L["RecentActivity"]</h5>
+		</Header>
+		<ChildContent>
+		@if (_recentFiles.Any())
+		{
+			<SbTable TItem="FileItemDto" Items="@_recentFiles" Striped Hover>
+				<HeaderContent>
+					<tr>
+						<th style="width: 85px;">Preview</th>
+						<th style="min-width: 150px">File Name</th>
+						<th style="min-width: 100px">Type</th>
+						<th style="min-width: 130px">Size</th>
+						<th style="min-width: 130px">@L["Status"]</th>
+						<th style="min-width: 150px">Uploaded By</th>
+						<th style="min-width: 150px">Date</th>
+						<th style="min-width: 150px">Actions</th>
+					</tr>
+				</HeaderContent>
+				<RowTemplate Context="item">
+					<td>
+						@if (item.FileType == FileType.Image && !string.IsNullOrEmpty(item.ThumbnailBlobName))
+						{
+							<img src="@GetThumbnailUrl(item)" alt="@item.Alt"
+									style="max-width: 50px; max-height: 50px; object-fit: cover; border-radius: 4px;" />
+						}
+						else
+						{
+							<SbIcon Name="@GetFileIconName(item.FileType)" Size="SbSize.Lg" />
+						}
+					</td>
+					<td>
+						<div class="text-truncate" style="max-width: 200px;" title="@item.OriginalName">
+							@item.OriginalName
+						</div>
+					</td>
+					<td>
+						<SbChip Color="@GetFileTypeColor(item.FileType)" Size="SbSize.Sm">
+							@item.FileType
+						</SbChip>
+					</td>
+					<td>@FormatSize(item.Size)</td>
+					<td>
+						@if (item.IsTemp) 
+						{
+							<SbChip Color="SbColor.Warning" Size="SbSize.Sm">@L["Temporary"]</SbChip>
+						}
+						else
+						{
+							<span class="text-muted">-</span>
+						}
+					</td>
+					<td>@(item.CreatorId?.ToString() ?? "System")</td>
+					<td>@item.CreationTime.ToString("yyyy-MM-dd HH:mm")</td>
+					<td>
+						<SbStack Direction="SbStackDirection.Row" Gap="1">
+							<SbIconButton Color="SbColor.Info" Size="SbSize.Sm" OnClick="@(() => ViewFile(item))" AriaLabel="View file">
+								<Icon><SbIcon Name="eye" /></Icon>
+							</SbIconButton>
+							<SbIconButton Color="SbColor.Primary" Size="SbSize.Sm" OnClick="@(() => DownloadFile(item))" AriaLabel="Download file">
+								<Icon><SbIcon Name="download" /></Icon>
+							</SbIconButton>
+							@if (CanDelete())
+							{
+								<SbIconButton Color="SbColor.Danger" Size="SbSize.Sm" OnClick="@(() => DeleteFile(item.Id))" AriaLabel="Delete file">
+									<Icon><SbIcon Name="trash" /></Icon>
+								</SbIconButton>
+							}
+						</SbStack>
+					</td>
+				</RowTemplate>
+				<EmptyContent>
+					<p class="text-muted text-center py-3">@L["NoRecentActivity"]</p>
+				</EmptyContent>
+			</SbTable>
+		}
+		else
+		{
+			<SbEmptyState>
+				<SbIcon Name="folder" Size="SbSize.Xl" />
+				<p>@L["NoRecentActivity"]</p>
+			</SbEmptyState>
+		}
+		</ChildContent>
+	</SbCard>
+</SbStack>
+
+<!-- Preview Modal -->
+<SbDialog Open="_viewerModalOpen" OpenChanged="@((v) => { _viewerModalOpen = v; if (!v) _viewingItem = null; })" Title="@(_viewingItem?.OriginalName ?? L["Preview"].Value)" Size="SbDialogSize.Xl">
+	<ChildContent>
+		@if (_viewingItem != null)
+		{
+			<div style="background: #1e1e2e; padding: 0;">
+				@if (_viewingItem.FileType == FileType.Image)
+				{
+					<FileImage @key="GetViewerMediaKey(_viewingItem)" FileId="@_viewingItem.Id" Size="FileImageSize.Large" />
+				}
+				else if (_viewingItem.FileType == FileType.Video)
+				{
+					<FileVideo @key="GetViewerMediaKey(_viewingItem)" FileId="@_viewingItem.Id" Controls="true" />
+				}
+				else
+				{
+					<SbEmptyState Class="text-center p-5">
+						<SbIcon Name="file" Size="SbSize.Xl" Class="text-muted mb-3" />
+						<p>@L["PreviewNotAvailable"]</p>
+						<SbButton Href="@GetDownloadUrl(_viewingItem)" Color="SbColor.Primary">
+							<StartIcon><SbIcon Name="download" /></StartIcon>
+							<ChildContent>@L["Download"]</ChildContent>
+						</SbButton>
+					</SbEmptyState>
+				}
+			</div>
+		}
+	</ChildContent>
+	<Footer>
+		<SbStack Direction="SbStackDirection.Row" Gap="2" Justify="SbJustify.End">
+			<SbButton Color="SbColor.Default" OnClick="@(() => { _viewerModalOpen = false; _viewingItem = null; })">@L["Close"]</SbButton>
+			@if (_viewingItem != null)
+			{
+				<SbButton Href="@GetDownloadUrl(_viewingItem)" Color="SbColor.Primary">
+					<StartIcon><SbIcon Name="download" /></StartIcon>
+					<ChildContent>@L["Download"]</ChildContent>
+				</SbButton>
+			}
+		</SbStack>
+	</Footer>
+</SbDialog>

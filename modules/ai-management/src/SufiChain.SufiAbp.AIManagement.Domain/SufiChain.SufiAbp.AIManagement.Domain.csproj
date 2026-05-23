@@ -1,0 +1,21 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <RootNamespace>SufiChain.SufiAbp.AIManagement</RootNamespace>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\..\framework\SufiChain.SufiAbp.Ddd.Application.Contracts\SufiChain.SufiAbp.Ddd.Application.Contracts.csproj" />
+    <ProjectReference Include="..\..\..\..\framework\SufiChain.SufiAbp.Ddd.Domain\SufiChain.SufiAbp.Ddd.Domain.csproj" />
+    <ProjectReference Include="..\..\..\..\framework\SufiChain.SufiAbp.AI\SufiChain.SufiAbp.AI.csproj" />
+    <ProjectReference Include="..\..\..\file-manager\src\SufiChain.SufiAbp.FileManager.Domain\SufiChain.SufiAbp.FileManager.Domain.csproj" />
+    <ProjectReference Include="..\..\..\file-manager\src\SufiChain.SufiAbp.FileManager.Domain.Shared\SufiChain.SufiAbp.FileManager.Domain.Shared.csproj" />
+    <ProjectReference Include="..\..\..\file-manager\src\SufiChain.SufiAbp.FileManager.Application.Contracts\SufiChain.SufiAbp.FileManager.Application.Contracts.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\SufiChain.SufiAbp.AIManagement.Domain.Shared\SufiChain.SufiAbp.AIManagement.Domain.Shared.csproj" />
+  </ItemGroup>
+</Project>

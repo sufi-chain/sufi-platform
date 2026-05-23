@@ -1,0 +1,610 @@
+/* ============================================
+   File Manager - Windows-like File Explorer
+   Using SufiBlazor Design Tokens for theme support
+   ============================================ */
+
+.file-manager {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    min-height: 500px;
+    background: var(--sb-color-background);
+    border: 1px solid var(--sb-color-border);
+    border-radius: var(--sb-radius-md);
+    overflow: hidden;
+    font-family: var(--sb-font-family-latin);
+    color: var(--sb-color-text);
+}
+
+/* Full height mode for page-level usage */
+.file-manager.file-manager-full-height {
+    min-height: 500px;
+}
+
+/* Breadcrumb */
+.file-manager-breadcrumb {
+    background: var(--sb-color-background);
+    border-bottom: 1px solid var(--sb-color-border);
+    padding: 8px 12px;
+}
+
+/* Main Content Area */
+.file-manager-content {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+    min-height: 0; /* Important for flex children to respect overflow */
+}
+
+/* Folder Tree Panel */
+.file-manager-tree {
+    width: 240px;
+    min-width: 180px;
+    max-width: 400px;
+    background: var(--sb-color-surface-variant);
+    border-right: 1px solid var(--sb-color-border);
+    overflow-y: auto;
+    resize: horizontal;
+}
+
+/* File View Panel */
+.file-manager-view {
+    flex: 1;
+    overflow-y: auto;
+    position: relative;
+    background: var(--sb-color-surface);
+}
+
+.file-manager-view.with-tree {
+    /* When tree is shown */
+}
+
+/* Properties Panel */
+.file-manager-properties {
+    width: 280px;
+    min-width: 200px;
+    max-width: 400px;
+    background: var(--sb-color-surface-variant);
+    border-left: 1px solid var(--sb-color-border);
+    overflow-y: auto;
+}
+
+/* Folders drawer (mobile): New Folder button + Tree */
+.fm-folders-drawer-content {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    min-height: 0;
+}
+
+.fm-folders-drawer-toolbar {
+    flex-shrink: 0;
+    padding: var(--sb-space-2);
+    border-bottom: 1px solid var(--sb-color-border);
+}
+
+.fm-folders-drawer-tree {
+    flex: 1;
+    overflow-y: auto;
+    min-height: 0;
+}
+
+/* Mobile layout: hide inline tree, full-width view, hide properties */
+@media (max-width: 767px) {
+    .file-manager-tree.fm-tree-desktop {
+        display: none !important;
+    }
+
+    .file-manager-view {
+        width: 100%;
+    }
+
+    .file-manager-properties {
+        display: none !important;
+    }
+}
+
+/* Status Bar */
+.file-manager-statusbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: var(--sb-color-surface-variant);
+    border-top: 1px solid var(--sb-color-border);
+    padding: 6px 12px;
+    font-size: 0.8rem;
+    color: var(--sb-color-text-muted);
+}
+
+/* Loading State */
+.file-manager-loading {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+    min-height: 200px;
+}
+
+/* ============================================
+   Breadcrumb Styles
+   ============================================ */
+
+::deep .fm-breadcrumb .breadcrumb {
+    background: transparent;
+    padding: 0;
+    margin: 0;
+    font-size: 0.9rem;
+}
+
+::deep .fm-breadcrumb .breadcrumb-item .last-item {
+    display: flex;
+    align-items: center;
+    color: var(--sb-color-text-muted);
+}
+
+::deep .fm-breadcrumb .breadcrumb-item a {
+    color: var(--sb-color-primary);
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+}
+
+::deep .fm-breadcrumb .breadcrumb-item a:hover {
+    color: var(--sb-color-primary-hover);
+    text-decoration: underline;
+}
+
+::deep .fm-breadcrumb .breadcrumb-item.active {
+    color: var(--sb-color-text);
+}
+
+::deep .fm-breadcrumb .breadcrumb-item + .breadcrumb-item::before {
+    content: "›";
+    color: var(--sb-color-text-muted);
+}
+
+/* ============================================
+   Folder Tree Styles
+   ============================================ */
+
+::deep .fm-folder-tree {
+    padding: 8px 0;
+}
+
+::deep .fm-tree-root,
+::deep .fm-tree-children {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+::deep .fm-tree-children {
+    padding-left: 16px;
+}
+
+::deep .fm-tree-node {
+    margin: 0;
+    padding: 5px 0;
+}
+
+::deep .fm-tree-node.selected {
+    background-color: var(--sb-color-primary-100);
+    color: var(--sb-color-primary);
+}
+
+::deep .fm-tree-node-content {
+    display: flex;
+    align-items: center;
+    padding: 4px 8px;
+    cursor: pointer;
+    border-radius: var(--sb-radius-sm);
+    gap: 4px;
+    user-select: none;
+}
+
+::deep .fm-tree-node-content:hover {
+    background: var(--sb-color-surface-hover);
+}
+
+::deep .fm-tree-node.selected > .fm-tree-node-content {
+    background-color: var(--sb-color-primary-100);
+    color: var(--sb-color-primary);
+}
+
+::deep .fm-tree-toggle {
+    width: 16px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: var(--sb-color-text-muted);
+}
+
+::deep .fm-tree-toggle.empty {
+    visibility: hidden;
+}
+
+::deep .fm-tree-icon {
+    font-size: 1rem;
+    display: flex;
+    align-items: center;
+}
+
+::deep .fm-tree-label {
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 0.875rem;
+}
+
+::deep .fm-tree-count {
+    font-size: 0.75rem;
+    color: var(--sb-color-text-muted);
+}
+
+/* ============================================
+   File View Styles
+   ============================================ */
+
+::deep .fm-file-view {
+    padding: 12px;
+    min-height: 100%;
+}
+
+::deep .fm-empty-folder {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+    min-height: 300px;
+    color: var(--sb-color-text-muted);
+}
+
+/* Icon Grid Views */
+::deep .fm-icon-grid {
+    display: grid;
+    gap: 8px;
+}
+
+::deep .fm-view-largeicons .fm-icon-grid {
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+}
+
+::deep .fm-view-smallicons .fm-icon-grid {
+    grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+}
+
+::deep .fm-view-tiles .fm-icon-grid {
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+}
+
+::deep .fm-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 8px;
+    border-radius: var(--sb-radius-md);
+    cursor: pointer;
+    user-select: none;
+    transition: background 0.15s ease;
+}
+
+::deep .fm-item:hover {
+    background: var(--sb-color-surface-hover);
+}
+
+::deep .fm-item.selected {
+    background: var(--sb-color-primary-50);
+    outline: 2px solid var(--sb-color-primary);
+}
+
+::deep .fm-item-icon {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 6px;
+}
+
+::deep .fm-item-icon .sb-icon--md {
+    width: 64px;
+    height: 64px;
+}
+
+::deep .fm-view-largeicons .fm-item-icon {
+    width: 64px;
+    height: 64px;
+    font-size: 2.5rem;
+}
+
+::deep .fm-view-smallicons .fm-item-icon {
+    width: 40px;
+    height: 40px;
+    font-size: 1.5rem;
+}
+
+::deep .fm-view-tiles .fm-item-icon {
+    width: 48px;
+    height: 48px;
+    font-size: 2rem;
+}
+
+::deep .fm-thumbnail {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+    border-radius: var(--sb-radius-sm);
+}
+
+::deep .fm-item-name {
+    text-align: center;
+    font-size: 0.8rem;
+    word-break: break-word;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    max-width: 100%;
+}
+
+::deep .fm-item-details {
+    font-size: 0.7rem;
+    color: var(--sb-color-text-muted);
+    margin-top: 2px;
+}
+
+::deep .fm-rename-input {
+    width: 100%;
+    text-align: center;
+    font-size: 0.8rem;
+    padding: 2px 4px;
+    border: 1px solid var(--sb-color-primary);
+    border-radius: 2px;
+    background: var(--sb-color-surface-variant);
+    color: var(--sb-color-text);
+}
+
+/* List View */
+::deep .fm-list-view {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+::deep .fm-list-item {
+    display: flex;
+    align-items: center;
+    padding: 6px 12px;
+    gap: 8px;
+    border-radius: var(--sb-radius-sm);
+    cursor: pointer;
+}
+
+::deep .fm-list-item:hover {
+    background: var(--sb-color-surface-hover);
+}
+
+::deep .fm-list-item.selected {
+    background: var(--sb-color-primary-50);
+}
+
+::deep .fm-list-name {
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* Details View */
+::deep .fm-details-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.875rem;
+}
+
+::deep .fm-details-table th {
+    text-align: left;
+    padding: 8px 12px;
+    background: var(--sb-color-surface-variant);
+    border-bottom: 1px solid var(--sb-color-border);
+    color: var(--sb-color-text-muted);
+    font-weight: 500;
+    cursor: pointer;
+    user-select: none;
+}
+
+::deep .fm-details-table th:hover {
+    background: var(--sb-color-surface-hover);
+}
+
+::deep .fm-row {
+    cursor: pointer;
+}
+
+::deep .fm-row:hover {
+    background: var(--sb-color-surface-hover);
+}
+
+::deep .fm-row.selected {
+    background: var(--sb-color-primary-50);
+}
+
+::deep .fm-row td {
+    padding: 6px 12px;
+    border-bottom: 1px solid var(--sb-color-border);
+}
+
+::deep .fm-col-icon {
+    width: 32px;
+    text-align: center;
+}
+
+::deep .fm-col-name {
+    min-width: 200px;
+}
+
+::deep .fm-col-date {
+    width: 150px;
+}
+
+::deep .fm-col-type {
+    width: 100px;
+}
+
+::deep .fm-col-size {
+    width: 80px;
+    text-align: right;
+}
+
+/* ============================================
+   Context Menu Styles
+   ============================================ */
+
+::deep .fm-context-menu {
+    position: fixed;
+    z-index: 9999;
+    opacity: 0;
+    visibility: hidden;
+    transform: scale(0.95);
+    transition: opacity 0.1s ease, transform 0.1s ease;
+}
+
+::deep .fm-context-menu.visible {
+    opacity: 1;
+    visibility: visible;
+    transform: scale(1);
+}
+
+::deep .fm-context-menu-content {
+    background: var(--sb-color-surface);
+    border: 1px solid var(--sb-color-border);
+    border-radius: var(--sb-radius-md);
+    padding: 4px 0;
+    min-width: 200px;
+    box-shadow: var(--sb-shadow-lg);
+}
+
+::deep .fm-menu-item {
+    display: flex;
+    align-items: center;
+    padding: 8px 12px;
+    gap: 10px;
+    cursor: pointer;
+    font-size: 0.875rem;
+}
+
+::deep .fm-menu-item:hover {
+    background: var(--sb-color-surface-hover);
+}
+
+::deep .fm-menu-item.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+::deep .fm-menu-item i {
+    width: 16px;
+    text-align: center;
+    color: var(--sb-color-text-muted);
+}
+
+/*::deep .fm-menu-item span:first-of-type {
+    flex: 1;
+}*/
+
+::deep .fm-shortcut {
+    font-size: 0.75rem;
+    color: var(--sb-color-text-muted);
+}
+
+::deep .fm-menu-divider {
+    height: 1px;
+    background: var(--sb-color-border);
+    margin: 4px 0;
+}
+
+::deep .fm-context-menu-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 9998;
+}
+
+/* Mobile: center context menu and keep it above bottom nav, scroll if needed */
+@media (max-width: 767px) {
+    ::deep .fm-context-menu.visible {
+        left: 50% !important;
+        top: 50% !important;
+        right: auto !important;
+        transform: translate(-50%, -50%) !important;
+        max-height: min(400px, calc(100vh - 140px));
+        overflow-y: auto;
+    }
+}
+
+/* ============================================
+   Properties Panel Styles
+   ============================================ */
+
+::deep .fm-properties-panel {
+    padding: 16px;
+}
+
+::deep .fm-properties-header {
+    text-align: center;
+    margin-bottom: 16px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--sb-color-border);
+}
+
+::deep .fm-properties-icon {
+    margin-bottom: 8px;
+}
+
+::deep .fm-properties-icon img {
+    max-width: 80px;
+    max-height: 80px;
+    object-fit: contain;
+    border-radius: var(--sb-radius-sm);
+}
+
+::deep .fm-properties-title {
+    font-size: 0.9rem;
+    font-weight: 500;
+    word-break: break-word;
+}
+
+::deep .fm-properties-body dl {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 8px 12px;
+    font-size: 0.8rem;
+    margin: 0;
+}
+
+::deep .fm-properties-body dt {
+    color: var(--sb-color-text-muted);
+    font-weight: 400;
+}
+
+::deep .fm-properties-body dd {
+    margin: 0;
+    word-break: break-word;
+}
+
+::deep .fm-properties-empty {
+    text-align: center;
+    padding: 24px;
+}
+
+/* ============================================
+   Theme Support Note
+   ============================================
+   This component uses only SufiBlazor design tokens (--sb-*)
+   defined in SufiChain.SufiBlazor/wwwroot/sufiblazor.css.
+   Tokens adapt automatically to light/dark mode via SbThemeProvider.
+   ============================================ */
+

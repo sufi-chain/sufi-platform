@@ -1,0 +1,100 @@
+<li class="fm-tree-node @(IsSelected ? "selected" : "")">
+    <div class="fm-tree-node-content" @onclick="@HandleClick" @ondblclick="@HandleDoubleClick">
+        @if (Node.HasChildren)
+        {
+            <span class="fm-tree-toggle" @onclick="@HandleToggle" @onclick:stopPropagation>
+                <SbIcon Name="@(Node.IsExpanded ? "chevron-down" : "chevron-right")" />
+            </span>
+        }
+        else
+        {
+            <span class="fm-tree-toggle empty"></span>
+        }
+        
+        <span class="fm-tree-icon" style="@GetIconStyle()">
+            <SbIcon Name="@GetFolderIconName()" />
+        </span>
+        
+        <span class="fm-tree-label">@Node.Name</span>
+        
+        @if (Node.FileCount > 0)
+        {
+            <span class="fm-tree-count">(@Node.FileCount)</span>
+        }
+    </div>
+
+    @if (Node.IsExpanded && Node.Children != null && Node.Children.Any())
+    {
+        <ul class="fm-tree-children">
+            @foreach (var child in Node.Children)
+            {
+                <FolderTreeNode 
+                    Node="@child"
+                    SelectedFolderId="@SelectedFolderId"
+                    OnSelect="@OnSelect"
+                    OnToggle="@OnToggle"
+                    OnLoadChildren="@OnLoadChildren" />
+            }
+        </ul>
+    }
+</li>
+
+@code {
+    [Parameter] public FolderTreeNodeDto Node { get; set; } = default!;
+    [Parameter] public Guid? SelectedFolderId { get; set; }
+    [Parameter] public EventCallback<FolderTreeNodeDto> OnSelect { get; set; }
+    [Parameter] public EventCallback<FolderTreeNodeDto> OnToggle { get; set; }
+    [Parameter] public EventCallback<FolderTreeNodeDto> OnLoadChildren { get; set; }
+
+    private bool IsSelected => Node.Id == SelectedFolderId || (Node.Id == null && SelectedFolderId == null && Node.Path == "/");
+
+    private async Task HandleClick()
+    {
+        await OnSelect.InvokeAsync(Node);
+    }
+
+    private async Task HandleDoubleClick()
+    {
+        await OnToggle.InvokeAsync(Node);
+    }
+
+    private async Task HandleToggle()
+    {
+        await OnToggle.InvokeAsync(Node);
+    }
+
+    private string GetFolderIconName()
+    {
+        if (!string.IsNullOrEmpty(Node.Icon))
+        {
+            var icon = Node.Icon;
+            return icon.StartsWith("fa-", StringComparison.OrdinalIgnoreCase) ? icon[3..] : icon;
+        }
+
+        return Node.Type switch
+        {
+            FolderTypeDto.TenantRoot => "building",
+            FolderTypeDto.Structure => "layers",
+            FolderTypeDto.YearMonth => "calendar",
+            FolderTypeDto.Custom => Node.IsExpanded ? "folder-open" : "folder",
+            _ => "folder"
+        };
+    }
+
+    private string GetIconStyle()
+    {
+        if (!string.IsNullOrEmpty(Node.Color))
+        {
+            return $"color: {Node.Color};";
+        }
+
+        return Node.Type switch
+        {
+            FolderTypeDto.TenantRoot => "color: #6366f1;",
+            FolderTypeDto.Structure => "color: #8b5cf6;",
+            FolderTypeDto.YearMonth => "color: #06b6d4;",
+            FolderTypeDto.Custom => "color: #f59e0b;",
+            _ => "color: #f59e0b;"
+        };
+    }
+}

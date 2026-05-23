@@ -1,0 +1,29 @@
+<nav class="fm-breadcrumb" aria-label="Folder path">
+    <ol class="breadcrumb mb-0">
+        @foreach (var item in Breadcrumbs)
+        {
+            var isLast = item == Breadcrumbs.LastOrDefault();
+            <li class="breadcrumb-item @(isLast ? "active" : "")">
+                @if (isLast)
+                {
+                    <span class="last-item">
+                        <SbIcon Name="@(item.Icon ?? "folder")" Class="me-1" />
+                        @item.Name
+                    </span>
+                }
+                else
+                {
+                    <a href="javascript:void(0)" @onclick="@(() => OnNavigate.InvokeAsync(item))" @onclick:preventDefault>
+                        <SbIcon Name="@(item.Icon ?? "folder")" Class="me-1" />
+                        @item.Name
+                    </a>
+                }
+            </li>
+        }
+    </ol>
+</nav>
+
+@code {
+    [Parameter] public List<BreadcrumbItemDto> Breadcrumbs { get; set; } = new();
+    [Parameter] public EventCallback<BreadcrumbItemDto> OnNavigate { get; set; }
+}

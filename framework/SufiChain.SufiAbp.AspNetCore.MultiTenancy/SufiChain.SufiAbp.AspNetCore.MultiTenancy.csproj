@@ -1,0 +1,10 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <RootNamespace>SufiChain.SufiAbp.AspNetCore.MultiTenancy</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Volo.Abp.AspNetCore.MultiTenancy" Version="$(AbpVersion)"/>
+  </ItemGroup>
+</Project>

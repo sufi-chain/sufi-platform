@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <RootNamespace>SufiChain.SufiAbp.BackgroundJobs</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\..\framework\SufiChain.SufiAbp.Ddd.Domain\SufiChain.SufiAbp.Ddd.Domain.csproj" />
+    <ProjectReference Include="..\..\..\..\framework\SufiChain.SufiAbp.BackgroundJobs\SufiChain.SufiAbp.BackgroundJobs.csproj" />
+    <ProjectReference Include="..\..\..\..\framework\SufiChain.SufiAbp.Mapperly\SufiChain.SufiAbp.Mapperly.csproj" />
+    <ProjectReference Include="..\SufiChain.SufiAbp.BackgroundJobs.Domain.Shared\SufiChain.SufiAbp.BackgroundJobs.Domain.Shared.csproj" />
+  </ItemGroup>
+</Project>

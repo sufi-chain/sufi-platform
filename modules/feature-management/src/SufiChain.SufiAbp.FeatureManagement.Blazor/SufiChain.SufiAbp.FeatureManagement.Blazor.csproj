@@ -1,0 +1,34 @@
+<Project Sdk="Microsoft.NET.Sdk.Razor">
+
+  <PropertyGroup>
+    <LangVersion>latest</LangVersion>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <RootNamespace>SufiChain.SufiAbp.FeatureManagement.Blazor</RootNamespace>
+    <IsPackable>true</IsPackable>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <PackageId>SufiChain.SufiAbp.FeatureManagement.Blazor</PackageId>
+    <Description>Feature management module Blazor UI components for Sufi Platform.</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Resolve version conflict with SufiBlazor -->
+    <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="$(MicrosoftAspNetCoreComponentsWebVersion)" />
+    <!-- ABP FeatureManagement -->
+    <ProjectReference Include="../SufiChain.SufiAbp.FeatureManagement.Application.Contracts/SufiChain.SufiAbp.FeatureManagement.Application.Contracts.csproj" />
+    <ProjectReference Include="../../../../framework/SufiChain.SufiAbp.Localization/SufiChain.SufiAbp.Localization.csproj" />
+    <ProjectReference Include="../../../../framework/SufiChain.SufiAbp.Authorization/SufiChain.SufiAbp.Authorization.csproj" />
+    <!-- Blazor Authorization -->
+    <PackageReference Include="Microsoft.AspNetCore.Components.Authorization" Version="$(AspNetCoreVersion)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- SufiAbp Framework (transitively provides SufiChain.SufiAbp.UI.Abstractions and SufiChain.SufiBlazor) -->
+    <ProjectReference Include="..\..\..\..\framework\SufiChain.SufiAbp.UI.Blazor\SufiChain.SufiAbp.UI.Blazor.csproj" />
+    <ProjectReference Include="..\SufiChain.SufiAbp.FeatureManagement.Application.Contracts\SufiChain.SufiAbp.FeatureManagement.Application.Contracts.csproj" />
+  </ItemGroup>
+
+</Project>

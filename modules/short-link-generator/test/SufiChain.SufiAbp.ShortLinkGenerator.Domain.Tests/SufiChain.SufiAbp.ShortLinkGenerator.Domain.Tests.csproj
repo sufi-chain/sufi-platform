@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <RootNamespace>SufiChain.SufiAbp.ShortLinkGenerator</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="$(MicrosoftNetTestSdkVersion)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\SufiChain.SufiAbp.ShortLinkGenerator.Domain\SufiChain.SufiAbp.ShortLinkGenerator.Domain.csproj" />
+    <ProjectReference Include="..\SufiChain.SufiAbp.ShortLinkGenerator.TestBase\SufiChain.SufiAbp.ShortLinkGenerator.TestBase.csproj" />
+  </ItemGroup>
+
+
+</Project>

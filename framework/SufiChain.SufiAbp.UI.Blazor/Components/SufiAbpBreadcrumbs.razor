@@ -1,0 +1,39 @@
+@if (PageLayout.BreadcrumbItems.Any())
+{
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb @CssClass">
+            @if (ShowHome)
+            {
+                <li class="breadcrumb-item">
+                    <a href="/">
+                        <SbIcon Name="@HomeIcon" Size="SbSize.Sm" />
+                    </a>
+                </li>
+            }
+            @foreach (var item in PageLayout.BreadcrumbItems)
+            {
+                var isLast = item == PageLayout.BreadcrumbItems.Last();
+                <li class="breadcrumb-item @(isLast ? "active" : "")" @(isLast ? "aria-current=page" : "")>
+                    @if (!string.IsNullOrEmpty(item.Url) && !isLast)
+                    {
+                        <a href="@item.Url">
+                            @if (item.Icon != null)
+                            {
+                                <SbIcon Name="@item.Icon.ToString()" Size="SbSize.Sm" />
+                            }
+                            @item.Text
+                        </a>
+                    }
+                    else
+                    {
+                        @if (item.Icon != null)
+                        {
+                            <SbIcon Name="@item.Icon.ToString()" Size="SbSize.Sm" />
+                        }
+                        @item.Text
+                    }
+                </li>
+            }
+        </ol>
+    </nav>
+}

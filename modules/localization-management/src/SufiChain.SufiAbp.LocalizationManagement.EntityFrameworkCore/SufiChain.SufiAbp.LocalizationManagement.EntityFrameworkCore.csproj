@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <RootNamespace>SufiChain.SufiAbp.LocalizationManagement</RootNamespace>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <PackageId>SufiChain.SufiAbp.LocalizationManagement.EntityFrameworkCore</PackageId>
+    <Description>Localization management module Entity Framework Core implementation for Sufi Platform.</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../../../../framework/SufiChain.SufiAbp.EntityFrameworkCore/SufiChain.SufiAbp.EntityFrameworkCore.csproj" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="$(MicrosoftEntityFrameworkCoreVersion)" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="$(MicrosoftEntityFrameworkCoreVersion)">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <ProjectReference Include="..\SufiChain.SufiAbp.LocalizationManagement.Domain\SufiChain.SufiAbp.LocalizationManagement.Domain.csproj" />
+  </ItemGroup>
+
+</Project>

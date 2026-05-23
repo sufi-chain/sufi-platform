@@ -1,0 +1,145 @@
+@inject IFileItemAppService FileItemAppService
+@inject FileManagerJsInterop JsInterop
+@inherits FileManagerComponentBase
+
+<SbDialog Open="@Open" OnCloseButtonClick="Close" OpenChanged="@OnOpenChanged" Title="@L["QuickShare"]" Size="SbDialogSize.Md">
+    <ChildContent>
+        <p class="text-muted mb-3">@L["QuickShareDescription"]</p>
+        <SbFormField Label="@L["ExpirationTime"]">
+            <SbStack Direction="SbStackDirection.Row" Gap="2" Wrap="true">
+                @foreach (var preset in _presets)
+                {
+                    <SbButton Size="SbSize.Sm"
+                              Color="@(!_useCustom && _durationMinutes == preset.Minutes ? SbColor.Primary : SbColor.Default)"
+                              OnClick="@(() => SelectDuration(preset.Minutes))">
+                        @L[preset.LabelKey]
+                    </SbButton>
+                }
+                <SbButton Size="SbSize.Sm"
+                          Color="@(_useCustom ? SbColor.Primary : SbColor.Default)"
+                          OnClick="@(() => { _useCustom = true; })">
+                    @L["ExpirationCustom"]
+                </SbButton>
+            </SbStack>
+        </SbFormField>
+        @if (_useCustom)
+        {
+            <SbFormField Label="@L["ExpirationCustom"]">
+                <SbTextField TValue="int" Type="number" @bind-Value="_customMinutes" Placeholder="1-10080" />
+            </SbFormField>
+        }
+        @if (!string.IsNullOrEmpty(_generatedUrl))
+        {
+            <div class="fm-quick-share-link-section">
+                <SbFormField Label="@L["Link"]" InputId="quick-share-link">
+                    <SbTextField TValue="string"
+                                Id="quick-share-link"
+                                @bind-Value="_generatedUrl"
+                                ReadOnly="true"
+                                Style="width: 100%"
+                                Class="fm-quick-share-link-input">
+                        <EndAdornment>
+                            <SbIconButton AriaLabel="@L["CopyToClipboard"]"
+                                          Title="@L["CopyToClipboard"]"
+                                          Variant="SbButtonVariant.Outline"
+                                          Size="SbSize.Sm"
+                                          Color="SbColor.Primary"
+                                          OnClick="@CopyToClipboard">
+                                <SbIcon Name="copy" Size="SbSize.Sm" />
+                            </SbIconButton>
+                        </EndAdornment>
+                    </SbTextField>
+                </SbFormField>
+                <p class="small text-muted mt-2">@L["QuickShareLinkNote"]</p>
+            </div>
+        }
+    </ChildContent>
+    <Footer>
+        <SbStack Direction="SbStackDirection.Row" Gap="2" Justify="SbJustify.End">
+            <SbButton Color="SbColor.Default" OnClick="@Close">@L["Cancel"]</SbButton>
+            <SbButton Color="SbColor.Primary" OnClick="@CreateLink" Disabled="@_loading">
+                @(_loading ? L["Loading"] + "..." : L["CreateLink"])</SbButton>
+        </SbStack>
+    </Footer>
+</SbDialog>
+
+@code {
+    [Parameter] public bool Open { get; set; }
+    [Parameter] public EventCallback<bool> OpenChanged { get; set; }
+    [Parameter] public Guid? FileId { get; set; }
+
+    private int _durationMinutes = 1440;
+    private string _generatedUrl = "";
+    private bool _loading;
+    private bool _useCustom;
+    private int _customMinutes = 1440;
+    private static readonly (int Minutes, string LabelKey)[] _presets =
+    {
+        (60, "Expiration1Hour"),
+        (360, "Expiration6Hours"),
+        (1440, "Expiration1Day"),
+        (4320, "Expiration3Days"),
+        (10080, "Expiration7Days")
+    };
+
+    protected override void OnParametersSet()
+    {
+        if (Open && FileId.HasValue)
+        {
+            _durationMinutes = 1440;
+            _generatedUrl = "";
+            _useCustom = false;
+            _customMinutes = 1440;
+        }
+    }
+
+    private void SelectDuration(int minutes)
+    {
+        _durationMinutes = minutes;
+        _useCustom = false;
+    }
+
+    private async Task CreateLink()
+    {
+        if (!FileId.HasValue) return;
+        var minutes = _useCustom ? _customMinutes : _durationMinutes;
+        minutes = Math.Clamp(minutes, 1, 10080);
+        _loading = true;
+        StateHasChanged();
+        try
+        {
+            _generatedUrl = await FileItemAppService.GetTemporaryAccessUrlAsync(FileId.Value, minutes);
+            await Notify.SuccessAsync(L["LinkCreated"]);
+        }
+        catch (Exception ex)
+        {
+            await Notify.ErrorAsync(ex.Message);
+        }
+        finally
+        {
+            _loading = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task CopyToClipboard()
+    {
+        if (string.IsNullOrEmpty(_generatedUrl)) return;
+        var ok = await JsInterop.CopyToClipboard(_generatedUrl);
+        if (ok)
+            await Notify.SuccessAsync(L["CopyToClipboard"]);
+        else
+            await Notify.WarnAsync(L["CopyToClipboardFailed"]);
+    }
+
+    private async Task Close()
+    {
+        _generatedUrl = "";
+        await OpenChanged.InvokeAsync(false);
+    }
+
+    private async Task OnOpenChanged(bool value)
+    {
+        await OpenChanged.InvokeAsync(value);
+    }
+}

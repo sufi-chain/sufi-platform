@@ -1,0 +1,40 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>SufiChain.SufiAbp.BlazorBuildTest.Console</RootNamespace>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\framework\SufiChain.SufiAbp.AspNetCore.Components.Server.Theming\SufiChain.SufiAbp.AspNetCore.Components.Server.Theming.csproj" />
+    <ProjectReference Include="..\..\framework\SufiChain.SufiAbp.AspNetCore.Components.Web\SufiChain.SufiAbp.AspNetCore.Components.Web.csproj" />
+    <ProjectReference Include="..\..\framework\SufiChain.SufiAbp.AspNetCore.Components.WebAssembly.Theming.Bundling\SufiChain.SufiAbp.AspNetCore.Components.WebAssembly.Theming.Bundling.csproj" />
+    <ProjectReference Include="..\..\framework\SufiChain.SufiAbp.AspNetCore.Components.WebAssembly.Theming\SufiChain.SufiAbp.AspNetCore.Components.WebAssembly.Theming.csproj" />
+    <ProjectReference Include="..\..\framework\SufiChain.SufiAbp.UI.Blazor\SufiChain.SufiAbp.UI.Blazor.csproj" />
+    <ProjectReference Include="..\..\framework\SufiChain.SufiAbp.UI.Blazor.Server\SufiChain.SufiAbp.UI.Blazor.Server.csproj" />
+    <ProjectReference Include="..\..\framework\SufiChain.SufiAbp.UI.Blazor.WebAssembly\SufiChain.SufiAbp.UI.Blazor.WebAssembly.csproj" />
+
+    <ProjectReference Include="..\..\modules\account\src\SufiChain.SufiAbp.Account.Blazor\SufiChain.SufiAbp.Account.Blazor.csproj" />
+    <ProjectReference Include="..\..\modules\ai-management\src\SufiChain.SufiAbp.AIManagement.Blazor\SufiChain.SufiAbp.AIManagement.Blazor.csproj" />
+    <ProjectReference Include="..\..\modules\ai-management\src\SufiChain.SufiAbp.AIManagement.Blazor.WebAssembly\SufiChain.SufiAbp.AIManagement.Blazor.WebAssembly.csproj" />
+    <ProjectReference Include="..\..\modules\audit-logging\src\SufiChain.SufiAbp.AuditLogging.Blazor\SufiChain.SufiAbp.AuditLogging.Blazor.csproj" />
+    <ProjectReference Include="..\..\modules\background-jobs\src\SufiChain.SufiAbp.BackgroundJobs.Blazor\SufiChain.SufiAbp.BackgroundJobs.Blazor.csproj" />
+    <ProjectReference Include="..\..\modules\feature-management\src\SufiChain.SufiAbp.FeatureManagement.Blazor\SufiChain.SufiAbp.FeatureManagement.Blazor.csproj" />
+    <ProjectReference Include="..\..\modules\file-manager\src\SufiChain.SufiAbp.FileManager.Blazor\SufiChain.SufiAbp.FileManager.Blazor.csproj" />
+    <ProjectReference Include="..\..\modules\file-manager\src\SufiChain.SufiAbp.FileManager.Blazor.Public\SufiChain.SufiAbp.FileManager.Blazor.Public.csproj" />
+    <ProjectReference Include="..\..\modules\file-manager\src\SufiChain.SufiAbp.FileManager.Blazor.Server\SufiChain.SufiAbp.FileManager.Blazor.Server.csproj" />
+    <ProjectReference Include="..\..\modules\file-manager\src\SufiChain.SufiAbp.FileManager.Blazor.WebAssembly\SufiChain.SufiAbp.FileManager.Blazor.WebAssembly.csproj" />
+    <ProjectReference Include="..\..\modules\identity\src\SufiChain.SufiAbp.Identity.Blazor\SufiChain.SufiAbp.Identity.Blazor.csproj" />
+    <ProjectReference Include="..\..\modules\localization-management\src\SufiChain.SufiAbp.LocalizationManagement.Blazor\SufiChain.SufiAbp.LocalizationManagement.Blazor.csproj" />
+    <ProjectReference Include="..\..\modules\setting-management\src\SufiChain.SufiAbp.SettingManagement.Blazor\SufiChain.SufiAbp.SettingManagement.Blazor.csproj" />
+    <ProjectReference Include="..\..\modules\short-link-generator\src\SufiChain.SufiAbp.ShortLinkGenerator.Blazor\SufiChain.SufiAbp.ShortLinkGenerator.Blazor.csproj" />
+    <ProjectReference Include="..\..\modules\short-link-generator\src\SufiChain.SufiAbp.ShortLinkGenerator.Blazor.Server\SufiChain.SufiAbp.ShortLinkGenerator.Blazor.Server.csproj" />
+    <ProjectReference Include="..\..\modules\short-link-generator\src\SufiChain.SufiAbp.ShortLinkGenerator.Blazor.WebAssembly\SufiChain.SufiAbp.ShortLinkGenerator.Blazor.WebAssembly.csproj" />
+    <ProjectReference Include="..\..\modules\tenant-management\src\SufiChain.SufiAbp.TenantManagement.Blazor\SufiChain.SufiAbp.TenantManagement.Blazor.csproj" />
+  </ItemGroup>
+
+</Project>

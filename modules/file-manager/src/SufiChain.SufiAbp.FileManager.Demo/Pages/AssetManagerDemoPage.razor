@@ -1,0 +1,95 @@
+@page "/demo/file-manager/asset-manager"
+@inherits FileManagerComponentBase
+
+<PageTitle>@(L["Menu:FileManagerDemoAssetManager"] + " - " + L["Menu:FileManagerDemo"])</PageTitle>
+
+<DemoLayout>
+    <SbHeading Level="1">@L["Menu:FileManagerDemoAssetManager"]</SbHeading>
+    <SbText Color="SbColor.Muted">@L["Demo:AssetManagerIntro"]</SbText>
+
+    <SbDivider />
+
+    <SbHeading Level="3">@L["Demo:AssetManagerComponentTitle"]</SbHeading>
+    <SbText Class="mb-4">@L["Demo:AssetManagerComponentDescription"]</SbText>
+
+    <SbStack Direction="SbStackDirection.Column" Gap="2" Class="mb-4">
+        <SbText><strong>@L["Demo:AssetManagerLayoutParams"]</strong></SbText>
+        <SbText Class="text-muted">@L["Demo:AssetManagerLayoutParamsDesc"]</SbText>
+        <SbText><strong>@L["Demo:AssetManagerBehaviorParams"]</strong></SbText>
+        <SbText Class="text-muted">@L["Demo:AssetManagerBehaviorParamsDesc"]</SbText>
+        <SbText><strong>@L["Demo:AssetManagerViewParams"]</strong></SbText>
+        <SbText Class="text-muted">@L["Demo:AssetManagerViewParamsDesc"]</SbText>
+        <SbText><strong>@L["Demo:AssetManagerOptionalParams"]</strong></SbText>
+        <SbText Class="text-muted">@L["Demo:AssetManagerOptionalParamsDesc"]</SbText>
+        <SbText><strong>@L["Demo:AssetManagerEventsParams"]</strong></SbText>
+        <SbText Class="text-muted">@L["Demo:AssetManagerEventsParamsDesc"]</SbText>
+    </SbStack>
+
+    <SbDivider />
+
+    <DemoSection
+        Title="@L["Demo:FileManagerFull"]"
+        Description="@L["Demo:FileManagerFullDescription"]"
+        SourceCode="@fullCode">
+        <ExampleContent>
+            <div class="file-manager-demo-height">
+                <FileManager
+                    ShowFolderTree="true"
+                    ShowTenantTree="false"
+                    ShowPropertiesPanel="true"
+                    AllowCreateFolders="true"
+                    AllowDragDrop="true"
+                    AllowMultiSelect="true"
+                    InitialViewMode="FileViewMode.LargeIcons" />
+            </div>
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection
+        Title="@L["Demo:FileManagerNoTree"]"
+        Description="@L["Demo:FileManagerNoTreeDescription"]"
+        SourceCode="@noTreeCode">
+        <ExampleContent>
+            <div class="file-manager-demo-height">
+                <FileManager
+                    ShowFolderTree="false"
+                    ShowTenantTree="false"
+                    ShowPropertiesPanel="true"
+                    AllowCreateFolders="true"
+                    AllowDragDrop="true"
+                    AllowMultiSelect="true"
+                    InitialViewMode="FileViewMode.LargeIcons" />
+            </div>
+        </ExampleContent>
+    </DemoSection>
+
+    <SbDivider />
+
+    <DocViewer DocName="FileManager" ContentAssembly="SufiChain.SufiAbp.FileManager.Blazor" />
+</DemoLayout>
+
+<style>
+    .file-manager-demo-height {
+        min-height: 400px;
+    }
+</style>
+
+@code {
+    private const string fullCode = @"<FileManager
+    ShowFolderTree=""true""
+    ShowTenantTree=""false""
+    ShowPropertiesPanel=""true""
+    AllowCreateFolders=""true""
+    AllowDragDrop=""true""
+    AllowMultiSelect=""true""
+    InitialViewMode=""FileViewMode.LargeIcons"" />";
+
+    private const string noTreeCode = @"<FileManager
+    ShowFolderTree=""false""
+    ShowTenantTree=""false""
+    ShowPropertiesPanel=""true""
+    AllowCreateFolders=""true""
+    AllowDragDrop=""true""
+    AllowMultiSelect=""true""
+    InitialViewMode=""FileViewMode.LargeIcons"" />";
+}

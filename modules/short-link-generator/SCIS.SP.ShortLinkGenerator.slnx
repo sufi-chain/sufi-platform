@@ -1,0 +1,22 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/SufiChain.SufiAbp.ShortLinkGenerator.Application.Contracts/SufiChain.SufiAbp.ShortLinkGenerator.Application.Contracts.csproj" />
+    <Project Path="src/SufiChain.SufiAbp.ShortLinkGenerator.Application/SufiChain.SufiAbp.ShortLinkGenerator.Application.csproj" />
+    <Project Path="src/SufiChain.SufiAbp.ShortLinkGenerator.Blazor.Server/SufiChain.SufiAbp.ShortLinkGenerator.Blazor.Server.csproj" />
+    <Project Path="src/SufiChain.SufiAbp.ShortLinkGenerator.Blazor.WebAssembly/SufiChain.SufiAbp.ShortLinkGenerator.Blazor.WebAssembly.csproj" />
+    <Project Path="src/SufiChain.SufiAbp.ShortLinkGenerator.Blazor/SufiChain.SufiAbp.ShortLinkGenerator.Blazor.csproj" />
+    <Project Path="src/SufiChain.SufiAbp.ShortLinkGenerator.Domain.Shared/SufiChain.SufiAbp.ShortLinkGenerator.Domain.Shared.csproj" />
+    <Project Path="src/SufiChain.SufiAbp.ShortLinkGenerator.Domain/SufiChain.SufiAbp.ShortLinkGenerator.Domain.csproj" />
+    <Project Path="src/SufiChain.SufiAbp.ShortLinkGenerator.EntityFrameworkCore/SufiChain.SufiAbp.ShortLinkGenerator.EntityFrameworkCore.csproj" />
+    <Project Path="src/SufiChain.SufiAbp.ShortLinkGenerator.HttpApi.Client/SufiChain.SufiAbp.ShortLinkGenerator.HttpApi.Client.csproj" />
+    <Project Path="src/SufiChain.SufiAbp.ShortLinkGenerator.HttpApi/SufiChain.SufiAbp.ShortLinkGenerator.HttpApi.csproj" />
+    <Project Path="src/SufiChain.SufiAbp.ShortLinkGenerator.MongoDB/SufiChain.SufiAbp.ShortLinkGenerator.MongoDB.csproj" />
+  </Folder>
+  <Folder Name="/test/">
+    <Project Path="test/SufiChain.SufiAbp.ShortLinkGenerator.Application.Tests/SufiChain.SufiAbp.ShortLinkGenerator.Application.Tests.csproj" />
+    <Project Path="test/SufiChain.SufiAbp.ShortLinkGenerator.Domain.Tests/SufiChain.SufiAbp.ShortLinkGenerator.Domain.Tests.csproj" />
+    <Project Path="test/SufiChain.SufiAbp.ShortLinkGenerator.EntityFrameworkCore.Tests/SufiChain.SufiAbp.ShortLinkGenerator.EntityFrameworkCore.Tests.csproj" />
+    <Project Path="test/SufiChain.SufiAbp.ShortLinkGenerator.MongoDB.Tests/SufiChain.SufiAbp.ShortLinkGenerator.MongoDB.Tests.csproj" />
+    <Project Path="test/SufiChain.SufiAbp.ShortLinkGenerator.TestBase/SufiChain.SufiAbp.ShortLinkGenerator.TestBase.csproj" />
+  </Folder>
+</Solution>

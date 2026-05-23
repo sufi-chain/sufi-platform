@@ -1,0 +1,12 @@
+{
+  "profiles": {
+    "MyCompanyName.MyProjectName.AuthServer": {
+      "commandName": "Project",
+      "launchBrowser": true,
+      "applicationUrl": "https://localhost:44306",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      }
+    }
+  }
+}

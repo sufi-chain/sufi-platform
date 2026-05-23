@@ -1,0 +1,324 @@
+@page "/admin/ai-management/multimodal-test"
+@attribute [Authorize(Policy = AIManagementPermissions.AI.Chat)]
+@inherits AIManagementComponentBase
+
+<SufiAbpPageToolbar>
+	<SbButton Color="SbColor.Secondary" Variant="SbButtonVariant.Outline" OnClick="@ResetForm">
+		<StartIcon><SbIcon Name="refresh" /></StartIcon>
+		<ChildContent>@L["Reset"]</ChildContent>
+	</SbButton>
+</SufiAbpPageToolbar>
+
+<SbStack Direction="SbStackDirection.Column" Gap="4">
+
+	<!-- Workspace Selection -->
+	<WorkspaceSelector Value="_selectedWorkspaceId"
+					   ValueChanged="@OnWorkspaceChangedAsync"
+					   Workspaces="_workspaces"
+					   Loading="@IsOperationLoading(LoadingKeys.LoadWorkspaces)" />
+
+	<!-- Capability Tabs -->
+	@if (!string.IsNullOrEmpty(_selectedWorkspaceName))
+	{
+		<SbCard>
+			<ChildContent>
+				<SbStack Direction="SbStackDirection.Column" Gap="3">
+					
+					<!-- Tab Buttons -->
+					<SbStack Direction="SbStackDirection.Row" Gap="2">
+						<AuthorizeView Policy="@AIManagementPermissions.AI.Chat">
+							<SbButton Color="@(_selectedCapability == AICapabilityType.ChatCompletion ? SbColor.Primary : SbColor.Default)"
+									  OnClick="@(() => SelectCapability(AICapabilityType.ChatCompletion))">
+								@L["Chat"]
+							</SbButton>
+						</AuthorizeView>
+						<AuthorizeView Policy="@AIManagementPermissions.AI.Audio">
+							<SbButton Color="@(_selectedCapability == AICapabilityType.AudioTranscription ? SbColor.Primary : SbColor.Default)"
+									  OnClick="@(() => SelectCapability(AICapabilityType.AudioTranscription))">
+								@L["AudioTranscription"]
+							</SbButton>
+						</AuthorizeView>
+						<AuthorizeView Policy="@AIManagementPermissions.AI.Audio">
+							<SbButton Color="@(_selectedCapability == AICapabilityType.TextToSpeech ? SbColor.Primary : SbColor.Default)"
+									  OnClick="@(() => SelectCapability(AICapabilityType.TextToSpeech))">
+								@L["TextToSpeech"]
+							</SbButton>
+						</AuthorizeView>
+						<AuthorizeView Policy="@AIManagementPermissions.AI.Vision">
+							<SbButton Color="@(_selectedCapability == AICapabilityType.VisionAnalysis ? SbColor.Primary : SbColor.Default)"
+									  OnClick="@(() => SelectCapability(AICapabilityType.VisionAnalysis))">
+								@L["Vision"]
+							</SbButton>
+						</AuthorizeView>
+						<AuthorizeView Policy="@AIManagementPermissions.AI.Embeddings">
+							<SbButton Color="@(_selectedCapability == AICapabilityType.Embeddings ? SbColor.Primary : SbColor.Default)"
+									  OnClick="@(() => SelectCapability(AICapabilityType.Embeddings))">
+								@L["Embeddings"]
+							</SbButton>
+						</AuthorizeView>
+					</SbStack>
+
+					<SbDivider />
+
+					<!-- Chat Tab -->
+					@if (_selectedCapability == AICapabilityType.ChatCompletion)
+					{
+						<SbStack Direction="SbStackDirection.Column" Gap="3">
+							<SbTextArea @bind-Value="_chatMessage"
+										Label="@L["Message"]"
+										Rows="4"
+										Placeholder="@L["EnterYourMessage"]" />
+							
+							<SbStack Direction="SbStackDirection.Row" Gap="2" Justify="SbJustify.End">
+								<SbButton Color="SbColor.Primary"
+										  OnClick="@SendChatAsync"
+										  Loading="IsOperationLoading(LoadingKeys.SendChat)"
+										  Disabled="string.IsNullOrWhiteSpace(_chatMessage)">
+									<StartIcon><SbIcon Name="send" /></StartIcon>
+									<ChildContent>@L["Send"]</ChildContent>
+								</SbButton>
+							</SbStack>
+
+							@if (!string.IsNullOrEmpty(_chatResponse))
+							{
+								<SbCard Elevation="1">
+									<ChildContent>
+										<SbStack Direction="SbStackDirection.Column" Gap="2">
+											<SbText Variant="SbTextVariant.Body" Weight="SbFontWeight.Medium">@L["Response"]:</SbText>
+											<SbText Variant="SbTextVariant.BodySmall">@_chatResponse</SbText>
+											@if (_chatTokens > 0)
+											{
+												<SbStack Direction="SbStackDirection.Row" Gap="2">
+													<SbChip Size="SbSize.Sm">@L["Tokens"]: @_chatTokens</SbChip>
+													<SbChip Size="SbSize.Sm">@L["Model"]: @_chatModel</SbChip>
+												</SbStack>
+											}
+										</SbStack>
+									</ChildContent>
+								</SbCard>
+							}
+						</SbStack>
+					}
+
+					<!-- Audio Transcription Tab -->
+					@if (_selectedCapability == AICapabilityType.AudioTranscription)
+					{
+						<SbStack Direction="SbStackDirection.Column" Gap="3">
+							<InputFile OnChange="@OnAudioFileSelectedAsync" accept="audio/*" />
+							
+							@if (_audioFileName != null)
+							{
+								<SbText Variant="SbTextVariant.BodySmall">@L["SelectedFile"]: @_audioFileName</SbText>
+							}
+
+							<SbStack Direction="SbStackDirection.Row" Gap="2" Justify="SbJustify.End">
+								<SbButton Color="SbColor.Primary"
+										  OnClick="@TranscribeAudioAsync"
+										  Loading="IsOperationLoading(LoadingKeys.TranscribeAudio)"
+										  Disabled="_audioData == null">
+									<StartIcon><SbIcon Name="mic" /></StartIcon>
+									<ChildContent>@L["Transcribe"]</ChildContent>
+								</SbButton>
+							</SbStack>
+
+							@if (!string.IsNullOrEmpty(_transcriptionText))
+							{
+								<SbCard Elevation="1">
+									<ChildContent>
+										<SbStack Direction="SbStackDirection.Column" Gap="2">
+											<SbText Variant="SbTextVariant.Body" Weight="SbFontWeight.Medium">@L["Transcription"]:</SbText>
+											<SbText Variant="SbTextVariant.BodySmall">@_transcriptionText</SbText>
+											@if (!string.IsNullOrEmpty(_transcriptionModel))
+											{
+												<SbChip Size="SbSize.Sm">@L["Model"]: @_transcriptionModel</SbChip>
+											}
+											@if (_transcriptionFileId.HasValue)
+											{
+												<SbStack Direction="SbStackDirection.Row" Gap="2">
+													<SbChip Size="SbSize.Sm" Color="SbColor.Info">
+														<StartIcon><SbIcon Name="file-audio" /></StartIcon>
+														<ChildContent>@L["FileStored"]</ChildContent>
+													</SbChip>
+													<SbButton Size="SbSize.Sm" Variant="SbButtonVariant.Solid" Href="@($"{_fileManagerBaseUrl}?fileId={_transcriptionFileId}")">
+														@L["ViewInFileManager"]
+													</SbButton>
+												</SbStack>
+											}
+										</SbStack>
+									</ChildContent>
+								</SbCard>
+							}
+						</SbStack>
+					}
+
+					<!-- Text-to-Speech Tab -->
+					@if (_selectedCapability == AICapabilityType.TextToSpeech)
+					{
+						<SbStack Direction="SbStackDirection.Column" Gap="3">
+							<SbTextArea @bind-Value="_ttsText"
+										Label="@L["Text"]"
+										Rows="4"
+										Placeholder="@L["EnterTextToSpeak"]" />
+
+							<SbStack Direction="SbStackDirection.Row" Gap="2" Justify="SbJustify.End">
+								<SbButton Color="SbColor.Primary"
+										  OnClick="@GenerateSpeechAsync"
+										  Loading="IsOperationLoading(LoadingKeys.GenerateSpeech)"
+										  Disabled="string.IsNullOrWhiteSpace(_ttsText)">
+									<StartIcon><SbIcon Name="volume" /></StartIcon>
+									<ChildContent>@L["GenerateSpeech"]</ChildContent>
+								</SbButton>
+							</SbStack>
+
+							@if (_audioOutputData != null)
+							{
+								<SbCard Elevation="1">
+									<ChildContent>
+										<SbStack Direction="SbStackDirection.Column" Gap="2">
+											<SbText Variant="SbTextVariant.Body" Weight="SbFontWeight.Medium">@L["GeneratedAudio"]:</SbText>
+											<audio controls src="@_audioOutputUrl" style="width: 100%;"></audio>
+											@if (_ttsFileId.HasValue)
+											{
+												<SbStack Direction="SbStackDirection.Row" Gap="2">
+													<SbChip Size="SbSize.Sm" Color="SbColor.Info">
+														<StartIcon><SbIcon Name="file-audio" /></StartIcon>
+														<ChildContent>@L["FileStored"]</ChildContent>
+													</SbChip>
+                                                    <SbButton Size="SbSize.Sm" Variant="SbButtonVariant.Solid" Href="@($"{_fileManagerBaseUrl}?fileId={_ttsFileId}")">
+														@L["ViewInFileManager"]
+													</SbButton>
+												</SbStack>
+											}
+											<SbButton Size="SbSize.Sm" OnClick="@DownloadAudioAsync">
+												<StartIcon><SbIcon Name="download" /></StartIcon>
+												<ChildContent>@L["Download"]</ChildContent>
+											</SbButton>
+										</SbStack>
+									</ChildContent>
+								</SbCard>
+							}
+						</SbStack>
+					}
+
+					<!-- Vision Analysis Tab -->
+					@if (_selectedCapability == AICapabilityType.VisionAnalysis)
+					{
+						<SbStack Direction="SbStackDirection.Column" Gap="3">
+							<InputFile OnChange="@OnImageFileSelectedAsync" accept="image/*" />
+							
+							@if (_imageFileName != null)
+							{
+								<SbText Variant="SbTextVariant.BodySmall">@L["SelectedFile"]: @_imageFileName</SbText>
+								@if (_imagePreviewUrl != null)
+								{
+									<img src="@_imagePreviewUrl" alt="Preview" style="max-width: 400px; max-height: 300px;" />
+								}
+							}
+
+							<SbTextArea @bind-Value="_visionPrompt"
+										Label="@L["Prompt"]"
+										Rows="2"
+										Placeholder="@L["DescribeWhatYouWantToKnow"]" />
+
+							<SbStack Direction="SbStackDirection.Row" Gap="2" Justify="SbJustify.End">
+								<SbButton Color="SbColor.Primary"
+										  OnClick="@AnalyzeImageAsync"
+										  Loading="IsOperationLoading(LoadingKeys.AnalyzeImage)"
+										  Disabled="_imageData == null || string.IsNullOrWhiteSpace(_visionPrompt)">
+									<StartIcon><SbIcon Name="eye" /></StartIcon>
+									<ChildContent>@L["Analyze"]</ChildContent>
+								</SbButton>
+							</SbStack>
+
+							@if (!string.IsNullOrEmpty(_visionDescription))
+							{
+								<SbCard Elevation="1">
+									<ChildContent>
+										<SbStack Direction="SbStackDirection.Column" Gap="2">
+											<SbText Variant="SbTextVariant.Body" Weight="SbFontWeight.Medium">@L["Analysis"]:</SbText>
+											<SbText Variant="SbTextVariant.BodySmall">@_visionDescription</SbText>
+											@if (_visionTokens > 0)
+											{
+												<SbStack Direction="SbStackDirection.Row" Gap="2">
+													<SbChip Size="SbSize.Sm">@L["Tokens"]: @_visionTokens</SbChip>
+													<SbChip Size="SbSize.Sm">@L["Model"]: @_visionModel</SbChip>
+												</SbStack>
+											}
+											@if (_visionFileId.HasValue)
+											{
+												<SbStack Direction="SbStackDirection.Row" Gap="2">
+													<SbChip Size="SbSize.Sm" Color="SbColor.Info">
+														<StartIcon><SbIcon Name="file-image" /></StartIcon>
+														<ChildContent>@L["FileStored"]</ChildContent>
+													</SbChip>
+                                                    <SbButton Size="SbSize.Sm" Variant="SbButtonVariant.Solid" Href="@($"{_fileManagerBaseUrl}?fileId={_visionFileId}")">
+														@L["ViewInFileManager"]
+													</SbButton>
+												</SbStack>
+											}
+										</SbStack>
+									</ChildContent>
+								</SbCard>
+							}
+						</SbStack>
+					}
+
+					<!-- Embeddings Tab -->
+					@if (_selectedCapability == AICapabilityType.Embeddings)
+					{
+						<SbStack Direction="SbStackDirection.Column" Gap="3">
+							<SbTextArea @bind-Value="_embeddingsText"
+										Label="@L["Text"]"
+										Rows="4"
+										Placeholder="@L["EnterTextToEmbed"]" />
+
+							<SbStack Direction="SbStackDirection.Row" Gap="2" Justify="SbJustify.End">
+								<SbButton Color="SbColor.Primary"
+										  OnClick="@GenerateEmbeddingsAsync"
+										  Loading="IsOperationLoading(LoadingKeys.GenerateEmbeddings)"
+										  Disabled="string.IsNullOrWhiteSpace(_embeddingsText)">
+									<StartIcon><SbIcon Name="hash" /></StartIcon>
+									<ChildContent>@L["GenerateEmbeddings"]</ChildContent>
+								</SbButton>
+							</SbStack>
+
+							@if (_embeddingsVector != null)
+							{
+								<SbCard Elevation="1">
+									<ChildContent>
+										<SbStack Direction="SbStackDirection.Column" Gap="2">
+											<SbText Variant="SbTextVariant.Body" Weight="SbFontWeight.Medium">@L["Embeddings"]:</SbText>
+											<SbText Variant="SbTextVariant.BodySmall">@L["VectorDimensions"]: @_embeddingsVector.Length</SbText>
+											<SbText Variant="SbTextVariant.Caption" Color="SbColor.Muted">
+												[@string.Join(", ", _embeddingsVector.Take(10))]... (@(_embeddingsVector.Length - 10) more)
+											</SbText>
+											@if (!string.IsNullOrEmpty(_embeddingsModel))
+											{
+												<SbChip Size="SbSize.Sm">@L["Model"]: @_embeddingsModel</SbChip>
+											}
+										</SbStack>
+									</ChildContent>
+								</SbCard>
+							}
+						</SbStack>
+					}
+
+				</SbStack>
+			</ChildContent>
+		</SbCard>
+	}
+	else
+	{
+		<SbCard>
+			<ChildContent>
+				<SbStack Direction="SbStackDirection.Column" Gap="2" Align="SbAlign.Center" style="padding: 4rem 0;">
+					<SbIcon Name="cpu" Size="SbSize.Xl" Color="SbColor.Muted" />
+					<SbText Variant="SbTextVariant.Body" Color="SbColor.Muted">
+						@L["SelectWorkspaceToTestAI"]
+					</SbText>
+				</SbStack>
+			</ChildContent>
+		</SbCard>
+	}
+
+</SbStack>

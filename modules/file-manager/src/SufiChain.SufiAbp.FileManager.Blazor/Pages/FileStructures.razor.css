@@ -1,0 +1,131 @@
+.structure-page {
+    padding: var(--sb-space-4);
+}
+
+.page-header {
+    background: linear-gradient(135deg, var(--sb-color-primary) 0%, var(--sb-color-primary-hover) 100%);
+    border-radius: var(--sb-radius-2xl);
+    padding: 2rem;
+    margin-bottom: 1.5rem;
+    color: white;
+}
+
+.page-title {
+    font-weight: 700;
+    font-size: 1.75rem;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.page-subtitle {
+    opacity: 0.8;
+    margin-top: 0.5rem;
+    margin-bottom: 0;
+}
+
+.stat-card-item {
+    flex: 1;
+    min-width: 150px;
+}
+
+.search-box {
+    max-width: 320px;
+}
+
+.structure-key {
+    font-family: var(--sb-font-family-mono);
+    font-size: 0.9rem;
+    background: var(--sb-color-primary-50);
+    padding: var(--sb-space-1) var(--sb-space-3);
+    border-radius: var(--sb-radius-md);
+    color: var(--sb-color-primary);
+}
+
+.flex-1 {
+    flex: 1;
+}
+
+.detail-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    padding: 0.4rem 0;
+    font-size: 0.9rem;
+}
+
+.detail-label {
+    font-weight: var(--sb-font-weight-bold);
+    min-width: 100px;
+}
+
+.detail-row > *:last-child {
+    min-width: 0;
+    flex: 1;
+}
+
+/* MIME type chips: allow truncation so long strings don't overflow on mobile */
+::deep .structure-detail-chips--mime .sb-chip {
+    min-width: 0;
+    max-width: 200px;
+}
+
+::deep .structure-detail-chips--mime .sb-chip__label {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* Create Structure Wizard - mobile stepper */
+@media (max-width: 767px) {
+    .create-wizard-stepper-container {
+        width: 100%;
+    }
+
+    .create-wizard-stepper-container ::deep .create-wizard-stepper.sb-stepper {
+        display: flex;
+        flex-direction: column;
+        min-height: 0;
+    }
+
+    .create-wizard-stepper-container ::deep .create-wizard-stepper .sb-stepper__steps {
+        flex: 0 0 auto;
+        overflow-x: auto;
+        overflow-y: hidden;
+        -webkit-overflow-scrolling: touch;
+        flex-wrap: nowrap;
+        padding-bottom: var(--sb-space-2);
+        scrollbar-width: thin;
+    }
+
+    .create-wizard-stepper-container ::deep .create-wizard-stepper .sb-stepper__step {
+        flex: 0 0 auto;
+        min-width: 88px;
+    }
+
+    .create-wizard-stepper-container ::deep .create-wizard-stepper .sb-stepper__step-description {
+        display: none;
+    }
+
+    .create-wizard-stepper-container ::deep .create-wizard-stepper .sb-stepper__step-label {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 80px;
+    }
+
+    .create-wizard-stepper-container ::deep .create-wizard-stepper .sb-stepper__connector {
+        display: none;
+    }
+
+    .create-wizard-stepper-container ::deep .create-wizard-stepper .sb-stepper__content {
+        flex: 1;
+        min-height: 0;
+        overflow-y: auto;
+    }
+
+    .detail-row {
+        flex-direction: column;
+    }
+}

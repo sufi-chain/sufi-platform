@@ -1,0 +1,62 @@
+/* SufiPlatform.DemoApp.Blazor.WebPublic - Global Styles */
+
+/* Public layout specific styles */
+.public-layout {
+    min-height: 100vh;
+}
+
+/* Page-specific overrides for public site */
+.public-hero {
+    padding: 4rem 2rem;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.public-hero h1 {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+}
+
+.public-hero p {
+    font-size: 1.25rem;
+    opacity: 0.9;
+}
+
+/* Content cards for public pages */
+.content-card {
+    border: none;
+    border-radius: 0.5rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.content-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Footer for public pages */
+.public-footer {
+    background-color: #f8f9fa;
+    padding: 2rem 0;
+    margin-top: 3rem;
+    border-top: 1px solid #e9ecef;
+}
+
+/* CMS placeholder styles */
+.cms-placeholder {
+    padding: 2rem;
+    border: 2px dashed #dee2e6;
+    border-radius: 0.5rem;
+    text-align: center;
+    color: #6c757d;
+    background-color: #f8f9fa;
+}
+
+.cms-placeholder i {
+    font-size: 2rem;
+    margin-bottom: 1rem;
+    display: block;
+}

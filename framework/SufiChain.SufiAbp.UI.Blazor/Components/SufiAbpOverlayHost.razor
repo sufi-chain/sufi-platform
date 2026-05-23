@@ -1,0 +1,613 @@
+@namespace SufiChain.SufiAbp.UI.Blazor.Components
+@using Microsoft.Extensions.Localization
+@using Microsoft.Extensions.Logging
+@using SufiChain.SufiAbp.UI.Blazor.Messages
+@using SufiChain.SufiAbp.UI.Blazor.Circuit
+@using SufiChain.SufiAbp.UI.Blazor.Notifications
+@using SufiChain.SufiAbp.UI.Blazor.BlockUi
+@using SufiChain.SufiAbp.UI.Blazor.Progression
+@using SufiChain.SufiAbp.UI.Messages
+@using SufiChain.SufiAbp.UI.Notifications
+@using SufiChain.SufiAbp.UI.BlockUi
+@using SufiChain.SufiAbp.UI.Progression
+@using SufiChain.SufiAbp.UI.Localization
+@using SufiChain.SufiBlazor.Components
+@using SufiChain.SufiBlazor.Components.Actions
+@using SufiChain.SufiBlazor.Components.Common
+@using SufiChain.SufiBlazor.Components.Feedback
+@using Microsoft.AspNetCore.Components.Web
+@using Microsoft.JSInterop
+@implements IDisposable
+@inject IUiMessageService MessageService
+@inject IJSRuntime JSRuntime
+@inject IUiNotificationService NotificationService
+@inject IBlockUiService BlockUiService
+@inject IUiPageProgressService PageProgressService
+@inject IBlazorCircuitIdAccessor CircuitIdAccessor
+@inject IStringLocalizer<SufiAbpFrameworkResource> FrameworkL
+@inject Microsoft.Extensions.Logging.ILogger<SufiAbpOverlayHost> Logger
+
+@* ====== BLOCK UI OVERLAY ====== *@
+@if (_isBlocked)
+{
+    <div class="sabp-block-ui-overlay" role="progressbar" aria-busy="true">
+        @if (_showBusy)
+        {
+            <div class="sabp-block-ui-spinner">
+                <SbProgress Type="SbProgressType.Circular" Size="SbSize.Lg" />
+            </div>
+        }
+    </div>
+}
+
+@* ====== PAGE PROGRESS BAR ====== *@
+@if (_showPageProgress)
+{
+    <div class="sabp-page-progress">
+        <SbProgress Type="SbProgressType.Linear"
+                    Indeterminate="@_pageProgressIndeterminate"
+                    Value="@_pageProgressValue"
+                    Class="sabp-page-progress__bar" />
+    </div>
+}
+
+@* ====== CONFIRM DIALOG (native dialog for top-layer stacking above SbDialog modals) ====== *@
+<dialog @ref="_confirmDialogRef"
+        class="sabp-overlay-host-dialog"
+        @onclick="OnConfirmOverlayClick"
+        @oncancel="OnConfirmCancel">
+    <div class="sb-confirm-dialog sb-confirm-dialog--default" @onclick:stopPropagation="true" role="alertdialog" aria-modal="true">
+        @if (_confirmRequest != null)
+        {
+            <div class="sb-confirm-dialog__icon sb-confirm-dialog__icon--default">
+                <SbIcon Name="help-circle" Size="SbSize.Lg" />
+            </div>
+            
+            <div class="sb-confirm-dialog__content">
+                <h3 class="sb-confirm-dialog__title">@(string.IsNullOrEmpty(_confirmRequest.Title) ? FrameworkL["Confirm"] : _confirmRequest.Title)</h3>
+                <p class="sb-confirm-dialog__message">@_confirmRequest.Message</p>
+            </div>
+            
+            <div class="sb-confirm-dialog__actions">
+                <SbButton Variant="SbButtonVariant.Ghost" OnClick="CancelConfirm">
+                    @(_confirmRequest.CancelButtonText ?? FrameworkL["Cancel"])
+                </SbButton>
+                <SbButton Variant="SbButtonVariant.Solid" Color="SbColor.Primary" OnClick="AcceptConfirm">
+                    @(_confirmRequest.ConfirmButtonText ?? FrameworkL["Confirm"])
+                </SbButton>
+            </div>
+        }
+    </div>
+</dialog>
+
+@* ====== MESSAGE DIALOG (native dialog for top-layer stacking above SbDialog modals) ====== *@
+<dialog @ref="_messageDialogRef"
+        class="sabp-overlay-host-dialog"
+        @onclick="CloseMessage"
+        @oncancel="CloseMessage">
+    <div class="sb-confirm-dialog sb-confirm-dialog--@GetMessageVariant()" @onclick:stopPropagation="true" role="alertdialog" aria-modal="true">
+        @if (_messageRequest != null)
+        {
+            <div class="sb-confirm-dialog__icon sb-confirm-dialog__icon--@GetMessageVariant()">
+                <SbIcon Name="@GetMessageIcon()" Size="SbSize.Lg" />
+            </div>
+            
+            <div class="sb-confirm-dialog__content">
+                @if (!string.IsNullOrEmpty(_messageRequest.Title))
+                {
+                    <h3 class="sb-confirm-dialog__title">@_messageRequest.Title</h3>
+                }
+                <p class="sb-confirm-dialog__message">@_messageRequest.Message</p>
+            </div>
+            
+            <div class="sb-confirm-dialog__actions">
+                <SbButton Variant="SbButtonVariant.Solid" Color="@GetMessageButtonColor()" OnClick="CloseMessage">
+                    @(_messageRequest.OkButtonText ?? FrameworkL["Ok"])
+                </SbButton>
+            </div>
+        }
+    </div>
+</dialog>
+
+@* ====== TOAST NOTIFICATIONS (popover for top-layer stacking above SbDialog modals) ====== *@
+<div @ref="_toastHostRef"
+     popover="manual"
+     class="sabp-toast-popover-host">
+    <div class="sb-toast-host sb-toast-host--top-right sabp-overlay-host-toast">
+        @foreach (var toast in GetToastsSnapshot())
+        {
+            <div class="sb-toast-host__item @(toast.IsLeaving ? "sb-toast-host__item--leaving" : "sb-toast-host__item--entering")">
+                <SbToast Title="@toast.Title"
+                         Message="@toast.Message"
+                         Severity="@GetToastSeverity(toast.Type)"
+                         ShowCloseButton="true"
+                         OnClose="() => RemoveToast(toast)" />
+            </div>
+        }
+    </div>
+</div>
+
+<style>
+    .sabp-block-ui-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: rgba(0, 0, 0, 0.4);
+        z-index: 2147483646; /* Above all z-index values; confirm/message use native dialog (top layer) */
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .sabp-block-ui-spinner {
+        padding: var(--sb-space-6, 1.5rem);
+        background: var(--sb-color-surface, white);
+        border-radius: var(--sb-radius-lg, 0.5rem);
+        box-shadow: var(--sb-shadow-xl, 0 20px 25px -5px rgba(0, 0, 0, 0.1));
+    }
+
+    .sabp-page-progress {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        z-index: 2147483645; /* Just below block UI, above all other z-index elements */
+    }
+
+    .sabp-page-progress__bar {
+        border-radius: 0;
+    }
+
+    /* Native dialog styling - uses top layer so always on top of SbDialog modals */
+    /* Closed: hide completely (our display:flex would override browser's default display:none) */
+    .sabp-overlay-host-dialog:not([open]) {
+        display: none;
+    }
+
+    .sabp-overlay-host-dialog[open] {
+        position: fixed;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        max-width: none;
+        max-height: none;
+        margin: 0;
+        padding: 0;
+        border: none;
+        background: transparent;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: var(--sb-space-4);
+    }
+
+    .sabp-overlay-host-dialog::backdrop {
+        background-color: rgba(0, 0, 0, 0.5);
+        backdrop-filter: blur(2px);
+    }
+
+    .sabp-overlay-host-toast {
+        pointer-events: auto; /* Override sb-toast-host's none so toasts are clickable */
+        z-index: 2147483644;
+    }
+
+    /* Toast popover: full viewport, transparent, pointer-events none so modal stays interactive */
+    .sabp-toast-popover-host {
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        border: none;
+        background: transparent;
+        padding: 0;
+        margin: 0;
+    }
+</style>
+
+@code {
+    // ====== BLOCK UI STATE ======
+    private bool _isBlocked;
+    private bool _showBusy;
+
+    // ====== PAGE PROGRESS STATE ======
+    private bool _showPageProgress;
+    private bool _pageProgressIndeterminate;
+    private int _pageProgressValue;
+
+    // ====== CONFIRM STATE ======
+    private bool _showConfirm;
+    private bool _confirmPendingShow;
+    private ConfirmRequest? _confirmRequest;
+    private TaskCompletionSource<bool>? _confirmTcs;
+
+    // ====== MESSAGE STATE ======
+    private bool _showMessage;
+    private bool _messagePendingShow;
+    private MessageRequest? _messageRequest;
+    private TaskCompletionSource? _messageTcs;
+
+    // ====== TOAST STATE ======
+    private readonly List<ToastItem> _toasts = new();
+    private readonly object _toastsLock = new();
+    private string? _notificationCircuitId;
+    private string? _messageCircuitId;
+    private string? _blockUiCircuitId;
+    private string? _pageProgressCircuitId;
+    private bool _handlersRegistered;
+
+    private ElementReference _confirmDialogRef;
+    private ElementReference _messageDialogRef;
+    private ElementReference _toastHostRef;
+
+    protected override void OnInitialized()
+    {
+        // Circuit ID is not available yet in OnInitialized - will register handlers in OnAfterRenderAsync
+    }
+
+    private void RegisterHandlers()
+    {
+        // Register message/confirm handlers
+        var circuitId = CircuitIdAccessor?.CurrentCircuitId;
+        Logger.LogInformation("SufiAbpOverlayHost.RegisterHandlers - Circuit ID: {CircuitId}", circuitId ?? "null");
+        
+        _handlersRegistered = true;
+        
+        if (MessageService is SufiBlazorMessageService messageService)
+        {
+            if (!string.IsNullOrEmpty(circuitId))
+            {
+                _messageCircuitId = circuitId;
+            }
+            
+            messageService.RegisterConfirmHandler(HandleConfirmAsync);
+            messageService.RegisterMessageHandler(HandleMessageAsync);
+        }
+
+        // Subscribe to notification events (circuit-keyed in Blazor Server to isolate per user/session)
+        if (NotificationService is SufiBlazorNotificationService notificationService)
+        {
+            if (!string.IsNullOrEmpty(circuitId))
+            {
+                notificationService.RegisterCircuitHandler(circuitId, OnNotificationAdded, OnNotificationRemoved);
+                _notificationCircuitId = circuitId;
+            }
+            else
+            {
+                notificationService.OnNotificationAdded += OnNotificationAdded;
+                notificationService.OnNotificationRemoved += OnNotificationRemoved;
+            }
+        }
+
+        // Subscribe to BlockUi events
+        if (BlockUiService is SufiBlazorBlockUiService blockUiService)
+        {
+            if (!string.IsNullOrEmpty(circuitId))
+            {
+                blockUiService.RegisterCircuitHandler(circuitId, OnBlockStateChanged);
+                _blockUiCircuitId = circuitId;
+            }
+            else
+            {
+                blockUiService.OnBlockStateChanged += OnBlockStateChanged;
+            }
+        }
+
+        // Subscribe to PageProgress events
+        if (PageProgressService is SufiBlazorPageProgressService pageProgressService)
+        {
+            if (!string.IsNullOrEmpty(circuitId))
+            {
+                pageProgressService.RegisterCircuitHandler(circuitId, OnProgressChanged);
+                _pageProgressCircuitId = circuitId;
+            }
+            else
+            {
+                pageProgressService.ProgressChanged += OnProgressChanged;
+            }
+        }
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender && !_handlersRegistered)
+        {
+            RegisterHandlers();
+        }
+        
+        if (_confirmPendingShow && _showConfirm)
+        {
+            _confirmPendingShow = false;
+            try
+            {
+                await JSRuntime.InvokeVoidAsync("SufiBlazor.dialog.showModal", _confirmDialogRef);
+            }
+            catch (JSException)
+            {
+                // Ignore during prerender or when JS not available
+            }
+        }
+        if (_messagePendingShow && _showMessage)
+        {
+            _messagePendingShow = false;
+            try
+            {
+                await JSRuntime.InvokeVoidAsync("SufiBlazor.dialog.showModal", _messageDialogRef);
+            }
+            catch (JSException)
+            {
+                // Ignore during prerender or when JS not available
+            }
+        }
+
+        // Toast popover: show when we have toasts (top layer above modals), hide when empty
+        var toastCount = GetToastsSnapshot().Count;
+        try
+        {
+            if (toastCount > 0)
+            {
+                await JSRuntime.InvokeVoidAsync("SufiBlazor.popover.show", _toastHostRef);
+            }
+            else
+            {
+                await JSRuntime.InvokeVoidAsync("SufiBlazor.popover.hide", _toastHostRef);
+            }
+        }
+        catch (JSException)
+        {
+            // Ignore during prerender or when JS not available
+        }
+    }
+
+    // ====== BLOCK UI HANDLERS ======
+    private void OnBlockStateChanged(BlockUiState state)
+    {
+        _isBlocked = state.IsBlocked;
+        _showBusy = state.ShowBusy;
+        InvokeAsync(StateHasChanged);
+    }
+
+    // ====== PAGE PROGRESS HANDLERS ======
+    private void OnProgressChanged(object? sender, UiPageProgressEventArgs e)
+    {
+        _showPageProgress = e.IsVisible;
+        _pageProgressIndeterminate = e.IsIndeterminate;
+        _pageProgressValue = e.Percentage ?? 0;
+        InvokeAsync(StateHasChanged);
+    }
+
+    // ====== CONFIRM HANDLERS ======
+    private async Task<bool> HandleConfirmAsync(ConfirmRequest request)
+    {
+        _confirmRequest = request;
+        _confirmTcs = new TaskCompletionSource<bool>();
+        _showConfirm = true;
+        _confirmPendingShow = true;
+        await InvokeAsync(StateHasChanged);
+        return await _confirmTcs.Task;
+    }
+
+    private async Task AcceptConfirm()
+    {
+        try
+        {
+            await JSRuntime.InvokeVoidAsync("SufiBlazor.dialog.close", _confirmDialogRef);
+        }
+        catch (JSException) { /* Ignore if prerender or disconnected */ }
+        _showConfirm = false;
+        _confirmTcs?.TrySetResult(true);
+    }
+
+    private async Task CancelConfirm()
+    {
+        try
+        {
+            await JSRuntime.InvokeVoidAsync("SufiBlazor.dialog.close", _confirmDialogRef);
+        }
+        catch (JSException) { /* Ignore if prerender or disconnected */ }
+        _showConfirm = false;
+        _confirmTcs?.TrySetResult(false);
+    }
+
+    private void OnConfirmOverlayClick(MouseEventArgs args)
+    {
+        if (_confirmRequest?.CloseOnBackdropClick == true)
+        {
+            _ = CancelConfirm();
+        }
+    }
+
+    private void OnConfirmCancel()
+    {
+        _ = CancelConfirm();
+    }
+
+    // ====== MESSAGE HANDLERS ======
+    private async Task HandleMessageAsync(MessageRequest request)
+    {
+        _messageRequest = request;
+        _messageTcs = new TaskCompletionSource();
+        _showMessage = true;
+        _messagePendingShow = true;
+        await InvokeAsync(StateHasChanged);
+        await _messageTcs.Task;
+    }
+
+    private async Task CloseMessage()
+    {
+        try
+        {
+            await JSRuntime.InvokeVoidAsync("SufiBlazor.dialog.close", _messageDialogRef);
+        }
+        catch (JSException) { /* Ignore if prerender or disconnected */ }
+        _showMessage = false;
+        _messageTcs?.TrySetResult();
+    }
+
+    private string GetMessageVariant() => _messageRequest?.Type switch
+    {
+        UiMessageType.Error => "danger",
+        UiMessageType.Warning => "warning",
+        UiMessageType.Success => "success",
+        _ => "info"
+    };
+
+    private string GetMessageIcon() => _messageRequest?.Type switch
+    {
+        UiMessageType.Error => "x-circle",
+        UiMessageType.Warning => "warning",
+        UiMessageType.Success => "check-circle",
+        _ => "info"
+    };
+
+    private SbColor GetMessageButtonColor() => _messageRequest?.Type switch
+    {
+        UiMessageType.Error => SbColor.Danger,
+        UiMessageType.Warning => SbColor.Warning,
+        UiMessageType.Success => SbColor.Success,
+        _ => SbColor.Info
+    };
+
+    // ====== TOAST HANDLERS ======
+    
+    /// <summary>
+    /// Returns a thread-safe snapshot of the toasts collection for rendering.
+    /// </summary>
+    private List<ToastItem> GetToastsSnapshot()
+    {
+        lock (_toastsLock)
+        {
+            return _toasts.ToList();
+        }
+    }
+
+    private void OnNotificationAdded(NotificationItem notification)
+    {
+        var toast = new ToastItem
+        {
+            Id = notification.Id,
+            Type = notification.Type,
+            Message = notification.Message,
+            Title = notification.Title,
+            DurationMs = notification.DurationMs
+        };
+
+        lock (_toastsLock)
+        {
+            _toasts.Add(toast);
+        }
+        InvokeAsync(StateHasChanged);
+
+        // Auto-remove after duration
+        if (toast.DurationMs > 0)
+        {
+            _ = Task.Run(async () =>
+            {
+                await Task.Delay(toast.DurationMs);
+                await InvokeAsync(() => RemoveToastWithAnimation(toast));
+            });
+        }
+    }
+
+    private void OnNotificationRemoved(NotificationItem notification)
+    {
+        ToastItem? toast;
+        lock (_toastsLock)
+        {
+            toast = _toasts.FirstOrDefault(t => t.Id == notification.Id);
+            if (toast != null)
+            {
+                _toasts.Remove(toast);
+            }
+        }
+        if (toast != null)
+        {
+            InvokeAsync(StateHasChanged);
+        }
+    }
+
+    private async Task RemoveToastWithAnimation(ToastItem toast)
+    {
+        toast.IsLeaving = true;
+        await InvokeAsync(StateHasChanged);
+        await Task.Delay(300); // Animation duration
+        lock (_toastsLock)
+        {
+            _toasts.Remove(toast);
+        }
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private void RemoveToast(ToastItem toast)
+    {
+        _ = RemoveToastWithAnimation(toast);
+    }
+
+    private SbToastSeverity GetToastSeverity(UiNotificationType type) => type switch
+    {
+        UiNotificationType.Success => SbToastSeverity.Success,
+        UiNotificationType.Warning => SbToastSeverity.Warning,
+        UiNotificationType.Error => SbToastSeverity.Error,
+        _ => SbToastSeverity.Info
+    };
+
+    // ====== DISPOSAL ======
+    public void Dispose()
+    {
+        if (MessageService is SufiBlazorMessageService messageService)
+        {
+            if (!string.IsNullOrEmpty(_messageCircuitId))
+            {
+                messageService.UnregisterHandlers(_messageCircuitId);
+            }
+        }
+
+        if (NotificationService is SufiBlazorNotificationService notificationService)
+        {
+            if (!string.IsNullOrEmpty(_notificationCircuitId))
+            {
+                notificationService.UnregisterCircuitHandler(_notificationCircuitId);
+            }
+            else
+            {
+                notificationService.OnNotificationAdded -= OnNotificationAdded;
+                notificationService.OnNotificationRemoved -= OnNotificationRemoved;
+            }
+        }
+
+        if (BlockUiService is SufiBlazorBlockUiService blockUiService)
+        {
+            if (!string.IsNullOrEmpty(_blockUiCircuitId))
+            {
+                blockUiService.UnregisterCircuitHandler(_blockUiCircuitId);
+            }
+            else
+            {
+                blockUiService.OnBlockStateChanged -= OnBlockStateChanged;
+            }
+        }
+
+        if (PageProgressService is SufiBlazorPageProgressService pageProgressService)
+        {
+            if (!string.IsNullOrEmpty(_pageProgressCircuitId))
+            {
+                pageProgressService.UnregisterCircuitHandler(_pageProgressCircuitId);
+            }
+            else
+            {
+                pageProgressService.ProgressChanged -= OnProgressChanged;
+            }
+        }
+    }
+
+    // ====== INTERNAL CLASSES ======
+    private class ToastItem
+    {
+        public Guid Id { get; set; }
+        public UiNotificationType Type { get; set; }
+        public string Message { get; set; } = string.Empty;
+        public string? Title { get; set; }
+        public int DurationMs { get; set; }
+        public bool IsLeaving { get; set; }
+    }
+}

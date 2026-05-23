@@ -1,0 +1,59 @@
+<Project Sdk="Microsoft.NET.Sdk.Razor">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <!-- CS8669: Suppress nullable annotations warning in Razor-generated code -->
+    <NoWarn>$(NoWarn);CS8669</NoWarn>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <PackageId>SufiChain.SufiAbp.FileManager.Blazor</PackageId>
+    <Description>File manager module Blazor UI components for Sufi Platform - media manager and file browser.</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Content Remove="Pages\MediaManager.razor" />
+    <Content Remove="Pages\MediaStructures.razor" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="$(MicrosoftAspNetCoreComponentsWebVersion)" />
+    <ProjectReference Include="..\..\..\..\framework\SufiChain.SufiAbp.Ddd.Application.Contracts\SufiChain.SufiAbp.Ddd.Application.Contracts.csproj" />
+    <!-- SufiAbp Framework (transitively provides SufiChain.SufiBlazor) -->
+    <ProjectReference Include="..\SufiChain.SufiAbp.FileManager.Application.Contracts\SufiChain.SufiAbp.FileManager.Application.Contracts.csproj" />
+    <ProjectReference Include="..\SufiChain.SufiAbp.FileManager.Blazor.Public\SufiChain.SufiAbp.FileManager.Blazor.Public.csproj" />
+    <ProjectReference Include="..\..\..\setting-management\src\SufiChain.SufiAbp.SettingManagement.Blazor\SufiChain.SufiAbp.SettingManagement.Blazor.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Update="wwwroot\vendor\cropper.min.css">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Update="wwwroot\vendor\cropper.min.js">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <!-- Copy demo documentation to wwwroot/docs for DocViewer -->
+  <PropertyGroup>
+    <DocsSourceRoot>$(MSBuildThisFileDirectory)..\..\..\..\docs\file-manager</DocsSourceRoot>
+  </PropertyGroup>
+  <Target Name="CopyDocsToWwwroot" BeforeTargets="Build">
+    <ItemGroup>
+      <DocToCopy Include="$(DocsSourceRoot)\SufiAbpFileManager.md" />
+      <DocToCopy Include="$(DocsSourceRoot)\SufiAbpFileBrowser.md" />
+      <DocToCopy Include="$(DocsSourceRoot)\SufiAbpFileGallery.md" />
+      <DocToCopy Include="$(DocsSourceRoot)\SufiAbpFileSelector.md" />
+      <DocToCopy Include="$(DocsSourceRoot)\SufiAbpFileUploader.md" />
+      <DocToCopy Include="$(DocsSourceRoot)\SufiAbpQuickImageUploader.md" />
+      <DocToCopy Include="$(DocsSourceRoot)\FileManagerRichTextEditorIntegration.md" />
+      <DocToCopy Include="$(DocsSourceRoot)\FileStructure.md" />
+      <DocToCopyFiltered Include="@(DocToCopy)" Condition="Exists('%(DocToCopy.Identity)')" />
+    </ItemGroup>
+    <MakeDir Directories="$(MSBuildThisFileDirectory)wwwroot\docs" Condition="!Exists('$(MSBuildThisFileDirectory)wwwroot\docs')" />
+    <Copy SourceFiles="@(DocToCopyFiltered)" DestinationFolder="$(MSBuildThisFileDirectory)wwwroot\docs" SkipUnchangedFiles="true" Condition="'@(DocToCopyFiltered)' != ''" />
+  </Target>
+
+</Project>

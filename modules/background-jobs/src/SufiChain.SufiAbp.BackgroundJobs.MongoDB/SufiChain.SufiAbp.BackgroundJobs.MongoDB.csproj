@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <RootNamespace>SufiChain.SufiAbp.BackgroundJobs</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    
+    <ProjectReference Include="..\..\..\..\framework\SufiChain.SufiAbp.MongoDB\SufiChain.SufiAbp.MongoDB.csproj" />
+    
+    <ProjectReference Include="..\SufiChain.SufiAbp.BackgroundJobs.Domain\SufiChain.SufiAbp.BackgroundJobs.Domain.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <!-- Exclude duplicate files in MongoDB subdirectory -->
+    <Compile Remove="MongoDB\**" />
+  </ItemGroup>
+</Project>

@@ -1,0 +1,17 @@
+@using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.Extensions.Localization
+@using MyCompanyName.MyProjectName.Localization
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject IStringLocalizer<DemoAppResource> L
+
+<AuthorizeView>
+    <Authorized>
+        @* User menu is handled by the theme's toolbar *@
+    </Authorized>
+    <NotAuthorized>
+        <a class="btn btn-outline-primary btn-sm" href="Account/Login">
+            <i class="fas fa-sign-in-alt me-1"></i>
+            @L["Login"]
+        </a>
+    </NotAuthorized>
+</AuthorizeView>

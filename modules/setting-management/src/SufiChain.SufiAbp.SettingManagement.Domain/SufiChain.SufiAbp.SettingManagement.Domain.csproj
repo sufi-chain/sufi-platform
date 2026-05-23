@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <RootNamespace>SufiChain.SufiAbp.SettingManagement</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Polly" Version="8.5.0" />
+    
+    <ProjectReference Include="..\..\..\..\framework\SufiChain.SufiAbp.Caching\SufiChain.SufiAbp.Caching.csproj" />
+    
+    <ProjectReference Include="..\..\..\..\framework\SufiChain.SufiAbp.Ddd.Domain\SufiChain.SufiAbp.Ddd.Domain.csproj" />
+    <ProjectReference Include="..\SufiChain.SufiAbp.SettingManagement.Domain.Shared\SufiChain.SufiAbp.SettingManagement.Domain.Shared.csproj" />
+  </ItemGroup>
+</Project>

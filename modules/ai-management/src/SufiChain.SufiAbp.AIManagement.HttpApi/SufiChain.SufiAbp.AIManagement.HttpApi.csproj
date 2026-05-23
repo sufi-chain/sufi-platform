@@ -1,0 +1,20 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <RootNamespace>SufiChain.SufiAbp.AIManagement</RootNamespace>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../../../../framework/SufiChain.SufiAbp.AI/SufiChain.SufiAbp.AI.csproj" />
+    <ProjectReference Include="../../../../framework/SufiChain.SufiAbp.AspNetCore.Mvc/SufiChain.SufiAbp.AspNetCore.Mvc.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\SufiChain.SufiAbp.AIManagement.Application.Contracts\SufiChain.SufiAbp.AIManagement.Application.Contracts.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.SemanticKernel" Version="1.76.0" />
+  </ItemGroup>
+</Project>

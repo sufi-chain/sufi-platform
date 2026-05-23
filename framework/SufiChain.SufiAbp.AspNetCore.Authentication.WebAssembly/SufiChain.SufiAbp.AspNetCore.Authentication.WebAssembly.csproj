@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk.Razor">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <RootNamespace>SufiChain.SufiAbp.AspNetCore.Authentication.WebAssembly</RootNamespace>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <PackageId>SufiChain.SufiAbp.AspNetCore.Authentication.WebAssembly</PackageId>
+    <Description>WebAssembly authentication for Sufi Platform Blazor applications using OIDC.</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="$(MicrosoftAspNetCoreComponentsWebAssemblyVersion)" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Authentication" Version="$(MicrosoftAspNetCoreComponentsWebAssemblyVersion)" />
+    <PackageReference Include="Volo.Abp.Autofac.WebAssembly" Version="$(AbpVersion)"/>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\SufiChain.SufiAbp.AspNetCore.Authentication.Abstractions\SufiChain.SufiAbp.AspNetCore.Authentication.Abstractions.csproj" />
+  </ItemGroup>
+
+</Project>

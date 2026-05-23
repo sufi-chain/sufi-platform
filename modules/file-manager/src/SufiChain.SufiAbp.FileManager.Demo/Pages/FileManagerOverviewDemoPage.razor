@@ -1,0 +1,38 @@
+@page "/demo/file-manager"
+@inherits FileManagerComponentBase
+
+<PageTitle>@(L["Menu:FileManagerDemoOverview"] +" - " + L["Menu:FileManagerDemo"])</PageTitle>
+
+<DemoLayout>
+	<div class="docs-home">
+		<section class="docs-hero">
+			<h1 class="docs-hero-title">@L["Menu:FileManagerDemo"]</h1>
+			<p class="docs-hero-subtitle">
+				@L["Demo:FileManagerOverviewIntro"]
+			</p>
+		</section>
+
+		<section class="demo-categories">
+			<a href="/demo/file-manager/asset-manager" class="demo-category-card">
+				<h3>@L["Menu:FileManagerDemoAssetManager"]</h3>
+				<p>@L["Demo:FileManagerOverviewAssetManagerDesc"]</p>
+			</a>
+			<a href="/demo/file-manager/browser" class="demo-category-card">
+				<h3>@L["Menu:FileManagerDemoFileBrowser"]</h3>
+				<p>@L["Demo:FileManagerOverviewFileBrowserDesc"]</p>
+			</a>
+			<a href="/demo/file-manager/upload" class="demo-category-card">
+				<h3>@L["Menu:FileManagerDemoUpload"]</h3>
+				<p>@L["Demo:FileManagerOverviewUploadDesc"]</p>
+			</a>
+			<a href="/demo/file-manager/rich-text-editor" class="demo-category-card">
+				<h3>@L["Menu:FileManagerDemoRichTextEditor"]</h3>
+				<p>@L["Demo:FileManagerOverviewRichTextEditorDesc"]</p>
+			</a>
+			<a href="/demo/file-manager/file-structure" class="demo-category-card">
+				<h3>@L["Menu:FileManagerDemoFileStructure"]</h3>
+				<p>@L["Demo:FileManagerOverviewFileStructureDesc"]</p>
+			</a>
+		</section>
+	</div>
+</DemoLayout>

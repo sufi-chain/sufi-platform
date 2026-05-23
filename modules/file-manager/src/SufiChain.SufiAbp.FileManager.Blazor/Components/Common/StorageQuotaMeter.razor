@@ -1,0 +1,46 @@
+<div class="storage-quota-meter @CssClass">
+    @if (Quota != null)
+    {
+        <SbStack Direction="SbStackDirection.Row" Justify="SbJustify.SpaceBetween" Align="SbAlign.Center" Class="mb-2">
+            <span class="fw-bold">Storage Usage</span>
+            <span class="text-muted">
+                @Quota.UsedMB.ToString("0.##") MB / @Quota.LimitMB MB
+            </span>
+        </SbStack>
+
+        <SbProgress Value="@((int)Quota.PercentageUsed)" Color="@GetQuotaColor()">
+            @if (ShowPercentage)
+            {
+                <span>@Quota.PercentageUsed.ToString("0.#")%</span>
+            }
+        </SbProgress>
+
+        @if (ShowDetails)
+        {
+            <div class="mt-2">
+                <small class="text-muted">
+                    <div>Available: @Quota.AvailableMB.ToString("0.##") MB</div>
+                    @if (Quota.PercentageUsed >= 90 && Quota.PercentageUsed < 100)
+                    {
+                        <SbAlert Severity="SbAlertSeverity.Warning" Class="mt-2 py-1 px-2">
+                            Storage is almost full
+                        </SbAlert>
+                    }
+                    else if (Quota.PercentageUsed >= 100)
+                    {
+                        <SbAlert Severity="SbAlertSeverity.Danger" Class="mt-2 py-1 px-2">
+                            Storage quota exceeded
+                        </SbAlert>
+                    }
+                </small>
+            </div>
+        }
+    }
+    else
+    {
+        <div class="text-center py-3">
+            <SbProgress Type="SbProgressType.Circular" Size="SbSize.Sm" />
+            <span class="ms-2 text-muted">Loading storage info...</span>
+        </div>
+    }
+</div>

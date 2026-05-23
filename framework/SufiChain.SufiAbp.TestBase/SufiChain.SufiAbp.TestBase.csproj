@@ -1,0 +1,10 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <RootNamespace>SufiChain.SufiAbp.TestBase</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Volo.Abp.TestBase" Version="$(AbpVersion)"/>
+  </ItemGroup>
+</Project>

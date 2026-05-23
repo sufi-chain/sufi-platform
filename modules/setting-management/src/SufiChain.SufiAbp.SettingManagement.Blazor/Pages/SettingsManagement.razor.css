@@ -1,0 +1,91 @@
+/* Settings Management Page - Vertical Tabs Layout */
+/* Matches the pattern used by PermissionManagementModal */
+
+.setting-panes {
+    display: flex;
+    min-height: 500px;
+}
+
+.setting-groups-nav {
+    width: 220px;
+    border-inline-end: 1px solid var(--sb-border-color, #dee2e6);
+    overflow-y: auto;
+    flex-shrink: 0;
+    background-color: var(--sb-bg-subtle, #f8f9fa);
+}
+
+.setting-content {
+    flex: 1;
+    overflow-y: auto;
+    background-color: var(--sb-bg, #fff);
+}
+
+.setting-groups-nav ::deep .setting-group-item {
+    display: block;
+    width: 100%;
+    padding: 0.75rem 1rem;
+    text-align: start;
+    border: none;
+    background: transparent;
+    color: inherit;
+    cursor: pointer;
+    transition: background-color 0.15s ease-in-out, color 0.15s ease-in-out;
+    border-inline-start: 3px solid transparent;
+}
+
+.setting-groups-nav ::deep .setting-group-item:hover {
+    background-color: var(--sb-hover-bg, #e9ecef);
+}
+
+.setting-groups-nav ::deep .setting-group-item.active {
+    background-color: var(--sb-primary-light, #e7f1ff);
+    color: var(--sb-primary, #0d6efd);
+    border-inline-start-color: var(--sb-primary, #0d6efd);
+}
+
+.setting-groups-nav ::deep .setting-group-item .group-name {
+    font-size: 0.875rem;
+    display: block;
+}
+
+/* Mobile: horizontal tabs on top, full-width content below */
+@media (max-width: 767px) {
+    .setting-panes {
+        flex-direction: column;
+        min-height: 300px;
+    }
+
+    .setting-groups-nav {
+        display: flex;
+        flex-direction: row;
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        overflow-y: hidden;
+        width: 100%;
+        min-width: 0;
+        border-inline-end: none;
+        border-block-end: 1px solid var(--sb-border-color, #dee2e6);
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: thin;
+    }
+
+    .setting-groups-nav ::deep .setting-group-item {
+        flex-shrink: 0;
+        width: auto;
+        min-width: max-content;
+        white-space: nowrap;
+        border-inline-start: none;
+        border-radius: 0;
+    }
+
+    /* Mobile: active indicator at bottom (horizontal tabs) */
+    .setting-groups-nav ::deep .setting-group-item.active {
+        border-inline-start-color: transparent;
+        border-block-end: 2px solid var(--sb-primary, #0d6efd);
+    }
+
+    .setting-content {
+        flex: 1;
+        min-height: 0;
+    }
+}

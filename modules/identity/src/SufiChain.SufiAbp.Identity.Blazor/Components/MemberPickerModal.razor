@@ -1,0 +1,89 @@
+@inherits IdentityComponentBase
+
+<SbDialog Open="@Open" OnCloseButtonClick="Hide" OpenChanged="OnDialogOpenChanged" Size="SbDialogSize.Lg" Title="@L["AddMembers"]">
+    <ChildContent>
+        <SbStack Gap="3">
+            <SbTextField @bind-Value="_filter" 
+                         @bind-Value:after="OnFilterChangedAsync"
+                         Placeholder="@L["SearchUsers"]"
+                         Clearable="true">
+                <StartAdornment>
+                    <SbIcon Name="search" />
+                </StartAdornment>
+            </SbTextField>
+
+            @if (!string.IsNullOrEmpty(_errorMessage))
+            {
+                <SbAlert Severity="SbAlertSeverity.Danger">
+                    <SbIcon Name="alert-circle" />
+                    @_errorMessage
+                </SbAlert>
+            }
+            else if (IsOperationLoading(LoadingKeys.LoadUsers))
+            {
+                <SbStack Justify="SbJustify.Center" Align="SbAlign.Center" Class="p-8">
+                    <SbProgress Type="SbProgressType.Circular" />
+                    <span>@L["Loading"]...</span>
+                </SbStack>
+            }
+            else if (_availableUsers.Count == 0)
+            {
+                <SbStack Justify="SbJustify.Center" Align="SbAlign.Center" Class="p-8 text-muted">
+                    <SbIcon Name="users" Size="SbSize.Xl" />
+                    <span>@L["NoAvailableUsersFound"]</span>
+                </SbStack>
+            }
+            else
+            {
+                <SbDataGrid TItem="OrganizationUnitMemberDto"
+                            Items="_availableUsers"
+                            Striped="true"
+                            Hoverable="true"
+                            PageIndex="_pageIndex"
+                            PageSize="_pageSize"
+                            TotalCount="_totalCount"
+                            PageIndexChanged="OnPageIndexChangedAsync">
+                    <SbColumn TItem="OrganizationUnitMemberDto" Title="" Width="50px">
+                        <CellTemplate Context="cellContext">
+                            <SbCheckbox Value="@_selectedUserIds.Contains(cellContext.Item.UserId)"
+                                        ValueChanged="@(v => OnUserToggled(cellContext.Item.UserId, v))" />
+                        </CellTemplate>
+                    </SbColumn>
+                    <SbColumn TItem="OrganizationUnitMemberDto" Title="@L["UserName"]">
+                        <CellTemplate Context="cellContext">
+                            @cellContext.Item.UserName
+                        </CellTemplate>
+                    </SbColumn>
+                    <SbColumn TItem="OrganizationUnitMemberDto" Title="@L["Email"]">
+                        <CellTemplate Context="cellContext">
+                            @cellContext.Item.Email
+                        </CellTemplate>
+                    </SbColumn>
+                    <SbColumn TItem="OrganizationUnitMemberDto" Title="@L["Name"]">
+                        <CellTemplate Context="cellContext">
+                            @($"{cellContext.Item.Name} {cellContext.Item.Surname}".Trim())
+                        </CellTemplate>
+                    </SbColumn>
+                </SbDataGrid>
+            }
+
+            @if (_selectedUserIds.Count > 0)
+            {
+                <SbAlert Severity="SbAlertSeverity.Info">
+                    @L["SelectedUsersCount", _selectedUserIds.Count]
+                </SbAlert>
+            }
+        </SbStack>
+    </ChildContent>
+    <Footer>
+        <SbStack Direction="SbStackDirection.Row" Gap="2" Justify="SbJustify.End">
+            <SbButton Variant="SbButtonVariant.Outline" OnClick="Hide">@L["Cancel"]</SbButton>
+            <SbButton Color="SbColor.Primary" 
+                      Loading="IsOperationLoading(LoadingKeys.AddMembers)" 
+                      Disabled="@(_selectedUserIds.Count == 0)"
+                      OnClick="AddMembersAsync">
+                @L["AddSelected"]
+            </SbButton>
+        </SbStack>
+    </Footer>
+</SbDialog>

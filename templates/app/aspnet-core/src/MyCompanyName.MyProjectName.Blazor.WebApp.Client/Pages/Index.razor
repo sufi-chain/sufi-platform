@@ -1,0 +1,326 @@
+@page "/"
+@using Microsoft.Extensions.Localization
+@using MyCompanyName.MyProjectName.Localization
+@inherits MyCompanyName.MyProjectName.Blazor.WebApp.Client.Pages.IndexBase
+
+<PageTitle>@L["Menu:Home"] - @AppName</PageTitle>
+
+<div class="landing-page">
+    <SbContainer MaxWidth="SbContainerMaxWidth.Fluid" Class="landing-content">
+        <SbStack Direction="SbStackDirection.Column" Gap="12">
+            
+            @* Hero Section *@
+            <SbStack Direction="SbStackDirection.Column" Gap="6" Align="SbAlign.Center" Class="hero-section">
+                <SbStack Direction="SbStackDirection.Column" Gap="3" Align="SbAlign.Center">
+                    <h1 class="hero-title">@L["Index:WelcomeTitle", AppName]</h1>
+                    <p class="hero-subtitle">@L["Index:WelcomeSubtitle"]</p>
+                </SbStack>
+                <p class="hero-description">@L["Index:PlatformIntro"]</p>
+                
+                <AuthorizeView>
+                    <NotAuthorized>
+                        <SbStack Direction="SbStackDirection.Row" Gap="4" Class="hero-actions">
+                            <SbButton Variant="SbButtonVariant.Solid" Size="SbSize.Lg" OnClick="NavigateToLogin">
+                                @L["Index:Login"]
+                            </SbButton>
+                            <SbButton Variant="SbButtonVariant.Outline" Size="SbSize.Lg" OnClick="NavigateToRegister">
+                                @L["Index:Register"]
+                            </SbButton>
+                        </SbStack>
+                    </NotAuthorized>
+                </AuthorizeView>
+            </SbStack>
+
+            @* Core Features Section *@
+            <SbStack Direction="SbStackDirection.Column" Gap="6" Class="features-section">
+                <SbStack Direction="SbStackDirection.Column" Gap="2" Align="SbAlign.Center">
+                    <h2 class="section-title">@L["Index:CoreFeaturesTitle"]</h2>
+                    <p class="section-subtitle">@L["Index:CoreFeaturesSubtitle"]</p>
+                </SbStack>
+                
+                <SbGrid Columns="1" ColumnsSm="2" ColumnsMd="3" Gap="6">
+                    @foreach (var feature in CoreFeatures)
+                    {
+                        <SbCard Elevation="2" Class="feature-card">
+                            <SbStack Direction="SbStackDirection.Column" Gap="3">
+                                <SbStack Direction="SbStackDirection.Row" Gap="3" Align="SbAlign.Center">
+                                    <SbIcon Name="@feature.Icon" Size="SbSize.Lg" Color="SbColor.Primary" />
+                                    <h3 class="feature-title">@feature.Title</h3>
+                                </SbStack>
+                                <p class="feature-description">@feature.Description</p>
+                            </SbStack>
+                        </SbCard>
+                    }
+                </SbGrid>
+            </SbStack>
+
+            @* Sufi Platform Modules Section *@
+            <SbStack Direction="SbStackDirection.Column" Gap="6" Class="features-section sufi-modules">
+                <SbStack Direction="SbStackDirection.Column" Gap="2" Align="SbAlign.Center">
+                    <h2 class="section-title">@L["Index:SufiModulesTitle"]</h2>
+                    <p class="section-subtitle">@L["Index:SufiModulesSubtitle"]</p>
+                </SbStack>
+                
+                <SbGrid Columns="1" ColumnsSm="2" ColumnsMd="4" Gap="6">
+                    @foreach (var feature in SufiModules)
+                    {
+                        <SbCard Elevation="2" Class="feature-card sufi-card">
+                            <SbStack Direction="SbStackDirection.Column" Gap="3">
+                                <SbStack Direction="SbStackDirection.Row" Gap="3" Align="SbAlign.Center">
+                                    <SbIcon Name="@feature.Icon" Size="SbSize.Lg" Color="SbColor.Success" />
+                                    <h3 class="feature-title">@feature.Title</h3>
+                                </SbStack>
+                                <p class="feature-description">@feature.Description</p>
+                                @if (!string.IsNullOrEmpty(feature.Badge))
+                                {
+                                    <span class="badge badge-alpha">@feature.Badge</span>
+                                }
+                            </SbStack>
+                        </SbCard>
+                    }
+                </SbGrid>
+            </SbStack>
+
+            @* Roadmap Section *@
+            <SbStack Direction="SbStackDirection.Column" Gap="6" Class="features-section roadmap-section">
+                <SbStack Direction="SbStackDirection.Column" Gap="2" Align="SbAlign.Center">
+                    <h2 class="section-title">@L["Index:RoadmapTitle"]</h2>
+                    <p class="section-subtitle">@L["Index:RoadmapSubtitle"]</p>
+                </SbStack>
+                
+                <SbGrid Columns="2" ColumnsSm="2" ColumnsMd="4" Gap="6">
+                    @foreach (var feature in RoadmapModules)
+                    {
+                        <SbCard Elevation="1" Class="feature-card roadmap-card">
+                            <SbStack Direction="SbStackDirection.Column" Gap="3">
+                                <SbStack Direction="SbStackDirection.Row" Gap="3" Align="SbAlign.Center">
+                                    <SbIcon Name="@feature.Icon" Size="SbSize.Lg" />
+                                    <h3 class="feature-title">@feature.Title</h3>
+                                </SbStack>
+                                <p class="feature-description">@feature.Description</p>
+                                @if (!string.IsNullOrEmpty(feature.Badge))
+                                {
+                                    <span class="badge badge-coming-soon">@feature.Badge</span>
+                                }
+                            </SbStack>
+                        </SbCard>
+                    }
+                </SbGrid>
+            </SbStack>
+
+
+
+            @* Developer Tips *@
+            <SbCard Elevation="2" Class="developer-tips">
+                <SbStack Direction="SbStackDirection.Column" Gap="4">
+                    <h2 class="section-title">@L["Index:DeveloperNextStepsTitle"]</h2>
+                    <p class="tips-intro">@L["Index:DeveloperNextStepsIntro"]</p>
+                    
+                    <SbStack Direction="SbStackDirection.Column" Gap="3" Class="tips-list">
+                        <div class="tip-item">
+                            <SbIcon Name="key" Size="SbSize.Md" Color="SbColor.Primary" />
+                            <span>@L["Index:DefaultCredentials"]</span>
+                        </div>
+                        <div class="tip-item">
+                            <SbIcon Name="server" Size="SbSize.Md" Color="SbColor.Primary" />
+                            <span>@L["Index:RunTiered"]</span>
+                        </div>
+                        <div class="tip-item">
+                            <SbIcon Name="menu" Size="SbSize.Md" Color="SbColor.Primary" />
+                            <span>@L["Index:MenuContributorTip"]</span>
+                        </div>
+                        <div class="tip-item">
+                            <SbIcon Name="code" Size="SbSize.Md" Color="SbColor.Primary" />
+                            <span>@L["Index:SbComponentsTip"]</span>
+                        </div>
+                        <div class="tip-item">
+                            <SbIcon Name="book" Size="SbSize.Md" Color="SbColor.Primary" />
+                            <span>@L["Index:SeeDocs"]</span>
+                        </div>
+                    </SbStack>
+                </SbStack>
+            </SbCard>
+
+        </SbStack>
+    </SbContainer>
+</div>
+
+<style>
+    .landing-page {
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: var(--sb-spacing-6) var(--sb-spacing-4);
+        background: linear-gradient(135deg, var(--sb-color-surface-container-lowest) 0%, var(--sb-color-surface-container-low) 100%);
+    }
+
+    .landing-content {
+        width: 100%;
+        padding-block: var(--sb-spacing-8);
+    }
+
+    .hero-section {
+        text-align: center;
+        max-width: 800px;
+        margin-inline: auto;
+    }
+
+    .hero-title {
+        font-size: clamp(2rem, 5vw, 3.5rem);
+        font-weight: 700;
+        color: var(--sb-color-on-surface);
+        margin: 0;
+        line-height: 1.2;
+    }
+
+    .hero-subtitle {
+        font-size: clamp(1.125rem, 2.5vw, 1.5rem);
+        color: var(--sb-color-on-surface-variant);
+        margin: 0;
+        font-weight: 500;
+    }
+
+    .hero-description {
+        font-size: 1.125rem;
+        color: var(--sb-color-on-surface-variant);
+        line-height: 1.6;
+        margin: 0;
+        max-width: 700px;
+    }
+
+    .hero-actions {
+        margin-top: var(--sb-spacing-4);
+    }
+
+    .features-section,
+    .quick-links-section {
+        width: 100%;
+    }
+
+    .section-title {
+        font-size: clamp(1.5rem, 3vw, 2rem);
+        font-weight: 600;
+        color: var(--sb-color-on-surface);
+        margin: 0;
+        text-align: center;
+    }
+
+    .section-subtitle {
+        font-size: 1rem;
+        color: var(--sb-color-on-surface-variant);
+        margin: 0;
+        text-align: center;
+    }
+
+    .feature-card {
+        height: 100%;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+        position: relative;
+    }
+
+    .feature-card:hover {
+        transform: translateY(-4px);
+        box-shadow: var(--sb-shadow-elevation-3);
+    }
+
+    .sufi-card {
+        border-inline-start: 3px solid var(--sb-color-success);
+    }
+
+    .roadmap-card {
+        opacity: 0.7;
+        cursor: not-allowed;
+    }
+
+    .roadmap-card:hover {
+        transform: none;
+        box-shadow: var(--sb-shadow-elevation-1);
+    }
+
+    .feature-title {
+        font-size: 1.125rem;
+        font-weight: 600;
+        color: var(--sb-color-on-surface);
+        margin: 0;
+    }
+
+    .feature-description {
+        font-size: 0.9375rem;
+        color: var(--sb-color-on-surface-variant);
+        line-height: 1.5;
+        margin: 0;
+    }
+
+    .badge {
+        display: inline-block;
+        padding: 0.25rem 0.75rem;
+        border-radius: var(--sb-radius-full);
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .badge-alpha {
+        background: var(--sb-color-warning-container);
+        color: var(--sb-color-on-warning-container);
+    }
+
+    .badge-coming-soon {
+        background: var(--sb-color-surface-variant);
+        color: var(--sb-color-on-surface-variant);
+    }
+
+    .developer-tips {
+        width: 100%;
+        max-width: 800px;
+        margin-inline: auto;
+    }
+
+    .tips-intro {
+        font-size: 1rem;
+        color: var(--sb-color-on-surface-variant);
+        margin: 0;
+    }
+
+    .tips-list {
+        padding-inline-start: var(--sb-spacing-2);
+    }
+
+    .tip-item {
+        display: flex;
+        align-items: flex-start;
+        gap: var(--sb-spacing-3);
+        font-size: 0.9375rem;
+        color: var(--sb-color-on-surface);
+        line-height: 1.6;
+    }
+
+    .tip-item svg {
+        flex-shrink: 0;
+        margin-top: 2px;
+    }
+
+    @@media (max-width: 768px) {
+        .landing-page {
+            min-height: auto;
+            padding: var(--sb-spacing-4) var(--sb-spacing-3);
+        }
+
+        .hero-actions {
+            flex-direction: column;
+            width: 100%;
+        }
+
+        .hero-actions > * {
+            width: 100%;
+        }
+    }
+
+    @@media (min-width: 1024px) {
+        .landing-page {
+            overflow: hidden;
+        }
+    }
+</style>

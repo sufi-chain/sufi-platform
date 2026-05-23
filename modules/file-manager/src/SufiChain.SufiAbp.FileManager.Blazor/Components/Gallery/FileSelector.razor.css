@@ -1,0 +1,32 @@
+.selector-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: var(--sb-space-3);
+}
+
+.selector-item {
+    position: relative;
+    cursor: pointer;
+    border-radius: var(--sb-radius-md);
+    overflow: hidden;
+    border: 2px solid transparent;
+    transition: border-color 0.2s;
+}
+
+.selector-item:hover {
+    border-color: var(--sb-color-primary-100);
+}
+
+.selector-item.selected {
+    border-color: var(--sb-color-primary);
+}
+
+.selection-indicator {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 50%;
+    padding: 8px;
+}

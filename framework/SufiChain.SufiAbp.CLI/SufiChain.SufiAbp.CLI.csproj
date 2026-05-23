@@ -1,0 +1,33 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <RootNamespace>SufiChain.SufiAbp.CLI</RootNamespace>
+    <AssemblyName>sufi</AssemblyName>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <PackageId>SufiChain.SufiAbp.CLI</PackageId>
+    <Description>Command-line interface for Sufi Platform - scaffolds solution templates with EF Core or MongoDB, tiered or single architecture.</Description>
+    <PackAsTool>true</PackAsTool>
+    <ToolCommandName>sufi</ToolCommandName>
+    <PackageOutputPath>./nupkg</PackageOutputPath>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Spectre.Console" Version="$(SpectreConsoleVersion)" />
+    <PackageReference Include="Spectre.Console.Cli" Version="$(SpectreConsoleVersion)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\SufiChain.SufiAbp.CLI.Core\SufiChain.SufiAbp.CLI.Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="nupkg\" />
+  </ItemGroup>
+
+</Project>

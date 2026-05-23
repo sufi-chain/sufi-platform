@@ -1,0 +1,41 @@
+/* Quick Share Modal - Link Input styling */
+.fm-quick-share-link-section ::deep .sb-text-field-wrapper {
+    width: 100%;
+}
+
+.fm-quick-share-link-section ::deep .sb-text-field {
+    min-height: 44px;
+    padding-inline: var(--sb-space-3);
+    background-color: var(--sb-color-surface-variant);
+    border: 1px solid var(--sb-color-border-strong);
+    border-radius: var(--sb-radius-lg);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+    transition: border-color var(--sb-duration-fast) var(--sb-easing-default),
+                box-shadow var(--sb-duration-fast) var(--sb-easing-default);
+}
+
+.fm-quick-share-link-section ::deep .sb-text-field:focus-within {
+    border-color: var(--sb-color-primary);
+    box-shadow: 0 0 0 3px var(--sb-color-primary-light);
+}
+
+.fm-quick-share-link-section ::deep .fm-quick-share-link-input,
+.fm-quick-share-link-section ::deep .sb-text-field__input {
+    font-size: var(--sb-font-size-sm);
+    letter-spacing: 0.02em;
+    color: var(--sb-color-text);
+    background: transparent;
+    padding-inline-end: var(--sb-space-2);
+}
+
+.fm-quick-share-link-section ::deep .sb-text-field__adornment--end {
+    padding-inline-start: var(--sb-space-2);
+}
+
+.fm-quick-share-link-section ::deep .sb-text-field__adornment--end .sb-icon-button {
+    min-width: 36px;
+    width: 36px;
+    height: 36px;
+    padding: 0;
+    border-radius: var(--sb-radius-md);
+}

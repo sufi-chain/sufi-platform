@@ -1,0 +1,83 @@
+{
+  "name": "SufiChain.SufiAbp.FileManager.Application",
+  "hash": "",
+  "contents": [
+    {
+      "namespace": "SufiChain.SufiAbp.FileManager",
+      "dependsOnModules": [
+        {
+          "declaringAssemblyName": "SufiChain.SufiAbp.FileManager.Domain",
+          "namespace": "SufiChain.SufiAbp.FileManager",
+          "name": "SpFileManagerDomainModule"
+        },
+        {
+          "declaringAssemblyName": "SufiChain.SufiAbp.FileManager.Application.Contracts",
+          "namespace": "SufiChain.SufiAbp.FileManager",
+          "name": "SpFileManagerApplicationContractsModule"
+        },
+        {
+          "declaringAssemblyName": "Volo.Abp.Ddd.Application",
+          "namespace": "Volo.Abp.Application",
+          "name": "AbpDddApplicationModule"
+        },
+        {
+          "declaringAssemblyName": "Volo.Abp.AutoMapper",
+          "namespace": "Volo.Abp.AutoMapper",
+          "name": "AbpAutoMapperModule"
+        },
+        {
+          "declaringAssemblyName": "SufiChain.SufiAbp.PermissionManagement.Domain.Shared",
+          "namespace": "SufiChain.SufiAbp.PermissionManagement",
+          "name": "SufiAbpPermissionManagementDomainSharedModule"
+        }
+      ],
+      "implementingInterfaces": [
+        {
+          "name": "IAbpModule",
+          "namespace": "Volo.Abp.Modularity",
+          "declaringAssemblyName": "Volo.Abp.Core",
+          "fullName": "Volo.Abp.Modularity.IAbpModule"
+        },
+        {
+          "name": "IOnPreApplicationInitialization",
+          "namespace": "Volo.Abp.Modularity",
+          "declaringAssemblyName": "Volo.Abp.Core",
+          "fullName": "Volo.Abp.Modularity.IOnPreApplicationInitialization"
+        },
+        {
+          "name": "IOnApplicationInitialization",
+          "namespace": "Volo.Abp",
+          "declaringAssemblyName": "Volo.Abp.Core",
+          "fullName": "Volo.Abp.IOnApplicationInitialization"
+        },
+        {
+          "name": "IOnPostApplicationInitialization",
+          "namespace": "Volo.Abp.Modularity",
+          "declaringAssemblyName": "Volo.Abp.Core",
+          "fullName": "Volo.Abp.Modularity.IOnPostApplicationInitialization"
+        },
+        {
+          "name": "IOnApplicationShutdown",
+          "namespace": "Volo.Abp",
+          "declaringAssemblyName": "Volo.Abp.Core",
+          "fullName": "Volo.Abp.IOnApplicationShutdown"
+        },
+        {
+          "name": "IPreConfigureServices",
+          "namespace": "Volo.Abp.Modularity",
+          "declaringAssemblyName": "Volo.Abp.Core",
+          "fullName": "Volo.Abp.Modularity.IPreConfigureServices"
+        },
+        {
+          "name": "IPostConfigureServices",
+          "namespace": "Volo.Abp.Modularity",
+          "declaringAssemblyName": "Volo.Abp.Core",
+          "fullName": "Volo.Abp.Modularity.IPostConfigureServices"
+        }
+      ],
+      "contentType": "abpModule",
+      "name": "SpFileManagerApplicationModule",
+      "summary": null
+    }
+  ]
+}

@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <RootNamespace>SufiChain.SufiAbp.TenantManagement</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\..\framework\SufiChain.SufiAbp.Ddd.Domain\SufiChain.SufiAbp.Ddd.Domain.csproj" />
+    <ProjectReference Include="..\..\..\..\framework\SufiChain.SufiAbp.Mapperly\SufiChain.SufiAbp.Mapperly.csproj" />
+    <ProjectReference Include="..\..\..\..\framework\SufiChain.SufiAbp.MultiTenancy\SufiChain.SufiAbp.MultiTenancy.csproj" />
+    <ProjectReference Include="..\..\..\..\framework\SufiChain.SufiAbp.Caching\SufiChain.SufiAbp.Caching.csproj" />
+    <ProjectReference Include="..\..\..\..\framework\SufiChain.SufiAbp.Data\SufiChain.SufiAbp.Data.csproj" />
+    <ProjectReference Include="..\SufiChain.SufiAbp.TenantManagement.Domain.Shared\SufiChain.SufiAbp.TenantManagement.Domain.Shared.csproj" />
+  </ItemGroup>
+</Project>

@@ -1,0 +1,225 @@
+@page "/admin/background-jobs"
+@attribute [Authorize(Policy = SufiChain.SufiAbp.BackgroundJobs.Permissions.BackgroundJobsPermissions.BackgroundJobs.Default)]
+@inherits BackgroundJobsComponentBase
+
+<SufiAbpPageToolbar>
+	<SbButton Color="SbColor.Primary" Variant="SbButtonVariant.Outline" OnClick="@LoadJobsAsync">
+		<StartIcon><SbIcon Name="refresh" /></StartIcon>
+		<ChildContent>@L["Refresh"]</ChildContent>
+	</SbButton>
+</SufiAbpPageToolbar>
+
+<SbStack Direction="SbStackDirection.Column" Gap="4">
+
+	<!-- Filter Section -->
+	<SbCard>
+		<ChildContent>
+			<SbStack Direction="SbStackDirection.Row" Gap="4" Align="SbAlign.Center" Wrap="true" Justify="@SbJustify.SpaceBetween">
+				<!-- Quick Filter Chips -->
+				<SbStack Direction="SbStackDirection.Row" Gap="2" Wrap="true" Align="SbAlign.Center">
+					<div class="filter-field" @onkeydown="HandleFilterKeyDown">
+						<label class="filter-field-label">@L["JobName"]</label>
+						<SbTextField @bind-Value="_jobName"
+									 Placeholder="@L["SearchByJobName"]" />
+					</div>
+					<div class="filter-field" @onkeydown="HandleFilterKeyDown">
+						<label class="filter-field-label">@L["Application"]</label>
+						<SbTextField @bind-Value="_applicationName"
+									 Placeholder="@L["SearchByApplication"]" />
+					</div>
+					<div class="filter-field">
+						<label class="filter-field-label">@L["Priority"]</label>
+						<SbSimpleSelect TValue="BackgroundJobPriority?"
+										Value="@_priority"
+										ValueChanged="@OnPriorityChanged"
+										Placeholder="@L["All"]"
+										Style="min-width: 150px;">
+							<SbSelectOption TValue="BackgroundJobPriority?" Value="@((BackgroundJobPriority?)null)">@L["All"]</SbSelectOption>
+							<SbSelectOption TValue="BackgroundJobPriority?" Value="@BackgroundJobPriority.High">@L["High"]</SbSelectOption>
+							<SbSelectOption TValue="BackgroundJobPriority?" Value="@BackgroundJobPriority.AboveNormal">@L["AboveNormal"]</SbSelectOption>
+							<SbSelectOption TValue="BackgroundJobPriority?" Value="@BackgroundJobPriority.Normal">@L["Normal"]</SbSelectOption>
+							<SbSelectOption TValue="BackgroundJobPriority?" Value="@BackgroundJobPriority.BelowNormal">@L["BelowNormal"]</SbSelectOption>
+							<SbSelectOption TValue="BackgroundJobPriority?" Value="@BackgroundJobPriority.Low">@L["Low"]</SbSelectOption>
+						</SbSimpleSelect>
+					</div>
+					<div class="filter-field">
+						<label class="filter-field-label">@L["Status"]</label>
+						<SbSimpleSelect TValue="bool?"
+										Value="@_isAbandoned"
+										ValueChanged="@OnStatusChanged"
+										Placeholder="@L["All"]"
+										Style="min-width: 150px;">
+							<SbSelectOption TValue="bool?" Value="@((bool?)null)">@L["All"]</SbSelectOption>
+							<SbSelectOption TValue="bool?" Value="@false">@L["Active"]</SbSelectOption>
+							<SbSelectOption TValue="bool?" Value="@true">@L["Abandoned"]</SbSelectOption>
+						</SbSimpleSelect>
+					</div>
+					<div class="filter-field" style="align-self: flex-end;">
+						<SbButton Color="SbColor.Primary" OnClick="@ApplyFiltersAsync">
+							<StartIcon><SbIcon Name="search" /></StartIcon>
+							<ChildContent>@L["Search"]</ChildContent>
+						</SbButton>
+					</div>
+				</SbStack>
+				<SbStack Direction="SbStackDirection.Column" Gap="1">
+					<span class="filter-label">
+						<SbIcon Name="filter" Size="SbSize.Sm" /> @L["QuickFilters"]:
+					</span>
+					<SbStack Direction="SbStackDirection.Row" Gap="2" Wrap="true" Align="SbAlign.Center">
+						<SbButton Size="SbSize.Sm"
+								  Variant="@(_isAbandoned == true ? SbButtonVariant.Solid : SbButtonVariant.Outline)"
+								  Color="SbColor.Danger"
+								  OnClick="@(() => ToggleQuickFilter("abandoned"))">
+							@L["Abandoned"]
+						</SbButton>
+						<SbButton Size="SbSize.Sm"
+								  Variant="@(_priority == BackgroundJobPriority.High ? SbButtonVariant.Solid : SbButtonVariant.Outline)"
+								  Color="SbColor.Warning"
+								  OnClick="@(() => ToggleQuickFilter("high"))">
+							@L["HighPriority"]
+						</SbButton>
+						<SbButton Size="SbSize.Sm"
+								  Variant="@(_isAbandoned == false ? SbButtonVariant.Solid : SbButtonVariant.Outline)"
+								  Color="SbColor.Success"
+								  OnClick="@(() => ToggleQuickFilter("active"))">
+							@L["Active"]
+						</SbButton>
+						@if (HasActiveFilters)
+						{
+							<SbButton Size="SbSize.Sm" Variant="SbButtonVariant.Ghost" Color="SbColor.Secondary" OnClick="@ClearFiltersAsync">
+								<StartIcon><SbIcon Name="x" Size="SbSize.Sm" /></StartIcon>
+								<ChildContent>@L["ClearAll"]</ChildContent>
+							</SbButton>
+						}
+					</SbStack>
+				</SbStack>
+			</SbStack>
+		</ChildContent>
+	</SbCard>
+
+	<!-- Jobs Grid -->
+	<SbCard>
+		<ChildContent>
+			<SbDataGrid TItem="BackgroundJobListItemDto"
+						Items="_jobs"
+						Loading="IsOperationLoading(LoadingKeys.LoadJobs)"
+						Striped="true"
+						Hoverable="true"
+						PageIndex="_pageIndex"
+						PageSize="_pageSize"
+						TotalCount="_totalCount"
+						PageIndexChanged="OnPageIndexChangedAsync">
+				<SbColumn TItem="BackgroundJobListItemDto" Title="@L["Actions"]" Width="140px">
+					<CellTemplate Context="cellContext">
+						<SbStack Direction="SbStackDirection.Row" Gap="1">
+							<SbIconButton Size="SbSize.Sm" AriaLabel="@L["ViewDetails"]"
+										  OnClick="@(() => ShowDetailModal(cellContext.Item))">
+								<Icon><SbIcon Name="eye" /></Icon>
+							</SbIconButton>
+							@if (cellContext.Item.IsAbandoned)
+							{
+								<SbIconButton Size="SbSize.Sm" Color="SbColor.Success" AriaLabel="@L["Retry"]"
+											  OnClick="@(() => RetryJobAsync(cellContext.Item))">
+									<Icon><SbIcon Name="refresh" /></Icon>
+								</SbIconButton>
+							}
+							else
+							{
+								<SbIconButton Size="SbSize.Sm" Color="SbColor.Warning" AriaLabel="@L["Abandon"]"
+											  OnClick="@(() => ShowAbandonConfirm(cellContext.Item))">
+									<Icon><SbIcon Name="ban" /></Icon>
+								</SbIconButton>
+							}
+							<SbIconButton Size="SbSize.Sm" Color="SbColor.Danger" AriaLabel="@L["Delete"]"
+										  OnClick="@(() => ShowDeleteConfirm(cellContext.Item))">
+								<Icon><SbIcon Name="trash" /></Icon>
+							</SbIconButton>
+						</SbStack>
+					</CellTemplate>
+				</SbColumn>
+				<SbColumn TItem="BackgroundJobListItemDto" Field="JobName" Title="@L["JobName"]" Width="180px" />
+				<SbColumn TItem="BackgroundJobListItemDto" Title="@L["Status"]" Width="100px">
+					<CellTemplate Context="cellContext">
+						<SbBadge Color="@GetStatusColor(cellContext.Item)">
+							@GetStatusText(cellContext.Item)
+						</SbBadge>
+					</CellTemplate>
+				</SbColumn>
+				<SbColumn TItem="BackgroundJobListItemDto" Title="@L["Priority"]" Width="100px">
+					<CellTemplate Context="cellContext">
+						<SbBadge Color="@GetPriorityColor(cellContext.Item.Priority)">
+							@cellContext.Item.Priority
+						</SbBadge>
+					</CellTemplate>
+				</SbColumn>
+				<SbColumn TItem="BackgroundJobListItemDto" Title="@L["TryCount"]" Width="80px">
+					<CellTemplate Context="cellContext">
+						@cellContext.Item.TryCount
+					</CellTemplate>
+				</SbColumn>
+				<SbColumn TItem="BackgroundJobListItemDto" Title="@L["CreationTime"]" Width="160px">
+					<CellTemplate Context="cellContext">
+						@cellContext.Item.CreationTime.ToString("yyyy-MM-dd HH:mm")
+					</CellTemplate>
+				</SbColumn>
+				<SbColumn TItem="BackgroundJobListItemDto" Title="@L["NextTryTime"]" Width="160px">
+					<CellTemplate Context="cellContext">
+						@(cellContext.Item.NextTryTime?.ToString("yyyy-MM-dd HH:mm") ?? "-")
+					</CellTemplate>
+				</SbColumn>
+				<SbColumn TItem="BackgroundJobListItemDto" Field="ApplicationName" Title="@L["Application"]" Width="150px" />
+			</SbDataGrid>
+		</ChildContent>
+	</SbCard>
+
+</SbStack>
+
+<BackgroundJobDetailModal @bind-Open="_showDetailModal" Job="_selectedJob" />
+
+<!-- Delete Confirmation Dialog -->
+<SbDialog Open="@_showDeleteConfirm" OpenChanged="@(v => { if (!v) CancelDelete(); })" Size="SbDialogSize.Sm" Title="@L["ConfirmDelete"]">
+	<ChildContent>
+		<SbStack Gap="3">
+			<p style="margin: 0;">@L["DeleteJobConfirmation", _jobToDelete?.JobName ?? ""]</p>
+			@if (_jobToDelete != null)
+			{
+				<div class="confirm-job-info">
+					<small>ID: @_jobToDelete.Id</small>
+				</div>
+			}
+		</SbStack>
+	</ChildContent>
+	<Footer>
+		<SbStack Direction="SbStackDirection.Row" Gap="2" Justify="SbJustify.End">
+			<SbButton Variant="SbButtonVariant.Outline" OnClick="@CancelDelete">@L["Cancel"]</SbButton>
+			<SbButton Color="SbColor.Danger" OnClick="@ConfirmDeleteAsync">
+				<StartIcon><SbIcon Name="trash" /></StartIcon>
+				<ChildContent>@L["Delete"]</ChildContent>
+			</SbButton>
+		</SbStack>
+	</Footer>
+</SbDialog>
+
+<!-- Abandon Confirmation Dialog -->
+<SbDialog Open="@_showAbandonConfirm" OpenChanged="@(v => { if (!v) CancelAbandon(); })" Size="SbDialogSize.Sm" Title="@L["ConfirmAbandon"]">
+	<ChildContent>
+		<SbStack Gap="3">
+			<p style="margin: 0;">@L["AbandonJobConfirmation", _jobToAbandon?.JobName ?? ""]</p>
+			@if (_jobToAbandon != null)
+			{
+				<div class="confirm-job-info">
+					<small>ID: @_jobToAbandon.Id</small>
+				</div>
+			}
+		</SbStack>
+	</ChildContent>
+	<Footer>
+		<SbStack Direction="SbStackDirection.Row" Gap="2" Justify="SbJustify.End">
+			<SbButton Variant="SbButtonVariant.Outline" OnClick="@CancelAbandon">@L["Cancel"]</SbButton>
+			<SbButton Color="SbColor.Warning" OnClick="@ConfirmAbandonAsync">
+				<StartIcon><SbIcon Name="ban" /></StartIcon>
+				<ChildContent>@L["Abandon"]</ChildContent>
+			</SbButton>
+		</SbStack>
+	</Footer>
+</SbDialog>

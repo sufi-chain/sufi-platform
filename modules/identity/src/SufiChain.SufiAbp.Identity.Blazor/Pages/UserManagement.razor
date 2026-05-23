@@ -1,0 +1,86 @@
+@page "/admin/identity/users"
+@attribute [Authorize(Policy = SufiChain.SufiAbp.Identity.IdentityPermissions.Users.Default)]
+@inherits IdentityComponentBase
+
+<SufiAbpPageToolbar>
+	<AuthorizeView Policy="@SufiChain.SufiAbp.Identity.IdentityPermissions.Users.Create">
+		<SbButton Color="SbColor.Primary" OnClick="@ShowCreateModal">
+			<StartIcon><SbIcon Name="plus" /></StartIcon>
+			<ChildContent>@L["NewUser"]</ChildContent>
+		</SbButton>
+	</AuthorizeView>
+</SufiAbpPageToolbar>
+
+<SbStack Direction="SbStackDirection.Column" Gap="4">
+
+	<!-- Users Content -->
+	<SbCard>
+		<ChildContent>
+			<SbStack Gap="4">
+				<SbTextField @bind-Value="_filter"
+							 Placeholder="@L["SearchUsers"]"
+							 Clearable="true">
+					<StartAdornment>
+						<SbIcon Name="search" />
+					</StartAdornment>
+				</SbTextField>
+
+				<SbDataGrid TItem="IdentityUserDto"
+							Items="_users"
+							Loading="IsOperationLoading(LoadingKeys.LoadUsers)"
+							Striped="true"
+							Hoverable="true"
+							PageIndex="_pageIndex"
+							PageSize="_pageSize"
+							TotalCount="_totalCount"
+							PageIndexChanged="OnPageIndexChangedAsync">
+					<SbColumn TItem="IdentityUserDto" Title="@L["Actions"]" Width="160px">
+						<CellTemplate Context="cellContext">
+							<SbStack Direction="SbStackDirection.Row" Gap="1">
+								<AuthorizeView Policy="@SufiChain.SufiAbp.Identity.IdentityPermissions.Users.Update" Context="authContext">
+									<SbIconButton Size="SbSize.Sm" AriaLabel="@L["Edit"]"
+												  OnClick="@(() => ShowEditModal(cellContext.Item))">
+										<Icon><SbIcon Name="edit" /></Icon>
+									</SbIconButton>
+								</AuthorizeView>
+								@if (_hasManagePermissionsPermission)
+								{
+									<SbIconButton Size="SbSize.Sm" AriaLabel="@L["Permissions"]"
+												  OnClick="@(async () => await ShowPermissionModalAsync(cellContext.Item))">
+										<Icon><SbIcon Name="shield" /></Icon>
+									</SbIconButton>
+								}
+								<AuthorizeView Policy="@SufiChain.SufiAbp.Identity.IdentityPermissions.Users.Delete" Context="authContext2">
+									<SbIconButton Size="SbSize.Sm" Color="SbColor.Danger" AriaLabel="@L["Delete"]"
+												  OnClick="@(() => DeleteUserAsync(cellContext.Item))">
+										<Icon><SbIcon Name="trash" /></Icon>
+									</SbIconButton>
+								</AuthorizeView>
+							</SbStack>
+						</CellTemplate>
+					</SbColumn>
+					<SbColumn TItem="IdentityUserDto" Field="UserName" Title="@L["Username"]" Sortable="true" />
+					<SbColumn TItem="IdentityUserDto" Field="Email" Title="@L["Email"]" Sortable="true" />
+					<SbColumn TItem="IdentityUserDto" Field="PhoneNumber" Title="@L["Phone"]" />
+					<SbColumn TItem="IdentityUserDto" Title="@L["Status"]">
+						<CellTemplate Context="cellContext">
+							@if (cellContext.Item.IsActive)
+							{
+								<SbBadge Color="SbColor.Success">@L["Active"]</SbBadge>
+							}
+							else
+							{
+								<SbBadge Color="SbColor.Danger">@L["Inactive"]</SbBadge>
+							}
+						</CellTemplate>
+					</SbColumn>
+				</SbDataGrid>
+			</SbStack>
+		</ChildContent>
+	</SbCard>
+
+</SbStack>
+
+<UserCreateModal @bind-Open="_showCreateModal" OnUserCreated="OnUserCreatedAsync" Roles="_roles" />
+<UserEditModal @bind-Open="_showEditModal" User="_selectedUser" OnUserUpdated="OnUserUpdatedAsync" Roles="_roles" />
+<PermissionManagementModal @ref="_permissionManagementModal" />

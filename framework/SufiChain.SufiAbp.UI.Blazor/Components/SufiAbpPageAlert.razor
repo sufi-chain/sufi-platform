@@ -1,0 +1,27 @@
+@using SufiChain.SufiAbp.UI.Alerts
+@using SufiChain.SufiAbp.UI.Services.Alerts
+@using SufiChain.SufiBlazor.Components.Feedback
+
+@{
+    // Get a single snapshot for both Any() check and iteration to ensure consistency
+    var alerts = AlertManager.Alerts;
+}
+
+@if (alerts.Any())
+{
+    <div class="sabp-page-alerts">
+        @foreach (var alert in alerts)
+        {
+            <SbAlert Severity="@GetAlertSeverity(alert.Type)" 
+                     Dismissible="@alert.Dismissible"
+                     OnDismiss="() => DismissAlert(alert)">
+                @if (!string.IsNullOrEmpty(alert.Title))
+                {
+                    <strong>@alert.Title</strong>
+                    <span> </span>
+                }
+                @alert.Message
+            </SbAlert>
+        }
+    </div>
+}

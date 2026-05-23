@@ -1,0 +1,25 @@
+{
+  "culture": "es",
+  "texts": {
+    "Menu:FeatureManagement": "Gestión de características",
+    "Menu:Features": "Características",
+    "Features": "Características",
+    "Feature": "Característica",
+    "FeaturesSavedSuccessfully": "Características guardadas correctamente",
+    "ManageFeatures": "Administrar características",
+    "ResetToDefault": "Restablecen a los predeterminados",
+    "AllFeatures": "Todas las características",
+    "FeatureGroup": "Grupo de características",
+    "FeatureName": "Nombre de característica",
+    "FeatureValue": "Valor de característica",
+    "Enabled": "Habilitado",
+    "Disabled": "Deshabilitado",
+    "SearchFeatures": "Buscar características...",
+    "SelectAllInAllTabs": "Seleccionar todo en todas las pestañas",
+    "SelectAllInThisTab": "Seleccionar todo en esta pestaña",
+    "LoadingFeatures": "Cargando características...",
+    "NoFeaturesAvailable": "No hay características disponibles",
+    "FeaturesResetSuccessfully": "Características restablecidas correctamente",
+    "ResetFeaturesConfirmation": "¿Está seguro de que desea restablecer todas las características a sus valores predeterminados?"
+  }
+}
