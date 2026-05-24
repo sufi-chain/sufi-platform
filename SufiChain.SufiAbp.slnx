@@ -87,11 +87,6 @@
     <Project Path="modules/ai-management/src/SufiChain.SufiAbp.AIManagement.HttpApi/SufiChain.SufiAbp.AIManagement.HttpApi.csproj" />
     <Project Path="modules/ai-management/src/SufiChain.SufiAbp.AIManagement.MongoDB/SufiChain.SufiAbp.AIManagement.MongoDB.csproj" />
   </Folder>
-  <Folder Name="/Modules/AiManagement/tests/">
-    <Project Path="modules/ai-management/test/SufiChain.SufiAbp.AIManagement.Application.Tests/SufiChain.SufiAbp.AIManagement.Application.Tests.csproj" />
-    <Project Path="modules/ai-management/test/SufiChain.SufiAbp.AIManagement.Domain.Tests/SufiChain.SufiAbp.AIManagement.Domain.Tests.csproj" />
-    <Project Path="modules/ai-management/test/SufiChain.SufiAbp.AIManagement.TestBase/SufiChain.SufiAbp.AIManagement.TestBase.csproj" />
-  </Folder>
   <Folder Name="/Modules/AuditLogging/">
     <Project Path="modules/audit-logging/src/SufiChain.SufiAbp.AuditLogging.Application.Contracts/SufiChain.SufiAbp.AuditLogging.Application.Contracts.csproj" />
     <Project Path="modules/audit-logging/src/SufiChain.SufiAbp.AuditLogging.Application/SufiChain.SufiAbp.AuditLogging.Application.csproj" />
@@ -146,11 +141,6 @@
     <Project Path="modules/file-manager/src/SufiChain.SufiAbp.FileManager.HttpApi/SufiChain.SufiAbp.FileManager.HttpApi.csproj" />
     <Project Path="modules/file-manager/src/SufiChain.SufiAbp.FileManager.MongoDB/SufiChain.SufiAbp.FileManager.MongoDB.csproj" />
     <Project Path="modules/file-manager/src/SufiChain.SufiAbp.FileManager.RichTextEditor/SufiChain.SufiAbp.FileManager.RichTextEditor.csproj" />
-  </Folder>
-  <Folder Name="/Modules/FileManager/tests/">
-    <Project Path="modules/file-manager/test/SufiChain.SufiAbp.FileManager.Domain.Tests/SufiChain.SufiAbp.FileManager.Domain.Tests.csproj" />
-    <Project Path="modules/file-manager/test/SufiChain.SufiAbp.FileManager.EntityFrameworkCore.Tests/SufiChain.SufiAbp.FileManager.EntityFrameworkCore.Tests.csproj" />
-    <Project Path="modules/file-manager/test/SufiChain.SufiAbp.FileManager.TestBase/SufiChain.SufiAbp.FileManager.TestBase.csproj" />
   </Folder>
   <Folder Name="/Modules/Identity/">
     <Project Path="modules/identity/src/SufiChain.SufiAbp.Identity.Application.Contracts/SufiChain.SufiAbp.Identity.Application.Contracts.csproj" />
@@ -217,13 +207,6 @@
     <Project Path="modules/short-link-generator/src/SufiChain.SufiAbp.ShortLinkGenerator.HttpApi.Client/SufiChain.SufiAbp.ShortLinkGenerator.HttpApi.Client.csproj" />
     <Project Path="modules/short-link-generator/src/SufiChain.SufiAbp.ShortLinkGenerator.HttpApi/SufiChain.SufiAbp.ShortLinkGenerator.HttpApi.csproj" />
     <Project Path="modules/short-link-generator/src/SufiChain.SufiAbp.ShortLinkGenerator.MongoDB/SufiChain.SufiAbp.ShortLinkGenerator.MongoDB.csproj" />
-  </Folder>
-  <Folder Name="/Modules/ShortLinkGenerator/tests/">
-    <Project Path="modules/short-link-generator/test/SufiChain.SufiAbp.ShortLinkGenerator.TestBase/SufiChain.SufiAbp.ShortLinkGenerator.TestBase.csproj" />
-    <Project Path="modules/short-link-generator/test/SufiChain.SufiAbp.ShortLinkGenerator.Application.Tests/SufiChain.SufiAbp.ShortLinkGenerator.Application.Tests.csproj" />
-    <Project Path="modules/short-link-generator/test/SufiChain.SufiAbp.ShortLinkGenerator.Domain.Tests/SufiChain.SufiAbp.ShortLinkGenerator.Domain.Tests.csproj" />
-    <Project Path="modules/short-link-generator/test/SufiChain.SufiAbp.ShortLinkGenerator.EntityFrameworkCore.Tests/SufiChain.SufiAbp.ShortLinkGenerator.EntityFrameworkCore.Tests.csproj" />
-    <Project Path="modules/short-link-generator/test/SufiChain.SufiAbp.ShortLinkGenerator.MongoDB.Tests/SufiChain.SufiAbp.ShortLinkGenerator.MongoDB.Tests.csproj" />
   </Folder>
   <Folder Name="/Modules/TenantManagement/">
     <Project Path="modules/tenant-management/src/SufiChain.SufiAbp.TenantManagement.Application.Contracts/SufiChain.SufiAbp.TenantManagement.Application.Contracts.csproj" />
