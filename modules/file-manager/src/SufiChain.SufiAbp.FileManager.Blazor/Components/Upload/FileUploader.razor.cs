@@ -79,7 +79,7 @@ public partial class FileUploader : FileManagerComponentBase, IDisposable
     protected override void OnInitialized()
     {
         // Set initial structure key - use provided key or default to "General"
-        _selectedStructureKey = StructureKey ?? SufiChain.SufiAbp.FileManager.Configuration.FileStructureKeys.General;
+        _selectedStructureKey = StructureKey ?? FileStructureKeys.General;
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)

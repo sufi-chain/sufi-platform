@@ -2,7 +2,6 @@ using System;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using SufiChain.SufiAbp.FileManager.Configuration;
 using SufiChain.SufiAbp.FileManager.BackgroundJobs;
 using SufiChain.SufiAbp.FileManager.Settings;
 using Volo.Abp.BackgroundWorkers;

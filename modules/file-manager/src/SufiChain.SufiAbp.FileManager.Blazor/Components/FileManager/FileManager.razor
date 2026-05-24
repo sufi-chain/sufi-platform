@@ -159,7 +159,7 @@
             <FileUploader 
                 FolderPath="@(string.IsNullOrEmpty(_state.CurrentPath) || _state.CurrentPath == "/" ? null : _state.CurrentPath)"
                 ShowStructureSelector="true"
-                StructureKey="@(_filterStructureKey ?? SufiChain.SufiAbp.FileManager.Configuration.FileStructureKeys.General)"
+                StructureKey="@(_filterStructureKey ?? FileStructureKeys.General)"
                 AutoConfirm="true"
                 OnUploadCompleted="@OnUploadCompleted" />
         </ChildContent>

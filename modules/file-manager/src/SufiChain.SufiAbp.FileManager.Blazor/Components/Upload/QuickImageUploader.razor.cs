@@ -71,7 +71,7 @@ public partial class QuickImageUploader : FileManagerComponentBase, IDisposable
 
     protected override void OnInitialized()
     {
-        _selectedStructureKey = StructureKey ?? SufiChain.SufiAbp.FileManager.Configuration.FileStructureKeys.General;
+        _selectedStructureKey = StructureKey ?? FileStructureKeys.General;
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -125,7 +125,7 @@ public partial class QuickImageUploader : FileManagerComponentBase, IDisposable
             : (ShowFolderPathField && !string.IsNullOrWhiteSpace(_userFolderPath) ? _userFolderPath.Trim() : null);
         var metadata = new JsUploadMetadata
         {
-            StructureKey = _selectedStructureKey ?? StructureKey ?? SufiChain.SufiAbp.FileManager.Configuration.FileStructureKeys.General,
+            StructureKey = _selectedStructureKey ?? StructureKey ?? FileStructureKeys.General,
             EntityType = EntityType,
             EntityId = EntityId,
             FolderPath = effectivePath,

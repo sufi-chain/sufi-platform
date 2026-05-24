@@ -14,16 +14,10 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <!-- ABP Dependencies -->
     <ProjectReference Include="../../../../framework/SufiChain.SufiAbp.AspNetCore.Mvc/SufiChain.SufiAbp.AspNetCore.Mvc.csproj" />
     <ProjectReference Include="../SufiChain.SufiAbp.Identity.Application.Contracts/SufiChain.SufiAbp.Identity.Application.Contracts.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <!-- Force a compile-time reference because this host build currently skips the project reference as a C# reference. -->
-    <Reference Include="SufiChain.SufiAbp.Identity.Application.Contracts">
-      <HintPath>..\SufiChain.SufiAbp.Identity.Application.Contracts\bin\$(Configuration)\net10.0\SufiChain.SufiAbp.Identity.Application.Contracts.dll</HintPath>
-    </Reference>
-  </ItemGroup>
+
 
 </Project>

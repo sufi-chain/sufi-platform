@@ -63,7 +63,7 @@
 			@if (_isLoading)
 			{
 				<div class="text-center p-4">
-					<SbSpinner />
+					<SbProgress Type="SbProgressType.Circular" />
 				</div>
 			}
 			else if (!_archivedFiles.Any())
@@ -131,9 +131,10 @@
 				@if (_totalCount > _pageSize)
 				{
 					<div class="d-flex justify-content-center mt-3">
-						<SbPagination CurrentPage="@_currentPage"
-									  TotalPages="@((_totalCount + _pageSize - 1) / _pageSize)"
-									  OnPageChanged="@OnPageChangedAsync" />
+						<SbPagination PageIndex="@(_currentPage - 1)"
+									  PageIndexChanged="@(async (pageIndex) => await OnPageChangedAsync(pageIndex + 1))"
+									  TotalCount="@_totalCount"
+									  PageSize="@_pageSize" />
 					</div>
 				}
 			}
