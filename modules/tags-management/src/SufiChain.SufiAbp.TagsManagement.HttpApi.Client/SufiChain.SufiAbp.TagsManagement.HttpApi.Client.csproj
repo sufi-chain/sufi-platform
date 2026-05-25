@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFrameworks>netstandard2.1;net10.0</TargetFrameworks>
+    <Nullable>enable</Nullable>
+    <RootNamespace>SufiChain.SufiAbp.TagsManagement</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="../../../../framework/SufiChain.SufiAbp.Http.Client/SufiChain.SufiAbp.Http.Client.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="../SufiChain.SufiAbp.TagsManagement.Application.Contracts/SufiChain.SufiAbp.TagsManagement.Application.Contracts.csproj" />
+  </ItemGroup>
+</Project>
+

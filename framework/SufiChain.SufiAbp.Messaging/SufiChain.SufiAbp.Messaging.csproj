@@ -1,0 +1,37 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <RootNamespace>SufiChain.SufiAbp.Messaging</RootNamespace>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <PackageId>SufiChain.SufiAbp.Messaging</PackageId>
+    <Description>Sufi Platform unified messaging abstractions for Email, SMS, and Voice Call.</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\SufiChain.SufiAbp.Localization\SufiChain.SufiAbp.Localization.csproj" />
+    <ProjectReference Include="..\SufiChain.SufiAbp.TextTemplating\SufiChain.SufiAbp.TextTemplating.csproj" />
+    <ProjectReference Include="..\SufiChain.SufiAbp.UI.Abstractions\SufiChain.SufiAbp.UI.Abstractions.csproj" />
+    <ProjectReference Include="..\SufiChain.SufiAbp.VirtualFileSystem\SufiChain.SufiAbp.VirtualFileSystem.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Volo.Abp.BackgroundJobs" Version="$(AbpVersion)" />
+    <PackageReference Include="Volo.Abp.Settings" Version="$(AbpVersion)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Localization\SufiAbpMessaging\*.json" />
+    <Content Remove="Localization\SufiAbpMessaging\*.json" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Templates\*.tpl" />
+    <Content Remove="Templates\*.tpl" />
+  </ItemGroup>
+
+</Project>

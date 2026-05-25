@@ -25,6 +25,8 @@ using SufiChain.SufiAbp.SettingManagement.MongoDB;
 using SufiChain.SufiAbp.ShortLinkGenerator;
 using SufiChain.SufiAbp.ShortLinkGenerator.MongoDB;
 using SufiChain.SufiAbp.Swashbuckle;
+using SufiChain.SufiAbp.TagsManagement;
+using SufiChain.SufiAbp.TagsManagement.MongoDB;
 using SufiChain.SufiAbp.TenantManagement;
 using SufiChain.SufiAbp.TenantManagement.MongoDB;
 using SufiChain.SufiAbp.Users;
@@ -76,6 +78,9 @@ namespace SufiChain.SufiAbp.SmokeTest.Console;
     typeof(SufiAbpTenantManagementApplicationModule),
     typeof(SufiAbpTenantManagementHttpApiModule),
     typeof(SufiAbpTenantManagementMongoDbModule),
+    typeof(SufiAbpTagsManagementApplicationModule),
+    typeof(SufiAbpTagsManagementHttpApiModule),
+    typeof(SufiAbpTagsManagementMongoDbModule),
     typeof(SufiAbpUsersMongoDbModule)
 )]
 public class SufiAbpSmokeTestModule : AbpModule

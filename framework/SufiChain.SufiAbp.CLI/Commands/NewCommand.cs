@@ -28,22 +28,16 @@ public class NewCommand : AsyncCommand<NewCommand.Settings>
         [DefaultValue("mongo")]
         public string Database { get; set; } = "mongo";
 
-        [CommandOption("--solution-kind")]
-        [Description("Solution type: 'single' or 'layered' (default: layered)")]
-        [DefaultValue("layered")]
-        public string SolutionKindStr { get; set; } = "layered";
-
         [CommandOption("--tiered")]
-        [Description("Use tiered architecture with separate API + Auth hosts (only for layered)")]
+        [Description("Use tiered architecture (separate HttpApi.Host + AuthServer). Default: layered (API + Auth in WebApp)")]
         public bool Tiered { get; set; }
+
+        // Internal: Always layered for Blazor WebApp template
+        internal string SolutionKindStr { get; set; } = "layered";
 
         [CommandOption("--multi-tenancy")]
         [Description("Enable multi-tenancy (forces tenant-management module)")]
         public bool MultiTenancy { get; set; }
-
-        [CommandOption("--public-website")]
-        [Description("Include SufiCMS public website")]
-        public bool PublicWebsite { get; set; }
 
         [CommandOption("--ef-provider")]
         [Description("EF Core sub-provider: sqlserver, postgresql, mysql, mariadb, sqlite")]
@@ -109,28 +103,12 @@ public class NewCommand : AsyncCommand<NewCommand.Settings>
                 return ValidationResult.Error("Solution name is required in non-interactive mode. Run without arguments for interactive wizard.");
             }
 
-            if (!Name.Contains('.'))
-            {
-                return ValidationResult.Error("Solution name must be in format 'CompanyName.ProjectName' (e.g., MyCompany.MyProject)");
-            }
-
             var db = Database.ToLowerInvariant();
             if (db != "ef" && db != "entityframeworkcore" && db != "mongo" && db != "mongodb")
             {
                 return ValidationResult.Error("Database must be 'ef' (Entity Framework Core) or 'mongo' (MongoDB)");
             }
 
-            var kind = SolutionKindStr.ToLowerInvariant();
-            if (kind != "single" && kind != "layered")
-            {
-                return ValidationResult.Error("Solution kind must be 'single' or 'layered'.");
-            }
-            
-            if (Tiered && kind == "single")
-            {
-                return ValidationResult.Error("Tiered architecture is only available for layered solutions.");
-            }
-            
             // Validate EF provider if specified
             if (!string.IsNullOrEmpty(EfProvider))
             {
@@ -269,21 +247,30 @@ public class NewCommand : AsyncCommand<NewCommand.Settings>
         // Step 1 -- Solution type
         var solutionKindChoice = AnsiConsole.Prompt(
             new SelectionPrompt<string>()
-                .Title("[green]?[/] Select solution type:")
+                .Title("[green]?[/] Select architecture:")
                 .PageSize(5)
                 .AddChoices(new[]
                 {
-                    "Single (minimal 3 projects)",
-                    "Layered (DDD with full project structure)"
+                    "Single (1 host: API embedded in WebApp, recommended)",
+                    "Layered (2 hosts: WebApp + HttpApi.Host)",
+                    "Tiered (3 hosts: WebApp + HttpApi.Host + AuthServer)"
                 }));
-        settings.SolutionKindStr = solutionKindChoice.StartsWith("Single") ? "single" : "layered";
         
-        // If Layered, ask about tiered
-        if (settings.SolutionKindStr == "layered")
+        // Parse architecture choice
+        if (solutionKindChoice.StartsWith("Single"))
         {
-            settings.Tiered = AnsiConsole.Prompt(
-                new ConfirmationPrompt("[green]?[/] Enable tiered architecture? (separate API + Auth hosts)")
-                    { DefaultValue = true });
+            settings.SolutionKindStr = "single";
+            settings.Tiered = false;
+        }
+        else if (solutionKindChoice.StartsWith("Tiered"))
+        {
+            settings.SolutionKindStr = "layered";
+            settings.Tiered = true;
+        }
+        else // Layered (non-tiered)
+        {
+            settings.SolutionKindStr = "layered";
+            settings.Tiered = false;
         }
         
         // Step 2 -- Solution name
@@ -294,8 +281,6 @@ public class NewCommand : AsyncCommand<NewCommand.Settings>
                 {
                     if (string.IsNullOrWhiteSpace(name))
                         return ValidationResult.Error("Solution name cannot be empty");
-                    if (!name.Contains('.'))
-                        return ValidationResult.Error("Solution name must be in format 'CompanyName.ProjectName'");
                     return ValidationResult.Success();
                 }));
         settings.Name = solutionName;
@@ -340,15 +325,7 @@ public class NewCommand : AsyncCommand<NewCommand.Settings>
             new ConfirmationPrompt("[green]?[/] Enable multi-tenancy?")
                 { DefaultValue = true });
         
-        // Step 5 -- Public website (only for layered tiered)
-        if (settings.SolutionKindStr == "layered" && settings.Tiered)
-        {
-            settings.PublicWebsite = AnsiConsole.Prompt(
-                new ConfirmationPrompt("[green]?[/] Include SufiCMS Public Website?")
-                    { DefaultValue = false });
-        }
-        
-        // Step 6 -- Optional sample/demo modules
+        // Step 5 -- Optional sample/demo modules
         var registry = new ModuleRegistry();
         var optionalModules = registry.GetOptionalModules()
             .Select(m => $"{m.Key} - {m.Description}")
@@ -363,11 +340,49 @@ public class NewCommand : AsyncCommand<NewCommand.Settings>
                 .InstructionsText("[grey](Press [blue]<space>[/] to toggle, [green]<enter>[/] to confirm)[/]")
                 .AddChoices(optionalModules);
             
+            // Pre-select all non-demo modules by default (demos are opt-in)
+            foreach (var module in optionalModules)
+            {
+                var moduleKey = module.Split(" - ")[0];
+                if (!moduleKey.EndsWith("-demo", StringComparison.OrdinalIgnoreCase))
+                {
+                    moduleChoices.Select(module);
+                }
+            }
+            
             var selectedModules = AnsiConsole.Prompt(moduleChoices);
-            var modules = selectedModules
+            var selectedKeys = selectedModules
                 .Select(m => m.Split(" - ")[0])
                 .ToList();
-            settings.Modules = modules.Count > 0 ? string.Join(",", modules) : string.Empty;
+            
+            // Validate and resolve dependencies
+            if (selectedKeys.Count > 0)
+            {
+                var resolved = registry.ResolveWithDependencies(selectedKeys);
+                var allRequired = resolved.Where(m => !m.IsCore).Select(m => m.Key).ToList();
+                
+                // Check if we need to add dependencies
+                var missing = allRequired.Except(selectedKeys, StringComparer.OrdinalIgnoreCase).ToList();
+                if (missing.Any())
+                {
+                    AnsiConsole.MarkupLine("[yellow]⚠ Adding required dependencies:[/]");
+                    foreach (var dep in missing)
+                    {
+                        var depModule = registry.GetModule(dep);
+                        if (depModule != null)
+                        {
+                            AnsiConsole.MarkupLine($"  [grey]→[/] {depModule.DisplayName} [dim](required by selected modules)[/]");
+                        }
+                    }
+                    AnsiConsole.WriteLine();
+                }
+                
+                settings.Modules = string.Join(",", allRequired);
+            }
+            else
+            {
+                settings.Modules = string.Empty;
+            }
         }
         
         // Step 7 -- Application display name
@@ -454,9 +469,6 @@ public class NewCommand : AsyncCommand<NewCommand.Settings>
         // AuthServer is implied by tiered
         var includeAuthServer = isTiered;
         
-        // Public website
-        var includePublicWebApp = settings.PublicWebsite;
-        
         // Multi-tenancy
         var isMultiTenancyEnabled = settings.MultiTenancy;
         
@@ -483,7 +495,7 @@ public class NewCommand : AsyncCommand<NewCommand.Settings>
         var outputDir = settings.OutputDirectory ?? Path.Combine(Directory.GetCurrentDirectory(), settings.Name);
 
         // Compute hosts from solution kind
-        var includedHosts = ProjectBuildArgs.ComputeIncludedHosts(solutionKind, isTiered, includePublicWebApp);
+        var includedHosts = ProjectBuildArgs.ComputeIncludedHosts(solutionKind, isTiered, includePublicWebApp: false);
         
         // Compute template name
         var templateName = ProjectBuildArgs.ComputeTemplateName(solutionKind, isTiered);
@@ -503,7 +515,7 @@ public class NewCommand : AsyncCommand<NewCommand.Settings>
             SolutionKind = solutionKind,
             IsTiered = isTiered,
             IncludeAuthServer = includeAuthServer,
-            IncludePublicWebApp = includePublicWebApp,
+            IncludePublicWebApp = false,
             EfProvider = efProvider,
             ConnectionString = settings.ConnectionString,
             IsMultiTenancyEnabled = isMultiTenancyEnabled,

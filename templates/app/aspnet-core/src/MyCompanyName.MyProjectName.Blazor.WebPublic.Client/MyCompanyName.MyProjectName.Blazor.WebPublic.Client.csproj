@@ -31,8 +31,8 @@
 		<!-- It is referenced from the Server project, not this WebAssembly client -->
 		
 		<!-- File Manager for public file access -->
-		<ProjectReference Include="..\..\..\..\..\src\modules\file-manager\src\SufiChain.SufiAbp.FileManager.Blazor\SufiChain.SufiAbp.FileManager.Blazor.csproj" />
-		<ProjectReference Include="..\..\..\..\..\src\modules\file-manager\src\SufiChain.SufiAbp.FileManager.Blazor.WebAssembly\SufiChain.SufiAbp.FileManager.Blazor.WebAssembly.csproj" />
+		<ProjectReference Include="..\..\..\..\..\modules\file-manager\src\SufiChain.SufiAbp.FileManager.Blazor\SufiChain.SufiAbp.FileManager.Blazor.csproj" />
+		<ProjectReference Include="..\..\..\..\..\modules\file-manager\src\SufiChain.SufiAbp.FileManager.Blazor.WebAssembly\SufiChain.SufiAbp.FileManager.Blazor.WebAssembly.csproj" />
 		
 		<!-- NOTE: Admin modules NOT included for WebPublic -->
 		<!-- NO: Identity.Blazor (admin), TenantManagement, AuditLogging, etc. -->

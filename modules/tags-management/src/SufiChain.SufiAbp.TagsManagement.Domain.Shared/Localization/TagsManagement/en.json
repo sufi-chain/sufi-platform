@@ -1,0 +1,9 @@
+{
+  "culture": "en",
+  "texts": {
+    "Permission:TagsManagement": "Tags management",
+    "Permission:TagsManagement.Tags": "Manage tags",
+    "Permission:TagsManagement.TagLinks": "Manage tag links"
+  }
+}
+

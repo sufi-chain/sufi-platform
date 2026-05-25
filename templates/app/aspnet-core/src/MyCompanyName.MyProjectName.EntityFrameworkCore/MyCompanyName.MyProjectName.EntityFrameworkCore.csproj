@@ -52,21 +52,21 @@
 
   <TEMPLATE-REMOVE>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\..\..\src\modules\permission-management\src\SufiChain.SufiAbp.PermissionManagement.EntityFrameworkCore\SufiChain.SufiAbp.PermissionManagement.EntityFrameworkCore.csproj" />
-    <ProjectReference Include="..\..\..\..\..\src\modules\setting-management\src\SufiChain.SufiAbp.SettingManagement.EntityFrameworkCore\SufiChain.SufiAbp.SettingManagement.EntityFrameworkCore.csproj" />
-    <ProjectReference Include="..\..\..\..\..\src\modules\feature-management\src\SufiChain.SufiAbp.FeatureManagement.EntityFrameworkCore\SufiChain.SufiAbp.FeatureManagement.EntityFrameworkCore.csproj" />
-    <ProjectReference Include="..\..\..\..\..\src\modules\audit-logging\src\SufiChain.SufiAbp.AuditLogging.EntityFrameworkCore\SufiChain.SufiAbp.AuditLogging.EntityFrameworkCore.csproj" />
-    <ProjectReference Include="..\..\..\..\..\src\modules\background-jobs\src\SufiChain.SufiAbp.BackgroundJobs.EntityFrameworkCore\SufiChain.SufiAbp.BackgroundJobs.EntityFrameworkCore.csproj" />
-    <ProjectReference Include="..\..\..\..\..\src\modules\identity\src\SufiChain.SufiAbp.Identity.EntityFrameworkCore\SufiChain.SufiAbp.Identity.EntityFrameworkCore.csproj" />
-    <ProjectReference Include="..\..\..\..\..\src\modules\users\src\SufiChain.SufiAbp.Users.EntityFrameworkCore\SufiChain.SufiAbp.Users.EntityFrameworkCore.csproj" />
-    <ProjectReference Include="..\..\..\..\..\src\modules\tenant-management\src\SufiChain.SufiAbp.TenantManagement.EntityFrameworkCore\SufiChain.SufiAbp.TenantManagement.EntityFrameworkCore.csproj" />
-    <ProjectReference Include="..\..\..\..\..\src\modules\openiddict\src\SufiChain.SufiAbp.OpenIddict.EntityFrameworkCore\SufiChain.SufiAbp.OpenIddict.EntityFrameworkCore.csproj" />
+    <ProjectReference Include="..\..\..\..\..\modules\permission-management\src\SufiChain.SufiAbp.PermissionManagement.EntityFrameworkCore\SufiChain.SufiAbp.PermissionManagement.EntityFrameworkCore.csproj" />
+    <ProjectReference Include="..\..\..\..\..\modules\setting-management\src\SufiChain.SufiAbp.SettingManagement.EntityFrameworkCore\SufiChain.SufiAbp.SettingManagement.EntityFrameworkCore.csproj" />
+    <ProjectReference Include="..\..\..\..\..\modules\feature-management\src\SufiChain.SufiAbp.FeatureManagement.EntityFrameworkCore\SufiChain.SufiAbp.FeatureManagement.EntityFrameworkCore.csproj" />
+    <ProjectReference Include="..\..\..\..\..\modules\audit-logging\src\SufiChain.SufiAbp.AuditLogging.EntityFrameworkCore\SufiChain.SufiAbp.AuditLogging.EntityFrameworkCore.csproj" />
+    <ProjectReference Include="..\..\..\..\..\modules\background-jobs\src\SufiChain.SufiAbp.BackgroundJobs.EntityFrameworkCore\SufiChain.SufiAbp.BackgroundJobs.EntityFrameworkCore.csproj" />
+    <ProjectReference Include="..\..\..\..\..\modules\identity\src\SufiChain.SufiAbp.Identity.EntityFrameworkCore\SufiChain.SufiAbp.Identity.EntityFrameworkCore.csproj" />
+    <ProjectReference Include="..\..\..\..\..\modules\users\src\SufiChain.SufiAbp.Users.EntityFrameworkCore\SufiChain.SufiAbp.Users.EntityFrameworkCore.csproj" />
+    <ProjectReference Include="..\..\..\..\..\modules\tenant-management\src\SufiChain.SufiAbp.TenantManagement.EntityFrameworkCore\SufiChain.SufiAbp.TenantManagement.EntityFrameworkCore.csproj" />
+    <ProjectReference Include="..\..\..\..\..\modules\openiddict\src\SufiChain.SufiAbp.OpenIddict.EntityFrameworkCore\SufiChain.SufiAbp.OpenIddict.EntityFrameworkCore.csproj" />
     
-    <ProjectReference Include="..\..\..\..\..\src\modules\blob-storing-database\src\SufiChain.SufiAbp.BlobStoring.Database.EntityFrameworkCore\SufiChain.SufiAbp.BlobStoring.Database.EntityFrameworkCore.csproj" />
-    <ProjectReference Include="..\..\..\..\..\src\modules\file-manager\src\SufiChain.SufiAbp.FileManager.EntityFrameworkCore\SufiChain.SufiAbp.FileManager.EntityFrameworkCore.csproj" />
-    <ProjectReference Include="..\..\..\..\..\src\modules\localization-management\src\SufiChain.SufiAbp.LocalizationManagement.EntityFrameworkCore\SufiChain.SufiAbp.LocalizationManagement.EntityFrameworkCore.csproj" />
-    <ProjectReference Include="..\..\..\..\..\src\modules\short-link-generator\src\SufiChain.SufiAbp.ShortLinkGenerator.EntityFrameworkCore\SufiChain.SufiAbp.ShortLinkGenerator.EntityFrameworkCore.csproj" />
-    <ProjectReference Include="..\..\..\..\..\src\modules\ai-management\src\SufiChain.SufiAbp.AIManagement.EntityFrameworkCore\SufiChain.SufiAbp.AIManagement.EntityFrameworkCore.csproj" />
+    <ProjectReference Include="..\..\..\..\..\modules\blob-storing-database\src\SufiChain.SufiAbp.BlobStoring.Database.EntityFrameworkCore\SufiChain.SufiAbp.BlobStoring.Database.EntityFrameworkCore.csproj" />
+    <ProjectReference Include="..\..\..\..\..\modules\file-manager\src\SufiChain.SufiAbp.FileManager.EntityFrameworkCore\SufiChain.SufiAbp.FileManager.EntityFrameworkCore.csproj" />
+    <ProjectReference Include="..\..\..\..\..\modules\localization-management\src\SufiChain.SufiAbp.LocalizationManagement.EntityFrameworkCore\SufiChain.SufiAbp.LocalizationManagement.EntityFrameworkCore.csproj" />
+    <ProjectReference Include="..\..\..\..\..\modules\short-link-generator\src\SufiChain.SufiAbp.ShortLinkGenerator.EntityFrameworkCore\SufiChain.SufiAbp.ShortLinkGenerator.EntityFrameworkCore.csproj" />
+    <ProjectReference Include="..\..\..\..\..\modules\ai-management\src\SufiChain.SufiAbp.AIManagement.EntityFrameworkCore\SufiChain.SufiAbp.AIManagement.EntityFrameworkCore.csproj" />
   </ItemGroup>
   </TEMPLATE-REMOVE>
 

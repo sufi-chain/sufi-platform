@@ -16,16 +16,16 @@
 
   <TEMPLATE-REMOVE>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\..\..\src\modules\permission-management\src\SufiChain.SufiAbp.PermissionManagement.Domain\SufiChain.SufiAbp.PermissionManagement.Domain.csproj" />
-    <ProjectReference Include="..\..\..\..\..\src\modules\setting-management\src\SufiChain.SufiAbp.SettingManagement.Domain\SufiChain.SufiAbp.SettingManagement.Domain.csproj" />
-    <ProjectReference Include="..\..\..\..\..\src\modules\feature-management\src\SufiChain.SufiAbp.FeatureManagement.Domain\SufiChain.SufiAbp.FeatureManagement.Domain.csproj" />
-    <ProjectReference Include="..\..\..\..\..\src\modules\audit-logging\src\SufiChain.SufiAbp.AuditLogging.Domain\SufiChain.SufiAbp.AuditLogging.Domain.csproj" />
-    <ProjectReference Include="..\..\..\..\..\src\modules\background-jobs\src\SufiChain.SufiAbp.BackgroundJobs.Domain\SufiChain.SufiAbp.BackgroundJobs.Domain.csproj" />
-    <ProjectReference Include="..\..\..\..\..\src\modules\identity\src\SufiChain.SufiAbp.Identity.Domain\SufiChain.SufiAbp.Identity.Domain.csproj" />
-    <ProjectReference Include="..\..\..\..\..\src\modules\users\src\SufiChain.SufiAbp.Users.Domain\SufiChain.SufiAbp.Users.Domain.csproj" />
-    <ProjectReference Include="..\..\..\..\..\src\modules\tenant-management\src\SufiChain.SufiAbp.TenantManagement.Domain\SufiChain.SufiAbp.TenantManagement.Domain.csproj" />
-    <ProjectReference Include="..\..\..\..\..\src\modules\openiddict\src\SufiChain.SufiAbp.OpenIddict.Domain\SufiChain.SufiAbp.OpenIddict.Domain.csproj" />
-    <ProjectReference Include="..\..\..\..\..\src\modules\openiddict\src\SufiChain.SufiAbp.PermissionManagement.Domain.OpenIddict\SufiChain.SufiAbp.PermissionManagement.Domain.OpenIddict.csproj" />
+    <ProjectReference Include="..\..\..\..\..\modules\permission-management\src\SufiChain.SufiAbp.PermissionManagement.Domain\SufiChain.SufiAbp.PermissionManagement.Domain.csproj" />
+    <ProjectReference Include="..\..\..\..\..\modules\setting-management\src\SufiChain.SufiAbp.SettingManagement.Domain\SufiChain.SufiAbp.SettingManagement.Domain.csproj" />
+    <ProjectReference Include="..\..\..\..\..\modules\feature-management\src\SufiChain.SufiAbp.FeatureManagement.Domain\SufiChain.SufiAbp.FeatureManagement.Domain.csproj" />
+    <ProjectReference Include="..\..\..\..\..\modules\audit-logging\src\SufiChain.SufiAbp.AuditLogging.Domain\SufiChain.SufiAbp.AuditLogging.Domain.csproj" />
+    <ProjectReference Include="..\..\..\..\..\modules\background-jobs\src\SufiChain.SufiAbp.BackgroundJobs.Domain\SufiChain.SufiAbp.BackgroundJobs.Domain.csproj" />
+    <ProjectReference Include="..\..\..\..\..\modules\identity\src\SufiChain.SufiAbp.Identity.Domain\SufiChain.SufiAbp.Identity.Domain.csproj" />
+    <ProjectReference Include="..\..\..\..\..\modules\users\src\SufiChain.SufiAbp.Users.Domain\SufiChain.SufiAbp.Users.Domain.csproj" />
+    <ProjectReference Include="..\..\..\..\..\modules\tenant-management\src\SufiChain.SufiAbp.TenantManagement.Domain\SufiChain.SufiAbp.TenantManagement.Domain.csproj" />
+    <ProjectReference Include="..\..\..\..\..\modules\openiddict\src\SufiChain.SufiAbp.OpenIddict.Domain\SufiChain.SufiAbp.OpenIddict.Domain.csproj" />
+    <ProjectReference Include="..\..\..\..\..\modules\openiddict\src\SufiChain.SufiAbp.PermissionManagement.Domain.OpenIddict\SufiChain.SufiAbp.PermissionManagement.Domain.OpenIddict.csproj" />
   </ItemGroup>
   </TEMPLATE-REMOVE>
 

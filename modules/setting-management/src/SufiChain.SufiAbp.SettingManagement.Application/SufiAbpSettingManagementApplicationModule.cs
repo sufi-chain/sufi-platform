@@ -1,14 +1,13 @@
 using Microsoft.Extensions.DependencyInjection;
-using Volo.Abp.Modularity;
-using SufiChain.SufiAbp.SettingManagement;
 using SufiChain.SufiAbp.Ddd;
-using SufiChain.SufiAbp.Emailing;
+using SufiChain.SufiAbp.Messaging;
+using Volo.Abp.Modularity;
 
 namespace SufiChain.SufiAbp.SettingManagement;
 
 [DependsOn(
     typeof(SufiAbpDddApplicationModule),
-    typeof(SufiAbpEmailingModule),
+    typeof(SufiAbpMessagingModule),
     typeof(SufiAbpSettingManagementDomainModule),
     typeof(SufiAbpSettingManagementApplicationContractsModule)
 )]

@@ -36,7 +36,6 @@
     <Project Path="framework/SufiChain.SufiAbp.Ddd.Domain.Shared/SufiChain.SufiAbp.Ddd.Domain.Shared.csproj" />
     <Project Path="framework/SufiChain.SufiAbp.Ddd.Domain/SufiChain.SufiAbp.Ddd.Domain.csproj" />
     <Project Path="framework/SufiChain.SufiAbp.DistributedLocking.Abstractions/SufiChain.SufiAbp.DistributedLocking.Abstractions.csproj" />
-    <Project Path="framework/SufiChain.SufiAbp.Emailing/SufiChain.SufiAbp.Emailing.csproj" />
     <Project Path="framework/SufiChain.SufiAbp.EntityFrameworkCore.MySQL/SufiChain.SufiAbp.EntityFrameworkCore.MySQL.csproj" />
     <Project Path="framework/SufiChain.SufiAbp.EntityFrameworkCore.PostgreSql/SufiChain.SufiAbp.EntityFrameworkCore.PostgreSql.csproj" />
     <Project Path="framework/SufiChain.SufiAbp.EntityFrameworkCore.Sqlite/SufiChain.SufiAbp.EntityFrameworkCore.Sqlite.csproj" />
@@ -48,12 +47,15 @@
     <Project Path="framework/SufiChain.SufiAbp.Http.Client/SufiChain.SufiAbp.Http.Client.csproj" />
     <Project Path="framework/SufiChain.SufiAbp.Localization/SufiChain.SufiAbp.Localization.csproj" />
     <Project Path="framework/SufiChain.SufiAbp.Mapperly/SufiChain.SufiAbp.Mapperly.csproj" />
+    <Project Path="framework/SufiChain.SufiAbp.Messaging/SufiChain.SufiAbp.Messaging.csproj" />
     <Project Path="framework/SufiChain.SufiAbp.MongoDB/SufiChain.SufiAbp.MongoDB.csproj" />
     <Project Path="framework/SufiChain.SufiAbp.MultiTenancy/SufiChain.SufiAbp.MultiTenancy.csproj" />
     <Project Path="framework/SufiChain.SufiAbp.ObjectExtending/SufiChain.SufiAbp.ObjectExtending.csproj" />
     <Project Path="framework/SufiChain.SufiAbp.Security/SufiChain.SufiAbp.Security.csproj" />
     <Project Path="framework/SufiChain.SufiAbp.Swashbuckle/SufiChain.SufiAbp.Swashbuckle.csproj" />
     <Project Path="framework/SufiChain.SufiAbp.TestBase/SufiChain.SufiAbp.TestBase.csproj" />
+    <Project Path="framework/SufiChain.SufiAbp.TextTemplating.Scriban/SufiChain.SufiAbp.TextTemplating.Scriban.csproj" />
+    <Project Path="framework/SufiChain.SufiAbp.TextTemplating/SufiChain.SufiAbp.TextTemplating.csproj" />
     <Project Path="framework/SufiChain.SufiAbp.Threading/SufiChain.SufiAbp.Threading.csproj" />
     <Project Path="framework/SufiChain.SufiAbp.Timing/SufiChain.SufiAbp.Timing.csproj" />
     <Project Path="framework/SufiChain.SufiAbp.UI.Abstractions/SufiChain.SufiAbp.UI.Abstractions.csproj" />
@@ -207,6 +209,16 @@
     <Project Path="modules/short-link-generator/src/SufiChain.SufiAbp.ShortLinkGenerator.HttpApi.Client/SufiChain.SufiAbp.ShortLinkGenerator.HttpApi.Client.csproj" />
     <Project Path="modules/short-link-generator/src/SufiChain.SufiAbp.ShortLinkGenerator.HttpApi/SufiChain.SufiAbp.ShortLinkGenerator.HttpApi.csproj" />
     <Project Path="modules/short-link-generator/src/SufiChain.SufiAbp.ShortLinkGenerator.MongoDB/SufiChain.SufiAbp.ShortLinkGenerator.MongoDB.csproj" />
+  </Folder>
+  <Folder Name="/Modules/TagsManagements/">
+    <Project Path="modules/tags-management/src/SufiChain.SufiAbp.TagsManagement.Application.Contracts/SufiChain.SufiAbp.TagsManagement.Application.Contracts.csproj" />
+    <Project Path="modules/tags-management/src/SufiChain.SufiAbp.TagsManagement.Application/SufiChain.SufiAbp.TagsManagement.Application.csproj" />
+    <Project Path="modules/tags-management/src/SufiChain.SufiAbp.TagsManagement.Domain.Shared/SufiChain.SufiAbp.TagsManagement.Domain.Shared.csproj" />
+    <Project Path="modules/tags-management/src/SufiChain.SufiAbp.TagsManagement.Domain/SufiChain.SufiAbp.TagsManagement.Domain.csproj" />
+    <Project Path="modules/tags-management/src/SufiChain.SufiAbp.TagsManagement.EntityFrameworkCore/SufiChain.SufiAbp.TagsManagement.EntityFrameworkCore.csproj" />
+    <Project Path="modules/tags-management/src/SufiChain.SufiAbp.TagsManagement.HttpApi.Client/SufiChain.SufiAbp.TagsManagement.HttpApi.Client.csproj" />
+    <Project Path="modules/tags-management/src/SufiChain.SufiAbp.TagsManagement.HttpApi/SufiChain.SufiAbp.TagsManagement.HttpApi.csproj" />
+    <Project Path="modules/tags-management/src/SufiChain.SufiAbp.TagsManagement.MongoDB/SufiChain.SufiAbp.TagsManagement.MongoDB.csproj" />
   </Folder>
   <Folder Name="/Modules/TenantManagement/">
     <Project Path="modules/tenant-management/src/SufiChain.SufiAbp.TenantManagement.Application.Contracts/SufiChain.SufiAbp.TenantManagement.Application.Contracts.csproj" />

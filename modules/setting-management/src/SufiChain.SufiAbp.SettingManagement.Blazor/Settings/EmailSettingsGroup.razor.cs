@@ -1,9 +1,3 @@
-using Microsoft.AspNetCore.Components;
-using SufiChain.SufiAbp.SettingManagement.Localization;
-using SufiChain.SufiAbp.UI.Blazor;
-using Volo.Abp.Emailing;
-using SufiChain.SufiAbp.SettingManagement;
-
 namespace SufiChain.SufiAbp.SettingManagement.Blazor.Settings;
 
 /// <summary>

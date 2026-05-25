@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFrameworks>netstandard2.1;net10.0</TargetFrameworks>
+    <Nullable>enable</Nullable>
+    <RootNamespace>SufiChain.SufiAbp.TagsManagement</RootNamespace>
+    <GenerateEmbeddedFilesManifest>true</GenerateEmbeddedFilesManifest>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="../../../../framework/SufiChain.SufiAbp.Ddd.Domain.Shared/SufiChain.SufiAbp.Ddd.Domain.Shared.csproj" />
+    <ProjectReference Include="../../../../framework/SufiChain.SufiAbp.Validation/SufiChain.SufiAbp.Validation.csproj" />
+    <ProjectReference Include="..\..\..\..\framework\SufiChain.SufiAbp.Authorization\SufiChain.SufiAbp.Authorization.csproj" />
+    <PackageReference Include="Microsoft.Extensions.FileProviders.Embedded" Version="$(MicrosoftExtensionsFileProvidersEmbeddedVersion)" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Localization\TagsManagement\*.json" />
+    <Content Remove="Localization\TagsManagement\*.json" />
+  </ItemGroup>
+</Project>
+

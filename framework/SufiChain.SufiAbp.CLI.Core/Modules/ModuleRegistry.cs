@@ -106,7 +106,7 @@ public class ModuleRegistry
             DisplayName = "File Manager",
             NuGetPackagePrefix = "SufiChain.SufiAbp.FileManager",
             Category = ModuleCategory.Infrastructure,
-            IsCore = true,
+            IsCore = false,
             Description = "File upload, storage, and management with RTE integration",
             ApplicableHosts = new[] { HostType.WebApp, HostType.WebPublic, HostType.HttpApi, HostType.Web }
         });
@@ -118,7 +118,7 @@ public class ModuleRegistry
             DisplayName = "Audit Logging",
             NuGetPackagePrefix = "SufiChain.SufiAbp.AuditLogging",
             Category = ModuleCategory.Infrastructure,
-            IsCore = true,
+            IsCore = false,
             Description = "Audit log viewing and management UI",
             ApplicableHosts = new[] { HostType.WebApp, HostType.HttpApi, HostType.Web }
         });
@@ -130,7 +130,7 @@ public class ModuleRegistry
             DisplayName = "Background Jobs",
             NuGetPackagePrefix = "SufiChain.SufiAbp.BackgroundJobs",
             Category = ModuleCategory.Infrastructure,
-            IsCore = true,
+            IsCore = false,
             Description = "Background job management and monitoring UI",
             ApplicableHosts = new[] { HostType.WebApp, HostType.HttpApi, HostType.Web }
         });
@@ -142,7 +142,7 @@ public class ModuleRegistry
             DisplayName = "Localization Management",
             NuGetPackagePrefix = "SufiChain.SufiAbp.LocalizationManagement",
             Category = ModuleCategory.Infrastructure,
-            IsCore = true,
+            IsCore = false,
             Description = "Runtime localization management UI",
             ApplicableHosts = new[] { HostType.WebApp, HostType.HttpApi, HostType.Web }
         });
@@ -153,7 +153,7 @@ public class ModuleRegistry
             DisplayName = "AI Management",
             NuGetPackagePrefix = "SufiChain.SufiAbp.AIManagement",
             Category = ModuleCategory.Infrastructure,
-            IsCore = true,
+            IsCore = false,
             Description = "AI workspace, RAG, MCP, and provider management",
             DependsOn = new[] { "file-manager" },
             ApplicableHosts = new[] { HostType.WebApp, HostType.HttpApi, HostType.Web },
@@ -166,7 +166,7 @@ public class ModuleRegistry
             DisplayName = "Short Link Generator",
             NuGetPackagePrefix = "SufiChain.SufiAbp.ShortLinkGenerator",
             Category = ModuleCategory.Infrastructure,
-            IsCore = true,
+            IsCore = false,
             Description = "URL shortening with click analytics",
             ApplicableHosts = new[] { HostType.WebApp, HostType.HttpApi, HostType.Web },
             AvailablePackages = ModulePackageTypes.All
@@ -178,7 +178,7 @@ public class ModuleRegistry
             DisplayName = "Blob Storing Database",
             NuGetPackagePrefix = "SufiChain.SufiAbp.BlobStoring.Database",
             Category = ModuleCategory.Infrastructure,
-            IsCore = true,
+            IsCore = false,
             Description = "Database-backed blob storage module",
             ApplicableHosts = new[] { HostType.WebApp, HostType.HttpApi, HostType.Web },
             AvailablePackages = ModulePackageTypes.DomainShared | ModulePackageTypes.Domain | ModulePackageTypes.EntityFrameworkCore | ModulePackageTypes.MongoDB

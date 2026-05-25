@@ -15,8 +15,9 @@
 
   <ItemGroup>
     <ProjectReference Include="../../../../framework/SufiChain.SufiAbp.Ddd.Application/SufiChain.SufiAbp.Ddd.Application.csproj" />
-    <ProjectReference Include="../../../../framework/SufiChain.SufiAbp.Emailing/SufiChain.SufiAbp.Emailing.csproj" />
+    <ProjectReference Include="../../../../framework/SufiChain.SufiAbp.Messaging/SufiChain.SufiAbp.Messaging.csproj" />
     <ProjectReference Include="../../../../framework/SufiChain.SufiAbp.Timing/SufiChain.SufiAbp.Timing.csproj" />
+    <ProjectReference Include="..\..\..\..\framework\SufiChain.SufiAbp.Messaging\SufiChain.SufiAbp.Messaging.csproj" />
     <ProjectReference Include="..\SufiChain.SufiAbp.SettingManagement.Domain\SufiChain.SufiAbp.SettingManagement.Domain.csproj" />
   </ItemGroup>
 

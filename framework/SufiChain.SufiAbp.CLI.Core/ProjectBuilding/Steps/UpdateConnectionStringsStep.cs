@@ -43,7 +43,6 @@ public class UpdateConnectionStringsStep : ProjectBuildPipelineStep
             try
             {
                 var jsonDoc = JsonDocument.Parse(content);
-                var modified = false;
                 
                 // Check if ConnectionStrings section exists
                 if (jsonDoc.RootElement.TryGetProperty("ConnectionStrings", out var connectionStrings))
@@ -52,7 +51,6 @@ public class UpdateConnectionStringsStep : ProjectBuildPipelineStep
                     if (newContent != content)
                     {
                         context.Files[filePath] = Encoding.UTF8.GetBytes(newContent);
-                        modified = true;
                     }
                 }
                 
