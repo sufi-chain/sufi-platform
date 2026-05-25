@@ -12,11 +12,12 @@ public class TemplateManager
 {
     private const string DefaultTemplateName = "blazor-webapp-layered-tiered";
     
-    // Nexus base URL for downloading templates (release mode)
-    private const string NexusBaseUrl = "https://nexus.sabp.ir/sabp/templates";
+    // CDN base URL for downloading templates (release mode)
+    private const string CdnBaseUrl = "https://cdn.sabp.ir/sufi-abp";
+    private const string CdnVersionManifestUrl = "https://cdn.sabp.ir/sufi-abp/latest.json";
     
-    // Current template version (used for downloads)
-    private const string TemplateVersion = "0.0.0-rc.1.0";
+    // Unified template name (single ZIP containing all variants)
+    private const string UnifiedTemplateName = "app-blazor-webapp-unified";
     
     // Debug mode flag (checks if running from bin/Debug)
     private static readonly bool IsDebugMode = AppContext.BaseDirectory.Contains("Debug", StringComparison.OrdinalIgnoreCase);
@@ -104,20 +105,21 @@ public class TemplateManager
     {
         var templates = new List<TemplateInfo>();
         
-        // Discover all templates from known host directories
-        foreach (var mapping in TemplateToHostDir)
+        // Discover unified template from filesystem (Debug mode)
+        var unifiedPath = GetUnifiedTemplatePath();
+        if (!string.IsNullOrEmpty(unifiedPath) && Directory.Exists(unifiedPath) && Directory.GetFiles(unifiedPath, "*.sln").Length > 0)
         {
-            var devPath = GetDevelopmentTemplatePath(mapping.Key);
-            if (!string.IsNullOrEmpty(devPath) && Directory.Exists(devPath) && Directory.GetFiles(devPath, "*.sln").Length > 0)
+            // Add all architecture variants from unified template
+            foreach (var arch in new[] { "single", "layered", "layered-tiered" })
             {
                 templates.Add(new TemplateInfo
                 {
-                    Name = mapping.Key,
-                    Description = $"Sufi Platform {mapping.Key} template (development)",
+                    Name = $"blazor-webapp-{arch}",
+                    Description = $"Sufi Platform Blazor WebApp {arch} template (development)",
                     Source = "filesystem",
-                    Path = devPath,
+                    Path = unifiedPath,
                     SupportedDatabaseProviders = new List<string> { "EntityFrameworkCore", "MongoDB" },
-                    SupportedArchitectures = new List<string> { mapping.Value }
+                    SupportedArchitectures = new List<string> { arch }
                 });
             }
         }
@@ -142,8 +144,8 @@ public class TemplateManager
     }
     
     /// <summary>
-    /// Gets the unified template path (src/templates/app/aspnet-core).
-    /// This is the new ABP-style unified template structure.
+    /// Gets the unified template path (sufi-abp/templates/app/aspnet-core).
+    /// This is the unified template structure containing all architecture variants.
     /// </summary>
     private string? GetUnifiedTemplatePath()
     {
@@ -154,9 +156,9 @@ public class TemplateManager
             var cliDir = Path.GetDirectoryName(assemblyLocation);
             if (cliDir != null)
             {
-                // Core DLL: src/framework/SufiChain.SufiAbp.CLI.Core/bin/Debug/net10.0 -> repo root is 6 levels up
-                var repoRoot = Path.GetFullPath(Path.Combine(cliDir, "..", "..", "..", "..", "..", ".."));
-                var unifiedPath = Path.Combine(repoRoot, "src", "templates", "app", "aspnet-core");
+                // Core DLL: framework/SufiChain.SufiAbp.CLI.Core/bin/Debug/net10.0 -> repo root is 5 levels up
+                var repoRoot = Path.GetFullPath(Path.Combine(cliDir, "..", "..", "..", "..", ".."));
+                var unifiedPath = Path.Combine(repoRoot, "templates", "app", "aspnet-core");
                 if (Directory.Exists(unifiedPath))
                 {
                     return Path.GetFullPath(unifiedPath);
@@ -166,7 +168,7 @@ public class TemplateManager
         
         // Try from current directory
         var currentDir = Directory.GetCurrentDirectory();
-        var fromCurrent = Path.GetFullPath(Path.Combine(currentDir, "src", "templates", "app", "aspnet-core"));
+        var fromCurrent = Path.GetFullPath(Path.Combine(currentDir, "templates", "app", "aspnet-core"));
         if (Directory.Exists(fromCurrent))
         {
             return fromCurrent;
@@ -199,14 +201,7 @@ public class TemplateManager
             }
         }
         
-        // 3. Try development path using the hosts/{architecture}/ structure (legacy)
-        var devPath = GetDevelopmentTemplatePath(templateName);
-        if (!string.IsNullOrEmpty(devPath) && Directory.Exists(devPath) && Directory.GetFiles(devPath, "*.sln").Length > 0)
-        {
-            return devPath;
-        }
-        
-        // 4. Return null to indicate download or embedded resources should be used
+        // 3. Return null to indicate download or embedded resources should be used
         return null;
     }
     
@@ -276,112 +271,6 @@ public class TemplateManager
         return files;
     }
     
-    /// <summary>
-    /// Maps template names to their host directory names under hosts/.
-    /// </summary>
-    private static readonly Dictionary<string, string> TemplateToHostDir = new(StringComparer.OrdinalIgnoreCase)
-    {
-        ["blazor-webapp-layered-tiered"] = "layered-tiered",
-        ["blazor-webapp-layered"] = "layered",
-        ["blazor-webapp-single"] = "single",
-        // Legacy mapping
-        ["blazor-webapp-mongodb-tiered"] = "layered-tiered"
-    };
-    
-    private string GetDevelopmentTemplatePath(string? templateName = null)
-    {
-        templateName ??= DefaultTemplateName;
-        
-        // Resolve the host directory name from template name
-        var hostDirName = TemplateToHostDir.TryGetValue(templateName, out var dir) ? dir : "layered-tiered";
-        
-        // Try multiple approaches to find the template path
-        
-        // 1. Try from assembly location (dev: .dev/hosts/{architecture}/)
-        var assemblyLocation = typeof(TemplateManager).Assembly.Location;
-        if (!string.IsNullOrEmpty(assemblyLocation))
-        {
-            var cliDir = Path.GetDirectoryName(assemblyLocation);
-            if (cliDir != null)
-            {
-                // Core DLL: src/framework/SufiChain.SufiAbp.CLI/bin/Debug/net10.0 -> repo root is 6 levels up
-                var repoRoot = Path.GetFullPath(Path.Combine(cliDir, "..", "..", "..", "..", "..", ".."));
-                // Development: .dev/hosts/{architecture}/
-                var devHostsPath = Path.Combine(repoRoot, ".dev", "hosts", hostDirName);
-                if (Directory.Exists(devHostsPath))
-                {
-                    return Path.GetFullPath(devHostsPath);
-                }
-                // Legacy: hosts/{architecture}/ at repo root
-                var legacyPath = Path.Combine(repoRoot, "hosts", hostDirName);
-                if (Directory.Exists(legacyPath))
-                {
-                    return Path.GetFullPath(legacyPath);
-                }
-            }
-        }
-        
-        // 2. Try from AppContext.BaseDirectory
-        var baseDir = AppContext.BaseDirectory;
-        if (!string.IsNullOrEmpty(baseDir))
-        {
-            var repoRoot = Path.GetFullPath(Path.Combine(baseDir, "..", "..", "..", "..", "..", "..", ".."));
-            var devHostsPath = Path.Combine(repoRoot, ".dev", "hosts", hostDirName);
-            if (Directory.Exists(devHostsPath))
-            {
-                return Path.GetFullPath(devHostsPath);
-            }
-            var legacyPath = Path.Combine(repoRoot, "hosts", hostDirName);
-            if (Directory.Exists(legacyPath))
-            {
-                return Path.GetFullPath(legacyPath);
-            }
-        }
-        
-        // 3. Try from current directory (useful when running from project folder)
-        var currentDir = Directory.GetCurrentDirectory();
-        
-        // .dev/hosts/{architecture}/ (development)
-        var fromDevHosts = Path.GetFullPath(Path.Combine(currentDir, ".dev", "hosts", hostDirName));
-        if (Directory.Exists(fromDevHosts))
-        {
-            return fromDevHosts;
-        }
-        
-        var fromCliProject = Path.GetFullPath(Path.Combine(currentDir, "..", "..", "..", ".dev", "hosts", hostDirName));
-        if (Directory.Exists(fromCliProject))
-        {
-            return fromCliProject;
-        }
-        
-        var fromRepoRoot = Path.GetFullPath(Path.Combine(currentDir, "hosts", hostDirName));
-        if (Directory.Exists(fromRepoRoot))
-        {
-            return fromRepoRoot;
-        }
-        
-        // 4. Walk up directories looking for .dev/hosts or hosts
-        var searchDir = currentDir;
-        for (int i = 0; i < 10; i++)
-        {
-            var devHostsCandidate = Path.Combine(searchDir, ".dev", "hosts", hostDirName);
-            if (Directory.Exists(devHostsCandidate))
-            {
-                return Path.GetFullPath(devHostsCandidate);
-            }
-            var legacyCandidate = Path.Combine(searchDir, "hosts", hostDirName);
-            if (Directory.Exists(legacyCandidate))
-            {
-                return Path.GetFullPath(legacyCandidate);
-            }
-            
-            var parent = Directory.GetParent(searchDir);
-            if (parent == null) break;
-            searchDir = parent.FullName;
-        }
-        
-        return "";
-    }
     
     /// <summary>
     /// Reconstructs the original file path from an embedded resource name.
@@ -463,7 +352,7 @@ public class TemplateManager
             return envZipPath;
         }
         
-        // 2. Check templates directory relative to CLI assembly (release: src/templates/)
+        // 2. Check templates directory relative to CLI assembly
         var assemblyLocation = typeof(TemplateManager).Assembly.Location;
         if (!string.IsNullOrEmpty(assemblyLocation))
         {
@@ -471,16 +360,9 @@ public class TemplateManager
             if (cliDir != null)
             {
                 var repoRoot = Path.GetFullPath(Path.Combine(cliDir, "..", "..", "..", "..", "..", ".."));
-                // Release: src/templates/
-                var srcTemplatesPath = Path.Combine(repoRoot, "src", "templates");
+                // Check templates/ directory
+                var srcTemplatesPath = Path.Combine(repoRoot, "templates");
                 var zipPath = Path.Combine(srcTemplatesPath, $"{templateName}.zip");
-                if (File.Exists(zipPath))
-                {
-                    return zipPath;
-                }
-                // Legacy: templates/ at repo root
-                var legacyTemplatesPath = Path.Combine(repoRoot, "templates");
-                zipPath = Path.Combine(legacyTemplatesPath, $"{templateName}.zip");
                 if (File.Exists(zipPath))
                 {
                     return zipPath;
@@ -488,18 +370,12 @@ public class TemplateManager
             }
         }
         
-        // 3. Walk up from current directory looking for src/templates or templates
+        // 3. Walk up from current directory looking for templates
         var currentDir = Directory.GetCurrentDirectory();
         for (int i = 0; i < 10; i++)
         {
-            var srcTemplatesDir = Path.Combine(currentDir, "src", "templates");
-            var zipPath = Path.Combine(srcTemplatesDir, $"{templateName}.zip");
-            if (File.Exists(zipPath))
-            {
-                return zipPath;
-            }
             var templatesDir = Path.Combine(currentDir, "templates");
-            zipPath = Path.Combine(templatesDir, $"{templateName}.zip");
+            var zipPath = Path.Combine(templatesDir, $"{templateName}.zip");
             if (File.Exists(zipPath))
             {
                 return zipPath;
@@ -531,8 +407,9 @@ public class TemplateManager
         }
         
         // Build download URL
-        var releaseVersion = version ?? TemplateVersion;
-        var url = $"{NexusBaseUrl}/{templateName}-{releaseVersion}.zip";
+        var manifest = await FetchLatestVersionAsync(cancellationToken);
+        var releaseVersion = version ?? manifest?.Version ?? "1.0.0-alpha.1.0";
+        var url = $"{CdnBaseUrl}/{releaseVersion}/templates/{templateName}.zip";
         
         // Download to temp location
         var tempPath = Path.Combine(Path.GetTempPath(), "sufi-templates");
@@ -623,7 +500,7 @@ public class TemplateManager
     
     /// <summary>
     /// Gets the best available template source and loads it.
-    /// Priority: Environment variable > Debug: Unified template > Local ZIP > Release: Nexus download > Filesystem > Embedded
+    /// Priority: Environment variable > Debug: Unified template > Local ZIP > Release: CDN download > Embedded
     /// </summary>
     public async Task<Dictionary<string, byte[]>> LoadTemplateAsync(
         string templateName = DefaultTemplateName,
@@ -644,7 +521,7 @@ public class TemplateManager
             }
         }
         
-        // 2. Try local ZIP files in src/templates/ (Debug mode)
+        // 2. Try local ZIP files in templates/ (Debug mode)
         if (IsDebugMode)
         {
             var localZip = GetLocalZipPath(templateName);
@@ -661,19 +538,12 @@ public class TemplateManager
             return LoadFromFilesystem(unifiedPath);
         }
         
-        // 4. Try development filesystem path (legacy hosts/)
-        var devPath = GetDevelopmentTemplatePath(templateName);
-        if (!string.IsNullOrEmpty(devPath) && Directory.Exists(devPath))
-        {
-            return LoadFromFilesystem(devPath);
-        }
-        
-        // 5. In Release mode, try downloading from Nexus
+        // 4. In Release mode, try downloading from CDN
         if (!IsDebugMode)
         {
         try
         {
-                var downloadedZip = await DownloadFromNexusAsync(templateName, downloadProgress, cancellationToken);
+                var downloadedZip = await DownloadFromCdnAsync(templateName, downloadProgress, cancellationToken);
             return ExtractTemplateZip(downloadedZip);
         }
         catch (Exception ex) when (ex is not OperationCanceledException)
@@ -682,7 +552,7 @@ public class TemplateManager
             }
         }
         
-        // 6. Try embedded as last resort
+        // 5. Try embedded as last resort
             if (HasEmbeddedTemplates())
             {
                 return LoadEmbeddedTemplate(templateName);
@@ -691,31 +561,58 @@ public class TemplateManager
         // No template found
             throw new InvalidOperationException(
                 $"Failed to load template '{templateName}'. " +
-                $"No template found in unified path, local ZIP, or Nexus. " +
-                $"In Debug mode, ensure src/templates/app/aspnet-core exists. " +
-                $"In Release mode, ensure internet connectivity for Nexus download.");
+                $"No template found in unified path, embedded resources, or CDN. " +
+                $"In Debug mode, ensure sufi-abp/templates/app/aspnet-core/ exists. " +
+                $"In Release mode, ensure internet connectivity for CDN download from https://cdn.sabp.ir/sufi-abp/latest.json");
     }
     
     /// <summary>
-    /// Downloads template from Nexus repository.
-    /// URL format: https://nexus.sabp.ir/sabp/templates/app-blazor-webapp-{variant}-{version}.zip
+    /// Downloads template from CDN with dynamic version discovery.
+    /// URL format: https://cdn.sabp.ir/sufi-abp/{version}/templates/app-blazor-webapp-unified.zip
     /// </summary>
-    private async Task<string> DownloadFromNexusAsync(
+    /// <summary>
+    /// Fetches the latest version manifest from CDN.
+    /// </summary>
+    private static async Task<CdnVersionManifest?> FetchLatestVersionAsync(CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            using var client = new HttpClient { Timeout = TimeSpan.FromSeconds(10) };
+            var json = await client.GetStringAsync(CdnVersionManifestUrl, cancellationToken);
+            return JsonSerializer.Deserialize<CdnVersionManifest>(json, new JsonSerializerOptions 
+            { 
+                PropertyNameCaseInsensitive = true 
+            });
+        }
+        catch
+        {
+            return null;
+        }
+    }
+    
+    /// <summary>
+    /// Downloads template from CDN with dynamic version discovery.
+    /// </summary>
+    private async Task<string> DownloadFromCdnAsync(
         string templateName,
         IProgress<int>? progress = null,
         CancellationToken cancellationToken = default)
     {
-        // Map template name to Nexus variant
-        var variant = templateName switch
+        // Fetch latest version from CDN
+        var manifest = await FetchLatestVersionAsync(cancellationToken);
+        if (manifest == null || string.IsNullOrEmpty(manifest.Version))
         {
-            "blazor-webapp-single" => "single",
-            "blazor-webapp-layered" => "layered",
-            "blazor-webapp-layered-tiered" => "layered-tiered",
-            _ => "layered-tiered" // default
-        };
+            throw new InvalidOperationException("Failed to fetch template version from CDN. Please check your internet connection.");
+        }
         
-        var url = $"{NexusBaseUrl}/app-blazor-webapp-{variant}-{TemplateVersion}.zip";
-        var tempPath = Path.Combine(Path.GetTempPath(), $"sabp-template-{variant}-{Guid.NewGuid()}.zip");
+        // Get unified template URL from manifest
+        if (!manifest.Templates.TryGetValue(UnifiedTemplateName, out var templateInfo))
+        {
+            throw new InvalidOperationException($"Template '{UnifiedTemplateName}' not found in CDN manifest.");
+        }
+        
+        var url = templateInfo.Url;
+        var tempPath = Path.Combine(Path.GetTempPath(), $"sufiabp-template-{manifest.Version}-{Guid.NewGuid()}.zip");
         
         using var httpClient = new HttpClient();
         httpClient.Timeout = TimeSpan.FromMinutes(5);
@@ -754,7 +651,7 @@ public class TemplateManager
             {
                 File.Delete(tempPath);
             }
-            throw new InvalidOperationException($"Failed to download template from Nexus: {url}. Error: {ex.Message}", ex);
+            throw new InvalidOperationException($"Failed to download template from CDN: {url}. Error: {ex.Message}", ex);
         }
     }
     

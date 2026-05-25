@@ -55,25 +55,19 @@ public class RunDbMigratorStep : ProjectBuildPipelineStep
             // Stream output in real-time
             var outputTask = Task.Run(async () =>
             {
-                while (!process.StandardOutput.EndOfStream)
+                string? line;
+                while ((line = await process.StandardOutput.ReadLineAsync()) != null)
                 {
-                    var line = await process.StandardOutput.ReadLineAsync();
-                    if (line != null)
-                    {
-                        Console.WriteLine(line);
-                    }
+                    Console.WriteLine(line);
                 }
             });
 
             var errorTask = Task.Run(async () =>
             {
-                while (!process.StandardError.EndOfStream)
+                string? line;
+                while ((line = await process.StandardError.ReadLineAsync()) != null)
                 {
-                    var line = await process.StandardError.ReadLineAsync();
-                    if (line != null)
-                    {
-                        Console.Error.WriteLine(line);
-                    }
+                    Console.Error.WriteLine(line);
                 }
             });
 

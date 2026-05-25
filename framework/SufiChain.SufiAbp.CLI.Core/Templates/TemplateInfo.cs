@@ -12,3 +12,22 @@ public class TemplateInfo
     public List<string> SupportedDatabaseProviders { get; set; } = new();
     public List<string> SupportedArchitectures { get; set; } = new();
 }
+
+/// <summary>
+/// CDN version manifest structure for dynamic template version discovery.
+/// </summary>
+public class CdnVersionManifest
+{
+    public string Version { get; set; } = "";
+    public Dictionary<string, CdnTemplateInfo> Templates { get; set; } = new();
+}
+
+/// <summary>
+/// CDN template information including download URL and integrity hash.
+/// </summary>
+public class CdnTemplateInfo
+{
+    public string Url { get; set; } = "";
+    public long Size { get; set; }
+    public string Sha256 { get; set; } = "";
+}

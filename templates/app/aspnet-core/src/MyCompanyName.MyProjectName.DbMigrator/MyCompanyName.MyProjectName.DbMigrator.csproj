@@ -33,31 +33,31 @@
   <!-- Development: SufiAbp module references (removed when generating templates) -->
   <!-- <TEMPLATE-REMOVE> -->
   <ItemGroup>
-    <ProjectReference Include="..\..\..\..\..\src\modules\file-manager\src\SufiChain.SufiAbp.FileManager.Application\SufiChain.SufiAbp.FileManager.Application.csproj" />
+    <ProjectReference Include="..\..\..\..\..\modules\file-manager\src\SufiChain.SufiAbp.FileManager.Application\SufiChain.SufiAbp.FileManager.Application.csproj" />
     <!-- <TEMPLATE-REMOVE IF-NOT="db:efcore"> -->
-    <ProjectReference Include="..\..\..\..\..\src\modules\file-manager\src\SufiChain.SufiAbp.FileManager.EntityFrameworkCore\SufiChain.SufiAbp.FileManager.EntityFrameworkCore.csproj" />
+    <ProjectReference Include="..\..\..\..\..\modules\file-manager\src\SufiChain.SufiAbp.FileManager.EntityFrameworkCore\SufiChain.SufiAbp.FileManager.EntityFrameworkCore.csproj" />
     <!-- </TEMPLATE-REMOVE> -->
     <!-- <TEMPLATE-REMOVE IF-NOT="db:mongodb"> -->
-    <ProjectReference Include="..\..\..\..\..\src\modules\file-manager\src\SufiChain.SufiAbp.FileManager.MongoDB\SufiChain.SufiAbp.FileManager.MongoDB.csproj" />
+    <ProjectReference Include="..\..\..\..\..\modules\file-manager\src\SufiChain.SufiAbp.FileManager.MongoDB\SufiChain.SufiAbp.FileManager.MongoDB.csproj" />
     <!-- </TEMPLATE-REMOVE> -->
-    <ProjectReference Include="..\..\..\..\..\src\modules\audit-logging\src\SufiChain.SufiAbp.AuditLogging.Application\SufiChain.SufiAbp.AuditLogging.Application.csproj" />
-    <ProjectReference Include="..\..\..\..\..\src\modules\background-jobs\src\SufiChain.SufiAbp.BackgroundJobs.Application\SufiChain.SufiAbp.BackgroundJobs.Application.csproj" />
-    <ProjectReference Include="..\..\..\..\..\src\modules\identity\src\SufiChain.SufiAbp.Identity.Application\SufiChain.SufiAbp.Identity.Application.csproj" />
-    <ProjectReference Include="..\..\..\..\..\src\modules\tenant-management\src\SufiChain.SufiAbp.TenantManagement.Application\SufiChain.SufiAbp.TenantManagement.Application.csproj" />
-    <ProjectReference Include="..\..\..\..\..\src\modules\localization-management\src\SufiChain.SufiAbp.LocalizationManagement.Application\SufiChain.SufiAbp.LocalizationManagement.Application.csproj" />
+    <ProjectReference Include="..\..\..\..\..\modules\audit-logging\src\SufiChain.SufiAbp.AuditLogging.Application\SufiChain.SufiAbp.AuditLogging.Application.csproj" />
+    <ProjectReference Include="..\..\..\..\..\modules\background-jobs\src\SufiChain.SufiAbp.BackgroundJobs.Application\SufiChain.SufiAbp.BackgroundJobs.Application.csproj" />
+    <ProjectReference Include="..\..\..\..\..\modules\identity\src\SufiChain.SufiAbp.Identity.Application\SufiChain.SufiAbp.Identity.Application.csproj" />
+    <ProjectReference Include="..\..\..\..\..\modules\tenant-management\src\SufiChain.SufiAbp.TenantManagement.Application\SufiChain.SufiAbp.TenantManagement.Application.csproj" />
+    <ProjectReference Include="..\..\..\..\..\modules\localization-management\src\SufiChain.SufiAbp.LocalizationManagement.Application\SufiChain.SufiAbp.LocalizationManagement.Application.csproj" />
     <!-- <TEMPLATE-REMOVE IF-NOT="db:efcore"> -->
-    <ProjectReference Include="..\..\..\..\..\src\modules\localization-management\src\SufiChain.SufiAbp.LocalizationManagement.EntityFrameworkCore\SufiChain.SufiAbp.LocalizationManagement.EntityFrameworkCore.csproj" />
+    <ProjectReference Include="..\..\..\..\..\modules\localization-management\src\SufiChain.SufiAbp.LocalizationManagement.EntityFrameworkCore\SufiChain.SufiAbp.LocalizationManagement.EntityFrameworkCore.csproj" />
     <!-- </TEMPLATE-REMOVE> -->
     <!-- <TEMPLATE-REMOVE IF-NOT="db:mongodb"> -->
-    <ProjectReference Include="..\..\..\..\..\src\modules\localization-management\src\SufiChain.SufiAbp.LocalizationManagement.MongoDB\SufiChain.SufiAbp.LocalizationManagement.MongoDB.csproj" />
+    <ProjectReference Include="..\..\..\..\..\modules\localization-management\src\SufiChain.SufiAbp.LocalizationManagement.MongoDB\SufiChain.SufiAbp.LocalizationManagement.MongoDB.csproj" />
     <!-- </TEMPLATE-REMOVE> -->
-    <ProjectReference Include="..\..\..\..\..\src\modules\short-link-generator\src\SufiChain.SufiAbp.ShortLinkGenerator.Application\SufiChain.SufiAbp.ShortLinkGenerator.Application.csproj" />
-    <ProjectReference Include="..\..\..\..\..\src\modules\ai-management\src\SufiChain.SufiAbp.AIManagement.Application\SufiChain.SufiAbp.AIManagement.Application.csproj" />
+    <ProjectReference Include="..\..\..\..\..\modules\short-link-generator\src\SufiChain.SufiAbp.ShortLinkGenerator.Application\SufiChain.SufiAbp.ShortLinkGenerator.Application.csproj" />
+    <ProjectReference Include="..\..\..\..\..\modules\ai-management\src\SufiChain.SufiAbp.AIManagement.Application\SufiChain.SufiAbp.AIManagement.Application.csproj" />
     <!-- <TEMPLATE-REMOVE IF-NOT="db:efcore"> -->
-    <ProjectReference Include="..\..\..\..\..\src\modules\short-link-generator\src\SufiChain.SufiAbp.ShortLinkGenerator.EntityFrameworkCore\SufiChain.SufiAbp.ShortLinkGenerator.EntityFrameworkCore.csproj" />
+    <ProjectReference Include="..\..\..\..\..\modules\short-link-generator\src\SufiChain.SufiAbp.ShortLinkGenerator.EntityFrameworkCore\SufiChain.SufiAbp.ShortLinkGenerator.EntityFrameworkCore.csproj" />
     <!-- </TEMPLATE-REMOVE> -->
     <!-- <TEMPLATE-REMOVE IF-NOT="db:mongodb"> -->
-    <ProjectReference Include="..\..\..\..\..\src\modules\short-link-generator\src\SufiChain.SufiAbp.ShortLinkGenerator.MongoDB\SufiChain.SufiAbp.ShortLinkGenerator.MongoDB.csproj" />
+    <ProjectReference Include="..\..\..\..\..\modules\short-link-generator\src\SufiChain.SufiAbp.ShortLinkGenerator.MongoDB\SufiChain.SufiAbp.ShortLinkGenerator.MongoDB.csproj" />
     <!-- </TEMPLATE-REMOVE> -->
   </ItemGroup>
   <!-- </TEMPLATE-REMOVE> -->

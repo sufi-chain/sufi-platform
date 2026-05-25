@@ -1,5 +1,5 @@
-using SufiChain.SufiAbp.Emailing;
 using Microsoft.Extensions.Logging;
+using SufiChain.SufiAbp.Messaging.Email;
 
 namespace SufiChain.SufiAbp.SettingManagement;
 
@@ -93,7 +93,7 @@ public class EmailSettingsAppService : SettingManagementAppServiceBase, IEmailSe
 
     protected virtual Task SendEmailByRegisteredSenderAsync(SendTestEmailInput input)
     {
-        return EmailSender.SendAsync(input.SenderEmailAddress, input.TargetEmailAddress, input.Subject, input.Body);
+        return EmailSender.SendAsync(to : input.SenderEmailAddress, from : input.TargetEmailAddress, subject: input.Subject, body: input.Body);
     }
 
     protected virtual int ToInt32(string? value)

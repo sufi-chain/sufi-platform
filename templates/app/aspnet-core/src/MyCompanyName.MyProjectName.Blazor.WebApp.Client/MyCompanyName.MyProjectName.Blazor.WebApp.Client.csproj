@@ -36,14 +36,14 @@
 	<!-- <TEMPLATE-REMOVE> -->
 	<ItemGroup>
 		<!-- SufiAbp Theme using SufiBlazor (replaces ABP Blazor UI packages) -->
-    <ProjectReference Include="..\..\..\..\..\src\modules\kom-theme\src\SufiChain.KomTheme.Blazor.WebAssembly\SufiChain.KomTheme.Blazor.WebAssembly.csproj" />
+    <ProjectReference Include="..\..\..\..\..\modules\kom-theme\src\SufiChain.KomTheme.Blazor.WebAssembly\SufiChain.KomTheme.Blazor.WebAssembly.csproj" />
 
     <!-- SufiAbp UI Modules (replacing ABP UI packages) -->
-		<ProjectReference Include="..\..\..\..\..\src\modules\identity\src\SufiChain.SufiAbp.Identity.Blazor\SufiChain.SufiAbp.Identity.Blazor.csproj" />
-		<ProjectReference Include="..\..\..\..\..\src\modules\tenant-management\src\SufiChain.SufiAbp.TenantManagement.Blazor\SufiChain.SufiAbp.TenantManagement.Blazor.csproj" />
-		<ProjectReference Include="..\..\..\..\..\src\modules\file-manager\src\SufiChain.SufiAbp.FileManager.Blazor\SufiChain.SufiAbp.FileManager.Blazor.csproj" />
-		<ProjectReference Include="..\..\..\..\..\src\modules\file-manager\src\SufiChain.SufiAbp.FileManager.Blazor.WebAssembly\SufiChain.SufiAbp.FileManager.Blazor.WebAssembly.csproj" />
-		<ProjectReference Include="..\..\..\..\..\src\modules\file-manager\src\SufiChain.SufiAbp.FileManager.Demo\SufiChain.SufiAbp.FileManager.Demo.csproj" />
+		<ProjectReference Include="..\..\..\..\..\modules\identity\src\SufiChain.SufiAbp.Identity.Blazor\SufiChain.SufiAbp.Identity.Blazor.csproj" />
+		<ProjectReference Include="..\..\..\..\..\modules\tenant-management\src\SufiChain.SufiAbp.TenantManagement.Blazor\SufiChain.SufiAbp.TenantManagement.Blazor.csproj" />
+		<ProjectReference Include="..\..\..\..\..\modules\file-manager\src\SufiChain.SufiAbp.FileManager.Blazor\SufiChain.SufiAbp.FileManager.Blazor.csproj" />
+		<ProjectReference Include="..\..\..\..\..\modules\file-manager\src\SufiChain.SufiAbp.FileManager.Blazor.WebAssembly\SufiChain.SufiAbp.FileManager.Blazor.WebAssembly.csproj" />
+		<ProjectReference Include="..\..\..\..\..\modules\file-manager\src\SufiChain.SufiAbp.FileManager.Demo\SufiChain.SufiAbp.FileManager.Demo.csproj" />
 	</ItemGroup>
 	<!-- </TEMPLATE-REMOVE> -->
 

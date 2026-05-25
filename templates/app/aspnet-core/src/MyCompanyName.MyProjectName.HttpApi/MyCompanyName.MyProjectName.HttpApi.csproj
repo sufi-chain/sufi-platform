@@ -19,10 +19,10 @@
   <!-- <TEMPLATE-REMOVE> -->
   <ItemGroup>
     <!-- SufiAbp Application.Contracts (wrap ABP contracts with SufiAbp localization) -->
-    <ProjectReference Include="..\..\..\..\..\src\modules\account\src\SufiChain.SufiAbp.Account.Application.Contracts\SufiChain.SufiAbp.Account.Application.Contracts.csproj" />
-    <ProjectReference Include="..\..\..\..\..\src\modules\permission-management\src\SufiChain.SufiAbp.PermissionManagement.Application.Contracts\SufiChain.SufiAbp.PermissionManagement.Application.Contracts.csproj" />
-    <ProjectReference Include="..\..\..\..\..\src\modules\feature-management\src\SufiChain.SufiAbp.FeatureManagement.Application.Contracts\SufiChain.SufiAbp.FeatureManagement.Application.Contracts.csproj" />
-    <ProjectReference Include="..\..\..\..\..\src\modules\setting-management\src\SufiChain.SufiAbp.SettingManagement.Application.Contracts\SufiChain.SufiAbp.SettingManagement.Application.Contracts.csproj" />
+    <ProjectReference Include="..\..\..\..\..\modules\account\src\SufiChain.SufiAbp.Account.Application.Contracts\SufiChain.SufiAbp.Account.Application.Contracts.csproj" />
+    <ProjectReference Include="..\..\..\..\..\modules\permission-management\src\SufiChain.SufiAbp.PermissionManagement.Application.Contracts\SufiChain.SufiAbp.PermissionManagement.Application.Contracts.csproj" />
+    <ProjectReference Include="..\..\..\..\..\modules\feature-management\src\SufiChain.SufiAbp.FeatureManagement.Application.Contracts\SufiChain.SufiAbp.FeatureManagement.Application.Contracts.csproj" />
+    <ProjectReference Include="..\..\..\..\..\modules\setting-management\src\SufiChain.SufiAbp.SettingManagement.Application.Contracts\SufiChain.SufiAbp.SettingManagement.Application.Contracts.csproj" />
   </ItemGroup>
   <!-- </TEMPLATE-REMOVE> -->
 

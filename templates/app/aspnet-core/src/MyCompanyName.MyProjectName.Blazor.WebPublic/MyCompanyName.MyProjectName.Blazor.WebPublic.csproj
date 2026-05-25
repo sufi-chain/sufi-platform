@@ -27,16 +27,16 @@
 		
 		<!-- SufiAbp UI Modules for Public Site -->
 		<!-- Account Blazor - login/register pages for public site -->
-		<ProjectReference Include="..\..\..\..\..\src\modules\account\src\SufiChain.SufiAbp.Account.Blazor\SufiChain.SufiAbp.Account.Blazor.csproj" />
-		<ProjectReference Include="..\..\..\..\..\src\modules\identity\src\SufiChain.SufiAbp.Identity.HttpApi.Client\SufiChain.SufiAbp.Identity.HttpApi.Client.csproj" />
+		<ProjectReference Include="..\..\..\..\..\modules\account\src\SufiChain.SufiAbp.Account.Blazor\SufiChain.SufiAbp.Account.Blazor.csproj" />
+		<ProjectReference Include="..\..\..\..\..\modules\identity\src\SufiChain.SufiAbp.Identity.HttpApi.Client\SufiChain.SufiAbp.Identity.HttpApi.Client.csproj" />
 		
 		<!-- File Manager for public file access (e.g., media in CMS pages) -->
-		<ProjectReference Include="..\..\..\..\..\src\modules\file-manager\src\SufiChain.SufiAbp.FileManager.Blazor\SufiChain.SufiAbp.FileManager.Blazor.csproj" />
-		<ProjectReference Include="..\..\..\..\..\src\modules\file-manager\src\SufiChain.SufiAbp.FileManager.Blazor.Server\SufiChain.SufiAbp.FileManager.Blazor.Server.csproj" />
-		<ProjectReference Include="..\..\..\..\..\src\modules\file-manager\src\SufiChain.SufiAbp.FileManager.HttpApi.Client\SufiChain.SufiAbp.FileManager.HttpApi.Client.csproj" />
+		<ProjectReference Include="..\..\..\..\..\modules\file-manager\src\SufiChain.SufiAbp.FileManager.Blazor\SufiChain.SufiAbp.FileManager.Blazor.csproj" />
+		<ProjectReference Include="..\..\..\..\..\modules\file-manager\src\SufiChain.SufiAbp.FileManager.Blazor.Server\SufiChain.SufiAbp.FileManager.Blazor.Server.csproj" />
+		<ProjectReference Include="..\..\..\..\..\modules\file-manager\src\SufiChain.SufiAbp.FileManager.HttpApi.Client\SufiChain.SufiAbp.FileManager.HttpApi.Client.csproj" />
 		
 		<!-- Tenant Management HTTP API Client (provides remote ITenantStore for tenant cookie resolution) -->
-		<ProjectReference Include="..\..\..\..\..\src\modules\tenant-management\src\SufiChain.SufiAbp.TenantManagement.HttpApi.Client\SufiChain.SufiAbp.TenantManagement.HttpApi.Client.csproj" />
+		<ProjectReference Include="..\..\..\..\..\modules\tenant-management\src\SufiChain.SufiAbp.TenantManagement.HttpApi.Client\SufiChain.SufiAbp.TenantManagement.HttpApi.Client.csproj" />
 		
 		<!-- NOTE: Admin modules NOT included for WebPublic -->
 		<!-- NO: AuditLogging, BackgroundJobs, FeatureManagement, SettingManagement -->

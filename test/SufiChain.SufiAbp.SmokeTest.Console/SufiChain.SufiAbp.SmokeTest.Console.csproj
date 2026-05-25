@@ -61,6 +61,9 @@
     <ProjectReference Include="..\..\modules\short-link-generator\src\SufiChain.SufiAbp.ShortLinkGenerator.Application\SufiChain.SufiAbp.ShortLinkGenerator.Application.csproj" />
     <ProjectReference Include="..\..\modules\short-link-generator\src\SufiChain.SufiAbp.ShortLinkGenerator.HttpApi\SufiChain.SufiAbp.ShortLinkGenerator.HttpApi.csproj" />
     <ProjectReference Include="..\..\modules\short-link-generator\src\SufiChain.SufiAbp.ShortLinkGenerator.MongoDB\SufiChain.SufiAbp.ShortLinkGenerator.MongoDB.csproj" />
+    <ProjectReference Include="..\..\modules\tags-management\src\SufiChain.SufiAbp.TagsManagement.Application\SufiChain.SufiAbp.TagsManagement.Application.csproj" />
+    <ProjectReference Include="..\..\modules\tags-management\src\SufiChain.SufiAbp.TagsManagement.HttpApi\SufiChain.SufiAbp.TagsManagement.HttpApi.csproj" />
+    <ProjectReference Include="..\..\modules\tags-management\src\SufiChain.SufiAbp.TagsManagement.MongoDB\SufiChain.SufiAbp.TagsManagement.MongoDB.csproj" />
     <ProjectReference Include="..\..\modules\tenant-management\src\SufiChain.SufiAbp.TenantManagement.Application\SufiChain.SufiAbp.TenantManagement.Application.csproj" />
     <ProjectReference Include="..\..\modules\tenant-management\src\SufiChain.SufiAbp.TenantManagement.HttpApi\SufiChain.SufiAbp.TenantManagement.HttpApi.csproj" />
     <ProjectReference Include="..\..\modules\tenant-management\src\SufiChain.SufiAbp.TenantManagement.MongoDB\SufiChain.SufiAbp.TenantManagement.MongoDB.csproj" />

@@ -1,0 +1,66 @@
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
+using SufiChain.SufiAbp.TagsManagement.Permissions;
+using Volo.Abp;
+using Volo.Abp.Application.Services;
+
+namespace SufiChain.SufiAbp.TagsManagement.Tags;
+
+[Authorize(TagsManagementPermissions.TagLinks.Default)]
+public class TagLinkAppService : ApplicationService, ITagLinkAppService
+{
+    private readonly ITagRepository _tagRepository;
+    private readonly ITagLinkRepository _tagLinkRepository;
+
+    public TagLinkAppService(ITagRepository tagRepository, ITagLinkRepository tagLinkRepository)
+    {
+        _tagRepository = tagRepository;
+        _tagLinkRepository = tagLinkRepository;
+    }
+
+    [Authorize(TagsManagementPermissions.TagLinks.Assign)]
+    public virtual async Task AssignAsync(AssignTagDto input)
+    {
+        var tag = await _tagRepository.FindAsync(input.TagId);
+        if (tag == null)
+        {
+            throw new BusinessException(TagsManagementErrorCodes.TagNotFound).WithData("TagId", input.TagId);
+        }
+
+        var exists = await _tagLinkRepository.ExistsAsync(input.TagId, input.EntityType, input.EntityId, CurrentTenant.Id);
+        if (exists)
+        {
+            return;
+        }
+
+        var link = new TagLink(GuidGenerator.Create(), input.TagId, input.EntityType, input.EntityId, CurrentTenant.Id);
+        await _tagLinkRepository.InsertAsync(link, autoSave: true);
+    }
+
+    [Authorize(TagsManagementPermissions.TagLinks.Unassign)]
+    public virtual async Task UnassignAsync(AssignTagDto input)
+    {
+        var links = await _tagLinkRepository.GetListByEntityAsync(input.EntityType, input.EntityId, CurrentTenant.Id);
+        var target = links.FirstOrDefault(x => x.TagId == input.TagId);
+        if (target != null)
+        {
+            await _tagLinkRepository.DeleteAsync(target, autoSave: true);
+        }
+    }
+
+    public virtual async Task<List<TagDto>> GetTagsByEntityAsync(EntityTagQueryInput input)
+    {
+        var links = await _tagLinkRepository.GetListByEntityAsync(input.EntityType, input.EntityId, CurrentTenant.Id);
+        if (links.Count == 0)
+        {
+            return new List<TagDto>();
+        }
+
+        var tagIds = links.Select(x => x.TagId).ToHashSet();
+        var query = await _tagRepository.GetQueryableAsync();
+        var tags = query.Where(x => tagIds.Contains(x.Id)).ToList();
+        return ObjectMapper.Map<List<Tag>, List<TagDto>>(tags);
+    }
+}

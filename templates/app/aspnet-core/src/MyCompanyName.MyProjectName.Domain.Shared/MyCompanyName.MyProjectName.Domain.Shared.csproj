@@ -29,14 +29,14 @@
   <!-- <TEMPLATE-REMOVE> -->
   <ItemGroup>
     <!-- SufiAbp Infrastructure Modules - Domain.Shared -->
-    <ProjectReference Include="..\..\..\..\..\src\modules\openiddict\src\SufiChain.SufiAbp.OpenIddict.Domain.Shared\SufiChain.SufiAbp.OpenIddict.Domain.Shared.csproj" />
-    <ProjectReference Include="..\..\..\..\..\src\modules\permission-management\src\SufiChain.SufiAbp.PermissionManagement.Domain.Shared\SufiChain.SufiAbp.PermissionManagement.Domain.Shared.csproj" />
-    <ProjectReference Include="..\..\..\..\..\src\modules\setting-management\src\SufiChain.SufiAbp.SettingManagement.Domain.Shared\SufiChain.SufiAbp.SettingManagement.Domain.Shared.csproj" />
-    <ProjectReference Include="..\..\..\..\..\src\modules\feature-management\src\SufiChain.SufiAbp.FeatureManagement.Domain.Shared\SufiChain.SufiAbp.FeatureManagement.Domain.Shared.csproj" />
-    <ProjectReference Include="..\..\..\..\..\src\modules\audit-logging\src\SufiChain.SufiAbp.AuditLogging.Domain.Shared\SufiChain.SufiAbp.AuditLogging.Domain.Shared.csproj" />
-    <ProjectReference Include="..\..\..\..\..\src\modules\background-jobs\src\SufiChain.SufiAbp.BackgroundJobs.Domain.Shared\SufiChain.SufiAbp.BackgroundJobs.Domain.Shared.csproj" />
-    <ProjectReference Include="..\..\..\..\..\src\modules\identity\src\SufiChain.SufiAbp.Identity.Domain.Shared\SufiChain.SufiAbp.Identity.Domain.Shared.csproj" />
-    <ProjectReference Include="..\..\..\..\..\src\modules\tenant-management\src\SufiChain.SufiAbp.TenantManagement.Domain.Shared\SufiChain.SufiAbp.TenantManagement.Domain.Shared.csproj" />
+    <ProjectReference Include="..\..\..\..\..\modules\openiddict\src\SufiChain.SufiAbp.OpenIddict.Domain.Shared\SufiChain.SufiAbp.OpenIddict.Domain.Shared.csproj" />
+    <ProjectReference Include="..\..\..\..\..\modules\permission-management\src\SufiChain.SufiAbp.PermissionManagement.Domain.Shared\SufiChain.SufiAbp.PermissionManagement.Domain.Shared.csproj" />
+    <ProjectReference Include="..\..\..\..\..\modules\setting-management\src\SufiChain.SufiAbp.SettingManagement.Domain.Shared\SufiChain.SufiAbp.SettingManagement.Domain.Shared.csproj" />
+    <ProjectReference Include="..\..\..\..\..\modules\feature-management\src\SufiChain.SufiAbp.FeatureManagement.Domain.Shared\SufiChain.SufiAbp.FeatureManagement.Domain.Shared.csproj" />
+    <ProjectReference Include="..\..\..\..\..\modules\audit-logging\src\SufiChain.SufiAbp.AuditLogging.Domain.Shared\SufiChain.SufiAbp.AuditLogging.Domain.Shared.csproj" />
+    <ProjectReference Include="..\..\..\..\..\modules\background-jobs\src\SufiChain.SufiAbp.BackgroundJobs.Domain.Shared\SufiChain.SufiAbp.BackgroundJobs.Domain.Shared.csproj" />
+    <ProjectReference Include="..\..\..\..\..\modules\identity\src\SufiChain.SufiAbp.Identity.Domain.Shared\SufiChain.SufiAbp.Identity.Domain.Shared.csproj" />
+    <ProjectReference Include="..\..\..\..\..\modules\tenant-management\src\SufiChain.SufiAbp.TenantManagement.Domain.Shared\SufiChain.SufiAbp.TenantManagement.Domain.Shared.csproj" />
   </ItemGroup>
   <!-- </TEMPLATE-REMOVE> -->
 

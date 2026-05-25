@@ -37,25 +37,25 @@
     <ProjectReference Include="..\..\..\..\..\independent-projects\kom-theme\src\SufiChain.KomTheme.Blazor.Server\SufiChain.KomTheme.Blazor.Server.csproj" />
     <!-- SufiBlazor: required for Account Blazor (Login, Register, AccountLayout) -->
     <ProjectReference Include="..\..\..\..\..\independent-projects\sufi-blazor\src\SufiChain.SufiBlazor\SufiChain.SufiBlazor.csproj" />
-    <ProjectReference Include="..\..\..\..\..\src\modules\account\src\SufiChain.SufiAbp.Account.Blazor\SufiChain.SufiAbp.Account.Blazor.csproj" />
+    <ProjectReference Include="..\..\..\..\..\modules\account\src\SufiChain.SufiAbp.Account.Blazor\SufiChain.SufiAbp.Account.Blazor.csproj" />
     <!-- Identity Module (Application services for credential validation) -->
-    <ProjectReference Include="..\..\..\..\..\src\modules\identity\src\SufiChain.SufiAbp.Identity.Application\SufiChain.SufiAbp.Identity.Application.csproj" />
-    <ProjectReference Include="..\..\..\..\..\src\modules\identity\src\SufiChain.SufiAbp.Identity.HttpApi\SufiChain.SufiAbp.Identity.HttpApi.csproj" />
+    <ProjectReference Include="..\..\..\..\..\modules\identity\src\SufiChain.SufiAbp.Identity.Application\SufiChain.SufiAbp.Identity.Application.csproj" />
+    <ProjectReference Include="..\..\..\..\..\modules\identity\src\SufiChain.SufiAbp.Identity.HttpApi\SufiChain.SufiAbp.Identity.HttpApi.csproj" />
     <!-- Tenant Management Module (Application services for multi-tenancy resolution) -->
-    <ProjectReference Include="..\..\..\..\..\src\modules\tenant-management\src\SufiChain.SufiAbp.TenantManagement.Application\SufiChain.SufiAbp.TenantManagement.Application.csproj" />
-    <ProjectReference Include="..\..\..\..\..\src\modules\tenant-management\src\SufiChain.SufiAbp.TenantManagement.HttpApi\SufiChain.SufiAbp.TenantManagement.HttpApi.csproj" />
+    <ProjectReference Include="..\..\..\..\..\modules\tenant-management\src\SufiChain.SufiAbp.TenantManagement.Application\SufiChain.SufiAbp.TenantManagement.Application.csproj" />
+    <ProjectReference Include="..\..\..\..\..\modules\tenant-management\src\SufiChain.SufiAbp.TenantManagement.HttpApi\SufiChain.SufiAbp.TenantManagement.HttpApi.csproj" />
     <!-- Account Module (Application + HttpApi) -->
-    <ProjectReference Include="..\..\..\..\..\src\modules\account\src\SufiChain.SufiAbp.Account.Application\SufiChain.SufiAbp.Account.Application.csproj" />
-    <ProjectReference Include="..\..\..\..\..\src\modules\account\src\SufiChain.SufiAbp.Account.HttpApi\SufiChain.SufiAbp.Account.HttpApi.csproj" />
+    <ProjectReference Include="..\..\..\..\..\modules\account\src\SufiChain.SufiAbp.Account.Application\SufiChain.SufiAbp.Account.Application.csproj" />
+    <ProjectReference Include="..\..\..\..\..\modules\account\src\SufiChain.SufiAbp.Account.HttpApi\SufiChain.SufiAbp.Account.HttpApi.csproj" />
     <!-- Permission Management Module (Application + HttpApi) -->
-    <ProjectReference Include="..\..\..\..\..\src\modules\permission-management\src\SufiChain.SufiAbp.PermissionManagement.Application\SufiChain.SufiAbp.PermissionManagement.Application.csproj" />
-    <ProjectReference Include="..\..\..\..\..\src\modules\permission-management\src\SufiChain.SufiAbp.PermissionManagement.HttpApi\SufiChain.SufiAbp.PermissionManagement.HttpApi.csproj" />
+    <ProjectReference Include="..\..\..\..\..\modules\permission-management\src\SufiChain.SufiAbp.PermissionManagement.Application\SufiChain.SufiAbp.PermissionManagement.Application.csproj" />
+    <ProjectReference Include="..\..\..\..\..\modules\permission-management\src\SufiChain.SufiAbp.PermissionManagement.HttpApi\SufiChain.SufiAbp.PermissionManagement.HttpApi.csproj" />
     <!-- Feature Management Module (Application + HttpApi) -->
-    <ProjectReference Include="..\..\..\..\..\src\modules\feature-management\src\SufiChain.SufiAbp.FeatureManagement.Application\SufiChain.SufiAbp.FeatureManagement.Application.csproj" />
-    <ProjectReference Include="..\..\..\..\..\src\modules\feature-management\src\SufiChain.SufiAbp.FeatureManagement.HttpApi\SufiChain.SufiAbp.FeatureManagement.HttpApi.csproj" />
+    <ProjectReference Include="..\..\..\..\..\modules\feature-management\src\SufiChain.SufiAbp.FeatureManagement.Application\SufiChain.SufiAbp.FeatureManagement.Application.csproj" />
+    <ProjectReference Include="..\..\..\..\..\modules\feature-management\src\SufiChain.SufiAbp.FeatureManagement.HttpApi\SufiChain.SufiAbp.FeatureManagement.HttpApi.csproj" />
     <!-- Setting Management Module (Application + HttpApi) -->
-    <ProjectReference Include="..\..\..\..\..\src\modules\setting-management\src\SufiChain.SufiAbp.SettingManagement.Application\SufiChain.SufiAbp.SettingManagement.Application.csproj" />
-    <ProjectReference Include="..\..\..\..\..\src\modules\setting-management\src\SufiChain.SufiAbp.SettingManagement.HttpApi\SufiChain.SufiAbp.SettingManagement.HttpApi.csproj" />
+    <ProjectReference Include="..\..\..\..\..\modules\setting-management\src\SufiChain.SufiAbp.SettingManagement.Application\SufiChain.SufiAbp.SettingManagement.Application.csproj" />
+    <ProjectReference Include="..\..\..\..\..\modules\setting-management\src\SufiChain.SufiAbp.SettingManagement.HttpApi\SufiChain.SufiAbp.SettingManagement.HttpApi.csproj" />
   </ItemGroup>
   <!-- </TEMPLATE-REMOVE> -->
 

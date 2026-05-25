@@ -1,0 +1,37 @@
+<Project>
+  <Import Project="versions.props" />
+  <Import Project="common.props" />
+
+  <PropertyGroup>
+    <!-- Package Metadata -->
+    <Company>Sufi Chain Intelligent Solutions</Company>
+    <Authors>SufiChain Team</Authors>
+    <Product>Sufi Platform</Product>
+    <Version>$(SufiVersion)</Version>
+    <Copyright>Copyright © Sufi Chain Intelligent Solutions $([System.DateTime]::Now.Year)</Copyright>
+    <PackageLicenseFile>LICENSE</PackageLicenseFile>
+    <PackageProjectUrl>https://sabp.ir</PackageProjectUrl>
+    <RepositoryUrl>https://git.sabp.ir/sufi-chain/sufi-abp.git</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageIcon Condition="Exists('$(MSBuildThisFileDirectory)icon.png')">icon.png</PackageIcon>
+    <PackageReadmeFile Condition="Exists('$(MSBuildThisFileDirectory)README.md')">README.md</PackageReadmeFile>
+    
+    <!-- Build Settings -->
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <NoWarn>$(NoWarn);1591</NoWarn>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+  
+  <PropertyGroup Condition="'$(Configuration)' == 'Release'">
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+  </PropertyGroup>
+
+  <ItemGroup Condition="Exists('$(MSBuildThisFileDirectory)LICENSE')">
+    <None Include="$(MSBuildThisFileDirectory)LICENSE" Pack="true" PackagePath="\" Visible="false" />
+  </ItemGroup>
+
+  <ItemGroup Condition="Exists('$(MSBuildThisFileDirectory)icon.png')">
+    <None Include="$(MSBuildThisFileDirectory)icon.png" Pack="true" PackagePath="\" Visible="false" />
+  </ItemGroup>
+</Project>
