@@ -8,6 +8,7 @@
 
   <TEMPLATE-REMOVE>
   <ItemGroup>
+    <PackageReference Include="OpenIddict.Abstractions" Version="$(OpenIddictVersion)" />
     <ProjectReference Include="..\..\..\..\..\src\framework\SufiChain.SufiAbp.Data\SufiChain.SufiAbp.Data.csproj" />
     <ProjectReference Include="..\MyCompanyName.MyProjectName.Domain.Shared\MyCompanyName.MyProjectName.Domain.Shared.csproj" />
     <PackageReference Include="SufiChain.SufiAbp.Emailing" Version="$(SufiVersion)" />
@@ -22,6 +23,7 @@
     <ProjectReference Include="..\..\..\..\..\modules\audit-logging\src\SufiChain.SufiAbp.AuditLogging.Domain\SufiChain.SufiAbp.AuditLogging.Domain.csproj" />
     <ProjectReference Include="..\..\..\..\..\modules\background-jobs\src\SufiChain.SufiAbp.BackgroundJobs.Domain\SufiChain.SufiAbp.BackgroundJobs.Domain.csproj" />
     <ProjectReference Include="..\..\..\..\..\modules\identity\src\SufiChain.SufiAbp.Identity.Domain\SufiChain.SufiAbp.Identity.Domain.csproj" />
+    <ProjectReference Include="..\..\..\..\..\modules\identity\src\SufiChain.SufiAbp.PermissionManagement.Domain.Identity\SufiChain.SufiAbp.PermissionManagement.Domain.Identity.csproj" />
     <ProjectReference Include="..\..\..\..\..\modules\users\src\SufiChain.SufiAbp.Users.Domain\SufiChain.SufiAbp.Users.Domain.csproj" />
     <ProjectReference Include="..\..\..\..\..\modules\tenant-management\src\SufiChain.SufiAbp.TenantManagement.Domain\SufiChain.SufiAbp.TenantManagement.Domain.csproj" />
     <ProjectReference Include="..\..\..\..\..\modules\openiddict\src\SufiChain.SufiAbp.OpenIddict.Domain\SufiChain.SufiAbp.OpenIddict.Domain.csproj" />
@@ -31,6 +33,7 @@
 
   <TEMPLATE-ONLY>
   <ItemGroup>
+    <PackageReference Include="OpenIddict.Abstractions" Version="$(OpenIddictVersion)" />
     <PackageReference Include="SufiChain.SufiAbp.Data" Version="$(SufiVersion)" />
     <ProjectReference Include="..\MyCompanyName.MyProjectName.Domain.Shared\MyCompanyName.MyProjectName.Domain.Shared.csproj" />
     <PackageReference Include="SufiChain.SufiAbp.AIManagement.Domain" Version="$(SufiVersion)" />
@@ -40,6 +43,7 @@
     <PackageReference Include="SufiChain.SufiAbp.AuditLogging.Domain" Version="$(SufiVersion)" />
     <PackageReference Include="SufiChain.SufiAbp.BackgroundJobs.Domain" Version="$(SufiVersion)" />
     <PackageReference Include="SufiChain.SufiAbp.Identity.Domain" Version="$(SufiVersion)" />
+    <PackageReference Include="SufiChain.SufiAbp.PermissionManagement.Domain.Identity" Version="$(SufiVersion)" />
     <PackageReference Include="SufiChain.SufiAbp.Users.Domain" Version="$(SufiVersion)" />
     <PackageReference Include="SufiChain.SufiAbp.TenantManagement.Domain" Version="$(SufiVersion)" />
     <PackageReference Include="SufiChain.SufiAbp.OpenIddict.Domain" Version="$(SufiVersion)" />

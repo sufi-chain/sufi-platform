@@ -33,10 +33,9 @@ public class SufiAbpMessagingModule : AbpModule
                 .AddVirtualJson("/Localization/SufiAbpMessaging");
         });
 
-        // Register SMTP as default email sender
-        context.Services.Replace(ServiceDescriptor.Transient<IEmailSender, SmtpEmailSender>());
-        context.Services.Replace(ServiceDescriptor.Transient<IEmailSenderConfiguration, SmtpEmailSenderConfiguration>());
-        
+        // Use NullEmailSender when SMTP is not configured; otherwise delegate to SmtpEmailSender.
+        context.Services.Replace(ServiceDescriptor.Transient<IEmailSender, DynamicEmailSender>());
+
         // Background jobs are automatically registered via ITransientDependency
         // No manual registration needed - ABP discovers them automatically
     }

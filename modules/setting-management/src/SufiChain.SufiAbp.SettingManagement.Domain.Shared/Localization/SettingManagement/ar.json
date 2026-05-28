@@ -46,6 +46,16 @@
     "CurrentTimeZone": "المنطقة الزمنية الحالية",
     "CurrentTime": "الوقت الحالي",
     "SearchTimeZone": "البحث عن المنطقة الزمنية…",
-    "MailSendingFailed": "فشل إرسال البريد."
+    "MailSendingFailed": "فشل إرسال البريد.",
+    "IdentitySettings": "الهوية والأمان",
+    "IdentityTabSignup": "التسجيل",
+    "IdentityTabPassword": "كلمة المرور",
+    "IdentityTabLockout": "القفل",
+    "IdentityTabTokens": "الرموز",
+    "IdentityTabTwoFactor": "المصادقة الثنائية",
+    "IdentityTabOtp": "OTP",
+    "IdentityTabCaptcha": "CAPTCHA",
+    "IdentityAllowedChannels": "قنوات الإرسال المسموحة",
+    "Permission:Identity": "إعدادات الهوية"
   }
 }

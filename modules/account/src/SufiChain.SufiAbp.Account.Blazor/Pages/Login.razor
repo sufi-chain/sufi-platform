@@ -5,14 +5,18 @@
 @using Microsoft.AspNetCore.Identity
 @using SufiChain.SufiAbp.Identity
 @using SufiChain.SufiAbp.Identity.AspNetCore
+@using SufiChain.SufiAbp.Account.Localization
 @using SufiChain.SufiAbp.UI.Abstractions.Account
 @inject SignInManager<SufiChain.SufiAbp.Identity.IdentityUser> SignInManager
 @inject IdentityUserManager UserManager
 @inject IAccountSecurityLogAppService SecurityLogAppService
 @inject IAuthenticationSchemeProvider SchemeProvider
 @inject IStringLocalizer<SufiAbpIdentityResource> L
+@inject IStringLocalizer<SufiAbpAccountResource> AccountL
 @inject NavigationManager Navigation
 @inject ILoginCompletionTokenStore TokenStore
+@inject ITwoFactorPendingLoginStore TwoFactorPendingStore
+@inject IAccountTwoFactorAppService TwoFactorAppService
 
 @*
     Login page: works in Static SSR and Interactive Server hosts.
@@ -70,9 +74,12 @@
 		<ExternalAuthButtons EnabledProviders="@_externalProviderNames"
 		                       ReturnUrl="@(ReturnUrl ?? "/")" />
 
-		<SbStack Direction="SbStackDirection.Row" Gap="1">
-			<SbText>@L["DontHaveAccount"]</SbText>
-			<SbLink Href="/account/register">@L["Register"]</SbLink>
+		<SbStack Gap="2" Align="SbAlign.Center">
+			<SbLink Href="/account/login-otp">@AccountL["SignInWithCode"]</SbLink>
+			<SbStack Direction="SbStackDirection.Row" Gap="1">
+				<SbText>@L["DontHaveAccount"]</SbText>
+				<SbLink Href="/account/register">@L["Register"]</SbLink>
+			</SbStack>
 		</SbStack>
 	</SbStack>
 </div>
@@ -166,10 +173,27 @@
 				return;
 			}
 			await UserManager.ResetAccessFailedCountAsync(user);
+
+			if (user.TwoFactorEnabled && TwoFactorPendingStore.IsSupported)
+			{
+				await SecurityLogAppService.SaveLoginEventAsync(
+					IdentitySecurityLogIdentityConsts.Identity,
+					IdentitySecurityLogActionConsts.LoginRequiresTwoFactor,
+					user.UserName);
+				var pendingToken = await TwoFactorPendingStore.CreateAsync(user.Id, ReturnUrl, Input.RememberMe);
+				var returnUrlEnc = Uri.EscapeDataString(ReturnUrl ?? "/");
+				Navigation.NavigateTo(
+					$"/account/login-2fa?pendingToken={Uri.EscapeDataString(pendingToken)}&returnUrl={returnUrlEnc}",
+					forceLoad: true);
+				return;
+			}
+
 			// Do NOT log LoginSucceeded here: CompleteLogin will log it when the cookie is set
 			var token = await TokenStore.CreateAsync(user.Id, ReturnUrl, Input.RememberMe);
-			var returnUrlEnc = Uri.EscapeDataString(ReturnUrl ?? "/");
-			Navigation.NavigateTo($"/account/complete-login?token={Uri.EscapeDataString(token)}&returnUrl={returnUrlEnc}", forceLoad: true);
+			var completionReturnUrl = Uri.EscapeDataString(ReturnUrl ?? "/");
+			Navigation.NavigateTo(
+				$"/account/complete-login?token={Uri.EscapeDataString(token)}&returnUrl={completionReturnUrl}",
+				forceLoad: true);
 			return;
 		}
 
@@ -183,9 +207,13 @@
 		if (result.Succeeded)
 		{
 			await SecurityLogAppService.SaveLoginEventAsync(IdentitySecurityLogIdentityConsts.Identity, IdentitySecurityLogActionConsts.LoginSucceeded, user.UserName);
+
+			var enforceUrl = await TwoFactorAppService.GetPostLoginRedirectUrlAsync(user.Id, ReturnUrl);
+			var redirectTarget = !string.IsNullOrEmpty(enforceUrl) ? enforceUrl : (ReturnUrl ?? "/");
+
 			if (HttpContext != null)
 			{
-				HttpContext.Response.Redirect(ReturnUrl ?? "/");
+				HttpContext.Response.Redirect(redirectTarget);
 				return;
 			}
 			ErrorMessage = L["AuthenticationNotAvailable"];

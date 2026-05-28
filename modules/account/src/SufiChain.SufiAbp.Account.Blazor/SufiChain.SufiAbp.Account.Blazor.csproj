@@ -27,17 +27,18 @@
     
     <!-- SufiAbp Account Application Contracts -->
     <ProjectReference Include="..\SufiChain.SufiAbp.Account.Application.Contracts\SufiChain.SufiAbp.Account.Application.Contracts.csproj" />
-    <ProjectReference Include="../../../identity/src/SufiChain.SufiAbp.Identity.Application.Contracts/SufiChain.SufiAbp.Identity.Application.Contracts.csproj" />
-    <ProjectReference Include="../../../identity/src/SufiChain.SufiAbp.Identity.Domain/SufiChain.SufiAbp.Identity.Domain.csproj" />
+    <ProjectReference Include="../../../../framework/SufiChain.SufiAbp.Captcha/SufiChain.SufiAbp.Captcha.csproj" />
     <!-- HttpClientFactory for making HTTP requests from Blazor components -->
     <PackageReference Include="Microsoft.Extensions.Http" Version="$(AspNetCoreVersion)" />
   </ItemGroup>
 
   <ItemGroup>
-    <!-- SufiAbp Framework (transitively provides SufiChain.SufiAbp.UI.Abstractions and SufiChain.SufiBlazor) -->
+    <!-- SufiAbp Framework (transitively provides SufiChain.SufiBlazor) -->
+    <ProjectReference Include="..\..\..\..\framework\SufiChain.SufiAbp.UI.Abstractions\SufiChain.SufiAbp.UI.Abstractions.csproj" />
     <ProjectReference Include="..\..\..\..\framework\SufiChain.SufiAbp.UI.Blazor\SufiChain.SufiAbp.UI.Blazor.csproj" />
     <!-- SufiAbp Identity Application.Contracts (includes Domain.Shared for localization) -->
     <ProjectReference Include="..\..\..\..\modules\identity\src\SufiChain.SufiAbp.Identity.Application.Contracts\SufiChain.SufiAbp.Identity.Application.Contracts.csproj" />
+    <ProjectReference Include="..\..\..\..\modules\identity\src\SufiChain.SufiAbp.Identity.AspNetCore\SufiChain.SufiAbp.Identity.AspNetCore.csproj" />
   </ItemGroup>
 
 </Project>

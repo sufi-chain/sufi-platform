@@ -1,29 +1,16 @@
 @page "/account/register"
 @layout AccountLayout
+@using SufiChain.SufiAbp.Account.Localization
 @using Microsoft.AspNetCore.Authentication
 @using Microsoft.AspNetCore.Http
-@using Microsoft.AspNetCore.Identity
-@using SufiChain.SufiAbp.UI.Abstractions.Account
-@inject IAccountAppService AccountAppService
-@inject SignInManager<SufiChain.SufiAbp.Identity.IdentityUser> SignInManager
-@inject IdentityUserManager UserManager
-@inject IAuthenticationSchemeProvider SchemeProvider
-@inject IStringLocalizer<SufiAbpIdentityResource> L
-@inject NavigationManager Navigation
-@inject ILoginCompletionTokenStore TokenStore
-
-@*
-    Register page: works in Static SSR and Interactive Server hosts.
-    Interactive Server: on success we create a one-time token and full-page navigate to
-    /account/complete-login so the auth cookie is set. Static SSR: use HttpContext.Response.Redirect.
-*@
+@using SufiChain.SufiAbp.Account.Blazor.Components
 
 <div class="account-page">
     <SbCard Class="account-card">
         <ChildContent>
             <SbStack Gap="4" Align="SbAlign.Center">
                 <SbHeading Level="2">@L["Register"]</SbHeading>
-                
+
                 @if (IsExternalLogin)
                 {
                     <form method="post" action="/Account/ExternalLoginConfirmation" class="w-full">
@@ -86,6 +73,9 @@
                                              AutoComplete="new-password"
                                              name="Input.Password" />
                             </SbFormField>
+                            <SufiAbpCaptcha @bind-CaptchaChallengeId="CaptchaChallengeId"
+                                            @bind-CaptchaAnswer="CaptchaAnswer"
+                                            @bind-CaptchaToken="CaptchaToken" />
                             @if (!string.IsNullOrEmpty(ErrorMessage))
                             {
                                 <SbAlert Severity="SbAlertSeverity.Danger">@ErrorMessage</SbAlert>
@@ -117,131 +107,14 @@
                     </SbStack>
                 }
 
-                <SbStack Direction="SbStackDirection.Row" Gap="1">
-                    <SbText>@L["AlreadyHaveAccount"]</SbText>
-                    <SbLink Href="/account/login">@L["SignIn"]</SbLink>
+                <SbStack Gap="2" Align="SbAlign.Center">
+                    <SbLink Href="/account/register-otp">@AccountL["RegisterWithCode"]</SbLink>
+                    <SbStack Direction="SbStackDirection.Row" Gap="1">
+                        <SbText>@L["AlreadyHaveAccount"]</SbText>
+                        <SbLink Href="/account/login">@L["SignIn"]</SbLink>
+                    </SbStack>
                 </SbStack>
             </SbStack>
         </ChildContent>
     </SbCard>
 </div>
-
-@code {
-    /// <summary>
-    /// HttpContext is available in Static SSR mode for optional auto-login.
-    /// </summary>
-    [CascadingParameter]
-    public HttpContext? HttpContext { get; set; }
-
-    /// <summary>
-    /// Return URL for redirect after registration.
-    /// </summary>
-    [SupplyParameterFromQuery]
-    public string? ReturnUrl { get; set; }
-
-    /// <summary>
-    /// True when arrived from ExternalLoginCallback redirect (new user, no account).
-    /// </summary>
-    [SupplyParameterFromQuery(Name = "isExternalLogin")]
-    public bool IsExternalLogin { get; set; }
-
-    /// <summary>
-    /// External provider name (e.g. "Google") when IsExternalLogin.
-    /// </summary>
-    [SupplyParameterFromQuery(Name = "externalLoginAuthSchema")]
-    public string? ExternalLoginAuthSchema { get; set; }
-
-    /// <summary>
-    /// Form input model bound from POST data.
-    /// </summary>
-    [SupplyParameterFromForm]
-    public RegisterInputModel Input { get; set; } = new();
-
-    private string? ErrorMessage { get; set; }
-    private IList<AuthenticationScheme> ExternalSchemes { get; set; } = Array.Empty<AuthenticationScheme>();
-
-    protected override async Task OnInitializedAsync()
-    {
-        if (IsExternalLogin && !string.IsNullOrEmpty(EmailFromQuery))
-        {
-            Input ??= new RegisterInputModel();
-            Input.EmailAddress = EmailFromQuery;
-        }
-        if (!string.IsNullOrEmpty(ErrorFromQuery))
-        {
-            ErrorMessage = ErrorFromQuery;
-        }
-        var allSchemes = await SchemeProvider.GetAllSchemesAsync();
-        ExternalSchemes = allSchemes.Where(s => !string.IsNullOrEmpty(s.DisplayName)).ToList();
-    }
-
-    [SupplyParameterFromQuery(Name = "email")]
-    public string? EmailFromQuery { get; set; }
-
-    [SupplyParameterFromQuery(Name = "error")]
-    public string? ErrorFromQuery { get; set; }
-
-    private async Task OnRegisterAsync()
-    {
-        // Ensure Input is initialized (can be null on failed form binding)
-        Input ??= new RegisterInputModel();
-
-        // Validate required fields
-        if (string.IsNullOrWhiteSpace(Input.UserName) ||
-            string.IsNullOrWhiteSpace(Input.EmailAddress) ||
-            string.IsNullOrWhiteSpace(Input.Password))
-        {
-            ErrorMessage = L["PleaseEnterAllFields"];
-            return;
-        }
-
-        try
-        {
-            // Register user via ABP AccountAppService
-            await AccountAppService.RegisterAsync(new RegisterDto
-            {
-                UserName = Input.UserName,
-                EmailAddress = Input.EmailAddress,
-                Password = Input.Password,
-                AppName = "DemoApp"
-            });
-
-            // Auto-login after successful registration
-            var user = await UserManager.FindByNameAsync(Input.UserName);
-            if (user != null)
-            {
-                if (TokenStore.IsSupported)
-                {
-                    var token = await TokenStore.CreateAsync(user.Id, ReturnUrl, rememberMe: false);
-                    var returnUrlEnc = Uri.EscapeDataString(ReturnUrl ?? "/");
-                    Navigation.NavigateTo($"/account/complete-login?token={Uri.EscapeDataString(token)}&returnUrl={returnUrlEnc}", forceLoad: true);
-                    return;
-                }
-                if (HttpContext != null)
-                {
-                    await SignInManager.SignInAsync(user, isPersistent: false);
-                    HttpContext.Response.Redirect(ReturnUrl ?? "/");
-                    return;
-                }
-                Navigation.NavigateTo("/account/login?registered=true", forceLoad: true);
-                return;
-            }
-
-            Navigation.NavigateTo("/account/login?registered=true", forceLoad: true);
-        }
-        catch (Exception ex)
-        {
-            ErrorMessage = ex.Message;
-        }
-    }
-
-    /// <summary>
-    /// Input model for the registration form.
-    /// </summary>
-    public class RegisterInputModel
-    {
-        public string UserName { get; set; } = "";
-        public string EmailAddress { get; set; } = "";
-        public string Password { get; set; } = "";
-    }
-}

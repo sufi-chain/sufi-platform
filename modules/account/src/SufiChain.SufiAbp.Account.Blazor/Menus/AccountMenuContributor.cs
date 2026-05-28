@@ -1,3 +1,5 @@
+using SufiChain.SufiAbp.Account.Localization;
+using SufiChain.SufiAbp.Account.Localization;
 using SufiChain.SufiAbp.Identity.Localization;
 using SufiChain.SufiAbp.UI.Navigation;
 
@@ -20,6 +22,7 @@ public class AccountMenuContributor : IMenuContributor
     private void ConfigureUserMenu(MenuConfigurationContext context)
     {
         var l = context.GetLocalizer<SufiAbpIdentityResource>();
+        var accountL = context.GetLocalizer<SufiAbpAccountResource>();
 
         context.Menu.AddItem(new ApplicationMenuItem(
             AccountMenuNames.Profile,
@@ -35,6 +38,14 @@ public class AccountMenuContributor : IMenuContributor
             url: "/account/change-password",
             icon: "lock",
             order: 200
+        ));
+
+        context.Menu.AddItem(new ApplicationMenuItem(
+            AccountMenuNames.TwoFactor,
+            accountL["Menu:TwoFactor"],
+            url: "/account/manage/two-factor",
+            icon: "shield",
+            order: 250
         ));
 
         context.Menu.AddItem(new ApplicationMenuItem(
@@ -55,5 +66,6 @@ public static class AccountMenuNames
     public const string GroupName = "Account";
     public const string Profile = GroupName + ".Profile";
     public const string ChangePassword = GroupName + ".ChangePassword";
+    public const string TwoFactor = GroupName + ".TwoFactor";
     public const string Logout = GroupName + ".Logout";
 }

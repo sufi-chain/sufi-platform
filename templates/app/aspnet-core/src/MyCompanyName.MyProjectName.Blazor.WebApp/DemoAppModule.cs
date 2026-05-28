@@ -80,6 +80,7 @@ using Volo.Abp.Autofac;
 using Volo.Abp.Caching;
 using Volo.Abp.Data;
 using Volo.Abp.Emailing;
+using SufiChain.SufiAbp.Messaging.Email;
 // <TEMPLATE-REMOVE IF-NOT="db:mongodb">
 // </TEMPLATE-REMOVE>
 // <TEMPLATE-REMOVE IF-NOT="db:mongodb">
@@ -250,6 +251,7 @@ public class DemoAppModule : AbpModule
 
         if (hostingEnvironment.IsDevelopment())
         {
+            context.Services.Replace(ServiceDescriptor.Singleton<Volo.Abp.Emailing.IEmailSender, Volo.Abp.Emailing.NullEmailSender>());
             context.Services.Replace(ServiceDescriptor.Singleton<IEmailSender, NullEmailSender>());
         }
 

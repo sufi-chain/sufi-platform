@@ -3,6 +3,7 @@ using System.Net.Mail;
 using System.Threading.Tasks;
 using Volo.Abp.BackgroundJobs;
 using SufiChain.SufiAbp.Messaging.Email;
+using Volo.Abp.DependencyInjection;
 using Volo.Abp.Settings;
 using Microsoft.Extensions.Logging;
 
@@ -11,7 +12,7 @@ namespace SufiChain.SufiAbp.Messaging.Smtp;
 /// <summary>
 /// SMTP email sender implementation
 /// </summary>
-public class SmtpEmailSender : EmailSenderBase
+public class SmtpEmailSender : EmailSenderBase, ISmtpEmailSender, ITransientDependency
 {
     protected ISettingProvider SettingProvider { get; }
 

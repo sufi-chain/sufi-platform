@@ -4,7 +4,7 @@ using Volo.Abp.Settings;
 
 namespace SufiChain.SufiAbp.Messaging.Smtp;
 
-public class SmtpEmailSenderConfiguration : IEmailSenderConfiguration, ITransientDependency
+public class SmtpEmailSenderConfiguration : IEmailSenderConfiguration
 {
     protected ISettingProvider SettingProvider { get; }
 

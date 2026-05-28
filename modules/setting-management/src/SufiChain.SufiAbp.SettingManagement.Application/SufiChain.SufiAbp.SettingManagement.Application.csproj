@@ -14,6 +14,8 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\..\account\src\SufiChain.SufiAbp.Account.Application.Contracts\SufiChain.SufiAbp.Account.Application.Contracts.csproj" />
+    <ProjectReference Include="..\..\..\identity\src\SufiChain.SufiAbp.Identity.Domain.Shared\SufiChain.SufiAbp.Identity.Domain.Shared.csproj" />
     <ProjectReference Include="../../../../framework/SufiChain.SufiAbp.Ddd.Application/SufiChain.SufiAbp.Ddd.Application.csproj" />
     <ProjectReference Include="../../../../framework/SufiChain.SufiAbp.Messaging/SufiChain.SufiAbp.Messaging.csproj" />
     <ProjectReference Include="../../../../framework/SufiChain.SufiAbp.Timing/SufiChain.SufiAbp.Timing.csproj" />

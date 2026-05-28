@@ -3,16 +3,15 @@ using Volo.Abp.Reflection;
 namespace SufiChain.SufiAbp.Identity;
 
 /// <summary>
-/// Permission constants for the SufiAbp Identity module.
-/// Follows ABP permission naming conventions.
+/// Permission constants for the Identity module.
+/// Naming: {ModuleName}.{Entity}.{Action} (e.g. Identity.Users.Create).
 /// </summary>
 public static class IdentityPermissions 
 {
     /// <summary>
-    /// Permission group name for SufiAbp Identity module.
-    /// Uses "SufiAbpIdentity" to integrate with ABP's Identity permission group.
+    /// Permission group name for the Identity module (e.g. Identity.Users.Create).
     /// </summary>
-    public const string GroupName = "SufiAbpIdentity";
+    public const string GroupName = "Identity";
 
     public static class Roles
     {

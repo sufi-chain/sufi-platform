@@ -335,6 +335,16 @@ public abstract class SufiAbpAccountController : AbpController
 
         await _securityLogAppService.SaveLoginEventAsync(IdentitySecurityLogIdentityConsts.Identity, IdentitySecurityLogActionConsts.LoginSucceeded, user.UserName);
 
+        var twoFactorAppService = HttpContext.RequestServices.GetService<IAccountTwoFactorAppService>();
+        if (twoFactorAppService != null)
+        {
+            var enforceUrl = await twoFactorAppService.GetPostLoginRedirectUrlAsync(userId, redirectUrl);
+            if (!string.IsNullOrEmpty(enforceUrl) && Url.IsLocalUrl(enforceUrl))
+            {
+                return Redirect(enforceUrl);
+            }
+        }
+
         var target = !string.IsNullOrEmpty(redirectUrl) && Url.IsLocalUrl(redirectUrl) ? redirectUrl : "/";
         return Redirect(target);
     }

@@ -40,23 +40,14 @@ using Volo.Abp.Identity.AspNetCore;
 using Volo.Abp.Localization;
 using Volo.Abp.Modularity;
 using Volo.Abp.OpenIddict;
-// <TEMPLATE-REMOVE IF-NOT="db:mongodb">
-using Volo.Abp.AuditLogging.MongoDB;
-// </TEMPLATE-REMOVE>
 using SufiChain.SufiAbp.FeatureManagement;
-// <TEMPLATE-REMOVE IF-NOT="db:mongodb">
 using Volo.Abp.FeatureManagement.MongoDB;
-// </TEMPLATE-REMOVE>
 using SufiChain.SufiAbp.SettingManagement;
-// <TEMPLATE-REMOVE IF-NOT="db:mongodb">
 using Volo.Abp.SettingManagement.MongoDB;
-// </TEMPLATE-REMOVE>
 using Volo.Abp.Threading;
 using Volo.Abp.UI.Navigation.Urls;
 using Volo.Abp.VirtualFileSystem;
-// <TEMPLATE-REMOVE IF-NOT="db:mongodb">
 using MyCompanyName.MyProjectName.MongoDB;
-// </TEMPLATE-REMOVE>
 using MyCompanyName.MyProjectName.MultiTenancy;
 
 namespace MyCompanyName.MyProjectName
@@ -66,9 +57,7 @@ namespace MyCompanyName.MyProjectName
         typeof(AbpAspNetCoreMultiTenancyModule),
         typeof(SufiAbpAspNetCoreModule),
         typeof(DemoAppApplicationModule),
-        // <TEMPLATE-REMOVE IF-NOT="db:mongodb">
         typeof(DemoAppMongoDbModule),
-        // </TEMPLATE-REMOVE>
         // OpenIddict authorization endpoints (authorize, token, logout)
         typeof(SufiAbpAuthenticationOpenIdConnectModule),
         // OAuth external logins (Google, Microsoft, Facebook) - provides MapAbpClaimTypes
@@ -83,29 +72,19 @@ namespace MyCompanyName.MyProjectName
         // Identity services for credential validation (SignInManager, UserManager)
         typeof(SufiAbpIdentityApplicationModule),
         typeof(SufiAbpIdentityHttpApiModule),
-        // <TEMPLATE-REMOVE IF-NOT="module:tenant-management">
         // Tenant Management for multi-tenancy resolution during login
         typeof(SufiAbpTenantManagementApplicationModule),
         typeof(SufiAbpTenantManagementHttpApiModule),
-        // </TEMPLATE-REMOVE>
-        // <TEMPLATE-REMOVE IF-NOT="db:mongodb">
-        // ABP infrastructure modules (DB layers for MongoDB)
-        typeof(AbpAuditLoggingMongoDbModule),
-        // </TEMPLATE-REMOVE>
         typeof(SufiAbpAccountApplicationModule),
         typeof(SufiAbpAccountHttpApiModule),
         typeof(SufiAbpPermissionManagementApplicationModule),
         typeof(SufiAbpPermissionManagementHttpApiModule),
         typeof(SufiAbpFeatureManagementApplicationModule),
         typeof(SufiAbpFeatureManagementHttpApiModule),
-        // <TEMPLATE-REMOVE IF-NOT="db:mongodb">
         typeof(AbpFeatureManagementMongoDbModule),
-        // </TEMPLATE-REMOVE>
         typeof(SufiAbpSettingManagementApplicationModule),
         typeof(SufiAbpSettingManagementHttpApiModule),
-        // <TEMPLATE-REMOVE IF-NOT="db:mongodb">
         typeof(AbpSettingManagementMongoDbModule)
-        // </TEMPLATE-REMOVE>
     )]
     public class DemoAppAuthServerModule : AbpModule
     {

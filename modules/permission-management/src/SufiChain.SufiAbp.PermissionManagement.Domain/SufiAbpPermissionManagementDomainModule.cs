@@ -1,13 +1,12 @@
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using SufiChain.SufiAbp.Authorization;
 using SufiChain.SufiAbp.Caching;
 using SufiChain.SufiAbp.Ddd;
+using SufiChain.SufiAbp.DistributedLocking.Abstractions;
 using Volo.Abp;
 using Volo.Abp.Data;
 using Volo.Abp.DependencyInjection;
-using Volo.Abp.DistributedLocking;
 using Volo.Abp.Json;
 using Volo.Abp.Modularity;
 using Volo.Abp.Threading;
@@ -18,6 +17,7 @@ namespace SufiChain.SufiAbp.PermissionManagement;
 [DependsOn(typeof(SufiAbpDddDomainModule))]
 [DependsOn(typeof(SufiAbpPermissionManagementDomainSharedModule))]
 [DependsOn(typeof(SufiAbpCachingModule))]
+[DependsOn(typeof(SufiAbpDistributedLockingAbstractionsModule))]
 [DependsOn(typeof(AbpJsonModule))]
 public class SufiAbpPermissionManagementDomainModule : AbpModule
 {
@@ -25,8 +25,6 @@ public class SufiAbpPermissionManagementDomainModule : AbpModule
 
     public override void ConfigureServices(ServiceConfigurationContext context)
     {
-        context.Services.Replace(ServiceDescriptor.Singleton<IAbpDistributedLock, NullAbpDistributedLock>());
-
         if (context.Services.IsDataMigrationEnvironment())
         {
             Configure<PermissionManagementOptions>(options =>
@@ -50,12 +48,7 @@ public class SufiAbpPermissionManagementDomainModule : AbpModule
         }
 
         var rootServiceProvider = context.ServiceProvider.GetRequiredService<IRootServiceProvider>();
-        var initializer = rootServiceProvider.GetService<PermissionDynamicInitializer>();
-        if (initializer == null)
-        {
-            return;
-        }
-
+        var initializer = rootServiceProvider.GetRequiredService<PermissionDynamicInitializer>();
         await initializer.InitializeAsync(true, _cancellationTokenSource.Token);
     }
 

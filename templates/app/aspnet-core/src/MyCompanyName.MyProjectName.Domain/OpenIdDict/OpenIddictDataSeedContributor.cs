@@ -7,6 +7,7 @@ using JetBrains.Annotations;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Localization;
 using OpenIddict.Abstractions;
+using OidcConstants = OpenIddict.Abstractions.OpenIddictConstants;
 using SufiChain.SufiAbp.OpenIddict.Applications;
 using SufiChain.SufiAbp.OpenIddict.Scopes;
 using SufiChain.SufiAbp.PermissionManagement;
@@ -81,11 +82,11 @@ public class OpenIddictDataSeedContributor : IDataSeedContributor, ITransientDep
     {
         var commonScopes = new List<string>
         {
-            OpenIddictConstants.Permissions.Scopes.Address,
-            OpenIddictConstants.Permissions.Scopes.Email,
-            OpenIddictConstants.Permissions.Scopes.Phone,
-            OpenIddictConstants.Permissions.Scopes.Profile,
-            OpenIddictConstants.Permissions.Scopes.Roles,
+            OidcConstants.Permissions.Scopes.Address,
+            OidcConstants.Permissions.Scopes.Email,
+            OidcConstants.Permissions.Scopes.Phone,
+            OidcConstants.Permissions.Scopes.Profile,
+            OidcConstants.Permissions.Scopes.Roles,
             "DemoApp"
         };
 
@@ -102,14 +103,14 @@ public class OpenIddictDataSeedContributor : IDataSeedContributor, ITransientDep
              * solution. Otherwise, you can delete this client. */
             await CreateApplicationAsync(
                 name: webClientId!,
-                type: OpenIddictConstants.ClientTypes.Confidential,
-                consentType: OpenIddictConstants.ConsentTypes.Implicit,
+                type: OidcConstants.ClientTypes.Confidential,
+                consentType: OidcConstants.ConsentTypes.Implicit,
                 displayName: "Web Application",
                 secret: configurationSection["DemoApp_Web:ClientSecret"] ?? "1q2w3e*",
                 grantTypes: new List<string> //Hybrid flow
                 {
-                    OpenIddictConstants.GrantTypes.AuthorizationCode,
-                    OpenIddictConstants.GrantTypes.Implicit
+                    OidcConstants.GrantTypes.AuthorizationCode,
+                    OidcConstants.GrantTypes.Implicit
                 },
                 scopes: commonScopes,
                 redirectUri: $"{webClientRootUrl}signin-oidc",
@@ -125,16 +126,16 @@ public class OpenIddictDataSeedContributor : IDataSeedContributor, ITransientDep
             var consoleAndAngularClientRootUrl = configurationSection["DemoApp_App:RootUrl"]?.TrimEnd('/');
             await CreateApplicationAsync(
                 name: consoleAndAngularClientId!,
-                type: OpenIddictConstants.ClientTypes.Public,
-                consentType: OpenIddictConstants.ConsentTypes.Implicit,
+                type: OidcConstants.ClientTypes.Public,
+                consentType: OidcConstants.ConsentTypes.Implicit,
                 displayName: "Console Test / Angular Application",
                 secret: null,
                 grantTypes: new List<string>
                 {
-                    OpenIddictConstants.GrantTypes.AuthorizationCode,
-                    OpenIddictConstants.GrantTypes.Password,
-                    OpenIddictConstants.GrantTypes.ClientCredentials,
-                    OpenIddictConstants.GrantTypes.RefreshToken
+                    OidcConstants.GrantTypes.AuthorizationCode,
+                    OidcConstants.GrantTypes.Password,
+                    OidcConstants.GrantTypes.ClientCredentials,
+                    OidcConstants.GrantTypes.RefreshToken
                 },
                 scopes: commonScopes,
                 redirectUri: consoleAndAngularClientRootUrl,
@@ -152,14 +153,14 @@ public class OpenIddictDataSeedContributor : IDataSeedContributor, ITransientDep
 
             await CreateApplicationAsync(
                 name: blazorClientId!,
-                type: OpenIddictConstants.ClientTypes.Confidential,
-                consentType: OpenIddictConstants.ConsentTypes.Implicit,
+                type: OidcConstants.ClientTypes.Confidential,
+                consentType: OidcConstants.ConsentTypes.Implicit,
                 displayName: "Blazor Application",
                 secret: configurationSection["DemoApp_Blazor:ClientSecret"] ?? "1q2w3e*",
                 grantTypes: new List<string>
                 {
-                    OpenIddictConstants.GrantTypes.AuthorizationCode,
-                    OpenIddictConstants.GrantTypes.Implicit
+                    OidcConstants.GrantTypes.AuthorizationCode,
+                    OidcConstants.GrantTypes.Implicit
                 },
                 scopes: commonScopes,
                 redirectUri: $"{blazorRootUrl}signin-oidc",
@@ -177,14 +178,14 @@ public class OpenIddictDataSeedContributor : IDataSeedContributor, ITransientDep
 
             await CreateApplicationAsync(
                 name: blazorServerTieredClientId!,
-                type: OpenIddictConstants.ClientTypes.Confidential,
-                consentType: OpenIddictConstants.ConsentTypes.Implicit,
+                type: OidcConstants.ClientTypes.Confidential,
+                consentType: OidcConstants.ConsentTypes.Implicit,
                 displayName: "Blazor Server Application",
                 secret: configurationSection["DemoApp_BlazorServerTiered:ClientSecret"] ?? "1q2w3e*",
                 grantTypes: new List<string> //Hybrid flow
                 {
-                    OpenIddictConstants.GrantTypes.AuthorizationCode,
-                    OpenIddictConstants.GrantTypes.Implicit
+                    OidcConstants.GrantTypes.AuthorizationCode,
+                    OidcConstants.GrantTypes.Implicit
                 },
                 scopes: commonScopes,
                 redirectUri: $"{blazorServerTieredRootUrl}signin-oidc",
@@ -202,14 +203,14 @@ public class OpenIddictDataSeedContributor : IDataSeedContributor, ITransientDep
 
             await CreateApplicationAsync(
                 name: blazorWebPublicClientId!,
-                type: OpenIddictConstants.ClientTypes.Confidential,
-                consentType: OpenIddictConstants.ConsentTypes.Implicit,
+                type: OidcConstants.ClientTypes.Confidential,
+                consentType: OidcConstants.ConsentTypes.Implicit,
                 displayName: "Blazor WebPublic Application",
                 secret: configurationSection["DemoApp_BlazorWebPublic:ClientSecret"] ?? "1q2w3e*",
                 grantTypes: new List<string> //Hybrid flow
                 {
-                    OpenIddictConstants.GrantTypes.AuthorizationCode,
-                    OpenIddictConstants.GrantTypes.Implicit
+                    OidcConstants.GrantTypes.AuthorizationCode,
+                    OidcConstants.GrantTypes.Implicit
                 },
                 scopes: commonScopes,
                 redirectUri: $"{blazorWebPublicRootUrl}signin-oidc",
@@ -225,13 +226,13 @@ public class OpenIddictDataSeedContributor : IDataSeedContributor, ITransientDep
         {
             await CreateApplicationAsync(
                 name: swaggerClientId!,
-                type: OpenIddictConstants.ClientTypes.Public,
-                consentType: OpenIddictConstants.ConsentTypes.Implicit,
+                type: OidcConstants.ClientTypes.Public,
+                consentType: OidcConstants.ConsentTypes.Implicit,
                 displayName: "Swagger Application",
                 secret: null,
                 grantTypes: new List<string>
                 {
-                    OpenIddictConstants.GrantTypes.AuthorizationCode,
+                    OidcConstants.GrantTypes.AuthorizationCode,
                 },
                 scopes: commonScopes,
                 redirectUri: $"{swaggerRootUrl}/swagger/oauth2-redirect.html",
@@ -253,12 +254,12 @@ public class OpenIddictDataSeedContributor : IDataSeedContributor, ITransientDep
         string? postLogoutRedirectUri = null,
         List<string>? permissions = null)
     {
-        if (!string.IsNullOrEmpty(secret) && string.Equals(type, OpenIddictConstants.ClientTypes.Public, StringComparison.OrdinalIgnoreCase))
+        if (!string.IsNullOrEmpty(secret) && string.Equals(type, OidcConstants.ClientTypes.Public, StringComparison.OrdinalIgnoreCase))
         {
             throw new BusinessException(L["NoClientSecretCanBeSetForPublicApplications"]);
         }
 
-        if (string.IsNullOrEmpty(secret) && string.Equals(type, OpenIddictConstants.ClientTypes.Confidential, StringComparison.OrdinalIgnoreCase))
+        if (string.IsNullOrEmpty(secret) && string.Equals(type, OidcConstants.ClientTypes.Confidential, StringComparison.OrdinalIgnoreCase))
         {
             throw new BusinessException(L["TheClientSecretIsRequiredForConfidentialApplications"]);
         }
@@ -284,105 +285,105 @@ public class OpenIddictDataSeedContributor : IDataSeedContributor, ITransientDep
             Check.NotNullOrEmpty(grantTypes, nameof(grantTypes));
             Check.NotNullOrEmpty(scopes, nameof(scopes));
 
-            if (new [] { OpenIddictConstants.GrantTypes.AuthorizationCode, OpenIddictConstants.GrantTypes.Implicit }.All(grantTypes.Contains))
+            if (new [] { OidcConstants.GrantTypes.AuthorizationCode, OidcConstants.GrantTypes.Implicit }.All(grantTypes.Contains))
             {
-                application.Permissions.Add(OpenIddictConstants.Permissions.ResponseTypes.CodeIdToken);
+                application.Permissions.Add(OidcConstants.Permissions.ResponseTypes.CodeIdToken);
 
-                if (string.Equals(type, OpenIddictConstants.ClientTypes.Public, StringComparison.OrdinalIgnoreCase))
+                if (string.Equals(type, OidcConstants.ClientTypes.Public, StringComparison.OrdinalIgnoreCase))
                 {
-                    application.Permissions.Add(OpenIddictConstants.Permissions.ResponseTypes.CodeIdTokenToken);
-                    application.Permissions.Add(OpenIddictConstants.Permissions.ResponseTypes.CodeToken);
+                    application.Permissions.Add(OidcConstants.Permissions.ResponseTypes.CodeIdTokenToken);
+                    application.Permissions.Add(OidcConstants.Permissions.ResponseTypes.CodeToken);
                 }
             }
 
             if (!redirectUri.IsNullOrWhiteSpace() || !postLogoutRedirectUri.IsNullOrWhiteSpace())
             {
-                application.Permissions.Add(OpenIddictConstants.Permissions.Endpoints.EndSession);
+                application.Permissions.Add(OidcConstants.Permissions.Endpoints.EndSession);
             }
 
             var buildInGrantTypes = new []
             {
-                OpenIddictConstants.GrantTypes.Implicit,
-                OpenIddictConstants.GrantTypes.Password,
-                OpenIddictConstants.GrantTypes.AuthorizationCode,
-                OpenIddictConstants.GrantTypes.ClientCredentials,
-                OpenIddictConstants.GrantTypes.DeviceCode,
-                OpenIddictConstants.GrantTypes.RefreshToken
+                OidcConstants.GrantTypes.Implicit,
+                OidcConstants.GrantTypes.Password,
+                OidcConstants.GrantTypes.AuthorizationCode,
+                OidcConstants.GrantTypes.ClientCredentials,
+                OidcConstants.GrantTypes.DeviceCode,
+                OidcConstants.GrantTypes.RefreshToken
             };
 
             foreach (var grantType in grantTypes)
             {
-              if (grantType == OpenIddictConstants.GrantTypes.AuthorizationCode)
+              if (grantType == OidcConstants.GrantTypes.AuthorizationCode)
               {
-                  application.Permissions.Add(OpenIddictConstants.Permissions.GrantTypes.AuthorizationCode);
-                  application.Permissions.Add(OpenIddictConstants.Permissions.ResponseTypes.Code);
+                  application.Permissions.Add(OidcConstants.Permissions.GrantTypes.AuthorizationCode);
+                  application.Permissions.Add(OidcConstants.Permissions.ResponseTypes.Code);
               }
 
-              if (grantType == OpenIddictConstants.GrantTypes.AuthorizationCode || grantType == OpenIddictConstants.GrantTypes.Implicit)
+              if (grantType == OidcConstants.GrantTypes.AuthorizationCode || grantType == OidcConstants.GrantTypes.Implicit)
               {
-                  application.Permissions.Add(OpenIddictConstants.Permissions.Endpoints.Authorization);
+                  application.Permissions.Add(OidcConstants.Permissions.Endpoints.Authorization);
               }
 
-              if (grantType == OpenIddictConstants.GrantTypes.AuthorizationCode ||
-                  grantType == OpenIddictConstants.GrantTypes.ClientCredentials ||
-                  grantType == OpenIddictConstants.GrantTypes.Password ||
-                  grantType == OpenIddictConstants.GrantTypes.RefreshToken ||
-                  grantType == OpenIddictConstants.GrantTypes.DeviceCode)
+              if (grantType == OidcConstants.GrantTypes.AuthorizationCode ||
+                  grantType == OidcConstants.GrantTypes.ClientCredentials ||
+                  grantType == OidcConstants.GrantTypes.Password ||
+                  grantType == OidcConstants.GrantTypes.RefreshToken ||
+                  grantType == OidcConstants.GrantTypes.DeviceCode)
               {
-                  application.Permissions.Add(OpenIddictConstants.Permissions.Endpoints.Token);
-                  application.Permissions.Add(OpenIddictConstants.Permissions.Endpoints.Revocation);
-                  application.Permissions.Add(OpenIddictConstants.Permissions.Endpoints.Introspection);
+                  application.Permissions.Add(OidcConstants.Permissions.Endpoints.Token);
+                  application.Permissions.Add(OidcConstants.Permissions.Endpoints.Revocation);
+                  application.Permissions.Add(OidcConstants.Permissions.Endpoints.Introspection);
               }
 
-              if (grantType == OpenIddictConstants.GrantTypes.ClientCredentials)
+              if (grantType == OidcConstants.GrantTypes.ClientCredentials)
               {
-                  application.Permissions.Add(OpenIddictConstants.Permissions.GrantTypes.ClientCredentials);
+                  application.Permissions.Add(OidcConstants.Permissions.GrantTypes.ClientCredentials);
               }
 
-              if (grantType == OpenIddictConstants.GrantTypes.Implicit)
+              if (grantType == OidcConstants.GrantTypes.Implicit)
               {
-                  application.Permissions.Add(OpenIddictConstants.Permissions.GrantTypes.Implicit);
+                  application.Permissions.Add(OidcConstants.Permissions.GrantTypes.Implicit);
               }
 
-              if (grantType == OpenIddictConstants.GrantTypes.Password)
+              if (grantType == OidcConstants.GrantTypes.Password)
               {
-                  application.Permissions.Add(OpenIddictConstants.Permissions.GrantTypes.Password);
+                  application.Permissions.Add(OidcConstants.Permissions.GrantTypes.Password);
               }
 
-              if (grantType == OpenIddictConstants.GrantTypes.RefreshToken)
+              if (grantType == OidcConstants.GrantTypes.RefreshToken)
               {
-                  application.Permissions.Add(OpenIddictConstants.Permissions.GrantTypes.RefreshToken);
+                  application.Permissions.Add(OidcConstants.Permissions.GrantTypes.RefreshToken);
               }
 
-              if (grantType == OpenIddictConstants.GrantTypes.DeviceCode)
+              if (grantType == OidcConstants.GrantTypes.DeviceCode)
               {
-                  application.Permissions.Add(OpenIddictConstants.Permissions.GrantTypes.DeviceCode);
-                  application.Permissions.Add(OpenIddictConstants.Permissions.Endpoints.DeviceAuthorization);
+                  application.Permissions.Add(OidcConstants.Permissions.GrantTypes.DeviceCode);
+                  application.Permissions.Add(OidcConstants.Permissions.Endpoints.DeviceAuthorization);
               }
 
-              if (grantType == OpenIddictConstants.GrantTypes.Implicit)
+              if (grantType == OidcConstants.GrantTypes.Implicit)
               {
-                  application.Permissions.Add(OpenIddictConstants.Permissions.ResponseTypes.IdToken);
-                  if (string.Equals(type, OpenIddictConstants.ClientTypes.Public, StringComparison.OrdinalIgnoreCase))
+                  application.Permissions.Add(OidcConstants.Permissions.ResponseTypes.IdToken);
+                  if (string.Equals(type, OidcConstants.ClientTypes.Public, StringComparison.OrdinalIgnoreCase))
                   {
-                      application.Permissions.Add(OpenIddictConstants.Permissions.ResponseTypes.IdTokenToken);
-                      application.Permissions.Add(OpenIddictConstants.Permissions.ResponseTypes.Token);
+                      application.Permissions.Add(OidcConstants.Permissions.ResponseTypes.IdTokenToken);
+                      application.Permissions.Add(OidcConstants.Permissions.ResponseTypes.Token);
                   }
               }
 
               if (!buildInGrantTypes.Contains(grantType))
               {
-                  application.Permissions.Add(OpenIddictConstants.Permissions.Prefixes.GrantType + grantType);
+                  application.Permissions.Add(OidcConstants.Permissions.Prefixes.GrantType + grantType);
               }
             }
 
             var buildInScopes = new []
             {
-                OpenIddictConstants.Permissions.Scopes.Address,
-                OpenIddictConstants.Permissions.Scopes.Email,
-                OpenIddictConstants.Permissions.Scopes.Phone,
-                OpenIddictConstants.Permissions.Scopes.Profile,
-                OpenIddictConstants.Permissions.Scopes.Roles
+                OidcConstants.Permissions.Scopes.Address,
+                OidcConstants.Permissions.Scopes.Email,
+                OidcConstants.Permissions.Scopes.Phone,
+                OidcConstants.Permissions.Scopes.Profile,
+                OidcConstants.Permissions.Scopes.Roles
             };
 
             foreach (var scope in scopes)
@@ -393,7 +394,7 @@ public class OpenIddictDataSeedContributor : IDataSeedContributor, ITransientDep
                 }
                 else
                 {
-                    application.Permissions.Add(OpenIddictConstants.Permissions.Prefixes.Scope + scope);
+                    application.Permissions.Add(OidcConstants.Permissions.Prefixes.Scope + scope);
                 }
             }
 

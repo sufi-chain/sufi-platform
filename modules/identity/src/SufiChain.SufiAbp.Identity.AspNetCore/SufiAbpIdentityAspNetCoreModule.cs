@@ -2,11 +2,13 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.DependencyInjection;
 using SufiChain.SufiAbp.Identity;
 using Volo.Abp.Modularity;
+using Volo.Abp.Settings;
 
 namespace SufiChain.SufiAbp.Identity.AspNetCore;
 
 [DependsOn(
-    typeof(SufiAbpIdentityDomainModule)
+    typeof(SufiAbpIdentityDomainModule),
+    typeof(AbpSettingsModule)
 )]
 public class SufiAbpIdentityAspNetCoreModule : AbpModule
 {
@@ -34,5 +36,7 @@ public class SufiAbpIdentityAspNetCoreModule : AbpModule
                 })
                 .AddIdentityCookies();
         }
+
+        context.Services.ConfigureOptions<IdentityTokenOptionsConfigurator>();
     }
 }

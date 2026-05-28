@@ -192,21 +192,6 @@ public abstract class SufiAbpCrudPageBase<TGetOutputDto, TGetListOutputDto, TKey
     }
 
     /// <summary>
-    /// Checks if the current user is granted the specified policy.
-    /// </summary>
-    protected virtual async Task<bool> IsGrantedAsync(string policyName)
-    {
-        var claims = CurrentUser.GetAllClaims();
-        var identity = claims.FirstOrDefault()?.Subject;
-        var principal = identity != null 
-            ? new System.Security.Claims.ClaimsPrincipal(identity) 
-            : new System.Security.Claims.ClaimsPrincipal();
-        
-        var result = await AuthorizationService.AuthorizeAsync(principal, policyName);
-        return result.Succeeded;
-    }
-
-    /// <summary>
     /// Checks a policy and throws if not granted.
     /// </summary>
     protected virtual async Task CheckPolicyAsync(string? policyName)

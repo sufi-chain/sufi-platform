@@ -27,6 +27,9 @@
     <Project Path="framework/SufiChain.SufiAbp.BlobStoring.S3Provider/SufiChain.SufiAbp.BlobStoring.S3Provider.csproj" />
     <Project Path="framework/SufiChain.SufiAbp.BlobStoring/SufiChain.SufiAbp.BlobStoring.csproj" />
     <Project Path="framework/SufiChain.SufiAbp.Caching/SufiChain.SufiAbp.Caching.csproj" />
+    <Project Path="framework/SufiChain.SufiAbp.Captcha.Recaptcha/SufiChain.SufiAbp.Captcha.Recaptcha.csproj" />
+    <Project Path="framework/SufiChain.SufiAbp.Captcha.Turnstile/SufiChain.SufiAbp.Captcha.Turnstile.csproj" />
+    <Project Path="framework/SufiChain.SufiAbp.Captcha/SufiChain.SufiAbp.Captcha.csproj" />
     <Project Path="framework/SufiChain.SufiAbp.CLI.Core/SufiChain.SufiAbp.CLI.Core.csproj" />
     <Project Path="framework/SufiChain.SufiAbp.CLI/SufiChain.SufiAbp.CLI.csproj" />
     <Project Path="framework/SufiChain.SufiAbp.Core/SufiChain.SufiAbp.Core.csproj" />

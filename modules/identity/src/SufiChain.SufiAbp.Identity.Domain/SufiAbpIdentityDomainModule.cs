@@ -4,6 +4,7 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Volo.Abp.Modularity;
 using Volo.Abp.Domain;
 using Volo.Abp.Security.Claims;
+using Volo.Abp.Settings;
 using SufiChain.SufiAbp.Ddd;
 using SufiChain.SufiAbp.Users;
 
@@ -12,7 +13,8 @@ namespace SufiChain.SufiAbp.Identity;
 [DependsOn(
     typeof(SufiAbpIdentityDomainSharedModule),
     typeof(SufiAbpUsersDomainModule),
-    typeof(SufiAbpDddDomainModule)
+    typeof(SufiAbpDddDomainModule),
+    typeof(AbpSettingsModule)
 )]
 public class SufiAbpIdentityDomainModule : AbpModule
 {
@@ -39,7 +41,8 @@ public class SufiAbpIdentityDomainModule : AbpModule
             {
                 options.User.RequireUniqueEmail = true;
             })
-            .AddRoles<IdentityRole>();
+            .AddRoles<IdentityRole>()
+            .AddPasswordValidator<SufiAbpExtendedPasswordValidator>();
 
         context.Services.AddObjectAccessor(identityBuilder);
         context.Services.ExecutePreConfiguredActions(identityBuilder);

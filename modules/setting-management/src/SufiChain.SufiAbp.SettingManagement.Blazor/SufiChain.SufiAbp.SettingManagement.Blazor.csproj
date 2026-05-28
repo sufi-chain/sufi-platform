@@ -18,6 +18,7 @@
     <!-- Resolve version conflict with SufiBlazor -->
     <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="$(MicrosoftAspNetCoreComponentsWebVersion)" />
     <!-- ABP SettingManagement -->
+    <ProjectReference Include="../../../identity/src/SufiChain.SufiAbp.Identity.Domain.Shared/SufiChain.SufiAbp.Identity.Domain.Shared.csproj" />
     <ProjectReference Include="../SufiChain.SufiAbp.SettingManagement.Application.Contracts/SufiChain.SufiAbp.SettingManagement.Application.Contracts.csproj" />
     <ProjectReference Include="../SufiChain.SufiAbp.SettingManagement.Domain/SufiChain.SufiAbp.SettingManagement.Domain.csproj" />
     <ProjectReference Include="../../../../framework/SufiChain.SufiAbp.Authorization/SufiChain.SufiAbp.Authorization.csproj" />

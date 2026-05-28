@@ -1,7 +1,7 @@
-using Volo.Abp.Application;
-using SufiChain.SufiAbp.FeatureManagement;
-using Volo.Abp.Modularity;
 using SufiChain.SufiAbp.Ddd;
+using Volo.Abp.Application;
+using Volo.Abp.Authorization.Permissions;
+using Volo.Abp.Modularity;
 
 namespace SufiChain.SufiAbp.FeatureManagement;
 
@@ -11,4 +11,11 @@ namespace SufiChain.SufiAbp.FeatureManagement;
 )]
 public class SufiAbpFeatureManagementApplicationContractsModule : AbpModule
 {
+    public override void ConfigureServices(ServiceConfigurationContext context)
+    {
+        Configure<AbpPermissionOptions>(options =>
+        {
+            options.DeletedPermissionGroups.Add("SufiAbpFeatureManagement");
+        });
+    }
 }

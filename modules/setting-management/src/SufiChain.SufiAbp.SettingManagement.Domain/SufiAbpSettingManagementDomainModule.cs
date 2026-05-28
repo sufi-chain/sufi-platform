@@ -1,4 +1,5 @@
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using SufiChain.SufiAbp.Caching;
 using SufiChain.SufiAbp.Ddd;
@@ -23,6 +24,8 @@ public class SufiAbpSettingManagementDomainModule : AbpModule
 
     public override void ConfigureServices(ServiceConfigurationContext context)
     {
+        context.Services.Replace(ServiceDescriptor.Transient<ISettingStore, SettingStore>());
+
         Configure<SettingManagementOptions>(options =>
         {
             options.Providers.Add<DefaultValueSettingManagementProvider>();

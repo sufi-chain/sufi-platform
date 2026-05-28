@@ -30,6 +30,7 @@ public class SufiAbpSettingManagementBlazorModule : AbpModule
         {
             options.Contributors.Add(new EmailSettingsGroupContributor());
             options.Contributors.Add(new TimeZoneSettingsGroupContributor());
+            options.Contributors.Add(new IdentitySettingsGroupContributor());
         });
     }
 }

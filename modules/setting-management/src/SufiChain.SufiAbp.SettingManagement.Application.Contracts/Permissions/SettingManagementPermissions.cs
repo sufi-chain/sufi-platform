@@ -7,4 +7,5 @@ public static class SettingManagementPermissions
     public const string Emailing = GroupName + ".Emailing";
     public const string EmailingTest = Emailing + ".Test";
     public const string TimeZone = GroupName + ".TimeZone";
+    public const string Identity = GroupName + ".Identity";
 }
