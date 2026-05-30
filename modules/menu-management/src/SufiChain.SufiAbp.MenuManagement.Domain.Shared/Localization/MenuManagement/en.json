@@ -1,0 +1,21 @@
+{
+  "culture": "en",
+  "texts": {
+    "MenuManagement": "Menu Management",
+    "Permission:MenuManagement": "Menu Management",
+    "Permission:MenuManagement.Menus": "Menus",
+    "Permission:MenuManagement.Menus.Create": "Create menus",
+    "Permission:MenuManagement.Menus.Edit": "Edit menus",
+    "Permission:MenuManagement.Menus.Delete": "Delete menus",
+    "Permission:MenuManagement.Menus.ManageItems": "Manage menu items",
+    "MenuManagement:MenuAlreadyExists": "A menu already exists for this context and name.",
+    "MenuManagement:MenuItemSlugAlreadyExists": "A menu item with this slug already exists in this menu.",
+    "MenuManagement:MenuItemCircularReference": "Menu item hierarchy cannot contain circular references.",
+    "MenuManagement:MenuItemInvalidTarget": "The menu item target is invalid.",
+    "MenuManagement:MenuItemMetadataTooLong": "Menu item metadata is too long.",
+    "MenuManagement:CreateMenuItem": "Create menu item",
+    "MenuManagement:EditMenuItem": "Edit menu item",
+    "MenuManagement:MoveMenuItem": "Move menu item",
+    "MenuManagement:ReorderMenuItem": "Reorder menu item"
+  }
+}

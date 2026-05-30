@@ -1,0 +1,16 @@
+@inherits MenuManagementComponentBase
+@if (Items?.Count > 0)
+{
+    <ul class="sufi-menu-tree">
+        @foreach (var item in Items)
+        {
+            <li>
+                <button type="button" @onclick="() => SelectAsync(item)">@item.DisplayName</button>
+                @if (item.Children.Count > 0)
+                {
+                    <MenuTreeView Items="item.Children" OnItemSelected="OnItemSelected" />
+                }
+            </li>
+        }
+    </ul>
+}

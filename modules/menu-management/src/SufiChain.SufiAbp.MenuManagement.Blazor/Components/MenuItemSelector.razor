@@ -1,0 +1,11 @@
+@inherits MenuManagementComponentBase
+<select value="@SelectedItemId" @onchange="OnChangedAsync">
+    @if (AllowEmpty)
+    {
+        <option value="">@Placeholder</option>
+    }
+    @foreach (var item in FlattenedItems)
+    {
+        <option value="@item.Id">@item.DisplayName</option>
+    }
+</select>

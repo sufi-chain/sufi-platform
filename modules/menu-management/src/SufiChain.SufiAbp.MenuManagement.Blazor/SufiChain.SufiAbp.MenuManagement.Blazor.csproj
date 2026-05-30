@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk.Razor">
+  <PropertyGroup><TargetFramework>net10.0</TargetFramework><Nullable>enable</Nullable><RootNamespace>SufiChain.SufiAbp.MenuManagement.Blazor</RootNamespace></PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="$(MicrosoftAspNetCoreComponentsWebVersion)" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.Authorization" Version="$(AspNetCoreVersion)" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="../../../../framework/SufiChain.SufiAbp.UI.Blazor/SufiChain.SufiAbp.UI.Blazor.csproj" />
+    <ProjectReference Include="../SufiChain.SufiAbp.MenuManagement.Domain.Shared/SufiChain.SufiAbp.MenuManagement.Domain.Shared.csproj" />
+    <ProjectReference Include="../SufiChain.SufiAbp.MenuManagement.Application.Contracts/SufiChain.SufiAbp.MenuManagement.Application.Contracts.csproj" />
+  </ItemGroup>
+</Project>

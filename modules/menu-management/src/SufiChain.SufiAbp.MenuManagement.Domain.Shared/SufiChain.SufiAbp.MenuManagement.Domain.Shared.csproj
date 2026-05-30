@@ -2,18 +2,17 @@
   <PropertyGroup>
     <TargetFrameworks>netstandard2.0;netstandard2.1;net10.0</TargetFrameworks>
     <Nullable>enable</Nullable>
-    <RootNamespace>SufiChain.SufiAbp.TagsManagement</RootNamespace>
+    <RootNamespace>SufiChain.SufiAbp.MenuManagement</RootNamespace>
     <GenerateEmbeddedFilesManifest>true</GenerateEmbeddedFilesManifest>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="../../../../framework/SufiChain.SufiAbp.Ddd.Domain.Shared/SufiChain.SufiAbp.Ddd.Domain.Shared.csproj" />
     <ProjectReference Include="../../../../framework/SufiChain.SufiAbp.Validation/SufiChain.SufiAbp.Validation.csproj" />
-    <ProjectReference Include="..\..\..\..\framework\SufiChain.SufiAbp.Authorization\SufiChain.SufiAbp.Authorization.csproj" />
+    <ProjectReference Include="../../../../framework/SufiChain.SufiAbp.Authorization/SufiChain.SufiAbp.Authorization.csproj" />
     <PackageReference Include="Microsoft.Extensions.FileProviders.Embedded" Version="$(MicrosoftExtensionsFileProvidersEmbeddedVersion)" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Localization\TagsManagement\*.json" />
-    <Content Remove="Localization\TagsManagement\*.json" />
+    <EmbeddedResource Include="Localization\MenuManagement\*.json" />
+    <Content Remove="Localization\MenuManagement\*.json" />
   </ItemGroup>
 </Project>
-

@@ -8,8 +8,8 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <PackageId>SufiChain.SufiAbp.TextTemplating.Core</PackageId>
-    <Description>Sufi Platform text templating core abstractions and implementations.</Description>
+    <PackageId>SufiChain.SufiAbp.TextTemplating</PackageId>
+    <Description>Sufi Platform text templating abstractions and implementations.</Description>
   </PropertyGroup>
 
   <ItemGroup>
