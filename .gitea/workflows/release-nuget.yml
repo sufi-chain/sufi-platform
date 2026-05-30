@@ -8,7 +8,9 @@ on:
 env:
   DOTNET_NOLOGO: true
   DOTNET_CLI_TELEMETRY_OPTOUT: true
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
   NUGET_SOURCE_URL: https://nuget.sabp.ir/v3/index.json
+  NUGET_PUSH_PARALLELISM: 4
   PACKAGE_OUTPUT: ./artifacts/nuget
   ROOT_SLNX: SufiChain.SufiAbp.slnx
   RELEASE_TAG: ${{ gitea.event.release.tag_name }}
@@ -26,9 +28,11 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          git clone --depth 1 https://git.sabp.ir/sufi-chain/sufi-abp.git .
-          echo "=== Workspace contents ==="
-          ls -la
+          if [ -n "${REF_NAME:-}" ]; then
+            git clone --depth 1 --branch "$REF_NAME" https://git.sabp.ir/sufi-chain/sufi-abp.git .
+          else
+            git clone --depth 1 https://git.sabp.ir/sufi-chain/sufi-abp.git .
+          fi
 
       - name: Set package version
         shell: bash
@@ -41,125 +45,29 @@ jobs:
           fi
           version="${version#v}"
           echo "VERSION=$version" >> "$GITHUB_ENV"
-          echo "=== Package version: $version ==="
-
-      - name: Print CI diagnostics
-        shell: bash
-        run: |
-          set -euo pipefail
-          mkdir -p .ci/logs
-          echo "=== Runner context ==="
-          pwd
-          ls -la
-          echo "Repository: ${REPOSITORY:-unknown}"
-          echo "Ref: ${REF_NAME:-unknown}"
-          echo "Release tag: ${RELEASE_TAG:-none}"
-          echo "=== Git context ==="
-          git rev-parse --show-toplevel || true
-          git rev-parse HEAD || true
-          git status --short || true
-          echo "=== .NET SDK ==="
-          dotnet --info
-          echo "=== NuGet sources ==="
-          dotnet nuget list source || true
-          echo "=== NuGet.Config files ==="
-          find . -maxdepth 4 -iname 'NuGet.Config' -o -iname 'nuget.config' | sort | while read -r config; do
-            echo "--- $config ---"
-            sed -n '1,160p' "$config"
-          done
-          echo "=== Solution files ==="
-          find . -path '*/.vs' -prune -o -name '*.slnx' -print | sort
-          echo "=== Module directories ==="
-          find modules -mindepth 1 -maxdepth 1 -type d | sort
+          echo "Package version: $version"
 
       - name: Restore root solution
         shell: bash
         run: |
           set -euo pipefail
-          mkdir -p .ci/logs
+          dotnet restore "$ROOT_SLNX" --verbosity minimal
 
-          print_solution_context() {
-            solution="$1"
-            solution_dir="$(dirname "$solution")"
-            echo "=== Solution context: $solution ==="
-            ls -l "$solution" || true
-            echo "=== First 160 lines of $solution ==="
-            sed -n '1,160p' "$solution" || true
-            echo "=== Project reference check for $solution ==="
-            grep -o 'Path="[^"]*\.csproj"' "$solution" | sed 's/^Path="//; s/"$//' | while read -r project; do
-              if [ ! -f "$solution_dir/$project" ]; then
-                echo "MISSING PROJECT: $solution_dir/$project"
-              fi
-            done || true
-          }
-
-          log_file=".ci/logs/restore-root.log"
-          print_solution_context "$ROOT_SLNX"
-          if ! dotnet restore "$ROOT_SLNX" --verbosity normal 2>&1 | tee "$log_file"; then
-            echo "=== Restore failed: $ROOT_SLNX ==="
-            echo "=== NuGet sources ==="
-            dotnet nuget list source || true
-            echo "=== Tail of $log_file ==="
-            tail -n 240 "$log_file" || true
-            exit 1
-          fi
-
-      - name: Build root solution
-        shell: bash
-        run: |
-          set -euo pipefail
-          mkdir -p .ci/logs
-          log_file=".ci/logs/build-root.log"
-          if ! dotnet build "$ROOT_SLNX" --configuration Release --no-restore --verbosity normal -p:GeneratePackageOnBuild=false 2>&1 | tee "$log_file"; then
-            echo "=== Build failed: $ROOT_SLNX ==="
-            echo "=== Failed build log tail ==="
-            tail -n 300 "$log_file" || true
-            exit 1
-          fi
-
-      - name: Discover packable projects
-        shell: bash
-        run: |
-          set -euo pipefail
-          mkdir -p .ci
-          find framework modules \
-            \( -path '*/bin' -o -path '*/obj' -o -path '*/.vs' \) -prune -o \
-            -type f -name '*.csproj' -print | sort | while read -r project; do
-              case "$project" in
-                */test/*|*/tests/*|*/host/*|*/templates/*) continue ;;
-              esac
-
-              if grep -Eq '<IsPackable>[[:space:]]*false[[:space:]]*</IsPackable>' "$project"; then
-                continue
-              fi
-
-              echo "$project"
-            done > .ci/package-projects.txt
-
-          if [ ! -s .ci/package-projects.txt ]; then
-            echo "No packable projects were discovered."
-            exit 1
-          fi
-
-          echo "=== Packable projects ==="
-          cat .ci/package-projects.txt
-
-      - name: Pack projects
+      - name: Build and pack root solution
         shell: bash
         run: |
           set -euo pipefail
           mkdir -p "$PACKAGE_OUTPUT"
-
-          while read -r project; do
-            echo "=== Packing $project ==="
-            dotnet pack "$project" \
-              --configuration Release \
-              --no-build \
-              --output "$PACKAGE_OUTPUT" \
-              -p:PackageVersion="$VERSION" \
-              -p:ContinuousIntegrationBuild=true \
-              -p:GeneratePackageOnBuild=false
-          done < .ci/package-projects.txt
+          dotnet build "$ROOT_SLNX" \
+            --configuration Release \
+            --no-restore \
+            --verbosity minimal \
+            -m \
+            --artifacts-path "$PACKAGE_OUTPUT" \
+            -p:PackageVersion="$VERSION" \
+            -p:ContinuousIntegrationBuild=true \
+            -p:BuildInParallel=true \
+            -p:GeneratePackageOnBuild=true
 
       - name: Push packages to BaGet
         shell: bash
@@ -172,16 +80,15 @@ jobs:
             exit 1
           fi
 
-          shopt -s nullglob
-          packages=("$PACKAGE_OUTPUT"/*.nupkg)
+          mapfile -t packages < <(find "$PACKAGE_OUTPUT" -type f -name '*.nupkg' ! -name '*.symbols.nupkg' | sort)
           if [ ${#packages[@]} -eq 0 ]; then
             echo "No NuGet packages were produced."
             exit 1
           fi
 
-          for package in "${packages[@]}"; do
-            dotnet nuget push "$package" \
+          printf '%s\0' "${packages[@]}" | xargs -0 -n 1 -P "$NUGET_PUSH_PARALLELISM" sh -c '
+            dotnet nuget push "$1" \
               --source "$NUGET_SOURCE_URL" \
               --api-key "$NUGET_API_KEY" \
               --skip-duplicate
-          done
+          ' sh
