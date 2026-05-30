@@ -51,7 +51,9 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          dotnet restore "$ROOT_SLNX" --verbosity minimal
+          dotnet restore "$ROOT_SLNX" \
+            --verbosity minimal \
+            -p:NuGetAudit=false
 
       - name: Build and pack root solution
         shell: bash
@@ -63,10 +65,10 @@ jobs:
             --no-restore \
             --verbosity minimal \
             -m \
-            --artifacts-path "$PACKAGE_OUTPUT" \
             -p:PackageVersion="$VERSION" \
             -p:ContinuousIntegrationBuild=true \
             -p:BuildInParallel=true \
+            -p:PackageOutputPath="$PWD/$PACKAGE_OUTPUT" \
             -p:GeneratePackageOnBuild=true
 
       - name: Push packages to BaGet
