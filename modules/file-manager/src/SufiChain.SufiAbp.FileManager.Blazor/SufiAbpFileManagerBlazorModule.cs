@@ -48,12 +48,10 @@ public class SufiAbpFileManagerBlazorModule : AbpModule
             options.MenuContributors.Add(new FileManagerMenuContributor());
         });
 
-        // Register File Storage settings contributor (adds "File Storage" tab to Settings page)
+        // Register File Manager settings contributor (single tab with all File Manager settings)
         Configure<SettingManagementComponentOptions>(options =>
         {
-            options.Contributors.Add(new FileManagerGeneralSettingsGroupContributor());
-            options.Contributors.Add(new FileManagerStorageSettingsGroupContributor());
-            options.Contributors.Add(new FileManagerArchivingSettingsGroupContributor());
+            options.Contributors.Add(new FileManagerSettingsGroupContributor());
         });
     }
 }
@@ -68,4 +66,3 @@ public static class FileManagerBundles
     /// </summary>
     public const string Cropper = "FileManager.Cropper";
 }
-

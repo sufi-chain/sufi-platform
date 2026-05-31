@@ -4,7 +4,9 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Logging;
 using SufiChain.SufiAbp.Application.Dtos;
+using SufiChain.SufiAbp.FileManager.Features;
 using SufiChain.SufiAbp.FileManager.Permissions;
+using SufiChain.SufiAbp.Features;
 
 namespace SufiChain.SufiAbp.FileManager.FileItems;
 
@@ -16,6 +18,7 @@ public partial class FileItemAppService
     /// <summary>
     /// Archive a file item
     /// </summary>
+    [RequiresFeature(SufiAbpFileManagerFeatures.Archiving)]
     [Authorize(FileManagerPermissions.FileItems.Delete)]
     public async Task ArchiveAsync(Guid id, string? reason = null)
     {
@@ -32,6 +35,7 @@ public partial class FileItemAppService
     /// <summary>
     /// Archive multiple files based on criteria (returns count of archived files)
     /// </summary>
+    [RequiresFeature(SufiAbpFileManagerFeatures.Archiving)]
     [Authorize(FileManagerPermissions.FileItems.Delete)]
     public async Task<int> ArchiveOldFilesAsync(ArchiveOldFilesInput input)
     {
@@ -77,6 +81,7 @@ public partial class FileItemAppService
     /// <summary>
     /// Restore a file from archive
     /// </summary>
+    [RequiresFeature(SufiAbpFileManagerFeatures.Archiving)]
     [Authorize(FileManagerPermissions.FileItems.Update)]
     public async Task RestoreFromArchiveAsync(Guid id)
     {
@@ -93,6 +98,7 @@ public partial class FileItemAppService
     /// <summary>
     /// Get list of archived files
     /// </summary>
+    [RequiresFeature(SufiAbpFileManagerFeatures.Archiving)]
     [Authorize(FileManagerPermissions.FileItems.Default)]
     public async Task<PagedResultDto<FileItemDto>> GetArchivedFilesAsync(GetArchivedFilesInput input)
     {

@@ -233,7 +233,27 @@
     "ModelsLoadedSuccessfully": "Models loaded successfully",
     "NoModelsReturned": "The provider did not return any models.",
     "LoadModelsFailed": "Could not load models",
-    "ApiKeyRequiredForModelList": "API key is required to load models."
+    "ApiKeyRequiredForModelList": "API key is required to load models.",
+    "Feature:AIManagement.Enable": "AI Management",
+    "Feature:AIManagement.Enable.Description": "Enables the AI Management module and runtime AI services.",
+    "Feature:AIManagement.Workspaces": "AI Workspaces",
+    "Feature:AIManagement.Workspaces.Description": "Allows workspace, provider, and model configuration management.",
+    "Feature:AIManagement.Chat": "AI Chat",
+    "Feature:AIManagement.Chat.Description": "Allows text chat completion and test chat experiences.",
+    "Feature:AIManagement.Audio": "AI Audio",
+    "Feature:AIManagement.Audio.Description": "Allows audio transcription and text-to-speech.",
+    "Feature:AIManagement.Vision": "AI Vision",
+    "Feature:AIManagement.Vision.Description": "Allows image and vision analysis.",
+    "Feature:AIManagement.Embeddings": "AI Embeddings",
+    "Feature:AIManagement.Embeddings.Description": "Allows embedding generation for semantic search and RAG.",
+    "Feature:AIManagement.RAG": "AI RAG",
+    "Feature:AIManagement.RAG.Description": "Allows document indexing, vector search, and retrieval-augmented generation.",
+    "Feature:AIManagement.MCP": "AI MCP",
+    "Feature:AIManagement.MCP.Description": "Allows MCP tools, MCP servers, and AI function calling.",
+    "Feature:AIManagement.UsageAnalytics": "AI Usage Analytics",
+    "Feature:AIManagement.UsageAnalytics.Description": "Allows usage logs, cost tracking, and analytics.",
+    "Feature:AIManagement.FileManagerIntegration": "AI File Manager Integration",
+    "Feature:AIManagement.FileManagerIntegration.Description": "Allows AI-generated and processed files to integrate with File Manager."
 
   }
 }

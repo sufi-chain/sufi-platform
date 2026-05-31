@@ -2,7 +2,9 @@ using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
 using Microsoft.AspNetCore.Authorization;
+using SufiChain.SufiAbp.AI.Features;
 using Volo.Abp.Application.Services;
+using SufiChain.SufiAbp.Features;
 using Volo.Abp.Security.Encryption;
 using SufiChain.SufiAbp.AIManagement.Permissions;
 using SufiChain.SufiAbp.Application.Dtos;
@@ -10,6 +12,7 @@ using Microsoft.Extensions.Logging;
 
 namespace SufiChain.SufiAbp.AIManagement.Workspaces;
 
+[RequiresFeature(SufiAbpAIFeatures.Enable)]
 [Authorize(AIManagementPermissions.Workspaces.Default)]
 public class WorkspaceAppService : ApplicationService, IWorkspaceAppService
 {

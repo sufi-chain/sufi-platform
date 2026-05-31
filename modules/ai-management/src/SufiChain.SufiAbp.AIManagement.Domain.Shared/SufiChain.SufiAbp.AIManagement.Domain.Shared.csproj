@@ -9,6 +9,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\..\framework\SufiChain.SufiAbp.Validation\SufiChain.SufiAbp.Validation.csproj" />
+    <ProjectReference Include="..\..\..\..\framework\SufiChain.SufiAbp.Features\SufiChain.SufiAbp.Features.csproj" />
   </ItemGroup>
 
   <ItemGroup>

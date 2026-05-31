@@ -1,6 +1,8 @@
 using System;
 using System.Threading.Tasks;
+using SufiChain.SufiAbp.Features;
 using SufiChain.SufiAbp.FileManager.ETOs;
+using SufiChain.SufiAbp.FileManager.Features;
 using SufiChain.SufiAbp.FileManager.FileTypes;
 using Volo.Abp;
 using Volo.Abp.Domain.Services;
@@ -19,17 +21,20 @@ public class FileItemManager : DomainService
     private readonly IDistributedEventBus _distributedEventBus;
     private readonly IClock _clock;
     private readonly ICurrentUser _currentUser;
+    private readonly IFeatureChecker _featureChecker;
 
     public FileItemManager(
         IFileItemRepository fileItemRepository,
         IDistributedEventBus distributedEventBus,
         IClock clock,
-        ICurrentUser currentUser)
+        ICurrentUser currentUser,
+        IFeatureChecker featureChecker)
     {
         _fileItemRepository = fileItemRepository;
         _distributedEventBus = distributedEventBus;
         _clock = clock;
         _currentUser = currentUser;
+        _featureChecker = featureChecker;
     }
 
     /// <summary>
@@ -46,6 +51,8 @@ public class FileItemManager : DomainService
         Guid? sourceEntityId = null,
         string? customMetadata = null)
     {
+        await CheckFileItemsFeatureAsync();
+
         var fileItem = new FileItem(
             GuidGenerator.Create(),
             CurrentTenant.Id,
@@ -80,6 +87,8 @@ public class FileItemManager : DomainService
     /// </summary>
     public async Task DeleteAsync(FileItem fileItem)
     {
+        await CheckFileItemsFeatureAsync();
+
         // Publish event before deletion
         await PublishFileDeletedEventAsync(fileItem);
 
@@ -95,6 +104,8 @@ public class FileItemManager : DomainService
         string newBlobName,
         string newDirectoryPath)
     {
+        await CheckFileItemsFeatureAsync();
+
         var oldName = fileItem.Name;
         var oldBlobName = fileItem.BlobName;
         var oldDirectoryPath = ExtractDirectoryPath(oldBlobName);
@@ -126,6 +137,8 @@ public class FileItemManager : DomainService
     /// </summary>
     public async Task ArchiveAsync(FileItem fileItem, string? reason = null)
     {
+        await CheckArchivingFeatureAsync();
+
         var originalDirectoryPath = ExtractDirectoryPath(fileItem.BlobName);
         
         fileItem.Archive(reason);
@@ -152,6 +165,8 @@ public class FileItemManager : DomainService
     /// </summary>
     public async Task RestoreFromArchiveAsync(FileItem fileItem)
     {
+        await CheckArchivingFeatureAsync();
+
         fileItem.RestoreFromArchive();
         await _fileItemRepository.UpdateAsync(fileItem, autoSave: true);
     }
@@ -161,6 +176,8 @@ public class FileItemManager : DomainService
     /// </summary>
     public async Task UpdateMetadataAsync(FileItem fileItem, string? customMetadata)
     {
+        await CheckFileItemsFeatureAsync();
+
         fileItem.SetCustomMetadata(customMetadata);
         await _fileItemRepository.UpdateAsync(fileItem, autoSave: true);
 
@@ -214,6 +231,34 @@ public class FileItemManager : DomainService
             StructureKey = fileItem.StructureKey,
             SourceEntityId = fileItem.SourceEntityId
         });
+    }
+
+    private async Task CheckEnableFeatureAsync()
+    {
+        if (!await _featureChecker.IsEnabledAsync(SufiAbpFileManagerFeatures.Enable))
+        {
+            throw new BusinessException($"Feature is disabled: {SufiAbpFileManagerFeatures.Enable}");
+        }
+    }
+
+    private async Task CheckFileItemsFeatureAsync()
+    {
+        await CheckEnableFeatureAsync();
+
+        if (!await _featureChecker.IsEnabledAsync(SufiAbpFileManagerFeatures.FileItems))
+        {
+            throw new BusinessException($"Feature is disabled: {SufiAbpFileManagerFeatures.FileItems}");
+        }
+    }
+
+    private async Task CheckArchivingFeatureAsync()
+    {
+        await CheckEnableFeatureAsync();
+
+        if (!await _featureChecker.IsEnabledAsync(SufiAbpFileManagerFeatures.Archiving))
+        {
+            throw new BusinessException($"Feature is disabled: {SufiAbpFileManagerFeatures.Archiving}");
+        }
     }
 
     private string ExtractDirectoryPath(string blobName)

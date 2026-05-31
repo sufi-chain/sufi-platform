@@ -51,8 +51,8 @@ public partial class FileUploader : FileManagerComponentBase, IDisposable
     /// When true and FolderPath is not passed, shows an input for the user to type the target folder path. Default false = upload to root.
     /// </summary>
     [Parameter] public bool ShowFolderPathField { get; set; } = false;
-    [Parameter] public string DropZoneTitle { get; set; } = "Drag & Drop Files Here";
-    [Parameter] public string DropZoneDescription { get; set; } = "or click Browse Files to select";
+    [Parameter] public string? DropZoneTitle { get; set; }
+    [Parameter] public string? DropZoneDescription { get; set; }
     [Parameter] public EventCallback<List<FileItemDto>> OnUploadCompleted { get; set; }
     [Parameter] public EventCallback<string> OnUploadError { get; set; }
     [Parameter] public string CssClass { get; set; } = "";

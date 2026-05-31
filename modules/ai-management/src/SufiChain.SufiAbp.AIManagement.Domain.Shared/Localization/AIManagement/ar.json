@@ -210,7 +210,29 @@
     "Code": "الرمز",
     "RequestId": "معرّف الطلب",
     "SystemPrompt": "موجه النظام",
-    "SystemPromptPlaceholder": "صف سلوك المساعد ودوره وقيوده وأسلوب رده للمحادثات الجديدة."
-
+    "SystemPromptPlaceholder": "صف سلوك المساعد ودوره وقيوده وأسلوب رده للمحادثات الجديدة.",
+    "Feature:AIManagement.Enable": "إدارة الذكاء الاصطناعي",
+    "Feature:AIManagement.Enable.Description": "تمكين وحدة إدارة الذكاء الاصطناعي وخدمات الذكاء الاصطناعي وقت التشغيل.",
+    "Feature:AIManagement.Workspaces": "مساحات عمل الذكاء الاصطناعي",
+    "Feature:AIManagement.Workspaces.Description": "السماح بإدارة تكوين مساحة العمل والموفر والنموذج.",
+    "Feature:AIManagement.Chat": "دردشة الذكاء الاصطناعي",
+    "Feature:AIManagement.Chat.Description": "السماح بإكمال الدردشة النصية وتجارب الدردشة الاختبارية.",
+    "Feature:AIManagement.Audio": "صوت الذكاء الاصطناعي",
+    "Feature:AIManagement.Audio.Description": "السماح بنسخ الصوت وتحويل النص إلى كلام.",
+    "Feature:AIManagement.Vision": "رؤية الذكاء الاصطناعي",
+    "Feature:AIManagement.Vision.Description": "السماح بتحليل الصور والرؤية.",
+    "Feature:AIManagement.Embeddings": "تضمينات الذكاء الاصطناعي",
+    "Feature:AIManagement.Embeddings.Description": "السماح بإنشاء التضمينات للبحث الدلالي و RAG.",
+    "Feature:AIManagement.RAG": "RAG للذكاء الاصطناعي",
+    "Feature:AIManagement.RAG.Description": "السماح بفهرسة المستندات والبحث المتجهي والتوليد المعزز بالاسترجاع.",
+    "Feature:AIManagement.MCP": "MCP للذكاء الاصطناعي",
+    "Feature:AIManagement.MCP.Description": "السماح بأدوات MCP وخوادم MCP واستدعاء وظائف الذكاء الاصطناعي.",
+    "Feature:AIManagement.UsageAnalytics": "تحليلات استخدام الذكاء الاصطناعي",
+    "Feature:AIManagement.UsageAnalytics.Description": "السماح بسجلات الاستخدام وتتبع التكلفة والتحليلات.",
+    "Feature:AIManagement.FileManagerIntegration": "تكامل الذكاء الاصطناعي مع مدير الملفات",
+    "Feature:AIManagement.FileManagerIntegration.Description": "السماح بدمج الملفات التي ينشئها ويعالجها الذكاء الاصطناعي مع مدير الملفات.",
+    "NoWorkspacesAvailable": "لا توجد مساحات عمل متاحة",
+    "WorkspaceNameRequired": "اسم مساحة العمل مطلوب",
+    "InheritWorkspace": "وراثة مساحة العمل"
   }
 }

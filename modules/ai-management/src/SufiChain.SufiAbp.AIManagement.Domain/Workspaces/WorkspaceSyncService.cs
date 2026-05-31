@@ -3,7 +3,9 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.AI;
 using Microsoft.SemanticKernel;
 using SufiChain.SufiAbp.AI;
+using SufiChain.SufiAbp.AI.Features;
 using Volo.Abp.DependencyInjection;
+using SufiChain.SufiAbp.Features;
 using System.Collections.Concurrent;
 
 namespace SufiChain.SufiAbp.AIManagement.Workspaces;
@@ -16,6 +18,7 @@ public class WorkspaceSyncService : ITransientDependency
 {
     private readonly IWorkspaceRepository _workspaceRepository;
     private readonly IServiceProvider _serviceProvider;
+    private readonly IFeatureChecker _featureChecker;
     private readonly ILogger<WorkspaceSyncService> _logger;
     
     // Cache for workspace instances
@@ -26,10 +29,12 @@ public class WorkspaceSyncService : ITransientDependency
     public WorkspaceSyncService(
         IWorkspaceRepository workspaceRepository,
         IServiceProvider serviceProvider,
+        IFeatureChecker featureChecker,
         ILogger<WorkspaceSyncService> logger)
     {
         _workspaceRepository = workspaceRepository;
         _serviceProvider = serviceProvider;
+        _featureChecker = featureChecker;
         _logger = logger;
     }
 
@@ -38,6 +43,8 @@ public class WorkspaceSyncService : ITransientDependency
     /// </summary>
     public async Task<IChatClient> GetOrCreateChatClientAsync(string workspaceName, CancellationToken cancellationToken = default)
     {
+        await CheckFeatureAsync(SufiAbpAIFeatures.Chat);
+
         if (_chatClientCache.TryGetValue(workspaceName, out var cachedClient))
         {
             return cachedClient;
@@ -62,6 +69,8 @@ public class WorkspaceSyncService : ITransientDependency
     /// </summary>
     public async Task<Kernel> GetOrCreateKernelAsync(string workspaceName, CancellationToken cancellationToken = default)
     {
+        await CheckFeatureAsync(SufiAbpAIFeatures.Workspaces);
+
         if (_kernelCache.TryGetValue(workspaceName, out var cachedKernel))
         {
             return cachedKernel;
@@ -88,6 +97,8 @@ public class WorkspaceSyncService : ITransientDependency
         string workspaceName, 
         CancellationToken cancellationToken = default)
     {
+        await CheckFeatureAsync(SufiAbpAIFeatures.Embeddings);
+
         if (_embeddingGeneratorCache.TryGetValue(workspaceName, out var cachedGenerator))
         {
             return cachedGenerator;
@@ -132,5 +143,18 @@ public class WorkspaceSyncService : ITransientDependency
         }
 
         return workspace;
+    }
+
+    private async Task CheckFeatureAsync(string featureName)
+    {
+        if (!await _featureChecker.IsEnabledAsync(SufiAbpAIFeatures.Enable))
+        {
+            throw new Volo.Abp.BusinessException($"Feature is disabled: {SufiAbpAIFeatures.Enable}");
+        }
+
+        if (!await _featureChecker.IsEnabledAsync(featureName))
+        {
+            throw new Volo.Abp.BusinessException($"Feature is disabled: {featureName}");
+        }
     }
 }

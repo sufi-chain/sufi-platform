@@ -5,6 +5,7 @@
     "Feature:SettingManagementEnable": "فعال‌سازی مدیریت تنظیمات",
     "Feature:SettingManagementEnableDescription": "سیستم مدیریت تنظیمات را در برنامه فعال می‌کند.",
     "Feature:AllowChangingEmailSettings": "اجازه تغییر تنظیمات ایمیل",
-    "Feature:AllowChangingEmailSettingsDescription": "اجازه تغییر تنظیمات ایمیل را می‌دهد."
+    "Feature:AllowChangingEmailSettingsDescription": "اجازه تغییر تنظیمات ایمیل را می‌دهد.",
+    "Permission:Identity": "تنظیمات هویت"
   }
 }

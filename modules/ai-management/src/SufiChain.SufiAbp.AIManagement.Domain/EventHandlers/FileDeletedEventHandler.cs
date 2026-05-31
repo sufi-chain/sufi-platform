@@ -1,8 +1,11 @@
 using Microsoft.Extensions.Logging;
+using SufiChain.SufiAbp.AI.Features;
 using SufiChain.SufiAbp.AIManagement.AI;
 using SufiChain.SufiAbp.FileManager.ETOs;
+using SufiChain.SufiAbp.FileManager.Features;
 using Volo.Abp.DependencyInjection;
 using Volo.Abp.EventBus.Distributed;
+using SufiChain.SufiAbp.Features;
 
 namespace SufiChain.SufiAbp.AIManagement.EventHandlers;
 
@@ -13,18 +16,26 @@ namespace SufiChain.SufiAbp.AIManagement.EventHandlers;
 public class FileDeletedEventHandler : IDistributedEventHandler<FileDeletedEto>, ITransientDependency
 {
     private readonly IAIUsageLogRepository _usageLogRepository;
+    private readonly IFeatureChecker _featureChecker;
     private readonly ILogger<FileDeletedEventHandler> _logger;
 
     public FileDeletedEventHandler(
         IAIUsageLogRepository usageLogRepository,
+        IFeatureChecker featureChecker,
         ILogger<FileDeletedEventHandler> logger)
     {
         _usageLogRepository = usageLogRepository;
+        _featureChecker = featureChecker;
         _logger = logger;
     }
 
     public async Task HandleEventAsync(FileDeletedEto eventData)
     {
+        if (!await IsFileManagerIntegrationEnabledAsync())
+        {
+            return;
+        }
+
         // Only handle AIManagement file structures.
         if (eventData.StructureKey?.StartsWith(AIManagementFileStructureKeys.AIManagement, StringComparison.OrdinalIgnoreCase) != true)
         {
@@ -67,5 +78,12 @@ public class FileDeletedEventHandler : IDistributedEventHandler<FileDeletedEto>,
                 "Failed to handle file deletion. FileId: {FileId}",
                 eventData.Id);
         }
+    }
+
+    private async Task<bool> IsFileManagerIntegrationEnabledAsync()
+    {
+        return await _featureChecker.IsEnabledAsync(SufiAbpAIFeatures.Enable) &&
+               await _featureChecker.IsEnabledAsync(SufiAbpAIFeatures.FileManagerIntegration) &&
+               await _featureChecker.IsEnabledAsync(SufiAbpFileManagerFeatures.Enable);
     }
 }

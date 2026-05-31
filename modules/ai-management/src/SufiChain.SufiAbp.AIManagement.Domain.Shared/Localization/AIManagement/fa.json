@@ -215,7 +215,29 @@
     "ModelsLoadedSuccessfully": "مدل‌ها با موفقیت بارگذاری شدند",
     "NoModelsReturned": "ارائه‌دهنده هیچ مدلی برنگرداند.",
     "LoadModelsFailed": "بارگذاری مدل‌ها ممکن نشد",
-    "ApiKeyRequiredForModelList": "برای بارگذاری مدل‌ها، کلید API الزامی است."
-
+    "ApiKeyRequiredForModelList": "برای بارگذاری مدل‌ها، کلید API الزامی است.",
+    "Feature:AIManagement.Enable": "مدیریت هوش مصنوعی",
+    "Feature:AIManagement.Enable.Description": "ماژول مدیریت هوش مصنوعی و سرویس‌های زمان اجرای هوش مصنوعی را فعال می‌کند.",
+    "Feature:AIManagement.Workspaces": "فضاهای کاری هوش مصنوعی",
+    "Feature:AIManagement.Workspaces.Description": "مدیریت پیکربندی فضای کاری، ارائه‌دهنده و مدل را مجاز می‌کند.",
+    "Feature:AIManagement.Chat": "گفتگوی هوش مصنوعی",
+    "Feature:AIManagement.Chat.Description": "تکمیل گفتگوی متنی و تجربه‌های گفتگوی آزمایشی را مجاز می‌کند.",
+    "Feature:AIManagement.Audio": "صوت هوش مصنوعی",
+    "Feature:AIManagement.Audio.Description": "رونویسی صوت و تبدیل متن به گفتار را مجاز می‌کند.",
+    "Feature:AIManagement.Vision": "بینایی هوش مصنوعی",
+    "Feature:AIManagement.Vision.Description": "تحلیل تصویر و بینایی را مجاز می‌کند.",
+    "Feature:AIManagement.Embeddings": "بردارسازی هوش مصنوعی",
+    "Feature:AIManagement.Embeddings.Description": "تولید بردار برای جستجوی معنایی و RAG را مجاز می‌کند.",
+    "Feature:AIManagement.RAG": "RAG هوش مصنوعی",
+    "Feature:AIManagement.RAG.Description": "نمایه‌سازی اسناد، جستجوی برداری و تولید تقویت‌شده با بازیابی را مجاز می‌کند.",
+    "Feature:AIManagement.MCP": "MCP هوش مصنوعی",
+    "Feature:AIManagement.MCP.Description": "ابزارهای MCP، سرورهای MCP و فراخوانی تابع هوش مصنوعی را مجاز می‌کند.",
+    "Feature:AIManagement.UsageAnalytics": "تحلیل مصرف هوش مصنوعی",
+    "Feature:AIManagement.UsageAnalytics.Description": "گزارش‌های مصرف، ردیابی هزینه و تحلیل‌ها را مجاز می‌کند.",
+    "Feature:AIManagement.FileManagerIntegration": "یکپارچگی هوش مصنوعی با مدیر فایل",
+    "Feature:AIManagement.FileManagerIntegration.Description": "یکپارچگی فایل‌های تولیدشده و پردازش‌شده توسط هوش مصنوعی با مدیر فایل را مجاز می‌کند.",
+    "NoWorkspacesAvailable": "هیچ فضای کاری موجود نیست",
+    "WorkspaceNameRequired": "نام فضای کاری الزامی است",
+    "InheritWorkspace": "ارث‌بری فضای کاری"
   }
 }

@@ -9,7 +9,7 @@
 
   <PropertyGroup>
     <PackageId>SufiChain.SufiAbp.Features</PackageId>
-    <Description>Sufi Platform feature management abstractions.</Description>
+    <Description>Sufi Platform feature management abstractions and module feature name constants.</Description>
   </PropertyGroup>
 
   <ItemGroup>

@@ -6,10 +6,12 @@ using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using SufiChain.SufiAbp.AI.Features;
 using SufiChain.SufiAbp.AIManagement.Workspaces;
 using Volo.Abp;
 using Volo.Abp.DependencyInjection;
 using Volo.Abp.Domain.Services;
+using SufiChain.SufiAbp.Features;
 
 namespace SufiChain.SufiAbp.AIManagement.AI;
 
@@ -26,6 +28,7 @@ public class AIService : DomainService, IAIService, ITransientDependency
     private readonly IAIModelConfigurationRepository _configurationRepository;
     private readonly IAIUsageLogRepository _usageLogRepository;
     private readonly IEnumerable<IAIProvider> _providers;
+    private readonly IFeatureChecker _featureChecker;
     private readonly ILogger<AIService> _logger;
 
     public AIService(
@@ -33,12 +36,14 @@ public class AIService : DomainService, IAIService, ITransientDependency
         IAIModelConfigurationRepository configurationRepository,
         IAIUsageLogRepository usageLogRepository,
         IEnumerable<IAIProvider> providers,
+        IFeatureChecker featureChecker,
         ILogger<AIService> logger)
     {
         _workspaceRepository = workspaceRepository;
         _configurationRepository = configurationRepository;
         _usageLogRepository = usageLogRepository;
         _providers = providers;
+        _featureChecker = featureChecker;
         _logger = logger;
     }
 
@@ -395,6 +400,8 @@ public class AIService : DomainService, IAIService, ITransientDependency
         AICapabilityType capabilityType,
         CancellationToken cancellationToken)
     {
+        await CheckFeatureAsync(capabilityType);
+
         var workspace = await _workspaceRepository.FindByNameAsync(workspaceName, cancellationToken);
         if (workspace == null)
         {
@@ -470,6 +477,30 @@ public class AIService : DomainService, IAIService, ITransientDependency
         }
 
         return (workspace, configuration, provider);
+    }
+
+    private async Task CheckFeatureAsync(AICapabilityType capabilityType)
+    {
+        if (!await _featureChecker.IsEnabledAsync(SufiAbpAIFeatures.Enable))
+        {
+            throw new BusinessException($"Feature is disabled: {SufiAbpAIFeatures.Enable}");
+        }
+
+        var featureName = capabilityType switch
+        {
+            AICapabilityType.ChatCompletion => SufiAbpAIFeatures.Chat,
+            AICapabilityType.AudioTranscription => SufiAbpAIFeatures.Audio,
+            AICapabilityType.TextToSpeech => SufiAbpAIFeatures.Audio,
+            AICapabilityType.VisionAnalysis => SufiAbpAIFeatures.Vision,
+            AICapabilityType.Embeddings => SufiAbpAIFeatures.Embeddings,
+            AICapabilityType.ImageGeneration => SufiAbpAIFeatures.Vision,
+            _ => SufiAbpAIFeatures.Enable
+        };
+
+        if (!await _featureChecker.IsEnabledAsync(featureName))
+        {
+            throw new BusinessException($"Feature is disabled: {featureName}");
+        }
     }
 
     private async Task LogUsageAsync(

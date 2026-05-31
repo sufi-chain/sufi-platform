@@ -6,12 +6,15 @@ using Microsoft.Extensions.AI;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
+using SufiChain.SufiAbp.AI.Features;
 using SufiChain.SufiAbp.AIManagement.Workspaces;
 using SufiChain.SufiAbp.Application.Services;
 using Volo.Abp;
+using SufiChain.SufiAbp.Features;
 
 namespace SufiChain.SufiAbp.AIManagement.Chat;
 
+[RequiresFeature(SufiAbpAIFeatures.Enable)]
 public class AIChatAppService : SufiAbpApplicationService, IAIChatAppService
 {
     private readonly IWorkspaceRepository _workspaceRepository;
@@ -23,6 +26,8 @@ public class AIChatAppService : SufiAbpApplicationService, IAIChatAppService
 
     public async Task<ChatResponseDto> SendMessageAsync(SendChatMessageInput input)
     {
+        await CheckFeatureAsync(SufiAbpAIFeatures.Chat);
+
         // Find workspace by name
         var workspace = await _workspaceRepository.FindByNameAsync(input.WorkspaceName);
         if (workspace == null)
@@ -100,6 +105,14 @@ public class AIChatAppService : SufiAbpApplicationService, IAIChatAppService
         }
         
         return null;
+    }
+
+    private async Task CheckFeatureAsync(string featureName)
+    {
+        if (!await FeatureChecker.IsEnabledAsync(featureName))
+        {
+            throw new BusinessException($"Feature is disabled: {featureName}");
+        }
     }
 
     private IChatCompletionService GetChatCompletionServiceForWorkspace(Workspace workspace)

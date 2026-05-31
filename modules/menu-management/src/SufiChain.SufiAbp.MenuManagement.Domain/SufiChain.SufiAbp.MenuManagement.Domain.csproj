@@ -3,6 +3,7 @@
   <ItemGroup>
     <ProjectReference Include="../../../../framework/SufiChain.SufiAbp.Core/SufiChain.SufiAbp.Core.csproj" />
     <ProjectReference Include="../../../../framework/SufiChain.SufiAbp.Ddd.Domain/SufiChain.SufiAbp.Ddd.Domain.csproj" />
+    <ProjectReference Include="../../../../framework/SufiChain.SufiAbp.Features/SufiChain.SufiAbp.Features.csproj" />
   </ItemGroup>
   <ItemGroup><ProjectReference Include="../SufiChain.SufiAbp.MenuManagement.Domain.Shared/SufiChain.SufiAbp.MenuManagement.Domain.Shared.csproj" /></ItemGroup>
 </Project>

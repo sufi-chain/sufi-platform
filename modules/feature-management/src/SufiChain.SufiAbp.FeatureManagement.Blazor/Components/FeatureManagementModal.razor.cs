@@ -38,6 +38,7 @@ public partial class FeatureManagementModal
     private string? _selectedTabId;
     private string _searchText = string.Empty;
     private bool _selectAllDisabled;
+    private bool _isClosing;
 
     private string SearchText
     {
@@ -60,6 +61,7 @@ public partial class FeatureManagementModal
     /// <param name="entityDisplayName">Display name for the entity (optional)</param>
     public async Task OpenAsync(string providerName, string? providerKey, string? entityDisplayName = null)
     {
+        _isClosing = false;
         _providerName = providerName;
         _providerKey = providerKey;
         _entityDisplayName = entityDisplayName ?? L["Features"];
@@ -129,7 +131,7 @@ public partial class FeatureManagementModal
         // Calculate feature depths for indentation
         foreach (var group in _groups)
         {
-            SetFeatureDepths(group.Features, null, 0);
+            SetFeatureDepths(group.Features, null, 0, new HashSet<string>());
         }
 
         // Select first tab if not already selected
@@ -139,14 +141,20 @@ public partial class FeatureManagementModal
         }
     }
 
-    private void SetFeatureDepths(List<FeatureDto> features, string? currentParent, int currentDepth)
+    private void SetFeatureDepths(List<FeatureDto> features, string? currentParent, int currentDepth, HashSet<string> path)
     {
         foreach (var item in features)
         {
             if (item.ParentName == currentParent)
             {
+                if (!path.Add(item.Name))
+                {
+                    continue;
+                }
+
                 _featureDepths[item.Name] = currentDepth;
-                SetFeatureDepths(features, item.Name, currentDepth + 1);
+                SetFeatureDepths(features, item.Name, currentDepth + 1, path);
+                path.Remove(item.Name);
             }
         }
     }
@@ -238,8 +246,10 @@ public partial class FeatureManagementModal
         StateHasChanged();
     }
 
-    private void OnEnableAllChanged(bool value)
+    private async Task OnEnableAllChanged(bool value)
     {
+        try
+        {
         foreach (var feature in _allGroups.SelectMany(x => x.Features))
         {
             if (feature.ValueType is ToggleStringValueType && !IsFeatureDisabled(feature))
@@ -252,10 +262,17 @@ public partial class FeatureManagementModal
         _searchText = string.Empty;
         _groups = _allGroups.ToList();
         NormalizeFeatureGroups(checkDisabledFeatures: false);
+        }
+        catch (Exception ex)
+        {
+            await CloseOnUnhandledModalErrorAsync(ex);
+        }
     }
 
-    private void OnGroupEnableAllChanged(bool value, FeatureGroupDto group)
+    private async Task OnGroupEnableAllChanged(bool value, FeatureGroupDto group)
     {
+        try
+        {
         foreach (var feature in group.Features)
         {
             if (feature.ValueType is ToggleStringValueType && !IsFeatureDisabled(feature))
@@ -265,29 +282,41 @@ public partial class FeatureManagementModal
         }
 
         StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            await CloseOnUnhandledModalErrorAsync(ex);
+        }
     }
 
-    private void OnToggleFeatureChanged(bool value, FeatureGroupDto group, FeatureDto feature)
+    private async Task OnToggleFeatureChanged(bool value, FeatureGroupDto group, FeatureDto feature)
     {
+        try
+        {
         _toggleValues[feature.Name] = value;
 
         if (value)
         {
             // Enable parent features recursively
-            EnableParentFeatures(group, feature);
+            EnableParentFeatures(group, feature, new HashSet<string>());
         }
         else
         {
             // Disable child features recursively
-            DisableChildFeatures(group, feature);
+            DisableChildFeatures(group, feature, new HashSet<string>());
         }
 
         StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            await CloseOnUnhandledModalErrorAsync(ex);
+        }
     }
 
-    private void EnableParentFeatures(FeatureGroupDto group, FeatureDto feature)
+    private void EnableParentFeatures(FeatureGroupDto group, FeatureDto feature, HashSet<string> visited)
     {
-        if (string.IsNullOrEmpty(feature.ParentName))
+        if (!visited.Add(feature.Name) || string.IsNullOrEmpty(feature.ParentName))
         {
             return;
         }
@@ -298,12 +327,17 @@ public partial class FeatureManagementModal
             !_toggleValues.GetValueOrDefault(parentFeature.Name))
         {
             _toggleValues[parentFeature.Name] = true;
-            EnableParentFeatures(group, parentFeature);
+            EnableParentFeatures(group, parentFeature, visited);
         }
     }
 
-    private void DisableChildFeatures(FeatureGroupDto group, FeatureDto feature)
+    private void DisableChildFeatures(FeatureGroupDto group, FeatureDto feature, HashSet<string> visited)
     {
+        if (!visited.Add(feature.Name))
+        {
+            return;
+        }
+
         var childFeatures = group.Features.Where(x => x.ParentName == feature.Name).ToList();
 
         foreach (var child in childFeatures)
@@ -313,16 +347,37 @@ public partial class FeatureManagementModal
                 !IsFeatureDisabled(child))
             {
                 _toggleValues[child.Name] = false;
-                DisableChildFeatures(group, child);
+                DisableChildFeatures(group, child, visited);
             }
         }
     }
 
-    private void Hide()
+    private async Task OnDialogOpenChanged(bool open)
+    {
+        if (!open)
+        {
+            await HideAsync();
+        }
+    }
+
+    private Task HideAsync()
     {
         _selectedTabId = null;
         _isOpen = false;
         StateHasChanged();
+        return Task.CompletedTask;
+    }
+
+    private async Task CloseOnUnhandledModalErrorAsync(Exception ex)
+    {
+        if (_isClosing)
+        {
+            return;
+        }
+
+        _isClosing = true;
+        await HideAsync();
+        await HandleErrorAsync(ex);
     }
 
     private Task SaveAsync() => ExecuteWithLoadingAsync(async () =>
@@ -363,7 +418,7 @@ public partial class FeatureManagementModal
 
         await Notify.SuccessAsync(L["FeaturesSavedSuccessfully"]);
         await OnFeaturesSaved.InvokeAsync();
-        Hide();
+        await HideAsync();
     }, LoadingKeys.SaveFeatures);
 
     private async Task ResetToDefaultAsync()

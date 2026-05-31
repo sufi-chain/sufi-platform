@@ -5,8 +5,10 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using SufiChain.SufiAbp.FileManager.Configuration;
+using SufiChain.SufiAbp.FileManager.Features;
 using SufiChain.SufiAbp.FileManager.Localization;
 using SufiChain.SufiAbp.FileManager.Permissions;
+using SufiChain.SufiAbp.Features;
 using SufiChain.SufiAbp.FileManager.Storage;
 using Volo.Abp;
 using SufiChain.SufiAbp.Application.Dtos;
@@ -18,6 +20,7 @@ using Volo.Abp.ObjectExtending;
 
 namespace SufiChain.SufiAbp.FileManager.FileStructures;
 
+[RequiresFeature(SufiAbpFileManagerFeatures.Enable, SufiAbpFileManagerFeatures.FileStructures)]
 public class FileStructureAppService : 
     SufiAbpCrudAppService<FileStructure, FileStructureDto, Guid, PagedAndSortedResultRequestDto, CreateUpdateFileStructureDto, CreateUpdateFileStructureDto>,
     IFileStructureAppService

@@ -1,9 +1,12 @@
 using Microsoft.AspNetCore.Authorization;
+using SufiChain.SufiAbp.AI.Features;
 using Volo.Abp.Application.Services;
+using SufiChain.SufiAbp.Features;
 using SufiChain.SufiAbp.AIManagement.Permissions;
 
 namespace SufiChain.SufiAbp.AIManagement.RAG;
 
+[RequiresFeature(SufiAbpAIFeatures.Enable)]
 [Authorize(AIManagementPermissions.RAG.Default)]
 public class RAGAppService : ApplicationService, IRAGAppService
 {

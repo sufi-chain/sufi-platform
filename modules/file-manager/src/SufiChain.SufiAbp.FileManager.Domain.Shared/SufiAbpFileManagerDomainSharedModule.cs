@@ -1,5 +1,6 @@
 using SufiChain.SufiAbp.BlobStoring.Database;
 using SufiChain.SufiAbp.Ddd;
+using SufiChain.SufiAbp.Features;
 using SufiChain.SufiAbp.FileManager.Localization;
 using SufiChain.SufiAbp.UI;
 using SufiChain.SufiAbp.Validation;
@@ -14,6 +15,7 @@ namespace SufiChain.SufiAbp.FileManager;
     typeof(SufiAbpUiDomainSharedModule),
     typeof(SufiAbpValidationModule),
     typeof(SufiAbpDddDomainSharedModule),
+    typeof(SufiAbpFeaturesModule),
     typeof(SufiAbpBlobStoringDatabaseDomainSharedModule)
 )]
 public class SufiAbpFileManagerDomainSharedModule : AbpModule

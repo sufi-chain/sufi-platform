@@ -1,16 +1,18 @@
+using SufiChain.SufiAbp.Features;
+using SufiChain.SufiAbp.ShortLinkGenerator.Localization;
+using SufiChain.SufiAbp.Validation;
+using SufiChain.SufiAbp.Validation.Localization;
 using Volo.Abp.Localization;
 using Volo.Abp.Localization.ExceptionHandling;
 using Volo.Abp.Modularity;
 using Volo.Abp.Validation;
-using SufiChain.SufiAbp.Validation.Localization;
 using Volo.Abp.VirtualFileSystem;
-using SufiChain.SufiAbp.ShortLinkGenerator.Localization;
-using SufiChain.SufiAbp.Validation;
 
 namespace SufiChain.SufiAbp.ShortLinkGenerator;
 
 [DependsOn(
-    typeof(SufiAbpValidationModule)
+    typeof(SufiAbpValidationModule),
+    typeof(SufiAbpFeaturesModule)
 )]
 public class SufiAbpShortLinkGeneratorDomainSharedModule : AbpModule
 {

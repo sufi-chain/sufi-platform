@@ -3,6 +3,8 @@ using Microsoft.Extensions.Options;
 using Microsoft.Extensions.DependencyInjection;
 using Volo.Abp;
 using Volo.Abp.Domain.Services;
+using SufiChain.SufiAbp.Features;
+using SufiChain.SufiAbp.AI.Features;
 using SufiChain.SufiAbp.AIManagement.Workspaces;
 
 namespace SufiChain.SufiAbp.AIManagement.RAG.Services;
@@ -12,16 +14,19 @@ public class RAGService : DomainService, IRAGService
     private readonly IServiceProvider _serviceProvider;
     private readonly IWorkspaceRepository _workspaceRepository;
     private readonly WorkspaceSyncService _syncService;
+    private readonly IFeatureChecker _featureChecker;
     private readonly List<IDocumentSource> _documentSources = new();
 
     public RAGService(
         IServiceProvider serviceProvider,
         IWorkspaceRepository workspaceRepository,
-        WorkspaceSyncService syncService)
+        WorkspaceSyncService syncService,
+        IFeatureChecker featureChecker)
     {
         _serviceProvider = serviceProvider;
         _workspaceRepository = workspaceRepository;
         _syncService = syncService;
+        _featureChecker = featureChecker;
     }
 
     public void RegisterDocumentSource(IDocumentSource source)
@@ -34,6 +39,7 @@ public class RAGService : DomainService, IRAGService
 
     public List<IDocumentSource> GetDocumentSources()
     {
+        CheckFeatureAsync().GetAwaiter().GetResult();
         EnsureSourcesLoaded();
         return _documentSources.ToList();
     }
@@ -44,6 +50,7 @@ public class RAGService : DomainService, IRAGService
         int maxResults = 10,
         CancellationToken cancellationToken = default)
     {
+        await CheckFeatureAsync();
         var workspace = await GetWorkspaceByNameAsync(workspaceName);
         
         if (workspace.EmbedderConfigJson == null || workspace.VectorStoreConfigJson == null)
@@ -81,6 +88,7 @@ public class RAGService : DomainService, IRAGService
         IProgress<IndexingProgress>? progress = null,
         CancellationToken cancellationToken = default)
     {
+        await CheckFeatureAsync();
         EnsureSourcesLoaded();
         
         var workspace = await GetWorkspaceByNameAsync(workspaceName);
@@ -151,6 +159,7 @@ public class RAGService : DomainService, IRAGService
         IProgress<IndexingProgress>? progress = null,
         CancellationToken cancellationToken = default)
     {
+        await CheckFeatureAsync();
         EnsureSourcesLoaded();
         
         foreach (var source in _documentSources)
@@ -164,6 +173,7 @@ public class RAGService : DomainService, IRAGService
         string sourceName,
         CancellationToken cancellationToken = default)
     {
+        await CheckFeatureAsync();
         EnsureSourcesLoaded();
         
         var source = _documentSources.FirstOrDefault(s => s.SourceName == sourceName);
@@ -205,6 +215,19 @@ public class RAGService : DomainService, IRAGService
             {
                 RegisterDocumentSource(source);
             }
+        }
+    }
+
+    private async Task CheckFeatureAsync()
+    {
+        if (!await _featureChecker.IsEnabledAsync(SufiAbpAIFeatures.Enable))
+        {
+            throw new BusinessException($"Feature is disabled: {SufiAbpAIFeatures.Enable}");
+        }
+
+        if (!await _featureChecker.IsEnabledAsync(SufiAbpAIFeatures.RAG))
+        {
+            throw new BusinessException($"Feature is disabled: {SufiAbpAIFeatures.RAG}");
         }
     }
 

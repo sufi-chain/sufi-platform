@@ -1,4 +1,6 @@
 using System.Text.RegularExpressions;
+using SufiChain.SufiAbp.Features;
+using SufiChain.SufiAbp.MenuManagement.Features;
 using Volo.Abp;
 using Volo.Abp.Domain.Services;
 
@@ -8,21 +10,30 @@ public class MenuManager : DomainService
 {
     private readonly IMenuRepository _menuRepository;
     private readonly IMenuItemRepository _menuItemRepository;
+    private readonly IFeatureChecker _featureChecker;
 
-    public MenuManager(IMenuRepository menuRepository, IMenuItemRepository menuItemRepository)
+    public MenuManager(
+        IMenuRepository menuRepository,
+        IMenuItemRepository menuItemRepository,
+        IFeatureChecker featureChecker)
     {
         _menuRepository = menuRepository;
         _menuItemRepository = menuItemRepository;
+        _featureChecker = featureChecker;
     }
 
     public virtual async Task<Menu> CreateMenuAsync(string contextType, Guid? contextId, string name, string displayName, Guid? tenantId = null)
     {
+        await CheckMenusFeatureAsync();
+
         await EnsureMenuUniqueAsync(contextType, contextId, name, tenantId);
         return new Menu(GuidGenerator.Create(), contextType, contextId, name, displayName, tenantId);
     }
 
     public virtual async Task<MenuItem> CreateItemAsync(Guid menuId, string name, string displayName, string? slug, Guid? parentId = null, Guid? tenantId = null)
     {
+        await CheckMenusFeatureAsync();
+
         var normalizedSlug = NormalizeSlug(string.IsNullOrWhiteSpace(slug) ? displayName : slug);
         await EnsureItemSlugUniqueAsync(menuId, normalizedSlug, tenantId);
         var item = new MenuItem(GuidGenerator.Create(), menuId, name, displayName, normalizedSlug, parentId, tenantId);
@@ -32,6 +43,8 @@ public class MenuManager : DomainService
 
     public virtual async Task ChangeItemSlugAsync(MenuItem item, string slug)
     {
+        await CheckMenusFeatureAsync();
+
         var normalizedSlug = NormalizeSlug(slug);
         await EnsureItemSlugUniqueAsync(item.MenuId, normalizedSlug, item.TenantId, item.Id);
         item.SetSlug(normalizedSlug);
@@ -39,6 +52,8 @@ public class MenuManager : DomainService
 
     public virtual async Task MoveItemAsync(MenuItem item, Guid? parentId, int displayOrder)
     {
+        await CheckMenusFeatureAsync();
+
         await EnsureNoCircularReferenceAsync(item, parentId, item.TenantId);
         item.Move(parentId, displayOrder);
     }
@@ -95,5 +110,18 @@ public class MenuManager : DomainService
     {
         var slug = Regex.Replace(value.Trim().ToLowerInvariant(), @"[^a-z0-9\u0600-\u06FF]+", "-").Trim('-');
         return string.IsNullOrWhiteSpace(slug) ? GuidGenerator.Create().ToString("N") : slug;
+    }
+
+    protected virtual async Task CheckMenusFeatureAsync()
+    {
+        if (!await _featureChecker.IsEnabledAsync(SufiAbpMenuManagementFeatures.Enable))
+        {
+            throw new BusinessException($"Feature is disabled: {SufiAbpMenuManagementFeatures.Enable}");
+        }
+
+        if (!await _featureChecker.IsEnabledAsync(SufiAbpMenuManagementFeatures.Menus))
+        {
+            throw new BusinessException($"Feature is disabled: {SufiAbpMenuManagementFeatures.Menus}");
+        }
     }
 }

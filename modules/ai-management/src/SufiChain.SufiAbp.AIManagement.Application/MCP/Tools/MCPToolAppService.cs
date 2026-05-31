@@ -3,14 +3,17 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
+using SufiChain.SufiAbp.AI.Features;
 using SufiChain.SufiAbp.AIManagement.MCP.Abstractions;
 using SufiChain.SufiAbp.AIManagement.MCP.Tools;
 using SufiChain.SufiAbp.AIManagement.Permissions;
 using Volo.Abp.Application.Services;
+using SufiChain.SufiAbp.Features;
 
 namespace SufiChain.SufiAbp.AIManagement.Application.MCP.Tools;
 
-[Authorize(AIManagementPermissions.Workspaces.Default)]
+[RequiresFeature(SufiAbpAIFeatures.Enable)]
+[Authorize(AIManagementPermissions.MCPTools.Default)]
 public class MCPToolAppService : ApplicationService, IMCPToolAppService
 {
     private readonly IMCPToolRegistry _toolRegistry;

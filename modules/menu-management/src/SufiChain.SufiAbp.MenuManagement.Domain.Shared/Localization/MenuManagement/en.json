@@ -18,6 +18,10 @@
     "MenuManagement:MoveMenuItem": "Move menu item",
     "MenuManagement:ReorderMenuItem": "Reorder menu item",
     "Feature:MenuManagement.Enable": "Menu Management",
-    "Feature:MenuManagement.Enable.Description": "Enable the Menu Management module for this edition."
+    "Feature:MenuManagement.Enable.Description": "Enable the Menu Management module for this edition.",
+    "Feature:MenuManagement.Menus": "Admin menus",
+    "Feature:MenuManagement.Menus.Description": "Enable admin menu and menu item management.",
+    "Feature:MenuManagement.PublicMenus": "Public menus",
+    "Feature:MenuManagement.PublicMenus.Description": "Enable public menu resolution APIs for front-end sites."
   }
 }

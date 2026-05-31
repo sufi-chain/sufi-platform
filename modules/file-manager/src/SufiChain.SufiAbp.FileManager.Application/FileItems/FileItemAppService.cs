@@ -8,6 +8,8 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using SufiChain.SufiAbp.FileManager.Caching;
 using SufiChain.SufiAbp.FileManager.Configuration;
+using SufiChain.SufiAbp.FileManager.Features;
+using SufiChain.SufiAbp.Features;
 using SufiChain.SufiAbp.FileManager.FileFolders;
 using SufiChain.SufiAbp.FileManager.FileStructures;
 using SufiChain.SufiAbp.FileManager.FileTypes;
@@ -29,6 +31,7 @@ using Volo.Abp.Validation;
 
 namespace SufiChain.SufiAbp.FileManager.FileItems;
 
+[RequiresFeature(SufiAbpFileManagerFeatures.Enable, SufiAbpFileManagerFeatures.FileItems)]
 public partial class FileItemAppService : ApplicationService, IFileItemAppService
 {
     private readonly IFileItemRepository _fileItemRepository;

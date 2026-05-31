@@ -5,6 +5,8 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Options;
+using SufiChain.SufiAbp.Features;
+using SufiChain.SufiAbp.ShortLinkGenerator.Features;
 using SufiChain.SufiAbp.ShortLinkGenerator.Permissions;
 using SufiChain.SufiAbp.ShortLinkGenerator.Settings;
 using Volo.Abp;
@@ -17,6 +19,7 @@ using Volo.Abp.Settings;
 
 namespace SufiChain.SufiAbp.ShortLinkGenerator;
 
+[RequiresFeature(SufiAbpShortLinkGeneratorFeatures.Enable, SufiAbpShortLinkGeneratorFeatures.ShortLinks)]
 [Authorize(ShortLinkGeneratorPermissions.ShortLinks.Default)]
 public class ShortUrlAppService : ApplicationService, IShortUrlAppService
 {
@@ -153,6 +156,7 @@ public class ShortUrlAppService : ApplicationService, IShortUrlAppService
         await _repository.DeleteAsync(id);
     }
     
+    [RequiresFeature(SufiAbpShortLinkGeneratorFeatures.Analytics)]
     [Authorize(ShortLinkGeneratorPermissions.ShortLinks.ViewAnalytics)]
     public virtual async Task<ShortUrlAnalyticsDto> GetAnalyticsAsync(Guid id)
     {

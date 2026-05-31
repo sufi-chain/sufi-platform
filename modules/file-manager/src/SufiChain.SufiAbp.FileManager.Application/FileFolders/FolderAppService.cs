@@ -3,8 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
+using SufiChain.SufiAbp.FileManager.Features;
 using SufiChain.SufiAbp.FileManager.FileItems;
 using SufiChain.SufiAbp.FileManager.Permissions;
+using SufiChain.SufiAbp.Features;
 using Volo.Abp;
 using Volo.Abp.Application.Services;
 using Volo.Abp.Authorization;
@@ -15,6 +17,7 @@ namespace SufiChain.SufiAbp.FileManager.FileFolders;
 /// <summary>
 /// Application service for folder management
 /// </summary>
+[RequiresFeature(SufiAbpFileManagerFeatures.Enable, SufiAbpFileManagerFeatures.FileItems)]
 public class FolderAppService : ApplicationService, IFolderAppService
 {
     private readonly IFileFolderRepository _folderRepository;

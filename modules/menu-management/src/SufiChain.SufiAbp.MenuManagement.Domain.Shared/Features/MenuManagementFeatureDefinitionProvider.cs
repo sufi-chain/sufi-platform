@@ -1,3 +1,4 @@
+using SufiChain.SufiAbp.MenuManagement.Features;
 using SufiChain.SufiAbp.MenuManagement.Localization;
 using Volo.Abp.Features;
 using Volo.Abp.Localization;
@@ -12,13 +13,20 @@ public class MenuManagementFeatureDefinitionProvider : FeatureDefinitionProvider
 {
     public override void Define(IFeatureDefinitionContext context)
     {
-        var group = context.AddGroup(MenuManagementFeatures.GroupName, L("MenuManagement"));
+        var group = context.AddGroup(SufiAbpMenuManagementFeatures.GroupName, L("MenuManagement"));
 
+        AddToggle(group, SufiAbpMenuManagementFeatures.Enable);
+        AddToggle(group, SufiAbpMenuManagementFeatures.Menus);
+        AddToggle(group, SufiAbpMenuManagementFeatures.PublicMenus);
+    }
+
+    private static void AddToggle(FeatureGroupDefinition group, string name)
+    {
         group.AddFeature(
-            MenuManagementFeatures.Names.Enable,
+            name,
             defaultValue: "true",
-            displayName: L("Feature:MenuManagement.Enable"),
-            description: L("Feature:MenuManagement.Enable.Description"),
+            displayName: L($"Feature:{name}"),
+            description: L($"Feature:{name}.Description"),
             valueType: new ToggleStringValueType());
     }
 

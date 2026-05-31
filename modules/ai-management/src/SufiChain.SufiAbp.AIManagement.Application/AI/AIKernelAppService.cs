@@ -1,7 +1,9 @@
 using System.Threading;
 using System.Threading.Tasks;
+using SufiChain.SufiAbp.AI.Features;
 using SufiChain.SufiAbp.AIManagement.Workspaces;
 using Volo.Abp.Application.Services;
+using SufiChain.SufiAbp.Features;
 
 namespace SufiChain.SufiAbp.AIManagement.AI;
 
@@ -9,6 +11,7 @@ namespace SufiChain.SufiAbp.AIManagement.AI;
 /// Application service that provides access to AI kernels.
 /// Acts as a bridge between HttpApi and Domain layer.
 /// </summary>
+[RequiresFeature(SufiAbpAIFeatures.Enable)]
 public class AIKernelAppService : ApplicationService, IAIKernelAppService
 {
     private readonly IWorkspaceAccessor _workspaceAccessor;

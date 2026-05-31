@@ -8,7 +8,7 @@ using Volo.Abp.Features;
 
 namespace SufiChain.SufiAbp.MenuManagement.Menus;
 
-[RequiresFeature(MenuManagementFeatures.Names.Enable)]
+[RequiresFeature(SufiAbpMenuManagementFeatures.Enable, SufiAbpMenuManagementFeatures.Menus)]
 [Authorize(MenuManagementPermissions.Menus.Default)]
 public class MenuItemAppService : ApplicationService, IMenuItemAppService
 {

@@ -4,25 +4,76 @@ on:
   release:
     types: [published]
   workflow_dispatch:
+    inputs:
+      push_only_version:
+        description: Skip build; re-push an existing Harbor bundle (e.g. 10.3.0)
+        required: false
+        type: string
+        default: ''
+      push_to_baget:
+        description: Push to internal BaGet (nuget.sabp.ir)
+        type: boolean
+        default: true
+      push_to_nuget_org:
+        description: Also push to nuget.org (manual opt-in only)
+        type: boolean
+        default: false
 
 env:
   DOTNET_NOLOGO: true
   DOTNET_CLI_TELEMETRY_OPTOUT: true
   DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
-  NUGET_SOURCE_URL: https://nuget.sabp.ir/v3/index.json
+  # Phase 1: Liara SDK. Phase 2: reg.sabp.ir/sufi-chain/dotnet-sdk-build:10.0.202
+  SDK_IMAGE: mcr-mirror.liara.ir/dotnet/sdk:10.0.202
+  HARBOR_REGISTRY: reg.sabp.ir
+  HARBOR_PROJECT: sufi-chain
+  HARBOR_NUGET_BUNDLE_REPO: nuget-packages
+  BAGET_SOURCE_URL: https://nuget.sabp.ir/v3/index.json
+  NUGET_ORG_SOURCE_URL: https://api.nuget.org/v3/index.json
   NUGET_PUSH_PARALLELISM: 4
   PACKAGE_OUTPUT: ./artifacts/nuget
   ROOT_SLNX: SufiChain.SufiAbp.slnx
+  ORAS_VERSION: 1.2.2
   RELEASE_TAG: ${{ gitea.event.release.tag_name }}
   REF_NAME: ${{ gitea.ref_name }}
   REPOSITORY: ${{ gitea.repository }}
 
 jobs:
-  pack-and-push:
+  resolve-version:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      harbor_bundle: ${{ steps.version.outputs.harbor_bundle }}
+    steps:
+      - name: Resolve package version
+        id: version
+        shell: bash
+        run: |
+          set -euo pipefail
+          push_only='${{ inputs.push_only_version }}'
+          if [ -n "$push_only" ]; then
+            version="$push_only"
+          elif [ -n "${RELEASE_TAG:-}" ]; then
+            version="$RELEASE_TAG"
+          else
+            version="0.0.0-dev.$(date +%Y%m%d%H%M%S)"
+          fi
+          version="${version#v}"
+          harbor_bundle="${HARBOR_REGISTRY}/${HARBOR_PROJECT}/${HARBOR_NUGET_BUNDLE_REPO}:${version}"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "harbor_bundle=$harbor_bundle" >> "$GITHUB_OUTPUT"
+          echo "Resolved version: $version"
+          echo "Harbor bundle: $harbor_bundle"
+
+  pack:
+    needs: resolve-version
+    if: ${{ gitea.event_name == 'release' || (gitea.event_name == 'workflow_dispatch' && inputs.push_only_version == '') }}
     runs-on: ubuntu-latest
     container:
       image: mcr-mirror.liara.ir/dotnet/sdk:10.0.202
-
+    env:
+      VERSION: ${{ needs.resolve-version.outputs.version }}
+      HARBOR_BUNDLE: ${{ needs.resolve-version.outputs.harbor_bundle }}
     steps:
       - name: Checkout
         shell: bash
@@ -33,19 +84,6 @@ jobs:
           else
             git clone --depth 1 https://git.sabp.ir/sufi-chain/sufi-abp.git .
           fi
-
-      - name: Set package version
-        shell: bash
-        run: |
-          set -euo pipefail
-          if [ -n "${RELEASE_TAG:-}" ]; then
-            version="$RELEASE_TAG"
-          else
-            version="0.0.0-dev.$(date +%Y%m%d%H%M%S)"
-          fi
-          version="${version#v}"
-          echo "VERSION=$version" >> "$GITHUB_ENV"
-          echo "Package version: $version"
 
       - name: Restore root solution
         shell: bash
@@ -71,26 +109,156 @@ jobs:
             -p:PackageOutputPath="$PWD/$PACKAGE_OUTPUT" \
             -p:GeneratePackageOnBuild=true
 
+      - name: Install ORAS
+        shell: bash
+        run: |
+          set -euo pipefail
+          bash .gitea/scripts/install-oras.sh
+
+      - name: Login to Harbor
+        shell: bash
+        env:
+          HARBOR_USERNAME: ${{ secrets.HARBOR_USERNAME }}
+          HARBOR_PASSWORD: ${{ secrets.HARBOR_PASSWORD }}
+        run: |
+          set -euo pipefail
+          if [ -z "${HARBOR_USERNAME:-}" ] || [ -z "${HARBOR_PASSWORD:-}" ]; then
+            echo "HARBOR_USERNAME and HARBOR_PASSWORD secrets are required."
+            exit 1
+          fi
+          echo "$HARBOR_PASSWORD" | oras login "$HARBOR_REGISTRY" \
+            -u "$HARBOR_USERNAME" --password-stdin
+
+      - name: Upload package bundle to Harbor
+        shell: bash
+        run: |
+          set -euo pipefail
+          mapfile -t packages < <(find "$PACKAGE_OUTPUT" -type f -name '*.nupkg' ! -name '*.symbols.nupkg')
+          if [ ${#packages[@]} -eq 0 ]; then
+            echo "No NuGet packages were produced."
+            exit 1
+          fi
+          echo "Packed ${#packages[@]} package(s)"
+          bash .gitea/scripts/harbor-nuget-bundle.sh upload "$PACKAGE_OUTPUT" "$HARBOR_BUNDLE" "$VERSION"
+
+  push-baget:
+    needs: [resolve-version, pack]
+    if: ${{ always() && needs.resolve-version.result == 'success' && (needs.pack.result == 'success' || needs.pack.result == 'skipped') && (gitea.event_name == 'release' || inputs.push_to_baget == 'true') }}
+    runs-on: ubuntu-latest
+    container:
+      image: mcr-mirror.liara.ir/dotnet/sdk:10.0.202
+    env:
+      VERSION: ${{ needs.resolve-version.outputs.version }}
+      HARBOR_BUNDLE: ${{ needs.resolve-version.outputs.harbor_bundle }}
+    steps:
+      - name: Checkout scripts
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ -n "${REF_NAME:-}" ]; then
+            git clone --depth 1 --branch "$REF_NAME" https://git.sabp.ir/sufi-chain/sufi-abp.git .
+          else
+            git clone --depth 1 https://git.sabp.ir/sufi-chain/sufi-abp.git .
+          fi
+
+      - name: Install ORAS
+        shell: bash
+        run: |
+          set -euo pipefail
+          bash .gitea/scripts/install-oras.sh
+
+      - name: Login to Harbor
+        shell: bash
+        env:
+          HARBOR_USERNAME: ${{ secrets.HARBOR_USERNAME }}
+          HARBOR_PASSWORD: ${{ secrets.HARBOR_PASSWORD }}
+        run: |
+          set -euo pipefail
+          if [ -z "${HARBOR_USERNAME:-}" ] || [ -z "${HARBOR_PASSWORD:-}" ]; then
+            echo "HARBOR_USERNAME and HARBOR_PASSWORD secrets are required."
+            exit 1
+          fi
+          echo "$HARBOR_PASSWORD" | oras login "$HARBOR_REGISTRY" \
+            -u "$HARBOR_USERNAME" --password-stdin
+
+      - name: Download package bundle from Harbor
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$PACKAGE_OUTPUT"
+          bash .gitea/scripts/harbor-nuget-bundle.sh download "$HARBOR_BUNDLE" "$VERSION" "$PACKAGE_OUTPUT"
+
       - name: Push packages to BaGet
         shell: bash
         env:
           NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
         run: |
           set -euo pipefail
-          if [ -z "${NUGET_API_KEY:-}" ]; then
-            echo "NUGET_API_KEY secret is required."
-            exit 1
+          bash .gitea/scripts/push-nuget-packages.sh \
+            "$PACKAGE_OUTPUT" \
+            "$BAGET_SOURCE_URL" \
+            "$NUGET_API_KEY" \
+            "$NUGET_PUSH_PARALLELISM"
+
+  push-nuget-org:
+    needs: [resolve-version, pack]
+    if: ${{ always() && needs.resolve-version.result == 'success' && (needs.pack.result == 'success' || needs.pack.result == 'skipped') && gitea.event_name == 'workflow_dispatch' && inputs.push_to_nuget_org == 'true' }}
+    runs-on: ubuntu-latest
+    container:
+      image: mcr-mirror.liara.ir/dotnet/sdk:10.0.202
+    env:
+      VERSION: ${{ needs.resolve-version.outputs.version }}
+      HARBOR_BUNDLE: ${{ needs.resolve-version.outputs.harbor_bundle }}
+    steps:
+      - name: Checkout scripts
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ -n "${REF_NAME:-}" ]; then
+            git clone --depth 1 --branch "$REF_NAME" https://git.sabp.ir/sufi-chain/sufi-abp.git .
+          else
+            git clone --depth 1 https://git.sabp.ir/sufi-chain/sufi-abp.git .
           fi
 
-          mapfile -t packages < <(find "$PACKAGE_OUTPUT" -type f -name '*.nupkg' ! -name '*.symbols.nupkg' | sort)
-          if [ ${#packages[@]} -eq 0 ]; then
-            echo "No NuGet packages were produced."
+      - name: Install ORAS
+        shell: bash
+        run: |
+          set -euo pipefail
+          bash .gitea/scripts/install-oras.sh
+
+      - name: Login to Harbor
+        shell: bash
+        env:
+          HARBOR_USERNAME: ${{ secrets.HARBOR_USERNAME }}
+          HARBOR_PASSWORD: ${{ secrets.HARBOR_PASSWORD }}
+        run: |
+          set -euo pipefail
+          if [ -z "${HARBOR_USERNAME:-}" ] || [ -z "${HARBOR_PASSWORD:-}" ]; then
+            echo "HARBOR_USERNAME and HARBOR_PASSWORD secrets are required."
             exit 1
           fi
+          echo "$HARBOR_PASSWORD" | oras login "$HARBOR_REGISTRY" \
+            -u "$HARBOR_USERNAME" --password-stdin
 
-          printf '%s\0' "${packages[@]}" | xargs -0 -n 1 -P "$NUGET_PUSH_PARALLELISM" sh -c '
-            dotnet nuget push "$1" \
-              --source "$NUGET_SOURCE_URL" \
-              --api-key "$NUGET_API_KEY" \
-              --skip-duplicate
-          ' sh
+      - name: Download package bundle from Harbor
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$PACKAGE_OUTPUT"
+          bash .gitea/scripts/harbor-nuget-bundle.sh download "$HARBOR_BUNDLE" "$VERSION" "$PACKAGE_OUTPUT"
+
+      - name: Push packages to nuget.org
+        shell: bash
+        env:
+          NUGET_ORG_API_KEY: ${{ secrets.NUGET_ORG_API_KEY }}
+        run: |
+          set -euo pipefail
+          if [ -z "${NUGET_ORG_API_KEY:-}" ]; then
+            echo "NUGET_ORG_API_KEY secret is required for nuget.org push."
+            exit 1
+          fi
+          bash .gitea/scripts/push-nuget-packages.sh \
+            "$PACKAGE_OUTPUT" \
+            "$NUGET_ORG_SOURCE_URL" \
+            "$NUGET_ORG_API_KEY" \
+            "$NUGET_PUSH_PARALLELISM"

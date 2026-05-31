@@ -4,10 +4,12 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
+using SufiChain.SufiAbp.AI.Features;
 using SufiChain.SufiAbp.AIManagement.MCP.Abstractions;
 using SufiChain.SufiAbp.AIManagement.Workspaces;
 using Volo.Abp;
 using Volo.Abp.DependencyInjection;
+using SufiChain.SufiAbp.Features;
 using Volo.Abp.Users;
 
 namespace SufiChain.SufiAbp.AIManagement.MCP.Execution;
@@ -22,6 +24,7 @@ public class MCPToolExecutionManager : IMCPToolExecutor, ITransientDependency
     private readonly IWorkspaceRepository _workspaceRepository;
     private readonly WorkspaceSyncService _syncService;
     private readonly ICurrentUser _currentUser;
+    private readonly IFeatureChecker _featureChecker;
     private readonly ILogger<MCPToolExecutionManager> _logger;
     
     public MCPToolExecutionManager(
@@ -29,12 +32,14 @@ public class MCPToolExecutionManager : IMCPToolExecutor, ITransientDependency
         IWorkspaceRepository workspaceRepository,
         WorkspaceSyncService syncService,
         ICurrentUser currentUser,
+        IFeatureChecker featureChecker,
         ILogger<MCPToolExecutionManager> logger)
     {
         _toolRegistry = toolRegistry;
         _workspaceRepository = workspaceRepository;
         _syncService = syncService;
         _currentUser = currentUser;
+        _featureChecker = featureChecker;
         _logger = logger;
     }
     
@@ -44,6 +49,7 @@ public class MCPToolExecutionManager : IMCPToolExecutor, ITransientDependency
         Dictionary<string, object?> parameters,
         CancellationToken cancellationToken = default)
     {
+        await CheckFeatureAsync();
         var tool = await _toolRegistry.GetToolAsync(workspaceName, toolName, cancellationToken);
         
         if (tool == null)
@@ -77,6 +83,7 @@ public class MCPToolExecutionManager : IMCPToolExecutor, ITransientDependency
         Dictionary<string, object?> parameters,
         CancellationToken cancellationToken = default)
     {
+        await CheckFeatureAsync();
         _logger.LogInformation(
             "Executing MCP tool {ToolName} (Type: {ToolType}, Source: {Source}) in workspace {WorkspaceName}",
             tool.Name,
@@ -154,5 +161,18 @@ public class MCPToolExecutionManager : IMCPToolExecutor, ITransientDependency
         kernel.Plugins.AddFromFunctions(pluginName, new[] { function });
         
         _logger.LogDebug("Registered MCP tool {ToolName} as Semantic Kernel plugin", tool.Name);
+    }
+
+    private async Task CheckFeatureAsync()
+    {
+        if (!await _featureChecker.IsEnabledAsync(SufiAbpAIFeatures.Enable))
+        {
+            throw new BusinessException($"Feature is disabled: {SufiAbpAIFeatures.Enable}");
+        }
+
+        if (!await _featureChecker.IsEnabledAsync(SufiAbpAIFeatures.MCP))
+        {
+            throw new BusinessException($"Feature is disabled: {SufiAbpAIFeatures.MCP}");
+        }
     }
 }

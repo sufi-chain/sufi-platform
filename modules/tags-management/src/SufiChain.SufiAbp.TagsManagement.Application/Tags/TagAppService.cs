@@ -12,7 +12,7 @@ using Volo.Abp.Features;
 
 namespace SufiChain.SufiAbp.TagsManagement.Tags;
 
-[RequiresFeature(TagsManagementFeatures.Names.Enable)]
+[RequiresFeature(SufiAbpTagsManagementFeatures.Enable, SufiAbpTagsManagementFeatures.Tags)]
 [Authorize(TagsManagementPermissions.Tags.Default)]
 public class TagAppService : ApplicationService, ITagAppService
 {

@@ -1,3 +1,6 @@
+using Microsoft.Extensions.DependencyInjection;
+using SufiChain.SufiAbp.Features;
+using SufiChain.SufiAbp.ShortLinkGenerator.Features;
 using SufiChain.SufiAbp.ShortLinkGenerator.Localization;
 using SufiChain.SufiAbp.ShortLinkGenerator.Permissions;
 using SufiChain.SufiAbp.UI.Navigation;
@@ -14,12 +17,19 @@ public class ShortLinkGeneratorMenuContributor : IMenuContributor
         }
     }
 
-    private Task ConfigureMainMenuAsync(MenuConfigurationContext context)
+    private async Task ConfigureMainMenuAsync(MenuConfigurationContext context)
     {
+        var featureChecker = context.ServiceProvider.GetRequiredService<IFeatureChecker>();
+
+        if (!await featureChecker.IsEnabledAsync(SufiAbpShortLinkGeneratorFeatures.Enable) ||
+            !await featureChecker.IsEnabledAsync(SufiAbpShortLinkGeneratorFeatures.ShortLinks))
+        {
+            return;
+        }
+
         var administrationMenu = context.Menu.GetAdministration();
         var l = context.GetLocalizer<SufiAbpShortLinkGeneratorResource>();
         
-        // Add Short Link Generator menu item to Administration menu
         administrationMenu.AddItem(new ApplicationMenuItem(
             ShortLinkGeneratorMenus.ShortLinks,
             l["Menu:ShortLinks"],
@@ -28,7 +38,6 @@ public class ShortLinkGeneratorMenuContributor : IMenuContributor
             requiredPermissionName: ShortLinkGeneratorPermissions.ShortLinks.Default
         ));
 
-        return Task.CompletedTask;
+        return;
     }
 }
-

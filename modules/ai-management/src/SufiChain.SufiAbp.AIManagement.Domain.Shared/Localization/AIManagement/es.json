@@ -210,7 +210,29 @@
     "Code": "Código",
     "RequestId": "ID de solicitud",
     "SystemPrompt": "Prompt del sistema",
-    "SystemPromptPlaceholder": "Describe el comportamiento, rol, restricciones y estilo de respuesta del asistente para nuevas conversaciones."
-
+    "SystemPromptPlaceholder": "Describe el comportamiento, rol, restricciones y estilo de respuesta del asistente para nuevas conversaciones.",
+    "Feature:AIManagement.Enable": "Gestión de IA",
+    "Feature:AIManagement.Enable.Description": "Habilita el módulo de Gestión de IA y los servicios de IA en tiempo de ejecución.",
+    "Feature:AIManagement.Workspaces": "Espacios de trabajo de IA",
+    "Feature:AIManagement.Workspaces.Description": "Permite gestionar la configuración de espacios de trabajo, proveedores y modelos.",
+    "Feature:AIManagement.Chat": "Chat de IA",
+    "Feature:AIManagement.Chat.Description": "Permite completado de chat de texto y experiencias de chat de prueba.",
+    "Feature:AIManagement.Audio": "Audio de IA",
+    "Feature:AIManagement.Audio.Description": "Permite transcripción de audio y texto a voz.",
+    "Feature:AIManagement.Vision": "Visión de IA",
+    "Feature:AIManagement.Vision.Description": "Permite análisis de imágenes y visión.",
+    "Feature:AIManagement.Embeddings": "Embeddings de IA",
+    "Feature:AIManagement.Embeddings.Description": "Permite generar embeddings para búsqueda semántica y RAG.",
+    "Feature:AIManagement.RAG": "RAG de IA",
+    "Feature:AIManagement.RAG.Description": "Permite indexación de documentos, búsqueda vectorial y generación aumentada por recuperación.",
+    "Feature:AIManagement.MCP": "MCP de IA",
+    "Feature:AIManagement.MCP.Description": "Permite herramientas MCP, servidores MCP y llamadas a funciones de IA.",
+    "Feature:AIManagement.UsageAnalytics": "Analítica de uso de IA",
+    "Feature:AIManagement.UsageAnalytics.Description": "Permite registros de uso, seguimiento de costos y analítica.",
+    "Feature:AIManagement.FileManagerIntegration": "Integración de IA con el administrador de archivos",
+    "Feature:AIManagement.FileManagerIntegration.Description": "Permite integrar archivos generados y procesados por IA con el Administrador de archivos.",
+    "NoWorkspacesAvailable": "No hay espacios de trabajo disponibles",
+    "WorkspaceNameRequired": "El nombre del espacio de trabajo es obligatorio",
+    "InheritWorkspace": "Heredar espacio de trabajo"
   }
 }

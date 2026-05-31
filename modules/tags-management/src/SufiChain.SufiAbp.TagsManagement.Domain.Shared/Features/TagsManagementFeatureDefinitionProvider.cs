@@ -1,3 +1,4 @@
+using SufiChain.SufiAbp.TagsManagement.Features;
 using SufiChain.SufiAbp.TagsManagement.Localization;
 using Volo.Abp.Features;
 using Volo.Abp.Localization;
@@ -12,13 +13,20 @@ public class TagsManagementFeatureDefinitionProvider : FeatureDefinitionProvider
 {
     public override void Define(IFeatureDefinitionContext context)
     {
-        var group = context.AddGroup(TagsManagementFeatures.GroupName, L("TagsManagement"));
+        var group = context.AddGroup(SufiAbpTagsManagementFeatures.GroupName, L("TagsManagement"));
 
+        AddToggle(group, SufiAbpTagsManagementFeatures.Enable);
+        AddToggle(group, SufiAbpTagsManagementFeatures.Tags);
+        AddToggle(group, SufiAbpTagsManagementFeatures.TagLinks);
+    }
+
+    private static void AddToggle(FeatureGroupDefinition group, string name)
+    {
         group.AddFeature(
-            TagsManagementFeatures.Names.Enable,
+            name,
             defaultValue: "true",
-            displayName: L("Feature:TagsManagement.Enable"),
-            description: L("Feature:TagsManagement.Enable.Description"),
+            displayName: L($"Feature:{name}"),
+            description: L($"Feature:{name}.Description"),
             valueType: new ToggleStringValueType());
     }
 

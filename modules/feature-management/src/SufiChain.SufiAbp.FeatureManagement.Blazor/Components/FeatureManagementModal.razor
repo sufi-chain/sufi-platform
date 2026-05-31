@@ -1,7 +1,7 @@
 @using Volo.Abp.Validation.StringValues
 @inherits FeatureManagementComponentBase
 
-<SbDialog @bind-Open="_isOpen" OnCloseButtonClick="Hide" Size="SbDialogSize.Lg" Title="@($"{L["Features"]} - {_entityDisplayName}")">
+<SbDialog Open="_isOpen" OpenChanged="OnDialogOpenChanged" OnCloseButtonClick="HideAsync" Size="SbDialogSize.Lg" Title="@($"{L["Features"]} - {_entityDisplayName}")">
 	<ChildContent>
 		<SbStack Gap="3">
 			@* Search and Select All Row *@
@@ -30,13 +30,13 @@
 			else if (_groups.Any())
 			{
 				<div class="feature-management-layout border rounded">
-					<SbTabs Vertical="true" Class="feature-modal__tabs" @bind-ActiveTab="_selectedTabId" LazyLoad="true">
+					<SbTabs Vertical="true" Class="feature-modal__tabs" @bind-ActiveTab="_selectedTabId">
 						@foreach (var group in _groups)
 						{
 							var tabId = GetNormalizedGroupName(group.Name);
 							var enabledCount = GetEnabledCount(group);
 
-							<SbTab Id="@tabId" Label="@group.DisplayName">
+							<SbTab @key="group.Name" Id="@tabId" Label="@group.DisplayName">
 								<Badge>
 									<span class="group-count">(@enabledCount)</span>
 								</Badge>
@@ -130,7 +130,7 @@
 				@L["ResetToDefault"]
 			</SbButton>
 			<SbStack Direction="SbStackDirection.Row" Gap="2">
-				<SbButton Variant="SbButtonVariant.Outline" OnClick="Hide">@L["Cancel"]</SbButton>
+				<SbButton Variant="SbButtonVariant.Outline" OnClick="HideAsync">@L["Cancel"]</SbButton>
 				<SbButton Color="SbColor.Primary"
 						  OnClick="@SaveAsync"
 						  Loading="IsOperationLoading(LoadingKeys.SaveFeatures)"

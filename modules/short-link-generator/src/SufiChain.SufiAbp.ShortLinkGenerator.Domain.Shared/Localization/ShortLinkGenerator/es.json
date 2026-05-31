@@ -80,6 +80,14 @@
     "DisplayName:ShortLinkGenerator.ShortUrl.CacheExpirationMinutes": "Expiración de caché (minutos)",
     "Description:ShortLinkGenerator.ShortUrl.CacheExpirationMinutes": "Número de minutos antes de que expiren los datos en caché de la URL corta",
     "DisplayName:ShortLinkGenerator.ShortUrl.DefaultExpirationDays": "Expiración predeterminada (días)",
-    "Description:ShortLinkGenerator.ShortUrl.DefaultExpirationDays": "Número predeterminado de días antes de que expiren las URL cortas (si no se especifica)"
+    "Description:ShortLinkGenerator.ShortUrl.DefaultExpirationDays": "Número predeterminado de días antes de que expiren las URL cortas (si no se especifica)",
+    "Feature:ShortLinkGenerator.Analytics": "Short link analytics",
+    "Feature:ShortLinkGenerator.PublicRedirect": "Public redirect",
+    "Feature:ShortLinkGenerator.Analytics.Description": "Enable click tracking and analytics.",
+    "Feature:ShortLinkGenerator.PublicRedirect.Description": "Enable public short URL redirect resolution.",
+    "Feature:ShortLinkGenerator.Enable.Description": "Enable the Short Link Generator module for this edition.",
+    "Feature:ShortLinkGenerator.Enable": "Short Link Generator",
+    "Feature:ShortLinkGenerator.ShortLinks": "Short links",
+    "Feature:ShortLinkGenerator.ShortLinks.Description": "Enable short URL creation, management, and administration."
   }
 }

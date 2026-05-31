@@ -7,7 +7,7 @@ using SufiChain.SufiAbp.SettingManagement.Blazor.Settings;
 
 namespace SufiChain.SufiAbp.FileManager.Blazor.Settings;
 
-public class FileManagerStorageSettingsGroupContributor : ISettingComponentContributor
+public class FileManagerSettingsGroupContributor : ISettingComponentContributor
 {
     public Task ConfigureAsync(SettingComponentCreationContext context)
     {
@@ -15,10 +15,10 @@ public class FileManagerStorageSettingsGroupContributor : ISettingComponentContr
 
         context.Groups.Add(new SettingComponentGroup
         {
-            Id = "file-storage",
-            DisplayName = l["FileStorageSettings"],
-            ComponentType = typeof(FileManagerStorageSettingsGroup),
-            Order = 200
+            Id = "file-manager",
+            DisplayName = l["Menu:FileManager"],
+            ComponentType = typeof(FileManagerSettingsGroup),
+            Order = 190
         });
 
         return Task.CompletedTask;
@@ -27,6 +27,7 @@ public class FileManagerStorageSettingsGroupContributor : ISettingComponentContr
     public async Task<bool> CheckPermissionsAsync(SettingComponentCreationContext context)
     {
         var authorizationService = context.GetRequiredService<IAuthorizationService>();
-        return await authorizationService.IsGrantedAsync(FileManagerPermissions.StorageSettings.Manage);
+        return await authorizationService.IsGrantedAsync(FileManagerPermissions.Settings.Default) ||
+               await authorizationService.IsGrantedAsync(FileManagerPermissions.StorageSettings.Manage);
     }
 }

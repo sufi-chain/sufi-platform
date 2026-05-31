@@ -5,13 +5,16 @@ using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Riok.Mapperly.Abstractions;
+using SufiChain.SufiAbp.AI.Features;
 using SufiChain.SufiAbp.AIManagement.Permissions;
 using Volo.Abp.Security.Encryption;
 using SufiChain.SufiAbp.Application.Services;
 using SufiChain.SufiAbp.AIManagement.Storage;
+using SufiChain.SufiAbp.Features;
 
 namespace SufiChain.SufiAbp.AIManagement.AI;
 
+[RequiresFeature(SufiAbpAIFeatures.Enable)]
 [Authorize(AIManagementPermissions.AI.Default)]
 public class AIAppService : SufiAbpApplicationService, IAIAppService
 {
@@ -36,6 +39,7 @@ public class AIAppService : SufiAbpApplicationService, IAIAppService
     }
 
     [Authorize(AIManagementPermissions.AI.Chat)]
+    [RequiresFeature(SufiAbpAIFeatures.Chat)]
     public async Task<ChatResponseDto> SendChatMessageAsync(SendChatMessageInput input)
     {
         var request = new ChatCompletionRequest
@@ -71,6 +75,7 @@ public class AIAppService : SufiAbpApplicationService, IAIAppService
     }
 
     [Authorize(AIManagementPermissions.AI.Chat)]
+    [RequiresFeature(SufiAbpAIFeatures.Chat)]
     public async IAsyncEnumerable<ChatResponseDto> StreamChatMessageAsync(SendChatMessageInput input)
     {
         var request = new ChatCompletionRequest
@@ -102,7 +107,8 @@ public class AIAppService : SufiAbpApplicationService, IAIAppService
         }
     }
 
-        [Authorize(AIManagementPermissions.AI.Audio)]
+    [Authorize(AIManagementPermissions.AI.Audio)]
+    [RequiresFeature(SufiAbpAIFeatures.Audio)]
     public async Task<AudioTranscriptionDto> TranscribeAudioAsync(TranscribeAudioInput input)
     {
         // Upload audio file to storage
@@ -137,7 +143,8 @@ public class AIAppService : SufiAbpApplicationService, IAIAppService
         };
     }
 
-        [Authorize(AIManagementPermissions.AI.Audio)]
+    [Authorize(AIManagementPermissions.AI.Audio)]
+    [RequiresFeature(SufiAbpAIFeatures.Audio)]
     public async Task<TextToSpeechDto> GenerateSpeechAsync(GenerateSpeechInput input)
     {
         var request = new TextToSpeechRequest
@@ -172,7 +179,8 @@ public class AIAppService : SufiAbpApplicationService, IAIAppService
         };
     }
 
-        [Authorize(AIManagementPermissions.AI.Vision)]
+    [Authorize(AIManagementPermissions.AI.Vision)]
+    [RequiresFeature(SufiAbpAIFeatures.Vision)]
     public async Task<VisionAnalysisDto> AnalyzeImageAsync(AnalyzeImageInput input)
     {
         // Upload image to storage
@@ -209,6 +217,7 @@ public class AIAppService : SufiAbpApplicationService, IAIAppService
     }
 
     [Authorize(AIManagementPermissions.AI.Embeddings)]
+    [RequiresFeature(SufiAbpAIFeatures.Embeddings)]
     public async Task<EmbeddingsDto> GenerateEmbeddingsAsync(GenerateEmbeddingsInput input)
     {
         var request = new EmbeddingsRequest
@@ -233,6 +242,7 @@ public class AIAppService : SufiAbpApplicationService, IAIAppService
     }
 
     [Authorize(AIManagementPermissions.AI.ManageConfigurations)]
+    [RequiresFeature(SufiAbpAIFeatures.Workspaces)]
     public async Task<List<AIModelConfigurationDto>> GetModelConfigurationsAsync(Guid workspaceId)
     {
         var configurations = await _configurationRepository.GetByWorkspaceIdAsync(workspaceId);
@@ -240,6 +250,7 @@ public class AIAppService : SufiAbpApplicationService, IAIAppService
     }
 
     [Authorize(AIManagementPermissions.AI.ManageConfigurations)]
+    [RequiresFeature(SufiAbpAIFeatures.Workspaces)]
     public async Task<AIModelConfigurationDto> CreateModelConfigurationAsync(CreateAIModelConfigurationDto input)
     {
         var configuration = new AIModelConfiguration(
@@ -267,6 +278,7 @@ public class AIAppService : SufiAbpApplicationService, IAIAppService
     }
 
     [Authorize(AIManagementPermissions.AI.ManageConfigurations)]
+    [RequiresFeature(SufiAbpAIFeatures.Workspaces)]
     public async Task<AIModelConfigurationDto> UpdateModelConfigurationAsync(Guid id, UpdateAIModelConfigurationDto input)
     {
         var configuration = await _configurationRepository.GetAsync(id);
@@ -288,12 +300,14 @@ public class AIAppService : SufiAbpApplicationService, IAIAppService
     }
 
     [Authorize(AIManagementPermissions.AI.ManageConfigurations)]
+    [RequiresFeature(SufiAbpAIFeatures.Workspaces)]
     public async Task DeleteModelConfigurationAsync(Guid id)
     {
         await _configurationRepository.DeleteAsync(id);
     }
 
     [Authorize(AIManagementPermissions.AI.ViewUsage)]
+    [RequiresFeature(SufiAbpAIFeatures.UsageAnalytics)]
     public async Task<List<AIUsageLogDto>> GetUsageLogsAsync(Guid workspaceId, DateTime? startDate = null, DateTime? endDate = null)
     {
         var logs = await _usageLogRepository.GetByWorkspaceAsync(workspaceId, startDate, endDate);
@@ -301,6 +315,7 @@ public class AIAppService : SufiAbpApplicationService, IAIAppService
     }
 
     [Authorize(AIManagementPermissions.AI.ViewUsage)]
+    [RequiresFeature(SufiAbpAIFeatures.UsageAnalytics)]
     public async Task<UsageStatisticsDto> GetUsageStatisticsAsync(Guid workspaceId, DateTime? startDate = null, DateTime? endDate = null)
     {
         var logs = await _usageLogRepository.GetByWorkspaceAsync(workspaceId, startDate, endDate);

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
+using SufiChain.SufiAbp.AI.Features;
 using SufiChain.SufiAbp.AIManagement.MCP.Abstractions;
 using SufiChain.SufiAbp.AIManagement.MCP.Entities;
 using SufiChain.SufiAbp.AIManagement.MCP.Servers;
@@ -10,10 +11,12 @@ using SufiChain.SufiAbp.AIManagement.Permissions;
 using Volo.Abp;
 using Volo.Abp.Application.Services;
 using Volo.Abp.Domain.Repositories;
+using SufiChain.SufiAbp.Features;
 
 namespace SufiChain.SufiAbp.AIManagement.Application.MCP.Servers;
 
-[Authorize(AIManagementPermissions.Workspaces.Default)]
+[RequiresFeature(SufiAbpAIFeatures.Enable)]
+[Authorize(AIManagementPermissions.MCPServers.Default)]
 public class MCPServerAppService : ApplicationService, IMCPServerAppService
 {
     private readonly IMCPServerRepository _serverRepository;

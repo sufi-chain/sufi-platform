@@ -1,0 +1,31 @@
+@using SufiChain.SufiAbp.SettingManagement.Blazor.Settings
+@inherits FileManagerComponentBase
+@implements ISaveableSettingGroup
+
+<SbStack Gap="4" class="p-4">
+    <SbTabs @bind-ActiveIndex="_activeTab">
+        @if (_hasGeneralSettingsPermission)
+        {
+            <SbTab Label="@L["FileManagerGeneralSettings"]">
+                <SbStack Gap="3" class="pt-3">
+                    <FileManagerGeneralSettingsGroup @ref="_generalSettingsGroup" />
+                </SbStack>
+            </SbTab>
+
+            <SbTab Label="@L["FileManagerArchivingSettings"]">
+                <SbStack Gap="3" class="pt-3">
+                    <FileManagerArchivingSettingsGroup @ref="_archivingSettingsGroup" />
+                </SbStack>
+            </SbTab>
+        }
+
+        @if (_hasStorageSettingsPermission)
+        {
+            <SbTab Label="@L["FileStorageSettings"]">
+                <SbStack Gap="3" class="pt-3">
+                    <FileManagerStorageSettingsGroup @ref="_storageSettingsGroup" />
+                </SbStack>
+            </SbTab>
+        }
+    </SbTabs>
+</SbStack>

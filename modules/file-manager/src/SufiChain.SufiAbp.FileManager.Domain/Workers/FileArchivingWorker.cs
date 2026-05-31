@@ -33,13 +33,13 @@ public class FileArchivingWorker : AsyncPeriodicBackgroundWorkerBase
         var clock = workerContext.ServiceProvider.GetRequiredService<IClock>();
         var logger = workerContext.ServiceProvider.GetRequiredService<ILogger<FileArchivingWorker>>();
 
-        if (!await featureChecker.IsEnabledAsync(FileManagerFeatures.Names.Enable))
+        if (!await featureChecker.IsEnabledAsync(SufiAbpFileManagerFeatures.Enable))
         {
             logger.LogDebug("File Manager module is disabled. Skipping archiving job.");
             return;
         }
 
-        if (!await featureChecker.IsEnabledAsync(FileManagerFeatures.Names.Archiving))
+        if (!await featureChecker.IsEnabledAsync(SufiAbpFileManagerFeatures.Archiving))
         {
             logger.LogDebug("File archiving feature is disabled. Skipping archiving job.");
             return;

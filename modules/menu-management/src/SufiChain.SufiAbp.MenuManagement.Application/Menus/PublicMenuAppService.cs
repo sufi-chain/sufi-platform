@@ -5,7 +5,7 @@ using Volo.Abp.Features;
 
 namespace SufiChain.SufiAbp.MenuManagement.Menus;
 
-[RequiresFeature(MenuManagementFeatures.Names.Enable)]
+[RequiresFeature(SufiAbpMenuManagementFeatures.Enable, SufiAbpMenuManagementFeatures.PublicMenus)]
 [AllowAnonymous]
 public class PublicMenuAppService : ApplicationService, IPublicMenuAppService
 {

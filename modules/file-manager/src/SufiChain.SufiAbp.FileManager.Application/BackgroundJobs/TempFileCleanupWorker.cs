@@ -6,6 +6,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Volo.Abp.Data;
 using Volo.Abp.MultiTenancy;
+using SufiChain.SufiAbp.Features;
+using SufiChain.SufiAbp.FileManager.Features;
 using SufiChain.SufiAbp.TenantManagement;
 using SufiChain.SufiAbp.FileManager.FileItems;
 using SufiChain.SufiAbp.FileManager.Settings;
@@ -34,6 +36,14 @@ public class TempFileCleanupWorker : AsyncPeriodicBackgroundWorkerBase
 
     protected override async Task DoWorkAsync(PeriodicBackgroundWorkerContext workerContext)
     {
+        var featureChecker = workerContext.ServiceProvider.GetRequiredService<IFeatureChecker>();
+        if (!await featureChecker.IsEnabledAsync(SufiAbpFileManagerFeatures.Enable) ||
+            !await featureChecker.IsEnabledAsync(SufiAbpFileManagerFeatures.FileItems))
+        {
+            Logger.LogDebug("File Manager or file items feature is disabled. Skipping temporary file cleanup.");
+            return;
+        }
+
         Logger.LogInformation("Starting temporary file cleanup job");
 
         try

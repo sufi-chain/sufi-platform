@@ -5,8 +5,10 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Caching.Distributed;
+using SufiChain.SufiAbp.FileManager.Features;
 using SufiChain.SufiAbp.FileManager.FileItems;
 using SufiChain.SufiAbp.FileManager.Permissions;
+using SufiChain.SufiAbp.Features;
 using SufiChain.SufiAbp.FileManager.Storage;
 using Volo.Abp;
 using Volo.Abp.Application.Services;
@@ -18,6 +20,7 @@ namespace SufiChain.SufiAbp.FileManager.FileFolders;
 /// <summary>
 /// Application service for file manager clipboard and bulk operations
 /// </summary>
+[RequiresFeature(SufiAbpFileManagerFeatures.Enable, SufiAbpFileManagerFeatures.FileItems)]
 public class FileManagerAppService : ApplicationService, IFileManagerAppService
 {
     private readonly IFileFolderRepository _folderRepository;

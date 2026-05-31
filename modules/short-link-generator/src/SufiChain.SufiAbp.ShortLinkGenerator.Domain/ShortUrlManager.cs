@@ -2,6 +2,8 @@ using System;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Options;
 using shortid;
+using SufiChain.SufiAbp.Features;
+using SufiChain.SufiAbp.ShortLinkGenerator.Features;
 using SufiChain.SufiAbp.ShortLinkGenerator.Settings;
 using Volo.Abp;
 using Volo.Abp.Domain.Services;
@@ -14,15 +16,18 @@ public class ShortUrlManager : DomainService
     private readonly IShortUrlRepository _repository;
     private readonly ShortLinkGeneratorOptions _options;
     private readonly ISettingProvider _settingProvider;
+    private readonly IFeatureChecker _featureChecker;
     
     public ShortUrlManager(
         IShortUrlRepository repository,
         IOptions<ShortLinkGeneratorOptions> options,
-        ISettingProvider settingProvider)
+        ISettingProvider settingProvider,
+        IFeatureChecker featureChecker)
     {
         _repository = repository;
         _options = options.Value;
         _settingProvider = settingProvider;
+        _featureChecker = featureChecker;
     }
     
     public virtual async Task<ShortUrl> CreateAsync(
@@ -31,6 +36,8 @@ public class ShortUrlManager : DomainService
         DateTime? expiresAt = null,
         string? description = null)
     {
+        await CheckShortLinksFeatureAsync();
+
         Check.NotNullOrWhiteSpace(destinationUrl, nameof(destinationUrl));
         Check.NotNullOrWhiteSpace(createdByModule, nameof(createdByModule));
         
@@ -101,6 +108,19 @@ public class ShortUrlManager : DomainService
         }
         
         return null;
+    }
+
+    protected virtual async Task CheckShortLinksFeatureAsync()
+    {
+        if (!await _featureChecker.IsEnabledAsync(SufiAbpShortLinkGeneratorFeatures.Enable))
+        {
+            throw new BusinessException($"Feature is disabled: {SufiAbpShortLinkGeneratorFeatures.Enable}");
+        }
+
+        if (!await _featureChecker.IsEnabledAsync(SufiAbpShortLinkGeneratorFeatures.ShortLinks))
+        {
+            throw new BusinessException($"Feature is disabled: {SufiAbpShortLinkGeneratorFeatures.ShortLinks}");
+        }
     }
 }
 

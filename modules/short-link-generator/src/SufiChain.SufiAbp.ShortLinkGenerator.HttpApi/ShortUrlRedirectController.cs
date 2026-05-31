@@ -4,8 +4,10 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Logging;
-using Volo.Abp;
 using SufiChain.SufiAbp.AspNetCore.Mvc.Controllers;
+using SufiChain.SufiAbp.Features;
+using SufiChain.SufiAbp.ShortLinkGenerator.Features;
+using Volo.Abp;
 using Volo.Abp.Caching;
 using Volo.Abp.Domain.Repositories;
 
@@ -18,20 +20,28 @@ public class ShortUrlRedirectController : SufiAbpControllerBase
     private readonly IShortUrlRepository _repository;
     private readonly IDistributedCache<ShortUrlCacheItem> _cache;
     private readonly IRepository<ShortUrlClick, Guid> _clickRepository;
+    private readonly IFeatureChecker _featureChecker;
     
     public ShortUrlRedirectController(
         IShortUrlRepository repository,
         IDistributedCache<ShortUrlCacheItem> cache,
-        IRepository<ShortUrlClick, Guid> clickRepository)
+        IRepository<ShortUrlClick, Guid> clickRepository,
+        IFeatureChecker featureChecker)
     {
         _repository = repository;
         _cache = cache;
         _clickRepository = clickRepository;
+        _featureChecker = featureChecker;
     }
     
     [HttpGet("{shortCode}")]
     public async Task<IActionResult> RedirectToUrl(string shortCode)
     {
+        if (!await IsPublicRedirectEnabledAsync())
+        {
+            return NotFound();
+        }
+
         // 1. Try cache first
         var cacheKey = $"ShortUrl:Code:{shortCode}";
         var cached = await _cache.GetAsync(cacheKey);
@@ -76,9 +86,20 @@ public class ShortUrlRedirectController : SufiAbpControllerBase
         if (expiresAt.HasValue && expiresAt < Clock.Now) return false;
         return true;
     }
-    
+
+    private async Task<bool> IsPublicRedirectEnabledAsync()
+    {
+        return await _featureChecker.IsEnabledAsync(SufiAbpShortLinkGeneratorFeatures.Enable) &&
+               await _featureChecker.IsEnabledAsync(SufiAbpShortLinkGeneratorFeatures.PublicRedirect);
+    }
+
     private async Task TrackClickAsync(Guid shortUrlId, string shortCode)
     {
+        if (!await _featureChecker.IsEnabledAsync(SufiAbpShortLinkGeneratorFeatures.Analytics))
+        {
+            return;
+        }
+
         try
         {
             // Increment click count
@@ -101,4 +122,3 @@ public class ShortUrlRedirectController : SufiAbpControllerBase
         }
     }
 }
-

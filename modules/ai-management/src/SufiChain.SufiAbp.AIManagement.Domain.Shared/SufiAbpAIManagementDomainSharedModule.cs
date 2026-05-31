@@ -1,4 +1,5 @@
 using SufiChain.SufiAbp.AIManagement.Localization;
+using SufiChain.SufiAbp.Features;
 using SufiChain.SufiAbp.Validation.Localization;
 using Volo.Abp.Localization;
 using Volo.Abp.Localization.ExceptionHandling;
@@ -7,6 +8,7 @@ using Volo.Abp.VirtualFileSystem;
 
 namespace SufiChain.SufiAbp.AIManagement;
 
+[DependsOn(typeof(SufiAbpFeaturesModule))]
 public class SufiAbpAIManagementDomainSharedModule : AbpModule
 {
     public override void ConfigureServices(ServiceConfigurationContext context)

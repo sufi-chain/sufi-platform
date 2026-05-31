@@ -1,3 +1,4 @@
+using SufiChain.SufiAbp.FileManager.Features;
 using SufiChain.SufiAbp.FileManager.Localization;
 using Volo.Abp.Features;
 using Volo.Abp.Localization;
@@ -12,20 +13,22 @@ public class FileManagerFeatureDefinitionProvider : FeatureDefinitionProvider
 {
     public override void Define(IFeatureDefinitionContext context)
     {
-        var group = context.AddGroup(FileManagerFeatures.GroupName, L("Menu:FileManager"));
+        var group = context.AddGroup(SufiAbpFileManagerFeatures.GroupName, L("Menu:FileManager"));
 
-        group.AddFeature(
-            FileManagerFeatures.Names.Enable,
-            defaultValue: "true",
-            displayName: L("Feature:FileManager.Enable"),
-            description: L("Feature:FileManager.Enable.Description"),
-            valueType: new ToggleStringValueType());
+        AddToggle(group, SufiAbpFileManagerFeatures.Enable);
+        AddToggle(group, SufiAbpFileManagerFeatures.FileItems);
+        AddToggle(group, SufiAbpFileManagerFeatures.FileStructures);
+        AddToggle(group, SufiAbpFileManagerFeatures.StorageSettings);
+        AddToggle(group, SufiAbpFileManagerFeatures.Archiving);
+    }
 
+    private static void AddToggle(FeatureGroupDefinition group, string name)
+    {
         group.AddFeature(
-            FileManagerFeatures.Names.Archiving,
+            name,
             defaultValue: "true",
-            displayName: L("Feature:FileManager.Archiving"),
-            description: L("Feature:FileManager.Archiving.Description"),
+            displayName: L($"Feature:{name}"),
+            description: L($"Feature:{name}.Description"),
             valueType: new ToggleStringValueType());
     }
 
