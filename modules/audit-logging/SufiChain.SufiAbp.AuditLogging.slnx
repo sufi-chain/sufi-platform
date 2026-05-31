@@ -1,0 +1,13 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/SufiChain.SufiAbp.AuditLogging.Application.Contracts/SufiChain.SufiAbp.AuditLogging.Application.Contracts.csproj" />
+    <Project Path="src/SufiChain.SufiAbp.AuditLogging.Application/SufiChain.SufiAbp.AuditLogging.Application.csproj" />
+    <Project Path="src/SufiChain.SufiAbp.AuditLogging.Blazor/SufiChain.SufiAbp.AuditLogging.Blazor.csproj" />
+    <Project Path="src/SufiChain.SufiAbp.AuditLogging.Domain.Shared/SufiChain.SufiAbp.AuditLogging.Domain.Shared.csproj" />
+    <Project Path="src/SufiChain.SufiAbp.AuditLogging.Domain/SufiChain.SufiAbp.AuditLogging.Domain.csproj" />
+    <Project Path="src/SufiChain.SufiAbp.AuditLogging.EntityFrameworkCore/SufiChain.SufiAbp.AuditLogging.EntityFrameworkCore.csproj" />
+    <Project Path="src/SufiChain.SufiAbp.AuditLogging.HttpApi.Client/SufiChain.SufiAbp.AuditLogging.HttpApi.Client.csproj" />
+    <Project Path="src/SufiChain.SufiAbp.AuditLogging.HttpApi/SufiChain.SufiAbp.AuditLogging.HttpApi.csproj" />
+    <Project Path="src/SufiChain.SufiAbp.AuditLogging.MongoDB/SufiChain.SufiAbp.AuditLogging.MongoDB.csproj" />
+  </Folder>
+</Solution>

@@ -17,8 +17,6 @@
   <Folder Name="/test/">
     <Project Path="test/SufiChain.SufiAbp.AIManagement.Application.Tests/SufiChain.SufiAbp.AIManagement.Application.Tests.csproj" />
     <Project Path="test/SufiChain.SufiAbp.AIManagement.Domain.Tests/SufiChain.SufiAbp.AIManagement.Domain.Tests.csproj" />
-    <Project Path="test/SufiChain.SufiAbp.AIManagement.EntityFrameworkCore.Tests/SufiChain.SufiAbp.AIManagement.EntityFrameworkCore.Tests.csproj" />
-    <Project Path="test/SufiChain.SufiAbp.AIManagement.MongoDB.Tests/SufiChain.SufiAbp.AIManagement.MongoDB.Tests.csproj" />
     <Project Path="test/SufiChain.SufiAbp.AIManagement.TestBase/SufiChain.SufiAbp.AIManagement.TestBase.csproj" />
   </Folder>
 </Solution>

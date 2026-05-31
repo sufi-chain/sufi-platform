@@ -14,6 +14,8 @@ using SufiChain.SufiAbp.FileManager;
 using SufiChain.SufiAbp.Identity;
 using SufiChain.SufiAbp.Identity.MongoDB;
 using SufiChain.SufiAbp.LocalizationManagement;
+using SufiChain.SufiAbp.MenuManagement;
+using SufiChain.SufiAbp.MenuManagement.MongoDB;
 using SufiChain.SufiAbp.OpenIddict;
 using SufiChain.SufiAbp.OpenIddict.MongoDB;
 using SufiChain.SufiAbp.PermissionManagement;
@@ -63,6 +65,9 @@ namespace SufiChain.SufiAbp.SmokeTest.Console;
     typeof(SufiAbpLocalizationManagementApplicationModule),
     typeof(SufiAbpLocalizationManagementHttpApiModule),
     typeof(SufiAbpLocalizationManagementMongoDbModule),
+    typeof(SufiAbpMenuManagementApplicationModule),
+    typeof(SufiAbpMenuManagementHttpApiModule),
+    typeof(SufiAbpMenuManagementMongoDbModule),
     typeof(SufiAbpOpenIddictMongoDbModule),
     typeof(SufiAbpPermissionManagementApplicationModule),
     typeof(SufiAbpPermissionManagementHttpApiModule),

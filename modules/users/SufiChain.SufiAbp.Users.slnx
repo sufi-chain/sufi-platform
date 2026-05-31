@@ -1,0 +1,10 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/SufiChain.SufiAbp.Users.Abstractions/SufiChain.SufiAbp.Users.Abstractions.csproj" />
+    <Project Path="src/SufiChain.SufiAbp.Users.Domain.Shared/SufiChain.SufiAbp.Users.Domain.Shared.csproj" />
+    <Project Path="src/SufiChain.SufiAbp.Users.Domain/SufiChain.SufiAbp.Users.Domain.csproj" />
+    <Project Path="src/SufiChain.SufiAbp.Users.EntityFrameworkCore/SufiChain.SufiAbp.Users.EntityFrameworkCore.csproj" />
+    <Project Path="src/SufiChain.SufiAbp.Users.MongoDB/SufiChain.SufiAbp.Users.MongoDB.csproj" />
+    <Project Path="src/SufiChain.SufiAbp.Users/SufiChain.SufiAbp.Users.csproj" />
+  </Folder>
+</Solution>

@@ -19,6 +19,9 @@ public class FileManagerPermissionDefinitionProvider : PermissionDefinitionProvi
         mediaStructures.AddChild(FileManagerPermissions.FileStructures.Create, L("Permission:Create"));
         mediaStructures.AddChild(FileManagerPermissions.FileStructures.Update, L("Permission:Update"));
         mediaStructures.AddChild(FileManagerPermissions.FileStructures.Delete, L("Permission:Delete"));
+
+        FileManagerGroup.AddPermission(FileManagerPermissions.Settings.Default, L("Permission:FileManagerSettings"));
+        FileManagerGroup.AddPermission(FileManagerPermissions.StorageSettings.Manage, L("Permission:FileManagerStorageSettings"));
     }
 
     private static LocalizableString L(string name)

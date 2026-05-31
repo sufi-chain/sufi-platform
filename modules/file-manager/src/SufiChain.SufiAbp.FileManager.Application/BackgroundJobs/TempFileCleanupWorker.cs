@@ -8,16 +8,16 @@ using Volo.Abp.Data;
 using Volo.Abp.MultiTenancy;
 using SufiChain.SufiAbp.TenantManagement;
 using SufiChain.SufiAbp.FileManager.FileItems;
+using SufiChain.SufiAbp.FileManager.Settings;
 using SufiChain.SufiAbp.FileManager.Storage;
 using Volo.Abp.BackgroundWorkers;
+using Volo.Abp.Settings;
 using Volo.Abp.Threading;
 
 namespace SufiChain.SufiAbp.FileManager.BackgroundJobs;
 
 /// <summary>
 /// Background worker that periodically cleans up temporary file items that were never confirmed.
-/// Removes temp files older than 3 days. Runs every 6 hours.
-/// For database-per-tenant setups, iterates per tenant; otherwise uses a single query across all tenants.
 /// </summary>
 public class TempFileCleanupWorker : AsyncPeriodicBackgroundWorkerBase
 {
@@ -29,8 +29,7 @@ public class TempFileCleanupWorker : AsyncPeriodicBackgroundWorkerBase
         : base(timer, serviceScopeFactory)
     {
         _serviceScopeFactory = serviceScopeFactory;
-        // Run every 6 hours
-        Timer.Period = 1000 * 60 * 60 * 6; // 6 hours in milliseconds
+        Timer.Period = 1000 * 60 * 60 * 6;
     }
 
     protected override async Task DoWorkAsync(PeriodicBackgroundWorkerContext workerContext)
@@ -45,11 +44,9 @@ public class TempFileCleanupWorker : AsyncPeriodicBackgroundWorkerBase
 
             if (tenantRepository != null)
             {
-                // Database-per-tenant: iterate over host and each tenant
                 var totalDeleted = 0;
                 var totalFailed = 0;
 
-                // Host (null tenant)
                 using (currentTenant.Change(null))
                 {
                     var (hostDeleted, hostFailed) = await CleanupTempFilesForCurrentContextAsync(scope.ServiceProvider);
@@ -75,7 +72,6 @@ public class TempFileCleanupWorker : AsyncPeriodicBackgroundWorkerBase
             }
             else
             {
-                // Single database: disable filter and process all temp files in one pass
                 var (deleted, failed) = await CleanupTempFilesForCurrentContextAsync(scope.ServiceProvider);
                 Logger.LogInformation(
                     "Temporary file cleanup completed: {Deleted} deleted, {Failed} failed",
@@ -94,8 +90,15 @@ public class TempFileCleanupWorker : AsyncPeriodicBackgroundWorkerBase
         var fileItemRepository = serviceProvider.GetRequiredService<IFileItemRepository>();
         var structureBlobContainerProvider = serviceProvider.GetRequiredService<IStructureBlobContainerProvider>();
         var dataFilter = serviceProvider.GetRequiredService<IDataFilter<IMultiTenant>>();
+        var settingProvider = serviceProvider.GetRequiredService<ISettingProvider>();
 
-        var cutoffTime = DateTime.UtcNow.AddDays(-3);
+        var retentionDays = await settingProvider.GetAsync<int>(FileManagerSettings.AutoDeleteTempMediaAfterDays);
+        if (retentionDays <= 0)
+        {
+            retentionDays = 7;
+        }
+
+        var cutoffTime = DateTime.UtcNow.AddDays(-retentionDays);
         var query = await fileItemRepository.GetQueryableAsync();
 
         List<FileItem> tempFileItems;
@@ -131,7 +134,6 @@ public class TempFileCleanupWorker : AsyncPeriodicBackgroundWorkerBase
             catch (Exception ex)
             {
                 failedCount++;
-                // Logger not available in static; exception is logged by caller
                 _ = ex;
             }
         }

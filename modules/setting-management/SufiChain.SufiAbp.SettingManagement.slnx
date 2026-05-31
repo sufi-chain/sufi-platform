@@ -1,0 +1,13 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/SufiChain.SufiAbp.SettingManagement.Application.Contracts/SufiChain.SufiAbp.SettingManagement.Application.Contracts.csproj" />
+    <Project Path="src/SufiChain.SufiAbp.SettingManagement.Application/SufiChain.SufiAbp.SettingManagement.Application.csproj" />
+    <Project Path="src/SufiChain.SufiAbp.SettingManagement.Blazor/SufiChain.SufiAbp.SettingManagement.Blazor.csproj" />
+    <Project Path="src/SufiChain.SufiAbp.SettingManagement.Domain.Shared/SufiChain.SufiAbp.SettingManagement.Domain.Shared.csproj" />
+    <Project Path="src/SufiChain.SufiAbp.SettingManagement.Domain/SufiChain.SufiAbp.SettingManagement.Domain.csproj" />
+    <Project Path="src/SufiChain.SufiAbp.SettingManagement.EntityFrameworkCore/SufiChain.SufiAbp.SettingManagement.EntityFrameworkCore.csproj" />
+    <Project Path="src/SufiChain.SufiAbp.SettingManagement.HttpApi.Client/SufiChain.SufiAbp.SettingManagement.HttpApi.Client.csproj" />
+    <Project Path="src/SufiChain.SufiAbp.SettingManagement.HttpApi/SufiChain.SufiAbp.SettingManagement.HttpApi.csproj" />
+    <Project Path="src/SufiChain.SufiAbp.SettingManagement.MongoDB/SufiChain.SufiAbp.SettingManagement.MongoDB.csproj" />
+  </Folder>
+</Solution>

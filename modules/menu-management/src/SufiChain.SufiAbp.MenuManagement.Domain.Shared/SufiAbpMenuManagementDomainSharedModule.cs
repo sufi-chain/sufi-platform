@@ -1,4 +1,5 @@
 using SufiChain.SufiAbp.MenuManagement.Localization;
+using SufiChain.SufiAbp.Features;
 using SufiChain.SufiAbp.Validation;
 using SufiChain.SufiAbp.Validation.Localization;
 using Volo.Abp.Localization;
@@ -8,7 +9,9 @@ using Volo.Abp.VirtualFileSystem;
 
 namespace SufiChain.SufiAbp.MenuManagement;
 
-[DependsOn(typeof(SufiAbpValidationModule))]
+[DependsOn(
+    typeof(SufiAbpValidationModule),
+    typeof(SufiAbpFeaturesModule))]
 public class SufiAbpMenuManagementDomainSharedModule : AbpModule
 {
     public override void ConfigureServices(ServiceConfigurationContext context)

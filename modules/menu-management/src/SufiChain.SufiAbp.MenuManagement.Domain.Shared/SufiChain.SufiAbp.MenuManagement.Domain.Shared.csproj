@@ -9,6 +9,8 @@
     <ProjectReference Include="../../../../framework/SufiChain.SufiAbp.Ddd.Domain.Shared/SufiChain.SufiAbp.Ddd.Domain.Shared.csproj" />
     <ProjectReference Include="../../../../framework/SufiChain.SufiAbp.Validation/SufiChain.SufiAbp.Validation.csproj" />
     <ProjectReference Include="../../../../framework/SufiChain.SufiAbp.Authorization/SufiChain.SufiAbp.Authorization.csproj" />
+    <ProjectReference Include="../../../../framework/SufiChain.SufiAbp.Features/SufiChain.SufiAbp.Features.csproj" />
+    <ProjectReference Include="..\..\..\..\framework\SufiChain.SufiAbp.Localization\SufiChain.SufiAbp.Localization.csproj" />
     <PackageReference Include="Microsoft.Extensions.FileProviders.Embedded" Version="$(MicrosoftExtensionsFileProvidersEmbeddedVersion)" />
   </ItemGroup>
   <ItemGroup>

@@ -1,5 +1,4 @@
 <Project Sdk="Microsoft.NET.Sdk">
-
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>net10.0</TargetFramework>
@@ -8,21 +7,18 @@
     <RootNamespace>SufiChain.SufiAbp.SmokeTest.Console</RootNamespace>
     <IsPackable>false</IsPackable>
   </PropertyGroup>
-
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="$(MicrosoftExtensionsConfigurationJsonVersion)" />
     <PackageReference Include="Serilog.Extensions.Logging" Version="$(SerilogExtensionsLoggingVersion)" />
     <PackageReference Include="Serilog.Sinks.Async" Version="$(SerilogSinksAsyncVersion)" />
     <PackageReference Include="Serilog.Sinks.Console" Version="$(SerilogSinksConsoleVersion)" />
   </ItemGroup>
-
   <ItemGroup>
     <ProjectReference Include="..\..\framework\SufiChain.SufiAbp.Autofac\SufiChain.SufiAbp.Autofac.csproj" />
     <ProjectReference Include="..\..\framework\SufiChain.SufiAbp.AspNetCore.Serilog\SufiChain.SufiAbp.AspNetCore.Serilog.csproj" />
     <ProjectReference Include="..\..\framework\SufiChain.SufiAbp.EntityFrameworkCore.Sqlite\SufiChain.SufiAbp.EntityFrameworkCore.Sqlite.csproj" />
     <ProjectReference Include="..\..\framework\SufiChain.SufiAbp.MongoDB\SufiChain.SufiAbp.MongoDB.csproj" />
     <ProjectReference Include="..\..\framework\SufiChain.SufiAbp.Swashbuckle\SufiChain.SufiAbp.Swashbuckle.csproj" />
-
     <ProjectReference Include="..\..\modules\account\src\SufiChain.SufiAbp.Account.Application\SufiChain.SufiAbp.Account.Application.csproj" />
     <ProjectReference Include="..\..\modules\account\src\SufiChain.SufiAbp.Account.HttpApi\SufiChain.SufiAbp.Account.HttpApi.csproj" />
     <ProjectReference Include="..\..\modules\ai-management\src\SufiChain.SufiAbp.AIManagement.Application\SufiChain.SufiAbp.AIManagement.Application.csproj" />
@@ -68,6 +64,8 @@
     <ProjectReference Include="..\..\modules\tenant-management\src\SufiChain.SufiAbp.TenantManagement.HttpApi\SufiChain.SufiAbp.TenantManagement.HttpApi.csproj" />
     <ProjectReference Include="..\..\modules\tenant-management\src\SufiChain.SufiAbp.TenantManagement.MongoDB\SufiChain.SufiAbp.TenantManagement.MongoDB.csproj" />
     <ProjectReference Include="..\..\modules\users\src\SufiChain.SufiAbp.Users.MongoDB\SufiChain.SufiAbp.Users.MongoDB.csproj" />
+    <ProjectReference Include="..\..\modules\menu-management\src\SufiChain.SufiAbp.MenuManagement.Application\SufiChain.SufiAbp.MenuManagement.Application.csproj" />
+    <ProjectReference Include="..\..\modules\menu-management\src\SufiChain.SufiAbp.MenuManagement.HttpApi\SufiChain.SufiAbp.MenuManagement.HttpApi.csproj" />
+    <ProjectReference Include="..\..\modules\menu-management\src\SufiChain.SufiAbp.MenuManagement.MongoDB\SufiChain.SufiAbp.MenuManagement.MongoDB.csproj" />
   </ItemGroup>
-
 </Project>

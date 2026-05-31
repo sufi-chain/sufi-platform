@@ -1,0 +1,12 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/SufiChain.SufiAbp.TagsManagement.Application.Contracts/SufiChain.SufiAbp.TagsManagement.Application.Contracts.csproj" />
+    <Project Path="src/SufiChain.SufiAbp.TagsManagement.Application/SufiChain.SufiAbp.TagsManagement.Application.csproj" />
+    <Project Path="src/SufiChain.SufiAbp.TagsManagement.Domain.Shared/SufiChain.SufiAbp.TagsManagement.Domain.Shared.csproj" />
+    <Project Path="src/SufiChain.SufiAbp.TagsManagement.Domain/SufiChain.SufiAbp.TagsManagement.Domain.csproj" />
+    <Project Path="src/SufiChain.SufiAbp.TagsManagement.EntityFrameworkCore/SufiChain.SufiAbp.TagsManagement.EntityFrameworkCore.csproj" />
+    <Project Path="src/SufiChain.SufiAbp.TagsManagement.HttpApi.Client/SufiChain.SufiAbp.TagsManagement.HttpApi.Client.csproj" />
+    <Project Path="src/SufiChain.SufiAbp.TagsManagement.HttpApi/SufiChain.SufiAbp.TagsManagement.HttpApi.csproj" />
+    <Project Path="src/SufiChain.SufiAbp.TagsManagement.MongoDB/SufiChain.SufiAbp.TagsManagement.MongoDB.csproj" />
+  </Folder>
+</Solution>

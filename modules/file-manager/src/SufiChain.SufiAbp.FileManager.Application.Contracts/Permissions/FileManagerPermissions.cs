@@ -22,6 +22,16 @@ public static class FileManagerPermissions
         public const string Delete = Default + ".Delete";
     }
 
+    public static class Settings
+    {
+        public const string Default = GroupName + ".Settings";
+    }
+
+    public static class StorageSettings
+    {
+        public const string Manage = GroupName + ".StorageSettings";
+    }
+
     public static string[] GetAll()
     {
         return ReflectionHelper.GetPublicConstantsRecursively(typeof(FileManagerPermissions));

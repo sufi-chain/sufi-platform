@@ -3,15 +3,18 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using SufiChain.SufiAbp.FileManager.BackgroundJobs;
+using SufiChain.SufiAbp.FileManager.Features;
 using SufiChain.SufiAbp.FileManager.Settings;
 using Volo.Abp.BackgroundWorkers;
+using Volo.Abp.Features;
 using Volo.Abp.Settings;
 using Volo.Abp.Threading;
+using Volo.Abp.Timing;
 
 namespace SufiChain.SufiAbp.FileManager.Workers;
 
 /// <summary>
-/// Background worker that schedules periodic file archiving
+/// Background worker that schedules periodic file archiving.
 /// </summary>
 public class FileArchivingWorker : AsyncPeriodicBackgroundWorkerBase
 {
@@ -20,16 +23,28 @@ public class FileArchivingWorker : AsyncPeriodicBackgroundWorkerBase
         IServiceScopeFactory serviceScopeFactory)
         : base(timer, serviceScopeFactory)
     {
-        // Run every 24 hours (daily)
-        Timer.Period = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
+        Timer.Period = 24 * 60 * 60 * 1000;
     }
 
     protected override async Task DoWorkAsync(PeriodicBackgroundWorkerContext workerContext)
     {
         var settingProvider = workerContext.ServiceProvider.GetRequiredService<ISettingProvider>();
+        var featureChecker = workerContext.ServiceProvider.GetRequiredService<IFeatureChecker>();
+        var clock = workerContext.ServiceProvider.GetRequiredService<IClock>();
         var logger = workerContext.ServiceProvider.GetRequiredService<ILogger<FileArchivingWorker>>();
 
-        // Check if archiving is enabled
+        if (!await featureChecker.IsEnabledAsync(FileManagerFeatures.Names.Enable))
+        {
+            logger.LogDebug("File Manager module is disabled. Skipping archiving job.");
+            return;
+        }
+
+        if (!await featureChecker.IsEnabledAsync(FileManagerFeatures.Names.Archiving))
+        {
+            logger.LogDebug("File archiving feature is disabled. Skipping archiving job.");
+            return;
+        }
+
         var enabled = await settingProvider.GetAsync<bool>(FileArchivingSettings.Enabled);
         if (!enabled)
         {
@@ -37,9 +52,9 @@ public class FileArchivingWorker : AsyncPeriodicBackgroundWorkerBase
             return;
         }
 
-        // Get settings
         var retentionDays = await settingProvider.GetAsync<int>(FileArchivingSettings.RetentionDays);
         var batchSize = await settingProvider.GetAsync<int>(FileArchivingSettings.BatchSize);
+        var schedule = await settingProvider.GetOrNullAsync(FileArchivingSettings.Schedule);
 
         logger.LogInformation(
             "Starting scheduled file archiving. Retention: {RetentionDays} days, Batch size: {BatchSize}",
@@ -48,9 +63,8 @@ public class FileArchivingWorker : AsyncPeriodicBackgroundWorkerBase
 
         try
         {
-            // Enqueue background job for general files
             var backgroundJobManager = workerContext.ServiceProvider.GetRequiredService<Volo.Abp.BackgroundJobs.IBackgroundJobManager>();
-            
+
             await backgroundJobManager.EnqueueAsync(new FileArchivingArgs
             {
                 OlderThanDays = retentionDays,
@@ -58,13 +72,12 @@ public class FileArchivingWorker : AsyncPeriodicBackgroundWorkerBase
                 ArchiveReason = "Automatic archiving - scheduled retention policy"
             });
 
-            // Check if AI files should be archived separately
             var archiveAIFiles = await settingProvider.GetAsync<bool>(FileArchivingSettings.ArchiveAIFiles);
             if (archiveAIFiles)
             {
                 var aiRetentionDaysStr = await settingProvider.GetOrNullAsync(FileArchivingSettings.AIFilesRetentionDays);
-                var aiRetentionDays = !string.IsNullOrEmpty(aiRetentionDaysStr) 
-                    ? int.Parse(aiRetentionDaysStr) 
+                var aiRetentionDays = !string.IsNullOrEmpty(aiRetentionDaysStr)
+                    ? int.Parse(aiRetentionDaysStr)
                     : retentionDays;
 
                 if (aiRetentionDays != retentionDays)
@@ -88,6 +101,10 @@ public class FileArchivingWorker : AsyncPeriodicBackgroundWorkerBase
         catch (Exception ex)
         {
             logger.LogError(ex, "Failed to schedule file archiving jobs");
+        }
+        finally
+        {
+            Timer.Period = FileArchivingScheduleHelper.GetPeriodMilliseconds(schedule, clock.Now.ToUniversalTime());
         }
     }
 }

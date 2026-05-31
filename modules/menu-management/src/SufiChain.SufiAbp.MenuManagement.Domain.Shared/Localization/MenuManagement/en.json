@@ -16,6 +16,8 @@
     "MenuManagement:CreateMenuItem": "Create menu item",
     "MenuManagement:EditMenuItem": "Edit menu item",
     "MenuManagement:MoveMenuItem": "Move menu item",
-    "MenuManagement:ReorderMenuItem": "Reorder menu item"
+    "MenuManagement:ReorderMenuItem": "Reorder menu item",
+    "Feature:MenuManagement.Enable": "Menu Management",
+    "Feature:MenuManagement.Enable.Description": "Enable the Menu Management module for this edition."
   }
 }

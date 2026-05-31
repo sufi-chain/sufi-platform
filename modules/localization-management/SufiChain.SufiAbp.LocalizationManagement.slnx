@@ -1,0 +1,13 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/SufiChain.SufiAbp.LocalizationManagement.Application.Contracts/SufiChain.SufiAbp.LocalizationManagement.Application.Contracts.csproj" />
+    <Project Path="src/SufiChain.SufiAbp.LocalizationManagement.Application/SufiChain.SufiAbp.LocalizationManagement.Application.csproj" />
+    <Project Path="src/SufiChain.SufiAbp.LocalizationManagement.Blazor/SufiChain.SufiAbp.LocalizationManagement.Blazor.csproj" />
+    <Project Path="src/SufiChain.SufiAbp.LocalizationManagement.Domain.Shared/SufiChain.SufiAbp.LocalizationManagement.Domain.Shared.csproj" />
+    <Project Path="src/SufiChain.SufiAbp.LocalizationManagement.Domain/SufiChain.SufiAbp.LocalizationManagement.Domain.csproj" />
+    <Project Path="src/SufiChain.SufiAbp.LocalizationManagement.EntityFrameworkCore/SufiChain.SufiAbp.LocalizationManagement.EntityFrameworkCore.csproj" />
+    <Project Path="src/SufiChain.SufiAbp.LocalizationManagement.HttpApi.Client/SufiChain.SufiAbp.LocalizationManagement.HttpApi.Client.csproj" />
+    <Project Path="src/SufiChain.SufiAbp.LocalizationManagement.HttpApi/SufiChain.SufiAbp.LocalizationManagement.HttpApi.csproj" />
+    <Project Path="src/SufiChain.SufiAbp.LocalizationManagement.MongoDB/SufiChain.SufiAbp.LocalizationManagement.MongoDB.csproj" />
+  </Folder>
+</Solution>

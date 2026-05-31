@@ -1,12 +1,7 @@
 <Project>
     <PropertyGroup>
         <LangVersion>latest</LangVersion>
-        <!-- SufiAbp Framework Version -->
-        <SufiVersion>1.0.0-alpha.1.0</SufiVersion>
-        <!-- Independent module versions (own repos, consumed via project or package ref) -->
-        <SufiBlazorVersion>1.0.0-alpha.1.0</SufiBlazorVersion>
-        <SufiMessagingProVersion>1.0.0-alpha.1.0</SufiMessagingProVersion>
-        <SufiChainSufiAbpAIVersion>0.0.0-rc.3.0</SufiChainSufiAbpAIVersion>
+        <SufiBlazorVersion>1.0.0-alpha.2.0</SufiBlazorVersion>
     </PropertyGroup>
 
     <!-- ABP Framework Package Versions -->

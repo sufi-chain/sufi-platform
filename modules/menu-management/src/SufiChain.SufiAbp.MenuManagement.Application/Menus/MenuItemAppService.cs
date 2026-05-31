@@ -1,11 +1,14 @@
 using Microsoft.AspNetCore.Authorization;
 using SufiChain.SufiAbp.Application.Dtos;
+using SufiChain.SufiAbp.MenuManagement.Features;
 using SufiChain.SufiAbp.MenuManagement.Permissions;
 using Volo.Abp;
 using Volo.Abp.Application.Services;
+using Volo.Abp.Features;
 
 namespace SufiChain.SufiAbp.MenuManagement.Menus;
 
+[RequiresFeature(MenuManagementFeatures.Names.Enable)]
 [Authorize(MenuManagementPermissions.Menus.Default)]
 public class MenuItemAppService : ApplicationService, IMenuItemAppService
 {

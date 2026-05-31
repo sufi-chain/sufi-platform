@@ -30,19 +30,19 @@ public abstract class ExtensibleEntityDto : ExtensibleObject, IEntityDto
 /// </summary>
 /// <typeparam name="TKey">Type of the primary key</typeparam>
 [Serializable]
-public abstract class SufiAbpExtensibleEntityDto<TKey> : ExtensibleObject, IEntityDto<TKey>
+public abstract class ExtensibleEntityDto<TKey> : ExtensibleObject, IEntityDto<TKey>
 {
     /// <summary>
     /// Id of the entity.
     /// </summary>
     public virtual TKey Id { get; set; } = default!;
 
-    protected SufiAbpExtensibleEntityDto()
+    protected ExtensibleEntityDto()
         : this(true)
     {
     }
 
-    protected SufiAbpExtensibleEntityDto(bool setDefaultsForExtraProperties)
+    protected ExtensibleEntityDto(bool setDefaultsForExtraProperties)
         : base(setDefaultsForExtraProperties)
     {
     }

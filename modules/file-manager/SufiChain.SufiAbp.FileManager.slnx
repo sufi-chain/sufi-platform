@@ -1,15 +1,13 @@
 <Solution>
-  <Configurations>
-    <Platform Name="Any CPU" />
-    <Platform Name="x64" />
-    <Platform Name="x86" />
-  </Configurations>
   <Folder Name="/modules/">
     <Project Path="../../../independent-projects/sufi-blazor/src/SufiChain.SufiBlazor/SufiChain.SufiBlazor.csproj" />
   </Folder>
   <Folder Name="/src/">
     <Project Path="src/SufiChain.SufiAbp.FileManager.Application.Contracts/SufiChain.SufiAbp.FileManager.Application.Contracts.csproj" />
     <Project Path="src/SufiChain.SufiAbp.FileManager.Application/SufiChain.SufiAbp.FileManager.Application.csproj" />
+    <Project Path="src/SufiChain.SufiAbp.FileManager.Blazor.Public/SufiChain.SufiAbp.FileManager.Blazor.Public.csproj" />
+    <Project Path="src/SufiChain.SufiAbp.FileManager.Blazor.Server/SufiChain.SufiAbp.FileManager.Blazor.Server.csproj" />
+    <Project Path="src/SufiChain.SufiAbp.FileManager.Blazor.WebAssembly/SufiChain.SufiAbp.FileManager.Blazor.WebAssembly.csproj" />
     <Project Path="src/SufiChain.SufiAbp.FileManager.Blazor/SufiChain.SufiAbp.FileManager.Blazor.csproj" />
     <Project Path="src/SufiChain.SufiAbp.FileManager.Demo/SufiChain.SufiAbp.FileManager.Demo.csproj" />
     <Project Path="src/SufiChain.SufiAbp.FileManager.Domain.Shared/SufiChain.SufiAbp.FileManager.Domain.Shared.csproj" />
@@ -18,6 +16,7 @@
     <Project Path="src/SufiChain.SufiAbp.FileManager.HttpApi.Client/SufiChain.SufiAbp.FileManager.HttpApi.Client.csproj" />
     <Project Path="src/SufiChain.SufiAbp.FileManager.HttpApi/SufiChain.SufiAbp.FileManager.HttpApi.csproj" />
     <Project Path="src/SufiChain.SufiAbp.FileManager.MongoDB/SufiChain.SufiAbp.FileManager.MongoDB.csproj" />
+    <Project Path="src/SufiChain.SufiAbp.FileManager.RichTextEditor/SufiChain.SufiAbp.FileManager.RichTextEditor.csproj" />
   </Folder>
   <Folder Name="/test/">
     <Project Path="test/SufiChain.SufiAbp.FileManager.Application.Tests/SufiChain.SufiAbp.FileManager.Application.Tests.csproj" />

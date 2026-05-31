@@ -4,7 +4,7 @@ using Volo.Abp.Domain.Entities;
 
 namespace SufiChain.SufiAbp.Identity;
 
-public class IdentityRoleDto : SufiAbpExtensibleEntityDto<Guid>, IHasConcurrencyStamp, IHasCreationTime
+public class IdentityRoleDto : ExtensibleEntityDto<Guid>, IHasConcurrencyStamp, IHasCreationTime
 {
     public string Name { get; set; } = string.Empty;
 

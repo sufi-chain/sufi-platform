@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Localization;
 using SufiChain.SufiAbp.FileManager.Localization;
+using SufiChain.SufiAbp.FileManager.Permissions;
 using SufiChain.SufiAbp.SettingManagement.Blazor.Settings;
 
 namespace SufiChain.SufiAbp.FileManager.Blazor.Settings;
@@ -26,6 +27,6 @@ public class FileManagerStorageSettingsGroupContributor : ISettingComponentContr
     public async Task<bool> CheckPermissionsAsync(SettingComponentCreationContext context)
     {
         var authorizationService = context.GetRequiredService<IAuthorizationService>();
-        return await authorizationService.IsGrantedAsync(SufiChain.SufiAbp.FileManager.Permissions.FileManagerPermissions.FileStructures.Default);
+        return await authorizationService.IsGrantedAsync(FileManagerPermissions.StorageSettings.Manage);
     }
 }

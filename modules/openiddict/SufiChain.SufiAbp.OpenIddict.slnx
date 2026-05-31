@@ -1,0 +1,10 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/SufiChain.SufiAbp.OpenIddict.AspNetCore/SufiChain.SufiAbp.OpenIddict.AspNetCore.csproj" />
+    <Project Path="src/SufiChain.SufiAbp.OpenIddict.Domain.Shared/SufiChain.SufiAbp.OpenIddict.Domain.Shared.csproj" />
+    <Project Path="src/SufiChain.SufiAbp.OpenIddict.Domain/SufiChain.SufiAbp.OpenIddict.Domain.csproj" />
+    <Project Path="src/SufiChain.SufiAbp.OpenIddict.EntityFrameworkCore/SufiChain.SufiAbp.OpenIddict.EntityFrameworkCore.csproj" />
+    <Project Path="src/SufiChain.SufiAbp.OpenIddict.MongoDB/SufiChain.SufiAbp.OpenIddict.MongoDB.csproj" />
+    <Project Path="src/SufiChain.SufiAbp.PermissionManagement.Domain.OpenIddict/SufiChain.SufiAbp.PermissionManagement.Domain.OpenIddict.csproj" />
+  </Folder>
+</Solution>

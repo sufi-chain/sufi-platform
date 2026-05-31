@@ -19,7 +19,7 @@ public abstract class EntityDto : IEntityDto
 /// </summary>
 /// <typeparam name="TKey">Type of the primary key</typeparam>
 [Serializable]
-public abstract class SufiAbpEntityDto<TKey> : EntityDto, IEntityDto<TKey>
+public abstract class EntityDto<TKey> : EntityDto, IEntityDto<TKey>
 {
     /// <summary>
     /// Id of the entity.

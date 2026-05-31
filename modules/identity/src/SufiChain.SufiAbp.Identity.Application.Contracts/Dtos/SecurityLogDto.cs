@@ -5,7 +5,7 @@ namespace SufiChain.SufiAbp.Identity.Dtos;
 /// <summary>
 /// Full security log details DTO.
 /// </summary>
-public class SecurityLogDto : SufiAbpEntityDto<Guid>
+public class SecurityLogDto : EntityDto<Guid>
 {
     public Guid? TenantId { get; set; }
     public string? TenantName { get; set; }
@@ -25,7 +25,7 @@ public class SecurityLogDto : SufiAbpEntityDto<Guid>
 /// <summary>
 /// Security log list item DTO for grid display.
 /// </summary>
-public class SecurityLogListItemDto : SufiAbpEntityDto<Guid>
+public class SecurityLogListItemDto : EntityDto<Guid>
 {
     public Guid? TenantId { get; set; }
     public string? TenantName { get; set; }

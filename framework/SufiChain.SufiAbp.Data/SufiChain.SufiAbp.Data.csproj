@@ -19,5 +19,9 @@
     <PackageReference Include="Volo.Abp.Settings" Version="$(AbpVersion)" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\..\modules\setting-management\src\SufiChain.SufiAbp.SettingManagement.Application.Contracts\SufiChain.SufiAbp.SettingManagement.Application.Contracts.csproj" />
+  </ItemGroup>
+
 
 </Project>

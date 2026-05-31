@@ -1,9 +1,12 @@
 using Microsoft.AspNetCore.Mvc;
-using SufiChain.SufiAbp.AspNetCore.Mvc;
+using SufiChain.SufiAbp.AspNetCore.Mvc.Controllers;
 using SufiChain.SufiAbp.MenuManagement.Menus;
+using Volo.Abp;
 
 namespace SufiChain.SufiAbp.MenuManagement.Controllers;
 
+[Area(MenuManagementConsts.ModuleName)]
+[RemoteService(Name = MenuManagementConsts.ModuleName)]
 [Route("api/menu-management/public")]
 public class PublicMenuController : SufiAbpControllerBase, IPublicMenuAppService
 {

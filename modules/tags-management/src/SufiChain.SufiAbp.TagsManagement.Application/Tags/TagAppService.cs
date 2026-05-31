@@ -3,21 +3,31 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using SufiChain.SufiAbp.Application.Dtos;
+using SufiChain.SufiAbp.TagsManagement.Features;
 using SufiChain.SufiAbp.TagsManagement.Permissions;
+using SufiChain.SufiAbp.TagsManagement.Settings;
+using Volo.Abp;
 using Volo.Abp.Application.Services;
+using Volo.Abp.Features;
 
 namespace SufiChain.SufiAbp.TagsManagement.Tags;
 
+[RequiresFeature(TagsManagementFeatures.Names.Enable)]
 [Authorize(TagsManagementPermissions.Tags.Default)]
 public class TagAppService : ApplicationService, ITagAppService
 {
     private readonly ITagRepository _tagRepository;
     private readonly TagManager _tagManager;
+    private readonly ITagsManagementPolicyProvider _policyProvider;
 
-    public TagAppService(ITagRepository tagRepository, TagManager tagManager)
+    public TagAppService(
+        ITagRepository tagRepository,
+        TagManager tagManager,
+        ITagsManagementPolicyProvider policyProvider)
     {
         _tagRepository = tagRepository;
         _tagManager = tagManager;
+        _policyProvider = policyProvider;
     }
 
     public virtual async Task<TagDto> GetAsync(Guid id)
@@ -43,6 +53,8 @@ public class TagAppService : ApplicationService, ITagAppService
     [Authorize(TagsManagementPermissions.Tags.Create)]
     public virtual async Task<TagDto> CreateAsync(CreateTagDto input)
     {
+        await CheckTagNameLengthAsync(input.Name);
+
         var tag = await _tagManager.CreateAsync(input.Name, input.Scope, input.Color, CurrentTenant.Id);
         await _tagRepository.InsertAsync(tag, autoSave: true);
         return ObjectMapper.Map<Tag, TagDto>(tag);
@@ -51,6 +63,8 @@ public class TagAppService : ApplicationService, ITagAppService
     [Authorize(TagsManagementPermissions.Tags.Update)]
     public virtual async Task<TagDto> UpdateAsync(Guid id, UpdateTagDto input)
     {
+        await CheckTagNameLengthAsync(input.Name);
+
         var tag = await _tagRepository.GetAsync(id);
         tag.SetName(input.Name);
         tag.SetScope(input.Scope);
@@ -63,5 +77,15 @@ public class TagAppService : ApplicationService, ITagAppService
     public virtual async Task DeleteAsync(Guid id)
     {
         await _tagRepository.DeleteAsync(id, autoSave: true);
+    }
+
+    protected virtual async Task CheckTagNameLengthAsync(string name)
+    {
+        var policy = await _policyProvider.GetAsync();
+        if (name.Length > policy.MaxTagNameLength)
+        {
+            throw new BusinessException(TagsManagementErrorCodes.MaxTagNameLengthExceeded)
+                .WithData("MaxTagNameLength", policy.MaxTagNameLength);
+        }
     }
 }

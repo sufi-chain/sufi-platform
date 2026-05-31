@@ -1,23 +1,33 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using System.Linq;
 using Microsoft.AspNetCore.Authorization;
+using SufiChain.SufiAbp.TagsManagement.Features;
 using SufiChain.SufiAbp.TagsManagement.Permissions;
+using SufiChain.SufiAbp.TagsManagement.Settings;
 using Volo.Abp;
 using Volo.Abp.Application.Services;
+using Volo.Abp.Features;
 
 namespace SufiChain.SufiAbp.TagsManagement.Tags;
 
+[RequiresFeature(TagsManagementFeatures.Names.Enable)]
 [Authorize(TagsManagementPermissions.TagLinks.Default)]
 public class TagLinkAppService : ApplicationService, ITagLinkAppService
 {
     private readonly ITagRepository _tagRepository;
     private readonly ITagLinkRepository _tagLinkRepository;
+    private readonly ITagsManagementPolicyProvider _policyProvider;
 
-    public TagLinkAppService(ITagRepository tagRepository, ITagLinkRepository tagLinkRepository)
+    public TagLinkAppService(
+        ITagRepository tagRepository,
+        ITagLinkRepository tagLinkRepository,
+        ITagsManagementPolicyProvider policyProvider)
     {
         _tagRepository = tagRepository;
         _tagLinkRepository = tagLinkRepository;
+        _policyProvider = policyProvider;
     }
 
     [Authorize(TagsManagementPermissions.TagLinks.Assign)]
@@ -33,6 +43,14 @@ public class TagLinkAppService : ApplicationService, ITagLinkAppService
         if (exists)
         {
             return;
+        }
+
+        var policy = await _policyProvider.GetAsync();
+        var existingLinks = await _tagLinkRepository.GetListByEntityAsync(input.EntityType, input.EntityId, CurrentTenant.Id);
+        if (existingLinks.Count >= policy.MaxTagsPerEntity)
+        {
+            throw new BusinessException(TagsManagementErrorCodes.MaxTagsPerEntityExceeded)
+                .WithData("MaxTagsPerEntity", policy.MaxTagsPerEntity);
         }
 
         var link = new TagLink(GuidGenerator.Create(), input.TagId, input.EntityType, input.EntityId, CurrentTenant.Id);

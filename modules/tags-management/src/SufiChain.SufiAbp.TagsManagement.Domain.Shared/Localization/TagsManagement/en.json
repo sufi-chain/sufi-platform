@@ -1,9 +1,14 @@
 {
   "culture": "en",
   "texts": {
-    "Permission:TagsManagement": "Tags management",
-    "Permission:TagsManagement.Tags": "Manage tags",
-    "Permission:TagsManagement.TagLinks": "Manage tag links"
+    "TagsManagement": "Tags Management",
+    "Feature:TagsManagement.Enable": "Tags Management",
+    "Feature:TagsManagement.Enable.Description": "Enable the Tags Management module for this edition.",
+    "Setting:TagsManagement.MaxTagsPerEntity": "Max tags per entity",
+    "Setting:TagsManagement.MaxTagsPerEntity.Description": "Maximum number of tags that can be assigned to a single entity.",
+    "Setting:TagsManagement.MaxTagNameLength": "Max tag name length",
+    "Setting:TagsManagement.MaxTagNameLength.Description": "Maximum length for tag names. Entity schema limits still apply.",
+    "TagsManagement:MaxTagsPerEntityExceeded": "The maximum number of tags per entity has been reached.",
+    "TagsManagement:MaxTagNameLengthExceeded": "Tag name exceeds the maximum allowed length."
   }
 }
-

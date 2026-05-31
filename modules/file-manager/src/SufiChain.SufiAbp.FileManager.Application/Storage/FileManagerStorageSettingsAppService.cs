@@ -6,7 +6,7 @@ using SufiChain.SufiAbp.FileManager.Permissions;
 
 namespace SufiChain.SufiAbp.FileManager.Storage;
 
-[Authorize(FileManagerPermissions.FileStructures.Default)]
+[Authorize(FileManagerPermissions.StorageSettings.Manage)]
 public class FileManagerStorageSettingsAppService : ApplicationService, IFileManagerStorageSettingsAppService
 {
     protected ISettingProvider SettingProvider { get; }

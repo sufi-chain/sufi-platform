@@ -6,7 +6,7 @@ namespace SufiChain.SufiAbp.Application.Dtos;
 /// Base extensible DTO for creation audited entities.
 /// </summary>
 [Serializable]
-public abstract class ExtensibleCreationAuditedEntityDto<TKey> : SufiAbpExtensibleEntityDto<TKey>, ICreationAuditedObject
+public abstract class ExtensibleCreationAuditedEntityDto<TKey> : ExtensibleEntityDto<TKey>, ICreationAuditedObject
 {
     public virtual DateTime CreationTime { get; set; }
     public virtual Guid? CreatorId { get; set; }
