@@ -238,6 +238,10 @@
     "Feature:AIManagement.FileManagerIntegration.Description": "یکپارچگی فایل‌های تولیدشده و پردازش‌شده توسط هوش مصنوعی با مدیر فایل را مجاز می‌کند.",
     "NoWorkspacesAvailable": "هیچ فضای کاری موجود نیست",
     "WorkspaceNameRequired": "نام فضای کاری الزامی است",
-    "InheritWorkspace": "ارث‌بری فضای کاری"
+    "InheritWorkspace": "ارث‌بری فضای کاری",
+    "InputCostPer1KTokensMustBeNonNegative": "هزینه توکن ورودی باید عددی نامنفی باشد",
+    "OutputCostPer1KTokensMustBeNonNegative": "هزینه توکن خروجی باید عددی نامنفی باشد",
+    "TemperatureMustBeNumber": "دما باید یک عدد معتبر باشد",
+    "MaxTokensMustBeNumber": "حداکثر توکن‌ها باید یک عدد معتبر باشد"
   }
 }

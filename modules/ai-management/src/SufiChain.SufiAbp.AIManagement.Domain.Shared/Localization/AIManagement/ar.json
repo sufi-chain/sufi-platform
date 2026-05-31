@@ -233,6 +233,10 @@
     "Feature:AIManagement.FileManagerIntegration.Description": "السماح بدمج الملفات التي ينشئها ويعالجها الذكاء الاصطناعي مع مدير الملفات.",
     "NoWorkspacesAvailable": "لا توجد مساحات عمل متاحة",
     "WorkspaceNameRequired": "اسم مساحة العمل مطلوب",
-    "InheritWorkspace": "وراثة مساحة العمل"
+    "InheritWorkspace": "وراثة مساحة العمل",
+    "InputCostPer1KTokensMustBeNonNegative": "يجب أن تكون تكلفة رموز الإدخال رقماً غير سالب",
+    "OutputCostPer1KTokensMustBeNonNegative": "يجب أن تكون تكلفة رموز الإخراج رقماً غير سالب",
+    "TemperatureMustBeNumber": "يجب أن تكون درجة الحرارة رقماً صالحاً",
+    "MaxTokensMustBeNumber": "يجب أن يكون الحد الأقصى للرموز رقماً صالحاً"
   }
 }

@@ -1,3 +1,4 @@
+using System.Globalization;
 using Microsoft.AspNetCore.Components;
 using SufiChain.SufiAbp.AIManagement.Workspaces;
 
@@ -160,7 +161,7 @@ public partial class WorkspaceCreateModal : AIManagementComponentBase
 
     private async Task<bool> TryApplyGenerationSettingsAsync()
     {
-        if (!float.TryParse(_temperatureText, out var temp))
+        if (!TryParseFloat(_temperatureText, out var temp))
         {
             await Message.ErrorAsync(L["TemperatureMustBeNumber"]);
             return false;
@@ -211,12 +212,24 @@ public partial class WorkspaceCreateModal : AIManagementComponentBase
             return true;
         }
 
-        if (decimal.TryParse(value, out var parsed) && parsed >= 0)
+        if (TryParseDecimal(value, out var parsed) && parsed >= 0)
         {
             result = parsed;
             return true;
         }
 
         return false;
+    }
+
+    private static bool TryParseFloat(string? value, out float result)
+    {
+        return float.TryParse(value, NumberStyles.Float, CultureInfo.InvariantCulture, out result) ||
+               float.TryParse(value, NumberStyles.Float, CultureInfo.CurrentCulture, out result);
+    }
+
+    private static bool TryParseDecimal(string value, out decimal result)
+    {
+        return decimal.TryParse(value, NumberStyles.Number, CultureInfo.InvariantCulture, out result) ||
+               decimal.TryParse(value, NumberStyles.Number, CultureInfo.CurrentCulture, out result);
     }
 }

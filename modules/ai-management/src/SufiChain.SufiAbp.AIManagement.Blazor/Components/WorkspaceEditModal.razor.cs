@@ -1,3 +1,4 @@
+using System.Globalization;
 using Microsoft.AspNetCore.Components;
 using SufiChain.SufiAbp.AIManagement.Workspaces;
 
@@ -65,10 +66,10 @@ public partial class WorkspaceEditModal : AIManagementComponentBase
                 InputCostPer1KTokens = _workspace.InputCostPer1KTokens,
                 OutputCostPer1KTokens = _workspace.OutputCostPer1KTokens
             };
-            _temperatureText = _workspace.Temperature.ToString("F2");
-            _maxTokensText = _workspace.MaxTokens.ToString();
-            _inputCostPer1KTokensText = _workspace.InputCostPer1KTokens?.ToString() ?? string.Empty;
-            _outputCostPer1KTokensText = _workspace.OutputCostPer1KTokens?.ToString() ?? string.Empty;
+            _temperatureText = _workspace.Temperature.ToString("0.##", CultureInfo.InvariantCulture);
+            _maxTokensText = _workspace.MaxTokens.ToString(CultureInfo.InvariantCulture);
+            _inputCostPer1KTokensText = _workspace.InputCostPer1KTokens?.ToString(CultureInfo.InvariantCulture) ?? string.Empty;
+            _outputCostPer1KTokensText = _workspace.OutputCostPer1KTokens?.ToString(CultureInfo.InvariantCulture) ?? string.Empty;
             _availableModels = new List<OpenAIModelDto>
             {
                 new() { Id = _workspace.Model }
@@ -188,7 +189,7 @@ public partial class WorkspaceEditModal : AIManagementComponentBase
 
     private async Task<bool> TryApplyGenerationSettingsAsync()
     {
-        if (!float.TryParse(_temperatureText, out var temp))
+        if (!TryParseFloat(_temperatureText, out var temp))
         {
             await Message.ErrorAsync(L["TemperatureMustBeNumber"]);
             return false;
@@ -240,12 +241,24 @@ public partial class WorkspaceEditModal : AIManagementComponentBase
             return true;
         }
 
-        if (decimal.TryParse(value, out var parsed) && parsed >= 0)
+        if (TryParseDecimal(value, out var parsed) && parsed >= 0)
         {
             result = parsed;
             return true;
         }
 
         return false;
+    }
+
+    private static bool TryParseFloat(string? value, out float result)
+    {
+        return float.TryParse(value, NumberStyles.Float, CultureInfo.InvariantCulture, out result) ||
+               float.TryParse(value, NumberStyles.Float, CultureInfo.CurrentCulture, out result);
+    }
+
+    private static bool TryParseDecimal(string value, out decimal result)
+    {
+        return decimal.TryParse(value, NumberStyles.Number, CultureInfo.InvariantCulture, out result) ||
+               decimal.TryParse(value, NumberStyles.Number, CultureInfo.CurrentCulture, out result);
     }
 }

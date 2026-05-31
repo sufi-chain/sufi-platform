@@ -233,6 +233,10 @@
     "Feature:AIManagement.FileManagerIntegration.Description": "Permite integrar archivos generados y procesados por IA con el Administrador de archivos.",
     "NoWorkspacesAvailable": "No hay espacios de trabajo disponibles",
     "WorkspaceNameRequired": "El nombre del espacio de trabajo es obligatorio",
-    "InheritWorkspace": "Heredar espacio de trabajo"
+    "InheritWorkspace": "Heredar espacio de trabajo",
+    "InputCostPer1KTokensMustBeNonNegative": "El costo de tokens de entrada debe ser un número no negativo",
+    "OutputCostPer1KTokensMustBeNonNegative": "El costo de tokens de salida debe ser un número no negativo",
+    "TemperatureMustBeNumber": "La temperatura debe ser un número válido",
+    "MaxTokensMustBeNumber": "El máximo de tokens debe ser un número válido"
   }
 }
