@@ -80,7 +80,7 @@
     <Project Path="modules/account/src/SufiChain.SufiAbp.Account.HttpApi.Client/SufiChain.SufiAbp.Account.HttpApi.Client.csproj" />
     <Project Path="modules/account/src/SufiChain.SufiAbp.Account.HttpApi/SufiChain.SufiAbp.Account.HttpApi.csproj" />
   </Folder>
-  <Folder Name="/Modules/AiMmanagement/">
+  <Folder Name="/Modules/AiManagement/">
     <Project Path="modules/ai-management/src/SufiChain.SufiAbp.AIManagement.Application.Contracts/SufiChain.SufiAbp.AIManagement.Application.Contracts.csproj" />
     <Project Path="modules/ai-management/src/SufiChain.SufiAbp.AIManagement.Application/SufiChain.SufiAbp.AIManagement.Application.csproj" />
     <Project Path="modules/ai-management/src/SufiChain.SufiAbp.AIManagement.Blazor.WebAssembly/SufiChain.SufiAbp.AIManagement.Blazor.WebAssembly.csproj" />
