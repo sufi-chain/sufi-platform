@@ -1,14 +1,10 @@
 namespace SufiChain.SufiAbp.Data;
 
-/// <summary>
-/// Sufi Platform overrides for ABP framework constants. Uses sufichain.ir domain instead of abp.io.
-/// Use these constants when passing seed context properties (e.g. in DbMigrationService) or when
-/// configuring email settings. Replaces ABP defaults: admin@sabp.com, noreply@abp.io, "ABP application".
-/// </summary>
+
 public static class SufiAbpConstants
 {
     /// <summary>
-    /// Default email for the seeded admin user (overrides ABP's admin@sabp.com).
+    /// Default email for the seeded admin user.
     /// </summary>
     public const string AdminEmailDefaultValue = "admin@sufichain.ir";
 
@@ -28,12 +24,12 @@ public static class SufiAbpConstants
     public const string AdminPasswordDefaultValue = "1q2w3E*";
 
     /// <summary>
-    /// Default sender email address for outbound mail (overrides ABP's noreply@abp.io).
+    /// Default sender email address for outbound mail.
     /// </summary>
     public const string DefaultFromAddress = "noreply@sufichain.ir";
 
     /// <summary>
-    /// Default sender display name for outbound mail (overrides ABP's "ABP application").
+    /// Default sender display name for outbound mail.
     /// </summary>
     public const string DefaultFromDisplayName = "Sufi Platform";
 }

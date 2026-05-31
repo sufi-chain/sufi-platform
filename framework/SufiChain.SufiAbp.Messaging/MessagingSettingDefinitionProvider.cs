@@ -25,7 +25,7 @@ public class MessagingSettingDefinitionProvider : SettingDefinitionProvider
             ),
             new SettingDefinition(
                 MessagingSettingNames.Email.SmtpHost,
-                "127.0.0.1",
+                "",
                 L("DisplayName:SufiAbp.Messaging.Email.SmtpHost"),
                 L("Description:SufiAbp.Messaging.Email.SmtpHost"),
                 isVisibleToClients: false,

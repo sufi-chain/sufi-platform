@@ -104,7 +104,7 @@ public class EmbeddingsDto
 }
 
 // Model Configuration DTOs
-public class AIModelConfigurationDto : EntityDto<Guid>
+public class AIModelConfigurationDto : Application.Dtos.EntityDto<Guid>
 {
     public Guid WorkspaceId { get; set; }
     public AICapabilityType CapabilityType { get; set; }
@@ -145,7 +145,7 @@ public class UpdateAIModelConfigurationDto
 }
 
 // Usage Log DTOs
-public class AIUsageLogDto : EntityDto<Guid>
+public class AIUsageLogDto : Application.Dtos.EntityDto<Guid>
 {
     public Guid WorkspaceId { get; set; }
     public AICapabilityType CapabilityType { get; set; }

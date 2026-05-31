@@ -2,6 +2,7 @@
 @attribute [Authorize]
 @inject IProfileAppService ProfileAppService
 @inject IStringLocalizer<SufiAbpIdentityResource> L
+@inject IStringLocalizer<SufiAbpAccountResource> AccountL
 
 <SbCard>
     <ChildContent>
@@ -42,6 +43,8 @@
                     {
                         <SbAlert Severity="SbAlertSeverity.Danger">@_errorMessage</SbAlert>
                     }
+
+                    <SbLink Href="/account/manage/two-factor">@AccountL["Menu:TwoFactor"]</SbLink>
 
                     <SbStack Direction="SbStackDirection.Row" Justify="SbJustify.End">
                         <SbButton Type="submit" Color="SbColor.Primary" Loading="_saving">

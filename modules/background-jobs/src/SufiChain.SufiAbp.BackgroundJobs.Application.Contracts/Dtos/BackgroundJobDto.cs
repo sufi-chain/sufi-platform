@@ -7,7 +7,7 @@ namespace SufiChain.SufiAbp.BackgroundJobs.Dtos;
 /// <summary>
 /// Full background job details DTO.
 /// </summary>
-public class BackgroundJobDto : SufiAbpEntityDto<Guid>
+public class BackgroundJobDto : EntityDto<Guid>
 {
     public string? JobName { get; set; }
     public string? ApplicationName { get; set; }
@@ -23,7 +23,7 @@ public class BackgroundJobDto : SufiAbpEntityDto<Guid>
 /// <summary>
 /// Background job list item DTO for grid display.
 /// </summary>
-public class BackgroundJobListItemDto : SufiAbpEntityDto<Guid>
+public class BackgroundJobListItemDto : EntityDto<Guid>
 {
     public string? JobName { get; set; }
     public string? ApplicationName { get; set; }

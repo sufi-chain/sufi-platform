@@ -41,6 +41,7 @@ public partial class FileItemAppService : ApplicationService, IFileItemAppServic
     private readonly IFileBlobNameCalculator _blobNameCalculator;
     private readonly FileManagerOptions _options;
     private readonly ISettingProvider _settingProvider;
+    private readonly IFileManagerTenantPolicyProvider _tenantPolicyProvider;
     private readonly IFileAccessTokenService _fileAccessTokenService;
     private readonly ILogger<FileItemAppService> _logger;
     private readonly IS3PublicBlobUrlProvider _s3PublicBlobUrlProvider;
@@ -58,6 +59,7 @@ public partial class FileItemAppService : ApplicationService, IFileItemAppServic
         IFileBlobNameCalculator blobNameCalculator,
         IOptions<FileManagerOptions> options,
         ISettingProvider settingProvider,
+        IFileManagerTenantPolicyProvider tenantPolicyProvider,
         IFileAccessTokenService fileAccessTokenService,
         ILogger<FileItemAppService> logger,
         IS3PublicBlobUrlProvider s3PublicBlobUrlProvider,
@@ -74,6 +76,7 @@ public partial class FileItemAppService : ApplicationService, IFileItemAppServic
         _blobNameCalculator = blobNameCalculator;
         _options = options.Value;
         _settingProvider = settingProvider;
+        _tenantPolicyProvider = tenantPolicyProvider;
         _fileAccessTokenService = fileAccessTokenService;
         _logger = logger;
         _s3PublicBlobUrlProvider = s3PublicBlobUrlProvider;
@@ -604,11 +607,11 @@ public partial class FileItemAppService : ApplicationService, IFileItemAppServic
 
         var usedBytes = await AsyncExecuter.SumAsync(query, x => (long?)x.Size) ?? 0;
 
-        // Get limit from settings
-        var limitMB = await _settingProvider.GetAsync<long>(FileManagerSettings.StorageQuota);
+        var policy = await _tenantPolicyProvider.GetGeneralPolicyAsync();
+        var limitMB = policy.StorageQuotaMB;
         if (limitMB == 0)
         {
-            limitMB = _options.DefaultStorageQuotaMB > 0 ? _options.DefaultStorageQuotaMB : 1024; // Default 1GB
+            limitMB = 1024;
         }
 
         return new StorageQuotaDto

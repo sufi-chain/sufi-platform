@@ -6,6 +6,7 @@ using SufiChain.SufiAbp.Users;
 namespace SufiChain.SufiAbp.PermissionManagement.Identity;
 
 [DependsOn(
+    typeof(SufiAbpIdentityApplicationContractsModule),
     typeof(SufiAbpIdentityDomainSharedModule),
     typeof(SufiAbpPermissionManagementDomainModule),
     typeof(SufiAbpUsersAbstractionModule)
@@ -20,8 +21,8 @@ public class SufiAbpPermissionManagementDomainIdentityModule : AbpModule
             options.ManagementProviders.Add<RolePermissionManagementProvider>();
 
             //TODO: Can we prevent duplication of permission names without breaking the design and making the system complicated
-            options.ProviderPolicies[UserPermissionValueProvider.ProviderName] = "SufiAbpIdentity.Users.ManagePermissions";
-            options.ProviderPolicies[RolePermissionValueProvider.ProviderName] = "SufiAbpIdentity.Roles.ManagePermissions";
+            options.ProviderPolicies[UserPermissionValueProvider.ProviderName] = IdentityPermissions.Users.ManagePermissions;
+            options.ProviderPolicies[RolePermissionValueProvider.ProviderName] = IdentityPermissions.Roles.ManagePermissions;
 
             options.ResourceManagementProviders.Add<UserResourcePermissionManagementProvider>();
             options.ResourceManagementProviders.Add<RoleResourcePermissionManagementProvider>();

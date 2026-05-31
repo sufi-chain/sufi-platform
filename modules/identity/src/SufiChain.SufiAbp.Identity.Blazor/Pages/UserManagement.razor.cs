@@ -1,4 +1,3 @@
-using System.Security.Claims;
 using Microsoft.AspNetCore.Components;
 using SufiChain.SufiAbp.Identity.Blazor.Components;
 using SufiChain.SufiAbp.Identity.Localization;
@@ -55,7 +54,7 @@ public partial class UserManagement : IdentityComponentBase
         if (firstRender)
         {
             // Check if user has permission to manage permissions
-            _hasManagePermissionsPermission = await IsGrantedAsync(SufiChain.SufiAbp.Identity.IdentityPermissions.Users.ManagePermissions);
+            _hasManagePermissionsPermission = await IsGrantedAsync(IdentityPermissions.Users.ManagePermissions);
 
             await ExecuteWithLoadingAsync(async () =>
             {
@@ -65,18 +64,6 @@ public partial class UserManagement : IdentityComponentBase
 
             await LoadUsersAsync();
         }
-    }
-
-    private async Task<bool> IsGrantedAsync(string policyName)
-    {
-        var claims = CurrentUser.GetAllClaims();
-        var identity = claims.FirstOrDefault()?.Subject;
-        var principal = identity != null
-            ? new ClaimsPrincipal(identity)
-            : new ClaimsPrincipal();
-
-        var result = await AuthorizationService.AuthorizeAsync(principal, null, policyName);
-        return result.Succeeded;
     }
 
     private void SetupPageLayout()

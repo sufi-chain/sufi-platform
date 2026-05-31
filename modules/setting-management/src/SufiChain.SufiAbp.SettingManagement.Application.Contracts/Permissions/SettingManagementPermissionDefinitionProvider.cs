@@ -15,6 +15,7 @@ public class SettingManagementPermissionDefinitionProvider : PermissionDefinitio
         group.AddPermission(SettingManagementPermissions.Emailing, L("Permission:Emailing"))
             .AddChild(SettingManagementPermissions.EmailingTest, L("Permission:EmailingTest"));
         group.AddPermission(SettingManagementPermissions.TimeZone, L("Permission:TimeZone"));
+        group.AddPermission(SettingManagementPermissions.Identity, L("Permission:Identity"));
     }
 
     private static LocalizableString L(string name)

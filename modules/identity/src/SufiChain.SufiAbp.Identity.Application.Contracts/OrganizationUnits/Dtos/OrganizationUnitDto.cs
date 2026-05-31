@@ -5,7 +5,7 @@ namespace SufiChain.SufiAbp.Identity.OrganizationUnits.Dtos;
 /// <summary>
 /// DTO for displaying an organization unit in a tree structure.
 /// </summary>
-public class OrganizationUnitDto : SufiAbpEntityDto<Guid>
+public class OrganizationUnitDto : EntityDto<Guid>
 {
     /// <summary>
     /// Parent organization unit ID. Null for root units.

@@ -12,4 +12,10 @@ public interface IAccountAppService : IApplicationService
     Task<bool> VerifyPasswordResetTokenAsync(VerifyPasswordResetTokenInput input);
 
     Task ResetPasswordAsync(ResetPasswordDto input);
+
+    Task SendEmailConfirmationTokenAsync(SendEmailConfirmationTokenDto input);
+
+    Task ConfirmEmailAsync(ConfirmEmailDto input);
+
+    Task<bool> VerifyEmailConfirmationTokenAsync(VerifyEmailConfirmationTokenInput input);
 }

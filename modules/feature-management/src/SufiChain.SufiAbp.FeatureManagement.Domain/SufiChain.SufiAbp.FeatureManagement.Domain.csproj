@@ -12,6 +12,7 @@
     <ProjectReference Include="..\..\..\..\framework\SufiChain.SufiAbp.Data\SufiChain.SufiAbp.Data.csproj" />
     <ProjectReference Include="..\..\..\..\framework\SufiChain.SufiAbp.Localization\SufiChain.SufiAbp.Localization.csproj" />
     <ProjectReference Include="..\SufiChain.SufiAbp.FeatureManagement.Domain.Shared\SufiChain.SufiAbp.FeatureManagement.Domain.Shared.csproj" />
+    <ProjectReference Include="..\..\..\tenant-management\src\SufiChain.SufiAbp.TenantManagement.Application.Contracts\SufiChain.SufiAbp.TenantManagement.Application.Contracts.csproj" />
   </ItemGroup>
 
   <ItemGroup>

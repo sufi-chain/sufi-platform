@@ -2,7 +2,7 @@ namespace SufiChain.SufiAbp.FeatureManagement;
 
 public static class FeatureManagementPermissions
 {
-    public const string GroupName = "SufiAbpFeatureManagement";
+    public const string GroupName = "FeatureManagement";
 
     public static class Features
     {

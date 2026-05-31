@@ -46,6 +46,16 @@
     "CurrentTimeZone": "منطقه زمانی فعلی",
     "CurrentTime": "زمان فعلی",
     "SearchTimeZone": "جستجوی منطقه زمانی…",
-    "MailSendingFailed": "ارسال ایمیل ناموفق بود."
+    "MailSendingFailed": "ارسال ایمیل ناموفق بود.",
+    "IdentitySettings": "هویت و امنیت",
+    "IdentityTabSignup": "ثبت‌نام",
+    "IdentityTabPassword": "رمز عبور",
+    "IdentityTabLockout": "قفل حساب",
+    "IdentityTabTokens": "توکن‌ها",
+    "IdentityTabTwoFactor": "دو مرحله‌ای",
+    "IdentityTabOtp": "OTP",
+    "IdentityTabCaptcha": "کپچا",
+    "IdentityAllowedChannels": "کانال‌های مجاز ارسال",
+    "Permission:Identity": "تنظیمات هویت"
   }
 }

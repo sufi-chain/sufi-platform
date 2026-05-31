@@ -42,9 +42,29 @@ public class AccountController : SufiAbpControllerBase, IAccountAppService
 
     [HttpPost]
     [Route("reset-password")]
-    public virtual Task ResetPasswordAsync(
-        ResetPasswordDto input)
+    public virtual Task ResetPasswordAsync(ResetPasswordDto input)
     {
         return _accountAppService.ResetPasswordAsync(input);
+    }
+
+    [HttpPost]
+    [Route("send-email-confirmation-token")]
+    public virtual Task SendEmailConfirmationTokenAsync(SendEmailConfirmationTokenDto input)
+    {
+        return _accountAppService.SendEmailConfirmationTokenAsync(input);
+    }
+
+    [HttpPost]
+    [Route("confirm-email")]
+    public virtual Task ConfirmEmailAsync(ConfirmEmailDto input)
+    {
+        return _accountAppService.ConfirmEmailAsync(input);
+    }
+
+    [HttpPost]
+    [Route("verify-email-confirmation-token")]
+    public virtual Task<bool> VerifyEmailConfirmationTokenAsync(VerifyEmailConfirmationTokenInput input)
+    {
+        return _accountAppService.VerifyEmailConfirmationTokenAsync(input);
     }
 }

@@ -15,6 +15,8 @@
     
     <ProjectReference Include="..\..\..\..\framework\SufiChain.SufiAbp.Ddd.Domain\SufiChain.SufiAbp.Ddd.Domain.csproj" />
     
+    <ProjectReference Include="..\..\..\..\framework\SufiChain.SufiAbp.DistributedLocking.Abstractions\SufiChain.SufiAbp.DistributedLocking.Abstractions.csproj" />
+    
     <ProjectReference Include="..\SufiChain.SufiAbp.PermissionManagement.Domain.Shared\SufiChain.SufiAbp.PermissionManagement.Domain.Shared.csproj" />
   </ItemGroup>
 </Project>

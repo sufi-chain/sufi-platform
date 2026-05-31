@@ -45,6 +45,16 @@
     "SearchTimeZone": "Buscar zona horaria…",
     "Cancel": "Cancelar",
     "Save": "Guardar",
-    "MailSendingFailed": "Error al enviar el correo."
+    "MailSendingFailed": "Error al enviar el correo.",
+    "IdentitySettings": "Identidad y seguridad",
+    "IdentityTabSignup": "Registro",
+    "IdentityTabPassword": "Contraseña",
+    "IdentityTabLockout": "Bloqueo",
+    "IdentityTabTokens": "Tokens",
+    "IdentityTabTwoFactor": "Dos factores",
+    "IdentityTabOtp": "OTP",
+    "IdentityTabCaptcha": "CAPTCHA",
+    "IdentityAllowedChannels": "Canales de envío permitidos",
+    "Permission:Identity": "Configuración de identidad"
   }
 }

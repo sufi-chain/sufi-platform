@@ -16,6 +16,7 @@
     <ProjectReference Include="..\..\..\..\framework\SufiChain.SufiAbp.UI.Domain.Shared\SufiChain.SufiAbp.UI.Domain.Shared.csproj" />
     <ProjectReference Include="../../../../framework/SufiChain.SufiAbp.Ddd.Domain.Shared/SufiChain.SufiAbp.Ddd.Domain.Shared.csproj" />
     <ProjectReference Include="../../../../framework/SufiChain.SufiAbp.Validation/SufiChain.SufiAbp.Validation.csproj" />
+    <ProjectReference Include="../../../../framework/SufiChain.SufiAbp.Features/SufiChain.SufiAbp.Features.csproj" />
     <ProjectReference Include="../../../../framework/SufiChain.SufiAbp.BlobStoring/SufiChain.SufiAbp.BlobStoring.csproj" />
     <ProjectReference Include="../../../blob-storing-database/src/SufiChain.SufiAbp.BlobStoring.Database.Domain.Shared/SufiChain.SufiAbp.BlobStoring.Database.Domain.Shared.csproj" />
   </ItemGroup>

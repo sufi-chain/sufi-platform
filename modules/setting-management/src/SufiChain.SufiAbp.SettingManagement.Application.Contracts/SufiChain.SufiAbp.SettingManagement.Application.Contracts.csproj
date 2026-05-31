@@ -20,6 +20,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\..\account\src\SufiChain.SufiAbp.Account.Domain.Shared\SufiChain.SufiAbp.Account.Domain.Shared.csproj" />
     <ProjectReference Include="..\SufiChain.SufiAbp.SettingManagement.Domain.Shared\SufiChain.SufiAbp.SettingManagement.Domain.Shared.csproj" />
   </ItemGroup>
 

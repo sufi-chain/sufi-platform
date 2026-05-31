@@ -51,7 +51,9 @@ public class SufiAbpFileManagerBlazorModule : AbpModule
         // Register File Storage settings contributor (adds "File Storage" tab to Settings page)
         Configure<SettingManagementComponentOptions>(options =>
         {
+            options.Contributors.Add(new FileManagerGeneralSettingsGroupContributor());
             options.Contributors.Add(new FileManagerStorageSettingsGroupContributor());
+            options.Contributors.Add(new FileManagerArchivingSettingsGroupContributor());
         });
     }
 }

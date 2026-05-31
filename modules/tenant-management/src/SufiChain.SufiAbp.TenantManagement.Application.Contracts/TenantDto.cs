@@ -4,7 +4,7 @@ using Volo.Abp.Domain.Entities;
 
 namespace SufiChain.SufiAbp.TenantManagement;
 
-public class TenantDto : SufiAbpExtensibleEntityDto<Guid>, IHasConcurrencyStamp
+public class TenantDto : ExtensibleEntityDto<Guid>, IHasConcurrencyStamp
 {
     public string Name { get; set; } = null!;
 

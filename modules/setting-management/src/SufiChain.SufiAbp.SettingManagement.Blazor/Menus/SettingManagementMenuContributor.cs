@@ -29,8 +29,9 @@ public class SettingManagementMenuContributor : IMenuContributor
             icon: "settings",
             order: 100
         ).RequirePermissions(
-            SettingManagementPermissions.Emailing, 
-            SettingManagementPermissions.TimeZone));
+            SettingManagementPermissions.Emailing,
+            SettingManagementPermissions.TimeZone,
+            SettingManagementPermissions.Identity));
 
         return Task.CompletedTask;
     }

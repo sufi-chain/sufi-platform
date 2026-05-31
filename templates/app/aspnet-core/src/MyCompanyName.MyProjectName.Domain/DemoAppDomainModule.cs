@@ -7,10 +7,12 @@ using SufiChain.SufiAbp.FeatureManagement;
 using SufiChain.SufiAbp.Identity;
 using SufiChain.SufiAbp.OpenIddict;
 using SufiChain.SufiAbp.PermissionManagement;
+using SufiChain.SufiAbp.PermissionManagement.Identity;
 using SufiChain.SufiAbp.PermissionManagement.OpenIddict;
 using SufiChain.SufiAbp.SettingManagement;
 using SufiChain.SufiAbp.TenantManagement;
 using SufiChain.SufiAbp.Users;
+using SufiChain.SufiAbp.Messaging.Email;
 using MyCompanyName.MyProjectName.MultiTenancy;
 using Volo.Abp.AuditLogging;
 using Volo.Abp.Emailing;
@@ -26,6 +28,7 @@ namespace MyCompanyName.MyProjectName
         typeof(SufiAbpFeatureManagementDomainModule),
         typeof(SufiAbpIdentityDomainModule),
         typeof(SufiAbpPermissionManagementDomainModule),
+        typeof(SufiAbpPermissionManagementDomainIdentityModule),
         typeof(SufiAbpOpenIddictDomainModule),
         typeof(SufiAbpPermissionManagementDomainOpenIddictModule),
         typeof(SufiAbpSettingManagementDomainModule),
@@ -45,6 +48,7 @@ namespace MyCompanyName.MyProjectName
             });
 
 #if DEBUG
+            context.Services.Replace(ServiceDescriptor.Singleton<Volo.Abp.Emailing.IEmailSender, Volo.Abp.Emailing.NullEmailSender>());
             context.Services.Replace(ServiceDescriptor.Singleton<IEmailSender, NullEmailSender>());
 #endif
         }

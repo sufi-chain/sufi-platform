@@ -51,7 +51,9 @@ public class IdentityPermissionDefinitionProvider : PermissionDefinitionProvider
     {
         group
             .AddPermission(IdentityPermissions.UserLookup.Default, L("Permission:UserLookup"))
-            .WithProviders(ClientPermissionValueProvider.ProviderName);
+            .WithProviders(
+                ClientPermissionValueProvider.ProviderName,
+                SufiChain.SufiAbp.Authorization.Permissions.RolePermissionValueProvider.ProviderName);
     }
 
     private static void DefineSecurityLogPermissions(PermissionGroupDefinition group)

@@ -6,6 +6,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <RootNamespace>SufiChain.SufiAbp.Account</RootNamespace>
     <IsPackable>true</IsPackable>
+    <GenerateEmbeddedFilesManifest>true</GenerateEmbeddedFilesManifest>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -14,16 +15,23 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <!-- ABP Dependencies -->
-    
     <ProjectReference Include="../../../identity/src/SufiChain.SufiAbp.Identity.Domain/SufiChain.SufiAbp.Identity.Domain.csproj" />
+    <ProjectReference Include="../../../../framework/SufiChain.SufiAbp.Captcha/SufiChain.SufiAbp.Captcha.csproj" />
+    <ProjectReference Include="../../../../framework/SufiChain.SufiAbp.Ddd.Application/SufiChain.SufiAbp.Ddd.Application.csproj" />
+    <ProjectReference Include="../../../../framework/SufiChain.SufiAbp.Mapperly/SufiChain.SufiAbp.Mapperly.csproj" />
+    <ProjectReference Include="../../../../framework/SufiChain.SufiAbp.Messaging/SufiChain.SufiAbp.Messaging.csproj" />
+    <ProjectReference Include="../../../../framework/SufiChain.SufiAbp.TextTemplating.Scriban/SufiChain.SufiAbp.TextTemplating.Scriban.csproj" />
+    <ProjectReference Include="../../../../framework/SufiChain.SufiAbp.UI.Abstractions/SufiChain.SufiAbp.UI.Abstractions.csproj" />
+    <ProjectReference Include="..\SufiChain.SufiAbp.Account.Application.Contracts\SufiChain.SufiAbp.Account.Application.Contracts.csproj" />
   </ItemGroup>
 
   <ItemGroup>
-    <!-- Project References -->
-    <ProjectReference Include="../../../../framework/SufiChain.SufiAbp.Ddd.Application/SufiChain.SufiAbp.Ddd.Application.csproj" />
-    <ProjectReference Include="../../../../framework/SufiChain.SufiAbp.Mapperly/SufiChain.SufiAbp.Mapperly.csproj" />
-    <ProjectReference Include="..\SufiChain.SufiAbp.Account.Application.Contracts\SufiChain.SufiAbp.Account.Application.Contracts.csproj" />
+    <PackageReference Include="Microsoft.Extensions.FileProviders.Embedded" Version="$(MicrosoftExtensionsFileProvidersEmbeddedVersion)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Templates\*.tpl" />
+    <Content Remove="Templates\*.tpl" />
   </ItemGroup>
 
 </Project>

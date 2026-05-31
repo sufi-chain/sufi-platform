@@ -1,12 +1,10 @@
 using System.ComponentModel.DataAnnotations;
 using SufiChain.SufiAbp.Identity;
 using Volo.Abp.Auditing;
-using Volo.Abp.ObjectExtending;
 using Volo.Abp.Validation;
-
 namespace SufiChain.SufiAbp.Account;
 
-public class RegisterDto : ExtensibleObject
+public class RegisterDto : CaptchaInputDto
 {
     [Required]
     [DynamicStringLength(typeof(IdentityUserConsts), nameof(IdentityUserConsts.MaxUserNameLength))]
@@ -25,4 +23,8 @@ public class RegisterDto : ExtensibleObject
 
     [Required]
     public string AppName { get; set; }
+
+    public string? ReturnUrl { get; set; }
+
+    public string? ReturnUrlHash { get; set; }
 }

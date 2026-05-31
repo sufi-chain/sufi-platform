@@ -7,6 +7,7 @@ using SufiChain.SufiAbp.FeatureManagement.Blazor;
 using SufiChain.SufiAbp.FileManager.Blazor;
 using SufiChain.SufiAbp.Identity.Blazor;
 using SufiChain.SufiAbp.LocalizationManagement.Blazor;
+using SufiChain.SufiAbp.MenuManagement.Blazor;
 using SufiChain.SufiAbp.SettingManagement.Blazor;
 using SufiChain.SufiAbp.ShortLinkGenerator;
 using SufiChain.SufiAbp.ShortLinkGenerator.Blazor;
@@ -28,6 +29,7 @@ public static class Program
             typeof(SufiAbpFileManagerBlazorModule),
             typeof(SufiAbpIdentityBlazorModule),
             typeof(SufiAbpLocalizationManagementBlazorModule),
+            typeof(SufiAbpMenuManagementBlazorModule),
             typeof(SufiAbpSettingManagementBlazorModule),
             typeof(SufiAbpTenantManagementBlazorModule),
             typeof(SufiAbpShortLinkGeneratorBlazorModule)

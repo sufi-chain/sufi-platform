@@ -6,7 +6,7 @@ namespace SufiChain.SufiAbp.AuditLogging.Dtos;
 /// <summary>
 /// Full entity change details DTO.
 /// </summary>
-public class EntityChangeDto : SufiAbpEntityDto<Guid>
+public class EntityChangeDto : EntityDto<Guid>
 {
     public Guid AuditLogId { get; set; }
     public Guid? TenantId { get; set; }
@@ -22,7 +22,7 @@ public class EntityChangeDto : SufiAbpEntityDto<Guid>
 /// <summary>
 /// Entity change list item DTO with username for grid display.
 /// </summary>
-public class EntityChangeListItemDto : SufiAbpEntityDto<Guid>
+public class EntityChangeListItemDto :  EntityDto<Guid>
 {
     public Guid AuditLogId { get; set; }
     public Guid? TenantId { get; set; }

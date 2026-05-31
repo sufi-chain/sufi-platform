@@ -2,6 +2,7 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using SufiChain.SufiAbp.Account.Blazor.Menus;
 using SufiChain.SufiAbp.Account.Blazor.Services;
 using SufiChain.SufiAbp.Identity;
+using SufiChain.SufiAbp.Identity.AspNetCore;
 using SufiChain.SufiAbp.UI.Abstractions.Account;
 using SufiChain.SufiAbp.UI.Navigation;
 using SufiChain.SufiAbp.UI.Routing;
@@ -16,9 +17,9 @@ namespace SufiChain.SufiAbp.Account.Blazor;
 /// Uses SignInManager and UserManager for direct cookie-based authentication.
 /// </summary>
 [DependsOn(
+    typeof(SufiAbpIdentityAspNetCoreModule),
     typeof(SufiAbpIdentityApplicationContractsModule),
-    typeof(SufiAbpAccountApplicationContractsModule),
-    typeof(SufiAbpIdentityApplicationContractsModule)
+    typeof(SufiAbpAccountApplicationContractsModule)
 )]
 public class SufiAbpAccountBlazorModule : AbpModule
 {
@@ -42,5 +43,6 @@ public class SufiAbpAccountBlazorModule : AbpModule
         // Default no-op token store; hosts using Interactive Server with cookie auth register
         // a real implementation (e.g. AuthenticationServerModule) which we must not override.
         context.Services.TryAddScoped<ILoginCompletionTokenStore, NullLoginCompletionTokenStore>();
+        context.Services.TryAddScoped<ITwoFactorPendingLoginStore, NullTwoFactorPendingLoginStore>();
     }
 }

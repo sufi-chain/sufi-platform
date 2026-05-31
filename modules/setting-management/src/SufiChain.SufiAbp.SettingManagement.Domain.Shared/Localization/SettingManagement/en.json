@@ -45,6 +45,16 @@
     "SearchTimeZone": "Search time zone…",
     "Cancel": "Cancel",
     "Save": "Save",
-    "MailSendingFailed": "Mail sending failed."
+    "MailSendingFailed": "Mail sending failed.",
+    "IdentitySettings": "Identity & Security",
+    "IdentityTabSignup": "Signup",
+    "IdentityTabPassword": "Password",
+    "IdentityTabLockout": "Lockout",
+    "IdentityTabTokens": "Tokens",
+    "IdentityTabTwoFactor": "Two-Factor",
+    "IdentityTabOtp": "OTP",
+    "IdentityTabCaptcha": "CAPTCHA",
+    "IdentityAllowedChannels": "Allowed delivery channels",
+    "Permission:Identity": "Identity settings"
   }
 }

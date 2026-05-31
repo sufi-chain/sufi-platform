@@ -1,8 +1,8 @@
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 using SufiChain.SufiAbp.Caching;
 using SufiChain.SufiAbp.FeatureManagement.Localization;
 using SufiChain.SufiAbp.Features;
+using SufiChain.SufiAbp.TenantManagement;
 using Volo.Abp;
 using Volo.Abp.Data;
 using Volo.Abp.DependencyInjection;
@@ -32,7 +32,7 @@ public class SufiAbpFeatureManagementDomainModule : AbpModule
 
             //TODO: Should be moved to the Tenant Management module
             //options.Providers.Add<TenantFeatureManagementProvider>();
-            options.ProviderPolicies[TenantFeatureValueProvider.ProviderName] = "SufiAbpTenantManagement.Tenants.ManageFeatures";
+            options.ProviderPolicies[TenantFeatureValueProvider.ProviderName] = TenantManagementPermissions.Tenants.ManageFeatures;
         });
 
         Configure<AbpExceptionLocalizationOptions>(options =>

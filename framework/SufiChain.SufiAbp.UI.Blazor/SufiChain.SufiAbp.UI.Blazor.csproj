@@ -26,6 +26,7 @@
 
 
   <ItemGroup>
+    <ProjectReference Include="..\SufiChain.SufiAbp.Authorization\SufiChain.SufiAbp.Authorization.csproj" />
     <ProjectReference Include="..\SufiChain.SufiAbp.AspNetCore.Authentication.Abstractions\SufiChain.SufiAbp.AspNetCore.Authentication.Abstractions.csproj" />
     <ProjectReference Include="..\SufiChain.SufiAbp.UI.Abstractions\SufiChain.SufiAbp.UI.Abstractions.csproj" />
     <ProjectReference Include="..\SufiChain.SufiAbp.UI.Domain.Shared\SufiChain.SufiAbp.UI.Domain.Shared.csproj" />

@@ -27,6 +27,9 @@
     <Project Path="framework/SufiChain.SufiAbp.BlobStoring.S3Provider/SufiChain.SufiAbp.BlobStoring.S3Provider.csproj" />
     <Project Path="framework/SufiChain.SufiAbp.BlobStoring/SufiChain.SufiAbp.BlobStoring.csproj" />
     <Project Path="framework/SufiChain.SufiAbp.Caching/SufiChain.SufiAbp.Caching.csproj" />
+    <Project Path="framework/SufiChain.SufiAbp.Captcha.Recaptcha/SufiChain.SufiAbp.Captcha.Recaptcha.csproj" />
+    <Project Path="framework/SufiChain.SufiAbp.Captcha.Turnstile/SufiChain.SufiAbp.Captcha.Turnstile.csproj" />
+    <Project Path="framework/SufiChain.SufiAbp.Captcha/SufiChain.SufiAbp.Captcha.csproj" />
     <Project Path="framework/SufiChain.SufiAbp.CLI.Core/SufiChain.SufiAbp.CLI.Core.csproj" />
     <Project Path="framework/SufiChain.SufiAbp.CLI/SufiChain.SufiAbp.CLI.csproj" />
     <Project Path="framework/SufiChain.SufiAbp.Core/SufiChain.SufiAbp.Core.csproj" />
@@ -167,6 +170,19 @@
     <Project Path="modules/localization-management/src/SufiChain.SufiAbp.LocalizationManagement.HttpApi.Client/SufiChain.SufiAbp.LocalizationManagement.HttpApi.Client.csproj" />
     <Project Path="modules/localization-management/src/SufiChain.SufiAbp.LocalizationManagement.HttpApi/SufiChain.SufiAbp.LocalizationManagement.HttpApi.csproj" />
     <Project Path="modules/localization-management/src/SufiChain.SufiAbp.LocalizationManagement.MongoDB/SufiChain.SufiAbp.LocalizationManagement.MongoDB.csproj" />
+  </Folder>
+  <Folder Name="/Modules/MenuManagement/">
+    <Project Path="modules/menu-management/src/SufiChain.SufiAbp.MenuManagement.Application.Contracts/SufiChain.SufiAbp.MenuManagement.Application.Contracts.csproj" />
+    <Project Path="modules/menu-management/src/SufiChain.SufiAbp.MenuManagement.Application/SufiChain.SufiAbp.MenuManagement.Application.csproj" />
+    <Project Path="modules/menu-management/src/SufiChain.SufiAbp.MenuManagement.Blazor.Server/SufiChain.SufiAbp.MenuManagement.Blazor.Server.csproj" />
+    <Project Path="modules/menu-management/src/SufiChain.SufiAbp.MenuManagement.Blazor.WebAssembly/SufiChain.SufiAbp.MenuManagement.Blazor.WebAssembly.csproj" />
+    <Project Path="modules/menu-management/src/SufiChain.SufiAbp.MenuManagement.Blazor/SufiChain.SufiAbp.MenuManagement.Blazor.csproj" />
+    <Project Path="modules/menu-management/src/SufiChain.SufiAbp.MenuManagement.Domain.Shared/SufiChain.SufiAbp.MenuManagement.Domain.Shared.csproj" />
+    <Project Path="modules/menu-management/src/SufiChain.SufiAbp.MenuManagement.Domain/SufiChain.SufiAbp.MenuManagement.Domain.csproj" />
+    <Project Path="modules/menu-management/src/SufiChain.SufiAbp.MenuManagement.EntityFrameworkCore/SufiChain.SufiAbp.MenuManagement.EntityFrameworkCore.csproj" />
+    <Project Path="modules/menu-management/src/SufiChain.SufiAbp.MenuManagement.HttpApi.Client/SufiChain.SufiAbp.MenuManagement.HttpApi.Client.csproj" />
+    <Project Path="modules/menu-management/src/SufiChain.SufiAbp.MenuManagement.HttpApi/SufiChain.SufiAbp.MenuManagement.HttpApi.csproj" />
+    <Project Path="modules/menu-management/src/SufiChain.SufiAbp.MenuManagement.MongoDB/SufiChain.SufiAbp.MenuManagement.MongoDB.csproj" />
   </Folder>
   <Folder Name="/Modules/Openiddict/">
     <Project Path="modules/openiddict/src/SufiChain.SufiAbp.OpenIddict.AspNetCore/SufiChain.SufiAbp.OpenIddict.AspNetCore.csproj" />

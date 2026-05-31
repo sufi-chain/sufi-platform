@@ -1,0 +1,10 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/SufiChain.SufiAbp.Account.Application.Contracts/SufiChain.SufiAbp.Account.Application.Contracts.csproj" />
+    <Project Path="src/SufiChain.SufiAbp.Account.Application/SufiChain.SufiAbp.Account.Application.csproj" />
+    <Project Path="src/SufiChain.SufiAbp.Account.Blazor/SufiChain.SufiAbp.Account.Blazor.csproj" />
+    <Project Path="src/SufiChain.SufiAbp.Account.Domain.Shared/SufiChain.SufiAbp.Account.Domain.Shared.csproj" />
+    <Project Path="src/SufiChain.SufiAbp.Account.HttpApi.Client/SufiChain.SufiAbp.Account.HttpApi.Client.csproj" />
+    <Project Path="src/SufiChain.SufiAbp.Account.HttpApi/SufiChain.SufiAbp.Account.HttpApi.csproj" />
+  </Folder>
+</Solution>

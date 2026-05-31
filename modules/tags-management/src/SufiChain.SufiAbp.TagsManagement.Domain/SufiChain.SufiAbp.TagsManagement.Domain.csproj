@@ -12,4 +12,3 @@
     <ProjectReference Include="../SufiChain.SufiAbp.TagsManagement.Domain.Shared/SufiChain.SufiAbp.TagsManagement.Domain.Shared.csproj" />
   </ItemGroup>
 </Project>
-

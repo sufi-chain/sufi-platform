@@ -5,7 +5,7 @@ namespace SufiChain.SufiAbp.AuditLogging.Dtos;
 /// <summary>
 /// Full audit log details DTO.
 /// </summary>
-public class AuditLogDto : SufiAbpEntityDto<Guid>
+public class AuditLogDto : EntityDto<Guid>
 {
     public string? ApplicationName { get; set; }
     public Guid? UserId { get; set; }
@@ -36,7 +36,7 @@ public class AuditLogDto : SufiAbpEntityDto<Guid>
 /// <summary>
 /// Audit log list item DTO for grid display.
 /// </summary>
-public class AuditLogListItemDto : SufiAbpEntityDto<Guid>
+public class AuditLogListItemDto : EntityDto<Guid>
 {
     public string? ApplicationName { get; set; }
     public Guid? UserId { get; set; }

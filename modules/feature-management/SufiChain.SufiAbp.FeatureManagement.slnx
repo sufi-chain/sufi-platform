@@ -1,0 +1,13 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/SufiChain.SufiAbp.FeatureManagement.Application.Contracts/SufiChain.SufiAbp.FeatureManagement.Application.Contracts.csproj" />
+    <Project Path="src/SufiChain.SufiAbp.FeatureManagement.Application/SufiChain.SufiAbp.FeatureManagement.Application.csproj" />
+    <Project Path="src/SufiChain.SufiAbp.FeatureManagement.Blazor/SufiChain.SufiAbp.FeatureManagement.Blazor.csproj" />
+    <Project Path="src/SufiChain.SufiAbp.FeatureManagement.Domain.Shared/SufiChain.SufiAbp.FeatureManagement.Domain.Shared.csproj" />
+    <Project Path="src/SufiChain.SufiAbp.FeatureManagement.Domain/SufiChain.SufiAbp.FeatureManagement.Domain.csproj" />
+    <Project Path="src/SufiChain.SufiAbp.FeatureManagement.EntityFrameworkCore/SufiChain.SufiAbp.FeatureManagement.EntityFrameworkCore.csproj" />
+    <Project Path="src/SufiChain.SufiAbp.FeatureManagement.HttpApi.Client/SufiChain.SufiAbp.FeatureManagement.HttpApi.Client.csproj" />
+    <Project Path="src/SufiChain.SufiAbp.FeatureManagement.HttpApi/SufiChain.SufiAbp.FeatureManagement.HttpApi.csproj" />
+    <Project Path="src/SufiChain.SufiAbp.FeatureManagement.MongoDB/SufiChain.SufiAbp.FeatureManagement.MongoDB.csproj" />
+  </Folder>
+</Solution>

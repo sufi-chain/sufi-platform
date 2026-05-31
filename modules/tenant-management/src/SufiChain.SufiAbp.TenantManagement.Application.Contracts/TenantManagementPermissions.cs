@@ -1,12 +1,9 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
 using Volo.Abp.Reflection;
 
+namespace SufiChain.SufiAbp.TenantManagement;
 
-public static class TenantManagementPermissions
-{
-    public const string GroupName = "SufiAbpTenantManagement";
+public static class TenantManagementPermissions{
+    public const string GroupName = "TenantManagement";
 
     public static class Tenants
     {

@@ -10,7 +10,7 @@ namespace SufiChain.SufiAbp.Messaging.Email;
 /// <summary>
 /// Base class for email sender implementations
 /// </summary>
-public abstract class EmailSenderBase : IEmailSender, ITransientDependency
+public abstract class EmailSenderBase : IEmailSender
 {
     public MessageType MessageType => MessageType.Email;
     

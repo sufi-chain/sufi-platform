@@ -30,6 +30,7 @@ public class SufiAbpAuthenticationServerModule : AbpModule
         // Default in-memory login completion token store (Blazor Interactive Server -> cookie flow)
         context.Services.AddMemoryCache();
         context.Services.AddSingleton<ILoginCompletionTokenStore, LoginCompletionTokenStore>();
+        context.Services.AddSingleton<ITwoFactorPendingLoginStore, TwoFactorPendingLoginStore>();
 
         // SufiAbpAccountController is automatically discovered by MVC
         // Account/{action} routes are available before Blazor fallback

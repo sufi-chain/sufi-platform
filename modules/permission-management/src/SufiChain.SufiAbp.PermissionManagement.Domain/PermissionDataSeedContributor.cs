@@ -4,45 +4,59 @@ using Volo.Abp.Authorization.Permissions;
 using Volo.Abp.Data;
 using Volo.Abp.DependencyInjection;
 using Volo.Abp.MultiTenancy;
-using Volo.Abp.Roles;
+using Volo.Abp.SimpleStateChecking;
 
 namespace SufiChain.SufiAbp.PermissionManagement;
 
 public class PermissionDataSeedContributor : IDataSeedContributor, ITransientDependency
 {
+    private const string RolePermissionProviderName =
+        SufiChain.SufiAbp.Authorization.Permissions.RolePermissionValueProvider.ProviderName;
+
+    private const string AdminRoleName = "admin";
+
     protected ICurrentTenant CurrentTenant { get; }
     protected IPermissionDefinitionManager PermissionDefinitionManager { get; }
-    protected IPermissionDataSeeder PermissionDataSeeder { get; }
-    protected IStaticPermissionSaver StaticPermissionSaver { get; }
+    protected IPermissionManager PermissionManager { get; }
+    protected ISimpleStateCheckerManager<PermissionDefinition> SimpleStateCheckerManager { get; }
 
     public PermissionDataSeedContributor(
         IPermissionDefinitionManager permissionDefinitionManager,
-        IPermissionDataSeeder permissionDataSeeder,
-        IStaticPermissionSaver staticPermissionSaver,
+        IPermissionManager permissionManager,
+        ISimpleStateCheckerManager<PermissionDefinition> simpleStateCheckerManager,
         ICurrentTenant currentTenant)
     {
         PermissionDefinitionManager = permissionDefinitionManager;
-        PermissionDataSeeder = permissionDataSeeder;
-        StaticPermissionSaver = staticPermissionSaver;
+        PermissionManager = permissionManager;
+        SimpleStateCheckerManager = simpleStateCheckerManager;
         CurrentTenant = currentTenant;
     }
 
     public virtual async Task SeedAsync(DataSeedContext context)
     {
-        await StaticPermissionSaver.SaveAsync();
-
         var multiTenancySide = CurrentTenant.GetMultiTenancySide();
-        var permissionNames = (await PermissionDefinitionManager.GetPermissionsAsync())
+        var permissions = (await PermissionDefinitionManager.GetPermissionsAsync())
             .Where(p => p.MultiTenancySide.HasFlag(multiTenancySide))
-            .Where(p => !p.Providers.Any() || p.Providers.Contains(RolePermissionValueProvider.ProviderName))
-            .Select(p => p.Name)
-            .ToArray();
+            .Where(p => !p.Providers.Any() || p.Providers.Contains(RolePermissionProviderName))
+            .ToList();
 
-        await PermissionDataSeeder.SeedAsync(
-            RolePermissionValueProvider.ProviderName,
-            AbpRoleConsts.AdminRoleName,
-            permissionNames,
-            context?.TenantId
-        );
+        foreach (var permission in permissions)
+        {
+            if (!permission.IsEnabled)
+            {
+                continue;
+            }
+
+            if (!await SimpleStateCheckerManager.IsEnabledAsync(permission))
+            {
+                continue;
+            }
+
+            await PermissionManager.SetAsync(
+                permission.Name,
+                RolePermissionProviderName,
+                AdminRoleName,
+                isGranted: true);
+        }
     }
 }

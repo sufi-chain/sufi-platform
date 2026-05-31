@@ -1,7 +1,7 @@
-using Volo.Abp.Application;
-using Volo.Abp.Modularity;
-using SufiChain.SufiAbp.TenantManagement;
 using SufiChain.SufiAbp.Ddd;
+using Volo.Abp.Application;
+using Volo.Abp.Authorization.Permissions;
+using Volo.Abp.Modularity;
 
 namespace SufiChain.SufiAbp.TenantManagement;
 
@@ -11,4 +11,11 @@ namespace SufiChain.SufiAbp.TenantManagement;
 )]
 public class SufiAbpTenantManagementApplicationContractsModule : AbpModule
 {
+    public override void ConfigureServices(ServiceConfigurationContext context)
+    {
+        Configure<AbpPermissionOptions>(options =>
+        {
+            options.DeletedPermissionGroups.Add("SufiAbpTenantManagement");
+        });
+    }
 }

@@ -14,6 +14,7 @@ using SufiChain.SufiAbp.UI.MultiTenancy;
 using SufiChain.SufiAbp.UI.Notifications;
 using SufiChain.SufiAbp.UI.Progression;
 using SufiChain.SufiAbp.UI.Users;
+using Volo.Abp.Authorization;
 
 namespace SufiChain.SufiAbp.UI.Blazor;
 
@@ -115,6 +116,18 @@ public abstract class SufiAbpComponentBase : OwningComponentBase
     /// </summary>
     protected IAuthorizationService AuthorizationService =>
         LazyGetRequiredService(ref _authorizationService);
+
+    /// <summary>
+    /// Checks whether the current user is granted the permission (uses ABP's authorization integration).
+    /// </summary>
+    protected virtual Task<bool> IsGrantedAsync(string permissionName) =>
+        AuthorizationService.IsGrantedAsync(permissionName);
+
+    /// <summary>
+    /// Checks whether the current user is granted any of the permissions.
+    /// </summary>
+    protected virtual Task<bool> IsGrantedAnyAsync(string permissionName) =>
+        AuthorizationService.IsGrantedAnyAsync(permissionName);
 
     // ====== CURRENT USER & TENANT ======
 
