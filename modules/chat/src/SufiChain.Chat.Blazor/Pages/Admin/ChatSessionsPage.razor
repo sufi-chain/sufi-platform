@@ -1,0 +1,38 @@
+@page "/admin/chat/sessions"
+@attribute [Authorize(ChatPermissions.Sessions.Default)]
+@inherits ChatComponentBase
+
+<SbCard>
+    <ChildContent>
+        <SbDataGrid TItem="ChatSessionListDto"
+                    Items="Sessions"
+                    Loading="IsLoading"
+                    Striped="true"
+                    Hoverable="true"
+                    PageIndex="PageIndex"
+                    PageSize="PageSize"
+                    TotalCount="TotalCount"
+                    PageIndexChanged="OnPageIndexChangedAsync"
+                    OnSortChanged="OnSortChangedAsync"
+                    KeySelector="@(item => item.Id.ToString())">
+            <EmptyTemplate>
+                <SbEmptyState Title="@L["Menu:ChatSessions"]" Description="@L["NoSessionsFound"]" />
+            </EmptyTemplate>
+            <ChildContent>
+                <SbColumn TItem="ChatSessionListDto" Title="@L["Actions"]" Width="100px" Sortable="false">
+                    <CellTemplate Context="cellContext">
+                        <SbIconButton Size="SbSize.Sm" AriaLabel="@L["View"]" OnClick="@(() => OpenSession(cellContext.Item.Id))">
+                            <Icon><SbIcon Name="eye" /></Icon>
+                        </SbIconButton>
+                    </CellTemplate>
+                </SbColumn>
+                <SbColumn TItem="ChatSessionListDto" Field="Title" Title="@L["Title"]" Sortable="true" />
+                <SbColumn TItem="ChatSessionListDto" Field="ConversationKind" Title="@L["ConversationKind"]" Sortable="true" />
+                <SbColumn TItem="ChatSessionListDto" Field="AccessMode" Title="@L["AccessMode"]" Sortable="true" />
+                <SbColumn TItem="ChatSessionListDto" Field="Status" Title="@L["Status"]" Sortable="true" />
+                <SbColumn TItem="ChatSessionListDto" Field="ParticipantCount" Title="@L["Participants"]" Sortable="true" Width="120px" />
+                <SbColumn TItem="ChatSessionListDto" Field="LastMessageTime" Title="@L["LastMessageTime"]" Sortable="true" Width="180px" Format="yyyy-MM-dd HH:mm" />
+            </ChildContent>
+        </SbDataGrid>
+    </ChildContent>
+</SbCard>

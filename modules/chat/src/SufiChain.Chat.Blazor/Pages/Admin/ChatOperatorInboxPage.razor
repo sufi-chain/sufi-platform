@@ -1,0 +1,14 @@
+@page "/admin/chat/inbox"
+@attribute [Authorize(ChatPermissions.Inbox.Operator)]
+@inherits ChatMessengerHostBase
+
+<div class="chat-messenger-page">
+    <ChatMessengerShell State="MessengerState"
+                        SignInUrl="@GetSignInUrl()"
+                        OnSessionSelected="OnSessionSelectedAsync"
+                        OnSendMessage="OnSendMessageAsync">
+        <ListHeader>
+            <SbHeading Level="6">@L["Menu:ChatInbox"]</SbHeading>
+        </ListHeader>
+    </ChatMessengerShell>
+</div>

@@ -83,11 +83,14 @@
         <BunitVersion>2.4.2</BunitVersion>
         <CoverletCollectorVersion>6.0.2</CoverletCollectorVersion>
         <ShortidVersion>5.0.0</ShortidVersion>
+        <MailKitVersion>4.13.0</MailKitVersion>
         <AwsSdkS3Version>3.7.400</AwsSdkS3Version>
         <AwsSdkSecurityTokenVersion>3.7.400</AwsSdkSecurityTokenVersion>
         <MicrosoftDataSqlClientVersion>5.2.2</MicrosoftDataSqlClientVersion>
         <MicrosoftIdentityModelJsonWebTokensVersion>8.16.0</MicrosoftIdentityModelJsonWebTokensVersion>
         <OpenIddictVersion>7.5.0</OpenIddictVersion>
+        <SharpCompressVersion>0.48.0</SharpCompressVersion>
+        <SnappierVersion>1.3.1</SnappierVersion>
     </PropertyGroup>
 
 </Project>

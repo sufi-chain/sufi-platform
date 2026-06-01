@@ -1,0 +1,20 @@
+@inherits ChatPublicComponentBase
+
+<div class="chat-session-context-panel @Class">
+    <SbHeading Level="6">@L["Messenger:SessionDetails"]</SbHeading>
+
+    @if (ContextPanel != null)
+    {
+        @ContextPanel
+    }
+    else if (Session != null)
+    {
+        <SbStack Gap="2" Class="chat-session-context-panel__content">
+            <SbText Variant="SbTextVariant.BodySmall" Color="SbColor.Muted">
+                @Session.ConversationKind · @Session.AccessMode
+            </SbText>
+            <SbText Weight="SbFontWeight.Medium">@L["Messenger:Participants"]</SbText>
+            <SbText Variant="SbTextVariant.BodySmall">@Session.Participants.Count</SbText>
+        </SbStack>
+    }
+</div>

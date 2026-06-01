@@ -1,0 +1,67 @@
+@inherits ChatPublicComponentBase
+
+<div class="chat-messenger-shell @GetShellClass() @Class">
+    <div class="chat-messenger-shell__list @GetListPaneClass()">
+        <ChatConversationList Sessions="@State.Sessions"
+                                SelectedSessionId="@State.SelectedSessionId"
+                                SelectedSessionIdChanged="@OnSessionSelectedAsync"
+                                IsLoading="@State.IsLoadingSessions"
+                                ConversationListSections="@ConversationListSections"
+                                ListHeader="@ListHeader"
+                                ListFooter="@ListFooter"
+                                ItemTemplate="@ItemTemplate"
+                                ItemTrailing="@ItemTrailing"
+                                EmptyTemplate="@EmptyTemplate" />
+    </div>
+
+    <div class="chat-messenger-shell__main @GetMainPaneClass()">
+        @if (State.SelectedSessionId.HasValue)
+        {
+            <ChatSessionHeader Session="@State.SelectedSession"
+                               ShowBackButton="@IsMobileTimelineView"
+                               OnBack="@OnBackAsync"
+                               HeaderActions="@HeaderActions" />
+
+            <div class="chat-messenger-shell__timeline">
+                <ChatMessageTimeline Messages="@State.Messages"
+                                     IsLoading="@State.IsLoadingMessages"
+                                     MessageActions="@MessageActions" />
+            </div>
+
+            <ChatComposer DraftMessage="@State.DraftMessage"
+                          DraftMessageChanged="@OnDraftChangedAsync"
+                          OnSend="@OnSendAsync"
+                          IsDisabled="@IsComposerDisabled"
+                          IsSignupRequired="@IsSignupRequired"
+                          SignupRequiredLocalizationKey="@SignupRequiredLocalizationKey"
+                          SignInUrl="@SignInUrl"
+                          ComposerToolbar="@ComposerToolbar" />
+        }
+        else
+        {
+            <div class="chat-messenger-shell__empty-selection">
+                @if (EmptySelection != null)
+                {
+                    @EmptySelection
+                }
+                else
+                {
+                    <SbStack Gap="2" Align="SbAlign.Center" Justify="SbJustify.Center">
+                        <SbHeading Level="6">@L["Messenger:SelectConversation"]</SbHeading>
+                        <SbText Variant="SbTextVariant.BodySmall" Color="SbColor.Muted">
+                            @L["Messenger:SelectConversationDescription"]
+                        </SbText>
+                    </SbStack>
+                }
+            </div>
+        }
+    </div>
+
+    @if (ShowContextPanel && State.SelectedSessionId.HasValue)
+    {
+        <div class="chat-messenger-shell__context @GetContextPaneClass()">
+            <ChatSessionContextPanel Session="@State.SelectedSession"
+                                     ContextPanel="@ContextPanel" />
+        </div>
+    }
+</div>

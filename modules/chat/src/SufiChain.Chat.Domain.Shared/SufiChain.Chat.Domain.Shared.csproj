@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFrameworks>netstandard2.1;net10.0</TargetFrameworks>
+    <RootNamespace>SufiChain.Chat</RootNamespace>
+    <GenerateEmbeddedFilesManifest>true</GenerateEmbeddedFilesManifest>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\..\framework\SufiChain.SufiAbp.Validation\SufiChain.SufiAbp.Validation.csproj" />
+    <ProjectReference Include="..\..\..\..\framework\SufiChain.SufiAbp.UI.Domain.Shared\SufiChain.SufiAbp.UI.Domain.Shared.csproj" />
+    <ProjectReference Include="..\..\..\..\framework\SufiChain.SufiAbp.Features\SufiChain.SufiAbp.Features.csproj" />
+    <ProjectReference Include="..\..\..\..\framework\SufiChain.SufiAbp.MultiTenancy\SufiChain.SufiAbp.MultiTenancy.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.FileProviders.Embedded" Version="$(MicrosoftExtensionsFileProvidersEmbeddedVersion)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Localization\Chat\*.json" />
+    <Content Remove="Localization\Chat\*.json" />
+  </ItemGroup>
+</Project>

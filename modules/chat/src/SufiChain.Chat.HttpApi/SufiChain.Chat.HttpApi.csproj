@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <RootNamespace>SufiChain.Chat</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\..\framework\SufiChain.SufiAbp.AspNetCore.Mvc\SufiChain.SufiAbp.AspNetCore.Mvc.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\SufiChain.Chat.Application.Contracts\SufiChain.Chat.Application.Contracts.csproj" />
+    <ProjectReference Include="..\SufiChain.Chat.Connector\SufiChain.Chat.Connector.csproj" />
+    <ProjectReference Include="..\SufiChain.Chat.Connector\SufiChain.Chat.Connector.csproj" />
+  </ItemGroup>
+</Project>

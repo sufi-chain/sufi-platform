@@ -1,0 +1,38 @@
+@inherits ChatPublicComponentBase
+
+<div class="chat-session-header @Class">
+    <SbStack Direction="SbStackDirection.Row"
+             Align="SbAlign.Center"
+             Justify="SbJustify.Start"
+             Gap="2"
+             Class="chat-session-header__stack">
+        @if (ShowBackButton)
+        {
+            <SbButton Variant="SbButtonVariant.Ghost" OnClick="OnBackInternal">
+                @L["Messenger:Back"]
+            </SbButton>
+        }
+
+        <div class="chat-session-header__title">
+            @if (Session != null)
+            {
+                <SbHeading Level="6">@GetSessionTitle()</SbHeading>
+                @if (Session.Status == ChatSessionStatus.Closed)
+                {
+                    <SbText Variant="SbTextVariant.Caption" Color="SbColor.Muted">@L["Messenger:ClosedSession"]</SbText>
+                }
+            }
+            else
+            {
+                <SbHeading Level="6">@L["Messenger:Conversations"]</SbHeading>
+            }
+        </div>
+
+        @if (HeaderActions != null)
+        {
+            <div class="chat-session-header__actions">
+                @HeaderActions
+            </div>
+        }
+    </SbStack>
+</div>

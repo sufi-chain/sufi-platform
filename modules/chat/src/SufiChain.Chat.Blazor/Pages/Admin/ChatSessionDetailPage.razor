@@ -1,0 +1,70 @@
+@page "/admin/chat/sessions/{Id:guid}"
+@attribute [Authorize(ChatPermissions.Sessions.Default)]
+@inherits ChatComponentBase
+
+@if (IsLoading)
+{
+    <SbProgress Type="SbProgressType.Circular" />
+}
+else if (Session != null)
+{
+    <SufiAbpPageToolbar>
+        <SbButton Variant="SbButtonVariant.Outline" OnClick="ExportTranscriptAsync">
+            @L["ExportTranscript"]
+        </SbButton>
+    </SufiAbpPageToolbar>
+
+    <SbStack Gap="4">
+        <SbCard>
+            <ChildContent>
+                <SbStack Gap="2">
+                    <SbHeading Level="5">@(Session.Title ?? L["Menu:ChatSessions"])</SbHeading>
+                    <SbText Color="SbColor.Muted">@Session.ConversationKind · @Session.AccessMode · @Session.Status</SbText>
+                    <SbText Variant="SbTextVariant.BodySmall">@L["Participants"]: @Session.Participants.Count</SbText>
+                </SbStack>
+            </ChildContent>
+        </SbCard>
+
+        <SbCard>
+            <ChildContent>
+                <SbHeading Level="6">@L["Messages"]</SbHeading>
+                <SbStack Gap="2" Class="mt-3">
+                    @foreach (var message in Messages)
+                    {
+                        <SbStack Gap="1">
+                            <SbText Variant="SbTextVariant.Caption" Color="SbColor.Muted">
+                                @message.CreationTime.ToString("yyyy-MM-dd HH:mm") · @message.SenderKind
+                            </SbText>
+                            <SbText>@message.Body</SbText>
+                        </SbStack>
+                    }
+                </SbStack>
+            </ChildContent>
+        </SbCard>
+
+        @if (Links.Any())
+        {
+            <SbCard>
+                <ChildContent>
+                    <SbHeading Level="6">@L["ConversationLinks"]</SbHeading>
+                    <SbStack Gap="1" Class="mt-3">
+                        @foreach (var link in Links)
+                        {
+                            <SbText>@link.LinkedEntityType · @link.LinkedEntityId</SbText>
+                        }
+                    </SbStack>
+                </ChildContent>
+            </SbCard>
+        }
+
+        @if (!string.IsNullOrWhiteSpace(TranscriptText))
+        {
+            <SbCard>
+                <ChildContent>
+                    <SbHeading Level="6">@L["Transcript"]</SbHeading>
+                    <pre class="chat-transcript">@TranscriptText</pre>
+                </ChildContent>
+            </SbCard>
+        }
+    </SbStack>
+}

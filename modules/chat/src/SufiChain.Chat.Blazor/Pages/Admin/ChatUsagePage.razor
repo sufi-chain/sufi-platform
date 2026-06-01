@@ -1,0 +1,33 @@
+@page "/admin/chat/usage"
+@attribute [Authorize(ChatPermissions.Usage.View)]
+@inherits ChatComponentBase
+
+<SbStack Gap="4">
+    <SbStack Direction="SbStackDirection.Row" Gap="4" Wrap="true">
+        <SbCard style="flex: 1; min-width: 220px;">
+            <ChildContent>
+                <SbText Variant="SbTextVariant.Caption" Color="SbColor.Muted">@L["Feature:Chat.Enable"]</SbText>
+                <SbHeading Level="4">@(ChatEnabled ? L["Enabled"] : L["Disabled"])</SbHeading>
+            </ChildContent>
+        </SbCard>
+        <SbCard style="flex: 1; min-width: 220px;">
+            <ChildContent>
+                <SbText Variant="SbTextVariant.Caption" Color="SbColor.Muted">@L["UsageGuard"]</SbText>
+                <SbHeading Level="4">@(UsageGuardEnabled ? L["Enabled"] : L["Disabled"])</SbHeading>
+            </ChildContent>
+        </SbCard>
+        <SbCard style="flex: 1; min-width: 220px;">
+            <ChildContent>
+                <SbText Variant="SbTextVariant.Caption" Color="SbColor.Muted">@L["Feature:Chat.Ai.UsageGuard"]</SbText>
+                <SbHeading Level="4">@(AiUsageGuardEnabled ? L["Enabled"] : L["Disabled"])</SbHeading>
+            </ChildContent>
+        </SbCard>
+    </SbStack>
+
+    <SbCard>
+        <ChildContent>
+            <SbHeading Level="6">@L["UsagePoliciesSummary"]</SbHeading>
+            <SbText Color="SbColor.Muted" Class="mt-2">@L["UsageDashboardHint"]</SbText>
+        </ChildContent>
+    </SbCard>
+</SbStack>

@@ -1,0 +1,16 @@
+.chat-messenger-page {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    height: calc(100vh - 8rem);
+    min-height: 32rem;
+}
+
+.chat-messenger-page__actions {
+    flex-shrink: 0;
+}
+
+.chat-messenger-page .chat-messenger-shell {
+    flex: 1;
+    min-height: 0;
+}

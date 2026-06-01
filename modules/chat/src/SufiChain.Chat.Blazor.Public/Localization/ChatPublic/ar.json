@@ -1,0 +1,21 @@
+{
+  "culture": "ar",
+  "texts": {
+    "Messenger:Back": "رجوع",
+    "Messenger:Conversations": "المحادثات",
+    "Messenger:SelectConversation": "اختر محادثة",
+    "Messenger:SelectConversationDescription": "اختر محادثة من القائمة لعرض الرسائل.",
+    "Messenger:NoMessages": "لا توجد رسائل بعد.",
+    "Messenger:TypeMessage": "اكتب رسالة",
+    "Messenger:Send": "إرسال",
+    "Messenger:SignInToContinue": "سجّل الدخول لمتابعة الدردشة",
+    "Messenger:SignIn": "تسجيل الدخول",
+    "Messenger:SessionDetails": "التفاصيل",
+    "Messenger:Participants": "المشاركون",
+    "Messenger:Loading": "جارٍ التحميل...",
+    "Messenger:ClosedSession": "هذه المحادثة مغلقة.",
+    "Widget:Open": "فتح الدردشة",
+    "Widget:Close": "إغلاق الدردشة",
+    "Widget:Title": "الدردشة"
+  }
+}
