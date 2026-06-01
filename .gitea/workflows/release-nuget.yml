@@ -30,6 +30,9 @@ env:
   REF_NAME: ${{ gitea.ref_name }}
   REPOSITORY: ${{ gitea.repository }}
 
+# No job-level container: upload/download-artifact need Node.js on the runner host.
+# dotnet restore/build/push runs in SDK_IMAGE via docker run (runner must have Docker).
+
 jobs:
   resolve-version:
     runs-on: ubuntu-latest
@@ -53,8 +56,6 @@ jobs:
   pack:
     needs: resolve-version
     runs-on: ubuntu-latest
-    container:
-      image: mcr-mirror.liara.ir/dotnet/sdk:10.0.202
     env:
       VERSION: ${{ needs.resolve-version.outputs.version }}
     steps:
@@ -68,29 +69,22 @@ jobs:
             git clone --depth 1 https://git.sabp.ir/sufi-chain/sufi-abp.git .
           fi
 
-      - name: Restore root solution
+      - name: Restore, build and pack root solution
         shell: bash
         run: |
           set -euo pipefail
-          dotnet restore "$ROOT_SLNX" \
-            --verbosity minimal \
-            -p:NuGetAudit=false
-
-      - name: Build and pack root solution
-        shell: bash
-        run: |
-          set -euo pipefail
-          mkdir -p "$PACKAGE_OUTPUT"
-          dotnet build "$ROOT_SLNX" \
-            --configuration Release \
-            --no-restore \
-            --verbosity minimal \
-            -m \
-            -p:PackageVersion="$VERSION" \
-            -p:ContinuousIntegrationBuild=true \
-            -p:BuildInParallel=true \
-            -p:PackageOutputPath="$PWD/$PACKAGE_OUTPUT" \
-            -p:GeneratePackageOnBuild=true
+          ws="${GITHUB_WORKSPACE:-$PWD}"
+          docker run --rm \
+            -v "${ws}:/src" \
+            -w /src \
+            -e VERSION \
+            -e PACKAGE_OUTPUT \
+            -e ROOT_SLNX \
+            -e DOTNET_NOLOGO \
+            -e DOTNET_CLI_TELEMETRY_OPTOUT \
+            -e DOTNET_SKIP_FIRST_TIME_EXPERIENCE \
+            "$SDK_IMAGE" \
+            bash /src/.gitea/scripts/nuget-pack.sh
 
       - name: Verify packages
         shell: bash
@@ -115,9 +109,17 @@ jobs:
     needs: [resolve-version, pack]
     if: ${{ always() && needs.resolve-version.result == 'success' && needs.pack.result == 'success' && (gitea.event_name == 'release' || inputs.push_to_baget == 'true') }}
     runs-on: ubuntu-latest
-    container:
-      image: mcr-mirror.liara.ir/dotnet/sdk:10.0.202
     steps:
+      - name: Checkout CI scripts
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ -n "${REF_NAME:-}" ]; then
+            git clone --depth 1 --branch "$REF_NAME" https://git.sabp.ir/sufi-chain/sufi-abp.git repo
+          else
+            git clone --depth 1 https://git.sabp.ir/sufi-chain/sufi-abp.git repo
+          fi
+
       - name: Download NuGet packages
         uses: https://git.sabp.ir/actions/download-artifact@v4
         with:
@@ -134,25 +136,32 @@ jobs:
             echo "NUGET_API_KEY secret is required."
             exit 1
           fi
-          mapfile -t packages < <(find "$PACKAGE_OUTPUT" -type f -name '*.nupkg' ! -name '*.symbols.nupkg' | sort)
-          if [ ${#packages[@]} -eq 0 ]; then
-            echo "No NuGet packages found in artifact."
-            exit 1
-          fi
-          printf '%s\0' "${packages[@]}" | xargs -0 -n 1 -P "$NUGET_PUSH_PARALLELISM" sh -c '
-            dotnet nuget push "$1" \
-              --source "$BAGET_SOURCE_URL" \
-              --api-key "$NUGET_API_KEY" \
-              --skip-duplicate
-          ' sh
+          ws="${GITHUB_WORKSPACE:-$PWD}"
+          docker run --rm \
+            -v "${ws}:/src" \
+            -w /src \
+            -e NUGET_API_KEY \
+            -e BAGET_SOURCE_URL \
+            -e NUGET_PUSH_PARALLELISM \
+            -e PACKAGE_OUTPUT \
+            "$SDK_IMAGE" \
+            bash /src/repo/.gitea/scripts/nuget-push-baget.sh
 
   push-nuget-org:
     needs: [resolve-version, pack]
     if: ${{ always() && needs.resolve-version.result == 'success' && needs.pack.result == 'success' && gitea.event_name == 'workflow_dispatch' && inputs.push_to_nuget_org == 'true' }}
     runs-on: ubuntu-latest
-    container:
-      image: mcr-mirror.liara.ir/dotnet/sdk:10.0.202
     steps:
+      - name: Checkout CI scripts
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ -n "${REF_NAME:-}" ]; then
+            git clone --depth 1 --branch "$REF_NAME" https://git.sabp.ir/sufi-chain/sufi-abp.git repo
+          else
+            git clone --depth 1 https://git.sabp.ir/sufi-chain/sufi-abp.git repo
+          fi
+
       - name: Download NuGet packages
         uses: https://git.sabp.ir/actions/download-artifact@v4
         with:
@@ -169,14 +178,13 @@ jobs:
             echo "NUGET_ORG_API_KEY secret is required for nuget.org push."
             exit 1
           fi
-          mapfile -t packages < <(find "$PACKAGE_OUTPUT" -type f -name '*.nupkg' ! -name '*.symbols.nupkg' | sort)
-          if [ ${#packages[@]} -eq 0 ]; then
-            echo "No NuGet packages found in artifact."
-            exit 1
-          fi
-          printf '%s\0' "${packages[@]}" | xargs -0 -n 1 -P "$NUGET_PUSH_PARALLELISM" sh -c '
-            dotnet nuget push "$1" \
-              --source "$NUGET_ORG_SOURCE_URL" \
-              --api-key "$NUGET_ORG_API_KEY" \
-              --skip-duplicate
-          ' sh
+          ws="${GITHUB_WORKSPACE:-$PWD}"
+          docker run --rm \
+            -v "${ws}:/src" \
+            -w /src \
+            -e NUGET_ORG_API_KEY \
+            -e NUGET_ORG_SOURCE_URL \
+            -e NUGET_PUSH_PARALLELISM \
+            -e PACKAGE_OUTPUT \
+            "$SDK_IMAGE" \
+            bash /src/repo/.gitea/scripts/nuget-push-nuget-org.sh
