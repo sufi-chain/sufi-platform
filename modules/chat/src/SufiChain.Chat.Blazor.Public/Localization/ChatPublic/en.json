@@ -1,0 +1,21 @@
+{
+  "culture": "en",
+  "texts": {
+    "Messenger:Back": "Back",
+    "Messenger:Conversations": "Conversations",
+    "Messenger:SelectConversation": "Select a conversation",
+    "Messenger:SelectConversationDescription": "Choose a conversation from the list to view messages.",
+    "Messenger:NoMessages": "No messages yet.",
+    "Messenger:TypeMessage": "Type a message",
+    "Messenger:Send": "Send",
+    "Messenger:SignInToContinue": "Sign in to continue chatting",
+    "Messenger:SignIn": "Sign in",
+    "Messenger:SessionDetails": "Details",
+    "Messenger:Participants": "Participants",
+    "Messenger:Loading": "Loading...",
+    "Messenger:ClosedSession": "This conversation is closed.",
+    "Widget:Open": "Open chat",
+    "Widget:Close": "Close chat",
+    "Widget:Title": "Chat"
+  }
+}

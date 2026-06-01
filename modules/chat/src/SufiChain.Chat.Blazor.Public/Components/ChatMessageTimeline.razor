@@ -1,0 +1,38 @@
+@inherits ChatPublicComponentBase
+
+<div class="chat-message-timeline @Class">
+    @if (IsLoading)
+    {
+        <div class="chat-message-timeline__loading">
+            <SbText Variant="SbTextVariant.BodySmall" Color="SbColor.Muted">@L["Messenger:Loading"]</SbText>
+        </div>
+    }
+    else if (!Messages.Any())
+    {
+        <div class="chat-message-timeline__empty">
+            <SbText Variant="SbTextVariant.BodySmall" Color="SbColor.Muted">@L["Messenger:NoMessages"]</SbText>
+        </div>
+    }
+    else
+    {
+        <div class="chat-message-timeline__messages">
+            @foreach (var message in Messages)
+            {
+                <div class="chat-message-timeline__message">
+                    <SbSurface Elevation="0"
+                               Outlined="true"
+                               Padding="10px 14px"
+                               Class="chat-message-timeline__bubble">
+                        <SbText>@message.Body</SbText>
+                    </SbSurface>
+                    @if (MessageActions != null)
+                    {
+                        <div class="chat-message-timeline__actions">
+                            @MessageActions(message)
+                        </div>
+                    }
+                </div>
+            }
+        </div>
+    }
+</div>

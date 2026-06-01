@@ -1,0 +1,26 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/SufiChain.Chat.Application.Contracts/SufiChain.Chat.Application.Contracts.csproj" />
+    <Project Path="src/SufiChain.Chat.Application/SufiChain.Chat.Application.csproj" />
+    <Project Path="src/SufiChain.Chat.Blazor.Public/SufiChain.Chat.Blazor.Public.csproj" />
+    <Project Path="src/SufiChain.Chat.Blazor.Server/SufiChain.Chat.Blazor.Server.csproj" />
+    <Project Path="src/SufiChain.Chat.Blazor.WebAssembly/SufiChain.Chat.Blazor.WebAssembly.csproj" />
+    <Project Path="src/SufiChain.Chat.Blazor/SufiChain.Chat.Blazor.csproj" />
+    <Project Path="src/SufiChain.Chat.Connector.Email/SufiChain.Chat.Connector.Email.csproj" />
+    <Project Path="src/SufiChain.Chat.Connector/SufiChain.Chat.Connector.csproj" />
+    <Project Path="src/SufiChain.Chat.Domain.Shared/SufiChain.Chat.Domain.Shared.csproj" />
+    <Project Path="src/SufiChain.Chat.Domain/SufiChain.Chat.Domain.csproj" />
+    <Project Path="src/SufiChain.Chat.EntityFrameworkCore/SufiChain.Chat.EntityFrameworkCore.csproj" />
+    <Project Path="src/SufiChain.Chat.HttpApi.Client/SufiChain.Chat.HttpApi.Client.csproj" />
+    <Project Path="src/SufiChain.Chat.HttpApi/SufiChain.Chat.HttpApi.csproj" />
+    <Project Path="src/SufiChain.Chat.MongoDB/SufiChain.Chat.MongoDB.csproj" />
+  </Folder>
+  <Folder Name="/test/">
+    <Project Path="test/SufiChain.Chat.Application.Tests/SufiChain.Chat.Application.Tests.csproj" />
+    <Project Path="test/SufiChain.Chat.Domain.Tests/SufiChain.Chat.Domain.Tests.csproj" />
+    <Project Path="test/SufiChain.Chat.EntityFrameworkCore.Tests/SufiChain.Chat.EntityFrameworkCore.Tests.csproj" />
+    <Project Path="test/SufiChain.Chat.HttpApi.Tests/SufiChain.Chat.HttpApi.Tests.csproj" />
+    <Project Path="test/SufiChain.Chat.MongoDB.Tests/SufiChain.Chat.MongoDB.Tests.csproj" />
+    <Project Path="test/SufiChain.Chat.TestBase/SufiChain.Chat.TestBase.csproj" />
+  </Folder>
+</Solution>

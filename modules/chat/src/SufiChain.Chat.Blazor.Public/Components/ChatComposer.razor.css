@@ -1,0 +1,27 @@
+.chat-composer {
+    border-top: 1px solid var(--sb-color-border-subtle, #e5e7eb);
+    background: var(--sb-color-surface, #fff);
+    padding: 0.75rem 1rem;
+}
+
+.chat-composer__toolbar {
+    margin-bottom: 0.5rem;
+}
+
+.chat-composer__input-row {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 0.75rem;
+    align-items: end;
+}
+
+.chat-composer__signup {
+    border: 1px solid var(--sb-color-border-subtle, #e5e7eb);
+    border-radius: 0.5rem;
+}
+
+@media (max-width: 767px) {
+    .chat-composer__input-row {
+        grid-template-columns: 1fr;
+    }
+}

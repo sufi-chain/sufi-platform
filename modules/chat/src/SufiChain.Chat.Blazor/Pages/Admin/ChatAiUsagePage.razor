@@ -1,0 +1,86 @@
+@page "/admin/chat/ai"
+@attribute [Authorize(ChatPermissions.AiUsage.View)]
+@inherits ChatComponentBase
+
+<SufiAbpPageToolbar>
+    <SbButton Variant="SbButtonVariant.Outline" OnClick="RefreshAsync">
+        <StartIcon><SbIcon Name="refresh" /></StartIcon>
+        <ChildContent>@L["Refresh"]</ChildContent>
+    </SbButton>
+</SufiAbpPageToolbar>
+
+@if (IsOperationLoading(LoadingKeys.LoadDashboard))
+{
+    <SbProgress Type="SbProgressType.Circular" />
+}
+else if (Dashboard != null && Policy != null)
+{
+    @if (AssistantAvailability?.IsAvailable != true)
+    {
+        <SbAlert Severity="SbAlertSeverity.Warning" Class="mb-4">
+            @L[AssistantAvailability?.MessageKey ?? "Chat:AiUnavailable"]
+        </SbAlert>
+    }
+
+    <SbStack Direction="SbStackDirection.Row" Gap="4" Wrap="true" Class="mb-4">
+        <SbCard style="flex: 1; min-width: 180px;">
+            <ChildContent>
+                <SbText Variant="SbTextVariant.Caption" Color="SbColor.Muted">@L["AiGuardEnabled"]</SbText>
+                <SbHeading Level="4">@(Policy.UsageGuardEnabled ? L["Enabled"] : L["Disabled"])</SbHeading>
+            </ChildContent>
+        </SbCard>
+        <SbCard style="flex: 1; min-width: 180px;">
+            <ChildContent>
+                <SbText Variant="SbTextVariant.Caption" Color="SbColor.Muted">@L["TokensUsedToday"]</SbText>
+                <SbHeading Level="4">@Dashboard.TotalTokens.ToString("N0")</SbHeading>
+            </ChildContent>
+        </SbCard>
+        <SbCard style="flex: 1; min-width: 180px;">
+            <ChildContent>
+                <SbText Variant="SbTextVariant.Caption" Color="SbColor.Muted">@L["OpenReservations"]</SbText>
+                <SbHeading Level="4">@Dashboard.ReservedCount.ToString("N0")</SbHeading>
+            </ChildContent>
+        </SbCard>
+        <SbCard style="flex: 1; min-width: 180px;">
+            <ChildContent>
+                <SbText Variant="SbTextVariant.Caption" Color="SbColor.Muted">@L["DeniedAiOperations"]</SbText>
+                <SbHeading Level="4">@Dashboard.DeniedCount.ToString("N0")</SbHeading>
+            </ChildContent>
+        </SbCard>
+        <SbCard style="flex: 1; min-width: 180px;">
+            <ChildContent>
+                <SbText Variant="SbTextVariant.Caption" Color="SbColor.Muted">@L["TenantDailyTokenQuota"]</SbText>
+                <SbHeading Level="4">@Policy.MaxTokensPerTenantPerDay.ToString("N0")</SbHeading>
+            </ChildContent>
+        </SbCard>
+    </SbStack>
+
+    @if (!string.IsNullOrWhiteSpace(Dashboard.AiManagementUsageAnalyticsUrl))
+    {
+        <SbLink Href="@Dashboard.AiManagementUsageAnalyticsUrl" Target="_blank">@L["OpenAiManagementUsage"]</SbLink>
+    }
+
+    <SbCard Class="mt-4">
+        <ChildContent>
+            <SbHeading Level="6">@L["AiReservations"]</SbHeading>
+            <SbDataGrid TItem="ChatAiUsageReservationDto"
+                        Items="Reservations"
+                        Loading="@IsOperationLoading(LoadingKeys.LoadReservations)"
+                        PageIndex="ReservationPageIndex"
+                        PageSize="ReservationPageSize"
+                        TotalCount="ReservationTotalCount"
+                        PageIndexChanged="OnReservationPageChangedAsync"
+                        KeySelector="@(item => item.Id.ToString())"
+                        Class="mt-3">
+                <ChildContent>
+                    <SbColumn TItem="ChatAiUsageReservationDto" Field="SessionId" Title="@L["Session"]" />
+                    <SbColumn TItem="ChatAiUsageReservationDto" Field="OperationKind" Title="@L["Operation"]" />
+                    <SbColumn TItem="ChatAiUsageReservationDto" Field="TotalTokens" Title="@L["Tokens"]" Width="120px" />
+                    <SbColumn TItem="ChatAiUsageReservationDto" Field="WorkspaceName" Title="@L["Workspace"]" />
+                    <SbColumn TItem="ChatAiUsageReservationDto" Field="DenyReason" Title="@L["DenyReason"]" />
+                    <SbColumn TItem="ChatAiUsageReservationDto" Field="ReservedAt" Title="@L["ReservedAt"]" Format="yyyy-MM-dd HH:mm" Width="180px" />
+                </ChildContent>
+            </SbDataGrid>
+        </ChildContent>
+    </SbCard>
+}

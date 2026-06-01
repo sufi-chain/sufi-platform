@@ -1,0 +1,40 @@
+@inherits ChatPublicComponentBase
+
+<div class="chat-composer @Class">
+    @if (IsSignupRequired)
+    {
+        <SbSurface Elevation="0" Padding="12px" Class="chat-composer__signup">
+            <SbStack Gap="2">
+                <SbText Weight="SbFontWeight.Medium">@GetSignupRequiredMessage()</SbText>
+                @if (!string.IsNullOrWhiteSpace(SignInUrl))
+                {
+                    <SbButton Color="SbColor.Primary" Variant="SbButtonVariant.Solid" Href="@SignInUrl">
+                        @L["Messenger:SignIn"]
+                    </SbButton>
+                }
+            </SbStack>
+        </SbSurface>
+    }
+    else
+    {
+        @if (ComposerToolbar != null)
+        {
+            <div class="chat-composer__toolbar">
+                @ComposerToolbar
+            </div>
+        }
+
+        <div class="chat-composer__input-row">
+            <SbTextArea @bind-Value="_draft"
+                        Placeholder="@L["Messenger:TypeMessage"]"
+                        Rows="2"
+                        Disabled="@IsDisabled" />
+            <SbButton Color="SbColor.Primary"
+                      Variant="SbButtonVariant.Solid"
+                      Disabled="@(IsDisabled || string.IsNullOrWhiteSpace(_draft))"
+                      OnClick="SendAsync">
+                @L["Messenger:Send"]
+            </SbButton>
+        </div>
+    }
+</div>

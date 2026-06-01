@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <RootNamespace>SufiChain.Chat</RootNamespace>
+    <Nullable>enable</Nullable>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\..\framework\SufiChain.SufiAbp.EntityFrameworkCore.Sqlite\SufiChain.SufiAbp.EntityFrameworkCore.Sqlite.csproj" />
+    <ProjectReference Include="..\SufiChain.Chat.TestBase\SufiChain.Chat.TestBase.csproj" />
+    <ProjectReference Include="..\..\src\SufiChain.Chat.Application\SufiChain.Chat.Application.csproj" />
+    <ProjectReference Include="..\..\src\SufiChain.Chat.Connector\SufiChain.Chat.Connector.csproj" />
+    <ProjectReference Include="..\..\src\SufiChain.Chat.EntityFrameworkCore\SufiChain.Chat.EntityFrameworkCore.csproj" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.11.0" />
+    <PackageReference Include="NSubstitute" Version="5.3.0" />
+    <PackageReference Include="Shouldly" Version="4.2.1" />
+    <PackageReference Include="Volo.Abp.EntityFrameworkCore.Sqlite" Version="10.3.0" />
+    <PackageReference Include="xunit" Version="2.9.0" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.8.2" />
+  </ItemGroup>
+</Project>

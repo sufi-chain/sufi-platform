@@ -1,0 +1,21 @@
+{
+  "culture": "fa",
+  "texts": {
+    "Messenger:Back": "بازگشت",
+    "Messenger:Conversations": "گفتگوها",
+    "Messenger:SelectConversation": "یک گفتگو انتخاب کنید",
+    "Messenger:SelectConversationDescription": "برای مشاهده پیام‌ها یک گفتگو از فهرست انتخاب کنید.",
+    "Messenger:NoMessages": "هنوز پیامی وجود ندارد.",
+    "Messenger:TypeMessage": "پیام بنویسید",
+    "Messenger:Send": "ارسال",
+    "Messenger:SignInToContinue": "برای ادامه گفتگو وارد شوید",
+    "Messenger:SignIn": "ورود",
+    "Messenger:SessionDetails": "جزئیات",
+    "Messenger:Participants": "شرکت‌کنندگان",
+    "Messenger:Loading": "در حال بارگذاری...",
+    "Messenger:ClosedSession": "این گفتگو بسته شده است.",
+    "Widget:Open": "باز کردن گفتگو",
+    "Widget:Close": "بستن گفتگو",
+    "Widget:Title": "گفتگو"
+  }
+}

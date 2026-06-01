@@ -1,0 +1,39 @@
+@inherits ChatComponentBase
+
+<SbDialog Open="@Open" OpenChanged="@OnOpenChangedAsync" Size="SbDialogSize.Md" Title="@L["Menu:NewDirectMessage"]">
+    <ChildContent>
+        <SbStack Gap="3">
+            <SbTextField @bind-Value="FilterText"
+                         Label="@L["Filter"]"
+                         Placeholder="@L["SearchContacts"]"
+                         Clearable="true" />
+
+            <SbButton Color="SbColor.Primary" OnClick="SearchAsync">
+                @L["Search"]
+            </SbButton>
+
+            @if (IsLoading)
+            {
+                <SbProgress Type="SbProgressType.Circular" />
+            }
+            else if (!Contacts.Any())
+            {
+                <SbText Color="SbColor.Muted">@L["NoContactsFound"]</SbText>
+            }
+            else
+            {
+                <SbStack Gap="1">
+                    @foreach (var contact in Contacts)
+                    {
+                        <SbButton Variant="SbButtonVariant.Outline" OnClick="@(() => SelectContactAsync(contact))">
+                            @(contact.DisplayName ?? contact.UserName ?? contact.Email)
+                        </SbButton>
+                    }
+                </SbStack>
+            }
+        </SbStack>
+    </ChildContent>
+    <Footer>
+        <SbButton Variant="SbButtonVariant.Outline" OnClick="CloseAsync">@L["Cancel"]</SbButton>
+    </Footer>
+</SbDialog>

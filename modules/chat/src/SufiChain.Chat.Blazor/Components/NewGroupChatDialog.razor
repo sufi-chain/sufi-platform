@@ -1,0 +1,20 @@
+@inherits ChatComponentBase
+
+<SbDialog Open="@Open" OpenChanged="@OnOpenChangedAsync" Size="SbDialogSize.Md" Title="@L["Menu:NewGroupChat"]">
+    <ChildContent>
+        <SbStack Gap="3">
+            <SbTextField @bind-Value="Input.Title"
+                         Label="@L["GroupTitle"]"
+                         Required="true" />
+            <SbText Variant="SbTextVariant.BodySmall" Color="SbColor.Muted">
+                @L["NewGroupHint"]
+            </SbText>
+        </SbStack>
+    </ChildContent>
+    <Footer>
+        <SbStack Direction="SbStackDirection.Row" Gap="2" Justify="SbJustify.End">
+            <SbButton Variant="SbButtonVariant.Outline" OnClick="CloseAsync">@L["Cancel"]</SbButton>
+            <SbButton Color="SbColor.Primary" OnClick="CreateAsync">@L["Create"]</SbButton>
+        </SbStack>
+    </Footer>
+</SbDialog>
