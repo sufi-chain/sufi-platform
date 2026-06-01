@@ -5,6 +5,10 @@ on:
     types: [published]
   workflow_dispatch:
     inputs:
+      package_version:
+        description: Optional SemVer package version. Defaults to a timestamped dev prerelease.
+        type: string
+        required: false
       push_to_baget:
         description: Push to internal BaGet (nuget.sabp.ir)
         type: boolean
@@ -18,8 +22,10 @@ env:
   DOTNET_NOLOGO: true
   DOTNET_CLI_TELEMETRY_OPTOUT: true
   DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
-  # Phase 1: Liara SDK. Phase 2: reg.sabp.ir/sufi-chain/dotnet-sdk-build:10.0.202
-  SDK_IMAGE: mcr-mirror.liara.ir/dotnet/sdk:10.0.202
+  HARBOR_REGISTRY: reg.sabp.ir
+  SDK_IMAGE: reg.sabp.ir/sufi-chain/dotnet-sdk-build:10.0.202
+  GIT_CLONE_IMAGE: reg.sabp.ir/sufi-chain/dotnet-sdk-build:10.0.202
+  GIT_HOST: git.sabp.ir
   BAGET_SOURCE_URL: https://nuget.sabp.ir/v3/index.json
   NUGET_ORG_SOURCE_URL: https://api.nuget.org/v3/index.json
   NUGET_PUSH_PARALLELISM: 4
@@ -29,9 +35,14 @@ env:
   RELEASE_TAG: ${{ gitea.event.release.tag_name }}
   REF_NAME: ${{ gitea.ref_name }}
   REPOSITORY: ${{ gitea.repository }}
+  INPUT_PACKAGE_VERSION: ${{ inputs.package_version }}
+
+concurrency:
+  group: release-nuget-${{ gitea.ref_name }}
+  cancel-in-progress: false
 
 # No job-level container: upload/download-artifact need Node.js on the runner host.
-# dotnet restore/build/push runs in SDK_IMAGE via docker run (runner must have Docker).
+# dotnet restore/build/push runs in SDK_IMAGE via docker run (runner must have Docker + Harbor login).
 
 jobs:
   resolve-version:
@@ -46,10 +57,17 @@ jobs:
           set -euo pipefail
           if [ -n "${RELEASE_TAG:-}" ]; then
             version="$RELEASE_TAG"
+          elif [ -n "${INPUT_PACKAGE_VERSION:-}" ]; then
+            version="$INPUT_PACKAGE_VERSION"
           else
             version="0.0.0-dev.$(date +%Y%m%d%H%M%S)"
           fi
           version="${version#v}"
+          if ! printf '%s' "$version" | grep -Eq '^[0-9]+(\.[0-9]+){2}(-[0-9A-Za-z][0-9A-Za-z.-]*)?(\+[0-9A-Za-z][0-9A-Za-z.-]*)?$'; then
+            echo "Invalid NuGet package version: $version" >&2
+            echo "Use SemVer like 1.2.3, 1.2.3-beta.1, or v1.2.3." >&2
+            exit 1
+          fi
           echo "version=$version" >> "$GITHUB_OUTPUT"
           echo "Resolved version: $version"
 
@@ -59,14 +77,49 @@ jobs:
     env:
       VERSION: ${{ needs.resolve-version.outputs.version }}
     steps:
+      - name: Login to Harbor
+        shell: bash
+        env:
+          HARBOR_USERNAME: ${{ secrets.HARBOR_USERNAME }}
+          HARBOR_PASSWORD: ${{ secrets.HARBOR_PASSWORD }}
+        run: |
+          set -euo pipefail
+          echo "$HARBOR_PASSWORD" | docker login "$HARBOR_REGISTRY" \
+            -u "$HARBOR_USERNAME" --password-stdin
+
       - name: Checkout
         shell: bash
         run: |
           set -euo pipefail
-          if [ -n "${REF_NAME:-}" ]; then
-            git clone --depth 1 --branch "$REF_NAME" https://git.sabp.ir/sufi-chain/sufi-abp.git .
+          ws="${GITHUB_WORKSPACE:-$PWD}"
+          if command -v git >/dev/null 2>&1; then
+            if [ -n "${REF_NAME:-}" ]; then
+              git clone --depth 1 --branch "$REF_NAME" "https://${GIT_HOST}/${REPOSITORY}.git" .
+            else
+              git clone --depth 1 "https://${GIT_HOST}/${REPOSITORY}.git" .
+            fi
           else
-            git clone --depth 1 https://git.sabp.ir/sufi-chain/sufi-abp.git .
+            parent="$(dirname "$ws")"
+            mount_dest="$(basename "$ws")"
+            docker run --rm \
+              -v "${parent}:/work" \
+              -w "/work/${mount_dest}" \
+              -e REF_NAME \
+              -e REPOSITORY \
+              -e GIT_HOST \
+              "$GIT_CLONE_IMAGE" \
+              bash -c '
+                set -euo pipefail
+                url="https://${GIT_HOST}/${REPOSITORY}.git"
+                if [ -n "${REF_NAME:-}" ]; then
+                  git clone --depth 1 --branch "$REF_NAME" "$url" _checkout
+                else
+                  git clone --depth 1 "$url" _checkout
+                fi
+                shopt -s dotglob
+                mv _checkout/* ./
+                rmdir _checkout
+              '
           fi
 
       - name: Restore, build and pack root solution
@@ -110,14 +163,44 @@ jobs:
     if: ${{ always() && needs.resolve-version.result == 'success' && needs.pack.result == 'success' && (gitea.event_name == 'release' || inputs.push_to_baget == 'true') }}
     runs-on: ubuntu-latest
     steps:
+      - name: Login to Harbor
+        shell: bash
+        env:
+          HARBOR_USERNAME: ${{ secrets.HARBOR_USERNAME }}
+          HARBOR_PASSWORD: ${{ secrets.HARBOR_PASSWORD }}
+        run: |
+          set -euo pipefail
+          echo "$HARBOR_PASSWORD" | docker login "$HARBOR_REGISTRY" \
+            -u "$HARBOR_USERNAME" --password-stdin
+
       - name: Checkout CI scripts
         shell: bash
         run: |
           set -euo pipefail
-          if [ -n "${REF_NAME:-}" ]; then
-            git clone --depth 1 --branch "$REF_NAME" https://git.sabp.ir/sufi-chain/sufi-abp.git repo
+          ws="${GITHUB_WORKSPACE:-$PWD}"
+          if command -v git >/dev/null 2>&1; then
+            if [ -n "${REF_NAME:-}" ]; then
+              git clone --depth 1 --branch "$REF_NAME" "https://${GIT_HOST}/${REPOSITORY}.git" repo
+            else
+              git clone --depth 1 "https://${GIT_HOST}/${REPOSITORY}.git" repo
+            fi
           else
-            git clone --depth 1 https://git.sabp.ir/sufi-chain/sufi-abp.git repo
+            docker run --rm \
+              -v "${ws}:/work" \
+              -w /work \
+              -e REF_NAME \
+              -e REPOSITORY \
+              -e GIT_HOST \
+              "$GIT_CLONE_IMAGE" \
+              bash -c '
+                set -euo pipefail
+                url="https://${GIT_HOST}/${REPOSITORY}.git"
+                if [ -n "${REF_NAME:-}" ]; then
+                  git clone --depth 1 --branch "$REF_NAME" "$url" repo
+                else
+                  git clone --depth 1 "$url" repo
+                fi
+              '
           fi
 
       - name: Download NuGet packages
@@ -149,17 +232,47 @@ jobs:
 
   push-nuget-org:
     needs: [resolve-version, pack]
-    if: ${{ always() && needs.resolve-version.result == 'success' && needs.pack.result == 'success' && gitea.event_name == 'workflow_dispatch' && inputs.push_to_nuget_org == 'true' }}
+    if: ${{ always() && needs.resolve-version.result == 'success' && needs.pack.result == 'success' && gitea.event_name == 'workflow_dispatch' && inputs.push_to_nuget_org == 'true' && inputs.package_version != '' }}
     runs-on: ubuntu-latest
     steps:
+      - name: Login to Harbor
+        shell: bash
+        env:
+          HARBOR_USERNAME: ${{ secrets.HARBOR_USERNAME }}
+          HARBOR_PASSWORD: ${{ secrets.HARBOR_PASSWORD }}
+        run: |
+          set -euo pipefail
+          echo "$HARBOR_PASSWORD" | docker login "$HARBOR_REGISTRY" \
+            -u "$HARBOR_USERNAME" --password-stdin
+
       - name: Checkout CI scripts
         shell: bash
         run: |
           set -euo pipefail
-          if [ -n "${REF_NAME:-}" ]; then
-            git clone --depth 1 --branch "$REF_NAME" https://git.sabp.ir/sufi-chain/sufi-abp.git repo
+          ws="${GITHUB_WORKSPACE:-$PWD}"
+          if command -v git >/dev/null 2>&1; then
+            if [ -n "${REF_NAME:-}" ]; then
+              git clone --depth 1 --branch "$REF_NAME" "https://${GIT_HOST}/${REPOSITORY}.git" repo
+            else
+              git clone --depth 1 "https://${GIT_HOST}/${REPOSITORY}.git" repo
+            fi
           else
-            git clone --depth 1 https://git.sabp.ir/sufi-chain/sufi-abp.git repo
+            docker run --rm \
+              -v "${ws}:/work" \
+              -w /work \
+              -e REF_NAME \
+              -e REPOSITORY \
+              -e GIT_HOST \
+              "$GIT_CLONE_IMAGE" \
+              bash -c '
+                set -euo pipefail
+                url="https://${GIT_HOST}/${REPOSITORY}.git"
+                if [ -n "${REF_NAME:-}" ]; then
+                  git clone --depth 1 --branch "$REF_NAME" "$url" repo
+                else
+                  git clone --depth 1 "$url" repo
+                fi
+              '
           fi
 
       - name: Download NuGet packages
