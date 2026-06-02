@@ -7,6 +7,9 @@ REF_NAME="${REF_NAME:-}"
 GIT_HOST="${GIT_HOST:-git.sabp.ir}"
 SDK_IMAGE="${SDK_IMAGE:-${GIT_CLONE_IMAGE:-reg.sabp.ir/sufi-chain/dotnet-sdk-build:10.0.202}}"
 
+script_dir="$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)"
+workspace="$("$script_dir/resolve-workspace.sh")"
+
 CLONE_URL="https://${GIT_HOST}/${REPOSITORY}.git"
 if [ -n "${GITEATOKEN:-}" ]; then
   CLONE_URL="$(printf '%s' "$CLONE_URL" | sed "s#^https://#https://x-access-token:${GITEATOKEN}@#")"
@@ -15,7 +18,7 @@ export CLONE_URL
 
 if [ "$TARGET_DIR" = "." ]; then
   docker run --rm \
-    -v "${PWD}:/work" \
+    -v "${workspace}:/work" \
     -w /work \
     -e REF_NAME \
     -e CLONE_URL \
@@ -31,9 +34,9 @@ if [ "$TARGET_DIR" = "." ]; then
       rm -rf _checkout
     '
 else
-  mkdir -p "$TARGET_DIR"
+  mkdir -p "$workspace/$TARGET_DIR"
   docker run --rm \
-    -v "${PWD}:/work" \
+    -v "${workspace}:/work" \
     -w /work \
     -e REF_NAME \
     -e CLONE_URL \

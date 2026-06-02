@@ -5,7 +5,9 @@ set -euo pipefail
 : "${NUGET_ORG_SOURCE_URL:?NUGET_ORG_SOURCE_URL is required}"
 : "${NUGET_ORG_API_KEY:?NUGET_ORG_API_KEY is required}"
 
-mapfile -t packages < <(find "$PACKAGE_OUTPUT" -type f -name '*.nupkg' ! -name '*.symbols.nupkg' | sort)
+package_output="/src/${PACKAGE_OUTPUT#./}"
+
+mapfile -t packages < <(find "$package_output" -type f -name '*.nupkg' ! -name '*.symbols.nupkg' | sort)
 if [ ${#packages[@]} -eq 0 ]; then
   echo "No NuGet packages found in artifact."
   exit 1

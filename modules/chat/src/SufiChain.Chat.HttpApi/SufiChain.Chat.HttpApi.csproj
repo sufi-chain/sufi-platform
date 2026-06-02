@@ -14,7 +14,5 @@
 
   <ItemGroup>
     <ProjectReference Include="..\SufiChain.Chat.Application.Contracts\SufiChain.Chat.Application.Contracts.csproj" />
-    <ProjectReference Include="..\SufiChain.Chat.Connector\SufiChain.Chat.Connector.csproj" />
-    <ProjectReference Include="..\SufiChain.Chat.Connector\SufiChain.Chat.Connector.csproj" />
   </ItemGroup>
 </Project>

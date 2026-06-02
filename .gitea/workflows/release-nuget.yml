@@ -36,6 +36,7 @@ env:
   NUGET_PUSH_PARALLELISM: 4
   PACKAGE_OUTPUT: ./artifacts/nuget
   ROOT_SLNX: SufiChain.SufiAbp.slnx
+  WORKSPACE_DIR: ${{ github.workspace }}
 
 concurrency:
   group: release-nuget-${{ gitea.ref_name }}
@@ -81,13 +82,16 @@ jobs:
           GITEATOKEN: ${{ secrets.GITEATOKEN }}
         run: |
           set -eu
+          workspace="${WORKSPACE_DIR:-${GITHUB_WORKSPACE:-$PWD}}"
+          cd "$workspace"
+          echo "Using workspace: $workspace"
           CLONE_URL="https://${GIT_HOST}/${REPOSITORY}.git"
           if [ -n "${GITEATOKEN:-}" ]; then
             CLONE_URL="$(printf '%s' "$CLONE_URL" | sed "s#^https://#https://x-access-token:${GITEATOKEN}@#")"
           fi
           export CLONE_URL
           docker run --rm \
-            -v "${PWD}:/work" \
+            -v "${workspace}:/work" \
             -w /work \
             -e REF_NAME \
             -e CLONE_URL \
@@ -102,6 +106,11 @@ jobs:
               cp -a _checkout/. ./
               rm -rf _checkout
             '
+          if [ ! -f "$workspace/$ROOT_SLNX" ]; then
+            echo "Checkout did not produce $ROOT_SLNX under $workspace" >&2
+            find "$workspace" -maxdepth 2 -type f -name '*.slnx' 2>/dev/null | head -20 >&2 || true
+            exit 1
+          fi
 
       - name: Resolve package version
         id: version
@@ -130,8 +139,15 @@ jobs:
           VERSION: ${{ steps.version.outputs.version }}
         run: |
           set -eu
+          if [ -z "${VERSION:-}" ]; then
+            echo "Package version was not resolved (steps.version.outputs.version is empty)." >&2
+            exit 1
+          fi
+          workspace="${WORKSPACE_DIR:-${GITHUB_WORKSPACE:-$PWD}}"
+          cd "$workspace"
+          echo "Using workspace: $workspace"
           docker run --rm \
-            -v "${PWD}:/src" \
+            -v "${workspace}:/src" \
             -w /src \
             -e VERSION \
             -e PACKAGE_OUTPUT \
@@ -141,23 +157,19 @@ jobs:
             -e DOTNET_SKIP_FIRST_TIME_EXPERIENCE \
             "$SDK_IMAGE" \
             bash /src/.gitea/scripts/nuget-pack.sh
-
-      - name: Verify packages
-        shell: sh
-        run: |
-          set -eu
-          if [ ! -d "$PACKAGE_OUTPUT" ]; then
-            echo "Package output directory was not created: $PACKAGE_OUTPUT" >&2
-            echo "Top-level workspace contents:" >&2
-            find . -maxdepth 2 -type d | sort >&2
+          package_dir="${workspace}/${PACKAGE_OUTPUT#./}"
+          if [ ! -d "$package_dir" ]; then
+            echo "Package output directory was not created on the runner workspace: $package_dir" >&2
+            echo "Workspace contents:" >&2
+            find "$workspace" -maxdepth 2 \( -type d -o -type f -name '*.slnx' \) | sort >&2
             exit 1
           fi
-          package_count="$(find "$PACKAGE_OUTPUT" -type f -name '*.nupkg' ! -name '*.symbols.nupkg' | wc -l | tr -d ' ')"
+          package_count="$(find "$package_dir" -type f -name '*.nupkg' ! -name '*.symbols.nupkg' | wc -l | tr -d ' ')"
           if [ "$package_count" = "0" ]; then
-            echo "No NuGet packages were produced in $PACKAGE_OUTPUT." >&2
+            echo "No NuGet packages were produced in $package_dir." >&2
             exit 1
           fi
-          echo "Packed $package_count package(s)."
+          echo "Packed $package_count package(s) into $package_dir."
 
       - name: Push packages to BaGet
         if: ${{ gitea.event_name == 'release' || inputs.push_to_baget == true }}
@@ -170,8 +182,10 @@ jobs:
             echo "NUGET_API_KEY secret is required." >&2
             exit 1
           fi
+          workspace="${WORKSPACE_DIR:-${GITHUB_WORKSPACE:-$PWD}}"
+          cd "$workspace"
           docker run --rm \
-            -v "${PWD}:/src" \
+            -v "${workspace}:/src" \
             -w /src \
             -e NUGET_API_KEY \
             -e BAGET_SOURCE_URL \
@@ -191,8 +205,10 @@ jobs:
             echo "NUGET_ORG_API_KEY secret is required for nuget.org push." >&2
             exit 1
           fi
+          workspace="${WORKSPACE_DIR:-${GITHUB_WORKSPACE:-$PWD}}"
+          cd "$workspace"
           docker run --rm \
-            -v "${PWD}:/src" \
+            -v "${workspace}:/src" \
             -w /src \
             -e NUGET_ORG_API_KEY \
             -e NUGET_ORG_SOURCE_URL \
