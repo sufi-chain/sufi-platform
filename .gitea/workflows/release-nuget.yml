@@ -24,37 +24,89 @@ env:
   DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
   HARBOR_REGISTRY: reg.sabp.ir
   SDK_IMAGE: reg.sabp.ir/sufi-chain/dotnet-sdk-build:10.0.202
-  GIT_CLONE_IMAGE: reg.sabp.ir/sufi-chain/dotnet-sdk-build:10.0.202
   GIT_HOST: git.sabp.ir
+  REPOSITORY: ${{ gitea.repository }}
+  REF_NAME: ${{ gitea.ref_name }}
+  RELEASE_TAG: ${{ gitea.event.release.tag_name }}
+  INPUT_PACKAGE_VERSION: ${{ inputs.package_version }}
+  INPUT_PUSH_TO_BAGET: ${{ inputs.push_to_baget }}
+  INPUT_PUSH_TO_NUGET_ORG: ${{ inputs.push_to_nuget_org }}
   BAGET_SOURCE_URL: https://nuget.sabp.ir/v3/index.json
   NUGET_ORG_SOURCE_URL: https://api.nuget.org/v3/index.json
   NUGET_PUSH_PARALLELISM: 4
   PACKAGE_OUTPUT: ./artifacts/nuget
-  NUGET_ARTIFACT_NAME: nuget-packages
   ROOT_SLNX: SufiChain.SufiAbp.slnx
-  RELEASE_TAG: ${{ gitea.event.release.tag_name }}
-  REF_NAME: ${{ gitea.ref_name }}
-  REPOSITORY: ${{ gitea.repository }}
-  INPUT_PACKAGE_VERSION: ${{ inputs.package_version }}
 
 concurrency:
   group: release-nuget-${{ gitea.ref_name }}
   cancel-in-progress: false
 
-# No job-level container: upload/download-artifact need Node.js on the runner host.
-# dotnet restore/build/push runs in SDK_IMAGE via docker run (runner must have Docker + Harbor login).
-
 jobs:
-  resolve-version:
+  pack-and-push:
     runs-on: ubuntu-latest
-    outputs:
-      version: ${{ steps.version.outputs.version }}
     steps:
+      - name: Check runner prerequisites
+        shell: sh
+        run: |
+          set -eu
+          if ! command -v docker >/dev/null 2>&1; then
+            echo "docker CLI is required on the runner." >&2
+            echo "Map ubuntu-latest to docker:27-cli and mount /var/run/docker.sock into act_runner." >&2
+            exit 1
+          fi
+          if ! docker version >/dev/null 2>&1; then
+            echo "docker CLI exists, but cannot reach Docker daemon." >&2
+            echo "Check Docker service and /var/run/docker.sock mount/permissions for the Gitea runner." >&2
+            exit 1
+          fi
+
+      - name: Login to Harbor
+        shell: sh
+        env:
+          HARBOR_USERNAME: ${{ secrets.HARBOR_USERNAME }}
+          HARBOR_PASSWORD: ${{ secrets.HARBOR_PASSWORD }}
+        run: |
+          set -eu
+          if [ -z "${HARBOR_USERNAME:-}" ] || [ -z "${HARBOR_PASSWORD:-}" ]; then
+            echo "HARBOR_USERNAME and HARBOR_PASSWORD secrets are required." >&2
+            exit 1
+          fi
+          echo "$HARBOR_PASSWORD" | docker login "$HARBOR_REGISTRY" \
+            -u "$HARBOR_USERNAME" \
+            --password-stdin
+
+      - name: Checkout
+        shell: sh
+        env:
+          GITEATOKEN: ${{ secrets.GITEATOKEN }}
+        run: |
+          set -eu
+          clone_url="https://${GIT_HOST}/${REPOSITORY}.git"
+          if [ -n "${GITEATOKEN:-}" ]; then
+            clone_url="$(printf '%s' "$clone_url" | sed "s#^https://#https://x-access-token:${GITEATOKEN}@#")"
+          fi
+          docker run --rm \
+            -v "${PWD}:/work" \
+            -w /work \
+            -e REF_NAME \
+            -e clone_url \
+            "$SDK_IMAGE" \
+            sh -c '
+              set -eu
+              if [ -n "${REF_NAME:-}" ]; then
+                git clone --depth 1 --branch "$REF_NAME" "$clone_url" _checkout
+              else
+                git clone --depth 1 "$clone_url" _checkout
+              fi
+              cp -a _checkout/. ./
+              rm -rf _checkout
+            '
+
       - name: Resolve package version
         id: version
-        shell: bash
+        shell: sh
         run: |
-          set -euo pipefail
+          set -eu
           if [ -n "${RELEASE_TAG:-}" ]; then
             version="$RELEASE_TAG"
           elif [ -n "${INPUT_PACKAGE_VERSION:-}" ]; then
@@ -63,7 +115,7 @@ jobs:
             version="0.0.0-dev.$(date +%Y%m%d%H%M%S)"
           fi
           version="${version#v}"
-          if ! printf '%s' "$version" | grep -Eq '^[0-9]+(\.[0-9]+){2}(-[0-9A-Za-z][0-9A-Za-z.-]*)?(\+[0-9A-Za-z][0-9A-Za-z.-]*)?$'; then
+          if ! printf '%s' "$version" | grep -Eq '^[0-9]+([.][0-9]+){2}(-[0-9A-Za-z][0-9A-Za-z.-]*)?([+][0-9A-Za-z][0-9A-Za-z.-]*)?$'; then
             echo "Invalid NuGet package version: $version" >&2
             echo "Use SemVer like 1.2.3, 1.2.3-beta.1, or v1.2.3." >&2
             exit 1
@@ -71,64 +123,14 @@ jobs:
           echo "version=$version" >> "$GITHUB_OUTPUT"
           echo "Resolved version: $version"
 
-  pack:
-    needs: resolve-version
-    runs-on: ubuntu-latest
-    env:
-      VERSION: ${{ needs.resolve-version.outputs.version }}
-    steps:
-      - name: Login to Harbor
-        shell: bash
-        env:
-          HARBOR_USERNAME: ${{ secrets.HARBOR_USERNAME }}
-          HARBOR_PASSWORD: ${{ secrets.HARBOR_PASSWORD }}
-        run: |
-          set -euo pipefail
-          echo "$HARBOR_PASSWORD" | docker login "$HARBOR_REGISTRY" \
-            -u "$HARBOR_USERNAME" --password-stdin
-
-      - name: Checkout
-        shell: bash
-        run: |
-          set -euo pipefail
-          ws="${GITHUB_WORKSPACE:-$PWD}"
-          if command -v git >/dev/null 2>&1; then
-            if [ -n "${REF_NAME:-}" ]; then
-              git clone --depth 1 --branch "$REF_NAME" "https://${GIT_HOST}/${REPOSITORY}.git" .
-            else
-              git clone --depth 1 "https://${GIT_HOST}/${REPOSITORY}.git" .
-            fi
-          else
-            parent="$(dirname "$ws")"
-            mount_dest="$(basename "$ws")"
-            docker run --rm \
-              -v "${parent}:/work" \
-              -w "/work/${mount_dest}" \
-              -e REF_NAME \
-              -e REPOSITORY \
-              -e GIT_HOST \
-              "$GIT_CLONE_IMAGE" \
-              bash -c '
-                set -euo pipefail
-                url="https://${GIT_HOST}/${REPOSITORY}.git"
-                if [ -n "${REF_NAME:-}" ]; then
-                  git clone --depth 1 --branch "$REF_NAME" "$url" _checkout
-                else
-                  git clone --depth 1 "$url" _checkout
-                fi
-                shopt -s dotglob
-                mv _checkout/* ./
-                rmdir _checkout
-              '
-          fi
-
       - name: Restore, build and pack root solution
-        shell: bash
+        shell: sh
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
         run: |
-          set -euo pipefail
-          ws="${GITHUB_WORKSPACE:-$PWD}"
+          set -eu
           docker run --rm \
-            -v "${ws}:/src" \
+            -v "${PWD}:/src" \
             -w /src \
             -e VERSION \
             -e PACKAGE_OUTPUT \
@@ -140,164 +142,54 @@ jobs:
             bash /src/.gitea/scripts/nuget-pack.sh
 
       - name: Verify packages
-        shell: bash
+        shell: sh
         run: |
-          set -euo pipefail
-          mapfile -t packages < <(find "$PACKAGE_OUTPUT" -type f -name '*.nupkg' ! -name '*.symbols.nupkg')
-          if [ ${#packages[@]} -eq 0 ]; then
-            echo "No NuGet packages were produced."
+          set -eu
+          package_count="$(find "$PACKAGE_OUTPUT" -type f -name '*.nupkg' ! -name '*.symbols.nupkg' | wc -l | tr -d ' ')"
+          if [ "$package_count" = "0" ]; then
+            echo "No NuGet packages were produced." >&2
             exit 1
           fi
-          echo "Packed ${#packages[@]} package(s)"
-
-      - name: Upload NuGet packages
-        uses: https://git.sabp.ir/actions/upload-artifact@v4
-        with:
-          name: ${{ env.NUGET_ARTIFACT_NAME }}
-          path: ${{ env.PACKAGE_OUTPUT }}/
-          if-no-files-found: error
-          retention-days: 7
-
-  push-baget:
-    needs: [resolve-version, pack]
-    if: ${{ always() && needs.resolve-version.result == 'success' && needs.pack.result == 'success' && (gitea.event_name == 'release' || inputs.push_to_baget == 'true') }}
-    runs-on: ubuntu-latest
-    steps:
-      - name: Login to Harbor
-        shell: bash
-        env:
-          HARBOR_USERNAME: ${{ secrets.HARBOR_USERNAME }}
-          HARBOR_PASSWORD: ${{ secrets.HARBOR_PASSWORD }}
-        run: |
-          set -euo pipefail
-          echo "$HARBOR_PASSWORD" | docker login "$HARBOR_REGISTRY" \
-            -u "$HARBOR_USERNAME" --password-stdin
-
-      - name: Checkout CI scripts
-        shell: bash
-        run: |
-          set -euo pipefail
-          ws="${GITHUB_WORKSPACE:-$PWD}"
-          if command -v git >/dev/null 2>&1; then
-            if [ -n "${REF_NAME:-}" ]; then
-              git clone --depth 1 --branch "$REF_NAME" "https://${GIT_HOST}/${REPOSITORY}.git" repo
-            else
-              git clone --depth 1 "https://${GIT_HOST}/${REPOSITORY}.git" repo
-            fi
-          else
-            docker run --rm \
-              -v "${ws}:/work" \
-              -w /work \
-              -e REF_NAME \
-              -e REPOSITORY \
-              -e GIT_HOST \
-              "$GIT_CLONE_IMAGE" \
-              bash -c '
-                set -euo pipefail
-                url="https://${GIT_HOST}/${REPOSITORY}.git"
-                if [ -n "${REF_NAME:-}" ]; then
-                  git clone --depth 1 --branch "$REF_NAME" "$url" repo
-                else
-                  git clone --depth 1 "$url" repo
-                fi
-              '
-          fi
-
-      - name: Download NuGet packages
-        uses: https://git.sabp.ir/actions/download-artifact@v4
-        with:
-          name: ${{ env.NUGET_ARTIFACT_NAME }}
-          path: ${{ env.PACKAGE_OUTPUT }}
+          echo "Packed $package_count package(s)."
 
       - name: Push packages to BaGet
-        shell: bash
+        if: ${{ gitea.event_name == 'release' || inputs.push_to_baget == true }}
+        shell: sh
         env:
           NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
         run: |
-          set -euo pipefail
+          set -eu
           if [ -z "${NUGET_API_KEY:-}" ]; then
-            echo "NUGET_API_KEY secret is required."
+            echo "NUGET_API_KEY secret is required." >&2
             exit 1
           fi
-          ws="${GITHUB_WORKSPACE:-$PWD}"
           docker run --rm \
-            -v "${ws}:/src" \
+            -v "${PWD}:/src" \
             -w /src \
             -e NUGET_API_KEY \
             -e BAGET_SOURCE_URL \
             -e NUGET_PUSH_PARALLELISM \
             -e PACKAGE_OUTPUT \
             "$SDK_IMAGE" \
-            bash /src/repo/.gitea/scripts/nuget-push-baget.sh
-
-  push-nuget-org:
-    needs: [resolve-version, pack]
-    if: ${{ always() && needs.resolve-version.result == 'success' && needs.pack.result == 'success' && gitea.event_name == 'workflow_dispatch' && inputs.push_to_nuget_org == 'true' && inputs.package_version != '' }}
-    runs-on: ubuntu-latest
-    steps:
-      - name: Login to Harbor
-        shell: bash
-        env:
-          HARBOR_USERNAME: ${{ secrets.HARBOR_USERNAME }}
-          HARBOR_PASSWORD: ${{ secrets.HARBOR_PASSWORD }}
-        run: |
-          set -euo pipefail
-          echo "$HARBOR_PASSWORD" | docker login "$HARBOR_REGISTRY" \
-            -u "$HARBOR_USERNAME" --password-stdin
-
-      - name: Checkout CI scripts
-        shell: bash
-        run: |
-          set -euo pipefail
-          ws="${GITHUB_WORKSPACE:-$PWD}"
-          if command -v git >/dev/null 2>&1; then
-            if [ -n "${REF_NAME:-}" ]; then
-              git clone --depth 1 --branch "$REF_NAME" "https://${GIT_HOST}/${REPOSITORY}.git" repo
-            else
-              git clone --depth 1 "https://${GIT_HOST}/${REPOSITORY}.git" repo
-            fi
-          else
-            docker run --rm \
-              -v "${ws}:/work" \
-              -w /work \
-              -e REF_NAME \
-              -e REPOSITORY \
-              -e GIT_HOST \
-              "$GIT_CLONE_IMAGE" \
-              bash -c '
-                set -euo pipefail
-                url="https://${GIT_HOST}/${REPOSITORY}.git"
-                if [ -n "${REF_NAME:-}" ]; then
-                  git clone --depth 1 --branch "$REF_NAME" "$url" repo
-                else
-                  git clone --depth 1 "$url" repo
-                fi
-              '
-          fi
-
-      - name: Download NuGet packages
-        uses: https://git.sabp.ir/actions/download-artifact@v4
-        with:
-          name: ${{ env.NUGET_ARTIFACT_NAME }}
-          path: ${{ env.PACKAGE_OUTPUT }}
+            bash /src/.gitea/scripts/nuget-push-baget.sh
 
       - name: Push packages to nuget.org
-        shell: bash
+        if: ${{ gitea.event_name == 'workflow_dispatch' && inputs.push_to_nuget_org == true && inputs.package_version != '' }}
+        shell: sh
         env:
           NUGET_ORG_API_KEY: ${{ secrets.NUGET_ORG_API_KEY }}
         run: |
-          set -euo pipefail
+          set -eu
           if [ -z "${NUGET_ORG_API_KEY:-}" ]; then
-            echo "NUGET_ORG_API_KEY secret is required for nuget.org push."
+            echo "NUGET_ORG_API_KEY secret is required for nuget.org push." >&2
             exit 1
           fi
-          ws="${GITHUB_WORKSPACE:-$PWD}"
           docker run --rm \
-            -v "${ws}:/src" \
+            -v "${PWD}:/src" \
             -w /src \
             -e NUGET_ORG_API_KEY \
             -e NUGET_ORG_SOURCE_URL \
             -e NUGET_PUSH_PARALLELISM \
             -e PACKAGE_OUTPUT \
             "$SDK_IMAGE" \
-            bash /src/repo/.gitea/scripts/nuget-push-nuget-org.sh
+            bash /src/.gitea/scripts/nuget-push-nuget-org.sh
