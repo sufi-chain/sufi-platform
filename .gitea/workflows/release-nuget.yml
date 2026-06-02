@@ -157,7 +157,8 @@ jobs:
           workspace="${WORKSPACE_DIR:-${GITHUB_WORKSPACE:-$PWD}}"
           cd "$workspace"
           echo "Using workspace: $workspace"
-          docker run --rm \
+          package_dir="${workspace}/${PACKAGE_OUTPUT#./}"
+          container_id="$(docker run -d \
             -v "${workspace}:/src" \
             -w /src \
             -e VERSION \
@@ -167,8 +168,14 @@ jobs:
             -e DOTNET_CLI_TELEMETRY_OPTOUT \
             -e DOTNET_SKIP_FIRST_TIME_EXPERIENCE \
             "$SDK_IMAGE" \
-            bash /src/.gitea/scripts/nuget-pack.sh
-          package_dir="${workspace}/${PACKAGE_OUTPUT#./}"
+            sleep 3600)"
+          trap 'docker rm -f "$container_id" >/dev/null 2>&1 || true' EXIT INT TERM
+          docker exec "$container_id" bash /src/.gitea/scripts/nuget-pack.sh
+          rm -rf "$package_dir"
+          mkdir -p "$package_dir"
+          docker cp "${container_id}:/src/artifacts/nuget/." "$package_dir/"
+          docker rm -f "$container_id"
+          trap - EXIT INT TERM
           if [ ! -d "$package_dir" ]; then
             echo "Package output directory was not created on the runner workspace: $package_dir" >&2
             echo "Workspace contents:" >&2
