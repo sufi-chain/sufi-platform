@@ -85,28 +85,39 @@ jobs:
           workspace="${WORKSPACE_DIR:-${GITHUB_WORKSPACE:-$PWD}}"
           cd "$workspace"
           echo "Using workspace: $workspace"
+
+          if [ -f "$ROOT_SLNX" ]; then
+            echo "Repository already checked out by the runner ($ROOT_SLNX)."
+            exit 0
+          fi
+
+          echo "Runner workspace is empty; cloning with SDK container."
           CLONE_URL="https://${GIT_HOST}/${REPOSITORY}.git"
           if [ -n "${GITEATOKEN:-}" ]; then
             CLONE_URL="$(printf '%s' "$CLONE_URL" | sed "s#^https://#https://x-access-token:${GITEATOKEN}@#")"
           fi
           export CLONE_URL
-          docker run --rm \
-            -v "${workspace}:/work" \
-            -w /work \
+          container_id="$(docker run -d \
+            -w /src \
             -e REF_NAME \
             -e CLONE_URL \
             "$SDK_IMAGE" \
-            sh -c '
-              set -eu
-              if [ -n "${REF_NAME:-}" ]; then
-                git clone --depth 1 --branch "$REF_NAME" "$CLONE_URL" _checkout
-              else
-                git clone --depth 1 "$CLONE_URL" _checkout
-              fi
-              cp -a _checkout/. ./
-              rm -rf _checkout
-            '
-          if [ ! -f "$workspace/$ROOT_SLNX" ]; then
+            sleep 3600)"
+          trap 'docker rm -f "$container_id" >/dev/null 2>&1 || true' EXIT INT TERM
+          docker exec "$container_id" sh -c '
+            set -eu
+            if [ -n "${REF_NAME:-}" ]; then
+              git clone --depth 1 --branch "$REF_NAME" "$CLONE_URL" /src
+            else
+              git clone --depth 1 "$CLONE_URL" /src
+            fi
+            test -f "'"$ROOT_SLNX"'"
+          '
+          docker cp "${container_id}:/src/." "${workspace}/"
+          docker rm -f "$container_id"
+          trap - EXIT INT TERM
+
+          if [ ! -f "$ROOT_SLNX" ]; then
             echo "Checkout did not produce $ROOT_SLNX under $workspace" >&2
             find "$workspace" -maxdepth 2 -type f -name '*.slnx' 2>/dev/null | head -20 >&2 || true
             exit 1
