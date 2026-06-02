@@ -5,6 +5,7 @@ using SufiChain.Chat.Settings;
 using SufiChain.SufiAbp.Features;
 using SufiChain.SufiAbp.SettingManagement;
 using Volo.Abp;
+using Volo.Abp.Settings;
 
 namespace SufiChain.Chat.Connectors.Email.Settings;
 

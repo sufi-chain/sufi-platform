@@ -5,7 +5,8 @@ set -euo pipefail
 : "${ROOT_SLNX:?ROOT_SLNX is required}"
 : "${VERSION:?VERSION is required}"
 
-mkdir -p "$PACKAGE_OUTPUT"
+package_output="/src/${PACKAGE_OUTPUT#./}"
+mkdir -p "$package_output"
 
 cat > /tmp/ci-nuget.config <<'NUGETEOF'
 <?xml version="1.0" encoding="utf-8"?>
@@ -38,6 +39,20 @@ dotnet build "$ROOT_SLNX" \
   -m \
   -p:PackageVersion="$VERSION" \
   -p:ContinuousIntegrationBuild=true \
-  -p:BuildInParallel=true \
-  -p:PackageOutputPath="/src/${PACKAGE_OUTPUT#./}" \
-  -p:GeneratePackageOnBuild=true
+  -p:BuildInParallel=true
+
+dotnet pack "$ROOT_SLNX" \
+  --configuration Release \
+  --no-build \
+  --output "$package_output" \
+  --verbosity minimal \
+  -p:PackageVersion="$VERSION" \
+  -p:ContinuousIntegrationBuild=true
+
+package_count="$(find "$package_output" -type f -name '*.nupkg' ! -name '*.symbols.nupkg' | wc -l | tr -d ' ')"
+if [ "$package_count" = "0" ]; then
+  echo "No NuGet packages were produced in $package_output." >&2
+  exit 1
+fi
+
+echo "Packed $package_count package(s) into $package_output."

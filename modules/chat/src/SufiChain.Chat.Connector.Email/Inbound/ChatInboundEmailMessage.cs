@@ -1,3 +1,5 @@
+using SufiChain.Chat.Connectors.Email.Settings;
+
 namespace SufiChain.Chat.Connectors.Email;
 
 public class ChatInboundEmailMessage

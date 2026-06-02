@@ -146,9 +146,15 @@ jobs:
         shell: sh
         run: |
           set -eu
+          if [ ! -d "$PACKAGE_OUTPUT" ]; then
+            echo "Package output directory was not created: $PACKAGE_OUTPUT" >&2
+            echo "Top-level workspace contents:" >&2
+            find . -maxdepth 2 -type d | sort >&2
+            exit 1
+          fi
           package_count="$(find "$PACKAGE_OUTPUT" -type f -name '*.nupkg' ! -name '*.symbols.nupkg' | wc -l | tr -d ' ')"
           if [ "$package_count" = "0" ]; then
-            echo "No NuGet packages were produced." >&2
+            echo "No NuGet packages were produced in $PACKAGE_OUTPUT." >&2
             exit 1
           fi
           echo "Packed $package_count package(s)."

@@ -4,6 +4,7 @@ using SufiChain.SufiAbp.BackgroundWorkers;
 using SufiChain.SufiAbp.Messaging;
 using SufiChain.SufiAbp.TextTemplating;
 using SufiChain.SufiAbp.TextTemplating.Scriban;
+using Volo.Abp;
 using Volo.Abp.BackgroundWorkers;
 using Volo.Abp.Modularity;
 using Volo.Abp.VirtualFileSystem;
