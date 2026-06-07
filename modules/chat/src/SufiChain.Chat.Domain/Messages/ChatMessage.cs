@@ -62,7 +62,15 @@ public class ChatMessage : FullAuditedEntity<Guid>, IMultiTenant
 
     public virtual void SetBody(string body)
     {
-        Body = Check.NotNullOrWhiteSpace(body, nameof(body), ChatConsts.MaxMessageBodyLength);
+        body ??= string.Empty;
+
+        if (string.IsNullOrWhiteSpace(body))
+        {
+            Body = string.Empty;
+            return;
+        }
+
+        Body = Check.Length(body.Trim(), nameof(body), ChatConsts.MaxMessageBodyLength);
     }
 
     public virtual void SetMetadata(string? metadataJson)

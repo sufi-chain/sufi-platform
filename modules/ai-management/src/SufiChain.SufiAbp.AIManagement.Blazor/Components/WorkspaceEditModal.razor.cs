@@ -209,9 +209,19 @@ public partial class WorkspaceEditModal : AIManagementComponentBase
     private async Task CloseModal()
     {
         _workspace = null;
-        Open = false;
-        _wasOpen = false;
-        await OpenChanged.InvokeAsync(Open);
+        await SetOpenAsync(false);
+    }
+
+    private async Task SetOpenAsync(bool open)
+    {
+        if (!open)
+        {
+            _workspace = null;
+        }
+
+        Open = open;
+        _wasOpen = open;
+        await OpenChanged.InvokeAsync(open);
     }
 
     private async Task<bool> TryApplyPricingAsync()

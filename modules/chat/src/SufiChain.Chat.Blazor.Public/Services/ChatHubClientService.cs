@@ -36,14 +36,17 @@ public class ChatHubClientService : IChatHubClientService, IScopedDependency
 
     public async Task EnsureConnectedAsync(CancellationToken cancellationToken = default)
     {
+        Console.WriteLine("[CHAT DEBUG HUB] EnsureConnectedAsync called");
         await _connectionLock.WaitAsync(cancellationToken);
         try
         {
             if (_connection is { State: HubConnectionState.Connected or HubConnectionState.Connecting or HubConnectionState.Reconnecting })
             {
+                Console.WriteLine($"[CHAT DEBUG HUB] Already connected or connecting. State={_connection.State}");
                 return;
             }
 
+            Console.WriteLine("[CHAT DEBUG HUB] Creating new hub connection...");
             _connection?.DisposeAsync();
 
             _connection = new HubConnectionBuilder()
@@ -57,9 +60,14 @@ public class ChatHubClientService : IChatHubClientService, IScopedDependency
 
             _connection.On<ChatMessageDto>(ChatRealtimeClientEvents.MessageReceived, async message =>
             {
+                Console.WriteLine($"[CHAT DEBUG HUB] MessageReceived event fired. MessageId={message.Id}, SessionId={message.SessionId}, SenderKind={message.SenderKind}");
                 if (MessageReceived != null)
                 {
                     await MessageReceived.Invoke(message);
+                }
+                else
+                {
+                    Console.WriteLine("[CHAT DEBUG HUB] WARNING: MessageReceived event has no subscribers!");
                 }
             });
 
@@ -80,6 +88,7 @@ public class ChatHubClientService : IChatHubClientService, IScopedDependency
             });
 
             await _connection.StartAsync(cancellationToken);
+            Console.WriteLine($"[CHAT DEBUG HUB] Hub connection started. State={_connection.State}");
         }
         finally
         {
@@ -92,10 +101,12 @@ public class ChatHubClientService : IChatHubClientService, IScopedDependency
         string? anonymousVisitorId = null,
         CancellationToken cancellationToken = default)
     {
+        Console.WriteLine($"[CHAT DEBUG HUB] JoinSessionAsync called. SessionId={sessionId}");
         await EnsureConnectedAsync(cancellationToken);
 
         if (_connection == null)
         {
+            Console.WriteLine("[CHAT DEBUG HUB] WARNING: Connection is null, cannot join session");
             return;
         }
 

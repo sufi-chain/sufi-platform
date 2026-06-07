@@ -16,6 +16,11 @@ public class ChatGeneralSettingDefinitionProvider : SettingDefinitionProvider
                 ChatSettingNames.General.MaxMessagesPerTenantPerDay,
                 ChatSettingDefaults.MaxMessagesPerTenantPerDay.ToString(),
                 isVisibleToClients: false,
+                isInherited: true),
+            new SettingDefinition(
+                ChatSettingNames.General.EnableFileAttachments,
+                true.ToString().ToLowerInvariant(),
+                isVisibleToClients: true,
                 isInherited: true));
     }
 }

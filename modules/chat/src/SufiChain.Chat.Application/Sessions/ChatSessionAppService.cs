@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.Extensions.Logging;
 using SufiChain.Chat.ETOs;
 using SufiChain.Chat.Mapping;
 using SufiChain.Chat.Participants;
@@ -7,7 +8,7 @@ using SufiChain.Chat.Realtime;
 using SufiChain.Chat.Usage;
 using SufiChain.SufiAbp.Application.Dtos;
 using Volo.Abp;
-using Volo.Abp.Linq;
+using Volo.Abp.Authorization;
 using Volo.Abp.EventBus.Distributed;
 
 namespace SufiChain.Chat.Sessions;
@@ -22,6 +23,8 @@ public class ChatSessionAppService : ChatAppService, IChatSessionAppService
     protected ChatApplicationMapper Mapper { get; }
     protected IDistributedEventBus DistributedEventBus { get; }
     protected IChatRealtimeNotifier RealtimeNotifier { get; }
+    protected IChatParticipantDisplayNameResolver DisplayNameResolver { get; }
+    protected IChatSessionDtoEnricher SessionDtoEnricher { get; }
 
     public ChatSessionAppService(
         IChatSessionRepository sessionRepository,
@@ -30,7 +33,9 @@ public class ChatSessionAppService : ChatAppService, IChatSessionAppService
         IChatUsageGuard usageGuard,
         ChatApplicationMapper mapper,
         IDistributedEventBus distributedEventBus,
-        IChatRealtimeNotifier realtimeNotifier)
+        IChatRealtimeNotifier realtimeNotifier,
+        IChatParticipantDisplayNameResolver displayNameResolver,
+        IChatSessionDtoEnricher sessionDtoEnricher)
     {
         SessionRepository = sessionRepository;
         ParticipantRepository = participantRepository;
@@ -39,6 +44,8 @@ public class ChatSessionAppService : ChatAppService, IChatSessionAppService
         Mapper = mapper;
         DistributedEventBus = distributedEventBus;
         RealtimeNotifier = realtimeNotifier;
+        DisplayNameResolver = displayNameResolver;
+        SessionDtoEnricher = sessionDtoEnricher;
     }
 
     [Authorize(ChatPermissions.Sessions.Create)]
@@ -120,10 +127,10 @@ public class ChatSessionAppService : ChatAppService, IChatSessionAppService
         await RealtimeNotifier.NotifySessionUpdatedAsync(await MapWithParticipantsAsync(session));
     }
 
-    [Authorize(ChatPermissions.Sessions.Manage)]
     public virtual async Task AddParticipantAsync(Guid sessionId, AddChatParticipantInput input)
     {
         var session = await SessionRepository.GetAsync(sessionId);
+        await EnsureCanManageParticipantsAsync(session);
         await SessionManager.EnsureCanAddParticipantAsync(session);
         await AddParticipantEntityAsync(session, input);
         await RealtimeNotifier.NotifySessionUpdatedAsync(await MapWithParticipantsAsync(session));
@@ -142,7 +149,6 @@ public class ChatSessionAppService : ChatAppService, IChatSessionAppService
         await ParticipantRepository.UpdateAsync(participant, autoSave: true);
         await RealtimeNotifier.NotifySessionUpdatedAsync(await MapWithParticipantsAsync(await SessionRepository.GetAsync(sessionId)));
     }
-
     public virtual async Task<PagedResultDto<ChatSessionListDto>> GetMySessionsAsync(GetMyChatSessionsInput input)
     {
         if (!CurrentUser.Id.HasValue)
@@ -150,20 +156,53 @@ public class ChatSessionAppService : ChatAppService, IChatSessionAppService
             return new PagedResultDto<ChatSessionListDto>(0, new List<ChatSessionListDto>());
         }
 
-        var sessions = await SessionRepository.GetSessionsForParticipantAsync(
+        Logger.LogInformation("[CHAT DEBUG] GetMySessionsAsync called for UserId={UserId}", CurrentUser.Id);
+
+        // Get sessions where user is a participant
+        var participantSessions = await SessionRepository.GetSessionsForParticipantAsync(
             CurrentTenant.Id,
             CurrentUser.Id,
             skipCount: input.SkipCount,
             maxResultCount: input.MaxResultCount);
 
-        var filtered = sessions
+        Logger.LogInformation("[CHAT DEBUG] Found {Count} sessions as participant", participantSessions.Count);
+
+        // Also get AI Assistant sessions created by the user
+        var queryable = await SessionRepository.GetQueryableAsync();
+        var createdSessions = await AsyncExecuter.ToListAsync(
+            queryable.Where(session => 
+                session.CreatorId == CurrentUser.Id && 
+                session.ConversationKind == ConversationKind.Assistant)
+            .OrderByDescending(s => s.LastMessageTime ?? s.CreationTime)
+            .Take(input.MaxResultCount));
+
+        Logger.LogInformation("[CHAT DEBUG] Found {Count} AI sessions as creator", createdSessions.Count);
+
+        // Combine and deduplicate
+        var allSessions = participantSessions
+            .Concat(createdSessions)
+            .GroupBy(s => s.Id)
+            .Select(g => g.First())
+            .OrderByDescending(s => s.LastMessageTime ?? s.CreationTime)
+            .ToList();
+
+        Logger.LogInformation("[CHAT DEBUG] Total unique sessions: {Count}", allSessions.Count);
+
+        var filtered = allSessions
             .WhereIf(input.Status.HasValue, session => session.Status == input.Status)
             .WhereIf(input.ConversationKind.HasValue, session => session.ConversationKind == input.ConversationKind)
             .ToList();
 
-        return new PagedResultDto<ChatSessionListDto>(
-            filtered.Count,
-            filtered.Select(session => Mapper.ToListDto(session)).ToList());
+        var items = new List<ChatSessionListDto>();
+        foreach (var session in filtered)
+        {
+            var participants = await ParticipantRepository.GetListBySessionAsync(session.Id);
+            items.Add(await SessionDtoEnricher.EnrichListItemAsync(session, participants));
+        }
+
+        Logger.LogInformation("[CHAT DEBUG] Returning {Count} sessions after filtering", items.Count);
+
+        return new PagedResultDto<ChatSessionListDto>(filtered.Count, items);
     }
 
     [Authorize(ChatPermissions.Sessions.Create)]
@@ -190,6 +229,8 @@ public class ChatSessionAppService : ChatAppService, IChatSessionAppService
             input.OtherUserId,
             input.ChannelOrigin,
             input.MetadataJson);
+
+        await EnsureParticipantDisplayNamesPersistedAsync(session.Id);
 
         var sessionDto = await MapWithParticipantsAsync(session);
         await RealtimeNotifier.NotifySessionUpdatedAsync(sessionDto);
@@ -267,6 +308,12 @@ public class ChatSessionAppService : ChatAppService, IChatSessionAppService
 
     protected virtual async Task AddParticipantEntityAsync(ChatSession session, AddChatParticipantInput input)
     {
+        var displayName = input.DisplayName;
+        if (displayName.IsNullOrWhiteSpace() && input.UserId.HasValue)
+        {
+            displayName = await DisplayNameResolver.ResolveAsync(input.UserId.Value);
+        }
+
         await ParticipantRepository.InsertAsync(
             new ChatParticipant(
                 GuidGenerator.Create(),
@@ -276,14 +323,64 @@ public class ChatSessionAppService : ChatAppService, IChatSessionAppService
                 Clock.Now,
                 input.UserId,
                 input.AnonymousVisitorId,
-                input.DisplayName),
+                displayName),
             autoSave: true);
     }
 
     protected virtual async Task<ChatSessionDto> MapWithParticipantsAsync(ChatSession session)
     {
         var participants = await ParticipantRepository.GetListBySessionAsync(session.Id);
-        return Mapper.ToDto(session, participants);
+        return await SessionDtoEnricher.EnrichAsync(session, participants);
+    }
+
+    protected virtual async Task EnsureParticipantDisplayNamesPersistedAsync(Guid sessionId)
+    {
+        var participants = await ParticipantRepository.GetListBySessionAsync(sessionId);
+        foreach (var participant in participants)
+        {
+            if (!participant.DisplayName.IsNullOrWhiteSpace() || !participant.UserId.HasValue)
+            {
+                continue;
+            }
+
+            var displayName = await DisplayNameResolver.ResolveAsync(participant.UserId.Value);
+            if (displayName.IsNullOrWhiteSpace())
+            {
+                continue;
+            }
+
+            participant.SetDisplayName(displayName);
+            await ParticipantRepository.UpdateAsync(participant, autoSave: true);
+        }
+    }
+
+    protected virtual async Task EnsureCanManageParticipantsAsync(ChatSession session)
+    {
+        if (await AuthorizationService.IsGrantedAsync(ChatPermissions.Sessions.Manage))
+        {
+            return;
+        }
+
+        if (session.ConversationKind != ConversationKind.Group)
+        {
+            throw new AbpAuthorizationException();
+        }
+
+        if (!CurrentUser.Id.HasValue)
+        {
+            throw new AbpAuthorizationException();
+        }
+
+        if (session.CreatorId != CurrentUser.Id &&
+            !await AuthorizationService.IsGrantedAsync(ChatPermissions.Inbox.Manage))
+        {
+            throw new AbpAuthorizationException();
+        }
+
+        if (!await ParticipantRepository.IsParticipantAsync(session.Id, CurrentUser.Id))
+        {
+            throw new AbpAuthorizationException();
+        }
     }
 
     protected virtual async Task EnsureUsageAllowedAsync(Guid sessionId, ChatUsageCheckResult result)

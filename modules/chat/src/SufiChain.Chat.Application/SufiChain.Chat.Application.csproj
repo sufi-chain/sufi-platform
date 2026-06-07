@@ -8,11 +8,15 @@
     <ProjectReference Include="..\..\..\..\framework\SufiChain.SufiAbp.Ddd.Application\SufiChain.SufiAbp.Ddd.Application.csproj" />
     <ProjectReference Include="..\..\..\..\framework\SufiChain.SufiAbp.Features\SufiChain.SufiAbp.Features.csproj" />
     <ProjectReference Include="..\..\..\..\framework\SufiChain.SufiAbp.Mapperly\SufiChain.SufiAbp.Mapperly.csproj" />
+    <ProjectReference Include="..\..\..\ai-management\src\SufiChain.SufiAbp.AIManagement.Application.Contracts\SufiChain.SufiAbp.AIManagement.Application.Contracts.csproj" />
     <ProjectReference Include="..\..\..\setting-management\src\SufiChain.SufiAbp.SettingManagement.Domain\SufiChain.SufiAbp.SettingManagement.Domain.csproj" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\file-manager\src\SufiChain.SufiAbp.FileManager.Domain\SufiChain.SufiAbp.FileManager.Domain.csproj" />
+    <ProjectReference Include="..\..\..\ai-management\src\SufiChain.SufiAbp.AIManagement.Domain\SufiChain.SufiAbp.AIManagement.Domain.csproj" />
+    <ProjectReference Include="..\..\..\ai-management\src\SufiChain.SufiAbp.AIManagement.Domain.Shared\SufiChain.SufiAbp.AIManagement.Domain.Shared.csproj" />
+    <ProjectReference Include="..\..\..\identity\src\SufiChain.SufiAbp.Identity.Domain\SufiChain.SufiAbp.Identity.Domain.csproj" />
     <ProjectReference Include="..\SufiChain.Chat.Application.Contracts\SufiChain.Chat.Application.Contracts.csproj" />
     <ProjectReference Include="..\SufiChain.Chat.Connector\SufiChain.Chat.Connector.csproj" />
     <ProjectReference Include="..\SufiChain.Chat.Domain\SufiChain.Chat.Domain.csproj" />

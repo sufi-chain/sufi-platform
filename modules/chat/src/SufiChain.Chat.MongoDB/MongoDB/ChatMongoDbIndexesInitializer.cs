@@ -22,7 +22,7 @@ public class ChatMongoDbIndexesInitializer : ITransientDependency
     {
         var dbContext = await DbContextProvider.GetDbContextAsync();
 
-        await CreateSessionIndexesAsync(dbContext.Sessions, cancellationToken);
+        await CreateSessionIndexesAsync(dbContext.ChatSessions, cancellationToken);
         await CreateMessageIndexesAsync(dbContext.Messages, cancellationToken);
         await CreateParticipantIndexesAsync(dbContext.Participants, cancellationToken);
         await CreateConversationLinkIndexesAsync(dbContext.ConversationLinks, cancellationToken);

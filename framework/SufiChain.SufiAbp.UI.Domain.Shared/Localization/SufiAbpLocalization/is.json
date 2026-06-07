@@ -1,7 +1,7 @@
 {
   "culture": "is",
   "texts": {
-    "DisplayName:Abp.Localization.DefaultLanguage": "Sjálfgefið tungumál",
-    "Description:Abp.Localization.DefaultLanguage": "Sjálfgefið tungumál forritsins."
+    "DisplayName:SufiAbp.Localization.DefaultLanguage": "Sjálfgefið tungumál",
+    "Description:SufiAbp.Localization.DefaultLanguage": "Sjálfgefið tungumál forritsins."
   }
 }

@@ -13,4 +13,7 @@ public partial class ChatSessionContextPanel : ChatPublicComponentBase
 
     [Parameter]
     public RenderFragment? ContextPanel { get; set; }
+
+    [Parameter]
+    public RenderFragment? PanelHeader { get; set; }
 }

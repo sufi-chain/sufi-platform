@@ -1,10 +1,12 @@
 using Microsoft.AspNetCore.Components;
+using SufiChain.Chat.Composer;
 using SufiChain.Chat.Messages;
 using SufiChain.Chat.Sessions;
+using SufiChain.Chat.Blazor.Public.Services;
 
 namespace SufiChain.Chat.Blazor.Public.Components;
 
-public partial class ChatMessengerShell : ChatPublicComponentBase, IDisposable
+public partial class ChatMessengerShell : ChatPublicComponentBase
 {
     [Parameter]
     public ChatMessengerState State { get; set; } = default!;
@@ -22,7 +24,7 @@ public partial class ChatMessengerShell : ChatPublicComponentBase, IDisposable
     public EventCallback<Guid> OnSessionSelected { get; set; }
 
     [Parameter]
-    public EventCallback<string> OnSendMessage { get; set; }
+    public EventCallback<ChatComposerSendRequest> OnSendMessage { get; set; }
 
     [Parameter]
     public RenderFragment? ConversationListSections { get; set; }
@@ -44,6 +46,9 @@ public partial class ChatMessengerShell : ChatPublicComponentBase, IDisposable
 
     [Parameter]
     public RenderFragment? ContextPanel { get; set; }
+
+    [Parameter]
+    public RenderFragment? ContextPanelHeader { get; set; }
 
     [Parameter]
     public RenderFragment? ComposerToolbar { get; set; }
@@ -123,9 +128,21 @@ public partial class ChatMessengerShell : ChatPublicComponentBase, IDisposable
         return Task.CompletedTask;
     }
 
-    protected async Task OnSendAsync(string message)
+    protected Task OnDraftAttachmentsChangedAsync(List<Guid> attachmentFileIds)
     {
-        await OnSendMessage.InvokeAsync(message);
+        State.DraftAttachmentFileIds = attachmentFileIds;
+        return Task.CompletedTask;
+    }
+
+    protected Task OnDraftMetadataChangedAsync(string? metadataJson)
+    {
+        State.DraftMetadataJson = metadataJson;
+        return Task.CompletedTask;
+    }
+
+    protected async Task OnSendAsync(ChatComposerSendRequest request)
+    {
+        await OnSendMessage.InvokeAsync(request);
     }
 
     protected void OnStateChanged()
@@ -133,8 +150,13 @@ public partial class ChatMessengerShell : ChatPublicComponentBase, IDisposable
         InvokeAsync(StateHasChanged);
     }
 
-    public void Dispose()
+    protected override void Dispose(bool disposing)
     {
-        State.StateChanged -= OnStateChanged;
+        if (disposing)
+        {
+            State.StateChanged -= OnStateChanged;
+        }
+
+        base.Dispose(disposing);
     }
 }

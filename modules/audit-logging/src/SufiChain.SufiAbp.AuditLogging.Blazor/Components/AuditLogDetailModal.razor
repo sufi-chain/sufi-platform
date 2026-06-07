@@ -1,6 +1,6 @@
 @inherits AuditLoggingComponentBase
 
-<SbDialog @bind-Open="Open" OnCloseButtonClick="Hide" Size="SbDialogSize.Xl" Title="@L["AuditLogDetails"]">
+<SbDialog Open="@Open" OpenChanged="@SetOpenAsync" Size="SbDialogSize.Xl" Title="@L["AuditLogDetails"]">
     <ChildContent>
         @if (IsOperationLoading(LoadingKeys.LoadAuditLog))
         {

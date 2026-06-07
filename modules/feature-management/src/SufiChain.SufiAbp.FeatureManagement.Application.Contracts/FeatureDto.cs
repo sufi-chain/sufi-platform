@@ -1,5 +1,3 @@
-using Volo.Abp.Validation.StringValues;
-
 namespace SufiChain.SufiAbp.FeatureManagement;
 
 public class FeatureDto
@@ -14,9 +12,25 @@ public class FeatureDto
 
     public string Description { get; set; }
 
-    public IStringValueType ValueType { get; set; }
+    public FeatureValueTypeDto ValueType { get; set; }
 
     public int Depth { get; set; }
 
     public string ParentName { get; set; }
+}
+
+public class FeatureValueTypeDto
+{
+    public string Name { get; set; }
+
+    public List<FeatureSelectionItemDto> SelectionItems { get; set; } = new();
+}
+
+public class FeatureSelectionItemDto
+{
+    public string Value { get; set; }
+
+    public string DisplayTextResourceName { get; set; }
+
+    public string DisplayTextName { get; set; }
 }

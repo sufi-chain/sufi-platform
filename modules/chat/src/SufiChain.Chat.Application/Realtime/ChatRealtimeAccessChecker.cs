@@ -29,9 +29,15 @@ public class ChatRealtimeAccessChecker : IChatRealtimeAccessChecker, ITransientD
 
     public virtual async Task<bool> CanJoinSessionAsync(Guid sessionId, string? anonymousVisitorId = null)
     {
-        if (await SessionRepository.FindAsync(sessionId) == null)
+        var session = await SessionRepository.FindAsync(sessionId);
+        if (session == null)
         {
             return false;
+        }
+
+        if (CurrentUser.Id.HasValue && session.CreatorId == CurrentUser.Id)
+        {
+            return true;
         }
 
         if (await PermissionChecker.IsGrantedAsync(ChatPermissions.Inbox.Operator) ||

@@ -2,6 +2,7 @@ using Microsoft.Extensions.DependencyInjection;
 using SufiChain.Chat;
 using SufiChain.Chat.Blazor.Menus;
 using SufiChain.Chat.Blazor.Public;
+using SufiChain.SufiAbp.FileManager.Blazor;
 using SufiChain.SufiAbp.UI.Navigation;
 using SufiChain.SufiAbp.UI.Routing;
 using Volo.Abp.Modularity;
@@ -10,7 +11,8 @@ namespace SufiChain.Chat.Blazor;
 
 [DependsOn(
     typeof(ChatApplicationContractsModule),
-    typeof(ChatBlazorPublicModule)
+    typeof(ChatBlazorPublicModule),
+    typeof(SufiAbpFileManagerBlazorModule)
 )]
 public class ChatBlazorModule : AbpModule
 {

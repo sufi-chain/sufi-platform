@@ -13,11 +13,11 @@
 
 @if (RenderMode == TenantSelectorRenderMode.Dialog)
 {
-    <SbDialog @bind-Open="Open"
+    <SbDialog Open="@Open" OpenChanged="@SetOpenAsync"
               Title="@L["SelectTenant"]"
               Size="SbDialogSize.Sm"
               AllowDropdownOverflow="true"
-              OnCloseButtonClick="Hide">
+             >
         <ChildContent>
             @if (Mode is "SelectFromList" or "Search")
             {

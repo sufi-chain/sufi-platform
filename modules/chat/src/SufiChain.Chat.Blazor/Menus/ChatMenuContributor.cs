@@ -29,16 +29,15 @@ public class ChatMenuContributor : IMenuContributor
         }
 
         var l = context.GetLocalizer<ChatResource>();
-        var administration = context.Menu.GetAdministration();
 
         var chatMenu = new ApplicationMenuItem(
             ChatMenus.GroupName,
             l["Menu:Chat"],
-            icon: "comments",
+            icon: "chat",
             order: 35
         ).RequirePermissions(ChatPermissions.Inbox.Default);
 
-        administration.AddItem(chatMenu);
+        context.Menu.AddItem(chatMenu);
 
         chatMenu.AddItem(new ApplicationMenuItem(
             ChatMenus.OperatorInbox,
@@ -65,19 +64,11 @@ public class ChatMenuContributor : IMenuContributor
         ).RequirePermissions(ChatPermissions.Usage.View));
 
         chatMenu.AddItem(new ApplicationMenuItem(
-            ChatMenus.AiUsage,
-            l["Menu:ChatAiUsage"],
-            url: "/admin/chat/ai",
-            icon: "robot",
-            order: 4
-        ).RequirePermissions(ChatPermissions.AiUsage.View));
-
-        chatMenu.AddItem(new ApplicationMenuItem(
             ChatMenus.Settings,
             l["Menu:ChatSettings"],
             url: "/admin/chat/settings",
-            icon: "cog",
-            order: 5
+            icon: "settings",
+            order: 4
         ).RequirePermissions(ChatPermissions.Settings.Manage));
     }
 }

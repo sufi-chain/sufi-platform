@@ -3,7 +3,7 @@ using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Options;
 using Volo.Abp;
 using Volo.Abp.DependencyInjection;
-using Volo.Abp.Features;
+using SufiChain.SufiAbp.Features;
 
 namespace SufiChain.SufiAbp.FeatureManagement;
 
@@ -129,7 +129,7 @@ public class FeatureManager : IFeatureManager, ISingletonDependency
 
         var feature = await FeatureDefinitionManager.GetAsync(name);
 
-        if (feature.ValueType?.Validator.IsValid(value) == false)
+        if (!feature.IsValidValue(value))
         {
             throw new FeatureValueInvalidException(feature.DisplayName.Localize(StringLocalizerFactory));
         }

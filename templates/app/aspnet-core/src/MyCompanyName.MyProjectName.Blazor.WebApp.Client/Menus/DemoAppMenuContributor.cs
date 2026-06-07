@@ -30,7 +30,7 @@ public class DemoAppMenuContributor : IMenuContributor
 
     private Task ConfigureMainMenuAsync(MenuConfigurationContext context)
     {
-        // Reorder administration sub-menus: Identity, TenantManagement, FileManager, Settings,
+        // Reorder administration sub-menus: Identity, TenantManagement, Settings,
         // AuditLogging, BackgroundJobs, LocalizationManagement
         var administration = context.Menu.GetAdministration();
         administration.Order = 100;
@@ -38,11 +38,10 @@ public class DemoAppMenuContributor : IMenuContributor
         demo.Order = 101;
         administration.SetSubItemOrder("Identity", 1);
         administration.SetSubItemOrder("TenantManagement", 2);
-        administration.SetSubItemOrder("SpFileManager", 3);
-        administration.SetSubItemOrder("SettingManagement", 4);
-        administration.SetSubItemOrder("AuditLogging", 5);
-        administration.SetSubItemOrder("BackgroundJobs", 6);
-        administration.SetSubItemOrder("LocalizationManagement", 7);
+        administration.SetSubItemOrder("SettingManagement", 3);
+        administration.SetSubItemOrder("AuditLogging", 4);
+        administration.SetSubItemOrder("BackgroundJobs", 5);
+        administration.SetSubItemOrder("LocalizationManagement", 6);
 
 
 

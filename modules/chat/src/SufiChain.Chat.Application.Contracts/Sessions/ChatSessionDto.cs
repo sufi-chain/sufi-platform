@@ -37,6 +37,8 @@ public class ChatSessionListDto : FullAuditedEntityDto<Guid>
 
     public ChatSessionStatus Status { get; set; }
 
+    public string? MetadataJson { get; set; }
+
     public DateTime? LastMessageTime { get; set; }
 
     public int ParticipantCount { get; set; }

@@ -5,7 +5,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\..\framework\SufiChain.SufiAbp.AspNetCore.Components.Server.Theming\SufiChain.SufiAbp.AspNetCore.Components.Server.Theming.csproj" />
     <ProjectReference Include="..\SufiChain.Chat.Blazor.Public\SufiChain.Chat.Blazor.Public.csproj" />
   </ItemGroup>
 

@@ -15,6 +15,11 @@ public class LocalizableString
         Inner = inner;
     }
 
+    public LocalizableString(Type resourceType, string name)
+        : this(new Volo.Abp.Localization.LocalizableString(resourceType, name))
+    {
+    }
+
     public static LocalizableString Create<TResource>(string name)
     {
         return new LocalizableString(Volo.Abp.Localization.LocalizableString.Create<TResource>(name));

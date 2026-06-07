@@ -456,6 +456,8 @@
     "SearchFiles": "البحث عن الملفات...",
     "Structure:AIManagement:DisplayName": "ملفات إدارة الذكاء الاصطناعي",
     "Structure:AIManagement:Description": "تحميل الملفات لمساحات عمل الذكاء الاصطناعي: الصور والصوت والفيديو والمستندات. يدعم جميع أنواع الملفات الشائعة المتعلقة بالذكاء الاصطناعي مع إنشاء الصور المصغرة التلقائي وتحويل WebP.",
+    "Structure:ChatAttachments:DisplayName": "مرفقات الدردشة",
+    "Structure:ChatAttachments:Description": "الملفات المرفقة برسائل الدردشة، ضمن نطاق الجلسة.",
     "Feature:FileManager.Enable": "مدير الملفات",
     "Feature:FileManager.Enable.Description": "تمكين وحدة مدير الملفات لهذا الإصدار.",
     "Feature:FileManager.FileItems": "عناصر الملفات",

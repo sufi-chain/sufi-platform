@@ -1,0 +1,56 @@
+@inherits ChatComponentBase
+
+<SbStack Gap="2" Class="@($"chat-operator-inbox-admin-actions {Class}")">
+    <SbSimpleSelect TValue="ChatSessionStatus?"
+                    Value="StatusFilter"
+                    ValueChanged="StatusFilterChanged"
+                    Label="@L["Status"]">
+        <SbSelectOption TValue="ChatSessionStatus?" Value="null">
+            @L["Filter:All"]
+        </SbSelectOption>
+        <SbSelectOption TValue="ChatSessionStatus?" Value="ChatSessionStatus.Open">
+            @L["SessionStatus:Open"]
+        </SbSelectOption>
+        <SbSelectOption TValue="ChatSessionStatus?" Value="ChatSessionStatus.Closed">
+            @L["SessionStatus:Closed"]
+        </SbSelectOption>
+    </SbSimpleSelect>
+
+    <SbSimpleSelect TValue="ConversationKind?"
+                    Value="ConversationKindFilter"
+                    ValueChanged="ConversationKindFilterChanged"
+                    Label="@L["ConversationKind"]">
+        <SbSelectOption TValue="ConversationKind?" Value="null">
+            @L["Filter:All"]
+        </SbSelectOption>
+        @foreach (var kind in AllConversationKinds)
+        {
+            <SbSelectOption TValue="ConversationKind?" Value="kind">
+                @L[$"ConversationKind:{kind}"]
+            </SbSelectOption>
+        }
+    </SbSimpleSelect>
+
+    <SbSimpleSelect TValue="AccessMode?"
+                    Value="AccessModeFilter"
+                    ValueChanged="AccessModeFilterChanged"
+                    Label="@L["AccessMode"]">
+        <SbSelectOption TValue="AccessMode?" Value="null">
+            @L["Filter:All"]
+        </SbSelectOption>
+        @foreach (var mode in AllAccessModes)
+        {
+            <SbSelectOption TValue="AccessMode?" Value="mode">
+                @L[$"AccessMode:{mode}"]
+            </SbSelectOption>
+        }
+    </SbSimpleSelect>
+
+    <SbButton Variant="SbButtonVariant.Outline"
+              FullWidth="true"
+              OnClick="OnRefresh"
+              Disabled="IsRefreshDisabled">
+        <StartIcon><SbIcon Name="refresh" Size="SbSize.Sm" /></StartIcon>
+        <ChildContent>@L["Refresh"]</ChildContent>
+    </SbButton>
+</SbStack>

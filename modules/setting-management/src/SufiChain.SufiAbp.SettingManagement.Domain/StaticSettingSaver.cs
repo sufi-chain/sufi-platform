@@ -31,12 +31,21 @@ public class StaticSettingSaver : IStaticSettingSaver, ITransientDependency
         {
             if (!string.IsNullOrEmpty(settingDefinition.DefaultValue))
             {
-                await SettingManagementStore.SetAsync(
+                // Only save default if setting doesn't already exist in database
+                var existingValue = await SettingManagementStore.GetOrNullAsync(
                     settingDefinition.Name,
-                    settingDefinition.DefaultValue,
                     GlobalSettingValueProvider.ProviderName,
-                    string.Empty
-                );
+                    string.Empty);
+                
+                if (existingValue == null)
+                {
+                    await SettingManagementStore.SetAsync(
+                        settingDefinition.Name,
+                        settingDefinition.DefaultValue,
+                        GlobalSettingValueProvider.ProviderName,
+                        string.Empty
+                    );
+                }
             }
         }
     }

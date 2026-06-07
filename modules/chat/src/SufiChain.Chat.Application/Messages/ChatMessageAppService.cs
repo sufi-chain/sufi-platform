@@ -5,16 +5,22 @@ using SufiChain.Chat.ETOs;
 using SufiChain.Chat.Mapping;
 using SufiChain.Chat.Permissions;
 using SufiChain.Chat.Realtime;
+using SufiChain.Chat.Participants;
 using SufiChain.Chat.Sessions;
 using SufiChain.Chat.Usage;
 using SufiChain.SufiAbp.Application.Dtos;
 using Volo.Abp;
 using Volo.Abp.EventBus.Distributed;
+using SufiChain.Chat.Features;
+using SufiChain.Chat.Messages;
+using SufiChain.Chat.Settings;
 using Volo.Abp.Authorization.Permissions;
+using SufiChain.SufiAbp.Features;
+using Volo.Abp.Settings;
 
 namespace SufiChain.Chat.Messages;
 
-[Authorize(ChatPermissions.Messages.Default)]
+[Authorize]
 public class ChatMessageAppService : ChatAppService, IChatMessageAppService
 {
     protected IChatMessageRepository MessageRepository { get; }
@@ -27,6 +33,10 @@ public class ChatMessageAppService : ChatAppService, IChatMessageAppService
     protected IChatRealtimeNotifier RealtimeNotifier { get; }
     protected IPermissionChecker PermissionChecker { get; }
     protected ChatOutboundMessageDispatcher OutboundMessageDispatcher { get; }
+    protected IChatParticipantRepository ParticipantRepository { get; }
+    protected IChatSessionDtoEnricher SessionDtoEnricher { get; }
+
+    protected IFeatureChecker FeatureChecker { get; }
 
     public ChatMessageAppService(
         IChatMessageRepository messageRepository,
@@ -38,7 +48,10 @@ public class ChatMessageAppService : ChatAppService, IChatMessageAppService
         IDistributedEventBus distributedEventBus,
         IChatRealtimeNotifier realtimeNotifier,
         IPermissionChecker permissionChecker,
-        ChatOutboundMessageDispatcher outboundMessageDispatcher)
+        ChatOutboundMessageDispatcher outboundMessageDispatcher,
+        IChatParticipantRepository participantRepository,
+        IChatSessionDtoEnricher sessionDtoEnricher,
+        IFeatureChecker featureChecker)
     {
         MessageRepository = messageRepository;
         SessionRepository = sessionRepository;
@@ -50,11 +63,15 @@ public class ChatMessageAppService : ChatAppService, IChatMessageAppService
         RealtimeNotifier = realtimeNotifier;
         PermissionChecker = permissionChecker;
         OutboundMessageDispatcher = outboundMessageDispatcher;
+        ParticipantRepository = participantRepository;
+        SessionDtoEnricher = sessionDtoEnricher;
+        FeatureChecker = featureChecker;
     }
 
-    [Authorize(ChatPermissions.Messages.Send)]
     public virtual async Task<ChatMessageDto> SendAsync(SendChatMessageInput input)
     {
+        await EnsureCanSendMessagesAsync();
+
         if (input.IsInternal)
         {
             await CheckPolicyAsync(ChatPermissions.Messages.SendInternal);
@@ -74,6 +91,8 @@ public class ChatMessageAppService : ChatAppService, IChatMessageAppService
         });
 
         await EnsureUsageAllowedAsync(input.SessionId, usageResult);
+
+        await ValidateSendContentAsync(input);
 
         var attachmentValidation = await ValidateAttachmentsAsync(input.SessionId, input.AttachmentFileIds);
 
@@ -114,6 +133,8 @@ public class ChatMessageAppService : ChatAppService, IChatMessageAppService
 
     public virtual async Task<PagedResultDto<ChatMessageDto>> GetListAsync(GetChatMessageListInput input)
     {
+        await EnsureCanReadMessagesAsync();
+
         var includeInternal = input.IncludeInternal && await PermissionChecker.IsGrantedAsync(ChatPermissions.Messages.ViewInternal);
         var totalCount = await MessageRepository.GetCountBySessionAsync(input.SessionId, includeInternal);
         var messages = await MessageRepository.GetListBySessionAsync(
@@ -140,6 +161,64 @@ public class ChatMessageAppService : ChatAppService, IChatMessageAppService
         return AttachmentValidator.ValidateAsync(sessionId, attachmentFileIds);
     }
 
+    protected virtual async Task ValidateSendContentAsync(SendChatMessageInput input)
+    {
+        var attachmentIds = input.AttachmentFileIds ?? new List<Guid>();
+        var metadata = ChatMessageMetadata.TryParse(input.MetadataJson);
+        var hasLocation = metadata?.ContentKind == ChatMessageContentKind.Location;
+        var hasVoice = metadata?.ContentKind == ChatMessageContentKind.Voice;
+        var hasBody = !string.IsNullOrWhiteSpace(input.Body);
+
+        if (!hasBody && attachmentIds.Count == 0 && !hasLocation)
+        {
+            throw new BusinessException(ChatErrorCodes.MessageContentRequired);
+        }
+
+        if (!string.IsNullOrWhiteSpace(input.Body) && input.Body.Length > ChatConsts.MaxMessageBodyLength)
+        {
+            throw new BusinessException(ChatErrorCodes.MessageContentRequired);
+        }
+
+        if (attachmentIds.Count > 0 || hasVoice)
+        {
+            if (!await FeatureChecker.IsEnabledAsync(ChatFeatures.Attachments) ||
+                !await SettingProvider.IsTrueAsync(ChatSettingNames.General.EnableFileAttachments))
+            {
+                throw new BusinessException(ChatErrorCodes.AttachmentsDisabled);
+            }
+
+            var maxFiles = await SettingProvider.GetAsync<int>(ChatSettingNames.Attachments.MaxFilesPerMessage);
+            if (maxFiles <= 0)
+            {
+                maxFiles = ChatSettingDefaults.MaxFilesPerMessage;
+            }
+
+            if (attachmentIds.Count > maxFiles)
+            {
+                throw new BusinessException(ChatErrorCodes.MaxFilesPerMessageExceeded);
+            }
+        }
+
+        if (hasVoice &&
+            !await SettingProvider.IsTrueAsync(ChatSettingNames.Attachments.EnableVoiceMessages))
+        {
+            throw new BusinessException(ChatErrorCodes.VoiceMessagesDisabled);
+        }
+
+        if (hasLocation)
+        {
+            if (!await SettingProvider.IsTrueAsync(ChatSettingNames.Attachments.EnableLocationSharing))
+            {
+                throw new BusinessException(ChatErrorCodes.LocationSharingDisabled);
+            }
+
+            if (metadata?.Location == null)
+            {
+                throw new BusinessException(ChatErrorCodes.MessageContentRequired);
+            }
+        }
+    }
+
     protected virtual async Task EnsureUsageAllowedAsync(Guid sessionId, ChatUsageCheckResult result)
     {
         if (!result.IsAllowed)
@@ -151,7 +230,8 @@ public class ChatMessageAppService : ChatAppService, IChatMessageAppService
 
     protected virtual async Task<ChatSessionDto> MapSessionAsync(ChatSession session)
     {
-        return await Task.FromResult(Mapper.ToDto(session));
+        var participants = await ParticipantRepository.GetListBySessionAsync(session.Id);
+        return await SessionDtoEnricher.EnrichAsync(session, participants);
     }
 
     protected virtual async Task PublishMessageSentAsync(ChatMessage message)

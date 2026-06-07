@@ -46,7 +46,7 @@ public class ChatSessionController : ChatController, IChatSessionAppService
     }
 
     [HttpPost("{sessionId}/participants")]
-    [Authorize(ChatPermissions.Sessions.Manage)]
+    [Authorize(ChatPermissions.Sessions.Default)]
     public virtual Task AddParticipantAsync(Guid sessionId, [FromBody] AddChatParticipantInput input)
     {
         return _sessionAppService.AddParticipantAsync(sessionId, input);

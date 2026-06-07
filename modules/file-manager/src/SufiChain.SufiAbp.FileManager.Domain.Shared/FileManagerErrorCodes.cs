@@ -44,16 +44,4 @@ public static class FileManagerErrorCodes
     
     // Storage errors (060xxx)
     public const string StorageQuotaExceeded = "SufiChain.SufiAbp.FileManager:060001";
-    
-    // Legacy codes for backward compatibility (deprecated - use new codes)
-    [Obsolete("Use FileSizeExceedsLimit instead")]
-    public const string FileSizeExceeded = FileSizeExceedsLimit;
-    [Obsolete("Use FileTypeNotAllowed instead")]
-    public const string InvalidFileType = FileTypeNotAllowed;
-    [Obsolete("Use FileStructureAlreadyExists instead")]
-    public const string FileStructureKeyAlreadyExists = FileStructureAlreadyExists;
-    [Obsolete("Use ImageWidthTooSmall, ImageHeightTooSmall, ImageWidthTooLarge, or ImageHeightTooLarge instead")]
-    public const string InvalidImageDimensions = "SufiChain.SufiAbp.FileManager:030000";
-    [Obsolete("Use FileTypeNotAllowed instead")]
-    public const string InvalidMimeType = FileTypeNotAllowed;
 }

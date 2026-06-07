@@ -159,12 +159,6 @@ public class EfCoreAuditLogRepository : EfCoreRepository<IAuditLoggingDbContext,
         return result.ToDictionary(element => element.Day.ClearTime(), element => element.avgExecutionTime);
     }
 
-    [Obsolete("Use WithDetailsAsync method.")]
-    public override IQueryable<AuditLog> WithDetails()
-    {
-        return GetQueryable().IncludeDetails();
-    }
-
     public async override Task<IQueryable<AuditLog>> WithDetailsAsync()
     {
         return (await GetQueryableAsync()).IncludeDetails();

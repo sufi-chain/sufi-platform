@@ -2,7 +2,6 @@
 using System.Threading.Tasks;
 using JetBrains.Annotations;
 using SufiChain.SufiAbp.Features;
-using Volo.Abp.Features;
 
 namespace SufiChain.SufiAbp.FeatureManagement;
 

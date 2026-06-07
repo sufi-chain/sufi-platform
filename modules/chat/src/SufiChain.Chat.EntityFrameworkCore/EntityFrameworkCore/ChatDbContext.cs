@@ -12,7 +12,7 @@ namespace SufiChain.Chat.EntityFrameworkCore;
 [ConnectionStringName(ChatDbProperties.ConnectionStringName)]
 public class ChatDbContext : AbpDbContext<ChatDbContext>, IChatDbContext
 {
-    public DbSet<ChatSession> Sessions { get; set; }
+    public DbSet<ChatSession> ChatSessions { get; set; }
 
     public DbSet<ChatMessage> Messages { get; set; }
 

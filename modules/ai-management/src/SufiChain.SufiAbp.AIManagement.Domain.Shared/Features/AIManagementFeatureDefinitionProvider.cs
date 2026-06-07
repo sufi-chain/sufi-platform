@@ -1,8 +1,7 @@
 using SufiChain.SufiAbp.AI.Features;
 using SufiChain.SufiAbp.AIManagement.Localization;
-using Volo.Abp.Features;
-using Volo.Abp.Localization;
-using Volo.Abp.Validation.StringValues;
+using SufiChain.SufiAbp.Features;
+using SufiChain.SufiAbp.Localization;
 
 namespace SufiChain.SufiAbp.AIManagement.Features;
 

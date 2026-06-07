@@ -5,7 +5,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Polly;
 using Volo.Abp.DependencyInjection;
-using Volo.Abp.Features;
+using SufiChain.SufiAbp.Features;
 using Volo.Abp.Threading;
 
 namespace SufiChain.SufiAbp.FeatureManagement;

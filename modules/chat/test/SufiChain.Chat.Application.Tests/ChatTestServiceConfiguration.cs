@@ -4,6 +4,7 @@ using SufiChain.Chat.AiUsage;
 using SufiChain.Chat.Contacts;
 using SufiChain.Chat.Supports;
 using SufiChain.Chat.Usage;
+using SufiChain.SufiAbp.AIManagement.AI;
 using SufiChain.SufiAbp.Features;
 using SufiChain.SufiAbp.FileManager.FileItems;
 using Volo.Abp.DependencyInjection;
@@ -22,6 +23,8 @@ public static class ChatTestServiceConfiguration
         context.Services.AddSingleton<IChatAiWorkspaceProvider>(sp =>
             sp.GetRequiredService<ConfigurableChatAiWorkspaceProvider>());
 
+        context.Services.Replace(ServiceDescriptor.Transient<IChatAssistantWorkspaceResolver, DefaultChatAssistantWorkspaceResolver>());
+
         context.Services.AddSingleton<TestChatUsageWalletResolver>();
         context.Services.Replace(ServiceDescriptor.Singleton<IChatUsageWalletResolver>(sp =>
             sp.GetRequiredService<TestChatUsageWalletResolver>()));
@@ -30,5 +33,9 @@ public static class ChatTestServiceConfiguration
         context.Services.AddSingleton<IChatContactProvider>(sp => sp.GetRequiredService<TestChatContactProvider>());
 
         context.Services.AddSingleton(_ => Substitute.For<IFileItemAppService>());
+
+        context.Services.AddSingleton<ConfigurableAiService>();
+        context.Services.Replace(ServiceDescriptor.Singleton<IAIService>(sp =>
+            sp.GetRequiredService<ConfigurableAiService>()));
     }
 }

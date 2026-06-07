@@ -7,8 +7,73 @@
                         SignInUrl="@GetSignInUrl()"
                         OnSessionSelected="OnSessionSelectedAsync"
                         OnSendMessage="OnSendMessageAsync">
+        <ComposerToolbar>
+            <ChatOperatorComposerExtensions SessionId="@MessengerState.SelectedSessionId"
+                                            Capabilities="@MessengerState.ComposerCapabilities"
+                                            DraftText="@MessengerState.DraftMessage"
+                                            DraftTextChanged="@OnOperatorDraftChangedAsync"
+                                            AttachmentFileIdsChanged="@OnGalleryAttachmentsSelectedAsync" />
+        </ComposerToolbar>
+        <ContextPanelHeader>
+            <ChatOperatorInboxAdminActions StatusFilter="StatusFilter"
+                                           StatusFilterChanged="OnStatusFilterChangedAsync"
+                                           ConversationKindFilter="ConversationKindFilter"
+                                           ConversationKindFilterChanged="OnConversationKindFilterChangedAsync"
+                                           AccessModeFilter="AccessModeFilter"
+                                           AccessModeFilterChanged="OnAccessModeFilterChangedAsync"
+                                           OnRefresh="RefreshSessionsAsync"
+                                           IsRefreshDisabled="IsOperationLoading(LoadingKeys.LoadSessions)" />
+        </ContextPanelHeader>
         <ListHeader>
-            <SbHeading Level="6">@L["Menu:ChatInbox"]</SbHeading>
+            <div class="chat-messenger-page__list-header">
+                <SbStack Direction="SbStackDirection.Row"
+                         Gap="2"
+                         Align="SbAlign.Center"
+                         Justify="SbJustify.SpaceBetween">
+                    <SbHeading Level="6">@L["Menu:ChatInbox"]</SbHeading>
+                    @if (HasActiveFilters)
+                    {
+                        <SbChip Size="SbSize.Sm" Variant="SbChipVariant.Outlined" Color="SbColor.Info">
+                            @ActiveFilterSummary
+                        </SbChip>
+                    }
+                </SbStack>
+                <div class="chat-messenger-page__mobile-actions">
+                    <ChatOperatorInboxAdminActions StatusFilter="StatusFilter"
+                                                   StatusFilterChanged="OnStatusFilterChangedAsync"
+                                                   ConversationKindFilter="ConversationKindFilter"
+                                                   ConversationKindFilterChanged="OnConversationKindFilterChangedAsync"
+                                                   AccessModeFilter="AccessModeFilter"
+                                                   AccessModeFilterChanged="OnAccessModeFilterChangedAsync"
+                                                   OnRefresh="RefreshSessionsAsync"
+                                                   IsRefreshDisabled="IsOperationLoading(LoadingKeys.LoadSessions)" />
+                </div>
+            </div>
         </ListHeader>
+        <HeaderActions>
+            @if (MessengerState.SelectedSessionId.HasValue)
+            {
+                <SbButton Variant="SbButtonVariant.Outline"
+                          Size="SbSize.Sm"
+                          OnClick="OpenSessionDetailPageAsync">
+                    <StartIcon><SbIcon Name="external-link" Size="SbSize.Sm" /></StartIcon>
+                    <ChildContent>@L["View"]</ChildContent>
+                </SbButton>
+                @if (CanCloseSession && MessengerState.SelectedSession?.Status == ChatSessionStatus.Open)
+                {
+                    <AuthorizeView Policy="@ChatPermissions.Sessions.Close">
+                        <Authorized>
+                            <SbButton Color="SbColor.Danger"
+                                      Size="SbSize.Sm"
+                                      OnClick="CloseSelectedSessionAsync"
+                                      Disabled="IsClosingSession">
+                                <StartIcon><SbIcon Name="x" Size="SbSize.Sm" /></StartIcon>
+                                <ChildContent>@L["CloseSession"]</ChildContent>
+                            </SbButton>
+                        </Authorized>
+                    </AuthorizeView>
+                }
+            }
+        </HeaderActions>
     </ChatMessengerShell>
 </div>

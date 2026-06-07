@@ -29,24 +29,6 @@ public class EfCoreTenantRepository : EfCoreRepository<ITenantManagementDbContex
             .FirstOrDefaultAsync(t => t.NormalizedName == normalizedName, GetCancellationToken(cancellationToken));
     }
 
-    [Obsolete("Use FindByNameAsync method.")]
-    public virtual Tenant FindByName(string normalizedName, bool includeDetails = true)
-    {
-        return DbSet
-            .IncludeDetails(includeDetails)
-            .OrderBy(t => t.Id)
-            .FirstOrDefault(t => t.NormalizedName == normalizedName);
-    }
-
-    [Obsolete("Use FindAsync method.")]
-    public virtual Tenant FindById(Guid id, bool includeDetails = true)
-    {
-        return DbSet
-            .IncludeDetails(includeDetails)
-            .OrderBy(t => t.Id)
-            .FirstOrDefault(t => t.Id == id);
-    }
-
     public virtual async Task<List<Tenant>> GetListAsync(
         string sorting = null,
         int maxResultCount = int.MaxValue,

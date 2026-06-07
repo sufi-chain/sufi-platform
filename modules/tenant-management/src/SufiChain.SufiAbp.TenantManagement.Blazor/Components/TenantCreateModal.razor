@@ -1,6 +1,6 @@
 @inherits TenantManagementComponentBase
 
-<SbDialog @bind-Open="Open" OnCloseButtonClick="Hide" Size="SbDialogSize.Md" Title="@L["CreateTenant"]">
+<SbDialog Open="@Open" OpenChanged="@SetOpenAsync" Size="SbDialogSize.Md" Title="@L["CreateTenant"]">
     <ChildContent>
         <SbForm @ref="_formRef" Model="_model" OnValidSubmit="OnValidSubmitAsync">
             <ChildContent>

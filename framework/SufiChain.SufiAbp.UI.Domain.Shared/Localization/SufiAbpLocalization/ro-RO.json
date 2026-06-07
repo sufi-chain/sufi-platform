@@ -1,7 +1,7 @@
 {
   "culture": "ro-RO",
   "texts": {
-    "DisplayName:Abp.Localization.DefaultLanguage": "Limba implicită",
-    "Description:Abp.Localization.DefaultLanguage": "Limba implicită a aplicaţiei."
+    "DisplayName:SufiAbp.Localization.DefaultLanguage": "Limba implicită",
+    "Description:SufiAbp.Localization.DefaultLanguage": "Limba implicită a aplicaţiei."
   }
 }

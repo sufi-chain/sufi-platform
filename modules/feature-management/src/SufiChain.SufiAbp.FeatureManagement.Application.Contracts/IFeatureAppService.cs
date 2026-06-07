@@ -1,14 +1,14 @@
 ﻿using System.Threading.Tasks;
 using JetBrains.Annotations;
-using Volo.Abp.Application.Services;
+using SufiChain.SufiAbp.Application.Services;
 
 namespace SufiChain.SufiAbp.FeatureManagement;
 
 public interface IFeatureAppService : IApplicationService
 {
-    Task<GetFeatureListResultDto> GetAsync([NotNull] string providerName, string providerKey);
+    Task<GetFeatureListResultDto> GetAsync([NotNull] string providerName, string? providerKey);
 
-    Task UpdateAsync([NotNull] string providerName, string providerKey, UpdateFeaturesDto input);
+    Task UpdateAsync([NotNull] string providerName, string? providerKey, UpdateFeaturesDto input);
 
-    Task DeleteAsync([NotNull] string providerName, string providerKey);
+    Task DeleteAsync([NotNull] string providerName, string? providerKey);
 }

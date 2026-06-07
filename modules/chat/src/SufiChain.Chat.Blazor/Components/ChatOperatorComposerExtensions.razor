@@ -1,0 +1,84 @@
+@inherits ChatComponentBase
+
+<SbStack Direction="SbStackDirection.Row" Gap="1" Align="SbAlign.Center" Class="chat-operator-composer-extensions">
+    @if (Capabilities?.CanPickFromGallery == true && SessionId.HasValue)
+    {
+        <div class="chat-composer-popover-anchor">
+            <SbIconButton Size="SbSize.Sm"
+                          Color="SbColor.Default"
+                          Title="@L["Composer:Gallery"]"
+                          AriaLabel="@L["Composer:Gallery"]"
+                          OnClick="@ToggleGalleryAsync">
+                <Icon><SbIcon Name="images" /></Icon>
+            </SbIconButton>
+
+            @if (_galleryOpen)
+            {
+                <SbSurface Elevation="1" Padding="12px" Class="chat-operator-composer-popover">
+                    <SbStack Gap="2">
+                        <SbText Weight="SbFontWeight.Semibold" Size="SbSize.Xs">@L["Composer:Gallery"]</SbText>
+                        <SbText Variant="SbTextVariant.Caption" Color="SbColor.Muted">
+                            @L["Composer:GalleryDescription"]
+                        </SbText>
+                        <SbButton Color="SbColor.Primary" Size="SbSize.Sm" OnClick="OpenGalleryAsync">
+                            <StartIcon><SbIcon Name="folder-open" /></StartIcon>
+                            <ChildContent>@L["Composer:OpenGallery"]</ChildContent>
+                        </SbButton>
+                    </SbStack>
+                </SbSurface>
+            }
+        </div>
+        <FileSelector @ref="_fileSelector"
+                      StructureKey="@ChatFileStructureKeys.Attachments"
+                      AllowMultiple="true"
+                      OnFileSelected="OnGalleryFilesSelectedAsync" />
+    }
+
+    @if (Capabilities?.CanUseOperatorCopilot == true && SessionId.HasValue)
+    {
+        <div class="chat-composer-popover-anchor">
+            <SbIconButton Size="SbSize.Sm"
+                          Color="SbColor.Primary"
+                          Title="@L["Composer:AiRun"]"
+                          AriaLabel="@L["Composer:AiRun"]"
+                          OnClick="@ToggleCopilotAsync">
+                <Icon><SbIcon Name="sparkles" /></Icon>
+            </SbIconButton>
+
+            @if (_copilotOpen)
+            {
+                <SbSurface Elevation="1" Padding="12px" Class="chat-operator-composer-popover chat-operator-composer-popover--ai">
+                    <SbStack Gap="3">
+                        <SbText Weight="SbFontWeight.Semibold" Size="SbSize.Xs">@L["Composer:AiAction"]</SbText>
+                        <SbSimpleSelect TValue="ChatOperatorCopilotOperation"
+                                        @bind-Value="_operation"
+                                        Label="@L["Composer:AiAction"]">
+                            <SbSelectOption TValue="ChatOperatorCopilotOperation" Value="@ChatOperatorCopilotOperation.Rewrite">
+                                @L["Composer:AiRewrite"]
+                            </SbSelectOption>
+                            <SbSelectOption TValue="ChatOperatorCopilotOperation" Value="@ChatOperatorCopilotOperation.ImproveTone">
+                                @L["Composer:AiImproveTone"]
+                            </SbSelectOption>
+                            <SbSelectOption TValue="ChatOperatorCopilotOperation" Value="@ChatOperatorCopilotOperation.GenerateFromPrompt">
+                                @L["Composer:AiGenerate"]
+                            </SbSelectOption>
+                        </SbSimpleSelect>
+
+                        @if (_operation == ChatOperatorCopilotOperation.GenerateFromPrompt)
+                        {
+                            <SbTextField @bind-Value="_prompt" Label="@L["Composer:AiPrompt"]" />
+                        }
+
+                        <SbButton Color="SbColor.Primary"
+                                  Size="SbSize.Sm"
+                                  Disabled="@IsBusy"
+                                  OnClick="RunCopilotAsync">
+                            <StartIcon><SbIcon Name="wand" /></StartIcon>
+                            <ChildContent>@L["Composer:AiRun"]</ChildContent>
+                        </SbButton>
+                    </SbStack>
+                </SbSurface>
+            }
+        </div>
+    }
+</SbStack>

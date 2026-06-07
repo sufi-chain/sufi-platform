@@ -24,17 +24,77 @@
             </div>
         }
 
-        <div class="chat-composer__input-row">
-            <SbTextArea @bind-Value="_draft"
-                        Placeholder="@L["Messenger:TypeMessage"]"
-                        Rows="2"
-                        Disabled="@IsDisabled" />
-            <SbButton Color="SbColor.Primary"
-                      Variant="SbButtonVariant.Solid"
-                      Disabled="@(IsDisabled || string.IsNullOrWhiteSpace(_draft))"
-                      OnClick="SendAsync">
-                @L["Messenger:Send"]
-            </SbButton>
+        <div @ref="_shellRef" class="chat-composer__shell">
+            @if (HasPendingContent)
+            {
+                <ChatComposerAttachmentPreview Items="@_pendingItems"
+                                               OnRemove="@RemovePendingItemAsync" />
+            }
+
+            <textarea @ref="_textAreaRef"
+                      class="chat-composer__textarea"
+                      rows="1"
+                      placeholder="@L["Messenger:TypeMessage"]"
+                      disabled="@IsDisabled"
+                      @bind="_draft"
+                      @bind:event="oninput"
+                      @onkeydown="HandleKeyDownAsync"></textarea>
+
+            <div class="chat-composer__footer">
+                <div class="chat-composer__footer-left">
+                    @if (ShowRichActions)
+                    {
+                        <ChatComposerAttachmentMenu ShellRef="_shellRef"
+                                                    Capabilities="@Capabilities"
+                                                    SessionId="@SessionId"
+                                                    PhotoInputId="@_photoInputId"
+                                                    DocumentInputId="@_documentInputId"
+                                                    OnLocationRequested="@ShareLocationAsync" />
+                        <ChatComposerEmojiPicker ShellRef="_shellRef"
+                                                 OnEmojiSelected="@InsertEmojiAsync" />
+                    }
+                </div>
+
+                <div class="chat-composer__footer-right">
+                    @if (ShowRichActions && Capabilities?.CanRecordVoice == true)
+                    {
+                        <ChatComposerVoiceButton IsDisabled="@IsDisabled"
+                                                 MaxSeconds="@(Capabilities?.MaxVoiceRecordingSeconds ?? 120)"
+                                                 IsRecording="@_isRecordingVoice"
+                                                 OnRecordingStarted="@StartVoiceRecordingAsync"
+                                                 OnRecordingStopped="@StopVoiceRecordingAsync" />
+                    }
+
+                    <SbIconButton Class="chat-composer__send"
+                                  Color="SbColor.Primary"
+                                  Disabled="@(IsDisabled || !CanSend)"
+                                  OnClick="SendAsync"
+                                  Title="@L["Messenger:Send"]"
+                                  AriaLabel="@L["Messenger:Send"]">
+                        <Icon><SbIcon Name="arrow-up" /></Icon>
+                    </SbIconButton>
+                </div>
+            </div>
         </div>
+
+        @if (_isBusy)
+        {
+            <SbText Variant="SbTextVariant.Caption" Color="SbColor.Muted" Class="chat-composer__busy">
+                @L["Composer:Working"]
+            </SbText>
+        }
     }
 </div>
+
+<input type="file"
+       id="@_photoInputId"
+       @ref="_photoInputRef"
+       accept="image/*,video/*"
+       class="chat-composer__hidden-input"
+       @onchange="OnPhotoInputChangedAsync" />
+<input type="file"
+       id="@_documentInputId"
+       @ref="_documentInputRef"
+       accept=".pdf,.doc,.docx,.txt,.md,application/pdf"
+       class="chat-composer__hidden-input"
+       @onchange="OnDocumentInputChangedAsync" />

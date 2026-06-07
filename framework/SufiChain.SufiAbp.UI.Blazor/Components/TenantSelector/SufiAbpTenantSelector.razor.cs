@@ -133,9 +133,15 @@ public partial class SufiAbpTenantSelector
 
     private async Task Hide()
     {
-        _wasOpen = false;
         _selectedTenantForSearch = null;
-        await OpenChanged.InvokeAsync(false);
+        await SetOpenAsync(false);
+    }
+
+    private async Task SetOpenAsync(bool open)
+    {
+        Open = open;
+        _wasOpen = open;
+        await OpenChanged.InvokeAsync(open);
     }
 
     private async Task SwitchByHostNameAsync()

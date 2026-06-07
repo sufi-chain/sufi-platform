@@ -17,10 +17,17 @@
             @if (Session != null)
             {
                 <SbHeading Level="6">@GetSessionTitle()</SbHeading>
-                @if (Session.Status == ChatSessionStatus.Closed)
-                {
-                    <SbText Variant="SbTextVariant.Caption" Color="SbColor.Muted">@L["Messenger:ClosedSession"]</SbText>
-                }
+                <div class="chat-session-header__chips">
+                    <SbChip Size="SbSize.Sm" Variant="SbChipVariant.Outlined">
+                        @L[$"Messenger:Kind:{Session.ConversationKind}"]
+                    </SbChip>
+                    @if (Session.Status == ChatSessionStatus.Closed)
+                    {
+                        <SbChip Size="SbSize.Sm" Color="SbColor.Muted">
+                            @L["Messenger:ClosedSession"]
+                        </SbChip>
+                    }
+                </div>
             }
             else
             {

@@ -17,12 +17,6 @@ public class UserRoleFinder : IUserRoleFinder, ITransientDependency
         IdentityRoleRepository = identityRoleRepository;
     }
 
-    [Obsolete("Use GetRoleNamesAsync instead.")]
-    public virtual async Task<string[]> GetRolesAsync(Guid userId)
-    {
-        return (await IdentityUserRepository.GetRoleNamesAsync(userId)).ToArray();
-    }
-
     public virtual async Task<string[]> GetRoleNamesAsync(Guid userId)
     {
         return (await IdentityUserRepository.GetRoleNamesAsync(userId)).ToArray();

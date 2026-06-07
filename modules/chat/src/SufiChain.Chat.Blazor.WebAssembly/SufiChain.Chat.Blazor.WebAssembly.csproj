@@ -9,7 +9,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\..\framework\SufiChain.SufiAbp.AspNetCore.Components.WebAssembly.Theming\SufiChain.SufiAbp.AspNetCore.Components.WebAssembly.Theming.csproj" />
     <ProjectReference Include="..\SufiChain.Chat.Blazor.Public\SufiChain.Chat.Blazor.Public.csproj" />
   </ItemGroup>
 

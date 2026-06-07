@@ -7,10 +7,7 @@
     <Project Path="framework/SufiChain.SufiAbp.AspNetCore.Authentication.OpenIdConnect/SufiChain.SufiAbp.AspNetCore.Authentication.OpenIdConnect.csproj" />
     <Project Path="framework/SufiChain.SufiAbp.AspNetCore.Authentication.Server/SufiChain.SufiAbp.AspNetCore.Authentication.Server.csproj" />
     <Project Path="framework/SufiChain.SufiAbp.AspNetCore.Authentication.WebAssembly/SufiChain.SufiAbp.AspNetCore.Authentication.WebAssembly.csproj" />
-    <Project Path="framework/SufiChain.SufiAbp.AspNetCore.Components.Server.Theming/SufiChain.SufiAbp.AspNetCore.Components.Server.Theming.csproj" />
     <Project Path="framework/SufiChain.SufiAbp.AspNetCore.Components.Web/SufiChain.SufiAbp.AspNetCore.Components.Web.csproj" />
-    <Project Path="framework/SufiChain.SufiAbp.AspNetCore.Components.WebAssembly.Theming.Bundling/SufiChain.SufiAbp.AspNetCore.Components.WebAssembly.Theming.Bundling.csproj" />
-    <Project Path="framework/SufiChain.SufiAbp.AspNetCore.Components.WebAssembly.Theming/SufiChain.SufiAbp.AspNetCore.Components.WebAssembly.Theming.csproj" />
     <Project Path="framework/SufiChain.SufiAbp.AspNetCore.MultiTenancy/SufiChain.SufiAbp.AspNetCore.MultiTenancy.csproj" />
     <Project Path="framework/SufiChain.SufiAbp.AspNetCore.Mvc/SufiChain.SufiAbp.AspNetCore.Mvc.csproj" />
     <Project Path="framework/SufiChain.SufiAbp.AspNetCore.Serilog/SufiChain.SufiAbp.AspNetCore.Serilog.csproj" />

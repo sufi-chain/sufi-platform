@@ -19,6 +19,7 @@
     <ProjectReference Include="../../../../framework/SufiChain.SufiAbp.Authorization/SufiChain.SufiAbp.Authorization.csproj" />
     <!-- SufiAbp Domain.Shared for localization -->
     <ProjectReference Include="..\SufiChain.SufiAbp.Identity.Domain.Shared\SufiChain.SufiAbp.Identity.Domain.Shared.csproj" />
+    <ProjectReference Include="../../../users/src/SufiChain.SufiAbp.Users.Abstractions/SufiChain.SufiAbp.Users.Abstractions.csproj" />
   </ItemGroup>
 
 </Project>

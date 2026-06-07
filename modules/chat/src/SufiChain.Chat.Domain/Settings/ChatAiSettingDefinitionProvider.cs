@@ -1,3 +1,4 @@
+using SufiChain.Chat.AiUsage;
 using Volo.Abp.Settings;
 
 namespace SufiChain.Chat.Settings;
@@ -11,6 +12,7 @@ public class ChatAiSettingDefinitionProvider : SettingDefinitionProvider
             new SettingDefinition(ChatSettingNames.Ai.UsageGuard, "true", isVisibleToClients: false, isInherited: true),
             new SettingDefinition(ChatSettingNames.Ai.RequireOperatorForAnonymousHandoff, "true", isVisibleToClients: false, isInherited: true),
             new SettingDefinition(ChatSettingNames.Ai.DefaultWorkspaceName, string.Empty, isVisibleToClients: false, isInherited: true),
+            new SettingDefinition(ChatSettingNames.Ai.AssistantMappings, ChatAssistantMappings.EmptyJson, isVisibleToClients: false, isInherited: true),
             new SettingDefinition(ChatSettingNames.Ai.MaxRepliesPerSession, ChatSettingDefaults.AiMaxRepliesPerSession.ToString(), isVisibleToClients: false, isInherited: true),
             new SettingDefinition(ChatSettingNames.Ai.MaxTokensPerSession, ChatSettingDefaults.AiMaxTokensPerSession.ToString(), isVisibleToClients: false, isInherited: true),
             new SettingDefinition(ChatSettingNames.Ai.MaxTokensPerTenantPerDay, ChatSettingDefaults.AiMaxTokensPerTenantPerDay.ToString(), isVisibleToClients: false, isInherited: true),

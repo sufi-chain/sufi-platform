@@ -7,6 +7,7 @@ using Volo.Abp.Caching;
 using Volo.Abp.DependencyInjection;
 using Volo.Abp.MultiTenancy;
 using Volo.Abp.ObjectMapping;
+using Volo.Abp.Threading;
 
 namespace SufiChain.SufiAbp.TenantManagement;
 
@@ -39,22 +40,22 @@ public class TenantStore : ITenantStore, ITransientDependency
         return (await GetCacheItemAsync(id, null)).Value;
     }
 
-    public virtual async Task<IReadOnlyList<TenantConfiguration>> GetListAsync(bool includeDetails = false)
-    {
-        return ObjectMapper.Map<List<Tenant>, List<TenantConfiguration>>(
-            await TenantRepository.GetListAsync(includeDetails));
-    }
-
     [Obsolete("Use FindAsync method.")]
     public virtual TenantConfiguration Find(string normalizedName)
     {
-        return (GetCacheItem(null, normalizedName)).Value;
+        return AsyncHelper.RunSync(() => FindAsync(normalizedName));
     }
 
     [Obsolete("Use FindAsync method.")]
     public virtual TenantConfiguration Find(Guid id)
     {
-        return (GetCacheItem(id, null)).Value;
+        return AsyncHelper.RunSync(() => FindAsync(id));
+    }
+
+    public virtual async Task<IReadOnlyList<TenantConfiguration>> GetListAsync(bool includeDetails = false)
+    {
+        return ObjectMapper.Map<List<Tenant>, List<TenantConfiguration>>(
+            await TenantRepository.GetListAsync(includeDetails));
     }
 
     protected virtual async Task<TenantConfigurationCacheItem> GetCacheItemAsync(Guid? id, string normalizedName)
@@ -93,47 +94,6 @@ public class TenantStore : ITenantStore, ITransientDependency
         var tenantConfiguration = tenant != null ? ObjectMapper.Map<Tenant, TenantConfiguration>(tenant) : null;
         var cacheItem = new TenantConfigurationCacheItem(tenantConfiguration);
         await Cache.SetAsync(cacheKey, cacheItem, considerUow: true);
-        return cacheItem;
-    }
-
-    [Obsolete("Use GetCacheItemAsync method.")]
-    protected virtual TenantConfigurationCacheItem GetCacheItem(Guid? id, string normalizedName)
-    {
-        var cacheKey = CalculateCacheKey(id, normalizedName);
-
-        var cacheItem = Cache.Get(cacheKey, considerUow: true);
-        if (cacheItem?.Value != null)
-        {
-            return cacheItem;
-        }
-
-        if (id.HasValue)
-        {
-            using (CurrentTenant.Change(null)) //TODO: No need this if we can implement to define host side (or tenant-independent) entities!
-            {
-                var tenant = TenantRepository.FindById(id.Value);
-                return SetCache(cacheKey, tenant);
-            }
-        }
-
-        if (!normalizedName.IsNullOrWhiteSpace())
-        {
-            using (CurrentTenant.Change(null)) //TODO: No need this if we can implement to define host side (or tenant-independent) entities!
-            {
-                var tenant = TenantRepository.FindByName(normalizedName);
-                return SetCache(cacheKey, tenant);
-            }
-        }
-
-        throw new AbpException("Both id and normalizedName can't be invalid.");
-    }
-
-    [Obsolete("Use SetCacheAsync method.")]
-    protected virtual TenantConfigurationCacheItem SetCache(string cacheKey, [CanBeNull] Tenant tenant)
-    {
-        var tenantConfiguration = tenant != null ? ObjectMapper.Map<Tenant, TenantConfiguration>(tenant) : null;
-        var cacheItem = new TenantConfigurationCacheItem(tenantConfiguration);
-        Cache.Set(cacheKey, cacheItem, considerUow: true);
         return cacheItem;
     }
 

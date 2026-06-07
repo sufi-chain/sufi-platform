@@ -1,7 +1,6 @@
 using SufiChain.SufiAbp.TenantManagement.Localization;
-using Volo.Abp.Features;
-using Volo.Abp.Localization;
-using Volo.Abp.Validation.StringValues;
+using SufiChain.SufiAbp.Features;
+using SufiChain.SufiAbp.Localization;
 
 namespace SufiChain.SufiAbp.TenantManagement.Features;
 
@@ -54,7 +53,8 @@ public class TenantSelectorFeatureDefinitionProvider : FeatureDefinitionProvider
                         Value = TenantSelectorMode.InputName,
                         DisplayText = new LocalizableStringInfo(TenantManagementResourceName, "TenantSelectorMode_InputName")
                     })
-            })
+            },
+            isAvailableToHost: true)
             .WithProperty("HostOnly", true);
     }
 

@@ -19,7 +19,6 @@ src/
   MyCompanyName.MyProjectName.Blazor.WebApp.Client/   # All architectures
   MyCompanyName.MyProjectName.HttpApi.Host/           # Layered + Tiered
   MyCompanyName.MyProjectName.AuthServer/             # Tiered only
-  MyCompanyName.MyProjectName.Web/                    # Tiered only
   MyCompanyName.MyProjectName.Blazor.WebPublic/       # Tiered only
   MyCompanyName.MyProjectName.Blazor.WebPublic.Client/# Tiered only
 
@@ -36,7 +35,7 @@ etc/docker/
 
 1. **Single**: Blazor.WebApp + Client (auth in server)
 2. **Layered**: Single + HttpApi.Host (auth still in Blazor.WebApp)
-3. **Layered-Tiered**: Layered + AuthServer + Web + Blazor.WebPublic (separate auth server)
+3. **Layered-Tiered**: Layered + AuthServer + Blazor.WebPublic (separate auth server; UI is Blazor only)
 
 ## Database Providers
 

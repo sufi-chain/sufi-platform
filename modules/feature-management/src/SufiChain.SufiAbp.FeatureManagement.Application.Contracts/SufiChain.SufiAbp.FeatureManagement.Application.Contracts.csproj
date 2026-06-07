@@ -15,6 +15,7 @@
 
   <ItemGroup>
     <ProjectReference Include="../../../../framework/SufiChain.SufiAbp.Ddd.Application.Contracts/SufiChain.SufiAbp.Ddd.Application.Contracts.csproj" />
+    <ProjectReference Include="../../../../framework/SufiChain.SufiAbp.Features/SufiChain.SufiAbp.Features.csproj" />
     
   </ItemGroup>
 

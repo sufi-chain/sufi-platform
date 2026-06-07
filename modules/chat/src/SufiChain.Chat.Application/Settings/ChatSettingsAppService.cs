@@ -43,7 +43,8 @@ public class ChatSettingsAppService : ChatAppService, IChatSettingsAppService
             MessageRetentionDays = await GetIntAsync(ChatSettingNames.Retention.MessageRetentionDays),
             ClosedSessionRetentionDays = await GetIntAsync(ChatSettingNames.Retention.ClosedSessionRetentionDays),
             UsageRecordRetentionDays = await GetIntAsync(ChatSettingNames.Retention.UsageRecordRetentionDays),
-            RealtimeEnabled = await SettingProvider.IsTrueAsync(ChatSettingNames.Realtime.Enabled)
+            RealtimeEnabled = await SettingProvider.IsTrueAsync(ChatSettingNames.Realtime.Enabled),
+            Attachments = await GetAttachmentSettingsAsync()
         };
     }
 
@@ -80,6 +81,39 @@ public class ChatSettingsAppService : ChatAppService, IChatSettingsAppService
         await SetIntAsync(ChatSettingNames.Retention.ClosedSessionRetentionDays, input.ClosedSessionRetentionDays);
         await SetIntAsync(ChatSettingNames.Retention.UsageRecordRetentionDays, input.UsageRecordRetentionDays);
         await SetBoolAsync(ChatSettingNames.Realtime.Enabled, input.RealtimeEnabled);
+        await SetAttachmentSettingsAsync(input.Attachments);
+    }
+
+    protected virtual async Task<ChatAttachmentSettingsDto> GetAttachmentSettingsAsync()
+    {
+        return new ChatAttachmentSettingsDto
+        {
+            EnableFileAttachments = await SettingProvider.IsTrueAsync(ChatSettingNames.General.EnableFileAttachments),
+            EnableLocationSharing = await SettingProvider.IsTrueAsync(ChatSettingNames.Attachments.EnableLocationSharing),
+            EnableVoiceMessages = await SettingProvider.IsTrueAsync(ChatSettingNames.Attachments.EnableVoiceMessages),
+            EnableOperatorGallery = await SettingProvider.IsTrueAsync(ChatSettingNames.Attachments.EnableOperatorGallery),
+            MaxFilesPerMessage = await GetIntAsync(ChatSettingNames.Attachments.MaxFilesPerMessage),
+            MaxVoiceRecordingSeconds = await GetIntAsync(ChatSettingNames.Attachments.MaxVoiceRecordingSeconds),
+            AllowedFileTypes = ParseAllowedFileTypes(await SettingProvider.GetOrNullAsync(ChatSettingNames.Attachments.AllowedFileTypes))
+        };
+    }
+
+    protected virtual async Task SetAttachmentSettingsAsync(ChatAttachmentSettingsDto dto)
+    {
+        await SetBoolAsync(ChatSettingNames.General.EnableFileAttachments, dto.EnableFileAttachments);
+        await SetBoolAsync(ChatSettingNames.Attachments.EnableLocationSharing, dto.EnableLocationSharing);
+        await SetBoolAsync(ChatSettingNames.Attachments.EnableVoiceMessages, dto.EnableVoiceMessages);
+        await SetBoolAsync(ChatSettingNames.Attachments.EnableOperatorGallery, dto.EnableOperatorGallery);
+        await SetIntAsync(ChatSettingNames.Attachments.MaxFilesPerMessage, dto.MaxFilesPerMessage);
+        await SetIntAsync(ChatSettingNames.Attachments.MaxVoiceRecordingSeconds, dto.MaxVoiceRecordingSeconds);
+        await SetIntAsync(ChatSettingNames.Attachments.AllowedFileTypes, (int)dto.AllowedFileTypes);
+    }
+
+    protected virtual ChatAttachmentAllowedFileTypes ParseAllowedFileTypes(string? value)
+    {
+        return int.TryParse(value, out var flags)
+            ? (ChatAttachmentAllowedFileTypes)flags
+            : ChatAttachmentAllowedFileTypes.All;
     }
 
     protected virtual async Task<ChatUsageTierSettingsDto> GetAnonymousTierAsync()

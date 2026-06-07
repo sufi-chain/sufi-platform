@@ -74,6 +74,18 @@ public class FileStructureBuilder
         return this;
     }
 
+    public FileStructureBuilder AlsoAllowMimeTypes(params string[] mimeTypes)
+    {
+        var existing = (_config.AllowedMimeTypes ?? "")
+            .Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
+            .Select(x => x.Trim())
+            .Where(x => !string.IsNullOrEmpty(x))
+            .ToList();
+        existing.AddRange(mimeTypes);
+        _config.AllowedMimeTypes = string.Join(",", existing.Distinct(StringComparer.OrdinalIgnoreCase));
+        return this;
+    }
+
     public FileStructureBuilder WithMaxSize(long sizeInBytes)
     {
         _config.MaxFileSize = sizeInBytes;

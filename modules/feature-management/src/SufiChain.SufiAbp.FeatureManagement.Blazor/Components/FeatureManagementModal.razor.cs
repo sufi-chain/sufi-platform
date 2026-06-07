@@ -1,15 +1,21 @@
 using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.Localization;
+using System.Linq.Expressions;
 using SufiChain.SufiAbp.FeatureManagement.Blazor;
-using Volo.Abp.Features;
 using SufiChain.SufiAbp.FeatureManagement;
 using Volo.Abp.Localization;
-using Volo.Abp.Validation.StringValues;
+using Volo.Abp.Localization.External;
+using SufiChain.SufiAbp.Features;
 
 namespace SufiChain.SufiAbp.FeatureManagement.Blazor.Components;
 
 public partial class FeatureManagementModal
 {
+    private const string ToggleValueTypeName = "TOGGLE";
+    private const string SelectionValueTypeName = "SELECTION";
+    private const string ToggleStringValueTypeName = "ToggleStringValueType";
+    private const string SelectionStringValueTypeName = "SelectionStringValueType";
+
     private static class LoadingKeys
     {
         public const string LoadFeatures = "load-features";
@@ -83,11 +89,11 @@ public partial class FeatureManagementModal
             {
                 foreach (var feature in group.Features)
                 {
-                    if (feature.ValueType is ToggleStringValueType)
+                    if (IsToggleFeature(feature))
                     {
                         _toggleValues[feature.Name] = feature.Value?.Equals("true", StringComparison.OrdinalIgnoreCase) ?? false;
                     }
-                    else if (feature.ValueType is SelectionStringValueType)
+                    else if (IsSelectionFeature(feature))
                     {
                         _selectValues[feature.Name] = feature.Value;
                     }
@@ -172,10 +178,11 @@ public partial class FeatureManagementModal
     /// <summary>
     /// Gets the localized display text for a selection item (e.g. dropdown option).
     /// </summary>
-    private string GetLocalizedSelectionItemText(ISelectionStringValueItem item)
+    private string GetLocalizedSelectionItemText(FeatureSelectionItemDto item)
     {
-        var localizer = StringLocalizerFactory.CreateByResourceNameOrNull(item.DisplayText.ResourceName);
-        return localizer?[item.DisplayText.Name].Value ?? item.Value;
+        var localizer = StringLocalizerFactory.CreateByResourceNameOrNull(item.DisplayTextResourceName);
+
+        return localizer?[item.DisplayTextName].Value ?? item.Value;
     }
 
     private bool IsFeatureDisabled(FeatureDto feature)
@@ -185,7 +192,7 @@ public partial class FeatureManagementModal
 
     private bool IsFeatureGroupDisabled(FeatureGroupDto group)
     {
-        var toggleFeatures = group.Features.Where(f => f.ValueType is ToggleStringValueType).ToList();
+        var toggleFeatures = group.Features.Where(IsToggleFeature).ToList();
         if (!toggleFeatures.Any())
         {
             return true; // No toggle features to enable/disable
@@ -196,12 +203,12 @@ public partial class FeatureManagementModal
 
     private bool HasToggleFeatures(FeatureGroupDto group)
     {
-        return group.Features.Any(f => f.ValueType is ToggleStringValueType);
+        return group.Features.Any(IsToggleFeature);
     }
 
     private bool AreAllToggleFeaturesEnabled(FeatureGroupDto group)
     {
-        var toggleFeatures = group.Features.Where(f => f.ValueType is ToggleStringValueType);
+        var toggleFeatures = group.Features.Where(IsToggleFeature);
         return toggleFeatures.All(f => _toggleValues.GetValueOrDefault(f.Name));
     }
 
@@ -216,15 +223,30 @@ public partial class FeatureManagementModal
         return $"{feature.DisplayName} ({feature.Provider?.Name})";
     }
 
+    private string? GetTextValue(string featureName)
+    {
+        return _textValues.GetValueOrDefault(featureName);
+    }
+
+    private void SetTextValue(string featureName, string? value)
+    {
+        _textValues[featureName] = value;
+    }
+
+    private Expression<Func<string?>> GetTextValueExpression(string featureName)
+    {
+        return () => _textValues[featureName];
+    }
+
     private bool EnableAll => _allGroups
         .SelectMany(x => x.Features)
-        .Where(f => f.ValueType is ToggleStringValueType)
+        .Where(IsToggleFeature)
         .All(f => _toggleValues.GetValueOrDefault(f.Name));
 
     private int GetEnabledCount(FeatureGroupDto group)
     {
         return group.Features
-            .Where(f => f.ValueType is ToggleStringValueType)
+            .Where(IsToggleFeature)
             .Count(f => _toggleValues.GetValueOrDefault(f.Name));
     }
 
@@ -252,7 +274,7 @@ public partial class FeatureManagementModal
         {
         foreach (var feature in _allGroups.SelectMany(x => x.Features))
         {
-            if (feature.ValueType is ToggleStringValueType && !IsFeatureDisabled(feature))
+            if (IsToggleFeature(feature) && !IsFeatureDisabled(feature))
             {
                 _toggleValues[feature.Name] = value;
             }
@@ -275,7 +297,7 @@ public partial class FeatureManagementModal
         {
         foreach (var feature in group.Features)
         {
-            if (feature.ValueType is ToggleStringValueType && !IsFeatureDisabled(feature))
+            if (IsToggleFeature(feature) && !IsFeatureDisabled(feature))
             {
                 _toggleValues[feature.Name] = value;
             }
@@ -323,7 +345,7 @@ public partial class FeatureManagementModal
 
         var parentFeature = group.Features.FirstOrDefault(x => x.Name == feature.ParentName);
         if (parentFeature != null &&
-            parentFeature.ValueType is ToggleStringValueType &&
+            IsToggleFeature(parentFeature) &&
             !_toggleValues.GetValueOrDefault(parentFeature.Name))
         {
             _toggleValues[parentFeature.Name] = true;
@@ -342,7 +364,7 @@ public partial class FeatureManagementModal
 
         foreach (var child in childFeatures)
         {
-            if (child.ValueType is ToggleStringValueType &&
+            if (IsToggleFeature(child) &&
                 _toggleValues.GetValueOrDefault(child.Name) &&
                 !IsFeatureDisabled(child))
             {
@@ -390,11 +412,11 @@ public partial class FeatureManagementModal
             {
                 string? value;
 
-                if (feature.ValueType is ToggleStringValueType)
+                if (IsToggleFeature(feature))
                 {
                     value = _toggleValues.GetValueOrDefault(feature.Name) ? "true" : "false";
                 }
-                else if (feature.ValueType is SelectionStringValueType)
+                else if (IsSelectionFeature(feature))
                 {
                     value = _selectValues.GetValueOrDefault(feature.Name);
                 }
@@ -447,11 +469,11 @@ public partial class FeatureManagementModal
             {
                 foreach (var feature in group.Features)
                 {
-                    if (feature.ValueType is ToggleStringValueType)
+                    if (IsToggleFeature(feature))
                     {
                         _toggleValues[feature.Name] = feature.Value?.Equals("true", StringComparison.OrdinalIgnoreCase) ?? false;
                     }
-                    else if (feature.ValueType is SelectionStringValueType)
+                    else if (IsSelectionFeature(feature))
                     {
                         _selectValues[feature.Name] = feature.Value;
                     }
@@ -464,5 +486,19 @@ public partial class FeatureManagementModal
 
             NormalizeFeatureGroups();
         }, LoadingKeys.ResetFeatures);
+    }
+
+    private static bool IsToggleFeature(FeatureDto feature)
+    {
+        return string.Equals(feature.ValueType?.Name, ToggleValueTypeName, StringComparison.OrdinalIgnoreCase) ||
+               string.Equals(feature.ValueType?.Name, ToggleStringValueTypeName, StringComparison.OrdinalIgnoreCase) ||
+               string.Equals(feature.Value, "true", StringComparison.OrdinalIgnoreCase) ||
+               string.Equals(feature.Value, "false", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static bool IsSelectionFeature(FeatureDto feature)
+    {
+        return string.Equals(feature.ValueType?.Name, SelectionValueTypeName, StringComparison.OrdinalIgnoreCase) ||
+               string.Equals(feature.ValueType?.Name, SelectionStringValueTypeName, StringComparison.OrdinalIgnoreCase);
     }
 }

@@ -19,19 +19,19 @@ public class FeaturesController : SufiAbpControllerBase, IFeatureAppService
     }
 
     [HttpGet]
-    public virtual Task<GetFeatureListResultDto> GetAsync(string providerName, string providerKey)
+    public virtual Task<GetFeatureListResultDto> GetAsync(string providerName, string? providerKey)
     {
         return _featureAppService.GetAsync(providerName, providerKey);
     }
 
     [HttpPut]
-    public virtual Task UpdateAsync(string providerName, string providerKey, UpdateFeaturesDto input)
+    public virtual Task UpdateAsync(string providerName, string? providerKey, UpdateFeaturesDto input)
     {
         return _featureAppService.UpdateAsync(providerName, providerKey, input);
     }
 
     [HttpDelete]
-    public virtual Task DeleteAsync(string providerName, string providerKey)
+    public virtual Task DeleteAsync(string providerName, string? providerKey)
     {
         return _featureAppService.DeleteAsync(providerName, providerKey);
     }

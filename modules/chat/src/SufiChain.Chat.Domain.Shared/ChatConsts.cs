@@ -20,16 +20,5 @@ public static class ChatConsts
     public const int MaxConnectorNameLength = 64;
     public const int MaxExternalIdLength = 512;
 
-    public static class Settings
-    {
-        public const string AiEnabled = ChatSettingNames.Ai.Enabled;
-        public const string AiUsageGuard = ChatSettingNames.Ai.UsageGuard;
-        public const string AiDefaultWorkspaceName = ChatSettingNames.Ai.DefaultWorkspaceName;
-        public const string AiMaxRepliesPerSession = ChatSettingNames.Ai.MaxRepliesPerSession;
-        public const string AiMaxTokensPerSession = ChatSettingNames.Ai.MaxTokensPerSession;
-        public const string AiMaxTokensPerTenantPerDay = ChatSettingNames.Ai.MaxTokensPerTenantPerDay;
-        public const string AiMaxSuggestionsPerOperatorPerDay = ChatSettingNames.Ai.MaxSuggestionsPerOperatorPerDay;
-        public const string AiMaxSummariesPerOperatorPerDay = ChatSettingNames.Ai.MaxSummariesPerOperatorPerDay;
-        public const string AiMaxRagChunksPerRequest = ChatSettingNames.Ai.MaxRagChunksPerRequest;
-    }
+ 
 }

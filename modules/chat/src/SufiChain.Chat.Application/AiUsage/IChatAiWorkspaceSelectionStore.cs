@@ -11,6 +11,10 @@ public interface IChatAiWorkspaceSelectionStore
     Task<string?> GetDefaultWorkspaceNameAsync();
 
     Task SetDefaultWorkspaceNameAsync(string? workspaceName);
+
+    Task<IReadOnlyList<ChatAssistantMappingItem>> GetAssistantMappingsAsync();
+
+    Task SetAssistantMappingsAsync(IReadOnlyList<ChatAssistantMappingItem> mappings);
 }
 
 public class NullChatAiWorkspaceSelectionStore : IChatAiWorkspaceSelectionStore, ITransientDependency
@@ -40,5 +44,20 @@ public class NullChatAiWorkspaceSelectionStore : IChatAiWorkspaceSelectionStore,
             CurrentTenant.Id,
             ChatSettingNames.Ai.DefaultWorkspaceName,
             workspaceName);
+    }
+
+    public virtual async Task<IReadOnlyList<ChatAssistantMappingItem>> GetAssistantMappingsAsync()
+    {
+        var json = await SettingProvider.GetOrNullAsync(ChatSettingNames.Ai.AssistantMappings);
+        return ChatAssistantMappings.Parse(json);
+    }
+
+    public virtual Task SetAssistantMappingsAsync(IReadOnlyList<ChatAssistantMappingItem> mappings)
+    {
+        var normalized = ChatAssistantMappings.Normalize(mappings);
+        return SettingManager.SetForTenantOrGlobalAsync(
+            CurrentTenant.Id,
+            ChatSettingNames.Ai.AssistantMappings,
+            ChatAssistantMappings.Serialize(normalized));
     }
 }

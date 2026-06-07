@@ -8,10 +8,7 @@
     <IsPackable>false</IsPackable>
   </PropertyGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\framework\SufiChain.SufiAbp.AspNetCore.Components.Server.Theming\SufiChain.SufiAbp.AspNetCore.Components.Server.Theming.csproj" />
     <ProjectReference Include="..\..\framework\SufiChain.SufiAbp.AspNetCore.Components.Web\SufiChain.SufiAbp.AspNetCore.Components.Web.csproj" />
-    <ProjectReference Include="..\..\framework\SufiChain.SufiAbp.AspNetCore.Components.WebAssembly.Theming.Bundling\SufiChain.SufiAbp.AspNetCore.Components.WebAssembly.Theming.Bundling.csproj" />
-    <ProjectReference Include="..\..\framework\SufiChain.SufiAbp.AspNetCore.Components.WebAssembly.Theming\SufiChain.SufiAbp.AspNetCore.Components.WebAssembly.Theming.csproj" />
     <ProjectReference Include="..\..\framework\SufiChain.SufiAbp.UI.Blazor\SufiChain.SufiAbp.UI.Blazor.csproj" />
     <ProjectReference Include="..\..\framework\SufiChain.SufiAbp.UI.Blazor.Server\SufiChain.SufiAbp.UI.Blazor.Server.csproj" />
     <ProjectReference Include="..\..\framework\SufiChain.SufiAbp.UI.Blazor.WebAssembly\SufiChain.SufiAbp.UI.Blazor.WebAssembly.csproj" />

@@ -1,15 +1,12 @@
 using SufiChain.Chat.Localization;
 using SufiChain.SufiAbp.Features;
-using Volo.Abp.Localization;
-using Volo.Abp.Validation.StringValues;
-using AbpFeatureDefinitionContext = Volo.Abp.Features.IFeatureDefinitionContext;
-using AbpFeatureGroupDefinition = Volo.Abp.Features.FeatureGroupDefinition;
+using SufiChain.SufiAbp.Localization;
 
 namespace SufiChain.Chat.Features;
 
 public class ChatFeatureDefinitionProvider : FeatureDefinitionProvider
 {
-    public override void Define(AbpFeatureDefinitionContext context)
+    public override void Define(IFeatureDefinitionContext context)
     {
         var group = context.AddGroup(ChatFeatures.GroupName, L("Menu:Chat"));
 
@@ -23,7 +20,7 @@ public class ChatFeatureDefinitionProvider : FeatureDefinitionProvider
         AddToggle(group, ChatFeatures.Ai.AnonymousHandoff);
     }
 
-    protected virtual void AddToggle(AbpFeatureGroupDefinition group, string name)
+    protected virtual void AddToggle(FeatureGroupDefinition group, string name)
     {
         group.AddFeature(
             name,

@@ -6,6 +6,17 @@ public static class ChatSettingNames
     {
         public const string MaxConcurrentOpenSessions = "Chat.Usage.MaxConcurrentOpenSessions";
         public const string MaxMessagesPerTenantPerDay = "Chat.Usage.MaxMessagesPerTenantPerDay";
+        public const string EnableFileAttachments = "Chat.General.EnableFileAttachments";
+    }
+
+    public static class Attachments
+    {
+        public const string EnableLocationSharing = "Chat.Attachments.EnableLocationSharing";
+        public const string EnableVoiceMessages = "Chat.Attachments.EnableVoiceMessages";
+        public const string MaxFilesPerMessage = "Chat.Attachments.MaxFilesPerMessage";
+        public const string MaxVoiceRecordingSeconds = "Chat.Attachments.MaxVoiceRecordingSeconds";
+        public const string AllowedFileTypes = "Chat.Attachments.AllowedFileTypes";
+        public const string EnableOperatorGallery = "Chat.Attachments.EnableOperatorGallery";
     }
 
     public static class Usage
@@ -56,6 +67,8 @@ public static class ChatSettingNames
         public const string UsageGuard = "Chat.Ai.UsageGuard";
         public const string RequireOperatorForAnonymousHandoff = "Chat.Ai.RequireOperatorForAnonymousHandoff";
         public const string DefaultWorkspaceName = "Chat.Ai.DefaultWorkspaceName";
+
+        public const string AssistantMappings = "Chat.Ai.AssistantMappings";
         public const string MaxRepliesPerSession = "Chat.Ai.MaxRepliesPerSession";
         public const string MaxTokensPerSession = "Chat.Ai.MaxTokensPerSession";
         public const string MaxTokensPerTenantPerDay = "Chat.Ai.MaxTokensPerTenantPerDay";

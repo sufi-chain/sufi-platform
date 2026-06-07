@@ -44,6 +44,7 @@ public class ChatApplicationMapper
             ConversationKind = session.ConversationKind,
             ChannelOrigin = session.ChannelOrigin,
             Status = session.Status,
+            MetadataJson = session.MetadataJson,
             LastMessageTime = session.LastMessageTime,
             CreationTime = session.CreationTime,
             CreatorId = session.CreatorId,

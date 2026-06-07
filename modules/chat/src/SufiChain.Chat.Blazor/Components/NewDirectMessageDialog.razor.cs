@@ -5,8 +5,10 @@ using SufiChain.SufiAbp.Application.Dtos;
 
 namespace SufiChain.Chat.Blazor.Components;
 
-public partial class NewDirectMessageDialog : ChatComponentBase
+public partial class NewDirectMessageDialog : ChatComponentBase, IDisposable
 {
+    private const int SearchDebounceMilliseconds = 300;
+
     [Parameter]
     public bool Open { get; set; }
 
@@ -28,6 +30,12 @@ public partial class NewDirectMessageDialog : ChatComponentBase
 
     protected bool IsLoading { get; set; }
 
+    protected bool CanSearch =>
+        !string.IsNullOrWhiteSpace(FilterText) &&
+        FilterText.Trim().Length >= ChatContactSearchConsts.MinFilterLength;
+
+    private CancellationTokenSource? _searchDebounceCts;
+
     protected async Task OnOpenChangedAsync(bool open)
     {
         Open = open;
@@ -35,18 +43,53 @@ public partial class NewDirectMessageDialog : ChatComponentBase
 
         if (open)
         {
+            FilterText = string.Empty;
+            Contacts = Array.Empty<ChatContactDto>();
+            IsLoading = false;
+            return;
+        }
+
+        CancelPendingSearch();
+    }
+
+    protected async Task OnFilterTextChangedAsync()
+    {
+        CancelPendingSearch();
+
+        if (!CanSearch)
+        {
+            Contacts = Array.Empty<ChatContactDto>();
+            IsLoading = false;
+            return;
+        }
+
+        _searchDebounceCts = new CancellationTokenSource();
+        var cancellationToken = _searchDebounceCts.Token;
+
+        try
+        {
+            await Task.Delay(SearchDebounceMilliseconds, cancellationToken);
             await SearchAsync();
+        }
+        catch (OperationCanceledException)
+        {
         }
     }
 
     protected async Task SearchAsync()
     {
+        if (!CanSearch)
+        {
+            Contacts = Array.Empty<ChatContactDto>();
+            return;
+        }
+
         IsLoading = true;
         try
         {
             var result = await ContactAppService.SearchAsync(new SearchChatContactsInput
             {
-                Filter = string.IsNullOrWhiteSpace(FilterText) ? null : FilterText,
+                Filter = FilterText.Trim(),
                 MaxResultCount = 20,
                 SkipCount = 0
             });
@@ -84,5 +127,17 @@ public partial class NewDirectMessageDialog : ChatComponentBase
     protected async Task CloseAsync()
     {
         await OnOpenChangedAsync(false);
+    }
+
+    public void Dispose()
+    {
+        CancelPendingSearch();
+    }
+
+    private void CancelPendingSearch()
+    {
+        _searchDebounceCts?.Cancel();
+        _searchDebounceCts?.Dispose();
+        _searchDebounceCts = null;
     }
 }

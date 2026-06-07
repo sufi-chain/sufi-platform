@@ -23,6 +23,13 @@
     min-width: 0;
 }
 
+.chat-messenger-shell__context {
+    display: flex;
+    flex-direction: column;
+    border-inline-start: 1px solid var(--sb-color-border-subtle, #e5e7eb);
+    background: var(--sb-color-surface, #fff);
+}
+
 .chat-messenger-shell__main {
     display: grid;
     grid-template-rows: auto minmax(0, 1fr) auto;

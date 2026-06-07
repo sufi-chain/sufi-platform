@@ -19,11 +19,8 @@ public class ChatUiSmokeValidationNotes
     [Fact(Skip = "Manual UI smoke: /admin/chat/sessions/{id}")]
     public void Manual_Validate_Session_Detail_Route() { }
 
-    [Fact(Skip = "Manual UI smoke: /admin/chat/usage")]
+    [Fact(Skip = "Manual UI smoke: /admin/chat/usage (includes AI usage section)")]
     public void Manual_Validate_Usage_Route() { }
-
-    [Fact(Skip = "Manual UI smoke: /admin/chat/ai")]
-    public void Manual_Validate_Ai_Usage_Route() { }
 
     [Fact(Skip = "Manual UI smoke: /admin/chat/settings")]
     public void Manual_Validate_Settings_Route() { }

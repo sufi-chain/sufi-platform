@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Components;
+using SufiChain.Chat.Blazor.Public;
 using SufiChain.Chat.Sessions;
 
 namespace SufiChain.Chat.Blazor.Public.Components;
@@ -54,13 +55,6 @@ public partial class ChatConversationList : ChatPublicComponentBase
         await SelectedSessionIdChanged.InvokeAsync(session.Id);
     }
 
-    protected static string GetSessionTitle(ChatSessionListDto session)
-    {
-        if (!string.IsNullOrWhiteSpace(session.Title))
-        {
-            return session.Title;
-        }
-
-        return session.ConversationKind.ToString();
-    }
+    protected string GetSessionTitle(ChatSessionListDto session) =>
+        ChatSessionUiTitle.GetTitle(session, key => L[key]);
 }

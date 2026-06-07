@@ -13,18 +13,6 @@ public interface ITenantRepository : IBasicRepository<Tenant, Guid>
         bool includeDetails = true,
         CancellationToken cancellationToken = default);
 
-    [Obsolete("Use FindByNameAsync method.")]
-    Tenant FindByName(
-        string normalizedName,
-        bool includeDetails = true
-    );
-
-    [Obsolete("Use FindAsync method.")]
-    Tenant FindById(
-        Guid id,
-        bool includeDetails = true
-    );
-
     Task<List<Tenant>> GetListAsync(
         string sorting = null,
         int maxResultCount = int.MaxValue,

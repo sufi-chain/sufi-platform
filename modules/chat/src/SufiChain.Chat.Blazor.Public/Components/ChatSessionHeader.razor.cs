@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Components;
+using SufiChain.Chat.Blazor.Public;
 using SufiChain.Chat.Sessions;
 
 namespace SufiChain.Chat.Blazor.Public.Components;
@@ -20,20 +21,8 @@ public partial class ChatSessionHeader : ChatPublicComponentBase
     [Parameter]
     public RenderFragment? HeaderActions { get; set; }
 
-    protected string GetSessionTitle()
-    {
-        if (Session == null)
-        {
-            return L["Messenger:Conversations"];
-        }
-
-        if (!string.IsNullOrWhiteSpace(Session.Title))
-        {
-            return Session.Title;
-        }
-
-        return Session.ConversationKind.ToString();
-    }
+    protected string GetSessionTitle() =>
+        ChatSessionUiTitle.GetTitle(Session, key => L[key], CurrentUser.Id);
 
     protected async Task OnBackInternal()
     {

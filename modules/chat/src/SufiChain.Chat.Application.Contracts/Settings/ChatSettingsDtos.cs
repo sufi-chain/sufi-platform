@@ -1,5 +1,22 @@
 namespace SufiChain.Chat.Settings;
 
+public class ChatAttachmentSettingsDto
+{
+    public bool EnableFileAttachments { get; set; }
+
+    public bool EnableLocationSharing { get; set; }
+
+    public bool EnableVoiceMessages { get; set; }
+
+    public bool EnableOperatorGallery { get; set; }
+
+    public int MaxFilesPerMessage { get; set; }
+
+    public int MaxVoiceRecordingSeconds { get; set; }
+
+    public ChatAttachmentAllowedFileTypes AllowedFileTypes { get; set; }
+}
+
 public class ChatUsageTierSettingsDto
 {
     public int MaxSessionsPerUserPerDay { get; set; }
@@ -56,6 +73,8 @@ public class ChatSettingsDto
     public int UsageRecordRetentionDays { get; set; }
 
     public bool RealtimeEnabled { get; set; }
+
+    public ChatAttachmentSettingsDto Attachments { get; set; } = new();
 }
 
 public class UpdateChatSettingsInput
@@ -89,4 +108,6 @@ public class UpdateChatSettingsInput
     public int UsageRecordRetentionDays { get; set; }
 
     public bool RealtimeEnabled { get; set; }
+
+    public ChatAttachmentSettingsDto Attachments { get; set; } = new();
 }

@@ -1,29 +1,40 @@
-using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Components.Authorization;
 using SufiChain.Chat.Blazor.Public.Services;
+using SufiChain.Chat.Realtime;
 
 namespace SufiChain.Chat.Blazor.Server.Services;
 
 /// <summary>
-/// Server-side access token provider for authenticated SignalR hub connections.
+/// Server-side access token provider for SignalR hub connections.
+/// <para>
+/// On Blazor Server the hub connection is opened from the server process during an interactive circuit,
+/// where <c>IHttpContextAccessor.HttpContext</c> is null and there is no OAuth access token (cookie auth).
+/// We therefore read the authenticated user from the circuit's <see cref="AuthenticationStateProvider"/>
+/// and mint a short-lived protected ticket that the hub validates server-side.
+/// </para>
 /// </summary>
 public class ServerChatHubConnectionAccessTokenProvider : IChatHubConnectionAccessTokenProvider
 {
-    private readonly IHttpContextAccessor _httpContextAccessor;
+    protected AuthenticationStateProvider AuthenticationStateProvider { get; }
 
-    public ServerChatHubConnectionAccessTokenProvider(IHttpContextAccessor httpContextAccessor)
+    protected IChatHubTicketProtector TicketProtector { get; }
+
+    public ServerChatHubConnectionAccessTokenProvider(
+        AuthenticationStateProvider authenticationStateProvider,
+        IChatHubTicketProtector ticketProtector)
     {
-        _httpContextAccessor = httpContextAccessor;
+        AuthenticationStateProvider = authenticationStateProvider;
+        TicketProtector = ticketProtector;
     }
 
-    public async Task<string?> GetAccessTokenAsync()
+    public virtual async Task<string?> GetAccessTokenAsync()
     {
-        var httpContext = _httpContextAccessor.HttpContext;
-        if (httpContext?.User?.Identity?.IsAuthenticated != true)
+        var state = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        if (state.User.Identity?.IsAuthenticated != true)
         {
             return null;
         }
 
-        return await httpContext.GetTokenAsync("access_token");
+        return TicketProtector.Protect(state.User);
     }
 }

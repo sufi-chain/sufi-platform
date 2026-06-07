@@ -25,4 +25,7 @@ public static class ChatSettingDefaults
     public const int AiMaxSummariesPerOperatorPerDay = 100;
     public const int AiMaxCopilotMessagesPerArticlePerDay = 50;
     public const int AiMaxRagChunksPerRequest = 8;
+    public const int MaxFilesPerMessage = 10;
+    public const int MaxVoiceRecordingSeconds = 120;
+    public const int AllowedAttachmentFileTypes = (int)ChatAttachmentAllowedFileTypes.All;
 }

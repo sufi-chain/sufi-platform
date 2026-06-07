@@ -7,10 +7,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\..\framework\SufiChain.SufiAbp.AspNetCore.Components.WebAssembly.Theming\SufiChain.SufiAbp.AspNetCore.Components.WebAssembly.Theming.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
     <ProjectReference Include="..\SufiChain.SufiAbp.AIManagement.Blazor\SufiChain.SufiAbp.AIManagement.Blazor.csproj" />
     <ProjectReference Include="..\SufiChain.SufiAbp.AIManagement.HttpApi.Client\SufiChain.SufiAbp.AIManagement.HttpApi.Client.csproj" />
   </ItemGroup>

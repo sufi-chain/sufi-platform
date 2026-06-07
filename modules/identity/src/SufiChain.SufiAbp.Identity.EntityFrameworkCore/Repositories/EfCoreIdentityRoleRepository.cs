@@ -59,6 +59,15 @@ public class EfCoreIdentityRoleRepository : EfCoreRepository<ISufiAbpIdentityDbC
             .ToListAsync(GetCancellationToken(cancellationToken));
     }
 
+    public virtual async Task<List<IdentityRole>> GetListAsync(
+        IEnumerable<string> names,
+        CancellationToken cancellationToken = default)
+    {
+        return await (await GetDbSetAsync())
+            .Where(r => names.Contains(r.Name))
+            .ToListAsync(GetCancellationToken(cancellationToken));
+    }
+
     public virtual async Task<List<IdentityRole>> GetDefaultOnesAsync(
         bool includeDetails = false,
         CancellationToken cancellationToken = default)

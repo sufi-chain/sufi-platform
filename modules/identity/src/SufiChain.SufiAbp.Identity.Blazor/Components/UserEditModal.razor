@@ -1,6 +1,6 @@
 @inherits IdentityComponentBase
 
-<SbDialog @bind-Open="Open" OnCloseButtonClick="Hide" Size="SbDialogSize.Md" Title="@L["EditUser"]">
+<SbDialog Open="@Open" OpenChanged="@SetOpenAsync" Size="SbDialogSize.Md" Title="@L["EditUser"]">
     <ChildContent>
         <SbForm Model="_model" OnValidSubmit="OnValidSubmitAsync">
             <SbTabs @bind-ActiveIndex="_activeTab">

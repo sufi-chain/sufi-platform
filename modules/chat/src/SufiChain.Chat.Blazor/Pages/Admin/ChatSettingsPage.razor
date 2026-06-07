@@ -3,8 +3,11 @@
 @inherits ChatComponentBase
 
 <SufiAbpPageToolbar>
-    <SbButton Color="SbColor.Primary" OnClick="SaveAsync" Disabled="@IsOperationLoading(LoadingKeys.Save)">
-        @L["Save"]
+    <SbButton Color="SbColor.Primary"
+              OnClick="SaveAsync"
+              Disabled="@IsOperationLoading(LoadingKeys.Save)">
+        <StartIcon><SbIcon Name="check" Size="SbSize.Sm" /></StartIcon>
+        <ChildContent>@L["Save"]</ChildContent>
     </SbButton>
 </SufiAbpPageToolbar>
 
@@ -15,27 +18,27 @@
 else
 {
     <SbTabs @bind-ActiveIndex="ActiveTabIndex">
+
+        @* ============ TAB 1: General ============ *@
         <SbTab Label="@L["SettingsTab:General"]">
-            <SbCard Class="mt-3">
-                <ChildContent>
-                    <SbStack Gap="3">
-                        <SbNumberField TValue="int" @bind-Value="Settings.MaxConcurrentOpenSessions" Label="@L["MaxConcurrentOpenSessions"]" Min="0" />
-                        <SbNumberField TValue="int" @bind-Value="Settings.MaxMessagesPerTenantPerDay" Label="@L["MaxMessagesPerTenantPerDay"]" Min="0" />
-                        <SbCheckbox @bind-Value="Settings.RealtimeEnabled" Label="@L["RealtimeEnabled"]" />
-                    </SbStack>
-                </ChildContent>
-            </SbCard>
-        </SbTab>
-
-        <SbTab Label="@L["SettingsTab:UsagePolicies"]">
             <SbStack Gap="3" Class="mt-3">
+                <SbAlert Severity="SbAlertSeverity.Info">
+                    @L["SettingsTab:General:InfoBanner"]
+                </SbAlert>
+
                 <SbCard>
                     <ChildContent>
                         <SbStack Gap="3">
-                            <SbHeading Level="6">@L["Tier:PublicAnonymous"]</SbHeading>
-                            <SbNumberField TValue="int" @bind-Value="Settings.PublicAnonymous.MaxSessionsPerUserPerDay" Label="@L["MaxSessionsPerUserPerDay"]" Min="0" />
-                            <SbNumberField TValue="int" @bind-Value="Settings.PublicAnonymous.MaxMessagesPerSession" Label="@L["MaxMessagesPerSession"]" Min="0" />
-                            <SbNumberField TValue="int" @bind-Value="Settings.PublicAnonymous.MaxAttachmentsPerSession" Label="@L["MaxAttachmentsPerSession"]" Min="0" />
+                            <SbHeading Level="6">@L["SettingsGroup:TenantWide"]</SbHeading>
+                            <SbText Color="SbColor.Muted">@L["SettingsGroup:TenantWide:Hint"]</SbText>
+                            <SbNumberField TValue="int"
+                                           @bind-Value="Settings.MaxConcurrentOpenSessions"
+                                           Label="@L["MaxConcurrentOpenSessions"]"
+                                           Min="0" />
+                            <SbNumberField TValue="int"
+                                           @bind-Value="Settings.MaxMessagesPerTenantPerDay"
+                                           Label="@L["MaxMessagesPerTenantPerDay"]"
+                                           Min="0" />
                         </SbStack>
                     </ChildContent>
                 </SbCard>
@@ -43,138 +46,505 @@ else
                 <SbCard>
                     <ChildContent>
                         <SbStack Gap="3">
-                            <SbHeading Level="6">@L["Tier:PublicAuthenticated"]</SbHeading>
-                            <SbNumberField TValue="int" @bind-Value="Settings.PublicAuthenticated.MaxSessionsPerUserPerDay" Label="@L["MaxSessionsPerUserPerDay"]" Min="0" />
-                            <SbNumberField TValue="int" @bind-Value="Settings.PublicAuthenticated.MaxMessagesPerSession" Label="@L["MaxMessagesPerSession"]" Min="0" />
-                            <SbNumberField TValue="int" @bind-Value="Settings.PublicAuthenticated.MaxAttachmentsPerSession" Label="@L["MaxAttachmentsPerSession"]" Min="0" />
-                        </SbStack>
-                    </ChildContent>
-                </SbCard>
-
-                <SbCard>
-                    <ChildContent>
-                        <SbStack Gap="3">
-                            <SbHeading Level="6">@L["Tier:Internal"]</SbHeading>
-                            <SbNumberField TValue="int" @bind-Value="Settings.Internal.MaxSessionsPerUserPerDay" Label="@L["MaxSessionsPerUserPerDay"]" Min="0" />
-                            <SbNumberField TValue="int" @bind-Value="Settings.Internal.MaxMessagesPerSession" Label="@L["MaxMessagesPerSession"]" Min="0" />
-                            <SbNumberField TValue="int" @bind-Value="Settings.Internal.MaxAttachmentsPerSession" Label="@L["MaxAttachmentsPerSession"]" Min="0" />
+                            <SbHeading Level="6">@L["SettingsGroup:Realtime"]</SbHeading>
+                            <SbText Color="SbColor.Muted">@L["SettingsGroup:Realtime:Hint"]</SbText>
+                            <SbCheckbox @bind-Value="Settings.RealtimeEnabled"
+                                        Label="@L["RealtimeEnabled"]" />
                         </SbStack>
                     </ChildContent>
                 </SbCard>
             </SbStack>
         </SbTab>
 
-        <SbTab Label="@L["SettingsTab:RateLimits"]">
-            <SbCard Class="mt-3">
-                <ChildContent>
-                    <SbStack Gap="3">
-                        <SbHeading Level="6">@L["AnonymousRateLimitsTitle"]</SbHeading>
-                        <SbText Color="SbColor.Muted">@L["AnonymousRateLimitsHint"]</SbText>
-                        <SbCheckbox @bind-Value="Settings.PublicAnonymous.EnableIpGuard" Label="@L["EnableIpGuard"]" />
-                        <SbNumberField TValue="int" @bind-Value="Settings.PublicAnonymous.MaxSessionsPerIpPerDay" Label="@L["MaxSessionsPerIpPerDay"]" Min="0" />
-                        <SbNumberField TValue="int" @bind-Value="Settings.PublicAnonymous.MaxMessagesPerIpPerDay" Label="@L["MaxMessagesPerIpPerDay"]" Min="0" />
-                        <SbNumberField TValue="int" @bind-Value="Settings.PublicAnonymous.MaxAiSessionsPerIpPerHour" Label="@L["MaxAiSessionsPerIpPerHour"]" Min="0" />
-                        <SbNumberField TValue="int" @bind-Value="Settings.PublicAnonymous.MaxMessagesBeforeSignupRequired" Label="@L["MaxMessagesBeforeSignupRequired"]" Min="0" />
-                        <SbNumberField TValue="int" @bind-Value="Settings.PublicAnonymous.MaxAiQuestionsBeforeSignupRequired" Label="@L["MaxAiQuestionsBeforeSignupRequired"]" Min="0" />
-                    </SbStack>
-                </ChildContent>
-            </SbCard>
-        </SbTab>
+        @* ============ TAB 2: Attachments ============ *@
+        <SbTab Label="@L["SettingsTab:Attachments"]">
+            <SbStack Gap="3" Class="mt-3">
+                <SbAlert Severity="SbAlertSeverity.Info">
+                    @L["SettingsTab:Attachments:InfoBanner"]
+                </SbAlert>
 
-        <SbTab Label="@L["SettingsTab:AiQuotas"]">
-            <SbCard Class="mt-3">
-                <ChildContent>
-                    <SbStack Gap="3">
-                        <SbCheckbox @bind-Value="Settings.AiEnabled" Label="@L["AiEnabled"]" />
-                        <SbCheckbox @bind-Value="Settings.AiUsageGuardEnabled" Label="@L["AiUsageGuardEnabled"]" />
-                        <SbNumberField TValue="int" @bind-Value="Settings.MaxRepliesPerSession" Label="@L["MaxRepliesPerSession"]" Min="0" />
-                        <SbNumberField TValue="int" @bind-Value="Settings.MaxTokensPerSession" Label="@L["MaxTokensPerSession"]" Min="0" />
-                        <SbNumberField TValue="int" @bind-Value="Settings.MaxTokensPerTenantPerDay" Label="@L["MaxTokensPerTenantPerDay"]" Min="0" />
-                        <SbNumberField TValue="int" @bind-Value="Settings.MaxAnonymousAiSessionsPerHour" Label="@L["MaxAnonymousAiSessionsPerHour"]" Min="0" />
-
-                        @if (ShowWorkspaceSelector)
-                        {
-                            <SbSimpleSelect TValue="string"
-                                            Value="@SelectedWorkspaceName"
-                                            ValueChanged="@((string? value) => SelectedWorkspaceName = value)"
-                                            Label="@L["DefaultWorkspaceName"]">
-                                @foreach (var option in WorkspaceOptions)
-                                {
-                                    <SbSelectOption TValue="string" Value="@option.Name">@(option.DisplayName ?? option.Name)</SbSelectOption>
-                                }
-                            </SbSimpleSelect>
-                            <SbButton Variant="SbButtonVariant.Outline" OnClick="SaveWorkspaceSelectionAsync">
-                                @L["SaveWorkspaceSelection"]
-                            </SbButton>
-                        }
-                        else
-                        {
-                            <SbAlert Severity="SbAlertSeverity.Warning">
-                                @L[WorkspaceSelection?.MessageKey ?? "Chat:AiUnavailable"]
-                            </SbAlert>
-                        }
-
-                        <SbButton Variant="SbButtonVariant.Outline" OnClick="OpenAiManagementWorkspaces">
-                            @L["ManageAiWorkspaces"]
-                        </SbButton>
-                    </SbStack>
-                </ChildContent>
-            </SbCard>
-        </SbTab>
-
-        <SbTab Label="@L["SettingsTab:Retention"]">
-            <SbCard Class="mt-3">
-                <ChildContent>
-                    <SbStack Gap="3">
-                        <SbNumberField TValue="int" @bind-Value="Settings.MessageRetentionDays" Label="@L["MessageRetentionDays"]" Min="0" />
-                        <SbNumberField TValue="int" @bind-Value="Settings.ClosedSessionRetentionDays" Label="@L["ClosedSessionRetentionDays"]" Min="0" />
-                        <SbNumberField TValue="int" @bind-Value="Settings.UsageRecordRetentionDays" Label="@L["UsageRecordRetentionDays"]" Min="0" />
-                    </SbStack>
-                </ChildContent>
-            </SbCard>
-        </SbTab>
-
-        @if (ShowEmailConnectorTab)
-        {
-            <SbTab Label="@L["SettingsTab:EmailConnector"]">
-                <SbCard Class="mt-3">
+                <SbCard>
                     <ChildContent>
                         <SbStack Gap="3">
-                            <SbCheckbox @bind-Value="EmailSettings.Enabled" Label="@L["EmailConnector:Enabled"]" />
-                            <SbTextField @bind-Value="EmailSettings.DefaultFromAddress" Label="@L["EmailConnector:DefaultFromAddress"]" />
-                            <SbTextField @bind-Value="EmailSettings.ReplyToAddress" Label="@L["EmailConnector:ReplyToAddress"]" />
-
-                            <SbHeading Level="6">@L["SettingsTab:EmailConnector"] — Inbound</SbHeading>
-                            <SbSimpleSelect TValue="ChatInboundEmailProtocol"
-                                            @bind-Value="EmailSettings.InboundProtocol"
-                                            Label="@L["EmailConnector:InboundProtocol"]">
-                                <SbSelectOption TValue="ChatInboundEmailProtocol" Value="ChatInboundEmailProtocol.None">None</SbSelectOption>
-                                <SbSelectOption TValue="ChatInboundEmailProtocol" Value="ChatInboundEmailProtocol.Imap">IMAP</SbSelectOption>
-                                <SbSelectOption TValue="ChatInboundEmailProtocol" Value="ChatInboundEmailProtocol.Pop3">POP3</SbSelectOption>
-                            </SbSimpleSelect>
-                            <SbTextField @bind-Value="EmailSettings.InboundHost" Label="@L["EmailConnector:InboundHost"]" />
-                            <SbNumberField TValue="int" @bind-Value="EmailSettings.InboundPort" Label="@L["EmailConnector:InboundPort"]" Min="1" />
-                            <SbCheckbox @bind-Value="EmailSettings.InboundUseSsl" Label="@L["EmailConnector:InboundUseSsl"]" />
-                            <SbTextField @bind-Value="EmailSettings.InboundUserName" Label="@L["EmailConnector:InboundUserName"]" />
-                            @if (EmailSettings.HasInboundPassword)
-                            {
-                                <SbText Color="SbColor.Muted">@L["EmailConnector:PasswordConfigured"]</SbText>
-                            }
-                            <SbTextField @bind-Value="InboundPassword" Label="@L["EmailConnector:InboundPassword"]" InputType="SbInputType.Password" Placeholder="@L["EmailConnector:InboundPasswordHint"]" />
-
-                            <SbHeading Level="6">@L["SettingsTab:EmailConnector"] — SMTP</SbHeading>
-                            <SbTextField @bind-Value="EmailSettings.SmtpHost" Label="@L["EmailConnector:SmtpHost"]" />
-                            <SbNumberField TValue="int" @bind-Value="EmailSettings.SmtpPort" Label="@L["EmailConnector:SmtpPort"]" Min="1" />
-                            <SbCheckbox @bind-Value="EmailSettings.SmtpUseSsl" Label="@L["EmailConnector:SmtpUseSsl"]" />
-                            <SbTextField @bind-Value="EmailSettings.SmtpUserName" Label="@L["EmailConnector:SmtpUserName"]" />
-                            @if (EmailSettings.HasSmtpPassword)
-                            {
-                                <SbText Color="SbColor.Muted">@L["EmailConnector:PasswordConfigured"]</SbText>
-                            }
-                            <SbTextField @bind-Value="SmtpPassword" Label="@L["EmailConnector:SmtpPassword"]" InputType="SbInputType.Password" Placeholder="@L["EmailConnector:SmtpPasswordHint"]" />
+                            <SbHeading Level="6">@L["SettingsGroup:Attachments"]</SbHeading>
+                            <SbCheckbox @bind-Value="Settings.Attachments.EnableFileAttachments"
+                                        Label="@L["EnableFileAttachments"]" />
+                            <SbCheckbox @bind-Value="Settings.Attachments.EnableLocationSharing"
+                                        Label="@L["EnableLocationSharing"]" />
+                            <SbCheckbox @bind-Value="Settings.Attachments.EnableVoiceMessages"
+                                        Label="@L["EnableVoiceMessages"]" />
+                            <SbCheckbox @bind-Value="Settings.Attachments.EnableOperatorGallery"
+                                        Label="@L["EnableOperatorGallery"]" />
                         </SbStack>
                     </ChildContent>
                 </SbCard>
+
+                <SbCard>
+                    <ChildContent>
+                        <SbStack Gap="3">
+                            <SbHeading Level="6">@L["SettingsGroup:AttachmentLimits"]</SbHeading>
+                            <SbNumberField TValue="int"
+                                           @bind-Value="Settings.Attachments.MaxFilesPerMessage"
+                                           Label="@L["MaxFilesPerMessage"]"
+                                           Min="1" />
+                            <SbNumberField TValue="int"
+                                           @bind-Value="Settings.Attachments.MaxVoiceRecordingSeconds"
+                                           Label="@L["MaxVoiceRecordingSeconds"]"
+                                           Min="1" />
+                            <SbText Color="SbColor.Muted">@L["AllowedFileTypes"]</SbText>
+                            <SbCheckbox Value="@IsFileTypeAllowed(ChatAttachmentAllowedFileTypes.Image)"
+                                        ValueChanged="@(value => SetFileTypeAllowed(ChatAttachmentAllowedFileTypes.Image, value))"
+                                        Label="@L["AllowedFileType:Image"]" />
+                            <SbCheckbox Value="@IsFileTypeAllowed(ChatAttachmentAllowedFileTypes.Video)"
+                                        ValueChanged="@(value => SetFileTypeAllowed(ChatAttachmentAllowedFileTypes.Video, value))"
+                                        Label="@L["AllowedFileType:Video"]" />
+                            <SbCheckbox Value="@IsFileTypeAllowed(ChatAttachmentAllowedFileTypes.Document)"
+                                        ValueChanged="@(value => SetFileTypeAllowed(ChatAttachmentAllowedFileTypes.Document, value))"
+                                        Label="@L["AllowedFileType:Document"]" />
+                            <SbCheckbox Value="@IsFileTypeAllowed(ChatAttachmentAllowedFileTypes.Audio)"
+                                        ValueChanged="@(value => SetFileTypeAllowed(ChatAttachmentAllowedFileTypes.Audio, value))"
+                                        Label="@L["AllowedFileType:Audio"]" />
+                            <SbText Variant="SbTextVariant.Caption" Color="SbColor.Muted">
+                                @L["SettingsTab:Attachments:UsagePoliciesHint"]
+                            </SbText>
+                        </SbStack>
+                    </ChildContent>
+                </SbCard>
+            </SbStack>
+        </SbTab>
+
+        @* ============ TAB 3: Usage policies ============ *@
+        <SbTab Label="@L["SettingsTab:UsagePolicies"]">
+            <SbStack Gap="3" Class="mt-3">
+                <SbAlert Severity="SbAlertSeverity.Info">
+                    @L["SettingsTab:UsagePolicies:InfoBanner"]
+                </SbAlert>
+
+                @foreach (var tier in TierEditors)
+                {
+                    <SbCard>
+                        <ChildContent>
+                            <SbStack Gap="3">
+                                <SbHeading Level="6">@L[tier.LabelKey]</SbHeading>
+                                <SbText Color="SbColor.Muted">@L[tier.HintKey]</SbText>
+
+                                <SbNumberField TValue="int"
+                                               @bind-Value="tier.Dto.MaxSessionsPerUserPerDay"
+                                               Label="@L["MaxSessionsPerUserPerDay"]"
+                                               Min="0" />
+                                <SbNumberField TValue="int"
+                                               @bind-Value="tier.Dto.MaxMessagesPerSession"
+                                               Label="@L["MaxMessagesPerSession"]"
+                                               Min="0" />
+                                <SbNumberField TValue="int"
+                                               @bind-Value="tier.Dto.MaxAttachmentsPerSession"
+                                               Label="@L["MaxAttachmentsPerSession"]"
+                                               Min="0" />
+                                <SbNumberField TValue="long"
+                                               @bind-Value="tier.Dto.MaxAttachmentBytesPerSession"
+                                               Label="@L["MaxAttachmentBytesPerSession"]"
+                                               Min="0"
+                                               HelpText="@L["MaxAttachmentBytesPerSession:Hint"]" />
+                                <SbSimpleSelect TValue="LimitExceededAction"
+                                                @bind-Value="tier.Dto.LimitExceededAction"
+                                                Label="@L["LimitExceededAction"]">
+                                    <SbSelectOption TValue="LimitExceededAction"
+                                                    Value="LimitExceededAction.BlockSend">
+                                        @L["LimitExceededAction:BlockSend"]
+                                    </SbSelectOption>
+                                    <SbSelectOption TValue="LimitExceededAction"
+                                                    Value="LimitExceededAction.CloseSession">
+                                        @L["LimitExceededAction:CloseSession"]
+                                    </SbSelectOption>
+                                    <SbSelectOption TValue="LimitExceededAction"
+                                                    Value="LimitExceededAction.RequireAuthentication">
+                                        @L["LimitExceededAction:RequireAuthentication"]
+                                    </SbSelectOption>
+                                </SbSimpleSelect>
+                            </SbStack>
+                        </ChildContent>
+                    </SbCard>
+                }
+            </SbStack>
+        </SbTab>
+
+        @* ============ TAB 3: Rate limits (Anonymous abuse) ============ *@
+        <SbTab Label="@L["SettingsTab:RateLimits"]">
+            <SbStack Gap="3" Class="mt-3">
+                <SbAlert Severity="SbAlertSeverity.Info">
+                    @L["SettingsTab:RateLimits:InfoBanner"]
+                </SbAlert>
+
+                <SbCard>
+                    <ChildContent>
+                        <SbStack Gap="3">
+                            <SbHeading Level="6">@L["AnonymousRateLimitsTitle"]</SbHeading>
+                            <SbText Color="SbColor.Muted">@L["AnonymousRateLimitsHint"]</SbText>
+                            <SbCheckbox @bind-Value="Settings.PublicAnonymous.EnableIpGuard"
+                                        Label="@L["EnableIpGuard"]" />
+                            <SbNumberField TValue="int"
+                                           @bind-Value="Settings.PublicAnonymous.MaxSessionsPerIpPerDay"
+                                           Label="@L["MaxSessionsPerIpPerDay"]"
+                                           Min="0" />
+                            <SbNumberField TValue="int"
+                                           @bind-Value="Settings.PublicAnonymous.MaxMessagesPerIpPerDay"
+                                           Label="@L["MaxMessagesPerIpPerDay"]"
+                                           Min="0" />
+                            <SbNumberField TValue="int"
+                                           @bind-Value="Settings.PublicAnonymous.MaxAiSessionsPerIpPerHour"
+                                           Label="@L["MaxAiSessionsPerIpPerHour"]"
+                                           Min="0" />
+                        </SbStack>
+                    </ChildContent>
+                </SbCard>
+
+                <SbCard>
+                    <ChildContent>
+                        <SbStack Gap="3">
+                            <SbHeading Level="6">@L["SignupGate"]</SbHeading>
+                            <SbText Color="SbColor.Muted">@L["SignupGate:Hint"]</SbText>
+                            <SbNumberField TValue="int"
+                                           @bind-Value="Settings.PublicAnonymous.MaxMessagesBeforeSignupRequired"
+                                           Label="@L["MaxMessagesBeforeSignupRequired"]"
+                                           Min="0" />
+                            <SbNumberField TValue="int"
+                                           @bind-Value="Settings.PublicAnonymous.MaxAiQuestionsBeforeSignupRequired"
+                                           Label="@L["MaxAiQuestionsBeforeSignupRequired"]"
+                                           Min="0" />
+                        </SbStack>
+                    </ChildContent>
+                </SbCard>
+            </SbStack>
+        </SbTab>
+
+        @* ============ TAB 4: AI & quotas ============ *@
+        <SbTab Label="@L["SettingsTab:AiQuotas"]">
+            <SbStack Gap="3" Class="mt-3">
+                <SbAlert Severity="SbAlertSeverity.Info">
+                    @L["SettingsTab:AiQuotas:InfoBanner"]
+                </SbAlert>
+
+                <SbCard>
+                    <ChildContent>
+                        <SbStack Gap="3">
+                            <SbHeading Level="6">@L["SettingsGroup:AiToggles"]</SbHeading>
+                            <SbCheckbox @bind-Value="Settings.AiEnabled"
+                                        Label="@L["AiEnabled"]" />
+                            <SbCheckbox @bind-Value="Settings.AiUsageGuardEnabled"
+                                        Label="@L["AiUsageGuardEnabled"]" />
+                        </SbStack>
+                    </ChildContent>
+                </SbCard>
+
+                <SbCard>
+                    <ChildContent>
+                        <SbStack Gap="3">
+                            <SbHeading Level="6">@L["SettingsGroup:AiQuotas"]</SbHeading>
+                            <SbText Color="SbColor.Muted">@L["SettingsGroup:AiQuotas:Hint"]</SbText>
+                            <SbNumberField TValue="int"
+                                           @bind-Value="Settings.MaxRepliesPerSession"
+                                           Label="@L["MaxRepliesPerSession"]"
+                                           Min="0" />
+                            <SbNumberField TValue="int"
+                                           @bind-Value="Settings.MaxTokensPerSession"
+                                           Label="@L["MaxTokensPerSession"]"
+                                           Min="0" />
+                            <SbNumberField TValue="int"
+                                           @bind-Value="Settings.MaxTokensPerTenantPerDay"
+                                           Label="@L["MaxTokensPerTenantPerDay"]"
+                                           Min="0" />
+                            <SbNumberField TValue="int"
+                                           @bind-Value="Settings.MaxAnonymousAiSessionsPerHour"
+                                           Label="@L["MaxAnonymousAiSessionsPerHour"]"
+                                           Min="0" />
+                        </SbStack>
+                    </ChildContent>
+                </SbCard>
+
+            </SbStack>
+        </SbTab>
+
+        @* ============ TAB 5: Assistants ============ *@
+        @if (ShowAssistantsTab)
+        {
+            <SbTab Label="@L["SettingsTab:Assistants"]">
+                <SbStack Gap="3" Class="mt-3">
+                    <SbAlert Severity="SbAlertSeverity.Info">
+                        @L["SettingsTab:Assistants:InfoBanner"]
+                    </SbAlert>
+
+                    <SbCard>
+                        <ChildContent>
+                            <SbStack Gap="3">
+                                <SbHeading Level="6">@L["SettingsGroup:AiWorkspace"]</SbHeading>
+                                <SbText Color="SbColor.Muted">@L["SettingsGroup:AiWorkspace:Hint"]</SbText>
+
+                                @if (AssistantConfiguration?.IsAvailable == true)
+                                {
+                                    <SbSimpleSelect TValue="string"
+                                                    Value="@SelectedWorkspaceName"
+                                                    ValueChanged="@((string? value) => SelectedWorkspaceName = value)"
+                                                    Label="@L["DefaultWorkspaceName"]">
+                                        @foreach (var option in WorkspaceOptions)
+                                        {
+                                            <SbSelectOption TValue="string" Value="@option.Name">
+                                                @(option.DisplayName ?? option.Name)
+                                            </SbSelectOption>
+                                        }
+                                    </SbSimpleSelect>
+                                }
+                                else
+                                {
+                                    <SbAlert Severity="SbAlertSeverity.Warning">
+                                        @L[AssistantConfiguration?.MessageKey ?? "Chat:AiUnavailable"]
+                                    </SbAlert>
+                                }
+
+                                <SbButton Variant="SbButtonVariant.Outline"
+                                          OnClick="OpenAiManagementWorkspaces">
+                                    <StartIcon><SbIcon Name="external-link" Size="SbSize.Sm" /></StartIcon>
+                                    <ChildContent>@L["ManageAiWorkspaces"]</ChildContent>
+                                </SbButton>
+                            </SbStack>
+                        </ChildContent>
+                    </SbCard>
+
+                    <SbCard>
+                        <ChildContent>
+                            <SbStack Gap="3">
+                                <SbStack Direction="SbStackDirection.Row"
+                                         Gap="2"
+                                         Justify="SbJustify.SpaceBetween"
+                                         Align="SbAlign.Center">
+                                    <div>
+                                        <SbHeading Level="6">@L["SettingsGroup:AssistantMappings"]</SbHeading>
+                                        <SbText Color="SbColor.Muted">@L["SettingsGroup:AssistantMappings:Hint"]</SbText>
+                                    </div>
+                                    <SbButton Variant="SbButtonVariant.Outline" OnClick="OpenCreateAssistantMappingDialog">
+                                        <StartIcon><SbIcon Name="plus" Size="SbSize.Sm" /></StartIcon>
+                                        <ChildContent>@L["AssistantMappings:Add"]</ChildContent>
+                                    </SbButton>
+                                </SbStack>
+
+                                <SbDataGrid TItem="ChatAssistantMappingDto"
+                                            Items="AssistantMappings"
+                                            Striped="true"
+                                            Hoverable="true"
+                                            PageIndex="AssistantMappingsPageIndex"
+                                            PageSize="AssistantMappingsPageSize"
+                                            TotalCount="AssistantMappings.Count"
+                                            PageIndexChanged="OnAssistantMappingsPageIndexChangedAsync"
+                                            KeySelector="@(item => item.Key)">
+                                    <EmptyTemplate>
+                                        <SbAlert Severity="SbAlertSeverity.Info">
+                                            @L["AssistantMappings:Empty"]
+                                        </SbAlert>
+                                    </EmptyTemplate>
+                                    <ChildContent>
+                                        <SbColumn TItem="ChatAssistantMappingDto" Title="@L["Actions"]" Width="120px" Sortable="false">
+                                            <CellTemplate Context="cellContext">
+                                                <SbStack Direction="SbStackDirection.Row" Gap="1">
+                                                    <SbIconButton Size="SbSize.Sm"
+                                                                  AriaLabel="@L["Edit"]"
+                                                                  OnClick="@(() => OpenEditAssistantMappingDialog(cellContext.Item))">
+                                                        <Icon><SbIcon Name="edit" /></Icon>
+                                                    </SbIconButton>
+                                                    <SbIconButton Size="SbSize.Sm"
+                                                                  AriaLabel="@L["AssistantMappings:Remove"]"
+                                                                  Color="SbColor.Danger"
+                                                                  OnClick="@(() => RemoveAssistantMappingAsync(cellContext.Item))">
+                                                        <Icon><SbIcon Name="trash" /></Icon>
+                                                    </SbIconButton>
+                                                </SbStack>
+                                            </CellTemplate>
+                                        </SbColumn>
+                                        <SbColumn TItem="ChatAssistantMappingDto" Field="Key" Title="@L["AssistantMappings:Key"]" Width="140px" />
+                                        <SbColumn TItem="ChatAssistantMappingDto" Field="DisplayName" Title="@L["AssistantMappings:DisplayName"]" />
+                                        <SbColumn TItem="ChatAssistantMappingDto" Field="WorkspaceName" Title="@L["AssistantMappings:WorkspaceName"]" Width="160px" />
+                                        <SbColumn TItem="ChatAssistantMappingDto" Title="@L["AssistantMappings:Enabled"]" Width="100px" Sortable="false">
+                                            <CellTemplate Context="cellContext">
+                                                <SbBadge Color="@(cellContext.Item.IsEnabled ? SbColor.Success : SbColor.Muted)">
+                                                    @(cellContext.Item.IsEnabled ? L["Yes"] : L["No"])
+                                                </SbBadge>
+                                            </CellTemplate>
+                                        </SbColumn>
+                                        <SbColumn TItem="ChatAssistantMappingDto" Title="@L["AssistantMappings:Public"]" Width="120px" Sortable="false">
+                                            <CellTemplate Context="cellContext">
+                                                <SbBadge Color="@(cellContext.Item.IsPublic ? SbColor.Info : SbColor.Muted)">
+                                                    @(cellContext.Item.IsPublic ? L["Yes"] : L["No"])
+                                                </SbBadge>
+                                            </CellTemplate>
+                                        </SbColumn>
+                                        <SbColumn TItem="ChatAssistantMappingDto" Title="@L["Status"]" Width="120px" Sortable="false">
+                                            <CellTemplate Context="cellContext">
+                                                @if (!string.IsNullOrWhiteSpace(cellContext.Item.WorkspaceName) && !cellContext.Item.IsWorkspaceHealthy)
+                                                {
+                                                    <SbTooltip Text="@L["AssistantMappings:WorkspaceUnhealthy"]">
+                                                        <SbBadge Color="SbColor.Warning">@L["AssistantMappings:Unhealthy"]</SbBadge>
+                                                    </SbTooltip>
+                                                }
+                                                else if (!string.IsNullOrWhiteSpace(cellContext.Item.WorkspaceName))
+                                                {
+                                                    <SbBadge Color="SbColor.Success">@L["AssistantMappings:Healthy"]</SbBadge>
+                                                }
+                                            </CellTemplate>
+                                        </SbColumn>
+                                    </ChildContent>
+                                </SbDataGrid>
+
+                                <SbButton Color="SbColor.Primary"
+                                          OnClick="SaveAssistantsAsync"
+                                          Disabled="@IsOperationLoading(LoadingKeys.SaveAssistants)">
+                                    @L["AssistantMappings:Save"]
+                                </SbButton>
+                            </SbStack>
+                        </ChildContent>
+                    </SbCard>
+
+                    <ChatAssistantMappingEditDialog Open="IsAssistantMappingDialogOpen"
+                                                  OpenChanged="OnAssistantMappingDialogOpenChangedAsync"
+                                                  IsCreate="IsCreatingAssistantMapping"
+                                                  Mapping="EditingAssistantMapping"
+                                                  WorkspaceOptions="WorkspaceOptions"
+                                                  ExistingKeys="AssistantMappingExistingKeys"
+                                                  OnSaved="OnAssistantMappingSavedAsync" />
+                </SbStack>
+            </SbTab>
+        }
+
+        @* ============ TAB 6: Retention ============ *@
+        <SbTab Label="@L["SettingsTab:Retention"]">
+            <SbStack Gap="3" Class="mt-3">
+                <SbAlert Severity="SbAlertSeverity.Warning">
+                    @L["SettingsTab:Retention:InfoBanner"]
+                </SbAlert>
+
+                <SbCard>
+                    <ChildContent>
+                        <SbStack Gap="3">
+                            <SbNumberField TValue="int"
+                                           @bind-Value="Settings.MessageRetentionDays"
+                                           Label="@L["MessageRetentionDays"]"
+                                           Min="0"
+                                           HelpText="@L["MessageRetentionDays:Hint"]" />
+                            <SbNumberField TValue="int"
+                                           @bind-Value="Settings.ClosedSessionRetentionDays"
+                                           Label="@L["ClosedSessionRetentionDays"]"
+                                           Min="0"
+                                           HelpText="@L["ClosedSessionRetentionDays:Hint"]" />
+                            <SbNumberField TValue="int"
+                                           @bind-Value="Settings.UsageRecordRetentionDays"
+                                           Label="@L["UsageRecordRetentionDays"]"
+                                           Min="0"
+                                           HelpText="@L["UsageRecordRetentionDays:Hint"]" />
+                        </SbStack>
+                    </ChildContent>
+                </SbCard>
+            </SbStack>
+        </SbTab>
+
+        @* ============ TAB 6: Email connector ============ *@
+        @if (ShowEmailConnectorTab)
+        {
+            <SbTab Label="@L["SettingsTab:EmailConnector"]">
+                <SbStack Gap="3" Class="mt-3">
+                    <SbAlert Severity="SbAlertSeverity.Info">
+                        @L["SettingsTab:EmailConnector:InfoBanner"]
+                    </SbAlert>
+
+                    <SbCard>
+                        <ChildContent>
+                            <SbStack Gap="3">
+                                <SbHeading Level="6">@L["SettingsGroup:EmailGeneral"]</SbHeading>
+                                <SbCheckbox @bind-Value="EmailSettings.Enabled"
+                                            Label="@L["EmailConnector:Enabled"]" />
+                                <SbTextField @bind-Value="EmailSettings.DefaultFromAddress"
+                                             Label="@L["EmailConnector:DefaultFromAddress"]"
+                                             Placeholder="support@example.com" />
+                                <SbTextField @bind-Value="EmailSettings.ReplyToAddress"
+                                             Label="@L["EmailConnector:ReplyToAddress"]" />
+                            </SbStack>
+                        </ChildContent>
+                    </SbCard>
+
+                    <SbCard>
+                        <ChildContent>
+                            <SbStack Gap="3">
+                                <SbHeading Level="6">@L["SettingsGroup:EmailInbound"]</SbHeading>
+                                <SbText Color="SbColor.Muted">@L["SettingsGroup:EmailInbound:Hint"]</SbText>
+                                <SbSimpleSelect TValue="ChatInboundEmailProtocol"
+                                                @bind-Value="EmailSettings.InboundProtocol"
+                                                Label="@L["EmailConnector:InboundProtocol"]">
+                                    <SbSelectOption TValue="ChatInboundEmailProtocol"
+                                                    Value="ChatInboundEmailProtocol.None">
+                                        @L["EmailConnector:Protocol:None"]
+                                    </SbSelectOption>
+                                    <SbSelectOption TValue="ChatInboundEmailProtocol"
+                                                    Value="ChatInboundEmailProtocol.Imap">
+                                        @L["EmailConnector:Protocol:Imap"]
+                                    </SbSelectOption>
+                                    <SbSelectOption TValue="ChatInboundEmailProtocol"
+                                                    Value="ChatInboundEmailProtocol.Pop3">
+                                        @L["EmailConnector:Protocol:Pop3"]
+                                    </SbSelectOption>
+                                </SbSimpleSelect>
+                                <SbTextField @bind-Value="EmailSettings.InboundHost"
+                                             Label="@L["EmailConnector:InboundHost"]" />
+                                <SbNumberField TValue="int"
+                                               @bind-Value="EmailSettings.InboundPort"
+                                               Label="@L["EmailConnector:InboundPort"]"
+                                               Min="1" />
+                                <SbCheckbox @bind-Value="EmailSettings.InboundUseSsl"
+                                            Label="@L["EmailConnector:InboundUseSsl"]" />
+                                <SbTextField @bind-Value="EmailSettings.InboundUserName"
+                                             Label="@L["EmailConnector:InboundUserName"]" />
+                                @if (EmailSettings.HasInboundPassword)
+                                {
+                                    <SbText Color="SbColor.Muted">
+                                        <SbIcon Name="lock" Size="SbSize.Sm" /> @L["EmailConnector:PasswordConfigured"]
+                                    </SbText>
+                                }
+                                <SbTextField @bind-Value="InboundPassword"
+                                             Label="@L["EmailConnector:InboundPassword"]"
+                                             InputType="SbInputType.Password"
+                                             Placeholder="@L["EmailConnector:InboundPasswordHint"]" />
+                            </SbStack>
+                        </ChildContent>
+                    </SbCard>
+
+                    <SbCard>
+                        <ChildContent>
+                            <SbStack Gap="3">
+                                <SbHeading Level="6">@L["SettingsGroup:EmailSmtp"]</SbHeading>
+                                <SbText Color="SbColor.Muted">@L["SettingsGroup:EmailSmtp:Hint"]</SbText>
+                                <SbTextField @bind-Value="EmailSettings.SmtpHost"
+                                             Label="@L["EmailConnector:SmtpHost"]" />
+                                <SbNumberField TValue="int"
+                                               @bind-Value="EmailSettings.SmtpPort"
+                                               Label="@L["EmailConnector:SmtpPort"]"
+                                               Min="1" />
+                                <SbCheckbox @bind-Value="EmailSettings.SmtpUseSsl"
+                                            Label="@L["EmailConnector:SmtpUseSsl"]" />
+                                <SbTextField @bind-Value="EmailSettings.SmtpUserName"
+                                             Label="@L["EmailConnector:SmtpUserName"]" />
+                                @if (EmailSettings.HasSmtpPassword)
+                                {
+                                    <SbText Color="SbColor.Muted">
+                                        <SbIcon Name="lock" Size="SbSize.Sm" /> @L["EmailConnector:PasswordConfigured"]
+                                    </SbText>
+                                }
+                                <SbTextField @bind-Value="SmtpPassword"
+                                             Label="@L["EmailConnector:SmtpPassword"]"
+                                             InputType="SbInputType.Password"
+                                             Placeholder="@L["EmailConnector:SmtpPasswordHint"]" />
+                            </SbStack>
+                        </ChildContent>
+                    </SbCard>
+
+                    <SbAlert Severity="SbAlertSeverity.Info">
+                        @L["EmailConnector:SecretsNote"]
+                    </SbAlert>
+                </SbStack>
             </SbTab>
         }
         else
@@ -182,7 +552,9 @@ else
             <SbTab Label="@L["SettingsTab:EmailConnector"]">
                 <SbCard Class="mt-3">
                     <ChildContent>
-                        <SbAlert Severity="SbAlertSeverity.Info">@L["EmailConnector:FeatureDisabledHint"]</SbAlert>
+                        <SbAlert Severity="SbAlertSeverity.Info">
+                            @L["EmailConnector:FeatureDisabledHint"]
+                        </SbAlert>
                     </ChildContent>
                 </SbCard>
             </SbTab>

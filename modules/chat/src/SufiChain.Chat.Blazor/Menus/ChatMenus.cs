@@ -11,6 +11,5 @@ public static class ChatMenus
     public const string OperatorInbox = GroupName + ".OperatorInbox";
     public const string Sessions = GroupName + ".Sessions";
     public const string Usage = GroupName + ".Usage";
-    public const string AiUsage = GroupName + ".AiUsage";
     public const string Settings = GroupName + ".Settings";
 }

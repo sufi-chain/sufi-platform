@@ -1,7 +1,7 @@
 {
   "culture": "fa",
   "texts": {
-    "DisplayName:Abp.Localization.DefaultLanguage": "زبان پیش فرض",
-    "Description:Abp.Localization.DefaultLanguage": "زبان پیش فرض برنامه"
+    "DisplayName:SufiAbp.Localization.DefaultLanguage": "زبان پیش فرض",
+    "Description:SufiAbp.Localization.DefaultLanguage": "زبان پیش فرض برنامه"
   }
 }

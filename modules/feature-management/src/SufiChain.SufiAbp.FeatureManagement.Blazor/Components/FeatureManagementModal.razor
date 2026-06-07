@@ -1,4 +1,4 @@
-@using Volo.Abp.Validation.StringValues
+@using SufiChain.SufiAbp.Features
 @inherits FeatureManagementComponentBase
 
 <SbDialog Open="_isOpen" OpenChanged="OnDialogOpenChanged" OnCloseButtonClick="HideAsync" Size="SbDialogSize.Lg" Title="@($"{L["Features"]} - {_entityDisplayName}")">
@@ -61,7 +61,7 @@
 											var isDisabled = IsFeatureDisabled(feature);
 
 											<div style="margin-inline-start: @(marginStart)px;">
-												@if (feature.ValueType is ToggleStringValueType)
+												@if (IsToggleFeature(feature))
 												{
 													<SbCheckbox Value="@_toggleValues.GetValueOrDefault(feature.Name)"
 																ValueChanged="@(v => OnToggleFeatureChanged(v, group, feature))"
@@ -72,16 +72,16 @@
 														<small class="text-muted d-block" style="margin-inline-start: 24px;">@feature.Description</small>
 													}
 												}
-												else if (feature.ValueType is SelectionStringValueType selectionType)
+												else if (IsSelectionFeature(feature))
 												{
 													<SbSimpleSelect TValue="string"
 																	Value="@_selectValues.GetValueOrDefault(feature.Name)"
 																	ValueChanged="@((string? v) => _selectValues[feature.Name] = v)"
 																	Label="@GetFeatureDisplayName(feature)"
 																	Disabled="@isDisabled">
-														@if (selectionType.ItemSource?.Items != null)
+														@if (feature.ValueType?.SelectionItems != null)
 														{
-															@foreach (var item in selectionType.ItemSource.Items)
+															@foreach (var item in feature.ValueType.SelectionItems)
 															{
 																<SbSelectOption TValue="string" Value="@item.Value" Text="@GetLocalizedSelectionItemText(item)" />
 															}
@@ -95,8 +95,9 @@
 												else
 												{
 													var featureName = feature.Name;
-													<SbTextField Value="@_textValues.GetValueOrDefault(featureName)"
-																 ValueChanged="@((string? v) => _textValues[featureName] = v)"
+													<SbTextField Value="@GetTextValue(featureName)"
+																 ValueChanged="@((string? v) => SetTextValue(featureName, v))"
+																 ValueExpression="@GetTextValueExpression(featureName)"
 																 Label="@(string.IsNullOrEmpty(GetFeatureDisplayName(feature)) ? null : GetFeatureDisplayName(feature))"
 																 Disabled="@isDisabled" />
 													@if (!string.IsNullOrEmpty(feature.Description))

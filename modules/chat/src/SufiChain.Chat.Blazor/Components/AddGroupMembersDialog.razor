@@ -1,0 +1,53 @@
+@inherits ChatComponentBase
+
+<SbDialog Open="@Open" OpenChanged="@OnOpenChangedAsync" Size="SbDialogSize.Md" Title="@L["AddGroupMembers"]">
+    <ChildContent>
+        <SbStack Gap="3">
+            <SbTextField @bind-Value="FilterText"
+                         @bind-Value:after="OnFilterTextChangedAsync"
+                         Label="@L["Filter"]"
+                         Placeholder="@L["SearchContacts"]"
+                         Clearable="true" />
+
+            @if (IsLoadingContacts)
+            {
+                <SbProgress Type="SbProgressType.Circular" />
+            }
+            else if (!CanSearch)
+            {
+                <SbText Color="SbColor.Muted">@L["SearchContactsMinLength"]</SbText>
+            }
+            else if (!Contacts.Any())
+            {
+                <SbText Color="SbColor.Muted">@L["NoContactsFound"]</SbText>
+            }
+            else
+            {
+                <SbStack Gap="1">
+                    @foreach (var contact in Contacts)
+                    {
+                        <SbButton Variant="@(IsSelected(contact) ? SbButtonVariant.Solid : SbButtonVariant.Outline)"
+                                  OnClick="@(() => ToggleContactAsync(contact))">
+                            @(contact.DisplayName ?? contact.UserName ?? contact.Email)
+                        </SbButton>
+                    }
+                </SbStack>
+            }
+
+            @if (SelectedUserIds.Count > 0)
+            {
+                <SbText Variant="SbTextVariant.BodySmall" Color="SbColor.Muted">
+                    @L["SelectedGroupMembers", SelectedUserIds.Count]
+                </SbText>
+            }
+        </SbStack>
+    </ChildContent>
+    <Footer>
+        <SbStack Direction="SbStackDirection.Row" Gap="2" Justify="SbJustify.End">
+            <SbButton Variant="SbButtonVariant.Outline" OnClick="CloseAsync">@L["Cancel"]</SbButton>
+            <SbButton Color="SbColor.Primary" OnClick="AddMembersAsync" Disabled="@(SelectedUserIds.Count == 0)">
+                @L["AddGroupMembers"]
+            </SbButton>
+        </SbStack>
+    </Footer>
+</SbDialog>

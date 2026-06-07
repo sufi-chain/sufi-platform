@@ -12,7 +12,7 @@ namespace SufiChain.Chat.MongoDB;
 [ConnectionStringName(ChatDbProperties.ConnectionStringName)]
 public class ChatMongoDbContext : AbpMongoDbContext, IChatMongoDbContext
 {
-    public IMongoCollection<ChatSession> Sessions => Collection<ChatSession>();
+    public IMongoCollection<ChatSession> ChatSessions => Collection<ChatSession>();
 
     public IMongoCollection<ChatMessage> Messages => Collection<ChatMessage>();
 

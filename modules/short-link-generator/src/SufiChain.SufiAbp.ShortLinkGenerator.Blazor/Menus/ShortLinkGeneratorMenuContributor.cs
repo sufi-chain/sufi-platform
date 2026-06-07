@@ -34,7 +34,7 @@ public class ShortLinkGeneratorMenuContributor : IMenuContributor
             ShortLinkGeneratorMenus.ShortLinks,
             l["Menu:ShortLinks"],
             url: "/short-link/short-links",
-            icon: "fa fa-link",
+            icon: "link",
             requiredPermissionName: ShortLinkGeneratorPermissions.ShortLinks.Default
         ));
 

@@ -49,15 +49,21 @@ public partial class OUCreateModal : IdentityComponentBase
         }
     }
 
-    private void Hide()
+    private Task Hide()
     {
-        OpenChanged.InvokeAsync(false);
+        return SetOpenAsync(false);
+    }
+
+    private async Task SetOpenAsync(bool open)
+    {
+        Open = open;
+        await OpenChanged.InvokeAsync(open);
     }
 
     private Task OnValidSubmitAsync() => ExecuteWithLoadingAsync(async () =>
     {
         await OrganizationUnitAppService.CreateAsync(_model);
         await OnCreated.InvokeAsync();
-        await OpenChanged.InvokeAsync(false);
+        await SetOpenAsync(false);
     }, LoadingKeys.Create);
 }

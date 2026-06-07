@@ -180,9 +180,14 @@ public partial class WorkspaceCreateModal : AIManagementComponentBase
 
     private async Task CloseModal()
     {
-        Open = false;
-        _wasOpen = false;
-        await OpenChanged.InvokeAsync(Open);
+        await SetOpenAsync(false);
+    }
+
+    private async Task SetOpenAsync(bool open)
+    {
+        Open = open;
+        _wasOpen = open;
+        await OpenChanged.InvokeAsync(open);
     }
 
     private async Task<bool> TryApplyPricingAsync()

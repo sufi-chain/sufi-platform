@@ -2,7 +2,7 @@ using System;
 using System.Threading.Tasks;
 using SufiChain.SufiAbp.Features;
 using Volo.Abp;
-using Volo.Abp.Features;
+using SufiChain.SufiAbp.Features;
 
 namespace SufiChain.SufiAbp.FeatureManagement;
 

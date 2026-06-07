@@ -1,6 +1,6 @@
 @inherits IdentityComponentBase
 
-<SbDialog @bind-Open="Open" OnCloseButtonClick="Hide" Size="SbDialogSize.Md" Title="@L["EditRole"]">
+<SbDialog Open="@Open" OpenChanged="@SetOpenAsync" Size="SbDialogSize.Md" Title="@L["EditRole"]">
     <ChildContent>
         <SbForm Model="_model" OnValidSubmit="OnValidSubmitAsync">
             <SbStack Gap="3">

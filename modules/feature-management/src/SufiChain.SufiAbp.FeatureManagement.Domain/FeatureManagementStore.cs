@@ -5,7 +5,6 @@ using SufiChain.SufiAbp.Caching;
 using Volo.Abp.Caching;
 using Volo.Abp.DependencyInjection;
 using SufiChain.SufiAbp.Features;
-using Volo.Abp.Features;
 using Volo.Abp.Guids;
 using Volo.Abp.Uow;
 

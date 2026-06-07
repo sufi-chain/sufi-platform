@@ -1,6 +1,6 @@
 @inherits AIManagementComponentBase
 
-<SbDialog @bind-Open="Open" Size="SbDialogSize.Md" Title="@(Server == null ? L["NewMCPServer"] : L["EditMCPServer"])" AllowDropdownOverflow="true">
+<SbDialog Open="@Open" OpenChanged="@SetOpenAsync" Size="SbDialogSize.Md" Title="@(Server == null ? L["NewMCPServer"] : L["EditMCPServer"])" AllowDropdownOverflow="true">
     <ChildContent>
         <SbForm>
             <SbStack Direction="SbStackDirection.Column" Gap="3">

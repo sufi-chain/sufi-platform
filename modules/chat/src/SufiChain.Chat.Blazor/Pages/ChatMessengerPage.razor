@@ -1,46 +1,48 @@
 @page "/chat/inbox"
+@page "/chat/inbox/{AssistantKey?}"
 @attribute [Authorize(ChatPermissions.Inbox.User)]
 @inherits ChatMessengerHostBase
 
 <div class="chat-messenger-page">
-    <SbStack Direction="SbStackDirection.Row" Gap="2" Justify="SbJustify.End" Class="chat-messenger-page__actions">
-        @if (CanCreateDirectMessages)
-        {
-            <SbButton Variant="SbButtonVariant.Outline" OnClick="OpenNewDirectMessageDialogAsync">
-                @L["Menu:NewDirectMessage"]
-            </SbButton>
-        }
-
-        @if (CanCreateGroups)
-        {
-            <SbButton Variant="SbButtonVariant.Outline" OnClick="OpenNewGroupDialogAsync">
-                @L["Menu:NewGroupChat"]
-            </SbButton>
-        }
-
-        @if (ShowStartAiChat)
-        {
-            <SbButton Color="SbColor.Primary" OnClick="StartAiChatAsync">
-                @L["Menu:StartAiChat"]
-            </SbButton>
-        }
-        else if (!string.IsNullOrWhiteSpace(AssistantUnavailableMessageKey))
-        {
-            <SbTooltip Text="@L[AssistantUnavailableMessageKey]">
-                <SbButton Color="SbColor.Primary" Disabled="true">
-                    @L["Menu:StartAiChat"]
-                </SbButton>
-            </SbTooltip>
-        }
-    </SbStack>
-
     <ChatMessengerShell State="MessengerState"
                         SignInUrl="@GetSignInUrl()"
                         OnSessionSelected="OnSessionSelectedAsync"
                         OnSendMessage="OnSendMessageAsync">
+        <ContextPanelHeader>
+            <ChatInboxQuickActions CanCreateDirectMessages="CanCreateDirectMessages"
+                                   CanCreateGroups="CanCreateGroups"
+                                   ShowStartAiChat="ShowStartAiChat"
+                                   AssistantOptions="AssistantPickerOptions"
+                                   AssistantUnavailableMessageKey="AssistantUnavailableMessageKey"
+                                   OnNewDirectMessage="OpenNewDirectMessageDialogAsync"
+                                   OnNewGroup="OpenNewGroupDialogAsync"
+                                   OnStartAiChat="StartAiChatAsync"
+                                   OnStartAssistantChat="StartAssistantChatAsync" />
+        </ContextPanelHeader>
         <ListHeader>
-            <SbHeading Level="6">@L["Messenger:Conversations"]</SbHeading>
+            <div class="chat-messenger-page__list-header">
+                <SbHeading Level="6">@L["Messenger:Conversations"]</SbHeading>
+                <div class="chat-messenger-page__mobile-actions">
+                    <ChatInboxQuickActions CanCreateDirectMessages="CanCreateDirectMessages"
+                                           CanCreateGroups="CanCreateGroups"
+                                           ShowStartAiChat="ShowStartAiChat"
+                                           AssistantOptions="AssistantPickerOptions"
+                                           AssistantUnavailableMessageKey="AssistantUnavailableMessageKey"
+                                           OnNewDirectMessage="OpenNewDirectMessageDialogAsync"
+                                           OnNewGroup="OpenNewGroupDialogAsync"
+                                           OnStartAiChat="StartAiChatAsync"
+                                           OnStartAssistantChat="StartAssistantChatAsync" />
+                </div>
+            </div>
         </ListHeader>
+        <HeaderActions>
+            @if (CanManageGroupMembers)
+            {
+                <SbButton Variant="SbButtonVariant.Outline" OnClick="OpenAddGroupMembersDialogAsync">
+                    @L["AddGroupMembers"]
+                </SbButton>
+            }
+        </HeaderActions>
     </ChatMessengerShell>
 </div>
 
@@ -51,3 +53,9 @@
 <NewGroupChatDialog Open="IsNewGroupDialogOpen"
                     OpenChanged="@(value => IsNewGroupDialogOpen = value)"
                     OnCreated="OnGroupCreatedAsync" />
+
+<AddGroupMembersDialog Open="IsAddGroupMembersDialogOpen"
+                       OpenChanged="@(value => IsAddGroupMembersDialogOpen = value)"
+                       SessionId="MessengerState.SelectedSessionId"
+                       ExistingMemberUserIds="GetExistingGroupMemberUserIds()"
+                       OnMembersAdded="OnGroupMembersAddedAsync" />

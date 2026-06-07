@@ -56,6 +56,20 @@ public class ChatAssistantAvailabilityAppService : ChatAppService, IChatAssistan
         }
 
         var defaultWorkspaceName = await WorkspaceSelectionStore.GetDefaultWorkspaceNameAsync();
+        var assistants = await BuildAssistantPickerOptionsAsync(defaultWorkspaceName);
+
+        if (assistants.Count > 0)
+        {
+            return new ChatAssistantAvailabilityDto
+            {
+                IsAvailable = true,
+                RequiredFeatures = requiredFeatures,
+                EnabledFeatures = enabledFeatures,
+                DefaultWorkspaceName = defaultWorkspaceName,
+                Assistants = assistants
+            };
+        }
+
         if (string.IsNullOrWhiteSpace(defaultWorkspaceName))
         {
             return Unavailable("DefaultWorkspaceMissing", "Chat:AiUnavailable", requiredFeatures);
@@ -71,8 +85,46 @@ public class ChatAssistantAvailabilityAppService : ChatAppService, IChatAssistan
             IsAvailable = true,
             RequiredFeatures = requiredFeatures,
             EnabledFeatures = enabledFeatures,
-            DefaultWorkspaceName = defaultWorkspaceName
+            DefaultWorkspaceName = defaultWorkspaceName,
+            Assistants = new List<ChatAssistantPickerOptionDto>()
         };
+    }
+
+    protected virtual async Task<List<ChatAssistantPickerOptionDto>> BuildAssistantPickerOptionsAsync(string? defaultWorkspaceName)
+    {
+        var mappings = await WorkspaceSelectionStore.GetAssistantMappingsAsync();
+        var enabledMappings = mappings
+            .Where(ChatAssistantMappings.IsMessengerVisible)
+            .Where(item => !string.IsNullOrWhiteSpace(item.Key))
+            .ToList();
+
+        if (enabledMappings.Count == 0)
+        {
+            return new List<ChatAssistantPickerOptionDto>();
+        }
+
+        var options = new List<ChatAssistantPickerOptionDto>();
+        foreach (var mapping in enabledMappings)
+        {
+            if (!await WorkspaceProvider.IsHealthyAsync(mapping.WorkspaceName))
+            {
+                continue;
+            }
+
+            options.Add(new ChatAssistantPickerOptionDto
+            {
+                Key = mapping.Key,
+                DisplayName = mapping.DisplayName,
+                WorkspaceName = mapping.WorkspaceName,
+                IsDefault = !string.IsNullOrWhiteSpace(defaultWorkspaceName) &&
+                            mapping.WorkspaceName.Equals(defaultWorkspaceName, StringComparison.OrdinalIgnoreCase)
+            });
+        }
+
+        return options
+            .OrderByDescending(item => item.IsDefault)
+            .ThenBy(item => item.DisplayName, StringComparer.OrdinalIgnoreCase)
+            .ToList();
     }
 
     protected virtual ChatAssistantAvailabilityDto Unavailable(

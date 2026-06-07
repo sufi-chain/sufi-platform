@@ -13,6 +13,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\SufiChain.SufiAbp.Localization\SufiChain.SufiAbp.Localization.csproj" />
     <PackageReference Include="Volo.Abp.Features" Version="$(AbpVersion)"/>
   </ItemGroup>
 

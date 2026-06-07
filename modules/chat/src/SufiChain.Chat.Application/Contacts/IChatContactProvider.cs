@@ -1,5 +1,4 @@
 using SufiChain.SufiAbp.Application.Dtos;
-using Volo.Abp.DependencyInjection;
 
 namespace SufiChain.Chat.Contacts;
 
@@ -8,7 +7,7 @@ public interface IChatContactProvider
     Task<PagedResultDto<ChatContactDto>> SearchAsync(SearchChatContactsInput input);
 }
 
-public class NullChatContactProvider : IChatContactProvider, ITransientDependency
+public class NullChatContactProvider : IChatContactProvider
 {
     public virtual Task<PagedResultDto<ChatContactDto>> SearchAsync(SearchChatContactsInput input)
     {

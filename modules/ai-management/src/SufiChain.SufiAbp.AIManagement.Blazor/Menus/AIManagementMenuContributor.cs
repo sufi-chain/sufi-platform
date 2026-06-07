@@ -30,16 +30,17 @@ public class AIManagementMenuContributor : IMenuContributor
             return;
         }
 
-        var administration = context.Menu.GetAdministration();
-
         var aiManagementMenu = new ApplicationMenuItem(
             AIManagementMenus.GroupName,
             l["Menu:AIManagement"],
-            icon: "brain",
+            icon: "sparkles",
             order: 30
-        ).RequirePermissions(AIManagementPermissions.Workspaces.Default);
+        )
+        {
+            IsCollapsed = false
+        }.RequirePermissions(AIManagementPermissions.Workspaces.Default);
 
-        administration.AddItem(aiManagementMenu);
+        context.Menu.AddItem(aiManagementMenu);
 
         if (await featureChecker.IsEnabledAsync(SufiAbpAIFeatures.Workspaces))
         {

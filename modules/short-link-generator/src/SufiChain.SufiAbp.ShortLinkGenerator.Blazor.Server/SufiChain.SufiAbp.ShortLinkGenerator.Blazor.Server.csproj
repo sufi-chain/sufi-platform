@@ -7,10 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="../../../../framework/SufiChain.SufiAbp.AspNetCore.Components.Server.Theming/SufiChain.SufiAbp.AspNetCore.Components.Server.Theming.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
+    <ProjectReference Include="../../../../framework/SufiChain.SufiAbp.Core/SufiChain.SufiAbp.Core.csproj" />
     <ProjectReference Include="..\SufiChain.SufiAbp.ShortLinkGenerator.Blazor\SufiChain.SufiAbp.ShortLinkGenerator.Blazor.csproj"/>
   </ItemGroup>
 

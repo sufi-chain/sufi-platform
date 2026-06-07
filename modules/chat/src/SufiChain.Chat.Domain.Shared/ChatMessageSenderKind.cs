@@ -5,5 +5,5 @@ public enum ChatMessageSenderKind
     Visitor,
     Operator,
     System,
-    Ai
+    Assistant
 }

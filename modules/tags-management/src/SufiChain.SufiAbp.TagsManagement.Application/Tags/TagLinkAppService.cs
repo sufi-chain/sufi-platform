@@ -8,7 +8,7 @@ using SufiChain.SufiAbp.TagsManagement.Permissions;
 using SufiChain.SufiAbp.TagsManagement.Settings;
 using Volo.Abp;
 using Volo.Abp.Application.Services;
-using Volo.Abp.Features;
+using SufiChain.SufiAbp.Features;
 
 namespace SufiChain.SufiAbp.TagsManagement.Tags;
 

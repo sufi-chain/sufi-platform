@@ -1,7 +1,7 @@
 {
   "culture": "sl",
   "texts": {
-    "DisplayName:Abp.Localization.DefaultLanguage": "Privzeti jezik",
-    "Description:Abp.Localization.DefaultLanguage": "Privzeti jezik aplikacije."
+    "DisplayName:SufiAbp.Localization.DefaultLanguage": "Privzeti jezik",
+    "Description:SufiAbp.Localization.DefaultLanguage": "Privzeti jezik aplikacije."
   }
 }

@@ -4,17 +4,18 @@
     <ChildContent>
         <SbStack Gap="3">
             <SbTextField @bind-Value="FilterText"
+                         @bind-Value:after="OnFilterTextChangedAsync"
                          Label="@L["Filter"]"
                          Placeholder="@L["SearchContacts"]"
                          Clearable="true" />
 
-            <SbButton Color="SbColor.Primary" OnClick="SearchAsync">
-                @L["Search"]
-            </SbButton>
-
             @if (IsLoading)
             {
                 <SbProgress Type="SbProgressType.Circular" />
+            }
+            else if (!CanSearch)
+            {
+                <SbText Color="SbColor.Muted">@L["SearchContactsMinLength"]</SbText>
             }
             else if (!Contacts.Any())
             {

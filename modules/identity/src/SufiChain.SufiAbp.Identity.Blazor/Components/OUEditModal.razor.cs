@@ -35,9 +35,15 @@ public partial class OUEditModal : IdentityComponentBase
         }
     }
 
-    private void Hide()
+    private Task Hide()
     {
-        OpenChanged.InvokeAsync(false);
+        return SetOpenAsync(false);
+    }
+
+    private async Task SetOpenAsync(bool open)
+    {
+        Open = open;
+        await OpenChanged.InvokeAsync(open);
     }
 
     private Task OnValidSubmitAsync() => ExecuteWithLoadingAsync(async () =>
@@ -46,6 +52,6 @@ public partial class OUEditModal : IdentityComponentBase
 
         await OrganizationUnitAppService.UpdateAsync(OrganizationUnit.Id, _model);
         await OnUpdated.InvokeAsync();
-        await OpenChanged.InvokeAsync(false);
+        await SetOpenAsync(false);
     }, LoadingKeys.Save);
 }

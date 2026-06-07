@@ -457,6 +457,8 @@
     "SearchFiles": "Buscar archivos...",
     "Structure:AIManagement:DisplayName": "Archivos de Gestión de IA",
     "Structure:AIManagement:Description": "Cargar archivos para espacios de trabajo de IA: imágenes, audio, video y documentos. Admite todos los tipos de archivos comunes relacionados con IA con generación automática de miniaturas y conversión WebP.",
+    "Structure:ChatAttachments:DisplayName": "Adjuntos de chat",
+    "Structure:ChatAttachments:Description": "Archivos adjuntos a los mensajes de chat, delimitados por sesión.",
     "Feature:FileManager.Enable": "Administrador de archivos",
     "Feature:FileManager.Enable.Description": "Habilita el módulo Administrador de archivos para esta edición.",
     "Feature:FileManager.FileItems": "Elementos de archivo",

@@ -108,9 +108,14 @@ public partial class MCPServerModal
     
     private async Task CloseAsync()
     {
-        Open = false;
-        await OpenChanged.InvokeAsync(Open);
+        await SetOpenAsync(false);
         ResetForm();
+    }
+
+    private async Task SetOpenAsync(bool open)
+    {
+        Open = open;
+        await OpenChanged.InvokeAsync(open);
     }
     
     private void ResetForm()

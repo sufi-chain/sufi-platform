@@ -1,7 +1,7 @@
 {
   "culture": "fi",
   "texts": {
-    "DisplayName:Abp.Localization.DefaultLanguage": "Oletuskieli",
-    "Description:Abp.Localization.DefaultLanguage": "Sovelluksen oletuskieli."
+    "DisplayName:SufiAbp.Localization.DefaultLanguage": "Oletuskieli",
+    "Description:SufiAbp.Localization.DefaultLanguage": "Sovelluksen oletuskieli."
   }
 }

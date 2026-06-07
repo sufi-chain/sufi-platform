@@ -20,6 +20,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\..\framework\SufiChain.SufiAbp.UI.Blazor\SufiChain.SufiAbp.UI.Blazor.csproj" />
+    <ProjectReference Include="..\..\..\file-manager\src\SufiChain.SufiAbp.FileManager.Blazor\SufiChain.SufiAbp.FileManager.Blazor.csproj" />
     <ProjectReference Include="..\SufiChain.Chat.Application.Contracts\SufiChain.Chat.Application.Contracts.csproj" />
     <ProjectReference Include="..\SufiChain.Chat.Blazor.Public\SufiChain.Chat.Blazor.Public.csproj" />
     <ProjectReference Include="..\SufiChain.Chat.Domain.Shared\SufiChain.Chat.Domain.Shared.csproj" />

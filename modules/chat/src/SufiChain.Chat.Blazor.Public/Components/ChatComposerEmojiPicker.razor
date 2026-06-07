@@ -1,0 +1,24 @@
+@inherits ChatPublicComponentBase
+
+<div @ref="_anchorRef" class="chat-composer-popover-anchor">
+    <SbIconButton Size="SbSize.Sm"
+                  Color="SbColor.Default"
+                  Class="chat-composer-emoji__trigger"
+                  Title="@L["Composer:Emoji"]"
+                  AriaLabel="@L["Composer:Emoji"]"
+                  OnClick="ToggleAsync">
+        <Icon><span class="chat-composer-emoji__trigger-glyph" aria-hidden="true">😊</span></Icon>
+    </SbIconButton>
+
+    @if (_isOpen)
+    {
+        <div @ref="_popoverRef" class="chat-composer-popover chat-composer-popover--emoji chat-composer-popover--overlay">
+            @foreach (var emoji in _emojis)
+            {
+                <SbButton Variant="SbButtonVariant.Solid" Size="SbSize.Sm" OnClick="@(() => SelectAsync(emoji))" Class="chat-composer-emoji__item">
+                    @emoji
+                </SbButton>
+            }
+        </div>
+    }
+</div>

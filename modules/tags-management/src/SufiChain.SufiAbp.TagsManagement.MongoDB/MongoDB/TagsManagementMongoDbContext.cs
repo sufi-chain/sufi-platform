@@ -15,15 +15,6 @@ public class TagsManagementMongoDbContext : AbpMongoDbContext, ITagsManagementMo
     {
         base.CreateModel(modelBuilder);
 
-        modelBuilder.Entity<Tags.Tag>(b =>
-        {
-            b.CollectionName = TagsManagementDbProperties.DbTablePrefix + "Tags";
-
-        });
-
-        modelBuilder.Entity<TagLink>(b =>
-        {
-            b.CollectionName = TagsManagementDbProperties.DbTablePrefix + "TagLinks";
-        });
+        modelBuilder.ConfigureSufiAbpTagsManagement();
     }
 }

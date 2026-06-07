@@ -1,7 +1,7 @@
 {
   "culture": "sk",
   "texts": {
-    "DisplayName:Abp.Localization.DefaultLanguage": "Predvolený jazyk",
-    "Description:Abp.Localization.DefaultLanguage": "Predvolený jazyk aplikácie."
+    "DisplayName:SufiAbp.Localization.DefaultLanguage": "Predvolený jazyk",
+    "Description:SufiAbp.Localization.DefaultLanguage": "Predvolený jazyk aplikácie."
   }
 }

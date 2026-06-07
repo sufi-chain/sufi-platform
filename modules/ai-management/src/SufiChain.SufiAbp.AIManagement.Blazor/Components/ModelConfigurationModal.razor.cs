@@ -198,8 +198,14 @@ public partial class ModelConfigurationModal : AIManagementComponentBase
 
     private async Task CloseModalAsync()
     {
-        _wasOpen = false;
-        await OpenChanged.InvokeAsync(false);
+        await SetOpenAsync(false);
+    }
+
+    private async Task SetOpenAsync(bool open)
+    {
+        Open = open;
+        _wasOpen = open;
+        await OpenChanged.InvokeAsync(open);
     }
 
     private bool TryApplyOpenAIApiMode()

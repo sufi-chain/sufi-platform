@@ -4,7 +4,7 @@ using Microsoft.Extensions.Options;
 using SufiChain.SufiAbp.Application.Services;
 using Volo.Abp;
 using Volo.Abp.DependencyInjection;
-using Volo.Abp.Features;
+using SufiChain.SufiAbp.Features;
 
 namespace SufiChain.SufiAbp.FeatureManagement;
 
@@ -14,6 +14,10 @@ namespace SufiChain.SufiAbp.FeatureManagement;
 public class FeatureAppService : SufiAbpApplicationService, IFeatureAppService
 {
     public const string HostOnlyPropertyKey = "HostOnly";
+    private const string ToggleValueTypeName = "TOGGLE";
+    private const string SelectionValueTypeName = "SELECTION";
+    private const string ToggleStringValueTypeName = "ToggleStringValueType";
+    private const string SelectionStringValueTypeName = "SelectionStringValueType";
 
     protected FeatureManagementOptions Options { get; }
     protected IFeatureManager FeatureManager { get; }
@@ -221,7 +225,7 @@ public class FeatureAppService : SufiAbpApplicationService, IFeatureAppService
             Name = featureDefinition.Name,
             DisplayName = featureDefinition.DisplayName?.Localize(StringLocalizerFactory),
             Description = featureDefinition.Description?.Localize(StringLocalizerFactory),
-            ValueType = featureDefinition.ValueType,
+            ValueType = CreateValueTypeDto(featureDefinition),
             ParentName = featureDefinition.Parent?.Name,
             Value = featureNameValueWithGrantedProvider.Value,
             Provider = new FeatureProviderDto
@@ -230,5 +234,62 @@ public class FeatureAppService : SufiAbpApplicationService, IFeatureAppService
                 Key = featureNameValueWithGrantedProvider.Provider?.Key
             }
         };
+    }
+
+    private static FeatureValueTypeDto CreateValueTypeDto(FeatureDefinition featureDefinition)
+    {
+        var valueType = new FeatureValueTypeDto
+        {
+            Name = NormalizeValueTypeName(featureDefinition, featureDefinition.DefaultValue)
+        };
+
+        if (string.Equals(valueType.Name, SelectionValueTypeName, StringComparison.OrdinalIgnoreCase))
+        {
+            valueType.SelectionItems = SelectionStringValueItemAccessor.GetItems(featureDefinition.ValueType)
+                .Select(item => new FeatureSelectionItemDto
+                {
+                    Value = SelectionStringValueItemAccessor.GetValue(item),
+                    DisplayTextResourceName = SelectionStringValueItemAccessor.GetDisplayTextResourceName(item),
+                    DisplayTextName = SelectionStringValueItemAccessor.GetDisplayTextName(item)
+                })
+                .ToList();
+        }
+
+        return valueType;
+    }
+
+    private static string NormalizeValueTypeName(
+        FeatureDefinition featureDefinition,
+        string? defaultValue)
+    {
+        if (featureDefinition.ValueType == null)
+        {
+            return IsBooleanValue(defaultValue) ? ToggleValueTypeName : string.Empty;
+        }
+
+        var valueTypeName = featureDefinition.ValueTypeName;
+        var runtimeTypeName = featureDefinition.ValueTypeRuntimeName;
+
+        if (string.Equals(valueTypeName, ToggleValueTypeName, StringComparison.OrdinalIgnoreCase) ||
+            string.Equals(valueTypeName, ToggleStringValueTypeName, StringComparison.OrdinalIgnoreCase) ||
+            string.Equals(runtimeTypeName, ToggleStringValueTypeName, StringComparison.OrdinalIgnoreCase))
+        {
+            return ToggleValueTypeName;
+        }
+
+        if (string.Equals(valueTypeName, SelectionValueTypeName, StringComparison.OrdinalIgnoreCase) ||
+            string.Equals(valueTypeName, SelectionStringValueTypeName, StringComparison.OrdinalIgnoreCase) ||
+            string.Equals(runtimeTypeName, SelectionStringValueTypeName, StringComparison.OrdinalIgnoreCase))
+        {
+            return SelectionValueTypeName;
+        }
+
+        return IsBooleanValue(defaultValue) ? ToggleValueTypeName : valueTypeName;
+    }
+
+    private static bool IsBooleanValue(string? value)
+    {
+        return string.Equals(value, "true", StringComparison.OrdinalIgnoreCase) ||
+               string.Equals(value, "false", StringComparison.OrdinalIgnoreCase);
     }
 }

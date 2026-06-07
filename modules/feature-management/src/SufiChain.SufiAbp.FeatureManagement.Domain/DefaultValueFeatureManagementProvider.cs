@@ -1,6 +1,6 @@
 using Volo.Abp;
 using Volo.Abp.DependencyInjection;
-using Volo.Abp.Features;
+using SufiChain.SufiAbp.Features;
 
 namespace SufiChain.SufiAbp.FeatureManagement;
 
@@ -25,11 +25,11 @@ public class DefaultValueFeatureManagementProvider : IFeatureManagementProvider,
 
     public virtual Task SetAsync(FeatureDefinition feature, string value, string providerKey)
     {
-        throw new AbpException($"Can not set default value of a feature. It is only possible while defining the feature in a {typeof(IFeatureDefinitionProvider)} implementation.");
+        throw new AbpException($"Can not set default value of a feature. It is only possible while defining the feature in a {typeof(FeatureDefinitionProvider)} implementation.");
     }
 
     public virtual Task ClearAsync(FeatureDefinition feature, string providerKey)
     {
-        throw new AbpException($"Can not clear default value of a feature. It is only possible while defining the feature in a {typeof(IFeatureDefinitionProvider)} implementation.");
+        throw new AbpException($"Can not clear default value of a feature. It is only possible while defining the feature in a {typeof(FeatureDefinitionProvider)} implementation.");
     }
 }

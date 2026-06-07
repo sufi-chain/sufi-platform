@@ -1,7 +1,7 @@
 using Microsoft.Extensions.Configuration;
 using Volo.Abp;
 using Volo.Abp.DependencyInjection;
-using Volo.Abp.Features;
+using SufiChain.SufiAbp.Features;
 
 namespace SufiChain.SufiAbp.FeatureManagement;
 

@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Components;
 using SufiChain.Chat.Permissions;
 using SufiChain.Chat.Sessions;
+using SufiChain.SufiBlazor.Components;
 using SufiChain.SufiBlazor.Contracts.Data;
 
 namespace SufiChain.Chat.Blazor.Pages.Admin;
@@ -27,6 +28,18 @@ public partial class ChatSessionsPage : ChatComponentBase
 
     protected bool IsLoading { get; set; }
 
+    protected ChatSessionStatus? StatusFilter { get; set; }
+
+    protected ConversationKind? ConversationKindFilter { get; set; }
+
+    protected AccessMode? AccessModeFilter { get; set; }
+
+    protected static IReadOnlyList<ConversationKind> AllConversationKinds { get; } =
+        Enum.GetValues<ConversationKind>();
+
+    protected static IReadOnlyList<AccessMode> AllAccessModes { get; } =
+        Enum.GetValues<AccessMode>();
+
     protected override async Task OnInitializedAsync()
     {
         await LoadSessionsAsync();
@@ -43,7 +56,10 @@ public partial class ChatSessionsPage : ChatComponentBase
                 SkipCount = PageIndex * PageSize,
                 Sorting = string.IsNullOrWhiteSpace(CurrentSorting)
                     ? nameof(ChatSessionListDto.LastMessageTime) + " DESC"
-                    : CurrentSorting
+                    : CurrentSorting,
+                Status = StatusFilter,
+                ConversationKind = ConversationKindFilter,
+                AccessMode = AccessModeFilter
             });
 
             Sessions = result.Items;
@@ -57,6 +73,33 @@ public partial class ChatSessionsPage : ChatComponentBase
         {
             IsLoading = false;
         }
+    }
+
+    protected virtual Task RefreshAsync()
+    {
+        PageIndex = 0;
+        return LoadSessionsAsync();
+    }
+
+    protected virtual Task OnStatusFilterChangedAsync(ChatSessionStatus? value)
+    {
+        StatusFilter = value;
+        PageIndex = 0;
+        return LoadSessionsAsync();
+    }
+
+    protected virtual Task OnConversationKindFilterChangedAsync(ConversationKind? value)
+    {
+        ConversationKindFilter = value;
+        PageIndex = 0;
+        return LoadSessionsAsync();
+    }
+
+    protected virtual Task OnAccessModeFilterChangedAsync(AccessMode? value)
+    {
+        AccessModeFilter = value;
+        PageIndex = 0;
+        return LoadSessionsAsync();
     }
 
     protected virtual async Task OnPageIndexChangedAsync(int pageIndex)
@@ -79,4 +122,19 @@ public partial class ChatSessionsPage : ChatComponentBase
     {
         NavigationManager.NavigateTo($"/admin/chat/sessions/{sessionId}");
     }
+
+    protected static SbColor GetStatusChipColor(ChatSessionStatus status) => status switch
+    {
+        ChatSessionStatus.Open => SbColor.Success,
+        ChatSessionStatus.Closed => SbColor.Muted,
+        _ => SbColor.Default
+    };
+
+    protected static SbColor GetAccessModeChipColor(AccessMode mode) => mode switch
+    {
+        AccessMode.PublicAnonymous => SbColor.Warning,
+        AccessMode.PublicAuthenticated => SbColor.Info,
+        AccessMode.Internal => SbColor.Primary,
+        _ => SbColor.Default
+    };
 }

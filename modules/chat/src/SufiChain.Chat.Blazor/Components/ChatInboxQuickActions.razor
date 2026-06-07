@@ -1,0 +1,60 @@
+@inherits ChatComponentBase
+
+<SbStack Gap="2" Class="@($"chat-inbox-quick-actions {Class}")">
+    @if (CanCreateDirectMessages)
+    {
+        <SbButton Variant="SbButtonVariant.Outline"
+                  FullWidth="true"
+                  OnClick="OnNewDirectMessage">
+            @L["Menu:NewDirectMessage"]
+        </SbButton>
+    }
+
+    @if (CanCreateGroups)
+    {
+        <SbButton Variant="SbButtonVariant.Outline"
+                  FullWidth="true"
+                  OnClick="OnNewGroup">
+            @L["Menu:NewGroupChat"]
+        </SbButton>
+    }
+
+    @if (ShowStartAiChat)
+    {
+        @if (AssistantOptions.Count > 1)
+        {
+            @foreach (var assistant in AssistantOptions)
+            {
+                <SbButton Color="SbColor.Primary"
+                          FullWidth="true"
+                          OnClick="@(() => StartAssistantAsync(assistant.Key))">
+                    @assistant.DisplayName
+                </SbButton>
+            }
+        }
+        else if (AssistantOptions.Count == 1)
+        {
+            <SbButton Color="SbColor.Primary"
+                      FullWidth="true"
+                      OnClick="@(() => StartAssistantAsync(AssistantOptions[0].Key))">
+                @AssistantOptions[0].DisplayName
+            </SbButton>
+        }
+        else
+        {
+            <SbButton Color="SbColor.Primary"
+                      FullWidth="true"
+                      OnClick="OnStartAiChat">
+                @L["Menu:StartAiChat"]
+            </SbButton>
+        }
+    }
+    else if (!string.IsNullOrWhiteSpace(AssistantUnavailableMessageKey))
+    {
+        <SbTooltip Text="@L[AssistantUnavailableMessageKey]">
+            <SbButton Color="SbColor.Primary" FullWidth="true" Disabled="true">
+                @L["Menu:StartAiChat"]
+            </SbButton>
+        </SbTooltip>
+    }
+</SbStack>

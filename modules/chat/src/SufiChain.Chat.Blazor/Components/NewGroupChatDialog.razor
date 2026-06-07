@@ -6,15 +6,51 @@
             <SbTextField @bind-Value="Input.Title"
                          Label="@L["GroupTitle"]"
                          Required="true" />
-            <SbText Variant="SbTextVariant.BodySmall" Color="SbColor.Muted">
-                @L["NewGroupHint"]
-            </SbText>
+
+            <SbTextField @bind-Value="FilterText"
+                         @bind-Value:after="OnFilterTextChangedAsync"
+                         Label="@L["Filter"]"
+                         Placeholder="@L["SearchContacts"]"
+                         Clearable="true" />
+
+            @if (IsLoadingContacts)
+            {
+                <SbProgress Type="SbProgressType.Circular" />
+            }
+            else if (!CanSearch)
+            {
+                <SbText Color="SbColor.Muted">@L["SearchContactsMinLength"]</SbText>
+            }
+            else if (!Contacts.Any())
+            {
+                <SbText Color="SbColor.Muted">@L["NoContactsFound"]</SbText>
+            }
+            else
+            {
+                <SbText Variant="SbTextVariant.BodySmall" Color="SbColor.Muted">@L["SelectGroupMembers"]</SbText>
+                <SbStack Gap="1">
+                    @foreach (var contact in Contacts)
+                    {
+                        <SbButton Variant="@(IsSelected(contact) ? SbButtonVariant.Solid : SbButtonVariant.Outline)"
+                                  OnClick="@(() => ToggleContactAsync(contact))">
+                            @(contact.DisplayName ?? contact.UserName ?? contact.Email)
+                        </SbButton>
+                    }
+                </SbStack>
+            }
+
+            @if (SelectedContacts.Any())
+            {
+                <SbText Variant="SbTextVariant.BodySmall" Color="SbColor.Muted">
+                    @L["SelectedGroupMembers", SelectedContacts.Count]
+                </SbText>
+            }
         </SbStack>
     </ChildContent>
     <Footer>
         <SbStack Direction="SbStackDirection.Row" Gap="2" Justify="SbJustify.End">
             <SbButton Variant="SbButtonVariant.Outline" OnClick="CloseAsync">@L["Cancel"]</SbButton>
-            <SbButton Color="SbColor.Primary" OnClick="CreateAsync">@L["Create"]</SbButton>
+            <SbButton Color="SbColor.Primary" OnClick="CreateAsync" Disabled="@(!CanCreate)">@L["Create"]</SbButton>
         </SbStack>
     </Footer>
 </SbDialog>

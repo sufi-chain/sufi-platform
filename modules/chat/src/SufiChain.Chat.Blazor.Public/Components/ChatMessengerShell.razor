@@ -24,12 +24,20 @@
 
             <div class="chat-messenger-shell__timeline">
                 <ChatMessageTimeline Messages="@State.Messages"
+                                     Session="@State.SelectedSession"
                                      IsLoading="@State.IsLoadingMessages"
+                                     IsWaitingForAiResponse="@State.IsWaitingForAiResponse"
                                      MessageActions="@MessageActions" />
             </div>
 
-            <ChatComposer DraftMessage="@State.DraftMessage"
+            <ChatComposer SessionId="@State.SelectedSessionId"
+                          Capabilities="@State.ComposerCapabilities"
+                          DraftMessage="@State.DraftMessage"
                           DraftMessageChanged="@OnDraftChangedAsync"
+                          DraftAttachmentFileIds="@State.DraftAttachmentFileIds"
+                          DraftAttachmentFileIdsChanged="@OnDraftAttachmentsChangedAsync"
+                          DraftMetadataJson="@State.DraftMetadataJson"
+                          DraftMetadataJsonChanged="@OnDraftMetadataChangedAsync"
                           OnSend="@OnSendAsync"
                           IsDisabled="@IsComposerDisabled"
                           IsSignupRequired="@IsSignupRequired"
@@ -57,11 +65,12 @@
         }
     </div>
 
-    @if (ShowContextPanel && State.SelectedSessionId.HasValue)
+    @if (ShowContextPanel)
     {
         <div class="chat-messenger-shell__context @GetContextPaneClass()">
             <ChatSessionContextPanel Session="@State.SelectedSession"
-                                     ContextPanel="@ContextPanel" />
+                                     ContextPanel="@ContextPanel"
+                                     PanelHeader="@ContextPanelHeader" />
         </div>
     }
 </div>

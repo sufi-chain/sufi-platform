@@ -4,7 +4,7 @@ using SufiChain.SufiAbp.MenuManagement.Features;
 using SufiChain.SufiAbp.MenuManagement.Permissions;
 using Volo.Abp;
 using Volo.Abp.Application.Services;
-using Volo.Abp.Features;
+using SufiChain.SufiAbp.Features;
 
 namespace SufiChain.SufiAbp.MenuManagement.Menus;
 

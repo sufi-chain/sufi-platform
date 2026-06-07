@@ -495,6 +495,8 @@
     "SearchFiles": "Search files...",
     "Structure:AIManagement:DisplayName": "AI Management Files",
     "Structure:AIManagement:Description": "Upload files for AI workspaces: images, audio, video, and documents. Supports all common AI-related file types with automatic thumbnail generation and WebP conversion.",
+    "Structure:ChatAttachments:DisplayName": "Chat attachments",
+    "Structure:ChatAttachments:Description": "Files attached to chat messages, scoped by session.",
     "DragDropFilesHere": "Drag & Drop Files Here",
     "ClickBrowseFilesToSelect": "or click Browse Files to select",
     "BrowseFiles": "Browse Files",

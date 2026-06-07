@@ -1,7 +1,7 @@
 {
   "culture": "de",
   "texts": {
-    "DisplayName:Abp.Localization.DefaultLanguage": "Standardsprache",
-    "Description:Abp.Localization.DefaultLanguage": "Die Standardsprache der Anwendung."
+    "DisplayName:SufiAbp.Localization.DefaultLanguage": "Standardsprache",
+    "Description:SufiAbp.Localization.DefaultLanguage": "Die Standardsprache der Anwendung."
   }
 }

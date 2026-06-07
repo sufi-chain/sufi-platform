@@ -1,4 +1,4 @@
-using SufiChain.Chat.Localization;
+using SufiChain.Chat.Blazor.Public.Localization;
 using SufiChain.SufiAbp.UI.Blazor;
 
 namespace SufiChain.Chat.Blazor;
@@ -10,6 +10,6 @@ public abstract class ChatComponentBase : SufiAbpComponentBase
 {
     protected ChatComponentBase()
     {
-        LocalizationResource = typeof(ChatResource);
+        LocalizationResource = typeof(ChatPublicResource);
     }
 }

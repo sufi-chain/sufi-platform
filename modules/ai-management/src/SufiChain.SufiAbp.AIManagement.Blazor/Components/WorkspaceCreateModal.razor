@@ -1,6 +1,6 @@
 @inherits AIManagementComponentBase
 
-<SbDialog @bind-Open="Open" Size="SbDialogSize.Lg" Title="@L["NewWorkspace"]" AllowDropdownOverflow="true">
+<SbDialog Open="@Open" OpenChanged="@SetOpenAsync" Size="SbDialogSize.Lg" Title="@L["NewWorkspace"]" AllowDropdownOverflow="true">
 	<ChildContent>
 		<SbTabs @bind-ActiveIndex="_activeTab">
 			<SbTab Label="@L["ConnectionSettings"]">

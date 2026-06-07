@@ -16,7 +16,7 @@ A modal dialog component built on the native HTML `<dialog>` element with header
 | CloseOnEscape | bool | true | Whether to close on Escape key |
 | CloseOnBackdropClick | bool | true | Whether to close when clicking backdrop |
 | ShowCloseButton | bool | true | Whether to show the close button |
-| OnCloseButtonClick | EventCallback | - | Optional. When set, the header close (X) button invokes this instead of the default close (e.g. pass your modal's Hide so @bind-Open stays in sync) |
+| OnCloseButtonClick | EventCallback | - | Optional hook invoked before the standard header close (X) flow. `OpenChanged(false)` still fires. |
 | Class | string? | null | Additional CSS classes |
 | Style | string? | null | Inline styles |
 | AdditionalAttributes | Dictionary\<string, object\>? | null | Additional HTML attributes |
@@ -176,19 +176,23 @@ Override the Size preset with inline dimensions. Inline styles override the size
 </SbDialog>
 ```
 
-### Custom Close Button Handler (e.g. for @bind-Open in a wrapper modal)
+### Custom Close Button Handler
 
-When the dialog is used inside a modal that binds Open from a parent, the header X should call the same close logic as Cancel so the binding stays in sync:
+Use `OnCloseButtonClick` for cleanup or confirmation-side effects that should run before the header X closes the dialog. The dialog still performs the standard close flow and fires `OpenChanged(false)` afterward:
 
 ```razor
-<SbDialog @bind-Open="Open" OnCloseButtonClick="Hide" Title="Create Item">
+<SbDialog @bind-Open="isOpen" OnCloseButtonClick="OnHeaderClose" Title="Create Item">
     <ChildContent>...</ChildContent>
 </SbDialog>
 
 @code {
-    [Parameter] public bool Open { get; set; }
-    [Parameter] public EventCallback<bool> OpenChanged { get; set; }
-    private void Hide() => OpenChanged.InvokeAsync(false);
+    private bool isOpen;
+
+    private Task OnHeaderClose()
+    {
+        // Optional cleanup before the dialog closes.
+        return Task.CompletedTask;
+    }
 }
 ```
 

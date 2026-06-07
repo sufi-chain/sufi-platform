@@ -1,27 +1,118 @@
 .chat-composer {
     border-top: 1px solid var(--sb-color-border-subtle, #e5e7eb);
     background: var(--sb-color-surface, #fff);
-    padding: 0.75rem 1rem;
+    padding: 0.75rem 1rem 0.5rem;
+}
+
+.chat-composer__signup {
+    border: 1px solid var(--sb-color-border-subtle, #e5e7eb);
+    border-radius: 0.75rem;
 }
 
 .chat-composer__toolbar {
     margin-bottom: 0.5rem;
 }
 
-.chat-composer__input-row {
-    display: grid;
-    grid-template-columns: 1fr auto;
-    gap: 0.75rem;
+.chat-composer__shell {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    border: 1px solid var(--sb-color-border-subtle, #e5e7eb);
+    border-radius: 0.75rem;
+    background: var(--sb-color-surface-muted, #f9fafb);
+    padding: 0.5rem 0.75rem;
+}
+
+.chat-composer__textarea {
+    width: 100%;
+    border: 0;
+    outline: none;
+    resize: vertical;
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    line-height: 1.5;
+    min-height: 2.5rem;
+    max-height: 10rem;
+    overflow-y: auto;
+    field-sizing: content;
+    padding: 0;
+}
+
+.chat-composer__footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    padding-top: 0.15rem;
+}
+
+.chat-composer__footer-left,
+.chat-composer__footer-right {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+}
+
+.chat-composer__send {
+    font-weight: 700;
+}
+
+.chat-composer__hidden-input {
+    display: none;
+}
+
+.chat-composer__busy {
+    margin-top: 0.35rem;
+}
+
+.chat-operator-composer-ai {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
     align-items: end;
 }
 
-.chat-composer__signup {
+.chat-operator-composer-popover {
+    position: absolute;
+    bottom: calc(100% + 0.5rem);
+    inset-inline-start: 0;
+    z-index: 20;
+    min-width: 15rem;
     border: 1px solid var(--sb-color-border-subtle, #e5e7eb);
+    border-radius: 0.75rem;
+}
+
+.chat-operator-composer-popover--ai {
+    min-width: 18rem;
+}
+
+.chat-message-timeline__attachments {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    margin-top: 0.35rem;
+}
+
+.chat-message-timeline__location-card {
+    margin-top: 0.35rem;
+    padding: 0.5rem 0.75rem;
     border-radius: 0.5rem;
+    background: rgba(37, 99, 235, 0.08);
+}
+
+.chat-message-timeline__location-card a {
+    color: inherit;
+    text-decoration: underline;
+}
+
+.chat-message-timeline__voice audio {
+    width: 100%;
+    max-width: 18rem;
 }
 
 @media (max-width: 767px) {
-    .chat-composer__input-row {
-        grid-template-columns: 1fr;
+    .chat-composer__footer {
+        flex-wrap: wrap;
     }
 }

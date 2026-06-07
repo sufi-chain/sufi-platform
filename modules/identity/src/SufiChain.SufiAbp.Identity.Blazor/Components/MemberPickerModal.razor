@@ -1,6 +1,6 @@
 @inherits IdentityComponentBase
 
-<SbDialog Open="@Open" OnCloseButtonClick="Hide" OpenChanged="OnDialogOpenChanged" Size="SbDialogSize.Lg" Title="@L["AddMembers"]">
+<SbDialog Open="@Open" OpenChanged="OnDialogOpenChanged" Size="SbDialogSize.Lg" Title="@L["AddMembers"]">
     <ChildContent>
         <SbStack Gap="3">
             <SbTextField @bind-Value="_filter" 

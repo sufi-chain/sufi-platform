@@ -30,9 +30,15 @@ public partial class RoleCreateModal : IdentityComponentBase
         }
     }
 
-    private void Hide()
+    private Task Hide()
     {
-        OpenChanged.InvokeAsync(false);
+        return SetOpenAsync(false);
+    }
+
+    private async Task SetOpenAsync(bool open)
+    {
+        Open = open;
+        await OpenChanged.InvokeAsync(open);
     }
 
     private Task OnValidSubmitAsync() => ExecuteWithLoadingAsync(async () =>

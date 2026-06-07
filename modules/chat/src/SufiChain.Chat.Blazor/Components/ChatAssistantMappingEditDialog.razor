@@ -1,0 +1,52 @@
+@inherits ChatComponentBase
+
+<SbDialog Open="@Open"
+          OpenChanged="@OnOpenChangedAsync"
+          Size="SbDialogSize.Md"
+          Title="@DialogTitle">
+    <ChildContent>
+        <SbStack Gap="3">
+            <SbTextField @bind-Value="_editModel.Key"
+                         Label="@L["AssistantMappings:Key"]"
+                         HelpText="@L["AssistantMappings:Key:Hint"]"
+                         ReadOnly="@(!IsCreate)"
+                         Required="true" />
+            <SbTextField @bind-Value="_editModel.DisplayName"
+                         Label="@L["AssistantMappings:DisplayName"]"
+                         Required="true" />
+            <SbSimpleSelect TValue="string"
+                            Value="@_editModel.WorkspaceName"
+                            ValueChanged="@((string? value) => _editModel.WorkspaceName = value ?? string.Empty)"
+                            Label="@L["AssistantMappings:WorkspaceName"]">
+                @foreach (var option in WorkspaceOptions)
+                {
+                    <SbSelectOption TValue="string" Value="@option.Name">
+                        @(option.DisplayName ?? option.Name)
+                    </SbSelectOption>
+                }
+            </SbSimpleSelect>
+            <SbCheckbox @bind-Value="_editModel.IsEnabled"
+                        Label="@L["AssistantMappings:Enabled"]" />
+            <SbCheckbox @bind-Value="_editModel.IsPublic"
+                        Label="@L["AssistantMappings:Public"]" />
+            <SbText Variant="SbTextVariant.Caption" Color="SbColor.Muted">
+                @L["AssistantMappings:Public:Hint"]
+            </SbText>
+
+            @if (!string.IsNullOrWhiteSpace(_editModel.WorkspaceName) && !IsSelectedWorkspaceHealthy)
+            {
+                <SbAlert Severity="SbAlertSeverity.Warning">
+                    @L["AssistantMappings:WorkspaceUnhealthy"]
+                </SbAlert>
+            }
+        </SbStack>
+    </ChildContent>
+    <Footer>
+        <SbStack Direction="SbStackDirection.Row" Gap="2" Justify="SbJustify.End">
+            <SbButton Variant="SbButtonVariant.Outline" OnClick="CloseAsync">@L["Cancel"]</SbButton>
+            <SbButton Color="SbColor.Primary" OnClick="SaveAsync" Disabled="@(!CanSave)">
+                @(IsCreate ? L["Create"] : L["Save"])
+            </SbButton>
+        </SbStack>
+    </Footer>
+</SbDialog>

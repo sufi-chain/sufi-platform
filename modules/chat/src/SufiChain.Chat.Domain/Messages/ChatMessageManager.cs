@@ -46,6 +46,14 @@ public class ChatMessageManager : DomainService
             throw new BusinessException(ChatErrorCodes.ParticipantRequired);
         }
 
+        var attachmentList = attachmentFileIds?.ToList() ?? new List<Guid>();
+        var metadata = ChatMessageMetadata.TryParse(metadataJson);
+        var hasLocation = metadata?.ContentKind == ChatMessageContentKind.Location;
+        if (string.IsNullOrWhiteSpace(body) && attachmentList.Count == 0 && !hasLocation)
+        {
+            throw new BusinessException(ChatErrorCodes.MessageContentRequired);
+        }
+
         var message = new ChatMessage(
             GuidGenerator.Create(),
             CurrentTenant.Id,
@@ -56,7 +64,7 @@ public class ChatMessageManager : DomainService
             anonymousVisitorId,
             isInternal,
             metadataJson,
-            attachmentFileIds);
+            attachmentList);
 
         await _messageRepository.InsertAsync(message, autoSave: true);
 

@@ -30,7 +30,6 @@ public class FileManagerMenuContributor : IMenuContributor
         }
 
         var l = context.GetLocalizer<SufiAbpFileManagerResource>();
-        var administration = context.Menu.GetAdministration();
 
         var fileManagerMenu = new ApplicationMenuItem(
             FileManagerMenus.GroupName,
@@ -91,7 +90,7 @@ public class FileManagerMenuContributor : IMenuContributor
 
         if (fileManagerMenu.Items.Count > 0)
         {
-            administration.AddItem(fileManagerMenu);
+            context.Menu.AddItem(fileManagerMenu);
         }
 
         return;

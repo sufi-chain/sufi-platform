@@ -13,6 +13,19 @@ public class ChatAssistantAvailabilityDto
     public List<string> EnabledFeatures { get; set; } = new();
 
     public string? DefaultWorkspaceName { get; set; }
+
+    public List<ChatAssistantPickerOptionDto> Assistants { get; set; } = new();
+}
+
+public class ChatAssistantPickerOptionDto
+{
+    public string Key { get; set; } = string.Empty;
+
+    public string DisplayName { get; set; } = string.Empty;
+
+    public string WorkspaceName { get; set; } = string.Empty;
+
+    public bool IsDefault { get; set; }
 }
 
 public class ChatAiWorkspaceSelectionDto
