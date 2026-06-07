@@ -1,4 +1,5 @@
 using System.Reflection;
+using SufiChain.Chat.Blazor;
 using SufiChain.SufiAbp.Account.Blazor;
 using SufiChain.SufiAbp.AIManagement.Blazor;
 using SufiChain.SufiAbp.AuditLogging.Blazor;
@@ -25,6 +26,7 @@ public static class Program
             typeof(SufiAbpAIManagementBlazorModule),
             typeof(SufiAbpAuditLoggingBlazorModule),
             typeof(SufiAbpBackgroundJobsBlazorModule),
+            typeof(ChatBlazorModule),
             typeof(SufiAbpFeatureManagementBlazorModule),
             typeof(SufiAbpFileManagerBlazorModule),
             typeof(SufiAbpIdentityBlazorModule),

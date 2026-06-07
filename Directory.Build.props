@@ -16,6 +16,11 @@
     <PackageIcon Condition="Exists('$(MSBuildThisFileDirectory)icon.png')">icon.png</PackageIcon>
     <PackageReadmeFile Condition="Exists('$(MSBuildThisFileDirectory)README.md')">README.md</PackageReadmeFile>
     
+    <!-- Local development hosts under .dev can opt into workspace project references. -->
+    <UseLocalDevelopmentReferences Condition="'$(UseLocalDevelopmentReferences)' == '' And $([System.String]::Copy('$(MSBuildStartupDirectory)').Contains('.dev'))">true</UseLocalDevelopmentReferences>
+    <UseLocalDevelopmentReferences Condition="'$(UseLocalDevelopmentReferences)' == '' And $([System.String]::Copy('$(SolutionDir)').Contains('.dev'))">true</UseLocalDevelopmentReferences>
+    <UseLocalDevelopmentReferences Condition="'$(UseLocalDevelopmentReferences)' == ''">false</UseLocalDevelopmentReferences>
+
     <!-- Build Settings -->
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <NoWarn>$(NoWarn);1591</NoWarn>

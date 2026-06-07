@@ -65,7 +65,7 @@
   <ItemGroup>
     <PackageReference Include="SufiChain.SufiAbp.AspNetCore.Authentication.OpenIdConnect" Version="$(SufiVersion)" />
     <PackageReference Include="SufiChain.SufiAbp.AspNetCore.Authentication.Server" Version="$(SufiVersion)" />
-    <PackageReference Include="SufiChain.KomTheme.Blazor.Server" Version="$(SufiVersion)" />
+    <PackageReference Include="SufiChain.KomTheme.Blazor.Server" Version="$(KomThemeVersion)" />
     <PackageReference Include="SufiChain.SufiBlazor" Version="$(SufiBlazorVersion)" />
     <PackageReference Include="SufiChain.SufiAbp.Account.Blazor" Version="$(SufiVersion)" />
     <PackageReference Include="SufiChain.SufiAbp.Identity.Application" Version="$(SufiVersion)" />

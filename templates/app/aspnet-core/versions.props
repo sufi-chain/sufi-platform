@@ -6,6 +6,7 @@
         
         <!-- Independent module versions (own repos, consumed via project or package ref) -->
         <SufiBlazorVersion>1.0.0-alpha.1.0</SufiBlazorVersion>
+        <KomThemeVersion>$(SufiVersion)</KomThemeVersion>
         <SufiChainSufiAbpAIVersion>0.0.0-rc.3.0</SufiChainSufiAbpAIVersion>
     </PropertyGroup>
 

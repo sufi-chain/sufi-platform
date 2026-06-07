@@ -87,6 +87,12 @@ public class ChatAssistantMessageHandler :
                 return;
             }
 
+            if (ChatAssistantMetadata.IsExternallyOrchestrated(session.MetadataJson))
+            {
+                Logger.LogInformation("[CHAT DEBUG HANDLER] Skipping - assistant session is externally orchestrated");
+                return;
+            }
+
             // Get the user's message - it should be in the current UoW context
             var userMessage = await MessageRepository.GetAsync(eventData.Id);
             

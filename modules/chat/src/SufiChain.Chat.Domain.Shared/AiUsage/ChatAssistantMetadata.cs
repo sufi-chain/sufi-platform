@@ -11,7 +11,11 @@ public static class ChatAssistantMetadata
 
     public const string AssistantKeyKey = "assistantKey";
 
-    public static string BuildJson(string workspaceName, string? assistantKey = null)
+    public const string OrchestrationModeKey = "orchestrationMode";
+
+    public const string ExternalOrchestrationMode = "external";
+
+    public static string BuildJson(string workspaceName, string? assistantKey = null, bool externalOrchestration = false)
     {
         var metadata = new Dictionary<string, string>();
 
@@ -23,6 +27,11 @@ public static class ChatAssistantMetadata
         if (!string.IsNullOrWhiteSpace(assistantKey))
         {
             metadata[AssistantKeyKey] = assistantKey.Trim().ToLowerInvariant();
+        }
+
+        if (externalOrchestration)
+        {
+            metadata[OrchestrationModeKey] = ExternalOrchestrationMode;
         }
 
         return metadata.Count == 0
@@ -53,6 +62,30 @@ public static class ChatAssistantMetadata
         }
 
         return null;
+    }
+
+    public static bool IsExternallyOrchestrated(string? metadataJson)
+    {
+        if (string.IsNullOrWhiteSpace(metadataJson))
+        {
+            return false;
+        }
+
+        try
+        {
+            using var document = JsonDocument.Parse(metadataJson);
+            if (document.RootElement.TryGetProperty(OrchestrationModeKey, out var property) &&
+                property.ValueKind == JsonValueKind.String)
+            {
+                return string.Equals(property.GetString(), ExternalOrchestrationMode, StringComparison.OrdinalIgnoreCase);
+            }
+        }
+        catch (JsonException)
+        {
+            return false;
+        }
+
+        return false;
     }
 
     public static string? TryGetAssistantKey(string? metadataJson)

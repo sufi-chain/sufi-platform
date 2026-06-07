@@ -112,7 +112,7 @@
 	<!-- Template: NuGet Package References (uncommented when generating templates) -->
 	<!-- <TEMPLATE-ONLY>
 	<ItemGroup>
-		<PackageReference Include="SufiChain.KomTheme.Blazor.Server" Version="$(SufiVersion)" />
+		<PackageReference Include="SufiChain.KomTheme.Blazor.Server" Version="$(KomThemeVersion)" />
 		<PackageReference Include="SufiChain.SufiAbp.AspNetCore.Authentication.OpenIdConnect" Version="$(SufiVersion)" />
 		<PackageReference Include="SufiChain.SufiAbp.AspNetCore.Authentication.Server" Version="$(SufiVersion)" />
 		<PackageReference Include="SufiChain.SufiAbp.Identity.Blazor" Version="$(SufiVersion)" />

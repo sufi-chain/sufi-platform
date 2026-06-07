@@ -1,3 +1,4 @@
+using SufiChain.Chat;
 using SufiChain.SufiAbp.Account;
 using SufiChain.SufiAbp.AIManagement;
 using SufiChain.SufiAbp.AIManagement.MongoDB;
@@ -53,6 +54,9 @@ namespace SufiChain.SufiAbp.SmokeTest.Console;
     typeof(SufiAbpBackgroundJobsHttpApiModule),
     typeof(SufiAbpBackgroundJobsMongoDbModule),
     typeof(SufiAbpBlobStoringDatabaseMongoDbModule),
+    typeof(ChatApplicationModule),
+    typeof(ChatHttpApiModule),
+    typeof(ChatMongoDbModule),
     typeof(SufiAbpFeatureManagementApplicationModule),
     typeof(SufiAbpFeatureManagementHttpApiModule),
     typeof(SufiAbpFeatureManagementMongoDbModule),

@@ -43,7 +43,7 @@
 	<!-- Template: NuGet Package References (uncommented when generating templates) -->
 	<!-- <TEMPLATE-ONLY>
 	<ItemGroup>
-		<PackageReference Include="SufiChain.KomTheme.Blazor.WebAssembly" Version="$(SufiVersion)" />
+		<PackageReference Include="SufiChain.KomTheme.Blazor.WebAssembly" Version="$(KomThemeVersion)" />
 		<PackageReference Include="SufiChain.SufiAbp.FileManager.Blazor" Version="$(SufiVersion)" />
 		<PackageReference Include="SufiChain.SufiAbp.FileManager.Blazor.WebAssembly" Version="$(SufiVersion)" />
 	</ItemGroup>
