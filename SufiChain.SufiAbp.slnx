@@ -77,22 +77,6 @@
     <Project Path="modules/account/src/SufiChain.SufiAbp.Account.HttpApi.Client/SufiChain.SufiAbp.Account.HttpApi.Client.csproj" />
     <Project Path="modules/account/src/SufiChain.SufiAbp.Account.HttpApi/SufiChain.SufiAbp.Account.HttpApi.csproj" />
   </Folder>
-    <Folder Name="/Modules/Chat/">
-    <Project Path="modules/chat/src/SufiChain.Chat.Application.Contracts/SufiChain.Chat.Application.Contracts.csproj" />
-    <Project Path="modules/chat/src/SufiChain.Chat.Application/SufiChain.Chat.Application.csproj" />
-    <Project Path="modules/chat/src/SufiChain.Chat.Blazor.Public/SufiChain.Chat.Blazor.Public.csproj" />
-    <Project Path="modules/chat/src/SufiChain.Chat.Blazor.Server/SufiChain.Chat.Blazor.Server.csproj" />
-    <Project Path="modules/chat/src/SufiChain.Chat.Blazor.WebAssembly/SufiChain.Chat.Blazor.WebAssembly.csproj" />
-    <Project Path="modules/chat/src/SufiChain.Chat.Blazor/SufiChain.Chat.Blazor.csproj" />
-    <Project Path="modules/chat/src/SufiChain.Chat.Connector.Email/SufiChain.Chat.Connector.Email.csproj" />
-    <Project Path="modules/chat/src/SufiChain.Chat.Connector/SufiChain.Chat.Connector.csproj" />
-    <Project Path="modules/chat/src/SufiChain.Chat.Domain.Shared/SufiChain.Chat.Domain.Shared.csproj" />
-    <Project Path="modules/chat/src/SufiChain.Chat.Domain/SufiChain.Chat.Domain.csproj" />
-    <Project Path="modules/chat/src/SufiChain.Chat.EntityFrameworkCore/SufiChain.Chat.EntityFrameworkCore.csproj" />
-    <Project Path="modules/chat/src/SufiChain.Chat.HttpApi.Client/SufiChain.Chat.HttpApi.Client.csproj" />
-    <Project Path="modules/chat/src/SufiChain.Chat.HttpApi/SufiChain.Chat.HttpApi.csproj" />
-    <Project Path="modules/chat/src/SufiChain.Chat.MongoDB/SufiChain.Chat.MongoDB.csproj" />
-  </Folder>
   <Folder Name="/Modules/AiManagement/">
     <Project Path="modules/ai-management/src/SufiChain.SufiAbp.AIManagement.Application.Contracts/SufiChain.SufiAbp.AIManagement.Application.Contracts.csproj" />
     <Project Path="modules/ai-management/src/SufiChain.SufiAbp.AIManagement.Application/SufiChain.SufiAbp.AIManagement.Application.csproj" />

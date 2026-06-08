@@ -19,24 +19,13 @@
   </ItemGroup>
 
   <ItemGroup>
-    <!-- Resolve version conflict with SufiBlazor -->
-    <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="$(MicrosoftAspNetCoreComponentsWebVersion)" />
-    <!-- ASP.NET Core Authentication and Identity are included in Microsoft.AspNetCore.App framework reference -->
-    <!-- Blazor Authorization -->
-    <PackageReference Include="Microsoft.AspNetCore.Components.Authorization" Version="$(AspNetCoreVersion)" />
-    
-    <!-- SufiAbp Account Application Contracts -->
     <ProjectReference Include="..\SufiChain.SufiAbp.Account.Application.Contracts\SufiChain.SufiAbp.Account.Application.Contracts.csproj" />
     <ProjectReference Include="../../../../framework/SufiChain.SufiAbp.Captcha/SufiChain.SufiAbp.Captcha.csproj" />
-    <!-- HttpClientFactory for making HTTP requests from Blazor components -->
-    <PackageReference Include="Microsoft.Extensions.Http" Version="$(AspNetCoreVersion)" />
   </ItemGroup>
 
   <ItemGroup>
-    <!-- SufiAbp Framework (transitively provides SufiChain.SufiBlazor) -->
     <ProjectReference Include="..\..\..\..\framework\SufiChain.SufiAbp.UI.Abstractions\SufiChain.SufiAbp.UI.Abstractions.csproj" />
     <ProjectReference Include="..\..\..\..\framework\SufiChain.SufiAbp.UI.Blazor\SufiChain.SufiAbp.UI.Blazor.csproj" />
-    <!-- SufiAbp Identity Application.Contracts (includes Domain.Shared for localization) -->
     <ProjectReference Include="..\..\..\..\modules\identity\src\SufiChain.SufiAbp.Identity.Application.Contracts\SufiChain.SufiAbp.Identity.Application.Contracts.csproj" />
     <ProjectReference Include="..\..\..\..\modules\identity\src\SufiChain.SufiAbp.Identity.AspNetCore\SufiChain.SufiAbp.Identity.AspNetCore.csproj" />
   </ItemGroup>
