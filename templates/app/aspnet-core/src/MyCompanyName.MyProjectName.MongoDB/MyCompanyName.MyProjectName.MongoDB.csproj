@@ -15,6 +15,7 @@
 
   <TEMPLATE-REMOVE>
   <ItemGroup>
+    <ProjectReference Include="..\..\..\..\..\src\framework\SufiChain.SufiAbp.Core\SufiChain.SufiAbp.Core.csproj" />
     <ProjectReference Include="..\..\..\..\..\modules\permission-management\src\SufiChain.SufiAbp.PermissionManagement.MongoDB\SufiChain.SufiAbp.PermissionManagement.MongoDB.csproj" />
     <ProjectReference Include="..\..\..\..\..\modules\setting-management\src\SufiChain.SufiAbp.SettingManagement.MongoDB\SufiChain.SufiAbp.SettingManagement.MongoDB.csproj" />
     <ProjectReference Include="..\..\..\..\..\modules\feature-management\src\SufiChain.SufiAbp.FeatureManagement.MongoDB\SufiChain.SufiAbp.FeatureManagement.MongoDB.csproj" />
@@ -35,6 +36,7 @@
 
   <TEMPLATE-ONLY>
   <ItemGroup>
+    <PackageReference Include="SufiChain.SufiAbp.Core" Version="$(SufiVersion)" />
     <PackageReference Include="SufiChain.SufiAbp.PermissionManagement.MongoDB" Version="$(SufiVersion)" />
     <PackageReference Include="SufiChain.SufiAbp.SettingManagement.MongoDB" Version="$(SufiVersion)" />
     <PackageReference Include="SufiChain.SufiAbp.FeatureManagement.MongoDB" Version="$(SufiVersion)" />
