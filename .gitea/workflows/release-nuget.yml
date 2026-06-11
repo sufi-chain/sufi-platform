@@ -197,6 +197,9 @@ jobs:
             sleep 3600)"
           trap 'docker rm -f "$container_id" >/dev/null 2>&1 || true' EXIT INT TERM
           docker exec "$container_id" bash /src/.gitea/scripts/nuget-pack.sh
+          rm -rf "$package_dir"
+          mkdir -p "$package_dir"
+          docker cp "${container_id}:/src/${version_package_output#./}/." "$package_dir/"
           docker rm -f "$container_id"
           trap - EXIT INT TERM
           if [ ! -d "$package_dir" ]; then
