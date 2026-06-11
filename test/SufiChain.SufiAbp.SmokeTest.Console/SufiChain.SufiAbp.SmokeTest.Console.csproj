@@ -31,9 +31,6 @@
     <ProjectReference Include="..\..\modules\background-jobs\src\SufiChain.SufiAbp.BackgroundJobs.HttpApi\SufiChain.SufiAbp.BackgroundJobs.HttpApi.csproj" />
     <ProjectReference Include="..\..\modules\background-jobs\src\SufiChain.SufiAbp.BackgroundJobs.MongoDB\SufiChain.SufiAbp.BackgroundJobs.MongoDB.csproj" />
     <ProjectReference Include="..\..\modules\blob-storing-database\src\SufiChain.SufiAbp.BlobStoring.Database.MongoDB\SufiChain.SufiAbp.BlobStoring.Database.MongoDB.csproj" />
-    <ProjectReference Include="..\..\modules\chat\src\SufiChain.Chat.Application\SufiChain.Chat.Application.csproj" />
-    <ProjectReference Include="..\..\modules\chat\src\SufiChain.Chat.HttpApi\SufiChain.Chat.HttpApi.csproj" />
-    <ProjectReference Include="..\..\modules\chat\src\SufiChain.Chat.MongoDB\SufiChain.Chat.MongoDB.csproj" />
     <ProjectReference Include="..\..\modules\feature-management\src\SufiChain.SufiAbp.FeatureManagement.Application\SufiChain.SufiAbp.FeatureManagement.Application.csproj" />
     <ProjectReference Include="..\..\modules\feature-management\src\SufiChain.SufiAbp.FeatureManagement.HttpApi\SufiChain.SufiAbp.FeatureManagement.HttpApi.csproj" />
     <ProjectReference Include="..\..\modules\feature-management\src\SufiChain.SufiAbp.FeatureManagement.MongoDB\SufiChain.SufiAbp.FeatureManagement.MongoDB.csproj" />

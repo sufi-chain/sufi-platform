@@ -18,5 +18,6 @@ public enum MessageType
 {
     Email = 1,
     Sms = 2,
-    VoiceCall = 3
+    VoiceCall = 3,
+    InApp = 4
 }

@@ -3,6 +3,8 @@
     <TargetFramework>net10.0</TargetFramework>
     <Nullable>enable</Nullable>
     <RootNamespace>SufiChain.SufiAbp.OpenIddict</RootNamespace>
+    <PackageId>SufiChain.SufiAbp.OpenIddict.Domain</PackageId>
+    <Description>Domain layer for SufiAbp OpenIddict.</Description>
   </PropertyGroup>
   <ItemGroup>
     

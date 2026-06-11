@@ -14,6 +14,11 @@ internal static class LocalizableStringConverter
             return localizableString;
         }
 
+        if (displayName is string fixedString)
+        {
+            return new Volo.Abp.Localization.FixedLocalizableString(fixedString);
+        }
+
         var toVoloMethod = displayName.GetType().GetMethod("ToVolo", Type.EmptyTypes);
         if (toVoloMethod?.Invoke(displayName, null) is Volo.Abp.Localization.ILocalizableString converted)
         {

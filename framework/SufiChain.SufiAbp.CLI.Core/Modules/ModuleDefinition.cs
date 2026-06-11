@@ -59,7 +59,7 @@ public class ModuleDefinition
 public enum ModuleCategory
 {
     /// <summary>
-    /// Core modules (Identity, FeatureManagement, SettingManagement) - always included.
+    /// Default platform modules that are always included.
     /// </summary>
     Core,
     

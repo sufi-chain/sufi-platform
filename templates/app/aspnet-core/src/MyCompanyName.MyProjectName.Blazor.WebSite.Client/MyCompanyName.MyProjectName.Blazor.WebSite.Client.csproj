@@ -1,0 +1,57 @@
+<Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
+
+	<PropertyGroup>
+		<LangVersion>latest</LangVersion>
+		<TargetFramework>net10.0</TargetFramework>
+		<BlazorWebAssemblyLoadAllGlobalizationData>true</BlazorWebAssemblyLoadAllGlobalizationData>
+		<IsPackable>false</IsPackable>
+		<OutputType>Library</OutputType>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<!-- Core WebAssembly packages -->
+		<PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="$(MicrosoftAspNetCoreComponentsWebVersion)" />
+		<PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="$(MicrosoftAspNetCoreComponentsWebAssemblyVersion)" />
+		<PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Authentication" Version="$(MicrosoftAspNetCoreComponentsWebAssemblyVersion)" />
+		<PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="$(MicrosoftExtensionsConfigurationBinderVersion)" />
+		
+		<!-- ABP Core module system (NOT UI packages) -->
+		<PackageReference Include="SufiChain.SufiAbp.Autofac.WebAssembly" Version="$(SufiVersion)" />
+	</ItemGroup>
+
+	<!-- ====================================================================== -->
+	<!-- Development: Project References (removed when generating templates) -->
+	<!-- <TEMPLATE-REMOVE> -->
+	<ItemGroup>
+		<!-- SufiAbp Theme using SufiBlazor (replaces ABP Blazor UI packages) -->
+		<ProjectReference Include="..\..\..\..\..\independent-projects\kom-theme\src\SufiChain.KomTheme.Blazor.WebAssembly\SufiChain.KomTheme.Blazor.WebAssembly.csproj" />
+		
+		<!-- SufiAbp UI Modules for Public Site -->
+		<!-- NOTE: SufiChain.SufiAbp.Account.Blazor is Server-only (uses SignInManager/AspNetCore.Identity) -->
+		<!-- It is referenced from the Server project, not this WebAssembly client -->
+		
+		<!-- File Manager for public file access -->
+		<ProjectReference Include="..\..\..\..\..\modules\file-manager\src\SufiChain.SufiAbp.FileManager.Blazor\SufiChain.SufiAbp.FileManager.Blazor.csproj" />
+		<ProjectReference Include="..\..\..\..\..\modules\file-manager\src\SufiChain.SufiAbp.FileManager.Blazor.WebAssembly\SufiChain.SufiAbp.FileManager.Blazor.WebAssembly.csproj" />
+		
+		<!-- NOTE: Admin modules NOT included for WebSite -->
+		<!-- NO: Identity.Blazor (admin), TenantManagement, AuditLogging, etc. -->
+	</ItemGroup>
+	<!-- </TEMPLATE-REMOVE> -->
+	
+	<!-- ====================================================================== -->
+	<!-- Template: NuGet Package References (uncommented when generating templates) -->
+	<!-- <TEMPLATE-ONLY>
+	<ItemGroup>
+		<PackageReference Include="SufiChain.KomTheme.Blazor.WebAssembly" Version="$(KomThemeVersion)" />
+		<PackageReference Include="SufiChain.SufiAbp.FileManager.Blazor" Version="$(SufiVersion)" />
+		<PackageReference Include="SufiChain.SufiAbp.FileManager.Blazor.WebAssembly" Version="$(SufiVersion)" />
+	</ItemGroup>
+	</TEMPLATE-ONLY> -->
+	
+	<ItemGroup>
+		<!-- Demo app project reference (always needed) -->
+		<ProjectReference Include="..\MyCompanyName.MyProjectName.HttpApi.Client\MyCompanyName.MyProjectName.HttpApi.Client.csproj" />
+	</ItemGroup>
+
+</Project>

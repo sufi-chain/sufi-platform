@@ -480,11 +480,11 @@ new SettingDefinition(
 
 ## Example: Complete Provider with Settings
 
-See the [Creating Custom Providers](./messaging-provider-guide.md) guide for complete examples of providers with dynamic settings.
+See the [Creating Custom Providers](./messagingvider-guide.md) guide for complete examples of providers with dynamic settings.
 
 ## Next Steps
 
-- [Creating Custom Providers](./messaging-provider-guide.md)
+- [Creating Custom Providers](./messagingvider-guide.md)
 - [Settings Management UI](./settings-management-ui.md)
 - [Multi-Tenancy Configuration](./multi-tenancy-settings.md)
 

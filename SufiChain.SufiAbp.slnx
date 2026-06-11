@@ -4,6 +4,7 @@
     <Project Path="framework/SufiChain.SufiAbp.AI/SufiChain.SufiAbp.AI.csproj" />
     <Project Path="framework/SufiChain.SufiAbp.AspNetCore.Authentication.Abstractions/SufiChain.SufiAbp.AspNetCore.Authentication.Abstractions.csproj" />
     <Project Path="framework/SufiChain.SufiAbp.AspNetCore.Authentication.OAuth/SufiChain.SufiAbp.AspNetCore.Authentication.OAuth.csproj" />
+    <Project Path="framework/SufiChain.SufiAbp.AspNetCore.Authentication.JwtBearer/SufiChain.SufiAbp.AspNetCore.Authentication.JwtBearer.csproj" />
     <Project Path="framework/SufiChain.SufiAbp.AspNetCore.Authentication.OpenIdConnect/SufiChain.SufiAbp.AspNetCore.Authentication.OpenIdConnect.csproj" />
     <Project Path="framework/SufiChain.SufiAbp.AspNetCore.Authentication.Server/SufiChain.SufiAbp.AspNetCore.Authentication.Server.csproj" />
     <Project Path="framework/SufiChain.SufiAbp.AspNetCore.Authentication.WebAssembly/SufiChain.SufiAbp.AspNetCore.Authentication.WebAssembly.csproj" />

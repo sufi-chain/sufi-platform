@@ -19,10 +19,6 @@
     <ProjectReference Include="..\..\modules\ai-management\src\SufiChain.SufiAbp.AIManagement.Blazor.WebAssembly\SufiChain.SufiAbp.AIManagement.Blazor.WebAssembly.csproj" />
     <ProjectReference Include="..\..\modules\audit-logging\src\SufiChain.SufiAbp.AuditLogging.Blazor\SufiChain.SufiAbp.AuditLogging.Blazor.csproj" />
     <ProjectReference Include="..\..\modules\background-jobs\src\SufiChain.SufiAbp.BackgroundJobs.Blazor\SufiChain.SufiAbp.BackgroundJobs.Blazor.csproj" />
-    <ProjectReference Include="..\..\modules\chat\src\SufiChain.Chat.Blazor\SufiChain.Chat.Blazor.csproj" />
-    <ProjectReference Include="..\..\modules\chat\src\SufiChain.Chat.Blazor.Public\SufiChain.Chat.Blazor.Public.csproj" />
-    <ProjectReference Include="..\..\modules\chat\src\SufiChain.Chat.Blazor.Server\SufiChain.Chat.Blazor.Server.csproj" />
-    <ProjectReference Include="..\..\modules\chat\src\SufiChain.Chat.Blazor.WebAssembly\SufiChain.Chat.Blazor.WebAssembly.csproj" />
     <ProjectReference Include="..\..\modules\feature-management\src\SufiChain.SufiAbp.FeatureManagement.Blazor\SufiChain.SufiAbp.FeatureManagement.Blazor.csproj" />
     <ProjectReference Include="..\..\modules\file-manager\src\SufiChain.SufiAbp.FileManager.Blazor\SufiChain.SufiAbp.FileManager.Blazor.csproj" />
     <ProjectReference Include="..\..\modules\file-manager\src\SufiChain.SufiAbp.FileManager.Blazor.Public\SufiChain.SufiAbp.FileManager.Blazor.Public.csproj" />

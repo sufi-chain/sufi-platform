@@ -218,7 +218,7 @@ using Volo.Abp.Data;
 using Volo.Abp.EntityFrameworkCore;
 using Volo.Abp.FeatureManagement.EntityFrameworkCore;
 using SufiChain.SufiAbp.Identity.EntityFrameworkCore;
-using Volo.Abp.OpenIddict.EntityFrameworkCore;
+using SufiChain.SufiAbp.OpenIddict.EntityFrameworkCore;
 using Volo.Abp.PermissionManagement.EntityFrameworkCore;
 using Volo.Abp.SettingManagement.EntityFrameworkCore;
 using Volo.Abp.TenantManagement.EntityFrameworkCore;
@@ -349,7 +349,7 @@ public class {projectName}DbContext : AbpDbContext<{projectName}DbContext>
     <PackageReference Include=""Volo.Abp.PermissionManagement.EntityFrameworkCore"" Version=""$(AbpVersion)"" />
     <PackageReference Include=""Volo.Abp.SettingManagement.EntityFrameworkCore"" Version=""$(AbpVersion)"" />
     <PackageReference Include=""SufiChain.SufiAbp.Identity.EntityFrameworkCore"" Version=""$(AbpVersion)"" />
-    <PackageReference Include=""Volo.Abp.OpenIddict.EntityFrameworkCore"" Version=""$(AbpVersion)"" />
+    <PackageReference Include=""SufiChain.SufiAbp.OpenIddict.EntityFrameworkCore"" Version=""$(SufiVersion)"" />
     <PackageReference Include=""Volo.Abp.TenantManagement.EntityFrameworkCore"" Version=""$(AbpVersion)"" />
     <PackageReference Include=""Volo.Abp.FeatureManagement.EntityFrameworkCore"" Version=""$(AbpVersion)"" />
     <PackageReference Include=""Volo.Abp.AuditLogging.EntityFrameworkCore"" Version=""$(AbpVersion)"" />
@@ -384,7 +384,7 @@ using Volo.Abp.Data;
 using Volo.Abp.EntityFrameworkCore;
 using Volo.Abp.FeatureManagement.EntityFrameworkCore;
 using SufiChain.SufiAbp.Identity.EntityFrameworkCore;
-using Volo.Abp.OpenIddict.EntityFrameworkCore;
+using SufiChain.SufiAbp.OpenIddict.EntityFrameworkCore;
 using Volo.Abp.PermissionManagement.EntityFrameworkCore;
 using Volo.Abp.SettingManagement.EntityFrameworkCore;
 using Volo.Abp.TenantManagement.EntityFrameworkCore;
@@ -439,7 +439,7 @@ using {providerNamespace};
 using Volo.Abp.FeatureManagement.EntityFrameworkCore;
 using SufiChain.SufiAbp.Identity.EntityFrameworkCore;
 using Volo.Abp.Modularity;
-using Volo.Abp.OpenIddict.EntityFrameworkCore;
+using SufiChain.SufiAbp.OpenIddict.EntityFrameworkCore;
 using Volo.Abp.PermissionManagement.EntityFrameworkCore;
 using Volo.Abp.SettingManagement.EntityFrameworkCore;
 using Volo.Abp.TenantManagement.EntityFrameworkCore;
@@ -453,7 +453,7 @@ namespace {solutionName}.EntityFrameworkCore;
     typeof(AbpPermissionManagementEntityFrameworkCoreModule),
     typeof(AbpSettingManagementEntityFrameworkCoreModule),
     typeof(AbpIdentityEntityFrameworkCoreModule),
-    typeof(AbpOpenIddictEntityFrameworkCoreModule),
+    typeof(SufiAbpOpenIddictEntityFrameworkCoreModule),
     typeof(AbpFeatureManagementEntityFrameworkCoreModule),
     typeof(AbpTenantManagementEntityFrameworkCoreModule),
     typeof(AbpAuditLoggingEntityFrameworkCoreModule),
@@ -768,8 +768,8 @@ public class EntityFrameworkCore{projectName}DbSchemaMigrator : I{projectName}Db
         var abpMongoToEf = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
         {
             ["SufiChain.SufiAbp.Identity.MongoDB"] = "SufiChain.SufiAbp.Identity.EntityFrameworkCore",
-            ["Volo.Abp.OpenIdDict.MongoDB"] = "Volo.Abp.OpenIddict.EntityFrameworkCore",
-            ["Volo.Abp.OpenIddict.MongoDB"] = "Volo.Abp.OpenIddict.EntityFrameworkCore",
+            ["SufiChain.SufiAbp.OpenIdDict.MongoDB"] = "SufiChain.SufiAbp.OpenIddict.EntityFrameworkCore",
+            ["SufiChain.SufiAbp.OpenIddict.MongoDB"] = "SufiChain.SufiAbp.OpenIddict.EntityFrameworkCore",
             ["Volo.Abp.TenantManagement.MongoDB"] = "Volo.Abp.TenantManagement.EntityFrameworkCore",
             ["Volo.Abp.AuditLogging.MongoDB"] = "Volo.Abp.AuditLogging.EntityFrameworkCore",
             ["Volo.Abp.PermissionManagement.MongoDB"] = "Volo.Abp.PermissionManagement.EntityFrameworkCore",
@@ -822,7 +822,7 @@ public class EntityFrameworkCore{projectName}DbSchemaMigrator : I{projectName}Db
             efCoreUsings.AddRange(new[]
             {
                 "using SufiChain.SufiAbp.Identity.EntityFrameworkCore;",
-                "using Volo.Abp.OpenIddict.EntityFrameworkCore;",
+                "using SufiChain.SufiAbp.OpenIddict.EntityFrameworkCore;",
                 "using Volo.Abp.TenantManagement.EntityFrameworkCore;",
                 "using Volo.Abp.PermissionManagement.EntityFrameworkCore;",
                 "using Volo.Abp.BackgroundJobs.EntityFrameworkCore;",
@@ -873,7 +873,7 @@ public class EntityFrameworkCore{projectName}DbSchemaMigrator : I{projectName}Db
                 {
                     content = content.Replace(
                         "typeof(AbpPermissionManagementDomainOpenIddictModule),",
-                        "typeof(AbpPermissionManagementDomainOpenIddictModule),\n    typeof(AbpIdentityEntityFrameworkCoreModule),\n    typeof(AbpOpenIddictEntityFrameworkCoreModule),\n    typeof(AbpTenantManagementEntityFrameworkCoreModule),\n    typeof(AbpAuditLoggingEntityFrameworkCoreModule),\n    typeof(AbpPermissionManagementEntityFrameworkCoreModule),");
+                        "typeof(AbpPermissionManagementDomainOpenIddictModule),\n    typeof(AbpIdentityEntityFrameworkCoreModule),\n    typeof(SufiAbpOpenIddictEntityFrameworkCoreModule),\n    typeof(AbpTenantManagementEntityFrameworkCoreModule),\n    typeof(AbpAuditLoggingEntityFrameworkCoreModule),\n    typeof(AbpPermissionManagementEntityFrameworkCoreModule),");
                 }
                 if (!content.Contains("AbpBackgroundJobsEntityFrameworkCoreModule"))
                 {

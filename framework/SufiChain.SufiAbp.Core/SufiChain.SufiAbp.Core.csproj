@@ -13,7 +13,12 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Volo.Abp.Caching" Version="$(AbpVersion)" />
     <PackageReference Include="Volo.Abp.Core" Version="$(AbpVersion)" />
+    <PackageReference Include="Volo.Abp.Data" Version="$(AbpVersion)" />
+    <PackageReference Include="Volo.Abp.EventBus" Version="$(AbpVersion)" />
+    <PackageReference Include="Volo.Abp.Localization" Version="$(AbpVersion)" />
+    <PackageReference Include="Volo.Abp.VirtualFileSystem" Version="$(AbpVersion)" />
   </ItemGroup>
 
 </Project>

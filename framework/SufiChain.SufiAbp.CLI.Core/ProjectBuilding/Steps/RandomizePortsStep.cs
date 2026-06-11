@@ -45,7 +45,7 @@ public class RandomizePortsStep : ProjectBuildPipelineStep
             // Replace Blazor WASM URLs (44307)
             content = ReplacePort(content, PortConfiguration.OriginalPorts.BlazorWasmPort, ports.BlazorWasmPort);
             
-            // Replace WebPublic URLs (60927, 60928 and tiered 44320 used in OpenIddict/DbMigrator/AuthServer)
+            // Replace WebSite URLs (60927, 60928 and tiered 44320 used in OpenIddict/DbMigrator/AuthServer)
             content = ReplacePort(content, PortConfiguration.OriginalPorts.PublicPort, ports.PublicPort);
             content = ReplacePort(content, PortConfiguration.OriginalPorts.PublicHttpPort, ports.PublicHttpPort);
             content = ReplacePort(content, PortConfiguration.OriginalPorts.PublicPortTiered, ports.PublicPort);
@@ -61,9 +61,9 @@ public class RandomizePortsStep : ProjectBuildPipelineStep
             content = ReplacePort(content, PortConfiguration.OriginalPorts.BlazorWebAppClientPort, ports.BlazorWebAppClientPort);
             content = ReplacePort(content, PortConfiguration.OriginalPorts.BlazorWebAppClientHttpPort, ports.BlazorWebAppClientHttpPort);
             
-            // Replace Blazor.WebPublic.Client dev server (65419, 65420)
-            content = ReplacePort(content, PortConfiguration.OriginalPorts.WebPublicClientPort, ports.WebPublicClientPort);
-            content = ReplacePort(content, PortConfiguration.OriginalPorts.WebPublicClientHttpPort, ports.WebPublicClientHttpPort);
+            // Replace Blazor.WebSite.Client dev server (65419, 65420)
+            content = ReplacePort(content, PortConfiguration.OriginalPorts.WebSiteClientPort, ports.WebSiteClientPort);
+            content = ReplacePort(content, PortConfiguration.OriginalPorts.WebSiteClientHttpPort, ports.WebSiteClientHttpPort);
             
             // Replace single-architecture client URLs (65463, 65464)
             content = ReplacePort(content, PortConfiguration.OriginalPorts.SingleClientPort, ports.SingleClientPort);

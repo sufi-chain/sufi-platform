@@ -1,7 +1,5 @@
-using SufiChain.Chat;
 using SufiChain.SufiAbp.Account;
 using SufiChain.SufiAbp.AIManagement;
-using SufiChain.SufiAbp.AIManagement.MongoDB;
 using SufiChain.SufiAbp.AspNetCore.Serilog;
 using SufiChain.SufiAbp.AuditLogging;
 using SufiChain.SufiAbp.AuditLogging.MongoDB;
@@ -54,9 +52,6 @@ namespace SufiChain.SufiAbp.SmokeTest.Console;
     typeof(SufiAbpBackgroundJobsHttpApiModule),
     typeof(SufiAbpBackgroundJobsMongoDbModule),
     typeof(SufiAbpBlobStoringDatabaseMongoDbModule),
-    typeof(ChatApplicationModule),
-    typeof(ChatHttpApiModule),
-    typeof(ChatMongoDbModule),
     typeof(SufiAbpFeatureManagementApplicationModule),
     typeof(SufiAbpFeatureManagementHttpApiModule),
     typeof(SufiAbpFeatureManagementMongoDbModule),

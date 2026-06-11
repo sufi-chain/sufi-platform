@@ -4,6 +4,7 @@ using SufiChain.SufiAbp.Messaging.Email;
 using SufiChain.SufiAbp.Messaging.Localization;
 using SufiChain.SufiAbp.Messaging.Smtp;
 using Volo.Abp.BackgroundJobs;
+using Volo.Abp.EventBus;
 using Volo.Abp.Localization;
 using Volo.Abp.Modularity;
 using Volo.Abp.Settings;
@@ -13,6 +14,7 @@ namespace SufiChain.SufiAbp.Messaging;
 
 [DependsOn(
     typeof(AbpBackgroundJobsModule),
+    typeof(AbpEventBusModule),
     typeof(AbpSettingsModule),
     typeof(AbpLocalizationModule),
     typeof(AbpVirtualFileSystemModule)

@@ -3,6 +3,8 @@
     <TargetFramework>net10.0</TargetFramework>
     <Nullable>enable</Nullable>
     <RootNamespace>SufiChain.SufiAbp.PermissionManagement.OpenIddict</RootNamespace>
+    <PackageId>SufiChain.SufiAbp.PermissionManagement.Domain.OpenIddict</PackageId>
+    <Description>Permission management integration for SufiAbp OpenIddict.</Description>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\..\permission-management\src\SufiChain.SufiAbp.PermissionManagement.Domain\SufiChain.SufiAbp.PermissionManagement.Domain.csproj" />

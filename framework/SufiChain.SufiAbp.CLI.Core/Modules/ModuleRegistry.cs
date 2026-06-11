@@ -28,7 +28,7 @@ public class ModuleRegistry
             Category = ModuleCategory.Core,
             IsCore = true,
             Description = "User and role management with ABP Identity integration",
-            ApplicableHosts = new[] { HostType.WebApp, HostType.AuthServer, HostType.WebPublic, HostType.HttpApi, HostType.Web },
+            ApplicableHosts = new[] { HostType.WebApp, HostType.AuthServer, HostType.WebSite, HostType.HttpApi, HostType.Web },
             AvailablePackages = ModulePackageTypes.All
         });
         
@@ -106,9 +106,9 @@ public class ModuleRegistry
             DisplayName = "File Manager",
             NuGetPackagePrefix = "SufiChain.SufiAbp.FileManager",
             Category = ModuleCategory.Infrastructure,
-            IsCore = false,
+            IsCore = true,
             Description = "File upload, storage, and management with RTE integration",
-            ApplicableHosts = new[] { HostType.WebApp, HostType.WebPublic, HostType.HttpApi, HostType.Web }
+            ApplicableHosts = new[] { HostType.WebApp, HostType.WebSite, HostType.HttpApi, HostType.Web }
         });
         
         // Audit Logging
@@ -118,7 +118,7 @@ public class ModuleRegistry
             DisplayName = "Audit Logging",
             NuGetPackagePrefix = "SufiChain.SufiAbp.AuditLogging",
             Category = ModuleCategory.Infrastructure,
-            IsCore = false,
+            IsCore = true,
             Description = "Audit log viewing and management UI",
             ApplicableHosts = new[] { HostType.WebApp, HostType.HttpApi, HostType.Web }
         });
@@ -130,7 +130,7 @@ public class ModuleRegistry
             DisplayName = "Background Jobs",
             NuGetPackagePrefix = "SufiChain.SufiAbp.BackgroundJobs",
             Category = ModuleCategory.Infrastructure,
-            IsCore = false,
+            IsCore = true,
             Description = "Background job management and monitoring UI",
             ApplicableHosts = new[] { HostType.WebApp, HostType.HttpApi, HostType.Web }
         });
@@ -142,7 +142,7 @@ public class ModuleRegistry
             DisplayName = "Localization Management",
             NuGetPackagePrefix = "SufiChain.SufiAbp.LocalizationManagement",
             Category = ModuleCategory.Infrastructure,
-            IsCore = false,
+            IsCore = true,
             Description = "Runtime localization management UI",
             ApplicableHosts = new[] { HostType.WebApp, HostType.HttpApi, HostType.Web }
         });
@@ -153,7 +153,7 @@ public class ModuleRegistry
             DisplayName = "AI Management",
             NuGetPackagePrefix = "SufiChain.SufiAbp.AIManagement",
             Category = ModuleCategory.Infrastructure,
-            IsCore = false,
+            IsCore = true,
             Description = "AI workspace, RAG, MCP, and provider management",
             DependsOn = new[] { "file-manager" },
             ApplicableHosts = new[] { HostType.WebApp, HostType.HttpApi, HostType.Web },
@@ -166,7 +166,7 @@ public class ModuleRegistry
             DisplayName = "Short Link Generator",
             NuGetPackagePrefix = "SufiChain.SufiAbp.ShortLinkGenerator",
             Category = ModuleCategory.Infrastructure,
-            IsCore = false,
+            IsCore = true,
             Description = "URL shortening with click analytics",
             ApplicableHosts = new[] { HostType.WebApp, HostType.HttpApi, HostType.Web },
             AvailablePackages = ModulePackageTypes.All
@@ -178,7 +178,7 @@ public class ModuleRegistry
             DisplayName = "Blob Storing Database",
             NuGetPackagePrefix = "SufiChain.SufiAbp.BlobStoring.Database",
             Category = ModuleCategory.Infrastructure,
-            IsCore = false,
+            IsCore = true,
             Description = "Database-backed blob storage module",
             ApplicableHosts = new[] { HostType.WebApp, HostType.HttpApi, HostType.Web },
             AvailablePackages = ModulePackageTypes.DomainShared | ModulePackageTypes.Domain | ModulePackageTypes.EntityFrameworkCore | ModulePackageTypes.MongoDB
@@ -216,8 +216,44 @@ public class ModuleRegistry
             Category = ModuleCategory.Infrastructure,
             IsCore = true,
             Description = "Default Sufi Platform shell, layout, navigation, and theme",
-            ApplicableHosts = new[] { HostType.WebApp, HostType.AuthServer, HostType.WebPublic, HostType.Web },
+            ApplicableHosts = new[] { HostType.WebApp, HostType.AuthServer, HostType.WebSite, HostType.Web },
             AvailablePackages = ModulePackageTypes.Blazor
+        });
+
+        Register(new ModuleDefinition
+        {
+            Key = "calendar",
+            DisplayName = "Calendar",
+            NuGetPackagePrefix = "SufiChain.SufiAbp.Calendar",
+            Category = ModuleCategory.Infrastructure,
+            IsCore = true,
+            Description = "Calendar events, scheduling, public calendar UI, and AI assistance",
+            ApplicableHosts = new[] { HostType.WebApp, HostType.WebSite, HostType.HttpApi, HostType.Web },
+            AvailablePackages = ModulePackageTypes.All | ModulePackageTypes.BlazorPublic
+        });
+
+        Register(new ModuleDefinition
+        {
+            Key = "menu-management",
+            DisplayName = "Menu Management",
+            NuGetPackagePrefix = "SufiChain.SufiAbp.MenuManagement",
+            Category = ModuleCategory.Infrastructure,
+            IsCore = true,
+            Description = "Dynamic menu and navigation management",
+            ApplicableHosts = new[] { HostType.WebApp, HostType.HttpApi, HostType.Web },
+            AvailablePackages = ModulePackageTypes.All
+        });
+
+        Register(new ModuleDefinition
+        {
+            Key = "tags-management",
+            DisplayName = "Tags Management",
+            NuGetPackagePrefix = "SufiChain.SufiAbp.TagsManagement",
+            Category = ModuleCategory.Infrastructure,
+            IsCore = true,
+            Description = "Reusable tag taxonomy and tagging services",
+            ApplicableHosts = new[] { HostType.WebApp, HostType.HttpApi, HostType.Web },
+            AvailablePackages = ModulePackageTypes.DomainShared | ModulePackageTypes.Domain | ModulePackageTypes.ApplicationContracts | ModulePackageTypes.Application | ModulePackageTypes.EntityFrameworkCore | ModulePackageTypes.MongoDB | ModulePackageTypes.HttpApi | ModulePackageTypes.HttpApiClient
         });
 
         // Demo/sample modules must be explicitly selected.

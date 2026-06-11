@@ -7,6 +7,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Http;
+using Microsoft.Extensions.DependencyInjection;
+using SufiChain.SufiAbp.AI;
+using SufiChain.SufiAbp.AIManagement.Adapters;
 using SufiChain.SufiAbp.AIManagement.MCP.Abstractions;
 using SufiChain.SufiAbp.AIManagement.MCP.Entities;
 using SufiChain.SufiAbp.AIManagement.MCP.External;
@@ -26,6 +29,7 @@ public class MCPToolRegistry : IMCPToolRegistry, ISingletonDependency
     private readonly IWorkspaceRepository _workspaceRepository;
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly ILogger<MCPToolRegistry> _logger;
+    private readonly IServiceProvider _serviceProvider;
     private readonly Dictionary<Guid, IMCPTransportClient> _activeClients = new();
     private readonly SemaphoreSlim _lock = new(1, 1);
     
@@ -34,12 +38,14 @@ public class MCPToolRegistry : IMCPToolRegistry, ISingletonDependency
         IMCPServerRepository serverRepository,
         IWorkspaceRepository workspaceRepository,
         IHttpClientFactory httpClientFactory,
+        IServiceProvider serviceProvider,
         ILogger<MCPToolRegistry> logger)
     {
         _internalToolDiscovery = internalToolDiscovery;
         _serverRepository = serverRepository;
         _workspaceRepository = workspaceRepository;
         _httpClientFactory = httpClientFactory;
+        _serviceProvider = serviceProvider;
         _logger = logger;
     }
     
@@ -60,6 +66,11 @@ public class MCPToolRegistry : IMCPToolRegistry, ISingletonDependency
         // Get internal tools
         var internalTools = await _internalToolDiscovery.DiscoverToolsAsync(cancellationToken);
         tools.AddRange(internalTools);
+
+        var frameworkTools = _serviceProvider
+            .GetServices<ISufiAbpAITool>()
+            .Select(tool => (IMCPTool)new McpToolAdapter(tool));
+        tools.AddRange(frameworkTools);
         
         // Get external tools from MCP servers
         var servers = await _serverRepository.GetEnabledByWorkspaceAsync(workspace.Id, cancellationToken);

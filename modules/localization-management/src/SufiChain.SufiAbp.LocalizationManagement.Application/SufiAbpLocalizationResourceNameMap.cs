@@ -12,6 +12,7 @@ internal static class SufiAbpLocalizationResourceNameMap
         "AbpEmailing",
         "AbpExceptionHandling",
         "AbpFeature",
+        "AbpSettings",
         "AbpGlobalFeature",
         "AbpLocalization",
         "AbpMultiTenancy",

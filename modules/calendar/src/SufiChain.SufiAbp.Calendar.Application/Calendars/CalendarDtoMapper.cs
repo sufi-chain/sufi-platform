@@ -1,0 +1,77 @@
+using SufiChain.SufiAbp.Data;
+
+namespace SufiChain.SufiAbp.Calendar.Calendars;
+
+public static class CalendarDtoMapper
+{
+    public static CalendarDto ToDto(Calendar calendar)
+    {
+        return new CalendarDto
+        {
+            Id = calendar.Id,
+            TenantId = calendar.TenantId,
+            Name = calendar.Name,
+            Kind = calendar.Kind,
+            TimeZoneId = calendar.TimeZoneId,
+            OwnerType = calendar.OwnerType,
+            OwnerId = calendar.OwnerId,
+            IsDefault = calendar.IsDefault,
+            MaxConcurrent = calendar.MaxConcurrent,
+            CreationTime = calendar.CreationTime,
+            CreatorId = calendar.CreatorId,
+            LastModificationTime = calendar.LastModificationTime,
+            LastModifierId = calendar.LastModifierId,
+            IsDeleted = calendar.IsDeleted,
+            DeleterId = calendar.DeleterId,
+            DeletionTime = calendar.DeletionTime,
+            ExtraProperties = new ExtraPropertyDictionary(calendar.ExtraProperties),
+            WorkingHourRules = calendar.WorkingHourRules.Select(ToDto).ToList(),
+            Exceptions = calendar.Exceptions.Select(ToDto).ToList()
+        };
+    }
+
+    public static CalendarLookupDto ToLookupDto(Calendar calendar)
+    {
+        return new CalendarLookupDto
+        {
+            Id = calendar.Id,
+            Name = calendar.Name,
+            Kind = calendar.Kind,
+            TimeZoneId = calendar.TimeZoneId,
+            OwnerType = calendar.OwnerType,
+            OwnerId = calendar.OwnerId,
+            IsDefault = calendar.IsDefault
+        };
+    }
+
+    public static WorkingHourRuleDto ToDto(WorkingHourRule rule)
+    {
+        return new WorkingHourRuleDto
+        {
+            Id = rule.Id,
+            CalendarId = rule.CalendarId,
+            DayOfWeek = rule.DayOfWeek,
+            StartTime = rule.StartTime.ToTimeSpan(),
+            EndTime = rule.EndTime.ToTimeSpan(),
+            MaxConcurrent = rule.MaxConcurrent
+        };
+    }
+
+    public static CalendarExceptionDto ToDto(CalendarException exception)
+    {
+        return new CalendarExceptionDto
+        {
+            Id = exception.Id,
+            CalendarId = exception.CalendarId,
+            Date = exception.Date.ToDateTime(TimeOnly.MinValue),
+            Kind = exception.Kind,
+            Description = exception.Description,
+            Ranges = exception.Ranges.Select(x => new WorkingHourRangeDto
+            {
+                StartTime = x.StartTime.ToTimeSpan(),
+                EndTime = x.EndTime.ToTimeSpan(),
+                MaxConcurrent = x.MaxConcurrent
+            }).ToList()
+        };
+    }
+}

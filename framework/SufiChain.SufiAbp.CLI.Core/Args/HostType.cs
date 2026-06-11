@@ -25,10 +25,10 @@ public enum HostType
     AuthServer,
     
     /// <summary>
-    /// Public website (Blazor.WebPublic) with dynamic layouts - for CMS public side.
+    /// Public website (Blazor.WebSite) with dynamic layouts.
     /// In tiered: OIDC client pointing to AuthServer.
     /// </summary>
-    WebPublic,
+    WebSite,
     
     /// <summary>
     /// MVC/Razor Pages host (Web) - traditional server-rendered UI.

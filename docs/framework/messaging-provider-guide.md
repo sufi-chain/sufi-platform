@@ -534,5 +534,5 @@ public class TwilioSmsSender : SmsSenderBase // Inherits background job logic
 ## Next Steps
 
 - [Dynamic Settings UI Configuration](./messaging-settings-ui-guide.md)
-- [Testing Providers](./messaging-provider-testing.md)
-- [Provider Best Practices](./messaging-provider-best-practices.md)
+- [Testing Providers](./messagingvider-testing.md)
+- [Provider Best Practices](./messagingvider-best-practices.md)

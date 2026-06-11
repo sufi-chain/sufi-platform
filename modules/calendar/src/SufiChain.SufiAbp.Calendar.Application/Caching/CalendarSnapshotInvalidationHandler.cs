@@ -1,0 +1,20 @@
+using SufiChain.SufiAbp.Calendar.Events;
+using SufiChain.SufiAbp.DependencyInjection;
+using SufiChain.SufiAbp.EventBus.Distributed;
+
+namespace SufiChain.SufiAbp.Calendar.Caching;
+
+public class CalendarSnapshotInvalidationHandler : IDistributedEventHandler<CalendarChangedEto>, ITransientDependency
+{
+    private readonly ICalendarSnapshotCache _snapshotCache;
+
+    public CalendarSnapshotInvalidationHandler(ICalendarSnapshotCache snapshotCache)
+    {
+        _snapshotCache = snapshotCache;
+    }
+
+    public virtual async Task HandleEventAsync(CalendarChangedEto eventData)
+    {
+        await _snapshotCache.RemoveAsync(eventData.CalendarId, eventData.TenantId);
+    }
+}

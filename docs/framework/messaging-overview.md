@@ -307,7 +307,7 @@ If you're migrating from `SufiChain.SufiAbp.Emailing`:
 
 ## Next Steps
 
-- [Creating Custom Providers](./messaging-provider-guide.md)
+- [Creating Custom Providers](./messagingvider-guide.md)
 - [Dynamic Settings Configuration](./messaging-settings-guide.md)
 - [TextTemplating Integration](./text-templating-overview.md)
 - [Background Jobs Configuration](./messaging-background-jobs.md)

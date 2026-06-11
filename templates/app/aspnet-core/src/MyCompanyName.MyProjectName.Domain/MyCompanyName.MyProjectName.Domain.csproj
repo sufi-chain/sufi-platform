@@ -11,7 +11,7 @@
     <PackageReference Include="OpenIddict.Abstractions" Version="$(OpenIddictVersion)" />
     <ProjectReference Include="..\..\..\..\..\src\framework\SufiChain.SufiAbp.Data\SufiChain.SufiAbp.Data.csproj" />
     <ProjectReference Include="..\MyCompanyName.MyProjectName.Domain.Shared\MyCompanyName.MyProjectName.Domain.Shared.csproj" />
-    <PackageReference Include="SufiChain.SufiAbp.Emailing" Version="$(SufiVersion)" />
+    <PackageReference Include="SufiChain.SufiAbp.Messaging" Version="$(SufiVersion)" />
   </ItemGroup>
   </TEMPLATE-REMOVE>
 

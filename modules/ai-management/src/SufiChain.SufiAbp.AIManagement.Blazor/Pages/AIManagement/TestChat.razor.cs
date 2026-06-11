@@ -19,8 +19,8 @@ public partial class TestChat : AIManagementComponentBase
     private IWorkspaceAppService WorkspaceAppService => LazyGetRequiredService(ref _workspaceAppService);
     private IWorkspaceAppService? _workspaceAppService;
 
-    private IAIAppService AIAppService => LazyGetRequiredService(ref _aiAppService);
-    private IAIAppService? _aiAppService;
+    private ISufiAbpAIChatAppService AIChatAppService => LazyGetRequiredService(ref _aiChatAppService);
+    private ISufiAbpAIChatAppService? _aiChatAppService;
 
     private List<WorkspaceDto> _workspaces = new();
     private Guid? _selectedWorkspaceId;
@@ -109,25 +109,24 @@ public partial class TestChat : AIManagementComponentBase
             var startTime = DateTime.Now;
             int? totalTokens = null;
 
-            var input = new SendChatMessageInput
+            var input = new SufiAbpAISendChatMessageInput
             {
                 WorkspaceName = _selectedWorkspaceName,
                 Message = userMessage,
                 ConversationHistory = _messages
                     .Take(Math.Max(0, _messages.Count - 2))
                     .Where(m => m.IsUser || !string.IsNullOrEmpty(m.Content))
-                    .Select(m => new ChatMessageDto
+                    .Select(m => new SufiAbpAIChatMessageDto
                     {
                         Role = m.IsUser ? "user" : "assistant",
                         Content = m.Content
                     })
-                    .ToList(),
-                Stream = true
+                    .ToList()
             };
 
             try
             {
-                await foreach (var chunk in AIAppService.StreamChatMessageAsync(input))
+                await foreach (var chunk in AIChatAppService.StreamMessageAsync(input))
                 {
                     assistantMessage.Content += chunk.Message;
                     totalTokens = chunk.TokensUsed;
@@ -167,23 +166,22 @@ public partial class TestChat : AIManagementComponentBase
         {
             var startTime = DateTime.Now;
             
-            var input = new SendChatMessageInput
+            var input = new SufiAbpAISendChatMessageInput
             {
                 WorkspaceName = _selectedWorkspaceName,
                 Message = userMessage,
                 ConversationHistory = _messages
                     .Take(Math.Max(0, _messages.Count - 1))
                     .Where(m => m.IsUser || !string.IsNullOrEmpty(m.Content))
-                    .Select(m => new ChatMessageDto
+                    .Select(m => new SufiAbpAIChatMessageDto
                     {
                         Role = m.IsUser ? "user" : "assistant",
                         Content = m.Content
                     })
-                    .ToList(),
-                Stream = false
+                    .ToList()
             };
 
-            var response = await AIAppService.SendChatMessageAsync(input);
+            var response = await AIChatAppService.SendMessageAsync(input);
             
             var latency = (DateTime.Now - startTime).TotalMilliseconds;
 

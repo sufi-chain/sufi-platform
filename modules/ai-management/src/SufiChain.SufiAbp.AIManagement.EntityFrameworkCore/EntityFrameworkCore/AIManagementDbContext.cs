@@ -24,6 +24,6 @@ public class AIManagementDbContext : AbpDbContext<AIManagementDbContext>, IAIMan
     {
         base.OnModelCreating(builder);
 
-        builder.ConfigureAIManagement();
+        builder.ConfigureSufiAbpAIManagement();
     }
 }

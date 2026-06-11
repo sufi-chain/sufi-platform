@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk.Razor">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <RootNamespace>SufiChain.SufiAbp.Calendar.Blazor</RootNamespace>
+  </PropertyGroup>
+  <PropertyGroup>
+    <PackageId>SufiChain.SufiAbp.Calendar.Blazor</PackageId>
+    <Description>Calendar module Blazor admin UI for Sufi Platform.</Description>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="$(MicrosoftAspNetCoreComponentsWebVersion)" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.Authorization" Version="$(AspNetCoreVersion)" />
+    <ProjectReference Include="../../../../framework/SufiChain.SufiAbp.UI.Blazor/SufiChain.SufiAbp.UI.Blazor.csproj" />
+    <ProjectReference Include="..\SufiChain.SufiAbp.Calendar.Application.Contracts\SufiChain.SufiAbp.Calendar.Application.Contracts.csproj" />
+  </ItemGroup>
+</Project>

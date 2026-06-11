@@ -3,6 +3,8 @@ using Microsoft.Extensions.Options;
 using Microsoft.Extensions.DependencyInjection;
 using Volo.Abp;
 using Volo.Abp.Domain.Services;
+using SufiChain.SufiAbp.AI;
+using SufiChain.SufiAbp.AIManagement.Adapters;
 using SufiChain.SufiAbp.Features;
 using SufiChain.SufiAbp.AI.Features;
 using SufiChain.SufiAbp.AIManagement.Workspaces;
@@ -214,6 +216,12 @@ public class RAGService : DomainService, IRAGService
             foreach (var source in sources)
             {
                 RegisterDocumentSource(source);
+            }
+
+            var frameworkSources = _serviceProvider.GetServices<ISufiAbpAIDocumentSource>();
+            foreach (var source in frameworkSources)
+            {
+                RegisterDocumentSource(new SufiAbpAIDocumentSourceAdapter(source));
             }
         }
     }

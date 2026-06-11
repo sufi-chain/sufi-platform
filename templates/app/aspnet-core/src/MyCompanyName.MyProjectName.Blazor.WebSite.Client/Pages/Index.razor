@@ -1,0 +1,27 @@
+@page "/"
+@using Microsoft.Extensions.Localization
+@using MyCompanyName.MyProjectName.Localization
+@inject IStringLocalizer<DemoAppResource> L
+
+<PageTitle>@L["Menu:Home"] - DemoApp Public</PageTitle>
+
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-8 text-center">
+            <h1 class="display-4 mb-4">Welcome to DemoApp Public</h1>
+            <p class="lead text-muted">
+                This is the public-facing Blazor Web App using the KomTheme with SufiBlazor design system.
+            </p>
+            <p class="text-muted">
+                Modern .NET 10 Blazor Web App with InteractiveAuto render mode supporting both Server and WebAssembly.
+            </p>
+            <hr class="my-4" />
+            <div class="alert alert-info">
+                <h5 class="alert-heading">WebSite Client</h5>
+                <p class="mb-0">
+                    This WebAssembly client is part of the WebSite host for CMS public content rendering.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>

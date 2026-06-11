@@ -43,9 +43,9 @@ public class ProjectBuildArgs
     public bool IncludeAuthServer { get; init; }
     
     /// <summary>
-    /// Whether to include the public website (SufiCMS).
+    /// Whether to include the optional public website host.
     /// </summary>
-    public bool IncludePublicWebApp { get; init; }
+    public bool IncludeWebSite { get; init; }
     
     /// <summary>
     /// EF Core sub-provider. Only relevant when <see cref="DatabaseProvider"/> is
@@ -92,7 +92,7 @@ public class ProjectBuildArgs
     
     /// <summary>
     /// Hosts to include in the generated solution.
-    /// Computed from <see cref="SolutionKind"/>, <see cref="IsTiered"/>, and <see cref="IncludePublicWebApp"/>.
+    /// Computed from <see cref="SolutionKind"/>, <see cref="IsTiered"/>, and <see cref="IncludeWebSite"/>.
     /// </summary>
     public HashSet<HostType> IncludedHosts { get; init; } = new()
     {
@@ -102,8 +102,8 @@ public class ProjectBuildArgs
     };
     
     /// <summary>
-    /// Optional modules to include beyond the core modules.
-    /// Core modules (identity) are always included.
+    /// Optional demo/sample modules to include beyond the default platform modules.
+    /// Real platform modules registered from sufi-abp/modules are always included.
     /// </summary>
     public HashSet<string> IncludedModules { get; init; } = new(StringComparer.OrdinalIgnoreCase);
     
@@ -133,9 +133,9 @@ public class ProjectBuildArgs
     
     /// <summary>
     /// Computes the included hosts from <see cref="SolutionKind"/>, <see cref="IsTiered"/>,
-    /// and <see cref="IncludePublicWebApp"/>.
+    /// and <see cref="IncludeWebSite"/>.
     /// </summary>
-    public static HashSet<HostType> ComputeIncludedHosts(SolutionKind solutionKind, bool isTiered, bool includePublicWebApp)
+    public static HashSet<HostType> ComputeIncludedHosts(SolutionKind solutionKind, bool isTiered, bool includeWebSite)
     {
         var hosts = new HashSet<HostType>();
         
@@ -147,12 +147,12 @@ public class ProjectBuildArgs
                 break;
                 
             case SolutionKind.Layered when isTiered:
-                // Layered tiered: WebApp + AuthServer + HttpApi (+ optional WebPublic)
+                // Layered tiered: WebApp + AuthServer + HttpApi (+ optional WebSite)
                 hosts.Add(HostType.WebApp);
                 hosts.Add(HostType.AuthServer);
                 hosts.Add(HostType.HttpApi);
-                if (includePublicWebApp)
-                    hosts.Add(HostType.WebPublic);
+                if (includeWebSite)
+                    hosts.Add(HostType.WebSite);
                 break;
                 
             case SolutionKind.Layered:

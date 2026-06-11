@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <RootNamespace>SufiChain.SufiAbp.Calendar</RootNamespace>
+  </PropertyGroup>
+  <PropertyGroup>
+    <PackageId>SufiChain.SufiAbp.Calendar.Application.Contracts</PackageId>
+    <Description>Calendar module application contracts for Sufi Platform.</Description>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="../../../../framework/SufiChain.SufiAbp.Ddd.Application.Contracts/SufiChain.SufiAbp.Ddd.Application.Contracts.csproj" />
+    <ProjectReference Include="../../../../framework/SufiChain.SufiAbp.Authorization/SufiChain.SufiAbp.Authorization.csproj" />
+    <ProjectReference Include="../../../../framework/SufiChain.SufiAbp.Core/SufiChain.SufiAbp.Core.csproj" />
+    <ProjectReference Include="..\SufiChain.SufiAbp.Calendar.Domain.Shared\SufiChain.SufiAbp.Calendar.Domain.Shared.csproj" />
+  </ItemGroup>
+</Project>

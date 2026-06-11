@@ -4,6 +4,8 @@
     <Nullable>enable</Nullable>
     <RootNamespace>SufiChain.SufiAbp.OpenIddict</RootNamespace>
     <GenerateEmbeddedFilesManifest>true</GenerateEmbeddedFilesManifest>
+    <PackageId>SufiChain.SufiAbp.OpenIddict.Domain.Shared</PackageId>
+    <Description>Shared domain contracts, constants, and localization for SufiAbp OpenIddict.</Description>
   </PropertyGroup>
 
   <ItemGroup>

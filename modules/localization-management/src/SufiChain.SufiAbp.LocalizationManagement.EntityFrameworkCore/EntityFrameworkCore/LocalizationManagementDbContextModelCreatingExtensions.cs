@@ -18,7 +18,7 @@ public static class LocalizationManagementDbContextModelCreatingExtensions
 
         builder.Entity<LocalizationResource>(b =>
         {
-            b.ToTable(SufiAbpLocalizationManagementDbProperties.DbTablePrefix + "LocalizationResources", SufiAbpLocalizationManagementDbProperties.DbSchema);
+            b.ToTable(SufiAbpLocalizationManagementDbProperties.DbTablePrefix + "Resources", SufiAbpLocalizationManagementDbProperties.DbSchema);
 
             b.ConfigureByConvention();
 
@@ -45,7 +45,7 @@ public static class LocalizationManagementDbContextModelCreatingExtensions
 
         builder.Entity<LocalizationText>(b =>
         {
-            b.ToTable(SufiAbpLocalizationManagementDbProperties.DbTablePrefix + "LocalizationTexts", SufiAbpLocalizationManagementDbProperties.DbSchema);
+            b.ToTable(SufiAbpLocalizationManagementDbProperties.DbTablePrefix + "Texts", SufiAbpLocalizationManagementDbProperties.DbSchema);
 
             b.ConfigureByConvention();
 

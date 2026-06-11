@@ -4,19 +4,17 @@ using SufiChain.SufiAbp.CLI.Templates;
 namespace SufiChain.SufiAbp.CLI.ProjectBuilding.Steps;
 
 /// <summary>
-/// Reads template files from ZIP, filesystem, or embedded resources.
-/// Priority: Environment variable > Local ZIP > Filesystem (dev) > GitHub download > Embedded
+/// Reads template files from the Sufi template source.
+/// Priority: explicit environment override, debug filesystem templates, release CDN zip cache.
 /// </summary>
 public class ReadTemplateFilesStep : ProjectBuildPipelineStep
 {
     private readonly string? _templatePath;
-    private readonly bool _useEmbedded;
     private readonly TemplateManager _templateManager;
 
-    public ReadTemplateFilesStep(string? templatePath, bool useEmbedded, TemplateManager templateManager)
+    public ReadTemplateFilesStep(string? templatePath, TemplateManager templateManager)
     {
         _templatePath = templatePath;
-        _useEmbedded = useEmbedded;
         _templateManager = templateManager;
     }
 
@@ -28,8 +26,6 @@ public class ReadTemplateFilesStep : ProjectBuildPipelineStep
         
         try
         {
-            // Use the new unified template loading
-            // Priority: ENV > Local ZIP > Filesystem (dev) > GitHub download > Embedded
             var files = await _templateManager.LoadTemplateAsync(
                 templateName,
                 cancellationToken: default);
@@ -46,54 +42,41 @@ public class ReadTemplateFilesStep : ProjectBuildPipelineStep
         }
         catch (Exception ex) when (ex is not InvalidOperationException)
         {
-            // Fallback: try legacy loading methods
             await FallbackLoadAsync(context, templateName);
         }
     }
     
     /// <summary>
-    /// Fallback loading using legacy methods if the new unified loading fails.
+    /// Fallback loading from the pipeline-provided path if the primary source fails.
     /// </summary>
     private async Task FallbackLoadAsync(ProjectBuildContext context, string templateName)
     {
         // Try filesystem path first (legacy dev mode)
-        if (!_useEmbedded && !string.IsNullOrEmpty(_templatePath))
+        if (!string.IsNullOrEmpty(_templatePath))
         {
             await LoadFromFileSystemAsync(context, _templatePath);
             return;
         }
         
-        // Try embedded resources
-        var files = _templateManager.LoadEmbeddedTemplate(templateName);
-        foreach (var kvp in files)
-        {
-            context.Files[kvp.Key] = kvp.Value;
-        }
+        var assemblyLocation = typeof(TemplateManager).Assembly.Location;
+        var baseDir = AppContext.BaseDirectory;
+        var currentDir = Directory.GetCurrentDirectory();
         
-        if (context.Files.Count == 0)
-        {
-            var assemblyLocation = typeof(TemplateManager).Assembly.Location;
-            var baseDir = AppContext.BaseDirectory;
-            var currentDir = Directory.GetCurrentDirectory();
-            
-            throw new InvalidOperationException(
-                $"No template files found for '{templateName}'.\n\n" +
-                "Debug info:\n" +
-                $"  Assembly location: {assemblyLocation}\n" +
-                $"  AppContext.BaseDirectory: {baseDir}\n" +
-                $"  Current directory: {currentDir}\n\n" +
-                "The CLI looks for templates in this order:\n" +
-                "  1. SOPHI_TEMPLATE_PATH environment variable\n" +
-                "  2. SOPHI_TEMPLATE_ZIP environment variable (ZIP file)\n" +
-                "  3. Local ZIP in src/templates/ or templates/ directory\n" +
-                "  4. .dev/hosts/{architecture}/ (development mode, e.g. .dev/hosts/layered-tiered/)\n" +
-                "  5. GitHub releases download\n" +
-                "  6. Embedded resources\n\n" +
-                "Solutions:\n" +
-                "  1. Run from the sufi-platform repository root\n" +
-                "  2. Generate template ZIP: .\\.dev\\build\\generate-templates.ps1 -All\n" +
-                "  3. Set SOPHI_TEMPLATE_PATH (or load .dev/.env for development)");
-        }
+        throw new InvalidOperationException(
+            $"No template files found for '{templateName}'.\n\n" +
+            "Debug info:\n" +
+            $"  Assembly location: {assemblyLocation}\n" +
+            $"  AppContext.BaseDirectory: {baseDir}\n" +
+            $"  Current directory: {currentDir}\n\n" +
+            "The CLI looks for templates in this order:\n" +
+            "  1. SOPHI_TEMPLATE_ZIP environment variable\n" +
+            "  2. SOPHI_TEMPLATE_PATH environment variable\n" +
+            "  3. Debug: sufi-abp/templates/app/aspnet-core\n" +
+            "  4. Release: https://cdn.sabp.ir/templates/latest.json and versioned template zip\n\n" +
+            "Solutions:\n" +
+            "  1. Run from the sufi-abp repository root in Debug mode\n" +
+            "  2. Set SOPHI_TEMPLATE_PATH to D:\\Projects\\SCIS\\sufi-chain\\sufi-abp\\templates\n" +
+            "  3. Publish app-blazor-webapp-unified.zip under cdn.sabp.ir/templates for Release mode");
     }
 
     private async Task LoadFromFileSystemAsync(ProjectBuildContext context, string basePath)

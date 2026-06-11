@@ -178,7 +178,7 @@
 		</PackageReference>
 		<!-- </TEMPLATE-REMOVE> -->
 		<PackageReference Include="SufiChain.SufiAbp.Caching" Version="$(SufiVersion)" />
-		<PackageReference Include="SufiChain.SufiAbp.Emailing" Version="$(SufiVersion)" />
+		<PackageReference Include="SufiChain.SufiAbp.Messaging" Version="$(SufiVersion)" />
 	</ItemGroup>
 
 	<ItemGroup>

@@ -10,10 +10,6 @@ namespace SufiChain.SufiAbp.AIManagement.AI;
 /// </summary>
 public interface IAIAppService : IApplicationService
 {
-    // Chat operations
-    Task<ChatResponseDto> SendChatMessageAsync(SendChatMessageInput input);
-    IAsyncEnumerable<ChatResponseDto> StreamChatMessageAsync(SendChatMessageInput input);
-    
     // Audio operations
     Task<AudioTranscriptionDto> TranscribeAudioAsync(TranscribeAudioInput input);
     Task<TextToSpeechDto> GenerateSpeechAsync(GenerateSpeechInput input);

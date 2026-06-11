@@ -1,0 +1,155 @@
+@page "/admin/calendar"
+@attribute [Authorize(CalendarPermissions.Calendars.Default)]
+@inherits CalendarManagementBase
+
+<SufiAbpPageToolbar>
+    <SbStack Direction="SbStackDirection.Row" Gap="2">
+        @if (HasCreatePermission)
+        {
+            <SbButton Color="SbColor.Primary" OnClick="OpenCreateModalAsync">
+                <StartIcon><SbIcon Name="plus" /></StartIcon>
+                <ChildContent>@L["CreateCalendar"]</ChildContent>
+            </SbButton>
+        }
+        <SbButton Variant="SbButtonVariant.Outline" OnClick="RefreshAsync">
+            <StartIcon><SbIcon Name="refresh" /></StartIcon>
+            <ChildContent>@L["Refresh"]</ChildContent>
+        </SbButton>
+    </SbStack>
+</SufiAbpPageToolbar>
+
+<SbStack Direction="SbStackDirection.Column" Gap="4">
+    <SbCard>
+        <ChildContent>
+            <SbStack Direction="SbStackDirection.Row" Gap="3" Align="SbAlign.End">
+                <SbTextField @bind-Value="FilterText" Label="@L["Filter"]" Clearable="true">
+                    <StartAdornment><SbIcon Name="search" /></StartAdornment>
+                </SbTextField>
+                <SbButton Variant="SbButtonVariant.Outline" OnClick="ClearFiltersAsync">@L["Clear"]</SbButton>
+                <SbButton Color="SbColor.Primary" OnClick="ApplyFiltersAsync">@L["Apply"]</SbButton>
+            </SbStack>
+        </ChildContent>
+    </SbCard>
+
+    <SbCard>
+        <ChildContent>
+            <SbDataGrid TItem="CalendarDto" Items="CalendarList" Loading="IsLoading" Striped="true" Hoverable="true" PageIndex="PageIndex" PageSize="PageSize" TotalCount="TotalCount" PageIndexChanged="OnPageIndexChangedAsync" KeySelector="@(item => item.Id.ToString())">
+                <EmptyTemplate>
+                    <SbEmptyState Class="text-center p-5" Title="@L["Calendar"]" Description="@L["NoCalendarsFound"]">
+                        <Icon><SbIcon Name="calendar" Size="SbSize.Xl" /></Icon>
+                    </SbEmptyState>
+                </EmptyTemplate>
+                <ChildContent>
+                    <SbColumn TItem="CalendarDto" Title="@L["Actions"]" Width="190px" Sortable="false">
+                        <CellTemplate Context="cellContext">
+                            <SbStack Direction="SbStackDirection.Row" Gap="1">
+                                @if (HasEditPermission)
+                                {
+                                    <SbTooltip Text="@L["Edit"]"><SbIconButton Size="SbSize.Sm" OnClick="@(() => OpenEditModalAsync(cellContext.Item))" AriaLabel="@L["Edit"]"><Icon><SbIcon Name="edit" /></Icon></SbIconButton></SbTooltip>
+                                    <SbTooltip Text="@L["ManageHours"]"><SbIconButton Size="SbSize.Sm" OnClick="@(() => OpenHoursModalAsync(cellContext.Item))" AriaLabel="@L["ManageHours"]"><Icon><SbIcon Name="clock" /></Icon></SbIconButton></SbTooltip>
+                                    <SbTooltip Text="@L["Exceptions"]"><SbIconButton Size="SbSize.Sm" OnClick="@(() => OpenExceptionsModalAsync(cellContext.Item))" AriaLabel="@L["Exceptions"]"><Icon><SbIcon Name="calendar-x" /></Icon></SbIconButton></SbTooltip>
+                                    <SbTooltip Text="@L["TestInstant"]"><SbIconButton Size="SbSize.Sm" OnClick="@(() => OpenTestModalAsync(cellContext.Item))" AriaLabel="@L["TestInstant"]"><Icon><SbIcon Name="activity" /></Icon></SbIconButton></SbTooltip>
+                                }
+                                @if (HasDeletePermission)
+                                {
+                                    <SbTooltip Text="@L["Delete"]"><SbIconButton Size="SbSize.Sm" Color="SbColor.Danger" OnClick="@(() => PromptDeleteAsync(cellContext.Item))" AriaLabel="@L["Delete"]"><Icon><SbIcon Name="trash" /></Icon></SbIconButton></SbTooltip>
+                                }
+                            </SbStack>
+                        </CellTemplate>
+                    </SbColumn>
+                    <SbColumn TItem="CalendarDto" Field="Name" Title="@L["Name"]" />
+                    <SbColumn TItem="CalendarDto" Field="Kind" Title="@L["Kind"]" Width="140px" />
+                    <SbColumn TItem="CalendarDto" Field="TimeZoneId" Title="@L["TimeZone"]" />
+                    <SbColumn TItem="CalendarDto" Field="IsDefault" Title="@L["Default"]" Width="120px">
+                        <CellTemplate Context="cellContext"><SbBadge Color="@(cellContext.Item.IsDefault ? SbColor.Success : SbColor.Secondary)">@(cellContext.Item.IsDefault ? L["Yes"] : L["No"])</SbBadge></CellTemplate>
+                    </SbColumn>
+                    <SbColumn TItem="CalendarDto" Field="MaxConcurrent" Title="@L["MaxConcurrent"]" Width="150px" />
+                </ChildContent>
+            </SbDataGrid>
+        </ChildContent>
+    </SbCard>
+</SbStack>
+
+<SbDialog @bind-Open="IsEditorOpen" Size="SbDialogSize.Lg" Title="@EditorTitle">
+    <ChildContent>
+        <SbForm Model="EditingCalendar" OnValidSubmit="SaveCalendarAsync">
+            <SbStack Gap="3">
+                <SbTextField @bind-Value="EditingCalendar.Name" Label="@L["Name"]" Required="true" />
+                <SbTextField @bind-Value="EditingCalendar.TimeZoneId" Label="@L["TimeZone"]" Placeholder="Asia/Tehran" Required="true" />
+                <SbCheckbox @bind-Value="EditingCalendar.IsDefault" Label="@L["Default"]" />
+                <SbNumberField TNumber="int" Value="EditorMaxConcurrentValue" ValueChanged="OnEditorMaxConcurrentChanged" Min="0" Label="@L["MaxConcurrent"]" />
+                <SbTextField @bind-Value="KindText" Label="@L["Kind"]" />
+                <SbTextField @bind-Value="OwnerTypeText" Label="@L["OwnerType"]" />
+            </SbStack>
+        </SbForm>
+    </ChildContent>
+    <Footer>
+        <SbStack Direction="SbStackDirection.Row" Gap="2" Justify="SbJustify.End">
+            <SbButton Variant="SbButtonVariant.Outline" OnClick="CloseEditorAsync">@L["Cancel"]</SbButton>
+            <SbButton Color="SbColor.Primary" OnClick="SaveCalendarAsync">@L["Save"]</SbButton>
+        </SbStack>
+    </Footer>
+</SbDialog>
+
+<SbDialog @bind-Open="IsHoursOpen" Size="SbDialogSize.Lg" Title="@L["WorkingHours"]">
+    <ChildContent>
+        <SbStack Gap="3">
+            @foreach (var rule in EditingHours)
+            {
+                <SbStack Direction="SbStackDirection.Row" Gap="2" Align="SbAlign.Center">
+                    <SbTextField @bind-Value="rule.DayOfWeekText" Label="@L["DayOfWeek"]" />
+                    <SbTextField @bind-Value="rule.StartTimeText" Label="@L["StartTime"]" />
+                    <SbTextField @bind-Value="rule.EndTimeText" Label="@L["EndTime"]" />
+                    <SbNumberField TNumber="int" Value="rule.MaxConcurrentValue" ValueChanged="@(value => rule.MaxConcurrentValue = value)" Min="0" Label="@L["MaxConcurrent"]" />
+                    <SbIconButton Color="SbColor.Danger" OnClick="@(() => RemoveHour(rule))" AriaLabel="@L["Delete"]"><Icon><SbIcon Name="trash" /></Icon></SbIconButton>
+                </SbStack>
+            }
+            <SbButton Variant="SbButtonVariant.Outline" OnClick="AddHour">@L["AddWorkingHour"]</SbButton>
+        </SbStack>
+    </ChildContent>
+    <Footer><SbButton Color="SbColor.Primary" OnClick="SaveHoursAsync">@L["Save"]</SbButton></Footer>
+</SbDialog>
+
+<SbDialog @bind-Open="IsExceptionsOpen" Size="SbDialogSize.Lg" Title="@L["Exceptions"]">
+    <ChildContent>
+        <SbStack Gap="3">
+            @foreach (var exception in EditingExceptions)
+            {
+                <SbStack Direction="SbStackDirection.Row" Gap="2" Align="SbAlign.Center">
+                    <SbDatePicker Value="exception.ExceptionDate" ValueChanged="@(value => exception.ExceptionDate = value)" Label="@L["Date"]" />
+                    <SbTextField @bind-Value="exception.KindText" Label="@L["Kind"]" />
+                    <SbTextField @bind-Value="exception.Description" Label="@L["Description"]" />
+                    <SbIconButton Color="SbColor.Danger" OnClick="@(() => RemoveException(exception))" AriaLabel="@L["Delete"]"><Icon><SbIcon Name="trash" /></Icon></SbIconButton>
+                </SbStack>
+            }
+            <SbButton Variant="SbButtonVariant.Outline" OnClick="AddException">@L["AddException"]</SbButton>
+        </SbStack>
+    </ChildContent>
+    <Footer><SbButton Color="SbColor.Primary" OnClick="SaveExceptionsAsync">@L["Save"]</SbButton></Footer>
+</SbDialog>
+
+<SbDialog @bind-Open="IsTestOpen" Size="SbDialogSize.Md" Title="@L["TestInstant"]">
+    <ChildContent>
+        <SbStack Gap="3">
+            <SbDatePicker Value="TestDate" ValueChanged="OnTestDateChanged" Label="@L["Date"]" />
+            <SbTextField @bind-Value="TestTimeText" Label="@L["TimeUtc"]" />
+            <SbButton Color="SbColor.Primary" OnClick="RunTestAsync">@L["TestInstant"]</SbButton>
+            @if (TestResult != null)
+            {
+                <SbAlert Severity="@(TestResult.IsOpen ? SbAlertSeverity.Success : SbAlertSeverity.Warning)">
+                    @(TestResult.IsOpen ? L["Open"] : L["Closed"])
+                    <br />@L["NextOpenAt"]: @TestResult.NextOpenAtUtc
+                    <br />@L["NextCloseAt"]: @TestResult.NextCloseAtUtc
+                </SbAlert>
+            }
+        </SbStack>
+    </ChildContent>
+</SbDialog>
+
+<SbDialog @bind-Open="IsDeleteOpen" Size="SbDialogSize.Sm" Title="@L["Delete"]">
+    <ChildContent><SbText>@L["AreYouSureToDelete"]</SbText></ChildContent>
+    <Footer>
+        <SbButton Variant="SbButtonVariant.Outline" OnClick="CancelDeleteAsync">@L["Cancel"]</SbButton>
+        <SbButton Color="SbColor.Danger" OnClick="DeleteConfirmedAsync">@L["Delete"]</SbButton>
+    </Footer>
+</SbDialog>

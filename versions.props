@@ -1,14 +1,22 @@
 <Project>
-    <PropertyGroup>
-        <LangVersion>latest</LangVersion>
-        <SufiBlazorVersion>1.0.0-rc.1.0</SufiBlazorVersion>
-        <KomThemeVersion>$(SufiVersion)</KomThemeVersion>
-    </PropertyGroup>
 
-    <!-- ABP Framework Package Versions -->
-    <PropertyGroup>
-        <AbpVersion>10.3.0</AbpVersion>
-    </PropertyGroup>
+  <PropertyGroup>
+    <LangVersion>latest</LangVersion>
+  </PropertyGroup>
+  
+  <!-- ABP Framework Package Versions -->
+  <PropertyGroup>
+    <AbpVersion>10.3.0</AbpVersion>
+  </PropertyGroup>
+  
+  <!-- Sufi Platform Package Versions -->
+  <PropertyGroup>
+      <SufiVersion>1.0.0-alpha.4.0</SufiVersion>
+      <KomThemeVersion>1.0.0-rc.1.0</KomThemeVersion>
+      <SufiBlazorVersion>1.0.0-rc.1.0</SufiBlazorVersion>
+  </PropertyGroup>
+
+
 
     <!-- Logging Package Versions -->
     <PropertyGroup>

@@ -9,7 +9,7 @@ namespace SufiChain.SufiAbp.AIManagement.EntityFrameworkCore;
 
 public static class AIManagementDbContextModelCreatingExtensions
 {
-    public static void ConfigureAIManagement(this ModelBuilder builder)
+    public static void ConfigureSufiAbpAIManagement(this ModelBuilder builder)
     {
         Check.NotNull(builder, nameof(builder));
 

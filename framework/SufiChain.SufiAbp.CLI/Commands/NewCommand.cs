@@ -54,6 +54,10 @@ public class NewCommand : AsyncCommand<NewCommand.Settings>
         [CommandOption("--modules")]
         [Description("Optional sample/demo modules to include (e.g. sufi-blazor-demo). Real platform modules are enabled by default.")]
         public string? Modules { get; set; }
+
+        [CommandOption("--include-website")]
+        [Description("Include optional Blazor.WebSite and Blazor.WebSite.Client projects (tiered architecture only).")]
+        public bool IncludeWebSite { get; set; }
         
         [CommandOption("--app-name")]
         [Description("Application display name for branding")]
@@ -183,9 +187,9 @@ public class NewCommand : AsyncCommand<NewCommand.Settings>
                 {
                     AnsiConsole.MarkupLine("  6. Run Blazor.WebApp (admin panel)");
                 }
-                if (args.IncludedHosts.Contains(HostType.WebPublic))
+                if (args.IncludedHosts.Contains(HostType.WebSite))
                 {
-                    AnsiConsole.MarkupLine("  7. Run Blazor.WebPublic (public site)");
+                    AnsiConsole.MarkupLine("  7. Run Blazor.WebSite (public website)");
                 }
             }
             else
@@ -324,8 +328,15 @@ public class NewCommand : AsyncCommand<NewCommand.Settings>
         settings.MultiTenancy = AnsiConsole.Prompt(
             new ConfirmationPrompt("[green]?[/] Enable multi-tenancy?")
                 { DefaultValue = true });
+
+        if (settings.Tiered)
+        {
+            settings.IncludeWebSite = AnsiConsole.Prompt(
+                new ConfirmationPrompt("[green]?[/] Include optional public website host (Blazor.WebSite + WebSite.Client)?")
+                    { DefaultValue = false });
+        }
         
-        // Step 5 -- Optional sample/demo modules
+        // Step 5 -- Optional demo/sample modules
         var registry = new ModuleRegistry();
         var optionalModules = registry.GetOptionalModules()
             .Select(m => $"{m.Key} - {m.Description}")
@@ -334,21 +345,11 @@ public class NewCommand : AsyncCommand<NewCommand.Settings>
         if (optionalModules.Any())
         {
             var moduleChoices = new MultiSelectionPrompt<string>()
-                .Title("[green]?[/] Select optional modules:")
+                .Title("[green]?[/] Select optional demo/sample modules:")
                 .PageSize(10)
                 .NotRequired()
                 .InstructionsText("[grey](Press [blue]<space>[/] to toggle, [green]<enter>[/] to confirm)[/]")
                 .AddChoices(optionalModules);
-            
-            // Pre-select all non-demo modules by default (demos are opt-in)
-            foreach (var module in optionalModules)
-            {
-                var moduleKey = module.Split(" - ")[0];
-                if (!moduleKey.EndsWith("-demo", StringComparison.OrdinalIgnoreCase))
-                {
-                    moduleChoices.Select(module);
-                }
-            }
             
             var selectedModules = AnsiConsole.Prompt(moduleChoices);
             var selectedKeys = selectedModules
@@ -495,7 +496,8 @@ public class NewCommand : AsyncCommand<NewCommand.Settings>
         var outputDir = settings.OutputDirectory ?? Path.Combine(Directory.GetCurrentDirectory(), settings.Name);
 
         // Compute hosts from solution kind
-        var includedHosts = ProjectBuildArgs.ComputeIncludedHosts(solutionKind, isTiered, includePublicWebApp: false);
+        var includeWebSite = isTiered && settings.IncludeWebSite;
+        var includedHosts = ProjectBuildArgs.ComputeIncludedHosts(solutionKind, isTiered, includeWebSite);
         
         // Compute template name
         var templateName = ProjectBuildArgs.ComputeTemplateName(solutionKind, isTiered);
@@ -515,7 +517,7 @@ public class NewCommand : AsyncCommand<NewCommand.Settings>
             SolutionKind = solutionKind,
             IsTiered = isTiered,
             IncludeAuthServer = includeAuthServer,
-            IncludePublicWebApp = false,
+            IncludeWebSite = includeWebSite,
             EfProvider = efProvider,
             ConnectionString = settings.ConnectionString,
             IsMultiTenancyEnabled = isMultiTenancyEnabled,
@@ -563,6 +565,7 @@ public class NewCommand : AsyncCommand<NewCommand.Settings>
         }
         
         table.AddRow("Architecture", args.IsTiered ? "Layered-Tiered" : args.SolutionKind == SolutionKind.Single ? "Single" : "Layered");
+        table.AddRow("Website", args.IncludeWebSite ? "Included" : "Not included");
         table.AddRow("Multi-Tenancy", args.IsMultiTenancyEnabled ? "Enabled" : "Disabled");
         table.AddRow("Hosts", string.Join(", ", args.IncludedHosts.Select(h => h.ToString())));
         table.AddRow("Template", args.TemplateName);

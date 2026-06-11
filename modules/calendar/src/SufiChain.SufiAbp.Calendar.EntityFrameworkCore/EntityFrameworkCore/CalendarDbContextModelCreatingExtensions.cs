@@ -1,0 +1,131 @@
+using Microsoft.EntityFrameworkCore;
+using SufiChain.SufiAbp;
+using SufiChain.SufiAbp.Calendar.Calendars;
+using SufiChain.SufiAbp.Calendar.Events;
+using Volo.Abp.EntityFrameworkCore.Modeling;
+
+namespace SufiChain.SufiAbp.Calendar.EntityFrameworkCore;
+
+public static class CalendarDbContextModelCreatingExtensions
+{
+    public static void ConfigureSufiAbpCalendar(this ModelBuilder builder)
+    {
+        Check.NotNull(builder, nameof(builder));
+
+        builder.Entity<Calendars.Calendar>(b =>
+        {
+            b.ToTable(CalendarConsts.DbTablePrefix + "Calendars", CalendarConsts.DbSchema);
+            b.ConfigureByConvention();
+
+            b.Property(x => x.Name).IsRequired().HasMaxLength(CalendarConsts.MaxNameLength);
+            b.Property(x => x.TimeZoneId).IsRequired().HasMaxLength(CalendarConsts.MaxTimeZoneIdLength);
+            b.Property(x => x.OwnerType).HasConversion<string>().HasMaxLength(CalendarConsts.MaxOwnerTypeLength);
+            b.Property(x => x.Kind).HasConversion<string>().HasMaxLength(32);
+            b.HasIndex(x => x.TenantId);
+            b.HasIndex(x => x.Kind);
+            b.HasIndex(x => new { x.TenantId, x.Kind, x.IsDefault });
+            b.HasIndex(x => new { x.OwnerType, x.OwnerId });
+
+            b.HasMany(x => x.WorkingHourRules).WithOne().HasForeignKey(x => x.CalendarId).OnDelete(DeleteBehavior.Cascade);
+            b.HasMany(x => x.Exceptions).WithOne().HasForeignKey(x => x.CalendarId).OnDelete(DeleteBehavior.Cascade);
+        });
+
+        builder.Entity<WorkingHourRule>(b =>
+        {
+            b.ToTable(CalendarConsts.DbTablePrefix + "WorkingHourRules", CalendarConsts.DbSchema);
+            b.ConfigureByConvention();
+
+            b.Property(x => x.DayOfWeek).HasConversion<string>().HasMaxLength(16);
+            b.Property(x => x.StartTime).HasConversion(v => v.ToTimeSpan(), v => TimeOnly.FromTimeSpan(v));
+            b.Property(x => x.EndTime).HasConversion(v => v.ToTimeSpan(), v => TimeOnly.FromTimeSpan(v));
+            b.HasIndex(x => x.CalendarId);
+            b.HasIndex(x => new { x.CalendarId, x.DayOfWeek });
+        });
+
+        builder.Entity<CalendarException>(b =>
+        {
+            b.ToTable(CalendarConsts.DbTablePrefix + "Exceptions", CalendarConsts.DbSchema);
+            b.ConfigureByConvention();
+
+            b.Property(x => x.Date).HasConversion(v => v.ToDateTime(TimeOnly.MinValue), v => DateOnly.FromDateTime(v));
+            b.Property(x => x.Kind).HasConversion<string>().HasMaxLength(32);
+            b.Property(x => x.Description).HasMaxLength(CalendarConsts.MaxDescriptionLength);
+            b.Property(x => x.Ranges)
+                .HasConversion(
+                    v => System.Text.Json.JsonSerializer.Serialize(v, (System.Text.Json.JsonSerializerOptions?)null),
+                    v => System.Text.Json.JsonSerializer.Deserialize<List<WorkingHourRange>>(v, (System.Text.Json.JsonSerializerOptions?)null) ?? new List<WorkingHourRange>());
+
+            b.HasIndex(x => x.CalendarId);
+            b.HasIndex(x => new { x.CalendarId, x.Date });
+        });
+
+        builder.Entity<CalendarEvent>(b =>
+        {
+            b.ToTable(CalendarConsts.DbTablePrefix + "Events", CalendarConsts.DbSchema);
+            b.ConfigureByConvention();
+
+            b.Property(x => x.Title).IsRequired().HasMaxLength(EventConsts.MaxTitleLength);
+            b.Property(x => x.TimeZoneId).IsRequired().HasMaxLength(EventConsts.MaxTimeZoneIdLength);
+            b.Property(x => x.Location).HasMaxLength(EventConsts.MaxLocationLength);
+            b.Property(x => x.Description).HasMaxLength(EventConsts.MaxDescriptionLength);
+            b.Property(x => x.Color).HasMaxLength(EventConsts.MaxColorLength);
+            b.Property(x => x.Status).HasConversion<string>().HasMaxLength(32);
+            b.Property(x => x.SourceType).HasMaxLength(EventConsts.MaxSourceTypeLength);
+            b.Property(x => x.SourceId).HasMaxLength(EventConsts.MaxSourceIdLength);
+
+            b.HasOne(x => x.RecurrenceRule).WithOne().HasForeignKey<RecurrenceRule>(x => x.EventId).OnDelete(DeleteBehavior.Cascade);
+            b.HasMany(x => x.OccurrenceExceptions).WithOne().HasForeignKey(x => x.EventId).OnDelete(DeleteBehavior.Cascade);
+            b.HasMany(x => x.Attendees).WithOne().HasForeignKey(x => x.EventId).OnDelete(DeleteBehavior.Cascade);
+            b.HasMany(x => x.Reminders).WithOne().HasForeignKey(x => x.EventId).OnDelete(DeleteBehavior.Cascade);
+
+            b.HasIndex(x => x.TenantId);
+            b.HasIndex(x => x.CalendarId);
+            b.HasIndex(x => new { x.CalendarId, x.StartUtc, x.EndUtc });
+            b.HasIndex(x => new { x.SourceType, x.SourceId });
+        });
+
+        builder.Entity<RecurrenceRule>(b =>
+        {
+            b.ToTable(CalendarConsts.DbTablePrefix + "RecurrenceRules", CalendarConsts.DbSchema);
+            b.ConfigureByConvention();
+
+            b.Property(x => x.Rule).IsRequired().HasMaxLength(EventConsts.MaxRecurrenceRuleLength);
+            b.Property(x => x.Frequency).IsRequired().HasMaxLength(EventConsts.MaxRecurrenceFrequencyLength);
+            b.HasIndex(x => x.EventId).IsUnique();
+        });
+
+        builder.Entity<EventOccurrenceException>(b =>
+        {
+            b.ToTable(CalendarConsts.DbTablePrefix + "EventOccurrenceExceptions", CalendarConsts.DbSchema);
+            b.ConfigureByConvention();
+
+            b.HasIndex(x => x.EventId);
+            b.HasIndex(x => new { x.EventId, x.OriginalStartUtc });
+        });
+
+        builder.Entity<EventAttendee>(b =>
+        {
+            b.ToTable(CalendarConsts.DbTablePrefix + "EventAttendees", CalendarConsts.DbSchema);
+            b.ConfigureByConvention();
+
+            b.Property(x => x.Email).HasMaxLength(EventConsts.MaxAttendeeEmailLength);
+            b.Property(x => x.DisplayName).IsRequired().HasMaxLength(EventConsts.MaxAttendeeDisplayNameLength);
+            b.Property(x => x.Role).HasConversion<string>().HasMaxLength(32);
+            b.Property(x => x.RsvpStatus).HasConversion<string>().HasMaxLength(32);
+            b.HasIndex(x => x.EventId);
+            b.HasIndex(x => x.UserId);
+            b.HasIndex(x => x.Email);
+        });
+
+        builder.Entity<EventReminder>(b =>
+        {
+            b.ToTable(CalendarConsts.DbTablePrefix + "EventReminders", CalendarConsts.DbSchema);
+            b.ConfigureByConvention();
+
+            b.Property(x => x.Channel).HasConversion<string>().HasMaxLength(32);
+            b.HasIndex(x => x.EventId);
+            b.HasIndex(x => x.AttendeeId);
+            b.HasIndex(x => x.SentAtUtc);
+        });
+    }
+}

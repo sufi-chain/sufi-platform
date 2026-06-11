@@ -3,6 +3,8 @@
     <TargetFramework>net10.0</TargetFramework>
     <Nullable>enable</Nullable>
     <RootNamespace>SufiChain.SufiAbp.OpenIddict</RootNamespace>
+    <PackageId>SufiChain.SufiAbp.OpenIddict.EntityFrameworkCore</PackageId>
+    <Description>Entity Framework Core integration for SufiAbp OpenIddict.</Description>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="../../../../framework/SufiChain.SufiAbp.EntityFrameworkCore/SufiChain.SufiAbp.EntityFrameworkCore.csproj" />

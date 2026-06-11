@@ -1,0 +1,22 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/SufiChain.SufiAbp.Calendar.AI/SufiChain.SufiAbp.Calendar.AI.csproj" />
+    <Project Path="src/SufiChain.SufiAbp.Calendar.Application.Contracts/SufiChain.SufiAbp.Calendar.Application.Contracts.csproj" />
+    <Project Path="src/SufiChain.SufiAbp.Calendar.Application/SufiChain.SufiAbp.Calendar.Application.csproj" />
+    <Project Path="src/SufiChain.SufiAbp.Calendar.Blazor.Public/SufiChain.SufiAbp.Calendar.Blazor.Public.csproj" />
+    <Project Path="src/SufiChain.SufiAbp.Calendar.Blazor/SufiChain.SufiAbp.Calendar.Blazor.csproj" />
+    <Project Path="src/SufiChain.SufiAbp.Calendar.Domain.Shared/SufiChain.SufiAbp.Calendar.Domain.Shared.csproj" />
+    <Project Path="src/SufiChain.SufiAbp.Calendar.Domain/SufiChain.SufiAbp.Calendar.Domain.csproj" />
+    <Project Path="src/SufiChain.SufiAbp.Calendar.EntityFrameworkCore/SufiChain.SufiAbp.Calendar.EntityFrameworkCore.csproj" />
+    <Project Path="src/SufiChain.SufiAbp.Calendar.HttpApi.Client/SufiChain.SufiAbp.Calendar.HttpApi.Client.csproj" />
+    <Project Path="src/SufiChain.SufiAbp.Calendar.HttpApi/SufiChain.SufiAbp.Calendar.HttpApi.csproj" />
+    <Project Path="src/SufiChain.SufiAbp.Calendar.MongoDB/SufiChain.SufiAbp.Calendar.MongoDB.csproj" />
+  </Folder>
+  <Folder Name="/test/">
+    <Project Path="test/SufiChain.SufiAbp.Calendar.Application.Tests/SufiChain.SufiAbp.Calendar.Application.Tests.csproj" />
+    <Project Path="test/SufiChain.SufiAbp.Calendar.Domain.Tests/SufiChain.SufiAbp.Calendar.Domain.Tests.csproj" />
+    <Project Path="test/SufiChain.SufiAbp.Calendar.EntityFrameworkCore.Tests/SufiChain.SufiAbp.Calendar.EntityFrameworkCore.Tests.csproj" />
+    <Project Path="test/SufiChain.SufiAbp.Calendar.MongoDB.Tests/SufiChain.SufiAbp.Calendar.MongoDB.Tests.csproj" />
+    <Project Path="test/SufiChain.SufiAbp.Calendar.TestBase/SufiChain.SufiAbp.Calendar.TestBase.csproj" />
+  </Folder>
+</Solution>

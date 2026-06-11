@@ -36,14 +36,13 @@ public class TemplateProjectBuilder
         
         // Build the pipeline
         var templatePath = _templateManager.GetTemplatePath(args.TemplateName);
-        var useEmbedded = templatePath == null;
-        var pipeline = CreatePipeline(args, templatePath, useEmbedded);
+        var pipeline = CreatePipeline(args, templatePath);
         
         // Execute pipeline
         await pipeline.ExecuteAsync(context, reportProgress);
     }
 
-    private ProjectBuildPipeline CreatePipeline(ProjectBuildArgs args, string? templatePath, bool useEmbedded)
+    private ProjectBuildPipeline CreatePipeline(ProjectBuildArgs args, string? templatePath)
     {
         var pipeline = new ProjectBuildPipeline();
 
@@ -52,7 +51,7 @@ public class TemplateProjectBuilder
         // =====================================================================
 
         // Step 1: Load template files from hosts/mongodb/tiered/
-        pipeline.AddStep(new ReadTemplateFilesStep(templatePath, useEmbedded, _templateManager));
+        pipeline.AddStep(new ReadTemplateFilesStep(templatePath, _templateManager));
         
         // Step 2: Process TEMPLATE-REMOVE and TEMPLATE-ONLY markers
         // This converts project references to NuGet references and handles conditional code
@@ -88,7 +87,7 @@ public class TemplateProjectBuilder
         }
         else if (args.IsTiered)
         {
-            // Layered-Tiered: 3+ hosts (WebApp + AuthServer + HttpApi.Host + optional WebPublic)
+            // Layered-Tiered: 3+ hosts (WebApp + AuthServer + HttpApi.Host + optional WebSite)
             pipeline.AddStep(new ConfigureTieredAuthServerStep());
         }
         else
@@ -101,10 +100,10 @@ public class TemplateProjectBuilder
         // PHASE 3: Host and Module Configuration
         // =====================================================================
         
-        // Step 8: Remove excluded host projects (WebPublic, Web if not selected)
+        // Step 8: Remove excluded host projects (WebSite, Web if not selected)
         pipeline.AddStep(new RemoveHostStep());
         
-        // Step 9: Configure modules (add/remove optional modules)
+        // Step 9: Configure modules (keep default platform modules, remove unselected demos)
         pipeline.AddStep(new AddModuleStep());
         
         // Step 10: Remove unused projects (after host and module configuration)

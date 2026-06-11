@@ -1,0 +1,48 @@
+@using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.Extensions.Localization
+@using Microsoft.Extensions.Options
+@using SufiChain.SufiAbp.UI.Blazor.Components
+@using SufiChain.SufiAbp.UI.Routing
+@using SufiChain.KomTheme
+@using SufiChain.KomTheme.Blazor.Layouts
+@using MyCompanyName.MyProjectName.Blazor.WebSite.Shared
+@using MyCompanyName.MyProjectName.Localization
+@inject IOptions<SufiAbpRouterOptions> RouterOptions
+@inject IOptions<KomThemeBlazorOptions> ThemeOptions
+@inject IStringLocalizer<DemoAppResource> L
+
+<CascadingAuthenticationState>
+    <Router AppAssembly="typeof(Routes).Assembly" AdditionalAssemblies="RouterOptions.Value.AdditionalAssemblies">
+        <Found Context="routeData">
+            @* 
+                WebSite uses AuthorizeRouteView but with different behavior:
+                - Public pages (home, content, etc.) don't require authentication
+                - Protected pages (account management, etc.) redirect to login
+                
+                TODO: For CMS implementation, the layout will be dynamically selected
+                based on the CMS page configuration, not from ThemeOptions.
+            *@
+            <AuthorizeRouteView RouteData="routeData" DefaultLayout="ThemeOptions.Value.Layout">
+                <NotAuthorized>
+                    @if (context.User.Identity?.IsAuthenticated != true)
+                    {
+                        <RedirectToLogin />
+                    }
+                    else
+                    {
+                        <LayoutView Layout="ThemeOptions.Value.Layout">
+                            <SufiAbpErrorPage StatusCode="403" Title="@L["NotAuthorized"]" Message="@L["NotAuthorizedMessage"]" />
+                        </LayoutView>
+                    }
+                </NotAuthorized>
+            </AuthorizeRouteView>
+            <FocusOnNavigate RouteData="routeData" Selector="h1" />
+        </Found>
+        <NotFound>
+            <PageTitle>@L["PageNotFound"]</PageTitle>
+            <LayoutView Layout="ThemeOptions.Value.Layout">
+                <SufiAbpErrorPage StatusCode="404" Title="@L["PageNotFound"]" Message="@L["PageNotFoundMessage"]" />
+            </LayoutView>
+        </NotFound>
+    </Router>
+</CascadingAuthenticationState>

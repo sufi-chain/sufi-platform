@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <RootNamespace>SufiChain.SufiAbp.Calendar</RootNamespace>
+  </PropertyGroup>
+  <PropertyGroup>
+    <PackageId>SufiChain.SufiAbp.Calendar.Application</PackageId>
+    <Description>Calendar module application services for Sufi Platform.</Description>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="../../../../framework/SufiChain.SufiAbp.Ddd.Application/SufiChain.SufiAbp.Ddd.Application.csproj" />
+    <ProjectReference Include="../../../../framework/SufiChain.SufiAbp.Caching/SufiChain.SufiAbp.Caching.csproj" />
+    <ProjectReference Include="../../../../framework/SufiChain.SufiAbp.MultiTenancy/SufiChain.SufiAbp.MultiTenancy.csproj" />
+    <ProjectReference Include="../../../../framework/SufiChain.SufiAbp.Messaging/SufiChain.SufiAbp.Messaging.csproj" />
+    <ProjectReference Include="..\SufiChain.SufiAbp.Calendar.Domain\SufiChain.SufiAbp.Calendar.Domain.csproj" />
+    <ProjectReference Include="..\SufiChain.SufiAbp.Calendar.Application.Contracts\SufiChain.SufiAbp.Calendar.Application.Contracts.csproj" />
+  </ItemGroup>
+</Project>

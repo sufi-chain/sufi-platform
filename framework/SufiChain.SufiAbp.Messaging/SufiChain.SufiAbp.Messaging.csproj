@@ -21,6 +21,7 @@
 
   <ItemGroup>
     <PackageReference Include="Volo.Abp.BackgroundJobs" Version="$(AbpVersion)" />
+    <PackageReference Include="Volo.Abp.EventBus" Version="$(AbpVersion)" />
     <PackageReference Include="Volo.Abp.Settings" Version="$(AbpVersion)" />
   </ItemGroup>
 

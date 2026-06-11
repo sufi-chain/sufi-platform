@@ -5,6 +5,7 @@ using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Riok.Mapperly.Abstractions;
+using SufiChain.SufiAbp.AI;
 using SufiChain.SufiAbp.AI.Features;
 using SufiChain.SufiAbp.AIManagement.Permissions;
 using Volo.Abp.Security.Encryption;
@@ -19,6 +20,7 @@ namespace SufiChain.SufiAbp.AIManagement.AI;
 public class AIAppService : SufiAbpApplicationService, IAIAppService
 {
     private readonly IAIService _aiService;
+    private readonly ISufiAbpAIAudioService _aiAudioService;
     private readonly IAIModelConfigurationRepository _configurationRepository;
     private readonly IAIUsageLogRepository _usageLogRepository;
     private readonly IAIFileStorageService _fileStorageService;
@@ -26,85 +28,18 @@ public class AIAppService : SufiAbpApplicationService, IAIAppService
 
     public AIAppService(
         IAIService aiService,
+        ISufiAbpAIAudioService aiAudioService,
         IAIModelConfigurationRepository configurationRepository,
         IAIUsageLogRepository usageLogRepository,
         IStringEncryptionService stringEncryptor,
         IAIFileStorageService fileStorageService)
     {
         _aiService = aiService;
+        _aiAudioService = aiAudioService;
         _configurationRepository = configurationRepository;
         _usageLogRepository = usageLogRepository;
         _stringEncryptor = stringEncryptor;
         _fileStorageService = fileStorageService;
-    }
-
-    [Authorize(AIManagementPermissions.AI.Chat)]
-    [RequiresFeature(SufiAbpAIFeatures.Chat)]
-    public async Task<ChatResponseDto> SendChatMessageAsync(SendChatMessageInput input)
-    {
-        var request = new ChatCompletionRequest
-        {
-            WorkspaceName = input.WorkspaceName,
-            Messages = input.ConversationHistory.Select(m => new ChatMessage
-            {
-                Role = m.Role,
-                Content = m.Content
-            }).ToList(),
-            Temperature = input.Temperature,
-            MaxTokens = input.MaxTokens,
-            Stream = false
-        };
-
-        // Add current message
-        request.Messages.Add(new ChatMessage
-        {
-            Role = "user",
-            Content = input.Message
-        });
-
-        var response = await _aiService.SendChatMessageAsync(request);
-
-        return new ChatResponseDto
-        {
-            Message = response.Content,
-            Model = response.ModelId,
-            TokensUsed = response.TotalTokens,
-            InputTokens = response.InputTokens,
-            OutputTokens = response.OutputTokens
-        };
-    }
-
-    [Authorize(AIManagementPermissions.AI.Chat)]
-    [RequiresFeature(SufiAbpAIFeatures.Chat)]
-    public async IAsyncEnumerable<ChatResponseDto> StreamChatMessageAsync(SendChatMessageInput input)
-    {
-        var request = new ChatCompletionRequest
-        {
-            WorkspaceName = input.WorkspaceName,
-            Messages = input.ConversationHistory.Select(m => new ChatMessage
-            {
-                Role = m.Role,
-                Content = m.Content
-            }).ToList(),
-            Temperature = input.Temperature,
-            MaxTokens = input.MaxTokens,
-            Stream = true
-        };
-
-        request.Messages.Add(new ChatMessage
-        {
-            Role = "user",
-            Content = input.Message
-        });
-
-        await foreach (var chunk in _aiService.StreamChatMessageAsync(request))
-        {
-            yield return new ChatResponseDto
-            {
-                Message = chunk.Content,
-                Model = chunk.ModelId
-            };
-        }
     }
 
     [Authorize(AIManagementPermissions.AI.Audio)]
@@ -122,7 +57,7 @@ public class AIAppService : SufiAbpApplicationService, IAIAppService
             metadata: new { Language = input.Language, Prompt = input.Prompt }
         );
 
-        var request = new AudioTranscriptionRequest
+        var request = new SufiAbpAITranscriptionRequest
         {
             WorkspaceName = input.WorkspaceName,
             AudioData = input.AudioData,
@@ -131,7 +66,7 @@ public class AIAppService : SufiAbpApplicationService, IAIAppService
             Prompt = input.Prompt
         };
 
-        var response = await _aiService.TranscribeAudioAsync(request);
+        var response = await _aiAudioService.TranscribeAsync(request);
 
         return new AudioTranscriptionDto
         {

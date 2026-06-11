@@ -17,6 +17,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\SufiChain.SufiAbp.Core\SufiChain.SufiAbp.Core.csproj" />
     <PackageReference Include="Volo.Abp.AspNetCore" Version="$(AbpVersion)"/>
     <PackageReference Include="Volo.Abp.Auditing" Version="$(AbpVersion)"/>
   </ItemGroup>

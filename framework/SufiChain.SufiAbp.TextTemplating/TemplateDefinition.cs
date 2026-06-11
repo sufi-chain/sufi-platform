@@ -62,7 +62,7 @@ public class TemplateDefinition : IHasNameWithLocalizableDisplayName
         bool isLayout = false,
         string? layout = null,
         string? defaultCultureName = null)
-    : this(name, LocalizationResourceNameAttribute.GetName(localizationResource), displayName, isLayout, layout, defaultCultureName)
+    : this(name, Localization.LocalizationResourceNameAttribute.GetName(localizationResource), displayName, isLayout, layout, defaultCultureName)
     {
 
     }

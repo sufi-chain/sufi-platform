@@ -5,7 +5,7 @@
   <PropertyGroup>
     <!-- Package Metadata -->
     <Company>Sufi Chain Intelligent Solutions</Company>
-    <Authors>SufiChain Team</Authors>
+    <Authors>Sufi Chain Team</Authors>
     <Product>Sufi Platform</Product>
     <Version>$(SufiVersion)</Version>
     <Copyright>Copyright © Sufi Chain Intelligent Solutions $([System.DateTime]::Now.Year)</Copyright>

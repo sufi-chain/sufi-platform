@@ -31,6 +31,9 @@ public partial class MultiModalTest : AIManagementComponentBase
     private IAIAppService AIAppService => LazyGetRequiredService(ref _aiAppService);
     private IAIAppService? _aiAppService;
 
+    private ISufiAbpAIChatAppService AIChatAppService => LazyGetRequiredService(ref _aiChatAppService);
+    private ISufiAbpAIChatAppService? _aiChatAppService;
+
     private IWorkspaceAppService WorkspaceAppService => LazyGetRequiredService(ref _workspaceAppService);
     private IWorkspaceAppService? _workspaceAppService;
 
@@ -151,13 +154,13 @@ public partial class MultiModalTest : AIManagementComponentBase
     {
         await ExecuteWithLoadingAsync(async () =>
         {
-            var input = new SendChatMessageInput
+            var input = new SufiAbpAISendChatMessageInput
             {
                 WorkspaceName = _selectedWorkspaceName,
                 Message = _chatMessage
             };
 
-            var response = await AIAppService.SendChatMessageAsync(input);
+            var response = await AIChatAppService.SendMessageAsync(input);
             _chatResponse = response.Message;
             _chatTokens = response.TokensUsed;
             _chatModel = response.Model;

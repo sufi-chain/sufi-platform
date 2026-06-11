@@ -19,8 +19,8 @@ src/
   MyCompanyName.MyProjectName.Blazor.WebApp.Client/   # All architectures
   MyCompanyName.MyProjectName.HttpApi.Host/           # Layered + Tiered
   MyCompanyName.MyProjectName.AuthServer/             # Tiered only
-  MyCompanyName.MyProjectName.Blazor.WebPublic/       # Tiered only
-  MyCompanyName.MyProjectName.Blazor.WebPublic.Client/# Tiered only
+  MyCompanyName.MyProjectName.Blazor.WebSite/        # Optional, tiered only
+  MyCompanyName.MyProjectName.Blazor.WebSite.Client/ # Optional, tiered only
 
 etc/docker/
   docker-compose.efcore-sqlserver.yml.template
@@ -35,7 +35,7 @@ etc/docker/
 
 1. **Single**: Blazor.WebApp + Client (auth in server)
 2. **Layered**: Single + HttpApi.Host (auth still in Blazor.WebApp)
-3. **Layered-Tiered**: Layered + AuthServer + Blazor.WebPublic (separate auth server; UI is Blazor only)
+3. **Layered-Tiered**: Layered + AuthServer; optional Blazor.WebSite can be included with `--include-website`
 
 ## Database Providers
 
@@ -49,6 +49,7 @@ etc/docker/
 - `<TEMPLATE-REMOVE IF-NOT="db:efcore">`: Conditional removal
 - `<TEMPLATE-REMOVE IF-NOT="efp:postgresql">`: EF provider conditional
 - `<TEMPLATE-REMOVE IF-NOT="arch:layered">`: Architecture conditional
+- `<TEMPLATE-REMOVE IF-NOT="host:website">`: Optional website host conditional
 
 ## CLI Processing
 

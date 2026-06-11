@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <RootNamespace>SufiChain.SufiAbp.Calendar</RootNamespace>
+  </PropertyGroup>
+  <PropertyGroup>
+    <PackageId>SufiChain.SufiAbp.Calendar.AI</PackageId>
+    <Description>Optional Calendar AI tools for Sufi Platform.</Description>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="../../../../framework/SufiChain.SufiAbp.AI.Abstractions/SufiChain.SufiAbp.AI.Abstractions.csproj" />
+    <ProjectReference Include="..\SufiChain.SufiAbp.Calendar.Application\SufiChain.SufiAbp.Calendar.Application.csproj" />
+  </ItemGroup>
+</Project>

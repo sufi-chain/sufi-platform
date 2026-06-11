@@ -103,11 +103,11 @@ public class ConfigureSingleStep : ProjectBuildPipelineStep
         // Add single-mode packages (OpenIddict for auth server, AspNetCore.Mvc for API)
         var additionalPackages = @"
     <!-- Single mode: Auth server and API hosting -->
-    <PackageReference Include=""Volo.Abp.OpenIddict.AspNetCore"" Version=""$(AbpVersion)"" />
-    <PackageReference Include=""Volo.Abp.AspNetCore.Authentication.JwtBearer"" Version=""$(AbpVersion)"" />
-    <PackageReference Include=""SufiChain.SufiAbp.Identity.AspNetCore"" Version=""$(AbpVersion)"" />";
+    <PackageReference Include=""SufiChain.SufiAbp.OpenIddict.AspNetCore"" Version=""$(SufiVersion)"" />
+    <PackageReference Include=""SufiChain.SufiAbp.AspNetCore.Authentication.JwtBearer"" Version=""$(SufiVersion)"" />
+    <PackageReference Include=""SufiChain.SufiAbp.Identity.AspNetCore"" Version=""$(SufiVersion)"" />";
 
-        if (!content.Contains("Volo.Abp.OpenIddict.AspNetCore"))
+        if (!content.Contains("SufiChain.SufiAbp.OpenIddict.AspNetCore"))
         {
             // Insert before the first </ItemGroup> that contains PackageReference
             content = Regex.Replace(
@@ -151,9 +151,9 @@ public class ConfigureSingleStep : ProjectBuildPipelineStep
     typeof({projectName}ApplicationModule),
     typeof({projectName}HttpApiModule),
     typeof({dbModuleName}),
-    typeof(AbpOpenIddictAspNetCoreModule),
-    typeof(AbpAspNetCoreAuthenticationJwtBearerModule),
-    typeof(AbpIdentityAspNetCoreModule),";
+    typeof(SufiAbpOpenIddictAspNetCoreModule),
+    typeof(SufiAbpAspNetCoreAuthenticationJwtBearerModule),
+    typeof(SufiAbpIdentityAspNetCoreModule),";
 
         // Insert after the first DependsOn opening
         if (!content.Contains($"{projectName}ApplicationModule"))
@@ -170,10 +170,10 @@ public class ConfigureSingleStep : ProjectBuildPipelineStep
 using {solutionName}.HttpApi;
 using {solutionName}.{dbProvider};
 using OpenIddict.Validation.AspNetCore;
-using Volo.Abp.AspNetCore.Authentication.JwtBearer;
+using SufiChain.SufiAbp.AspNetCore.Authentication.JwtBearer;
 using Volo.Abp.AspNetCore.Mvc;
 using SufiChain.SufiAbp.Identity.AspNetCore;
-using Volo.Abp.OpenIddict;
+using SufiChain.SufiAbp.OpenIddict;
 ";
 
         // Add usings before namespace

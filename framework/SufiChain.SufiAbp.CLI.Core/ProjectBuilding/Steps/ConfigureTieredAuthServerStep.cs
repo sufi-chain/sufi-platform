@@ -9,13 +9,13 @@ namespace SufiChain.SufiAbp.CLI.ProjectBuilding.Steps;
 /// - AuthServer: Blazor Server identity host (OIDC authority, login/register pages)
 /// - HttpApi.Host: API-only (JWT validation pointing to AuthServer)
 /// - WebApp: Admin panel (OIDC client pointing to AuthServer)
-/// - WebPublic: Optional public website (OIDC client pointing to AuthServer)
+/// - WebSite: Optional public website (OIDC client pointing to AuthServer)
 /// 
 /// This step ensures:
 /// - AuthServer:Authority URLs point to AuthServer across all appsettings.json
 /// - RemoteServices:Default:BaseUrl points to HttpApi.Host in client hosts
 /// - JWT validation on HttpApi.Host uses AuthServer as authority
-/// - OIDC client configs on WebApp/WebPublic point to AuthServer
+/// - OIDC client configs on WebApp/WebSite point to AuthServer
 /// </summary>
 public class ConfigureTieredAuthServerStep : ProjectBuildPipelineStep
 {

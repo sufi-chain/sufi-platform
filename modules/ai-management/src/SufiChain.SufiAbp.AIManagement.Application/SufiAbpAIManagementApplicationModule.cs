@@ -1,9 +1,8 @@
-using Microsoft.Extensions.DependencyInjection;
-using SufiChain.SufiAbp.AIManagement.Chat;
 using Volo.Abp.Application;
 using Volo.Abp.Modularity;
 using SufiChain.SufiAbp.Ddd;
 using SufiChain.SufiAbp.Mapperly;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace SufiChain.SufiAbp.AIManagement;
 
@@ -18,8 +17,5 @@ public class SufiAbpAIManagementApplicationModule : AbpModule
     public override void ConfigureServices(ServiceConfigurationContext context)
     {
         context.Services.AddMapperlyObjectMapper<SufiAbpAIManagementApplicationModule>();
-        
-        // Register application services
-        context.Services.AddTransient<IAIChatAppService, AIChatAppService>();
     }
 }

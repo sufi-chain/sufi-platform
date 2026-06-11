@@ -8,7 +8,7 @@ namespace SufiChain.SufiAbp.CLI.ProjectBuilding.Steps;
 /// 
 /// Host to project mapping:
 /// - WebApp: Blazor.WebApp, Blazor.WebApp.Client
-/// - WebPublic: Blazor.WebPublic, Blazor.WebPublic.Client
+/// - WebSite: Blazor.WebSite, Blazor.WebSite.Client
 /// - Web: Web
 /// - HttpApi: HttpApi.Host (only removed for single architecture)
 /// </summary>
@@ -23,7 +23,7 @@ public class RemoveHostStep : ProjectBuildPipelineStep
     {
         [HostType.WebApp] = new[] { "Blazor.WebApp", "Blazor.WebApp.Client" },
         [HostType.AuthServer] = new[] { "AuthServer" },
-        [HostType.WebPublic] = new[] { "Blazor.WebPublic", "Blazor.WebPublic.Client" },
+        [HostType.WebSite] = new[] { "Blazor.WebSite", "Blazor.WebSite.Client" },
         [HostType.Web] = new[] { "Web" },
         [HostType.HttpApi] = new[] { "HttpApi.Host" }
     };

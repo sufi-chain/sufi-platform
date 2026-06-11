@@ -12,10 +12,10 @@ using SufiChain.SufiAbp.PermissionManagement.OpenIddict;
 using SufiChain.SufiAbp.SettingManagement;
 using SufiChain.SufiAbp.TenantManagement;
 using SufiChain.SufiAbp.Users;
+using SufiChain.SufiAbp.Messaging;
 using SufiChain.SufiAbp.Messaging.Email;
 using MyCompanyName.MyProjectName.MultiTenancy;
 using Volo.Abp.AuditLogging;
-using Volo.Abp.Emailing;
 using Volo.Abp.Modularity;
 using Volo.Abp.MultiTenancy;
 
@@ -35,7 +35,7 @@ namespace MyCompanyName.MyProjectName
         typeof(SufiAbpTenantManagementDomainModule),
         typeof(SufiAbpUsersDomainModule),
         typeof(SufiAbpAIManagementDomainModule),
-        typeof(AbpEmailingModule)
+        typeof(SufiAbpMessagingModule)
     )]
     public class DemoAppDomainModule : AbpModule
     {
@@ -48,7 +48,6 @@ namespace MyCompanyName.MyProjectName
             });
 
 #if DEBUG
-            context.Services.Replace(ServiceDescriptor.Singleton<Volo.Abp.Emailing.IEmailSender, Volo.Abp.Emailing.NullEmailSender>());
             context.Services.Replace(ServiceDescriptor.Singleton<IEmailSender, NullEmailSender>());
 #endif
         }

@@ -5,6 +5,8 @@
     <IsPackable>true</IsPackable>
     <Nullable>enable</Nullable>
     <RootNamespace>SufiChain.SufiAbp.OpenIddict</RootNamespace>
+    <PackageId>SufiChain.SufiAbp.OpenIddict.AspNetCore</PackageId>
+    <Description>ASP.NET Core integration for SufiAbp OpenIddict.</Description>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\SufiChain.SufiAbp.OpenIddict.Domain\SufiChain.SufiAbp.OpenIddict.Domain.csproj" />

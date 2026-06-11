@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <RootNamespace>SufiChain.SufiAbp.Calendar</RootNamespace>
+  </PropertyGroup>
+  <PropertyGroup>
+    <PackageId>SufiChain.SufiAbp.Calendar.HttpApi</PackageId>
+    <Description>Calendar module HTTP API controllers for Sufi Platform.</Description>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="../../../../framework/SufiChain.SufiAbp.AspNetCore.Mvc/SufiChain.SufiAbp.AspNetCore.Mvc.csproj" />
+    <ProjectReference Include="../../../../framework/SufiChain.SufiAbp.UI.Domain.Shared/SufiChain.SufiAbp.UI.Domain.Shared.csproj" />
+    <ProjectReference Include="..\SufiChain.SufiAbp.Calendar.Application.Contracts\SufiChain.SufiAbp.Calendar.Application.Contracts.csproj" />
+  </ItemGroup>
+</Project>

@@ -32,12 +32,12 @@ public class PortConfiguration
     public int BlazorWasmPort { get; set; }
     
     /// <summary>
-    /// HTTPS port for Blazor.WebPublic (CMS public site).
+    /// HTTPS port for Blazor.WebSite.
     /// </summary>
     public int PublicPort { get; set; }
     
     /// <summary>
-    /// HTTP port for Blazor.WebPublic.
+    /// HTTP port for Blazor.WebSite.
     /// </summary>
     public int PublicHttpPort { get; set; }
     
@@ -67,14 +67,14 @@ public class PortConfiguration
     public int BlazorWebAppClientHttpPort { get; set; }
 
     /// <summary>
-    /// HTTPS port for Blazor.WebPublic.Client dev server.
+    /// HTTPS port for Blazor.WebSite.Client dev server.
     /// </summary>
-    public int WebPublicClientPort { get; set; }
+    public int WebSiteClientPort { get; set; }
 
     /// <summary>
-    /// HTTP port for Blazor.WebPublic.Client dev server.
+    /// HTTP port for Blazor.WebSite.Client dev server.
     /// </summary>
-    public int WebPublicClientHttpPort { get; set; }
+    public int WebSiteClientHttpPort { get; set; }
 
     /// <summary>
     /// HTTPS port for single-architecture client project.
@@ -107,8 +107,8 @@ public class PortConfiguration
         /// <summary>Blazor.WebApp.Client in layered-tiered.</summary>
         public const int BlazorWebAppClientPort = 62577;
         public const int BlazorWebAppClientHttpPort = 62578;
-        public const int WebPublicClientPort = 65419;
-        public const int WebPublicClientHttpPort = 65420;
+        public const int WebSiteClientPort = 65419;
+        public const int WebSiteClientHttpPort = 65420;
         public const int SingleClientPort = 65463;
         public const int SingleClientHttpPort = 65464;
         /// <summary>Blazor.WebApp in layered (.dev/hosts/layered) - different from tiered to avoid port conflicts.</summary>
@@ -117,7 +117,7 @@ public class PortConfiguration
         /// <summary>Blazor.WebApp.Client in layered (.dev/hosts/layered).</summary>
         public const int LayeredBlazorWebAppClientPort = 62590;
         public const int LayeredBlazorWebAppClientHttpPort = 62591;
-        /// <summary>Blazor.WebPublic in tiered (OpenIddict, DbMigrator, AuthServer appsettings).</summary>
+        /// <summary>Blazor.WebSite in tiered (OpenIddict, DbMigrator, AuthServer appsettings).</summary>
         public const int PublicPortTiered = 44320;
     }
 
@@ -149,7 +149,7 @@ public class PortConfiguration
         var singleHostPort = NextUnique(44800, 44898);  // pair: 44898+1=44899
         var singleClientPort = NextUnique(44900, 44998); // pair
         var blazorWebAppClientPort = NextUnique(45000, 45098); // pair
-        var webPublicClientPort = NextUnique(45100, 45198);    // pair
+        var webSiteClientPort = NextUnique(45100, 45198);    // pair
 
         return new PortConfiguration
         {
@@ -167,8 +167,8 @@ public class PortConfiguration
             SingleClientHttpPort = singleClientPort + 1,
             BlazorWebAppClientPort = blazorWebAppClientPort,
             BlazorWebAppClientHttpPort = blazorWebAppClientPort + 1,
-            WebPublicClientPort = webPublicClientPort,
-            WebPublicClientHttpPort = webPublicClientPort + 1
+            WebSiteClientPort = webSiteClientPort,
+            WebSiteClientHttpPort = webSiteClientPort + 1
         };
     }
 
@@ -191,8 +191,8 @@ public class PortConfiguration
             SingleHostHttpPort = OriginalPorts.SingleHostHttpPort,
             BlazorWebAppClientPort = OriginalPorts.BlazorWebAppClientPort,
             BlazorWebAppClientHttpPort = OriginalPorts.BlazorWebAppClientHttpPort,
-            WebPublicClientPort = OriginalPorts.WebPublicClientPort,
-            WebPublicClientHttpPort = OriginalPorts.WebPublicClientHttpPort,
+            WebSiteClientPort = OriginalPorts.WebSiteClientPort,
+            WebSiteClientHttpPort = OriginalPorts.WebSiteClientHttpPort,
             SingleClientPort = OriginalPorts.SingleClientPort,
             SingleClientHttpPort = OriginalPorts.SingleClientHttpPort
         };

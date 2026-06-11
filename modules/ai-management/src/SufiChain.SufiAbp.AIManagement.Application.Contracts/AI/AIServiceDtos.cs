@@ -5,32 +5,6 @@ using Volo.Abp.Application.Dtos;
 
 namespace SufiChain.SufiAbp.AIManagement.AI;
 
-// Chat DTOs
-public class SendChatMessageInput
-{
-    public string WorkspaceName { get; set; } = string.Empty;
-    public string Message { get; set; } = string.Empty;
-    public List<ChatMessageDto> ConversationHistory { get; set; } = new();
-    public float? Temperature { get; set; }
-    public int? MaxTokens { get; set; }
-    public bool Stream { get; set; }
-}
-
-public class ChatMessageDto
-{
-    public string Role { get; set; } = string.Empty;
-    public string Content { get; set; } = string.Empty;
-}
-
-public class ChatResponseDto
-{
-    public string Message { get; set; } = string.Empty;
-    public string Model { get; set; } = string.Empty;
-    public int? TokensUsed { get; set; }
-    public int? InputTokens { get; set; }
-    public int? OutputTokens { get; set; }
-}
-
 // Audio Transcription DTOs
 public class TranscribeAudioInput
 {

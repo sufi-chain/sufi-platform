@@ -194,30 +194,32 @@ public class OpenIddictDataSeedContributor : IDataSeedContributor, ITransientDep
             );
         }
 
-        // Blazor WebPublic Client (Public-facing website for CMS)
-        var blazorWebPublicClientId = configurationSection["DemoApp_BlazorWebPublic:ClientId"];
-        var blazorWebPublicRootUrl = configurationSection["DemoApp_BlazorWebPublic:RootUrl"];
-        if (!blazorWebPublicClientId.IsNullOrWhiteSpace() && !blazorWebPublicRootUrl.IsNullOrWhiteSpace())
+        // <TEMPLATE-REMOVE IF-NOT="host:website">
+        // Blazor WebSite Client (Public-facing website for CMS)
+        var blazorWebSiteClientId = configurationSection["DemoApp_BlazorWebSite:ClientId"];
+        var blazorWebSiteRootUrl = configurationSection["DemoApp_BlazorWebSite:RootUrl"];
+        if (!blazorWebSiteClientId.IsNullOrWhiteSpace() && !blazorWebSiteRootUrl.IsNullOrWhiteSpace())
         {
-            blazorWebPublicRootUrl = blazorWebPublicRootUrl.EnsureEndsWith('/');
+            blazorWebSiteRootUrl = blazorWebSiteRootUrl.EnsureEndsWith('/');
 
             await CreateApplicationAsync(
-                name: blazorWebPublicClientId!,
+                name: blazorWebSiteClientId!,
                 type: OidcConstants.ClientTypes.Confidential,
                 consentType: OidcConstants.ConsentTypes.Implicit,
-                displayName: "Blazor WebPublic Application",
-                secret: configurationSection["DemoApp_BlazorWebPublic:ClientSecret"] ?? "1q2w3e*",
+                displayName: "Blazor WebSite Application",
+                secret: configurationSection["DemoApp_BlazorWebSite:ClientSecret"] ?? "1q2w3e*",
                 grantTypes: new List<string> //Hybrid flow
                 {
                     OidcConstants.GrantTypes.AuthorizationCode,
                     OidcConstants.GrantTypes.Implicit
                 },
                 scopes: commonScopes,
-                redirectUri: $"{blazorWebPublicRootUrl}signin-oidc",
-                clientUri: blazorWebPublicRootUrl,
-                postLogoutRedirectUri: $"{blazorWebPublicRootUrl}signout-callback-oidc"
+                redirectUri: $"{blazorWebSiteRootUrl}signin-oidc",
+                clientUri: blazorWebSiteRootUrl,
+                postLogoutRedirectUri: $"{blazorWebSiteRootUrl}signout-callback-oidc"
             );
         }
+        // </TEMPLATE-REMOVE>
 
         // Swagger Client
         var swaggerClientId = configurationSection["DemoApp_Swagger:ClientId"];

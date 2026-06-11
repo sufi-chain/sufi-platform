@@ -34,8 +34,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
+using SufiChain.SufiAbp.AspNetCore.Authentication.JwtBearer;
 using Volo.Abp;
-using Volo.Abp.AspNetCore.Authentication.JwtBearer;
 using Volo.Abp.AspNetCore.MultiTenancy;
 using Volo.Abp.AspNetCore.Mvc;
 using Volo.Abp.AspNetCore.Mvc.Libs;
@@ -69,7 +69,7 @@ namespace MyCompanyName.MyProjectName
         // <TEMPLATE-REMOVE IF-NOT="db:mongodb">
         typeof(DemoAppMongoDbModule),
         // </TEMPLATE-REMOVE>
-        typeof(AbpAspNetCoreAuthenticationJwtBearerModule),
+        typeof(SufiAbpAspNetCoreAuthenticationJwtBearerModule),
         typeof(AbpAspNetCoreSerilogModule),
         typeof(AbpSwashbuckleModule),
         // <TEMPLATE-REMOVE IF-NOT="module:file-manager">

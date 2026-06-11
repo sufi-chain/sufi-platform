@@ -99,9 +99,9 @@ public class ProjectBuildContext
         }
         
         // Public website symbol
-        if (Args.IncludePublicWebApp)
+        if (Args.IncludeWebSite)
         {
-            Symbols.Add("public-webapp");
+            Symbols.Add("website");
         }
         
         // Host symbols

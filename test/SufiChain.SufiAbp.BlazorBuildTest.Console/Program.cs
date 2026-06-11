@@ -1,5 +1,3 @@
-using System.Reflection;
-using SufiChain.Chat.Blazor;
 using SufiChain.SufiAbp.Account.Blazor;
 using SufiChain.SufiAbp.AIManagement.Blazor;
 using SufiChain.SufiAbp.AuditLogging.Blazor;
@@ -11,7 +9,6 @@ using SufiChain.SufiAbp.LocalizationManagement.Blazor;
 using SufiChain.SufiAbp.MenuManagement.Blazor;
 using SufiChain.SufiAbp.SettingManagement.Blazor;
 using SufiChain.SufiAbp.ShortLinkGenerator;
-using SufiChain.SufiAbp.ShortLinkGenerator.Blazor;
 using SufiChain.SufiAbp.TenantManagement.Blazor;
 
 namespace SufiChain.SufiAbp.BlazorBuildTest.Console;
@@ -26,7 +23,6 @@ public static class Program
             typeof(SufiAbpAIManagementBlazorModule),
             typeof(SufiAbpAuditLoggingBlazorModule),
             typeof(SufiAbpBackgroundJobsBlazorModule),
-            typeof(ChatBlazorModule),
             typeof(SufiAbpFeatureManagementBlazorModule),
             typeof(SufiAbpFileManagerBlazorModule),
             typeof(SufiAbpIdentityBlazorModule),

@@ -1,0 +1,26 @@
+@inherits CalendarPublicComponentBase
+
+<SbDialog Open="@Open" OpenChanged="SetOpenAsync" Size="SbDialogSize.Lg" Title="@DialogTitle" AllowDropdownOverflow="true">
+    <ChildContent>
+        <EditForm Model="_model" OnValidSubmit="SaveAsync">
+            <DataAnnotationsValidator />
+            <div class="sufi-event-editor">
+                <SbTextField @bind-Value="_model.Title" Label="@L["Title"]" />
+                <SbDateRangePicker Value="@_dateRange" ValueChanged="OnDateRangeChanged" Label="@L["Date"]" />
+                <SbTextField @bind-Value="_startTimeText" Label="@L["StartTime"]" />
+                <SbTextField @bind-Value="_endTimeText" Label="@L["EndTime"]" />
+                <SbTextField @bind-Value="_model.TimeZoneId" Label="@L["TimeZone"]" />
+                <SbTextField @bind-Value="_model.Location" Label="@L["Location"]" />
+                <SbTextField @bind-Value="_model.Color" Label="@L["Color"]" />
+                <SbTextField @bind-Value="_model.RecurrenceRule" Label="@L["RecurrenceRule"]" />
+                <SbTextField @bind-Value="_model.Description" Label="@L["Description"]" Multiline="true" Rows="4" />
+            </div>
+        </EditForm>
+    </ChildContent>
+    <Footer>
+        <SbStack Direction="SbStackDirection.Row" Gap="2" Justify="SbJustify.End">
+            <SbButton Variant="SbButtonVariant.Outline" OnClick="HideAsync">@L["Cancel"]</SbButton>
+            <SbButton Color="SbColor.Primary" Loading="@IsOperationLoading(LoadingKeys.Save)" OnClick="SaveAsync">@L["Save"]</SbButton>
+        </SbStack>
+    </Footer>
+</SbDialog>

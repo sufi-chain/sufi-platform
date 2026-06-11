@@ -37,6 +37,7 @@ public class HelpCommand : Command<HelpCommand.Settings>
         table.AddRow("--tiered", "Tiered architecture with separate API + Auth hosts", "false");
         table.AddRow("--solution-kind", "Solution type: single or layered", "layered");
         table.AddRow("--modules", "Optional sample/demo modules only", "none");
+        table.AddRow("--include-website", "Include optional Blazor.WebSite host (tiered only)", "false");
         table.AddRow("-o, --output", "Output directory", "current directory");
 
         AnsiConsole.Write(table);
