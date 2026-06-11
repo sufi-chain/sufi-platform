@@ -4,16 +4,23 @@ set -euo pipefail
 : "${PACKAGE_OUTPUT:?PACKAGE_OUTPUT is required}"
 : "${NUGET_ORG_SOURCE_URL:?NUGET_ORG_SOURCE_URL is required}"
 : "${NUGET_ORG_API_KEY:?NUGET_ORG_API_KEY is required}"
+: "${VERSION:?VERSION is required}"
 
 package_output="/src/${PACKAGE_OUTPUT#./}"
 
-mapfile -t packages < <(find "$package_output" -type f -name '*.nupkg' ! -name '*.symbols.nupkg' | sort)
+mapfile -t skipped_packages < <(find "$package_output" -type f -name '*.nupkg' ! -name '*.symbols.nupkg' ! -name "*.${VERSION}.nupkg" | sort)
+if [ ${#skipped_packages[@]} -gt 0 ]; then
+  echo "Skipping ${#skipped_packages[@]} package(s) that do not match resolved version $VERSION:"
+  printf '  %s\n' "${skipped_packages[@]}"
+fi
+
+mapfile -t packages < <(find "$package_output" -type f -name "*.${VERSION}.nupkg" ! -name '*.symbols.nupkg' | sort)
 if [ ${#packages[@]} -eq 0 ]; then
-  echo "No NuGet packages found in artifact."
+  echo "No NuGet packages found for resolved version $VERSION in artifact."
   exit 1
 fi
 
-echo "Pushing ${#packages[@]} package(s) to nuget.org: $NUGET_ORG_SOURCE_URL"
+echo "Pushing ${#packages[@]} package(s) for version $VERSION to nuget.org: $NUGET_ORG_SOURCE_URL"
 
 printf '%s\0' "${packages[@]}" | xargs -0 -n 1 -P "${NUGET_PUSH_PARALLELISM:-4}" sh -c '
   package="$1"

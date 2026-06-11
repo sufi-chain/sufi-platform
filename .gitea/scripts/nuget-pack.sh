@@ -6,6 +6,7 @@ set -euo pipefail
 : "${VERSION:?VERSION is required}"
 
 package_output="/src/${PACKAGE_OUTPUT#./}"
+rm -rf "$package_output"
 mkdir -p "$package_output"
 
 cat > /tmp/ci-nuget.config <<'NUGETEOF'
@@ -52,6 +53,13 @@ dotnet pack "$ROOT_SLNX" \
 package_count="$(find "$package_output" -type f -name '*.nupkg' ! -name '*.symbols.nupkg' | wc -l | tr -d ' ')"
 if [ "$package_count" = "0" ]; then
   echo "No NuGet packages were produced in $package_output." >&2
+  exit 1
+fi
+
+stale_count="$(find "$package_output" -type f -name '*.nupkg' ! -name '*.symbols.nupkg' ! -name "*.${VERSION}.nupkg" | wc -l | tr -d ' ')"
+if [ "$stale_count" != "0" ]; then
+  echo "Pack produced package(s) that do not match resolved version $VERSION:" >&2
+  find "$package_output" -type f -name '*.nupkg' ! -name '*.symbols.nupkg' ! -name "*.${VERSION}.nupkg" | sort >&2
   exit 1
 fi
 

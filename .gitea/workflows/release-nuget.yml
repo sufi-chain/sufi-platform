@@ -217,6 +217,7 @@ jobs:
         shell: sh
         env:
           NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
+          VERSION: ${{ steps.version.outputs.version }}
         run: |
           set -eu
           if [ -z "${NUGET_API_KEY:-}" ]; then
@@ -229,6 +230,7 @@ jobs:
             -v "${workspace}:/src" \
             -w /src \
             -e NUGET_API_KEY \
+            -e VERSION \
             -e BAGET_SOURCE_URL \
             -e NUGET_PUSH_PARALLELISM \
             -e PACKAGE_OUTPUT \
@@ -240,6 +242,7 @@ jobs:
         shell: sh
         env:
           NUGET_ORG_API_KEY: ${{ secrets.NUGET_ORG_API_KEY }}
+          VERSION: ${{ steps.version.outputs.version }}
         run: |
           set -eu
           if [ -z "${NUGET_ORG_API_KEY:-}" ]; then
@@ -252,6 +255,7 @@ jobs:
             -v "${workspace}:/src" \
             -w /src \
             -e NUGET_ORG_API_KEY \
+            -e VERSION \
             -e NUGET_ORG_SOURCE_URL \
             -e NUGET_PUSH_PARALLELISM \
             -e PACKAGE_OUTPUT \
