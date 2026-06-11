@@ -181,6 +181,8 @@ jobs:
           cd "$workspace"
           echo "Using workspace: $workspace"
           package_dir="${workspace}/${PACKAGE_OUTPUT#./}"
+          rm -rf "$package_dir"
+          mkdir -p "$package_dir"
           container_id="$(docker run -d \
             -v "${workspace}:/src" \
             -w /src \
@@ -194,9 +196,6 @@ jobs:
             sleep 3600)"
           trap 'docker rm -f "$container_id" >/dev/null 2>&1 || true' EXIT INT TERM
           docker exec "$container_id" bash /src/.gitea/scripts/nuget-pack.sh
-          rm -rf "$package_dir"
-          mkdir -p "$package_dir"
-          docker cp "${container_id}:/src/artifacts/nuget/." "$package_dir/"
           docker rm -f "$container_id"
           trap - EXIT INT TERM
           if [ ! -d "$package_dir" ]; then
@@ -205,12 +204,18 @@ jobs:
             find "$workspace" -maxdepth 2 \( -type d -o -type f -name '*.slnx' \) | sort >&2
             exit 1
           fi
-          package_count="$(find "$package_dir" -type f -name '*.nupkg' ! -name '*.symbols.nupkg' | wc -l | tr -d ' ')"
+          stale_packages="$(find "$package_dir" -type f -name '*.nupkg' ! -name '*.symbols.nupkg' ! -name "*.${VERSION}.nupkg" | sort || true)"
+          if [ -n "$stale_packages" ]; then
+            echo "Removing package(s) that do not match resolved version $VERSION:" >&2
+            printf '%s\n' "$stale_packages" >&2
+            find "$package_dir" -type f -name '*.nupkg' ! -name '*.symbols.nupkg' ! -name "*.${VERSION}.nupkg" -exec rm -f {} +
+          fi
+          package_count="$(find "$package_dir" -type f -name "*.${VERSION}.nupkg" ! -name '*.symbols.nupkg' | wc -l | tr -d ' ')"
           if [ "$package_count" = "0" ]; then
-            echo "No NuGet packages were produced in $package_dir." >&2
+            echo "No NuGet packages for resolved version $VERSION were produced in $package_dir." >&2
             exit 1
           fi
-          echo "Packed $package_count package(s) into $package_dir."
+          echo "Packed $package_count package(s) for version $VERSION into $package_dir."
 
       - name: Push packages to BaGet
         if: ${{ gitea.event_name == 'release' || inputs.push_to_baget == true }}

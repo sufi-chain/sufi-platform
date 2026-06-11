@@ -10,8 +10,9 @@ package_output="/src/${PACKAGE_OUTPUT#./}"
 
 mapfile -t skipped_packages < <(find "$package_output" -type f -name '*.nupkg' ! -name '*.symbols.nupkg' ! -name "*.${VERSION}.nupkg" | sort)
 if [ ${#skipped_packages[@]} -gt 0 ]; then
-  echo "Skipping ${#skipped_packages[@]} package(s) that do not match resolved version $VERSION:"
+  echo "Removing ${#skipped_packages[@]} package(s) that do not match resolved version $VERSION:"
   printf '  %s\n' "${skipped_packages[@]}"
+  rm -f -- "${skipped_packages[@]}"
 fi
 
 mapfile -t packages < <(find "$package_output" -type f -name "*.${VERSION}.nupkg" ! -name '*.symbols.nupkg' | sort)

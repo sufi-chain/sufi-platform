@@ -63,4 +63,4 @@ if [ "$stale_count" != "0" ]; then
   exit 1
 fi
 
-echo "Packed $package_count package(s) into $package_output."
+echo "Packed $package_count package(s) for version $VERSION into $package_output."
