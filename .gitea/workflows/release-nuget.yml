@@ -72,14 +72,33 @@ jobs:
             echo "HARBOR_USERNAME and HARBOR_PASSWORD secrets are required." >&2
             exit 1
           fi
-          echo "$HARBOR_PASSWORD" | docker login "$HARBOR_REGISTRY" \
-            -u "$HARBOR_USERNAME" \
-            --password-stdin
+          echo "Checking DNS for $HARBOR_REGISTRY from the runner host..."
+          if command -v getent >/dev/null 2>&1; then
+            getent hosts "$HARBOR_REGISTRY" || {
+              echo "DNS lookup failed for $HARBOR_REGISTRY." >&2
+              echo "Fix the Gitea runner host DNS/Docker daemon DNS; current /etc/resolv.conf:" >&2
+              cat /etc/resolv.conf >&2 || true
+              exit 1
+            }
+          fi
+          for attempt in 1 2 3; do
+            if echo "$HARBOR_PASSWORD" | docker login "$HARBOR_REGISTRY" \
+              -u "$HARBOR_USERNAME" \
+              --password-stdin; then
+              exit 0
+            fi
+            echo "Harbor login failed (attempt $attempt/3)." >&2
+            sleep $((attempt * 5))
+          done
+          echo "Harbor login failed after 3 attempts." >&2
+          exit 1
 
       - name: Checkout
         shell: sh
         env:
           GITEATOKEN: ${{ secrets.GITEATOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITEA_TOKEN: ${{ secrets.GITEA_TOKEN }}
         run: |
           set -eu
           workspace="${WORKSPACE_DIR:-${GITHUB_WORKSPACE:-$PWD}}"
@@ -93,8 +112,12 @@ jobs:
 
           echo "Runner workspace is empty; cloning with SDK container."
           CLONE_URL="https://${GIT_HOST}/${REPOSITORY}.git"
-          if [ -n "${GITEATOKEN:-}" ]; then
+          clone_token="${GITEATOKEN:-${GITEA_TOKEN:-${GITHUB_TOKEN:-}}}"
+          if [ -n "$clone_token" ]; then
+            GITEATOKEN="$clone_token"
             CLONE_URL="$(printf '%s' "$CLONE_URL" | sed "s#^https://#https://x-access-token:${GITEATOKEN}@#")"
+          else
+            echo "No GITEATOKEN/GITEA_TOKEN/GITHUB_TOKEN secret was provided; private repository checkout may fail." >&2
           fi
           export CLONE_URL
           container_id="$(docker run -d \
