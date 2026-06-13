@@ -3,6 +3,7 @@
     <TargetFramework>net10.0</TargetFramework>
     <Nullable>enable</Nullable>
     <RootNamespace>SufiChain.SufiAbp.SettingManagement</RootNamespace>
+    <PackageId>SufiChain.SufiAbp.SettingManagement.EntityFrameworkCore</PackageId>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\SufiChain.SufiAbp.SettingManagement.Domain\SufiChain.SufiAbp.SettingManagement.Domain.csproj" />

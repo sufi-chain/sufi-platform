@@ -1,9 +1,9 @@
 using MyCompanyName.MyProjectName.Localization;
-using Volo.Abp.AspNetCore.Components;
+using SufiChain.SufiAbp.UI.Blazor;
 
 namespace MyCompanyName.MyProjectName;
 
-public abstract class DemoAppComponentBase : AbpComponentBase
+public abstract class DemoAppComponentBase : SufiAbpComponentBase
 {
     protected DemoAppComponentBase()
     {

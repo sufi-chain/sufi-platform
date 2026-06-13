@@ -6,16 +6,17 @@
     <IsPackable>false</IsPackable>
   </PropertyGroup>
 
-  <TEMPLATE-REMOVE>
-  <ItemGroup>
-    <PackageReference Include="OpenIddict.Abstractions" Version="$(OpenIddictVersion)" />
-    <ProjectReference Include="..\..\..\..\..\src\framework\SufiChain.SufiAbp.Data\SufiChain.SufiAbp.Data.csproj" />
-    <ProjectReference Include="..\MyCompanyName.MyProjectName.Domain.Shared\MyCompanyName.MyProjectName.Domain.Shared.csproj" />
-    <PackageReference Include="SufiChain.SufiAbp.Messaging" Version="$(SufiVersion)" />
-  </ItemGroup>
-  </TEMPLATE-REMOVE>
+	  <!-- <TEMPLATE-REMOVE> -->
+	  <ItemGroup>
+	    <PackageReference Include="OpenIddict.Abstractions" Version="$(OpenIddictVersion)" />
+	    <ProjectReference Include="..\..\..\..\..\src\framework\SufiChain.SufiAbp.Core\SufiChain.SufiAbp.Core.csproj" />
+	    <ProjectReference Include="..\..\..\..\..\src\framework\SufiChain.SufiAbp.Data\SufiChain.SufiAbp.Data.csproj" />
+	    <ProjectReference Include="..\..\..\..\..\src\framework\SufiChain.SufiAbp.Messaging\SufiChain.SufiAbp.Messaging.csproj" />
+	    <ProjectReference Include="..\MyCompanyName.MyProjectName.Domain.Shared\MyCompanyName.MyProjectName.Domain.Shared.csproj" />
+	  </ItemGroup>
+	  <!-- </TEMPLATE-REMOVE> -->
 
-  <TEMPLATE-REMOVE>
+	  <!-- <TEMPLATE-REMOVE> -->
   <ItemGroup>
     <ProjectReference Include="..\..\..\..\..\modules\permission-management\src\SufiChain.SufiAbp.PermissionManagement.Domain\SufiChain.SufiAbp.PermissionManagement.Domain.csproj" />
     <ProjectReference Include="..\..\..\..\..\modules\setting-management\src\SufiChain.SufiAbp.SettingManagement.Domain\SufiChain.SufiAbp.SettingManagement.Domain.csproj" />
@@ -29,14 +30,16 @@
     <ProjectReference Include="..\..\..\..\..\modules\openiddict\src\SufiChain.SufiAbp.OpenIddict.Domain\SufiChain.SufiAbp.OpenIddict.Domain.csproj" />
     <ProjectReference Include="..\..\..\..\..\modules\openiddict\src\SufiChain.SufiAbp.PermissionManagement.Domain.OpenIddict\SufiChain.SufiAbp.PermissionManagement.Domain.OpenIddict.csproj" />
   </ItemGroup>
-  </TEMPLATE-REMOVE>
+	  <!-- </TEMPLATE-REMOVE> -->
 
-  <TEMPLATE-ONLY>
-  <ItemGroup>
-    <PackageReference Include="OpenIddict.Abstractions" Version="$(OpenIddictVersion)" />
-    <PackageReference Include="SufiChain.SufiAbp.Data" Version="$(SufiVersion)" />
-    <ProjectReference Include="..\MyCompanyName.MyProjectName.Domain.Shared\MyCompanyName.MyProjectName.Domain.Shared.csproj" />
-    <PackageReference Include="SufiChain.SufiAbp.AIManagement.Domain" Version="$(SufiVersion)" />
+	  <!-- <TEMPLATE-ONLY>
+	  <ItemGroup>
+	    <PackageReference Include="OpenIddict.Abstractions" Version="$(OpenIddictVersion)" />
+	    <PackageReference Include="SufiChain.SufiAbp.Core" Version="$(SufiVersion)" />
+	    <PackageReference Include="SufiChain.SufiAbp.Data" Version="$(SufiVersion)" />
+	    <ProjectReference Include="..\MyCompanyName.MyProjectName.Domain.Shared\MyCompanyName.MyProjectName.Domain.Shared.csproj" />
+	    <PackageReference Include="SufiChain.SufiAbp.Messaging" Version="$(SufiVersion)" />
+	    <PackageReference Include="SufiChain.SufiAbp.AIManagement.Domain" Version="$(SufiVersion)" />
     <PackageReference Include="SufiChain.SufiAbp.PermissionManagement.Domain" Version="$(SufiVersion)" />
     <PackageReference Include="SufiChain.SufiAbp.SettingManagement.Domain" Version="$(SufiVersion)" />
     <PackageReference Include="SufiChain.SufiAbp.FeatureManagement.Domain" Version="$(SufiVersion)" />
@@ -48,7 +51,7 @@
     <PackageReference Include="SufiChain.SufiAbp.TenantManagement.Domain" Version="$(SufiVersion)" />
     <PackageReference Include="SufiChain.SufiAbp.OpenIddict.Domain" Version="$(SufiVersion)" />
     <PackageReference Include="SufiChain.SufiAbp.PermissionManagement.Domain.OpenIddict" Version="$(SufiVersion)" />
-  </ItemGroup>
-  </TEMPLATE-ONLY>
+	  </ItemGroup>
+	  </TEMPLATE-ONLY> -->
 
 </Project>

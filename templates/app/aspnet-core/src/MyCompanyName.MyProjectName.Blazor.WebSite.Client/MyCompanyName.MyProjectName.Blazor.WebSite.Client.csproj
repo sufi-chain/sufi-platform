@@ -16,6 +16,7 @@
 		<PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="$(MicrosoftExtensionsConfigurationBinderVersion)" />
 		
 		<!-- ABP Core module system (NOT UI packages) -->
+		<PackageReference Include="SufiChain.SufiAbp.Core" Version="$(SufiVersion)" />
 		<PackageReference Include="SufiChain.SufiAbp.Autofac.WebAssembly" Version="$(SufiVersion)" />
 	</ItemGroup>
 
@@ -23,6 +24,8 @@
 	<!-- Development: Project References (removed when generating templates) -->
 	<!-- <TEMPLATE-REMOVE> -->
 	<ItemGroup>
+		<ProjectReference Include="..\..\..\..\..\src\framework\SufiChain.SufiAbp.Core\SufiChain.SufiAbp.Core.csproj" />
+		<ProjectReference Include="..\..\..\..\..\src\framework\SufiChain.SufiAbp.Autofac.WebAssembly\SufiChain.SufiAbp.Autofac.WebAssembly.csproj" />
 		<!-- SufiAbp Theme using SufiBlazor (replaces ABP Blazor UI packages) -->
 		<ProjectReference Include="..\..\..\..\..\independent-projects\kom-theme\src\SufiChain.KomTheme.Blazor.WebAssembly\SufiChain.KomTheme.Blazor.WebAssembly.csproj" />
 		

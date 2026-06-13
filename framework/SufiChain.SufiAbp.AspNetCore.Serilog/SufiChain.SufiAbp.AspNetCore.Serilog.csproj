@@ -8,6 +8,8 @@
         <IsPackable>true</IsPackable>
         <OutputType>Library</OutputType>
         <NoDefaultLaunchSettingsFile>true</NoDefaultLaunchSettingsFile>
+        <PackageId>SufiChain.SufiAbp.AspNetCore.Serilog</PackageId>
+        <Description>ASP.NET Core Serilog integration for SufiAbp applications.</Description>
     </PropertyGroup>
 
     <ItemGroup>

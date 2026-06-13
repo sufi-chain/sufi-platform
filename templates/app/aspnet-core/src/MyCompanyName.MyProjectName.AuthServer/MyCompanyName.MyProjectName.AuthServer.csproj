@@ -11,6 +11,7 @@
   <ItemGroup>
     <PackageReference Include="Serilog.AspNetCore" Version="$(SerilogAspNetCoreVersion)" />
     <PackageReference Include="Serilog.Sinks.Async" Version="$(SerilogSinksAsyncVersion)" />
+    <PackageReference Include="SufiChain.SufiAbp.Core" Version="$(SufiVersion)" />
     <PackageReference Include="SufiChain.SufiAbp.AspNetCore.MultiTenancy" Version="$(SufiVersion)" />
     <PackageReference Include="SufiChain.SufiAbp.Autofac" Version="$(SufiVersion)" />
     <PackageReference Include="SufiChain.SufiAbp.AspNetCore.Serilog" Version="$(SufiVersion)" />

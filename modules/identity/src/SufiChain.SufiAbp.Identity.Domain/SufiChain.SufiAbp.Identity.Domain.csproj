@@ -3,6 +3,7 @@
     <TargetFramework>net10.0</TargetFramework>
     <Nullable>enable</Nullable>
     <RootNamespace>SufiChain.SufiAbp.Identity</RootNamespace>
+    <PackageId>SufiChain.SufiAbp.Identity.Domain</PackageId>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="../../../../framework/SufiChain.SufiAbp.Ddd.Domain/SufiChain.SufiAbp.Ddd.Domain.csproj" />

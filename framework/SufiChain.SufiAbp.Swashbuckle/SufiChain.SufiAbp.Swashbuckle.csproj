@@ -5,6 +5,8 @@
         <Nullable>enable</Nullable>
         <RootNamespace>SufiChain.SufiAbp.Swashbuckle</RootNamespace>
         <AssemblyName>SufiChain.SufiAbp.Swashbuckle</AssemblyName>
+        <PackageId>SufiChain.SufiAbp.Swashbuckle</PackageId>
+        <Description>Swagger/Swashbuckle integration for SufiAbp applications.</Description>
     </PropertyGroup>
 
     <ItemGroup>

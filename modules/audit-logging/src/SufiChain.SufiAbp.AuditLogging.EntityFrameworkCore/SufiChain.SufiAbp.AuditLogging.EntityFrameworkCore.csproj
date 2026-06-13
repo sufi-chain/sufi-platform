@@ -3,6 +3,7 @@
     <TargetFramework>net10.0</TargetFramework>
     <Nullable>enable</Nullable>
     <RootNamespace>SufiChain.SufiAbp.AuditLogging</RootNamespace>
+    <PackageId>SufiChain.SufiAbp.AuditLogging.EntityFrameworkCore</PackageId>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\SufiChain.SufiAbp.AuditLogging.Domain\SufiChain.SufiAbp.AuditLogging.Domain.csproj" />

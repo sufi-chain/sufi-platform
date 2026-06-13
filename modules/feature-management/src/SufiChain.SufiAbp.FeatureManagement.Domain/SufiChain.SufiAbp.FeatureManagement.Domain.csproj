@@ -3,6 +3,7 @@
     <TargetFramework>net10.0</TargetFramework>
     <Nullable>enable</Nullable>
     <RootNamespace>SufiChain.SufiAbp.FeatureManagement</RootNamespace>
+    <PackageId>SufiChain.SufiAbp.FeatureManagement.Domain</PackageId>
   </PropertyGroup>
   
   <ItemGroup>

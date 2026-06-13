@@ -42,6 +42,12 @@ using SufiChain.SufiAbp.Threading;
 using SufiChain.SufiAbp.UI.Navigation;
 using SufiChain.SufiAbp.VirtualFileSystem;
 using SufiChain.KomTheme.Blazor;
+using Volo.Abp.Threading;
+using Volo.Abp.Data;
+using SufiChain.SufiAbp.Core;
+using SufiChain.SufiAbp.AspNetCore;
+using Volo.Abp.VirtualFileSystem;
+using Microsoft.OpenApi;
 
 namespace SufiChain.SufiAbp.AIManagement;
 
@@ -167,7 +173,7 @@ public class AIManagementBlazorHostModule : SufiAbpModule
 
     private void ConfigureSwaggerServices(IServiceCollection services)
     {
-        services.AddSufiAbpSwaggerGen(
+        services.AddAbpSwaggerGen(
             options =>
             {
                 options.SwaggerDoc("v1", new OpenApiInfo { Title = "AIManagement API", Version = "v1" });

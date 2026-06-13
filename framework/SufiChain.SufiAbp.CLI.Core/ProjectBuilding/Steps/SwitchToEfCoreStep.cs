@@ -212,16 +212,16 @@ public class SwitchToEfCoreStep : ProjectBuildPipelineStep
                 : "";
 
             var dbContextContent = $@"using Microsoft.EntityFrameworkCore;
-using Volo.Abp.AuditLogging.EntityFrameworkCore;
-using Volo.Abp.BackgroundJobs.EntityFrameworkCore;{blobStoringUsing}
+using SufiChain.SufiAbp.AuditLogging.EntityFrameworkCore;
+using SufiChain.SufiAbp.BackgroundJobs.EntityFrameworkCore;{blobStoringUsing}
 using Volo.Abp.Data;
 using Volo.Abp.EntityFrameworkCore;
-using Volo.Abp.FeatureManagement.EntityFrameworkCore;
+using SufiChain.SufiAbp.FeatureManagement.EntityFrameworkCore;
 using SufiChain.SufiAbp.Identity.EntityFrameworkCore;
 using SufiChain.SufiAbp.OpenIddict.EntityFrameworkCore;
-using Volo.Abp.PermissionManagement.EntityFrameworkCore;
-using Volo.Abp.SettingManagement.EntityFrameworkCore;
-using Volo.Abp.TenantManagement.EntityFrameworkCore;
+using SufiChain.SufiAbp.PermissionManagement.EntityFrameworkCore;
+using SufiChain.SufiAbp.SettingManagement.EntityFrameworkCore;
+using SufiChain.SufiAbp.TenantManagement.EntityFrameworkCore;
 
 namespace {solutionName}.Data;
 
@@ -346,14 +346,14 @@ public class {projectName}DbContext : AbpDbContext<{projectName}DbContext>
 
   <ItemGroup>
     <PackageReference Include=""{providerPackage}"" Version=""$(AbpVersion)"" />
-    <PackageReference Include=""Volo.Abp.PermissionManagement.EntityFrameworkCore"" Version=""$(AbpVersion)"" />
-    <PackageReference Include=""Volo.Abp.SettingManagement.EntityFrameworkCore"" Version=""$(AbpVersion)"" />
-    <PackageReference Include=""SufiChain.SufiAbp.Identity.EntityFrameworkCore"" Version=""$(AbpVersion)"" />
+    <PackageReference Include=""SufiChain.SufiAbp.PermissionManagement.EntityFrameworkCore"" Version=""$(SufiVersion)"" />
+    <PackageReference Include=""SufiChain.SufiAbp.SettingManagement.EntityFrameworkCore"" Version=""$(SufiVersion)"" />
+    <PackageReference Include=""SufiChain.SufiAbp.Identity.EntityFrameworkCore"" Version=""$(SufiVersion)"" />
     <PackageReference Include=""SufiChain.SufiAbp.OpenIddict.EntityFrameworkCore"" Version=""$(SufiVersion)"" />
-    <PackageReference Include=""Volo.Abp.TenantManagement.EntityFrameworkCore"" Version=""$(AbpVersion)"" />
-    <PackageReference Include=""Volo.Abp.FeatureManagement.EntityFrameworkCore"" Version=""$(AbpVersion)"" />
-    <PackageReference Include=""Volo.Abp.AuditLogging.EntityFrameworkCore"" Version=""$(AbpVersion)"" />
-    <PackageReference Include=""Volo.Abp.BackgroundJobs.EntityFrameworkCore"" Version=""$(AbpVersion)"" />{blobStoringPackage}
+    <PackageReference Include=""SufiChain.SufiAbp.TenantManagement.EntityFrameworkCore"" Version=""$(SufiVersion)"" />
+    <PackageReference Include=""SufiChain.SufiAbp.FeatureManagement.EntityFrameworkCore"" Version=""$(SufiVersion)"" />
+    <PackageReference Include=""SufiChain.SufiAbp.AuditLogging.EntityFrameworkCore"" Version=""$(SufiVersion)"" />
+    <PackageReference Include=""SufiChain.SufiAbp.BackgroundJobs.EntityFrameworkCore"" Version=""$(SufiVersion)"" />{blobStoringPackage}
     <PackageReference Include=""Microsoft.EntityFrameworkCore.Tools"" Version=""$(AspNetCoreVersion)"">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
@@ -378,16 +378,16 @@ public class {projectName}DbContext : AbpDbContext<{projectName}DbContext>
             : "";
 
         return $@"using Microsoft.EntityFrameworkCore;
-using Volo.Abp.AuditLogging.EntityFrameworkCore;
-using Volo.Abp.BackgroundJobs.EntityFrameworkCore;{blobStoringUsing}
-using Volo.Abp.Data;
-using Volo.Abp.EntityFrameworkCore;
-using Volo.Abp.FeatureManagement.EntityFrameworkCore;
-using SufiChain.SufiAbp.Identity.EntityFrameworkCore;
-using SufiChain.SufiAbp.OpenIddict.EntityFrameworkCore;
-using Volo.Abp.PermissionManagement.EntityFrameworkCore;
-using Volo.Abp.SettingManagement.EntityFrameworkCore;
-using Volo.Abp.TenantManagement.EntityFrameworkCore;
+	using SufiChain.SufiAbp.AuditLogging.EntityFrameworkCore;
+	using SufiChain.SufiAbp.BackgroundJobs.EntityFrameworkCore;{blobStoringUsing}
+	using Volo.Abp.Data;
+	using Volo.Abp.EntityFrameworkCore;
+	using SufiChain.SufiAbp.FeatureManagement.EntityFrameworkCore;
+	using SufiChain.SufiAbp.Identity.EntityFrameworkCore;
+	using SufiChain.SufiAbp.OpenIddict.EntityFrameworkCore;
+	using SufiChain.SufiAbp.PermissionManagement.EntityFrameworkCore;
+	using SufiChain.SufiAbp.SettingManagement.EntityFrameworkCore;
+	using SufiChain.SufiAbp.TenantManagement.EntityFrameworkCore;
 
 namespace {solutionName}.EntityFrameworkCore;
 
@@ -432,17 +432,17 @@ public class {projectName}DbContext : AbpDbContext<{projectName}DbContext>
             : "";
 
         return $@"using Microsoft.Extensions.DependencyInjection;
-using Volo.Abp.AuditLogging.EntityFrameworkCore;
-using Volo.Abp.BackgroundJobs.EntityFrameworkCore;{blobStoringUsing}
-using Volo.Abp.EntityFrameworkCore;
-using {providerNamespace};
-using Volo.Abp.FeatureManagement.EntityFrameworkCore;
-using SufiChain.SufiAbp.Identity.EntityFrameworkCore;
-using Volo.Abp.Modularity;
-using SufiChain.SufiAbp.OpenIddict.EntityFrameworkCore;
-using Volo.Abp.PermissionManagement.EntityFrameworkCore;
-using Volo.Abp.SettingManagement.EntityFrameworkCore;
-using Volo.Abp.TenantManagement.EntityFrameworkCore;
+	using SufiChain.SufiAbp.AuditLogging.EntityFrameworkCore;
+	using SufiChain.SufiAbp.BackgroundJobs.EntityFrameworkCore;{blobStoringUsing}
+	using Volo.Abp.EntityFrameworkCore;
+	using {providerNamespace};
+	using SufiChain.SufiAbp.FeatureManagement.EntityFrameworkCore;
+	using SufiChain.SufiAbp.Identity.EntityFrameworkCore;
+	using Volo.Abp.Modularity;
+	using SufiChain.SufiAbp.OpenIddict.EntityFrameworkCore;
+	using SufiChain.SufiAbp.PermissionManagement.EntityFrameworkCore;
+	using SufiChain.SufiAbp.SettingManagement.EntityFrameworkCore;
+	using SufiChain.SufiAbp.TenantManagement.EntityFrameworkCore;
 using {solutionName}.Domain;
 
 namespace {solutionName}.EntityFrameworkCore;
@@ -450,16 +450,16 @@ namespace {solutionName}.EntityFrameworkCore;
 [DependsOn(
     typeof({projectName}DomainModule),
     typeof({providerModuleName}),
-    typeof(AbpPermissionManagementEntityFrameworkCoreModule),
-    typeof(AbpSettingManagementEntityFrameworkCoreModule),
-    typeof(AbpIdentityEntityFrameworkCoreModule),
-    typeof(SufiAbpOpenIddictEntityFrameworkCoreModule),
-    typeof(AbpFeatureManagementEntityFrameworkCoreModule),
-    typeof(AbpTenantManagementEntityFrameworkCoreModule),
-    typeof(AbpAuditLoggingEntityFrameworkCoreModule),
-    typeof(AbpBackgroundJobsEntityFrameworkCoreModule){blobStoringDependsOn}
+	    typeof(SufiAbpPermissionManagementEntityFrameworkCoreModule),
+	    typeof(SufiAbpSettingManagementEntityFrameworkCoreModule),
+	    typeof(SufiAbpIdentityEntityFrameworkCoreModule),
+	    typeof(SufiAbpOpenIddictEntityFrameworkCoreModule),
+	    typeof(SufiAbpFeatureManagementEntityFrameworkCoreModule),
+	    typeof(SufiAbpTenantManagementEntityFrameworkCoreModule),
+	    typeof(SufiAbpAuditLoggingEntityFrameworkCoreModule),
+	    typeof(SufiAbpBackgroundJobsEntityFrameworkCoreModule){blobStoringDependsOn}
 )]
-public class {projectName}EntityFrameworkCoreModule : AbpModule
+public class {projectName}EntityFrameworkCoreModule : SufiAbpModule
 {{
     public override void PreConfigureServices(ServiceConfigurationContext context)
     {{
@@ -770,12 +770,12 @@ public class EntityFrameworkCore{projectName}DbSchemaMigrator : I{projectName}Db
             ["SufiChain.SufiAbp.Identity.MongoDB"] = "SufiChain.SufiAbp.Identity.EntityFrameworkCore",
             ["SufiChain.SufiAbp.OpenIdDict.MongoDB"] = "SufiChain.SufiAbp.OpenIddict.EntityFrameworkCore",
             ["SufiChain.SufiAbp.OpenIddict.MongoDB"] = "SufiChain.SufiAbp.OpenIddict.EntityFrameworkCore",
-            ["Volo.Abp.TenantManagement.MongoDB"] = "Volo.Abp.TenantManagement.EntityFrameworkCore",
-            ["Volo.Abp.AuditLogging.MongoDB"] = "Volo.Abp.AuditLogging.EntityFrameworkCore",
-            ["Volo.Abp.PermissionManagement.MongoDB"] = "Volo.Abp.PermissionManagement.EntityFrameworkCore",
-            ["Volo.Abp.FeatureManagement.MongoDB"] = "Volo.Abp.FeatureManagement.EntityFrameworkCore",
-            ["Volo.Abp.SettingManagement.MongoDB"] = "Volo.Abp.SettingManagement.EntityFrameworkCore",
-            ["Volo.Abp.BackgroundJobs.MongoDB"] = "Volo.Abp.BackgroundJobs.EntityFrameworkCore",
+            ["SufiChain.SufiAbp.TenantManagement.MongoDB"] = "SufiChain.SufiAbp.TenantManagement.EntityFrameworkCore",
+            ["SufiChain.SufiAbp.AuditLogging.MongoDB"] = "SufiChain.SufiAbp.AuditLogging.EntityFrameworkCore",
+            ["SufiChain.SufiAbp.PermissionManagement.MongoDB"] = "SufiChain.SufiAbp.PermissionManagement.EntityFrameworkCore",
+            ["SufiChain.SufiAbp.FeatureManagement.MongoDB"] = "SufiChain.SufiAbp.FeatureManagement.EntityFrameworkCore",
+            ["SufiChain.SufiAbp.SettingManagement.MongoDB"] = "SufiChain.SufiAbp.SettingManagement.EntityFrameworkCore",
+            ["SufiChain.SufiAbp.BackgroundJobs.MongoDB"] = "SufiChain.SufiAbp.BackgroundJobs.EntityFrameworkCore",
         };
 
         var csprojFiles = context.Files.Keys
@@ -813,9 +813,9 @@ public class EntityFrameworkCore{projectName}DbSchemaMigrator : I{projectName}Db
         // Using statements to add (before namespace)
         var efCoreUsings = new List<string>
         {
-            "using Volo.Abp.AuditLogging.EntityFrameworkCore;",
-            "using Volo.Abp.FeatureManagement.EntityFrameworkCore;",
-            "using Volo.Abp.SettingManagement.EntityFrameworkCore;",
+            "using SufiChain.SufiAbp.AuditLogging.EntityFrameworkCore;",
+            "using SufiChain.SufiAbp.FeatureManagement.EntityFrameworkCore;",
+            "using SufiChain.SufiAbp.SettingManagement.EntityFrameworkCore;",
         };
         if (isSingle)
         {
@@ -823,17 +823,17 @@ public class EntityFrameworkCore{projectName}DbSchemaMigrator : I{projectName}Db
             {
                 "using SufiChain.SufiAbp.Identity.EntityFrameworkCore;",
                 "using SufiChain.SufiAbp.OpenIddict.EntityFrameworkCore;",
-                "using Volo.Abp.TenantManagement.EntityFrameworkCore;",
-                "using Volo.Abp.PermissionManagement.EntityFrameworkCore;",
-                "using Volo.Abp.BackgroundJobs.EntityFrameworkCore;",
+                "using SufiChain.SufiAbp.TenantManagement.EntityFrameworkCore;",
+                "using SufiChain.SufiAbp.PermissionManagement.EntityFrameworkCore;",
+                "using SufiChain.SufiAbp.BackgroundJobs.EntityFrameworkCore;",
             });
         }
 
         // Module files to process (host modules that configure DB)
         var moduleFiles = context.Files.Keys
             .Where(f => f.EndsWith("Module.cs") && (
-                f.Contains("Blazor.WebApp") || f.Contains("AuthServer") || f.Contains("HttpApi.Host") ||
-                (isSingle && !f.Contains("Contracts") && !f.Contains("Client") && !f.Contains("Application.") && !f.Contains("Domain") && !f.Contains("HttpApi"))))
+                (f.Contains("Blazor.WebApp") && !f.Contains("Blazor.WebApp.Client")) ||
+                f.Contains("AuthServer") || f.Contains("HttpApi.Host")))
             .ToList();
 
         foreach (var file in moduleFiles)
@@ -852,34 +852,34 @@ public class EntityFrameworkCore{projectName}DbSchemaMigrator : I{projectName}Db
             }
 
             // Add typeof for AuditLogging (before FeatureManagement in layered)
-            if (!isSingle && !content.Contains("AbpAuditLoggingEntityFrameworkCoreModule"))
+            if (!isSingle && !content.Contains("SufiAbpAuditLoggingEntityFrameworkCoreModule"))
             {
                 content = content.Replace(
-                    "typeof(AbpFeatureManagementApplicationModule),",
-                    "typeof(AbpAuditLoggingEntityFrameworkCoreModule),\n    typeof(AbpFeatureManagementApplicationModule),");
+                    "typeof(SufiAbpFeatureManagementApplicationModule),",
+                    "typeof(SufiAbpAuditLoggingEntityFrameworkCoreModule),\n    typeof(SufiAbpFeatureManagementApplicationModule),");
             }
 
             // Add typeof for FeatureManagement and SettingManagement
             content = content.Replace(
-                "typeof(AbpFeatureManagementApplicationModule),",
-                "typeof(AbpFeatureManagementApplicationModule),\n    typeof(AbpFeatureManagementEntityFrameworkCoreModule),");
+                "typeof(SufiAbpFeatureManagementApplicationModule),",
+                "typeof(SufiAbpFeatureManagementApplicationModule),\n    typeof(SufiAbpFeatureManagementEntityFrameworkCoreModule),");
             content = content.Replace(
-                "typeof(AbpSettingManagementApplicationModule),",
-                "typeof(AbpSettingManagementApplicationModule),\n    typeof(AbpSettingManagementEntityFrameworkCoreModule),");
+                "typeof(SufiAbpSettingManagementApplicationModule),",
+                "typeof(SufiAbpSettingManagementApplicationModule),\n    typeof(SufiAbpSettingManagementEntityFrameworkCoreModule),");
 
             if (isSingle)
             {
-                if (!content.Contains("AbpIdentityEntityFrameworkCoreModule"))
+                if (!content.Contains("SufiAbpIdentityEntityFrameworkCoreModule"))
                 {
                     content = content.Replace(
-                        "typeof(AbpPermissionManagementDomainOpenIddictModule),",
-                        "typeof(AbpPermissionManagementDomainOpenIddictModule),\n    typeof(AbpIdentityEntityFrameworkCoreModule),\n    typeof(SufiAbpOpenIddictEntityFrameworkCoreModule),\n    typeof(AbpTenantManagementEntityFrameworkCoreModule),\n    typeof(AbpAuditLoggingEntityFrameworkCoreModule),\n    typeof(AbpPermissionManagementEntityFrameworkCoreModule),");
+                        "typeof(SufiAbpPermissionManagementDomainOpenIddictModule),",
+                        "typeof(SufiAbpPermissionManagementDomainOpenIddictModule),\n    typeof(SufiAbpIdentityEntityFrameworkCoreModule),\n    typeof(SufiAbpOpenIddictEntityFrameworkCoreModule),\n    typeof(SufiAbpTenantManagementEntityFrameworkCoreModule),\n    typeof(SufiAbpAuditLoggingEntityFrameworkCoreModule),\n    typeof(SufiAbpPermissionManagementEntityFrameworkCoreModule),");
                 }
-                if (!content.Contains("AbpBackgroundJobsEntityFrameworkCoreModule"))
+                if (!content.Contains("SufiAbpBackgroundJobsEntityFrameworkCoreModule"))
                 {
                     content = content.Replace(
-                        "typeof(AbpSettingManagementApplicationModule),\n    typeof(AbpSettingManagementEntityFrameworkCoreModule),",
-                        "typeof(AbpSettingManagementApplicationModule),\n    typeof(AbpSettingManagementEntityFrameworkCoreModule),\n    typeof(AbpBackgroundJobsEntityFrameworkCoreModule),");
+                        "typeof(SufiAbpSettingManagementApplicationModule),\n    typeof(SufiAbpSettingManagementEntityFrameworkCoreModule),",
+                        "typeof(SufiAbpSettingManagementApplicationModule),\n    typeof(SufiAbpSettingManagementEntityFrameworkCoreModule),\n    typeof(SufiAbpBackgroundJobsEntityFrameworkCoreModule),");
                 }
             }
 

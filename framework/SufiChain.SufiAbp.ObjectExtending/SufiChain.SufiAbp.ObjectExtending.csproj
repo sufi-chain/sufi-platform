@@ -5,6 +5,8 @@
       <Nullable>enable</Nullable>
         <RootNamespace>SufiChain.SufiAbp.ObjectExtending</RootNamespace>
         <AssemblyName>SufiChain.SufiAbp.ObjectExtending</AssemblyName>
+        <PackageId>SufiChain.SufiAbp.ObjectExtending</PackageId>
+        <Description>Object extension infrastructure for SufiAbp applications.</Description>
     </PropertyGroup>
 
     <ItemGroup>

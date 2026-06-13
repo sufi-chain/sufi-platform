@@ -29,20 +29,21 @@ using SufiChain.SufiAbp.UI.Bundling;
 using SufiChain.SufiAbp.UI.Routing;
 using SufiChain.SufiAbp.UI.Toolbars;
 using StackExchange.Redis;
+using SufiChain.SufiAbp.AspNetCore.Authentication.OpenIdConnect;
+using SufiChain.SufiAbp.AspNetCore.Mvc.Client;
+using SufiChain.SufiAbp.AspNetCore.MultiTenancy;
+using SufiChain.SufiAbp.AspNetCore.Serilog;
+using SufiChain.SufiAbp.Autofac;
+using SufiChain.SufiAbp.Caching.StackExchangeRedis;
+using SufiChain.SufiAbp.Http.Client.IdentityModel.Web;
+using SufiChain.SufiAbp.Swashbuckle;
 using Volo.Abp;
-using Volo.Abp.AspNetCore.Authentication.OpenIdConnect;
-using Volo.Abp.AspNetCore.Mvc.Client;
 using Volo.Abp.AspNetCore.Mvc.Libs;
 using Volo.Abp.AspNetCore.Mvc.Localization;
-using Volo.Abp.AspNetCore.Serilog;
-using Volo.Abp.Autofac;
 using Volo.Abp.Caching;
-using Volo.Abp.Caching.StackExchangeRedis;
-using Volo.Abp.Http.Client.IdentityModel.Web;
 using Volo.Abp.Localization;
 using Volo.Abp.Modularity;
 using Volo.Abp.MultiTenancy;
-using Volo.Abp.Swashbuckle;
 using Volo.Abp.VirtualFileSystem;
 using MyCompanyName.MyProjectName.Blazor.WebSite.Menus;
 using MyCompanyName.MyProjectName.Localization;
@@ -62,13 +63,13 @@ namespace MyCompanyName.MyProjectName.Blazor.WebSite;
 /// </summary>
 [DependsOn(
     typeof(DemoAppHttpApiClientModule),
-    typeof(AbpCachingStackExchangeRedisModule),
-    typeof(AbpAspNetCoreMvcClientModule),
-    typeof(AbpAspNetCoreSufiAbpAuthenticationOpenIdConnectModule),
-    typeof(AbpHttpClientIdentityModelWebModule),
-    typeof(AbpAutofacModule),
-    typeof(AbpSwashbuckleModule),
-    typeof(AbpAspNetCoreSerilogModule),
+    typeof(SufiAbpCachingStackExchangeRedisModule),
+    typeof(SufiAbpAspNetCoreMvcClientModule),
+    typeof(SufiAbpAuthenticationOpenIdConnectModule),
+    typeof(SufiAbpHttpClientIdentityModelWebModule),
+    typeof(SufiAbpAutofacModule),
+    typeof(SufiAbpSwashbuckleModule),
+    typeof(SufiAbpAspNetCoreSerilogModule),
     // SufiAbp UI ABP Integration - bridges ABP services (menus, languages, users, etc.) to SufiAbp UI
     typeof(SufiAbpUIModule),
     // SufiAbp UI Modules for Public Site
@@ -89,7 +90,7 @@ namespace MyCompanyName.MyProjectName.Blazor.WebSite;
     // NOTE: For CMS, this will be replaced with dynamic layout rendering
     typeof(KomThemeBlazorServerModule),
     // ABP Multi-Tenancy (cookie/header/domain resolvers + middleware)
-    typeof(AbpAspNetCoreMultiTenancyModule)
+    typeof(SufiAbpAspNetCoreMultiTenancyModule)
 )]
 public class DemoAppBlazorWebSiteModule : AbpModule
 {

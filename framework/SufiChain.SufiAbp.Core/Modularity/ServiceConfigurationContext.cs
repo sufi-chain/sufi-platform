@@ -1,6 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
 
-namespace SufiChain.SufiAbp.Core;
+namespace SufiChain.SufiAbp.Modularity;
 
 public class ServiceConfigurationContext
 {

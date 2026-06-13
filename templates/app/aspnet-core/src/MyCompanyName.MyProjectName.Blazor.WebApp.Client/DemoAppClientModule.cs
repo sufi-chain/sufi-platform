@@ -28,7 +28,9 @@ namespace MyCompanyName.MyProjectName;
 /// </summary>
 [DependsOn(
     typeof(SufiAbpAutofacWebAssemblyModule),
+    // <TEMPLATE-REMOVE IF="arch:single">
     typeof(DemoAppHttpApiClientModule),
+    // </TEMPLATE-REMOVE>
     // SufiAbp Theme & UI Modules for WebAssembly
     typeof(KomThemeBlazorWebAssemblyModule),
     typeof(SufiAbpIdentityBlazorModule),

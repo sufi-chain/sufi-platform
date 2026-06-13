@@ -22,6 +22,13 @@
 	<!-- Development: Project References (removed when generating templates) -->
 	<!-- <TEMPLATE-REMOVE> -->
 	<ItemGroup>
+		<ProjectReference Include="..\..\..\..\..\src\framework\SufiChain.SufiAbp.Caching.StackExchangeRedis\SufiChain.SufiAbp.Caching.StackExchangeRedis.csproj" />
+		<ProjectReference Include="..\..\..\..\..\src\framework\SufiChain.SufiAbp.AspNetCore.Mvc.Client\SufiChain.SufiAbp.AspNetCore.Mvc.Client.csproj" />
+		<ProjectReference Include="..\..\..\..\..\src\framework\SufiChain.SufiAbp.Http.Client.IdentityModel.Web\SufiChain.SufiAbp.Http.Client.IdentityModel.Web.csproj" />
+		<ProjectReference Include="..\..\..\..\..\src\framework\SufiChain.SufiAbp.Autofac\SufiChain.SufiAbp.Autofac.csproj" />
+		<ProjectReference Include="..\..\..\..\..\src\framework\SufiChain.SufiAbp.Swashbuckle\SufiChain.SufiAbp.Swashbuckle.csproj" />
+		<ProjectReference Include="..\..\..\..\..\src\framework\SufiChain.SufiAbp.AspNetCore.MultiTenancy\SufiChain.SufiAbp.AspNetCore.MultiTenancy.csproj" />
+		<ProjectReference Include="..\..\..\..\..\src\framework\SufiChain.SufiAbp.AspNetCore.Serilog\SufiChain.SufiAbp.AspNetCore.Serilog.csproj" />
 		<!-- KomTheme with ABP module pattern, uses SufiBlazor design system -->
 		<ProjectReference Include="..\..\..\..\..\independent-projects\kom-theme\src\SufiChain.KomTheme.Blazor.Server\SufiChain.KomTheme.Blazor.Server.csproj" />
 		
@@ -59,6 +66,7 @@
 	</TEMPLATE-ONLY> -->
 	
 	<ItemGroup>
+		<PackageReference Include="SufiChain.SufiAbp.Core" Version="$(SufiVersion)" />
 		<!-- Demo app project reference (always needed) -->
 		<ProjectReference Include="..\MyCompanyName.MyProjectName.HttpApi.Client\MyCompanyName.MyProjectName.HttpApi.Client.csproj" />
 		<PackageReference Include="SufiChain.SufiAbp.Caching.StackExchangeRedis" Version="$(SufiVersion)" />

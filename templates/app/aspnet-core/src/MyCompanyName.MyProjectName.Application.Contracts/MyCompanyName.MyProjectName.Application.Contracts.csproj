@@ -8,6 +8,8 @@
 
   <TEMPLATE-REMOVE>
   <ItemGroup>
+    <ProjectReference Include="..\..\..\..\..\src\framework\SufiChain.SufiAbp.Core\SufiChain.SufiAbp.Core.csproj" />
+    <ProjectReference Include="..\..\..\..\..\src\framework\SufiChain.SufiAbp.Authorization\SufiChain.SufiAbp.Authorization.csproj" />
     <ProjectReference Include="..\..\..\..\..\modules\tenant-management\src\SufiChain.SufiAbp.TenantManagement.Application.Contracts\SufiChain.SufiAbp.TenantManagement.Application.Contracts.csproj" />
     <ProjectReference Include="..\MyCompanyName.MyProjectName.Domain.Shared\MyCompanyName.MyProjectName.Domain.Shared.csproj" />
     <ProjectReference Include="..\..\..\..\..\modules\account\src\SufiChain.SufiAbp.Account.Application.Contracts\SufiChain.SufiAbp.Account.Application.Contracts.csproj" />
@@ -20,6 +22,8 @@
 
   <TEMPLATE-ONLY>
   <ItemGroup>
+    <PackageReference Include="SufiChain.SufiAbp.Core" Version="$(SufiVersion)" />
+    <PackageReference Include="SufiChain.SufiAbp.Authorization" Version="$(SufiVersion)" />
     <PackageReference Include="SufiChain.SufiAbp.TenantManagement.Application.Contracts" Version="$(SufiVersion)" />
     <ProjectReference Include="..\MyCompanyName.MyProjectName.Domain.Shared\MyCompanyName.MyProjectName.Domain.Shared.csproj" />
     <PackageReference Include="SufiChain.SufiAbp.Account.Application.Contracts" Version="$(SufiVersion)" />

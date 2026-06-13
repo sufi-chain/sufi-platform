@@ -15,6 +15,7 @@
 
   <TEMPLATE-REMOVE>
   <ItemGroup>
+    <ProjectReference Include="..\..\..\..\..\src\framework\SufiChain.SufiAbp.Core\SufiChain.SufiAbp.Core.csproj" />
     <ProjectReference Include="..\..\..\..\..\src\framework\SufiChain.SufiAbp.Data\SufiChain.SufiAbp.Data.csproj" />
     <ProjectReference Include="..\..\..\..\..\src\framework\SufiChain.SufiAbp.EntityFrameworkCore.SqlServer\SufiChain.SufiAbp.EntityFrameworkCore.SqlServer.csproj" />
     <ProjectReference Include="..\..\..\..\..\src\framework\SufiChain.SufiAbp.EntityFrameworkCore.PostgreSql\SufiChain.SufiAbp.EntityFrameworkCore.PostgreSql.csproj" />
@@ -25,6 +26,7 @@
 
   <TEMPLATE-ONLY>
   <ItemGroup>
+    <PackageReference Include="SufiChain.SufiAbp.Core" Version="$(SufiVersion)" />
     <PackageReference Include="SufiChain.SufiAbp.Data" Version="$(SufiVersion)" />
     <TEMPLATE-REMOVE IF-NOT="efp:sqlserver">
     <PackageReference Include="SufiChain.SufiAbp.EntityFrameworkCore.SqlServer" Version="$(SufiVersion)" />

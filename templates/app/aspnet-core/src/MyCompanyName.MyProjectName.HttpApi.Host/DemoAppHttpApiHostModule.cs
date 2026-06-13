@@ -35,24 +35,26 @@ using System.IO;
 using System.Linq;
 using System.Net.Http;
 using SufiChain.SufiAbp.AspNetCore.Authentication.JwtBearer;
+using SufiChain.SufiAbp.AspNetCore.MultiTenancy;
+using SufiChain.SufiAbp.AspNetCore.Serilog;
+using SufiChain.SufiAbp.Autofac;
+using SufiChain.SufiAbp.Swashbuckle;
 using Volo.Abp;
-using Volo.Abp.AspNetCore.MultiTenancy;
 using Volo.Abp.AspNetCore.Mvc;
 using Volo.Abp.AspNetCore.Mvc.Libs;
-using Volo.Abp.AspNetCore.Serilog;
-using Volo.Abp.Autofac;
 using Volo.Abp.Localization;
 using Volo.Abp.Modularity;
 // <TEMPLATE-REMOVE IF-NOT="db:mongodb">
-using Volo.Abp.AuditLogging.EntityFrameworkCore;
+using SufiChain.SufiAbp.AuditLogging.EntityFrameworkCore;
 // </TEMPLATE-REMOVE>
 // <TEMPLATE-REMOVE IF-NOT="db:mongodb">
-using Volo.Abp.FeatureManagement.EntityFrameworkCore;
+using SufiChain.SufiAbp.FeatureManagement.EntityFrameworkCore;
+using SufiChain.SufiAbp.FeatureManagement.MongoDB;
 // </TEMPLATE-REMOVE>
 // <TEMPLATE-REMOVE IF-NOT="db:mongodb">
-using Volo.Abp.SettingManagement.EntityFrameworkCore;
+using SufiChain.SufiAbp.SettingManagement.EntityFrameworkCore;
+using SufiChain.SufiAbp.SettingManagement.MongoDB;
 // </TEMPLATE-REMOVE>
-using Volo.Abp.Swashbuckle;
 using Volo.Abp.VirtualFileSystem;
 // <TEMPLATE-REMOVE IF-NOT="db:mongodb">
 using MyCompanyName.MyProjectName.EntityFrameworkCore;
@@ -63,15 +65,15 @@ namespace MyCompanyName.MyProjectName
 {
     [DependsOn(
         typeof(DemoAppHttpApiModule),
-        typeof(AbpAutofacModule),
-        typeof(AbpAspNetCoreMultiTenancyModule),
+        typeof(SufiAbpAutofacModule),
+        typeof(SufiAbpAspNetCoreMultiTenancyModule),
         typeof(DemoAppApplicationModule),
         // <TEMPLATE-REMOVE IF-NOT="db:mongodb">
         typeof(DemoAppMongoDbModule),
         // </TEMPLATE-REMOVE>
         typeof(SufiAbpAspNetCoreAuthenticationJwtBearerModule),
-        typeof(AbpAspNetCoreSerilogModule),
-        typeof(AbpSwashbuckleModule),
+        typeof(SufiAbpAspNetCoreSerilogModule),
+        typeof(SufiAbpSwashbuckleModule),
         // <TEMPLATE-REMOVE IF-NOT="module:file-manager">
         // Blob storage for file manager (must load before SufiAbpFileManagerMongoDbModule)
         typeof(SufiAbpBlobStoringDatabaseMongoDbModule),
@@ -111,13 +113,13 @@ namespace MyCompanyName.MyProjectName
         typeof(SufiAbpAIManagementHttpApiModule),
         // <TEMPLATE-REMOVE IF-NOT="db:mongodb">
         // ABP Admin Modules (DB layers for MongoDB)
-        typeof(AbpAuditLoggingEntityFrameworkCoreModule),
+        typeof(SufiAbpAuditLoggingEntityFrameworkCoreModule),
         // </TEMPLATE-REMOVE>
         // <TEMPLATE-REMOVE IF-NOT="db:mongodb">
-        typeof(AbpFeatureManagementMongoDbModule),
+        typeof(SufiAbpFeatureManagementMongoDbModule),
         // </TEMPLATE-REMOVE>
         // <TEMPLATE-REMOVE IF-NOT="db:mongodb">
-        typeof(AbpSettingManagementMongoDbModule),
+        typeof(SufiAbpSettingManagementMongoDbModule),
         // </TEMPLATE-REMOVE>
         // <TEMPLATE-REMOVE IF-NOT="module:localization-management">
         // Localization Management Module (backend services for translation editor)

@@ -13,8 +13,9 @@ using SufiChain.SufiAbp.SettingManagement.EntityFrameworkCore;
 using SufiChain.SufiAbp.ShortLinkGenerator.EntityFrameworkCore;
 using SufiChain.SufiAbp.TenantManagement.EntityFrameworkCore;
 using SufiChain.SufiAbp.Users;
+using SufiChain.SufiAbp.EntityFrameworkCore;
+using SufiChain.SufiAbp.EntityFrameworkCore.SqlServer;
 using Volo.Abp.EntityFrameworkCore;
-using Volo.Abp.EntityFrameworkCore.SqlServer;
 using Volo.Abp.Modularity;
 
 namespace MyCompanyName.MyProjectName.EntityFrameworkCore;
@@ -22,7 +23,7 @@ namespace MyCompanyName.MyProjectName.EntityFrameworkCore;
 [DependsOn(
     typeof(DemoAppDomainModule),
     typeof(DemoAppApplicationContractsModule),
-    typeof(AbpEntityFrameworkCoreSqlServerModule),
+    typeof(SufiAbpEntityFrameworkCoreSqlServerModule),
 
     // SufiAbp Infrastructure Modules
     typeof(SufiAbpIdentityEntityFrameworkCoreModule),

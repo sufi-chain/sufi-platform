@@ -6,7 +6,7 @@ namespace SufiChain.SufiAbp.FileManager;
     typeof(FileManagerApplicationModule),
     typeof(FileManagerDomainTestModule)
     )]
-public class SufiAbpFileManagerApplicationTestModule : AbpModule
+public class SufiAbpFileManagerApplicationTestModule : SufiAbpModule
 {
 
 }

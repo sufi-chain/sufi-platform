@@ -9,22 +9,19 @@
 
   <!-- <TEMPLATE-REMOVE> -->
     <ItemGroup>
+      <ProjectReference Include="..\..\..\..\..\src\framework\SufiChain.SufiAbp.Core\SufiChain.SufiAbp.Core.csproj" />
       <ProjectReference Include="..\..\..\..\..\src\framework\SufiChain.SufiAbp.UI.Domain.Shared\SufiChain.SufiAbp.UI.Domain.Shared.csproj" />
     </ItemGroup>
   <!-- </TEMPLATE-REMOVE> -->
 
-  <!-- <TEMPLATE-ONLY>
-  <ItemGroup>
-    <PackageReference Include="SufiChain.SufiAbp.UI.Domain.Shared" Version="$(SufiVersion)" />
-  </ItemGroup>
-  </TEMPLATE-ONLY> -->
-
-  <!--<ItemGroup>
-    --><!-- OpenIddict still uses ABP directly (no SufiAbp wrapper yet) --><!--
-    <PackageReference Include="SufiChain.SufiAbp.OpenIddict.Domain.Shared" Version="$(SufiVersion)" />
-  </ItemGroup>-->
-
-  <!-- ====================================================================== -->
+	  <!-- <TEMPLATE-ONLY>
+	  <ItemGroup>
+	    <PackageReference Include="SufiChain.SufiAbp.Core" Version="$(SufiVersion)" />
+	    <PackageReference Include="SufiChain.SufiAbp.UI.Domain.Shared" Version="$(SufiVersion)" />
+	  </ItemGroup>
+	  </TEMPLATE-ONLY> -->
+	
+	  <!-- ====================================================================== -->
   <!-- Development: SufiAbp module references (removed when generating templates) -->
   <!-- <TEMPLATE-REMOVE> -->
   <ItemGroup>
@@ -42,8 +39,9 @@
 
   <!-- <TEMPLATE-ONLY> -->
   <!--
-  <ItemGroup>
-    <PackageReference Include="SufiChain.SufiAbp.PermissionManagement.Domain.Shared" Version="$(SufiVersion)" />
+	  <ItemGroup>
+	    <PackageReference Include="SufiChain.SufiAbp.OpenIddict.Domain.Shared" Version="$(SufiVersion)" />
+	    <PackageReference Include="SufiChain.SufiAbp.PermissionManagement.Domain.Shared" Version="$(SufiVersion)" />
     <PackageReference Include="SufiChain.SufiAbp.SettingManagement.Domain.Shared" Version="$(SufiVersion)" />
     <PackageReference Include="SufiChain.SufiAbp.FeatureManagement.Domain.Shared" Version="$(SufiVersion)" />
     <PackageReference Include="SufiChain.SufiAbp.AuditLogging.Domain.Shared" Version="$(SufiVersion)" />

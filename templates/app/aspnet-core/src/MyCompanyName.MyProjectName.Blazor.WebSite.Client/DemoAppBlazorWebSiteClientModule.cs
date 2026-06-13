@@ -7,7 +7,7 @@ using SufiChain.SufiAbp.FileManager.Blazor.WebAssembly;
 using SufiChain.KomTheme.Blazor.WebAssembly;
 using SufiChain.SufiAbp.UI.Navigation;
 using SufiChain.SufiAbp.UI.Routing;
-using Volo.Abp.Autofac.WebAssembly;
+using SufiChain.SufiAbp.Autofac.WebAssembly;
 using Volo.Abp.Modularity;
 using MyCompanyName.MyProjectName.Blazor.WebSite.Client.Menus;
 
@@ -23,7 +23,7 @@ namespace MyCompanyName.MyProjectName.Blazor.WebSite.Client;
 /// - Uses public menu contributor
 /// </summary>
 [DependsOn(
-    typeof(AbpAutofacWebAssemblyModule),
+    typeof(SufiAbpAutofacWebAssemblyModule),
     typeof(DemoAppHttpApiClientModule),
     // SufiAbp Theme & UI Modules for WebAssembly
     typeof(KomThemeBlazorWebAssemblyModule),

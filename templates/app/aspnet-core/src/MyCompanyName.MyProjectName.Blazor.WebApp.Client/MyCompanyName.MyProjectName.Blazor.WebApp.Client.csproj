@@ -21,12 +21,16 @@
 
 	<!-- <TEMPLATE-REMOVE> -->
 	<ItemGroup>
+		<ProjectReference Include="..\..\..\..\..\src\framework\SufiChain.SufiAbp.Core\SufiChain.SufiAbp.Core.csproj" />
+		<ProjectReference Include="..\..\..\..\..\src\framework\SufiChain.SufiAbp.UI.Blazor\SufiChain.SufiAbp.UI.Blazor.csproj" />
 		<ProjectReference Include="..\..\..\..\..\src\framework\SufiChain.SufiAbp.Autofac.WebAssembly\SufiChain.SufiAbp.Autofac.WebAssembly.csproj" />
 	</ItemGroup>
 	<!-- </TEMPLATE-REMOVE> -->
 
 	<!-- <TEMPLATE-ONLY>
 	<ItemGroup>
+		<PackageReference Include="SufiChain.SufiAbp.Core" Version="$(SufiVersion)" />
+		<PackageReference Include="SufiChain.SufiAbp.UI.Blazor" Version="$(SufiVersion)" />
 		<PackageReference Include="SufiChain.SufiAbp.Autofac.WebAssembly" Version="$(SufiVersion)" />
 	</ItemGroup>
 	</TEMPLATE-ONLY> -->
@@ -35,8 +39,8 @@
 	<!-- Development: Project References (removed when generating templates) -->
 	<!-- <TEMPLATE-REMOVE> -->
 	<ItemGroup>
-		<!-- SufiAbp Theme using SufiBlazor (replaces ABP Blazor UI packages) -->
-    <ProjectReference Include="..\..\..\..\..\modules\kom-theme\src\SufiChain.KomTheme.Blazor.WebAssembly\SufiChain.KomTheme.Blazor.WebAssembly.csproj" />
+			<!-- SufiAbp Theme using SufiBlazor (replaces ABP Blazor UI packages) -->
+    <ProjectReference Include="..\..\..\..\..\independent-projects\kom-theme\src\SufiChain.KomTheme.Blazor.WebAssembly\SufiChain.KomTheme.Blazor.WebAssembly.csproj" />
 
     <!-- SufiAbp UI Modules (replacing ABP UI packages) -->
 		<ProjectReference Include="..\..\..\..\..\modules\identity\src\SufiChain.SufiAbp.Identity.Blazor\SufiChain.SufiAbp.Identity.Blazor.csproj" />
@@ -60,9 +64,11 @@
 	</TEMPLATE-ONLY> -->
 
 	<ItemGroup>
-		<!-- Application.Contracts + HttpApi.Client project references (always needed) -->
+			<!-- Application.Contracts + HttpApi.Client project references -->
 		<ProjectReference Include="..\MyCompanyName.MyProjectName.Application.Contracts\MyCompanyName.MyProjectName.Application.Contracts.csproj" />
+		<!-- <TEMPLATE-REMOVE IF="arch:single"> -->
 		<ProjectReference Include="..\MyCompanyName.MyProjectName.HttpApi.Client\MyCompanyName.MyProjectName.HttpApi.Client.csproj" />
+		<!-- </TEMPLATE-REMOVE> -->
 	</ItemGroup>
 
 </Project>

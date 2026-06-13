@@ -28,6 +28,7 @@
     <ProjectReference Include="..\..\..\identity\src\SufiChain.SufiAbp.Identity.HttpApi\SufiChain.SufiAbp.Identity.HttpApi.csproj" />
     <ProjectReference Include="..\..\..\identity\src\SufiChain.SufiAbp.Identity.Blazor\SufiChain.SufiAbp.Identity.Blazor.csproj" />
     <ProjectReference Include="..\..\..\identity\src\SufiChain.SufiAbp.Identity.MongoDB\SufiChain.SufiAbp.Identity.MongoDB.csproj" />
+    <ProjectReference Include="..\..\..\identity\src\SufiChain.SufiAbp.PermissionManagement.Domain.Identity\SufiChain.SufiAbp.PermissionManagement.Domain.Identity.csproj" />
     
     <ProjectReference Include="..\..\..\tenant-management\src\SufiChain.SufiAbp.TenantManagement.Application\SufiChain.SufiAbp.TenantManagement.Application.csproj" />
     <ProjectReference Include="..\..\..\tenant-management\src\SufiChain.SufiAbp.TenantManagement.HttpApi\SufiChain.SufiAbp.TenantManagement.HttpApi.csproj" />

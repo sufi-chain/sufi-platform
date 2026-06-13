@@ -26,14 +26,14 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Volo.Abp;
+using SufiChain.SufiAbp.AspNetCore.MultiTenancy;
+using SufiChain.SufiAbp.AspNetCore.Serilog;
+using SufiChain.SufiAbp.Autofac;
 using SufiChain.SufiAbp.Account;
 using SufiChain.SufiAbp.PermissionManagement;
-using Volo.Abp.AspNetCore.MultiTenancy;
 using Volo.Abp.AspNetCore.Mvc;
 using Volo.Abp.AspNetCore.Auditing;
 using Volo.Abp.AspNetCore.Mvc.Libs;
-using Volo.Abp.AspNetCore.Serilog;
-using Volo.Abp.Autofac;
 using Volo.Abp.Data;
 using Volo.Abp.Identity;
 using Volo.Abp.Identity.AspNetCore;
@@ -41,9 +41,9 @@ using Volo.Abp.Localization;
 using Volo.Abp.Modularity;
 using Volo.Abp.OpenIddict;
 using SufiChain.SufiAbp.FeatureManagement;
-using Volo.Abp.FeatureManagement.MongoDB;
+using SufiChain.SufiAbp.FeatureManagement.MongoDB;
 using SufiChain.SufiAbp.SettingManagement;
-using Volo.Abp.SettingManagement.MongoDB;
+using SufiChain.SufiAbp.SettingManagement.MongoDB;
 using Volo.Abp.Threading;
 using Volo.Abp.UI.Navigation.Urls;
 using Volo.Abp.VirtualFileSystem;
@@ -53,8 +53,8 @@ using MyCompanyName.MyProjectName.MultiTenancy;
 namespace MyCompanyName.MyProjectName
 {
     [DependsOn(
-        typeof(AbpAutofacModule),
-        typeof(AbpAspNetCoreMultiTenancyModule),
+        typeof(SufiAbpAutofacModule),
+        typeof(SufiAbpAspNetCoreMultiTenancyModule),
         typeof(SufiAbpAspNetCoreModule),
         typeof(DemoAppApplicationModule),
         typeof(DemoAppMongoDbModule),
@@ -68,7 +68,7 @@ namespace MyCompanyName.MyProjectName
         typeof(KomThemeBlazorServerModule),
         // Account Blazor pages (Login, Register, etc.)
         typeof(SufiAbpAccountBlazorModule),
-        typeof(AbpAspNetCoreSerilogModule),
+        typeof(SufiAbpAspNetCoreSerilogModule),
         // Identity services for credential validation (SignInManager, UserManager)
         typeof(SufiAbpIdentityApplicationModule),
         typeof(SufiAbpIdentityHttpApiModule),
@@ -81,10 +81,10 @@ namespace MyCompanyName.MyProjectName
         typeof(SufiAbpPermissionManagementHttpApiModule),
         typeof(SufiAbpFeatureManagementApplicationModule),
         typeof(SufiAbpFeatureManagementHttpApiModule),
-        typeof(AbpFeatureManagementMongoDbModule),
+        typeof(SufiAbpFeatureManagementMongoDbModule),
         typeof(SufiAbpSettingManagementApplicationModule),
         typeof(SufiAbpSettingManagementHttpApiModule),
-        typeof(AbpSettingManagementMongoDbModule)
+        typeof(SufiAbpSettingManagementMongoDbModule)
     )]
     public class DemoAppAuthServerModule : AbpModule
     {

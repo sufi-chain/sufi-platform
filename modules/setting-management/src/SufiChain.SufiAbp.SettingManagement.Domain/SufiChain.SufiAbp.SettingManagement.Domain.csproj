@@ -3,6 +3,7 @@
     <TargetFramework>net10.0</TargetFramework>
     <Nullable>enable</Nullable>
     <RootNamespace>SufiChain.SufiAbp.SettingManagement</RootNamespace>
+    <PackageId>SufiChain.SufiAbp.SettingManagement.Domain</PackageId>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Polly" Version="8.5.0" />

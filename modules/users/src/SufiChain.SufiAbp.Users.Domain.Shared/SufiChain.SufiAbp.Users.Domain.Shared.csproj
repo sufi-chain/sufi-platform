@@ -10,6 +10,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\..\..\framework\SufiChain.SufiAbp.Core\SufiChain.SufiAbp.Core.csproj" />
     <ProjectReference Include="..\SufiChain.SufiAbp.Users\SufiChain.SufiAbp.Users.csproj" />
   </ItemGroup>
 

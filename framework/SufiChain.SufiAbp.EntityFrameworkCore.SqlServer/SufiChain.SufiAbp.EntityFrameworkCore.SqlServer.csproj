@@ -3,6 +3,8 @@
     <TargetFramework>net10.0</TargetFramework>
     <Nullable>enable</Nullable>
     <RootNamespace>SufiChain.SufiAbp.EntityFrameworkCore.SqlServer</RootNamespace>
+    <PackageId>SufiChain.SufiAbp.EntityFrameworkCore.SqlServer</PackageId>
+    <Description>SQL Server provider integration for SufiAbp Entity Framework Core.</Description>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Volo.Abp.EntityFrameworkCore.SqlServer" Version="$(AbpVersion)"/>

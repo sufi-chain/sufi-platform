@@ -6,6 +6,9 @@
     <Project Path="framework/SufiChain.SufiAbp.AspNetCore.Authentication.OAuth/SufiChain.SufiAbp.AspNetCore.Authentication.OAuth.csproj" />
     <Project Path="framework/SufiChain.SufiAbp.AspNetCore.Authentication.JwtBearer/SufiChain.SufiAbp.AspNetCore.Authentication.JwtBearer.csproj" />
     <Project Path="framework/SufiChain.SufiAbp.AspNetCore.Authentication.OpenIdConnect/SufiChain.SufiAbp.AspNetCore.Authentication.OpenIdConnect.csproj" />
+    <Project Path="framework/SufiChain.SufiAbp.AspNetCore.Mvc.Client/SufiChain.SufiAbp.AspNetCore.Mvc.Client.csproj" />
+    <Project Path="framework/SufiChain.SufiAbp.Caching.StackExchangeRedis/SufiChain.SufiAbp.Caching.StackExchangeRedis.csproj" />
+    <Project Path="framework/SufiChain.SufiAbp.Http.Client.IdentityModel.Web/SufiChain.SufiAbp.Http.Client.IdentityModel.Web.csproj" />
     <Project Path="framework/SufiChain.SufiAbp.AspNetCore.Authentication.Server/SufiChain.SufiAbp.AspNetCore.Authentication.Server.csproj" />
     <Project Path="framework/SufiChain.SufiAbp.AspNetCore.Authentication.WebAssembly/SufiChain.SufiAbp.AspNetCore.Authentication.WebAssembly.csproj" />
     <Project Path="framework/SufiChain.SufiAbp.AspNetCore.Components.Web/SufiChain.SufiAbp.AspNetCore.Components.Web.csproj" />
@@ -117,6 +120,19 @@
     <Project Path="modules/blob-storing-database/src/SufiChain.SufiAbp.BlobStoring.Database.Domain/SufiChain.SufiAbp.BlobStoring.Database.Domain.csproj" />
     <Project Path="modules/blob-storing-database/src/SufiChain.SufiAbp.BlobStoring.Database.EntityFrameworkCore/SufiChain.SufiAbp.BlobStoring.Database.EntityFrameworkCore.csproj" />
     <Project Path="modules/blob-storing-database/src/SufiChain.SufiAbp.BlobStoring.Database.MongoDB/SufiChain.SufiAbp.BlobStoring.Database.MongoDB.csproj" />
+  </Folder>
+  <Folder Name="/Modules/Calendar/">
+    <Project Path="modules/calendar/src/SufiChain.SufiAbp.Calendar.AI/SufiChain.SufiAbp.Calendar.AI.csproj" />
+    <Project Path="modules/calendar/src/SufiChain.SufiAbp.Calendar.Application.Contracts/SufiChain.SufiAbp.Calendar.Application.Contracts.csproj" />
+    <Project Path="modules/calendar/src/SufiChain.SufiAbp.Calendar.Application/SufiChain.SufiAbp.Calendar.Application.csproj" />
+    <Project Path="modules/calendar/src/SufiChain.SufiAbp.Calendar.Blazor.Public/SufiChain.SufiAbp.Calendar.Blazor.Public.csproj" />
+    <Project Path="modules/calendar/src/SufiChain.SufiAbp.Calendar.Blazor/SufiChain.SufiAbp.Calendar.Blazor.csproj" />
+    <Project Path="modules/calendar/src/SufiChain.SufiAbp.Calendar.Domain.Shared/SufiChain.SufiAbp.Calendar.Domain.Shared.csproj" />
+    <Project Path="modules/calendar/src/SufiChain.SufiAbp.Calendar.Domain/SufiChain.SufiAbp.Calendar.Domain.csproj" />
+    <Project Path="modules/calendar/src/SufiChain.SufiAbp.Calendar.EntityFrameworkCore/SufiChain.SufiAbp.Calendar.EntityFrameworkCore.csproj" />
+    <Project Path="modules/calendar/src/SufiChain.SufiAbp.Calendar.HttpApi.Client/SufiChain.SufiAbp.Calendar.HttpApi.Client.csproj" />
+    <Project Path="modules/calendar/src/SufiChain.SufiAbp.Calendar.HttpApi/SufiChain.SufiAbp.Calendar.HttpApi.csproj" />
+    <Project Path="modules/calendar/src/SufiChain.SufiAbp.Calendar.MongoDB/SufiChain.SufiAbp.Calendar.MongoDB.csproj" />
   </Folder>
   <Folder Name="/Modules/FeatureManagement/">
     <Project Path="modules/feature-management/src/SufiChain.SufiAbp.FeatureManagement.Application.Contracts/SufiChain.SufiAbp.FeatureManagement.Application.Contracts.csproj" />
@@ -254,6 +270,30 @@
     <Project Path="modules/users/src/SufiChain.SufiAbp.Users/SufiChain.SufiAbp.Users.csproj" />
   </Folder>
   <Folder Name="/Tests/" />
+  <Folder Name="/Tests/AiManagement/">
+    <Project Path="modules/ai-management/test/SufiChain.SufiAbp.AIManagement.Application.Tests/SufiChain.SufiAbp.AIManagement.Application.Tests.csproj" />
+    <Project Path="modules/ai-management/test/SufiChain.SufiAbp.AIManagement.Domain.Tests/SufiChain.SufiAbp.AIManagement.Domain.Tests.csproj" />
+    <Project Path="modules/ai-management/test/SufiChain.SufiAbp.AIManagement.TestBase/SufiChain.SufiAbp.AIManagement.TestBase.csproj" />
+  </Folder>
+  <Folder Name="/Tests/Calendar/">
+    <Project Path="modules/calendar/test/SufiChain.SufiAbp.Calendar.Application.Tests/SufiChain.SufiAbp.Calendar.Application.Tests.csproj" />
+    <Project Path="modules/calendar/test/SufiChain.SufiAbp.Calendar.Domain.Tests/SufiChain.SufiAbp.Calendar.Domain.Tests.csproj" />
+    <Project Path="modules/calendar/test/SufiChain.SufiAbp.Calendar.EntityFrameworkCore.Tests/SufiChain.SufiAbp.Calendar.EntityFrameworkCore.Tests.csproj" />
+    <Project Path="modules/calendar/test/SufiChain.SufiAbp.Calendar.MongoDB.Tests/SufiChain.SufiAbp.Calendar.MongoDB.Tests.csproj" />
+    <Project Path="modules/calendar/test/SufiChain.SufiAbp.Calendar.TestBase/SufiChain.SufiAbp.Calendar.TestBase.csproj" />
+  </Folder>
+  <Folder Name="/Tests/FileManager/">
+    <Project Path="modules/file-manager/test/SufiChain.SufiAbp.FileManager.Application.Tests/SufiChain.SufiAbp.FileManager.Application.Tests.csproj" />
+    <Project Path="modules/file-manager/test/SufiChain.SufiAbp.FileManager.Domain.Tests/SufiChain.SufiAbp.FileManager.Domain.Tests.csproj" />
+    <Project Path="modules/file-manager/test/SufiChain.SufiAbp.FileManager.EntityFrameworkCore.Tests/SufiChain.SufiAbp.FileManager.EntityFrameworkCore.Tests.csproj" />
+    <Project Path="modules/file-manager/test/SufiChain.SufiAbp.FileManager.TestBase/SufiChain.SufiAbp.FileManager.TestBase.csproj" />
+  </Folder>
+  <Folder Name="/Tests/ShortLinkGenerator/">
+    <Project Path="modules/short-link-generator/test/SufiChain.SufiAbp.ShortLinkGenerator.Application.Tests/SufiChain.SufiAbp.ShortLinkGenerator.Application.Tests.csproj" />
+    <Project Path="modules/short-link-generator/test/SufiChain.SufiAbp.ShortLinkGenerator.Domain.Tests/SufiChain.SufiAbp.ShortLinkGenerator.Domain.Tests.csproj" />
+    <Project Path="modules/short-link-generator/test/SufiChain.SufiAbp.ShortLinkGenerator.EntityFrameworkCore.Tests/SufiChain.SufiAbp.ShortLinkGenerator.EntityFrameworkCore.Tests.csproj" />
+    <Project Path="modules/short-link-generator/test/SufiChain.SufiAbp.ShortLinkGenerator.TestBase/SufiChain.SufiAbp.ShortLinkGenerator.TestBase.csproj" />
+  </Folder>
   <Folder Name="/Tests/SmokeTest/">
     <Project Path="test/SufiChain.SufiAbp.BlazorBuildTest.Console/SufiChain.SufiAbp.BlazorBuildTest.Console.csproj" />
     <Project Path="test/SufiChain.SufiAbp.SmokeTest.Console/SufiChain.SufiAbp.SmokeTest.Console.csproj" />

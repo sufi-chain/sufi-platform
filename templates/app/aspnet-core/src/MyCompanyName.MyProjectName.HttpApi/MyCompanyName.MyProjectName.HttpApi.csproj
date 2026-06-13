@@ -18,6 +18,7 @@
 
   <!-- <TEMPLATE-REMOVE> -->
   <ItemGroup>
+    <ProjectReference Include="..\..\..\..\..\src\framework\SufiChain.SufiAbp.Core\SufiChain.SufiAbp.Core.csproj" />
     <!-- SufiAbp Application.Contracts (wrap ABP contracts with SufiAbp localization) -->
     <ProjectReference Include="..\..\..\..\..\modules\account\src\SufiChain.SufiAbp.Account.Application.Contracts\SufiChain.SufiAbp.Account.Application.Contracts.csproj" />
     <ProjectReference Include="..\..\..\..\..\modules\permission-management\src\SufiChain.SufiAbp.PermissionManagement.Application.Contracts\SufiChain.SufiAbp.PermissionManagement.Application.Contracts.csproj" />
@@ -28,6 +29,7 @@
 
   <!-- <TEMPLATE-ONLY>
   <ItemGroup>
+    <PackageReference Include="SufiChain.SufiAbp.Core" Version="$(SufiVersion)" />
     <PackageReference Include="SufiChain.SufiAbp.Account.Application.Contracts" Version="$(SufiVersion)" />
     <PackageReference Include="SufiChain.SufiAbp.PermissionManagement.Application.Contracts" Version="$(SufiVersion)" />
     <PackageReference Include="SufiChain.SufiAbp.FeatureManagement.Application.Contracts" Version="$(SufiVersion)" />

@@ -3,6 +3,7 @@
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
     <RootNamespace>SufiChain.SufiAbp.AIManagement.Blazor</RootNamespace>
+    <PackageId>SufiChain.SufiAbp.AIManagement.Blazor</PackageId>
     <Nullable>enable</Nullable>
   </PropertyGroup>
 

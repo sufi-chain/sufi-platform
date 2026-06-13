@@ -3,6 +3,8 @@
     <TargetFramework>net10.0</TargetFramework>
     <Nullable>enable</Nullable>
     <RootNamespace>SufiChain.SufiAbp.Autofac.WebAssembly</RootNamespace>
+    <PackageId>SufiChain.SufiAbp.Autofac.WebAssembly</PackageId>
+    <Description>Autofac WebAssembly integration for SufiAbp applications.</Description>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Volo.Abp.Autofac.WebAssembly" Version="$(AbpVersion)"/>

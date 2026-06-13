@@ -7,6 +7,7 @@
 		<IsPackable>false</IsPackable>
 	</PropertyGroup>
 	<ItemGroup>
+		<PackageReference Include="SufiChain.SufiAbp.Core" Version="$(SufiVersion)" />
 		<PackageReference Include="SufiChain.SufiAbp.Http.Client" Version="$(SufiVersion)" />
 		<ProjectReference Include="..\MyCompanyName.MyProjectName.Application.Contracts\MyCompanyName.MyProjectName.Application.Contracts.csproj" />
 	</ItemGroup>

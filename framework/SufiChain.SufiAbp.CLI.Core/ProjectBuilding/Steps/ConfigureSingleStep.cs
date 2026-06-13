@@ -35,10 +35,44 @@ public class ConfigureSingleStep : ProjectBuildPipelineStep
         // Update the Blazor.WebApp module for single mode
         UpdateBlazorWebAppModule(context);
 
+        // Ensure the WebAssembly client does not keep references to the removed HttpApi.Client project.
+        UpdateBlazorWebAppClientForSingle(context);
+
         // Update appsettings.json for single mode
         UpdateAppSettings(context);
 
         return Task.CompletedTask;
+    }
+
+    private void UpdateBlazorWebAppClientForSingle(ProjectBuildContext context)
+    {
+        var clientModulePath = context.Files.Keys
+            .FirstOrDefault(f => f.Contains("Blazor.WebApp.Client") && f.EndsWith("Module.cs"));
+
+        if (clientModulePath != null)
+        {
+            var content = Encoding.UTF8.GetString(context.Files[clientModulePath]);
+            content = Regex.Replace(
+                content,
+                @"\s*,?\s*typeof\([^)]*HttpApiClientModule\)",
+                "",
+                RegexOptions.IgnoreCase);
+            context.Files[clientModulePath] = Encoding.UTF8.GetBytes(content);
+        }
+
+        var clientCsprojPath = context.Files.Keys
+            .FirstOrDefault(f => f.Contains("Blazor.WebApp.Client") && f.EndsWith(".csproj"));
+
+        if (clientCsprojPath != null)
+        {
+            var content = Encoding.UTF8.GetString(context.Files[clientCsprojPath]);
+            content = Regex.Replace(
+                content,
+                @"\s*<ProjectReference[^>]*HttpApi\.Client[^>]*/>\s*",
+                "\n",
+                RegexOptions.IgnoreCase);
+            context.Files[clientCsprojPath] = Encoding.UTF8.GetBytes(content);
+        }
     }
 
     private void UpdateBlazorWebAppCsproj(ProjectBuildContext context)
@@ -102,10 +136,9 @@ public class ConfigureSingleStep : ProjectBuildPipelineStep
 
         // Add single-mode packages (OpenIddict for auth server, AspNetCore.Mvc for API)
         var additionalPackages = @"
-    <!-- Single mode: Auth server and API hosting -->
-    <PackageReference Include=""SufiChain.SufiAbp.OpenIddict.AspNetCore"" Version=""$(SufiVersion)"" />
-    <PackageReference Include=""SufiChain.SufiAbp.AspNetCore.Authentication.JwtBearer"" Version=""$(SufiVersion)"" />
-    <PackageReference Include=""SufiChain.SufiAbp.Identity.AspNetCore"" Version=""$(SufiVersion)"" />";
+	    <!-- Single mode: Auth server and API hosting -->
+	    <PackageReference Include=""SufiChain.SufiAbp.OpenIddict.AspNetCore"" Version=""$(SufiVersion)"" />
+	    <PackageReference Include=""SufiChain.SufiAbp.Identity.AspNetCore"" Version=""$(SufiVersion)"" />";
 
         if (!content.Contains("SufiChain.SufiAbp.OpenIddict.AspNetCore"))
         {
@@ -146,14 +179,11 @@ public class ConfigureSingleStep : ProjectBuildPipelineStep
         content = Regex.Replace(content, @",?\s*typeof\(AbpAspNetCoreAuthenticationOpenIdConnectModule\)", "");
         content = Regex.Replace(content, @",?\s*typeof\(AbpHttpClientIdentityModelWebModule\)", "");
 
-        // Add single-mode module dependencies
+        // Add single-mode module dependencies only when the template does not already carry them.
         var singleModeDeps = $@"
     typeof({projectName}ApplicationModule),
     typeof({projectName}HttpApiModule),
-    typeof({dbModuleName}),
-    typeof(SufiAbpOpenIddictAspNetCoreModule),
-    typeof(SufiAbpAspNetCoreAuthenticationJwtBearerModule),
-    typeof(SufiAbpIdentityAspNetCoreModule),";
+    typeof({dbModuleName}),";
 
         // Insert after the first DependsOn opening
         if (!content.Contains($"{projectName}ApplicationModule"))
@@ -166,18 +196,11 @@ public class ConfigureSingleStep : ProjectBuildPipelineStep
         }
 
         // Add using statements for single mode
-        var singleModeUsings = $@"using {solutionName}.Application;
-using {solutionName}.HttpApi;
-using {solutionName}.{dbProvider};
-using OpenIddict.Validation.AspNetCore;
-using SufiChain.SufiAbp.AspNetCore.Authentication.JwtBearer;
-using Volo.Abp.AspNetCore.Mvc;
-using SufiChain.SufiAbp.Identity.AspNetCore;
-using SufiChain.SufiAbp.OpenIddict;
-";
+        var singleModeUsings = $@"using {solutionName}.{dbProvider};
+		";
 
         // Add usings before namespace
-        if (!content.Contains($"using {solutionName}.Application;"))
+        if (!content.Contains($"using {solutionName}.{dbProvider};"))
         {
             content = Regex.Replace(
                 content,
@@ -186,10 +209,8 @@ using SufiChain.SufiAbp.OpenIddict;
             );
         }
 
-        // Remove OIDC configuration and replace with Identity auth
+        // The unified WebApp template already configures authentication and controllers.
         content = RemoveOidcConfiguration(content);
-        content = AddSingleModeAuthConfiguration(content, projectName);
-        content = AddSingleModeServices(content, projectName);
         content = UpdateOnApplicationInitialization(content);
 
         context.Files[blazorModulePath] = Encoding.UTF8.GetBytes(content);
@@ -217,73 +238,6 @@ using SufiChain.SufiAbp.OpenIddict;
             content,
             @"using Microsoft\.IdentityModel\.Protocols\.OpenIdConnect;\s*\n?",
             ""
-        );
-
-        return content;
-    }
-
-    private string AddSingleModeAuthConfiguration(string content, string projectName)
-    {
-        var authConfig = $@"
-    private void ConfigureAuthentication(ServiceConfigurationContext context, IConfiguration configuration)
-    {{
-        // Single mode: Use cookie authentication with Identity
-        context.Services.ForwardIdentityAuthenticationForBearer(OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme);
-        
-        context.Services.AddAuthentication()
-            .AddJwtBearer(options =>
-            {{
-                options.Authority = configuration[""App:SelfUrl""];
-                options.RequireHttpsMetadata = false;
-                options.Audience = ""{projectName}"";
-            }});
-    }}
-
-    private void ConfigureOpenIddict(ServiceConfigurationContext context)
-    {{
-        // Configure OpenIddict server for single mode
-        PreConfigure<OpenIddictBuilder>(builder =>
-        {{
-            builder.AddValidation(options =>
-            {{
-                options.AddAudiences(""{projectName}"");
-                options.UseLocalServer();
-                options.UseAspNetCore();
-            }});
-        }});
-    }}
-
-    private void ConfigureConventionalControllers()
-    {{
-        Configure<AbpAspNetCoreMvcOptions>(options =>
-        {{
-            options.ConventionalControllers.Create(typeof({projectName}ApplicationModule).Assembly);
-        }});
-    }}
-";
-
-        // Insert before the last closing brace of the class
-        content = Regex.Replace(
-            content,
-            @"(\n\})\s*$",
-            $"{authConfig}$1"
-        );
-
-        return content;
-    }
-
-    private string AddSingleModeServices(string content, string projectName)
-    {
-        // Add calls to single-mode configuration methods in ConfigureServices
-        var singleModeServiceCalls = @"
-        ConfigureAuthentication(context, configuration);
-        ConfigureConventionalControllers();";
-
-        // Insert after the first line of ConfigureServices (after getting configuration)
-        content = Regex.Replace(
-            content,
-            @"(var configuration = context\.Services\.GetConfiguration\(\);)",
-            $"$1\n{singleModeServiceCalls}"
         );
 
         return content;

@@ -59,6 +59,11 @@ public class ProjectBuildContext
             if (Args.EfProvider.HasValue)
             {
                 Symbols.Add($"efprovider:{Args.EfProvider.Value.ToString().ToLowerInvariant()}");
+                Symbols.Add($"efp:{Args.EfProvider.Value.ToString().ToLowerInvariant()}");
+            }
+            else
+            {
+                Symbols.Add("efp:sqlserver");
             }
         }
         else

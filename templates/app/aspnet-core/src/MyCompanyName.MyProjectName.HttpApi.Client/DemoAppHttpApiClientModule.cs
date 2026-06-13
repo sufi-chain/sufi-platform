@@ -1,5 +1,5 @@
 using Microsoft.Extensions.DependencyInjection;
-using Volo.Abp.Http.Client;
+using SufiChain.SufiAbp.Http.Client;
 using Volo.Abp.Modularity;
 using Volo.Abp.VirtualFileSystem;
 
@@ -7,7 +7,7 @@ namespace MyCompanyName.MyProjectName
 {
     [DependsOn(
         typeof(DemoAppApplicationContractsModule),
-        typeof(AbpHttpClientModule)
+        typeof(SufiAbpHttpClientModule)
     )]
     public class DemoAppHttpApiClientModule : AbpModule
     {

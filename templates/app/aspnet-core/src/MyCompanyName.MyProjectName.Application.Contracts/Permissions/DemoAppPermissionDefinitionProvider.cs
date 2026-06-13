@@ -1,6 +1,5 @@
 ﻿using MyCompanyName.MyProjectName.Localization;
-using Volo.Abp.Authorization.Permissions;
-using Volo.Abp.Localization;
+using SufiChain.SufiAbp.Authorization.Permissions;
 
 namespace MyCompanyName.MyProjectName.Permissions
 {
@@ -11,11 +10,6 @@ namespace MyCompanyName.MyProjectName.Permissions
             var myGroup = context.AddGroup(DemoAppPermissions.GroupName);
             //Define your own permissions here. Example:
             //myGroup.AddPermission(DemoAppPermissions.MyPermission1, L("Permission:MyPermission1"));
-        }
-
-        private static LocalizableString L(string name)
-        {
-            return LocalizableString.Create<DemoAppResource>(name);
         }
     }
 }

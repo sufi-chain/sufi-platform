@@ -15,7 +15,6 @@ using SufiChain.SufiAbp.Users;
 using SufiChain.SufiAbp.Messaging;
 using SufiChain.SufiAbp.Messaging.Email;
 using MyCompanyName.MyProjectName.MultiTenancy;
-using Volo.Abp.AuditLogging;
 using Volo.Abp.Modularity;
 using Volo.Abp.MultiTenancy;
 

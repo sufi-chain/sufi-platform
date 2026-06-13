@@ -3,6 +3,7 @@
     <TargetFramework>net10.0</TargetFramework>
     <Nullable>enable</Nullable>
     <RootNamespace>SufiChain.SufiAbp.BackgroundJobs</RootNamespace>
+    <PackageId>SufiChain.SufiAbp.BackgroundJobs.EntityFrameworkCore</PackageId>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\..\..\framework\SufiChain.SufiAbp.EntityFrameworkCore\SufiChain.SufiAbp.EntityFrameworkCore.csproj" />

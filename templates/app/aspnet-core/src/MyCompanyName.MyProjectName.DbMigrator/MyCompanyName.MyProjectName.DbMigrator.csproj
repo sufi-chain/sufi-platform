@@ -18,6 +18,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="SufiChain.SufiAbp.Core" Version="$(SufiVersion)" />
     <PackageReference Include="SufiChain.SufiAbp.Autofac" Version="$(SufiVersion)" />
     <ProjectReference Include="..\MyCompanyName.MyProjectName.Application\MyCompanyName.MyProjectName.Application.csproj" />
     <ProjectReference Include="..\MyCompanyName.MyProjectName.Application.Contracts\MyCompanyName.MyProjectName.Application.Contracts.csproj" />

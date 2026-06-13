@@ -36,7 +36,12 @@
 	<!-- Framework wrapper packages (development: project refs, template: package refs) -->
 	<!-- <TEMPLATE-REMOVE> -->
 	<ItemGroup>
+		<ProjectReference Include="..\..\..\..\..\independent-projects\kom-theme\src\SufiChain.KomTheme.Blazor.Server\SufiChain.KomTheme.Blazor.Server.csproj" />
+		<ProjectReference Include="..\..\..\..\..\independent-projects\sufi-blazor\src\SufiChain.SufiBlazor\SufiChain.SufiBlazor.csproj" />
 		<ProjectReference Include="..\..\..\..\..\src\framework\SufiChain.SufiAbp.ObjectExtending\SufiChain.SufiAbp.ObjectExtending.csproj" />
+		<ProjectReference Include="..\..\..\..\..\src\framework\SufiChain.SufiAbp.Ddd.Application\SufiChain.SufiAbp.Ddd.Application.csproj" />
+		<ProjectReference Include="..\..\..\..\..\src\framework\SufiChain.SufiAbp.UI.Blazor\SufiChain.SufiAbp.UI.Blazor.csproj" />
+		<ProjectReference Include="..\..\..\..\..\src\framework\SufiChain.SufiAbp.UI.Blazor.Server\SufiChain.SufiAbp.UI.Blazor.Server.csproj" />
 		<ProjectReference Include="..\..\..\..\..\src\framework\SufiChain.SufiAbp.AspNetCore.Serilog\SufiChain.SufiAbp.AspNetCore.Serilog.csproj" />
 		<ProjectReference Include="..\..\..\..\..\src\framework\SufiChain.SufiAbp.Swashbuckle\SufiChain.SufiAbp.Swashbuckle.csproj" />
 	</ItemGroup>
@@ -46,9 +51,6 @@
 	<!-- Development: Project References (removed when generating templates) -->
 	<!-- <TEMPLATE-REMOVE> -->
 	<ItemGroup>
-		<!-- KomTheme with ABP module pattern, uses SufiBlazor design system -->
-    <ProjectReference Include="..\..\..\..\..\modules\kom-theme\src\SufiChain.KomTheme.Blazor.Server\SufiChain.KomTheme.Blazor.Server.csproj" />
-
 		<!-- Framework OpenIddict authorization endpoints -->
 		<ProjectReference Include="..\..\..\..\..\src\framework\SufiChain.SufiAbp.AspNetCore.Authentication.OpenIdConnect\SufiChain.SufiAbp.AspNetCore.Authentication.OpenIdConnect.csproj" />
 		<ProjectReference Include="..\..\..\..\..\src\framework\SufiChain.SufiAbp.AspNetCore.Authentication.OAuth\SufiChain.SufiAbp.AspNetCore.Authentication.OAuth.csproj" />
@@ -113,6 +115,8 @@
 	<!-- <TEMPLATE-ONLY>
 	<ItemGroup>
 		<PackageReference Include="SufiChain.KomTheme.Blazor.Server" Version="$(KomThemeVersion)" />
+		<PackageReference Include="SufiChain.SufiAbp.UI.Blazor.Server" Version="$(SufiVersion)" />
+		<PackageReference Include="SufiChain.SufiAbp.AspNetCore.Authentication.OAuth" Version="$(SufiVersion)" />
 		<PackageReference Include="SufiChain.SufiAbp.AspNetCore.Authentication.OpenIdConnect" Version="$(SufiVersion)" />
 		<PackageReference Include="SufiChain.SufiAbp.AspNetCore.Authentication.Server" Version="$(SufiVersion)" />
 		<PackageReference Include="SufiChain.SufiAbp.Identity.Blazor" Version="$(SufiVersion)" />
@@ -158,6 +162,10 @@
 		<!-- SufiAbp infrastructure packages -->
 		<PackageReference Include="SufiChain.SufiAbp.AspNetCore.MultiTenancy" Version="$(SufiVersion)" />
 		<PackageReference Include="SufiChain.SufiAbp.Autofac" Version="$(SufiVersion)" />
+		<PackageReference Include="SufiChain.SufiAbp.Ddd.Application" Version="$(SufiVersion)" />
+		<PackageReference Include="SufiChain.SufiAbp.UI.Blazor" Version="$(SufiVersion)" />
+		<PackageReference Include="SufiChain.SufiAbp.AspNetCore.Serilog" Version="$(SufiVersion)" />
+		<PackageReference Include="SufiChain.SufiAbp.Swashbuckle" Version="$(SufiVersion)" />
 		<!-- <TEMPLATE-REMOVE IF-NOT="db:efcore"> -->
 		<!-- EF Core for all ABP infrastructure (injected when EF Core selected) -->
 		<!-- <TEMPLATE-REMOVE IF-NOT="efp:sqlserver">

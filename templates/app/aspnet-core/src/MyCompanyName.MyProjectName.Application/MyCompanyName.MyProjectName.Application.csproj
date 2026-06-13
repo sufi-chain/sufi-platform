@@ -14,6 +14,7 @@
 
   <TEMPLATE-REMOVE>
   <ItemGroup>
+    <ProjectReference Include="..\..\..\..\..\src\framework\SufiChain.SufiAbp.Core\SufiChain.SufiAbp.Core.csproj" />
     <ProjectReference Include="..\..\..\..\..\modules\identity\src\SufiChain.SufiAbp.Identity.Application\SufiChain.SufiAbp.Identity.Application.csproj" />
     <ProjectReference Include="..\..\..\..\..\modules\tenant-management\src\SufiChain.SufiAbp.TenantManagement.Application\SufiChain.SufiAbp.TenantManagement.Application.csproj" />
     <ProjectReference Include="..\..\..\..\..\modules\account\src\SufiChain.SufiAbp.Account.Application\SufiChain.SufiAbp.Account.Application.csproj" />
@@ -25,6 +26,7 @@
 
   <TEMPLATE-ONLY>
   <ItemGroup>
+    <PackageReference Include="SufiChain.SufiAbp.Core" Version="$(SufiVersion)" />
     <PackageReference Include="SufiChain.SufiAbp.Identity.Application" Version="$(SufiVersion)" />
     <PackageReference Include="SufiChain.SufiAbp.TenantManagement.Application" Version="$(SufiVersion)" />
     <PackageReference Include="SufiChain.SufiAbp.Account.Application" Version="$(SufiVersion)" />

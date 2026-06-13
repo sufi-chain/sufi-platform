@@ -4,6 +4,7 @@
     <TargetFramework>net10.0</TargetFramework>
     <Nullable>enable</Nullable>
     <RootNamespace>SufiChain.SufiAbp.AIManagement</RootNamespace>
+    <PackageId>SufiChain.SufiAbp.AIManagement.MongoDB</PackageId>
   </PropertyGroup>
 
   <ItemGroup>
