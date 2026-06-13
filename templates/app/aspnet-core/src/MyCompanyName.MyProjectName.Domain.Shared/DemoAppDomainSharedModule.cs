@@ -10,7 +10,10 @@ using Volo.Abp.Modularity;
 using SufiChain.SufiAbp.OpenIddict;
 using SufiChain.SufiAbp.PermissionManagement;
 using SufiChain.SufiAbp.SettingManagement;
+using SufiChain.SufiAbp.ShortLinkGenerator;
+using SufiChain.SufiAbp.TagsManagement;
 using SufiChain.SufiAbp.TenantManagement;
+using SufiChain.SufiAbp.MenuManagement;
 using Volo.Abp.VirtualFileSystem;
 using SufiChain.SufiAbp.UI.Localization;
 
@@ -25,7 +28,10 @@ namespace MyCompanyName.MyProjectName
         typeof(SufiAbpOpenIddictDomainSharedModule),
         typeof(SufiAbpPermissionManagementDomainSharedModule),
         typeof(SufiAbpSettingManagementDomainSharedModule),
-        typeof(SufiAbpTenantManagementDomainSharedModule)
+        typeof(SufiAbpTenantManagementDomainSharedModule),
+        typeof(SufiAbpShortLinkGeneratorDomainSharedModule),
+        typeof(SufiAbpTagsManagementDomainSharedModule),
+        typeof(SufiAbpMenuManagementDomainSharedModule)
         )]
     public class DemoAppDomainSharedModule : AbpModule
     {

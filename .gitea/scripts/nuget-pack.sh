@@ -28,12 +28,15 @@ if [ ! -f "$ROOT_SLNX" ]; then
   exit 1
 fi
 
-dotnet restore "$ROOT_SLNX" \
+release_slnx="/tmp/release-pack.slnx"
+grep -v 'modules/calendar/test/' "$ROOT_SLNX" > "$release_slnx"
+
+dotnet restore "$release_slnx" \
   --configfile /tmp/ci-nuget.config \
   --verbosity minimal \
   -p:NuGetAudit=false
 
-dotnet build "$ROOT_SLNX" \
+dotnet build "$release_slnx" \
   --configuration Release \
   --no-restore \
   --verbosity minimal \
@@ -42,7 +45,7 @@ dotnet build "$ROOT_SLNX" \
   -p:ContinuousIntegrationBuild=true \
   -p:BuildInParallel=true
 
-dotnet pack "$ROOT_SLNX" \
+dotnet pack "$release_slnx" \
   --configuration Release \
   --no-build \
   --output "$package_output" \

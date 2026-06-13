@@ -78,6 +78,25 @@
 		<ProjectReference Include="..\..\..\..\..\modules\ai-management\src\SufiChain.SufiAbp.AIManagement.Blazor\SufiChain.SufiAbp.AIManagement.Blazor.csproj" />
 		<ProjectReference Include="..\..\..\..\..\modules\ai-management\src\SufiChain.SufiAbp.AIManagement.Application\SufiChain.SufiAbp.AIManagement.Application.csproj" />
 		<ProjectReference Include="..\..\..\..\..\modules\ai-management\src\SufiChain.SufiAbp.AIManagement.HttpApi\SufiChain.SufiAbp.AIManagement.HttpApi.csproj" />
+		<!-- Calendar Module (Admin UI, Public UI, Application, HttpApi) -->
+		<ProjectReference Include="..\..\..\..\..\modules\calendar\src\SufiChain.SufiAbp.Calendar.Blazor\SufiChain.SufiAbp.Calendar.Blazor.csproj" />
+		<ProjectReference Include="..\..\..\..\..\modules\calendar\src\SufiChain.SufiAbp.Calendar.Blazor.Public\SufiChain.SufiAbp.Calendar.Blazor.Public.csproj" />
+		<ProjectReference Include="..\..\..\..\..\modules\calendar\src\SufiChain.SufiAbp.Calendar.AI\SufiChain.SufiAbp.Calendar.AI.csproj" />
+		<ProjectReference Include="..\..\..\..\..\modules\calendar\src\SufiChain.SufiAbp.Calendar.Application\SufiChain.SufiAbp.Calendar.Application.csproj" />
+		<ProjectReference Include="..\..\..\..\..\modules\calendar\src\SufiChain.SufiAbp.Calendar.HttpApi\SufiChain.SufiAbp.Calendar.HttpApi.csproj" />
+		<!-- Short Link Generator (UI, Server, Application, HttpApi) -->
+		<ProjectReference Include="..\..\..\..\..\modules\short-link-generator\src\SufiChain.SufiAbp.ShortLinkGenerator.Blazor\SufiChain.SufiAbp.ShortLinkGenerator.Blazor.csproj" />
+		<ProjectReference Include="..\..\..\..\..\modules\short-link-generator\src\SufiChain.SufiAbp.ShortLinkGenerator.Blazor.Server\SufiChain.SufiAbp.ShortLinkGenerator.Blazor.Server.csproj" />
+		<ProjectReference Include="..\..\..\..\..\modules\short-link-generator\src\SufiChain.SufiAbp.ShortLinkGenerator.Application\SufiChain.SufiAbp.ShortLinkGenerator.Application.csproj" />
+		<ProjectReference Include="..\..\..\..\..\modules\short-link-generator\src\SufiChain.SufiAbp.ShortLinkGenerator.HttpApi\SufiChain.SufiAbp.ShortLinkGenerator.HttpApi.csproj" />
+		<!-- Tags Management (Application, HttpApi — no Blazor UI) -->
+		<ProjectReference Include="..\..\..\..\..\modules\tags-management\src\SufiChain.SufiAbp.TagsManagement.Application\SufiChain.SufiAbp.TagsManagement.Application.csproj" />
+		<ProjectReference Include="..\..\..\..\..\modules\tags-management\src\SufiChain.SufiAbp.TagsManagement.HttpApi\SufiChain.SufiAbp.TagsManagement.HttpApi.csproj" />
+		<!-- Menu Management (UI, Server, Application, HttpApi) -->
+		<ProjectReference Include="..\..\..\..\..\modules\menu-management\src\SufiChain.SufiAbp.MenuManagement.Blazor\SufiChain.SufiAbp.MenuManagement.Blazor.csproj" />
+		<ProjectReference Include="..\..\..\..\..\modules\menu-management\src\SufiChain.SufiAbp.MenuManagement.Blazor.Server\SufiChain.SufiAbp.MenuManagement.Blazor.Server.csproj" />
+		<ProjectReference Include="..\..\..\..\..\modules\menu-management\src\SufiChain.SufiAbp.MenuManagement.Application\SufiChain.SufiAbp.MenuManagement.Application.csproj" />
+		<ProjectReference Include="..\..\..\..\..\modules\menu-management\src\SufiChain.SufiAbp.MenuManagement.HttpApi\SufiChain.SufiAbp.MenuManagement.HttpApi.csproj" />
 
 		<!-- Admin Modules (Audit Logging, Background Jobs, Feature Management, Setting Management) -->
 		<ProjectReference Include="..\..\..\..\..\modules\audit-logging\src\SufiChain.SufiAbp.AuditLogging.Blazor\SufiChain.SufiAbp.AuditLogging.Blazor.csproj" />
@@ -134,6 +153,21 @@
 		<PackageReference Include="SufiChain.SufiAbp.AIManagement.Blazor" Version="$(SufiVersion)" />
 		<PackageReference Include="SufiChain.SufiAbp.AIManagement.Application" Version="$(SufiVersion)" />
 		<PackageReference Include="SufiChain.SufiAbp.AIManagement.HttpApi" Version="$(SufiVersion)" />
+		<PackageReference Include="SufiChain.SufiAbp.Calendar.Blazor" Version="$(SufiVersion)" />
+		<PackageReference Include="SufiChain.SufiAbp.Calendar.Blazor.Public" Version="$(SufiVersion)" />
+		<PackageReference Include="SufiChain.SufiAbp.Calendar.AI" Version="$(SufiVersion)" />
+		<PackageReference Include="SufiChain.SufiAbp.Calendar.Application" Version="$(SufiVersion)" />
+		<PackageReference Include="SufiChain.SufiAbp.Calendar.HttpApi" Version="$(SufiVersion)" />
+		<PackageReference Include="SufiChain.SufiAbp.ShortLinkGenerator.Blazor" Version="$(SufiVersion)" />
+		<PackageReference Include="SufiChain.SufiAbp.ShortLinkGenerator.Blazor.Server" Version="$(SufiVersion)" />
+		<PackageReference Include="SufiChain.SufiAbp.ShortLinkGenerator.Application" Version="$(SufiVersion)" />
+		<PackageReference Include="SufiChain.SufiAbp.ShortLinkGenerator.HttpApi" Version="$(SufiVersion)" />
+		<PackageReference Include="SufiChain.SufiAbp.TagsManagement.Application" Version="$(SufiVersion)" />
+		<PackageReference Include="SufiChain.SufiAbp.TagsManagement.HttpApi" Version="$(SufiVersion)" />
+		<PackageReference Include="SufiChain.SufiAbp.MenuManagement.Blazor" Version="$(SufiVersion)" />
+		<PackageReference Include="SufiChain.SufiAbp.MenuManagement.Blazor.Server" Version="$(SufiVersion)" />
+		<PackageReference Include="SufiChain.SufiAbp.MenuManagement.Application" Version="$(SufiVersion)" />
+		<PackageReference Include="SufiChain.SufiAbp.MenuManagement.HttpApi" Version="$(SufiVersion)" />
 		<PackageReference Include="SufiChain.SufiAbp.AuditLogging.Blazor" Version="$(SufiVersion)" />
 		<PackageReference Include="SufiChain.SufiAbp.AuditLogging.Application" Version="$(SufiVersion)" />
 		<PackageReference Include="SufiChain.SufiAbp.AuditLogging.HttpApi" Version="$(SufiVersion)" />

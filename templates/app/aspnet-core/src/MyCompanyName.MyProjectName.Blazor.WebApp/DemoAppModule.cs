@@ -19,6 +19,8 @@ using SufiChain.SufiAbp.BackgroundJobs;
 using SufiChain.SufiAbp.BackgroundJobs.Blazor;
 using SufiChain.SufiAbp.FeatureManagement;
 using SufiChain.SufiAbp.FeatureManagement.Blazor;
+using SufiChain.SufiAbp.Calendar;
+using SufiChain.SufiAbp.Calendar.Blazor.Public;
 using SufiChain.SufiAbp.FileManager;
 using SufiChain.SufiAbp.FileManager.Blazor;
 using SufiChain.SufiAbp.FileManager.Blazor.Server;
@@ -33,9 +35,14 @@ using SufiChain.SufiAbp.LocalizationManagement.Blazor;
 using SufiChain.SufiAbp.PermissionManagement;
 using SufiChain.SufiAbp.SettingManagement;
 using SufiChain.SufiAbp.SettingManagement.Blazor;
+using SufiChain.SufiAbp.ShortLinkGenerator;
+using SufiChain.SufiAbp.TagsManagement;
 using SufiChain.SufiAbp.TenantManagement;
 using SufiChain.SufiAbp.TenantManagement.Blazor;
 using SufiChain.SufiAbp.UI;
+using SufiChain.SufiAbp.MenuManagement;
+using SufiChain.SufiAbp.MenuManagement.Blazor;
+using SufiChain.SufiAbp.MenuManagement.Blazor.Server;
 
 
 
@@ -192,6 +199,33 @@ namespace MyCompanyName.MyProjectName;
     typeof(SufiAbpAIManagementBlazorModule),
     typeof(SufiAbpAIManagementApplicationModule),
     typeof(SufiAbpAIManagementHttpApiModule),
+    // =========================================================================
+    // Calendar
+    // =========================================================================
+    typeof(SufiAbpCalendarBlazorModule),
+    typeof(SufiAbpCalendarBlazorPublicModule),
+    typeof(SufiAbpCalendarAIModule),
+    typeof(SufiAbpCalendarApplicationModule),
+    typeof(SufiAbpCalendarHttpApiModule),
+    // =========================================================================
+    // Short Link Generator
+    // =========================================================================
+    typeof(SufiAbpShortLinkGeneratorBlazorModule),
+    typeof(SufiAbpShortLinkGeneratorBlazorServerModule),
+    typeof(SufiAbpShortLinkGeneratorApplicationModule),
+    typeof(SufiAbpShortLinkGeneratorHttpApiModule),
+    // =========================================================================
+    // Tags Management (API only — no Blazor UI)
+    // =========================================================================
+    typeof(SufiAbpTagsManagementApplicationModule),
+    typeof(SufiAbpTagsManagementHttpApiModule),
+    // =========================================================================
+    // Menu Management
+    // =========================================================================
+    typeof(SufiAbpMenuManagementBlazorModule),
+    typeof(SufiAbpMenuManagementBlazorServerModule),
+    typeof(SufiAbpMenuManagementApplicationModule),
+    typeof(SufiAbpMenuManagementHttpApiModule),
     // <TEMPLATE-REMOVE IF-NOT="module:sufi-blazor-demo">
     // SufiBlazor component demo library
     typeof(SufiBlazorDemoModule)
@@ -556,15 +590,6 @@ public class DemoAppModule : AbpModule
                 .AddInteractiveServerRenderMode()
                 .AddAdditionalAssemblies(routerOptions.AdditionalAssemblies.Distinct().ToArray());
         });
-
-
-
-        // Seed initial data (OpenIddict apps, admin user, etc.)
-        //Todoo check efcore 
-        using var scope = app.ApplicationServices.CreateScope();
-        AsyncHelper.RunSync(async () =>
-            await scope.ServiceProvider.GetRequiredService<IDataSeeder>().SeedAsync()
-        );
 
     }
 }

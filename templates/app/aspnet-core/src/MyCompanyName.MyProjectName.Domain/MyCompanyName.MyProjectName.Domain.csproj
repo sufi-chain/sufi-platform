@@ -29,6 +29,9 @@
     <ProjectReference Include="..\..\..\..\..\modules\tenant-management\src\SufiChain.SufiAbp.TenantManagement.Domain\SufiChain.SufiAbp.TenantManagement.Domain.csproj" />
     <ProjectReference Include="..\..\..\..\..\modules\openiddict\src\SufiChain.SufiAbp.OpenIddict.Domain\SufiChain.SufiAbp.OpenIddict.Domain.csproj" />
     <ProjectReference Include="..\..\..\..\..\modules\openiddict\src\SufiChain.SufiAbp.PermissionManagement.Domain.OpenIddict\SufiChain.SufiAbp.PermissionManagement.Domain.OpenIddict.csproj" />
+    <ProjectReference Include="..\..\..\..\..\modules\short-link-generator\src\SufiChain.SufiAbp.ShortLinkGenerator.Domain\SufiChain.SufiAbp.ShortLinkGenerator.Domain.csproj" />
+    <ProjectReference Include="..\..\..\..\..\modules\tags-management\src\SufiChain.SufiAbp.TagsManagement.Domain\SufiChain.SufiAbp.TagsManagement.Domain.csproj" />
+    <ProjectReference Include="..\..\..\..\..\modules\menu-management\src\SufiChain.SufiAbp.MenuManagement.Domain\SufiChain.SufiAbp.MenuManagement.Domain.csproj" />
   </ItemGroup>
 	  <!-- </TEMPLATE-REMOVE> -->
 
@@ -51,6 +54,9 @@
     <PackageReference Include="SufiChain.SufiAbp.TenantManagement.Domain" Version="$(SufiVersion)" />
     <PackageReference Include="SufiChain.SufiAbp.OpenIddict.Domain" Version="$(SufiVersion)" />
     <PackageReference Include="SufiChain.SufiAbp.PermissionManagement.Domain.OpenIddict" Version="$(SufiVersion)" />
+    <PackageReference Include="SufiChain.SufiAbp.ShortLinkGenerator.Domain" Version="$(SufiVersion)" />
+    <PackageReference Include="SufiChain.SufiAbp.TagsManagement.Domain" Version="$(SufiVersion)" />
+    <PackageReference Include="SufiChain.SufiAbp.MenuManagement.Domain" Version="$(SufiVersion)" />
 	  </ItemGroup>
 	  </TEMPLATE-ONLY> -->
 

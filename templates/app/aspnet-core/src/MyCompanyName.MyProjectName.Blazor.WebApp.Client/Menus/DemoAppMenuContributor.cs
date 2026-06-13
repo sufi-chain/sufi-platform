@@ -30,12 +30,13 @@ public class DemoAppMenuContributor : IMenuContributor
 
     private Task ConfigureMainMenuAsync(MenuConfigurationContext context)
     {
+        var l = context.ServiceProvider.GetRequiredService<IStringLocalizer<DemoAppResource>>();
+
         // Reorder administration sub-menus: Identity, TenantManagement, Settings,
         // AuditLogging, BackgroundJobs, LocalizationManagement
         var administration = context.Menu.GetAdministration();
+        administration.DisplayName = l["Administration"];
         administration.Order = 100;
-        var demo = context.Menu.GetDemo();
-        demo.Order = 101;
         administration.SetSubItemOrder("Identity", 1);
         administration.SetSubItemOrder("TenantManagement", 2);
         administration.SetSubItemOrder("SettingManagement", 3);
@@ -43,6 +44,18 @@ public class DemoAppMenuContributor : IMenuContributor
         administration.SetSubItemOrder("BackgroundJobs", 5);
         administration.SetSubItemOrder("LocalizationManagement", 6);
 
+        var hasDemoModules = false;
+        // <TEMPLATE-REMOVE IF-NOT="module:file-manager-demo">
+        hasDemoModules = true;
+        // </TEMPLATE-REMOVE>
+        // <TEMPLATE-REMOVE IF-NOT="module:sufi-blazor-demo">
+        hasDemoModules = true;
+        // </TEMPLATE-REMOVE>
+        if (hasDemoModules)
+        {
+            var demo = context.Menu.GetDemo();
+            demo.Order = 101;
+        }
 
 
         return Task.CompletedTask;

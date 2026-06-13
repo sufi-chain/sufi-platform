@@ -34,6 +34,9 @@
     <ProjectReference Include="..\..\..\..\..\modules\background-jobs\src\SufiChain.SufiAbp.BackgroundJobs.Domain.Shared\SufiChain.SufiAbp.BackgroundJobs.Domain.Shared.csproj" />
     <ProjectReference Include="..\..\..\..\..\modules\identity\src\SufiChain.SufiAbp.Identity.Domain.Shared\SufiChain.SufiAbp.Identity.Domain.Shared.csproj" />
     <ProjectReference Include="..\..\..\..\..\modules\tenant-management\src\SufiChain.SufiAbp.TenantManagement.Domain.Shared\SufiChain.SufiAbp.TenantManagement.Domain.Shared.csproj" />
+    <ProjectReference Include="..\..\..\..\..\modules\short-link-generator\src\SufiChain.SufiAbp.ShortLinkGenerator.Domain.Shared\SufiChain.SufiAbp.ShortLinkGenerator.Domain.Shared.csproj" />
+    <ProjectReference Include="..\..\..\..\..\modules\tags-management\src\SufiChain.SufiAbp.TagsManagement.Domain.Shared\SufiChain.SufiAbp.TagsManagement.Domain.Shared.csproj" />
+    <ProjectReference Include="..\..\..\..\..\modules\menu-management\src\SufiChain.SufiAbp.MenuManagement.Domain.Shared\SufiChain.SufiAbp.MenuManagement.Domain.Shared.csproj" />
   </ItemGroup>
   <!-- </TEMPLATE-REMOVE> -->
 
@@ -48,6 +51,9 @@
     <PackageReference Include="SufiChain.SufiAbp.BackgroundJobs.Domain.Shared" Version="$(SufiVersion)" />
     <PackageReference Include="SufiChain.SufiAbp.Identity.Domain.Shared" Version="$(SufiVersion)" />
     <PackageReference Include="SufiChain.SufiAbp.TenantManagement.Domain.Shared" Version="$(SufiVersion)" />
+    <PackageReference Include="SufiChain.SufiAbp.ShortLinkGenerator.Domain.Shared" Version="$(SufiVersion)" />
+    <PackageReference Include="SufiChain.SufiAbp.TagsManagement.Domain.Shared" Version="$(SufiVersion)" />
+    <PackageReference Include="SufiChain.SufiAbp.MenuManagement.Domain.Shared" Version="$(SufiVersion)" />
   </ItemGroup>
   -->
   <!-- </TEMPLATE-ONLY> -->
