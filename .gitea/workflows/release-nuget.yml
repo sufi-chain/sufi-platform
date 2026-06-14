@@ -234,8 +234,7 @@ jobs:
           fi
           workspace="${WORKSPACE_DIR:-${GITHUB_WORKSPACE:-$PWD}}"
           cd "$workspace"
-          docker run --rm \
-            -v "${workspace}:/src" \
+          container_id="$(docker run -d \
             -w /src \
             -e NUGET_API_KEY \
             -e VERSION \
@@ -243,7 +242,13 @@ jobs:
             -e NUGET_PUSH_PARALLELISM \
             -e PACKAGE_OUTPUT="${PACKAGE_OUTPUT%/}/${VERSION}" \
             "$SDK_IMAGE" \
-            bash /src/.gitea/scripts/nuget-push-baget.sh
+            sleep 3600)"
+          trap 'docker rm -f "$container_id" >/dev/null 2>&1 || true' EXIT INT TERM
+          
+          docker cp "${workspace}/." "${container_id}:/src/"
+          docker exec "$container_id" bash /src/.gitea/scripts/nuget-push-baget.sh
+          docker rm -f "$container_id"
+          trap - EXIT INT TERM
 
       - name: Push packages to nuget.org
         if: ${{ gitea.event_name == 'workflow_dispatch' && inputs.push_to_nuget_org == true && inputs.package_version != '' }}
@@ -259,8 +264,7 @@ jobs:
           fi
           workspace="${WORKSPACE_DIR:-${GITHUB_WORKSPACE:-$PWD}}"
           cd "$workspace"
-          docker run --rm \
-            -v "${workspace}:/src" \
+          container_id="$(docker run -d \
             -w /src \
             -e NUGET_ORG_API_KEY \
             -e VERSION \
@@ -268,4 +272,10 @@ jobs:
             -e NUGET_PUSH_PARALLELISM \
             -e PACKAGE_OUTPUT="${PACKAGE_OUTPUT%/}/${VERSION}" \
             "$SDK_IMAGE" \
-            bash /src/.gitea/scripts/nuget-push-nuget-org.sh
+            sleep 3600)"
+          trap 'docker rm -f "$container_id" >/dev/null 2>&1 || true' EXIT INT TERM
+          
+          docker cp "${workspace}/." "${container_id}:/src/"
+          docker exec "$container_id" bash /src/.gitea/scripts/nuget-push-nuget-org.sh
+          docker rm -f "$container_id"
+          trap - EXIT INT TERM
