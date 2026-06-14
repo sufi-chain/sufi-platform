@@ -11,6 +11,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\..\..\framework\SufiChain.SufiAbp.Core\SufiChain.SufiAbp.Core.csproj" />
     <ProjectReference Include="..\..\src\SufiChain.SufiAbp.FileManager.Domain\SufiChain.SufiAbp.FileManager.Domain.csproj" />
     <ProjectReference Include="..\SufiChain.SufiAbp.FileManager.TestBase\SufiChain.SufiAbp.FileManager.TestBase.csproj" />
   </ItemGroup>

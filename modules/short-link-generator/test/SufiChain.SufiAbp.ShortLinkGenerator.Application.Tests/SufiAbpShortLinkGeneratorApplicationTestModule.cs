@@ -3,8 +3,8 @@ using Volo.Abp.Modularity;
 namespace SufiChain.SufiAbp.ShortLinkGenerator;
 
 [DependsOn(
-    typeof(ShortLinkGeneratorApplicationModule),
-    typeof(ShortLinkGeneratorDomainTestModule)
+    typeof(SufiAbpShortLinkGeneratorApplicationModule),
+    typeof(SufiAbpShortLinkGeneratorDomainTestModule)
 )]
 public class SufiAbpShortLinkGeneratorApplicationTestModule : AbpModule
 {

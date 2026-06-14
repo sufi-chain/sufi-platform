@@ -1,10 +1,11 @@
-﻿using Volo.Abp.Modularity;
+using SufiChain.SufiAbp.Modularity;
+using Volo.Abp.Modularity;
 
 namespace SufiChain.SufiAbp.FileManager;
 
 [DependsOn(
-    typeof(FileManagerApplicationModule),
-    typeof(FileManagerDomainTestModule)
+    typeof(SufiAbpFileManagerApplicationModule),
+    typeof(SufiAbpFileManagerDomainTestModule)
     )]
 public class SufiAbpFileManagerApplicationTestModule : SufiAbpModule
 {

@@ -28,7 +28,12 @@ public class WorkspaceManagerTests : AIManagementTestBase<AIManagementDomainTest
             .Returns(Task.FromResult<Workspace?>(null));
 
         // Act
-        var workspace = await _workspaceManager.CreateAsync(
+        await _workspaceManager.ValidateNameAsync(
+            AIManagementTestData.Workspaces.DefaultWorkspaceName
+        );
+
+        var workspace = new Workspace(
+            Guid.NewGuid(),
             AIManagementTestData.Workspaces.DefaultWorkspaceName,
             AIProviderType.OpenAI,
             AIManagementTestData.Workspaces.DefaultModelId
@@ -57,10 +62,8 @@ public class WorkspaceManagerTests : AIManagementTestBase<AIManagementDomainTest
         // Act & Assert
         await Should.ThrowAsync<BusinessException>(async () =>
         {
-            await _workspaceManager.CreateAsync(
-                AIManagementTestData.Workspaces.DefaultWorkspaceName,
-                AIProviderType.OpenAI,
-                "gpt-4"
+            await _workspaceManager.ValidateNameAsync(
+                AIManagementTestData.Workspaces.DefaultWorkspaceName
             );
         });
     }
@@ -81,7 +84,8 @@ public class WorkspaceManagerTests : AIManagementTestBase<AIManagementDomainTest
             .Returns(Task.FromResult<Workspace?>(null));
 
         // Act
-        await _workspaceManager.ChangeNameAsync(workspace, "new-name");
+        await _workspaceManager.ValidateNameAsync("new-name", workspace.Id);
+        workspace.SetName("new-name");
 
         // Assert
         workspace.Name.ShouldBe("new-name");
@@ -112,7 +116,7 @@ public class WorkspaceManagerTests : AIManagementTestBase<AIManagementDomainTest
         // Act & Assert
         await Should.ThrowAsync<BusinessException>(async () =>
         {
-            await _workspaceManager.ChangeNameAsync(workspace, "new-name");
+            await _workspaceManager.ValidateNameAsync("new-name", workspace.Id);
         });
     }
 }

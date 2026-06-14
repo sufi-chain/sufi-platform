@@ -12,7 +12,7 @@ public class AIUsageLogTests : AIManagementTestBase<AIManagementDomainTestModule
         var usageLog = new AIUsageLog(
             Guid.NewGuid(),
             Guid.NewGuid(),
-            AICapabilityType.Vision,
+            AICapabilityType.VisionAnalysis,
             "gpt-4o",
             AIProviderType.OpenAI);
         var fileId = Guid.NewGuid();

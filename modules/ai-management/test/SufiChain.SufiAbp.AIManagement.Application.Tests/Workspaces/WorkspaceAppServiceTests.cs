@@ -3,8 +3,8 @@ using System.Threading.Tasks;
 using Shouldly;
 using SufiChain.SufiAbp.AIManagement.Workspaces;
 using SufiChain.SufiAbp.AIManagement;
+using SufiChain.SufiAbp.Application.Dtos;
 using Volo.Abp;
-using Volo.Abp.Application.Dtos;
 using Xunit;
 
 namespace SufiChain.SufiAbp.AIManagement.Application.Tests.Workspaces;
@@ -61,8 +61,7 @@ public class WorkspaceAppServiceTests : AIManagementTestBase<AIManagementApplica
             Provider = AIProviderType.OpenAI,
             Model = "gpt-4",
             ApiKey = "sk-test-key",
-            ApiBaseUrl = "https://api.openai.com/v1",
-            IsActive = true
+            ApiBaseUrl = "https://api.openai.com/v1"
         };
 
         // Act

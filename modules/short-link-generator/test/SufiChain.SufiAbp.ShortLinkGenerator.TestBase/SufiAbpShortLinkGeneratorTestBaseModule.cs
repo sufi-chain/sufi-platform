@@ -1,15 +1,16 @@
 using Microsoft.Extensions.DependencyInjection;
+using SufiChain.SufiAbp.Authorization;
+using SufiChain.SufiAbp.Autofac;
+using SufiChain.SufiAbp.Guids;
+using SufiChain.SufiAbp.TestBase;
 using Volo.Abp;
-using Volo.Abp.Authorization;
-using Volo.Abp.Autofac;
-using Volo.Abp.Guids;
 using Volo.Abp.Modularity;
 using Volo.Abp.Testing;
 
 namespace SufiChain.SufiAbp.ShortLinkGenerator;
 
 [DependsOn(
-    typeof(ShortLinkGeneratorApplicationContractsModule),
+    typeof(SufiAbpShortLinkGeneratorApplicationContractsModule),
     typeof(SufiAbpAutofacModule),
     typeof(SufiAbpTestBaseModule),
     typeof(SufiAbpAuthorizationModule),

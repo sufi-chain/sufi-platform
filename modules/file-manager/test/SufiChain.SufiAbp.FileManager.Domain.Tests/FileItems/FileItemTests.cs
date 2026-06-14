@@ -24,32 +24,27 @@ public class FileItemTests : FileManagerDomainTestBase<SufiAbpFileManagerDomainT
     }
 
     [Fact]
-    public void Should_Set_Source_Module_Source_Entity_And_Custom_Metadata()
+    public void Should_Set_Source_Entity_And_Custom_Metadata()
     {
         var fileItem = CreateFileItem();
         var sourceEntityId = Guid.NewGuid();
 
-        fileItem.SetSourceModule(" AIManagement ");
         fileItem.SetSourceEntity(sourceEntityId);
         fileItem.SetCustomMetadata("{\"Capability\":\"Vision\"}");
 
-        fileItem.SourceModule.ShouldBe("AIManagement");
         fileItem.SourceEntityId.ShouldBe(sourceEntityId);
         fileItem.CustomMetadata.ShouldBe("{\"Capability\":\"Vision\"}");
     }
 
-    [Theory]
-    [InlineData(null)]
-    [InlineData("")]
-    [InlineData(" ")]
-    public void Should_Clear_Source_Module_When_Value_Is_Blank(string? sourceModule)
+    [Fact]
+    public void Should_Clear_Source_Entity_When_Null_Is_Set()
     {
         var fileItem = CreateFileItem();
-        fileItem.SetSourceModule("AIManagement");
+        fileItem.SetSourceEntity(Guid.NewGuid());
 
-        fileItem.SetSourceModule(sourceModule);
+        fileItem.SetSourceEntity(null);
 
-        fileItem.SourceModule.ShouldBeNull();
+        fileItem.SourceEntityId.ShouldBeNull();
     }
 
     private static FileItem CreateFileItem()

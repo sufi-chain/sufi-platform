@@ -50,67 +50,90 @@ dotnet pack "$ROOT_SLNX" \
   -p:PackageVersion="$VERSION" \
   -p:ContinuousIntegrationBuild=true
 
-mapfile -t calendar_packages < <(
-  find modules/calendar/src -type f -name '*.csproj' | sort | while read -r csproj; do
-    package_id="$(sed -n 's:.*<PackageId>\(.*\)</PackageId>.*:\1:p' "$csproj" | head -n 1)"
-    if [ -z "$package_id" ]; then
-      package_id="$(basename "$csproj" .csproj)"
-    fi
-    echo "$package_id"
-  done | sort -u
+mapfile -t solution_projects < <(
+  sed -n 's:.*<Project Path="\([^"]\+\)".*:\1:p' "$ROOT_SLNX" | sort -u
 )
 
-missing_calendar_packages=()
-for package_id in "${calendar_packages[@]}"; do
+packable_package_ids=()
+packable_project_paths=()
+
+for csproj in "${solution_projects[@]}"; do
+  if [ ! -f "$csproj" ]; then
+    continue
+  fi
+
+  if ! grep -q '<IsPackable>true</IsPackable>' "$csproj"; then
+    continue
+  fi
+
+  package_id="$(sed -n 's:.*<PackageId>\(.*\)</PackageId>.*:\1:p' "$csproj" | head -n 1)"
+  if [ -z "$package_id" ]; then
+    package_id="$(basename "$csproj" .csproj)"
+  fi
+
+  packable_package_ids+=("$package_id")
+  packable_project_paths+=("$csproj")
+done
+
+if [ ${#packable_package_ids[@]} -eq 0 ]; then
+  echo "No packable projects were discovered from $ROOT_SLNX." >&2
+  exit 1
+fi
+
+missing_package_ids=()
+missing_project_paths=()
+
+for i in "${!packable_package_ids[@]}"; do
+  package_id="${packable_package_ids[$i]}"
+  csproj="${packable_project_paths[$i]}"
   if [ ! -f "$package_output/${package_id}.${VERSION}.nupkg" ]; then
-    missing_calendar_packages+=("$package_id")
+    missing_package_ids+=("$package_id")
+    missing_project_paths+=("$csproj")
   fi
 done
 
-if [ ${#missing_calendar_packages[@]} -gt 0 ]; then
-  echo "Calendar package verification failed after root pack."
-  echo "Missing ${#missing_calendar_packages[@]} package(s):"
-  printf '  %s\n' "${missing_calendar_packages[@]}"
-  echo "Running targeted calendar restore/build/pack for src projects only..."
+if [ ${#missing_package_ids[@]} -gt 0 ]; then
+  echo "Package verification failed after root pack."
+  echo "Missing ${#missing_package_ids[@]} package(s):"
+  printf '  %s\n' "${missing_package_ids[@]}"
+  echo "Running targeted restore/build/pack for missing project(s)..."
 
-  calendar_slnx="modules/calendar/SufiChain.SufiAbp.Calendar.slnx"
-  calendar_release_slnx="modules/calendar/SufiChain.SufiAbp.Calendar.ReleasePack.slnx"
-  grep -v '/test/' "$calendar_slnx" > "$calendar_release_slnx"
-  trap 'rm -f "$calendar_release_slnx"' EXIT
+  for csproj in "${missing_project_paths[@]}"; do
+    dotnet restore "$csproj" \
+      --configfile /tmp/ci-nuget.config \
+      --verbosity minimal \
+      -p:NuGetAudit=false
 
-  dotnet restore "$calendar_release_slnx" \
-    --configfile /tmp/ci-nuget.config \
-    --verbosity minimal \
-    -p:NuGetAudit=false
+    dotnet build "$csproj" \
+      --configuration Release \
+      --no-restore \
+      --verbosity minimal \
+      -m \
+      -p:PackageVersion="$VERSION" \
+      -p:ContinuousIntegrationBuild=true \
+      -p:BuildInParallel=true
 
-  dotnet build "$calendar_release_slnx" \
-    --configuration Release \
-    --no-restore \
-    --verbosity minimal \
-    -m \
-    -p:PackageVersion="$VERSION" \
-    -p:ContinuousIntegrationBuild=true \
-    -p:BuildInParallel=true
+    dotnet pack "$csproj" \
+      --configuration Release \
+      --no-build \
+      --output "$package_output" \
+      --verbosity minimal \
+      -p:PackageVersion="$VERSION" \
+      -p:ContinuousIntegrationBuild=true
+  done
 
-  dotnet pack "$calendar_release_slnx" \
-    --configuration Release \
-    --no-build \
-    --output "$package_output" \
-    --verbosity minimal \
-    -p:PackageVersion="$VERSION" \
-    -p:ContinuousIntegrationBuild=true
-
-  missing_calendar_packages=()
-  for package_id in "${calendar_packages[@]}"; do
+  missing_package_ids=()
+  for i in "${!packable_package_ids[@]}"; do
+    package_id="${packable_package_ids[$i]}"
     if [ ! -f "$package_output/${package_id}.${VERSION}.nupkg" ]; then
-      missing_calendar_packages+=("$package_id")
+      missing_package_ids+=("$package_id")
     fi
   done
 
-  if [ ${#missing_calendar_packages[@]} -gt 0 ]; then
-    echo "Calendar package verification still failing after targeted repack."
-    echo "Missing ${#missing_calendar_packages[@]} package(s):"
-    printf '  %s\n' "${missing_calendar_packages[@]}"
+  if [ ${#missing_package_ids[@]} -gt 0 ]; then
+    echo "Package verification still failing after targeted repack."
+    echo "Missing ${#missing_package_ids[@]} package(s):"
+    printf '  %s\n' "${missing_package_ids[@]}"
     exit 1
   fi
 fi
