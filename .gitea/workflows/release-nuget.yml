@@ -105,16 +105,10 @@ jobs:
           cd "$workspace"
           echo "Using workspace: $workspace"
 
-          echo "Cleaning workspace to ensure fresh checkout..."
           if [ -f "$ROOT_SLNX" ] || [ -d ".git" ]; then
-            echo "Found existing repository files, removing..."
             rm -rf .git modules frameworks templates src test .gitea .gitignore *.slnx *.props *.targets *.md || true
-            echo "Workspace cleaned"
-          else
-            echo "Workspace is already clean"
           fi
 
-          echo "Runner workspace is empty; cloning with SDK container."
           CLONE_URL="https://${GIT_HOST}/${REPOSITORY}.git"
           clone_token="${GITEATOKEN:-${GITEA_TOKEN:-${GITHUB_TOKEN:-}}}"
           if [ -n "$clone_token" ]; then
@@ -134,30 +128,13 @@ jobs:
           docker exec "$container_id" sh -c '
             set -eu
             if [ -n "${REF_NAME:-}" ]; then
-              echo "Cloning branch/tag: $REF_NAME"
               git clone --depth 1 --branch "$REF_NAME" "$CLONE_URL" /src
             else
-              echo "Cloning default branch"
               git clone --depth 1 "$CLONE_URL" /src
-            fi
-            echo "Clone completed. Checking repository structure..."
-            ls -la /src/modules/ 2>/dev/null || echo "No modules directory"
-            if [ -d /src/modules/calendar ]; then
-              echo "Calendar directory exists, checking contents..."
-              find /src/modules/calendar -name "*.csproj" | head -5
-            else
-              echo "WARNING: Calendar directory not found after clone"
             fi
             test -f "'"$ROOT_SLNX"'"
           '
           docker cp "${container_id}:/src/." "${workspace}/"
-          echo "Files copied to workspace. Verifying Calendar presence..."
-          if [ -d "${workspace}/modules/calendar" ]; then
-            echo "Calendar directory exists in workspace"
-            find "${workspace}/modules/calendar" -name "*.csproj" | wc -l
-          else
-            echo "WARNING: Calendar directory missing in workspace after docker cp"
-          fi
           docker rm -f "$container_id"
           trap - EXIT INT TERM
 
@@ -205,23 +182,6 @@ jobs:
           package_dir="${workspace}/${version_package_output#./}"
           rm -rf "$package_dir"
           mkdir -p "$package_dir"
-          
-          echo "Workspace diagnostics before container creation:"
-          echo "  workspace variable: ${workspace}"
-          echo "  PWD: $PWD"
-          echo "  Checking if running inside container:"
-          if [ -f /.dockerenv ] || grep -q docker /proc/1/cgroup 2>/dev/null; then
-            echo "  DETECTED: Runner is inside a container"
-            echo "  Volume mount will fail - workspace path doesn't exist on Docker host"
-            echo "  Checking for alternative mount strategies..."
-            docker_host_workspace="${GITHUB_WORKSPACE:-}"
-            if [ -n "$docker_host_workspace" ]; then
-              echo "  Will try GITHUB_WORKSPACE: $docker_host_workspace"
-            fi
-          else
-            echo "  Runner is on bare metal, volume mount should work"
-          fi
-          
           container_id="$(docker run -d \
             -w /src \
             -e VERSION \
@@ -234,40 +194,7 @@ jobs:
             sleep 3600)"
           trap 'docker rm -f "$container_id" >/dev/null 2>&1 || true' EXIT INT TERM
           
-          echo "Copying workspace contents into pack container..."
           docker cp "${workspace}/." "${container_id}:/src/"
-          echo "Copy completed."
-          
-          echo "Verifying Calendar module projects are present in container..."
-          echo "First, checking workspace on runner before container check:"
-          if [ -d "${workspace}/modules/calendar" ]; then
-            calendar_count="$(find "${workspace}/modules/calendar" -name '*.csproj' 2>/dev/null | wc -l)"
-            echo "Found $calendar_count Calendar .csproj files in runner workspace"
-          else
-            echo "ERROR: Calendar directory missing from runner workspace at ${workspace}/modules/calendar" >&2
-          fi
-          
-          echo "Now checking inside pack container..."
-          echo "Container mount point contents:"
-          docker exec "$container_id" ls -la /src/ | head -20
-          echo ""
-          echo "Checking if modules directory exists in container:"
-          docker exec "$container_id" ls -la /src/modules/ 2>/dev/null | head -10 || echo "modules/ directory not found in container"
-          echo ""
-          echo "Attempting to find ANY .csproj in container:"
-          docker exec "$container_id" find /src -name "*.csproj" -type f 2>/dev/null | head -10 || echo "No .csproj files found"
-          echo ""
-          echo "Checking workspace variable value: ${workspace}"
-          echo ""
-          
-          calendar_projects="$(docker exec "$container_id" find /src/modules/calendar/src -name '*.csproj' 2>/dev/null || true)"
-          if [ -z "$calendar_projects" ]; then
-            echo "WARNING: No Calendar .csproj files found in container at /src/modules/calendar/src" >&2
-          else
-            echo "Found Calendar projects in container:"
-            echo "$calendar_projects"
-          fi
-          
           docker exec "$container_id" bash /src/.gitea/scripts/nuget-pack.sh
           rm -rf "$package_dir"
           mkdir -p "$package_dir"
