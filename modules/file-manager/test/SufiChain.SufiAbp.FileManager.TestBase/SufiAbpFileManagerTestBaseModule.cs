@@ -1,13 +1,11 @@
 using Microsoft.Extensions.DependencyInjection;
 using SufiChain.SufiAbp.Authorization;
 using SufiChain.SufiAbp.Autofac;
+using SufiChain.SufiAbp.FileManager.FileStructures;
 using SufiChain.SufiAbp.Guids;
 using SufiChain.SufiAbp.TestBase;
 using Volo.Abp;
-using Volo.Abp.Authorization;
-using Volo.Abp.Autofac;
 using Volo.Abp.Data;
-using Volo.Abp.Guids;
 using Volo.Abp.Modularity;
 using Volo.Abp.Threading;
 
@@ -37,6 +35,12 @@ public class SufiAbpFileManagerTestBaseModule : AbpModule
         {
             using (var scope = context.ServiceProvider.CreateScope())
             {
+                var fileStructureRepository = scope.ServiceProvider.GetService<IFileStructureRepository>();
+                if (fileStructureRepository == null)
+                {
+                    return;
+                }
+
                 await scope.ServiceProvider
                     .GetRequiredService<IDataSeeder>()
                     .SeedAsync();

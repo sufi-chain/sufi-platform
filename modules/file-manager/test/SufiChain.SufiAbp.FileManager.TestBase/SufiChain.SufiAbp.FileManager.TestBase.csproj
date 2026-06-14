@@ -21,6 +21,7 @@
     <ProjectReference Include="../../../../framework/SufiChain.SufiAbp.Authorization/SufiChain.SufiAbp.Authorization.csproj" />
     <ProjectReference Include="../../../../framework/SufiChain.SufiAbp.Guids/SufiChain.SufiAbp.Guids.csproj" />
     <ProjectReference Include="../../../../framework/SufiChain.SufiAbp.TestBase/SufiChain.SufiAbp.TestBase.csproj" />
+    <ProjectReference Include="..\..\src\SufiChain.SufiAbp.FileManager.Domain\SufiChain.SufiAbp.FileManager.Domain.csproj" />
   </ItemGroup>
 
 </Project>

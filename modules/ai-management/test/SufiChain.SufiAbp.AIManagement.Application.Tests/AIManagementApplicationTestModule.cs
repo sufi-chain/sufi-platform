@@ -24,6 +24,7 @@ public class AIManagementApplicationTestModule : AbpModule
 
     public override void ConfigureServices(ServiceConfigurationContext context)
     {
+        context.Services.AddHttpClient();
         ConfigureInMemorySqlite(context.Services);
     }
 

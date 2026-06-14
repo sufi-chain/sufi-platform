@@ -288,12 +288,7 @@
     <Project Path="modules/file-manager/test/SufiChain.SufiAbp.FileManager.EntityFrameworkCore.Tests/SufiChain.SufiAbp.FileManager.EntityFrameworkCore.Tests.csproj" />
     <Project Path="modules/file-manager/test/SufiChain.SufiAbp.FileManager.TestBase/SufiChain.SufiAbp.FileManager.TestBase.csproj" />
   </Folder>
-  <Folder Name="/Tests/ShortLinkGenerator/">
-    <Project Path="modules/short-link-generator/test/SufiChain.SufiAbp.ShortLinkGenerator.Application.Tests/SufiChain.SufiAbp.ShortLinkGenerator.Application.Tests.csproj" />
-    <Project Path="modules/short-link-generator/test/SufiChain.SufiAbp.ShortLinkGenerator.Domain.Tests/SufiChain.SufiAbp.ShortLinkGenerator.Domain.Tests.csproj" />
-    <Project Path="modules/short-link-generator/test/SufiChain.SufiAbp.ShortLinkGenerator.EntityFrameworkCore.Tests/SufiChain.SufiAbp.ShortLinkGenerator.EntityFrameworkCore.Tests.csproj" />
-    <Project Path="modules/short-link-generator/test/SufiChain.SufiAbp.ShortLinkGenerator.TestBase/SufiChain.SufiAbp.ShortLinkGenerator.TestBase.csproj" />
-  </Folder>
+  <Folder Name="/Tests/ShortLinkGenerator/" />
   <Folder Name="/Tests/SmokeTest/">
     <Project Path="test/SufiChain.SufiAbp.BlazorBuildTest.Console/SufiChain.SufiAbp.BlazorBuildTest.Console.csproj" />
     <Project Path="test/SufiChain.SufiAbp.SmokeTest.Console/SufiChain.SufiAbp.SmokeTest.Console.csproj" />

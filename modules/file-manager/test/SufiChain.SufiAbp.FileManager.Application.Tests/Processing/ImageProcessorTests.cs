@@ -9,7 +9,7 @@ using Xunit;
 
 namespace SufiChain.SufiAbp.FileManager.Application.Tests.Processing;
 
-public class ImageProcessorTests : FileManagerApplicationTestBase<FileManagerApplicationTestModule>
+public class ImageProcessorTests : FileManagerApplicationTestBase<SufiAbpFileManagerApplicationTestModule>
 {
     private readonly IImageProcessor _imageProcessor;
 

@@ -11,7 +11,7 @@ using Xunit;
 
 namespace SufiChain.SufiAbp.FileManager.Application.Tests.FileItems;
 
-public class FileItemAppServiceTests : FileManagerApplicationTestBase<FileManagerApplicationTestModule>
+public class FileItemAppServiceTests : FileManagerApplicationTestBase<SufiAbpFileManagerApplicationTestModule>
 {
     private readonly IFileItemAppService _fileItemAppService;
 

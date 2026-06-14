@@ -7,7 +7,7 @@ using Xunit;
 
 namespace SufiChain.SufiAbp.FileManager.Application.Tests.Processing;
 
-public class VideoProcessorTests : FileManagerApplicationTestBase<FileManagerApplicationTestModule>
+public class VideoProcessorTests : FileManagerApplicationTestBase<SufiAbpFileManagerApplicationTestModule>
 {
     private readonly IVideoProcessor _videoProcessor;
 
