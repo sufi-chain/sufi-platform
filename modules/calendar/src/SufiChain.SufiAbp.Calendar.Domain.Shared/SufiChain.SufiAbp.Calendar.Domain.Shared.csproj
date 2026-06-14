@@ -4,6 +4,7 @@
     <Nullable>enable</Nullable>
     <RootNamespace>SufiChain.SufiAbp.Calendar</RootNamespace>
     <GenerateEmbeddedFilesManifest>true</GenerateEmbeddedFilesManifest>
+    <IsPackable>true</IsPackable>
   </PropertyGroup>
   <PropertyGroup>
     <PackageId>SufiChain.SufiAbp.Calendar.Domain.Shared</PackageId>

@@ -4,6 +4,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <RootNamespace>SufiChain.SufiAbp.Calendar.Blazor</RootNamespace>
+    <IsPackable>true</IsPackable>
   </PropertyGroup>
   <PropertyGroup>
     <PackageId>SufiChain.SufiAbp.Calendar.Blazor</PackageId>

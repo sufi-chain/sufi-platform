@@ -5,7 +5,7 @@ using Xunit;
 
 namespace SufiChain.SufiAbp.FileManager.FileItems;
 
-public class FileItemTests : FileManagerDomainTestBase<FileManagerDomainTestModule>
+public class FileItemTests : FileManagerDomainTestBase<SufiAbpFileManagerDomainTestModule>
 {
     [Fact]
     public void Should_Archive_And_Restore_File()
