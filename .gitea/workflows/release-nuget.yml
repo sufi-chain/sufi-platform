@@ -223,7 +223,6 @@ jobs:
           fi
           
           container_id="$(docker run -d \
-            -v "${workspace}:/src" \
             -w /src \
             -e VERSION \
             -e PACKAGE_OUTPUT="$version_package_output" \
@@ -234,6 +233,10 @@ jobs:
             "$SDK_IMAGE" \
             sleep 3600)"
           trap 'docker rm -f "$container_id" >/dev/null 2>&1 || true' EXIT INT TERM
+          
+          echo "Copying workspace contents into pack container..."
+          docker cp "${workspace}/." "${container_id}:/src/"
+          echo "Copy completed."
           
           echo "Verifying Calendar module projects are present in container..."
           echo "First, checking workspace on runner before container check:"
