@@ -105,11 +105,6 @@ jobs:
           cd "$workspace"
           echo "Using workspace: $workspace"
 
-          if [ -f "$ROOT_SLNX" ]; then
-            echo "Repository already checked out by the runner ($ROOT_SLNX)."
-            exit 0
-          fi
-
           echo "Runner workspace is empty; cloning with SDK container."
           CLONE_URL="https://${GIT_HOST}/${REPOSITORY}.git"
           clone_token="${GITEATOKEN:-${GITEA_TOKEN:-${GITHUB_TOKEN:-}}}"
@@ -196,6 +191,16 @@ jobs:
             "$SDK_IMAGE" \
             sleep 3600)"
           trap 'docker rm -f "$container_id" >/dev/null 2>&1 || true' EXIT INT TERM
+          
+          echo "Verifying Calendar module projects are present in container..."
+          calendar_projects="$(docker exec "$container_id" find /src/modules/calendar/src -name '*.csproj' 2>/dev/null || true)"
+          if [ -z "$calendar_projects" ]; then
+            echo "WARNING: No Calendar .csproj files found in container at /src/modules/calendar/src" >&2
+          else
+            echo "Found Calendar projects in container:"
+            echo "$calendar_projects"
+          fi
+          
           docker exec "$container_id" bash /src/.gitea/scripts/nuget-pack.sh
           rm -rf "$package_dir"
           mkdir -p "$package_dir"

@@ -80,6 +80,11 @@ if [ ${#packable_package_ids[@]} -eq 0 ]; then
   exit 1
 fi
 
+echo "Discovered ${#packable_package_ids[@]} packable project(s):"
+for i in "${!packable_package_ids[@]}"; do
+  printf '  [%d] %s (%s)\n' "$((i+1))" "${packable_package_ids[$i]}" "${packable_project_paths[$i]}"
+done
+
 missing_package_ids=()
 missing_project_paths=()
 
@@ -94,8 +99,10 @@ done
 
 if [ ${#missing_package_ids[@]} -gt 0 ]; then
   echo "Package verification failed after root pack."
-  echo "Missing ${#missing_package_ids[@]} package(s):"
-  printf '  %s\n' "${missing_package_ids[@]}"
+  echo "Missing ${#missing_package_ids[@]} package(s) out of ${#packable_package_ids[@]} total:"
+  for i in "${!missing_package_ids[@]}"; do
+    printf '  [%d] %s (%s)\n' "$((i+1))" "${missing_package_ids[$i]}" "${missing_project_paths[$i]}"
+  done
   echo "Running targeted restore/build/pack for missing project(s)..."
 
   for csproj in "${missing_project_paths[@]}"; do
