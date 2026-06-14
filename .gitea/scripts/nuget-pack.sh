@@ -28,15 +28,12 @@ if [ ! -f "$ROOT_SLNX" ]; then
   exit 1
 fi
 
-release_slnx="/tmp/release-pack.slnx"
-grep -v 'modules/calendar/test/' "$ROOT_SLNX" > "$release_slnx"
-
-dotnet restore "$release_slnx" \
+dotnet restore "$ROOT_SLNX" \
   --configfile /tmp/ci-nuget.config \
   --verbosity minimal \
   -p:NuGetAudit=false
 
-dotnet build "$release_slnx" \
+dotnet build "$ROOT_SLNX" \
   --configuration Release \
   --no-restore \
   --verbosity minimal \
@@ -45,13 +42,78 @@ dotnet build "$release_slnx" \
   -p:ContinuousIntegrationBuild=true \
   -p:BuildInParallel=true
 
-dotnet pack "$release_slnx" \
+dotnet pack "$ROOT_SLNX" \
   --configuration Release \
   --no-build \
   --output "$package_output" \
   --verbosity minimal \
   -p:PackageVersion="$VERSION" \
   -p:ContinuousIntegrationBuild=true
+
+mapfile -t calendar_packages < <(
+  find modules/calendar/src -type f -name '*.csproj' | sort | while read -r csproj; do
+    package_id="$(sed -n 's:.*<PackageId>\(.*\)</PackageId>.*:\1:p' "$csproj" | head -n 1)"
+    if [ -z "$package_id" ]; then
+      package_id="$(basename "$csproj" .csproj)"
+    fi
+    echo "$package_id"
+  done | sort -u
+)
+
+missing_calendar_packages=()
+for package_id in "${calendar_packages[@]}"; do
+  if [ ! -f "$package_output/${package_id}.${VERSION}.nupkg" ]; then
+    missing_calendar_packages+=("$package_id")
+  fi
+done
+
+if [ ${#missing_calendar_packages[@]} -gt 0 ]; then
+  echo "Calendar package verification failed after root pack."
+  echo "Missing ${#missing_calendar_packages[@]} package(s):"
+  printf '  %s\n' "${missing_calendar_packages[@]}"
+  echo "Running targeted calendar restore/build/pack for src projects only..."
+
+  calendar_slnx="modules/calendar/SufiChain.SufiAbp.Calendar.slnx"
+  calendar_release_slnx="modules/calendar/SufiChain.SufiAbp.Calendar.ReleasePack.slnx"
+  grep -v '/test/' "$calendar_slnx" > "$calendar_release_slnx"
+  trap 'rm -f "$calendar_release_slnx"' EXIT
+
+  dotnet restore "$calendar_release_slnx" \
+    --configfile /tmp/ci-nuget.config \
+    --verbosity minimal \
+    -p:NuGetAudit=false
+
+  dotnet build "$calendar_release_slnx" \
+    --configuration Release \
+    --no-restore \
+    --verbosity minimal \
+    -m \
+    -p:PackageVersion="$VERSION" \
+    -p:ContinuousIntegrationBuild=true \
+    -p:BuildInParallel=true
+
+  dotnet pack "$calendar_release_slnx" \
+    --configuration Release \
+    --no-build \
+    --output "$package_output" \
+    --verbosity minimal \
+    -p:PackageVersion="$VERSION" \
+    -p:ContinuousIntegrationBuild=true
+
+  missing_calendar_packages=()
+  for package_id in "${calendar_packages[@]}"; do
+    if [ ! -f "$package_output/${package_id}.${VERSION}.nupkg" ]; then
+      missing_calendar_packages+=("$package_id")
+    fi
+  done
+
+  if [ ${#missing_calendar_packages[@]} -gt 0 ]; then
+    echo "Calendar package verification still failing after targeted repack."
+    echo "Missing ${#missing_calendar_packages[@]} package(s):"
+    printf '  %s\n' "${missing_calendar_packages[@]}"
+    exit 1
+  fi
+fi
 
 package_count="$(find "$package_output" -type f -name '*.nupkg' ! -name '*.symbols.nupkg' | wc -l | tr -d ' ')"
 if [ "$package_count" = "0" ]; then

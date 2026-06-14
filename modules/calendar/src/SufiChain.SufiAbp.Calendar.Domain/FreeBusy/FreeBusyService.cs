@@ -109,12 +109,22 @@ public class FreeBusyService : IFreeBusyService, ITransientDependency
         {
             var openAtCursor = await _availabilityCalendarService.IsOpenAtAsync(availabilityCalendarId, cursor, ct);
             var start = openAtCursor ? cursor : await _availabilityCalendarService.NextOpenAtAsync(availabilityCalendarId, cursor, ct);
+            if (!openAtCursor && start <= cursor)
+            {
+                start = cursor.AddMinutes(1);
+            }
             if (start >= utcTo)
             {
                 break;
             }
 
             var close = await _availabilityCalendarService.NextCloseAtAsync(availabilityCalendarId, start, ct);
+            if (close <= start)
+            {
+                cursor = start.AddMinutes(1);
+                continue;
+            }
+
             var end = close < utcTo ? close : utcTo;
             if (end > start)
             {

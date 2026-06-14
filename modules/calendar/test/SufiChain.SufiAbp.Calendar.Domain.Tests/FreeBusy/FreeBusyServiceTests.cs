@@ -123,8 +123,32 @@ public class FreeBusyServiceTests
                 var instant = callInfo.ArgAt<DateTime>(1);
                 return instant >= open.Value && instant < close.Value;
             });
-        _availabilityCalendarService.NextOpenAtAsync(calendar.Id, Arg.Any<DateTime>(), Arg.Any<CancellationToken>()).Returns(open.Value);
-        _availabilityCalendarService.NextCloseAtAsync(calendar.Id, Arg.Any<DateTime>(), Arg.Any<CancellationToken>()).Returns(close.Value);
+        _availabilityCalendarService.NextOpenAtAsync(calendar.Id, Arg.Any<DateTime>(), Arg.Any<CancellationToken>())
+            .Returns(callInfo =>
+            {
+                var instant = callInfo.ArgAt<DateTime>(1);
+                if (instant < open.Value)
+                {
+                    return open.Value;
+                }
+                if (instant >= close.Value)
+                {
+                    return to;
+                }
+
+                return instant.AddMinutes(1);
+            });
+        _availabilityCalendarService.NextCloseAtAsync(calendar.Id, Arg.Any<DateTime>(), Arg.Any<CancellationToken>())
+            .Returns(callInfo =>
+            {
+                var instant = callInfo.ArgAt<DateTime>(1);
+                if (instant < close.Value)
+                {
+                    return close.Value;
+                }
+
+                return instant.AddMinutes(1);
+            });
     }
 
     private static CalendarAggregate CreateCalendar(int? maxConcurrent)
