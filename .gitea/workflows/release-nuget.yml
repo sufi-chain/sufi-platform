@@ -125,13 +125,30 @@ jobs:
           docker exec "$container_id" sh -c '
             set -eu
             if [ -n "${REF_NAME:-}" ]; then
+              echo "Cloning branch/tag: $REF_NAME"
               git clone --depth 1 --branch "$REF_NAME" "$CLONE_URL" /src
             else
+              echo "Cloning default branch"
               git clone --depth 1 "$CLONE_URL" /src
+            fi
+            echo "Clone completed. Checking repository structure..."
+            ls -la /src/modules/ 2>/dev/null || echo "No modules directory"
+            if [ -d /src/modules/calendar ]; then
+              echo "Calendar directory exists, checking contents..."
+              find /src/modules/calendar -name "*.csproj" | head -5
+            else
+              echo "WARNING: Calendar directory not found after clone"
             fi
             test -f "'"$ROOT_SLNX"'"
           '
           docker cp "${container_id}:/src/." "${workspace}/"
+          echo "Files copied to workspace. Verifying Calendar presence..."
+          if [ -d "${workspace}/modules/calendar" ]; then
+            echo "Calendar directory exists in workspace"
+            find "${workspace}/modules/calendar" -name "*.csproj" | wc -l
+          else
+            echo "WARNING: Calendar directory missing in workspace after docker cp"
+          fi
           docker rm -f "$container_id"
           trap - EXIT INT TERM
 
@@ -193,6 +210,15 @@ jobs:
           trap 'docker rm -f "$container_id" >/dev/null 2>&1 || true' EXIT INT TERM
           
           echo "Verifying Calendar module projects are present in container..."
+          echo "First, checking workspace on runner before container check:"
+          if [ -d "${workspace}/modules/calendar" ]; then
+            calendar_count="$(find "${workspace}/modules/calendar" -name '*.csproj' 2>/dev/null | wc -l)"
+            echo "Found $calendar_count Calendar .csproj files in runner workspace"
+          else
+            echo "ERROR: Calendar directory missing from runner workspace at ${workspace}/modules/calendar" >&2
+          fi
+          
+          echo "Now checking inside pack container..."
           calendar_projects="$(docker exec "$container_id" find /src/modules/calendar/src -name '*.csproj' 2>/dev/null || true)"
           if [ -z "$calendar_projects" ]; then
             echo "WARNING: No Calendar .csproj files found in container at /src/modules/calendar/src" >&2
