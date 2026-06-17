@@ -66,7 +66,7 @@
 	<ItemGroup>
 			<!-- Application.Contracts + HttpApi.Client project references -->
 		<ProjectReference Include="..\MyCompanyName.MyProjectName.Application.Contracts\MyCompanyName.MyProjectName.Application.Contracts.csproj" />
-		<!-- <TEMPLATE-REMOVE IF="arch:single"> -->
+		<!-- <TEMPLATE-REMOVE IF="arch:webapp"> -->
 		<ProjectReference Include="..\MyCompanyName.MyProjectName.HttpApi.Client\MyCompanyName.MyProjectName.HttpApi.Client.csproj" />
 		<!-- </TEMPLATE-REMOVE> -->
 	</ItemGroup>

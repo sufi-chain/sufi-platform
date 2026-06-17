@@ -20,6 +20,10 @@
     "LoadingFeatures": "Loading features...",
     "NoFeaturesAvailable": "No features available",
     "FeaturesResetSuccessfully": "Features reset successfully",
-    "ResetFeaturesConfirmation": "Are you sure you want to reset all features to their default values?"
+    "ResetFeaturesConfirmation": "Are you sure you want to reset all features to their default values?",
+    "Permission:FeatureManagement": "Feature management",
+    "Permission:FeatureManagement.Features": "Features",
+    "Permission:FeatureManagement.ManageHostFeatures": "Manage host features",
+    "Permission:FeatureManagement.ManageTenantFeatures": "Manage tenant features"
   }
 }

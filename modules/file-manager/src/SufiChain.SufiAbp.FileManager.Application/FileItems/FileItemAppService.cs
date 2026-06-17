@@ -129,12 +129,18 @@ public partial class FileItemAppService : ApplicationService, IFileItemAppServic
 
     private async Task<Guid?> ResolveFolderIdAsync(Guid? folderId, string? folderPath)
     {
+        if (folderId.HasValue)
+        {
+            return folderId;
+        }
+
         if (!string.IsNullOrWhiteSpace(folderPath))
         {
             var folder = await _folderAppService.GetOrCreateFolderByPathAsync(folderPath.Trim());
             return folder?.Id;
         }
-        return folderId;
+
+        return null;
     }
 
     [RemoteService(false)]

@@ -5,6 +5,7 @@ using Microsoft.SemanticKernel;
 using SufiChain.SufiAbp.AI;
 using SufiChain.SufiAbp.AI.Features;
 using Volo.Abp.DependencyInjection;
+using Volo.Abp.Security.Encryption;
 using SufiChain.SufiAbp.Features;
 using System.Collections.Concurrent;
 
@@ -19,6 +20,7 @@ public class WorkspaceSyncService : ITransientDependency
     private readonly IWorkspaceRepository _workspaceRepository;
     private readonly IServiceProvider _serviceProvider;
     private readonly IFeatureChecker _featureChecker;
+    private readonly IStringEncryptionService _stringEncryptor;
     private readonly ILogger<WorkspaceSyncService> _logger;
     
     // Cache for workspace instances
@@ -30,11 +32,13 @@ public class WorkspaceSyncService : ITransientDependency
         IWorkspaceRepository workspaceRepository,
         IServiceProvider serviceProvider,
         IFeatureChecker featureChecker,
+        IStringEncryptionService stringEncryptor,
         ILogger<WorkspaceSyncService> logger)
     {
         _workspaceRepository = workspaceRepository;
         _serviceProvider = serviceProvider;
         _featureChecker = featureChecker;
+        _stringEncryptor = stringEncryptor;
         _logger = logger;
     }
 
@@ -83,7 +87,7 @@ public class WorkspaceSyncService : ITransientDependency
 
         var builder = Kernel.CreateBuilder();
         builder.Services.AddSingleton(_serviceProvider);
-        WorkspaceConfigurationHelper.ConfigureKernel(builder, workspace);
+        WorkspaceConfigurationHelper.ConfigureKernel(builder, workspace, DecryptApiKey(workspace.ApiKey));
         var kernel = builder.Build();
 
         _kernelCache.TryAdd(workspaceName, kernel);
@@ -155,6 +159,23 @@ public class WorkspaceSyncService : ITransientDependency
         if (!await _featureChecker.IsEnabledAsync(featureName))
         {
             throw new Volo.Abp.BusinessException($"Feature is disabled: {featureName}");
+        }
+    }
+
+    private string? DecryptApiKey(string? encryptedApiKey)
+    {
+        if (string.IsNullOrWhiteSpace(encryptedApiKey))
+        {
+            return encryptedApiKey;
+        }
+
+        try
+        {
+            return _stringEncryptor.Decrypt(encryptedApiKey);
+        }
+        catch
+        {
+            return encryptedApiKey;
         }
     }
 }

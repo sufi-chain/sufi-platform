@@ -14,6 +14,6 @@ public class AIManagementMongoDbContext : AbpMongoDbContext, IAIManagementMongoD
     {
         base.CreateModel(modelBuilder);
 
-        modelBuilder.ConfigureAIManagement();
+        modelBuilder.ConfigureSufiAbpAIManagement();
     }
 }

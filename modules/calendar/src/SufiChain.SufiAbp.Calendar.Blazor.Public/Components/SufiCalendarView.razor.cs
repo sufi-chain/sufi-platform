@@ -51,6 +51,8 @@ public partial class SufiCalendarView : CalendarPublicComponentBase
 
     protected string TitleText => $"{SbCalendarHelper.GetMonthName(Date, _culture)} {SbCalendarHelper.GetYear(Date, _culture)}";
 
+    protected IEnumerable<int> DayTimelineHours => Enumerable.Range(0, 24);
+
     protected override async Task OnParametersSetAsync()
     {
         _culture = CultureInfo.CurrentUICulture;
@@ -105,6 +107,13 @@ public partial class SufiCalendarView : CalendarPublicComponentBase
         await OnSlotSelect.InvokeAsync(new SufiCalendarSlotSelectArgs(startUtc, startUtc.AddDays(1), CalendarIds));
     }
 
+    protected virtual async Task SelectHourSlotAsync(int hour)
+    {
+        var localStart = Date.Date.AddHours(hour);
+        var startUtc = ToUtc(localStart);
+        await OnSlotSelect.InvokeAsync(new SufiCalendarSlotSelectArgs(startUtc, startUtc.AddHours(1), CalendarIds));
+    }
+
     protected virtual IEnumerable<EventOccurrenceDto> GetOccurrencesForDay(DateTime day)
     {
         var timeZone = ResolveTimeZone();
@@ -117,11 +126,49 @@ public partial class SufiCalendarView : CalendarPublicComponentBase
         return SbCalendarHelper.FormatDate(local, null, _culture) + " " + local.ToString("HH:mm", _culture);
     }
 
+    protected virtual string FormatHour(int hour)
+    {
+        return Date.Date.AddHours(hour).ToString("HH:mm", _culture);
+    }
+
+    protected virtual string FormatTimeRange(EventOccurrenceDto occurrence)
+    {
+        var timeZone = ResolveTimeZone();
+        var start = TimeZoneInfo.ConvertTimeFromUtc(DateTime.SpecifyKind(occurrence.StartUtc, DateTimeKind.Utc), timeZone);
+        var end = TimeZoneInfo.ConvertTimeFromUtc(DateTime.SpecifyKind(occurrence.EndUtc, DateTimeKind.Utc), timeZone);
+        return $"{start.ToString("HH:mm", _culture)} - {end.ToString("HH:mm", _culture)}";
+    }
+
+    protected virtual IEnumerable<EventOccurrenceDto> GetOccurrencesForHour(int hour)
+    {
+        var timeZone = ResolveTimeZone();
+        var hourStart = Date.Date.AddHours(hour);
+        var hourEnd = hourStart.AddHours(1);
+
+        return _visibleOccurrences.Where(occurrence =>
+        {
+            var start = TimeZoneInfo.ConvertTimeFromUtc(DateTime.SpecifyKind(occurrence.StartUtc, DateTimeKind.Utc), timeZone);
+            var end = TimeZoneInfo.ConvertTimeFromUtc(DateTime.SpecifyKind(occurrence.EndUtc, DateTimeKind.Utc), timeZone);
+            return start < hourEnd && end > hourStart;
+        });
+    }
+
     protected virtual string GetDayClass(DateTime day)
     {
         var currentMonth = SbCalendarHelper.GetMonth(day, _culture) == SbCalendarHelper.GetMonth(Date, _culture) &&
                            SbCalendarHelper.GetYear(day, _culture) == SbCalendarHelper.GetYear(Date, _culture);
         return currentMonth ? "sufi-calendar-view__day" : "sufi-calendar-view__day sufi-calendar-view__day--muted";
+    }
+
+    protected virtual string GetGridClass()
+    {
+        var classes = new List<string> { "sufi-calendar-view__grid", $"sufi-calendar-view__grid--{View.ToString().ToLowerInvariant()}" };
+        if (View == SufiCalendarViewMode.Month)
+        {
+            classes.Add(_days.Count > 35 ? "sufi-calendar-view__grid--six-rows" : "sufi-calendar-view__grid--five-rows");
+        }
+
+        return string.Join(" ", classes);
     }
 
     private void BuildVisibleDays()

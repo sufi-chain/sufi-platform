@@ -45,6 +45,23 @@
     "JobDeletedSuccessfully": "Trabajo eliminado correctamente",
     "JobRetriedSuccessfully": "Trabajo reintentado correctamente",
     "JobAbandonedSuccessfully": "Trabajo abandonado correctamente",
-    "NoArguments": "Sin argumentos"
+    "NoArguments": "Sin argumentos",
+    "Permission:BackgroundJobs": "Trabajos en segundo plano",
+    "Permission:BackgroundJobs.Management": "Administrar trabajos en segundo plano",
+    "Permission:BackgroundJobs.Delete": "Eliminar trabajos en segundo plano",
+    "Permission:BackgroundJobs.Retry": "Reintentar trabajos en segundo plano",
+    "Actions": "Acciones",
+    "Active": "Activo",
+    "All": "Todo",
+    "Cancel": "Cancelar",
+    "Close": "Cerrar",
+    "Delete": "Eliminar",
+    "No": "No",
+    "Pending": "Pendiente",
+    "Refresh": "Actualizar",
+    "Search": "Buscar",
+    "Status": "Estado",
+    "ViewDetails": "Ver detalles",
+    "Yes": "Sí"
   }
 }

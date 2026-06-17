@@ -78,6 +78,13 @@ public class SolutionRenameStep : ProjectBuildPipelineStep
             foreach (var replacement in sortedReplacements)
             {
                 newPath = newPath.Replace(replacement.Key, replacement.Value);
+
+                var pascalKey = ToPascalCase(replacement.Key);
+                var pascalValue = ToPascalCase(replacement.Value);
+                if (pascalKey != replacement.Key)
+                {
+                    newPath = newPath.Replace(pascalKey, pascalValue);
+                }
             }
 
             if (newPath != oldPath)

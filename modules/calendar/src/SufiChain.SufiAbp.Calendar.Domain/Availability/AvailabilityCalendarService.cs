@@ -7,7 +7,9 @@ public class AvailabilityCalendarService : IAvailabilityCalendarService, ITransi
     private readonly ICalendarSnapshotProvider _snapshotProvider;
     private readonly BusinessCalendarCalculator _calculator;
 
-    public AvailabilityCalendarService(ICalendarSnapshotProvider snapshotProvider, BusinessCalendarCalculator calculator)
+    public AvailabilityCalendarService(
+        ICalendarSnapshotProvider snapshotProvider,
+        BusinessCalendarCalculator calculator)
     {
         _snapshotProvider = snapshotProvider;
         _calculator = calculator;

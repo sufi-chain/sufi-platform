@@ -26,12 +26,13 @@ public class Workspace : FullAuditedAggregateRoot<Guid>, IMultiTenant
     public float Temperature { get; protected set; }
     public int MaxTokens { get; protected set; }
     public OpenAIApiMode OpenAIApiMode { get; protected set; }
-    public decimal? InputCostPer1KTokens { get; protected set; }
-    public decimal? OutputCostPer1KTokens { get; protected set; }
+    public decimal? InputCostPer1MTokens { get; protected set; }
+    public decimal? OutputCostPer1MTokens { get; protected set; }
     public bool IsActive { get; protected set; }
     
     public string? EmbedderConfigJson { get; protected set; }
     public string? VectorStoreConfigJson { get; protected set; }
+    public string? EnabledMCPToolsJson { get; protected set; }
     
     /// <summary>
     /// Collection of AI model configurations for different capabilities.
@@ -78,12 +79,12 @@ public class Workspace : FullAuditedAggregateRoot<Guid>, IMultiTenant
         float temperature,
         int maxTokens,
         OpenAIApiMode openAIApiMode = OpenAIApiMode.ChatCompletions,
-        decimal? inputCostPer1KTokens = null,
-        decimal? outputCostPer1KTokens = null
+        decimal? inputCostPer1MTokens = null,
+        decimal? outputCostPer1MTokens = null
     )
     {
-        ValidatePricing(inputCostPer1KTokens, nameof(inputCostPer1KTokens));
-        ValidatePricing(outputCostPer1KTokens, nameof(outputCostPer1KTokens));
+        ValidatePricing(inputCostPer1MTokens, nameof(inputCostPer1MTokens));
+        ValidatePricing(outputCostPer1MTokens, nameof(outputCostPer1MTokens));
 
         DefaultModel = model;
         ApiKey = apiKey;
@@ -92,8 +93,8 @@ public class Workspace : FullAuditedAggregateRoot<Guid>, IMultiTenant
         Temperature = temperature;
         MaxTokens = maxTokens;
         OpenAIApiMode = openAIApiMode;
-        InputCostPer1KTokens = inputCostPer1KTokens;
-        OutputCostPer1KTokens = outputCostPer1KTokens;
+        InputCostPer1MTokens = inputCostPer1MTokens;
+        OutputCostPer1MTokens = outputCostPer1MTokens;
     }
     
     /// <summary>
@@ -107,8 +108,8 @@ public class Workspace : FullAuditedAggregateRoot<Guid>, IMultiTenant
         string? configurationJson = null,
         int priority = 0,
         OpenAIApiMode? openAIApiMode = null,
-        decimal? inputCostPer1KTokens = null,
-        decimal? outputCostPer1KTokens = null
+        decimal? inputCostPer1MTokens = null,
+        decimal? outputCostPer1MTokens = null
     )
     {
         var config = new AIModelConfiguration(
@@ -126,8 +127,8 @@ public class Workspace : FullAuditedAggregateRoot<Guid>, IMultiTenant
             configurationJson,
             priority,
             openAIApiMode,
-            inputCostPer1KTokens,
-            outputCostPer1KTokens);
+            inputCostPer1MTokens,
+            outputCostPer1MTokens);
         
         _modelConfigurations.Add(config);
         return config;
@@ -168,6 +169,11 @@ public class Workspace : FullAuditedAggregateRoot<Guid>, IMultiTenant
     public void SetVectorStoreConfig(string? configJson)
     {
         VectorStoreConfigJson = configJson;
+    }
+
+    public void SetEnabledMCPTools(string? toolsJson)
+    {
+        EnabledMCPToolsJson = toolsJson;
     }
     
     public void Activate() => IsActive = true;

@@ -41,7 +41,8 @@ public class CalendarSnapshotCache : ICalendarSnapshotCache, ITransientDependenc
 
     public virtual async Task RemoveAsync(Guid calendarId, Guid? tenantId = null, CancellationToken cancellationToken = default)
     {
-        await _cache.RemoveAsync(BuildCacheKey(calendarId, tenantId ?? _currentTenant.Id), token: cancellationToken);
+        var cacheKey = BuildCacheKey(calendarId, tenantId ?? _currentTenant.Id);
+        await _cache.RemoveAsync(cacheKey, token: cancellationToken);
     }
 
     protected virtual async Task<CalendarSnapshot> LoadAsync(Guid calendarId, CancellationToken cancellationToken)

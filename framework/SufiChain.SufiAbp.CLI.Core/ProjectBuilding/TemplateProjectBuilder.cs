@@ -81,7 +81,7 @@ public class TemplateProjectBuilder
         }
         
         // Step 7: Configure architecture based on SolutionKind + Tiered
-        if (args.SolutionKind == SolutionKind.Single)
+        if (args.SolutionKind == SolutionKind.WebApp)
         {
             pipeline.AddStep(new ConfigureSingleStep());
         }
@@ -92,7 +92,7 @@ public class TemplateProjectBuilder
         }
         else
         {
-            // Layered non-tiered: single WebApp host with direct DB access
+            // Layered non-tiered: WebApp host plus HttpApi.Host
             pipeline.AddStep(new ConfigureLayeredNonTieredStep());
         }
         

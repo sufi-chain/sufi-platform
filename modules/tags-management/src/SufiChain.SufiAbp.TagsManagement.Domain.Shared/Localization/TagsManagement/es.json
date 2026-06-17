@@ -1,0 +1,8 @@
+{
+  "culture": "es",
+  "texts": {
+    "Permission:TagsManagement": "Gestión de etiquetas",
+    "Permission:TagsManagement.Tags": "Etiquetas",
+    "Permission:TagsManagement.TagLinks": "Enlaces de etiquetas"
+  }
+}

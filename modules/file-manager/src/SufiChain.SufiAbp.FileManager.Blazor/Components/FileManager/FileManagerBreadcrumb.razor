@@ -1,3 +1,4 @@
+@inherits FileManagerComponentBase
 <nav class="fm-breadcrumb" aria-label="Folder path">
     <ol class="breadcrumb mb-0">
         @foreach (var item in Breadcrumbs)
@@ -8,14 +9,14 @@
                 {
                     <span class="last-item">
                         <SbIcon Name="@(item.Icon ?? "folder")" Class="me-1" />
-                        @item.Name
+                        @GetBreadcrumbDisplayName(item)
                     </span>
                 }
                 else
                 {
                     <a href="javascript:void(0)" @onclick="@(() => OnNavigate.InvokeAsync(item))" @onclick:preventDefault>
                         <SbIcon Name="@(item.Icon ?? "folder")" Class="me-1" />
-                        @item.Name
+                    @GetBreadcrumbDisplayName(item)
                     </a>
                 }
             </li>
@@ -26,4 +27,18 @@
 @code {
     [Parameter] public List<BreadcrumbItemDto> Breadcrumbs { get; set; } = new();
     [Parameter] public EventCallback<BreadcrumbItemDto> OnNavigate { get; set; }
+
+    private string GetBreadcrumbDisplayName(BreadcrumbItemDto item)
+    {
+        var structureKey = item.Path.Split('/', StringSplitOptions.RemoveEmptyEntries).FirstOrDefault();
+        if (!string.IsNullOrWhiteSpace(structureKey) && item.Path.Trim('/') == structureKey)
+        {
+            var displayName = L[$"Structure:{structureKey}:DisplayName"].Value;
+            return string.IsNullOrWhiteSpace(displayName) || displayName == $"Structure:{structureKey}:DisplayName"
+                ? item.Name
+                : displayName;
+        }
+
+        return item.Name;
+    }
 }

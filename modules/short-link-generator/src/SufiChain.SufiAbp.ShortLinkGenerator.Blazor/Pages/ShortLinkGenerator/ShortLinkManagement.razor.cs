@@ -2,11 +2,13 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Web;
 using Microsoft.JSInterop;
 using SufiChain.SufiBlazor.Components.Data;
 using SufiChain.SufiAbp.ShortLinkGenerator.Permissions;
 using SufiChain.SufiBlazor.Contracts.Data;
 using Microsoft.AspNetCore.Authorization;
+using SufiChain.SufiAbp.UI.Layout;
 
 namespace SufiChain.SufiAbp.ShortLinkGenerator.Blazor.Pages.ShortLinkGenerator;
 
@@ -14,6 +16,7 @@ public partial class ShortLinkManagementBase : ShortLinkGeneratorComponentBase
 {
     [Inject] protected IShortUrlAppService ShortUrlAppService { get; set; } = null!;
     [Inject] protected IJSRuntime JsRuntime { get; set; } = null!;
+    [Inject] protected IPageLayout PageLayout { get; set; } = default!;
 
     protected IReadOnlyList<ShortUrlDto> ShortUrlList { get; set; } = Array.Empty<ShortUrlDto>();
     protected int TotalCount { get; set; }
@@ -22,6 +25,7 @@ public partial class ShortLinkManagementBase : ShortLinkGeneratorComponentBase
     protected string CurrentSorting { get; set; } = string.Empty;
     protected string FilterText { get; set; } = string.Empty;
     protected bool IsLoading { get; set; }
+    protected bool HasActiveFilters => !string.IsNullOrWhiteSpace(FilterText);
 
     protected CreateShortUrlDto NewEntity { get; set; } = new();
     protected UpdateShortUrlDto EditingEntity { get; set; } = new();
@@ -52,9 +56,15 @@ public partial class ShortLinkManagementBase : ShortLinkGeneratorComponentBase
 
     protected override async Task OnInitializedAsync()
     {
+        SetupPageLayout();
         await SetPermissionsAsync();
         await GetShortUrlsAsync();
         await base.OnInitializedAsync();
+    }
+
+    protected virtual void SetupPageLayout()
+    {
+        PageLayout.Title = L["ShortLinks"];
     }
 
     protected virtual async Task SetPermissionsAsync()
@@ -119,6 +129,14 @@ public partial class ShortLinkManagementBase : ShortLinkGeneratorComponentBase
         FilterText = string.Empty;
         PageIndex = 0;
         await GetShortUrlsAsync();
+    }
+
+    protected virtual async Task HandleFilterKeyDown(KeyboardEventArgs args)
+    {
+        if (args.Key == "Enter")
+        {
+            await ApplyFiltersAsync();
+        }
     }
 
     protected virtual async Task RefreshAsync()

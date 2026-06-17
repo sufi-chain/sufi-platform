@@ -31,7 +31,7 @@ public interface ITemplateInfo
     bool SupportsTiered { get; }
     
     /// <summary>
-    /// Whether the template supports single architecture.
+    /// Whether the template supports WebApp architecture.
     /// </summary>
     bool SupportsSingle { get; }
     

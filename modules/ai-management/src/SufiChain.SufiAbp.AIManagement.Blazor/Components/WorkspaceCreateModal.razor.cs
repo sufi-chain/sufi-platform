@@ -23,8 +23,8 @@ public partial class WorkspaceCreateModal : AIManagementComponentBase
     private CreateWorkspaceDto _model = new();
     private string _temperatureText = "0.7";
     private string _maxTokensText = "2000";
-    private string _inputCostPer1KTokensText = string.Empty;
-    private string _outputCostPer1KTokensText = string.Empty;
+    private string _inputCostPer1MTokensText = string.Empty;
+    private string _outputCostPer1MTokensText = string.Empty;
     private List<OpenAIModelDto> _availableModels = new();
     private int _activeTab;
     private bool _wasOpen;
@@ -50,8 +50,8 @@ public partial class WorkspaceCreateModal : AIManagementComponentBase
         };
         _temperatureText = "0.7";
         _maxTokensText = "2000";
-        _inputCostPer1KTokensText = string.Empty;
-        _outputCostPer1KTokensText = string.Empty;
+        _inputCostPer1MTokensText = string.Empty;
+        _outputCostPer1MTokensText = string.Empty;
         _availableModels = new List<OpenAIModelDto>();
         _activeTab = 0;
     }
@@ -192,20 +192,20 @@ public partial class WorkspaceCreateModal : AIManagementComponentBase
 
     private async Task<bool> TryApplyPricingAsync()
     {
-        if (!TryParseNullableDecimal(_inputCostPer1KTokensText, out var inputCost))
+        if (!TryParseNullableDecimal(_inputCostPer1MTokensText, out var inputCost))
         {
-            await Message.ErrorAsync(L["InputCostPer1KTokensMustBeNonNegative"]);
+            await Message.ErrorAsync(L["InputCostPer1MTokensMustBeNonNegative"]);
             return false;
         }
 
-        if (!TryParseNullableDecimal(_outputCostPer1KTokensText, out var outputCost))
+        if (!TryParseNullableDecimal(_outputCostPer1MTokensText, out var outputCost))
         {
-            await Message.ErrorAsync(L["OutputCostPer1KTokensMustBeNonNegative"]);
+            await Message.ErrorAsync(L["OutputCostPer1MTokensMustBeNonNegative"]);
             return false;
         }
 
-        _model.InputCostPer1KTokens = inputCost;
-        _model.OutputCostPer1KTokens = outputCost;
+        _model.InputCostPer1MTokens = inputCost;
+        _model.OutputCostPer1MTokens = outputCost;
         return true;
     }
 

@@ -6,39 +6,42 @@ using System.Text.RegularExpressions;
 namespace SufiChain.SufiAbp.CLI.ProjectBuilding.Steps;
 
 /// <summary>
-/// Configures the solution for single (non-tiered) architecture.
-/// In single mode, Blazor.WebApp hosts both the UI and API directly with database access.
+/// Configures the solution for WebApp (non-tiered) architecture.
+/// In WebApp mode, Blazor.WebApp hosts both the UI and API directly with database access.
 /// </summary>
 public class ConfigureSingleStep : ProjectBuildPipelineStep
 {
-    public override string Description => "Configuring single architecture...";
+    public override string Description => "Configuring WebApp architecture...";
 
     public override Task ExecuteAsync(ProjectBuildContext context)
     {
         if (context.Args.IsTiered)
             return Task.CompletedTask;
 
-        // Single architecture merges API into Blazor host
+        // WebApp architecture merges API into Blazor host
+        context.Symbols.Add("webapp");
+        context.Symbols.Add("arch:webapp");
         context.Symbols.Add("single");
+        context.Symbols.Add("arch:single");
 
         // Remove HttpApi.Host project - Blazor.WebApp will host the API
         var httpApiHostProject = $"{context.Args.SolutionName}.HttpApi.Host";
         context.ProjectsToRemove.Add(httpApiHostProject);
 
-        // Remove HttpApi.Client since we don't need HTTP client in single mode
+        // Remove HttpApi.Client since we don't need HTTP client in WebApp mode
         var httpApiClientProject = $"{context.Args.SolutionName}.HttpApi.Client";
         context.ProjectsToRemove.Add(httpApiClientProject);
 
         // Update Blazor.WebApp csproj to include direct references
         UpdateBlazorWebAppCsproj(context);
 
-        // Update the Blazor.WebApp module for single mode
+        // Update the Blazor.WebApp module for WebApp mode
         UpdateBlazorWebAppModule(context);
 
         // Ensure the WebAssembly client does not keep references to the removed HttpApi.Client project.
         UpdateBlazorWebAppClientForSingle(context);
 
-        // Update appsettings.json for single mode
+        // Update appsettings.json for WebApp mode
         UpdateAppSettings(context);
 
         return Task.CompletedTask;
@@ -115,9 +118,9 @@ public class ConfigureSingleStep : ProjectBuildPipelineStep
             "\n"
         );
 
-        // Add single-mode project references (Application, HttpApi, Database)
+        // Add WebApp-mode project references (Application, HttpApi, Database)
         var additionalRefs = $@"
-    <!-- Single mode: Direct application and database access -->
+    <!-- WebApp mode: Direct application and database access -->
     <ProjectReference Include=""..\{solutionName}.Application\{solutionName}.Application.csproj"" />
     <ProjectReference Include=""..\{solutionName}.HttpApi\{solutionName}.HttpApi.csproj"" />
     <ProjectReference Include=""..\{solutionName}.{dbProvider}\{solutionName}.{dbProvider}.csproj"" />";
@@ -134,9 +137,9 @@ public class ConfigureSingleStep : ProjectBuildPipelineStep
             );
         }
 
-        // Add single-mode packages (OpenIddict for auth server, AspNetCore.Mvc for API)
+        // Add WebApp-mode packages (OpenIddict for auth server, AspNetCore.Mvc for API)
         var additionalPackages = @"
-	    <!-- Single mode: Auth server and API hosting -->
+	    <!-- WebApp mode: Auth server and API hosting -->
 	    <PackageReference Include=""SufiChain.SufiAbp.OpenIddict.AspNetCore"" Version=""$(SufiVersion)"" />
 	    <PackageReference Include=""SufiChain.SufiAbp.Identity.AspNetCore"" Version=""$(SufiVersion)"" />";
 
@@ -179,7 +182,7 @@ public class ConfigureSingleStep : ProjectBuildPipelineStep
         content = Regex.Replace(content, @",?\s*typeof\(AbpAspNetCoreAuthenticationOpenIdConnectModule\)", "");
         content = Regex.Replace(content, @",?\s*typeof\(AbpHttpClientIdentityModelWebModule\)", "");
 
-        // Add single-mode module dependencies only when the template does not already carry them.
+        // Add WebApp-mode module dependencies only when the template does not already carry them.
         var singleModeDeps = $@"
     typeof({projectName}ApplicationModule),
     typeof({projectName}HttpApiModule),
@@ -195,7 +198,7 @@ public class ConfigureSingleStep : ProjectBuildPipelineStep
             );
         }
 
-        // Add using statements for single mode
+        // Add using statements for WebApp mode
         var singleModeUsings = $@"using {solutionName}.{dbProvider};
 		";
 
@@ -280,7 +283,7 @@ public class ConfigureSingleStep : ProjectBuildPipelineStep
         {
             var content = Encoding.UTF8.GetString(context.Files[file]);
 
-            // Remove RemoteServices configuration - not needed in single mode
+            // Remove RemoteServices configuration - not needed in WebApp mode
             content = Regex.Replace(
                 content,
                 @"\s*""RemoteServices"":\s*\{[^}]+\},?",

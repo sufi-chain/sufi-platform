@@ -16,6 +16,10 @@ public interface IWorkspaceAppService : IApplicationService
     Task<List<OpenAIModelDto>> GetAvailableModelsAsync(GetOpenAIModelsInput input);
 
     Task TestConnectionAsync(TestWorkspaceConnectionInput input);
+
+    Task<WorkspaceMCPToolConfigurationDto> GetMCPToolConfigurationAsync(Guid id);
+
+    Task UpdateMCPToolConfigurationAsync(Guid id, UpdateWorkspaceMCPToolConfigurationDto input);
     
     Task DeleteAsync(Guid id);
 }

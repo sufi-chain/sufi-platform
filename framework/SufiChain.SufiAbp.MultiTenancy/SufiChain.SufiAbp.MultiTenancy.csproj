@@ -5,6 +5,9 @@
     <RootNamespace>SufiChain.SufiAbp.MultiTenancy</RootNamespace>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Volo.Abp.MultiTenancy" Version="$(AbpVersion)"/>
+    <PackageReference Include="Volo.Abp.MultiTenancy" Version="$(AbpVersion)" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\SufiChain.SufiAbp.Core\SufiChain.SufiAbp.Core.csproj" />
   </ItemGroup>
 </Project>

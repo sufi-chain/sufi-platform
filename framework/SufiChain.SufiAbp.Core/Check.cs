@@ -16,4 +16,19 @@ public static class Check
     {
         return Volo.Abp.Check.NotNullOrWhiteSpace(value, parameterName, maxLength);
     }
+
+    public static string NotNullOrEmpty(string? value, string parameterName, int maxLength = int.MaxValue)
+    {
+        return Volo.Abp.Check.NotNullOrEmpty(value, parameterName, maxLength);
+    }
+
+    public static ICollection<T> NotNullOrEmpty<T>(ICollection<T>? value, string parameterName)
+    {
+        return Volo.Abp.Check.NotNullOrEmpty(value, parameterName);
+    }
+
+    public static string? Length(string? value, string parameterName, int maxLength, int minLength = 0)
+    {
+        return Volo.Abp.Check.Length(value, parameterName, maxLength, minLength);
+    }
 }

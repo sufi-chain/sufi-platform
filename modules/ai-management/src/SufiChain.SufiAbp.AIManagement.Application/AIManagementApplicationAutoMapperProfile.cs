@@ -1,6 +1,7 @@
 using Riok.Mapperly.Abstractions;
 using SufiChain.SufiAbp.AIManagement.RAG;
 using SufiChain.SufiAbp.AIManagement.Workspaces;
+using System.Text.Json;
 using Volo.Abp.Mapperly;
 
 namespace SufiChain.SufiAbp.AIManagement;
@@ -12,16 +13,18 @@ public partial class WorkspaceToWorkspaceDtoMapper : MapperBase<Workspace, Works
     [MapperIgnoreTarget(nameof(WorkspaceDto.HasVectorStoreConfig))]
     [MapperIgnoreTarget(nameof(WorkspaceDto.HasApiKey))]
     [MapperIgnoreTarget(nameof(WorkspaceDto.OpenAIApiMode))]
-    [MapperIgnoreTarget(nameof(WorkspaceDto.InputCostPer1KTokens))]
-    [MapperIgnoreTarget(nameof(WorkspaceDto.OutputCostPer1KTokens))]
+    [MapperIgnoreTarget(nameof(WorkspaceDto.InputCostPer1MTokens))]
+    [MapperIgnoreTarget(nameof(WorkspaceDto.OutputCostPer1MTokens))]
+    [MapperIgnoreTarget(nameof(WorkspaceDto.EnabledMCPToolCount))]
     public override partial WorkspaceDto Map(Workspace source);
 
     [MapperIgnoreTarget(nameof(WorkspaceDto.HasEmbedderConfig))]
     [MapperIgnoreTarget(nameof(WorkspaceDto.HasVectorStoreConfig))]
     [MapperIgnoreTarget(nameof(WorkspaceDto.HasApiKey))]
     [MapperIgnoreTarget(nameof(WorkspaceDto.OpenAIApiMode))]
-    [MapperIgnoreTarget(nameof(WorkspaceDto.InputCostPer1KTokens))]
-    [MapperIgnoreTarget(nameof(WorkspaceDto.OutputCostPer1KTokens))]
+    [MapperIgnoreTarget(nameof(WorkspaceDto.InputCostPer1MTokens))]
+    [MapperIgnoreTarget(nameof(WorkspaceDto.OutputCostPer1MTokens))]
+    [MapperIgnoreTarget(nameof(WorkspaceDto.EnabledMCPToolCount))]
     public override partial void Map(Workspace source, WorkspaceDto destination);
 
     public override void AfterMap(Workspace source, WorkspaceDto destination)
@@ -30,8 +33,26 @@ public partial class WorkspaceToWorkspaceDtoMapper : MapperBase<Workspace, Works
         destination.HasEmbedderConfig = !string.IsNullOrEmpty(source.EmbedderConfigJson);
         destination.HasVectorStoreConfig = !string.IsNullOrEmpty(source.VectorStoreConfigJson);
         destination.OpenAIApiMode = source.OpenAIApiMode;
-        destination.InputCostPer1KTokens = source.InputCostPer1KTokens;
-        destination.OutputCostPer1KTokens = source.OutputCostPer1KTokens;
+        destination.InputCostPer1MTokens = source.InputCostPer1MTokens;
+        destination.OutputCostPer1MTokens = source.OutputCostPer1MTokens;
+        destination.EnabledMCPToolCount = CountEnabledMCPTools(source.EnabledMCPToolsJson);
+    }
+
+    private static int CountEnabledMCPTools(string? enabledMCPToolsJson)
+    {
+        if (string.IsNullOrWhiteSpace(enabledMCPToolsJson))
+        {
+            return 0;
+        }
+
+        try
+        {
+            return JsonSerializer.Deserialize<List<string>>(enabledMCPToolsJson)?.Count ?? 0;
+        }
+        catch
+        {
+            return 0;
+        }
     }
 }
 

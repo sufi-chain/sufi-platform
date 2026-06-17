@@ -30,9 +30,7 @@
                     }
                     else
                     {
-                        <LayoutView Layout="ThemeOptions.Value.Layout">
-                            <SufiAbpErrorPage StatusCode="403" Title="@L["NotAuthorized"]" Message="@L["NotAuthorizedMessage"]" />
-                        </LayoutView>
+                         <SufiAbpErrorPage StatusCode="403" Title="@L["NotAuthorized"]" Message="@L["NotAuthorizedMessage"]" />
                     }
                 </NotAuthorized>
             </AuthorizeRouteView>

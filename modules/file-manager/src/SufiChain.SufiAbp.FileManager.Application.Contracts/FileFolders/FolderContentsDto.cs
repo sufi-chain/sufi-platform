@@ -12,7 +12,7 @@ public class FolderContentsDto
     /// <summary>
     /// Current folder information
     /// </summary>
-    public FolderTreeNodeDto CurrentFolder { get; set; } = default!;
+    public FolderTreeNodeDto? CurrentFolder { get; set; }
 
     /// <summary>
     /// Parent folder (null if at root)

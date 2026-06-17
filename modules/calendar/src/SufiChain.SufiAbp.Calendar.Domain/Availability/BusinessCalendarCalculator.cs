@@ -1,8 +1,9 @@
 using SufiChain.SufiAbp.Calendar.Calendars;
+using SufiChain.SufiAbp.DependencyInjection;
 
 namespace SufiChain.SufiAbp.Calendar.Availability;
 
-public class BusinessCalendarCalculator
+public class BusinessCalendarCalculator : ITransientDependency
 {
     private static readonly TimeSpan SearchStep = TimeSpan.FromMinutes(1);
 

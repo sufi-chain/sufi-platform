@@ -9,6 +9,8 @@ using Volo.Abp.Security.Encryption;
 using SufiChain.SufiAbp.AIManagement.Permissions;
 using SufiChain.SufiAbp.Application.Dtos;
 using Microsoft.Extensions.Logging;
+using SufiChain.SufiAbp.AIManagement.MCP.Abstractions;
+using SufiChain.SufiAbp.AIManagement.MCP.Tools;
 
 namespace SufiChain.SufiAbp.AIManagement.Workspaces;
 
@@ -22,17 +24,20 @@ public class WorkspaceAppService : ApplicationService, IWorkspaceAppService
     private readonly WorkspaceManager _workspaceManager;
     private readonly IStringEncryptionService _stringEncryptor;
     private readonly IHttpClientFactory _httpClientFactory;
+    private readonly IMCPToolRegistry _toolRegistry;
 
     public WorkspaceAppService(
         IWorkspaceRepository workspaceRepository,
         WorkspaceManager workspaceManager,
         IStringEncryptionService stringEncryptor,
-        IHttpClientFactory httpClientFactory)
+        IHttpClientFactory httpClientFactory,
+        IMCPToolRegistry toolRegistry)
     {
         _workspaceRepository = workspaceRepository;
         _workspaceManager = workspaceManager;
         _stringEncryptor = stringEncryptor;
         _httpClientFactory = httpClientFactory;
+        _toolRegistry = toolRegistry;
     }
 
     public async Task<PagedResultDto<WorkspaceDto>> GetListAsync(PagedAndSortedResultRequestDto input)
@@ -77,8 +82,8 @@ public class WorkspaceAppService : ApplicationService, IWorkspaceAppService
             input.Temperature,
             input.MaxTokens,
             input.OpenAIApiMode,
-            input.InputCostPer1KTokens,
-            input.OutputCostPer1KTokens
+            input.InputCostPer1MTokens,
+            input.OutputCostPer1MTokens
         );
 
         if (input.EmbedderConfig != null)
@@ -120,8 +125,8 @@ public class WorkspaceAppService : ApplicationService, IWorkspaceAppService
             input.Temperature,
             input.MaxTokens,
             input.OpenAIApiMode,
-            input.InputCostPer1KTokens,
-            input.OutputCostPer1KTokens
+            input.InputCostPer1MTokens,
+            input.OutputCostPer1MTokens
         );
 
         if (input.IsActive)
@@ -269,6 +274,45 @@ public class WorkspaceAppService : ApplicationService, IWorkspaceAppService
         );
     }
 
+    [Authorize(AIManagementPermissions.Workspaces.Edit)]
+    public async Task<WorkspaceMCPToolConfigurationDto> GetMCPToolConfigurationAsync(Guid id)
+    {
+        var workspace = await _workspaceRepository.GetAsync(id);
+        var enabledToolNames = ReadEnabledMCPToolNames(workspace);
+        var tools = await _toolRegistry.GetAllToolsForWorkspaceAsync(workspace.Name);
+
+        return new WorkspaceMCPToolConfigurationDto
+        {
+            AvailableTools = tools.Select(tool => new MCPToolDto
+            {
+                Name = tool.Name,
+                Description = tool.Description,
+                ParameterSchema = tool.ParameterSchema,
+                ToolType = tool.ToolType.ToString(),
+                Source = tool.Source
+            }).ToList(),
+            EnabledToolNames = enabledToolNames
+        };
+    }
+
+    [Authorize(AIManagementPermissions.Workspaces.Edit)]
+    public async Task UpdateMCPToolConfigurationAsync(Guid id, UpdateWorkspaceMCPToolConfigurationDto input)
+    {
+        var workspace = await _workspaceRepository.GetAsync(id);
+        var tools = await _toolRegistry.GetAllToolsForWorkspaceAsync(workspace.Name);
+        var availableToolNames = tools.Select(tool => tool.Name).ToHashSet();
+        var enabledToolNames = input.EnabledToolNames
+            .Where(availableToolNames.Contains)
+            .Distinct()
+            .OrderBy(toolName => toolName)
+            .ToList();
+
+        workspace.SetEnabledMCPTools(JsonSerializer.Serialize(enabledToolNames));
+
+        await _workspaceRepository.UpdateAsync(workspace);
+        await CurrentUnitOfWork.SaveChangesAsync();
+    }
+
     private string? EncryptApiKey(string? apiKey)
     {
         if (string.IsNullOrWhiteSpace(apiKey))
@@ -294,6 +338,23 @@ public class WorkspaceAppService : ApplicationService, IWorkspaceAppService
         {
             // If decryption fails, assume it's already plain text (backward compatibility)
             return encryptedApiKey;
+        }
+    }
+
+    private static List<string> ReadEnabledMCPToolNames(Workspace workspace)
+    {
+        if (string.IsNullOrWhiteSpace(workspace.EnabledMCPToolsJson))
+        {
+            return new List<string>();
+        }
+
+        try
+        {
+            return JsonSerializer.Deserialize<List<string>>(workspace.EnabledMCPToolsJson) ?? new List<string>();
+        }
+        catch
+        {
+            return new List<string>();
         }
     }
 

@@ -10,12 +10,15 @@
     else
     {
         <ul class="fm-tree-root">
-            <FolderTreeNode 
-                Node="@_rootNode"
-                SelectedFolderId="@SelectedFolderId"
-                OnSelect="@HandleNodeSelect"
-                OnToggle="@HandleNodeToggle"
-                OnLoadChildren="@LoadChildrenAsync" />
+            @foreach (var node in _rootNodes)
+            {
+                <FolderTreeNode
+                    Node="@node"
+                    SelectedFolderId="@SelectedFolderId"
+                    OnSelect="@HandleNodeSelect"
+                    OnToggle="@HandleNodeToggle"
+                    OnLoadChildren="@LoadChildrenAsync" />
+            }
         </ul>
     }
 </div>
@@ -29,7 +32,7 @@
     /// </summary>
     [Parameter] public int RefreshTrigger { get; set; }
 
-    private FolderTreeNodeDto _rootNode = new();
+    private List<FolderTreeNodeDto> _rootNodes = new();
     private bool _isLoading = true;
     private int _lastRefreshTrigger = -1;
 
@@ -52,38 +55,15 @@
         _isLoading = true;
         try
         {
-            var rootFolders = await FolderAppService.GetTreeAsync();
-            _rootNode = new FolderTreeNodeDto
+            _rootNodes = await FolderAppService.GetTreeAsync();
+            foreach (var node in _rootNodes)
             {
-                Id = null,
-                Name = "Root",
-                Path = "/",
-                Type = FolderTypeDto.TenantRoot,
-                Icon = "home",
-                IsVirtual = true,
-                CanWrite = true,
-                CanDelete = false,
-                HasChildren = true,
-                IsExpanded = true,
-                Children = rootFolders
-            };
+                node.IsExpanded = true;
+            }
         }
         catch (Exception)
         {
-            _rootNode = new FolderTreeNodeDto
-            {
-                Id = null,
-                Name = "Root",
-                Path = "/",
-                Type = FolderTypeDto.TenantRoot,
-                Icon = "home",
-                IsVirtual = true,
-                CanWrite = true,
-                CanDelete = false,
-                HasChildren = true,
-                IsExpanded = true,
-                Children = new List<FolderTreeNodeDto>()
-            };
+            _rootNodes = new List<FolderTreeNodeDto>();
         }
         finally
         {
@@ -100,10 +80,7 @@
 
         try
         {
-            // Root node (Id == null): get root-level folders via (null, null)
-            var children = node.Id == null
-                ? await FolderAppService.GetChildrenAsync(null, null)
-                : await FolderAppService.GetChildrenAsync(node.Id, node.Path);
+            var children = await FolderAppService.GetChildrenAsync(node.Id, node.Path);
             node.Children = children;
             StateHasChanged();
         }

@@ -13,9 +13,10 @@ public class WorkspaceDto : FullAuditedEntityDto<Guid>
     public float Temperature { get; set; }
     public int MaxTokens { get; set; }
     public OpenAIApiMode OpenAIApiMode { get; set; }
-    public decimal? InputCostPer1KTokens { get; set; }
-    public decimal? OutputCostPer1KTokens { get; set; }
+    public decimal? InputCostPer1MTokens { get; set; }
+    public decimal? OutputCostPer1MTokens { get; set; }
     public bool IsActive { get; set; }
     public bool HasEmbedderConfig { get; set; }
     public bool HasVectorStoreConfig { get; set; }
+    public int EnabledMCPToolCount { get; set; }
 }

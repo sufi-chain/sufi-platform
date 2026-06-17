@@ -19,7 +19,7 @@ public class Program
                 .WithExample("new", "MyCompany.MyProject")
                 .WithExample("new", "MyCompany.MyProject", "-d", "ef")
                 .WithExample("new", "MyCompany.MyProject", "-d", "mongo", "--tiered")
-                .WithExample("new", "MyCompany.MyProject", "-d", "ef", "--single");
+                .WithExample("new", "MyCompany.MyProject", "-d", "ef", "--solution-kind", "webapp");
             
             config.AddCommand<ListCommand>("list")
                 .WithDescription("Lists available templates.");

@@ -53,55 +53,16 @@ public class AIManagementMenuContributor : IMenuContributor
             ).RequirePermissions(AIManagementPermissions.Workspaces.Default));
         }
 
-        if (await featureChecker.IsEnabledAsync(SufiAbpAIFeatures.Workspaces))
-        {
-            var configurationMenu = new ApplicationMenuItem(
-                AIManagementMenus.ConfigurationGroup,
-                l["Menu:Configuration"],
-                icon: "sliders",
-                order: 2
-            ).RequirePermissions(AIManagementPermissions.AI.ManageConfigurations);
-
-            configurationMenu.AddItem(new ApplicationMenuItem(
-                AIManagementMenus.ModelConfigurations,
-                l["Menu:ModelConfigurations"],
-                url: "/admin/ai-management/model-configurations",
-                icon: "model",
-                order: 1
-            ).RequirePermissions(AIManagementPermissions.AI.ManageConfigurations));
-
-            aiManagementMenu.AddItem(configurationMenu);
-        }
-
         if (await featureChecker.IsEnabledAsync(SufiAbpAIFeatures.Chat))
         {
             var testingMenu = new ApplicationMenuItem(
-                AIManagementMenus.TestingGroup,
-                l["Menu:Testing"],
-                icon: "flask",
-                order: 3
-            ).RequirePermissions(AIManagementPermissions.TestChat.Default);
-
-            testingMenu.AddItem(new ApplicationMenuItem(
                 AIManagementMenus.TestChat,
-                l["Menu:TestChat"],
+                l["Menu:Testing"],
                 url: "/admin/ai-management/test-chat",
                 icon: "chat",
                 order: 1
-            ).RequirePermissions(AIManagementPermissions.TestChat.Default));
+            ).RequirePermissions(AIManagementPermissions.TestChat.Default);
 
-            if (await featureChecker.IsEnabledAsync(SufiAbpAIFeatures.Audio) ||
-                await featureChecker.IsEnabledAsync(SufiAbpAIFeatures.Vision) ||
-                await featureChecker.IsEnabledAsync(SufiAbpAIFeatures.Embeddings))
-            {
-                testingMenu.AddItem(new ApplicationMenuItem(
-                    AIManagementMenus.MultiModalTest,
-                    l["Menu:MultiModalTest"],
-                    url: "/admin/ai-management/multimodal-test",
-                    icon: "multimodal",
-                    order: 2
-                ).RequirePermissions(AIManagementPermissions.AI.Chat));
-            }
 
             aiManagementMenu.AddItem(testingMenu);
         }
@@ -196,14 +157,9 @@ public static class AIManagementMenus
     // Standalone items
     public const string Workspaces = GroupName + ".Workspaces";
     
-    // Configuration group
-    public const string ConfigurationGroup = GroupName + ".Configuration";
-    public const string ModelConfigurations = ConfigurationGroup + ".ModelConfigurations";
-    
     // Testing group
     public const string TestingGroup = GroupName + ".Testing";
     public const string TestChat = TestingGroup + ".TestChat";
-    public const string MultiModalTest = TestingGroup + ".MultiModalTest";
     
     // Analytics group
     public const string AnalyticsGroup = GroupName + ".Analytics";

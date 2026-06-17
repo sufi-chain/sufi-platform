@@ -1,4 +1,5 @@
 @page "/short-link/short-links"
+@using SufiChain.SufiAbp.UI.Blazor.Components
 @attribute [Authorize(ShortLinkGeneratorPermissions.ShortLinks.Default)]
 @inherits ShortLinkManagementBase
 
@@ -11,7 +12,7 @@
         </SbButton>
     }
 
-    <SbButton Variant="SbButtonVariant.Outline" OnClick="RefreshAsync">
+    <SbButton Color="SbColor.Primary" Variant="SbButtonVariant.Outline" OnClick="RefreshAsync">
         <StartIcon><SbIcon Name="refresh" /></StartIcon>
         <ChildContent>@L["Refresh"]</ChildContent>
     </SbButton>
@@ -20,25 +21,39 @@
 <SbStack Direction="SbStackDirection.Column" Gap="4">
     <SbCard>
         <ChildContent>
-            <SbStack Gap="4">
-                <SbTextField @bind-Value="FilterText"
-                             Label="@L["Filter"]"
-                             Placeholder="@L["SearchByCodeOrUrl"]"
-                             Clearable="true">
-                    <StartAdornment>
-                        <SbIcon Name="search" />
-                    </StartAdornment>
-                </SbTextField>
-
-                <SbStack Direction="SbStackDirection.Row" Gap="2" Justify="SbJustify.End">
-                    <SbButton Variant="SbButtonVariant.Outline" OnClick="ClearFiltersAsync">
-                        @L["Clear"]
-                    </SbButton>
-                    <SbButton Color="SbColor.Primary" OnClick="ApplyFiltersAsync">
-                        <StartIcon><SbIcon Name="search" /></StartIcon>
-                        <ChildContent>@L["Apply"]</ChildContent>
-                    </SbButton>
+            <SbStack Direction="SbStackDirection.Row" Gap="4" Align="SbAlign.Center" Wrap="true" Justify="@SbJustify.SpaceBetween">
+                <SbStack Direction="SbStackDirection.Row" Gap="2" Wrap="true" Align="SbAlign.Center">
+                    <div class="filter-field" @onkeydown="HandleFilterKeyDown">
+                        <label class="filter-field-label">@L["Filter"]</label>
+                        <SbTextField @bind-Value="FilterText"
+                                     Placeholder="@L["SearchByCodeOrUrl"]"
+                                     Clearable="true">
+                            <StartAdornment>
+                                <SbIcon Name="search" />
+                            </StartAdornment>
+                        </SbTextField>
+                    </div>
+                    <div class="filter-field" style="align-self: flex-end;">
+                        <SbButton Color="SbColor.Primary" OnClick="ApplyFiltersAsync">
+                            <StartIcon><SbIcon Name="search" /></StartIcon>
+                            <ChildContent>@L["Search"]</ChildContent>
+                        </SbButton>
+                    </div>
                 </SbStack>
+                @if (HasActiveFilters)
+                {
+                    <SbStack Direction="SbStackDirection.Column" Gap="1">
+                        <span class="filter-label">
+                            <SbIcon Name="filter" Size="SbSize.Sm" /> @L["Filter"]:
+                        </span>
+                        <SbStack Direction="SbStackDirection.Row" Gap="2" Wrap="true" Align="SbAlign.Center">
+                            <SbButton Size="SbSize.Sm" Variant="SbButtonVariant.Ghost" Color="SbColor.Secondary" OnClick="ClearFiltersAsync">
+                                <StartIcon><SbIcon Name="x" Size="SbSize.Sm" /></StartIcon>
+                                <ChildContent>@L["Clear"]</ChildContent>
+                            </SbButton>
+                        </SbStack>
+                    </SbStack>
+                }
             </SbStack>
         </ChildContent>
     </SbCard>

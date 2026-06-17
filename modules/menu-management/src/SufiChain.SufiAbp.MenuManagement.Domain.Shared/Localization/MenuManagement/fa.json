@@ -1,0 +1,11 @@
+{
+  "culture": "fa",
+  "texts": {
+    "Permission:MenuManagement": "مدیریت منو",
+    "Permission:MenuManagement.Menus": "منوها",
+    "Permission:MenuManagement.Menus.Create": "ایجاد منو",
+    "Permission:MenuManagement.Menus.Edit": "ویرایش منو",
+    "Permission:MenuManagement.Menus.Delete": "حذف منو",
+    "Permission:MenuManagement.Menus.ManageItems": "مدیریت آیتم‌های منو"
+  }
+}

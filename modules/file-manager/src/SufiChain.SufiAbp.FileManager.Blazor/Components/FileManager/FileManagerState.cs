@@ -41,6 +41,11 @@ public class FileManagerState
     public FileViewMode ViewMode { get; set; } = FileViewMode.LargeIcons;
 
     /// <summary>
+    /// Current explorer source mode.
+    /// </summary>
+    public FileExplorerSourceMode SourceMode { get; set; } = FileExplorerSourceMode.DirectoryMap;
+
+    /// <summary>
     /// Navigation history for back/forward
     /// </summary>
     public List<NavigationHistoryItem> History { get; set; } = new();
@@ -108,7 +113,7 @@ public class FileManagerState
     /// <summary>
     /// Check if clipboard has content
     /// </summary>
-    public bool CanPaste => Clipboard?.HasContent == true;
+    public bool CanPaste => SourceMode == FileExplorerSourceMode.DirectoryMap && Clipboard?.HasContent == true;
 
     /// <summary>
     /// Clear selection

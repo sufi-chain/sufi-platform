@@ -23,6 +23,10 @@
     "LoadingFeatures": "جاري تحميل الميزات...",
     "NoFeaturesAvailable": "لا توجد ميزات متاحة",
     "FeaturesResetSuccessfully": "تم إعادة تعيين الميزات بنجاح",
-    "ResetFeaturesConfirmation": "هل أنت متأكد أنك تريد إعادة تعيين جميع الميزات إلى قيمها الافتراضية؟"
+    "ResetFeaturesConfirmation": "هل أنت متأكد أنك تريد إعادة تعيين جميع الميزات إلى قيمها الافتراضية؟",
+    "Permission:FeatureManagement": "إدارة الميزات",
+    "Permission:FeatureManagement.Features": "الميزات",
+    "Permission:FeatureManagement.ManageHostFeatures": "إدارة ميزات المضيف",
+    "Permission:FeatureManagement.ManageTenantFeatures": "إدارة ميزات المستأجر"
   }
 }

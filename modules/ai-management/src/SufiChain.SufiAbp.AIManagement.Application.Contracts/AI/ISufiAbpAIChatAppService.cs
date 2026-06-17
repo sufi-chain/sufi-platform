@@ -8,5 +8,7 @@ public interface ISufiAbpAIChatAppService : IApplicationService
 {
     Task<SufiAbpAIChatResponseDto> SendMessageAsync(SufiAbpAISendChatMessageInput input);
 
+    Task<SufiAbpAIChatResponseDto> SendMessageWithToolsAsync(SufiAbpAISendChatMessageInput input);
+
     IAsyncEnumerable<SufiAbpAIChatResponseDto> StreamMessageAsync(SufiAbpAISendChatMessageInput input);
 }

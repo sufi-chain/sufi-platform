@@ -87,8 +87,8 @@ public class AIModelConfigurationDto : Application.Dtos.EntityDto<Guid>
     public bool IsEnabled { get; set; }
     public int Priority { get; set; }
     public OpenAIApiMode? OpenAIApiMode { get; set; }
-    public decimal? InputCostPer1KTokens { get; set; }
-    public decimal? OutputCostPer1KTokens { get; set; }
+    public decimal? InputCostPer1MTokens { get; set; }
+    public decimal? OutputCostPer1MTokens { get; set; }
     public string? ConfigurationJson { get; set; }
 }
 
@@ -101,8 +101,8 @@ public class CreateAIModelConfigurationDto
     public string? ApiKey { get; set; }
     public string? ConfigurationJson { get; set; }
     public OpenAIApiMode? OpenAIApiMode { get; set; }
-    public decimal? InputCostPer1KTokens { get; set; }
-    public decimal? OutputCostPer1KTokens { get; set; }
+    public decimal? InputCostPer1MTokens { get; set; }
+    public decimal? OutputCostPer1MTokens { get; set; }
     public int Priority { get; set; }
 }
 
@@ -113,8 +113,8 @@ public class UpdateAIModelConfigurationDto
     public string? ApiKey { get; set; }
     public string? ConfigurationJson { get; set; }
     public OpenAIApiMode? OpenAIApiMode { get; set; }
-    public decimal? InputCostPer1KTokens { get; set; }
-    public decimal? OutputCostPer1KTokens { get; set; }
+    public decimal? InputCostPer1MTokens { get; set; }
+    public decimal? OutputCostPer1MTokens { get; set; }
     public int Priority { get; set; }
 }
 

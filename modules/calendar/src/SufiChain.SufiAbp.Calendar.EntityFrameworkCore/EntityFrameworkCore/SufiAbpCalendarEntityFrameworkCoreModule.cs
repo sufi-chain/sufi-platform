@@ -1,6 +1,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using SufiChain.SufiAbp.Calendar.Calendars;
 using SufiChain.SufiAbp.Calendar.EntityFrameworkCore.Repositories;
+using SufiChain.SufiAbp.Calendar.Events;
 using SufiChain.SufiAbp.EntityFrameworkCore;
 using Volo.Abp.Data;
 using Volo.Abp.EntityFrameworkCore;
@@ -20,7 +21,11 @@ public class SufiAbpCalendarEntityFrameworkCoreModule : AbpModule
         {
             options.AddDefaultRepositories<ICalendarDbContext>();
             options.AddRepository<Calendars.Calendar, EfCoreCalendarRepository>();
+            options.AddRepository<CalendarEvent, EfCoreCalendarEventRepository>();
         });
+
+        context.Services.AddTransient<ICalendarRepository, EfCoreCalendarRepository>();
+        context.Services.AddTransient<ICalendarEventRepository, EfCoreCalendarEventRepository>();
 
         Configure<AbpDbConnectionOptions>(options =>
         {

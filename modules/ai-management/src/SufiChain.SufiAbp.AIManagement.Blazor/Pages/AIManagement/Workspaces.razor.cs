@@ -30,6 +30,11 @@ public partial class Workspaces : AIManagementComponentBase
     private bool _showCreateModal;
     private bool _showEditModal;
     private Guid? _editingWorkspaceId;
+    private bool _showModelConfigurationsModal;
+    private Guid? _modelConfigurationsWorkspaceId;
+    private string? _modelConfigurationsWorkspaceName;
+    private bool _showMCPToolsModal;
+    private Guid? _mcpToolsWorkspaceId;
 
     protected override void OnInitialized()
     {
@@ -89,10 +94,23 @@ public partial class Workspaces : AIManagementComponentBase
         _showEditModal = true;
     }
 
+    private void OpenModelConfigurationsModal(WorkspaceDto workspace)
+    {
+        _modelConfigurationsWorkspaceId = workspace.Id;
+        _modelConfigurationsWorkspaceName = workspace.Name;
+        _showModelConfigurationsModal = true;
+    }
+
+    private void OpenMCPToolsModal(WorkspaceDto workspace)
+    {
+        _mcpToolsWorkspaceId = workspace.Id;
+        _showMCPToolsModal = true;
+    }
+
     private async Task OnWorkspaceCreatedAsync()
     {
         _showCreateModal = false;
-        await Message.Success(L["WorkspaceCreatedSuccessfully"]);
+        await Message.SuccessAsync(L["WorkspaceCreatedSuccessfully"]);
         await ExecuteWithLoadingAsync(
             () => _gridRef?.RefreshDataAsync() ?? Task.CompletedTask,
             LoadingKeys.LoadWorkspaces);
@@ -101,7 +119,16 @@ public partial class Workspaces : AIManagementComponentBase
     private async Task OnWorkspaceUpdatedAsync()
     {
         _showEditModal = false;
-        await Message.Success(L["WorkspaceUpdatedSuccessfully"]);
+        await Message.SuccessAsync(L["WorkspaceUpdatedSuccessfully"]);
+        await ExecuteWithLoadingAsync(
+            () => _gridRef?.RefreshDataAsync() ?? Task.CompletedTask,
+            LoadingKeys.LoadWorkspaces);
+    }
+
+    private async Task OnMCPToolsUpdatedAsync()
+    {
+        _showMCPToolsModal = false;
+        await Message.SuccessAsync(L["MCPToolsUpdatedSuccessfully"]);
         await ExecuteWithLoadingAsync(
             () => _gridRef?.RefreshDataAsync() ?? Task.CompletedTask,
             LoadingKeys.LoadWorkspaces);
@@ -121,7 +148,7 @@ public partial class Workspaces : AIManagementComponentBase
         await ExecuteWithLoadingAsync(async () =>
         {
             await WorkspaceAppService.DeleteAsync(workspace.Id);
-            await Message.Success(L["WorkspaceDeletedSuccessfully"]);
+            await Message.SuccessAsync(L["WorkspaceDeletedSuccessfully"]);
             await (_gridRef?.RefreshDataAsync() ?? Task.CompletedTask);
         }, LoadingKeys.DeleteWorkspace);
     }

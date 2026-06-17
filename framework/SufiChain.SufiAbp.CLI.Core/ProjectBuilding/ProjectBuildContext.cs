@@ -81,8 +81,10 @@ public class ProjectBuildContext
             Symbols.Add("tiered");
             Symbols.Add("arch:tiered");
         }
-        else if (Args.SolutionKind == SolutionKind.Single)
+        else if (Args.SolutionKind == SolutionKind.WebApp)
         {
+            Symbols.Add("webapp");
+            Symbols.Add("arch:webapp");
             Symbols.Add("single");
             Symbols.Add("arch:single");
         }

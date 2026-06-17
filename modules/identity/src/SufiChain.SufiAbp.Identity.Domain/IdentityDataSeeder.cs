@@ -63,23 +63,21 @@ public class IdentityDataSeeder : ITransientDependency, IIdentityDataSeeder
                 LookupNormalizer.NormalizeName(adminUserName)
             );
 
-            if (adminUser != null)
+            if (adminUser == null)
             {
-                return result;
+                adminUser = new IdentityUser(
+                    GuidGenerator.Create(),
+                    adminUserName,
+                    adminEmail,
+                    tenantId
+                )
+                {
+                    Name = adminUserName
+                };
+
+                (await UserManager.CreateAsync(adminUser, adminPassword, validatePassword: false)).CheckErrors();
+                result.CreatedAdminUser = true;
             }
-
-            adminUser = new IdentityUser(
-                GuidGenerator.Create(),
-                adminUserName,
-                adminEmail,
-                tenantId
-            )
-            {
-                Name = adminUserName
-            };
-
-            (await UserManager.CreateAsync(adminUser, adminPassword, validatePassword: false)).CheckErrors();
-            result.CreatedAdminUser = true;
 
             //"admin" role
             const string adminRoleName = "admin";
@@ -101,7 +99,36 @@ public class IdentityDataSeeder : ITransientDependency, IIdentityDataSeeder
                 result.CreatedAdminRole = true;
             }
 
-            (await UserManager.AddToRoleAsync(adminUser, adminRoleName)).CheckErrors();
+            //"user" role
+            const string userRoleName = "user";
+            var userRole =
+                await RoleRepository.FindByNormalizedNameAsync(LookupNormalizer.NormalizeName(userRoleName));
+            if (userRole == null)
+            {
+                userRole = new IdentityRole(
+                    GuidGenerator.Create(),
+                    userRoleName,
+                    tenantId
+                )
+                {
+                    IsDefault = true,
+                    IsStatic = true,
+                    IsPublic = true
+                };
+
+                (await RoleManager.CreateAsync(userRole)).CheckErrors();
+                result.CreatedUserRole = true;
+            }
+            else if (!userRole.IsDefault)
+            {
+                userRole.IsDefault = true;
+                (await RoleManager.UpdateAsync(userRole)).CheckErrors();
+            }
+
+            if (!await UserManager.IsInRoleAsync(adminUser, adminRoleName))
+            {
+                (await UserManager.AddToRoleAsync(adminUser, adminRoleName)).CheckErrors();
+            }
 
             return result;
         }

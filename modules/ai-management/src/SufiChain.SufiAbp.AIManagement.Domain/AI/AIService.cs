@@ -458,8 +458,8 @@ public class AIService : DomainService, IAIService, ITransientDependency
                 null,
                 999,
                 workspace.OpenAIApiMode,
-                workspace.InputCostPer1KTokens,
-                workspace.OutputCostPer1KTokens);
+                workspace.InputCostPer1MTokens,
+                workspace.OutputCostPer1MTokens);
         }
 
         var provider = _providers.FirstOrDefault(p => p.ProviderType == workspace.Provider);
@@ -565,17 +565,17 @@ public class AIService : DomainService, IAIService, ITransientDependency
             return new CostCalculationResult(0, false, UsageUnavailable);
         }
 
-        var inputCostPer1KTokens = configuration.InputCostPer1KTokens ?? workspace.InputCostPer1KTokens;
-        var outputCostPer1KTokens = configuration.OutputCostPer1KTokens ?? workspace.OutputCostPer1KTokens;
-        var hasPricing = inputCostPer1KTokens.HasValue || outputCostPer1KTokens.HasValue;
+        var inputCostPer1MTokens = configuration.InputCostPer1MTokens ?? workspace.InputCostPer1MTokens;
+        var outputCostPer1MTokens = configuration.OutputCostPer1MTokens ?? workspace.OutputCostPer1MTokens;
+        var hasPricing = inputCostPer1MTokens.HasValue || outputCostPer1MTokens.HasValue;
 
         if (!hasPricing)
         {
             return new CostCalculationResult(0, false, PricingNotConfigured);
         }
 
-        var estimatedCost = ((inputTokens ?? 0) * (inputCostPer1KTokens ?? 0) +
-                             (outputTokens ?? 0) * (outputCostPer1KTokens ?? 0)) / 1000m;
+        var estimatedCost = ((inputTokens ?? 0) * (inputCostPer1MTokens ?? 0) +
+                             (outputTokens ?? 0) * (outputCostPer1MTokens ?? 0)) / 1000000m;
 
         return new CostCalculationResult(estimatedCost, true, null);
     }

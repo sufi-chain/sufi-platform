@@ -17,6 +17,14 @@ public interface IMCPToolRegistry
     Task<List<IMCPTool>> GetToolsForWorkspaceAsync(
         string workspaceName,
         CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Get all discovered tools for a specific workspace, ignoring workspace enabled-tool selection.
+    /// Used by configuration UI.
+    /// </summary>
+    Task<List<IMCPTool>> GetAllToolsForWorkspaceAsync(
+        string workspaceName,
+        CancellationToken cancellationToken = default);
     
     /// <summary>
     /// Get a specific tool by name for a workspace.

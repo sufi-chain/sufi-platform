@@ -22,9 +22,8 @@
             OnCopy="@HandleCopy"
             OnPaste="@HandlePaste"
             OnViewModeChanged="@HandleViewModeChanged"
+            OnSourceModeChanged="@HandleSourceModeChanged"
             OnSearch="@HandleSearch"
-            FilterStructureKey="@_filterStructureKey"
-            OnStructureFilterChanged="@HandleStructureFilterChanged"
             ShowPropertiesPanel="@ShowPropertiesPanel"
             OnTogglePropertiesPanel="@HandleShowProperties"
             OnOpenFoldersDrawer="@HandleOpenFoldersDrawer" />
@@ -37,7 +36,7 @@
     </div>
 
     <div class="file-manager-content">
-        @if (ShowFolderTree)
+        @if (ShowFolderTree && _state.SourceMode == FileExplorerSourceMode.DirectoryMap)
         {
             @* Desktop: inline tree *@
             <div class="file-manager-tree fm-tree-desktop">
@@ -50,7 +49,7 @@
         }
 
         @* Mobile: tree in drawer *@
-        @if (ShowFolderTree)
+        @if (ShowFolderTree && _state.SourceMode == FileExplorerSourceMode.DirectoryMap)
         {
             <SbDrawer @bind-Open="_foldersDrawerOpen"
                       Placement="SbDrawerPlacement.Start"
@@ -77,7 +76,7 @@
             </SbDrawer>
         }
 
-        <div class="file-manager-view @(ShowFolderTree ? "with-tree" : "")">
+        <div class="file-manager-view @(ShowFolderTree && _state.SourceMode == FileExplorerSourceMode.DirectoryMap ? "with-tree" : "")">
             @if (_state.IsLoading)
             {
                 <div class="file-manager-loading">
@@ -158,8 +157,8 @@
         <ChildContent>
             <FileUploader 
                 FolderPath="@(string.IsNullOrEmpty(_state.CurrentPath) || _state.CurrentPath == "/" ? null : _state.CurrentPath)"
-                ShowStructureSelector="true"
-                StructureKey="@(_filterStructureKey ?? FileStructureKeys.General)"
+                ShowStructureSelector="false"
+                StructureKey="@GetCurrentStructureKey()"
                 AutoConfirm="true"
                 OnUploadCompleted="@OnUploadCompleted" />
         </ChildContent>
@@ -265,7 +264,6 @@
     private bool _disposed = false;
     private int _lastRefreshTrigger;
     private int _treeRefreshTrigger;
-    private string? _filterStructureKey;
 
     // Edit file fields
     private FileItemDto? _editingFile;
@@ -280,7 +278,6 @@
     protected override async Task OnInitializedAsync()
     {
         _state.ViewMode = InitialViewMode;
-        _filterStructureKey = StructureKey;
         _state.NavigateTo(null, "/");
         await RefreshAsync();
         await LoadClipboardState();
@@ -306,13 +303,24 @@
 
         try
         {
+            if (_state.CurrentFolderId == null && _state.CurrentPath == "/" && _state.SourceMode == FileExplorerSourceMode.DirectoryMap)
+            {
+                var rootFolders = await FolderAppService.GetTreeAsync();
+                var firstRoot = rootFolders.FirstOrDefault();
+                if (firstRoot?.Id != null)
+                {
+                    _state.NavigateTo(firstRoot.Id, firstRoot.Path);
+                }
+            }
+
             var input = new GetFolderContentsInput
             {
                 FolderId = _state.CurrentFolderId,
                 VirtualPath = _state.CurrentPath,
                 Sorting = $"{_state.SortField} {(_state.SortDescending ? "DESC" : "ASC")}",
                 Filter = _state.SearchFilter,
-                StructureKey = _filterStructureKey
+                StructureKey = GetCurrentStructureKey(),
+                SourceMode = _state.SourceMode
             };
 
             _state.Contents = await FolderAppService.GetContentsAsync(input);
@@ -340,12 +348,6 @@
         }
     }
 
-    private async Task HandleStructureFilterChanged(string? newValue)
-    {
-        _filterStructureKey = newValue;
-        await RefreshAsync();
-    }
-
     #region Navigation
 
     private async Task HandleNavigateBack()
@@ -365,6 +367,12 @@
         if (_state.Contents?.ParentFolder != null)
         {
             _state.NavigateTo(_state.Contents.ParentFolder.Id, _state.Contents.ParentFolder.Path);
+            await RefreshAsync();
+        }
+        else if (_state.SourceMode == FileExplorerSourceMode.BlobPath && _state.CurrentPath != "/")
+        {
+            var parentPath = GetParentPath(_state.CurrentPath);
+            _state.NavigateTo(null, string.IsNullOrEmpty(parentPath) ? "/" : parentPath);
             await RefreshAsync();
         }
     }
@@ -478,7 +486,7 @@
 
     private async Task HandlePaste()
     {
-        if (!_state.CanPaste) return;
+        if (!_state.CanPaste || _state.SourceMode == FileExplorerSourceMode.BlobPath) return;
 
         try
         {
@@ -517,7 +525,7 @@
 
     private void HandleNewFolder()
     {
-        if (!AllowCreateFolders) return;
+        if (!AllowCreateFolders || _state.SourceMode == FileExplorerSourceMode.BlobPath) return;
         _newFolderName = "New Folder";
         _newFolderModalOpen = true;
     }
@@ -556,7 +564,7 @@
 
     private void HandleDelete()
     {
-        if (!_state.HasSelection) return;
+        if (!_state.HasSelection || _state.SourceMode == FileExplorerSourceMode.BlobPath) return;
         _deleteModalOpen = true;
     }
 
@@ -597,6 +605,11 @@
 
     private void HandleUpload()
     {
+        if (_state.SourceMode == FileExplorerSourceMode.BlobPath)
+        {
+            return;
+        }
+
         _uploadModalOpen = true;
     }
 
@@ -615,6 +628,13 @@
     {
         _state.ViewMode = mode;
         StateHasChanged();
+    }
+
+    private async Task HandleSourceModeChanged(FileExplorerSourceMode mode)
+    {
+        _state.SourceMode = mode;
+        _state.NavigateTo(null, "/");
+        await RefreshAsync();
     }
 
     private async Task HandleSearch(string query)
@@ -650,7 +670,7 @@
 
     private void StartRename()
     {
-        if (_state.SelectionCount == 1)
+        if (_state.SourceMode != FileExplorerSourceMode.BlobPath && _state.SelectionCount == 1)
         {
             _state.IsRenaming = true;
             _state.RenamingItemId = _state.SelectedFiles.FirstOrDefault() != default 
@@ -751,6 +771,7 @@
     private async Task HandleDrop(DragDropEventArgs args)
     {
         if (!AllowDragDrop) return;
+        if (_state.SourceMode == FileExplorerSourceMode.BlobPath) return;
 
         try
         {
@@ -817,6 +838,39 @@
         var folders = _state.Contents.Folders.Count;
         var files = _state.Contents.TotalFileCount;
         return L["FoldersAndFilesCount", folders, files].Value!;
+    }
+
+    private string? GetCurrentStructureKey()
+    {
+        if (!string.IsNullOrWhiteSpace(StructureKey))
+        {
+            return StructureKey;
+        }
+
+        if (_state.SourceMode == FileExplorerSourceMode.BlobPath)
+        {
+            return null;
+        }
+
+        var currentFolder = _state.Contents?.CurrentFolder;
+        if (!string.IsNullOrWhiteSpace(currentFolder?.StructureKey))
+        {
+            return currentFolder.StructureKey;
+        }
+
+        var firstSegment = _state.CurrentPath.Split('/', StringSplitOptions.RemoveEmptyEntries).FirstOrDefault();
+        if (string.IsNullOrWhiteSpace(firstSegment))
+        {
+            return null;
+        }
+
+        return firstSegment;
+    }
+
+    private static string GetParentPath(string path)
+    {
+        var lastSlash = path.LastIndexOf('/');
+        return lastSlash <= 0 ? "" : path[..lastSlash];
     }
 
     private string FormatFileSize(long bytes)

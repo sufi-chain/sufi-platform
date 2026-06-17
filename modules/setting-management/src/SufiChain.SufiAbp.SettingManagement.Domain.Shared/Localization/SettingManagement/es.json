@@ -55,6 +55,10 @@
     "IdentityTabOtp": "OTP",
     "IdentityTabCaptcha": "CAPTCHA",
     "IdentityAllowedChannels": "Canales de envío permitidos",
-    "Permission:Identity": "Configuración de identidad"
+    "Permission:Identity": "Configuración de identidad",
+    "Permission:SettingManagement": "Gestión de configuración",
+    "Permission:Emailing": "Correo electrónico",
+    "Permission:EmailingTest": "Prueba de correo electrónico",
+    "Permission:TimeZone": "Zona horaria"
   }
 }

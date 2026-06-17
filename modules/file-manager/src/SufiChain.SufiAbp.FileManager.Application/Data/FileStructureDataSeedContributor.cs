@@ -1,7 +1,9 @@
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using SufiChain.SufiAbp.FileManager;
 using SufiChain.SufiAbp.FileManager.Configuration;
+using SufiChain.SufiAbp.FileManager.FileFolders;
 using SufiChain.SufiAbp.FileManager.FileStructures;
 using Volo.Abp.Data;
 using Volo.Abp.DependencyInjection;
@@ -15,22 +17,25 @@ namespace SufiChain.SufiAbp.FileManager.Data;
 /// This contributor is automatically discovered and executed by ABP's data seeding system.
 /// </summary>
 public class FileStructureDataSeedContributor : IDataSeedContributor, ITransientDependency
-{
-    private readonly IFileStructureRepository _fileStructureRepository;
-    private readonly IGuidGenerator _guidGenerator;
+    {
+        private readonly IFileStructureRepository _fileStructureRepository;
+        private readonly IFileFolderRepository _fileFolderRepository;
+        private readonly IGuidGenerator _guidGenerator;
     private readonly ICurrentTenant _currentTenant;
     private readonly FileManagerOptions _options;
     private readonly ILogger<FileStructureDataSeedContributor> _logger;
 
-    public FileStructureDataSeedContributor(
-        IFileStructureRepository fileStructureRepository,
-        IGuidGenerator guidGenerator,
+        public FileStructureDataSeedContributor(
+            IFileStructureRepository fileStructureRepository,
+            IFileFolderRepository fileFolderRepository,
+            IGuidGenerator guidGenerator,
         ICurrentTenant currentTenant,
         IOptions<FileManagerOptions> options,
         ILogger<FileStructureDataSeedContributor> logger)
-    {
-        _fileStructureRepository = fileStructureRepository;
-        _guidGenerator = guidGenerator;
+        {
+            _fileStructureRepository = fileStructureRepository;
+            _fileFolderRepository = fileFolderRepository;
+            _guidGenerator = guidGenerator;
         _currentTenant = currentTenant;
         _options = options.Value;
         _logger = logger;
@@ -73,6 +78,7 @@ public class FileStructureDataSeedContributor : IDataSeedContributor, ITransient
 
         if (existing != null)
         {
+            await EnsureStructureRootFolderAsync(existing);
             _logger.LogDebug("File structure '{StructureKey}' already exists with ID {Id}.", config.Key, existing.Id);
             return;
         }
@@ -106,6 +112,38 @@ public class FileStructureDataSeedContributor : IDataSeedContributor, ITransient
         };
 
         await _fileStructureRepository.InsertAsync(entity, autoSave: true);
+        await EnsureStructureRootFolderAsync(entity);
         _logger.LogInformation("Seeded file structure '{StructureKey}' with ID {Id}.", config.Key, entity.Id);
     }
+
+    private async Task EnsureStructureRootFolderAsync(FileStructure structure)
+    {
+        var path = GetStructureRootPath(structure.Key);
+        var existingFolder = await _fileFolderRepository.FindByPathAsync(path, _currentTenant.Id);
+        if (existingFolder != null)
+        {
+            existingFolder.Type = FolderType.Structure;
+            existingFolder.StructureKey = structure.Key;
+            existingFolder.Name = GetStructureRootName(structure);
+            existingFolder.ParentId = null;
+            existingFolder.SetDisplayProperties("folder", null, structure.Description);
+            await _fileFolderRepository.UpdateAsync(existingFolder, autoSave: true);
+            return;
+        }
+
+        var folder = new FileFolder(
+            _guidGenerator.Create(),
+            _currentTenant.Id,
+            GetStructureRootName(structure),
+            path,
+            FolderType.Structure,
+            structureKey: structure.Key);
+
+        folder.SetDisplayProperties("folder", null, structure.Description);
+        await _fileFolderRepository.InsertAsync(folder, autoSave: true);
+    }
+
+    private static string GetStructureRootName(FileStructure structure) => structure.DisplayName;
+
+    private static string GetStructureRootPath(string structureKey) => $"/{structureKey}";
 }

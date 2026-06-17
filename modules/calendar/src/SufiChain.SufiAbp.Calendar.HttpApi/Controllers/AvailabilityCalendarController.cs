@@ -45,6 +45,27 @@ public class AvailabilityCalendarController : CalendarController, IAvailabilityC
         return _availabilityCalendarAppService.GetDefaultAsync(kind);
     }
 
+    [HttpGet]
+    [Route("my/personal")]
+    public virtual Task<CalendarDto> GetOrCreateMyPersonalCalendarAsync()
+    {
+        return _availabilityCalendarAppService.GetOrCreateMyPersonalCalendarAsync();
+    }
+
+    [HttpGet]
+    [Route("my/visible")]
+    public virtual Task<ListResultDto<CalendarLookupDto>> GetMyVisibleCalendarsAsync()
+    {
+        return _availabilityCalendarAppService.GetMyVisibleCalendarsAsync();
+    }
+
+    [HttpPost]
+    [Route("organization-units")]
+    public virtual Task<ListResultDto<CalendarLookupDto>> GetOrganizationUnitCalendarsAsync(List<Guid> organizationUnitIds)
+    {
+        return _availabilityCalendarAppService.GetOrganizationUnitCalendarsAsync(organizationUnitIds);
+    }
+
     [HttpPost]
     public virtual Task<CalendarDto> CreateAsync(CreateUpdateCalendarDto input)
     {

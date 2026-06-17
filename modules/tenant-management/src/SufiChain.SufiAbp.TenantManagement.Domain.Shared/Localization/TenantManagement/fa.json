@@ -44,6 +44,12 @@
     "Create": "ایجاد",
     "Save": "ذخیره",
     "Edit": "ویرایش",
-    "Delete": "حذف"
+    "Delete": "حذف",
+    "Permission:TenantManagement": "مدیریت مستأجرها",
+    "Permission:Create": "ایجاد",
+    "Permission:Edit": "ویرایش",
+    "Permission:Delete": "حذف",
+    "Permission:ManageFeatures": "مدیریت ویژگی‌ها",
+    "Permission:ManageConnectionStrings": "مدیریت رشته‌های اتصال"
   }
 }

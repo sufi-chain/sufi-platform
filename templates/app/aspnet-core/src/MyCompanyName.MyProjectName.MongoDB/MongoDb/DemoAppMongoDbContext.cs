@@ -62,7 +62,7 @@ public class DemoAppMongoDbContext : AbpMongoDbContext,
         modelBuilder.ConfigureSufiAbpFileManager();
         modelBuilder.ConfigureSufiAbpLocalizationManagement();
         modelBuilder.ConfigureSufiAbpShortLinkGenerator();
-        modelBuilder.ConfigureAIManagement();
+        modelBuilder.ConfigureSufiAbpAIManagement();
 
         /* Configure your own collections here */
         //modelBuilder.Entity<YourEntity>(b =>

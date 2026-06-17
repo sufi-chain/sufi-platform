@@ -10,7 +10,7 @@ namespace SufiChain.SufiAbp.CLI.ProjectBuilding.Steps;
 /// - WebApp: Blazor.WebApp, Blazor.WebApp.Client
 /// - WebSite: Blazor.WebSite, Blazor.WebSite.Client
 /// - Web: Web
-/// - HttpApi: HttpApi.Host (only removed for single architecture)
+/// - HttpApi: HttpApi.Host (only removed for WebApp architecture)
 /// </summary>
 public class RemoveHostStep : ProjectBuildPipelineStep
 {

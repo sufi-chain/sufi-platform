@@ -47,12 +47,12 @@ public class PortConfiguration
     public int WebPort { get; set; }
 
     /// <summary>
-    /// HTTPS port for single-architecture host.
+    /// HTTPS port for WebApp architecture host.
     /// </summary>
     public int SingleHostPort { get; set; }
 
     /// <summary>
-    /// HTTP port for single-architecture host.
+    /// HTTP port for WebApp architecture host.
     /// </summary>
     public int SingleHostHttpPort { get; set; }
 
@@ -77,12 +77,12 @@ public class PortConfiguration
     public int WebSiteClientHttpPort { get; set; }
 
     /// <summary>
-    /// HTTPS port for single-architecture client project.
+    /// HTTPS port for WebApp architecture client project.
     /// </summary>
     public int SingleClientPort { get; set; }
 
     /// <summary>
-    /// HTTP port for single-architecture client project.
+    /// HTTP port for WebApp architecture client project.
     /// </summary>
     public int SingleClientHttpPort { get; set; }
 

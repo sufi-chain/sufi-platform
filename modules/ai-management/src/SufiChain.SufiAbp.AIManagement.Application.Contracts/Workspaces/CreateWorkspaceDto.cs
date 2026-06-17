@@ -33,10 +33,10 @@ public class CreateWorkspaceDto
     public OpenAIApiMode OpenAIApiMode { get; set; } = OpenAIApiMode.ChatCompletions;
 
     [Range(typeof(decimal), "0", "79228162514264337593543950335")]
-    public decimal? InputCostPer1KTokens { get; set; }
+    public decimal? InputCostPer1MTokens { get; set; }
 
     [Range(typeof(decimal), "0", "79228162514264337593543950335")]
-    public decimal? OutputCostPer1KTokens { get; set; }
+    public decimal? OutputCostPer1MTokens { get; set; }
     
     public EmbedderConfigDto? EmbedderConfig { get; set; }
     public VectorStoreConfigDto? VectorStoreConfig { get; set; }

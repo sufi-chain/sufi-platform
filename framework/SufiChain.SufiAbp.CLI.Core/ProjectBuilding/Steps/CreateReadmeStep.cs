@@ -35,7 +35,7 @@ This solution was generated using the Sufi Platform CLI.
 ## Configuration
 
 - **Database Provider**: {args.DatabaseProvider}
-- **Architecture**: {(args.IsTiered ? "Tiered" : "Single")}
+- **Architecture**: {(args.IsTiered ? "Tiered" : args.SolutionKind == SolutionKind.WebApp ? "WebApp" : "Layered")}
 
 ## Getting Started
 

@@ -2,6 +2,7 @@ using Microsoft.Extensions.DependencyInjection;
 using SufiChain.SufiAbp.AIManagement;
 using SufiChain.SufiAbp.AuditLogging.EntityFrameworkCore;
 using SufiChain.SufiAbp.BackgroundJobs.EntityFrameworkCore;
+using SufiChain.SufiAbp.Calendar.EntityFrameworkCore;
 using SufiChain.SufiAbp.Data;
 using SufiChain.SufiAbp.FeatureManagement.EntityFrameworkCore;
 using SufiChain.SufiAbp.FileManager.EntityFrameworkCore;
@@ -41,6 +42,7 @@ namespace MyCompanyName.MyProjectName.EntityFrameworkCore;
     typeof(SufiAbpLocalizationManagementEntityFrameworkCoreModule),
     typeof(SufiAbpShortLinkGeneratorEntityFrameworkCoreModule),
     typeof(SufiAbpAIManagementEntityFrameworkCoreModule),
+    typeof(SufiAbpCalendarEntityFrameworkCoreModule),
     
     typeof(SufiAbpDataModule)
 )]

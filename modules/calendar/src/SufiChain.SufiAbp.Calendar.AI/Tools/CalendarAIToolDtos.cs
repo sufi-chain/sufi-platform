@@ -41,6 +41,33 @@ public class CalendarAICreateEventInput
     public string? SourceId { get; set; }
 }
 
+public class CalendarAISearchEventsInput
+{
+    public Guid? CalendarId { get; set; }
+
+    public DateTime? FromUtc { get; set; }
+
+    public DateTime? ToUtc { get; set; }
+
+    public string? TitleContains { get; set; }
+
+    public int MaxResultCount { get; set; } = 10;
+}
+
+public class CalendarAIMoveEventInput
+{
+    public Guid EventId { get; set; }
+
+    public DateTime MovedStartUtc { get; set; }
+
+    public DateTime MovedEndUtc { get; set; }
+}
+
+public class CalendarAICancelEventInput
+{
+    public Guid EventId { get; set; }
+}
+
 public class CalendarAIMoveOccurrenceInput
 {
     public Guid EventId { get; set; }
@@ -68,6 +95,23 @@ public class CalendarAITestAvailabilityInput
     public Guid CalendarId { get; set; }
 
     public DateTime UtcInstant { get; set; }
+}
+
+public class CalendarAIListCalendarsInput
+{
+    public string? Filter { get; set; }
+}
+
+public class CalendarAIGetWorkingHoursInput
+{
+    public Guid CalendarId { get; set; }
+}
+
+public class CalendarAIGetCurrentTimeInput
+{
+    public Guid? CalendarId { get; set; }
+
+    public string? TimeZoneId { get; set; }
 }
 
 public class CalendarAIEventResult

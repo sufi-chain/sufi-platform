@@ -1,15 +1,15 @@
 {
   "culture": "ar",
   "texts": {
-    "Menu:ShortLinkGenerator": "Short Link Generator",
-    "Menu:ShortLinks": "Short Links",
-    "Permission:ShortLinkGenerator": "Short Link Generator",
-    "Permission:ShortLinks": "Short Links",
-    "Permission:Create": "Create",
-    "Permission:Edit": "Edit",
-    "Permission:Delete": "Delete",
-    "Permission:ViewAnalytics": "View Analytics",
-    "ShortLinks": "Short Links",
+    "Menu:ShortLinkGenerator": "مولد الروابط القصيرة",
+    "Menu:ShortLinks": "الروابط القصيرة",
+    "Permission:ShortLinkGenerator": "مولد الروابط القصيرة",
+    "Permission:ShortLinks": "الروابط القصيرة",
+    "Permission:Create": "إنشاء",
+    "Permission:Edit": "تعديل",
+    "Permission:Delete": "حذف",
+    "Permission:ViewAnalytics": "عرض التحليلات",
+    "ShortLinks": "الروابط القصيرة",
     "CreateShortLink": "Create Short Link",
     "EditShortLink": "Edit Short Link",
     "ShortLinkDetails": "Short Link Details",
@@ -88,6 +88,11 @@
     "Feature:ShortLinkGenerator.Analytics": "Short link analytics",
     "Feature:ShortLinkGenerator.Analytics.Description": "Enable click tracking and analytics.",
     "Feature:ShortLinkGenerator.PublicRedirect": "Public redirect",
-    "Feature:ShortLinkGenerator.PublicRedirect.Description": "Enable public short URL redirect resolution."
+    "Feature:ShortLinkGenerator.PublicRedirect.Description": "Enable public short URL redirect resolution.",
+    "Cancel": "إلغاء",
+    "Save": "حفظ",
+    "Yes": "نعم",
+    "No": "لا",
+    "SamplePageMessage": "صفحة نموذجية لوحدة مولد الروابط القصيرة."
   }
 }

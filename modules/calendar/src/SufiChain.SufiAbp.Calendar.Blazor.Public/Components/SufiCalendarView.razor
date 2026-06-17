@@ -39,6 +39,30 @@
                 }
             </div>
         }
+        else if (View == SufiCalendarViewMode.Day)
+        {
+            <div class="sufi-calendar-view__day-timeline">
+                @foreach (var hour in DayTimelineHours)
+                {
+                    <button type="button"
+                            class="sufi-calendar-view__timeline-row"
+                            @onclick="@(() => SelectHourSlotAsync(hour))">
+                        <span class="sufi-calendar-view__timeline-hour">@FormatHour(hour)</span>
+                        <span class="sufi-calendar-view__timeline-lane">
+                            @foreach (var occurrence in GetOccurrencesForHour(hour))
+                            {
+                                <span class="sufi-calendar-view__timeline-event"
+                                      @onclick="@(() => SelectEventAsync(occurrence))"
+                                      @onclick:stopPropagation="true">
+                                    <strong>@FormatTimeRange(occurrence)</strong>
+                                    <span>@occurrence.Title</span>
+                                </span>
+                            }
+                        </span>
+                    </button>
+                }
+            </div>
+        }
         else
         {
             <div class="sufi-calendar-view__day-names">
@@ -47,7 +71,7 @@
                     <div>@dayName</div>
                 }
             </div>
-            <div class="sufi-calendar-view__grid sufi-calendar-view__grid--@View.ToString().ToLowerInvariant()">
+            <div class="@GetGridClass()">
                 @foreach (var day in _days)
                 {
                     <button type="button" class="@GetDayClass(day)" @onclick="@(() => SelectSlotAsync(day))">

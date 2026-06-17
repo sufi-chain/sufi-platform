@@ -33,8 +33,8 @@ etc/docker/
 
 ## Architecture Variants
 
-1. **Single**: Blazor.WebApp + Client (auth in server)
-2. **Layered**: Single + HttpApi.Host (auth still in Blazor.WebApp)
+1. **WebApp**: Blazor.WebApp + Client (auth in server)
+2. **Layered**: WebApp + HttpApi.Host (auth still in Blazor.WebApp)
 3. **Layered-Tiered**: Layered + AuthServer; optional Blazor.WebSite can be included with `--include-website`
 
 ## Database Providers

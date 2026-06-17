@@ -30,8 +30,8 @@ public partial class ModelConfigurationModal : AIManagementComponentBase
     private CreateAIModelConfigurationDto _model = new();
     private string _priorityText = "0";
     private string _openAIApiModeText = string.Empty;
-    private string _inputCostPer1KTokensText = string.Empty;
-    private string _outputCostPer1KTokensText = string.Empty;
+    private string _inputCostPer1MTokensText = string.Empty;
+    private string _outputCostPer1MTokensText = string.Empty;
     private List<OpenAIModelDto> _availableModels = new();
     private int _activeTab;
     private bool _wasOpen;
@@ -59,14 +59,14 @@ public partial class ModelConfigurationModal : AIManagementComponentBase
                 ApiEndpoint = Configuration.ApiEndpoint,
                 ConfigurationJson = Configuration.ConfigurationJson,
                 OpenAIApiMode = Configuration.OpenAIApiMode,
-                InputCostPer1KTokens = Configuration.InputCostPer1KTokens,
-                OutputCostPer1KTokens = Configuration.OutputCostPer1KTokens,
+                InputCostPer1MTokens = Configuration.InputCostPer1MTokens,
+                OutputCostPer1MTokens = Configuration.OutputCostPer1MTokens,
                 Priority = Configuration.Priority
             };
             _priorityText = Configuration.Priority.ToString();
             _openAIApiModeText = Configuration.OpenAIApiMode?.ToString() ?? string.Empty;
-            _inputCostPer1KTokensText = Configuration.InputCostPer1KTokens?.ToString() ?? string.Empty;
-            _outputCostPer1KTokensText = Configuration.OutputCostPer1KTokens?.ToString() ?? string.Empty;
+            _inputCostPer1MTokensText = Configuration.InputCostPer1MTokens?.ToString() ?? string.Empty;
+            _outputCostPer1MTokensText = Configuration.OutputCostPer1MTokens?.ToString() ?? string.Empty;
             _availableModels = new List<OpenAIModelDto>
             {
                 new() { Id = Configuration.ModelId }
@@ -83,8 +83,8 @@ public partial class ModelConfigurationModal : AIManagementComponentBase
             };
             _priorityText = "0";
             _openAIApiModeText = string.Empty;
-            _inputCostPer1KTokensText = string.Empty;
-            _outputCostPer1KTokensText = string.Empty;
+            _inputCostPer1MTokensText = string.Empty;
+            _outputCostPer1MTokensText = string.Empty;
             _availableModels = new List<OpenAIModelDto>();
             _activeTab = 0;
         }
@@ -146,8 +146,8 @@ public partial class ModelConfigurationModal : AIManagementComponentBase
                     ApiKey = _model.ApiKey,
                     ConfigurationJson = _model.ConfigurationJson,
                     OpenAIApiMode = _model.OpenAIApiMode,
-                    InputCostPer1KTokens = _model.InputCostPer1KTokens,
-                    OutputCostPer1KTokens = _model.OutputCostPer1KTokens,
+                    InputCostPer1MTokens = _model.InputCostPer1MTokens,
+                    OutputCostPer1MTokens = _model.OutputCostPer1MTokens,
                     Priority = _model.Priority
                 };
                 await AIAppService.UpdateModelConfigurationAsync(Configuration.Id, updateDto);
@@ -228,20 +228,20 @@ public partial class ModelConfigurationModal : AIManagementComponentBase
 
     private bool TryApplyPricing()
     {
-        if (!TryParseNullableDecimal(_inputCostPer1KTokensText, out var inputCost))
+        if (!TryParseNullableDecimal(_inputCostPer1MTokensText, out var inputCost))
         {
-            _ = Message.ErrorAsync(L["InputCostPer1KTokensMustBeNonNegative"]);
+            _ = Message.ErrorAsync(L["InputCostPer1MTokensMustBeNonNegative"]);
             return false;
         }
 
-        if (!TryParseNullableDecimal(_outputCostPer1KTokensText, out var outputCost))
+        if (!TryParseNullableDecimal(_outputCostPer1MTokensText, out var outputCost))
         {
-            _ = Message.ErrorAsync(L["OutputCostPer1KTokensMustBeNonNegative"]);
+            _ = Message.ErrorAsync(L["OutputCostPer1MTokensMustBeNonNegative"]);
             return false;
         }
 
-        _model.InputCostPer1KTokens = inputCost;
-        _model.OutputCostPer1KTokens = outputCost;
+        _model.InputCostPer1MTokens = inputCost;
+        _model.OutputCostPer1MTokens = outputCost;
         return true;
     }
 

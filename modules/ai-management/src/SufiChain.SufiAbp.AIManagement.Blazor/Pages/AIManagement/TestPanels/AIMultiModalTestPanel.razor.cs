@@ -14,9 +14,9 @@ using SufiChain.SufiAbp.Application.Dtos;
 
 namespace SufiChain.SufiAbp.AIManagement.Blazor.Pages.AIManagement;
 
-public partial class MultiModalTest : AIManagementComponentBase
+public partial class AIMultiModalTestPanel : AIManagementComponentBase
 {
-    private static class LoadingKeys
+    private static class MultiModalLoadingKeys
     {
         public const string LoadWorkspaces = "load-workspaces";
         public const string SendChat = "send-chat";
@@ -95,7 +95,7 @@ public partial class MultiModalTest : AIManagementComponentBase
                 MaxResultCount = 1000
             });
             _workspaces = result.Items.ToList();
-        }, LoadingKeys.LoadWorkspaces);
+        }, MultiModalLoadingKeys.LoadWorkspaces);
     }
 
     private Task OnWorkspaceChangedAsync(Guid? workspaceId)
@@ -164,7 +164,7 @@ public partial class MultiModalTest : AIManagementComponentBase
             _chatResponse = response.Message;
             _chatTokens = response.TokensUsed;
             _chatModel = response.Model;
-        }, LoadingKeys.SendChat);
+        }, MultiModalLoadingKeys.SendChat);
     }
 
     // Audio Transcription
@@ -199,7 +199,7 @@ public partial class MultiModalTest : AIManagementComponentBase
             _transcriptionFileId = response.FileId;
             _transcriptionFileUrl = response.FileUrl;
             _transcriptionModel = response.Model;
-        }, LoadingKeys.TranscribeAudio);
+        }, MultiModalLoadingKeys.TranscribeAudio);
     }
 
     // Text-to-Speech
@@ -221,7 +221,7 @@ public partial class MultiModalTest : AIManagementComponentBase
             // Create blob URL for audio playback
             var base64 = Convert.ToBase64String(_audioOutputData);
             _audioOutputUrl = $"data:audio/{response.AudioFormat};base64,{base64}";
-        }, LoadingKeys.GenerateSpeech);
+        }, MultiModalLoadingKeys.GenerateSpeech);
     }
 
     private async Task DownloadAudioAsync()
@@ -271,7 +271,7 @@ public partial class MultiModalTest : AIManagementComponentBase
             _visionFileUrl = response.FileUrl;
             _visionTokens = (response.InputTokens ?? 0) + (response.OutputTokens ?? 0);
             _visionModel = response.Model;
-        }, LoadingKeys.AnalyzeImage);
+        }, MultiModalLoadingKeys.AnalyzeImage);
     }
 
     // Embeddings
@@ -288,6 +288,6 @@ public partial class MultiModalTest : AIManagementComponentBase
             var response = await AIAppService.GenerateEmbeddingsAsync(input);
             _embeddingsVector = response.Embedding;
             _embeddingsModel = response.Model;
-        }, LoadingKeys.GenerateEmbeddings);
+        }, MultiModalLoadingKeys.GenerateEmbeddings);
     }
 }

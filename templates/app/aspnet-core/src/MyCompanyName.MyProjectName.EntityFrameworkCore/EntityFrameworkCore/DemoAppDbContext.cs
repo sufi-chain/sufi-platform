@@ -3,6 +3,9 @@ using SufiChain.SufiAbp.AIManagement.EntityFrameworkCore;
 using SufiChain.SufiAbp.AuditLogging.EntityFrameworkCore;
 using SufiChain.SufiAbp.BackgroundJobs.EntityFrameworkCore;
 using SufiChain.SufiAbp.BlobStoring.Database.EntityFrameworkCore;
+using SufiChain.SufiAbp.Calendar.Calendars;
+using SufiChain.SufiAbp.Calendar.EntityFrameworkCore;
+using SufiChain.SufiAbp.Calendar.Events;
 using SufiChain.SufiAbp.FeatureManagement.EntityFrameworkCore;
 using SufiChain.SufiAbp.FileManager.EntityFrameworkCore;
 using SufiChain.SufiAbp.FileManager.FileFolders;
@@ -48,6 +51,7 @@ namespace MyCompanyName.MyProjectName.EntityFrameworkCore;
 [ReplaceDbContext(typeof(ISufiAbpLocalizationManagementDbContext))]
 [ReplaceDbContext(typeof(ISufiAbpShortLinkGeneratorDbContext))]
 [ReplaceDbContext(typeof(IAIManagementDbContext))]
+[ReplaceDbContext(typeof(ICalendarDbContext))]
 [ConnectionStringName("Default")]
 public class DemoAppDbContext :
     AbpDbContext<DemoAppDbContext>,
@@ -63,7 +67,8 @@ public class DemoAppDbContext :
     ISufiAbpBlobStoringDbContext,
     ISufiAbpLocalizationManagementDbContext,
     ISufiAbpShortLinkGeneratorDbContext,
-    IAIManagementDbContext
+    IAIManagementDbContext,
+    ICalendarDbContext
 {
     #region Entities from ABP modules
 
@@ -133,6 +138,15 @@ public class DemoAppDbContext :
     public DbSet<SufiChain.SufiAbp.AIManagement.Workspaces.Workspace> Workspaces { get; set; } = null!;
     public DbSet<SufiChain.SufiAbp.AIManagement.MCP.Entities.MCPServer> MCPServers { get; set; } = null!;
 
+    // Calendar
+    public DbSet<SufiChain.SufiAbp.Calendar.Calendars.Calendar> Calendars { get; set; } = null!;
+    public DbSet<WorkingHourRule> WorkingHourRules { get; set; } = null!;
+    public DbSet<CalendarException> CalendarExceptions { get; set; } = null!;
+    public DbSet<CalendarEvent> CalendarEvents { get; set; } = null!;
+    public DbSet<EventOccurrenceException> EventOccurrenceExceptions { get; set; } = null!;
+    public DbSet<EventAttendee> EventAttendees { get; set; } = null!;
+    public DbSet<EventReminder> EventReminders { get; set; } = null!;
+
     #endregion
 
     public DemoAppDbContext(DbContextOptions<DemoAppDbContext> options)
@@ -158,7 +172,8 @@ public class DemoAppDbContext :
         builder.ConfigureSufiAbpBlobStoringDatabase();
         builder.ConfigureSufiAbpLocalizationManagement();
         builder.ConfigureSufiAbpShortLinkGenerator();
-        builder.ConfigureAIManagement();
+        builder.ConfigureSufiAbpAIManagement();
+        builder.ConfigureSufiAbpCalendar();
 
         /* Configure your own tables/entities inside here */
         //builder.Entity<YourEntity>(b =>

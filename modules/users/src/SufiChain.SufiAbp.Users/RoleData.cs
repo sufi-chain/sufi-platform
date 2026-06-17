@@ -1,14 +1,14 @@
 using System;
 using JetBrains.Annotations;
-using Volo.Abp.Data;
+using SufiChain.SufiAbp.Data;
 
 namespace SufiChain.SufiAbp.Users;
 
 public class RoleData : IRoleData
 {
-    public Guid Id { get; set; }
+    public System.Guid Id { get; set; }
 
-    public Guid? TenantId { get; set; }
+    public System.Guid? TenantId { get; set; }
 
     public string Name { get; set; }
 
@@ -22,7 +22,7 @@ public class RoleData : IRoleData
 
     public RoleData()
     {
-
+        ExtraProperties = new ExtraPropertyDictionary();
     }
 
     public RoleData(IRoleData roleData)
@@ -37,12 +37,12 @@ public class RoleData : IRoleData
     }
 
     public RoleData(
-        Guid id,
+        System.Guid id,
         [NotNull] string name,
         bool isDefault = false,
         bool isStatic = false,
         bool isPublic = false,
-        Guid? tenantId = null,
+        System.Guid? tenantId = null,
         ExtraPropertyDictionary extraProperties = null)
     {
         Id = id;
@@ -51,6 +51,6 @@ public class RoleData : IRoleData
         IsStatic = isStatic;
         IsPublic = isPublic;
         TenantId = tenantId;
-        ExtraProperties = extraProperties;
+        ExtraProperties = extraProperties ?? new ExtraPropertyDictionary();
     }
 }

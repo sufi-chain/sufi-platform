@@ -1,6 +1,7 @@
 {
   "culture": "fa",
   "texts": {
+    "AppName": "MyProjectName",
     "Menu:Home": "خانه",
     "Menu:MyAccount": "حساب من",
     "Logout": "خروج",

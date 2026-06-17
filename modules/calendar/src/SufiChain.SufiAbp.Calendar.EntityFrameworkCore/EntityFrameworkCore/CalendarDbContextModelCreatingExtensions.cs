@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 using SufiChain.SufiAbp;
 using SufiChain.SufiAbp.Calendar.Calendars;
 using SufiChain.SufiAbp.Calendar.Events;
@@ -38,22 +39,30 @@ public static class CalendarDbContextModelCreatingExtensions
             b.Property(x => x.DayOfWeek).HasConversion<string>().HasMaxLength(16);
             b.Property(x => x.StartTime).HasConversion(v => v.ToTimeSpan(), v => TimeOnly.FromTimeSpan(v));
             b.Property(x => x.EndTime).HasConversion(v => v.ToTimeSpan(), v => TimeOnly.FromTimeSpan(v));
+            b.Property(x => x.DisplayOrder);
             b.HasIndex(x => x.CalendarId);
+            b.HasIndex(x => new { x.CalendarId, x.DisplayOrder });
             b.HasIndex(x => new { x.CalendarId, x.DayOfWeek });
         });
 
         builder.Entity<CalendarException>(b =>
         {
+            var workingHourRangeListComparer = new ValueComparer<List<WorkingHourRange>>(
+                (left, right) => ReferenceEquals(left, right) || (left != null && right != null && left.SequenceEqual(right)),
+                ranges => ranges == null ? 0 : ranges.Aggregate(0, (hashCode, range) => HashCode.Combine(hashCode, range.GetHashCode())),
+                ranges => ranges == null ? new List<WorkingHourRange>() : ranges.ToList());
+
             b.ToTable(CalendarConsts.DbTablePrefix + "Exceptions", CalendarConsts.DbSchema);
             b.ConfigureByConvention();
 
             b.Property(x => x.Date).HasConversion(v => v.ToDateTime(TimeOnly.MinValue), v => DateOnly.FromDateTime(v));
             b.Property(x => x.Kind).HasConversion<string>().HasMaxLength(32);
             b.Property(x => x.Description).HasMaxLength(CalendarConsts.MaxDescriptionLength);
-            b.Property(x => x.Ranges)
+            var rangesProperty = b.Property(x => x.Ranges)
                 .HasConversion(
                     v => System.Text.Json.JsonSerializer.Serialize(v, (System.Text.Json.JsonSerializerOptions?)null),
                     v => System.Text.Json.JsonSerializer.Deserialize<List<WorkingHourRange>>(v, (System.Text.Json.JsonSerializerOptions?)null) ?? new List<WorkingHourRange>());
+            rangesProperty.Metadata.SetValueComparer(workingHourRangeListComparer);
 
             b.HasIndex(x => x.CalendarId);
             b.HasIndex(x => new { x.CalendarId, x.Date });

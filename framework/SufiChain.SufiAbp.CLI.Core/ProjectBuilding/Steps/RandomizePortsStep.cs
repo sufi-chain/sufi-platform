@@ -53,7 +53,7 @@ public class RandomizePortsStep : ProjectBuildPipelineStep
             // Replace Web MVC URLs (44302)
             content = ReplacePort(content, PortConfiguration.OriginalPorts.WebPort, ports.WebPort);
             
-            // Replace single-architecture host URLs (44338, 44339)
+            // Replace WebApp architecture host URLs (44338, 44339)
             content = ReplacePort(content, PortConfiguration.OriginalPorts.SingleHostPort, ports.SingleHostPort);
             content = ReplacePort(content, PortConfiguration.OriginalPorts.SingleHostHttpPort, ports.SingleHostHttpPort);
             
@@ -65,7 +65,7 @@ public class RandomizePortsStep : ProjectBuildPipelineStep
             content = ReplacePort(content, PortConfiguration.OriginalPorts.WebSiteClientPort, ports.WebSiteClientPort);
             content = ReplacePort(content, PortConfiguration.OriginalPorts.WebSiteClientHttpPort, ports.WebSiteClientHttpPort);
             
-            // Replace single-architecture client URLs (65463, 65464)
+            // Replace WebApp architecture client URLs (65463, 65464)
             content = ReplacePort(content, PortConfiguration.OriginalPorts.SingleClientPort, ports.SingleClientPort);
             content = ReplacePort(content, PortConfiguration.OriginalPorts.SingleClientHttpPort, ports.SingleClientHttpPort);
             

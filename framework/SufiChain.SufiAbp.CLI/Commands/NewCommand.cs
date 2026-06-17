@@ -32,8 +32,10 @@ public class NewCommand : AsyncCommand<NewCommand.Settings>
         [Description("Use tiered architecture (separate HttpApi.Host + AuthServer). Default: layered (API + Auth in WebApp)")]
         public bool Tiered { get; set; }
 
-        // Internal: Always layered for Blazor WebApp template
-        internal string SolutionKindStr { get; set; } = "layered";
+        [CommandOption("--solution-kind")]
+        [Description("Solution type: webapp or layered. Legacy alias: single.")]
+        [DefaultValue("layered")]
+        public string SolutionKindStr { get; set; } = "layered";
 
         [CommandOption("--multi-tenancy")]
         [Description("Enable multi-tenancy (forces tenant-management module)")]
@@ -111,6 +113,12 @@ public class NewCommand : AsyncCommand<NewCommand.Settings>
             if (db != "ef" && db != "entityframeworkcore" && db != "mongo" && db != "mongodb")
             {
                 return ValidationResult.Error("Database must be 'ef' (Entity Framework Core) or 'mongo' (MongoDB)");
+            }
+
+            var solutionKind = SolutionKindStr.ToLowerInvariant();
+            if (solutionKind != "webapp" && solutionKind != "single" && solutionKind != "layered")
+            {
+                return ValidationResult.Error("Solution kind must be 'webapp' or 'layered'. Legacy alias: 'single'.");
             }
 
             // Validate EF provider if specified
@@ -255,15 +263,15 @@ public class NewCommand : AsyncCommand<NewCommand.Settings>
                 .PageSize(5)
                 .AddChoices(new[]
                 {
-                    "Single (1 host: API embedded in WebApp, recommended)",
+                    "WebApp (1 host: API embedded in Blazor.WebApp, recommended)",
                     "Layered (2 hosts: WebApp + HttpApi.Host)",
                     "Tiered (3 hosts: WebApp + HttpApi.Host + AuthServer)"
                 }));
         
         // Parse architecture choice
-        if (solutionKindChoice.StartsWith("Single"))
+        if (solutionKindChoice.StartsWith("WebApp"))
         {
-            settings.SolutionKindStr = "single";
+            settings.SolutionKindStr = "webapp";
             settings.Tiered = false;
         }
         else if (solutionKindChoice.StartsWith("Tiered"))
@@ -460,7 +468,7 @@ public class NewCommand : AsyncCommand<NewCommand.Settings>
         // Parse solution kind
         var solutionKind = settings.SolutionKindStr.ToLowerInvariant() switch
         {
-            "single" => SolutionKind.Single,
+            "webapp" or "single" => SolutionKind.WebApp,
             _ => SolutionKind.Layered
         };
         
@@ -564,7 +572,7 @@ public class NewCommand : AsyncCommand<NewCommand.Settings>
             table.AddRow("EF Provider", args.EfProvider.Value.ToString());
         }
         
-        table.AddRow("Architecture", args.IsTiered ? "Layered-Tiered" : args.SolutionKind == SolutionKind.Single ? "Single" : "Layered");
+        table.AddRow("Architecture", args.IsTiered ? "Layered-Tiered" : args.SolutionKind == SolutionKind.WebApp ? "WebApp" : "Layered");
         table.AddRow("Website", args.IncludeWebSite ? "Included" : "Not included");
         table.AddRow("Multi-Tenancy", args.IsMultiTenancyEnabled ? "Enabled" : "Disabled");
         table.AddRow("Hosts", string.Join(", ", args.IncludedHosts.Select(h => h.ToString())));

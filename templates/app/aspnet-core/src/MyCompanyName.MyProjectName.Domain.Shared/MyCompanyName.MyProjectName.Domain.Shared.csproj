@@ -40,23 +40,27 @@
   </ItemGroup>
   <!-- </TEMPLATE-REMOVE> -->
 
-  <!-- <TEMPLATE-ONLY> -->
-  <!--
+<!-- <TEMPLATE-ONLY> -->
+<!--
 	  <ItemGroup>
+	    <PackageReference Include="SufiChain.SufiAbp.Calendar.Domain.Shared" Version="$(SufiVersion)" />
+	    <PackageReference Include="SufiChain.SufiAbp.LocalizationManagement.Domain.Shared" Version="$(SufiVersion)" />
+	    <PackageReference Include="SufiChain.SufiAbp.AIManagement.Domain.Shared" Version="$(SufiVersion)" />
+	    <PackageReference Include="SufiChain.SufiAbp.FileManager.Domain.Shared" Version="$(SufiVersion)" />
 	    <PackageReference Include="SufiChain.SufiAbp.OpenIddict.Domain.Shared" Version="$(SufiVersion)" />
 	    <PackageReference Include="SufiChain.SufiAbp.PermissionManagement.Domain.Shared" Version="$(SufiVersion)" />
-    <PackageReference Include="SufiChain.SufiAbp.SettingManagement.Domain.Shared" Version="$(SufiVersion)" />
-    <PackageReference Include="SufiChain.SufiAbp.FeatureManagement.Domain.Shared" Version="$(SufiVersion)" />
-    <PackageReference Include="SufiChain.SufiAbp.AuditLogging.Domain.Shared" Version="$(SufiVersion)" />
-    <PackageReference Include="SufiChain.SufiAbp.BackgroundJobs.Domain.Shared" Version="$(SufiVersion)" />
-    <PackageReference Include="SufiChain.SufiAbp.Identity.Domain.Shared" Version="$(SufiVersion)" />
-    <PackageReference Include="SufiChain.SufiAbp.TenantManagement.Domain.Shared" Version="$(SufiVersion)" />
-    <PackageReference Include="SufiChain.SufiAbp.ShortLinkGenerator.Domain.Shared" Version="$(SufiVersion)" />
-    <PackageReference Include="SufiChain.SufiAbp.TagsManagement.Domain.Shared" Version="$(SufiVersion)" />
-    <PackageReference Include="SufiChain.SufiAbp.MenuManagement.Domain.Shared" Version="$(SufiVersion)" />
-  </ItemGroup>
-  -->
-  <!-- </TEMPLATE-ONLY> -->
+     <PackageReference Include="SufiChain.SufiAbp.SettingManagement.Domain.Shared" Version="$(SufiVersion)" />
+     <PackageReference Include="SufiChain.SufiAbp.FeatureManagement.Domain.Shared" Version="$(SufiVersion)" />
+     <PackageReference Include="SufiChain.SufiAbp.AuditLogging.Domain.Shared" Version="$(SufiVersion)" />
+     <PackageReference Include="SufiChain.SufiAbp.BackgroundJobs.Domain.Shared" Version="$(SufiVersion)" />
+     <PackageReference Include="SufiChain.SufiAbp.Identity.Domain.Shared" Version="$(SufiVersion)" />
+     <PackageReference Include="SufiChain.SufiAbp.TenantManagement.Domain.Shared" Version="$(SufiVersion)" />
+     <PackageReference Include="SufiChain.SufiAbp.ShortLinkGenerator.Domain.Shared" Version="$(SufiVersion)" />
+     <PackageReference Include="SufiChain.SufiAbp.TagsManagement.Domain.Shared" Version="$(SufiVersion)" />
+     <PackageReference Include="SufiChain.SufiAbp.MenuManagement.Domain.Shared" Version="$(SufiVersion)" />
+	  </ItemGroup>
+	-->
+<!-- </TEMPLATE-ONLY> -->
 
   <ItemGroup>
     <EmbeddedResource Include="Localization\DemoApp\*.json" />

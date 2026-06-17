@@ -25,7 +25,7 @@ public static class CalendarDtoMapper
             DeleterId = calendar.DeleterId,
             DeletionTime = calendar.DeletionTime,
             ExtraProperties = new ExtraPropertyDictionary(calendar.ExtraProperties),
-            WorkingHourRules = calendar.WorkingHourRules.Select(ToDto).ToList(),
+            WorkingHourRules = calendar.WorkingHourRules.OrderBy(x => x.DisplayOrder).ThenBy(x => x.Id).Select(ToDto).ToList(),
             Exceptions = calendar.Exceptions.Select(ToDto).ToList()
         };
     }

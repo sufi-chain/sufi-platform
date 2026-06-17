@@ -7,6 +7,7 @@
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="../../../../framework/SufiChain.SufiAbp.Ddd.Domain/SufiChain.SufiAbp.Ddd.Domain.csproj" />
+    <ProjectReference Include="../../../../framework/SufiChain.SufiAbp.Mapperly/SufiChain.SufiAbp.Mapperly.csproj" />
     <ProjectReference Include="../../../users/src/SufiChain.SufiAbp.Users.Domain/SufiChain.SufiAbp.Users.Domain.csproj" />
     <ProjectReference Include="..\SufiChain.SufiAbp.Identity.Domain.Shared\SufiChain.SufiAbp.Identity.Domain.Shared.csproj" />
   </ItemGroup>

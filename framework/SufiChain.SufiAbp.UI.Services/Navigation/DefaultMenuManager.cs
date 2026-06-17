@@ -2,6 +2,12 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using SufiChain.SufiAbp.UI.Authorization;
 using SufiChain.SufiAbp.UI.Navigation;
+using NavigationApplicationMenu = SufiChain.SufiAbp.UI.Navigation.ApplicationMenu;
+using NavigationApplicationMenuItem = SufiChain.SufiAbp.UI.Navigation.ApplicationMenuItem;
+using NavigationIHasMenuItems = SufiChain.SufiAbp.UI.Navigation.IHasMenuItems;
+using NavigationIMenuContributor = SufiChain.SufiAbp.UI.Navigation.IMenuContributor;
+using NavigationIMenuManager = SufiChain.SufiAbp.UI.Navigation.IMenuManager;
+using NavigationMenuConfigurationContext = SufiChain.SufiAbp.UI.Navigation.MenuConfigurationContext;
 
 namespace SufiChain.SufiAbp.UI.Services.Navigation;
 
@@ -9,14 +15,14 @@ namespace SufiChain.SufiAbp.UI.Services.Navigation;
 /// Default implementation of IMenuManager.
 /// Supports permission-based filtering of menu items.
 /// </summary>
-public class DefaultMenuManager : IMenuManager
+public class DefaultMenuManager : NavigationIMenuManager
 {
-    private readonly IServiceProvider _serviceProvider;
+    private readonly System.IServiceProvider _serviceProvider;
     private readonly SufiAbpNavigationOptions _options;
     private readonly ISufiAbpPermissionChecker _permissionChecker;
 
     public DefaultMenuManager(
-        IServiceProvider serviceProvider,
+        System.IServiceProvider serviceProvider,
         IOptions<SufiAbpNavigationOptions> options,
         ISufiAbpPermissionChecker permissionChecker)
     {
@@ -26,14 +32,14 @@ public class DefaultMenuManager : IMenuManager
     }
 
     /// <inheritdoc/>
-    public async Task<ApplicationMenu> GetAsync(string name)
+    public async Task<NavigationApplicationMenu> GetAsync(string name)
     {
-        var menu = new ApplicationMenu(name);
-        var context = new MenuConfigurationContext(menu, _serviceProvider);
+        var menu = new NavigationApplicationMenu(name);
+        var context = new NavigationMenuConfigurationContext(menu, _serviceProvider);
 
         // Get all contributors from options and from DI
         var contributors = _options.MenuContributors
-            .Concat(_serviceProvider.GetServices<IMenuContributor>())
+            .Concat(_serviceProvider.GetServices<NavigationIMenuContributor>())
             .ToList();
 
         foreach (var contributor in contributors)
@@ -51,7 +57,7 @@ public class DefaultMenuManager : IMenuManager
     }
 
     /// <inheritdoc/>
-    public Task<ApplicationMenu> GetMainMenuAsync()
+    public Task<NavigationApplicationMenu> GetMainMenuAsync()
     {
         return GetAsync(StandardMenus.Main);
     }
@@ -59,10 +65,10 @@ public class DefaultMenuManager : IMenuManager
     /// <summary>
     /// Checks permissions for all menu items and removes unauthorized ones.
     /// </summary>
-    private async Task CheckPermissionsAsync(ApplicationMenu menu)
+    private async Task CheckPermissionsAsync(NavigationApplicationMenu menu)
     {
         // Collect all menu items that require permissions
-        var allMenuItems = new List<ApplicationMenuItem>();
+        var allMenuItems = new List<NavigationApplicationMenuItem>();
         CollectAllMenuItems(menu, allMenuItems);
 
         // Get unique permission names
@@ -81,7 +87,7 @@ public class DefaultMenuManager : IMenuManager
         var permissionResults = await _permissionChecker.IsGrantedAsync(permissionNames);
 
         // Find items to remove (permission denied)
-        var toBeDeleted = new HashSet<ApplicationMenuItem>();
+        var toBeDeleted = new HashSet<NavigationApplicationMenuItem>();
         foreach (var item in allMenuItems)
         {
             if (!string.IsNullOrEmpty(item.RequiredPermissionName) &&
@@ -102,7 +108,7 @@ public class DefaultMenuManager : IMenuManager
     /// <summary>
     /// Recursively collects all menu items from the menu tree.
     /// </summary>
-    private void CollectAllMenuItems(IHasMenuItems menuWithItems, List<ApplicationMenuItem> output)
+    private void CollectAllMenuItems(NavigationIHasMenuItems menuWithItems, List<NavigationApplicationMenuItem> output)
     {
         foreach (var item in menuWithItems.Items)
         {
@@ -114,7 +120,7 @@ public class DefaultMenuManager : IMenuManager
     /// <summary>
     /// Recursively removes menu items from the tree.
     /// </summary>
-    private void RemoveMenuItems(IHasMenuItems menuWithItems, HashSet<ApplicationMenuItem> toBeDeleted)
+    private void RemoveMenuItems(NavigationIHasMenuItems menuWithItems, HashSet<NavigationApplicationMenuItem> toBeDeleted)
     {
         // Remove matching items from this level
         var itemsToRemove = menuWithItems.Items.Where(toBeDeleted.Contains).ToList();
@@ -130,7 +136,7 @@ public class DefaultMenuManager : IMenuManager
         }
     }
 
-    private void NormalizeMenu(ApplicationMenu menu)
+    private void NormalizeMenu(NavigationApplicationMenu menu)
     {
         menu.Items.Normalize();
 
@@ -143,7 +149,7 @@ public class DefaultMenuManager : IMenuManager
         RemoveEmptyParentItems(menu);
     }
 
-    private void NormalizeMenuItem(ApplicationMenuItem item)
+    private void NormalizeMenuItem(NavigationApplicationMenuItem item)
     {
         item.Items.Normalize();
 
@@ -157,7 +163,7 @@ public class DefaultMenuManager : IMenuManager
     /// Removes parent menu items that have no URL and no children.
     /// These become orphaned after child items are removed due to permissions.
     /// </summary>
-    private void RemoveEmptyParentItems(IHasMenuItems menuWithItems)
+    private void RemoveEmptyParentItems(NavigationIHasMenuItems menuWithItems)
     {
         // First, recursively process children
         foreach (var item in menuWithItems.Items.ToList())

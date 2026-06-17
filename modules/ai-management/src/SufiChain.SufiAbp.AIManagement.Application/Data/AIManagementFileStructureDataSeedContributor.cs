@@ -3,6 +3,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using SufiChain.SufiAbp.AIManagement.Configuration;
 using SufiChain.SufiAbp.FileManager.Configuration;
+using SufiChain.SufiAbp.FileManager.FileFolders;
 using SufiChain.SufiAbp.FileManager.FileStructures;
 using Volo.Abp.Data;
 using Volo.Abp.DependencyInjection;
@@ -18,6 +19,7 @@ namespace SufiChain.SufiAbp.AIManagement.Data;
 public class AIManagementFileStructureDataSeedContributor : IDataSeedContributor, ITransientDependency
 {
     private readonly IFileStructureRepository _fileStructureRepository;
+    private readonly IFileFolderRepository _fileFolderRepository;
     private readonly IGuidGenerator _guidGenerator;
     private readonly ICurrentTenant _currentTenant;
     private readonly AIManagementOptions _aiOptions;
@@ -26,6 +28,7 @@ public class AIManagementFileStructureDataSeedContributor : IDataSeedContributor
 
     public AIManagementFileStructureDataSeedContributor(
         IFileStructureRepository fileStructureRepository,
+        IFileFolderRepository fileFolderRepository,
         IGuidGenerator guidGenerator,
         ICurrentTenant currentTenant,
         IOptions<AIManagementOptions> aiOptions,
@@ -33,6 +36,7 @@ public class AIManagementFileStructureDataSeedContributor : IDataSeedContributor
         ILogger<AIManagementFileStructureDataSeedContributor> logger)
     {
         _fileStructureRepository = fileStructureRepository;
+        _fileFolderRepository = fileFolderRepository;
         _guidGenerator = guidGenerator;
         _currentTenant = currentTenant;
         _aiOptions = aiOptions.Value;
@@ -82,6 +86,7 @@ public class AIManagementFileStructureDataSeedContributor : IDataSeedContributor
 
         if (existing != null)
         {
+            await EnsureStructureRootFolderAsync(existing);
             _logger.LogDebug(
                 "File structure '{StructureKey}' already exists with ID {Id}.",
                 config.Key,
@@ -118,10 +123,38 @@ public class AIManagementFileStructureDataSeedContributor : IDataSeedContributor
         };
 
         await _fileStructureRepository.InsertAsync(entity, autoSave: true);
+        await EnsureStructureRootFolderAsync(entity);
         
         _logger.LogInformation(
             "Seeded file structure '{StructureKey}' with ID {Id}.",
             config.Key,
             entity.Id);
+    }
+
+    private async Task EnsureStructureRootFolderAsync(FileStructure structure)
+    {
+        var path = $"/{structure.Key}";
+        var existingFolder = await _fileFolderRepository.FindByPathAsync(path, _currentTenant.Id);
+        if (existingFolder != null)
+        {
+            existingFolder.Type = FolderType.Structure;
+            existingFolder.StructureKey = structure.Key;
+            existingFolder.Name = structure.DisplayName;
+            existingFolder.ParentId = null;
+            existingFolder.SetDisplayProperties("folder", null, structure.Description);
+            await _fileFolderRepository.UpdateAsync(existingFolder, autoSave: true);
+            return;
+        }
+
+        var folder = new FileFolder(
+            _guidGenerator.Create(),
+            _currentTenant.Id,
+            structure.DisplayName,
+            path,
+            FolderType.Structure,
+            structureKey: structure.Key);
+
+        folder.SetDisplayProperties("folder", null, structure.Description);
+        await _fileFolderRepository.InsertAsync(folder, autoSave: true);
     }
 }

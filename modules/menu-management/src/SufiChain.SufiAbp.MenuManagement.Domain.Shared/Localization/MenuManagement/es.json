@@ -1,0 +1,11 @@
+{
+  "culture": "es",
+  "texts": {
+    "Permission:MenuManagement": "Gestión de menús",
+    "Permission:MenuManagement.Menus": "Menús",
+    "Permission:MenuManagement.Menus.Create": "Crear menú",
+    "Permission:MenuManagement.Menus.Edit": "Editar menú",
+    "Permission:MenuManagement.Menus.Delete": "Eliminar menú",
+    "Permission:MenuManagement.Menus.ManageItems": "Administrar elementos del menú"
+  }
+}

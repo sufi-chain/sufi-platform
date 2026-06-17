@@ -1,0 +1,18 @@
+@page "/calendar"
+@attribute [Authorize(CalendarPermissions.Events.Default)]
+@inherits CalendarPageBase
+
+<SufiAbpPageToolbar>
+    <SbButton Color="SbColor.Primary" Variant="SbButtonVariant.Outline" OnClick="RefreshAsync">
+        <SbIcon Name="refresh-cw" Size="SbSize.Sm" />
+        @L["Refresh"]
+    </SbButton>
+</SufiAbpPageToolbar>
+
+<SufiCalendarScheduler Inline="true"
+                       Title="@L["MyCalendar"]"
+                       AllowCalendarSelection="true"
+                       AllowEventEditing="true"
+                       InitialCalendarId="PersonalCalendarId"
+                       InitialDate="DateTime.Today"
+                       EventSaved="OnEventChangedAsync" />

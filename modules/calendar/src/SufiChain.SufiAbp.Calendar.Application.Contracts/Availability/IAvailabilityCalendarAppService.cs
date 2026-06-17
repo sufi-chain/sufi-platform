@@ -14,6 +14,12 @@ public interface IAvailabilityCalendarAppService : IApplicationService
 
     Task<CalendarDto?> GetDefaultAsync(CalendarKind kind);
 
+    Task<CalendarDto> GetOrCreateMyPersonalCalendarAsync();
+
+    Task<ListResultDto<CalendarLookupDto>> GetMyVisibleCalendarsAsync();
+
+    Task<ListResultDto<CalendarLookupDto>> GetOrganizationUnitCalendarsAsync(List<Guid> organizationUnitIds);
+
     Task<CalendarDto> CreateAsync(CreateUpdateCalendarDto input);
 
     Task<CalendarDto> UpdateAsync(Guid id, CreateUpdateCalendarDto input);

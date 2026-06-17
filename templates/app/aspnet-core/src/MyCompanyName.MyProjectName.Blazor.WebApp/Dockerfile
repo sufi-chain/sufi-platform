@@ -1,4 +1,4 @@
-# MyCompanyName.MyProjectName.Blazor.WebApp - Single host web application.
+# MyCompanyName.MyProjectName.Blazor.WebApp - WebApp host application.
 # Build context MUST be the repository root.
 #
 # Build from repo root:

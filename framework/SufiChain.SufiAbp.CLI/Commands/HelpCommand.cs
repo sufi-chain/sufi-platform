@@ -35,7 +35,7 @@ public class HelpCommand : Command<HelpCommand.Settings>
 
         table.AddRow("-d, --database", "Database provider: 'ef' or 'mongo'", "mongo");
         table.AddRow("--tiered", "Tiered architecture with separate API + Auth hosts", "false");
-        table.AddRow("--solution-kind", "Solution type: single or layered", "layered");
+        table.AddRow("--solution-kind", "Solution type: webapp or layered", "layered");
         table.AddRow("--modules", "Optional sample/demo modules only", "none");
         table.AddRow("--include-website", "Include optional Blazor.WebSite host (tiered only)", "false");
         table.AddRow("-o, --output", "Output directory", "current directory");
@@ -46,7 +46,7 @@ public class HelpCommand : Command<HelpCommand.Settings>
         AnsiConsole.MarkupLine("[bold yellow]Examples:[/]");
         AnsiConsole.MarkupLine("  sufi new MyCompany.MyProject");
         AnsiConsole.MarkupLine("  sufi new MyCompany.MyProject -d ef");
-        AnsiConsole.MarkupLine("  sufi new MyCompany.MyProject -d mongo --solution-kind single");
+        AnsiConsole.MarkupLine("  sufi new MyCompany.MyProject -d mongo --solution-kind webapp");
         AnsiConsole.MarkupLine("  sufi new MyCompany.MyProject -d ef --tiered -o C:\\Projects");
         AnsiConsole.WriteLine();
 
@@ -58,7 +58,7 @@ public class HelpCommand : Command<HelpCommand.Settings>
         AnsiConsole.MarkupLine("[bold yellow]Architectures:[/]");
         AnsiConsole.MarkupLine("  [green]Layered[/] (default)   - Blazor.WebApp + HttpApi.Host");
         AnsiConsole.MarkupLine("  [green]Tiered[/]              - Blazor.WebApp + HttpApi.Host + AuthServer");
-        AnsiConsole.MarkupLine("  [green]Single[/]              - Integrated Blazor.WebApp with embedded API and cookie auth");
+        AnsiConsole.MarkupLine("  [green]WebApp[/]              - Integrated Blazor.WebApp with embedded API and cookie auth");
         AnsiConsole.WriteLine();
         AnsiConsole.MarkupLine("[bold yellow]Modules:[/]");
         AnsiConsole.MarkupLine("  Real platform modules in src/modules are enabled by default.");

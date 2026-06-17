@@ -1,3 +1,4 @@
+using SufiChain.SufiAbp.BackgroundJobs.Localization;
 using Volo.Abp.Authorization.Permissions;
 using Volo.Abp.Localization;
 
@@ -29,6 +30,6 @@ public class BackgroundJobsPermissionDefinitionProvider : PermissionDefinitionPr
 
     private static LocalizableString L(string name)
     {
-        return LocalizableString.Create<BackgroundJobsPermissionDefinitionProvider>(name);
+        return LocalizableString.Create<SufiAbpBackgroundJobsResource>(name);
     }
 }

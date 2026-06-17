@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
+using SufiChain.SufiAbp.FileManager;
 using SufiChain.SufiAbp.FileManager.Features;
 using SufiChain.SufiAbp.FileManager.FileItems;
 using SufiChain.SufiAbp.FileManager.Permissions;
@@ -113,6 +114,11 @@ public class FolderAppService : ApplicationService, IFolderAppService
 
     public async Task<FolderContentsDto> GetContentsAsync(GetFolderContentsInput input)
     {
+        if (input.SourceMode == FileExplorerSourceMode.BlobPath)
+        {
+            return await GetBlobPathContentsAsync(input);
+        }
+
         FileFolder? folder = null;
 
         if (input.FolderId.HasValue)
@@ -149,50 +155,190 @@ public class FolderAppService : ApplicationService, IFolderAppService
             }
 
             // Get files in folder
-            var files = await GetFilesInFolderAsync(folder.Id, input.SkipCount, input.MaxResultCount, input.Sorting, input.Filter, input.StructureKey);
+            var structureKey = input.StructureKey ?? ResolveStructureKey(folder);
+            var files = await GetFilesInFolderAsync(folder.Id, input.SkipCount, input.MaxResultCount, input.Sorting, input.Filter, structureKey);
             result.Files = ObjectMapper.Map<List<FileItem>, List<FileItemDto>>(files);
-            result.TotalFileCount = await GetFileCountInFolderAsync(folder.Id, input.StructureKey);
+            result.TotalFileCount = await GetFileCountInFolderAsync(folder.Id, structureKey);
         }
         else
         {
-            // Root level - get root folders
-            result.CurrentFolder = new FolderTreeNodeDto
-            {
-                Id = null,
-                Name = "Root",
-                Path = "/",
-                Type = FolderTypeDto.TenantRoot,
-                Icon = "home",
-                IsVirtual = true,
-                CanWrite = true,
-                CanDelete = false
-            };
-
-            result.Breadcrumbs.Add(new BreadcrumbItemDto
-            {
-                Id = null,
-                Name = "Root",
-                Path = "/",
-                Icon = "home",
-                IsCurrent = true
-            });
-
             var rootFolders = await _folderRepository.GetRootFoldersAsync(CurrentTenant.Id);
-            foreach (var rootFolder in rootFolders)
+            if (rootFolders.Count > 0)
             {
-                result.Folders.Add(await BuildFolderTreeNodeAsync(rootFolder));
+                var firstRoot = rootFolders.First();
+                result.CurrentFolder = await BuildFolderTreeNodeAsync(firstRoot);
+                result.Breadcrumbs = await BuildBreadcrumbsAsync(firstRoot);
+
+                var subfolders = await _folderRepository.GetChildrenAsync(firstRoot.Id);
+                foreach (var subfolder in subfolders)
+                {
+                    result.Folders.Add(await BuildFolderTreeNodeAsync(subfolder));
+                }
+
+                var structureKey = input.StructureKey ?? ResolveStructureKey(firstRoot);
+                var files = await GetFilesInFolderAsync(firstRoot.Id, input.SkipCount, input.MaxResultCount, input.Sorting, input.Filter, structureKey);
+                result.Files = ObjectMapper.Map<List<FileItem>, List<FileItemDto>>(files);
+                result.TotalFileCount = await GetFileCountInFolderAsync(firstRoot.Id, structureKey);
+                result.TotalFolderCount = result.Folders.Count;
+                result.TotalSize = result.Files.Sum(f => f.Size);
+                return result;
             }
 
-            // Get files without folder
-            var filesWithoutFolder = await GetFilesWithoutFolderAsync(input.SkipCount, input.MaxResultCount, input.Sorting, input.Filter, input.StructureKey);
-            result.Files = ObjectMapper.Map<List<FileItem>, List<FileItemDto>>(filesWithoutFolder);
-            result.TotalFileCount = await GetFileCountWithoutFolderAsync(input.StructureKey);
+            result.Files = new List<FileItemDto>();
+            result.TotalFileCount = 0;
         }
 
         result.TotalFolderCount = result.Folders.Count;
         result.TotalSize = result.Files.Sum(f => f.Size);
 
         return result;
+    }
+
+    protected virtual async Task<FolderContentsDto> GetBlobPathContentsAsync(GetFolderContentsInput input)
+    {
+        var currentPath = NormalizeVirtualPath(input.VirtualPath);
+        var structureKey = input.StructureKey;
+        var allFiles = await GetBlobPathFilesAsync(input.Filter, structureKey);
+        var childPrefix = currentPath == "/" ? "" : currentPath.Trim('/') + "/";
+        var childFolders = new SortedSet<string>(StringComparer.OrdinalIgnoreCase);
+        var directFiles = new List<FileItem>();
+
+        foreach (var file in allFiles)
+        {
+            var blobName = NormalizeBlobName(file.BlobName);
+            if (!blobName.StartsWith(childPrefix, StringComparison.OrdinalIgnoreCase))
+            {
+                continue;
+            }
+
+            var remainder = blobName[childPrefix.Length..];
+            if (string.IsNullOrWhiteSpace(remainder))
+            {
+                continue;
+            }
+
+            var slashIndex = remainder.IndexOf('/');
+            if (slashIndex >= 0)
+            {
+                childFolders.Add(remainder[..slashIndex]);
+            }
+            else
+            {
+                directFiles.Add(file);
+            }
+        }
+
+        var result = new FolderContentsDto
+        {
+            CurrentFolder = new FolderTreeNodeDto
+            {
+                Id = null,
+                Name = currentPath == "/" ? "Blob Storage" : currentPath.Split('/', StringSplitOptions.RemoveEmptyEntries).Last(),
+                Path = currentPath,
+                Type = FolderTypeDto.YearMonth,
+                Icon = currentPath == "/" ? "database" : "folder",
+                IsVirtual = true,
+                CanWrite = false,
+                CanDelete = false,
+                StructureKey = structureKey
+            },
+            Breadcrumbs = BuildBlobPathBreadcrumbs(currentPath)
+        };
+
+        result.ParentFolder = currentPath == "/"
+            ? null
+            : new FolderTreeNodeDto
+            {
+                Id = null,
+                Name = "Blob Storage",
+                Path = GetParentPath(currentPath) is { Length: > 0 } parentPath ? parentPath : "/",
+                Type = FolderTypeDto.YearMonth,
+                Icon = "folder",
+                IsVirtual = true,
+                CanWrite = false,
+                CanDelete = false,
+                StructureKey = structureKey
+            };
+
+        foreach (var childFolder in childFolders)
+        {
+            var path = currentPath == "/" ? $"/{childFolder}" : $"{currentPath}/{childFolder}";
+            result.Folders.Add(new FolderTreeNodeDto
+            {
+                Id = null,
+                Name = childFolder,
+                Path = path,
+                Type = FolderTypeDto.YearMonth,
+                Icon = "folder",
+                HasChildren = true,
+                IsVirtual = true,
+                CanWrite = false,
+                CanDelete = false,
+                StructureKey = structureKey
+            });
+        }
+
+        result.Files = ObjectMapper.Map<List<FileItem>, List<FileItemDto>>(
+            ApplyFileSorting(directFiles.AsQueryable(), input.Sorting)
+                .Skip(input.SkipCount)
+                .Take(input.MaxResultCount)
+                .ToList());
+        result.TotalFileCount = directFiles.Count;
+        result.TotalFolderCount = result.Folders.Count;
+        result.TotalSize = result.Files.Sum(f => f.Size);
+        return result;
+    }
+
+    protected virtual async Task<List<FileItem>> GetBlobPathFilesAsync(string? filter, string? structureKey)
+    {
+        var query = await _fileItemRepository.GetQueryableAsync();
+        query = query.Where(f => !f.IsArchived && f.TenantId == CurrentTenant.Id);
+
+        if (!string.IsNullOrWhiteSpace(structureKey))
+        {
+            query = query.Where(f => f.StructureKey == structureKey);
+        }
+
+        if (!string.IsNullOrWhiteSpace(filter))
+        {
+            query = query.Where(f =>
+                f.OriginalName.Contains(filter) ||
+                f.Name.Contains(filter) ||
+                f.BlobName.Contains(filter));
+        }
+
+        return await AsyncExecuter.ToListAsync(query);
+    }
+
+    protected virtual List<BreadcrumbItemDto> BuildBlobPathBreadcrumbs(string currentPath)
+    {
+        var breadcrumbs = new List<BreadcrumbItemDto>
+        {
+            new()
+            {
+                Id = null,
+                Name = "Blob Storage",
+                Path = "/",
+                Icon = "database",
+                IsCurrent = currentPath == "/"
+            }
+        };
+
+        var path = "";
+        foreach (var segment in currentPath.Split('/', StringSplitOptions.RemoveEmptyEntries))
+        {
+            path += "/" + segment;
+            breadcrumbs.Add(new BreadcrumbItemDto
+            {
+                Id = null,
+                Name = segment,
+                Path = path,
+                Icon = "folder",
+                IsCurrent = path == currentPath
+            });
+        }
+
+        return breadcrumbs;
     }
 
     public async Task<FileFolderDto> GetAsync(Guid id)
@@ -299,7 +445,8 @@ public class FolderAppService : ApplicationService, IFolderAppService
             input.Name,
             path,
             FolderType.Custom,
-            parentId);
+            parentId,
+            parentId.HasValue ? ResolveStructureKey(await _folderRepository.GetAsync(parentId.Value)) : null);
 
         folder.SetDisplayProperties(input.Icon, input.Color, input.Description);
 
@@ -744,16 +891,6 @@ public class FolderAppService : ApplicationService, IFolderAppService
             }
         }
 
-        // Add root
-        breadcrumbs.Insert(0, new BreadcrumbItemDto
-        {
-            Id = null,
-            Name = "Root",
-            Path = "/",
-            Icon = "home",
-            IsCurrent = false
-        });
-
         return breadcrumbs;
     }
 
@@ -882,6 +1019,36 @@ public class FolderAppService : ApplicationService, IFolderAppService
             _ => query.OrderByDescending(m => m.CreationTime)
         };
     }
+
+    private IQueryable<FileItem> ApplyFileSorting(IQueryable<FileItem> query, string? sorting) => ApplySorting(query, sorting);
+
+    private string? ResolveStructureKey(FileFolder folder)
+    {
+        if (!string.IsNullOrWhiteSpace(folder.StructureKey))
+        {
+            return folder.StructureKey;
+        }
+
+        var segments = folder.Path.Split('/', StringSplitOptions.RemoveEmptyEntries);
+        if (segments.Length == 0)
+        {
+            return null;
+        }
+
+        return segments[0];
+    }
+
+    private static string NormalizeVirtualPath(string? path)
+    {
+        if (string.IsNullOrWhiteSpace(path) || path == "/")
+        {
+            return "/";
+        }
+
+        return "/" + path.Trim().Trim('/');
+    }
+
+    private static string NormalizeBlobName(string blobName) => blobName.Trim().TrimStart('/');
 
     private static FolderTypeDto MapFolderType(FolderType type) => type switch
     {

@@ -6,7 +6,7 @@ namespace SufiChain.SufiAbp.AIManagement.MongoDB;
 
 public static class AIManagementMongoDbContextExtensions
 {
-    public static void ConfigureAIManagement(this IMongoModelBuilder builder)
+    public static void ConfigureSufiAbpAIManagement(this IMongoModelBuilder builder)
     {
         Check.NotNull(builder, nameof(builder));
 

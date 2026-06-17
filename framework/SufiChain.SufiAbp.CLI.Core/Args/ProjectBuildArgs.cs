@@ -26,7 +26,7 @@ public class ProjectBuildArgs
     public required DatabaseProvider DatabaseProvider { get; init; }
     
     /// <summary>
-    /// Solution structure kind (Single or Layered).
+    /// Solution structure kind (WebApp or Layered).
     /// </summary>
     public required SolutionKind SolutionKind { get; init; }
     
@@ -86,7 +86,7 @@ public class ProjectBuildArgs
     
     /// <summary>
     /// Template source name, computed from <see cref="SolutionKind"/> and <see cref="IsTiered"/>.
-    /// Examples: "blazor-webapp-single", "blazor-webapp-layered", "blazor-webapp-layered-tiered"
+    /// Examples: "blazor-webapp", "blazor-webapp-layered", "blazor-webapp-layered-tiered"
     /// </summary>
     public string TemplateName { get; init; } = "blazor-webapp-layered-tiered";
     
@@ -124,7 +124,7 @@ public class ProjectBuildArgs
     {
         return solutionKind switch
         {
-            SolutionKind.Single => "blazor-webapp-single",
+            SolutionKind.WebApp => "blazor-webapp",
             SolutionKind.Layered when isTiered => "blazor-webapp-layered-tiered",
             SolutionKind.Layered => "blazor-webapp-layered",
             _ => throw new ArgumentOutOfRangeException(nameof(solutionKind))
@@ -141,8 +141,8 @@ public class ProjectBuildArgs
         
         switch (solutionKind)
         {
-            case SolutionKind.Single:
-                // Single: just the App host (no host splitting)
+            case SolutionKind.WebApp:
+                // WebApp: just the Blazor.WebApp host (no host splitting)
                 hosts.Add(HostType.WebApp);
                 break;
                 

@@ -60,6 +60,29 @@ public class MCPToolRegistry : IMCPToolRegistry, ISingletonDependency
             throw new BusinessException(AIManagementErrorCodes.WorkspaceNotFound)
                 .WithData("WorkspaceName", workspaceName);
         }
+
+        var enabledToolNames = ReadEnabledMCPToolNames(workspace);
+        if (enabledToolNames.Count == 0)
+        {
+            return new List<IMCPTool>();
+        }
+
+        var allTools = await GetAllToolsForWorkspaceAsync(workspaceName, cancellationToken);
+        var enabledToolNameSet = enabledToolNames.ToHashSet();
+        return allTools.Where(tool => enabledToolNameSet.Contains(tool.Name)).ToList();
+    }
+
+    public async Task<List<IMCPTool>> GetAllToolsForWorkspaceAsync(
+        string workspaceName,
+        CancellationToken cancellationToken = default)
+    {
+        var workspace = await _workspaceRepository.FindByNameAsync(workspaceName, cancellationToken);
+        
+        if (workspace == null)
+        {
+            throw new BusinessException(AIManagementErrorCodes.WorkspaceNotFound)
+                .WithData("WorkspaceName", workspaceName);
+        }
         
         var tools = new List<IMCPTool>();
         
@@ -69,6 +92,7 @@ public class MCPToolRegistry : IMCPToolRegistry, ISingletonDependency
 
         var frameworkTools = _serviceProvider
             .GetServices<ISufiAbpAITool>()
+            .Where(tool => tools.All(existingTool => existingTool.Name != tool.Name))
             .Select(tool => (IMCPTool)new McpToolAdapter(tool));
         tools.AddRange(frameworkTools);
         
@@ -120,6 +144,23 @@ public class MCPToolRegistry : IMCPToolRegistry, ISingletonDependency
         );
         
         return tools;
+    }
+
+    private static List<string> ReadEnabledMCPToolNames(Workspace workspace)
+    {
+        if (string.IsNullOrWhiteSpace(workspace.EnabledMCPToolsJson))
+        {
+            return new List<string>();
+        }
+
+        try
+        {
+            return JsonSerializer.Deserialize<List<string>>(workspace.EnabledMCPToolsJson) ?? new List<string>();
+        }
+        catch
+        {
+            return new List<string>();
+        }
     }
     
     public async Task<IMCPTool?> GetToolAsync(

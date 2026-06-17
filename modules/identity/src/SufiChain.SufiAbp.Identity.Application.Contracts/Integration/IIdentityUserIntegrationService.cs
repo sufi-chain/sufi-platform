@@ -12,15 +12,15 @@ namespace SufiChain.SufiAbp.Identity.Integration;
 [IntegrationService]
 public interface IIdentityUserIntegrationService : IApplicationService
 {
-    Task<string[]> GetRoleNamesAsync(Guid id);
+    Task<string[]> GetRoleNamesAsync(System.Guid id);
 
-    Task<IdentityUserData?> FindByIdAsync(Guid id);
+    Task<IdentityUserData?> FindByIdAsync(System.Guid id);
 
     Task<IdentityUserData?> FindByUserNameAsync(string userName);
 
     Task<ListResultDto<IdentityUserData>> SearchAsync(UserLookupSearchInputDto input);
 
-    Task<ListResultDto<IdentityUserData>> SearchByIdsAsync(Guid[] ids);
+    Task<ListResultDto<IdentityUserData>> SearchByIdsAsync(System.Guid[] ids);
 
     Task<long> GetCountAsync(UserLookupCountInputDto input);
 

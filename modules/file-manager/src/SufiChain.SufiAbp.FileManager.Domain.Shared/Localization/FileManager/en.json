@@ -505,6 +505,11 @@
     "MaxFilesWithValue": "Max files: {0}",
     "MinDimensionsWithValue": "Min dimensions: {0} x {1} px",
     "UploadingFiles": "Uploading Files",
-    "UploadedFilesWithCount": "Uploaded Files ({0})"
+    "UploadedFilesWithCount": "Uploaded Files ({0})",
+    "Permission:FileManager": "File manager",
+    "Permission:MediaItems": "Media items",
+    "Permission:MediaStructures": "Media structures",
+    "BlobStorageView": "Blob storage",
+    "DirectoryMapView": "Directory map"
   }
 }

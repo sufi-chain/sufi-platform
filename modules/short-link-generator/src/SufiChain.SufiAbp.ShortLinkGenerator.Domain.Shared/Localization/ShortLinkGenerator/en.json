@@ -88,6 +88,11 @@
     "Feature:ShortLinkGenerator.Analytics": "Short link analytics",
     "Feature:ShortLinkGenerator.Analytics.Description": "Enable click tracking and analytics.",
     "Feature:ShortLinkGenerator.PublicRedirect": "Public redirect",
-    "Feature:ShortLinkGenerator.PublicRedirect.Description": "Enable public short URL redirect resolution."
+    "Feature:ShortLinkGenerator.PublicRedirect.Description": "Enable public short URL redirect resolution.",
+    "Cancel": "Cancel",
+    "Save": "Save",
+    "Yes": "Yes",
+    "No": "No",
+    "SamplePageMessage": "A sample page for the Short Link Generator module."
   }
 }

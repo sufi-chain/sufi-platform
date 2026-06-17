@@ -29,9 +29,10 @@ public static class AIManagementDbContextModelCreatingExtensions
             b.Property(x => x.Temperature).IsRequired();
             b.Property(x => x.MaxTokens).IsRequired();
             b.Property(x => x.OpenAIApiMode).IsRequired();
-            b.Property(x => x.InputCostPer1KTokens).HasPrecision(18, 8);
-            b.Property(x => x.OutputCostPer1KTokens).HasPrecision(18, 8);
+            b.Property(x => x.InputCostPer1MTokens).HasPrecision(18, 8);
+            b.Property(x => x.OutputCostPer1MTokens).HasPrecision(18, 8);
             b.Property(x => x.IsActive).IsRequired();
+            b.Property(x => x.EnabledMCPToolsJson).HasMaxLength(8192);
 
             b.HasIndex(x => x.Name).IsUnique();
             b.HasIndex(x => x.TenantId);
@@ -60,8 +61,8 @@ public static class AIManagementDbContextModelCreatingExtensions
             b.Property(x => x.IsEnabled).IsRequired();
             b.Property(x => x.Priority).IsRequired();
             b.Property(x => x.OpenAIApiMode);
-            b.Property(x => x.InputCostPer1KTokens).HasPrecision(18, 8);
-            b.Property(x => x.OutputCostPer1KTokens).HasPrecision(18, 8);
+            b.Property(x => x.InputCostPer1MTokens).HasPrecision(18, 8);
+            b.Property(x => x.OutputCostPer1MTokens).HasPrecision(18, 8);
             b.Property(x => x.ConfigurationJson).HasMaxLength(4096);
 
             b.HasIndex(x => new { x.WorkspaceId, x.CapabilityType, x.Priority });

@@ -62,7 +62,9 @@ public partial class PermissionManagementModal : IdentityComponentBase
         {
             var result = await PermissionAppService.GetAsync(_providerName, _providerKey);
             _entityDisplayName = entityDisplayName ?? result.EntityDisplayName;
-            _allGroups = result.Groups.OrderBy(x => x.DisplayName).ToList();
+            _allGroups = result.Groups
+                .OrderBy(x => x.DisplayName)
+                .ToList();
             _groups = _allGroups.ToList();
 
             NormalizePermissionGroups();
@@ -90,10 +92,12 @@ public partial class PermissionManagementModal : IdentityComponentBase
             }
         }
 
+        _permissionDepths.Clear();
+
         // Calculate permission depths for indentation
         foreach (var group in _groups)
         {
-            SetPermissionDepths(group.Permissions, null, 0);
+            SetPermissionDepths(group.Permissions, null, 0, new HashSet<string>());
         }
 
         // Select first tab if not already selected
@@ -103,14 +107,24 @@ public partial class PermissionManagementModal : IdentityComponentBase
         }
     }
 
-    private void SetPermissionDepths(List<PermissionGrantInfoDto> permissions, string? currentParent, int currentDepth)
+    private void SetPermissionDepths(
+        List<PermissionGrantInfoDto> permissions,
+        string? currentParent,
+        int currentDepth,
+        HashSet<string> path)
     {
         foreach (var item in permissions)
         {
             if (item.ParentName == currentParent)
             {
+                if (!path.Add(item.Name))
+                {
+                    continue;
+                }
+
                 _permissionDepths[item.Name] = currentDepth;
-                SetPermissionDepths(permissions, item.Name, currentDepth + 1);
+                SetPermissionDepths(permissions, item.Name, currentDepth + 1, path);
+                path.Remove(item.Name);
             }
         }
     }

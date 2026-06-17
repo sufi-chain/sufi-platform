@@ -1,6 +1,7 @@
 {
   "culture": "ar",
   "texts": {
+    "AppName": "MyProjectName",
     "Menu:Home": "الرئيسية",
     "Menu:MyAccount": "حسابي",
     "Logout": "تسجيل الخروج",

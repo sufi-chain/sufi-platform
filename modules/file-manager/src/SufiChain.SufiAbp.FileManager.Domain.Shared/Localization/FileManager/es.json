@@ -481,6 +481,11 @@
     "MaxFilesWithValue": "Máximo de archivos: {0}",
     "MinDimensionsWithValue": "Dimensiones mínimas: {0} × {1} px",
     "UploadingFiles": "Subiendo archivos",
-    "UploadedFilesWithCount": "Archivos subidos ({0})"
+    "UploadedFilesWithCount": "Archivos subidos ({0})",
+    "Permission:FileManager": "Gestor de archivos",
+    "Permission:MediaItems": "Elementos multimedia",
+    "Permission:MediaStructures": "Estructuras multimedia",
+    "BlobStorageView": "Almacenamiento blob",
+    "DirectoryMapView": "Mapa de carpetas"
   }
 }

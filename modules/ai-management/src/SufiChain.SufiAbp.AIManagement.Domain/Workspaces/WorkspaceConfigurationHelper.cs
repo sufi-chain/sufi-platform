@@ -20,10 +20,10 @@ public static class WorkspaceConfigurationHelper
         }
     }
 
-    public static void ConfigureKernel(IKernelBuilder builder, Workspace workspace)
+    public static void ConfigureKernel(IKernelBuilder builder, Workspace workspace, string? apiKey = null)
     {
         EnsureOpenAIProvider(workspace.Provider);
-        ConfigureOpenAIKernel(builder, workspace);
+        ConfigureOpenAIKernel(builder, workspace, apiKey);
     }
 
     public static IEmbeddingGenerator<string, Embedding<float>> CreateEmbeddingGenerator(Workspace workspace, string? embeddingModel = null)
@@ -79,9 +79,9 @@ public static class WorkspaceConfigurationHelper
         return new SemanticKernelEmbeddingGenerator(embeddingService);
     }
 
-    private static void ConfigureOpenAIKernel(IKernelBuilder builder, Workspace workspace)
+    private static void ConfigureOpenAIKernel(IKernelBuilder builder, Workspace workspace, string? apiKeyOverride)
     {
-        var apiKey = workspace.ApiKey ?? throw new InvalidOperationException("OpenAI API key is required");
+        var apiKey = apiKeyOverride ?? workspace.ApiKey ?? throw new InvalidOperationException("OpenAI API key is required");
 
         if (!string.IsNullOrWhiteSpace(workspace.ApiBaseUrl))
         {

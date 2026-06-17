@@ -65,6 +65,10 @@
 
   <!-- <TEMPLATE-ONLY>
   <ItemGroup>
+    <PackageReference Include="SufiChain.SufiAbp.Calendar.Application" Version="$(SufiVersion)" />
+    <!-- <TEMPLATE-REMOVE IF-NOT="db:efcore"> -->
+    <PackageReference Include="SufiChain.SufiAbp.Calendar.EntityFrameworkCore" Version="$(SufiVersion)" />
+    <!-- </TEMPLATE-REMOVE> -->
     <PackageReference Include="SufiChain.SufiAbp.FileManager.Application" Version="$(SufiVersion)" />
     <!-- <TEMPLATE-REMOVE IF-NOT="db:efcore"> -->
     <PackageReference Include="SufiChain.SufiAbp.FileManager.EntityFrameworkCore" Version="$(SufiVersion)" />
@@ -87,6 +91,7 @@
     <PackageReference Include="SufiChain.SufiAbp.AIManagement.Application" Version="$(SufiVersion)" />
     <!-- <TEMPLATE-REMOVE IF-NOT="db:efcore"> -->
     <PackageReference Include="SufiChain.SufiAbp.ShortLinkGenerator.EntityFrameworkCore" Version="$(SufiVersion)" />
+    <PackageReference Include="SufiChain.SufiAbp.AIManagement.EntityFrameworkCore" Version="$(SufiVersion)" />
     <!-- </TEMPLATE-REMOVE> -->
     <!-- <TEMPLATE-REMOVE IF-NOT="db:mongodb"> -->
     <PackageReference Include="SufiChain.SufiAbp.ShortLinkGenerator.MongoDB" Version="$(SufiVersion)" />

@@ -23,6 +23,11 @@ public class AIManagementOptions
     /// </summary>
     public void AddDefaultFileStructure(FileManagerOptions fileManagerOptions)
     {
+        if (fileManagerOptions.Structures.Exists(s => s.Key == AIManagementFileStructureKeys.AIManagement))
+        {
+            return;
+        }
+
         fileManagerOptions.DefineStructure(AIManagementFileStructureKeys.AIManagement)
             .WithDisplayName("Structure:AIManagement:DisplayName")
             .WithDescription("Structure:AIManagement:Description")
@@ -35,4 +40,3 @@ public class AIManagementOptions
             .IsPublic(false);
     }
 }
-

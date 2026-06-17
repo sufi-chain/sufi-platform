@@ -56,6 +56,10 @@
     "IdentityTabOtp": "OTP",
     "IdentityTabCaptcha": "CAPTCHA",
     "IdentityAllowedChannels": "قنوات الإرسال المسموحة",
-    "Permission:Identity": "إعدادات الهوية"
+    "Permission:Identity": "إعدادات الهوية",
+    "Permission:SettingManagement": "إدارة الإعدادات",
+    "Permission:Emailing": "البريد الإلكتروني",
+    "Permission:EmailingTest": "اختبار البريد الإلكتروني",
+    "Permission:TimeZone": "المنطقة الزمنية"
   }
 }

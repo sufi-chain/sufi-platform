@@ -5,9 +5,9 @@ namespace SufiChain.SufiAbp.Identity;
 
 public class UserData : ExtensibleObject
 {
-    public Guid Id { get; set; }
+    public System.Guid Id { get; set; }
 
-    public Guid? TenantId { get; set; }
+    public System.Guid? TenantId { get; set; }
 
     public string UserName { get; set; } = string.Empty;
 
@@ -31,7 +31,7 @@ public class UserData : ExtensibleObject
     }
 
     public UserData(
-        Guid id,
+        System.Guid id,
         string userName,
         string? email = null,
         string? name = null,
@@ -39,7 +39,7 @@ public class UserData : ExtensibleObject
         bool emailConfirmed = false,
         string? phoneNumber = null,
         bool phoneNumberConfirmed = false,
-        Guid? tenantId = null,
+        System.Guid? tenantId = null,
         bool isActive = true,
         ExtraPropertyDictionary? extraProperties = null)
         : base(false)

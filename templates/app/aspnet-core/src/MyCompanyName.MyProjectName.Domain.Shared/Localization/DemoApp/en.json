@@ -1,6 +1,7 @@
 {
   "culture": "en",
   "texts": {
+    "AppName": "MyProjectName",
     "Menu:Home": "Home",
     "Menu:MyAccount": "My Account",
     "Logout": "Logout",

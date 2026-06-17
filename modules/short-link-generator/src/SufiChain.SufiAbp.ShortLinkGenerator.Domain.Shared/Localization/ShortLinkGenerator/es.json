@@ -88,6 +88,11 @@
     "Feature:ShortLinkGenerator.Enable.Description": "Enable the Short Link Generator module for this edition.",
     "Feature:ShortLinkGenerator.Enable": "Short Link Generator",
     "Feature:ShortLinkGenerator.ShortLinks": "Short links",
-    "Feature:ShortLinkGenerator.ShortLinks.Description": "Enable short URL creation, management, and administration."
+    "Feature:ShortLinkGenerator.ShortLinks.Description": "Enable short URL creation, management, and administration.",
+    "Cancel": "Cancelar",
+    "Save": "Guardar",
+    "Yes": "Sí",
+    "No": "No",
+    "SamplePageMessage": "Una página de ejemplo para el módulo Generador de enlaces cortos."
   }
 }

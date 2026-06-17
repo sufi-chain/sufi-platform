@@ -12,7 +12,7 @@ public class BlazorWebAppTemplate : ITemplateInfo
     
     public string Description => "A Blazor Web App solution with ABP framework, " +
                                  "supporting both MongoDB and Entity Framework Core, " +
-                                 "with tiered or single architecture options.";
+                                 "with tiered, layered, or WebApp architecture options.";
     
     public IReadOnlyList<string> SupportedDatabaseProviders => new[] { "MongoDB", "EntityFrameworkCore" };
     

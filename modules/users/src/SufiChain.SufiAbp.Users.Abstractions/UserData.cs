@@ -1,17 +1,14 @@
 using System;
-using System.Collections.Generic;
 using JetBrains.Annotations;
 using SufiChain.SufiAbp.Data;
-using SufiChain.SufiAbp.ObjectExtending;
-using Volo.Abp.Data;
 
 namespace SufiChain.SufiAbp.Users;
 
 public class UserData : IUserData
 {
-    public Guid Id { get; set; }
+    public System.Guid Id { get; set; }
 
-    public Guid? TenantId { get; set; }
+    public System.Guid? TenantId { get; set; }
 
     public string UserName { get; set; }
 
@@ -33,7 +30,7 @@ public class UserData : IUserData
 
     public UserData()
     {
-
+        ExtraProperties = new ExtraPropertyDictionary();
     }
 
     public UserData(IUserData userData)
@@ -52,7 +49,7 @@ public class UserData : IUserData
     }
 
     public UserData(
-        Guid id,
+        System.Guid id,
         [NotNull] string userName,
         [CanBeNull] string email = null,
         [CanBeNull] string name = null,
@@ -60,7 +57,7 @@ public class UserData : IUserData
         bool emailConfirmed = false,
         [CanBeNull] string phoneNumber = null,
         bool phoneNumberConfirmed = false,
-        Guid? tenantId = null,
+        System.Guid? tenantId = null,
         bool isActive = true,
         ExtraPropertyDictionary extraProperties = null)
     {
@@ -74,6 +71,6 @@ public class UserData : IUserData
         PhoneNumber = phoneNumber;
         PhoneNumberConfirmed = phoneNumberConfirmed;
         TenantId = tenantId;
-        ExtraProperties = extraProperties;
+        ExtraProperties = extraProperties ?? new ExtraPropertyDictionary();
     }
 }

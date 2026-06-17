@@ -108,7 +108,7 @@ using Volo.Abp.VirtualFileSystem;
 namespace MyCompanyName.MyProjectName;
 
 /// <summary>
-/// Single-layer all-in-one module. Combines DB, Auth, API, and Blazor Server UI in one host.
+/// Integrated WebApp module. Combines DB, Auth, API, and Blazor Server UI in one host.
 /// No separate Application, Domain, HttpApi, or MongoDB projects — everything is in this project.
 /// </summary>
 [DependsOn(
@@ -484,6 +484,11 @@ public class DemoAppModule : AbpModule
             options.Layout = KomLayouts.DualSidebar;
             options.IconRailDarkMode = true;
             options.ExpandOnHover = true;
+            options.MobileShortcuts.Add(new MobileMenuShortcut(
+                "DemoApp.Home",
+                "Home",
+                "/",
+                "home"));
         });
     }
 
@@ -495,6 +500,7 @@ public class DemoAppModule : AbpModule
         });
         Configure<ToolbarOptions>(options =>
         {
+            options.Contributors.Add(new CalendarPublicToolbarContributor());
             options.Contributors.Add(new DemoAppToolbarContributor());
         });
     }

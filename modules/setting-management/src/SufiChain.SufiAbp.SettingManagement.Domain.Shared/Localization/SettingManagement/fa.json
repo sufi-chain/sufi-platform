@@ -56,6 +56,10 @@
     "IdentityTabOtp": "OTP",
     "IdentityTabCaptcha": "کپچا",
     "IdentityAllowedChannels": "کانال‌های مجاز ارسال",
-    "Permission:Identity": "تنظیمات هویت"
+    "Permission:Identity": "تنظیمات هویت",
+    "Permission:SettingManagement": "مدیریت تنظیمات",
+    "Permission:Emailing": "ایمیل",
+    "Permission:EmailingTest": "آزمایش ایمیل",
+    "Permission:TimeZone": "منطقه زمانی"
   }
 }

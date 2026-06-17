@@ -47,9 +47,9 @@ public class AIModelConfiguration : AuditedEntity<Guid>
 
     public OpenAIApiMode? OpenAIApiMode { get; protected set; }
 
-    public decimal? InputCostPer1KTokens { get; protected set; }
+    public decimal? InputCostPer1MTokens { get; protected set; }
 
-    public decimal? OutputCostPer1KTokens { get; protected set; }
+    public decimal? OutputCostPer1MTokens { get; protected set; }
     
     /// <summary>
     /// Additional configuration as JSON (model-specific parameters, temperature, max_tokens, etc.)
@@ -80,12 +80,12 @@ public class AIModelConfiguration : AuditedEntity<Guid>
         string? configurationJson,
         int priority,
         OpenAIApiMode? openAIApiMode = null,
-        decimal? inputCostPer1KTokens = null,
-        decimal? outputCostPer1KTokens = null
+        decimal? inputCostPer1MTokens = null,
+        decimal? outputCostPer1MTokens = null
     )
     {
-        ValidatePricing(inputCostPer1KTokens, nameof(inputCostPer1KTokens));
-        ValidatePricing(outputCostPer1KTokens, nameof(outputCostPer1KTokens));
+        ValidatePricing(inputCostPer1MTokens, nameof(inputCostPer1MTokens));
+        ValidatePricing(outputCostPer1MTokens, nameof(outputCostPer1MTokens));
 
         ModelId = Check.NotNullOrWhiteSpace(modelId, nameof(modelId));
         ApiEndpoint = apiEndpoint;
@@ -93,8 +93,8 @@ public class AIModelConfiguration : AuditedEntity<Guid>
         ConfigurationJson = configurationJson;
         Priority = priority;
         OpenAIApiMode = openAIApiMode;
-        InputCostPer1KTokens = inputCostPer1KTokens;
-        OutputCostPer1KTokens = outputCostPer1KTokens;
+        InputCostPer1MTokens = inputCostPer1MTokens;
+        OutputCostPer1MTokens = outputCostPer1MTokens;
     }
     
     public void Enable() => IsEnabled = true;

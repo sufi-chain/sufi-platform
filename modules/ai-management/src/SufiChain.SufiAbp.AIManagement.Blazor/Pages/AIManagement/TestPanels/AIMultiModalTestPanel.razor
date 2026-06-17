@@ -1,13 +1,6 @@
-@page "/admin/ai-management/multimodal-test"
-@attribute [Authorize(Policy = AIManagementPermissions.AI.Chat)]
 @inherits AIManagementComponentBase
+@namespace SufiChain.SufiAbp.AIManagement.Blazor.Pages.AIManagement
 
-<SufiAbpPageToolbar>
-	<SbButton Color="SbColor.Secondary" Variant="SbButtonVariant.Outline" OnClick="@ResetForm">
-		<StartIcon><SbIcon Name="refresh" /></StartIcon>
-		<ChildContent>@L["Reset"]</ChildContent>
-	</SbButton>
-</SufiAbpPageToolbar>
 
 <SbStack Direction="SbStackDirection.Column" Gap="4">
 
@@ -15,7 +8,7 @@
 	<WorkspaceSelector Value="_selectedWorkspaceId"
 					   ValueChanged="@OnWorkspaceChangedAsync"
 					   Workspaces="_workspaces"
-					   Loading="@IsOperationLoading(LoadingKeys.LoadWorkspaces)" />
+					   Loading="@IsOperationLoading(MultiModalLoadingKeys.LoadWorkspaces)" />
 
 	<!-- Capability Tabs -->
 	@if (!string.IsNullOrEmpty(_selectedWorkspaceName))
@@ -72,7 +65,7 @@
 							<SbStack Direction="SbStackDirection.Row" Gap="2" Justify="SbJustify.End">
 								<SbButton Color="SbColor.Primary"
 										  OnClick="@SendChatAsync"
-										  Loading="IsOperationLoading(LoadingKeys.SendChat)"
+										  Loading="IsOperationLoading(MultiModalLoadingKeys.SendChat)"
 										  Disabled="string.IsNullOrWhiteSpace(_chatMessage)">
 									<StartIcon><SbIcon Name="send" /></StartIcon>
 									<ChildContent>@L["Send"]</ChildContent>
@@ -114,7 +107,7 @@
 							<SbStack Direction="SbStackDirection.Row" Gap="2" Justify="SbJustify.End">
 								<SbButton Color="SbColor.Primary"
 										  OnClick="@TranscribeAudioAsync"
-										  Loading="IsOperationLoading(LoadingKeys.TranscribeAudio)"
+										  Loading="IsOperationLoading(MultiModalLoadingKeys.TranscribeAudio)"
 										  Disabled="_audioData == null">
 									<StartIcon><SbIcon Name="mic" /></StartIcon>
 									<ChildContent>@L["Transcribe"]</ChildContent>
@@ -163,7 +156,7 @@
 							<SbStack Direction="SbStackDirection.Row" Gap="2" Justify="SbJustify.End">
 								<SbButton Color="SbColor.Primary"
 										  OnClick="@GenerateSpeechAsync"
-										  Loading="IsOperationLoading(LoadingKeys.GenerateSpeech)"
+										  Loading="IsOperationLoading(MultiModalLoadingKeys.GenerateSpeech)"
 										  Disabled="string.IsNullOrWhiteSpace(_ttsText)">
 									<StartIcon><SbIcon Name="volume" /></StartIcon>
 									<ChildContent>@L["GenerateSpeech"]</ChildContent>
@@ -223,7 +216,7 @@
 							<SbStack Direction="SbStackDirection.Row" Gap="2" Justify="SbJustify.End">
 								<SbButton Color="SbColor.Primary"
 										  OnClick="@AnalyzeImageAsync"
-										  Loading="IsOperationLoading(LoadingKeys.AnalyzeImage)"
+										  Loading="IsOperationLoading(MultiModalLoadingKeys.AnalyzeImage)"
 										  Disabled="_imageData == null || string.IsNullOrWhiteSpace(_visionPrompt)">
 									<StartIcon><SbIcon Name="eye" /></StartIcon>
 									<ChildContent>@L["Analyze"]</ChildContent>
@@ -275,7 +268,7 @@
 							<SbStack Direction="SbStackDirection.Row" Gap="2" Justify="SbJustify.End">
 								<SbButton Color="SbColor.Primary"
 										  OnClick="@GenerateEmbeddingsAsync"
-										  Loading="IsOperationLoading(LoadingKeys.GenerateEmbeddings)"
+										  Loading="IsOperationLoading(MultiModalLoadingKeys.GenerateEmbeddings)"
 										  Disabled="string.IsNullOrWhiteSpace(_embeddingsText)">
 									<StartIcon><SbIcon Name="hash" /></StartIcon>
 									<ChildContent>@L["GenerateEmbeddings"]</ChildContent>

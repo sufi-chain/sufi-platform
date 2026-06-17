@@ -480,6 +480,11 @@
     "MaxFilesWithValue": "الحد الأقصى للملفات: {0}",
     "MinDimensionsWithValue": "الحد الأدنى للأبعاد: {0} × {1} بكسل",
     "UploadingFiles": "جاري رفع الملفات",
-    "UploadedFilesWithCount": "الملفات المرفوعة ({0})"
+    "UploadedFilesWithCount": "الملفات المرفوعة ({0})",
+    "Permission:FileManager": "مدير الملفات",
+    "Permission:MediaItems": "عناصر الوسائط",
+    "Permission:MediaStructures": "هياكل الوسائط",
+    "BlobStorageView": "عرض التخزين",
+    "DirectoryMapView": "عرض المجلدات"
   }
 }

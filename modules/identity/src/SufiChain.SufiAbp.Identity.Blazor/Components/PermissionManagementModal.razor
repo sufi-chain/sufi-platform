@@ -18,10 +18,17 @@
 			</SbStack>
 
 			@* Permission Groups - Vertical Layout *@
-			@if (_groups.Any())
+			@if (IsOperationLoading(LoadingKeys.LoadPermissions))
+			{
+				<div class="p-5 text-center">
+					<SbProgress Type="SbProgressType.Circular" />
+					<p class="mt-3 text-muted">@L["LoadingPermissions"]</p>
+				</div>
+			}
+			else if (_groups.Any())
 			{
 				<div class="permission-modal__panes border rounded">
-					<SbTabs Vertical="true" Class="permission-modal__tabs" @bind-ActiveTab="_selectedTabId" LazyLoad="true">
+					<SbTabs Vertical="true" Class="permission-modal__tabs" @bind-ActiveTab="_selectedTabId">
 						@foreach (var group in _groups)
 						{
 							var tabId = GetNormalizedGroupName(group.Name);

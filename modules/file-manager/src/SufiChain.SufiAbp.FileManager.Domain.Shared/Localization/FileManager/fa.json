@@ -4,7 +4,7 @@
     "Menu:SpFileManager": "مدیریت فایل",
     "Menu:FileManager": "مدیر فایل",
     "Menu:FileStats": "آمار فایل‌ها",
-    "Menu:AssetManager": "مدیریت دارایی‌های دیجیتال",
+    "Menu:AssetManager": "مدیریت فایل ها ",
     "Menu:FileItems": "فایل‌ها",
     "Menu:FileStructures": "ساختارهای فایل",
     "Menu:ArchivedFiles": "فایل های آرشیو شده",
@@ -465,6 +465,11 @@
     "MaxFilesWithValue": "حداکثر فایل‌ها: {0}",
     "MinDimensionsWithValue": "حداقل ابعاد: {0} × {1} پیکسل",
     "UploadingFiles": "در حال آپلود فایل‌ها",
-    "UploadedFilesWithCount": "فایل‌های آپلودشده ({0})"
+    "UploadedFilesWithCount": "فایل‌های آپلودشده ({0})",
+    "Permission:FileManager": "مدیر فایل",
+    "Permission:MediaItems": "آیتم‌های رسانه",
+    "Permission:MediaStructures": "ساختارهای رسانه",
+    "BlobStorageView": "نمای ذخیره‌سازی",
+    "DirectoryMapView": "نمای پوشه‌ها"
   }
 }

@@ -6,13 +6,13 @@ namespace SufiChain.SufiAbp.CLI.Args;
 public enum SolutionKind
 {
     /// <summary>
-    /// Minimal 3-project structure: App (UI + API + Auth + DB), App.Client, Application.Contracts.
+    /// DDD solution hosted by Blazor.WebApp without separate HttpApi.Host/AuthServer hosts.
     /// </summary>
-    Single,
+    WebApp,
 
     /// <summary>
     /// Full DDD project structure with separate Domain, Application, HttpApi, and infrastructure layers.
-    /// Can be tiered (separate hosts) or non-tiered (single host with direct DB access).
+    /// Can be tiered (separate hosts) or non-tiered (WebApp + HttpApi.Host).
     /// </summary>
     Layered
 }

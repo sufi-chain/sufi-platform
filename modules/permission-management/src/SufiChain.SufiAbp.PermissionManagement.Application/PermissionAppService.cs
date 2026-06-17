@@ -1,4 +1,8 @@
 using Microsoft.Extensions.Options;
+using Volo.Abp.Authorization.Permissions;
+using Volo.Abp.Localization;
+using Volo.Abp.MultiTenancy;
+using Volo.Abp.SimpleStateChecking;
 using SufiChain.SufiAbp.Application.Services;
 using SufiChain.SufiAbp.PermissionManagement.Localization;
 
@@ -10,18 +14,24 @@ public class PermissionAppService : SufiAbpApplicationService, IPermissionAppSer
     protected PermissionManagementOptions Options { get; }
     protected IPermissionManager PermissionManager { get; }
     protected IResourcePermissionManager ResourcePermissionManager { get; }
+    protected IPermissionDefinitionManager PermissionDefinitionManager { get; }
+    protected ISimpleStateCheckerManager<PermissionDefinition> SimpleStateCheckerManager { get; }
 
     public PermissionAppService(
         IPermissionManager permissionManager,
+        IPermissionDefinitionManager permissionDefinitionManager,
         IResourcePermissionManager resourcePermissionManager,
-        IOptions<PermissionManagementOptions> options)
+        IOptions<PermissionManagementOptions> options,
+        ISimpleStateCheckerManager<PermissionDefinition> simpleStateCheckerManager)
     {
         LocalizationResource = typeof(SufiAbpPermissionManagementResource);
         ObjectMapperContext = typeof(SufiAbpPermissionManagementApplicationModule);
 
         Options = options.Value;
         PermissionManager = permissionManager;
+        PermissionDefinitionManager = permissionDefinitionManager;
         ResourcePermissionManager = resourcePermissionManager;
+        SimpleStateCheckerManager = simpleStateCheckerManager;
     }
 
     public virtual async Task<GetPermissionListResultDto> GetAsync(string providerName, string providerKey)
@@ -39,34 +49,100 @@ public class PermissionAppService : SufiAbpApplicationService, IPermissionAppSer
             Groups = new List<PermissionGroupDto>()
         };
 
-        var grants = await PermissionManager.GetAllAsync(providerName, providerKey);
-        if (grants.Count == 0)
+        var multiTenancySide = CurrentTenant.GetMultiTenancySide();
+        var permissionGroups = new List<PermissionGroupDto>();
+
+        foreach (var group in (await PermissionDefinitionManager.GetGroupsAsync())
+                     .Where(x => string.IsNullOrWhiteSpace(groupName) || x.Name == groupName))
         {
-            return result;
+            var groupDto = CreatePermissionGroupDto(group);
+            var permissions = group.GetPermissionsWithChildren()
+                .Where(x => x.IsEnabled)
+                .Where(x => !x.Providers.Any() || x.Providers.Contains(providerName))
+                .Where(x => x.MultiTenancySide.HasFlag(multiTenancySide));
+
+            var enabledPermissions = new List<PermissionDefinition>();
+            foreach (var permission in permissions)
+            {
+                if (permission.Parent != null && !enabledPermissions.Contains(permission.Parent))
+                {
+                    continue;
+                }
+
+                if (await SimpleStateCheckerManager.IsEnabledAsync(permission))
+                {
+                    enabledPermissions.Add(permission);
+                }
+            }
+
+            if (!enabledPermissions.Any())
+            {
+                continue;
+            }
+
+            groupDto.Permissions.AddRange(enabledPermissions.Select(CreatePermissionGrantInfoDto));
+            permissionGroups.Add(groupDto);
         }
 
-        result.Groups.Add(new PermissionGroupDto
+        var grantInfo = await PermissionManager.GetAsync(
+            permissionGroups.SelectMany(group => group.Permissions).Select(permission => permission.Name).ToArray(),
+            providerName,
+            providerKey);
+
+        foreach (var permissionGroup in permissionGroups)
         {
-            Name = string.IsNullOrWhiteSpace(groupName) ? PermissionManagementRemoteServiceConsts.ModuleName : groupName,
-            DisplayName = string.IsNullOrWhiteSpace(groupName) ? L["Permissions"].ToString() : groupName,
-            DisplayNameKey = null,
-            DisplayNameResource = null,
-            Permissions = grants.Select(grant => new PermissionGrantInfoDto
+            foreach (var permission in permissionGroup.Permissions)
             {
-                Name = grant.Name,
-                DisplayName = grant.Name,
-                ParentName = null,
-                IsGranted = grant.IsGranted,
-                AllowedProviders = new List<string> { providerName },
-                GrantedProviders = grant.Providers.Select(provider => new ProviderInfoDto
+                var permissionGrantInfo = grantInfo.Result.FirstOrDefault(x => x.Name == permission.Name);
+                if (permissionGrantInfo == null)
+                {
+                    continue;
+                }
+
+                permission.IsGranted = permissionGrantInfo.IsGranted;
+                permission.GrantedProviders = permissionGrantInfo.Providers.Select(provider => new ProviderInfoDto
                 {
                     ProviderName = provider.Name,
                     ProviderKey = provider.Key
-                }).ToList()
-            }).ToList()
-        });
+                }).ToList();
+            }
+
+            if (permissionGroup.Permissions.Any())
+            {
+                result.Groups.Add(permissionGroup);
+            }
+        }
 
         return result;
+    }
+
+    protected virtual PermissionGrantInfoDto CreatePermissionGrantInfoDto(PermissionDefinition permission)
+    {
+        return new PermissionGrantInfoDto
+        {
+            Name = permission.Name,
+            DisplayName = permission.DisplayName?.Localize(StringLocalizerFactory) ?? permission.Name,
+            ParentName = permission.Parent?.Name,
+            IsGranted = false,
+            AllowedProviders = permission.Providers.ToList(),
+            GrantedProviders = new List<ProviderInfoDto>()
+        };
+    }
+
+    protected virtual PermissionGroupDto CreatePermissionGroupDto(PermissionGroupDefinition group)
+    {
+        var localizableDisplayName = group.DisplayName as LocalizableString;
+
+        return new PermissionGroupDto
+        {
+            Name = group.Name,
+            DisplayName = group.DisplayName?.Localize(StringLocalizerFactory) ?? group.Name,
+            DisplayNameKey = localizableDisplayName?.Name,
+            DisplayNameResource = localizableDisplayName?.ResourceType != null
+                ? LocalizationResourceNameAttribute.GetName(localizableDisplayName.ResourceType)
+                : null,
+            Permissions = new List<PermissionGrantInfoDto>()
+        };
     }
 
     public virtual async Task UpdateAsync(string providerName, string providerKey, UpdatePermissionsDto input)

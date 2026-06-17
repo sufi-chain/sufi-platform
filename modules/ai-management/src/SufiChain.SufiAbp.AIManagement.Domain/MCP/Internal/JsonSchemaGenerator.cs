@@ -69,6 +69,11 @@ public class JsonSchemaGenerator
             schema["type"] = "string";
             schema["format"] = "date-time";
         }
+        else if (underlyingType == typeof(TimeSpan))
+        {
+            schema["type"] = "string";
+            schema["description"] = "Duration as a TimeSpan, for example 00:30:00.";
+        }
         else if (underlyingType == typeof(Guid))
         {
             schema["type"] = "string";
@@ -132,6 +137,11 @@ public class JsonSchemaGenerator
         {
             schema["type"] = "string";
             schema["format"] = "date-time";
+        }
+        else if (underlyingType == typeof(TimeSpan))
+        {
+            schema["type"] = "string";
+            schema["description"] = "Duration as a TimeSpan, for example 00:30:00.";
         }
         else if (underlyingType == typeof(Guid))
         {

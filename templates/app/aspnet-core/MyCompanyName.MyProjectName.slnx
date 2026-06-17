@@ -1,4 +1,9 @@
 <Solution>
+  <Folder Name="/Solution Items/">
+    <File Path="NuGet.Config" />
+    <File Path="README.md" />
+    <File Path="versions.props" />
+  </Folder>
   <Folder Name="/src/">
     <Project Path="src/MyCompanyName.MyProjectName.Domain.Shared/MyCompanyName.MyProjectName.Domain.Shared.csproj" />
     <Project Path="src/MyCompanyName.MyProjectName.Domain/MyCompanyName.MyProjectName.Domain.csproj" />

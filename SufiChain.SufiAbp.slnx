@@ -3,16 +3,14 @@
     <Project Path="framework/SufiChain.SufiAbp.AI.Abstractions/SufiChain.SufiAbp.AI.Abstractions.csproj" />
     <Project Path="framework/SufiChain.SufiAbp.AI/SufiChain.SufiAbp.AI.csproj" />
     <Project Path="framework/SufiChain.SufiAbp.AspNetCore.Authentication.Abstractions/SufiChain.SufiAbp.AspNetCore.Authentication.Abstractions.csproj" />
-    <Project Path="framework/SufiChain.SufiAbp.AspNetCore.Authentication.OAuth/SufiChain.SufiAbp.AspNetCore.Authentication.OAuth.csproj" />
     <Project Path="framework/SufiChain.SufiAbp.AspNetCore.Authentication.JwtBearer/SufiChain.SufiAbp.AspNetCore.Authentication.JwtBearer.csproj" />
+    <Project Path="framework/SufiChain.SufiAbp.AspNetCore.Authentication.OAuth/SufiChain.SufiAbp.AspNetCore.Authentication.OAuth.csproj" />
     <Project Path="framework/SufiChain.SufiAbp.AspNetCore.Authentication.OpenIdConnect/SufiChain.SufiAbp.AspNetCore.Authentication.OpenIdConnect.csproj" />
-    <Project Path="framework/SufiChain.SufiAbp.AspNetCore.Mvc.Client/SufiChain.SufiAbp.AspNetCore.Mvc.Client.csproj" />
-    <Project Path="framework/SufiChain.SufiAbp.Caching.StackExchangeRedis/SufiChain.SufiAbp.Caching.StackExchangeRedis.csproj" />
-    <Project Path="framework/SufiChain.SufiAbp.Http.Client.IdentityModel.Web/SufiChain.SufiAbp.Http.Client.IdentityModel.Web.csproj" />
     <Project Path="framework/SufiChain.SufiAbp.AspNetCore.Authentication.Server/SufiChain.SufiAbp.AspNetCore.Authentication.Server.csproj" />
     <Project Path="framework/SufiChain.SufiAbp.AspNetCore.Authentication.WebAssembly/SufiChain.SufiAbp.AspNetCore.Authentication.WebAssembly.csproj" />
     <Project Path="framework/SufiChain.SufiAbp.AspNetCore.Components.Web/SufiChain.SufiAbp.AspNetCore.Components.Web.csproj" />
     <Project Path="framework/SufiChain.SufiAbp.AspNetCore.MultiTenancy/SufiChain.SufiAbp.AspNetCore.MultiTenancy.csproj" />
+    <Project Path="framework/SufiChain.SufiAbp.AspNetCore.Mvc.Client/SufiChain.SufiAbp.AspNetCore.Mvc.Client.csproj" />
     <Project Path="framework/SufiChain.SufiAbp.AspNetCore.Mvc/SufiChain.SufiAbp.AspNetCore.Mvc.csproj" />
     <Project Path="framework/SufiChain.SufiAbp.AspNetCore.Serilog/SufiChain.SufiAbp.AspNetCore.Serilog.csproj" />
     <Project Path="framework/SufiChain.SufiAbp.AspNetCore/SufiChain.SufiAbp.AspNetCore.csproj" />
@@ -27,6 +25,7 @@
     <Project Path="framework/SufiChain.SufiAbp.BlobStoring.Minio/SufiChain.SufiAbp.BlobStoring.Minio.csproj" />
     <Project Path="framework/SufiChain.SufiAbp.BlobStoring.S3Provider/SufiChain.SufiAbp.BlobStoring.S3Provider.csproj" />
     <Project Path="framework/SufiChain.SufiAbp.BlobStoring/SufiChain.SufiAbp.BlobStoring.csproj" />
+    <Project Path="framework/SufiChain.SufiAbp.Caching.StackExchangeRedis/SufiChain.SufiAbp.Caching.StackExchangeRedis.csproj" />
     <Project Path="framework/SufiChain.SufiAbp.Caching/SufiChain.SufiAbp.Caching.csproj" />
     <Project Path="framework/SufiChain.SufiAbp.Captcha.Recaptcha/SufiChain.SufiAbp.Captcha.Recaptcha.csproj" />
     <Project Path="framework/SufiChain.SufiAbp.Captcha.Turnstile/SufiChain.SufiAbp.Captcha.Turnstile.csproj" />
@@ -48,6 +47,7 @@
     <Project Path="framework/SufiChain.SufiAbp.EventBus/SufiChain.SufiAbp.EventBus.csproj" />
     <Project Path="framework/SufiChain.SufiAbp.Features/SufiChain.SufiAbp.Features.csproj" />
     <Project Path="framework/SufiChain.SufiAbp.Guids/SufiChain.SufiAbp.Guids.csproj" />
+    <Project Path="framework/SufiChain.SufiAbp.Http.Client.IdentityModel.Web/SufiChain.SufiAbp.Http.Client.IdentityModel.Web.csproj" />
     <Project Path="framework/SufiChain.SufiAbp.Http.Client/SufiChain.SufiAbp.Http.Client.csproj" />
     <Project Path="framework/SufiChain.SufiAbp.Localization/SufiChain.SufiAbp.Localization.csproj" />
     <Project Path="framework/SufiChain.SufiAbp.Mapperly/SufiChain.SufiAbp.Mapperly.csproj" />
@@ -294,6 +294,7 @@
     <Project Path="test/SufiChain.SufiAbp.SmokeTest.Console/SufiChain.SufiAbp.SmokeTest.Console.csproj" />
   </Folder>
   <Folder Name="/Solution Items/">
+    <File Path=".gitea/workflows/release-nuget.yml" />
     <File Path="NuGet.Config" />
     <File Path="versions.props" />
   </Folder>

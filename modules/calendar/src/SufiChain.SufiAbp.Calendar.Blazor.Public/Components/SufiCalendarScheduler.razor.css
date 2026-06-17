@@ -1,0 +1,35 @@
+.sufi-calendar-scheduler {
+    min-height: calc(100vh - 12rem);
+}
+
+.sufi-calendar-scheduler__header {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    grid-template-areas: "actions calendar";
+    align-items: center;
+    gap: var(--sb-space-3, 0.75rem);
+    width: 100%;
+}
+
+.sufi-calendar-scheduler__actions {
+    grid-area: actions;
+}
+
+.sufi-calendar-scheduler__calendar-select {
+    grid-area: calendar;
+    justify-self: end;
+    width: min(100%, 28rem);
+}
+
+[dir="rtl"] .sufi-calendar-scheduler__header {
+    grid-template-columns: 1fr auto;
+    grid-template-areas: "calendar actions";
+}
+
+[dir="rtl"] .sufi-calendar-scheduler__calendar-select {
+    justify-self: start;
+}
+
+[dir="rtl"] .sufi-calendar-scheduler__actions {
+    justify-self: end;
+}

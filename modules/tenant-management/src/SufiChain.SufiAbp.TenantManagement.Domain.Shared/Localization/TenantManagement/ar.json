@@ -44,6 +44,12 @@
     "Create": "إنشاء",
     "Save": "حفظ",
     "Edit": "تعديل",
-    "Delete": "حذف"
+    "Delete": "حذف",
+    "Permission:TenantManagement": "إدارة المستأجرين",
+    "Permission:Create": "إنشاء",
+    "Permission:Edit": "تعديل",
+    "Permission:Delete": "حذف",
+    "Permission:ManageFeatures": "إدارة الميزات",
+    "Permission:ManageConnectionStrings": "إدارة سلاسل الاتصال"
   }
 }

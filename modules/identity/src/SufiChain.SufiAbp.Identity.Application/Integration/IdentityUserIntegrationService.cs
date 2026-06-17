@@ -5,6 +5,7 @@ using SufiChain.SufiAbp.Users;
 using Volo.Abp.Domain.Repositories;
 using Volo.Abp.Users;
 using IdentityUserData = SufiChain.SufiAbp.Identity.UserData;
+using SystemGuid = System.Guid;
 
 namespace SufiChain.SufiAbp.Identity;
 
@@ -30,12 +31,12 @@ public class IdentityUserIntegrationService : SufiAbpApplicationService, IIdenti
         RoleRepository = roleRepository;
     }
 
-    public virtual async Task<string[]> GetRoleNamesAsync(Guid id)
+    public virtual async Task<string[]> GetRoleNamesAsync(SystemGuid id)
     {
         return await UserRoleFinder.GetRoleNamesAsync(id);
     }
 
-    public virtual async Task<IdentityUserData?> FindByIdAsync(Guid id)
+    public virtual async Task<IdentityUserData?> FindByIdAsync(SystemGuid id)
     {
         var userData = await UserLookupServiceProvider.FindByIdAsync(id);
         return userData == null ? null : MapToUserData(userData);
@@ -61,7 +62,7 @@ public class IdentityUserIntegrationService : SufiAbpApplicationService, IIdenti
                 .ToList());
     }
 
-    public virtual async Task<ListResultDto<IdentityUserData>> SearchByIdsAsync(Guid[] ids)
+    public virtual async Task<ListResultDto<IdentityUserData>> SearchByIdsAsync(SystemGuid[] ids)
     {
         var users = await UserRepository.GetListByIdsAsync(ids);
 
@@ -76,9 +77,9 @@ public class IdentityUserIntegrationService : SufiAbpApplicationService, IIdenti
                     u.EmailConfirmed,
                     u.PhoneNumber,
                     u.PhoneNumberConfirmed,
-                    u.TenantId,
+                    ToSystemGuidOrNull(u.TenantId),
                     u.IsActive,
-                    u.ExtraProperties))
+                    u.ExtraProperties.ToSufiAbpExtraProperties()))
                 .ToList());
     }
 
@@ -105,7 +106,7 @@ public class IdentityUserIntegrationService : SufiAbpApplicationService, IIdenti
                     r.IsStatic,
                     r.IsPublic,
                     r.TenantId,
-                    r.ExtraProperties)).ToList());
+                    r.ExtraProperties.ToSufiAbpExtraProperties())).ToList());
         }
     }
 
@@ -123,7 +124,7 @@ public class IdentityUserIntegrationService : SufiAbpApplicationService, IIdenti
                     r.IsStatic,
                     r.IsPublic,
                     r.TenantId,
-                    r.ExtraProperties)).ToList());
+                    r.ExtraProperties.ToSufiAbpExtraProperties())).ToList());
         }
     }
 
@@ -146,5 +147,12 @@ public class IdentityUserIntegrationService : SufiAbpApplicationService, IIdenti
             user.TenantId,
             user.IsActive,
             user.ExtraProperties);
+    }
+
+    protected virtual SystemGuid? ToSystemGuidOrNull(object? value)
+    {
+        return value == null
+            ? null
+            : SystemGuid.Parse(value.ToString()!);
     }
 }

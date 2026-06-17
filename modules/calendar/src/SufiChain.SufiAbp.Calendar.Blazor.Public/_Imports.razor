@@ -1,5 +1,6 @@
 @using System.Globalization
 @using Microsoft.AspNetCore.Components
+@using Microsoft.AspNetCore.Authorization
 @using Microsoft.AspNetCore.Components.Forms
 @using Microsoft.AspNetCore.Components.Web
 @using SufiChain.SufiAbp.Application.Dtos
@@ -7,10 +8,13 @@
 @using SufiChain.SufiAbp.Calendar.Availability
 @using SufiChain.SufiAbp.Calendar.Blazor.Public
 @using SufiChain.SufiAbp.Calendar.Blazor.Public.Components
+@using SufiChain.SufiAbp.Calendar.Calendars
 @using SufiChain.SufiAbp.Calendar.Events
 @using SufiChain.SufiAbp.Calendar.FreeBusy
 @using SufiChain.SufiAbp.Calendar.Localization
+@using SufiChain.SufiAbp.Calendar.Permissions
 @using SufiChain.SufiAbp.UI.Blazor
+@using SufiChain.SufiAbp.UI.Blazor.Components
 @using SufiChain.SufiBlazor.Components
 @using SufiChain.SufiBlazor.Components.Actions
 @using SufiChain.SufiBlazor.Components.Common

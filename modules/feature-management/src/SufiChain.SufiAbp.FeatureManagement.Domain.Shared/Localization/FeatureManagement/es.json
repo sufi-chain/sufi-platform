@@ -20,6 +20,10 @@
     "LoadingFeatures": "Cargando características...",
     "NoFeaturesAvailable": "No hay características disponibles",
     "FeaturesResetSuccessfully": "Características restablecidas correctamente",
-    "ResetFeaturesConfirmation": "¿Está seguro de que desea restablecer todas las características a sus valores predeterminados?"
+    "ResetFeaturesConfirmation": "¿Está seguro de que desea restablecer todas las características a sus valores predeterminados?",
+    "Permission:FeatureManagement": "Gestión de características",
+    "Permission:FeatureManagement.Features": "Características",
+    "Permission:FeatureManagement.ManageHostFeatures": "Administrar características del host",
+    "Permission:FeatureManagement.ManageTenantFeatures": "Administrar características del tenant"
   }
 }

@@ -1,15 +1,14 @@
 using System;
 using JetBrains.Annotations;
 using SufiChain.SufiAbp.Data;
-using Volo.Abp.Data;
 
 namespace SufiChain.SufiAbp.Users;
 
 public interface IUserData : IHasExtraProperties
 {
-    Guid Id { get; }
+    System.Guid Id { get; }
 
-    Guid? TenantId { get; }
+    System.Guid? TenantId { get; }
 
     string UserName { get; }
 

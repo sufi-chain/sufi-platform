@@ -14,7 +14,7 @@ public class CalendarGetFreeBusyTool : CalendarAIToolBase
 
     public override string Name => CalendarAIToolNames.GetFreeBusy;
 
-    public override string Description => "Gets busy blocks and free slots for one or more calendars in a UTC range.";
+    public override string Description => "Gets busy blocks and free slots for one or more calendars in a UTC range. Before converting relative dates, Persian dates, or local business-day ranges into UTC, call calendar.get_current_time using the selected calendar timezone.";
 
     public override string ParameterSchema => CalendarAIToolSchemas.FreeBusy;
 
@@ -24,20 +24,30 @@ public class CalendarGetFreeBusyTool : CalendarAIToolBase
         CancellationToken cancellationToken = default)
     {
         var input = ReadInput<CalendarAIFreeBusyInput>(parameters);
+        return await SuccessAsync(await GetFreeBusyAsync(input.CalendarIds, input.FromUtc, input.ToUtc, cancellationToken));
+    }
+
+    [SufiAbpAITool(CalendarAIToolNames.GetFreeBusy, "Gets busy blocks and free slots for one or more calendars in a UTC range. Before converting relative dates, Persian dates, or local business-day ranges into UTC, call calendar.get_current_time using the selected calendar timezone.")]
+    public virtual async Task<object> GetFreeBusyAsync(
+        List<Guid> calendarIds,
+        DateTime fromUtc,
+        DateTime toUtc,
+        CancellationToken cancellationToken = default)
+    {
         var result = await _freeBusyAppService.GetFreeBusyAsync(new GetFreeBusyInput
         {
-            CalendarIds = input.CalendarIds,
-            FromUtc = input.FromUtc,
-            ToUtc = input.ToUtc
+            CalendarIds = calendarIds,
+            FromUtc = fromUtc,
+            ToUtc = toUtc
         });
 
-        return await SuccessAsync(new
+        return new
         {
             result.FromUtc,
             result.ToUtc,
             BusyBlocks = result.BusyBlocks,
             FreeSlots = result.FreeSlots
-        });
+        };
     }
 }
 
@@ -52,7 +62,7 @@ public class CalendarFindFreeSlotsTool : CalendarAIToolBase
 
     public override string Name => CalendarAIToolNames.FindFreeSlots;
 
-    public override string Description => "Finds available slots for one or more calendars in a UTC range.";
+    public override string Description => "Finds available slots for one or more calendars in a UTC range. Before converting relative dates, Persian dates, or first-working-day requests into UTC, call calendar.get_current_time using the selected calendar timezone.";
 
     public override string ParameterSchema => CalendarAIToolSchemas.FindFreeSlots;
 
@@ -62,14 +72,25 @@ public class CalendarFindFreeSlotsTool : CalendarAIToolBase
         CancellationToken cancellationToken = default)
     {
         var input = ReadInput<CalendarAIFindFreeSlotsInput>(parameters);
+        return await SuccessAsync(await FindFreeSlotsAsync(input.CalendarIds, input.FromUtc, input.ToUtc, input.Duration, cancellationToken));
+    }
+
+    [SufiAbpAITool(CalendarAIToolNames.FindFreeSlots, "Finds available slots for one or more calendars in a UTC range. Before converting relative dates, Persian dates, or first-working-day requests into UTC, call calendar.get_current_time using the selected calendar timezone.")]
+    public virtual async Task<object> FindFreeSlotsAsync(
+        List<Guid> calendarIds,
+        DateTime fromUtc,
+        DateTime toUtc,
+        TimeSpan duration,
+        CancellationToken cancellationToken = default)
+    {
         var result = await _freeBusyAppService.FindAvailableSlotsAsync(new FindAvailableSlotsInput
         {
-            CalendarIds = input.CalendarIds,
-            FromUtc = input.FromUtc,
-            ToUtc = input.ToUtc,
-            Duration = input.Duration
+            CalendarIds = calendarIds,
+            FromUtc = fromUtc,
+            ToUtc = toUtc,
+            Duration = duration
         });
 
-        return await SuccessAsync(result.Items);
+        return result.Items;
     }
 }

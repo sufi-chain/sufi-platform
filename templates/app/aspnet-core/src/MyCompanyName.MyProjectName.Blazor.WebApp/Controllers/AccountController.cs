@@ -12,7 +12,7 @@ using IdentityUser = SufiChain.SufiAbp.Identity.IdentityUser;
 namespace MyCompanyName.MyProjectName.Controllers;
 
 /// <summary>
-/// Account controller for single-layer Blazor WebApp.
+/// Account controller for integrated Blazor WebApp.
 /// All SufiAbp login implementation (complete-login, logout, tenant switch) lives in <see cref="SpAccountController"/>.
 /// Login is handled by the Blazor Account.Blazor pages directly (local cookie auth).
 /// </summary>

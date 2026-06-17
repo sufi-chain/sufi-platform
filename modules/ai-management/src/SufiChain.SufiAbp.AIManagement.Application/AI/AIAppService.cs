@@ -203,8 +203,8 @@ public class AIAppService : SufiAbpApplicationService, IAIAppService
             input.ConfigurationJson,
             input.Priority,
             input.OpenAIApiMode,
-            input.InputCostPer1KTokens,
-            input.OutputCostPer1KTokens
+            input.InputCostPer1MTokens,
+            input.OutputCostPer1MTokens
         );
 
         await _configurationRepository.InsertAsync(configuration);
@@ -225,8 +225,8 @@ public class AIAppService : SufiAbpApplicationService, IAIAppService
             input.ConfigurationJson,
             input.Priority,
             input.OpenAIApiMode,
-            input.InputCostPer1KTokens,
-            input.OutputCostPer1KTokens
+            input.InputCostPer1MTokens,
+            input.OutputCostPer1MTokens
         );
 
         await _configurationRepository.UpdateAsync(configuration);
@@ -303,8 +303,8 @@ public static partial class AIModelConfigurationMapper
             IsEnabled = entity.IsEnabled,
             Priority = entity.Priority,
             OpenAIApiMode = entity.OpenAIApiMode,
-            InputCostPer1KTokens = entity.InputCostPer1KTokens,
-            OutputCostPer1KTokens = entity.OutputCostPer1KTokens,
+            InputCostPer1MTokens = entity.InputCostPer1MTokens,
+            OutputCostPer1MTokens = entity.OutputCostPer1MTokens,
             ConfigurationJson = entity.ConfigurationJson
         };
     }

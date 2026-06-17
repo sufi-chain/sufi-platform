@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Identity;
 using SufiChain.SufiAbp.Users;
 using Volo.Abp.DependencyInjection;
+using SystemGuid = System.Guid;
 
 namespace SufiChain.SufiAbp.Identity;
 
@@ -19,7 +20,7 @@ public class IdentityUserRepositoryExternalUserLookupServiceProvider : IExternal
     }
 
     public virtual async Task<IUserData> FindByIdAsync(
-        Guid id,
+        SystemGuid id,
         CancellationToken cancellationToken = default)
     {
         return (await UserRepository.FindAsync(

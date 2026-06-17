@@ -17,6 +17,8 @@
     <PackageReference Include="SufiChain.SufiAbp.AspNetCore.Authentication.JwtBearer" Version="$(SufiVersion)" />
     <PackageReference Include="SufiChain.SufiAbp.AspNetCore.Serilog" Version="$(SufiVersion)" />
     <PackageReference Include="SufiChain.SufiAbp.Swashbuckle" Version="$(SufiVersion)" />
+    <PackageReference Include="SufiChain.SufiAbp.BlobStoring.Database.EntityFrameworkCore" Version="$(SufiVersion)" />
+    <PackageReference Include="Microsoft.OpenApi" Version="1.6.22" />
   </ItemGroup>
 
   <ItemGroup>

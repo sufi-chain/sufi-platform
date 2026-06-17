@@ -19,11 +19,11 @@ public class SwitchToEfCoreStep : ProjectBuildPipelineStep
             return Task.CompletedTask;
 
         var provider = context.Args.EfProvider ?? EfProviderKind.SqlServer;
-        var isSingle = context.Args.SolutionKind == SolutionKind.Single;
+        var isSingle = context.Args.SolutionKind == SolutionKind.WebApp;
 
         if (isSingle)
         {
-            // Single template: replace embedded MongoDB with EF Core (no separate DB project)
+            // WebApp template: replace embedded MongoDB with EF Core (no separate DB project)
             ConfigureSingleTemplateForEfCore(context, provider);
         }
         else
@@ -187,7 +187,7 @@ public class SwitchToEfCoreStep : ProjectBuildPipelineStep
     }
 
     /// <summary>
-    /// Configures the single template for EF Core: replaces embedded MongoDB DbContext with EF Core version,
+    /// Configures the WebApp template for EF Core: replaces embedded MongoDB DbContext with EF Core version,
     /// adds EF Core packages, and injects ConfigureEfCore in the module.
     /// </summary>
     private void ConfigureSingleTemplateForEfCore(ProjectBuildContext context, EfProviderKind provider)
@@ -761,7 +761,7 @@ public class EntityFrameworkCore{projectName}DbSchemaMigrator : I{projectName}Db
 
     /// <summary>
     /// Swaps ABP infrastructure MongoDB NuGet packages to EntityFrameworkCore equivalents in host .csproj files.
-    /// Affects single template (host has ABP packages directly) and TEMPLATE-ONLY sections when uncommented.
+    /// Affects WebApp template (host has ABP packages directly) and TEMPLATE-ONLY sections when uncommented.
     /// </summary>
     private void SwitchAbpInfraPackagesInHostCsproj(ProjectBuildContext context)
     {
@@ -808,7 +808,7 @@ public class EntityFrameworkCore{projectName}DbSchemaMigrator : I{projectName}Db
     /// </summary>
     private void InjectAbpEfCoreModuleDependencies(ProjectBuildContext context)
     {
-        var isSingle = context.Args.SolutionKind == SolutionKind.Single;
+        var isSingle = context.Args.SolutionKind == SolutionKind.WebApp;
 
         // Using statements to add (before namespace)
         var efCoreUsings = new List<string>

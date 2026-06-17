@@ -13,10 +13,16 @@ public partial class WorkspaceSelector : AIManagementComponentBase
     [Parameter] public bool ShowInactiveWorkspaces { get; set; } = false;
     [Parameter] public string? EmptyMessage { get; set; }
 
+    private const int CompactChipThreshold = 3;
+
     private IEnumerable<WorkspaceDto> FilteredWorkspaces =>
         ShowInactiveWorkspaces
             ? Workspaces
             : Workspaces.Where(w => w.IsActive);
+
+    private List<WorkspaceDto> FilteredWorkspaceList => FilteredWorkspaces.ToList();
+
+    private bool UseCompactChips => FilteredWorkspaceList.Count <= CompactChipThreshold;
 
     private async Task OnWorkspaceClickAsync(Guid workspaceId)
     {
@@ -52,5 +58,19 @@ public partial class WorkspaceSelector : AIManagementComponentBase
             AIProviderType.OpenAI => "OpenAI",
             _ => provider.ToString()
         };
+    }
+
+    private string GetWorkspaceOptionText(WorkspaceDto workspace)
+    {
+        return $"{workspace.Name} · {GetProviderDisplayName(workspace.Provider)} · {workspace.Model}";
+    }
+
+    private async Task OnSelectChangedAsync(Guid? workspaceId)
+    {
+        if (Value != workspaceId)
+        {
+            Value = workspaceId;
+            await ValueChanged.InvokeAsync(Value);
+        }
     }
 }

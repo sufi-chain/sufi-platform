@@ -44,6 +44,12 @@
     "Create": "Crear",
     "Save": "Guardar",
     "Edit": "Editar",
-    "Delete": "Eliminar"
+    "Delete": "Eliminar",
+    "Permission:TenantManagement": "Gestión de tenants",
+    "Permission:Create": "Crear",
+    "Permission:Edit": "Editar",
+    "Permission:Delete": "Eliminar",
+    "Permission:ManageFeatures": "Administrar características",
+    "Permission:ManageConnectionStrings": "Administrar cadenas de conexión"
   }
 }

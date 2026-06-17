@@ -23,6 +23,10 @@
     "LoadingFeatures": "در حال بارگذاری ویژگی‌ها...",
     "NoFeaturesAvailable": "هیچ ویژگی‌ای در دسترس نیست",
     "FeaturesResetSuccessfully": "ویژگی‌ها با موفقیت بازنشانی شد",
-    "ResetFeaturesConfirmation": "آیا مطمئن هستید که می‌خواهید همه ویژگی‌ها را به مقادیر پیش‌فرض بازنشانی کنید؟"
+    "ResetFeaturesConfirmation": "آیا مطمئن هستید که می‌خواهید همه ویژگی‌ها را به مقادیر پیش‌فرض بازنشانی کنید؟",
+    "Permission:FeatureManagement": "مدیریت ویژگی‌ها",
+    "Permission:FeatureManagement.Features": "ویژگی‌ها",
+    "Permission:FeatureManagement.ManageHostFeatures": "مدیریت ویژگی‌های میزبان",
+    "Permission:FeatureManagement.ManageTenantFeatures": "مدیریت ویژگی‌های مستأجر"
   }
 }

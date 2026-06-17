@@ -108,6 +108,10 @@ public class MethodParameterBinder
         // DateTime
         if (underlyingType == typeof(DateTime))
             return DateTime.Parse(value.ToString()!);
+
+        // TimeSpan
+        if (underlyingType == typeof(TimeSpan))
+            return TimeSpan.Parse(value.ToString()!);
         
         // Enum
         if (underlyingType.IsEnum)
@@ -137,6 +141,8 @@ public class MethodParameterBinder
                     return Guid.Parse(str!);
                 if (targetType == typeof(DateTime))
                     return DateTime.Parse(str!);
+                if (targetType == typeof(TimeSpan))
+                    return TimeSpan.Parse(str!);
                 if (targetType.IsEnum)
                     return Enum.Parse(targetType, str!, ignoreCase: true);
                 return str;

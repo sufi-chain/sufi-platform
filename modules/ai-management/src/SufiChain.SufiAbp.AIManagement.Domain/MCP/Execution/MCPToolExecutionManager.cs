@@ -25,6 +25,7 @@ public class MCPToolExecutionManager : IMCPToolExecutor, ITransientDependency
     private readonly WorkspaceSyncService _syncService;
     private readonly ICurrentUser _currentUser;
     private readonly IFeatureChecker _featureChecker;
+    private readonly IMCPKernelToolRegistrar _toolRegistrar;
     private readonly ILogger<MCPToolExecutionManager> _logger;
     
     public MCPToolExecutionManager(
@@ -33,6 +34,7 @@ public class MCPToolExecutionManager : IMCPToolExecutor, ITransientDependency
         WorkspaceSyncService syncService,
         ICurrentUser currentUser,
         IFeatureChecker featureChecker,
+        IMCPKernelToolRegistrar toolRegistrar,
         ILogger<MCPToolExecutionManager> logger)
     {
         _toolRegistry = toolRegistry;
@@ -40,6 +42,7 @@ public class MCPToolExecutionManager : IMCPToolExecutor, ITransientDependency
         _syncService = syncService;
         _currentUser = currentUser;
         _featureChecker = featureChecker;
+        _toolRegistrar = toolRegistrar;
         _logger = logger;
     }
     
@@ -97,9 +100,7 @@ public class MCPToolExecutionManager : IMCPToolExecutor, ITransientDependency
             // Get kernel for the workspace from sync service
             var kernel = await _syncService.GetOrCreateKernelAsync(context.WorkspaceName, cancellationToken);
             
-            // Register MCP tool as Semantic Kernel plugin if not already registered
-            // This allows SK to invoke the tool via function calling
-            RegisterToolAsPlugin(kernel, tool, context);
+            await _toolRegistrar.RegisterToolsAsync(kernel, context.WorkspaceName, context, cancellationToken);
             
             // Execute the tool
             var result = await tool.ExecuteAsync(context, parameters, cancellationToken);
@@ -137,32 +138,6 @@ public class MCPToolExecutionManager : IMCPToolExecutor, ITransientDependency
         }
     }
     
-    private void RegisterToolAsPlugin(Kernel kernel, IMCPTool tool, WorkspaceContext context)
-    {
-        // Check if plugin already registered
-        var pluginName = $"MCP_{tool.Name}";
-        if (kernel.Plugins.Any(p => p.Name == pluginName))
-        {
-            return;
-        }
-        
-        // Create a KernelFunction from the MCP tool
-        var function = KernelFunctionFactory.CreateFromMethod(
-            async (Dictionary<string, object?> args, CancellationToken ct) =>
-            {
-                var result = await tool.ExecuteAsync(context, args, ct);
-                return result.Result;
-            },
-            functionName: tool.Name,
-            description: tool.Description ?? $"MCP tool: {tool.Name}"
-        );
-        
-        // Add as plugin
-        kernel.Plugins.AddFromFunctions(pluginName, new[] { function });
-        
-        _logger.LogDebug("Registered MCP tool {ToolName} as Semantic Kernel plugin", tool.Name);
-    }
-
     private async Task CheckFeatureAsync()
     {
         if (!await _featureChecker.IsEnabledAsync(SufiAbpAIFeatures.Enable))

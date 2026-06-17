@@ -21,14 +21,14 @@ using MyCompanyName.MyProjectName.Menus;
 namespace MyCompanyName.MyProjectName;
 
 /// <summary>
-/// Blazor WebAssembly client module for the single-layer template.
+/// Blazor WebAssembly client module for the WebApp template.
 /// Configures SufiAbp theme and navigation for WebAssembly hosting.
 /// NOTE: SufiAbpAccountBlazorModule is Server-only (uses SignInManager/AspNetCore.Identity)
 /// and is NOT included here — login pages are served by the Server project.
 /// </summary>
 [DependsOn(
     typeof(SufiAbpAutofacWebAssemblyModule),
-    // <TEMPLATE-REMOVE IF="arch:single">
+    // <TEMPLATE-REMOVE IF="arch:webapp">
     typeof(DemoAppHttpApiClientModule),
     // </TEMPLATE-REMOVE>
     // SufiAbp Theme & UI Modules for WebAssembly

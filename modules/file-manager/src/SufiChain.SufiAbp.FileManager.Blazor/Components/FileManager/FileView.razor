@@ -45,7 +45,7 @@
                                 }
                                 else
                                 {
-                                    @folder.Name
+                                    @GetFolderDisplayName(folder)
                                 }
                             </div>
                             @if (State.ViewMode == FileViewMode.Tiles && folder.FileCount > 0)
@@ -116,7 +116,7 @@
                              @oncontextmenu:preventDefault
                              @oncontextmenu:stopPropagation>
                             <span style="@GetFolderIconStyle(folder)"><SbIcon Name="@GetFolderIconName(folder)" /></span>
-                            <span class="fm-list-name">@folder.Name</span>
+                            <span class="fm-list-name">@GetFolderDisplayName(folder)</span>
                         </div>
                     }
                     @foreach (var file in State.Contents.Files)
@@ -169,7 +169,7 @@
                                 <td class="fm-col-icon">
                                     <span style="@GetFolderIconStyle(folder)"><SbIcon Name="@GetFolderIconName(folder)" /></span>
                                 </td>
-                                <td class="fm-col-name">@folder.Name</td>
+                                <td class="fm-col-name">@GetFolderDisplayName(folder)</td>
                                 <td class="fm-col-status">-</td>
                                 <td class="fm-col-date">-</td>
                                 <td class="fm-col-type">Folder</td>
@@ -216,6 +216,19 @@
 
     private bool IsFileSelected(FileItemDto file) => State.SelectedFiles.Contains(file.Id);
     private bool IsFolderSelected(FolderTreeNodeDto folder) => folder.Id.HasValue && State.SelectedFolders.Contains(folder.Id.Value);
+
+    private string GetFolderDisplayName(FolderTreeNodeDto folder)
+    {
+        if (folder.Type == FolderTypeDto.Structure && !string.IsNullOrWhiteSpace(folder.StructureKey))
+        {
+            var displayName = L[$"Structure:{folder.StructureKey}:DisplayName"].Value;
+            return string.IsNullOrWhiteSpace(displayName) || displayName == $"Structure:{folder.StructureKey}:DisplayName"
+                ? folder.Name
+                : displayName;
+        }
+
+        return folder.Name;
+    }
 
     /// <summary>
     /// Display name for the file: user-editable Name when set, otherwise OriginalName (filename at upload).

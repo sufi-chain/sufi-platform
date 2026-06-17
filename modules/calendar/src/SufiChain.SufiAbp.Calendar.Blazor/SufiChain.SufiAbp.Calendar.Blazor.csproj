@@ -15,5 +15,6 @@
     <PackageReference Include="Microsoft.AspNetCore.Components.Authorization" Version="$(AspNetCoreVersion)" />
     <ProjectReference Include="../../../../framework/SufiChain.SufiAbp.UI.Blazor/SufiChain.SufiAbp.UI.Blazor.csproj" />
     <ProjectReference Include="..\SufiChain.SufiAbp.Calendar.Application.Contracts\SufiChain.SufiAbp.Calendar.Application.Contracts.csproj" />
+    <ProjectReference Include="..\SufiChain.SufiAbp.Calendar.Blazor.Public\SufiChain.SufiAbp.Calendar.Blazor.Public.csproj" />
   </ItemGroup>
 </Project>

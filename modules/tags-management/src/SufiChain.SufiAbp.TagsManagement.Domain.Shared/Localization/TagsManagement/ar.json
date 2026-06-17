@@ -1,0 +1,8 @@
+{
+  "culture": "ar",
+  "texts": {
+    "Permission:TagsManagement": "إدارة الوسوم",
+    "Permission:TagsManagement.Tags": "الوسوم",
+    "Permission:TagsManagement.TagLinks": "روابط الوسوم"
+  }
+}

@@ -14,7 +14,7 @@ using SufiChain.SufiAbp.BackgroundJobs;
 using SufiChain.SufiAbp.Account;
 // <TEMPLATE-REMOVE IF-NOT="module:file-manager">
 using SufiChain.SufiAbp.FileManager;
-using Volo.Abp.BlobStoring.Database.EntityFrameworkCore;
+using SufiChain.SufiAbp.BlobStoring.Database.EntityFrameworkCore;
 // </TEMPLATE-REMOVE>
 using SufiChain.SufiAbp.FeatureManagement;
 using SufiChain.SufiAbp.Identity;
@@ -44,21 +44,7 @@ using Volo.Abp.AspNetCore.Mvc;
 using Volo.Abp.AspNetCore.Mvc.Libs;
 using Volo.Abp.Localization;
 using Volo.Abp.Modularity;
-// <TEMPLATE-REMOVE IF-NOT="db:mongodb">
-using SufiChain.SufiAbp.AuditLogging.EntityFrameworkCore;
-// </TEMPLATE-REMOVE>
-// <TEMPLATE-REMOVE IF-NOT="db:mongodb">
-using SufiChain.SufiAbp.FeatureManagement.EntityFrameworkCore;
-using SufiChain.SufiAbp.FeatureManagement.MongoDB;
-// </TEMPLATE-REMOVE>
-// <TEMPLATE-REMOVE IF-NOT="db:mongodb">
-using SufiChain.SufiAbp.SettingManagement.EntityFrameworkCore;
-using SufiChain.SufiAbp.SettingManagement.MongoDB;
-// </TEMPLATE-REMOVE>
 using Volo.Abp.VirtualFileSystem;
-// <TEMPLATE-REMOVE IF-NOT="db:mongodb">
-using MyCompanyName.MyProjectName.EntityFrameworkCore;
-// </TEMPLATE-REMOVE>
 using MyCompanyName.MyProjectName.MultiTenancy;
 
 namespace MyCompanyName.MyProjectName
@@ -68,17 +54,14 @@ namespace MyCompanyName.MyProjectName
         typeof(SufiAbpAutofacModule),
         typeof(SufiAbpAspNetCoreMultiTenancyModule),
         typeof(DemoAppApplicationModule),
-        // <TEMPLATE-REMOVE IF-NOT="db:mongodb">
-        typeof(DemoAppMongoDbModule),
-        // </TEMPLATE-REMOVE>
         typeof(SufiAbpAspNetCoreAuthenticationJwtBearerModule),
         typeof(SufiAbpAspNetCoreSerilogModule),
         typeof(SufiAbpSwashbuckleModule),
         // <TEMPLATE-REMOVE IF-NOT="module:file-manager">
-        // Blob storage for file manager (must load before SufiAbpFileManagerMongoDbModule)
-        typeof(SufiAbpBlobStoringDatabaseMongoDbModule),
+        // Blob storage for file manager (must load before SufiAbpFileManagerEntityFrameworkCoreModule)
+        typeof(SufiAbpBlobStoringDatabaseEntityFrameworkCoreModule),
         // File Manager Module (data layer first for blob storage, then Application + API)
-        typeof(SufiAbpFileManagerMongoDbModule),
+        typeof(SufiAbpFileManagerEntityFrameworkCoreModule),
         typeof(SufiAbpFileManagerApplicationModule),
         typeof(SufiAbpFileManagerHttpApiModule),
         // </TEMPLATE-REMOVE>
@@ -105,27 +88,19 @@ namespace MyCompanyName.MyProjectName
         typeof(SufiAbpPermissionManagementHttpApiModule),
         // Feature Management Module (Application + HttpApi)
         typeof(SufiAbpFeatureManagementApplicationModule),
+        typeof(SufiAbpFeatureManagementEntityFrameworkCoreModule),
         typeof(SufiAbpFeatureManagementHttpApiModule),
         // Setting Management Module (Application + HttpApi)
         typeof(SufiAbpSettingManagementApplicationModule),
+        typeof(SufiAbpSettingManagementEntityFrameworkCoreModule),
         typeof(SufiAbpSettingManagementHttpApiModule),
         typeof(SufiAbpAIManagementApplicationModule),
         typeof(SufiAbpAIManagementHttpApiModule),
-        // <TEMPLATE-REMOVE IF-NOT="db:mongodb">
-        // ABP Admin Modules (DB layers for MongoDB)
-        typeof(SufiAbpAuditLoggingEntityFrameworkCoreModule),
-        // </TEMPLATE-REMOVE>
-        // <TEMPLATE-REMOVE IF-NOT="db:mongodb">
-        typeof(SufiAbpFeatureManagementMongoDbModule),
-        // </TEMPLATE-REMOVE>
-        // <TEMPLATE-REMOVE IF-NOT="db:mongodb">
-        typeof(SufiAbpSettingManagementMongoDbModule),
-        // </TEMPLATE-REMOVE>
         // <TEMPLATE-REMOVE IF-NOT="module:localization-management">
         // Localization Management Module (backend services for translation editor)
         typeof(SufiAbpLocalizationManagementApplicationModule),
         typeof(SufiAbpLocalizationManagementHttpApiModule),
-        typeof(SufiAbpLocalizationManagementMongoDbModule),
+        typeof(SufiAbpLocalizationManagementEntityFrameworkCoreModule),
         // </TEMPLATE-REMOVE>
         // <TEMPLATE-REMOVE IF-NOT="module:sufi-blazor-demo">
         // SufiBlazor Demo localization (Blazor fetches from remote API)

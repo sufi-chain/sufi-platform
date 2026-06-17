@@ -38,7 +38,7 @@ public class TemplateManager
                 Source = IsDebugMode ? "filesystem" : "cdn",
                 Path = IsDebugMode ? GetDebugTemplateDirectory() ?? string.Empty : $"{CdnBaseUrl}/",
                 SupportedDatabaseProviders = new List<string> { "EntityFrameworkCore", "MongoDB" },
-                SupportedArchitectures = new List<string> { "single", "layered", "layered-tiered" }
+                SupportedArchitectures = new List<string> { "webapp", "layered", "layered-tiered" }
             }
         };
     }
@@ -342,6 +342,7 @@ public class TemplateManager
     private static string NormalizeTemplateName(string templateName)
     {
         return string.IsNullOrWhiteSpace(templateName) ||
+               templateName.Equals("blazor-webapp", StringComparison.OrdinalIgnoreCase) ||
                templateName.StartsWith("blazor-webapp-", StringComparison.OrdinalIgnoreCase)
             ? DefaultTemplateName
             : templateName;

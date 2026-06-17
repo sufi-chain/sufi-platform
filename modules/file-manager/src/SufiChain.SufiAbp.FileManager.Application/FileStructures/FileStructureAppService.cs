@@ -6,6 +6,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using SufiChain.SufiAbp.FileManager.Configuration;
 using SufiChain.SufiAbp.FileManager.Features;
+using SufiChain.SufiAbp.FileManager.FileFolders;
 using SufiChain.SufiAbp.FileManager.Localization;
 using SufiChain.SufiAbp.FileManager.Permissions;
 using SufiChain.SufiAbp.Features;
@@ -29,12 +30,14 @@ public class FileStructureAppService :
     private readonly FileManagerOptions _options;
     private readonly IGuidGenerator _guidGenerator;
     private readonly IStructureStorageConfigEncryption _storageConfigEncryption;
+    private readonly IFileFolderRepository _folderRepository;
 
     public FileStructureAppService(
         IFileStructureRepository structureRepository,
         IOptions<FileManagerOptions> options,
         IGuidGenerator guidGenerator,
-        IStructureStorageConfigEncryption storageConfigEncryption)
+        IStructureStorageConfigEncryption storageConfigEncryption,
+        IFileFolderRepository folderRepository)
         : base(structureRepository)
     {
         LocalizationResource = typeof(SufiAbpFileManagerResource);
@@ -42,6 +45,7 @@ public class FileStructureAppService :
         _options = options.Value;
         _guidGenerator = guidGenerator;
         _storageConfigEncryption = storageConfigEncryption;
+        _folderRepository = folderRepository;
         
         //GetPolicyName = FileManagerPermissions.FileStructures.Default;
         //GetListPolicyName = FileManagerPermissions.FileStructures.Default;
@@ -94,6 +98,7 @@ public class FileStructureAppService :
         var entity = await MapToEntityAsync(input);
         ApplyStorageConfigToEntity(entity, input.StorageConfig);
         await Repository.InsertAsync(entity);
+        await EnsureStructureRootFolderAsync(entity);
         var result = ObjectMapper.Map<FileStructure, FileStructureDto>(entity);
         EnrichStorageConfig(result, entity);
         EnrichWithDefaultInfo(result);
@@ -269,17 +274,50 @@ public class FileStructureAppService :
                 };
 
                 await _structureRepository.InsertAsync(entity);
+                await EnsureStructureRootFolderAsync(entity);
                 Logger.LogInformation("Seeded file structure '{StructureKey}' with ID {Id}.", config.Key, entity.Id);
                 seededCount++;
             }
             else
             {
+                await EnsureStructureRootFolderAsync(existing);
                 Logger.LogDebug("File structure '{StructureKey}' already exists.", config.Key);
             }
         }
 
         return seededCount;
     }
+
+    protected virtual async Task EnsureStructureRootFolderAsync(FileStructure structure)
+    {
+        var path = GetStructureRootPath(structure.Key);
+        var existingFolder = await _folderRepository.FindByPathAsync(path, CurrentTenant.Id);
+        if (existingFolder != null)
+        {
+            existingFolder.Type = FolderType.Structure;
+            existingFolder.StructureKey = structure.Key;
+            existingFolder.Name = GetStructureRootName(structure);
+            existingFolder.ParentId = null;
+            existingFolder.SetDisplayProperties("folder", null, structure.Description);
+            await _folderRepository.UpdateAsync(existingFolder, autoSave: true);
+            return;
+        }
+
+        var folder = new FileFolder(
+            GuidGenerator.Create(),
+            CurrentTenant.Id,
+            GetStructureRootName(structure),
+            path,
+            FolderType.Structure,
+            structureKey: structure.Key);
+
+        folder.SetDisplayProperties("folder", null, structure.Description);
+        await _folderRepository.InsertAsync(folder, autoSave: true);
+    }
+
+    protected virtual string GetStructureRootName(FileStructure structure) => structure.DisplayName;
+
+    protected virtual string GetStructureRootPath(string structureKey) => $"/{structureKey}";
 
     private void EnrichWithDefaultInfo(FileStructureDto dto)
     {

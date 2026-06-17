@@ -12,7 +12,7 @@
 
   <PropertyGroup>
     <PackageId>SufiChain.SufiAbp.CLI</PackageId>
-    <Description>Command-line interface for Sufi Platform - scaffolds solution templates with EF Core or MongoDB, tiered or single architecture.</Description>
+    <Description>Command-line interface for Sufi Platform - scaffolds solution templates with EF Core or MongoDB, WebApp, layered, or tiered architecture.</Description>
     <PackAsTool>true</PackAsTool>
     <ToolCommandName>sufi</ToolCommandName>
     <PackageOutputPath>./nupkg</PackageOutputPath>

@@ -113,6 +113,20 @@ public class GetFolderContentsInput
     /// Filter files by structure key (null = show all)
     /// </summary>
     public string? StructureKey { get; set; }
+
+    /// <summary>
+    /// Explorer source mode. DirectoryMap uses FileFolder mappings; BlobPath groups files by BlobName path.
+    /// </summary>
+    public FileExplorerSourceMode SourceMode { get; set; } = FileExplorerSourceMode.DirectoryMap;
+}
+
+/// <summary>
+/// File explorer content source.
+/// </summary>
+public enum FileExplorerSourceMode
+{
+    DirectoryMap = 0,
+    BlobPath = 1
 }
 
 /// <summary>

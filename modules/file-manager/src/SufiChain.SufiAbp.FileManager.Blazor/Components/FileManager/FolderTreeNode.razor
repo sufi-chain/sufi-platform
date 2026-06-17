@@ -1,3 +1,5 @@
+@inherits FileManagerComponentBase
+
 <li class="fm-tree-node @(IsSelected ? "selected" : "")">
     <div class="fm-tree-node-content" @onclick="@HandleClick" @ondblclick="@HandleDoubleClick">
         @if (Node.HasChildren)
@@ -15,7 +17,7 @@
             <SbIcon Name="@GetFolderIconName()" />
         </span>
         
-        <span class="fm-tree-label">@Node.Name</span>
+        <span class="fm-tree-label">@GetNodeDisplayName()</span>
         
         @if (Node.FileCount > 0)
         {
@@ -79,6 +81,19 @@
             FolderTypeDto.Custom => Node.IsExpanded ? "folder-open" : "folder",
             _ => "folder"
         };
+    }
+
+    private string GetNodeDisplayName()
+    {
+        if (Node.Type == FolderTypeDto.Structure && !string.IsNullOrWhiteSpace(Node.StructureKey))
+        {
+            var displayName = L[$"Structure:{Node.StructureKey}:DisplayName"].Value;
+            return string.IsNullOrWhiteSpace(displayName) || displayName == $"Structure:{Node.StructureKey}:DisplayName"
+                ? Node.Name
+                : displayName;
+        }
+
+        return Node.Name;
     }
 
     private string GetIconStyle()

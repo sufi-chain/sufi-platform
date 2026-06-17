@@ -2,7 +2,7 @@ namespace SufiChain.SufiAbp.Users;
 
 public interface IExternalUserLookupServiceProvider
 {
-    Task<IUserData> FindByIdAsync(Guid id, CancellationToken cancellationToken = default);
+    Task<IUserData> FindByIdAsync(System.Guid id, CancellationToken cancellationToken = default);
 
     Task<IUserData> FindByUserNameAsync(string userName, CancellationToken cancellationToken = default);
 

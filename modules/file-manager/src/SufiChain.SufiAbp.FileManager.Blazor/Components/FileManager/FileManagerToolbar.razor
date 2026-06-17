@@ -1,6 +1,5 @@
 @inherits FileManagerComponentBase
 @implements IDisposable
-@inject IFileStructureAppService FileStructureAppService
 <div class="fm-toolbar">
 	@* Desktop toolbar *@
 	<div class="fm-toolbar-desktop">
@@ -18,7 +17,7 @@
 				<SbIconButton Color="SbColor.Default" Size="SbSize.Sm" Disabled="@(!State.CanGoForward)" OnClick="@OnNavigateForward" Title="@L["Forward"]" AriaLabel="@L["Forward"]">
 					<Icon><SbIcon Name="arrow-right" /></Icon>
 				</SbIconButton>
-				<SbIconButton Color="SbColor.Default" Size="SbSize.Sm" Disabled="@(State.CurrentFolderId == null)" OnClick="@OnNavigateUp" Title="@L["Up"]" AriaLabel="@L["Up"]">
+					<SbIconButton Color="SbColor.Default" Size="SbSize.Sm" Disabled="@(State.CurrentFolderId == null && State.CurrentPath == "/")" OnClick="@OnNavigateUp" Title="@L["Up"]" AriaLabel="@L["Up"]">
 					<Icon><SbIcon Name="arrow-up" /></Icon>
 				</SbIconButton>
 
@@ -59,22 +58,17 @@
 						</EndAdornment>
 					</SbTextField>
 				</div>
-				@if (_structureFilterOptions.Any())
-				{
-					<div class="fm-toolbar-structure" style="min-width: 140px;">
-						<SbSelect TItem="StructureFilterOption"
-								  TValue="string?"
-								  Items="@_structureFilterOptions"
-								  Value="@FilterStructureKey"
-								  ValueChanged="@OnStructureFilterChanged"
-								  TextField="@(x => x.DisplayName)"
-								  ValueField="@(x => x.Key)"
-								  Placeholder="@L["AllStructures"]" />
-					</div>
-				}
-			</SbStack>
-			<SbStack Direction="SbStackDirection.Row" Gap="2" Align="SbAlign.Center">
-				<SbMenu @bind-Open="_viewMenuOpen">
+				</SbStack>
+				<SbStack Direction="SbStackDirection.Row" Gap="2" Align="SbAlign.Center">
+					<SbButton Color="@(State.SourceMode == FileExplorerSourceMode.BlobPath ? SbColor.Primary : SbColor.Default)"
+							  Size="SbSize.Sm"
+							  OnClick="@ToggleSourceMode"
+							  Title="@L["BlobStorageView"]">
+						<StartIcon><SbIcon Name="database" /></StartIcon>
+						<ChildContent><span class="fm-toolbar-btn-label">@GetSourceModeLabel()</span></ChildContent>
+					</SbButton>
+
+					<SbMenu @bind-Open="_viewMenuOpen">
 					<AnchorContent>
 						<SbButton Color="SbColor.Default" Size="SbSize.Sm" Title="@L["ViewOptions"]" OnClick="@(() => _viewMenuOpen = !_viewMenuOpen)">
 							<StartIcon><SbIcon Name="@GetViewModeIcon()" /></StartIcon>
@@ -99,7 +93,7 @@
 					</ChildContent>
 				</SbMenu>
 
-				<SbButton Color="SbColor.Default" Size="SbSize.Sm" OnClick="@OnNewFolder" Title="@L["NewFolder"]" Class="fm-toolbar-btn-newfolder">
+					<SbButton Color="SbColor.Default" Size="SbSize.Sm" Disabled="@(State.SourceMode == FileExplorerSourceMode.BlobPath)" OnClick="@OnNewFolder" Title="@L["NewFolder"]" Class="fm-toolbar-btn-newfolder">
 					<StartIcon><SbIcon Name="folder-open" /></StartIcon>
 					<ChildContent><span class="fm-toolbar-btn-label">@L["NewFolder"]</span></ChildContent>
 				</SbButton>
@@ -112,7 +106,7 @@
 		</SbStack>
 	</div>
 
-	@* Mobile toolbar: Row 1 = Folders + Upload + Overflow, Row 2 = Search + Structure *@
+		@* Mobile toolbar: Row 1 = Folders + Upload + Overflow, Row 2 = Search *@
 	<div class="fm-toolbar-mobile">
 		<SbStack Direction="SbStackDirection.Column" Gap="2" Class="w-100" role="toolbar" aria-label="@L["UploadFiles"]">
 			<SbStack Direction="SbStackDirection.Row" Gap="2" Align="SbAlign.Center">
@@ -123,11 +117,14 @@
 						<ChildContent>@L["Folders"]</ChildContent>
 					</SbButton>
 				}
-				<SbButton Color="SbColor.Primary" Size="SbSize.Sm" OnClick="@OnUpload" Title="@L["UploadFiles"]">
+					<SbButton Color="SbColor.Primary" Size="SbSize.Sm" OnClick="@OnUpload" Title="@L["UploadFiles"]">
 					<StartIcon><SbIcon Name="upload" /></StartIcon>
 					<ChildContent>@L["Upload"]</ChildContent>
-				</SbButton>
-				<div class="fm-toolbar-spacer"></div>
+					</SbButton>
+					<SbButton Color="@(State.SourceMode == FileExplorerSourceMode.BlobPath ? SbColor.Primary : SbColor.Default)" Size="SbSize.Sm" OnClick="@ToggleSourceMode" Title="@L["BlobStorageView"]">
+						<StartIcon><SbIcon Name="database" /></StartIcon>
+					</SbButton>
+					<div class="fm-toolbar-spacer"></div>
 				<SbMenu @bind-Open="_mobileMenuOpen" Placement="SbPlacement.BottomEnd" Class="fm-toolbar-mobile-menu">
 					<AnchorContent>
 						<SbButton Color="SbColor.Default" Size="SbSize.Sm" AriaLabel="@L["MoreActions"]" OnClick="@(() => _mobileMenuOpen = !_mobileMenuOpen)">
@@ -153,22 +150,9 @@
 						<SbMenuItem OnClick="@_setTilesHandler"><SbIcon Name="columns" Class="me-2" />@L["Tiles"]</SbMenuItem>
 					</ChildContent>
 				</SbMenu>
-			</SbStack>
-			<SbStack Direction="SbStackDirection.Row" Gap="2" Align="SbAlign.Center" Class="fm-toolbar-mobile-search-row">
-				@if (_structureFilterOptions.Any())
-				{
-					<div class="fm-toolbar-structure fm-toolbar-structure--mobile">
-						<SbSelect TItem="StructureFilterOption"
-								  TValue="string?"
-								  Items="@_structureFilterOptions"
-								  Value="@FilterStructureKey"
-								  ValueChanged="@OnStructureFilterChanged"
-								  TextField="@(x => x.DisplayName)"
-								  ValueField="@(x => x.Key)"
-								  Placeholder="@L["AllStructures"]" />
-					</div>
-				}
-				<div class="fm-toolbar-search fm-toolbar-search--mobile">
+				</SbStack>
+				<SbStack Direction="SbStackDirection.Row" Gap="2" Align="SbAlign.Center" Class="fm-toolbar-mobile-search-row">
+					<div class="fm-toolbar-search fm-toolbar-search--mobile">
 					<SbTextField Placeholder="@L["SearchPlaceholder"]"
 								 @bind-Value="_searchText"
 								 @bind-Value:after="DebouncedSearchAsync">
@@ -185,8 +169,6 @@
 </div>
 
 @code {
-	private record StructureFilterOption(string? Key, string DisplayName);
-
 	[Parameter] public FileManagerState State { get; set; } = new();
 	[Parameter] public bool ShowFolderTree { get; set; } = true;
 	[Parameter] public EventCallback OnNavigateBack { get; set; }
@@ -200,9 +182,8 @@
 	[Parameter] public EventCallback OnCopy { get; set; }
 	[Parameter] public EventCallback OnPaste { get; set; }
 	[Parameter] public EventCallback<FileViewMode> OnViewModeChanged { get; set; }
+	[Parameter] public EventCallback<FileExplorerSourceMode> OnSourceModeChanged { get; set; }
 	[Parameter] public EventCallback<string> OnSearch { get; set; }
-	[Parameter] public string? FilterStructureKey { get; set; }
-	[Parameter] public EventCallback<string?> OnStructureFilterChanged { get; set; }
 	[Parameter] public bool ShowPropertiesPanel { get; set; }
 	[Parameter] public EventCallback OnTogglePropertiesPanel { get; set; }
 	[Parameter] public EventCallback OnOpenFoldersDrawer { get; set; }
@@ -210,7 +191,6 @@
 	private string _searchText = "";
 	private bool _viewMenuOpen;
 	private bool _mobileMenuOpen;
-	private List<StructureFilterOption> _structureFilterOptions = new();
 	private CancellationTokenSource? _searchDebounceCts;
 
 	// Cached event handlers to avoid delegate allocations on every render
@@ -220,36 +200,15 @@
 	private EventCallback _setDetailsHandler;
 	private EventCallback _setTilesHandler;
 
-	protected override async Task OnInitializedAsync()
+	protected override void OnInitialized()
 	{
 		_searchText = State.SearchFilter ?? "";
-		await LoadStructureFilterOptionsAsync();
 		// Initialize cached handlers
 		_setLargeIconsHandler = EventCallback.Factory.Create(this, () => OnViewModeChanged.InvokeAsync(FileViewMode.LargeIcons));
 		_setSmallIconsHandler = EventCallback.Factory.Create(this, () => OnViewModeChanged.InvokeAsync(FileViewMode.SmallIcons));
 		_setListHandler = EventCallback.Factory.Create(this, () => OnViewModeChanged.InvokeAsync(FileViewMode.List));
 		_setDetailsHandler = EventCallback.Factory.Create(this, () => OnViewModeChanged.InvokeAsync(FileViewMode.Details));
 		_setTilesHandler = EventCallback.Factory.Create(this, () => OnViewModeChanged.InvokeAsync(FileViewMode.Tiles));
-	}
-
-	private async Task LoadStructureFilterOptionsAsync()
-	{
-		try
-		{
-			var result = await FileStructureAppService.GetListAsync(new SufiChain.SufiAbp.Application.Dtos.PagedAndSortedResultRequestDto
-			{
-				MaxResultCount = 100,
-				Sorting = "DisplayName"
-			});
-			_structureFilterOptions = result.Items
-				.Select(s => new StructureFilterOption(s.Key, L[s.DisplayName].Value!))
-				.Prepend(new StructureFilterOption(null, L["AllStructures"].Value!))
-				.ToList();
-		}
-		catch
-		{
-			_structureFilterOptions = new List<StructureFilterOption> { new(null, L["AllStructures"].Value!) };
-		}
 	}
 
 	private async Task DebouncedSearchAsync()
@@ -277,6 +236,19 @@
 		FileViewMode.Tiles => "columns",
 		_ => "grid"
 	};
+
+	private async Task ToggleSourceMode()
+	{
+		var nextMode = State.SourceMode == FileExplorerSourceMode.DirectoryMap
+			? FileExplorerSourceMode.BlobPath
+			: FileExplorerSourceMode.DirectoryMap;
+		await OnSourceModeChanged.InvokeAsync(nextMode);
+	}
+
+	private string GetSourceModeLabel() =>
+		State.SourceMode == FileExplorerSourceMode.BlobPath
+			? L["BlobStorageView"].Value!
+			: L["DirectoryMapView"].Value!;
 
 	public void Dispose()
 	{

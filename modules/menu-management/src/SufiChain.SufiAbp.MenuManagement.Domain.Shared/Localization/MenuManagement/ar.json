@@ -1,0 +1,11 @@
+{
+  "culture": "ar",
+  "texts": {
+    "Permission:MenuManagement": "إدارة القوائم",
+    "Permission:MenuManagement.Menus": "القوائم",
+    "Permission:MenuManagement.Menus.Create": "إنشاء قائمة",
+    "Permission:MenuManagement.Menus.Edit": "تعديل قائمة",
+    "Permission:MenuManagement.Menus.Delete": "حذف قائمة",
+    "Permission:MenuManagement.Menus.ManageItems": "إدارة عناصر القائمة"
+  }
+}

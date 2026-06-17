@@ -30,6 +30,10 @@
   <TEMPLATE-ONLY>
   <ItemGroup>
     <PackageReference Include="SufiChain.SufiAbp.Core" Version="$(SufiVersion)" />
+    <PackageReference Include="SufiChain.SufiAbp.Calendar.Application" Version="$(SufiVersion)" />
+    <PackageReference Include="SufiChain.SufiAbp.LocalizationManagement.Application" Version="$(SufiVersion)" />
+    <PackageReference Include="SufiChain.SufiAbp.AIManagement.Application" Version="$(SufiVersion)" />
+    <PackageReference Include="SufiChain.SufiAbp.FileManager.Application" Version="$(SufiVersion)" />
     <PackageReference Include="SufiChain.SufiAbp.Identity.Application" Version="$(SufiVersion)" />
     <PackageReference Include="SufiChain.SufiAbp.TenantManagement.Application" Version="$(SufiVersion)" />
     <PackageReference Include="SufiChain.SufiAbp.Account.Application" Version="$(SufiVersion)" />

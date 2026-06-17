@@ -1,5 +1,6 @@
 using System.Reflection;
 using Microsoft.Extensions.Logging;
+using SufiChain.SufiAbp.AI;
 using SufiChain.SufiAbp.AIManagement.MCP.Abstractions;
 using SufiChain.SufiAbp.AIManagement.MCP.Attributes;
 using SufiChain.SufiAbp.Application.Services;
@@ -76,18 +77,19 @@ public class ReflectionToolDiscoveryService : IInternalToolDiscoveryService, ISi
             try
             {
                 var types = assembly.GetTypes()
-                    .Where(t => t.IsClass && !t.IsAbstract && 
-                               (typeof(IApplicationService).IsAssignableFrom(t) || 
+                    .Where(t => t.IsClass && !t.IsAbstract &&
+                               (typeof(IApplicationService).IsAssignableFrom(t) ||
+                                typeof(ISufiAbpAITool).IsAssignableFrom(t) ||
                                 t.Name.EndsWith("AppService")));
                 
                 foreach (var type in types)
                 {
                     var methods = type.GetMethods(BindingFlags.Public | BindingFlags.Instance)
-                        .Where(m => m.GetCustomAttribute<MCPToolAttribute>() != null);
+                        .Where(HasToolAttribute);
                     
                     foreach (var method in methods)
                     {
-                        var attribute = method.GetCustomAttribute<MCPToolAttribute>()!;
+                        var attribute = GetToolAttribute(method);
                         
                         try
                         {
@@ -134,4 +136,24 @@ public class ReflectionToolDiscoveryService : IInternalToolDiscoveryService, ISi
         
         return Task.FromResult(tools);
     }
+
+    private static bool HasToolAttribute(MethodInfo method)
+    {
+        return method.GetCustomAttribute<MCPToolAttribute>() != null ||
+               method.GetCustomAttribute<SufiAbpAIToolAttribute>() != null;
+    }
+
+    private static ToolAttributeInfo GetToolAttribute(MethodInfo method)
+    {
+        var mcpToolAttribute = method.GetCustomAttribute<MCPToolAttribute>();
+        if (mcpToolAttribute != null)
+        {
+            return new ToolAttributeInfo(mcpToolAttribute.Name, mcpToolAttribute.Description);
+        }
+
+        var sufiAbpToolAttribute = method.GetCustomAttribute<SufiAbpAIToolAttribute>()!;
+        return new ToolAttributeInfo(sufiAbpToolAttribute.Name, sufiAbpToolAttribute.Description);
+    }
+
+    private sealed record ToolAttributeInfo(string Name, string Description);
 }

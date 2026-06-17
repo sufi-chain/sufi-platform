@@ -24,6 +24,9 @@ public class ApplyBrandingStep : ProjectBuildPipelineStep
         
         // Update appsettings.json files
         UpdateAppSettings(context, appName, logoUrl);
+
+        // Update localized app name values
+        UpdateLocalizationFiles(context, appName);
         
         // Update branding provider classes
         UpdateBrandingProviders(context, appName);
@@ -139,6 +142,28 @@ public class ApplyBrandingStep : ProjectBuildPipelineStep
         }
         
         return content;
+    }
+
+    private void UpdateLocalizationFiles(ProjectBuildContext context, string appName)
+    {
+        var localizationFiles = context.Files.Keys
+            .Where(f => f.EndsWith(".json", StringComparison.OrdinalIgnoreCase) &&
+                        f.Replace('\\', '/').Contains("/Localization/"))
+            .ToList();
+
+        foreach (var filePath in localizationFiles)
+        {
+            var content = Encoding.UTF8.GetString(context.Files[filePath]);
+            var newContent = Regex.Replace(
+                content,
+                @"(""AppName""\s*:\s*"")[^""]*("")",
+                match => match.Groups[1].Value + appName + match.Groups[2].Value);
+
+            if (newContent != content)
+            {
+                context.Files[filePath] = Encoding.UTF8.GetBytes(newContent);
+            }
+        }
     }
     
     private void UpdateBrandingProviders(ProjectBuildContext context, string appName)

@@ -133,6 +133,7 @@
     "CreateOrganizationUnit": "Crear unidad organizativa",
     "EnterDisplayName": "Enter display name",
     "CreatingSubUnitUnder": "Creando subunidad bajo '{0}'",
+    "LoadingPermissions": "Cargando permisos...",
     "SearchPermissions": "Buscar permisos...",
     "SelectAllInAllTabs": "Seleccionar todo",
     "SelectAllInThisTab": "Seleccionar todo en este grupo",
@@ -216,6 +217,22 @@
     "CaptchaRecaptchaVersion:v3": "v3 basado en puntuación",
     "SufiAbp.Identity:VerificationChannelUnavailable": "El canal seleccionado no está disponible. Configure los proveedores de mensajería o elija otro canal.",
     "SufiAbp.Identity:PhoneNumberRequired": "Se requiere un número de teléfono para envío por SMS o voz. Agregue un número a su perfil.",
-    "SufiAbp.Identity:PhoneNumberNotConfirmed": "Su número de teléfono debe estar confirmado antes de usar SMS o voz."
+    "SufiAbp.Identity:PhoneNumberNotConfirmed": "Su número de teléfono debe estar confirmado antes de usar SMS o voz.",
+    "Permission:IdentityManagement": "Gestión de identidad",
+    "Permission:RoleManagement": "Gestión de roles",
+    "Permission:UserManagement": "Gestión de usuarios",
+    "Permission:UserLookup": "Búsqueda de usuarios",
+    "Permission:SecurityLogs": "Registros de seguridad",
+    "Permission:Create": "Crear",
+    "Permission:Edit": "Editar",
+    "Permission:Delete": "Eliminar",
+    "Permission:ChangePermissions": "Cambiar permisos",
+    "Permission:ManageRoles": "Administrar roles",
+    "Permission:OrganizationUnits": "Unidades organizativas",
+    "Permission:OrganizationUnits.Create": "Crear unidades organizativas",
+    "Permission:OrganizationUnits.Update": "Actualizar unidades organizativas",
+    "Permission:OrganizationUnits.Delete": "Eliminar unidades organizativas",
+    "Permission:OrganizationUnits.ManageMembers": "Administrar miembros de unidades organizativas",
+    "Permission:OrganizationUnits.ManageRoles": "Administrar roles de unidades organizativas"
   }
 }

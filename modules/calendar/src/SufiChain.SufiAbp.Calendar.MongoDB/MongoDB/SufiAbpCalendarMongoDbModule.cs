@@ -1,5 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
 using SufiChain.SufiAbp.Calendar.Calendars;
+using SufiChain.SufiAbp.Calendar.Events;
 using SufiChain.SufiAbp.Calendar.MongoDB.Repositories;
 using SufiChain.SufiAbp.MongoDB;
 using Volo.Abp.Modularity;
@@ -19,6 +20,10 @@ public class SufiAbpCalendarMongoDbModule : AbpModule
         {
             options.AddDefaultRepositories<ICalendarMongoDbContext>();
             options.AddRepository<Calendars.Calendar, MongoCalendarRepository>();
+            options.AddRepository<CalendarEvent, MongoCalendarEventRepository>();
         });
+
+        context.Services.AddTransient<ICalendarRepository, MongoCalendarRepository>();
+        context.Services.AddTransient<ICalendarEventRepository, MongoCalendarEventRepository>();
     }
 }

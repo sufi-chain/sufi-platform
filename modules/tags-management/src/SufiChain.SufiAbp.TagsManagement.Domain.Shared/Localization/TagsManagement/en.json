@@ -13,6 +13,9 @@
     "Setting:TagsManagement.MaxTagNameLength": "Max tag name length",
     "Setting:TagsManagement.MaxTagNameLength.Description": "Maximum length for tag names. Entity schema limits still apply.",
     "TagsManagement:MaxTagsPerEntityExceeded": "The maximum number of tags per entity has been reached.",
-    "TagsManagement:MaxTagNameLengthExceeded": "Tag name exceeds the maximum allowed length."
+    "TagsManagement:MaxTagNameLengthExceeded": "Tag name exceeds the maximum allowed length.",
+    "Permission:TagsManagement": "Tags management",
+    "Permission:TagsManagement.Tags": "Tags",
+    "Permission:TagsManagement.TagLinks": "Tag links"
   }
 }
