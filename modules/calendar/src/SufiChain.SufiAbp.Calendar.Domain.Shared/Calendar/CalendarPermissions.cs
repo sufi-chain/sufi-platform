@@ -1,4 +1,4 @@
-using SufiChain.SufiAbp.Reflection;
+using Volo.Abp.Reflection;
 
 namespace SufiChain.SufiAbp.Calendar.Permissions;
 
