@@ -10,7 +10,7 @@ namespace SufiChain.SufiAbp.FileManager.Controllers;
 
 [Area(FileManagerRemoteServiceConsts.ModuleName)]
 [RemoteService(Name = FileManagerRemoteServiceConsts.RemoteServiceName)]
-[Route("api/sabp/file-manager/operations")]
+[Route("api/file-manager/operations")]
 public class FileManagerController : SufiAbpControllerBase, IFileManagerAppService
 {
     private readonly IFileManagerAppService _fileManagerAppService;

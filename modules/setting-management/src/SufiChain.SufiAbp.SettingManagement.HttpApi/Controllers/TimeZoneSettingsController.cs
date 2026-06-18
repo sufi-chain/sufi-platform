@@ -9,7 +9,7 @@ namespace SufiChain.SufiAbp.SettingManagement.Controllers;
 
 [Area(SettingManagementRemoteServiceConsts.ModuleName)]
 [RemoteService(Name = SettingManagementRemoteServiceConsts.RemoteServiceName)]
-[Route("api/sabp/setting-management/timezone")]
+[Route("api/setting-management/timezone")]
 public class TimeZoneSettingsController : SufiAbpControllerBase, ITimeZoneSettingsAppService
 {
     private readonly ITimeZoneSettingsAppService _timeZoneSettingsAppService;

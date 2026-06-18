@@ -11,7 +11,7 @@ namespace SufiChain.SufiAbp.BackgroundJobs.Controllers;
 /// </summary>
 [Area(BackgroundJobsRemoteServiceConsts.ModuleName)]
 [RemoteService(Name = BackgroundJobsRemoteServiceConsts.RemoteServiceName)]
-[Route("api/sabp/background-jobs")]
+[Route("api/background-jobs")]
 public class BackgroundJobController : SufiAbpControllerBase, IBackgroundJobAppService
 {
     private readonly IBackgroundJobAppService _backgroundJobAppService;

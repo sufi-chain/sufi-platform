@@ -303,7 +303,7 @@ public class ConfigureSingleStep : ProjectBuildPipelineStep
             if (!content.Contains("ConnectionStrings"))
             {
                 var dbProvider = context.Args.DatabaseProvider;
-                var dbName = context.Args.CompanyName + context.Args.ProjectName;
+                var dbName = context.Args.ProjectName;
                 var connString = dbProvider == DatabaseProvider.MongoDB
                     ? $"mongodb://localhost:27017/{dbName}"
                     : $"Server=(localdb)\\\\MSSQLLocalDB;Database={dbName};Trusted_Connection=True;TrustServerCertificate=True";

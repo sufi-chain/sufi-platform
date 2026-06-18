@@ -11,7 +11,7 @@ namespace SufiChain.SufiAbp.AuditLogging.Controllers;
 /// </summary>
 [Area(AuditLoggingRemoteServiceConsts.ModuleName)]
 [RemoteService(Name = AuditLoggingRemoteServiceConsts.RemoteServiceName)]
-[Route("api/sabp/audit-logging/entity-changes")]
+[Route("api/audit-logging/entity-changes")]
 public class EntityChangeController : SufiAbpControllerBase, IEntityChangeAppService
 {
     private readonly IEntityChangeAppService _entityChangeAppService;

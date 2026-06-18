@@ -8,7 +8,7 @@ namespace SufiChain.SufiAbp.SettingManagement.Controllers;
 
 [Area(SettingManagementRemoteServiceConsts.ModuleName)]
 [RemoteService(Name = SettingManagementRemoteServiceConsts.RemoteServiceName)]
-[Route("api/sabp/setting-management/emailing")]
+[Route("api/setting-management/emailing")]
 public class EmailSettingsController : SufiAbpControllerBase, IEmailSettingsAppService
 {
     private readonly IEmailSettingsAppService _emailSettingsAppService;

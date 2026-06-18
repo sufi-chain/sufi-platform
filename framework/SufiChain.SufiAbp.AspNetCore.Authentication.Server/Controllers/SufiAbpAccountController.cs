@@ -24,6 +24,7 @@ namespace SufiChain.SufiAbp.AspNetCore.Authentication.Server.Controllers;
 /// lives in the framework.
 /// </summary>
 [Route("Account")]
+[ApiExplorerSettings(IgnoreApi = true)]
 public abstract class SufiAbpAccountController : AbpController
 {
     private readonly SufiAbpAuthenticationOptions _options;

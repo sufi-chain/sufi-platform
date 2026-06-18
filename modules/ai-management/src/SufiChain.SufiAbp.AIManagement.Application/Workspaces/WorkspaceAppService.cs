@@ -98,8 +98,7 @@ public class WorkspaceAppService : ApplicationService, IWorkspaceAppService
             workspace.SetVectorStoreConfig(JsonSerializer.Serialize(input.VectorStoreConfig));
         }
 
-        await _workspaceRepository.InsertAsync(workspace);
-        await CurrentUnitOfWork.SaveChangesAsync();
+        await _workspaceRepository.InsertAsync(workspace, autoSave: true);
 
         return ObjectMapper.Map<Workspace, WorkspaceDto>(workspace);
     }
@@ -161,8 +160,7 @@ public class WorkspaceAppService : ApplicationService, IWorkspaceAppService
             workspace.SetVectorStoreConfig(JsonSerializer.Serialize(input.VectorStoreConfig));
         }
 
-        await _workspaceRepository.UpdateAsync(workspace);
-        await CurrentUnitOfWork.SaveChangesAsync();
+        await _workspaceRepository.UpdateAsync(workspace, autoSave: true);
 
         return ObjectMapper.Map<Workspace, WorkspaceDto>(workspace);
     }
@@ -170,7 +168,7 @@ public class WorkspaceAppService : ApplicationService, IWorkspaceAppService
     [Authorize(AIManagementPermissions.Workspaces.Delete)]
     public async Task DeleteAsync(Guid id)
     {
-        await _workspaceRepository.DeleteAsync(id);
+        await _workspaceRepository.DeleteAsync(id, autoSave: true);
     }
 
     public async Task<List<OpenAIModelDto>> GetAvailableModelsAsync(GetOpenAIModelsInput input)
@@ -309,8 +307,7 @@ public class WorkspaceAppService : ApplicationService, IWorkspaceAppService
 
         workspace.SetEnabledMCPTools(JsonSerializer.Serialize(enabledToolNames));
 
-        await _workspaceRepository.UpdateAsync(workspace);
-        await CurrentUnitOfWork.SaveChangesAsync();
+        await _workspaceRepository.UpdateAsync(workspace, autoSave: true);
     }
 
     private string? EncryptApiKey(string? apiKey)

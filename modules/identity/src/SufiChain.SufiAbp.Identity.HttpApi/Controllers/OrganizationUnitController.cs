@@ -13,7 +13,7 @@ namespace SufiChain.SufiAbp.Identity.Controllers;
 /// </summary>
 [Area(IdentityRemoteServiceConsts.ModuleName)]
 [RemoteService(Name = IdentityRemoteServiceConsts.RemoteServiceName)]
-[Route("api/sabp/identity/organization-units")]
+[Route("api/identity/organization-units")]
 public class OrganizationUnitController : SufiAbpControllerBase, IOrganizationUnitAppService
 {
     private readonly IOrganizationUnitAppService _organizationUnitAppService;

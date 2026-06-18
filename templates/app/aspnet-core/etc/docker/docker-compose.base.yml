@@ -9,7 +9,7 @@ services:
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: DemoApp_Layered
+      POSTGRES_DB: MyProjectName
     ports:
       - "5432:5432"
     volumes:
@@ -32,7 +32,7 @@ services:
     environment:
       MONGO_INITDB_ROOT_USERNAME: admin
       MONGO_INITDB_ROOT_PASSWORD: admin
-      MONGO_INITDB_DATABASE: DemoApp_Layered
+      MONGO_INITDB_DATABASE: MyProjectName
     ports:
       - "27017:27017"
     volumes:
@@ -56,10 +56,10 @@ services:
       dockerfile: .dev/hosts/layered/src/SufiPlatform.DemoApp.DbMigrator/Dockerfile
     environment:
       # <TEMPLATE-REMOVE IF-NOT="db:efcore">
-      - ConnectionStrings__Default=Host=postgres;Port=5432;Database=DemoApp_Layered;Username=postgres;Password=postgres
+      - ConnectionStrings__Default=Host=postgres;Port=5432;Database=MyProjectName;Username=postgres;Password=postgres
       # </TEMPLATE-REMOVE>
       # <TEMPLATE-REMOVE IF-NOT="db:mongodb">
-      - ConnectionStrings__Default=mongodb://admin:admin@mongodb:27017/DemoApp_Layered?authSource=admin
+      - ConnectionStrings__Default=mongodb://admin:admin@mongodb:27017/MyProjectName?authSource=admin
       # </TEMPLATE-REMOVE>
     depends_on:
       # <TEMPLATE-REMOVE IF-NOT="db:efcore">

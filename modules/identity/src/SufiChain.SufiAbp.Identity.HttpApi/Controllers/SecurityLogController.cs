@@ -12,7 +12,7 @@ namespace SufiChain.SufiAbp.Identity.Controllers;
 /// </summary>
 [Area(IdentityRemoteServiceConsts.ModuleName)]
 [RemoteService(Name = IdentityRemoteServiceConsts.RemoteServiceName)]
-[Route("api/sabp/identity/security-logs")]
+[Route("api/identity/security-logs")]
 public class SecurityLogController : SufiAbpControllerBase, IIdentitySecurityLogAppService
 {
     private readonly IIdentitySecurityLogAppService _securityLogAppService;

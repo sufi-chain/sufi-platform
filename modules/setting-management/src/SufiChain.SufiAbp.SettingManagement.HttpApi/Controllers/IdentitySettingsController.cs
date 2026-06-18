@@ -7,7 +7,7 @@ namespace SufiChain.SufiAbp.SettingManagement.Controllers;
 
 [Area(SettingManagementRemoteServiceConsts.ModuleName)]
 [RemoteService(Name = SettingManagementRemoteServiceConsts.RemoteServiceName)]
-[Route("api/sabp/setting-management/identity")]
+[Route("api/setting-management/identity")]
 public class IdentitySettingsController : SufiAbpControllerBase, IIdentitySettingsAppService
 {
     private readonly IIdentitySettingsAppService _identitySettingsAppService;

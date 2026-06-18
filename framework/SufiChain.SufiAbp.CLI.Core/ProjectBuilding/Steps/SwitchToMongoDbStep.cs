@@ -37,7 +37,7 @@ public class SwitchToMongoDbStep : ProjectBuildPipelineStep
             var content = Encoding.UTF8.GetString(context.Files[file]);
             
             // Ensure MongoDB connection string format
-            var dbName = context.Args.CompanyName + context.Args.ProjectName;
+            var dbName = context.Args.ProjectName;
             
             // Replace any SQL Server connection string with MongoDB
             if (content.Contains("Server=") || content.Contains("Data Source="))

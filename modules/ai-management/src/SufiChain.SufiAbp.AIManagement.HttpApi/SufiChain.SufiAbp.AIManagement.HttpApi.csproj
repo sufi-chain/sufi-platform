@@ -14,6 +14,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\SufiChain.SufiAbp.AIManagement.Application.Contracts\SufiChain.SufiAbp.AIManagement.Application.Contracts.csproj" />
+    <ProjectReference Include="..\SufiChain.SufiAbp.AIManagement.Application\SufiChain.SufiAbp.AIManagement.Application.csproj" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.SemanticKernel" Version="1.76.0" />

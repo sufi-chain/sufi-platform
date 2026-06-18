@@ -7,7 +7,7 @@ namespace SufiChain.SufiAbp.Account.Controllers;
 
 [Area(AccountRemoteServiceConsts.ModuleName)]
 [RemoteService(Name = AccountRemoteServiceConsts.RemoteServiceName)]
-[Route("api/sabp/account/captcha")]
+[Route("api/account/captcha")]
 public class CaptchaController : SufiAbpControllerBase, ICaptchaAppService
 {
     private readonly ICaptchaAppService _captchaAppService;

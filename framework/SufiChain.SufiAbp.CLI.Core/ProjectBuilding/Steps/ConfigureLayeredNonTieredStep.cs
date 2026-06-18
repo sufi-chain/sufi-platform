@@ -40,17 +40,17 @@ public class ConfigureLayeredNonTieredStep : ProjectBuildPipelineStep
         foreach (var file in dbMigratorSettings)
         {
             var content = Encoding.UTF8.GetString(context.Files[file]);
-            var layeredDatabaseName = $"{context.Args.ProjectName}_Layered";
+            var databaseName = context.Args.ProjectName;
 
             content = Regex.Replace(
                 content,
                 @"Database=[^;\""]+",
-                $"Database={layeredDatabaseName}");
+                $"Database={databaseName}");
 
             content = Regex.Replace(
                 content,
                 @"mongodb://localhost:27017/[^\""]+",
-                $"mongodb://localhost:27017/{layeredDatabaseName}");
+                $"mongodb://localhost:27017/{databaseName}");
 
             context.Files[file] = Encoding.UTF8.GetBytes(content);
         }

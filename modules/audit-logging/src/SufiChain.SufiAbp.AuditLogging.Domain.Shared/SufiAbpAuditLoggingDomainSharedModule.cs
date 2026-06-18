@@ -5,6 +5,7 @@ using Volo.Abp.Modularity;
 using Volo.Abp.VirtualFileSystem;
 using SufiChain.SufiAbp.AuditLogging.Localization;
 using SufiChain.SufiAbp.UI;
+using SufiChain.SufiAbp.UI.Localization;
 
 namespace SufiChain.SufiAbp.AuditLogging;
 
@@ -24,7 +25,7 @@ public class SufiAbpAuditLoggingDomainSharedModule : AbpModule
         {
             options.Resources
                 .Add<SufiAbpAuditLoggingResource>("en")
-                .AddBaseTypes(typeof(SufiChain.SufiAbp.UI.Localization.SufiAbpFrameworkResource))
+                .AddBaseTypes(typeof(SufiAbpFrameworkResource))
                 .AddVirtualJson("/Localization/AuditLogging");
         });
 

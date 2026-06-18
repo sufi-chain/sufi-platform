@@ -9,7 +9,7 @@ namespace SufiChain.SufiAbp.Account.Controllers;
 
 [Area(AccountRemoteServiceConsts.ModuleName)]
 [RemoteService(Name = AccountRemoteServiceConsts.RemoteServiceName)]
-[Route("api/sabp/account/dynamic-claims")]
+[Route("api/account/dynamic-claims")]
 public class DynamicClaimsController : SufiAbpControllerBase, IDynamicClaimsAppService
 {
     private readonly IDynamicClaimsAppService _dynamicClaimsAppService;

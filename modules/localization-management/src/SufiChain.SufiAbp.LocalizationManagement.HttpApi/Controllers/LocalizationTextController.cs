@@ -10,7 +10,7 @@ namespace SufiChain.SufiAbp.LocalizationManagement.Controllers;
 
 [RemoteService(Name = LocalizationManagementRemoteServiceConsts.RemoteServiceName)]
 [Area(LocalizationManagementRemoteServiceConsts.ModuleName)]
-[Route("api/sabp/localization-management/texts")]
+[Route("api/localization-management/texts")]
 public class LocalizationTextController : LocalizationManagementController, ILocalizationTextAppService
 {
     private readonly ILocalizationTextAppService _service;

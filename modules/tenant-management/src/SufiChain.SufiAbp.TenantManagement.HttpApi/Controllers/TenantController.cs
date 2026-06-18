@@ -10,7 +10,7 @@ namespace SufiChain.SufiAbp.TenantManagement.Controllers;
 
 [Area(TenantManagementRemoteServiceConsts.ModuleName)]
 [RemoteService(Name = TenantManagementRemoteServiceConsts.RemoteServiceName)]
-[Route("api/sabp/tenant-management/tenants")]
+[Route("api/tenant-management/tenants")]
 public class TenantController : SufiAbpControllerBase, ITenantAppService
 {
     private readonly ITenantAppService _tenantAppService;

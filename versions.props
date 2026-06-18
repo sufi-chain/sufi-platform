@@ -11,9 +11,9 @@
   
   <!-- Sufi Platform Package Versions -->
   <PropertyGroup>
-      <SufiVersion>1.0.0-alpha.4.0</SufiVersion>
-      <KomThemeVersion>1.0.0-rc.1.0</KomThemeVersion>
-      <SufiBlazorVersion>1.0.0-rc.1.0</SufiBlazorVersion>
+      <SufiVersion>1.0.0-alpha.6.3</SufiVersion>
+      <KomThemeVersion>1.0.0-rc.1.1</KomThemeVersion>
+      <SufiBlazorVersion>1.0.0-rc.1.1</SufiBlazorVersion>
   </PropertyGroup>
 
 

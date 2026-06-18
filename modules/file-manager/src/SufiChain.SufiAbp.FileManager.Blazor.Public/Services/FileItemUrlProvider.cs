@@ -9,7 +9,7 @@ namespace SufiChain.SufiAbp.FileManager.Blazor.Public.Services;
 /// </summary>
 public class FileItemUrlProvider : IFileItemUrlProvider
 {
-    private const string FileItemsPath = "api/sabp/file-manager/file-items";
+    private const string FileItemsPath = "api/file-manager/file-items";
 
     private readonly string _apiBaseUrl;
     private readonly IFileAccessTokenService _fileAccessTokenService;

@@ -11,7 +11,7 @@ namespace SufiChain.SufiAbp.FileManager.Controllers;
 
 [Area(FileManagerRemoteServiceConsts.ModuleName)]
 [RemoteService(Name = FileManagerRemoteServiceConsts.RemoteServiceName)]
-[Route("api/sabp/file-manager/file-structures")]
+[Route("api/file-manager/file-structures")]
 public class FileStructureController : SufiAbpControllerBase, IFileStructureAppService
 {
     private readonly IFileStructureAppService _fileStructureAppService;

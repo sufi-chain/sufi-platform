@@ -23,7 +23,7 @@ public class SufiAbpTenantManagementHttpApiClientModule : AbpModule
             TenantManagementRemoteServiceConsts.RemoteServiceName
         );
 
-        // Override ABP's TenantClientProxy to use SufiAbp routes (/api/sabp/tenant-management/tenants).
+        // Override ABP's TenantClientProxy to use SufiAbp routes (/api/tenant-management/tenants).
         // SufiAbpTenantManagementHttpApiClientModule registers proxies for ABP's default routes,
         // but our SufiAbp TenantController serves ITenantAppService under the SufiAbp remote service name.
         context.Services.AddHttpClientProxies(

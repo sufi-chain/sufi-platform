@@ -8,7 +8,7 @@ namespace SufiChain.SufiAbp.FeatureManagement.Controllers;
 
 [Area(FeatureManagementRemoteServiceConsts.ModuleName)]
 [RemoteService(Name = FeatureManagementRemoteServiceConsts.RemoteServiceName)]
-[Route("api/sabp/feature-management/features")]
+[Route("api/feature-management/features")]
 public class FeaturesController : SufiAbpControllerBase, IFeatureAppService
 {
     private readonly IFeatureAppService _featureAppService;

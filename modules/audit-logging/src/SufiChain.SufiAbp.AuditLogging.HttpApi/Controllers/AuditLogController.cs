@@ -11,7 +11,7 @@ namespace SufiChain.SufiAbp.AuditLogging.Controllers;
 /// </summary>
 [Area(AuditLoggingRemoteServiceConsts.ModuleName)]
 [RemoteService(Name = AuditLoggingRemoteServiceConsts.RemoteServiceName)]
-[Route("api/sabp/audit-logging/audit-logs")]
+[Route("api/audit-logging/audit-logs")]
 public class AuditLogController : SufiAbpControllerBase, IAuditLogAppService
 {
     private readonly IAuditLogAppService _auditLogAppService;

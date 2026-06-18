@@ -6,7 +6,7 @@ namespace SufiChain.SufiAbp.Account.Controllers;
 
 [Area(AccountRemoteServiceConsts.ModuleName)]
 [RemoteService(Name = AccountRemoteServiceConsts.RemoteServiceName)]
-[Route("api/sabp/account/my-profile")]
+[Route("api/account/my-profile")]
 public class ProfileController : SufiAbpControllerBase, IProfileAppService
 {
     private readonly IProfileAppService _profileAppService;

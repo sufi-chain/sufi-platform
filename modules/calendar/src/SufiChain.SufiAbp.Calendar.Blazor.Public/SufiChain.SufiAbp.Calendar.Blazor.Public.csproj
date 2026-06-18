@@ -15,11 +15,4 @@
     <ProjectReference Include="..\SufiChain.SufiAbp.Calendar.Domain.Shared\SufiChain.SufiAbp.Calendar.Domain.Shared.csproj" />
     <ProjectReference Include="..\SufiChain.SufiAbp.Calendar.Application.Contracts\SufiChain.SufiAbp.Calendar.Application.Contracts.csproj" />
   </ItemGroup>
-  <ItemGroup>
-    <Content Update="wwwroot\calendar-public.css">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      <Pack>true</Pack>
-      <PackagePath>staticwebassets\calendar-public.css</PackagePath>
-    </Content>
-  </ItemGroup>
 </Project>

@@ -16,7 +16,7 @@ namespace SufiChain.SufiAbp.FileManager.Controllers;
 
 [Area("sabp-file-manager")]
 [RemoteService(Name = "FileManager")]
-[Route("api/sabp/file-manager/file-items")]
+[Route("api/file-manager/file-items")]
 public class FileItemController : SufiAbpControllerBase, IFileItemAppService
 {
     private readonly IFileItemAppService _fileItemAppService;

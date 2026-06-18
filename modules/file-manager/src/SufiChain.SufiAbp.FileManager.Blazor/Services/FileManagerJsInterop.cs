@@ -10,9 +10,9 @@ public class FileManagerJsInterop : IAsyncDisposable
 {
     /// <summary>
     /// Path segment for the file-items API. Must match FileItemController route
-    /// (api/sabp/file-manager/file-items).
+    /// (api/file-manager/file-items).
     /// </summary>
-    public const string FileItemsApiPath = "api/sabp/file-manager/file-items";
+    public const string FileItemsApiPath = "api/file-manager/file-items";
 
     private readonly Lazy<Task<IJSObjectReference>> _moduleTask;
     private readonly IConfiguration _configuration;

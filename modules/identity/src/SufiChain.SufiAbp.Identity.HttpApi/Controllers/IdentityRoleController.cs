@@ -10,7 +10,7 @@ namespace SufiChain.SufiAbp.Identity.Controllers;
 
 [Area(IdentityRemoteServiceConsts.ModuleName)]
 [RemoteService(Name = IdentityRemoteServiceConsts.RemoteServiceName)]
-[Route("api/sabp/identity/roles")]
+[Route("api/identity/roles")]
 public class IdentityRoleController : SufiAbpControllerBase, IIdentityRoleAppService
 {
     private readonly IIdentityRoleAppService _roleAppService;

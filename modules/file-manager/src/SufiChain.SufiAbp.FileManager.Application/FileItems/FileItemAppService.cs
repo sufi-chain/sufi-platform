@@ -669,7 +669,7 @@ public partial class FileItemAppService : ApplicationService, IFileItemAppServic
         var entry = await _structureCache.GetAsync(fileItem.StructureKey);
         // Structure BaseUrl is for direct storage URLs (e.g. S3 bucket); API paths must use app base
         var baseUrl = _options.BaseUrl ?? "/";
-        var path = $"{baseUrl.TrimEnd('/')}/api/sabp/file-manager/file-items/{id}/download";
+        var path = $"{baseUrl.TrimEnd('/')}/api/file-manager/file-items/{id}/download";
         var url = entry?.IsPublicAccess == true
             ? path
             : AppendAccessTokenIfConfigured(path, id);
@@ -689,7 +689,7 @@ public partial class FileItemAppService : ApplicationService, IFileItemAppServic
         var entry = await _structureCache.GetAsync(fileItem.StructureKey);
         // Structure BaseUrl is for direct storage URLs; API paths must use app base
         var baseUrl = _options.BaseUrl ?? "/";
-        var path = $"{baseUrl.TrimEnd('/')}/api/sabp/file-manager/file-items/{id}/thumbnail";
+        var path = $"{baseUrl.TrimEnd('/')}/api/file-manager/file-items/{id}/thumbnail";
         var url = entry?.IsPublicAccess == true
             ? path
             : AppendAccessTokenIfConfigured(path, id);
@@ -707,7 +707,7 @@ public partial class FileItemAppService : ApplicationService, IFileItemAppServic
         var entry = await _structureCache.GetAsync(fileItem.StructureKey);
         // Structure BaseUrl is for direct storage URLs; API paths must use app base
         var baseUrl = _options.BaseUrl ?? "/";
-        var path = $"{baseUrl.TrimEnd('/')}/api/sabp/file-manager/file-items/{id}/stream";
+        var path = $"{baseUrl.TrimEnd('/')}/api/file-manager/file-items/{id}/stream";
         var url = entry?.IsPublicAccess == true
             ? path
             : AppendAccessTokenIfConfigured(path, id);

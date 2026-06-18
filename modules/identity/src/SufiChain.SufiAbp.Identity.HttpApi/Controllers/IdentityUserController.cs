@@ -10,7 +10,7 @@ namespace SufiChain.SufiAbp.Identity.Controllers;
 
 [Area(IdentityRemoteServiceConsts.ModuleName)]
 [RemoteService(Name = IdentityRemoteServiceConsts.RemoteServiceName)]
-[Route("api/sabp/identity/users")]
+[Route("api/identity/users")]
 public class IdentityUserController : SufiAbpControllerBase, IIdentityUserAppService
 {
     private readonly IIdentityUserAppService _userAppService;

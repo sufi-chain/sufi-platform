@@ -9,7 +9,7 @@ namespace SufiChain.SufiAbp.PermissionManagement.Controllers;
 
 [Area(PermissionManagementRemoteServiceConsts.ModuleName)]
 [RemoteService(Name = PermissionManagementRemoteServiceConsts.RemoteServiceName)]
-[Route("api/sabp/permission-management/permissions")]
+[Route("api/permission-management/permissions")]
 public class PermissionsController : SufiAbpControllerBase, IPermissionAppService
 {
     private readonly IPermissionAppService _permissionAppService;
@@ -92,7 +92,7 @@ public class PermissionsController : SufiAbpControllerBase, IPermissionAppServic
 
 //[Area(PermissionManagementRemoteServiceConsts.ModuleName)]
 //[RemoteService(Name = PermissionManagementRemoteServiceConsts.RemoteServiceName)]
-//[Route("api/sabp/permission-management/permissions")]
+//[Route("api/permission-management/permissions")]
 //public class PermissionsController : SufiAbpControllerBase, IPermissionAppService
 //{
 //    private readonly IPermissionAppService _permissionAppService;

@@ -3,7 +3,7 @@
 // for better performance with large files.
 
 /** Path for the versioned file-items API; must match FileItemController route. Built only here to avoid duplicate path in upload URL. */
-const FILE_ITEMS_API_PATH = '/api/sabp/file-manager/file-items';
+const FILE_ITEMS_API_PATH = '/api/file-manager/file-items';
 
 /**
  * Upload a file directly to the API using XMLHttpRequest (bypasses SignalR - no circuit timeout).

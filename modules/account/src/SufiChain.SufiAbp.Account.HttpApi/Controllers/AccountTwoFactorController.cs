@@ -8,7 +8,7 @@ namespace SufiChain.SufiAbp.Account.Controllers;
 
 [Area(AccountRemoteServiceConsts.ModuleName)]
 [RemoteService(Name = AccountRemoteServiceConsts.RemoteServiceName)]
-[Route("api/sabp/account/two-factor")]
+[Route("api/account/two-factor")]
 public class AccountTwoFactorController : SufiAbpControllerBase, IAccountTwoFactorAppService
 {
     private readonly IAccountTwoFactorAppService _twoFactorAppService;

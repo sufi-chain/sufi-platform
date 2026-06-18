@@ -8,7 +8,7 @@ namespace SufiChain.SufiAbp.Account.Controllers;
 
 [Area(AccountRemoteServiceConsts.ModuleName)]
 [RemoteService(Name = AccountRemoteServiceConsts.RemoteServiceName)]
-[Route("api/sabp/account/otp")]
+[Route("api/account/otp")]
 public class AccountOtpController : SufiAbpControllerBase, IAccountOtpAppService
 {
     private readonly IAccountOtpAppService _otpAppService;

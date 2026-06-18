@@ -9,7 +9,7 @@ namespace SufiChain.SufiAbp.Account.Controllers;
 
 [Area(AccountRemoteServiceConsts.ModuleName)]
 [RemoteService(Name = AccountRemoteServiceConsts.RemoteServiceName)]
-[Route("api/sabp/account")]
+[Route("api/account")]
 public class AccountController : SufiAbpControllerBase, IAccountAppService
 {
     private readonly IAccountAppService _accountAppService;

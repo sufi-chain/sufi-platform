@@ -1042,7 +1042,7 @@ public class EntityFrameworkCore{projectName}DbSchemaMigrator : I{projectName}Db
 
     private void UpdateConnectionStrings(ProjectBuildContext context, EfProviderKind provider)
     {
-        var dbName = context.Args.CompanyName + context.Args.ProjectName;
+        var dbName = context.Args.ProjectName;
         
         // Use explicit connection string if provided via --connection-string CLI option
         var connectionString = context.Args.ConnectionString;
