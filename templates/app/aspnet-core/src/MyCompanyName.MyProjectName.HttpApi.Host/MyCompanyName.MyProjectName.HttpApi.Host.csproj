@@ -18,18 +18,17 @@
     <PackageReference Include="SufiChain.SufiAbp.AspNetCore.Serilog" Version="$(SufiVersion)" />
     <PackageReference Include="SufiChain.SufiAbp.Swashbuckle" Version="$(SufiVersion)" />
     <PackageReference Include="SufiChain.SufiAbp.BlobStoring.Database.EntityFrameworkCore" Version="$(SufiVersion)" />
-    <PackageReference Include="Microsoft.OpenApi" Version="1.6.22" />
   </ItemGroup>
 
   <ItemGroup>
-    <!-- Demo app project references (always needed) -->
+    
     <ProjectReference Include="..\MyCompanyName.MyProjectName.Application\MyCompanyName.MyProjectName.Application.csproj" />
     <ProjectReference Include="..\MyCompanyName.MyProjectName.EntityFrameworkCore\MyCompanyName.MyProjectName.EntityFrameworkCore.csproj" />
     <ProjectReference Include="..\MyCompanyName.MyProjectName.HttpApi\MyCompanyName.MyProjectName.HttpApi.csproj" />
   </ItemGroup>
   
-  <!-- ====================================================================== -->
-  <!-- Development: Project References (removed when generating templates) -->
+  
+  
   <!-- <TEMPLATE-REMOVE> -->
   <ItemGroup>
     <!-- File Manager Module (backend services and API) -->
@@ -72,8 +71,8 @@
   </ItemGroup>
   <!-- </TEMPLATE-REMOVE> -->
   
-  <!-- ====================================================================== -->
-  <!-- Template: NuGet Package References (uncommented when generating templates) -->
+  
+  
   <!-- <TEMPLATE-ONLY>
   <ItemGroup>
     <PackageReference Include="SufiChain.SufiAbp.FileManager.Application" Version="$(SufiVersion)" />
@@ -104,7 +103,7 @@
   </TEMPLATE-ONLY> -->
 
   <ItemGroup>
-    <!-- ABP Admin Modules (MongoDB data layers only - Application replaced by SufiAbp modules) -->
+    
     <PackageReference Include="SufiChain.SufiAbp.AuditLogging.EntityFrameworkCore" Version="$(SufiVersion)" />
     <PackageReference Include="SufiChain.SufiAbp.FeatureManagement.EntityFrameworkCore" Version="$(SufiVersion)" />
     <PackageReference Include="SufiChain.SufiAbp.SettingManagement.EntityFrameworkCore" Version="$(SufiVersion)" />

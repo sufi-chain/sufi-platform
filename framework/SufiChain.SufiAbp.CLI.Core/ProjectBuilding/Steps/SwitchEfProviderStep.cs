@@ -40,14 +40,13 @@ public class SwitchEfProviderStep : ProjectBuildPipelineStep
             var content = Encoding.UTF8.GetString(context.Files[filePath]);
             var modified = false;
             
-            // 1. Replace package reference in .csproj files
+            // 1. Replace provider package references in .csproj files
             if (filePath.EndsWith(".csproj", StringComparison.OrdinalIgnoreCase))
             {
-                if (content.Contains("Volo.Abp.EntityFrameworkCore.SqlServer"))
+                var updatedContent = ReplaceProviderPackages(content, providerInfo.PackageName);
+                if (updatedContent != content)
                 {
-                    content = content.Replace(
-                        "Volo.Abp.EntityFrameworkCore.SqlServer",
-                        providerInfo.PackageName);
+                    content = updatedContent;
                     modified = true;
                 }
             }
@@ -55,30 +54,10 @@ public class SwitchEfProviderStep : ProjectBuildPipelineStep
             // 2. Replace module class in *EntityFrameworkCoreModule.cs
             if (filePath.EndsWith("EntityFrameworkCoreModule.cs", StringComparison.OrdinalIgnoreCase))
             {
-                // Replace using statement
-                if (content.Contains("using Volo.Abp.EntityFrameworkCore.SqlServer;"))
+                var updatedContent = ReplaceProviderModuleContent(content, providerInfo);
+                if (updatedContent != content)
                 {
-                    content = content.Replace(
-                        "using Volo.Abp.EntityFrameworkCore.SqlServer;",
-                        $"using {providerInfo.ModuleNamespace};");
-                    modified = true;
-                }
-                
-                // Replace DependsOn attribute
-                if (content.Contains("typeof(AbpEntityFrameworkCoreSqlServerModule)"))
-                {
-                    content = content.Replace(
-                        "typeof(AbpEntityFrameworkCoreSqlServerModule)",
-                        $"typeof({providerInfo.ModuleClassName})");
-                    modified = true;
-                }
-                
-                // Replace UseSqlServer in Configure method
-                if (content.Contains("UseSqlServer("))
-                {
-                    content = content.Replace("UseSqlServer(", $"{providerInfo.UseMethod}(");
-                    
-                    // Special case for MySQL: Add MySqlServerVersion parameter
+                    content = updatedContent;
                     if (provider == EfProviderKind.MySQL || provider == EfProviderKind.MariaDB)
                     {
                         content = AddMySqlServerVersion(content, providerInfo.UseMethod);
@@ -88,14 +67,13 @@ public class SwitchEfProviderStep : ProjectBuildPipelineStep
                 }
             }
             
-            // 3. Replace UseSqlServer in DbContext files
+            // 3. Replace provider method in DbContext files
             if (filePath.EndsWith("DbContext.cs", StringComparison.OrdinalIgnoreCase))
             {
-                if (content.Contains("UseSqlServer("))
+                var updatedContent = ReplaceProviderUseMethod(content, providerInfo.UseMethod);
+                if (updatedContent != content)
                 {
-                    content = content.Replace("UseSqlServer(", $"{providerInfo.UseMethod}(");
-                    
-                    // Special case for MySQL: Add MySqlServerVersion parameter
+                    content = updatedContent;
                     if (provider == EfProviderKind.MySQL || provider == EfProviderKind.MariaDB)
                     {
                         content = AddMySqlServerVersion(content, providerInfo.UseMethod);
@@ -105,14 +83,13 @@ public class SwitchEfProviderStep : ProjectBuildPipelineStep
                 }
             }
             
-            // 4. Replace UseSqlServer in DbContextFactory files
+            // 4. Replace provider method in DbContextFactory files
             if (filePath.EndsWith("DbContextFactory.cs", StringComparison.OrdinalIgnoreCase))
             {
-                if (content.Contains("UseSqlServer("))
+                var updatedContent = ReplaceProviderUseMethod(content, providerInfo.UseMethod);
+                if (updatedContent != content)
                 {
-                    content = content.Replace("UseSqlServer(", $"{providerInfo.UseMethod}(");
-                    
-                    // Special case for MySQL: Add MySqlServerVersion parameter
+                    content = updatedContent;
                     if (provider == EfProviderKind.MySQL || provider == EfProviderKind.MariaDB)
                     {
                         content = AddMySqlServerVersion(content, providerInfo.UseMethod);
@@ -129,6 +106,52 @@ public class SwitchEfProviderStep : ProjectBuildPipelineStep
         }
         
         return Task.CompletedTask;
+    }
+
+    private static string ReplaceProviderPackages(string content, string packageName)
+    {
+        content = System.Text.RegularExpressions.Regex.Replace(
+            content,
+            @"Volo\.Abp\.EntityFrameworkCore\.(SqlServer|PostgreSql|MySQL|Sqlite)",
+            packageName);
+
+        return System.Text.RegularExpressions.Regex.Replace(
+            content,
+            @"SufiChain\.SufiAbp\.EntityFrameworkCore\.(SqlServer|PostgreSql|MySQL|Sqlite)",
+            packageName);
+    }
+
+    private static string ReplaceProviderModuleContent(string content, EfProviderInfo providerInfo)
+    {
+        content = System.Text.RegularExpressions.Regex.Replace(
+            content,
+            @"using Volo\.Abp\.EntityFrameworkCore\.(SqlServer|PostgreSql|MySQL|Sqlite);",
+            $"using {providerInfo.ModuleNamespace};");
+
+        content = System.Text.RegularExpressions.Regex.Replace(
+            content,
+            @"using SufiChain\.SufiAbp\.EntityFrameworkCore\.(SqlServer|PostgreSql|MySQL|Sqlite);",
+            $"using {providerInfo.ModuleNamespace};");
+
+        content = System.Text.RegularExpressions.Regex.Replace(
+            content,
+            @"typeof\(AbpEntityFrameworkCore(SqlServer|PostgreSql|MySQL|Sqlite)Module\)",
+            $"typeof({providerInfo.ModuleClassName})");
+
+        content = System.Text.RegularExpressions.Regex.Replace(
+            content,
+            @"typeof\(SufiAbpEntityFrameworkCore(SqlServer|PostgreSql|MySQL|Sqlite)Module\)",
+            $"typeof({providerInfo.ModuleClassName})");
+
+        return ReplaceProviderUseMethod(content, providerInfo.UseMethod);
+    }
+
+    private static string ReplaceProviderUseMethod(string content, string useMethod)
+    {
+        return System.Text.RegularExpressions.Regex.Replace(
+            content,
+            @"Use(SqlServer|Npgsql|MySQL|MySql|Sqlite)\(",
+            $"{useMethod}(");
     }
     
     /// <summary>
@@ -177,37 +200,37 @@ public class SwitchEfProviderStep : ProjectBuildPipelineStep
         {
             EfProviderKind.SqlServer => new EfProviderInfo
             {
-                PackageName = "Volo.Abp.EntityFrameworkCore.SqlServer",
-                ModuleNamespace = "Volo.Abp.EntityFrameworkCore.SqlServer",
-                ModuleClassName = "AbpEntityFrameworkCoreSqlServerModule",
+                PackageName = "SufiChain.SufiAbp.EntityFrameworkCore.SqlServer",
+                ModuleNamespace = "SufiChain.SufiAbp.EntityFrameworkCore.SqlServer",
+                ModuleClassName = "SufiAbpEntityFrameworkCoreSqlServerModule",
                 UseMethod = "UseSqlServer"
             },
             EfProviderKind.PostgreSQL => new EfProviderInfo
             {
-                PackageName = "Volo.Abp.EntityFrameworkCore.PostgreSql",
-                ModuleNamespace = "Volo.Abp.EntityFrameworkCore.PostgreSql",
-                ModuleClassName = "AbpEntityFrameworkCorePostgreSqlModule",
+                PackageName = "SufiChain.SufiAbp.EntityFrameworkCore.PostgreSql",
+                ModuleNamespace = "SufiChain.SufiAbp.EntityFrameworkCore.PostgreSql",
+                ModuleClassName = "SufiAbpEntityFrameworkCorePostgreSqlModule",
                 UseMethod = "UseNpgsql"
             },
             EfProviderKind.MySQL => new EfProviderInfo
             {
-                PackageName = "Volo.Abp.EntityFrameworkCore.MySQL",
-                ModuleNamespace = "Volo.Abp.EntityFrameworkCore.MySQL",
-                ModuleClassName = "AbpEntityFrameworkCoreMySQLModule",
+                PackageName = "SufiChain.SufiAbp.EntityFrameworkCore.MySQL",
+                ModuleNamespace = "SufiChain.SufiAbp.EntityFrameworkCore.MySQL",
+                ModuleClassName = "SufiAbpEntityFrameworkCoreMySQLModule",
                 UseMethod = "UseMySql"
             },
             EfProviderKind.MariaDB => new EfProviderInfo
             {
-                PackageName = "Volo.Abp.EntityFrameworkCore.MySQL",
-                ModuleNamespace = "Volo.Abp.EntityFrameworkCore.MySQL",
-                ModuleClassName = "AbpEntityFrameworkCoreMySQLModule",
+                PackageName = "SufiChain.SufiAbp.EntityFrameworkCore.MySQL",
+                ModuleNamespace = "SufiChain.SufiAbp.EntityFrameworkCore.MySQL",
+                ModuleClassName = "SufiAbpEntityFrameworkCoreMySQLModule",
                 UseMethod = "UseMySql"
             },
             EfProviderKind.Sqlite => new EfProviderInfo
             {
-                PackageName = "Volo.Abp.EntityFrameworkCore.Sqlite",
-                ModuleNamespace = "Volo.Abp.EntityFrameworkCore.Sqlite",
-                ModuleClassName = "AbpEntityFrameworkCoreSqliteModule",
+                PackageName = "SufiChain.SufiAbp.EntityFrameworkCore.Sqlite",
+                ModuleNamespace = "SufiChain.SufiAbp.EntityFrameworkCore.Sqlite",
+                ModuleClassName = "SufiAbpEntityFrameworkCoreSqliteModule",
                 UseMethod = "UseSqlite"
             },
             _ => throw new ArgumentException($"Unsupported EF Core provider: {provider}")

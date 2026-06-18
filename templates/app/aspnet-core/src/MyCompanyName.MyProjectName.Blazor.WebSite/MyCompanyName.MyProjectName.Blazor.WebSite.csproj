@@ -18,8 +18,8 @@
 		<PackageReference Include="Microsoft.AspNetCore.DataProtection.StackExchangeRedis" Version="$(AspNetCoreVersion)" />
 	</ItemGroup>
 
-	<!-- ====================================================================== -->
-	<!-- Development: Project References (removed when generating templates) -->
+	
+	
 	<!-- <TEMPLATE-REMOVE> -->
 	<ItemGroup>
 		<ProjectReference Include="..\..\..\..\..\src\framework\SufiChain.SufiAbp.Caching.StackExchangeRedis\SufiChain.SufiAbp.Caching.StackExchangeRedis.csproj" />
@@ -51,8 +51,8 @@
 	</ItemGroup>
 	<!-- </TEMPLATE-REMOVE> -->
 	
-	<!-- ====================================================================== -->
-	<!-- Template: NuGet Package References (uncommented when generating templates) -->
+	
+	
 	<!-- <TEMPLATE-ONLY>
 	<ItemGroup>
 		<PackageReference Include="SufiChain.KomTheme.Blazor.Server" Version="$(KomThemeVersion)" />

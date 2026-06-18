@@ -5,7 +5,9 @@ using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
+// <TEMPLATE-REMOVE IF-NOT="arch:single">
 using Microsoft.OpenApi;
+// </TEMPLATE-REMOVE>
 using SufiChain.SufiAbp.Account;
 using SufiChain.SufiAbp.Account.Blazor;
 using SufiChain.SufiAbp.AIManagement;
@@ -76,7 +78,9 @@ using SufiChain.SufiAbp.AspNetCore.MultiTenancy;
 using SufiChain.SufiAbp.AspNetCore.Serilog;
 using SufiChain.SufiAbp.Autofac;
 using SufiChain.SufiAbp.Caching;
+// <TEMPLATE-REMOVE IF-NOT="arch:single">
 using SufiChain.SufiAbp.Swashbuckle;
+// </TEMPLATE-REMOVE>
 using Volo.Abp;
 using Volo.Abp.AspNetCore.Mvc;
 using Volo.Abp.AspNetCore.Mvc.Libs;
@@ -113,7 +117,9 @@ namespace MyCompanyName.MyProjectName;
 /// </summary>
 [DependsOn(
     typeof(DemoAppApplicationModule),
+    // <TEMPLATE-REMOVE IF-NOT="arch:single">
     typeof(DemoAppHttpApiModule),
+    // </TEMPLATE-REMOVE>
     // <TEMPLATE-REMOVE IF-NOT="db:efcore">
     typeof(DemoAppEntityFrameworkCoreModule),
     // </TEMPLATE-REMOVE>
@@ -127,7 +133,9 @@ namespace MyCompanyName.MyProjectName;
     typeof(SufiAbpCachingModule),
     typeof(SufiAbpAspNetCoreMultiTenancyModule),
     typeof(SufiAbpAspNetCoreSerilogModule),
+    // <TEMPLATE-REMOVE IF-NOT="arch:single">
     typeof(SufiAbpSwashbuckleModule),
+    // </TEMPLATE-REMOVE>
     // =========================================================================
     // OpenIddict & Authentication
     // =========================================================================
@@ -289,7 +297,9 @@ public class DemoAppModule : AbpModule
         ConfigureAuthentication(context);
         ConfigureUrls(configuration);
         ConfigureMultiTenancy();
+        // <TEMPLATE-REMOVE IF-NOT="arch:single">
         ConfigureConventionalControllers();
+        // </TEMPLATE-REMOVE>
         ConfigureIdentityLoginPath();
         ConfigureBundles();
         ConfigureLocalization();
@@ -297,7 +307,9 @@ public class DemoAppModule : AbpModule
         ConfigureCors(context, configuration);
         ConfigureRouter(context);
         ConfigureMenu(configuration);
+        // <TEMPLATE-REMOVE IF-NOT="arch:single">
         ConfigureSwaggerServices(context.Services);
+        // </TEMPLATE-REMOVE>
         ConfigureAuditing();
         // Add SufiBlazor services 
         context.Services.AddSufiBlazor();
@@ -387,12 +399,14 @@ public class DemoAppModule : AbpModule
         });
     }
 
+    // <TEMPLATE-REMOVE IF-NOT="arch:single">
     private void ConfigureConventionalControllers()
     {
         Configure<AbpAspNetCoreMvcOptions>(options =>
         {
         });
     }
+    // </TEMPLATE-REMOVE>
 
     private void ConfigureBundles()
     {
@@ -505,6 +519,7 @@ public class DemoAppModule : AbpModule
         });
     }
 
+    // <TEMPLATE-REMOVE IF-NOT="arch:single">
     private void ConfigureSwaggerServices(IServiceCollection services)
     {
         services.AddAbpSwaggerGen(
@@ -537,6 +552,7 @@ public class DemoAppModule : AbpModule
             }
         );
     }
+    // </TEMPLATE-REMOVE>
     
     public override void OnApplicationInitialization(ApplicationInitializationContext context)
     {
@@ -574,11 +590,13 @@ public class DemoAppModule : AbpModule
         // Required for Blazor Server antiforgery
         app.UseAntiforgery();
 
+        // <TEMPLATE-REMOVE IF-NOT="arch:single">
         app.UseSwagger();
         app.UseAbpSwaggerUI(options =>
         {
             options.SwaggerEndpoint("/swagger/v1/swagger.json", "DemoApp API");
         });
+        // </TEMPLATE-REMOVE>
 
         app.UseAuditing();
         app.UseAbpSerilogEnrichers();

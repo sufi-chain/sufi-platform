@@ -9,7 +9,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
-using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi;
 // <TEMPLATE-REMOVE IF-NOT="module:file-manager">
 using SufiChain.SufiAbp.FileManager;
 using SufiChain.SufiAbp.FileManager.Blazor;

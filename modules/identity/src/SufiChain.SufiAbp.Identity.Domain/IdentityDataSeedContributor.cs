@@ -7,11 +7,8 @@ namespace SufiChain.SufiAbp.Identity;
 public class IdentityDataSeedContributor : IDataSeedContributor, ITransientDependency
 {
     public const string AdminEmailPropertyName = "AdminEmail";
-    public const string AdminEmailDefaultValue = "admin@sabp.com";
     public const string AdminUserNamePropertyName = "AdminUserName";
-    public const string AdminUserNameDefaultValue = "admin";
     public const string AdminPasswordPropertyName = "AdminPassword";
-    public const string AdminPasswordDefaultValue = "1q2w3E*";
 
     protected IIdentityDataSeeder IdentityDataSeeder { get; }
 
@@ -23,10 +20,10 @@ public class IdentityDataSeedContributor : IDataSeedContributor, ITransientDepen
     public virtual Task SeedAsync(DataSeedContext context)
     {
         return IdentityDataSeeder.SeedAsync(
-            context?[AdminEmailPropertyName] as string ?? AdminEmailDefaultValue,
-            context?[AdminPasswordPropertyName] as string ?? AdminPasswordDefaultValue,
+            context?[AdminEmailPropertyName] as string ?? IdentityDataSeedConsts.AdminEmailDefaultValue,
+            context?[AdminPasswordPropertyName] as string ?? IdentityDataSeedConsts.AdminPasswordDefaultValue,
             context?.TenantId,
-            context?[AdminUserNamePropertyName] as string ?? AdminUserNameDefaultValue
+            context?[AdminUserNamePropertyName] as string ?? IdentityDataSeedConsts.AdminUserNameDefaultValue
         );
     }
 }

@@ -28,15 +28,23 @@ public class SwitchToEfCoreStep : ProjectBuildPipelineStep
         }
         else
         {
-            // Layered/tiered: remove MongoDB project, create EF Core project
+            // Layered/tiered: remove MongoDB project and use the EF Core project
+            // already present in the unified template. Older templates did not
+            // contain it, so CreateEfCoreProject remains as a fallback only.
             var mongoProjectName = $"{context.Args.SolutionName}.MongoDB";
             context.ProjectsToRemove.Add(mongoProjectName);
 
-            CreateEfCoreProject(context, provider);
-            AddEfCoreProjectToSolution(context);
+            if (!HasEfCoreProject(context))
+            {
+                CreateEfCoreProject(context, provider);
+                AddEfCoreProjectToSolution(context);
+            }
+
             UpdateHostProjectReferences(context);
             UpdateModuleDependencies(context);
         }
+
+        NormalizeEfCoreProjects(context, provider);
 
         // Switch SufiAbp module DB packages (e.g. FileManager.MongoDB -> FileManager.EntityFrameworkCore)
         SwitchSpModuleDbPackages(context);
@@ -46,6 +54,9 @@ public class SwitchToEfCoreStep : ProjectBuildPipelineStep
         
         // Inject ABP EF Core module typeof() and using statements (replacing removed MongoDB refs)
         InjectAbpEfCoreModuleDependencies(context);
+
+        NormalizeHostEfCoreDependencies(context);
+        NormalizeDbMigratorDependencies(context);
         
         // Update connection strings
         UpdateConnectionStrings(context, provider);
@@ -60,12 +71,12 @@ public class SwitchToEfCoreStep : ProjectBuildPipelineStep
     /// </summary>
     private static string GetAbpProviderPackage(EfProviderKind provider) => provider switch
     {
-        EfProviderKind.SqlServer => "Volo.Abp.EntityFrameworkCore.SqlServer",
-        EfProviderKind.PostgreSQL => "Volo.Abp.EntityFrameworkCore.PostgreSql",
-        EfProviderKind.MySQL => "Volo.Abp.EntityFrameworkCore.MySQL",
-        EfProviderKind.MariaDB => "Volo.Abp.EntityFrameworkCore.MySQL",
-        EfProviderKind.Sqlite => "Volo.Abp.EntityFrameworkCore.Sqlite",
-        _ => "Volo.Abp.EntityFrameworkCore.SqlServer"
+        EfProviderKind.SqlServer => "SufiChain.SufiAbp.EntityFrameworkCore.SqlServer",
+        EfProviderKind.PostgreSQL => "SufiChain.SufiAbp.EntityFrameworkCore.PostgreSql",
+        EfProviderKind.MySQL => "SufiChain.SufiAbp.EntityFrameworkCore.MySQL",
+        EfProviderKind.MariaDB => "SufiChain.SufiAbp.EntityFrameworkCore.MySQL",
+        EfProviderKind.Sqlite => "SufiChain.SufiAbp.EntityFrameworkCore.Sqlite",
+        _ => "SufiChain.SufiAbp.EntityFrameworkCore.SqlServer"
     };
 
     /// <summary>
@@ -73,12 +84,12 @@ public class SwitchToEfCoreStep : ProjectBuildPipelineStep
     /// </summary>
     private static string GetAbpProviderModuleName(EfProviderKind provider) => provider switch
     {
-        EfProviderKind.SqlServer => "AbpEntityFrameworkCoreSqlServerModule",
-        EfProviderKind.PostgreSQL => "AbpEntityFrameworkCorePostgreSqlModule",
-        EfProviderKind.MySQL => "AbpEntityFrameworkCoreMySQLModule",
-        EfProviderKind.MariaDB => "AbpEntityFrameworkCoreMySQLModule",
-        EfProviderKind.Sqlite => "AbpEntityFrameworkCoreSqliteModule",
-        _ => "AbpEntityFrameworkCoreSqlServerModule"
+        EfProviderKind.SqlServer => "SufiAbpEntityFrameworkCoreSqlServerModule",
+        EfProviderKind.PostgreSQL => "SufiAbpEntityFrameworkCorePostgreSqlModule",
+        EfProviderKind.MySQL => "SufiAbpEntityFrameworkCoreMySQLModule",
+        EfProviderKind.MariaDB => "SufiAbpEntityFrameworkCoreMySQLModule",
+        EfProviderKind.Sqlite => "SufiAbpEntityFrameworkCoreSqliteModule",
+        _ => "SufiAbpEntityFrameworkCoreSqlServerModule"
     };
 
     /// <summary>
@@ -86,12 +97,12 @@ public class SwitchToEfCoreStep : ProjectBuildPipelineStep
     /// </summary>
     private static string GetAbpProviderNamespace(EfProviderKind provider) => provider switch
     {
-        EfProviderKind.SqlServer => "Volo.Abp.EntityFrameworkCore.SqlServer",
-        EfProviderKind.PostgreSQL => "Volo.Abp.EntityFrameworkCore.PostgreSql",
-        EfProviderKind.MySQL => "Volo.Abp.EntityFrameworkCore.MySQL",
-        EfProviderKind.MariaDB => "Volo.Abp.EntityFrameworkCore.MySQL",
-        EfProviderKind.Sqlite => "Volo.Abp.EntityFrameworkCore.Sqlite",
-        _ => "Volo.Abp.EntityFrameworkCore.SqlServer"
+        EfProviderKind.SqlServer => "SufiChain.SufiAbp.EntityFrameworkCore.SqlServer",
+        EfProviderKind.PostgreSQL => "SufiChain.SufiAbp.EntityFrameworkCore.PostgreSql",
+        EfProviderKind.MySQL => "SufiChain.SufiAbp.EntityFrameworkCore.MySQL",
+        EfProviderKind.MariaDB => "SufiChain.SufiAbp.EntityFrameworkCore.MySQL",
+        EfProviderKind.Sqlite => "SufiChain.SufiAbp.EntityFrameworkCore.Sqlite",
+        _ => "SufiChain.SufiAbp.EntityFrameworkCore.SqlServer"
     };
 
     /// <summary>
@@ -184,6 +195,133 @@ public class SwitchToEfCoreStep : ProjectBuildPipelineStep
 
         // Create empty Migrations folder marker
         context.Files[$"{projectFolder}\\Migrations\\.gitkeep"] = Array.Empty<byte>();
+    }
+
+    private static bool HasEfCoreProject(ProjectBuildContext context)
+    {
+        var solutionName = context.Args.SolutionName;
+
+        return context.Files.Keys.Any(f =>
+            f.EndsWith($"{solutionName}.EntityFrameworkCore.csproj", StringComparison.OrdinalIgnoreCase) &&
+            f.Contains(".EntityFrameworkCore", StringComparison.OrdinalIgnoreCase));
+    }
+
+    private void NormalizeEfCoreProjects(ProjectBuildContext context, EfProviderKind provider)
+    {
+        var providerPackage = GetAbpProviderPackage(provider);
+        var providerNamespace = GetAbpProviderNamespace(provider);
+        var providerModuleName = GetAbpProviderModuleName(provider);
+        var providerUseMethod = GetUseProviderMethod(provider);
+
+        var efCsprojFiles = context.Files.Keys
+            .Where(f => f.EndsWith(".EntityFrameworkCore.csproj", StringComparison.OrdinalIgnoreCase))
+            .ToList();
+
+        foreach (var file in efCsprojFiles)
+        {
+            var content = Encoding.UTF8.GetString(context.Files[file]);
+
+            content = Regex.Replace(
+                content,
+                @"\s*<Import Project=""\.\.\\\.\.\\versions\.props"" />\s*",
+                "\n",
+                RegexOptions.IgnoreCase);
+
+            content = Regex.Replace(
+                content,
+                @"<PackageReference Include=""Volo\.Abp\.EntityFrameworkCore\.(SqlServer|PostgreSql|MySQL|Sqlite)"" Version=""\$\(AbpVersion\)"" />",
+                $@"<PackageReference Include=""{providerPackage}"" Version=""$(SufiVersion)"" />",
+                RegexOptions.IgnoreCase);
+            content = Regex.Replace(
+                content,
+                @"<PackageReference Include=""SufiChain\.SufiAbp\.EntityFrameworkCore\.(SqlServer|PostgreSql|MySQL|Sqlite)"" Version=""\$\(AbpVersion\)"" />",
+                $@"<PackageReference Include=""{providerPackage}"" Version=""$(SufiVersion)"" />",
+                RegexOptions.IgnoreCase);
+
+            content = EnsurePackageReference(content, "SufiChain.SufiAbp.Core");
+            content = EnsurePackageReference(content, "SufiChain.SufiAbp.Data");
+            content = EnsurePackageReference(content, providerPackage);
+            content = EnsurePackageReference(content, "SufiChain.SufiAbp.PermissionManagement.EntityFrameworkCore");
+            content = EnsurePackageReference(content, "SufiChain.SufiAbp.SettingManagement.EntityFrameworkCore");
+            content = EnsurePackageReference(content, "SufiChain.SufiAbp.FeatureManagement.EntityFrameworkCore");
+            content = EnsurePackageReference(content, "SufiChain.SufiAbp.AuditLogging.EntityFrameworkCore");
+            content = EnsurePackageReference(content, "SufiChain.SufiAbp.BackgroundJobs.EntityFrameworkCore");
+            content = EnsurePackageReference(content, "SufiChain.SufiAbp.Identity.EntityFrameworkCore");
+            content = EnsurePackageReference(content, "SufiChain.SufiAbp.Users.EntityFrameworkCore");
+            content = EnsurePackageReference(content, "SufiChain.SufiAbp.TenantManagement.EntityFrameworkCore");
+            content = EnsurePackageReference(content, "SufiChain.SufiAbp.OpenIddict.EntityFrameworkCore");
+            content = EnsurePackageReference(content, "SufiChain.SufiAbp.BlobStoring.Database.EntityFrameworkCore");
+
+            if (context.Symbols.Contains("module:file-manager"))
+            {
+                content = EnsurePackageReference(content, "SufiChain.SufiAbp.FileManager.EntityFrameworkCore");
+            }
+            if (context.Symbols.Contains("module:localization-management"))
+            {
+                content = EnsurePackageReference(content, "SufiChain.SufiAbp.LocalizationManagement.EntityFrameworkCore");
+            }
+            if (context.Symbols.Contains("module:short-link-generator"))
+            {
+                content = EnsurePackageReference(content, "SufiChain.SufiAbp.ShortLinkGenerator.EntityFrameworkCore");
+            }
+            if (context.Symbols.Contains("module:calendar"))
+            {
+                content = EnsurePackageReference(content, "SufiChain.SufiAbp.Calendar.EntityFrameworkCore");
+            }
+            if (context.Symbols.Contains("module:ai-management"))
+            {
+                content = EnsurePackageReference(content, "SufiChain.SufiAbp.AIManagement.EntityFrameworkCore");
+            }
+
+            content = EnsureProjectReference(content, context.Args.SolutionName, "Application.Contracts");
+            content = EnsureProjectReference(content, context.Args.SolutionName, "Domain");
+            content = RemoveDuplicatePackageReferences(content);
+
+            context.Files[file] = Encoding.UTF8.GetBytes(content);
+        }
+
+        var efModuleFiles = context.Files.Keys
+            .Where(f => f.EndsWith("EntityFrameworkCoreModule.cs", StringComparison.OrdinalIgnoreCase) &&
+                        f.Contains(".EntityFrameworkCore", StringComparison.OrdinalIgnoreCase))
+            .ToList();
+
+        foreach (var file in efModuleFiles)
+        {
+            var content = Encoding.UTF8.GetString(context.Files[file]);
+
+            content = Regex.Replace(
+                content,
+                @"using Volo\.Abp\.EntityFrameworkCore\.(SqlServer|PostgreSql|MySQL|Sqlite);",
+                $"using {providerNamespace};",
+                RegexOptions.IgnoreCase);
+            content = Regex.Replace(
+                content,
+                @"typeof\(AbpEntityFrameworkCore(SqlServer|PostgreSql|MySQL|Sqlite)Module\)",
+                $"typeof({providerModuleName})",
+                RegexOptions.IgnoreCase);
+            content = Regex.Replace(
+                content,
+                @"options\.Use(SqlServer|Npgsql|MySQL|MySql|Sqlite)\(\);",
+                $"options.{providerUseMethod}();",
+                RegexOptions.IgnoreCase);
+
+            content = EnsureUsing(content, "SufiChain.SufiAbp.Data");
+            content = EnsureUsing(content, "SufiChain.SufiAbp.EntityFrameworkCore");
+            content = EnsureUsing(content, providerNamespace);
+            content = EnsureUsing(content, "SufiChain.SufiAbp.Users");
+            if (content.Contains(": SufiAbpModule", StringComparison.Ordinal))
+            {
+                content = EnsureUsing(content, "SufiChain.SufiAbp.Core");
+                content = EnsureUsing(content, "SufiChain.SufiAbp.Modularity");
+            }
+            content = EnsureDependsOn(content, "SufiAbpUsersEntityFrameworkCoreModule", "SufiAbpOpenIddictEntityFrameworkCoreModule");
+            content = RemoveDuplicateDependsOnEntries(content);
+
+            context.Files[file] = Encoding.UTF8.GetBytes(content);
+        }
+
+        NormalizeHostEfCoreDependencies(context);
+        NormalizeDbMigratorDependencies(context);
     }
 
     /// <summary>
@@ -345,10 +483,13 @@ public class {projectName}DbContext : AbpDbContext<{projectName}DbContext>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include=""{providerPackage}"" Version=""$(AbpVersion)"" />
+    <PackageReference Include=""SufiChain.SufiAbp.Core"" Version=""$(SufiVersion)"" />
+    <PackageReference Include=""SufiChain.SufiAbp.Data"" Version=""$(SufiVersion)"" />
+    <PackageReference Include=""{providerPackage}"" Version=""$(SufiVersion)"" />
     <PackageReference Include=""SufiChain.SufiAbp.PermissionManagement.EntityFrameworkCore"" Version=""$(SufiVersion)"" />
     <PackageReference Include=""SufiChain.SufiAbp.SettingManagement.EntityFrameworkCore"" Version=""$(SufiVersion)"" />
     <PackageReference Include=""SufiChain.SufiAbp.Identity.EntityFrameworkCore"" Version=""$(SufiVersion)"" />
+    <PackageReference Include=""SufiChain.SufiAbp.Users.EntityFrameworkCore"" Version=""$(SufiVersion)"" />
     <PackageReference Include=""SufiChain.SufiAbp.OpenIddict.EntityFrameworkCore"" Version=""$(SufiVersion)"" />
     <PackageReference Include=""SufiChain.SufiAbp.TenantManagement.EntityFrameworkCore"" Version=""$(SufiVersion)"" />
     <PackageReference Include=""SufiChain.SufiAbp.FeatureManagement.EntityFrameworkCore"" Version=""$(SufiVersion)"" />
@@ -361,6 +502,7 @@ public class {projectName}DbContext : AbpDbContext<{projectName}DbContext>
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include=""..\{solutionName}.Application.Contracts\{solutionName}.Application.Contracts.csproj"" />
     <ProjectReference Include=""..\{solutionName}.Domain\{solutionName}.Domain.csproj"" />
   </ItemGroup>
 
@@ -438,7 +580,7 @@ public class {projectName}DbContext : AbpDbContext<{projectName}DbContext>
 	using {providerNamespace};
 	using SufiChain.SufiAbp.FeatureManagement.EntityFrameworkCore;
 	using SufiChain.SufiAbp.Identity.EntityFrameworkCore;
-	using Volo.Abp.Modularity;
+	using SufiChain.SufiAbp.Modularity;
 	using SufiChain.SufiAbp.OpenIddict.EntityFrameworkCore;
 	using SufiChain.SufiAbp.PermissionManagement.EntityFrameworkCore;
 	using SufiChain.SufiAbp.SettingManagement.EntityFrameworkCore;
@@ -631,9 +773,11 @@ public class EntityFrameworkCore{projectName}DbSchemaMigrator : I{projectName}Db
         var efRef = $"{solutionName}.EntityFrameworkCore";
 
         // Find host project files that reference MongoDB
+        var includeBlazorWebApp = context.Args.SolutionKind == SolutionKind.WebApp;
         var csprojFiles = context.Files.Keys
             .Where(f => f.EndsWith(".csproj") && 
-                       (f.Contains("HttpApi.Host") || f.Contains("Blazor.WebApp") || f.Contains("DbMigrator") || f.Contains("AuthServer")))
+                       (f.Contains("HttpApi.Host") || f.Contains("DbMigrator") || f.Contains("AuthServer") ||
+                        (includeBlazorWebApp && f.Contains("Blazor.WebApp") && !f.Contains("Blazor.WebApp.Client"))))
             .ToList();
 
         foreach (var csprojFile in csprojFiles)
@@ -664,9 +808,11 @@ public class EntityFrameworkCore{projectName}DbSchemaMigrator : I{projectName}Db
         var projectName = context.Args.ProjectName;
 
         // Find module files in host projects
+        var includeBlazorWebApp = context.Args.SolutionKind == SolutionKind.WebApp;
         var moduleFiles = context.Files.Keys
             .Where(f => f.EndsWith("Module.cs") && 
-                       (f.Contains("HttpApi.Host") || f.Contains("Blazor.WebApp") || f.Contains("DbMigrator") || f.Contains("AuthServer")))
+                       (f.Contains("HttpApi.Host") || f.Contains("DbMigrator") || f.Contains("AuthServer") ||
+                        (includeBlazorWebApp && f.Contains("Blazor.WebApp") && !f.Contains("Blazor.WebApp.Client"))))
             .ToList();
 
         foreach (var moduleFile in moduleFiles)
@@ -832,7 +978,7 @@ public class EntityFrameworkCore{projectName}DbSchemaMigrator : I{projectName}Db
         // Module files to process (host modules that configure DB)
         var moduleFiles = context.Files.Keys
             .Where(f => f.EndsWith("Module.cs") && (
-                (f.Contains("Blazor.WebApp") && !f.Contains("Blazor.WebApp.Client")) ||
+                (isSingle && f.Contains("Blazor.WebApp") && !f.Contains("Blazor.WebApp.Client")) ||
                 f.Contains("AuthServer") || f.Contains("HttpApi.Host")))
             .ToList();
 
@@ -860,12 +1006,19 @@ public class EntityFrameworkCore{projectName}DbSchemaMigrator : I{projectName}Db
             }
 
             // Add typeof for FeatureManagement and SettingManagement
-            content = content.Replace(
-                "typeof(SufiAbpFeatureManagementApplicationModule),",
-                "typeof(SufiAbpFeatureManagementApplicationModule),\n    typeof(SufiAbpFeatureManagementEntityFrameworkCoreModule),");
-            content = content.Replace(
-                "typeof(SufiAbpSettingManagementApplicationModule),",
-                "typeof(SufiAbpSettingManagementApplicationModule),\n    typeof(SufiAbpSettingManagementEntityFrameworkCoreModule),");
+            if (!content.Contains("SufiAbpFeatureManagementEntityFrameworkCoreModule", StringComparison.Ordinal))
+            {
+                content = content.Replace(
+                    "typeof(SufiAbpFeatureManagementApplicationModule),",
+                    "typeof(SufiAbpFeatureManagementApplicationModule),\n    typeof(SufiAbpFeatureManagementEntityFrameworkCoreModule),");
+            }
+
+            if (!content.Contains("SufiAbpSettingManagementEntityFrameworkCoreModule", StringComparison.Ordinal))
+            {
+                content = content.Replace(
+                    "typeof(SufiAbpSettingManagementApplicationModule),",
+                    "typeof(SufiAbpSettingManagementApplicationModule),\n    typeof(SufiAbpSettingManagementEntityFrameworkCoreModule),");
+            }
 
             if (isSingle)
             {
@@ -906,13 +1059,239 @@ public class EntityFrameworkCore{projectName}DbSchemaMigrator : I{projectName}Db
         {
             var content = Encoding.UTF8.GetString(context.Files[file]);
             
-            // Replace MongoDB connection string with the provider-specific one
+            // Keep runtime configuration aligned with the selected EF provider.
             content = Regex.Replace(
                 content,
-                @"""Default"":\s*""mongodb://[^""]+""",
+                @"""Default"":\s*""[^""]*""",
                 $@"""Default"": ""{connectionString}"""
             );
 
+            context.Files[file] = Encoding.UTF8.GetBytes(content);
+        }
+    }
+
+    private static string EnsurePackageReference(string content, string packageName)
+    {
+        if (Regex.IsMatch(
+                content,
+                $@"<PackageReference\s+Include=""{Regex.Escape(packageName)}""\b",
+                RegexOptions.IgnoreCase))
+        {
+            return content;
+        }
+
+        var reference = $@"    <PackageReference Include=""{packageName}"" Version=""$(SufiVersion)"" />";
+        var firstPackageReference = Regex.Match(content, @"^\s*<PackageReference\s+Include=", RegexOptions.Multiline);
+
+        if (firstPackageReference.Success)
+        {
+            return content.Insert(firstPackageReference.Index, reference + Environment.NewLine);
+        }
+
+        var itemGroupMatch = Regex.Match(content, @"^\s*<ItemGroup>\s*$", RegexOptions.Multiline);
+        if (itemGroupMatch.Success)
+        {
+            var insertAt = itemGroupMatch.Index + itemGroupMatch.Length;
+            return content.Insert(insertAt, Environment.NewLine + reference);
+        }
+
+        return content.Replace("</Project>", $"  <ItemGroup>{Environment.NewLine}{reference}{Environment.NewLine}  </ItemGroup>{Environment.NewLine}{Environment.NewLine}</Project>");
+    }
+
+    private static string EnsureProjectReference(string content, string solutionName, string projectSuffix)
+    {
+        var projectName = $"{solutionName}.{projectSuffix}";
+        if (content.Contains($"{projectName}.csproj", StringComparison.OrdinalIgnoreCase))
+        {
+            return content;
+        }
+
+        var reference = $@"    <ProjectReference Include=""..\{projectName}\{projectName}.csproj"" />";
+        var domainReference = Regex.Match(content, @"^\s*<ProjectReference\s+Include=""\.\.\\[^""]+\.Domain\\[^""]+\.Domain\.csproj""\s*/>\s*$", RegexOptions.Multiline);
+
+        if (projectSuffix == "Application.Contracts" && domainReference.Success)
+        {
+            return content.Insert(domainReference.Index, reference + Environment.NewLine);
+        }
+
+        var projectItemGroup = Regex.Match(content, @"<ItemGroup>\s*(?:\r?\n\s*<ProjectReference[^>]+/>\s*)+\r?\n\s*</ItemGroup>", RegexOptions.Singleline);
+        if (projectItemGroup.Success)
+        {
+            var insertAt = projectItemGroup.Index + projectItemGroup.Length - "</ItemGroup>".Length;
+            return content.Insert(insertAt, reference + Environment.NewLine);
+        }
+
+        return content.Replace("</Project>", $"  <ItemGroup>{Environment.NewLine}{reference}{Environment.NewLine}  </ItemGroup>{Environment.NewLine}{Environment.NewLine}</Project>");
+    }
+
+    private static string RemoveDuplicatePackageReferences(string content)
+    {
+        var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        var lines = content.Split('\n');
+        var result = new List<string>();
+
+        foreach (var line in lines)
+        {
+            var match = Regex.Match(line, @"<PackageReference\s+Include=""([^""]+)""");
+            if (match.Success)
+            {
+                var packageName = match.Groups[1].Value;
+                if (!seen.Add(packageName))
+                {
+                    continue;
+                }
+            }
+
+            result.Add(line);
+        }
+
+        return string.Join('\n', result);
+    }
+
+    private static string EnsureUsing(string content, string namespaceName)
+    {
+        var usingStatement = $"using {namespaceName};";
+        if (content.Contains(usingStatement, StringComparison.Ordinal))
+        {
+            return content;
+        }
+
+        var namespaceIndex = content.IndexOf("\nnamespace ", StringComparison.Ordinal);
+        if (namespaceIndex > 0)
+        {
+            return content.Insert(namespaceIndex, usingStatement + "\n");
+        }
+
+        return usingStatement + "\n" + content;
+    }
+
+    private static string EnsureDependsOn(string content, string moduleName, string insertAfterModuleName)
+    {
+        if (content.Contains($"typeof({moduleName})", StringComparison.Ordinal))
+        {
+            return content;
+        }
+
+        var after = $"typeof({insertAfterModuleName}),";
+        if (content.Contains(after, StringComparison.Ordinal))
+        {
+            return content.Replace(after, $"{after}\n    typeof({moduleName}),");
+        }
+
+        var dependsOnStart = content.IndexOf("[DependsOn(", StringComparison.Ordinal);
+        if (dependsOnStart >= 0)
+        {
+            var firstTypeOf = content.IndexOf("typeof(", dependsOnStart, StringComparison.Ordinal);
+            if (firstTypeOf >= 0)
+            {
+                return content.Insert(firstTypeOf, $"typeof({moduleName}),\n    ");
+            }
+        }
+
+        return content;
+    }
+
+    private static string RemoveDuplicateDependsOnEntries(string content)
+    {
+        var seen = new HashSet<string>(StringComparer.Ordinal);
+        var lines = content.Split('\n');
+        var result = new List<string>();
+
+        foreach (var line in lines)
+        {
+            var match = Regex.Match(line, @"typeof\(([^)]+)\)");
+            if (match.Success)
+            {
+                var moduleName = match.Groups[1].Value;
+                if (!seen.Add(moduleName))
+                {
+                    continue;
+                }
+            }
+
+            result.Add(line);
+        }
+
+        return string.Join('\n', result);
+    }
+
+    private void NormalizeHostEfCoreDependencies(ProjectBuildContext context)
+    {
+        var moduleFiles = context.Files.Keys
+            .Where(f => f.EndsWith("Module.cs", StringComparison.OrdinalIgnoreCase) && (
+                (context.Args.SolutionKind == SolutionKind.WebApp &&
+                 f.Contains("Blazor.WebApp") && !f.Contains("Blazor.WebApp.Client")) ||
+                f.Contains("AuthServer") ||
+                f.Contains("HttpApi.Host")))
+            .ToList();
+
+        foreach (var file in moduleFiles)
+        {
+            var content = Encoding.UTF8.GetString(context.Files[file]);
+
+            if (context.Symbols.Contains("module:file-manager") &&
+                content.Contains("SufiAbpFileManagerEntityFrameworkCoreModule", StringComparison.Ordinal))
+            {
+                content = EnsureUsing(content, "SufiChain.SufiAbp.FileManager.EntityFrameworkCore");
+            }
+
+            if (context.Symbols.Contains("module:localization-management") &&
+                content.Contains("SufiAbpLocalizationManagementEntityFrameworkCoreModule", StringComparison.Ordinal))
+            {
+                content = EnsureUsing(content, "SufiChain.SufiAbp.LocalizationManagement.EntityFrameworkCore");
+            }
+
+            content = RemoveDuplicateDependsOnEntries(content);
+            context.Files[file] = Encoding.UTF8.GetBytes(content);
+        }
+
+        var csprojFiles = context.Files.Keys
+            .Where(f => f.EndsWith(".csproj", StringComparison.OrdinalIgnoreCase))
+            .ToList();
+
+        foreach (var file in csprojFiles)
+        {
+            var content = Encoding.UTF8.GetString(context.Files[file]);
+            content = RemoveDuplicatePackageReferences(content);
+            context.Files[file] = Encoding.UTF8.GetBytes(content);
+        }
+    }
+
+    private void NormalizeDbMigratorDependencies(ProjectBuildContext context)
+    {
+        var dbMigratorModuleFiles = context.Files.Keys
+            .Where(f => f.EndsWith("DbMigratorModule.cs", StringComparison.OrdinalIgnoreCase))
+            .ToList();
+
+        foreach (var file in dbMigratorModuleFiles)
+        {
+            var content = Encoding.UTF8.GetString(context.Files[file]);
+
+            if (context.Symbols.Contains("module:calendar"))
+            {
+                content = EnsureUsing(content, "SufiChain.SufiAbp.Calendar");
+                content = EnsureDependsOn(content, "SufiAbpCalendarApplicationModule", "SufiAbpShortLinkGeneratorApplicationModule");
+            }
+
+            content = RemoveDuplicateDependsOnEntries(content);
+            context.Files[file] = Encoding.UTF8.GetBytes(content);
+        }
+
+        var dbMigratorCsprojFiles = context.Files.Keys
+            .Where(f => f.EndsWith(".DbMigrator.csproj", StringComparison.OrdinalIgnoreCase))
+            .ToList();
+
+        foreach (var file in dbMigratorCsprojFiles)
+        {
+            var content = Encoding.UTF8.GetString(context.Files[file]);
+
+            if (context.Symbols.Contains("module:calendar"))
+            {
+                content = EnsurePackageReference(content, "SufiChain.SufiAbp.Calendar.Application");
+                content = EnsurePackageReference(content, "SufiChain.SufiAbp.Calendar.EntityFrameworkCore");
+            }
+
+            content = RemoveDuplicatePackageReferences(content);
             context.Files[file] = Encoding.UTF8.GetBytes(content);
         }
     }

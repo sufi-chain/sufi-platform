@@ -21,9 +21,11 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<!-- Application layers + Client project references -->
+		
 		<ProjectReference Include="..\MyCompanyName.MyProjectName.Application\MyCompanyName.MyProjectName.Application.csproj" />
+		<!-- <TEMPLATE-REMOVE IF-NOT="arch:single"> -->
 		<ProjectReference Include="..\MyCompanyName.MyProjectName.HttpApi\MyCompanyName.MyProjectName.HttpApi.csproj" />
+		<!-- </TEMPLATE-REMOVE> -->
 		<!-- <TEMPLATE-REMOVE IF-NOT="db:efcore"> -->
 		<ProjectReference Include="..\MyCompanyName.MyProjectName.EntityFrameworkCore\MyCompanyName.MyProjectName.EntityFrameworkCore.csproj" />
 		<!-- </TEMPLATE-REMOVE> -->
@@ -33,7 +35,6 @@
 		<ProjectReference Include="..\MyCompanyName.MyProjectName.Blazor.WebApp.Client\MyCompanyName.MyProjectName.Blazor.WebApp.Client.csproj" />
 	</ItemGroup>
 
-	<!-- Framework wrapper packages (development: project refs, template: package refs) -->
 	<!-- <TEMPLATE-REMOVE> -->
 	<ItemGroup>
 		<ProjectReference Include="..\..\..\..\..\independent-projects\kom-theme\src\SufiChain.KomTheme.Blazor.Server\SufiChain.KomTheme.Blazor.Server.csproj" />
@@ -43,12 +44,12 @@
 		<ProjectReference Include="..\..\..\..\..\src\framework\SufiChain.SufiAbp.UI.Blazor\SufiChain.SufiAbp.UI.Blazor.csproj" />
 		<ProjectReference Include="..\..\..\..\..\src\framework\SufiChain.SufiAbp.UI.Blazor.Server\SufiChain.SufiAbp.UI.Blazor.Server.csproj" />
 		<ProjectReference Include="..\..\..\..\..\src\framework\SufiChain.SufiAbp.AspNetCore.Serilog\SufiChain.SufiAbp.AspNetCore.Serilog.csproj" />
+		<!-- <TEMPLATE-REMOVE IF-NOT="arch:single"> -->
 		<ProjectReference Include="..\..\..\..\..\src\framework\SufiChain.SufiAbp.Swashbuckle\SufiChain.SufiAbp.Swashbuckle.csproj" />
+		<!-- </TEMPLATE-REMOVE> -->
 	</ItemGroup>
 	<!-- </TEMPLATE-REMOVE> -->
 
-	<!-- ====================================================================== -->
-	<!-- Development: Project References (removed when generating templates) -->
 	<!-- <TEMPLATE-REMOVE> -->
 	<ItemGroup>
 		<!-- Framework OpenIddict authorization endpoints -->
@@ -123,14 +124,11 @@
 		<ProjectReference Include="..\..\..\..\..\modules\localization-management\src\SufiChain.SufiAbp.LocalizationManagement.Application\SufiChain.SufiAbp.LocalizationManagement.Application.csproj" />
 		<ProjectReference Include="..\..\..\..\..\modules\localization-management\src\SufiChain.SufiAbp.LocalizationManagement.HttpApi\SufiChain.SufiAbp.LocalizationManagement.HttpApi.csproj" />
 
-		<!-- SufiBlazor: required for Identity Public Blazor (Login, Register, AccountLayout) -->
 		<!-- Sufi Blazor Demo Library -->
     <PackageReference Include="SufiChain.SufiBlazor.Demo" Version="$(SufiBlazorVersion)" />
   </ItemGroup>
 	<!-- </TEMPLATE-REMOVE> -->
 
-	<!-- ====================================================================== -->
-	<!-- Template: NuGet Package References (uncommented when generating templates) -->
 	<!-- <TEMPLATE-ONLY>
 	<ItemGroup>
 		<PackageReference Include="SufiChain.KomTheme.Blazor.Server" Version="$(KomThemeVersion)" />
@@ -193,15 +191,17 @@
 	</TEMPLATE-ONLY> -->
 
 	<ItemGroup>
-		<!-- SufiAbp infrastructure packages -->
+		
 		<PackageReference Include="SufiChain.SufiAbp.AspNetCore.MultiTenancy" Version="$(SufiVersion)" />
 		<PackageReference Include="SufiChain.SufiAbp.Autofac" Version="$(SufiVersion)" />
 		<PackageReference Include="SufiChain.SufiAbp.Ddd.Application" Version="$(SufiVersion)" />
 		<PackageReference Include="SufiChain.SufiAbp.UI.Blazor" Version="$(SufiVersion)" />
 		<PackageReference Include="SufiChain.SufiAbp.AspNetCore.Serilog" Version="$(SufiVersion)" />
+		<!-- <TEMPLATE-REMOVE IF-NOT="arch:single"> -->
 		<PackageReference Include="SufiChain.SufiAbp.Swashbuckle" Version="$(SufiVersion)" />
+		<!-- </TEMPLATE-REMOVE> -->
 		<!-- <TEMPLATE-REMOVE IF-NOT="db:efcore"> -->
-		<!-- EF Core for all ABP infrastructure (injected when EF Core selected) -->
+		
 		<!-- <TEMPLATE-REMOVE IF-NOT="efp:sqlserver">
 		<PackageReference Include="SufiChain.SufiAbp.EntityFrameworkCore.SqlServer" Version="$(SufiVersion)" />
 		 </TEMPLATE-REMOVE> -->

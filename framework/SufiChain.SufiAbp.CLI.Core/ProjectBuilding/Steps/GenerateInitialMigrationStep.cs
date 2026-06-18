@@ -1,3 +1,4 @@
+using SufiChain.SufiAbp.CLI.Args;
 using SufiChain.SufiAbp.CLI.ProjectBuilding.Pipeline;
 using System.Diagnostics;
 
@@ -111,8 +112,9 @@ public class GenerateInitialMigrationStep : ProjectBuildPipelineStep
 
     private string? FindStartupProject(ProjectBuildContext context)
     {
-        // Priority order: Blazor.WebApp, HttpApi.Host, DbMigrator
-        var candidates = new[] { "Blazor.WebApp", "HttpApi.Host", "DbMigrator" };
+        var candidates = context.Args.SolutionKind == SolutionKind.WebApp
+            ? new[] { "Blazor.WebApp", "DbMigrator" }
+            : new[] { "HttpApi.Host", "AuthServer", "DbMigrator" };
 
         foreach (var candidate in candidates)
         {

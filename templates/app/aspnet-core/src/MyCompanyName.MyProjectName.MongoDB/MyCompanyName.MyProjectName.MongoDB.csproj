@@ -8,7 +8,7 @@
     <IsPackable>false</IsPackable>
   </PropertyGroup>
 
-  <!-- Internal project references (always present in both dev and generated) -->
+  
   <ItemGroup>
     <ProjectReference Include="..\MyCompanyName.MyProjectName.Domain\MyCompanyName.MyProjectName.Domain.csproj" />
   </ItemGroup>

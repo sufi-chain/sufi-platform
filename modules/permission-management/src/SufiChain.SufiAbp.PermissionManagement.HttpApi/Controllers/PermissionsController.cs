@@ -38,36 +38,50 @@ public class PermissionsController : SufiAbpControllerBase, IPermissionAppServic
         return _permissionAppService.UpdateAsync(providerName, providerKey, input);
     }
 
+    [HttpDelete]
+    [Route("resources/{resourceName}/{resourceKey}/by-provider")]
     public virtual Task DeleteResourceAsync(string resourceName, string resourceKey, string providerName, string providerKey)
     {
         return _permissionAppService.DeleteResourceAsync(resourceName, resourceKey, providerName, providerKey);
     }
 
+    [HttpGet]
+    [Route("resources/{resourceName}/{resourceKey}")]
     public virtual Task<GetResourcePermissionListResultDto> GetResourceAsync(string resourceName, string resourceKey)
     {
         return _permissionAppService.GetResourceAsync(resourceName, resourceKey);
     }
 
+    [HttpGet]
+    [Route("resources/{resourceName}/{resourceKey}/by-provider")]
     public virtual Task<GetResourcePermissionWithProviderListResultDto> GetResourceByProviderAsync(string resourceName, string resourceKey, string providerName, string providerKey)
     {
         return _permissionAppService.GetResourceByProviderAsync(resourceName, resourceKey, providerName, providerKey);
     }
 
+    [HttpGet]
+    [Route("resources/{resourceName}/definitions")]
     public virtual Task<GetResourcePermissionDefinitionListResultDto> GetResourceDefinitionsAsync(string resourceName)
     {
         return _permissionAppService.GetResourceDefinitionsAsync(resourceName);
     }
 
+    [HttpGet]
+    [Route("resources/{resourceName}/provider-key-lookup-services")]
     public virtual Task<GetResourceProviderListResultDto> GetResourceProviderKeyLookupServicesAsync(string resourceName)
     {
         return _permissionAppService.GetResourceProviderKeyLookupServicesAsync(resourceName);
     }
 
+    [HttpGet]
+    [Route("resources/{resourceName}/provider-key-lookup-services/{serviceName}/search")]
     public virtual Task<SearchProviderKeyListResultDto> SearchResourceProviderKeyAsync(string resourceName, string serviceName, string filter, int page)
     {
         return _permissionAppService.SearchResourceProviderKeyAsync(resourceName, serviceName, filter, page);
     }
 
+    [HttpPut]
+    [Route("resources/{resourceName}/{resourceKey}")]
     public virtual Task UpdateResourceAsync(string resourceName, string resourceKey, UpdateResourcePermissionsDto input)
     {
         return _permissionAppService.UpdateResourceAsync(resourceName, resourceKey, input);

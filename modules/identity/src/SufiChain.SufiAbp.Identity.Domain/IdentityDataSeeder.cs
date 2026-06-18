@@ -57,7 +57,7 @@ public class IdentityDataSeeder : ITransientDependency, IIdentityDataSeeder
             //"admin" user
             if(adminUserName.IsNullOrWhiteSpace())
             {
-                adminUserName = IdentityDataSeedContributor.AdminUserNameDefaultValue;
+                adminUserName = IdentityDataSeedConsts.AdminUserNameDefaultValue;
             }
             var adminUser = await UserRepository.FindByNormalizedUserNameAsync(
                 LookupNormalizer.NormalizeName(adminUserName)
@@ -80,7 +80,7 @@ public class IdentityDataSeeder : ITransientDependency, IIdentityDataSeeder
             }
 
             //"admin" role
-            const string adminRoleName = "admin";
+            var adminRoleName = IdentityDataSeedConsts.AdminRoleNameDefaultValue;
             var adminRole =
                 await RoleRepository.FindByNormalizedNameAsync(LookupNormalizer.NormalizeName(adminRoleName));
             if (adminRole == null)
@@ -100,7 +100,7 @@ public class IdentityDataSeeder : ITransientDependency, IIdentityDataSeeder
             }
 
             //"user" role
-            const string userRoleName = "user";
+            var userRoleName = IdentityDataSeedConsts.UserRoleNameDefaultValue;
             var userRole =
                 await RoleRepository.FindByNormalizedNameAsync(LookupNormalizer.NormalizeName(userRoleName));
             if (userRole == null)

@@ -1,4 +1,6 @@
 using SufiChain.SufiAbp.CLI.ProjectBuilding.Pipeline;
+using System.Text;
+using System.Text.RegularExpressions;
 
 namespace SufiChain.SufiAbp.CLI.ProjectBuilding.Steps;
 
@@ -21,6 +23,36 @@ public class ConfigureLayeredNonTieredStep : ProjectBuildPipelineStep
     public override Task ExecuteAsync(ProjectBuildContext context)
     {
         context.Symbols.Add("layered-httpapi");
+
+        BlazorWebAppHostCleanup.RemoveApiHosting(context);
+        AlignDbMigratorConnectionStringWithLayeredHost(context);
+
         return Task.CompletedTask;
+    }
+
+    private static void AlignDbMigratorConnectionStringWithLayeredHost(ProjectBuildContext context)
+    {
+        var dbMigratorSettings = context.Files.Keys
+            .Where(file => file.Contains(".DbMigrator", StringComparison.OrdinalIgnoreCase) &&
+                           file.EndsWith("appsettings.json", StringComparison.OrdinalIgnoreCase))
+            .ToList();
+
+        foreach (var file in dbMigratorSettings)
+        {
+            var content = Encoding.UTF8.GetString(context.Files[file]);
+            var layeredDatabaseName = $"{context.Args.ProjectName}_Layered";
+
+            content = Regex.Replace(
+                content,
+                @"Database=[^;\""]+",
+                $"Database={layeredDatabaseName}");
+
+            content = Regex.Replace(
+                content,
+                @"mongodb://localhost:27017/[^\""]+",
+                $"mongodb://localhost:27017/{layeredDatabaseName}");
+
+            context.Files[file] = Encoding.UTF8.GetBytes(content);
+        }
     }
 }

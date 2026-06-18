@@ -23,14 +23,10 @@ public class ConfigureTieredAuthServerStep : ProjectBuildPipelineStep
 
     public override Task ExecuteAsync(ProjectBuildContext context)
     {
-        // The layered-tiered template already has the correct structure with AuthServer.
-        // This step is primarily a validation/no-op for now since the template
-        // already ships with the correct 4-host setup.
-        //
-        // Future enhancements:
-        // - Validate that AuthServer:Authority URLs are consistent
-        // - Wire up OpenIddict app registrations dynamically
-        // - Handle custom port allocation
+        context.Symbols.Add("tiered");
+        context.Symbols.Add("arch:tiered");
+
+        BlazorWebAppHostCleanup.RemoveApiAndLocalAuthServerHosting(context);
         
         return Task.CompletedTask;
     }

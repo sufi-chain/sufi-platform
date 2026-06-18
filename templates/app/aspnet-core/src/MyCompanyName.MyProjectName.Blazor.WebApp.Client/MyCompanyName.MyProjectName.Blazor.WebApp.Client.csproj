@@ -10,13 +10,13 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<!-- Core WebAssembly packages -->
+		
 		<PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="$(MicrosoftAspNetCoreComponentsWebVersion)" />
 		<PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="$(MicrosoftAspNetCoreComponentsWebAssemblyVersion)" />
 		<PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Authentication" Version="$(MicrosoftAspNetCoreComponentsWebAssemblyVersion)" />
 		<PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="$(AspNetCoreVersion)" />
 
-		<!-- SufiAbp Autofac WebAssembly wrapper -->
+		
 	</ItemGroup>
 
 	<!-- <TEMPLATE-REMOVE> -->
@@ -35,8 +35,8 @@
 	</ItemGroup>
 	</TEMPLATE-ONLY> -->
 
-	<!-- ====================================================================== -->
-	<!-- Development: Project References (removed when generating templates) -->
+	
+	
 	<!-- <TEMPLATE-REMOVE> -->
 	<ItemGroup>
 			<!-- SufiAbp Theme using SufiBlazor (replaces ABP Blazor UI packages) -->
@@ -51,8 +51,8 @@
 	</ItemGroup>
 	<!-- </TEMPLATE-REMOVE> -->
 
-	<!-- ====================================================================== -->
-	<!-- Template: NuGet Package References (uncommented when generating templates) -->
+	
+	
 	<!-- <TEMPLATE-ONLY>
 	<ItemGroup>
 		<PackageReference Include="SufiChain.KomTheme.Blazor.WebAssembly" Version="$(KomThemeVersion)" />
@@ -64,7 +64,7 @@
 	</TEMPLATE-ONLY> -->
 
 	<ItemGroup>
-			<!-- Application.Contracts + HttpApi.Client project references -->
+			
 		<ProjectReference Include="..\MyCompanyName.MyProjectName.Application.Contracts\MyCompanyName.MyProjectName.Application.Contracts.csproj" />
 		<!-- <TEMPLATE-REMOVE IF="arch:webapp"> -->
 		<ProjectReference Include="..\MyCompanyName.MyProjectName.HttpApi.Client\MyCompanyName.MyProjectName.HttpApi.Client.csproj" />

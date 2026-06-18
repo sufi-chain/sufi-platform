@@ -3,6 +3,7 @@ using SufiChain.SufiAbp.Account;
 using SufiChain.SufiAbp.AIManagement;
 using SufiChain.SufiAbp.AuditLogging;
 using SufiChain.SufiAbp.BackgroundJobs;
+using SufiChain.SufiAbp.Calendar;
 // </TEMPLATE-REMOVE>
 // <TEMPLATE-REMOVE IF-NOT="db:mongodb">
 // using SufiChain.SufiAbp.BlobStoring.Database.MongoDB;
@@ -39,6 +40,7 @@ namespace MyCompanyName.MyProjectName.DbMigrator;
     typeof(SufiAbpTenantManagementApplicationModule),
     typeof(SufiAbpLocalizationManagementApplicationModule),
     typeof(SufiAbpShortLinkGeneratorApplicationModule),
+    typeof(SufiAbpCalendarApplicationModule),
     typeof(SufiAbpAccountApplicationModule),
     typeof(SufiAbpFeatureManagementApplicationModule),
     typeof(SufiAbpPermissionManagementApplicationModule),

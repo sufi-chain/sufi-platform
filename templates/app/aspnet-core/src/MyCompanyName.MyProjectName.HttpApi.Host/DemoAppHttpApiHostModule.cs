@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Cors;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi;
 using SufiChain.SufiAbp.AIManagement;
 // <TEMPLATE-REMOVE IF-NOT="module:audit-logging">
 using SufiChain.SufiAbp.AuditLogging;
@@ -14,18 +14,26 @@ using SufiChain.SufiAbp.BackgroundJobs;
 using SufiChain.SufiAbp.Account;
 // <TEMPLATE-REMOVE IF-NOT="module:file-manager">
 using SufiChain.SufiAbp.FileManager;
+using SufiChain.SufiAbp.FileManager.EntityFrameworkCore;
 using SufiChain.SufiAbp.BlobStoring.Database.EntityFrameworkCore;
 // </TEMPLATE-REMOVE>
 using SufiChain.SufiAbp.FeatureManagement;
+// <TEMPLATE-REMOVE IF-NOT="db:efcore">
+using SufiChain.SufiAbp.FeatureManagement.EntityFrameworkCore;
+// </TEMPLATE-REMOVE>
 using SufiChain.SufiAbp.Identity;
 // <TEMPLATE-REMOVE IF-NOT="module:localization-management">
 using SufiChain.SufiAbp.LocalizationManagement;
+using SufiChain.SufiAbp.LocalizationManagement.EntityFrameworkCore;
 // </TEMPLATE-REMOVE>
 // <TEMPLATE-REMOVE IF-NOT="module:sufi-blazor-demo">
 using SufiChain.SufiBlazor.Demo;
 // </TEMPLATE-REMOVE>
 using SufiChain.SufiAbp.PermissionManagement;
 using SufiChain.SufiAbp.SettingManagement;
+// <TEMPLATE-REMOVE IF-NOT="db:efcore">
+using SufiChain.SufiAbp.SettingManagement.EntityFrameworkCore;
+// </TEMPLATE-REMOVE>
 // <TEMPLATE-REMOVE IF-NOT="module:tenant-management">
 using SufiChain.SufiAbp.TenantManagement;
 // </TEMPLATE-REMOVE>
@@ -39,6 +47,12 @@ using SufiChain.SufiAbp.AspNetCore.MultiTenancy;
 using SufiChain.SufiAbp.AspNetCore.Serilog;
 using SufiChain.SufiAbp.Autofac;
 using SufiChain.SufiAbp.Swashbuckle;
+// <TEMPLATE-REMOVE IF-NOT="db:efcore">
+using MyCompanyName.MyProjectName.EntityFrameworkCore;
+// </TEMPLATE-REMOVE>
+// <TEMPLATE-REMOVE IF-NOT="db:mongodb">
+using MyCompanyName.MyProjectName.MongoDB;
+// </TEMPLATE-REMOVE>
 using Volo.Abp;
 using Volo.Abp.AspNetCore.Mvc;
 using Volo.Abp.AspNetCore.Mvc.Libs;
@@ -57,6 +71,12 @@ namespace MyCompanyName.MyProjectName
         typeof(SufiAbpAspNetCoreAuthenticationJwtBearerModule),
         typeof(SufiAbpAspNetCoreSerilogModule),
         typeof(SufiAbpSwashbuckleModule),
+        // <TEMPLATE-REMOVE IF-NOT="db:efcore">
+        typeof(DemoAppEntityFrameworkCoreModule),
+        // </TEMPLATE-REMOVE>
+        // <TEMPLATE-REMOVE IF-NOT="db:mongodb">
+        typeof(DemoAppMongoDbModule),
+        // </TEMPLATE-REMOVE>
         // <TEMPLATE-REMOVE IF-NOT="module:file-manager">
         // Blob storage for file manager (must load before SufiAbpFileManagerEntityFrameworkCoreModule)
         typeof(SufiAbpBlobStoringDatabaseEntityFrameworkCoreModule),

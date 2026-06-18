@@ -71,6 +71,7 @@ public class GenerateDirectoryBuildPropsStep : ProjectBuildPipelineStep
   <PropertyGroup>
     <LangVersion>latest</LangVersion>
     <SufiVersion>{sufiVersion}</SufiVersion>
+    <NuGetAudit>false</NuGetAudit>
   </PropertyGroup>
 </Project>
 ";

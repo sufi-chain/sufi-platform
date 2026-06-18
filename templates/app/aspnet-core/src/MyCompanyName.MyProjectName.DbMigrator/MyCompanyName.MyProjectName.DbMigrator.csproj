@@ -30,8 +30,8 @@
     <!-- </TEMPLATE-REMOVE> -->
   </ItemGroup>
 
-  <!-- ====================================================================== -->
-  <!-- Development: SufiAbp module references (removed when generating templates) -->
+  
+  
   <!-- <TEMPLATE-REMOVE> -->
   <ItemGroup>
     <ProjectReference Include="..\..\..\..\..\modules\file-manager\src\SufiChain.SufiAbp.FileManager.Application\SufiChain.SufiAbp.FileManager.Application.csproj" />

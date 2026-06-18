@@ -23,8 +23,8 @@
     <ProjectReference Include="..\MyCompanyName.MyProjectName.MongoDB\MyCompanyName.MyProjectName.MongoDB.csproj" />
   </ItemGroup>
 
-  <!-- ====================================================================== -->
-  <!-- Development: Project References (removed when generating templates) -->
+  
+  
   <!-- <TEMPLATE-REMOVE> -->
   <ItemGroup>
     <!-- Framework auditing (/_blazor exclusion, HTTP method filter) -->
@@ -60,8 +60,8 @@
   </ItemGroup>
   <!-- </TEMPLATE-REMOVE> -->
 
-  <!-- ====================================================================== -->
-  <!-- Template: NuGet Package References (uncommented when generating templates) -->
+  
+  
   <!-- <TEMPLATE-ONLY>
   <ItemGroup>
     <PackageReference Include="SufiChain.SufiAbp.AspNetCore.Authentication.OpenIdConnect" Version="$(SufiVersion)" />

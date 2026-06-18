@@ -3,7 +3,6 @@ using SufiChain.SufiAbp.Calendar.Availability;
 using SufiChain.SufiAbp.Calendar.Caching;
 using SufiChain.SufiAbp.Caching;
 using SufiChain.SufiAbp.Ddd;
-using SufiChain.SufiAbp.PermissionManagement;
 using Volo.Abp.Modularity;
 
 namespace SufiChain.SufiAbp.Calendar;
@@ -12,8 +11,7 @@ namespace SufiChain.SufiAbp.Calendar;
     typeof(SufiAbpCalendarDomainModule),
     typeof(SufiAbpCalendarApplicationContractsModule),
     typeof(SufiAbpDddApplicationModule),
-    typeof(SufiAbpCachingModule),
-    typeof(SufiAbpPermissionManagementDomainModule)
+    typeof(SufiAbpCachingModule)
 )]
 public class SufiAbpCalendarApplicationModule : AbpModule
 {
