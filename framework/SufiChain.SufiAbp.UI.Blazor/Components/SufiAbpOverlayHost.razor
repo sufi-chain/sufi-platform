@@ -1,6 +1,7 @@
 @namespace SufiChain.SufiAbp.UI.Blazor.Components
 @using Microsoft.Extensions.Localization
 @using Microsoft.Extensions.Logging
+@using System.Text
 @using SufiChain.SufiAbp.UI.Blazor.Messages
 @using SufiChain.SufiAbp.UI.Blazor.Circuit
 @using SufiChain.SufiAbp.UI.Blazor.Notifications
@@ -89,15 +90,15 @@
         @if (_messageRequest != null)
         {
             <div class="sb-confirm-dialog__icon sb-confirm-dialog__icon--@GetMessageVariant()">
-                <SbIcon Name="@GetMessageIcon()" Size="SbSize.Lg" />
+                <SbIcon Name="@GetMessageIcon()" Size="SbSize.Lg" Color="@GetMessageButtonColor()" />
             </div>
             
             <div class="sb-confirm-dialog__content">
                 @if (!string.IsNullOrEmpty(_messageRequest.Title))
                 {
-                    <h3 class="sb-confirm-dialog__title">@_messageRequest.Title</h3>
+                    <h3 class="sb-confirm-dialog__title">@NormalizeDialogText(_messageRequest.Title)</h3>
                 }
-                <p class="sb-confirm-dialog__message">@_messageRequest.Message</p>
+                <p class="sb-confirm-dialog__message">@NormalizeDialogText(_messageRequest.Message)</p>
             </div>
             
             <div class="sb-confirm-dialog__actions">
@@ -454,11 +455,47 @@
 
     private string GetMessageIcon() => _messageRequest?.Type switch
     {
-        UiMessageType.Error => "x-circle",
+        UiMessageType.Error => "error",
         UiMessageType.Warning => "warning",
-        UiMessageType.Success => "check-circle",
+        UiMessageType.Success => "success",
         _ => "info"
     };
+
+    private static string NormalizeDialogText(string? text)
+    {
+        if (string.IsNullOrWhiteSpace(text) || !LooksLikeLocalizationKey(text))
+        {
+            return text ?? string.Empty;
+        }
+
+        var key = text[(text.LastIndexOf(':') + 1)..];
+        var builder = new StringBuilder(key.Length + 8);
+        for (var i = 0; i < key.Length; i++)
+        {
+            var current = key[i];
+            if (i > 0 && char.IsUpper(current) && !char.IsWhiteSpace(key[i - 1]))
+            {
+                builder.Append(' ');
+            }
+
+            builder.Append(current);
+        }
+
+        return builder.ToString();
+    }
+
+    private static bool LooksLikeLocalizationKey(string text)
+    {
+        if (text.Any(char.IsWhiteSpace) || !text.Contains(':', StringComparison.Ordinal))
+        {
+            return false;
+        }
+
+        var key = text[(text.LastIndexOf(':') + 1)..];
+        return key.Length > 0 &&
+               key.Any(char.IsUpper) &&
+               key.All(ch => char.IsLetterOrDigit(ch) || ch is '_' or '-' or '.');
+    }
 
     private SbColor GetMessageButtonColor() => _messageRequest?.Type switch
     {

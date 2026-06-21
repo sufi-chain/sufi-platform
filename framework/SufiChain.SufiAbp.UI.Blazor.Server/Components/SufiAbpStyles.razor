@@ -1,16 +1,13 @@
 @implements IDisposable
 @inject IComponentBundleManager BundleManager
 @inject PersistentComponentState ApplicationState
+@inject Microsoft.AspNetCore.Hosting.IWebHostEnvironment Environment
 
 @if (StyleFiles != null)
 {
     foreach (var file in StyleFiles)
     {
-        var href = file;
-        if (!string.IsNullOrWhiteSpace(AppBasePath))
-        {
-            href = AppBasePath.TrimEnd('/') + "/" + file.TrimStart('/');
-        }
+        var href = ResolveAssetUrl(file);
         <link rel="stylesheet" href="@href" />
     }
 }
@@ -35,6 +32,13 @@
     /// </summary>
     [Parameter]
     public string? AppBasePath { get; set; }
+
+    /// <summary>
+    /// Appended to asset URLs so packaged CSS changes are not hidden by browser/proxy cache.
+    /// If not set, the component uses the file last-modified timestamp when available.
+    /// </summary>
+    [Parameter]
+    public string? AssetVersion { get; set; }
 
     private List<string>? StyleFiles { get; set; }
 
@@ -87,6 +91,34 @@
     {
         ApplicationState.PersistAsJson(PrerenderedKey, StyleFiles);
         return Task.CompletedTask;
+    }
+
+    private string ResolveAssetUrl(string file)
+    {
+        var href = file;
+        if (!string.IsNullOrWhiteSpace(AppBasePath))
+        {
+            href = AppBasePath.TrimEnd('/') + "/" + file.TrimStart('/');
+        }
+
+        var version = AssetVersion;
+        if (string.IsNullOrWhiteSpace(version))
+        {
+            var fileInfo = Environment.WebRootFileProvider.GetFileInfo(file.TrimStart('/'));
+            if (fileInfo.Exists)
+            {
+                version = fileInfo.LastModified.UtcTicks.ToString(System.Globalization.CultureInfo.InvariantCulture);
+            }
+        }
+
+        if (string.IsNullOrWhiteSpace(version))
+        {
+            version = typeof(SufiAbpStyles).Assembly.GetName().Version?.ToString();
+        }
+
+        return string.IsNullOrWhiteSpace(version)
+            ? href
+            : href + (href.Contains('?', StringComparison.Ordinal) ? "&" : "?") + "v=" + Uri.EscapeDataString(version);
     }
 
     public void Dispose() => _persistingSubscription.Dispose();

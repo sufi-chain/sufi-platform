@@ -3,6 +3,7 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using SufiChain.SufiAbp.Messaging.Email;
 using SufiChain.SufiAbp.Messaging.Localization;
 using SufiChain.SufiAbp.Messaging.Smtp;
+using SufiChain.SufiAbp.TextTemplating;
 using Volo.Abp.BackgroundJobs;
 using Volo.Abp.EventBus;
 using Volo.Abp.Localization;
@@ -17,7 +18,8 @@ namespace SufiChain.SufiAbp.Messaging;
     typeof(AbpEventBusModule),
     typeof(AbpSettingsModule),
     typeof(AbpLocalizationModule),
-    typeof(AbpVirtualFileSystemModule)
+    typeof(AbpVirtualFileSystemModule),
+    typeof(SufiAbpTextTemplatingModule)
 )]
 public class SufiAbpMessagingModule : AbpModule
 {

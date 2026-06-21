@@ -4,9 +4,11 @@ using System.Text;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Options;
 using SufiChain.SufiAbp.UI.ExceptionHandling;
 using SufiChain.SufiAbp.UI.Localization;
 using SufiChain.SufiAbp.UI.Messages;
+using Volo.Abp.Localization.ExceptionHandling;
 
 namespace SufiChain.SufiAbp.UI.Blazor.ExceptionHandling;
 
@@ -18,15 +20,21 @@ public class DefaultUserExceptionInformer : IUserExceptionInformer
 {
     private readonly IUiMessageService _messageService;
     private readonly IStringLocalizer<SufiAbpFrameworkResource> _localizer;
+    private readonly IStringLocalizerFactory? _stringLocalizerFactory;
+    private readonly AbpExceptionLocalizationOptions? _exceptionLocalizationOptions;
     private readonly ILogger<DefaultUserExceptionInformer> _logger;
 
     public DefaultUserExceptionInformer(
         IUiMessageService messageService,
         IStringLocalizer<SufiAbpFrameworkResource> localizer,
+        IStringLocalizerFactory? stringLocalizerFactory = null,
+        IOptions<AbpExceptionLocalizationOptions>? exceptionLocalizationOptions = null,
         ILogger<DefaultUserExceptionInformer>? logger = null)
     {
         _messageService = messageService;
         _localizer = localizer;
+        _stringLocalizerFactory = stringLocalizerFactory;
+        _exceptionLocalizationOptions = exceptionLocalizationOptions?.Value;
         _logger = logger ?? NullLogger<DefaultUserExceptionInformer>.Instance;
     }
 
@@ -144,15 +152,15 @@ public class DefaultUserExceptionInformer : IUserExceptionInformer
     {
         var errorType = errorInfo.GetType();
 
+        var code = GetPropertyValue<string>(errorInfo, "Code");
+
         // Get Message
-        var message = GetPropertyValue<string>(errorInfo, "Message") ?? _localizer["AnErrorOccurred"];
+        var message = NormalizeMessage(GetPropertyValue<string>(errorInfo, "Message"), code);
 
         // Get Details
         var details = GetPropertyValue<string>(errorInfo, "Details");
 
-        // Get Code (for title)
-        var code = GetPropertyValue<string>(errorInfo, "Code");
-        var title = !string.IsNullOrEmpty(code) ? code : _localizer["Error"];
+        var title = _localizer["Error"];
 
         // Get ValidationErrors
         var validationErrors = GetPropertyValue<IEnumerable>(errorInfo, "ValidationErrors");
@@ -217,12 +225,12 @@ public class DefaultUserExceptionInformer : IUserExceptionInformer
     /// </summary>
     private ErrorInfo ExtractAbpBusinessExceptionInfo(Exception exception)
     {
-        var code = GetPropertyValue<string>(exception, "Code");
         var details = GetPropertyValue<string>(exception, "Details");
+        var code = GetPropertyValue<string>(exception, "Code");
 
         return new ErrorInfo(
-            exception.Message,
-            !string.IsNullOrEmpty(code) ? code : _localizer["Error"],
+            NormalizeMessage(exception.Message, code, exception.Data),
+            _localizer["Error"],
             details);
     }
 
@@ -297,6 +305,106 @@ public class DefaultUserExceptionInformer : IUserExceptionInformer
             ArgumentException ex => ex.Message,
             _ => exception.Message // Show the actual message instead of generic text
         };
+    }
+
+    private string NormalizeMessage(string? message, string? errorCode = null, IDictionary? data = null)
+    {
+        var localizedMessage = LocalizeErrorCode(errorCode, data);
+        if (!string.IsNullOrWhiteSpace(localizedMessage))
+        {
+            return localizedMessage;
+        }
+
+        if (IsGenericExceptionMessage(message))
+        {
+            return _localizer["DefaultErrorMessage"];
+        }
+
+        return NormalizeKeyLikeMessage(message!);
+    }
+
+    private static bool IsGenericExceptionMessage(string? message)
+    {
+        return string.IsNullOrWhiteSpace(message) ||
+               (message.StartsWith("Exception of type '", StringComparison.Ordinal) &&
+                message.EndsWith("' was thrown.", StringComparison.Ordinal));
+    }
+
+    private string? LocalizeErrorCode(string? errorCode, IDictionary? data)
+    {
+        if (string.IsNullOrWhiteSpace(errorCode) ||
+            !errorCode.Contains(':', StringComparison.Ordinal) ||
+            _stringLocalizerFactory == null ||
+            _exceptionLocalizationOptions == null)
+        {
+            return null;
+        }
+
+        var codeNamespace = errorCode.Split(':')[0];
+        if (!_exceptionLocalizationOptions.ErrorCodeNamespaceMappings.TryGetValue(codeNamespace, out var resourceType))
+        {
+            return null;
+        }
+
+        var localizedString = _stringLocalizerFactory.Create(resourceType)[errorCode];
+        if (localizedString.ResourceNotFound)
+        {
+            return null;
+        }
+
+        var value = localizedString.Value;
+        if (data == null || data.Count == 0)
+        {
+            return value;
+        }
+
+        foreach (var key in data.Keys)
+        {
+            value = value.Replace("{" + key + "}", data[key]?.ToString(), StringComparison.Ordinal);
+        }
+
+        return value;
+    }
+
+    private static string NormalizeKeyLikeMessage(string message)
+    {
+        if (!LooksLikeLocalizationKey(message))
+        {
+            return message;
+        }
+
+        var key = message[(message.LastIndexOf(':') + 1)..];
+        if (string.IsNullOrWhiteSpace(key))
+        {
+            return message;
+        }
+
+        var builder = new StringBuilder(key.Length + 8);
+        for (var i = 0; i < key.Length; i++)
+        {
+            var current = key[i];
+            if (i > 0 && char.IsUpper(current) && !char.IsWhiteSpace(key[i - 1]))
+            {
+                builder.Append(' ');
+            }
+
+            builder.Append(current);
+        }
+
+        return builder.ToString();
+    }
+
+    private static bool LooksLikeLocalizationKey(string message)
+    {
+        if (message.Any(char.IsWhiteSpace) || !message.Contains(':', StringComparison.Ordinal))
+        {
+            return false;
+        }
+
+        var key = message[(message.LastIndexOf(':') + 1)..];
+        return key.Length > 0 &&
+               key.Any(char.IsUpper) &&
+               key.All(ch => char.IsLetterOrDigit(ch) || ch is '_' or '-' or '.');
     }
 
     protected virtual void LogException(UserExceptionInformerContext context)

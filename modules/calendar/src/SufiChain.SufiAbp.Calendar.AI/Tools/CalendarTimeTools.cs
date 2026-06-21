@@ -17,7 +17,7 @@ public class CalendarGetCurrentTimeTool : CalendarAIToolBase
 
     public override string Name => CalendarAIToolNames.GetCurrentTime;
 
-    public override string Description => "Returns the current UTC time plus current local date/time, weekday, timezone, and Persian/Jalali date for a calendar timezone or explicit timezone. Use this before interpreting relative-date words, next working-day requests, Farsi date phrases, Persian calendar dates, next Saturday, today, or tomorrow. Prefer calendarId so the timezone is inherited from the calendar. Do not calculate today's Jalali date from memory.";
+    public override string Description => CalendarAIToolGuidance.GetCurrentTime;
 
     public override string ParameterSchema => CalendarAIToolSchemas.GetCurrentTime;
 
