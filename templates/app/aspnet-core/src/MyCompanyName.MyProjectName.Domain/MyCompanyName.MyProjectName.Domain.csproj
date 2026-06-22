@@ -45,7 +45,7 @@
 	    <PackageReference Include="SufiChain.SufiAbp.Messaging" Version="$(SufiVersion)" />
 	    <PackageReference Include="SufiChain.SufiAbp.Calendar.Domain" Version="$(SufiVersion)" />
 	    <PackageReference Include="SufiChain.SufiAbp.LocalizationManagement.Domain" Version="$(SufiVersion)" />
-	    <PackageReference Include="SufiChain.SufiAbp.AIManagement.Domain" Version="$(SufiVersion)" />
+	    <PackageReference Include="SufiChain.SufiAbp.AI.Domain" Version="$(SufiVersion)" />
 	    <PackageReference Include="SufiChain.SufiAbp.FileManager.Domain" Version="$(SufiVersion)" />
      <PackageReference Include="SufiChain.SufiAbp.PermissionManagement.Domain" Version="$(SufiVersion)" />
      <PackageReference Include="SufiChain.SufiAbp.SettingManagement.Domain" Version="$(SufiVersion)" />

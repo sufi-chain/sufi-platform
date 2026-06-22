@@ -149,9 +149,9 @@ public class ModuleRegistry
         
         Register(new ModuleDefinition
         {
-            Key = "ai-management",
+            Key = "ai",
             DisplayName = "AI Management",
-            NuGetPackagePrefix = "SufiChain.SufiAbp.AIManagement",
+            NuGetPackagePrefix = "SufiChain.SufiAbp.AI",
             Category = ModuleCategory.Infrastructure,
             IsCore = true,
             Description = "AI workspace, RAG, MCP, and provider management",

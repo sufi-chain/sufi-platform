@@ -1,7 +1,7 @@
 using Volo.Abp.Data;
 using MongoDB.Driver;
-using SufiChain.SufiAbp.AIManagement.MongoDB;
-using SufiChain.SufiAbp.AIManagement.Workspaces;
+using SufiChain.SufiAbp.AI.MongoDB;
+using SufiChain.SufiAbp.AI.Workspaces;
 using SufiChain.SufiAbp.AuditLogging.MongoDB;
 using SufiChain.SufiAbp.BackgroundJobs.MongoDB;
 using SufiChain.SufiAbp.FeatureManagement.MongoDB;
@@ -27,7 +27,7 @@ public class DemoAppMongoDbContext : AbpMongoDbContext,
     IFileManagerMongoDbContext,
     ILocalizationManagementMongoDbContext,
     IShortLinkGeneratorMongoDbContext,
-    IAIManagementMongoDbContext
+    IAIMongoDbContext
 {
     // File Manager
     public IMongoCollection<FileItem> FileItems => Collection<FileItem>();
@@ -62,7 +62,7 @@ public class DemoAppMongoDbContext : AbpMongoDbContext,
         modelBuilder.ConfigureSufiAbpFileManager();
         modelBuilder.ConfigureSufiAbpLocalizationManagement();
         modelBuilder.ConfigureSufiAbpShortLinkGenerator();
-        modelBuilder.ConfigureSufiAbpAIManagement();
+        modelBuilder.ConfigureSufiAI();
 
         /* Configure your own collections here */
         //modelBuilder.Entity<YourEntity>(b =>

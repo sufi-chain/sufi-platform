@@ -268,9 +268,9 @@ public class SwitchToEfCoreStep : ProjectBuildPipelineStep
             {
                 content = EnsurePackageReference(content, "SufiChain.SufiAbp.Calendar.EntityFrameworkCore");
             }
-            if (context.Symbols.Contains("module:ai-management"))
+            if (context.Symbols.Contains("module:ai"))
             {
-                content = EnsurePackageReference(content, "SufiChain.SufiAbp.AIManagement.EntityFrameworkCore");
+                content = EnsurePackageReference(content, "SufiChain.SufiAbp.AI.EntityFrameworkCore");
             }
 
             content = EnsureProjectReference(content, context.Args.SolutionName, "Application.Contracts");

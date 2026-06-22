@@ -27,5 +27,5 @@ public static class FileStructureKeys
     /// <summary>
     /// AI Management structure key
     /// </summary>
-    public const string AIManagement = "AIManagement";
+    public const string AI = "AI";
 }

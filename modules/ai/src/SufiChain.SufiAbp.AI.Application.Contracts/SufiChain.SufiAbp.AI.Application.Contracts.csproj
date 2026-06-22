@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>netstandard2.1;net10.0</TargetFrameworks>
+    <RootNamespace>SufiChain.SufiAbp.AI</RootNamespace>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\..\framework\SufiChain.SufiAbp.Ddd.Application.Contracts\SufiChain.SufiAbp.Ddd.Application.Contracts.csproj" />
+    <ProjectReference Include="..\..\..\..\framework\SufiChain.SufiAbp.Authorization\SufiChain.SufiAbp.Authorization.csproj" />
+    <ProjectReference Include="..\..\..\file-manager\src\SufiChain.SufiAbp.FileManager.Application.Contracts\SufiChain.SufiAbp.FileManager.Application.Contracts.csproj" />
+    <ProjectReference Include="..\..\..\file-manager\src\SufiChain.SufiAbp.FileManager.Domain.Shared\SufiChain.SufiAbp.FileManager.Domain.Shared.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\SufiChain.SufiAbp.AI.Domain.Shared\SufiChain.SufiAbp.AI.Domain.Shared.csproj" />
+  </ItemGroup>
+
+</Project>

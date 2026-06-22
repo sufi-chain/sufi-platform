@@ -1,5 +1,5 @@
 using SufiChain.SufiAbp.Account;
-using SufiChain.SufiAbp.AIManagement;
+using SufiChain.SufiAbp.AI;
 using SufiChain.SufiAbp.AspNetCore.Serilog;
 using SufiChain.SufiAbp.AuditLogging;
 using SufiChain.SufiAbp.AuditLogging.MongoDB;
@@ -42,9 +42,9 @@ namespace SufiChain.SufiAbp.SmokeTest.Console;
     typeof(SufiAbpOpenIddictAspNetCoreModule),
     typeof(SufiAbpAccountApplicationModule),
     typeof(SufiAbpAccountHttpApiModule),
-    typeof(SufiAbpAIManagementApplicationModule),
-    typeof(SufiAbpAIManagementHttpApiModule),
-    typeof(SufiAbpAIManagementMongoDbModule),
+    typeof(SufiAIApplicationModule),
+    typeof(SufiAIHttpApiModule),
+    typeof(SufiAIMongoDbModule),
     typeof(SufiAbpAuditLoggingApplicationModule),
     typeof(SufiAbpAuditLoggingHttpApiModule),
     typeof(SufiAbpAuditLoggingMongoDbModule),

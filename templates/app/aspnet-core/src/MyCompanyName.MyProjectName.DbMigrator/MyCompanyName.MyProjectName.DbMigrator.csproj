@@ -53,7 +53,7 @@
     <ProjectReference Include="..\..\..\..\..\modules\localization-management\src\SufiChain.SufiAbp.LocalizationManagement.MongoDB\SufiChain.SufiAbp.LocalizationManagement.MongoDB.csproj" />
     <!-- </TEMPLATE-REMOVE> -->
     <ProjectReference Include="..\..\..\..\..\modules\short-link-generator\src\SufiChain.SufiAbp.ShortLinkGenerator.Application\SufiChain.SufiAbp.ShortLinkGenerator.Application.csproj" />
-    <ProjectReference Include="..\..\..\..\..\modules\ai-management\src\SufiChain.SufiAbp.AIManagement.Application\SufiChain.SufiAbp.AIManagement.Application.csproj" />
+    <ProjectReference Include="..\..\..\..\..\modules\ai\src\SufiChain.SufiAbp.AI.Application\SufiChain.SufiAbp.AI.Application.csproj" />
     <!-- <TEMPLATE-REMOVE IF-NOT="db:efcore"> -->
     <ProjectReference Include="..\..\..\..\..\modules\short-link-generator\src\SufiChain.SufiAbp.ShortLinkGenerator.EntityFrameworkCore\SufiChain.SufiAbp.ShortLinkGenerator.EntityFrameworkCore.csproj" />
     <!-- </TEMPLATE-REMOVE> -->
@@ -88,10 +88,10 @@
     <PackageReference Include="SufiChain.SufiAbp.LocalizationManagement.MongoDB" Version="$(SufiVersion)" />
     <!-- </TEMPLATE-REMOVE> -->
     <PackageReference Include="SufiChain.SufiAbp.ShortLinkGenerator.Application" Version="$(SufiVersion)" />
-    <PackageReference Include="SufiChain.SufiAbp.AIManagement.Application" Version="$(SufiVersion)" />
+    <PackageReference Include="SufiChain.SufiAbp.AI.Application" Version="$(SufiVersion)" />
     <!-- <TEMPLATE-REMOVE IF-NOT="db:efcore"> -->
     <PackageReference Include="SufiChain.SufiAbp.ShortLinkGenerator.EntityFrameworkCore" Version="$(SufiVersion)" />
-    <PackageReference Include="SufiChain.SufiAbp.AIManagement.EntityFrameworkCore" Version="$(SufiVersion)" />
+    <PackageReference Include="SufiChain.SufiAbp.AI.EntityFrameworkCore" Version="$(SufiVersion)" />
     <!-- </TEMPLATE-REMOVE> -->
     <!-- <TEMPLATE-REMOVE IF-NOT="db:mongodb"> -->
     <PackageReference Include="SufiChain.SufiAbp.ShortLinkGenerator.MongoDB" Version="$(SufiVersion)" />

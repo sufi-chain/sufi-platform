@@ -28,7 +28,7 @@
     <ProjectReference Include="..\MyCompanyName.MyProjectName.Domain.Shared\MyCompanyName.MyProjectName.Domain.Shared.csproj" />
     <PackageReference Include="SufiChain.SufiAbp.Calendar.Application.Contracts" Version="$(SufiVersion)" />
     <PackageReference Include="SufiChain.SufiAbp.LocalizationManagement.Application.Contracts" Version="$(SufiVersion)" />
-    <PackageReference Include="SufiChain.SufiAbp.AIManagement.Application.Contracts" Version="$(SufiVersion)" />
+    <PackageReference Include="SufiChain.SufiAbp.AI.Application.Contracts" Version="$(SufiVersion)" />
     <PackageReference Include="SufiChain.SufiAbp.FileManager.Application.Contracts" Version="$(SufiVersion)" />
     <PackageReference Include="SufiChain.SufiAbp.Account.Application.Contracts" Version="$(SufiVersion)" />
     <PackageReference Include="SufiChain.SufiAbp.PermissionManagement.Application.Contracts" Version="$(SufiVersion)" />

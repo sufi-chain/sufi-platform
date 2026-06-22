@@ -90,7 +90,7 @@ public class FileArchivingWorker : AsyncPeriodicBackgroundWorkerBase
                     {
                         OlderThanDays = aiRetentionDays,
                         BatchSize = batchSize,
-                        StructureKey = FileStructureKeys.AIManagement,
+                        StructureKey = FileStructureKeys.AI,
                         ArchiveReason = "Automatic archiving - AI files retention policy"
                     });
                 }

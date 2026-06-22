@@ -8,7 +8,7 @@ namespace SufiChain.SufiAbp.Calendar.AI.Tools;
 /// <summary>
 /// Base class for Calendar AI tools.
 /// </summary>
-public abstract class CalendarAIToolBase : ISufiAbpAITool, ITransientDependency
+public abstract class CalendarAIToolBase : ISufiAITool, ITransientDependency
 {
     protected static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web)
     {
@@ -23,8 +23,8 @@ public abstract class CalendarAIToolBase : ISufiAbpAITool, ITransientDependency
 
     public virtual string Source => "SufiChain.SufiAbp.Calendar";
 
-    public abstract Task<SufiAbpAIToolExecutionResult> ExecuteAsync(
-        SufiAbpAIToolExecutionContext context,
+    public abstract Task<SufiAIToolExecutionResult> ExecuteAsync(
+        SufiAIToolExecutionContext context,
         Dictionary<string, object?> parameters,
         CancellationToken cancellationToken = default);
 
@@ -35,8 +35,8 @@ public abstract class CalendarAIToolBase : ISufiAbpAITool, ITransientDependency
                ?? throw new InvalidOperationException($"Invalid parameters for {Name}.");
     }
 
-    protected virtual Task<SufiAbpAIToolExecutionResult> SuccessAsync(object? result)
+    protected virtual Task<SufiAIToolExecutionResult> SuccessAsync(object? result)
     {
-        return Task.FromResult(SufiAbpAIToolExecutionResult.CreateSuccess(result, 0));
+        return Task.FromResult(SufiAIToolExecutionResult.CreateSuccess(result, 0));
     }
 }

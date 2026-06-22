@@ -1,5 +1,5 @@
 using Microsoft.EntityFrameworkCore;
-using SufiChain.SufiAbp.AIManagement.EntityFrameworkCore;
+using SufiChain.SufiAbp.AI.EntityFrameworkCore;
 using SufiChain.SufiAbp.AuditLogging.EntityFrameworkCore;
 using SufiChain.SufiAbp.BackgroundJobs.EntityFrameworkCore;
 using SufiChain.SufiAbp.BlobStoring.Database.EntityFrameworkCore;
@@ -50,7 +50,7 @@ namespace MyCompanyName.MyProjectName.EntityFrameworkCore;
 [ReplaceDbContext(typeof(ISufiAbpBlobStoringDbContext))]
 [ReplaceDbContext(typeof(ISufiAbpLocalizationManagementDbContext))]
 [ReplaceDbContext(typeof(ISufiAbpShortLinkGeneratorDbContext))]
-[ReplaceDbContext(typeof(IAIManagementDbContext))]
+[ReplaceDbContext(typeof(IAIDbContext))]
 [ReplaceDbContext(typeof(ICalendarDbContext))]
 [ConnectionStringName("Default")]
 public class DemoAppDbContext :
@@ -67,7 +67,7 @@ public class DemoAppDbContext :
     ISufiAbpBlobStoringDbContext,
     ISufiAbpLocalizationManagementDbContext,
     ISufiAbpShortLinkGeneratorDbContext,
-    IAIManagementDbContext,
+    IAIDbContext,
     ICalendarDbContext
 {
     #region Entities from ABP modules
@@ -135,8 +135,8 @@ public class DemoAppDbContext :
     public DbSet<ShortUrlClick> ShortUrlClicks { get; set; } = null!;
 
     // AI Management
-    public DbSet<SufiChain.SufiAbp.AIManagement.Workspaces.Workspace> Workspaces { get; set; } = null!;
-    public DbSet<SufiChain.SufiAbp.AIManagement.MCP.Entities.MCPServer> MCPServers { get; set; } = null!;
+    public DbSet<SufiChain.SufiAbp.AI.Workspaces.Workspace> Workspaces { get; set; } = null!;
+    public DbSet<SufiChain.SufiAbp.AI.MCP.Entities.MCPServer> MCPServers { get; set; } = null!;
 
     // Calendar
     public DbSet<SufiChain.SufiAbp.Calendar.Calendars.Calendar> Calendars { get; set; } = null!;
@@ -172,7 +172,7 @@ public class DemoAppDbContext :
         builder.ConfigureSufiAbpBlobStoringDatabase();
         builder.ConfigureSufiAbpLocalizationManagement();
         builder.ConfigureSufiAbpShortLinkGenerator();
-        builder.ConfigureSufiAbpAIManagement();
+        builder.ConfigureSufiAI();
         builder.ConfigureSufiAbpCalendar();
 
         /* Configure your own tables/entities inside here */

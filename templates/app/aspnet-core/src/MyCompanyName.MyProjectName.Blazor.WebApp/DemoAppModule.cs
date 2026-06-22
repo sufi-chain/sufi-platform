@@ -10,8 +10,8 @@ using Microsoft.OpenApi;
 // </TEMPLATE-REMOVE>
 using SufiChain.SufiAbp.Account;
 using SufiChain.SufiAbp.Account.Blazor;
-using SufiChain.SufiAbp.AIManagement;
-using SufiChain.SufiAbp.AIManagement.Blazor;
+using SufiChain.SufiAbp.AI;
+using SufiChain.SufiAbp.AI.Blazor;
 using SufiChain.SufiAbp.AspNetCore.Authentication.OAuth;
 using SufiChain.SufiAbp.AspNetCore.Authentication.OpenIdConnect;
 using SufiChain.SufiAbp.AspNetCore.Authentication.Server;
@@ -204,9 +204,9 @@ namespace MyCompanyName.MyProjectName;
     // KomTheme using SufiBlazor design system
     // =========================================================================
     typeof(KomThemeBlazorServerModule),
-    typeof(SufiAbpAIManagementBlazorModule),
-    typeof(SufiAbpAIManagementApplicationModule),
-    typeof(SufiAbpAIManagementHttpApiModule),
+    typeof(SufiAIBlazorModule),
+    typeof(SufiAIApplicationModule),
+    typeof(SufiAIHttpApiModule),
     // =========================================================================
     // Calendar
     // =========================================================================

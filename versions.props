@@ -16,7 +16,7 @@
 
   <!-- Nedded in Hosts -->
   <PropertyGroup>
-    <SufiVersion>1.0.0-alpha.6.5</SufiVersion>
+    <SufiVersion>1.0.0-alpha.7.0</SufiVersion>
     <KomThemeVersion>1.0.0-rc.1.4</KomThemeVersion>
   </PropertyGroup>
 

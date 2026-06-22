@@ -4,7 +4,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi;
-using SufiChain.SufiAbp.AIManagement;
+using SufiChain.SufiAbp.AI;
 // <TEMPLATE-REMOVE IF-NOT="module:audit-logging">
 using SufiChain.SufiAbp.AuditLogging;
 // </TEMPLATE-REMOVE>
@@ -114,8 +114,8 @@ namespace MyCompanyName.MyProjectName
         typeof(SufiAbpSettingManagementApplicationModule),
         typeof(SufiAbpSettingManagementEntityFrameworkCoreModule),
         typeof(SufiAbpSettingManagementHttpApiModule),
-        typeof(SufiAbpAIManagementApplicationModule),
-        typeof(SufiAbpAIManagementHttpApiModule),
+        typeof(SufiAIApplicationModule),
+        typeof(SufiAIHttpApiModule),
         // <TEMPLATE-REMOVE IF-NOT="module:localization-management">
         // Localization Management Module (backend services for translation editor)
         typeof(SufiAbpLocalizationManagementApplicationModule),

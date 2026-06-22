@@ -15,8 +15,8 @@
     <ProjectReference Include="..\..\framework\SufiChain.SufiAbp.UI.Blazor.Server\SufiChain.SufiAbp.UI.Blazor.Server.csproj" />
     <ProjectReference Include="..\..\framework\SufiChain.SufiAbp.UI.Blazor.WebAssembly\SufiChain.SufiAbp.UI.Blazor.WebAssembly.csproj" />
     <ProjectReference Include="..\..\modules\account\src\SufiChain.SufiAbp.Account.Blazor\SufiChain.SufiAbp.Account.Blazor.csproj" />
-    <ProjectReference Include="..\..\modules\ai-management\src\SufiChain.SufiAbp.AIManagement.Blazor\SufiChain.SufiAbp.AIManagement.Blazor.csproj" />
-    <ProjectReference Include="..\..\modules\ai-management\src\SufiChain.SufiAbp.AIManagement.Blazor.WebAssembly\SufiChain.SufiAbp.AIManagement.Blazor.WebAssembly.csproj" />
+    <ProjectReference Include="..\..\modules\ai\src\SufiChain.SufiAbp.AI.Blazor\SufiChain.SufiAbp.AI.Blazor.csproj" />
+    <ProjectReference Include="..\..\modules\ai\src\SufiChain.SufiAbp.AI.Blazor.WebAssembly\SufiChain.SufiAbp.AI.Blazor.WebAssembly.csproj" />
     <ProjectReference Include="..\..\modules\audit-logging\src\SufiChain.SufiAbp.AuditLogging.Blazor\SufiChain.SufiAbp.AuditLogging.Blazor.csproj" />
     <ProjectReference Include="..\..\modules\background-jobs\src\SufiChain.SufiAbp.BackgroundJobs.Blazor\SufiChain.SufiAbp.BackgroundJobs.Blazor.csproj" />
     <ProjectReference Include="..\..\modules\feature-management\src\SufiChain.SufiAbp.FeatureManagement.Blazor\SufiChain.SufiAbp.FeatureManagement.Blazor.csproj" />

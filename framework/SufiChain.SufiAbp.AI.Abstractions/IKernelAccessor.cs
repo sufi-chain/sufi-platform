@@ -7,7 +7,7 @@ namespace SufiChain.SufiAbp.AI;
 /// <para>
 /// Framework/advanced use only: this contract exposes the
 /// <c>Microsoft.SemanticKernel</c> SDK surface. Product modules must not consume it;
-/// they use <see cref="ISufiAbpAIChatService"/> and the other SufiAbp DTO-based
+/// they use <see cref="ISufiAIChatService"/> and the other SufiAbp DTO-based
 /// contracts instead.
 /// </para>
 /// </summary>

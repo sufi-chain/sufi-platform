@@ -21,8 +21,8 @@ public class CalendarGetCurrentTimeTool : CalendarAIToolBase
 
     public override string ParameterSchema => CalendarAIToolSchemas.GetCurrentTime;
 
-    public override async Task<SufiAbpAIToolExecutionResult> ExecuteAsync(
-        SufiAbpAIToolExecutionContext context,
+    public override async Task<SufiAIToolExecutionResult> ExecuteAsync(
+        SufiAIToolExecutionContext context,
         Dictionary<string, object?> parameters,
         CancellationToken cancellationToken = default)
     {
@@ -30,7 +30,7 @@ public class CalendarGetCurrentTimeTool : CalendarAIToolBase
         return await SuccessAsync(await GetCurrentTimeAsync(input.CalendarId, input.TimeZoneId, cancellationToken));
     }
 
-    [SufiAbpAITool(CalendarAIToolNames.GetCurrentTime, "Returns the current UTC time plus current local date/time, weekday, timezone, and Persian/Jalali date for a calendar timezone or explicit timezone. Use this before interpreting relative-date words, next working-day requests, Farsi date phrases, Persian calendar dates, next Saturday, today, or tomorrow. Prefer calendarId so the timezone is inherited from the calendar. Do not calculate today's Jalali date from memory.")]
+    [SufiAITool(CalendarAIToolNames.GetCurrentTime, "Returns the current UTC time plus current local date/time, weekday, timezone, and Persian/Jalali date for a calendar timezone or explicit timezone. Use this before interpreting relative-date words, next working-day requests, Farsi date phrases, Persian calendar dates, next Saturday, today, or tomorrow. Prefer calendarId so the timezone is inherited from the calendar. Do not calculate today's Jalali date from memory.")]
     public virtual async Task<object> GetCurrentTimeAsync(
         Guid? calendarId = null,
         string? timeZoneId = null,

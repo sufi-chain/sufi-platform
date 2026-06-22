@@ -30,7 +30,7 @@
     <ProjectReference Include="..\..\..\..\..\modules\file-manager\src\SufiChain.SufiAbp.FileManager.MongoDB\SufiChain.SufiAbp.FileManager.MongoDB.csproj" />
     <ProjectReference Include="..\..\..\..\..\modules\localization-management\src\SufiChain.SufiAbp.LocalizationManagement.MongoDB\SufiChain.SufiAbp.LocalizationManagement.MongoDB.csproj" />
     <ProjectReference Include="..\..\..\..\..\modules\short-link-generator\src\SufiChain.SufiAbp.ShortLinkGenerator.MongoDB\SufiChain.SufiAbp.ShortLinkGenerator.MongoDB.csproj" />
-    <ProjectReference Include="..\..\..\..\..\modules\ai-management\src\SufiChain.SufiAbp.AIManagement.MongoDB\SufiChain.SufiAbp.AIManagement.MongoDB.csproj" />
+    <ProjectReference Include="..\..\..\..\..\modules\ai\src\SufiChain.SufiAbp.AI.MongoDB\SufiChain.SufiAbp.AI.MongoDB.csproj" />
   </ItemGroup>
   </TEMPLATE-REMOVE>
 
@@ -50,7 +50,7 @@
     <PackageReference Include="SufiChain.SufiAbp.FileManager.MongoDB" Version="$(SufiVersion)" />
     <PackageReference Include="SufiChain.SufiAbp.LocalizationManagement.MongoDB" Version="$(SufiVersion)" />
     <PackageReference Include="SufiChain.SufiAbp.ShortLinkGenerator.MongoDB" Version="$(SufiVersion)" />
-    <PackageReference Include="SufiChain.SufiAbp.AIManagement.MongoDB" Version="$(SufiVersion)" />
+    <PackageReference Include="SufiChain.SufiAbp.AI.MongoDB" Version="$(SufiVersion)" />
   </ItemGroup>
   </TEMPLATE-ONLY>
 

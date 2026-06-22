@@ -71,7 +71,7 @@
     <ProjectReference Include="..\..\..\..\..\modules\calendar\src\SufiChain.SufiAbp.Calendar.EntityFrameworkCore\SufiChain.SufiAbp.Calendar.EntityFrameworkCore.csproj" />
     <ProjectReference Include="..\..\..\..\..\modules\tags-management\src\SufiChain.SufiAbp.TagsManagement.EntityFrameworkCore\SufiChain.SufiAbp.TagsManagement.EntityFrameworkCore.csproj" />
     <ProjectReference Include="..\..\..\..\..\modules\menu-management\src\SufiChain.SufiAbp.MenuManagement.EntityFrameworkCore\SufiChain.SufiAbp.MenuManagement.EntityFrameworkCore.csproj" />
-    <ProjectReference Include="..\..\..\..\..\modules\ai-management\src\SufiChain.SufiAbp.AIManagement.EntityFrameworkCore\SufiChain.SufiAbp.AIManagement.EntityFrameworkCore.csproj" />
+    <ProjectReference Include="..\..\..\..\..\modules\ai\src\SufiChain.SufiAbp.AI.EntityFrameworkCore\SufiChain.SufiAbp.AI.EntityFrameworkCore.csproj" />
   </ItemGroup>
   </TEMPLATE-REMOVE>
 
@@ -93,7 +93,7 @@
     <PackageReference Include="SufiChain.SufiAbp.Calendar.EntityFrameworkCore" Version="$(SufiVersion)" />
     <PackageReference Include="SufiChain.SufiAbp.TagsManagement.EntityFrameworkCore" Version="$(SufiVersion)" />
     <PackageReference Include="SufiChain.SufiAbp.MenuManagement.EntityFrameworkCore" Version="$(SufiVersion)" />
-    <PackageReference Include="SufiChain.SufiAbp.AIManagement.EntityFrameworkCore" Version="$(SufiVersion)" />
+    <PackageReference Include="SufiChain.SufiAbp.AI.EntityFrameworkCore" Version="$(SufiVersion)" />
   </ItemGroup>
   </TEMPLATE-ONLY>
 

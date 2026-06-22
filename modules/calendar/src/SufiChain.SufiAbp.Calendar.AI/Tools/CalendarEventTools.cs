@@ -18,8 +18,8 @@ public class CalendarCreateEventTool : CalendarAIToolBase
 
     public override string ParameterSchema => CalendarAIToolSchemas.CreateEvent;
 
-    public override async Task<SufiAbpAIToolExecutionResult> ExecuteAsync(
-        SufiAbpAIToolExecutionContext context,
+    public override async Task<SufiAIToolExecutionResult> ExecuteAsync(
+        SufiAIToolExecutionContext context,
         Dictionary<string, object?> parameters,
         CancellationToken cancellationToken = default)
     {
@@ -39,7 +39,7 @@ public class CalendarCreateEventTool : CalendarAIToolBase
             cancellationToken));
     }
 
-    [SufiAbpAITool(CalendarAIToolNames.CreateEvent, "Creates a calendar event after resolving only the data required for scheduling. Users may ask in Farsi; when they do, interpret Farsi relative-date words and report dates in the Jalali calendar unless the user asks otherwise. If calendarId is unknown, call calendar.list_calendars and use the default or first matching calendar when the user says personal/default/first calendar. If the user says default timezone, inherit the selected calendar TimeZoneId; do not ask a separate timezone question. Before interpreting relative dates, Persian calendar dates, or next working-day requests, call calendar.get_current_time. A title may be formed from the user's subject. If date, start, or end/duration is missing, ask one short natural question. Convert local times to UTC before calling. Report success only from the returned event id/times.")]
+    [SufiAITool(CalendarAIToolNames.CreateEvent, "Creates a calendar event after resolving only the data required for scheduling. Users may ask in Farsi; when they do, interpret Farsi relative-date words and report dates in the Jalali calendar unless the user asks otherwise. If calendarId is unknown, call calendar.list_calendars and use the default or first matching calendar when the user says personal/default/first calendar. If the user says default timezone, inherit the selected calendar TimeZoneId; do not ask a separate timezone question. Before interpreting relative dates, Persian calendar dates, or next working-day requests, call calendar.get_current_time. A title may be formed from the user's subject. If date, start, or end/duration is missing, ask one short natural question. Convert local times to UTC before calling. Report success only from the returned event id/times.")]
     public virtual async Task<CalendarAIEventResult> CreateEventAsync(
         Guid calendarId,
         string title,
@@ -88,8 +88,8 @@ public class CalendarSearchEventsTool : CalendarAIToolBase
 
     public override string ParameterSchema => CalendarAIToolSchemas.SearchEvents;
 
-    public override async Task<SufiAbpAIToolExecutionResult> ExecuteAsync(
-        SufiAbpAIToolExecutionContext context,
+    public override async Task<SufiAIToolExecutionResult> ExecuteAsync(
+        SufiAIToolExecutionContext context,
         Dictionary<string, object?> parameters,
         CancellationToken cancellationToken = default)
     {
@@ -103,7 +103,7 @@ public class CalendarSearchEventsTool : CalendarAIToolBase
             cancellationToken));
     }
 
-    [SufiAbpAITool(CalendarAIToolNames.SearchEvents, "Searches existing calendar events and returns event ids needed for update, move, cancel, or delete requests. Use this before changing an event when the user gives only a title, day, or conversational reference. Before converting relative dates or Persian dates into fromUtc/toUtc, call calendar.get_current_time using the selected calendar timezone. Prefer a narrow date range from the conversation and a titleContains filter. If multiple likely matches are returned, ask the user to choose; do not invent an event id.")]
+    [SufiAITool(CalendarAIToolNames.SearchEvents, "Searches existing calendar events and returns event ids needed for update, move, cancel, or delete requests. Use this before changing an event when the user gives only a title, day, or conversational reference. Before converting relative dates or Persian dates into fromUtc/toUtc, call calendar.get_current_time using the selected calendar timezone. Prefer a narrow date range from the conversation and a titleContains filter. If multiple likely matches are returned, ask the user to choose; do not invent an event id.")]
     public virtual async Task<object> SearchEventsAsync(
         Guid? calendarId = null,
         DateTime? fromUtc = null,
@@ -156,8 +156,8 @@ public class CalendarMoveEventTool : CalendarAIToolBase
 
     public override string ParameterSchema => CalendarAIToolSchemas.MoveEvent;
 
-    public override async Task<SufiAbpAIToolExecutionResult> ExecuteAsync(
-        SufiAbpAIToolExecutionContext context,
+    public override async Task<SufiAIToolExecutionResult> ExecuteAsync(
+        SufiAIToolExecutionContext context,
         Dictionary<string, object?> parameters,
         CancellationToken cancellationToken = default)
     {
@@ -165,7 +165,7 @@ public class CalendarMoveEventTool : CalendarAIToolBase
         return await SuccessAsync(await MoveEventAsync(input.EventId, input.MovedStartUtc, input.MovedEndUtc, cancellationToken));
     }
 
-    [SufiAbpAITool(CalendarAIToolNames.MoveEvent, "Moves a normal non-recurring calendar event only when eventId is known from tool results, not guesses. Users may ask in Farsi; when they do, interpret Farsi relative-date words and report dates in the Jalali calendar unless the user asks otherwise. If the user identifies the event by title or conversation, first call calendar.search_events. Before interpreting relative dates or next working-day requests, call calendar.get_current_time. Preserve title, timezone, calendar, status, and other details; preserve the original duration unless the user asks otherwise. Convert requested local move time to UTC using the event or calendar timezone. Report success only from the returned event.")]
+    [SufiAITool(CalendarAIToolNames.MoveEvent, "Moves a normal non-recurring calendar event only when eventId is known from tool results, not guesses. Users may ask in Farsi; when they do, interpret Farsi relative-date words and report dates in the Jalali calendar unless the user asks otherwise. If the user identifies the event by title or conversation, first call calendar.search_events. Before interpreting relative dates or next working-day requests, call calendar.get_current_time. Preserve title, timezone, calendar, status, and other details; preserve the original duration unless the user asks otherwise. Convert requested local move time to UTC using the event or calendar timezone. Report success only from the returned event.")]
     public virtual async Task<CalendarAIEventResult> MoveEventAsync(
         Guid eventId,
         DateTime movedStartUtc,
@@ -211,8 +211,8 @@ public class CalendarCancelEventTool : CalendarAIToolBase
 
     public override string ParameterSchema => CalendarAIToolSchemas.CancelEvent;
 
-    public override async Task<SufiAbpAIToolExecutionResult> ExecuteAsync(
-        SufiAbpAIToolExecutionContext context,
+    public override async Task<SufiAIToolExecutionResult> ExecuteAsync(
+        SufiAIToolExecutionContext context,
         Dictionary<string, object?> parameters,
         CancellationToken cancellationToken = default)
     {
@@ -220,7 +220,7 @@ public class CalendarCancelEventTool : CalendarAIToolBase
         return await SuccessAsync(await CancelEventAsync(input.EventId, cancellationToken));
     }
 
-    [SufiAbpAITool(CalendarAIToolNames.CancelEvent, "Cancels a normal calendar event by setting its status to Cancelled only when eventId is known from tool results, not guesses. If the user identifies the event by title or conversation, first call calendar.search_events. If the user asks to reschedule, create or move the replacement only after this tool returns success. Report success only from returned tool data.")]
+    [SufiAITool(CalendarAIToolNames.CancelEvent, "Cancels a normal calendar event by setting its status to Cancelled only when eventId is known from tool results, not guesses. If the user identifies the event by title or conversation, first call calendar.search_events. If the user asks to reschedule, create or move the replacement only after this tool returns success. Report success only from returned tool data.")]
     public virtual async Task<CalendarAIEventResult> CancelEventAsync(
         Guid eventId,
         CancellationToken cancellationToken = default)
@@ -264,8 +264,8 @@ public class CalendarMoveOccurrenceTool : CalendarAIToolBase
 
     public override string ParameterSchema => CalendarAIToolSchemas.MoveOccurrence;
 
-    public override async Task<SufiAbpAIToolExecutionResult> ExecuteAsync(
-        SufiAbpAIToolExecutionContext context,
+    public override async Task<SufiAIToolExecutionResult> ExecuteAsync(
+        SufiAIToolExecutionContext context,
         Dictionary<string, object?> parameters,
         CancellationToken cancellationToken = default)
     {
@@ -279,7 +279,7 @@ public class CalendarMoveOccurrenceTool : CalendarAIToolBase
             cancellationToken));
     }
 
-    [SufiAbpAITool(CalendarAIToolNames.MoveOccurrence, "Moves a recurring event occurrence only when eventId and originalStartUtc are known from tool results, not guesses. Users may ask in Farsi; when they do, interpret Farsi relative-date words and report dates in the Jalali calendar unless the user asks otherwise. If the user identifies the event by title or conversation, first call calendar.search_events. Before interpreting relative dates or next working-day requests, call calendar.get_current_time. Preserve the original duration unless the user asks otherwise. Convert requested local move time to UTC using the event or calendar timezone. Report success only from the returned event.")]
+    [SufiAITool(CalendarAIToolNames.MoveOccurrence, "Moves a recurring event occurrence only when eventId and originalStartUtc are known from tool results, not guesses. Users may ask in Farsi; when they do, interpret Farsi relative-date words and report dates in the Jalali calendar unless the user asks otherwise. If the user identifies the event by title or conversation, first call calendar.search_events. Before interpreting relative dates or next working-day requests, call calendar.get_current_time. Preserve the original duration unless the user asks otherwise. Convert requested local move time to UTC using the event or calendar timezone. Report success only from the returned event.")]
     public virtual async Task<CalendarAIEventResult> MoveOccurrenceAsync(
         Guid eventId,
         DateTime originalStartUtc,
@@ -315,8 +315,8 @@ public class CalendarCancelOccurrenceTool : CalendarAIToolBase
 
     public override string ParameterSchema => CalendarAIToolSchemas.CancelOccurrence;
 
-    public override async Task<SufiAbpAIToolExecutionResult> ExecuteAsync(
-        SufiAbpAIToolExecutionContext context,
+    public override async Task<SufiAIToolExecutionResult> ExecuteAsync(
+        SufiAIToolExecutionContext context,
         Dictionary<string, object?> parameters,
         CancellationToken cancellationToken = default)
     {
@@ -328,7 +328,7 @@ public class CalendarCancelOccurrenceTool : CalendarAIToolBase
             cancellationToken));
     }
 
-    [SufiAbpAITool(CalendarAIToolNames.CancelOccurrence, "Cancels a recurring event occurrence only when eventId and originalStartUtc are known from tool results, not guesses. If the user identifies the event by title or conversation, first call calendar.search_events. If the user wants to reschedule, create or move the replacement only after the cancel/move tool returns success. Report success only from returned tool data.")]
+    [SufiAITool(CalendarAIToolNames.CancelOccurrence, "Cancels a recurring event occurrence only when eventId and originalStartUtc are known from tool results, not guesses. If the user identifies the event by title or conversation, first call calendar.search_events. If the user wants to reschedule, create or move the replacement only after the cancel/move tool returns success. Report success only from returned tool data.")]
     public virtual async Task<CalendarAIEventResult> CancelOccurrenceAsync(
         Guid eventId,
         DateTime originalStartUtc,

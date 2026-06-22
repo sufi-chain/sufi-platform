@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk.Razor">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <RootNamespace>SufiChain.SufiAbp.AI.Blazor.WebAssembly</RootNamespace>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\SufiChain.SufiAbp.AI.Blazor\SufiChain.SufiAbp.AI.Blazor.csproj" />
+    <ProjectReference Include="..\SufiChain.SufiAbp.AI.HttpApi.Client\SufiChain.SufiAbp.AI.HttpApi.Client.csproj" />
+  </ItemGroup>
+
+</Project>

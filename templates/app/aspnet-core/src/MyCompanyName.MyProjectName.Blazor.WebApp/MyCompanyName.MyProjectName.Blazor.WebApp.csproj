@@ -76,9 +76,9 @@
 		<ProjectReference Include="..\..\..\..\..\modules\file-manager\src\SufiChain.SufiAbp.FileManager.HttpApi\SufiChain.SufiAbp.FileManager.HttpApi.csproj" />
 
 		<!-- AI Management Module (UI + Application + HttpApi) -->
-		<ProjectReference Include="..\..\..\..\..\modules\ai-management\src\SufiChain.SufiAbp.AIManagement.Blazor\SufiChain.SufiAbp.AIManagement.Blazor.csproj" />
-		<ProjectReference Include="..\..\..\..\..\modules\ai-management\src\SufiChain.SufiAbp.AIManagement.Application\SufiChain.SufiAbp.AIManagement.Application.csproj" />
-		<ProjectReference Include="..\..\..\..\..\modules\ai-management\src\SufiChain.SufiAbp.AIManagement.HttpApi\SufiChain.SufiAbp.AIManagement.HttpApi.csproj" />
+		<ProjectReference Include="..\..\..\..\..\modules\ai\src\SufiChain.SufiAbp.AI.Blazor\SufiChain.SufiAbp.AI.Blazor.csproj" />
+		<ProjectReference Include="..\..\..\..\..\modules\ai\src\SufiChain.SufiAbp.AI.Application\SufiChain.SufiAbp.AI.Application.csproj" />
+		<ProjectReference Include="..\..\..\..\..\modules\ai\src\SufiChain.SufiAbp.AI.HttpApi\SufiChain.SufiAbp.AI.HttpApi.csproj" />
 		<!-- Calendar Module (Admin UI, Public UI, Application, HttpApi) -->
 		<ProjectReference Include="..\..\..\..\..\modules\calendar\src\SufiChain.SufiAbp.Calendar.Blazor\SufiChain.SufiAbp.Calendar.Blazor.csproj" />
 		<ProjectReference Include="..\..\..\..\..\modules\calendar\src\SufiChain.SufiAbp.Calendar.Blazor.Public\SufiChain.SufiAbp.Calendar.Blazor.Public.csproj" />
@@ -148,9 +148,9 @@
 		<PackageReference Include="SufiChain.SufiAbp.FileManager.RichTextEditor" Version="$(SufiVersion)" />
 		<PackageReference Include="SufiChain.SufiAbp.FileManager.Application" Version="$(SufiVersion)" />
 		<PackageReference Include="SufiChain.SufiAbp.FileManager.HttpApi" Version="$(SufiVersion)" />
-		<PackageReference Include="SufiChain.SufiAbp.AIManagement.Blazor" Version="$(SufiVersion)" />
-		<PackageReference Include="SufiChain.SufiAbp.AIManagement.Application" Version="$(SufiVersion)" />
-		<PackageReference Include="SufiChain.SufiAbp.AIManagement.HttpApi" Version="$(SufiVersion)" />
+		<PackageReference Include="SufiChain.SufiAbp.AI.Blazor" Version="$(SufiVersion)" />
+		<PackageReference Include="SufiChain.SufiAbp.AI.Application" Version="$(SufiVersion)" />
+		<PackageReference Include="SufiChain.SufiAbp.AI.HttpApi" Version="$(SufiVersion)" />
 		<PackageReference Include="SufiChain.SufiAbp.Calendar.Blazor" Version="$(SufiVersion)" />
 		<PackageReference Include="SufiChain.SufiAbp.Calendar.Blazor.Public" Version="$(SufiVersion)" />
 		<PackageReference Include="SufiChain.SufiAbp.Calendar.AI" Version="$(SufiVersion)" />

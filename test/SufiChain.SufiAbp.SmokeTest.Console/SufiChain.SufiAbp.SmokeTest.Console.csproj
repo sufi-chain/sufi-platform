@@ -22,9 +22,9 @@
     <ProjectReference Include="..\..\framework\SufiChain.SufiAbp.Swashbuckle\SufiChain.SufiAbp.Swashbuckle.csproj" />
     <ProjectReference Include="..\..\modules\account\src\SufiChain.SufiAbp.Account.Application\SufiChain.SufiAbp.Account.Application.csproj" />
     <ProjectReference Include="..\..\modules\account\src\SufiChain.SufiAbp.Account.HttpApi\SufiChain.SufiAbp.Account.HttpApi.csproj" />
-    <ProjectReference Include="..\..\modules\ai-management\src\SufiChain.SufiAbp.AIManagement.Application\SufiChain.SufiAbp.AIManagement.Application.csproj" />
-    <ProjectReference Include="..\..\modules\ai-management\src\SufiChain.SufiAbp.AIManagement.HttpApi\SufiChain.SufiAbp.AIManagement.HttpApi.csproj" />
-    <ProjectReference Include="..\..\modules\ai-management\src\SufiChain.SufiAbp.AIManagement.MongoDB\SufiChain.SufiAbp.AIManagement.MongoDB.csproj" />
+    <ProjectReference Include="..\..\modules\ai\src\SufiChain.SufiAbp.AI.Application\SufiChain.SufiAbp.AI.Application.csproj" />
+    <ProjectReference Include="..\..\modules\ai\src\SufiChain.SufiAbp.AI.HttpApi\SufiChain.SufiAbp.AI.HttpApi.csproj" />
+    <ProjectReference Include="..\..\modules\ai\src\SufiChain.SufiAbp.AI.MongoDB\SufiChain.SufiAbp.AI.MongoDB.csproj" />
     <ProjectReference Include="..\..\modules\audit-logging\src\SufiChain.SufiAbp.AuditLogging.Application\SufiChain.SufiAbp.AuditLogging.Application.csproj" />
     <ProjectReference Include="..\..\modules\audit-logging\src\SufiChain.SufiAbp.AuditLogging.HttpApi\SufiChain.SufiAbp.AuditLogging.HttpApi.csproj" />
     <ProjectReference Include="..\..\modules\audit-logging\src\SufiChain.SufiAbp.AuditLogging.MongoDB\SufiChain.SufiAbp.AuditLogging.MongoDB.csproj" />

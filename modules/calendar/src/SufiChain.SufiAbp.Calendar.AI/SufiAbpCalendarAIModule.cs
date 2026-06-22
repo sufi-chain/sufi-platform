@@ -10,7 +10,7 @@ namespace SufiChain.SufiAbp.Calendar;
 /// </summary>
 [DependsOn(
     typeof(SufiAbpCalendarApplicationModule),
-    typeof(SufiAbpAIAbstractionsModule)
+    typeof(SufiAIAbstractionsModule)
 )]
 public class SufiAbpCalendarAIModule : AbpModule
 {

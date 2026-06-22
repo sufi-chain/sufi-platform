@@ -1,0 +1,71 @@
+@inherits AIComponentBase
+
+<SbDialog Open="@Open" OpenChanged="@SetOpenAsync" Size="SbDialogSize.Md" Title="@(Server == null ? L["NewMCPServer"] : L["EditMCPServer"])" AllowDropdownOverflow="true">
+    <ChildContent>
+        <SbForm>
+            <SbStack Direction="SbStackDirection.Column" Gap="3">
+                
+                <SbFormField Label="@L["Name"]" Required="true">
+                    <SbTextField @bind-Value="_name" 
+                                 Placeholder="@L["EnterServerName"]"
+                                 FullWidth="true" />
+                </SbFormField>
+                
+                <SbFormField Label="@L["TransportType"]" Required="true">
+                    <SbSimpleSelect TValue="string"
+                              Value="_transportType"
+                              ValueChanged="@OnTransportTypeChanged"
+                              Disabled="@(Server != null)">
+						<SbSelectOption TValue="string" Value="@("STDIO")">STDIO</SbSelectOption>
+						<SbSelectOption TValue="string" Value="@("SSE")">SSE</SbSelectOption>
+						<SbSelectOption TValue="string" Value="@("HTTP")">HTTP</SbSelectOption>
+                    </SbSimpleSelect>
+                </SbFormField>
+                
+                @if (_transportType == "STDIO")
+                {
+                    <SbFormField Label="@L["Command"]" Required="true">
+                        <SbTextField @bind-Value="_command" 
+                                     Placeholder="npx"
+                                     FullWidth="true" />
+                    </SbFormField>
+                    
+                    <SbFormField Label="@L["Arguments"]">
+                        <SbTextField @bind-Value="_argumentsJson" 
+                                     Placeholder='["modelcontextprotocol/server-filesystem", "/path"]'
+                                     FullWidth="true"
+                                     Multiline="true"
+                                     Rows="3" />
+                    </SbFormField>
+                }
+                else
+                {
+                    <SbFormField Label="@L["Endpoint"]" Required="true">
+                        <SbTextField @bind-Value="_endpoint" 
+                                     Placeholder="https://mcp-server.example.com"
+                                     FullWidth="true" />
+                    </SbFormField>
+                }
+                
+                <SbFormField Label="@L["Metadata"]">
+                    <SbTextField @bind-Value="_metadataJson" 
+                                 Placeholder='{"apiKey": "..."}'
+                                 FullWidth="true"
+                                 Multiline="true"
+                                 Rows="3" />
+                </SbFormField>
+                
+            </SbStack>
+        </SbForm>
+    </ChildContent>
+    <Footer>
+        <SbStack Direction="SbStackDirection.Row" Gap="2" Justify="SbJustify.End">
+            <SbButton OnClick="@CancelAsync">@L["Cancel"]</SbButton>
+            <SbButton Color="SbColor.Primary"
+                      OnClick="@SaveAsync"
+                      Loading="IsOperationLoading(LoadingKeys.Save)">
+                @L["Save"]
+            </SbButton>
+        </SbStack>
+    </Footer>
+</SbDialog>

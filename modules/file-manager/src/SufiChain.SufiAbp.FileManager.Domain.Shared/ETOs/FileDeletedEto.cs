@@ -47,7 +47,7 @@ public class FileDeletedEto : IMultiTenant
     public DateTime DeletedAt { get; set; }
     
     /// <summary>
-    /// File structure key (e.g., "AIManagement.ProcessedAudio", "General")
+    /// File structure key (e.g., "AI.ProcessedAudio", "General")
     /// </summary>
     public string? StructureKey { get; set; }
     

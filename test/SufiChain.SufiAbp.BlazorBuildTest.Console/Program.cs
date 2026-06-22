@@ -1,5 +1,5 @@
 using SufiChain.SufiAbp.Account.Blazor;
-using SufiChain.SufiAbp.AIManagement.Blazor;
+using SufiChain.SufiAbp.AI.Blazor;
 using SufiChain.SufiAbp.AuditLogging.Blazor;
 using SufiChain.SufiAbp.BackgroundJobs.Blazor;
 using SufiChain.SufiAbp.FeatureManagement.Blazor;
@@ -20,7 +20,7 @@ public static class Program
         var moduleTypes = new[]
         {
             typeof(SufiAbpAccountBlazorModule),
-            typeof(SufiAbpAIManagementBlazorModule),
+            typeof(SufiAIBlazorModule),
             typeof(SufiAbpAuditLoggingBlazorModule),
             typeof(SufiAbpBackgroundJobsBlazorModule),
             typeof(SufiAbpFeatureManagementBlazorModule),

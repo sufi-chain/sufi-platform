@@ -36,8 +36,8 @@
     <ProjectReference Include="..\..\..\..\..\modules\file-manager\src\SufiChain.SufiAbp.FileManager.HttpApi\SufiChain.SufiAbp.FileManager.HttpApi.csproj" />
     <ProjectReference Include="..\..\..\..\..\modules\file-manager\src\SufiChain.SufiAbp.FileManager.EntityFrameworkCore\SufiChain.SufiAbp.FileManager.EntityFrameworkCore.csproj" />
     <!-- AI Management Module (Application services and API) -->
-    <ProjectReference Include="..\..\..\..\..\modules\ai-management\src\SufiChain.SufiAbp.AIManagement.Application\SufiChain.SufiAbp.AIManagement.Application.csproj" />
-    <ProjectReference Include="..\..\..\..\..\modules\ai-management\src\SufiChain.SufiAbp.AIManagement.HttpApi\SufiChain.SufiAbp.AIManagement.HttpApi.csproj" />
+    <ProjectReference Include="..\..\..\..\..\modules\ai\src\SufiChain.SufiAbp.AI.Application\SufiChain.SufiAbp.AI.Application.csproj" />
+    <ProjectReference Include="..\..\..\..\..\modules\ai\src\SufiChain.SufiAbp.AI.HttpApi\SufiChain.SufiAbp.AI.HttpApi.csproj" />
     <!-- Audit Logging Module (Application services and API) -->
     <ProjectReference Include="..\..\..\..\..\modules\audit-logging\src\SufiChain.SufiAbp.AuditLogging.Application\SufiChain.SufiAbp.AuditLogging.Application.csproj" />
     <ProjectReference Include="..\..\..\..\..\modules\audit-logging\src\SufiChain.SufiAbp.AuditLogging.HttpApi\SufiChain.SufiAbp.AuditLogging.HttpApi.csproj" />
@@ -78,8 +78,8 @@
     <PackageReference Include="SufiChain.SufiAbp.FileManager.Application" Version="$(SufiVersion)" />
     <PackageReference Include="SufiChain.SufiAbp.FileManager.HttpApi" Version="$(SufiVersion)" />
     <PackageReference Include="SufiChain.SufiAbp.FileManager.EntityFrameworkCore" Version="$(SufiVersion)" />
-    <PackageReference Include="SufiChain.SufiAbp.AIManagement.Application" Version="$(SufiVersion)" />
-    <PackageReference Include="SufiChain.SufiAbp.AIManagement.HttpApi" Version="$(SufiVersion)" />
+    <PackageReference Include="SufiChain.SufiAbp.AI.Application" Version="$(SufiVersion)" />
+    <PackageReference Include="SufiChain.SufiAbp.AI.HttpApi" Version="$(SufiVersion)" />
     <PackageReference Include="SufiChain.SufiAbp.AuditLogging.Application" Version="$(SufiVersion)" />
     <PackageReference Include="SufiChain.SufiAbp.AuditLogging.HttpApi" Version="$(SufiVersion)" />
     <PackageReference Include="SufiChain.SufiAbp.BackgroundJobs.Application" Version="$(SufiVersion)" />

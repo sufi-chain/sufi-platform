@@ -15,11 +15,11 @@ public class KernelAccessor<TWorkSpace> : IKernelAccessor<TWorkSpace>, ITransien
     public KernelAccessor(IServiceProvider serviceProvider)
     {
         Kernel = serviceProvider.GetKeyedService<Kernel>(
-                SufiAbpAIWorkspaceOptions.GetKernelServiceKeyName(
+                SufiAIWorkspaceOptions.GetKernelServiceKeyName(
                     WorkspaceNameAttribute.GetWorkspaceName<TWorkSpace>()))
                 ??
             serviceProvider.GetKeyedService<Kernel>(
-                SufiAbpAIWorkspaceOptions.GetKernelServiceKeyName(
-                    SufiAbpAIModule.DefaultWorkspaceName));
+                SufiAIWorkspaceOptions.GetKernelServiceKeyName(
+                    SufiAIModule.DefaultWorkspaceName));
     }
 }

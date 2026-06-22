@@ -27,7 +27,7 @@ public class CustomerSupportWorkspace { }
 ### 2. Configure Workspace
 
 ```csharp
-Configure<SufiAbpAIWorkspaceOptions>(options =>
+Configure<SufiAIWorkspaceOptions>(options =>
 {
     options.AddWorkspace("customer-support", ws =>
     {
@@ -70,7 +70,7 @@ public class MyService
 ## Related Packages
 
 - `SufiChain.SufiAbp.AI.Abstractions` - Core interfaces
-- `SufiChain.SufiAbp.AIManagement` - Full AI management module with UI
+- `SufiChain.SufiAbp.AI` - Full AI management module with UI
 
 ## License
 

@@ -14,7 +14,7 @@ public class DefaultKernelAccessor : IKernelAccessor, ITransientDependency
     public DefaultKernelAccessor(IServiceProvider serviceProvider)
     {
         Kernel = serviceProvider.GetKeyedService<Kernel>(
-            SufiAbpAIWorkspaceOptions.GetKernelServiceKeyName(
-                SufiAbpAIModule.DefaultWorkspaceName));
+            SufiAIWorkspaceOptions.GetKernelServiceKeyName(
+                SufiAIModule.DefaultWorkspaceName));
     }
 }

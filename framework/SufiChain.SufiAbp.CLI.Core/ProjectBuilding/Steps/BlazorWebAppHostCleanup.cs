@@ -111,7 +111,7 @@ internal static class BlazorWebAppHostCleanup
             content = RemovePackageReferenceLines(content, "Identity.Application");
             content = RemovePackageReferenceLines(content, "TenantManagement.Application");
             content = RemovePackageReferenceLines(content, "FileManager.Application");
-            content = RemovePackageReferenceLines(content, "AIManagement.Application");
+            content = RemovePackageReferenceLines(content, "AI.Application");
             content = RemovePackageReferenceLines(content, "Calendar.Application");
             content = RemovePackageReferenceLines(content, "ShortLinkGenerator.Application");
             content = RemovePackageReferenceLines(content, "TagsManagement.Application");

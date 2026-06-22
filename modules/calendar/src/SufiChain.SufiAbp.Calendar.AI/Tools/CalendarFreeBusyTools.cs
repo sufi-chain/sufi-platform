@@ -18,8 +18,8 @@ public class CalendarGetFreeBusyTool : CalendarAIToolBase
 
     public override string ParameterSchema => CalendarAIToolSchemas.FreeBusy;
 
-    public override async Task<SufiAbpAIToolExecutionResult> ExecuteAsync(
-        SufiAbpAIToolExecutionContext context,
+    public override async Task<SufiAIToolExecutionResult> ExecuteAsync(
+        SufiAIToolExecutionContext context,
         Dictionary<string, object?> parameters,
         CancellationToken cancellationToken = default)
     {
@@ -27,7 +27,7 @@ public class CalendarGetFreeBusyTool : CalendarAIToolBase
         return await SuccessAsync(await GetFreeBusyAsync(input.CalendarIds, input.FromUtc, input.ToUtc, cancellationToken));
     }
 
-    [SufiAbpAITool(CalendarAIToolNames.GetFreeBusy, "Gets busy blocks and free slots for one or more calendars in a UTC range. Before converting relative dates, Persian dates, or local business-day ranges into UTC, call calendar.get_current_time using the selected calendar timezone.")]
+    [SufiAITool(CalendarAIToolNames.GetFreeBusy, "Gets busy blocks and free slots for one or more calendars in a UTC range. Before converting relative dates, Persian dates, or local business-day ranges into UTC, call calendar.get_current_time using the selected calendar timezone.")]
     public virtual async Task<object> GetFreeBusyAsync(
         List<Guid> calendarIds,
         DateTime fromUtc,
@@ -66,8 +66,8 @@ public class CalendarFindFreeSlotsTool : CalendarAIToolBase
 
     public override string ParameterSchema => CalendarAIToolSchemas.FindFreeSlots;
 
-    public override async Task<SufiAbpAIToolExecutionResult> ExecuteAsync(
-        SufiAbpAIToolExecutionContext context,
+    public override async Task<SufiAIToolExecutionResult> ExecuteAsync(
+        SufiAIToolExecutionContext context,
         Dictionary<string, object?> parameters,
         CancellationToken cancellationToken = default)
     {
@@ -75,7 +75,7 @@ public class CalendarFindFreeSlotsTool : CalendarAIToolBase
         return await SuccessAsync(await FindFreeSlotsAsync(input.CalendarIds, input.FromUtc, input.ToUtc, input.Duration, cancellationToken));
     }
 
-    [SufiAbpAITool(CalendarAIToolNames.FindFreeSlots, "Finds available slots for one or more calendars in a UTC range. Before converting relative dates, Persian dates, or first-working-day requests into UTC, call calendar.get_current_time using the selected calendar timezone.")]
+    [SufiAITool(CalendarAIToolNames.FindFreeSlots, "Finds available slots for one or more calendars in a UTC range. Before converting relative dates, Persian dates, or first-working-day requests into UTC, call calendar.get_current_time using the selected calendar timezone.")]
     public virtual async Task<object> FindFreeSlotsAsync(
         List<Guid> calendarIds,
         DateTime fromUtc,

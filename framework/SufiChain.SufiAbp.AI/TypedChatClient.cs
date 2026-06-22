@@ -10,12 +10,12 @@ public class TypedChatClient<TWorkSpace> : DelegatingChatClient, IChatClient<TWo
     public TypedChatClient(IServiceProvider serviceProvider)
         : base(
             serviceProvider.GetKeyedService<IChatClient>(
-                SufiAbpAIWorkspaceOptions.GetChatClientServiceKeyName(
+                SufiAIWorkspaceOptions.GetChatClientServiceKeyName(
                     WorkspaceNameAttribute.GetWorkspaceName<TWorkSpace>()))
                 ??
             serviceProvider.GetRequiredKeyedService<IChatClient>(
-                SufiAbpAIWorkspaceOptions.GetChatClientServiceKeyName(
-                    SufiAbpAIModule.DefaultWorkspaceName))
+                SufiAIWorkspaceOptions.GetChatClientServiceKeyName(
+                    SufiAIModule.DefaultWorkspaceName))
         )
     {
     }

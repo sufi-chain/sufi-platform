@@ -32,7 +32,7 @@ public static class FileArchivingSettings
     public const string Schedule = Prefix + ".Schedule";
 
     /// <summary>
-    /// Whether to archive files from AIManagement module
+    /// Whether to archive files from AI module
     /// Default: true
     /// </summary>
     public const string ArchiveAIFiles = Prefix + ".ArchiveAIFiles";

@@ -1,5 +1,5 @@
 using Microsoft.Extensions.DependencyInjection;
-using SufiChain.SufiAbp.AIManagement;
+using SufiChain.SufiAbp.AI;
 using SufiChain.SufiAbp.AuditLogging.MongoDB;
 using SufiChain.SufiAbp.BackgroundJobs.MongoDB;
 using SufiChain.SufiAbp.FeatureManagement.MongoDB;
@@ -33,7 +33,7 @@ namespace MyCompanyName.MyProjectName.MongoDB;
     typeof(SufiAbpFileManagerMongoDbModule),
     typeof(SufiAbpLocalizationManagementMongoDbModule),
     typeof(SufiAbpShortLinkGeneratorMongoDbModule),
-    typeof(SufiAbpAIManagementMongoDbModule)
+    typeof(SufiAIMongoDbModule)
 )]
 public class DemoAppMongoDbModule : AbpModule
 {

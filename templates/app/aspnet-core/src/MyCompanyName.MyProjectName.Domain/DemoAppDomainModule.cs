@@ -1,6 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using SufiChain.SufiAbp.AIManagement;
+using SufiChain.SufiAbp.AI;
 using SufiChain.SufiAbp.AuditLogging;
 using SufiChain.SufiAbp.BackgroundJobs;
 using SufiChain.SufiAbp.FeatureManagement;
@@ -33,7 +33,7 @@ namespace MyCompanyName.MyProjectName
         typeof(SufiAbpSettingManagementDomainModule),
         typeof(SufiAbpTenantManagementDomainModule),
         typeof(SufiAbpUsersDomainModule),
-        typeof(SufiAbpAIManagementDomainModule),
+        typeof(SufiAIDomainModule),
         typeof(SufiAbpMessagingModule)
     )]
     public class DemoAppDomainModule : AbpModule

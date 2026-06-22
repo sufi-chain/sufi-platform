@@ -14,8 +14,8 @@ public class ChatClientAccessor : IChatClientAccessor, ITransientDependency
     public ChatClientAccessor(IServiceProvider serviceProvider)
     {
         ChatClient = serviceProvider.GetKeyedService<IChatClient>(
-            SufiAbpAIWorkspaceOptions.GetChatClientServiceKeyName(
-                SufiAbpAIModule.DefaultWorkspaceName));
+            SufiAIWorkspaceOptions.GetChatClientServiceKeyName(
+                SufiAIModule.DefaultWorkspaceName));
     }
 }
 
@@ -29,12 +29,12 @@ public class ChatClientAccessor<TWorkSpace> : IChatClientAccessor<TWorkSpace>, I
     public ChatClientAccessor(IServiceProvider serviceProvider)
     {
         ChatClient = serviceProvider.GetKeyedService<IChatClient>(
-                SufiAbpAIWorkspaceOptions.GetChatClientServiceKeyName(
+                SufiAIWorkspaceOptions.GetChatClientServiceKeyName(
                     WorkspaceNameAttribute.GetWorkspaceName<TWorkSpace>()))
                 ??
             serviceProvider.GetRequiredKeyedService<IChatClient>(
-                SufiAbpAIWorkspaceOptions.GetChatClientServiceKeyName(
-                    SufiAbpAIModule.DefaultWorkspaceName))
+                SufiAIWorkspaceOptions.GetChatClientServiceKeyName(
+                    SufiAIModule.DefaultWorkspaceName))
         ;
     }
 }

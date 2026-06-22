@@ -1,6 +1,6 @@
 // <TEMPLATE-REMOVE IF-NOT="db:efcore">
 using SufiChain.SufiAbp.Account;
-using SufiChain.SufiAbp.AIManagement;
+using SufiChain.SufiAbp.AI;
 using SufiChain.SufiAbp.AuditLogging;
 using SufiChain.SufiAbp.BackgroundJobs;
 using SufiChain.SufiAbp.Calendar;
@@ -45,7 +45,7 @@ namespace MyCompanyName.MyProjectName.DbMigrator;
     typeof(SufiAbpFeatureManagementApplicationModule),
     typeof(SufiAbpPermissionManagementApplicationModule),
     typeof(SufiAbpSettingManagementApplicationModule),
-    typeof(SufiAbpAIManagementApplicationModule)
+    typeof(SufiAIApplicationModule)
 )]
 public class DemoAppDbMigratorModule : AbpModule
 {

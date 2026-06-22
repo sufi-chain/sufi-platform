@@ -24,6 +24,6 @@ public class WorkspaceConfigurationDictionary : Dictionary<string, WorkspaceConf
 
     public void ConfigureDefault(Action<WorkspaceConfiguration>? configureAction = null)
     {
-        Configure(SufiAbpAIModule.DefaultWorkspaceName, configureAction);
+        Configure(SufiAIModule.DefaultWorkspaceName, configureAction);
     }
 }

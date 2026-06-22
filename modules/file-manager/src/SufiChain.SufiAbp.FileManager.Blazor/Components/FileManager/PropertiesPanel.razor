@@ -97,7 +97,7 @@
                     </dd>
                 }
                 
-                @if (IsAiManagementStructure(file))
+                @if (IsAIStructure(file))
                 {
                     <dt>AI Processing</dt>
                     <dd>
@@ -247,14 +247,14 @@
         if (!file.SourceEntityId.HasValue || string.IsNullOrEmpty(file.StructureKey))
             return "#";
 
-        return IsAiManagementStructure(file)
-            ? $"/admin/ai-management/usage-logs?id={file.SourceEntityId}"
+        return IsAIStructure(file)
+            ? $"/admin/ai/usage-logs?id={file.SourceEntityId}"
             : "#";
     }
 
-    private static bool IsAiManagementStructure(FileItemDto file)
+    private static bool IsAIStructure(FileItemDto file)
     {
-        return file.StructureKey?.StartsWith("AIManagement", StringComparison.OrdinalIgnoreCase) == true;
+        return file.StructureKey?.StartsWith("AI", StringComparison.OrdinalIgnoreCase) == true;
     }
 
     private string GetStreamUrl(FileItemDto file)
