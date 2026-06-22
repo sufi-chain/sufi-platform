@@ -1,0 +1,33 @@
+.sufi-calendar-management__filter-label {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+    color: var(--sb-color-text-secondary, #6b7280);
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+.sufi-calendar-management__filter-field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.375rem;
+}
+
+.sufi-calendar-management__filter-field--action {
+    align-self: flex-end;
+}
+
+.sufi-calendar-management__filter-field-label {
+    color: var(--sb-color-text-secondary, #6b7280);
+    font-size: 0.75rem;
+    font-weight: 500;
+    letter-spacing: 0.025em;
+    text-transform: uppercase;
+}
+
+@media (max-width: 768px) {
+    .sufi-calendar-management__filter-field,
+    .sufi-calendar-management__filter-field--action {
+        width: 100%;
+    }
+}

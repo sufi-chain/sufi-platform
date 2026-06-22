@@ -4,6 +4,40 @@
     overflow: hidden;
 }
 
+.sufi-calendar-scheduler__header {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    grid-template-areas: "actions calendar";
+    align-items: center;
+    gap: var(--sb-space-3, 0.75rem);
+    width: 100%;
+    min-width: 0;
+}
+
+.sufi-calendar-scheduler__actions {
+    grid-area: actions;
+}
+
+.sufi-calendar-scheduler__calendar-select {
+    grid-area: calendar;
+    justify-self: end;
+    width: min(100%, 28rem);
+    min-width: 0;
+}
+
+[dir="rtl"] .sufi-calendar-scheduler__header {
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas: "calendar actions";
+}
+
+[dir="rtl"] .sufi-calendar-scheduler__calendar-select {
+    justify-self: start;
+}
+
+[dir="rtl"] .sufi-calendar-scheduler__actions {
+    justify-self: end;
+}
+
 .sufi-calendar-scheduler-inline {
     display: grid;
     gap: 1rem;
@@ -291,6 +325,20 @@
 @media (max-width: 768px) {
     .sufi-calendar-scheduler {
         height: calc(100dvh - 9rem);
+    }
+
+    .sufi-calendar-scheduler__header {
+        grid-template-columns: minmax(0, 1fr);
+        grid-template-areas:
+            "actions"
+            "calendar";
+    }
+
+    .sufi-calendar-scheduler__actions,
+    .sufi-calendar-scheduler__calendar-select,
+    [dir="rtl"] .sufi-calendar-scheduler__actions,
+    [dir="rtl"] .sufi-calendar-scheduler__calendar-select {
+        justify-self: stretch;
     }
 
     .sufi-calendar-scheduler-inline .sufi-calendar-scheduler {

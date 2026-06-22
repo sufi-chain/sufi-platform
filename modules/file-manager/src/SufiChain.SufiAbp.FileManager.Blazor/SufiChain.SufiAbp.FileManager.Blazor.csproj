@@ -49,6 +49,7 @@
       <DocToCopy Include="$(DocsSourceRoot)\SufiAbpFileUploader.md" />
       <DocToCopy Include="$(DocsSourceRoot)\SufiAbpQuickImageUploader.md" />
       <DocToCopy Include="$(DocsSourceRoot)\FileManagerRichTextEditorIntegration.md" />
+      <DocToCopy Include="$(MSBuildThisFileDirectory)wwwroot\docs\FileManagerMarkdownEditorIntegration.md" />
       <DocToCopy Include="$(DocsSourceRoot)\FileStructure.md" />
       <DocToCopyFiltered Include="@(DocToCopy)" Condition="Exists('%(DocToCopy.Identity)')" />
     </ItemGroup>

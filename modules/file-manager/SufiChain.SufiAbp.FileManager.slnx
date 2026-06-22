@@ -17,6 +17,7 @@
     <Project Path="src/SufiChain.SufiAbp.FileManager.HttpApi/SufiChain.SufiAbp.FileManager.HttpApi.csproj" />
     <Project Path="src/SufiChain.SufiAbp.FileManager.MongoDB/SufiChain.SufiAbp.FileManager.MongoDB.csproj" />
     <Project Path="src/SufiChain.SufiAbp.FileManager.RichTextEditor/SufiChain.SufiAbp.FileManager.RichTextEditor.csproj" />
+    <Project Path="src/SufiChain.SufiAbp.FileManager.MarkdownEditor/SufiChain.SufiAbp.FileManager.MarkdownEditor.csproj" />
   </Folder>
   <Folder Name="/test/">
     <Project Path="test/SufiChain.SufiAbp.FileManager.Application.Tests/SufiChain.SufiAbp.FileManager.Application.Tests.csproj" />

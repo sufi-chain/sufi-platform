@@ -23,15 +23,15 @@
         <ChildContent>
             <SbStack Direction="SbStackDirection.Row" Gap="4" Align="SbAlign.Center" Wrap="true" Justify="@SbJustify.SpaceBetween">
                 <SbStack Direction="SbStackDirection.Row" Gap="2" Wrap="true" Align="SbAlign.Center">
-                    <div class="filter-field" @onkeydown="HandleFilterKeyDown">
-                        <label class="filter-field-label">@L["Filter"]</label>
+                    <div class="sufi-calendar-management__filter-field" @onkeydown="HandleFilterKeyDown">
+                        <label class="sufi-calendar-management__filter-field-label">@L["Filter"]</label>
                         <SbTextField @bind-Value="FilterText"
                                      Placeholder="@L["Filter"]"
                                      Clearable="true">
                             <StartAdornment><SbIcon Name="search" /></StartAdornment>
                         </SbTextField>
                     </div>
-                    <div class="filter-field" style="align-self: flex-end;">
+                    <div class="sufi-calendar-management__filter-field sufi-calendar-management__filter-field--action">
                         <SbButton Color="SbColor.Primary" OnClick="ApplyFiltersAsync">
                             <StartIcon><SbIcon Name="search" /></StartIcon>
                             <ChildContent>@L["Search"]</ChildContent>
@@ -41,7 +41,7 @@
                 @if (HasActiveFilters)
                 {
                     <SbStack Direction="SbStackDirection.Column" Gap="1">
-                        <span class="filter-label">
+                        <span class="sufi-calendar-management__filter-label">
                             <SbIcon Name="filter" Size="SbSize.Sm" /> @L["Filter"]:
                         </span>
                         <SbStack Direction="SbStackDirection.Row" Gap="2" Wrap="true" Align="SbAlign.Center">

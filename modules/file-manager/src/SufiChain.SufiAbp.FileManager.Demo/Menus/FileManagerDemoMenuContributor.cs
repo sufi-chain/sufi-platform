@@ -65,11 +65,18 @@ public class FileManagerDemoMenuContributor : IMenuContributor
             order: 5
         ));
         fileManagerDemo.AddItem(new ApplicationMenuItem(
+            FileManagerDemoMenus.MarkdownEditor,
+            l["Menu:FileManagerDemoMarkdownEditor"],
+            "/demo/file-manager/markdown-editor",
+            icon: "file-text",
+            order: 6
+        ));
+        fileManagerDemo.AddItem(new ApplicationMenuItem(
             FileManagerDemoMenus.FileStructure,
             l["Menu:FileManagerDemoFileStructure"],
             "/demo/file-manager/file-structure",
             icon: "layers",
-            order: 6
+            order: 7
         ));
 
         demoMenu.AddItem(fileManagerDemo);

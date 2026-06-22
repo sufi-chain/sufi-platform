@@ -14,14 +14,14 @@ public class StandardMessageTemplateDefinitionProvider : TemplateDefinitionProvi
                 displayName: LocalizableString.Create<MessagingResource>("TextTemplate:Layout"),
                 layout: null,
                 localizationResource: typeof(MessagingResource)
-            ).WithVirtualFilePath("/Templates/Layout.tpl", isInlineLocalized: true),
+            ).WithVirtualFilePath("/Templates/Layout", isInlineLocalized: true),
             
             new TemplateDefinition(
                 StandardMessageTemplates.Message,
                 displayName: LocalizableString.Create<MessagingResource>("TextTemplate:Message"),
                 layout: StandardMessageTemplates.Layout,
                 localizationResource: typeof(MessagingResource)
-            ).WithVirtualFilePath("/Templates/Message.tpl", isInlineLocalized: true)
+            ).WithVirtualFilePath("/Templates/Message", isInlineLocalized: true)
         );
     }
 }

@@ -1,6 +1,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using SufiChain.SufiAbp.FileManager.Blazor;
 using SufiChain.SufiAbp.FileManager.Demo.Menus;
+using SufiChain.SufiAbp.FileManager.MarkdownEditor;
 using SufiChain.SufiAbp.FileManager.RichTextEditor;
 using SufiChain.SufiAbp.UI.Navigation;
 using SufiChain.SufiAbp.UI.Routing;
@@ -10,7 +11,8 @@ namespace SufiChain.SufiAbp.FileManager.Demo;
 
 [DependsOn(
     typeof(SufiAbpFileManagerBlazorModule),
-    typeof(SufiAbpFileManagerRichTextEditorModule)
+    typeof(SufiAbpFileManagerRichTextEditorModule),
+    typeof(SufiAbpFileManagerMarkdownEditorModule)
 )]
 public class SufiAbpFileManagerDemoModule : AbpModule
 {
