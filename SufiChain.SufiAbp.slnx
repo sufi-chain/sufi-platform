@@ -270,9 +270,6 @@
     <Project Path="modules/users/src/SufiChain.SufiAbp.Users.MongoDB/SufiChain.SufiAbp.Users.MongoDB.csproj" />
     <Project Path="modules/users/src/SufiChain.SufiAbp.Users/SufiChain.SufiAbp.Users.csproj" />
   </Folder>
-  <Folder Name="/SufiBlazor/">
-    <Project Path="../independent-projects/sufi-blazor/src/SufiChain.SufiBlazor/SufiChain.SufiBlazor.csproj" />
-  </Folder>
   <Folder Name="/Tests/" />
   <Folder Name="/Tests/AI/">
     <Project Path="modules/ai/test/SufiChain.SufiAbp.AI.Application.Tests/SufiChain.SufiAbp.AI.Application.Tests.csproj" />

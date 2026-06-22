@@ -31,6 +31,7 @@ fi
 dotnet restore "$ROOT_SLNX" \
   --configfile /tmp/ci-nuget.config \
   --verbosity minimal \
+  -p:UseLocalDevelopmentReferences=false \
   -p:NuGetAudit=false
 
 dotnet build "$ROOT_SLNX" \
@@ -39,6 +40,7 @@ dotnet build "$ROOT_SLNX" \
   --verbosity minimal \
   -m \
   -p:PackageVersion="$VERSION" \
+  -p:UseLocalDevelopmentReferences=false \
   -p:ContinuousIntegrationBuild=true \
   -p:BuildInParallel=true
 
@@ -48,6 +50,7 @@ dotnet pack "$ROOT_SLNX" \
   --output "$package_output" \
   --verbosity minimal \
   -p:PackageVersion="$VERSION" \
+  -p:UseLocalDevelopmentReferences=false \
   -p:ContinuousIntegrationBuild=true
 
 mapfile -t solution_projects < <(
@@ -109,6 +112,7 @@ if [ ${#missing_package_ids[@]} -gt 0 ]; then
     dotnet restore "$csproj" \
       --configfile /tmp/ci-nuget.config \
       --verbosity minimal \
+      -p:UseLocalDevelopmentReferences=false \
       -p:NuGetAudit=false
 
     dotnet build "$csproj" \
@@ -117,6 +121,7 @@ if [ ${#missing_package_ids[@]} -gt 0 ]; then
       --verbosity minimal \
       -m \
       -p:PackageVersion="$VERSION" \
+      -p:UseLocalDevelopmentReferences=false \
       -p:ContinuousIntegrationBuild=true \
       -p:BuildInParallel=true
 
@@ -126,6 +131,7 @@ if [ ${#missing_package_ids[@]} -gt 0 ]; then
       --output "$package_output" \
       --verbosity minimal \
       -p:PackageVersion="$VERSION" \
+      -p:UseLocalDevelopmentReferences=false \
       -p:ContinuousIntegrationBuild=true
   done
 
