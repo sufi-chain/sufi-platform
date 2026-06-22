@@ -9,11 +9,15 @@
     <AbpVersion>10.3.0</AbpVersion>
   </PropertyGroup>
   
-  <!-- Sufi Platform Package Versions -->
+  <!-- Nedded in Sufi-Abp -->
   <PropertyGroup>
-      <!--<SufiVersion>1.0.0-alpha.6.3</SufiVersion>-->
-      <!--<KomThemeVersion>1.0.0-rc.1.1</KomThemeVersion>-->
       <SufiBlazorVersion>1.0.0-rc.1.3</SufiBlazorVersion>
+  </PropertyGroup>
+
+  <!-- Nedded in Hosts -->
+  <PropertyGroup>
+    <SufiVersion>1.0.0-alpha.6.5</SufiVersion>
+    <KomThemeVersion>1.0.0-rc.1.4</KomThemeVersion>
   </PropertyGroup>
 
 

@@ -35,7 +35,15 @@ public class FileManagerMarkdownToolbarContributor : IMdToolbarContributor
                 var result = await service.ShowImageGalleryAsync();
                 if (result != null && !string.IsNullOrEmpty(result.Url) && actionContext.InsertImageMarkdownAsync != null)
                 {
-                    await actionContext.InsertImageMarkdownAsync(result.Url, result.Alt);
+                    if (actionContext.EditorId.Contains("html", System.StringComparison.OrdinalIgnoreCase) &&
+                        actionContext.InsertTextAsync != null)
+                    {
+                        await actionContext.InsertTextAsync($"<img src=\"{result.Url}\" alt=\"{result.Alt ?? string.Empty}\" />");
+                    }
+                    else
+                    {
+                        await actionContext.InsertImageMarkdownAsync(result.Url, result.Alt);
+                    }
                 }
             }
         });
@@ -59,7 +67,15 @@ public class FileManagerMarkdownToolbarContributor : IMdToolbarContributor
                 var result = await service.ShowFileGalleryAsync();
                 if (result != null && !string.IsNullOrEmpty(result.Url) && actionContext.InsertLinkMarkdownAsync != null)
                 {
-                    await actionContext.InsertLinkMarkdownAsync(result.Url, result.FileName);
+                    if (actionContext.EditorId.Contains("html", System.StringComparison.OrdinalIgnoreCase) &&
+                        actionContext.InsertTextAsync != null)
+                    {
+                        await actionContext.InsertTextAsync($"<a href=\"{result.Url}\">{result.FileName ?? result.Url}</a>");
+                    }
+                    else
+                    {
+                        await actionContext.InsertLinkMarkdownAsync(result.Url, result.FileName);
+                    }
                 }
             }
         });
