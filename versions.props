@@ -11,13 +11,13 @@
   
   <!-- Nedded in Sufi-Abp -->
   <PropertyGroup>
-      <SufiBlazorVersion>1.0.0-rc.2.0</SufiBlazorVersion>
+      <SufiBlazorVersion>1.0.0-rc.2.1</SufiBlazorVersion>
   </PropertyGroup>
 
   <!-- Nedded in Hosts -->
   <PropertyGroup>
-    <SufiVersion>1.0.0-alpha.7.0</SufiVersion>
-    <KomThemeVersion>1.0.0-rc.1.4</KomThemeVersion>
+    <SufiVersion>1.0.0-alpha.7.1</SufiVersion>
+    <KomThemeVersion>1.0.0-rc.2.0</KomThemeVersion>
   </PropertyGroup>
 
 
@@ -33,19 +33,19 @@
 
     <!-- ASP.NET Core Package Versions -->
     <PropertyGroup>
-        <AspNetCoreVersion>10.0.2</AspNetCoreVersion>
+        <AspNetCoreVersion>10.0.7</AspNetCoreVersion>
     </PropertyGroup>
 
     <!-- Microsoft Package Versions -->
     <PropertyGroup>
-        <MicrosoftExtensionsLocalizationVersion>10.0.2</MicrosoftExtensionsLocalizationVersion>
-        <MicrosoftExtensionsFileProvidersEmbeddedVersion>10.0.2</MicrosoftExtensionsFileProvidersEmbeddedVersion>
-        <MicrosoftExtensionsConfigurationBinderVersion>10.0.2</MicrosoftExtensionsConfigurationBinderVersion>
+        <MicrosoftExtensionsLocalizationVersion>10.0.7</MicrosoftExtensionsLocalizationVersion>
+        <MicrosoftExtensionsFileProvidersEmbeddedVersion>10.0.7</MicrosoftExtensionsFileProvidersEmbeddedVersion>
+        <MicrosoftExtensionsConfigurationBinderVersion>10.0.7</MicrosoftExtensionsConfigurationBinderVersion>
         <MicrosoftExtensionsHostingVersion>10.0.0</MicrosoftExtensionsHostingVersion>
         <MicrosoftNetTestSdkVersion>17.14.1</MicrosoftNetTestSdkVersion>
-        <MicrosoftAspNetCoreComponentsWebVersion>10.0.2</MicrosoftAspNetCoreComponentsWebVersion>
-        <MicrosoftAspNetCoreComponentsWebAssemblyVersion>10.0.2</MicrosoftAspNetCoreComponentsWebAssemblyVersion>
-        <MicrosoftExtensionsConfigurationJsonVersion>10.0.2</MicrosoftExtensionsConfigurationJsonVersion>
+        <MicrosoftAspNetCoreComponentsWebVersion>10.0.7</MicrosoftAspNetCoreComponentsWebVersion>
+        <MicrosoftAspNetCoreComponentsWebAssemblyVersion>10.0.7</MicrosoftAspNetCoreComponentsWebAssemblyVersion>
+        <MicrosoftExtensionsConfigurationJsonVersion>10.0.7</MicrosoftExtensionsConfigurationJsonVersion>
     </PropertyGroup>
 
     <!-- AI and Semantic Kernel Package Versions -->
@@ -61,7 +61,7 @@
 
     <!-- Entity Framework Core Package Versions -->
     <PropertyGroup>
-        <MicrosoftEntityFrameworkCoreVersion>10.0.2</MicrosoftEntityFrameworkCoreVersion>
+        <MicrosoftEntityFrameworkCoreVersion>10.0.7</MicrosoftEntityFrameworkCoreVersion>
     </PropertyGroup>
 
     <!-- Testing Package Versions -->
