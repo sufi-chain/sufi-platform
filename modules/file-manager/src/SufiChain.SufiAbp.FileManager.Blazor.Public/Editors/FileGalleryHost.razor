@@ -7,18 +7,24 @@
 @inject FileGalleryDialogService DialogService
 @inherits SufiChain.SufiAbp.UI.Blazor.SufiAbpComponentBase
 
-<FileGalleryDialog IsOpen="@_isImageGalleryOpen"
-                   IsOpenChanged="@OnImageGalleryOpenChangedAsync"
-                   Title="Select Image"
-                   ImagesOnly="true"
-                   OnFileSelected="@OnImageSelected" />
+@if (_isImageGalleryOpen)
+{
+    <FileGalleryDialog IsOpen="@_isImageGalleryOpen"
+                       IsOpenChanged="@OnImageGalleryOpenChangedAsync"
+                       Title="Select Image"
+                       ImagesOnly="true"
+                       OnFileSelected="@OnImageSelected" />
+}
 
-<FileGalleryDialog IsOpen="@_isFileGalleryOpen"
-                   IsOpenChanged="@OnFileGalleryOpenChangedAsync"
-                   Title="Select File"
-                   Description="@L["SelectFileToInsertAsLink"].Value"
-                   ImagesOnly="false"
-                   OnFileSelected="@OnFileSelected" />
+@if (_isFileGalleryOpen)
+{
+    <FileGalleryDialog IsOpen="@_isFileGalleryOpen"
+                       IsOpenChanged="@OnFileGalleryOpenChangedAsync"
+                       Title="Select File"
+                       Description="@L["SelectFileToInsertAsLink"].Value"
+                       ImagesOnly="false"
+                       OnFileSelected="@OnFileSelected" />
+}
 
 @code {
     private bool _isImageGalleryOpen;
@@ -46,25 +52,27 @@
     private Task OnImageGalleryOpenChangedAsync(bool open)
     {
         _isImageGalleryOpen = open;
-        return Task.CompletedTask;
+        return InvokeAsync(StateHasChanged);
     }
 
     private Task OnFileGalleryOpenChangedAsync(bool open)
     {
         _isFileGalleryOpen = open;
-        return Task.CompletedTask;
+        return InvokeAsync(StateHasChanged);
     }
 
     private void OnImageSelected(FileItemDto? fileItem)
     {
         _isImageGalleryOpen = false;
         DialogService.CompleteImageSelection(fileItem);
+        _ = InvokeAsync(StateHasChanged);
     }
 
     private void OnFileSelected(FileItemDto? fileItem)
     {
         _isFileGalleryOpen = false;
         DialogService.CompleteFileSelection(fileItem);
+        _ = InvokeAsync(StateHasChanged);
     }
 
     public void Dispose()

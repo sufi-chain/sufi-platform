@@ -14,7 +14,6 @@
 - `SufiChain.SufiAbp.FileManager.Blazor.WebAssembly`
 - `SufiChain.SufiAbp.FileManager.EntityFrameworkCore`
 - `SufiChain.SufiAbp.FileManager.MongoDB`
-- `SufiChain.SufiAbp.FileManager.RichTextEditor`
 
 ## Typical host setup
 

@@ -160,9 +160,7 @@
     <Project Path="modules/file-manager/src/SufiChain.SufiAbp.FileManager.EntityFrameworkCore/SufiChain.SufiAbp.FileManager.EntityFrameworkCore.csproj" />
     <Project Path="modules/file-manager/src/SufiChain.SufiAbp.FileManager.HttpApi.Client/SufiChain.SufiAbp.FileManager.HttpApi.Client.csproj" />
     <Project Path="modules/file-manager/src/SufiChain.SufiAbp.FileManager.HttpApi/SufiChain.SufiAbp.FileManager.HttpApi.csproj" />
-    <Project Path="modules/file-manager/src/SufiChain.SufiAbp.FileManager.MarkdownEditor/SufiChain.SufiAbp.FileManager.MarkdownEditor.csproj" />
     <Project Path="modules/file-manager/src/SufiChain.SufiAbp.FileManager.MongoDB/SufiChain.SufiAbp.FileManager.MongoDB.csproj" />
-    <Project Path="modules/file-manager/src/SufiChain.SufiAbp.FileManager.RichTextEditor/SufiChain.SufiAbp.FileManager.RichTextEditor.csproj" />
   </Folder>
   <Folder Name="/Modules/Identity/">
     <Project Path="modules/identity/src/SufiChain.SufiAbp.Identity.Application.Contracts/SufiChain.SufiAbp.Identity.Application.Contracts.csproj" />

@@ -9,7 +9,7 @@ The File Manager module provides reusable file and media capabilities for Sufi P
 - folder-based browsing and organization
 - thumbnails and media processing
 - public and administrative file presentation
-- rich text editor integration
+- shared markdown and markup editor integration
 
 ## How it fits the platform
 
@@ -23,4 +23,4 @@ Open these packages first:
 - `SufiChain.SufiAbp.FileManager.Blazor.Public` for public-facing components such as galleries and download links
 - `SufiChain.SufiAbp.FileManager.Application` and `.Application.Contracts` for the use cases and DTOs
 - `SufiChain.SufiAbp.FileManager.Domain`, `.EntityFrameworkCore`, and `.MongoDB` for the storage model and provider-specific persistence
-- `SufiChain.SufiAbp.FileManager.RichTextEditor` when the requirement touches editor integration
+- `SufiChain.SufiAbp.FileManager.Blazor.Public` when the requirement touches shared editor integration, gallery dialogs, or reusable public toolbar actions

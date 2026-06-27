@@ -25,11 +25,11 @@ using SufiChain.SufiAbp.Calendar;
 using SufiChain.SufiAbp.Calendar.Blazor.Public;
 using SufiChain.SufiAbp.FileManager;
 using SufiChain.SufiAbp.FileManager.Blazor;
+using SufiChain.SufiAbp.FileManager.Blazor.Public;
 using SufiChain.SufiAbp.FileManager.Blazor.Server;
 // <TEMPLATE-REMOVE IF-NOT="module:file-manager-demo">
 using SufiChain.SufiAbp.FileManager.Demo;
 // </TEMPLATE-REMOVE>
-using SufiChain.SufiAbp.FileManager.RichTextEditor;
 using SufiChain.SufiAbp.Identity;
 using SufiChain.SufiAbp.Identity.Blazor;
 using SufiChain.SufiAbp.LocalizationManagement;
@@ -159,8 +159,8 @@ namespace MyCompanyName.MyProjectName;
     // </TEMPLATE-REMOVE>
     // <TEMPLATE-REMOVE IF-NOT="module:file-manager">
     typeof(SufiAbpFileManagerBlazorModule),
+    typeof(SufiAbpFileManagerBlazorPublicModule),
     typeof(SufiAbpFileManagerBlazorServerModule),
-    typeof(SufiAbpFileManagerRichTextEditorModule),
     // <TEMPLATE-REMOVE IF-NOT="module:file-manager-demo">
     typeof(SufiAbpFileManagerDemoModule),
     // </TEMPLATE-REMOVE>

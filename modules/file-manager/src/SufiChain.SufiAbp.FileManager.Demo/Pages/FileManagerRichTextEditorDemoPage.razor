@@ -1,7 +1,8 @@
 @page "/demo/file-manager/rich-text-editor"
+@using SufiChain.SufiBlazor.Components.Forms
 @using SufiChain.SufiBlazor.Components.Surfaces
 @using SufiChain.SufiBlazor.Components.Typography
-@using SufiChain.SufiAbp.FileManager.RichTextEditor.Components
+@using SufiChain.SufiAbp.FileManager.Blazor.Public.Editors
 @inherits FileManagerComponentBase
 
 <PageTitle>@(L["Menu:FileManagerDemoRichTextEditor"] + " - " + L["Menu:FileManagerDemo"])</PageTitle>
@@ -21,9 +22,10 @@
         <ExampleContent>
             <SbStack Gap="4">
                 <SbFormField Label="@L["Menu:FileManagerDemoRichTextEditor"]">
-                    <SbRichTextEditor @bind-Value="_content"
-                                     Height="500px"
-                                     UseToolbarContributors="true" />
+                    <SbMarkEditor @bind-Value="_content"
+                                  Height="500px"
+                                  Mode="SufiChain.SufiBlazor.Contracts.Editors.SbMarkEditorMode.Markup"
+                                  UseToolbarContributors="true" />
                 </SbFormField>
             </SbStack>
         </ExampleContent>
@@ -42,8 +44,9 @@
     private const string rteCode = @"<FileGalleryHost />
 
 <SbFormField Label=""Content"">
-    <SbRichTextEditor @bind-Value=""_content""
-                     Height=""500px""
-                     UseToolbarContributors=""true"" />
+    <SbMarkEditor @bind-Value=""_content""
+                  Height=""500px""
+                  Mode=""SufiChain.SufiBlazor.Contracts.Editors.SbMarkEditorMode.Markup""
+                  UseToolbarContributors=""true"" />
 </SbFormField>";
 }

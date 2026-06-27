@@ -55,6 +55,7 @@ public static class ServiceCollectionExtensions
         // Register browser services
         services.TryAddScoped<ICookieService, BrowserCookieService>();
         services.TryAddScoped<ILocalStorageService, BrowserLocalStorageService>();
+        services.TryAddScoped<ISessionStorageService, BrowserSessionStorageService>();
 
         // Register timing services
         services.TryAddSingleton<IClock, DefaultClock>();

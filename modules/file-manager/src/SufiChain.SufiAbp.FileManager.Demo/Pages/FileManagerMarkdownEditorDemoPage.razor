@@ -1,7 +1,8 @@
 @page "/demo/file-manager/markdown-editor"
+@using SufiChain.SufiBlazor.Components.Forms
 @using SufiChain.SufiBlazor.Components.Surfaces
 @using SufiChain.SufiBlazor.Components.Typography
-@using SufiChain.SufiAbp.FileManager.RichTextEditor.Components
+@using SufiChain.SufiAbp.FileManager.Blazor.Public.Editors
 @inherits FileManagerComponentBase
 
 <PageTitle>@(L["Menu:FileManagerDemoMarkdownEditor"] + " - " + L["Menu:FileManagerDemo"])</PageTitle>
@@ -24,11 +25,12 @@
                     @L["Demo:FileManagerMarkdownEditorToolbarHint"]
                 </SbAlert>
                 <SbFormField Label="@L["Menu:FileManagerDemoMarkdownEditor"]">
-                    <SbMarkdownEditor @bind-Value="_content"
-                                      MinHeight="420px"
-                                      UseToolbarContributors="true"
-                                      EnableMermaid="true"
-                                      EnableHighlight="true" />
+                    <SbMarkEditor @bind-Value="_content"
+                                  MinHeight="420px"
+                                  Mode="SufiChain.SufiBlazor.Contracts.Editors.SbMarkEditorMode.Markdown"
+                                  UseToolbarContributors="true"
+                                  EnableMermaid="true"
+                                  EnableHighlight="true" />
                 </SbFormField>
             </SbStack>
         </ExampleContent>
@@ -63,9 +65,10 @@
 
     private const string mdCode = @"<FileGalleryHost />
 
-<SbMarkdownEditor @bind-Value=""_content""
-                  MinHeight=""420px""
-                  UseToolbarContributors=""true""
-                  EnableMermaid=""true""
-                  EnableHighlight=""true"" />";
+<SbMarkEditor @bind-Value=""_content""
+              MinHeight=""420px""
+              Mode=""SufiChain.SufiBlazor.Contracts.Editors.SbMarkEditorMode.Markdown""
+              UseToolbarContributors=""true""
+              EnableMermaid=""true""
+              EnableHighlight=""true"" />";
 }

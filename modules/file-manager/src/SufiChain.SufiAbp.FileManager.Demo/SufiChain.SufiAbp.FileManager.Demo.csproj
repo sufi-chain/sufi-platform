@@ -19,8 +19,7 @@
     <ProjectReference Include="..\..\..\..\framework\SufiChain.SufiAbp.UI.Abstractions\SufiChain.SufiAbp.UI.Abstractions.csproj" />
     <ProjectReference Include="..\..\..\..\framework\SufiChain.SufiAbp.UI.Domain.Shared\SufiChain.SufiAbp.UI.Domain.Shared.csproj" />
     <ProjectReference Include="..\SufiChain.SufiAbp.FileManager.Blazor\SufiChain.SufiAbp.FileManager.Blazor.csproj" />
-    <ProjectReference Include="..\SufiChain.SufiAbp.FileManager.RichTextEditor\SufiChain.SufiAbp.FileManager.RichTextEditor.csproj" />
-    <ProjectReference Include="..\SufiChain.SufiAbp.FileManager.MarkdownEditor\SufiChain.SufiAbp.FileManager.MarkdownEditor.csproj" />
+    <ProjectReference Include="..\SufiChain.SufiAbp.FileManager.Blazor.Public\SufiChain.SufiAbp.FileManager.Blazor.Public.csproj" />
   </ItemGroup>
 
 </Project>

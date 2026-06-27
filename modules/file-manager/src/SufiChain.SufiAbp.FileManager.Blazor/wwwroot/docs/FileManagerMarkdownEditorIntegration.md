@@ -1,56 +1,55 @@
-# File Manager Markdown Editor Integration
+# File Manager Markdown Integration
 
-The File Manager module provides integration with `SbMarkdownEditor`, allowing users to insert images from the file gallery and attach files from the markdown editor toolbar.
+The File Manager public Blazor module integrates with markdown-capable editors through a single shared gallery host and toolbar contributor path.
 
 ## Components
 
 ### FileGalleryHost
 
-Reuse the host from the Rich Text Editor integration package. Place it once on the page or layout that uses `SbMarkdownEditor` with file manager toolbar contributors.
+Place `FileGalleryHost` once on the page or layout that contains your editor.
 
 ```razor
+@using SufiChain.SufiAbp.FileManager.Blazor.Public.Editors
+
 <FileGalleryHost />
 ```
 
 ### FileManagerMarkdownToolbarContributor
 
-Adds toolbar buttons to `SbMarkdownEditor` when `UseToolbarContributors="true"` and `FileGalleryHost` is present on the page:
+When `UseToolbarContributors="true"` is enabled, the public file manager integration adds:
 
-| Button | Icon | Action |
-|--------|------|--------|
-| Insert Image from Gallery | 📁 | Inserts `![alt](url)` markdown at the cursor |
-| Attach File | 📎 | Inserts `[filename](url)` download link at the cursor |
-
-Buttons are hidden automatically when `FileGalleryHost` is not registered on the page.
+| Button | Action |
+|--------|--------|
+| Insert Image | Inserts `![alt](url)` markdown |
+| Attach File | Inserts `[filename](url)` markdown |
 
 ## Setup
 
-1. **Add both integration modules** to your application:
+1. Add the public file manager integration module:
 
 ```csharp
-[DependsOn(
-    typeof(SufiAbpFileManagerRichTextEditorModule),
-    typeof(SufiAbpFileManagerMarkdownEditorModule))]
+[DependsOn(typeof(SufiAbpFileManagerBlazorPublicModule))]
 ```
 
-2. **Add FileGalleryHost and SbMarkdownEditor** to your page:
+2. Add `FileGalleryHost` and use `SbMarkEditor` or `SbMarkdownEditor`:
 
 ```razor
-@using SufiChain.SufiAbp.FileManager.RichTextEditor.Components
+@using SufiChain.SufiAbp.FileManager.Blazor.Public.Editors
+@using SufiChain.SufiBlazor.Components.Forms
 
 <FileGalleryHost />
 
-<SbMarkdownEditor @bind-Value="_content"
-                  MinHeight="400px"
-                  UseToolbarContributors="true"
-                  EnableMermaid="true"
-                  EnableHighlight="true" />
+<SbMarkEditor @bind-Value="_content"
+              MinHeight="400px"
+              Mode="SufiChain.SufiBlazor.Contracts.Editors.SbMarkEditorMode.Markdown"
+              UseToolbarContributors="true"
+              EnableMermaid="true"
+              EnableHighlight="true" />
 ```
 
-3. Set `UseToolbarContributors="true"` so the markdown toolbar contributor can register gallery buttons.
+3. Keep `UseToolbarContributors="true"` enabled so the contributor can register the gallery actions.
 
 ## Dependencies
 
-- **SufiChain.SufiAbp.FileManager.RichTextEditor** – `FileGalleryHost`, `IFileGalleryDialogService`
-- **SufiChain.SufiAbp.FileManager.MarkdownEditor** – `FileManagerMarkdownToolbarContributor`
-- **SufiChain.SufiBlazor** – `SbMarkdownEditor`
+- `SufiChain.SufiAbp.FileManager.Blazor.Public`
+- `SufiChain.SufiBlazor`
