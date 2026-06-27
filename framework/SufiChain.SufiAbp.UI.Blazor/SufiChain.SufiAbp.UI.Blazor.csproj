@@ -13,6 +13,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="SufiChain.SufiBlazor" Version="$(SufiBlazorVersion)" />
     <PackageReference Include="Microsoft.AspNetCore.Authorization" Version="$(AspNetCoreVersion)" />
     <PackageReference Include="Microsoft.AspNetCore.Components.Authorization" Version="$(AspNetCoreVersion)" />
     <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="$(MicrosoftAspNetCoreComponentsWebVersion)" />
@@ -28,9 +29,6 @@
 
 
   <ItemGroup>
-    <PackageReference Include="SufiChain.SufiBlazor" Version="$(SufiBlazorVersion)" Condition="'$(UseLocalDevelopmentReferences)' != 'true'" />
-    <ProjectReference Include="..\..\..\independent-projects\sufi-blazor\src\SufiChain.SufiBlazor\SufiChain.SufiBlazor.csproj" Condition="'$(UseLocalDevelopmentReferences)' == 'true'" />
-
     <ProjectReference Include="..\SufiChain.SufiAbp.Authorization\SufiChain.SufiAbp.Authorization.csproj" />
     <ProjectReference Include="..\SufiChain.SufiAbp.AspNetCore.Authentication.Abstractions\SufiChain.SufiAbp.AspNetCore.Authentication.Abstractions.csproj" />
     <ProjectReference Include="..\SufiChain.SufiAbp.UI.Abstractions\SufiChain.SufiAbp.UI.Abstractions.csproj" />

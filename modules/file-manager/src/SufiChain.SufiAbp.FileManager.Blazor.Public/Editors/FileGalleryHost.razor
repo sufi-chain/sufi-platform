@@ -1,0 +1,76 @@
+@using SufiChain.SufiAbp.FileManager.Blazor.Public.Editors
+@using SufiChain.SufiAbp.FileManager.FileItems
+@using SufiChain.SufiAbp.FileManager.Localization
+@using Microsoft.Extensions.Localization
+@implements IDisposable
+@inject IStringLocalizer<SufiAbpFileManagerResource> L
+@inject FileGalleryDialogService DialogService
+@inherits SufiChain.SufiAbp.UI.Blazor.SufiAbpComponentBase
+
+<FileGalleryDialog IsOpen="@_isImageGalleryOpen"
+                   IsOpenChanged="@OnImageGalleryOpenChangedAsync"
+                   Title="Select Image"
+                   ImagesOnly="true"
+                   OnFileSelected="@OnImageSelected" />
+
+<FileGalleryDialog IsOpen="@_isFileGalleryOpen"
+                   IsOpenChanged="@OnFileGalleryOpenChangedAsync"
+                   Title="Select File"
+                   Description="@L["SelectFileToInsertAsLink"].Value"
+                   ImagesOnly="false"
+                   OnFileSelected="@OnFileSelected" />
+
+@code {
+    private bool _isImageGalleryOpen;
+    private bool _isFileGalleryOpen;
+
+    protected override void OnInitialized()
+    {
+        DialogService.RegisterHost();
+        DialogService.OnShowImageGallery += ShowImageGallery;
+        DialogService.OnShowFileGallery += ShowFileGallery;
+    }
+
+    private void ShowImageGallery()
+    {
+        _isImageGalleryOpen = true;
+        _ = InvokeAsync(StateHasChanged);
+    }
+
+    private void ShowFileGallery()
+    {
+        _isFileGalleryOpen = true;
+        _ = InvokeAsync(StateHasChanged);
+    }
+
+    private Task OnImageGalleryOpenChangedAsync(bool open)
+    {
+        _isImageGalleryOpen = open;
+        return Task.CompletedTask;
+    }
+
+    private Task OnFileGalleryOpenChangedAsync(bool open)
+    {
+        _isFileGalleryOpen = open;
+        return Task.CompletedTask;
+    }
+
+    private void OnImageSelected(FileItemDto? fileItem)
+    {
+        _isImageGalleryOpen = false;
+        DialogService.CompleteImageSelection(fileItem);
+    }
+
+    private void OnFileSelected(FileItemDto? fileItem)
+    {
+        _isFileGalleryOpen = false;
+        DialogService.CompleteFileSelection(fileItem);
+    }
+
+    public void Dispose()
+    {
+        DialogService.OnShowImageGallery -= ShowImageGallery;
+        DialogService.OnShowFileGallery -= ShowFileGallery;
+        DialogService.UnregisterHost();
+    }
+}

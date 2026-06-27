@@ -23,6 +23,12 @@ public class RAGController : AIController, IRAGAppService
         return _ragAppService.GetDocumentSourcesAsync();
     }
 
+    [HttpGet("availability")]
+    public virtual Task<RagAvailabilityDto> GetAvailabilityAsync()
+    {
+        return _ragAppService.GetAvailabilityAsync();
+    }
+
     [HttpPost("documents/search")]
     public virtual Task<List<DocumentChunkDto>> SearchDocumentsAsync(SearchDocumentsInput input)
     {

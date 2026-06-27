@@ -23,57 +23,57 @@ public class AccountTemplateDefinitionProvider : TemplateDefinitionProvider
                 displayName: LocalizableString.Create<SufiAbpAccountResource>("TextTemplate:EmailConfirmation"),
                 layout: AccountTemplates.Layout,
                 localizationResource: typeof(SufiAbpAccountResource)
-            ).WithVirtualFilePath("/Templates/EmailConfirmation.tpl", isInlineLocalized: false),
+            ).WithVirtualFilePath("/Templates/EmailConfirmation", isInlineLocalized: true),
 
             new TemplateDefinition(
                 AccountTemplates.PasswordReset,
                 displayName: LocalizableString.Create<SufiAbpAccountResource>("TextTemplate:PasswordReset"),
                 layout: AccountTemplates.Layout,
                 localizationResource: typeof(SufiAbpAccountResource)
-            ).WithVirtualFilePath("/Templates/PasswordReset.tpl", isInlineLocalized: false),
+            ).WithVirtualFilePath("/Templates/PasswordReset", isInlineLocalized: true),
 
             new TemplateDefinition(
                 AccountTemplates.VerificationCode,
                 displayName: LocalizableString.Create<SufiAbpAccountResource>("TextTemplate:VerificationCode"),
                 layout: AccountTemplates.Layout,
                 localizationResource: typeof(SufiAbpAccountResource)
-            ).WithVirtualFilePath("/Templates/VerificationCode.tpl", isInlineLocalized: false),
+            ).WithVirtualFilePath("/Templates/VerificationCode", isInlineLocalized: true),
 
             new TemplateDefinition(
                 AccountTemplates.VerificationCodeSms,
                 displayName: LocalizableString.Create<SufiAbpAccountResource>("TextTemplate:VerificationCodeSms"),
                 localizationResource: typeof(SufiAbpAccountResource)
-            ).WithVirtualFilePath("/Templates/VerificationCodeSms.tpl", isInlineLocalized: false),
+            ).WithVirtualFilePath("/Templates/VerificationCodeSms", isInlineLocalized: true),
 
             new TemplateDefinition(
                 AccountTemplates.VerificationCodeVoice,
                 displayName: LocalizableString.Create<SufiAbpAccountResource>("TextTemplate:VerificationCodeVoice"),
                 localizationResource: typeof(SufiAbpAccountResource)
-            ).WithVirtualFilePath("/Templates/VerificationCodeVoice.tpl", isInlineLocalized: false),
+            ).WithVirtualFilePath("/Templates/VerificationCodeVoice", isInlineLocalized: true),
 
             new TemplateDefinition(
                 AccountTemplates.OtpCodeSms,
                 displayName: LocalizableString.Create<SufiAbpAccountResource>("TextTemplate:OtpCodeSms"),
                 localizationResource: typeof(SufiAbpAccountResource)
-            ).WithVirtualFilePath("/Templates/OtpCodeSms.tpl", isInlineLocalized: false),
+            ).WithVirtualFilePath("/Templates/OtpCodeSms", isInlineLocalized: true),
 
             new TemplateDefinition(
                 AccountTemplates.OtpCodeVoice,
                 displayName: LocalizableString.Create<SufiAbpAccountResource>("TextTemplate:OtpCodeVoice"),
                 localizationResource: typeof(SufiAbpAccountResource)
-            ).WithVirtualFilePath("/Templates/OtpCodeVoice.tpl", isInlineLocalized: false),
+            ).WithVirtualFilePath("/Templates/OtpCodeVoice", isInlineLocalized: true),
 
             new TemplateDefinition(
                 AccountTemplates.TwoFactorCodeSms,
                 displayName: LocalizableString.Create<SufiAbpAccountResource>("TextTemplate:TwoFactorCodeSms"),
                 localizationResource: typeof(SufiAbpAccountResource)
-            ).WithVirtualFilePath("/Templates/TwoFactorCodeSms.tpl", isInlineLocalized: false),
+            ).WithVirtualFilePath("/Templates/TwoFactorCodeSms", isInlineLocalized: true),
 
             new TemplateDefinition(
                 AccountTemplates.TwoFactorCodeVoice,
                 displayName: LocalizableString.Create<SufiAbpAccountResource>("TextTemplate:TwoFactorCodeVoice"),
                 localizationResource: typeof(SufiAbpAccountResource)
-            ).WithVirtualFilePath("/Templates/TwoFactorCodeVoice.tpl", isInlineLocalized: false)
+            ).WithVirtualFilePath("/Templates/TwoFactorCodeVoice", isInlineLocalized: true)
         );
     }
 }

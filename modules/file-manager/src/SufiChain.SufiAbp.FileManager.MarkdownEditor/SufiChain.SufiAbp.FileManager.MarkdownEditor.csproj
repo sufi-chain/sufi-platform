@@ -14,8 +14,7 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="$(MicrosoftAspNetCoreComponentsWebVersion)" />
-    <PackageReference Include="SufiChain.SufiBlazor" Version="$(SufiBlazorVersion)" Condition="'$(UseLocalDevelopmentReferences)' != 'true'" />
-    <ProjectReference Include="..\..\..\..\..\independent-projects\sufi-blazor\src\SufiChain.SufiBlazor\SufiChain.SufiBlazor.csproj" Condition="'$(UseLocalDevelopmentReferences)' == 'true'" />
+    <PackageReference Include="SufiChain.SufiBlazor" Version="$(SufiBlazorVersion)" />
     <ProjectReference Include="../../../../framework/SufiChain.SufiAbp.AspNetCore.Components.Web/SufiChain.SufiAbp.AspNetCore.Components.Web.csproj" />
     <ProjectReference Include="..\SufiChain.SufiAbp.FileManager.RichTextEditor\SufiChain.SufiAbp.FileManager.RichTextEditor.csproj" />
   </ItemGroup>

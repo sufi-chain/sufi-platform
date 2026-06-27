@@ -17,6 +17,12 @@ public class RAGAppService : ApplicationService, IRAGAppService
         _ragService = ragService;
     }
 
+    public async Task<RagAvailabilityDto> GetAvailabilityAsync()
+    {
+        var availability = await _ragService.GetAvailabilityAsync();
+        return ObjectMapper.Map<RagAvailability, RagAvailabilityDto>(availability);
+    }
+
     public async Task<List<DocumentSourceDto>> GetDocumentSourcesAsync()
     {
         var sources = _ragService.GetDocumentSources();
@@ -28,7 +34,7 @@ public class RAGAppService : ApplicationService, IRAGAppService
             result.Add(new DocumentSourceDto
             {
                 SourceName = source.SourceName,
-                TotalDocuments = count,
+                DocumentCount = count,
                 LastIndexedAt = null // Will be tracked in future
             });
         }

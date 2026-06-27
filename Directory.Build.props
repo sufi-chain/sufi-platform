@@ -19,7 +19,6 @@
     <!-- Local development hosts under .dev can opt into workspace project references. -->
     <UseLocalDevelopmentReferences Condition="'$(UseLocalDevelopmentReferences)' == '' And $([System.String]::Copy('$(MSBuildStartupDirectory)').Contains('.dev'))">true</UseLocalDevelopmentReferences>
     <UseLocalDevelopmentReferences Condition="'$(UseLocalDevelopmentReferences)' == '' And $([System.String]::Copy('$(SolutionDir)').Contains('.dev'))">true</UseLocalDevelopmentReferences>
-    <UseLocalDevelopmentReferences Condition="'$(UseLocalDevelopmentReferences)' == '' And Exists('$(MSBuildThisFileDirectory)..\independent-projects\sufi-blazor\src\SufiChain.SufiBlazor\SufiChain.SufiBlazor.csproj')">true</UseLocalDevelopmentReferences>
     <UseLocalDevelopmentReferences Condition="'$(UseLocalDevelopmentReferences)' == ''">false</UseLocalDevelopmentReferences>
 
     <!-- Build Settings -->

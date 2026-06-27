@@ -61,6 +61,8 @@
     <ProjectReference Include="..\..\src\SufiChain.SufiAbp.AI.HttpApi\SufiChain.SufiAbp.AI.HttpApi.csproj" />
     <ProjectReference Include="..\..\src\SufiChain.SufiAbp.AI.Blazor\SufiChain.SufiAbp.AI.Blazor.csproj" />
     <ProjectReference Include="..\..\src\SufiChain.SufiAbp.AI.MongoDB\SufiChain.SufiAbp.AI.MongoDB.csproj" />
+    <ProjectReference Include="..\..\src\SufiChain.SufiAbp.AI.Pgvector\SufiChain.SufiAbp.AI.Pgvector.csproj" />
+    <ProjectReference Include="..\..\src\SufiChain.SufiAbp.AI.Qdrant\SufiChain.SufiAbp.AI.Qdrant.csproj" />
   </ItemGroup>
 
   <ItemGroup>

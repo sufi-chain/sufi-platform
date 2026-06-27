@@ -4,6 +4,7 @@ using Volo.Abp.EntityFrameworkCore.Modeling;
 using SufiChain.SufiAbp.AI.Workspaces;
 using SufiChain.SufiAbp.AI.MCP.Entities;
 using SufiChain.SufiAbp.AI;
+using SufiChain.SufiAbp.AI.RAG;
 
 namespace SufiChain.SufiAbp.AI.EntityFrameworkCore;
 
@@ -122,6 +123,23 @@ public static class AIDbContextModelCreatingExtensions
             b.HasIndex(x => new { x.WorkspaceId, x.Name }).IsUnique();
             b.HasIndex(x => x.TenantId);
             b.HasIndex(x => x.IsEnabled);
+        });
+
+        builder.Entity<RagIndexingState>(b =>
+        {
+            b.ToTable(AIDbProperties.DbTablePrefix + "RagIndexingStates", AIDbProperties.DbSchema);
+            b.ConfigureByConvention();
+            b.ConfigureMultiTenant();
+
+            b.Property(x => x.WorkspaceName).IsRequired().HasMaxLength(128);
+            b.Property(x => x.SourceName).IsRequired().HasMaxLength(256);
+            b.Property(x => x.TotalDocuments).IsRequired();
+            b.Property(x => x.IndexedDocuments).IsRequired();
+            b.Property(x => x.IsIndexing).IsRequired();
+            b.Property(x => x.ErrorMessage).HasMaxLength(2048);
+
+            b.HasIndex(x => x.TenantId);
+            b.HasIndex(x => new { x.TenantId, x.WorkspaceName, x.SourceName }).IsUnique();
         });
     }
 }

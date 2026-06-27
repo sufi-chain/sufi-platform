@@ -4,6 +4,7 @@ namespace SufiChain.SufiAbp.AI.RAG;
 
 public interface IRAGAppService : IApplicationService
 {
+    Task<RagAvailabilityDto> GetAvailabilityAsync();
     Task<List<DocumentSourceDto>> GetDocumentSourcesAsync();
     
     Task<List<DocumentChunkDto>> SearchDocumentsAsync(SearchDocumentsInput input);

@@ -3,6 +3,8 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel.Embeddings;
+using System.Text.Json;
+using SufiChain.SufiAbp.AI.RAG;
 
 namespace SufiChain.SufiAbp.AI.Workspaces;
 
@@ -12,6 +14,11 @@ namespace SufiChain.SufiAbp.AI.Workspaces;
 /// </summary>
 public static class WorkspaceConfigurationHelper
 {
+    public static bool HasVectorStoreConfiguration(Workspace workspace)
+    {
+        return ParseVectorStoreConfig(workspace) != null;
+    }
+
     public static void ConfigureChatClient(ChatClientBuilder builder, Workspace workspace)
     {
         if (workspace.Provider != AIProviderType.OpenAI)
@@ -26,21 +33,29 @@ public static class WorkspaceConfigurationHelper
         ConfigureOpenAIKernel(builder, workspace, apiKey);
     }
 
-    public static IEmbeddingGenerator<string, Embedding<float>> CreateEmbeddingGenerator(Workspace workspace, string? embeddingModel = null)
+    public static IEmbeddingGenerator<string, Embedding<float>> CreateEmbeddingGenerator(
+        Workspace workspace,
+        EmbedderConfiguration? embedderConfiguration = null,
+        string? embeddingModel = null)
     {
-        var config = ParseEmbedderConfig(workspace);
+        var config = embedderConfiguration ?? ParseEmbedderConfig(workspace);
         var provider = config?.Provider ?? workspace.Provider;
         EnsureOpenAIProvider(provider);
 
         var model = embeddingModel ?? config?.Model ?? "text-embedding-3-small";
-        return CreateOpenAIEmbeddingGenerator(workspace, model);
+        return CreateOpenAIEmbeddingGenerator(workspace, config, model);
     }
 
-    private static EmbedderConfig? ParseEmbedderConfig(Workspace workspace)
+    public static EmbedderConfiguration? ParseEmbedderConfig(Workspace workspace)
     {
         return string.IsNullOrWhiteSpace(workspace.EmbedderConfigJson)
             ? null
-            : System.Text.Json.JsonSerializer.Deserialize<EmbedderConfig>(workspace.EmbedderConfigJson);
+            : JsonSerializer.Deserialize<EmbedderConfiguration>(workspace.EmbedderConfigJson);
+    }
+
+    public static VectorStoreConfiguration? ParseVectorStoreConfig(Workspace workspace)
+    {
+        return VectorStoreConfiguration.Parse(workspace.VectorStoreConfigJson);
     }
 
     private static void EnsureOpenAIProvider(AIProviderType provider)
@@ -51,14 +66,18 @@ public static class WorkspaceConfigurationHelper
         }
     }
 
-    private static IEmbeddingGenerator<string, Embedding<float>> CreateOpenAIEmbeddingGenerator(Workspace workspace, string model)
+    private static IEmbeddingGenerator<string, Embedding<float>> CreateOpenAIEmbeddingGenerator(
+        Workspace workspace,
+        EmbedderConfiguration? embedderConfiguration,
+        string model)
     {
-        var apiKey = workspace.ApiKey ?? throw new InvalidOperationException("OpenAI API key is required");
+        var apiKey = embedderConfiguration?.ApiKey ?? workspace.ApiKey ?? throw new InvalidOperationException("OpenAI API key is required");
         var kernelBuilder = Kernel.CreateBuilder();
+        var apiBaseUrl = embedderConfiguration?.ApiBaseUrl ?? workspace.ApiBaseUrl;
 
-        if (!string.IsNullOrWhiteSpace(workspace.ApiBaseUrl))
+        if (!string.IsNullOrWhiteSpace(apiBaseUrl))
         {
-            var httpClient = new HttpClient { BaseAddress = new Uri(workspace.ApiBaseUrl) };
+            var httpClient = new HttpClient { BaseAddress = new Uri(apiBaseUrl) };
             kernelBuilder.AddOpenAITextEmbeddingGeneration(
                 modelId: model,
                 apiKey: apiKey,
@@ -99,12 +118,6 @@ public static class WorkspaceConfigurationHelper
                 apiKey: apiKey
             );
         }
-    }
-
-    private class EmbedderConfig
-    {
-        public AIProviderType Provider { get; set; }
-        public string? Model { get; set; }
     }
 
     private class SemanticKernelEmbeddingGenerator : IEmbeddingGenerator<string, Embedding<float>>

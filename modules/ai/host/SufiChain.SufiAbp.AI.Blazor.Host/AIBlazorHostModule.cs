@@ -11,6 +11,8 @@ using SufiChain.SufiAbp.Account;
 using SufiChain.SufiAbp.Account.Blazor.Server;
 using SufiChain.SufiAbp.AI.Blazor;
 using SufiChain.SufiAbp.AI.MongoDB;
+using SufiChain.SufiAbp.AI.Pgvector;
+using SufiChain.SufiAbp.AI.Qdrant;
 using SufiChain.SufiAbp.AspNetCore.Mvc;
 using SufiChain.SufiAbp.AspNetCore.Serilog;
 using SufiChain.SufiAbp.AuditLogging.MongoDB;
@@ -57,6 +59,8 @@ namespace SufiChain.SufiAbp.AI;
     typeof(SufiAIApplicationModule),
     typeof(SufiAIHttpApiModule),
     typeof(SufiAIMongoDbModule),
+    typeof(SufiAIPgvectorModule),
+    typeof(SufiAIQdrantModule),
     
     // SufiAbp Modules - MongoDB
     typeof(SufiAbpAuditLoggingMongoDbModule),

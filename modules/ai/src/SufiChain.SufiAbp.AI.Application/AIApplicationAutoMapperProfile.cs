@@ -78,3 +78,10 @@ public partial class IndexingStatusToIndexingStatusDtoMapper : MapperBase<Indexi
     public override partial IndexingStatusDto Map(IndexingStatus source);
     public override partial void Map(IndexingStatus source, IndexingStatusDto destination);
 }
+
+[Mapper(RequiredMappingStrategy = RequiredMappingStrategy.Target)]
+public partial class RagAvailabilityToRagAvailabilityDtoMapper : MapperBase<RagAvailability, RagAvailabilityDto>
+{
+    public override partial RagAvailabilityDto Map(RagAvailability source);
+    public override partial void Map(RagAvailability source, RagAvailabilityDto destination);
+}

@@ -24,6 +24,7 @@ public partial class RAG : AIComponentBase
 
     private List<WorkspaceDto> _workspaces = new();
     private Guid? _selectedWorkspaceId;
+    private RagAvailabilityDto _availability = new();
     private string _query = string.Empty;
     private string _maxResultsText = "10";
     private List<DocumentChunkDto> _searchResults = new();
@@ -32,12 +33,18 @@ public partial class RAG : AIComponentBase
     protected override async Task OnInitializedAsync()
     {
         SetupPageLayout();
+        await LoadAvailabilityAsync();
         await LoadWorkspacesAsync();
     }
 
     private void SetupPageLayout()
     {
         PageLayout.Title = L["RAG:Search"];
+    }
+
+    private async Task LoadAvailabilityAsync()
+    {
+        _availability = await RAGAppService.GetAvailabilityAsync();
     }
 
     private async Task LoadWorkspacesAsync()
@@ -61,7 +68,7 @@ public partial class RAG : AIComponentBase
 
     private async Task SearchAsync()
     {
-        if (!_selectedWorkspaceId.HasValue || string.IsNullOrWhiteSpace(_query))
+        if (!_availability.IsAvailable || !_selectedWorkspaceId.HasValue || string.IsNullOrWhiteSpace(_query))
         {
             return;
         }
@@ -93,5 +100,12 @@ public partial class RAG : AIComponentBase
         _searchResults.Clear();
         _hasSearched = false;
         _maxResultsText = "10";
+    }
+
+    private string GetAvailabilityMessage()
+    {
+        return string.IsNullOrWhiteSpace(_availability.Message)
+            ? L["RagUnavailable"]
+            : _availability.Message!;
     }
 }

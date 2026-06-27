@@ -3,20 +3,20 @@
   <PropertyGroup>
     <LangVersion>latest</LangVersion>
   </PropertyGroup>
-  
+
   <!-- ABP Framework Package Versions -->
   <PropertyGroup>
     <AbpVersion>10.3.0</AbpVersion>
   </PropertyGroup>
-  
+
   <!-- Nedded in Sufi-Abp -->
   <PropertyGroup>
-      <SufiBlazorVersion>1.0.0-rc.2.1</SufiBlazorVersion>
+      <SufiBlazorVersion>1.0.0-rc.2.2</SufiBlazorVersion>
   </PropertyGroup>
 
   <!-- Nedded in Hosts -->
   <PropertyGroup>
-    <SufiVersion>1.0.0-alpha.7.1</SufiVersion>
+    <SufiVersion>1.0.0-alpha.7.2</SufiVersion>
     <KomThemeVersion>1.0.0-rc.2.0</KomThemeVersion>
   </PropertyGroup>
 
@@ -57,6 +57,9 @@
         <MicrosoftExtensionsAIVersion>10.5.2</MicrosoftExtensionsAIVersion>
         <MicrosoftExtensionsAIOpenAIVersion>10.5.2</MicrosoftExtensionsAIOpenAIVersion>
         <MicrosoftExtensionsAIOllamaVersion>10.5.2</MicrosoftExtensionsAIOllamaVersion>
+        <NpgsqlVersion>8.0.7</NpgsqlVersion>
+        <PgvectorVersion>0.3.2</PgvectorVersion>
+        <QdrantClientVersion>1.18.1</QdrantClientVersion>
     </PropertyGroup>
 
     <!-- Entity Framework Core Package Versions -->

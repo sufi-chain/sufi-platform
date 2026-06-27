@@ -9,9 +9,17 @@
 	</SbButton>
 </SufiAbpPageToolbar>
 
-<SbStack Direction="SbStackDirection.Column" Gap="4">
+	<SbStack Direction="SbStackDirection.Column" Gap="4">
 
-	<!-- Workspace Selection -->
+		@if (!_availability.IsAvailable)
+		{
+			<SbAlert Color="SbColor.Warning">
+				<strong>@L["RagUnavailable"]</strong><br />
+				@GetAvailabilityMessage()
+			</SbAlert>
+		}
+
+		<!-- Workspace Selection -->
 	<WorkspaceSelector Value="_selectedWorkspaceId"
 					   ValueChanged="@OnWorkspaceChangedAsync"
 					   Workspaces="_workspaces"
@@ -38,10 +46,10 @@
 						<CellTemplate Context="cellContext">
 							<AuthorizeView Policy="@AIPermissions.RAG.Index">
 								<SbButton Size="SbSize.Sm" 
-										  Color="SbColor.Primary"
-										  OnClick="@(() => StartIndexingAsync(cellContext.Item))"
-										  Disabled="cellContext.Item.Status == IndexingStatusType.Indexing"
-										  Loading="@IsOperationLoading($"{LoadingKeys.StartIndexing}-{cellContext.Item.Id}")">
+											  Color="SbColor.Primary"
+											  OnClick="@(() => StartIndexingAsync(cellContext.Item))"
+											  Disabled="@(!_availability.IsAvailable || cellContext.Item.Status == IndexingStatusType.Indexing)"
+											  Loading="@IsOperationLoading($"{LoadingKeys.StartIndexing}-{cellContext.Item.Id}")">
 									<StartIcon><SbIcon Name="play" /></StartIcon>
 									<ChildContent>@L["StartIndexing"]</ChildContent>
 								</SbButton>

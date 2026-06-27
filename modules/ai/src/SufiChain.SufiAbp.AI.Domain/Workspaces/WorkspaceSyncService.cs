@@ -4,6 +4,7 @@ using Microsoft.Extensions.AI;
 using Microsoft.SemanticKernel;
 using SufiChain.SufiAbp.AI;
 using SufiChain.SufiAbp.AI.Features;
+using SufiChain.SufiAbp.AI.RAG;
 using Volo.Abp.DependencyInjection;
 using Volo.Abp.Security.Encryption;
 using SufiChain.SufiAbp.Features;
@@ -113,7 +114,7 @@ public class WorkspaceSyncService : ITransientDependency
         _logger.LogInformation("Creating EmbeddingGenerator for workspace {WorkspaceName} (Provider: {Provider})",
             workspaceName, workspace.Provider);
 
-        var embeddingGenerator = WorkspaceConfigurationHelper.CreateEmbeddingGenerator(workspace);
+        var embeddingGenerator = WorkspaceConfigurationHelper.CreateEmbeddingGenerator(workspace, ResolveEmbedderConfiguration(workspace));
 
         _embeddingGeneratorCache.TryAdd(workspaceName, embeddingGenerator);
         return embeddingGenerator;
@@ -177,5 +178,19 @@ public class WorkspaceSyncService : ITransientDependency
         {
             return encryptedApiKey;
         }
+    }
+
+    private EmbedderConfiguration? ResolveEmbedderConfiguration(Workspace workspace)
+    {
+        var config = WorkspaceConfigurationHelper.ParseEmbedderConfig(workspace);
+        if (config == null)
+        {
+            return null;
+        }
+
+        config.ApiKey = DecryptApiKey(config.ApiKey);
+        config.ApiBaseUrl ??= workspace.ApiBaseUrl;
+        config.Model = string.IsNullOrWhiteSpace(config.Model) ? workspace.DefaultModel : config.Model;
+        return config;
     }
 }

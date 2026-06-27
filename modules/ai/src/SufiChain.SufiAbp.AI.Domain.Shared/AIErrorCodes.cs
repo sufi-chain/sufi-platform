@@ -6,6 +6,11 @@ public static class AIErrorCodes
     public const string WorkspaceNotFound = "AI:WorkspaceNotFound";
     public const string WorkspaceNotActive = "AI:WorkspaceNotActive";
     public const string InvalidProviderConfiguration = "AI:InvalidProviderConfiguration";
+    public const string EmbedderConfigurationMissing = "AI:EmbedderConfigurationMissing";
+    public const string VectorStoreConfigurationMissing = "AI:VectorStoreConfigurationMissing";
+    public const string VectorStoreProviderNotSupported = "AI:VectorStoreProviderNotSupported";
+    public const string VectorStoreConfigurationInvalid = "AI:VectorStoreConfigurationInvalid";
+    public const string RagUnavailable = "AI:RagUnavailable";
     public const string DocumentSourceNotFound = "AI:DocumentSourceNotFound";
     public const string EmbeddingGenerationFailed = "AI:EmbeddingGenerationFailed";
     public const string VectorSearchFailed = "AI:VectorSearchFailed";

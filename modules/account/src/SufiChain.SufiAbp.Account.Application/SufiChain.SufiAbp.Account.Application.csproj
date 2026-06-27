@@ -30,8 +30,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="Templates\*.tpl" />
-    <Content Remove="Templates\*.tpl" />
+    <EmbeddedResource Include="Templates\**\*.tpl" />
+    <Content Remove="Templates\**\*.tpl" />
   </ItemGroup>
 
 </Project>

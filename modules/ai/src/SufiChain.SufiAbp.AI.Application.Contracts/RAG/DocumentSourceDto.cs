@@ -6,7 +6,6 @@ public class DocumentSourceDto
     public string Name { get; set; } = string.Empty;
     public string SourceName { get; set; } = string.Empty;
     public int DocumentCount { get; set; }
-    public int TotalDocuments { get; set; } // Backward compatibility
     public DateTime? LastIndexedAt { get; set; }
     public IndexingStatusType Status { get; set; }
     public int? Progress { get; set; }

@@ -92,6 +92,8 @@
     <Project Path="modules/ai/src/SufiChain.SufiAbp.AI.HttpApi.Client/SufiChain.SufiAbp.AI.HttpApi.Client.csproj" />
     <Project Path="modules/ai/src/SufiChain.SufiAbp.AI.HttpApi/SufiChain.SufiAbp.AI.HttpApi.csproj" />
     <Project Path="modules/ai/src/SufiChain.SufiAbp.AI.MongoDB/SufiChain.SufiAbp.AI.MongoDB.csproj" />
+    <Project Path="modules/ai/src/SufiChain.SufiAbp.AI.Pgvector/SufiChain.SufiAbp.AI.Pgvector.csproj" />
+    <Project Path="modules/ai/src/SufiChain.SufiAbp.AI.Qdrant/SufiChain.SufiAbp.AI.Qdrant.csproj" />
   </Folder>
   <Folder Name="/Modules/AuditLogging/">
     <Project Path="modules/audit-logging/src/SufiChain.SufiAbp.AuditLogging.Application.Contracts/SufiChain.SufiAbp.AuditLogging.Application.Contracts.csproj" />
@@ -296,6 +298,7 @@
   </Folder>
   <Folder Name="/Solution Items/">
     <File Path=".gitea/workflows/release-nuget.yml" />
+    <File Path="Directory.Build.props" />
     <File Path="NuGet.Config" />
     <File Path="versions.props" />
   </Folder>

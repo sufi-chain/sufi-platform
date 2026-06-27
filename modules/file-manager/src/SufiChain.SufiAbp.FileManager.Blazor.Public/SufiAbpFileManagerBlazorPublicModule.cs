@@ -1,7 +1,9 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using SufiChain.SufiAbp.FileManager.Blazor.Public.Editors;
 using SufiChain.SufiAbp.FileManager.Blazor.Public.Services;
 using SufiChain.SufiAbp.FileManager.Configuration;
+using SufiChain.SufiBlazor;
 using Volo.Abp.Modularity;
 
 namespace SufiChain.SufiAbp.FileManager.Blazor.Public;
@@ -27,5 +29,8 @@ public class SufiAbpFileManagerBlazorPublicModule : AbpModule
         context.Services.AddScoped<IFilePublicUrlResolver, FilePublicUrlResolver>();
         // Register file item URL provider (thumbnail/download/stream base URL; used by both public and admin)
         context.Services.AddScoped<IFileItemUrlProvider, FileItemUrlProvider>();
+        context.Services.AddScoped<FileGalleryDialogService>();
+        context.Services.AddScoped<IFileGalleryDialogService>(provider => provider.GetRequiredService<FileGalleryDialogService>());
+        context.Services.AddMdToolbarContributor<FileManagerMarkdownToolbarContributor>();
     }
 }

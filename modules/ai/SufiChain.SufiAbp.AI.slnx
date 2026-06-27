@@ -13,6 +13,8 @@
     <Project Path="src/SufiChain.SufiAbp.AI.HttpApi.Client/SufiChain.SufiAbp.AI.HttpApi.Client.csproj" />
     <Project Path="src/SufiChain.SufiAbp.AI.HttpApi/SufiChain.SufiAbp.AI.HttpApi.csproj" />
     <Project Path="src/SufiChain.SufiAbp.AI.MongoDB/SufiChain.SufiAbp.AI.MongoDB.csproj" />
+    <Project Path="src/SufiChain.SufiAbp.AI.Pgvector/SufiChain.SufiAbp.AI.Pgvector.csproj" />
+    <Project Path="src/SufiChain.SufiAbp.AI.Qdrant/SufiChain.SufiAbp.AI.Qdrant.csproj" />
   </Folder>
   <Folder Name="/test/">
     <Project Path="test/SufiChain.SufiAbp.AI.Application.Tests/SufiChain.SufiAbp.AI.Application.Tests.csproj" />

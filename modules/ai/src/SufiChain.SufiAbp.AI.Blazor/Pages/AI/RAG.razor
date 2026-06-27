@@ -9,10 +9,18 @@
 	</SbButton>
 </SufiAbpPageToolbar>
 
-<SbStack Direction="SbStackDirection.Column" Gap="4">
+	<SbStack Direction="SbStackDirection.Column" Gap="4">
 
-	<!-- Workspace Selection -->
-	<WorkspaceSelector Value="_selectedWorkspaceId"
+		@if (!_availability.IsAvailable)
+		{
+			<SbAlert Color="SbColor.Warning">
+				<strong>@L["RagUnavailable"]</strong><br />
+				@GetAvailabilityMessage()
+			</SbAlert>
+		}
+
+		<!-- Workspace Selection -->
+		<WorkspaceSelector Value="_selectedWorkspaceId"
 					   ValueChanged="@OnWorkspaceChangedAsync"
 					   Workspaces="_workspaces"
 					   Loading="@IsOperationLoading(LoadingKeys.LoadWorkspaces)" />
@@ -33,13 +41,13 @@
 				</SbStack>
 
 				<SbStack Direction="SbStackDirection.Row" Gap="2" Justify="SbJustify.End">
-					<SbButton Color="SbColor.Primary" 
-							  OnClick="@SearchAsync"
-							  Loading="IsOperationLoading(LoadingKeys.Search)"
-							  Disabled="!_selectedWorkspaceId.HasValue || string.IsNullOrWhiteSpace(_query)">
-						<StartIcon><SbIcon Name="search" /></StartIcon>
-						<ChildContent>@L["Search"]</ChildContent>
-					</SbButton>
+						<SbButton Color="SbColor.Primary" 
+								  OnClick="@SearchAsync"
+								  Loading="IsOperationLoading(LoadingKeys.Search)"
+								  Disabled="@(!_availability.IsAvailable || !_selectedWorkspaceId.HasValue || string.IsNullOrWhiteSpace(_query))">
+							<StartIcon><SbIcon Name="search" /></StartIcon>
+							<ChildContent>@L["Search"]</ChildContent>
+						</SbButton>
 				</SbStack>
 			</SbStack>
 		</ChildContent>

@@ -35,16 +35,23 @@ public partial class IndexingStatus : AIComponentBase
     private List<WorkspaceDto> _workspaces = new();
     private Guid? _selectedWorkspaceId;
     private List<DocumentSourceDto> _documentSources = new();
+    private RagAvailabilityDto _availability = new();
 
     protected override async Task OnInitializedAsync()
     {
         SetupPageLayout();
+        await LoadAvailabilityAsync();
         await LoadWorkspacesAsync();
     }
 
     private void SetupPageLayout()
     {
         PageLayout.Title = L["IndexingStatus"];
+    }
+
+    private async Task LoadAvailabilityAsync()
+    {
+        _availability = await RAGAppService.GetAvailabilityAsync();
     }
 
     private async Task LoadWorkspacesAsync()
@@ -79,6 +86,11 @@ public partial class IndexingStatus : AIComponentBase
     private async Task<SbDataResponse<DocumentSourceDto>> LoadDocumentSourcesDataAsync(SbDataRequest request)
     {
         if (!_selectedWorkspaceId.HasValue)
+        {
+            return new SbDataResponse<DocumentSourceDto>(new List<DocumentSourceDto>(), 0);
+        }
+
+        if (!_availability.IsAvailable)
         {
             return new SbDataResponse<DocumentSourceDto>(new List<DocumentSourceDto>(), 0);
         }
@@ -126,6 +138,11 @@ public partial class IndexingStatus : AIComponentBase
             return;
         }
 
+        if (!_availability.IsAvailable)
+        {
+            return;
+        }
+
         var workspace = _workspaces.FirstOrDefault(w => w.Id == _selectedWorkspaceId.Value);
         if (workspace == null)
         {
@@ -165,5 +182,12 @@ public partial class IndexingStatus : AIComponentBase
             IndexingStatusType.Failed => L["Failed"],
             _ => L["Unknown"]
         };
+    }
+
+    private string GetAvailabilityMessage()
+    {
+        return string.IsNullOrWhiteSpace(_availability.Message)
+            ? L["RagUnavailable"]
+            : _availability.Message!;
     }
 }

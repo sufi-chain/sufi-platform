@@ -4,11 +4,13 @@ public interface IRAGService
 {
     void RegisterDocumentSource(IDocumentSource source);
     List<IDocumentSource> GetDocumentSources();
+    Task<RagAvailability> GetAvailabilityAsync(CancellationToken cancellationToken = default);
     
     Task<List<DocumentChunk>> SearchAsync(
         string workspaceName,
         string query,
         int maxResults = 10,
+        float? minSimilarity = null,
         CancellationToken cancellationToken = default
     );
     
@@ -50,4 +52,5 @@ public class IndexingStatus
     public int IndexedDocuments { get; set; }
     public DateTime? LastIndexedAt { get; set; }
     public bool IsIndexing { get; set; }
+    public string? ErrorMessage { get; set; }
 }

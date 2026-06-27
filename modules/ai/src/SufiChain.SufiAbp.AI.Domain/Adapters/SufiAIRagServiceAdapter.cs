@@ -20,7 +20,7 @@ public class SufiAIRagServiceAdapter : ISufiAIRagService, ITransientDependency
 
     public virtual Task<bool> IsAvailableAsync(CancellationToken cancellationToken = default)
     {
-        return Task.FromResult(true);
+        return IsAvailableInternalAsync(cancellationToken);
     }
 
     public virtual async Task<SufiAIRagSearchResult> SearchAsync(
@@ -31,7 +31,7 @@ public class SufiAIRagServiceAdapter : ISufiAIRagService, ITransientDependency
             request.WorkspaceName,
             request.Query,
             request.MaxResults,
-            cancellationToken);
+            cancellationToken: cancellationToken);
 
         return new SufiAIRagSearchResult
         {
@@ -74,6 +74,7 @@ public class SufiAIRagServiceAdapter : ISufiAIRagService, ITransientDependency
         return new SufiAIDocumentChunk
         {
             Id = chunk.Id,
+            Score = chunk.Score,
             SourceName = chunk.SourceName,
             SourceId = chunk.SourceId,
             Content = chunk.Content,
@@ -89,6 +90,7 @@ public class SufiAIRagServiceAdapter : ISufiAIRagService, ITransientDependency
         return new DocumentChunk
         {
             Id = chunk.Id,
+            Score = chunk.Score,
             SourceName = chunk.SourceName,
             SourceId = chunk.SourceId,
             Content = chunk.Content,
@@ -97,5 +99,11 @@ public class SufiAIRagServiceAdapter : ISufiAIRagService, ITransientDependency
             CreatedAt = chunk.CreatedAt,
             UpdatedAt = chunk.UpdatedAt
         };
+    }
+
+    protected virtual async Task<bool> IsAvailableInternalAsync(CancellationToken cancellationToken)
+    {
+        var availability = await RagService.GetAvailabilityAsync(cancellationToken);
+        return availability.IsAvailable;
     }
 }
