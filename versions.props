@@ -99,7 +99,7 @@
         <BunitVersion>2.4.2</BunitVersion>
         <CoverletCollectorVersion>6.0.2</CoverletCollectorVersion>
         <ShortidVersion>5.0.0</ShortidVersion>
-        <MailKitVersion>4.13.0</MailKitVersion>
+        <MailKitVersion>4.16.0</MailKitVersion>
         <AwsSdkS3Version>3.7.400</AwsSdkS3Version>
         <AwsSdkSecurityTokenVersion>3.7.400</AwsSdkSecurityTokenVersion>
         <MicrosoftDataSqlClientVersion>5.2.2</MicrosoftDataSqlClientVersion>

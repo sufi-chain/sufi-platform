@@ -3,7 +3,7 @@
 
 @if (Inline)
 {
-    <div class="sufi-calendar-scheduler-inline">
+    <SbStack Direction="SbStackDirection.Column" Gap="3" Class="sufi-calendar-scheduler-inline">
         <div class="sufi-calendar-scheduler__header">
             <SbHeading Level="5">@(Title ?? L["Calendar"])</SbHeading>
             @if (AllowCalendarSelection)
@@ -25,24 +25,22 @@
             }
         </div>
 
-        <SbStack Direction="SbStackDirection.Column" Gap="3" Class="sufi-calendar-scheduler">
-            @if (SelectedCalendarId == Guid.Empty)
-            {
-                <SbAlert Severity="SbAlertSeverity.Info">@L["NoCalendarsFound"]</SbAlert>
-            }
-            else
-            {
-                <SufiCalendarView @key="CalendarViewKey"
-                                  CalendarIds="@SelectedCalendarIds"
-                                  TimeZoneId="@SelectedTimeZoneId"
-                                  View="@View"
-                                  ViewChanged="OnViewChangedAsync"
-                                  Date="@Date"
-                                  DateChanged="OnDateChangedAsync"
-                                  OnEventClick="OpenEditEventAsync"
-                                  OnSlotSelect="OpenCreateEventFromSlotAsync" />
-            }
-        </SbStack>
+        @if (SelectedCalendarId == Guid.Empty)
+        {
+            <SbAlert Severity="SbAlertSeverity.Info">@L["NoCalendarsFound"]</SbAlert>
+        }
+        else
+        {
+            <SufiCalendarView @key="CalendarViewKey"
+                              CalendarIds="@SelectedCalendarIds"
+                              TimeZoneId="@SelectedTimeZoneId"
+                              View="@View"
+                              ViewChanged="OnViewChangedAsync"
+                              Date="@Date"
+                              DateChanged="OnDateChangedAsync"
+                              OnEventClick="OpenEditEventAsync"
+                              OnSlotSelect="OpenCreateEventFromSlotAsync" />
+        }
 
         <SufiEventEditor Open="@IsEventEditorOpen"
                          OpenChanged="OnEventEditorOpenChangedAsync"
@@ -53,7 +51,7 @@
                          TimeZoneId="@SelectedTimeZoneId"
                          Saved="OnEventSavedAsync"
                          Deleted="OnEventDeletedAsync" />
-    </div>
+    </SbStack>
 }
 else
 {

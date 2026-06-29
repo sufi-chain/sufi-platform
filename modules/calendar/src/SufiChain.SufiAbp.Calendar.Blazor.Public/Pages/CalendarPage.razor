@@ -4,15 +4,17 @@
 
 <SufiAbpPageToolbar>
     <SbButton Color="SbColor.Primary" Variant="SbButtonVariant.Outline" OnClick="RefreshAsync">
-        <SbIcon Name="refresh-cw" Size="SbSize.Sm" />
-        @L["Refresh"]
+        <StartIcon><SbIcon Name="refresh" Size="SbSize.Sm" /></StartIcon>
+        <ChildContent>@L["Refresh"]</ChildContent>
     </SbButton>
 </SufiAbpPageToolbar>
 
-<SufiCalendarScheduler Inline="true"
-                       Title="@L["MyCalendar"]"
-                       AllowCalendarSelection="true"
-                       AllowEventEditing="true"
-                       InitialCalendarId="PersonalCalendarId"
-                       InitialDate="DateTime.Today"
-                       EventSaved="OnEventChangedAsync" />
+<SbStack Direction="SbStackDirection.Column" Gap="4">
+    <SufiCalendarScheduler Inline="true"
+                           Title="@L["MyCalendar"]"
+                           AllowCalendarSelection="true"
+                           AllowEventEditing="true"
+                           InitialCalendarId="PersonalCalendarId"
+                           InitialDate="DateTime.Today"
+                           EventSaved="OnEventChangedAsync" />
+</SbStack>
