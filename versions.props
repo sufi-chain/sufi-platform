@@ -11,7 +11,7 @@
 
   <!-- Nedded in Sufi-Abp -->
   <PropertyGroup>
-      <SufiBlazorVersion>1.0.0-rc.2.2</SufiBlazorVersion>
+      <SufiBlazorVersion>1.0.0-rc.2.3</SufiBlazorVersion>
   </PropertyGroup>
 
   <!-- Nedded in Hosts -->
