@@ -36,4 +36,14 @@ public interface INotificationPublisher
         string? source = null,
         string? url = null,
         Dictionary<string, string>? data = null);
+
+    /// <summary>
+    /// Publishes a multi-channel notification envelope. The default publisher fans this out
+    /// into per-channel ETOs (<see cref="InboxNotificationEto"/>, <see cref="SendEmailNotificationEto"/>,
+    /// <see cref="SendSmsNotificationEto"/>, <see cref="SendVoiceNotificationEto"/>) based on
+    /// <see cref="NotificationEnvelope.Channels"/> and the addresses on
+    /// <see cref="NotificationEnvelope.Recipients"/>. Channels lacking a resolvable address
+    /// for a recipient are silently dropped (no throw).
+    /// </summary>
+    Task PublishAsync(NotificationEnvelope envelope, CancellationToken cancellationToken = default);
 }
