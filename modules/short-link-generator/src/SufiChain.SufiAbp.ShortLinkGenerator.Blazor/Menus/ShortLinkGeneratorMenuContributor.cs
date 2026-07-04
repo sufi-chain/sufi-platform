@@ -33,7 +33,7 @@ public class ShortLinkGeneratorMenuContributor : IMenuContributor
         administrationMenu.AddItem(new ApplicationMenuItem(
             ShortLinkGeneratorMenus.ShortLinks,
             l["Menu:ShortLinks"],
-            url: "/short-link/short-links",
+            url: "/panel/short-link/short-links",
             icon: "link",
             requiredPermissionName: ShortLinkGeneratorPermissions.ShortLinks.Default
         ));

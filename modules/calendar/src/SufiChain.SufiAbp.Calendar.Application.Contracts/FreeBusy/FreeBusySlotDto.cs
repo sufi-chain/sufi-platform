@@ -9,8 +9,4 @@ public class FreeBusySlotDto
     public DateTime EndUtc { get; set; }
 
     public int BusyCount { get; set; }
-
-    public int? MaxConcurrent { get; set; }
-
-    public bool IsCapacityFull { get; set; }
 }

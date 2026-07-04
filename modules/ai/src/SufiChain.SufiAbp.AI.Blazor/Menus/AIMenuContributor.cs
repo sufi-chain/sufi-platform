@@ -34,7 +34,7 @@ public class AIMenuContributor : IMenuContributor
             AIMenus.GroupName,
             l["Menu:AI"],
             icon: "sparkles",
-            order: 30
+            order: 20
         )
         {
             IsCollapsed = false
@@ -47,7 +47,7 @@ public class AIMenuContributor : IMenuContributor
             AIMenu.AddItem(new ApplicationMenuItem(
                 AIMenus.Workspaces,
                 l["Menu:Workspaces"],
-                url: "/admin/ai/workspaces",
+                url: "/panel/admin/ai/workspaces",
                 icon: "workspace",
                 order: 1
             ).RequirePermissions(AIPermissions.Workspaces.Default));
@@ -58,7 +58,7 @@ public class AIMenuContributor : IMenuContributor
             var testingMenu = new ApplicationMenuItem(
                 AIMenus.TestChat,
                 l["Menu:Testing"],
-                url: "/admin/ai/test-chat",
+                url: "/panel/admin/ai/test-chat",
                 icon: "chat",
                 order: 1
             ).RequirePermissions(AIPermissions.TestChat.Default);
@@ -79,7 +79,7 @@ public class AIMenuContributor : IMenuContributor
             analyticsMenu.AddItem(new ApplicationMenuItem(
                 AIMenus.UsageAnalytics,
                 l["Menu:UsageAnalytics"],
-                url: "/admin/ai/usage-analytics",
+                url: "/panel/admin/ai/usage-analytics",
                 icon: "chart-bar",
                 order: 1
             ).RequirePermissions(AIPermissions.AI.ViewUsage));
@@ -99,7 +99,7 @@ public class AIMenuContributor : IMenuContributor
             ragMenu.AddItem(new ApplicationMenuItem(
                 AIMenus.RAGSearch,
                 l["Menu:RAGSearch"],
-                url: "/admin/ai/rag",
+                url: "/panel/admin/ai/rag",
                 icon: "search",
                 order: 1
             ).RequirePermissions(AIPermissions.RAG.Default));
@@ -107,7 +107,7 @@ public class AIMenuContributor : IMenuContributor
             ragMenu.AddItem(new ApplicationMenuItem(
                 AIMenus.IndexingStatus,
                 l["Menu:IndexingStatus"],
-                url: "/admin/ai/indexing-status",
+                url: "/panel/admin/ai/indexing-status",
                 icon: "activity",
                 order: 2
             ).RequirePermissions(AIPermissions.RAG.Default));
@@ -127,7 +127,7 @@ public class AIMenuContributor : IMenuContributor
             mcpMenu.AddItem(new ApplicationMenuItem(
                 AIMenus.MCPTools,
                 l["Menu:MCPTools"],
-                url: "/admin/ai/mcp-tools",
+                url: "/panel/admin/ai/mcp-tools",
                 icon: "wrench",
                 order: 1
             ).RequirePermissions(AIPermissions.MCPTools.Default));
@@ -135,7 +135,7 @@ public class AIMenuContributor : IMenuContributor
             mcpMenu.AddItem(new ApplicationMenuItem(
                 AIMenus.MCPServers,
                 l["Menu:MCPServers"],
-                url: "/admin/ai/mcp-servers",
+                url: "/panel/admin/ai/mcp-servers",
                 icon: "server",
                 order: 2
             ).RequirePermissions(AIPermissions.MCPServers.Default));

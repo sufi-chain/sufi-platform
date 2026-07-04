@@ -513,6 +513,23 @@
     "Permission:MediaItems": "Media items",
     "Permission:MediaStructures": "Media structures",
     "BlobStorageView": "Blob storage",
-    "DirectoryMapView": "Directory map"
+    "DirectoryMapView": "Directory map",
+    "Menu:FolderAccess": "Folder Access",
+    "FolderAccess:Folder": "Folder",
+    "FolderAccess:ChooseFolder": "Choose a folder…",
+    "FolderAccess:GrantType": "Grant type",
+    "FolderAccess:User": "User",
+    "FolderAccess:Role": "Role",
+    "FolderAccess:OrganizationUnit": "Organization unit",
+    "FolderAccess:PrincipalId": "Principal id",
+    "FolderAccess:Level": "Permission level",
+    "FolderAccess:Read": "Read",
+    "FolderAccess:Write": "Write",
+    "FolderAccess:Delete": "Delete",
+    "FolderAccess:Share": "Share",
+    "FolderAccess:Full": "Full",
+    "FolderAccess:InheritToChildren": "Inherit to children",
+    "FolderAccess:ClearAll": "Clear all",
+    "FolderAccess:NoPermissions": "No access grants for this folder."
   }
 }

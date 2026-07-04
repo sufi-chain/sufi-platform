@@ -145,11 +145,12 @@ public class SetFolderPermissionsInput
 /// </summary>
 public class FolderPermissionDto
 {
-    public Guid? Id { get; set; }
-    public Guid? UserId { get; set; }
-    public Guid? RoleId { get; set; }
-    public FolderPermissionLevelDto Level { get; set; }
-    public bool InheritToChildren { get; set; } = true;
+   public Guid? Id { get; set; }
+   public Guid? UserId { get; set; }
+   public Guid? RoleId { get; set; }
+    public Guid? OrganizationUnitId { get; set; }
+   public FolderPermissionLevelDto Level { get; set; }
+   public bool InheritToChildren { get; set; } = true;
 }
 
 /// <summary>

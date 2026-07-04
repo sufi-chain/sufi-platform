@@ -1,0 +1,94 @@
+@page "/panel/admin/file-manager/access"
+@using SufiChain.SufiAbp.FileManager.FileFolders
+@attribute [Authorize(FileManagerPermissions.FileItems.Update)]
+@inherits FileManagerComponentBase
+
+<SbCard>
+    <ChildContent>
+        <SbStack Direction="SbStackDirection.Column" Gap="3">
+           <SbFormField Label="@L["FolderAccess:Folder"]">
+                <SbSimpleSelect TValue="Guid?"
+                                Value="@_selectedFolderId"
+                                ValueChanged="@OnFolderChangedAsync"
+                                Placeholder="@L["FolderAccess:ChooseFolder"]"
+                                Clearable="true"
+                                Searchable="true">
+                    @foreach (var node in _flatFolders)
+                    {
+                        <SbSelectOption TValue="Guid?" Value="@node.Id">@($"({node.Path}) {node.Name}")</SbSelectOption>
+                    }
+                </SbSimpleSelect>
+            </SbFormField>
+
+            @if (_selectedFolderId.HasValue)
+            {
+                <SbStack Direction="SbStackDirection.Row" Gap="2">
+                    <SbFormField Label="@L["FolderAccess:GrantType"]" Style="flex:1">
+                        <SbSimpleSelect TValue="FolderGrantType"
+                                        Value="@_addGrant.GrantType"
+                                        ValueChanged="@((FolderGrantType v) => _addGrant.GrantType = v)">
+                            @foreach (var grantType in _grantTypes)
+                            {
+                                <SbSelectOption TValue="FolderGrantType" Value="@grantType">@GrantTypeLabel(grantType)</SbSelectOption>
+                            }
+                        </SbSimpleSelect>
+                    </SbFormField>
+                    <SbFormField Label="@L["FolderAccess:PrincipalId"]" Style="flex:1">
+                        <SbTextField @bind-Value="_addGrant.PrincipalId" Placeholder="00000000-0000-0000-0000-000000000000" />
+                    </SbFormField>
+                </SbStack>
+
+                <SbStack Direction="SbStackDirection.Row" Gap="2">
+                    <SbFormField Label="@L["FolderAccess:Level"]" Style="flex:1">
+                        <SbSimpleSelect TValue="FolderPermissionLevelDto"
+                                        Value="@_addGrant.Level"
+                                        ValueChanged="@((FolderPermissionLevelDto v) => _addGrant.Level = v)">
+                            @foreach (var level in _levels)
+                            {
+                                <SbSelectOption TValue="FolderPermissionLevelDto" Value="@level">@LevelLabel(level)</SbSelectOption>
+                            }
+                        </SbSimpleSelect>
+                    </SbFormField>
+                    <SbFormField Label="@L["FolderAccess:InheritToChildren"]" Style="flex:1">
+                        <SbCheckbox Value="_addGrant.InheritToChildren"
+                                    ValueExpression="@(() => _addGrant.InheritToChildren)"
+                                    ValueChanged="@(v => _addGrant.InheritToChildren = v)" />
+                    </SbFormField>
+                </SbStack>
+
+                <SbStack Direction="SbStackDirection.Row" Gap="2">
+                    <SbButton Color="SbColor.Primary" OnClick="@AddGrantAsync">@L["Add"]</SbButton>
+                    <SbButton Color="SbColor.Danger" Variant="SbButtonVariant.Outline" OnClick="@ClearAllAsync">@L["FolderAccess:ClearAll"]</SbButton>
+                </SbStack>
+
+                <SbTable TItem="FolderPermissionDto" Items="@_permissions" Hover>
+                    <HeaderContent>
+                        <tr>
+                            <th>@L["FolderAccess:User"]</th>
+                            <th>@L["FolderAccess:Role"]</th>
+                            <th>@L["FolderAccess:OrganizationUnit"]</th>
+                            <th>@L["FolderAccess:Level"]</th>
+                            <th>@L["FolderAccess:InheritToChildren"]</th>
+                            <th></th>
+                        </tr>
+                    </HeaderContent>
+                    <RowTemplate Context="perm">
+                        <td><code>@(perm.UserId?.ToString() ?? "—")</code></td>
+                        <td><code>@(perm.RoleId?.ToString() ?? "—")</code></td>
+                        <td><code>@(perm.OrganizationUnitId?.ToString() ?? "—")</code></td>
+                        <td>@LevelLabel(perm.Level)</td>
+                        <td>@(perm.InheritToChildren ? "✓" : "—")</td>
+                        <td>
+                            <SbIconButton Color="SbColor.Danger" Size="SbSize.Sm" OnClick="@(() => RemoveGrantAsync(perm.Id))" AriaLabel="@L["Delete"]">
+                                <Icon><SbIcon Name="trash" /></Icon>
+                            </SbIconButton>
+                        </td>
+                    </RowTemplate>
+                    <EmptyContent>
+                        <p class="text-muted text-center py-3">@L["FolderAccess:NoPermissions"]</p>
+                    </EmptyContent>
+                </SbTable>
+            }
+        </SbStack>
+    </ChildContent>
+</SbCard>

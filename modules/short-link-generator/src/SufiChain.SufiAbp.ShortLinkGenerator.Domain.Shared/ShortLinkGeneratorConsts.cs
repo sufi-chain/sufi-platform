@@ -10,6 +10,7 @@ public static class ShortLinkGeneratorConsts
     public static class ShortUrl
     {
         public const int MaxShortCodeLength = 20;
+        public const int MaxRedirectRouteLength = 100;
         public const int MaxDestinationUrlLength = 2048;
         public const int MaxDescriptionLength = 500;
         public const int MaxCreatedByModuleLength = 100;

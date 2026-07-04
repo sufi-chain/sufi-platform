@@ -14,32 +14,34 @@ public class Calendar : FullAuditedAggregateRoot<Guid>, IMultiTenant
 
     public virtual string TimeZoneId { get; private set; } = default!;
 
-    public virtual CalendarOwnerType OwnerType { get; private set; }
+    public virtual Guid? OwnerUserId { get; private set; }
 
-    public virtual Guid? OwnerId { get; private set; }
+    public virtual string? OwnerName { get; private set; }
 
     public virtual bool IsDefault { get; private set; }
 
-    public virtual int? MaxConcurrent { get; private set; }
+    public virtual bool IsAlwaysOpen { get; private set; }
 
     public virtual List<WorkingHourRule> WorkingHourRules { get; private set; } = new();
 
     public virtual List<CalendarException> Exceptions { get; private set; } = new();
 
+    public virtual List<CalendarInheritance> Inheritances { get; private set; } = new();
+
     protected Calendar()
     {
     }
 
-    public Calendar(Guid id, Guid? tenantId, string name, CalendarKind kind, string timeZoneId, CalendarOwnerType ownerType = CalendarOwnerType.None, Guid? ownerId = null, bool isDefault = false, int? maxConcurrent = null)
+    public Calendar(Guid id, Guid? tenantId, string name, CalendarKind kind, string timeZoneId, Guid? ownerUserId = null, string? ownerName = null, bool isDefault = false, bool isAlwaysOpen = false)
         : base(id)
     {
         TenantId = tenantId;
         SetName(name);
         SetKind(kind);
         SetTimeZone(timeZoneId);
-        SetOwner(ownerType, ownerId);
+        SetOwner(ownerUserId, ownerName);
         SetDefault(isDefault);
-        SetMaxConcurrent(maxConcurrent);
+        SetAlwaysOpen(isAlwaysOpen);
     }
 
     public virtual void SetName(string name)
@@ -49,11 +51,6 @@ public class Calendar : FullAuditedAggregateRoot<Guid>, IMultiTenant
 
     public virtual void SetKind(CalendarKind kind)
     {
-        if (kind == CalendarKind.Resource && OwnerType is not CalendarOwnerType.None and not CalendarOwnerType.Resource)
-        {
-            throw new BusinessException(CalendarErrorCodes.InvalidOwner);
-        }
-
         Kind = kind;
     }
 
@@ -64,25 +61,13 @@ public class Calendar : FullAuditedAggregateRoot<Guid>, IMultiTenant
         TimeZoneId = timeZoneId;
     }
 
-    public virtual void SetOwner(CalendarOwnerType ownerType, Guid? ownerId)
+    public virtual void SetOwner(Guid? ownerUserId, string? ownerName)
     {
-        if (ownerType == CalendarOwnerType.None && ownerId.HasValue)
-        {
-            throw new BusinessException(CalendarErrorCodes.InvalidOwner);
-        }
+        OwnerName = string.IsNullOrWhiteSpace(ownerName)
+            ? null
+            : Check.NotNullOrWhiteSpace(ownerName, nameof(ownerName), CalendarConsts.MaxOwnerNameLength);
 
-        if (ownerType != CalendarOwnerType.None && !ownerId.HasValue)
-        {
-            throw new BusinessException(CalendarErrorCodes.InvalidOwner);
-        }
-
-        if (Kind == CalendarKind.Resource && ownerType != CalendarOwnerType.Resource)
-        {
-            throw new BusinessException(CalendarErrorCodes.InvalidOwner);
-        }
-
-        OwnerType = ownerType;
-        OwnerId = ownerId;
+        OwnerUserId = ownerUserId;
     }
 
     public virtual void SetDefault(bool isDefault)
@@ -90,14 +75,9 @@ public class Calendar : FullAuditedAggregateRoot<Guid>, IMultiTenant
         IsDefault = isDefault;
     }
 
-    public virtual void SetMaxConcurrent(int? maxConcurrent)
+    public virtual void SetAlwaysOpen(bool isAlwaysOpen)
     {
-        if (maxConcurrent is <= 0)
-        {
-            throw new BusinessException(CalendarErrorCodes.InvalidMaxConcurrent);
-        }
-
-        MaxConcurrent = maxConcurrent;
+        IsAlwaysOpen = isAlwaysOpen;
     }
 
     public virtual void ReplaceWorkingHours(IEnumerable<WorkingHourRule> rules)
@@ -106,7 +86,7 @@ public class Calendar : FullAuditedAggregateRoot<Guid>, IMultiTenant
         foreach (var dayRules in ruleList.GroupBy(x => x.DayOfWeek))
         {
             CalendarException.EnsureNoOverlaps(
-                dayRules.Select(x => new WorkingHourRange(x.StartTime, x.EndTime, x.MaxConcurrent)).ToList(),
+                dayRules.Select(x => new WorkingHourRange(x.StartTime, x.EndTime)).ToList(),
                 CalendarErrorCodes.OverlappingWorkingHours);
         }
 
@@ -143,6 +123,18 @@ public class Calendar : FullAuditedAggregateRoot<Guid>, IMultiTenant
     public virtual void RemoveException(DateOnly date)
     {
         Exceptions.RemoveAll(x => x.Date == date);
+        AddDistributedEvent(new SufiChain.SufiAbp.Calendar.Events.CalendarChangedEto(Id, TenantId));
+    }
+
+    public virtual void AddInheritance(CalendarInheritance inheritance)
+    {
+        Inheritances.Add(inheritance);
+        AddDistributedEvent(new SufiChain.SufiAbp.Calendar.Events.CalendarChangedEto(Id, TenantId));
+    }
+
+    public virtual void RemoveInheritance(Guid parentCalendarId)
+    {
+        Inheritances.RemoveAll(x => x.ParentCalendarId == parentCalendarId);
         AddDistributedEvent(new SufiChain.SufiAbp.Calendar.Events.CalendarChangedEto(Id, TenantId));
     }
 }

@@ -6,6 +6,8 @@
     "Permission:MenuManagement.Menus.Create": "ایجاد منو",
     "Permission:MenuManagement.Menus.Edit": "ویرایش منو",
     "Permission:MenuManagement.Menus.Delete": "حذف منو",
-    "Permission:MenuManagement.Menus.ManageItems": "مدیریت آیتم‌های منو"
+    "Permission:MenuManagement.Menus.ManageItems": "مدیریت آیتم‌های منو",
+    "Menu:MenuManagement": "مدیریت منو",
+    "Menu:MenuManagement.Menus": "منوها"
   }
 }

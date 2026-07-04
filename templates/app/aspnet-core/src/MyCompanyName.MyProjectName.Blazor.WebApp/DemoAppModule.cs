@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.Authentication.Cookies;
+﻿using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.OAuth.Claims;
 // </TEMPLATE-REMOVE>
 using Microsoft.AspNetCore.Cors;
@@ -90,7 +90,7 @@ using Volo.Abp.AspNetCore.Mvc.Localization;
 // <TEMPLATE-REMOVE IF-NOT="module:background-jobs">
 // </TEMPLATE-REMOVE>
 using Volo.Abp.Data;
-using SufiChain.SufiAbp.Messaging.Email;
+using SufiChain.SufiAbp.Communications.Email;
 // <TEMPLATE-REMOVE IF-NOT="db:mongodb">
 // </TEMPLATE-REMOVE>
 // <TEMPLATE-REMOVE IF-NOT="db:mongodb">

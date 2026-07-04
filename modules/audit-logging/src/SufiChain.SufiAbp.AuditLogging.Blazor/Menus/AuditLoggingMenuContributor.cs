@@ -25,7 +25,7 @@ public class AuditLoggingMenuContributor : IMenuContributor
         administration.AddItem(new ApplicationMenuItem(
             AuditLoggingMenuNames.GroupName,
             l["AuditLogs"],
-            url: "/admin/audit-logs",
+            url: "/panel/admin/audit-logs",
             icon: "clipboard-list",
             order: 20
         ).RequirePermissions(AuditLoggingPermissions.AuditLogs.Default));

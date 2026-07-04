@@ -18,15 +18,21 @@ public class FolderPermission : Entity<Guid>
     /// </summary>
     public Guid? UserId { get; set; }
 
-    /// <summary>
-    /// Role ID this permission applies to (if role-based)
-    /// </summary>
-    public Guid? RoleId { get; set; }
+   /// <summary>
+   /// Role ID this permission applies to (if role-based)
+   /// </summary>
+   public Guid? RoleId { get; set; }
 
     /// <summary>
-    /// The permission level granted
+    /// Organization Unit ID this permission applies to (if OU-based).
+    /// Resolved against the Identity module's organization units.
     /// </summary>
-    public FolderPermissionLevel Level { get; set; }
+    public Guid? OrganizationUnitId { get; set; }
+
+   /// <summary>
+   /// The permission level granted
+   /// </summary>
+   public FolderPermissionLevel Level { get; set; }
 
     /// <summary>
     /// Whether permissions are inherited by child folders
@@ -42,33 +48,43 @@ public class FolderPermission : Entity<Guid>
     {
     }
 
-    public FolderPermission(
-        Guid id,
-        Guid folderId,
-        FolderPermissionLevel level,
+   public FolderPermission(
+       Guid id,
+       Guid folderId,
+       FolderPermissionLevel level,
         Guid? userId = null,
-        Guid? roleId = null) : base(id)
-    {
-        FolderId = folderId;
-        Level = level;
-        UserId = userId;
-        RoleId = roleId;
-    }
+        Guid? roleId = null,
+        Guid? organizationUnitId = null) : base(id)
+   {
+       FolderId = folderId;
+       Level = level;
+       UserId = userId;
+       RoleId = roleId;
+        OrganizationUnitId = organizationUnitId;
+   }
+
+   /// <summary>
+   /// Create a user-specific permission
+   /// </summary>
+   public static FolderPermission ForUser(Guid folderId, Guid userId, FolderPermissionLevel level)
+   {
+       return new FolderPermission(Guid.NewGuid(), folderId, level, userId: userId);
+   }
+
+   /// <summary>
+   /// Create a role-based permission
+   /// </summary>
+   public static FolderPermission ForRole(Guid folderId, Guid roleId, FolderPermissionLevel level)
+   {
+       return new FolderPermission(Guid.NewGuid(), folderId, level, roleId: roleId);
+   }
 
     /// <summary>
-    /// Create a user-specific permission
+    /// Create an organization-unit-based permission
     /// </summary>
-    public static FolderPermission ForUser(Guid folderId, Guid userId, FolderPermissionLevel level)
+    public static FolderPermission ForOrganizationUnit(Guid folderId, Guid organizationUnitId, FolderPermissionLevel level)
     {
-        return new FolderPermission(Guid.NewGuid(), folderId, level, userId: userId);
-    }
-
-    /// <summary>
-    /// Create a role-based permission
-    /// </summary>
-    public static FolderPermission ForRole(Guid folderId, Guid roleId, FolderPermissionLevel level)
-    {
-        return new FolderPermission(Guid.NewGuid(), folderId, level, roleId: roleId);
+        return new FolderPermission(Guid.NewGuid(), folderId, level, organizationUnitId: organizationUnitId);
     }
 
     /// <summary>

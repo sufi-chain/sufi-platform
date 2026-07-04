@@ -1,6 +1,6 @@
-using SufiChain.SufiAbp.Account.Localization;
+﻿using SufiChain.SufiAbp.Account.Localization;
 using SufiChain.SufiAbp.Account.Templates;
-using SufiChain.SufiAbp.Messaging.Templates;
+using SufiChain.SufiAbp.Communications.Templates;
 using SufiChain.SufiAbp.TextTemplating;
 using Volo.Abp.Localization;
 

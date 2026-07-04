@@ -23,7 +23,7 @@ public class ShortUrl : AuditedAggregateRoot<Guid>, IMultiTenant
     public string CreatedByModule { get; set; } = string.Empty;
     
     public string? Description { get; set; }
-    
+
     protected ShortUrl()
     {
     }
@@ -46,4 +46,3 @@ public class ShortUrl : AuditedAggregateRoot<Guid>, IMultiTenant
         ClickCount = 0;
     }
 }
-

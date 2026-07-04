@@ -35,7 +35,7 @@ public class FileManagerMenuContributor : IMenuContributor
             FileManagerMenus.GroupName,
             l["Menu:FileManager"],
             icon: "folder-open",
-            order: 20
+            order: 40
         );
 
         if (await featureChecker.IsEnabledAsync(SufiAbpFileManagerFeatures.FileItems))
@@ -44,22 +44,32 @@ public class FileManagerMenuContributor : IMenuContributor
                 new ApplicationMenuItem(
                     FileManagerMenus.FileStats,
                     l["Menu:FileStats"],
-                    url: "/admin/file-manager/stats",
+                    url: "/panel/admin/file-manager/stats",
                     icon: "chart-bar",
                     order: 1
                 ).RequirePermissions(FileManagerPermissions.FileItems.Default)
             );
 
+           fileManagerMenu.AddItem(
+               new ApplicationMenuItem(
+                   FileManagerMenus.AssetManager,
+                   l["Menu:AssetManager"],
+                   url: "/panel/admin/file-manager/assets",
+                   icon: "folder-tree",
+                   order: 2
+               ).RequirePermissions(FileManagerPermissions.FileItems.Default)
+           );
+
             fileManagerMenu.AddItem(
                 new ApplicationMenuItem(
-                    FileManagerMenus.AssetManager,
-                    l["Menu:AssetManager"],
-                    url: "/admin/file-manager/assets",
-                    icon: "folder-tree",
-                    order: 2
-                ).RequirePermissions(FileManagerPermissions.FileItems.Default)
+                    FileManagerMenus.FolderAccess,
+                    l["Menu:FolderAccess"],
+                    url: "/panel/admin/file-manager/access",
+                    icon: "user-shield",
+                    order: 5
+                ).RequirePermissions(FileManagerPermissions.FileItems.Update)
             );
-        }
+       }
 
         if (await featureChecker.IsEnabledAsync(SufiAbpFileManagerFeatures.FileStructures))
         {
@@ -67,7 +77,7 @@ public class FileManagerMenuContributor : IMenuContributor
                 new ApplicationMenuItem(
                     FileManagerMenus.FileStructures,
                     l["Menu:FileStructures"],
-                    url: "/admin/file-manager/structures",
+                    url: "/panel/admin/file-manager/structures",
                     icon: "layers",
                     order: 3
                 ).RequirePermissions(FileManagerPermissions.FileStructures.Default)
@@ -81,7 +91,7 @@ public class FileManagerMenuContributor : IMenuContributor
                 new ApplicationMenuItem(
                     FileManagerMenus.ArchivedFiles,
                     l["Menu:ArchivedFiles"],
-                    url: "/admin/file-manager/archived",
+                    url: "/panel/admin/file-manager/archived",
                     icon: "archive",
                     order: 4
                 ).RequirePermissions(FileManagerPermissions.FileItems.Default)

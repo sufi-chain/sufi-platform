@@ -1,4 +1,4 @@
-@page "/admin/calendar"
+@page "/panel/admin/calendar"
 @using SufiChain.SufiAbp.UI.Blazor.Components
 @using SufiChain.SufiBlazor.Components.Navigation
 @attribute [Authorize(CalendarPermissions.Calendars.Default)]
@@ -58,7 +58,7 @@
 
     <SbCard>
         <ChildContent>
-            <SbDataGrid TItem="CalendarDto" Items="CalendarList" Loading="IsLoading" Striped="true" Hoverable="true" PageIndex="PageIndex" PageSize="PageSize" TotalCount="TotalCount" PageIndexChanged="OnPageIndexChangedAsync" KeySelector="@(item => item.Id.ToString())">
+            <SbDataGrid TItem="CalendarDto" @ref="_gridRef" ItemsProvider="LoadCalendarsDataAsync" Loading="IsOperationLoading(LoadingKeys.LoadCalendars)" Striped="true" Hoverable="true" PageIndex="PageIndex" PageSize="PageSize" TotalCount="TotalCount" PageIndexChanged="OnPageIndexChangedAsync" PageSizeChanged="OnPageSizeChangedAsync" KeySelector="@(item => item.Id.ToString())">
                 <EmptyTemplate>
                     <SbEmptyState Class="text-center p-5" Title="@L["Calendar"]" Description="@L["NoCalendarsFound"]">
                         <Icon><SbIcon Name="calendar" Size="SbSize.Xl" /></Icon>
@@ -87,7 +87,9 @@
                     <SbColumn TItem="CalendarDto" Field="IsDefault" Title="@L["Default"]" Width="120px">
                         <CellTemplate Context="cellContext"><SbBadge Color="@(cellContext.Item.IsDefault ? SbColor.Success : SbColor.Secondary)">@(cellContext.Item.IsDefault ? L["Yes"] : L["No"])</SbBadge></CellTemplate>
                     </SbColumn>
-                    <SbColumn TItem="CalendarDto" Field="MaxConcurrent" Title="@L["MaxConcurrent"]" Width="150px" />
+                    <SbColumn TItem="CalendarDto" Field="IsAlwaysOpen" Title="@L["BusinessHours"]" Width="150px">
+                        <CellTemplate Context="cellContext"><SbBadge Color="@(cellContext.Item.IsAlwaysOpen ? SbColor.Success : SbColor.Secondary)">@(cellContext.Item.IsAlwaysOpen ? L["Yes"] : L["No"])</SbBadge></CellTemplate>
+                    </SbColumn>
                 </ChildContent>
             </SbDataGrid>
         </ChildContent>
@@ -106,24 +108,14 @@
                     }
                 </SbSimpleSelect>
                 <SbCheckbox @bind-Value="EditingCalendar.IsDefault" Label="@L["Default"]" />
-                <SbNumberField TNumber="int" Value="EditorMaxConcurrentValue" ValueChanged="OnEditorMaxConcurrentChanged" Min="0" Label="@L["MaxConcurrent"]" />
                 <SbSimpleSelect TValue="CalendarKind" Value="@EditingCalendar.Kind" ValueChanged="OnCalendarKindChangedAsync" Label="@L["Kind"]">
                     @foreach (var kind in CalendarKindOptions)
                     {
                         <SbSelectOption TValue="CalendarKind" Value="@kind" Text="@GetCalendarKindText(kind)">@GetCalendarKindText(kind)</SbSelectOption>
                     }
                 </SbSimpleSelect>
-                <SbSimpleSelect TValue="CalendarOwnerType" Value="@EditingCalendar.OwnerType" ValueChanged="OnCalendarOwnerTypeChangedAsync" Label="@L["OwnerType"]">
-                    @foreach (var ownerType in GetAvailableOwnerTypeOptions())
-                    {
-                        <SbSelectOption TValue="CalendarOwnerType" Value="@ownerType" Text="@GetCalendarOwnerTypeText(ownerType)">@GetCalendarOwnerTypeText(ownerType)</SbSelectOption>
-                    }
-                </SbSimpleSelect>
-                @if (RequiresOwnerId)
-                {
-                    <SbTextField @bind-Value="OwnerIdText" Label="@GetOwnerIdLabel()" />
-                    <SbText Variant="SbTextVariant.Caption" Color="SbColor.Muted">@L["OwnerIdHelp"]</SbText>
-                }
+                <SbCheckbox @bind-Value="EditingCalendar.IsAlwaysOpen" Label="@L["BusinessHours"]" />
+                <SbTextField @bind-Value="EditingCalendar.OwnerName" Label="@L["OwnerName"]" />
             </SbStack>
         </SbForm>
     </ChildContent>
@@ -152,7 +144,6 @@
                                       Label="@L["DayOfWeek"]" />
                             <SbTextField @bind-Value="rule.StartTimeText" Label="@L["StartTime"]" />
                             <SbTextField @bind-Value="rule.EndTimeText" Label="@L["EndTime"]" />
-                            <SbNumberField TNumber="int" Value="rule.MaxConcurrentValue" ValueChanged="@(value => rule.MaxConcurrentValue = value)" Min="0" Label="@L["MaxConcurrent"]" />
                             <SbIconButton Color="SbColor.Danger" OnClick="@(() => RemoveHour(rule))" AriaLabel="@L["Delete"]"><Icon><SbIcon Name="trash" /></Icon></SbIconButton>
                         </SbStack>
                     }

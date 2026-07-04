@@ -32,28 +32,28 @@ public class IdentityMenuContributor : IMenuContributor
         identityMenu.AddItem(new ApplicationMenuItem(
             IdentityMenuNames.OrganizationUnits,
             l["Menu:OrganizationUnits"],
-            url: "/admin/identity/organization-units",
+            url: "/panel/admin/identity/organization-units",
             icon: "folder-tree"
         ).RequirePermissions(IdentityPermissions.OrganizationUnits.Default));
 
         identityMenu.AddItem(new ApplicationMenuItem(
             IdentityMenuNames.Users,
             l["Menu:Users"],
-            url: "/admin/identity/users",
+            url: "/panel/admin/identity/users",
             icon: "user"
         ).RequirePermissions(SufiChain.SufiAbp.Identity.IdentityPermissions.Users.Default));
 
         identityMenu.AddItem(new ApplicationMenuItem(
             IdentityMenuNames.Roles,
             l["Menu:Roles"],
-            url: "/admin/identity/roles",
+            url: "/panel/admin/identity/roles",
             icon: "shield"
         ).RequirePermissions(SufiChain.SufiAbp.Identity.IdentityPermissions.Roles.Default));
 
         identityMenu.AddItem(new ApplicationMenuItem(
             IdentityMenuNames.SecurityLogs,
             l["Menu:SecurityLogs"],
-            url: "/admin/identity/security-logs",
+            url: "/panel/admin/identity/security-logs",
             icon: "shield-alert"
         ).RequirePermissions(SufiChain.SufiAbp.Identity.IdentityPermissions.Users.Default));
 

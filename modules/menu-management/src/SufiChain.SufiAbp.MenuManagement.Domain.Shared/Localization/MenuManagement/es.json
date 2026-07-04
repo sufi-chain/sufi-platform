@@ -6,6 +6,8 @@
     "Permission:MenuManagement.Menus.Create": "Crear menú",
     "Permission:MenuManagement.Menus.Edit": "Editar menú",
     "Permission:MenuManagement.Menus.Delete": "Eliminar menú",
-    "Permission:MenuManagement.Menus.ManageItems": "Administrar elementos del menú"
+    "Permission:MenuManagement.Menus.ManageItems": "Administrar elementos del menú",
+    "Menu:MenuManagement": "Gestión de menús",
+    "Menu:MenuManagement.Menus": "Menús"
   }
 }

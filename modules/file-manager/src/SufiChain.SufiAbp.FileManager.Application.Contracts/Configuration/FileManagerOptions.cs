@@ -59,11 +59,18 @@ public class FileManagerOptions
     /// </summary>
     public bool ResizeLargeImagesByDefault { get; set; } = true;
 
+   /// <summary>
+   /// Whether to seed the default "General" file structure.
+   /// Default is true.
+   /// </summary>
+   public bool SeedDefaultStructures { get; set; } = true;
+
     /// <summary>
-    /// Whether to seed the default "General" file structure.
-    /// Default is true.
+    /// The role name that grants administrative (full) access to all folders
+    /// within the user's own tenant. Host users always bypass this check.
+    /// Default is "admin".
     /// </summary>
-    public bool SeedDefaultStructures { get; set; } = true;
+    public string FolderAdminRoleName { get; set; } = "admin";
 
     /// <summary>
     /// Secret key for signing file access tokens (thumbnail/stream URLs).

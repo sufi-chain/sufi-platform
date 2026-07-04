@@ -488,6 +488,23 @@
     "Permission:MediaItems": "عناصر الوسائط",
     "Permission:MediaStructures": "هياكل الوسائط",
     "BlobStorageView": "عرض التخزين",
-    "DirectoryMapView": "عرض المجلدات"
+    "DirectoryMapView": "عرض المجلدات",
+    "Menu:FolderAccess": "وصول المجلدات",
+    "FolderAccess:Folder": "المجلد",
+    "FolderAccess:ChooseFolder": "اختر مجلدًا…",
+    "FolderAccess:GrantType": "نوع المنح",
+    "FolderAccess:User": "مستخدم",
+    "FolderAccess:Role": "دور",
+    "FolderAccess:OrganizationUnit": "وحدة تنظيمية",
+    "FolderAccess:PrincipalId": "معرّف الطرف",
+    "FolderAccess:Level": "مستوى الإذن",
+    "FolderAccess:Read": "قراءة",
+    "FolderAccess:Write": "كتابة",
+    "FolderAccess:Delete": "حذف",
+    "FolderAccess:Share": "مشاركة",
+    "FolderAccess:Full": "كامل",
+    "FolderAccess:InheritToChildren": "التوريث للأبناء",
+    "FolderAccess:ClearAll": "مسح الكل",
+    "FolderAccess:NoPermissions": "لا توجد منحات وصول لهذا المجلد."
   }
 }

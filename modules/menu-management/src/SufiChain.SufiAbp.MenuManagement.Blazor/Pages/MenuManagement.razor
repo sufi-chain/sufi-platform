@@ -1,0 +1,78 @@
+@page "/panel/admin/menu-management/menus"
+@attribute [Authorize(Policy = MenuManagementPermissions.Menus.Default)]
+@inherits MenuManagementComponentBase
+
+<SufiAbpPageToolbar>
+    <AuthorizeView Policy="@MenuManagementPermissions.Menus.Create">
+        <SbButton Color="SbColor.Primary" OnClick="@ShowCreateModal">
+            <StartIcon><SbIcon Name="plus" /></StartIcon>
+            <ChildContent>@L["NewMenu"]</ChildContent>
+        </SbButton>
+    </AuthorizeView>
+</SufiAbpPageToolbar>
+
+<SbStack Direction="SbStackDirection.Column" Gap="4">
+    <SbCard>
+        <ChildContent>
+            <SbStack Gap="4">
+                <SbTextField @bind-Value="_keyword"
+                             Placeholder="@L["SearchMenus"]"
+                             Clearable="true" />
+
+                <SbDataGrid TItem="MenuListDto"
+                            Items="_menus"
+                            Loading="IsOperationLoading(LoadingKeys.LoadMenus)"
+                            Striped="true"
+                            Hoverable="true"
+                            PageIndex="_pageIndex"
+                            PageSize="_pageSize"
+                            TotalCount="_totalCount"
+                            PageIndexChanged="OnPageIndexChangedAsync">
+                    <SbColumn TItem="MenuListDto" Title="@L["Actions"]" Width="200px">
+                        <CellTemplate Context="cellContext">
+                            <SbStack Direction="SbStackDirection.Row" Gap="1">
+                                <AuthorizeView Policy="@MenuManagementPermissions.Menus.ManageItems">
+                                    <SbTooltip Text="@L["ManageItems"]">
+                                        <SbIconButton Size="SbSize.Sm" AriaLabel="@L["ManageItems"]"
+                                                      OnClick="@(() => GoToItems(cellContext.Item))">
+                                            <Icon><SbIcon Name="list" /></Icon>
+                                        </SbIconButton>
+                                    </SbTooltip>
+                                </AuthorizeView>
+                                <AuthorizeView Policy="@MenuManagementPermissions.Menus.Edit">
+                                    <SbTooltip Text="@L["EditMenu"]">
+                                        <SbIconButton Size="SbSize.Sm" AriaLabel="@L["EditMenu"]"
+                                                      OnClick="@(() => ShowEditModal(cellContext.Item))">
+                                            <Icon><SbIcon Name="edit" /></Icon>
+                                        </SbIconButton>
+                                    </SbTooltip>
+                                </AuthorizeView>
+                                <AuthorizeView Policy="@MenuManagementPermissions.Menus.Delete">
+                                    <SbTooltip Text="@L["DeleteMenu"]">
+                                        <SbIconButton Size="SbSize.Sm" Color="SbColor.Danger" AriaLabel="@L["DeleteMenu"]"
+                                                      OnClick="@(() => DeleteMenuAsync(cellContext.Item))">
+                                            <Icon><SbIcon Name="trash" /></Icon>
+                                        </SbIconButton>
+                                    </SbTooltip>
+                                </AuthorizeView>
+                            </SbStack>
+                        </CellTemplate>
+                    </SbColumn>
+                    <SbColumn TItem="MenuListDto" Field="Name" Title="@L["MenuName"]" Sortable="true" />
+                    <SbColumn TItem="MenuListDto" Field="ContextType" Title="@L["ContextType"]" Sortable="true" />
+                    <SbColumn TItem="MenuListDto" Field="DisplayName" Title="@L["DisplayName"]" Sortable="true" />
+                    <SbColumn TItem="MenuListDto" Field="IsActive" Title="@L["IsActive"]">
+                        <CellTemplate Context="cellContext">
+                            <SbText Color="@(cellContext.Item.IsActive ? SbColor.Success : SbColor.Muted)">
+                                @(cellContext.Item.IsActive ? "✓" : "—")
+                            </SbText>
+                        </CellTemplate>
+                    </SbColumn>
+                </SbDataGrid>
+            </SbStack>
+        </ChildContent>
+    </SbCard>
+</SbStack>
+
+<MenuCreateModal Open="_showCreateModal" OpenChanged="SetCreateOpen" OnMenuCreated="OnMenuCreatedAsync" />
+<MenuEditModal Open="_showEditModal" OpenChanged="SetEditOpen" Menu="_selectedMenu" OnMenuUpdated="OnMenuUpdatedAsync" />

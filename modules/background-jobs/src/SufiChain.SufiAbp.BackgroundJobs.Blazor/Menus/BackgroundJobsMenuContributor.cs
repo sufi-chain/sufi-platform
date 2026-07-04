@@ -24,7 +24,7 @@ public class BackgroundJobsMenuContributor : IMenuContributor
         administration.AddItem(new ApplicationMenuItem(
             BackgroundJobsMenuNames.GroupName,
             l["BackgroundJobs"],
-            url: "/admin/background-jobs",
+            url: "/panel/admin/background-jobs",
             icon: "clock",
             order: 30
         ).RequirePermissions(BackgroundJobsPermissions.BackgroundJobs.Default));

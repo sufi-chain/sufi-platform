@@ -1,4 +1,4 @@
-@page "/admin/file-manager/archived"
+@page "/panel/admin/file-manager/archived"
 @attribute [Authorize(FileManagerPermissions.FileItems.Default)]
 @inherits FileManagerComponentBase
 @inject IFileItemAppService FileItemAppService
@@ -40,7 +40,7 @@
 					<SbSimpleSelect TValue="string?"
 									Value="@_structureKeyFilter"
 									ValueChanged="@OnStructureKeyFilterChanged"
-									Label="@L["FileStructure"]">
+									Placeholder="@L["AllStructures"]">
 						<SbSelectOption TValue="string?" Value="@(null)">@L["AllStructures"]</SbSelectOption>
 						@foreach (var structure in _structureFilterOptions)
 						{

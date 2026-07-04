@@ -25,7 +25,7 @@ public class TenantManagementMenuContributor : IMenuContributor
         administration.AddItem(new ApplicationMenuItem(
             TenantManagementMenuNames.GroupName,
             l["Menu:TenantManagement"],
-            url: "/admin/tenant-management/tenants",
+            url: "/panel/admin/tenant-management/tenants",
             icon: "building",
             order: 10
         ).RequirePermissions(TenantManagementPermissions.Tenants.Default));

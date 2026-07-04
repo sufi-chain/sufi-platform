@@ -1,4 +1,4 @@
-@page "/admin/file-manager/stats"
+@page "/panel/admin/file-manager/stats"
 @attribute [Authorize(FileManagerPermissions.FileItems.Default)]
 @inherits FileManagerComponentBase
 
@@ -37,7 +37,7 @@
 		<Header>
 			<SbStack Direction="SbStackDirection.Row" Align="@SbAlign.Center" Justify="@SbJustify.SpaceBetween">
 				<h5 class="m-0">@L["FileStructures"]</h5>
-				<SbButton Href="/admin/file-manager/structures">
+				<SbButton Href="/panel/admin/file-manager/structures">
 					@L["AddStructure"]
 				</SbButton>
 			</SbStack>

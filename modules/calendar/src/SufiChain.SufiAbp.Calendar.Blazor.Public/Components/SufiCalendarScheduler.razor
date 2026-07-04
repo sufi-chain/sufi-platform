@@ -4,26 +4,14 @@
 @if (Inline)
 {
     <SbStack Direction="SbStackDirection.Column" Gap="3" Class="sufi-calendar-scheduler-inline">
-        <div class="sufi-calendar-scheduler__header">
-            <SbHeading Level="5">@(Title ?? L["Calendar"])</SbHeading>
-            @if (AllowCalendarSelection)
-            {
-                <div class="sufi-calendar-scheduler__calendar-select" @key="CalendarSelectKey">
-                    <SbSimpleSelect TValue="string"
-                                    Value="@SelectedCalendarKey"
-                                    ValueChanged="OnSelectedCalendarChangedAsync"
-                                    Placeholder="@L["Calendar"]"
-                                    Searchable="true">
-                        @foreach (var calendar in CalendarOptions)
-                        {
-                            <SbSelectOption TValue="string" Value="@GetCalendarKey(calendar)" Text="@GetCalendarOptionText(calendar)">
-                                @GetCalendarOptionText(calendar)
-                            </SbSelectOption>
-                        }
-                    </SbSimpleSelect>
-                </div>
-            }
-        </div>
+        @if (AllowCalendarSelection && ShowCalendarSelectInHeader)
+        {
+            <SufiCalendarSelect SelectedCalendarId="@SelectedCalendarId"
+                                SelectedCalendarIdChanged="OnSelectedCalendarIdChangedAsync"
+                                SelectedCalendarChanged="OnSelectedCalendarChangedAsync"
+                                InitialCalendarId="@InitialCalendarId"
+                                Calendars="@Calendars" />
+        }
 
         @if (SelectedCalendarId == Guid.Empty)
         {
@@ -84,22 +72,13 @@ else
                         </SbTooltip>
                     }
                 </SbStack>
-                @if (AllowCalendarSelection)
+                @if (AllowCalendarSelection && ShowCalendarSelectInHeader)
                 {
-                    <div class="sufi-calendar-scheduler__calendar-select" @key="CalendarSelectKey">
-                        <SbSimpleSelect TValue="string"
-                                        Value="@SelectedCalendarKey"
-                                        ValueChanged="OnSelectedCalendarChangedAsync"
-                                        Placeholder="@L["Calendar"]"
-                                        Searchable="true">
-                            @foreach (var calendar in CalendarOptions)
-                            {
-                                <SbSelectOption TValue="string" Value="@GetCalendarKey(calendar)" Text="@GetCalendarOptionText(calendar)">
-                                    @GetCalendarOptionText(calendar)
-                                </SbSelectOption>
-                            }
-                        </SbSimpleSelect>
-                    </div>
+                    <SufiCalendarSelect SelectedCalendarId="@SelectedCalendarId"
+                                        SelectedCalendarIdChanged="OnSelectedCalendarIdChangedAsync"
+                                        SelectedCalendarChanged="OnSelectedCalendarChangedAsync"
+                                        InitialCalendarId="@InitialCalendarId"
+                                        Calendars="@Calendars" />
                 }
             </div>
         </Header>

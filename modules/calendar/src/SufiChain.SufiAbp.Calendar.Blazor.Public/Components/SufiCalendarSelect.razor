@@ -1,0 +1,16 @@
+@inherits CalendarPublicComponentBase
+
+<div class="sufi-calendar-scheduler__calendar-select">
+    @if (IsLoaded)
+    {
+        <SbSelect TItem="CalendarLookupDto"
+                  TValue="string"
+                  Items="CalendarOptions"
+                  Value="@SelectedCalendarKey"
+                  ValueChanged="OnSelectedCalendarChangedAsync"
+                  TextField="@(calendar => GetCalendarOptionText(calendar))"
+                  ValueField="@(calendar => GetCalendarKey(calendar))"
+                  Placeholder="@L["Calendar"]"
+                  Searchable="true" />
+    }
+</div>

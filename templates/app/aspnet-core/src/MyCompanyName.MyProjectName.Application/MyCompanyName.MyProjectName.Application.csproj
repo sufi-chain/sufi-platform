@@ -1,49 +1,45 @@
+﻿<?xml version="1.0" encoding="utf-16"?>
 <Project Sdk="Microsoft.NET.Sdk">
-
-	<PropertyGroup><LangVersion>latest</LangVersion>
+  <PropertyGroup>
+    <LangVersion>latest</LangVersion>
     <TargetFramework>net10.0</TargetFramework>
     <RootNamespace>MyCompanyName.MyProjectName</RootNamespace>
     <IsPackable>false</IsPackable>
   </PropertyGroup>
-
-  
   <ItemGroup>
     <ProjectReference Include="..\MyCompanyName.MyProjectName.Domain\MyCompanyName.MyProjectName.Domain.csproj" />
     <ProjectReference Include="..\MyCompanyName.MyProjectName.Application.Contracts\MyCompanyName.MyProjectName.Application.Contracts.csproj" />
   </ItemGroup>
-
   <TEMPLATE-REMOVE>
-  <ItemGroup>
-    <ProjectReference Include="..\..\..\..\..\src\framework\SufiChain.SufiAbp.Core\SufiChain.SufiAbp.Core.csproj" />
-    <ProjectReference Include="..\..\..\..\..\modules\identity\src\SufiChain.SufiAbp.Identity.Application\SufiChain.SufiAbp.Identity.Application.csproj" />
-    <ProjectReference Include="..\..\..\..\..\modules\tenant-management\src\SufiChain.SufiAbp.TenantManagement.Application\SufiChain.SufiAbp.TenantManagement.Application.csproj" />
-    <ProjectReference Include="..\..\..\..\..\modules\account\src\SufiChain.SufiAbp.Account.Application\SufiChain.SufiAbp.Account.Application.csproj" />
-    <ProjectReference Include="..\..\..\..\..\modules\permission-management\src\SufiChain.SufiAbp.PermissionManagement.Application\SufiChain.SufiAbp.PermissionManagement.Application.csproj" />
-    <ProjectReference Include="..\..\..\..\..\modules\feature-management\src\SufiChain.SufiAbp.FeatureManagement.Application\SufiChain.SufiAbp.FeatureManagement.Application.csproj" />
-    <ProjectReference Include="..\..\..\..\..\modules\setting-management\src\SufiChain.SufiAbp.SettingManagement.Application\SufiChain.SufiAbp.SettingManagement.Application.csproj" />
-    <ProjectReference Include="..\..\..\..\..\modules\short-link-generator\src\SufiChain.SufiAbp.ShortLinkGenerator.Application\SufiChain.SufiAbp.ShortLinkGenerator.Application.csproj" />
-    <ProjectReference Include="..\..\..\..\..\modules\tags-management\src\SufiChain.SufiAbp.TagsManagement.Application\SufiChain.SufiAbp.TagsManagement.Application.csproj" />
-    <ProjectReference Include="..\..\..\..\..\modules\menu-management\src\SufiChain.SufiAbp.MenuManagement.Application\SufiChain.SufiAbp.MenuManagement.Application.csproj" />
-  </ItemGroup>
+    <ItemGroup>
+      <ProjectReference Include="..\..\..\..\..\framework\SufiChain.SufiAbp.Core\SufiChain.SufiAbp.Core.csproj" />
+      <ProjectReference Include="..\..\..\..\..\modules\identity\src\SufiChain.SufiAbp.Identity.Application\SufiChain.SufiAbp.Identity.Application.csproj" />
+      <ProjectReference Include="..\..\..\..\..\modules\tenant-management\src\SufiChain.SufiAbp.TenantManagement.Application\SufiChain.SufiAbp.TenantManagement.Application.csproj" />
+      <ProjectReference Include="..\..\..\..\..\modules\account\src\SufiChain.SufiAbp.Account.Application\SufiChain.SufiAbp.Account.Application.csproj" />
+      <ProjectReference Include="..\..\..\..\..\modules\permission-management\src\SufiChain.SufiAbp.PermissionManagement.Application\SufiChain.SufiAbp.PermissionManagement.Application.csproj" />
+      <ProjectReference Include="..\..\..\..\..\modules\feature-management\src\SufiChain.SufiAbp.FeatureManagement.Application\SufiChain.SufiAbp.FeatureManagement.Application.csproj" />
+      <ProjectReference Include="..\..\..\..\..\modules\setting-management\src\SufiChain.SufiAbp.SettingManagement.Application\SufiChain.SufiAbp.SettingManagement.Application.csproj" />
+      <ProjectReference Include="..\..\..\..\..\modules\short-link-generator\src\SufiChain.SufiAbp.ShortLinkGenerator.Application\SufiChain.SufiAbp.ShortLinkGenerator.Application.csproj" />
+      <ProjectReference Include="..\..\..\..\..\modules\tags-management\src\SufiChain.SufiAbp.TagsManagement.Application\SufiChain.SufiAbp.TagsManagement.Application.csproj" />
+      <ProjectReference Include="..\..\..\..\..\modules\menu-management\src\SufiChain.SufiAbp.MenuManagement.Application\SufiChain.SufiAbp.MenuManagement.Application.csproj" />
+    </ItemGroup>
   </TEMPLATE-REMOVE>
-
   <TEMPLATE-ONLY>
-  <ItemGroup>
-    <PackageReference Include="SufiChain.SufiAbp.Core" Version="$(SufiVersion)" />
-    <PackageReference Include="SufiChain.SufiAbp.Calendar.Application" Version="$(SufiVersion)" />
-    <PackageReference Include="SufiChain.SufiAbp.LocalizationManagement.Application" Version="$(SufiVersion)" />
-    <PackageReference Include="SufiChain.SufiAbp.AI.Application" Version="$(SufiVersion)" />
-    <PackageReference Include="SufiChain.SufiAbp.FileManager.Application" Version="$(SufiVersion)" />
-    <PackageReference Include="SufiChain.SufiAbp.Identity.Application" Version="$(SufiVersion)" />
-    <PackageReference Include="SufiChain.SufiAbp.TenantManagement.Application" Version="$(SufiVersion)" />
-    <PackageReference Include="SufiChain.SufiAbp.Account.Application" Version="$(SufiVersion)" />
-    <PackageReference Include="SufiChain.SufiAbp.PermissionManagement.Application" Version="$(SufiVersion)" />
-    <PackageReference Include="SufiChain.SufiAbp.FeatureManagement.Application" Version="$(SufiVersion)" />
-    <PackageReference Include="SufiChain.SufiAbp.SettingManagement.Application" Version="$(SufiVersion)" />
-    <PackageReference Include="SufiChain.SufiAbp.ShortLinkGenerator.Application" Version="$(SufiVersion)" />
-    <PackageReference Include="SufiChain.SufiAbp.TagsManagement.Application" Version="$(SufiVersion)" />
-    <PackageReference Include="SufiChain.SufiAbp.MenuManagement.Application" Version="$(SufiVersion)" />
-  </ItemGroup>
+    <ItemGroup>
+      <PackageReference Include="SufiChain.SufiAbp.Core" Version="$(SufiVersion)" />
+      <PackageReference Include="SufiChain.SufiAbp.Calendar.Application" Version="$(SufiVersion)" />
+      <PackageReference Include="SufiChain.SufiAbp.LocalizationManagement.Application" Version="$(SufiVersion)" />
+      <PackageReference Include="SufiChain.SufiAbp.AI.Application" Version="$(SufiVersion)" />
+      <PackageReference Include="SufiChain.SufiAbp.FileManager.Application" Version="$(SufiVersion)" />
+      <PackageReference Include="SufiChain.SufiAbp.Identity.Application" Version="$(SufiVersion)" />
+      <PackageReference Include="SufiChain.SufiAbp.TenantManagement.Application" Version="$(SufiVersion)" />
+      <PackageReference Include="SufiChain.SufiAbp.Account.Application" Version="$(SufiVersion)" />
+      <PackageReference Include="SufiChain.SufiAbp.PermissionManagement.Application" Version="$(SufiVersion)" />
+      <PackageReference Include="SufiChain.SufiAbp.FeatureManagement.Application" Version="$(SufiVersion)" />
+      <PackageReference Include="SufiChain.SufiAbp.SettingManagement.Application" Version="$(SufiVersion)" />
+      <PackageReference Include="SufiChain.SufiAbp.ShortLinkGenerator.Application" Version="$(SufiVersion)" />
+      <PackageReference Include="SufiChain.SufiAbp.TagsManagement.Application" Version="$(SufiVersion)" />
+      <PackageReference Include="SufiChain.SufiAbp.MenuManagement.Application" Version="$(SufiVersion)" />
+    </ItemGroup>
   </TEMPLATE-ONLY>
-
 </Project>

@@ -27,7 +27,7 @@ public class FreeBusyServiceTests
     [Fact]
     public async Task Should_Calculate_Busy_Blocks_And_Free_Slots_For_Exclusive_Calendar()
     {
-        var calendar = CreateCalendar(maxConcurrent: 1);
+        var calendar = CreateCalendar();
         var from = Utc(2026, 6, 8, 9);
         var to = Utc(2026, 6, 8, 17);
         var occurrences = new[]
@@ -40,10 +40,10 @@ public class FreeBusyServiceTests
 
         var result = await _service.GetFreeBusyAsync(new[] { calendar.Id }, from, to);
 
-        result.BusyBlocks.Select(x => (x.StartUtc, x.EndUtc, x.BusyCount, x.IsCapacityFull)).ShouldBe(new[]
+        result.BusyBlocks.Select(x => (x.StartUtc, x.EndUtc, x.BusyCount)).ShouldBe(new[]
         {
-            (Utc(2026, 6, 8, 10), Utc(2026, 6, 8, 11), 1, true),
-            (Utc(2026, 6, 8, 13), Utc(2026, 6, 8, 14), 1, true)
+            (Utc(2026, 6, 8, 10), Utc(2026, 6, 8, 11), 1),
+            (Utc(2026, 6, 8, 13), Utc(2026, 6, 8, 14), 1)
         });
         result.FreeSlots.Select(x => (x.StartUtc, x.EndUtc)).ShouldBe(new[]
         {
@@ -54,9 +54,9 @@ public class FreeBusyServiceTests
     }
 
     [Fact]
-    public async Task Should_Count_Overlaps_And_Only_Block_Free_Slots_When_Capacity_Is_Full()
+    public async Task Should_Count_Overlaps_And_Subtract_All_Busy_Blocks_From_Free_Slots()
     {
-        var calendar = CreateCalendar(maxConcurrent: 2);
+        var calendar = CreateCalendar();
         var from = Utc(2026, 6, 8, 9);
         var to = Utc(2026, 6, 8, 13);
         var occurrences = new[]
@@ -69,14 +69,14 @@ public class FreeBusyServiceTests
 
         var result = await _service.GetFreeBusyAsync(new[] { calendar.Id }, from, to);
 
-        result.BusyBlocks.Select(x => (x.StartUtc, x.EndUtc, x.BusyCount, x.IsCapacityFull)).ShouldBe(new[]
+        result.BusyBlocks.Select(x => (x.StartUtc, x.EndUtc, x.BusyCount)).ShouldBe(new[]
         {
-            (Utc(2026, 6, 8, 10), Utc(2026, 6, 8, 11), 1, false),
-            (Utc(2026, 6, 8, 11), Utc(2026, 6, 8, 12), 2, true)
+            (Utc(2026, 6, 8, 10), Utc(2026, 6, 8, 11), 1),
+            (Utc(2026, 6, 8, 11), Utc(2026, 6, 8, 12), 2)
         });
         result.FreeSlots.Select(x => (x.StartUtc, x.EndUtc)).ShouldBe(new[]
         {
-            (Utc(2026, 6, 8, 9), Utc(2026, 6, 8, 11)),
+            (Utc(2026, 6, 8, 9), Utc(2026, 6, 8, 10)),
             (Utc(2026, 6, 8, 12), Utc(2026, 6, 8, 13))
         });
     }
@@ -84,7 +84,7 @@ public class FreeBusyServiceTests
     [Fact]
     public async Task Should_Honor_Availability_Windows_When_Calculating_Free_Slots()
     {
-        var calendar = CreateCalendar(maxConcurrent: 1);
+        var calendar = CreateCalendar();
         var from = Utc(2026, 6, 8, 7);
         var to = Utc(2026, 6, 8, 18);
         var open = Utc(2026, 6, 8, 9);
@@ -151,15 +151,14 @@ public class FreeBusyServiceTests
             });
     }
 
-    private static CalendarAggregate CreateCalendar(int? maxConcurrent)
+    private static CalendarAggregate CreateCalendar()
     {
         return new CalendarAggregate(
             Guid.NewGuid(),
             null,
             "Team calendar",
-            CalendarKind.Shared,
-            "UTC",
-            maxConcurrent: maxConcurrent);
+            CalendarKind.Public,
+            "UTC");
     }
 
     private static EventOccurrence CreateOccurrence(Guid calendarId, DateTime startUtc, DateTime endUtc)

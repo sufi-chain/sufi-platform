@@ -35,17 +35,20 @@ public class CalendarEventAppService : SufiAbpApplicationService, ICalendarEvent
         return CalendarEventDtoMapper.ToDto(calendarEvent);
     }
 
-    public virtual async Task<PagedResultDto<CalendarEventDto>> GetListAsync(GetEventListInput input)
-    {
-        await CheckPolicyAsync(CalendarPermissions.Events.Default);
+   public virtual async Task<PagedResultDto<CalendarEventDto>> GetListAsync(GetEventListInput input)
+   {
+       await CheckPolicyAsync(CalendarPermissions.Events.Default);
 
-        var query = await _eventRepository.WithDetailsAsync();
-        query = await ApplyVisibilityFilterAsync(query);
-        query = ApplyFilter(query, input);
-        var totalCount = await _asyncExecuter.CountAsync(query);
-        var items = await _asyncExecuter.ToListAsync(query.Skip(input.SkipCount).Take(input.MaxResultCount));
-        return new PagedResultDto<CalendarEventDto>(totalCount, items.Select(CalendarEventDtoMapper.ToDto).ToList());
-    }
+       var query = await _eventRepository.WithDetailsAsync();
+       query = await ApplyVisibilityFilterAsync(query);
+        var inheritedCalendarIds = input.CalendarId.HasValue
+            ? await _calendarRepository.GetInheritedCalendarIdsAsync(input.CalendarId.Value)
+            : new List<Guid>();
+        query = ApplyFilter(query, input, inheritedCalendarIds);
+       var totalCount = await _asyncExecuter.CountAsync(query);
+       var items = await _asyncExecuter.ToListAsync(query.Skip(input.SkipCount).Take(input.MaxResultCount));
+       return new PagedResultDto<CalendarEventDto>(totalCount, items.Select(CalendarEventDtoMapper.ToDto).ToList());
+   }
 
     public virtual async Task<ListResultDto<CalendarEventDto>> GetEventsBySourceAsync(string sourceType, string sourceId)
     {
@@ -224,11 +227,12 @@ public class CalendarEventAppService : SufiAbpApplicationService, ICalendarEvent
         return CalendarEventDtoMapper.ToDto(calendarEvent);
     }
 
-    protected virtual IQueryable<CalendarEvent> ApplyFilter(IQueryable<CalendarEvent> query, GetEventListInput input)
+    protected virtual IQueryable<CalendarEvent> ApplyFilter(IQueryable<CalendarEvent> query, GetEventListInput input, IReadOnlyList<Guid> inheritedCalendarIds)
     {
         if (input.CalendarId.HasValue)
         {
-            query = query.Where(x => x.CalendarId == input.CalendarId.Value);
+            var calendarIds = new[] { input.CalendarId.Value }.Concat(inheritedCalendarIds).ToList();
+            query = query.Where(x => calendarIds.Contains(x.CalendarId));
         }
 
         if (input.FromUtc.HasValue)
@@ -266,7 +270,7 @@ public class CalendarEventAppService : SufiAbpApplicationService, ICalendarEvent
         var canSee = await _asyncExecuter.AnyAsync(GetVisibleCalendarQuery(query).Where(x => x.Id == calendarId));
         if (!canSee)
         {
-            throw new BusinessException(CalendarErrorCodes.InvalidOwner);
+            throw new BusinessException(CalendarErrorCodes.CalendarNotAccessible);
         }
     }
 
@@ -281,9 +285,9 @@ public class CalendarEventAppService : SufiAbpApplicationService, ICalendarEvent
         var userId = CurrentUser.Id;
 
         return query.Where(x =>
-            x.OwnerType == CalendarOwnerType.None ||
-            x.Kind == CalendarKind.Tenant ||
-            (userId.HasValue && x.OwnerType == CalendarOwnerType.User && x.OwnerId == userId.Value));
+            x.Kind == CalendarKind.Public ||
+            !x.OwnerUserId.HasValue ||
+            (userId.HasValue && x.OwnerUserId == userId.Value));
     }
 
     protected virtual void CopyExtraProperties(IDictionary<string, object?> source, IDictionary<string, object?> target)

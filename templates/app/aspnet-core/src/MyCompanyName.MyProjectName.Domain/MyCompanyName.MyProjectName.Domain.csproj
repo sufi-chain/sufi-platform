@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup><LangVersion>latest</LangVersion>
     <TargetFramework>net10.0</TargetFramework>
@@ -11,7 +11,7 @@
 	    <PackageReference Include="OpenIddict.Abstractions" Version="$(OpenIddictVersion)" />
 	    <ProjectReference Include="..\..\..\..\..\src\framework\SufiChain.SufiAbp.Core\SufiChain.SufiAbp.Core.csproj" />
 	    <ProjectReference Include="..\..\..\..\..\src\framework\SufiChain.SufiAbp.Data\SufiChain.SufiAbp.Data.csproj" />
-	    <ProjectReference Include="..\..\..\..\..\src\framework\SufiChain.SufiAbp.Messaging\SufiChain.SufiAbp.Messaging.csproj" />
+	    <ProjectReference Include="..\..\..\..\..\src\framework\SufiChain.SufiAbp.Communications\SufiChain.SufiAbp.Communications.csproj" />
 	    <ProjectReference Include="..\MyCompanyName.MyProjectName.Domain.Shared\MyCompanyName.MyProjectName.Domain.Shared.csproj" />
 	  </ItemGroup>
 	  <!-- </TEMPLATE-REMOVE> -->
@@ -42,7 +42,7 @@
 	    <PackageReference Include="SufiChain.SufiAbp.Core" Version="$(SufiVersion)" />
 	    <PackageReference Include="SufiChain.SufiAbp.Data" Version="$(SufiVersion)" />
 	    <ProjectReference Include="..\MyCompanyName.MyProjectName.Domain.Shared\MyCompanyName.MyProjectName.Domain.Shared.csproj" />
-	    <PackageReference Include="SufiChain.SufiAbp.Messaging" Version="$(SufiVersion)" />
+	    <PackageReference Include="SufiChain.SufiAbp.Communications" Version="$(SufiVersion)" />
 	    <PackageReference Include="SufiChain.SufiAbp.Calendar.Domain" Version="$(SufiVersion)" />
 	    <PackageReference Include="SufiChain.SufiAbp.LocalizationManagement.Domain" Version="$(SufiVersion)" />
 	    <PackageReference Include="SufiChain.SufiAbp.AI.Domain" Version="$(SufiVersion)" />

@@ -146,17 +146,13 @@ public partial class SufiAbpTenantSelector
 
     private async Task SwitchByHostNameAsync()
     {
-        if (!IsInteractive)
-        {
-            Logger.LogWarning("SwitchByHostNameAsync: component is not interactive (prerendering). Tenant switch deferred.");
-            return;
-        }
-
         var tenantName = string.IsNullOrWhiteSpace(_tenantName) ? null : _tenantName.Trim();
         Logger.LogInformation("SwitchByHostNameAsync: switching to {Target}", tenantName is null ? "host" : $"tenant '{tenantName}'");
         await ExecuteWithLoadingAsync(
             () => TenantSwitchService.SwitchTenantAsync(null, tenantName),
             LoadingKeys.Switch,
             LoadingBehavior.None);
+        _tenantName = string.Empty;
+        await Hide();
     }
 }

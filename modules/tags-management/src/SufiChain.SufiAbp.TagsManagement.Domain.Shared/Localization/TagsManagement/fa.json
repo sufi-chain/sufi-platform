@@ -3,6 +3,9 @@
   "texts": {
     "Permission:TagsManagement": "مدیریت برچسب‌ها",
     "Permission:TagsManagement.Tags": "برچسب‌ها",
-    "Permission:TagsManagement.TagLinks": "پیوندهای برچسب"
+    "Permission:TagsManagement.TagLinks": "پیوندهای برچسب",
+    "Menu:TagsManagement": "مدیریت برچسب‌ها",
+    "Menu:TagsManagement.Tags": "برچسب‌ها",
+    "Menu:TagsManagement.TagLinks": "پیوندهای برچسب"
   }
 }

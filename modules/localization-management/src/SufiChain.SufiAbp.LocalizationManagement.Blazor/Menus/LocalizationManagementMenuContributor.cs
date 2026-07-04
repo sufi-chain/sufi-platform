@@ -34,14 +34,14 @@ public class LocalizationManagementMenuContributor : IMenuContributor
         localizationMenu.AddItem(new ApplicationMenuItem(
             LocalizationManagementMenus.LocalizationTexts,
             l["Menu:LocalizationTexts"],
-            url: "/admin/localization-management/texts",
+            url: "/panel/admin/localization-management/texts",
             icon: "file-text"
         ).RequirePermissions(LocalizationManagementPermissions.Texts.Default));
 
         localizationMenu.AddItem(new ApplicationMenuItem(
             LocalizationManagementMenus.LocalizationResources,
             l["Menu:LocalizationResources"],
-            url: "/admin/localization-management/resources",
+            url: "/panel/admin/localization-management/resources",
             icon: "folder"
         ).RequirePermissions(LocalizationManagementPermissions.Resources.Default));
     }

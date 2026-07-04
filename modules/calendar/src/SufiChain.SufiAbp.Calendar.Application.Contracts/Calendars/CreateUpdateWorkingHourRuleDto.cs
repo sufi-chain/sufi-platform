@@ -8,5 +8,4 @@ public class CreateUpdateWorkingHourRuleDto
 
     public TimeSpan EndTime { get; set; }
 
-    public int? MaxConcurrent { get; set; }
 }

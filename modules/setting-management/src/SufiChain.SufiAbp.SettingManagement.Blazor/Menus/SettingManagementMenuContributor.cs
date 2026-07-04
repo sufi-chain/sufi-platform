@@ -25,7 +25,7 @@ public class SettingManagementMenuContributor : IMenuContributor
         administration.AddItem(new ApplicationMenuItem(
             SettingManagementMenuNames.GroupName,
             l["Settings"],
-            url: "/admin/settings",
+            url: "/panel/admin/settings",
             icon: "settings",
             order: 100
         ).RequirePermissions(

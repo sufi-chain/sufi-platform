@@ -36,7 +36,7 @@ public partial class LocalizationResources : LocalizationManagementComponentBase
 
     private void ViewTexts(string resourceName)
     {
-        Navigation.NavigateTo($"/admin/localization-management/texts?resourceName={resourceName}");
+        Navigation.NavigateTo($"/panel/admin/localization-management/texts?resourceName={resourceName}");
     }
 
     private void ShowCreateDialog()

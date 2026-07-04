@@ -13,10 +13,10 @@ public static class CalendarDtoMapper
             Name = calendar.Name,
             Kind = calendar.Kind,
             TimeZoneId = calendar.TimeZoneId,
-            OwnerType = calendar.OwnerType,
-            OwnerId = calendar.OwnerId,
+            OwnerUserId = calendar.OwnerUserId,
+            OwnerName = calendar.OwnerName,
             IsDefault = calendar.IsDefault,
-            MaxConcurrent = calendar.MaxConcurrent,
+            IsAlwaysOpen = calendar.IsAlwaysOpen,
             CreationTime = calendar.CreationTime,
             CreatorId = calendar.CreatorId,
             LastModificationTime = calendar.LastModificationTime,
@@ -26,7 +26,14 @@ public static class CalendarDtoMapper
             DeletionTime = calendar.DeletionTime,
             ExtraProperties = new ExtraPropertyDictionary(calendar.ExtraProperties),
             WorkingHourRules = calendar.WorkingHourRules.OrderBy(x => x.DisplayOrder).ThenBy(x => x.Id).Select(ToDto).ToList(),
-            Exceptions = calendar.Exceptions.Select(ToDto).ToList()
+            Exceptions = calendar.Exceptions.Select(ToDto).ToList(),
+            Inheritances = calendar.Inheritances.Select(x => new CalendarInheritanceDto
+            {
+                Id = x.Id,
+                CalendarId = x.CalendarId,
+                ParentCalendarId = x.ParentCalendarId,
+                IsInheritedByDefault = x.IsInheritedByDefault
+            }).ToList()
         };
     }
 
@@ -38,8 +45,8 @@ public static class CalendarDtoMapper
             Name = calendar.Name,
             Kind = calendar.Kind,
             TimeZoneId = calendar.TimeZoneId,
-            OwnerType = calendar.OwnerType,
-            OwnerId = calendar.OwnerId,
+            OwnerUserId = calendar.OwnerUserId,
+            OwnerName = calendar.OwnerName,
             IsDefault = calendar.IsDefault
         };
     }
@@ -53,7 +60,6 @@ public static class CalendarDtoMapper
             DayOfWeek = rule.DayOfWeek,
             StartTime = rule.StartTime.ToTimeSpan(),
             EndTime = rule.EndTime.ToTimeSpan(),
-            MaxConcurrent = rule.MaxConcurrent
         };
     }
 
@@ -69,8 +75,7 @@ public static class CalendarDtoMapper
             Ranges = exception.Ranges.Select(x => new WorkingHourRangeDto
             {
                 StartTime = x.StartTime.ToTimeSpan(),
-                EndTime = x.EndTime.ToTimeSpan(),
-                MaxConcurrent = x.MaxConcurrent
+                EndTime = x.EndTime.ToTimeSpan()
             }).ToList()
         };
     }

@@ -15,13 +15,13 @@ public class CreateUpdateCalendarDto
     [StringLength(CalendarConsts.MaxTimeZoneIdLength)]
     public string TimeZoneId { get; set; } = string.Empty;
 
-    public CalendarOwnerType OwnerType { get; set; }
+    public Guid? OwnerUserId { get; set; }
 
-    public Guid? OwnerId { get; set; }
+    public string? OwnerName { get; set; }
 
     public bool IsDefault { get; set; }
 
-    public int? MaxConcurrent { get; set; }
+    public bool IsAlwaysOpen { get; set; }
 
     public ExtraPropertyDictionary ExtraProperties { get; set; } = new();
 }

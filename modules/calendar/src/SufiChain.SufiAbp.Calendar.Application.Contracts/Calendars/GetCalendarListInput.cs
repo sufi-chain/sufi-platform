@@ -8,7 +8,5 @@ public class GetCalendarListInput : PagedAndSortedResultRequestDto
 
     public CalendarKind? Kind { get; set; }
 
-    public CalendarOwnerType? OwnerType { get; set; }
-
-    public Guid? OwnerId { get; set; }
+    public Guid? OwnerUserId { get; set; }
 }

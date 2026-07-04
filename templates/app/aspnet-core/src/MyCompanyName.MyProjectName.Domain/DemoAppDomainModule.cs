@@ -1,4 +1,4 @@
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using SufiChain.SufiAbp.AI;
 using SufiChain.SufiAbp.AuditLogging;
@@ -12,8 +12,8 @@ using SufiChain.SufiAbp.PermissionManagement.OpenIddict;
 using SufiChain.SufiAbp.SettingManagement;
 using SufiChain.SufiAbp.TenantManagement;
 using SufiChain.SufiAbp.Users;
-using SufiChain.SufiAbp.Messaging;
-using SufiChain.SufiAbp.Messaging.Email;
+using SufiChain.SufiAbp.Communications;
+using SufiChain.SufiAbp.Communications.Email;
 using MyCompanyName.MyProjectName.MultiTenancy;
 using Volo.Abp.Modularity;
 using Volo.Abp.MultiTenancy;
@@ -34,7 +34,7 @@ namespace MyCompanyName.MyProjectName
         typeof(SufiAbpTenantManagementDomainModule),
         typeof(SufiAbpUsersDomainModule),
         typeof(SufiAIDomainModule),
-        typeof(SufiAbpMessagingModule)
+        typeof(SufiAbpCommunicationsModule)
     )]
     public class DemoAppDomainModule : AbpModule
     {

@@ -13,8 +13,8 @@ public class CalendarSnapshotInvalidationHandler : IDistributedEventHandler<Cale
         _snapshotCache = snapshotCache;
     }
 
-    public virtual async Task HandleEventAsync(CalendarChangedEto eventData)
-    {
-        await _snapshotCache.RemoveAsync(eventData.CalendarId, eventData.TenantId);
-    }
+   public virtual async Task HandleEventAsync(CalendarChangedEto eventData)
+   {
+        await _snapshotCache.RemoveWithInheritorsAsync(eventData.CalendarId, eventData.TenantId);
+   }
 }

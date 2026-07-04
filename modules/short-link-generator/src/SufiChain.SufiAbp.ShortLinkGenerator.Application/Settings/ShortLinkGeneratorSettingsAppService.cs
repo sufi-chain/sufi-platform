@@ -33,6 +33,7 @@ public class ShortLinkGeneratorSettingsAppService : ShortLinkGeneratorAppService
         return new ShortLinkGeneratorSettingsDto
         {
             BaseUrl = await GetBaseUrlAsync(),
+            RedirectRoute = await GetRedirectRouteAsync(),
             ShortCodeLength = await GetShortCodeLengthAsync(),
             CacheExpirationMinutes = await GetCacheExpirationMinutesAsync(),
             DefaultExpirationDays = await GetDefaultExpirationDaysAsync()
@@ -47,6 +48,11 @@ public class ShortLinkGeneratorSettingsAppService : ShortLinkGeneratorAppService
             CurrentTenant.Id,
             ShortLinkGeneratorSettings.BaseUrl,
             string.IsNullOrWhiteSpace(baseUrl) ? null : baseUrl);
+
+        await _settingManager.SetForTenantOrGlobalAsync(
+            CurrentTenant.Id,
+            ShortLinkGeneratorSettings.ShortUrl.RedirectRoute,
+            ShortLinkRedirectHelper.NormalizeBaseKey(input.RedirectRoute));
 
         await _settingManager.SetForTenantOrGlobalAsync(
             CurrentTenant.Id,
@@ -73,6 +79,17 @@ public class ShortLinkGeneratorSettingsAppService : ShortLinkGeneratorAppService
         }
 
         return _options.BaseUrl;
+    }
+
+    private async Task<string> GetRedirectRouteAsync()
+    {
+        var value = await _settingProvider.GetOrNullAsync(ShortLinkGeneratorSettings.ShortUrl.RedirectRoute);
+        if (!string.IsNullOrWhiteSpace(value))
+        {
+            return ShortLinkRedirectHelper.NormalizeBaseKey(value);
+        }
+
+        return ShortLinkRedirectHelper.NormalizeBaseKey(_options.RedirectRoute);
     }
 
     private async Task<int> GetShortCodeLengthAsync()
@@ -134,4 +151,5 @@ public class ShortLinkGeneratorSettingsAppService : ShortLinkGeneratorAppService
             ? _options.DefaultExpirationDays.Value
             : ShortLinkGeneratorConsts.DefaultExpirationDays;
     }
+
 }

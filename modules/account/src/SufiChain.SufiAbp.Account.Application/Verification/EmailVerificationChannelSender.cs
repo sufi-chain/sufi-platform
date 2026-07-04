@@ -1,8 +1,8 @@
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Microsoft.Extensions.Localization;
 using SufiChain.SufiAbp.Account.Localization;
 using SufiChain.SufiAbp.Account.Templates;
-using SufiChain.SufiAbp.Messaging.Email;
+using SufiChain.SufiAbp.Communications.Email;
 using SufiChain.SufiAbp.TextTemplating;
 using Volo.Abp.DependencyInjection;
 

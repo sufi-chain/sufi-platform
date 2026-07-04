@@ -26,7 +26,7 @@ public class BusinessCalendarCalculator : ITransientDependency
 
         var ranges = exception?.Kind == CalendarExceptionKind.SpecialHours
             ? exception.Ranges
-            : snapshot.Rules.Where(x => x.DayOfWeek == localDateTime.DayOfWeek).Select(x => new WorkingHourRange(x.StartTime, x.EndTime, x.MaxConcurrent)).ToList();
+            : snapshot.Rules.Where(x => x.DayOfWeek == localDateTime.DayOfWeek).Select(x => new WorkingHourRange(x.StartTime, x.EndTime)).ToList();
 
         return ranges.Any(x => x.StartTime <= time && time < x.EndTime);
     }

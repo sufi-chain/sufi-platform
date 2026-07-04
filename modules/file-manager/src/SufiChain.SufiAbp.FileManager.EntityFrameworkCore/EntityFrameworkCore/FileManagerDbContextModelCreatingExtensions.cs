@@ -131,12 +131,14 @@ public static class FileManagerDbContextModelCreatingExtensions
             // Match FileFolder's global filters so permissions for filtered folders are filtered too.
             b.HasQueryFilter(x => x.Folder != null);
 
-            // Indexes
-            b.HasIndex(x => x.FolderId);
-            b.HasIndex(x => x.UserId);
-            b.HasIndex(x => x.RoleId);
-            b.HasIndex(x => new { x.FolderId, x.UserId });
-            b.HasIndex(x => new { x.FolderId, x.RoleId });
+           // Indexes
+           b.HasIndex(x => x.FolderId);
+           b.HasIndex(x => x.UserId);
+           b.HasIndex(x => x.RoleId);
+            b.HasIndex(x => x.OrganizationUnitId);
+           b.HasIndex(x => new { x.FolderId, x.UserId });
+           b.HasIndex(x => new { x.FolderId, x.RoleId });
+            b.HasIndex(x => new { x.FolderId, x.OrganizationUnitId });
         });
     }
 }

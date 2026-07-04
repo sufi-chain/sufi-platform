@@ -73,8 +73,8 @@
     "ShortLinkGenerator:ShortUrlExpired": "Esta URL corta ha expirado",
     "DisplayName:ShortLinkGenerator.BaseUrl": "URL base",
     "Description:ShortLinkGenerator.BaseUrl": "La URL base usada para generar enlaces cortos completos (p. ej., https://s.co/)",
-    "DisplayName:ShortLinkGenerator.ShortUrl.RedirectRoute": "Ruta de redirección",
-    "Description:ShortLinkGenerator.ShortUrl.RedirectRoute": "La ruta usada para redirigir URL cortas (p. ej., 'sur' para /sur/{code})",
+    "DisplayName:ShortLinkGenerator.ShortUrl.RedirectRoute": "Redirect Base Key",
+    "Description:ShortLinkGenerator.ShortUrl.RedirectRoute": "The base key used in public short links (e.g., 'r' for https://s.co/r/{code})",
     "DisplayName:ShortLinkGenerator.ShortUrl.ShortCodeLength": "Longitud del código corto",
     "Description:ShortLinkGenerator.ShortUrl.ShortCodeLength": "La longitud de los códigos cortos generados",
     "DisplayName:ShortLinkGenerator.ShortUrl.CacheExpirationMinutes": "Expiración de caché (minutos)",
@@ -93,6 +93,7 @@
     "Save": "Guardar",
     "Yes": "Sí",
     "No": "No",
-    "SamplePageMessage": "Una página de ejemplo para el módulo Generador de enlaces cortos."
+    "SamplePageMessage": "Una página de ejemplo para el módulo Generador de enlaces cortos.",
+    "Redirecting": "Redirecting..."
   }
 }

@@ -3,6 +3,9 @@
   "texts": {
     "Permission:TagsManagement": "Gestión de etiquetas",
     "Permission:TagsManagement.Tags": "Etiquetas",
-    "Permission:TagsManagement.TagLinks": "Enlaces de etiquetas"
+    "Permission:TagsManagement.TagLinks": "Enlaces de etiquetas",
+    "Menu:TagsManagement": "Gestión de etiquetas",
+    "Menu:TagsManagement.Tags": "Etiquetas",
+    "Menu:TagsManagement.TagLinks": "Enlaces de etiquetas"
   }
 }

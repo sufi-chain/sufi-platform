@@ -73,9 +73,9 @@ public class BusinessCalendarCalculatorTests
         return new CalendarSnapshot(
             Guid.NewGuid(),
             null,
-            CalendarKind.WorkingHours,
+            CalendarKind.Public,
             "UTC",
-            null,
+            true,
             Array.Empty<WorkingHourRuleSnapshot>(),
             Array.Empty<CalendarExceptionSnapshot>());
     }
@@ -85,16 +85,16 @@ public class BusinessCalendarCalculatorTests
         return new CalendarSnapshot(
             Guid.NewGuid(),
             null,
-            CalendarKind.WorkingHours,
+            CalendarKind.Public,
             "UTC",
-            1,
+            false,
             new[]
             {
-                new WorkingHourRuleSnapshot(DayOfWeek.Monday, new TimeOnly(9, 0), new TimeOnly(17, 0), 1),
-                new WorkingHourRuleSnapshot(DayOfWeek.Tuesday, new TimeOnly(9, 0), new TimeOnly(17, 0), 1),
-                new WorkingHourRuleSnapshot(DayOfWeek.Wednesday, new TimeOnly(9, 0), new TimeOnly(17, 0), 1),
-                new WorkingHourRuleSnapshot(DayOfWeek.Thursday, new TimeOnly(9, 0), new TimeOnly(17, 0), 1),
-                new WorkingHourRuleSnapshot(DayOfWeek.Friday, new TimeOnly(9, 0), new TimeOnly(17, 0), 1)
+                new WorkingHourRuleSnapshot(DayOfWeek.Monday, new TimeOnly(9, 0), new TimeOnly(17, 0)),
+                new WorkingHourRuleSnapshot(DayOfWeek.Tuesday, new TimeOnly(9, 0), new TimeOnly(17, 0)),
+                new WorkingHourRuleSnapshot(DayOfWeek.Wednesday, new TimeOnly(9, 0), new TimeOnly(17, 0)),
+                new WorkingHourRuleSnapshot(DayOfWeek.Thursday, new TimeOnly(9, 0), new TimeOnly(17, 0)),
+                new WorkingHourRuleSnapshot(DayOfWeek.Friday, new TimeOnly(9, 0), new TimeOnly(17, 0))
             },
             exceptions);
     }

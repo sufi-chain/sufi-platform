@@ -73,8 +73,8 @@
     "ShortLinkGenerator:ShortUrlExpired": "این نشانی کوتاه منقضی شده است",
     "DisplayName:ShortLinkGenerator.BaseUrl": "نشانی پایه",
     "Description:ShortLinkGenerator.BaseUrl": "نشانی پایه برای تولید لینک‌های کوتاه کامل (مثلاً https://s.co/)",
-    "DisplayName:ShortLinkGenerator.ShortUrl.RedirectRoute": "مسیر هدایت",
-    "Description:ShortLinkGenerator.ShortUrl.RedirectRoute": "مسیر مورد استفاده برای هدایت نشانی‌های کوتاه (مثلاً 'sur' برای /sur/{code})",
+    "DisplayName:ShortLinkGenerator.ShortUrl.RedirectRoute": "Redirect Base Key",
+    "Description:ShortLinkGenerator.ShortUrl.RedirectRoute": "The base key used in public short links (e.g., 'r' for https://s.co/r/{code})",
     "DisplayName:ShortLinkGenerator.ShortUrl.ShortCodeLength": "طول کد کوتاه",
     "Description:ShortLinkGenerator.ShortUrl.ShortCodeLength": "طول کدهای کوتاه تولیدشده",
     "DisplayName:ShortLinkGenerator.ShortUrl.CacheExpirationMinutes": "انقضای کش (دقیقه)",
@@ -93,6 +93,7 @@
     "Save": "ذخیره",
     "Yes": "بله",
     "No": "خیر",
-    "SamplePageMessage": "یک صفحه نمونه برای ماژول تولیدکننده لینک کوتاه."
+    "SamplePageMessage": "یک صفحه نمونه برای ماژول تولیدکننده لینک کوتاه.",
+    "Redirecting": "Redirecting..."
   }
 }

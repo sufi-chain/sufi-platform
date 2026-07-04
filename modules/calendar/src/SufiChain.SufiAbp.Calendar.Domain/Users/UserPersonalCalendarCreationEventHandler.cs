@@ -1,7 +1,7 @@
 using SufiChain.SufiAbp.Calendar.Calendars;
+using CalendarAggregate = SufiChain.SufiAbp.Calendar.Calendars.Calendar;
 using SufiChain.SufiAbp.DependencyInjection;
 using SufiChain.SufiAbp.EventBus.Distributed;
-using SufiChain.SufiAbp.Linq;
 using SufiChain.SufiAbp.MultiTenancy;
 using SufiChain.SufiAbp.Users;
 using Volo.Abp.Domain.Entities.Events.Distributed;
@@ -18,20 +18,17 @@ public class UserPersonalCalendarCreationEventHandler :
     protected CalendarManager CalendarManager { get; }
     protected ICurrentTenant CurrentTenant { get; }
     protected IGuidGenerator GuidGenerator { get; }
-    protected IAsyncQueryableExecuter AsyncExecuter { get; }
 
     public UserPersonalCalendarCreationEventHandler(
         ICalendarRepository calendarRepository,
         CalendarManager calendarManager,
         ICurrentTenant currentTenant,
-        IGuidGenerator guidGenerator,
-        IAsyncQueryableExecuter asyncExecuter)
+        IGuidGenerator guidGenerator)
     {
         CalendarRepository = calendarRepository;
         CalendarManager = calendarManager;
         CurrentTenant = currentTenant;
         GuidGenerator = guidGenerator;
-        AsyncExecuter = asyncExecuter;
     }
 
     [UnitOfWork]
@@ -39,11 +36,8 @@ public class UserPersonalCalendarCreationEventHandler :
     {
         using (CurrentTenant.Change(eventData.Entity.TenantId))
         {
-            var query = await CalendarRepository.GetQueryableAsync();
-            var existingCalendar = await AsyncExecuter.FirstOrDefaultAsync(query.Where(calendar =>
-                calendar.Kind == CalendarKind.Personal &&
-                calendar.OwnerType == CalendarOwnerType.User &&
-                calendar.OwnerId == eventData.Entity.Id));
+            var calendars = await CalendarRepository.GetByOwnerUserIdAsync(eventData.Entity.TenantId, eventData.Entity.Id);
+            var existingCalendar = calendars.FirstOrDefault(x => x.Kind == CalendarKind.Personal);
 
             if (existingCalendar != null)
             {
@@ -56,12 +50,30 @@ public class UserPersonalCalendarCreationEventHandler :
                 GetCalendarName(eventData.Entity),
                 CalendarKind.Personal,
                 TimeZoneInfo.Local.Id,
-                CalendarOwnerType.User,
                 eventData.Entity.Id,
+                eventData.Entity.UserName,
                 isDefault: false);
+
+            await AttachDefaultHostHijriInheritanceAsync(calendar);
 
             await CalendarRepository.InsertAsync(calendar, autoSave: true);
         }
+    }
+
+    protected virtual async Task AttachDefaultHostHijriInheritanceAsync(CalendarAggregate calendar)
+    {
+        CalendarAggregate? hostHijriCalendar;
+        using (CurrentTenant.Change(null))
+        {
+            hostHijriCalendar = await CalendarRepository.FindByNameAsync(null, CalendarConsts.HostHijriCalendarName);
+        }
+
+        if (hostHijriCalendar == null)
+        {
+            return;
+        }
+
+        await CalendarManager.AddInheritanceAsync(calendar, hostHijriCalendar, isInheritedByDefault: true);
     }
 
     protected virtual string GetCalendarName(UserEto user)

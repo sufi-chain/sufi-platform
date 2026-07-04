@@ -20,9 +20,7 @@ public static class FreeBusyDtoMapper
             CalendarId = block.CalendarId,
             StartUtc = block.StartUtc,
             EndUtc = block.EndUtc,
-            BusyCount = block.BusyCount,
-            MaxConcurrent = block.MaxConcurrent,
-            IsCapacityFull = block.IsCapacityFull
+            BusyCount = block.BusyCount
         };
     }
 
@@ -33,9 +31,7 @@ public static class FreeBusyDtoMapper
             CalendarId = slot.CalendarId,
             StartUtc = slot.StartUtc,
             EndUtc = slot.EndUtc,
-            BusyCount = 0,
-            MaxConcurrent = slot.MaxConcurrent,
-            IsCapacityFull = false
+            BusyCount = 0
         };
     }
 }

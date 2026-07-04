@@ -1,0 +1,27 @@
+@inherits MenuManagementComponentBase
+
+<SbDialog Open="@Open" OpenChanged="@SetOpenAsync" Size="SbDialogSize.Md" Title="@L["EditMenu"]">
+    <ChildContent>
+        <SbForm Model="_model" OnValidSubmit="OnValidSubmitAsync">
+            <ChildContent>
+                <SbStack Gap="3">
+                    <SbTextField @bind-Value="_model.DisplayName"
+                                 Label="@L["DisplayName"]"
+                                 Required="true" />
+
+                    <SbTextArea @bind-Value="_model.Description"
+                                Label="@L["Description"]"
+                                Rows="3" />
+
+                    <SbSwitch @bind-Value="_model.IsActive" Label="@L["IsActive"]" />
+                </SbStack>
+            </ChildContent>
+            <FooterContent>
+                <SbStack Direction="SbStackDirection.Row" Gap="2" Justify="SbJustify.End">
+                    <SbButton Variant="SbButtonVariant.Outline" OnClick="Hide">@L["Cancel"]</SbButton>
+                    <SbButton Type="submit" Color="SbColor.Primary" Loading="IsOperationLoading(LoadingKeys.Save)">@L["Save"]</SbButton>
+                </SbStack>
+            </FooterContent>
+        </SbForm>
+    </ChildContent>
+</SbDialog>

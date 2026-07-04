@@ -1,8 +1,8 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Threading.Tasks;
-using SufiChain.SufiAbp.Messaging;
-using SufiChain.SufiAbp.Messaging.Sms;
-using SufiChain.SufiAbp.Messaging.VoiceCall;
+using SufiChain.SufiAbp.Communications;
+using SufiChain.SufiAbp.Communications.Sms;
+using SufiChain.SufiAbp.Communications.VoiceCall;
 using Volo.Abp.DependencyInjection;
 using Volo.Abp.Settings;
 
@@ -50,7 +50,7 @@ public class VerificationChannelAvailabilityChecker : IVerificationChannelAvaila
 
     protected virtual async Task<bool> IsEmailAvailableAsync()
     {
-        var smtpHost = await SettingProvider.GetOrNullAsync(MessagingSettingNames.Email.SmtpHost);
+        var smtpHost = await SettingProvider.GetOrNullAsync(CommunicationsSettingNames.Email.SmtpHost);
         return !string.IsNullOrWhiteSpace(smtpHost);
     }
 }

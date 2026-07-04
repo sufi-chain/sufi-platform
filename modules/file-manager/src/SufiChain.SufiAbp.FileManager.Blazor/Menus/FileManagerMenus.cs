@@ -6,9 +6,10 @@ public static class FileManagerMenus
 
     public const string GroupName = Prefix;
 
-    public const string FileStats = Prefix + ".FileStats";
-    public const string AssetManager = Prefix + ".AssetManager";
-    public const string FileStructures = Prefix + ".FileStructures";
+       public const string FileStats = Prefix + ".FileStats";
+       public const string AssetManager = Prefix + ".AssetManager";
+        public const string FolderAccess = Prefix + ".FolderAccess";
+       public const string FileStructures = Prefix + ".FileStructures";
     public const string ArchivedFiles = Prefix + ".ArchivedFiles";
 
     public const string FileManagerDemo = Prefix + ".FileManagerDemo";

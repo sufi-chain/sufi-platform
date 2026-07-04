@@ -9,7 +9,9 @@ public class ShortLinkGeneratorOptions
     public string BaseUrl { get; set; } = string.Empty;
     
     /// <summary>
-    /// The route prefix for short URL redirects. Default is "sur".
+    /// The required base key for public short URL redirects.
+    /// Final public URLs are built as {BaseUrl}/{RedirectRoute}/{ShortCode}.
+    /// Default is "sur".
     /// Configure in appsettings.json: "ShortLinkGenerator:RedirectRoute"
     /// </summary>
     public string RedirectRoute { get; set; } = ShortLinkGeneratorConsts.DefaultRedirectRoute;

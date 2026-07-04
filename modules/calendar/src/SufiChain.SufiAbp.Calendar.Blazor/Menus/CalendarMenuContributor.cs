@@ -16,7 +16,7 @@ public class CalendarMenuContributor : IMenuContributor
             administrationMenu.AddItem(new ApplicationMenuItem(
                 CalendarMenus.Calendars,
                 l["Menu:Calendar"],
-                url: "/admin/calendar",
+                url: "/panel/admin/calendar",
                 icon: "calendar",
                 requiredPermissionName: CalendarPermissions.Calendars.Default));
         }

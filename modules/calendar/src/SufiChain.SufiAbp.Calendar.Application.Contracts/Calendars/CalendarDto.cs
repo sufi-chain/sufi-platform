@@ -13,17 +13,19 @@ public class CalendarDto : FullAuditedEntityDto<Guid>
 
     public string TimeZoneId { get; set; } = string.Empty;
 
-    public CalendarOwnerType OwnerType { get; set; }
+    public Guid? OwnerUserId { get; set; }
 
-    public Guid? OwnerId { get; set; }
+    public string? OwnerName { get; set; }
 
     public bool IsDefault { get; set; }
 
-    public int? MaxConcurrent { get; set; }
+    public bool IsAlwaysOpen { get; set; }
 
     public ExtraPropertyDictionary ExtraProperties { get; set; } = new();
 
     public List<WorkingHourRuleDto> WorkingHourRules { get; set; } = new();
 
     public List<CalendarExceptionDto> Exceptions { get; set; } = new();
+
+    public List<CalendarInheritanceDto> Inheritances { get; set; } = new();
 }

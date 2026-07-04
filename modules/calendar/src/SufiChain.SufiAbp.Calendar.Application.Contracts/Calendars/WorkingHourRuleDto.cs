@@ -12,5 +12,4 @@ public class WorkingHourRuleDto : EntityDto<Guid>
 
     public TimeSpan EndTime { get; set; }
 
-    public int? MaxConcurrent { get; set; }
 }

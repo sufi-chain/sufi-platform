@@ -96,7 +96,7 @@ public class CalendarListCalendarsTool : CalendarAIToolBase
             calendar.Name,
             Kind = calendar.Kind.ToString(),
             calendar.TimeZoneId,
-            OwnerType = calendar.OwnerType.ToString(),
+            OwnerName = calendar.OwnerName,
             calendar.IsDefault
         }).ToList();
     }
@@ -145,8 +145,7 @@ public class CalendarGetWorkingHoursTool : CalendarAIToolBase
             rule.CalendarId,
             DayOfWeek = rule.DayOfWeek.ToString(),
             StartTime = rule.StartTime.ToString(),
-            EndTime = rule.EndTime.ToString(),
-            rule.MaxConcurrent
+            EndTime = rule.EndTime.ToString()
         }).ToList();
     }
 }

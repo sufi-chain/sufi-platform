@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SufiChain.SufiAbp.FileManager.FileFolders;
 using Volo.Abp;
@@ -11,6 +12,7 @@ namespace SufiChain.SufiAbp.FileManager.Controllers;
 [Area(FileManagerRemoteServiceConsts.ModuleName)]
 [RemoteService(Name = FileManagerRemoteServiceConsts.RemoteServiceName)]
 [Route("api/file-manager/folders")]
+[Authorize]
 public class FolderController : SufiAbpControllerBase, IFolderAppService
 {
     private readonly IFolderAppService _folderAppService;

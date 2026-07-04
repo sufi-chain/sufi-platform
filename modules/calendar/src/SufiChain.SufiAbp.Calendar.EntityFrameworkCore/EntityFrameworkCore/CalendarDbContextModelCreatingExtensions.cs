@@ -20,15 +20,26 @@ public static class CalendarDbContextModelCreatingExtensions
 
             b.Property(x => x.Name).IsRequired().HasMaxLength(CalendarConsts.MaxNameLength);
             b.Property(x => x.TimeZoneId).IsRequired().HasMaxLength(CalendarConsts.MaxTimeZoneIdLength);
-            b.Property(x => x.OwnerType).HasConversion<string>().HasMaxLength(CalendarConsts.MaxOwnerTypeLength);
+            b.Property(x => x.OwnerName).HasMaxLength(CalendarConsts.MaxOwnerNameLength);
             b.Property(x => x.Kind).HasConversion<string>().HasMaxLength(32);
             b.HasIndex(x => x.TenantId);
             b.HasIndex(x => x.Kind);
             b.HasIndex(x => new { x.TenantId, x.Kind, x.IsDefault });
-            b.HasIndex(x => new { x.OwnerType, x.OwnerId });
+            b.HasIndex(x => x.OwnerUserId);
 
             b.HasMany(x => x.WorkingHourRules).WithOne().HasForeignKey(x => x.CalendarId).OnDelete(DeleteBehavior.Cascade);
             b.HasMany(x => x.Exceptions).WithOne().HasForeignKey(x => x.CalendarId).OnDelete(DeleteBehavior.Cascade);
+            b.HasMany(x => x.Inheritances).WithOne().HasForeignKey(x => x.CalendarId).OnDelete(DeleteBehavior.Cascade);
+        });
+
+        builder.Entity<CalendarInheritance>(b =>
+        {
+            b.ToTable(CalendarConsts.DbTablePrefix + "CalendarInheritances", CalendarConsts.DbSchema);
+            b.ConfigureByConvention();
+
+            b.HasIndex(x => x.CalendarId);
+            b.HasIndex(x => x.ParentCalendarId);
+            b.HasIndex(x => new { x.CalendarId, x.ParentCalendarId }).IsUnique();
         });
 
         builder.Entity<WorkingHourRule>(b =>

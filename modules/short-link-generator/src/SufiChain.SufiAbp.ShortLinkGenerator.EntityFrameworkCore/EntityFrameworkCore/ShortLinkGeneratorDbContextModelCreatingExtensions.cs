@@ -36,6 +36,7 @@ public static class ShortLinkGeneratorDbContextModelCreatingExtensions
             b.HasIndex(x => x.ShortCode);
             b.HasIndex(x => x.IsActive);
             b.HasIndex(x => x.ExpiresAt);
+
         });
 
         builder.Entity<ShortUrlClick>(b =>
@@ -54,9 +55,12 @@ public static class ShortLinkGeneratorDbContextModelCreatingExtensions
             b.Property(x => x.Referrer)
                 .HasMaxLength(2048);
 
+            b.Property(x => x.Token).HasMaxLength(256);
+            b.Property(x => x.DedupKey).HasMaxLength(512);
+
             b.HasIndex(x => x.ShortUrlId);
             b.HasIndex(x => x.ClickedAt);
+            b.HasIndex(x => new { x.ShortUrlId, x.DedupKey });
         });
     }
 }
-

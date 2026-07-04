@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Components;
 using SufiChain.SufiBlazor.Components;
 using SufiChain.SufiAbp.FileManager.Blazor.Public.Services;
+using SufiChain.SufiAbp.FileManager.Permissions;
 using SufiChain.SufiAbp.FileManager.FileItems;
 using SufiChain.SufiAbp.FileManager.FileStructures;
 using SufiChain.SufiAbp.FileManager.FileTypes;
@@ -8,6 +9,7 @@ using SufiChain.SufiAbp.FileManager.Localization;
 using SufiChain.SufiAbp.UI.Blazor;
 using SufiChain.SufiAbp.UI.Layout;
 using SufiChain.SufiAbp.Application.Dtos;
+using Microsoft.AspNetCore.Authorization;
 
 namespace SufiChain.SufiAbp.FileManager.Blazor.Pages;
 
@@ -22,8 +24,9 @@ public partial class FileStats : FileManagerComponentBase
     private List<FileItemDto> _recentFiles = new();
     private bool _viewerModalOpen;
     private FileItemDto? _viewingItem;
-    private List<FileStructureDto> _structures = new();
-    private FileStatistics _statistics = new();
+   private List<FileStructureDto> _structures = new();
+   private FileStatistics _statistics = new();
+    private bool _canDelete;
 
     protected override void OnInitialized()
     {
@@ -46,13 +49,14 @@ public partial class FileStats : FileManagerComponentBase
         // Breadcrumbs are auto-generated from menu hierarchy by the layout
     }
 
-    private async Task LoadData()
-    {
-        await Task.WhenAll(
-            LoadRecentFiles(),
-            LoadStructures(),
-            RefreshStats()
-        );
+   private async Task LoadData()
+   {
+        _canDelete = await AuthorizationService.IsGrantedAsync(FileManagerPermissions.FileItems.Delete);
+       await Task.WhenAll(
+           LoadRecentFiles(),
+           LoadStructures(),
+           RefreshStats()
+       );
 
         StateHasChanged(); // Update UI with results
     }
@@ -206,10 +210,10 @@ public partial class FileStats : FileManagerComponentBase
         return $"{len:0.##} {sizes[order]}";
     }
 
-    private bool CanDelete()
-    {
-        return true; // TODO: Implement proper permission check
-    }
+   private bool CanDelete()
+   {
+        return _canDelete;
+   }
 
     private class FileStatistics
     {

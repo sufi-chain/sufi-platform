@@ -41,7 +41,7 @@ public partial class AIMultiModalTestPanel : AIComponentBase
     private Guid? _selectedWorkspaceId;
     private string _selectedWorkspaceName = string.Empty;
     private AICapabilityType _selectedCapability = AICapabilityType.ChatCompletion;
-    private string _fileManagerBaseUrl = "/admin/file-manager/files";
+    private string _fileManagerBaseUrl = "/panel/admin/file-manager/files";
 
     // Chat
     private string _chatMessage = string.Empty;

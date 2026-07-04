@@ -3,6 +3,9 @@
   "texts": {
     "Permission:TagsManagement": "إدارة الوسوم",
     "Permission:TagsManagement.Tags": "الوسوم",
-    "Permission:TagsManagement.TagLinks": "روابط الوسوم"
+    "Permission:TagsManagement.TagLinks": "روابط الوسوم",
+    "Menu:TagsManagement": "إدارة الوسوم",
+    "Menu:TagsManagement.Tags": "الوسوم",
+    "Menu:TagsManagement.TagLinks": "روابط الوسوم"
   }
 }

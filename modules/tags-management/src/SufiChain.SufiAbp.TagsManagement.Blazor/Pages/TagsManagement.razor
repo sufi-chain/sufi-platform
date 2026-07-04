@@ -1,0 +1,89 @@
+@page "/panel/admin/tags-management/tags"
+@attribute [Authorize(Policy = TagsManagementPermissions.Tags.Default)]
+@inherits TagsManagementComponentBase
+
+<SufiAbpPageToolbar>
+    <AuthorizeView Policy="@TagsManagementPermissions.Tags.Create">
+        <SbButton Color="SbColor.Primary" OnClick="@ShowCreateModal">
+            <StartIcon><SbIcon Name="plus" /></StartIcon>
+            <ChildContent>@L["NewTag"]</ChildContent>
+        </SbButton>
+    </AuthorizeView>
+</SufiAbpPageToolbar>
+
+<SbStack Direction="SbStackDirection.Column" Gap="4">
+    <SbCard>
+        <ChildContent>
+            <SbStack Gap="4">
+                <SbTextField @bind-Value="_scopeFilter"
+                             Label="@L["FilterByScope"]"
+                             Placeholder="@L["AllScopes"]"
+                             Clearable="true" />
+
+                <SbDataGrid TItem="TagDto"
+                            Items="_tags"
+                            Loading="IsOperationLoading(LoadingKeys.LoadTags)"
+                            Striped="true"
+                            Hoverable="true"
+                            PageIndex="_pageIndex"
+                            PageSize="_pageSize"
+                            TotalCount="_totalCount"
+                            PageIndexChanged="OnPageIndexChangedAsync">
+                    <SbColumn TItem="TagDto" Title="@L["Actions"]" Width="160px">
+                        <CellTemplate Context="cellContext">
+                            <SbStack Direction="SbStackDirection.Row" Gap="1">
+                                <AuthorizeView Policy="@TagsManagementPermissions.Tags.Update">
+                                    <SbTooltip Text="@L["EditTag"]">
+                                        <SbIconButton Size="SbSize.Sm" AriaLabel="@L["EditTag"]"
+                                                      OnClick="@(() => ShowEditModal(cellContext.Item))">
+                                            <Icon><SbIcon Name="edit" /></Icon>
+                                        </SbIconButton>
+                                    </SbTooltip>
+                                </AuthorizeView>
+                                <AuthorizeView Policy="@TagsManagementPermissions.Tags.Delete">
+                                    <SbTooltip Text="@L["DeleteTag"]">
+                                        <SbIconButton Size="SbSize.Sm" Color="SbColor.Danger" AriaLabel="@L["DeleteTag"]"
+                                                      OnClick="@(() => DeleteTagAsync(cellContext.Item))">
+                                            <Icon><SbIcon Name="trash" /></Icon>
+                                        </SbIconButton>
+                                    </SbTooltip>
+                                </AuthorizeView>
+                            </SbStack>
+                        </CellTemplate>
+                    </SbColumn>
+                    <SbColumn TItem="TagDto" Field="Name" Title="@L["TagName"]" Sortable="true" />
+                    <SbColumn TItem="TagDto" Field="Scope" Title="@L["Scope"]" Sortable="true" />
+                    <SbColumn TItem="TagDto" Field="Color" Title="@L["Color"]">
+                        <CellTemplate Context="cellContext">
+                            @if (!string.IsNullOrWhiteSpace(cellContext.Item.Color))
+                            {
+                                <SbStack Direction="SbStackDirection.Row" Gap="2" Align="SbAlign.Center">
+                                    <span class="tags-color-swatch" style="@($"background:{cellContext.Item.Color}")"></span>
+                                    <SbText>@cellContext.Item.Color</SbText>
+                                </SbStack>
+                            }
+                        </CellTemplate>
+                    </SbColumn>
+                    <SbColumn TItem="TagDto" Field="CreationTime" Title="@L["Created"]" Sortable="true">
+                        <CellTemplate Context="cellContext">
+                            @cellContext.Item.CreationTime.ToString("yyyy-MM-dd")
+                        </CellTemplate>
+                    </SbColumn>
+                </SbDataGrid>
+            </SbStack>
+        </ChildContent>
+    </SbCard>
+</SbStack>
+
+<TagCreateModal Open="_showCreateModal" OpenChanged="SetCreateOpen" OnTagCreated="OnTagCreatedAsync" />
+<TagEditModal Open="_showEditModal" OpenChanged="SetEditOpen" Tag="_selectedTag" OnTagUpdated="OnTagUpdatedAsync" />
+
+<style>
+    .tags-color-swatch {
+        display: inline-block;
+        width: 1rem;
+        height: 1rem;
+        border-radius: 0.25rem;
+        border: 1px solid var(--sb-color-border, #d0d7de);
+    }
+</style>

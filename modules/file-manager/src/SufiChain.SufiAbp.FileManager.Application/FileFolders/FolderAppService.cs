@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
+using SufiChain.SufiAbp.FileManager.AccessControl;
 using SufiChain.SufiAbp.FileManager;
 using SufiChain.SufiAbp.FileManager.Features;
 using SufiChain.SufiAbp.FileManager.FileItems;
@@ -21,16 +22,22 @@ namespace SufiChain.SufiAbp.FileManager.FileFolders;
 [RequiresFeature(SufiAbpFileManagerFeatures.Enable, SufiAbpFileManagerFeatures.FileItems)]
 public class FolderAppService : ApplicationService, IFolderAppService
 {
-    private readonly IFileFolderRepository _folderRepository;
-    private readonly IFileItemRepository _fileItemRepository;
+   private readonly IFileFolderRepository _folderRepository;
+   private readonly IFileItemRepository _fileItemRepository;
+    private readonly IFolderAccessResolver _accessResolver;
+    private readonly IUserFolderAccessContextProvider _accessContextProvider;
 
-    public FolderAppService(
-        IFileFolderRepository folderRepository,
-        IFileItemRepository fileItemRepository)
-    {
-        _folderRepository = folderRepository;
-        _fileItemRepository = fileItemRepository;
-    }
+   public FolderAppService(
+       IFileFolderRepository folderRepository,
+        IFileItemRepository fileItemRepository,
+        IFolderAccessResolver accessResolver,
+        IUserFolderAccessContextProvider accessContextProvider)
+   {
+       _folderRepository = folderRepository;
+       _fileItemRepository = fileItemRepository;
+        _accessResolver = accessResolver;
+        _accessContextProvider = accessContextProvider;
+   }
 
     #region Tree Operations
 
@@ -56,10 +63,11 @@ public class FolderAppService : ApplicationService, IFolderAppService
             effectiveTenantId,
             includeShared: true);
 
-        var rootFolders = folders.Where(f => f.ParentId == null).ToList();
+       var rootFolders = folders.Where(f => f.ParentId == null).ToList();
 
-        return BuildTreeNodes(rootFolders, folders);
-    }
+        var accessContext = await _accessContextProvider.GetContextAsync();
+        return BuildTreeNodes(rootFolders, folders, accessContext);
+   }
 
     public async Task<List<FolderTreeNodeDto>> GetChildrenAsync(Guid? parentId, string? parentPath = null)
     {
@@ -83,31 +91,33 @@ public class FolderAppService : ApplicationService, IFolderAppService
             children = await _folderRepository.GetRootFoldersAsync(CurrentTenant.Id);
         }
 
-        var result = new List<FolderTreeNodeDto>();
-        foreach (var child in children)
-        {
-            var hasChildren = await _folderRepository.HasChildrenAsync(child.Id);
-            var fileCount = await GetFileCountInFolderAsync(child.Id);
+       var result = new List<FolderTreeNodeDto>();
+        var accessContext = await _accessContextProvider.GetContextAsync();
+       foreach (var child in children)
+       {
+           var hasChildren = await _folderRepository.HasChildrenAsync(child.Id);
+           var fileCount = await GetFileCountInFolderAsync(child.Id);
+            var (canWrite, canDelete) = await EvaluateNodeAccessAsync(child, accessContext);
 
-            result.Add(new FolderTreeNodeDto
-            {
-                Id = child.Id,
-                Name = child.Name,
-                Path = child.Path,
-                ParentId = child.ParentId,
-                Type = MapFolderType(child.Type),
-                Icon = child.Icon ?? GetDefaultIcon(child.Type),
-                Color = child.Color,
-                HasChildren = hasChildren,
-                FileCount = fileCount,
-                IsVirtual = child.Type != FolderType.Custom,
-                StructureKey = child.StructureKey,
-                TenantId = child.TenantId,
-                IsShared = child.IsShared,
-                CanWrite = true, // TODO: Check permissions
-                CanDelete = child.Type == FolderType.Custom
-            });
-        }
+           result.Add(new FolderTreeNodeDto
+           {
+               Id = child.Id,
+               Name = child.Name,
+               Path = child.Path,
+               ParentId = child.ParentId,
+               Type = MapFolderType(child.Type),
+               Icon = child.Icon ?? GetDefaultIcon(child.Type),
+               Color = child.Color,
+               HasChildren = hasChildren,
+               FileCount = fileCount,
+               IsVirtual = child.Type != FolderType.Custom,
+               StructureKey = child.StructureKey,
+               TenantId = child.TenantId,
+               IsShared = child.IsShared,
+                CanWrite = canWrite,
+                CanDelete = canDelete
+           });
+       }
 
         return result;
     }
@@ -642,56 +652,55 @@ public class FolderAppService : ApplicationService, IFolderAppService
 
     #region Permissions
 
-    [Authorize(FileManagerPermissions.FileItems.Update)]
-    public async Task SetPermissionsAsync(Guid folderId, SetFolderPermissionsInput input)
-    {
-        var folder = await _folderRepository.GetWithPermissionsAsync(folderId)
-            ?? throw new UserFriendlyException("Folder not found.");
+   [Authorize(FileManagerPermissions.FileItems.Update)]
+   public async Task SetPermissionsAsync(Guid folderId, SetFolderPermissionsInput input)
+   {
+       var folder = await _folderRepository.GetWithPermissionsAsync(folderId)
+           ?? throw new UserFriendlyException("Folder not found.");
 
-        // Clear existing permissions
-        folder.Permissions.Clear();
-
-        // Add new permissions
-        foreach (var permDto in input.Permissions)
+        var permissions = input.Permissions.Select(permDto => new FolderPermission(
+            GuidGenerator.Create(),
+            folderId,
+            MapPermissionLevel(permDto.Level),
+            permDto.UserId,
+            permDto.RoleId,
+            permDto.OrganizationUnitId)
         {
-            var permission = new FolderPermission(
-                GuidGenerator.Create(),
-                folderId,
-                MapPermissionLevel(permDto.Level),
-                permDto.UserId,
-                permDto.RoleId)
-            {
-                InheritToChildren = permDto.InheritToChildren
-            };
+            InheritToChildren = permDto.InheritToChildren
+        });
 
-            folder.Permissions.Add(permission);
-        }
+        folder.SetPermissions(permissions);
 
-        await _folderRepository.UpdateAsync(folder, autoSave: true);
-    }
+       await _folderRepository.UpdateAsync(folder, autoSave: true);
+   }
 
     public async Task<List<FolderPermissionDto>> GetPermissionsAsync(Guid folderId)
     {
         var folder = await _folderRepository.GetWithPermissionsAsync(folderId)
             ?? throw new UserFriendlyException("Folder not found.");
 
-        return folder.Permissions.Select(p => new FolderPermissionDto
-        {
-            Id = p.Id,
-            UserId = p.UserId,
-            RoleId = p.RoleId,
-            Level = MapPermissionLevelDto(p.Level),
-            InheritToChildren = p.InheritToChildren
-        }).ToList();
+       return folder.Permissions.Select(p => new FolderPermissionDto
+       {
+           Id = p.Id,
+           UserId = p.UserId,
+           RoleId = p.RoleId,
+            OrganizationUnitId = p.OrganizationUnitId,
+           Level = MapPermissionLevelDto(p.Level),
+           InheritToChildren = p.InheritToChildren
+       }).ToList();
     }
 
-    public async Task<bool> HasPermissionAsync(Guid folderId, FolderPermissionLevelDto level)
-    {
-        // TODO: Implement proper permission checking based on current user
-        // For now, return true for all users
-        await Task.CompletedTask;
-        return true;
-    }
+   public async Task<bool> HasPermissionAsync(Guid folderId, FolderPermissionLevelDto level)
+   {
+        var folder = await _folderRepository.GetWithPermissionsAsync(folderId);
+        if (folder == null)
+        {
+            return false;
+        }
+
+        var context = await _accessContextProvider.GetContextAsync();
+        return await _accessResolver.HasPermissionAsync(folder, context, MapPermissionLevel(level));
+   }
 
     #endregion
 
@@ -803,12 +812,13 @@ public class FolderAppService : ApplicationService, IFolderAppService
 
     #region Private Helpers
 
-    private List<FolderTreeNodeDto> BuildTreeNodes(List<FileFolder> rootFolders, List<FileFolder> allFolders)
+    private List<FolderTreeNodeDto> BuildTreeNodes(List<FileFolder> rootFolders, List<FileFolder> allFolders, FolderAccessContext? accessContext)
     {
         var result = new List<FolderTreeNodeDto>();
 
         foreach (var folder in rootFolders.OrderBy(f => f.SortOrder).ThenBy(f => f.Name))
         {
+            var (canWrite, canDelete) = FastNodeAccess(folder, accessContext);
             var node = new FolderTreeNodeDto
             {
                 Id = folder.Id,
@@ -822,8 +832,8 @@ public class FolderAppService : ApplicationService, IFolderAppService
                 StructureKey = folder.StructureKey,
                 TenantId = folder.TenantId,
                 IsShared = folder.IsShared,
-                CanWrite = true,
-                CanDelete = folder.Type == FolderType.Custom
+                CanWrite = canWrite,
+                CanDelete = canDelete
             };
 
             var children = allFolders.Where(f => f.ParentId == folder.Id).ToList();
@@ -831,19 +841,21 @@ public class FolderAppService : ApplicationService, IFolderAppService
             {
                 node.HasChildren = true;
                 node.ChildFolderCount = children.Count;
-                node.Children = BuildTreeNodes(children, allFolders);
+                node.Children = BuildTreeNodes(children, allFolders, accessContext);
             }
 
             result.Add(node);
         }
 
         return result;
-    }
+   }
 
-    private async Task<FolderTreeNodeDto> BuildFolderTreeNodeAsync(FileFolder folder)
-    {
-        var hasChildren = await _folderRepository.HasChildrenAsync(folder.Id);
-        var fileCount = await GetFileCountInFolderAsync(folder.Id);
+   private async Task<FolderTreeNodeDto> BuildFolderTreeNodeAsync(FileFolder folder)
+   {
+       var hasChildren = await _folderRepository.HasChildrenAsync(folder.Id);
+       var fileCount = await GetFileCountInFolderAsync(folder.Id);
+        var accessContext = await _accessContextProvider.GetContextAsync();
+        var (canWrite, canDelete) = await EvaluateNodeAccessAsync(folder, accessContext);
 
         return new FolderTreeNodeDto
         {
@@ -859,11 +871,11 @@ public class FolderAppService : ApplicationService, IFolderAppService
             IsVirtual = folder.Type != FolderType.Custom,
             StructureKey = folder.StructureKey,
             TenantId = folder.TenantId,
-            IsShared = folder.IsShared,
-            CanWrite = true,
-            CanDelete = folder.Type == FolderType.Custom
-        };
-    }
+           IsShared = folder.IsShared,
+            CanWrite = canWrite,
+            CanDelete = canDelete
+       };
+   }
 
     private async Task<List<BreadcrumbItemDto>> BuildBreadcrumbsAsync(FileFolder folder)
     {
@@ -1048,9 +1060,68 @@ public class FolderAppService : ApplicationService, IFolderAppService
         return "/" + path.Trim().Trim('/');
     }
 
-    private static string NormalizeBlobName(string blobName) => blobName.Trim().TrimStart('/');
+   private static string NormalizeBlobName(string blobName) => blobName.Trim().TrimStart('/');
 
-    private static FolderTypeDto MapFolderType(FolderType type) => type switch
+   /// <summary>
+   /// Evaluates (CanWrite, CanDelete) for a folder node against the current user's
+   /// access context. Virtual/system folders are never deletable.
+   /// </summary>
+   private async Task<(bool CanWrite, bool CanDelete)> EvaluateNodeAccessAsync(FileFolder folder, FolderAccessContext context)
+   {
+       // Virtual folders are never deletable.
+       if (folder.Type != FolderType.Custom)
+       {
+           var canRead = await _accessResolver.HasPermissionAsync(folder, context, FolderPermissionLevel.Read);
+           return (canRead, false);
+       }
+
+       var canWrite = await _accessResolver.HasPermissionAsync(folder, context, FolderPermissionLevel.Write);
+       var canDelete = await _accessResolver.HasPermissionAsync(folder, context, FolderPermissionLevel.Delete);
+       return (canWrite, canDelete);
+   }
+
+    /// <summary>
+    /// Synchronous fast-path access evaluation for tree building where per-node
+    /// permission loading would cause N+1 queries. Resolves host/admin/owner directly,
+    /// and falls back to the loaded <see cref="FileFolder.Permissions"/> collection
+    /// when present. Non-fast-path users with unloaded permissions get (false, false)
+    /// until the node is opened (lazy children use the async path).
+    /// </summary>
+    private (bool CanWrite, bool CanDelete) FastNodeAccess(FileFolder folder, FolderAccessContext? context)
+    {
+        var isCustom = folder.Type == FolderType.Custom;
+
+        if (context == null || context.IsAnonymous)
+        {
+            return (false, false);
+        }
+
+        // Host/admin/owner fast paths.
+        if (context.IsHost || context.IsAdmin || folder.CreatorId == context.UserId)
+        {
+            return (true, isCustom);
+        }
+
+        // Tenant isolation: a tenant user cannot access another tenant's folder.
+        if (folder.TenantId != context.TenantId)
+        {
+            return (false, false);
+        }
+
+        // If permissions happen to be loaded on this node, evaluate them synchronously.
+        if (folder.Permissions != null && folder.Permissions.Count > 0)
+        {
+            var chain = new List<FileFolder> { folder };
+            var canWrite = _accessResolver.HasPermission(chain, context, FolderPermissionLevel.Write);
+            var canDelete = isCustom && _accessResolver.HasPermission(chain, context, FolderPermissionLevel.Delete);
+            return (canWrite, canDelete);
+        }
+
+        // No fast path and no loaded permissions: deny write/delete in the tree view.
+        return (false, false);
+    }
+
+   private static FolderTypeDto MapFolderType(FolderType type) => type switch
     {
         FolderType.TenantRoot => FolderTypeDto.TenantRoot,
         FolderType.Structure => FolderTypeDto.Structure,

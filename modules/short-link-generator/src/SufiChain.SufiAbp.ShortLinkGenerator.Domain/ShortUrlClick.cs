@@ -17,6 +17,12 @@ public class ShortUrlClick : Entity<Guid>, IMultiTenant
     public string? IpAddress { get; set; }
     
     public string? Referrer { get; set; }
+
+    /// <summary>The 'c' query param (contact token) that accompanied this click, if any.</summary>
+    public string? Token { get; set; }
+
+    /// <summary>Stable dedup key, e.g. ShortUrlId:Token or ShortUrlId:IpAddress when no token.</summary>
+    public string? DedupKey { get; set; }
     
     protected ShortUrlClick()
     {

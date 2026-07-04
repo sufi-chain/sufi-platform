@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Components;
 using SufiChain.SufiAbp.Calendar.Availability;
+using SufiChain.SufiAbp.Calendar.Blazor.Public.Components;
 using SufiChain.SufiAbp.Calendar.Events;
 
 namespace SufiChain.SufiAbp.Calendar.Blazor.Public.Pages;
@@ -10,16 +11,35 @@ public partial class CalendarPageBase : CalendarPublicComponentBase
     protected IAvailabilityCalendarAppService AvailabilityCalendarAppService { get; set; } = default!;
 
     protected Guid? PersonalCalendarId { get; set; }
+    protected Guid SelectedCalendarId { get; set; }
+    protected SufiCalendarSelect? CalendarSelect { get; set; }
+    protected SufiCalendarScheduler? CalendarScheduler { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
         var personalCalendar = await AvailabilityCalendarAppService.GetOrCreateMyPersonalCalendarAsync();
         PersonalCalendarId = personalCalendar.Id;
+        SelectedCalendarId = personalCalendar.Id;
     }
 
-    protected virtual Task RefreshAsync()
+    protected virtual async Task RefreshAsync()
     {
+        if (CalendarSelect != null)
+        {
+            await CalendarSelect.RefreshAsync();
+        }
+
+        if (CalendarScheduler != null)
+        {
+            await CalendarScheduler.RefreshAsync();
+        }
+
         StateHasChanged();
+    }
+
+    protected virtual Task OnSelectedCalendarIdChangedAsync(Guid calendarId)
+    {
+        SelectedCalendarId = calendarId;
         return Task.CompletedTask;
     }
 

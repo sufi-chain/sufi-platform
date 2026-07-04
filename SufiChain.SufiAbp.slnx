@@ -51,7 +51,8 @@
     <Project Path="framework/SufiChain.SufiAbp.Http.Client/SufiChain.SufiAbp.Http.Client.csproj" />
     <Project Path="framework/SufiChain.SufiAbp.Localization/SufiChain.SufiAbp.Localization.csproj" />
     <Project Path="framework/SufiChain.SufiAbp.Mapperly/SufiChain.SufiAbp.Mapperly.csproj" />
-    <Project Path="framework/SufiChain.SufiAbp.Messaging/SufiChain.SufiAbp.Messaging.csproj" />
+    <Project Path="framework/SufiChain.SufiAbp.Communications.Abstractions/SufiChain.SufiAbp.Communications.Abstractions.csproj" />
+    <Project Path="framework/SufiChain.SufiAbp.Communications/SufiChain.SufiAbp.Communications.csproj" />
     <Project Path="framework/SufiChain.SufiAbp.MongoDB/SufiChain.SufiAbp.MongoDB.csproj" />
     <Project Path="framework/SufiChain.SufiAbp.MultiTenancy/SufiChain.SufiAbp.MultiTenancy.csproj" />
     <Project Path="framework/SufiChain.SufiAbp.ObjectExtending/SufiChain.SufiAbp.ObjectExtending.csproj" />

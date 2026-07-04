@@ -6,6 +6,8 @@
     "Permission:MenuManagement.Menus.Create": "إنشاء قائمة",
     "Permission:MenuManagement.Menus.Edit": "تعديل قائمة",
     "Permission:MenuManagement.Menus.Delete": "حذف قائمة",
-    "Permission:MenuManagement.Menus.ManageItems": "إدارة عناصر القائمة"
+    "Permission:MenuManagement.Menus.ManageItems": "إدارة عناصر القائمة",
+    "Menu:MenuManagement": "إدارة القوائم",
+    "Menu:MenuManagement.Menus": "القوائم"
   }
 }

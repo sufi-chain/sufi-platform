@@ -114,6 +114,27 @@ public class AvailabilityCalendarController : CalendarController, IAvailabilityC
         return _availabilityCalendarAppService.ReplaceExceptionsAsync(calendarId, input);
     }
 
+    [HttpGet]
+    [Route("{calendarId}/inheritances")]
+    public virtual Task<ListResultDto<CalendarInheritanceDto>> GetInheritancesAsync(Guid calendarId)
+    {
+        return _availabilityCalendarAppService.GetInheritancesAsync(calendarId);
+    }
+
+    [HttpPost]
+    [Route("{calendarId}/inheritances")]
+    public virtual Task<CalendarDto> AddInheritanceAsync(Guid calendarId, AddCalendarInheritanceInput input)
+    {
+        return _availabilityCalendarAppService.AddInheritanceAsync(calendarId, input);
+    }
+
+    [HttpDelete]
+    [Route("{calendarId}/inheritances/{parentCalendarId}")]
+    public virtual Task DeleteInheritanceAsync(Guid calendarId, Guid parentCalendarId)
+    {
+        return _availabilityCalendarAppService.DeleteInheritanceAsync(calendarId, parentCalendarId);
+    }
+
     [HttpPost]
     [Route("{calendarId}/test")]
     public virtual Task<TestAvailabilityResultDto> TestAsync(Guid calendarId, TestAvailabilityInput input)

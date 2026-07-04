@@ -1,8 +1,11 @@
-@page "/calendar"
+@page "/panel/calendar"
 @attribute [Authorize(CalendarPermissions.Events.Default)]
 @inherits CalendarPageBase
 
 <SufiAbpPageToolbar>
+    <SufiCalendarSelect @bind-SelectedCalendarId="SelectedCalendarId"
+                        InitialCalendarId="PersonalCalendarId"
+                        @ref="CalendarSelect" />
     <SbButton Color="SbColor.Primary" Variant="SbButtonVariant.Outline" OnClick="RefreshAsync">
         <StartIcon><SbIcon Name="refresh" Size="SbSize.Sm" /></StartIcon>
         <ChildContent>@L["Refresh"]</ChildContent>
@@ -10,9 +13,12 @@
 </SufiAbpPageToolbar>
 
 <SbStack Direction="SbStackDirection.Column" Gap="4">
-    <SufiCalendarScheduler Inline="true"
-                           Title="@L["MyCalendar"]"
+    <SufiCalendarScheduler @ref="CalendarScheduler"
+                           Inline="true"
                            AllowCalendarSelection="true"
+                           ShowCalendarSelectInHeader="false"
+                           SelectedCalendarId="@SelectedCalendarId"
+                           SelectedCalendarIdChanged="OnSelectedCalendarIdChangedAsync"
                            AllowEventEditing="true"
                            InitialCalendarId="PersonalCalendarId"
                            InitialDate="DateTime.Today"

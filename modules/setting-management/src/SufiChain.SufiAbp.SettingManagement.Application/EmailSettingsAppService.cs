@@ -1,5 +1,5 @@
-using Microsoft.Extensions.Logging;
-using SufiChain.SufiAbp.Messaging.Email;
+﻿using Microsoft.Extensions.Logging;
+using SufiChain.SufiAbp.Communications.Email;
 
 namespace SufiChain.SufiAbp.SettingManagement;
 

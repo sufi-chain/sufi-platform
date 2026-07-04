@@ -6,20 +6,26 @@ using SufiChain.SufiAbp.Calendar.Availability;
 using SufiChain.SufiAbp.Calendar.Calendars;
 using SufiChain.SufiAbp.Calendar.Permissions;
 using SufiChain.SufiAbp.UI.Layout;
+using SufiChain.SufiBlazor.Components.Data;
+using SufiChain.SufiBlazor.Contracts.Data;
 
 namespace SufiChain.SufiAbp.Calendar.Blazor.Pages.Calendar;
 
 public partial class CalendarManagementBase : CalendarComponentBase
 {
+    public static class LoadingKeys
+    {
+        public const string LoadCalendars = "load-calendars";
+    }
+
     [Inject] protected IAvailabilityCalendarAppService AvailabilityCalendarAppService { get; set; } = null!;
     [Inject] protected IPageLayout PageLayout { get; set; } = default!;
 
-    protected IReadOnlyList<CalendarDto> CalendarList { get; set; } = Array.Empty<CalendarDto>();
-    protected int TotalCount { get; set; }
+    protected SbDataGrid<CalendarDto>? _gridRef;
     protected int PageSize { get; set; } = 10;
     protected int PageIndex { get; set; }
+    protected long TotalCount { get; set; }
     protected string FilterText { get; set; } = string.Empty;
-    protected bool IsLoading { get; set; }
     protected bool HasActiveFilters => !string.IsNullOrWhiteSpace(FilterText);
 
     protected bool HasCreatePermission { get; set; }
@@ -42,33 +48,17 @@ public partial class CalendarManagementBase : CalendarComponentBase
     protected TestAvailabilityResultDto? TestResult { get; set; }
     protected int BusinessHoursActiveTab { get; set; }
     protected Guid? SchedulerCalendarId { get; set; }
-    protected string OwnerIdText { get; set; } = string.Empty;
 
     protected string EditorTitle => EditingCalendarId == Guid.Empty ? L["CreateCalendar"] : L["EditCalendar"];
     protected IReadOnlyList<TimeZoneInfo> TimeZoneOptions { get; } = TimeZoneInfo.GetSystemTimeZones();
     protected IReadOnlyList<CalendarKind> CalendarKindOptions { get; } = Enum.GetValues<CalendarKind>();
-    protected IReadOnlyList<CalendarOwnerType> CalendarOwnerTypeOptions { get; } = Enum.GetValues<CalendarOwnerType>();
     protected IReadOnlyList<CalendarExceptionKind> CalendarExceptionKindOptions { get; } = Enum.GetValues<CalendarExceptionKind>();
     protected IReadOnlyList<DayOfWeek> DayOfWeekOptions { get; } = Enum.GetValues<DayOfWeek>();
-    protected bool RequiresOwnerId => EditingCalendar.OwnerType != CalendarOwnerType.None;
-
-    protected int EditorMaxConcurrentValue
-    {
-        get => EditingCalendar.MaxConcurrent ?? 0;
-        set => EditingCalendar.MaxConcurrent = value > 0 ? value : null;
-    }
-
-    protected virtual Task OnEditorMaxConcurrentChanged(int value)
-    {
-        EditorMaxConcurrentValue = value;
-        return Task.CompletedTask;
-    }
 
     protected override async Task OnInitializedAsync()
     {
         SetupPageLayout();
         await SetPermissionsAsync();
-        await GetCalendarsAsync();
         await base.OnInitializedAsync();
     }
 
@@ -84,40 +74,57 @@ public partial class CalendarManagementBase : CalendarComponentBase
         HasDeletePermission = await AuthorizationService.IsGrantedAsync(CalendarPermissions.Calendars.Delete);
     }
 
-    protected virtual async Task GetCalendarsAsync()
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        try
+        await base.OnAfterRenderAsync(firstRender);
+
+        if (firstRender)
         {
-            IsLoading = true;
-            var result = await AvailabilityCalendarAppService.GetListAsync(new GetCalendarListInput
-            {
-                Filter = string.IsNullOrWhiteSpace(FilterText) ? null : FilterText,
-                MaxResultCount = PageSize,
-                SkipCount = PageIndex * PageSize
-            });
-            CalendarList = result.Items;
-            TotalCount = (int)result.TotalCount;
+            await ExecuteWithLoadingAsync(
+                () => _gridRef?.RefreshDataAsync() ?? Task.CompletedTask,
+                LoadingKeys.LoadCalendars);
         }
-        catch (Exception exception)
+    }
+
+    protected virtual async Task<SbDataResponse<CalendarDto>> LoadCalendarsDataAsync(SbDataRequest request)
+    {
+        var result = await AvailabilityCalendarAppService.GetListAsync(new GetCalendarListInput
         {
-            await HandleErrorAsync(exception);
-        }
-        finally
-        {
-            IsLoading = false;
-        }
+            Filter = string.IsNullOrWhiteSpace(FilterText) ? null : FilterText,
+            Sorting = request.Sorts.Count > 0
+                ? string.Join(", ", request.Sorts.Select(sort => sort.Direction == SbSortDirection.Descending ? $"{sort.Field} DESC" : sort.Field))
+                : "Name",
+            MaxResultCount = request.PageSize,
+            SkipCount = Math.Max(0, request.PageIndex * request.PageSize)
+        });
+
+        TotalCount = result.TotalCount;
+        return new SbDataResponse<CalendarDto>(result.Items, result.TotalCount);
     }
 
     protected virtual async Task OnPageIndexChangedAsync(int pageIndex)
     {
         PageIndex = pageIndex;
-        await GetCalendarsAsync();
+        await ExecuteWithLoadingAsync(
+            () => _gridRef?.RefreshDataAsync() ?? Task.CompletedTask,
+            LoadingKeys.LoadCalendars);
+    }
+
+    protected virtual async Task OnPageSizeChangedAsync(int pageSize)
+    {
+        PageSize = pageSize;
+        PageIndex = 0;
+        await ExecuteWithLoadingAsync(
+            () => _gridRef?.RefreshDataAsync() ?? Task.CompletedTask,
+            LoadingKeys.LoadCalendars);
     }
 
     protected virtual async Task ApplyFiltersAsync()
     {
         PageIndex = 0;
-        await GetCalendarsAsync();
+        await ExecuteWithLoadingAsync(
+            () => _gridRef?.RefreshDataAsync() ?? Task.CompletedTask,
+            LoadingKeys.LoadCalendars);
     }
 
     protected virtual async Task ClearFiltersAsync()
@@ -137,8 +144,7 @@ public partial class CalendarManagementBase : CalendarComponentBase
     protected virtual Task OpenCreateModalAsync()
     {
         EditingCalendarId = Guid.Empty;
-        EditingCalendar = new CreateUpdateCalendarDto { Kind = CalendarKind.WorkingHours, TimeZoneId = GetDefaultTimeZoneId() };
-        OwnerIdText = string.Empty;
+        EditingCalendar = new CreateUpdateCalendarDto { Kind = CalendarKind.Public, TimeZoneId = GetDefaultTimeZoneId() };
         IsEditorOpen = true;
         return Task.CompletedTask;
     }
@@ -151,13 +157,12 @@ public partial class CalendarManagementBase : CalendarComponentBase
             Name = calendar.Name,
             Kind = calendar.Kind,
             TimeZoneId = calendar.TimeZoneId,
-            OwnerType = calendar.OwnerType,
-            OwnerId = calendar.OwnerId,
+            OwnerUserId = calendar.OwnerUserId,
+            OwnerName = calendar.OwnerName,
             IsDefault = calendar.IsDefault,
-            MaxConcurrent = calendar.MaxConcurrent,
+            IsAlwaysOpen = calendar.IsAlwaysOpen,
             ExtraProperties = calendar.ExtraProperties
         };
-        OwnerIdText = calendar.OwnerId?.ToString() ?? string.Empty;
         IsEditorOpen = true;
         return Task.CompletedTask;
     }
@@ -188,7 +193,9 @@ public partial class CalendarManagementBase : CalendarComponentBase
 
             IsEditorOpen = false;
             await Message.SuccessAsync(L["SavedSuccessfully"]);
-            await GetCalendarsAsync();
+            await ExecuteWithLoadingAsync(
+                () => _gridRef?.RefreshDataAsync() ?? Task.CompletedTask,
+                LoadingKeys.LoadCalendars);
         }
         catch (Exception exception)
         {
@@ -315,12 +322,16 @@ public partial class CalendarManagementBase : CalendarComponentBase
         await AvailabilityCalendarAppService.DeleteAsync(PendingDeleteCalendar.Id);
         await CancelDeleteAsync();
         await Message.SuccessAsync(L["DeletedSuccessfully"]);
-        await GetCalendarsAsync();
+        await ExecuteWithLoadingAsync(
+            () => _gridRef?.RefreshDataAsync() ?? Task.CompletedTask,
+            LoadingKeys.LoadCalendars);
     }
 
     protected virtual async Task RefreshAsync()
     {
-        await GetCalendarsAsync();
+        await ExecuteWithLoadingAsync(
+            () => _gridRef?.RefreshDataAsync() ?? Task.CompletedTask,
+            LoadingKeys.LoadCalendars);
     }
 
     protected virtual string GetDefaultTimeZoneId()
@@ -331,11 +342,6 @@ public partial class CalendarManagementBase : CalendarComponentBase
     protected virtual string GetCalendarKindText(CalendarKind kind)
     {
         return L[$"Enum:CalendarKind:{kind}"];
-    }
-
-    protected virtual string GetCalendarOwnerTypeText(CalendarOwnerType ownerType)
-    {
-        return L[$"Enum:CalendarOwnerType:{ownerType}"];
     }
 
     protected virtual string GetCalendarExceptionKindText(CalendarExceptionKind kind)
@@ -374,12 +380,6 @@ public partial class CalendarManagementBase : CalendarComponentBase
                     return false;
                 }
 
-                if (hour.MaxConcurrent is <= 0)
-                {
-                    await Message.ErrorAsync(L["InvalidMaxConcurrent"]);
-                    return false;
-                }
-
                 ranges.Add((start, end));
             }
 
@@ -397,88 +397,15 @@ public partial class CalendarManagementBase : CalendarComponentBase
         return true;
     }
 
-    protected virtual IReadOnlyList<CalendarOwnerType> GetAvailableOwnerTypeOptions()
-    {
-        return EditingCalendar.Kind == CalendarKind.Resource
-            ? new[] { CalendarOwnerType.Resource }
-            : CalendarOwnerTypeOptions;
-    }
-
     protected virtual Task OnCalendarKindChangedAsync(CalendarKind kind)
     {
         EditingCalendar.Kind = kind;
-        if (kind == CalendarKind.Resource)
-        {
-            EditingCalendar.OwnerType = CalendarOwnerType.Resource;
-        }
-
-        if (!GetAvailableOwnerTypeOptions().Contains(EditingCalendar.OwnerType))
-        {
-            EditingCalendar.OwnerType = CalendarOwnerType.None;
-            OwnerIdText = string.Empty;
-        }
-
-        ApplyOwnerIdText();
         return Task.CompletedTask;
     }
 
-    protected virtual Task OnCalendarOwnerTypeChangedAsync(CalendarOwnerType ownerType)
+    protected virtual Task<bool> ValidateCalendarEditorAsync()
     {
-        EditingCalendar.OwnerType = ownerType;
-        if (ownerType == CalendarOwnerType.None)
-        {
-            OwnerIdText = string.Empty;
-            EditingCalendar.OwnerId = null;
-        }
-
-        return Task.CompletedTask;
-    }
-
-    protected virtual string GetOwnerIdLabel()
-    {
-        return EditingCalendar.OwnerType switch
-        {
-            CalendarOwnerType.User => L["UserId"],
-            CalendarOwnerType.Team => L["OrganizationUnitId"],
-            CalendarOwnerType.Tenant => L["TenantId"],
-            CalendarOwnerType.Resource => L["ResourceId"],
-            _ => L["OwnerId"]
-        };
-    }
-
-    protected virtual async Task<bool> ValidateCalendarEditorAsync()
-    {
-        ApplyOwnerIdText();
-        if (EditingCalendar.Kind == CalendarKind.Resource && EditingCalendar.OwnerType != CalendarOwnerType.Resource)
-        {
-            await Message.ErrorAsync(L["InvalidCalendarOwner"]);
-            return false;
-        }
-
-        if (EditingCalendar.OwnerType == CalendarOwnerType.None && EditingCalendar.OwnerId.HasValue)
-        {
-            await Message.ErrorAsync(L["InvalidCalendarOwner"]);
-            return false;
-        }
-
-        if (EditingCalendar.OwnerType != CalendarOwnerType.None && !EditingCalendar.OwnerId.HasValue)
-        {
-            await Message.ErrorAsync(L["OwnerIdRequired"]);
-            return false;
-        }
-
-        return true;
-    }
-
-    private void ApplyOwnerIdText()
-    {
-        if (EditingCalendar.OwnerType == CalendarOwnerType.None)
-        {
-            EditingCalendar.OwnerId = null;
-            return;
-        }
-
-        EditingCalendar.OwnerId = Guid.TryParse(OwnerIdText, out var ownerId) ? ownerId : null;
+        return Task.FromResult(true);
     }
 
     protected sealed class WorkingHourEditorModel
@@ -488,13 +415,6 @@ public partial class CalendarManagementBase : CalendarComponentBase
         public DayOfWeek DayOfWeek { get; set; } = DayOfWeek.Monday;
         public string StartTimeText { get; set; } = "09:00";
         public string EndTimeText { get; set; } = "17:00";
-        public int? MaxConcurrent { get; set; }
-
-        public int MaxConcurrentValue
-        {
-            get => MaxConcurrent ?? 0;
-            set => MaxConcurrent = value > 0 ? value : null;
-        }
 
         public WorkingHourEditorModel()
         {
@@ -505,7 +425,6 @@ public partial class CalendarManagementBase : CalendarComponentBase
             DayOfWeek = dto.DayOfWeek;
             StartTimeText = dto.StartTime.ToString(@"hh\:mm");
             EndTimeText = dto.EndTime.ToString(@"hh\:mm");
-            MaxConcurrent = dto.MaxConcurrent;
         }
 
         public CreateUpdateWorkingHourRuleDto ToDto()
@@ -514,8 +433,7 @@ public partial class CalendarManagementBase : CalendarComponentBase
             {
                 DayOfWeek = DayOfWeek,
                 StartTime = TimeSpan.TryParse(StartTimeText, out var start) ? start : TimeSpan.FromHours(9),
-                EndTime = TimeSpan.TryParse(EndTimeText, out var end) ? end : TimeSpan.FromHours(17),
-                MaxConcurrent = MaxConcurrent
+                EndTime = TimeSpan.TryParse(EndTimeText, out var end) ? end : TimeSpan.FromHours(17)
             };
         }
     }

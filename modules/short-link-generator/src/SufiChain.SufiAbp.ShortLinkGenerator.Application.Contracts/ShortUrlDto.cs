@@ -3,7 +3,7 @@ using SufiChain.SufiAbp.Application.Dtos;
 
 namespace SufiChain.SufiAbp.ShortLinkGenerator;
 
-public class ShortUrlDto : AuditedEntityDto<Guid>
+public class ShortUrlDto : ExtensibleAuditedEntityDto<Guid>
 {
     public string ShortCode { get; set; } = string.Empty;
     
@@ -22,5 +22,5 @@ public class ShortUrlDto : AuditedEntityDto<Guid>
     public string? Description { get; set; }
     
     public string FullShortUrl { get; set; } = string.Empty;
-}
 
+}

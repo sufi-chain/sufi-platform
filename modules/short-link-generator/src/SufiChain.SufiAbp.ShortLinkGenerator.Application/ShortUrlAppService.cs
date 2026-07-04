@@ -15,6 +15,7 @@ using Volo.Abp.Application.Services;
 using Volo.Abp.Caching;
 using Volo.Abp.Domain.Repositories;
 using Volo.Abp.Linq;
+using Volo.Abp.ObjectExtending;
 using Volo.Abp.Settings;
 
 namespace SufiChain.SufiAbp.ShortLinkGenerator;
@@ -54,7 +55,9 @@ public class ShortUrlAppService : ApplicationService, IShortUrlAppService
             input.CreatedByModule ?? "Manual",
             input.ExpiresAt,
             input.Description);
-            
+
+        input.MapExtraPropertiesTo(shortUrl);
+
         await _repository.InsertAsync(shortUrl, autoSave: true);
         await CacheShortUrlAsync(shortUrl);
         
@@ -226,10 +229,10 @@ public class ShortUrlAppService : ApplicationService, IShortUrlAppService
         var value = await _settingProvider.GetOrNullAsync(ShortLinkGeneratorSettings.ShortUrl.RedirectRoute);
         if (!string.IsNullOrWhiteSpace(value))
         {
-            return value;
+            return ShortLinkRedirectHelper.NormalizeBaseKey(value);
         }
         
-        return _options.RedirectRoute;
+        return ShortLinkRedirectHelper.NormalizeBaseKey(_options.RedirectRoute);
     }
     
     private async Task<ShortUrlDto> MapToDtoAsync(ShortUrl shortUrl)
@@ -242,15 +245,7 @@ public class ShortUrlAppService : ApplicationService, IShortUrlAppService
         if (!string.IsNullOrWhiteSpace(baseUrl))
         {
             var normalizedBase = baseUrl.TrimEnd('/');
-            if (string.IsNullOrWhiteSpace(redirectRoute))
-            {
-                dto.FullShortUrl = $"{normalizedBase}/{shortUrl.ShortCode}";
-            }
-            else
-            {
-                var normalizedRoute = redirectRoute.Trim('/');
-                dto.FullShortUrl = $"{normalizedBase}/{normalizedRoute}/{shortUrl.ShortCode}";
-            }
+            dto.FullShortUrl = $"{normalizedBase}/{redirectRoute}/{shortUrl.ShortCode}";
         }
         else
         {
@@ -259,5 +254,5 @@ public class ShortUrlAppService : ApplicationService, IShortUrlAppService
         
         return dto;
     }
-}
 
+}

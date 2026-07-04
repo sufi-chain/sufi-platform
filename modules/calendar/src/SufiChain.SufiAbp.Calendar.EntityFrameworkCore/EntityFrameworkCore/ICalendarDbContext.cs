@@ -15,6 +15,8 @@ public interface ICalendarDbContext : IEfCoreDbContext
 
     DbSet<CalendarException> CalendarExceptions { get; }
 
+    DbSet<CalendarInheritance> CalendarInheritances { get; }
+
     DbSet<CalendarEvent> CalendarEvents { get; }
 
     DbSet<EventOccurrenceException> EventOccurrenceExceptions { get; }

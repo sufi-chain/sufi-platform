@@ -29,6 +29,15 @@ public partial class SufiCalendarScheduler : CalendarPublicComponentBase
     public bool AllowCalendarSelection { get; set; } = true;
 
     [Parameter]
+    public bool ShowCalendarSelectInHeader { get; set; } = true;
+
+    [Parameter]
+    public Guid SelectedCalendarId { get; set; }
+
+    [Parameter]
+    public EventCallback<Guid> SelectedCalendarIdChanged { get; set; }
+
+    [Parameter]
     public bool AllowEventEditing { get; set; } = true;
 
     [Parameter]
@@ -44,8 +53,6 @@ public partial class SufiCalendarScheduler : CalendarPublicComponentBase
     public EventCallback<CalendarEventDto> EventSaved { get; set; }
 
     protected List<CalendarLookupDto> CalendarOptions { get; set; } = new();
-    protected Guid SelectedCalendarId { get; set; }
-    protected string? SelectedCalendarKey { get; set; }
     protected string SelectedTimeZoneId { get; set; } = TimeZoneInfo.Local.Id;
     protected SufiCalendarViewMode View { get; set; } = SufiCalendarViewMode.Month;
     protected DateTime Date { get; set; } = DateTime.Today;
@@ -57,7 +64,7 @@ public partial class SufiCalendarScheduler : CalendarPublicComponentBase
     protected bool HasFocusedInitialDate { get; set; }
     protected IReadOnlyList<Guid> SelectedCalendarIds => SelectedCalendarId == Guid.Empty ? Array.Empty<Guid>() : new[] { SelectedCalendarId };
     protected string CalendarViewKey => $"{SelectedCalendarId:N}-{View}-{Date:yyyyMMdd}-{RefreshToken}";
-    protected string CalendarSelectKey => $"{SelectedCalendarKey}-{CalendarOptions.Count}";
+    private bool _hasAppliedInitialCalendarId;
 
     protected override async Task OnParametersSetAsync()
     {
@@ -75,6 +82,15 @@ public partial class SufiCalendarScheduler : CalendarPublicComponentBase
         if (CalendarOptions.Count == 0)
         {
             await LoadCalendarsAsync();
+        }
+        else
+        {
+            await TryApplyInitialCalendarIdAsync();
+
+            if (SelectedCalendarId != Guid.Empty)
+            {
+                SyncSelectedCalendarFromOptions();
+            }
         }
     }
 
@@ -106,8 +122,8 @@ public partial class SufiCalendarScheduler : CalendarPublicComponentBase
                 Name = personalCalendar.Name,
                 Kind = personalCalendar.Kind,
                 TimeZoneId = personalCalendar.TimeZoneId,
-                OwnerType = personalCalendar.OwnerType,
-                OwnerId = personalCalendar.OwnerId,
+                OwnerUserId = personalCalendar.OwnerUserId,
+                OwnerName = personalCalendar.OwnerName,
                 IsDefault = personalCalendar.IsDefault
             });
 
@@ -115,26 +131,36 @@ public partial class SufiCalendarScheduler : CalendarPublicComponentBase
             CalendarOptions.AddRange(visibleCalendars.Items.Where(x => x.Id != personalCalendar.Id));
         }
 
-        var selected = InitialCalendarId.HasValue
-            ? CalendarOptions.FirstOrDefault(x => x.Id == InitialCalendarId.Value)
-            : CalendarOptions.FirstOrDefault(x => x.IsDefault) ?? CalendarOptions.FirstOrDefault();
+        var selected = CalendarSelectionHelper.ResolveDefaultSelection(
+            CalendarOptions,
+            SelectedCalendarId,
+            InitialCalendarId);
 
-        if (selected != null)
+        if (SelectedCalendarId != Guid.Empty)
         {
-            SetSelectedCalendar(selected);
+            SyncSelectedCalendarFromOptions();
+            StateHasChanged();
+        }
+        else if (selected != null)
+        {
+            await SetSelectedCalendarAsync(selected, notifyParent: true);
             StateHasChanged();
             await FocusNearestEventAsync(selected.Id);
         }
     }
 
-    protected virtual async Task OnSelectedCalendarChangedAsync(string? value)
+    protected virtual async Task OnSelectedCalendarIdChangedAsync(Guid calendarId)
     {
-        var selected = CalendarOptions.FirstOrDefault(x => GetCalendarKey(x) == value);
-        if (selected != null)
-        {
-            SetSelectedCalendar(selected);
-            await FocusNearestEventAsync(selected.Id);
-        }
+        SelectedCalendarId = calendarId;
+        SyncSelectedCalendarFromOptions();
+        await SelectedCalendarIdChanged.InvokeAsync(calendarId);
+        StateHasChanged();
+    }
+
+    protected virtual async Task OnSelectedCalendarChangedAsync(CalendarLookupDto calendar)
+    {
+        await SetSelectedCalendarAsync(calendar, notifyParent: true);
+        await FocusNearestEventAsync(calendar.Id);
     }
 
     protected virtual Task OnViewChangedAsync(SufiCalendarViewMode value)
@@ -210,20 +236,11 @@ public partial class SufiCalendarScheduler : CalendarPublicComponentBase
         return Task.CompletedTask;
     }
 
-    protected virtual async Task RefreshAsync()
+    public virtual async Task RefreshAsync()
     {
+        _hasAppliedInitialCalendarId = false;
         CalendarOptions.Clear();
         await LoadCalendarsAsync();
-    }
-
-    protected virtual string GetCalendarOptionText(CalendarLookupDto calendar)
-    {
-        return $"{calendar.Name} · {L[$"Enum:CalendarKind:{calendar.Kind}"]}";
-    }
-
-    protected virtual string GetCalendarKey(CalendarLookupDto calendar)
-    {
-        return GetCalendarOptionText(calendar);
     }
 
     protected virtual async Task FocusNearestEventAsync(Guid calendarId)
@@ -252,11 +269,46 @@ public partial class SufiCalendarScheduler : CalendarPublicComponentBase
         }
     }
 
-    private void SetSelectedCalendar(CalendarLookupDto calendar)
+    private async Task TryApplyInitialCalendarIdAsync()
+    {
+        if (_hasAppliedInitialCalendarId || !InitialCalendarId.HasValue || CalendarOptions.Count == 0)
+        {
+            return;
+        }
+
+        var initial = CalendarOptions.FirstOrDefault(x => x.Id == InitialCalendarId.Value);
+        if (initial == null)
+        {
+            return;
+        }
+
+        if (SelectedCalendarId != initial.Id)
+        {
+            await SetSelectedCalendarAsync(initial, notifyParent: true);
+            StateHasChanged();
+        }
+
+        _hasAppliedInitialCalendarId = true;
+    }
+
+    private async Task SetSelectedCalendarAsync(CalendarLookupDto calendar, bool notifyParent)
     {
         SelectedCalendarId = calendar.Id;
-        SelectedCalendarKey = GetCalendarKey(calendar);
         SelectedTimeZoneId = string.IsNullOrWhiteSpace(calendar.TimeZoneId) ? TimeZoneInfo.Local.Id : calendar.TimeZoneId;
+
+        if (notifyParent)
+        {
+            await SelectedCalendarIdChanged.InvokeAsync(calendar.Id);
+        }
+    }
+
+    private void SyncSelectedCalendarFromOptions()
+    {
+        var calendar = CalendarOptions.FirstOrDefault(x => x.Id == SelectedCalendarId);
+        if (calendar != null)
+        {
+            SelectedTimeZoneId = string.IsNullOrWhiteSpace(calendar.TimeZoneId) ? TimeZoneInfo.Local.Id : calendar.TimeZoneId;
+        }
     }
 
     private TimeZoneInfo ResolveSelectedTimeZone()

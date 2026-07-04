@@ -4,6 +4,7 @@ using Volo.Abp.Mapperly;
 namespace SufiChain.SufiAbp.ShortLinkGenerator;
 
 [Mapper(RequiredMappingStrategy = RequiredMappingStrategy.Target)]
+[MapExtraProperties]
 public partial class ShortUrlToShortUrlDtoMapper : MapperBase<ShortUrl, ShortUrlDto>
 {
     [MapperIgnoreTarget(nameof(ShortUrlDto.FullShortUrl))]

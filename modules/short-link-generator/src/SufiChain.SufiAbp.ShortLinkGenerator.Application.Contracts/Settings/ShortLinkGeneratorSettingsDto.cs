@@ -10,6 +10,11 @@ public class ShortLinkGeneratorSettingsDto
     [StringLength(ShortLinkGeneratorConsts.ShortUrl.MaxDestinationUrlLength)]
     public string? BaseUrl { get; set; }
 
+    [Required]
+    [StringLength(ShortLinkGeneratorConsts.ShortUrl.MaxRedirectRouteLength)]
+    [RegularExpression(@"^[A-Za-z0-9][A-Za-z0-9_-]*$")]
+    public string RedirectRoute { get; set; } = ShortLinkGeneratorConsts.DefaultRedirectRoute;
+
     [Range(1, ShortLinkGeneratorConsts.ShortUrl.MaxShortCodeLength)]
     public int ShortCodeLength { get; set; } = ShortLinkGeneratorConsts.DefaultShortCodeLength;
 

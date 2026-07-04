@@ -45,10 +45,24 @@ public class CalendarSnapshotCache : ICalendarSnapshotCache, ITransientDependenc
         await _cache.RemoveAsync(cacheKey, token: cancellationToken);
     }
 
+    public virtual async Task RemoveWithInheritorsAsync(Guid calendarId, Guid? tenantId = null, CancellationToken cancellationToken = default)
+    {
+        await RemoveAsync(calendarId, tenantId, cancellationToken);
+
+        // A change on a parent calendar invalidates every calendar that inherits from it,
+        // since their cached snapshots fold in the parent's rules/exceptions.
+        var inheritorIds = await _calendarRepository.GetInheritingCalendarIdsAsync(calendarId, cancellationToken);
+        foreach (var inheritorId in inheritorIds)
+        {
+            await RemoveAsync(inheritorId, tenantId, cancellationToken);
+        }
+    }
+
     protected virtual async Task<CalendarSnapshot> LoadAsync(Guid calendarId, CancellationToken cancellationToken)
     {
         var calendar = await _calendarRepository.GetAsync(calendarId, includeDetails: true, cancellationToken: cancellationToken);
-        return CalendarSnapshotMapper.ToSnapshot(calendar);
+        var inheritedCalendars = await _calendarRepository.GetInheritedCalendarsAsync(calendarId, cancellationToken);
+        return CalendarSnapshotMapper.ToSnapshot(calendar, inheritedCalendars);
     }
 
     protected virtual string BuildCacheKey(Guid calendarId, Guid? tenantId)

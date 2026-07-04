@@ -1,7 +1,7 @@
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using SufiChain.SufiAbp.Account.Templates;
-using SufiChain.SufiAbp.Messaging;
-using SufiChain.SufiAbp.Messaging.Sms;
+using SufiChain.SufiAbp.Communications;
+using SufiChain.SufiAbp.Communications.Sms;
 using SufiChain.SufiAbp.TextTemplating;
 using Volo.Abp.DependencyInjection;
 

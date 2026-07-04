@@ -31,6 +31,16 @@
     min-width: 12rem;
 }
 
+.sufi-calendar-scheduler-inline > .sufi-calendar-scheduler__calendar-select {
+    width: 100%;
+    max-width: 28rem;
+}
+
+.kom-topbar-page-actions .sufi-calendar-scheduler__calendar-select {
+    width: min(100%, 18rem);
+    min-width: 10rem;
+}
+
 [dir="rtl"] .sufi-calendar-scheduler__calendar-select {
     justify-self: start;
 }

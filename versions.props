@@ -107,6 +107,9 @@
         <OpenIddictVersion>7.5.0</OpenIddictVersion>
         <SharpCompressVersion>0.48.0</SharpCompressVersion>
         <SnappierVersion>1.3.1</SnappierVersion>
+        <KavenegarVersion>1.0.7</KavenegarVersion>
+        <RestSharpVersion>112.1.0</RestSharpVersion>
+        <IpeSmsIrVersion>1.2.7</IpeSmsIrVersion>
     </PropertyGroup>
 
 </Project>

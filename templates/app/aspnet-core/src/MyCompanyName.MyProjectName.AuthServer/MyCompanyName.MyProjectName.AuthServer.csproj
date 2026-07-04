@@ -1,13 +1,13 @@
+﻿<?xml version="1.0" encoding="utf-16"?>
 <Project Sdk="Microsoft.NET.Sdk.Web">
-
-	<PropertyGroup><LangVersion>latest</LangVersion>
+  <PropertyGroup>
+    <LangVersion>latest</LangVersion>
     <TargetFramework>net10.0</TargetFramework>
     <RootNamespace>MyCompanyName.MyProjectName</RootNamespace>
     <PreserveCompilationReferences>true</PreserveCompilationReferences>
     <UserSecretsId>MyCompanyName.MyProjectName.AuthServer-a3f8e2b1-7c4d-4a91-b6e5-9d2f1c8a7b3e</UserSecretsId>
     <IsPackable>false</IsPackable>
   </PropertyGroup>
-
   <ItemGroup>
     <PackageReference Include="Serilog.AspNetCore" Version="$(SerilogAspNetCoreVersion)" />
     <PackageReference Include="Serilog.Sinks.Async" Version="$(SerilogSinksAsyncVersion)" />
@@ -16,24 +16,20 @@
     <PackageReference Include="SufiChain.SufiAbp.Autofac" Version="$(SufiVersion)" />
     <PackageReference Include="SufiChain.SufiAbp.AspNetCore.Serilog" Version="$(SufiVersion)" />
   </ItemGroup>
-
   <ItemGroup>
     <!-- Demo app project references (always needed for direct DB access + credential validation) -->
     <ProjectReference Include="..\MyCompanyName.MyProjectName.Application\MyCompanyName.MyProjectName.Application.csproj" />
     <ProjectReference Include="..\MyCompanyName.MyProjectName.MongoDB\MyCompanyName.MyProjectName.MongoDB.csproj" />
   </ItemGroup>
-
-  
-  
   <!-- <TEMPLATE-REMOVE> -->
   <ItemGroup>
     <!-- Framework auditing (/_blazor exclusion, HTTP method filter) -->
-    <ProjectReference Include="..\..\..\..\..\src\framework\src\SufiChain.SufiAbp.AspNetCore\SufiChain.SufiAbp.AspNetCore.csproj" />
+    <ProjectReference Include="..\..\..\..\..\framework\SufiChain.SufiAbp.AspNetCore\SufiChain.SufiAbp.AspNetCore.csproj" />
     <!-- Framework OpenIddict authorization endpoints -->
-    <ProjectReference Include="..\..\..\..\..\src\framework\src\SufiChain.SufiAbp.AspNetCore.Authentication.OpenIdConnect\SufiChain.SufiAbp.AspNetCore.Authentication.OpenIdConnect.csproj" />
-    <ProjectReference Include="..\..\..\..\..\src\framework\src\SufiChain.SufiAbp.AspNetCore.Authentication.OAuth\SufiChain.SufiAbp.AspNetCore.Authentication.OAuth.csproj" />
+    <ProjectReference Include="..\..\..\..\..\framework\SufiChain.SufiAbp.AspNetCore.Authentication.OpenIdConnect\SufiChain.SufiAbp.AspNetCore.Authentication.OpenIdConnect.csproj" />
+    <ProjectReference Include="..\..\..\..\..\framework\SufiChain.SufiAbp.AspNetCore.Authentication.OAuth\SufiChain.SufiAbp.AspNetCore.Authentication.OAuth.csproj" />
     <!-- Framework SufiAbp Account controller (complete-login, OIDC Login/Logout) -->
-    <ProjectReference Include="..\..\..\..\..\src\framework\src\SufiChain.SufiAbp.AspNetCore.Authentication.Server\SufiChain.SufiAbp.AspNetCore.Authentication.Server.csproj" />
+    <ProjectReference Include="..\..\..\..\..\framework\SufiChain.SufiAbp.AspNetCore.Authentication.Server\SufiChain.SufiAbp.AspNetCore.Authentication.Server.csproj" />
     <!-- Blazor Server theme for rendering auth UI pages -->
     <ProjectReference Include="..\..\..\..\..\independent-projects\kom-theme\src\SufiChain.KomTheme.Blazor.Server\SufiChain.KomTheme.Blazor.Server.csproj" />
     <!-- SufiBlazor: required for Account Blazor (Login, Register, AccountLayout) -->
@@ -59,9 +55,6 @@
     <ProjectReference Include="..\..\..\..\..\modules\setting-management\src\SufiChain.SufiAbp.SettingManagement.HttpApi\SufiChain.SufiAbp.SettingManagement.HttpApi.csproj" />
   </ItemGroup>
   <!-- </TEMPLATE-REMOVE> -->
-
-  
-  
   <!-- <TEMPLATE-ONLY>
   <ItemGroup>
     <PackageReference Include="SufiChain.SufiAbp.AspNetCore.Authentication.OpenIdConnect" Version="$(SufiVersion)" />
@@ -83,19 +76,16 @@
     <PackageReference Include="SufiChain.SufiAbp.SettingManagement.HttpApi" Version="$(SufiVersion)" />
   </ItemGroup>
   </TEMPLATE-ONLY> -->
-
   <ItemGroup>
     <!-- ABP infrastructure modules (audit logging, features, settings with MongoDB persistence) -->
     <PackageReference Include="SufiChain.SufiAbp.AuditLogging.MongoDB" Version="$(SufiVersion)" />
     <PackageReference Include="SufiChain.SufiAbp.FeatureManagement.MongoDB" Version="$(SufiVersion)" />
     <PackageReference Include="SufiChain.SufiAbp.SettingManagement.MongoDB" Version="$(SufiVersion)" />
   </ItemGroup>
-
   <ItemGroup>
     <Compile Remove="Logs\**" />
     <Content Remove="Logs\**" />
     <EmbeddedResource Remove="Logs\**" />
     <None Remove="Logs\**" />
   </ItemGroup>
-
 </Project>

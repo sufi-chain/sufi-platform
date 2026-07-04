@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk.Razor">
+﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
 
   <PropertyGroup>
     <LangVersion>latest</LangVersion>
@@ -23,7 +23,7 @@
     <ProjectReference Include="../SufiChain.SufiAbp.SettingManagement.Domain/SufiChain.SufiAbp.SettingManagement.Domain.csproj" />
     <ProjectReference Include="../../../../framework/SufiChain.SufiAbp.Authorization/SufiChain.SufiAbp.Authorization.csproj" />
     <!-- ABP Email and Timing for setting names -->
-    <ProjectReference Include="../../../../framework/SufiChain.SufiAbp.Messaging/SufiChain.SufiAbp.Messaging.csproj" />
+    <ProjectReference Include="../../../../framework/SufiChain.SufiAbp.Communications/SufiChain.SufiAbp.Communications.csproj" />
     <ProjectReference Include="../../../../framework/SufiChain.SufiAbp.Timing/SufiChain.SufiAbp.Timing.csproj" />
     <!-- Blazor Authorization -->
     <PackageReference Include="Microsoft.AspNetCore.Components.Authorization" Version="$(AspNetCoreVersion)" />

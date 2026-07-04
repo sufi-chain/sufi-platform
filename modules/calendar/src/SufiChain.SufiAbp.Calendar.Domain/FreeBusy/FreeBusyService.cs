@@ -43,7 +43,7 @@ public class FreeBusyService : IFreeBusyService, ITransientDependency
                 .ThenBy(x => x.EndUtc)
                 .ToList();
 
-            busyBlocks.AddRange(BuildBusyBlocks(calendar.Id, activeOccurrences, calendar.MaxConcurrent));
+            busyBlocks.AddRange(BuildBusyBlocks(calendar.Id, activeOccurrences));
             freeSlots.AddRange(await BuildFreeSlotsAsync(calendar, activeOccurrences, utcFrom, utcTo, ct));
         }
 
@@ -54,7 +54,7 @@ public class FreeBusyService : IFreeBusyService, ITransientDependency
             freeSlots.OrderBy(x => x.StartUtc).ThenBy(x => x.EndUtc).ToList());
     }
 
-    private static IReadOnlyList<BusyBlock> BuildBusyBlocks(Guid calendarId, IReadOnlyList<EventOccurrence> occurrences, int? maxConcurrent)
+    private static IReadOnlyList<BusyBlock> BuildBusyBlocks(Guid calendarId, IReadOnlyList<EventOccurrence> occurrences)
     {
         var points = occurrences
             .SelectMany(x => new[]
@@ -74,7 +74,7 @@ public class FreeBusyService : IFreeBusyService, ITransientDependency
         {
             if (segmentStart.HasValue && point.Utc > segmentStart.Value && busyCount > 0)
             {
-                blocks.Add(new BusyBlock(calendarId, segmentStart.Value, point.Utc, busyCount, maxConcurrent));
+                blocks.Add(new BusyBlock(calendarId, segmentStart.Value, point.Utc, busyCount));
             }
 
             busyCount += point.Delta;
@@ -87,16 +87,8 @@ public class FreeBusyService : IFreeBusyService, ITransientDependency
     private async Task<IReadOnlyList<FreeSlot>> BuildFreeSlotsAsync(Calendars.Calendar calendar, IReadOnlyList<EventOccurrence> occurrences, DateTime utcFrom, DateTime utcTo, CancellationToken ct)
     {
         var windows = await BuildAvailabilityWindowsAsync(calendar, utcFrom, utcTo, ct);
-        if (!calendar.MaxConcurrent.HasValue)
-        {
-            return windows.Select(x => new FreeSlot(calendar.Id, x.StartUtc, x.EndUtc, null)).ToList();
-        }
-
-        var fullBusyBlocks = BuildBusyBlocks(calendar.Id, occurrences, calendar.MaxConcurrent)
-            .Where(x => x.IsCapacityFull)
-            .ToList();
-
-        return SubtractBusy(windows, fullBusyBlocks, calendar.Id, calendar.MaxConcurrent.Value);
+        var busyBlocks = BuildBusyBlocks(calendar.Id, occurrences);
+        return SubtractBusy(windows, busyBlocks, calendar.Id);
     }
 
     private async Task<IReadOnlyList<FreeSlot>> BuildAvailabilityWindowsAsync(Calendars.Calendar calendar, DateTime utcFrom, DateTime utcTo, CancellationToken ct)
@@ -128,7 +120,7 @@ public class FreeBusyService : IFreeBusyService, ITransientDependency
             var end = close < utcTo ? close : utcTo;
             if (end > start)
             {
-                windows.Add(new FreeSlot(calendar.Id, start, end, calendar.MaxConcurrent));
+                windows.Add(new FreeSlot(calendar.Id, start, end));
             }
 
             cursor = end <= start ? start.AddMinutes(1) : end;
@@ -137,20 +129,20 @@ public class FreeBusyService : IFreeBusyService, ITransientDependency
         return windows;
     }
 
-    private static IReadOnlyList<FreeSlot> SubtractBusy(IReadOnlyList<FreeSlot> windows, IReadOnlyList<BusyBlock> fullBusyBlocks, Guid calendarId, int maxConcurrent)
+    private static IReadOnlyList<FreeSlot> SubtractBusy(IReadOnlyList<FreeSlot> windows, IReadOnlyList<BusyBlock> busyBlocks, Guid calendarId)
     {
         var freeSlots = new List<FreeSlot>();
         foreach (var window in windows)
         {
             var cursor = window.StartUtc;
-            foreach (var busy in fullBusyBlocks.Where(x => x.EndUtc > window.StartUtc && x.StartUtc < window.EndUtc).OrderBy(x => x.StartUtc))
+            foreach (var busy in busyBlocks.Where(x => x.EndUtc > window.StartUtc && x.StartUtc < window.EndUtc).OrderBy(x => x.StartUtc))
             {
                 var busyStart = busy.StartUtc > window.StartUtc ? busy.StartUtc : window.StartUtc;
                 var busyEnd = busy.EndUtc < window.EndUtc ? busy.EndUtc : window.EndUtc;
 
                 if (busyStart > cursor)
                 {
-                    freeSlots.Add(new FreeSlot(calendarId, cursor, busyStart, maxConcurrent));
+                    freeSlots.Add(new FreeSlot(calendarId, cursor, busyStart));
                 }
 
                 if (busyEnd > cursor)
@@ -161,7 +153,7 @@ public class FreeBusyService : IFreeBusyService, ITransientDependency
 
             if (cursor < window.EndUtc)
             {
-                freeSlots.Add(new FreeSlot(calendarId, cursor, window.EndUtc, maxConcurrent));
+                freeSlots.Add(new FreeSlot(calendarId, cursor, window.EndUtc));
             }
         }
 

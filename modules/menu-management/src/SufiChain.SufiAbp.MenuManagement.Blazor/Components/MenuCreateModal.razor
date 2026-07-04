@@ -1,0 +1,38 @@
+@inherits MenuManagementComponentBase
+
+<SbDialog Open="@Open" OpenChanged="@SetOpenAsync" Size="SbDialogSize.Md" Title="@L["CreateMenu"]">
+    <ChildContent>
+        <SbForm Model="_model" OnValidSubmit="OnValidSubmitAsync">
+            <ChildContent>
+                <SbStack Gap="3">
+                    <SbTextField @bind-Value="_model.Name"
+                                 Label="@L["MenuName"]"
+                                 Required="true" />
+
+                    <SbTextField @bind-Value="_model.DisplayName"
+                                 Label="@L["DisplayName"]"
+                                 Required="true" />
+
+                    <SbTextField @bind-Value="_model.ContextType"
+                                 Label="@L["ContextType"]"
+                                 Required="true"
+                                 Placeholder="e.g. Public" />
+
+                    <SbTextField @bind-Value="_contextIdText"
+                                 Label="@L["ContextId"]"
+                                 Placeholder="@L["NoParent"]" />
+
+                    <SbTextArea @bind-Value="_model.Description"
+                                Label="@L["Description"]"
+                                Rows="3" />
+                </SbStack>
+            </ChildContent>
+            <FooterContent>
+                <SbStack Direction="SbStackDirection.Row" Gap="2" Justify="SbJustify.End">
+                    <SbButton Variant="SbButtonVariant.Outline" OnClick="Hide">@L["Cancel"]</SbButton>
+                    <SbButton Type="submit" Color="SbColor.Primary" Loading="IsOperationLoading(LoadingKeys.Create)">@L["CreateMenu"]</SbButton>
+                </SbStack>
+            </FooterContent>
+        </SbForm>
+    </ChildContent>
+</SbDialog>

@@ -162,11 +162,40 @@ public class FileFolder : FullAuditedAggregateRoot<Guid>, IMultiTenant
             ?? new List<Guid>();
     }
 
+   /// <summary>
+   /// Set the sort order for this folder
+   /// </summary>
+   public void SetSortOrder(int sortOrder)
+   {
+       SortOrder = sortOrder;
+   }
+
     /// <summary>
-    /// Set the sort order for this folder
+    /// Replaces all folder permissions with the given set.
+    /// Permissions are mutated through the aggregate root to enforce invariants.
     /// </summary>
-    public void SetSortOrder(int sortOrder)
+    public void SetPermissions(IEnumerable<FolderPermission> permissions)
     {
-        SortOrder = sortOrder;
+        Permissions.Clear();
+        foreach (var permission in permissions)
+        {
+            Permissions.Add(permission);
+        }
+    }
+
+    /// <summary>
+    /// Adds a single permission to the folder.
+    /// </summary>
+    public void AddPermission(FolderPermission permission)
+    {
+        Permissions.Add(permission);
+    }
+
+    /// <summary>
+    /// Removes all permissions from the folder.
+    /// </summary>
+    public void ClearPermissions()
+    {
+        Permissions.Clear();
     }
 }

@@ -57,11 +57,6 @@ public class CalendarException : Entity<Guid>
             {
                 throw new BusinessException(CalendarErrorCodes.InvalidTimeRange);
             }
-
-            if (range.MaxConcurrent is <= 0)
-            {
-                throw new BusinessException(CalendarErrorCodes.InvalidMaxConcurrent);
-            }
         }
 
         var orderedRanges = ranges.OrderBy(x => x.StartTime).ToList();

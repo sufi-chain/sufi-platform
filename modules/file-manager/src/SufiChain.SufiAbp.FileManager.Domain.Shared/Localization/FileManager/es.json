@@ -488,6 +488,23 @@
     "Permission:MediaItems": "Elementos multimedia",
     "Permission:MediaStructures": "Estructuras multimedia",
     "BlobStorageView": "Almacenamiento blob",
-    "DirectoryMapView": "Mapa de carpetas"
+    "DirectoryMapView": "Mapa de carpetas",
+    "Menu:FolderAccess": "Acceso a carpetas",
+    "FolderAccess:Folder": "Carpeta",
+    "FolderAccess:ChooseFolder": "Elija una carpeta…",
+    "FolderAccess:GrantType": "Tipo de concesión",
+    "FolderAccess:User": "Usuario",
+    "FolderAccess:Role": "Rol",
+    "FolderAccess:OrganizationUnit": "Unidad organizativa",
+    "FolderAccess:PrincipalId": "ID del principal",
+    "FolderAccess:Level": "Nivel de permiso",
+    "FolderAccess:Read": "Lectura",
+    "FolderAccess:Write": "Escritura",
+    "FolderAccess:Delete": "Eliminación",
+    "FolderAccess:Share": "Compartir",
+    "FolderAccess:Full": "Total",
+    "FolderAccess:InheritToChildren": "Heredar a subcarpetas",
+    "FolderAccess:ClearAll": "Borrar todo",
+    "FolderAccess:NoPermissions": "No hay concesiones de acceso para esta carpeta."
   }
 }

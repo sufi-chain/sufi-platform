@@ -15,6 +15,8 @@ public class CalendarDbContext : AbpDbContext<CalendarDbContext>, ICalendarDbCon
 
     public DbSet<CalendarException> CalendarExceptions { get; set; } = null!;
 
+    public DbSet<CalendarInheritance> CalendarInheritances { get; set; } = null!;
+
     public DbSet<CalendarEvent> CalendarEvents { get; set; } = null!;
 
     public DbSet<EventOccurrenceException> EventOccurrenceExceptions { get; set; } = null!;

@@ -73,8 +73,8 @@
     "ShortLinkGenerator:ShortUrlExpired": "This short URL has expired",
     "DisplayName:ShortLinkGenerator.BaseUrl": "Base URL",
     "Description:ShortLinkGenerator.BaseUrl": "The base URL used to generate full short links (e.g., https://s.co/)",
-    "DisplayName:ShortLinkGenerator.ShortUrl.RedirectRoute": "Redirect Route",
-    "Description:ShortLinkGenerator.ShortUrl.RedirectRoute": "The route path used for redirecting short URLs (e.g., 'sur' for /sur/{code})",
+    "DisplayName:ShortLinkGenerator.ShortUrl.RedirectRoute": "Redirect Base Key",
+    "Description:ShortLinkGenerator.ShortUrl.RedirectRoute": "The base key used in public short links (e.g., 'r' for https://s.co/r/{code})",
     "DisplayName:ShortLinkGenerator.ShortUrl.ShortCodeLength": "Short Code Length",
     "Description:ShortLinkGenerator.ShortUrl.ShortCodeLength": "The length of the generated short codes",
     "DisplayName:ShortLinkGenerator.ShortUrl.CacheExpirationMinutes": "Cache Expiration (Minutes)",
@@ -93,6 +93,7 @@
     "Save": "حفظ",
     "Yes": "نعم",
     "No": "لا",
-    "SamplePageMessage": "صفحة نموذجية لوحدة مولد الروابط القصيرة."
+    "SamplePageMessage": "صفحة نموذجية لوحدة مولد الروابط القصيرة.",
+    "Redirecting": "Redirecting..."
   }
 }

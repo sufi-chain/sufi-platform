@@ -43,6 +43,7 @@ public class AvailabilityCalendarAppService : SufiAbpApplicationService, IAvaila
         var query = await _calendarRepository.GetQueryableAsync();
         query = ApplyVisibilityFilter(query);
         query = ApplyFilter(query, input);
+        query = ApplySorting(query, input.Sorting);
         var totalCount = await _asyncExecuter.CountAsync(query);
         var items = await _asyncExecuter.ToListAsync(query.Skip(input.SkipCount).Take(input.MaxResultCount));
         return new PagedResultDto<CalendarDto>(totalCount, items.Select(CalendarDtoMapper.ToDto).ToList());
@@ -77,15 +78,11 @@ public class AvailabilityCalendarAppService : SufiAbpApplicationService, IAvaila
         var userId = CurrentUser.Id;
         if (!userId.HasValue)
         {
-            throw new BusinessException(CalendarErrorCodes.InvalidOwner);
+            throw new BusinessException(CalendarErrorCodes.UserRequired);
         }
 
-        var query = await _calendarRepository.GetQueryableAsync();
-        var existing = await _asyncExecuter.FirstOrDefaultAsync(query.Where(x =>
-            x.Kind == CalendarKind.Personal &&
-            x.OwnerType == CalendarOwnerType.User &&
-            x.OwnerId == userId.Value));
-
+        var calendars = await _calendarRepository.GetByOwnerUserIdAsync(CurrentTenant.Id, userId.Value);
+        var existing = calendars.FirstOrDefault(x => x.Kind == CalendarKind.Personal);
         if (existing != null)
         {
             return CalendarDtoMapper.ToDto(existing);
@@ -99,8 +96,8 @@ public class AvailabilityCalendarAppService : SufiAbpApplicationService, IAvaila
             CurrentUser.UserName ?? CurrentUser.Email ?? "Personal Calendar",
             CalendarKind.Personal,
             TimeZoneInfo.Local.Id,
-            CalendarOwnerType.User,
             userId.Value,
+            CurrentUser.UserName,
             isDefault: false);
 
         await _calendarRepository.InsertAsync(calendar, autoSave: true);
@@ -129,10 +126,9 @@ public class AvailabilityCalendarAppService : SufiAbpApplicationService, IAvaila
 
         var query = await _calendarRepository.GetQueryableAsync();
         query = query.Where(x =>
-            x.Kind == CalendarKind.Shared &&
-            x.OwnerType == CalendarOwnerType.Team &&
-            x.OwnerId.HasValue &&
-            organizationUnitIds.Contains(x.OwnerId.Value));
+            x.Kind == CalendarKind.Public &&
+            x.OwnerUserId.HasValue &&
+            organizationUnitIds.Contains(x.OwnerUserId.Value));
         query = ApplyVisibilityFilter(query);
 
         var items = await _asyncExecuter.ToListAsync(query);
@@ -149,10 +145,10 @@ public class AvailabilityCalendarAppService : SufiAbpApplicationService, IAvaila
             input.Name,
             input.Kind,
             input.TimeZoneId,
-            input.OwnerType,
-            input.OwnerId,
+            input.OwnerUserId,
+            input.OwnerName,
             input.IsDefault,
-            input.MaxConcurrent);
+            input.IsAlwaysOpen);
 
         CopyExtraProperties(input.ExtraProperties, calendar.ExtraProperties);
         await _calendarRepository.InsertAsync(calendar, autoSave: true);
@@ -167,9 +163,9 @@ public class AvailabilityCalendarAppService : SufiAbpApplicationService, IAvaila
         calendar.SetName(input.Name);
         calendar.SetKind(input.Kind);
         calendar.SetTimeZone(input.TimeZoneId);
-        calendar.SetOwner(input.OwnerType, input.OwnerId);
+        calendar.SetOwner(input.OwnerUserId, input.OwnerName);
         await _calendarManager.SetDefaultAsync(calendar, input.IsDefault);
-        calendar.SetMaxConcurrent(input.MaxConcurrent);
+        calendar.SetAlwaysOpen(input.IsAlwaysOpen);
         CopyExtraProperties(input.ExtraProperties, calendar.ExtraProperties);
 
         await _calendarRepository.UpdateAsync(calendar, autoSave: true);
@@ -200,7 +196,6 @@ public class AvailabilityCalendarAppService : SufiAbpApplicationService, IAvaila
             x.DayOfWeek,
             TimeOnly.FromTimeSpan(x.StartTime),
             TimeOnly.FromTimeSpan(x.EndTime),
-            x.MaxConcurrent,
             index)).ToList();
         calendar.ReplaceWorkingHours(rules);
         await _calendarRepository.UpdateAsync(calendar, autoSave: true);
@@ -224,12 +219,52 @@ public class AvailabilityCalendarAppService : SufiAbpApplicationService, IAvaila
             calendar.Id,
             DateOnly.FromDateTime(x.Date),
             x.Kind,
-            x.Ranges.Select(r => new WorkingHourRange(TimeOnly.FromTimeSpan(r.StartTime), TimeOnly.FromTimeSpan(r.EndTime), r.MaxConcurrent)),
+            x.Ranges.Select(r => new WorkingHourRange(TimeOnly.FromTimeSpan(r.StartTime), TimeOnly.FromTimeSpan(r.EndTime))),
             x.Description)).ToList();
 
         calendar.ReplaceExceptions(exceptions);
         await _calendarRepository.UpdateAsync(calendar, autoSave: true);
         return new ListResultDto<CalendarExceptionDto>(calendar.Exceptions.Select(CalendarDtoMapper.ToDto).ToList());
+    }
+
+    public virtual async Task<ListResultDto<CalendarInheritanceDto>> GetInheritancesAsync(Guid calendarId)
+    {
+        await CheckPolicyAsync(CalendarPermissions.Calendars.Default);
+        var calendar = await GetVisibleCalendarAsync(calendarId, includeDetails: true);
+        var parentIds = calendar.Inheritances.Select(x => x.ParentCalendarId).ToList();
+        var parents = parentIds.Count == 0
+            ? new Dictionary<Guid, Calendars.Calendar>()
+            : (await _calendarRepository.GetListAsync(x => parentIds.Contains(x.Id))).ToDictionary(x => x.Id);
+
+        return new ListResultDto<CalendarInheritanceDto>(calendar.Inheritances.Select(x =>
+        {
+            return new CalendarInheritanceDto
+            {
+                Id = x.Id,
+                CalendarId = x.CalendarId,
+                ParentCalendarId = x.ParentCalendarId,
+                ParentCalendarName = parents.TryGetValue(x.ParentCalendarId, out var parent) ? parent.Name : null,
+                IsInheritedByDefault = x.IsInheritedByDefault
+            };
+        }).ToList());
+    }
+
+    public virtual async Task<CalendarDto> AddInheritanceAsync(Guid calendarId, AddCalendarInheritanceInput input)
+    {
+        await CheckPolicyAsync(CalendarPermissions.Calendars.Update);
+        var calendar = await _calendarRepository.GetAsync(calendarId, includeDetails: true);
+        var parentCalendar = await _calendarRepository.GetAsync(input.ParentCalendarId, includeDetails: true);
+        await _calendarManager.AddInheritanceAsync(calendar, parentCalendar, input.IsInheritedByDefault);
+        await _calendarRepository.UpdateAsync(calendar, autoSave: true);
+        return CalendarDtoMapper.ToDto(calendar);
+    }
+
+    public virtual async Task DeleteInheritanceAsync(Guid calendarId, Guid parentCalendarId)
+    {
+        await CheckPolicyAsync(CalendarPermissions.Calendars.Update);
+        var calendar = await _calendarRepository.GetAsync(calendarId, includeDetails: true);
+        await _calendarManager.RemoveInheritanceAsync(calendar, parentCalendarId);
+        await _calendarRepository.UpdateAsync(calendar, autoSave: true);
     }
 
     public virtual async Task<TestAvailabilityResultDto> TestAsync(Guid calendarId, TestAvailabilityInput input)
@@ -259,17 +294,72 @@ public class AvailabilityCalendarAppService : SufiAbpApplicationService, IAvaila
             query = query.Where(x => x.Kind == input.Kind.Value);
         }
 
-        if (input.OwnerType.HasValue)
+        if (input.OwnerUserId.HasValue)
         {
-            query = query.Where(x => x.OwnerType == input.OwnerType.Value);
-        }
-
-        if (input.OwnerId.HasValue)
-        {
-            query = query.Where(x => x.OwnerId == input.OwnerId.Value);
+            query = query.Where(x => x.OwnerUserId == input.OwnerUserId.Value);
         }
 
         return query;
+    }
+
+    protected virtual IQueryable<Calendars.Calendar> ApplySorting(IQueryable<Calendars.Calendar> query, string? sorting)
+    {
+        if (string.IsNullOrWhiteSpace(sorting))
+        {
+            return query.OrderBy(x => x.Name).ThenBy(x => x.Id);
+        }
+
+        var sortParts = sorting.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+
+        IOrderedQueryable<Calendars.Calendar>? ordered = null;
+
+        foreach (var part in sortParts)
+        {
+            var tokens = part.Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+            var field = tokens[0];
+            var isDescending = tokens.Length > 1 && tokens[1].Equals("DESC", StringComparison.OrdinalIgnoreCase);
+
+            if (ordered == null)
+            {
+                ordered = (field, isDescending) switch
+                {
+                    ("Name", false) => query.OrderBy(x => x.Name),
+                    ("Name", true) => query.OrderByDescending(x => x.Name),
+                    ("Kind", false) => query.OrderBy(x => x.Kind),
+                    ("Kind", true) => query.OrderByDescending(x => x.Kind),
+                    ("TimeZoneId", false) => query.OrderBy(x => x.TimeZoneId),
+                    ("TimeZoneId", true) => query.OrderByDescending(x => x.TimeZoneId),
+                    ("IsDefault", false) => query.OrderBy(x => x.IsDefault),
+                    ("IsDefault", true) => query.OrderByDescending(x => x.IsDefault),
+                    ("IsAlwaysOpen", false) => query.OrderBy(x => x.IsAlwaysOpen),
+                    ("IsAlwaysOpen", true) => query.OrderByDescending(x => x.IsAlwaysOpen),
+                    ("CreationTime", false) => query.OrderBy(x => x.CreationTime),
+                    ("CreationTime", true) => query.OrderByDescending(x => x.CreationTime),
+                    _ => query.OrderBy(x => x.Name)
+                };
+            }
+            else
+            {
+                ordered = (field, isDescending) switch
+                {
+                    ("Name", false) => ordered.ThenBy(x => x.Name),
+                    ("Name", true) => ordered.ThenByDescending(x => x.Name),
+                    ("Kind", false) => ordered.ThenBy(x => x.Kind),
+                    ("Kind", true) => ordered.ThenByDescending(x => x.Kind),
+                    ("TimeZoneId", false) => ordered.ThenBy(x => x.TimeZoneId),
+                    ("TimeZoneId", true) => ordered.ThenByDescending(x => x.TimeZoneId),
+                    ("IsDefault", false) => ordered.ThenBy(x => x.IsDefault),
+                    ("IsDefault", true) => ordered.ThenByDescending(x => x.IsDefault),
+                    ("IsAlwaysOpen", false) => ordered.ThenBy(x => x.IsAlwaysOpen),
+                    ("IsAlwaysOpen", true) => ordered.ThenByDescending(x => x.IsAlwaysOpen),
+                    ("CreationTime", false) => ordered.ThenBy(x => x.CreationTime),
+                    ("CreationTime", true) => ordered.ThenByDescending(x => x.CreationTime),
+                    _ => ordered.ThenBy(x => x.Name)
+                };
+            }
+        }
+
+        return ordered ?? query.OrderBy(x => x.Name).ThenBy(x => x.Id);
     }
 
     protected virtual IQueryable<Calendars.Calendar> ApplyVisibilityFilter(IQueryable<Calendars.Calendar> query)
@@ -277,9 +367,9 @@ public class AvailabilityCalendarAppService : SufiAbpApplicationService, IAvaila
         var userId = CurrentUser.Id;
 
         return query.Where(x =>
-            x.OwnerType == CalendarOwnerType.None ||
-            x.Kind == CalendarKind.Tenant ||
-            (userId.HasValue && x.OwnerType == CalendarOwnerType.User && x.OwnerId == userId.Value));
+            x.Kind == CalendarKind.Public ||
+            !x.OwnerUserId.HasValue ||
+            (userId.HasValue && x.OwnerUserId == userId.Value));
     }
 
     protected virtual async Task<Calendars.Calendar> GetVisibleCalendarAsync(Guid id, bool includeDetails = false)
@@ -287,7 +377,7 @@ public class AvailabilityCalendarAppService : SufiAbpApplicationService, IAvaila
         var calendar = await _calendarRepository.GetAsync(id, includeDetails: includeDetails);
         if (!CanSeeCalendar(calendar))
         {
-            throw new BusinessException(CalendarErrorCodes.InvalidOwner);
+            throw new BusinessException(CalendarErrorCodes.CalendarNotAccessible);
         }
 
         return calendar;
@@ -295,11 +385,9 @@ public class AvailabilityCalendarAppService : SufiAbpApplicationService, IAvaila
 
     protected virtual bool CanSeeCalendar(Calendars.Calendar calendar)
     {
-        return calendar.OwnerType == CalendarOwnerType.None ||
-               calendar.Kind == CalendarKind.Tenant ||
-               (CurrentUser.Id.HasValue &&
-                calendar.OwnerType == CalendarOwnerType.User &&
-                calendar.OwnerId == CurrentUser.Id.Value);
+        return calendar.Kind == CalendarKind.Public ||
+               !calendar.OwnerUserId.HasValue ||
+               (CurrentUser.Id.HasValue && calendar.OwnerUserId == CurrentUser.Id.Value);
     }
 
     protected virtual void CopyExtraProperties(IDictionary<string, object?> source, IDictionary<string, object?> target)

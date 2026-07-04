@@ -16,6 +16,11 @@
                 <SbTextField @bind-Value="_settings.BaseUrl" />
             </SbFormField>
 
+            <SbFormField Label="@L["DisplayName:ShortLinkGenerator.ShortUrl.RedirectRoute"]"
+                         HelperText="@L["Description:ShortLinkGenerator.ShortUrl.RedirectRoute"]">
+                <SbTextField @bind-Value="_settings.RedirectRoute" />
+            </SbFormField>
+
             <SbFormField Label="@L["DisplayName:ShortLinkGenerator.ShortUrl.ShortCodeLength"]"
                          HelperText="@L["Description:ShortLinkGenerator.ShortUrl.ShortCodeLength"]">
                 <SbNumberField TValue="int"

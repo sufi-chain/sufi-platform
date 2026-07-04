@@ -4,6 +4,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using SufiChain.SufiAbp.UI.MultiTenancy;
+using Volo.Abp.MultiTenancy;
+using Volo.Abp.MultiTenancy;
 
 namespace SufiChain.SufiAbp.UI.Blazor.Server.MultiTenancy;
 
@@ -102,6 +104,29 @@ public static class ApplicationBuilderExtensions
         string tenantName,
         ILogger logger)
     {
+        var tenantStore = context.RequestServices.GetService<ITenantStore>();
+        if (tenantStore != null)
+        {
+            try
+            {
+                var normalizedName = tenantName.ToUpperInvariant();
+                var tenantConfig = await tenantStore.FindAsync(normalizedName);
+                if (tenantConfig?.Id != null)
+                {
+                    logger.LogInformation(
+                        "SwitchTenant: resolved tenant name '{TenantName}' → ID '{TenantId}' via ITenantStore",
+                        tenantName, tenantConfig.Id);
+                    return tenantConfig.Id.ToString();
+                }
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex,
+                    "SwitchTenant: error resolving tenant name '{TenantName}' via ITenantStore.",
+                    tenantName);
+            }
+        }
+
         var tenantLookupService = context.RequestServices.GetService<ITenantLookupService>();
         if (tenantLookupService == null)
         {
@@ -126,7 +151,7 @@ public static class ApplicationBuilderExtensions
             }
 
             logger.LogWarning(
-                "SwitchTenant: tenant '{TenantName}' not found via ITenantLookupService; storing name as-is.",
+                "SwitchTenant: tenant '{TenantName}' not found; storing name as-is.",
                 tenantName);
             return null;
         }

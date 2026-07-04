@@ -10,9 +10,9 @@ public class CalendarLookupDto : EntityDto<Guid>
 
     public string TimeZoneId { get; set; } = string.Empty;
 
-    public CalendarOwnerType OwnerType { get; set; }
+    public Guid? OwnerUserId { get; set; }
 
-    public Guid? OwnerId { get; set; }
+    public string? OwnerName { get; set; }
 
     public bool IsDefault { get; set; }
 }
