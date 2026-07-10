@@ -2,10 +2,10 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using SufiChain.SufiBlazor.Components;
 using SufiChain.SufiAbp.BackgroundJobs.Dtos;
-using SufiChain.SufiAbp.BackgroundJobs.Localization;
-using SufiChain.SufiAbp.UI.Blazor;
 using SufiChain.SufiAbp.UI.Layout;
 using SufiChain.SufiAbp.BackgroundJobs;
+using SufiChain.SufiBlazor.Components.Data;
+using SufiChain.SufiBlazor.Contracts.Data;
 
 namespace SufiChain.SufiAbp.BackgroundJobs.Blazor.Pages;
 
@@ -24,7 +24,7 @@ public partial class BackgroundJobsManagement : BackgroundJobsComponentBase
     private IBackgroundJobAppService BackgroundJobAppService => LazyGetRequiredService(ref _backgroundJobAppService);
     private IBackgroundJobAppService? _backgroundJobAppService;
 
-    private List<BackgroundJobListItemDto> _jobs = new();
+    private SbDataGrid<BackgroundJobListItemDto>? _gridRef;
     private int _pageIndex = 0;
     private int _pageSize = 20;
     private long _totalCount;
@@ -75,7 +75,7 @@ public partial class BackgroundJobsManagement : BackgroundJobsComponentBase
         
         if (firstRender)
         {
-            await LoadJobsAsync();
+            await RefreshGridAsync();
         }
     }
 
@@ -85,33 +85,39 @@ public partial class BackgroundJobsManagement : BackgroundJobsComponentBase
         // Breadcrumbs are auto-generated from menu hierarchy by the layout
     }
 
-    private Task LoadJobsAsync() => ExecuteWithLoadingAsync(async () =>
+    private async Task<SbDataResponse<BackgroundJobListItemDto>> LoadJobsDataAsync(SbDataRequest request)
     {
-        var input = new GetBackgroundJobListInput
+        var result = await BackgroundJobAppService.GetListAsync(new GetBackgroundJobListInput
         {
             JobName = _jobName,
             ApplicationName = _applicationName,
             IsAbandoned = _isAbandoned,
             Priority = _priority,
-            SkipCount = _pageIndex * _pageSize,
-            MaxResultCount = _pageSize
-        };
+            SkipCount = Math.Max(0, request.PageIndex * request.PageSize),
+            MaxResultCount = request.PageSize
+        });
 
-        var result = await BackgroundJobAppService.GetListAsync(input);
-        _jobs = result.Items.ToList();
         _totalCount = result.TotalCount;
-    }, LoadingKeys.LoadJobs);
+        return new SbDataResponse<BackgroundJobListItemDto>(result.Items, result.TotalCount);
+    }
+
+    private Task RefreshGridAsync()
+    {
+        return ExecuteWithLoadingAsync(
+            () => _gridRef?.RefreshDataAsync() ?? Task.CompletedTask,
+            LoadingKeys.LoadJobs);
+    }
 
     private async Task OnPageIndexChangedAsync(int pageIndex)
     {
         _pageIndex = pageIndex;
-        await LoadJobsAsync();
+        await RefreshGridAsync();
     }
 
     private async Task ApplyFiltersAsync()
     {
         _pageIndex = 0;
-        await LoadJobsAsync();
+        await RefreshGridAsync();
     }
 
     private async Task ClearFiltersAsync()
@@ -121,7 +127,7 @@ public partial class BackgroundJobsManagement : BackgroundJobsComponentBase
         _isAbandoned = null;
         _priority = null;
         _pageIndex = 0;
-        await LoadJobsAsync();
+        await RefreshGridAsync();
     }
 
     private async Task HandleFilterKeyDown(KeyboardEventArgs e)
@@ -194,7 +200,7 @@ public partial class BackgroundJobsManagement : BackgroundJobsComponentBase
         {
             await BackgroundJobAppService.DeleteAsync(job.Id);
             await Notify.SuccessAsync(L["JobDeletedSuccessfully"]);
-            await LoadJobsAsync();
+            await RefreshGridAsync();
         }, LoadingKeys.DeleteJob);
     }
 
@@ -204,7 +210,7 @@ public partial class BackgroundJobsManagement : BackgroundJobsComponentBase
         {
             await BackgroundJobAppService.RetryAsync(job.Id);
             await Notify.SuccessAsync(L["JobRetriedSuccessfully"]);
-            await LoadJobsAsync();
+            await RefreshGridAsync();
         }, LoadingKeys.RetryJob);
     }
 
@@ -232,7 +238,7 @@ public partial class BackgroundJobsManagement : BackgroundJobsComponentBase
         {
             await BackgroundJobAppService.AbandonAsync(job.Id);
             await Notify.SuccessAsync(L["JobAbandonedSuccessfully"]);
-            await LoadJobsAsync();
+            await RefreshGridAsync();
         }, LoadingKeys.DeleteJob);
     }
 

@@ -1,9 +1,10 @@
+@namespace SufiChain.SufiAbp.BackgroundJobs.Blazor.Pages
 @page "/panel/admin/background-jobs"
 @attribute [Authorize(Policy = SufiChain.SufiAbp.BackgroundJobs.Permissions.BackgroundJobsPermissions.BackgroundJobs.Default)]
 @inherits BackgroundJobsComponentBase
 
 <SufiAbpPageToolbar>
-	<SbButton Color="SbColor.Primary" Variant="SbButtonVariant.Outline" OnClick="@LoadJobsAsync">
+	<SbButton Color="SbColor.Primary" Variant="SbButtonVariant.Outline" OnClick="@RefreshGridAsync">
 		<StartIcon><SbIcon Name="refresh" /></StartIcon>
 		<ChildContent>@L["Refresh"]</ChildContent>
 	</SbButton>
@@ -101,7 +102,8 @@
 	<SbCard>
 		<ChildContent>
 			<SbDataGrid TItem="BackgroundJobListItemDto"
-						Items="_jobs"
+						@ref="_gridRef"
+						ItemsProvider="LoadJobsDataAsync"
 						Loading="IsOperationLoading(LoadingKeys.LoadJobs)"
 						Striped="true"
 						Hoverable="true"

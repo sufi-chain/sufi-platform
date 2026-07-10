@@ -1,10 +1,10 @@
 using Microsoft.AspNetCore.Components;
 using SufiChain.SufiAbp.FeatureManagement.Blazor.Components;
 using SufiChain.SufiAbp.SettingManagement.Blazor.Components;
-using SufiChain.SufiAbp.TenantManagement.Localization;
-using SufiChain.SufiAbp.UI.Blazor;
 using SufiChain.SufiAbp.UI.Layout;
 using SufiChain.SufiAbp.TenantManagement;
+using SufiChain.SufiBlazor.Components.Data;
+using SufiChain.SufiBlazor.Contracts.Data;
 
 namespace SufiChain.SufiAbp.TenantManagement.Blazor.Pages;
 
@@ -26,7 +26,7 @@ public partial class TenantManagement : TenantManagementComponentBase
     private ITenantAppService TenantAppService => LazyGetRequiredService(ref _tenantAppService);
     private ITenantAppService? _tenantAppService;
 
-    private List<TenantDto> _tenants = new();
+    private SbDataGrid<TenantDto>? _gridRef;
     private string? _filter;
     private int _pageIndex = 0;
     private int _pageSize = 10;
@@ -50,7 +50,7 @@ public partial class TenantManagement : TenantManagementComponentBase
         
         if (firstRender)
         {
-            await LoadTenantsAsync();
+            await RefreshGridAsync();
         }
     }
 
@@ -60,24 +60,30 @@ public partial class TenantManagement : TenantManagementComponentBase
         // Breadcrumbs are auto-generated from menu hierarchy by the layout
     }
 
-    private Task LoadTenantsAsync() => ExecuteWithLoadingAsync(async () =>
+    private async Task<SbDataResponse<TenantDto>> LoadTenantsDataAsync(SbDataRequest request)
     {
-        var input = new GetTenantsInput
+        var result = await TenantAppService.GetListAsync(new GetTenantsInput
         {
             Filter = _filter,
-            SkipCount = _pageIndex * _pageSize,
-            MaxResultCount = _pageSize
-        };
+            SkipCount = Math.Max(0, request.PageIndex * request.PageSize),
+            MaxResultCount = request.PageSize
+        });
 
-        var result = await TenantAppService.GetListAsync(input);
-        _tenants = result.Items.ToList();
         _totalCount = result.TotalCount;
-    }, LoadingKeys.LoadTenants);
+        return new SbDataResponse<TenantDto>(result.Items, result.TotalCount);
+    }
+
+    private Task RefreshGridAsync()
+    {
+        return ExecuteWithLoadingAsync(
+            () => _gridRef?.RefreshDataAsync() ?? Task.CompletedTask,
+            LoadingKeys.LoadTenants);
+    }
 
     private async Task OnPageIndexChangedAsync(int pageIndex)
     {
         _pageIndex = pageIndex;
-        await LoadTenantsAsync();
+        await RefreshGridAsync();
     }
 
     private void ShowCreateModal()
@@ -95,14 +101,14 @@ public partial class TenantManagement : TenantManagementComponentBase
     {
         _showCreateModal = false;
         await Notify.SuccessAsync(L["TenantCreatedSuccessfully"]);
-        await LoadTenantsAsync();
+        await RefreshGridAsync();
     }
 
     private async Task OnTenantUpdatedAsync()
     {
         _showEditModal = false;
         await Notify.SuccessAsync(L["TenantUpdatedSuccessfully"]);
-        await LoadTenantsAsync();
+        await RefreshGridAsync();
     }
 
     private async Task DeleteTenantAsync(TenantDto tenant)
@@ -116,7 +122,7 @@ public partial class TenantManagement : TenantManagementComponentBase
         {
             await TenantAppService.DeleteAsync(tenant.Id);
             await Notify.SuccessAsync(L["TenantDeletedSuccessfully"]);
-            await LoadTenantsAsync();
+            await RefreshGridAsync();
         }, LoadingKeys.DeleteTenant);
     }
 
