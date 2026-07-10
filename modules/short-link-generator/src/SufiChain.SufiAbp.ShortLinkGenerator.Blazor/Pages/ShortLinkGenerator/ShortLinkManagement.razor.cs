@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
@@ -14,17 +15,21 @@ namespace SufiChain.SufiAbp.ShortLinkGenerator.Blazor.Pages.ShortLinkGenerator;
 
 public partial class ShortLinkManagementBase : ShortLinkGeneratorComponentBase
 {
+    protected static class LoadingKeys
+    {
+        public const string LoadShortUrls = "load-short-urls";
+    }
+
     [Inject] protected IShortUrlAppService ShortUrlAppService { get; set; } = null!;
     [Inject] protected IJSRuntime JsRuntime { get; set; } = null!;
     [Inject] protected IPageLayout PageLayout { get; set; } = default!;
 
-    protected IReadOnlyList<ShortUrlDto> ShortUrlList { get; set; } = Array.Empty<ShortUrlDto>();
+    protected SbDataGrid<ShortUrlDto>? _gridRef;
     protected int TotalCount { get; set; }
     protected int PageSize { get; set; } = 10;
     protected int PageIndex { get; set; }
     protected string CurrentSorting { get; set; } = string.Empty;
     protected string FilterText { get; set; } = string.Empty;
-    protected bool IsLoading { get; set; }
     protected bool HasActiveFilters => !string.IsNullOrWhiteSpace(FilterText);
 
     protected CreateShortUrlDto NewEntity { get; set; } = new();
@@ -58,8 +63,17 @@ public partial class ShortLinkManagementBase : ShortLinkGeneratorComponentBase
     {
         SetupPageLayout();
         await SetPermissionsAsync();
-        await GetShortUrlsAsync();
         await base.OnInitializedAsync();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await base.OnAfterRenderAsync(firstRender);
+
+        if (firstRender)
+        {
+            await RefreshGridAsync();
+        }
     }
 
     protected virtual void SetupPageLayout()
@@ -74,38 +88,34 @@ public partial class ShortLinkManagementBase : ShortLinkGeneratorComponentBase
         HasDeletePermission = await AuthorizationService.IsGrantedAsync(ShortLinkGeneratorPermissions.ShortLinks.Delete);
     }
 
-    protected virtual async Task GetShortUrlsAsync()
+    protected virtual async Task<SbDataResponse<ShortUrlDto>> LoadShortUrlsDataAsync(SbDataRequest request)
     {
-        try
+        var input = new GetShortUrlListDto
         {
-            IsLoading = true;
+            Filter = string.IsNullOrWhiteSpace(FilterText) ? null : FilterText,
+            MaxResultCount = request.PageSize,
+            SkipCount = Math.Max(0, request.PageIndex * request.PageSize),
+            Sorting = request.Sorts.Count > 0
+                ? string.Join(", ", request.Sorts.Select(s => s.Direction == SbSortDirection.Descending ? $"{s.Field} DESC" : s.Field))
+                : string.IsNullOrWhiteSpace(CurrentSorting) ? nameof(ShortUrlDto.CreationTime) + " DESC" : CurrentSorting
+        };
 
-            var input = new GetShortUrlListDto
-            {
-                Filter = string.IsNullOrWhiteSpace(FilterText) ? null : FilterText,
-                MaxResultCount = PageSize,
-                SkipCount = PageIndex * PageSize,
-                Sorting = string.IsNullOrWhiteSpace(CurrentSorting) ? nameof(ShortUrlDto.CreationTime) + " DESC" : CurrentSorting
-            };
+        var result = await ShortUrlAppService.GetListAsync(input);
+        TotalCount = (int)result.TotalCount;
+        return new SbDataResponse<ShortUrlDto>(result.Items, result.TotalCount);
+    }
 
-            var result = await ShortUrlAppService.GetListAsync(input);
-            ShortUrlList = result.Items;
-            TotalCount = (int)result.TotalCount;
-        }
-        catch (Exception exception)
-        {
-            await HandleErrorAsync(exception);
-        }
-        finally
-        {
-            IsLoading = false;
-        }
+    protected virtual Task RefreshGridAsync()
+    {
+        return ExecuteWithLoadingAsync(
+            () => _gridRef?.RefreshDataAsync() ?? Task.CompletedTask,
+            LoadingKeys.LoadShortUrls);
     }
 
     protected virtual async Task OnPageIndexChangedAsync(int pageIndex)
     {
         PageIndex = pageIndex;
-        await GetShortUrlsAsync();
+        await RefreshGridAsync();
     }
 
     protected virtual async Task OnSortChangedAsync(SbSort? sort)
@@ -115,20 +125,20 @@ public partial class ShortLinkManagementBase : ShortLinkGeneratorComponentBase
             : sort.Field + (sort.Direction == SbSortDirection.Descending ? " DESC" : string.Empty);
 
         PageIndex = 0;
-        await GetShortUrlsAsync();
+        await RefreshGridAsync();
     }
 
     protected virtual async Task ApplyFiltersAsync()
     {
         PageIndex = 0;
-        await GetShortUrlsAsync();
+        await RefreshGridAsync();
     }
 
     protected virtual async Task ClearFiltersAsync()
     {
         FilterText = string.Empty;
         PageIndex = 0;
-        await GetShortUrlsAsync();
+        await RefreshGridAsync();
     }
 
     protected virtual async Task HandleFilterKeyDown(KeyboardEventArgs args)
@@ -139,10 +149,7 @@ public partial class ShortLinkManagementBase : ShortLinkGeneratorComponentBase
         }
     }
 
-    protected virtual async Task RefreshAsync()
-    {
-        await GetShortUrlsAsync();
-    }
+    protected virtual Task RefreshAsync() => RefreshGridAsync();
 
     protected virtual Task OpenCreateModalAsync()
     {
@@ -176,7 +183,7 @@ public partial class ShortLinkManagementBase : ShortLinkGeneratorComponentBase
         {
             var result = await ShortUrlAppService.CreateAsync(NewEntity);
             IsCreateDialogOpen = false;
-            await GetShortUrlsAsync();
+            await RefreshGridAsync();
 
             if (!string.IsNullOrWhiteSpace(result.FullShortUrl))
             {
@@ -222,7 +229,7 @@ public partial class ShortLinkManagementBase : ShortLinkGeneratorComponentBase
             await ShortUrlAppService.UpdateAsync(EditingEntityId, EditingEntity);
             IsEditDialogOpen = false;
             await Message.Success(L["ShortLinkUpdatedSuccessfully"]);
-            await GetShortUrlsAsync();
+            await RefreshGridAsync();
         }
         catch (Exception exception)
         {
@@ -266,7 +273,7 @@ public partial class ShortLinkManagementBase : ShortLinkGeneratorComponentBase
             await ShortUrlAppService.DeleteAsync(PendingDeleteEntity.Id);
             await Message.SuccessAsync(L["ShortLinkDeletedSuccessfully"]);
             await CancelDelete();
-            await GetShortUrlsAsync();
+            await RefreshGridAsync();
         }
         catch (Exception exception)
         {

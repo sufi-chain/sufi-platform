@@ -2,7 +2,7 @@ namespace SufiChain.SufiAbp.ShortLinkGenerator;
 
 public static class ShortLinkGeneratorConsts
 {
-    public const string DefaultRedirectRoute = "sur";
+    public const string DefaultRedirectRoute = "short-links";
     public const int DefaultShortCodeLength = 8;
     public const int DefaultCacheExpirationMinutes = 60;
     public const int DefaultExpirationDays = 365;

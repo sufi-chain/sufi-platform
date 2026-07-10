@@ -49,7 +49,8 @@ public static class ShortLinkRedirectHelper
             return destination.ReplaceFirst("{InvitationToken}", token, StringComparison.OrdinalIgnoreCase);
         }
 
-        if (destination.Contains("c=", StringComparison.OrdinalIgnoreCase))
+        if (destination.Contains("c=", StringComparison.OrdinalIgnoreCase) ||
+            destination.Contains("invitation=", StringComparison.OrdinalIgnoreCase))
         {
             return destination;
         }

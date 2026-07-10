@@ -10,8 +10,13 @@ public partial class ShortLinkRedirectBase : ShortLinkGeneratorComponentBase
 
     [Parameter] public string ShortCode { get; set; } = string.Empty;
 
-    protected override void OnInitialized()
+    protected override void OnAfterRender(bool firstRender)
     {
+        if (!firstRender)
+        {
+            return;
+        }
+
         var currentUri = NavigationManager.ToAbsoluteUri(NavigationManager.Uri);
         var query = currentUri.Query;
 
