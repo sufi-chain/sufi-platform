@@ -32,4 +32,14 @@ public static class SufiAbpConstants
     /// Default sender display name for outbound mail.
     /// </summary>
     public const string DefaultFromDisplayName = "Sufi Platform";
+
+    /// <summary>
+    /// Property name for default seed culture in <see cref="Volo.Abp.Data.DataSeedContext"/>.
+    /// </summary>
+    public const string DefaultCulturePropertyName = "DefaultCulture";
+
+    /// <summary>
+    /// Property name for supported seed cultures in <see cref="Volo.Abp.Data.DataSeedContext"/>.
+    /// </summary>
+    public const string SupportedCulturesPropertyName = "SupportedCultures";
 }
