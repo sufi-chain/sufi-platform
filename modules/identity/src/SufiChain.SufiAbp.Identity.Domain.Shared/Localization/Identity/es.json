@@ -129,6 +129,7 @@
     "AddSelected": "Agregar seleccionados",
     "NoAvailableRolesFound": "No se encontraron roles disponibles",
     "SelectedRolesCount": "{0} rol(es) seleccionado(s)",
+    "SelectedMembersCount": "{0} miembro(s) seleccionado(s)",
     "AssignSelected": "Asignar seleccionados",
     "CreateOrganizationUnit": "Crear unidad organizativa",
     "EnterDisplayName": "Enter display name",

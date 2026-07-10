@@ -33,6 +33,8 @@
     <ProjectReference Include="..\SufiChain.SufiAbp.Identity.Domain.Shared\SufiChain.SufiAbp.Identity.Domain.Shared.csproj" />
     <!-- SufiAbp Identity Application Contracts -->
     <ProjectReference Include="..\SufiChain.SufiAbp.Identity.Application.Contracts\SufiChain.SufiAbp.Identity.Application.Contracts.csproj" />
+    <ProjectReference Include="..\..\..\users\src\SufiChain.SufiAbp.Users.Blazor.Public\SufiChain.SufiAbp.Users.Blazor.Public.csproj" />
+    <ProjectReference Include="..\SufiChain.SufiAbp.Identity.Blazor.Public\SufiChain.SufiAbp.Identity.Blazor.Public.csproj" />
   </ItemGroup>
 
 </Project>

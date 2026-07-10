@@ -1,3 +1,4 @@
+@namespace SufiChain.SufiAbp.Identity.Blazor.Components
 @inherits IdentityComponentBase
 
 <SbDialog Open="@Open" OpenChanged="OnDialogOpenChanged" Size="SbDialogSize.Md" Title="@L["AssignRoles"]">
@@ -22,30 +23,25 @@
                     @_errorMessage
                 </SbAlert>
             }
-            else if (IsOperationLoading(LoadingKeys.LoadRoles))
-            {
-                <SbStack Justify="SbJustify.Center" Align="SbAlign.Center" Class="p-8">
-                    <SbProgress Type="SbProgressType.Circular" />
-                    <span>@L["Loading"]...</span>
-                </SbStack>
-            }
-            else if (_availableRoles.Count == 0)
-            {
-                <SbStack Justify="SbJustify.Center" Align="SbAlign.Center" Class="p-8 text-muted">
-                    <SbIcon Name="shield" Size="SbSize.Xl" />
-                    <span>@L["NoAvailableRolesFound"]</span>
-                </SbStack>
-            }
             else
             {
                 <SbDataGrid TItem="OrganizationUnitRoleDto"
-                            Items="_availableRoles"
+                            @ref="_gridRef"
+                            ItemsProvider="LoadAvailableRolesDataAsync"
+                            Loading="IsOperationLoading(LoadingKeys.LoadRoles)"
                             Striped="true"
                             Hoverable="true"
                             PageIndex="_pageIndex"
                             PageSize="_pageSize"
                             TotalCount="_totalCount"
                             PageIndexChanged="OnPageIndexChangedAsync">
+                    <EmptyTemplate>
+                        <SbStack Justify="SbJustify.Center" Align="SbAlign.Center" Class="p-8 text-muted">
+                            <SbIcon Name="shield" Size="SbSize.Xl" />
+                            <span>@L["NoAvailableRolesFound"]</span>
+                        </SbStack>
+                    </EmptyTemplate>
+                    <ChildContent>
                     <SbColumn TItem="OrganizationUnitRoleDto" Title="" Width="50px">
                         <CellTemplate Context="cellContext">
                             <SbCheckbox Value="@_selectedRoleIds.Contains(cellContext.Item.RoleId)"
@@ -60,6 +56,7 @@
                             </SbStack>
                         </CellTemplate>
                     </SbColumn>
+                    </ChildContent>
                 </SbDataGrid>
             }
 

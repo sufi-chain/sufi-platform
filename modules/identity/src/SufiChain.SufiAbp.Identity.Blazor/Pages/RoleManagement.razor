@@ -1,3 +1,4 @@
+@namespace SufiChain.SufiAbp.Identity.Blazor.Pages
 @page "/panel/admin/identity/roles"
 @attribute [Authorize(Policy = SufiChain.SufiAbp.Identity.IdentityPermissions.Roles.Default)]
 @inherits IdentityComponentBase
@@ -26,7 +27,8 @@
 				</SbTextField>
 
 				<SbDataGrid TItem="IdentityRoleDto"
-							Items="_roles"
+							@ref="_gridRef"
+							ItemsProvider="LoadRolesDataAsync"
 							Loading="IsOperationLoading(LoadingKeys.LoadRoles)"
 							Striped="true"
 							Hoverable="true"

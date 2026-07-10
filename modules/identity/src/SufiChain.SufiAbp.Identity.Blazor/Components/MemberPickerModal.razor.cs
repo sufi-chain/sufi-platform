@@ -1,18 +1,17 @@
 using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.Logging;
-using SufiChain.SufiAbp.Identity.Localization;
 using SufiChain.SufiAbp.Identity.OrganizationUnits;
 using SufiChain.SufiAbp.Identity.OrganizationUnits.Dtos;
-using SufiChain.SufiAbp.UI.Blazor;
+using SufiChain.SufiBlazor.Components.Data;
+using SufiChain.SufiBlazor.Contracts.Data;
 
 namespace SufiChain.SufiAbp.Identity.Blazor.Components;
 
 public partial class MemberPickerModal : IdentityComponentBase
 {
-
     private static class LoadingKeys
     {
-        public const string LoadUsers = "load-users";
+        public const string LoadMembers = "load-available-members";
         public const string AddMembers = "add-members";
     }
 
@@ -24,7 +23,7 @@ public partial class MemberPickerModal : IdentityComponentBase
     [Parameter] public Guid OrganizationUnitId { get; set; }
     [Parameter] public EventCallback OnMembersAdded { get; set; }
 
-    private List<OrganizationUnitMemberDto> _availableUsers = new();
+    private SbDataGrid<OrganizationUnitMemberDto>? _gridRef;
     private HashSet<Guid> _selectedUserIds = new();
     private string? _filter;
     private int _pageIndex = 0;
@@ -32,75 +31,77 @@ public partial class MemberPickerModal : IdentityComponentBase
     private long _totalCount;
     private string? _errorMessage;
 
-    // Track previous open state to detect when modal opens
     private bool _wasOpen;
     private Guid _loadedForOuId;
 
     protected override async Task OnParametersSetAsync()
     {
-        // Load data when modal transitions from closed to open, or when OrganizationUnitId changes while open
-        var shouldLoad = Open && OrganizationUnitId != Guid.Empty && 
-                        (!_wasOpen || _loadedForOuId != OrganizationUnitId);
+        var shouldLoad = Open && OrganizationUnitId != Guid.Empty &&
+                         (!_wasOpen || _loadedForOuId != OrganizationUnitId);
 
         if (shouldLoad)
         {
             _selectedUserIds.Clear();
             _filter = null;
             _pageIndex = 0;
-            _availableUsers.Clear();
             _errorMessage = null;
             _loadedForOuId = OrganizationUnitId;
-            await LoadAvailableUsersAsync();
+            await RefreshGridAsync();
         }
+
         _wasOpen = Open;
     }
 
-    private async Task LoadAvailableUsersAsync()
+    private async Task<SbDataResponse<OrganizationUnitMemberDto>> LoadAvailableMembersDataAsync(SbDataRequest request)
     {
-        if (OrganizationUnitId == Guid.Empty) 
+        if (OrganizationUnitId == Guid.Empty)
         {
             _errorMessage = "OrganizationUnitId is empty";
-            return;
+            return new SbDataResponse<OrganizationUnitMemberDto>(Array.Empty<OrganizationUnitMemberDto>(), 0);
         }
 
         try
         {
-            await ExecuteWithLoadingAsync(async () =>
+            var result = await OrganizationUnitAppService.GetAvailableMembersAsync(new GetOrganizationUnitMembersInput
             {
-                var input = new GetOrganizationUnitMembersInput
-                {
-                    OrganizationUnitId = OrganizationUnitId,
-                    Filter = _filter,
-                    SkipCount = _pageIndex * _pageSize,
-                    MaxResultCount = _pageSize
-                };
+                OrganizationUnitId = OrganizationUnitId,
+                Filter = _filter,
+                SkipCount = Math.Max(0, request.PageIndex * request.PageSize),
+                MaxResultCount = request.PageSize
+            });
 
-                var result = await OrganizationUnitAppService.GetAvailableMembersAsync(input);
-                _availableUsers = result.Items.ToList();
-                _totalCount = result.TotalCount;
-                _errorMessage = null;
-            }, LoadingKeys.LoadUsers);
+            _totalCount = result.TotalCount;
+            _errorMessage = null;
+            return new SbDataResponse<OrganizationUnitMemberDto>(result.Items, result.TotalCount);
         }
         catch (Exception ex)
         {
             _errorMessage = ex.Message;
             Logger.LogError(ex, "Failed to load available members for OU {OrganizationUnitId}", OrganizationUnitId);
+            return new SbDataResponse<OrganizationUnitMemberDto>(Array.Empty<OrganizationUnitMemberDto>(), 0);
         }
+    }
+
+    private Task RefreshGridAsync()
+    {
+        return ExecuteWithLoadingAsync(
+            () => _gridRef?.RefreshDataAsync() ?? Task.CompletedTask,
+            LoadingKeys.LoadMembers);
     }
 
     private async Task OnFilterChangedAsync()
     {
         _pageIndex = 0;
-        await LoadAvailableUsersAsync();
+        await RefreshGridAsync();
     }
 
     private async Task OnPageIndexChangedAsync(int pageIndex)
     {
         _pageIndex = pageIndex;
-        await LoadAvailableUsersAsync();
+        await RefreshGridAsync();
     }
 
-    private void OnUserToggled(Guid userId, bool isSelected)
+    private void OnMemberToggled(Guid userId, bool isSelected)
     {
         if (isSelected)
         {
@@ -112,9 +113,6 @@ public partial class MemberPickerModal : IdentityComponentBase
         }
     }
 
-    /// <summary>
-    /// Called when SbDialog's open state changes (X button, backdrop click, escape key).
-    /// </summary>
     private async Task OnDialogOpenChanged(bool isOpen)
     {
         if (!isOpen)
@@ -132,15 +130,17 @@ public partial class MemberPickerModal : IdentityComponentBase
 
     private Task AddMembersAsync() => ExecuteWithLoadingAsync(async () =>
     {
-        if (_selectedUserIds.Count == 0) return;
+        if (_selectedUserIds.Count == 0)
+        {
+            return;
+        }
 
-        var input = new OrganizationUnitUserInput
+        await OrganizationUnitAppService.AddMembersAsync(new OrganizationUnitUserInput
         {
             OrganizationUnitId = OrganizationUnitId,
             UserIds = _selectedUserIds.ToList()
-        };
+        });
 
-        await OrganizationUnitAppService.AddMembersAsync(input);
         await OnMembersAdded.InvokeAsync();
         _wasOpen = false;
         await OpenChanged.InvokeAsync(false);

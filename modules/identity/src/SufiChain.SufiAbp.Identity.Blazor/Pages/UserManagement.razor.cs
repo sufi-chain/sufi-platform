@@ -1,9 +1,9 @@
 using Microsoft.AspNetCore.Components;
 using SufiChain.SufiAbp.Identity.Blazor.Components;
-using SufiChain.SufiAbp.Identity.Localization;
-using SufiChain.SufiAbp.UI.Blazor;
 using SufiChain.SufiAbp.UI.Layout;
 using SufiChain.SufiAbp.Identity;
+using SufiChain.SufiBlazor.Components.Data;
+using SufiChain.SufiBlazor.Contracts.Data;
 
 namespace SufiChain.SufiAbp.Identity.Blazor.Pages;
 
@@ -27,7 +27,7 @@ public partial class UserManagement : IdentityComponentBase
     private IIdentityRoleAppService RoleAppService => LazyGetRequiredService(ref _roleAppService);
     private IIdentityRoleAppService? _roleAppService;
 
-    private List<IdentityUserDto> _users = new();
+    private SbDataGrid<IdentityUserDto>? _gridRef;
     private List<IdentityRoleDto> _roles = new();
     private string? _filter;
     private int _pageIndex = 0;
@@ -62,7 +62,7 @@ public partial class UserManagement : IdentityComponentBase
                 _roles = result.Items.ToList();
             }, LoadingKeys.LoadRoles);
 
-            await LoadUsersAsync();
+            await RefreshGridAsync();
         }
     }
 
@@ -72,24 +72,30 @@ public partial class UserManagement : IdentityComponentBase
         // Breadcrumbs are auto-generated from menu hierarchy by the layout
     }
 
-    private Task LoadUsersAsync() => ExecuteWithLoadingAsync(async () =>
+    private async Task<SbDataResponse<IdentityUserDto>> LoadUsersDataAsync(SbDataRequest request)
     {
-        var input = new GetIdentityUsersInput
+        var result = await UserAppService.GetListAsync(new GetIdentityUsersInput
         {
             Filter = _filter,
-            SkipCount = _pageIndex * _pageSize,
-            MaxResultCount = _pageSize
-        };
+            SkipCount = Math.Max(0, request.PageIndex * request.PageSize),
+            MaxResultCount = request.PageSize
+        });
 
-        var result = await UserAppService.GetListAsync(input);
-        _users = result.Items.ToList();
         _totalCount = result.TotalCount;
-    }, LoadingKeys.LoadUsers);
+        return new SbDataResponse<IdentityUserDto>(result.Items, result.TotalCount);
+    }
+
+    private Task RefreshGridAsync()
+    {
+        return ExecuteWithLoadingAsync(
+            () => _gridRef?.RefreshDataAsync() ?? Task.CompletedTask,
+            LoadingKeys.LoadUsers);
+    }
 
     private async Task OnPageIndexChangedAsync(int pageIndex)
     {
         _pageIndex = pageIndex;
-        await LoadUsersAsync();
+        await RefreshGridAsync();
     }
 
     private void ShowCreateModal()
@@ -107,14 +113,14 @@ public partial class UserManagement : IdentityComponentBase
     {
         _showCreateModal = false;
         await Notify.SuccessAsync(L["UserCreatedSuccessfully"]);
-        await LoadUsersAsync();
+        await RefreshGridAsync();
     }
 
     private async Task OnUserUpdatedAsync()
     {
         _showEditModal = false;
         await Notify.SuccessAsync(L["UserUpdatedSuccessfully"]);
-        await LoadUsersAsync();
+        await RefreshGridAsync();
     }
 
     private async Task DeleteUserAsync(IdentityUserDto user)
@@ -128,7 +134,7 @@ public partial class UserManagement : IdentityComponentBase
         {
             await UserAppService.DeleteAsync(user.Id);
             await Notify.SuccessAsync(L["UserDeletedSuccessfully"]);
-            await LoadUsersAsync();
+            await RefreshGridAsync();
         }, LoadingKeys.DeleteUser);
     }
 

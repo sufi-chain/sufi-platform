@@ -1,5 +1,7 @@
+@namespace SufiChain.SufiAbp.Identity.Blazor.Pages
 @page "/panel/admin/identity/organization-units"
 @using SufiChain.SufiAbp.Identity.Blazor.Components
+@using SufiChain.SufiAbp.Users.Blazor.Public.Components
 @using SufiChain.SufiAbp.UI.Blazor.Components
 @using SufiChain.SufiBlazor.Components.Forms
 @using SufiChain.SufiBlazor.Components.Navigation
@@ -144,7 +146,8 @@
 									</SbStack>
 
 									<SbDataGrid TItem="OrganizationUnitMemberDto"
-												Items="_members"
+												@ref="_membersGridRef"
+												ItemsProvider="LoadMembersDataAsync"
 												Loading="IsOperationLoading(LoadingKeys.LoadMembers)"
 												Striped="true"
 												Hoverable="true"
@@ -197,7 +200,8 @@
 									</SbStack>
 
 									<SbDataGrid TItem="OrganizationUnitRoleDto"
-												Items="_roles"
+												@ref="_rolesGridRef"
+												ItemsProvider="LoadRolesDataAsync"
 												Loading="IsOperationLoading(LoadingKeys.LoadRoles)"
 												Striped="true"
 												Hoverable="true"
@@ -339,7 +343,7 @@
 										</SbButton>
 									</AuthorizeView>
 								</SbStack>
-								<SbDataGrid TItem="OrganizationUnitMemberDto" Items="_members" Loading="IsOperationLoading(LoadingKeys.LoadMembers)" Striped="true" Hoverable="true"
+								<SbDataGrid TItem="OrganizationUnitMemberDto" @ref="_membersGridRefMobile" ItemsProvider="LoadMembersDataAsync" Loading="IsOperationLoading(LoadingKeys.LoadMembers)" Striped="true" Hoverable="true"
 											PageIndex="_memberPageIndex" PageSize="_memberPageSize" TotalCount="_memberTotalCount" PageIndexChanged="OnMemberPageIndexChangedAsync">
 									<SbColumn TItem="OrganizationUnitMemberDto" Title="@L["UserName"]">
 										<CellTemplate Context="cellContext">@cellContext.Item.UserName</CellTemplate>
@@ -373,7 +377,7 @@
 										</SbButton>
 									</AuthorizeView>
 								</SbStack>
-								<SbDataGrid TItem="OrganizationUnitRoleDto" Items="_roles" Loading="IsOperationLoading(LoadingKeys.LoadRoles)" Striped="true" Hoverable="true"
+								<SbDataGrid TItem="OrganizationUnitRoleDto" @ref="_rolesGridRefMobile" ItemsProvider="LoadRolesDataAsync" Loading="IsOperationLoading(LoadingKeys.LoadRoles)" Striped="true" Hoverable="true"
 											PageIndex="_rolePageIndex" PageSize="_rolePageSize" TotalCount="_roleTotalCount" PageIndexChanged="OnRolePageIndexChangedAsync">
 									<SbColumn TItem="OrganizationUnitRoleDto" Title="@L["RoleName"]">
 										<CellTemplate Context="cellContext">
@@ -413,8 +417,8 @@
 			 OnUpdated="OnUnitUpdatedAsync" />
 
 <MemberPickerModal @bind-Open="_showMemberPickerModal"
-				   OrganizationUnitId="_selectedUnit?.Id ?? Guid.Empty"
-				   OnMembersAdded="OnMembersAddedAsync" />
+                   OrganizationUnitId="_selectedUnit?.Id ?? Guid.Empty"
+                   OnMembersAdded="OnMembersAddedAsync" />
 
 <RolePickerModal @bind-Open="_showRolePickerModal"
 				 OrganizationUnitId="_selectedUnit?.Id ?? Guid.Empty"

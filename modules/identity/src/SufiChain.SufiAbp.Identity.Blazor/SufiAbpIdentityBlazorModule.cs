@@ -3,6 +3,8 @@ using SufiChain.SufiAbp.Identity.Blazor.Menus;
 using SufiChain.SufiAbp.UI.Navigation;
 using SufiChain.SufiAbp.UI.Routing;
 using SufiChain.SufiAbp.Identity;
+using SufiChain.SufiAbp.Identity.Blazor.Public;
+using SufiChain.SufiAbp.Users.Blazor.Public;
 using Volo.Abp.Modularity;
 using SufiChain.SufiAbp.PermissionManagement;
 
@@ -15,7 +17,8 @@ namespace SufiChain.SufiAbp.Identity.Blazor;
 [DependsOn(
     typeof(SufiAbpIdentityApplicationContractsModule),
     typeof(SufiAbpPermissionManagementApplicationContractsModule),
-    typeof(SufiAbpIdentityApplicationContractsModule)
+    typeof(SufiAbpIdentityBlazorPublicModule),
+    typeof(SufiAbpUsersBlazorPublicModule)
 )]
 public class SufiAbpIdentityBlazorModule : AbpModule
 {

@@ -1,9 +1,9 @@
 using Microsoft.AspNetCore.Components;
 using SufiChain.SufiBlazor.Components;
 using SufiChain.SufiAbp.Identity.Dtos;
-using SufiChain.SufiAbp.Identity.Localization;
-using SufiChain.SufiAbp.UI.Blazor;
 using SufiChain.SufiAbp.UI.Layout;
+using SufiChain.SufiBlazor.Components.Data;
+using SufiChain.SufiBlazor.Contracts.Data;
 
 namespace SufiChain.SufiAbp.Identity.Blazor.Pages;
 
@@ -18,7 +18,7 @@ public partial class SecurityLogManagement : IdentityComponentBase
     [Inject] protected IPageLayout PageLayout { get; set; } = default!;
     [Inject] protected IIdentitySecurityLogAppService SecurityLogAppService { get; set; } = default!;
 
-    private List<SecurityLogListItemDto> _securityLogs = new();
+    private SbDataGrid<SecurityLogListItemDto>? _gridRef;
     private int _pageIndex = 0;
     private int _pageSize = 20;
     private long _totalCount;
@@ -44,7 +44,7 @@ public partial class SecurityLogManagement : IdentityComponentBase
         
         if (firstRender)
         {
-            await LoadSecurityLogsAsync();
+            await RefreshGridAsync();
         }
     }
 
@@ -54,9 +54,9 @@ public partial class SecurityLogManagement : IdentityComponentBase
         // Breadcrumbs are auto-generated from menu hierarchy by the layout
     }
 
-    private Task LoadSecurityLogsAsync() => ExecuteWithLoadingAsync(async () =>
+    private async Task<SbDataResponse<SecurityLogListItemDto>> LoadSecurityLogsDataAsync(SbDataRequest request)
     {
-        var input = new GetSecurityLogListInput
+        var result = await SecurityLogAppService.GetListAsync(new GetSecurityLogListInput
         {
             StartTime = _startDate?.ToDateTime(TimeOnly.MinValue),
             EndTime = _endDate?.ToDateTime(TimeOnly.MaxValue),
@@ -64,26 +64,32 @@ public partial class SecurityLogManagement : IdentityComponentBase
             Action = _action,
             ClientIpAddress = _clientIpAddress,
             ApplicationName = _applicationName,
-            SkipCount = _pageIndex * _pageSize,
-            MaxResultCount = _pageSize,
+            SkipCount = Math.Max(0, request.PageIndex * request.PageSize),
+            MaxResultCount = request.PageSize,
             Sorting = "CreationTime DESC"
-        };
+        });
 
-        var result = await SecurityLogAppService.GetListAsync(input);
-        _securityLogs = result.Items.ToList();
         _totalCount = result.TotalCount;
-    }, LoadingKeys.LoadSecurityLogs);
+        return new SbDataResponse<SecurityLogListItemDto>(result.Items, result.TotalCount);
+    }
+
+    private Task RefreshGridAsync()
+    {
+        return ExecuteWithLoadingAsync(
+            () => _gridRef?.RefreshDataAsync() ?? Task.CompletedTask,
+            LoadingKeys.LoadSecurityLogs);
+    }
 
     private async Task OnPageIndexChangedAsync(int pageIndex)
     {
         _pageIndex = pageIndex;
-        await LoadSecurityLogsAsync();
+        await RefreshGridAsync();
     }
 
     private async Task ApplyFiltersAsync()
     {
         _pageIndex = 0;
-        await LoadSecurityLogsAsync();
+        await RefreshGridAsync();
     }
 
     private async Task ClearFiltersAsync()
@@ -95,7 +101,7 @@ public partial class SecurityLogManagement : IdentityComponentBase
         _clientIpAddress = null;
         _applicationName = null;
         _pageIndex = 0;
-        await LoadSecurityLogsAsync();
+        await RefreshGridAsync();
     }
 
     private SbColor GetActionColor(string? action)

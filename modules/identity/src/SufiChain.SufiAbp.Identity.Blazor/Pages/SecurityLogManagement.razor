@@ -1,3 +1,4 @@
+@namespace SufiChain.SufiAbp.Identity.Blazor.Pages
 @page "/panel/admin/identity/security-logs"
 @attribute [Authorize(Policy = SufiChain.SufiAbp.Identity.IdentityPermissions.Users.Default)]
 @inherits IdentityComponentBase
@@ -72,7 +73,8 @@
 	<SbCard>
 		<ChildContent>
 			<SbDataGrid TItem="SecurityLogListItemDto"
-						Items="_securityLogs"
+						@ref="_gridRef"
+						ItemsProvider="LoadSecurityLogsDataAsync"
 						Loading="IsOperationLoading(LoadingKeys.LoadSecurityLogs)"
 						Striped="true"
 						Hoverable="true"

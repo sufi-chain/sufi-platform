@@ -2,6 +2,8 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.Logging;
 using SufiChain.SufiAbp.Identity.OrganizationUnits;
 using SufiChain.SufiAbp.Identity.OrganizationUnits.Dtos;
+using SufiChain.SufiBlazor.Components.Data;
+using SufiChain.SufiBlazor.Contracts.Data;
 
 namespace SufiChain.SufiAbp.Identity.Blazor.Components;
 
@@ -21,7 +23,7 @@ public partial class RolePickerModal : IdentityComponentBase
     [Parameter] public Guid OrganizationUnitId { get; set; }
     [Parameter] public EventCallback OnRolesAdded { get; set; }
 
-    private List<OrganizationUnitRoleDto> _availableRoles = new();
+    private SbDataGrid<OrganizationUnitRoleDto>? _gridRef;
     private HashSet<Guid> _selectedRoleIds = new();
     private string? _filter;
     private int _pageIndex = 0;
@@ -44,57 +46,60 @@ public partial class RolePickerModal : IdentityComponentBase
             _selectedRoleIds.Clear();
             _filter = null;
             _pageIndex = 0;
-            _availableRoles.Clear();
             _errorMessage = null;
             _loadedForOuId = OrganizationUnitId;
-            await LoadAvailableRolesAsync();
+            await RefreshGridAsync();
         }
         _wasOpen = Open;
     }
 
-    private async Task LoadAvailableRolesAsync()
+    private async Task<SbDataResponse<OrganizationUnitRoleDto>> LoadAvailableRolesDataAsync(SbDataRequest request)
     {
         if (OrganizationUnitId == Guid.Empty)
         {
             _errorMessage = "OrganizationUnitId is empty";
-            return;
+            return new SbDataResponse<OrganizationUnitRoleDto>(Array.Empty<OrganizationUnitRoleDto>(), 0);
         }
 
         try
         {
-            await ExecuteWithLoadingAsync(async () =>
+            var result = await OrganizationUnitAppService.GetAvailableRolesAsync(new GetOrganizationUnitRolesInput
             {
-                var input = new GetOrganizationUnitRolesInput
-                {
-                    OrganizationUnitId = OrganizationUnitId,
-                    Filter = _filter,
-                    SkipCount = _pageIndex * _pageSize,
-                    MaxResultCount = _pageSize
-                };
+                OrganizationUnitId = OrganizationUnitId,
+                Filter = _filter,
+                SkipCount = Math.Max(0, request.PageIndex * request.PageSize),
+                MaxResultCount = request.PageSize
+            });
 
-                var result = await OrganizationUnitAppService.GetAvailableRolesAsync(input);
-                _availableRoles = result.Items.ToList();
-                _totalCount = result.TotalCount;
-                _errorMessage = null;
-            }, LoadingKeys.LoadRoles);
+            _totalCount = result.TotalCount;
+            _errorMessage = null;
+            return new SbDataResponse<OrganizationUnitRoleDto>(result.Items, result.TotalCount);
         }
         catch (Exception ex)
         {
             _errorMessage = ex.Message;
             Logger.LogError(ex, "Failed to load available roles for OU {OrganizationUnitId}", OrganizationUnitId);
+            return new SbDataResponse<OrganizationUnitRoleDto>(Array.Empty<OrganizationUnitRoleDto>(), 0);
         }
+    }
+
+    private Task RefreshGridAsync()
+    {
+        return ExecuteWithLoadingAsync(
+            () => _gridRef?.RefreshDataAsync() ?? Task.CompletedTask,
+            LoadingKeys.LoadRoles);
     }
 
     private async Task OnFilterChangedAsync()
     {
         _pageIndex = 0;
-        await LoadAvailableRolesAsync();
+        await RefreshGridAsync();
     }
 
     private async Task OnPageIndexChangedAsync(int pageIndex)
     {
         _pageIndex = pageIndex;
-        await LoadAvailableRolesAsync();
+        await RefreshGridAsync();
     }
 
     private void OnRoleToggled(Guid roleId, bool isSelected)

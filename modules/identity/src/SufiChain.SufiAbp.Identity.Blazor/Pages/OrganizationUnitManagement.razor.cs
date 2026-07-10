@@ -1,11 +1,10 @@
 using Microsoft.AspNetCore.Components;
 using SufiChain.SufiBlazor.Components.Overlays;
-using SufiChain.SufiAbp.Identity.Localization;
 using SufiChain.SufiAbp.Identity.OrganizationUnits;
 using SufiChain.SufiAbp.Identity.OrganizationUnits.Dtos;
-using SufiChain.SufiAbp.Identity.Permissions;
-using SufiChain.SufiAbp.UI.Blazor;
 using SufiChain.SufiAbp.UI.Layout;
+using SufiChain.SufiBlazor.Components.Data;
+using SufiChain.SufiBlazor.Contracts.Data;
 
 namespace SufiChain.SufiAbp.Identity.Blazor.Pages;
 
@@ -35,14 +34,16 @@ public partial class OrganizationUnitManagement : IdentityComponentBase
     private int _activeTab = 0;
 
     // Members
-    private List<OrganizationUnitMemberDto> _members = new();
+    private SbDataGrid<OrganizationUnitMemberDto>? _membersGridRef;
+    private SbDataGrid<OrganizationUnitMemberDto>? _membersGridRefMobile;
     private string? _memberFilter;
     private int _memberPageIndex = 0;
     private int _memberPageSize = 10;
     private long _memberTotalCount;
 
     // Roles
-    private List<OrganizationUnitRoleDto> _roles = new();
+    private SbDataGrid<OrganizationUnitRoleDto>? _rolesGridRef;
+    private SbDataGrid<OrganizationUnitRoleDto>? _rolesGridRefMobile;
     private int _rolePageIndex = 0;
     private int _rolePageSize = 10;
     private long _roleTotalCount;
@@ -118,8 +119,8 @@ public partial class OrganizationUnitManagement : IdentityComponentBase
         else
         {
             _selectedUnitDetails = null;
-            _members.Clear();
-            _roles.Clear();
+            _memberTotalCount = 0;
+            _roleTotalCount = 0;
         }
     }
 
@@ -133,7 +134,7 @@ public partial class OrganizationUnitManagement : IdentityComponentBase
         }, LoadingKeys.LoadDetails);
 
         // Load members and roles in parallel
-        await Task.WhenAll(LoadMembersAsync(), LoadRolesAsync());
+        await Task.WhenAll(RefreshMembersGridAsync(), RefreshRolesGridAsync());
     }
 
     #endregion
@@ -199,27 +200,38 @@ public partial class OrganizationUnitManagement : IdentityComponentBase
 
     #region Members
 
-    private Task LoadMembersAsync() => ExecuteWithLoadingAsync(async () =>
+    private async Task<SbDataResponse<OrganizationUnitMemberDto>> LoadMembersDataAsync(SbDataRequest request)
     {
-        if (_selectedUnit == null) return;
+        if (_selectedUnit == null)
+        {
+            return new SbDataResponse<OrganizationUnitMemberDto>(Array.Empty<OrganizationUnitMemberDto>(), 0);
+        }
 
-        var input = new GetOrganizationUnitMembersInput
+        var result = await OrganizationUnitAppService.GetMembersAsync(new GetOrganizationUnitMembersInput
         {
             OrganizationUnitId = _selectedUnit.Id,
             Filter = _memberFilter,
-            SkipCount = _memberPageIndex * _memberPageSize,
-            MaxResultCount = _memberPageSize
-        };
+            SkipCount = Math.Max(0, request.PageIndex * request.PageSize),
+            MaxResultCount = request.PageSize
+        });
 
-        var result = await OrganizationUnitAppService.GetMembersAsync(input);
-        _members = result.Items.ToList();
         _memberTotalCount = result.TotalCount;
-    }, LoadingKeys.LoadMembers);
+        return new SbDataResponse<OrganizationUnitMemberDto>(result.Items, result.TotalCount);
+    }
+
+    private async Task RefreshMembersGridAsync()
+    {
+        await ExecuteWithLoadingAsync(async () =>
+        {
+            await (_membersGridRef?.RefreshDataAsync() ?? Task.CompletedTask);
+            await (_membersGridRefMobile?.RefreshDataAsync() ?? Task.CompletedTask);
+        }, LoadingKeys.LoadMembers);
+    }
 
     private async Task OnMemberPageIndexChangedAsync(int pageIndex)
     {
         _memberPageIndex = pageIndex;
-        await LoadMembersAsync();
+        await RefreshMembersGridAsync();
     }
 
     private void ShowMemberPickerModal()
@@ -231,7 +243,7 @@ public partial class OrganizationUnitManagement : IdentityComponentBase
     {
         _showMemberPickerModal = false;
         await Notify.SuccessAsync(L["MembersAddedSuccessfully"]);
-        await LoadMembersAsync();
+        await RefreshMembersGridAsync();
         await LoadUnitDetailsAsync();
     }
 
@@ -248,7 +260,7 @@ public partial class OrganizationUnitManagement : IdentityComponentBase
         {
             await OrganizationUnitAppService.RemoveMemberAsync(_selectedUnit.Id, member.UserId);
             await Notify.SuccessAsync(L["MemberRemovedSuccessfully"]);
-            await LoadMembersAsync();
+            await RefreshMembersGridAsync();
             await LoadUnitDetailsAsync();
         }, LoadingKeys.LoadMembers);
     }
@@ -257,26 +269,37 @@ public partial class OrganizationUnitManagement : IdentityComponentBase
 
     #region Roles
 
-    private Task LoadRolesAsync() => ExecuteWithLoadingAsync(async () =>
+    private async Task<SbDataResponse<OrganizationUnitRoleDto>> LoadRolesDataAsync(SbDataRequest request)
     {
-        if (_selectedUnit == null) return;
+        if (_selectedUnit == null)
+        {
+            return new SbDataResponse<OrganizationUnitRoleDto>(Array.Empty<OrganizationUnitRoleDto>(), 0);
+        }
 
-        var input = new GetOrganizationUnitRolesInput
+        var result = await OrganizationUnitAppService.GetRolesAsync(new GetOrganizationUnitRolesInput
         {
             OrganizationUnitId = _selectedUnit.Id,
-            SkipCount = _rolePageIndex * _rolePageSize,
-            MaxResultCount = _rolePageSize
-        };
+            SkipCount = Math.Max(0, request.PageIndex * request.PageSize),
+            MaxResultCount = request.PageSize
+        });
 
-        var result = await OrganizationUnitAppService.GetRolesAsync(input);
-        _roles = result.Items.ToList();
         _roleTotalCount = result.TotalCount;
-    }, LoadingKeys.LoadRoles);
+        return new SbDataResponse<OrganizationUnitRoleDto>(result.Items, result.TotalCount);
+    }
+
+    private async Task RefreshRolesGridAsync()
+    {
+        await ExecuteWithLoadingAsync(async () =>
+        {
+            await (_rolesGridRef?.RefreshDataAsync() ?? Task.CompletedTask);
+            await (_rolesGridRefMobile?.RefreshDataAsync() ?? Task.CompletedTask);
+        }, LoadingKeys.LoadRoles);
+    }
 
     private async Task OnRolePageIndexChangedAsync(int pageIndex)
     {
         _rolePageIndex = pageIndex;
-        await LoadRolesAsync();
+        await RefreshRolesGridAsync();
     }
 
     private void ShowRolePickerModal()
@@ -288,7 +311,7 @@ public partial class OrganizationUnitManagement : IdentityComponentBase
     {
         _showRolePickerModal = false;
         await Notify.SuccessAsync(L["RolesAssignedSuccessfully"]);
-        await LoadRolesAsync();
+        await RefreshRolesGridAsync();
         await LoadUnitDetailsAsync();
     }
 
@@ -305,7 +328,7 @@ public partial class OrganizationUnitManagement : IdentityComponentBase
         {
             await OrganizationUnitAppService.RemoveRoleAsync(_selectedUnit.Id, role.RoleId);
             await Notify.SuccessAsync(L["RoleRemovedSuccessfully"]);
-            await LoadRolesAsync();
+            await RefreshRolesGridAsync();
             await LoadUnitDetailsAsync();
         }, LoadingKeys.LoadRoles);
     }

@@ -1,9 +1,9 @@
 using Microsoft.AspNetCore.Components;
 using SufiChain.SufiAbp.Identity.Blazor.Components;
-using SufiChain.SufiAbp.Identity.Localization;
-using SufiChain.SufiAbp.UI.Blazor;
 using SufiChain.SufiAbp.UI.Layout;
 using SufiChain.SufiAbp.Identity;
+using SufiChain.SufiBlazor.Components.Data;
+using SufiChain.SufiBlazor.Contracts.Data;
 
 namespace SufiChain.SufiAbp.Identity.Blazor.Pages;
 
@@ -23,7 +23,7 @@ public partial class RoleManagement : IdentityComponentBase
     private IIdentityRoleAppService RoleAppService => LazyGetRequiredService(ref _roleAppService);
     private IIdentityRoleAppService? _roleAppService;
 
-    private List<IdentityRoleDto> _roles = new();
+    private SbDataGrid<IdentityRoleDto>? _gridRef;
     private string? _filter;
     private int _pageIndex = 0;
     private int _pageSize = 10;
@@ -51,7 +51,7 @@ public partial class RoleManagement : IdentityComponentBase
             // Check if user has permission to manage permissions
             _hasManagePermissionsPermission = await IsGrantedAsync(IdentityPermissions.Roles.ManagePermissions);
 
-            await LoadRolesAsync();
+            await RefreshGridAsync();
         }
     }
 
@@ -61,24 +61,30 @@ public partial class RoleManagement : IdentityComponentBase
         // Breadcrumbs are auto-generated from menu hierarchy by the layout
     }
 
-    private Task LoadRolesAsync() => ExecuteWithLoadingAsync(async () =>
+    private async Task<SbDataResponse<IdentityRoleDto>> LoadRolesDataAsync(SbDataRequest request)
     {
-        var input = new GetIdentityRolesInput
+        var result = await RoleAppService.GetListAsync(new GetIdentityRolesInput
         {
             Filter = _filter,
-            SkipCount = _pageIndex * _pageSize,
-            MaxResultCount = _pageSize
-        };
+            SkipCount = Math.Max(0, request.PageIndex * request.PageSize),
+            MaxResultCount = request.PageSize
+        });
 
-        var result = await RoleAppService.GetListAsync(input);
-        _roles = result.Items.ToList();
         _totalCount = result.TotalCount;
-    }, LoadingKeys.LoadRoles);
+        return new SbDataResponse<IdentityRoleDto>(result.Items, result.TotalCount);
+    }
+
+    private Task RefreshGridAsync()
+    {
+        return ExecuteWithLoadingAsync(
+            () => _gridRef?.RefreshDataAsync() ?? Task.CompletedTask,
+            LoadingKeys.LoadRoles);
+    }
 
     private async Task OnPageIndexChangedAsync(int pageIndex)
     {
         _pageIndex = pageIndex;
-        await LoadRolesAsync();
+        await RefreshGridAsync();
     }
 
     private void ShowCreateModal()
@@ -96,14 +102,14 @@ public partial class RoleManagement : IdentityComponentBase
     {
         _showCreateModal = false;
         await Notify.SuccessAsync(L["RoleCreatedSuccessfully"]);
-        await LoadRolesAsync();
+        await RefreshGridAsync();
     }
 
     private async Task OnRoleUpdatedAsync()
     {
         _showEditModal = false;
         await Notify.SuccessAsync(L["RoleUpdatedSuccessfully"]);
-        await LoadRolesAsync();
+        await RefreshGridAsync();
     }
 
     private async Task DeleteRoleAsync(IdentityRoleDto role)
@@ -120,7 +126,7 @@ public partial class RoleManagement : IdentityComponentBase
         {
             await RoleAppService.DeleteAsync(role.Id);
             await Notify.SuccessAsync(L["RoleDeletedSuccessfully"]);
-            await LoadRolesAsync();
+            await RefreshGridAsync();
         }, LoadingKeys.DeleteRole);
     }
 
