@@ -45,6 +45,20 @@
     "Translated": "مترجم",
     "OverriddenFromDatabase": "تم تجاوزه من قاعدة البيانات",
     "Overridden": "تم التجاوز",
-    "Base": "أساسي"
+    "Base": "أساسي",
+    "Setting:Localization.DefaultCulture": "الثقافة الافتراضية",
+    "Setting:Localization.DefaultCulture.Description": "الثقافة الافتراضية المستخدمة عند بذر المحتوى والترجمة التجارية لهذا المستأجر.",
+    "BusinessTextEditor:LiteralMode": "نص ثابت",
+    "BusinessTextEditor:LocalizedMode": "مفتاح مترجم",
+    "BusinessTextEditor:CultureTab": "الثقافة",
+    "BusinessTextEditor:KeyPreview": "مفتاح الترجمة",
+    "BusinessTextEditor:SaveRequired": "اسم العرض مطلوب.",
+    "BusinessTextEditor:DefaultCultureRequired": "ترجمة الثقافة الافتراضية مطلوبة.",
+    "BusinessTextEditor:LiteralMode": "نص ثابت",
+    "BusinessTextEditor:LocalizedMode": "مفتاح مترجم",
+    "BusinessTextEditor:CultureTab": "الثقافة",
+    "BusinessTextEditor:KeyPreview": "مفتاح الترجمة",
+    "BusinessTextEditor:SaveRequired": "اسم العرض مطلوب.",
+    "BusinessTextEditor:DefaultCultureRequired": "ترجمة الثقافة الافتراضية مطلوبة."
   }
 }

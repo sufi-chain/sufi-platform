@@ -1,0 +1,69 @@
+@namespace SufiChain.SufiAbp.LocalizationManagement.Blazor.Public.Components
+@inherits LocalizationManagementPublicComponentBase
+
+<SbStack Gap="2">
+    @if (!string.IsNullOrWhiteSpace(Label))
+    {
+        <SbText Weight="SbFontWeight.Medium">@Label</SbText>
+    }
+
+    @if (Mode == BusinessTextEditorMode.Literal)
+    {
+        <SbTextField TValue="string"
+                     Value="@(LiteralValue ?? string.Empty)"
+                     ValueChanged="OnLiteralValueChangedAsync"
+                     ValueExpression="@(() => LiteralValue!)"
+                     Disabled="@Disabled"
+                     Required="@Required" />
+    }
+    else
+    {
+        @if (string.IsNullOrWhiteSpace(ResourceName) || string.IsNullOrWhiteSpace(LocalizationKey))
+        {
+            <SbText Color="SbColor.Muted">@L["BusinessTextEditor:SaveRequired"]</SbText>
+        }
+        else
+        {
+            @if (!string.IsNullOrWhiteSpace(LocalizationKey))
+            {
+                <SbText Color="SbColor.Muted" Size="SbSize.Sm">
+                    @L["BusinessTextEditor:KeyPreview"]: @LocalizationKey
+                </SbText>
+            }
+
+            @if (_loading)
+            {
+                <SbText Color="SbColor.Muted">@L["Loading"]</SbText>
+            }
+            else if (_cultures.Count == 0)
+            {
+                <SbText Color="SbColor.Muted">@L["SelectCulture"]</SbText>
+            }
+            else
+            {
+                <SbTabs @bind-ActiveIndex="_activeCultureTab">
+                    @foreach (var culture in _cultures)
+                    {
+                        var cultureName = culture.CultureName;
+                        <SbTab Label="@GetCultureTabLabel(culture)">
+                            <SbStack Gap="2" Class="pt-2">
+                                <SbTextField TValue="string"
+                                             Value="@GetCultureValue(cultureName)"
+                                             ValueChanged="@(value => SetCultureValue(cultureName, value))"
+                                             ValueExpression="@(() => _values[cultureName])"
+                                             Disabled="@Disabled"
+                                             Dir="@(culture.IsRtl ? "rtl" : "ltr")"
+                                             Required="@(Required && culture.IsDefault)" />
+                            </SbStack>
+                        </SbTab>
+                    }
+                </SbTabs>
+            }
+        }
+    }
+
+    @if (!string.IsNullOrWhiteSpace(_validationMessage))
+    {
+        <SbText Color="SbColor.Danger" Size="SbSize.Sm">@_validationMessage</SbText>
+    }
+</SbStack>

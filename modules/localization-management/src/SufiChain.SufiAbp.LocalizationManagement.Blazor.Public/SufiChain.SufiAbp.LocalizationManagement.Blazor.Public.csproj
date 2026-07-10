@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk.Razor">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <RootNamespace>SufiChain.SufiAbp.LocalizationManagement.Blazor.Public</RootNamespace>
+    <PackageId>SufiChain.SufiAbp.LocalizationManagement.Blazor.Public</PackageId>
+    <Description>Localization management public Blazor components for Sufi Platform - embeddable multi-culture business text editors.</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="$(MicrosoftAspNetCoreComponentsWebVersion)" />
+    <ProjectReference Include="..\..\..\..\framework\SufiChain.SufiAbp.Data\SufiChain.SufiAbp.Data.csproj" />
+    <ProjectReference Include="..\..\..\..\framework\SufiChain.SufiAbp.UI.Blazor\SufiChain.SufiAbp.UI.Blazor.csproj" />
+    <ProjectReference Include="..\SufiChain.SufiAbp.LocalizationManagement.Application.Contracts\SufiChain.SufiAbp.LocalizationManagement.Application.Contracts.csproj" />
+    <ProjectReference Include="..\SufiChain.SufiAbp.LocalizationManagement.Domain.Shared\SufiChain.SufiAbp.LocalizationManagement.Domain.Shared.csproj" />
+  </ItemGroup>
+
+</Project>

@@ -45,6 +45,20 @@
     "Translated": "Traducido",
     "OverriddenFromDatabase": "Sobrescrito desde la base de datos",
     "Overridden": "Sobrescrito",
-    "Base": "Base"
+    "Base": "Base",
+    "Setting:Localization.DefaultCulture": "Cultura predeterminada",
+    "Setting:Localization.DefaultCulture.Description": "Cultura predeterminada para sembrar contenido y localización empresarial de este inquilino.",
+    "BusinessTextEditor:LiteralMode": "Texto literal",
+    "BusinessTextEditor:LocalizedMode": "Clave localizada",
+    "BusinessTextEditor:CultureTab": "Cultura",
+    "BusinessTextEditor:KeyPreview": "Clave de localización",
+    "BusinessTextEditor:SaveRequired": "El nombre para mostrar es obligatorio.",
+    "BusinessTextEditor:DefaultCultureRequired": "La traducción de la cultura predeterminada es obligatoria.",
+    "BusinessTextEditor:LiteralMode": "Texto literal",
+    "BusinessTextEditor:LocalizedMode": "Clave localizada",
+    "BusinessTextEditor:CultureTab": "Cultura",
+    "BusinessTextEditor:KeyPreview": "Clave de localización",
+    "BusinessTextEditor:SaveRequired": "El nombre para mostrar es obligatorio.",
+    "BusinessTextEditor:DefaultCultureRequired": "La traducción de la cultura predeterminada es obligatoria."
   }
 }

@@ -45,6 +45,14 @@
     "Translated": "ترجمه شده",
     "OverriddenFromDatabase": "از پایگاه داده بازنویسی شده",
     "Overridden": "بازنویسی شده",
-    "Base": "پایه"
+    "Base": "پایه",
+    "Setting:Localization.DefaultCulture": "زبان پیش‌فرض",
+    "Setting:Localization.DefaultCulture.Description": "زبان پیش‌فرض برای بذر محتوا و بومی‌سازی کسب‌وکار این مستأجر.",
+    "BusinessTextEditor:LiteralMode": "متن ثابت",
+    "BusinessTextEditor:LocalizedMode": "کلید چندزبانه",
+    "BusinessTextEditor:CultureTab": "زبان",
+    "BusinessTextEditor:KeyPreview": "کلید بومی‌سازی",
+    "BusinessTextEditor:SaveRequired": "نام نمایشی الزامی است.",
+    "BusinessTextEditor:DefaultCultureRequired": "ترجمه زبان پیش‌فرض الزامی است."
   }
 }

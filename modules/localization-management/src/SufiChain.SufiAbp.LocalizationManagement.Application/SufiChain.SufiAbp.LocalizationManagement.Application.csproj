@@ -12,6 +12,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="../../../../framework/SufiChain.SufiAbp.Data/SufiChain.SufiAbp.Data.csproj" />
     <ProjectReference Include="../../../../framework/SufiChain.SufiAbp.Mapperly/SufiChain.SufiAbp.Mapperly.csproj" />
     <ProjectReference Include="../../../../framework/SufiChain.SufiAbp.Ddd.Application/SufiChain.SufiAbp.Ddd.Application.csproj" />
     <ProjectReference Include="../../../../framework/SufiChain.SufiAbp.Caching/SufiChain.SufiAbp.Caching.csproj" />

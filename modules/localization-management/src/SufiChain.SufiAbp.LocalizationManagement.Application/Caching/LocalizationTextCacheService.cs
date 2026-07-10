@@ -1,7 +1,9 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
+using SufiChain.SufiAbp.Data;
 using SufiChain.SufiAbp.LocalizationManagement.Caching;
 using SufiChain.SufiAbp.LocalizationManagement.Repositories;
 using Volo.Abp.Caching;
@@ -116,14 +118,56 @@ public class LocalizationTextCacheService : ISingletonDependency
         using var scope = _serviceProvider.CreateScope();
         var repository = scope.ServiceProvider.GetRequiredService<ILocalizationTextRepository>();
 
-        var texts = await repository.GetListAsync(resourceName, cultureName).ConfigureAwait(false);
-
         var cacheItem = new LocalizationTextCacheItem();
-        foreach (var text in texts)
+        foreach (var candidateCulture in GetCultureCandidates(cultureName).Reverse())
         {
-            cacheItem.Texts[text.Key] = text.Value;
+            var texts = await repository.GetListAsync(resourceName, candidateCulture).ConfigureAwait(false);
+            foreach (var text in texts)
+            {
+                cacheItem.Texts[text.Key] = text.Value;
+            }
         }
 
         return cacheItem;
+    }
+
+    private static IEnumerable<string> GetCultureCandidates(string cultureName)
+    {
+        if (string.IsNullOrWhiteSpace(cultureName))
+        {
+            yield break;
+        }
+
+        var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        var current = cultureName.Trim();
+
+        while (!string.IsNullOrWhiteSpace(current))
+        {
+            if (seen.Add(current))
+            {
+                yield return current;
+            }
+
+            var normalized = SeedCultureHelper.NormalizeCulture(current);
+            if (!string.IsNullOrWhiteSpace(normalized) && seen.Add(normalized))
+            {
+                yield return normalized;
+            }
+
+            try
+            {
+                var parent = CultureInfo.GetCultureInfo(current).Parent?.Name;
+                if (string.IsNullOrWhiteSpace(parent) || string.Equals(parent, current, StringComparison.OrdinalIgnoreCase))
+                {
+                    break;
+                }
+
+                current = parent;
+            }
+            catch (CultureNotFoundException)
+            {
+                break;
+            }
+        }
     }
 }

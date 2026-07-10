@@ -45,6 +45,14 @@
     "Translated": "Translated",
     "OverriddenFromDatabase": "Overridden from database",
     "Overridden": "Overridden",
-    "Base": "Base"
+    "Base": "Base",
+    "Setting:Localization.DefaultCulture": "Default culture",
+    "Setting:Localization.DefaultCulture.Description": "Default culture used when seeding business localization and content for this tenant.",
+    "BusinessTextEditor:LiteralMode": "Literal text",
+    "BusinessTextEditor:LocalizedMode": "Localized key",
+    "BusinessTextEditor:CultureTab": "Culture",
+    "BusinessTextEditor:KeyPreview": "Localization key",
+    "BusinessTextEditor:SaveRequired": "Display name is required.",
+    "BusinessTextEditor:DefaultCultureRequired": "Default culture translation is required."
   }
 }

@@ -49,12 +49,12 @@ public static class LocalizationManagementDbContextModelCreatingExtensions
 
             b.ConfigureByConvention();
 
-            b.HasIndex(x => x.TenantId);
-            b.HasIndex(x => x.ResourceName);
-            b.HasIndex(x => x.CultureName);
-            b.HasIndex(x => new { x.ResourceName, x.CultureName, x.Key }).IsUnique();
+           b.HasIndex(x => x.TenantId);
+           b.HasIndex(x => x.ResourceName);
+           b.HasIndex(x => x.CultureName);
+            b.HasIndex(x => new { x.TenantId, x.ResourceName, x.CultureName, x.Key }).IsUnique();
 
-            b.Property(x => x.ResourceName).IsRequired().HasMaxLength(128);
+           b.Property(x => x.ResourceName).IsRequired().HasMaxLength(128);
             b.Property(x => x.CultureName).IsRequired().HasMaxLength(16);
             b.Property(x => x.Key).IsRequired().HasMaxLength(512);
             b.Property(x => x.Value).IsRequired().HasMaxLength(4096);

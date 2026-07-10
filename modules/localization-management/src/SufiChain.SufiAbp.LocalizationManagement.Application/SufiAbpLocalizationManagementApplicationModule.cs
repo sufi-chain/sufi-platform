@@ -25,6 +25,8 @@ public class SufiAbpLocalizationManagementApplicationModule : AbpModule
 {
     public override void ConfigureServices(ServiceConfigurationContext context)
     {
+        context.Services.AddTransient<ILocalizationTextSeeder, LocalizationTextSeeder>();
+
         context.Services.AddMapperlyObjectMapper<SufiAbpLocalizationManagementApplicationModule>();
 
         // Replace the default NullExternalLocalizationStore with our database-backed implementation
