@@ -59,7 +59,6 @@ public class FileEntry
             ".yaml" => true,
             ".yml" => true,
             ".gitignore" => true,
-            ".editorconfig" => true,
             _ => false
         };
     }

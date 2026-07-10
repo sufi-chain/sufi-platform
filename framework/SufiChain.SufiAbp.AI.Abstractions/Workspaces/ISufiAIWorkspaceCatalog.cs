@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
@@ -22,4 +23,10 @@ public interface ISufiAIWorkspaceCatalog
     /// or when no provider module is installed.
     /// </summary>
     Task<SufiAIWorkspaceDescriptor?> FindAsync(string name, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Finds a workspace by its identifier. Returns <c>null</c> when not found
+    /// or when no provider module is installed.
+    /// </summary>
+    Task<SufiAIWorkspaceDescriptor?> FindByIdAsync(Guid id, CancellationToken cancellationToken = default);
 }

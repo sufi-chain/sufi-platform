@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
@@ -20,6 +21,12 @@ public class NullSufiAIWorkspaceCatalog : ISufiAIWorkspaceCatalog, ITransientDep
 
     /// <inheritdoc />
     public virtual Task<SufiAIWorkspaceDescriptor?> FindAsync(string name, CancellationToken cancellationToken = default)
+    {
+        return Task.FromResult<SufiAIWorkspaceDescriptor?>(null);
+    }
+
+    /// <inheritdoc />
+    public virtual Task<SufiAIWorkspaceDescriptor?> FindByIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
         return Task.FromResult<SufiAIWorkspaceDescriptor?>(null);
     }

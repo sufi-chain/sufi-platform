@@ -5,6 +5,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <RootNamespace>SufiChain.SufiAbp.AspNetCore.Authentication.WebAssembly</RootNamespace>
+    <RazorLangVersion>Latest</RazorLangVersion>
   </PropertyGroup>
 
   <PropertyGroup>

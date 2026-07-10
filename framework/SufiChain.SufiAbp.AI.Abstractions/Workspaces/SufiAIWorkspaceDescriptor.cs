@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 
 namespace SufiChain.SufiAbp.AI;
@@ -9,6 +10,11 @@ namespace SufiChain.SufiAbp.AI;
 /// </summary>
 public class SufiAIWorkspaceDescriptor
 {
+    /// <summary>
+    /// Stable workspace identifier in the current tenant scope.
+    /// </summary>
+    public Guid Id { get; set; }
+
     /// <summary>
     /// Unique workspace name used to address the workspace in AI requests.
     /// </summary>
