@@ -25,7 +25,7 @@ public partial class WorkspaceEditModal : AIComponentBase
     private WorkspaceDto? _workspace;
     private UpdateWorkspaceDto _model = new();
     private string _temperatureText = "0.7";
-    private string _maxTokensText = "2000";
+    private string _maxContextTokensText = "200000";
     private string _inputCostPer1MTokensText = string.Empty;
     private string _outputCostPer1MTokensText = string.Empty;
     private List<OpenAIModelDto> _availableModels = new();
@@ -60,14 +60,14 @@ public partial class WorkspaceEditModal : AIComponentBase
                 ApiBaseUrl = _workspace.ApiBaseUrl,
                 SystemPrompt = _workspace.SystemPrompt,
                 Temperature = _workspace.Temperature,
-                MaxTokens = _workspace.MaxTokens,
+                MaxContextTokens = _workspace.MaxContextTokens,
                 IsActive = _workspace.IsActive,
                 OpenAIApiMode = _workspace.OpenAIApiMode,
                 InputCostPer1MTokens = _workspace.InputCostPer1MTokens,
                 OutputCostPer1MTokens = _workspace.OutputCostPer1MTokens
             };
             _temperatureText = _workspace.Temperature.ToString("0.##", CultureInfo.InvariantCulture);
-            _maxTokensText = _workspace.MaxTokens.ToString(CultureInfo.InvariantCulture);
+            _maxContextTokensText = _workspace.MaxContextTokens.ToString(CultureInfo.InvariantCulture);
             _inputCostPer1MTokensText = _workspace.InputCostPer1MTokens?.ToString(CultureInfo.InvariantCulture) ?? string.Empty;
             _outputCostPer1MTokensText = _workspace.OutputCostPer1MTokens?.ToString(CultureInfo.InvariantCulture) ?? string.Empty;
             _availableModels = new List<OpenAIModelDto>
@@ -195,14 +195,14 @@ public partial class WorkspaceEditModal : AIComponentBase
             return false;
         }
 
-        if (!int.TryParse(_maxTokensText, out var tokens))
+        if (!int.TryParse(_maxContextTokensText, out var tokens))
         {
-            await Message.ErrorAsync(L["MaxTokensMustBeNumber"]);
+            await Message.ErrorAsync(L["MaxContextTokensMustBeNumber"]);
             return false;
         }
 
         _model.Temperature = temp;
-        _model.MaxTokens = tokens;
+        _model.MaxContextTokens = tokens;
         return true;
     }
 

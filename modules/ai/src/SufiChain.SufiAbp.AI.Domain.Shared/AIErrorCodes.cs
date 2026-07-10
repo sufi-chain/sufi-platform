@@ -23,4 +23,6 @@ public static class AIErrorCodes
     public const string MCPServerNotEnabled = "AI:MCPServerNotEnabled";
     public const string MCPToolParameterBindingFailed = "AI:MCPToolParameterBindingFailed";
     public const string MCPToolPermissionDenied = "AI:MCPToolPermissionDenied";
+
+    public const string ProviderRequestFailed = "AI:ProviderRequestFailed";
 }

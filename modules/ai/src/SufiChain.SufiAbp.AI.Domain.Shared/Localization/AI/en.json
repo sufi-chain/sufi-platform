@@ -3,6 +3,7 @@
   "texts": {
     "AI:ApiBaseUrlRequired": "API base URL is required for {Provider} provider in workspace '{WorkspaceName}'.",
     "AI:ApiKeyRequired": "API key is required for {Provider} provider in workspace '{WorkspaceName}'.",
+    "AI:ProviderRequestFailed": "The AI provider could not complete the request (HTTP {StatusCode}). Please try again in a moment.",
     "AI:UnsupportedProvider": "AI provider '{Provider}' is not supported.",
     "AI:WorkspaceNotActive": "Workspace '{WorkspaceName}' is not active.",
     "AI:WorkspaceNotFound": "Workspace '{WorkspaceName}' not found.",
@@ -91,7 +92,7 @@
     "LoadingUsageData": "Loading usage data...",
     "MCPServers": "MCP Servers",
     "MaxResults": "Max Results",
-    "MaxTokens": "Max Tokens",
+    "MaxContextTokens": "Max Context Tokens",
     "Menu:AI": "AI Management",
     "Menu:Analytics": "Analytics",
     "Menu:Configuration": "Configuration",
@@ -221,7 +222,7 @@
     "InputCostPer1MTokensMustBeNonNegative": "Input token cost must be a non-negative number",
     "OutputCostPer1MTokensMustBeNonNegative": "Output token cost must be a non-negative number",
     "TemperatureMustBeNumber": "Temperature must be a valid number",
-    "MaxTokensMustBeNumber": "Max tokens must be a valid number",
+    "MaxContextTokensMustBeNumber": "Max context tokens must be a valid number",
     "InvalidOpenAIApiMode": "Invalid OpenAI API mode",
     "UsageUnavailable": "Usage unavailable",
     "UsageUnavailableRequests": "Usage unavailable",
@@ -293,6 +294,8 @@
     "SelectAll": "Select all",
     "ClearAll": "Clear all",
     "MCPToolsUpdatedSuccessfully": "MCP tools updated successfully",
-    "Type": "Type"
+    "Type": "Type",
+    "MCPToolType:Internal": "Internal",
+    "MCPToolType:External": "External"
   }
 }

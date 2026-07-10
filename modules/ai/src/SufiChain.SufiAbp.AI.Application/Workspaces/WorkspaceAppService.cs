@@ -80,7 +80,7 @@ public class WorkspaceAppService : ApplicationService, IWorkspaceAppService
             input.ApiBaseUrl,
             input.SystemPrompt,
             input.Temperature,
-            input.MaxTokens,
+            input.MaxContextTokens,
             input.OpenAIApiMode,
             input.InputCostPer1MTokens,
             input.OutputCostPer1MTokens
@@ -122,7 +122,7 @@ public class WorkspaceAppService : ApplicationService, IWorkspaceAppService
             input.ApiBaseUrl,
             input.SystemPrompt,
             input.Temperature,
-            input.MaxTokens,
+            input.MaxContextTokens,
             input.OpenAIApiMode,
             input.InputCostPer1MTokens,
             input.OutputCostPer1MTokens

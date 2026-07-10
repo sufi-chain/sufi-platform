@@ -18,9 +18,16 @@ public class MCPKernelToolRegistrar : IMCPKernelToolRegistrar, ITransientDepende
         Kernel kernel,
         string workspaceName,
         WorkspaceContext context,
+        IReadOnlyList<string>? allowedToolNames = null,
         CancellationToken cancellationToken = default)
     {
         var tools = await _toolRegistry.GetToolsForWorkspaceAsync(workspaceName, cancellationToken);
+        if (allowedToolNames is { Count: > 0 })
+        {
+            var allowed = allowedToolNames.ToHashSet(StringComparer.OrdinalIgnoreCase);
+            tools = tools.Where(tool => allowed.Contains(tool.Name)).ToList();
+        }
+
         foreach (var tool in tools)
         {
             var pluginName = ToKernelPluginName(tool.Name);

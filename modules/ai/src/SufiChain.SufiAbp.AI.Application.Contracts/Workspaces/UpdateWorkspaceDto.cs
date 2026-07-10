@@ -27,8 +27,8 @@ public class UpdateWorkspaceDto
     [Range(0.0f, 2.0f)]
     public float Temperature { get; set; } = 0.7f;
     
-    [Range(1, 100000)]
-    public int MaxTokens { get; set; } = 2000;
+    [Range(1, 4000000)]
+    public int MaxContextTokens { get; set; } = 200000;
 
     public OpenAIApiMode OpenAIApiMode { get; set; } = OpenAIApiMode.ChatCompletions;
 

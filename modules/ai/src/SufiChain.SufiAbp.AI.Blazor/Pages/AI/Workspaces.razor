@@ -1,3 +1,4 @@
+@namespace SufiChain.SufiAbp.AI.Blazor.Pages.AI
 @page "/panel/admin/ai/workspaces"
 @attribute [Authorize(Policy = AIPermissions.Workspaces.Default)]
 @inherits AIComponentBase
@@ -91,9 +92,9 @@
 						@cellContext.Item.Temperature.ToString("F2")
 					</CellTemplate>
 				</SbColumn>
-				<SbColumn TItem="WorkspaceDto" Title="@L["MaxTokens"]" Width="120px">
+				<SbColumn TItem="WorkspaceDto" Title="@L["MaxContextTokens"]" Width="120px">
 					<CellTemplate Context="cellContext">
-						@cellContext.Item.MaxTokens.ToString("N0")
+						@cellContext.Item.MaxContextTokens.ToString("N0")
 					</CellTemplate>
 				</SbColumn>
 				<SbColumn TItem="WorkspaceDto" Title="@L["CreationTime"]" Width="160px">

@@ -8,5 +8,6 @@ public interface IMCPKernelToolRegistrar
         Kernel kernel,
         string workspaceName,
         WorkspaceContext context,
+        IReadOnlyList<string>? allowedToolNames = null,
         CancellationToken cancellationToken = default);
 }

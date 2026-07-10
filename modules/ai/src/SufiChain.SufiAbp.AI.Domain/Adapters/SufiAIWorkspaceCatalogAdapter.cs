@@ -50,6 +50,19 @@ public class SufiAIWorkspaceCatalogAdapter :
         return workspace == null ? null : MapWorkspace(workspace);
     }
 
+    public virtual async Task<SufiAIWorkspaceDescriptor?> FindByIdAsync(
+        Guid id,
+        CancellationToken cancellationToken = default)
+    {
+        if (id == Guid.Empty)
+        {
+            return null;
+        }
+
+        var workspace = await WorkspaceRepository.FindAsync(id, cancellationToken: cancellationToken);
+        return workspace == null ? null : MapWorkspace(workspace);
+    }
+
     public virtual async Task<SufiAIWorkspaceDescriptor?> ResolveAsync(
         string? preferredWorkspaceName = null,
         CancellationToken cancellationToken = default)
@@ -70,6 +83,7 @@ public class SufiAIWorkspaceCatalogAdapter :
     {
         return new SufiAIWorkspaceDescriptor
         {
+            Id = workspace.Id,
             Name = workspace.Name,
             DisplayName = workspace.Name,
             Model = workspace.Model,

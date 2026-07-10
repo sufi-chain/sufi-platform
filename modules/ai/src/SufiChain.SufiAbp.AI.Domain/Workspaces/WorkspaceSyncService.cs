@@ -52,6 +52,7 @@ public class WorkspaceSyncService : ITransientDependency
 
         if (_chatClientCache.TryGetValue(workspaceName, out var cachedClient))
         {
+            _logger.LogDebug("Using cached ChatClient for workspace {WorkspaceName}", workspaceName);
             return cachedClient;
         }
 
@@ -78,6 +79,7 @@ public class WorkspaceSyncService : ITransientDependency
 
         if (_kernelCache.TryGetValue(workspaceName, out var cachedKernel))
         {
+            _logger.LogDebug("Using cached Kernel for workspace {WorkspaceName}", workspaceName);
             return cachedKernel;
         }
 
@@ -106,6 +108,7 @@ public class WorkspaceSyncService : ITransientDependency
 
         if (_embeddingGeneratorCache.TryGetValue(workspaceName, out var cachedGenerator))
         {
+            _logger.LogDebug("Using cached EmbeddingGenerator for workspace {WorkspaceName}", workspaceName);
             return cachedGenerator;
         }
 
@@ -137,15 +140,29 @@ public class WorkspaceSyncService : ITransientDependency
 
         if (workspace == null)
         {
+            _logger.LogDebug("WorkspaceSyncService could not find workspace {WorkspaceName}", workspaceName);
             throw new Volo.Abp.BusinessException(AIErrorCodes.WorkspaceNotFound)
                 .WithData("WorkspaceName", workspaceName);
         }
 
         if (!workspace.IsActive)
         {
+            _logger.LogDebug(
+                "WorkspaceSyncService found inactive workspace {WorkspaceName} with id {WorkspaceId}",
+                workspaceName,
+                workspace.Id);
             throw new Volo.Abp.BusinessException(AIErrorCodes.WorkspaceNotActive)
                 .WithData("WorkspaceName", workspaceName);
         }
+
+        _logger.LogDebug(
+            "WorkspaceSyncService resolved workspace {WorkspaceName}. WorkspaceId={WorkspaceId}, Provider={Provider}, Model={Model}, ApiBaseUrlConfigured={ApiBaseUrlConfigured}, ApiKeyConfigured={ApiKeyConfigured}",
+            workspaceName,
+            workspace.Id,
+            workspace.Provider,
+            workspace.Model,
+            !string.IsNullOrWhiteSpace(workspace.ApiBaseUrl),
+            !string.IsNullOrWhiteSpace(workspace.ApiKey));
 
         return workspace;
     }

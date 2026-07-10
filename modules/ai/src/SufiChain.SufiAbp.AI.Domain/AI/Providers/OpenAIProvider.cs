@@ -190,7 +190,7 @@ public class OpenAIProvider : IAIProvider, ITransientDependency
                     }
                 }
             },
-            max_tokens = request.MaxTokens ?? (workspace.MaxTokens > 0 ? workspace.MaxTokens : 300)
+            max_tokens = request.MaxTokens ?? 300
         };
 
         var response = await httpClient.PostAsync($"{baseUrl}/chat/completions", CreateJsonContent(requestBody), cancellationToken);
@@ -266,7 +266,7 @@ public class OpenAIProvider : IAIProvider, ITransientDependency
             model = configuration.ModelId,
             messages = BuildChatCompletionsMessages(request.Messages, request.SystemPrompt ?? workspace.SystemPrompt),
             temperature = request.Temperature ?? workspace.Temperature,
-            max_tokens = request.MaxTokens ?? workspace.MaxTokens,
+            max_tokens = request.MaxTokens,
             stream = false
         };
 
@@ -305,7 +305,7 @@ public class OpenAIProvider : IAIProvider, ITransientDependency
             model = configuration.ModelId,
             messages = BuildChatCompletionsMessages(request.Messages, request.SystemPrompt ?? workspace.SystemPrompt),
             temperature = request.Temperature ?? workspace.Temperature,
-            max_tokens = request.MaxTokens ?? workspace.MaxTokens,
+            max_tokens = request.MaxTokens,
             stream = true,
             stream_options = new { include_usage = true }
         };
@@ -515,7 +515,7 @@ public class OpenAIProvider : IAIProvider, ITransientDependency
             instructions = request.SystemPrompt ?? workspace.SystemPrompt,
             input = BuildResponsesInput(request.Messages),
             temperature = request.Temperature ?? workspace.Temperature,
-            max_output_tokens = request.MaxTokens ?? workspace.MaxTokens,
+            max_output_tokens = request.MaxTokens,
             stream
         };
     }
@@ -656,23 +656,27 @@ public class OpenAIProvider : IAIProvider, ITransientDependency
         }
 
         var responseBody = await response.Content.ReadAsStringAsync(cancellationToken);
-        var error = ParseProviderError(responseBody);
+        var error = ParseProviderError(responseBody, response);
         var requestId = ReadRequestId(response, error);
         var safeOperation = SanitizeOperation(operation);
-        var message = BuildProviderErrorMessage(response, safeOperation, modelId, error, requestId);
+        var statusCode = (int)response.StatusCode;
 
         _logger.LogWarning(
             "OpenAI-compatible provider request failed. Operation: {Operation}, Model: {ModelId}, Status: {StatusCode}, ErrorType: {ErrorType}, ErrorCode: {ErrorCode}, Param: {Param}, RequestId: {RequestId}, Body: {Body}",
             safeOperation,
             modelId,
-            (int)response.StatusCode,
+            statusCode,
             error.Type,
             error.Code,
             error.Param,
             requestId,
             TrimForLog(responseBody));
 
-        throw new Volo.Abp.UserFriendlyException(message);
+        throw new BusinessException(AIErrorCodes.ProviderRequestFailed)
+            .WithData("StatusCode", statusCode)
+            .WithData("Operation", safeOperation)
+            .WithData("ModelId", modelId)
+            .WithData("RequestId", requestId ?? string.Empty);
     }
 
     private static string SanitizeOperation(string operation)
@@ -710,11 +714,26 @@ public class OpenAIProvider : IAIProvider, ITransientDependency
         return "provider endpoint";
     }
 
-    private static ProviderError ParseProviderError(string? responseBody)
+    private static ProviderError ParseProviderError(string? responseBody, HttpResponseMessage response)
     {
         if (string.IsNullOrWhiteSpace(responseBody))
         {
-            return ProviderError.Empty;
+            return new ProviderError(
+                $"{(int)response.StatusCode} {response.ReasonPhrase}",
+                null,
+                null,
+                null,
+                null);
+        }
+
+        if (LooksLikeHtmlErrorPage(responseBody))
+        {
+            return new ProviderError(
+                ExtractHtmlErrorSummary(responseBody, response),
+                null,
+                null,
+                null,
+                null);
         }
 
         try
@@ -723,14 +742,15 @@ public class OpenAIProvider : IAIProvider, ITransientDependency
             var root = document.RootElement;
             if (root.ValueKind != JsonValueKind.Object)
             {
-                return new ProviderError(root.ToString(), null, null, null, null);
+                return new ProviderError(NormalizeProviderErrorText(root.ToString()), null, null, null, null);
             }
 
             var errorElement = root.TryGetProperty("error", out var error) ? error : root;
             if (errorElement.ValueKind != JsonValueKind.Object)
             {
                 return new ProviderError(
-                    errorElement.ValueKind == JsonValueKind.String ? errorElement.GetString() : errorElement.ToString(),
+                    NormalizeProviderErrorText(
+                        errorElement.ValueKind == JsonValueKind.String ? errorElement.GetString() : errorElement.ToString()),
                     null,
                     null,
                     null,
@@ -738,7 +758,7 @@ public class OpenAIProvider : IAIProvider, ITransientDependency
             }
 
             return new ProviderError(
-                TryGetString(errorElement, "message") ?? TryGetString(root, "message"),
+                NormalizeProviderErrorText(TryGetString(errorElement, "message") ?? TryGetString(root, "message")),
                 TryGetString(errorElement, "type"),
                 TryGetString(errorElement, "param"),
                 TryGetString(errorElement, "code"),
@@ -746,59 +766,53 @@ public class OpenAIProvider : IAIProvider, ITransientDependency
         }
         catch (JsonException)
         {
-            return new ProviderError(responseBody, null, null, null, null);
+            return new ProviderError(NormalizeProviderErrorText(responseBody), null, null, null, null);
         }
     }
 
-    private static string BuildProviderErrorMessage(
-        HttpResponseMessage response,
-        string operation,
-        string modelId,
-        ProviderError error,
-        string? requestId)
+    private static bool LooksLikeHtmlErrorPage(string responseBody)
     {
-        var message = StripProviderPrefix(error.Message);
-        if (string.IsNullOrWhiteSpace(message))
-        {
-            message = $"{(int)response.StatusCode} {response.ReasonPhrase}";
-        }
-
-        var details = new List<string>
-        {
-            $"OpenAI provider request failed while calling {operation}.",
-            $"Model: {modelId}.",
-            $"Reason: {message}"
-        };
-
-        if (!string.IsNullOrWhiteSpace(error.Param))
-        {
-            details.Add($"Parameter: {error.Param}.");
-        }
-
-        if (!string.IsNullOrWhiteSpace(error.Code))
-        {
-            details.Add($"Code: {error.Code}.");
-        }
-
-        if (!string.IsNullOrWhiteSpace(requestId))
-        {
-            details.Add($"Request ID: {requestId}.");
-        }
-
-        return string.Join(" ", details);
+        var trimmed = responseBody.TrimStart();
+        return trimmed.StartsWith("<!", StringComparison.OrdinalIgnoreCase)
+               || trimmed.StartsWith("<html", StringComparison.OrdinalIgnoreCase)
+               || trimmed.Contains("error-section__status", StringComparison.OrdinalIgnoreCase);
     }
 
-    private static string? StripProviderPrefix(string? message)
+    private static string ExtractHtmlErrorSummary(string responseBody, HttpResponseMessage response)
     {
-        const string providerPrefix = "Provider API error:";
+        var statusMatch = System.Text.RegularExpressions.Regex.Match(
+            responseBody,
+            @"error-section__status[^>]*>([^<]+)",
+            System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+
+        var reasonMatch = System.Text.RegularExpressions.Regex.Match(
+            responseBody,
+            @"error-section__reason[^>]*>([^<]+)",
+            System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+
+        if (statusMatch.Success || reasonMatch.Success)
+        {
+            var status = statusMatch.Success ? statusMatch.Groups[1].Value.Trim() : $"{(int)response.StatusCode}";
+            var reason = reasonMatch.Success ? reasonMatch.Groups[1].Value.Trim() : response.ReasonPhrase ?? "Error";
+            return $"{status} {reason}".Trim();
+        }
+
+        return $"{(int)response.StatusCode} {response.ReasonPhrase}";
+    }
+
+    private static string? NormalizeProviderErrorText(string? message)
+    {
         if (string.IsNullOrWhiteSpace(message))
         {
             return message;
         }
 
-        return message.StartsWith(providerPrefix, StringComparison.OrdinalIgnoreCase)
-            ? message[providerPrefix.Length..].Trim()
-            : message.Trim();
+        if (LooksLikeHtmlErrorPage(message))
+        {
+            return "Gateway error";
+        }
+
+        return message.Length <= 500 ? message : message[..500] + "...";
     }
 
     private static string? ReadRequestId(HttpResponseMessage response, ProviderError error)

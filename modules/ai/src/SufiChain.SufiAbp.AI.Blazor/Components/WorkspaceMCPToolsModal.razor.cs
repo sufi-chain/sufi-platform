@@ -36,7 +36,8 @@ public partial class WorkspaceMCPToolsModal
             return _availableTools
                 .Where(tool =>
                     tool.Name.Contains(_filter, StringComparison.OrdinalIgnoreCase) ||
-                    tool.Description.Contains(_filter, StringComparison.OrdinalIgnoreCase) ||
+                    ResolveMcpToolDisplayName(tool.Name).Contains(_filter, StringComparison.OrdinalIgnoreCase) ||
+                    ResolveMcpToolDescription(tool.Name, tool.Description).Contains(_filter, StringComparison.OrdinalIgnoreCase) ||
                     tool.Source.Contains(_filter, StringComparison.OrdinalIgnoreCase))
                 .ToList();
         }

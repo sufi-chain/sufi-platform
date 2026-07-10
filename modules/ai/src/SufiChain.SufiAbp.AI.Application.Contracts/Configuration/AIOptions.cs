@@ -17,6 +17,17 @@ public class AIOptions
     public bool SeedFileStructure { get; set; } = true;
 
     /// <summary>
+    /// Whether to seed the default host AI workspace used by platform copilots.
+    /// Default is true.
+    /// </summary>
+    public bool SeedDefaultWorkspace { get; set; } = true;
+
+    /// <summary>
+    /// Default workspace seed payload. Bind from configuration section <c>AI:DefaultWorkspace</c>.
+    /// </summary>
+    public DefaultWorkspaceSeedOptions DefaultWorkspace { get; set; } = new();
+
+    /// <summary>
     /// Adds the default "AI" file structure configuration.
     /// This structure supports all AI-related file types (images, audio, video, documents)
     /// with permissive settings suitable for AI workspaces.
@@ -29,14 +40,16 @@ public class AIOptions
         }
 
         fileManagerOptions.DefineStructure(AIFileStructureKeys.AI)
-            .WithDisplayName("Structure:AI:DisplayName")
-            .WithDescription("Structure:AI:Description")
+            .WithDisplayNameKey("Structure:AI:DisplayName")
+            .WithDescriptionKey("Structure:AI:Description")
+            .WithLocalizationResource("AI")
             .ForFileTypes(FileType.Image | FileType.Video | FileType.Document | FileType.Audio)
             .WithMaxSize(100.MB())
             .MultipleFiles()
             .GenerateThumbnail(true, 200, 200)
             .EnableWebPConversion(true, 80)
             .ResizeLargeImages(true)
-            .IsPublic(false);
+            .IsPublic(false)
+            .IsStatic(true);
     }
 }

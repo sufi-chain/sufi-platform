@@ -38,7 +38,7 @@ public class AIMenuContributor : IMenuContributor
         )
         {
             IsCollapsed = false
-        }.RequirePermissions(AIPermissions.Workspaces.Default);
+        };
 
         context.Menu.AddItem(AIMenu);
 

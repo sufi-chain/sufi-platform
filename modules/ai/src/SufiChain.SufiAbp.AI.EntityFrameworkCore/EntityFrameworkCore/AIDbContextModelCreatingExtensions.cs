@@ -28,15 +28,16 @@ public static class AIDbContextModelCreatingExtensions
             b.Property(x => x.ApiBaseUrl).HasMaxLength(512);
             b.Property(x => x.SystemPrompt).HasMaxLength(4096);
             b.Property(x => x.Temperature).IsRequired();
-            b.Property(x => x.MaxTokens).IsRequired();
+            b.Property(x => x.MaxContextTokens).IsRequired();
             b.Property(x => x.OpenAIApiMode).IsRequired();
             b.Property(x => x.InputCostPer1MTokens).HasPrecision(18, 8);
             b.Property(x => x.OutputCostPer1MTokens).HasPrecision(18, 8);
             b.Property(x => x.IsActive).IsRequired();
             b.Property(x => x.EnabledMCPToolsJson).HasMaxLength(8192);
 
-            b.HasIndex(x => x.Name).IsUnique();
+            b.HasIndex(x => x.Name);
             b.HasIndex(x => x.TenantId);
+            b.HasIndex(x => new { x.TenantId, x.Name }).IsUnique();
             
             // Configure the collection navigation using the backing field
             b.HasMany(x => x.ModelConfigurations)

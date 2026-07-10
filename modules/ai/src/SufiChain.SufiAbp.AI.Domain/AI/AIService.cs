@@ -51,6 +51,13 @@ public class AIService : DomainService, IAIService, ITransientDependency
         ChatCompletionRequest request,
         CancellationToken cancellationToken = default)
     {
+        _logger.LogDebug(
+            "AI chat completion requested. WorkspaceName={WorkspaceName}, MessageCount={MessageCount}, HasSystemPrompt={HasSystemPrompt}, Stream={Stream}",
+            request.WorkspaceName,
+            request.Messages.Count,
+            !string.IsNullOrWhiteSpace(request.SystemPrompt),
+            request.Stream);
+
         var (workspace, configuration, provider) = await PrepareRequestAsync(
             request.WorkspaceName,
             AICapabilityType.ChatCompletion,
@@ -60,8 +67,26 @@ public class AIService : DomainService, IAIService, ITransientDependency
 
         try
         {
+            _logger.LogDebug(
+                "AI provider chat completion started. WorkspaceId={WorkspaceId}, WorkspaceName={WorkspaceName}, Provider={Provider}, Model={Model}, Capability={Capability}",
+                workspace.Id,
+                workspace.Name,
+                workspace.Provider,
+                configuration.ModelId,
+                AICapabilityType.ChatCompletion);
+
             var response = await provider.SendChatMessageAsync(workspace, configuration, request, cancellationToken);
             stopwatch.Stop();
+
+            _logger.LogDebug(
+                "AI provider chat completion completed. WorkspaceId={WorkspaceId}, WorkspaceName={WorkspaceName}, Provider={Provider}, Model={Model}, ContentLength={ContentLength}, TotalTokens={TotalTokens}, LatencyMs={LatencyMs}",
+                workspace.Id,
+                workspace.Name,
+                workspace.Provider,
+                response.ModelId,
+                response.Content?.Length ?? 0,
+                response.TotalTokens,
+                stopwatch.ElapsedMilliseconds);
 
             await LogUsageAsync(
                 workspace,
@@ -80,6 +105,15 @@ public class AIService : DomainService, IAIService, ITransientDependency
         catch (Exception ex)
         {
             stopwatch.Stop();
+
+            _logger.LogWarning(
+                ex,
+                "AI provider chat completion failed. WorkspaceId={WorkspaceId}, WorkspaceName={WorkspaceName}, Provider={Provider}, Model={Model}, LatencyMs={LatencyMs}",
+                workspace.Id,
+                workspace.Name,
+                workspace.Provider,
+                configuration.ModelId,
+                stopwatch.ElapsedMilliseconds);
 
             await LogUsageAsync(
                 workspace,
@@ -401,16 +435,29 @@ public class AIService : DomainService, IAIService, ITransientDependency
         CancellationToken cancellationToken)
     {
         await CheckFeatureAsync(capabilityType);
+        _logger.LogDebug(
+            "Preparing AI request. WorkspaceName={WorkspaceName}, Capability={Capability}",
+            workspaceName,
+            capabilityType);
 
         var workspace = await _workspaceRepository.FindByNameAsync(workspaceName, cancellationToken);
         if (workspace == null)
         {
+            _logger.LogDebug(
+                "AI workspace not found. WorkspaceName={WorkspaceName}, Capability={Capability}",
+                workspaceName,
+                capabilityType);
             throw new BusinessException("AI:WorkspaceNotFound")
                 .WithData("WorkspaceName", workspaceName);
         }
 
         if (!workspace.IsActive)
         {
+            _logger.LogDebug(
+                "AI workspace is inactive. WorkspaceId={WorkspaceId}, WorkspaceName={WorkspaceName}, Capability={Capability}",
+                workspace.Id,
+                workspace.Name,
+                capabilityType);
             throw new BusinessException("AI:WorkspaceNotActive")
                 .WithData("WorkspaceName", workspaceName);
         }
@@ -460,21 +507,57 @@ public class AIService : DomainService, IAIService, ITransientDependency
                 workspace.OpenAIApiMode,
                 workspace.InputCostPer1MTokens,
                 workspace.OutputCostPer1MTokens);
+
+            _logger.LogDebug(
+                "AI request using workspace fallback model configuration. WorkspaceId={WorkspaceId}, WorkspaceName={WorkspaceName}, Capability={Capability}, Model={Model}",
+                workspace.Id,
+                workspace.Name,
+                capabilityType,
+                configuration.ModelId);
+        }
+        else
+        {
+            _logger.LogDebug(
+                "AI request using primary model configuration. WorkspaceId={WorkspaceId}, WorkspaceName={WorkspaceName}, Capability={Capability}, Model={Model}, ConfigurationId={ConfigurationId}",
+                workspace.Id,
+                workspace.Name,
+                capabilityType,
+                configuration.ModelId,
+                configuration.Id);
         }
 
         var provider = _providers.FirstOrDefault(p => p.ProviderType == workspace.Provider);
         if (provider == null)
         {
+            _logger.LogDebug(
+                "AI provider not registered. WorkspaceId={WorkspaceId}, WorkspaceName={WorkspaceName}, Provider={Provider}",
+                workspace.Id,
+                workspace.Name,
+                workspace.Provider);
             throw new BusinessException("AI:ProviderNotSupported")
                 .WithData("Provider", workspace.Provider.ToString());
         }
 
         if (!provider.SupportsCapability(capabilityType))
         {
+            _logger.LogDebug(
+                "AI provider does not support capability. WorkspaceId={WorkspaceId}, WorkspaceName={WorkspaceName}, Provider={Provider}, Capability={Capability}",
+                workspace.Id,
+                workspace.Name,
+                workspace.Provider,
+                capabilityType);
             throw new BusinessException("AI:CapabilityNotSupported")
                 .WithData("Provider", workspace.Provider.ToString())
                 .WithData("CapabilityType", capabilityType.ToString());
         }
+
+        _logger.LogDebug(
+            "AI request prepared. WorkspaceId={WorkspaceId}, WorkspaceName={WorkspaceName}, Provider={Provider}, Capability={Capability}, Model={Model}",
+            workspace.Id,
+            workspace.Name,
+            workspace.Provider,
+            capabilityType,
+            configuration.ModelId);
 
         return (workspace, configuration, provider);
     }

@@ -10,6 +10,8 @@
   <ItemGroup>
     <ProjectReference Include="..\..\..\..\framework\SufiChain.SufiAbp.Ddd.Application\SufiChain.SufiAbp.Ddd.Application.csproj" />
     <ProjectReference Include="..\..\..\..\framework\SufiChain.SufiAbp.Mapperly\SufiChain.SufiAbp.Mapperly.csproj" />
+    <ProjectReference Include="..\..\..\file-manager\src\SufiChain.SufiAbp.FileManager.Application\SufiChain.SufiAbp.FileManager.Application.csproj" />
+    <ProjectReference Include="..\..\..\localization-management\src\SufiChain.SufiAbp.LocalizationManagement.Application.Contracts\SufiChain.SufiAbp.LocalizationManagement.Application.Contracts.csproj" />
   </ItemGroup>
 
   <ItemGroup>

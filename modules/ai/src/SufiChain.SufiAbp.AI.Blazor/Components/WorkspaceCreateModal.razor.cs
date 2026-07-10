@@ -22,7 +22,7 @@ public partial class WorkspaceCreateModal : AIComponentBase
 
     private CreateWorkspaceDto _model = new();
     private string _temperatureText = "0.7";
-    private string _maxTokensText = "2000";
+    private string _maxContextTokensText = "200000";
     private string _inputCostPer1MTokensText = string.Empty;
     private string _outputCostPer1MTokensText = string.Empty;
     private List<OpenAIModelDto> _availableModels = new();
@@ -45,11 +45,11 @@ public partial class WorkspaceCreateModal : AIComponentBase
         {
             Provider = AIProviderType.OpenAI,
             Temperature = 0.7f,
-            MaxTokens = 2000,
+            MaxContextTokens = 200000,
             OpenAIApiMode = OpenAIApiMode.ChatCompletions
         };
         _temperatureText = "0.7";
-        _maxTokensText = "2000";
+        _maxContextTokensText = "200000";
         _inputCostPer1MTokensText = string.Empty;
         _outputCostPer1MTokensText = string.Empty;
         _availableModels = new List<OpenAIModelDto>();
@@ -167,14 +167,14 @@ public partial class WorkspaceCreateModal : AIComponentBase
             return false;
         }
 
-        if (!int.TryParse(_maxTokensText, out var tokens))
+        if (!int.TryParse(_maxContextTokensText, out var tokens))
         {
-            await Message.ErrorAsync(L["MaxTokensMustBeNumber"]);
+            await Message.ErrorAsync(L["MaxContextTokensMustBeNumber"]);
             return false;
         }
 
         _model.Temperature = temp;
-        _model.MaxTokens = tokens;
+        _model.MaxContextTokens = tokens;
         return true;
     }
 

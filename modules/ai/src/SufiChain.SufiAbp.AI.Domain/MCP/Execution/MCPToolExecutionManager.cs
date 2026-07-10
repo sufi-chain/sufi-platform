@@ -100,7 +100,7 @@ public class MCPToolExecutionManager : IMCPToolExecutor, ITransientDependency
             // Get kernel for the workspace from sync service
             var kernel = await _syncService.GetOrCreateKernelAsync(context.WorkspaceName, cancellationToken);
             
-            await _toolRegistrar.RegisterToolsAsync(kernel, context.WorkspaceName, context, cancellationToken);
+            await _toolRegistrar.RegisterToolsAsync(kernel, context.WorkspaceName, context);
             
             // Execute the tool
             var result = await tool.ExecuteAsync(context, parameters, cancellationToken);

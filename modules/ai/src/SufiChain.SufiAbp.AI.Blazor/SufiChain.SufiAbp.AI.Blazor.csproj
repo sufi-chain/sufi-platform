@@ -17,6 +17,7 @@
   <ItemGroup>
     <!-- SufiAbp Framework (transitively provides SufiChain.SufiAbp.UI.Abstractions and SufiChain.SufiBlazor) -->
     <ProjectReference Include="..\..\..\..\framework\SufiChain.SufiAbp.UI.Blazor\SufiChain.SufiAbp.UI.Blazor.csproj" />
+    <ProjectReference Include="..\..\..\..\framework\SufiChain.SufiAbp.Data\SufiChain.SufiAbp.Data.csproj" />
     <!-- SufiAbp AI Domain.Shared for localization -->
     <ProjectReference Include="..\SufiChain.SufiAbp.AI.Domain.Shared\SufiChain.SufiAbp.AI.Domain.Shared.csproj" />
     <!-- SufiAbp AI Application Contracts -->

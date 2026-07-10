@@ -3,6 +3,7 @@
   "texts": {
     "AI:ApiBaseUrlRequired": "آدرس پایه API برای ارائه‌دهنده {Provider} در فضای کاری '{WorkspaceName}' الزامی است.",
     "AI:ApiKeyRequired": "کلید API برای ارائه‌دهنده {Provider} در فضای کاری '{WorkspaceName}' الزامی است.",
+    "AI:ProviderRequestFailed": "ارائه‌دهنده هوش مصنوعی نتوانست درخواست را تکمیل کند (HTTP {StatusCode}). لطفاً کمی بعد دوباره تلاش کنید.",
     "AI:UnsupportedProvider": "ارائه‌دهنده هوشواره '{Provider}' پشتیبانی نمی‌شود.",
     "AI:WorkspaceNotActive": "فضای کاری '{WorkspaceName}' فعال نیست.",
     "AI:WorkspaceNotFound": "فضای کاری '{WorkspaceName}' یافت نشد.",
@@ -91,7 +92,7 @@
     "LoadingUsageData": "در حال بارگذاری داده‌های استفاده...",
     "MCPServers": "سرورهای MCP",
     "MaxResults": "حداکثر نتایج",
-    "MaxTokens": "حداکثر توکن‌ها",
+    "MaxContextTokens": "حداکثر توکن‌ها",
     "Menu:AI": "مدیریت هوشواره",
     "Menu:Analytics": "تحلیل‌ها",
     "Menu:Configuration": "پیکربندی",
@@ -242,7 +243,7 @@
     "InputCostPer1MTokensMustBeNonNegative": "هزینه توکن ورودی باید عددی نامنفی باشد",
     "OutputCostPer1MTokensMustBeNonNegative": "هزینه توکن خروجی باید عددی نامنفی باشد",
     "TemperatureMustBeNumber": "دما باید یک عدد معتبر باشد",
-    "MaxTokensMustBeNumber": "حداکثر توکن‌ها باید یک عدد معتبر باشد",
+    "MaxContextTokensMustBeNumber": "حداکثر توکن‌ها باید یک عدد معتبر باشد",
     "Permission:AI": "مدیریت هوشواره",
     "Permission:Workspaces": "فضاهای کاری",
     "Permission:Create": "ایجاد",
@@ -279,6 +280,8 @@
     "SelectAll": "انتخاب همه",
     "ClearAll": "پاک کردن همه",
     "MCPToolsUpdatedSuccessfully": "ابزارهای MCP با موفقیت به‌روزرسانی شدند",
-    "Type": "نوع"
+    "Type": "نوع",
+    "MCPToolType:Internal": "داخلی",
+    "MCPToolType:External": "خارجی"
   }
 }

@@ -1,3 +1,4 @@
+@namespace SufiChain.SufiAbp.AI.Blazor.Components
 @inherits AIComponentBase
 
 <SbDialog Open="@Open" OpenChanged="@SetOpenAsync" Size="SbDialogSize.Lg" Title="@L["ConfigureMCPTools"]" AllowDropdownOverflow="true">
@@ -23,10 +24,31 @@
                                     ValueChanged="@((bool value) => ToggleToolAsync(cellContext.Item.Name, value))" />
                     </CellTemplate>
                 </SbColumn>
-                <SbColumn TItem="MCPToolDto" Field="Name" Title="@L["Name"]" Width="240px" />
-                <SbColumn TItem="MCPToolDto" Field="Description" Title="@L["Description"]" />
-                <SbColumn TItem="MCPToolDto" Field="Source" Title="@L["Source"]" Width="180px" />
-                <SbColumn TItem="MCPToolDto" Field="ToolType" Title="@L["Type"]" Width="120px" />
+                <SbColumn TItem="MCPToolDto" Title="@L["Name"]" Width="240px">
+                    <CellTemplate Context="cellContext">
+                        <SbStack Direction="SbStackDirection.Column" Gap="0">
+                            <SbText Variant="SbTextVariant.BodySmall" Weight="SbFontWeight.Medium">
+                                @ResolveMcpToolDisplayName(cellContext.Item.Name)
+                            </SbText>
+                            <SbText Variant="SbTextVariant.Caption" Color="SbColor.Muted">@cellContext.Item.Name</SbText>
+                        </SbStack>
+                    </CellTemplate>
+                </SbColumn>
+                <SbColumn TItem="MCPToolDto" Title="@L["Description"]">
+                    <CellTemplate Context="cellContext">
+                        @ResolveMcpToolDescription(cellContext.Item.Name, cellContext.Item.Description)
+                    </CellTemplate>
+                </SbColumn>
+                <SbColumn TItem="MCPToolDto" Title="@L["Source"]" Width="180px">
+                    <CellTemplate Context="cellContext">
+                        @ResolveMcpToolSource(cellContext.Item.Name, cellContext.Item.Source)
+                    </CellTemplate>
+                </SbColumn>
+                <SbColumn TItem="MCPToolDto" Title="@L["Type"]" Width="120px">
+                    <CellTemplate Context="cellContext">
+                        @ResolveMcpToolType(cellContext.Item.ToolType)
+                    </CellTemplate>
+                </SbColumn>
             </SbDataGrid>
         </SbStack>
     </ChildContent>

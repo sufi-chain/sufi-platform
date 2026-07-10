@@ -24,7 +24,7 @@ public class Workspace : FullAuditedAggregateRoot<Guid>, IMultiTenant
     public string? ApiBaseUrl { get; protected set; }
     public string? SystemPrompt { get; protected set; }
     public float Temperature { get; protected set; }
-    public int MaxTokens { get; protected set; }
+    public int MaxContextTokens { get; protected set; }
     public OpenAIApiMode OpenAIApiMode { get; protected set; }
     public decimal? InputCostPer1MTokens { get; protected set; }
     public decimal? OutputCostPer1MTokens { get; protected set; }
@@ -62,7 +62,7 @@ public class Workspace : FullAuditedAggregateRoot<Guid>, IMultiTenant
         TenantId = tenantId;
         IsActive = true;
         Temperature = 0.7f;
-        MaxTokens = 2000;
+        MaxContextTokens = 200000;
         OpenAIApiMode = OpenAIApiMode.ChatCompletions;
     }
     
@@ -77,7 +77,7 @@ public class Workspace : FullAuditedAggregateRoot<Guid>, IMultiTenant
         string? apiBaseUrl,
         string? systemPrompt,
         float temperature,
-        int maxTokens,
+        int maxContextTokens,
         OpenAIApiMode openAIApiMode = OpenAIApiMode.ChatCompletions,
         decimal? inputCostPer1MTokens = null,
         decimal? outputCostPer1MTokens = null
@@ -91,7 +91,7 @@ public class Workspace : FullAuditedAggregateRoot<Guid>, IMultiTenant
         ApiBaseUrl = apiBaseUrl;
         SystemPrompt = systemPrompt;
         Temperature = temperature;
-        MaxTokens = maxTokens;
+        MaxContextTokens = maxContextTokens;
         OpenAIApiMode = openAIApiMode;
         InputCostPer1MTokens = inputCostPer1MTokens;
         OutputCostPer1MTokens = outputCostPer1MTokens;

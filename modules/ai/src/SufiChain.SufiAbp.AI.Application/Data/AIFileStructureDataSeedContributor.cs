@@ -5,6 +5,7 @@ using SufiChain.SufiAbp.AI.Configuration;
 using SufiChain.SufiAbp.FileManager.Configuration;
 using SufiChain.SufiAbp.FileManager.FileFolders;
 using SufiChain.SufiAbp.FileManager.FileStructures;
+using SufiChain.SufiAbp.LocalizationManagement;
 using Volo.Abp.Data;
 using Volo.Abp.DependencyInjection;
 using Volo.Abp.Guids;
@@ -24,6 +25,7 @@ public class AIFileStructureDataSeedContributor : IDataSeedContributor, ITransie
     private readonly ICurrentTenant _currentTenant;
     private readonly AIOptions _aiOptions;
     private readonly FileManagerOptions _fileManagerOptions;
+    private readonly ILocalizationTextSeeder _localizationTextSeeder;
     private readonly ILogger<AIFileStructureDataSeedContributor> _logger;
 
     public AIFileStructureDataSeedContributor(
@@ -33,6 +35,7 @@ public class AIFileStructureDataSeedContributor : IDataSeedContributor, ITransie
         ICurrentTenant currentTenant,
         IOptions<AIOptions> aiOptions,
         IOptions<FileManagerOptions> fileManagerOptions,
+        ILocalizationTextSeeder localizationTextSeeder,
         ILogger<AIFileStructureDataSeedContributor> logger)
     {
         _fileStructureRepository = fileStructureRepository;
@@ -41,6 +44,7 @@ public class AIFileStructureDataSeedContributor : IDataSeedContributor, ITransie
         _currentTenant = currentTenant;
         _aiOptions = aiOptions.Value;
         _fileManagerOptions = fileManagerOptions.Value;
+        _localizationTextSeeder = localizationTextSeeder;
         _logger = logger;
     }
 
@@ -60,10 +64,15 @@ public class AIFileStructureDataSeedContributor : IDataSeedContributor, ITransie
                 "AI file structure seeding started. TenantId={TenantId}",
                 context?.TenantId);
 
-            // Add AI structure to FileManagerOptions
             _aiOptions.AddDefaultFileStructure(_fileManagerOptions);
 
-            // Find the AI structure config
+            await _localizationTextSeeder.UpsertStructureTextsAsync(
+                AIFileStructureSeedTexts.ResourceName,
+                AIFileStructureSeedTexts.StructureKey,
+                AIFileStructureSeedTexts.DisplayName,
+                AIFileStructureSeedTexts.Description,
+                context?.TenantId);
+
             var config = _fileManagerOptions.Structures
                 .Find(s => s.Key == AIFileStructureKeys.AI);
 
@@ -124,7 +133,7 @@ public class AIFileStructureDataSeedContributor : IDataSeedContributor, ITransie
 
         await _fileStructureRepository.InsertAsync(entity, autoSave: true);
         await EnsureStructureRootFolderAsync(entity);
-        
+
         _logger.LogInformation(
             "Seeded file structure '{StructureKey}' with ID {Id}.",
             config.Key,

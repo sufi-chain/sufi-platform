@@ -1,3 +1,4 @@
+@namespace SufiChain.SufiAbp.AI.Blazor.Components
 @inherits AIComponentBase
 
 <SbDialog Open="@Open" OpenChanged="@SetOpenAsync" Size="SbDialogSize.Lg" Title="@L["EditWorkspace"]" AllowDropdownOverflow="true">
@@ -94,8 +95,8 @@
 							<SbTextField @bind-Value="_temperatureText"
 										 Label="@L["Temperature"]" />
 
-							<SbTextField @bind-Value="_maxTokensText"
-										 Label="@L["MaxTokens"]" />
+							<SbTextField @bind-Value="_maxContextTokensText"
+										 Label="@L["MaxContextTokens"]" />
 						</SbGrid>
 
 						<SbGrid Columns="1" ColumnsMd="2" Gap="4">
