@@ -1,3 +1,4 @@
+@namespace SufiChain.SufiAbp.MenuManagement.Blazor.Components
 @inherits MenuManagementComponentBase
 
 <div class="menu-item-node">
@@ -6,7 +7,7 @@
         {
             <SbIcon Name="@Item.Icon" />
         }
-        <SbText Weight="SbFontWeight.Medium">@Item.DisplayName</SbText>
+        <SbText Weight="SbFontWeight.Medium">@ResolveMenuItemDisplayName(Item, ContextType)</SbText>
         <SbText Color="SbColor.Muted" Variant="SbTextVariant.BodySmall">@Item.Name</SbText>
         <SbText Color="SbColor.Muted" Variant="SbTextVariant.Caption">#@Item.DisplayOrder</SbText>
 
@@ -52,6 +53,7 @@
             @foreach (var child in Item.Children)
             {
                 <MenuItemNode Item="child"
+                              ContextType="ContextType"
                               OnAddChild="OnAddChild"
                               OnEdit="OnEdit"
                               OnMove="OnMove"

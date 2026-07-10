@@ -5,8 +5,10 @@
     <PackageReference Include="Microsoft.AspNetCore.Components.Authorization" Version="$(AspNetCoreVersion)" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="../../../../framework/SufiChain.SufiAbp.Data/SufiChain.SufiAbp.Data.csproj" />
     <ProjectReference Include="../../../../framework/SufiChain.SufiAbp.UI.Blazor/SufiChain.SufiAbp.UI.Blazor.csproj" />
     <ProjectReference Include="../SufiChain.SufiAbp.MenuManagement.Domain.Shared/SufiChain.SufiAbp.MenuManagement.Domain.Shared.csproj" />
     <ProjectReference Include="../SufiChain.SufiAbp.MenuManagement.Application.Contracts/SufiChain.SufiAbp.MenuManagement.Application.Contracts.csproj" />
+    <ProjectReference Include="../../../localization-management/src/SufiChain.SufiAbp.LocalizationManagement.Blazor.Public/SufiChain.SufiAbp.LocalizationManagement.Blazor.Public.csproj" />
   </ItemGroup>
 </Project>

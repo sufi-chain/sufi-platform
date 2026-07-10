@@ -8,6 +8,9 @@
     "Permission:MenuManagement.Menus.Delete": "Eliminar menú",
     "Permission:MenuManagement.Menus.ManageItems": "Administrar elementos del menú",
     "Menu:MenuManagement": "Gestión de menús",
-    "Menu:MenuManagement.Menus": "Menús"
+    "Menu:MenuManagement.Menus": "Menús",
+    "ContextType:Public": "Público",
+    "ContextType:KnowledgeBase.Project": "Proyecto de base de conocimiento",
+    "DisplayNameLocalizationMode": "Modo del nombre para mostrar"
   }
 }

@@ -11,28 +11,63 @@ public class PublicMenuAppService : ApplicationService, IPublicMenuAppService
 {
     private readonly IMenuRepository _menuRepository;
     private readonly IMenuItemRepository _menuItemRepository;
+    private readonly MenuBusinessLocalizationService _businessLocalization;
 
-    public PublicMenuAppService(IMenuRepository menuRepository, IMenuItemRepository menuItemRepository)
+    public PublicMenuAppService(
+        IMenuRepository menuRepository,
+        IMenuItemRepository menuItemRepository,
+        MenuBusinessLocalizationService businessLocalization)
     {
         _menuRepository = menuRepository;
         _menuItemRepository = menuItemRepository;
+        _businessLocalization = businessLocalization;
     }
 
     public virtual async Task<List<MenuItemTreeDto>> GetTreeAsync(string contextType, Guid? contextId, string menuName)
     {
         var menu = await _menuRepository.FindByNameAsync(contextType, contextId, menuName, CurrentTenant.Id, includeDetails: false);
-        if (menu == null || !menu.IsActive) return [];
-        var items = (await _menuItemRepository.GetTreeItemsAsync(menu.Id, CurrentTenant.Id)).Where(x => x.IsActive && x.IsVisible).ToList();
-        return BuildTree(items, null);
+        if (menu == null || !menu.IsActive)
+        {
+            return [];
+        }
+
+        var items = (await _menuItemRepository.GetTreeItemsAsync(menu.Id, CurrentTenant.Id))
+            .Where(x => x.IsActive && x.IsVisible)
+            .ToList();
+
+        return BuildTree(items, null, menu.ContextType);
     }
 
     public virtual async Task<MenuItemDto?> FindItemBySlugAsync(string contextType, Guid? contextId, string menuName, string slug)
     {
         var menu = await _menuRepository.FindByNameAsync(contextType, contextId, menuName, CurrentTenant.Id, includeDetails: false);
-        if (menu == null || !menu.IsActive) return null;
+        if (menu == null || !menu.IsActive)
+        {
+            return null;
+        }
+
         var item = await _menuItemRepository.FindBySlugAsync(menu.Id, slug, CurrentTenant.Id, includeDetails: false);
-        return item is { IsActive: true, IsVisible: true } ? item.ToDto() : null;
+        if (item is not { IsActive: true, IsVisible: true })
+        {
+            return null;
+        }
+
+        var dto = item.ToDto();
+        dto.DisplayName = _businessLocalization.ResolveMenuItemDisplayName(dto.DisplayName, menu.ContextType);
+        return dto;
     }
 
-    protected virtual List<MenuItemTreeDto> BuildTree(List<MenuItem> items, Guid? parentId) => items.Where(x => x.ParentId == parentId).OrderBy(x => x.DisplayOrder).ThenBy(x => x.DisplayName).Select(x => { var dto = x.ToTreeDto(); dto.Children = BuildTree(items, x.Id); return dto; }).ToList();
+    protected virtual List<MenuItemTreeDto> BuildTree(List<MenuItem> items, Guid? parentId, string contextType) =>
+        items
+            .Where(x => x.ParentId == parentId)
+            .OrderBy(x => x.DisplayOrder)
+            .ThenBy(x => x.DisplayName)
+            .Select(x =>
+            {
+                var dto = x.ToTreeDto();
+                dto.DisplayName = _businessLocalization.ResolveMenuItemDisplayName(dto.DisplayName, contextType);
+                dto.Children = BuildTree(items, x.Id, contextType);
+                return dto;
+            })
+            .ToList();
 }

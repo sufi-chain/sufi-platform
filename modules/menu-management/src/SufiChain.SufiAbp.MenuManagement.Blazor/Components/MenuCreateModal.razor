@@ -1,3 +1,4 @@
+@namespace SufiChain.SufiAbp.MenuManagement.Blazor.Components
 @inherits MenuManagementComponentBase
 
 <SbDialog Open="@Open" OpenChanged="@SetOpenAsync" Size="SbDialogSize.Md" Title="@L["CreateMenu"]">
@@ -5,18 +6,35 @@
         <SbForm Model="_model" OnValidSubmit="OnValidSubmitAsync">
             <ChildContent>
                 <SbStack Gap="3">
-                    <SbTextField @bind-Value="_model.Name"
+                    <SbTextField TValue="string"
+                                 Value="_model.Name"
+                                 ValueChanged="OnNameChangedAsync"
+                                 ValueExpression="@(() => _model.Name)"
                                  Label="@L["MenuName"]"
                                  Required="true" />
 
-                    <SbTextField @bind-Value="_model.DisplayName"
-                                 Label="@L["DisplayName"]"
-                                 Required="true" />
-
-                    <SbTextField @bind-Value="_model.ContextType"
+                    <SbTextField TValue="string"
+                                 Value="_model.ContextType"
+                                 ValueChanged="OnContextTypeChangedAsync"
+                                 ValueExpression="@(() => _model.ContextType)"
                                  Label="@L["ContextType"]"
                                  Required="true"
                                  Placeholder="e.g. Public" />
+
+                    <SbStack Gap="1">
+                        <SbText Weight="SbFontWeight.Medium">@L["DisplayNameLocalizationMode"]</SbText>
+                        <BusinessLocalizationModeSwitch Mode="_displayNameMode"
+                                                        ModeChanged="OnDisplayNameModeChangedAsync" />
+                    </SbStack>
+
+                    <BusinessTextEditor @ref="_displayNameEditor"
+                                        Label="@L["DisplayName"]"
+                                        ResourceName="_localizationResourceName"
+                                        LocalizationKey="_localizationKey"
+                                        Mode="_displayNameMode"
+                                        LiteralValue="_literalDisplayName"
+                                        LiteralValueChanged="OnLiteralDisplayNameChangedAsync"
+                                        Required="true" />
 
                     <SbTextField @bind-Value="_contextIdText"
                                  Label="@L["ContextId"]"

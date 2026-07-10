@@ -8,6 +8,9 @@
     "Permission:MenuManagement.Menus.Delete": "حذف منو",
     "Permission:MenuManagement.Menus.ManageItems": "مدیریت آیتم‌های منو",
     "Menu:MenuManagement": "مدیریت منو",
-    "Menu:MenuManagement.Menus": "منوها"
+    "Menu:MenuManagement.Menus": "منوها",
+    "ContextType:Public": "عمومی",
+    "ContextType:KnowledgeBase.Project": "پروژه پایگاه دانش",
+    "DisplayNameLocalizationMode": "حالت نام نمایشی"
   }
 }

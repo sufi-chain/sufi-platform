@@ -8,6 +8,9 @@
     "Permission:MenuManagement.Menus.Delete": "حذف قائمة",
     "Permission:MenuManagement.Menus.ManageItems": "إدارة عناصر القائمة",
     "Menu:MenuManagement": "إدارة القوائم",
-    "Menu:MenuManagement.Menus": "القوائم"
+    "Menu:MenuManagement.Menus": "القوائم",
+    "ContextType:Public": "عام",
+    "ContextType:KnowledgeBase.Project": "مشروع قاعدة المعرفة",
+    "DisplayNameLocalizationMode": "وضع اسم العرض"
   }
 }

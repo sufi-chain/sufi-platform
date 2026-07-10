@@ -1,3 +1,4 @@
+@namespace SufiChain.SufiAbp.MenuManagement.Blazor.Components
 @inherits MenuManagementComponentBase
 @if (Items?.Count > 0)
 {
@@ -5,10 +6,10 @@
         @foreach (var item in Items)
         {
             <li>
-                <button type="button" @onclick="() => SelectAsync(item)">@item.DisplayName</button>
+                <button type="button" @onclick="() => SelectAsync(item)">@ResolveMenuItemDisplayName(item, ContextType)</button>
                 @if (item.Children.Count > 0)
                 {
-                    <MenuTreeView Items="item.Children" OnItemSelected="OnItemSelected" />
+                    <MenuTreeView Items="item.Children" ContextType="ContextType" OnItemSelected="OnItemSelected" />
                 }
             </li>
         }

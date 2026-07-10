@@ -1,4 +1,7 @@
 using Microsoft.AspNetCore.Components;
+using SufiChain.SufiAbp.Data;
+using SufiChain.SufiAbp.LocalizationManagement.Blazor.Public.Components;
+using SufiChain.SufiAbp.LocalizationManagement.Blazor.Public.Models;
 using SufiChain.SufiAbp.MenuManagement.Menus;
 using System.Text.Json;
 
@@ -18,6 +21,9 @@ public partial class MenuItemCreateModal : MenuManagementComponentBase
     [Parameter] public EventCallback<bool> OpenChanged { get; set; }
     [Parameter] public Guid MenuId { get; set; }
     [Parameter] public Guid? ParentId { get; set; }
+    [Parameter] public string? MenuKey { get; set; }
+    [Parameter] public string? ResourceName { get; set; }
+    [Parameter] public string? ContextType { get; set; }
     [Parameter] public IReadOnlyList<MenuItemOption> ParentOptions { get; set; } = new List<MenuItemOption>();
     [Parameter] public EventCallback OnItemCreated { get; set; }
 
@@ -25,6 +31,11 @@ public partial class MenuItemCreateModal : MenuManagementComponentBase
     private string _displayOrderText = "0";
     private string _targetIdText = string.Empty;
     private string _parentIdText = string.Empty;
+    private BusinessTextEditorMode _displayNameMode = BusinessTextEditorMode.Literal;
+    private string? _localizationResourceName;
+    private string? _localizationKey;
+    private string? _literalDisplayName;
+    private BusinessTextEditor? _displayNameEditor;
 
     protected override void OnParametersSet()
     {
@@ -40,6 +51,11 @@ public partial class MenuItemCreateModal : MenuManagementComponentBase
             _displayOrderText = "0";
             _targetIdText = string.Empty;
             _parentIdText = ParentId?.ToString() ?? string.Empty;
+            _displayNameMode = string.Equals(ContextType, "Public", StringComparison.OrdinalIgnoreCase)
+                ? BusinessTextEditorMode.Localized
+                : BusinessTextEditorMode.Literal;
+            _literalDisplayName = string.Empty;
+            UpdateLocalizationBinding();
         }
     }
 
@@ -51,8 +67,60 @@ public partial class MenuItemCreateModal : MenuManagementComponentBase
         await OpenChanged.InvokeAsync(open);
     }
 
+    private Task OnNameChangedAsync(string value)
+    {
+        _model.Name = value;
+        UpdateLocalizationBinding();
+        return Task.CompletedTask;
+    }
+
+    private Task OnSlugChangedAsync(string value)
+    {
+        _model.Slug = value;
+        UpdateLocalizationBinding();
+        return Task.CompletedTask;
+    }
+
+    private Task OnDisplayNameModeChangedAsync(BusinessTextEditorMode mode)
+    {
+        _displayNameMode = mode;
+        UpdateLocalizationBinding();
+        return Task.CompletedTask;
+    }
+
+    private Task OnLiteralDisplayNameChangedAsync(string? value)
+    {
+        _literalDisplayName = value;
+        return Task.CompletedTask;
+    }
+
+    private void UpdateLocalizationBinding()
+    {
+        _localizationResourceName = ResourceName;
+
+        if (string.IsNullOrWhiteSpace(MenuKey))
+        {
+            _localizationKey = null;
+            return;
+        }
+
+        var itemSlug = MenuLocalizationKeyHelper.NormalizeItemSlug(_model.Slug, _model.Name);
+        if (string.IsNullOrWhiteSpace(itemSlug))
+        {
+            _localizationKey = null;
+            return;
+        }
+
+        _localizationKey = BusinessLocalizationKeys.SeededMenuItemDisplayName(MenuKey, itemSlug);
+    }
+
     private Task OnValidSubmitAsync() => ExecuteWithLoadingAsync(async () =>
     {
+        if (_displayNameEditor == null || !await _displayNameEditor.ValidateAsync())
+        {
+            return;
+        }
+
         if (string.IsNullOrWhiteSpace(_model.Name))
         {
             await Message.ErrorAsync(L["NameIsRequired"]);
@@ -100,7 +168,9 @@ public partial class MenuItemCreateModal : MenuManagementComponentBase
             }
         }
 
+        _model.DisplayName = _displayNameEditor.GetStoredValue();
         await MenuItemAppService.CreateAsync(_model);
+        await _displayNameEditor.SaveAsync();
         await OnItemCreated.InvokeAsync();
         await Hide();
     }, LoadingKeys.Create);

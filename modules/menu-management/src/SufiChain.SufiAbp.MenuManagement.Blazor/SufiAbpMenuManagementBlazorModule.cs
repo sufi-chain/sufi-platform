@@ -1,11 +1,14 @@
 using SufiChain.SufiAbp.MenuManagement.Blazor.Menus;
+using SufiChain.SufiAbp.LocalizationManagement.Blazor.Public;
 using SufiChain.SufiAbp.UI.Navigation;
 using SufiChain.SufiAbp.UI.Routing;
 using Volo.Abp.Modularity;
 
 namespace SufiChain.SufiAbp.MenuManagement.Blazor;
 
-[DependsOn(typeof(SufiAbpMenuManagementApplicationContractsModule))]
+[DependsOn(
+    typeof(SufiAbpMenuManagementApplicationContractsModule),
+    typeof(SufiAbpLocalizationManagementBlazorPublicModule))]
 public class SufiAbpMenuManagementBlazorModule : AbpModule
 {
     public override void ConfigureServices(ServiceConfigurationContext context)

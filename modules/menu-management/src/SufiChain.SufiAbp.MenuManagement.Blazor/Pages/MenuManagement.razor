@@ -1,3 +1,4 @@
+@namespace SufiChain.SufiAbp.MenuManagement.Blazor.Pages
 @page "/panel/admin/menu-management/menus"
 @attribute [Authorize(Policy = MenuManagementPermissions.Menus.Default)]
 @inherits MenuManagementComponentBase
@@ -20,7 +21,8 @@
                              Clearable="true" />
 
                 <SbDataGrid TItem="MenuListDto"
-                            Items="_menus"
+                            @ref="_gridRef"
+                            ItemsProvider="LoadMenusDataAsync"
                             Loading="IsOperationLoading(LoadingKeys.LoadMenus)"
                             Striped="true"
                             Hoverable="true"
@@ -59,8 +61,12 @@
                         </CellTemplate>
                     </SbColumn>
                     <SbColumn TItem="MenuListDto" Field="Name" Title="@L["MenuName"]" Sortable="true" />
-                    <SbColumn TItem="MenuListDto" Field="ContextType" Title="@L["ContextType"]" Sortable="true" />
-                    <SbColumn TItem="MenuListDto" Field="DisplayName" Title="@L["DisplayName"]" Sortable="true" />
+                    <SbColumn TItem="MenuListDto" Title="@L["ContextType"]" Sortable="true">
+                        <CellTemplate Context="cellContext">@ResolveContextType(cellContext.Item.ContextType)</CellTemplate>
+                    </SbColumn>
+                    <SbColumn TItem="MenuListDto" Title="@L["DisplayName"]" Sortable="true">
+                        <CellTemplate Context="cellContext">@ResolveMenuDisplayName(cellContext.Item)</CellTemplate>
+                    </SbColumn>
                     <SbColumn TItem="MenuListDto" Field="IsActive" Title="@L["IsActive"]">
                         <CellTemplate Context="cellContext">
                             <SbText Color="@(cellContext.Item.IsActive ? SbColor.Success : SbColor.Muted)">

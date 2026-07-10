@@ -3,10 +3,11 @@ using SufiChain.SufiAbp.MenuManagement.Menus;
 
 namespace SufiChain.SufiAbp.MenuManagement.Blazor.Components;
 
-public partial class MenuBreadcrumb
+public partial class MenuBreadcrumb : MenuManagementComponentBase
 {
     [Parameter] public List<MenuItemTreeDto> Tree { get; set; } = [];
     [Parameter] public Guid? SelectedItemId { get; set; }
+    [Parameter] public string? ContextType { get; set; }
     protected List<MenuItemTreeDto> Trail { get; set; } = [];
     protected override Task OnParametersSetAsync()
     {

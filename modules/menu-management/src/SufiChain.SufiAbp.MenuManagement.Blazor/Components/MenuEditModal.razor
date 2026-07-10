@@ -1,3 +1,4 @@
+@namespace SufiChain.SufiAbp.MenuManagement.Blazor.Components
 @inherits MenuManagementComponentBase
 
 <SbDialog Open="@Open" OpenChanged="@SetOpenAsync" Size="SbDialogSize.Md" Title="@L["EditMenu"]">
@@ -5,9 +6,20 @@
         <SbForm Model="_model" OnValidSubmit="OnValidSubmitAsync">
             <ChildContent>
                 <SbStack Gap="3">
-                    <SbTextField @bind-Value="_model.DisplayName"
-                                 Label="@L["DisplayName"]"
-                                 Required="true" />
+                    <SbStack Gap="1">
+                        <SbText Weight="SbFontWeight.Medium">@L["DisplayNameLocalizationMode"]</SbText>
+                        <BusinessLocalizationModeSwitch Mode="_displayNameMode"
+                                                        ModeChanged="OnDisplayNameModeChangedAsync" />
+                    </SbStack>
+
+                    <BusinessTextEditor @ref="_displayNameEditor"
+                                        Label="@L["DisplayName"]"
+                                        ResourceName="_localizationResourceName"
+                                        LocalizationKey="_localizationKey"
+                                        Mode="_displayNameMode"
+                                        LiteralValue="_literalDisplayName"
+                                        LiteralValueChanged="OnLiteralDisplayNameChangedAsync"
+                                        Required="true" />
 
                     <SbTextArea @bind-Value="_model.Description"
                                 Label="@L["Description"]"

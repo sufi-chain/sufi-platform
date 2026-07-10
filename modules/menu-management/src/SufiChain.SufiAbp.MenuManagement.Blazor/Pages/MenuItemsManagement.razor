@@ -1,3 +1,4 @@
+@namespace SufiChain.SufiAbp.MenuManagement.Blazor.Pages
 @page "/panel/admin/menu-management/menus/{MenuId:guid}/items"
 @attribute [Authorize(Policy = MenuManagementPermissions.Menus.ManageItems)]
 @inherits MenuManagementComponentBase
@@ -24,6 +25,7 @@
                     @foreach (var node in _tree)
                     {
                         <MenuItemNode Item="node"
+                                      ContextType="_menuContextType"
                                       OnAddChild="OnAddChildAsync"
                                       OnEdit="OnEditAsync"
                                       OnMove="OnMoveAsync"
@@ -39,11 +41,13 @@
 
 <MenuItemCreateModal Open="_showCreateModal" OpenChanged="SetCreateOpen"
                      MenuId="MenuId" ParentId="_createParentId"
+                     MenuKey="_menuKey" ResourceName="_menuResourceName" ContextType="_menuContextType"
                      ParentOptions="_parentOptions"
                      OnItemCreated="OnItemCreatedAsync" />
 
 <MenuItemEditModal Open="_showEditModal" OpenChanged="SetEditOpen"
                    Item="_selectedItem" ParentOptions="_parentOptions"
+                   MenuKey="_menuKey" ResourceName="_menuResourceName" ContextType="_menuContextType"
                    OnItemUpdated="OnItemUpdatedAsync" />
 
 <MenuItemMoveModal Open="_showMoveModal" OpenChanged="SetMoveOpen"

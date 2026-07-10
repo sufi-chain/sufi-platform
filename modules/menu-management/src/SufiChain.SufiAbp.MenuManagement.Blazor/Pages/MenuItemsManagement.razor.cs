@@ -26,6 +26,9 @@ public partial class MenuItemsManagement : MenuManagementComponentBase
 
     private List<MenuItemTreeDto> _tree = new();
     private string _menuDisplayName = string.Empty;
+    private string? _menuContextType;
+    private string? _menuKey;
+    private string? _menuResourceName;
 
     private List<MenuItemOption> _parentOptions = new();
 
@@ -48,7 +51,10 @@ public partial class MenuItemsManagement : MenuManagementComponentBase
         try
         {
             var menu = await MenuAppService.GetAsync(MenuId);
-            _menuDisplayName = menu.DisplayName;
+            _menuContextType = menu.ContextType;
+            _menuKey = MenuLocalizationKeyHelper.ResolveMenuKey(menu.DisplayName, menu.ContextType, menu.Name);
+            _menuResourceName = MenuLocalizationRegistry.GetResourceName(_menuKey, menu.ContextType);
+            _menuDisplayName = ResolveMenuDisplayName(menu);
         }
         catch
         {
@@ -83,7 +89,9 @@ public partial class MenuItemsManagement : MenuManagementComponentBase
             return;
         }
 
-        var path = string.IsNullOrEmpty(parentPath) ? item.DisplayName : $"{parentPath} / {item.DisplayName}";
+        var path = string.IsNullOrEmpty(parentPath)
+            ? ResolveMenuItemDisplayName(item, _menuContextType)
+            : $"{parentPath} / {ResolveMenuItemDisplayName(item, _menuContextType)}";
         options.Add(new MenuItemOption(item.Id, path));
 
         foreach (var child in item.Children)

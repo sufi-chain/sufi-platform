@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Components;
 using SufiChain.SufiAbp.MenuManagement.Menus;
 using SufiChain.SufiAbp.UI.Layout;
+using SufiChain.SufiBlazor.Components.Data;
+using SufiChain.SufiBlazor.Contracts.Data;
 
 namespace SufiChain.SufiAbp.MenuManagement.Blazor.Pages;
 
@@ -18,7 +20,7 @@ public partial class MenuManagement : MenuManagementComponentBase
     private IMenuAppService MenuAppService => LazyGetRequiredService(ref _menuAppService);
     private IMenuAppService? _menuAppService;
 
-    private List<MenuListDto> _menus = new();
+    private SbDataGrid<MenuListDto>? _gridRef;
     private string? _keyword;
     private int _pageIndex = 0;
     private int _pageSize = 10;
@@ -39,27 +41,34 @@ public partial class MenuManagement : MenuManagementComponentBase
 
         if (firstRender)
         {
-            await LoadMenusAsync();
+            await RefreshGridAsync();
         }
     }
 
-    private Task LoadMenusAsync() => ExecuteWithLoadingAsync(async () =>
+    private async Task<SbDataResponse<MenuListDto>> LoadMenusDataAsync(SbDataRequest request)
     {
         var result = await MenuAppService.GetListAsync(new GetMenusInput
         {
             Keyword = _keyword,
-            SkipCount = _pageIndex * _pageSize,
-            MaxResultCount = _pageSize
+            SkipCount = Math.Max(0, request.PageIndex * request.PageSize),
+            MaxResultCount = request.PageSize
         });
 
-        _menus = result.Items.ToList();
         _totalCount = result.TotalCount;
-    }, LoadingKeys.LoadMenus);
+        return new SbDataResponse<MenuListDto>(result.Items, result.TotalCount);
+    }
+
+    private Task RefreshGridAsync()
+    {
+        return ExecuteWithLoadingAsync(
+            () => _gridRef?.RefreshDataAsync() ?? Task.CompletedTask,
+            LoadingKeys.LoadMenus);
+    }
 
     private async Task OnPageIndexChangedAsync(int pageIndex)
     {
         _pageIndex = pageIndex;
-        await LoadMenusAsync();
+        await RefreshGridAsync();
     }
 
     private void ShowCreateModal()
@@ -86,14 +95,14 @@ public partial class MenuManagement : MenuManagementComponentBase
     {
         _showCreateModal = false;
         await Notify.SuccessAsync(L["MenuCreatedSuccessfully"]);
-        await LoadMenusAsync();
+        await RefreshGridAsync();
     }
 
     private async Task OnMenuUpdatedAsync()
     {
         _showEditModal = false;
         await Notify.SuccessAsync(L["MenuUpdatedSuccessfully"]);
-        await LoadMenusAsync();
+        await RefreshGridAsync();
     }
 
     private async Task DeleteMenuAsync(MenuListDto menu)
@@ -107,7 +116,7 @@ public partial class MenuManagement : MenuManagementComponentBase
         {
             await MenuAppService.DeleteAsync(menu.Id);
             await Notify.SuccessAsync(L["MenuDeletedSuccessfully"]);
-            await LoadMenusAsync();
+            await RefreshGridAsync();
         }, LoadingKeys.DeleteMenu);
     }
 }

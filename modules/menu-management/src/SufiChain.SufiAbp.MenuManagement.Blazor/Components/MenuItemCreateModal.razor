@@ -1,3 +1,4 @@
+@namespace SufiChain.SufiAbp.MenuManagement.Blazor.Components
 @inherits MenuManagementComponentBase
 
 <SbDialog Open="@Open" OpenChanged="@SetOpenAsync" Size="SbDialogSize.Lg" Title="@L["NewItem"]" AllowDropdownOverflow="true">
@@ -16,9 +17,33 @@
                         }
                     </SbSimpleSelect>
 
-                    <SbTextField @bind-Value="_model.Name" Label="@L["MenuName"]" Required="true" />
-                    <SbTextField @bind-Value="_model.DisplayName" Label="@L["DisplayName"]" Required="true" />
-                    <SbTextField @bind-Value="_model.Slug" Label="@L["Slug"]" />
+                    <SbTextField TValue="string"
+                                 Value="_model.Name"
+                                 ValueChanged="OnNameChangedAsync"
+                                 ValueExpression="@(() => _model.Name)"
+                                 Label="@L["MenuName"]"
+                                 Required="true" />
+
+                    <SbStack Gap="1">
+                        <SbText Weight="SbFontWeight.Medium">@L["DisplayNameLocalizationMode"]</SbText>
+                        <BusinessLocalizationModeSwitch Mode="_displayNameMode"
+                                                        ModeChanged="OnDisplayNameModeChangedAsync" />
+                    </SbStack>
+
+                    <BusinessTextEditor @ref="_displayNameEditor"
+                                        Label="@L["DisplayName"]"
+                                        ResourceName="_localizationResourceName"
+                                        LocalizationKey="_localizationKey"
+                                        Mode="_displayNameMode"
+                                        LiteralValue="_literalDisplayName"
+                                        LiteralValueChanged="OnLiteralDisplayNameChangedAsync"
+                                        Required="true" />
+
+                    <SbTextField TValue="string"
+                                 Value="@(_model.Slug ?? string.Empty)"
+                                 ValueChanged="OnSlugChangedAsync"
+                                 ValueExpression="@(() => _model.Slug!)"
+                                 Label="@L["Slug"]" />
                     <SbTextArea @bind-Value="_model.Description" Label="@L["Description"]" Rows="2" />
 
                     <SbTextField @bind-Value="_displayOrderText" Label="@L["DisplayOrder"]" Type="number" />

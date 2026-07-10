@@ -78,6 +78,9 @@
     "Actions": "Actions",
     "NoItems": "This menu has no items yet.",
     "NameIsRequired": "Name is required.",
-    "DisplayOrderMustBeNumber": "Display order must be a number."
+    "DisplayOrderMustBeNumber": "Display order must be a number.",
+    "ContextType:Public": "Public",
+    "ContextType:KnowledgeBase.Project": "Knowledge Base project",
+    "DisplayNameLocalizationMode": "Display name mode"
   }
 }
