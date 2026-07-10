@@ -19,6 +19,12 @@ public class MongoCalendarRepository : MongoDbRepository<ICalendarMongoDbContext
             .FirstOrDefaultAsync(x => x.TenantId == tenantId && x.Kind == kind && x.IsDefault, cancellationToken);
     }
 
+    public virtual async Task<Calendars.Calendar?> FindByKindAsync(Guid? tenantId, CalendarKind kind, CancellationToken cancellationToken = default)
+    {
+        return await (await GetQueryableAsync(cancellationToken))
+            .FirstOrDefaultAsync(x => x.TenantId == tenantId && x.Kind == kind, cancellationToken);
+    }
+
    public virtual async Task<List<Calendars.Calendar>> GetInheritedCalendarsAsync(Guid calendarId, CancellationToken cancellationToken = default)
    {
        var calendar = await (await GetQueryableAsync(cancellationToken))

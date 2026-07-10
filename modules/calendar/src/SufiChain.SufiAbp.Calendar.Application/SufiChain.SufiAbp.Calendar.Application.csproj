@@ -14,6 +14,8 @@
     <ProjectReference Include="../../../../framework/SufiChain.SufiAbp.Caching/SufiChain.SufiAbp.Caching.csproj" />
     <ProjectReference Include="../../../../framework/SufiChain.SufiAbp.MultiTenancy/SufiChain.SufiAbp.MultiTenancy.csproj" />
     <ProjectReference Include="../../../../framework/SufiChain.SufiAbp.Communications/SufiChain.SufiAbp.Communications.csproj" />
+    <ProjectReference Include="../../../../framework/SufiChain.SufiAbp.Data/SufiChain.SufiAbp.Data.csproj" />
+    <ProjectReference Include="../../../../modules/localization-management/src/SufiChain.SufiAbp.LocalizationManagement.Application.Contracts/SufiChain.SufiAbp.LocalizationManagement.Application.Contracts.csproj" />
     <ProjectReference Include="..\SufiChain.SufiAbp.Calendar.Domain\SufiChain.SufiAbp.Calendar.Domain.csproj" />
     <ProjectReference Include="..\SufiChain.SufiAbp.Calendar.Application.Contracts\SufiChain.SufiAbp.Calendar.Application.Contracts.csproj" />
   </ItemGroup>

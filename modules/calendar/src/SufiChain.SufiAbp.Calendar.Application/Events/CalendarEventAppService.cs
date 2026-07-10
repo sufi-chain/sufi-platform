@@ -285,6 +285,7 @@ public class CalendarEventAppService : SufiAbpApplicationService, ICalendarEvent
         var userId = CurrentUser.Id;
 
         return query.Where(x =>
+            x.Kind == CalendarKind.Default ||
             x.Kind == CalendarKind.Public ||
             !x.OwnerUserId.HasValue ||
             (userId.HasValue && x.OwnerUserId == userId.Value));

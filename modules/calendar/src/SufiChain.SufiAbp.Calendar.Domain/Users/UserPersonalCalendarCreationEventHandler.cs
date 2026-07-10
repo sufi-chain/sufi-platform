@@ -1,5 +1,4 @@
 using SufiChain.SufiAbp.Calendar.Calendars;
-using CalendarAggregate = SufiChain.SufiAbp.Calendar.Calendars.Calendar;
 using SufiChain.SufiAbp.DependencyInjection;
 using SufiChain.SufiAbp.EventBus.Distributed;
 using SufiChain.SufiAbp.MultiTenancy;
@@ -54,26 +53,8 @@ public class UserPersonalCalendarCreationEventHandler :
                 eventData.Entity.UserName,
                 isDefault: false);
 
-            await AttachDefaultHostHijriInheritanceAsync(calendar);
-
             await CalendarRepository.InsertAsync(calendar, autoSave: true);
         }
-    }
-
-    protected virtual async Task AttachDefaultHostHijriInheritanceAsync(CalendarAggregate calendar)
-    {
-        CalendarAggregate? hostHijriCalendar;
-        using (CurrentTenant.Change(null))
-        {
-            hostHijriCalendar = await CalendarRepository.FindByNameAsync(null, CalendarConsts.HostHijriCalendarName);
-        }
-
-        if (hostHijriCalendar == null)
-        {
-            return;
-        }
-
-        await CalendarManager.AddInheritanceAsync(calendar, hostHijriCalendar, isInheritedByDefault: true);
     }
 
     protected virtual string GetCalendarName(UserEto user)

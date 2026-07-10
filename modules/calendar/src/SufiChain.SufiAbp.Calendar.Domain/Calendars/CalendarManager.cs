@@ -1,15 +1,18 @@
 using SufiChain.SufiAbp;
 using SufiChain.SufiAbp.Domain.Services;
+using SufiChain.SufiAbp.MultiTenancy;
 
 namespace SufiChain.SufiAbp.Calendar.Calendars;
 
 public class CalendarManager : DomainService
 {
     private readonly ICalendarRepository _calendarRepository;
+    private readonly ICurrentTenant _currentTenant;
 
-    public CalendarManager(ICalendarRepository calendarRepository)
+    public CalendarManager(ICalendarRepository calendarRepository, ICurrentTenant currentTenant)
     {
         _calendarRepository = calendarRepository;
+        _currentTenant = currentTenant;
     }
 
     public virtual async Task<Calendar> CreateAsync(Guid id, Guid? tenantId, string name, CalendarKind kind, string timeZoneId, Guid? ownerUserId = null, string? ownerName = null, bool isDefault = false, bool isAlwaysOpen = false, CancellationToken cancellationToken = default)
@@ -19,7 +22,11 @@ public class CalendarManager : DomainService
             await EnsureDefaultIsUniqueAsync(tenantId, kind, cancellationToken);
         }
 
-        return new Calendar(id, tenantId, name, kind, timeZoneId, ownerUserId, ownerName, isDefault, isAlwaysOpen);
+        var calendar = new Calendar(id, tenantId, name, kind, timeZoneId, ownerUserId, ownerName, isDefault, isAlwaysOpen);
+
+        await AttachDefaultCalendarInheritanceAsync(calendar, cancellationToken);
+
+        return calendar;
     }
 
     public virtual async Task<CalendarInheritance> AddInheritanceAsync(Calendar calendar, Calendar parentCalendar, bool isInheritedByDefault = false, CancellationToken cancellationToken = default)
@@ -29,7 +36,8 @@ public class CalendarManager : DomainService
             throw new BusinessException(CalendarErrorCodes.CalendarCannotInheritItself);
         }
 
-        if (parentCalendar.Inheritances.Count > 0)
+        var parentInheritedCalendars = await _calendarRepository.GetInheritedCalendarsAsync(parentCalendar.Id, cancellationToken);
+        if (parentInheritedCalendars.Any(x => x.Kind != CalendarKind.Default))
         {
             throw new BusinessException(CalendarErrorCodes.InheritanceExceedsOneLevel);
         }
@@ -50,6 +58,18 @@ public class CalendarManager : DomainService
         return Task.CompletedTask;
     }
 
+    public virtual Task UpdateInheritanceAsync(Calendar calendar, Guid parentCalendarId, bool isInheritedByDefault, CancellationToken cancellationToken = default)
+    {
+        var inheritance = calendar.Inheritances.FirstOrDefault(x => x.ParentCalendarId == parentCalendarId);
+        if (inheritance == null)
+        {
+            throw new BusinessException(CalendarErrorCodes.CalendarInheritanceNotFound);
+        }
+
+        inheritance.SetInheritedByDefault(isInheritedByDefault);
+        return Task.CompletedTask;
+    }
+
     public virtual async Task SetDefaultAsync(Calendar calendar, bool isDefault, CancellationToken cancellationToken = default)
     {
         if (isDefault && !calendar.IsDefault)
@@ -67,5 +87,30 @@ public class CalendarManager : DomainService
         {
             throw new BusinessException(CalendarErrorCodes.DefaultCalendarAlreadyExists);
         }
+    }
+
+    protected virtual async Task AttachDefaultCalendarInheritanceAsync(Calendar calendar, CancellationToken cancellationToken)
+    {
+        if (calendar.Kind == CalendarKind.Default)
+        {
+            return;
+        }
+
+        var defaultCalendar = await _calendarRepository.FindByKindAsync(calendar.TenantId, CalendarKind.Default, cancellationToken);
+
+        if (defaultCalendar == null && calendar.TenantId.HasValue)
+        {
+            using (_currentTenant.Change(null))
+            {
+                defaultCalendar = await _calendarRepository.FindByKindAsync(null, CalendarKind.Default, cancellationToken);
+            }
+        }
+
+        if (defaultCalendar == null)
+        {
+            return;
+        }
+
+        await AddInheritanceAsync(calendar, defaultCalendar, isInheritedByDefault: true, cancellationToken);
     }
 }

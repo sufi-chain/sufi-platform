@@ -40,7 +40,7 @@ public class AvailabilityCalendarAppService : SufiAbpApplicationService, IAvaila
     {
         await CheckPolicyAsync(CalendarPermissions.Calendars.Default);
 
-        var query = await _calendarRepository.GetQueryableAsync();
+        var query = await _calendarRepository.WithDetailsAsync();
         query = ApplyVisibilityFilter(query);
         query = ApplyFilter(query, input);
         query = ApplySorting(query, input.Sorting);
@@ -259,12 +259,62 @@ public class AvailabilityCalendarAppService : SufiAbpApplicationService, IAvaila
         return CalendarDtoMapper.ToDto(calendar);
     }
 
+    public virtual async Task<CalendarInheritanceDto> UpdateInheritanceAsync(Guid calendarId, Guid parentCalendarId, UpdateCalendarInheritanceInput input)
+    {
+        await CheckPolicyAsync(CalendarPermissions.Calendars.Update);
+        var calendar = await _calendarRepository.GetAsync(calendarId, includeDetails: true);
+        await _calendarManager.UpdateInheritanceAsync(calendar, parentCalendarId, input.IsInheritedByDefault);
+        await _calendarRepository.UpdateAsync(calendar, autoSave: true);
+
+        var inheritance = calendar.Inheritances.First(x => x.ParentCalendarId == parentCalendarId);
+        var parentCalendar = await _calendarRepository.FindAsync(parentCalendarId);
+
+        return new CalendarInheritanceDto
+        {
+            Id = inheritance.Id,
+            CalendarId = inheritance.CalendarId,
+            ParentCalendarId = inheritance.ParentCalendarId,
+            ParentCalendarName = parentCalendar?.Name,
+            IsInheritedByDefault = inheritance.IsInheritedByDefault
+        };
+    }
+
     public virtual async Task DeleteInheritanceAsync(Guid calendarId, Guid parentCalendarId)
     {
         await CheckPolicyAsync(CalendarPermissions.Calendars.Update);
         var calendar = await _calendarRepository.GetAsync(calendarId, includeDetails: true);
         await _calendarManager.RemoveInheritanceAsync(calendar, parentCalendarId);
         await _calendarRepository.UpdateAsync(calendar, autoSave: true);
+    }
+
+    public virtual async Task<ListResultDto<CalendarLookupDto>> GetEligibleParentCalendarsAsync(Guid calendarId)
+    {
+        await CheckPolicyAsync(CalendarPermissions.Calendars.Default);
+        await GetVisibleCalendarAsync(calendarId);
+
+        var query = await _calendarRepository.WithDetailsAsync();
+        query = ApplyVisibilityFilter(query);
+        var calendars = await _asyncExecuter.ToListAsync(query);
+
+        var existingParentIds = calendars
+            .Where(x => x.Id == calendarId)
+            .SelectMany(x => x.Inheritances)
+            .Select(x => x.ParentCalendarId)
+            .ToHashSet();
+        var defaultCalendarIds = calendars
+            .Where(x => x.Kind == CalendarKind.Default)
+            .Select(x => x.Id)
+            .ToHashSet();
+
+        var eligible = calendars
+            .Where(x => x.Id != calendarId)
+            .Where(x => !existingParentIds.Contains(x.Id))
+            .Where(x => x.Kind == CalendarKind.Default || x.Inheritances.All(i => defaultCalendarIds.Contains(i.ParentCalendarId)))
+            .OrderBy(x => x.Name)
+            .Select(CalendarDtoMapper.ToLookupDto)
+            .ToList();
+
+        return new ListResultDto<CalendarLookupDto>(eligible);
     }
 
     public virtual async Task<TestAvailabilityResultDto> TestAsync(Guid calendarId, TestAvailabilityInput input)
@@ -367,6 +417,7 @@ public class AvailabilityCalendarAppService : SufiAbpApplicationService, IAvaila
         var userId = CurrentUser.Id;
 
         return query.Where(x =>
+            x.Kind == CalendarKind.Default ||
             x.Kind == CalendarKind.Public ||
             !x.OwnerUserId.HasValue ||
             (userId.HasValue && x.OwnerUserId == userId.Value));
@@ -386,6 +437,7 @@ public class AvailabilityCalendarAppService : SufiAbpApplicationService, IAvaila
     protected virtual bool CanSeeCalendar(Calendars.Calendar calendar)
     {
         return calendar.Kind == CalendarKind.Public ||
+               calendar.Kind == CalendarKind.Default ||
                !calendar.OwnerUserId.HasValue ||
                (CurrentUser.Id.HasValue && calendar.OwnerUserId == CurrentUser.Id.Value);
     }

@@ -24,6 +24,42 @@ public partial class SufiCalendarSelect : CalendarPublicComponentBase
     [Parameter]
     public IReadOnlyList<CalendarLookupDto>? Calendars { get; set; }
 
+    /// <summary>
+    /// Label text displayed above the calendar selector (form contexts).
+    /// </summary>
+    [Parameter]
+    public string? Label { get; set; }
+
+    /// <summary>
+    /// Placeholder when no calendar is selected. Defaults to the Calendar localization key.
+    /// </summary>
+    [Parameter]
+    public string? Placeholder { get; set; }
+
+    /// <summary>
+    /// When true, marks the field as required in form layouts.
+    /// </summary>
+    [Parameter]
+    public bool Required { get; set; }
+
+    /// <summary>
+    /// Disables calendar selection.
+    /// </summary>
+    [Parameter]
+    public bool Disabled { get; set; }
+
+    /// <summary>
+    /// Stretches the selector to the full width of its container (dialogs, forms).
+    /// </summary>
+    [Parameter]
+    public bool FullWidth { get; set; }
+
+    /// <summary>
+    /// Optional additional CSS class names for the wrapper element.
+    /// </summary>
+    [Parameter]
+    public string? Class { get; set; }
+
     protected List<CalendarLookupDto> CalendarOptions { get; set; } = new();
     protected string? SelectedCalendarKey { get; set; }
     protected bool IsLoaded { get; set; }
@@ -74,6 +110,24 @@ public partial class SufiCalendarSelect : CalendarPublicComponentBase
     protected virtual string GetCalendarKey(CalendarLookupDto calendar)
     {
         return calendar.Id.ToString("N");
+    }
+
+    protected string EffectivePlaceholder => string.IsNullOrWhiteSpace(Placeholder) ? L["Calendar"].Value : Placeholder;
+
+    protected string GetWrapperClass()
+    {
+        var classes = new List<string> { "sufi-calendar-select", "sufi-calendar-scheduler__calendar-select" };
+        if (FullWidth)
+        {
+            classes.Add("sufi-calendar-select--full-width");
+        }
+
+        if (!string.IsNullOrWhiteSpace(Class))
+        {
+            classes.Add(Class);
+        }
+
+        return string.Join(' ', classes);
     }
 
     protected virtual async Task LoadCalendarsAsync()

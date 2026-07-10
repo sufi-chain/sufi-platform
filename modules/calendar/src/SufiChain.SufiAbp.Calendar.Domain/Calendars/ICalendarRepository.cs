@@ -6,6 +6,8 @@ public interface ICalendarRepository : IRepository<Calendar, Guid>
 {
     Task<Calendar?> FindDefaultAsync(Guid? tenantId, CalendarKind kind, CancellationToken cancellationToken = default);
 
+    Task<Calendar?> FindByKindAsync(Guid? tenantId, CalendarKind kind, CancellationToken cancellationToken = default);
+
    Task<List<Calendar>> GetInheritedCalendarsAsync(Guid calendarId, CancellationToken cancellationToken = default);
 
     Task<List<Guid>> GetInheritedCalendarIdsAsync(Guid calendarId, CancellationToken cancellationToken = default);

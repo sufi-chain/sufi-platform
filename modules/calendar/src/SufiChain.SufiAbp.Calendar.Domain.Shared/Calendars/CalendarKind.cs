@@ -2,6 +2,7 @@ namespace SufiChain.SufiAbp.Calendar.Calendars;
 
 public enum CalendarKind
 {
-    Personal = 0,
-    Public = 1
+    Default = 0,
+    Personal = 1,
+    Public = 2
 }

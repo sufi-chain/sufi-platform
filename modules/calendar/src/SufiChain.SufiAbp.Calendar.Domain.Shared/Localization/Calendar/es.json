@@ -106,6 +106,7 @@
     "ResourceId": "Resource ID",
     "OwnerId": "Owner ID",
     "OwnerIdHelp": "Enter the related owner ID for the selected owner type.",
+    "Enum:CalendarKind:Default": "Predeterminado",
     "Enum:CalendarKind:Personal": "Personal",
     "Enum:CalendarKind:Public": "Público",
     "Enum:CalendarExceptionKind:Closed": "Cerrado",

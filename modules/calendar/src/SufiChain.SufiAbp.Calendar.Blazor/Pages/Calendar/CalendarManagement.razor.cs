@@ -16,6 +16,8 @@ public partial class CalendarManagementBase : CalendarComponentBase
     public static class LoadingKeys
     {
         public const string LoadCalendars = "load-calendars";
+        public const string LoadInheritances = "load-inheritances";
+        public const string SaveInheritance = "save-inheritance";
     }
 
     [Inject] protected IAvailabilityCalendarAppService AvailabilityCalendarAppService { get; set; } = null!;
@@ -36,11 +38,17 @@ public partial class CalendarManagementBase : CalendarComponentBase
     protected bool IsBusinessHoursOpen { get; set; }
     protected bool IsSchedulerOpen { get; set; }
     protected bool IsDeleteOpen { get; set; }
+    protected int EditorActiveTab { get; set; }
 
     protected Guid EditingCalendarId { get; set; }
     protected CreateUpdateCalendarDto EditingCalendar { get; set; } = new() { TimeZoneId = "UTC" };
     protected CalendarDto? SelectedCalendar { get; set; }
     protected CalendarDto? PendingDeleteCalendar { get; set; }
+    protected List<CalendarInheritanceDto> EditingInheritances { get; set; } = new();
+    protected List<CalendarLookupDto> EligibleParentCalendars { get; set; } = new();
+    protected Dictionary<Guid, CalendarLookupDto> CalendarLookupById { get; set; } = new();
+    protected Guid? SelectedParentCalendarId { get; set; }
+    protected bool NewInheritanceIsDefault { get; set; }
     protected List<WorkingHourEditorModel> EditingHours { get; set; } = new();
     protected List<ExceptionEditorModel> EditingExceptions { get; set; } = new();
     protected DateOnly? TestDate { get; set; } = DateOnly.FromDateTime(DateTime.UtcNow);
@@ -50,6 +58,8 @@ public partial class CalendarManagementBase : CalendarComponentBase
     protected Guid? SchedulerCalendarId { get; set; }
 
     protected string EditorTitle => EditingCalendarId == Guid.Empty ? L["CreateCalendar"] : L["EditCalendar"];
+    protected bool IsEditingExistingCalendar => EditingCalendarId != Guid.Empty;
+    protected bool CanManageInheritances => IsEditingExistingCalendar && HasEditPermission;
     protected IReadOnlyList<TimeZoneInfo> TimeZoneOptions { get; } = TimeZoneInfo.GetSystemTimeZones();
     protected IReadOnlyList<CalendarKind> CalendarKindOptions { get; } = Enum.GetValues<CalendarKind>();
     protected IReadOnlyList<CalendarExceptionKind> CalendarExceptionKindOptions { get; } = Enum.GetValues<CalendarExceptionKind>();
@@ -145,11 +155,13 @@ public partial class CalendarManagementBase : CalendarComponentBase
     {
         EditingCalendarId = Guid.Empty;
         EditingCalendar = new CreateUpdateCalendarDto { Kind = CalendarKind.Public, TimeZoneId = GetDefaultTimeZoneId() };
+        EditorActiveTab = 0;
+        ResetInheritanceEditorState();
         IsEditorOpen = true;
         return Task.CompletedTask;
     }
 
-    protected virtual Task OpenEditModalAsync(CalendarDto calendar)
+    protected virtual async Task OpenEditModalAsync(CalendarDto calendar)
     {
         EditingCalendarId = calendar.Id;
         EditingCalendar = new CreateUpdateCalendarDto
@@ -163,14 +175,155 @@ public partial class CalendarManagementBase : CalendarComponentBase
             IsAlwaysOpen = calendar.IsAlwaysOpen,
             ExtraProperties = calendar.ExtraProperties
         };
+        EditorActiveTab = 0;
+        ResetInheritanceEditorState();
         IsEditorOpen = true;
-        return Task.CompletedTask;
+        await LoadInheritanceEditorDataAsync();
+    }
+
+    protected virtual void ResetInheritanceEditorState()
+    {
+        EditingInheritances = new List<CalendarInheritanceDto>();
+        EligibleParentCalendars = new List<CalendarLookupDto>();
+        CalendarLookupById = new Dictionary<Guid, CalendarLookupDto>();
+        SelectedParentCalendarId = null;
+        NewInheritanceIsDefault = false;
+    }
+
+    protected virtual async Task LoadInheritanceEditorDataAsync()
+    {
+        if (!CanManageInheritances)
+        {
+            return;
+        }
+
+        await ExecuteWithLoadingAsync(async () =>
+        {
+            var inheritancesResult = await AvailabilityCalendarAppService.GetInheritancesAsync(EditingCalendarId);
+            var eligibleParentsResult = await AvailabilityCalendarAppService.GetEligibleParentCalendarsAsync(EditingCalendarId);
+            var lookupResult = await AvailabilityCalendarAppService.GetLookupAsync();
+            EditingInheritances = inheritancesResult.Items.ToList();
+            EligibleParentCalendars = eligibleParentsResult.Items.ToList();
+            CalendarLookupById = lookupResult.Items.ToDictionary(x => x.Id);
+            SelectedParentCalendarId = EligibleParentCalendars.FirstOrDefault()?.Id;
+        }, LoadingKeys.LoadInheritances);
     }
 
     protected virtual Task CloseEditorAsync()
     {
         IsEditorOpen = false;
+        EditorActiveTab = 0;
+        ResetInheritanceEditorState();
         return Task.CompletedTask;
+    }
+
+    protected virtual async Task AddInheritanceAsync()
+    {
+        if (!CanManageInheritances || !SelectedParentCalendarId.HasValue)
+        {
+            return;
+        }
+
+        try
+        {
+            await ExecuteWithLoadingAsync(async () =>
+            {
+                await AvailabilityCalendarAppService.AddInheritanceAsync(EditingCalendarId, new AddCalendarInheritanceInput
+                {
+                    ParentCalendarId = SelectedParentCalendarId.Value,
+                    IsInheritedByDefault = NewInheritanceIsDefault
+                });
+                await LoadInheritanceEditorDataAsync();
+            }, LoadingKeys.SaveInheritance);
+
+            NewInheritanceIsDefault = false;
+            await Message.SuccessAsync(L["SavedSuccessfully"]);
+            await ExecuteWithLoadingAsync(
+                () => _gridRef?.RefreshDataAsync() ?? Task.CompletedTask,
+                LoadingKeys.LoadCalendars);
+        }
+        catch (Exception exception)
+        {
+            await HandleErrorAsync(exception);
+        }
+    }
+
+    protected virtual async Task UpdateInheritanceDefaultAsync(CalendarInheritanceDto inheritance, bool isInheritedByDefault)
+    {
+        if (!CanManageInheritances)
+        {
+            return;
+        }
+
+        try
+        {
+            await ExecuteWithLoadingAsync(async () =>
+            {
+                var updated = await AvailabilityCalendarAppService.UpdateInheritanceAsync(
+                    EditingCalendarId,
+                    inheritance.ParentCalendarId,
+                    new UpdateCalendarInheritanceInput { IsInheritedByDefault = isInheritedByDefault });
+
+                var index = EditingInheritances.FindIndex(x => x.ParentCalendarId == inheritance.ParentCalendarId);
+                if (index >= 0)
+                {
+                    EditingInheritances[index] = updated;
+                }
+            }, LoadingKeys.SaveInheritance);
+        }
+        catch (Exception exception)
+        {
+            await HandleErrorAsync(exception);
+            await LoadInheritanceEditorDataAsync();
+        }
+    }
+
+    protected virtual async Task RemoveInheritanceAsync(CalendarInheritanceDto inheritance)
+    {
+        if (!CanManageInheritances)
+        {
+            return;
+        }
+
+        try
+        {
+            await ExecuteWithLoadingAsync(async () =>
+            {
+                await AvailabilityCalendarAppService.DeleteInheritanceAsync(EditingCalendarId, inheritance.ParentCalendarId);
+                await LoadInheritanceEditorDataAsync();
+            }, LoadingKeys.SaveInheritance);
+
+            await Message.SuccessAsync(L["DeletedSuccessfully"]);
+            await ExecuteWithLoadingAsync(
+                () => _gridRef?.RefreshDataAsync() ?? Task.CompletedTask,
+                LoadingKeys.LoadCalendars);
+        }
+        catch (Exception exception)
+        {
+            await HandleErrorAsync(exception);
+        }
+    }
+
+    protected virtual string GetParentCalendarKindText(Guid parentCalendarId)
+    {
+        if (!CalendarLookupById.TryGetValue(parentCalendarId, out var parent))
+        {
+            return string.Empty;
+        }
+
+        return GetCalendarKindText(parent.Kind);
+    }
+
+    protected virtual string GetParentCalendarDisplayName(CalendarInheritanceDto inheritance)
+    {
+        if (!string.IsNullOrWhiteSpace(inheritance.ParentCalendarName))
+        {
+            return inheritance.ParentCalendarName;
+        }
+
+        return CalendarLookupById.TryGetValue(inheritance.ParentCalendarId, out var parent)
+            ? parent.Name
+            : inheritance.ParentCalendarId.ToString();
     }
 
     protected virtual async Task SaveCalendarAsync()

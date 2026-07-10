@@ -10,6 +10,7 @@ public static class CalendarErrorCodes
     public const string UserRequired = "Calendar:UserRequired";
     public const string CalendarCannotInheritItself = "Calendar:CalendarCannotInheritItself";
     public const string InheritanceExceedsOneLevel = "Calendar:InheritanceExceedsOneLevel";
+    public const string CalendarInheritanceNotFound = "Calendar:CalendarInheritanceNotFound";
     public const string InvalidTimeZone = "Calendar:InvalidTimeZone";
     public const string DefaultCalendarAlreadyExists = "Calendar:DefaultCalendarAlreadyExists";
     public const string InvalidSource = "Calendar:InvalidSource";

@@ -31,3 +31,36 @@
         width: 100%;
     }
 }
+
+.sufi-calendar-management__editor {
+    padding-block: 0.5rem;
+}
+
+.sufi-calendar-management__editor-options {
+    background: var(--sb-color-surface-secondary, #f9fafb);
+}
+
+.sufi-calendar-management__section-title {
+    font-weight: 600;
+}
+
+.sufi-calendar-management__inheritance-item {
+    border: 1px solid var(--sb-color-border, #e5e7eb);
+}
+
+.sufi-calendar-management__inheritance-name {
+    font-weight: 600;
+}
+
+.sufi-calendar-management__inheritance-add {
+    border-style: dashed;
+}
+
+.sufi-calendar-management__inheritance-select {
+    flex: 1 1 16rem;
+    min-width: 12rem;
+}
+
+.sufi-calendar-management__inheritance-loading {
+    min-height: 6rem;
+}

@@ -38,7 +38,11 @@ public interface IAvailabilityCalendarAppService : IApplicationService
 
     Task<CalendarDto> AddInheritanceAsync(Guid calendarId, AddCalendarInheritanceInput input);
 
+    Task<CalendarInheritanceDto> UpdateInheritanceAsync(Guid calendarId, Guid parentCalendarId, UpdateCalendarInheritanceInput input);
+
     Task DeleteInheritanceAsync(Guid calendarId, Guid parentCalendarId);
+
+    Task<ListResultDto<CalendarLookupDto>> GetEligibleParentCalendarsAsync(Guid calendarId);
 
     Task<TestAvailabilityResultDto> TestAsync(Guid calendarId, TestAvailabilityInput input);
 }
