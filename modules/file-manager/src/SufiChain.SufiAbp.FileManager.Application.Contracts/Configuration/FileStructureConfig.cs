@@ -10,6 +10,12 @@ public class FileStructureConfig
     public string Key { get; set; } = default!;
     public string DisplayName { get; set; } = default!;
     public string? Description { get; set; }
+
+    /// <summary>
+    /// Owning module localization resource for <see cref="DisplayName"/> and <see cref="Description"/> keys.
+    /// </summary>
+    public string LocalizationResourceName { get; set; } = FileStructureLocalizationRegistry.DefaultResourceName;
+
     public FileType AllowedFileTypes { get; set; }
     public string AllowedExtensions { get; set; } = default!;
     public string AllowedMimeTypes { get; set; } = default!;
@@ -30,4 +36,9 @@ public class FileStructureConfig
     public bool IsPublicAccess { get; set; }
     public string? BaseUrl { get; set; }
     public bool ResizeLargeImages { get; set; }
+
+    /// <summary>
+    /// When true, the structure is seeded by the platform and cannot be deleted by users.
+    /// </summary>
+    public bool IsStatic { get; set; }
 }

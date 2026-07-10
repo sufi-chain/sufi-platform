@@ -31,6 +31,7 @@
     <ProjectReference Include="../../../../framework/SufiChain.SufiAbp.Guids/SufiChain.SufiAbp.Guids.csproj" />
     <PackageReference Include="SixLabors.ImageSharp" Version="$(SixLaborsImageSharpVersion)" />
     <PackageReference Include="FFMpegCore" Version="$(FFMpegCoreVersion)" />
+    <ProjectReference Include="..\..\..\localization-management\src\SufiChain.SufiAbp.LocalizationManagement.Application.Contracts\SufiChain.SufiAbp.LocalizationManagement.Application.Contracts.csproj" />
     <ProjectReference Include="..\SufiChain.SufiAbp.FileManager.Application.Contracts\SufiChain.SufiAbp.FileManager.Application.Contracts.csproj" />
     <ProjectReference Include="..\SufiChain.SufiAbp.FileManager.Domain.Shared\SufiChain.SufiAbp.FileManager.Domain.Shared.csproj" />
     <ProjectReference Include="..\SufiChain.SufiAbp.FileManager.Domain\SufiChain.SufiAbp.FileManager.Domain.csproj" />

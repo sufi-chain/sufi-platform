@@ -65,7 +65,7 @@ public class FileManagerMenuContributor : IMenuContributor
                     FileManagerMenus.FolderAccess,
                     l["Menu:FolderAccess"],
                     url: "/panel/admin/file-manager/access",
-                    icon: "user-shield",
+                    icon: "shield",
                     order: 5
                 ).RequirePermissions(FileManagerPermissions.FileItems.Update)
             );

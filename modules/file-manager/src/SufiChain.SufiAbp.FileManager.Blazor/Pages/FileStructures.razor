@@ -1,3 +1,4 @@
+@namespace SufiChain.SufiAbp.FileManager.Blazor.Pages
 @page "/panel/admin/file-manager/structures"
 @using SufiChain.SufiAbp.FileManager.Storage
 @using SufiChain.SufiAbp.UI.Blazor
@@ -90,11 +91,11 @@
 							<code class="structure-key">@structure.Key</code>
 						</td>
 						<td>
-							<strong>@(string.IsNullOrEmpty(structure.DisplayName) ? structure.Key : L[structure.DisplayName])</strong>
+							<strong>@ResolveStructureText(structure)</strong>
 							@if (!string.IsNullOrEmpty(structure.Description))
 							{
 								<br />
-								<small class="text-muted">@TruncateText(L[structure.Description], 50)</small>
+								<small class="text-muted">@TruncateText(ResolveStructureDescription(structure), 50)</small>
 							}
 						</td>
 						<td>
@@ -145,7 +146,7 @@
 										</SbIconButton>
 									</SbTooltip>
 								}
-								@if (!structure.HasDefaultConfig)
+								@if (!structure.IsStatic)
 								{
 									<SbTooltip Text="@L["Delete"]">
 										<SbIconButton Color="SbColor.Danger" Size="SbSize.Sm" OnClick="@(() => DeleteStructure(structure))" AriaLabel="@L["Delete"]">
@@ -817,11 +818,11 @@
 							{
 								<div class="detail-row">
 									<span class="detail-label">@L["DisplayName"]:</span>
-									<span>@L[_defaultConfig.DisplayName]</span>
+									<span>@ResolveStructureText(_defaultConfig)</span>
 								</div>
 								<div class="detail-row">
 									<span class="detail-label">@L["Description"]:</span>
-									<span>@(_defaultConfig.Description != null ? L[_defaultConfig.Description] : "-")</span>
+									<span>@(!string.IsNullOrEmpty(_defaultConfig.Description) ? ResolveStructureDescription(_defaultConfig) : "-")</span>
 								</div>
 								<div class="detail-row">
 									<span class="detail-label">@L["FileTypes"]:</span>
@@ -900,11 +901,11 @@
 							{
 								<div class="detail-row">
 									<span class="detail-label">@L["DisplayName"]:</span>
-									<span>@L[_viewStructure.DisplayName]</span>
+									<span>@ResolveStructureText(_viewStructure)</span>
 								</div>
 								<div class="detail-row">
 									<span class="detail-label">@L["Description"]:</span>
-									<span>@(_viewStructure.Description != null ? L[_viewStructure.Description] : "-")</span>
+									<span>@(!string.IsNullOrEmpty(_viewStructure.Description) ? ResolveStructureDescription(_viewStructure) : "-")</span>
 								</div>
 								<div class="detail-row">
 									<span class="detail-label">@L["FileTypes"]:</span>
@@ -993,11 +994,11 @@
 						{
 							<div class="detail-row">
 								<span class="detail-label">@L["DisplayName"]:</span>
-								<span>@L[_viewStructure.DisplayName]</span>
+								<span>@ResolveStructureText(_viewStructure)</span>
 							</div>
 							<div class="detail-row">
 								<span class="detail-label">@L["Description"]:</span>
-								<span>@(_viewStructure.Description != null ? L[_viewStructure.Description] : "-")</span>
+								<span>@(!string.IsNullOrEmpty(_viewStructure.Description) ? ResolveStructureDescription(_viewStructure) : "-")</span>
 							</div>
 							<div class="detail-row">
 								<span class="detail-label">@L["FileTypes"]:</span>

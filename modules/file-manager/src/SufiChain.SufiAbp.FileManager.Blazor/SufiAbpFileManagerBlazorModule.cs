@@ -4,6 +4,8 @@ using SufiChain.SufiAbp.FileManager.Blazor.Settings;
 using SufiChain.SufiAbp.SettingManagement.Blazor.Settings;
 using SufiChain.SufiAbp.FileManager.Blazor.Public;
 using SufiChain.SufiAbp.FileManager.Blazor.Services;
+using SufiChain.SufiAbp.Identity.Blazor.Public;
+using SufiChain.SufiAbp.Users.Blazor.Public;
 using SufiChain.SufiAbp.UI.Bundling;
 using SufiChain.SufiAbp.UI.Navigation;
 using SufiChain.SufiAbp.UI.Routing;
@@ -13,6 +15,8 @@ namespace SufiChain.SufiAbp.FileManager.Blazor;
 
 [DependsOn(
     typeof(SufiAbpFileManagerBlazorPublicModule),
+    typeof(SufiAbpUsersBlazorPublicModule),
+    typeof(SufiAbpIdentityBlazorPublicModule),
     typeof(SufiChain.SufiAbp.SettingManagement.Blazor.SufiAbpSettingManagementBlazorModule)
 )]
 public class SufiAbpFileManagerBlazorModule : AbpModule

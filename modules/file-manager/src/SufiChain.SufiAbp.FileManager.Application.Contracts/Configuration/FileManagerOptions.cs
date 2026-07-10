@@ -102,15 +102,17 @@ public class FileManagerOptions
         if (!Structures.Any(s => s.Key == FileStructureKeys.General))
         {
             DefineStructure(FileStructureKeys.General)
-                .WithDisplayName("Structure:General:DisplayName")
-                .WithDescription("Structure:General:Description")
+                .WithDisplayNameKey("Structure:General:DisplayName")
+                .WithDescriptionKey("Structure:General:Description")
+                .WithLocalizationResource(FileStructureLocalizationRegistry.DefaultResourceName)
                 .ForFileTypes(FileType.Image | FileType.Video | FileType.Document | FileType.Audio)
                 .WithMaxSize(100.MB())
                 .MultipleFiles()
                 .GenerateThumbnail(true, 200, 200)
                 .EnableWebPConversion(true, 80)
                 .ResizeLargeImages(true)
-                .IsPublic(false);
+                .IsPublic(true)
+                .IsStatic(true);
         }
 
         return this;

@@ -33,10 +33,7 @@
         var structureKey = item.Path.Split('/', StringSplitOptions.RemoveEmptyEntries).FirstOrDefault();
         if (!string.IsNullOrWhiteSpace(structureKey) && item.Path.Trim('/') == structureKey)
         {
-            var displayName = L[$"Structure:{structureKey}:DisplayName"].Value;
-            return string.IsNullOrWhiteSpace(displayName) || displayName == $"Structure:{structureKey}:DisplayName"
-                ? item.Name
-                : displayName;
+            return ResolveStructureDisplayName(structureKey, item.Name);
         }
 
         return item.Name;

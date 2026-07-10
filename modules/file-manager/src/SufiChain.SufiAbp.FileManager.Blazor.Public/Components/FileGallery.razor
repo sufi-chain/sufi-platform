@@ -1,3 +1,4 @@
+@namespace SufiChain.SufiAbp.FileManager.Blazor.Public.Components
 <div class="file-gallery @Class" style="@Style">
     <div class="file-gallery__grid" style="--columns: @Columns">
         @foreach (var (fileId, index) in _fileInfos.Select((f, i) => (f, i)))

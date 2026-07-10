@@ -1,3 +1,4 @@
+@namespace SufiChain.SufiAbp.FileManager.Blazor.Components.Structures
 @inherits FileManagerComponentBase
 
 <SbTable TItem="FileStructureDto" Items="@FileStructures" Hover>
@@ -16,11 +17,11 @@
             <code class="structure-key">@structure.Key</code>
         </td>
         <td>
-            <strong>@L[structure.DisplayName]</strong>
+            <strong>@ResolveStructureText(structure)</strong>
             @if (!string.IsNullOrEmpty(structure.Description))
             {
                 <br />
-                <small class="text-muted">@TruncateText(L[structure.Description], 50)</small>
+                <small class="text-muted">@TruncateText(ResolveStructureDescription(structure), 50)</small>
             }
         </td>
         <td>
@@ -68,7 +69,7 @@
                         </SbIconButton>
                     </SbTooltip>
                 }
-                @if (!structure.HasDefaultConfig)
+                @if (!structure.IsStatic)
                 {
                     <SbTooltip Text="@L["Delete"]">
                         <SbIconButton Color="SbColor.Danger" Size="SbSize.Sm" OnClick="@(() => OnDelete.InvokeAsync(structure))" AriaLabel="@L["Delete"]">

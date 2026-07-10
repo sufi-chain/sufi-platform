@@ -4,7 +4,6 @@
 @using Microsoft.Extensions.Localization
 @implements IDisposable
 @inject IStringLocalizer<SufiAbpFileManagerResource> L
-@inject FileGalleryDialogService DialogService
 @inherits SufiChain.SufiAbp.UI.Blazor.SufiAbpComponentBase
 
 @if (_isImageGalleryOpen)
@@ -24,61 +23,4 @@
                        Description="@L["SelectFileToInsertAsLink"].Value"
                        ImagesOnly="false"
                        OnFileSelected="@OnFileSelected" />
-}
-
-@code {
-    private bool _isImageGalleryOpen;
-    private bool _isFileGalleryOpen;
-
-    protected override void OnInitialized()
-    {
-        DialogService.RegisterHost();
-        DialogService.OnShowImageGallery += ShowImageGallery;
-        DialogService.OnShowFileGallery += ShowFileGallery;
-    }
-
-    private void ShowImageGallery()
-    {
-        _isImageGalleryOpen = true;
-        _ = InvokeAsync(StateHasChanged);
-    }
-
-    private void ShowFileGallery()
-    {
-        _isFileGalleryOpen = true;
-        _ = InvokeAsync(StateHasChanged);
-    }
-
-    private Task OnImageGalleryOpenChangedAsync(bool open)
-    {
-        _isImageGalleryOpen = open;
-        return InvokeAsync(StateHasChanged);
-    }
-
-    private Task OnFileGalleryOpenChangedAsync(bool open)
-    {
-        _isFileGalleryOpen = open;
-        return InvokeAsync(StateHasChanged);
-    }
-
-    private void OnImageSelected(FileItemDto? fileItem)
-    {
-        _isImageGalleryOpen = false;
-        DialogService.CompleteImageSelection(fileItem);
-        _ = InvokeAsync(StateHasChanged);
-    }
-
-    private void OnFileSelected(FileItemDto? fileItem)
-    {
-        _isFileGalleryOpen = false;
-        DialogService.CompleteFileSelection(fileItem);
-        _ = InvokeAsync(StateHasChanged);
-    }
-
-    public void Dispose()
-    {
-        DialogService.OnShowImageGallery -= ShowImageGallery;
-        DialogService.OnShowFileGallery -= ShowFileGallery;
-        DialogService.UnregisterHost();
-    }
 }

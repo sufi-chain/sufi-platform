@@ -179,7 +179,7 @@ public partial class FileBrowser : FileManagerComponentBase, IDisposable
                 Sorting = "DisplayName"
             });
             _structureFilterOptions = result.Items
-                .Select(s => new StructureFilterOption(s.Key, L[s.DisplayName].Value!))
+                .Select(s => new StructureFilterOption(s.Key, ResolveStructureText(s)))
                 .Prepend(new StructureFilterOption(null, L["AllStructures"].Value!))
                 .ToList();
         }

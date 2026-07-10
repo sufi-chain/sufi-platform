@@ -1,3 +1,4 @@
+@namespace SufiChain.SufiAbp.FileManager.Blazor.Components.Upload
 @implements IDisposable
 @inherits FileManagerComponentBase
 
@@ -125,7 +126,7 @@
 									  Items="@_availableStructures"
 									  Value="@_selectedStructureKey"
 									  ValueChanged="@OnStructureChanged"
-									  TextField="@(s => L[s.DisplayName])"
+									  TextField="@(s => ResolveStructureText(s))"
 									  ValueField="@(s => s.Key)"
 									  Placeholder="@L["SelectFileStructure"]" />
 						</SbFormField>

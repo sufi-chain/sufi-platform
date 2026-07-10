@@ -11,6 +11,12 @@ public class FileStructureDto : AuditedEntityDto<Guid>
     public string Key { get; set; } = default!;
     public string DisplayName { get; set; } = default!;
     public string? Description { get; set; }
+
+    /// <summary>
+    /// Owning module localization resource for business-tier display keys.
+    /// </summary>
+    public string LocalizationResourceName { get; set; } = Configuration.FileStructureLocalizationRegistry.DefaultResourceName;
+
     public FileType AllowedFileTypes { get; set; }
     public string AllowedExtensions { get; set; } = default!;
     public string AllowedMimeTypes { get; set; } = default!;
@@ -32,6 +38,11 @@ public class FileStructureDto : AuditedEntityDto<Guid>
     public bool IsPublicAccess { get; set; }
     public string? BaseUrl { get; set; }
     
+    /// <summary>
+    /// Indicates if this structure is platform-defined and cannot be deleted.
+    /// </summary>
+    public bool IsStatic { get; set; }
+
     /// <summary>
     /// Indicates if this structure has a developer-defined default configuration
     /// </summary>
@@ -105,6 +116,7 @@ public class FileStructureDefaultDto
     public string Key { get; set; } = default!;
     public string DisplayName { get; set; } = default!;
     public string? Description { get; set; }
+    public string LocalizationResourceName { get; set; } = Configuration.FileStructureLocalizationRegistry.DefaultResourceName;
     public FileType AllowedFileTypes { get; set; }
     public string AllowedExtensions { get; set; } = default!;
     public string AllowedMimeTypes { get; set; } = default!;
@@ -125,4 +137,5 @@ public class FileStructureDefaultDto
     public string? StorageProvider { get; set; }
     public bool IsPublicAccess { get; set; }
     public string? BaseUrl { get; set; }
+    public bool IsStatic { get; set; }
 }

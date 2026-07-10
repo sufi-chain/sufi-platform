@@ -70,12 +70,27 @@ public partial class FolderAccess
         }
     }
 
+    private Task OnGrantTypeChangedAsync(FolderGrantType grantType)
+    {
+        _addGrant.GrantType = grantType;
+        _addGrant.PrincipalId = null;
+        return Task.CompletedTask;
+    }
+
+    private Task OnPrincipalIdChangedAsync(Guid? principalId)
+    {
+        _addGrant.PrincipalId = principalId;
+        return Task.CompletedTask;
+    }
+
     private async Task AddGrantAsync()
     {
-        if (!_selectedFolderId.HasValue || !Guid.TryParse(_addGrant.PrincipalId, out var principalId) || principalId == Guid.Empty)
+        if (!_selectedFolderId.HasValue || !_addGrant.PrincipalId.HasValue || _addGrant.PrincipalId == Guid.Empty)
         {
             return;
         }
+
+        var principalId = _addGrant.PrincipalId.Value;
 
         var dto = new FolderPermissionDto
         {
@@ -98,7 +113,7 @@ public partial class FolderAccess
 
         var updated = _permissions.Append(dto).ToList();
         await SaveAsync(updated);
-        _addGrant.PrincipalId = string.Empty;
+        _addGrant.PrincipalId = null;
     }
 
     private async Task RemoveGrantAsync(Guid? permissionId)
@@ -137,6 +152,15 @@ public partial class FolderAccess
         _permissions = await FolderAppService.GetPermissionsAsync(_selectedFolderId.Value);
     }
 
+    private string GetFolderDisplayLabel(FolderTreeNodeDto node)
+    {
+        var displayName = node.Type == FolderTypeDto.Structure && !string.IsNullOrWhiteSpace(node.StructureKey)
+            ? ResolveStructureDisplayName(node.StructureKey, node.Name)
+            : node.Name;
+
+        return $"({node.Path}) {displayName}";
+    }
+
     private string GrantTypeLabel(FolderGrantType grantType) => grantType switch
     {
         FolderGrantType.User => L["FolderAccess:User"],
@@ -144,6 +168,8 @@ public partial class FolderAccess
         FolderGrantType.OrganizationUnit => L["FolderAccess:OrganizationUnit"],
         _ => grantType.ToString()
     };
+
+    private string PrincipalLabel => GrantTypeLabel(_addGrant.GrantType);
 
     private string LevelLabel(FolderPermissionLevelDto level) => level switch
     {
@@ -172,7 +198,7 @@ public enum FolderGrantType
 public class FolderGrantInput
 {
     public FolderGrantType GrantType { get; set; } = FolderGrantType.User;
-    public string PrincipalId { get; set; } = string.Empty;
+    public Guid? PrincipalId { get; set; }
     public FolderPermissionLevelDto Level { get; set; } = FolderPermissionLevelDto.Read;
     public bool InheritToChildren { get; set; } = true;
 }

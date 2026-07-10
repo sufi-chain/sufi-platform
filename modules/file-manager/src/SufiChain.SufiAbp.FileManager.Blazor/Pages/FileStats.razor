@@ -1,3 +1,4 @@
+@namespace SufiChain.SufiAbp.FileManager.Blazor.Pages
 @page "/panel/admin/file-manager/stats"
 @attribute [Authorize(FileManagerPermissions.FileItems.Default)]
 @inherits FileManagerComponentBase
@@ -59,7 +60,7 @@
 						</HeaderContent>
 						<RowTemplate Context="structure">
 							<td><code>@structure.Key</code></td>
-							<td>@L[structure.DisplayName]</td>
+							<td>@ResolveStructureText(structure)</td>
 							<td>
 								<SbStack Direction="SbStackDirection.Row" Gap="1" Wrap="true">
 									@foreach (var type in GetFileTypes(structure.AllowedFileTypes))
@@ -89,7 +90,7 @@
 							<div class="file-structure-card">
 								<div class="file-structure-card__header">
 									<code>@structure.Key</code>
-									<span class="file-structure-card__title">@L[structure.DisplayName]</span>
+									<span class="file-structure-card__title">@ResolveStructureText(structure)</span>
 								</div>
 								<div class="file-structure-card__body">
 									<div class="file-structure-card__row">

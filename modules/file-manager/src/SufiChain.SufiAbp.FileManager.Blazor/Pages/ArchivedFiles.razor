@@ -176,7 +176,7 @@
 			});
 
 			_structureFilterOptions = result.Items
-				.Select(s => new StructureFilterOption(s.Key, L[s.DisplayName].Value!))
+				.Select(s => new StructureFilterOption(s.Key, ResolveStructureText(s)))
 				.ToList();
 		}
 		catch (Exception ex)

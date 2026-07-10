@@ -1,4 +1,7 @@
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using SufiChain.SufiAbp.FileManager.Configuration;
+using SufiChain.SufiAbp.LocalizationManagement;
 using Volo.Abp.Application;
 using Volo.Abp.Mapperly;
 using Volo.Abp.BackgroundWorkers;
@@ -25,6 +28,7 @@ namespace SufiChain.SufiAbp.FileManager;
 [DependsOn(
     typeof(SufiAbpFileManagerDomainModule),
     typeof(SufiAbpFileManagerApplicationContractsModule),
+    typeof(SufiAbpLocalizationManagementApplicationContractsModule),
     typeof(SufiAbpCachingModule),
     typeof(SufiAbpDddApplicationModule),
     typeof(SufiAbpMapperlyModule),
@@ -38,6 +42,17 @@ public class SufiAbpFileManagerApplicationModule : AbpModule
 {
     public override void ConfigureServices(ServiceConfigurationContext context)
     {
+        var configuration = context.Services.GetConfiguration();
+
+        Configure<FileManagerOptions>(configuration.GetSection("FileManager"));
+        PostConfigure<FileManagerOptions>(options =>
+        {
+            if (options.SeedDefaultStructures)
+            {
+                options.AddDefaultStructures();
+            }
+        });
+
         context.Services.AddMapperlyObjectMapper<SufiAbpFileManagerApplicationModule>();
 
         context.Services.AddTransient<IStructureCache, StructureCacheService>();

@@ -207,7 +207,9 @@
                                 <SbTextField @bind-Value="@_editFileAlt" Placeholder="@L["EnterAltText"]" />
                             </SbFormField>
                             <SbFormField Label="@L["TagsCommaSeparated"]">
-                                <SbTextField @bind-Value="@_editFileTags" Placeholder="@L["EnterTagsPlaceholder"]" />
+                                <SbTagInput Tags="_editFileTags"
+                                            TagsChanged="OnEditFileTagsChangedAsync"
+                                            Placeholder="@L["EnterTagsPlaceholder"]" />
                             </SbFormField>
                             <div class="small text-muted">
                                 <span>@L["Created"]: @_editingFile.CreationTime.ToString("yyyy-MM-dd HH:mm")</span>
@@ -269,7 +271,7 @@
     private FileItemDto? _editingFile;
     private string _editFileName = "";
     private string _editFileAlt = "";
-    private string _editFileTags = "";
+    private List<string> _editFileTags = new();
 
     // Quick Share fields
     private bool _quickShareModalOpen;
@@ -319,7 +321,9 @@
                 VirtualPath = _state.CurrentPath,
                 Sorting = $"{_state.SortField} {(_state.SortDescending ? "DESC" : "ASC")}",
                 Filter = _state.SearchFilter,
-                StructureKey = GetCurrentStructureKey(),
+                // Let the server resolve structure key from the target folder. Client-side
+                // Contents.CurrentFolder still points at the previous folder during refresh.
+                StructureKey = !string.IsNullOrWhiteSpace(StructureKey) ? StructureKey : null,
                 SourceMode = _state.SourceMode
             };
 
@@ -731,7 +735,7 @@
             {
                 _editFileName = _editingFile.Name ?? _editingFile.OriginalName;
                 _editFileAlt = _editingFile.Alt ?? "";
-                _editFileTags = _editingFile.Tags != null ? string.Join(", ", _editingFile.Tags) : "";
+                _editFileTags = _editingFile.Tags?.ToList() ?? new List<string>();
                 _editModalOpen = true;
             }
         }
@@ -747,10 +751,10 @@
 
         try
         {
-            var tags = string.IsNullOrWhiteSpace(_editFileTags) 
-                ? null 
-                : _editFileTags.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
-            
+            var tags = _editFileTags.Count == 0
+                ? null
+                : _editFileTags.ToArray();
+
             await FileItemAppService.UpdateMetadataAsync(_editingFile.Id, new UpdateFileMetadataInput
             {
                 Name = _editFileName,
@@ -766,6 +770,12 @@
         {
             await Notify.ErrorAsync($"Failed to update file: {ex.Message}");
         }
+    }
+
+    private Task OnEditFileTagsChangedAsync(List<string> tags)
+    {
+        _editFileTags = tags;
+        return Task.CompletedTask;
     }
 
     private async Task HandleDrop(DragDropEventArgs args)
@@ -852,19 +862,23 @@
             return null;
         }
 
+        // Prefer CurrentPath — it is updated synchronously in NavigateTo, unlike
+        // Contents.CurrentFolder which still reflects the previous folder until refresh completes.
+        var firstSegment = _state.CurrentPath.Split('/', StringSplitOptions.RemoveEmptyEntries).FirstOrDefault();
+        if (!string.IsNullOrWhiteSpace(firstSegment))
+        {
+            return firstSegment;
+        }
+
         var currentFolder = _state.Contents?.CurrentFolder;
-        if (!string.IsNullOrWhiteSpace(currentFolder?.StructureKey))
+        if (currentFolder != null &&
+            currentFolder.Id == _state.CurrentFolderId &&
+            !string.IsNullOrWhiteSpace(currentFolder.StructureKey))
         {
             return currentFolder.StructureKey;
         }
 
-        var firstSegment = _state.CurrentPath.Split('/', StringSplitOptions.RemoveEmptyEntries).FirstOrDefault();
-        if (string.IsNullOrWhiteSpace(firstSegment))
-        {
-            return null;
-        }
-
-        return firstSegment;
+        return null;
     }
 
     private static string GetParentPath(string path)

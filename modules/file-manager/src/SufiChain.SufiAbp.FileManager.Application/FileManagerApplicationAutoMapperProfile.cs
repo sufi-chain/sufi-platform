@@ -30,11 +30,13 @@ public partial class FileStructureToFileStructureDtoMapper : MapperBase<FileStru
 {
     [MapperIgnoreTarget(nameof(FileStructureDto.HasDefaultConfig))]
     [MapperIgnoreTarget(nameof(FileStructureDto.IsModifiedFromDefault))]
+    [MapperIgnoreTarget(nameof(FileStructureDto.IsStatic))]
     [MapperIgnoreTarget(nameof(FileStructureDto.StorageConfig))]
     public override partial FileStructureDto Map(FileStructure source);
 
     [MapperIgnoreTarget(nameof(FileStructureDto.HasDefaultConfig))]
     [MapperIgnoreTarget(nameof(FileStructureDto.IsModifiedFromDefault))]
+    [MapperIgnoreTarget(nameof(FileStructureDto.IsStatic))]
     [MapperIgnoreTarget(nameof(FileStructureDto.StorageConfig))]
     public override partial void Map(FileStructure source, FileStructureDto destination);
 }

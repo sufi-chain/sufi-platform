@@ -1,5 +1,8 @@
+@namespace SufiChain.SufiAbp.FileManager.Blazor.Pages
 @page "/panel/admin/file-manager/access"
 @using SufiChain.SufiAbp.FileManager.FileFolders
+@using SufiChain.SufiAbp.Users.Blazor.Public.Components
+@using SufiChain.SufiAbp.Identity.Blazor.Public.Components
 @attribute [Authorize(FileManagerPermissions.FileItems.Update)]
 @inherits FileManagerComponentBase
 
@@ -15,7 +18,9 @@
                                 Searchable="true">
                     @foreach (var node in _flatFolders)
                     {
-                        <SbSelectOption TValue="Guid?" Value="@node.Id">@($"({node.Path}) {node.Name}")</SbSelectOption>
+                        <SbSelectOption TValue="Guid?"
+                                        Value="@node.Id"
+                                        Text="@GetFolderDisplayLabel(node)" />
                     }
                 </SbSimpleSelect>
             </SbFormField>
@@ -26,16 +31,33 @@
                     <SbFormField Label="@L["FolderAccess:GrantType"]" Style="flex:1">
                         <SbSimpleSelect TValue="FolderGrantType"
                                         Value="@_addGrant.GrantType"
-                                        ValueChanged="@((FolderGrantType v) => _addGrant.GrantType = v)">
+                                        ValueChanged="@OnGrantTypeChangedAsync">
                             @foreach (var grantType in _grantTypes)
                             {
                                 <SbSelectOption TValue="FolderGrantType" Value="@grantType">@GrantTypeLabel(grantType)</SbSelectOption>
                             }
                         </SbSimpleSelect>
                     </SbFormField>
-                    <SbFormField Label="@L["FolderAccess:PrincipalId"]" Style="flex:1">
-                        <SbTextField @bind-Value="_addGrant.PrincipalId" Placeholder="00000000-0000-0000-0000-000000000000" />
-                    </SbFormField>
+                    <div style="flex:1">
+                        @switch (_addGrant.GrantType)
+                        {
+                            case FolderGrantType.User:
+                                <SufiUserSelect UserId="@_addGrant.PrincipalId"
+                                                UserIdChanged="@OnPrincipalIdChangedAsync"
+                                                Label="@PrincipalLabel" />
+                                break;
+                            case FolderGrantType.Role:
+                                <SufiRoleSelect RoleId="@_addGrant.PrincipalId"
+                                                RoleIdChanged="@OnPrincipalIdChangedAsync"
+                                                Label="@PrincipalLabel" />
+                                break;
+                            case FolderGrantType.OrganizationUnit:
+                                <SufiOrganizationUnitSelect OrganizationUnitId="@_addGrant.PrincipalId"
+                                                            OrganizationUnitIdChanged="@OnPrincipalIdChangedAsync"
+                                                            Label="@PrincipalLabel" />
+                                break;
+                        }
+                    </div>
                 </SbStack>
 
                 <SbStack Direction="SbStackDirection.Row" Gap="2">

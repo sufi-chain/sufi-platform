@@ -5,6 +5,7 @@ using SufiChain.SufiAbp.FileManager;
 using SufiChain.SufiAbp.FileManager.Configuration;
 using SufiChain.SufiAbp.FileManager.FileFolders;
 using SufiChain.SufiAbp.FileManager.FileStructures;
+using SufiChain.SufiAbp.LocalizationManagement;
 using Volo.Abp.Data;
 using Volo.Abp.DependencyInjection;
 using Volo.Abp.Guids;
@@ -17,27 +18,30 @@ namespace SufiChain.SufiAbp.FileManager.Data;
 /// This contributor is automatically discovered and executed by ABP's data seeding system.
 /// </summary>
 public class FileStructureDataSeedContributor : IDataSeedContributor, ITransientDependency
-    {
-        private readonly IFileStructureRepository _fileStructureRepository;
-        private readonly IFileFolderRepository _fileFolderRepository;
-        private readonly IGuidGenerator _guidGenerator;
+{
+    private readonly IFileStructureRepository _fileStructureRepository;
+    private readonly IFileFolderRepository _fileFolderRepository;
+    private readonly IGuidGenerator _guidGenerator;
     private readonly ICurrentTenant _currentTenant;
     private readonly FileManagerOptions _options;
+    private readonly ILocalizationTextSeeder _localizationTextSeeder;
     private readonly ILogger<FileStructureDataSeedContributor> _logger;
 
-        public FileStructureDataSeedContributor(
-            IFileStructureRepository fileStructureRepository,
-            IFileFolderRepository fileFolderRepository,
-            IGuidGenerator guidGenerator,
+    public FileStructureDataSeedContributor(
+        IFileStructureRepository fileStructureRepository,
+        IFileFolderRepository fileFolderRepository,
+        IGuidGenerator guidGenerator,
         ICurrentTenant currentTenant,
         IOptions<FileManagerOptions> options,
+        ILocalizationTextSeeder localizationTextSeeder,
         ILogger<FileStructureDataSeedContributor> logger)
-        {
-            _fileStructureRepository = fileStructureRepository;
-            _fileFolderRepository = fileFolderRepository;
-            _guidGenerator = guidGenerator;
+    {
+        _fileStructureRepository = fileStructureRepository;
+        _fileFolderRepository = fileFolderRepository;
+        _guidGenerator = guidGenerator;
         _currentTenant = currentTenant;
         _options = options.Value;
+        _localizationTextSeeder = localizationTextSeeder;
         _logger = logger;
     }
 
@@ -49,7 +53,6 @@ public class FileStructureDataSeedContributor : IDataSeedContributor, ITransient
                 "FileStructure seeding started. TenantId={TenantId}, SeedDefaultStructures={SeedDefaultStructures}",
                 context?.TenantId, _options.SeedDefaultStructures);
 
-            // Add default structures to options if enabled
             if (_options.SeedDefaultStructures)
             {
                 _options.AddDefaultStructures();
@@ -60,6 +63,8 @@ public class FileStructureDataSeedContributor : IDataSeedContributor, ITransient
                 _logger.LogInformation("No file structures configured to seed.");
                 return;
             }
+
+            await SeedGeneralStructureLocalizationAsync(context);
 
             _logger.LogInformation("Seeding {Count} file structure(s)...", _options.Structures.Count);
 
@@ -72,12 +77,28 @@ public class FileStructureDataSeedContributor : IDataSeedContributor, ITransient
         }
     }
 
+    private async Task SeedGeneralStructureLocalizationAsync(DataSeedContext context)
+    {
+        if (!_options.Structures.Any(s => s.Key == FileStructureKeys.General))
+        {
+            return;
+        }
+
+        await _localizationTextSeeder.UpsertStructureTextsAsync(
+            FileManagerFileStructureSeedTexts.ResourceName,
+            FileManagerFileStructureSeedTexts.GeneralKey,
+            FileManagerFileStructureSeedTexts.GeneralDisplayName,
+            FileManagerFileStructureSeedTexts.GeneralDescription,
+            context?.TenantId);
+    }
+
     private async Task SeedStructureAsync(FileStructureConfig config)
     {
         var existing = await _fileStructureRepository.FindByKeyAsync(config.Key);
 
         if (existing != null)
         {
+            await EnsureStaticStructurePropertiesAsync(existing, config);
             await EnsureStructureRootFolderAsync(existing);
             _logger.LogDebug("File structure '{StructureKey}' already exists with ID {Id}.", config.Key, existing.Id);
             return;
@@ -146,4 +167,15 @@ public class FileStructureDataSeedContributor : IDataSeedContributor, ITransient
     private static string GetStructureRootName(FileStructure structure) => structure.DisplayName;
 
     private static string GetStructureRootPath(string structureKey) => $"/{structureKey}";
+
+    private async Task EnsureStaticStructurePropertiesAsync(FileStructure structure, FileStructureConfig config)
+    {
+        if (!config.IsStatic || structure.IsPublicAccess == config.IsPublicAccess)
+        {
+            return;
+        }
+
+        structure.IsPublicAccess = config.IsPublicAccess;
+        await _fileStructureRepository.UpdateAsync(structure, autoSave: true);
+    }
 }

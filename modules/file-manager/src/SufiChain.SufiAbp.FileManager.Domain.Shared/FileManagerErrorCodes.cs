@@ -36,6 +36,7 @@ public static class FileManagerErrorCodes
     public const string FileStructureNotFound = "SufiChain.SufiAbp.FileManager:040001";
     public const string FileStructureAlreadyExists = "SufiChain.SufiAbp.FileManager:040002";
     public const string CannotResetManualStructure = "SufiChain.SufiAbp.FileManager:040003";
+    public const string CannotDeleteStaticStructure = "SufiChain.SufiAbp.FileManager:040004";
     
     // Processing errors (050xxx)
     public const string ProcessingFailed = "SufiChain.SufiAbp.FileManager:050001";

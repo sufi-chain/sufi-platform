@@ -149,6 +149,19 @@ public class FileStructureAppService :
         return result;
     }
 
+    public override async Task DeleteAsync(Guid id)
+    {
+        var entity = await _structureRepository.GetAsync(id);
+
+        if (IsStaticStructure(entity.Key))
+        {
+            throw new BusinessException(FileManagerErrorCodes.CannotDeleteStaticStructure)
+                .WithData("Key", entity.Key);
+        }
+
+        await base.DeleteAsync(id);
+    }
+
     public Task<FileStructureDefaultDto?> GetDefaultConfigAsync(string key)
     {
         var config = _options.Structures.FirstOrDefault(x => x.Key == key);
@@ -280,6 +293,7 @@ public class FileStructureAppService :
             }
             else
             {
+                await EnsureStaticStructurePropertiesAsync(existing, config);
                 await EnsureStructureRootFolderAsync(existing);
                 Logger.LogDebug("File structure '{StructureKey}' already exists.", config.Key);
             }
@@ -323,11 +337,37 @@ public class FileStructureAppService :
     {
         var defaultConfig = _options.Structures.FirstOrDefault(x => x.Key == dto.Key);
         dto.HasDefaultConfig = defaultConfig != null;
-        
+        dto.IsStatic = IsStaticStructure(dto.Key);
+        dto.LocalizationResourceName = FileStructureLocalizationRegistry.GetResourceName(
+            dto.Key,
+            defaultConfig?.LocalizationResourceName);
+
         if (defaultConfig != null)
         {
             dto.IsModifiedFromDefault = IsModifiedFromDefaultDto(dto, defaultConfig);
         }
+    }
+
+    private bool IsStaticStructure(string key)
+    {
+        var defaultConfig = _options.Structures.FirstOrDefault(x => x.Key == key);
+        return defaultConfig?.IsStatic ?? false;
+    }
+
+    private async Task EnsureStaticStructurePropertiesAsync(FileStructure structure, FileStructureConfig config)
+    {
+        if (!config.IsStatic)
+        {
+            return;
+        }
+
+        if (structure.IsPublicAccess == config.IsPublicAccess)
+        {
+            return;
+        }
+
+        structure.IsPublicAccess = config.IsPublicAccess;
+        await _structureRepository.UpdateAsync(structure, autoSave: true);
     }
 
     private static bool IsModifiedFromDefault(FileStructure structure, FileStructureConfig defaultConfig)
@@ -517,6 +557,7 @@ public class FileStructureAppService :
             Key = config.Key,
             DisplayName = config.DisplayName,
             Description = config.Description,
+            LocalizationResourceName = config.LocalizationResourceName,
             AllowedFileTypes = config.AllowedFileTypes,
             AllowedExtensions = config.AllowedExtensions,
             AllowedMimeTypes = config.AllowedMimeTypes,
@@ -536,7 +577,8 @@ public class FileStructureAppService :
             StorageProvider = config.StorageProvider,
             IsPublicAccess = config.IsPublicAccess,
             BaseUrl = config.BaseUrl,
-            ResizeLargeImages = config.ResizeLargeImages
+            ResizeLargeImages = config.ResizeLargeImages,
+            IsStatic = config.IsStatic
         };
     }
 }

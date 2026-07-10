@@ -21,10 +21,13 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="$(MicrosoftAspNetCoreComponentsWebVersion)" />
     <ProjectReference Include="..\..\..\..\framework\SufiChain.SufiAbp.Ddd.Application.Contracts\SufiChain.SufiAbp.Ddd.Application.Contracts.csproj" />
+    <ProjectReference Include="..\..\..\..\framework\SufiChain.SufiAbp.Data\SufiChain.SufiAbp.Data.csproj" />
     <!-- SufiAbp Framework (transitively provides SufiChain.SufiBlazor) -->
     <ProjectReference Include="..\SufiChain.SufiAbp.FileManager.Application.Contracts\SufiChain.SufiAbp.FileManager.Application.Contracts.csproj" />
     <ProjectReference Include="..\SufiChain.SufiAbp.FileManager.Blazor.Public\SufiChain.SufiAbp.FileManager.Blazor.Public.csproj" />
     <ProjectReference Include="..\..\..\setting-management\src\SufiChain.SufiAbp.SettingManagement.Blazor\SufiChain.SufiAbp.SettingManagement.Blazor.csproj" />
+    <ProjectReference Include="..\..\..\users\src\SufiChain.SufiAbp.Users.Blazor.Public\SufiChain.SufiAbp.Users.Blazor.Public.csproj" />
+    <ProjectReference Include="..\..\..\identity\src\SufiChain.SufiAbp.Identity.Blazor.Public\SufiChain.SufiAbp.Identity.Blazor.Public.csproj" />
   </ItemGroup>
 
   <ItemGroup>

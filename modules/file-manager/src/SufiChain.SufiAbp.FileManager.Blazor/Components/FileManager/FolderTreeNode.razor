@@ -87,10 +87,7 @@
     {
         if (Node.Type == FolderTypeDto.Structure && !string.IsNullOrWhiteSpace(Node.StructureKey))
         {
-            var displayName = L[$"Structure:{Node.StructureKey}:DisplayName"].Value;
-            return string.IsNullOrWhiteSpace(displayName) || displayName == $"Structure:{Node.StructureKey}:DisplayName"
-                ? Node.Name
-                : displayName;
+            return ResolveStructureDisplayName(Node.StructureKey, Node.Name);
         }
 
         return Node.Name;

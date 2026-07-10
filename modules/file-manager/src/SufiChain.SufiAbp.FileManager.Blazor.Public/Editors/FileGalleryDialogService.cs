@@ -7,6 +7,12 @@ namespace SufiChain.SufiAbp.FileManager.Blazor.Public.Editors;
 
 public class FileGalleryDialogService : IFileGalleryDialogService
 {
+    /// <summary>
+    /// Cascading parameter name for sharing one dialog service instance across
+    /// <see cref="FileGalleryHost"/> and gallery consumers on the same page.
+    /// </summary>
+    public const string CascadeName = "FileGalleryDialogService";
+
     private readonly IFileItemUrlProvider _fileItemUrlProvider;
     private TaskCompletionSource<FileGalleryResult?>? _imageCompletionSource;
     private TaskCompletionSource<FileGalleryResult?>? _fileCompletionSource;

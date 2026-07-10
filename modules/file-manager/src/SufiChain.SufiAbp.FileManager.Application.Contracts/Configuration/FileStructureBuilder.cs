@@ -19,18 +19,39 @@ public class FileStructureBuilder
         {
             Key = key,
             DisplayName = key,
+            LocalizationResourceName = FileStructureLocalizationRegistry.DefaultResourceName,
             AllowedFileTypes = FileType.None,
             MaxFileSize = 10 * 1024 * 1024, // 10MB default
             EnableWebPConversion = options.EnableWebPConversionByDefault,
             ResizeLargeImages = options.ResizeLargeImagesByDefault,
-            WebPQuality = options.DefaultWebPQuality
+            WebPQuality = options.DefaultWebPQuality,
+            IsStatic = true
         };
         _options.Structures.Add(_config);
+    }
+
+    public FileStructureBuilder WithLocalizationResource(string localizationResourceName)
+    {
+        _config.LocalizationResourceName = localizationResourceName;
+        FileStructureLocalizationRegistry.Register(_config.Key, localizationResourceName);
+        return this;
+    }
+
+    public FileStructureBuilder WithDisplayNameKey(string displayNameKey)
+    {
+        _config.DisplayName = displayNameKey;
+        return this;
     }
 
     public FileStructureBuilder WithDisplayName(string displayName)
     {
         _config.DisplayName = displayName;
+        return this;
+    }
+
+    public FileStructureBuilder WithDescriptionKey(string descriptionKey)
+    {
+        _config.Description = descriptionKey;
         return this;
     }
 
@@ -149,6 +170,12 @@ public class FileStructureBuilder
     public FileStructureBuilder IsPublic(bool isPublic = true)
     {
         _config.IsPublicAccess = isPublic;
+        return this;
+    }
+
+    public FileStructureBuilder IsStatic(bool isStatic = true)
+    {
+        _config.IsStatic = isStatic;
         return this;
     }
 

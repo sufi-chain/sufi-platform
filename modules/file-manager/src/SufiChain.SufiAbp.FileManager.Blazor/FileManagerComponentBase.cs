@@ -1,3 +1,6 @@
+using SufiChain.SufiAbp.Data;
+using SufiChain.SufiAbp.FileManager.Configuration;
+using SufiChain.SufiAbp.FileManager.FileStructures;
 using SufiChain.SufiAbp.FileManager.Localization;
 using SufiChain.SufiAbp.UI.Blazor;
 
@@ -12,5 +15,95 @@ public abstract class FileManagerComponentBase : SufiAbpComponentBase
     protected FileManagerComponentBase()
     {
         LocalizationResource = typeof(SufiAbpFileManagerResource);
+    }
+
+    protected string ResolveBusinessText(string resourceName, string? keyOrText, string fallback = "")
+    {
+        return FileStructureLocalizationHelper.ResolveText(
+            StringLocalizerFactory,
+            resourceName,
+            keyOrText,
+            string.IsNullOrWhiteSpace(fallback) ? keyOrText ?? string.Empty : fallback);
+    }
+
+    protected string ResolveStructureText(FileStructureDto structure)
+    {
+        return ResolveStructureText(
+            structure.Key,
+            structure.DisplayName,
+            structure.LocalizationResourceName);
+    }
+
+    protected string ResolveStructureText(
+        string structureKey,
+        string? displayNameKey,
+        string? localizationResourceName = null)
+    {
+        var resourceName = localizationResourceName
+            ?? Configuration.FileStructureLocalizationRegistry.GetResourceName(structureKey);
+        var key = string.IsNullOrWhiteSpace(displayNameKey)
+            ? BusinessLocalizationKeys.FileStructureDisplayName(structureKey)
+            : displayNameKey;
+
+        return ResolveBusinessText(resourceName, key, structureKey);
+    }
+
+    protected string ResolveStructureDisplayName(string structureKey, string? storedKeyOrText = null)
+    {
+        return ResolveStructureText(
+            structureKey,
+            storedKeyOrText ?? BusinessLocalizationKeys.FileStructureDisplayName(structureKey),
+            null);
+    }
+
+    protected string ResolveStructureDescription(string structureKey, string? storedDescriptionKey)
+    {
+        if (string.IsNullOrWhiteSpace(storedDescriptionKey))
+        {
+            return string.Empty;
+        }
+
+        var resourceName = FileStructureLocalizationRegistry.GetResourceName(structureKey);
+        return ResolveBusinessText(resourceName, storedDescriptionKey, storedDescriptionKey);
+    }
+
+    protected string ResolveStructureDescription(FileStructureDto structure)
+    {
+        if (string.IsNullOrWhiteSpace(structure.Description))
+        {
+            return string.Empty;
+        }
+
+        var resourceName = structure.LocalizationResourceName
+            ?? Configuration.FileStructureLocalizationRegistry.GetResourceName(structure.Key);
+
+        return ResolveBusinessText(
+            resourceName,
+            structure.Description,
+            structure.Description);
+    }
+
+    protected string ResolveStructureText(FileStructureDefaultDto config)
+    {
+        return ResolveStructureText(
+            config.Key,
+            config.DisplayName,
+            config.LocalizationResourceName);
+    }
+
+    protected string ResolveStructureDescription(FileStructureDefaultDto config)
+    {
+        if (string.IsNullOrWhiteSpace(config.Description))
+        {
+            return string.Empty;
+        }
+
+        var resourceName = config.LocalizationResourceName
+            ?? Configuration.FileStructureLocalizationRegistry.GetResourceName(config.Key);
+
+        return ResolveBusinessText(
+            resourceName,
+            config.Description,
+            config.Description);
     }
 }

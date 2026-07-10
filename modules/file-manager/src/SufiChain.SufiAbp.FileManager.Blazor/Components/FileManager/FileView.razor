@@ -221,10 +221,7 @@
     {
         if (folder.Type == FolderTypeDto.Structure && !string.IsNullOrWhiteSpace(folder.StructureKey))
         {
-            var displayName = L[$"Structure:{folder.StructureKey}:DisplayName"].Value;
-            return string.IsNullOrWhiteSpace(displayName) || displayName == $"Structure:{folder.StructureKey}:DisplayName"
-                ? folder.Name
-                : displayName;
+            return ResolveStructureDisplayName(folder.StructureKey, folder.Name);
         }
 
         return folder.Name;
