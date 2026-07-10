@@ -24,28 +24,13 @@ public class TagsManagementMenuContributor : IMenuContributor
         var l = context.GetLocalizer<SufiAbpTagsManagementResource>();
         var administration = context.Menu.GetAdministration();
 
-        var moduleMenu = new ApplicationMenuItem(
-            TagsManagementMenuNames.GroupName,
-            l["Menu:TagsManagement"],
+        administration.AddItem(new ApplicationMenuItem(
+            TagsManagementMenuNames.Tags,
+            l["Tags"],
+            url: "/panel/admin/tags",
             icon: "tag",
             order: 20
-        );
-
-        administration.AddItem(moduleMenu);
-
-        moduleMenu.AddItem(new ApplicationMenuItem(
-            TagsManagementMenuNames.Tags,
-            l["Menu:TagsManagement.Tags"],
-            url: "/panel/admin/tags-management/tags",
-            icon: "tag"
         ).RequirePermissions(TagsManagementPermissions.Tags.Default));
-
-        moduleMenu.AddItem(new ApplicationMenuItem(
-            TagsManagementMenuNames.TagLinks,
-            l["Menu:TagsManagement.TagLinks"],
-            url: "/panel/admin/tags-management/tag-links",
-            icon: "link"
-        ).RequirePermissions(TagsManagementPermissions.TagLinks.Default));
 
         return Task.CompletedTask;
     }
@@ -56,7 +41,5 @@ public class TagsManagementMenuContributor : IMenuContributor
 /// </summary>
 public static class TagsManagementMenuNames
 {
-    public const string GroupName = "TagsManagement";
-    public const string Tags = GroupName + ".Tags";
-    public const string TagLinks = GroupName + ".TagLinks";
+    public const string Tags = "TagsManagement.Tags";
 }

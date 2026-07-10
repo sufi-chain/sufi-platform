@@ -27,6 +27,9 @@ public class TagController : SufiAbpControllerBase, ITagAppService
     [HttpGet("scope/{scope}")]
     public virtual Task<ListResultDto<TagDto>> GetListByScopeAsync(string scope) => _tagAppService.GetListByScopeAsync(scope);
 
+    [HttpGet("search")]
+    public virtual Task<ListResultDto<TagDto>> SearchAsync([FromQuery] SearchTagsInput input) => _tagAppService.SearchAsync(input);
+
     [HttpPost]
     public virtual Task<TagDto> CreateAsync(CreateTagDto input) => _tagAppService.CreateAsync(input);
 

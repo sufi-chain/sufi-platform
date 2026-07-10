@@ -31,4 +31,36 @@ public class EfCoreTagRepository : EfCoreRepository<ITagsManagementDbContext, Ta
         var dbSet = await GetDbSetAsync();
         return await dbSet.Where(x => x.Scope == scope && x.TenantId == tenantId).OrderBy(x => x.Name).ToListAsync(cancellationToken);
     }
+
+    public virtual async Task<List<Tag>> SearchAsync(
+        string? scope,
+        string? filter,
+        Guid? tenantId = null,
+        int skipCount = 0,
+        int maxResultCount = 20,
+        CancellationToken cancellationToken = default)
+    {
+        var dbSet = await GetDbSetAsync();
+        var query = dbSet.AsQueryable().Where(x => x.TenantId == tenantId);
+
+        if (!string.IsNullOrWhiteSpace(scope))
+        {
+            query = query.Where(x => x.Scope == scope);
+        }
+
+        if (!string.IsNullOrWhiteSpace(filter))
+        {
+            var trimmedFilter = filter.Trim();
+            var normalizedFilter = trimmedFilter.ToUpperInvariant();
+            query = query.Where(x =>
+                x.Name.Contains(trimmedFilter) ||
+                x.NormalizedName.Contains(normalizedFilter));
+        }
+
+        return await query
+            .OrderBy(x => x.Name)
+            .Skip(skipCount)
+            .Take(maxResultCount)
+            .ToListAsync(cancellationToken);
+    }
 }

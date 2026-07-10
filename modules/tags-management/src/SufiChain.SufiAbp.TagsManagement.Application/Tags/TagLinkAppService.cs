@@ -81,4 +81,16 @@ public class TagLinkAppService : ApplicationService, ITagLinkAppService
         var tags = query.Where(x => tagIds.Contains(x.Id)).ToList();
         return ObjectMapper.Map<List<Tag>, List<TagDto>>(tags);
     }
+
+    public virtual async Task<List<TagLinkDto>> GetLinksByTagAsync(Guid tagId)
+    {
+        var tag = await _tagRepository.FindAsync(tagId);
+        if (tag == null)
+        {
+            throw new BusinessException(TagsManagementErrorCodes.TagNotFound).WithData("TagId", tagId);
+        }
+
+        var links = await _tagLinkRepository.GetListByTagAsync(tagId, CurrentTenant.Id);
+        return ObjectMapper.Map<List<TagLink>, List<TagLinkDto>>(links);
+    }
 }

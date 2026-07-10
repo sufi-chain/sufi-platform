@@ -1,4 +1,7 @@
+@namespace SufiChain.SufiAbp.TagsManagement.Blazor.Pages
+@page "/panel/admin/tags"
 @page "/panel/admin/tags-management/tags"
+@page "/panel/admin/tags-management/tag-links"
 @attribute [Authorize(Policy = TagsManagementPermissions.Tags.Default)]
 @inherits TagsManagementComponentBase
 
@@ -21,7 +24,8 @@
                              Clearable="true" />
 
                 <SbDataGrid TItem="TagDto"
-                            Items="_tags"
+                            @ref="_gridRef"
+                            ItemsProvider="LoadTagsDataAsync"
                             Loading="IsOperationLoading(LoadingKeys.LoadTags)"
                             Striped="true"
                             Hoverable="true"
@@ -29,9 +33,17 @@
                             PageSize="_pageSize"
                             TotalCount="_totalCount"
                             PageIndexChanged="OnPageIndexChangedAsync">
-                    <SbColumn TItem="TagDto" Title="@L["Actions"]" Width="160px">
+                    <SbColumn TItem="TagDto" Title="@L["Actions"]" Width="220px">
                         <CellTemplate Context="cellContext">
                             <SbStack Direction="SbStackDirection.Row" Gap="1">
+                                <AuthorizeView Policy="@TagsManagementPermissions.TagLinks.Default">
+                                    <SbTooltip Text="@L["ViewTagLinks"]">
+                                        <SbIconButton Size="SbSize.Sm" AriaLabel="@L["ViewTagLinks"]"
+                                                      OnClick="@(() => ShowLinksDrawer(cellContext.Item))">
+                                            <Icon><SbIcon Name="link" /></Icon>
+                                        </SbIconButton>
+                                    </SbTooltip>
+                                </AuthorizeView>
                                 <AuthorizeView Policy="@TagsManagementPermissions.Tags.Update">
                                     <SbTooltip Text="@L["EditTag"]">
                                         <SbIconButton Size="SbSize.Sm" AriaLabel="@L["EditTag"]"
@@ -77,6 +89,7 @@
 
 <TagCreateModal Open="_showCreateModal" OpenChanged="SetCreateOpen" OnTagCreated="OnTagCreatedAsync" />
 <TagEditModal Open="_showEditModal" OpenChanged="SetEditOpen" Tag="_selectedTag" OnTagUpdated="OnTagUpdatedAsync" />
+<TagLinksDrawer Open="_showLinksDrawer" OpenChanged="SetLinksDrawerOpen" Tag="_selectedTagForLinks" />
 
 <style>
     .tags-color-swatch {

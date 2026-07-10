@@ -2,6 +2,8 @@ using Microsoft.AspNetCore.Components;
 using SufiChain.SufiAbp.Application.Dtos;
 using SufiChain.SufiAbp.TagsManagement.Tags;
 using SufiChain.SufiAbp.UI.Layout;
+using SufiChain.SufiBlazor.Components.Data;
+using SufiChain.SufiBlazor.Contracts.Data;
 
 namespace SufiChain.SufiAbp.TagsManagement.Blazor.Pages;
 
@@ -18,7 +20,7 @@ public partial class TagsManagement : TagsManagementComponentBase
     private ITagAppService TagAppService => LazyGetRequiredService(ref _tagAppService);
     private ITagAppService? _tagAppService;
 
-    private List<TagDto> _tags = new();
+    private SbDataGrid<TagDto>? _gridRef;
     private string? _scopeFilter;
     private int _pageIndex = 0;
     private int _pageSize = 10;
@@ -26,7 +28,9 @@ public partial class TagsManagement : TagsManagementComponentBase
 
     private bool _showCreateModal;
     private bool _showEditModal;
+    private bool _showLinksDrawer;
     private TagDto? _selectedTag;
+    private TagDto? _selectedTagForLinks;
 
     protected override void OnInitialized()
     {
@@ -39,46 +43,46 @@ public partial class TagsManagement : TagsManagementComponentBase
 
         if (firstRender)
         {
-            await LoadTagsAsync();
+            await RefreshGridAsync();
         }
     }
 
-    private Task LoadTagsAsync() => ExecuteWithLoadingAsync(async () =>
+    private async Task<SbDataResponse<TagDto>> LoadTagsDataAsync(SbDataRequest request)
     {
         if (string.IsNullOrWhiteSpace(_scopeFilter))
         {
             var result = await TagAppService.GetListAsync(new PagedAndSortedResultRequestDto
             {
-                SkipCount = _pageIndex * _pageSize,
-                MaxResultCount = _pageSize
+                SkipCount = Math.Max(0, request.PageIndex * request.PageSize),
+                MaxResultCount = request.PageSize
             });
 
-            _tags = result.Items.ToList();
             _totalCount = result.TotalCount;
+            return new SbDataResponse<TagDto>(result.Items, result.TotalCount);
         }
-        else
-        {
-            var result = await TagAppService.GetListByScopeAsync(_scopeFilter);
-            var all = result.Items.ToList();
-            _totalCount = all.Count;
-            _tags = all
-                .Skip(_pageIndex * _pageSize)
-                .Take(_pageSize)
-                .ToList();
-        }
-    }, LoadingKeys.LoadTags);
+
+        var scopedResult = await TagAppService.GetListByScopeAsync(_scopeFilter);
+        var all = scopedResult.Items.ToList();
+        var page = all
+            .Skip(Math.Max(0, request.PageIndex * request.PageSize))
+            .Take(request.PageSize)
+            .ToList();
+
+        _totalCount = all.Count;
+        return new SbDataResponse<TagDto>(page, all.Count);
+    }
+
+    private Task RefreshGridAsync()
+    {
+        return ExecuteWithLoadingAsync(
+            () => _gridRef?.RefreshDataAsync() ?? Task.CompletedTask,
+            LoadingKeys.LoadTags);
+    }
 
     private async Task OnPageIndexChangedAsync(int pageIndex)
     {
         _pageIndex = pageIndex;
-        await LoadTagsAsync();
-    }
-
-    private async Task OnScopeFilterChanged(string? value)
-    {
-        _scopeFilter = value;
-        _pageIndex = 0;
-        await LoadTagsAsync();
+        await RefreshGridAsync();
     }
 
     private void ShowCreateModal()
@@ -92,6 +96,12 @@ public partial class TagsManagement : TagsManagementComponentBase
         _showEditModal = true;
     }
 
+    private void ShowLinksDrawer(TagDto tag)
+    {
+        _selectedTagForLinks = tag;
+        _showLinksDrawer = true;
+    }
+
     private void SetCreateOpen(bool open)
     {
         _showCreateModal = open;
@@ -102,18 +112,28 @@ public partial class TagsManagement : TagsManagementComponentBase
         _showEditModal = open;
     }
 
+    private void SetLinksDrawerOpen(bool open)
+    {
+        _showLinksDrawer = open;
+
+        if (!open)
+        {
+            _selectedTagForLinks = null;
+        }
+    }
+
     private async Task OnTagCreatedAsync()
     {
         _showCreateModal = false;
         await Notify.SuccessAsync(L["TagCreatedSuccessfully"]);
-        await LoadTagsAsync();
+        await RefreshGridAsync();
     }
 
     private async Task OnTagUpdatedAsync()
     {
         _showEditModal = false;
         await Notify.SuccessAsync(L["TagUpdatedSuccessfully"]);
-        await LoadTagsAsync();
+        await RefreshGridAsync();
     }
 
     private async Task DeleteTagAsync(TagDto tag)
@@ -127,7 +147,7 @@ public partial class TagsManagement : TagsManagementComponentBase
         {
             await TagAppService.DeleteAsync(tag.Id);
             await Notify.SuccessAsync(L["TagDeletedSuccessfully"]);
-            await LoadTagsAsync();
+            await RefreshGridAsync();
         }, LoadingKeys.DeleteTag);
     }
 }

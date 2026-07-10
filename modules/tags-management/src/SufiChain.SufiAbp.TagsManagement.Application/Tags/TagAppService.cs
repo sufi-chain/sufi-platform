@@ -50,6 +50,18 @@ public class TagAppService : ApplicationService, ITagAppService
         return new ListResultDto<TagDto>(ObjectMapper.Map<List<Tag>, List<TagDto>>(items));
     }
 
+    public virtual async Task<ListResultDto<TagDto>> SearchAsync(SearchTagsInput input)
+    {
+        var items = await _tagRepository.SearchAsync(
+            input.Scope,
+            input.Filter,
+            CurrentTenant.Id,
+            input.SkipCount,
+            input.MaxResultCount);
+
+        return new ListResultDto<TagDto>(ObjectMapper.Map<List<Tag>, List<TagDto>>(items));
+    }
+
     [Authorize(TagsManagementPermissions.Tags.Create)]
     public virtual async Task<TagDto> CreateAsync(CreateTagDto input)
     {

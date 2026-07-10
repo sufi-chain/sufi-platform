@@ -25,5 +25,8 @@ public class TagLinkController : SufiAbpControllerBase, ITagLinkAppService
 
     [HttpGet("by-entity")]
     public virtual Task<List<TagDto>> GetTagsByEntityAsync([FromQuery] EntityTagQueryInput input) => _tagLinkAppService.GetTagsByEntityAsync(input);
+
+    [HttpGet("by-tag/{tagId:guid}")]
+    public virtual Task<List<TagLinkDto>> GetLinksByTagAsync(Guid tagId) => _tagLinkAppService.GetLinksByTagAsync(tagId);
 }
 

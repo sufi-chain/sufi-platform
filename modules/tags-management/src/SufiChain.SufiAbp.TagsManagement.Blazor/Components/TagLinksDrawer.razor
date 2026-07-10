@@ -1,0 +1,50 @@
+@namespace SufiChain.SufiAbp.TagsManagement.Blazor.Components
+@inherits TagsManagementComponentBase
+
+<SbDrawer Open="@Open"
+          OpenChanged="@SetOpenAsync"
+          Placement="SbDrawerPlacement.End"
+          Width="480px"
+          Title="@DrawerTitle">
+    @if (Tag != null)
+    {
+        @if (IsOperationLoading(LoadingKeys.LoadLinks))
+        {
+            <SbProgress />
+        }
+        else if (_links.Count == 0)
+        {
+            <SbText Color="SbColor.Muted">@L["NoTagLinksFound"]</SbText>
+        }
+        else
+        {
+            <SbStack Direction="SbStackDirection.Column" Gap="3">
+                @foreach (var link in _links)
+                {
+                    <SbStack Direction="SbStackDirection.Row" Gap="2" Align="SbAlign.Center" Wrap="true">
+                        <SbStack Direction="SbStackDirection.Column" Gap="0" Class="tags-link-drawer-item">
+                            <SbText Weight="SbFontWeight.Medium">@link.EntityType</SbText>
+                            <SbText Color="SbColor.Muted" Variant="SbTextVariant.BodySmall">@link.EntityId</SbText>
+                        </SbStack>
+                        <AuthorizeView Policy="@TagsManagementPermissions.TagLinks.Unassign">
+                            <SbButton Size="SbSize.Sm"
+                                      Variant="SbButtonVariant.Outline"
+                                      Color="SbColor.Danger"
+                                      Loading="@IsOperationLoading($"{LoadingKeys.Unassign}-{link.Id}")"
+                                      OnClick="@(() => UnassignAsync(link))">
+                                @L["Unassign"]
+                            </SbButton>
+                        </AuthorizeView>
+                    </SbStack>
+                }
+            </SbStack>
+        }
+    }
+</SbDrawer>
+
+<style>
+    .tags-link-drawer-item {
+        flex: 1 1 auto;
+        min-width: 0;
+    }
+</style>

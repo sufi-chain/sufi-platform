@@ -6,6 +6,13 @@
     "Permission:TagsManagement.TagLinks": "روابط الوسوم",
     "Menu:TagsManagement": "إدارة الوسوم",
     "Menu:TagsManagement.Tags": "الوسوم",
-    "Menu:TagsManagement.TagLinks": "روابط الوسوم"
+    "Menu:TagsManagement.TagLinks": "روابط الوسوم",
+    "Tags": "الوسوم",
+    "ViewTagLinks": "عرض الروابط",
+    "TagLinksFor": "روابط {0}",
+    "NoTagLinksFound": "هذا الوسم غير مرتبط بأي كيان.",
+    "UnassignTagLinkConfirmation": "إزالة هذا الوسم من '{0}' ({1})؟",
+    "Unassign": "إلغاء الربط",
+    "TagUnassignedSuccessfully": "تم إلغاء ربط الوسم بنجاح."
   }
 }

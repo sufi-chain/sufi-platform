@@ -52,6 +52,10 @@
     "EntityIdIsRequired": "Entity id is required.",
     "InvalidEntityId": "Entity id must be a valid GUID.",
     "Actions": "Actions",
-    "Created": "Created"
+    "Created": "Created",
+    "ViewTagLinks": "View links",
+    "TagLinksFor": "Links for {0}",
+    "NoTagLinksFound": "This tag is not linked to any entity.",
+    "UnassignTagLinkConfirmation": "Remove this tag from '{0}' ({1})?"
   }
 }
