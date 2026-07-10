@@ -1,8 +1,10 @@
 using Microsoft.AspNetCore.Components.Server.Circuits;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using SufiChain.SufiAbp.UI.Authorization;
 using SufiChain.SufiAbp.UI.Blazor.Circuit;
 using SufiChain.SufiAbp.UI.Blazor.Server.Circuit;
+using SufiChain.SufiAbp.UI.Services.Authorization;
 
 namespace SufiChain.SufiAbp.UI.Blazor.Server.DependencyInjection;
 
@@ -11,6 +13,16 @@ namespace SufiChain.SufiAbp.UI.Blazor.Server.DependencyInjection;
 /// </summary>
 public static class ServiceCollectionExtensions
 {
+    /// <summary>
+    /// Registers ABP-backed permission checking for menu and toolbar filtering.
+    /// Call before <see cref="SufiChain.SufiAbp.UI.Services.DependencyInjection.ServiceCollectionExtensions.AddSufiAbpUIServices"/>.
+    /// </summary>
+    public static IServiceCollection AddSufiAbpBlazorServerAuthorization(this IServiceCollection services)
+    {
+        services.Replace(ServiceDescriptor.Scoped<ISufiAbpPermissionChecker, AbpPermissionCheckerAdapter>());
+        return services;
+    }
+
     /// <summary>
     /// Registers circuit-aware overlay services for Blazor Server. Replaces the default
     /// <see cref="IBlazorCircuitIdAccessor"/> with the Server implementation and adds

@@ -2,6 +2,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using SufiChain.SufiAbp.UI.Authorization;
 using SufiChain.SufiAbp.UI.Navigation;
+using SufiChain.SufiAbp.UI.Users;
 using NavigationApplicationMenu = SufiChain.SufiAbp.UI.Navigation.ApplicationMenu;
 using NavigationApplicationMenuItem = SufiChain.SufiAbp.UI.Navigation.ApplicationMenuItem;
 using NavigationIHasMenuItems = SufiChain.SufiAbp.UI.Navigation.IHasMenuItems;
@@ -20,15 +21,18 @@ public class DefaultMenuManager : NavigationIMenuManager
     private readonly System.IServiceProvider _serviceProvider;
     private readonly SufiAbpNavigationOptions _options;
     private readonly ISufiAbpPermissionChecker _permissionChecker;
+    private readonly ICurrentUserAccessor _currentUser;
 
     public DefaultMenuManager(
         System.IServiceProvider serviceProvider,
         IOptions<SufiAbpNavigationOptions> options,
-        ISufiAbpPermissionChecker permissionChecker)
+        ISufiAbpPermissionChecker permissionChecker,
+        ICurrentUserAccessor currentUser)
     {
         _serviceProvider = serviceProvider;
         _options = options.Value;
         _permissionChecker = permissionChecker;
+        _currentUser = currentUser;
     }
 
     /// <inheritdoc/>
@@ -67,41 +71,76 @@ public class DefaultMenuManager : NavigationIMenuManager
     /// </summary>
     private async Task CheckPermissionsAsync(NavigationApplicationMenu menu)
     {
-        // Collect all menu items that require permissions
         var allMenuItems = new List<NavigationApplicationMenuItem>();
         CollectAllMenuItems(menu, allMenuItems);
 
-        // Get unique permission names
-        var permissionNames = allMenuItems
-            .Where(item => !string.IsNullOrEmpty(item.RequiredPermissionName))
-            .Select(item => item.RequiredPermissionName!)
-            .Distinct()
-            .ToList();
-
-        if (permissionNames.Count == 0)
+        if (allMenuItems.Count == 0)
         {
             return;
         }
 
-        // Batch check permissions for performance
-        var permissionResults = await _permissionChecker.IsGrantedAsync(permissionNames);
+        var permissionNames = allMenuItems
+            .SelectMany(GetPermissionNames)
+            .Distinct(StringComparer.Ordinal)
+            .ToList();
 
-        // Find items to remove (permission denied)
+        var permissionResults = permissionNames.Count == 0
+            ? new Dictionary<string, bool>(StringComparer.Ordinal)
+            : await _permissionChecker.IsGrantedAsync(permissionNames);
+
         var toBeDeleted = new HashSet<NavigationApplicationMenuItem>();
         foreach (var item in allMenuItems)
         {
-            if (!string.IsNullOrEmpty(item.RequiredPermissionName) &&
-                permissionResults.TryGetValue(item.RequiredPermissionName, out var isGranted) &&
-                !isGranted)
+            if (ShouldRemoveMenuItem(item, permissionResults))
             {
                 toBeDeleted.Add(item);
             }
         }
 
-        // Remove unauthorized menu items
         if (toBeDeleted.Count > 0)
         {
             RemoveMenuItems(menu, toBeDeleted);
+        }
+    }
+
+    private bool ShouldRemoveMenuItem(
+        NavigationApplicationMenuItem item,
+        Dictionary<string, bool> permissionResults)
+    {
+        if (item.IsAuthenticationRequired() && !_currentUser.IsAuthenticated)
+        {
+            return true;
+        }
+
+        if (!string.IsNullOrEmpty(item.RequiredPermissionName))
+        {
+            if (!permissionResults.TryGetValue(item.RequiredPermissionName, out var isGranted) || !isGranted)
+            {
+                return true;
+            }
+        }
+
+        foreach (var permission in item.GetRequiredPermissions())
+        {
+            if (!permissionResults.TryGetValue(permission, out var isGranted) || !isGranted)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private static IEnumerable<string> GetPermissionNames(NavigationApplicationMenuItem item)
+    {
+        if (!string.IsNullOrEmpty(item.RequiredPermissionName))
+        {
+            yield return item.RequiredPermissionName;
+        }
+
+        foreach (var permission in item.GetRequiredPermissions())
+        {
+            yield return permission;
         }
     }
 

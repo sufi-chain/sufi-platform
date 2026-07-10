@@ -19,6 +19,7 @@
   <ItemGroup>
     <ProjectReference Include="..\SufiChain.SufiAbp.MultiTenancy\SufiChain.SufiAbp.MultiTenancy.csproj" />
     <ProjectReference Include="..\SufiChain.SufiAbp.UI.Blazor\SufiChain.SufiAbp.UI.Blazor.csproj" />
+    <ProjectReference Include="..\SufiChain.SufiAbp.UI.Services\SufiChain.SufiAbp.UI.Services.csproj" />
   </ItemGroup>
 
 </Project>
