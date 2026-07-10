@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk.Razor">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <RootNamespace>SufiChain.SufiAbp.Users.Blazor.Public</RootNamespace>
+    <PackageId>SufiChain.SufiAbp.Users.Blazor.Public</PackageId>
+    <Description>Users module public Blazor components for Sufi Platform - reusable user selector.</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="$(MicrosoftAspNetCoreComponentsWebVersion)" />
+    <ProjectReference Include="..\..\..\..\framework\SufiChain.SufiAbp.UI.Blazor\SufiChain.SufiAbp.UI.Blazor.csproj" />
+    <ProjectReference Include="..\SufiChain.SufiAbp.Users.Application.Contracts\SufiChain.SufiAbp.Users.Application.Contracts.csproj" />
+    <ProjectReference Include="..\SufiChain.SufiAbp.Users.Domain.Shared\SufiChain.SufiAbp.Users.Domain.Shared.csproj" />
+  </ItemGroup>
+
+</Project>

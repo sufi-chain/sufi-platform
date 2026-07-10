@@ -1,0 +1,22 @@
+{
+  "culture": "fa",
+  "texts": {
+    "Permission:Users": "کاربران",
+    "Permission:UserLookup": "جستجوی کاربر",
+    "SelectUser": "انتخاب کاربر",
+    "SelectUsers": "انتخاب کاربران",
+    "ChangeUser": "تغییر کاربر",
+    "ClearUser": "پاک کردن",
+    "SearchUsers": "جستجوی کاربران",
+    "SelectedUser": "کاربر انتخاب‌شده",
+    "SelectedUsersCount": "{0} کاربر انتخاب شده",
+    "NoUsersFound": "کاربری یافت نشد",
+    "UserName": "نام کاربری",
+    "Email": "ایمیل",
+    "PhoneNumber": "شماره تلفن",
+    "Name": "نام",
+    "Surname": "نام خانوادگی",
+    "DisplayName": "نام نمایشی",
+    "IsActive": "فعال"
+  }
+}

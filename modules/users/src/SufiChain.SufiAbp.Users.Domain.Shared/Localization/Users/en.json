@@ -1,0 +1,22 @@
+{
+  "culture": "en",
+  "texts": {
+    "Permission:Users": "Users",
+    "Permission:UserLookup": "User lookup",
+    "SelectUser": "Select user",
+    "SelectUsers": "Select users",
+    "ChangeUser": "Change user",
+    "ClearUser": "Clear",
+    "SearchUsers": "Search users",
+    "SelectedUser": "Selected user",
+    "SelectedUsersCount": "{0} user(s) selected",
+    "NoUsersFound": "No users found",
+    "UserName": "User name",
+    "Email": "Email",
+    "PhoneNumber": "Phone number",
+    "Name": "Name",
+    "Surname": "Surname",
+    "DisplayName": "Display name",
+    "IsActive": "Active"
+  }
+}

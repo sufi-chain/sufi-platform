@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>SufiChain.SufiAbp.Users</RootNamespace>
+    <IsPackable>true</IsPackable>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <PackageId>SufiChain.SufiAbp.Users.Application</PackageId>
+    <Description>Users module application services for Sufi Platform - user lookup services.</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\..\framework\SufiChain.SufiAbp.Ddd.Application\SufiChain.SufiAbp.Ddd.Application.csproj" />
+    <ProjectReference Include="..\SufiChain.SufiAbp.Users.Application.Contracts\SufiChain.SufiAbp.Users.Application.Contracts.csproj" />
+    <ProjectReference Include="..\SufiChain.SufiAbp.Users.Abstractions\SufiChain.SufiAbp.Users.Abstractions.csproj" />
+  </ItemGroup>
+
+</Project>
