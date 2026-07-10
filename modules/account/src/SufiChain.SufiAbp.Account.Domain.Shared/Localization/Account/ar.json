@@ -84,6 +84,26 @@
     "VerifyOtpCode": "تحقق من الرمز",
     "OtpVerifiedContinueRegistration": "تم التحقق من البريد. أكمل التسجيل أدناه.",
     "OtpLoginDisabled": "تسجيل الدخول بدون كلمة مرور غير مفعل.",
-    "OtpRegistrationDisabled": "التسجيل بدون كلمة مرور غير مفعل."
+    "OtpRegistrationDisabled": "التسجيل بدون كلمة مرور غير مفعل.",
+    "TextTemplate:SufiAbp.Account.Layout": "تخطيط بريد الحساب",
+    "TextTemplate:SufiAbp.Account.Layout:Description": "غلاف بريد إلكتروني بعلامة المنصة لرسائل الهوية مثل تأكيد البريد وإعادة تعيين كلمة المرور ورموز التحقق.",
+    "TextTemplate:SufiAbp.Account.EmailConfirmation": "تأكيد بريد الحساب",
+    "TextTemplate:SufiAbp.Account.EmailConfirmation:Description": "بريد يرسل إلى المستخدمين الجدد أو المحدّثين لتأكيد ملكية عنوان البريد وتفعيل الوصول إلى الحساب.",
+    "TextTemplate:SufiAbp.Account.PasswordReset": "إعادة تعيين كلمة مرور الحساب",
+    "TextTemplate:SufiAbp.Account.PasswordReset:Description": "بريد يرسل عندما يطلب المستخدم رابطاً آمناً لإعادة تعيين كلمة مرور الحساب.",
+    "TextTemplate:SufiAbp.Account.VerificationCode": "رمز تحقق الحساب بالبريد",
+    "TextTemplate:SufiAbp.Account.VerificationCode:Description": "بريد يحتوي على رمز تحقق قصير الصلاحية لتسجيل الدخول أو التسجيل أو تأكيد هوية الحساب.",
+    "TextTemplate:SufiAbp.Account.VerificationCode.Sms": "رمز تحقق الحساب عبر SMS",
+    "TextTemplate:SufiAbp.Account.VerificationCode.Sms:Description": "رسالة SMS تحتوي على رمز تحقق قصير الصلاحية لفحوصات هوية الحساب.",
+    "TextTemplate:SufiAbp.Account.VerificationCode.Voice": "رمز تحقق الحساب عبر مكالمة صوتية",
+    "TextTemplate:SufiAbp.Account.VerificationCode.Voice:Description": "رسالة مكالمة صوتية تقرأ رمز تحقق قصير الصلاحية لفحوصات هوية الحساب.",
+    "TextTemplate:SufiAbp.Account.OtpCode.Sms": "رمز SMS لتسجيل الدخول بدون كلمة مرور",
+    "TextTemplate:SufiAbp.Account.OtpCode.Sms:Description": "رمز مرور لمرة واحدة عبر SMS لتسجيل الدخول أو التسجيل بدون كلمة مرور.",
+    "TextTemplate:SufiAbp.Account.OtpCode.Voice": "رمز صوتي لتسجيل الدخول بدون كلمة مرور",
+    "TextTemplate:SufiAbp.Account.OtpCode.Voice:Description": "رمز مرور لمرة واحدة عبر مكالمة صوتية لتسجيل الدخول أو التسجيل بدون كلمة مرور.",
+    "TextTemplate:SufiAbp.Account.TwoFactorCode.Sms": "رمز SMS للمصادقة الثنائية",
+    "TextTemplate:SufiAbp.Account.TwoFactorCode.Sms:Description": "رمز SMS يستخدم كعامل مصادقة ثانٍ أثناء تسجيل الدخول إلى الحساب.",
+    "TextTemplate:SufiAbp.Account.TwoFactorCode.Voice": "رمز صوتي للمصادقة الثنائية",
+    "TextTemplate:SufiAbp.Account.TwoFactorCode.Voice:Description": "رمز مكالمة صوتية يستخدم كعامل مصادقة ثانٍ أثناء تسجيل الدخول إلى الحساب."
   }
 }

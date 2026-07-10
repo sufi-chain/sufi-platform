@@ -84,6 +84,26 @@
     "VerifyOtpCode": "Verificar código",
     "OtpVerifiedContinueRegistration": "Correo verificado. Complete su registro a continuación.",
     "OtpLoginDisabled": "El inicio de sesión sin contraseña no está habilitado.",
-    "OtpRegistrationDisabled": "El registro sin contraseña no está habilitado."
+    "OtpRegistrationDisabled": "El registro sin contraseña no está habilitado.",
+    "TextTemplate:SufiAbp.Account.Layout": "Diseño de correo de cuenta",
+    "TextTemplate:SufiAbp.Account.Layout:Description": "Contenedor de correo de cuenta con marca para mensajes de identidad como confirmación, restablecimiento de contraseña y verificaciones.",
+    "TextTemplate:SufiAbp.Account.EmailConfirmation": "Confirmación de correo de cuenta",
+    "TextTemplate:SufiAbp.Account.EmailConfirmation:Description": "Correo enviado a usuarios nuevos o actualizados para confirmar la propiedad de su dirección y activar el acceso a la cuenta.",
+    "TextTemplate:SufiAbp.Account.PasswordReset": "Restablecimiento de contraseña de cuenta",
+    "TextTemplate:SufiAbp.Account.PasswordReset:Description": "Correo enviado cuando un usuario solicita un enlace seguro para restablecer la contraseña de su cuenta.",
+    "TextTemplate:SufiAbp.Account.VerificationCode": "Código de verificación de cuenta por correo",
+    "TextTemplate:SufiAbp.Account.VerificationCode:Description": "Correo con un código de verificación de corta duración para inicio de sesión, registro o confirmación de identidad.",
+    "TextTemplate:SufiAbp.Account.VerificationCode.Sms": "Código de verificación de cuenta por SMS",
+    "TextTemplate:SufiAbp.Account.VerificationCode.Sms:Description": "SMS con un código de verificación de corta duración para comprobaciones de identidad de cuenta.",
+    "TextTemplate:SufiAbp.Account.VerificationCode.Voice": "Código de verificación de cuenta por voz",
+    "TextTemplate:SufiAbp.Account.VerificationCode.Voice:Description": "Mensaje de llamada de voz que dicta un código de verificación de corta duración para comprobar la identidad de la cuenta.",
+    "TextTemplate:SufiAbp.Account.OtpCode.Sms": "Código SMS de acceso sin contraseña",
+    "TextTemplate:SufiAbp.Account.OtpCode.Sms:Description": "Código SMS de un solo uso para iniciar sesión o registrarse sin contraseña.",
+    "TextTemplate:SufiAbp.Account.OtpCode.Voice": "Código de voz de acceso sin contraseña",
+    "TextTemplate:SufiAbp.Account.OtpCode.Voice:Description": "Código de un solo uso por llamada de voz para iniciar sesión o registrarse sin contraseña.",
+    "TextTemplate:SufiAbp.Account.TwoFactorCode.Sms": "Código SMS de dos factores",
+    "TextTemplate:SufiAbp.Account.TwoFactorCode.Sms:Description": "Código SMS usado como segundo factor de autenticación durante el inicio de sesión.",
+    "TextTemplate:SufiAbp.Account.TwoFactorCode.Voice": "Código de voz de dos factores",
+    "TextTemplate:SufiAbp.Account.TwoFactorCode.Voice:Description": "Código por llamada de voz usado como segundo factor de autenticación durante el inicio de sesión."
   }
 }

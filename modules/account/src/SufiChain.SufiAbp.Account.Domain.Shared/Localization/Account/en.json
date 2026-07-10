@@ -84,6 +84,26 @@
     "VerifyOtpCode": "Verify code",
     "OtpVerifiedContinueRegistration": "Email verified. Complete your registration below.",
     "OtpLoginDisabled": "Passwordless sign-in is not enabled.",
-    "OtpRegistrationDisabled": "Passwordless registration is not enabled."
+    "OtpRegistrationDisabled": "Passwordless registration is not enabled.",
+    "TextTemplate:SufiAbp.Account.Layout": "Account Email Layout",
+    "TextTemplate:SufiAbp.Account.Layout:Description": "Branded account email wrapper used for identity messages such as confirmation, password reset, and verification emails.",
+    "TextTemplate:SufiAbp.Account.EmailConfirmation": "Account Email Confirmation",
+    "TextTemplate:SufiAbp.Account.EmailConfirmation:Description": "Email sent to new or updated users so they can confirm ownership of their email address and activate account access.",
+    "TextTemplate:SufiAbp.Account.PasswordReset": "Account Password Reset",
+    "TextTemplate:SufiAbp.Account.PasswordReset:Description": "Email sent when a user requests a secure link to reset their account password.",
+    "TextTemplate:SufiAbp.Account.VerificationCode": "Account Email Verification Code",
+    "TextTemplate:SufiAbp.Account.VerificationCode:Description": "Email containing a short-lived verification code for account sign-in, registration, or identity confirmation flows.",
+    "TextTemplate:SufiAbp.Account.VerificationCode.Sms": "Account SMS Verification Code",
+    "TextTemplate:SufiAbp.Account.VerificationCode.Sms:Description": "SMS message containing a short-lived verification code for account identity checks.",
+    "TextTemplate:SufiAbp.Account.VerificationCode.Voice": "Account Voice Verification Code",
+    "TextTemplate:SufiAbp.Account.VerificationCode.Voice:Description": "Voice-call message that reads a short-lived verification code for account identity checks.",
+    "TextTemplate:SufiAbp.Account.OtpCode.Sms": "Passwordless Sign-In SMS Code",
+    "TextTemplate:SufiAbp.Account.OtpCode.Sms:Description": "SMS one-time passcode used for passwordless account sign-in or registration.",
+    "TextTemplate:SufiAbp.Account.OtpCode.Voice": "Passwordless Sign-In Voice Code",
+    "TextTemplate:SufiAbp.Account.OtpCode.Voice:Description": "Voice-call one-time passcode used for passwordless account sign-in or registration.",
+    "TextTemplate:SufiAbp.Account.TwoFactorCode.Sms": "Two-Factor SMS Code",
+    "TextTemplate:SufiAbp.Account.TwoFactorCode.Sms:Description": "SMS code used as the second authentication factor during account sign-in.",
+    "TextTemplate:SufiAbp.Account.TwoFactorCode.Voice": "Two-Factor Voice Code",
+    "TextTemplate:SufiAbp.Account.TwoFactorCode.Voice:Description": "Voice-call code used as the second authentication factor during account sign-in."
   }
 }
