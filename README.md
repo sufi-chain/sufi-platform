@@ -223,7 +223,7 @@ These infrastructure modules provide the foundation for vertical applications bu
 
 - 🔄 Chat - Basic real-time chat infrastructure
 - 🔄 Chat.Channels - Basic multi-channel communication 
-- 🔄 Messaging 
+- 🔄 Communication 
 - 🔄 TextTemplating
    
 ---
