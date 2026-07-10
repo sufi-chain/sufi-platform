@@ -3,11 +3,11 @@
 namespace SufiChain.SufiAbp.Communications.Notifications;
 
 /// <summary>
-/// Distributed event requesting an email delivery. Handled by the pro Messaging module
+/// Distributed event requesting an email delivery. Handled by the pro Communication module
 /// (or any host-registered handler) which renders the template and sends via <c>IEmailSender</c>.
 /// </summary>
 [Serializable]
-[EventName("SufiAbp.Messaging.SendEmailNotification")]
+[EventName("SufiAbp.Communication.SendEmailNotification")]
 public class SendEmailNotificationEto : NotificationMessageEto
 {
     /// <summary>

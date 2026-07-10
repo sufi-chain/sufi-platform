@@ -12,7 +12,7 @@ public interface IMessageSender
 }
 
 /// <summary>
-/// Message types supported by the messaging system
+/// Message types supported by the communication system
 /// </summary>
 public enum MessageType
 {

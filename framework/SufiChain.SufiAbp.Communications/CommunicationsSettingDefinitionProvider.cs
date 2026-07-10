@@ -12,108 +12,108 @@ public class CommunicationsSettingDefinitionProvider : SettingDefinitionProvider
             new SettingDefinition(
                 CommunicationsSettingNames.Email.DefaultFromAddress,
                 "noreply@example.com",
-                L("DisplayName:SufiAbp.Messaging.Email.DefaultFromAddress"),
-                L("Description:SufiAbp.Messaging.Email.DefaultFromAddress"),
+                L("DisplayName:SufiAbp.Communication.Email.DefaultFromAddress"),
+                L("Description:SufiAbp.Communication.Email.DefaultFromAddress"),
                 isVisibleToClients: false
             ),
             new SettingDefinition(
                 CommunicationsSettingNames.Email.DefaultFromDisplayName,
                 "Application",
-                L("DisplayName:SufiAbp.Messaging.Email.DefaultFromDisplayName"),
-                L("Description:SufiAbp.Messaging.Email.DefaultFromDisplayName"),
+                L("DisplayName:SufiAbp.Communication.Email.DefaultFromDisplayName"),
+                L("Description:SufiAbp.Communication.Email.DefaultFromDisplayName"),
                 isVisibleToClients: false
             ),
             new SettingDefinition(
                 CommunicationsSettingNames.Email.SmtpHost,
                 "",
-                L("DisplayName:SufiAbp.Messaging.Email.SmtpHost"),
-                L("Description:SufiAbp.Messaging.Email.SmtpHost"),
+                L("DisplayName:SufiAbp.Communication.Email.SmtpHost"),
+                L("Description:SufiAbp.Communication.Email.SmtpHost"),
                 isVisibleToClients: false,
                 isEncrypted: false
             ),
             new SettingDefinition(
                 CommunicationsSettingNames.Email.SmtpPort,
                 "25",
-                L("DisplayName:SufiAbp.Messaging.Email.SmtpPort"),
-                L("Description:SufiAbp.Messaging.Email.SmtpPort"),
+                L("DisplayName:SufiAbp.Communication.Email.SmtpPort"),
+                L("Description:SufiAbp.Communication.Email.SmtpPort"),
                 isVisibleToClients: false
             ),
             new SettingDefinition(
                 CommunicationsSettingNames.Email.SmtpUserName,
                 "",
-                L("DisplayName:SufiAbp.Messaging.Email.SmtpUserName"),
-                L("Description:SufiAbp.Messaging.Email.SmtpUserName"),
+                L("DisplayName:SufiAbp.Communication.Email.SmtpUserName"),
+                L("Description:SufiAbp.Communication.Email.SmtpUserName"),
                 isVisibleToClients: false
             ),
             new SettingDefinition(
                 CommunicationsSettingNames.Email.SmtpPassword,
                 "",
-                L("DisplayName:SufiAbp.Messaging.Email.SmtpPassword"),
-                L("Description:SufiAbp.Messaging.Email.SmtpPassword"),
+                L("DisplayName:SufiAbp.Communication.Email.SmtpPassword"),
+                L("Description:SufiAbp.Communication.Email.SmtpPassword"),
                 isVisibleToClients: false,
                 isEncrypted: true
             ),
             new SettingDefinition(
                 CommunicationsSettingNames.Email.SmtpDomain,
                 "",
-                L("DisplayName:SufiAbp.Messaging.Email.SmtpDomain"),
-                L("Description:SufiAbp.Messaging.Email.SmtpDomain"),
+                L("DisplayName:SufiAbp.Communication.Email.SmtpDomain"),
+                L("Description:SufiAbp.Communication.Email.SmtpDomain"),
                 isVisibleToClients: false
             ),
             new SettingDefinition(
                 CommunicationsSettingNames.Email.SmtpEnableSsl,
                 "false",
-                L("DisplayName:SufiAbp.Messaging.Email.SmtpEnableSsl"),
-                L("Description:SufiAbp.Messaging.Email.SmtpEnableSsl"),
+                L("DisplayName:SufiAbp.Communication.Email.SmtpEnableSsl"),
+                L("Description:SufiAbp.Communication.Email.SmtpEnableSsl"),
                 isVisibleToClients: false
             ),
             new SettingDefinition(
                 CommunicationsSettingNames.Email.SmtpUseDefaultCredentials,
                 "true",
-                L("DisplayName:SufiAbp.Messaging.Email.SmtpUseDefaultCredentials"),
-                L("Description:SufiAbp.Messaging.Email.SmtpUseDefaultCredentials"),
+                L("DisplayName:SufiAbp.Communication.Email.SmtpUseDefaultCredentials"),
+                L("Description:SufiAbp.Communication.Email.SmtpUseDefaultCredentials"),
                 isVisibleToClients: false
             ),
             new SettingDefinition(
                 CommunicationsSettingNames.Sms.DefaultFromNumber,
                 "",
-                L("DisplayName:SufiAbp.Messaging.Sms.DefaultFromNumber"),
-                L("Description:SufiAbp.Messaging.Sms.DefaultFromNumber"),
+                L("DisplayName:SufiAbp.Communication.Sms.DefaultFromNumber"),
+                L("Description:SufiAbp.Communication.Sms.DefaultFromNumber"),
                 isVisibleToClients: false
             ),
             new SettingDefinition(
                 CommunicationsSettingNames.Sms.ProviderName,
                 "",
-                L("DisplayName:SufiAbp.Messaging.Sms.ProviderName"),
-                L("Description:SufiAbp.Messaging.Sms.ProviderName"),
+                L("DisplayName:SufiAbp.Communication.Sms.ProviderName"),
+                L("Description:SufiAbp.Communication.Sms.ProviderName"),
                 isVisibleToClients: false
             ),
             new SettingDefinition(
                 CommunicationsSettingNames.VoiceCall.DefaultFromNumber,
                 "",
-                L("DisplayName:SufiAbp.Messaging.VoiceCall.DefaultFromNumber"),
-                L("Description:SufiAbp.Messaging.VoiceCall.DefaultFromNumber"),
+                L("DisplayName:SufiAbp.Communication.VoiceCall.DefaultFromNumber"),
+                L("Description:SufiAbp.Communication.VoiceCall.DefaultFromNumber"),
                 isVisibleToClients: false
             ),
             new SettingDefinition(
                 CommunicationsSettingNames.VoiceCall.DefaultLanguage,
                 "en-US",
-                L("DisplayName:SufiAbp.Messaging.VoiceCall.DefaultLanguage"),
-                L("Description:SufiAbp.Messaging.VoiceCall.DefaultLanguage"),
+                L("DisplayName:SufiAbp.Communication.VoiceCall.DefaultLanguage"),
+                L("Description:SufiAbp.Communication.VoiceCall.DefaultLanguage"),
                 isVisibleToClients: false
             ),
             new SettingDefinition(
                 CommunicationsSettingNames.VoiceCall.DefaultVoiceGender,
                 "Female",
-                L("DisplayName:SufiAbp.Messaging.VoiceCall.DefaultVoiceGender"),
-                L("Description:SufiAbp.Messaging.VoiceCall.DefaultVoiceGender"),
+                L("DisplayName:SufiAbp.Communication.VoiceCall.DefaultVoiceGender"),
+                L("Description:SufiAbp.Communication.VoiceCall.DefaultVoiceGender"),
                 isVisibleToClients: false
             ),
             new SettingDefinition(
                 CommunicationsSettingNames.VoiceCall.ProviderName,
                 "",
-                L("DisplayName:SufiAbp.Messaging.VoiceCall.ProviderName"),
-                L("Description:SufiAbp.Messaging.VoiceCall.ProviderName"),
+                L("DisplayName:SufiAbp.Communication.VoiceCall.ProviderName"),
+                L("Description:SufiAbp.Communication.VoiceCall.ProviderName"),
                 isVisibleToClients: false
             )
         );

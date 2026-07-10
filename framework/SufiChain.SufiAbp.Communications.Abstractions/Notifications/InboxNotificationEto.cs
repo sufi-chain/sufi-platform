@@ -5,10 +5,10 @@ namespace SufiChain.SufiAbp.Communications.Notifications;
 /// <summary>
 /// Distributed event transfer object carrying an in-app inbox notification.
 /// Published by any module via <see cref="INotificationPublisher"/> and consumed
-/// by the inbox implementation (e.g. the Messaging pro-module).
+/// by the inbox implementation (e.g. the Communication pro-module).
 /// </summary>
 [Serializable]
-[EventName("SufiAbp.Messaging.InboxNotification")]
+[EventName("SufiAbp.Communication.InboxNotification")]
 public class InboxNotificationEto
 {
     /// <summary>

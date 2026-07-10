@@ -3,11 +3,11 @@
 namespace SufiChain.SufiAbp.Communications.Notifications;
 
 /// <summary>
-/// Distributed event requesting an SMS delivery. Handled by the pro Messaging module
+/// Distributed event requesting an SMS delivery. Handled by the pro Communication module
 /// which renders the template (if any) and sends via the configured SMS provider.
 /// </summary>
 [Serializable]
-[EventName("SufiAbp.Messaging.SendSmsNotification")]
+[EventName("SufiAbp.Communication.SendSmsNotification")]
 public class SendSmsNotificationEto : NotificationMessageEto
 {
     /// <summary>

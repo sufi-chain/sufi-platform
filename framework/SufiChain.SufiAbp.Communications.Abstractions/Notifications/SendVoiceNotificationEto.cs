@@ -3,11 +3,11 @@
 namespace SufiChain.SufiAbp.Communications.Notifications;
 
 /// <summary>
-/// Distributed event requesting a voice (TTS) call. Handled by the pro Messaging module
+/// Distributed event requesting a voice (TTS) call. Handled by the pro Communication module
 /// via the configured voice provider (e.g. Kavenegar). Reserved for critical events.
 /// </summary>
 [Serializable]
-[EventName("SufiAbp.Messaging.SendVoiceNotification")]
+[EventName("SufiAbp.Communication.SendVoiceNotification")]
 public class SendVoiceNotificationEto : NotificationMessageEto
 {
     /// <summary>

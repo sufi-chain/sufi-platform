@@ -8,7 +8,7 @@ public interface ISmsChannel : IChannel
 {
     string ProviderCode { get; }
 
-    int Priority => 0;
+    int Priority { get; }
 
     void Configure(Dictionary<string, string> settings);
 
@@ -19,11 +19,6 @@ public interface ISmsChannel : IChannel
     Task<ProviderHealthCheckResult> HealthCheckAsync();
 
     Task<List<string>> GetSupportedFeaturesAsync();
-
-    async Task<List<string>> GetCapabilitiesAsync()
-    {
-        return await GetSupportedFeaturesAsync();
-    }
 
     Task<SmsProviderMetadata> GetMetadataAsync();
 
