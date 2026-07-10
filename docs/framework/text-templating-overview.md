@@ -2,7 +2,7 @@
 
 ## Overview
 
-The SufiAbp TextTemplating system provides a powerful, extensible framework for rendering dynamic text content using templates. It's fully integrated with the Messaging system and supports multiple rendering engines (Scriban by default).
+The SufiAbp TextTemplating system provides a powerful, extensible framework for rendering dynamic text content using templates. It's fully integrated with the Communication system and supports multiple rendering engines (Scriban by default).
 
 ## Key Features
 
@@ -442,9 +442,9 @@ public override void ConfigureServices(ServiceConfigurationContext context)
 {{ L "LocalizationKeyWithParam" param1 param2 }}
 ```
 
-## Integration with Messaging
+## Integration with Communication
 
-The TextTemplating system is fully integrated with the Messaging system:
+The TextTemplating system is fully integrated with the Communication system:
 
 ```csharp
 public class NotificationService : SufiAbpApplicationService
@@ -501,7 +501,7 @@ public class NotificationService : SufiAbpApplicationService
 
 ## Next Steps
 
-- [Messaging System Overview](./messaging-overview.md)
+- [Communication System Overview](./communication-overview.md)
 - [Creating Custom Rendering Engines](./text-templating-custom-engines.md)
 - [Template Testing Guide](./text-templating-testing.md)
 

@@ -12,6 +12,22 @@ This page explains the layout variants available in KomTheme and when each one f
 | `AccountLayout` | Authentication and account pages such as login or reset flows |
 | `EmptyLayout` | Minimal wrapper for full-screen, embedded, or print-oriented pages |
 
+## Account layout (external definition)
+
+`AccountLayout` is **not** defined inside the KomTheme product repo. At startup, `KomThemeBlazorModule` registers:
+
+```csharp
+KomLayouts.Account = typeof(AccountLayout); // SufiChain.SufiAbp.UI.Blazor.Layouts
+```
+
+Hosts may override account pages with a custom layout. For example, SufiChane.Console uses `ConsoleAccountLayout` (tenant-branded) on all account routes instead of the default `AccountLayout`.
+
+## Public layout (same shell as Application)
+
+`Kom1Theme.GetLayout` maps `StandardLayouts.Public` to the same type as `StandardLayouts.Application` (`KomThemeBlazorOptions.Layout`). There is no separate public layout component in KomTheme.
+
+For public-facing **navigation** (KB, marketing menus), use `IPublicMenuProvider`. See [Public navigation](public-navigation.md).
+
 ## Common behavior
 
 All layouts share a few important platform behaviors:

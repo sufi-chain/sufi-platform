@@ -22,8 +22,20 @@ Each module folder in this section should explain three things clearly: what res
 
 | Module | Responsibility | Canonical docs |
 | --- | --- | --- |
+| AI | Workspaces, RAG, MCP tools/servers, usage analytics | [AI](ai/index.md) |
+| Calendar | Calendars, events, availability, MCP scheduling tools | [Calendar](calendar/index.md) |
 | File Manager | Shared file, media, upload, folder, and asset-management workflows | [File Manager](file-manager/index.md) |
+| Menu Management | Dynamic menus, menu items, public menu API | [Menu Management](menu-management/index.md) |
 | Short Link Generator | Short URL creation, redirect handling, and click analytics | [Short Link Generator](short-link-generator/index.md) |
+| Tags Management | Tags and tag-to-entity links | [Tags Management](tags-management/index.md) |
+| Users | User lookup services and public selector components | [Users](users/index.md) |
+
+## Infrastructure modules
+
+| Module | Responsibility | Canonical docs |
+| --- | --- | --- |
+| Blob Storing Database | Database-backed blob storage provider (EF + MongoDB) | [Blob Storing Database](blob-storing-database/index.md) |
+| OpenIddict | OAuth/OIDC server integration for tiered hosts | [OpenIddict](openiddict/index.md) |
 
 ## Standard module page set
 

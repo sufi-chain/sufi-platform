@@ -4,8 +4,17 @@ KomTheme is the preferred shell and layout layer used by Sufi Platform hosts. Re
 
 KomTheme is not a replacement for SufiBlazor. The two play different roles:
 
-- `SufiBlazor` provides reusable interactive components
+- `SufiBlazor` provides reusable interactive components (standalone — no ABP required)
 - `KomTheme` provides the host shell, page layout, and branded navigation frame
+
+## Dependencies
+
+KomTheme **requires SufiAbp UI**, not SufiBlazor alone:
+
+- `SufiChain.SufiAbp.UI.Blazor` — menus, toolbars, page layout, `AccountLayout`
+- `SufiChain.SufiAbp.Core`, `SufiChain.SufiAbp.Security` — module infrastructure
+
+Product source: `independent-projects/kom-theme/` (independently versioned NuGet packages).
 
 ## Packages
 
@@ -30,4 +39,5 @@ KomTheme is not a replacement for SufiBlazor. The two play different roles:
 - open [Layouts](layouts.md) when choosing or changing the shell structure of a host
 - open [Toolbars](toolbars.md) when adding top-bar actions or user-specific tools
 - open [Configuration](configuration.md) when changing default layout behavior or branding
+- open [Public navigation](public-navigation.md) when public/KB menus differ from admin navigation
 - open [Font Override](font-override.md) when the host needs custom Latin or RTL fonts

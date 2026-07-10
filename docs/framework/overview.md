@@ -44,7 +44,7 @@ Open these areas first depending on the problem you are working on:
 
 - localization through `L["Key"]`
 - user and tenant context access
-- UI messaging and notifications
+- UI communication and notifications
 - loading helpers such as `ExecuteWithLoadingAsync`
 - lazy access to common platform services
 
