@@ -45,17 +45,12 @@ public class PermissionStore : IPermissionStore, ITransientDependency
     {
         var cacheKey = CalculateCacheKey(name, providerName, providerKey);
 
-        Logger.LogDebug($"PermissionStore.GetCacheItemAsync: {cacheKey}");
-
         var cacheItem = await Cache.GetAsync(cacheKey);
 
         if (cacheItem != null)
         {
-            Logger.LogDebug($"Found in the cache: {cacheKey}");
             return cacheItem;
         }
-
-        Logger.LogDebug($"Not found in the cache: {cacheKey}");
 
         cacheItem = new PermissionGrantCacheItem(false);
 
@@ -140,18 +135,13 @@ public class PermissionStore : IPermissionStore, ITransientDependency
     {
         var cacheKeys = names.Select(x => CalculateCacheKey(x, providerName, providerKey)).ToList();
 
-        Logger.LogDebug($"PermissionStore.GetCacheItemAsync: {string.Join(",", cacheKeys)}");
-
         var cacheItems = (await Cache.GetManyAsync(cacheKeys)).ToList();
         if (cacheItems.All(x => x.Value != null))
         {
-            Logger.LogDebug($"Found in the cache: {string.Join(",", cacheKeys)}");
             return cacheItems;
         }
 
         var notCacheKeys = cacheItems.Where(x => x.Value == null).Select(x => x.Key).ToList();
-
-        Logger.LogDebug($"Not found in the cache: {string.Join(",", notCacheKeys)}");
 
         var newCacheItems = await SetCacheItemsAsync(providerName, providerKey, notCacheKeys);
 
