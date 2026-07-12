@@ -14,12 +14,12 @@
     <PackageReference Include="Serilog.Sinks.Console" Version="$(SerilogSinksConsoleVersion)" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\framework\SufiChain.SufiAbp.Autofac\SufiChain.SufiAbp.Autofac.csproj" />
-    <ProjectReference Include="..\..\framework\SufiChain.SufiAbp.AspNetCore.Serilog\SufiChain.SufiAbp.AspNetCore.Serilog.csproj" />
+    <PackageReference Include="Volo.Abp.Autofac" Version="$(AbpVersion)" />
+    <PackageReference Include="Volo.Abp.AspNetCore.Serilog" Version="$(AbpVersion)" />
     <ProjectReference Include="..\..\framework\SufiChain.SufiAbp.Core\SufiChain.SufiAbp.Core.csproj" />
-    <ProjectReference Include="..\..\framework\SufiChain.SufiAbp.EntityFrameworkCore.Sqlite\SufiChain.SufiAbp.EntityFrameworkCore.Sqlite.csproj" />
-    <ProjectReference Include="..\..\framework\SufiChain.SufiAbp.MongoDB\SufiChain.SufiAbp.MongoDB.csproj" />
-    <ProjectReference Include="..\..\framework\SufiChain.SufiAbp.Swashbuckle\SufiChain.SufiAbp.Swashbuckle.csproj" />
+    <PackageReference Include="Volo.Abp.EntityFrameworkCore.Sqlite" Version="$(AbpVersion)" />
+    <PackageReference Include="Volo.Abp.MongoDB" Version="$(AbpVersion)" />
+    <PackageReference Include="Volo.Abp.Swashbuckle" Version="$(AbpVersion)" />
     <ProjectReference Include="..\..\modules\account\src\SufiChain.SufiAbp.Account.Application\SufiChain.SufiAbp.Account.Application.csproj" />
     <ProjectReference Include="..\..\modules\account\src\SufiChain.SufiAbp.Account.HttpApi\SufiChain.SufiAbp.Account.HttpApi.csproj" />
     <ProjectReference Include="..\..\modules\ai\src\SufiChain.SufiAbp.AI.Application\SufiChain.SufiAbp.AI.Application.csproj" />

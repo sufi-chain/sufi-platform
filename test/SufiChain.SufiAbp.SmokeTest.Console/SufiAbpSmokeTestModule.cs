@@ -1,10 +1,7 @@
 using SufiChain.SufiAbp.Account;
 using SufiChain.SufiAbp.AI;
-using SufiChain.SufiAbp.AspNetCore.Serilog;
 using SufiChain.SufiAbp.AuditLogging;
 using SufiChain.SufiAbp.AuditLogging.MongoDB;
-using SufiChain.SufiAbp.Autofac;
-using SufiChain.SufiAbp.BackgroundJobs;
 using SufiChain.SufiAbp.BackgroundJobs.MongoDB;
 using SufiChain.SufiAbp.BlobStoring.Database.MongoDB;
 using SufiChain.SufiAbp.FeatureManagement;
@@ -25,7 +22,6 @@ using SufiChain.SufiAbp.SettingManagement;
 using SufiChain.SufiAbp.SettingManagement.MongoDB;
 using SufiChain.SufiAbp.ShortLinkGenerator;
 using SufiChain.SufiAbp.ShortLinkGenerator.MongoDB;
-using SufiChain.SufiAbp.Swashbuckle;
 using SufiChain.SufiAbp.TagsManagement;
 using SufiChain.SufiAbp.TagsManagement.MongoDB;
 using SufiChain.SufiAbp.TenantManagement;
@@ -33,12 +29,15 @@ using SufiChain.SufiAbp.TenantManagement.MongoDB;
 using SufiChain.SufiAbp.Users;
 using Volo.Abp.Modularity;
 
+using Volo.Abp.Autofac;
+using Volo.Abp.Swashbuckle;
+using Volo.Abp.AspNetCore.Serilog;
 namespace SufiChain.SufiAbp.SmokeTest.Console;
 
 [DependsOn(
-    typeof(SufiAbpAutofacModule),
-    typeof(SufiAbpAspNetCoreSerilogModule),
-    typeof(SufiAbpSwashbuckleModule),
+    typeof(AbpAutofacModule),
+    typeof(AbpAspNetCoreSerilogModule),
+    typeof(AbpSwashbuckleModule),
     typeof(SufiAbpOpenIddictAspNetCoreModule),
     typeof(SufiAbpAccountApplicationModule),
     typeof(SufiAbpAccountHttpApiModule),

@@ -4,7 +4,7 @@
 
 SufiAbp is a comprehensive, modular platform for building enterprise-grade Blazor applications. It provides a complete infrastructure layer—authentication, authorization, multi-tenancy, localization, auditing, and more—so you can focus on your domain logic and business features.
 
-Built on top of ABP Framework , SufiAbp offers a custom Blazor UI system (SufiBlazor component library + KomTheme), reimplemented modules with clean branding, and a powerful CLI for rapid development.
+Built on top of ABP Framework , SufiAbp offers a custom Blazor UI system (SufiBlazor component library + SufiTheme), reimplemented modules with clean branding, and a powerful CLI for rapid development.
 
 ---
 
@@ -14,7 +14,7 @@ SufiAbp is **not a fork** of ABP Framework. It is a strategic platform layer tha
 
 - **Consumes ABP Framework** as NuGet packages for backend infrastructure (modular architecture, DDD patterns, multi-tenancy, permissions, settings, auditing)
 - **Provides 63 SufiAbp packages** (43 reimplemented from ABP with custom branding + 20 innovations including custom UI system and authentication)
-- **Replaces ABP's Blazorise-based UI** with a fully custom Blazor component library (SufiBlazor) and theme system (KomTheme)
+- **Replaces ABP's Blazorise-based UI** with a fully custom Blazor component library (SufiBlazor) and theme system (SufiTheme)
 - **Reimplements core ABP modules** (Identity, Tenant Management, etc.) with SufiAbp UI and branding
 - **Offers custom tooling** (`sufi` CLI) for scaffolding and code generation
 - **Remains fully open-source** under LGPL-3.0 license
@@ -25,7 +25,7 @@ SufiAbp is **not a fork** of ABP Framework. It is a strategic platform layer tha
 Host Applications & Products
     ↓
 SufiAbp Modules (Identity, Tenant Management, File Manager, AI Management, etc.)
-    ├─ KomTheme Module (Shell, Layout, Navigation, Theming System)
+    ├─ SufiTheme Module (Shell, Layout, Navigation, Theming System)
     ↓
 SufiBlazor (Component Library) - Replaces Blazorise
     ↓
@@ -60,7 +60,7 @@ ABP Framework  (consumed as NuGet packages)
 ### Frontend (SufiAbp Custom)
 
 - **SufiBlazor Component Library**: Custom Blazor components (DataGrid, Form, Modal, Tabs, etc.)
-- **KomTheme**: Dual-layout theme system (collapsed/expanded shells) with LTR/RTL support
+- **SufiTheme**: Dual-layout theme system (collapsed/expanded shells) with LTR/RTL support
 - **Responsive Design**: Mobile-first layouts with adaptive navigation
 - **Theming System**: CSS variables for easy customization
 - **Icon System**: Integrated icon library with consistent styling
@@ -105,7 +105,7 @@ These infrastructure modules provide the foundation for vertical applications bu
 | **Component Base** | `AbpComponentBase` | `SufiAbpComponentBase` |
 | **DTO Branding** | `Volo.Abp.Application.Dtos.*` | `SufiChain.SufiAbp.Application.Dtos.*` |
 | **Controller Base** | `AbpControllerBase` | `SufiAbpControllerBase` |
-| **Theme** | LeptonX | KomTheme  |
+| **Theme** | LeptonX | SufiTheme  |
 | **CLI** | `abp` command | `sufi` command |
 | **License** | LGPL-3.0 (framework only) | LGPL-3.0 (framework + modules) |
 | **Commercial** | ABP Commercial for modules | Infrastructure open-source, vertical apps commercial |
@@ -134,7 +134,7 @@ These infrastructure modules provide the foundation for vertical applications bu
 - **Blazor Server**: Server-side rendering with SignalR
 - **Blazor WebAssembly**: Client-side SPA with .NET in browser
 - **SufiBlazor**: Custom component library
-- **KomTheme**: Layout and theming system
+- **SufiTheme**: Layout and theming system
 - **CSS Variables**: Dynamic theming
 - **Responsive Design**: Mobile-first layouts
 
