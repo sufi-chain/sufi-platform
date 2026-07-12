@@ -1,0 +1,72 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>SufiChain.SufiPlatform.SmokeTest.Console</RootNamespace>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="$(MicrosoftExtensionsConfigurationJsonVersion)" />
+    <PackageReference Include="Serilog.Extensions.Logging" Version="$(SerilogExtensionsLoggingVersion)" />
+    <PackageReference Include="Serilog.Sinks.Async" Version="$(SerilogSinksAsyncVersion)" />
+    <PackageReference Include="Serilog.Sinks.Console" Version="$(SerilogSinksConsoleVersion)" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Volo.Abp.Autofac" Version="$(AbpVersion)" />
+    <PackageReference Include="Volo.Abp.AspNetCore.Serilog" Version="$(AbpVersion)" />
+    <ProjectReference Include="..\..\framework\SufiChain.SufiPlatform.Core\SufiChain.SufiPlatform.Core.csproj" />
+    <PackageReference Include="Volo.Abp.EntityFrameworkCore.Sqlite" Version="$(AbpVersion)" />
+    <PackageReference Include="Volo.Abp.MongoDB" Version="$(AbpVersion)" />
+    <PackageReference Include="Volo.Abp.Swashbuckle" Version="$(AbpVersion)" />
+    <ProjectReference Include="..\..\modules\account\src\SufiChain.SufiPlatform.Account.Application\SufiChain.SufiPlatform.Account.Application.csproj" />
+    <ProjectReference Include="..\..\modules\account\src\SufiChain.SufiPlatform.Account.HttpApi\SufiChain.SufiPlatform.Account.HttpApi.csproj" />
+    <ProjectReference Include="..\..\modules\ai\src\SufiChain.SufiPlatform.SufiAI.Application\SufiChain.SufiPlatform.SufiAI.Application.csproj" />
+    <ProjectReference Include="..\..\modules\ai\src\SufiChain.SufiPlatform.SufiAI.HttpApi\SufiChain.SufiPlatform.SufiAI.HttpApi.csproj" />
+    <ProjectReference Include="..\..\modules\ai\src\SufiChain.SufiPlatform.SufiAI.MongoDB\SufiChain.SufiPlatform.SufiAI.MongoDB.csproj" />
+    <ProjectReference Include="..\..\modules\audit-logging\src\SufiChain.SufiPlatform.AuditLogging.Application\SufiChain.SufiPlatform.AuditLogging.Application.csproj" />
+    <ProjectReference Include="..\..\modules\audit-logging\src\SufiChain.SufiPlatform.AuditLogging.HttpApi\SufiChain.SufiPlatform.AuditLogging.HttpApi.csproj" />
+    <ProjectReference Include="..\..\modules\audit-logging\src\SufiChain.SufiPlatform.AuditLogging.MongoDB\SufiChain.SufiPlatform.AuditLogging.MongoDB.csproj" />
+    <ProjectReference Include="..\..\modules\jobs\src\SufiChain.SufiPlatform.BackgroundJobs.Application\SufiChain.SufiPlatform.BackgroundJobs.Application.csproj" />
+    <ProjectReference Include="..\..\modules\jobs\src\SufiChain.SufiPlatform.BackgroundJobs.HttpApi\SufiChain.SufiPlatform.BackgroundJobs.HttpApi.csproj" />
+    <ProjectReference Include="..\..\modules\jobs\src\SufiChain.SufiPlatform.BackgroundJobs.MongoDB\SufiChain.SufiPlatform.BackgroundJobs.MongoDB.csproj" />
+    <ProjectReference Include="..\..\modules\blob-database\src\SufiChain.SufiPlatform.BlobDatabase.MongoDB\SufiChain.SufiPlatform.BlobDatabase.MongoDB.csproj" />
+    <ProjectReference Include="..\..\modules\features\src\SufiChain.SufiPlatform.Features.Application\SufiChain.SufiPlatform.Features.Application.csproj" />
+    <ProjectReference Include="..\..\modules\features\src\SufiChain.SufiPlatform.Features.HttpApi\SufiChain.SufiPlatform.Features.HttpApi.csproj" />
+    <ProjectReference Include="..\..\modules\features\src\SufiChain.SufiPlatform.Features.MongoDB\SufiChain.SufiPlatform.Features.MongoDB.csproj" />
+    <ProjectReference Include="..\..\modules\file-manager\src\SufiChain.SufiPlatform.FileManager.Application\SufiChain.SufiPlatform.FileManager.Application.csproj" />
+    <ProjectReference Include="..\..\modules\file-manager\src\SufiChain.SufiPlatform.FileManager.HttpApi\SufiChain.SufiPlatform.FileManager.HttpApi.csproj" />
+    <ProjectReference Include="..\..\modules\file-manager\src\SufiChain.SufiPlatform.FileManager.MongoDB\SufiChain.SufiPlatform.FileManager.MongoDB.csproj" />
+    <ProjectReference Include="..\..\modules\identity\src\SufiChain.SufiPlatform.Identity.Application\SufiChain.SufiPlatform.Identity.Application.csproj" />
+    <ProjectReference Include="..\..\modules\identity\src\SufiChain.SufiPlatform.Identity.HttpApi\SufiChain.SufiPlatform.Identity.HttpApi.csproj" />
+    <ProjectReference Include="..\..\modules\identity\src\SufiChain.SufiPlatform.Identity.MongoDB\SufiChain.SufiPlatform.Identity.MongoDB.csproj" />
+    <ProjectReference Include="..\..\modules\localization\src\SufiChain.SufiPlatform.Localization.Application\SufiChain.SufiPlatform.Localization.Application.csproj" />
+    <ProjectReference Include="..\..\modules\localization\src\SufiChain.SufiPlatform.Localization.HttpApi\SufiChain.SufiPlatform.Localization.HttpApi.csproj" />
+    <ProjectReference Include="..\..\modules\localization\src\SufiChain.SufiPlatform.Localization.MongoDB\SufiChain.SufiPlatform.Localization.MongoDB.csproj" />
+    <ProjectReference Include="..\..\modules\openiddict\src\SufiChain.SufiPlatform.OpenIddict.AspNetCore\SufiChain.SufiPlatform.OpenIddict.AspNetCore.csproj" />
+    <ProjectReference Include="..\..\modules\openiddict\src\SufiChain.SufiPlatform.OpenIddict.MongoDB\SufiChain.SufiPlatform.OpenIddict.MongoDB.csproj" />
+    <ProjectReference Include="..\..\modules\openiddict\src\SufiChain.SufiPlatform.Permissions.Domain.OpenIddict\SufiChain.SufiPlatform.Permissions.Domain.OpenIddict.csproj" />
+    <ProjectReference Include="..\..\modules\identity\src\SufiChain.SufiPlatform.Permissions.Domain.Identity\SufiChain.SufiPlatform.Permissions.Domain.Identity.csproj" />
+    <ProjectReference Include="..\..\modules\permissions\src\SufiChain.SufiPlatform.Permissions.Application\SufiChain.SufiPlatform.Permissions.Application.csproj" />
+    <ProjectReference Include="..\..\modules\permissions\src\SufiChain.SufiPlatform.Permissions.Domain\SufiChain.SufiPlatform.Permissions.Domain.csproj" />
+    <ProjectReference Include="..\..\modules\permissions\src\SufiChain.SufiPlatform.Permissions.HttpApi\SufiChain.SufiPlatform.Permissions.HttpApi.csproj" />
+    <ProjectReference Include="..\..\modules\permissions\src\SufiChain.SufiPlatform.Permissions.MongoDB\SufiChain.SufiPlatform.Permissions.MongoDB.csproj" />
+    <ProjectReference Include="..\..\modules\settings\src\SufiChain.SufiPlatform.Settings.Application\SufiChain.SufiPlatform.Settings.Application.csproj" />
+    <ProjectReference Include="..\..\modules\settings\src\SufiChain.SufiPlatform.Settings.HttpApi\SufiChain.SufiPlatform.Settings.HttpApi.csproj" />
+    <ProjectReference Include="..\..\modules\settings\src\SufiChain.SufiPlatform.Settings.MongoDB\SufiChain.SufiPlatform.Settings.MongoDB.csproj" />
+    <ProjectReference Include="..\..\modules\short-links\src\SufiChain.SufiPlatform.ShortLinks.Application\SufiChain.SufiPlatform.ShortLinks.Application.csproj" />
+    <ProjectReference Include="..\..\modules\short-links\src\SufiChain.SufiPlatform.ShortLinks.HttpApi\SufiChain.SufiPlatform.ShortLinks.HttpApi.csproj" />
+    <ProjectReference Include="..\..\modules\short-links\src\SufiChain.SufiPlatform.ShortLinks.MongoDB\SufiChain.SufiPlatform.ShortLinks.MongoDB.csproj" />
+    <ProjectReference Include="..\..\modules\tags\src\SufiChain.SufiPlatform.Tags.Application\SufiChain.SufiPlatform.Tags.Application.csproj" />
+    <ProjectReference Include="..\..\modules\tags\src\SufiChain.SufiPlatform.Tags.HttpApi\SufiChain.SufiPlatform.Tags.HttpApi.csproj" />
+    <ProjectReference Include="..\..\modules\tags\src\SufiChain.SufiPlatform.Tags.MongoDB\SufiChain.SufiPlatform.Tags.MongoDB.csproj" />
+    <ProjectReference Include="..\..\modules\tenants\src\SufiChain.SufiPlatform.Tenants.Application\SufiChain.SufiPlatform.Tenants.Application.csproj" />
+    <ProjectReference Include="..\..\modules\tenants\src\SufiChain.SufiPlatform.Tenants.HttpApi\SufiChain.SufiPlatform.Tenants.HttpApi.csproj" />
+    <ProjectReference Include="..\..\modules\tenants\src\SufiChain.SufiPlatform.Tenants.MongoDB\SufiChain.SufiPlatform.Tenants.MongoDB.csproj" />
+    <ProjectReference Include="..\..\modules\users\src\SufiChain.SufiPlatform.Users.MongoDB\SufiChain.SufiPlatform.Users.MongoDB.csproj" />
+    <ProjectReference Include="..\..\modules\menus\src\SufiChain.SufiPlatform.Menus.Application\SufiChain.SufiPlatform.Menus.Application.csproj" />
+    <ProjectReference Include="..\..\modules\menus\src\SufiChain.SufiPlatform.Menus.HttpApi\SufiChain.SufiPlatform.Menus.HttpApi.csproj" />
+    <ProjectReference Include="..\..\modules\menus\src\SufiChain.SufiPlatform.Menus.MongoDB\SufiChain.SufiPlatform.Menus.MongoDB.csproj" />
+  </ItemGroup>
+</Project>

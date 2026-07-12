@@ -3,7 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Serilog;
 using Volo.Abp;
 
-namespace SufiChain.SufiAbp.SmokeTest.Console;
+namespace SufiChain.SufiPlatform.SmokeTest.Console;
 
 public static class Program
 {
@@ -20,17 +20,17 @@ public static class Program
             var configuration = new ConfigurationBuilder()
                 .AddInMemoryCollection(new Dictionary<string, string?>
                 {
-                    ["ConnectionStrings:Default"] = "mongodb://localhost:27017/SufiAbp_SmokeTest",
+                    ["ConnectionStrings:Default"] = "mongodb://localhost:27017/Sufi_SmokeTest",
                     ["AuthServer:Authority"] = "https://localhost:44300",
                     ["AuthServer:RequireHttpsMetadata"] = "false",
-                    ["StringEncryption:DefaultPassPhrase"] = "SufiAbpSmokeTestPassPhrase"
+                    ["StringEncryption:DefaultPassPhrase"] = "SufiSmokeTestPassPhrase"
                 })
                 .AddJsonFile("appsettings.json", optional: true)
                 .AddEnvironmentVariables()
                 .AddCommandLine(args)
                 .Build();
 
-            using var application = await AbpApplicationFactory.CreateAsync<SufiAbpSmokeTestModule>(options =>
+            using var application = await AbpApplicationFactory.CreateAsync<SufiSmokeTestModule>(options =>
             {
                 options.Services.ReplaceConfiguration(configuration);
                 options.UseAutofac();
@@ -38,15 +38,15 @@ public static class Program
             });
 
             await application.InitializeAsync();
-            Log.Information("SufiAbp smoke test initialized successfully.");
+            Log.Information("Sufi smoke test initialized successfully.");
             await application.ShutdownAsync();
-            Log.Information("SufiAbp smoke test shutdown completed successfully.");
+            Log.Information("Sufi smoke test shutdown completed successfully.");
 
             return 0;
         }
         catch (Exception exception)
         {
-            Log.Fatal(exception, "SufiAbp smoke test failed.");
+            Log.Fatal(exception, "Sufi smoke test failed.");
             return 1;
         }
         finally

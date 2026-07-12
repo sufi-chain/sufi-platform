@@ -1,4 +1,4 @@
-using SufiChain.SufiAbp.Application.Services;
+using SufiChain.SufiPlatform.Application.Services;
 using MyCompanyName.MyProjectName.Localization;
 
 namespace MyCompanyName.MyProjectName.Services;
@@ -6,7 +6,7 @@ namespace MyCompanyName.MyProjectName.Services;
 /// <summary>
 /// Inherit your application services from this class.
 /// </summary>
-public abstract class DemoAppAppService : SufiAbpApplicationService
+public abstract class DemoAppAppService : SufiApplicationService
 {
     protected DemoAppAppService()
     {

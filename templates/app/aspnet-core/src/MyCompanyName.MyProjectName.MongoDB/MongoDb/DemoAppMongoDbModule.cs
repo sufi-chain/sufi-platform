@@ -1,18 +1,18 @@
 using Microsoft.Extensions.DependencyInjection;
-using SufiChain.SufiAbp.AI;
-using SufiChain.SufiAbp.AuditLogging.MongoDB;
-using SufiChain.SufiAbp.BackgroundJobs.MongoDB;
-using SufiChain.SufiAbp.FeatureManagement.MongoDB;
-using SufiChain.SufiAbp.FileManager;
-using SufiChain.SufiAbp.Identity.MongoDB;
-using SufiChain.SufiAbp.LocalizationManagement;
-using SufiChain.SufiAbp.OpenIddict.MongoDB;
-using SufiChain.SufiAbp.PermissionManagement.MongoDB;
-using SufiChain.SufiAbp.SettingManagement.MongoDB;
-using SufiChain.SufiAbp.ShortLinkGenerator.MongoDB;
-using SufiChain.SufiAbp.TenantManagement.MongoDB;
-using SufiChain.SufiAbp.Users;
-using SufiChain.SufiAbp.BlobStoring.Database.MongoDB;
+using SufiChain.SufiPlatform.SufiAI;
+using SufiChain.SufiPlatform.AuditLogging.MongoDB;
+using SufiChain.SufiPlatform.BackgroundJobs.MongoDB;
+using SufiChain.SufiPlatform.Features.MongoDB;
+using SufiChain.SufiPlatform.FileManager;
+using SufiChain.SufiPlatform.Identity.MongoDB;
+using SufiChain.SufiPlatform.Localization;
+using SufiChain.SufiPlatform.OpenIddict.MongoDB;
+using SufiChain.SufiPlatform.Permissions.MongoDB;
+using SufiChain.SufiPlatform.Settings.MongoDB;
+using SufiChain.SufiPlatform.ShortLinks.MongoDB;
+using SufiChain.SufiPlatform.Tenants.MongoDB;
+using SufiChain.SufiPlatform.Users;
+using SufiChain.SufiPlatform.BlobDatabase.MongoDB;
 using Volo.Abp.Uow;
 using Volo.Abp.Modularity;
 
@@ -20,19 +20,19 @@ namespace MyCompanyName.MyProjectName.MongoDB;
 
 [DependsOn(
     typeof(DemoAppDomainModule),
-    typeof(SufiAbpPermissionManagementMongoDbModule),
-    typeof(SufiAbpSettingManagementMongoDbModule),
-    typeof(SufiAbpBackgroundJobsMongoDbModule),
-    typeof(SufiAbpAuditLoggingMongoDbModule),
-    typeof(SufiAbpFeatureManagementMongoDbModule),
-    typeof(SufiAbpIdentityMongoDbModule),
-    typeof(SufiAbpUsersMongoDbModule),
-    typeof(SufiAbpOpenIddictMongoDbModule),
-    typeof(SufiAbpTenantManagementMongoDbModule),
-    typeof(SufiAbpBlobStoringDatabaseMongoDbModule),
-    typeof(SufiAbpFileManagerMongoDbModule),
-    typeof(SufiAbpLocalizationManagementMongoDbModule),
-    typeof(SufiAbpShortLinkGeneratorMongoDbModule),
+    typeof(SufiPermissionsMongoDbModule),
+    typeof(SufiSettingsMongoDbModule),
+    typeof(SufiBackgroundJobsMongoDbModule),
+    typeof(SufiAuditLoggingMongoDbModule),
+    typeof(SufiFeaturesMongoDbModule),
+    typeof(SufiIdentityMongoDbModule),
+    typeof(SufiUsersMongoDbModule),
+    typeof(SufiOpenIddictMongoDbModule),
+    typeof(SufiTenantsMongoDbModule),
+    typeof(SufiBlobDatabaseDatabaseMongoDbModule),
+    typeof(SufiFileManagerMongoDbModule),
+    typeof(SufiLocalizationMongoDbModule),
+    typeof(SufiShortLinksMongoDbModule),
     typeof(SufiAIMongoDbModule)
 )]
 public class DemoAppMongoDbModule : AbpModule

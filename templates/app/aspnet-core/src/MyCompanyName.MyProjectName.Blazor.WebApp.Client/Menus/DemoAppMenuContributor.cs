@@ -2,7 +2,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Localization;
-using SufiChain.SufiAbp.UI.Navigation;
+using SufiChain.SufiPlatform.UI.Navigation;
 using MyCompanyName.MyProjectName.Localization;
 
 namespace MyCompanyName.MyProjectName.Menus;

@@ -11,7 +11,7 @@
   <ItemGroup>
     <PackageReference Include="Serilog.AspNetCore" Version="$(SerilogAspNetCoreVersion)" />
     <PackageReference Include="Serilog.Sinks.Async" Version="$(SerilogSinksAsyncVersion)" />
-    <PackageReference Include="SufiChain.SufiAbp.Core" Version="$(SufiVersion)" />
+    <PackageReference Include="SufiChain.SufiPlatform.Core" Version="$(SufiVersion)" />
     <PackageReference Include="Volo.Abp.AspNetCore.MultiTenancy" Version="$(AbpVersion)" />
     <PackageReference Include="Volo.Abp.Autofac" Version="$(AbpVersion)" />
     <PackageReference Include="Volo.Abp.AspNetCore.Serilog" Version="$(AbpVersion)" />
@@ -24,63 +24,63 @@
   <!-- <TEMPLATE-REMOVE> -->
   <ItemGroup>
     <!-- Framework auditing (/_blazor exclusion, HTTP method filter) -->
-    <ProjectReference Include="..\..\..\..\..\framework\SufiChain.SufiAbp.AspNetCore\SufiChain.SufiAbp.AspNetCore.csproj" />
+    <ProjectReference Include="..\..\..\..\..\framework\SufiChain.SufiPlatform.AspNetCore\SufiChain.SufiPlatform.AspNetCore.csproj" />
     <!-- Framework OpenIddict authorization endpoints -->
-    <ProjectReference Include="..\..\..\..\..\framework\SufiChain.SufiAbp.AspNetCore.Authentication.OpenIdConnect\SufiChain.SufiAbp.AspNetCore.Authentication.OpenIdConnect.csproj" />
+    <ProjectReference Include="..\..\..\..\..\framework\SufiChain.SufiPlatform.AspNetCore.Authentication.OpenIdConnect\SufiChain.SufiPlatform.AspNetCore.Authentication.OpenIdConnect.csproj" />
     <PackageReference Include="Volo.Abp.AspNetCore.Authentication.OAuth" Version="$(AbpVersion)" />
-<!-- Framework SufiAbp Account controller (complete-login, OIDC Login/Logout) -->
-    <ProjectReference Include="..\..\..\..\..\framework\SufiChain.SufiAbp.AspNetCore.Authentication.Server\SufiChain.SufiAbp.AspNetCore.Authentication.Server.csproj" />
+<!-- Framework Sufi Platform Account controller (complete-login, OIDC Login/Logout) -->
+    <ProjectReference Include="..\..\..\..\..\framework\SufiChain.SufiPlatform.AspNetCore.Authentication.Server\SufiChain.SufiPlatform.AspNetCore.Authentication.Server.csproj" />
     <!-- Blazor Server theme for rendering auth UI pages -->
     <ProjectReference Include="..\..\..\..\..\independent-projects\sufi-theme\src\SufiChain.SufiTheme.Blazor.Server\SufiChain.SufiTheme.Blazor.Server.csproj" />
     <!-- SufiBlazor: required for Account Blazor (Login, Register, AccountLayout) -->
     <ProjectReference Include="..\..\..\..\..\independent-projects\sufi-blazor\src\SufiChain.SufiBlazor\SufiChain.SufiBlazor.csproj" />
-    <ProjectReference Include="..\..\..\..\..\modules\account\src\SufiChain.SufiAbp.Account.Blazor\SufiChain.SufiAbp.Account.Blazor.csproj" />
+    <ProjectReference Include="..\..\..\..\..\modules\account\src\SufiChain.SufiPlatform.Account.Blazor\SufiChain.SufiPlatform.Account.Blazor.csproj" />
     <!-- Identity Module (Application services for credential validation) -->
-    <ProjectReference Include="..\..\..\..\..\modules\identity\src\SufiChain.SufiAbp.Identity.Application\SufiChain.SufiAbp.Identity.Application.csproj" />
-    <ProjectReference Include="..\..\..\..\..\modules\identity\src\SufiChain.SufiAbp.Identity.HttpApi\SufiChain.SufiAbp.Identity.HttpApi.csproj" />
+    <ProjectReference Include="..\..\..\..\..\modules\identity\src\SufiChain.SufiPlatform.Identity.Application\SufiChain.SufiPlatform.Identity.Application.csproj" />
+    <ProjectReference Include="..\..\..\..\..\modules\identity\src\SufiChain.SufiPlatform.Identity.HttpApi\SufiChain.SufiPlatform.Identity.HttpApi.csproj" />
     <!-- Tenant Management Module (Application services for multi-tenancy resolution) -->
-    <ProjectReference Include="..\..\..\..\..\modules\tenant-management\src\SufiChain.SufiAbp.TenantManagement.Application\SufiChain.SufiAbp.TenantManagement.Application.csproj" />
-    <ProjectReference Include="..\..\..\..\..\modules\tenant-management\src\SufiChain.SufiAbp.TenantManagement.HttpApi\SufiChain.SufiAbp.TenantManagement.HttpApi.csproj" />
+    <ProjectReference Include="..\..\..\..\..\modules\tenants\src\SufiChain.SufiPlatform.Tenants.Application\SufiChain.SufiPlatform.Tenants.Application.csproj" />
+    <ProjectReference Include="..\..\..\..\..\modules\tenants\src\SufiChain.SufiPlatform.Tenants.HttpApi\SufiChain.SufiPlatform.Tenants.HttpApi.csproj" />
     <!-- Account Module (Application + HttpApi) -->
-    <ProjectReference Include="..\..\..\..\..\modules\account\src\SufiChain.SufiAbp.Account.Application\SufiChain.SufiAbp.Account.Application.csproj" />
-    <ProjectReference Include="..\..\..\..\..\modules\account\src\SufiChain.SufiAbp.Account.HttpApi\SufiChain.SufiAbp.Account.HttpApi.csproj" />
+    <ProjectReference Include="..\..\..\..\..\modules\account\src\SufiChain.SufiPlatform.Account.Application\SufiChain.SufiPlatform.Account.Application.csproj" />
+    <ProjectReference Include="..\..\..\..\..\modules\account\src\SufiChain.SufiPlatform.Account.HttpApi\SufiChain.SufiPlatform.Account.HttpApi.csproj" />
     <!-- Permission Management Module (Application + HttpApi) -->
-    <ProjectReference Include="..\..\..\..\..\modules\permission-management\src\SufiChain.SufiAbp.PermissionManagement.Application\SufiChain.SufiAbp.PermissionManagement.Application.csproj" />
-    <ProjectReference Include="..\..\..\..\..\modules\permission-management\src\SufiChain.SufiAbp.PermissionManagement.HttpApi\SufiChain.SufiAbp.PermissionManagement.HttpApi.csproj" />
+    <ProjectReference Include="..\..\..\..\..\modules\permissions\src\SufiChain.SufiPlatform.Permissions.Application\SufiChain.SufiPlatform.Permissions.Application.csproj" />
+    <ProjectReference Include="..\..\..\..\..\modules\permissions\src\SufiChain.SufiPlatform.Permissions.HttpApi\SufiChain.SufiPlatform.Permissions.HttpApi.csproj" />
     <!-- Feature Management Module (Application + HttpApi) -->
-    <ProjectReference Include="..\..\..\..\..\modules\feature-management\src\SufiChain.SufiAbp.FeatureManagement.Application\SufiChain.SufiAbp.FeatureManagement.Application.csproj" />
-    <ProjectReference Include="..\..\..\..\..\modules\feature-management\src\SufiChain.SufiAbp.FeatureManagement.HttpApi\SufiChain.SufiAbp.FeatureManagement.HttpApi.csproj" />
+    <ProjectReference Include="..\..\..\..\..\modules\features\src\SufiChain.SufiPlatform.Features.Application\SufiChain.SufiPlatform.Features.Application.csproj" />
+    <ProjectReference Include="..\..\..\..\..\modules\features\src\SufiChain.SufiPlatform.Features.HttpApi\SufiChain.SufiPlatform.Features.HttpApi.csproj" />
     <!-- Setting Management Module (Application + HttpApi) -->
-    <ProjectReference Include="..\..\..\..\..\modules\setting-management\src\SufiChain.SufiAbp.SettingManagement.Application\SufiChain.SufiAbp.SettingManagement.Application.csproj" />
-    <ProjectReference Include="..\..\..\..\..\modules\setting-management\src\SufiChain.SufiAbp.SettingManagement.HttpApi\SufiChain.SufiAbp.SettingManagement.HttpApi.csproj" />
+    <ProjectReference Include="..\..\..\..\..\modules\settings\src\SufiChain.SufiPlatform.Settings.Application\SufiChain.SufiPlatform.Settings.Application.csproj" />
+    <ProjectReference Include="..\..\..\..\..\modules\settings\src\SufiChain.SufiPlatform.Settings.HttpApi\SufiChain.SufiPlatform.Settings.HttpApi.csproj" />
   </ItemGroup>
   <!-- </TEMPLATE-REMOVE> -->
   <!-- <TEMPLATE-ONLY>
   <ItemGroup>
-    <PackageReference Include="SufiChain.SufiAbp.AspNetCore.Authentication.OpenIdConnect" Version="$(SufiVersion)" />
-    <PackageReference Include="SufiChain.SufiAbp.AspNetCore.Authentication.Server" Version="$(SufiVersion)" />
+    <PackageReference Include="SufiChain.SufiPlatform.AspNetCore.Authentication.OpenIdConnect" Version="$(SufiVersion)" />
+    <PackageReference Include="SufiChain.SufiPlatform.AspNetCore.Authentication.Server" Version="$(SufiVersion)" />
     <PackageReference Include="SufiChain.SufiTheme.Blazor.Server" Version="$(SufiThemeVersion)" />
     <PackageReference Include="SufiChain.SufiBlazor" Version="$(SufiBlazorVersion)" />
-    <PackageReference Include="SufiChain.SufiAbp.Account.Blazor" Version="$(SufiVersion)" />
-    <PackageReference Include="SufiChain.SufiAbp.Identity.Application" Version="$(SufiVersion)" />
-    <PackageReference Include="SufiChain.SufiAbp.Identity.HttpApi" Version="$(SufiVersion)" />
-    <PackageReference Include="SufiChain.SufiAbp.TenantManagement.Application" Version="$(SufiVersion)" />
-    <PackageReference Include="SufiChain.SufiAbp.TenantManagement.HttpApi" Version="$(SufiVersion)" />
-    <PackageReference Include="SufiChain.SufiAbp.Account.Application" Version="$(SufiVersion)" />
-    <PackageReference Include="SufiChain.SufiAbp.Account.HttpApi" Version="$(SufiVersion)" />
-    <PackageReference Include="SufiChain.SufiAbp.PermissionManagement.Application" Version="$(SufiVersion)" />
-    <PackageReference Include="SufiChain.SufiAbp.PermissionManagement.HttpApi" Version="$(SufiVersion)" />
-    <PackageReference Include="SufiChain.SufiAbp.FeatureManagement.Application" Version="$(SufiVersion)" />
-    <PackageReference Include="SufiChain.SufiAbp.FeatureManagement.HttpApi" Version="$(SufiVersion)" />
-    <PackageReference Include="SufiChain.SufiAbp.SettingManagement.Application" Version="$(SufiVersion)" />
-    <PackageReference Include="SufiChain.SufiAbp.SettingManagement.HttpApi" Version="$(SufiVersion)" />
+    <PackageReference Include="SufiChain.SufiPlatform.Account.Blazor" Version="$(SufiVersion)" />
+    <PackageReference Include="SufiChain.SufiPlatform.Identity.Application" Version="$(SufiVersion)" />
+    <PackageReference Include="SufiChain.SufiPlatform.Identity.HttpApi" Version="$(SufiVersion)" />
+    <PackageReference Include="SufiChain.SufiPlatform.Tenants.Application" Version="$(SufiVersion)" />
+    <PackageReference Include="SufiChain.SufiPlatform.Tenants.HttpApi" Version="$(SufiVersion)" />
+    <PackageReference Include="SufiChain.SufiPlatform.Account.Application" Version="$(SufiVersion)" />
+    <PackageReference Include="SufiChain.SufiPlatform.Account.HttpApi" Version="$(SufiVersion)" />
+    <PackageReference Include="SufiChain.SufiPlatform.Permissions.Application" Version="$(SufiVersion)" />
+    <PackageReference Include="SufiChain.SufiPlatform.Permissions.HttpApi" Version="$(SufiVersion)" />
+    <PackageReference Include="SufiChain.SufiPlatform.Features.Application" Version="$(SufiVersion)" />
+    <PackageReference Include="SufiChain.SufiPlatform.Features.HttpApi" Version="$(SufiVersion)" />
+    <PackageReference Include="SufiChain.SufiPlatform.Settings.Application" Version="$(SufiVersion)" />
+    <PackageReference Include="SufiChain.SufiPlatform.Settings.HttpApi" Version="$(SufiVersion)" />
   </ItemGroup>
   </TEMPLATE-ONLY> -->
   <ItemGroup>
     <!-- ABP infrastructure modules (audit logging, features, settings with MongoDB persistence) -->
-    <PackageReference Include="SufiChain.SufiAbp.AuditLogging.MongoDB" Version="$(SufiVersion)" />
-    <PackageReference Include="SufiChain.SufiAbp.FeatureManagement.MongoDB" Version="$(SufiVersion)" />
-    <PackageReference Include="SufiChain.SufiAbp.SettingManagement.MongoDB" Version="$(SufiVersion)" />
+    <PackageReference Include="SufiChain.SufiPlatform.AuditLogging.MongoDB" Version="$(SufiVersion)" />
+    <PackageReference Include="SufiChain.SufiPlatform.Features.MongoDB" Version="$(SufiVersion)" />
+    <PackageReference Include="SufiChain.SufiPlatform.Settings.MongoDB" Version="$(SufiVersion)" />
   </ItemGroup>
   <ItemGroup>
     <Compile Remove="Logs\**" />

@@ -7,12 +7,12 @@
 		<IsPackable>false</IsPackable>
 	</PropertyGroup>
 	<ItemGroup>
-		<PackageReference Include="SufiChain.SufiAbp.Core" Version="$(SufiVersion)" />
+		<PackageReference Include="SufiChain.SufiPlatform.Core" Version="$(SufiVersion)" />
 		<PackageReference Include="Volo.Abp.Http.Client" Version="$(AbpVersion)" />
-		<PackageReference Include="SufiChain.SufiAbp.Calendar.Application.Contracts" Version="$(SufiVersion)" />
-		<PackageReference Include="SufiChain.SufiAbp.LocalizationManagement.Application.Contracts" Version="$(SufiVersion)" />
-		<PackageReference Include="SufiChain.SufiAbp.AI.Application.Contracts" Version="$(SufiVersion)" />
-		<PackageReference Include="SufiChain.SufiAbp.FileManager.Application.Contracts" Version="$(SufiVersion)" />
+		<PackageReference Include="SufiChain.SufiPlatform.Calendar.Application.Contracts" Version="$(SufiVersion)" />
+		<PackageReference Include="SufiChain.SufiPlatform.Localization.Application.Contracts" Version="$(SufiVersion)" />
+		<PackageReference Include="SufiChain.SufiPlatform.SufiAI.Application.Contracts" Version="$(SufiVersion)" />
+		<PackageReference Include="SufiChain.SufiPlatform.FileManager.Application.Contracts" Version="$(SufiVersion)" />
 		<ProjectReference Include="..\MyCompanyName.MyProjectName.Application.Contracts\MyCompanyName.MyProjectName.Application.Contracts.csproj" />
 	</ItemGroup>
 	<ItemGroup>

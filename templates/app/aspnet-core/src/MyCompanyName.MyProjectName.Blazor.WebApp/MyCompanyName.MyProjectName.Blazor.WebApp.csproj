@@ -36,9 +36,9 @@
     <ProjectReference Include="..\..\..\..\..\independent-projects\sufi-theme\src\SufiChain.SufiTheme.Blazor.Server\SufiChain.SufiTheme.Blazor.Server.csproj" />
     <ProjectReference Include="..\..\..\..\..\independent-projects\sufi-blazor\src\SufiChain.SufiBlazor\SufiChain.SufiBlazor.csproj" />
     <PackageReference Include="Volo.Abp.ObjectExtending" Version="$(AbpVersion)" />
-    <ProjectReference Include="..\..\..\..\..\framework\SufiChain.SufiAbp.Ddd.Application\SufiChain.SufiAbp.Ddd.Application.csproj" />
-    <ProjectReference Include="..\..\..\..\..\framework\SufiChain.SufiAbp.UI.Blazor\SufiChain.SufiAbp.UI.Blazor.csproj" />
-    <ProjectReference Include="..\..\..\..\..\framework\SufiChain.SufiAbp.UI.Blazor.Server\SufiChain.SufiAbp.UI.Blazor.Server.csproj" />
+    <ProjectReference Include="..\..\..\..\..\framework\SufiChain.SufiPlatform.Ddd.Application\SufiChain.SufiPlatform.Ddd.Application.csproj" />
+    <ProjectReference Include="..\..\..\..\..\framework\SufiChain.SufiPlatform.UI.Blazor\SufiChain.SufiPlatform.UI.Blazor.csproj" />
+    <ProjectReference Include="..\..\..\..\..\framework\SufiChain.SufiPlatform.UI.Blazor.Server\SufiChain.SufiPlatform.UI.Blazor.Server.csproj" />
     <PackageReference Include="Volo.Abp.AspNetCore.Serilog" Version="$(AbpVersion)" />
 <!-- <TEMPLATE-REMOVE IF-NOT="arch:single"> -->
     <PackageReference Include="Volo.Abp.Swashbuckle" Version="$(AbpVersion)" />
@@ -48,71 +48,71 @@
   <!-- <TEMPLATE-REMOVE> -->
   <ItemGroup>
     <!-- Framework OpenIddict authorization endpoints -->
-    <ProjectReference Include="..\..\..\..\..\framework\SufiChain.SufiAbp.AspNetCore.Authentication.OpenIdConnect\SufiChain.SufiAbp.AspNetCore.Authentication.OpenIdConnect.csproj" />
+    <ProjectReference Include="..\..\..\..\..\framework\SufiChain.SufiPlatform.AspNetCore.Authentication.OpenIdConnect\SufiChain.SufiPlatform.AspNetCore.Authentication.OpenIdConnect.csproj" />
     <PackageReference Include="Volo.Abp.AspNetCore.Authentication.OAuth" Version="$(AbpVersion)" />
-<!-- Framework SufiAbp Account controller (complete-login, OIDC Login/Logout) -->
-    <ProjectReference Include="..\..\..\..\..\framework\SufiChain.SufiAbp.AspNetCore.Authentication.Server\SufiChain.SufiAbp.AspNetCore.Authentication.Server.csproj" />
-    <!-- SufiAbp UI Modules (admin identity + account) -->
-    <ProjectReference Include="..\..\..\..\..\modules\identity\src\SufiChain.SufiAbp.Identity.Blazor\SufiChain.SufiAbp.Identity.Blazor.csproj" />
-    <ProjectReference Include="..\..\..\..\..\modules\account\src\SufiChain.SufiAbp.Account.Blazor\SufiChain.SufiAbp.Account.Blazor.csproj" />
-    <ProjectReference Include="..\..\..\..\..\modules\identity\src\SufiChain.SufiAbp.Identity.Application\SufiChain.SufiAbp.Identity.Application.csproj" />
-    <ProjectReference Include="..\..\..\..\..\modules\identity\src\SufiChain.SufiAbp.Identity.HttpApi\SufiChain.SufiAbp.Identity.HttpApi.csproj" />
-    <ProjectReference Include="..\..\..\..\..\modules\tenant-management\src\SufiChain.SufiAbp.TenantManagement.Blazor\SufiChain.SufiAbp.TenantManagement.Blazor.csproj" />
-    <ProjectReference Include="..\..\..\..\..\modules\tenant-management\src\SufiChain.SufiAbp.TenantManagement.Application\SufiChain.SufiAbp.TenantManagement.Application.csproj" />
-    <ProjectReference Include="..\..\..\..\..\modules\tenant-management\src\SufiChain.SufiAbp.TenantManagement.HttpApi\SufiChain.SufiAbp.TenantManagement.HttpApi.csproj" />
+<!-- Framework Sufi Platform Account controller (complete-login, OIDC Login/Logout) -->
+    <ProjectReference Include="..\..\..\..\..\framework\SufiChain.SufiPlatform.AspNetCore.Authentication.Server\SufiChain.SufiPlatform.AspNetCore.Authentication.Server.csproj" />
+    <!-- Sufi Platform UI Modules (admin identity + account) -->
+    <ProjectReference Include="..\..\..\..\..\modules\identity\src\SufiChain.SufiPlatform.Identity.Blazor\SufiChain.SufiPlatform.Identity.Blazor.csproj" />
+    <ProjectReference Include="..\..\..\..\..\modules\account\src\SufiChain.SufiPlatform.Account.Blazor\SufiChain.SufiPlatform.Account.Blazor.csproj" />
+    <ProjectReference Include="..\..\..\..\..\modules\identity\src\SufiChain.SufiPlatform.Identity.Application\SufiChain.SufiPlatform.Identity.Application.csproj" />
+    <ProjectReference Include="..\..\..\..\..\modules\identity\src\SufiChain.SufiPlatform.Identity.HttpApi\SufiChain.SufiPlatform.Identity.HttpApi.csproj" />
+    <ProjectReference Include="..\..\..\..\..\modules\tenants\src\SufiChain.SufiPlatform.Tenants.Blazor\SufiChain.SufiPlatform.Tenants.Blazor.csproj" />
+    <ProjectReference Include="..\..\..\..\..\modules\tenants\src\SufiChain.SufiPlatform.Tenants.Application\SufiChain.SufiPlatform.Tenants.Application.csproj" />
+    <ProjectReference Include="..\..\..\..\..\modules\tenants\src\SufiChain.SufiPlatform.Tenants.HttpApi\SufiChain.SufiPlatform.Tenants.HttpApi.csproj" />
     <!-- File Manager Module (UI, Server-specific, Public editor integration, Application, HttpApi, MongoDB) -->
-    <ProjectReference Include="..\..\..\..\..\modules\file-manager\src\SufiChain.SufiAbp.FileManager.Blazor\SufiChain.SufiAbp.FileManager.Blazor.csproj" />
-    <ProjectReference Include="..\..\..\..\..\modules\file-manager\src\SufiChain.SufiAbp.FileManager.Blazor.Server\SufiChain.SufiAbp.FileManager.Blazor.Server.csproj" />
-    <ProjectReference Include="..\..\..\..\..\modules\file-manager\src\SufiChain.SufiAbp.FileManager.Blazor.Public\SufiChain.SufiAbp.FileManager.Blazor.Public.csproj" />
-    <ProjectReference Include="..\..\..\..\..\modules\file-manager\src\SufiChain.SufiAbp.FileManager.Demo\SufiChain.SufiAbp.FileManager.Demo.csproj" />
-    <ProjectReference Include="..\..\..\..\..\modules\file-manager\src\SufiChain.SufiAbp.FileManager.Application\SufiChain.SufiAbp.FileManager.Application.csproj" />
-    <ProjectReference Include="..\..\..\..\..\modules\file-manager\src\SufiChain.SufiAbp.FileManager.HttpApi\SufiChain.SufiAbp.FileManager.HttpApi.csproj" />
+    <ProjectReference Include="..\..\..\..\..\modules\file-manager\src\SufiChain.SufiPlatform.FileManager.Blazor\SufiChain.SufiPlatform.FileManager.Blazor.csproj" />
+    <ProjectReference Include="..\..\..\..\..\modules\file-manager\src\SufiChain.SufiPlatform.FileManager.Blazor.Server\SufiChain.SufiPlatform.FileManager.Blazor.Server.csproj" />
+    <ProjectReference Include="..\..\..\..\..\modules\file-manager\src\SufiChain.SufiPlatform.FileManager.Blazor.Public\SufiChain.SufiPlatform.FileManager.Blazor.Public.csproj" />
+    <ProjectReference Include="..\..\..\..\..\modules\file-manager\src\SufiChain.SufiPlatform.FileManager.Demo\SufiChain.SufiPlatform.FileManager.Demo.csproj" />
+    <ProjectReference Include="..\..\..\..\..\modules\file-manager\src\SufiChain.SufiPlatform.FileManager.Application\SufiChain.SufiPlatform.FileManager.Application.csproj" />
+    <ProjectReference Include="..\..\..\..\..\modules\file-manager\src\SufiChain.SufiPlatform.FileManager.HttpApi\SufiChain.SufiPlatform.FileManager.HttpApi.csproj" />
     <!-- AI Management Module (UI + Application + HttpApi) -->
-    <ProjectReference Include="..\..\..\..\..\modules\ai\src\SufiChain.SufiAbp.AI.Blazor\SufiChain.SufiAbp.AI.Blazor.csproj" />
-    <ProjectReference Include="..\..\..\..\..\modules\ai\src\SufiChain.SufiAbp.AI.Application\SufiChain.SufiAbp.AI.Application.csproj" />
-    <ProjectReference Include="..\..\..\..\..\modules\ai\src\SufiChain.SufiAbp.AI.HttpApi\SufiChain.SufiAbp.AI.HttpApi.csproj" />
+    <ProjectReference Include="..\..\..\..\..\modules\ai\src\SufiChain.SufiPlatform.SufiAI.Blazor\SufiChain.SufiPlatform.SufiAI.Blazor.csproj" />
+    <ProjectReference Include="..\..\..\..\..\modules\ai\src\SufiChain.SufiPlatform.SufiAI.Application\SufiChain.SufiPlatform.SufiAI.Application.csproj" />
+    <ProjectReference Include="..\..\..\..\..\modules\ai\src\SufiChain.SufiPlatform.SufiAI.HttpApi\SufiChain.SufiPlatform.SufiAI.HttpApi.csproj" />
     <!-- Calendar Module (Admin UI, Public UI, Application, HttpApi) -->
-    <ProjectReference Include="..\..\..\..\..\modules\calendar\src\SufiChain.SufiAbp.Calendar.Blazor\SufiChain.SufiAbp.Calendar.Blazor.csproj" />
-    <ProjectReference Include="..\..\..\..\..\modules\calendar\src\SufiChain.SufiAbp.Calendar.Blazor.Public\SufiChain.SufiAbp.Calendar.Blazor.Public.csproj" />
-    <ProjectReference Include="..\..\..\..\..\modules\calendar\src\SufiChain.SufiAbp.Calendar.AI\SufiChain.SufiAbp.Calendar.AI.csproj" />
-    <ProjectReference Include="..\..\..\..\..\modules\calendar\src\SufiChain.SufiAbp.Calendar.Application\SufiChain.SufiAbp.Calendar.Application.csproj" />
-    <ProjectReference Include="..\..\..\..\..\modules\calendar\src\SufiChain.SufiAbp.Calendar.HttpApi\SufiChain.SufiAbp.Calendar.HttpApi.csproj" />
+    <ProjectReference Include="..\..\..\..\..\modules\calendar\src\SufiChain.SufiPlatform.Calendar.Blazor\SufiChain.SufiPlatform.Calendar.Blazor.csproj" />
+    <ProjectReference Include="..\..\..\..\..\modules\calendar\src\SufiChain.SufiPlatform.Calendar.Blazor.Public\SufiChain.SufiPlatform.Calendar.Blazor.Public.csproj" />
+    <ProjectReference Include="..\..\..\..\..\modules\calendar\src\SufiChain.SufiPlatform.Calendar.AI\SufiChain.SufiPlatform.Calendar.AI.csproj" />
+    <ProjectReference Include="..\..\..\..\..\modules\calendar\src\SufiChain.SufiPlatform.Calendar.Application\SufiChain.SufiPlatform.Calendar.Application.csproj" />
+    <ProjectReference Include="..\..\..\..\..\modules\calendar\src\SufiChain.SufiPlatform.Calendar.HttpApi\SufiChain.SufiPlatform.Calendar.HttpApi.csproj" />
     <!-- Short Link Generator (UI, Server, Application, HttpApi) -->
-    <ProjectReference Include="..\..\..\..\..\modules\short-link-generator\src\SufiChain.SufiAbp.ShortLinkGenerator.Blazor\SufiChain.SufiAbp.ShortLinkGenerator.Blazor.csproj" />
-    <ProjectReference Include="..\..\..\..\..\modules\short-link-generator\src\SufiChain.SufiAbp.ShortLinkGenerator.Blazor.Server\SufiChain.SufiAbp.ShortLinkGenerator.Blazor.Server.csproj" />
-    <ProjectReference Include="..\..\..\..\..\modules\short-link-generator\src\SufiChain.SufiAbp.ShortLinkGenerator.Application\SufiChain.SufiAbp.ShortLinkGenerator.Application.csproj" />
-    <ProjectReference Include="..\..\..\..\..\modules\short-link-generator\src\SufiChain.SufiAbp.ShortLinkGenerator.HttpApi\SufiChain.SufiAbp.ShortLinkGenerator.HttpApi.csproj" />
+    <ProjectReference Include="..\..\..\..\..\modules\short-links\src\SufiChain.SufiPlatform.ShortLinks.Blazor\SufiChain.SufiPlatform.ShortLinks.Blazor.csproj" />
+    <ProjectReference Include="..\..\..\..\..\modules\short-links\src\SufiChain.SufiPlatform.ShortLinks.Blazor.Server\SufiChain.SufiPlatform.ShortLinks.Blazor.Server.csproj" />
+    <ProjectReference Include="..\..\..\..\..\modules\short-links\src\SufiChain.SufiPlatform.ShortLinks.Application\SufiChain.SufiPlatform.ShortLinks.Application.csproj" />
+    <ProjectReference Include="..\..\..\..\..\modules\short-links\src\SufiChain.SufiPlatform.ShortLinks.HttpApi\SufiChain.SufiPlatform.ShortLinks.HttpApi.csproj" />
     <!-- Tags Management (Application, HttpApi — no Blazor UI) -->
-    <ProjectReference Include="..\..\..\..\..\modules\tags-management\src\SufiChain.SufiAbp.TagsManagement.Application\SufiChain.SufiAbp.TagsManagement.Application.csproj" />
-    <ProjectReference Include="..\..\..\..\..\modules\tags-management\src\SufiChain.SufiAbp.TagsManagement.HttpApi\SufiChain.SufiAbp.TagsManagement.HttpApi.csproj" />
+    <ProjectReference Include="..\..\..\..\..\modules\tags\src\SufiChain.SufiPlatform.Tags.Application\SufiChain.SufiPlatform.Tags.Application.csproj" />
+    <ProjectReference Include="..\..\..\..\..\modules\tags\src\SufiChain.SufiPlatform.Tags.HttpApi\SufiChain.SufiPlatform.Tags.HttpApi.csproj" />
     <!-- Menu Management (UI, Server, Application, HttpApi) -->
-    <ProjectReference Include="..\..\..\..\..\modules\menu-management\src\SufiChain.SufiAbp.MenuManagement.Blazor\SufiChain.SufiAbp.MenuManagement.Blazor.csproj" />
-    <ProjectReference Include="..\..\..\..\..\modules\menu-management\src\SufiChain.SufiAbp.MenuManagement.Blazor.Server\SufiChain.SufiAbp.MenuManagement.Blazor.Server.csproj" />
-    <ProjectReference Include="..\..\..\..\..\modules\menu-management\src\SufiChain.SufiAbp.MenuManagement.Application\SufiChain.SufiAbp.MenuManagement.Application.csproj" />
-    <ProjectReference Include="..\..\..\..\..\modules\menu-management\src\SufiChain.SufiAbp.MenuManagement.HttpApi\SufiChain.SufiAbp.MenuManagement.HttpApi.csproj" />
+    <ProjectReference Include="..\..\..\..\..\modules\menus\src\SufiChain.SufiPlatform.Menus.Blazor\SufiChain.SufiPlatform.Menus.Blazor.csproj" />
+    <ProjectReference Include="..\..\..\..\..\modules\menus\src\SufiChain.SufiPlatform.Menus.Blazor.Server\SufiChain.SufiPlatform.Menus.Blazor.Server.csproj" />
+    <ProjectReference Include="..\..\..\..\..\modules\menus\src\SufiChain.SufiPlatform.Menus.Application\SufiChain.SufiPlatform.Menus.Application.csproj" />
+    <ProjectReference Include="..\..\..\..\..\modules\menus\src\SufiChain.SufiPlatform.Menus.HttpApi\SufiChain.SufiPlatform.Menus.HttpApi.csproj" />
     <!-- Admin Modules (Audit Logging, Background Jobs, Feature Management, Setting Management) -->
-    <ProjectReference Include="..\..\..\..\..\modules\audit-logging\src\SufiChain.SufiAbp.AuditLogging.Blazor\SufiChain.SufiAbp.AuditLogging.Blazor.csproj" />
-    <ProjectReference Include="..\..\..\..\..\modules\audit-logging\src\SufiChain.SufiAbp.AuditLogging.Application\SufiChain.SufiAbp.AuditLogging.Application.csproj" />
-    <ProjectReference Include="..\..\..\..\..\modules\audit-logging\src\SufiChain.SufiAbp.AuditLogging.HttpApi\SufiChain.SufiAbp.AuditLogging.HttpApi.csproj" />
-    <ProjectReference Include="..\..\..\..\..\modules\background-jobs\src\SufiChain.SufiAbp.BackgroundJobs.Blazor\SufiChain.SufiAbp.BackgroundJobs.Blazor.csproj" />
-    <ProjectReference Include="..\..\..\..\..\modules\background-jobs\src\SufiChain.SufiAbp.BackgroundJobs.Application\SufiChain.SufiAbp.BackgroundJobs.Application.csproj" />
-    <ProjectReference Include="..\..\..\..\..\modules\background-jobs\src\SufiChain.SufiAbp.BackgroundJobs.HttpApi\SufiChain.SufiAbp.BackgroundJobs.HttpApi.csproj" />
-    <ProjectReference Include="..\..\..\..\..\modules\feature-management\src\SufiChain.SufiAbp.FeatureManagement.Blazor\SufiChain.SufiAbp.FeatureManagement.Blazor.csproj" />
-    <ProjectReference Include="..\..\..\..\..\modules\feature-management\src\SufiChain.SufiAbp.FeatureManagement.Application\SufiChain.SufiAbp.FeatureManagement.Application.csproj" />
-    <ProjectReference Include="..\..\..\..\..\modules\feature-management\src\SufiChain.SufiAbp.FeatureManagement.HttpApi\SufiChain.SufiAbp.FeatureManagement.HttpApi.csproj" />
-    <ProjectReference Include="..\..\..\..\..\modules\setting-management\src\SufiChain.SufiAbp.SettingManagement.Blazor\SufiChain.SufiAbp.SettingManagement.Blazor.csproj" />
-    <ProjectReference Include="..\..\..\..\..\modules\setting-management\src\SufiChain.SufiAbp.SettingManagement.Application\SufiChain.SufiAbp.SettingManagement.Application.csproj" />
-    <ProjectReference Include="..\..\..\..\..\modules\setting-management\src\SufiChain.SufiAbp.SettingManagement.HttpApi\SufiChain.SufiAbp.SettingManagement.HttpApi.csproj" />
+    <ProjectReference Include="..\..\..\..\..\modules\audit-logging\src\SufiChain.SufiPlatform.AuditLogging.Blazor\SufiChain.SufiPlatform.AuditLogging.Blazor.csproj" />
+    <ProjectReference Include="..\..\..\..\..\modules\audit-logging\src\SufiChain.SufiPlatform.AuditLogging.Application\SufiChain.SufiPlatform.AuditLogging.Application.csproj" />
+    <ProjectReference Include="..\..\..\..\..\modules\audit-logging\src\SufiChain.SufiPlatform.AuditLogging.HttpApi\SufiChain.SufiPlatform.AuditLogging.HttpApi.csproj" />
+    <ProjectReference Include="..\..\..\..\..\modules\jobs\src\SufiChain.SufiPlatform.BackgroundJobs.Blazor\SufiChain.SufiPlatform.BackgroundJobs.Blazor.csproj" />
+    <ProjectReference Include="..\..\..\..\..\modules\jobs\src\SufiChain.SufiPlatform.BackgroundJobs.Application\SufiChain.SufiPlatform.BackgroundJobs.Application.csproj" />
+    <ProjectReference Include="..\..\..\..\..\modules\jobs\src\SufiChain.SufiPlatform.BackgroundJobs.HttpApi\SufiChain.SufiPlatform.BackgroundJobs.HttpApi.csproj" />
+    <ProjectReference Include="..\..\..\..\..\modules\features\src\SufiChain.SufiPlatform.Features.Blazor\SufiChain.SufiPlatform.Features.Blazor.csproj" />
+    <ProjectReference Include="..\..\..\..\..\modules\features\src\SufiChain.SufiPlatform.Features.Application\SufiChain.SufiPlatform.Features.Application.csproj" />
+    <ProjectReference Include="..\..\..\..\..\modules\features\src\SufiChain.SufiPlatform.Features.HttpApi\SufiChain.SufiPlatform.Features.HttpApi.csproj" />
+    <ProjectReference Include="..\..\..\..\..\modules\settings\src\SufiChain.SufiPlatform.Settings.Blazor\SufiChain.SufiPlatform.Settings.Blazor.csproj" />
+    <ProjectReference Include="..\..\..\..\..\modules\settings\src\SufiChain.SufiPlatform.Settings.Application\SufiChain.SufiPlatform.Settings.Application.csproj" />
+    <ProjectReference Include="..\..\..\..\..\modules\settings\src\SufiChain.SufiPlatform.Settings.HttpApi\SufiChain.SufiPlatform.Settings.HttpApi.csproj" />
     <!-- Account Module (Application + HttpApi) -->
-    <ProjectReference Include="..\..\..\..\..\modules\account\src\SufiChain.SufiAbp.Account.Application\SufiChain.SufiAbp.Account.Application.csproj" />
-    <ProjectReference Include="..\..\..\..\..\modules\account\src\SufiChain.SufiAbp.Account.HttpApi\SufiChain.SufiAbp.Account.HttpApi.csproj" />
+    <ProjectReference Include="..\..\..\..\..\modules\account\src\SufiChain.SufiPlatform.Account.Application\SufiChain.SufiPlatform.Account.Application.csproj" />
+    <ProjectReference Include="..\..\..\..\..\modules\account\src\SufiChain.SufiPlatform.Account.HttpApi\SufiChain.SufiPlatform.Account.HttpApi.csproj" />
     <!-- Permission Management Module (Application + HttpApi) -->
-    <ProjectReference Include="..\..\..\..\..\modules\permission-management\src\SufiChain.SufiAbp.PermissionManagement.Application\SufiChain.SufiAbp.PermissionManagement.Application.csproj" />
-    <ProjectReference Include="..\..\..\..\..\modules\permission-management\src\SufiChain.SufiAbp.PermissionManagement.HttpApi\SufiChain.SufiAbp.PermissionManagement.HttpApi.csproj" />
+    <ProjectReference Include="..\..\..\..\..\modules\permissions\src\SufiChain.SufiPlatform.Permissions.Application\SufiChain.SufiPlatform.Permissions.Application.csproj" />
+    <ProjectReference Include="..\..\..\..\..\modules\permissions\src\SufiChain.SufiPlatform.Permissions.HttpApi\SufiChain.SufiPlatform.Permissions.HttpApi.csproj" />
     <!-- Localization Management Module (UI + Application + HttpApi + MongoDB) -->
-    <ProjectReference Include="..\..\..\..\..\modules\localization-management\src\SufiChain.SufiAbp.LocalizationManagement.Blazor\SufiChain.SufiAbp.LocalizationManagement.Blazor.csproj" />
-    <ProjectReference Include="..\..\..\..\..\modules\localization-management\src\SufiChain.SufiAbp.LocalizationManagement.Application\SufiChain.SufiAbp.LocalizationManagement.Application.csproj" />
-    <ProjectReference Include="..\..\..\..\..\modules\localization-management\src\SufiChain.SufiAbp.LocalizationManagement.HttpApi\SufiChain.SufiAbp.LocalizationManagement.HttpApi.csproj" />
+    <ProjectReference Include="..\..\..\..\..\modules\localization\src\SufiChain.SufiPlatform.Localization.Blazor\SufiChain.SufiPlatform.Localization.Blazor.csproj" />
+    <ProjectReference Include="..\..\..\..\..\modules\localization\src\SufiChain.SufiPlatform.Localization.Application\SufiChain.SufiPlatform.Localization.Application.csproj" />
+    <ProjectReference Include="..\..\..\..\..\modules\localization\src\SufiChain.SufiPlatform.Localization.HttpApi\SufiChain.SufiPlatform.Localization.HttpApi.csproj" />
     <!-- Sufi Blazor Demo Library -->
     <PackageReference Include="SufiChain.SufiBlazor.Demo" Version="$(SufiBlazorVersion)" />
   </ItemGroup>
@@ -120,59 +120,59 @@
   <!-- <TEMPLATE-ONLY>
 	<ItemGroup>
 		<PackageReference Include="SufiChain.SufiTheme.Blazor.Server" Version="$(SufiThemeVersion)" />
-		<PackageReference Include="SufiChain.SufiAbp.UI.Blazor.Server" Version="$(SufiVersion)" />
+		<PackageReference Include="SufiChain.SufiPlatform.UI.Blazor.Server" Version="$(SufiVersion)" />
 		<PackageReference Include="Volo.Abp.AspNetCore.Authentication.OAuth" Version="$(AbpVersion)" />
-		<PackageReference Include="SufiChain.SufiAbp.AspNetCore.Authentication.OpenIdConnect" Version="$(SufiVersion)" />
-		<PackageReference Include="SufiChain.SufiAbp.AspNetCore.Authentication.Server" Version="$(SufiVersion)" />
-		<PackageReference Include="SufiChain.SufiAbp.Identity.Blazor" Version="$(SufiVersion)" />
-		<PackageReference Include="SufiChain.SufiAbp.Account.Blazor" Version="$(SufiVersion)" />
-		<PackageReference Include="SufiChain.SufiAbp.Identity.Application" Version="$(SufiVersion)" />
-		<PackageReference Include="SufiChain.SufiAbp.Identity.HttpApi" Version="$(SufiVersion)" />
-		<PackageReference Include="SufiChain.SufiAbp.TenantManagement.Blazor" Version="$(SufiVersion)" />
-		<PackageReference Include="SufiChain.SufiAbp.TenantManagement.Application" Version="$(SufiVersion)" />
-			<PackageReference Include="SufiChain.SufiAbp.TenantManagement.HttpApi" Version="$(SufiVersion)" />
-			<PackageReference Include="SufiChain.SufiAbp.FileManager.Blazor" Version="$(SufiVersion)" />
-			<PackageReference Include="SufiChain.SufiAbp.FileManager.Blazor.Server" Version="$(SufiVersion)" />
-			<PackageReference Include="SufiChain.SufiAbp.FileManager.Blazor.Public" Version="$(SufiVersion)" />
-			<PackageReference Include="SufiChain.SufiAbp.FileManager.Application" Version="$(SufiVersion)" />
-			<PackageReference Include="SufiChain.SufiAbp.FileManager.HttpApi" Version="$(SufiVersion)" />
-		<PackageReference Include="SufiChain.SufiAbp.AI.Blazor" Version="$(SufiVersion)" />
-		<PackageReference Include="SufiChain.SufiAbp.AI.Application" Version="$(SufiVersion)" />
-		<PackageReference Include="SufiChain.SufiAbp.AI.HttpApi" Version="$(SufiVersion)" />
-		<PackageReference Include="SufiChain.SufiAbp.Calendar.Blazor" Version="$(SufiVersion)" />
-		<PackageReference Include="SufiChain.SufiAbp.Calendar.Blazor.Public" Version="$(SufiVersion)" />
-		<PackageReference Include="SufiChain.SufiAbp.Calendar.AI" Version="$(SufiVersion)" />
-		<PackageReference Include="SufiChain.SufiAbp.Calendar.Application" Version="$(SufiVersion)" />
-		<PackageReference Include="SufiChain.SufiAbp.Calendar.HttpApi" Version="$(SufiVersion)" />
-		<PackageReference Include="SufiChain.SufiAbp.ShortLinkGenerator.Blazor" Version="$(SufiVersion)" />
-		<PackageReference Include="SufiChain.SufiAbp.ShortLinkGenerator.Blazor.Server" Version="$(SufiVersion)" />
-		<PackageReference Include="SufiChain.SufiAbp.ShortLinkGenerator.Application" Version="$(SufiVersion)" />
-		<PackageReference Include="SufiChain.SufiAbp.ShortLinkGenerator.HttpApi" Version="$(SufiVersion)" />
-		<PackageReference Include="SufiChain.SufiAbp.TagsManagement.Application" Version="$(SufiVersion)" />
-		<PackageReference Include="SufiChain.SufiAbp.TagsManagement.HttpApi" Version="$(SufiVersion)" />
-		<PackageReference Include="SufiChain.SufiAbp.MenuManagement.Blazor" Version="$(SufiVersion)" />
-		<PackageReference Include="SufiChain.SufiAbp.MenuManagement.Blazor.Server" Version="$(SufiVersion)" />
-		<PackageReference Include="SufiChain.SufiAbp.MenuManagement.Application" Version="$(SufiVersion)" />
-		<PackageReference Include="SufiChain.SufiAbp.MenuManagement.HttpApi" Version="$(SufiVersion)" />
-		<PackageReference Include="SufiChain.SufiAbp.AuditLogging.Blazor" Version="$(SufiVersion)" />
-		<PackageReference Include="SufiChain.SufiAbp.AuditLogging.Application" Version="$(SufiVersion)" />
-		<PackageReference Include="SufiChain.SufiAbp.AuditLogging.HttpApi" Version="$(SufiVersion)" />
-		<PackageReference Include="SufiChain.SufiAbp.BackgroundJobs.Blazor" Version="$(SufiVersion)" />
-		<PackageReference Include="SufiChain.SufiAbp.BackgroundJobs.Application" Version="$(SufiVersion)" />
-		<PackageReference Include="SufiChain.SufiAbp.BackgroundJobs.HttpApi" Version="$(SufiVersion)" />
-		<PackageReference Include="SufiChain.SufiAbp.FeatureManagement.Blazor" Version="$(SufiVersion)" />
-		<PackageReference Include="SufiChain.SufiAbp.FeatureManagement.Application" Version="$(SufiVersion)" />
-		<PackageReference Include="SufiChain.SufiAbp.FeatureManagement.HttpApi" Version="$(SufiVersion)" />
-		<PackageReference Include="SufiChain.SufiAbp.SettingManagement.Blazor" Version="$(SufiVersion)" />
-		<PackageReference Include="SufiChain.SufiAbp.SettingManagement.Application" Version="$(SufiVersion)" />
-		<PackageReference Include="SufiChain.SufiAbp.SettingManagement.HttpApi" Version="$(SufiVersion)" />
-		<PackageReference Include="SufiChain.SufiAbp.Account.Application" Version="$(SufiVersion)" />
-		<PackageReference Include="SufiChain.SufiAbp.Account.HttpApi" Version="$(SufiVersion)" />
-		<PackageReference Include="SufiChain.SufiAbp.PermissionManagement.Application" Version="$(SufiVersion)" />
-		<PackageReference Include="SufiChain.SufiAbp.PermissionManagement.HttpApi" Version="$(SufiVersion)" />
-		<PackageReference Include="SufiChain.SufiAbp.LocalizationManagement.Blazor" Version="$(SufiVersion)" />
-		<PackageReference Include="SufiChain.SufiAbp.LocalizationManagement.Application" Version="$(SufiVersion)" />
-		<PackageReference Include="SufiChain.SufiAbp.LocalizationManagement.HttpApi" Version="$(SufiVersion)" />
+		<PackageReference Include="SufiChain.SufiPlatform.AspNetCore.Authentication.OpenIdConnect" Version="$(SufiVersion)" />
+		<PackageReference Include="SufiChain.SufiPlatform.AspNetCore.Authentication.Server" Version="$(SufiVersion)" />
+		<PackageReference Include="SufiChain.SufiPlatform.Identity.Blazor" Version="$(SufiVersion)" />
+		<PackageReference Include="SufiChain.SufiPlatform.Account.Blazor" Version="$(SufiVersion)" />
+		<PackageReference Include="SufiChain.SufiPlatform.Identity.Application" Version="$(SufiVersion)" />
+		<PackageReference Include="SufiChain.SufiPlatform.Identity.HttpApi" Version="$(SufiVersion)" />
+		<PackageReference Include="SufiChain.SufiPlatform.Tenants.Blazor" Version="$(SufiVersion)" />
+		<PackageReference Include="SufiChain.SufiPlatform.Tenants.Application" Version="$(SufiVersion)" />
+			<PackageReference Include="SufiChain.SufiPlatform.Tenants.HttpApi" Version="$(SufiVersion)" />
+			<PackageReference Include="SufiChain.SufiPlatform.FileManager.Blazor" Version="$(SufiVersion)" />
+			<PackageReference Include="SufiChain.SufiPlatform.FileManager.Blazor.Server" Version="$(SufiVersion)" />
+			<PackageReference Include="SufiChain.SufiPlatform.FileManager.Blazor.Public" Version="$(SufiVersion)" />
+			<PackageReference Include="SufiChain.SufiPlatform.FileManager.Application" Version="$(SufiVersion)" />
+			<PackageReference Include="SufiChain.SufiPlatform.FileManager.HttpApi" Version="$(SufiVersion)" />
+		<PackageReference Include="SufiChain.SufiPlatform.SufiAI.Blazor" Version="$(SufiVersion)" />
+		<PackageReference Include="SufiChain.SufiPlatform.SufiAI.Application" Version="$(SufiVersion)" />
+		<PackageReference Include="SufiChain.SufiPlatform.SufiAI.HttpApi" Version="$(SufiVersion)" />
+		<PackageReference Include="SufiChain.SufiPlatform.Calendar.Blazor" Version="$(SufiVersion)" />
+		<PackageReference Include="SufiChain.SufiPlatform.Calendar.Blazor.Public" Version="$(SufiVersion)" />
+		<PackageReference Include="SufiChain.SufiPlatform.Calendar.AI" Version="$(SufiVersion)" />
+		<PackageReference Include="SufiChain.SufiPlatform.Calendar.Application" Version="$(SufiVersion)" />
+		<PackageReference Include="SufiChain.SufiPlatform.Calendar.HttpApi" Version="$(SufiVersion)" />
+		<PackageReference Include="SufiChain.SufiPlatform.ShortLinks.Blazor" Version="$(SufiVersion)" />
+		<PackageReference Include="SufiChain.SufiPlatform.ShortLinks.Blazor.Server" Version="$(SufiVersion)" />
+		<PackageReference Include="SufiChain.SufiPlatform.ShortLinks.Application" Version="$(SufiVersion)" />
+		<PackageReference Include="SufiChain.SufiPlatform.ShortLinks.HttpApi" Version="$(SufiVersion)" />
+		<PackageReference Include="SufiChain.SufiPlatform.Tags.Application" Version="$(SufiVersion)" />
+		<PackageReference Include="SufiChain.SufiPlatform.Tags.HttpApi" Version="$(SufiVersion)" />
+		<PackageReference Include="SufiChain.SufiPlatform.Menus.Blazor" Version="$(SufiVersion)" />
+		<PackageReference Include="SufiChain.SufiPlatform.Menus.Blazor.Server" Version="$(SufiVersion)" />
+		<PackageReference Include="SufiChain.SufiPlatform.Menus.Application" Version="$(SufiVersion)" />
+		<PackageReference Include="SufiChain.SufiPlatform.Menus.HttpApi" Version="$(SufiVersion)" />
+		<PackageReference Include="SufiChain.SufiPlatform.AuditLogging.Blazor" Version="$(SufiVersion)" />
+		<PackageReference Include="SufiChain.SufiPlatform.AuditLogging.Application" Version="$(SufiVersion)" />
+		<PackageReference Include="SufiChain.SufiPlatform.AuditLogging.HttpApi" Version="$(SufiVersion)" />
+		<PackageReference Include="SufiChain.SufiPlatform.BackgroundJobs.Blazor" Version="$(SufiVersion)" />
+		<PackageReference Include="SufiChain.SufiPlatform.BackgroundJobs.Application" Version="$(SufiVersion)" />
+		<PackageReference Include="SufiChain.SufiPlatform.BackgroundJobs.HttpApi" Version="$(SufiVersion)" />
+		<PackageReference Include="SufiChain.SufiPlatform.Features.Blazor" Version="$(SufiVersion)" />
+		<PackageReference Include="SufiChain.SufiPlatform.Features.Application" Version="$(SufiVersion)" />
+		<PackageReference Include="SufiChain.SufiPlatform.Features.HttpApi" Version="$(SufiVersion)" />
+		<PackageReference Include="SufiChain.SufiPlatform.Settings.Blazor" Version="$(SufiVersion)" />
+		<PackageReference Include="SufiChain.SufiPlatform.Settings.Application" Version="$(SufiVersion)" />
+		<PackageReference Include="SufiChain.SufiPlatform.Settings.HttpApi" Version="$(SufiVersion)" />
+		<PackageReference Include="SufiChain.SufiPlatform.Account.Application" Version="$(SufiVersion)" />
+		<PackageReference Include="SufiChain.SufiPlatform.Account.HttpApi" Version="$(SufiVersion)" />
+		<PackageReference Include="SufiChain.SufiPlatform.Permissions.Application" Version="$(SufiVersion)" />
+		<PackageReference Include="SufiChain.SufiPlatform.Permissions.HttpApi" Version="$(SufiVersion)" />
+		<PackageReference Include="SufiChain.SufiPlatform.Localization.Blazor" Version="$(SufiVersion)" />
+		<PackageReference Include="SufiChain.SufiPlatform.Localization.Application" Version="$(SufiVersion)" />
+		<PackageReference Include="SufiChain.SufiPlatform.Localization.HttpApi" Version="$(SufiVersion)" />
 		<PackageReference Include="SufiChain.SufiBlazor" Version="$(SufiBlazorVersion)" />
 		<PackageReference Include="SufiChain.SufiBlazor.Demo" Version="$(SufiBlazorVersion)" />
 	</ItemGroup>
@@ -180,8 +180,8 @@
   <ItemGroup>
     <PackageReference Include="Volo.Abp.AspNetCore.MultiTenancy" Version="$(AbpVersion)" />
     <PackageReference Include="Volo.Abp.Autofac" Version="$(AbpVersion)" />
-    <PackageReference Include="SufiChain.SufiAbp.Ddd.Application" Version="$(SufiVersion)" />
-    <PackageReference Include="SufiChain.SufiAbp.UI.Blazor" Version="$(SufiVersion)" />
+    <PackageReference Include="SufiChain.SufiPlatform.Ddd.Application" Version="$(SufiVersion)" />
+    <PackageReference Include="SufiChain.SufiPlatform.UI.Blazor" Version="$(SufiVersion)" />
     <PackageReference Include="Volo.Abp.AspNetCore.Serilog" Version="$(AbpVersion)" />
     <!-- <TEMPLATE-REMOVE IF-NOT="arch:single"> -->
     <PackageReference Include="Volo.Abp.Swashbuckle" Version="$(AbpVersion)" />
@@ -205,7 +205,7 @@
     </PackageReference>
     <!-- </TEMPLATE-REMOVE> -->
     <PackageReference Include="Volo.Abp.Caching" Version="$(AbpVersion)" />
-    <PackageReference Include="SufiChain.SufiAbp.Communications" Version="$(SufiVersion)" />
+    <PackageReference Include="SufiChain.SufiPlatform.SufiCom" Version="$(SufiVersion)" />
   </ItemGroup>
   <ItemGroup>
     <Compile Remove="Logs\**" />

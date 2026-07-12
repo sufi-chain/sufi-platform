@@ -4,11 +4,11 @@
 @using Microsoft.Extensions.Localization
 @using Volo.Abp.Localization
 @using SufiChain.SufiTheme.Blazor.Server.Bundling
-@using SufiChain.SufiAbp.UI.Blazor.Server.Components
-@using SufiChain.SufiAbp.UI.Localization
+@using SufiChain.SufiPlatform.UI.Blazor.Server.Components
+@using SufiChain.SufiPlatform.UI.Localization
 @inject IHostEnvironment Env
 @inject IHttpContextAccessor HttpContextAccessor
-@inject IStringLocalizer<SufiAbpFrameworkResource> L
+@inject IStringLocalizer<SufiFrameworkResource> L
 @{
     var rtl = CultureHelper.IsRtl ? "rtl" : string.Empty;
 }
@@ -21,7 +21,7 @@
     <title>MyCompanyName.MyProjectName - Authentication</title>
     <base href="/" />
 
-    <SufiAbpStyles BundleName="@BlazorSufiThemeBundles.Styles.Global" />
+    <SufiStyles BundleName="@BlazorSufiThemeBundles.Styles.Global" />
 
     @* Scoped CSS bundle *@
     <link href="MyCompanyName.MyProjectName.AuthServer.styles.css" rel="stylesheet"/>
@@ -60,7 +60,7 @@
         <a class="dismiss">🗙</a>
     </div>
 
-    <SufiAbpScripts BundleName="@BlazorSufiThemeBundles.Scripts.Global" />
+    <SufiScripts BundleName="@BlazorSufiThemeBundles.Scripts.Global" />
 
     <script src="_framework/blazor.web.js"></script>
 

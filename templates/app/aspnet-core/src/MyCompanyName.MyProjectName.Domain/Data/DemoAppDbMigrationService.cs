@@ -7,11 +7,11 @@ using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-using SufiChain.SufiAbp.Data;
+using SufiChain.SufiPlatform.Data;
 using Volo.Abp.Data;
 using Volo.Abp.DependencyInjection;
-using SufiChain.SufiAbp.Identity;
-using SufiChain.SufiAbp.TenantManagement;
+using SufiChain.SufiPlatform.Identity;
+using SufiChain.SufiPlatform.Tenants;
 using Volo.Abp.MultiTenancy;
 
 namespace MyCompanyName.MyProjectName.Data
@@ -96,8 +96,8 @@ namespace MyCompanyName.MyProjectName.Data
             Logger.LogInformation($"Executing {(tenant == null ? "host" : tenant.Name + " tenant")} database seed...");
 
             await _dataSeeder.SeedAsync(new DataSeedContext(tenant?.Id)
-                .WithProperty(SufiAbpConstants.AdminEmailPropertyName, SufiAbpConstants.AdminEmailDefaultValue)
-                .WithProperty(SufiAbpConstants.AdminPasswordPropertyName, SufiAbpConstants.AdminPasswordDefaultValue)
+                .WithProperty(SufiConstants.AdminEmailPropertyName, SufiConstants.AdminEmailDefaultValue)
+                .WithProperty(SufiConstants.AdminPasswordPropertyName, SufiConstants.AdminPasswordDefaultValue)
             );
         }
 

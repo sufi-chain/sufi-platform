@@ -1,5 +1,5 @@
-﻿using MyCompanyName.MyProjectName.Localization;
-using SufiChain.SufiAbp.Authorization.Permissions;
+using MyCompanyName.MyProjectName.Localization;
+using SufiChain.SufiPlatform.Authorization.Permissions;
 
 namespace MyCompanyName.MyProjectName.Permissions
 {

@@ -27,16 +27,16 @@
     <PackageReference Include="Volo.Abp.AspNetCore.Serilog" Version="$(AbpVersion)" />
 <!-- SufiTheme with ABP module pattern, uses SufiBlazor design system -->
     <ProjectReference Include="..\..\..\..\..\independent-projects\sufi-theme\src\SufiChain.SufiTheme.Blazor.Server\SufiChain.SufiTheme.Blazor.Server.csproj" />
-    <!-- SufiAbp UI Modules for Public Site -->
+    <!-- Sufi Platform UI Modules for Public Site -->
     <!-- Account Blazor - login/register pages for public site -->
-    <ProjectReference Include="..\..\..\..\..\modules\account\src\SufiChain.SufiAbp.Account.Blazor\SufiChain.SufiAbp.Account.Blazor.csproj" />
-    <ProjectReference Include="..\..\..\..\..\modules\identity\src\SufiChain.SufiAbp.Identity.HttpApi.Client\SufiChain.SufiAbp.Identity.HttpApi.Client.csproj" />
+    <ProjectReference Include="..\..\..\..\..\modules\account\src\SufiChain.SufiPlatform.Account.Blazor\SufiChain.SufiPlatform.Account.Blazor.csproj" />
+    <ProjectReference Include="..\..\..\..\..\modules\identity\src\SufiChain.SufiPlatform.Identity.HttpApi.Client\SufiChain.SufiPlatform.Identity.HttpApi.Client.csproj" />
     <!-- File Manager for public file access (e.g., media in CMS pages) -->
-    <ProjectReference Include="..\..\..\..\..\modules\file-manager\src\SufiChain.SufiAbp.FileManager.Blazor\SufiChain.SufiAbp.FileManager.Blazor.csproj" />
-    <ProjectReference Include="..\..\..\..\..\modules\file-manager\src\SufiChain.SufiAbp.FileManager.Blazor.Server\SufiChain.SufiAbp.FileManager.Blazor.Server.csproj" />
-    <ProjectReference Include="..\..\..\..\..\modules\file-manager\src\SufiChain.SufiAbp.FileManager.HttpApi.Client\SufiChain.SufiAbp.FileManager.HttpApi.Client.csproj" />
+    <ProjectReference Include="..\..\..\..\..\modules\file-manager\src\SufiChain.SufiPlatform.FileManager.Blazor\SufiChain.SufiPlatform.FileManager.Blazor.csproj" />
+    <ProjectReference Include="..\..\..\..\..\modules\file-manager\src\SufiChain.SufiPlatform.FileManager.Blazor.Server\SufiChain.SufiPlatform.FileManager.Blazor.Server.csproj" />
+    <ProjectReference Include="..\..\..\..\..\modules\file-manager\src\SufiChain.SufiPlatform.FileManager.HttpApi.Client\SufiChain.SufiPlatform.FileManager.HttpApi.Client.csproj" />
     <!-- Tenant Management HTTP API Client (provides remote ITenantStore for tenant cookie resolution) -->
-    <ProjectReference Include="..\..\..\..\..\modules\tenant-management\src\SufiChain.SufiAbp.TenantManagement.HttpApi.Client\SufiChain.SufiAbp.TenantManagement.HttpApi.Client.csproj" />
+    <ProjectReference Include="..\..\..\..\..\modules\tenants\src\SufiChain.SufiPlatform.Tenants.HttpApi.Client\SufiChain.SufiPlatform.Tenants.HttpApi.Client.csproj" />
     <!-- NOTE: Admin modules NOT included for WebSite -->
     <!-- NO: AuditLogging, BackgroundJobs, FeatureManagement, SettingManagement -->
     <!-- NO: TenantManagement Blazor UI (managed via Admin panel only) -->
@@ -45,28 +45,28 @@
   <!-- <TEMPLATE-ONLY>
 	<ItemGroup>
 		<PackageReference Include="SufiChain.SufiTheme.Blazor.Server" Version="$(SufiThemeVersion)" />
-		<PackageReference Include="SufiChain.SufiAbp.Account.Blazor" Version="$(SufiVersion)" />
-		<PackageReference Include="SufiChain.SufiAbp.Identity.HttpApi.Client" Version="$(SufiVersion)" />
-		<PackageReference Include="SufiChain.SufiAbp.FileManager.Blazor" Version="$(SufiVersion)" />
-		<PackageReference Include="SufiChain.SufiAbp.FileManager.Blazor.Server" Version="$(SufiVersion)" />
-		<PackageReference Include="SufiChain.SufiAbp.FileManager.HttpApi.Client" Version="$(SufiVersion)" />
-		<PackageReference Include="SufiChain.SufiAbp.TenantManagement.HttpApi.Client" Version="$(SufiVersion)" />
+		<PackageReference Include="SufiChain.SufiPlatform.Account.Blazor" Version="$(SufiVersion)" />
+		<PackageReference Include="SufiChain.SufiPlatform.Identity.HttpApi.Client" Version="$(SufiVersion)" />
+		<PackageReference Include="SufiChain.SufiPlatform.FileManager.Blazor" Version="$(SufiVersion)" />
+		<PackageReference Include="SufiChain.SufiPlatform.FileManager.Blazor.Server" Version="$(SufiVersion)" />
+		<PackageReference Include="SufiChain.SufiPlatform.FileManager.HttpApi.Client" Version="$(SufiVersion)" />
+		<PackageReference Include="SufiChain.SufiPlatform.Tenants.HttpApi.Client" Version="$(SufiVersion)" />
 	</ItemGroup>
 	</TEMPLATE-ONLY> -->
   <ItemGroup>
-    <PackageReference Include="SufiChain.SufiAbp.Core" Version="$(SufiVersion)" />
+    <PackageReference Include="SufiChain.SufiPlatform.Core" Version="$(SufiVersion)" />
     <!-- Demo app project reference (always needed) -->
     <ProjectReference Include="..\MyCompanyName.MyProjectName.HttpApi.Client\MyCompanyName.MyProjectName.HttpApi.Client.csproj" />
     <PackageReference Include="Volo.Abp.Caching.StackExchangeRedis" Version="$(AbpVersion)" />
     <PackageReference Include="Volo.Abp.AspNetCore.Mvc.Client" Version="$(AbpVersion)" />
-    <PackageReference Include="SufiChain.SufiAbp.AspNetCore.Authentication.OpenIdConnect" Version="$(SufiVersion)" />
+    <PackageReference Include="SufiChain.SufiPlatform.AspNetCore.Authentication.OpenIdConnect" Version="$(SufiVersion)" />
     <PackageReference Include="Volo.Abp.Http.Client.IdentityModel.Web" Version="$(AbpVersion)" />
     <PackageReference Include="Volo.Abp.Autofac" Version="$(AbpVersion)" />
     <PackageReference Include="Volo.Abp.Swashbuckle" Version="$(AbpVersion)" />
     <PackageReference Include="Volo.Abp.AspNetCore.MultiTenancy" Version="$(AbpVersion)" />
     <PackageReference Include="Volo.Abp.AspNetCore.Serilog" Version="$(AbpVersion)" />
     <!-- ABP Backend Application (keeps working with ABP's backend services) -->
-    <PackageReference Include="SufiChain.SufiAbp.Identity.Application.Contracts" Version="$(SufiVersion)" />
+    <PackageReference Include="SufiChain.SufiPlatform.Identity.Application.Contracts" Version="$(SufiVersion)" />
   </ItemGroup>
   <ItemGroup>
     <Compile Remove="Logs\**" />

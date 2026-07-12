@@ -1,7 +1,7 @@
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.Extensions.DependencyInjection;
-using SufiChain.SufiAbp.UI.Toolbars;
+using SufiChain.SufiPlatform.UI.Toolbars;
 using MyCompanyName.MyProjectName.Blazor.WebSite.Components.Toolbar.LoginLink;
 
 namespace MyCompanyName.MyProjectName.Blazor.WebSite.Menus;

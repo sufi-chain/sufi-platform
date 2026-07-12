@@ -11,13 +11,13 @@
   <ItemGroup>
     <PackageReference Include="Serilog.AspNetCore" Version="$(SerilogAspNetCoreVersion)" />
     <PackageReference Include="Serilog.Sinks.Async" Version="$(SerilogSinksAsyncVersion)" />
-    <PackageReference Include="SufiChain.SufiAbp.Core" Version="$(SufiVersion)" />
+    <PackageReference Include="SufiChain.SufiPlatform.Core" Version="$(SufiVersion)" />
     <PackageReference Include="Volo.Abp.AspNetCore.MultiTenancy" Version="$(AbpVersion)" />
     <PackageReference Include="Volo.Abp.Autofac" Version="$(AbpVersion)" />
     <PackageReference Include="Volo.Abp.AspNetCore.Authentication.JwtBearer" Version="$(AbpVersion)" />
     <PackageReference Include="Volo.Abp.AspNetCore.Serilog" Version="$(AbpVersion)" />
     <PackageReference Include="Volo.Abp.Swashbuckle" Version="$(AbpVersion)" />
-    <PackageReference Include="SufiChain.SufiAbp.BlobStoring.Database.EntityFrameworkCore" Version="$(SufiVersion)" />
+    <PackageReference Include="SufiChain.SufiPlatform.BlobDatabase.EntityFrameworkCore" Version="$(SufiVersion)" />
   </ItemGroup>
 
   <ItemGroup>
@@ -32,42 +32,42 @@
   <!-- <TEMPLATE-REMOVE> -->
   <ItemGroup>
     <!-- File Manager Module (backend services and API) -->
-    <ProjectReference Include="..\..\..\..\..\modules\file-manager\src\SufiChain.SufiAbp.FileManager.Application\SufiChain.SufiAbp.FileManager.Application.csproj" />
-    <ProjectReference Include="..\..\..\..\..\modules\file-manager\src\SufiChain.SufiAbp.FileManager.HttpApi\SufiChain.SufiAbp.FileManager.HttpApi.csproj" />
-    <ProjectReference Include="..\..\..\..\..\modules\file-manager\src\SufiChain.SufiAbp.FileManager.EntityFrameworkCore\SufiChain.SufiAbp.FileManager.EntityFrameworkCore.csproj" />
+    <ProjectReference Include="..\..\..\..\..\modules\file-manager\src\SufiChain.SufiPlatform.FileManager.Application\SufiChain.SufiPlatform.FileManager.Application.csproj" />
+    <ProjectReference Include="..\..\..\..\..\modules\file-manager\src\SufiChain.SufiPlatform.FileManager.HttpApi\SufiChain.SufiPlatform.FileManager.HttpApi.csproj" />
+    <ProjectReference Include="..\..\..\..\..\modules\file-manager\src\SufiChain.SufiPlatform.FileManager.EntityFrameworkCore\SufiChain.SufiPlatform.FileManager.EntityFrameworkCore.csproj" />
     <!-- AI Management Module (Application services and API) -->
-    <ProjectReference Include="..\..\..\..\..\modules\ai\src\SufiChain.SufiAbp.AI.Application\SufiChain.SufiAbp.AI.Application.csproj" />
-    <ProjectReference Include="..\..\..\..\..\modules\ai\src\SufiChain.SufiAbp.AI.HttpApi\SufiChain.SufiAbp.AI.HttpApi.csproj" />
+    <ProjectReference Include="..\..\..\..\..\modules\ai\src\SufiChain.SufiPlatform.SufiAI.Application\SufiChain.SufiPlatform.SufiAI.Application.csproj" />
+    <ProjectReference Include="..\..\..\..\..\modules\ai\src\SufiChain.SufiPlatform.SufiAI.HttpApi\SufiChain.SufiPlatform.SufiAI.HttpApi.csproj" />
     <!-- Audit Logging Module (Application services and API) -->
-    <ProjectReference Include="..\..\..\..\..\modules\audit-logging\src\SufiChain.SufiAbp.AuditLogging.Application\SufiChain.SufiAbp.AuditLogging.Application.csproj" />
-    <ProjectReference Include="..\..\..\..\..\modules\audit-logging\src\SufiChain.SufiAbp.AuditLogging.HttpApi\SufiChain.SufiAbp.AuditLogging.HttpApi.csproj" />
+    <ProjectReference Include="..\..\..\..\..\modules\audit-logging\src\SufiChain.SufiPlatform.AuditLogging.Application\SufiChain.SufiPlatform.AuditLogging.Application.csproj" />
+    <ProjectReference Include="..\..\..\..\..\modules\audit-logging\src\SufiChain.SufiPlatform.AuditLogging.HttpApi\SufiChain.SufiPlatform.AuditLogging.HttpApi.csproj" />
     <!-- Background Jobs Module (Application services and API) -->
-    <ProjectReference Include="..\..\..\..\..\modules\background-jobs\src\SufiChain.SufiAbp.BackgroundJobs.Application\SufiChain.SufiAbp.BackgroundJobs.Application.csproj" />
-    <ProjectReference Include="..\..\..\..\..\modules\background-jobs\src\SufiChain.SufiAbp.BackgroundJobs.HttpApi\SufiChain.SufiAbp.BackgroundJobs.HttpApi.csproj" />
+    <ProjectReference Include="..\..\..\..\..\modules\jobs\src\SufiChain.SufiPlatform.BackgroundJobs.Application\SufiChain.SufiPlatform.BackgroundJobs.Application.csproj" />
+    <ProjectReference Include="..\..\..\..\..\modules\jobs\src\SufiChain.SufiPlatform.BackgroundJobs.HttpApi\SufiChain.SufiPlatform.BackgroundJobs.HttpApi.csproj" />
     <!-- Identity Security Logs Module (Application services and API) -->
-    <ProjectReference Include="..\..\..\..\..\modules\identity\src\SufiChain.SufiAbp.Identity.Application\SufiChain.SufiAbp.Identity.Application.csproj" />
-    <ProjectReference Include="..\..\..\..\..\modules\identity\src\SufiChain.SufiAbp.Identity.HttpApi\SufiChain.SufiAbp.Identity.HttpApi.csproj" />
+    <ProjectReference Include="..\..\..\..\..\modules\identity\src\SufiChain.SufiPlatform.Identity.Application\SufiChain.SufiPlatform.Identity.Application.csproj" />
+    <ProjectReference Include="..\..\..\..\..\modules\identity\src\SufiChain.SufiPlatform.Identity.HttpApi\SufiChain.SufiPlatform.Identity.HttpApi.csproj" />
     <!-- Tenant Management Module (Application services and API) -->
-    <ProjectReference Include="..\..\..\..\..\modules\tenant-management\src\SufiChain.SufiAbp.TenantManagement.Application\SufiChain.SufiAbp.TenantManagement.Application.csproj" />
-    <ProjectReference Include="..\..\..\..\..\modules\tenant-management\src\SufiChain.SufiAbp.TenantManagement.HttpApi\SufiChain.SufiAbp.TenantManagement.HttpApi.csproj" />
+    <ProjectReference Include="..\..\..\..\..\modules\tenants\src\SufiChain.SufiPlatform.Tenants.Application\SufiChain.SufiPlatform.Tenants.Application.csproj" />
+    <ProjectReference Include="..\..\..\..\..\modules\tenants\src\SufiChain.SufiPlatform.Tenants.HttpApi\SufiChain.SufiPlatform.Tenants.HttpApi.csproj" />
     <!-- SufiBlazor Demo Localization (Blazor fetches from remote API) -->
     <ProjectReference Include="..\..\..\..\..\independent-projects\sufi-blazor\src\SufiChain.SufiBlazor.Demo.Localization\SufiChain.SufiBlazor.Demo.Localization.csproj" />
     <!-- Localization Management Module (backend services for translation editor) -->
-    <ProjectReference Include="..\..\..\..\..\modules\localization-management\src\SufiChain.SufiAbp.LocalizationManagement.Application\SufiChain.SufiAbp.LocalizationManagement.Application.csproj" />
-    <ProjectReference Include="..\..\..\..\..\modules\localization-management\src\SufiChain.SufiAbp.LocalizationManagement.HttpApi\SufiChain.SufiAbp.LocalizationManagement.HttpApi.csproj" />
-    <ProjectReference Include="..\..\..\..\..\modules\localization-management\src\SufiChain.SufiAbp.LocalizationManagement.EntityFrameworkCore\SufiChain.SufiAbp.LocalizationManagement.EntityFrameworkCore.csproj" />
+    <ProjectReference Include="..\..\..\..\..\modules\localization\src\SufiChain.SufiPlatform.Localization.Application\SufiChain.SufiPlatform.Localization.Application.csproj" />
+    <ProjectReference Include="..\..\..\..\..\modules\localization\src\SufiChain.SufiPlatform.Localization.HttpApi\SufiChain.SufiPlatform.Localization.HttpApi.csproj" />
+    <ProjectReference Include="..\..\..\..\..\modules\localization\src\SufiChain.SufiPlatform.Localization.EntityFrameworkCore\SufiChain.SufiPlatform.Localization.EntityFrameworkCore.csproj" />
     <!-- Account Module (Application + HttpApi) -->
-    <ProjectReference Include="..\..\..\..\..\modules\account\src\SufiChain.SufiAbp.Account.Application\SufiChain.SufiAbp.Account.Application.csproj" />
-    <ProjectReference Include="..\..\..\..\..\modules\account\src\SufiChain.SufiAbp.Account.HttpApi\SufiChain.SufiAbp.Account.HttpApi.csproj" />
+    <ProjectReference Include="..\..\..\..\..\modules\account\src\SufiChain.SufiPlatform.Account.Application\SufiChain.SufiPlatform.Account.Application.csproj" />
+    <ProjectReference Include="..\..\..\..\..\modules\account\src\SufiChain.SufiPlatform.Account.HttpApi\SufiChain.SufiPlatform.Account.HttpApi.csproj" />
     <!-- Permission Management Module (Application + HttpApi) -->
-    <ProjectReference Include="..\..\..\..\..\modules\permission-management\src\SufiChain.SufiAbp.PermissionManagement.Application\SufiChain.SufiAbp.PermissionManagement.Application.csproj" />
-    <ProjectReference Include="..\..\..\..\..\modules\permission-management\src\SufiChain.SufiAbp.PermissionManagement.HttpApi\SufiChain.SufiAbp.PermissionManagement.HttpApi.csproj" />
+    <ProjectReference Include="..\..\..\..\..\modules\permissions\src\SufiChain.SufiPlatform.Permissions.Application\SufiChain.SufiPlatform.Permissions.Application.csproj" />
+    <ProjectReference Include="..\..\..\..\..\modules\permissions\src\SufiChain.SufiPlatform.Permissions.HttpApi\SufiChain.SufiPlatform.Permissions.HttpApi.csproj" />
     <!-- Feature Management Module (Application + HttpApi) -->
-    <ProjectReference Include="..\..\..\..\..\modules\feature-management\src\SufiChain.SufiAbp.FeatureManagement.Application\SufiChain.SufiAbp.FeatureManagement.Application.csproj" />
-    <ProjectReference Include="..\..\..\..\..\modules\feature-management\src\SufiChain.SufiAbp.FeatureManagement.HttpApi\SufiChain.SufiAbp.FeatureManagement.HttpApi.csproj" />
+    <ProjectReference Include="..\..\..\..\..\modules\features\src\SufiChain.SufiPlatform.Features.Application\SufiChain.SufiPlatform.Features.Application.csproj" />
+    <ProjectReference Include="..\..\..\..\..\modules\features\src\SufiChain.SufiPlatform.Features.HttpApi\SufiChain.SufiPlatform.Features.HttpApi.csproj" />
     <!-- Setting Management Module (Application + HttpApi) -->
-    <ProjectReference Include="..\..\..\..\..\modules\setting-management\src\SufiChain.SufiAbp.SettingManagement.Application\SufiChain.SufiAbp.SettingManagement.Application.csproj" />
-    <ProjectReference Include="..\..\..\..\..\modules\setting-management\src\SufiChain.SufiAbp.SettingManagement.HttpApi\SufiChain.SufiAbp.SettingManagement.HttpApi.csproj" />
+    <ProjectReference Include="..\..\..\..\..\modules\settings\src\SufiChain.SufiPlatform.Settings.Application\SufiChain.SufiPlatform.Settings.Application.csproj" />
+    <ProjectReference Include="..\..\..\..\..\modules\settings\src\SufiChain.SufiPlatform.Settings.HttpApi\SufiChain.SufiPlatform.Settings.HttpApi.csproj" />
   </ItemGroup>
   <!-- </TEMPLATE-REMOVE> -->
   
@@ -75,38 +75,38 @@
   
   <!-- <TEMPLATE-ONLY>
   <ItemGroup>
-    <PackageReference Include="SufiChain.SufiAbp.FileManager.Application" Version="$(SufiVersion)" />
-    <PackageReference Include="SufiChain.SufiAbp.FileManager.HttpApi" Version="$(SufiVersion)" />
-    <PackageReference Include="SufiChain.SufiAbp.FileManager.EntityFrameworkCore" Version="$(SufiVersion)" />
-    <PackageReference Include="SufiChain.SufiAbp.AI.Application" Version="$(SufiVersion)" />
-    <PackageReference Include="SufiChain.SufiAbp.AI.HttpApi" Version="$(SufiVersion)" />
-    <PackageReference Include="SufiChain.SufiAbp.AuditLogging.Application" Version="$(SufiVersion)" />
-    <PackageReference Include="SufiChain.SufiAbp.AuditLogging.HttpApi" Version="$(SufiVersion)" />
-    <PackageReference Include="SufiChain.SufiAbp.BackgroundJobs.Application" Version="$(SufiVersion)" />
-    <PackageReference Include="SufiChain.SufiAbp.BackgroundJobs.HttpApi" Version="$(SufiVersion)" />
-    <PackageReference Include="SufiChain.SufiAbp.Identity.Application" Version="$(SufiVersion)" />
-    <PackageReference Include="SufiChain.SufiAbp.Identity.HttpApi" Version="$(SufiVersion)" />
-    <PackageReference Include="SufiChain.SufiAbp.TenantManagement.Application" Version="$(SufiVersion)" />
-    <PackageReference Include="SufiChain.SufiAbp.TenantManagement.HttpApi" Version="$(SufiVersion)" />
-    <PackageReference Include="SufiChain.SufiAbp.LocalizationManagement.Application" Version="$(SufiVersion)" />
-    <PackageReference Include="SufiChain.SufiAbp.LocalizationManagement.HttpApi" Version="$(SufiVersion)" />
-    <PackageReference Include="SufiChain.SufiAbp.LocalizationManagement.EntityFrameworkCore" Version="$(SufiVersion)" />
-    <PackageReference Include="SufiChain.SufiAbp.Account.Application" Version="$(SufiVersion)" />
-    <PackageReference Include="SufiChain.SufiAbp.Account.HttpApi" Version="$(SufiVersion)" />
-    <PackageReference Include="SufiChain.SufiAbp.PermissionManagement.Application" Version="$(SufiVersion)" />
-    <PackageReference Include="SufiChain.SufiAbp.PermissionManagement.HttpApi" Version="$(SufiVersion)" />
-    <PackageReference Include="SufiChain.SufiAbp.FeatureManagement.Application" Version="$(SufiVersion)" />
-    <PackageReference Include="SufiChain.SufiAbp.FeatureManagement.HttpApi" Version="$(SufiVersion)" />
-    <PackageReference Include="SufiChain.SufiAbp.SettingManagement.Application" Version="$(SufiVersion)" />
-    <PackageReference Include="SufiChain.SufiAbp.SettingManagement.HttpApi" Version="$(SufiVersion)" />
+    <PackageReference Include="SufiChain.SufiPlatform.FileManager.Application" Version="$(SufiVersion)" />
+    <PackageReference Include="SufiChain.SufiPlatform.FileManager.HttpApi" Version="$(SufiVersion)" />
+    <PackageReference Include="SufiChain.SufiPlatform.FileManager.EntityFrameworkCore" Version="$(SufiVersion)" />
+    <PackageReference Include="SufiChain.SufiPlatform.SufiAI.Application" Version="$(SufiVersion)" />
+    <PackageReference Include="SufiChain.SufiPlatform.SufiAI.HttpApi" Version="$(SufiVersion)" />
+    <PackageReference Include="SufiChain.SufiPlatform.AuditLogging.Application" Version="$(SufiVersion)" />
+    <PackageReference Include="SufiChain.SufiPlatform.AuditLogging.HttpApi" Version="$(SufiVersion)" />
+    <PackageReference Include="SufiChain.SufiPlatform.BackgroundJobs.Application" Version="$(SufiVersion)" />
+    <PackageReference Include="SufiChain.SufiPlatform.BackgroundJobs.HttpApi" Version="$(SufiVersion)" />
+    <PackageReference Include="SufiChain.SufiPlatform.Identity.Application" Version="$(SufiVersion)" />
+    <PackageReference Include="SufiChain.SufiPlatform.Identity.HttpApi" Version="$(SufiVersion)" />
+    <PackageReference Include="SufiChain.SufiPlatform.Tenants.Application" Version="$(SufiVersion)" />
+    <PackageReference Include="SufiChain.SufiPlatform.Tenants.HttpApi" Version="$(SufiVersion)" />
+    <PackageReference Include="SufiChain.SufiPlatform.Localization.Application" Version="$(SufiVersion)" />
+    <PackageReference Include="SufiChain.SufiPlatform.Localization.HttpApi" Version="$(SufiVersion)" />
+    <PackageReference Include="SufiChain.SufiPlatform.Localization.EntityFrameworkCore" Version="$(SufiVersion)" />
+    <PackageReference Include="SufiChain.SufiPlatform.Account.Application" Version="$(SufiVersion)" />
+    <PackageReference Include="SufiChain.SufiPlatform.Account.HttpApi" Version="$(SufiVersion)" />
+    <PackageReference Include="SufiChain.SufiPlatform.Permissions.Application" Version="$(SufiVersion)" />
+    <PackageReference Include="SufiChain.SufiPlatform.Permissions.HttpApi" Version="$(SufiVersion)" />
+    <PackageReference Include="SufiChain.SufiPlatform.Features.Application" Version="$(SufiVersion)" />
+    <PackageReference Include="SufiChain.SufiPlatform.Features.HttpApi" Version="$(SufiVersion)" />
+    <PackageReference Include="SufiChain.SufiPlatform.Settings.Application" Version="$(SufiVersion)" />
+    <PackageReference Include="SufiChain.SufiPlatform.Settings.HttpApi" Version="$(SufiVersion)" />
   </ItemGroup>
   </TEMPLATE-ONLY> -->
 
   <ItemGroup>
     
-    <PackageReference Include="SufiChain.SufiAbp.AuditLogging.EntityFrameworkCore" Version="$(SufiVersion)" />
-    <PackageReference Include="SufiChain.SufiAbp.FeatureManagement.EntityFrameworkCore" Version="$(SufiVersion)" />
-    <PackageReference Include="SufiChain.SufiAbp.SettingManagement.EntityFrameworkCore" Version="$(SufiVersion)" />
+    <PackageReference Include="SufiChain.SufiPlatform.AuditLogging.EntityFrameworkCore" Version="$(SufiVersion)" />
+    <PackageReference Include="SufiChain.SufiPlatform.Features.EntityFrameworkCore" Version="$(SufiVersion)" />
+    <PackageReference Include="SufiChain.SufiPlatform.Settings.EntityFrameworkCore" Version="$(SufiVersion)" />
   </ItemGroup>
 
   <ItemGroup>

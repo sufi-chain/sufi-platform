@@ -3,11 +3,11 @@
 @using Microsoft.Extensions.Localization
 @using Volo.Abp.Localization
 @using SufiChain.SufiTheme.Blazor.Server.Bundling
-@using SufiChain.SufiAbp.UI.Blazor.Server.Components
-@using SufiChain.SufiAbp.UI.Localization
+@using SufiChain.SufiPlatform.UI.Blazor.Server.Components
+@using SufiChain.SufiPlatform.UI.Localization
 @using static Microsoft.AspNetCore.Components.Web.RenderMode
 @inject IHostEnvironment Env
-@inject IStringLocalizer<SufiAbpFrameworkResource> L
+@inject IStringLocalizer<SufiFrameworkResource> L
 @{
     var rtl = CultureHelper.IsRtl ? "rtl" : string.Empty;
 }
@@ -20,7 +20,7 @@
     <title>DemoApp</title>
     <base href="/" />
 
-    <SufiAbpStyles BundleName="@BlazorSufiThemeBundles.Styles.Global" />
+    <SufiStyles BundleName="@BlazorSufiThemeBundles.Styles.Global" />
 
     <link href="MyCompanyName.MyProjectName.Blazor.WebApp.styles.css" rel="stylesheet"/>
     <!-- <TEMPLATE-REMOVE IF-NOT="module:sufi-blazor-demo"> -->
@@ -47,7 +47,7 @@
         <a class="dismiss">🗙</a>
     </div>
 
-    <SufiAbpScripts BundleName="@BlazorSufiThemeBundles.Scripts.Global" />
+    <SufiScripts BundleName="@BlazorSufiThemeBundles.Scripts.Global" />
 
     <script src="_framework/blazor.web.js"></script>
 

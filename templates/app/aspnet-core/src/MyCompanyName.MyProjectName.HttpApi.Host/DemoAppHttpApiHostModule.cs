@@ -4,42 +4,42 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi;
-using SufiChain.SufiAbp.AI;
+using SufiChain.SufiPlatform.SufiAI;
 using Volo.Abp.Autofac;
 using Volo.Abp.AspNetCore.MultiTenancy;
 using Volo.Abp.AspNetCore.Authentication.JwtBearer;
 using Volo.Abp.Swashbuckle;
 using Volo.Abp.AspNetCore.Serilog;
 // <TEMPLATE-REMOVE IF-NOT="module:audit-logging">
-using SufiChain.SufiAbp.AuditLogging;
+using SufiChain.SufiPlatform.AuditLogging;
 // </TEMPLATE-REMOVE>
-// <TEMPLATE-REMOVE IF-NOT="module:background-jobs">
+// <TEMPLATE-REMOVE IF-NOT="module:jobs">
 // </TEMPLATE-REMOVE>
-using SufiChain.SufiAbp.Account;
+using SufiChain.SufiPlatform.Account;
 // <TEMPLATE-REMOVE IF-NOT="module:file-manager">
-using SufiChain.SufiAbp.FileManager;
-using SufiChain.SufiAbp.FileManager.EntityFrameworkCore;
-using SufiChain.SufiAbp.BlobStoring.Database.EntityFrameworkCore;
+using SufiChain.SufiPlatform.FileManager;
+using SufiChain.SufiPlatform.FileManager.EntityFrameworkCore;
+using SufiChain.SufiPlatform.BlobDatabase.EntityFrameworkCore;
 // </TEMPLATE-REMOVE>
-using SufiChain.SufiAbp.FeatureManagement;
+using SufiChain.SufiPlatform.Features;
 // <TEMPLATE-REMOVE IF-NOT="db:efcore">
-using SufiChain.SufiAbp.FeatureManagement.EntityFrameworkCore;
+using SufiChain.SufiPlatform.Features.EntityFrameworkCore;
 // </TEMPLATE-REMOVE>
-using SufiChain.SufiAbp.Identity;
-// <TEMPLATE-REMOVE IF-NOT="module:localization-management">
-using SufiChain.SufiAbp.LocalizationManagement;
-using SufiChain.SufiAbp.LocalizationManagement.EntityFrameworkCore;
+using SufiChain.SufiPlatform.Identity;
+// <TEMPLATE-REMOVE IF-NOT="module:localization">
+using SufiChain.SufiPlatform.Localization;
+using SufiChain.SufiPlatform.Localization.EntityFrameworkCore;
 // </TEMPLATE-REMOVE>
 // <TEMPLATE-REMOVE IF-NOT="module:sufi-blazor-demo">
 using SufiChain.SufiBlazor.Demo;
 // </TEMPLATE-REMOVE>
-using SufiChain.SufiAbp.PermissionManagement;
-using SufiChain.SufiAbp.SettingManagement;
+using SufiChain.SufiPlatform.Permissions;
+using SufiChain.SufiPlatform.Settings;
 // <TEMPLATE-REMOVE IF-NOT="db:efcore">
-using SufiChain.SufiAbp.SettingManagement.EntityFrameworkCore;
+using SufiChain.SufiPlatform.Settings.EntityFrameworkCore;
 // </TEMPLATE-REMOVE>
-// <TEMPLATE-REMOVE IF-NOT="module:tenant-management">
-using SufiChain.SufiAbp.TenantManagement;
+// <TEMPLATE-REMOVE IF-NOT="module:tenants">
+using SufiChain.SufiPlatform.Tenants;
 // </TEMPLATE-REMOVE>
 using System;
 using System.Collections.Generic;
@@ -77,49 +77,49 @@ namespace MyCompanyName.MyProjectName
         typeof(DemoAppMongoDbModule),
         // </TEMPLATE-REMOVE>
         // <TEMPLATE-REMOVE IF-NOT="module:file-manager">
-        // Blob storage for file manager (must load before SufiAbpFileManagerEntityFrameworkCoreModule)
-        typeof(SufiAbpBlobStoringDatabaseEntityFrameworkCoreModule),
+        // Blob storage for file manager (must load before SufiFileManagerEntityFrameworkCoreModule)
+        typeof(SufiBlobDatabaseDatabaseEntityFrameworkCoreModule),
         // File Manager Module (data layer first for blob storage, then Application + API)
-        typeof(SufiAbpFileManagerEntityFrameworkCoreModule),
-        typeof(SufiAbpFileManagerApplicationModule),
-        typeof(SufiAbpFileManagerHttpApiModule),
+        typeof(SufiFileManagerEntityFrameworkCoreModule),
+        typeof(SufiFileManagerApplicationModule),
+        typeof(SufiFileManagerHttpApiModule),
         // </TEMPLATE-REMOVE>
         // <TEMPLATE-REMOVE IF-NOT="module:audit-logging">
-        typeof(SufiAbpAuditLoggingApplicationModule),
-        typeof(SufiAbpAuditLoggingHttpApiModule),
+        typeof(SufiAuditLoggingApplicationModule),
+        typeof(SufiAuditLoggingHttpApiModule),
         // </TEMPLATE-REMOVE>
-        // <TEMPLATE-REMOVE IF-NOT="module:background-jobs">
-        typeof(SufiAbpBackgroundJobsApplicationModule),
-        typeof(SufiAbpBackgroundJobsHttpApiModule),
+        // <TEMPLATE-REMOVE IF-NOT="module:jobs">
+        typeof(SufiBackgroundJobsApplicationModule),
+        typeof(SufiBackgroundJobsHttpApiModule),
         // </TEMPLATE-REMOVE>
-        typeof(SufiAbpIdentityApplicationModule),
-        typeof(SufiAbpIdentityHttpApiModule),
-        // <TEMPLATE-REMOVE IF-NOT="module:tenant-management">
+        typeof(SufiIdentityApplicationModule),
+        typeof(SufiIdentityHttpApiModule),
+        // <TEMPLATE-REMOVE IF-NOT="module:tenants">
         // Tenant Management Module (Application services and API)
-        typeof(SufiAbpTenantManagementApplicationModule),
-        typeof(SufiAbpTenantManagementHttpApiModule),
+        typeof(SufiTenantsApplicationModule),
+        typeof(SufiTenantsHttpApiModule),
         // </TEMPLATE-REMOVE>
         // Account Module (Application + HttpApi)
-        typeof(SufiAbpAccountApplicationModule),
-        typeof(SufiAbpAccountHttpApiModule),
+        typeof(SufiAccountApplicationModule),
+        typeof(SufiAccountHttpApiModule),
         // Permission Management Module (Application + HttpApi)
-        typeof(SufiAbpPermissionManagementApplicationModule),
-        typeof(SufiAbpPermissionManagementHttpApiModule),
+        typeof(SufiPermissionsApplicationModule),
+        typeof(SufiPermissionsHttpApiModule),
         // Feature Management Module (Application + HttpApi)
-        typeof(SufiAbpFeatureManagementApplicationModule),
-        typeof(SufiAbpFeatureManagementEntityFrameworkCoreModule),
-        typeof(SufiAbpFeatureManagementHttpApiModule),
+        typeof(SufiFeaturesApplicationModule),
+        typeof(SufiFeaturesEntityFrameworkCoreModule),
+        typeof(SufiFeaturesHttpApiModule),
         // Setting Management Module (Application + HttpApi)
-        typeof(SufiAbpSettingManagementApplicationModule),
-        typeof(SufiAbpSettingManagementEntityFrameworkCoreModule),
-        typeof(SufiAbpSettingManagementHttpApiModule),
+        typeof(SufiSettingsApplicationModule),
+        typeof(SufiSettingsEntityFrameworkCoreModule),
+        typeof(SufiSettingsHttpApiModule),
         typeof(SufiAIApplicationModule),
         typeof(SufiAIHttpApiModule),
-        // <TEMPLATE-REMOVE IF-NOT="module:localization-management">
+        // <TEMPLATE-REMOVE IF-NOT="module:localization">
         // Localization Management Module (backend services for translation editor)
-        typeof(SufiAbpLocalizationManagementApplicationModule),
-        typeof(SufiAbpLocalizationManagementHttpApiModule),
-        typeof(SufiAbpLocalizationManagementEntityFrameworkCoreModule),
+        typeof(SufiLocalizationApplicationModule),
+        typeof(SufiLocalizationHttpApiModule),
+        typeof(SufiLocalizationEntityFrameworkCoreModule),
         // </TEMPLATE-REMOVE>
         // <TEMPLATE-REMOVE IF-NOT="module:sufi-blazor-demo">
         // SufiBlazor Demo localization (Blazor fetches from remote API)

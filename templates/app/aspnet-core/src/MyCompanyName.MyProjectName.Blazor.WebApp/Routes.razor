@@ -2,15 +2,15 @@
 @using Microsoft.AspNetCore.Components.Routing
 @using Microsoft.Extensions.Localization
 @using Microsoft.Extensions.Options
-@using SufiChain.SufiAbp.UI.Blazor.Components
-@using SufiChain.SufiAbp.UI.Routing
+@using SufiChain.SufiPlatform.UI.Blazor.Components
+@using SufiChain.SufiPlatform.UI.Routing
 @using SufiChain.SufiTheme
 @using SufiChain.SufiBlazor.Components
 @using SufiChain.SufiBlazor.Components.Actions
 @using SufiChain.SufiTheme.Blazor.Layouts
 @using MyCompanyName.MyProjectName.Shared
 @using MyCompanyName.MyProjectName.Localization
-@inject IOptions<SufiAbpRouterOptions> RouterOptions
+@inject IOptions<SufiRouterOptions> RouterOptions
 @inject IOptions<SufiThemeBlazorOptions> ThemeOptions
 @inject IStringLocalizer<DemoAppResource> L
 @inject NavigationManager Navigation
@@ -28,7 +28,7 @@
                     }
                     else
                     {                       
-                       <SufiAbpErrorPage StatusCode="403" Title="@L["NotAuthorized"]" Message="@L["NotAuthorizedMessage"]" /> 
+                       <SufiErrorPage StatusCode="403" Title="@L["NotAuthorized"]" Message="@L["NotAuthorizedMessage"]" /> 
                     }
                 </NotAuthorized>
                     </AuthorizeRouteView>
@@ -57,7 +57,7 @@
         <NotFound>
             <PageTitle>@L["PageNotFound"]</PageTitle>
             <LayoutView Layout="ThemeOptions.Value.Layout">
-                <SufiAbpErrorPage StatusCode="404" Title="@L["PageNotFound"]" Message="@L["PageNotFoundMessage"]" />
+                <SufiErrorPage StatusCode="404" Title="@L["PageNotFound"]" Message="@L["PageNotFoundMessage"]" />
             </LayoutView>
         </NotFound>
     </Router>

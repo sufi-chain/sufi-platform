@@ -18,24 +18,24 @@ using Volo.Abp.Swashbuckle;
 using Volo.Abp.AspNetCore.Serilog;
 using Volo.Abp.UI;
 // <TEMPLATE-REMOVE IF-NOT="module:file-manager">
-using SufiChain.SufiAbp.FileManager;
-using SufiChain.SufiAbp.FileManager.Blazor;
-using SufiChain.SufiAbp.FileManager.Blazor.Server;
+using SufiChain.SufiPlatform.FileManager;
+using SufiChain.SufiPlatform.FileManager.Blazor;
+using SufiChain.SufiPlatform.FileManager.Blazor.Server;
 // </TEMPLATE-REMOVE>
-using SufiChain.SufiAbp.Identity;
-// <TEMPLATE-REMOVE IF-NOT="module:tenant-management">
-using SufiChain.SufiAbp.TenantManagement;
+using SufiChain.SufiPlatform.Identity;
+// <TEMPLATE-REMOVE IF-NOT="module:tenants">
+using SufiChain.SufiPlatform.Tenants;
 // </TEMPLATE-REMOVE>
-using SufiChain.SufiAbp.UI.Blazor.Server.MultiTenancy;
+using SufiChain.SufiPlatform.UI.Blazor.Server.MultiTenancy;
 using Volo.Abp.AspNetCore.MultiTenancy;
 using SufiChain.SufiTheme;
 using SufiChain.SufiTheme.Blazor.Server;
 using SufiChain.SufiTheme.Blazor.Server.Bundling;
-using SufiChain.SufiAbp.UI.Bundling;
-using SufiChain.SufiAbp.UI.Routing;
-using SufiChain.SufiAbp.UI.Toolbars;
+using SufiChain.SufiPlatform.UI.Bundling;
+using SufiChain.SufiPlatform.UI.Routing;
+using SufiChain.SufiPlatform.UI.Toolbars;
 using StackExchange.Redis;
-using SufiChain.SufiAbp.AspNetCore.Authentication.OpenIdConnect;
+using SufiChain.SufiPlatform.AspNetCore.Authentication.OpenIdConnect;
 using Volo.Abp;
 using Volo.Abp.AspNetCore.Mvc.Libs;
 using Volo.Abp.AspNetCore.Mvc.Localization;
@@ -64,26 +64,26 @@ namespace MyCompanyName.MyProjectName.Blazor.WebSite;
     typeof(DemoAppHttpApiClientModule),
     typeof(AbpCachingStackExchangeRedisModule),
     typeof(AbpAspNetCoreMvcClientModule),
-    typeof(SufiAbpAuthenticationOpenIdConnectModule),
+    typeof(SufiAuthenticationOpenIdConnectModule),
     typeof(AbpHttpClientIdentityModelWebModule),
     typeof(AbpAutofacModule),
     typeof(AbpSwashbuckleModule),
     typeof(AbpAspNetCoreSerilogModule),
-    // SufiAbp UI ABP Integration - bridges ABP services (menus, languages, users, etc.) to SufiAbp UI
+    // Sufi Platform UI ABP Integration - bridges ABP services (menus, languages, users, etc.) to Sufi Platform UI
     typeof(AbpUiModule),
-    // SufiAbp UI Modules for Public Site
-    // NOTE: SufiAbpAccountBlazorModule is NOT included here because auth pages
+    // Sufi Platform UI Modules for Public Site
+    // NOTE: SufiAccountBlazorModule is NOT included here because auth pages
     // are served by the dedicated AuthServer host in tiered architecture.
-    typeof(SufiAbpIdentityHttpApiClientModule),
+    typeof(SufiIdentityHttpApiClientModule),
     // <TEMPLATE-REMOVE IF-NOT="module:file-manager">
     // File Manager for public file access (e.g., media in CMS pages)
-    typeof(SufiAbpFileManagerBlazorModule),
-    typeof(SufiAbpFileManagerBlazorServerModule),
-    typeof(SufiAbpFileManagerHttpApiClientModule),
+    typeof(SufiFileManagerBlazorModule),
+    typeof(SufiFileManagerBlazorServerModule),
+    typeof(SufiFileManagerHttpApiClientModule),
     // </TEMPLATE-REMOVE>
-    // <TEMPLATE-REMOVE IF-NOT="module:tenant-management">
+    // <TEMPLATE-REMOVE IF-NOT="module:tenants">
     // Tenant Management HTTP API Client (provides remote ITenantStore for tenant cookie resolution)
-    typeof(SufiAbpTenantManagementHttpApiClientModule),
+    typeof(SufiTenantsHttpApiClientModule),
     // </TEMPLATE-REMOVE>
     // SufiTheme using SufiBlazor design system
     // NOTE: For CMS, this will be replaced with dynamic layout rendering
@@ -162,7 +162,7 @@ public class DemoAppBlazorWebSiteModule : AbpModule
 
     private void ConfigureBundles()
     {
-        // Configure SufiAbp bundling for additional app-specific styles
+        // Configure Sufi Platform bundling for additional app-specific styles
         Configure<BundleOptions>(options =>
         {
             options.StyleBundles.Add(BlazorSufiThemeBundles.Styles.Global, "/blazor-global-styles.css");
@@ -221,11 +221,11 @@ public class DemoAppBlazorWebSiteModule : AbpModule
                 // <TEMPLATE-REMOVE>
                 options.FileSets.ReplaceEmbeddedByPhysical<SufiThemeBlazorServerModule>(
                     Path.Combine(hostingEnvironment.ContentRootPath, $"..{Path.DirectorySeparatorChar}..{Path.DirectorySeparatorChar}..{Path.DirectorySeparatorChar}..{Path.DirectorySeparatorChar}..{Path.DirectorySeparatorChar}src{Path.DirectorySeparatorChar}modules{Path.DirectorySeparatorChar}sufi-theme{Path.DirectorySeparatorChar}src{Path.DirectorySeparatorChar}SufiChain.SufiTheme.Blazor.Server"));
-                // Load SufiAbpFramework and FileManager localization from source so base-type fallback and fa/ar work in dev
+                // Load SufiFramework and FileManager localization from source so base-type fallback and fa/ar work in dev
                 options.FileSets.ReplaceEmbeddedByPhysical<UiDomainSharedModule>(
-                    Path.Combine(hostingEnvironment.ContentRootPath, "..", "..", "..", "..", "..", "src", "framework", "src", "SufiChain.SufiAbp.UI.Domain.Shared"));
+                    Path.Combine(hostingEnvironment.ContentRootPath, "..", "..", "..", "..", "..", "src", "framework", "src", "SufiChain.SufiPlatform.UI.Domain.Shared"));
                 options.FileSets.ReplaceEmbeddedByPhysical<FileManagerDomainSharedModule>(
-                    Path.Combine(hostingEnvironment.ContentRootPath, "..", "..", "..", "..", "..", "src", "modules", "file-manager", "src", "SufiChain.SufiAbp.FileManager.Domain.Shared"));
+                    Path.Combine(hostingEnvironment.ContentRootPath, "..", "..", "..", "..", "..", "src", "modules", "file-manager", "src", "SufiChain.SufiPlatform.FileManager.Domain.Shared"));
                 // </TEMPLATE-REMOVE>
             });
         }
@@ -235,20 +235,11 @@ public class DemoAppBlazorWebSiteModule : AbpModule
     {
         Configure<AbpLocalizationOptions>(options =>
         {
-            // Primary languages (en, fa, ar)
-            // Note: RTL is determined automatically by the culture (ar, fa are RTL)
+            // RTL is derived from culture by DefaultLanguageProvider (ar, fa, …)
             options.Languages.Add(new LanguageInfo("en", "en", "English"));
             options.Languages.Add(new LanguageInfo("fa", "fa", "فارسی"));
             options.Languages.Add(new LanguageInfo("ar", "ar", "العربية"));
             options.Languages.Add(new LanguageInfo("es", "es", "Español"));
-        });
-
-        Configure<SufiChain.SufiAbp.UI.Localization.SufiAbpLocalizationOptions>(options =>
-        {
-            options.Languages.Add(new SufiChain.SufiAbp.UI.Localization.LanguageInfo("en", "en", "English"));
-            options.Languages.Add(new SufiChain.SufiAbp.UI.Localization.LanguageInfo("fa", "fa", "فارسی", isRtl: true));
-            options.Languages.Add(new SufiChain.SufiAbp.UI.Localization.LanguageInfo("ar", "ar", "العربية", isRtl: true));
-            options.Languages.Add(new SufiChain.SufiAbp.UI.Localization.LanguageInfo("es", "es", "Español"));
         });
     }
 
@@ -262,7 +253,7 @@ public class DemoAppBlazorWebSiteModule : AbpModule
 
     private void ConfigureRouter(ServiceConfigurationContext context)
     {
-        Configure<SufiAbpRouterOptions>(options =>
+        Configure<SufiRouterOptions>(options =>
         {
             options.AppAssembly = typeof(DemoAppBlazorWebSiteModule).Assembly;
         });
@@ -345,7 +336,7 @@ public class DemoAppBlazorWebSiteModule : AbpModule
         app.UseConfiguredEndpoints(endpoints =>
         {
             var routerOptions = endpoints.ServiceProvider
-                .GetRequiredService<IOptions<SufiAbpRouterOptions>>()
+                .GetRequiredService<IOptions<SufiRouterOptions>>()
                 .Value;
             
             endpoints.MapRazorComponents<App>()

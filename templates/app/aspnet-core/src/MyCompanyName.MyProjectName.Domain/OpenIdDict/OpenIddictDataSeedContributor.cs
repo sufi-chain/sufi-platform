@@ -8,9 +8,9 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Localization;
 using OpenIddict.Abstractions;
 using OidcConstants = OpenIddict.Abstractions.OpenIddictConstants;
-using SufiChain.SufiAbp.OpenIddict.Applications;
-using SufiChain.SufiAbp.OpenIddict.Scopes;
-using SufiChain.SufiAbp.PermissionManagement;
+using SufiChain.SufiPlatform.OpenIddict.Applications;
+using SufiChain.SufiPlatform.OpenIddict.Scopes;
+using SufiChain.SufiPlatform.Permissions;
 using Volo.Abp;
 using Volo.Abp.Data;
 using Volo.Abp.DependencyInjection;
@@ -22,7 +22,7 @@ namespace MyCompanyName.MyProjectName.OpenIddict;
 /* Creates initial data that is needed to properly run the application
  * and make client-to-server communication possible.
  *
- * Aligns with SufiChain.SufiAbp framework login flows (SufiAbpAuthenticationOptions, AccountController):
+ * Aligns with SufiChain.SufiPlatform framework login flows (SufiAuthenticationOptions, AccountController):
  * - OIDC clients (MVC, Blazor Server): signin-oidc, signout-callback-oidc
  *
  * Only seeds clients when both ClientId and RootUrl are configured (DbMigrator

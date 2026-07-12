@@ -8,29 +8,29 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using OpenIddict.Validation.AspNetCore;
-using SufiChain.SufiAbp.AspNetCore;
-using SufiChain.SufiAbp.AspNetCore.Authentication.OpenIdConnect;
-using SufiChain.SufiAbp.AspNetCore.Authentication.Server;
-using SufiChain.SufiAbp.Identity;
-using SufiChain.SufiAbp.Account.Blazor;
+using SufiChain.SufiPlatform.AspNetCore;
+using SufiChain.SufiPlatform.AspNetCore.Authentication.OpenIdConnect;
+using SufiChain.SufiPlatform.AspNetCore.Authentication.Server;
+using SufiChain.SufiPlatform.Identity;
+using SufiChain.SufiPlatform.Account.Blazor;
 using Volo.Abp.Autofac;
 using Volo.Abp.AspNetCore.MultiTenancy;
 using Volo.Abp.AspNetCore.Authentication.OAuth;
 using Volo.Abp.AspNetCore.Serilog;
-// <TEMPLATE-REMOVE IF-NOT="module:tenant-management">
-using SufiChain.SufiAbp.TenantManagement;
+// <TEMPLATE-REMOVE IF-NOT="module:tenants">
+using SufiChain.SufiPlatform.Tenants;
 // </TEMPLATE-REMOVE>
 using SufiChain.SufiTheme;
 using SufiChain.SufiTheme.Blazor.Server;
-using SufiChain.SufiAbp.UI.Blazor.Server.MultiTenancy;
-using SufiChain.SufiAbp.UI.Routing;
+using SufiChain.SufiPlatform.UI.Blazor.Server.MultiTenancy;
+using SufiChain.SufiPlatform.UI.Routing;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Volo.Abp;
-using SufiChain.SufiAbp.Account;
-using SufiChain.SufiAbp.PermissionManagement;
+using SufiChain.SufiPlatform.Account;
+using SufiChain.SufiPlatform.Permissions;
 using Volo.Abp.AspNetCore.Mvc;
 using Volo.Abp.AspNetCore.Auditing;
 using Volo.Abp.AspNetCore.Mvc.Libs;
@@ -40,10 +40,10 @@ using Volo.Abp.Identity.AspNetCore;
 using Volo.Abp.Localization;
 using Volo.Abp.Modularity;
 using Volo.Abp.OpenIddict;
-using SufiChain.SufiAbp.FeatureManagement;
-using SufiChain.SufiAbp.FeatureManagement.MongoDB;
-using SufiChain.SufiAbp.SettingManagement;
-using SufiChain.SufiAbp.SettingManagement.MongoDB;
+using SufiChain.SufiPlatform.Features;
+using SufiChain.SufiPlatform.Features.MongoDB;
+using SufiChain.SufiPlatform.Settings;
+using SufiChain.SufiPlatform.Settings.MongoDB;
 using Volo.Abp.Threading;
 using Volo.Abp.UI.Navigation.Urls;
 using Volo.Abp.VirtualFileSystem;
@@ -55,36 +55,36 @@ namespace MyCompanyName.MyProjectName
     [DependsOn(
         typeof(AbpAutofacModule),
         typeof(AbpAspNetCoreMultiTenancyModule),
-        typeof(SufiAbpAspNetCoreModule),
+        typeof(SufiAspNetCoreModule),
         typeof(DemoAppApplicationModule),
         typeof(DemoAppMongoDbModule),
         // OpenIddict authorization endpoints (authorize, token, logout)
-        typeof(SufiAbpAuthenticationOpenIdConnectModule),
+        typeof(SufiAuthenticationOpenIdConnectModule),
         // OAuth external logins (Google, Microsoft, Facebook) - provides MapAbpClaimTypes
         typeof(AbpAspNetCoreAuthenticationOAuthModule),
-        // SufiAbp Account controller (complete-login, OIDC Login/Logout, ExternalLogin)
-        typeof(SufiAbpAuthenticationServerModule),
+        // Sufi Platform Account controller (complete-login, OIDC Login/Logout, ExternalLogin)
+        typeof(SufiAuthenticationServerModule),
         // Blazor Server theme for rendering auth UI pages
         typeof(SufiThemeBlazorServerModule),
         // Account Blazor pages (Login, Register, etc.)
-        typeof(SufiAbpAccountBlazorModule),
+        typeof(SufiAccountBlazorModule),
         typeof(AbpAspNetCoreSerilogModule),
         // Identity services for credential validation (SignInManager, UserManager)
-        typeof(SufiAbpIdentityApplicationModule),
-        typeof(SufiAbpIdentityHttpApiModule),
+        typeof(SufiIdentityApplicationModule),
+        typeof(SufiIdentityHttpApiModule),
         // Tenant Management for multi-tenancy resolution during login
-        typeof(SufiAbpTenantManagementApplicationModule),
-        typeof(SufiAbpTenantManagementHttpApiModule),
-        typeof(SufiAbpAccountApplicationModule),
-        typeof(SufiAbpAccountHttpApiModule),
-        typeof(SufiAbpPermissionManagementApplicationModule),
-        typeof(SufiAbpPermissionManagementHttpApiModule),
-        typeof(SufiAbpFeatureManagementApplicationModule),
-        typeof(SufiAbpFeatureManagementHttpApiModule),
-        typeof(SufiAbpFeatureManagementMongoDbModule),
-        typeof(SufiAbpSettingManagementApplicationModule),
-        typeof(SufiAbpSettingManagementHttpApiModule),
-        typeof(SufiAbpSettingManagementMongoDbModule)
+        typeof(SufiTenantsApplicationModule),
+        typeof(SufiTenantsHttpApiModule),
+        typeof(SufiAccountApplicationModule),
+        typeof(SufiAccountHttpApiModule),
+        typeof(SufiPermissionsApplicationModule),
+        typeof(SufiPermissionsHttpApiModule),
+        typeof(SufiFeaturesApplicationModule),
+        typeof(SufiFeaturesHttpApiModule),
+        typeof(SufiFeaturesMongoDbModule),
+        typeof(SufiSettingsApplicationModule),
+        typeof(SufiSettingsHttpApiModule),
+        typeof(SufiSettingsMongoDbModule)
     )]
     public class DemoAppAuthServerModule : AbpModule
     {
@@ -187,7 +187,7 @@ namespace MyCompanyName.MyProjectName
 
         private void ConfigureConventionalControllers()
         {
-            // SufiAbp HttpApi modules handle Account, Permission, Feature, Setting routes via explicit controllers.
+            // Sufi Platform HttpApi modules handle Account, Permission, Feature, Setting routes via explicit controllers.
             // No conventional controller setup needed for these modules.
         }
 
@@ -229,9 +229,9 @@ namespace MyCompanyName.MyProjectName
                     options.FileSets.ReplaceEmbeddedByPhysical<SufiThemeBlazorServerModule>(
                         Path.Combine(hostingEnvironment.ContentRootPath,
                             $"..{Path.DirectorySeparatorChar}..{Path.DirectorySeparatorChar}..{Path.DirectorySeparatorChar}..{Path.DirectorySeparatorChar}..{Path.DirectorySeparatorChar}src{Path.DirectorySeparatorChar}modules{Path.DirectorySeparatorChar}sufi-theme{Path.DirectorySeparatorChar}src{Path.DirectorySeparatorChar}SufiChain.SufiTheme.Blazor.Server"));
-                    options.FileSets.ReplaceEmbeddedByPhysical<SufiAbpAccountBlazorModule>(
+                    options.FileSets.ReplaceEmbeddedByPhysical<SufiAccountBlazorModule>(
                         Path.Combine(hostingEnvironment.ContentRootPath,
-                            $"..{Path.DirectorySeparatorChar}..{Path.DirectorySeparatorChar}..{Path.DirectorySeparatorChar}..{Path.DirectorySeparatorChar}..{Path.DirectorySeparatorChar}src{Path.DirectorySeparatorChar}modules{Path.DirectorySeparatorChar}account{Path.DirectorySeparatorChar}src{Path.DirectorySeparatorChar}SufiChain.SufiAbp.Account.Blazor"));
+                            $"..{Path.DirectorySeparatorChar}..{Path.DirectorySeparatorChar}..{Path.DirectorySeparatorChar}..{Path.DirectorySeparatorChar}..{Path.DirectorySeparatorChar}src{Path.DirectorySeparatorChar}modules{Path.DirectorySeparatorChar}account{Path.DirectorySeparatorChar}src{Path.DirectorySeparatorChar}SufiChain.SufiPlatform.Account.Blazor"));
                     // </TEMPLATE-REMOVE>
                 });
             }
@@ -239,11 +239,11 @@ namespace MyCompanyName.MyProjectName
 
         private void ConfigureRouter(ServiceConfigurationContext context)
         {
-            Configure<SufiAbpRouterOptions>(options =>
+            Configure<SufiRouterOptions>(options =>
             {
                 options.AdditionalAssemblies.Add(typeof(DemoAppAuthServerModule).Assembly);
                 // Add Account.Blazor assembly for Login, Register, etc. pages
-                options.AdditionalAssemblies.Add(typeof(SufiAbpAccountBlazorModule).Assembly);
+                options.AdditionalAssemblies.Add(typeof(SufiAccountBlazorModule).Assembly);
             });
 
             // Configure SufiTheme to use DualSidebar layout with modern dual sidebar pattern
@@ -328,7 +328,7 @@ namespace MyCompanyName.MyProjectName
                 // Map Blazor Static SSR components for authentication pages
                 endpoints.MapRazorComponents<App>()
                     .AddInteractiveServerRenderMode()
-                    .AddAdditionalAssemblies(typeof(SufiAbpAccountBlazorModule).Assembly);
+                    .AddAdditionalAssemblies(typeof(SufiAccountBlazorModule).Assembly);
             });
         }
     }

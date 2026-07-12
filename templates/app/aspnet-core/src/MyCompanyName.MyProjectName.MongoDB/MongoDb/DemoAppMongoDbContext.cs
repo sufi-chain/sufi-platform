@@ -1,23 +1,23 @@
 using Volo.Abp.Data;
 using MongoDB.Driver;
-using SufiChain.SufiAbp.AI.MongoDB;
-using SufiChain.SufiAbp.AI.Workspaces;
-using SufiChain.SufiAbp.AuditLogging.MongoDB;
-using SufiChain.SufiAbp.BackgroundJobs.MongoDB;
-using SufiChain.SufiAbp.FeatureManagement.MongoDB;
-using SufiChain.SufiAbp.FileManager.FileFolders;
-using SufiChain.SufiAbp.FileManager.FileItems;
-using SufiChain.SufiAbp.FileManager.FileStructures;
-using SufiChain.SufiAbp.FileManager.MongoDB;
-using SufiChain.SufiAbp.Identity.MongoDB;
-using SufiChain.SufiAbp.LocalizationManagement.Entities;
-using SufiChain.SufiAbp.LocalizationManagement.MongoDB;
-using SufiChain.SufiAbp.OpenIddict.MongoDB;
-using SufiChain.SufiAbp.PermissionManagement.MongoDB;
-using SufiChain.SufiAbp.SettingManagement.MongoDB;
-using SufiChain.SufiAbp.ShortLinkGenerator;
-using SufiChain.SufiAbp.ShortLinkGenerator.MongoDB.MongoDB;
-using SufiChain.SufiAbp.TenantManagement.MongoDB;
+using SufiChain.SufiPlatform.SufiAI.MongoDB;
+using SufiChain.SufiPlatform.SufiAI.Workspaces;
+using SufiChain.SufiPlatform.AuditLogging.MongoDB;
+using SufiChain.SufiPlatform.BackgroundJobs.MongoDB;
+using SufiChain.SufiPlatform.Features.MongoDB;
+using SufiChain.SufiPlatform.FileManager.FileFolders;
+using SufiChain.SufiPlatform.FileManager.FileItems;
+using SufiChain.SufiPlatform.FileManager.FileStructures;
+using SufiChain.SufiPlatform.FileManager.MongoDB;
+using SufiChain.SufiPlatform.Identity.MongoDB;
+using SufiChain.SufiPlatform.Localization.Entities;
+using SufiChain.SufiPlatform.Localization.MongoDB;
+using SufiChain.SufiPlatform.OpenIddict.MongoDB;
+using SufiChain.SufiPlatform.Permissions.MongoDB;
+using SufiChain.SufiPlatform.Settings.MongoDB;
+using SufiChain.SufiPlatform.ShortLinks;
+using SufiChain.SufiPlatform.ShortLinks.MongoDB.MongoDB;
+using SufiChain.SufiPlatform.Tenants.MongoDB;
 using Volo.Abp.MongoDB;
 
 namespace MyCompanyName.MyProjectName.MongoDB;
@@ -49,19 +49,19 @@ public class DemoAppMongoDbContext : AbpMongoDbContext,
     {
         base.CreateModel(modelBuilder);
 
-        /* Configure SufiAbp modules */
+        /* Configure Sufi Platform modules */
         modelBuilder.ConfigureIdentity();
-        modelBuilder.ConfigureSufiAbpTenantManagement();
+        modelBuilder.ConfigureSufiTenants();
         modelBuilder.ConfigurePermissionManagement();
-        modelBuilder.ConfigureSufiAbpSettingManagement();
-        modelBuilder.ConfigureSufiAbpFeatureManagement();
+        modelBuilder.ConfigureSufiSettings();
+        modelBuilder.ConfigureSufiFeatures();
         modelBuilder.ConfigureAuditLogging();
         modelBuilder.ConfigureBackgroundJobs();
-        modelBuilder.ConfigureSufiAbpOpenIddict();
+        modelBuilder.ConfigureSufiOpenIddict();
         
-        modelBuilder.ConfigureSufiAbpFileManager();
-        modelBuilder.ConfigureSufiAbpLocalizationManagement();
-        modelBuilder.ConfigureSufiAbpShortLinkGenerator();
+        modelBuilder.ConfigureSufiFileManager();
+        modelBuilder.ConfigureSufiLocalization();
+        modelBuilder.ConfigureSufiShortLinks();
         modelBuilder.ConfigureSufiAI();
 
         /* Configure your own collections here */

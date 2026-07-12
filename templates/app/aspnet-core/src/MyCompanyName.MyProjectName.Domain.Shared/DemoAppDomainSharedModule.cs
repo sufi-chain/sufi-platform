@@ -1,37 +1,37 @@
 using MyCompanyName.MyProjectName.Localization;
-using SufiChain.SufiAbp.AuditLogging;
-using SufiChain.SufiAbp.FeatureManagement;
-using SufiChain.SufiAbp.Identity;
+using SufiChain.SufiPlatform.AuditLogging;
+using SufiChain.SufiPlatform.Features;
+using SufiChain.SufiPlatform.Identity;
 using Volo.Abp.Localization;
 using Volo.Abp.Localization.ExceptionHandling;
 using Volo.Abp.Modularity;
-using SufiChain.SufiAbp.OpenIddict;
-using SufiChain.SufiAbp.PermissionManagement;
-using SufiChain.SufiAbp.SettingManagement;
-using SufiChain.SufiAbp.ShortLinkGenerator;
-using SufiChain.SufiAbp.TagsManagement;
-using SufiChain.SufiAbp.TenantManagement;
-using SufiChain.SufiAbp.MenuManagement;
+using SufiChain.SufiPlatform.OpenIddict;
+using SufiChain.SufiPlatform.Permissions;
+using SufiChain.SufiPlatform.Settings;
+using SufiChain.SufiPlatform.ShortLinks;
+using SufiChain.SufiPlatform.Tags;
+using SufiChain.SufiPlatform.Tenants;
+using SufiChain.SufiPlatform.Menus;
 using Volo.Abp.VirtualFileSystem;
-using SufiChain.SufiAbp.UI.Localization;
+using SufiChain.SufiPlatform.UI.Localization;
 
-using SufiChain.SufiAbp.UI;
+using SufiChain.SufiPlatform.UI;
 
 namespace MyCompanyName.MyProjectName
 {
     [DependsOn(
-        typeof(SufiAbpUiDomainSharedModule),
-        typeof(SufiAbpAuditLoggingDomainSharedModule),
-        typeof(SufiAbpBackgroundJobsDomainSharedModule),
-        typeof(SufiAbpFeatureManagementDomainSharedModule),
-        typeof(SufiAbpIdentityDomainSharedModule),
-        typeof(SufiAbpOpenIddictDomainSharedModule),
-        typeof(SufiAbpPermissionManagementDomainSharedModule),
-        typeof(SufiAbpSettingManagementDomainSharedModule),
-        typeof(SufiAbpTenantManagementDomainSharedModule),
-        typeof(SufiAbpShortLinkGeneratorDomainSharedModule),
-        typeof(SufiAbpTagsManagementDomainSharedModule),
-        typeof(SufiAbpMenuManagementDomainSharedModule)
+        typeof(SufiUiDomainSharedModule),
+        typeof(SufiAuditLoggingDomainSharedModule),
+        typeof(SufiBackgroundJobsDomainSharedModule),
+        typeof(SufiFeaturesDomainSharedModule),
+        typeof(SufiIdentityDomainSharedModule),
+        typeof(SufiOpenIddictDomainSharedModule),
+        typeof(SufiPermissionsDomainSharedModule),
+        typeof(SufiSettingsDomainSharedModule),
+        typeof(SufiTenantsDomainSharedModule),
+        typeof(SufiShortLinksDomainSharedModule),
+        typeof(SufiTagsDomainSharedModule),
+        typeof(SufiMenusDomainSharedModule)
         )]
     public class DemoAppDomainSharedModule : AbpModule
     {
@@ -52,7 +52,7 @@ namespace MyCompanyName.MyProjectName
             {
                 options.Resources
                     .Add<DemoAppResource>("en")
-                    .AddBaseTypes(typeof(SufiAbpFrameworkResource))
+                    .AddBaseTypes(typeof(SufiFrameworkResource))
                     .AddVirtualJson("/Localization/DemoApp");
 
                 options.DefaultResourceType = typeof(DemoAppResource);

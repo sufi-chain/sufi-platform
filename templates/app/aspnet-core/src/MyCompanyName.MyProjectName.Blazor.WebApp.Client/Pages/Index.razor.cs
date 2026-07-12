@@ -1,11 +1,11 @@
 using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.Localization;
-using SufiChain.SufiAbp.UI.Blazor;
+using SufiChain.SufiPlatform.UI.Blazor;
 using MyCompanyName.MyProjectName.Localization;
 
 namespace MyCompanyName.MyProjectName.Blazor.WebApp.Client.Pages;
 
-public partial class IndexBase : SufiAbpComponentBase
+public partial class IndexBase : SufiComponentBase
 {
     [Inject] protected IStringLocalizer<DemoAppResource> L { get; set; } = default!;
     [Inject] protected NavigationManager NavigationManager { get; set; } = default!;

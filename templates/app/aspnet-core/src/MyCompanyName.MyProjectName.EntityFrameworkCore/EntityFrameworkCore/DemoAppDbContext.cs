@@ -1,71 +1,71 @@
 using Microsoft.EntityFrameworkCore;
-using SufiChain.SufiAbp.AI.EntityFrameworkCore;
-using SufiChain.SufiAbp.AuditLogging.EntityFrameworkCore;
-using SufiChain.SufiAbp.BackgroundJobs.EntityFrameworkCore;
-using SufiChain.SufiAbp.BlobStoring.Database.EntityFrameworkCore;
-using SufiChain.SufiAbp.Calendar.Calendars;
-using SufiChain.SufiAbp.Calendar.EntityFrameworkCore;
-using SufiChain.SufiAbp.Calendar.Events;
-using SufiChain.SufiAbp.FeatureManagement.EntityFrameworkCore;
-using SufiChain.SufiAbp.FileManager.EntityFrameworkCore;
-using SufiChain.SufiAbp.FileManager.FileFolders;
-using SufiChain.SufiAbp.FileManager.FileItems;
-using SufiChain.SufiAbp.FileManager.FileStructures;
-using SufiChain.SufiAbp.Identity.EntityFrameworkCore;
-using SufiChain.SufiAbp.Identity;
-using SufiChain.SufiAbp.LocalizationManagement.EntityFrameworkCore;
-using SufiChain.SufiAbp.LocalizationManagement.Entities;
-using SufiChain.SufiAbp.OpenIddict.EntityFrameworkCore;
-using SufiChain.SufiAbp.PermissionManagement.EntityFrameworkCore;
-using SufiChain.SufiAbp.SettingManagement.EntityFrameworkCore;
-using SufiChain.SufiAbp.ShortLinkGenerator;
-using SufiChain.SufiAbp.ShortLinkGenerator.EntityFrameworkCore;
-using SufiChain.SufiAbp.TenantManagement.EntityFrameworkCore;
-using SufiChain.SufiAbp.BlobStoring.Database;
+using SufiChain.SufiPlatform.SufiAI.EntityFrameworkCore;
+using SufiChain.SufiPlatform.AuditLogging.EntityFrameworkCore;
+using SufiChain.SufiPlatform.BackgroundJobs.EntityFrameworkCore;
+using SufiChain.SufiPlatform.BlobDatabase.EntityFrameworkCore;
+using SufiChain.SufiPlatform.Calendar.Calendars;
+using SufiChain.SufiPlatform.Calendar.EntityFrameworkCore;
+using SufiChain.SufiPlatform.Calendar.Events;
+using SufiChain.SufiPlatform.Features.EntityFrameworkCore;
+using SufiChain.SufiPlatform.FileManager.EntityFrameworkCore;
+using SufiChain.SufiPlatform.FileManager.FileFolders;
+using SufiChain.SufiPlatform.FileManager.FileItems;
+using SufiChain.SufiPlatform.FileManager.FileStructures;
+using SufiChain.SufiPlatform.Identity.EntityFrameworkCore;
+using SufiChain.SufiPlatform.Identity;
+using SufiChain.SufiPlatform.Localization.EntityFrameworkCore;
+using SufiChain.SufiPlatform.Localization.Entities;
+using SufiChain.SufiPlatform.OpenIddict.EntityFrameworkCore;
+using SufiChain.SufiPlatform.Permissions.EntityFrameworkCore;
+using SufiChain.SufiPlatform.Settings.EntityFrameworkCore;
+using SufiChain.SufiPlatform.ShortLinks;
+using SufiChain.SufiPlatform.ShortLinks.EntityFrameworkCore;
+using SufiChain.SufiPlatform.Tenants.EntityFrameworkCore;
+using SufiChain.SufiPlatform.BlobDatabase;
 using Volo.Abp.Data;
 using Volo.Abp.DependencyInjection;
 using Volo.Abp.EntityFrameworkCore;
-using SufiChain.SufiAbp.AuditLogging;
-using SufiChain.SufiAbp.FeatureManagement;
-using SufiChain.SufiAbp.OpenIddict.Applications;
-using SufiChain.SufiAbp.OpenIddict.Authorizations;
-using SufiChain.SufiAbp.OpenIddict.Scopes;
-using SufiChain.SufiAbp.OpenIddict.Tokens;
-using SufiChain.SufiAbp.PermissionManagement;
-using SufiChain.SufiAbp.SettingManagement;
-using SufiChain.SufiAbp.TenantManagement;
+using SufiChain.SufiPlatform.AuditLogging;
+using SufiChain.SufiPlatform.Features;
+using SufiChain.SufiPlatform.OpenIddict.Applications;
+using SufiChain.SufiPlatform.OpenIddict.Authorizations;
+using SufiChain.SufiPlatform.OpenIddict.Scopes;
+using SufiChain.SufiPlatform.OpenIddict.Tokens;
+using SufiChain.SufiPlatform.Permissions;
+using SufiChain.SufiPlatform.Settings;
+using SufiChain.SufiPlatform.Tenants;
 
 namespace MyCompanyName.MyProjectName.EntityFrameworkCore;
 
-[ReplaceDbContext(typeof(ISufiAbpIdentityDbContext))]
+[ReplaceDbContext(typeof(ISufiIdentityDbContext))]
 [ReplaceDbContext(typeof(ITenantManagementDbContext))]
-[ReplaceDbContext(typeof(ISufiAbpPermissionManagementDbContext))]
-[ReplaceDbContext(typeof(ISufiAbpSettingManagementDbContext))]
-[ReplaceDbContext(typeof(ISufiAbpFeatureManagementDbContext))]
-[ReplaceDbContext(typeof(ISufiAbpAuditLoggingDbContext))]
-[ReplaceDbContext(typeof(ISufiAbpBackgroundJobsDbContext))]
+[ReplaceDbContext(typeof(ISufiPermissionsDbContext))]
+[ReplaceDbContext(typeof(ISufiSettingsDbContext))]
+[ReplaceDbContext(typeof(ISufiFeaturesDbContext))]
+[ReplaceDbContext(typeof(ISufiAuditLoggingDbContext))]
+[ReplaceDbContext(typeof(ISufiBackgroundJobsDbContext))]
 [ReplaceDbContext(typeof(IOpenIddictDbContext))]
-[ReplaceDbContext(typeof(ISufiAbpFileManagerDbContext))]
-[ReplaceDbContext(typeof(ISufiAbpBlobStoringDbContext))]
-[ReplaceDbContext(typeof(ISufiAbpLocalizationManagementDbContext))]
-[ReplaceDbContext(typeof(ISufiAbpShortLinkGeneratorDbContext))]
+[ReplaceDbContext(typeof(ISufiFileManagerDbContext))]
+[ReplaceDbContext(typeof(ISufiBlobDatabaseDbContext))]
+[ReplaceDbContext(typeof(ISufiLocalizationDbContext))]
+[ReplaceDbContext(typeof(ISufiShortLinksDbContext))]
 [ReplaceDbContext(typeof(IAIDbContext))]
 [ReplaceDbContext(typeof(ICalendarDbContext))]
 [ConnectionStringName("Default")]
 public class DemoAppDbContext :
     AbpDbContext<DemoAppDbContext>,
-    ISufiAbpIdentityDbContext,
+    ISufiIdentityDbContext,
     ITenantManagementDbContext,
-    ISufiAbpPermissionManagementDbContext,
-    ISufiAbpSettingManagementDbContext,
-    ISufiAbpFeatureManagementDbContext,
-    ISufiAbpAuditLoggingDbContext,
-    ISufiAbpBackgroundJobsDbContext,
+    ISufiPermissionsDbContext,
+    ISufiSettingsDbContext,
+    ISufiFeaturesDbContext,
+    ISufiAuditLoggingDbContext,
+    ISufiBackgroundJobsDbContext,
     IOpenIddictDbContext,
-    ISufiAbpFileManagerDbContext,
-    ISufiAbpBlobStoringDbContext,
-    ISufiAbpLocalizationManagementDbContext,
-    ISufiAbpShortLinkGeneratorDbContext,
+    ISufiFileManagerDbContext,
+    ISufiBlobDatabaseDbContext,
+    ISufiLocalizationDbContext,
+    ISufiShortLinksDbContext,
     IAIDbContext,
     ICalendarDbContext
 {
@@ -134,11 +134,11 @@ public class DemoAppDbContext :
     public DbSet<ShortUrlClick> ShortUrlClicks { get; set; } = null!;
 
     // AI Management
-    public DbSet<SufiChain.SufiAbp.AI.Workspaces.Workspace> Workspaces { get; set; } = null!;
-    public DbSet<SufiChain.SufiAbp.AI.MCP.Entities.MCPServer> MCPServers { get; set; } = null!;
+    public DbSet<SufiChain.SufiPlatform.SufiAI.Workspaces.Workspace> Workspaces { get; set; } = null!;
+    public DbSet<SufiChain.SufiPlatform.SufiAI.MCP.Entities.MCPServer> MCPServers { get; set; } = null!;
 
     // Calendar
-    public DbSet<SufiChain.SufiAbp.Calendar.Calendars.Calendar> Calendars { get; set; } = null!;
+    public DbSet<SufiChain.SufiPlatform.Calendar.Calendars.Calendar> Calendars { get; set; } = null!;
     public DbSet<WorkingHourRule> WorkingHourRules { get; set; } = null!;
     public DbSet<CalendarException> CalendarExceptions { get; set; } = null!;
     public DbSet<CalendarEvent> CalendarEvents { get; set; } = null!;
@@ -157,22 +157,22 @@ public class DemoAppDbContext :
     {
         base.OnModelCreating(builder);
 
-        /* Configure SufiAbp modules */
-        builder.ConfigureSufiAbpIdentity();
-        builder.ConfigureSufiAbpTenantManagement();
-        builder.ConfigureSufiAbpPermissionManagement();
-        builder.ConfigureSufiAbpSettingManagement();
-        builder.ConfigureSufiAbpFeatureManagement();
-        builder.ConfigureSufiAbpAuditLogging();
-        builder.ConfigureSufiAbpBackgroundJobs();
-        builder.ConfigureSufiAbpOpenIddict();
+        /* Configure Sufi Platform modules */
+        builder.ConfigureSufiIdentity();
+        builder.ConfigureSufiTenants();
+        builder.ConfigureSufiPermissions();
+        builder.ConfigureSufiSettings();
+        builder.ConfigureSufiFeatures();
+        builder.ConfigureSufiAuditLogging();
+        builder.ConfigureSufiBackgroundJobs();
+        builder.ConfigureSufiOpenIddict();
         
-        builder.ConfigureSufiAbpFileManager();
-        builder.ConfigureSufiAbpBlobStoringDatabase();
-        builder.ConfigureSufiAbpLocalizationManagement();
-        builder.ConfigureSufiAbpShortLinkGenerator();
+        builder.ConfigureSufiFileManager();
+        builder.ConfigureSufiBlobDatabaseDatabase();
+        builder.ConfigureSufiLocalization();
+        builder.ConfigureSufiShortLinks();
         builder.ConfigureSufiAI();
-        builder.ConfigureSufiAbpCalendar();
+        builder.ConfigureSufiCalendar();
 
         /* Configure your own tables/entities inside here */
         //builder.Entity<YourEntity>(b =>

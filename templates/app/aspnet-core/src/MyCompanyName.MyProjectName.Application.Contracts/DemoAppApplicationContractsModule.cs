@@ -1,9 +1,9 @@
-using SufiChain.SufiAbp.Account;
-using SufiChain.SufiAbp.FeatureManagement;
-using SufiChain.SufiAbp.Identity;
-using SufiChain.SufiAbp.PermissionManagement;
-using SufiChain.SufiAbp.SettingManagement;
-using SufiChain.SufiAbp.TenantManagement;
+using SufiChain.SufiPlatform.Account;
+using SufiChain.SufiPlatform.Features;
+using SufiChain.SufiPlatform.Identity;
+using SufiChain.SufiPlatform.Permissions;
+using SufiChain.SufiPlatform.Settings;
+using SufiChain.SufiPlatform.Tenants;
 using Volo.Abp.ObjectExtending;
 using Volo.Abp.Modularity;
 
@@ -11,12 +11,12 @@ namespace MyCompanyName.MyProjectName
 {
     [DependsOn(
         typeof(DemoAppDomainSharedModule),
-        typeof(SufiAbpAccountApplicationContractsModule),
-        typeof(SufiAbpFeatureManagementApplicationContractsModule),
-        typeof(SufiAbpIdentityApplicationContractsModule),
-        typeof(SufiAbpPermissionManagementApplicationContractsModule),
-        typeof(SufiAbpSettingManagementApplicationContractsModule),
-        typeof(SufiAbpTenantManagementApplicationContractsModule),
+        typeof(SufiAccountApplicationContractsModule),
+        typeof(SufiFeaturesApplicationContractsModule),
+        typeof(SufiIdentityApplicationContractsModule),
+        typeof(SufiPermissionsApplicationContractsModule),
+        typeof(SufiSettingsApplicationContractsModule),
+        typeof(SufiTenantsApplicationContractsModule),
         typeof(AbpObjectExtendingModule)
     )]
     public class DemoAppApplicationContractsModule : AbpModule

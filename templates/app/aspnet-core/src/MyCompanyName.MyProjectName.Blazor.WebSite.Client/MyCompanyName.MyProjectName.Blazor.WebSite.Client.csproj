@@ -13,21 +13,21 @@
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Authentication" Version="$(MicrosoftAspNetCoreComponentsWebAssemblyVersion)" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="$(MicrosoftExtensionsConfigurationBinderVersion)" />
     <!-- ABP Core module system (NOT UI packages) -->
-    <PackageReference Include="SufiChain.SufiAbp.Core" Version="$(SufiVersion)" />
+    <PackageReference Include="SufiChain.SufiPlatform.Core" Version="$(SufiVersion)" />
     <PackageReference Include="Volo.Abp.Autofac.WebAssembly" Version="$(AbpVersion)" />
   </ItemGroup>
   <!-- <TEMPLATE-REMOVE> -->
   <ItemGroup>
-    <ProjectReference Include="..\..\..\..\..\framework\SufiChain.SufiAbp.Core\SufiChain.SufiAbp.Core.csproj" />
+    <ProjectReference Include="..\..\..\..\..\framework\SufiChain.SufiPlatform.Core\SufiChain.SufiPlatform.Core.csproj" />
     <PackageReference Include="Volo.Abp.Autofac.WebAssembly" Version="$(AbpVersion)" />
-<!-- SufiAbp Theme using SufiBlazor (replaces ABP Blazor UI packages) -->
+<!-- Sufi Platform Theme using SufiBlazor (replaces ABP Blazor UI packages) -->
     <ProjectReference Include="..\..\..\..\..\independent-projects\sufi-theme\src\SufiChain.SufiTheme.Blazor.WebAssembly\SufiChain.SufiTheme.Blazor.WebAssembly.csproj" />
-    <!-- SufiAbp UI Modules for Public Site -->
-    <!-- NOTE: SufiChain.SufiAbp.Account.Blazor is Server-only (uses SignInManager/AspNetCore.Identity) -->
+    <!-- Sufi Platform UI Modules for Public Site -->
+    <!-- NOTE: SufiChain.SufiPlatform.Account.Blazor is Server-only (uses SignInManager/AspNetCore.Identity) -->
     <!-- It is referenced from the Server project, not this WebAssembly client -->
     <!-- File Manager for public file access -->
-    <ProjectReference Include="..\..\..\..\..\modules\file-manager\src\SufiChain.SufiAbp.FileManager.Blazor\SufiChain.SufiAbp.FileManager.Blazor.csproj" />
-    <ProjectReference Include="..\..\..\..\..\modules\file-manager\src\SufiChain.SufiAbp.FileManager.Blazor.WebAssembly\SufiChain.SufiAbp.FileManager.Blazor.WebAssembly.csproj" />
+    <ProjectReference Include="..\..\..\..\..\modules\file-manager\src\SufiChain.SufiPlatform.FileManager.Blazor\SufiChain.SufiPlatform.FileManager.Blazor.csproj" />
+    <ProjectReference Include="..\..\..\..\..\modules\file-manager\src\SufiChain.SufiPlatform.FileManager.Blazor.WebAssembly\SufiChain.SufiPlatform.FileManager.Blazor.WebAssembly.csproj" />
     <!-- NOTE: Admin modules NOT included for WebSite -->
     <!-- NO: Identity.Blazor (admin), TenantManagement, AuditLogging, etc. -->
   </ItemGroup>
@@ -35,8 +35,8 @@
   <!-- <TEMPLATE-ONLY>
 	<ItemGroup>
 		<PackageReference Include="SufiChain.SufiTheme.Blazor.WebAssembly" Version="$(SufiThemeVersion)" />
-		<PackageReference Include="SufiChain.SufiAbp.FileManager.Blazor" Version="$(SufiVersion)" />
-		<PackageReference Include="SufiChain.SufiAbp.FileManager.Blazor.WebAssembly" Version="$(SufiVersion)" />
+		<PackageReference Include="SufiChain.SufiPlatform.FileManager.Blazor" Version="$(SufiVersion)" />
+		<PackageReference Include="SufiChain.SufiPlatform.FileManager.Blazor.WebAssembly" Version="$(SufiVersion)" />
 	</ItemGroup>
 	</TEMPLATE-ONLY> -->
   <ItemGroup>

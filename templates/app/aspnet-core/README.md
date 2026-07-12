@@ -1,6 +1,6 @@
-# SufiAbp Application Template
+# Sufi Platform Application Template
 
-This is the unified template structure for SufiAbp CLI (`sufi new`) command.
+This is the unified template structure for Sufi Platform CLI (`sufi new`) command.
 
 ## Structure
 
@@ -65,4 +65,4 @@ etc/docker/
 ## Version
 
 Template version: 0.0.0-rc.1.0
-SufiAbp Framework version: $(SufiVersion) from versions.props
+Sufi Platform Framework version: $(SufiVersion) from versions.props

@@ -1,0 +1,263 @@
+<Solution>
+  <Folder Name="/Framework/">
+    <Project Path="framework/SufiChain.SufiPlatform.SufiAI.Abstractions/SufiChain.SufiPlatform.SufiAI.Abstractions.csproj" />
+    <Project Path="framework/SufiChain.SufiPlatform.SufiAI/SufiChain.SufiPlatform.SufiAI.csproj" />
+    <Project Path="framework/SufiChain.SufiPlatform.AspNetCore.Authentication.Abstractions/SufiChain.SufiPlatform.AspNetCore.Authentication.Abstractions.csproj" />
+    <Project Path="framework/SufiChain.SufiPlatform.AspNetCore.Authentication.OpenIdConnect/SufiChain.SufiPlatform.AspNetCore.Authentication.OpenIdConnect.csproj" />
+    <Project Path="framework/SufiChain.SufiPlatform.AspNetCore.Authentication.Server/SufiChain.SufiPlatform.AspNetCore.Authentication.Server.csproj" />
+    <Project Path="framework/SufiChain.SufiPlatform.AspNetCore.Authentication.WebAssembly/SufiChain.SufiPlatform.AspNetCore.Authentication.WebAssembly.csproj" />
+    <Project Path="framework/SufiChain.SufiPlatform.AspNetCore.Mvc/SufiChain.SufiPlatform.AspNetCore.Mvc.csproj" />
+    <Project Path="framework/SufiChain.SufiPlatform.AspNetCore/SufiChain.SufiPlatform.AspNetCore.csproj" />
+<Project Path="framework/SufiChain.SufiPlatform.Authorization/SufiChain.SufiPlatform.Authorization.csproj" />
+    <Project Path="framework/SufiChain.SufiPlatform.BlobStoring.S3Provider/SufiChain.SufiPlatform.BlobStoring.S3Provider.csproj" />
+    <Project Path="framework/SufiChain.SufiPlatform.Captcha.Recaptcha/SufiChain.SufiPlatform.Captcha.Recaptcha.csproj" />
+    <Project Path="framework/SufiChain.SufiPlatform.Captcha.Turnstile/SufiChain.SufiPlatform.Captcha.Turnstile.csproj" />
+    <Project Path="framework/SufiChain.SufiPlatform.Captcha/SufiChain.SufiPlatform.Captcha.csproj" />
+    <Project Path="framework/SufiChain.SufiPlatform.CLI.Core/SufiChain.SufiPlatform.CLI.Core.csproj" />
+    <Project Path="framework/SufiChain.SufiPlatform.CLI/SufiChain.SufiPlatform.CLI.csproj" />
+    <Project Path="framework/SufiChain.SufiPlatform.Core/SufiChain.SufiPlatform.Core.csproj" />
+    <Project Path="framework/SufiChain.SufiPlatform.Data/SufiChain.SufiPlatform.Data.csproj" />
+    <Project Path="framework/SufiChain.SufiPlatform.Ddd.Application.Contracts/SufiChain.SufiPlatform.Ddd.Application.Contracts.csproj" />
+    <Project Path="framework/SufiChain.SufiPlatform.Ddd.Application/SufiChain.SufiPlatform.Ddd.Application.csproj" />
+<Project Path="framework/SufiChain.SufiPlatform.Features/SufiChain.SufiPlatform.Features.csproj" />
+    <Project Path="framework/SufiChain.SufiPlatform.SufiCom.Abstractions/SufiChain.SufiPlatform.SufiCom.Abstractions.csproj" />
+    <Project Path="framework/SufiChain.SufiPlatform.SufiCom/SufiChain.SufiPlatform.SufiCom.csproj" />
+    <Project Path="framework/SufiChain.SufiPlatform.TextTemplating.Scriban/SufiChain.SufiPlatform.TextTemplating.Scriban.csproj" />
+    <Project Path="framework/SufiChain.SufiPlatform.TextTemplating/SufiChain.SufiPlatform.TextTemplating.csproj" />
+    <Project Path="framework/SufiChain.SufiPlatform.UI.Abstractions/SufiChain.SufiPlatform.UI.Abstractions.csproj" />
+    <Project Path="framework/SufiChain.SufiPlatform.UI.Blazor.Server/SufiChain.SufiPlatform.UI.Blazor.Server.csproj" />
+    <Project Path="framework/SufiChain.SufiPlatform.UI.Blazor.WebAssembly/SufiChain.SufiPlatform.UI.Blazor.WebAssembly.csproj" />
+    <Project Path="framework/SufiChain.SufiPlatform.UI.Blazor/SufiChain.SufiPlatform.UI.Blazor.csproj" />
+    <Project Path="framework/SufiChain.SufiPlatform.UI.Domain.Shared/SufiChain.SufiPlatform.UI.Domain.Shared.csproj" />
+    <Project Path="framework/SufiChain.SufiPlatform.UI.Services/SufiChain.SufiPlatform.UI.Services.csproj" />
+    <Project Path="framework/SufiChain.SufiPlatform.Validation/SufiChain.SufiPlatform.Validation.csproj" />
+  </Folder>
+  <Folder Name="/Modules/" />
+  <Folder Name="/Modules/Account/">
+    <Project Path="modules/account/src/SufiChain.SufiPlatform.Account.Application.Contracts/SufiChain.SufiPlatform.Account.Application.Contracts.csproj" />
+    <Project Path="modules/account/src/SufiChain.SufiPlatform.Account.Application/SufiChain.SufiPlatform.Account.Application.csproj" />
+    <Project Path="modules/account/src/SufiChain.SufiPlatform.Account.Blazor/SufiChain.SufiPlatform.Account.Blazor.csproj" />
+    <Project Path="modules/account/src/SufiChain.SufiPlatform.Account.Domain.Shared/SufiChain.SufiPlatform.Account.Domain.Shared.csproj" />
+    <Project Path="modules/account/src/SufiChain.SufiPlatform.Account.HttpApi.Client/SufiChain.SufiPlatform.Account.HttpApi.Client.csproj" />
+    <Project Path="modules/account/src/SufiChain.SufiPlatform.Account.HttpApi/SufiChain.SufiPlatform.Account.HttpApi.csproj" />
+  </Folder>
+  <Folder Name="/Modules/AI/">
+    <Project Path="modules/ai/src/SufiChain.SufiPlatform.SufiAI.Application.Contracts/SufiChain.SufiPlatform.SufiAI.Application.Contracts.csproj" />
+    <Project Path="modules/ai/src/SufiChain.SufiPlatform.SufiAI.Application/SufiChain.SufiPlatform.SufiAI.Application.csproj" />
+    <Project Path="modules/ai/src/SufiChain.SufiPlatform.SufiAI.Blazor.WebAssembly/SufiChain.SufiPlatform.SufiAI.Blazor.WebAssembly.csproj" />
+    <Project Path="modules/ai/src/SufiChain.SufiPlatform.SufiAI.Blazor/SufiChain.SufiPlatform.SufiAI.Blazor.csproj" />
+    <Project Path="modules/ai/src/SufiChain.SufiPlatform.SufiAI.Domain.Shared/SufiChain.SufiPlatform.SufiAI.Domain.Shared.csproj" />
+    <Project Path="modules/ai/src/SufiChain.SufiPlatform.SufiAI.Domain/SufiChain.SufiPlatform.SufiAI.Domain.csproj" />
+    <Project Path="modules/ai/src/SufiChain.SufiPlatform.SufiAI.EntityFrameworkCore/SufiChain.SufiPlatform.SufiAI.EntityFrameworkCore.csproj" />
+    <Project Path="modules/ai/src/SufiChain.SufiPlatform.SufiAI.HttpApi.Client/SufiChain.SufiPlatform.SufiAI.HttpApi.Client.csproj" />
+    <Project Path="modules/ai/src/SufiChain.SufiPlatform.SufiAI.HttpApi/SufiChain.SufiPlatform.SufiAI.HttpApi.csproj" />
+    <Project Path="modules/ai/src/SufiChain.SufiPlatform.SufiAI.MongoDB/SufiChain.SufiPlatform.SufiAI.MongoDB.csproj" />
+    <Project Path="modules/ai/src/SufiChain.SufiPlatform.SufiAI.Pgvector/SufiChain.SufiPlatform.SufiAI.Pgvector.csproj" />
+    <Project Path="modules/ai/src/SufiChain.SufiPlatform.SufiAI.Qdrant/SufiChain.SufiPlatform.SufiAI.Qdrant.csproj" />
+  </Folder>
+  <Folder Name="/Modules/AuditLogging/">
+    <Project Path="modules/audit-logging/src/SufiChain.SufiPlatform.AuditLogging.Application.Contracts/SufiChain.SufiPlatform.AuditLogging.Application.Contracts.csproj" />
+    <Project Path="modules/audit-logging/src/SufiChain.SufiPlatform.AuditLogging.Application/SufiChain.SufiPlatform.AuditLogging.Application.csproj" />
+    <Project Path="modules/audit-logging/src/SufiChain.SufiPlatform.AuditLogging.Blazor/SufiChain.SufiPlatform.AuditLogging.Blazor.csproj" />
+    <Project Path="modules/audit-logging/src/SufiChain.SufiPlatform.AuditLogging.Domain.Shared/SufiChain.SufiPlatform.AuditLogging.Domain.Shared.csproj" />
+    <Project Path="modules/audit-logging/src/SufiChain.SufiPlatform.AuditLogging.Domain/SufiChain.SufiPlatform.AuditLogging.Domain.csproj" />
+    <Project Path="modules/audit-logging/src/SufiChain.SufiPlatform.AuditLogging.EntityFrameworkCore/SufiChain.SufiPlatform.AuditLogging.EntityFrameworkCore.csproj" />
+    <Project Path="modules/audit-logging/src/SufiChain.SufiPlatform.AuditLogging.HttpApi.Client/SufiChain.SufiPlatform.AuditLogging.HttpApi.Client.csproj" />
+    <Project Path="modules/audit-logging/src/SufiChain.SufiPlatform.AuditLogging.HttpApi/SufiChain.SufiPlatform.AuditLogging.HttpApi.csproj" />
+    <Project Path="modules/audit-logging/src/SufiChain.SufiPlatform.AuditLogging.MongoDB/SufiChain.SufiPlatform.AuditLogging.MongoDB.csproj" />
+  </Folder>
+  <Folder Name="/Modules/BackgroundJobs/">
+    <Project Path="modules/jobs/src/SufiChain.SufiPlatform.BackgroundJobs.Application.Contracts/SufiChain.SufiPlatform.BackgroundJobs.Application.Contracts.csproj" />
+    <Project Path="modules/jobs/src/SufiChain.SufiPlatform.BackgroundJobs.Application/SufiChain.SufiPlatform.BackgroundJobs.Application.csproj" />
+    <Project Path="modules/jobs/src/SufiChain.SufiPlatform.BackgroundJobs.Blazor/SufiChain.SufiPlatform.BackgroundJobs.Blazor.csproj" />
+    <Project Path="modules/jobs/src/SufiChain.SufiPlatform.BackgroundJobs.Domain.Shared/SufiChain.SufiPlatform.BackgroundJobs.Domain.Shared.csproj" />
+    <Project Path="modules/jobs/src/SufiChain.SufiPlatform.BackgroundJobs.Domain/SufiChain.SufiPlatform.BackgroundJobs.Domain.csproj" />
+    <Project Path="modules/jobs/src/SufiChain.SufiPlatform.BackgroundJobs.EntityFrameworkCore/SufiChain.SufiPlatform.BackgroundJobs.EntityFrameworkCore.csproj" />
+    <Project Path="modules/jobs/src/SufiChain.SufiPlatform.BackgroundJobs.HttpApi.Client/SufiChain.SufiPlatform.BackgroundJobs.HttpApi.Client.csproj" />
+    <Project Path="modules/jobs/src/SufiChain.SufiPlatform.BackgroundJobs.HttpApi/SufiChain.SufiPlatform.BackgroundJobs.HttpApi.csproj" />
+    <Project Path="modules/jobs/src/SufiChain.SufiPlatform.BackgroundJobs.MongoDB/SufiChain.SufiPlatform.BackgroundJobs.MongoDB.csproj" />
+  </Folder>
+  <Folder Name="/Modules/BlobStoringDatabase/">
+    <Project Path="modules/blob-database/src/SufiChain.SufiPlatform.BlobDatabase.Domain.Shared/SufiChain.SufiPlatform.BlobDatabase.Domain.Shared.csproj" />
+    <Project Path="modules/blob-database/src/SufiChain.SufiPlatform.BlobDatabase.Domain/SufiChain.SufiPlatform.BlobDatabase.Domain.csproj" />
+    <Project Path="modules/blob-database/src/SufiChain.SufiPlatform.BlobDatabase.EntityFrameworkCore/SufiChain.SufiPlatform.BlobDatabase.EntityFrameworkCore.csproj" />
+    <Project Path="modules/blob-database/src/SufiChain.SufiPlatform.BlobDatabase.MongoDB/SufiChain.SufiPlatform.BlobDatabase.MongoDB.csproj" />
+  </Folder>
+  <Folder Name="/Modules/Calendar/">
+    <Project Path="modules/calendar/src/SufiChain.SufiPlatform.Calendar.AI/SufiChain.SufiPlatform.Calendar.AI.csproj" />
+    <Project Path="modules/calendar/src/SufiChain.SufiPlatform.Calendar.Application.Contracts/SufiChain.SufiPlatform.Calendar.Application.Contracts.csproj" />
+    <Project Path="modules/calendar/src/SufiChain.SufiPlatform.Calendar.Application/SufiChain.SufiPlatform.Calendar.Application.csproj" />
+    <Project Path="modules/calendar/src/SufiChain.SufiPlatform.Calendar.Blazor.Public/SufiChain.SufiPlatform.Calendar.Blazor.Public.csproj" />
+    <Project Path="modules/calendar/src/SufiChain.SufiPlatform.Calendar.Blazor/SufiChain.SufiPlatform.Calendar.Blazor.csproj" />
+    <Project Path="modules/calendar/src/SufiChain.SufiPlatform.Calendar.Domain.Shared/SufiChain.SufiPlatform.Calendar.Domain.Shared.csproj" />
+    <Project Path="modules/calendar/src/SufiChain.SufiPlatform.Calendar.Domain/SufiChain.SufiPlatform.Calendar.Domain.csproj" />
+    <Project Path="modules/calendar/src/SufiChain.SufiPlatform.Calendar.EntityFrameworkCore/SufiChain.SufiPlatform.Calendar.EntityFrameworkCore.csproj" />
+    <Project Path="modules/calendar/src/SufiChain.SufiPlatform.Calendar.HttpApi.Client/SufiChain.SufiPlatform.Calendar.HttpApi.Client.csproj" />
+    <Project Path="modules/calendar/src/SufiChain.SufiPlatform.Calendar.HttpApi/SufiChain.SufiPlatform.Calendar.HttpApi.csproj" />
+    <Project Path="modules/calendar/src/SufiChain.SufiPlatform.Calendar.MongoDB/SufiChain.SufiPlatform.Calendar.MongoDB.csproj" />
+  </Folder>
+  <Folder Name="/Modules/Features/">
+    <Project Path="modules/features/src/SufiChain.SufiPlatform.Features.Application.Contracts/SufiChain.SufiPlatform.Features.Application.Contracts.csproj" />
+    <Project Path="modules/features/src/SufiChain.SufiPlatform.Features.Application/SufiChain.SufiPlatform.Features.Application.csproj" />
+    <Project Path="modules/features/src/SufiChain.SufiPlatform.Features.Blazor/SufiChain.SufiPlatform.Features.Blazor.csproj" />
+    <Project Path="modules/features/src/SufiChain.SufiPlatform.Features.Domain.Shared/SufiChain.SufiPlatform.Features.Domain.Shared.csproj" />
+    <Project Path="modules/features/src/SufiChain.SufiPlatform.Features.Domain/SufiChain.SufiPlatform.Features.Domain.csproj" />
+    <Project Path="modules/features/src/SufiChain.SufiPlatform.Features.EntityFrameworkCore/SufiChain.SufiPlatform.Features.EntityFrameworkCore.csproj" />
+    <Project Path="modules/features/src/SufiChain.SufiPlatform.Features.HttpApi.Client/SufiChain.SufiPlatform.Features.HttpApi.Client.csproj" />
+    <Project Path="modules/features/src/SufiChain.SufiPlatform.Features.HttpApi/SufiChain.SufiPlatform.Features.HttpApi.csproj" />
+    <Project Path="modules/features/src/SufiChain.SufiPlatform.Features.MongoDB/SufiChain.SufiPlatform.Features.MongoDB.csproj" />
+  </Folder>
+  <Folder Name="/Modules/FileManager/">
+    <Project Path="modules/file-manager/src/SufiChain.SufiPlatform.FileManager.Application.Contracts/SufiChain.SufiPlatform.FileManager.Application.Contracts.csproj" />
+    <Project Path="modules/file-manager/src/SufiChain.SufiPlatform.FileManager.Application/SufiChain.SufiPlatform.FileManager.Application.csproj" />
+    <Project Path="modules/file-manager/src/SufiChain.SufiPlatform.FileManager.Blazor.Public/SufiChain.SufiPlatform.FileManager.Blazor.Public.csproj" />
+    <Project Path="modules/file-manager/src/SufiChain.SufiPlatform.FileManager.Blazor.Server/SufiChain.SufiPlatform.FileManager.Blazor.Server.csproj" />
+    <Project Path="modules/file-manager/src/SufiChain.SufiPlatform.FileManager.Blazor.WebAssembly/SufiChain.SufiPlatform.FileManager.Blazor.WebAssembly.csproj" />
+    <Project Path="modules/file-manager/src/SufiChain.SufiPlatform.FileManager.Blazor/SufiChain.SufiPlatform.FileManager.Blazor.csproj" />
+    <Project Path="modules/file-manager/src/SufiChain.SufiPlatform.FileManager.Demo/SufiChain.SufiPlatform.FileManager.Demo.csproj" />
+    <Project Path="modules/file-manager/src/SufiChain.SufiPlatform.FileManager.Domain.Shared/SufiChain.SufiPlatform.FileManager.Domain.Shared.csproj" />
+    <Project Path="modules/file-manager/src/SufiChain.SufiPlatform.FileManager.Domain/SufiChain.SufiPlatform.FileManager.Domain.csproj" />
+    <Project Path="modules/file-manager/src/SufiChain.SufiPlatform.FileManager.EntityFrameworkCore/SufiChain.SufiPlatform.FileManager.EntityFrameworkCore.csproj" />
+    <Project Path="modules/file-manager/src/SufiChain.SufiPlatform.FileManager.HttpApi.Client/SufiChain.SufiPlatform.FileManager.HttpApi.Client.csproj" />
+    <Project Path="modules/file-manager/src/SufiChain.SufiPlatform.FileManager.HttpApi/SufiChain.SufiPlatform.FileManager.HttpApi.csproj" />
+    <Project Path="modules/file-manager/src/SufiChain.SufiPlatform.FileManager.MongoDB/SufiChain.SufiPlatform.FileManager.MongoDB.csproj" />
+  </Folder>
+  <Folder Name="/Modules/Identity/">
+    <Project Path="modules/identity/src/SufiChain.SufiPlatform.Identity.Application.Contracts/SufiChain.SufiPlatform.Identity.Application.Contracts.csproj" />
+    <Project Path="modules/identity/src/SufiChain.SufiPlatform.Identity.Application/SufiChain.SufiPlatform.Identity.Application.csproj" />
+    <Project Path="modules/identity/src/SufiChain.SufiPlatform.Identity.AspNetCore/SufiChain.SufiPlatform.Identity.AspNetCore.csproj" />
+    <Project Path="modules/identity/src/SufiChain.SufiPlatform.Identity.Blazor/SufiChain.SufiPlatform.Identity.Blazor.csproj" />
+    <Project Path="modules/identity/src/SufiChain.SufiPlatform.Identity.Domain.Shared/SufiChain.SufiPlatform.Identity.Domain.Shared.csproj" />
+    <Project Path="modules/identity/src/SufiChain.SufiPlatform.Identity.Domain/SufiChain.SufiPlatform.Identity.Domain.csproj" />
+    <Project Path="modules/identity/src/SufiChain.SufiPlatform.Identity.EntityFrameworkCore/SufiChain.SufiPlatform.Identity.EntityFrameworkCore.csproj" />
+    <Project Path="modules/identity/src/SufiChain.SufiPlatform.Identity.HttpApi.Client/SufiChain.SufiPlatform.Identity.HttpApi.Client.csproj" />
+    <Project Path="modules/identity/src/SufiChain.SufiPlatform.Identity.HttpApi/SufiChain.SufiPlatform.Identity.HttpApi.csproj" />
+    <Project Path="modules/identity/src/SufiChain.SufiPlatform.Identity.MongoDB/SufiChain.SufiPlatform.Identity.MongoDB.csproj" />
+    <Project Path="modules/identity/src/SufiChain.SufiPlatform.Permissions.Domain.Identity/SufiChain.SufiPlatform.Permissions.Domain.Identity.csproj" />
+  </Folder>
+  <Folder Name="/Modules/Localization/">
+    <Project Path="modules/localization/src/SufiChain.SufiPlatform.Localization.Application.Contracts/SufiChain.SufiPlatform.Localization.Application.Contracts.csproj" />
+    <Project Path="modules/localization/src/SufiChain.SufiPlatform.Localization.Application/SufiChain.SufiPlatform.Localization.Application.csproj" />
+    <Project Path="modules/localization/src/SufiChain.SufiPlatform.Localization.Blazor/SufiChain.SufiPlatform.Localization.Blazor.csproj" />
+    <Project Path="modules/localization/src/SufiChain.SufiPlatform.Localization.Domain.Shared/SufiChain.SufiPlatform.Localization.Domain.Shared.csproj" />
+    <Project Path="modules/localization/src/SufiChain.SufiPlatform.Localization.Domain/SufiChain.SufiPlatform.Localization.Domain.csproj" />
+    <Project Path="modules/localization/src/SufiChain.SufiPlatform.Localization.EntityFrameworkCore/SufiChain.SufiPlatform.Localization.EntityFrameworkCore.csproj" />
+    <Project Path="modules/localization/src/SufiChain.SufiPlatform.Localization.HttpApi.Client/SufiChain.SufiPlatform.Localization.HttpApi.Client.csproj" />
+    <Project Path="modules/localization/src/SufiChain.SufiPlatform.Localization.HttpApi/SufiChain.SufiPlatform.Localization.HttpApi.csproj" />
+    <Project Path="modules/localization/src/SufiChain.SufiPlatform.Localization.MongoDB/SufiChain.SufiPlatform.Localization.MongoDB.csproj" />
+  </Folder>
+  <Folder Name="/Modules/Menus/">
+    <Project Path="modules/menus/src/SufiChain.SufiPlatform.Menus.Application.Contracts/SufiChain.SufiPlatform.Menus.Application.Contracts.csproj" />
+    <Project Path="modules/menus/src/SufiChain.SufiPlatform.Menus.Application/SufiChain.SufiPlatform.Menus.Application.csproj" />
+    <Project Path="modules/menus/src/SufiChain.SufiPlatform.Menus.Blazor.Server/SufiChain.SufiPlatform.Menus.Blazor.Server.csproj" />
+    <Project Path="modules/menus/src/SufiChain.SufiPlatform.Menus.Blazor.WebAssembly/SufiChain.SufiPlatform.Menus.Blazor.WebAssembly.csproj" />
+    <Project Path="modules/menus/src/SufiChain.SufiPlatform.Menus.Blazor/SufiChain.SufiPlatform.Menus.Blazor.csproj" />
+    <Project Path="modules/menus/src/SufiChain.SufiPlatform.Menus.Domain.Shared/SufiChain.SufiPlatform.Menus.Domain.Shared.csproj" />
+    <Project Path="modules/menus/src/SufiChain.SufiPlatform.Menus.Domain/SufiChain.SufiPlatform.Menus.Domain.csproj" />
+    <Project Path="modules/menus/src/SufiChain.SufiPlatform.Menus.EntityFrameworkCore/SufiChain.SufiPlatform.Menus.EntityFrameworkCore.csproj" />
+    <Project Path="modules/menus/src/SufiChain.SufiPlatform.Menus.HttpApi.Client/SufiChain.SufiPlatform.Menus.HttpApi.Client.csproj" />
+    <Project Path="modules/menus/src/SufiChain.SufiPlatform.Menus.HttpApi/SufiChain.SufiPlatform.Menus.HttpApi.csproj" />
+    <Project Path="modules/menus/src/SufiChain.SufiPlatform.Menus.MongoDB/SufiChain.SufiPlatform.Menus.MongoDB.csproj" />
+  </Folder>
+  <Folder Name="/Modules/Openiddict/">
+    <Project Path="modules/openiddict/src/SufiChain.SufiPlatform.OpenIddict.AspNetCore/SufiChain.SufiPlatform.OpenIddict.AspNetCore.csproj" />
+    <Project Path="modules/openiddict/src/SufiChain.SufiPlatform.OpenIddict.Domain.Shared/SufiChain.SufiPlatform.OpenIddict.Domain.Shared.csproj" />
+    <Project Path="modules/openiddict/src/SufiChain.SufiPlatform.OpenIddict.Domain/SufiChain.SufiPlatform.OpenIddict.Domain.csproj" />
+    <Project Path="modules/openiddict/src/SufiChain.SufiPlatform.OpenIddict.EntityFrameworkCore/SufiChain.SufiPlatform.OpenIddict.EntityFrameworkCore.csproj" />
+    <Project Path="modules/openiddict/src/SufiChain.SufiPlatform.OpenIddict.MongoDB/SufiChain.SufiPlatform.OpenIddict.MongoDB.csproj" />
+    <Project Path="modules/openiddict/src/SufiChain.SufiPlatform.Permissions.Domain.OpenIddict/SufiChain.SufiPlatform.Permissions.Domain.OpenIddict.csproj" />
+  </Folder>
+  <Folder Name="/Modules/Permissions/">
+    <Project Path="modules/permissions/src/SufiChain.SufiPlatform.Permissions.Application.Contracts/SufiChain.SufiPlatform.Permissions.Application.Contracts.csproj" />
+    <Project Path="modules/permissions/src/SufiChain.SufiPlatform.Permissions.Application/SufiChain.SufiPlatform.Permissions.Application.csproj" />
+    <Project Path="modules/permissions/src/SufiChain.SufiPlatform.Permissions.Domain.Shared/SufiChain.SufiPlatform.Permissions.Domain.Shared.csproj" />
+    <Project Path="modules/permissions/src/SufiChain.SufiPlatform.Permissions.Domain/SufiChain.SufiPlatform.Permissions.Domain.csproj" />
+    <Project Path="modules/permissions/src/SufiChain.SufiPlatform.Permissions.EntityFrameworkCore/SufiChain.SufiPlatform.Permissions.EntityFrameworkCore.csproj" />
+    <Project Path="modules/permissions/src/SufiChain.SufiPlatform.Permissions.HttpApi.Client/SufiChain.SufiPlatform.Permissions.HttpApi.Client.csproj" />
+    <Project Path="modules/permissions/src/SufiChain.SufiPlatform.Permissions.HttpApi/SufiChain.SufiPlatform.Permissions.HttpApi.csproj" />
+    <Project Path="modules/permissions/src/SufiChain.SufiPlatform.Permissions.MongoDB/SufiChain.SufiPlatform.Permissions.MongoDB.csproj" />
+  </Folder>
+  <Folder Name="/Modules/Settings/">
+    <Project Path="modules/settings/src/SufiChain.SufiPlatform.Settings.Application.Contracts/SufiChain.SufiPlatform.Settings.Application.Contracts.csproj" />
+    <Project Path="modules/settings/src/SufiChain.SufiPlatform.Settings.Application/SufiChain.SufiPlatform.Settings.Application.csproj" />
+    <Project Path="modules/settings/src/SufiChain.SufiPlatform.Settings.Blazor/SufiChain.SufiPlatform.Settings.Blazor.csproj" />
+    <Project Path="modules/settings/src/SufiChain.SufiPlatform.Settings.Domain.Shared/SufiChain.SufiPlatform.Settings.Domain.Shared.csproj" />
+    <Project Path="modules/settings/src/SufiChain.SufiPlatform.Settings.Domain/SufiChain.SufiPlatform.Settings.Domain.csproj" />
+    <Project Path="modules/settings/src/SufiChain.SufiPlatform.Settings.EntityFrameworkCore/SufiChain.SufiPlatform.Settings.EntityFrameworkCore.csproj" />
+    <Project Path="modules/settings/src/SufiChain.SufiPlatform.Settings.HttpApi.Client/SufiChain.SufiPlatform.Settings.HttpApi.Client.csproj" />
+    <Project Path="modules/settings/src/SufiChain.SufiPlatform.Settings.HttpApi/SufiChain.SufiPlatform.Settings.HttpApi.csproj" />
+    <Project Path="modules/settings/src/SufiChain.SufiPlatform.Settings.MongoDB/SufiChain.SufiPlatform.Settings.MongoDB.csproj" />
+  </Folder>
+  <Folder Name="/Modules/ShortLinks/">
+    <Project Path="modules/short-links/src/SufiChain.SufiPlatform.ShortLinks.Application.Contracts/SufiChain.SufiPlatform.ShortLinks.Application.Contracts.csproj" />
+    <Project Path="modules/short-links/src/SufiChain.SufiPlatform.ShortLinks.Application/SufiChain.SufiPlatform.ShortLinks.Application.csproj" />
+    <Project Path="modules/short-links/src/SufiChain.SufiPlatform.ShortLinks.Blazor.Server/SufiChain.SufiPlatform.ShortLinks.Blazor.Server.csproj" />
+    <Project Path="modules/short-links/src/SufiChain.SufiPlatform.ShortLinks.Blazor.WebAssembly/SufiChain.SufiPlatform.ShortLinks.Blazor.WebAssembly.csproj" />
+    <Project Path="modules/short-links/src/SufiChain.SufiPlatform.ShortLinks.Blazor/SufiChain.SufiPlatform.ShortLinks.Blazor.csproj" />
+    <Project Path="modules/short-links/src/SufiChain.SufiPlatform.ShortLinks.Domain.Shared/SufiChain.SufiPlatform.ShortLinks.Domain.Shared.csproj" />
+    <Project Path="modules/short-links/src/SufiChain.SufiPlatform.ShortLinks.Domain/SufiChain.SufiPlatform.ShortLinks.Domain.csproj" />
+    <Project Path="modules/short-links/src/SufiChain.SufiPlatform.ShortLinks.EntityFrameworkCore/SufiChain.SufiPlatform.ShortLinks.EntityFrameworkCore.csproj" />
+    <Project Path="modules/short-links/src/SufiChain.SufiPlatform.ShortLinks.HttpApi.Client/SufiChain.SufiPlatform.ShortLinks.HttpApi.Client.csproj" />
+    <Project Path="modules/short-links/src/SufiChain.SufiPlatform.ShortLinks.HttpApi/SufiChain.SufiPlatform.ShortLinks.HttpApi.csproj" />
+    <Project Path="modules/short-links/src/SufiChain.SufiPlatform.ShortLinks.MongoDB/SufiChain.SufiPlatform.ShortLinks.MongoDB.csproj" />
+  </Folder>
+  <Folder Name="/Modules/Tagss/">
+    <Project Path="modules/tags/src/SufiChain.SufiPlatform.Tags.Application.Contracts/SufiChain.SufiPlatform.Tags.Application.Contracts.csproj" />
+    <Project Path="modules/tags/src/SufiChain.SufiPlatform.Tags.Application/SufiChain.SufiPlatform.Tags.Application.csproj" />
+    <Project Path="modules/tags/src/SufiChain.SufiPlatform.Tags.Domain.Shared/SufiChain.SufiPlatform.Tags.Domain.Shared.csproj" />
+    <Project Path="modules/tags/src/SufiChain.SufiPlatform.Tags.Domain/SufiChain.SufiPlatform.Tags.Domain.csproj" />
+    <Project Path="modules/tags/src/SufiChain.SufiPlatform.Tags.EntityFrameworkCore/SufiChain.SufiPlatform.Tags.EntityFrameworkCore.csproj" />
+    <Project Path="modules/tags/src/SufiChain.SufiPlatform.Tags.HttpApi.Client/SufiChain.SufiPlatform.Tags.HttpApi.Client.csproj" />
+    <Project Path="modules/tags/src/SufiChain.SufiPlatform.Tags.HttpApi/SufiChain.SufiPlatform.Tags.HttpApi.csproj" />
+    <Project Path="modules/tags/src/SufiChain.SufiPlatform.Tags.MongoDB/SufiChain.SufiPlatform.Tags.MongoDB.csproj" />
+  </Folder>
+  <Folder Name="/Modules/Tenants/">
+    <Project Path="modules/tenants/src/SufiChain.SufiPlatform.Tenants.Application.Contracts/SufiChain.SufiPlatform.Tenants.Application.Contracts.csproj" />
+    <Project Path="modules/tenants/src/SufiChain.SufiPlatform.Tenants.Application/SufiChain.SufiPlatform.Tenants.Application.csproj" />
+    <Project Path="modules/tenants/src/SufiChain.SufiPlatform.Tenants.Blazor/SufiChain.SufiPlatform.Tenants.Blazor.csproj" />
+    <Project Path="modules/tenants/src/SufiChain.SufiPlatform.Tenants.Domain.Shared/SufiChain.SufiPlatform.Tenants.Domain.Shared.csproj" />
+    <Project Path="modules/tenants/src/SufiChain.SufiPlatform.Tenants.Domain/SufiChain.SufiPlatform.Tenants.Domain.csproj" />
+    <Project Path="modules/tenants/src/SufiChain.SufiPlatform.Tenants.EntityFrameworkCore/SufiChain.SufiPlatform.Tenants.EntityFrameworkCore.csproj" />
+    <Project Path="modules/tenants/src/SufiChain.SufiPlatform.Tenants.HttpApi.Client/SufiChain.SufiPlatform.Tenants.HttpApi.Client.csproj" />
+    <Project Path="modules/tenants/src/SufiChain.SufiPlatform.Tenants.HttpApi/SufiChain.SufiPlatform.Tenants.HttpApi.csproj" />
+    <Project Path="modules/tenants/src/SufiChain.SufiPlatform.Tenants.MongoDB/SufiChain.SufiPlatform.Tenants.MongoDB.csproj" />
+  </Folder>
+  <Folder Name="/Modules/Users/">
+    <Project Path="modules/users/src/SufiChain.SufiPlatform.Users.Abstractions/SufiChain.SufiPlatform.Users.Abstractions.csproj" />
+    <Project Path="modules/users/src/SufiChain.SufiPlatform.Users.Domain.Shared/SufiChain.SufiPlatform.Users.Domain.Shared.csproj" />
+    <Project Path="modules/users/src/SufiChain.SufiPlatform.Users.Domain/SufiChain.SufiPlatform.Users.Domain.csproj" />
+    <Project Path="modules/users/src/SufiChain.SufiPlatform.Users.EntityFrameworkCore/SufiChain.SufiPlatform.Users.EntityFrameworkCore.csproj" />
+    <Project Path="modules/users/src/SufiChain.SufiPlatform.Users.MongoDB/SufiChain.SufiPlatform.Users.MongoDB.csproj" />
+    <Project Path="modules/users/src/SufiChain.SufiPlatform.Users/SufiChain.SufiPlatform.Users.csproj" />
+  </Folder>
+  <Folder Name="/Tests/" />
+  <Folder Name="/Tests/AI/">
+    <Project Path="modules/ai/test/SufiChain.SufiPlatform.SufiAI.Application.Tests/SufiChain.SufiPlatform.SufiAI.Application.Tests.csproj" />
+    <Project Path="modules/ai/test/SufiChain.SufiPlatform.SufiAI.Domain.Tests/SufiChain.SufiPlatform.SufiAI.Domain.Tests.csproj" />
+    <Project Path="modules/ai/test/SufiChain.SufiPlatform.SufiAI.TestBase/SufiChain.SufiPlatform.SufiAI.TestBase.csproj" />
+  </Folder>
+  <Folder Name="/Tests/Calendar/">
+    <Project Path="modules/calendar/test/SufiChain.SufiPlatform.Calendar.Application.Tests/SufiChain.SufiPlatform.Calendar.Application.Tests.csproj" />
+    <Project Path="modules/calendar/test/SufiChain.SufiPlatform.Calendar.Domain.Tests/SufiChain.SufiPlatform.Calendar.Domain.Tests.csproj" />
+    <Project Path="modules/calendar/test/SufiChain.SufiPlatform.Calendar.EntityFrameworkCore.Tests/SufiChain.SufiPlatform.Calendar.EntityFrameworkCore.Tests.csproj" />
+    <Project Path="modules/calendar/test/SufiChain.SufiPlatform.Calendar.MongoDB.Tests/SufiChain.SufiPlatform.Calendar.MongoDB.Tests.csproj" />
+    <Project Path="modules/calendar/test/SufiChain.SufiPlatform.Calendar.TestBase/SufiChain.SufiPlatform.Calendar.TestBase.csproj" />
+  </Folder>
+  <Folder Name="/Tests/FileManager/">
+    <Project Path="modules/file-manager/test/SufiChain.SufiPlatform.FileManager.Application.Tests/SufiChain.SufiPlatform.FileManager.Application.Tests.csproj" />
+    <Project Path="modules/file-manager/test/SufiChain.SufiPlatform.FileManager.Domain.Tests/SufiChain.SufiPlatform.FileManager.Domain.Tests.csproj" />
+    <Project Path="modules/file-manager/test/SufiChain.SufiPlatform.FileManager.EntityFrameworkCore.Tests/SufiChain.SufiPlatform.FileManager.EntityFrameworkCore.Tests.csproj" />
+    <Project Path="modules/file-manager/test/SufiChain.SufiPlatform.FileManager.TestBase/SufiChain.SufiPlatform.FileManager.TestBase.csproj" />
+  </Folder>
+  <Folder Name="/Tests/ShortLinks/" />
+  <Folder Name="/Tests/SmokeTest/">
+    <Project Path="test/SufiChain.SufiPlatform.BlazorBuildTest.Console/SufiChain.SufiPlatform.BlazorBuildTest.Console.csproj" />
+    <Project Path="test/SufiChain.SufiPlatform.SmokeTest.Console/SufiChain.SufiPlatform.SmokeTest.Console.csproj" />
+  </Folder>
+  <Folder Name="/Solution Items/">
+    <File Path=".gitea/workflows/release-nuget.yml" />
+    <File Path="Directory.Build.props" />
+    <File Path="NuGet.Config" />
+    <File Path="versions.props" />
+  </Folder>
+</Solution>

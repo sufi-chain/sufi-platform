@@ -16,37 +16,37 @@
   </ItemGroup>
   <!-- <TEMPLATE-REMOVE> -->
   <ItemGroup>
-    <ProjectReference Include="..\..\..\..\..\framework\SufiChain.SufiAbp.Core\SufiChain.SufiAbp.Core.csproj" />
-    <ProjectReference Include="..\..\..\..\..\framework\SufiChain.SufiAbp.UI.Blazor\SufiChain.SufiAbp.UI.Blazor.csproj" />
+    <ProjectReference Include="..\..\..\..\..\framework\SufiChain.SufiPlatform.Core\SufiChain.SufiPlatform.Core.csproj" />
+    <ProjectReference Include="..\..\..\..\..\framework\SufiChain.SufiPlatform.UI.Blazor\SufiChain.SufiPlatform.UI.Blazor.csproj" />
     <PackageReference Include="Volo.Abp.Autofac.WebAssembly" Version="$(AbpVersion)" />
   </ItemGroup>
   <!-- </TEMPLATE-REMOVE> -->
   <!-- <TEMPLATE-ONLY>
 	<ItemGroup>
-		<PackageReference Include="SufiChain.SufiAbp.Core" Version="$(SufiVersion)" />
-		<PackageReference Include="SufiChain.SufiAbp.UI.Blazor" Version="$(SufiVersion)" />
+		<PackageReference Include="SufiChain.SufiPlatform.Core" Version="$(SufiVersion)" />
+		<PackageReference Include="SufiChain.SufiPlatform.UI.Blazor" Version="$(SufiVersion)" />
 		<PackageReference Include="Volo.Abp.Autofac.WebAssembly" Version="$(AbpVersion)" />
 	</ItemGroup>
 	</TEMPLATE-ONLY> -->
   <!-- <TEMPLATE-REMOVE> -->
   <ItemGroup>
-    <!-- SufiAbp Theme using SufiBlazor (replaces ABP Blazor UI packages) -->
+    <!-- Sufi Platform Theme using SufiBlazor (replaces ABP Blazor UI packages) -->
     <ProjectReference Include="..\..\..\..\..\independent-projects\sufi-theme\src\SufiChain.SufiTheme.Blazor.WebAssembly\SufiChain.SufiTheme.Blazor.WebAssembly.csproj" />
-    <!-- SufiAbp UI Modules (replacing ABP UI packages) -->
-    <ProjectReference Include="..\..\..\..\..\modules\identity\src\SufiChain.SufiAbp.Identity.Blazor\SufiChain.SufiAbp.Identity.Blazor.csproj" />
-    <ProjectReference Include="..\..\..\..\..\modules\tenant-management\src\SufiChain.SufiAbp.TenantManagement.Blazor\SufiChain.SufiAbp.TenantManagement.Blazor.csproj" />
-    <ProjectReference Include="..\..\..\..\..\modules\file-manager\src\SufiChain.SufiAbp.FileManager.Blazor\SufiChain.SufiAbp.FileManager.Blazor.csproj" />
-    <ProjectReference Include="..\..\..\..\..\modules\file-manager\src\SufiChain.SufiAbp.FileManager.Blazor.WebAssembly\SufiChain.SufiAbp.FileManager.Blazor.WebAssembly.csproj" />
-    <ProjectReference Include="..\..\..\..\..\modules\file-manager\src\SufiChain.SufiAbp.FileManager.Demo\SufiChain.SufiAbp.FileManager.Demo.csproj" />
+    <!-- Sufi Platform UI Modules (replacing ABP UI packages) -->
+    <ProjectReference Include="..\..\..\..\..\modules\identity\src\SufiChain.SufiPlatform.Identity.Blazor\SufiChain.SufiPlatform.Identity.Blazor.csproj" />
+    <ProjectReference Include="..\..\..\..\..\modules\tenants\src\SufiChain.SufiPlatform.Tenants.Blazor\SufiChain.SufiPlatform.Tenants.Blazor.csproj" />
+    <ProjectReference Include="..\..\..\..\..\modules\file-manager\src\SufiChain.SufiPlatform.FileManager.Blazor\SufiChain.SufiPlatform.FileManager.Blazor.csproj" />
+    <ProjectReference Include="..\..\..\..\..\modules\file-manager\src\SufiChain.SufiPlatform.FileManager.Blazor.WebAssembly\SufiChain.SufiPlatform.FileManager.Blazor.WebAssembly.csproj" />
+    <ProjectReference Include="..\..\..\..\..\modules\file-manager\src\SufiChain.SufiPlatform.FileManager.Demo\SufiChain.SufiPlatform.FileManager.Demo.csproj" />
   </ItemGroup>
   <!-- </TEMPLATE-REMOVE> -->
   <!-- <TEMPLATE-ONLY>
 	<ItemGroup>
 		<PackageReference Include="SufiChain.SufiTheme.Blazor.WebAssembly" Version="$(SufiThemeVersion)" />
-		<PackageReference Include="SufiChain.SufiAbp.Identity.Blazor" Version="$(SufiVersion)" />
-		<PackageReference Include="SufiChain.SufiAbp.TenantManagement.Blazor" Version="$(SufiVersion)" />
-		<PackageReference Include="SufiChain.SufiAbp.FileManager.Blazor" Version="$(SufiVersion)" />
-		<PackageReference Include="SufiChain.SufiAbp.FileManager.Blazor.WebAssembly" Version="$(SufiVersion)" />
+		<PackageReference Include="SufiChain.SufiPlatform.Identity.Blazor" Version="$(SufiVersion)" />
+		<PackageReference Include="SufiChain.SufiPlatform.Tenants.Blazor" Version="$(SufiVersion)" />
+		<PackageReference Include="SufiChain.SufiPlatform.FileManager.Blazor" Version="$(SufiVersion)" />
+		<PackageReference Include="SufiChain.SufiPlatform.FileManager.Blazor.WebAssembly" Version="$(SufiVersion)" />
 	</ItemGroup>
 	</TEMPLATE-ONLY> -->
   <ItemGroup>

@@ -1,7 +1,7 @@
-using SufiChain.SufiAbp.Authorization.Permissions;
-using SufiChain.SufiAbp.Calendar.Permissions;
-using SufiChain.SufiAbp.Identity;
-using SufiChain.SufiAbp.PermissionManagement;
+using SufiChain.SufiPlatform.Authorization.Permissions;
+using SufiChain.SufiPlatform.Calendar.Permissions;
+using SufiChain.SufiPlatform.Identity;
+using SufiChain.SufiPlatform.Permissions;
 using Volo.Abp.Data;
 using Volo.Abp.DependencyInjection;
 using Microsoft.AspNetCore.Identity;

@@ -14,55 +14,55 @@ using Microsoft.Extensions.Options;
 // <TEMPLATE-REMOVE IF-NOT="arch:single">
 using Microsoft.OpenApi;
 // </TEMPLATE-REMOVE>
-using SufiChain.SufiAbp.Account;
-using SufiChain.SufiAbp.Account.Blazor;
-using SufiChain.SufiAbp.AI;
-using SufiChain.SufiAbp.AI.Blazor;
-using SufiChain.SufiAbp.AspNetCore.Authentication.OpenIdConnect;
-using SufiChain.SufiAbp.AspNetCore.Authentication.Server;
-using SufiChain.SufiAbp.AuditLogging;
-using SufiChain.SufiAbp.AuditLogging.Blazor;
-using SufiChain.SufiAbp.BackgroundJobs.Blazor;
-using SufiChain.SufiAbp.FeatureManagement;
-using SufiChain.SufiAbp.FeatureManagement.Blazor;
-using SufiChain.SufiAbp.Calendar;
-using SufiChain.SufiAbp.Calendar.Blazor.Public;
-using SufiChain.SufiAbp.FileManager;
-using SufiChain.SufiAbp.FileManager.Blazor;
-using SufiChain.SufiAbp.FileManager.Blazor.Public;
-using SufiChain.SufiAbp.FileManager.Blazor.Server;
+using SufiChain.SufiPlatform.Account;
+using SufiChain.SufiPlatform.Account.Blazor;
+using SufiChain.SufiPlatform.SufiAI;
+using SufiChain.SufiPlatform.SufiAI.Blazor;
+using SufiChain.SufiPlatform.AspNetCore.Authentication.OpenIdConnect;
+using SufiChain.SufiPlatform.AspNetCore.Authentication.Server;
+using SufiChain.SufiPlatform.AuditLogging;
+using SufiChain.SufiPlatform.AuditLogging.Blazor;
+using SufiChain.SufiPlatform.BackgroundJobs.Blazor;
+using SufiChain.SufiPlatform.Features;
+using SufiChain.SufiPlatform.Features.Blazor;
+using SufiChain.SufiPlatform.Calendar;
+using SufiChain.SufiPlatform.Calendar.Blazor.Public;
+using SufiChain.SufiPlatform.FileManager;
+using SufiChain.SufiPlatform.FileManager.Blazor;
+using SufiChain.SufiPlatform.FileManager.Blazor.Public;
+using SufiChain.SufiPlatform.FileManager.Blazor.Server;
 // <TEMPLATE-REMOVE IF-NOT="module:file-manager-demo">
-using SufiChain.SufiAbp.FileManager.Demo;
+using SufiChain.SufiPlatform.FileManager.Demo;
 // </TEMPLATE-REMOVE>
-using SufiChain.SufiAbp.Identity;
-using SufiChain.SufiAbp.Identity.Blazor;
-using SufiChain.SufiAbp.LocalizationManagement;
-using SufiChain.SufiAbp.LocalizationManagement.Blazor;
-using SufiChain.SufiAbp.PermissionManagement;
-using SufiChain.SufiAbp.SettingManagement;
-using SufiChain.SufiAbp.SettingManagement.Blazor;
-using SufiChain.SufiAbp.ShortLinkGenerator;
-using SufiChain.SufiAbp.TagsManagement;
-using SufiChain.SufiAbp.TenantManagement;
-using SufiChain.SufiAbp.TenantManagement.Blazor;
-using SufiChain.SufiAbp.MenuManagement;
-using SufiChain.SufiAbp.MenuManagement.Blazor;
-using SufiChain.SufiAbp.MenuManagement.Blazor.Server;
+using SufiChain.SufiPlatform.Identity;
+using SufiChain.SufiPlatform.Identity.Blazor;
+using SufiChain.SufiPlatform.Localization;
+using SufiChain.SufiPlatform.Localization.Blazor;
+using SufiChain.SufiPlatform.Permissions;
+using SufiChain.SufiPlatform.Settings;
+using SufiChain.SufiPlatform.Settings.Blazor;
+using SufiChain.SufiPlatform.ShortLinks;
+using SufiChain.SufiPlatform.Tags;
+using SufiChain.SufiPlatform.Tenants;
+using SufiChain.SufiPlatform.Tenants.Blazor;
+using SufiChain.SufiPlatform.Menus;
+using SufiChain.SufiPlatform.Menus.Blazor;
+using SufiChain.SufiPlatform.Menus.Blazor.Server;
 
 
 
 
 // </TEMPLATE-REMOVE>
-// <TEMPLATE-REMOVE IF-NOT="module:localization-management">
+// <TEMPLATE-REMOVE IF-NOT="module:localization">
 // </TEMPLATE-REMOVE>
-using SufiChain.SufiAbp.UI.Blazor.Server.MultiTenancy;
-using SufiChain.SufiAbp.UI.Bundling;
-using SufiChain.SufiAbp.UI.Navigation;
-using SufiChain.SufiAbp.UI.Routing;
-using SufiChain.SufiAbp.UI.Toolbars;
+using SufiChain.SufiPlatform.UI.Blazor.Server.MultiTenancy;
+using SufiChain.SufiPlatform.UI.Bundling;
+using SufiChain.SufiPlatform.UI.Navigation;
+using SufiChain.SufiPlatform.UI.Routing;
+using SufiChain.SufiPlatform.UI.Toolbars;
 using SufiChain.SufiTheme;
 using SufiChain.SufiTheme.Blazor.Server;
-// <TEMPLATE-REMOVE IF-NOT="module:tenant-management">
+// <TEMPLATE-REMOVE IF-NOT="module:tenants">
 // </TEMPLATE-REMOVE>
 using SufiChain.SufiTheme.Blazor.Server.Bundling;
 using SufiChain.SufiBlazor;
@@ -85,10 +85,10 @@ using Volo.Abp.AspNetCore.Mvc.Libs;
 using Volo.Abp.AspNetCore.Mvc.Localization;
 // <TEMPLATE-REMOVE IF-NOT="module:audit-logging">
 // </TEMPLATE-REMOVE>
-// <TEMPLATE-REMOVE IF-NOT="module:background-jobs">
+// <TEMPLATE-REMOVE IF-NOT="module:jobs">
 // </TEMPLATE-REMOVE>
 using Volo.Abp.Data;
-using SufiChain.SufiAbp.Communications.Email;
+using SufiChain.SufiPlatform.SufiCom.Email;
 // <TEMPLATE-REMOVE IF-NOT="db:mongodb">
 // </TEMPLATE-REMOVE>
 // <TEMPLATE-REMOVE IF-NOT="db:mongodb">
@@ -107,7 +107,7 @@ using Volo.Abp.UI.Navigation.Urls;
 using Volo.Abp.Uow;
 using Volo.Abp.VirtualFileSystem;
 
-using SufiChain.SufiAbp.UI;
+using SufiChain.SufiPlatform.UI;
 
 namespace MyCompanyName.MyProjectName;
 
@@ -139,57 +139,57 @@ namespace MyCompanyName.MyProjectName;
     // =========================================================================
     // OpenIddict & Authentication
     // =========================================================================
-	    typeof(SufiAbpAuthenticationOpenIdConnectModule),
+	    typeof(SufiAuthenticationOpenIdConnectModule),
 	    typeof(AbpAspNetCoreAuthenticationOAuthModule),
-    typeof(SufiAbpAuthenticationServerModule),
-    typeof(SufiAbpAccountBlazorModule),
-    typeof(SufiAbpAccountApplicationModule),
-    typeof(SufiAbpAccountHttpApiModule),
-    typeof(SufiAbpPermissionManagementApplicationModule),
-    typeof(SufiAbpPermissionManagementHttpApiModule),
+    typeof(SufiAuthenticationServerModule),
+    typeof(SufiAccountBlazorModule),
+    typeof(SufiAccountApplicationModule),
+    typeof(SufiAccountHttpApiModule),
+    typeof(SufiPermissionsApplicationModule),
+    typeof(SufiPermissionsHttpApiModule),
     // Admin UI Modules
     // =========================================================================
-    typeof(SufiAbpIdentityBlazorModule),
-    typeof(SufiAbpIdentityApplicationModule),
-    typeof(SufiAbpIdentityHttpApiModule),
-    // <TEMPLATE-REMOVE IF-NOT="module:tenant-management">
-    typeof(SufiAbpTenantManagementBlazorModule),
-    typeof(SufiAbpTenantManagementApplicationModule),
-    typeof(SufiAbpTenantManagementHttpApiModule),
+    typeof(SufiIdentityBlazorModule),
+    typeof(SufiIdentityApplicationModule),
+    typeof(SufiIdentityHttpApiModule),
+    // <TEMPLATE-REMOVE IF-NOT="module:tenants">
+    typeof(SufiTenantsBlazorModule),
+    typeof(SufiTenantsApplicationModule),
+    typeof(SufiTenantsHttpApiModule),
     // </TEMPLATE-REMOVE>
     // <TEMPLATE-REMOVE IF-NOT="module:file-manager">
-    typeof(SufiAbpFileManagerBlazorModule),
-    typeof(SufiAbpFileManagerBlazorPublicModule),
-    typeof(SufiAbpFileManagerBlazorServerModule),
+    typeof(SufiFileManagerBlazorModule),
+    typeof(SufiFileManagerBlazorPublicModule),
+    typeof(SufiFileManagerBlazorServerModule),
     // <TEMPLATE-REMOVE IF-NOT="module:file-manager-demo">
-    typeof(SufiAbpFileManagerDemoModule),
+    typeof(SufiFileManagerDemoModule),
     // </TEMPLATE-REMOVE>
-    typeof(SufiAbpFileManagerApplicationModule),
-    typeof(SufiAbpFileManagerHttpApiModule),
+    typeof(SufiFileManagerApplicationModule),
+    typeof(SufiFileManagerHttpApiModule),
     // </TEMPLATE-REMOVE>
     // <TEMPLATE-REMOVE IF-NOT="module:audit-logging">
     // Audit Logging (UI + Application + HttpApi)
-    typeof(SufiAbpAuditLoggingBlazorModule),
-    typeof(SufiAbpAuditLoggingApplicationModule),
-    typeof(SufiAbpAuditLoggingHttpApiModule),
+    typeof(SufiAuditLoggingBlazorModule),
+    typeof(SufiAuditLoggingApplicationModule),
+    typeof(SufiAuditLoggingHttpApiModule),
     // </TEMPLATE-REMOVE>
-    // <TEMPLATE-REMOVE IF-NOT="module:background-jobs">
+    // <TEMPLATE-REMOVE IF-NOT="module:jobs">
     // Background Jobs (UI + Application + HttpApi)
-    typeof(SufiAbpBackgroundJobsBlazorModule),
-    typeof(SufiAbpBackgroundJobsApplicationModule),
-    typeof(SufiAbpBackgroundJobsHttpApiModule),
+    typeof(SufiBackgroundJobsBlazorModule),
+    typeof(SufiBackgroundJobsApplicationModule),
+    typeof(SufiBackgroundJobsHttpApiModule),
     // </TEMPLATE-REMOVE>
-    typeof(SufiAbpFeatureManagementBlazorModule),
-    typeof(SufiAbpFeatureManagementApplicationModule),
-    typeof(SufiAbpFeatureManagementHttpApiModule),
-    typeof(SufiAbpSettingManagementBlazorModule),
-    typeof(SufiAbpSettingManagementApplicationModule),
-    typeof(SufiAbpSettingManagementHttpApiModule),
-    // <TEMPLATE-REMOVE IF-NOT="module:localization-management">
+    typeof(SufiFeaturesBlazorModule),
+    typeof(SufiFeaturesApplicationModule),
+    typeof(SufiFeaturesHttpApiModule),
+    typeof(SufiSettingsBlazorModule),
+    typeof(SufiSettingsApplicationModule),
+    typeof(SufiSettingsHttpApiModule),
+    // <TEMPLATE-REMOVE IF-NOT="module:localization">
     // Localization Management (UI + Application + HttpApi)
-    typeof(SufiAbpLocalizationManagementBlazorModule),
-    typeof(SufiAbpLocalizationManagementApplicationModule),
-    typeof(SufiAbpLocalizationManagementHttpApiModule),
+    typeof(SufiLocalizationBlazorModule),
+    typeof(SufiLocalizationApplicationModule),
+    typeof(SufiLocalizationHttpApiModule),
     // </TEMPLATE-REMOVE>
     // =========================================================================
     // ABP MongoDB modules for infrastructure
@@ -210,30 +210,30 @@ namespace MyCompanyName.MyProjectName;
     // =========================================================================
     // Calendar
     // =========================================================================
-    typeof(SufiAbpCalendarBlazorModule),
-    typeof(SufiAbpCalendarBlazorPublicModule),
-    typeof(SufiAbpCalendarAIModule),
-    typeof(SufiAbpCalendarApplicationModule),
-    typeof(SufiAbpCalendarHttpApiModule),
+    typeof(SufiCalendarBlazorModule),
+    typeof(SufiCalendarBlazorPublicModule),
+    typeof(SufiCalendarAIModule),
+    typeof(SufiCalendarApplicationModule),
+    typeof(SufiCalendarHttpApiModule),
     // =========================================================================
     // Short Link Generator
     // =========================================================================
-    typeof(SufiAbpShortLinkGeneratorBlazorModule),
-    typeof(SufiAbpShortLinkGeneratorBlazorServerModule),
-    typeof(SufiAbpShortLinkGeneratorApplicationModule),
-    typeof(SufiAbpShortLinkGeneratorHttpApiModule),
+    typeof(SufiShortLinksBlazorModule),
+    typeof(SufiShortLinksBlazorServerModule),
+    typeof(SufiShortLinksApplicationModule),
+    typeof(SufiShortLinksHttpApiModule),
     // =========================================================================
     // Tags Management (API only — no Blazor UI)
     // =========================================================================
-    typeof(SufiAbpTagsManagementApplicationModule),
-    typeof(SufiAbpTagsManagementHttpApiModule),
+    typeof(SufiTagsApplicationModule),
+    typeof(SufiTagsHttpApiModule),
     // =========================================================================
     // Menu Management
     // =========================================================================
-    typeof(SufiAbpMenuManagementBlazorModule),
-    typeof(SufiAbpMenuManagementBlazorServerModule),
-    typeof(SufiAbpMenuManagementApplicationModule),
-    typeof(SufiAbpMenuManagementHttpApiModule),
+    typeof(SufiMenusBlazorModule),
+    typeof(SufiMenusBlazorServerModule),
+    typeof(SufiMenusApplicationModule),
+    typeof(SufiMenusHttpApiModule),
     // <TEMPLATE-REMOVE IF-NOT="module:sufi-blazor-demo">
     // SufiBlazor component demo library
     typeof(SufiBlazorDemoModule)
@@ -425,14 +425,6 @@ public class DemoAppModule : AbpModule
             options.Languages.Add(new LanguageInfo("ar", "ar", "العربية"));
             options.Languages.Add(new LanguageInfo("es", "es", "Español"));
         });
-
-        Configure<SufiChain.SufiAbp.UI.Localization.SufiAbpLocalizationOptions>(options =>
-        {
-            options.Languages.Add(new SufiChain.SufiAbp.UI.Localization.LanguageInfo("en", "en", "English"));
-            options.Languages.Add(new SufiChain.SufiAbp.UI.Localization.LanguageInfo("fa", "fa", "فارسی", isRtl: true));
-            options.Languages.Add(new SufiChain.SufiAbp.UI.Localization.LanguageInfo("ar", "ar", "العربية", isRtl: true));
-            options.Languages.Add(new SufiChain.SufiAbp.UI.Localization.LanguageInfo("es", "es", "Español"));
-        });
     }
 
     private void ConfigureVirtualFileSystem(IWebHostEnvironment hostingEnvironment)
@@ -451,11 +443,11 @@ public class DemoAppModule : AbpModule
                 options.FileSets.ReplaceEmbeddedByPhysical<SufiThemeBlazorServerModule>(
                     Path.Combine(hostingEnvironment.ContentRootPath,
                         $"..{Path.DirectorySeparatorChar}..{Path.DirectorySeparatorChar}..{Path.DirectorySeparatorChar}..{Path.DirectorySeparatorChar}..{Path.DirectorySeparatorChar}independent-projects{Path.DirectorySeparatorChar}sufi-theme{Path.DirectorySeparatorChar}src{Path.DirectorySeparatorChar}SufiChain.SufiTheme.Blazor.Server"));
-                options.FileSets.ReplaceEmbeddedByPhysical<SufiAbpAccountBlazorModule>(
+                options.FileSets.ReplaceEmbeddedByPhysical<SufiAccountBlazorModule>(
                     Path.Combine(hostingEnvironment.ContentRootPath,
-                        $"..{Path.DirectorySeparatorChar}..{Path.DirectorySeparatorChar}..{Path.DirectorySeparatorChar}..{Path.DirectorySeparatorChar}..{Path.DirectorySeparatorChar}src{Path.DirectorySeparatorChar}modules{Path.DirectorySeparatorChar}account{Path.DirectorySeparatorChar}src{Path.DirectorySeparatorChar}SufiChain.SufiAbp.Account.Blazor"));
-                options.FileSets.ReplaceEmbeddedByPhysical<SufiAbpUiDomainSharedModule>(
-                    Path.Combine(hostingEnvironment.ContentRootPath, "..", "..", "..", "..", "..", "src", "framework", "SufiChain.SufiAbp.UI.Domain.Shared"));
+                        $"..{Path.DirectorySeparatorChar}..{Path.DirectorySeparatorChar}..{Path.DirectorySeparatorChar}..{Path.DirectorySeparatorChar}..{Path.DirectorySeparatorChar}src{Path.DirectorySeparatorChar}modules{Path.DirectorySeparatorChar}account{Path.DirectorySeparatorChar}src{Path.DirectorySeparatorChar}SufiChain.SufiPlatform.Account.Blazor"));
+                options.FileSets.ReplaceEmbeddedByPhysical<SufiUiDomainSharedModule>(
+                    Path.Combine(hostingEnvironment.ContentRootPath, "..", "..", "..", "..", "..", "src", "framework", "SufiChain.SufiPlatform.UI.Domain.Shared"));
                 // </TEMPLATE-REMOVE>
             }
         });
@@ -485,10 +477,10 @@ public class DemoAppModule : AbpModule
 
     private void ConfigureRouter(ServiceConfigurationContext context)
     {
-        Configure<SufiAbpRouterOptions>(options =>
+        Configure<SufiRouterOptions>(options =>
         {
             // Add Account.Blazor assembly for Login, Register, etc. pages
-            options.AdditionalAssemblies.Add(typeof(SufiAbpAccountBlazorModule).Assembly);
+            options.AdditionalAssemblies.Add(typeof(SufiAccountBlazorModule).Assembly);
             // Add Client assembly for Index.razor (@page "/") — module not loaded, just route discovery
             options.AdditionalAssemblies.Add(typeof(DemoAppClientModule).Assembly);
         });
@@ -508,7 +500,7 @@ public class DemoAppModule : AbpModule
 
     private void ConfigureMenu(IConfiguration configuration)
     {
-        Configure<SufiAbpNavigationOptions>(options =>
+        Configure<SufiNavigationOptions>(options =>
         {
             options.MenuContributors.Add(new DemoAppMenuContributor(configuration));
         });
@@ -527,12 +519,12 @@ public class DemoAppModule : AbpModule
             {
                 options.SwaggerDoc("v1", new OpenApiInfo 
                 { 
-                    Title = "SufiChain SufiAbp Platform API", 
+                    Title = "SufiChain Sufi Platform Platform API", 
                     Version = "v1",
-                    Description = "RESTful API for SufiChain SufiAbp Platform modules"
+                    Description = "RESTful API for SufiChain Sufi Platform Platform modules"
                 });
                 
-                // Only include SufiChain.SufiAbp module APIs, exclude ABP framework endpoints
+                // Only include SufiChain.SufiPlatform module APIs, exclude ABP framework endpoints
                 options.DocInclusionPredicate((docName, description) =>
                 {
                     if (description.ActionDescriptor is not Microsoft.AspNetCore.Mvc.Controllers.ControllerActionDescriptor actionDescriptor)
@@ -544,8 +536,8 @@ public class DemoAppModule : AbpModule
                     if (controllerNamespace.StartsWith("Volo.Abp"))
                         return false;
                     
-                    // Include only SufiChain.SufiAbp.* controllers
-                    return controllerNamespace.StartsWith("SufiChain.SufiAbp");
+                    // Include only SufiChain.SufiPlatform.* controllers
+                    return controllerNamespace.StartsWith("SufiChain.SufiPlatform");
                 });
                 
                 options.CustomSchemaIds(type => type.FullName);
@@ -607,7 +599,7 @@ public class DemoAppModule : AbpModule
             endpoints.MapGet("/health", () => Results.Ok(new { status = "ok" }));
 
             var routerOptions = endpoints.ServiceProvider
-                .GetRequiredService<IOptions<SufiAbpRouterOptions>>()
+                .GetRequiredService<IOptions<SufiRouterOptions>>()
                 .Value;
 
             endpoints.MapRazorComponents<App>()

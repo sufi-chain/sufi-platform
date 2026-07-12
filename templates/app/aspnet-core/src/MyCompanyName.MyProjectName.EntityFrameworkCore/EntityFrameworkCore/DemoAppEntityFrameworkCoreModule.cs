@@ -1,19 +1,19 @@
 using Microsoft.Extensions.DependencyInjection;
-using SufiChain.SufiAbp.AI;
-using SufiChain.SufiAbp.AuditLogging.EntityFrameworkCore;
-using SufiChain.SufiAbp.BackgroundJobs.EntityFrameworkCore;
-using SufiChain.SufiAbp.Calendar.EntityFrameworkCore;
-using SufiChain.SufiAbp.Data;
-using SufiChain.SufiAbp.FeatureManagement.EntityFrameworkCore;
-using SufiChain.SufiAbp.FileManager.EntityFrameworkCore;
-using SufiChain.SufiAbp.Identity.EntityFrameworkCore;
-using SufiChain.SufiAbp.LocalizationManagement.EntityFrameworkCore;
-using SufiChain.SufiAbp.OpenIddict.EntityFrameworkCore;
-using SufiChain.SufiAbp.PermissionManagement.EntityFrameworkCore;
-using SufiChain.SufiAbp.SettingManagement.EntityFrameworkCore;
-using SufiChain.SufiAbp.ShortLinkGenerator.EntityFrameworkCore;
-using SufiChain.SufiAbp.TenantManagement.EntityFrameworkCore;
-using SufiChain.SufiAbp.Users;
+using SufiChain.SufiPlatform.SufiAI;
+using SufiChain.SufiPlatform.AuditLogging.EntityFrameworkCore;
+using SufiChain.SufiPlatform.BackgroundJobs.EntityFrameworkCore;
+using SufiChain.SufiPlatform.Calendar.EntityFrameworkCore;
+using SufiChain.SufiPlatform.Data;
+using SufiChain.SufiPlatform.Features.EntityFrameworkCore;
+using SufiChain.SufiPlatform.FileManager.EntityFrameworkCore;
+using SufiChain.SufiPlatform.Identity.EntityFrameworkCore;
+using SufiChain.SufiPlatform.Localization.EntityFrameworkCore;
+using SufiChain.SufiPlatform.OpenIddict.EntityFrameworkCore;
+using SufiChain.SufiPlatform.Permissions.EntityFrameworkCore;
+using SufiChain.SufiPlatform.Settings.EntityFrameworkCore;
+using SufiChain.SufiPlatform.ShortLinks.EntityFrameworkCore;
+using SufiChain.SufiPlatform.Tenants.EntityFrameworkCore;
+using SufiChain.SufiPlatform.Users;
 using Volo.Abp.EntityFrameworkCore;
 using Volo.Abp.Modularity;
 
@@ -25,25 +25,25 @@ namespace MyCompanyName.MyProjectName.EntityFrameworkCore;
     typeof(DemoAppApplicationContractsModule),
     typeof(AbpEntityFrameworkCoreSqlServerModule),
 
-    // SufiAbp Infrastructure Modules
-    typeof(SufiAbpIdentityEntityFrameworkCoreModule),
-    typeof(SufiAbpTenantManagementEntityFrameworkCoreModule),
-    typeof(SufiAbpPermissionManagementEntityFrameworkCoreModule),
-    typeof(SufiAbpFeatureManagementEntityFrameworkCoreModule),
-    typeof(SufiAbpSettingManagementEntityFrameworkCoreModule),
-    typeof(SufiAbpAuditLoggingEntityFrameworkCoreModule),
-    typeof(SufiAbpBackgroundJobsEntityFrameworkCoreModule),
-    typeof(SufiAbpOpenIddictEntityFrameworkCoreModule),
-    typeof(SufiAbpUsersEntityFrameworkCoreModule),
+    // Sufi Platform Infrastructure Modules
+    typeof(SufiIdentityEntityFrameworkCoreModule),
+    typeof(SufiTenantsEntityFrameworkCoreModule),
+    typeof(SufiPermissionsEntityFrameworkCoreModule),
+    typeof(SufiFeaturesEntityFrameworkCoreModule),
+    typeof(SufiSettingsEntityFrameworkCoreModule),
+    typeof(SufiAuditLoggingEntityFrameworkCoreModule),
+    typeof(SufiBackgroundJobsEntityFrameworkCoreModule),
+    typeof(SufiOpenIddictEntityFrameworkCoreModule),
+    typeof(SufiUsersEntityFrameworkCoreModule),
     
-    // SufiAbp Business Modules
-    typeof(SufiAbpFileManagerEntityFrameworkCoreModule),
-    typeof(SufiAbpLocalizationManagementEntityFrameworkCoreModule),
-    typeof(SufiAbpShortLinkGeneratorEntityFrameworkCoreModule),
+    // Sufi Platform Business Modules
+    typeof(SufiFileManagerEntityFrameworkCoreModule),
+    typeof(SufiLocalizationEntityFrameworkCoreModule),
+    typeof(SufiShortLinksEntityFrameworkCoreModule),
     typeof(SufiAIEntityFrameworkCoreModule),
-    typeof(SufiAbpCalendarEntityFrameworkCoreModule),
+    typeof(SufiCalendarEntityFrameworkCoreModule),
     
-    typeof(SufiAbpDataModule)
+    typeof(SufiDataModule)
 )]
 public class DemoAppEntityFrameworkCoreModule : AbpModule
 {

@@ -1,4 +1,4 @@
-using SufiChain.SufiAbp.UI.Toolbars;
+using SufiChain.SufiPlatform.UI.Toolbars;
 using Volo.Abp.Users;
 
 namespace MyCompanyName.MyProjectName.Menus;

@@ -15,42 +15,42 @@
 
   <TEMPLATE-REMOVE>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\..\..\src\framework\SufiChain.SufiAbp.Core\SufiChain.SufiAbp.Core.csproj" />
-    <ProjectReference Include="..\..\..\..\..\modules\permission-management\src\SufiChain.SufiAbp.PermissionManagement.MongoDB\SufiChain.SufiAbp.PermissionManagement.MongoDB.csproj" />
-    <ProjectReference Include="..\..\..\..\..\modules\setting-management\src\SufiChain.SufiAbp.SettingManagement.MongoDB\SufiChain.SufiAbp.SettingManagement.MongoDB.csproj" />
-    <ProjectReference Include="..\..\..\..\..\modules\feature-management\src\SufiChain.SufiAbp.FeatureManagement.MongoDB\SufiChain.SufiAbp.FeatureManagement.MongoDB.csproj" />
-    <ProjectReference Include="..\..\..\..\..\modules\audit-logging\src\SufiChain.SufiAbp.AuditLogging.MongoDB\SufiChain.SufiAbp.AuditLogging.MongoDB.csproj" />
-    <ProjectReference Include="..\..\..\..\..\modules\background-jobs\src\SufiChain.SufiAbp.BackgroundJobs.MongoDB\SufiChain.SufiAbp.BackgroundJobs.MongoDB.csproj" />
-    <ProjectReference Include="..\..\..\..\..\modules\identity\src\SufiChain.SufiAbp.Identity.MongoDB\SufiChain.SufiAbp.Identity.MongoDB.csproj" />
-    <ProjectReference Include="..\..\..\..\..\modules\users\src\SufiChain.SufiAbp.Users.MongoDB\SufiChain.SufiAbp.Users.MongoDB.csproj" />
-    <ProjectReference Include="..\..\..\..\..\modules\tenant-management\src\SufiChain.SufiAbp.TenantManagement.MongoDB\SufiChain.SufiAbp.TenantManagement.MongoDB.csproj" />
-    <ProjectReference Include="..\..\..\..\..\modules\openiddict\src\SufiChain.SufiAbp.OpenIddict.MongoDB\SufiChain.SufiAbp.OpenIddict.MongoDB.csproj" />
+    <ProjectReference Include="..\..\..\..\..\src\framework\SufiChain.SufiPlatform.Core\SufiChain.SufiPlatform.Core.csproj" />
+    <ProjectReference Include="..\..\..\..\..\modules\permissions\src\SufiChain.SufiPlatform.Permissions.MongoDB\SufiChain.SufiPlatform.Permissions.MongoDB.csproj" />
+    <ProjectReference Include="..\..\..\..\..\modules\settings\src\SufiChain.SufiPlatform.Settings.MongoDB\SufiChain.SufiPlatform.Settings.MongoDB.csproj" />
+    <ProjectReference Include="..\..\..\..\..\modules\features\src\SufiChain.SufiPlatform.Features.MongoDB\SufiChain.SufiPlatform.Features.MongoDB.csproj" />
+    <ProjectReference Include="..\..\..\..\..\modules\audit-logging\src\SufiChain.SufiPlatform.AuditLogging.MongoDB\SufiChain.SufiPlatform.AuditLogging.MongoDB.csproj" />
+    <ProjectReference Include="..\..\..\..\..\modules\jobs\src\SufiChain.SufiPlatform.BackgroundJobs.MongoDB\SufiChain.SufiPlatform.BackgroundJobs.MongoDB.csproj" />
+    <ProjectReference Include="..\..\..\..\..\modules\identity\src\SufiChain.SufiPlatform.Identity.MongoDB\SufiChain.SufiPlatform.Identity.MongoDB.csproj" />
+    <ProjectReference Include="..\..\..\..\..\modules\users\src\SufiChain.SufiPlatform.Users.MongoDB\SufiChain.SufiPlatform.Users.MongoDB.csproj" />
+    <ProjectReference Include="..\..\..\..\..\modules\tenants\src\SufiChain.SufiPlatform.Tenants.MongoDB\SufiChain.SufiPlatform.Tenants.MongoDB.csproj" />
+    <ProjectReference Include="..\..\..\..\..\modules\openiddict\src\SufiChain.SufiPlatform.OpenIddict.MongoDB\SufiChain.SufiPlatform.OpenIddict.MongoDB.csproj" />
     
-    <ProjectReference Include="..\..\..\..\..\modules\blob-storing-database\src\SufiChain.SufiAbp.BlobStoring.Database.MongoDB\SufiChain.SufiAbp.BlobStoring.Database.MongoDB.csproj" />
-    <ProjectReference Include="..\..\..\..\..\modules\file-manager\src\SufiChain.SufiAbp.FileManager.MongoDB\SufiChain.SufiAbp.FileManager.MongoDB.csproj" />
-    <ProjectReference Include="..\..\..\..\..\modules\localization-management\src\SufiChain.SufiAbp.LocalizationManagement.MongoDB\SufiChain.SufiAbp.LocalizationManagement.MongoDB.csproj" />
-    <ProjectReference Include="..\..\..\..\..\modules\short-link-generator\src\SufiChain.SufiAbp.ShortLinkGenerator.MongoDB\SufiChain.SufiAbp.ShortLinkGenerator.MongoDB.csproj" />
-    <ProjectReference Include="..\..\..\..\..\modules\ai\src\SufiChain.SufiAbp.AI.MongoDB\SufiChain.SufiAbp.AI.MongoDB.csproj" />
+    <ProjectReference Include="..\..\..\..\..\modules\blob-database\src\SufiChain.SufiPlatform.BlobDatabase.MongoDB\SufiChain.SufiPlatform.BlobDatabase.MongoDB.csproj" />
+    <ProjectReference Include="..\..\..\..\..\modules\file-manager\src\SufiChain.SufiPlatform.FileManager.MongoDB\SufiChain.SufiPlatform.FileManager.MongoDB.csproj" />
+    <ProjectReference Include="..\..\..\..\..\modules\localization\src\SufiChain.SufiPlatform.Localization.MongoDB\SufiChain.SufiPlatform.Localization.MongoDB.csproj" />
+    <ProjectReference Include="..\..\..\..\..\modules\short-links\src\SufiChain.SufiPlatform.ShortLinks.MongoDB\SufiChain.SufiPlatform.ShortLinks.MongoDB.csproj" />
+    <ProjectReference Include="..\..\..\..\..\modules\ai\src\SufiChain.SufiPlatform.SufiAI.MongoDB\SufiChain.SufiPlatform.SufiAI.MongoDB.csproj" />
   </ItemGroup>
   </TEMPLATE-REMOVE>
 
   <TEMPLATE-ONLY>
   <ItemGroup>
-    <PackageReference Include="SufiChain.SufiAbp.Core" Version="$(SufiVersion)" />
-    <PackageReference Include="SufiChain.SufiAbp.PermissionManagement.MongoDB" Version="$(SufiVersion)" />
-    <PackageReference Include="SufiChain.SufiAbp.SettingManagement.MongoDB" Version="$(SufiVersion)" />
-    <PackageReference Include="SufiChain.SufiAbp.FeatureManagement.MongoDB" Version="$(SufiVersion)" />
-    <PackageReference Include="SufiChain.SufiAbp.AuditLogging.MongoDB" Version="$(SufiVersion)" />
-    <PackageReference Include="SufiChain.SufiAbp.BackgroundJobs.MongoDB" Version="$(SufiVersion)" />
-    <PackageReference Include="SufiChain.SufiAbp.Identity.MongoDB" Version="$(SufiVersion)" />
-    <PackageReference Include="SufiChain.SufiAbp.Users.MongoDB" Version="$(SufiVersion)" />
-    <PackageReference Include="SufiChain.SufiAbp.TenantManagement.MongoDB" Version="$(SufiVersion)" />
-    <PackageReference Include="SufiChain.SufiAbp.OpenIddict.MongoDB" Version="$(SufiVersion)" />
-    <PackageReference Include="SufiChain.SufiAbp.BlobStoring.Database.MongoDB" Version="$(SufiVersion)" />
-    <PackageReference Include="SufiChain.SufiAbp.FileManager.MongoDB" Version="$(SufiVersion)" />
-    <PackageReference Include="SufiChain.SufiAbp.LocalizationManagement.MongoDB" Version="$(SufiVersion)" />
-    <PackageReference Include="SufiChain.SufiAbp.ShortLinkGenerator.MongoDB" Version="$(SufiVersion)" />
-    <PackageReference Include="SufiChain.SufiAbp.AI.MongoDB" Version="$(SufiVersion)" />
+    <PackageReference Include="SufiChain.SufiPlatform.Core" Version="$(SufiVersion)" />
+    <PackageReference Include="SufiChain.SufiPlatform.Permissions.MongoDB" Version="$(SufiVersion)" />
+    <PackageReference Include="SufiChain.SufiPlatform.Settings.MongoDB" Version="$(SufiVersion)" />
+    <PackageReference Include="SufiChain.SufiPlatform.Features.MongoDB" Version="$(SufiVersion)" />
+    <PackageReference Include="SufiChain.SufiPlatform.AuditLogging.MongoDB" Version="$(SufiVersion)" />
+    <PackageReference Include="SufiChain.SufiPlatform.BackgroundJobs.MongoDB" Version="$(SufiVersion)" />
+    <PackageReference Include="SufiChain.SufiPlatform.Identity.MongoDB" Version="$(SufiVersion)" />
+    <PackageReference Include="SufiChain.SufiPlatform.Users.MongoDB" Version="$(SufiVersion)" />
+    <PackageReference Include="SufiChain.SufiPlatform.Tenants.MongoDB" Version="$(SufiVersion)" />
+    <PackageReference Include="SufiChain.SufiPlatform.OpenIddict.MongoDB" Version="$(SufiVersion)" />
+    <PackageReference Include="SufiChain.SufiPlatform.BlobDatabase.MongoDB" Version="$(SufiVersion)" />
+    <PackageReference Include="SufiChain.SufiPlatform.FileManager.MongoDB" Version="$(SufiVersion)" />
+    <PackageReference Include="SufiChain.SufiPlatform.Localization.MongoDB" Version="$(SufiVersion)" />
+    <PackageReference Include="SufiChain.SufiPlatform.ShortLinks.MongoDB" Version="$(SufiVersion)" />
+    <PackageReference Include="SufiChain.SufiPlatform.SufiAI.MongoDB" Version="$(SufiVersion)" />
   </ItemGroup>
   </TEMPLATE-ONLY>
 

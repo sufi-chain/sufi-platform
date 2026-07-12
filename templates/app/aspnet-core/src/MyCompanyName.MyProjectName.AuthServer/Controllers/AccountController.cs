@@ -1,10 +1,10 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Options;
-using SufiChain.SufiAbp.Account;
-using SufiChain.SufiAbp.AspNetCore.Authentication;
-using SufiChain.SufiAbp.AspNetCore.Authentication.Server.Controllers;
-using SufiChain.SufiAbp.UI.Abstractions.Account;
-using SufiChain.SufiAbp.UI.MultiTenancy;
+using SufiChain.SufiPlatform.Account;
+using SufiChain.SufiPlatform.AspNetCore.Authentication;
+using SufiChain.SufiPlatform.AspNetCore.Authentication.Server.Controllers;
+using SufiChain.SufiPlatform.UI.Abstractions.Account;
+using SufiChain.SufiPlatform.UI.MultiTenancy;
 using Volo.Abp.Identity;
 using Volo.Abp.Identity.AspNetCore;
 using IdentityUser = Volo.Abp.Identity.IdentityUser;
@@ -12,12 +12,12 @@ using IdentityUser = Volo.Abp.Identity.IdentityUser;
 namespace MyCompanyName.MyProjectName.Controllers;
 
 /// <summary>
-/// AuthServer account controller. All SufiAbp login implementation (complete-login, OIDC Login/Logout) lives in <see cref="AccountController"/>.
+/// AuthServer account controller. All Sufi Platform login implementation (complete-login, OIDC Login/Logout) lives in <see cref="AccountController"/>.
 /// </summary>
 public class AccountController : AccountController
 {
     public AccountController(
-        IOptions<SufiAbpAuthenticationOptions> options,
+        IOptions<SufiAuthenticationOptions> options,
         ILoginCompletionTokenStore tokenStore,
         SignInManager<IdentityUser> signInManager,
         IdentityUserManager userManager,

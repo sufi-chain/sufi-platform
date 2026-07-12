@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup><LangVersion>latest</LangVersion>
     <TargetFramework>net10.0</TargetFramework>
@@ -9,58 +9,58 @@
 	  <!-- <TEMPLATE-REMOVE> -->
 	  <ItemGroup>
 	    <PackageReference Include="OpenIddict.Abstractions" Version="$(OpenIddictVersion)" />
-	    <ProjectReference Include="..\..\..\..\..\src\framework\SufiChain.SufiAbp.Core\SufiChain.SufiAbp.Core.csproj" />
-	    <ProjectReference Include="..\..\..\..\..\src\framework\SufiChain.SufiAbp.Data\SufiChain.SufiAbp.Data.csproj" />
-	    <ProjectReference Include="..\..\..\..\..\src\framework\SufiChain.SufiAbp.Communications\SufiChain.SufiAbp.Communications.csproj" />
+	    <ProjectReference Include="..\..\..\..\..\src\framework\SufiChain.SufiPlatform.Core\SufiChain.SufiPlatform.Core.csproj" />
+	    <ProjectReference Include="..\..\..\..\..\src\framework\SufiChain.SufiPlatform.Data\SufiChain.SufiPlatform.Data.csproj" />
+	    <ProjectReference Include="..\..\..\..\..\src\framework\SufiChain.SufiPlatform.SufiCom\SufiChain.SufiPlatform.SufiCom.csproj" />
 	    <ProjectReference Include="..\MyCompanyName.MyProjectName.Domain.Shared\MyCompanyName.MyProjectName.Domain.Shared.csproj" />
 	  </ItemGroup>
 	  <!-- </TEMPLATE-REMOVE> -->
 
 	  <!-- <TEMPLATE-REMOVE> -->
   <ItemGroup>
-    <ProjectReference Include="..\..\..\..\..\modules\permission-management\src\SufiChain.SufiAbp.PermissionManagement.Domain\SufiChain.SufiAbp.PermissionManagement.Domain.csproj" />
-    <ProjectReference Include="..\..\..\..\..\modules\setting-management\src\SufiChain.SufiAbp.SettingManagement.Domain\SufiChain.SufiAbp.SettingManagement.Domain.csproj" />
-    <ProjectReference Include="..\..\..\..\..\modules\feature-management\src\SufiChain.SufiAbp.FeatureManagement.Domain\SufiChain.SufiAbp.FeatureManagement.Domain.csproj" />
-    <ProjectReference Include="..\..\..\..\..\modules\audit-logging\src\SufiChain.SufiAbp.AuditLogging.Domain\SufiChain.SufiAbp.AuditLogging.Domain.csproj" />
-    <ProjectReference Include="..\..\..\..\..\modules\background-jobs\src\SufiChain.SufiAbp.BackgroundJobs.Domain\SufiChain.SufiAbp.BackgroundJobs.Domain.csproj" />
-    <ProjectReference Include="..\..\..\..\..\modules\identity\src\SufiChain.SufiAbp.Identity.Domain\SufiChain.SufiAbp.Identity.Domain.csproj" />
-    <ProjectReference Include="..\..\..\..\..\modules\identity\src\SufiChain.SufiAbp.PermissionManagement.Domain.Identity\SufiChain.SufiAbp.PermissionManagement.Domain.Identity.csproj" />
-    <ProjectReference Include="..\..\..\..\..\modules\users\src\SufiChain.SufiAbp.Users.Domain\SufiChain.SufiAbp.Users.Domain.csproj" />
-    <ProjectReference Include="..\..\..\..\..\modules\tenant-management\src\SufiChain.SufiAbp.TenantManagement.Domain\SufiChain.SufiAbp.TenantManagement.Domain.csproj" />
-    <ProjectReference Include="..\..\..\..\..\modules\openiddict\src\SufiChain.SufiAbp.OpenIddict.Domain\SufiChain.SufiAbp.OpenIddict.Domain.csproj" />
-    <ProjectReference Include="..\..\..\..\..\modules\openiddict\src\SufiChain.SufiAbp.PermissionManagement.Domain.OpenIddict\SufiChain.SufiAbp.PermissionManagement.Domain.OpenIddict.csproj" />
-    <ProjectReference Include="..\..\..\..\..\modules\calendar\src\SufiChain.SufiAbp.Calendar.Domain\SufiChain.SufiAbp.Calendar.Domain.csproj" />
-    <ProjectReference Include="..\..\..\..\..\modules\short-link-generator\src\SufiChain.SufiAbp.ShortLinkGenerator.Domain\SufiChain.SufiAbp.ShortLinkGenerator.Domain.csproj" />
-    <ProjectReference Include="..\..\..\..\..\modules\tags-management\src\SufiChain.SufiAbp.TagsManagement.Domain\SufiChain.SufiAbp.TagsManagement.Domain.csproj" />
-    <ProjectReference Include="..\..\..\..\..\modules\menu-management\src\SufiChain.SufiAbp.MenuManagement.Domain\SufiChain.SufiAbp.MenuManagement.Domain.csproj" />
+    <ProjectReference Include="..\..\..\..\..\modules\permissions\src\SufiChain.SufiPlatform.Permissions.Domain\SufiChain.SufiPlatform.Permissions.Domain.csproj" />
+    <ProjectReference Include="..\..\..\..\..\modules\settings\src\SufiChain.SufiPlatform.Settings.Domain\SufiChain.SufiPlatform.Settings.Domain.csproj" />
+    <ProjectReference Include="..\..\..\..\..\modules\features\src\SufiChain.SufiPlatform.Features.Domain\SufiChain.SufiPlatform.Features.Domain.csproj" />
+    <ProjectReference Include="..\..\..\..\..\modules\audit-logging\src\SufiChain.SufiPlatform.AuditLogging.Domain\SufiChain.SufiPlatform.AuditLogging.Domain.csproj" />
+    <ProjectReference Include="..\..\..\..\..\modules\jobs\src\SufiChain.SufiPlatform.BackgroundJobs.Domain\SufiChain.SufiPlatform.BackgroundJobs.Domain.csproj" />
+    <ProjectReference Include="..\..\..\..\..\modules\identity\src\SufiChain.SufiPlatform.Identity.Domain\SufiChain.SufiPlatform.Identity.Domain.csproj" />
+    <ProjectReference Include="..\..\..\..\..\modules\identity\src\SufiChain.SufiPlatform.Permissions.Domain.Identity\SufiChain.SufiPlatform.Permissions.Domain.Identity.csproj" />
+    <ProjectReference Include="..\..\..\..\..\modules\users\src\SufiChain.SufiPlatform.Users.Domain\SufiChain.SufiPlatform.Users.Domain.csproj" />
+    <ProjectReference Include="..\..\..\..\..\modules\tenants\src\SufiChain.SufiPlatform.Tenants.Domain\SufiChain.SufiPlatform.Tenants.Domain.csproj" />
+    <ProjectReference Include="..\..\..\..\..\modules\openiddict\src\SufiChain.SufiPlatform.OpenIddict.Domain\SufiChain.SufiPlatform.OpenIddict.Domain.csproj" />
+    <ProjectReference Include="..\..\..\..\..\modules\openiddict\src\SufiChain.SufiPlatform.Permissions.Domain.OpenIddict\SufiChain.SufiPlatform.Permissions.Domain.OpenIddict.csproj" />
+    <ProjectReference Include="..\..\..\..\..\modules\calendar\src\SufiChain.SufiPlatform.Calendar.Domain\SufiChain.SufiPlatform.Calendar.Domain.csproj" />
+    <ProjectReference Include="..\..\..\..\..\modules\short-links\src\SufiChain.SufiPlatform.ShortLinks.Domain\SufiChain.SufiPlatform.ShortLinks.Domain.csproj" />
+    <ProjectReference Include="..\..\..\..\..\modules\tags\src\SufiChain.SufiPlatform.Tags.Domain\SufiChain.SufiPlatform.Tags.Domain.csproj" />
+    <ProjectReference Include="..\..\..\..\..\modules\menus\src\SufiChain.SufiPlatform.Menus.Domain\SufiChain.SufiPlatform.Menus.Domain.csproj" />
   </ItemGroup>
 	  <!-- </TEMPLATE-REMOVE> -->
 
 <!-- <TEMPLATE-ONLY>
 	  <ItemGroup>
 	    <PackageReference Include="OpenIddict.Abstractions" Version="$(OpenIddictVersion)" />
-	    <PackageReference Include="SufiChain.SufiAbp.Core" Version="$(SufiVersion)" />
-	    <PackageReference Include="SufiChain.SufiAbp.Data" Version="$(SufiVersion)" />
+	    <PackageReference Include="SufiChain.SufiPlatform.Core" Version="$(SufiVersion)" />
+	    <PackageReference Include="SufiChain.SufiPlatform.Data" Version="$(SufiVersion)" />
 	    <ProjectReference Include="..\MyCompanyName.MyProjectName.Domain.Shared\MyCompanyName.MyProjectName.Domain.Shared.csproj" />
-	    <PackageReference Include="SufiChain.SufiAbp.Communications" Version="$(SufiVersion)" />
-	    <PackageReference Include="SufiChain.SufiAbp.Calendar.Domain" Version="$(SufiVersion)" />
-	    <PackageReference Include="SufiChain.SufiAbp.LocalizationManagement.Domain" Version="$(SufiVersion)" />
-	    <PackageReference Include="SufiChain.SufiAbp.AI.Domain" Version="$(SufiVersion)" />
-	    <PackageReference Include="SufiChain.SufiAbp.FileManager.Domain" Version="$(SufiVersion)" />
-     <PackageReference Include="SufiChain.SufiAbp.PermissionManagement.Domain" Version="$(SufiVersion)" />
-     <PackageReference Include="SufiChain.SufiAbp.SettingManagement.Domain" Version="$(SufiVersion)" />
-     <PackageReference Include="SufiChain.SufiAbp.FeatureManagement.Domain" Version="$(SufiVersion)" />
-     <PackageReference Include="SufiChain.SufiAbp.AuditLogging.Domain" Version="$(SufiVersion)" />
-     <PackageReference Include="SufiChain.SufiAbp.BackgroundJobs.Domain" Version="$(SufiVersion)" />
-     <PackageReference Include="SufiChain.SufiAbp.Identity.Domain" Version="$(SufiVersion)" />
-     <PackageReference Include="SufiChain.SufiAbp.PermissionManagement.Domain.Identity" Version="$(SufiVersion)" />
-     <PackageReference Include="SufiChain.SufiAbp.Users.Domain" Version="$(SufiVersion)" />
-     <PackageReference Include="SufiChain.SufiAbp.TenantManagement.Domain" Version="$(SufiVersion)" />
-     <PackageReference Include="SufiChain.SufiAbp.OpenIddict.Domain" Version="$(SufiVersion)" />
-     <PackageReference Include="SufiChain.SufiAbp.PermissionManagement.Domain.OpenIddict" Version="$(SufiVersion)" />
-     <PackageReference Include="SufiChain.SufiAbp.ShortLinkGenerator.Domain" Version="$(SufiVersion)" />
-     <PackageReference Include="SufiChain.SufiAbp.TagsManagement.Domain" Version="$(SufiVersion)" />
-     <PackageReference Include="SufiChain.SufiAbp.MenuManagement.Domain" Version="$(SufiVersion)" />
+	    <PackageReference Include="SufiChain.SufiPlatform.SufiCom" Version="$(SufiVersion)" />
+	    <PackageReference Include="SufiChain.SufiPlatform.Calendar.Domain" Version="$(SufiVersion)" />
+	    <PackageReference Include="SufiChain.SufiPlatform.Localization.Domain" Version="$(SufiVersion)" />
+	    <PackageReference Include="SufiChain.SufiPlatform.SufiAI.Domain" Version="$(SufiVersion)" />
+	    <PackageReference Include="SufiChain.SufiPlatform.FileManager.Domain" Version="$(SufiVersion)" />
+     <PackageReference Include="SufiChain.SufiPlatform.Permissions.Domain" Version="$(SufiVersion)" />
+     <PackageReference Include="SufiChain.SufiPlatform.Settings.Domain" Version="$(SufiVersion)" />
+     <PackageReference Include="SufiChain.SufiPlatform.Features.Domain" Version="$(SufiVersion)" />
+     <PackageReference Include="SufiChain.SufiPlatform.AuditLogging.Domain" Version="$(SufiVersion)" />
+     <PackageReference Include="SufiChain.SufiPlatform.BackgroundJobs.Domain" Version="$(SufiVersion)" />
+     <PackageReference Include="SufiChain.SufiPlatform.Identity.Domain" Version="$(SufiVersion)" />
+     <PackageReference Include="SufiChain.SufiPlatform.Permissions.Domain.Identity" Version="$(SufiVersion)" />
+     <PackageReference Include="SufiChain.SufiPlatform.Users.Domain" Version="$(SufiVersion)" />
+     <PackageReference Include="SufiChain.SufiPlatform.Tenants.Domain" Version="$(SufiVersion)" />
+     <PackageReference Include="SufiChain.SufiPlatform.OpenIddict.Domain" Version="$(SufiVersion)" />
+     <PackageReference Include="SufiChain.SufiPlatform.Permissions.Domain.OpenIddict" Version="$(SufiVersion)" />
+     <PackageReference Include="SufiChain.SufiPlatform.ShortLinks.Domain" Version="$(SufiVersion)" />
+     <PackageReference Include="SufiChain.SufiPlatform.Tags.Domain" Version="$(SufiVersion)" />
+     <PackageReference Include="SufiChain.SufiPlatform.Menus.Domain" Version="$(SufiVersion)" />
 	  </ItemGroup>
 	  </TEMPLATE-ONLY> -->
 
