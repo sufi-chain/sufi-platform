@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFrameworks>netstandard2.1;net10.0</TargetFrameworks>
+    <Nullable>enable</Nullable>
+    <RootNamespace>SufiChain.SufiPlatform.Tags</RootNamespace>
+    <GenerateEmbeddedFilesManifest>true</GenerateEmbeddedFilesManifest>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Volo.Abp.Ddd.Domain.Shared" Version="$(AbpVersion)" />
+    <ProjectReference Include="../../../../framework/SufiChain.SufiPlatform.Validation/SufiChain.SufiPlatform.Validation.csproj" />
+    <ProjectReference Include="../../../../framework/SufiChain.SufiPlatform.Features/SufiChain.SufiPlatform.Features.csproj" />
+    <ProjectReference Include="..\..\..\..\framework\SufiChain.SufiPlatform.Authorization\SufiChain.SufiPlatform.Authorization.csproj" />
+    <PackageReference Include="Microsoft.Extensions.FileProviders.Embedded" Version="$(MicrosoftExtensionsFileProvidersEmbeddedVersion)" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Localization\Tags\*.json" />
+    <Content Remove="Localization\Tags\*.json" />
+  </ItemGroup>
+</Project>
+

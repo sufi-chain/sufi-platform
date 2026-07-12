@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <RootNamespace>SufiChain.SufiPlatform.Localization</RootNamespace>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <PackageId>SufiChain.SufiPlatform.Localization.HttpApi</PackageId>
+    <Description>Localization management module HTTP API for Sufi Platform.</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../../../../framework/SufiChain.SufiPlatform.AspNetCore.Mvc/SufiChain.SufiPlatform.AspNetCore.Mvc.csproj" />
+    <ProjectReference Include="../../../../framework/SufiChain.SufiPlatform.UI.Domain.Shared/SufiChain.SufiPlatform.UI.Domain.Shared.csproj" />
+    <ProjectReference Include="..\SufiChain.SufiPlatform.Localization.Application.Contracts\SufiChain.SufiPlatform.Localization.Application.Contracts.csproj" />
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,11 @@
+{
+  "culture": "fa",
+  "texts": {
+    "Feature:SettingsGroup": "مدیریت تنظیمات",
+    "Feature:SettingsEnable": "فعال‌سازی مدیریت تنظیمات",
+    "Feature:SettingsEnableDescription": "سیستم مدیریت تنظیمات را در برنامه فعال می‌کند.",
+    "Feature:AllowChangingEmailSettings": "اجازه تغییر تنظیمات ایمیل",
+    "Feature:AllowChangingEmailSettingsDescription": "اجازه تغییر تنظیمات ایمیل را می‌دهد.",
+    "Permission:Identity": "تنظیمات هویت"
+  }
+}

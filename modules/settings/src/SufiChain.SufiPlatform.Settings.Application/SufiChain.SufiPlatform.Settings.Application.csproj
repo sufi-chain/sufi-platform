@@ -1,0 +1,30 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>SufiChain.SufiPlatform.Settings</RootNamespace>
+    <IsPackable>true</IsPackable>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <PackageId>SufiChain.SufiPlatform.Settings.Application</PackageId>
+    <Description>Setting management module application services for Sufi Platform - wraps ABP setting management application services.</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\account\src\SufiChain.SufiPlatform.Account.Application.Contracts\SufiChain.SufiPlatform.Account.Application.Contracts.csproj" />
+    <ProjectReference Include="..\..\..\identity\src\SufiChain.SufiPlatform.Identity.Domain.Shared\SufiChain.SufiPlatform.Identity.Domain.Shared.csproj" />
+    <ProjectReference Include="../../../../framework/SufiChain.SufiPlatform.Ddd.Application/SufiChain.SufiPlatform.Ddd.Application.csproj" />
+    <ProjectReference Include="../../../../framework/SufiChain.SufiPlatform.SufiCom/SufiChain.SufiPlatform.SufiCom.csproj" />
+    <PackageReference Include="Volo.Abp.Timing" Version="$(AbpVersion)" />
+    <ProjectReference Include="..\..\..\..\framework\SufiChain.SufiPlatform.SufiCom\SufiChain.SufiPlatform.SufiCom.csproj" />
+    <ProjectReference Include="..\SufiChain.SufiPlatform.Settings.Domain\SufiChain.SufiPlatform.Settings.Domain.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\SufiChain.SufiPlatform.Settings.Application.Contracts\SufiChain.SufiPlatform.Settings.Application.Contracts.csproj" />
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <RootNamespace>SufiChain.SufiPlatform.FileManager</RootNamespace>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <PackageId>SufiChain.SufiPlatform.FileManager.MongoDB</PackageId>
+    <Description>File manager module MongoDB implementation for Sufi Platform.</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Volo.Abp.MongoDB" Version="$(AbpVersion)" />
+    <ProjectReference Include="../../../blob-database/src/SufiChain.SufiPlatform.BlobDatabase.MongoDB/SufiChain.SufiPlatform.BlobDatabase.MongoDB.csproj" />
+    <ProjectReference Include="..\SufiChain.SufiPlatform.FileManager.Domain\SufiChain.SufiPlatform.FileManager.Domain.csproj" />
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,108 @@
+using Microsoft.Extensions.Logging;
+using SufiChain.SufiPlatform.SufiCom.Email;
+
+namespace SufiChain.SufiPlatform.Settings;
+
+[Microsoft.AspNetCore.Authorization.Authorize(SettingsPermissions.Emailing)]
+public class EmailSettingsAppService : SettingsAppServiceBase, IEmailSettingsAppService
+{
+    protected ISettingManager SettingManager { get; }
+    protected IEmailSender EmailSender { get; }
+
+    public EmailSettingsAppService(ISettingManager settingManager, IEmailSender emailSender)
+    {
+        SettingManager = settingManager;
+        EmailSender = emailSender;
+    }
+
+    public virtual async Task<EmailSettingsDto> GetAsync()
+    {
+        await CheckFeatureAsync();
+
+        var settingsDto = new EmailSettingsDto
+        {
+            SmtpHost = await SettingProvider.GetOrNullAsync(EmailSettingNames.Smtp.Host),
+            SmtpPort = ToInt32(await SettingProvider.GetOrNullAsync(EmailSettingNames.Smtp.Port)),
+            SmtpUserName = await SettingProvider.GetOrNullAsync(EmailSettingNames.Smtp.UserName),
+            SmtpDomain = await SettingProvider.GetOrNullAsync(EmailSettingNames.Smtp.Domain),
+            SmtpEnableSsl = ToBoolean(await SettingProvider.GetOrNullAsync(EmailSettingNames.Smtp.EnableSsl)),
+            SmtpUseDefaultCredentials = ToBoolean(await SettingProvider.GetOrNullAsync(EmailSettingNames.Smtp.UseDefaultCredentials)),
+            DefaultFromAddress = await SettingProvider.GetOrNullAsync(EmailSettingNames.DefaultFromAddress),
+            DefaultFromDisplayName = await SettingProvider.GetOrNullAsync(EmailSettingNames.DefaultFromDisplayName),
+        };
+
+        if (CurrentTenant.IsAvailable)
+        {
+            settingsDto.SmtpHost = await SettingManager.GetOrNullForTenantAsync(EmailSettingNames.Smtp.Host, CurrentTenant.Id!.Value, false);
+            settingsDto.SmtpUserName = await SettingManager.GetOrNullForTenantAsync(EmailSettingNames.Smtp.UserName, CurrentTenant.Id!.Value, false);
+            settingsDto.SmtpDomain = await SettingManager.GetOrNullForTenantAsync(EmailSettingNames.Smtp.Domain, CurrentTenant.Id!.Value, false);
+        }
+
+        return settingsDto;
+    }
+
+    public virtual async Task UpdateAsync(UpdateEmailSettingsDto input)
+    {
+        await CheckFeatureAsync();
+
+        await SettingManager.SetForTenantOrGlobalAsync(CurrentTenant.Id, EmailSettingNames.Smtp.Host, input.SmtpHost);
+        await SettingManager.SetForTenantOrGlobalAsync(CurrentTenant.Id, EmailSettingNames.Smtp.Port, input.SmtpPort.ToString());
+        await SettingManager.SetForTenantOrGlobalAsync(CurrentTenant.Id, EmailSettingNames.Smtp.UserName, input.SmtpUserName);
+
+        if (!string.IsNullOrWhiteSpace(input.SmtpPassword))
+        {
+            await SettingManager.SetForTenantOrGlobalAsync(CurrentTenant.Id, EmailSettingNames.Smtp.Password, input.SmtpPassword);
+        }
+
+        await SettingManager.SetForTenantOrGlobalAsync(CurrentTenant.Id, EmailSettingNames.Smtp.Domain, input.SmtpDomain);
+        await SettingManager.SetForTenantOrGlobalAsync(CurrentTenant.Id, EmailSettingNames.Smtp.EnableSsl, input.SmtpEnableSsl.ToString());
+        await SettingManager.SetForTenantOrGlobalAsync(CurrentTenant.Id, EmailSettingNames.Smtp.UseDefaultCredentials, input.SmtpUseDefaultCredentials.ToString().ToLowerInvariant());
+        await SettingManager.SetForTenantOrGlobalAsync(CurrentTenant.Id, EmailSettingNames.DefaultFromAddress, input.DefaultFromAddress);
+        await SettingManager.SetForTenantOrGlobalAsync(CurrentTenant.Id, EmailSettingNames.DefaultFromDisplayName, input.DefaultFromDisplayName);
+    }
+
+    [Microsoft.AspNetCore.Authorization.Authorize(SettingsPermissions.EmailingTest)]
+    public virtual async Task SendTestEmailAsync(SendTestEmailInput input)
+    {
+        await CheckFeatureAsync();
+
+        try
+        {
+            await SendEmailByRegisteredSenderAsync(input);
+        }
+        catch (Exception e)
+        {
+            Logger.LogError(e, "Error sending test email.");
+            throw new ApplicationException(L["MailSendingFailed"]);
+        }
+    }
+
+    protected virtual async Task CheckFeatureAsync()
+    {
+        if (!await FeatureChecker.IsEnabledAsync(SettingsFeatures.Enable))
+        {
+            throw new ApplicationException($"Feature is disabled: {SettingsFeatures.Enable}");
+        }
+
+        if (CurrentTenant.IsAvailable &&
+            !await FeatureChecker.IsEnabledAsync(SettingsFeatures.AllowChangingEmailSettings))
+        {
+            throw new ApplicationException($"Feature is disabled: {SettingsFeatures.AllowChangingEmailSettings}");
+        }
+    }
+
+    protected virtual Task SendEmailByRegisteredSenderAsync(SendTestEmailInput input)
+    {
+        return EmailSender.SendAsync(to : input.SenderEmailAddress, from : input.TargetEmailAddress, subject: input.Subject, body: input.Body);
+    }
+
+    protected virtual int ToInt32(string? value)
+    {
+        return int.TryParse(value, out var result) ? result : 0;
+    }
+
+    protected virtual bool ToBoolean(string? value)
+    {
+        return bool.TryParse(value, out var result) && result;
+    }
+}

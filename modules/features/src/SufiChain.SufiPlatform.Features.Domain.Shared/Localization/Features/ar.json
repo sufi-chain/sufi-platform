@@ -1,0 +1,32 @@
+{
+  "culture": "ar",
+  "texts": {
+    "Menu:Features": "إدارة الميزات",
+    "Menu:Features": "الميزات",
+    "Features": "الميزات",
+    "Feature": "ميزة",
+    "FeaturesSavedSuccessfully": "تم حفظ الميزات بنجاح",
+    "ManageFeatures": "إدارة الميزات",
+    "ResetToDefault": "إعادة التعيين للافتراضي",
+    "AllFeatures": "جميع الميزات",
+    "FeatureGroup": "مجموعة الميزات",
+    "FeatureName": "اسم الميزة",
+    "FeatureValue": "قيمة الميزة",
+    "Enabled": "مفعّل",
+    "Disabled": "معطّل",
+    "Save": "حفظ",
+    "Cancel": "إلغاء",
+    "Actions": "الإجراءات",
+    "SearchFeatures": "البحث في الميزات...",
+    "SelectAllInAllTabs": "تحديد الكل في جميع التبويبات",
+    "SelectAllInThisTab": "تحديد الكل في هذا التبويب",
+    "LoadingFeatures": "جاري تحميل الميزات...",
+    "NoFeaturesAvailable": "لا توجد ميزات متاحة",
+    "FeaturesResetSuccessfully": "تم إعادة تعيين الميزات بنجاح",
+    "ResetFeaturesConfirmation": "هل أنت متأكد أنك تريد إعادة تعيين جميع الميزات إلى قيمها الافتراضية؟",
+    "Permission:Features": "إدارة الميزات",
+    "Permission:Features.Features": "الميزات",
+    "Permission:Features.ManageHostFeatures": "إدارة ميزات المضيف",
+    "Permission:Features.ManageTenantFeatures": "إدارة ميزات المستأجر"
+  }
+}

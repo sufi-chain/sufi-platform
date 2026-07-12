@@ -1,0 +1,95 @@
+@namespace SufiChain.SufiPlatform.Localization.Blazor.Pages
+@page "/panel/admin/localization-management/resources"
+@attribute [Authorize(LocalizationPermissions.Resources.Default)]
+@inherits LocalizationComponentBase
+
+<SufiPageToolbar>
+    <AuthorizeView Policy="@LocalizationPermissions.Resources.Create">
+        <SbButton Color="SbColor.Primary" OnClick="@ShowCreateDialog">
+            <StartIcon><SbIcon Name="plus" /></StartIcon>
+            <ChildContent>@L["Create"]</ChildContent>
+        </SbButton>
+    </AuthorizeView>
+</SufiPageToolbar>
+
+<SbStack Direction="SbStackDirection.Column" Gap="4">
+    <SbCard>
+        <ChildContent>
+            @if (IsOperationLoading(LoadingKeys.LoadItems))
+            {
+                <SbSkeleton Variant="SbSkeletonVariant.Text" />
+            }
+            else
+            {
+                <SbDataGrid TItem="LocalizationResourceSummaryDto"
+                            Items="_resources"
+                            Striped="true"
+                            Hoverable="true">
+                    <SbColumn TItem="LocalizationResourceSummaryDto" Title="@L["Actions"]" Width="120px">
+                        <CellTemplate Context="ctx3">
+                            <SbButton Size="SbSize.Sm" Variant="SbButtonVariant.Link" OnClick="@(() => ViewTexts(ctx3.Item.ResourceName))">
+                                <StartIcon><SbIcon Name="list" /></StartIcon>
+                                <ChildContent>@L["View"]</ChildContent>
+                            </SbButton>
+                        </CellTemplate>
+                    </SbColumn>
+                    <SbColumn TItem="LocalizationResourceSummaryDto" Field="ResourceName" Title="@L["ResourceName"]" />
+                    <SbColumn TItem="LocalizationResourceSummaryDto" Field="DisplayName" Title="@L["DisplayName"]" />
+                    <SbColumn TItem="LocalizationResourceSummaryDto" Title="@L["SupportedCultures"]">
+                        <CellTemplate Context="ctx1">
+                            <SbStack Direction="SbStackDirection.Row" Gap="1" Wrap="true">
+                                @foreach (var culture in ctx1.Item.SupportedCultures)
+                                {
+                                    <SbChip Size="SbSize.Sm">@culture</SbChip>
+                                }
+                            </SbStack>
+                        </CellTemplate>
+                    </SbColumn>
+                    <SbColumn TItem="LocalizationResourceSummaryDto" Field="TextCount" Title="@L["LocalizationTexts"]" Width="120px" />
+                    <SbColumn TItem="LocalizationResourceSummaryDto" Title="@L["IsEnabled"]" Width="100px">
+                        <CellTemplate Context="ctx2">
+                            @if (ctx2.Item.IsEnabled)
+                            {
+                                <SbBadge Color="SbColor.Success">@L["Yes"]</SbBadge>
+                            }
+                            else
+                            {
+                                <SbBadge Color="SbColor.Danger">@L["No"]</SbBadge>
+                            }
+                        </CellTemplate>
+                    </SbColumn>
+                </SbDataGrid>
+            }
+        </ChildContent>
+    </SbCard>
+</SbStack>
+
+<!-- Create Dialog -->
+<SbDialog Open="@_showCreateDialog" OnCloseButtonClick="@(() => _showCreateDialog = false)" OpenChanged="@((bool v) => { _showCreateDialog = v; })" Title="@L["Create"]" Size="SbDialogSize.Sm">
+    <ChildContent>
+        <SbStack Gap="3">
+            <SbTextField TValue="string"
+                         @bind-Value="_newResource.ResourceName"
+                         Label="@L["ResourceName"]"
+                         Required="true" />
+            <SbTextField TValue="string"
+                         @bind-Value="_newResource.DisplayName"
+                         Label="@L["DisplayName"]" />
+            <SbTextField TValue="string"
+                         @bind-Value="_newResource.DefaultCulture"
+                         Label="@L["DefaultCulture"]" />
+            <SbCheckbox @bind-Value="_newResource.IsEnabled"
+                        Label="@L["IsEnabled"]" />
+        </SbStack>
+    </ChildContent>
+    <Footer>
+        <SbStack Direction="SbStackDirection.Row" Gap="2" Justify="SbJustify.End">
+            <SbButton Variant="SbButtonVariant.Solid" OnClick="@(() => _showCreateDialog = false)">
+                @L["Cancel"]
+            </SbButton>
+            <SbButton Color="SbColor.Primary" OnClick="@CreateResourceAsync">
+                @L["Save"]
+            </SbButton>
+        </SbStack>
+    </Footer>
+</SbDialog>

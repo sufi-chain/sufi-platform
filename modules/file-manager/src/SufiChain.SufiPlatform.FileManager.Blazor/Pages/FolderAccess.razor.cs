@@ -1,0 +1,204 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Components;
+using SufiChain.SufiPlatform.FileManager.FileFolders;
+using SufiChain.SufiPlatform.FileManager.Localization;
+
+namespace SufiChain.SufiPlatform.FileManager.Blazor.Pages;
+
+/// <summary>
+/// Admin page for assigning folder access grants (user / role / organization unit).
+/// </summary>
+public partial class FolderAccess
+{
+    [Inject] private IFolderAppService FolderAppService { get; set; } = default!;
+
+    private Guid? _selectedFolderId;
+    private List<FolderTreeNodeDto> _flatFolders = new();
+    private List<FolderPermissionDto> _permissions = new();
+    private readonly FolderGrantInput _addGrant = new();
+
+    private static readonly FolderGrantType[] _grantTypes =
+    {
+        FolderGrantType.User,
+        FolderGrantType.Role,
+        FolderGrantType.OrganizationUnit
+    };
+
+    private static readonly FolderPermissionLevelDto[] _levels =
+    {
+        FolderPermissionLevelDto.Read,
+        FolderPermissionLevelDto.Write,
+        FolderPermissionLevelDto.Delete,
+        FolderPermissionLevelDto.Share,
+        FolderPermissionLevelDto.Full
+    };
+
+    protected override async Task OnInitializedAsync()
+    {
+        var tree = await FolderAppService.GetTreeAsync();
+        _flatFolders = Flatten(tree).Where(n => n.Id.HasValue).ToList()!;
+    }
+
+    private static IEnumerable<FolderTreeNodeDto?> Flatten(IEnumerable<FolderTreeNodeDto> nodes)
+    {
+        foreach (var node in nodes)
+        {
+            yield return node;
+            if (node.Children != null)
+            {
+                foreach (var child in Flatten(node.Children))
+                {
+                    yield return child;
+                }
+            }
+        }
+    }
+
+    private async Task OnFolderChangedAsync(Guid? folderId)
+    {
+        _selectedFolderId = folderId;
+        if (folderId.HasValue)
+        {
+            _permissions = await FolderAppService.GetPermissionsAsync(folderId.Value);
+        }
+        else
+        {
+            _permissions.Clear();
+        }
+    }
+
+    private Task OnGrantTypeChangedAsync(FolderGrantType grantType)
+    {
+        _addGrant.GrantType = grantType;
+        _addGrant.PrincipalId = null;
+        return Task.CompletedTask;
+    }
+
+    private Task OnPrincipalIdChangedAsync(Guid? principalId)
+    {
+        _addGrant.PrincipalId = principalId;
+        return Task.CompletedTask;
+    }
+
+    private async Task AddGrantAsync()
+    {
+        if (!_selectedFolderId.HasValue || !_addGrant.PrincipalId.HasValue || _addGrant.PrincipalId == Guid.Empty)
+        {
+            return;
+        }
+
+        var principalId = _addGrant.PrincipalId.Value;
+
+        var dto = new FolderPermissionDto
+        {
+            Level = _addGrant.Level,
+            InheritToChildren = _addGrant.InheritToChildren
+        };
+
+        switch (_addGrant.GrantType)
+        {
+            case FolderGrantType.User:
+                dto.UserId = principalId;
+                break;
+            case FolderGrantType.Role:
+                dto.RoleId = principalId;
+                break;
+            case FolderGrantType.OrganizationUnit:
+                dto.OrganizationUnitId = principalId;
+                break;
+        }
+
+        var updated = _permissions.Append(dto).ToList();
+        await SaveAsync(updated);
+        _addGrant.PrincipalId = null;
+    }
+
+    private async Task RemoveGrantAsync(Guid? permissionId)
+    {
+        if (!permissionId.HasValue)
+        {
+            return;
+        }
+
+        var updated = _permissions.Where(p => p.Id != permissionId.Value).ToList();
+        await SaveAsync(updated);
+    }
+
+    private async Task ClearAllAsync()
+    {
+        await SaveAsync(new List<FolderPermissionDto>());
+    }
+
+    private async Task SaveAsync(List<FolderPermissionDto> permissions)
+    {
+        if (!_selectedFolderId.HasValue)
+        {
+            return;
+        }
+
+        // Strip ids so the backend treats the set as the new full state.
+        foreach (var p in permissions)
+        {
+            p.Id = null;
+        }
+
+        await FolderAppService.SetPermissionsAsync(
+            _selectedFolderId.Value,
+            new SetFolderPermissionsInput { Permissions = permissions });
+
+        _permissions = await FolderAppService.GetPermissionsAsync(_selectedFolderId.Value);
+    }
+
+    private string GetFolderDisplayLabel(FolderTreeNodeDto node)
+    {
+        var displayName = node.Type == FolderTypeDto.Structure && !string.IsNullOrWhiteSpace(node.StructureKey)
+            ? ResolveStructureDisplayName(node.StructureKey, node.Name)
+            : node.Name;
+
+        return $"({node.Path}) {displayName}";
+    }
+
+    private string GrantTypeLabel(FolderGrantType grantType) => grantType switch
+    {
+        FolderGrantType.User => L["FolderAccess:User"],
+        FolderGrantType.Role => L["FolderAccess:Role"],
+        FolderGrantType.OrganizationUnit => L["FolderAccess:OrganizationUnit"],
+        _ => grantType.ToString()
+    };
+
+    private string PrincipalLabel => GrantTypeLabel(_addGrant.GrantType);
+
+    private string LevelLabel(FolderPermissionLevelDto level) => level switch
+    {
+        FolderPermissionLevelDto.Read => L["FolderAccess:Read"],
+        FolderPermissionLevelDto.Write => L["FolderAccess:Write"],
+        FolderPermissionLevelDto.Delete => L["FolderAccess:Delete"],
+        FolderPermissionLevelDto.Share => L["FolderAccess:Share"],
+        FolderPermissionLevelDto.Full => L["FolderAccess:Full"],
+        _ => level.ToString()
+    };
+}
+
+/// <summary>
+/// The kind of principal a folder grant applies to.
+/// </summary>
+public enum FolderGrantType
+{
+    User = 0,
+    Role = 1,
+    OrganizationUnit = 2
+}
+
+/// <summary>
+/// Backing model for the add-grant form.
+/// </summary>
+public class FolderGrantInput
+{
+    public FolderGrantType GrantType { get; set; } = FolderGrantType.User;
+    public Guid? PrincipalId { get; set; }
+    public FolderPermissionLevelDto Level { get; set; } = FolderPermissionLevelDto.Read;
+    public bool InheritToChildren { get; set; } = true;
+}

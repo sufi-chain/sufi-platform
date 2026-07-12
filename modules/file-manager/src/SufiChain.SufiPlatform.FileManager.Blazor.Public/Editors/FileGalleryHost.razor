@@ -1,0 +1,26 @@
+@using SufiChain.SufiPlatform.FileManager.Blazor.Public.Editors
+@using SufiChain.SufiPlatform.FileManager.FileItems
+@using SufiChain.SufiPlatform.FileManager.Localization
+@using Microsoft.Extensions.Localization
+@implements IDisposable
+@inject IStringLocalizer<SufiFileManagerResource> L
+@inherits SufiChain.SufiPlatform.UI.Blazor.SufiComponentBase
+
+@if (_isImageGalleryOpen)
+{
+    <FileGalleryDialog IsOpen="@_isImageGalleryOpen"
+                       IsOpenChanged="@OnImageGalleryOpenChangedAsync"
+                       Title="Select Image"
+                       ImagesOnly="true"
+                       OnFileSelected="@OnImageSelected" />
+}
+
+@if (_isFileGalleryOpen)
+{
+    <FileGalleryDialog IsOpen="@_isFileGalleryOpen"
+                       IsOpenChanged="@OnFileGalleryOpenChangedAsync"
+                       Title="Select File"
+                       Description="@L["SelectFileToInsertAsLink"].Value"
+                       ImagesOnly="false"
+                       OnFileSelected="@OnFileSelected" />
+}

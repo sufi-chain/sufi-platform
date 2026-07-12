@@ -1,0 +1,33 @@
+<Project Sdk="Microsoft.NET.Sdk.Razor">
+
+  <PropertyGroup>
+    <LangVersion>latest</LangVersion>
+    <TargetFramework>net10.0</TargetFramework>
+    <RootNamespace>SufiChain.SufiPlatform.FileManager.Blazor.Server</RootNamespace>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <IsPackable>true</IsPackable>
+    <OutputType>Library</OutputType>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <PackageId>SufiChain.SufiPlatform.FileManager.Blazor.Server</PackageId>
+    <Description>File manager module Blazor Server components for Sufi Platform - server-side authentication and file operations.</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Required for IHttpContextAccessor and authentication extensions (Server-only) -->
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- ABP Core for module system -->
+    <ProjectReference Include="../../../../framework/SufiChain.SufiPlatform.Core/SufiChain.SufiPlatform.Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Shared FileManager Blazor components -->
+    <ProjectReference Include="..\SufiChain.SufiPlatform.FileManager.Blazor\SufiChain.SufiPlatform.FileManager.Blazor.csproj" />
+  </ItemGroup>
+
+</Project>

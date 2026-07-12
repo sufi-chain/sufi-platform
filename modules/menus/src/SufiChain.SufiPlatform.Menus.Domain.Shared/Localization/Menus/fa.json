@@ -1,0 +1,16 @@
+{
+  "culture": "fa",
+  "texts": {
+    "Permission:SufiMenus": "مدیریت منو",
+    "Permission:SufiMenus.Menus": "منوها",
+    "Permission:SufiMenus.Menus.Create": "ایجاد منو",
+    "Permission:SufiMenus.Menus.Edit": "ویرایش منو",
+    "Permission:SufiMenus.Menus.Delete": "حذف منو",
+    "Permission:SufiMenus.Menus.ManageItems": "مدیریت آیتم‌های منو",
+    "Menu:SufiMenus": "مدیریت منو",
+    "Menu:SufiMenus.Menus": "منوها",
+    "ContextType:Public": "عمومی",
+    "ContextType:KnowledgeBase.Project": "پروژه پایگاه دانش",
+    "DisplayNameLocalizationMode": "حالت نام نمایشی"
+  }
+}

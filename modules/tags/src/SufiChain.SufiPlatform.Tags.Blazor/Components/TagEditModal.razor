@@ -1,0 +1,29 @@
+@namespace SufiChain.SufiPlatform.Tags.Blazor.Components
+@inherits TagsComponentBase
+
+<SbDialog Open="@Open" OpenChanged="@SetOpenAsync" Size="SbDialogSize.Md" Title="@L["EditTag"]">
+    <ChildContent>
+        <SbForm Model="_model" OnValidSubmit="OnValidSubmitAsync">
+            <ChildContent>
+                <SbStack Gap="3">
+                    <SbTextField @bind-Value="_model.Name"
+                                 Label="@L["TagName"]"
+                                 Required="true" />
+
+                    <SbTextField @bind-Value="_model.Scope"
+                                 Label="@L["Scope"]"
+                                 Required="true" />
+
+                    <SbTextField @bind-Value="_model.Color"
+                                 Label="@L["Color"]" />
+                </SbStack>
+            </ChildContent>
+            <FooterContent>
+                <SbStack Direction="SbStackDirection.Row" Gap="2" Justify="SbJustify.End">
+                    <SbButton Variant="SbButtonVariant.Outline" OnClick="Hide">@L["Cancel"]</SbButton>
+                    <SbButton Type="submit" Color="SbColor.Primary" Loading="IsOperationLoading(LoadingKeys.Save)">@L["Save"]</SbButton>
+                </SbStack>
+            </FooterContent>
+        </SbForm>
+    </ChildContent>
+</SbDialog>

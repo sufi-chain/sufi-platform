@@ -1,0 +1,21 @@
+@namespace SufiChain.SufiPlatform.Tags.Blazor.Components
+@inherits TagsComponentBase
+
+<SbTagAutocomplete TItem="TagDto"
+                   SelectedItems="SelectedItems"
+                   SelectedItemsChanged="SelectedItemsChanged"
+                   TextField="@(tag => tag.Name)"
+                   ValueField="@(tag => tag.Id)"
+                   SearchFunc="ResolveSearchAsync"
+                   OnCreateAsync="@(AllowCreate ? ResolveCreateAsync : null)"
+                   AllowCreate="@AllowCreate"
+                   MinLength="0"
+                   MaxResults="20"
+                   MaxTags="MaxTags"
+                   Label="Label"
+                   Placeholder="Placeholder"
+                   Disabled="Disabled"
+                   ReadOnly="ReadOnly"
+                   Required="Required"
+                   Class="Class"
+                   Style="Style" />

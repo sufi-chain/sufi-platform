@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+
+  <PropertyGroup>
+    <TargetFrameworks>netstandard2.1;net10.0</TargetFrameworks>
+    <AssemblyName>SufiChain.SufiPlatform.Users</AssemblyName>
+    <PackageId>SufiChain.SufiPlatform.Users</PackageId>
+    <RootNamespace>SufiChain.SufiPlatform.Users</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\SufiChain.SufiPlatform.Users.Abstractions\SufiChain.SufiPlatform.Users.Abstractions.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Remove="IExternalUserLookupServiceProvider.cs" />
+    <Compile Remove="IRoleData.cs" />
+    <Compile Remove="IUserData.cs" />
+    <Compile Remove="RoleData.cs" />
+    <Compile Remove="SufiUsersAbstractionModule.cs" />
+    <Compile Remove="UserData.cs" />
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,40 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <RootNamespace>SufiChain.SufiPlatform.FileManager</RootNamespace>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <PackageId>SufiChain.SufiPlatform.FileManager.Application</PackageId>
+    <Description>File manager module application services for Sufi Platform - file operations and image processing.</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+    <ProjectReference Include="../../../../framework/SufiChain.SufiPlatform.Core/SufiChain.SufiPlatform.Core.csproj" />
+    <PackageReference Include="Volo.Abp.Mapperly" Version="$(AbpVersion)" />
+    <PackageReference Include="Volo.Abp.Caching" Version="$(AbpVersion)" />
+    <PackageReference Include="Volo.Abp.BackgroundWorkers" Version="$(AbpVersion)" />
+    <ProjectReference Include="../../../tenants/src/SufiChain.SufiPlatform.Tenants.Domain/SufiChain.SufiPlatform.Tenants.Domain.csproj" />
+    <ProjectReference Include="../../../../framework/SufiChain.SufiPlatform.Ddd.Application/SufiChain.SufiPlatform.Ddd.Application.csproj" />
+    <PackageReference Include="Volo.Abp.BlobStoring" Version="$(AbpVersion)" />
+    <PackageReference Include="Volo.Abp.BlobStoring.FileSystem" Version="$(AbpVersion)" />
+    <PackageReference Include="Volo.Abp.BlobStoring.Minio" Version="$(AbpVersion)" />
+    <ProjectReference Include="..\..\..\..\framework\SufiChain.SufiPlatform.BlobStoring.S3Provider\SufiChain.SufiPlatform.BlobStoring.S3Provider.csproj" />
+    <PackageReference Include="Volo.Abp.Security" Version="$(AbpVersion)" />
+    <ProjectReference Include="../../../settings/src/SufiChain.SufiPlatform.Settings.Domain/SufiChain.SufiPlatform.Settings.Domain.csproj" />
+    <PackageReference Include="Microsoft.Data.SqlClient" Version="$(MicrosoftDataSqlClientVersion)" />
+    <PackageReference Include="Volo.Abp.Threading" Version="$(AbpVersion)" />
+    <ProjectReference Include="../../../../framework/SufiChain.SufiPlatform.Data/SufiChain.SufiPlatform.Data.csproj" />
+    <PackageReference Include="Volo.Abp.Guids" Version="$(AbpVersion)" />
+    <PackageReference Include="SixLabors.ImageSharp" Version="$(SixLaborsImageSharpVersion)" />
+    <PackageReference Include="FFMpegCore" Version="$(FFMpegCoreVersion)" />
+    <ProjectReference Include="..\..\..\localization\src\SufiChain.SufiPlatform.Localization.Application.Contracts\SufiChain.SufiPlatform.Localization.Application.Contracts.csproj" />
+    <ProjectReference Include="..\SufiChain.SufiPlatform.FileManager.Application.Contracts\SufiChain.SufiPlatform.FileManager.Application.Contracts.csproj" />
+    <ProjectReference Include="..\SufiChain.SufiPlatform.FileManager.Domain.Shared\SufiChain.SufiPlatform.FileManager.Domain.Shared.csproj" />
+    <ProjectReference Include="..\SufiChain.SufiPlatform.FileManager.Domain\SufiChain.SufiPlatform.FileManager.Domain.csproj" />
+  </ItemGroup>
+
+</Project>

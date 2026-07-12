@@ -1,0 +1,18 @@
+{
+  "culture": "fa",
+  "texts": {
+    "Permission:SufiTags": "مدیریت برچسب‌ها",
+    "Permission:SufiTags.Tags": "برچسب‌ها",
+    "Permission:SufiTags.TagLinks": "پیوندهای برچسب",
+    "Menu:SufiTags": "مدیریت برچسب‌ها",
+    "Menu:SufiTags.Tags": "برچسب‌ها",
+    "Menu:SufiTags.TagLinks": "پیوندهای برچسب",
+    "Tags": "برچسب‌ها",
+    "ViewTagLinks": "مشاهده پیوندها",
+    "TagLinksFor": "پیوندها برای {0}",
+    "NoTagLinksFound": "این برچسب به هیچ موجودیتی پیوند نشده است.",
+    "UnassignTagLinkConfirmation": "این برچسب از '{0}' ({1}) حذف شود؟",
+    "Unassign": "حذف پیوند",
+    "TagUnassignedSuccessfully": "پیوند برچسب با موفقیت حذف شد."
+  }
+}

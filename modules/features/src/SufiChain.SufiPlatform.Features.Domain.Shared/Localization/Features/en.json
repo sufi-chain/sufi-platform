@@ -1,0 +1,29 @@
+{
+  "culture": "en",
+  "texts": {
+    "Menu:Features": "Feature Management",
+    "Menu:Features": "Features",
+    "Features": "Features",
+    "Feature": "Feature",
+    "FeaturesSavedSuccessfully": "Features saved successfully",
+    "ManageFeatures": "Manage Features",
+    "ResetToDefault": "Reset to Default",
+    "AllFeatures": "All Features",
+    "FeatureGroup": "Feature Group",
+    "FeatureName": "Feature Name",
+    "FeatureValue": "Feature Value",
+    "Enabled": "Enabled",
+    "Disabled": "Disabled",
+    "SearchFeatures": "Search features...",
+    "SelectAllInAllTabs": "Select all in all tabs",
+    "SelectAllInThisTab": "Select all in this tab",
+    "LoadingFeatures": "Loading features...",
+    "NoFeaturesAvailable": "No features available",
+    "FeaturesResetSuccessfully": "Features reset successfully",
+    "ResetFeaturesConfirmation": "Are you sure you want to reset all features to their default values?",
+    "Permission:Features": "Feature management",
+    "Permission:Features.Features": "Features",
+    "Permission:Features.ManageHostFeatures": "Manage host features",
+    "Permission:Features.ManageTenantFeatures": "Manage tenant features"
+  }
+}

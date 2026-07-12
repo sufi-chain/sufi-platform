@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>SufiChain.SufiPlatform.Permissions</RootNamespace>
+    <IsPackable>true</IsPackable>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <PackageId>SufiChain.SufiPlatform.Permissions.HttpApi</PackageId>
+    <Description>Permission management module HTTP API controllers for Sufi Platform.</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../../../../framework/SufiChain.SufiPlatform.AspNetCore.Mvc/SufiChain.SufiPlatform.AspNetCore.Mvc.csproj" />
+    <ProjectReference Include="../SufiChain.SufiPlatform.Permissions.Application.Contracts/SufiChain.SufiPlatform.Permissions.Application.Contracts.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\SufiChain.SufiPlatform.Permissions.Application.Contracts\SufiChain.SufiPlatform.Permissions.Application.Contracts.csproj" />
+  </ItemGroup>
+
+</Project>

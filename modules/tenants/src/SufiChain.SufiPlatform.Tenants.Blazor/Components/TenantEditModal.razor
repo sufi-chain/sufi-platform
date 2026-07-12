@@ -1,0 +1,22 @@
+@namespace SufiChain.SufiPlatform.Tenants.Blazor.Components
+@inherits TenantsComponentBase
+
+<SbDialog Open="@Open" OpenChanged="@SetOpenAsync" Size="SbDialogSize.Md" Title="@L["EditTenant"]">
+    <ChildContent>
+        <SbForm Model="_model" OnValidSubmit="OnValidSubmitAsync">
+            <ChildContent>
+                <SbStack Gap="3" class="pb-4">
+                    <SbTextField @bind-Value="_model.Name"
+                                 Label="@L["TenantName"]"
+                                 Required="true" />
+                </SbStack>
+            </ChildContent>
+            <FooterContent>
+                <SbStack Direction="SbStackDirection.Row" Gap="2" Justify="SbJustify.End">
+                    <SbButton Variant="SbButtonVariant.Outline" OnClick="Hide">@L["Cancel"]</SbButton>
+                    <SbButton Type="submit" Color="SbColor.Primary" Loading="IsOperationLoading(LoadingKeys.Save)">@L["Save"]</SbButton>
+                </SbStack>
+            </FooterContent>
+        </SbForm>
+    </ChildContent>
+</SbDialog>

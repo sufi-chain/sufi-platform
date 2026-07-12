@@ -1,0 +1,77 @@
+@namespace SufiChain.SufiPlatform.Menus.Blazor.Components
+@inherits MenusComponentBase
+
+<div class="menu-item-node">
+    <SbStack Direction="SbStackDirection.Row" Gap="2" Align="SbAlign.Center" Wrap="true">
+        @if (!string.IsNullOrWhiteSpace(Item.Icon))
+        {
+            <SbIcon Name="@Item.Icon" />
+        }
+        <SbText Weight="SbFontWeight.Medium">@ResolveMenuItemDisplayName(Item, ContextType)</SbText>
+        <SbText Color="SbColor.Muted" Variant="SbTextVariant.BodySmall">@Item.Name</SbText>
+        <SbText Color="SbColor.Muted" Variant="SbTextVariant.Caption">#@Item.DisplayOrder</SbText>
+
+        <SbStack Direction="SbStackDirection.Row" Gap="1">
+            <AuthorizeView Policy="@MenusPermissions.Menus.ManageItems">
+                <SbTooltip Text="@L["AddChild"]">
+                    <SbIconButton Size="SbSize.Sm" AriaLabel="@L["AddChild"]" OnClick="@(() => OnAddChild.InvokeAsync(Item))">
+                        <Icon><SbIcon Name="plus" /></Icon>
+                    </SbIconButton>
+                </SbTooltip>
+                <SbTooltip Text="@L["EditMenu"]">
+                    <SbIconButton Size="SbSize.Sm" AriaLabel="@L["EditMenu"]" OnClick="@(() => OnEdit.InvokeAsync(Item))">
+                        <Icon><SbIcon Name="edit" /></Icon>
+                    </SbIconButton>
+                </SbTooltip>
+                <SbTooltip Text="@L["MoveItem"]">
+                    <SbIconButton Size="SbSize.Sm" AriaLabel="@L["MoveItem"]" OnClick="@(() => OnMove.InvokeAsync(Item))">
+                        <Icon><SbIcon Name="move" /></Icon>
+                    </SbIconButton>
+                </SbTooltip>
+                <SbTooltip Text="@L["MoveUp"]">
+                    <SbIconButton Size="SbSize.Sm" AriaLabel="@L["MoveUp"]" OnClick="@(() => OnReorderUp.InvokeAsync(Item))">
+                        <Icon><SbIcon Name="arrow-up" /></Icon>
+                    </SbIconButton>
+                </SbTooltip>
+                <SbTooltip Text="@L["MoveDown"]">
+                    <SbIconButton Size="SbSize.Sm" AriaLabel="@L["MoveDown"]" OnClick="@(() => OnReorderDown.InvokeAsync(Item))">
+                        <Icon><SbIcon Name="arrow-down" /></Icon>
+                    </SbIconButton>
+                </SbTooltip>
+                <SbTooltip Text="@L["DeleteItem"]">
+                    <SbIconButton Size="SbSize.Sm" Color="SbColor.Danger" AriaLabel="@L["DeleteItem"]" OnClick="@(() => OnDelete.InvokeAsync(Item))">
+                        <Icon><SbIcon Name="trash" /></Icon>
+                    </SbIconButton>
+                </SbTooltip>
+            </AuthorizeView>
+        </SbStack>
+    </SbStack>
+
+    @if (Item.Children.Count > 0)
+    {
+        <div class="menu-item-children">
+            @foreach (var child in Item.Children)
+            {
+                <MenuItemNode Item="child"
+                              ContextType="ContextType"
+                              OnAddChild="OnAddChild"
+                              OnEdit="OnEdit"
+                              OnMove="OnMove"
+                              OnDelete="OnDelete"
+                              OnReorderUp="OnReorderUp"
+                              OnReorderDown="OnReorderDown" />
+            }
+        </div>
+    }
+</div>
+
+<style>
+    .menu-item-node {
+        padding: 0.25rem 0;
+    }
+    .menu-item-children {
+        margin-left: 1.25rem;
+        padding-left: 0.75rem;
+        border-left: 2px solid var(--sb-color-border, #e5e7eb);
+    }
+</style>

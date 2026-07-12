@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>netstandard2.1;net10.0</TargetFrameworks>
+    <Nullable>enable</Nullable>
+    <RootNamespace>SufiChain.SufiPlatform.FileManager</RootNamespace>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <PackageId>SufiChain.SufiPlatform.FileManager.Application.Contracts</PackageId>
+    <Description>File manager module application contracts for Sufi Platform - DTOs and service interfaces.</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../../../../framework/SufiChain.SufiPlatform.Ddd.Application.Contracts/SufiChain.SufiPlatform.Ddd.Application.Contracts.csproj" />
+    <ProjectReference Include="../../../../framework/SufiChain.SufiPlatform.Authorization/SufiChain.SufiPlatform.Authorization.csproj" />
+    <ProjectReference Include="..\SufiChain.SufiPlatform.FileManager.Domain.Shared\SufiChain.SufiPlatform.FileManager.Domain.Shared.csproj" />
+  </ItemGroup>
+
+</Project>

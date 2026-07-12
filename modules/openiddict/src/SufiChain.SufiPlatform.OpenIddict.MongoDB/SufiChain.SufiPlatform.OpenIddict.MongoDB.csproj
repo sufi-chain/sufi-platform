@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <RootNamespace>SufiChain.SufiPlatform.OpenIddict</RootNamespace>
+    <PackageId>SufiChain.SufiPlatform.OpenIddict.MongoDB</PackageId>
+    <Description>MongoDB integration for Sufi OpenIddict.</Description>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Volo.Abp.MongoDB" Version="$(AbpVersion)" />
+    <ProjectReference Include="..\SufiChain.SufiPlatform.OpenIddict.Domain\SufiChain.SufiPlatform.OpenIddict.Domain.csproj" />
+  </ItemGroup>
+</Project>

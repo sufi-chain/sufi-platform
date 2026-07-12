@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <RootNamespace>SufiChain.SufiPlatform.SufiAI</RootNamespace>
+    <PackageId>SufiChain.SufiPlatform.SufiAI.Domain</PackageId>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\..\framework\SufiChain.SufiPlatform.Ddd.Application.Contracts\SufiChain.SufiPlatform.Ddd.Application.Contracts.csproj" />
+    <PackageReference Include="Volo.Abp.Ddd.Domain" Version="$(AbpVersion)" />
+    <ProjectReference Include="..\..\..\..\framework\SufiChain.SufiPlatform.SufiAI\SufiChain.SufiPlatform.SufiAI.csproj" />
+    <ProjectReference Include="..\..\..\file-manager\src\SufiChain.SufiPlatform.FileManager.Domain\SufiChain.SufiPlatform.FileManager.Domain.csproj" />
+    <ProjectReference Include="..\..\..\file-manager\src\SufiChain.SufiPlatform.FileManager.Domain.Shared\SufiChain.SufiPlatform.FileManager.Domain.Shared.csproj" />
+    <ProjectReference Include="..\..\..\file-manager\src\SufiChain.SufiPlatform.FileManager.Application.Contracts\SufiChain.SufiPlatform.FileManager.Application.Contracts.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\SufiChain.SufiPlatform.SufiAI.Domain.Shared\SufiChain.SufiPlatform.SufiAI.Domain.Shared.csproj" />
+  </ItemGroup>
+</Project>

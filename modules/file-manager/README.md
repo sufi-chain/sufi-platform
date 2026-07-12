@@ -1,4 +1,4 @@
-# SufiChain.SufiAbp.FileManager
+# SufiChain.SufiPlatform.FileManager
 
 Canonical documentation for this module lives under `docs/modules/file-manager/`.
 
@@ -12,5 +12,5 @@ Start here:
 Build:
 
 ```bash
-dotnet build src/modules/file-manager/SufiChain.SufiAbp.FileManager.sln
+dotnet build src/modules/file-manager/SufiChain.SufiPlatform.FileManager.sln
 ```

@@ -1,0 +1,122 @@
+@namespace SufiChain.SufiPlatform.SufiAI.Blazor.Pages.AI
+@page "/panel/admin/ai/mcp-servers"
+@attribute [Authorize(Policy = AIPermissions.MCPServers.Default)]
+@inherits AIComponentBase
+
+<SufiPageToolbar>
+    <AuthorizeView Policy="@AIPermissions.MCPServers.Create">
+        <SbButton Color="SbColor.Primary" OnClick="@OpenCreateModal">
+            <StartIcon><SbIcon Name="plus" /></StartIcon>
+            <ChildContent>@L["NewMCPServer"]</ChildContent>
+        </SbButton>
+    </AuthorizeView>
+</SufiPageToolbar>
+
+<SbStack Direction="SbStackDirection.Column" Gap="4">
+
+    <!-- Workspace Selector -->
+    <WorkspaceSelector Value="_selectedWorkspaceId"
+                       ValueChanged="@OnWorkspaceChangedAsync"
+                       Workspaces="_workspaces"
+                       Loading="@IsOperationLoading(LoadingKeys.LoadWorkspaces)" />
+
+    <!-- Servers Grid -->
+    <SbCard>
+        <ChildContent>
+            <SbDataGrid TItem="MCPServerDto"
+                        Items="@_servers"
+                        Loading="IsOperationLoading(LoadingKeys.LoadServers)"
+                        Striped="true"
+                        Hoverable="true"
+                        KeySelector="@(item => item.Id.ToString())">
+                <ChildContent>
+                    <SbColumn TItem="MCPServerDto" Title="@L["Actions"]" Width="200px">
+                        <CellTemplate Context="cellContext">
+                            <SbStack Direction="SbStackDirection.Row" Gap="1">
+                                <SbIconButton Size="SbSize.Sm" 
+                                              AriaLabel="@L["TestConnection"]"
+                                              Color="SbColor.Info"
+                                              OnClick="@(() => TestConnectionAsync(cellContext.Item))"
+                                              Loading="@IsOperationLoading($"{LoadingKeys.TestConnection}-{cellContext.Item.Id}")">
+                                    <Icon><SbIcon Name="zap" /></Icon>
+                                </SbIconButton>
+                                <AuthorizeView Policy="@AIPermissions.MCPServers.Edit">
+                                    <SbIconButton Size="SbSize.Sm" AriaLabel="@L["Edit"]"
+                                                  OnClick="@(() => OpenEditModal(cellContext.Item))">
+                                        <Icon><SbIcon Name="edit" /></Icon>
+                                    </SbIconButton>
+                                </AuthorizeView>
+                                <SbIconButton Size="SbSize.Sm" 
+                                              AriaLabel="@(cellContext.Item.IsEnabled ? L["Disable"] : L["Enable"])"
+                                              Color="@(cellContext.Item.IsEnabled ? SbColor.Warning : SbColor.Success)"
+                                              OnClick="@(() => ToggleServerAsync(cellContext.Item))">
+                                    <Icon><SbIcon Name="@(cellContext.Item.IsEnabled ? "pause" : "play")" /></Icon>
+                                </SbIconButton>
+                                <AuthorizeView Policy="@AIPermissions.MCPServers.Delete">
+                                    <SbIconButton Size="SbSize.Sm" AriaLabel="@L["Delete"]"
+                                                  Color="SbColor.Danger"
+                                                  OnClick="@(() => DeleteServerAsync(cellContext.Item))">
+                                        <Icon><SbIcon Name="trash" /></Icon>
+                                    </SbIconButton>
+                                </AuthorizeView>
+                            </SbStack>
+                        </CellTemplate>
+                    </SbColumn>
+                    <SbColumn TItem="MCPServerDto" Field="Name" Title="@L["Name"]" Width="200px">
+                        <CellTemplate Context="cellContext">
+                            <SbText Variant="SbTextVariant.BodySmall" Weight="SbFontWeight.Medium">
+                                @cellContext.Item.Name
+                            </SbText>
+                        </CellTemplate>
+                    </SbColumn>
+                    <SbColumn TItem="MCPServerDto" Field="TransportType" Title="@L["Transport"]" Width="120px">
+                        <CellTemplate Context="cellContext">
+                            <SbChip Size="SbSize.Sm">@cellContext.Item.TransportType</SbChip>
+                        </CellTemplate>
+                    </SbColumn>
+                    <SbColumn TItem="MCPServerDto" Field="IsEnabled" Title="@L["Status"]" Width="100px">
+                        <CellTemplate Context="cellContext">
+                            <SbChip Color="@(cellContext.Item.IsEnabled ? SbColor.Success : SbColor.Default)"
+                                    Size="SbSize.Sm">
+                                @(cellContext.Item.IsEnabled ? L["Enabled"] : L["Disabled"])
+                            </SbChip>
+                        </CellTemplate>
+                    </SbColumn>
+                    <SbColumn TItem="MCPServerDto" Field="LastConnectedAt" Title="@L["LastConnected"]" Width="180px">
+                        <CellTemplate Context="cellContext">
+                            @if (cellContext.Item.LastConnectedAt.HasValue)
+                            {
+                                <SbText Variant="SbTextVariant.BodySmall">
+                                    @cellContext.Item.LastConnectedAt.Value.ToString("g")
+                                </SbText>
+                            }
+                            else
+                            {
+                                <SbText Variant="SbTextVariant.BodySmall" Color="SbColor.Muted">
+                                    @L["Never"]
+                                </SbText>
+                            }
+                        </CellTemplate>
+                    </SbColumn>
+                    <SbColumn TItem="MCPServerDto" Field="LastConnectionError" Title="@L["Error"]">
+                        <CellTemplate Context="cellContext">
+                            @if (!string.IsNullOrEmpty(cellContext.Item.LastConnectionError))
+                            {
+                                <SbText Variant="SbTextVariant.BodySmall" Color="SbColor.Danger">
+                                    @cellContext.Item.LastConnectionError
+                                </SbText>
+                            }
+                        </CellTemplate>
+                    </SbColumn>
+                </ChildContent>
+            </SbDataGrid>
+        </ChildContent>
+    </SbCard>
+
+</SbStack>
+
+<!-- Create/Edit Modal -->
+<MCPServerModal @bind-Open="_modalOpen"
+                Server="_editingServer"
+                WorkspaceId="_selectedWorkspaceId"
+                OnSaved="@OnServerSavedAsync" />

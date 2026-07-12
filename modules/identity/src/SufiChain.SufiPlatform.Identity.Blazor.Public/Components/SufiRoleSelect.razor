@@ -1,0 +1,23 @@
+@namespace SufiChain.SufiPlatform.Identity.Blazor.Public.Components
+@using SufiChain.SufiPlatform.Identity
+@inherits SufiRoleLookupInlineComponentBase
+
+<SbAutocomplete TItem="IdentityRoleDto"
+                Value="_selectedRole"
+                ValueChanged="OnSelectedRoleChangedAsync"
+                SearchFunc="@SearchRolesForSelectAsync"
+                TextField="@FormatRoleLabel"
+                ValueField="role => role.Id"
+                Label="@Label"
+                Placeholder="@L["SelectRole"]"
+                MinLength="0"
+                MaxResults="@MaxResultCount"
+                Disabled="@Disabled"
+                Clearable="@AllowClear">
+    <ItemTemplate Context="role">
+        <SbText Variant="SbTextVariant.BodySmall">@role.Name</SbText>
+    </ItemTemplate>
+    <NoResultsTemplate>
+        <span>@L["NoRolesFound"]</span>
+    </NoResultsTemplate>
+</SbAutocomplete>

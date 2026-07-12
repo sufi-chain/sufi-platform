@@ -1,0 +1,121 @@
+@namespace SufiChain.SufiPlatform.Account.Blazor.Pages
+@page "/account/register"
+@layout AccountLayout
+@using SufiChain.SufiPlatform.Account.Localization
+@using Microsoft.AspNetCore.Authentication
+@using Microsoft.AspNetCore.Http
+@using SufiChain.SufiPlatform.Account.Blazor.Components
+
+<div class="account-page">
+    <SbCard Class="account-card">
+        <ChildContent>
+            <SbStack Gap="4" Align="SbAlign.Center">
+                <SbHeading Level="2">@L["Register"]</SbHeading>
+
+                @if (IsExternalLogin)
+                {
+                    <form method="post" action="/Account/ExternalLoginConfirmation" class="w-full">
+                        <AntiforgeryToken />
+                        <input type="hidden" name="returnUrl" value="@(ReturnUrl ?? "/")" />
+                        <input type="hidden" name="externalLoginAuthSchema" value="@(ExternalLoginAuthSchema ?? "")" />
+                        <SbStack Gap="3">
+                            <SbFormField Label="@L["UserName"]" InputId="UserName" Required="true">
+                                <SbTextField @bind-Value="Input.UserName"
+                                             Id="UserName"
+                                             Type="text"
+                                             Placeholder="@L["ChooseUsername"]"
+                                             AutoComplete="username"
+                                             name="userName" />
+                            </SbFormField>
+                            <SbFormField Label="@L["Email"]" InputId="EmailAddress" Required="true">
+                                <SbTextField @bind-Value="Input.EmailAddress"
+                                             Id="EmailAddress"
+                                             Type="email"
+                                             Placeholder="@L["EnterEmail"]"
+                                             AutoComplete="email"
+                                             name="emailAddress" />
+                            </SbFormField>
+                            @if (!string.IsNullOrEmpty(ErrorMessage))
+                            {
+                                <SbAlert Severity="SbAlertSeverity.Danger">@ErrorMessage</SbAlert>
+                            }
+                            <SbButton Type="submit" Color="SbColor.Primary" FullWidth="true">
+                                @L["Register"]
+                            </SbButton>
+                        </SbStack>
+                    </form>
+                }
+                else
+                {
+                    <form method="post" @onsubmit="OnRegisterAsync" @formname="register" class="w-full">
+                        <AntiforgeryToken />
+                        <SbStack Gap="3">
+                            <SbFormField Label="@L["UserName"]" InputId="UserName" Required="true">
+                                <SbTextField @bind-Value="Input.UserName"
+                                             Id="UserName"
+                                             Type="text"
+                                             Placeholder="@L["ChooseUsername"]"
+                                             AutoComplete="username"
+                                             name="Input.UserName" />
+                            </SbFormField>
+                            <SbFormField Label="@L["Email"]" InputId="EmailAddress" Required="true">
+                                <SbTextField @bind-Value="Input.EmailAddress"
+                                             Id="EmailAddress"
+                                             Type="email"
+                                             Placeholder="@L["EnterEmail"]"
+                                             AutoComplete="email"
+                                             name="Input.EmailAddress" />
+                            </SbFormField>
+                            <SbFormField Label="@L["Password"]" InputId="Password" Required="true">
+                                <SbTextField @bind-Value="Input.Password"
+                                             Id="Password"
+                                             Type="password"
+                                             Placeholder="@L["CreatePassword"]"
+                                             AutoComplete="new-password"
+                                             name="Input.Password" />
+                            </SbFormField>
+                            <SufiCaptcha @bind-CaptchaChallengeId="CaptchaChallengeId"
+                                            @bind-CaptchaAnswer="CaptchaAnswer"
+                                            @bind-CaptchaToken="CaptchaToken" />
+                            @if (!string.IsNullOrEmpty(ErrorMessage))
+                            {
+                                <SbAlert Severity="SbAlertSeverity.Danger">@ErrorMessage</SbAlert>
+                            }
+                            <SbButton Type="submit" Color="SbColor.Primary" FullWidth="true">
+                                @L["Register"]
+                            </SbButton>
+                        </SbStack>
+                    </form>
+                }
+
+                @if (!IsExternalLogin && ExternalSchemes.Count > 0)
+                {
+                    <SbStack Gap="2" Align="SbAlign.Center">
+                        <SbText Color="SbColor.Muted">@L["OrRegisterWith"]</SbText>
+                        <SbStack Direction="SbStackDirection.Row" Gap="2" Justify="SbJustify.Center">
+                            @foreach (var scheme in ExternalSchemes)
+                            {
+                                <form method="post" action="/Account/ExternalLogin" style="display:inline">
+                                    <AntiforgeryToken />
+                                    <input type="hidden" name="provider" value="@scheme.Name" />
+                                    <input type="hidden" name="returnUrl" value="@(ReturnUrl ?? "/")" />
+                                    <SbButton Type="submit" Color="SbColor.Secondary" Variant="SbButtonVariant.Outline">
+                                        @scheme.DisplayName
+                                    </SbButton>
+                                </form>
+                            }
+                        </SbStack>
+                    </SbStack>
+                }
+
+                <SbStack Gap="2" Align="SbAlign.Center">
+                    <SbLink Href="/account/register-otp">@AccountL["RegisterWithCode"]</SbLink>
+                    <SbStack Direction="SbStackDirection.Row" Gap="1">
+                        <SbText>@L["AlreadyHaveAccount"]</SbText>
+                        <SbLink Href="/account/login">@L["SignIn"]</SbLink>
+                    </SbStack>
+                </SbStack>
+            </SbStack>
+        </ChildContent>
+    </SbCard>
+</div>

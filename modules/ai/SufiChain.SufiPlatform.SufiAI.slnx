@@ -1,0 +1,24 @@
+<Solution>
+  <Folder Name="/host/">
+    <Project Path="host/SufiChain.SufiPlatform.SufiAI.Blazor.Host/SufiChain.SufiPlatform.SufiAI.Blazor.Host.csproj" />
+  </Folder>
+  <Folder Name="/src/">
+    <Project Path="src/SufiChain.SufiPlatform.SufiAI.Application.Contracts/SufiChain.SufiPlatform.SufiAI.Application.Contracts.csproj" />
+    <Project Path="src/SufiChain.SufiPlatform.SufiAI.Application/SufiChain.SufiPlatform.SufiAI.Application.csproj" />
+    <Project Path="src/SufiChain.SufiPlatform.SufiAI.Blazor.WebAssembly/SufiChain.SufiPlatform.SufiAI.Blazor.WebAssembly.csproj" />
+    <Project Path="src/SufiChain.SufiPlatform.SufiAI.Blazor/SufiChain.SufiPlatform.SufiAI.Blazor.csproj" />
+    <Project Path="src/SufiChain.SufiPlatform.SufiAI.Domain.Shared/SufiChain.SufiPlatform.SufiAI.Domain.Shared.csproj" />
+    <Project Path="src/SufiChain.SufiPlatform.SufiAI.Domain/SufiChain.SufiPlatform.SufiAI.Domain.csproj" />
+    <Project Path="src/SufiChain.SufiPlatform.SufiAI.EntityFrameworkCore/SufiChain.SufiPlatform.SufiAI.EntityFrameworkCore.csproj" />
+    <Project Path="src/SufiChain.SufiPlatform.SufiAI.HttpApi.Client/SufiChain.SufiPlatform.SufiAI.HttpApi.Client.csproj" />
+    <Project Path="src/SufiChain.SufiPlatform.SufiAI.HttpApi/SufiChain.SufiPlatform.SufiAI.HttpApi.csproj" />
+    <Project Path="src/SufiChain.SufiPlatform.SufiAI.MongoDB/SufiChain.SufiPlatform.SufiAI.MongoDB.csproj" />
+    <Project Path="src/SufiChain.SufiPlatform.SufiAI.Pgvector/SufiChain.SufiPlatform.SufiAI.Pgvector.csproj" />
+    <Project Path="src/SufiChain.SufiPlatform.SufiAI.Qdrant/SufiChain.SufiPlatform.SufiAI.Qdrant.csproj" />
+  </Folder>
+  <Folder Name="/test/">
+    <Project Path="test/SufiChain.SufiPlatform.SufiAI.Application.Tests/SufiChain.SufiPlatform.SufiAI.Application.Tests.csproj" />
+    <Project Path="test/SufiChain.SufiPlatform.SufiAI.Domain.Tests/SufiChain.SufiPlatform.SufiAI.Domain.Tests.csproj" />
+    <Project Path="test/SufiChain.SufiPlatform.SufiAI.TestBase/SufiChain.SufiPlatform.SufiAI.TestBase.csproj" />
+  </Folder>
+</Solution>

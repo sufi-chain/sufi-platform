@@ -1,0 +1,70 @@
+@namespace SufiChain.SufiPlatform.FileManager.Blazor.Public.Components
+<div class="file-gallery @Class" style="@Style">
+    <div class="file-gallery__grid" style="--columns: @Columns">
+        @foreach (var (fileId, index) in _fileInfos.Select((f, i) => (f, i)))
+        {
+            <div class="file-gallery__item" @onclick="() => OpenLightbox(index)">
+                <FileImage FileId="@fileId.Id"
+                           Size="@ThumbnailSize"
+                           LazyLoad="true"
+                           Class="file-gallery__thumbnail" />
+                @if (!string.IsNullOrEmpty(fileId.Alt))
+                {
+                    <div class="file-gallery__caption">@fileId.Alt</div>
+                }
+            </div>
+        }
+    </div>
+</div>
+
+@if (EnableLightbox && _lightboxOpen && _currentIndex >= 0 && _currentIndex < _fileInfos.Count)
+{
+    <div class="file-gallery-lightbox" @onclick="CloseLightbox" @onkeydown="HandleKeyDown" tabindex="0">
+        <div class="file-gallery-lightbox__backdrop"></div>
+        
+        <div class="file-gallery-lightbox__content" @onclick:stopPropagation>
+            <button class="file-gallery-lightbox__close" @onclick="CloseLightbox" aria-label="Close">
+                <span>&times;</span>
+            </button>
+            
+            @if (_fileInfos.Count > 1)
+            {
+                <button class="file-gallery-lightbox__nav file-gallery-lightbox__nav--prev" 
+                        @onclick="PreviousImage" 
+                        disabled="@(_currentIndex <= 0)"
+                        aria-label="Previous">
+                    <span>&lsaquo;</span>
+                </button>
+            }
+            
+            <div class="file-gallery-lightbox__image-container">
+                <FileImage FileId="@_fileInfos[_currentIndex].Id"
+                           Size="FileImageSize.Original"
+                           LazyLoad="false"
+                           Alt="@_fileInfos[_currentIndex].Alt"
+                           Class="file-gallery-lightbox__image" />
+            </div>
+            
+            @if (_fileInfos.Count > 1)
+            {
+                <button class="file-gallery-lightbox__nav file-gallery-lightbox__nav--next" 
+                        @onclick="NextImage" 
+                        disabled="@(_currentIndex >= _fileInfos.Count - 1)"
+                        aria-label="Next">
+                    <span>&rsaquo;</span>
+                </button>
+            }
+            
+            <div class="file-gallery-lightbox__footer">
+                @if (!string.IsNullOrEmpty(_fileInfos[_currentIndex].Alt))
+                {
+                    <span class="file-gallery-lightbox__caption">@_fileInfos[_currentIndex].Alt</span>
+                }
+                @if (_fileInfos.Count > 1)
+                {
+                    <span class="file-gallery-lightbox__counter">@(_currentIndex + 1) / @_fileInfos.Count</span>
+                }
+            </div>
+        </div>
+    </div>
+}

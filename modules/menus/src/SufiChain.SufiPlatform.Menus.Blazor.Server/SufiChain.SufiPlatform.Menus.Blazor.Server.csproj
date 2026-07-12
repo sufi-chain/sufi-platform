@@ -1,0 +1,1 @@
+<Project Sdk="Microsoft.NET.Sdk.Razor"><PropertyGroup><TargetFramework>net10.0</TargetFramework><Nullable>enable</Nullable><RootNamespace>SufiChain.SufiPlatform.Menus.Blazor.Server</RootNamespace></PropertyGroup><ItemGroup><ProjectReference Include="../SufiChain.SufiPlatform.Menus.Blazor/SufiChain.SufiPlatform.Menus.Blazor.csproj" /></ItemGroup></Project>

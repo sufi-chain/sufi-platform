@@ -1,0 +1,56 @@
+@namespace SufiChain.SufiPlatform.Menus.Blazor.Components
+@inherits MenusComponentBase
+
+<SbDialog Open="@Open" OpenChanged="@SetOpenAsync" Size="SbDialogSize.Md" Title="@L["CreateMenu"]">
+    <ChildContent>
+        <SbForm Model="_model" OnValidSubmit="OnValidSubmitAsync">
+            <ChildContent>
+                <SbStack Gap="3">
+                    <SbTextField TValue="string"
+                                 Value="_model.Name"
+                                 ValueChanged="OnNameChangedAsync"
+                                 ValueExpression="@(() => _model.Name)"
+                                 Label="@L["MenuName"]"
+                                 Required="true" />
+
+                    <SbTextField TValue="string"
+                                 Value="_model.ContextType"
+                                 ValueChanged="OnContextTypeChangedAsync"
+                                 ValueExpression="@(() => _model.ContextType)"
+                                 Label="@L["ContextType"]"
+                                 Required="true"
+                                 Placeholder="e.g. Public" />
+
+                    <SbStack Gap="1">
+                        <SbText Weight="SbFontWeight.Medium">@L["DisplayNameLocalizationMode"]</SbText>
+                        <BusinessLocalizationModeSwitch Mode="_displayNameMode"
+                                                        ModeChanged="OnDisplayNameModeChangedAsync" />
+                    </SbStack>
+
+                    <BusinessTextEditor @ref="_displayNameEditor"
+                                        Label="@L["DisplayName"]"
+                                        ResourceName="_localizationResourceName"
+                                        LocalizationKey="_localizationKey"
+                                        Mode="_displayNameMode"
+                                        LiteralValue="_literalDisplayName"
+                                        LiteralValueChanged="OnLiteralDisplayNameChangedAsync"
+                                        Required="true" />
+
+                    <SbTextField @bind-Value="_contextIdText"
+                                 Label="@L["ContextId"]"
+                                 Placeholder="@L["NoParent"]" />
+
+                    <SbTextArea @bind-Value="_model.Description"
+                                Label="@L["Description"]"
+                                Rows="3" />
+                </SbStack>
+            </ChildContent>
+            <FooterContent>
+                <SbStack Direction="SbStackDirection.Row" Gap="2" Justify="SbJustify.End">
+                    <SbButton Variant="SbButtonVariant.Outline" OnClick="Hide">@L["Cancel"]</SbButton>
+                    <SbButton Type="submit" Color="SbColor.Primary" Loading="IsOperationLoading(LoadingKeys.Create)">@L["CreateMenu"]</SbButton>
+                </SbStack>
+            </FooterContent>
+        </SbForm>
+    </ChildContent>
+</SbDialog>

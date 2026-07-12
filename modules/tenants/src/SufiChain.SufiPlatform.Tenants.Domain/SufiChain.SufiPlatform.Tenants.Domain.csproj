@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <PackageId>SufiChain.SufiPlatform.Tenants.Domain</PackageId>
+    <RootNamespace>SufiChain.SufiPlatform.Tenants</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Volo.Abp.Ddd.Domain" Version="$(AbpVersion)" />
+    <PackageReference Include="Volo.Abp.Mapperly" Version="$(AbpVersion)" />
+    <PackageReference Include="Volo.Abp.MultiTenancy" Version="$(AbpVersion)" />
+    <PackageReference Include="Volo.Abp.Caching" Version="$(AbpVersion)" />
+    <ProjectReference Include="..\..\..\..\framework\SufiChain.SufiPlatform.Data\SufiChain.SufiPlatform.Data.csproj" />
+    <ProjectReference Include="..\SufiChain.SufiPlatform.Tenants.Domain.Shared\SufiChain.SufiPlatform.Tenants.Domain.Shared.csproj" />
+  </ItemGroup>
+</Project>

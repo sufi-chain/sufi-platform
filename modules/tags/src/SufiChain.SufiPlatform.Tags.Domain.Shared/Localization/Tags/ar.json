@@ -1,0 +1,18 @@
+{
+  "culture": "ar",
+  "texts": {
+    "Permission:SufiTags": "إدارة الوسوم",
+    "Permission:SufiTags.Tags": "الوسوم",
+    "Permission:SufiTags.TagLinks": "روابط الوسوم",
+    "Menu:SufiTags": "إدارة الوسوم",
+    "Menu:SufiTags.Tags": "الوسوم",
+    "Menu:SufiTags.TagLinks": "روابط الوسوم",
+    "Tags": "الوسوم",
+    "ViewTagLinks": "عرض الروابط",
+    "TagLinksFor": "روابط {0}",
+    "NoTagLinksFound": "هذا الوسم غير مرتبط بأي كيان.",
+    "UnassignTagLinkConfirmation": "إزالة هذا الوسم من '{0}' ({1})؟",
+    "Unassign": "إلغاء الربط",
+    "TagUnassignedSuccessfully": "تم إلغاء ربط الوسم بنجاح."
+  }
+}

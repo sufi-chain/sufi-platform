@@ -1,8 +1,0 @@
-@namespace SufiChain.SufiAbp.MenuManagement.Blazor.Components
-@inherits MenuManagementComponentBase
-<div class="sufi-menu-cards">
-    @foreach (var item in Items)
-    {
-        <article class="sufi-menu-card"><h3>@ResolveMenuItemDisplayName(item, ContextType)</h3><p>@item.Description</p></article>
-    }
-</div>

@@ -1,0 +1,228 @@
+@namespace SufiChain.SufiPlatform.Localization.Blazor.Pages
+@page "/panel/admin/localization-management/texts"
+@attribute [Authorize(LocalizationPermissions.Texts.Default)]
+@inherits LocalizationComponentBase
+
+<SufiPageToolbar>
+	<AuthorizeView Policy="@LocalizationPermissions.Texts.Create">
+		<SbButton Color="SbColor.Primary" OnClick="@ShowCreateDialog">
+			<StartIcon><SbIcon Name="plus" /></StartIcon>
+			<ChildContent>@L["Create"]</ChildContent>
+		</SbButton>
+	</AuthorizeView>
+</SufiPageToolbar>
+
+<SbStack Direction="SbStackDirection.Column" Gap="4">
+	<SbCard>
+		<ChildContent>
+			<SbStack Gap="4">
+				<!-- Filters -->
+				<SbGrid Columns="1" ColumnsMd="3" Gap="3">
+					<SbSimpleSelect TValue="string"
+									Value="@_selectedResource"
+									ValueChanged="@((string? v) => { _selectedResource = v; })"
+									Placeholder="@L["SelectResource"]"
+									Style="min-width: 200px;">
+						@foreach (var resource in _resourceNames)
+						{
+							<SbSelectOption Value="@resource">@resource</SbSelectOption>
+						}
+					</SbSimpleSelect>
+
+					<SbSimpleSelect TValue="string"
+									Value="@_selectedCulture"
+									ValueChanged="@((string? v) => { _selectedCulture = v; })"
+									Placeholder="@L["SelectCulture"]"
+									Style="min-width: 150px;">
+						@foreach (var culture in _cultureNames)
+						{
+							<SbSelectOption Value="@culture">@culture</SbSelectOption>
+						}
+					</SbSimpleSelect>
+
+					<SbTextField TValue="string"
+								 @bind-Value="_keyFilter"
+								 Placeholder="@L["Key"]"
+								 Clearable="true"
+								 Style="min-width: 200px;">
+						<StartAdornment>
+							<SbIcon Name="search" />
+						</StartAdornment>
+					</SbTextField>
+				</SbGrid>
+				<SbStack Direction="SbStackDirection.Row" Gap="2" Justify="SbJustify.End">
+					<SbButton OnClick="@ClearFilterAsync" Variant="SbButtonVariant.Outline">
+						<ChildContent>@L["ClearFilters"]</ChildContent>
+					</SbButton>
+					<SbButton OnClick="@SearchAsync" Color="SbColor.Primary">
+						<StartIcon><SbIcon Name="search" /></StartIcon>
+						<ChildContent>@L["Search"]</ChildContent>
+					</SbButton>
+				</SbStack>
+
+				@if (!HasValidSelection)
+				{
+					<SbText Color="SbColor.Muted">@L["SelectResourceAndCultureToViewResults"]</SbText>
+				}
+				else if (IsMergedMode)
+				{
+					<!-- Merged view: base JSON values + DB overrides (server-side paging) -->
+					<SbDataGrid TItem="LocalizationTextWithBaseValueDto"
+								@ref="_mergedGridRef"
+								ItemsProvider="LoadMergedDataAsync"
+								Loading="IsOperationLoading(LoadingKeys.LoadItems)"
+								Striped="true"
+								Hoverable="true"
+								PageIndex="_pageIndex"
+								PageSize="_pageSize"
+								TotalCount="_totalCount"
+								PageIndexChanged="OnPageIndexChangedAsync"
+								PageSizeChanged="OnPageSizeChangedAsync"
+								KeySelector="@(item => item.Key)">
+						<SbColumn TItem="LocalizationTextWithBaseValueDto" Title="@L["Actions"]" Width="120px">
+							<CellTemplate Context="ctx">
+								<SbStack Direction="SbStackDirection.Row" Gap="1">
+									<AuthorizeView Policy="@LocalizationPermissions.Texts.Update" Context="authContext">
+										<SbIconButton Size="SbSize.Sm" AriaLabel="@L["Edit"]"
+													  OnClick="@(() => ShowEditDialogForMerged(ctx.Item))">
+											<Icon><SbIcon Name="edit" /></Icon>
+										</SbIconButton>
+									</AuthorizeView>
+									@if (ctx.Item.IsOverride && ctx.Item.Id != Guid.Empty)
+									{
+										<AuthorizeView Policy="@LocalizationPermissions.Texts.Delete" Context="authContext2">
+											<SbIconButton Size="SbSize.Sm" Color="SbColor.Danger" AriaLabel="@L["Delete"]"
+														  OnClick="@(() => DeleteMergedAsync(ctx.Item))">
+												<Icon><SbIcon Name="trash" /></Icon>
+											</SbIconButton>
+										</AuthorizeView>
+									}
+								</SbStack>
+							</CellTemplate>
+						</SbColumn>
+						<SbColumn TItem="LocalizationTextWithBaseValueDto" Field="Key" Title="@L["Key"]" Sortable="true" />
+						<SbColumn TItem="LocalizationTextWithBaseValueDto" Field="BaseValue" Title="@L["BaseValue"]" />
+						<SbColumn TItem="LocalizationTextWithBaseValueDto" Field="Value" Title="@L["Value"]" />
+						<SbColumn TItem="LocalizationTextWithBaseValueDto" Title="@L["Status"]" Width="120px">
+							<CellTemplate Context="ctx2">
+								@if (ctx2.Item.IsOverride)
+								{
+									<SbBadge Color="SbColor.Primary">@L["Overridden"]</SbBadge>
+								}
+								else
+								{
+									<SbBadge Color="SbColor.Muted">@L["Base"]</SbBadge>
+								}
+							</CellTemplate>
+						</SbColumn>
+					</SbDataGrid>
+				}
+				else
+				{
+					<!-- DB-only view (server-side paging) -->
+					<SbDataGrid TItem="LocalizationTextDto"
+								@ref="_dbOnlyGridRef"
+								ItemsProvider="LoadDbOnlyDataAsync"
+								Loading="IsOperationLoading(LoadingKeys.LoadItems)"
+								Striped="true"
+								Hoverable="true"
+								PageIndex="_pageIndex"
+								PageSize="_pageSize"
+								TotalCount="_totalCount"
+								PageIndexChanged="OnPageIndexChangedAsync"
+								PageSizeChanged="OnPageSizeChangedAsync"
+								KeySelector="@(item => item.Id.ToString())">
+						<SbColumn TItem="LocalizationTextDto" Title="@L["Actions"]" Width="120px">
+							<CellTemplate Context="ctx">
+								<SbStack Direction="SbStackDirection.Row" Gap="1">
+									<AuthorizeView Policy="@LocalizationPermissions.Texts.Update" Context="authContext">
+										<SbIconButton Size="SbSize.Sm" AriaLabel="@L["Edit"]"
+													  OnClick="@(() => ShowEditDialog(ctx.Item))">
+											<Icon><SbIcon Name="edit" /></Icon>
+										</SbIconButton>
+									</AuthorizeView>
+									<AuthorizeView Policy="@LocalizationPermissions.Texts.Delete" Context="authContext2">
+										<SbIconButton Size="SbSize.Sm" Color="SbColor.Danger" AriaLabel="@L["Delete"]"
+													  OnClick="@(() => DeleteAsync(ctx.Item))">
+											<Icon><SbIcon Name="trash" /></Icon>
+										</SbIconButton>
+									</AuthorizeView>
+								</SbStack>
+							</CellTemplate>
+						</SbColumn>
+						<SbColumn TItem="LocalizationTextDto" Field="ResourceName" Title="@L["ResourceName"]" Sortable="true" />
+						<SbColumn TItem="LocalizationTextDto" Field="CultureName" Title="@L["CultureName"]" Width="100px" Sortable="true" />
+						<SbColumn TItem="LocalizationTextDto" Field="Key" Title="@L["Key"]" Sortable="true" />
+						<SbColumn TItem="LocalizationTextDto" Field="Value" Title="@L["Value"]" />
+					</SbDataGrid>
+				}
+			</SbStack>
+		</ChildContent>
+	</SbCard>
+</SbStack>
+
+<!-- Create Dialog -->
+<SbDialog Open="@_showCreateDialog" OnCloseButtonClick="@(() => _showCreateDialog = false)" OpenChanged="@((bool v) => { _showCreateDialog = v; })" Title="@L["Create"]" Size="SbDialogSize.Md">
+	<ChildContent>
+		<SbStack Gap="3">
+			<SbTextField TValue="string"
+						 @bind-Value="_newItem.ResourceName"
+						 Label="@L["ResourceName"]"
+						 Required="true" />
+			<SbTextField TValue="string"
+						 @bind-Value="_newItem.CultureName"
+						 Label="@L["CultureName"]"
+						 Required="true" />
+			<SbTextField TValue="string"
+						 @bind-Value="_newItem.Key"
+						 Label="@L["Key"]"
+						 Required="true" />
+			<SbTextArea @bind-Value="_newItem.Value"
+						Label="@L["Value"]"
+						Rows="4" />
+		</SbStack>
+	</ChildContent>
+	<Footer>
+		<SbStack Direction="SbStackDirection.Row" Gap="2" Justify="SbJustify.End">
+			<SbButton Variant="SbButtonVariant.Solid" OnClick="@(() => _showCreateDialog = false)">
+				@L["Cancel"]
+			</SbButton>
+			<SbButton Color="SbColor.Primary" OnClick="@CreateAsync">
+				@L["Save"]
+			</SbButton>
+		</SbStack>
+	</Footer>
+</SbDialog>
+
+<!-- Edit Dialog -->
+<SbDialog Open="@_showEditDialog" OnCloseButtonClick="@(() => _showEditDialog = false)" OpenChanged="@((bool v) => { _showEditDialog = v; })" Title="@L["Edit"]" Size="SbDialogSize.Md">
+	<ChildContent>
+		<SbStack Gap="3">
+			<SbTextField TValue="string"
+						 @bind-Value="_editingItem.ResourceName"
+						 Label="@L["ResourceName"]"
+						 Disabled="true" />
+			<SbTextField TValue="string"
+						 @bind-Value="_editingItem.CultureName"
+						 Label="@L["CultureName"]"
+						 Disabled="true" />
+			<SbTextField TValue="string"
+						 @bind-Value="_editingItem.Key"
+						 Label="@L["Key"]"
+						 Disabled="true" />
+			<SbTextArea @bind-Value="_editingItem.Value"
+						Label="@L["Value"]"
+						Rows="4" />
+		</SbStack>
+	</ChildContent>
+	<Footer>
+		<SbStack Direction="SbStackDirection.Row" Gap="2" Justify="SbJustify.End">
+			<SbButton Variant="SbButtonVariant.Solid" OnClick="@(() => _showEditDialog = false)">
+				@L["Cancel"]
+			</SbButton>
+			<SbButton Color="SbColor.Primary" OnClick="@UpdateAsync">
+				@L["Save"]
+			</SbButton>
+		</SbStack>
+	</Footer>
+</SbDialog>

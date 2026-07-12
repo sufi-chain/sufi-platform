@@ -1,0 +1,180 @@
+@page "/demo/file-manager/upload"
+@inherits FileManagerComponentBase
+
+<PageTitle>@(L["Menu:FileManagerDemoUpload"] + " - " + L["Menu:FileManagerDemo"])</PageTitle>
+
+<DemoLayout>
+    <SbHeading Level="1">@L["Menu:FileManagerDemoUpload"]</SbHeading>
+    <SbText Color="SbColor.Muted">@L["Demo:FileUploadBasicDescription"]</SbText>
+
+    <SbDivider />
+
+    <DemoSection
+        Title="@L["Demo:FileUploaderFull"]"
+        Description="@L["Demo:FileUploaderFullDescription"]"
+        SourceCode="@fileUploaderCode">
+        <ExampleContent>
+            <div class="upload-demo-container">
+                <FileUploader
+                    StructureKey="@FileStructureKeys.General"
+                    AllowMultiple="true"
+                    ShowStorageQuota="true"
+                    ShowStructureSelector="false"
+                    OnUploadCompleted="@HandleUploadCompleted" />
+            </div>
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection
+        Title="@L["Demo:FileUploaderWithStructureSelector"]"
+        Description="@L["Demo:FileUploaderWithStructureSelectorDescription"]"
+        SourceCode="@fileUploaderWithSelectorCode">
+        <ExampleContent>
+            <div class="upload-demo-container">
+                <FileUploader
+                    StructureKey="@FileStructureKeys.General"
+                    AllowMultiple="true"
+                    ShowStorageQuota="true"
+                    ShowStructureSelector="true"
+                    ShowFolderPathField="true" />
+            </div>
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection
+        Title="@L["Demo:FileUploaderWithFolderPath"]"
+        Description="@L["Demo:FileUploaderWithFolderPathDescription"]"
+        SourceCode="@fileUploaderWithFolderPathCode">
+        <ExampleContent>
+            <div class="upload-demo-container">
+                <FileUploader
+                    StructureKey="@FileStructureKeys.General"
+                    FolderPath="/web/demo"
+                    AllowMultiple="true"
+                    ShowStorageQuota="true"
+                    OnUploadCompleted="@HandleUploadCompleted" />
+            </div>
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection
+        Title="@L["Demo:QuickImageUploader"]"
+        Description="@L["Demo:QuickImageUploaderDescription"]"
+        SourceCode="@quickImageUploaderCode">
+        <ExampleContent>
+            <div class="upload-demo-container">
+                <SbStack Direction="SbStackDirection.Row" Gap="4" Wrap="true">
+                    <div>
+                        <SbText Class="mb-2">@L["Demo:QuickImageUploaderSingle"]</SbText>
+                        <QuickImageUploader
+                            StructureKey="@FileStructureKeys.General"
+                            Placeholder="@L["ImageUploaderPlaceholder"]"
+                            OnImageUploaded="@HandleImageUploaded" />
+                    </div>
+                </SbStack>
+            </div>
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection
+        Title="@L["Demo:QuickImageUploaderWithStructureSelector"]"
+        Description="@L["Demo:QuickImageUploaderWithStructureSelectorDescription"]"
+        SourceCode="@quickImageUploaderWithSelectorCode">
+        <ExampleContent>
+            <div class="upload-demo-container">
+                <SbStack Direction="SbStackDirection.Row" Gap="4" Wrap="true">
+                    <div>
+                        <SbText Class="mb-2">@L["Demo:QuickImageUploaderSingle"]</SbText>
+                        <QuickImageUploader
+                            StructureKey="@FileStructureKeys.General"
+                            ShowStructureSelector="true"
+                            ShowFolderPathField="true"
+                            Placeholder="@L["ImageUploaderPlaceholder"]"
+                            OnImageUploaded="@HandleImageUploaded" />
+                    </div>
+                </SbStack>
+            </div>
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection
+        Title="@L["Demo:QuickImageUploaderWithFolderPath"]"
+        Description="@L["Demo:QuickImageUploaderWithFolderPathDescription"]"
+        SourceCode="@quickImageUploaderWithFolderPathCode">
+        <ExampleContent>
+            <div class="upload-demo-container">
+                <SbStack Direction="SbStackDirection.Row" Gap="4" Wrap="true">
+                    <div>
+                        <SbText Class="mb-2">@L["Demo:QuickImageUploaderSingle"]</SbText>
+                        <QuickImageUploader
+                            StructureKey="@FileStructureKeys.General"
+                            FolderPath="/web/avatars"
+                            Placeholder="@L["ImageUploaderPlaceholder"]"
+                            OnImageUploaded="@HandleImageUploaded" />
+                    </div>
+                </SbStack>
+            </div>
+        </ExampleContent>
+    </DemoSection>
+
+    <SbDivider />
+
+    <DocViewer DocName="FileUploader" ContentAssembly="SufiChain.SufiPlatform.FileManager.Blazor" />
+    <SbDivider />
+    <DocViewer DocName="QuickImageUploader" ContentAssembly="SufiChain.SufiPlatform.FileManager.Blazor" />
+</DemoLayout>
+
+<style>
+    .upload-demo-container {
+        min-width: 320px;
+    }
+</style>
+
+@code {
+    private const string fileUploaderCode = @"<FileUploader
+    StructureKey=""General""
+    AllowMultiple=""true""
+    ShowStorageQuota=""true""
+    OnUploadCompleted=""@HandleUploadCompleted"" />";
+
+    private const string fileUploaderWithSelectorCode = @"<FileUploader
+    StructureKey=""General""
+    ShowStorageQuota=""true""
+    ShowStructureSelector=""true""
+    ShowFolderPathField=""true"" />";
+
+    private const string fileUploaderWithFolderPathCode = @"<FileUploader
+    StructureKey=""General""
+    FolderPath=""/web/demo""
+    AllowMultiple=""true""
+    ShowStorageQuota=""true""
+    OnUploadCompleted=""@HandleUploadCompleted"" />";
+
+    private const string quickImageUploaderCode = @"<QuickImageUploader
+    StructureKey=""General""
+    Placeholder=""Max 5MB, JPG/PNG/WebP""
+    OnImageUploaded=""@HandleImageUploaded"" />";
+
+    private const string quickImageUploaderWithSelectorCode = @"<QuickImageUploader
+    StructureKey=""General""
+    ShowStructureSelector=""true""
+    ShowFolderPathField=""true""
+    Placeholder=""Max 5MB, JPG/PNG/WebP""
+    OnImageUploaded=""@HandleImageUploaded"" />";
+
+    private const string quickImageUploaderWithFolderPathCode = @"<QuickImageUploader
+    StructureKey=""General""
+    FolderPath=""/web/avatars""
+    Placeholder=""Max 5MB, JPG/PNG/WebP""
+    OnImageUploaded=""@HandleImageUploaded"" />";
+
+    private void HandleUploadCompleted(List<FileItemDto> files)
+    {
+        // Handle completed uploads
+    }
+
+    private void HandleImageUploaded(FileItemDto file)
+    {
+        // Handle single image upload (e.g. avatar, product image)
+    }
+}

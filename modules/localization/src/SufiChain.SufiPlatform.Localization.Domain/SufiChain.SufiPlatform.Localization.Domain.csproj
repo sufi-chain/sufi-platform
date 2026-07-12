@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <RootNamespace>SufiChain.SufiPlatform.Localization</RootNamespace>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <PackageId>SufiChain.SufiPlatform.Localization.Domain</PackageId>
+    <Description>Localization management module domain layer for Sufi Platform - entities, repositories, and domain services.</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Volo.Abp.Ddd.Domain" Version="$(AbpVersion)" />
+    <ProjectReference Include="..\..\..\settings\src\SufiChain.SufiPlatform.Settings.Domain\SufiChain.SufiPlatform.Settings.Domain.csproj" />
+    <ProjectReference Include="..\SufiChain.SufiPlatform.Localization.Domain.Shared\SufiChain.SufiPlatform.Localization.Domain.Shared.csproj" />
+  </ItemGroup>
+
+</Project>

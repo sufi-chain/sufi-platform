@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>netstandard2.1;net10.0</TargetFrameworks>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>SufiChain.SufiPlatform.Tenants</RootNamespace>
+    <IsPackable>true</IsPackable>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <PackageId>SufiChain.SufiPlatform.Tenants.Application.Contracts</PackageId>
+    <Description>Tenant management module application contracts for Sufi Platform - wraps ABP contracts and registers Sufi localization.</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../../../../framework/SufiChain.SufiPlatform.Ddd.Application.Contracts/SufiChain.SufiPlatform.Ddd.Application.Contracts.csproj" />
+    <PackageReference Include="Volo.Abp.Auditing.Contracts" Version="$(AbpVersion)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\SufiChain.SufiPlatform.Tenants.Domain.Shared\SufiChain.SufiPlatform.Tenants.Domain.Shared.csproj" />
+  </ItemGroup>
+
+</Project>

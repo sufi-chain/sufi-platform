@@ -1,0 +1,27 @@
+<Project Sdk="Microsoft.NET.Sdk.Razor">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <RootNamespace>SufiChain.SufiPlatform.SufiAI.Blazor</RootNamespace>
+    <PackageId>SufiChain.SufiPlatform.SufiAI.Blazor</PackageId>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Resolve version conflict with SufiBlazor -->
+    <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="$(MicrosoftAspNetCoreComponentsWebVersion)" />
+    <!-- Blazor Authorization -->
+    <PackageReference Include="Microsoft.AspNetCore.Components.Authorization" Version="$(AspNetCoreVersion)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Sufi Framework (transitively provides SufiChain.SufiPlatform.UI.Abstractions and SufiChain.SufiBlazor) -->
+    <ProjectReference Include="..\..\..\..\framework\SufiChain.SufiPlatform.UI.Blazor\SufiChain.SufiPlatform.UI.Blazor.csproj" />
+    <ProjectReference Include="..\..\..\..\framework\SufiChain.SufiPlatform.Data\SufiChain.SufiPlatform.Data.csproj" />
+    <!-- Sufi AI Domain.Shared for localization -->
+    <ProjectReference Include="..\SufiChain.SufiPlatform.SufiAI.Domain.Shared\SufiChain.SufiPlatform.SufiAI.Domain.Shared.csproj" />
+    <!-- Sufi AI Application Contracts -->
+    <ProjectReference Include="..\SufiChain.SufiPlatform.SufiAI.Application.Contracts\SufiChain.SufiPlatform.SufiAI.Application.Contracts.csproj" />
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,74 @@
+@page "/demo/file-manager/markdown-editor"
+@using SufiChain.SufiBlazor.Components.Forms
+@using SufiChain.SufiBlazor.Components.Surfaces
+@using SufiChain.SufiBlazor.Components.Typography
+@using SufiChain.SufiPlatform.FileManager.Blazor.Public.Editors
+@inherits FileManagerComponentBase
+
+<PageTitle>@(L["Menu:FileManagerDemoMarkdownEditor"] + " - " + L["Menu:FileManagerDemo"])</PageTitle>
+
+<FileGalleryHost />
+
+<DemoLayout>
+    <SbHeading Level="1">@L["Menu:FileManagerDemoMarkdownEditor"]</SbHeading>
+    <SbText Color="SbColor.Muted">@L["Demo:FileManagerOverviewMarkdownEditorDesc"]</SbText>
+
+    <SbDivider />
+
+    <DemoSection
+        Title="@L["Menu:FileManagerDemoMarkdownEditor"]"
+        SourceCode="@mdCode"
+        RelatedCode="@mdCodeBehind">
+        <ExampleContent>
+            <SbStack Gap="4">
+                <SbAlert Severity="SbAlertSeverity.Info">
+                    @L["Demo:FileManagerMarkdownEditorToolbarHint"]
+                </SbAlert>
+                <SbFormField Label="@L["Menu:FileManagerDemoMarkdownEditor"]">
+                    <SbMarkEditor @bind-Value="_content"
+                                  MinHeight="420px"
+                                  Mode="SufiChain.SufiBlazor.Contracts.Editors.SbMarkEditorMode.Markdown"
+                                  UseToolbarContributors="true"
+                                  EnableMermaid="true"
+                                  EnableHighlight="true" />
+                </SbFormField>
+            </SbStack>
+        </ExampleContent>
+    </DemoSection>
+
+    <SbDivider />
+
+    <DocViewer DocName="FileManagerMarkdownEditorIntegration" ContentAssembly="SufiChain.SufiPlatform.FileManager.Blazor" />
+</DemoLayout>
+
+@code {
+    private string _content = """
+        # File gallery integration
+
+        Use the toolbar buttons to insert content from the file manager:
+
+        - **Gallery (folder icon)** — insert an image as `![alt](url)` markdown
+        - **Attach (paperclip icon)** — insert a file as `[filename](url)` download link
+
+        ## Example diagram
+
+        ```mermaid
+        flowchart TD
+            Editor -->|Pick image| Gallery
+            Gallery --> InsertMarkdown
+        ```
+
+        Add your own attachments using the toolbar above.
+        """;
+
+    private const string mdCodeBehind = @"private string _content = ""# File gallery integration"";";
+
+    private const string mdCode = @"<FileGalleryHost />
+
+<SbMarkEditor @bind-Value=""_content""
+              MinHeight=""420px""
+              Mode=""SufiChain.SufiBlazor.Contracts.Editors.SbMarkEditorMode.Markdown""
+              UseToolbarContributors=""true""
+              EnableMermaid=""true""
+              EnableHighlight=""true"" />";
+}

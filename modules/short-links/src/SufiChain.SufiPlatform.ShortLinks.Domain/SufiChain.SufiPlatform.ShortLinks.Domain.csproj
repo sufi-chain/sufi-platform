@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+
+    <PropertyGroup>
+		<TargetFramework>net10.0</TargetFramework>
+        <Nullable>enable</Nullable>
+        <RootNamespace>SufiChain.SufiPlatform.ShortLinks</RootNamespace>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="shortid" Version="$(ShortidVersion)" />
+        <ProjectReference Include="../../../../framework/SufiChain.SufiPlatform.Core/SufiChain.SufiPlatform.Core.csproj" />
+        <PackageReference Include="Volo.Abp.Ddd.Domain" Version="$(AbpVersion)" />
+    <PackageReference Include="Volo.Abp.Caching" Version="$(AbpVersion)" />
+    <ProjectReference Include="../../../../framework/SufiChain.SufiPlatform.Features/SufiChain.SufiPlatform.Features.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\SufiChain.SufiPlatform.ShortLinks.Domain.Shared\SufiChain.SufiPlatform.ShortLinks.Domain.Shared.csproj" />
+    </ItemGroup>
+
+</Project>
+

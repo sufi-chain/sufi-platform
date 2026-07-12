@@ -1,0 +1,51 @@
+@namespace SufiChain.SufiPlatform.Users.Blazor.Public.Components
+@using SufiChain.SufiPlatform.Users
+@using SufiChain.SufiBlazor.Contracts.Data
+@inherits UsersPublicComponentBase
+
+<SbDialog Open="@Open"
+          OpenChanged="@OnDialogOpenChangedAsync"
+          Size="SbDialogSize.Lg"
+          Title="@DialogTitle">
+    <ChildContent>
+        <SbStack Gap="3">
+            <SbTextField TValue="string"
+                         @bind-Value="_filter"
+                         @bind-Value:after="OnFilterChangedAsync"
+                         Label="@L["SearchUsers"]"
+                         Placeholder="@L["SearchUsers"]"
+                         Clearable="true"
+                         Disabled="@Disabled">
+                <StartAdornment>
+                    <SbIcon Name="search" />
+                </StartAdornment>
+            </SbTextField>
+
+            <SufiUserSelectorUserGrid @ref="_userGridRef"
+                                      ItemsProvider="LoadUsersDataAsync"
+                                      Loading="@IsOperationLoading(LoadingKeys.LoadUsers)"
+                                      PageIndex="_pageIndex"
+                                      PageSize="_pageSize"
+                                      TotalCount="_totalCount"
+                                      PageIndexChanged="OnPageIndexChangedAsync"
+                                      SelectionMode="SbSelectionMode.MultipleRows"
+                                      SelectedKeys="_selectedKeys"
+                                      SelectedKeysChanged="OnSelectedKeysChangedAsync" />
+
+            @if (_selectedUsers.Count > 0)
+            {
+                <SbAlert Color="SbColor.Info">@L["SelectedUsersCount", _selectedUsers.Count]</SbAlert>
+            }
+        </SbStack>
+    </ChildContent>
+    <Footer>
+        <SbStack Direction="SbStackDirection.Row" Gap="2" Justify="SbJustify.End">
+            <SbButton Variant="SbButtonVariant.Outline" OnClick="@CloseAsync">@L["Cancel"]</SbButton>
+            <SbButton Color="SbColor.Primary"
+                      OnClick="@ConfirmAsync"
+                      Disabled="@(_selectedUsers.Count == 0 || Disabled)">
+                @L["Select"]
+            </SbButton>
+        </SbStack>
+    </Footer>
+</SbDialog>

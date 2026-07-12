@@ -1,0 +1,58 @@
+@namespace SufiChain.SufiPlatform.FileManager.Blazor.Public.Components
+@if (_isLoading)
+{
+    <div class="file-video file-video--loading @Class" style="@GetContainerStyle()">
+        <div class="file-video__placeholder">
+            @if (LoadingTemplate != null)
+            {
+                @LoadingTemplate
+            }
+            else
+            {
+                <span class="file-video__spinner"></span>
+            }
+        </div>
+    </div>
+}
+else if (_hasError || _fileInfo == null || string.IsNullOrEmpty(_fileInfo.StreamUrl))
+{
+    <div class="file-video file-video--error @Class" style="@GetContainerStyle()">
+        @if (ErrorTemplate != null)
+        {
+            @ErrorTemplate
+        }
+        else
+        {
+            <div class="file-video__placeholder file-video__placeholder--error">
+                <span>Video not available</span>
+            </div>
+        }
+    </div>
+}
+else
+{
+    <div class="file-video @Class" style="@GetContainerStyle()">
+        <video class="file-video__player"
+               src="@_fileInfo.StreamUrl"
+               poster="@(_fileInfo.ThumbnailUrl ?? Poster)"
+               controls="@Controls"
+               autoplay="@Autoplay"
+               muted="@Muted"
+               loop="@Loop"
+               playsinline="@Playsinline"
+               preload="@Preload"
+               width="@(Width > 0 ? Width.ToString() : null)"
+               height="@(Height > 0 ? Height.ToString() : null)">
+            Your browser does not support the video tag.
+        </video>
+        
+        @if (ShowDownloadLink && !string.IsNullOrEmpty(_fileInfo.DownloadUrl))
+        {
+            <div class="file-video__download">
+                <a href="@_fileInfo.DownloadUrl" download="@_fileInfo.FileName" target="_blank">
+                    Download video
+                </a>
+            </div>
+        }
+    </div>
+}

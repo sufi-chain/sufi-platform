@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <PackageId>SufiChain.SufiPlatform.Tenants.MongoDB</PackageId>
+    <RootNamespace>SufiChain.SufiPlatform.Tenants</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Volo.Abp.MongoDB" Version="$(AbpVersion)" />
+    <ProjectReference Include="..\SufiChain.SufiPlatform.Tenants.Domain\SufiChain.SufiPlatform.Tenants.Domain.csproj" />
+  </ItemGroup>
+</Project>

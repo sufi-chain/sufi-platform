@@ -1,0 +1,88 @@
+@inherits AIComponentBase
+@namespace SufiChain.SufiPlatform.SufiAI.Blazor.Pages.AI
+
+<SbStack Direction="SbStackDirection.Column" Gap="4">
+    <WorkspaceSelector Value="_selectedWorkspaceId"
+                       ValueChanged="@OnWorkspaceChangedAsync"
+                       Workspaces="_workspaces"
+                       Loading="@IsOperationLoading(ToolChatLoadingKeys.LoadWorkspaces)" />
+
+    <SbCard>
+        <ChildContent>
+            <SbStack Direction="SbStackDirection.Column" Gap="3">
+                <SbStack Direction="SbStackDirection.Row" Gap="2" Justify="SbJustify.SpaceBetween" Align="SbAlign.Center">
+                    <SbHeading Level="5">@L["MCPToolChat"]</SbHeading>
+                    <SbButton Color="SbColor.Secondary"
+                              Variant="SbButtonVariant.Outline"
+                              OnClick="@ClearChat">
+                        <StartIcon><SbIcon Name="refresh" /></StartIcon>
+                        <ChildContent>@L["ClearChat"]</ChildContent>
+                    </SbButton>
+                </SbStack>
+
+                <SbText Variant="SbTextVariant.BodySmall" Color="SbColor.Muted">
+                    @L["MCPToolChatDescription"]
+                </SbText>
+
+                <SbStack Direction="SbStackDirection.Column" Gap="3" style="min-height: 360px; max-height: 520px; overflow-y: auto;">
+                    @if (!_messages.Any())
+                    {
+                        <SbStack Direction="SbStackDirection.Column" Gap="2" Align="SbAlign.Center" style="padding: 3rem 0;">
+                            <SbIcon Name="wrench" Size="SbSize.Xl" Color="SbColor.Muted" />
+                            <SbText Variant="SbTextVariant.Body" Color="SbColor.Muted">@L["NoMessagesYet"]</SbText>
+                            <SbText Variant="SbTextVariant.BodySmall" Color="SbColor.Muted">@L["AskToolEnabledQuestion"]</SbText>
+                        </SbStack>
+                    }
+                    else
+                    {
+                        @foreach (var message in _messages)
+                        {
+                            <SbStack Direction="SbStackDirection.Row" Justify="@(message.IsUser ? SbJustify.End : SbJustify.Start)">
+                                <SbCard Elevation="1" style="@($"max-width: 70%; background-color: {(message.IsUser ? "var(--sb-color-primary-light)" : "var(--sb-color-surface)")}")">
+                                    <ChildContent>
+                                        <SbStack Direction="SbStackDirection.Column" Gap="1">
+                                            <SbText Variant="SbTextVariant.Caption" Color="SbColor.Muted">
+                                                @(message.IsUser ? L["You"] : L["Assistant"])
+                                            </SbText>
+                                            <SbText Variant="SbTextVariant.BodySmall">@message.Content</SbText>
+                                        </SbStack>
+                                    </ChildContent>
+                                </SbCard>
+                            </SbStack>
+                        }
+                    }
+
+                    @if (IsOperationLoading(ToolChatLoadingKeys.SendMessage))
+                    {
+                        <SbStack Direction="SbStackDirection.Row" Justify="SbJustify.Start">
+                            <SbCard Elevation="1">
+                                <ChildContent>
+                                    <SbStack Direction="SbStackDirection.Row" Gap="2" Align="SbAlign.Center">
+                                        <SbProgress Indeterminate="true" style="width: 100px;" />
+                                        <SbText Variant="SbTextVariant.BodySmall" Color="SbColor.Muted">@L["Thinking"]...</SbText>
+                                    </SbStack>
+                                </ChildContent>
+                            </SbCard>
+                        </SbStack>
+                    }
+                </SbStack>
+
+                <SbTextArea @bind-Value="_messageInput"
+                            Label="@L["Message"]"
+                            Rows="3"
+                            Placeholder="@L["AskToolEnabledQuestion"]"
+                            Disabled="@string.IsNullOrWhiteSpace(_selectedWorkspaceName)" />
+
+                <SbStack Direction="SbStackDirection.Row" Gap="2" Justify="SbJustify.End">
+                    <SbButton Color="SbColor.Primary"
+                              OnClick="@SendMessageAsync"
+                              Loading="@IsOperationLoading(ToolChatLoadingKeys.SendMessage)"
+                              Disabled="@(string.IsNullOrWhiteSpace(_selectedWorkspaceName) || string.IsNullOrWhiteSpace(_messageInput))">
+                        <StartIcon><SbIcon Name="send" /></StartIcon>
+                        <ChildContent>@L["Send"]</ChildContent>
+                    </SbButton>
+                </SbStack>
+            </SbStack>
+        </ChildContent>
+    </SbCard>
+</SbStack>

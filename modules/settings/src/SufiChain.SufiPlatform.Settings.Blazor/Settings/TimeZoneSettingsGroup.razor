@@ -1,0 +1,43 @@
+@namespace SufiChain.SufiPlatform.Settings.Blazor.Settings
+@inherits SettingsComponentBase
+
+<SbStack Gap="4" class="p-4">
+    @if (IsOperationLoading(LoadingKeys.Load))
+    {
+        <div class="text-center py-4">
+            <SbProgress Type="SbProgressType.Circular" />
+        </div>
+    }
+    else
+    {
+        <SbStack Gap="4">
+            <div>
+                <h6 class="mb-3">@L["TimeZoneConfiguration"]</h6>
+                <SbStack Gap="3">
+                    <SbSimpleSelect TValue="string" 
+                              Value="@_selectedTimeZone"
+                              ValueChanged="@((string? v) => _selectedTimeZone = v)"
+                              Label="@((string)L["DefaultTimeZone"])"
+                              Searchable="true"
+                              SearchPlaceholder="@L["SearchTimeZone"]">
+                        @foreach (var tz in _timeZones)
+                        {
+                            <SbSelectOption TValue="string" Value="@tz.Value">
+                                @tz.Name
+                            </SbSelectOption>
+                        }
+                    </SbSimpleSelect>
+                    
+                    @if (!string.IsNullOrEmpty(_selectedTimeZone))
+                    {
+                        <SbAlert Severity="SbAlertSeverity.Info">
+                            <strong>@L["CurrentTimeZone"]:</strong> @_selectedTimeZone
+                            <br />
+                            <small>@L["CurrentTime"]: @GetCurrentTimeInSelectedTimeZone()</small>
+                        </SbAlert>
+                    }
+                </SbStack>
+            </div>
+        </SbStack>
+    }
+</SbStack>

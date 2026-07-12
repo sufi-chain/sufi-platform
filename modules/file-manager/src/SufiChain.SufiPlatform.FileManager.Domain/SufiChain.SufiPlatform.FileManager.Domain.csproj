@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <RootNamespace>SufiChain.SufiPlatform.FileManager</RootNamespace>
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <PackageId>SufiChain.SufiPlatform.FileManager.Domain</PackageId>
+    <Description>File manager module domain layer for Sufi Platform - entities, repositories, and domain services.</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Volo.Abp.Ddd.Domain" Version="$(AbpVersion)" />
+    <ProjectReference Include="../../../blob-database/src/SufiChain.SufiPlatform.BlobDatabase.Domain/SufiChain.SufiPlatform.BlobDatabase.Domain.csproj" />
+    <PackageReference Include="Volo.Abp.BackgroundJobs" Version="$(AbpVersion)" />
+    <ProjectReference Include="..\..\..\..\framework\SufiChain.SufiPlatform.Features\SufiChain.SufiPlatform.Features.csproj" />
+    <ProjectReference Include="..\SufiChain.SufiPlatform.FileManager.Domain.Shared\SufiChain.SufiPlatform.FileManager.Domain.Shared.csproj" />
+  </ItemGroup>
+
+
+</Project>

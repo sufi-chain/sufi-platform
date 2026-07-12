@@ -1,0 +1,1128 @@
+@namespace SufiChain.SufiPlatform.FileManager.Blazor.Pages
+@page "/panel/admin/file-manager/structures"
+@using SufiChain.SufiPlatform.FileManager.Storage
+@using SufiChain.SufiPlatform.UI.Blazor
+@inherits FileManagerComponentBase
+@attribute [Authorize(FileManagerPermissions.FileStructures.Default)]
+
+<SufiPageToolbar>
+	<SbStack Direction="SbStackDirection.Row" Gap="2">
+		<SbButton Color="SbColor.Primary" OnClick="@OpenCreateModal">
+			<StartIcon><SbIcon Name="plus" /></StartIcon>
+			<ChildContent>@L["AddStructure"]</ChildContent>
+		</SbButton>
+		<SbButton Color="SbColor.Primary" Variant="SbButtonVariant.Outline" OnClick="@LoadStructures">
+			<StartIcon><SbIcon Name="refresh" /></StartIcon>
+			<ChildContent>@L["Refresh"]</ChildContent>
+		</SbButton>
+	</SbStack>
+</SufiPageToolbar>
+
+<SbStack Direction="SbStackDirection.Column" Gap="4">
+
+	<!-- Statistics -->
+	<SbGrid Columns="2" ColumnsMd="4" Gap="4">
+		<SbStatCard Label="@L["TotalStructures"]" Value="@_structures.Count.ToString()" Class="flex-1">
+			<Icon><SbIcon Name="folder" Color="SbColor.Primary" /></Icon>
+		</SbStatCard>
+		<SbStatCard Label="@L["UsingDefaults"]" Value="@_structures.Count(s => s.HasDefaultConfig && !s.IsModifiedFromDefault).ToString()" Class="flex-1">
+			<Icon><SbIcon Name="check" Color="SbColor.Success" /></Icon>
+		</SbStatCard>
+		<SbStatCard Label="@L["Modified"]" Value="@_structures.Count(s => s.IsModifiedFromDefault).ToString()" Class="flex-1">
+			<Icon><SbIcon Name="edit" Color="SbColor.Warning" /></Icon>
+		</SbStatCard>
+		<SbStatCard Label="@L["Custom"]" Value="@_structures.Count(s => !s.HasDefaultConfig).ToString()" Class="flex-1">
+			<Icon><SbIcon Name="plus" Color="SbColor.Info" /></Icon>
+		</SbStatCard>
+	</SbGrid>
+
+	<!-- Search Box -->
+	<SbStack Direction="SbStackDirection.Row" Justify="SbJustify.Start" Align="SbAlign.Center">
+		<div style="width: 300px;">
+			<SbTextField Placeholder="@L["SearchStructures"]" @bind-Value="@_searchTerm" @oninput="OnSearchChanged">
+				<StartAdornment><SbIcon Name="search" /></StartAdornment>
+			</SbTextField>
+		</div>
+	</SbStack>
+
+	<!-- Structures Table -->
+	<SbCard NoPadding>
+		<ChildContent>
+			@if (_loading)
+			{
+				<div class="text-center py-5">
+					<SbProgress Type="SbProgressType.Circular" />
+					<p class="mt-3 text-muted">@L["LoadingStructures"]</p>
+				</div>
+			}
+			else if (!FilteredStructures.Any())
+			{
+				<SbEmptyState Class="py-5">
+					<SbIcon Name="folder" Size="SbSize.Xl" />
+					<h5>@L["NoStructuresFound"]</h5>
+					<p class="text-muted">
+						@if (string.IsNullOrEmpty(_searchTerm))
+						{
+							<text>@L["CreateFirstStructure"]</text>
+						}
+						else
+						{
+							<text>@L["NoStructuresMatchSearch"]</text>
+						}
+					</p>
+				</SbEmptyState>
+			}
+			else
+			{
+				<SbTable TItem="FileStructureDto" Items="@FilteredStructures" Hover>
+					<HeaderContent>
+						<tr>
+							<th style="min-width: 100px">@L["Key"]</th>
+							<th style="min-width: 200px">@L["DisplayName"]</th>
+							<th style="min-width: 150px">@L["FileTypes"]</th>
+							<th style="min-width: 100px">@L["MaxSize"]</th>
+							<th style="min-width: 100px">@L["StorageProvider"]</th>
+							<th style="min-width: 100px">@L["Status"]</th>
+							<th style="min-width: 100px;">@L["Actions"]</th>
+						</tr>
+					</HeaderContent>
+					<RowTemplate Context="structure">
+						<td>
+							<code class="structure-key">@structure.Key</code>
+						</td>
+						<td>
+							<strong>@ResolveStructureText(structure)</strong>
+							@if (!string.IsNullOrEmpty(structure.Description))
+							{
+								<br />
+								<small class="text-muted">@TruncateText(ResolveStructureDescription(structure), 50)</small>
+							}
+						</td>
+						<td>
+							@foreach (var type in GetFileTypes(structure.AllowedFileTypes))
+							{
+								<SbChip Color="@GetFileTypeColor(type)" Size="SbSize.Sm" Class="me-1">
+									@L[type]
+								</SbChip>
+							}
+						</td>
+						<td>
+							<strong>@FormatSize(structure.MaxFileSize)</strong>
+						</td>
+						<td>
+							@GetStorageProviderDisplay(structure.StorageConfig?.StorageProvider, structure.StorageProvider)
+						</td>
+						<td>
+							@if (!structure.HasDefaultConfig)
+							{
+								<SbChip Color="SbColor.Primary" Size="SbSize.Sm">@L["Custom"]</SbChip>
+							}
+							else if (structure.IsModifiedFromDefault)
+							{
+								<SbChip Color="SbColor.Warning" Size="SbSize.Sm">@L["Modified"]</SbChip>
+							}
+							else
+							{
+								<SbChip Color="SbColor.Success" Size="SbSize.Sm">@L["Default"]</SbChip>
+							}
+						</td>
+						<td>
+							<SbStack Direction="SbStackDirection.Row" Gap="1">
+								<SbTooltip Text="@L["ViewDetails"]">
+									<SbIconButton Color="SbColor.Success" Size="SbSize.Sm" OnClick="@(async () => await OpenViewModal(structure))" AriaLabel="@L["ViewDetails"]">
+										<Icon><SbIcon Name="eye" /></Icon>
+									</SbIconButton>
+								</SbTooltip>
+								<SbTooltip Text="@L["Edit"]">
+									<SbIconButton Color="SbColor.Info" Size="SbSize.Sm" OnClick="@(async () => await OpenEditModal(structure))" AriaLabel="@L["Edit"]">
+										<Icon><SbIcon Name="edit" /></Icon>
+									</SbIconButton>
+								</SbTooltip>
+								@if (structure.HasDefaultConfig && structure.IsModifiedFromDefault)
+								{
+									<SbTooltip Text="@L["ResetToDefault"]">
+										<SbIconButton Color="SbColor.Warning" Size="SbSize.Sm" OnClick="@(() => ResetToDefault(structure))" AriaLabel="@L["ResetToDefault"]">
+											<Icon><SbIcon Name="refresh" /></Icon>
+										</SbIconButton>
+									</SbTooltip>
+								}
+								@if (!structure.IsStatic)
+								{
+									<SbTooltip Text="@L["Delete"]">
+										<SbIconButton Color="SbColor.Danger" Size="SbSize.Sm" OnClick="@(() => DeleteStructure(structure))" AriaLabel="@L["Delete"]">
+											<Icon><SbIcon Name="trash" /></Icon>
+										</SbIconButton>
+									</SbTooltip>
+								}
+							</SbStack>
+						</td>
+					</RowTemplate>
+				</SbTable>
+			}
+		</ChildContent>
+	</SbCard>
+</SbStack>
+
+<!-- Create Wizard Modal -->
+<SbDialog @bind-Open="_createWizardOpen" Title="@L["CreateStructure"]" Size="SbDialogSize.Lg">
+	<ChildContent>
+		<div class="create-wizard-stepper-container">
+			@if (_createEditContext != null)
+			{
+				<EditForm EditContext="_createEditContext">
+					<DataAnnotationsValidator />
+					<SbStepper @bind-ActiveIndex="_wizardStep" ShowNavigation="false" Linear="true" Class="create-wizard-stepper">
+						<SbStep Label="@L["CreateWizard:Introduction"]" Description="@L["CreateWizard:IntroductionDescription"]">
+							<SbStack Gap="4" Class="p-4">
+								<SbText Color="SbColor.Muted">@L["CreateWizard:StructureIntro"]</SbText>
+								<SbAlert Severity="SbAlertSeverity.Info">
+									@L["CreateWizard:StructureIntroTip"]
+								</SbAlert>
+							</SbStack>
+						</SbStep>
+						<SbStep Label="@L["CreateWizard:Identity"]" Description="@L["CreateWizard:IdentityDescription"]">
+							<SbStack Gap="4" Class="p-4">
+								@if (_wizardStep == 1)
+								{
+									<SbValidationSummary />
+								}
+								<SbFormField Label="@L["Key"]" Required Class="flex-1">
+									<SbTextField @bind-Value="@_editModel.Key" Placeholder="@L["KeyPlaceholder"]" />
+									<small class="text-muted">@L["UniqueIdentifierHint"]</small>
+								</SbFormField>
+								<SbFormField Label="@L["DisplayName"]" Required Class="flex-1">
+									<SbTextField @bind-Value="@_editModel.DisplayName" Placeholder="@L["DisplayNamePlaceholder"]" />
+								</SbFormField>
+								<SbFormField Label="@L["Description"]">
+									<SbTextField @bind-Value="@_editModel.Description" Placeholder="@L["BriefDescription"]" />
+								</SbFormField>
+							</SbStack>
+						</SbStep>
+						<SbStep Label="@L["CreateWizard:FileTypes"]" Description="@L["CreateWizard:FileTypesDescription"]">
+							<div class="p-4">
+								<div>
+									<label class="form-label">@L["AllowedFileTypes"]</label>
+									<SbStack Direction="SbStackDirection.Row" Gap="2" Wrap="true">
+										<SbChip Color="@(HasFileType(FileType.Image) ? SbColor.Success : SbColor.Default)"
+												OnClick="@(() => ToggleFileType(FileType.Image, !HasFileType(FileType.Image)))">@L["FileTypeImage"]</SbChip>
+										<SbChip Color="@(HasFileType(FileType.Video) ? SbColor.Success : SbColor.Default)"
+												OnClick="@(() => ToggleFileType(FileType.Video, !HasFileType(FileType.Video)))">@L["FileTypeVideo"]</SbChip>
+										<SbChip Color="@(HasFileType(FileType.Document) ? SbColor.Success : SbColor.Default)"
+												OnClick="@(() => ToggleFileType(FileType.Document, !HasFileType(FileType.Document)))">@L["FileTypeDocument"]</SbChip>
+										<SbChip Color="@(HasFileType(FileType.Audio) ? SbColor.Success : SbColor.Default)"
+												OnClick="@(() => ToggleFileType(FileType.Audio, !HasFileType(FileType.Audio)))">@L["FileTypeAudio"]</SbChip>
+									</SbStack>
+								</div>
+								<SbStack Direction="SbStackDirection.Column" Gap="4" Class="mt-4">
+									<SbFormField Label="@L["Extensions"]" Class="flex-1">
+										<SbTagInput Tags="_extensionTags" TagsChanged="SyncExtensionsToModel" Placeholder="@L["AddExtension"]" Delimiters="@(new[] { "Enter", "Tab", "," })" />
+									</SbFormField>
+									<SbFormField Label="@L["MIMETypes"]" Class="flex-1">
+										<SbTagInput Tags="_mimeTypeTags" TagsChanged="SyncMimeTypesToModel" Placeholder="@L["AddMimeType"]" Delimiters="@(new[] { "Enter", "Tab", "," })" />
+									</SbFormField>
+								</SbStack>
+							</div>
+						</SbStep>
+						<SbStep Label="@L["CreateWizard:FileSettings"]" Description="@L["CreateWizard:FileSettingsDescription"]">
+							<div class="p-4">
+								<SbStack Gap="4">
+									<SbStack Direction="SbStackDirection.Row" Justify="SbJustify.SpaceBetween" Align="SbAlign.Center">
+										<div>
+											<strong>@L["MaxFileSize"]</strong>
+											<br /><small class="text-muted">@L["MaxFileSizeHint"]</small>
+										</div>
+										<SbStack Direction="SbStackDirection.Row" Gap="2" Align="SbAlign.Center">
+											<SbNumberField TNumber="decimal" Value="@(_editModel.MaxFileSize / 1024m / 1024m)" ValueChanged="@(v => _editModel.MaxFileSize = (long)(v * 1024 * 1024))" Min="1" Style="width: 100px;" />
+											<span>MB</span>
+										</SbStack>
+									</SbStack>
+									<SbStack Direction="SbStackDirection.Row" Justify="SbJustify.SpaceBetween" Align="SbAlign.Center">
+										<div>
+											<strong>@L["Required"]</strong>
+											<br /><small class="text-muted">@L["RequiredHint"]</small>
+										</div>
+										<SbSwitch @bind-Value="@_editModel.IsRequired" />
+									</SbStack>
+									<SbStack Direction="SbStackDirection.Row" Justify="SbJustify.SpaceBetween" Align="SbAlign.Center">
+										<div>
+											<strong>@L["MultipleFiles"]</strong>
+											<br /><small class="text-muted">@L["MultipleFilesHint"]</small>
+										</div>
+										<SbSwitch @bind-Value="@_editModel.IsMultiple" />
+									</SbStack>
+									@if (_editModel.IsMultiple)
+									{
+										<SbStack Direction="SbStackDirection.Row" Justify="SbJustify.SpaceBetween" Align="SbAlign.Center" Class="ps-4">
+											<div>
+												<strong>@L["MaxFiles"]</strong>
+												<br /><small class="text-muted">@L["MaxFilesHint"]</small>
+											</div>
+											<SbNumberField TNumber="int" Value="@(_editModel.MaxCount ?? 1)" ValueChanged="@(v => _editModel.MaxCount = v)" Min="1" Max="100" Style="width: 100px;" />
+										</SbStack>
+									}
+									<SbDivider />
+									<h5 class="m-0">@L["ImageDimensionsOptional"]</h5>
+									<SbStack Direction="SbStackDirection.Column" Gap="4">
+										<SbStack Direction="SbStackDirection.Row" Gap="2" Align="SbAlign.Center" Class="flex-1">
+											<span class="text-muted">@L["MinLabel"]:</span>
+											<SbNumberField TNumber="int" Value="@(_editModel.MinImageWidth ?? 0)" ValueChanged="@(v => _editModel.MinImageWidth = v > 0 ? v : null)" Min="0" Placeholder="W" Style="width: 80px;" />
+											<span>×</span>
+											<SbNumberField TNumber="int" Value="@(_editModel.MinImageHeight ?? 0)" ValueChanged="@(v => _editModel.MinImageHeight = v > 0 ? v : null)" Min="0" Placeholder="H" Style="width: 80px;" />
+											<span>px</span>
+										</SbStack>
+										<SbStack Direction="SbStackDirection.Row" Gap="2" Align="SbAlign.Center" Class="flex-1">
+											<span class="text-muted">@L["MaxLabel"]:</span>
+											<SbNumberField TNumber="int" Value="@(_editModel.MaxImageWidth ?? 0)" ValueChanged="@(v => _editModel.MaxImageWidth = v > 0 ? v : null)" Min="0" Placeholder="W" Style="width: 80px;" />
+											<span>×</span>
+											<SbNumberField TNumber="int" Value="@(_editModel.MaxImageHeight ?? 0)" ValueChanged="@(v => _editModel.MaxImageHeight = v > 0 ? v : null)" Min="0" Placeholder="H" Style="width: 80px;" />
+											<span>px</span>
+										</SbStack>
+									</SbStack>
+								</SbStack>
+							</div>
+						</SbStep>
+						<SbStep Label="@L["CreateWizard:ImageProcessing"]" Description="@L["CreateWizard:ImageProcessingDescription"]">
+							<div class="p-4">
+								@if (HasFileType(FileType.Image))
+								{
+									<SbStack Gap="4">
+										<SbStack Direction="SbStackDirection.Row" Justify="SbJustify.SpaceBetween" Align="SbAlign.Center">
+											<div>
+												<strong>@L["GenerateThumbnail"]</strong>
+												<br /><small class="text-muted">@L["GenerateThumbnailHint"]</small>
+											</div>
+											<SbSwitch @bind-Value="@_editModel.GenerateThumbnail" />
+										</SbStack>
+										@if (_editModel.GenerateThumbnail)
+										{
+											<SbStack Direction="SbStackDirection.Row" Justify="SbJustify.SpaceBetween" Align="SbAlign.Center">
+												<strong>@L["ThumbnailSize"]</strong>
+												<SbStack Direction="SbStackDirection.Row" Gap="2" Align="SbAlign.Center">
+													<SbNumberField TNumber="int" @bind-Value="@_editModel.ThumbnailWidth" Min="16" Max="1000" Style="width: 100px;" />
+													<span>×</span>
+													<SbNumberField TNumber="int" @bind-Value="@_editModel.ThumbnailHeight" Min="16" Max="1000" Style="width: 100px;" />
+												</SbStack>
+											</SbStack>
+										}
+										<SbStack Direction="SbStackDirection.Row" Justify="SbJustify.SpaceBetween" Align="SbAlign.Center">
+											<div>
+												<strong>@L["WebPConversion"]</strong>
+												<br /><small class="text-muted">@L["WebPConversionHint"]</small>
+											</div>
+											<SbSwitch @bind-Value="@_editModel.EnableWebPConversion" />
+										</SbStack>
+										@if (_editModel.EnableWebPConversion)
+										{
+											<SbStack Direction="SbStackDirection.Row" Justify="SbJustify.SpaceBetween" Align="SbAlign.Center" Class="ps-4">
+												<strong>@L["Quality"]</strong>
+												<SbStack Direction="SbStackDirection.Row" Gap="2" Align="SbAlign.Center">
+													<SbNumberField TNumber="int" @bind-Value="@_editModel.WebPQuality" Min="1" Max="100" Style="width: 80px;" />
+													<span>%</span>
+												</SbStack>
+											</SbStack>
+										}
+										<SbStack Direction="SbStackDirection.Row" Justify="SbJustify.SpaceBetween" Align="SbAlign.Center">
+											<div>
+												<strong>@L["ResizeLargeImages"]</strong>
+												<br /><small class="text-muted">@L["ResizeLargeImagesHint"]</small>
+											</div>
+											<SbSwitch @bind-Value="@_editModel.ResizeLargeImages" />
+										</SbStack>
+									</SbStack>
+								}
+								else
+								{
+									<SbAlert Severity="SbAlertSeverity.Info">@L["CreateWizard:ImageProcessingNotApplicable"]</SbAlert>
+								}
+							</div>
+						</SbStep>
+						<SbStep Label="@L["CreateWizard:Storage"]" Description="@L["CreateWizard:StorageDescription"]">
+							<div class="p-4">
+								<SbStack Gap="4">
+									<p class="text-muted mb-3">@L["CreateWizard:StorageIntro"]</p>
+									@if (_hasDefaultStorageConfigured)
+									{
+										<SbAlert Severity="SbAlertSeverity.Info">@L["CreateWizard:StorageUseDefault"]</SbAlert>
+									}
+									else
+									{
+										<SbAlert Severity="SbAlertSeverity.Warning">@L["CreateWizard:StorageConfigureRequired"]</SbAlert>
+									}
+									@if (_editModel.StorageConfig != null)
+									{
+										<SbFormField Label="@L["StorageProvider"]" HelperText="@L[GetStorageProviderBriefKey(_editModel.StorageConfig.StorageProvider)]">
+											<SbSelect TItem="FileStructureStorageProvider" TValue="FileStructureStorageProvider"
+													  Items="@_storageProviderOptions" TextField="@GetStorageProviderLabel" ValueField="@(p => p)"
+													  @bind-Value="@_editModel.StorageConfig.StorageProvider" />
+										</SbFormField>
+										@if (_editModel.StorageConfig.StorageProvider == FileStructureStorageProvider.Database)
+										{
+											<SbFormField Label="@L["DatabaseConnectionString"]" HelperText="@L["DatabaseConnectionStringHint"]">
+												<SbTextField @bind-Value="@_editModel.StorageConfig.DatabaseConnectionString" Placeholder="@L["LeaveEmptyForDefault"]" Type="password" AutoComplete="new-password" />
+											</SbFormField>
+										}
+										@if (_editModel.StorageConfig.StorageProvider == FileStructureStorageProvider.FileSystem)
+										{
+											<SbFormField Label="@L["FileSystemBasePath"]" HelperText="@L["FileSystemBasePathHint"]">
+												<SbTextField @bind-Value="@_editModel.StorageConfig.FileSystemBasePath" Placeholder="@L["LeaveEmptyForStandardizedPath"]" />
+											</SbFormField>
+										}
+										@if (_editModel.StorageConfig.StorageProvider == FileStructureStorageProvider.MinIO)
+										{
+											<SbFormField Label="@L["MinioEndPoint"]"><SbTextField @bind-Value="@_editModel.StorageConfig.MinioEndPoint" Placeholder="https://minio.example.com" /></SbFormField>
+											<SbFormField Label="@L["MinioAccessKey"]"><SbTextField @bind-Value="@_editModel.StorageConfig.MinioAccessKey" Type="password" /></SbFormField>
+											<SbFormField Label="@L["MinioSecretKey"]"><SbTextField @bind-Value="@_editModel.StorageConfig.MinioSecretKey" Type="password" /></SbFormField>
+											<SbFormField Label="@L["MinioBucketName"]"><SbTextField @bind-Value="@_editModel.StorageConfig.MinioBucketName" Placeholder="my-bucket" /></SbFormField>
+										}
+										@if (_editModel.StorageConfig.StorageProvider == FileStructureStorageProvider.S3Provider)
+										{
+											<SbFormField Label="@L["S3Region"]"><SbTextField @bind-Value="@_editModel.StorageConfig.S3Region" Placeholder="us-east-1" /></SbFormField>
+											<SbFormField Label="@L["S3ContainerName"]"><SbTextField @bind-Value="@_editModel.StorageConfig.S3ContainerName" Placeholder="my-bucket" /></SbFormField>
+											<SbFormField Label="@L["S3AccessKeyId"]"><SbTextField @bind-Value="@_editModel.StorageConfig.S3AccessKeyId" Type="password" /></SbFormField>
+											<SbFormField Label="@L["S3SecretAccessKey"]"><SbTextField @bind-Value="@_editModel.StorageConfig.S3SecretAccessKey" Type="password" /></SbFormField>
+										}
+									}
+								</SbStack>
+							</div>
+						</SbStep>
+						<SbStep Label="@L["CreateWizard:Review"]" Description="@L["CreateWizard:ReviewDescription"]">
+							<div class="p-4">
+								<SbStack Gap="3">
+									<div class="detail-row"><span class="detail-label">@L["Key"]:</span> <code>@_editModel.Key</code></div>
+									<div class="detail-row"><span class="detail-label">@L["DisplayName"]:</span> @(string.IsNullOrEmpty(_editModel.DisplayName) ? "-" : _editModel.DisplayName)</div>
+									<div class="detail-row"><span class="detail-label">@L["FileTypes"]:</span> @string.Join(", ", GetFileTypes(_editModel.AllowedFileTypes).Select(t => L[t].Value))</div>
+									<div class="detail-row"><span class="detail-label">@L["MaxFileSize"]:</span> @FormatSize(_editModel.MaxFileSize)</div>
+									<div class="detail-row"><span class="detail-label">@L["StorageProvider"]:</span> @GetStorageProviderLabel(_editModel.StorageConfig?.StorageProvider ?? FileStructureStorageProvider.Database)</div>
+								</SbStack>
+							</div>
+						</SbStep>
+					</SbStepper>
+				</EditForm>
+			}
+		</div>
+	</ChildContent>
+	<Footer>
+		<SbStack Direction="SbStackDirection.Row" Gap="2" Justify="SbJustify.SpaceBetween" Align="SbAlign.Center">
+			<SbStack Direction="SbStackDirection.Row" Gap="2">
+				@if (_wizardStep > 0)
+				{
+					<SbButton Color="SbColor.Default" OnClick="@WizardBack">
+						<ChildContent>@L["Previous"]</ChildContent>
+					</SbButton>
+				}
+				@if (_wizardStep < 6)
+				{
+					<SbButton Color="SbColor.Primary" OnClick="@WizardNext">
+						<ChildContent>@L["Next"]</ChildContent>
+					</SbButton>
+				}
+				else
+				{
+					<SbButton Color="SbColor.Primary" OnClick="@WizardFinish" Loading="@_saving">
+						<StartIcon><SbIcon Name="check" /></StartIcon>
+						<ChildContent>@L["Create"]</ChildContent>
+					</SbButton>
+				}
+			</SbStack>
+			<SbButton Variant="SbButtonVariant.Outline" OnClick="@CloseCreateWizard">
+				<ChildContent>@L["Cancel"]</ChildContent>
+			</SbButton>
+		</SbStack>
+	</Footer>
+</SbDialog>
+
+<!-- Edit Modal -->
+<SbDialog @bind-Open="_editModalOpen" Title="@L["EditStructure"]" Size="SbDialogSize.Lg">
+	<ChildContent>
+		<SbTabs @bind-ActiveTab="_selectedTab">
+			<SbTab Id="basic" Label="@L["Basic"]">
+				<SbStack Gap="4">
+					<SbStack Direction="SbStackDirection.Column" DirectionMd="SbStackDirection.Row" Gap="4" Justify="@SbJustify.Start">
+						<SbFormField Label="@L["Key"]" Required Class="flex-1">
+							<SbTextField @bind-Value="@_editModel.Key" Placeholder="@L["KeyPlaceholder"]" Disabled="@_isEditing" />
+							<small class="text-muted">@L["UniqueIdentifierHint"]</small>
+						</SbFormField>
+						<SbFormField Label="@L["DisplayName"]" Required Class="flex-1">
+							<SbTextField @bind-Value="@_editModel.DisplayName" Placeholder="@L["DisplayNamePlaceholder"]" />
+						</SbFormField>
+					</SbStack>
+					<SbFormField Label="@L["BaseUrl"]">
+						<SbTextField @bind-Value="@_editModel.BaseUrl"
+									 Placeholder="@L["BaseUrlPlaceholder"]"
+									 HelperText="@L["BaseUrlHint"]"
+									 Type="text"
+									 InputMode="url" />
+					</SbFormField>
+					<SbFormField Label="@L["Description"]">
+						<SbTextField @bind-Value="@_editModel.Description" Placeholder="@L["BriefDescription"]" />
+					</SbFormField>
+
+					<SbStack Direction="SbStackDirection.Row" Justify="SbJustify.SpaceBetween" Align="SbAlign.Center">
+						<div>
+							<strong>@L["PublicAccess"]</strong>
+							<br /><small class="text-muted">@L["PublicAccessHint"]</small>
+						</div>
+						<SbSwitch @bind-Value="@_editModel.IsPublicAccess" />
+					</SbStack>
+
+
+					<div>
+						<label class="form-label">@L["AllowedFileTypes"]</label>
+						<SbStack Direction="SbStackDirection.Row" Gap="2" Wrap="true">
+							<SbChip Color="@(HasFileType(FileType.Image) ? SbColor.Success : SbColor.Default)"
+									OnClick="@(() => ToggleFileType(FileType.Image, !HasFileType(FileType.Image)))">
+								@L["FileTypeImage"]
+							</SbChip>
+							<SbChip Color="@(HasFileType(FileType.Video) ? SbColor.Success : SbColor.Default)"
+									OnClick="@(() => ToggleFileType(FileType.Video, !HasFileType(FileType.Video)))">
+								@L["FileTypeVideo"]
+							</SbChip>
+							<SbChip Color="@(HasFileType(FileType.Document) ? SbColor.Success : SbColor.Default)"
+									OnClick="@(() => ToggleFileType(FileType.Document, !HasFileType(FileType.Document)))">
+								@L["FileTypeDocument"]
+							</SbChip>
+							<SbChip Color="@(HasFileType(FileType.Audio) ? SbColor.Success : SbColor.Default)"
+									OnClick="@(() => ToggleFileType(FileType.Audio, !HasFileType(FileType.Audio)))">
+								@L["FileTypeAudio"]
+							</SbChip>
+						</SbStack>
+					</div>
+
+					@if (_showExtensionDetails)
+					{
+						<SbStack Direction="SbStackDirection.Column" Gap="4">
+							<SbFormField Label="@L["Extensions"]" Class="flex-1">
+								<SbTagInput Tags="_extensionTags"
+											TagsChanged="SyncExtensionsToModel"
+											Placeholder="@L["AddExtension"]"
+											Delimiters="@(new[] { "Enter", "Tab", "," })" />
+							</SbFormField>
+							<SbFormField Label="@L["MIMETypes"]" Class="flex-1">
+								<SbTagInput Tags="_mimeTypeTags"
+											TagsChanged="SyncMimeTypesToModel"
+											Placeholder="@L["AddMimeType"]"
+											Delimiters="@(new[] { "Enter", "Tab", "," })" />
+							</SbFormField>
+						</SbStack>
+					}
+					<SbButton Variant="SbButtonVariant.Ghost" OnClick="() => _showExtensionDetails = !_showExtensionDetails">
+						<ChildContent>@(_showExtensionDetails? L["HideExtensionDetails"] : L["ShowExtensionDetails"])</ChildContent>
+					</SbButton>
+				</SbStack>
+			</SbTab>
+
+			<SbTab Id="files" Label="@L["Files"]">
+				<div class="p-4">
+					<SbStack Gap="4">
+						<SbStack Direction="SbStackDirection.Row" Justify="SbJustify.SpaceBetween" Align="SbAlign.Center">
+							<div>
+								<strong>@L["MaxFileSize"]</strong>
+								<br /><small class="text-muted">@L["MaxFileSizeHint"]</small>
+							</div>
+							<SbStack Direction="SbStackDirection.Row" Gap="2" Align="SbAlign.Center">
+								<SbNumberField TNumber="decimal" Value="@(_editModel.MaxFileSize / 1024m / 1024m)"
+											   ValueChanged="@(v => _editModel.MaxFileSize = (long)(v * 1024 * 1024))"
+											   Min="0" Style="width: 100px;" />
+								<span>MB</span>
+							</SbStack>
+						</SbStack>
+
+						<SbStack Direction="SbStackDirection.Row" Justify="SbJustify.SpaceBetween" Align="SbAlign.Center">
+							<div>
+								<strong>@L["Required"]</strong>
+								<br /><small class="text-muted">@L["RequiredHint"]</small>
+							</div>
+							<SbSwitch @bind-Value="@_editModel.IsRequired" />
+						</SbStack>
+
+						<SbStack Direction="SbStackDirection.Row" Justify="SbJustify.SpaceBetween" Align="SbAlign.Center">
+							<div>
+								<strong>@L["MultipleFiles"]</strong>
+								<br /><small class="text-muted">@L["MultipleFilesHint"]</small>
+							</div>
+							<SbSwitch @bind-Value="@_editModel.IsMultiple" />
+						</SbStack>
+
+						@if (_editModel.IsMultiple)
+						{
+							<SbStack Direction="SbStackDirection.Row" Justify="SbJustify.SpaceBetween" Align="SbAlign.Center">
+								<div>
+									<strong>@L["MaxFiles"]</strong>
+									<br /><small class="text-muted">@L["MaxFilesHint"]</small>
+								</div>
+								<SbNumberField TNumber="int" Value="@(_editModel.MaxCount ?? 1)"
+											   ValueChanged="@(v => _editModel.MaxCount = v)"
+											   Min="1" Max="100" Style="width: 100px;" />
+							</SbStack>
+						}
+
+						<SbDivider />
+						<h5 class="m-0">@L["ImageDimensionsOptional"]</h5>
+
+						<SbStack Direction="SbStackDirection.Column" Gap="4">
+							<SbStack Direction="SbStackDirection.Row" Gap="2" Align="SbAlign.Center" Class="flex-1">
+								<span class="text-muted">@L["MinLabel"]:</span>
+								<SbNumberField TNumber="int" Value="@(_editModel.MinImageWidth ?? 0)"
+											   ValueChanged="@(v => _editModel.MinImageWidth = v > 0 ? v : null)"
+											   Min="0" Placeholder="W" Style="width: 80px;" />
+								<span>×</span>
+								<SbNumberField TNumber="int" Value="@(_editModel.MinImageHeight ?? 0)"
+											   ValueChanged="@(v => _editModel.MinImageHeight = v > 0 ? v : null)"
+											   Min="0" Placeholder="H" Style="width: 80px;" />
+								<span>px</span>
+							</SbStack>
+							<SbStack Direction="SbStackDirection.Row" Gap="2" Align="SbAlign.Center" Class="flex-1">
+								<span class="text-muted">@L["MaxLabel"]:</span>
+								<SbNumberField TNumber="int" Value="@(_editModel.MaxImageWidth ?? 0)"
+											   ValueChanged="@(v => _editModel.MaxImageWidth = v > 0 ? v : null)"
+											   Min="0" Placeholder="W" Style="width: 80px;" />
+								<span>×</span>
+								<SbNumberField TNumber="int" Value="@(_editModel.MaxImageHeight ?? 0)"
+											   ValueChanged="@(v => _editModel.MaxImageHeight = v > 0 ? v : null)"
+											   Min="0" Placeholder="H" Style="width: 80px;" />
+								<span>px</span>
+							</SbStack>
+						</SbStack>
+					</SbStack>
+				</div>
+			</SbTab>
+
+			<SbTab Id="processing" Label="@L["ImgProcessing"]">
+				<div class="p-4">
+					<SbStack Gap="4">
+						<SbStack Direction="SbStackDirection.Row" Justify="SbJustify.SpaceBetween" Align="SbAlign.Center">
+							<div>
+								<strong>@L["GenerateThumbnail"]</strong>
+								<br /><small class="text-muted">@L["GenerateThumbnailHint"]</small>
+							</div>
+							<SbSwitch @bind-Value="@_editModel.GenerateThumbnail" />
+						</SbStack>
+
+						@if (_editModel.GenerateThumbnail)
+						{
+							<SbStack Direction="SbStackDirection.Row" Justify="SbJustify.SpaceBetween" Align="SbAlign.Center">
+								<strong>@L["ThumbnailSize"]</strong>
+								<SbStack Direction="SbStackDirection.Row" Gap="2" Align="SbAlign.Center">
+									<SbNumberField TNumber="int" @bind-Value="@_editModel.ThumbnailWidth" Min="16" Max="1000" Style="width: 100px;" />
+									<span>×</span>
+									<SbNumberField TNumber="int" @bind-Value="@_editModel.ThumbnailHeight" Min="16" Max="1000" Style="width: 100px;" />
+								</SbStack>
+							</SbStack>
+						}
+
+						<SbStack Direction="SbStackDirection.Row" Justify="SbJustify.SpaceBetween" Align="SbAlign.Center">
+							<div>
+								<strong>@L["WebPConversion"]</strong>
+								<br /><small class="text-muted">@L["WebPConversionHint"]</small>
+							</div>
+							<SbSwitch @bind-Value="@_editModel.EnableWebPConversion" />
+						</SbStack>
+
+						@if (_editModel.EnableWebPConversion)
+						{
+							<SbStack Direction="SbStackDirection.Row" Justify="SbJustify.SpaceBetween" Align="SbAlign.Center">
+								<strong>@L["Quality"]</strong>
+								<SbStack Direction="SbStackDirection.Row" Gap="2" Align="SbAlign.Center">
+									<SbNumberField TNumber="int" @bind-Value="@_editModel.WebPQuality" Min="1" Max="100" Style="width: 80px;" />
+									<span>%</span>
+								</SbStack>
+							</SbStack>
+						}
+
+						<SbStack Direction="SbStackDirection.Row" Justify="SbJustify.SpaceBetween" Align="SbAlign.Center">
+							<div>
+								<strong>@L["ResizeLargeImages"]</strong>
+								<br /><small class="text-muted">@L["ResizeLargeImagesHint"]</small>
+							</div>
+							<SbSwitch @bind-Value="@_editModel.ResizeLargeImages" />
+						</SbStack>
+					</SbStack>
+				</div>
+			</SbTab>
+
+			<SbTab Id="providers" Label="@L["Providers"]">
+				<div class="p-4">
+					<SbStack Gap="4">
+						<p class="text-muted mb-3">@L["ProvidersTabIntro"]</p>
+
+						@if (_editModel.StorageConfig != null)
+						{
+							<SbFormField Label="@L["StorageProvider"]" HelperText="@L["StorageProviderHint"]">
+								<SbSelect TItem="FileStructureStorageProvider" TValue="FileStructureStorageProvider"
+										  Items="@_storageProviderOptions" TextField="@GetStorageProviderLabel" ValueField="@(p => p)"
+										  @bind-Value="@_editModel.StorageConfig.StorageProvider" />
+							</SbFormField>
+
+							@if (_editModel.StorageConfig.StorageProvider == FileStructureStorageProvider.Database)
+							{
+								<SbFormField Label="@L["DatabaseConnectionString"]" HelperText="@L["DatabaseConnectionStringHint"]">
+									@if (_editModel.StorageConfig.HasDatabaseConnectionString && _showDbConnectionString == false)
+									{
+										<SbStack Direction="SbStackDirection.Row" Gap="2" Align="SbAlign.Center">
+											<div class="form-control" style="flex: 1; opacity: 0.8;">••••••</div>
+											<SbButton Variant="SbButtonVariant.Outline" Size="SbSize.Sm" OnClick="@(() => _showDbConnectionString = true)">
+												@L["Change"]
+											</SbButton>
+										</SbStack>
+									}
+									else
+									{
+										<SbTextField @bind-Value="@_editModel.StorageConfig.DatabaseConnectionString"
+													 Placeholder="@L["LeaveEmptyForDefault"]"
+													 Type="password"
+													 AutoComplete="new-password"
+													 @onblur="@(() => { if (!string.IsNullOrWhiteSpace(_editModel.StorageConfig.DatabaseConnectionString)) _showDbConnectionString = false; })" />
+									}
+								</SbFormField>
+							}
+
+							@if (_editModel.StorageConfig.StorageProvider == FileStructureStorageProvider.FileSystem)
+							{
+								<SbFormField Label="@L["FileSystemBasePath"]" HelperText="@L["FileSystemBasePathHint"]">
+									<SbTextField @bind-Value="@_editModel.StorageConfig.FileSystemBasePath" Placeholder="@L["LeaveEmptyForStandardizedPath"]" />
+								</SbFormField>
+							}
+
+							@if (_editModel.StorageConfig.StorageProvider == FileStructureStorageProvider.MinIO)
+							{
+								<p class="text-muted small">@L["MinioConnectionHint"]</p>
+								<SbFormField Label="@L["MinioEndPoint"]" Required>
+									<SbTextField @bind-Value="@_editModel.StorageConfig.MinioEndPoint" Placeholder="https://minio.example.com" />
+								</SbFormField>
+								<SbFormField Label="@L["MinioAccessKey"]">
+									@if (_editModel.StorageConfig.HasMinioAccessKey && _showMinioAccessKey == false)
+									{
+										<SbStack Direction="SbStackDirection.Row" Gap="2" Align="SbAlign.Center">
+											<div class="form-control" style="flex: 1; opacity: 0.8;">••••••</div>
+											<SbButton Variant="SbButtonVariant.Outline" Size="SbSize.Sm" OnClick="@(() => _showMinioAccessKey = true)">@L["Change"]</SbButton>
+										</SbStack>
+									}
+									else
+									{
+										<SbTextField @bind-Value="@_editModel.StorageConfig.MinioAccessKey" Type="password" AutoComplete="new-password" />
+									}
+								</SbFormField>
+								<SbFormField Label="@L["MinioSecretKey"]">
+									@if (_editModel.StorageConfig.HasMinioSecretKey && _showMinioSecretKey == false)
+									{
+										<SbStack Direction="SbStackDirection.Row" Gap="2" Align="SbAlign.Center">
+											<div class="form-control" style="flex: 1; opacity: 0.8;">••••••</div>
+											<SbButton Variant="SbButtonVariant.Outline" Size="SbSize.Sm" OnClick="@(() => _showMinioSecretKey = true)">@L["Change"]</SbButton>
+										</SbStack>
+									}
+									else
+									{
+										<SbTextField @bind-Value="@_editModel.StorageConfig.MinioSecretKey" Type="password" AutoComplete="new-password" />
+									}
+								</SbFormField>
+								<SbFormField Label="@L["MinioBucketName"]" Required>
+									<SbTextField @bind-Value="@_editModel.StorageConfig.MinioBucketName" Placeholder="my-bucket" />
+								</SbFormField>
+							}
+
+							@if (_editModel.StorageConfig.StorageProvider == FileStructureStorageProvider.S3Provider)
+							{
+								<p class="text-muted small">@L["S3ConnectionHint"]</p>
+								<SbFormField Label="@L["S3EndPoint"]" HelperText="@L["S3EndPointHint"]">
+									<SbTextField @bind-Value="@_editModel.StorageConfig.S3EndPoint" Placeholder="https://s3.amazonaws.com (leave empty for AWS)" />
+								</SbFormField>
+								<SbFormField Label="@L["S3Region"]" Required>
+									<SbTextField @bind-Value="@_editModel.StorageConfig.S3Region" Placeholder="us-east-1" />
+								</SbFormField>
+								<SbFormField Label="@L["S3ContainerName"]" Required>
+									<SbTextField @bind-Value="@_editModel.StorageConfig.S3ContainerName" Placeholder="my-bucket" />
+								</SbFormField>
+								<SbFormField Label="@L["S3AccessKeyId"]">
+									@if (_editModel.StorageConfig.HasS3AccessKey && _showS3AccessKey == false)
+									{
+										<SbStack Direction="SbStackDirection.Row" Gap="2" Align="SbAlign.Center">
+											<div class="form-control" style="flex: 1; opacity: 0.8;">••••••</div>
+											<SbButton Variant="SbButtonVariant.Outline" Size="SbSize.Sm" OnClick="@(() => _showS3AccessKey = true)">@L["Change"]</SbButton>
+										</SbStack>
+									}
+									else
+									{
+										<SbTextField @bind-Value="@_editModel.StorageConfig.S3AccessKeyId" Type="password" AutoComplete="new-password" />
+									}
+								</SbFormField>
+								<SbFormField Label="@L["S3SecretAccessKey"]">
+									@if (_editModel.StorageConfig.HasS3SecretKey && _showS3SecretKey == false)
+									{
+										<SbStack Direction="SbStackDirection.Row" Gap="2" Align="SbAlign.Center">
+											<div class="form-control" style="flex: 1; opacity: 0.8;">••••••</div>
+											<SbButton Variant="SbButtonVariant.Outline" Size="SbSize.Sm" OnClick="@(() => _showS3SecretKey = true)">@L["Change"]</SbButton>
+										</SbStack>
+									}
+									else
+									{
+										<SbTextField @bind-Value="@_editModel.StorageConfig.S3SecretAccessKey" Type="password" AutoComplete="new-password" />
+									}
+								</SbFormField>
+							}
+
+							@if (_editModel.StorageConfig != null)
+							{
+								<SbStack Direction="SbStackDirection.Row" Gap="2" Justify="SbJustify.End">
+									<SbButton Variant="SbButtonVariant.Outline" Size="SbSize.Sm" OnClick="@TestStorageConnectionAsync" Loading="@_testingConnection">
+										<StartIcon><SbIcon Name="refresh" /></StartIcon>
+										<ChildContent>@L["TestConnection"]</ChildContent>
+									</SbButton>
+								</SbStack>
+							}
+						}
+					</SbStack>
+				</div>
+			</SbTab>
+		</SbTabs>
+	</ChildContent>
+	<Footer>
+		<SbStack Direction="SbStackDirection.Row" Gap="2" Justify="SbJustify.End">
+			<SbButton Color="SbColor.Default" OnClick="@CloseEditModal">
+				<ChildContent>@L["Cancel"]</ChildContent>
+			</SbButton>
+			<SbButton Color="SbColor.Primary" OnClick="@SaveStructure" Loading="@_saving">
+				<StartIcon><SbIcon Name="check" /></StartIcon>
+				<ChildContent>@(_isEditing? L["SaveChanges"] : L["Create"])</ChildContent>
+			</SbButton>
+		</SbStack>
+	</Footer>
+</SbDialog>
+
+<!-- View Details Modal -->
+<SbDialog @bind-Open="_viewModalOpen" Title="@L["StructureDetails"]" Width="80%">
+	<ChildContent>
+		@if (_viewStructure != null)
+		{
+			<div class="mb-3">
+				<code class="structure-key" style="font-size: 1.1rem;">@_viewStructure.Key</code>
+				@if (_viewStructure.HasDefaultConfig && _viewStructure.IsModifiedFromDefault)
+				{
+					<SbChip Color="SbColor.Warning" Size="SbSize.Sm" Class="ms-2">@L["ModifiedFromDefault"]</SbChip>
+				}
+			</div>
+
+			@if (_viewStructure.HasDefaultConfig && _viewStructure.IsModifiedFromDefault && _defaultConfig != null)
+			{
+				<SbAlert Severity="SbAlertSeverity.Warning" Class="mb-3">
+					@L["StructureModifiedFromDefaultMessage"]
+					<SbButton Color="SbColor.Warning" Size="SbSize.Sm" OnClick="@(() => ResetToDefault(_viewStructure))" Class="ms-2">
+						<ChildContent>@L["ResetToDefault"]</ChildContent>
+					</SbButton>
+				</SbAlert>
+
+				<SbGrid Columns="2" Gap="4">
+					<SbCard Class="flex-1" Outlined>
+						<Header><strong style="color: var(--sb-color-success);">@L["DeveloperDefault"]</strong></Header>
+						<ChildContent>
+							@if (_defaultConfig != null)
+							{
+								<div class="detail-row">
+									<span class="detail-label">@L["DisplayName"]:</span>
+									<span>@ResolveStructureText(_defaultConfig)</span>
+								</div>
+								<div class="detail-row">
+									<span class="detail-label">@L["Description"]:</span>
+									<span>@(!string.IsNullOrEmpty(_defaultConfig.Description) ? ResolveStructureDescription(_defaultConfig) : "-")</span>
+								</div>
+								<div class="detail-row">
+									<span class="detail-label">@L["FileTypes"]:</span>
+									<SbStack Direction="SbStackDirection.Row" Gap="1" Wrap="true">
+										@foreach (var type in GetFileTypes(_defaultConfig.AllowedFileTypes))
+										{
+											<SbChip @key="type" Color="@GetFileTypeColor(type)" Size="SbSize.Sm">@L[type]</SbChip>
+										}
+									</SbStack>
+								</div>
+								<div class="detail-row">
+									<span class="detail-label">@L["Extensions"]:</span>
+									<SbStack Direction="SbStackDirection.Row" Gap="1" Wrap="true">
+										@foreach (var ext in ParseCsvToList(_defaultConfig.AllowedExtensions))
+										{
+											<SbChip @key="ext" Color="SbColor.Primary" Size="SbSize.Sm" Variant="SbChipVariant.Outlined">@ext</SbChip>
+										}
+									</SbStack>
+								</div>
+								<div class="detail-row">
+									<span class="detail-label">@L["MIMETypes"]:</span>
+									<SbStack Direction="SbStackDirection.Row" Gap="1" Wrap="true">
+										@foreach (var mime in ParseCsvToList(_defaultConfig.AllowedMimeTypes))
+										{
+											<SbChip @key="mime" Color="SbColor.Info" Size="SbSize.Sm" Variant="SbChipVariant.Outlined">@mime</SbChip>
+										}
+									</SbStack>
+								</div>
+								<div class="detail-row">
+									<span class="detail-label">@L["MaxFileSize"]:</span>
+									<span>@FormatSize(_defaultConfig.MaxFileSize)</span>
+								</div>
+								<div class="detail-row">
+									<span class="detail-label">@L["ImageDimensionsOptional"]:</span>
+									<span>@FormatImageDimensions(_defaultConfig.MinImageWidth, _defaultConfig.MinImageHeight, _defaultConfig.MaxImageWidth, _defaultConfig.MaxImageHeight)</span>
+								</div>
+								<div class="detail-row">
+									<span class="detail-label">@L["MultipleFiles"]:</span>
+									<span>@(_defaultConfig.IsMultiple? L["YesWithMax", _defaultConfig.MaxCount ?? 0] : L["No"])</span>
+								</div>
+								<div class="detail-row">
+									<span class="detail-label">@L["Required"]:</span>
+									<span>@(_defaultConfig.IsRequired? L["Yes"] : L["No"])</span>
+								</div>
+								<div class="detail-row">
+									<span class="detail-label">@L["GenerateThumbnail"]:</span>
+									<span>@(_defaultConfig.GenerateThumbnail? L["YesWithDimensions", _defaultConfig.ThumbnailWidth, _defaultConfig.ThumbnailHeight] : L["No"])</span>
+								</div>
+								<div class="detail-row">
+									<span class="detail-label">@L["WebPConversion"]:</span>
+									<span>@(_defaultConfig.EnableWebPConversion? L["YesWithQuality", _defaultConfig.WebPQuality] : L["No"])</span>
+								</div>
+								<div class="detail-row">
+									<span class="detail-label">@L["ResizeLargeImages"]:</span>
+									<span>@(_defaultConfig.ResizeLargeImages? L["Yes"] : L["No"])</span>
+								</div>
+								<div class="detail-row">
+									<span class="detail-label">@L["StorageProvider"]:</span>
+									<span>@GetStorageProviderDisplay(null, _defaultConfig.StorageProvider)</span>
+								</div>
+								<div class="detail-row">
+									<span class="detail-label">@L["PublicAccess"]:</span>
+									<span>@(_defaultConfig.IsPublicAccess? L["Yes"] : L["No"])</span>
+								</div>
+								<div class="detail-row">
+									<span class="detail-label">@L["BaseUrl"]:</span>
+									<span dir="ltr">@(_defaultConfig.BaseUrl ?? "-")</span>
+								</div>
+							}
+						</ChildContent>
+					</SbCard>
+					<SbCard Class="flex-1" Outlined>
+						<Header><strong style="color: var(--sb-color-warning);">@L["CurrentConfiguration"]</strong></Header>
+						<ChildContent>
+							@if (_viewStructure != null)
+							{
+								<div class="detail-row">
+									<span class="detail-label">@L["DisplayName"]:</span>
+									<span>@ResolveStructureText(_viewStructure)</span>
+								</div>
+								<div class="detail-row">
+									<span class="detail-label">@L["Description"]:</span>
+									<span>@(!string.IsNullOrEmpty(_viewStructure.Description) ? ResolveStructureDescription(_viewStructure) : "-")</span>
+								</div>
+								<div class="detail-row">
+									<span class="detail-label">@L["FileTypes"]:</span>
+									<SbStack Direction="SbStackDirection.Row" Gap="1" Wrap="true">
+										@foreach (var type in GetFileTypes(_viewStructure.AllowedFileTypes))
+										{
+											<SbChip @key="type" Color="@GetFileTypeColor(type)" Size="SbSize.Sm">@L[type]</SbChip>
+										}
+									</SbStack>
+								</div>
+								<div class="detail-row">
+									<span class="detail-label">@L["Extensions"]:</span>
+									<SbStack Direction="SbStackDirection.Row" Gap="1" Wrap="true">
+										@foreach (var ext in ParseCsvToList(_viewStructure.AllowedExtensions))
+										{
+											<SbChip @key="ext" Color="SbColor.Primary" Size="SbSize.Sm" Variant="SbChipVariant.Outlined">@ext</SbChip>
+										}
+									</SbStack>
+								</div>
+								<div class="detail-row">
+									<span class="detail-label">@L["MIMETypes"]:</span>
+									<SbStack Direction="SbStackDirection.Row" Gap="1" Wrap="true">
+										@foreach (var mime in ParseCsvToList(_viewStructure.AllowedMimeTypes))
+										{
+											<SbChip @key="mime" Color="SbColor.Info" Size="SbSize.Sm" Variant="SbChipVariant.Outlined">@mime</SbChip>
+										}
+									</SbStack>
+								</div>
+								<div class="detail-row">
+									<span class="detail-label">@L["MaxFileSize"]:</span>
+									<span>@FormatSize(_viewStructure.MaxFileSize)</span>
+								</div>
+								<div class="detail-row">
+									<span class="detail-label">@L["ImageDimensionsOptional"]:</span>
+									<span>@FormatImageDimensions(_viewStructure.MinImageWidth, _viewStructure.MinImageHeight, _viewStructure.MaxImageWidth, _viewStructure.MaxImageHeight)</span>
+								</div>
+								<div class="detail-row">
+									<span class="detail-label">@L["MultipleFiles"]:</span>
+									<span>@(_viewStructure.IsMultiple? L["YesWithMax", _viewStructure.MaxCount ?? 0] : L["No"])</span>
+								</div>
+								<div class="detail-row">
+									<span class="detail-label">@L["Required"]:</span>
+									<span>@(_viewStructure.IsRequired? L["Yes"] : L["No"])</span>
+								</div>
+								<div class="detail-row">
+									<span class="detail-label">@L["GenerateThumbnail"]:</span>
+									<span>@(_viewStructure.GenerateThumbnail? L["YesWithDimensions", _viewStructure.ThumbnailWidth, _viewStructure.ThumbnailHeight] : L["No"])</span>
+								</div>
+								<div class="detail-row">
+									<span class="detail-label">@L["WebPConversion"]:</span>
+									<span>@(_viewStructure.EnableWebPConversion? L["YesWithQuality", _viewStructure.WebPQuality] : L["No"])</span>
+								</div>
+								<div class="detail-row">
+									<span class="detail-label">@L["ResizeLargeImages"]:</span>
+									<span>@(_viewStructure.ResizeLargeImages? L["Yes"] : L["No"])</span>
+								</div>
+								<div class="detail-row">
+									<span class="detail-label">@L["StorageProvider"]:</span>
+									<span>@GetStorageProviderDisplay(_viewStructure.StorageConfig?.StorageProvider, _viewStructure.StorageProvider)</span>
+								</div>
+								@if (_viewStructure.StorageConfig != null)
+								{
+									<div class="detail-row">
+										<span class="detail-label">@L["Storage"]:</span>
+										<span>@FormatStorageConfigDetails(_viewStructure.StorageConfig, _viewStructure.Key)</span>
+									</div>
+								}
+								<div class="detail-row">
+									<span class="detail-label">@L["PublicAccess"]:</span>
+									<span>@(_viewStructure.IsPublicAccess? L["Yes"] : L["No"])</span>
+								</div>
+								<div class="detail-row">
+									<span class="detail-label">@L["BaseUrl"]:</span>
+									<span dir="ltr">@(_viewStructure.BaseUrl ?? "-")</span>
+								</div>
+							}
+						</ChildContent>
+					</SbCard>
+				</SbGrid>
+			}
+			else
+			{
+				<SbCard Outlined>
+					<ChildContent>
+						@if (_viewStructure != null)
+						{
+							<div class="detail-row">
+								<span class="detail-label">@L["DisplayName"]:</span>
+								<span>@ResolveStructureText(_viewStructure)</span>
+							</div>
+							<div class="detail-row">
+								<span class="detail-label">@L["Description"]:</span>
+								<span>@(!string.IsNullOrEmpty(_viewStructure.Description) ? ResolveStructureDescription(_viewStructure) : "-")</span>
+							</div>
+							<div class="detail-row">
+								<span class="detail-label">@L["FileTypes"]:</span>
+								<SbStack Direction="SbStackDirection.Row" Gap="1" Wrap="true">
+									@foreach (var type in GetFileTypes(_viewStructure.AllowedFileTypes))
+									{
+										<SbChip @key="type" Color="@GetFileTypeColor(type)" Size="SbSize.Sm">@L[type]</SbChip>
+									}
+								</SbStack>
+							</div>
+							<div class="detail-row">
+								<span class="detail-label">@L["Extensions"]:</span>
+								<SbStack Direction="SbStackDirection.Row" Gap="1" Wrap="true">
+									@foreach (var ext in ParseCsvToList(_viewStructure.AllowedExtensions))
+									{
+										<SbChip @key="ext" Color="SbColor.Primary" Size="SbSize.Sm" Variant="SbChipVariant.Outlined">@ext</SbChip>
+									}
+								</SbStack>
+							</div>
+							<div class="detail-row">
+								<span class="detail-label">@L["MIMETypes"]:</span>
+								<SbStack Direction="SbStackDirection.Row" Gap="1" Wrap="true" Class="structure-detail-chips structure-detail-chips--mime">
+									@foreach (var mime in ParseCsvToList(_viewStructure.AllowedMimeTypes))
+									{
+										<SbChip @key="mime" Color="SbColor.Info" Size="SbSize.Sm" Variant="SbChipVariant.Outlined">@mime</SbChip>
+									}
+								</SbStack>
+							</div>
+							<div class="detail-row">
+								<span class="detail-label">@L["MaxFileSize"]:</span>
+								<span>@FormatSize(_viewStructure.MaxFileSize)</span>
+							</div>
+							<div class="detail-row">
+								<span class="detail-label">@L["ImageDimensionsOptional"]:</span>
+								<span>@FormatImageDimensions(_viewStructure.MinImageWidth, _viewStructure.MinImageHeight, _viewStructure.MaxImageWidth, _viewStructure.MaxImageHeight)</span>
+							</div>
+							<div class="detail-row">
+								<span class="detail-label">@L["MultipleFiles"]:</span>
+								<span>@(_viewStructure.IsMultiple? L["YesWithMax", _viewStructure.MaxCount ?? 0] : L["No"])</span>
+							</div>
+							<div class="detail-row">
+								<span class="detail-label">@L["Required"]:</span>
+								<span>@(_viewStructure.IsRequired? L["Yes"] : L["No"])</span>
+							</div>
+							<div class="detail-row">
+								<span class="detail-label">@L["GenerateThumbnail"]:</span>
+								<span>@(_viewStructure.GenerateThumbnail? L["YesWithDimensions", _viewStructure.ThumbnailWidth, _viewStructure.ThumbnailHeight] : L["No"])</span>
+							</div>
+							<div class="detail-row">
+								<span class="detail-label">@L["WebPConversion"]:</span>
+								<span>@(_viewStructure.EnableWebPConversion? L["YesWithQuality", _viewStructure.WebPQuality] : L["No"])</span>
+							</div>
+							<div class="detail-row">
+								<span class="detail-label">@L["ResizeLargeImages"]:</span>
+								<span>@(_viewStructure.ResizeLargeImages? L["Yes"] : L["No"])</span>
+							</div>
+							<div class="detail-row">
+								<span class="detail-label">@L["StorageProvider"]:</span>
+								<span>@GetStorageProviderDisplay(_viewStructure.StorageConfig?.StorageProvider, _viewStructure.StorageProvider)</span>
+							</div>
+							@if (_viewStructure.StorageConfig != null)
+							{
+								<div class="detail-row">
+									<span class="detail-label">@L["Storage"]:</span>
+									<span>@FormatStorageConfigDetails(_viewStructure.StorageConfig, _viewStructure.Key)</span>
+								</div>
+							}
+							<div class="detail-row">
+								<span class="detail-label">@L["PublicAccess"]:</span>
+								<span>@(_viewStructure.IsPublicAccess? L["Yes"] : L["No"])</span>
+							</div>
+							<div class="detail-row">
+								<span class="detail-label">@L["BaseUrl"]:</span>
+								<span dir="ltr">@(_viewStructure.BaseUrl ?? "-")</span>
+							</div>
+						}
+					</ChildContent>
+				</SbCard>
+			}
+		}
+	</ChildContent>
+	<Footer>
+		<SbStack Direction="SbStackDirection.Row" Gap="2" Justify="SbJustify.End">
+			<SbButton Color="SbColor.Default" OnClick="@CloseViewModal">
+				<ChildContent>@L["Close"]</ChildContent>
+			</SbButton>
+			<SbButton Color="SbColor.Primary" OnClick="@(async () => { await CloseViewModal(); await OpenEditModal(_viewStructure!); })">
+				<StartIcon><SbIcon Name="edit" /></StartIcon>
+				<ChildContent>@L["Edit"]</ChildContent>
+			</SbButton>
+		</SbStack>
+	</Footer>
+</SbDialog>
+
+<!-- Delete Confirmation Modal -->
+<SbDialog @bind-Open="_deleteConfirmOpen" Title="@L["ConfirmDelete"]">
+	<ChildContent>
+		<p>@L["ConfirmDeleteStructureMessage"]</p>
+	</ChildContent>
+	<Footer>
+		<SbStack Direction="SbStackDirection.Row" Gap="2" Justify="SbJustify.End">
+			<SbButton Color="SbColor.Default" OnClick="@CancelDeleteStructure">
+				<ChildContent>@L["Cancel"]</ChildContent>
+			</SbButton>
+			<SbButton Color="SbColor.Danger" OnClick="@ConfirmDeleteStructure">
+				<ChildContent>@L["Delete"]</ChildContent>
+			</SbButton>
+		</SbStack>
+	</Footer>
+</SbDialog>
+
+<!-- Reset Confirmation Modal -->
+<SbDialog @bind-Open="_resetConfirmOpen" Title="@L["ConfirmReset"]">
+	<ChildContent>
+		<p>@L["ConfirmResetStructureMessage"]</p>
+	</ChildContent>
+	<Footer>
+		<SbStack Direction="SbStackDirection.Row" Gap="2" Justify="SbJustify.End">
+			<SbButton Color="SbColor.Default" OnClick="@CancelReset">
+				<ChildContent>@L["Cancel"]</ChildContent>
+			</SbButton>
+			<SbButton Color="SbColor.Warning" OnClick="@ConfirmReset">
+				<ChildContent>@L["ResetToDefault"]</ChildContent>
+			</SbButton>
+		</SbStack>
+	</Footer>
+</SbDialog>

@@ -1,0 +1,28 @@
+@namespace SufiChain.SufiPlatform.Identity.Blazor.Components
+@inherits IdentityComponentBase
+
+<SbDialog Open="@Open" OpenChanged="@SetOpenAsync" Size="SbDialogSize.Md" Title="@L["CreateOrganizationUnit"]">
+    <ChildContent>
+        <SbForm Model="_model" OnValidSubmit="OnValidSubmitAsync">
+            <SbStack Gap="3">
+                <SbTextField @bind-Value="_model.DisplayName" 
+                             Label="@L["DisplayName"]" 
+                             Required="true"
+                             Placeholder="@L["EnterDisplayName"]" />
+
+                @if (ParentId.HasValue)
+                {
+                    <SbAlert Severity="SbAlertSeverity.Info">
+                        @L["CreatingSubUnitUnder", _parentDisplayName]
+                    </SbAlert>
+                }
+            </SbStack>
+        </SbForm>
+    </ChildContent>
+    <Footer>
+        <SbStack Direction="SbStackDirection.Row" Gap="2" Justify="SbJustify.End">
+            <SbButton Variant="SbButtonVariant.Outline" OnClick="Hide">@L["Cancel"]</SbButton>
+            <SbButton Color="SbColor.Primary" Loading="IsOperationLoading(LoadingKeys.Create)" OnClick="OnValidSubmitAsync">@L["Create"]</SbButton>
+        </SbStack>
+    </Footer>
+</SbDialog>

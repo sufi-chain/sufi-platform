@@ -1,0 +1,55 @@
+@namespace SufiChain.SufiPlatform.Menus.Blazor.Pages
+@page "/panel/admin/menu-management/menus/{MenuId:guid}/items"
+@attribute [Authorize(Policy = MenusPermissions.Menus.ManageItems)]
+@inherits MenusComponentBase
+
+<SufiPageToolbar>
+    <SbButton Color="SbColor.Primary" OnClick="@ShowCreateRootModal">
+        <StartIcon><SbIcon Name="plus" /></StartIcon>
+        <ChildContent>@L["NewRootItem"]</ChildContent>
+    </SbButton>
+</SufiPageToolbar>
+
+<SbStack Direction="SbStackDirection.Column" Gap="4">
+    <SbCard>
+        <ChildContent>
+            <SbStack Gap="3">
+                <SbHeading Level="6">@_menuDisplayName</SbHeading>
+
+                @if (_tree.Count == 0)
+                {
+                    <SbText Color="SbColor.Muted">@L["NoItems"]</SbText>
+                }
+                else
+                {
+                    @foreach (var node in _tree)
+                    {
+                        <MenuItemNode Item="node"
+                                      ContextType="_menuContextType"
+                                      OnAddChild="OnAddChildAsync"
+                                      OnEdit="OnEditAsync"
+                                      OnMove="OnMoveAsync"
+                                      OnDelete="OnDeleteAsync"
+                                      OnReorderUp="OnReorderUpAsync"
+                                      OnReorderDown="OnReorderDownAsync" />
+                    }
+                }
+            </SbStack>
+        </ChildContent>
+    </SbCard>
+</SbStack>
+
+<MenuItemCreateModal Open="_showCreateModal" OpenChanged="SetCreateOpen"
+                     MenuId="MenuId" ParentId="_createParentId"
+                     MenuKey="_menuKey" ResourceName="_menuResourceName" ContextType="_menuContextType"
+                     ParentOptions="_parentOptions"
+                     OnItemCreated="OnItemCreatedAsync" />
+
+<MenuItemEditModal Open="_showEditModal" OpenChanged="SetEditOpen"
+                   Item="_selectedItem" ParentOptions="_parentOptions"
+                   MenuKey="_menuKey" ResourceName="_menuResourceName" ContextType="_menuContextType"
+                   OnItemUpdated="OnItemUpdatedAsync" />
+
+<MenuItemMoveModal Open="_showMoveModal" OpenChanged="SetMoveOpen"
+                   Item="_selectedItem" ParentOptions="_parentOptions"
+                   OnItemMoved="OnItemMovedAsync" />

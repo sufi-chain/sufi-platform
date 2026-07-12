@@ -1,0 +1,172 @@
+@namespace SufiChain.SufiPlatform.FileManager.Blazor.Components.Gallery
+@inherits FileManagerComponentBase
+
+<div class="file-gallery @CssClass">
+    <SbCard>
+        <Header>
+            <SbStack Direction="SbStackDirection.Row" Justify="SbJustify.SpaceBetween" Align="SbAlign.Center">
+                <h5 class="mb-0">@L["Menu:FileGallery"]</h5>
+                <SbStack Direction="SbStackDirection.Row" Gap="1">
+                    <SbIconButton Color="@(_viewMode == ViewMode.Grid ? SbColor.Primary : SbColor.Default)"
+                                  OnClick="@(() => SetViewMode(ViewMode.Grid))"
+                                  AriaLabel="@L["GridView"]">
+                        <Icon><SbIcon Name="folder" /></Icon>
+                    </SbIconButton>
+                    <SbIconButton Color="@(_viewMode == ViewMode.List ? SbColor.Primary : SbColor.Default)"
+                                  OnClick="@(() => SetViewMode(ViewMode.List))"
+                                  AriaLabel="@L["ListView"]">
+                        <Icon><SbIcon Name="menu" /></Icon>
+                    </SbIconButton>
+                </SbStack>
+            </SbStack>
+        </Header>
+        <ChildContent>
+            <!-- Filters -->
+            <div class="p-3">
+                <SbStack Direction="SbStackDirection.Row" Gap="4" Wrap="true">
+                    <div style="flex: 2; min-width: 200px;">
+                        <SbTextField Placeholder="@L["SearchByNamePlaceholder"]" @bind-Value="@_searchKeyword">
+                            <StartAdornment><SbIcon Name="search" /></StartAdornment>
+                        </SbTextField>
+                    </div>
+                    <div style="flex: 1; min-width: 150px;">
+                        <SbSelect TItem="FileType?" 
+                                  TValue="FileType?" 
+                                  Items="@_fileTypeOptions"
+                                  @bind-Value="@_selectedFileType"
+                                  TextField="@GetFileTypeLabel"
+                                  Placeholder="@L["AllTypes"]" />
+                    </div>
+                    <SbStack Direction="SbStackDirection.Row" Gap="2">
+                        <SbButton Color="SbColor.Primary" OnClick="@LoadFileItems">
+                            <StartIcon><SbIcon Name="search" /></StartIcon>
+                            <ChildContent>@L["Search"]</ChildContent>
+                        </SbButton>
+                        <SbButton Color="SbColor.Default" OnClick="@ClearFilters">
+                            <StartIcon><SbIcon Name="x" /></StartIcon>
+                            <ChildContent>@L["Clear"]</ChildContent>
+                        </SbButton>
+                    </SbStack>
+                </SbStack>
+            </div>
+
+            <!-- Content -->
+            @if (_isLoading)
+        {
+            <div class="text-center py-5">
+                <SbProgress Type="SbProgressType.Circular" />
+                <p class="mt-3 text-muted">@L["LoadingFiles"]</p>
+            </div>
+        }
+        else if (_fileItems == null || !_fileItems.Any())
+        {
+            <SbEmptyState Class="py-5">
+                <SbIcon Name="folder" Size="SbSize.Xl" />
+                <p class="text-muted">@L["NoFilesFound"]</p>
+            </SbEmptyState>
+        }
+        else
+        {
+            @if (_viewMode == ViewMode.Grid)
+            {
+                <div class="gallery-grid p-3">
+                    @foreach (var item in _fileItems)
+                    {
+                        <div @key="item.Id" class="gallery-item" @onclick="@(() => SelectFileItem(item))">
+                            <FileCard 
+                                FileItem="@item"
+                                Selectable="@Selectable"
+                                IsSelected="@_selectedItems.Contains(item.Id)"
+                                ShowActions="@ShowActions"
+                                OnView="@(EventCallback.Factory.Create<FileItemDto>(this, ViewFileItem))"
+                                OnEdit="@(EventCallback.Factory.Create<FileItemDto>(this, EditFileItem))"
+                                OnDelete="@(EventCallback.Factory.Create<FileItemDto>(this, DeleteFileItem))" />
+                        </div>
+                    }
+                </div>
+            }
+            else
+            {
+                <SbTable TItem="FileItemDto" Items="@_fileItems" Striped Hover>
+                    <HeaderContent>
+                        <tr>
+                            <th>@L["Name"]</th>
+                            <th>@L["Type"]</th>
+                            <th>@L["Size"]</th>
+                            <th>@L["Created"]</th>
+                            <th>@L["Actions"]</th>
+                        </tr>
+                    </HeaderContent>
+                    <RowTemplate Context="item">
+                        <td>@item.OriginalName</td>
+                        <td>
+                            <SbChip Color="@GetFileTypeColor(item.FileType)" Size="SbSize.Sm">
+                                @item.FileType
+                            </SbChip>
+                        </td>
+                        <td>@FormatFileSize(item.Size)</td>
+                        <td>@item.CreationTime.ToString("g")</td>
+                        <td>
+                            <SbStack Direction="SbStackDirection.Row" Gap="1">
+                                <SbIconButton Color="SbColor.Primary" Size="SbSize.Sm" OnClick="@(() => ViewFileItem(item))" AriaLabel="View file">
+                                    <Icon><SbIcon Name="eye" /></Icon>
+                                </SbIconButton>
+                                @if (ShowActions)
+                                {
+                                    <SbIconButton Color="SbColor.Default" Size="SbSize.Sm" OnClick="@(() => EditFileItem(item))" AriaLabel="Edit file">
+                                        <Icon><SbIcon Name="edit" /></Icon>
+                                    </SbIconButton>
+                                    <SbIconButton Color="SbColor.Danger" Size="SbSize.Sm" OnClick="@(() => DeleteFileItem(item))" AriaLabel="Delete file">
+                                        <Icon><SbIcon Name="trash" /></Icon>
+                                    </SbIconButton>
+                                }
+                            </SbStack>
+                        </td>
+                    </RowTemplate>
+                </SbTable>
+            }
+
+            <!-- Pagination -->
+            @if (_totalPages > 1)
+            {
+                <div class="p-3">
+                    <SbStack Direction="SbStackDirection.Row" Justify="SbJustify.SpaceBetween" Align="SbAlign.Center">
+                        <span class="text-muted">Showing @_fileItems.Count of @_totalCount items</span>
+                        <SbPagination PageIndex="@(_currentPage - 1)" PageSize="@PageSize" TotalCount="@_totalCount" PageIndexChanged="@(p => LoadPage(p + 1))" />
+                    </SbStack>
+                </div>
+            }
+        }
+        </ChildContent>
+    </SbCard>
+
+    <!-- Lightbox Modal -->
+    <SbDialog @bind-Open="_lightboxOpen" Title="@(_selectedFileItem?.OriginalName ?? "Preview")" Size="SbDialogSize.Xl">
+        <ChildContent>
+            @if (_selectedFileItem != null)
+            {
+                @if (_selectedFileItem.FileType == FileType.Image)
+                {
+                    <img src="@GetFileUrl(_selectedFileItem)" class="img-fluid" alt="@_selectedFileItem.Alt" style="max-width: 100%;" />
+                }
+                else if (_selectedFileItem.FileType == FileType.Video)
+                {
+                    <video controls style="max-width: 100%;">
+                        <source src="@GetFileUrl(_selectedFileItem)" type="@_selectedFileItem.MimeType" />
+                    </video>
+                }
+                else
+                {
+                    <SbEmptyState Class="py-5">
+                        <SbIcon Name="file" Size="SbSize.Xl" />
+                        <p>@_selectedFileItem.OriginalName</p>
+                        <SbButton Href="@GetDownloadUrl(_selectedFileItem)" Color="SbColor.Primary">
+                            <StartIcon><SbIcon Name="download" /></StartIcon>
+                            <ChildContent>Download</ChildContent>
+                        </SbButton>
+                    </SbEmptyState>
+                }
+            }
+        </ChildContent>
+    </SbDialog>
+</div>

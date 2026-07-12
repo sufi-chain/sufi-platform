@@ -1,0 +1,12 @@
+@namespace SufiChain.SufiPlatform.Menus.Blazor.Components
+@inherits MenusComponentBase
+@if (Open)
+{
+    <div class="sufi-menu-dialog">
+        <input @bind="Model.DisplayName" placeholder="Display name" />
+        <input @bind="Model.Slug" placeholder="Slug" />
+        <textarea @bind="Model.Description" placeholder="Description"></textarea>
+        <button type="button" @onclick="SaveAsync">Save</button>
+        <button type="button" @onclick="CloseAsync">Cancel</button>
+    </div>
+}

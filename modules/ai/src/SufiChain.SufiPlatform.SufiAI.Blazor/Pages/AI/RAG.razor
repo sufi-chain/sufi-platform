@@ -1,0 +1,118 @@
+@namespace SufiChain.SufiPlatform.SufiAI.Blazor.Pages.AI
+@page "/panel/admin/ai/rag"
+@attribute [Authorize(Policy = AIPermissions.RAG.Default)]
+@inherits AIComponentBase
+
+<SufiPageToolbar>
+	<SbButton Color="SbColor.Primary" Variant="SbButtonVariant.Outline" OnClick="@ClearSearch">
+		<StartIcon><SbIcon Name="refresh" /></StartIcon>
+		<ChildContent>@L["Clear"]</ChildContent>
+	</SbButton>
+</SufiPageToolbar>
+
+	<SbStack Direction="SbStackDirection.Column" Gap="4">
+
+		@if (!_availability.IsAvailable)
+		{
+			<SbAlert Color="SbColor.Warning">
+				<strong>@L["RagUnavailable"]</strong><br />
+				@GetAvailabilityMessage()
+			</SbAlert>
+		}
+
+		<!-- Workspace Selection -->
+		<WorkspaceSelector Value="_selectedWorkspaceId"
+					   ValueChanged="@OnWorkspaceChangedAsync"
+					   Workspaces="_workspaces"
+					   Loading="@IsOperationLoading(LoadingKeys.LoadWorkspaces)" />
+
+	<!-- Search Form -->
+	<SbCard>
+		<ChildContent>
+			<SbStack Direction="SbStackDirection.Column" Gap="4">
+				<SbTextArea @bind-Value="_query"
+							Label="@L["Query"]"
+							Rows="3"
+							Placeholder="@L["EnterSearchQuery"]" />
+
+				<SbStack Direction="SbStackDirection.Row" Gap="4">
+					<SbTextField @bind-Value="_maxResultsText"
+								 Label="@L["MaxResults"]"
+								 Placeholder="10" />
+				</SbStack>
+
+				<SbStack Direction="SbStackDirection.Row" Gap="2" Justify="SbJustify.End">
+						<SbButton Color="SbColor.Primary" 
+								  OnClick="@SearchAsync"
+								  Loading="IsOperationLoading(LoadingKeys.Search)"
+								  Disabled="@(!_availability.IsAvailable || !_selectedWorkspaceId.HasValue || string.IsNullOrWhiteSpace(_query))">
+							<StartIcon><SbIcon Name="search" /></StartIcon>
+							<ChildContent>@L["Search"]</ChildContent>
+						</SbButton>
+				</SbStack>
+			</SbStack>
+		</ChildContent>
+	</SbCard>
+
+	<!-- Search Results -->
+	@if (_searchResults.Any())
+	{
+		<SbCard>
+			<ChildContent>
+				<SbStack Direction="SbStackDirection.Column" Gap="3">
+					<SbHeading Level="6">
+						@L["SearchResults"] (@_searchResults.Count)
+					</SbHeading>
+
+					@foreach (var result in _searchResults)
+					{
+						<SbCard Elevation="1">
+							<ChildContent>
+								<SbStack Direction="SbStackDirection.Column" Gap="2">
+									<SbStack Direction="SbStackDirection.Row" Justify="SbJustify.SpaceBetween" Align="SbAlign.Center">
+										<SbText Variant="SbTextVariant.Body" Weight="SbFontWeight.Bold">
+											@result.SourceName
+										</SbText>
+										<SbBadge Color="SbColor.Info">
+											@L["Score"]: @result.Score.ToString("F3")
+										</SbBadge>
+									</SbStack>
+
+									<SbText Variant="SbTextVariant.BodySmall">
+										@result.Content
+									</SbText>
+
+									@if (result.Metadata != null && result.Metadata.Any())
+									{
+										<SbStack Direction="SbStackDirection.Row" Gap="1" Wrap="true">
+											@foreach (var meta in result.Metadata)
+											{
+												<SbChip Size="SbSize.Sm">
+													@meta.Key: @meta.Value
+												</SbChip>
+											}
+										</SbStack>
+									}
+								</SbStack>
+							</ChildContent>
+						</SbCard>
+					}
+				</SbStack>
+			</ChildContent>
+		</SbCard>
+	}
+	else if (_hasSearched)
+	{
+		<SbCard>
+			<ChildContent>
+				<SbStack Direction="SbStackDirection.Column" Gap="2" Align="SbAlign.Center">
+					<SbIcon Name="search" Size="SbSize.Xl" Color="SbColor.Muted" />
+					<SbText Variant="SbTextVariant.Body" Color="SbColor.Muted">
+						@L["NoResultsFound"]
+					</SbText>
+				</SbStack>
+			</ChildContent>
+		</SbCard>
+	}
+
+</SbStack>

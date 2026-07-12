@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <RootNamespace>SufiChain.SufiPlatform.FileManager</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="$(MicrosoftNetTestSdkVersion)" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Proxies" Version="$(MicrosoftEntityFrameworkCoreVersion)" />
+    <ProjectReference Include="..\..\src\SufiChain.SufiPlatform.FileManager.EntityFrameworkCore\SufiChain.SufiPlatform.FileManager.EntityFrameworkCore.csproj" />
+    <ProjectReference Include="..\SufiChain.SufiPlatform.FileManager.Application.Tests\SufiChain.SufiPlatform.FileManager.Application.Tests.csproj" />
+    <PackageReference Include="Volo.Abp.EntityFrameworkCore.Sqlite" Version="$(AbpVersion)" />
+  </ItemGroup>
+
+</Project>

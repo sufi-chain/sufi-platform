@@ -1,0 +1,55 @@
+@namespace SufiChain.SufiPlatform.Calendar.Blazor.Public.Components
+@inherits CalendarPublicComponentBase
+
+@if (CanUseCalendar)
+{
+    <SbMenu Open="@IsOpen" OpenChanged="SetOpenAsync" Placement="SbPlacement.BottomEnd" Class="calendar-menu">
+        <AnchorContent>
+            <SbButton Variant="SbButtonVariant.Ghost"
+                      Size="SbSize.Sm"
+                      OnClick="ToggleMenuAsync"
+                      title="@L["Calendar"]">
+                <SbIcon Name="calendar" Size="SbSize.Md" />
+            </SbButton>
+        </AnchorContent>
+        <ChildContent>
+            <div class="sufi-calendar-widget">
+                <div class="sufi-calendar-widget__today">
+                    <SbText Variant="SbTextVariant.Caption" Color="SbColor.Muted">@L["Today"]</SbText>
+                    <SbHeading Level="5">@CurrentDateTimeText</SbHeading>
+                </div>
+
+                @if (IsLoading)
+                {
+                    <div class="sufi-calendar-view__empty">@L["Loading"]</div>
+                }
+                else if (Agenda.Count == 0)
+                {
+                    <div class="sufi-calendar-view__empty">@L["NoEventsToday"]</div>
+                }
+                else
+                {
+                    <div class="sufi-calendar-widget__agenda">
+                        @foreach (var occurrence in Agenda)
+                        {
+                            <div class="sufi-calendar-widget__agenda-item">
+                                <span>@FormatTimeRange(occurrence)</span>
+                                <strong>@occurrence.Title</strong>
+                            </div>
+                        }
+                    </div>
+                }
+
+                <div class="sufi-calendar-widget__actions">
+                    <SbButton Variant="SbButtonVariant.Outline"
+                              Size="SbSize.Sm"
+                              OnClick="OpenPageAsync"
+                              title="@L["OpenCalendar"]">
+                        <SbIcon Name="external-link" Size="SbSize.Sm" />
+                        @L["OpenCalendar"]
+                    </SbButton>
+                </div>
+            </div>
+        </ChildContent>
+    </SbMenu>
+}

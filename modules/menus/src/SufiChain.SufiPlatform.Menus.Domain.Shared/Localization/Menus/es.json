@@ -1,0 +1,16 @@
+{
+  "culture": "es",
+  "texts": {
+    "Permission:SufiMenus": "Gestión de menús",
+    "Permission:SufiMenus.Menus": "Menús",
+    "Permission:SufiMenus.Menus.Create": "Crear menú",
+    "Permission:SufiMenus.Menus.Edit": "Editar menú",
+    "Permission:SufiMenus.Menus.Delete": "Eliminar menú",
+    "Permission:SufiMenus.Menus.ManageItems": "Administrar elementos del menú",
+    "Menu:SufiMenus": "Gestión de menús",
+    "Menu:SufiMenus.Menus": "Menús",
+    "ContextType:Public": "Público",
+    "ContextType:KnowledgeBase.Project": "Proyecto de base de conocimiento",
+    "DisplayNameLocalizationMode": "Modo del nombre para mostrar"
+  }
+}

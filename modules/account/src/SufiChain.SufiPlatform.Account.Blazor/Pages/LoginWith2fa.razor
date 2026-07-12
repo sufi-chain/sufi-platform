@@ -1,0 +1,91 @@
+@namespace SufiChain.SufiPlatform.Account.Blazor.Pages
+@page "/account/login-2fa"
+@layout AccountLayout
+
+<div class="account-page">
+    <SbCard Class="account-card">
+        <ChildContent>
+            <SbStack Gap="4" Align="SbAlign.Center">
+                <SbHeading Level="2">@AccountL["LoginWith2fa"]</SbHeading>
+                <SbText Color="SbColor.Muted">@AccountL["LoginWith2faInstructions"]</SbText>
+
+                @if (!string.IsNullOrEmpty(ErrorMessage) && string.IsNullOrEmpty(PendingToken) && !UseInteractiveFlow)
+                {
+                    <SbAlert Severity="SbAlertSeverity.Danger">@ErrorMessage</SbAlert>
+                    <SbLink Href="/account/login">@L["SignIn"]</SbLink>
+                }
+                else
+                {
+                    <form method="post" @onsubmit="OnVerifyAsync" @formname="login-2fa" class="w-full">
+                        <AntiforgeryToken />
+                        <SbStack Gap="3">
+                            @if (Options?.AllowAuthenticatorApp == true)
+                            {
+                                <SbFormField Label="@AccountL["AuthenticatorCode"]" InputId="Code" Required="true">
+                                    <SbTextField @bind-Value="Input.Code"
+                                                 Id="Code"
+                                                 Type="text"
+                                                 Placeholder="@AccountL["AuthenticatorCodePlaceholder"]"
+                                                 AutoComplete="one-time-code"
+                                                 name="Input.Code" />
+                                </SbFormField>
+                            }
+
+                            @if (Options?.AllowCodeDelivery == true)
+                            {
+                                @if (ShowCodeChannelPicker)
+                                {
+                                    <SbFormField Label="@AccountL["OtpDeliveryChannel"]" InputId="TwoFactorChannel">
+                                        <SbSimpleSelect TValue="VerificationDeliveryChannel"
+                                                        @bind-Value="SelectedCodeChannel"
+                                                        Id="TwoFactorChannel">
+                                            @foreach (var channel in Options!.AvailableCodeChannels)
+                                            {
+                                                <SbSelectOption TValue="VerificationDeliveryChannel" Value="@channel">
+                                                    @GetChannelLabel(channel)
+                                                </SbSelectOption>
+                                            }
+                                        </SbSimpleSelect>
+                                    </SbFormField>
+                                }
+                                <SbStack Direction="SbStackDirection.Row" Gap="2" Align="SbAlign.Center">
+                                    <SbButton Type="button"
+                                              Color="SbColor.Secondary"
+                                              Variant="SbButtonVariant.Outline"
+                                              Loading="IsSendingCode"
+                                              OnClick="OnSendCodeAsync">
+                                        @AccountL["SendTwoFactorCode"]
+                                    </SbButton>
+                                </SbStack>
+                            }
+
+                            <SbFormField Label="@AccountL["RecoveryCode"]" InputId="RecoveryCode">
+                                <SbTextField @bind-Value="Input.RecoveryCode"
+                                             Id="RecoveryCode"
+                                             Type="text"
+                                             Placeholder="@AccountL["RecoveryCodePlaceholder"]"
+                                             AutoComplete="off"
+                                             name="Input.RecoveryCode" />
+                            </SbFormField>
+
+                            @if (!string.IsNullOrEmpty(SuccessMessage))
+                            {
+                                <SbAlert Severity="SbAlertSeverity.Success">@SuccessMessage</SbAlert>
+                            }
+                            @if (!string.IsNullOrEmpty(ErrorMessage))
+                            {
+                                <SbAlert Severity="SbAlertSeverity.Danger">@ErrorMessage</SbAlert>
+                            }
+
+                            <SbButton Type="submit" Color="SbColor.Primary" FullWidth="true" Loading="IsSubmitting">
+                                @L["SignIn"]
+                            </SbButton>
+                        </SbStack>
+                    </form>
+
+                    <SbLink Href="/account/login">@L["SignIn"]</SbLink>
+                }
+            </SbStack>
+        </ChildContent>
+    </SbCard>
+</div>

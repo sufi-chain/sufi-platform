@@ -1,0 +1,48 @@
+@namespace SufiChain.SufiPlatform.ShortLinks.Blazor.Settings
+@inherits ShortLinksComponentBase
+@implements ISaveableSettingGroup
+
+<SbStack Gap="4" class="p-4">
+    @if (IsOperationLoading(LoadingKeys.Load))
+    {
+        <div class="text-center py-4">
+            <SbProgress Type="SbProgressType.Circular" />
+        </div>
+    }
+    else
+    {
+        <SbStack Gap="4">
+            <SbFormField Label="@L["DisplayName:ShortLinks.BaseUrl"]"
+                         HelperText="@L["Description:ShortLinks.BaseUrl"]">
+                <SbTextField @bind-Value="_settings.BaseUrl" />
+            </SbFormField>
+
+            <SbFormField Label="@L["DisplayName:ShortLinks.ShortUrl.RedirectRoute"]"
+                         HelperText="@L["Description:ShortLinks.ShortUrl.RedirectRoute"]">
+                <SbTextField @bind-Value="_settings.RedirectRoute" />
+            </SbFormField>
+
+            <SbFormField Label="@L["DisplayName:ShortLinks.ShortUrl.ShortCodeLength"]"
+                         HelperText="@L["Description:ShortLinks.ShortUrl.ShortCodeLength"]">
+                <SbNumberField TValue="int"
+                               @bind-Value="_settings.ShortCodeLength"
+                               Min="1"
+                               Max="@ShortLinksConsts.ShortUrl.MaxShortCodeLength" />
+            </SbFormField>
+
+            <SbFormField Label="@L["DisplayName:ShortLinks.ShortUrl.CacheExpirationMinutes"]"
+                         HelperText="@L["Description:ShortLinks.ShortUrl.CacheExpirationMinutes"]">
+                <SbNumberField TValue="int"
+                               @bind-Value="_settings.CacheExpirationMinutes"
+                               Min="1" />
+            </SbFormField>
+
+            <SbFormField Label="@L["DisplayName:ShortLinks.ShortUrl.DefaultExpirationDays"]"
+                         HelperText="@L["Description:ShortLinks.ShortUrl.DefaultExpirationDays"]">
+                <SbNumberField TValue="int"
+                               @bind-Value="_settings.DefaultExpirationDays"
+                               Min="1" />
+            </SbFormField>
+        </SbStack>
+    }
+</SbStack>

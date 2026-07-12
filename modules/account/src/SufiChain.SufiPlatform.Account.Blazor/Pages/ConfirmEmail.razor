@@ -1,0 +1,28 @@
+@namespace SufiChain.SufiPlatform.Account.Blazor.Pages
+@page "/account/confirm-email"
+@layout AccountLayout
+
+<div class="account-page">
+    <SbCard Class="account-card">
+        <ChildContent>
+            <SbStack Gap="4" Align="SbAlign.Center">
+                <SbHeading Level="2">@AccountL["ConfirmEmail"]</SbHeading>
+
+                @if (IsProcessing)
+                {
+                    <SbText Color="SbColor.Muted">@AccountL["ConfirmEmailProcessing"]</SbText>
+                }
+                else if (IsSuccess)
+                {
+                    <SbAlert Severity="SbAlertSeverity.Success">@AccountL["ConfirmEmailSuccess"]</SbAlert>
+                    <SbButton Color="SbColor.Primary" OnClick="NavigateToLogin">@L["SignIn"]</SbButton>
+                }
+                else
+                {
+                    <SbAlert Severity="SbAlertSeverity.Danger">@(ErrorMessage ?? AccountL["ConfirmEmailFailed"])</SbAlert>
+                    <SbLink Href="/account/login">@L["SignIn"]</SbLink>
+                }
+            </SbStack>
+        </ChildContent>
+    </SbCard>
+</div>

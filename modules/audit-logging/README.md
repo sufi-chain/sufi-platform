@@ -1,4 +1,4 @@
-# SufiChain.SufiAbp.AuditLogging
+# SufiChain.SufiPlatform.AuditLogging
 
 Canonical documentation for this module lives under `docs/modules/audit-logging/`.
 

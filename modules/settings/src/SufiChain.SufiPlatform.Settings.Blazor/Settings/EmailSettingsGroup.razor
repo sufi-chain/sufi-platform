@@ -1,0 +1,103 @@
+@namespace SufiChain.SufiPlatform.Settings.Blazor.Settings
+@inherits SettingsComponentBase
+
+<SbStack Gap="4" class="p-4">
+    @if (IsOperationLoading(LoadingKeys.Load))
+    {
+        <div class="text-center py-4">
+            <SbProgress Type="SbProgressType.Circular" />
+        </div>
+    }
+    else
+    {
+        <SbStack Gap="4">
+            <!-- SMTP Server Settings -->
+            <div>
+                <h6 class="mb-3">@L["SmtpServerSettings"]</h6>
+                <SbStack Gap="3">
+                    <SbStack Direction="SbStackDirection.Column" DirectionMd="SbStackDirection.Row" Gap="3">
+                        <SbTextField @bind-Value="_settings.SmtpHost" 
+                                     Label="@L["SmtpHost"]"
+                                     Placeholder="@L["Placeholder:SmtpHost"]"
+                                     Style="flex: 2;" />
+                        <SbNumberField TValue="int" @bind-Value="_settings.SmtpPort" 
+                                       Label="@L["SmtpPort"]"
+                                       Style="flex: 1;" />
+                    </SbStack>
+                    
+                    <SbCheckbox @bind-Value="_settings.SmtpEnableSsl" 
+                                Label="@L["EnableSsl"]" />
+                    
+                    <SbCheckbox @bind-Value="_settings.SmtpUseDefaultCredentials" 
+                                Label="@L["UseDefaultCredentials"]" />
+                </SbStack>
+            </div>
+
+            <!-- SMTP Credentials -->
+            @if (!_settings.SmtpUseDefaultCredentials)
+            {
+                <div>
+                    <h6 class="mb-3">@L["SmtpCredentials"]</h6>
+                    <SbStack Gap="3">
+                        <SbTextField @bind-Value="_settings.SmtpUserName" 
+                                     Label="@L["SmtpUserName"]" />
+                        <SbTextField @bind-Value="_settings.SmtpPassword" 
+                                     Label="@L["SmtpPassword"]"
+                                     Type="password"
+                                     AutoComplete="new-password" />
+                        <SbTextField @bind-Value="_settings.SmtpDomain" 
+                                     Label="@L["SmtpDomain"]" />
+                    </SbStack>
+                </div>
+            }
+
+            <!-- Default Sender -->
+            <div>
+                <h6 class="mb-3">@L["DefaultSender"]</h6>
+                <SbStack Gap="3">
+                    <SbTextField @bind-Value="_settings.DefaultFromAddress" 
+                                 Label="@L["DefaultFromAddress"]"
+                                 Type="email"
+                                 Placeholder="@L["Placeholder:DefaultFromAddress"]" />
+                    <SbTextField @bind-Value="_settings.DefaultFromDisplayName" 
+                                 Label="@L["DefaultFromDisplayName"]"
+                                 Placeholder="@L["Placeholder:DefaultFromDisplayName"]" />
+                </SbStack>
+            </div>
+
+            <!-- Test Email Action (inline action, not save) -->
+            <SbStack Direction="SbStackDirection.Row" Gap="2" Justify="SbJustify.End">
+                <SbButton Variant="SbButtonVariant.Outline" OnClick="ShowTestEmailModal">
+                    <StartIcon><SbIcon Name="mail" /></StartIcon>
+                    <ChildContent>@L["SendTestEmail"]</ChildContent>
+                </SbButton>
+            </SbStack>
+        </SbStack>
+    }
+</SbStack>
+
+<!-- Test Email Modal -->
+<SbDialog @bind-Open="_showTestEmailModal" Size="SbDialogSize.Sm" Title="@L["SendTestEmail"]">
+    <ChildContent>
+        <SbStack Gap="3" class="p-4">
+            <SbTextField @bind-Value="_testEmailAddress" 
+                         Label="@L["TargetEmailAddress"]"
+                         Type="email"
+                         Placeholder="@L["Placeholder:TargetEmailAddress"]"
+                         Required="true" />
+        </SbStack>
+    </ChildContent>
+    <Footer>
+        <SbStack Direction="SbStackDirection.Row" Gap="2" Justify="SbJustify.End">
+            <SbButton Variant="SbButtonVariant.Outline" OnClick="@(() => _showTestEmailModal = false)">
+                @L["Cancel"]
+            </SbButton>
+            <SbButton Color="SbColor.Primary" 
+                      OnClick="SendTestEmailAsync"
+                      Loading="IsOperationLoading(LoadingKeys.SendTest)"
+                      Disabled="@string.IsNullOrEmpty(_testEmailAddress)">
+                @L["Send"]
+            </SbButton>
+        </SbStack>
+    </Footer>
+</SbDialog>

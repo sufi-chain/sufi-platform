@@ -1,0 +1,38 @@
+@namespace SufiChain.SufiPlatform.Users.Blazor.Public.Components
+@using SufiChain.SufiPlatform.Users
+@using SufiChain.SufiBlazor.Components.Data
+@using SufiChain.SufiBlazor.Contracts.Data
+@inherits UsersPublicComponentBase
+
+<SbDataGrid TItem="UserLookupDto"
+            @ref="_gridRef"
+            ItemsProvider="ItemsProvider"
+            Loading="Loading"
+            Striped="true"
+            Hoverable="true"
+            PageIndex="PageIndex"
+            PageSize="PageSize"
+            TotalCount="TotalCount"
+            PageIndexChanged="PageIndexChanged"
+            SelectionMode="SelectionMode"
+            KeySelector="@(item => item.Id.ToString())"
+            SelectedKeys="SelectedKeys"
+            SelectedKeysChanged="SelectedKeysChanged"
+            OnRowClicked="OnRowClicked">
+    <EmptyTemplate>
+        <SbStack Justify="SbJustify.Center" Align="SbAlign.Center" Class="p-8 text-muted">
+            <SbIcon Name="users" Size="SbSize.Xl" />
+            <SbText Variant="SbTextVariant.BodySmall" Color="SbColor.Muted">@L["NoUsersFound"]</SbText>
+        </SbStack>
+    </EmptyTemplate>
+    <ChildContent>
+        <SbColumn TItem="UserLookupDto" Field="UserName" Title="@L["UserName"]" />
+        <SbColumn TItem="UserLookupDto" Title="@L["DisplayName"]">
+            <CellTemplate Context="cellContext">
+                @cellContext.Item.DisplayName
+            </CellTemplate>
+        </SbColumn>
+        <SbColumn TItem="UserLookupDto" Field="Email" Title="@L["Email"]" />
+        <SbColumn TItem="UserLookupDto" Field="PhoneNumber" Title="@L["PhoneNumber"]" Width="140px" />
+    </ChildContent>
+</SbDataGrid>

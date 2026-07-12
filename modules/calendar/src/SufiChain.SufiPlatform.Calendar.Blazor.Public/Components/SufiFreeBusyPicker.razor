@@ -1,0 +1,25 @@
+@namespace SufiChain.SufiPlatform.Calendar.Blazor.Public.Components
+@inherits CalendarPublicComponentBase
+
+<div class="sufi-free-busy-picker">
+    <SbCard>
+        <div class="sufi-free-busy-picker__toolbar">
+            <SbDateRangePicker Value="@_dateRange" ValueChanged="OnDateRangeChanged" Label="@L["Date"]" />
+            <SbTextField @bind-Value="_durationText" Label="@L["Duration"]" />
+            <SbButton Color="SbColor.Primary" Loading="@IsOperationLoading(LoadingKeys.Load)" OnClick="LoadSlotsAsync">@L["FindAvailableSlots"]</SbButton>
+        </div>
+        <div class="sufi-free-busy-picker__slots">
+            @if (_slots.Count == 0)
+            {
+                <SbText Color="SbColor.Muted">@L["NoAvailableSlots"]</SbText>
+            }
+            @foreach (var slot in _slots)
+            {
+                <button type="button" class="sufi-free-busy-picker__slot" @onclick="@(() => SelectSlotAsync(slot))">
+                    <span>@FormatSlot(slot)</span>
+                    <SbBadge Color="SbColor.Success">@L["Available"]</SbBadge>
+                </button>
+            }
+        </div>
+    </SbCard>
+</div>

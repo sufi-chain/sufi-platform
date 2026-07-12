@@ -1,0 +1,80 @@
+@namespace SufiChain.SufiPlatform.FileManager.Blazor.Public.Components
+<div class="file-attachment-list @(Compact ? "file-attachment-list--compact" : "") @Class">
+    @if (_isLoading)
+    {
+        <div class="file-attachment-list__loading">
+            @if (LoadingTemplate != null)
+            {
+                @LoadingTemplate
+            }
+            else
+            {
+                <span class="file-attachment-list__spinner"></span>
+                <span>Loading attachments...</span>
+            }
+        </div>
+    }
+    else if (_fileInfos.Count == 0)
+    {
+        @if (EmptyTemplate != null)
+        {
+            @EmptyTemplate
+        }
+        else
+        {
+            <div class="file-attachment-list__empty">
+                No attachments
+            </div>
+        }
+    }
+    else
+    {
+        @if (!string.IsNullOrEmpty(Title))
+        {
+            <h4 class="file-attachment-list__title">@Title</h4>
+        }
+        
+        <ul class="file-attachment-list__items">
+            @foreach (var file in _fileInfos)
+            {
+                <li class="file-attachment-list__item">
+                    <span class="file-attachment-list__icon">@GetFileIcon(file.MimeType)</span>
+                    
+                    <div class="file-attachment-list__details">
+                        <a href="@file.DownloadUrl" 
+                           class="file-attachment-list__name"
+                           download="@file.FileName"
+                           target="_blank"
+                           rel="noopener noreferrer">
+                            @file.FileName
+                        </a>
+                        
+                        @if (ShowFileSize)
+                        {
+                            <span class="file-attachment-list__size">@FormatFileSize(file.Size)</span>
+                        }
+                    </div>
+                    
+                    @if (ShowDownloadButton)
+                    {
+                        <a href="@file.DownloadUrl" 
+                           class="file-attachment-list__download-btn"
+                           download="@file.FileName"
+                           target="_blank"
+                           rel="noopener noreferrer"
+                           title="Download">
+                            <span>Download</span>
+                        </a>
+                    }
+                </li>
+            }
+        </ul>
+        
+        @if (ShowTotalSize && _fileInfos.Count > 1)
+        {
+            <div class="file-attachment-list__total">
+                Total: @_fileInfos.Count files (@FormatFileSize(_fileInfos.Sum(f => f.Size)))
+            </div>
+        }
+    }
+</div>

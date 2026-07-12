@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <RootNamespace>SufiChain.SufiPlatform.BackgroundJobs</RootNamespace>
+    <PackageId>SufiChain.SufiPlatform.BackgroundJobs.Domain</PackageId>
+  </PropertyGroup>
+  <ItemGroup>
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Volo.Abp.Ddd.Domain" Version="$(AbpVersion)" />
+    <PackageReference Include="Volo.Abp.BackgroundJobs" Version="$(AbpVersion)" />
+    <PackageReference Include="Volo.Abp.Mapperly" Version="$(AbpVersion)" />
+    <ProjectReference Include="..\SufiChain.SufiPlatform.BackgroundJobs.Domain.Shared\SufiChain.SufiPlatform.BackgroundJobs.Domain.Shared.csproj" />
+  </ItemGroup>
+</Project>

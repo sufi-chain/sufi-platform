@@ -1,0 +1,118 @@
+@namespace SufiChain.SufiPlatform.SufiAI.Blazor.Pages.AI
+@page "/panel/admin/ai/workspaces"
+@attribute [Authorize(Policy = AIPermissions.Workspaces.Default)]
+@inherits AIComponentBase
+
+<SufiPageToolbar>
+	<AuthorizeView Policy="@AIPermissions.Workspaces.Create">
+		<SbButton Color="SbColor.Primary" OnClick="@OpenCreateModal">
+			<StartIcon><SbIcon Name="plus" /></StartIcon>
+			<ChildContent>@L["NewWorkspace"]</ChildContent>
+		</SbButton>
+	</AuthorizeView>
+</SufiPageToolbar>
+
+<SbStack Direction="SbStackDirection.Column" Gap="4">
+
+	<!-- Workspaces Grid -->
+	<SbCard>
+		<ChildContent>
+			<SbDataGrid TItem="WorkspaceDto"
+						@ref="_gridRef"
+						ItemsProvider="LoadWorkspacesDataAsync"
+						Loading="IsOperationLoading(LoadingKeys.LoadWorkspaces)"
+						Striped="true"
+						Hoverable="true"
+						PageIndex="_pageIndex"
+						PageSize="_pageSize"
+						TotalCount="_totalCount"
+						PageIndexChanged="OnPageIndexChangedAsync"
+						PageSizeChanged="OnPageSizeChangedAsync"
+						KeySelector="@(item => item.Id.ToString())">
+					<SbColumn TItem="WorkspaceDto" Title="@L["Actions"]" Width="150px">
+						<CellTemplate Context="cellContext">
+							<SbStack Direction="SbStackDirection.Row" Gap="1">
+								<AuthorizeView Policy="@AIPermissions.Workspaces.Edit">
+									<SbIconButton Size="SbSize.Sm" AriaLabel="@L["Edit"]"
+												  OnClick="@(() => OpenEditModal(cellContext.Item))">
+										<Icon><SbIcon Name="edit" /></Icon>
+									</SbIconButton>
+								</AuthorizeView>
+									<AuthorizeView Policy="@AIPermissions.AI.ManageConfigurations">
+										<SbIconButton Size="SbSize.Sm" AriaLabel="@L["ModelConfigurations"]"
+													  OnClick="@(() => OpenModelConfigurationsModal(cellContext.Item))">
+											<Icon><SbIcon Name="settings" /></Icon>
+										</SbIconButton>
+									</AuthorizeView>
+									<AuthorizeView Policy="@AIPermissions.Workspaces.Edit">
+										<SbIconButton Size="SbSize.Sm" AriaLabel="@L["ConfigureMCPTools"]"
+													  OnClick="@(() => OpenMCPToolsModal(cellContext.Item))">
+											<Icon><SbIcon Name="mcp" /></Icon>
+										</SbIconButton>
+									</AuthorizeView>
+									<AuthorizeView Policy="@AIPermissions.Workspaces.Delete">
+										<SbIconButton Size="SbSize.Sm" AriaLabel="@L["Delete"]"
+												  Color="SbColor.Danger"
+												  OnClick="@(() => DeleteWorkspaceAsync(cellContext.Item))">
+										<Icon><SbIcon Name="trash" /></Icon>
+									</SbIconButton>
+								</AuthorizeView>
+							</SbStack>
+						</CellTemplate>
+					</SbColumn>
+				<SbColumn TItem="WorkspaceDto" Field="Name" Title="@L["Name"]" Width="200px">
+					<CellTemplate Context="cellContext">
+						<strong>@cellContext.Item.Name</strong>
+					</CellTemplate>
+				</SbColumn>
+				<SbColumn TItem="WorkspaceDto" Title="@L["Provider"]" Width="120px">
+					<CellTemplate Context="cellContext">
+						<SbBadge Color="@GetProviderColor(cellContext.Item.Provider)">
+							@cellContext.Item.Provider.ToString()
+						</SbBadge>
+					</CellTemplate>
+				</SbColumn>
+					<SbColumn TItem="WorkspaceDto" Field="Model" Title="@L["Model"]" Width="180px" />
+					<SbColumn TItem="WorkspaceDto" Title="@L["MCPTools"]" Width="120px">
+						<CellTemplate Context="cellContext">
+							<SbBadge Color="@(cellContext.Item.EnabledMCPToolCount > 0 ? SbColor.Success : SbColor.Default)">
+								@cellContext.Item.EnabledMCPToolCount
+							</SbBadge>
+						</CellTemplate>
+					</SbColumn>
+					<SbColumn TItem="WorkspaceDto" Title="@L["Status"]" Width="100px">
+					<CellTemplate Context="cellContext">
+						<SbBadge Color="@(cellContext.Item.IsActive ? SbColor.Success : SbColor.Default)">
+							@(cellContext.Item.IsActive ? L["Active"] : L["Inactive"])
+						</SbBadge>
+					</CellTemplate>
+				</SbColumn>
+				<SbColumn TItem="WorkspaceDto" Title="@L["Temperature"]" Width="120px">
+					<CellTemplate Context="cellContext">
+						@cellContext.Item.Temperature.ToString("F2")
+					</CellTemplate>
+				</SbColumn>
+				<SbColumn TItem="WorkspaceDto" Title="@L["MaxContextTokens"]" Width="120px">
+					<CellTemplate Context="cellContext">
+						@cellContext.Item.MaxContextTokens.ToString("N0")
+					</CellTemplate>
+				</SbColumn>
+				<SbColumn TItem="WorkspaceDto" Title="@L["CreationTime"]" Width="160px">
+					<CellTemplate Context="cellContext">
+						@cellContext.Item.CreationTime.ToString("yyyy-MM-dd HH:mm")
+					</CellTemplate>
+				</SbColumn>
+			</SbDataGrid>
+		</ChildContent>
+	</SbCard>
+
+</SbStack>
+
+	<WorkspaceCreateModal @bind-Open="_showCreateModal" OnCreated="@OnWorkspaceCreatedAsync" />
+	<WorkspaceEditModal @bind-Open="_showEditModal" WorkspaceId="_editingWorkspaceId" OnUpdated="@OnWorkspaceUpdatedAsync" />
+		<ModelConfigurationsModal @bind-Open="_showModelConfigurationsModal"
+								  WorkspaceId="_modelConfigurationsWorkspaceId"
+								  WorkspaceName="@_modelConfigurationsWorkspaceName" />
+		<WorkspaceMCPToolsModal @bind-Open="_showMCPToolsModal"
+								WorkspaceId="_mcpToolsWorkspaceId"
+								OnSaved="@OnMCPToolsUpdatedAsync" />

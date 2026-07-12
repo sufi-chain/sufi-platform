@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>netstandard2.1;net10.0</TargetFrameworks>
+    <Nullable>enable</Nullable>
+    <RootNamespace>SufiChain.SufiPlatform.Users</RootNamespace>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <PackageId>SufiChain.SufiPlatform.Users.Abstractions</PackageId>
+    <Description>Users abstractions for Sufi Platform - interfaces and base classes for user management.</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\..\framework\SufiChain.SufiPlatform.Data\SufiChain.SufiPlatform.Data.csproj" />
+    <PackageReference Include="Volo.Abp.EventBus" Version="$(AbpVersion)" />
+    <PackageReference Include="Volo.Abp.MultiTenancy" Version="$(AbpVersion)" />
+    <PackageReference Include="Volo.Abp.ObjectExtending" Version="$(AbpVersion)" />
+  </ItemGroup>
+
+</Project>

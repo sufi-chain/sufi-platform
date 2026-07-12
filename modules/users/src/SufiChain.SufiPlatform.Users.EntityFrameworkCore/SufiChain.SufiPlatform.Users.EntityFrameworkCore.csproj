@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <AssemblyName>SufiChain.SufiPlatform.Users.EntityFrameworkCore</AssemblyName>
+    <PackageId>SufiChain.SufiPlatform.Users.EntityFrameworkCore</PackageId>
+    <RootNamespace>SufiChain.SufiPlatform.Users</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\SufiChain.SufiPlatform.Users.Domain\SufiChain.SufiPlatform.Users.Domain.csproj" />
+    <PackageReference Include="Volo.Abp.EntityFrameworkCore" Version="$(AbpVersion)" />
+  </ItemGroup>
+
+</Project>

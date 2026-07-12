@@ -1,0 +1,105 @@
+@namespace SufiChain.SufiPlatform.Calendar.Blazor.Public.Components
+@using SufiChain.SufiBlazor.Components.Navigation
+@inherits CalendarPublicComponentBase
+
+<SbDialog Open="@Open" OpenChanged="SetOpenAsync" Size="SbDialogSize.Lg" Title="@DialogTitle" AllowDropdownOverflow="true">
+    <ChildContent>
+        <EditForm Model="_model" OnValidSubmit="SaveAsync">
+            <DataAnnotationsValidator />
+            <SbTabs @bind-ActiveIndex="_activeTab">
+                <SbTab Label="@L["General"]">
+                    <div class="sufi-event-editor">
+                        <SbTextField @bind-Value="_model.Title" Label="@L["Title"]" />
+                        <SbDateRangePicker Value="@_dateRange" ValueChanged="OnDateRangeChanged" Label="@L["Date"]" />
+                        <SbTextField @bind-Value="_startTimeText" Label="@L["StartTime"]" />
+                        <SbTextField @bind-Value="_endTimeText" Label="@L["EndTime"]" />
+                        <SbCheckbox @bind-Value="_model.IsAllDay" Label="@L["AllDay"]" />
+                        <SbSimpleSelect TValue="string" @bind-Value="_model.TimeZoneId" Label="@L["TimeZone"]" Searchable="true" Placeholder="@L["SelectTimeZone"]">
+                            @foreach (var timeZone in TimeZoneOptions)
+                            {
+                                <SbSelectOption TValue="string" Value="@timeZone.Id" Text="@timeZone.DisplayName">@timeZone.DisplayName</SbSelectOption>
+                            }
+                        </SbSimpleSelect>
+                        <SbSimpleSelect TValue="EventStatus" @bind-Value="_model.Status" Label="@L["Status"]">
+                            @foreach (var status in EventStatusOptions)
+                            {
+                                <SbSelectOption TValue="EventStatus" Value="@status" Text="@GetEventStatusText(status)">@GetEventStatusText(status)</SbSelectOption>
+                            }
+                        </SbSimpleSelect>
+                        <SbTextField @bind-Value="_model.Location" Label="@L["Location"]" />
+                        <SbTextField @bind-Value="_model.Color" Label="@L["Color"]" />
+                        <SbTextField @bind-Value="_model.Description" Label="@L["Description"]" Multiline="true" Rows="4" />
+                    </div>
+                </SbTab>
+                <SbTab Label="@L["Recurrence"]">
+                    <SbStack Gap="3">
+                        <SbSimpleSelect TValue="RecurrenceFrequency" Value="@_recurrenceFrequency" ValueChanged="OnRecurrenceFrequencyChanged" Label="@L["RecurrenceFrequency"]">
+                            @foreach (var frequency in RecurrenceFrequencyOptions)
+                            {
+                                <SbSelectOption TValue="RecurrenceFrequency" Value="@frequency" Text="@GetRecurrenceFrequencyText(frequency)">@GetRecurrenceFrequencyText(frequency)</SbSelectOption>
+                            }
+                        </SbSimpleSelect>
+                        @if (_recurrenceFrequency != RecurrenceFrequency.None)
+                        {
+                            <SbNumberField TNumber="int" Value="_recurrenceInterval" ValueChanged="OnRecurrenceIntervalChanged" Min="1" Label="@L["RecurrenceInterval"]" />
+                            <SbNumberField TNumber="int" Value="_recurrenceCount" ValueChanged="OnRecurrenceCountChanged" Min="0" Label="@L["RecurrenceCount"]" />
+                        }
+                        <SbTextField @bind-Value="_model.RecurrenceRule" Label="@L["RecurrenceRule"]" />
+                    </SbStack>
+                </SbTab>
+                <SbTab Label="@L["Attendees"]" Disabled="@(!EventId.HasValue)">
+                    <SbStack Gap="3">
+                        @foreach (var attendee in _attendees)
+                        {
+                            <SbStack Direction="SbStackDirection.Row" Gap="2" Align="SbAlign.Center" Wrap="true">
+                                <SbText>@attendee.DisplayName</SbText>
+                                <SbBadge Color="SbColor.Secondary">@GetAttendeeRoleText(attendee.Role)</SbBadge>
+                                <SbBadge Color="SbColor.Info">@GetRsvpStatusText(attendee.RsvpStatus)</SbBadge>
+                                <SbIconButton Color="SbColor.Danger" OnClick="@(() => RemoveAttendeeAsync(attendee))" AriaLabel="@L["Delete"]"><Icon><SbIcon Name="trash" /></Icon></SbIconButton>
+                            </SbStack>
+                        }
+                        <SbTextField @bind-Value="_newAttendeeDisplayName" Label="@L["DisplayName"]" />
+                        <SbTextField @bind-Value="_newAttendeeEmail" Label="@L["Email"]" />
+                        <SbSimpleSelect TValue="AttendeeRole" @bind-Value="_newAttendeeRole" Label="@L["Role"]">
+                            @foreach (var role in AttendeeRoleOptions)
+                            {
+                                <SbSelectOption TValue="AttendeeRole" Value="@role" Text="@GetAttendeeRoleText(role)">@GetAttendeeRoleText(role)</SbSelectOption>
+                            }
+                        </SbSimpleSelect>
+                        <SbButton Variant="SbButtonVariant.Outline" OnClick="AddAttendeeAsync">@L["AddAttendee"]</SbButton>
+                    </SbStack>
+                </SbTab>
+                <SbTab Label="@L["Reminders"]" Disabled="@(!EventId.HasValue)">
+                    <SbStack Gap="3">
+                        @foreach (var reminder in _reminders)
+                        {
+                            <SbStack Direction="SbStackDirection.Row" Gap="2" Align="SbAlign.Center" Wrap="true">
+                                <SbText>@FormatReminderOffset(reminder.Offset)</SbText>
+                                <SbBadge Color="SbColor.Secondary">@GetReminderChannelText(reminder.Channel)</SbBadge>
+                                <SbIconButton Color="SbColor.Danger" OnClick="@(() => RemoveReminderAsync(reminder))" AriaLabel="@L["Delete"]"><Icon><SbIcon Name="trash" /></Icon></SbIconButton>
+                            </SbStack>
+                        }
+                        <SbTextField @bind-Value="_newReminderOffsetText" Label="@L["ReminderOffset"]" />
+                        <SbSimpleSelect TValue="ReminderChannel" @bind-Value="_newReminderChannel" Label="@L["ReminderChannel"]">
+                            @foreach (var channel in ReminderChannelOptions)
+                            {
+                                <SbSelectOption TValue="ReminderChannel" Value="@channel" Text="@GetReminderChannelText(channel)">@GetReminderChannelText(channel)</SbSelectOption>
+                            }
+                        </SbSimpleSelect>
+                        <SbButton Variant="SbButtonVariant.Outline" OnClick="AddReminderAsync">@L["AddReminder"]</SbButton>
+                    </SbStack>
+                </SbTab>
+            </SbTabs>
+        </EditForm>
+    </ChildContent>
+    <Footer>
+        <SbStack Direction="SbStackDirection.Row" Gap="2" Justify="SbJustify.End">
+            @if (EventId.HasValue)
+            {
+                <SbButton Color="SbColor.Danger" Variant="SbButtonVariant.Outline" OnClick="DeleteAsync">@L["Delete"]</SbButton>
+            }
+            <SbButton Variant="SbButtonVariant.Outline" OnClick="HideAsync">@L["Cancel"]</SbButton>
+            <SbButton Color="SbColor.Primary" Loading="@IsOperationLoading(LoadingKeys.Save)" OnClick="SaveAsync">@L["Save"]</SbButton>
+        </SbStack>
+    </Footer>
+</SbDialog>

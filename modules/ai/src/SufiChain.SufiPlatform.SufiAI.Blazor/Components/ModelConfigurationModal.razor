@@ -1,0 +1,133 @@
+@namespace SufiChain.SufiPlatform.SufiAI.Blazor.Components
+@inherits AIComponentBase
+
+<SbDialog Open="@Open" OpenChanged="@SetOpenAsync" Size="SbDialogSize.Lg" Title="@(_isEditMode ? L["EditModelConfiguration"] : L["NewModelConfiguration"])" AllowDropdownOverflow="true">
+	<ChildContent>
+		<SbTabs @bind-ActiveIndex="_activeTab">
+			<SbTab Label="@L["ConnectionSettings"]">
+				<SbStack Direction="SbStackDirection.Column" Gap="4">
+					<SbAlert Severity="SbAlertSeverity.Info">
+						@L["OnlyOpenAIProviderAvailable"]
+					</SbAlert>
+
+					<SbGrid Columns="1" ColumnsMd="2" Gap="4">
+						<SbSimpleSelect TValue="AICapabilityType"
+										Value="@_model.CapabilityType"
+										ValueChanged="@((AICapabilityType value) => _model.CapabilityType = value)"
+										Label="@L["Capability"]"
+										Disabled="_isEditMode">
+							<SbSelectOption TValue="AICapabilityType" Value="@AICapabilityType.ChatCompletion">@L["ChatCompletion"]</SbSelectOption>
+							<SbSelectOption TValue="AICapabilityType" Value="@AICapabilityType.AudioTranscription">@L["AudioTranscription"]</SbSelectOption>
+							<SbSelectOption TValue="AICapabilityType" Value="@AICapabilityType.TextToSpeech">@L["TextToSpeech"]</SbSelectOption>
+							<SbSelectOption TValue="AICapabilityType" Value="@AICapabilityType.VisionAnalysis">@L["VisionAnalysis"]</SbSelectOption>
+							<SbSelectOption TValue="AICapabilityType" Value="@AICapabilityType.Embeddings">@L["Embeddings"]</SbSelectOption>
+							<SbSelectOption TValue="AICapabilityType" Value="@AICapabilityType.ImageGeneration">@L["ImageGeneration"]</SbSelectOption>
+						</SbSimpleSelect>
+
+						<SbSimpleSelect TValue="AIProviderType"
+										Value="@AIProviderType.OpenAI"
+										Label="@L["Provider"]"
+										Disabled="true">
+							<SbSelectOption TValue="AIProviderType" Value="@AIProviderType.OpenAI">OpenAI</SbSelectOption>
+						</SbSimpleSelect>
+					</SbGrid>
+
+					<SbGrid Columns="1" ColumnsMd="2" Gap="4">
+						<SbTextField @bind-Value="_model.ApiEndpoint"
+									 Label="@L["ApiEndpoint"]"
+									 Placeholder="@L["ApiEndpointPlaceholder"]" />
+
+						<SbTextField @bind-Value="_model.ApiKey"
+									 Label="@L["ApiKey"]"
+									 Placeholder="@L["ApiKeyPlaceholder"]"
+									 Type="password" />
+					</SbGrid>
+
+					<SbGrid Columns="1" ColumnsMd="2" Gap="4">
+						<SbTextField @bind-Value="_model.ModelId"
+									 Label="@L["ModelId"]"
+									 Required="true"
+									 Placeholder="@L["ModelIdPlaceholder"]" />
+
+						<SbStack Direction="SbStackDirection.Row" Gap="2" Align="SbAlign.End">
+							<SbButton Variant="SbButtonVariant.Outline"
+									  OnClick="@LoadModelsAsync"
+									  Loading="IsOperationLoading(LoadingKeys.LoadModels)">
+								@L["LoadModels"]
+							</SbButton>
+						</SbStack>
+					</SbGrid>
+
+					@if (_availableModels.Count > 0)
+					{
+						<SbSimpleSelect TValue="string"
+										@bind-Value="_model.ModelId"
+										Label="@L["AvailableModels"]"
+										Searchable="true"
+										SearchPlaceholder="@L["SearchModels"]">
+							@if (!string.IsNullOrWhiteSpace(_model.ModelId) && !_availableModels.Any(m => m.Id == _model.ModelId))
+							{
+								<SbSelectOption TValue="string" Value="@_model.ModelId">@_model.ModelId</SbSelectOption>
+							}
+							@foreach (var model in _availableModels)
+							{
+								<SbSelectOption TValue="string" Value="@model.Id">@model.Id</SbSelectOption>
+							}
+						</SbSimpleSelect>
+					}
+
+					<SbRadioGroup TValue="string"
+								  @bind-Value="_openAIApiModeText"
+								  Label="@L["OpenAIApiMode"]"
+								  Orientation="SbOrientation.Horizontal">
+						<SbRadio TValue="string" Value="@string.Empty" Label="@L["InheritWorkspace"]" />
+						<SbRadio TValue="string" Value="@OpenAIApiMode.ChatCompletions.ToString()" Label="@L["ChatCompletions"]" />
+						<SbRadio TValue="string" Value="@OpenAIApiMode.Responses.ToString()" Label="@L["Responses"]" />
+					</SbRadioGroup>
+
+					@if (_openAIApiModeText == OpenAIApiMode.Responses.ToString())
+					{
+						<SbAlert Severity="SbAlertSeverity.Warning">
+							@L["ResponsesApiCompatibilityWarning"]
+						</SbAlert>
+					}
+				</SbStack>
+			</SbTab>
+
+			<SbTab Label="@L["GenerationAndCost"]">
+				<SbStack Direction="SbStackDirection.Column" Gap="4">
+					<SbGrid Columns="1" ColumnsMd="2" Gap="4">
+						<SbTextField @bind-Value="_priorityText"
+									 Label="@L["Priority"]"
+									 Placeholder="0" />
+
+						<SbTextField @bind-Value="_inputCostPer1MTokensText"
+									 Label="@L["InputCostPer1MTokens"]"
+									 Placeholder="@L["InheritWorkspace"]" />
+					</SbGrid>
+
+					<SbGrid Columns="1" ColumnsMd="2" Gap="4">
+						<SbTextField @bind-Value="_outputCostPer1MTokensText"
+									 Label="@L["OutputCostPer1MTokens"]"
+									 Placeholder="@L["InheritWorkspace"]" />
+					</SbGrid>
+
+					<SbTextArea @bind-Value="_model.ConfigurationJson"
+								Label="@L["ConfigurationJson"]"
+								Placeholder="@L["ConfigurationJsonPlaceholder"]"
+								Rows="5" />
+				</SbStack>
+			</SbTab>
+		</SbTabs>
+	</ChildContent>
+	<Footer>
+		<SbStack Direction="SbStackDirection.Row" Gap="2" Justify="SbJustify.End">
+			<SbButton OnClick="@CloseModalAsync">@L["Cancel"]</SbButton>
+			<SbButton Color="SbColor.Primary"
+					  OnClick="@SaveConfigurationAsync"
+					  Loading="IsOperationLoading(LoadingKeys.SaveConfiguration)">
+				@L["Save"]
+			</SbButton>
+		</SbStack>
+	</Footer>
+</SbDialog>

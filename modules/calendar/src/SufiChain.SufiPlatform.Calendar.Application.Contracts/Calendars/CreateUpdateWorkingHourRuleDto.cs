@@ -1,0 +1,11 @@
+namespace SufiChain.SufiPlatform.Calendar.Calendars;
+
+public class CreateUpdateWorkingHourRuleDto
+{
+    public DayOfWeek DayOfWeek { get; set; }
+
+    public TimeSpan StartTime { get; set; }
+
+    public TimeSpan EndTime { get; set; }
+
+}

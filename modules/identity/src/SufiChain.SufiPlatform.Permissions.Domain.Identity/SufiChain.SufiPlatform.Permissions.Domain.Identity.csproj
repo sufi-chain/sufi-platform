@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <RootNamespace>SufiChain.SufiPlatform.Permissions.Identity</RootNamespace>
+    <PackageId>SufiChain.SufiPlatform.Permissions.Domain.Identity</PackageId>
+  </PropertyGroup>
+  
+  <ItemGroup>
+    <ProjectReference Include="..\SufiChain.SufiPlatform.Identity.Application.Contracts\SufiChain.SufiPlatform.Identity.Application.Contracts.csproj" />
+    <ProjectReference Include="..\SufiChain.SufiPlatform.Identity.Domain.Shared\SufiChain.SufiPlatform.Identity.Domain.Shared.csproj" />
+    <ProjectReference Include="..\SufiChain.SufiPlatform.Identity.Domain\SufiChain.SufiPlatform.Identity.Domain.csproj" />
+    <PackageReference Include="Volo.Abp.Guids" Version="$(AbpVersion)" />
+    <ProjectReference Include="..\..\..\permissions\src\SufiChain.SufiPlatform.Permissions.Domain\SufiChain.SufiPlatform.Permissions.Domain.csproj" />
+  </ItemGroup>
+</Project>

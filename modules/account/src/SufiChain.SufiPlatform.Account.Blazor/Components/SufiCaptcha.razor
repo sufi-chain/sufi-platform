@@ -1,0 +1,80 @@
+@namespace SufiChain.SufiPlatform.Account.Blazor.Components
+@using Microsoft.AspNetCore.Components.Web
+@using SufiChain.SufiPlatform.Captcha
+@implements IAsyncDisposable
+
+<HeadContent>
+    <link href="_content/SufiChain.SufiPlatform.Account.Blazor/css/sufiAbpCaptcha.css" rel="stylesheet" />
+    <script src="_content/SufiChain.SufiPlatform.Account.Blazor/js/sufiAbpCaptcha.js"></script>
+</HeadContent>
+
+@if (IsVisible)
+{
+    <SbStack Gap="2">
+        @if (IsLoading)
+        {
+            <SbText Variant="SbTextVariant.BodySmall" Color="SbColor.Muted">@AccountL["CaptchaLoading"]</SbText>
+        }
+        else if (!string.IsNullOrEmpty(LoadError))
+        {
+            <SbAlert Severity="SbAlertSeverity.Danger">@LoadError</SbAlert>
+        }
+        else if (IsSimpleProvider && Challenge != null)
+        {
+            <SbStack Gap="2">
+                <label class="sb-form-field__label" for="CaptchaAnswer">
+                    @AccountL["CaptchaQuestion"]
+                    <span class="sb-form-field__required" aria-hidden="true">*</span>
+                </label>
+                <div class="sufi-abp-captcha-simple">
+                    <span class="sufi-abp-captcha-simple__question" aria-hidden="true">@Challenge.Question</span>
+                    <SbTextField @bind-Value="CaptchaAnswerValue"
+                                 @bind-Value:after="PublishCaptchaAnswerAsync"
+                                 Id="CaptchaAnswer"
+                                 Type="text"
+                                 Placeholder="@AccountL["CaptchaAnswerPlaceholder"]"
+                                 AutoComplete="off"
+                                 name="CaptchaAnswer"
+                                 Class="sufi-abp-captcha-simple__input" />
+                    <SbButton Type="button"
+                              Color="SbColor.Secondary"
+                              Variant="SbButtonVariant.Outline"
+                              Class="sufi-abp-captcha-simple__refresh"
+                              OnClick="@OnRefreshClickAsync">
+                        @AccountL["CaptchaRefresh"]
+                    </SbButton>
+                </div>
+            </SbStack>
+            <input type="hidden" name="CaptchaChallengeId" value="@CaptchaChallengeId" />
+        }
+        else if (IsTurnstileProvider)
+        {
+            @if (string.IsNullOrWhiteSpace(Options?.SiteKey))
+            {
+                <SbAlert Severity="SbAlertSeverity.Warning">@AccountL["CaptchaExternalProviderNotConfigured"]</SbAlert>
+            }
+            else
+            {
+                <div id="@_turnstileElementId" class="sufi-abp-captcha-turnstile"></div>
+            }
+        }
+        else if (IsRecaptchaProvider)
+        {
+            @if (string.IsNullOrWhiteSpace(Options?.SiteKey))
+            {
+                <SbAlert Severity="SbAlertSeverity.Warning">@AccountL["CaptchaExternalProviderNotConfigured"]</SbAlert>
+            }
+            else
+            {
+                <div id="@_recaptchaElementId" class="sufi-abp-captcha-recaptcha"></div>
+            }
+        }
+
+        <input type="text"
+               name="website"
+               tabindex="-1"
+               autocomplete="off"
+               style="position:absolute;left:-9999px;width:1px;height:1px;"
+               aria-hidden="true" />
+    </SbStack>
+}

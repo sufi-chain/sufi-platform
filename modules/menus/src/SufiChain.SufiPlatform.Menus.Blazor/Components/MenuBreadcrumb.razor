@@ -1,0 +1,8 @@
+@namespace SufiChain.SufiPlatform.Menus.Blazor.Components
+@inherits MenusComponentBase
+<nav class="sufi-menu-breadcrumb">
+    @foreach (var item in Trail)
+    {
+        <span>@ResolveMenuItemDisplayName(item, ContextType)</span>
+    }
+</nav>

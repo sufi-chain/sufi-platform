@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk.Razor">
+
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../../../../framework/SufiChain.SufiPlatform.Core/SufiChain.SufiPlatform.Core.csproj" />
+    <ProjectReference Include="..\SufiChain.SufiPlatform.ShortLinks.Blazor\SufiChain.SufiPlatform.ShortLinks.Blazor.csproj"/>
+  </ItemGroup>
+
+</Project>

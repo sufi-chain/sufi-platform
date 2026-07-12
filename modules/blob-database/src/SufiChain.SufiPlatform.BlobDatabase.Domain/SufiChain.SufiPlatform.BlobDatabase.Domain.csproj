@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <RootNamespace>SufiChain.SufiPlatform.BlobDatabase</RootNamespace>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <PackageId>SufiChain.SufiPlatform.BlobDatabase.Domain</PackageId>
+    <Description>Sufi Platform database blob storage module domain layer.</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Volo.Abp.Ddd.Domain" Version="$(AbpVersion)" />
+    <PackageReference Include="Volo.Abp.BlobStoring" Version="$(AbpVersion)" />
+    <ProjectReference Include="../SufiChain.SufiPlatform.BlobDatabase.Domain.Shared/SufiChain.SufiPlatform.BlobDatabase.Domain.Shared.csproj" />
+  </ItemGroup>
+
+</Project>

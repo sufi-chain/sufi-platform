@@ -1,0 +1,28 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>netstandard2.1;net10.0</TargetFrameworks>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>SufiChain.SufiPlatform.Settings</RootNamespace>
+    <IsPackable>true</IsPackable>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <PackageId>SufiChain.SufiPlatform.Settings.Application.Contracts</PackageId>
+    <Description>Setting management module application contracts for Sufi Platform - wraps ABP contracts and registers Sufi localization.</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Volo.Abp.Localization" Version="$(AbpVersion)" />
+    <ProjectReference Include="../../../../framework/SufiChain.SufiPlatform.UI.Domain.Shared/SufiChain.SufiPlatform.UI.Domain.Shared.csproj" />
+    <ProjectReference Include="../../../../framework/SufiChain.SufiPlatform.Ddd.Application.Contracts/SufiChain.SufiPlatform.Ddd.Application.Contracts.csproj" />
+    <ProjectReference Include="../../../../framework/SufiChain.SufiPlatform.Authorization/SufiChain.SufiPlatform.Authorization.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\account\src\SufiChain.SufiPlatform.Account.Domain.Shared\SufiChain.SufiPlatform.Account.Domain.Shared.csproj" />
+    <ProjectReference Include="..\SufiChain.SufiPlatform.Settings.Domain.Shared\SufiChain.SufiPlatform.Settings.Domain.Shared.csproj" />
+  </ItemGroup>
+
+</Project>

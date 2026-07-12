@@ -1,0 +1,9 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup><TargetFramework>net10.0</TargetFramework><Nullable>enable</Nullable><RootNamespace>SufiChain.SufiPlatform.Menus</RootNamespace></PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="../../../../framework/SufiChain.SufiPlatform.Core/SufiChain.SufiPlatform.Core.csproj" />
+    <PackageReference Include="Volo.Abp.Ddd.Domain" Version="$(AbpVersion)" />
+    <ProjectReference Include="../../../../framework/SufiChain.SufiPlatform.Features/SufiChain.SufiPlatform.Features.csproj" />
+  </ItemGroup>
+  <ItemGroup><ProjectReference Include="../SufiChain.SufiPlatform.Menus.Domain.Shared/SufiChain.SufiPlatform.Menus.Domain.Shared.csproj" /></ItemGroup>
+</Project>

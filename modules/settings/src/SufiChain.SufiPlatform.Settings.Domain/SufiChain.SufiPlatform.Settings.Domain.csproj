@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <RootNamespace>SufiChain.SufiPlatform.Settings</RootNamespace>
+    <PackageId>SufiChain.SufiPlatform.Settings.Domain</PackageId>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Polly" Version="8.5.0" />
+    <PackageReference Include="Volo.Abp.Caching" Version="$(AbpVersion)" />
+    <PackageReference Include="Volo.Abp.Ddd.Domain" Version="$(AbpVersion)" />
+    <ProjectReference Include="..\SufiChain.SufiPlatform.Settings.Domain.Shared\SufiChain.SufiPlatform.Settings.Domain.Shared.csproj" />
+  </ItemGroup>
+</Project>

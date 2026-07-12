@@ -1,0 +1,88 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
+using SufiChain.SufiPlatform.SufiAI.Features;
+using SufiChain.SufiPlatform.SufiAI.MCP.Abstractions;
+using SufiChain.SufiPlatform.SufiAI.MCP.Tools;
+using SufiChain.SufiPlatform.SufiAI.Permissions;
+using SufiChain.SufiPlatform.Application.Services;
+using SufiChain.SufiPlatform.Features;
+
+namespace SufiChain.SufiPlatform.SufiAI.Application.MCP.Tools;
+
+[RequiresFeature(SufiAIFeatures.Enable)]
+[Authorize(AIPermissions.MCPTools.Default)]
+public class MCPToolAppService : SufiApplicationService, IMCPToolAppService
+{
+    private readonly IMCPToolRegistry _toolRegistry;
+    private readonly IMCPToolExecutor _toolExecutor;
+    
+    public MCPToolAppService(
+        IMCPToolRegistry toolRegistry,
+        IMCPToolExecutor toolExecutor)
+    {
+        _toolRegistry = toolRegistry;
+        _toolExecutor = toolExecutor;
+    }
+    
+    public async Task<List<MCPToolDto>> GetToolsForWorkspaceAsync(string workspaceName)
+    {
+        var tools = await _toolRegistry.GetToolsForWorkspaceAsync(workspaceName);
+        
+        return tools.Select(t => new MCPToolDto
+        {
+            Name = t.Name,
+            Description = t.Description,
+            ParameterSchema = t.ParameterSchema,
+            ToolType = t.ToolType.ToString(),
+            Source = t.Source
+        }).ToList();
+    }
+    
+    public async Task<MCPToolDto> GetToolAsync(string workspaceName, string toolName)
+    {
+        var tool = await _toolRegistry.GetToolAsync(workspaceName, toolName);
+        
+        if (tool == null)
+        {
+            throw new Volo.Abp.BusinessException(AIErrorCodes.MCPToolNotFound)
+                .WithData("ToolName", toolName)
+                .WithData("WorkspaceName", workspaceName);
+        }
+        
+        return new MCPToolDto
+        {
+            Name = tool.Name,
+            Description = tool.Description,
+            ParameterSchema = tool.ParameterSchema,
+            ToolType = tool.ToolType.ToString(),
+            Source = tool.Source
+        };
+    }
+    
+    public async Task<MCPToolExecutionResultDto> ExecuteToolAsync(MCPToolExecutionRequestDto request)
+    {
+        var result = await _toolExecutor.ExecuteAsync(
+            request.WorkspaceName,
+            request.ToolName,
+            request.Parameters
+        );
+        
+        return new MCPToolExecutionResultDto
+        {
+            Success = result.Success,
+            Result = result.Result,
+            ErrorMessage = result.ErrorMessage,
+            ExceptionDetails = result.ExceptionDetails,
+            ExecutionTimeMs = result.ExecutionTimeMs,
+            ExecutedAt = result.ExecutedAt
+        };
+    }
+    
+    public async Task RefreshToolRegistryAsync()
+    {
+        await _toolRegistry.RefreshAsync();
+    }
+}

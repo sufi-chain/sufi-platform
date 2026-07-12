@@ -1,0 +1,106 @@
+@namespace SufiChain.SufiPlatform.Identity.Blazor.Pages
+@page "/panel/admin/identity/security-logs"
+@attribute [Authorize(Policy = SufiChain.SufiPlatform.Identity.IdentityPermissions.Users.Default)]
+@inherits IdentityComponentBase
+
+<SufiPageToolbar>
+	<SbButton Color="SbColor.Primary" Variant="SbButtonVariant.Outline" OnClick="@ClearFiltersAsync">
+		<StartIcon><SbIcon Name="refresh" /></StartIcon>
+		<ChildContent>@L["Refresh"]</ChildContent>
+	</SbButton>
+</SufiPageToolbar>
+
+<SbStack Direction="SbStackDirection.Column" Gap="4">
+
+	<!-- Filters -->
+	<SbCard>
+		<ChildContent>
+			<SbStack Gap="4">
+				<SbGrid Columns="1" ColumnsMd="3" ColumnsLg="5" Gap="3">
+					<SbDatePicker @bind-Value="_startDate"
+								  Label="@L["StartDate"]"
+								  Style="min-width: 180px;" />
+					<SbDatePicker @bind-Value="_endDate"
+								  Label="@L["EndDate"]"
+								  Style="min-width: 180px;" />
+					<SbTextField @bind-Value="_userName"
+								 Label="@L["UserName"]"
+								 Placeholder="@L["SearchByUser"]"
+								 Style="min-width: 180px;" />
+					<SbSimpleSelect TValue="string"
+									Value="@_action"
+									ValueChanged="@((string? v) => _action = v)"
+									Label="@((string)L["Action"])"
+									Style="min-width: 220px;">
+						<SbSelectOption TValue="string" Value="@((string?)null)">@L["All"]</SbSelectOption>
+						@* Authentication Events *@
+						<SbSelectOption TValue="string" Value="@SecurityLogActions.LoginSucceeded">@L["LoginSucceeded"]</SbSelectOption>
+						<SbSelectOption TValue="string" Value="@SecurityLogActions.LoginFailed">@L["LoginFailed"]</SbSelectOption>
+						<SbSelectOption TValue="string" Value="@SecurityLogActions.LoginInvalidUserName">@L["LoginInvalidUserName"]</SbSelectOption>
+						<SbSelectOption TValue="string" Value="@SecurityLogActions.LoginInvalidUserNameOrPassword">@L["LoginInvalidCredentials"]</SbSelectOption>
+						<SbSelectOption TValue="string" Value="@SecurityLogActions.LoginLockedout">@L["LoginLockedout"]</SbSelectOption>
+						<SbSelectOption TValue="string" Value="@SecurityLogActions.LoginNotAllowed">@L["LoginNotAllowed"]</SbSelectOption>
+						<SbSelectOption TValue="string" Value="@SecurityLogActions.LoginRequiresTwoFactor">@L["LoginRequiresTwoFactor"]</SbSelectOption>
+						<SbSelectOption TValue="string" Value="@SecurityLogActions.Logout">@L["Logout"]</SbSelectOption>
+						@* Account Changes *@
+						<SbSelectOption TValue="string" Value="@SecurityLogActions.ChangePassword">@L["ChangePassword"]</SbSelectOption>
+						<SbSelectOption TValue="string" Value="@SecurityLogActions.ChangeEmail">@L["ChangeEmail"]</SbSelectOption>
+						<SbSelectOption TValue="string" Value="@SecurityLogActions.ChangePhoneNumber">@L["ChangePhoneNumber"]</SbSelectOption>
+						<SbSelectOption TValue="string" Value="@SecurityLogActions.ChangeUserName">@L["ChangeUserName"]</SbSelectOption>
+						@* Two-Factor Authentication *@
+						<SbSelectOption TValue="string" Value="@SecurityLogActions.TwoFactorEnabled">@L["TwoFactorEnabled"]</SbSelectOption>
+						<SbSelectOption TValue="string" Value="@SecurityLogActions.TwoFactorDisabled">@L["TwoFactorDisabled"]</SbSelectOption>
+					</SbSimpleSelect>
+					<SbTextField @bind-Value="_clientIpAddress"
+								 Label="@L["IpAddress"]"
+								 Placeholder="@L["SearchByIp"]"
+								 Style="min-width: 150px;" />
+				</SbGrid>
+				<SbStack Direction="SbStackDirection.Row" Gap="2" Justify="SbJustify.End">
+					<SbButton Variant="SbButtonVariant.Outline" OnClick="@ClearFiltersAsync">
+						@L["ClearFilters"]
+					</SbButton>
+					<SbButton Color="SbColor.Primary" OnClick="@ApplyFiltersAsync">
+						<StartIcon><SbIcon Name="search" /></StartIcon>
+						<ChildContent>@L["Search"]</ChildContent>
+					</SbButton>
+				</SbStack>
+			</SbStack>
+		</ChildContent>
+	</SbCard>
+
+	<!-- Security Logs Grid -->
+	<SbCard>
+		<ChildContent>
+			<SbDataGrid TItem="SecurityLogListItemDto"
+						@ref="_gridRef"
+						ItemsProvider="LoadSecurityLogsDataAsync"
+						Loading="IsOperationLoading(LoadingKeys.LoadSecurityLogs)"
+						Striped="true"
+						Hoverable="true"
+						PageIndex="_pageIndex"
+						PageSize="_pageSize"
+						TotalCount="_totalCount"
+						PageIndexChanged="OnPageIndexChangedAsync">
+				<SbColumn TItem="SecurityLogListItemDto" Title="@L["Time"]" Width="160px" Style="min-width: 160px">
+					<CellTemplate Context="cellContext">
+						@cellContext.Item.CreationTime.ToString("yyyy-MM-dd HH:mm:ss")
+					</CellTemplate>
+				</SbColumn>
+				<SbColumn TItem="SecurityLogListItemDto" Title="@L["Action"]" Width="180px" Style="min-width: 180px">
+					<CellTemplate Context="cellContext">
+						<SbBadge Color="@GetActionColor(cellContext.Item.Action)">
+							@GetActionDisplayName(cellContext.Item.Action)
+						</SbBadge>
+					</CellTemplate>
+				</SbColumn>
+				<SbColumn TItem="SecurityLogListItemDto" Field="UserName" Title="@L["User"]" Width="150px" Style="min-width: 150px" />
+				<SbColumn TItem="SecurityLogListItemDto" Field="ClientIpAddress" Title="@L["IpAddress"]" Width="130px" Style="min-width: 130px" />
+				<SbColumn TItem="SecurityLogListItemDto" Field="BrowserInfo" Title="@L["Browser"]" />
+				<SbColumn TItem="SecurityLogListItemDto" Field="ApplicationName" Title="@L["Application"]" Width="150px" Style="min-width: 150px" />
+				<SbColumn TItem="SecurityLogListItemDto" Field="Identity" Title="@L["Identity"]" Width="130px" Style="min-width: 130px" />
+			</SbDataGrid>
+		</ChildContent>
+	</SbCard>
+
+</SbStack>

@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk.Razor">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <RootNamespace>SufiChain.SufiPlatform.Identity.Blazor.Public</RootNamespace>
+    <PackageId>SufiChain.SufiPlatform.Identity.Blazor.Public</PackageId>
+    <Description>Identity module public Blazor components for Sufi Platform - reusable role and organization unit selectors.</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="$(MicrosoftAspNetCoreComponentsWebVersion)" />
+    <ProjectReference Include="..\..\..\..\framework\SufiChain.SufiPlatform.UI.Blazor\SufiChain.SufiPlatform.UI.Blazor.csproj" />
+    <ProjectReference Include="..\SufiChain.SufiPlatform.Identity.Application.Contracts\SufiChain.SufiPlatform.Identity.Application.Contracts.csproj" />
+    <ProjectReference Include="..\SufiChain.SufiPlatform.Identity.Domain.Shared\SufiChain.SufiPlatform.Identity.Domain.Shared.csproj" />
+  </ItemGroup>
+
+</Project>

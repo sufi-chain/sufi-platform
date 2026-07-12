@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+        <TargetFrameworks>netstandard2.1;net10.0</TargetFrameworks>
+    <Nullable>enable</Nullable>
+    <RootNamespace>SufiChain.SufiPlatform.Calendar</RootNamespace>
+    <GenerateEmbeddedFilesManifest>true</GenerateEmbeddedFilesManifest>
+    <IsPackable>true</IsPackable>
+  </PropertyGroup>
+  <PropertyGroup>
+    <PackageId>SufiChain.SufiPlatform.Calendar.Domain.Shared</PackageId>
+    <Description>Calendar module domain shared layer for Sufi Platform.</Description>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Volo.Abp.Ddd.Domain.Shared" Version="$(AbpVersion)" />
+    <ProjectReference Include="../../../../framework/SufiChain.SufiPlatform.Validation/SufiChain.SufiPlatform.Validation.csproj" />
+    <ProjectReference Include="../../../../framework/SufiChain.SufiPlatform.Features/SufiChain.SufiPlatform.Features.csproj" />
+    <ProjectReference Include="../../../../framework/SufiChain.SufiPlatform.UI.Domain.Shared/SufiChain.SufiPlatform.UI.Domain.Shared.csproj" />
+    <ProjectReference Include="..\..\..\..\framework\SufiChain.SufiPlatform.UI.Abstractions\SufiChain.SufiPlatform.UI.Abstractions.csproj" />
+    <PackageReference Include="Microsoft.Extensions.FileProviders.Embedded" Version="$(MicrosoftExtensionsFileProvidersEmbeddedVersion)" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Localization\Calendar\*.json" />
+    <Content Remove="Localization\Calendar\*.json" />
+  </ItemGroup>
+</Project>

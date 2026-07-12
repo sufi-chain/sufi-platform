@@ -1,0 +1,32 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>netstandard2.1;net10.0</TargetFrameworks>
+    <Nullable>enable</Nullable>
+    <RootNamespace>SufiChain.SufiPlatform.Tenants</RootNamespace>
+    <GenerateEmbeddedFilesManifest>true</GenerateEmbeddedFilesManifest>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <PackageId>SufiChain.SufiPlatform.Tenants.Domain.Shared</PackageId>
+    <Description>Tenant management module domain shared layer for Sufi Platform - constants, enums, and localization.</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\..\framework\SufiChain.SufiPlatform.UI.Domain.Shared\SufiChain.SufiPlatform.UI.Domain.Shared.csproj" />
+    <PackageReference Include="Volo.Abp.Auditing.Contracts" Version="$(AbpVersion)" />
+    <ProjectReference Include="../../../../framework/SufiChain.SufiPlatform.Features/SufiChain.SufiPlatform.Features.csproj" />
+    
+    <ProjectReference Include="../../../../framework/SufiChain.SufiPlatform.Validation/SufiChain.SufiPlatform.Validation.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.FileProviders.Embedded" Version="$(MicrosoftExtensionsFileProvidersEmbeddedVersion)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Localization\Tenants\*.json" />
+    <Content Remove="Localization\Tenants\*.json" />
+  </ItemGroup>
+
+</Project>

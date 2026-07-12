@@ -1,0 +1,12 @@
+@namespace SufiChain.SufiPlatform.Menus.Blazor.Components
+@inherits MenusComponentBase
+<select value="@SelectedItemId" @onchange="OnChangedAsync">
+    @if (AllowEmpty)
+    {
+        <option value="">@Placeholder</option>
+    }
+    @foreach (var item in FlattenedItems)
+    {
+        <option value="@item.Id">@item.DisplayName</option>
+    }
+</select>

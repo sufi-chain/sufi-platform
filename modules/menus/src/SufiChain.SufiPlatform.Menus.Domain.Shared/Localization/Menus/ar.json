@@ -1,0 +1,16 @@
+{
+  "culture": "ar",
+  "texts": {
+    "Permission:SufiMenus": "إدارة القوائم",
+    "Permission:SufiMenus.Menus": "القوائم",
+    "Permission:SufiMenus.Menus.Create": "إنشاء قائمة",
+    "Permission:SufiMenus.Menus.Edit": "تعديل قائمة",
+    "Permission:SufiMenus.Menus.Delete": "حذف قائمة",
+    "Permission:SufiMenus.Menus.ManageItems": "إدارة عناصر القائمة",
+    "Menu:SufiMenus": "إدارة القوائم",
+    "Menu:SufiMenus.Menus": "القوائم",
+    "ContextType:Public": "عام",
+    "ContextType:KnowledgeBase.Project": "مشروع قاعدة المعرفة",
+    "DisplayNameLocalizationMode": "وضع اسم العرض"
+  }
+}

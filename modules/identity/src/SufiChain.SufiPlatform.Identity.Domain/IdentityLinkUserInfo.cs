@@ -1,0 +1,16 @@
+using System;
+
+namespace SufiChain.SufiPlatform.Identity;
+
+public class IdentityLinkUserInfo
+{
+    public virtual Guid UserId { get; set; }
+
+    public virtual Guid? TenantId { get; set; }
+
+    public IdentityLinkUserInfo(Guid userId, Guid? tenantId = null)
+    {
+        UserId = userId;
+        TenantId = tenantId;
+    }
+}

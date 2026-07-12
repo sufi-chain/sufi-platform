@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <RootNamespace>SufiChain.SufiPlatform.AuditLogging</RootNamespace>
+    <PackageId>SufiChain.SufiPlatform.AuditLogging.EntityFrameworkCore</PackageId>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\SufiChain.SufiPlatform.AuditLogging.Domain\SufiChain.SufiPlatform.AuditLogging.Domain.csproj" />
+    <PackageReference Include="Volo.Abp.EntityFrameworkCore" Version="$(AbpVersion)" />
+  </ItemGroup>
+</Project>

@@ -1,0 +1,319 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Web;
+using Microsoft.JSInterop;
+using SufiChain.SufiBlazor.Components.Data;
+using SufiChain.SufiPlatform.ShortLinks.Permissions;
+using SufiChain.SufiBlazor.Contracts.Data;
+using Microsoft.AspNetCore.Authorization;
+using SufiChain.SufiPlatform.UI.Layout;
+
+namespace SufiChain.SufiPlatform.ShortLinks.Blazor.Pages.ShortLinks;
+
+public partial class ShortLinkManagementBase : ShortLinksComponentBase
+{
+    protected static class LoadingKeys
+    {
+        public const string LoadShortUrls = "load-short-urls";
+    }
+
+    [Inject] protected IShortUrlAppService ShortUrlAppService { get; set; } = null!;
+    [Inject] protected IJSRuntime JsRuntime { get; set; } = null!;
+    [Inject] protected IPageLayout PageLayout { get; set; } = default!;
+
+    protected SbDataGrid<ShortUrlDto>? _gridRef;
+    protected int TotalCount { get; set; }
+    protected int PageSize { get; set; } = 10;
+    protected int PageIndex { get; set; }
+    protected string CurrentSorting { get; set; } = string.Empty;
+    protected string FilterText { get; set; } = string.Empty;
+    protected bool HasActiveFilters => !string.IsNullOrWhiteSpace(FilterText);
+
+    protected CreateShortUrlDto NewEntity { get; set; } = new();
+    protected UpdateShortUrlDto EditingEntity { get; set; } = new();
+    protected ShortUrlDto EditingEntityDto { get; set; } = new();
+    protected Guid EditingEntityId { get; set; }
+    protected ShortUrlDto? PendingDeleteEntity { get; set; }
+
+    protected bool IsCreateDialogOpen { get; set; }
+    protected bool IsEditDialogOpen { get; set; }
+    protected bool IsDeleteDialogOpen { get; set; }
+
+    protected bool HasCreatePermission { get; set; }
+    protected bool HasEditPermission { get; set; }
+    protected bool HasDeletePermission { get; set; }
+
+
+    protected DateOnly? NewEntityExpiresAt
+    {
+        get => NewEntity.ExpiresAt.HasValue ? DateOnly.FromDateTime(NewEntity.ExpiresAt.Value) : null;
+        set => NewEntity.ExpiresAt = value?.ToDateTime(TimeOnly.MinValue);
+    }
+
+    protected DateOnly? EditingEntityExpiresAt
+    {
+        get => EditingEntity.ExpiresAt.HasValue ? DateOnly.FromDateTime(EditingEntity.ExpiresAt.Value) : null;
+        set => EditingEntity.ExpiresAt = value?.ToDateTime(TimeOnly.MinValue);
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        SetupPageLayout();
+        await SetPermissionsAsync();
+        await base.OnInitializedAsync();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await base.OnAfterRenderAsync(firstRender);
+
+        if (firstRender)
+        {
+            await RefreshGridAsync();
+        }
+    }
+
+    protected virtual void SetupPageLayout()
+    {
+        PageLayout.Title = L["ShortLinks"];
+    }
+
+    protected virtual async Task SetPermissionsAsync()
+    {
+        HasCreatePermission = await AuthorizationService.IsGrantedAnyAsync(ShortLinksPermissions.ShortLinks.Create);
+        HasEditPermission = await AuthorizationService.IsGrantedAsync(ShortLinksPermissions.ShortLinks.Edit);
+        HasDeletePermission = await AuthorizationService.IsGrantedAsync(ShortLinksPermissions.ShortLinks.Delete);
+    }
+
+    protected virtual async Task<SbDataResponse<ShortUrlDto>> LoadShortUrlsDataAsync(SbDataRequest request)
+    {
+        var input = new GetShortUrlListDto
+        {
+            Filter = string.IsNullOrWhiteSpace(FilterText) ? null : FilterText,
+            MaxResultCount = request.PageSize,
+            SkipCount = Math.Max(0, request.PageIndex * request.PageSize),
+            Sorting = request.Sorts.Count > 0
+                ? string.Join(", ", request.Sorts.Select(s => s.Direction == SbSortDirection.Descending ? $"{s.Field} DESC" : s.Field))
+                : string.IsNullOrWhiteSpace(CurrentSorting) ? nameof(ShortUrlDto.CreationTime) + " DESC" : CurrentSorting
+        };
+
+        var result = await ShortUrlAppService.GetListAsync(input);
+        TotalCount = (int)result.TotalCount;
+        return new SbDataResponse<ShortUrlDto>(result.Items, result.TotalCount);
+    }
+
+    protected virtual Task RefreshGridAsync()
+    {
+        return ExecuteWithLoadingAsync(
+            () => _gridRef?.RefreshDataAsync() ?? Task.CompletedTask,
+            LoadingKeys.LoadShortUrls);
+    }
+
+    protected virtual async Task OnPageIndexChangedAsync(int pageIndex)
+    {
+        PageIndex = pageIndex;
+        await RefreshGridAsync();
+    }
+
+    protected virtual async Task OnSortChangedAsync(SbSort? sort)
+    {
+        CurrentSorting = sort == null || string.IsNullOrWhiteSpace(sort.Field)
+            ? string.Empty
+            : sort.Field + (sort.Direction == SbSortDirection.Descending ? " DESC" : string.Empty);
+
+        PageIndex = 0;
+        await RefreshGridAsync();
+    }
+
+    protected virtual async Task ApplyFiltersAsync()
+    {
+        PageIndex = 0;
+        await RefreshGridAsync();
+    }
+
+    protected virtual async Task ClearFiltersAsync()
+    {
+        FilterText = string.Empty;
+        PageIndex = 0;
+        await RefreshGridAsync();
+    }
+
+    protected virtual async Task HandleFilterKeyDown(KeyboardEventArgs args)
+    {
+        if (args.Key == "Enter")
+        {
+            await ApplyFiltersAsync();
+        }
+    }
+
+    protected virtual Task RefreshAsync() => RefreshGridAsync();
+
+    protected virtual Task OpenCreateModalAsync()
+    {
+        NewEntity = new CreateShortUrlDto();
+        IsCreateDialogOpen = true;
+        return Task.CompletedTask;
+    }
+
+    protected virtual Task CloseCreateModalAsync()
+    {
+        NewEntity = new CreateShortUrlDto();
+        IsCreateDialogOpen = false;
+        return Task.CompletedTask;
+    }
+
+    protected Task OnNewEntityExpiresAtChanged(DateOnly? value)
+    {
+        NewEntityExpiresAt = value;
+        return Task.CompletedTask;
+    }
+
+    protected Task OnEditingEntityExpiresAtChanged(DateOnly? value)
+    {
+        EditingEntityExpiresAt = value;
+        return Task.CompletedTask;
+    }
+
+    protected virtual async Task CreateShortUrlAsync()
+    {
+        try
+        {
+            var result = await ShortUrlAppService.CreateAsync(NewEntity);
+            IsCreateDialogOpen = false;
+            await RefreshGridAsync();
+
+            if (!string.IsNullOrWhiteSpace(result.FullShortUrl))
+            {
+                await Message.SuccessAsync(L["ShortLinkCreatedSuccessfully"] + Environment.NewLine + result.FullShortUrl);
+                await CopyShortLinkAsync(result.FullShortUrl, false);
+            }
+        }
+        catch (Exception exception)
+        {
+            await HandleErrorAsync(exception);
+        }
+    }
+
+    protected virtual Task OpenEditModalAsync(ShortUrlDto entity)
+    {
+        EditingEntityId = entity.Id;
+        EditingEntityDto = entity;
+        EditingEntity = new UpdateShortUrlDto
+        {
+            DestinationUrl = entity.DestinationUrl,
+            Description = entity.Description,
+            IsActive = entity.IsActive,
+            ExpiresAt = entity.ExpiresAt
+        };
+
+        IsEditDialogOpen = true;
+        return Task.CompletedTask;
+    }
+
+    protected virtual Task CloseEditModalAsync()
+    {
+        EditingEntity = new UpdateShortUrlDto();
+        EditingEntityDto = new ShortUrlDto();
+        EditingEntityId = Guid.Empty;
+        IsEditDialogOpen = false;
+        return Task.CompletedTask;
+    }
+
+    protected virtual async Task UpdateShortUrlAsync()
+    {
+        try
+        {
+            await ShortUrlAppService.UpdateAsync(EditingEntityId, EditingEntity);
+            IsEditDialogOpen = false;
+            await Message.Success(L["ShortLinkUpdatedSuccessfully"]);
+            await RefreshGridAsync();
+        }
+        catch (Exception exception)
+        {
+            await HandleErrorAsync(exception);
+        }
+    }
+
+    protected virtual Task PromptDeleteAsync(ShortUrlDto entity)
+    {
+        PendingDeleteEntity = entity;
+        IsDeleteDialogOpen = true;
+        return Task.CompletedTask;
+    }
+
+    protected virtual Task CancelDelete()
+    {
+        PendingDeleteEntity = null;
+        IsDeleteDialogOpen = false;
+        return Task.CompletedTask;
+    }
+
+    protected void OnDeleteDialogOpenChanged(bool open)
+    {
+        IsDeleteDialogOpen = open;
+        if (!open)
+        {
+            PendingDeleteEntity = null;
+        }
+    }
+
+    protected virtual async Task DeleteConfirmedAsync()
+    {
+        if (PendingDeleteEntity == null)
+        {
+            IsDeleteDialogOpen = false;
+            return;
+        }
+
+        try
+        {
+            await ShortUrlAppService.DeleteAsync(PendingDeleteEntity.Id);
+            await Message.SuccessAsync(L["ShortLinkDeletedSuccessfully"]);
+            await CancelDelete();
+            await RefreshGridAsync();
+        }
+        catch (Exception exception)
+        {
+            await HandleErrorAsync(exception);
+        }
+    }
+
+    protected virtual async Task CopyShortLinkAsync(string? fullShortUrl, bool showSuccessMessage = true)
+    {
+        if (string.IsNullOrWhiteSpace(fullShortUrl))
+        {
+            return;
+        }
+
+        try
+        {
+            await JsRuntime.InvokeVoidAsync("navigator.clipboard.writeText", fullShortUrl);
+            if (showSuccessMessage)
+            {
+                await Message.SuccessAsync(L["LinkCopiedToClipboard"]);
+            }
+        }
+        catch
+        {
+            await Message.WarnAsync(L["FailedToCopyLink"]);
+        }
+    }
+
+    protected virtual string GetTrimmedUrl(string? value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            return string.Empty;
+        }
+
+        return value.Length > 60 ? value[..60] + "..." : value;
+    }
+
+    protected override async Task HandleErrorAsync(Exception exception)
+    {
+        await Message.ErrorAsync(exception.Message);
+    }
+}

@@ -1,0 +1,20 @@
+@namespace SufiChain.SufiPlatform.SufiAI.Blazor.Pages.AI
+@page "/panel/admin/ai/test-chat"
+@attribute [Authorize(Policy = AIPermissions.TestChat.Default)]
+@inherits AIComponentBase
+
+<SbCard>
+    <ChildContent>
+        <SbTabs @bind-ActiveIndex="_activeTab">
+            <SbTab Label="@L["Chat"]">
+                <AIChatTestPanel />
+            </SbTab>
+            <SbTab Label="@L["MultiModalTest"]">
+                <AIMultiModalTestPanel />
+            </SbTab>
+            <SbTab Label="@L["MCPTools"]">
+                <AIToolTestPanel />
+            </SbTab>
+        </SbTabs>
+    </ChildContent>
+</SbCard>

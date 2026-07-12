@@ -1,0 +1,88 @@
+@namespace SufiChain.SufiPlatform.Identity.Blazor.Components
+@inherits IdentityComponentBase
+
+<SbDialog Open="@Open" OpenChanged="OnDialogOpenChanged" Size="SbDialogSize.Md" Title="@L["AddMembers"]">
+    <ChildContent>
+        <SbStack Gap="3">
+            <SbTextField @bind-Value="_filter"
+                         @bind-Value:after="OnFilterChangedAsync"
+                         Placeholder="@L["SearchUsers"]"
+                         Clearable="true">
+                <StartAdornment>
+                    <SbIcon Name="search" />
+                </StartAdornment>
+            </SbTextField>
+
+            @if (!string.IsNullOrEmpty(_errorMessage))
+            {
+                <SbAlert Severity="@SbAlertSeverity.Danger">
+                    @_errorMessage
+                </SbAlert>
+            }
+            else
+            {
+                <SbDataGrid TItem="OrganizationUnitMemberDto"
+                            @ref="_gridRef"
+                            ItemsProvider="LoadAvailableMembersDataAsync"
+                            Loading="IsOperationLoading(LoadingKeys.LoadMembers)"
+                            Striped="true"
+                            Hoverable="true"
+                            PageIndex="_pageIndex"
+                            PageSize="_pageSize"
+                            TotalCount="_totalCount"
+                            PageIndexChanged="OnPageIndexChangedAsync">
+                    <EmptyTemplate>
+                        <SbStack Justify="SbJustify.Center" Align="SbAlign.Center" Class="p-8 text-muted">
+                            <SbIcon Name="users" Size="SbSize.Xl" />
+                            <span>@L["NoAvailableUsersFound"]</span>
+                        </SbStack>
+                    </EmptyTemplate>
+                    <ChildContent>
+                        <SbColumn TItem="OrganizationUnitMemberDto" Title="" Width="50px">
+                            <CellTemplate Context="cellContext">
+                                <SbCheckbox Value="@_selectedUserIds.Contains(cellContext.Item.UserId)"
+                                            ValueChanged="@(v => OnMemberToggled(cellContext.Item.UserId, v))" />
+                            </CellTemplate>
+                        </SbColumn>
+                        <SbColumn TItem="OrganizationUnitMemberDto" Title="@L["UserName"]">
+                            <CellTemplate Context="cellContext">
+                                <SbStack Direction="SbStackDirection.Row" Gap="2" Align="SbAlign.Center">
+                                    <SbIcon Name="user" />
+                                    @cellContext.Item.UserName
+                                </SbStack>
+                            </CellTemplate>
+                        </SbColumn>
+                        <SbColumn TItem="OrganizationUnitMemberDto" Title="@L["Email"]">
+                            <CellTemplate Context="cellContext">
+                                @cellContext.Item.Email
+                            </CellTemplate>
+                        </SbColumn>
+                        <SbColumn TItem="OrganizationUnitMemberDto" Title="@L["Name"]">
+                            <CellTemplate Context="cellContext">
+                                @($"{cellContext.Item.Name} {cellContext.Item.Surname}".Trim())
+                            </CellTemplate>
+                        </SbColumn>
+                    </ChildContent>
+                </SbDataGrid>
+            }
+
+            @if (_selectedUserIds.Count > 0)
+            {
+                <SbAlert Severity="SbAlertSeverity.Info">
+                    @L["SelectedMembersCount", _selectedUserIds.Count]
+                </SbAlert>
+            }
+        </SbStack>
+    </ChildContent>
+    <Footer>
+        <SbStack Direction="SbStackDirection.Row" Gap="2" Justify="SbJustify.End">
+            <SbButton Variant="SbButtonVariant.Outline" OnClick="Hide">@L["Cancel"]</SbButton>
+            <SbButton Color="SbColor.Primary"
+                      Loading="IsOperationLoading(LoadingKeys.AddMembers)"
+                      Disabled="@(_selectedUserIds.Count == 0)"
+                      OnClick="AddMembersAsync">
+                @L["AssignSelected"]
+            </SbButton>
+        </SbStack>
+    </Footer>
+</SbDialog>

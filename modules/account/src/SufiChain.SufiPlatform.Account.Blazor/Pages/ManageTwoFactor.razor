@@ -1,0 +1,132 @@
+@namespace SufiChain.SufiPlatform.Account.Blazor.Pages
+@page "/account/manage/two-factor"
+@layout AccountLayout
+
+<div class="account-page">
+    <SbCard Class="account-card">
+        <ChildContent>
+            <SbStack Gap="4" Align="SbAlign.Center">
+                <SbHeading Level="2">@AccountL["ManageTwoFactor"]</SbHeading>
+
+                @if (IsLoading)
+                {
+                    <SbText Color="SbColor.Muted">@AccountL["Loading"]</SbText>
+                }
+                else if (Info == null)
+                {
+                    <SbAlert Severity="SbAlertSeverity.Danger">@(ErrorMessage ?? AccountL["TwoFactorLoadFailed"])</SbAlert>
+                }
+                else
+                {
+                    <SbStack Gap="3" class="w-full">
+                        @if (Info.IsEnabled)
+                        {
+                            <SbAlert Severity="SbAlertSeverity.Success">@AccountL["TwoFactorIsEnabled"]</SbAlert>
+
+                            @if (RecoveryCodes.Length > 0)
+                            {
+                                <SbAlert Severity="SbAlertSeverity.Info">
+                                    <SbStack Gap="2">
+                                        <SbText Weight="SbFontWeight.Medium">@AccountL["RecoveryCodesTitle"]</SbText>
+                                        @foreach (var code in RecoveryCodes)
+                                        {
+                                            <SbText Variant="SbTextVariant.BodySmall"><code>@@code</code></SbText>
+                                        }
+                                        <SbText Variant="SbTextVariant.Caption" Color="SbColor.Muted">
+                                            @AccountL["RecoveryCodesHint"]
+                                        </SbText>
+                                    </SbStack>
+                                </SbAlert>
+                            }
+
+                            <SbButton Type="button"
+                                      Color="SbColor.Secondary"
+                                      Variant="SbButtonVariant.Outline"
+                                      Loading="IsBusy"
+                                      OnClick="OnRegenerateRecoveryCodesAsync">
+                                @AccountL["RegenerateRecoveryCodes"]
+                            </SbButton>
+
+                            <SbFormField Label="@L["Password"]" InputId="DisablePassword" Required="true">
+                                <SbTextField @bind-Value="DisablePassword"
+                                             Id="DisablePassword"
+                                             Type="password"
+                                             Placeholder="@L["EnterPassword"]"
+                                             AutoComplete="current-password" />
+                            </SbFormField>
+                            <SbButton Type="button"
+                                      Color="SbColor.Danger"
+                                      Variant="SbButtonVariant.Outline"
+                                      Loading="IsBusy"
+                                      OnClick="OnDisableAsync">
+                                @AccountL["DisableTwoFactor"]
+                            </SbButton>
+                        }
+                        else
+                        {
+                            <SbText Color="SbColor.Muted">@AccountL["TwoFactorSetupInstructions"]</SbText>
+
+                            @if (Info.AllowAuthenticatorApp)
+                            {
+                                <SbButton Type="button"
+                                          Color="SbColor.Secondary"
+                                          Variant="SbButtonVariant.Outline"
+                                          Loading="IsBusy"
+                                          OnClick="OnGenerateSetupAsync">
+                                    @AccountL["GenerateAuthenticatorSetup"]
+                                </SbButton>
+
+                                @if (Setup != null)
+                                {
+                                    <SbAlert Severity="SbAlertSeverity.Info">
+                                        <SbStack Gap="2">
+                                            <SbText Weight="SbFontWeight.Medium">@AccountL["AuthenticatorSharedKey"]</SbText>
+                                            <SbText Variant="SbTextVariant.BodySmall"><code>@Setup.SharedKey</code></SbText>
+                                            <SbText Variant="SbTextVariant.Caption" Color="SbColor.Muted">
+                                                @AccountL["AuthenticatorUriHint"]
+                                            </SbText>
+                                            <SbText Variant="SbTextVariant.BodySmall" style="word-break: break-all;">
+                                                @Setup.AuthenticatorUri
+                                            </SbText>
+                                        </SbStack>
+                                    </SbAlert>
+
+                                    <SbFormField Label="@AccountL["AuthenticatorCode"]" InputId="VerificationCode" Required="true">
+                                        <SbTextField @bind-Value="VerificationCode"
+                                                     Id="VerificationCode"
+                                                     Type="text"
+                                                     Placeholder="@AccountL["AuthenticatorCodePlaceholder"]"
+                                                     AutoComplete="one-time-code" />
+                                    </SbFormField>
+
+                                    <SbButton Type="button"
+                                              Color="SbColor.Primary"
+                                              Loading="IsBusy"
+                                              OnClick="OnEnableAsync">
+                                        @AccountL["EnableTwoFactor"]
+                                    </SbButton>
+                                }
+                            }
+                        }
+
+                        @if (!string.IsNullOrEmpty(SuccessMessage))
+                        {
+                            <SbAlert Severity="SbAlertSeverity.Success">@SuccessMessage</SbAlert>
+                        }
+                        @if (!string.IsNullOrEmpty(ErrorMessage))
+                        {
+                            <SbAlert Severity="SbAlertSeverity.Danger">@ErrorMessage</SbAlert>
+                        }
+
+                        @if (!string.IsNullOrWhiteSpace(ReturnUrl))
+                        {
+                            <SbButton Type="button" Color="SbColor.Primary" OnClick="ContinueAfterSetup">
+                                @AccountL["Continue"]
+                            </SbButton>
+                        }
+                    </SbStack>
+                }
+            </SbStack>
+        </ChildContent>
+    </SbCard>
+</div>

@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <RootNamespace>SufiChain.SufiPlatform.SufiAI</RootNamespace>
+    <PackageId>SufiChain.SufiPlatform.SufiAI.Application</PackageId>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\..\framework\SufiChain.SufiPlatform.Ddd.Application\SufiChain.SufiPlatform.Ddd.Application.csproj" />
+    <PackageReference Include="Volo.Abp.Mapperly" Version="$(AbpVersion)" />
+    <ProjectReference Include="..\..\..\file-manager\src\SufiChain.SufiPlatform.FileManager.Application\SufiChain.SufiPlatform.FileManager.Application.csproj" />
+    <ProjectReference Include="..\..\..\localization\src\SufiChain.SufiPlatform.Localization.Application.Contracts\SufiChain.SufiPlatform.Localization.Application.Contracts.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\SufiChain.SufiPlatform.SufiAI.Application.Contracts\SufiChain.SufiPlatform.SufiAI.Application.Contracts.csproj" />
+    <ProjectReference Include="..\SufiChain.SufiPlatform.SufiAI.Domain\SufiChain.SufiPlatform.SufiAI.Domain.csproj" />
+  </ItemGroup>
+
+</Project>

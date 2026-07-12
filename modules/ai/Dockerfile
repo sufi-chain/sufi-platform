@@ -7,23 +7,23 @@ FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 WORKDIR /src
 
 # Copy project files
-COPY ["src/SufiChain.SufiAbp.AI.Domain.Shared/", "SufiChain.SufiAbp.AI.Domain.Shared/"]
-COPY ["src/SufiChain.SufiAbp.AI.Domain/", "SufiChain.SufiAbp.AI.Domain/"]
-COPY ["src/SufiChain.SufiAbp.AI.Application.Contracts/", "SufiChain.SufiAbp.AI.Application.Contracts/"]
-COPY ["src/SufiChain.SufiAbp.AI.Application/", "SufiChain.SufiAbp.AI.Application/"]
-COPY ["src/SufiChain.SufiAbp.AI.EntityFrameworkCore/", "SufiChain.SufiAbp.AI.EntityFrameworkCore/"]
-COPY ["src/SufiChain.SufiAbp.AI.HttpApi/", "SufiChain.SufiAbp.AI.HttpApi/"]
+COPY ["src/SufiChain.SufiPlatform.SufiAI.Domain.Shared/", "SufiChain.SufiPlatform.SufiAI.Domain.Shared/"]
+COPY ["src/SufiChain.SufiPlatform.SufiAI.Domain/", "SufiChain.SufiPlatform.SufiAI.Domain/"]
+COPY ["src/SufiChain.SufiPlatform.SufiAI.Application.Contracts/", "SufiChain.SufiPlatform.SufiAI.Application.Contracts/"]
+COPY ["src/SufiChain.SufiPlatform.SufiAI.Application/", "SufiChain.SufiPlatform.SufiAI.Application/"]
+COPY ["src/SufiChain.SufiPlatform.SufiAI.EntityFrameworkCore/", "SufiChain.SufiPlatform.SufiAI.EntityFrameworkCore/"]
+COPY ["src/SufiChain.SufiPlatform.SufiAI.HttpApi/", "SufiChain.SufiPlatform.SufiAI.HttpApi/"]
 
 # Restore dependencies
-RUN dotnet restore "SufiChain.SufiAbp.AI.HttpApi/SufiChain.SufiAbp.AI.HttpApi.csproj"
+RUN dotnet restore "SufiChain.SufiPlatform.SufiAI.HttpApi/SufiChain.SufiPlatform.SufiAI.HttpApi.csproj"
 
 # Build
-RUN dotnet build "SufiChain.SufiAbp.AI.HttpApi/SufiChain.SufiAbp.AI.HttpApi.csproj" -c Release -o /app/build
+RUN dotnet build "SufiChain.SufiPlatform.SufiAI.HttpApi/SufiChain.SufiPlatform.SufiAI.HttpApi.csproj" -c Release -o /app/build
 
 FROM build AS publish
-RUN dotnet publish "SufiChain.SufiAbp.AI.HttpApi/SufiChain.SufiAbp.AI.HttpApi.csproj" -c Release -o /app/publish
+RUN dotnet publish "SufiChain.SufiPlatform.SufiAI.HttpApi/SufiChain.SufiPlatform.SufiAI.HttpApi.csproj" -c Release -o /app/publish
 
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
-ENTRYPOINT ["dotnet", "SufiChain.SufiAbp.AI.HttpApi.dll"]
+ENTRYPOINT ["dotnet", "SufiChain.SufiPlatform.SufiAI.HttpApi.dll"]

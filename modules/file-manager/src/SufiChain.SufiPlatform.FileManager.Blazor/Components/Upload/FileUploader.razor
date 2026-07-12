@@ -1,0 +1,151 @@
+@namespace SufiChain.SufiPlatform.FileManager.Blazor.Components.Upload
+@implements IDisposable
+@inherits FileManagerComponentBase
+
+<div class="file-uploader @CssClass">
+	@if (ShowStorageQuota && _storageQuota != null)
+	{
+		<StorageQuotaMeter Quota="@_storageQuota" Class="mb-3" />
+	}
+
+	@if (_structure != null && !string.IsNullOrEmpty(_structure.Description))
+	{
+		<SbAlert Severity="SbAlertSeverity.Info" Class="mb-3">
+			@L[_structure.Description]
+		</SbAlert>
+	}
+
+	<SbCard>
+		<div class="upload-area @(_isDragging ? "dragging" : "")"
+			 @ondragenter="HandleDragEnter"
+			 @ondragleave="HandleDragLeave"
+			 @ondragover:preventDefault
+			 @ondrop="HandleDrop"
+			 @ondrop:preventDefault>
+			@if (_hasConfigOptions)
+			{
+				<div class="fm-uploader-config-btn" @onclick:stopPropagation>
+					<SbIconButton AriaLabel="@L["UploadSettings"]"
+								  Title="@L["UploadSettings"]"
+								  Size="SbSize.Sm"
+								  Color="SbColor.Default"
+								  OnClick="@(() => _configModalOpen = true)">
+						<Icon><SbIcon Name="settings" Size="SbSize.Sm" /></Icon>
+					</SbIconButton>
+				</div>
+			}
+			<div class="text-center py-4">
+				<SbIcon Name="upload" Size="SbSize.Xl" Class="text-muted mb-3" />
+				<h5>@(DropZoneTitle ?? L["DragDropFilesHere"])</h5>
+				<p class="text-muted">@(DropZoneDescription ?? L["ClickBrowseFilesToSelect"])</p>
+
+				<label for="@_fileInputId" class="sb-button sb-button--solid sb-button--primary sb-button--md">
+					<SbIcon Name="folder" /> @L["BrowseFiles"]
+				</label>
+
+				<input type="file"
+					   id="@_fileInputId"
+					   class="d-none"
+					   multiple="@(AllowMultiple ? "multiple" : null)"
+					   accept="@GetAcceptedFileTypes()" />
+
+				@if (_structure != null)
+				{
+					<div class="mt-3">
+						<small class="text-muted">
+							<div class="mb-1">@L["AllowedTypes"]</div>
+							<div class="d-flex flex-wrap gap-1 mb-2">
+								@foreach (var ext in GetAllowedExtensions())
+								{
+									<SbChip Key="@ext" Color="SbColor.Primary" Size="SbSize.Sm" Variant="SbChipVariant.Outlined">@ext</SbChip>
+								}
+							</div>
+							<div>@L["MaxFileSizeWithValue", FormatFileSize(_structure.MaxFileSize)]</div>
+							@if (_structure.IsMultiple && _structure.MaxCount.HasValue)
+							{
+								<div>@L["MaxFilesWithValue", _structure.MaxCount]</div>
+							}
+							@if (_structure.MinImageWidth.HasValue || _structure.MinImageHeight.HasValue)
+							{
+								<div>@L["MinDimensionsWithValue", _structure.MinImageWidth, _structure.MinImageHeight]</div>
+							}
+						</small>
+					</div>
+				}
+			</div>
+		</div>
+
+		@if (_uploadingFiles.Any())
+		{
+			<div class="upload-progress-list p-3">
+				<h6>@L["UploadingFiles"]</h6>
+				@foreach (var file in _uploadingFiles)
+				{
+					<UploadProgress FileName="@file.FileName"
+									  FileSize="@file.FileSize"
+									  Progress="@file.Progress"
+									  IsCompleted="@file.IsCompleted"
+									  HasError="@file.HasError"
+									  ErrorMessage="@file.ErrorMessage"
+									  StatusMessage="@file.StatusMessage"
+									  OnCancel="@(() => CancelUpload(file))"
+									  CssClass="mb-2" />
+				}
+			</div>
+		}
+
+		@if (_uploadedFiles.Any())
+		{
+			<div class="uploaded-files-preview p-3">
+				<h6>@L["UploadedFilesWithCount", _uploadedFiles.Count]</h6>
+				<div class="upload-preview-grid">
+					@foreach (var fileItem in _uploadedFiles)
+					{
+						<FileThumbnail FileItem="@fileItem"
+										 ShowTitle="true"
+										 Width="150"
+										 Height="150"
+										 CssClass="mb-3" />
+					}
+				</div>
+			</div>
+		}
+	</SbCard>
+
+	@* Config modal: Structure selector and/or Folder Path *@
+	@if (_hasConfigOptions)
+	{
+		<SbDialog @bind-Open="_configModalOpen" Title="@L["UploadSettings"]" Size="SbDialogSize.Sm" AllowDropdownOverflow="true">
+			<ChildContent>
+				<SbStack Gap="4">
+					@if (ShowStructureSelector && _availableStructures.Any())
+					{
+						<SbFormField Label="@L["FileStructure"]">
+							<SbSelect TItem="FileStructureDto"
+									  TValue="string?"
+									  Items="@_availableStructures"
+									  Value="@_selectedStructureKey"
+									  ValueChanged="@OnStructureChanged"
+									  TextField="@(s => ResolveStructureText(s))"
+									  ValueField="@(s => s.Key)"
+									  Placeholder="@L["SelectFileStructure"]" />
+						</SbFormField>
+					}
+					@if (ShowFolderPathField && string.IsNullOrEmpty(FolderPath))
+					{
+						<SbFormField Label="@L["FolderPath"]" HelpText="@L["FolderPathHint"]">
+							<SbTextField TValue="string"
+										 @bind-Value="_userFolderPath"
+										 Placeholder="/web/tourist" />
+						</SbFormField>
+					}
+				</SbStack>
+			</ChildContent>
+			<Footer>
+				<SbButton Color="SbColor.Primary" OnClick="@(() => _configModalOpen = false)">
+					@L["Save"]
+				</SbButton>
+			</Footer>
+		</SbDialog>
+	}
+</div>

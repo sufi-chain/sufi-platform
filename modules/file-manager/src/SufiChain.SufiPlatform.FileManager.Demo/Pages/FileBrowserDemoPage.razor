@@ -1,0 +1,89 @@
+@page "/demo/file-manager/browser"
+@inherits FileManagerComponentBase
+
+<PageTitle>@(L["Menu:FileManagerDemoFileBrowser"] + " - " + L["Menu:FileManagerDemo"])</PageTitle>
+
+<DemoLayout>
+    <SbHeading Level="1">@L["Menu:FileManagerDemoFileBrowser"]</SbHeading>
+    <SbText Color="SbColor.Muted">@L["Demo:FileBrowserBasicDescription"]</SbText>
+
+    <SbDivider />
+
+    <DemoSection
+        Title="@L["Demo:FileBrowserBasic"]"
+        Description="@L["Demo:FileBrowserBasicDescription"]"
+        SourceCode="@basicCode">
+        <ExampleContent>
+            <div class="file-browser-demo-height">
+                <FileBrowser StructureKey="@FileStructureKeys.General" />
+            </div>
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection
+        Title="@L["Demo:FileSelectorBasic"]"
+        Description="@L["Demo:FileSelectorBasicDescription"]"
+        SourceCode="@selectorCode">
+        <ExampleContent>
+            <SbStack Direction="SbStackDirection.Row" Gap="2">
+                <SbButton Color="SbColor.Primary" OnClick="@(async () => await OpenSelector())">
+                    <StartIcon><SbIcon Name="folder" /></StartIcon>
+                    <ChildContent>@L["SelectFile"]</ChildContent>
+                </SbButton>
+                @if (_selectedFiles.Any())
+                {
+                    <SbChip Color="SbColor.Success" Size="SbSize.Sm">
+                        @L["SelectCount", _selectedFiles.Count]
+                    </SbChip>
+                }
+            </SbStack>
+            <FileSelector
+                @ref="_fileSelectorRef"
+                StructureKey="@FileStructureKeys.General"
+                AllowMultiple="true"
+                OnFileSelected="@HandleFileSelected" />
+        </ExampleContent>
+    </DemoSection>
+
+    <SbDivider />
+
+    <DocViewer DocName="FileBrowser" ContentAssembly="SufiChain.SufiPlatform.FileManager.Blazor" />
+    <SbDivider />
+    <DocViewer DocName="FileSelector" ContentAssembly="SufiChain.SufiPlatform.FileManager.Blazor" />
+</DemoLayout>
+
+<style>
+    .file-browser-demo-height {
+        min-height: 400px;
+    }
+</style>
+
+@code {
+    private FileSelector? _fileSelectorRef;
+    private List<FileItemDto> _selectedFiles = new();
+
+    private const string basicCode = @"<FileBrowser StructureKey=""General"" />";
+
+    private const string selectorCode = @"<SbButton OnClick=""@OpenSelector"">Select File</SbButton>
+<FileSelector @ref=""_fileSelectorRef""
+    StructureKey=""General""
+    AllowMultiple=""true""
+    OnFileSelected=""@HandleFileSelected"" />
+
+@code {
+    private FileSelector? _fileSelectorRef;
+    private async Task OpenSelector() => await _fileSelectorRef!.ShowAsync();
+    private void HandleFileSelected(List<FileItemDto> files) { }
+}";
+
+    private async Task OpenSelector()
+    {
+        if (_fileSelectorRef != null)
+            await _fileSelectorRef.ShowAsync();
+    }
+
+    private void HandleFileSelected(List<FileItemDto> files)
+    {
+        _selectedFiles = files;
+    }
+}

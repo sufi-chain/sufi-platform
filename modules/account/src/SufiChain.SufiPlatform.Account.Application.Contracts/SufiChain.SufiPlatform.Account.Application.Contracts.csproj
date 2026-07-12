@@ -1,0 +1,30 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>netstandard2.1;net10.0</TargetFrameworks>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>SufiChain.SufiPlatform.Account</RootNamespace>
+    <IsPackable>true</IsPackable>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <PackageId>SufiChain.SufiPlatform.Account.Application.Contracts</PackageId>
+    <Description>Account module application contracts for Sufi Platform - wraps ABP Account contracts and registers Sufi localization.</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- ABP Dependencies -->
+    <ProjectReference Include="../../../../framework/SufiChain.SufiPlatform.Ddd.Application.Contracts/SufiChain.SufiPlatform.Ddd.Application.Contracts.csproj" />
+    
+    <ProjectReference Include="../../../identity/src/SufiChain.SufiPlatform.Identity.Domain.Shared/SufiChain.SufiPlatform.Identity.Domain.Shared.csproj" />
+    
+    <ProjectReference Include="..\..\..\identity\src\SufiChain.SufiPlatform.Identity.Application.Contracts\SufiChain.SufiPlatform.Identity.Application.Contracts.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Sufi Domain.Shared for localization -->
+    <ProjectReference Include="..\SufiChain.SufiPlatform.Account.Domain.Shared\SufiChain.SufiPlatform.Account.Domain.Shared.csproj" />
+  </ItemGroup>
+
+</Project>

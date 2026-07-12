@@ -1,7 +1,0 @@
-@namespace SufiChain.SufiAbp.MenuManagement.Blazor.Components
-@inherits MenuManagementComponentBase
-<div class="sufi-menu-builder">
-    <MenuTreeView Items="Items" OnItemSelected="SelectAsync" />
-    <button type="button" @onclick="NewRootAsync">@L["MenuManagement:CreateMenuItem"]</button>
-    <MenuItemEditDialog Open="DialogOpen" OpenChanged="SetDialogOpenAsync" Model="EditModel" OnSave="SaveAsync" />
-</div>

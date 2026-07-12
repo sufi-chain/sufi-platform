@@ -1,0 +1,26 @@
+@namespace SufiChain.SufiPlatform.Identity.Blazor.Public.Components
+@using SufiChain.SufiPlatform.Identity.OrganizationUnits.Dtos
+@inherits SufiOrganizationUnitLookupInlineComponentBase
+
+<SbAutocomplete TItem="OrganizationUnitDto"
+                Value="_selectedOrganizationUnit"
+                ValueChanged="OnSelectedOrganizationUnitChangedAsync"
+                SearchFunc="@SearchOrganizationUnitsForSelectAsync"
+                TextField="@FormatOrganizationUnitLabel"
+                ValueField="organizationUnit => organizationUnit.Id"
+                Label="@Label"
+                Placeholder="@L["SelectOrganizationUnit"]"
+                MinLength="0"
+                MaxResults="@MaxResultCount"
+                Disabled="@Disabled"
+                Clearable="@AllowClear">
+    <ItemTemplate Context="organizationUnit">
+        <SbStack Direction="SbStackDirection.Column" Gap="0">
+            <SbText Variant="SbTextVariant.BodySmall">@organizationUnit.DisplayName</SbText>
+            <SbText Variant="SbTextVariant.Caption" Color="SbColor.Muted">@organizationUnit.Code</SbText>
+        </SbStack>
+    </ItemTemplate>
+    <NoResultsTemplate>
+        <span>@L["NoOrganizationUnitsFound"]</span>
+    </NoResultsTemplate>
+</SbAutocomplete>

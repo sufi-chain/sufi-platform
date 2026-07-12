@@ -1,0 +1,265 @@
+@using SufiChain.SufiPlatform.FileManager.Localization
+@inject Microsoft.Extensions.Localization.IStringLocalizer<SufiFileManagerResource> L
+
+<div class="fm-properties-panel">
+    @if (SelectedFiles.Count == 1 && !SelectedFolders.Any())
+    {
+        var file = SelectedFiles.First();
+        <div class="fm-properties-header">
+            <div class="fm-properties-icon">
+                @if (file.FileType == FileType.Image && !string.IsNullOrEmpty(file.ThumbnailBlobName))
+                {
+                    <img src="@GetThumbnailUrl(file)" alt="@file.Alt" />
+                }
+                else
+                {
+                    <SbIcon Name="@GetFileIconName(file)" Size="SbSize.Xl" />
+                }
+            </div>
+            <div class="fm-properties-title">@file.OriginalName</div>
+        </div>
+        <div class="fm-properties-body">
+            <dl>
+                <dt>Type</dt>
+                <dd>@GetFileTypeName(file)</dd>
+                
+                <dt>Size</dt>
+                <dd>@FormatFileSize(file.Size)</dd>
+                
+                @if (file.Width.HasValue && file.Height.HasValue)
+                {
+                    <dt>Dimensions</dt>
+                    <dd>@(file.Width)×@(file.Height) px</dd>
+                }
+                
+                @if (file.Duration.HasValue)
+                {
+                    <dt>Duration</dt>
+                    <dd>@file.Duration.Value.ToString(@"hh\:mm\:ss")</dd>
+                }
+                
+                <dt>Created</dt>
+                <dd>@file.CreationTime.ToString("yyyy-MM-dd HH:mm:ss")</dd>
+                
+                @if (file.LastModificationTime.HasValue)
+                {
+                    <dt>Modified</dt>
+                    <dd>@file.LastModificationTime.Value.ToString("yyyy-MM-dd HH:mm:ss")</dd>
+                }
+                
+                <dt>MIME Type</dt>
+                <dd>@file.MimeType</dd>
+                
+                @if (!string.IsNullOrEmpty(file.Alt))
+                {
+                    <dt>Alt Text</dt>
+                    <dd>@file.Alt</dd>
+                }
+                
+                @if (file.Tags != null && file.Tags.Any())
+                {
+                    <dt>Tags</dt>
+                    <dd>
+                        @foreach (var tag in file.Tags)
+                        {
+                            <SbChip Color="SbColor.Default" Size="SbSize.Sm" Class="me-1">@tag</SbChip>
+                        }
+                    </dd>
+                }
+                
+                @if (!string.IsNullOrEmpty(file.StructureKey))
+                {
+                    <dt>@L["FileStructure"]</dt>
+                    <dd>
+                        <SbChip Color="SbColor.Primary" Size="SbSize.Sm">@file.StructureKey</SbChip>
+                        @if (file.SourceEntityId.HasValue)
+                        {
+                            <SbButton Size="SbSize.Sm" 
+                                      Variant="SbButtonVariant.Ghost" 
+                                      Href="@GetSourceEntityUrl(file)"
+                                      Title="@L["ViewSource"]">
+                                <StartIcon><SbIcon Name="external-link" /></StartIcon>
+                                <ChildContent>@L["ViewSource"]</ChildContent>
+                            </SbButton>
+                        }
+                    </dd>
+                }
+                
+                @if (file.IsArchived)
+                {
+                    <dt>Status</dt>
+                    <dd>
+                        <SbChip Color="SbColor.Warning" Size="SbSize.Sm">Archived</SbChip>
+                        @if (file.ArchivedAt.HasValue)
+                        {
+                            <span class="text-muted ms-2">@file.ArchivedAt.Value.ToString("yyyy-MM-dd")</span>
+                        }
+                    </dd>
+                }
+                
+                @if (IsAIStructure(file))
+                {
+                    <dt>AI Processing</dt>
+                    <dd>
+                        @if (file.FileType == FileType.Audio)
+                        {
+                            <div class="mt-2">
+                                <small class="text-muted">
+                                    @L["AIProcessedAudio"]
+                                </small>
+                                @if (!string.IsNullOrEmpty(file.BlobName))
+                                {
+                                    <audio controls src="@GetStreamUrl(file)" style="width: 100%; max-width: 400px;" class="mt-2"></audio>
+                                }
+                            </div>
+                        }
+                        else if (file.FileType == FileType.Image)
+                        {
+                            <small class="text-muted">
+                                @L["AIProcessedImage"]
+                            </small>
+                        }
+                    </dd>
+                }
+            </dl>
+        </div>
+    }
+    else if (SelectedFolders.Count == 1 && !SelectedFiles.Any())
+    {
+        var folder = SelectedFolders.First();
+        <div class="fm-properties-header">
+            <div class="fm-properties-icon" style="color: @(folder.Color ?? "#f59e0b")">
+                <SbIcon Name="@GetFolderIconName(folder)" Size="SbSize.Xl" />
+            </div>
+            <div class="fm-properties-title">@folder.Name</div>
+        </div>
+        <div class="fm-properties-body">
+            <dl>
+                <dt>Type</dt>
+                <dd>@GetFolderTypeName(folder)</dd>
+                
+                <dt>Path</dt>
+                <dd>@folder.Path</dd>
+                
+                <dt>Files</dt>
+                <dd>@folder.FileCount</dd>
+                
+                @if (folder.IsShared)
+                {
+                    <dt>Shared</dt>
+                    <dd>Yes</dd>
+                }
+            </dl>
+        </div>
+    }
+    else if (SelectedFiles.Count + SelectedFolders.Count > 1)
+    {
+        <div class="fm-properties-header">
+            <div class="fm-properties-icon">
+                <SbIcon Name="file" Size="SbSize.Xl" />
+            </div>
+            <div class="fm-properties-title">@(SelectedFiles.Count + SelectedFolders.Count) items selected</div>
+        </div>
+        <div class="fm-properties-body">
+            <dl>
+                <dt>Files</dt>
+                <dd>@SelectedFiles.Count</dd>
+                
+                <dt>Folders</dt>
+                <dd>@SelectedFolders.Count</dd>
+                
+                <dt>Total Size</dt>
+                <dd>@FormatFileSize(SelectedFiles.Sum(f => f.Size))</dd>
+            </dl>
+        </div>
+    }
+    else
+    {
+        <div class="fm-properties-empty">
+            <p class="text-muted">Select an item to view properties</p>
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter] public List<FileItemDto> SelectedFiles { get; set; } = new();
+    [Parameter] public List<FolderTreeNodeDto> SelectedFolders { get; set; } = new();
+
+    [Inject] protected IFileItemUrlProvider FileItemUrlProvider { get; set; } = default!;
+    private string GetThumbnailUrl(FileItemDto file) => FileItemUrlProvider.GetThumbnailUrl(file.Id, (file.LastModificationTime ?? file.CreationTime).Ticks, file.StructureBaseUrl, file.StructureIsPublicAccess, file.ThumbnailBlobName, file.TenantId, file.StructureStorageProvider);
+
+    private static string GetFolderIconName(FolderTreeNodeDto folder)
+    {
+        var icon = folder.Icon ?? "folder";
+        return icon.StartsWith("fa-", StringComparison.OrdinalIgnoreCase) ? icon[3..] : icon;
+    }
+
+    private static string GetFileIconName(FileItemDto file) => file.FileType switch
+    {
+        FileType.Image => "file-image",
+        FileType.Video => "file-video",
+        FileType.Audio => "file-audio",
+        FileType.Document when file.MimeType.Contains("pdf") => "file-pdf",
+        FileType.Document when file.MimeType.Contains("word") || file.MimeType.Contains("msword") || file.MimeType.Contains("opendocument.text") => "file-doc",
+        FileType.Document when file.MimeType.Contains("excel") || file.MimeType.Contains("spreadsheet") || file.MimeType.Contains("opendocument.spreadsheet") => "file-excel",
+        FileType.Document when file.MimeType.Contains("powerpoint") || file.MimeType.Contains("presentation") || file.MimeType.Contains("opendocument.presentation") => "file-ppt",
+        FileType.Document when file.MimeType.Contains("csv") => "file-csv",
+        FileType.Document when file.MimeType.Contains("json") => "file-json",
+        FileType.Document when file.MimeType.Contains("xml") => "file-xml",
+        FileType.Document => "file-text",
+        _ when file.MimeType.Contains("zip") || file.MimeType.Contains("archive") || file.MimeType.Contains("x-rar") || file.MimeType.Contains("x-7z") => "file-archive",
+        _ => "file"
+    };
+
+    private string GetFileTypeName(FileItemDto file) => file.FileType switch
+    {
+        FileType.Image => "Image",
+        FileType.Video => "Video",
+        FileType.Audio => "Audio",
+        FileType.Document => "Document",
+        _ => "File"
+    };
+
+    private string GetFolderTypeName(FolderTreeNodeDto folder) => folder.Type switch
+    {
+        FolderTypeDto.TenantRoot => "Tenant Root",
+        FolderTypeDto.Structure => "Structure Folder",
+        FolderTypeDto.YearMonth => "Date Folder",
+        FolderTypeDto.Custom => "Folder",
+        _ => "Folder"
+    };
+
+    private string FormatFileSize(long bytes)
+    {
+        string[] sizes = { "B", "KB", "MB", "GB" };
+        double len = bytes;
+        int order = 0;
+        while (len >= 1024 && order < sizes.Length - 1)
+        {
+            order++;
+            len /= 1024;
+        }
+        return $"{len:0.##} {sizes[order]}";
+    }
+
+    private string GetSourceEntityUrl(FileItemDto file)
+    {
+        if (!file.SourceEntityId.HasValue || string.IsNullOrEmpty(file.StructureKey))
+            return "#";
+
+        return IsAIStructure(file)
+            ? $"/panel/admin/ai/usage-logs?id={file.SourceEntityId}"
+            : "#";
+    }
+
+    private static bool IsAIStructure(FileItemDto file)
+    {
+        return file.StructureKey?.StartsWith("AI", StringComparison.OrdinalIgnoreCase) == true;
+    }
+
+    private string GetStreamUrl(FileItemDto file)
+    {
+        // Use the FileItemUrlProvider to get the file URL
+        return FileItemUrlProvider.GetStreamUrl(file.Id, (file.LastModificationTime ?? file.CreationTime).Ticks, file.StructureBaseUrl, file.StructureIsPublicAccess, file.BlobName, file.TenantId, file.StructureStorageProvider);
+    }
+}

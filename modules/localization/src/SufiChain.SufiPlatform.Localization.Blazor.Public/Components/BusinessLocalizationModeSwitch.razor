@@ -1,0 +1,19 @@
+@namespace SufiChain.SufiPlatform.Localization.Blazor.Public.Components
+@inherits LocalizationPublicComponentBase
+
+<SbStack Direction="SbStackDirection.Row" Gap="2" Wrap="true">
+    <SbButton Variant="@(Mode == BusinessTextEditorMode.Literal ? SbButtonVariant.Solid : SbButtonVariant.Outline)"
+              Color="SbColor.Primary"
+              Size="SbSize.Sm"
+              Disabled="@Disabled"
+              OnClick="@(() => SetModeAsync(BusinessTextEditorMode.Literal))">
+        @L["BusinessTextEditor:LiteralMode"]
+    </SbButton>
+    <SbButton Variant="@(Mode == BusinessTextEditorMode.Localized ? SbButtonVariant.Solid : SbButtonVariant.Outline)"
+              Color="SbColor.Primary"
+              Size="SbSize.Sm"
+              Disabled="@Disabled"
+              OnClick="@(() => SetModeAsync(BusinessTextEditorMode.Localized))">
+        @L["BusinessTextEditor:LocalizedMode"]
+    </SbButton>
+</SbStack>
