@@ -5,6 +5,7 @@
 # Build outputs (ignore everywhere)
 **/bin/
 **/obj/
+**/.o/
 **/out/
 **/TestResults/
 **/BenchmarkDotNet.Artifacts/

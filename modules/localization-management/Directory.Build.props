@@ -1,0 +1,15 @@
+<Project>
+  <!-- Must import parent so versions.props / common.props still apply (MSBuild stops at the nearest Directory.Build.props).
+       Use a relative path — GetPathOfFileAbove inside a Condition with nested quotes fails with MSB4092. -->
+  <Import Project="..\..\Directory.Build.props" />
+
+  <PropertyGroup>
+    <!--
+      This module's project names are long enough that the default
+      obj\...\*.GeneratedMSBuildEditorConfig.editorconfig path exceeds
+      Windows MAX_PATH (260), which breaks Roslyn (Microsoft.Managed.Core.targets).
+      Keep intermediates under a short module-relative root.
+    -->
+    <BaseIntermediateOutputPath>$(MSBuildThisFileDirectory).o\$(MSBuildProjectName.Replace('SufiChain.SufiAbp.LocalizationManagement.', ''))\</BaseIntermediateOutputPath>
+  </PropertyGroup>
+</Project>
