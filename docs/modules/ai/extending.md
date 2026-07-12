@@ -62,14 +62,14 @@ Return published content only. Populate `Metadata` (title, slug, url) for citati
 
 Implement `IAIProvider` in the Domain layer and register with DI. Today only `OpenAIProvider` is registered; additional providers require enum extension and UI work.
 
-Use `context.Services.Replace(ServiceDescriptor.Transient<IAIProvider, YourProvider>())` only when replacing a specific registration pattern—follow SufiAbp module override rules.
+Use `context.Services.Replace(ServiceDescriptor.Transient<IAIProvider, YourProvider>())` only when replacing a specific registration pattern—follow Sufi Platform module override rules.
 
 ## Internal MCP tools
 
 Mark application service methods with `[MCPTool]`:
 
 ```csharp
-public class CalculatorAppService : SufiAbpApplicationService
+public class CalculatorAppService : SufiApplicationService
 {
     [MCPTool("add", "Add two numbers")]
     public virtual Task<int> AddAsync(int a, int b) => Task.FromResult(a + b);

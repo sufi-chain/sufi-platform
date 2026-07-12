@@ -1,10 +1,10 @@
 # ABP Integration
 
-**SufiChain.SufiAbp.UI.Abp** adapts the SufiAbp UI layer of Sufi Platform to ABP backend services.
+**SufiChain.SufiPlatform.UI.Abp** adapts the Sufi Platform UI layer of Sufi Platform to ABP backend services.
 
 ## Adapters
 
-| SufiAbp contract | ABP adapter |
+| Sufi Platform contract | ABP adapter |
 |-------------|-------------|
 | ICurrentUserAccessor | AbpCurrentUserAccessor |
 | ICurrentTenant | AbpCurrentTenantAdapter |
@@ -16,12 +16,12 @@
 ## Features
 
 - **Backend stays ABP**: Domain, application services, DTOs, permissions.  
-- **UI uses SufiAbp**: `SufiAbpComponentBase`, SufiBlazor, and SufiTheme; components depend on SufiAbp interfaces, not ABP directly.  
-- **Menus/toolbars**: Existing ABP menu/toolbar contributors can be adapted so they feed SufiAbp’s menu/toolbar system.
+- **UI uses Sufi Platform**: `SufiComponentBase`, SufiBlazor, and SufiTheme; components depend on Sufi Platform interfaces, not ABP directly.  
+- **Menus/toolbars**: Existing ABP menu/toolbar contributors can be adapted so they feed Sufi Platform’s menu/toolbar system.
 
 ## Usage
 
 - Add **SufiAbpUiModule** to the Blazor app.  
-- Use **SufiAbpComponentBase** and SufiAbp services (`Message`, `Notify`, `CurrentUser`, etc.); they are backed by ABP where adapters exist.  
+- Use **SufiComponentBase** and Sufi Platform services (`Message`, `Notify`, `CurrentUser`, etc.); they are backed by ABP where adapters exist.  
 - Use ABP app services via DI (e.g. `IIdentityUserAppService`).  
 - Use **AuthorizeView** and **`[Authorize(Policy = "...")]`** with ABP permissions.

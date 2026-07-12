@@ -1,8 +1,8 @@
-# SufiAbp TextTemplating System
+# Sufi Platform TextTemplating System
 
 ## Overview
 
-The SufiAbp TextTemplating system provides a powerful, extensible framework for rendering dynamic text content using templates. It's fully integrated with the Communication system and supports multiple rendering engines (Scriban by default).
+The Sufi Platform TextTemplating system provides a powerful, extensible framework for rendering dynamic text content using templates. It's fully integrated with the Communication system and supports multiple rendering engines (Scriban by default).
 
 ## Key Features
 
@@ -17,7 +17,7 @@ The SufiAbp TextTemplating system provides a powerful, extensible framework for 
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│  SufiChain.SufiAbp.TextTemplating (Core)                    │
+│  SufiChain.SufiPlatform.TextTemplating (Core)                    │
 │  ┌──────────────────────────────────────────────────────┐   │
 │  │ ITemplateRenderer                                    │   │
 │  │  - RenderAsync(templateName, model)                  │   │
@@ -39,7 +39,7 @@ The SufiAbp TextTemplating system provides a powerful, extensible framework for 
 └─────────────────────────────────────────────────────────────┘
                             ↓
 ┌─────────────────────────────────────────────────────────────┐
-│  SufiChain.SufiAbp.TextTemplating.Scriban                   │
+│  SufiChain.SufiPlatform.TextTemplating.Scriban                   │
 │  ┌──────────────────────────────────────────────────────┐   │
 │  │ ScribanTemplateRenderingEngine                       │   │
 │  │  - Implements ITemplateRenderingEngine               │   │
@@ -51,11 +51,11 @@ The SufiAbp TextTemplating system provides a powerful, extensible framework for 
 
 ## Package Structure
 
-### Core Package: `SufiChain.SufiAbp.TextTemplating`
+### Core Package: `SufiChain.SufiPlatform.TextTemplating`
 
 **Dependencies:**
-- `SufiChain.SufiAbp.Localization`
-- `SufiChain.SufiAbp.VirtualFileSystem`
+- `SufiChain.SufiPlatform.Localization`
+- `SufiChain.SufiPlatform.VirtualFileSystem`
 
 **Key Interfaces:**
 
@@ -66,10 +66,10 @@ The SufiAbp TextTemplating system provides a powerful, extensible framework for 
 5. **ITemplateContentProvider** - Provides template content from various sources
 6. **ILocalizedTemplateContentReader** - Reads localized template content
 
-### Scriban Package: `SufiChain.SufiAbp.TextTemplating.Scriban`
+### Scriban Package: `SufiChain.SufiPlatform.TextTemplating.Scriban`
 
 **Dependencies:**
-- `SufiChain.SufiAbp.TextTemplating`
+- `SufiChain.SufiPlatform.TextTemplating`
 - `Scriban` (NuGet package)
 
 **What's Included:**
@@ -82,7 +82,7 @@ The SufiAbp TextTemplating system provides a powerful, extensible framework for 
 
 **MyTemplateDefinitionProvider.cs:**
 ```csharp
-using SufiChain.SufiAbp.TextTemplating;
+using SufiChain.SufiPlatform.TextTemplating;
 
 namespace MyApp.Templates;
 
@@ -183,7 +183,7 @@ The {{ app_name }} Team
 [DependsOn(
     typeof(SufiAbpTextTemplatingScribanModule)
 )]
-public class MyAppModule : SufiAbpModule
+public class MyAppModule : SufiModule
 {
     public override void ConfigureServices(ServiceConfigurationContext context)
     {
@@ -199,9 +199,9 @@ public class MyAppModule : SufiAbpModule
 
 **UserRegistrationService.cs:**
 ```csharp
-using SufiChain.SufiAbp.TextTemplating;
+using SufiChain.SufiPlatform.TextTemplating;
 
-public class UserRegistrationService : SufiAbpApplicationService
+public class UserRegistrationService : SufiApplicationService
 {
     private readonly ITemplateRenderer _templateRenderer;
     private readonly IEmailSender _emailSender;
@@ -366,8 +366,8 @@ Load templates from database or external sources:
 
 **DatabaseTemplateContentProvider.cs:**
 ```csharp
-using SufiChain.SufiAbp.TextTemplating;
-using SufiChain.SufiAbp.DependencyInjection;
+using SufiChain.SufiPlatform.TextTemplating;
+using SufiChain.SufiPlatform.DependencyInjection;
 
 public class DatabaseTemplateContentProvider : ITemplateContentProvider, ITransientDependency
 {
@@ -436,7 +436,7 @@ public override void ConfigureServices(ServiceConfigurationContext context)
 {{ date.now }}
 ```
 
-### Localization (SufiAbp Extension)
+### Localization (Sufi Platform Extension)
 ```scriban
 {{ L "LocalizationKey" }}
 {{ L "LocalizationKeyWithParam" param1 param2 }}
@@ -447,7 +447,7 @@ public override void ConfigureServices(ServiceConfigurationContext context)
 The TextTemplating system is fully integrated with the Communication system:
 
 ```csharp
-public class NotificationService : SufiAbpApplicationService
+public class NotificationService : SufiApplicationService
 {
     private readonly ITemplateRenderer _templateRenderer;
     private readonly IEmailSender _emailSender;
@@ -508,5 +508,5 @@ public class NotificationService : SufiAbpApplicationService
 ## See Also
 
 - [Scriban Documentation](https://github.com/scriban/scriban)
-- [SufiAbp Localization](./localization.md)
-- [SufiAbp Virtual File System](./virtual-file-system.md)
+- [Sufi Platform Localization](./localization.md)
+- [Sufi Platform Virtual File System](./virtual-file-system.md)

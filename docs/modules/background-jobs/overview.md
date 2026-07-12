@@ -17,6 +17,6 @@ This module is part of the baseline operations story. It keeps background proces
 
 Open these packages first:
 
-- `SufiChain.SufiAbp.BackgroundJobs.Blazor` for the `BackgroundJobsManagement` page
-- `SufiChain.SufiAbp.BackgroundJobs.Application.Contracts` for DTOs and permission definitions
-- `SufiChain.SufiAbp.BackgroundJobs.HttpApi` for the public management API
+- `SufiChain.SufiPlatform.BackgroundJobs.Blazor` for the `BackgroundJobsManagement` page
+- `SufiChain.SufiPlatform.BackgroundJobs.Application.Contracts` for DTOs and permission definitions
+- `SufiChain.SufiPlatform.BackgroundJobs.HttpApi` for the public management API

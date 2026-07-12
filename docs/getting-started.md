@@ -18,7 +18,7 @@ The Sufi CLI is distributed as a .NET global tool.
 ### Install from NuGet.org
 
 ```bash
-dotnet tool install --global SufiChain.SufiAbp.CLI
+dotnet tool install --global SufiChain.SufiPlatform.CLI
 sufi --version
 ```
 
@@ -30,7 +30,7 @@ If your environment uses the SufiChain package feed, add it once and install fro
 dotnet nuget add source https://nuget.sabp.ir/v3/index.json \
   --name SufiChain
 
-dotnet tool install --global SufiChain.SufiAbp.CLI --add-source SufiChain
+dotnet tool install --global SufiChain.SufiPlatform.CLI --add-source SufiChain
 sufi --version
 ```
 
@@ -39,8 +39,8 @@ sufi --version
 If you are working from this repository and want to install the local build:
 
 ```bash
-dotnet pack src/framework/SufiChain.SufiAbp.CLI -o ./nupkg
-dotnet tool install --global --add-source ./nupkg SufiChain.SufiAbp.CLI
+dotnet pack src/framework/SufiChain.SufiPlatform.CLI -o ./nupkg
+dotnet tool install --global --add-source ./nupkg SufiChain.SufiPlatform.CLI
 sufi --version
 ```
 
@@ -49,10 +49,10 @@ sufi --version
 To update to the latest version:
 
 ```bash
-dotnet tool update --global SufiChain.SufiAbp.CLI
+dotnet tool update --global SufiChain.SufiPlatform.CLI
 
 # Or from the SufiChain feed
-dotnet tool update --global SufiChain.SufiAbp.CLI --add-source SufiChain
+dotnet tool update --global SufiChain.SufiPlatform.CLI --add-source SufiChain
 ```
 
 ## Explore the available templates

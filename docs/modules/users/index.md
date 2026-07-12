@@ -1,10 +1,10 @@
 # Users Module
 
-> **KB:** See workspace Obsidian vault `.obsidian/SufiAbp/Modules/Users.md` for verified capabilities.
+> **KB:** See workspace Obsidian vault `.obsidian/Sufi Platform/Modules/Users.md` for verified capabilities.
 
 ## Code location
 
-`sufi-abp/modules/users/`
+`sufi-platform/modules/users/`
 
 ## Quick facts
 
@@ -15,5 +15,5 @@
 
 ## Start in source
 
-- `SufiChain.SufiAbp.Users.Application` — `UserLookupAppService`
-- `SufiChain.SufiAbp.Users.Blazor.Public` — `SufiUserSelector`, `SufiUserSelect`
+- `SufiChain.SufiPlatform.Users.Application` — `UserLookupAppService`
+- `SufiChain.SufiPlatform.Users.Blazor.Public` — `SufiUserSelector`, `SufiUserSelect`

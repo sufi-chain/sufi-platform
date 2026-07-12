@@ -1,6 +1,6 @@
 # Creating Modules
 
-Guidelines for building application modules (e.g. Catalog, Orders) that plug into Sufi Platform.
+Guidelines for building application modules (e.g. Catalog, Orders) that plug into Sufi.
 
 ## Structure
 
@@ -13,7 +13,7 @@ Implement **IMenuContributor**. In `ConfigureMenuAsync`, add items to `context.M
 
 ## Pages
 
-- Use **SufiAbpComponentBase**.  
+- Use **SufiComponentBase**.  
 - `@page` for routing; **`[Authorize(Policy = "...")]`** for protection.  
 - Load data with **ExecuteWithLoadingAsync**; use **IsOperationLoading** for grid/list loading.  
 - Use **SbCard**, **SbDataGrid**, **SbButton**, **SbTextField**, etc.  

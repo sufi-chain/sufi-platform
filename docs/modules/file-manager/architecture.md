@@ -1,6 +1,6 @@
 # File Manager Architecture
 
-The File Manager module is a strong reference implementation for a full ABP-style business module in Sufi Platform.
+The File Manager module is a strong reference implementation for a full ABP-style business module in Sufi.
 
 ## Projects
 

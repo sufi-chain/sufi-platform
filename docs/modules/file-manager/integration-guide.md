@@ -1,8 +1,8 @@
-# SufiChain.SufiAbp.FileManager – Integration Guide
+# SufiChain.SufiPlatform.FileManager – Integration Guide
 
 ## Overview
 
-SufiChain.SufiAbp.FileManager is an ABP module for managing files and media (images, videos, documents, audio) with thumbnails, WebP conversion, structured file definitions, and Blazor UI.
+SufiChain.SufiPlatform.FileManager is an ABP module for managing files and media (images, videos, documents, audio) with thumbnails, WebP conversion, structured file definitions, and Blazor UI.
 
 For **full configuration options** (options, blob storage, tiered apps, appsettings), see **[Configuration](configuration.md)**.
 
@@ -14,15 +14,15 @@ For **full configuration options** (options, blob storage, tiered apps, appsetti
 
 ```bash
 # Host (API) application
-dotnet add package SufiChain.SufiAbp.FileManager.Application
-dotnet add package SufiChain.SufiAbp.FileManager.EntityFrameworkCore
+dotnet add package SufiChain.SufiPlatform.FileManager.Application
+dotnet add package SufiChain.SufiPlatform.FileManager.EntityFrameworkCore
 # OR for MongoDB:
-# dotnet add package SufiChain.SufiAbp.FileManager.MongoDB
-dotnet add package SufiChain.SufiAbp.FileManager.HttpApi
+# dotnet add package SufiChain.SufiPlatform.FileManager.MongoDB
+dotnet add package SufiChain.SufiPlatform.FileManager.HttpApi
 
 # Blazor application
-dotnet add package SufiChain.SufiAbp.FileManager.Blazor
-dotnet add package SufiChain.SufiAbp.FileManager.HttpApi.Client
+dotnet add package SufiChain.SufiPlatform.FileManager.Blazor
+dotnet add package SufiChain.SufiPlatform.FileManager.HttpApi.Client
 ```
 
 ### 2. Add Module Dependencies
@@ -167,10 +167,10 @@ public class YourAppService : ApplicationService
 
 ```razor
 @page "/products/create"
-@using SufiChain.SufiAbp.FileManager.Blazor.Components.Upload
-@using SufiChain.SufiAbp.FileManager.Blazor.Components.Gallery
-@using SufiChain.SufiAbp.FileManager.Blazor.Components.Browser
-@using SufiChain.SufiAbp.FileManager.FileItems
+@using SufiChain.SufiPlatform.FileManager.Blazor.Components.Upload
+@using SufiChain.SufiPlatform.FileManager.Blazor.Components.Gallery
+@using SufiChain.SufiPlatform.FileManager.Blazor.Components.Browser
+@using SufiChain.SufiPlatform.FileManager.FileItems
 
 <SbCard>
     <ChildContent>

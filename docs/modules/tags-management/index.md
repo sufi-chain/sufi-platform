@@ -1,10 +1,10 @@
 # Tags Management Module
 
-> **KB:** See workspace Obsidian vault `.obsidian/SufiAbp/Modules/Tags Management.md` for verified capabilities.
+> **KB:** See workspace Obsidian vault `.obsidian/Sufi Platform/Modules/Tags Management.md` for verified capabilities.
 
 ## Code location
 
-`sufi-abp/modules/tags-management/`
+`sufi-platform/modules/tags/`
 
 ## Quick facts
 
@@ -15,5 +15,5 @@
 
 ## Start in source
 
-- `SufiChain.SufiAbp.TagsManagement.Application` — tag and tag-link services
-- `SufiChain.SufiAbp.TagsManagement.Blazor` — admin pages
+- `SufiChain.SufiPlatform.TagsManagement.Application` — tag and tag-link services
+- `SufiChain.SufiPlatform.TagsManagement.Blazor` — admin pages

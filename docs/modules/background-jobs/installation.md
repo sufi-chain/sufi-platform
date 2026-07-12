@@ -2,10 +2,10 @@
 
 ## Main packages
 
-- `SufiChain.SufiAbp.BackgroundJobs.Application.Contracts`
-- `SufiChain.SufiAbp.BackgroundJobs.Application`
-- `SufiChain.SufiAbp.BackgroundJobs.HttpApi`
-- `SufiChain.SufiAbp.BackgroundJobs.HttpApi.Client`
-- `SufiChain.SufiAbp.BackgroundJobs.Blazor`
+- `SufiChain.SufiPlatform.BackgroundJobs.Application.Contracts`
+- `SufiChain.SufiPlatform.BackgroundJobs.Application`
+- `SufiChain.SufiPlatform.BackgroundJobs.HttpApi`
+- `SufiChain.SufiPlatform.BackgroundJobs.HttpApi.Client`
+- `SufiChain.SufiPlatform.BackgroundJobs.Blazor`
 
 Use this module when the application exposes operational background-job administration to platform users.

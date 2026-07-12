@@ -17,10 +17,10 @@ This page explains the layout variants available in SufiTheme and when each one 
 `AccountLayout` is **not** defined inside the SufiTheme product repo. At startup, `SufiThemeBlazorModule` registers:
 
 ```csharp
-SufiLayouts.Account = typeof(AccountLayout); // SufiChain.SufiAbp.UI.Blazor.Layouts
+SufiLayouts.Account = typeof(AccountLayout); // SufiChain.SufiPlatform.UI.Blazor.Layouts
 ```
 
-Hosts may override account pages with a custom layout. For example, SufiChane.Console uses `ConsoleAccountLayout` (tenant-branded) on all account routes instead of the default `AccountLayout`.
+Hosts may override account pages with a custom layout. For example, SufiChane.SufiPlatform uses `ConsoleAccountLayout` (tenant-branded) on all account routes instead of the default `AccountLayout`.
 
 ## Public layout (same shell as Application)
 

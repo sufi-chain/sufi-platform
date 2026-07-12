@@ -1,6 +1,6 @@
 # Creating Custom Communication Providers
 
-This guide explains how to create custom provider modules for the SufiAbp Communication system (Email, SMS, and Voice Call providers).
+This guide explains how to create custom provider modules for the Sufi Platform Communication system (Email, SMS, and Voice Call providers).
 
 ## Provider Architecture
 
@@ -15,19 +15,19 @@ Providers are separate NuGet packages that:
 ### Step 1: Create the Provider Package
 
 ```bash
-cd sufi-abp/framework
-mkdir SufiChain.SufiAbp.Communication.Twilio
-cd SufiChain.SufiAbp.Communication.Twilio
+cd sufi-platform/framework
+mkdir SufiChain.SufiPlatform.Communication.Twilio
+cd SufiChain.SufiPlatform.Communication.Twilio
 ```
 
 ### Step 2: Create the Project File
 
-**SufiChain.SufiAbp.Communication.Twilio.csproj:**
+**SufiChain.SufiPlatform.Communication.Twilio.csproj:**
 ```xml
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
-    <RootNamespace>SufiChain.SufiAbp.Communication.Twilio</RootNamespace>
+    <RootNamespace>SufiChain.SufiPlatform.Communication.Twilio</RootNamespace>
     <GenerateEmbeddedFilesManifest>true</GenerateEmbeddedFilesManifest>
   </PropertyGroup>
 
@@ -36,7 +36,7 @@ cd SufiChain.SufiAbp.Communication.Twilio
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\SufiChain.SufiAbp.Communication\SufiChain.SufiAbp.Communication.csproj" />
+    <ProjectReference Include="..\SufiChain.SufiPlatform.Communication\SufiChain.SufiPlatform.Communication.csproj" />
   </ItemGroup>
 
   <ItemGroup>
@@ -49,11 +49,11 @@ cd SufiChain.SufiAbp.Communication.Twilio
 
 **TwilioMessagingSettingNames.cs:**
 ```csharp
-namespace SufiChain.SufiAbp.Communication.Twilio;
+namespace SufiChain.SufiPlatform.Communication.Twilio;
 
 public static class TwilioMessagingSettingNames
 {
-    private const string Prefix = "SufiAbp.Communication.Twilio";
+    private const string Prefix = "Sufi.Communication.Twilio";
 
     public const string AccountSid = Prefix + ".AccountSid";
     public const string AuthToken = Prefix + ".AuthToken";
@@ -69,11 +69,11 @@ public static class TwilioMessagingSettingNames
 
 **TwilioMessagingSettingDefinitionProvider.cs:**
 ```csharp
-using SufiChain.SufiAbp.Localization;
-using SufiChain.SufiAbp.Communication.Twilio.Localization;
-using SufiChain.SufiAbp.Settings;
+using SufiChain.SufiPlatform.Localization;
+using SufiChain.SufiPlatform.Communication.Twilio.Localization;
+using SufiChain.SufiPlatform.Settings;
 
-namespace SufiChain.SufiAbp.Communication.Twilio;
+namespace SufiChain.SufiPlatform.Communication.Twilio;
 
 public class TwilioMessagingSettingDefinitionProvider : SettingDefinitionProvider
 {
@@ -134,14 +134,14 @@ public class TwilioMessagingSettingDefinitionProvider : SettingDefinitionProvide
 using System;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using SufiChain.SufiAbp.BackgroundJobs;
-using SufiChain.SufiAbp.DependencyInjection;
-using SufiChain.SufiAbp.Settings;
+using SufiChain.SufiPlatform.BackgroundJobs;
+using SufiChain.SufiPlatform.DependencyInjection;
+using SufiChain.SufiPlatform.Settings;
 using Twilio;
 using Twilio.Rest.Api.V2010.Account;
 using Twilio.Types;
 
-namespace SufiChain.SufiAbp.Communication.Twilio;
+namespace SufiChain.SufiPlatform.Communication.Twilio;
 
 [Dependency(ReplaceServices = true)]
 [ExposeServices(typeof(ISmsSender))]
@@ -194,14 +194,14 @@ public class TwilioSmsSender : SmsSenderBase, ITransientDependency
 using System;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using SufiChain.SufiAbp.BackgroundJobs;
-using SufiChain.SufiAbp.DependencyInjection;
-using SufiChain.SufiAbp.Settings;
+using SufiChain.SufiPlatform.BackgroundJobs;
+using SufiChain.SufiPlatform.DependencyInjection;
+using SufiChain.SufiPlatform.Settings;
 using Twilio;
 using Twilio.Rest.Api.V2010.Account;
 using Twilio.Types;
 
-namespace SufiChain.SufiAbp.Communication.Twilio;
+namespace SufiChain.SufiPlatform.Communication.Twilio;
 
 [Dependency(ReplaceServices = true)]
 [ExposeServices(typeof(IVoiceCallSender))]
@@ -265,18 +265,18 @@ public class TwilioVoiceCallSender : VoiceCallSenderBase, ITransientDependency
 **SufiAbpMessagingTwilioModule.cs:**
 ```csharp
 using Microsoft.Extensions.DependencyInjection;
-using SufiChain.SufiAbp.Localization;
-using SufiChain.SufiAbp.Communication.Twilio.Localization;
-using SufiChain.SufiAbp.Modularity;
-using SufiChain.SufiAbp.Settings;
-using SufiChain.SufiAbp.VirtualFileSystem;
+using SufiChain.SufiPlatform.Localization;
+using SufiChain.SufiPlatform.Communication.Twilio.Localization;
+using SufiChain.SufiPlatform.Modularity;
+using SufiChain.SufiPlatform.Settings;
+using SufiChain.SufiPlatform.VirtualFileSystem;
 
-namespace SufiChain.SufiAbp.Communication.Twilio;
+namespace SufiChain.SufiPlatform.Communication.Twilio;
 
 [DependsOn(
     typeof(SufiAbpMessagingModule)
 )]
-public class SufiAbpMessagingTwilioModule : SufiAbpModule
+public class SufiAbpMessagingTwilioModule : SufiModule
 {
     public override void ConfigureServices(ServiceConfigurationContext context)
     {
@@ -318,9 +318,9 @@ public class SufiAbpMessagingTwilioModule : SufiAbpModule
 
 **Localization/TwilioMessagingResource.cs:**
 ```csharp
-using SufiChain.SufiAbp.Localization;
+using SufiChain.SufiPlatform.Localization;
 
-namespace SufiChain.SufiAbp.Communication.Twilio.Localization;
+namespace SufiChain.SufiPlatform.Communication.Twilio.Localization;
 
 [LocalizationResourceName("TwilioMessaging")]
 public class TwilioMessagingResource
@@ -337,11 +337,11 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using SendGrid;
 using SendGrid.Helpers.Mail;
-using SufiChain.SufiAbp.BackgroundJobs;
-using SufiChain.SufiAbp.DependencyInjection;
-using SufiChain.SufiAbp.Settings;
+using SufiChain.SufiPlatform.BackgroundJobs;
+using SufiChain.SufiPlatform.DependencyInjection;
+using SufiChain.SufiPlatform.Settings;
 
-namespace SufiChain.SufiAbp.Communication.SendGrid;
+namespace SufiChain.SufiPlatform.Communication.SendGrid;
 
 [Dependency(ReplaceServices = true)]
 [ExposeServices(typeof(IEmailSender))]
@@ -407,7 +407,7 @@ public class SendGridEmailSender : EmailSenderBase, ITransientDependency
 ### Step 1: Install Provider Package
 
 ```bash
-dotnet add package SufiChain.SufiAbp.Communication.Twilio
+dotnet add package SufiChain.SufiPlatform.Communication.Twilio
 ```
 
 ### Step 2: Add Module Dependency
@@ -417,7 +417,7 @@ dotnet add package SufiChain.SufiAbp.Communication.Twilio
     typeof(SufiAbpMessagingModule),
     typeof(SufiAbpMessagingTwilioModule)  // Replaces NullSmsSender and NullVoiceCallSender
 )]
-public class MyApplicationModule : SufiAbpModule
+public class MyApplicationModule : SufiModule
 {
 }
 ```
@@ -428,11 +428,11 @@ public class MyApplicationModule : SufiAbpModule
 ```json
 {
   "Settings": {
-    "SufiAbp.Communication.Twilio.AccountSid": "your-account-sid",
-    "SufiAbp.Communication.Twilio.AuthToken": "your-auth-token",
-    "SufiAbp.Communication.Twilio.DefaultFromNumber": "+1234567890",
-    "SufiAbp.Communication.Twilio.VoiceUrl": "https://yourapp.com/api/twilio/voice",
-    "SufiAbp.Communication.Twilio.StatusCallbackUrl": "https://yourapp.com/api/twilio/status"
+    "Sufi.Communication.Twilio.AccountSid": "your-account-sid",
+    "Sufi.Communication.Twilio.AuthToken": "your-auth-token",
+    "Sufi.Communication.Twilio.DefaultFromNumber": "+1234567890",
+    "Sufi.Communication.Twilio.VoiceUrl": "https://yourapp.com/api/twilio/voice",
+    "Sufi.Communication.Twilio.StatusCallbackUrl": "https://yourapp.com/api/twilio/status"
   }
 }
 ```
@@ -440,7 +440,7 @@ public class MyApplicationModule : SufiAbpModule
 ### Step 4: Use in Application Code
 
 ```csharp
-public class NotificationService : SufiAbpApplicationService
+public class NotificationService : SufiApplicationService
 {
     private readonly ISmsSender _smsSender;
     private readonly IVoiceCallSender _voiceCallSender;

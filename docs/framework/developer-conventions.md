@@ -1,13 +1,13 @@
 # Developer Conventions
 
-This page defines the documentation and implementation conventions that should stay consistent across Sufi Platform.
+This page defines the documentation and implementation conventions that should stay consistent across Sufi.
 
 ## Naming conventions
 
 - Use `Sufi Platform` for product, business, planning, and marketing language.
-- Use `SufiAbp` (`Sufi ASP.NET Core Boilerplate `) for the technical framework, package family, and namespace root `SufiChain.SufiAbp.*`.
-- Use `SufiAbp` for type, module, and resource prefixes in code examples and technical docs.
-- Avoid `SufiAbp` in new docs because it is ambiguous.
+- Use `Sufi Platform` (`Sufi ASP.NET Core Boilerplate `) for the technical framework, package family, and namespace root `SufiChain.SufiPlatform.*`.
+- Use `Sufi Platform` for type, module, and resource prefixes in code examples and technical docs.
+- Avoid `Sufi Platform` in new docs because it is ambiguous.
 
 ## Documentation conventions
 
@@ -42,4 +42,4 @@ Every new module should add or update:
 
 ## Naming and path notes
 
-Use real repository paths in documentation even when a path contains a temporary naming issue. For example, the short-link module currently lives under `src/modules/short-link-generator/`, and docs should stay accurate until that path is intentionally renamed.
+Use real repository paths in documentation even when a path contains a temporary naming issue. For example, the short-link module currently lives under `src/modules/short-links/`, and docs should stay accurate until that path is intentionally renamed.

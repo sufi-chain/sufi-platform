@@ -1,10 +1,10 @@
 # Calendar Module
 
-> **KB:** See workspace Obsidian vault `.obsidian/SufiAbp/Modules/Calendar.md` for verified capabilities.
+> **KB:** See workspace Obsidian vault `.obsidian/Sufi Platform/Modules/Calendar.md` for verified capabilities.
 
 ## Code location
 
-`sufi-abp/modules/calendar/`
+`sufi-platform/modules/calendar/`
 
 ## Quick facts
 
@@ -15,6 +15,6 @@
 
 ## Start in source
 
-- `SufiChain.SufiAbp.Calendar.Application` — app services, MCP seed contributor
-- `SufiChain.SufiAbp.Calendar.AI` — MCP tool implementations
-- `SufiChain.SufiAbp.Calendar.Blazor.Public` — public UI components
+- `SufiChain.SufiPlatform.Calendar.Application` — app services, MCP seed contributor
+- `SufiChain.SufiPlatform.Calendar.AI` — MCP tool implementations
+- `SufiChain.SufiPlatform.Calendar.Blazor.Public` — public UI components

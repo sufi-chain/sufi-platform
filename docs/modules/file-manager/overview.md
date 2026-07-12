@@ -19,8 +19,8 @@ Treat File Manager as a horizontal capability. Products and modules can depend o
 
 Open these packages first:
 
-- `SufiChain.SufiAbp.FileManager.Blazor` for admin screens such as asset management and structures
-- `SufiChain.SufiAbp.FileManager.Blazor.Public` for public-facing components such as galleries and download links
-- `SufiChain.SufiAbp.FileManager.Application` and `.Application.Contracts` for the use cases and DTOs
-- `SufiChain.SufiAbp.FileManager.Domain`, `.EntityFrameworkCore`, and `.MongoDB` for the storage model and provider-specific persistence
-- `SufiChain.SufiAbp.FileManager.Blazor.Public` when the requirement touches shared editor integration, gallery dialogs, or reusable public toolbar actions
+- `SufiChain.SufiPlatform.FileManager.Blazor` for admin screens such as asset management and structures
+- `SufiChain.SufiPlatform.FileManager.Blazor.Public` for public-facing components such as galleries and download links
+- `SufiChain.SufiPlatform.FileManager.Application` and `.Application.Contracts` for the use cases and DTOs
+- `SufiChain.SufiPlatform.FileManager.Domain`, `.EntityFrameworkCore`, and `.MongoDB` for the storage model and provider-specific persistence
+- `SufiChain.SufiPlatform.FileManager.Blazor.Public` when the requirement touches shared editor integration, gallery dialogs, or reusable public toolbar actions

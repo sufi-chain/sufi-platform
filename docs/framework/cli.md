@@ -1,6 +1,6 @@
 # CLI Tool
 
-The `sufi` CLI is the starting point for vertical solution teams using Sufi Platform. Its main job is to generate a solution from the platform templates so the team can start building a product without assembling the baseline architecture by hand.
+The `sufi` CLI is the starting point for vertical solution teams using Sufi. Its main job is to generate a solution from the platform templates so the team can start building a product without assembling the baseline architecture by hand.
 
 If your team is consuming the platform rather than contributing to `src/`, this is the command surface you care about first.
 
@@ -11,7 +11,7 @@ If your team is consuming the platform rather than contributing to `src/`, this 
 The Sufi CLI is published to NuGet.org as a .NET global tool:
 
 ```bash
-dotnet tool install --global SufiChain.SufiAbp.CLI
+dotnet tool install --global SufiChain.SufiPlatform.CLI
 sufi --version
 ```
 
@@ -25,7 +25,7 @@ dotnet nuget add source https://nuget.sabp.ir/v3/index.json \
   --name SufiChain
 
 # Install the CLI
-dotnet tool install --global SufiChain.SufiAbp.CLI --add-source SufiChain
+dotnet tool install --global SufiChain.SufiPlatform.CLI --add-source SufiChain
 sufi --version
 ```
 
@@ -36,15 +36,15 @@ To update to the latest version:
 
 ```bash
 # From NuGet.org
-dotnet tool update --global SufiChain.SufiAbp.CLI
+dotnet tool update --global SufiChain.SufiPlatform.CLI
 
 # From nuget.sabp.ir
-dotnet tool update --global SufiChain.SufiAbp.CLI --add-source SufiChain
+dotnet tool update --global SufiChain.SufiPlatform.CLI --add-source SufiChain
 
 # From local build
 cd /path/to/sufi-orchestrator
-dotnet pack src/framework/SufiChain.SufiAbp.CLI -o ./nupkg
-dotnet tool update --global --add-source ./nupkg SufiChain.SufiAbp.CLI
+dotnet pack src/framework/SufiChain.SufiPlatform.CLI -o ./nupkg
+dotnet tool update --global --add-source ./nupkg SufiChain.SufiPlatform.CLI
 ```
 
 ### Uninstall
@@ -52,7 +52,7 @@ dotnet tool update --global --add-source ./nupkg SufiChain.SufiAbp.CLI
 To remove the CLI:
 
 ```bash
-dotnet tool uninstall --global SufiChain.SufiAbp.CLI
+dotnet tool uninstall --global SufiChain.SufiPlatform.CLI
 ```
 
 ## Main commands
@@ -135,7 +135,7 @@ sufi new MyCompany.MyProduct \
 
 Depending on the options you choose, the generated solution will typically include:
 
-- standard SufiAbp and ABP layering
+- standard Sufi Platform and ABP layering
 - the selected host style, such as single or layered
 - the selected database setup
 - the baseline platform modules

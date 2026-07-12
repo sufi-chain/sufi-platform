@@ -2,15 +2,15 @@
 
 Sufi Platform is the reusable open-source base used to build business applications on top of ABP without rebuilding the same technical foundation for every product. Product owners can use this page to understand what the platform already provides, what kind of needs fit the platform, and how to describe new product requests clearly.
 
-For delivery teams, the platform gives each generated solution a starting point: the SufiAbp framework, a standard host structure, reusable first-party modules, SufiBlazor for interactive UI, and SufiTheme for the application shell.
+For delivery teams, the platform gives each generated solution a starting point: the Sufi Platform framework, a standard host structure, reusable first-party modules, SufiBlazor for interactive UI, and SufiTheme for the application shell.
 
 Sufi Platform is licensed as an LGPL open-source base product. It respects the ABP Framework as the upstream foundation and extends it with a focused Sufi Platform experience for enterprise Blazor applications.
 
 ## Naming model
 
 - `Sufi Platform` is the product and platform name.
-- `SufiAbp` is the technical foundation and package family behind the platform.
-- `SufiAbp` is the code prefix used in framework and module types such as `SufiAbpComponentBase`.
+- `Sufi Platform` is the technical foundation and package family behind the platform.
+- `Sufi Platform` is the code prefix used in framework and module types such as `SufiComponentBase`.
 
 ## What a generated product inherits
 
@@ -19,7 +19,7 @@ A generated solution starts with a stable set of layers that are meant to be reu
 | Layer | Role in a generated product |
 | --- | --- |
 | ABP | Backend modular architecture, domain and application layering, permissions, settings, tenancy, auditing, persistence |
-| SufiAbp Framework | Platform-aware UI abstractions, shared services, Blazor integration, authentication helpers, CLI support |
+| Sufi Platform Framework | Platform-aware UI abstractions, shared services, Blazor integration, authentication helpers, CLI support |
 | SufiBlazor | Default interactive component system for forms, tables, dialogs, navigation, and layout primitives |
 | SufiTheme | Default application shell, layout, navigation chrome, and branding surface |
 | First-party Modules | Reusable platform capabilities such as identity, tenancy, settings, file management, and short links |

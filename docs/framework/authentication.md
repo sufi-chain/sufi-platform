@@ -1,6 +1,6 @@
 # Authentication
 
-Modular auth for different hosting and identity scenarios in the SufiAbp foundation of Sufi Platform.
+Modular auth for different hosting and identity scenarios in the Sufi Platform foundation of Sufi.
 
 ## Packages
 
@@ -22,4 +22,4 @@ Modular auth for different hosting and identity scenarios in the SufiAbp foundat
 
 - Use **SufiAbpAuthorizationMessageHandler** (or equivalent) to attach tokens to HTTP calls when tiered.  
 - Use **AuthorizeView** and **`[Authorize]`** for protected UI.  
-- ABP Identity can back user validation and token creation; auth modules bridge SufiAbp UI and ABP.
+- ABP Identity can back user validation and token creation; auth modules bridge Sufi Platform UI and ABP.

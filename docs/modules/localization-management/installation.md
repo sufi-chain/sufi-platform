@@ -2,12 +2,12 @@
 
 ## Main packages
 
-- `SufiChain.SufiAbp.LocalizationManagement.Application.Contracts`
-- `SufiChain.SufiAbp.LocalizationManagement.Application`
-- `SufiChain.SufiAbp.LocalizationManagement.Domain.Shared`
-- `SufiChain.SufiAbp.LocalizationManagement.Domain`
-- `SufiChain.SufiAbp.LocalizationManagement.EntityFrameworkCore`
-- `SufiChain.SufiAbp.LocalizationManagement.MongoDB`
-- `SufiChain.SufiAbp.LocalizationManagement.HttpApi`
-- `SufiChain.SufiAbp.LocalizationManagement.HttpApi.Client`
-- `SufiChain.SufiAbp.LocalizationManagement.Blazor`
+- `SufiChain.SufiPlatform.LocalizationManagement.Application.Contracts`
+- `SufiChain.SufiPlatform.LocalizationManagement.Application`
+- `SufiChain.SufiPlatform.LocalizationManagement.Domain.Shared`
+- `SufiChain.SufiPlatform.LocalizationManagement.Domain`
+- `SufiChain.SufiPlatform.LocalizationManagement.EntityFrameworkCore`
+- `SufiChain.SufiPlatform.LocalizationManagement.MongoDB`
+- `SufiChain.SufiPlatform.LocalizationManagement.HttpApi`
+- `SufiChain.SufiPlatform.LocalizationManagement.HttpApi.Client`
+- `SufiChain.SufiPlatform.LocalizationManagement.Blazor`

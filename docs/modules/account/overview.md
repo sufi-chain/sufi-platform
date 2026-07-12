@@ -19,6 +19,6 @@ Use Account together with Identity. Account handles the self-service experience 
 
 Open these packages first:
 
-- `SufiChain.SufiAbp.Account.Blazor` for the user-facing pages such as `Login`, `Register`, `Profile`, and `ChangePassword`
-- `SufiChain.SufiAbp.Account.Application.Contracts` for the DTOs and service contracts used by the UI
-- `SufiChain.SufiAbp.Account.HttpApi` and `SufiChain.SufiAbp.Account.HttpApi.Client` for the remote surface used by hosts and front ends
+- `SufiChain.SufiPlatform.Account.Blazor` for the user-facing pages such as `Login`, `Register`, `Profile`, and `ChangePassword`
+- `SufiChain.SufiPlatform.Account.Application.Contracts` for the DTOs and service contracts used by the UI
+- `SufiChain.SufiPlatform.Account.HttpApi` and `SufiChain.SufiPlatform.Account.HttpApi.Client` for the remote surface used by hosts and front ends

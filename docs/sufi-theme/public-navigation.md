@@ -23,7 +23,7 @@ Hosts replace this when public routes need a menu tree separate from the admin `
 
 ## Console host example
 
-SufiChane.Console registers `ConsolePublicMenuProvider` in `ConsoleModule`:
+SufiChane.SufiPlatform registers `ConsolePublicMenuProvider` in `ConsoleModule`:
 
 ```csharp
 context.Services.Replace(ServiceDescriptor.Scoped<IPublicMenuProvider, ConsolePublicMenuProvider>());

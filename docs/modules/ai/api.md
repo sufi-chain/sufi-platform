@@ -127,7 +127,7 @@ Application services implementing `IApplicationService` are exposed as REST endp
 
 ### OpenAICompatibleController
 
-Explicit OpenAI-style routes (see `SufiChain.SufiAbp.AI.HttpApi`):
+Explicit OpenAI-style routes (see `SufiChain.SufiPlatform.SufiAI.HttpApi`):
 
 | Method | Route | Notes |
 |--------|-------|-------|

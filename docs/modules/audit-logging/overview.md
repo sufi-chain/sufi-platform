@@ -17,6 +17,6 @@ Audit Logging is part of the baseline operations toolset. It complements modules
 
 Open these packages first:
 
-- `SufiChain.SufiAbp.AuditLogging.Blazor` for the operator-facing audit pages
-- `SufiChain.SufiAbp.AuditLogging.Application.Contracts` for permission names and DTOs
-- `SufiChain.SufiAbp.AuditLogging.HttpApi` for the remote API surface
+- `SufiChain.SufiPlatform.AuditLogging.Blazor` for the operator-facing audit pages
+- `SufiChain.SufiPlatform.AuditLogging.Application.Contracts` for permission names and DTOs
+- `SufiChain.SufiPlatform.AuditLogging.HttpApi` for the remote API surface

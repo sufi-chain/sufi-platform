@@ -1,6 +1,6 @@
 # SufiTheme Overview
 
-SufiTheme is the preferred shell and layout layer used by Sufi Platform hosts. Read this section when you need to understand how a host application assembles top bars, side navigation, layout variants, branding, and toolbar composition on top of SufiAbp and SufiBlazor.
+SufiTheme is the preferred shell and layout layer used by Sufi Platform hosts. Read this section when you need to understand how a host application assembles top bars, side navigation, layout variants, branding, and toolbar composition on top of Sufi Platform and SufiBlazor.
 
 SufiTheme is not a replacement for SufiBlazor. The two play different roles:
 
@@ -9,10 +9,10 @@ SufiTheme is not a replacement for SufiBlazor. The two play different roles:
 
 ## Dependencies
 
-SufiTheme **requires SufiAbp UI**, not SufiBlazor alone:
+SufiTheme **requires Sufi Platform UI**, not SufiBlazor alone:
 
-- `SufiChain.SufiAbp.UI.Blazor` — menus, toolbars, page layout, `AccountLayout`
-- `SufiChain.SufiAbp.Core`, `SufiChain.SufiAbp.Security` — module infrastructure
+- `SufiChain.SufiPlatform.UI.Blazor` — menus, toolbars, page layout, `AccountLayout`
+- `SufiChain.SufiPlatform.Core`, `SufiChain.SufiPlatform.Security` — module infrastructure
 
 Product source: `independent-projects/sufi-theme/` (independently versioned NuGet packages).
 

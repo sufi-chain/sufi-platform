@@ -1,10 +1,10 @@
 # Menu Management Module
 
-> **KB:** See workspace Obsidian vault `.obsidian/SufiAbp/Modules/Menu Management.md` for verified capabilities.
+> **KB:** See workspace Obsidian vault `.obsidian/Sufi Platform/Modules/Menu Management.md` for verified capabilities.
 
 ## Code location
 
-`sufi-abp/modules/menu-management/`
+`sufi-platform/modules/menus/`
 
 ## Quick facts
 
@@ -15,5 +15,5 @@
 
 ## Start in source
 
-- `SufiChain.SufiAbp.MenuManagement.Application` — menu app services
-- `SufiChain.SufiAbp.MenuManagement.Blazor` — admin UI (tree, modals, sidebar)
+- `SufiChain.SufiPlatform.MenuManagement.Application` — menu app services
+- `SufiChain.SufiPlatform.MenuManagement.Blazor` — admin UI (tree, modals, sidebar)

@@ -1,6 +1,6 @@
 # Identity Module Reference
 
-**SufiChain.SufiAbp.Identity.Blazor** provides user and role management UI and is a reference implementation for Sufi Platform modules.
+**SufiChain.SufiPlatform.Identity.Blazor** provides user and role management UI and is a reference implementation for Sufi Platform modules.
 
 ## Scope
 
@@ -17,7 +17,7 @@
 
 ## Patterns Used
 
-- **SufiAbpComponentBase** — `L`, `Message`, `Notify`, `ExecuteWithLoadingAsync`, `CurrentUser` / `CurrentTenant`.  
+- **SufiComponentBase** — `L`, `Message`, `Notify`, `ExecuteWithLoadingAsync`, `CurrentUser` / `CurrentTenant`.  
 - **Lazy services** — `IIdentityUserAppService`, `IIdentityRoleAppService` via `LazyGetRequiredService`.  
 - **Loading keys** — Separate keys for load-users, load-roles, delete-user; `IsOperationLoading` on **SbDataGrid**.  
 - **Permissions** — `[Authorize(Policy = IdentityPermissions.Users.Default)]` on pages; **AuthorizeView** for create/edit/delete actions.  
@@ -26,6 +26,6 @@
 
 ## Dependencies
 
-- **SufiChain.SufiAbp.UI.Blazor**, **SufiChain.SufiBlazor**, **Volo.Abp.Identity.Application.Contracts**.
+- **SufiChain.SufiPlatform.UI.Blazor**, **SufiChain.SufiBlazor**, **Volo.Abp.Identity.Application.Contracts**.
 
 Use Identity as a template for structure, menu contribution, permission checks, and CRUD + modal patterns.

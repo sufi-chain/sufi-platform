@@ -5,12 +5,12 @@ This page explains how to think about package roles across the public Sufi Platf
 ## Naming
 
 - `Sufi Platform` is the product/platform name used outside the codebase.
-- `SufiAbp` (`Sufi ASP.NET Core Boilerplate `) is the technical framework and package family in `SufiChain.SufiAbp.*`.
-- `SufiAbp` is the code prefix used for framework and module identifiers.
+- `Sufi Platform` (`Sufi ASP.NET Core Boilerplate `) is the technical framework and package family in `SufiChain.SufiPlatform.*`.
+- `Sufi Platform` is the code prefix used for framework and module identifiers.
 
 ## Framework packages
 
-The main framework packages live under `src/framework/` and form the SufiAbp technical foundation of Sufi Platform. They include:
+The main framework packages live under `src/framework/` and form the Sufi Platform technical foundation of Sufi. They include:
 
 - UI abstraction packages
 - Blazor platform integration packages

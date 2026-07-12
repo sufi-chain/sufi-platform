@@ -1,6 +1,6 @@
 # AI Management Architecture
 
-AI Management follows SufiAbp layered module structure with domain-driven design.
+AI Management follows Sufi Platform layered module structure with domain-driven design.
 
 ## Module packages
 
@@ -125,7 +125,7 @@ Modules implement `IDocumentSource` (`SourceName`, `SearchAsync`, `GetByIdAsync`
 
 ## Dependencies
 
-- SufiAbp framework (DDD, UI, authorization)
+- Sufi Platform framework (DDD, UI, authorization)
 - `Microsoft.SemanticKernel`
 - OpenAI / HTTP clients inside `OpenAIProvider`
 - MongoDB driver (when MongoDB vector store or MongoDB module is used)

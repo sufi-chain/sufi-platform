@@ -1,6 +1,6 @@
 # Identity Overview
 
-The Identity module is the main operator-facing module for user and role administration in Sufi Platform. It is the module to inspect when a host needs standard administration screens for identity data or when a team needs to extend identity workflows without owning the full stack itself.
+The Identity module is the main operator-facing module for user and role administration in Sufi. It is the module to inspect when a host needs standard administration screens for identity data or when a team needs to extend identity workflows without owning the full stack itself.
 
 ## What it enables
 
@@ -17,7 +17,7 @@ Identity is one of the core baseline modules. It works alongside Account for end
 
 Open these packages first:
 
-- `SufiChain.SufiAbp.Identity.Blazor` for pages such as `UserManagement`, `RoleManagement`, and `OrganizationUnitManagement`
-- `SufiChain.SufiAbp.Identity.Public.Blazor` when the scenario touches public-facing identity UI
-- `SufiChain.SufiAbp.Identity.Application.Contracts` for DTOs, permissions, and remote service contracts
-- `SufiChain.SufiAbp.Identity.HttpApi` for the remote management surface
+- `SufiChain.SufiPlatform.Identity.Blazor` for pages such as `UserManagement`, `RoleManagement`, and `OrganizationUnitManagement`
+- `SufiChain.SufiPlatform.Identity.Public.Blazor` when the scenario touches public-facing identity UI
+- `SufiChain.SufiPlatform.Identity.Application.Contracts` for DTOs, permissions, and remote service contracts
+- `SufiChain.SufiPlatform.Identity.HttpApi` for the remote management surface

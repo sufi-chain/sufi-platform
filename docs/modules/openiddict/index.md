@@ -1,10 +1,10 @@
 # OpenIddict Module
 
-> **KB:** See workspace Obsidian vault `.obsidian/SufiAbp/Modules/OpenIddict.md` for verified capabilities.
+> **KB:** See workspace Obsidian vault `.obsidian/Sufi Platform/Modules/OpenIddict.md` for verified capabilities.
 
 ## Code location
 
-`sufi-abp/modules/openiddict/`
+`sufi-platform/modules/openiddict/`
 
 ## Quick facts
 
@@ -16,5 +16,5 @@
 
 ## Start in source
 
-- `SufiChain.SufiAbp.OpenIddict.AspNetCore` — host integration
-- `SufiChain.SufiAbp.PermissionManagement.Domain.OpenIddict` — permission bridge
+- `SufiChain.SufiPlatform.OpenIddict.AspNetCore` — host integration
+- `SufiChain.SufiPlatform.PermissionManagement.Domain.OpenIddict` — permission bridge

@@ -2,11 +2,11 @@
 
 ## Main packages
 
-- `SufiChain.SufiAbp.AuditLogging.Application.Contracts`
-- `SufiChain.SufiAbp.AuditLogging.Application`
-- `SufiChain.SufiAbp.AuditLogging.HttpApi`
-- `SufiChain.SufiAbp.AuditLogging.HttpApi.Client`
-- `SufiChain.SufiAbp.AuditLogging.Blazor`
+- `SufiChain.SufiPlatform.AuditLogging.Application.Contracts`
+- `SufiChain.SufiPlatform.AuditLogging.Application`
+- `SufiChain.SufiPlatform.AuditLogging.HttpApi`
+- `SufiChain.SufiPlatform.AuditLogging.HttpApi.Client`
+- `SufiChain.SufiPlatform.AuditLogging.Blazor`
 
 ## Typical usage
 

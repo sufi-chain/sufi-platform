@@ -18,4 +18,4 @@ The public source includes:
 
 ## Why it matters
 
-Tenant management is central to SaaS-style and multi-organization applications built on Sufi Platform.
+Tenant management is central to SaaS-style and multi-organization applications built on Sufi.

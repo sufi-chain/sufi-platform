@@ -1,4 +1,4 @@
-# SufiChain.SufiAbp.FileManager – API Reference
+# SufiChain.SufiPlatform.FileManager – API Reference
 
 ## Application Services
 
@@ -6,7 +6,7 @@
 
 Main service for file item operations.
 
-**Namespace:** `SufiChain.SufiAbp.FileManager.FileItems`
+**Namespace:** `SufiChain.SufiPlatform.FileManager.FileItems`
 
 #### UploadAsync
 
@@ -168,7 +168,7 @@ Task<FileItemDto> ConfirmAsync(Guid id)
 
 Service for managing file structures.
 
-**Namespace:** `SufiChain.SufiAbp.FileManager.FileStructures`
+**Namespace:** `SufiChain.SufiPlatform.FileManager.FileStructures`
 
 ```csharp
 Task<FileStructureDto> GetAsync(Guid id)
@@ -185,7 +185,7 @@ Task DeleteAsync(Guid id)
 
 Service for managing folders.
 
-**Namespace:** `SufiChain.SufiAbp.FileManager.FileFolders`
+**Namespace:** `SufiChain.SufiPlatform.FileManager.FileFolders`
 
 ```csharp
 Task<FolderDto> CreateAsync(CreateFolderInput input)
@@ -343,7 +343,7 @@ public enum FileType
 
 ## Blazor URL Provider
 
-For tiered apps (Blazor and API on different origins), use **IFileItemUrlProvider** from `SufiChain.SufiAbp.FileManager.Blazor.Public.Services`:
+For tiered apps (Blazor and API on different origins), use **IFileItemUrlProvider** from `SufiChain.SufiPlatform.FileManager.Blazor.Public.Services`:
 
 ```csharp
 public interface IFileItemUrlProvider

@@ -47,11 +47,11 @@ Create a static class with setting key constants:
 
 **TwilioMessagingSettingNames.cs:**
 ```csharp
-namespace SufiChain.SufiAbp.Communication.Twilio;
+namespace SufiChain.SufiPlatform.Communication.Twilio;
 
 public static class TwilioMessagingSettingNames
 {
-    private const string Prefix = "SufiAbp.Communication.Twilio";
+    private const string Prefix = "Sufi.Communication.Twilio";
 
     public const string AccountSid = Prefix + ".AccountSid";
     public const string AuthToken = Prefix + ".AuthToken";
@@ -71,11 +71,11 @@ public static class TwilioMessagingSettingNames
 
 **TwilioMessagingSettingDefinitionProvider.cs:**
 ```csharp
-using SufiChain.SufiAbp.Localization;
-using SufiChain.SufiAbp.Communication.Twilio.Localization;
-using SufiChain.SufiAbp.Settings;
+using SufiChain.SufiPlatform.Localization;
+using SufiChain.SufiPlatform.Communication.Twilio.Localization;
+using SufiChain.SufiPlatform.Settings;
 
-namespace SufiChain.SufiAbp.Communication.Twilio;
+namespace SufiChain.SufiPlatform.Communication.Twilio;
 
 public class TwilioMessagingSettingDefinitionProvider : SettingDefinitionProvider
 {
@@ -227,19 +227,19 @@ Use `.WithProperty()` to add metadata for UI rendering:
 **SufiAbpMessagingTwilioModule.cs:**
 ```csharp
 using Microsoft.Extensions.DependencyInjection;
-using SufiChain.SufiAbp.Localization;
-using SufiChain.SufiAbp.Communication.Twilio.Localization;
-using SufiChain.SufiAbp.Modularity;
-using SufiChain.SufiAbp.Settings;
-using SufiChain.SufiAbp.VirtualFileSystem;
+using SufiChain.SufiPlatform.Localization;
+using SufiChain.SufiPlatform.Communication.Twilio.Localization;
+using SufiChain.SufiPlatform.Modularity;
+using SufiChain.SufiPlatform.Settings;
+using SufiChain.SufiPlatform.VirtualFileSystem;
 
-namespace SufiChain.SufiAbp.Communication.Twilio;
+namespace SufiChain.SufiPlatform.Communication.Twilio;
 
 [DependsOn(
     typeof(SufiAbpMessagingModule),
     typeof(SufiAbpSettingsModule)
 )]
-public class SufiAbpMessagingTwilioModule : SufiAbpModule
+public class SufiAbpMessagingTwilioModule : SufiModule
 {
     public override void ConfigureServices(ServiceConfigurationContext context)
     {
@@ -272,7 +272,7 @@ When the host application includes the Twilio module, settings are automatically
     typeof(SufiAbpMessagingModule),
     typeof(SufiAbpMessagingTwilioModule)  // Settings auto-discovered
 )]
-public class MyAppBlazorModule : SufiAbpModule
+public class MyAppBlazorModule : SufiModule
 {
 }
 ```
@@ -284,7 +284,7 @@ The host application's settings management page will automatically display Twili
 **Example Blazor Settings Page:**
 ```razor
 @page "/settings/communication"
-@using SufiChain.SufiAbp.Settings
+@using SufiChain.SufiPlatform.Settings
 @inject ISettingManager SettingManager
 @inject ISettingDefinitionManager SettingDefinitionManager
 
@@ -318,7 +318,7 @@ The host application's settings management page will automatically display Twili
     {
         var definitions = await SettingDefinitionManager.GetAllAsync();
         
-        foreach (var definition in definitions.Where(d => d.Name.StartsWith("SufiAbp.Communication")))
+        foreach (var definition in definitions.Where(d => d.Name.StartsWith("Sufi.Communication")))
         {
             settingValues[definition.Name] = await SettingManager.GetOrNullAsync(definition.Name) ?? string.Empty;
         }
@@ -327,7 +327,7 @@ The host application's settings management page will automatically display Twili
     private Dictionary<string, List<SettingDefinition>> GetSettingGroups()
     {
         var definitions = SettingDefinitionManager.GetAll()
-            .Where(d => d.Name.StartsWith("SufiAbp.Communication"));
+            .Where(d => d.Name.StartsWith("Sufi.Communication"));
         
         return definitions
             .GroupBy(d => d.Properties.GetOrDefault("Group")?.ToString() ?? "General")
@@ -365,13 +365,13 @@ Settings can also be configured via appsettings.json:
 ```json
 {
   "Settings": {
-    "SufiAbp.Communication.Twilio.AccountSid": "ACxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
-    "SufiAbp.Communication.Twilio.AuthToken": "your-auth-token-here",
-    "SufiAbp.Communication.Twilio.DefaultFromNumber": "+1234567890",
-    "SufiAbp.Communication.Twilio.Sms.StatusCallbackUrl": "https://myapp.com/api/twilio/sms-status",
-    "SufiAbp.Communication.Twilio.Voice.Url": "https://myapp.com/api/twilio/voice",
-    "SufiAbp.Communication.Twilio.Voice.StatusCallbackUrl": "https://myapp.com/api/twilio/voice-status",
-    "SufiAbp.Communication.Twilio.Voice.Method": "POST"
+    "Sufi.Communication.Twilio.AccountSid": "ACxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+    "Sufi.Communication.Twilio.AuthToken": "your-auth-token-here",
+    "Sufi.Communication.Twilio.DefaultFromNumber": "+1234567890",
+    "Sufi.Communication.Twilio.Sms.StatusCallbackUrl": "https://myapp.com/api/twilio/sms-status",
+    "Sufi.Communication.Twilio.Voice.Url": "https://myapp.com/api/twilio/voice",
+    "Sufi.Communication.Twilio.Voice.StatusCallbackUrl": "https://myapp.com/api/twilio/voice-status",
+    "Sufi.Communication.Twilio.Voice.Method": "POST"
   }
 }
 ```
@@ -490,6 +490,6 @@ See the [Creating Custom Providers](./messagingvider-guide.md) guide for complet
 
 ## See Also
 
-- [SufiAbp Settings System](./settings.md)
-- [SufiAbp Multi-Tenancy](./multi-tenancy.md)
-- [SufiAbp Localization](./localization.md)
+- [Sufi Platform Settings System](./settings.md)
+- [Sufi Platform Multi-Tenancy](./multi-tenancy.md)
+- [Sufi Platform Localization](./localization.md)

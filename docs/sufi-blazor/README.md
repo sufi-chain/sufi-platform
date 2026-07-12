@@ -29,7 +29,7 @@ This folder is a pointer only. Do not add or edit component reference files here
 
 - **SufiBlazor** (`SufiChain.SufiBlazor`) is standalone — no ABP or SufiTheme required for the core library.
 - **App shell chrome** (navigation frame, sidebars, top bar) lives in **SufiTheme**, not SufiBlazor. See `LAYOUT_REVIEW.md`.
-- **SufiChain.SufiBlazor.Demo** is a platform-hosted gallery; it references `SufiChain.SufiAbp.UI.Blazor` for menu integration only.
+- **SufiChain.SufiBlazor.Demo** is a platform-hosted gallery; it references `SufiChain.SufiPlatform.UI.Blazor` for menu integration only.
 
 ## Obsidian KB
 

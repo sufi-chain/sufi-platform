@@ -6,11 +6,11 @@ Use this module when the application needs user-facing account pages and support
 
 ## Main packages
 
-- `SufiChain.SufiAbp.Account.Application.Contracts`
-- `SufiChain.SufiAbp.Account.Application`
-- `SufiChain.SufiAbp.Account.HttpApi`
-- `SufiChain.SufiAbp.Account.HttpApi.Client`
-- `SufiChain.SufiAbp.Account.Blazor`
+- `SufiChain.SufiPlatform.Account.Application.Contracts`
+- `SufiChain.SufiPlatform.Account.Application`
+- `SufiChain.SufiPlatform.Account.HttpApi`
+- `SufiChain.SufiPlatform.Account.HttpApi.Client`
+- `SufiChain.SufiPlatform.Account.Blazor`
 
 ## Notes
 

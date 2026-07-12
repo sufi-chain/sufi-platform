@@ -1,8 +1,8 @@
-# SufiAbp Communication System
+# Sufi Platform Communication System
 
 ## Overview
 
-The SufiAbp Communication system provides a unified, provider-based architecture for sending messages across multiple channels: **Email**, **SMS**, and **Voice Calls**. It replaces the legacy `SufiChain.SufiAbp.Emailing` package with a more comprehensive solution.
+The Sufi Platform Communication system provides a unified, provider-based architecture for sending messages across multiple channels: **Email**, **SMS**, and **Voice Calls**. It replaces the legacy `SufiChain.SufiPlatform.Emailing` package with a more comprehensive solution.
 
 ## Key Features
 
@@ -10,15 +10,15 @@ The SufiAbp Communication system provides a unified, provider-based architecture
 - **Provider-Based Architecture**: Core abstractions with pluggable provider implementations
 - **SMTP Built-In**: SMTP email sender included by default (no additional packages needed)
 - **Background Job Support**: All message types support queued/background sending
-- **Settings-Based Configuration**: Dynamic configuration via SufiAbp Settings system
+- **Settings-Based Configuration**: Dynamic configuration via Sufi Platform Settings system
 - **Graceful Degradation**: Works without configuration (uses Null implementations)
-- **Template Integration**: Full integration with SufiAbp TextTemplating system
+- **Template Integration**: Full integration with Sufi Platform TextTemplating system
 
 ## Architecture
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│  SufiChain.SufiAbp.Communication (Core Package)                 │
+│  SufiChain.SufiPlatform.Communication (Core Package)                 │
 │  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐      │
 │  │ IEmailSender │  │ ISmsSender   │  │IVoiceCallSender│    │
 │  └──────────────┘  └──────────────┘  └──────────────┘      │
@@ -32,13 +32,13 @@ The SufiAbp Communication system provides a unified, provider-based architecture
 ┌─────────────────────────────────────────────────────────────┐
 │  Provider Modules (Separate Packages - Injected)            │
 │  ┌──────────────────────────────────────────────────────┐   │
-│  │ SufiChain.SufiAbp.Communication.Twilio                   │   │
+│  │ SufiChain.SufiPlatform.Communication.Twilio                   │   │
 │  │  - TwilioSmsSender (replaces NullSmsSender)         │   │
 │  │  - TwilioVoiceCallSender (replaces NullVoiceCall)   │   │
 │  │  - TwilioSettingDefinitionProvider (dynamic settings)│   │
 │  └──────────────────────────────────────────────────────┘   │
 │  ┌──────────────────────────────────────────────────────┐   │
-│  │ SufiChain.SufiAbp.Communication.SendGrid                 │   │
+│  │ SufiChain.SufiPlatform.Communication.SendGrid                 │   │
 │  │  - SendGridEmailSender (replaces SmtpEmailSender)    │   │
 │  │  - SendGridSettingDefinitionProvider                 │   │
 │  └──────────────────────────────────────────────────────┘   │
@@ -47,16 +47,16 @@ The SufiAbp Communication system provides a unified, provider-based architecture
 
 ## Package Structure
 
-### Core Package: `SufiChain.SufiAbp.Communication`
+### Core Package: `SufiChain.SufiPlatform.Communication`
 
-**Included by default in all SufiAbp applications.**
+**Included by default in all Sufi Platform applications.**
 
 **Dependencies:**
-- `SufiChain.SufiAbp.BackgroundJobs.Abstractions`
-- `SufiChain.SufiAbp.Localization`
-- `SufiChain.SufiAbp.Settings`
-- `SufiChain.SufiAbp.TextTemplating.Scriban`
-- `SufiChain.SufiAbp.VirtualFileSystem`
+- `SufiChain.SufiPlatform.BackgroundJobs.Abstractions`
+- `SufiChain.SufiPlatform.Localization`
+- `SufiChain.SufiPlatform.Settings`
+- `SufiChain.SufiPlatform.TextTemplating.Scriban`
+- `SufiChain.SufiPlatform.VirtualFileSystem`
 
 **What's Included:**
 
@@ -96,20 +96,20 @@ SMTP is included by default. Just configure settings:
 ```json
 {
   "Settings": {
-    "SufiAbp.Communication.Email.DefaultFromAddress": "noreply@example.com",
-    "SufiAbp.Communication.Email.DefaultFromDisplayName": "My Application",
-    "SufiAbp.Communication.Email.Smtp.Host": "smtp.gmail.com",
-    "SufiAbp.Communication.Email.Smtp.Port": "587",
-    "SufiAbp.Communication.Email.Smtp.EnableSsl": "true",
-    "SufiAbp.Communication.Email.Smtp.UserName": "your-email@gmail.com",
-    "SufiAbp.Communication.Email.Smtp.Password": "your-app-password"
+    "Sufi.Communication.Email.DefaultFromAddress": "noreply@example.com",
+    "Sufi.Communication.Email.DefaultFromDisplayName": "My Application",
+    "Sufi.Communication.Email.Smtp.Host": "smtp.gmail.com",
+    "Sufi.Communication.Email.Smtp.Port": "587",
+    "Sufi.Communication.Email.Smtp.EnableSsl": "true",
+    "Sufi.Communication.Email.Smtp.UserName": "your-email@gmail.com",
+    "Sufi.Communication.Email.Smtp.Password": "your-app-password"
   }
 }
 ```
 
 **Usage in Application Service:**
 ```csharp
-public class UserRegistrationService : SufiAbpApplicationService
+public class UserRegistrationService : SufiApplicationService
 {
     private readonly IEmailSender _emailSender;
 
@@ -162,7 +162,7 @@ await _smsSender.SendAsync("+1234567890", "Your verification code is 123456");
 
 1. Install provider package:
    ```bash
-   dotnet add package SufiChain.SufiAbp.Communication.Twilio
+   dotnet add package SufiChain.SufiPlatform.Communication.Twilio
    ```
 
 2. Add module dependency:
@@ -171,7 +171,7 @@ await _smsSender.SendAsync("+1234567890", "Your verification code is 123456");
        typeof(SufiAbpMessagingModule),
        typeof(SufiAbpMessagingTwilioModule)  // Replaces NullSmsSender
    )]
-   public class MyApplicationModule : SufiAbpModule
+   public class MyApplicationModule : SufiModule
    {
    }
    ```
@@ -180,9 +180,9 @@ await _smsSender.SendAsync("+1234567890", "Your verification code is 123456");
    ```json
    {
      "Settings": {
-       "SufiAbp.Communication.Sms.DefaultFromNumber": "+1234567890",
-       "SufiAbp.Communication.Sms.Twilio.AccountSid": "your-account-sid",
-       "SufiAbp.Communication.Sms.Twilio.AuthToken": "your-auth-token"
+       "Sufi.Communication.Sms.DefaultFromNumber": "+1234567890",
+       "Sufi.Communication.Sms.Twilio.AccountSid": "your-account-sid",
+       "Sufi.Communication.Sms.Twilio.AuthToken": "your-auth-token"
      }
    }
    ```
@@ -201,38 +201,38 @@ await _smsSender.SendAsync("+1234567890", "Your verification code is 123456");
 
 | Setting Key | Description | Default |
 |------------|-------------|---------|
-| `SufiAbp.Communication.Email.DefaultFromAddress` | Default sender email | - |
-| `SufiAbp.Communication.Email.DefaultFromDisplayName` | Default sender name | - |
-| `SufiAbp.Communication.Email.Smtp.Host` | SMTP server hostname | - |
-| `SufiAbp.Communication.Email.Smtp.Port` | SMTP server port | 25 |
-| `SufiAbp.Communication.Email.Smtp.EnableSsl` | Enable SSL/TLS | false |
-| `SufiAbp.Communication.Email.Smtp.UserName` | SMTP username | - |
-| `SufiAbp.Communication.Email.Smtp.Password` | SMTP password | - |
-| `SufiAbp.Communication.Email.Smtp.Domain` | SMTP domain (optional) | - |
-| `SufiAbp.Communication.Email.Smtp.UseDefaultCredentials` | Use Windows credentials | true |
+| `Sufi.Communication.Email.DefaultFromAddress` | Default sender email | - |
+| `Sufi.Communication.Email.DefaultFromDisplayName` | Default sender name | - |
+| `Sufi.Communication.Email.Smtp.Host` | SMTP server hostname | - |
+| `Sufi.Communication.Email.Smtp.Port` | SMTP server port | 25 |
+| `Sufi.Communication.Email.Smtp.EnableSsl` | Enable SSL/TLS | false |
+| `Sufi.Communication.Email.Smtp.UserName` | SMTP username | - |
+| `Sufi.Communication.Email.Smtp.Password` | SMTP password | - |
+| `Sufi.Communication.Email.Smtp.Domain` | SMTP domain (optional) | - |
+| `Sufi.Communication.Email.Smtp.UseDefaultCredentials` | Use Windows credentials | true |
 
 ### SMS Settings (Core)
 
 | Setting Key | Description | Default |
 |------------|-------------|---------|
-| `SufiAbp.Communication.Sms.DefaultFromNumber` | Default sender phone number | - |
-| `SufiAbp.Communication.Sms.ProviderName` | Active SMS provider name | - |
+| `Sufi.Communication.Sms.DefaultFromNumber` | Default sender phone number | - |
+| `Sufi.Communication.Sms.ProviderName` | Active SMS provider name | - |
 
 ### Voice Call Settings (Core)
 
 | Setting Key | Description | Default |
 |------------|-------------|---------|
-| `SufiAbp.Communication.VoiceCall.DefaultFromNumber` | Default caller phone number | - |
-| `SufiAbp.Communication.VoiceCall.DefaultLanguage` | Default voice language | en-US |
-| `SufiAbp.Communication.VoiceCall.DefaultVoiceGender` | Default voice gender | Female |
-| `SufiAbp.Communication.VoiceCall.ProviderName` | Active voice provider name | - |
+| `Sufi.Communication.VoiceCall.DefaultFromNumber` | Default caller phone number | - |
+| `Sufi.Communication.VoiceCall.DefaultLanguage` | Default voice language | en-US |
+| `Sufi.Communication.VoiceCall.DefaultVoiceGender` | Default voice gender | Female |
+| `Sufi.Communication.VoiceCall.ProviderName` | Active voice provider name | - |
 
 ## Template Integration
 
-The Communication system integrates with SufiAbp TextTemplating for dynamic message content:
+The Communication system integrates with Sufi Platform TextTemplating for dynamic message content:
 
 ```csharp
-public class WelcomeEmailSender : SufiAbpApplicationService
+public class WelcomeEmailSender : SufiApplicationService
 {
     private readonly IEmailSender _emailSender;
     private readonly ITemplateRenderer _templateRenderer;
@@ -264,18 +264,18 @@ public class WelcomeEmailSender : SufiAbpApplicationService
 
 ## Migration from Legacy Emailing
 
-If you're migrating from `SufiChain.SufiAbp.Emailing`:
+If you're migrating from `SufiChain.SufiPlatform.Emailing`:
 
 1. **Remove old package reference:**
    ```xml
    <!-- Remove this -->
-   <PackageReference Include="SufiChain.SufiAbp.Emailing" Version="*" />
+   <PackageReference Include="SufiChain.SufiPlatform.Emailing" Version="*" />
    ```
 
 2. **Add new package reference:**
    ```xml
-   <!-- Add this (or it's already included via SufiAbpModule) -->
-   <PackageReference Include="SufiChain.SufiAbp.Communication" Version="*" />
+   <!-- Add this (or it's already included via SufiModule) -->
+   <PackageReference Include="SufiChain.SufiPlatform.Communication" Version="*" />
    ```
 
 3. **Update module dependencies:**
@@ -290,19 +290,19 @@ If you're migrating from `SufiChain.SufiAbp.Emailing`:
 4. **Update code:**
    ```csharp
    // Old
-   using SufiChain.SufiAbp.Emailing;
+   using SufiChain.SufiPlatform.Emailing;
    
    // New
-   using SufiChain.SufiAbp.Communication;
+   using SufiChain.SufiPlatform.Communication;
    ```
 
 5. **Update settings keys:**
    ```json
    // Old
-   "SufiAbp.Emailing.DefaultFromAddress": "..."
+   "Sufi.Emailing.DefaultFromAddress": "..."
    
    // New
-   "SufiAbp.Communication.Email.DefaultFromAddress": "..."
+   "Sufi.Communication.Email.DefaultFromAddress": "..."
    ```
 
 ## Next Steps
@@ -314,6 +314,6 @@ If you're migrating from `SufiChain.SufiAbp.Emailing`:
 
 ## See Also
 
-- [SufiAbp Settings System](./settings.md)
-- [SufiAbp Background Jobs](./background-jobs.md)
-- [SufiAbp TextTemplating](./text-templating-overview.md)
+- [Sufi Platform Settings System](./settings.md)
+- [Sufi Platform Background Jobs](./background-jobs.md)
+- [Sufi Platform TextTemplating](./text-templating-overview.md)

@@ -2,7 +2,7 @@
 
 ## Overview
 
-The SufiChain.SufiAbp.FileManager module includes a powerful plugin system that allows you to extend the media management functionality with custom processors, editors, and filters.
+The SufiChain.SufiPlatform.FileManager module includes a powerful plugin system that allows you to extend the media management functionality with custom processors, editors, and filters.
 
 ## Plugin Types
 
@@ -63,8 +63,8 @@ public interface IMediaEditorPlugin : IMediaPlugin
 ### Example: Custom Watermark Plugin
 
 ```csharp
-using SufiChain.SufiAbp.FileManager.Plugins;
-using SufiChain.SufiAbp.FileManager.Plugins.Dtos;
+using SufiChain.SufiPlatform.FileManager.Plugins;
+using SufiChain.SufiPlatform.FileManager.Plugins.Dtos;
 using Volo.Abp.DependencyInjection;
 
 namespace MyCompany.CustomPlugins;

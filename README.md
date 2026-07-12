@@ -1,21 +1,21 @@
-# SufiAbp – Sufi ASP.NET Core Platform
+# Sufi Platform – Sufi ASP.NET Core Platform
 
 **Open-Source Enterprise Platform for Blazor Applications**
 
-SufiAbp is a comprehensive, modular platform for building enterprise-grade Blazor applications. It provides a complete infrastructure layer—authentication, authorization, multi-tenancy, localization, auditing, and more—so you can focus on your domain logic and business features.
+Sufi Platform is a comprehensive, modular platform for building enterprise-grade Blazor applications. It provides a complete infrastructure layer—authentication, authorization, multi-tenancy, localization, auditing, and more—so you can focus on your domain logic and business features.
 
-Built on top of ABP Framework , SufiAbp offers a custom Blazor UI system (SufiBlazor component library + SufiTheme), reimplemented modules with clean branding, and a powerful CLI for rapid development.
+Built on top of ABP Framework , Sufi Platform offers a custom Blazor UI system (SufiBlazor component library + SufiTheme), reimplemented modules with clean branding, and a powerful CLI for rapid development.
 
 ---
 
-## What is SufiAbp?
+## What is Sufi Platform?
 
-SufiAbp is **not a fork** of ABP Framework. It is a strategic platform layer that:
+Sufi Platform is **not a fork** of ABP Framework. It is a strategic platform layer that:
 
 - **Consumes ABP Framework** as NuGet packages for backend infrastructure (modular architecture, DDD patterns, multi-tenancy, permissions, settings, auditing)
-- **Provides 63 SufiAbp packages** (43 reimplemented from ABP with custom branding + 20 innovations including custom UI system and authentication)
+- **Provides 63 Sufi Platform packages** (43 reimplemented from ABP with custom branding + 20 innovations including custom UI system and authentication)
 - **Replaces ABP's Blazorise-based UI** with a fully custom Blazor component library (SufiBlazor) and theme system (SufiTheme)
-- **Reimplements core ABP modules** (Identity, Tenant Management, etc.) with SufiAbp UI and branding
+- **Reimplements core ABP modules** (Identity, Tenant Management, etc.) with Sufi Platform UI and branding
 - **Offers custom tooling** (`sufi` CLI) for scaffolding and code generation
 - **Remains fully open-source** under LGPL-3.0 license
 
@@ -24,14 +24,14 @@ SufiAbp is **not a fork** of ABP Framework. It is a strategic platform layer tha
 ```
 Host Applications & Products
     ↓
-SufiAbp Modules (Identity, Tenant Management, File Manager, AI Management, etc.)
+Sufi Platform Modules (Identity, Tenant Management, File Manager, AI Management, etc.)
     ├─ SufiTheme Module (Shell, Layout, Navigation, Theming System)
     ↓
 SufiBlazor (Component Library) - Replaces Blazorise
     ↓
-SufiAbp Framework (63 packages)
-    ├─ 43 reimplemented from ABP (with SufiAbp branding & customizations)
-    └─ 20 SufiAbp innovations (UI system, Auth, CLI)
+Sufi Platform Framework (63 packages)
+    ├─ 43 reimplemented from ABP (with Sufi Platform branding & customizations)
+    └─ 20 Sufi Platform innovations (UI system, Auth, CLI)
     ↓
 ABP Framework  (consumed as NuGet packages)
     ↓
@@ -57,7 +57,7 @@ ABP Framework  (consumed as NuGet packages)
 - **Validation**: Fluent validation with automatic DTO validation
 - **Exception Handling**: Centralized error handling with localized messages
 
-### Frontend (SufiAbp Custom)
+### Frontend (Sufi Platform Custom)
 
 - **SufiBlazor Component Library**: Custom Blazor components (DataGrid, Form, Modal, Tabs, etc.)
 - **SufiTheme**: Dual-layout theme system (collapsed/expanded shells) with LTR/RTL support
@@ -74,7 +74,7 @@ ABP Framework  (consumed as NuGet packages)
 - **Repository Pattern**: Generic repositories with async operations
 - **Unit of Work**: Automatic transaction management
 
-### SufiAbp Modules
+### Sufi Platform Modules
 
 **Core Modules (Open Source - LGPL-3.0):**
 
@@ -97,14 +97,14 @@ These infrastructure modules provide the foundation for vertical applications bu
 
 ---
 
-## SufiAbp vs ABP Framework
+## Sufi Platform vs ABP Framework
 
-| Aspect | ABP Framework | SufiAbp Platform |
+| Aspect | ABP Framework | Sufi Platform |
 |--------|---------------|------------------|
 | **UI System** | Blazorise (3rd party) | SufiBlazor (owned) |
-| **Component Base** | `AbpComponentBase` | `SufiAbpComponentBase` |
-| **DTO Branding** | `Volo.Abp.Application.Dtos.*` | `SufiChain.SufiAbp.Application.Dtos.*` |
-| **Controller Base** | `AbpControllerBase` | `SufiAbpControllerBase` |
+| **Component Base** | `AbpComponentBase` | `SufiComponentBase` |
+| **DTO Branding** | `Volo.Abp.Application.Dtos.*` | `SufiChain.SufiPlatform.Application.Dtos.*` |
+| **Controller Base** | `AbpControllerBase` | `SufiControllerBase` |
 | **Theme** | LeptonX | SufiTheme  |
 | **CLI** | `abp` command | `sufi` command |
 | **License** | LGPL-3.0 (framework only) | LGPL-3.0 (framework + modules) |
@@ -159,10 +159,10 @@ These infrastructure modules provide the foundation for vertical applications bu
 
 ### Installation
 
-1. **Install the SufiAbp CLI:**
+1. **Install the Sufi Platform CLI:**
 
    ```bash
-   dotnet tool install -g SufiChain.SufiAbp.Cli
+   dotnet tool install -g SufiChain.SufiPlatform.Cli
    ```
 
 2. **Create a new application:**
@@ -234,7 +234,7 @@ These infrastructure modules provide the foundation for vertical applications bu
 
 The following components are licensed under LGPL-3.0 and are free to use:
 
-- **SufiAbp Framework**
+- **Sufi Platform Framework**
 - **Core Modules**: Identity, Tenant Management, File Manager, AI Management, Audit Logging, etc.
 
 You can use these components in both open-source and commercial projects without restrictions.
@@ -258,7 +258,7 @@ You can use these components in both open-source and commercial projects without
 
 ## Contributing
 
-SufiAbp is an open-source project and welcomes contributions:
+Sufi Platform is an open-source project and welcomes contributions:
 
 1. Fork the repository
 2. Create a feature branch
@@ -270,7 +270,7 @@ SufiAbp is an open-source project and welcomes contributions:
 
 ## Acknowledgments
 
-SufiAbp is built on top of [ABP Framework](https://abp.io) and would not be possible without the excellent work of the ABP team. We consume ABP as NuGet packages and extend it with our custom UI system, modules, and tooling.
+Sufi Platform is built on top of [ABP Framework](https://abp.io) and would not be possible without the excellent work of the ABP team. We consume ABP as NuGet packages and extend it with our custom UI system, modules, and tooling.
 
 Special thanks to:
 - ABP Framework team for the solid foundation

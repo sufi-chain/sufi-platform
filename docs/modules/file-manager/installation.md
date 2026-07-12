@@ -2,18 +2,18 @@
 
 ## Main packages
 
-- `SufiChain.SufiAbp.FileManager.Application.Contracts`
-- `SufiChain.SufiAbp.FileManager.Application`
-- `SufiChain.SufiAbp.FileManager.Domain.Shared`
-- `SufiChain.SufiAbp.FileManager.Domain`
-- `SufiChain.SufiAbp.FileManager.HttpApi`
-- `SufiChain.SufiAbp.FileManager.HttpApi.Client`
-- `SufiChain.SufiAbp.FileManager.Blazor`
-- `SufiChain.SufiAbp.FileManager.Blazor.Public`
-- `SufiChain.SufiAbp.FileManager.Blazor.Server`
-- `SufiChain.SufiAbp.FileManager.Blazor.WebAssembly`
-- `SufiChain.SufiAbp.FileManager.EntityFrameworkCore`
-- `SufiChain.SufiAbp.FileManager.MongoDB`
+- `SufiChain.SufiPlatform.FileManager.Application.Contracts`
+- `SufiChain.SufiPlatform.FileManager.Application`
+- `SufiChain.SufiPlatform.FileManager.Domain.Shared`
+- `SufiChain.SufiPlatform.FileManager.Domain`
+- `SufiChain.SufiPlatform.FileManager.HttpApi`
+- `SufiChain.SufiPlatform.FileManager.HttpApi.Client`
+- `SufiChain.SufiPlatform.FileManager.Blazor`
+- `SufiChain.SufiPlatform.FileManager.Blazor.Public`
+- `SufiChain.SufiPlatform.FileManager.Blazor.Server`
+- `SufiChain.SufiPlatform.FileManager.Blazor.WebAssembly`
+- `SufiChain.SufiPlatform.FileManager.EntityFrameworkCore`
+- `SufiChain.SufiPlatform.FileManager.MongoDB`
 
 ## Typical host setup
 

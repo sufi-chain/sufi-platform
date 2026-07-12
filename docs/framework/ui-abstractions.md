@@ -1,6 +1,6 @@
 # UI Abstractions
 
-Contracts in **SufiChain.SufiAbp.UI.Abstractions** define the UI surface. Implementations live in UI.Services, UI.Blazor, or UI.Abp.
+Contracts in **SufiChain.SufiPlatform.UI.Abstractions** define the UI surface. Implementations live in UI.Services, UI.Blazor, or UI.Abp.
 
 ## Theming
 

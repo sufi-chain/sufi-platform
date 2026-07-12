@@ -1,11 +1,11 @@
 # AI Management Installation
 
-Add AI Management to a SufiAbp host application.
+Add AI Management to a Sufi Platform host application.
 
 ## Prerequisites
 
 - .NET 10.0 SDK
-- SufiAbp host (Blazor Server or WebAssembly with server API)
+- Sufi Platform host (Blazor Server or WebAssembly with server API)
 - SQL or MongoDB (match your host persistence)
 - OpenAI API access (workspace keys configured in admin UI)
 - Optional: File-Manager module for structured media storage
@@ -27,7 +27,7 @@ public class YourHostModule : AbpModule
 }
 ```
 
-Reference projects from `src/modules/ai/` during platform development, or NuGet packages `SufiChain.SufiAbp.AI.*` in consuming solutions.
+Reference projects from `src/modules/ai/` during platform development, or NuGet packages `SufiChain.SufiPlatform.SufiAI.*` in consuming solutions.
 
 **Blazor WebAssembly:** also add `SufiAIBlazorWebAssemblyModule` on the client and `SufiAIHttpApiClientModule` for proxies.
 

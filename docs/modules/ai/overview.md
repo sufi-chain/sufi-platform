@@ -36,11 +36,11 @@ Operator workflows: [Usage](usage.md). Integrators: [API](api.md), [Extending](e
 
 | Package | Purpose |
 |---------|---------|
-| `SufiChain.SufiAbp.AI.Blazor` | Admin UI, `AIMenuContributor`, `WorkspaceSelector`, pages |
-| `SufiChain.SufiAbp.AI.Application.Contracts` | DTOs and service interfaces |
-| `SufiChain.SufiAbp.AI.Application` | Application services |
-| `SufiChain.SufiAbp.AI.Domain` | `OpenAIProvider`, `RAGService`, `WorkspaceSyncService`, MCP registry |
-| `SufiChain.SufiAbp.AI.HttpApi` | `OpenAICompatibleController` (`/v1/*`) |
-| `SufiChain.SufiAbp.AI.EntityFrameworkCore` / `.MongoDB` | Persistence |
+| `SufiChain.SufiPlatform.SufiAI.Blazor` | Admin UI, `AIMenuContributor`, `WorkspaceSelector`, pages |
+| `SufiChain.SufiPlatform.SufiAI.Application.Contracts` | DTOs and service interfaces |
+| `SufiChain.SufiPlatform.SufiAI.Application` | Application services |
+| `SufiChain.SufiPlatform.SufiAI.Domain` | `OpenAIProvider`, `RAGService`, `WorkspaceSyncService`, MCP registry |
+| `SufiChain.SufiPlatform.SufiAI.HttpApi` | `OpenAICompatibleController` (`/v1/*`) |
+| `SufiChain.SufiPlatform.SufiAI.EntityFrameworkCore` / `.MongoDB` | Persistence |
 
 Implementation root: `src/modules/ai/`.

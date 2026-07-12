@@ -10,8 +10,8 @@ Read this guide together with:
 ## Terminology
 
 - Use `Sufi Platform` for the product and application-platform offering.
-- Use `SufiAbp` for the technical framework and package family.
-- Use `SufiAbp` for module, type, and code prefixes.
+- Use `Sufi Platform` for the technical framework and package family.
+- Use `Sufi Platform` for module, type, and code prefixes.
 - Use `ABP Framework` when referring to the upstream open-source foundation that Sufi Platform builds on.
 - Keep planning notes focused on user needs, workflows, roles, permissions, data, and delivery priorities.
 
@@ -74,7 +74,7 @@ Examples:
 
 Do not start from a blank ABP solution unless there is a clear reason to do so.
 
-Always begin by identifying which existing SufiAbp capabilities and first-party modules can be reused.
+Always begin by identifying which existing Sufi Platform capabilities and first-party modules can be reused.
 
 ### Baseline modules to consider first
 
@@ -167,7 +167,7 @@ The default rule is simple: do not rebuild those concerns inside a new module un
 
 Use these defaults unless the product explicitly needs something different:
 
-- `SufiAbp Framework` for platform-aware UI behavior
+- `Sufi Platform Framework` for platform-aware UI behavior
 - `SufiBlazor` for interactive components
 - `SufiTheme` for the full app shell, navigation, and branded layout
 
@@ -222,7 +222,7 @@ For each reusable module, default to the standard ABP split:
 
 ## Step 8: Make the module feel native to the platform
 
-A new SufiAbp module should:
+A new Sufi Platform module should:
 
 - use permissions consistently
 - define settings clearly
@@ -230,7 +230,7 @@ A new SufiAbp module should:
 - localize all user-facing text
 - plug into menus and toolbars through contributor patterns
 - expose clean application contracts
-- use SufiAbp and SufiBlazor conventions in the UI
+- use Sufi Platform and SufiBlazor conventions in the UI
 - follow the standard documentation structure under `docs/modules/`
 
 If the capability is admin-facing or operational, it should normally include a Blazor management experience.
@@ -241,7 +241,7 @@ If the request is for a full product, do not stop at the module level.
 
 Create a host composition that:
 
-1. includes the needed baseline SufiAbp modules
+1. includes the needed baseline Sufi Platform modules
 2. includes any new horizontal modules
 3. includes domain-specific product modules where required
 4. applies SufiTheme when the product should follow the standard shell model

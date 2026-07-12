@@ -1,6 +1,6 @@
 # Short Link Generator Overview
 
-The Short Link Generator module provides a compact but complete example of a reusable business capability in Sufi Platform. It combines management UI, public redirect handling, settings, permissions, analytics, and both EF Core and MongoDB persistence, which makes it useful both as a product feature and as a reference implementation.
+The Short Link Generator module provides a compact but complete example of a reusable business capability in Sufi. It combines management UI, public redirect handling, settings, permissions, analytics, and both EF Core and MongoDB persistence, which makes it useful both as a product feature and as a reference implementation.
 
 ## What it enables
 
@@ -17,7 +17,7 @@ Treat this module as a horizontal capability. It is useful in marketing flows, i
 
 Open these packages first:
 
-- `SufiChain.SufiAbp.ShortLinkGenerator.Blazor` for the management UI
-- `SufiChain.SufiAbp.ShortLinkGenerator.Application` and `.Application.Contracts` for the main use cases and DTOs
-- `SufiChain.SufiAbp.ShortLinkGenerator.HttpApi` for both management and redirect-related API behavior
-- `SufiChain.SufiAbp.ShortLinkGenerator.Domain`, `.EntityFrameworkCore`, and `.MongoDB` for the persistence model
+- `SufiChain.SufiPlatform.ShortLinkGenerator.Blazor` for the management UI
+- `SufiChain.SufiPlatform.ShortLinkGenerator.Application` and `.Application.Contracts` for the main use cases and DTOs
+- `SufiChain.SufiPlatform.ShortLinkGenerator.HttpApi` for both management and redirect-related API behavior
+- `SufiChain.SufiPlatform.ShortLinkGenerator.Domain`, `.EntityFrameworkCore`, and `.MongoDB` for the persistence model

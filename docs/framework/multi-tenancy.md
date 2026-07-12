@@ -16,7 +16,7 @@ Tenant resolution via a **middleware** and a **resolver chain**. First resolver 
 ## Features
 
 - **Custom resolvers**: Implement `ITenantResolver` (Name, Priority, `ResolveTenantAsync`), register in DI.  
-- **CurrentTenant**: Access via `ICurrentTenant` / SufiAbpComponentBase `CurrentTenant` (Id, Name, IsAvailable).  
+- **CurrentTenant**: Access via `ICurrentTenant` / SufiComponentBase `CurrentTenant` (Id, Name, IsAvailable).  
 - **Data filtering**: Use ABP’s multi-tenant filtering; disable when needed for host-only operations.
 
 ## Configuration

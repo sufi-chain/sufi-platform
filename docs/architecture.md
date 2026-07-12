@@ -5,15 +5,15 @@ This document explains how the public source is organized and how the platform i
 ## Terminology
 
 - `Sufi Platform` is the platform and product name.
-- `SufiAbp` is the technical base and the package family under `SufiChain.SufiAbp.*`.
-- `SufiAbp` is the code prefix used in framework and module types.
+- `Sufi Platform` is the technical base and the package family under `SufiChain.SufiPlatform.*`.
+- `Sufi Platform` is the code prefix used in framework and module types.
 - `ABP Framework` is the upstream open-source framework that provides the core backend architecture. Website: [abp.io](https://abp.io). Source: [github.com/abpframework/abp](https://github.com/abpframework/abp).
 
 ## Relationship with ABP
 
 Sufi Platform is built on top of ABP Framework rather than trying to hide that heritage. ABP provides the proven modular architecture, DDD layering, multi-tenancy, authorization, settings, localization, auditing, and persistence model.
 
-Sufi Platform extends that foundation with SufiAbp-branded framework surfaces, SufiBlazor components, SufiTheme, first-party modules, templates, and the `sufi` CLI. The goal is to remain compatible with ABP's architectural strengths while providing a focused enterprise Blazor platform and a consistent Sufi Platform developer experience.
+Sufi Platform extends that foundation with Sufi Platform-branded framework surfaces, SufiBlazor components, SufiTheme, first-party modules, templates, and the `sufi` CLI. The goal is to remain compatible with ABP's architectural strengths while providing a focused enterprise Blazor platform and a consistent Sufi Platform developer experience.
 
 ## Layered model
 
@@ -26,7 +26,7 @@ From bottom to top:
    - domain/application layering
    - permissions, settings, tenancy, auditing, persistence
 
-2. `SufiAbp Framework`
+2. `Sufi Platform Framework`
    - UI abstractions and default UI services
    - Blazor composition and base components
    - ABP integration points
@@ -48,7 +48,7 @@ From bottom to top:
 
 | Path | What lives there |
 | --- | --- |
-| `src/framework` | SufiAbp framework packages and CLI |
+| `src/framework` | Sufi Platform framework packages and CLI |
 | `src/modules` | First-party reusable modules |
 | `src/templates` | Template assets used by the CLI |
 | `docs` | Canonical long-form documentation |
@@ -62,7 +62,7 @@ For most platform work, start in `src/framework` or `src/modules`. Reach for the
 The architectural rule is simple:
 
 - keep backend behavior aligned with ABP layering
-- keep UI composition aligned with SufiAbp abstractions
+- keep UI composition aligned with Sufi Platform abstractions
 - use SufiBlazor for reusable interactive components
 - use SufiTheme for standard shell and layout behavior
 

@@ -16,6 +16,6 @@ Think of this module as shared infrastructure for administration rather than an 
 
 Open these packages first:
 
-- `SufiChain.SufiAbp.PermissionManagement.Application` and `.Application.Contracts` for grant workflows and DTOs
-- `SufiChain.SufiAbp.PermissionManagement.HttpApi` for the remote surface exposed to other parts of the platform
-- `SufiChain.SufiAbp.PermissionManagement.Domain.Shared` for shared permission-related definitions
+- `SufiChain.SufiPlatform.PermissionManagement.Application` and `.Application.Contracts` for grant workflows and DTOs
+- `SufiChain.SufiPlatform.PermissionManagement.HttpApi` for the remote surface exposed to other parts of the platform
+- `SufiChain.SufiPlatform.PermissionManagement.Domain.Shared` for shared permission-related definitions

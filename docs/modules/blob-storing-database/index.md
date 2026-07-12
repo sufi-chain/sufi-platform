@@ -1,10 +1,10 @@
 # Blob Storing Database Module
 
-> **KB:** See workspace Obsidian vault `.obsidian/SufiAbp/Modules/Blob Storing Database.md` for verified capabilities.
+> **KB:** See workspace Obsidian vault `.obsidian/Sufi Platform/Modules/Blob Storing Database.md` for verified capabilities.
 
 ## Code location
 
-`sufi-abp/modules/blob-storing-database/`
+`sufi-platform/modules/blob-database/`
 
 ## Quick facts
 
@@ -15,5 +15,5 @@
 
 ## Start in source
 
-- `SufiChain.SufiAbp.BlobStoring.Database.Domain` — `DatabaseBlob`, `DatabaseBlobProvider`
+- `SufiChain.SufiPlatform.BlobStoring.Database.Domain` — `DatabaseBlob`, `DatabaseBlobProvider`
 - Used by File Manager when database storage is configured

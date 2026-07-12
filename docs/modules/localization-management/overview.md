@@ -17,6 +17,6 @@ This module is part of the configuration and operations toolset. It complements 
 
 Open these packages first:
 
-- `SufiChain.SufiAbp.LocalizationManagement.Blazor` for the resource and text management pages
-- `SufiChain.SufiAbp.LocalizationManagement.Application` and `.Application.Contracts` for service workflows and contracts
-- `SufiChain.SufiAbp.LocalizationManagement.Domain`, `.EntityFrameworkCore`, and `.MongoDB` for persisted localization data
+- `SufiChain.SufiPlatform.LocalizationManagement.Blazor` for the resource and text management pages
+- `SufiChain.SufiPlatform.LocalizationManagement.Application` and `.Application.Contracts` for service workflows and contracts
+- `SufiChain.SufiPlatform.LocalizationManagement.Domain`, `.EntityFrameworkCore`, and `.MongoDB` for persisted localization data

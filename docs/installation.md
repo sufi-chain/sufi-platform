@@ -14,7 +14,7 @@ Use this page when you want the shortest path from an empty machine to a generat
 ### From NuGet.org
 
 ```bash
-dotnet tool install --global SufiChain.SufiAbp.CLI
+dotnet tool install --global SufiChain.SufiPlatform.CLI
 sufi --version
 ```
 
@@ -26,7 +26,7 @@ If your environment uses the SufiChain package feed:
 dotnet nuget add source https://nuget.sabp.ir/v3/index.json \
   --name SufiChain
 
-dotnet tool install --global SufiChain.SufiAbp.CLI --add-source SufiChain
+dotnet tool install --global SufiChain.SufiPlatform.CLI --add-source SufiChain
 sufi --version
 ```
 
@@ -105,7 +105,7 @@ Most generated solutions include authentication, identity management, optional m
 ## Common commands
 
 ```bash
-dotnet tool update --global SufiChain.SufiAbp.CLI
+dotnet tool update --global SufiChain.SufiPlatform.CLI
 sufi new --list-modules
 sufi help
 sufi new --help
