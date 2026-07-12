@@ -2,7 +2,7 @@
 @using Microsoft.Extensions.Hosting
 @using Microsoft.Extensions.Localization
 @using Volo.Abp.Localization
-@using SufiChain.KomTheme.Blazor.Server.Bundling
+@using SufiChain.SufiTheme.Blazor.Server.Bundling
 @using SufiChain.SufiAbp.UI.Blazor.Server.Components
 @using SufiChain.SufiAbp.UI.Localization
 @using static Microsoft.AspNetCore.Components.Web.RenderMode
@@ -20,7 +20,7 @@
     <title>DemoApp</title>
     <base href="/" />
 
-    <SufiAbpStyles BundleName="@BlazorKomThemeBundles.Styles.Global" />
+    <SufiAbpStyles BundleName="@BlazorSufiThemeBundles.Styles.Global" />
 
     <link href="MyCompanyName.MyProjectName.Blazor.WebApp.styles.css" rel="stylesheet"/>
     <!-- <TEMPLATE-REMOVE IF-NOT="module:sufi-blazor-demo"> -->
@@ -47,7 +47,7 @@
         <a class="dismiss">🗙</a>
     </div>
 
-    <SufiAbpScripts BundleName="@BlazorKomThemeBundles.Scripts.Global" />
+    <SufiAbpScripts BundleName="@BlazorSufiThemeBundles.Scripts.Global" />
 
     <script src="_framework/blazor.web.js"></script>
 

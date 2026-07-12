@@ -1,13 +1,13 @@
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Microsoft.Extensions.DependencyInjection;
+using Volo.Abp.Autofac.WebAssembly;
 // <TEMPLATE-REMOVE IF-NOT="module:file-manager">
 using SufiChain.SufiAbp.FileManager.Blazor;
 using SufiChain.SufiAbp.FileManager.Blazor.WebAssembly;
 // </TEMPLATE-REMOVE>
-using SufiChain.KomTheme.Blazor.WebAssembly;
+using SufiChain.SufiTheme.Blazor.WebAssembly;
 using SufiChain.SufiAbp.UI.Navigation;
 using SufiChain.SufiAbp.UI.Routing;
-using SufiChain.SufiAbp.Autofac.WebAssembly;
 using Volo.Abp.Modularity;
 using MyCompanyName.MyProjectName.Blazor.WebSite.Client.Menus;
 
@@ -23,10 +23,10 @@ namespace MyCompanyName.MyProjectName.Blazor.WebSite.Client;
 /// - Uses public menu contributor
 /// </summary>
 [DependsOn(
-    typeof(SufiAbpAutofacWebAssemblyModule),
+    typeof(AbpAutofacWebAssemblyModule),
     typeof(DemoAppHttpApiClientModule),
     // SufiAbp Theme & UI Modules for WebAssembly
-    typeof(KomThemeBlazorWebAssemblyModule),
+    typeof(SufiThemeBlazorWebAssemblyModule),
     // <TEMPLATE-REMOVE IF-NOT="module:file-manager">
     // File Manager Module (for public file access)
     typeof(SufiAbpFileManagerBlazorModule),

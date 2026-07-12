@@ -2,7 +2,6 @@
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using SufiChain.SufiAbp.AI;
 using SufiChain.SufiAbp.AuditLogging;
-using SufiChain.SufiAbp.BackgroundJobs;
 using SufiChain.SufiAbp.FeatureManagement;
 using SufiChain.SufiAbp.Identity;
 using SufiChain.SufiAbp.OpenIddict;

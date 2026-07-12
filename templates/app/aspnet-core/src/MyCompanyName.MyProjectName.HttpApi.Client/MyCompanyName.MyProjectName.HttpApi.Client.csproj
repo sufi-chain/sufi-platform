@@ -8,7 +8,7 @@
 	</PropertyGroup>
 	<ItemGroup>
 		<PackageReference Include="SufiChain.SufiAbp.Core" Version="$(SufiVersion)" />
-		<PackageReference Include="SufiChain.SufiAbp.Http.Client" Version="$(SufiVersion)" />
+		<PackageReference Include="Volo.Abp.Http.Client" Version="$(AbpVersion)" />
 		<PackageReference Include="SufiChain.SufiAbp.Calendar.Application.Contracts" Version="$(SufiVersion)" />
 		<PackageReference Include="SufiChain.SufiAbp.LocalizationManagement.Application.Contracts" Version="$(SufiVersion)" />
 		<PackageReference Include="SufiChain.SufiAbp.AI.Application.Contracts" Version="$(SufiVersion)" />

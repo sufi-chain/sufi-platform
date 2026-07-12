@@ -1,5 +1,11 @@
-﻿using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.OAuth.Claims;
+using Volo.Abp.Autofac;
+using Volo.Abp.AspNetCore.MultiTenancy;
+using Volo.Abp.AspNetCore.Authentication.OAuth;
+using Volo.Abp.Swashbuckle;
+using Volo.Abp.AspNetCore.Serilog;
+using Volo.Abp.Caching;
 // </TEMPLATE-REMOVE>
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Identity;
@@ -12,12 +18,10 @@ using SufiChain.SufiAbp.Account;
 using SufiChain.SufiAbp.Account.Blazor;
 using SufiChain.SufiAbp.AI;
 using SufiChain.SufiAbp.AI.Blazor;
-using SufiChain.SufiAbp.AspNetCore.Authentication.OAuth;
 using SufiChain.SufiAbp.AspNetCore.Authentication.OpenIdConnect;
 using SufiChain.SufiAbp.AspNetCore.Authentication.Server;
 using SufiChain.SufiAbp.AuditLogging;
 using SufiChain.SufiAbp.AuditLogging.Blazor;
-using SufiChain.SufiAbp.BackgroundJobs;
 using SufiChain.SufiAbp.BackgroundJobs.Blazor;
 using SufiChain.SufiAbp.FeatureManagement;
 using SufiChain.SufiAbp.FeatureManagement.Blazor;
@@ -41,7 +45,6 @@ using SufiChain.SufiAbp.ShortLinkGenerator;
 using SufiChain.SufiAbp.TagsManagement;
 using SufiChain.SufiAbp.TenantManagement;
 using SufiChain.SufiAbp.TenantManagement.Blazor;
-using SufiChain.SufiAbp.UI;
 using SufiChain.SufiAbp.MenuManagement;
 using SufiChain.SufiAbp.MenuManagement.Blazor;
 using SufiChain.SufiAbp.MenuManagement.Blazor.Server;
@@ -57,11 +60,11 @@ using SufiChain.SufiAbp.UI.Bundling;
 using SufiChain.SufiAbp.UI.Navigation;
 using SufiChain.SufiAbp.UI.Routing;
 using SufiChain.SufiAbp.UI.Toolbars;
-using SufiChain.KomTheme;
-using SufiChain.KomTheme.Blazor.Server;
+using SufiChain.SufiTheme;
+using SufiChain.SufiTheme.Blazor.Server;
 // <TEMPLATE-REMOVE IF-NOT="module:tenant-management">
 // </TEMPLATE-REMOVE>
-using SufiChain.KomTheme.Blazor.Server.Bundling;
+using SufiChain.SufiTheme.Blazor.Server.Bundling;
 using SufiChain.SufiBlazor;
 // <TEMPLATE-REMOVE IF-NOT="module:sufi-blazor-demo">
 using SufiChain.SufiBlazor.Demo;
@@ -74,12 +77,7 @@ using MyCompanyName.MyProjectName.EntityFrameworkCore;
 using MyCompanyName.MyProjectName.Localization;
 using MyCompanyName.MyProjectName.Menus;
 using MyCompanyName.MyProjectName.MultiTenancy;
-using SufiChain.SufiAbp.AspNetCore.MultiTenancy;
-using SufiChain.SufiAbp.AspNetCore.Serilog;
-using SufiChain.SufiAbp.Autofac;
-using SufiChain.SufiAbp.Caching;
 // <TEMPLATE-REMOVE IF-NOT="arch:single">
-using SufiChain.SufiAbp.Swashbuckle;
 // </TEMPLATE-REMOVE>
 using Volo.Abp;
 using Volo.Abp.AspNetCore.Mvc;
@@ -109,6 +107,8 @@ using Volo.Abp.UI.Navigation.Urls;
 using Volo.Abp.Uow;
 using Volo.Abp.VirtualFileSystem;
 
+using SufiChain.SufiAbp.UI;
+
 namespace MyCompanyName.MyProjectName;
 
 /// <summary>
@@ -129,18 +129,18 @@ namespace MyCompanyName.MyProjectName;
     // =========================================================================
     // Core ABP Framework
     // =========================================================================
-    typeof(SufiAbpAutofacModule),
-    typeof(SufiAbpCachingModule),
-    typeof(SufiAbpAspNetCoreMultiTenancyModule),
-    typeof(SufiAbpAspNetCoreSerilogModule),
+    typeof(AbpAutofacModule),
+    typeof(AbpCachingModule),
+    typeof(AbpAspNetCoreMultiTenancyModule),
+    typeof(AbpAspNetCoreSerilogModule),
     // <TEMPLATE-REMOVE IF-NOT="arch:single">
-    typeof(SufiAbpSwashbuckleModule),
+    typeof(AbpSwashbuckleModule),
     // </TEMPLATE-REMOVE>
     // =========================================================================
     // OpenIddict & Authentication
     // =========================================================================
 	    typeof(SufiAbpAuthenticationOpenIdConnectModule),
-	    typeof(SufiAbpAspNetCoreAuthenticationOAuthModule),
+	    typeof(AbpAspNetCoreAuthenticationOAuthModule),
     typeof(SufiAbpAuthenticationServerModule),
     typeof(SufiAbpAccountBlazorModule),
     typeof(SufiAbpAccountApplicationModule),
@@ -201,9 +201,9 @@ namespace MyCompanyName.MyProjectName;
     // <TEMPLATE-REMOVE IF-NOT="db:mongodb">
     // </TEMPLATE-REMOVE>
     // =========================================================================
-    // KomTheme using SufiBlazor design system
+    // SufiTheme using SufiBlazor design system
     // =========================================================================
-    typeof(KomThemeBlazorServerModule),
+    typeof(SufiThemeBlazorServerModule),
     typeof(SufiAIBlazorModule),
     typeof(SufiAIApplicationModule),
     typeof(SufiAIHttpApiModule),
@@ -412,7 +412,7 @@ public class DemoAppModule : AbpModule
     {
         Configure<BundleOptions>(options =>
         {
-            options.StyleBundles.Add(BlazorKomThemeBundles.Styles.Global, "/blazor-global-styles.css");
+            options.StyleBundles.Add(BlazorSufiThemeBundles.Styles.Global, "/blazor-global-styles.css");
         });
     }
 
@@ -448,9 +448,9 @@ public class DemoAppModule : AbpModule
                         $"..{Path.DirectorySeparatorChar}MyCompanyName.MyProjectName.Contracts"));
                 options.FileSets.ReplaceEmbeddedByPhysical<DemoAppModule>(hostingEnvironment.ContentRootPath);
                 // <TEMPLATE-REMOVE>
-                options.FileSets.ReplaceEmbeddedByPhysical<KomThemeBlazorServerModule>(
+                options.FileSets.ReplaceEmbeddedByPhysical<SufiThemeBlazorServerModule>(
                     Path.Combine(hostingEnvironment.ContentRootPath,
-                        $"..{Path.DirectorySeparatorChar}..{Path.DirectorySeparatorChar}..{Path.DirectorySeparatorChar}..{Path.DirectorySeparatorChar}..{Path.DirectorySeparatorChar}independent-projects{Path.DirectorySeparatorChar}kom-theme{Path.DirectorySeparatorChar}src{Path.DirectorySeparatorChar}SufiChain.KomTheme.Blazor.Server"));
+                        $"..{Path.DirectorySeparatorChar}..{Path.DirectorySeparatorChar}..{Path.DirectorySeparatorChar}..{Path.DirectorySeparatorChar}..{Path.DirectorySeparatorChar}independent-projects{Path.DirectorySeparatorChar}sufi-theme{Path.DirectorySeparatorChar}src{Path.DirectorySeparatorChar}SufiChain.SufiTheme.Blazor.Server"));
                 options.FileSets.ReplaceEmbeddedByPhysical<SufiAbpAccountBlazorModule>(
                     Path.Combine(hostingEnvironment.ContentRootPath,
                         $"..{Path.DirectorySeparatorChar}..{Path.DirectorySeparatorChar}..{Path.DirectorySeparatorChar}..{Path.DirectorySeparatorChar}..{Path.DirectorySeparatorChar}src{Path.DirectorySeparatorChar}modules{Path.DirectorySeparatorChar}account{Path.DirectorySeparatorChar}src{Path.DirectorySeparatorChar}SufiChain.SufiAbp.Account.Blazor"));
@@ -493,9 +493,9 @@ public class DemoAppModule : AbpModule
             options.AdditionalAssemblies.Add(typeof(DemoAppClientModule).Assembly);
         });
 
-        Configure<KomThemeBlazorOptions>(options =>
+        Configure<SufiThemeBlazorOptions>(options =>
         {
-            options.Layout = KomLayouts.DualSidebar;
+            options.Layout = SufiLayouts.DualSidebar;
             options.IconRailDarkMode = true;
             options.ExpandOnHover = true;
             options.MobileShortcuts.Add(new MobileMenuShortcut(

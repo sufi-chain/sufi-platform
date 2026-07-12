@@ -9,16 +9,19 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using OpenIddict.Validation.AspNetCore;
 using SufiChain.SufiAbp.AspNetCore;
-using SufiChain.SufiAbp.AspNetCore.Authentication.OAuth;
 using SufiChain.SufiAbp.AspNetCore.Authentication.OpenIdConnect;
 using SufiChain.SufiAbp.AspNetCore.Authentication.Server;
 using SufiChain.SufiAbp.Identity;
 using SufiChain.SufiAbp.Account.Blazor;
+using Volo.Abp.Autofac;
+using Volo.Abp.AspNetCore.MultiTenancy;
+using Volo.Abp.AspNetCore.Authentication.OAuth;
+using Volo.Abp.AspNetCore.Serilog;
 // <TEMPLATE-REMOVE IF-NOT="module:tenant-management">
 using SufiChain.SufiAbp.TenantManagement;
 // </TEMPLATE-REMOVE>
-using SufiChain.KomTheme;
-using SufiChain.KomTheme.Blazor.Server;
+using SufiChain.SufiTheme;
+using SufiChain.SufiTheme.Blazor.Server;
 using SufiChain.SufiAbp.UI.Blazor.Server.MultiTenancy;
 using SufiChain.SufiAbp.UI.Routing;
 using System;
@@ -26,9 +29,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Volo.Abp;
-using SufiChain.SufiAbp.AspNetCore.MultiTenancy;
-using SufiChain.SufiAbp.AspNetCore.Serilog;
-using SufiChain.SufiAbp.Autofac;
 using SufiChain.SufiAbp.Account;
 using SufiChain.SufiAbp.PermissionManagement;
 using Volo.Abp.AspNetCore.Mvc;
@@ -53,22 +53,22 @@ using MyCompanyName.MyProjectName.MultiTenancy;
 namespace MyCompanyName.MyProjectName
 {
     [DependsOn(
-        typeof(SufiAbpAutofacModule),
-        typeof(SufiAbpAspNetCoreMultiTenancyModule),
+        typeof(AbpAutofacModule),
+        typeof(AbpAspNetCoreMultiTenancyModule),
         typeof(SufiAbpAspNetCoreModule),
         typeof(DemoAppApplicationModule),
         typeof(DemoAppMongoDbModule),
         // OpenIddict authorization endpoints (authorize, token, logout)
         typeof(SufiAbpAuthenticationOpenIdConnectModule),
         // OAuth external logins (Google, Microsoft, Facebook) - provides MapAbpClaimTypes
-        typeof(SufiAbpAspNetCoreAuthenticationOAuthModule),
+        typeof(AbpAspNetCoreAuthenticationOAuthModule),
         // SufiAbp Account controller (complete-login, OIDC Login/Logout, ExternalLogin)
         typeof(SufiAbpAuthenticationServerModule),
         // Blazor Server theme for rendering auth UI pages
-        typeof(KomThemeBlazorServerModule),
+        typeof(SufiThemeBlazorServerModule),
         // Account Blazor pages (Login, Register, etc.)
         typeof(SufiAbpAccountBlazorModule),
-        typeof(SufiAbpAspNetCoreSerilogModule),
+        typeof(AbpAspNetCoreSerilogModule),
         // Identity services for credential validation (SignInManager, UserManager)
         typeof(SufiAbpIdentityApplicationModule),
         typeof(SufiAbpIdentityHttpApiModule),
@@ -226,9 +226,9 @@ namespace MyCompanyName.MyProjectName
                             $"..{Path.DirectorySeparatorChar}MyCompanyName.MyProjectName.Application"));
                     // <TEMPLATE-REMOVE>
                     // Theme modules for hot reload during development
-                    options.FileSets.ReplaceEmbeddedByPhysical<KomThemeBlazorServerModule>(
+                    options.FileSets.ReplaceEmbeddedByPhysical<SufiThemeBlazorServerModule>(
                         Path.Combine(hostingEnvironment.ContentRootPath,
-                            $"..{Path.DirectorySeparatorChar}..{Path.DirectorySeparatorChar}..{Path.DirectorySeparatorChar}..{Path.DirectorySeparatorChar}..{Path.DirectorySeparatorChar}src{Path.DirectorySeparatorChar}modules{Path.DirectorySeparatorChar}sufi-theme{Path.DirectorySeparatorChar}src{Path.DirectorySeparatorChar}SufiChain.KomTheme.Blazor.Server"));
+                            $"..{Path.DirectorySeparatorChar}..{Path.DirectorySeparatorChar}..{Path.DirectorySeparatorChar}..{Path.DirectorySeparatorChar}..{Path.DirectorySeparatorChar}src{Path.DirectorySeparatorChar}modules{Path.DirectorySeparatorChar}sufi-theme{Path.DirectorySeparatorChar}src{Path.DirectorySeparatorChar}SufiChain.SufiTheme.Blazor.Server"));
                     options.FileSets.ReplaceEmbeddedByPhysical<SufiAbpAccountBlazorModule>(
                         Path.Combine(hostingEnvironment.ContentRootPath,
                             $"..{Path.DirectorySeparatorChar}..{Path.DirectorySeparatorChar}..{Path.DirectorySeparatorChar}..{Path.DirectorySeparatorChar}..{Path.DirectorySeparatorChar}src{Path.DirectorySeparatorChar}modules{Path.DirectorySeparatorChar}account{Path.DirectorySeparatorChar}src{Path.DirectorySeparatorChar}SufiChain.SufiAbp.Account.Blazor"));
@@ -246,10 +246,10 @@ namespace MyCompanyName.MyProjectName
                 options.AdditionalAssemblies.Add(typeof(SufiAbpAccountBlazorModule).Assembly);
             });
 
-            // Configure KomTheme to use DualSidebar layout with modern dual sidebar pattern
-            Configure<KomThemeBlazorOptions>(options =>
+            // Configure SufiTheme to use DualSidebar layout with modern dual sidebar pattern
+            Configure<SufiThemeBlazorOptions>(options =>
             {
-                options.Layout = KomLayouts.DualSidebar;
+                options.Layout = SufiLayouts.DualSidebar;
                 options.IconRailDarkMode = true;
                 options.ExpandOnHover = true;
             });

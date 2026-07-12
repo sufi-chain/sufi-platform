@@ -4,7 +4,6 @@ using SufiChain.SufiAbp.Identity;
 using SufiChain.SufiAbp.PermissionManagement;
 using SufiChain.SufiAbp.SettingManagement;
 using SufiChain.SufiAbp.TenantManagement;
-using SufiChain.SufiAbp.ObjectExtending;
 using Volo.Abp.ObjectExtending;
 using Volo.Abp.Modularity;
 
@@ -18,7 +17,7 @@ namespace MyCompanyName.MyProjectName
         typeof(SufiAbpPermissionManagementApplicationContractsModule),
         typeof(SufiAbpSettingManagementApplicationContractsModule),
         typeof(SufiAbpTenantManagementApplicationContractsModule),
-        typeof(SufiAbpObjectExtendingModule)
+        typeof(AbpObjectExtendingModule)
     )]
     public class DemoAppApplicationContractsModule : AbpModule
     {

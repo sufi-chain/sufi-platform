@@ -100,8 +100,8 @@ public partial class IndexBase : SufiAbpComponentBase
             new FeatureItem
             {
                 Icon = "palette",
-                Title = L["Index:ModuleKomTheme"].Value.Split('—')[0].Trim(),
-                Description = L["Index:ModuleKomTheme"].Value.Split('—')[1].Trim()
+                Title = L["Index:ModuleSufiTheme"].Value.Split('—')[0].Trim(),
+                Description = L["Index:ModuleSufiTheme"].Value.Split('—')[1].Trim()
             }
         };
     }

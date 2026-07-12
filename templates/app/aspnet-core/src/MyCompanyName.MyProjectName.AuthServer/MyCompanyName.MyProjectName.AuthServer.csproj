@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-16"?>
+<?xml version="1.0" encoding="utf-16"?>
 <Project Sdk="Microsoft.NET.Sdk.Web">
   <PropertyGroup>
     <LangVersion>latest</LangVersion>
@@ -12,9 +12,9 @@
     <PackageReference Include="Serilog.AspNetCore" Version="$(SerilogAspNetCoreVersion)" />
     <PackageReference Include="Serilog.Sinks.Async" Version="$(SerilogSinksAsyncVersion)" />
     <PackageReference Include="SufiChain.SufiAbp.Core" Version="$(SufiVersion)" />
-    <PackageReference Include="SufiChain.SufiAbp.AspNetCore.MultiTenancy" Version="$(SufiVersion)" />
-    <PackageReference Include="SufiChain.SufiAbp.Autofac" Version="$(SufiVersion)" />
-    <PackageReference Include="SufiChain.SufiAbp.AspNetCore.Serilog" Version="$(SufiVersion)" />
+    <PackageReference Include="Volo.Abp.AspNetCore.MultiTenancy" Version="$(AbpVersion)" />
+    <PackageReference Include="Volo.Abp.Autofac" Version="$(AbpVersion)" />
+    <PackageReference Include="Volo.Abp.AspNetCore.Serilog" Version="$(AbpVersion)" />
   </ItemGroup>
   <ItemGroup>
     <!-- Demo app project references (always needed for direct DB access + credential validation) -->
@@ -27,11 +27,11 @@
     <ProjectReference Include="..\..\..\..\..\framework\SufiChain.SufiAbp.AspNetCore\SufiChain.SufiAbp.AspNetCore.csproj" />
     <!-- Framework OpenIddict authorization endpoints -->
     <ProjectReference Include="..\..\..\..\..\framework\SufiChain.SufiAbp.AspNetCore.Authentication.OpenIdConnect\SufiChain.SufiAbp.AspNetCore.Authentication.OpenIdConnect.csproj" />
-    <ProjectReference Include="..\..\..\..\..\framework\SufiChain.SufiAbp.AspNetCore.Authentication.OAuth\SufiChain.SufiAbp.AspNetCore.Authentication.OAuth.csproj" />
-    <!-- Framework SufiAbp Account controller (complete-login, OIDC Login/Logout) -->
+    <PackageReference Include="Volo.Abp.AspNetCore.Authentication.OAuth" Version="$(AbpVersion)" />
+<!-- Framework SufiAbp Account controller (complete-login, OIDC Login/Logout) -->
     <ProjectReference Include="..\..\..\..\..\framework\SufiChain.SufiAbp.AspNetCore.Authentication.Server\SufiChain.SufiAbp.AspNetCore.Authentication.Server.csproj" />
     <!-- Blazor Server theme for rendering auth UI pages -->
-    <ProjectReference Include="..\..\..\..\..\independent-projects\kom-theme\src\SufiChain.KomTheme.Blazor.Server\SufiChain.KomTheme.Blazor.Server.csproj" />
+    <ProjectReference Include="..\..\..\..\..\independent-projects\sufi-theme\src\SufiChain.SufiTheme.Blazor.Server\SufiChain.SufiTheme.Blazor.Server.csproj" />
     <!-- SufiBlazor: required for Account Blazor (Login, Register, AccountLayout) -->
     <ProjectReference Include="..\..\..\..\..\independent-projects\sufi-blazor\src\SufiChain.SufiBlazor\SufiChain.SufiBlazor.csproj" />
     <ProjectReference Include="..\..\..\..\..\modules\account\src\SufiChain.SufiAbp.Account.Blazor\SufiChain.SufiAbp.Account.Blazor.csproj" />
@@ -59,7 +59,7 @@
   <ItemGroup>
     <PackageReference Include="SufiChain.SufiAbp.AspNetCore.Authentication.OpenIdConnect" Version="$(SufiVersion)" />
     <PackageReference Include="SufiChain.SufiAbp.AspNetCore.Authentication.Server" Version="$(SufiVersion)" />
-    <PackageReference Include="SufiChain.KomTheme.Blazor.Server" Version="$(KomThemeVersion)" />
+    <PackageReference Include="SufiChain.SufiTheme.Blazor.Server" Version="$(SufiThemeVersion)" />
     <PackageReference Include="SufiChain.SufiBlazor" Version="$(SufiBlazorVersion)" />
     <PackageReference Include="SufiChain.SufiAbp.Account.Blazor" Version="$(SufiVersion)" />
     <PackageReference Include="SufiChain.SufiAbp.Identity.Application" Version="$(SufiVersion)" />

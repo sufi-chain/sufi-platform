@@ -3,7 +3,7 @@
 @using Microsoft.Extensions.Hosting
 @using Microsoft.Extensions.Localization
 @using Volo.Abp.Localization
-@using SufiChain.KomTheme.Blazor.Server.Bundling
+@using SufiChain.SufiTheme.Blazor.Server.Bundling
 @using SufiChain.SufiAbp.UI.Blazor.Server.Components
 @using SufiChain.SufiAbp.UI.Localization
 @inject IHostEnvironment Env
@@ -21,7 +21,7 @@
     <title>MyCompanyName.MyProjectName - Authentication</title>
     <base href="/" />
 
-    <SufiAbpStyles BundleName="@BlazorKomThemeBundles.Styles.Global" />
+    <SufiAbpStyles BundleName="@BlazorSufiThemeBundles.Styles.Global" />
 
     @* Scoped CSS bundle *@
     <link href="MyCompanyName.MyProjectName.AuthServer.styles.css" rel="stylesheet"/>
@@ -60,7 +60,7 @@
         <a class="dismiss">🗙</a>
     </div>
 
-    <SufiAbpScripts BundleName="@BlazorKomThemeBundles.Scripts.Global" />
+    <SufiAbpScripts BundleName="@BlazorSufiThemeBundles.Scripts.Global" />
 
     <script src="_framework/blazor.web.js"></script>
 

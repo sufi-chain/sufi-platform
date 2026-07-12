@@ -1,7 +1,5 @@
-using SufiChain.SufiAbp.UI;
 using MyCompanyName.MyProjectName.Localization;
 using SufiChain.SufiAbp.AuditLogging;
-using SufiChain.SufiAbp.BackgroundJobs;
 using SufiChain.SufiAbp.FeatureManagement;
 using SufiChain.SufiAbp.Identity;
 using Volo.Abp.Localization;
@@ -16,6 +14,8 @@ using SufiChain.SufiAbp.TenantManagement;
 using SufiChain.SufiAbp.MenuManagement;
 using Volo.Abp.VirtualFileSystem;
 using SufiChain.SufiAbp.UI.Localization;
+
+using SufiChain.SufiAbp.UI;
 
 namespace MyCompanyName.MyProjectName
 {

@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-16"?>
+<?xml version="1.0" encoding="utf-16"?>
 <Project Sdk="Microsoft.NET.Sdk.Web">
   <PropertyGroup>
     <LangVersion>latest</LangVersion>
@@ -18,15 +18,15 @@
   </ItemGroup>
   <!-- <TEMPLATE-REMOVE> -->
   <ItemGroup>
-    <ProjectReference Include="..\..\..\..\..\framework\SufiChain.SufiAbp.Caching.StackExchangeRedis\SufiChain.SufiAbp.Caching.StackExchangeRedis.csproj" />
-    <ProjectReference Include="..\..\..\..\..\framework\SufiChain.SufiAbp.AspNetCore.Mvc.Client\SufiChain.SufiAbp.AspNetCore.Mvc.Client.csproj" />
-    <ProjectReference Include="..\..\..\..\..\framework\SufiChain.SufiAbp.Http.Client.IdentityModel.Web\SufiChain.SufiAbp.Http.Client.IdentityModel.Web.csproj" />
-    <ProjectReference Include="..\..\..\..\..\framework\SufiChain.SufiAbp.Autofac\SufiChain.SufiAbp.Autofac.csproj" />
-    <ProjectReference Include="..\..\..\..\..\framework\SufiChain.SufiAbp.Swashbuckle\SufiChain.SufiAbp.Swashbuckle.csproj" />
-    <ProjectReference Include="..\..\..\..\..\framework\SufiChain.SufiAbp.AspNetCore.MultiTenancy\SufiChain.SufiAbp.AspNetCore.MultiTenancy.csproj" />
-    <ProjectReference Include="..\..\..\..\..\framework\SufiChain.SufiAbp.AspNetCore.Serilog\SufiChain.SufiAbp.AspNetCore.Serilog.csproj" />
-    <!-- KomTheme with ABP module pattern, uses SufiBlazor design system -->
-    <ProjectReference Include="..\..\..\..\..\independent-projects\kom-theme\src\SufiChain.KomTheme.Blazor.Server\SufiChain.KomTheme.Blazor.Server.csproj" />
+    <PackageReference Include="Volo.Abp.Caching.StackExchangeRedis" Version="$(AbpVersion)" />
+    <PackageReference Include="Volo.Abp.AspNetCore.Mvc.Client" Version="$(AbpVersion)" />
+    <PackageReference Include="Volo.Abp.Http.Client.IdentityModel.Web" Version="$(AbpVersion)" />
+    <PackageReference Include="Volo.Abp.Autofac" Version="$(AbpVersion)" />
+    <PackageReference Include="Volo.Abp.Swashbuckle" Version="$(AbpVersion)" />
+    <PackageReference Include="Volo.Abp.AspNetCore.MultiTenancy" Version="$(AbpVersion)" />
+    <PackageReference Include="Volo.Abp.AspNetCore.Serilog" Version="$(AbpVersion)" />
+<!-- SufiTheme with ABP module pattern, uses SufiBlazor design system -->
+    <ProjectReference Include="..\..\..\..\..\independent-projects\sufi-theme\src\SufiChain.SufiTheme.Blazor.Server\SufiChain.SufiTheme.Blazor.Server.csproj" />
     <!-- SufiAbp UI Modules for Public Site -->
     <!-- Account Blazor - login/register pages for public site -->
     <ProjectReference Include="..\..\..\..\..\modules\account\src\SufiChain.SufiAbp.Account.Blazor\SufiChain.SufiAbp.Account.Blazor.csproj" />
@@ -44,7 +44,7 @@
   <!-- </TEMPLATE-REMOVE> -->
   <!-- <TEMPLATE-ONLY>
 	<ItemGroup>
-		<PackageReference Include="SufiChain.KomTheme.Blazor.Server" Version="$(KomThemeVersion)" />
+		<PackageReference Include="SufiChain.SufiTheme.Blazor.Server" Version="$(SufiThemeVersion)" />
 		<PackageReference Include="SufiChain.SufiAbp.Account.Blazor" Version="$(SufiVersion)" />
 		<PackageReference Include="SufiChain.SufiAbp.Identity.HttpApi.Client" Version="$(SufiVersion)" />
 		<PackageReference Include="SufiChain.SufiAbp.FileManager.Blazor" Version="$(SufiVersion)" />
@@ -57,14 +57,14 @@
     <PackageReference Include="SufiChain.SufiAbp.Core" Version="$(SufiVersion)" />
     <!-- Demo app project reference (always needed) -->
     <ProjectReference Include="..\MyCompanyName.MyProjectName.HttpApi.Client\MyCompanyName.MyProjectName.HttpApi.Client.csproj" />
-    <PackageReference Include="SufiChain.SufiAbp.Caching.StackExchangeRedis" Version="$(SufiVersion)" />
-    <PackageReference Include="SufiChain.SufiAbp.AspNetCore.Mvc.Client" Version="$(SufiVersion)" />
+    <PackageReference Include="Volo.Abp.Caching.StackExchangeRedis" Version="$(AbpVersion)" />
+    <PackageReference Include="Volo.Abp.AspNetCore.Mvc.Client" Version="$(AbpVersion)" />
     <PackageReference Include="SufiChain.SufiAbp.AspNetCore.Authentication.OpenIdConnect" Version="$(SufiVersion)" />
-    <PackageReference Include="SufiChain.SufiAbp.Http.Client.IdentityModel.Web" Version="$(SufiVersion)" />
-    <PackageReference Include="SufiChain.SufiAbp.Autofac" Version="$(SufiVersion)" />
-    <PackageReference Include="SufiChain.SufiAbp.Swashbuckle" Version="$(SufiVersion)" />
-    <PackageReference Include="SufiChain.SufiAbp.AspNetCore.MultiTenancy" Version="$(SufiVersion)" />
-    <PackageReference Include="SufiChain.SufiAbp.AspNetCore.Serilog" Version="$(SufiVersion)" />
+    <PackageReference Include="Volo.Abp.Http.Client.IdentityModel.Web" Version="$(AbpVersion)" />
+    <PackageReference Include="Volo.Abp.Autofac" Version="$(AbpVersion)" />
+    <PackageReference Include="Volo.Abp.Swashbuckle" Version="$(AbpVersion)" />
+    <PackageReference Include="Volo.Abp.AspNetCore.MultiTenancy" Version="$(AbpVersion)" />
+    <PackageReference Include="Volo.Abp.AspNetCore.Serilog" Version="$(AbpVersion)" />
     <!-- ABP Backend Application (keeps working with ABP's backend services) -->
     <PackageReference Include="SufiChain.SufiAbp.Identity.Application.Contracts" Version="$(SufiVersion)" />
   </ItemGroup>

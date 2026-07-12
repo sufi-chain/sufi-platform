@@ -12,11 +12,11 @@
     <PackageReference Include="Serilog.AspNetCore" Version="$(SerilogAspNetCoreVersion)" />
     <PackageReference Include="Serilog.Sinks.Async" Version="$(SerilogSinksAsyncVersion)" />
     <PackageReference Include="SufiChain.SufiAbp.Core" Version="$(SufiVersion)" />
-    <PackageReference Include="SufiChain.SufiAbp.AspNetCore.MultiTenancy" Version="$(SufiVersion)" />
-    <PackageReference Include="SufiChain.SufiAbp.Autofac" Version="$(SufiVersion)" />
-    <PackageReference Include="SufiChain.SufiAbp.AspNetCore.Authentication.JwtBearer" Version="$(SufiVersion)" />
-    <PackageReference Include="SufiChain.SufiAbp.AspNetCore.Serilog" Version="$(SufiVersion)" />
-    <PackageReference Include="SufiChain.SufiAbp.Swashbuckle" Version="$(SufiVersion)" />
+    <PackageReference Include="Volo.Abp.AspNetCore.MultiTenancy" Version="$(AbpVersion)" />
+    <PackageReference Include="Volo.Abp.Autofac" Version="$(AbpVersion)" />
+    <PackageReference Include="Volo.Abp.AspNetCore.Authentication.JwtBearer" Version="$(AbpVersion)" />
+    <PackageReference Include="Volo.Abp.AspNetCore.Serilog" Version="$(AbpVersion)" />
+    <PackageReference Include="Volo.Abp.Swashbuckle" Version="$(AbpVersion)" />
     <PackageReference Include="SufiChain.SufiAbp.BlobStoring.Database.EntityFrameworkCore" Version="$(SufiVersion)" />
   </ItemGroup>
 

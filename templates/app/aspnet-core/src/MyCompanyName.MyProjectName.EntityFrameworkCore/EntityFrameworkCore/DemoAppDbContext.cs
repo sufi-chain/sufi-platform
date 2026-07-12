@@ -26,7 +26,6 @@ using Volo.Abp.Data;
 using Volo.Abp.DependencyInjection;
 using Volo.Abp.EntityFrameworkCore;
 using SufiChain.SufiAbp.AuditLogging;
-using SufiChain.SufiAbp.BackgroundJobs;
 using SufiChain.SufiAbp.FeatureManagement;
 using SufiChain.SufiAbp.OpenIddict.Applications;
 using SufiChain.SufiAbp.OpenIddict.Authorizations;

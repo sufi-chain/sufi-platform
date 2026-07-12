@@ -2,8 +2,8 @@
 using SufiChain.SufiAbp.Account;
 using SufiChain.SufiAbp.AI;
 using SufiChain.SufiAbp.AuditLogging;
-using SufiChain.SufiAbp.BackgroundJobs;
 using SufiChain.SufiAbp.Calendar;
+using Volo.Abp.Autofac;
 // </TEMPLATE-REMOVE>
 // <TEMPLATE-REMOVE IF-NOT="db:mongodb">
 // using SufiChain.SufiAbp.BlobStoring.Database.MongoDB;
@@ -22,14 +22,13 @@ using MyCompanyName.MyProjectName.EntityFrameworkCore;
 // <TEMPLATE-REMOVE IF-NOT="db:mongodb">
 // using MyCompanyName.MyProjectName.MongoDB;
 // </TEMPLATE-REMOVE>
-using SufiChain.SufiAbp.Autofac;
 // <TEMPLATE-REMOVE IF-NOT="db:efcore">
 using Volo.Abp.Modularity;
 
 namespace MyCompanyName.MyProjectName.DbMigrator;
 
 [DependsOn(
-    typeof(SufiAbpAutofacModule),
+    typeof(AbpAutofacModule),
     typeof(DemoAppEntityFrameworkCoreModule),
     typeof(DemoAppApplicationContractsModule),
     // Load application contracts/providers so DbMigrator can seed every SufiAbp permission.

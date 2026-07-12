@@ -10,6 +10,13 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using Microsoft.OpenApi;
+using Volo.Abp.Http.Client.IdentityModel.Web;
+using Volo.Abp.Autofac;
+using Volo.Abp.Caching.StackExchangeRedis;
+using Volo.Abp.AspNetCore.Mvc.Client;
+using Volo.Abp.Swashbuckle;
+using Volo.Abp.AspNetCore.Serilog;
+using Volo.Abp.UI;
 // <TEMPLATE-REMOVE IF-NOT="module:file-manager">
 using SufiChain.SufiAbp.FileManager;
 using SufiChain.SufiAbp.FileManager.Blazor;
@@ -21,22 +28,14 @@ using SufiChain.SufiAbp.TenantManagement;
 // </TEMPLATE-REMOVE>
 using SufiChain.SufiAbp.UI.Blazor.Server.MultiTenancy;
 using Volo.Abp.AspNetCore.MultiTenancy;
-using SufiChain.KomTheme;
-using SufiChain.KomTheme.Blazor.Server;
-using SufiChain.KomTheme.Blazor.Server.Bundling;
-using SufiChain.SufiAbp.UI;
+using SufiChain.SufiTheme;
+using SufiChain.SufiTheme.Blazor.Server;
+using SufiChain.SufiTheme.Blazor.Server.Bundling;
 using SufiChain.SufiAbp.UI.Bundling;
 using SufiChain.SufiAbp.UI.Routing;
 using SufiChain.SufiAbp.UI.Toolbars;
 using StackExchange.Redis;
 using SufiChain.SufiAbp.AspNetCore.Authentication.OpenIdConnect;
-using SufiChain.SufiAbp.AspNetCore.Mvc.Client;
-using SufiChain.SufiAbp.AspNetCore.MultiTenancy;
-using SufiChain.SufiAbp.AspNetCore.Serilog;
-using SufiChain.SufiAbp.Autofac;
-using SufiChain.SufiAbp.Caching.StackExchangeRedis;
-using SufiChain.SufiAbp.Http.Client.IdentityModel.Web;
-using SufiChain.SufiAbp.Swashbuckle;
 using Volo.Abp;
 using Volo.Abp.AspNetCore.Mvc.Libs;
 using Volo.Abp.AspNetCore.Mvc.Localization;
@@ -63,15 +62,15 @@ namespace MyCompanyName.MyProjectName.Blazor.WebSite;
 /// </summary>
 [DependsOn(
     typeof(DemoAppHttpApiClientModule),
-    typeof(SufiAbpCachingStackExchangeRedisModule),
-    typeof(SufiAbpAspNetCoreMvcClientModule),
+    typeof(AbpCachingStackExchangeRedisModule),
+    typeof(AbpAspNetCoreMvcClientModule),
     typeof(SufiAbpAuthenticationOpenIdConnectModule),
-    typeof(SufiAbpHttpClientIdentityModelWebModule),
-    typeof(SufiAbpAutofacModule),
-    typeof(SufiAbpSwashbuckleModule),
-    typeof(SufiAbpAspNetCoreSerilogModule),
+    typeof(AbpHttpClientIdentityModelWebModule),
+    typeof(AbpAutofacModule),
+    typeof(AbpSwashbuckleModule),
+    typeof(AbpAspNetCoreSerilogModule),
     // SufiAbp UI ABP Integration - bridges ABP services (menus, languages, users, etc.) to SufiAbp UI
-    typeof(SufiAbpUIModule),
+    typeof(AbpUiModule),
     // SufiAbp UI Modules for Public Site
     // NOTE: SufiAbpAccountBlazorModule is NOT included here because auth pages
     // are served by the dedicated AuthServer host in tiered architecture.
@@ -86,11 +85,11 @@ namespace MyCompanyName.MyProjectName.Blazor.WebSite;
     // Tenant Management HTTP API Client (provides remote ITenantStore for tenant cookie resolution)
     typeof(SufiAbpTenantManagementHttpApiClientModule),
     // </TEMPLATE-REMOVE>
-    // KomTheme using SufiBlazor design system
+    // SufiTheme using SufiBlazor design system
     // NOTE: For CMS, this will be replaced with dynamic layout rendering
-    typeof(KomThemeBlazorServerModule),
+    typeof(SufiThemeBlazorServerModule),
     // ABP Multi-Tenancy (cookie/header/domain resolvers + middleware)
-    typeof(SufiAbpAspNetCoreMultiTenancyModule)
+    typeof(AbpAspNetCoreMultiTenancyModule)
 )]
 public class DemoAppBlazorWebSiteModule : AbpModule
 {
@@ -166,7 +165,7 @@ public class DemoAppBlazorWebSiteModule : AbpModule
         // Configure SufiAbp bundling for additional app-specific styles
         Configure<BundleOptions>(options =>
         {
-            options.StyleBundles.Add(BlazorKomThemeBundles.Styles.Global, "/blazor-global-styles.css");
+            options.StyleBundles.Add(BlazorSufiThemeBundles.Styles.Global, "/blazor-global-styles.css");
         });
     }
 
@@ -220,8 +219,8 @@ public class DemoAppBlazorWebSiteModule : AbpModule
                     Path.Combine(hostingEnvironment.ContentRootPath, $"..{Path.DirectorySeparatorChar}MyCompanyName.MyProjectName.Application.Contracts"));
                 options.FileSets.ReplaceEmbeddedByPhysical<DemoAppBlazorWebSiteModule>(hostingEnvironment.ContentRootPath);
                 // <TEMPLATE-REMOVE>
-                options.FileSets.ReplaceEmbeddedByPhysical<KomThemeBlazorServerModule>(
-                    Path.Combine(hostingEnvironment.ContentRootPath, $"..{Path.DirectorySeparatorChar}..{Path.DirectorySeparatorChar}..{Path.DirectorySeparatorChar}..{Path.DirectorySeparatorChar}..{Path.DirectorySeparatorChar}src{Path.DirectorySeparatorChar}modules{Path.DirectorySeparatorChar}sufi-theme{Path.DirectorySeparatorChar}src{Path.DirectorySeparatorChar}SufiChain.KomTheme.Blazor.Server"));
+                options.FileSets.ReplaceEmbeddedByPhysical<SufiThemeBlazorServerModule>(
+                    Path.Combine(hostingEnvironment.ContentRootPath, $"..{Path.DirectorySeparatorChar}..{Path.DirectorySeparatorChar}..{Path.DirectorySeparatorChar}..{Path.DirectorySeparatorChar}..{Path.DirectorySeparatorChar}src{Path.DirectorySeparatorChar}modules{Path.DirectorySeparatorChar}sufi-theme{Path.DirectorySeparatorChar}src{Path.DirectorySeparatorChar}SufiChain.SufiTheme.Blazor.Server"));
                 // Load SufiAbpFramework and FileManager localization from source so base-type fallback and fa/ar work in dev
                 options.FileSets.ReplaceEmbeddedByPhysical<UiDomainSharedModule>(
                     Path.Combine(hostingEnvironment.ContentRootPath, "..", "..", "..", "..", "..", "src", "framework", "src", "SufiChain.SufiAbp.UI.Domain.Shared"));
@@ -268,12 +267,12 @@ public class DemoAppBlazorWebSiteModule : AbpModule
             options.AppAssembly = typeof(DemoAppBlazorWebSiteModule).Assembly;
         });
         
-        // Configure KomTheme for public site
+        // Configure SufiTheme for public site
         // TODO: In future CMS implementation, this will be replaced with dynamic layout selection
         // based on the CMS page being rendered. For now, use a simple sidebar layout.
-        Configure<KomThemeBlazorOptions>(options =>
+        Configure<SufiThemeBlazorOptions>(options =>
         {
-            options.Layout = KomLayouts.TopMenu;
+            options.Layout = SufiLayouts.TopMenu;
             options.IconRailDarkMode = false;
             options.ExpandOnHover = true;
         });

@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-16"?>
+<?xml version="1.0" encoding="utf-16"?>
 <Project Sdk="Microsoft.NET.Sdk.Web">
   <PropertyGroup>
     <LangVersion>latest</LangVersion>
@@ -33,24 +33,24 @@
   </ItemGroup>
   <!-- <TEMPLATE-REMOVE> -->
   <ItemGroup>
-    <ProjectReference Include="..\..\..\..\..\independent-projects\kom-theme\src\SufiChain.KomTheme.Blazor.Server\SufiChain.KomTheme.Blazor.Server.csproj" />
+    <ProjectReference Include="..\..\..\..\..\independent-projects\sufi-theme\src\SufiChain.SufiTheme.Blazor.Server\SufiChain.SufiTheme.Blazor.Server.csproj" />
     <ProjectReference Include="..\..\..\..\..\independent-projects\sufi-blazor\src\SufiChain.SufiBlazor\SufiChain.SufiBlazor.csproj" />
-    <ProjectReference Include="..\..\..\..\..\framework\SufiChain.SufiAbp.ObjectExtending\SufiChain.SufiAbp.ObjectExtending.csproj" />
+    <PackageReference Include="Volo.Abp.ObjectExtending" Version="$(AbpVersion)" />
     <ProjectReference Include="..\..\..\..\..\framework\SufiChain.SufiAbp.Ddd.Application\SufiChain.SufiAbp.Ddd.Application.csproj" />
     <ProjectReference Include="..\..\..\..\..\framework\SufiChain.SufiAbp.UI.Blazor\SufiChain.SufiAbp.UI.Blazor.csproj" />
     <ProjectReference Include="..\..\..\..\..\framework\SufiChain.SufiAbp.UI.Blazor.Server\SufiChain.SufiAbp.UI.Blazor.Server.csproj" />
-    <ProjectReference Include="..\..\..\..\..\framework\SufiChain.SufiAbp.AspNetCore.Serilog\SufiChain.SufiAbp.AspNetCore.Serilog.csproj" />
-    <!-- <TEMPLATE-REMOVE IF-NOT="arch:single"> -->
-    <ProjectReference Include="..\..\..\..\..\framework\SufiChain.SufiAbp.Swashbuckle\SufiChain.SufiAbp.Swashbuckle.csproj" />
-    <!-- </TEMPLATE-REMOVE> -->
+    <PackageReference Include="Volo.Abp.AspNetCore.Serilog" Version="$(AbpVersion)" />
+<!-- <TEMPLATE-REMOVE IF-NOT="arch:single"> -->
+    <PackageReference Include="Volo.Abp.Swashbuckle" Version="$(AbpVersion)" />
+<!-- </TEMPLATE-REMOVE> -->
   </ItemGroup>
   <!-- </TEMPLATE-REMOVE> -->
   <!-- <TEMPLATE-REMOVE> -->
   <ItemGroup>
     <!-- Framework OpenIddict authorization endpoints -->
     <ProjectReference Include="..\..\..\..\..\framework\SufiChain.SufiAbp.AspNetCore.Authentication.OpenIdConnect\SufiChain.SufiAbp.AspNetCore.Authentication.OpenIdConnect.csproj" />
-    <ProjectReference Include="..\..\..\..\..\framework\SufiChain.SufiAbp.AspNetCore.Authentication.OAuth\SufiChain.SufiAbp.AspNetCore.Authentication.OAuth.csproj" />
-    <!-- Framework SufiAbp Account controller (complete-login, OIDC Login/Logout) -->
+    <PackageReference Include="Volo.Abp.AspNetCore.Authentication.OAuth" Version="$(AbpVersion)" />
+<!-- Framework SufiAbp Account controller (complete-login, OIDC Login/Logout) -->
     <ProjectReference Include="..\..\..\..\..\framework\SufiChain.SufiAbp.AspNetCore.Authentication.Server\SufiChain.SufiAbp.AspNetCore.Authentication.Server.csproj" />
     <!-- SufiAbp UI Modules (admin identity + account) -->
     <ProjectReference Include="..\..\..\..\..\modules\identity\src\SufiChain.SufiAbp.Identity.Blazor\SufiChain.SufiAbp.Identity.Blazor.csproj" />
@@ -119,9 +119,9 @@
   <!-- </TEMPLATE-REMOVE> -->
   <!-- <TEMPLATE-ONLY>
 	<ItemGroup>
-		<PackageReference Include="SufiChain.KomTheme.Blazor.Server" Version="$(KomThemeVersion)" />
+		<PackageReference Include="SufiChain.SufiTheme.Blazor.Server" Version="$(SufiThemeVersion)" />
 		<PackageReference Include="SufiChain.SufiAbp.UI.Blazor.Server" Version="$(SufiVersion)" />
-		<PackageReference Include="SufiChain.SufiAbp.AspNetCore.Authentication.OAuth" Version="$(SufiVersion)" />
+		<PackageReference Include="Volo.Abp.AspNetCore.Authentication.OAuth" Version="$(AbpVersion)" />
 		<PackageReference Include="SufiChain.SufiAbp.AspNetCore.Authentication.OpenIdConnect" Version="$(SufiVersion)" />
 		<PackageReference Include="SufiChain.SufiAbp.AspNetCore.Authentication.Server" Version="$(SufiVersion)" />
 		<PackageReference Include="SufiChain.SufiAbp.Identity.Blazor" Version="$(SufiVersion)" />
@@ -178,33 +178,33 @@
 	</ItemGroup>
 	</TEMPLATE-ONLY> -->
   <ItemGroup>
-    <PackageReference Include="SufiChain.SufiAbp.AspNetCore.MultiTenancy" Version="$(SufiVersion)" />
-    <PackageReference Include="SufiChain.SufiAbp.Autofac" Version="$(SufiVersion)" />
+    <PackageReference Include="Volo.Abp.AspNetCore.MultiTenancy" Version="$(AbpVersion)" />
+    <PackageReference Include="Volo.Abp.Autofac" Version="$(AbpVersion)" />
     <PackageReference Include="SufiChain.SufiAbp.Ddd.Application" Version="$(SufiVersion)" />
     <PackageReference Include="SufiChain.SufiAbp.UI.Blazor" Version="$(SufiVersion)" />
-    <PackageReference Include="SufiChain.SufiAbp.AspNetCore.Serilog" Version="$(SufiVersion)" />
+    <PackageReference Include="Volo.Abp.AspNetCore.Serilog" Version="$(AbpVersion)" />
     <!-- <TEMPLATE-REMOVE IF-NOT="arch:single"> -->
-    <PackageReference Include="SufiChain.SufiAbp.Swashbuckle" Version="$(SufiVersion)" />
+    <PackageReference Include="Volo.Abp.Swashbuckle" Version="$(AbpVersion)" />
     <!-- </TEMPLATE-REMOVE> -->
     <!-- <TEMPLATE-REMOVE IF-NOT="db:efcore"> -->
     <!-- <TEMPLATE-REMOVE IF-NOT="efp:sqlserver">
-		<PackageReference Include="SufiChain.SufiAbp.EntityFrameworkCore.SqlServer" Version="$(SufiVersion)" />
+		<PackageReference Include="Volo.Abp.EntityFrameworkCore.SqlServer" Version="$(AbpVersion)" />
 		 </TEMPLATE-REMOVE> -->
     <!-- <TEMPLATE-REMOVE IF-NOT="efp:postgresql">
-		<PackageReference Include="SufiChain.SufiAbp.EntityFrameworkCore.PostgreSql" Version="$(SufiVersion)" />
+		<PackageReference Include="Volo.Abp.EntityFrameworkCore.PostgreSql" Version="$(AbpVersion)" />
 		</TEMPLATE-REMOVE> -->
     <!-- <TEMPLATE-REMOVE IF-NOT="efp:mysql">
-		<PackageReference Include="SufiChain.SufiAbp.EntityFrameworkCore.MySQL" Version="$(SufiVersion)" />
+		<PackageReference Include="Volo.Abp.EntityFrameworkCore.MySQL" Version="$(AbpVersion)" />
 		</TEMPLATE-REMOVE> -->
     <!-- <TEMPLATE-REMOVE IF-NOT="efp:sqlite">
-		<PackageReference Include="SufiChain.SufiAbp.EntityFrameworkCore.Sqlite" Version="$(SufiVersion)" />
+		<PackageReference Include="Volo.Abp.EntityFrameworkCore.Sqlite" Version="$(AbpVersion)" />
 		</TEMPLATE-REMOVE> -->
     <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="$(AspNetCoreVersion)">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
     </PackageReference>
     <!-- </TEMPLATE-REMOVE> -->
-    <PackageReference Include="SufiChain.SufiAbp.Caching" Version="$(SufiVersion)" />
+    <PackageReference Include="Volo.Abp.Caching" Version="$(AbpVersion)" />
     <PackageReference Include="SufiChain.SufiAbp.Communications" Version="$(SufiVersion)" />
   </ItemGroup>
   <ItemGroup>

@@ -38,12 +38,12 @@
   </TEMPLATE-ONLY>
   <TEMPLATE-REMOVE>
     <ItemGroup>
-      <ProjectReference Include="..\..\..\..\..\framework\SufiChain.SufiAbp.ObjectExtending\SufiChain.SufiAbp.ObjectExtending.csproj" />
-    </ItemGroup>
+    <PackageReference Include="Volo.Abp.ObjectExtending" Version="$(AbpVersion)" />
+  </ItemGroup>
   </TEMPLATE-REMOVE>
   <TEMPLATE-ONLY>
     <ItemGroup>
-      <PackageReference Include="SufiChain.SufiAbp.ObjectExtending" Version="$(SufiVersion)" />
+      <PackageReference Include="Volo.Abp.ObjectExtending" Version="$(AbpVersion)" />
     </ItemGroup>
   </TEMPLATE-ONLY>
 </Project>

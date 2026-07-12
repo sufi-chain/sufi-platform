@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-16"?>
+<?xml version="1.0" encoding="utf-16"?>
 <Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
   <PropertyGroup>
     <LangVersion>latest</LangVersion>
@@ -18,20 +18,20 @@
   <ItemGroup>
     <ProjectReference Include="..\..\..\..\..\framework\SufiChain.SufiAbp.Core\SufiChain.SufiAbp.Core.csproj" />
     <ProjectReference Include="..\..\..\..\..\framework\SufiChain.SufiAbp.UI.Blazor\SufiChain.SufiAbp.UI.Blazor.csproj" />
-    <ProjectReference Include="..\..\..\..\..\framework\SufiChain.SufiAbp.Autofac.WebAssembly\SufiChain.SufiAbp.Autofac.WebAssembly.csproj" />
+    <PackageReference Include="Volo.Abp.Autofac.WebAssembly" Version="$(AbpVersion)" />
   </ItemGroup>
   <!-- </TEMPLATE-REMOVE> -->
   <!-- <TEMPLATE-ONLY>
 	<ItemGroup>
 		<PackageReference Include="SufiChain.SufiAbp.Core" Version="$(SufiVersion)" />
 		<PackageReference Include="SufiChain.SufiAbp.UI.Blazor" Version="$(SufiVersion)" />
-		<PackageReference Include="SufiChain.SufiAbp.Autofac.WebAssembly" Version="$(SufiVersion)" />
+		<PackageReference Include="Volo.Abp.Autofac.WebAssembly" Version="$(AbpVersion)" />
 	</ItemGroup>
 	</TEMPLATE-ONLY> -->
   <!-- <TEMPLATE-REMOVE> -->
   <ItemGroup>
     <!-- SufiAbp Theme using SufiBlazor (replaces ABP Blazor UI packages) -->
-    <ProjectReference Include="..\..\..\..\..\independent-projects\kom-theme\src\SufiChain.KomTheme.Blazor.WebAssembly\SufiChain.KomTheme.Blazor.WebAssembly.csproj" />
+    <ProjectReference Include="..\..\..\..\..\independent-projects\sufi-theme\src\SufiChain.SufiTheme.Blazor.WebAssembly\SufiChain.SufiTheme.Blazor.WebAssembly.csproj" />
     <!-- SufiAbp UI Modules (replacing ABP UI packages) -->
     <ProjectReference Include="..\..\..\..\..\modules\identity\src\SufiChain.SufiAbp.Identity.Blazor\SufiChain.SufiAbp.Identity.Blazor.csproj" />
     <ProjectReference Include="..\..\..\..\..\modules\tenant-management\src\SufiChain.SufiAbp.TenantManagement.Blazor\SufiChain.SufiAbp.TenantManagement.Blazor.csproj" />
@@ -42,7 +42,7 @@
   <!-- </TEMPLATE-REMOVE> -->
   <!-- <TEMPLATE-ONLY>
 	<ItemGroup>
-		<PackageReference Include="SufiChain.KomTheme.Blazor.WebAssembly" Version="$(KomThemeVersion)" />
+		<PackageReference Include="SufiChain.SufiTheme.Blazor.WebAssembly" Version="$(SufiThemeVersion)" />
 		<PackageReference Include="SufiChain.SufiAbp.Identity.Blazor" Version="$(SufiVersion)" />
 		<PackageReference Include="SufiChain.SufiAbp.TenantManagement.Blazor" Version="$(SufiVersion)" />
 		<PackageReference Include="SufiChain.SufiAbp.FileManager.Blazor" Version="$(SufiVersion)" />

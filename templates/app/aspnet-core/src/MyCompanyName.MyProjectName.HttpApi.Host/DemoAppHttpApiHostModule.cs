@@ -5,11 +5,15 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi;
 using SufiChain.SufiAbp.AI;
+using Volo.Abp.Autofac;
+using Volo.Abp.AspNetCore.MultiTenancy;
+using Volo.Abp.AspNetCore.Authentication.JwtBearer;
+using Volo.Abp.Swashbuckle;
+using Volo.Abp.AspNetCore.Serilog;
 // <TEMPLATE-REMOVE IF-NOT="module:audit-logging">
 using SufiChain.SufiAbp.AuditLogging;
 // </TEMPLATE-REMOVE>
 // <TEMPLATE-REMOVE IF-NOT="module:background-jobs">
-using SufiChain.SufiAbp.BackgroundJobs;
 // </TEMPLATE-REMOVE>
 using SufiChain.SufiAbp.Account;
 // <TEMPLATE-REMOVE IF-NOT="module:file-manager">
@@ -42,11 +46,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
-using SufiChain.SufiAbp.AspNetCore.Authentication.JwtBearer;
-using SufiChain.SufiAbp.AspNetCore.MultiTenancy;
-using SufiChain.SufiAbp.AspNetCore.Serilog;
-using SufiChain.SufiAbp.Autofac;
-using SufiChain.SufiAbp.Swashbuckle;
 // <TEMPLATE-REMOVE IF-NOT="db:efcore">
 using MyCompanyName.MyProjectName.EntityFrameworkCore;
 // </TEMPLATE-REMOVE>
@@ -65,12 +64,12 @@ namespace MyCompanyName.MyProjectName
 {
     [DependsOn(
         typeof(DemoAppHttpApiModule),
-        typeof(SufiAbpAutofacModule),
-        typeof(SufiAbpAspNetCoreMultiTenancyModule),
+        typeof(AbpAutofacModule),
+        typeof(AbpAspNetCoreMultiTenancyModule),
         typeof(DemoAppApplicationModule),
-        typeof(SufiAbpAspNetCoreAuthenticationJwtBearerModule),
-        typeof(SufiAbpAspNetCoreSerilogModule),
-        typeof(SufiAbpSwashbuckleModule),
+        typeof(AbpAspNetCoreAuthenticationJwtBearerModule),
+        typeof(AbpAspNetCoreSerilogModule),
+        typeof(AbpSwashbuckleModule),
         // <TEMPLATE-REMOVE IF-NOT="db:efcore">
         typeof(DemoAppEntityFrameworkCoreModule),
         // </TEMPLATE-REMOVE>

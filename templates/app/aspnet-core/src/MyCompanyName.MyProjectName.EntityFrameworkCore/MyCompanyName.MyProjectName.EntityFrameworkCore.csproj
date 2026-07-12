@@ -17,10 +17,10 @@
   <ItemGroup>
     <ProjectReference Include="..\..\..\..\..\src\framework\SufiChain.SufiAbp.Core\SufiChain.SufiAbp.Core.csproj" />
     <ProjectReference Include="..\..\..\..\..\src\framework\SufiChain.SufiAbp.Data\SufiChain.SufiAbp.Data.csproj" />
-    <ProjectReference Include="..\..\..\..\..\src\framework\SufiChain.SufiAbp.EntityFrameworkCore.SqlServer\SufiChain.SufiAbp.EntityFrameworkCore.SqlServer.csproj" />
-    <ProjectReference Include="..\..\..\..\..\src\framework\SufiChain.SufiAbp.EntityFrameworkCore.PostgreSql\SufiChain.SufiAbp.EntityFrameworkCore.PostgreSql.csproj" />
-    <ProjectReference Include="..\..\..\..\..\src\framework\SufiChain.SufiAbp.EntityFrameworkCore.MySQL\SufiChain.SufiAbp.EntityFrameworkCore.MySQL.csproj" />
-    <ProjectReference Include="..\..\..\..\..\src\framework\SufiChain.SufiAbp.EntityFrameworkCore.Sqlite\SufiChain.SufiAbp.EntityFrameworkCore.Sqlite.csproj" />
+    <PackageReference Include="Volo.Abp.EntityFrameworkCore.SqlServer" Version="$(AbpVersion)" />
+    <PackageReference Include="Volo.Abp.EntityFrameworkCore.PostgreSql" Version="$(AbpVersion)" />
+    <PackageReference Include="Volo.Abp.EntityFrameworkCore.MySQL" Version="$(AbpVersion)" />
+    <PackageReference Include="Volo.Abp.EntityFrameworkCore.Sqlite" Version="$(AbpVersion)" />
   </ItemGroup>
   </TEMPLATE-REMOVE>
 
@@ -29,16 +29,16 @@
     <PackageReference Include="SufiChain.SufiAbp.Core" Version="$(SufiVersion)" />
     <PackageReference Include="SufiChain.SufiAbp.Data" Version="$(SufiVersion)" />
     <TEMPLATE-REMOVE IF-NOT="efp:sqlserver">
-    <PackageReference Include="SufiChain.SufiAbp.EntityFrameworkCore.SqlServer" Version="$(SufiVersion)" />
+    <PackageReference Include="Volo.Abp.EntityFrameworkCore.SqlServer" Version="$(AbpVersion)" />
     </TEMPLATE-REMOVE>
     <TEMPLATE-REMOVE IF-NOT="efp:postgresql">
-    <PackageReference Include="SufiChain.SufiAbp.EntityFrameworkCore.PostgreSql" Version="$(SufiVersion)" />
+    <PackageReference Include="Volo.Abp.EntityFrameworkCore.PostgreSql" Version="$(AbpVersion)" />
     </TEMPLATE-REMOVE>
     <TEMPLATE-REMOVE IF-NOT="efp:mysql">
-    <PackageReference Include="SufiChain.SufiAbp.EntityFrameworkCore.MySQL" Version="$(SufiVersion)" />
+    <PackageReference Include="Volo.Abp.EntityFrameworkCore.MySQL" Version="$(AbpVersion)" />
     </TEMPLATE-REMOVE>
     <TEMPLATE-REMOVE IF-NOT="efp:sqlite">
-    <PackageReference Include="SufiChain.SufiAbp.EntityFrameworkCore.Sqlite" Version="$(SufiVersion)" />
+    <PackageReference Include="Volo.Abp.EntityFrameworkCore.Sqlite" Version="$(AbpVersion)" />
     </TEMPLATE-REMOVE>
   </ItemGroup>
   </TEMPLATE-ONLY>
