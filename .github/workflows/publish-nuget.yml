@@ -1,0 +1,90 @@
+name: Publish NuGet Packages to nuget.org
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      package_version:
+        description: SemVer package version (required for manual runs). Example: 1.2.3 or 1.2.3-beta.1
+        type: string
+        required: true
+
+permissions:
+  contents: read
+
+env:
+  DOTNET_NOLOGO: true
+  DOTNET_CLI_TELEMETRY_OPTOUT: true
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
+  DOTNET_VERSION: "10.0.x"
+  NUGET_ORG_SOURCE_URL: https://api.nuget.org/v3/index.json
+  NUGET_PUSH_PARALLELISM: "4"
+  PACKAGE_OUTPUT: ./artifacts/nuget
+  ROOT_SLNX: SufiChain.SufiAbp.slnx
+
+concurrency:
+  group: publish-nuget-org-${{ github.ref_name }}
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Resolve package version
+        id: version
+        shell: bash
+        env:
+          RELEASE_TAG: ${{ github.event.release.tag_name }}
+          INPUT_PACKAGE_VERSION: ${{ inputs.package_version }}
+        run: |
+          set -euo pipefail
+          if [ -n "${RELEASE_TAG:-}" ]; then
+            version="$RELEASE_TAG"
+          elif [ -n "${INPUT_PACKAGE_VERSION:-}" ]; then
+            version="$INPUT_PACKAGE_VERSION"
+          else
+            echo "Package version is required." >&2
+            exit 1
+          fi
+          version="${version#v}"
+          if ! printf '%s' "$version" | grep -Eq '^[0-9]+([.][0-9]+){2}(-[0-9A-Za-z][0-9A-Za-z.-]*)?([+][0-9A-Za-z][0-9A-Za-z.-]*)?$'; then
+            echo "Invalid NuGet package version: $version" >&2
+            echo "Use SemVer like 1.2.3, 1.2.3-beta.1, or v1.2.3." >&2
+            exit 1
+          fi
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "Resolved version: $version"
+
+      - name: Restore, build and pack packages
+        shell: bash
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+          PACKAGE_OUTPUT: ${{ env.PACKAGE_OUTPUT }}/${{ steps.version.outputs.version }}
+        run: |
+          set -euo pipefail
+          chmod +x .github/scripts/nuget-pack.sh
+          bash .github/scripts/nuget-pack.sh
+
+      - name: Push packages to nuget.org
+        shell: bash
+        env:
+          NUGET_ORG_API_KEY: ${{ secrets.NUGET_ORG_API_KEY }}
+          VERSION: ${{ steps.version.outputs.version }}
+          PACKAGE_OUTPUT: ${{ env.PACKAGE_OUTPUT }}/${{ steps.version.outputs.version }}
+        run: |
+          set -euo pipefail
+          if [ -z "${NUGET_ORG_API_KEY:-}" ]; then
+            echo "NUGET_ORG_API_KEY repository secret is required." >&2
+            exit 1
+          fi
+          chmod +x .github/scripts/nuget-push-nuget-org.sh
+          bash .github/scripts/nuget-push-nuget-org.sh
