@@ -1,12 +1,11 @@
 using Microsoft.Extensions.DependencyInjection;
-using SufiChain.SufiAbp.EntityFrameworkCore;
 using SufiChain.SufiAbp.MenuManagement.Menus;
 using Volo.Abp.EntityFrameworkCore;
 using Volo.Abp.Modularity;
 
 namespace SufiChain.SufiAbp.MenuManagement.EntityFrameworkCore;
 
-[DependsOn(typeof(SufiAbpMenuManagementDomainModule), typeof(SufiAbpEntityFrameworkCoreModule))]
+[DependsOn(typeof(SufiAbpMenuManagementDomainModule), typeof(AbpEntityFrameworkCoreModule))]
 public class SufiAbpMenuManagementEntityFrameworkCoreModule : AbpModule
 {
     public override void ConfigureServices(ServiceConfigurationContext context)

@@ -1,9 +1,9 @@
 /* ============================================
-   Calendar Public - SufiBlazor / KomTheme aligned
+   Calendar Public - SufiBlazor / SufiTheme aligned
    ============================================
-   The calendar flows inside KomTheme's .kom-content-body. We avoid
+   The calendar flows inside SufiTheme's .kom-content-body. We avoid
    viewport-relative heights (calc(100dvh - ...)) and overflow:hidden here
-   because KomTheme already provides the scroll container and padding.
+   because SufiTheme already provides the scroll container and padding.
    Width filling relies on the natural block/flex stretch of SbCard/SbStack.
    ============================================ */
 

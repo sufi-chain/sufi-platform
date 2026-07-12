@@ -9,7 +9,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\..\framework\SufiChain.SufiAbp.Ddd.Application.Contracts\SufiChain.SufiAbp.Ddd.Application.Contracts.csproj" />
-    <ProjectReference Include="..\..\..\..\framework\SufiChain.SufiAbp.Ddd.Domain\SufiChain.SufiAbp.Ddd.Domain.csproj" />
+    <PackageReference Include="Volo.Abp.Ddd.Domain" Version="$(AbpVersion)" />
     <ProjectReference Include="..\..\..\..\framework\SufiChain.SufiAbp.AI\SufiChain.SufiAbp.AI.csproj" />
     <ProjectReference Include="..\..\..\file-manager\src\SufiChain.SufiAbp.FileManager.Domain\SufiChain.SufiAbp.FileManager.Domain.csproj" />
     <ProjectReference Include="..\..\..\file-manager\src\SufiChain.SufiAbp.FileManager.Domain.Shared\SufiChain.SufiAbp.FileManager.Domain.Shared.csproj" />

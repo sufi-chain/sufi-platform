@@ -1,13 +1,12 @@
-using SufiChain.SufiAbp.BlobStoring;
-using SufiChain.SufiAbp.Ddd;
 using Volo.Abp.BlobStoring;
 using Volo.Abp.Modularity;
+using Volo.Abp.Domain;
 
 namespace SufiChain.SufiAbp.BlobStoring.Database;
 
 [DependsOn(
-    typeof(SufiAbpDddDomainModule),
-    typeof(SufiAbpBlobStoringModule),
+    typeof(AbpDddDomainModule),
+    typeof(AbpBlobStoringModule),
     typeof(SufiAbpBlobStoringDatabaseDomainSharedModule)
 )]
 public class SufiAbpBlobStoringDatabaseDomainModule : AbpModule

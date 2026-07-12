@@ -1,7 +1,7 @@
 using SufiChain.SufiAbp.Authorization.Permissions;
-using SufiChain.SufiAbp.Localization;
 using SufiChain.SufiAbp.MenuManagement.Localization;
 
+using Volo.Abp.Localization;
 namespace SufiChain.SufiAbp.MenuManagement.Permissions;
 
 public class MenuManagementPermissionDefinitionProvider : PermissionDefinitionProvider

@@ -13,9 +13,9 @@
 
   <ItemGroup>
     <ProjectReference Include="../../../../framework/SufiChain.SufiAbp.Data/SufiChain.SufiAbp.Data.csproj" />
-    <ProjectReference Include="../../../../framework/SufiChain.SufiAbp.Mapperly/SufiChain.SufiAbp.Mapperly.csproj" />
+    <PackageReference Include="Volo.Abp.Mapperly" Version="$(AbpVersion)" />
     <ProjectReference Include="../../../../framework/SufiChain.SufiAbp.Ddd.Application/SufiChain.SufiAbp.Ddd.Application.csproj" />
-    <ProjectReference Include="../../../../framework/SufiChain.SufiAbp.Caching/SufiChain.SufiAbp.Caching.csproj" />
+    <PackageReference Include="Volo.Abp.Caching" Version="$(AbpVersion)" />
     <ProjectReference Include="..\SufiChain.SufiAbp.LocalizationManagement.Application.Contracts\SufiChain.SufiAbp.LocalizationManagement.Application.Contracts.csproj" />
     <ProjectReference Include="..\SufiChain.SufiAbp.LocalizationManagement.Domain\SufiChain.SufiAbp.LocalizationManagement.Domain.csproj" />
   </ItemGroup>

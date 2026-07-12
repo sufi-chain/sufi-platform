@@ -6,6 +6,7 @@ using Volo.Abp.Domain.Entities;
 using Volo.Abp.MultiTenancy;
 using Volo.Abp.SecurityLog;
 
+using Volo.Abp.ObjectExtending;
 namespace SufiChain.SufiAbp.Identity;
 
 public class IdentitySecurityLog : Entity<Guid>, IMultiTenant, IHasCreationTime, IHasExtraProperties

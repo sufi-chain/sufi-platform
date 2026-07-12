@@ -12,8 +12,8 @@
     <PackageReference Include="xunit.runner.visualstudio" Version="2.8.2" />
     <PackageReference Include="Shouldly" Version="4.2.1" />
     <PackageReference Include="NSubstitute" Version="5.1.0" />
-    <ProjectReference Include="..\..\..\..\framework\SufiChain.SufiAbp.Autofac\SufiChain.SufiAbp.Autofac.csproj" />
+    <PackageReference Include="Volo.Abp.Autofac" Version="$(AbpVersion)" />
     <ProjectReference Include="..\..\..\..\framework\SufiChain.SufiAbp.Authorization\SufiChain.SufiAbp.Authorization.csproj" />
-    <ProjectReference Include="..\..\..\..\framework\SufiChain.SufiAbp.TestBase\SufiChain.SufiAbp.TestBase.csproj" />
+    <PackageReference Include="Volo.Abp.TestBase" Version="$(AbpVersion)" />
   </ItemGroup>
 </Project>

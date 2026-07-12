@@ -4,7 +4,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using SufiChain.SufiAbp.Authorization.Permissions;
 using Volo.Abp.Domain.Repositories;
-using SufiChain.SufiAbp.Guids;
 using SufiChain.SufiAbp.Identity;
 using Volo.Abp.MultiTenancy;
 using Volo.Abp.Guids;

@@ -1,13 +1,13 @@
 using Microsoft.AspNetCore.Authorization;
 using SufiChain.SufiAbp.MenuManagement.Features;
-using Volo.Abp.Application.Services;
+using SufiChain.SufiAbp.Application.Services;
 using SufiChain.SufiAbp.Features;
 
 namespace SufiChain.SufiAbp.MenuManagement.Menus;
 
 [RequiresFeature(SufiAbpMenuManagementFeatures.Enable, SufiAbpMenuManagementFeatures.PublicMenus)]
 [AllowAnonymous]
-public class PublicMenuAppService : ApplicationService, IPublicMenuAppService
+public class PublicMenuAppService : SufiAbpApplicationService, IPublicMenuAppService
 {
     private readonly IMenuRepository _menuRepository;
     private readonly IMenuItemRepository _menuItemRepository;

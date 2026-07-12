@@ -1,23 +1,23 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using SufiChain.SufiAbp.Authorization;
-using SufiChain.SufiAbp.Caching;
-using SufiChain.SufiAbp.Ddd;
-using SufiChain.SufiAbp.DistributedLocking.Abstractions;
 using Volo.Abp;
 using Volo.Abp.Data;
 using Volo.Abp.DependencyInjection;
 using Volo.Abp.Json;
 using Volo.Abp.Modularity;
 using Volo.Abp.Threading;
+using Volo.Abp.Domain;
 
+using Volo.Abp.DistributedLocking;
+using Volo.Abp.Caching;
 namespace SufiChain.SufiAbp.PermissionManagement;
 
 [DependsOn(typeof(SufiAbpAuthorizationModule))]
-[DependsOn(typeof(SufiAbpDddDomainModule))]
+[DependsOn(typeof(AbpDddDomainModule))]
 [DependsOn(typeof(SufiAbpPermissionManagementDomainSharedModule))]
-[DependsOn(typeof(SufiAbpCachingModule))]
-[DependsOn(typeof(SufiAbpDistributedLockingAbstractionsModule))]
+[DependsOn(typeof(AbpCachingModule))]
+[DependsOn(typeof(AbpDistributedLockingAbstractionsModule))]
 [DependsOn(typeof(AbpJsonModule))]
 public class SufiAbpPermissionManagementDomainModule : AbpModule
 {

@@ -8,9 +8,8 @@
   
   <ItemGroup>
     <!-- SufiAbp Framework -->
-    <ProjectReference Include="../../../../framework/SufiChain.SufiAbp.Ddd.Domain/SufiChain.SufiAbp.Ddd.Domain.csproj" />
-    
-    <!-- Module References -->
+    <PackageReference Include="Volo.Abp.Ddd.Domain" Version="$(AbpVersion)" />
+<!-- Module References -->
     <ProjectReference Include="..\SufiChain.SufiAbp.AuditLogging.Domain.Shared\SufiChain.SufiAbp.AuditLogging.Domain.Shared.csproj" />
     
     <!-- ABP Framework (needed for auditing support) -->

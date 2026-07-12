@@ -1,9 +1,9 @@
-using SufiChain.SufiAbp;
+using Volo.Abp;
 using SufiChain.SufiAbp.Calendar.Availability;
 using SufiChain.SufiAbp.Calendar.Calendars;
 using SufiChain.SufiAbp.Calendar.Events;
 using SufiChain.SufiAbp.Calendar.Scheduling;
-using SufiChain.SufiAbp.DependencyInjection;
+using Volo.Abp.DependencyInjection;
 
 namespace SufiChain.SufiAbp.Calendar.FreeBusy;
 

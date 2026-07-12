@@ -1,13 +1,13 @@
 using Microsoft.Extensions.DependencyInjection;
-using SufiChain.SufiAbp.Caching;
-using SufiChain.SufiAbp.Ddd;
 using Volo.Abp.Modularity;
+using Volo.Abp.Domain;
 
+using Volo.Abp.Caching;
 namespace SufiChain.SufiAbp.ShortLinkGenerator;
 
 [DependsOn(
-    typeof(SufiAbpDddDomainModule),
-    typeof(SufiAbpCachingModule),
+    typeof(AbpDddDomainModule),
+    typeof(AbpCachingModule),
     typeof(SufiAbpShortLinkGeneratorDomainSharedModule)
 )]
 public class SufiAbpShortLinkGeneratorDomainModule : AbpModule

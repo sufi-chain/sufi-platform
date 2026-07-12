@@ -11,8 +11,8 @@
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="../../../../framework/SufiChain.SufiAbp.Ddd.Application/SufiChain.SufiAbp.Ddd.Application.csproj" />
-    <ProjectReference Include="../../../../framework/SufiChain.SufiAbp.Caching/SufiChain.SufiAbp.Caching.csproj" />
-    <ProjectReference Include="../../../../framework/SufiChain.SufiAbp.MultiTenancy/SufiChain.SufiAbp.MultiTenancy.csproj" />
+    <PackageReference Include="Volo.Abp.Caching" Version="$(AbpVersion)" />
+    <PackageReference Include="Volo.Abp.MultiTenancy" Version="$(AbpVersion)" />
     <ProjectReference Include="../../../../framework/SufiChain.SufiAbp.Communications/SufiChain.SufiAbp.Communications.csproj" />
     <ProjectReference Include="../../../../framework/SufiChain.SufiAbp.Data/SufiChain.SufiAbp.Data.csproj" />
     <ProjectReference Include="../../../../modules/localization-management/src/SufiChain.SufiAbp.LocalizationManagement.Application.Contracts/SufiChain.SufiAbp.LocalizationManagement.Application.Contracts.csproj" />

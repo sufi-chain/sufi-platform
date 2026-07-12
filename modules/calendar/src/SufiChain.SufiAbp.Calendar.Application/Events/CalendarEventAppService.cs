@@ -1,10 +1,10 @@
-using SufiChain.SufiAbp;
+using Volo.Abp;
 using SufiChain.SufiAbp.Application.Dtos;
 using SufiChain.SufiAbp.Application.Services;
 using SufiChain.SufiAbp.Calendar.Calendars;
 using SufiChain.SufiAbp.Calendar.Permissions;
 using SufiChain.SufiAbp.Calendar.Scheduling;
-using SufiChain.SufiAbp.Linq;
+using Volo.Abp.Linq;
 
 namespace SufiChain.SufiAbp.Calendar.Events;
 

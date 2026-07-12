@@ -1,7 +1,7 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using SufiChain.SufiAbp.AI;
-using SufiChain.SufiAbp.DependencyInjection;
+using Volo.Abp.DependencyInjection;
 
 namespace SufiChain.SufiAbp.Calendar.AI.Tools;
 

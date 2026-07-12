@@ -9,8 +9,8 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <ProjectReference Include="../../../../framework/SufiChain.SufiAbp.EntityFrameworkCore/SufiChain.SufiAbp.EntityFrameworkCore.csproj" />
-    </ItemGroup>
+    <PackageReference Include="Volo.Abp.EntityFrameworkCore" Version="$(AbpVersion)" />
+  </ItemGroup>
 
     <ItemGroup>
       <ProjectReference Include="..\SufiChain.SufiAbp.ShortLinkGenerator.Domain\SufiChain.SufiAbp.ShortLinkGenerator.Domain.csproj" />

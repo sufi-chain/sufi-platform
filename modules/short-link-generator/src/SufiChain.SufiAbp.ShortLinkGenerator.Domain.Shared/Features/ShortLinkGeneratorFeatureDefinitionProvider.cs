@@ -1,8 +1,8 @@
 using SufiChain.SufiAbp.ShortLinkGenerator.Features;
 using SufiChain.SufiAbp.ShortLinkGenerator.Localization;
 using SufiChain.SufiAbp.Features;
-using SufiChain.SufiAbp.Localization;
 
+using Volo.Abp.Localization;
 namespace SufiChain.SufiAbp.ShortLinkGenerator.Features;
 
 /// <summary>

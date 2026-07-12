@@ -3,14 +3,14 @@ using SufiChain.SufiAbp.Application.Dtos;
 using SufiChain.SufiAbp.MenuManagement.Features;
 using SufiChain.SufiAbp.MenuManagement.Permissions;
 using Volo.Abp;
-using Volo.Abp.Application.Services;
+using SufiChain.SufiAbp.Application.Services;
 using SufiChain.SufiAbp.Features;
 
 namespace SufiChain.SufiAbp.MenuManagement.Menus;
 
 [RequiresFeature(SufiAbpMenuManagementFeatures.Enable, SufiAbpMenuManagementFeatures.Menus)]
 [Authorize(MenuManagementPermissions.Menus.Default)]
-public class MenuItemAppService : ApplicationService, IMenuItemAppService
+public class MenuItemAppService : SufiAbpApplicationService, IMenuItemAppService
 {
     private readonly IMenuRepository _menuRepository;
     private readonly IMenuItemRepository _menuItemRepository;

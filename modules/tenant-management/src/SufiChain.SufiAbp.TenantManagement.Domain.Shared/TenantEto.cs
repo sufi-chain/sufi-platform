@@ -1,5 +1,5 @@
 using System;
-using SufiChain.SufiAbp.Auditing;
+using Volo.Abp.Auditing;
 
 namespace SufiChain.SufiAbp.TenantManagement;
 

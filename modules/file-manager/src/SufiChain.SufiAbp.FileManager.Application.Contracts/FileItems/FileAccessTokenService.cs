@@ -86,20 +86,8 @@ public class FileAccessTokenService : IFileAccessTokenService, ITransientDepende
         var expectedSignature = ComputeHmac(secret, payload);
         var actualSignature = FromBase64Url(parts[1]);
 
-#if NETSTANDARD2_0
-        // For netstandard2.0, use manual comparison (not constant-time, but functional)
-        if (expectedSignature.Length != actualSignature.Length)
-            return false;
-        
-        for (int i = 0; i < expectedSignature.Length; i++)
-        {
-            if (expectedSignature[i] != actualSignature[i])
-                return false;
-        }
-        return true;
-#else
         return CryptographicOperations.FixedTimeEquals(expectedSignature, actualSignature);
-#endif
+
     }
 
     private string GetSecret()

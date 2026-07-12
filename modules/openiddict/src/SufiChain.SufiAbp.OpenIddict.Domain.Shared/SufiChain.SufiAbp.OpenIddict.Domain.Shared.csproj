@@ -1,6 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFrameworks>netstandard2.0;netstandard2.1;net10.0</TargetFrameworks>
+    <TargetFrameworks>netstandard2.1;net10.0</TargetFrameworks>
     <Nullable>enable</Nullable>
     <RootNamespace>SufiChain.SufiAbp.OpenIddict</RootNamespace>
     <GenerateEmbeddedFilesManifest>true</GenerateEmbeddedFilesManifest>
@@ -12,7 +12,7 @@
     <ProjectReference Include="..\..\..\..\framework\SufiChain.SufiAbp.UI.Domain.Shared\SufiChain.SufiAbp.UI.Domain.Shared.csproj" />
     
     <ProjectReference Include="../../../../framework/SufiChain.SufiAbp.Validation/SufiChain.SufiAbp.Validation.csproj" />
-    <ProjectReference Include="../../../../framework/SufiChain.SufiAbp.VirtualFileSystem/SufiChain.SufiAbp.VirtualFileSystem.csproj" />
+    <PackageReference Include="Volo.Abp.VirtualFileSystem" Version="$(AbpVersion)" />
   </ItemGroup>
 
   <ItemGroup>

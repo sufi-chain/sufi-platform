@@ -1,6 +1,6 @@
 using SufiChain.SufiAbp.Calendar.Availability;
-using SufiChain.SufiAbp.Caching;
 
+using Volo.Abp.Caching;
 namespace SufiChain.SufiAbp.Calendar.Caching;
 
 [CacheName("CalendarSnapshots")]

@@ -1,6 +1,5 @@
 using Microsoft.Extensions.DependencyInjection;
 using SufiChain.SufiAbp.FeatureManagement;
-using SufiChain.SufiAbp.Http.Client;
 using Volo.Abp.Http.Client;
 using Volo.Abp.Modularity;
 using Volo.Abp.VirtualFileSystem;
@@ -9,7 +8,7 @@ namespace SufiChain.SufiAbp.FeatureManagement;
 
 [DependsOn(
     typeof(SufiAbpFeatureManagementApplicationContractsModule),
-    typeof(SufiAbpHttpClientModule))]
+    typeof(AbpHttpClientModule))]
 public class SufiAbpFeatureManagementHttpApiClientModule : AbpModule
 {
     public override void ConfigureServices(ServiceConfigurationContext context)

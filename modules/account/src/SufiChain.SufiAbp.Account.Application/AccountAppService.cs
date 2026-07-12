@@ -6,13 +6,13 @@ using SufiChain.SufiAbp.Captcha;
 using SufiChain.SufiAbp.Identity;
 using SufiChain.SufiAbp.Identity.Settings;
 using Volo.Abp;
-using Volo.Abp.Application.Services;
+using SufiChain.SufiAbp.Application.Services;
 using Volo.Abp.EventBus.Local;
 using Volo.Abp.Settings;
 
 namespace SufiChain.SufiAbp.Account;
 
-public class AccountAppService : ApplicationService, IAccountAppService
+public class AccountAppService : SufiAbpApplicationService, IAccountAppService
 {
     protected IdentityUserManager UserManager { get; }
     protected IIdentityUserRepository UserRepository { get; }

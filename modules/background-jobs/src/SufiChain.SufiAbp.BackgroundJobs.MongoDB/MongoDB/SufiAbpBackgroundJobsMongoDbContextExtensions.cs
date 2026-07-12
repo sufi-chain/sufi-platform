@@ -1,5 +1,4 @@
 using Volo.Abp;
-using SufiChain.SufiAbp.BackgroundJobs;
 using Volo.Abp.MongoDB;
 
 namespace SufiChain.SufiAbp.BackgroundJobs.MongoDB;

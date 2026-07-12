@@ -1,3 +1,4 @@
+using Volo.Abp.Domain;
 using SufiChain.SufiAbp.Features;
 using SufiChain.SufiAbp.ShortLinkGenerator.Localization;
 using SufiChain.SufiAbp.Validation;
@@ -11,6 +12,7 @@ using Volo.Abp.VirtualFileSystem;
 namespace SufiChain.SufiAbp.ShortLinkGenerator;
 
 [DependsOn(
+    typeof(AbpDddDomainSharedModule),
     typeof(SufiAbpValidationModule),
     typeof(SufiAbpFeaturesModule)
 )]

@@ -1,13 +1,13 @@
-using SufiChain.SufiAbp.Caching;
-using SufiChain.SufiAbp.Ddd;
 using SufiChain.SufiAbp.Users;
 using Volo.Abp.Modularity;
+using Volo.Abp.Domain;
 
+using Volo.Abp.Caching;
 namespace SufiChain.SufiAbp.Calendar;
 
 [DependsOn(
-    typeof(SufiAbpDddDomainModule),
-    typeof(SufiAbpCachingModule),
+    typeof(AbpDddDomainModule),
+    typeof(AbpCachingModule),
     typeof(SufiAbpUsersAbstractionModule),
     typeof(SufiAbpCalendarDomainSharedModule)
 )]

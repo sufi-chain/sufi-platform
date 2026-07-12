@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Options;
 using SufiChain.SufiAbp.Identity;
 using Volo.Abp;
-using Volo.Abp.Application.Services;
+using SufiChain.SufiAbp.Application.Services;
 using Volo.Abp.Data;
 using Volo.Abp.ObjectExtending;
 using Volo.Abp.Users;
@@ -11,7 +11,7 @@ using Volo.Abp.Users;
 namespace SufiChain.SufiAbp.Account;
 
 [Authorize]
-public class ProfileAppService : ApplicationService, IProfileAppService
+public class ProfileAppService : SufiAbpApplicationService, IProfileAppService
 {
     protected IdentityUserManager UserManager { get; }
     protected IOptions<IdentityOptions> IdentityOptions { get; }

@@ -6,13 +6,12 @@ using SufiChain.SufiAbp.OpenIddict.Applications;
 using SufiChain.SufiAbp.OpenIddict.Authorizations;
 using SufiChain.SufiAbp.OpenIddict.Scopes;
 using SufiChain.SufiAbp.OpenIddict.Tokens;
-using SufiChain.SufiAbp.EntityFrameworkCore;
 
 namespace SufiChain.SufiAbp.OpenIddict.EntityFrameworkCore;
 
 [DependsOn(
     typeof(SufiAbpOpenIddictDomainModule),
-    typeof(SufiAbpEntityFrameworkCoreModule)
+    typeof(AbpEntityFrameworkCoreModule)
 )]
 public class SufiAbpOpenIddictEntityFrameworkCoreModule : AbpModule
 {

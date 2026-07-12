@@ -5,18 +5,18 @@ using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.DependencyInjection;
 using SufiChain.SufiAbp.AI.Application;
 using SufiChain.SufiAbp.AI.EntityFrameworkCore;
-using SufiChain.SufiAbp.EntityFrameworkCore.Sqlite;
 using Volo.Abp;
 using Volo.Abp.EntityFrameworkCore;
 using Volo.Abp.Modularity;
 
+using Volo.Abp.EntityFrameworkCore.Sqlite;
 namespace SufiChain.SufiAbp.AI;
 
 [DependsOn(
     typeof(AITestBaseModule),
     typeof(SufiAIApplicationModule),
     typeof(SufiAIEntityFrameworkCoreModule),
-    typeof(SufiAbpEntityFrameworkCoreSqliteModule)
+    typeof(AbpEntityFrameworkCoreSqliteModule)
 )]
 public class AIApplicationTestModule : AbpModule
 {

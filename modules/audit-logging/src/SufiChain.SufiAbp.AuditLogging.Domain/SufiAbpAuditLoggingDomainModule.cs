@@ -1,4 +1,3 @@
-using SufiChain.SufiAbp.Ddd;
 using SufiChain.SufiAbp.ObjectExtending;
 using Volo.Abp.Auditing;
 using Volo.Abp.Domain;
@@ -12,7 +11,7 @@ using Volo.Abp.Threading;
 namespace SufiChain.SufiAbp.AuditLogging;
 
 [DependsOn(typeof(AbpAuditingModule))]
-[DependsOn(typeof(SufiAbpDddDomainModule))]
+[DependsOn(typeof(AbpDddDomainModule))]
 [DependsOn(typeof(SufiAbpAuditLoggingDomainSharedModule))]
 [DependsOn(typeof(AbpExceptionHandlingModule))]
 [DependsOn(typeof(AbpJsonModule))]

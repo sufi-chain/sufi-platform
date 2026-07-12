@@ -1,5 +1,4 @@
 using Microsoft.Extensions.DependencyInjection;
-using SufiChain.SufiAbp.EntityFrameworkCore;
 using Volo.Abp.EntityFrameworkCore;
 using Volo.Abp.Modularity;
 
@@ -7,7 +6,7 @@ namespace SufiChain.SufiAbp.TenantManagement.EntityFrameworkCore;
 
 [DependsOn(
     typeof(SufiAbpTenantManagementDomainModule),
-    typeof(SufiAbpEntityFrameworkCoreModule)
+    typeof(AbpEntityFrameworkCoreModule)
 )]
 public class SufiAbpTenantManagementEntityFrameworkCoreModule : AbpModule
 {

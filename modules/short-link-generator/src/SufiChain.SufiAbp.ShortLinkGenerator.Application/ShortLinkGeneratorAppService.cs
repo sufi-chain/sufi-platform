@@ -1,9 +1,9 @@
 using SufiChain.SufiAbp.ShortLinkGenerator.Localization;
-using Volo.Abp.Application.Services;
+using SufiChain.SufiAbp.Application.Services;
 
 namespace SufiChain.SufiAbp.ShortLinkGenerator;
 
-public abstract class ShortLinkGeneratorAppService : ApplicationService
+public abstract class ShortLinkGeneratorAppService : SufiAbpApplicationService
 {
     protected ShortLinkGeneratorAppService()
     {

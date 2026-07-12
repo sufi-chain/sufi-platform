@@ -1,6 +1,5 @@
 using Microsoft.EntityFrameworkCore;
 using SufiChain.SufiAbp.Calendar.Calendars;
-using SufiChain.SufiAbp.Calendar.EntityFrameworkCore;
 using Volo.Abp.Domain.Repositories.EntityFrameworkCore;
 using Volo.Abp.EntityFrameworkCore;
 

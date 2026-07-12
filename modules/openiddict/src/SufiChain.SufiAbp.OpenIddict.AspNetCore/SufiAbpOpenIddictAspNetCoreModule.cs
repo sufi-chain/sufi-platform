@@ -6,14 +6,14 @@ using OpenIddict.Server;
 using OpenIddict.Server.AspNetCore;
 using OpenIddict.Validation;
 using OpenIddict.Validation.AspNetCore;
-using SufiChain.SufiAbp.AspNetCore.MultiTenancy;
 using Volo.Abp.Modularity;
 
+using Volo.Abp.AspNetCore.MultiTenancy;
 namespace SufiChain.SufiAbp.OpenIddict;
 
 [DependsOn(
     typeof(SufiAbpOpenIddictDomainModule),
-    typeof(SufiAbpAspNetCoreMultiTenancyModule)
+    typeof(AbpAspNetCoreMultiTenancyModule)
 )]
 public class SufiAbpOpenIddictAspNetCoreModule : AbpModule
 {

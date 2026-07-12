@@ -2,7 +2,7 @@ using Microsoft.AspNetCore.Authorization;
 using SufiChain.SufiAbp.Identity.Dtos;
 using SufiChain.SufiAbp.Identity.Permissions;
 using SufiChain.SufiAbp.Application.Dtos;
-using Volo.Abp.Application.Services;
+using SufiChain.SufiAbp.Application.Services;
 using SufiChain.SufiAbp.Identity;
 
 namespace SufiChain.SufiAbp.Identity;
@@ -11,7 +11,7 @@ namespace SufiChain.SufiAbp.Identity;
 /// Application service for managing identity security logs.
 /// </summary>
 [Authorize(IdentityPermissions.SecurityLogs.Default)]
-public class IdentitySecurityLogAppService : ApplicationService, IIdentitySecurityLogAppService
+public class IdentitySecurityLogAppService : SufiAbpApplicationService, IIdentitySecurityLogAppService
 {
     private readonly IIdentitySecurityLogRepository _securityLogRepository;
 

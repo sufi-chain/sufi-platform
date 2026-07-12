@@ -1,6 +1,6 @@
 using System;
 using JetBrains.Annotations;
-using SufiChain.SufiAbp.Data;
+using Volo.Abp.Data;
 
 namespace SufiChain.SufiAbp.Users;
 

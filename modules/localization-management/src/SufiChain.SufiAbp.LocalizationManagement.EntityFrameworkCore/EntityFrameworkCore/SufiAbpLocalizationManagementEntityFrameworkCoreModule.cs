@@ -1,14 +1,14 @@
 using Microsoft.Extensions.DependencyInjection;
-using SufiChain.SufiAbp.EntityFrameworkCore;
 using SufiChain.SufiAbp.LocalizationManagement.Entities;
 using SufiChain.SufiAbp.LocalizationManagement.Repositories;
 using Volo.Abp.Modularity;
 
+using Volo.Abp.EntityFrameworkCore;
 namespace SufiChain.SufiAbp.LocalizationManagement.EntityFrameworkCore;
 
 [DependsOn(
     typeof(SufiAbpLocalizationManagementDomainModule),
-    typeof(SufiAbpEntityFrameworkCoreModule)
+    typeof(AbpEntityFrameworkCoreModule)
 )]
 public class SufiAbpLocalizationManagementEntityFrameworkCoreModule : AbpModule
 {

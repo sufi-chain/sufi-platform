@@ -1,13 +1,12 @@
 using Microsoft.Extensions.DependencyInjection;
 using Volo.Abp.EntityFrameworkCore;
-using SufiChain.SufiAbp.EntityFrameworkCore;
 using Volo.Abp.Modularity;
 
 namespace SufiChain.SufiAbp.SettingManagement.EntityFrameworkCore;
 
 [DependsOn(
     typeof(SufiAbpSettingManagementDomainModule),
-    typeof(SufiAbpEntityFrameworkCoreModule)
+    typeof(AbpEntityFrameworkCoreModule)
 )]
 public class SufiAbpSettingManagementEntityFrameworkCoreModule : AbpModule
 {

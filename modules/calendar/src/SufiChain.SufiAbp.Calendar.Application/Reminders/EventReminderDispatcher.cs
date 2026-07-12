@@ -1,6 +1,6 @@
-﻿using SufiChain.SufiAbp.Calendar.Events;
+using SufiChain.SufiAbp.Calendar.Events;
 using SufiChain.SufiAbp.Calendar.Reminders;
-using SufiChain.SufiAbp.DependencyInjection;
+using Volo.Abp.DependencyInjection;
 using SufiChain.SufiAbp.Communications.Email;
 
 namespace SufiChain.SufiAbp.Calendar.Reminders;

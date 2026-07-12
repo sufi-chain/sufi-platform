@@ -1,5 +1,4 @@
-using SufiChain.SufiAbp.Core;
-using SufiChain.SufiAbp.Modularity;
+using Volo.Abp.Modularity;
 
 namespace SufiChain.SufiAbp.FileManager;
 
@@ -7,7 +6,7 @@ namespace SufiChain.SufiAbp.FileManager;
     typeof(SufiAbpFileManagerDomainModule),
     typeof(SufiAbpFileManagerTestBaseModule)
 )]
-public class SufiAbpFileManagerDomainTestModule : SufiAbpModule
+public class SufiAbpFileManagerDomainTestModule : AbpModule
 {
 
 }

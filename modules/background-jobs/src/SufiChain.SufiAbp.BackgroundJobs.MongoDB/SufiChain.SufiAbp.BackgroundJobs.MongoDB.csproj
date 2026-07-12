@@ -6,9 +6,7 @@
     <PackageId>SufiChain.SufiAbp.BackgroundJobs.MongoDB</PackageId>
   </PropertyGroup>
   <ItemGroup>
-    
-    <ProjectReference Include="..\..\..\..\framework\SufiChain.SufiAbp.MongoDB\SufiChain.SufiAbp.MongoDB.csproj" />
-    
+    <PackageReference Include="Volo.Abp.MongoDB" Version="$(AbpVersion)" />
     <ProjectReference Include="..\SufiChain.SufiAbp.BackgroundJobs.Domain\SufiChain.SufiAbp.BackgroundJobs.Domain.csproj" />
   </ItemGroup>
   <ItemGroup>

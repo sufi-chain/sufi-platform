@@ -8,9 +8,9 @@
 
     <ItemGroup>
         <ProjectReference Include="../../../../framework/SufiChain.SufiAbp.Ddd.Application/SufiChain.SufiAbp.Ddd.Application.csproj" />
-        <ProjectReference Include="../../../../framework/SufiChain.SufiAbp.Caching/SufiChain.SufiAbp.Caching.csproj" />
-        <ProjectReference Include="../../../../framework/SufiChain.SufiAbp.Mapperly/SufiChain.SufiAbp.Mapperly.csproj" />
-        <ProjectReference Include="../../../setting-management/src/SufiChain.SufiAbp.SettingManagement.Domain/SufiChain.SufiAbp.SettingManagement.Domain.csproj" />
+    <PackageReference Include="Volo.Abp.Caching" Version="$(AbpVersion)" />
+    <PackageReference Include="Volo.Abp.Mapperly" Version="$(AbpVersion)" />
+    <ProjectReference Include="../../../setting-management/src/SufiChain.SufiAbp.SettingManagement.Domain/SufiChain.SufiAbp.SettingManagement.Domain.csproj" />
     </ItemGroup>
 
     <ItemGroup>

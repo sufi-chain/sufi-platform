@@ -9,7 +9,7 @@ using SufiChain.SufiAbp.AI.MCP.Entities;
 using SufiChain.SufiAbp.AI.MCP.Servers;
 using SufiChain.SufiAbp.AI.Permissions;
 using Volo.Abp;
-using Volo.Abp.Application.Services;
+using SufiChain.SufiAbp.Application.Services;
 using Volo.Abp.Domain.Repositories;
 using SufiChain.SufiAbp.Features;
 
@@ -17,7 +17,7 @@ namespace SufiChain.SufiAbp.AI.Application.MCP.Servers;
 
 [RequiresFeature(SufiAIFeatures.Enable)]
 [Authorize(AIPermissions.MCPServers.Default)]
-public class MCPServerAppService : ApplicationService, IMCPServerAppService
+public class MCPServerAppService : SufiAbpApplicationService, IMCPServerAppService
 {
     private readonly IMCPServerRepository _serverRepository;
     private readonly IRepository<MCPServer, Guid> _repository;

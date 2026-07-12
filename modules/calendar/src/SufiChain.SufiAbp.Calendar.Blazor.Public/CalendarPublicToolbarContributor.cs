@@ -5,11 +5,11 @@ namespace SufiChain.SufiAbp.Calendar.Blazor.Public;
 
 public class CalendarPublicToolbarContributor : IToolbarContributor
 {
-    private const string KomMainToolbar = "KomMain";
+    private const string SufiMainToolbar = "SufiMain";
 
     public virtual Task ConfigureToolbarAsync(IToolbarConfigurationContext context)
     {
-        if (context.Toolbar.Name == KomMainToolbar || context.Toolbar.Name == StandardToolbars.Main)
+        if (context.Toolbar.Name == SufiMainToolbar || context.Toolbar.Name == StandardToolbars.Main)
         {
             context.Toolbar.Items.Add(new ToolbarItem(typeof(CalendarToolbarWidget), order: 190));
         }

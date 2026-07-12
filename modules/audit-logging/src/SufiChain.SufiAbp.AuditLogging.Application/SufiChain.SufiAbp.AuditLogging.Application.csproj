@@ -16,7 +16,7 @@
   <ItemGroup>
     <!-- ABP Dependencies -->
     <ProjectReference Include="../../../../framework/SufiChain.SufiAbp.Ddd.Application/SufiChain.SufiAbp.Ddd.Application.csproj" />
-    <ProjectReference Include="../../../../framework/SufiChain.SufiAbp.Mapperly/SufiChain.SufiAbp.Mapperly.csproj" />
+    <PackageReference Include="Volo.Abp.Mapperly" Version="$(AbpVersion)" />
     <ProjectReference Include="../SufiChain.SufiAbp.AuditLogging.Domain/SufiChain.SufiAbp.AuditLogging.Domain.csproj" />
   </ItemGroup>
 

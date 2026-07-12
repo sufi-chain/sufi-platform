@@ -1,17 +1,17 @@
-using SufiChain.SufiAbp.BlobStoring;
 using SufiChain.SufiAbp.BlobStoring.Database;
-using SufiChain.SufiAbp.Ddd;
 using SufiChain.SufiAbp.FileManager.Workers;
 using Volo.Abp;
 using Volo.Abp.BackgroundWorkers;
 using Volo.Abp.Modularity;
+using Volo.Abp.Domain;
 
+using Volo.Abp.BlobStoring;
 namespace SufiChain.SufiAbp.FileManager;
 
 [DependsOn(
-    typeof(SufiAbpDddDomainModule),
+    typeof(AbpDddDomainModule),
     typeof(SufiAbpFileManagerDomainSharedModule),
-    typeof(SufiAbpBlobStoringModule),
+    typeof(AbpBlobStoringModule),
     typeof(SufiAbpBlobStoringDatabaseDomainModule)
 )]
 public class SufiAbpFileManagerDomainModule : AbpModule

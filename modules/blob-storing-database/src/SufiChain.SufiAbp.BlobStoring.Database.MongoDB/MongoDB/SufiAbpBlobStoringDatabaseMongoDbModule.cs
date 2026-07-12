@@ -1,6 +1,5 @@
 using Microsoft.Extensions.DependencyInjection;
 using SufiChain.SufiAbp.BlobStoring.Database;
-using SufiChain.SufiAbp.MongoDB;
 using Volo.Abp.Modularity;
 using Volo.Abp.MongoDB;
 
@@ -8,7 +7,7 @@ namespace SufiChain.SufiAbp.BlobStoring.Database.MongoDB;
 
 [DependsOn(
     typeof(SufiAbpBlobStoringDatabaseDomainModule),
-    typeof(SufiAbpMongoDbModule)
+    typeof(AbpMongoDbModule)
 )]
 public class SufiAbpBlobStoringDatabaseMongoDbModule : AbpModule
 {

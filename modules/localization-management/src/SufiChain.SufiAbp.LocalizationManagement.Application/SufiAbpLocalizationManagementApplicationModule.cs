@@ -8,8 +8,6 @@ using Volo.Abp.Caching;
 using Volo.Abp.Localization;
 using Volo.Abp.Localization.External;
 using Volo.Abp.Modularity;
-using SufiChain.SufiAbp.Mapperly;
-using SufiChain.SufiAbp.Caching;
 using SufiChain.SufiAbp.Ddd;
 
 namespace SufiChain.SufiAbp.LocalizationManagement;
@@ -18,8 +16,8 @@ namespace SufiChain.SufiAbp.LocalizationManagement;
     typeof(SufiAbpLocalizationManagementDomainModule),
     typeof(SufiAbpLocalizationManagementApplicationContractsModule),
     typeof(SufiAbpDddApplicationModule),
-    typeof(SufiAbpMapperlyModule),
-    typeof(SufiAbpCachingModule)
+    typeof(AbpMapperlyModule),
+    typeof(AbpCachingModule)
 )]
 public class SufiAbpLocalizationManagementApplicationModule : AbpModule
 {

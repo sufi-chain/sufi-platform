@@ -11,9 +11,9 @@
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="../../../../framework/SufiChain.SufiAbp.Core/SufiChain.SufiAbp.Core.csproj" />
-    <ProjectReference Include="../../../../framework/SufiChain.SufiAbp.Ddd.Domain/SufiChain.SufiAbp.Ddd.Domain.csproj" />
-    <ProjectReference Include="../../../../framework/SufiChain.SufiAbp.Caching/SufiChain.SufiAbp.Caching.csproj" />
-    <ProjectReference Include="../../../../framework/SufiChain.SufiAbp.MultiTenancy/SufiChain.SufiAbp.MultiTenancy.csproj" />
+    <PackageReference Include="Volo.Abp.Ddd.Domain" Version="$(AbpVersion)" />
+    <PackageReference Include="Volo.Abp.Caching" Version="$(AbpVersion)" />
+    <PackageReference Include="Volo.Abp.MultiTenancy" Version="$(AbpVersion)" />
     <ProjectReference Include="../../../users/src/SufiChain.SufiAbp.Users.Abstractions/SufiChain.SufiAbp.Users.Abstractions.csproj" />
     <ProjectReference Include="..\SufiChain.SufiAbp.Calendar.Domain.Shared\SufiChain.SufiAbp.Calendar.Domain.Shared.csproj" />
   </ItemGroup>

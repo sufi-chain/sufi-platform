@@ -24,8 +24,8 @@
     <ProjectReference Include="../../../../framework/SufiChain.SufiAbp.Authorization/SufiChain.SufiAbp.Authorization.csproj" />
     <!-- ABP Email and Timing for setting names -->
     <ProjectReference Include="../../../../framework/SufiChain.SufiAbp.Communications/SufiChain.SufiAbp.Communications.csproj" />
-    <ProjectReference Include="../../../../framework/SufiChain.SufiAbp.Timing/SufiChain.SufiAbp.Timing.csproj" />
-    <!-- Blazor Authorization -->
+    <PackageReference Include="Volo.Abp.Timing" Version="$(AbpVersion)" />
+<!-- Blazor Authorization -->
     <PackageReference Include="Microsoft.AspNetCore.Components.Authorization" Version="$(AspNetCoreVersion)" />
   </ItemGroup>
 

@@ -1,7 +1,7 @@
 using SufiChain.SufiAbp.TenantManagement.Localization;
 using SufiChain.SufiAbp.Features;
-using SufiChain.SufiAbp.Localization;
 
+using Volo.Abp.Localization;
 namespace SufiChain.SufiAbp.TenantManagement.Features;
 
 /// <summary>

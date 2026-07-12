@@ -1,21 +1,21 @@
 using Microsoft.Extensions.DependencyInjection;
 using SufiChain.SufiAbp.Authorization;
-using SufiChain.SufiAbp.Autofac;
 using SufiChain.SufiAbp.FileManager.FileStructures;
-using SufiChain.SufiAbp.Guids;
-using SufiChain.SufiAbp.TestBase;
 using Volo.Abp;
 using Volo.Abp.Data;
 using Volo.Abp.Modularity;
 using Volo.Abp.Threading;
 
+using Volo.Abp.Autofac;
+using Volo.Abp.Guids;
+using Volo.Abp.Testing;
 namespace SufiChain.SufiAbp.FileManager;
 
 [DependsOn(
-    typeof(SufiAbpAutofacModule),
-    typeof(SufiAbpTestBaseModule),
+    typeof(AbpAutofacModule),
+    typeof(AbpTestBaseModule),
     typeof(SufiAbpAuthorizationModule),
-    typeof(SufiAbpGuidsModule)
+    typeof(AbpGuidsModule)
 )]
 public class SufiAbpFileManagerTestBaseModule : AbpModule
 {

@@ -1,8 +1,8 @@
 using SufiChain.SufiAbp.TagsManagement.Features;
 using SufiChain.SufiAbp.TagsManagement.Localization;
 using SufiChain.SufiAbp.Features;
-using SufiChain.SufiAbp.Localization;
 
+using Volo.Abp.Localization;
 namespace SufiChain.SufiAbp.TagsManagement.Features;
 
 /// <summary>

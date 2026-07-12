@@ -1,7 +1,7 @@
 using SufiChain.SufiAbp.SettingManagement.Localization;
 using SufiChain.SufiAbp.Features;
-using SufiChain.SufiAbp.Localization;
 
+using Volo.Abp.Localization;
 namespace SufiChain.SufiAbp.SettingManagement;
 
 public class SettingManagementFeatureDefinitionProvider : FeatureDefinitionProvider

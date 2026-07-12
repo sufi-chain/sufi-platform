@@ -6,7 +6,6 @@ using SufiChain.SufiAbp.Identity;
 using SufiChain.SufiAbp.Identity.Integration;
 using Volo.Abp.Modularity;
 using SufiChain.SufiAbp.Ddd;
-using SufiChain.SufiAbp.Mapperly;
 
 namespace SufiChain.SufiAbp.Identity;
 
@@ -14,7 +13,7 @@ namespace SufiChain.SufiAbp.Identity;
     typeof(SufiAbpDataModule),
     typeof(SufiAbpIdentityApplicationContractsModule),
     typeof(SufiAbpDddApplicationModule),
-    typeof(SufiAbpMapperlyModule),
+    typeof(AbpMapperlyModule),
     typeof(SufiAbpIdentityDomainModule)
 )]
 public class SufiAbpIdentityApplicationModule : AbpModule

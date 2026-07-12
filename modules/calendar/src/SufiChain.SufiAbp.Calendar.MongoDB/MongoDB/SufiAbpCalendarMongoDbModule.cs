@@ -2,7 +2,6 @@ using Microsoft.Extensions.DependencyInjection;
 using SufiChain.SufiAbp.Calendar.Calendars;
 using SufiChain.SufiAbp.Calendar.Events;
 using SufiChain.SufiAbp.Calendar.MongoDB.Repositories;
-using SufiChain.SufiAbp.MongoDB;
 using Volo.Abp.Modularity;
 using Volo.Abp.MongoDB;
 
@@ -10,7 +9,7 @@ namespace SufiChain.SufiAbp.Calendar.MongoDB;
 
 [DependsOn(
     typeof(SufiAbpCalendarDomainModule),
-    typeof(SufiAbpMongoDbModule)
+    typeof(AbpMongoDbModule)
 )]
 public class SufiAbpCalendarMongoDbModule : AbpModule
 {

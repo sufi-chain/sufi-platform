@@ -3,9 +3,9 @@ using SufiChain.SufiAbp.AI.Configuration;
 using SufiChain.SufiAbp.Ddd;
 using SufiChain.SufiAbp.FileManager.Configuration;
 using SufiChain.SufiAbp.LocalizationManagement;
-using SufiChain.SufiAbp.Mapperly;
 using Volo.Abp.Modularity;
 
+using Volo.Abp.Mapperly;
 namespace SufiChain.SufiAbp.AI;
 
 [DependsOn(
@@ -13,7 +13,7 @@ namespace SufiChain.SufiAbp.AI;
     typeof(SufiAIApplicationContractsModule),
     typeof(SufiAbpLocalizationManagementApplicationContractsModule),
     typeof(SufiAbpDddApplicationModule),
-    typeof(SufiAbpMapperlyModule)
+    typeof(AbpMapperlyModule)
 )]
 public class SufiAIApplicationModule : AbpModule
 {

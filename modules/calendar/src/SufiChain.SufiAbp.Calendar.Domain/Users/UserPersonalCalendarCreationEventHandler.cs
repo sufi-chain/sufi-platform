@@ -1,12 +1,12 @@
 using SufiChain.SufiAbp.Calendar.Calendars;
-using SufiChain.SufiAbp.DependencyInjection;
-using SufiChain.SufiAbp.EventBus.Distributed;
-using SufiChain.SufiAbp.MultiTenancy;
+using Volo.Abp.DependencyInjection;
+using Volo.Abp.EventBus.Distributed;
 using SufiChain.SufiAbp.Users;
 using Volo.Abp.Domain.Entities.Events.Distributed;
 using Volo.Abp.Guids;
 using Volo.Abp.Uow;
 
+using Volo.Abp.MultiTenancy;
 namespace SufiChain.SufiAbp.Calendar.Users;
 
 public class UserPersonalCalendarCreationEventHandler :

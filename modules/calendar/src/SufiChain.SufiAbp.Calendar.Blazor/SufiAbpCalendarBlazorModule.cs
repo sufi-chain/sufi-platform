@@ -37,6 +37,6 @@ public static class CalendarBundles
 {
     public static class Styles
     {
-        public const string Global = "Blazor.KomTheme.SufiBlazor.Global";
+        public const string Global = "Blazor.SufiTheme.SufiBlazor.Global";
     }
 }

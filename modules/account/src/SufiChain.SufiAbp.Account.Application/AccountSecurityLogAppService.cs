@@ -1,5 +1,5 @@
 using System.Threading.Tasks;
-using Volo.Abp.Application.Services;
+using SufiChain.SufiAbp.Application.Services;
 using SufiChain.SufiAbp.Identity;
 
 namespace SufiChain.SufiAbp.Account;
@@ -8,7 +8,7 @@ namespace SufiChain.SufiAbp.Account;
 /// Application service implementation for account security logging.
 /// Delegates to Identity domain's IdentitySecurityLogManager.
 /// </summary>
-public class AccountSecurityLogAppService : ApplicationService, IAccountSecurityLogAppService
+public class AccountSecurityLogAppService : SufiAbpApplicationService, IAccountSecurityLogAppService
 {
     private readonly IdentitySecurityLogManager _securityLogManager;
 

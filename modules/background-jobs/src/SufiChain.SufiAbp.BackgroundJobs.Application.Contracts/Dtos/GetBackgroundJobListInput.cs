@@ -1,6 +1,4 @@
-using SufiChain.SufiAbp.BackgroundJobs;
 using SufiChain.SufiAbp.Application.Dtos;
-using SufiChain.SufiAbp.BackgroundJobs;
 
 namespace SufiChain.SufiAbp.BackgroundJobs.Dtos;
 

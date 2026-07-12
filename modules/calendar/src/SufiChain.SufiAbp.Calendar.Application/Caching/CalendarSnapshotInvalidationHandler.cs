@@ -1,6 +1,6 @@
 using SufiChain.SufiAbp.Calendar.Events;
-using SufiChain.SufiAbp.DependencyInjection;
-using SufiChain.SufiAbp.EventBus.Distributed;
+using Volo.Abp.DependencyInjection;
+using Volo.Abp.EventBus.Distributed;
 
 namespace SufiChain.SufiAbp.Calendar.Caching;
 

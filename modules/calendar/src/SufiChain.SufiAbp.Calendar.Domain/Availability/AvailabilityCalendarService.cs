@@ -1,4 +1,4 @@
-using SufiChain.SufiAbp.DependencyInjection;
+using Volo.Abp.DependencyInjection;
 
 namespace SufiChain.SufiAbp.Calendar.Availability;
 

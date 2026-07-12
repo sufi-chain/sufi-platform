@@ -1,6 +1,5 @@
 using Riok.Mapperly.Abstractions;
 using SufiChain.SufiAbp.BackgroundJobs.Dtos;
-using SufiChain.SufiAbp.BackgroundJobs;
 using Volo.Abp.Mapperly;
 
 namespace SufiChain.SufiAbp.BackgroundJobs;

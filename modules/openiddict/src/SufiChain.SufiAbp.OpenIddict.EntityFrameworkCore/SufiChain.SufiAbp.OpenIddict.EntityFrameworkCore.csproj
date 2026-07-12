@@ -7,7 +7,7 @@
     <Description>Entity Framework Core integration for SufiAbp OpenIddict.</Description>
   </PropertyGroup>
   <ItemGroup>
-    <ProjectReference Include="../../../../framework/SufiChain.SufiAbp.EntityFrameworkCore/SufiChain.SufiAbp.EntityFrameworkCore.csproj" />
+    <PackageReference Include="Volo.Abp.EntityFrameworkCore" Version="$(AbpVersion)" />
     <ProjectReference Include="..\SufiChain.SufiAbp.OpenIddict.Domain\SufiChain.SufiAbp.OpenIddict.Domain.csproj" />
   </ItemGroup>
 </Project>

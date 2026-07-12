@@ -1,6 +1,5 @@
 using Microsoft.Extensions.DependencyInjection;
 using SufiChain.SufiAbp.BlobStoring.Database;
-using SufiChain.SufiAbp.EntityFrameworkCore;
 using Volo.Abp.EntityFrameworkCore;
 using Volo.Abp.Modularity;
 
@@ -8,7 +7,7 @@ namespace SufiChain.SufiAbp.BlobStoring.Database.EntityFrameworkCore;
 
 [DependsOn(
     typeof(SufiAbpBlobStoringDatabaseDomainModule),
-    typeof(SufiAbpEntityFrameworkCoreModule)
+    typeof(AbpEntityFrameworkCoreModule)
 )]
 public class SufiAbpBlobStoringDatabaseEntityFrameworkCoreModule : AbpModule
 {

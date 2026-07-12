@@ -7,11 +7,12 @@
   </PropertyGroup>
   
   <ItemGroup>
-    <ProjectReference Include="..\..\..\..\framework\SufiChain.SufiAbp.Ddd.Domain\SufiChain.SufiAbp.Ddd.Domain.csproj" />
+    <PackageReference Include="Volo.Abp.Localization" Version="$(AbpVersion)" />
+    <ProjectReference Include="../../../../framework/SufiChain.SufiAbp.UI.Domain.Shared/SufiChain.SufiAbp.UI.Domain.Shared.csproj" />
+    <PackageReference Include="Volo.Abp.Ddd.Domain" Version="$(AbpVersion)" />
     <ProjectReference Include="..\..\..\..\framework\SufiChain.SufiAbp.Features\SufiChain.SufiAbp.Features.csproj" />
-    <ProjectReference Include="..\..\..\..\framework\SufiChain.SufiAbp.Caching\SufiChain.SufiAbp.Caching.csproj" />
+    <PackageReference Include="Volo.Abp.Caching" Version="$(AbpVersion)" />
     <ProjectReference Include="..\..\..\..\framework\SufiChain.SufiAbp.Data\SufiChain.SufiAbp.Data.csproj" />
-    <ProjectReference Include="..\..\..\..\framework\SufiChain.SufiAbp.Localization\SufiChain.SufiAbp.Localization.csproj" />
     <ProjectReference Include="..\SufiChain.SufiAbp.FeatureManagement.Domain.Shared\SufiChain.SufiAbp.FeatureManagement.Domain.Shared.csproj" />
     <ProjectReference Include="..\..\..\tenant-management\src\SufiChain.SufiAbp.TenantManagement.Application.Contracts\SufiChain.SufiAbp.TenantManagement.Application.Contracts.csproj" />
   </ItemGroup>

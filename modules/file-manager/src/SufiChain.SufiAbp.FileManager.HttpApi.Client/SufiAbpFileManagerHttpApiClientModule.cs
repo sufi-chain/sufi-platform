@@ -1,14 +1,13 @@
 using Microsoft.Extensions.DependencyInjection;
 using Volo.Abp.Http.Client;
 using Volo.Abp.Modularity;
-using SufiChain.SufiAbp.Http.Client;
 using Volo.Abp.VirtualFileSystem;
 
 namespace SufiChain.SufiAbp.FileManager;
 
 [DependsOn(
     typeof(SufiAbpFileManagerApplicationContractsModule),
-    typeof(SufiAbpHttpClientModule))]
+    typeof(AbpHttpClientModule))]
 public class SufiAbpFileManagerHttpApiClientModule : AbpModule
 {
     public override void ConfigureServices(ServiceConfigurationContext context)

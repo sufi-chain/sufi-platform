@@ -1,7 +1,7 @@
-using SufiChain.SufiAbp;
-using SufiChain.SufiAbp.Domain.Entities.Auditing;
-using SufiChain.SufiAbp.MultiTenancy;
+using Volo.Abp;
+using Volo.Abp.Domain.Entities.Auditing;
 
+using Volo.Abp.MultiTenancy;
 namespace SufiChain.SufiAbp.Calendar.Events;
 
 public class CalendarEvent : FullAuditedAggregateRoot<Guid>, IMultiTenant

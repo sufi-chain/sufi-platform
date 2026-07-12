@@ -1,4 +1,4 @@
-using SufiChain.SufiAbp;
+using Volo.Abp;
 using SufiChain.SufiAbp.Calendar.Calendars;
 using SufiChain.SufiAbp.Calendar.Events;
 using Volo.Abp.MongoDB;

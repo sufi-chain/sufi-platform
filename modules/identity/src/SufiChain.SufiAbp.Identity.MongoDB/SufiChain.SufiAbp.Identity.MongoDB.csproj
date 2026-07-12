@@ -6,9 +6,7 @@
     <PackageId>SufiChain.SufiAbp.Identity.MongoDB</PackageId>
   </PropertyGroup>
   <ItemGroup>
-    
-    <ProjectReference Include="..\..\..\..\framework\SufiChain.SufiAbp.MongoDB\SufiChain.SufiAbp.MongoDB.csproj" />
-    
+    <PackageReference Include="Volo.Abp.MongoDB" Version="$(AbpVersion)" />
     <ProjectReference Include="..\..\..\users\src\SufiChain.SufiAbp.Users.MongoDB\SufiChain.SufiAbp.Users.MongoDB.csproj" />
     <ProjectReference Include="..\SufiChain.SufiAbp.Identity.Domain\SufiChain.SufiAbp.Identity.Domain.csproj" />
   </ItemGroup>

@@ -5,13 +5,12 @@ using SufiChain.SufiAbp.OpenIddict.Applications;
 using SufiChain.SufiAbp.OpenIddict.Authorizations;
 using SufiChain.SufiAbp.OpenIddict.Scopes;
 using SufiChain.SufiAbp.OpenIddict.Tokens;
-using SufiChain.SufiAbp.MongoDB;
 
 namespace SufiChain.SufiAbp.OpenIddict.MongoDB;
 
 [DependsOn(
     typeof(SufiAbpOpenIddictDomainModule),
-    typeof(SufiAbpMongoDbModule)
+    typeof(AbpMongoDbModule)
     )]
 public class SufiAbpOpenIddictMongoDbModule : AbpModule
 {

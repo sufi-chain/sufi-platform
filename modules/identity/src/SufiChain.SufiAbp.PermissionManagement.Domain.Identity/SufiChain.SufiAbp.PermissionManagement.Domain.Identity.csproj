@@ -10,7 +10,7 @@
     <ProjectReference Include="..\SufiChain.SufiAbp.Identity.Application.Contracts\SufiChain.SufiAbp.Identity.Application.Contracts.csproj" />
     <ProjectReference Include="..\SufiChain.SufiAbp.Identity.Domain.Shared\SufiChain.SufiAbp.Identity.Domain.Shared.csproj" />
     <ProjectReference Include="..\SufiChain.SufiAbp.Identity.Domain\SufiChain.SufiAbp.Identity.Domain.csproj" />
-    <ProjectReference Include="..\..\..\..\framework\SufiChain.SufiAbp.Guids\SufiChain.SufiAbp.Guids.csproj" />
+    <PackageReference Include="Volo.Abp.Guids" Version="$(AbpVersion)" />
     <ProjectReference Include="..\..\..\permission-management\src\SufiChain.SufiAbp.PermissionManagement.Domain\SufiChain.SufiAbp.PermissionManagement.Domain.csproj" />
   </ItemGroup>
 </Project>

@@ -1,5 +1,4 @@
 using Microsoft.Extensions.DependencyInjection;
-using SufiChain.SufiAbp.Mapperly;
 using SufiChain.SufiAbp.SettingManagement.Blazor;
 using SufiChain.SufiAbp.SettingManagement.Blazor.Settings;
 using SufiChain.SufiAbp.ShortLinkGenerator.Blazor.Menus;
@@ -13,7 +12,7 @@ namespace SufiChain.SufiAbp.ShortLinkGenerator;
 
 [DependsOn(
     typeof(SufiAbpShortLinkGeneratorApplicationContractsModule),
-    typeof(SufiAbpMapperlyModule),
+    typeof(AbpMapperlyModule),
     typeof(SufiAbpSettingManagementBlazorModule)
 )]
 public class SufiAbpShortLinkGeneratorBlazorModule : AbpModule

@@ -18,7 +18,7 @@
     <ProjectReference Include="../../../identity/src/SufiChain.SufiAbp.Identity.Domain/SufiChain.SufiAbp.Identity.Domain.csproj" />
     <ProjectReference Include="../../../../framework/SufiChain.SufiAbp.Captcha/SufiChain.SufiAbp.Captcha.csproj" />
     <ProjectReference Include="../../../../framework/SufiChain.SufiAbp.Ddd.Application/SufiChain.SufiAbp.Ddd.Application.csproj" />
-    <ProjectReference Include="../../../../framework/SufiChain.SufiAbp.Mapperly/SufiChain.SufiAbp.Mapperly.csproj" />
+    <PackageReference Include="Volo.Abp.Mapperly" Version="$(AbpVersion)" />
     <ProjectReference Include="../../../../framework/SufiChain.SufiAbp.Communications/SufiChain.SufiAbp.Communications.csproj" />
     <ProjectReference Include="../../../../framework/SufiChain.SufiAbp.TextTemplating.Scriban/SufiChain.SufiAbp.TextTemplating.Scriban.csproj" />
     <ProjectReference Include="../../../../framework/SufiChain.SufiAbp.UI.Abstractions/SufiChain.SufiAbp.UI.Abstractions.csproj" />

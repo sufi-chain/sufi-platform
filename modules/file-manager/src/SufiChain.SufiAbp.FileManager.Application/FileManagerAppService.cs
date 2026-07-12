@@ -1,9 +1,9 @@
 using SufiChain.SufiAbp.FileManager.Localization;
-using Volo.Abp.Application.Services;
+using SufiChain.SufiAbp.Application.Services;
 
 namespace SufiChain.SufiAbp.FileManager;
 
-public abstract class FileManagerAppService : ApplicationService
+public abstract class FileManagerAppService : SufiAbpApplicationService
 {
     protected FileManagerAppService()
     {

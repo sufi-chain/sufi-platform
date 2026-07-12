@@ -3,14 +3,14 @@ using SufiChain.SufiAbp.FileManager.Features;
 using SufiChain.SufiAbp.FileManager.Permissions;
 using SufiChain.SufiAbp.Features;
 using SufiChain.SufiAbp.SettingManagement;
-using Volo.Abp.Application.Services;
+using SufiChain.SufiAbp.Application.Services;
 using Volo.Abp.Settings;
 
 namespace SufiChain.SufiAbp.FileManager.Storage;
 
 [RequiresFeature(SufiAbpFileManagerFeatures.Enable, SufiAbpFileManagerFeatures.StorageSettings)]
 [Authorize(FileManagerPermissions.StorageSettings.Manage)]
-public class FileManagerStorageSettingsAppService : ApplicationService, IFileManagerStorageSettingsAppService
+public class FileManagerStorageSettingsAppService : SufiAbpApplicationService, IFileManagerStorageSettingsAppService
 {
     protected ISettingProvider SettingProvider { get; }
     protected ISettingManager SettingManager { get; }

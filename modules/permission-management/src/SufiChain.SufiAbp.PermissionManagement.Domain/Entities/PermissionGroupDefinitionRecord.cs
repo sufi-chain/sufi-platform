@@ -3,6 +3,7 @@ using Volo.Abp;
 using Volo.Abp.Data;
 using Volo.Abp.Domain.Entities;
 
+using Volo.Abp.ObjectExtending;
 namespace SufiChain.SufiAbp.PermissionManagement;
 
 public class PermissionGroupDefinitionRecord : BasicAggregateRoot<Guid>, IHasExtraProperties

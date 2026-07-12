@@ -12,7 +12,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="../../../../framework/SufiChain.SufiAbp.MongoDB/SufiChain.SufiAbp.MongoDB.csproj" />
+    <PackageReference Include="Volo.Abp.MongoDB" Version="$(AbpVersion)" />
     <ProjectReference Include="../SufiChain.SufiAbp.BlobStoring.Database.Domain/SufiChain.SufiAbp.BlobStoring.Database.Domain.csproj" />
   </ItemGroup>
 

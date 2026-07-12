@@ -6,6 +6,7 @@ using Volo.Abp.Data;
 using Volo.Abp.Domain.Entities;
 using Volo.Abp.Localization;
 
+using Volo.Abp.ObjectExtending;
 namespace SufiChain.SufiAbp.SettingManagement;
 
 public class SettingDefinitionRecord : BasicAggregateRoot<Guid>, IHasExtraProperties

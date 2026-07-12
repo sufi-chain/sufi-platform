@@ -1,13 +1,11 @@
-using SufiChain.SufiAbp.Data;
+using Volo.Abp.Data;
 
 namespace SufiChain.SufiAbp.Users;
 
 public static class ExtraPropertyDictionaryExtensions
 {
-    public static ExtraPropertyDictionary ToSufiAbpExtraProperties(this Volo.Abp.Data.ExtraPropertyDictionary? extraProperties)
+    public static ExtraPropertyDictionary EnsureNotNull(this ExtraPropertyDictionary? extraProperties)
     {
-        return extraProperties == null
-            ? new ExtraPropertyDictionary()
-            : new ExtraPropertyDictionary(extraProperties);
+        return extraProperties ?? new ExtraPropertyDictionary();
     }
 }

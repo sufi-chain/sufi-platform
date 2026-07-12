@@ -10,13 +10,13 @@ using SufiChain.SufiAbp.Identity;
 using SufiChain.SufiAbp.Identity.Settings;
 using SufiChain.SufiAbp.UI.Abstractions.Account;
 using Volo.Abp;
-using Volo.Abp.Application.Services;
+using SufiChain.SufiAbp.Application.Services;
 using Volo.Abp.EventBus.Local;
 using Volo.Abp.Settings;
 
 namespace SufiChain.SufiAbp.Account;
 
-public class AccountOtpAppService : ApplicationService, IAccountOtpAppService
+public class AccountOtpAppService : SufiAbpApplicationService, IAccountOtpAppService
 {
     protected IdentityUserManager UserManager { get; }
 

@@ -1,5 +1,4 @@
 using Microsoft.Extensions.DependencyInjection;
-using SufiChain.SufiAbp.MongoDB;
 using SufiChain.SufiAbp.ShortLinkGenerator.MongoDB.MongoDB;
 using Volo.Abp.Modularity;
 using Volo.Abp.MongoDB;
@@ -8,7 +7,7 @@ namespace SufiChain.SufiAbp.ShortLinkGenerator.MongoDB;
 
 [DependsOn(
     typeof(SufiAbpShortLinkGeneratorDomainModule),
-    typeof(SufiAbpMongoDbModule)
+    typeof(AbpMongoDbModule)
     )]
 public class SufiAbpShortLinkGeneratorMongoDbModule : AbpModule
 {

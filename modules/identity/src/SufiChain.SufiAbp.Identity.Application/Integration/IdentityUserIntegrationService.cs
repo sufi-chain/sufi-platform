@@ -79,7 +79,7 @@ public class IdentityUserIntegrationService : SufiAbpApplicationService, IIdenti
                     u.PhoneNumberConfirmed,
                     ToSystemGuidOrNull(u.TenantId),
                     u.IsActive,
-                    u.ExtraProperties.ToSufiAbpExtraProperties()))
+                    u.ExtraProperties))
                 .ToList());
     }
 
@@ -106,7 +106,7 @@ public class IdentityUserIntegrationService : SufiAbpApplicationService, IIdenti
                     r.IsStatic,
                     r.IsPublic,
                     r.TenantId,
-                    r.ExtraProperties.ToSufiAbpExtraProperties())).ToList());
+                    r.ExtraProperties)).ToList());
         }
     }
 
@@ -124,7 +124,7 @@ public class IdentityUserIntegrationService : SufiAbpApplicationService, IIdenti
                     r.IsStatic,
                     r.IsPublic,
                     r.TenantId,
-                    r.ExtraProperties.ToSufiAbpExtraProperties())).ToList());
+                    r.ExtraProperties)).ToList());
         }
     }
 

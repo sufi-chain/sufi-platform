@@ -1,5 +1,4 @@
 using Microsoft.Extensions.DependencyInjection;
-using SufiChain.SufiAbp.Http.Client;
 using Volo.Abp.Http.Client;
 using Volo.Abp.Modularity;
 using Volo.Abp.VirtualFileSystem;
@@ -8,7 +7,7 @@ namespace SufiChain.SufiAbp.LocalizationManagement;
 
 [DependsOn(
     typeof(SufiAbpLocalizationManagementApplicationContractsModule),
-    typeof(SufiAbpHttpClientModule)
+    typeof(AbpHttpClientModule)
 )]
 public class SufiAbpLocalizationManagementHttpApiClientModule : AbpModule
 {

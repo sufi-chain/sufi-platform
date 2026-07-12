@@ -1,8 +1,8 @@
 using SufiChain.SufiAbp.AI.Features;
 using SufiChain.SufiAbp.AI.Localization;
 using SufiChain.SufiAbp.Features;
-using SufiChain.SufiAbp.Localization;
 
+using Volo.Abp.Localization;
 namespace SufiChain.SufiAbp.AI.Features;
 
 /// <summary>

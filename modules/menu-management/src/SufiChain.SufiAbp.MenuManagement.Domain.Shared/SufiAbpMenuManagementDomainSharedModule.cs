@@ -1,3 +1,4 @@
+using Volo.Abp.Domain;
 using SufiChain.SufiAbp.MenuManagement.Localization;
 using SufiChain.SufiAbp.Features;
 using SufiChain.SufiAbp.Validation;
@@ -10,6 +11,7 @@ using Volo.Abp.VirtualFileSystem;
 namespace SufiChain.SufiAbp.MenuManagement;
 
 [DependsOn(
+    typeof(AbpDddDomainSharedModule),
     typeof(SufiAbpValidationModule),
     typeof(SufiAbpFeaturesModule))]
 public class SufiAbpMenuManagementDomainSharedModule : AbpModule

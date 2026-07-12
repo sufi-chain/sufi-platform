@@ -1,7 +1,7 @@
 using SufiChain.SufiAbp.SettingManagement.Localization;
 using SufiChain.SufiAbp.Authorization.Permissions;
-using SufiChain.SufiAbp.Localization;
 
+using Volo.Abp.Localization;
 namespace SufiChain.SufiAbp.SettingManagement;
 
 public class SettingManagementPermissionDefinitionProvider : PermissionDefinitionProvider

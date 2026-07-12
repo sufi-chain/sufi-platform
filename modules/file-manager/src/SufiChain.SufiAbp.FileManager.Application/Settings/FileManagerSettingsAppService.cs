@@ -3,7 +3,7 @@ using SufiChain.SufiAbp.FileManager.Features;
 using SufiChain.SufiAbp.FileManager.Permissions;
 using SufiChain.SufiAbp.Features;
 using SufiChain.SufiAbp.SettingManagement;
-using Volo.Abp.Application.Services;
+using SufiChain.SufiAbp.Application.Services;
 using Volo.Abp.Settings;
 
 namespace SufiChain.SufiAbp.FileManager.Settings;
@@ -13,7 +13,7 @@ namespace SufiChain.SufiAbp.FileManager.Settings;
 /// </summary>
 [RequiresFeature(SufiAbpFileManagerFeatures.Enable)]
 [Authorize(FileManagerPermissions.Settings.Default)]
-public class FileManagerSettingsAppService : ApplicationService, IFileManagerSettingsAppService
+public class FileManagerSettingsAppService : SufiAbpApplicationService, IFileManagerSettingsAppService
 {
     protected ISettingProvider SettingProvider { get; }
     protected ISettingManager SettingManager { get; }

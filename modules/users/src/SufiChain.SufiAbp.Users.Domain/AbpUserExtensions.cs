@@ -15,7 +15,7 @@ public static class AbpUserExtensions
             phoneNumber: user.PhoneNumber,
             phoneNumberConfirmed: user.PhoneNumberConfirmed,
             tenantId: user.TenantId,
-            extraProperties: user.ExtraProperties.ToSufiAbpExtraProperties()
+            extraProperties: user.ExtraProperties.EnsureNotNull()
         );
     }
 }

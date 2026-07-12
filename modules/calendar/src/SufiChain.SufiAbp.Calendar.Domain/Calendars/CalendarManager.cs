@@ -1,7 +1,7 @@
-using SufiChain.SufiAbp;
-using SufiChain.SufiAbp.Domain.Services;
-using SufiChain.SufiAbp.MultiTenancy;
+using Volo.Abp;
+using Volo.Abp.Domain.Services;
 
+using Volo.Abp.MultiTenancy;
 namespace SufiChain.SufiAbp.Calendar.Calendars;
 
 public class CalendarManager : DomainService

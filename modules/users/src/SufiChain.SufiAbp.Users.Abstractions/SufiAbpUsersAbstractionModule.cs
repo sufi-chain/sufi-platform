@@ -1,12 +1,12 @@
-using SufiChain.SufiAbp.EventBus;
-using SufiChain.SufiAbp.MultiTenancy;
 using Volo.Abp.Modularity;
 
+using Volo.Abp.EventBus;
+using Volo.Abp.MultiTenancy;
 namespace SufiChain.SufiAbp.Users;
 
 [DependsOn(
-    typeof(SufiAbpMultiTenancyModule),
-    typeof(SufiAbpEventBusModule)
+    typeof(AbpMultiTenancyModule),
+    typeof(AbpEventBusModule)
     )]
 public class SufiAbpUsersAbstractionModule : AbpModule
 {

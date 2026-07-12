@@ -8,9 +8,9 @@
   <ItemGroup>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\..\framework\SufiChain.SufiAbp.Ddd.Domain\SufiChain.SufiAbp.Ddd.Domain.csproj" />
-    <ProjectReference Include="..\..\..\..\framework\SufiChain.SufiAbp.BackgroundJobs\SufiChain.SufiAbp.BackgroundJobs.csproj" />
-    <ProjectReference Include="..\..\..\..\framework\SufiChain.SufiAbp.Mapperly\SufiChain.SufiAbp.Mapperly.csproj" />
+    <PackageReference Include="Volo.Abp.Ddd.Domain" Version="$(AbpVersion)" />
+    <PackageReference Include="Volo.Abp.BackgroundJobs" Version="$(AbpVersion)" />
+    <PackageReference Include="Volo.Abp.Mapperly" Version="$(AbpVersion)" />
     <ProjectReference Include="..\SufiChain.SufiAbp.BackgroundJobs.Domain.Shared\SufiChain.SufiAbp.BackgroundJobs.Domain.Shared.csproj" />
   </ItemGroup>
 </Project>

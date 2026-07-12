@@ -6,7 +6,6 @@ using SufiChain.SufiAbp.FileManager.FileStructures;
 using SufiChain.SufiAbp.FileManager.MongoDB;
 using SufiChain.SufiAbp.FileManager.Repositories;
 using SufiChain.SufiAbp.FileManager.Storage;
-using SufiChain.SufiAbp.MongoDB;
 using Volo.Abp.BlobStoring;
 using SufiChain.SufiAbp.BlobStoring.Database;
 using Volo.Abp.Data;
@@ -17,7 +16,7 @@ namespace SufiChain.SufiAbp.FileManager;
 
 [DependsOn(
     typeof(SufiAbpFileManagerDomainModule),
-    typeof(SufiAbpMongoDbModule),
+    typeof(AbpMongoDbModule),
     typeof(SufiAbpBlobStoringDatabaseMongoDbModule)
 )]
 public class SufiAbpFileManagerMongoDbModule : AbpModule

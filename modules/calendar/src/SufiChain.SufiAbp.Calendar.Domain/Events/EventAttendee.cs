@@ -1,5 +1,5 @@
-using SufiChain.SufiAbp;
-using SufiChain.SufiAbp.Domain.Entities;
+using Volo.Abp;
+using Volo.Abp.Domain.Entities;
 
 namespace SufiChain.SufiAbp.Calendar.Events;
 

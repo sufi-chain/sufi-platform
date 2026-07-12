@@ -11,7 +11,7 @@ using SufiChain.SufiAbp.LocalizationManagement.Permissions;
 using SufiChain.SufiAbp.LocalizationManagement.Repositories;
 using Volo.Abp;
 using SufiChain.SufiAbp.Application.Dtos;
-using Volo.Abp.Application.Services;
+using SufiChain.SufiAbp.Application.Services;
 using Volo.Abp.Localization;
 using Volo.Abp.Localization.External;
 using LocalizationResourceEntity = SufiChain.SufiAbp.LocalizationManagement.Entities.LocalizationResource;
@@ -19,7 +19,7 @@ using LocalizationResourceEntity = SufiChain.SufiAbp.LocalizationManagement.Enti
 namespace SufiChain.SufiAbp.LocalizationManagement;
 
 [Authorize(LocalizationManagementPermissions.Resources.Default)]
-public class LocalizationResourceAppService : ApplicationService, ILocalizationResourceAppService
+public class LocalizationResourceAppService : SufiAbpApplicationService, ILocalizationResourceAppService
 {
     private readonly ILocalizationResourceRepository _resourceRepository;
     private readonly ILocalizationTextRepository _textRepository;

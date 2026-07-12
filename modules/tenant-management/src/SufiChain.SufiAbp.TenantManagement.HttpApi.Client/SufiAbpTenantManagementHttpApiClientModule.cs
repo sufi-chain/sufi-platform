@@ -1,8 +1,8 @@
 using Microsoft.Extensions.DependencyInjection;
-using SufiChain.SufiAbp.Http.Client;
 using Volo.Abp.Modularity;
 using Volo.Abp.VirtualFileSystem;
 
+using Volo.Abp.Http.Client;
 namespace SufiChain.SufiAbp.TenantManagement;
 
 /// <summary>
@@ -13,7 +13,7 @@ namespace SufiChain.SufiAbp.TenantManagement;
 /// </summary>
 [DependsOn(
     typeof(SufiAbpTenantManagementApplicationContractsModule),
-    typeof(SufiAbpHttpClientModule))]
+    typeof(AbpHttpClientModule))]
 public class SufiAbpTenantManagementHttpApiClientModule : AbpModule
 {
     public override void ConfigureServices(ServiceConfigurationContext context)

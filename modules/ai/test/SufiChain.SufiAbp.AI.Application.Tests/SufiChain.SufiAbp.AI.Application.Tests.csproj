@@ -7,7 +7,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\..\framework\SufiChain.SufiAbp.EntityFrameworkCore.Sqlite\SufiChain.SufiAbp.EntityFrameworkCore.Sqlite.csproj" />
     <ProjectReference Include="..\SufiChain.SufiAbp.AI.TestBase\SufiChain.SufiAbp.AI.TestBase.csproj" />
     <ProjectReference Include="..\..\src\SufiChain.SufiAbp.AI.Application\SufiChain.SufiAbp.AI.Application.csproj" />
     <ProjectReference Include="..\..\src\SufiChain.SufiAbp.AI.EntityFrameworkCore\SufiChain.SufiAbp.AI.EntityFrameworkCore.csproj" />

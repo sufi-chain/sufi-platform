@@ -7,14 +7,14 @@ using SufiChain.SufiAbp.TagsManagement.Features;
 using SufiChain.SufiAbp.TagsManagement.Permissions;
 using SufiChain.SufiAbp.TagsManagement.Settings;
 using Volo.Abp;
-using Volo.Abp.Application.Services;
+using SufiChain.SufiAbp.Application.Services;
 using SufiChain.SufiAbp.Features;
 
 namespace SufiChain.SufiAbp.TagsManagement.Tags;
 
 [RequiresFeature(SufiAbpTagsManagementFeatures.Enable, SufiAbpTagsManagementFeatures.TagLinks)]
 [Authorize(TagsManagementPermissions.TagLinks.Default)]
-public class TagLinkAppService : ApplicationService, ITagLinkAppService
+public class TagLinkAppService : SufiAbpApplicationService, ITagLinkAppService
 {
     private readonly ITagRepository _tagRepository;
     private readonly ITagLinkRepository _tagLinkRepository;

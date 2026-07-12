@@ -1,4 +1,4 @@
-using SufiChain.SufiAbp.Mapperly;
+using Volo.Abp.Mapperly;
 using Volo.Abp.Modularity;
 
 namespace SufiChain.SufiAbp.TagsManagement;
@@ -6,7 +6,7 @@ namespace SufiChain.SufiAbp.TagsManagement;
 [DependsOn(
     typeof(SufiAbpTagsManagementDomainModule),
     typeof(SufiAbpTagsManagementApplicationContractsModule),
-    typeof(SufiAbpMapperlyModule)
+    typeof(AbpMapperlyModule)
 )]
 public class SufiAbpTagsManagementApplicationModule : AbpModule
 {

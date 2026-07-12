@@ -11,7 +11,7 @@ using SufiChain.SufiAbp.ShortLinkGenerator.Permissions;
 using SufiChain.SufiAbp.ShortLinkGenerator.Settings;
 using Volo.Abp;
 using SufiChain.SufiAbp.Application.Dtos;
-using Volo.Abp.Application.Services;
+using SufiChain.SufiAbp.Application.Services;
 using Volo.Abp.Caching;
 using Volo.Abp.Domain.Repositories;
 using Volo.Abp.Linq;
@@ -22,7 +22,7 @@ namespace SufiChain.SufiAbp.ShortLinkGenerator;
 
 [RequiresFeature(SufiAbpShortLinkGeneratorFeatures.Enable, SufiAbpShortLinkGeneratorFeatures.ShortLinks)]
 [Authorize(ShortLinkGeneratorPermissions.ShortLinks.Default)]
-public class ShortUrlAppService : ApplicationService, IShortUrlAppService
+public class ShortUrlAppService : SufiAbpApplicationService, IShortUrlAppService
 {
     private readonly IShortUrlRepository _repository;
     private readonly IRepository<ShortUrlClick, Guid> _clickRepository;

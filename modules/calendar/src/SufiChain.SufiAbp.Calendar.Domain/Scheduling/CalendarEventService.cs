@@ -1,5 +1,5 @@
 using SufiChain.SufiAbp.Calendar.Events;
-using SufiChain.SufiAbp.DependencyInjection;
+using Volo.Abp.DependencyInjection;
 
 namespace SufiChain.SufiAbp.Calendar.Scheduling;
 

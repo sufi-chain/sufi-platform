@@ -2,7 +2,7 @@ using Microsoft.AspNetCore.Authorization;
 using SufiChain.SufiAbp.AuditLogging.Dtos;
 using SufiChain.SufiAbp.AuditLogging.Permissions;
 using SufiChain.SufiAbp.Application.Dtos;
-using Volo.Abp.Application.Services;
+using SufiChain.SufiAbp.Application.Services;
 using SufiChain.SufiAbp.AuditLogging;
 
 namespace SufiChain.SufiAbp.AuditLogging;
@@ -11,7 +11,7 @@ namespace SufiChain.SufiAbp.AuditLogging;
 /// Application service for managing audit logs.
 /// </summary>
 [Authorize(AuditLoggingPermissions.AuditLogs.Default)]
-public class AuditLogAppService : ApplicationService, IAuditLogAppService
+public class AuditLogAppService : SufiAbpApplicationService, IAuditLogAppService
 {
     private readonly IAuditLogRepository _auditLogRepository;
 

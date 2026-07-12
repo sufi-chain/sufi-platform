@@ -10,7 +10,7 @@
     <Description>Calendar module MongoDB implementation for Sufi Platform.</Description>
   </PropertyGroup>
   <ItemGroup>
-    <ProjectReference Include="../../../../framework/SufiChain.SufiAbp.MongoDB/SufiChain.SufiAbp.MongoDB.csproj" />
+    <PackageReference Include="Volo.Abp.MongoDB" Version="$(AbpVersion)" />
     <ProjectReference Include="..\SufiChain.SufiAbp.Calendar.Domain\SufiChain.SufiAbp.Calendar.Domain.csproj" />
   </ItemGroup>
 </Project>

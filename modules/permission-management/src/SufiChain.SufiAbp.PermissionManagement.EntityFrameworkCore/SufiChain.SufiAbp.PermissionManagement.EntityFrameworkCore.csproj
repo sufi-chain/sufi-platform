@@ -6,7 +6,7 @@
     <PackageId>SufiChain.SufiAbp.PermissionManagement.EntityFrameworkCore</PackageId>
   </PropertyGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\..\framework\SufiChain.SufiAbp.EntityFrameworkCore\SufiChain.SufiAbp.EntityFrameworkCore.csproj" />
+    <PackageReference Include="Volo.Abp.EntityFrameworkCore" Version="$(AbpVersion)" />
     <ProjectReference Include="..\SufiChain.SufiAbp.PermissionManagement.Domain\SufiChain.SufiAbp.PermissionManagement.Domain.csproj" />
   </ItemGroup>
 </Project>

@@ -1,17 +1,17 @@
 using Microsoft.Extensions.DependencyInjection;
 using SufiChain.SufiAbp.Calendar.Availability;
 using SufiChain.SufiAbp.Calendar.Caching;
-using SufiChain.SufiAbp.Caching;
 using SufiChain.SufiAbp.Ddd;
 using Volo.Abp.Modularity;
 
+using Volo.Abp.Caching;
 namespace SufiChain.SufiAbp.Calendar;
 
 [DependsOn(
     typeof(SufiAbpCalendarDomainModule),
     typeof(SufiAbpCalendarApplicationContractsModule),
     typeof(SufiAbpDddApplicationModule),
-    typeof(SufiAbpCachingModule)
+    typeof(AbpCachingModule)
 )]
 public class SufiAbpCalendarApplicationModule : AbpModule
 {

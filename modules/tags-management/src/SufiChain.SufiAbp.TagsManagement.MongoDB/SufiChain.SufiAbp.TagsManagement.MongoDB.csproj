@@ -5,7 +5,7 @@
     <RootNamespace>SufiChain.SufiAbp.TagsManagement.MongoDB</RootNamespace>
   </PropertyGroup>
   <ItemGroup>
-    <ProjectReference Include="../../../../framework/SufiChain.SufiAbp.MongoDB/SufiChain.SufiAbp.MongoDB.csproj" />
+    <PackageReference Include="Volo.Abp.MongoDB" Version="$(AbpVersion)" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="../SufiChain.SufiAbp.TagsManagement.Domain/SufiChain.SufiAbp.TagsManagement.Domain.csproj" />

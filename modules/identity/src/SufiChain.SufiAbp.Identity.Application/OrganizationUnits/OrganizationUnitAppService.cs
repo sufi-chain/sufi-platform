@@ -3,7 +3,7 @@ using SufiChain.SufiAbp.Identity.OrganizationUnits;
 using SufiChain.SufiAbp.Identity.OrganizationUnits.Dtos;
 using SufiChain.SufiAbp.Identity.Permissions;
 using SufiChain.SufiAbp.Application.Dtos;
-using Volo.Abp.Application.Services;
+using SufiChain.SufiAbp.Application.Services;
 using SufiChain.SufiAbp.Identity;
 
 namespace SufiChain.SufiAbp.Identity.OrganizationUnits;
@@ -13,7 +13,7 @@ namespace SufiChain.SufiAbp.Identity.OrganizationUnits;
 /// Uses ABP Identity Domain services for all operations.
 /// </summary>
 [Authorize(IdentityPermissions.OrganizationUnits.Default)]
-public class OrganizationUnitAppService : ApplicationService, IOrganizationUnitAppService
+public class OrganizationUnitAppService : SufiAbpApplicationService, IOrganizationUnitAppService
 {
     private readonly OrganizationUnitManager _organizationUnitManager;
     private readonly IOrganizationUnitRepository _organizationUnitRepository;

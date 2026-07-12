@@ -12,8 +12,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="../../../../framework/SufiChain.SufiAbp.Ddd.Domain/SufiChain.SufiAbp.Ddd.Domain.csproj" />
-    <ProjectReference Include="../../../../framework/SufiChain.SufiAbp.BlobStoring/SufiChain.SufiAbp.BlobStoring.csproj" />
+    <PackageReference Include="Volo.Abp.Ddd.Domain" Version="$(AbpVersion)" />
+    <PackageReference Include="Volo.Abp.BlobStoring" Version="$(AbpVersion)" />
     <ProjectReference Include="../SufiChain.SufiAbp.BlobStoring.Database.Domain.Shared/SufiChain.SufiAbp.BlobStoring.Database.Domain.Shared.csproj" />
   </ItemGroup>
 

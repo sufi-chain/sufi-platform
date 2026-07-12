@@ -14,9 +14,7 @@ using SufiChain.SufiAbp.AI.MongoDB;
 using SufiChain.SufiAbp.AI.Pgvector;
 using SufiChain.SufiAbp.AI.Qdrant;
 using SufiChain.SufiAbp.AspNetCore.Mvc;
-using SufiChain.SufiAbp.AspNetCore.Serilog;
 using SufiChain.SufiAbp.AuditLogging.MongoDB;
-using SufiChain.SufiAbp.Autofac;
 using SufiChain.SufiAbp.Data;
 using SufiChain.SufiAbp.FeatureManagement;
 using SufiChain.SufiAbp.FeatureManagement.Blazor.Server;
@@ -24,9 +22,6 @@ using SufiChain.SufiAbp.FeatureManagement.MongoDB;
 using SufiChain.SufiAbp.Identity;
 using SufiChain.SufiAbp.Identity.Blazor.Server;
 using SufiChain.SufiAbp.Identity.MongoDB;
-using SufiChain.SufiAbp.Localization;
-using SufiChain.SufiAbp.Modularity;
-using SufiChain.SufiAbp.MultiTenancy;
 using SufiChain.SufiAbp.OpenIddict;
 using SufiChain.SufiAbp.OpenIddict.MongoDB;
 using SufiChain.SufiAbp.PermissionManagement;
@@ -36,14 +31,12 @@ using SufiChain.SufiAbp.PermissionManagement.MongoDB;
 using SufiChain.SufiAbp.SettingManagement;
 using SufiChain.SufiAbp.SettingManagement.Blazor.Server;
 using SufiChain.SufiAbp.SettingManagement.MongoDB;
-using SufiChain.SufiAbp.Swashbuckle;
+using Volo.Abp.Modularity;
 using SufiChain.SufiAbp.TenantManagement;
 using SufiChain.SufiAbp.TenantManagement.Blazor.Server;
 using SufiChain.SufiAbp.TenantManagement.MongoDB;
-using SufiChain.SufiAbp.Threading;
 using SufiChain.SufiAbp.UI.Navigation;
-using SufiChain.SufiAbp.VirtualFileSystem;
-using SufiChain.KomTheme.Blazor;
+using SufiChain.SufiTheme.Blazor;
 using Volo.Abp.Threading;
 using Volo.Abp.Data;
 using SufiChain.SufiAbp.Core;
@@ -51,6 +44,9 @@ using SufiChain.SufiAbp.AspNetCore;
 using Volo.Abp.VirtualFileSystem;
 using Microsoft.OpenApi;
 
+using Volo.Abp.Autofac;
+using Volo.Abp.Swashbuckle;
+using Volo.Abp.AspNetCore.Serilog;
 namespace SufiChain.SufiAbp.AI;
 
 [DependsOn(
@@ -93,13 +89,13 @@ namespace SufiChain.SufiAbp.AI;
     typeof(SufiAbpSettingManagementBlazorServerModule),
     typeof(SufiAbpTenantManagementBlazorServerModule),
     
-    // KomTheme
-    typeof(SufiAbpKomThemeBlazorModule),
+    // SufiTheme
+    typeof(SufiAbpSufiThemeBlazorModule),
     
     // SufiAbp Framework
-    typeof(SufiAbpAutofacModule),
-    typeof(SufiAbpAspNetCoreSerilogModule),
-    typeof(SufiAbpSwashbuckleModule),
+    typeof(AbpAutofacModule),
+    typeof(AbpAspNetCoreSerilogModule),
+    typeof(AbpSwashbuckleModule),
     typeof(SufiAbpOpenIddictAspNetCoreModule)
 )]
 public class AIBlazorHostModule : SufiAbpModule

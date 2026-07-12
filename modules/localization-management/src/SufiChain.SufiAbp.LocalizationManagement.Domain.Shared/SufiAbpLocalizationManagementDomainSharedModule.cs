@@ -5,16 +5,16 @@ using Volo.Abp.Domain;
 using Volo.Abp.Localization.ExceptionHandling;
 using Volo.Abp.Validation;
 using Volo.Abp.VirtualFileSystem;
-using SufiChain.SufiAbp.UI;
 using SufiChain.SufiAbp.Validation;
-using SufiChain.SufiAbp.Ddd;
+
+using SufiChain.SufiAbp.UI;
 
 namespace SufiChain.SufiAbp.LocalizationManagement;
 
 [DependsOn(
     typeof(SufiAbpUiDomainSharedModule),
     typeof(SufiAbpValidationModule),
-    typeof(SufiAbpDddDomainSharedModule)
+    typeof(AbpDddDomainSharedModule)
 )]
 public class SufiAbpLocalizationManagementDomainSharedModule : AbpModule
 {

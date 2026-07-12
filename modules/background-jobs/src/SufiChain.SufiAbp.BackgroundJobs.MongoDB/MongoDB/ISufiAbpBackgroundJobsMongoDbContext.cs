@@ -1,5 +1,4 @@
 using MongoDB.Driver;
-using SufiChain.SufiAbp.BackgroundJobs;
 using Volo.Abp.Data;
 using Volo.Abp.MongoDB;
 using Volo.Abp.MultiTenancy;

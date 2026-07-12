@@ -10,7 +10,7 @@
     <Description>Calendar module HTTP API client proxies for Sufi Platform.</Description>
   </PropertyGroup>
   <ItemGroup>
-    <ProjectReference Include="../../../../framework/SufiChain.SufiAbp.Http.Client/SufiChain.SufiAbp.Http.Client.csproj" />
+    <PackageReference Include="Volo.Abp.Http.Client" Version="$(AbpVersion)" />
     <ProjectReference Include="..\SufiChain.SufiAbp.Calendar.Application.Contracts\SufiChain.SufiAbp.Calendar.Application.Contracts.csproj" />
   </ItemGroup>
   <ItemGroup>

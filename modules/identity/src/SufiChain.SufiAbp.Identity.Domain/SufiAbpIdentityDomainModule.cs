@@ -7,8 +7,6 @@ using Volo.Abp.Domain.Entities.Events.Distributed;
 using Volo.Abp.Mapperly;
 using Volo.Abp.Security.Claims;
 using Volo.Abp.Settings;
-using SufiChain.SufiAbp.Ddd;
-using SufiChain.SufiAbp.Mapperly;
 using SufiChain.SufiAbp.Users;
 
 namespace SufiChain.SufiAbp.Identity;
@@ -16,8 +14,8 @@ namespace SufiChain.SufiAbp.Identity;
 [DependsOn(
     typeof(SufiAbpIdentityDomainSharedModule),
     typeof(SufiAbpUsersDomainModule),
-    typeof(SufiAbpDddDomainModule),
-    typeof(SufiAbpMapperlyModule),
+    typeof(AbpDddDomainModule),
+    typeof(AbpMapperlyModule),
     typeof(AbpSettingsModule)
 )]
 public class SufiAbpIdentityDomainModule : AbpModule

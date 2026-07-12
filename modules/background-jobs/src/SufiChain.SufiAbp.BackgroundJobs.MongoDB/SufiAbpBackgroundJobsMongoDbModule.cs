@@ -1,5 +1,4 @@
 using Microsoft.Extensions.DependencyInjection;
-using SufiChain.SufiAbp.MongoDB;
 using Volo.Abp.Modularity;
 using Volo.Abp.MongoDB;
 
@@ -7,7 +6,7 @@ namespace SufiChain.SufiAbp.BackgroundJobs.MongoDB;
 
 [DependsOn(
     typeof(SufiAbpBackgroundJobsDomainModule),
-    typeof(SufiAbpMongoDbModule)
+    typeof(AbpMongoDbModule)
     )]
 public class SufiAbpBackgroundJobsMongoDbModule : AbpModule
 {

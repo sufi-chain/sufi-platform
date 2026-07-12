@@ -2,7 +2,6 @@ using SufiChain.SufiAbp.UI.Localization;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using SufiChain.SufiAbp.AspNetCore.Mvc;
-using SufiChain.SufiAbp.BlobStoring;
 using SufiChain.SufiAbp.FileManager.Configuration;
 using SufiChain.SufiAbp.FileManager.Localization;
 using Volo.Abp.AspNetCore.Mvc;
@@ -15,7 +14,7 @@ namespace SufiChain.SufiAbp.FileManager;
 [DependsOn(
     typeof(SufiAbpFileManagerApplicationContractsModule),
     typeof(SufiAbpAspNetCoreMvcModule),
-    typeof(SufiAbpBlobStoringModule))]
+    typeof(AbpBlobStoringModule))]
 public class SufiAbpFileManagerHttpApiModule : AbpModule
 {
     public override void PreConfigureServices(ServiceConfigurationContext context)

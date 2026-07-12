@@ -10,7 +10,7 @@ using SufiChain.SufiAbp.FileManager.FileItems;
 using SufiChain.SufiAbp.FileManager.Permissions;
 using SufiChain.SufiAbp.Features;
 using Volo.Abp;
-using Volo.Abp.Application.Services;
+using SufiChain.SufiAbp.Application.Services;
 using Volo.Abp.Authorization;
 using Volo.Abp.Domain.Repositories;
 
@@ -20,7 +20,7 @@ namespace SufiChain.SufiAbp.FileManager.FileFolders;
 /// Application service for folder management
 /// </summary>
 [RequiresFeature(SufiAbpFileManagerFeatures.Enable, SufiAbpFileManagerFeatures.FileItems)]
-public class FolderAppService : ApplicationService, IFolderAppService
+public class FolderAppService : SufiAbpApplicationService, IFolderAppService
 {
    private readonly IFileFolderRepository _folderRepository;
    private readonly IFileItemRepository _fileItemRepository;

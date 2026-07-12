@@ -8,6 +8,7 @@ using Volo.Abp.Domain.Entities;
 using Volo.Abp.Guids;
 using Volo.Abp.MultiTenancy;
 
+using Volo.Abp.ObjectExtending;
 namespace SufiChain.SufiAbp.AuditLogging;
 
 [DisableAuditing]

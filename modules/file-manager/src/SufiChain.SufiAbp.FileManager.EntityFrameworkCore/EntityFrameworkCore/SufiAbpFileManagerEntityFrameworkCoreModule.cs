@@ -1,6 +1,5 @@
 using Microsoft.Extensions.DependencyInjection;
 using SufiChain.SufiAbp.BlobStoring.Database.EntityFrameworkCore;
-using SufiChain.SufiAbp.EntityFrameworkCore;
 using SufiChain.SufiAbp.FileManager.FileFolders;
 using SufiChain.SufiAbp.FileManager.FileItems;
 using SufiChain.SufiAbp.FileManager.FileStructures;
@@ -16,7 +15,7 @@ namespace SufiChain.SufiAbp.FileManager.EntityFrameworkCore;
 
 [DependsOn(
     typeof(SufiAbpFileManagerDomainModule),
-    typeof(SufiAbpEntityFrameworkCoreModule),
+    typeof(AbpEntityFrameworkCoreModule),
     typeof(SufiAbpBlobStoringDatabaseEntityFrameworkCoreModule)
 )]
 public class SufiAbpFileManagerEntityFrameworkCoreModule : AbpModule

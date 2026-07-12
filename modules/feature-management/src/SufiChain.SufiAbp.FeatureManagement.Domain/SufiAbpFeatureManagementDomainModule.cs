@@ -1,5 +1,4 @@
 using Microsoft.Extensions.DependencyInjection;
-using SufiChain.SufiAbp.Caching;
 using SufiChain.SufiAbp.FeatureManagement.Localization;
 using SufiChain.SufiAbp.TenantManagement;
 using Volo.Abp;
@@ -10,12 +9,13 @@ using Volo.Abp.Localization.ExceptionHandling;
 using Volo.Abp.Modularity;
 using Volo.Abp.Threading;
 
+using Volo.Abp.Caching;
 namespace SufiChain.SufiAbp.FeatureManagement;
 
 [DependsOn(
     typeof(SufiAbpFeatureManagementDomainSharedModule),
     typeof(SufiAbpFeaturesModule),
-    typeof(SufiAbpCachingModule)
+    typeof(AbpCachingModule)
     )]
 public class SufiAbpFeatureManagementDomainModule : AbpModule
 {

@@ -1,4 +1,4 @@
-using SufiChain.SufiAbp.Domain.Entities;
+using Volo.Abp.Domain.Entities;
 
 namespace SufiChain.SufiAbp.Calendar.Calendars;
 

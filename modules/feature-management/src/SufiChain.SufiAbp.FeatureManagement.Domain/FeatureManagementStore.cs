@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using SufiChain.SufiAbp.Caching;
 using Volo.Abp.Caching;
 using Volo.Abp.DependencyInjection;
 using SufiChain.SufiAbp.Features;
@@ -12,7 +11,7 @@ namespace SufiChain.SufiAbp.FeatureManagement;
 
 public class FeatureManagementStore : IFeatureManagementStore, ITransientDependency
 {
-    protected SufiChain.SufiAbp.Caching.IDistributedCache<FeatureValueCacheItem> Cache { get; }
+    protected IDistributedCache<FeatureValueCacheItem> Cache { get; }
     protected IFeatureDefinitionManager FeatureDefinitionManager { get; }
     protected IFeatureValueRepository FeatureValueRepository { get; }
     protected IGuidGenerator GuidGenerator { get; }
@@ -20,7 +19,7 @@ public class FeatureManagementStore : IFeatureManagementStore, ITransientDepende
     public FeatureManagementStore(
         IFeatureValueRepository featureValueRepository,
         IGuidGenerator guidGenerator,
-        SufiChain.SufiAbp.Caching.IDistributedCache<FeatureValueCacheItem> cache,
+        IDistributedCache<FeatureValueCacheItem> cache,
         IFeatureDefinitionManager featureDefinitionManager)
     {
         FeatureValueRepository = featureValueRepository;

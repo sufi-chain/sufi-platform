@@ -4,8 +4,9 @@ using Volo.Abp.Localization.ExceptionHandling;
 using Volo.Abp.Modularity;
 using Volo.Abp.VirtualFileSystem;
 using SufiChain.SufiAbp.AuditLogging.Localization;
-using SufiChain.SufiAbp.UI;
 using SufiChain.SufiAbp.UI.Localization;
+
+using SufiChain.SufiAbp.UI;
 
 namespace SufiChain.SufiAbp.AuditLogging;
 

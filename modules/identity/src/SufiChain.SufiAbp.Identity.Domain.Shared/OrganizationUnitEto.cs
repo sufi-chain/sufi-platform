@@ -1,7 +1,7 @@
 using System;
-using SufiChain.SufiAbp.Auditing;
-using SufiChain.SufiAbp.MultiTenancy;
+using Volo.Abp.Auditing;
 
+using Volo.Abp.MultiTenancy;
 namespace SufiChain.SufiAbp.Identity;
 
 [Serializable]

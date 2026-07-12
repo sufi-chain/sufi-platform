@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using SufiChain.SufiAbp.AI.Features;
-using Volo.Abp.Application.Services;
+using SufiChain.SufiAbp.Application.Services;
 using SufiChain.SufiAbp.Features;
 using SufiChain.SufiAbp.AI.Permissions;
 
@@ -8,7 +8,7 @@ namespace SufiChain.SufiAbp.AI.RAG;
 
 [RequiresFeature(SufiAIFeatures.Enable)]
 [Authorize(AIPermissions.RAG.Default)]
-public class RAGAppService : ApplicationService, IRAGAppService
+public class RAGAppService : SufiAbpApplicationService, IRAGAppService
 {
     private readonly IRAGService _ragService;
 

@@ -1,8 +1,8 @@
 using SufiChain.SufiAbp.FileManager.Features;
 using SufiChain.SufiAbp.FileManager.Localization;
 using SufiChain.SufiAbp.Features;
-using SufiChain.SufiAbp.Localization;
 
+using Volo.Abp.Localization;
 namespace SufiChain.SufiAbp.FileManager.Features;
 
 /// <summary>

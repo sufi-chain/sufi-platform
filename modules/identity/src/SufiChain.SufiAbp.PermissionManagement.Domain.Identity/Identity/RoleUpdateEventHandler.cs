@@ -3,7 +3,7 @@ using SufiChain.SufiAbp.Authorization.Permissions;
 using Volo.Abp.DependencyInjection;
 using Volo.Abp.EventBus.Distributed;
 using SufiChain.SufiAbp.Identity;
-using SufiChain.SufiAbp.Uow;
+using Volo.Abp.Uow;
 using Volo.Abp.Uow;
 
 namespace SufiChain.SufiAbp.PermissionManagement.Identity;

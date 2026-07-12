@@ -10,7 +10,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\SufiChain.SufiAbp.Users.Domain.Shared\SufiChain.SufiAbp.Users.Domain.Shared.csproj" />
-    <ProjectReference Include="..\..\..\..\framework\SufiChain.SufiAbp.Ddd.Domain\SufiChain.SufiAbp.Ddd.Domain.csproj" />
+    <PackageReference Include="Volo.Abp.Ddd.Domain" Version="$(AbpVersion)" />
   </ItemGroup>
 
 </Project>

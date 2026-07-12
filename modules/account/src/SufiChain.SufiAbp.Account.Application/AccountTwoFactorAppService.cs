@@ -9,14 +9,14 @@ using SufiChain.SufiAbp.Identity.Settings;
 using SufiChain.SufiAbp.UI.Abstractions.Account;
 using Microsoft.AspNetCore.Authorization;
 using Volo.Abp;
-using Volo.Abp.Application.Services;
+using SufiChain.SufiAbp.Application.Services;
 using Volo.Abp.EventBus.Local;
 using Volo.Abp.Settings;
 using Volo.Abp.Users;
 
 namespace SufiChain.SufiAbp.Account;
 
-public class AccountTwoFactorAppService : ApplicationService, IAccountTwoFactorAppService
+public class AccountTwoFactorAppService : SufiAbpApplicationService, IAccountTwoFactorAppService
 {
     protected IdentityUserManager UserManager { get; }
 

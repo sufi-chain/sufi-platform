@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>netstandard2.0;netstandard2.1;net10.0</TargetFrameworks>
+    <TargetFrameworks>netstandard2.1;net10.0</TargetFrameworks>
     <Nullable>enable</Nullable>
     <RootNamespace>SufiChain.SufiAbp.PermissionManagement</RootNamespace>
     <GenerateEmbeddedFilesManifest>true</GenerateEmbeddedFilesManifest>
@@ -14,8 +14,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\..\framework\SufiChain.SufiAbp.UI.Domain.Shared\SufiChain.SufiAbp.UI.Domain.Shared.csproj" />
-    <ProjectReference Include="..\..\..\..\framework\SufiChain.SufiAbp.EventBus\SufiChain.SufiAbp.EventBus.csproj" />
-    
+    <PackageReference Include="Volo.Abp.EventBus" Version="$(AbpVersion)" />
   </ItemGroup>
 
   <ItemGroup>

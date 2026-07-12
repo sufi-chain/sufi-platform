@@ -15,11 +15,12 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Volo.Abp.Localization" Version="$(AbpVersion)" />
+    <ProjectReference Include="../../../../framework/SufiChain.SufiAbp.UI.Domain.Shared/SufiChain.SufiAbp.UI.Domain.Shared.csproj" />
     <!-- Resolve version conflict with SufiBlazor -->
     <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="$(MicrosoftAspNetCoreComponentsWebVersion)" />
     <!-- ABP FeatureManagement -->
     <ProjectReference Include="../SufiChain.SufiAbp.FeatureManagement.Application.Contracts/SufiChain.SufiAbp.FeatureManagement.Application.Contracts.csproj" />
-    <ProjectReference Include="../../../../framework/SufiChain.SufiAbp.Localization/SufiChain.SufiAbp.Localization.csproj" />
     <ProjectReference Include="../../../../framework/SufiChain.SufiAbp.Authorization/SufiChain.SufiAbp.Authorization.csproj" />
     <!-- Blazor Authorization -->
     <PackageReference Include="Microsoft.AspNetCore.Components.Authorization" Version="$(AspNetCoreVersion)" />

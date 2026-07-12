@@ -12,7 +12,7 @@
     <ProjectReference Include="..\SufiChain.SufiAbp.OpenIddict.Domain\SufiChain.SufiAbp.OpenIddict.Domain.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="../../../../framework/SufiChain.SufiAbp.AspNetCore.MultiTenancy/SufiChain.SufiAbp.AspNetCore.MultiTenancy.csproj" />
+    <PackageReference Include="Volo.Abp.AspNetCore.MultiTenancy" Version="$(AbpVersion)" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="OpenIddict.Server.AspNetCore" Version="$(OpenIddictVersion)"/>

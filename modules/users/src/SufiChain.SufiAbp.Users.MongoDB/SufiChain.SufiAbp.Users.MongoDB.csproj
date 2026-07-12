@@ -10,7 +10,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\SufiChain.SufiAbp.Users.Domain\SufiChain.SufiAbp.Users.Domain.csproj" />
-    <ProjectReference Include="..\..\..\..\framework\SufiChain.SufiAbp.MongoDB\SufiChain.SufiAbp.MongoDB.csproj" />
+    <PackageReference Include="Volo.Abp.MongoDB" Version="$(AbpVersion)" />
   </ItemGroup>
 
 </Project>

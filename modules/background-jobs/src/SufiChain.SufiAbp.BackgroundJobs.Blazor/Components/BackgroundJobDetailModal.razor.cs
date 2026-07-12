@@ -3,7 +3,6 @@ using SufiChain.SufiBlazor.Components;
 using SufiChain.SufiAbp.BackgroundJobs.Dtos;
 using SufiChain.SufiAbp.BackgroundJobs.Localization;
 using SufiChain.SufiAbp.UI.Blazor;
-using SufiChain.SufiAbp.BackgroundJobs;
 
 namespace SufiChain.SufiAbp.BackgroundJobs.Blazor.Components;
 

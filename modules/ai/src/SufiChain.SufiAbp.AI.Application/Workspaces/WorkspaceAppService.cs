@@ -3,7 +3,7 @@ using System.Text;
 using System.Text.Json;
 using Microsoft.AspNetCore.Authorization;
 using SufiChain.SufiAbp.AI.Features;
-using Volo.Abp.Application.Services;
+using SufiChain.SufiAbp.Application.Services;
 using SufiChain.SufiAbp.Features;
 using Volo.Abp.Security.Encryption;
 using SufiChain.SufiAbp.AI.Permissions;
@@ -16,7 +16,7 @@ namespace SufiChain.SufiAbp.AI.Workspaces;
 
 [RequiresFeature(SufiAIFeatures.Enable)]
 [Authorize(AIPermissions.Workspaces.Default)]
-public class WorkspaceAppService : ApplicationService, IWorkspaceAppService
+public class WorkspaceAppService : SufiAbpApplicationService, IWorkspaceAppService
 {
     private const string DefaultOpenAIBaseUrl = "https://api.openai.com/v1";
 

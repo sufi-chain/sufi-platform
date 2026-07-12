@@ -1,22 +1,22 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
-using SufiChain.SufiAbp.Caching;
-using SufiChain.SufiAbp.Ddd;
 using Volo.Abp;
 using Volo.Abp.Data;
 using Volo.Abp.DependencyInjection;
 using Volo.Abp.Modularity;
 using Volo.Abp.Settings;
 using Volo.Abp.Threading;
+using Volo.Abp.Domain;
 
+using Volo.Abp.Caching;
 namespace SufiChain.SufiAbp.SettingManagement;
 
 [DependsOn(
     typeof(AbpSettingsModule),
-    typeof(SufiAbpDddDomainModule),
+    typeof(AbpDddDomainModule),
     typeof(SufiAbpSettingManagementDomainSharedModule),
-    typeof(SufiAbpCachingModule)
+    typeof(AbpCachingModule)
     )]
 public class SufiAbpSettingManagementDomainModule : AbpModule
 {

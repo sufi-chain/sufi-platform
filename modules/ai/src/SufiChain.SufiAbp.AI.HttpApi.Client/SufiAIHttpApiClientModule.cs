@@ -1,12 +1,12 @@
 using Microsoft.Extensions.DependencyInjection;
-using SufiChain.SufiAbp.Http.Client;
 using Volo.Abp.Modularity;
 
+using Volo.Abp.Http.Client;
 namespace SufiChain.SufiAbp.AI;
 
 [DependsOn(
     typeof(SufiAIApplicationContractsModule),
-    typeof(SufiAbpHttpClientModule)
+    typeof(AbpHttpClientModule)
 )]
 public class SufiAIHttpApiClientModule : AbpModule
 {

@@ -2,8 +2,7 @@ using Microsoft.AspNetCore.Authorization;
 using SufiChain.SufiAbp.BackgroundJobs.Dtos;
 using SufiChain.SufiAbp.BackgroundJobs.Permissions;
 using SufiChain.SufiAbp.Application.Dtos;
-using Volo.Abp.Application.Services;
-using SufiChain.SufiAbp.BackgroundJobs;
+using SufiChain.SufiAbp.Application.Services;
 using Volo.Abp.Domain.Repositories;
 
 namespace SufiChain.SufiAbp.BackgroundJobs;
@@ -12,7 +11,7 @@ namespace SufiChain.SufiAbp.BackgroundJobs;
 /// Application service for managing background jobs.
 /// </summary>
 [Authorize(BackgroundJobsPermissions.BackgroundJobs.Default)]
-public class BackgroundJobAppService : ApplicationService, IBackgroundJobAppService
+public class BackgroundJobAppService : SufiAbpApplicationService, IBackgroundJobAppService
 {
     private readonly IBackgroundJobRepository _backgroundJobRepository;
 

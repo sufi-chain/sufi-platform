@@ -7,7 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
 using Microsoft.AspNetCore.Identity;
-using SufiChain.SufiAbp.Uow;
+using Volo.Abp.Uow;
 using Volo.Abp;
 using Volo.Abp.Domain.Repositories;
 using Volo.Abp.Guids;
@@ -61,7 +61,7 @@ public class IdentityUserStore :
 
     protected virtual async Task<TResult> ExecuteInUnitOfWorkAsync<TResult>(Func<Task<TResult>> action, CancellationToken cancellationToken = default)
     {
-        if (UnitOfWorkManager.HasActiveUnitOfWork)
+        if (UnitOfWorkManager.Current != null)
         {
             return await action();
         }
@@ -74,7 +74,7 @@ public class IdentityUserStore :
 
     protected virtual async Task ExecuteInUnitOfWorkAsync(Func<Task> action, CancellationToken cancellationToken = default)
     {
-        if (UnitOfWorkManager.HasActiveUnitOfWork)
+        if (UnitOfWorkManager.Current != null)
         {
             await action();
             return;

@@ -1,13 +1,13 @@
 using Microsoft.Extensions.DependencyInjection;
-using SufiChain.SufiAbp.EntityFrameworkCore;
 using SufiChain.SufiAbp.Users;
 using Volo.Abp.Modularity;
 
+using Volo.Abp.EntityFrameworkCore;
 namespace SufiChain.SufiAbp.Identity.EntityFrameworkCore;
 
 [DependsOn(
     typeof(SufiAbpIdentityDomainModule),
-    typeof(SufiAbpEntityFrameworkCoreModule),
+    typeof(AbpEntityFrameworkCoreModule),
     typeof(SufiAbpUsersEntityFrameworkCoreModule)
 )]
 public class SufiAbpIdentityEntityFrameworkCoreModule : AbpModule

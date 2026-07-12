@@ -13,13 +13,13 @@ using SufiChain.SufiAbp.LocalizationManagement.Permissions;
 using SufiChain.SufiAbp.LocalizationManagement.Repositories;
 using Volo.Abp;
 using SufiChain.SufiAbp.Application.Dtos;
-using Volo.Abp.Application.Services;
+using SufiChain.SufiAbp.Application.Services;
 using Volo.Abp.Localization;
 
 namespace SufiChain.SufiAbp.LocalizationManagement;
 
 [Authorize(LocalizationManagementPermissions.Texts.Default)]
-public class LocalizationTextAppService : ApplicationService, ILocalizationTextAppService
+public class LocalizationTextAppService : SufiAbpApplicationService, ILocalizationTextAppService
 {
     private readonly ILocalizationTextRepository _textRepository;
     private readonly IStringLocalizerFactory _stringLocalizerFactory;

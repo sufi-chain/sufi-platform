@@ -7,6 +7,6 @@
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\SufiChain.SufiAbp.SettingManagement.Domain\SufiChain.SufiAbp.SettingManagement.Domain.csproj" />
-    <ProjectReference Include="..\..\..\..\framework\SufiChain.SufiAbp.EntityFrameworkCore\SufiChain.SufiAbp.EntityFrameworkCore.csproj" />
+    <PackageReference Include="Volo.Abp.EntityFrameworkCore" Version="$(AbpVersion)" />
   </ItemGroup>
 </Project>

@@ -6,7 +6,7 @@
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="../../../../framework/SufiChain.SufiAbp.Core/SufiChain.SufiAbp.Core.csproj" />
-    <ProjectReference Include="../../../../framework/SufiChain.SufiAbp.Ddd.Domain/SufiChain.SufiAbp.Ddd.Domain.csproj" />
+    <PackageReference Include="Volo.Abp.Ddd.Domain" Version="$(AbpVersion)" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="../SufiChain.SufiAbp.TagsManagement.Domain.Shared/SufiChain.SufiAbp.TagsManagement.Domain.Shared.csproj" />

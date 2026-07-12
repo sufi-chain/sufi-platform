@@ -11,7 +11,7 @@
     <PackageReference Include="Microsoft.EntityFrameworkCore.Proxies" Version="$(MicrosoftEntityFrameworkCoreVersion)" />
     <ProjectReference Include="..\..\src\SufiChain.SufiAbp.FileManager.EntityFrameworkCore\SufiChain.SufiAbp.FileManager.EntityFrameworkCore.csproj" />
     <ProjectReference Include="..\SufiChain.SufiAbp.FileManager.Application.Tests\SufiChain.SufiAbp.FileManager.Application.Tests.csproj" />
-    <ProjectReference Include="../../../../framework/SufiChain.SufiAbp.EntityFrameworkCore.Sqlite/SufiChain.SufiAbp.EntityFrameworkCore.Sqlite.csproj" />
+    <PackageReference Include="Volo.Abp.EntityFrameworkCore.Sqlite" Version="$(AbpVersion)" />
   </ItemGroup>
 
 </Project>

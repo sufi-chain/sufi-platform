@@ -2,12 +2,12 @@ using System;
 using System.Threading.Tasks;
 using SufiChain.SufiAbp.Captcha;
 using SufiChain.SufiAbp.Identity.Settings;
-using Volo.Abp.Application.Services;
+using SufiChain.SufiAbp.Application.Services;
 using Volo.Abp.Settings;
 
 namespace SufiChain.SufiAbp.Account;
 
-public class AccountCaptchaAppService : ApplicationService, ICaptchaAppService
+public class AccountCaptchaAppService : SufiAbpApplicationService, ICaptchaAppService
 {
     protected ICaptchaProviderResolver ProviderResolver { get; }
 

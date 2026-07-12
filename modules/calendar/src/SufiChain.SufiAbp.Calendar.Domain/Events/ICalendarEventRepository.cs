@@ -1,5 +1,5 @@
 using SufiChain.SufiAbp.Calendar.Reminders;
-using SufiChain.SufiAbp.Domain.Repositories;
+using Volo.Abp.Domain.Repositories;
 
 namespace SufiChain.SufiAbp.Calendar.Events;
 

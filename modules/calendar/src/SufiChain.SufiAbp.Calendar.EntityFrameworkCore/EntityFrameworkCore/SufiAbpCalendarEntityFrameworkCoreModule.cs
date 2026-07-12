@@ -2,7 +2,6 @@ using Microsoft.Extensions.DependencyInjection;
 using SufiChain.SufiAbp.Calendar.Calendars;
 using SufiChain.SufiAbp.Calendar.EntityFrameworkCore.Repositories;
 using SufiChain.SufiAbp.Calendar.Events;
-using SufiChain.SufiAbp.EntityFrameworkCore;
 using Volo.Abp.Data;
 using Volo.Abp.EntityFrameworkCore;
 using Volo.Abp.Modularity;
@@ -11,7 +10,7 @@ namespace SufiChain.SufiAbp.Calendar.EntityFrameworkCore;
 
 [DependsOn(
     typeof(SufiAbpCalendarDomainModule),
-    typeof(SufiAbpEntityFrameworkCoreModule)
+    typeof(AbpEntityFrameworkCoreModule)
 )]
 public class SufiAbpCalendarEntityFrameworkCoreModule : AbpModule
 {

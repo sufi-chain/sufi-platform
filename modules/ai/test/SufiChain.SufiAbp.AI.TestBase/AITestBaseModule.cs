@@ -1,18 +1,18 @@
 using Microsoft.Extensions.DependencyInjection;
 using SufiChain.SufiAbp.AI;
 using SufiChain.SufiAbp.Authorization;
-using SufiChain.SufiAbp.Autofac;
-using SufiChain.SufiAbp.TestBase;
 using Volo.Abp;
 using Volo.Abp.Authorization;
 using Volo.Abp.Modularity;
 
+using Volo.Abp.Autofac;
+using Volo.Abp.Testing;
 namespace SufiChain.SufiAbp.AI;
 
 [DependsOn(
     typeof(SufiAIDomainModule),
-    typeof(SufiAbpTestBaseModule),
-    typeof(SufiAbpAutofacModule),
+    typeof(AbpTestBaseModule),
+    typeof(AbpAutofacModule),
     typeof(SufiAbpAuthorizationModule)
 )]
 public class AITestBaseModule : AbpModule

@@ -1,8 +1,8 @@
 using SufiChain.SufiAbp.MenuManagement.Features;
 using SufiChain.SufiAbp.MenuManagement.Localization;
 using SufiChain.SufiAbp.Features;
-using SufiChain.SufiAbp.Localization;
 
+using Volo.Abp.Localization;
 namespace SufiChain.SufiAbp.MenuManagement.Features;
 
 /// <summary>

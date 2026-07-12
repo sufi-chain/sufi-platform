@@ -2,13 +2,12 @@ using Microsoft.Extensions.DependencyInjection;
 using Volo.Abp.Modularity;
 using Volo.Abp.MongoDB;
 using SufiChain.SufiAbp.PermissionManagement.MongoDB;
-using SufiChain.SufiAbp.MongoDB;
 
 namespace SufiChain.SufiAbp.PermissionManagement.MongoDB;
 
 [DependsOn(
     typeof(SufiAbpPermissionManagementDomainModule),
-    typeof(SufiAbpMongoDbModule),
+    typeof(AbpMongoDbModule),
 )]
 public class SufiAbpPermissionManagementMongoDbModule : AbpModule
 {

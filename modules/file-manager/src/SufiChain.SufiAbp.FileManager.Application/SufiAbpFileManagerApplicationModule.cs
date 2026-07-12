@@ -16,12 +16,7 @@ using SufiChain.SufiAbp.FileManager.Caching;
 using SufiChain.SufiAbp.FileManager.Storage;
 using Volo.Abp;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using SufiChain.SufiAbp.BlobStoring;
-using SufiChain.SufiAbp.Mapperly;
 using SufiChain.SufiAbp.Ddd;
-using SufiChain.SufiAbp.Caching;
-using SufiChain.SufiAbp.BlobStoring.FileSystem;
-using SufiChain.SufiAbp.BackgroundWorkers;
 
 namespace SufiChain.SufiAbp.FileManager;
 
@@ -29,14 +24,14 @@ namespace SufiChain.SufiAbp.FileManager;
     typeof(SufiAbpFileManagerDomainModule),
     typeof(SufiAbpFileManagerApplicationContractsModule),
     typeof(SufiAbpLocalizationManagementApplicationContractsModule),
-    typeof(SufiAbpCachingModule),
+    typeof(AbpCachingModule),
     typeof(SufiAbpDddApplicationModule),
-    typeof(SufiAbpMapperlyModule),
-    typeof(SufiAbpBlobStoringModule),
-    typeof(SufiAbpBlobStoringFileSystemModule),
+    typeof(AbpMapperlyModule),
+    typeof(AbpBlobStoringModule),
+    typeof(AbpBlobStoringFileSystemModule),
     typeof(AbpBlobStoringMinioModule),
     typeof(SufiAbpBlobStoringS3ProviderModule),
-    typeof(SufiAbpBackgroundWorkersModule)
+    typeof(AbpBackgroundWorkersModule)
     )]
 public class SufiAbpFileManagerApplicationModule : AbpModule
 {

@@ -1,20 +1,21 @@
 using SufiChain.SufiAbp.BlobStoring.Database;
-using SufiChain.SufiAbp.Ddd;
 using SufiChain.SufiAbp.Features;
 using SufiChain.SufiAbp.FileManager.Localization;
-using SufiChain.SufiAbp.UI;
 using SufiChain.SufiAbp.Validation;
 using Volo.Abp.Localization;
 using Volo.Abp.Localization.ExceptionHandling;
 using Volo.Abp.Modularity;
 using Volo.Abp.VirtualFileSystem;
 
+using Volo.Abp.Domain;
+using SufiChain.SufiAbp.UI;
+
 namespace SufiChain.SufiAbp.FileManager;
 
 [DependsOn(
     typeof(SufiAbpUiDomainSharedModule),
     typeof(SufiAbpValidationModule),
-    typeof(SufiAbpDddDomainSharedModule),
+    typeof(AbpDddDomainSharedModule),
     typeof(SufiAbpFeaturesModule),
     typeof(SufiAbpBlobStoringDatabaseDomainSharedModule)
 )]

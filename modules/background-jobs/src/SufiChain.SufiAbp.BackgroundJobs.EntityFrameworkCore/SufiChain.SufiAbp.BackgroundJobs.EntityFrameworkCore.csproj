@@ -6,7 +6,7 @@
     <PackageId>SufiChain.SufiAbp.BackgroundJobs.EntityFrameworkCore</PackageId>
   </PropertyGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\..\framework\SufiChain.SufiAbp.EntityFrameworkCore\SufiChain.SufiAbp.EntityFrameworkCore.csproj" />
+    <PackageReference Include="Volo.Abp.EntityFrameworkCore" Version="$(AbpVersion)" />
     <ProjectReference Include="..\SufiChain.SufiAbp.BackgroundJobs.Domain\SufiChain.SufiAbp.BackgroundJobs.Domain.csproj" />
   </ItemGroup>
   <ItemGroup>

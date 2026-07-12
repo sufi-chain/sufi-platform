@@ -1,5 +1,4 @@
 using Microsoft.Extensions.DependencyInjection;
-using SufiChain.SufiAbp.Http.Client;
 using Volo.Abp.Http.Client;
 using SufiChain.SufiAbp.Identity;
 using Volo.Abp.Modularity;
@@ -9,7 +8,7 @@ namespace SufiChain.SufiAbp.Identity;
 
 [DependsOn(
     typeof(SufiAbpIdentityApplicationContractsModule),
-    typeof(SufiAbpHttpClientModule))]
+    typeof(AbpHttpClientModule))]
 public class SufiAbpIdentityHttpApiClientModule : AbpModule
 {
     public override void ConfigureServices(ServiceConfigurationContext context)

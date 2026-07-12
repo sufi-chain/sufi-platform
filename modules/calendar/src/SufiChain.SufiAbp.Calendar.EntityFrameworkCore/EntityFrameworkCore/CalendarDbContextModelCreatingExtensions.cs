@@ -1,6 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
-using SufiChain.SufiAbp;
+using Volo.Abp;
 using SufiChain.SufiAbp.Calendar.Calendars;
 using SufiChain.SufiAbp.Calendar.Events;
 using Volo.Abp.EntityFrameworkCore.Modeling;

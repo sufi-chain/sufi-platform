@@ -1,8 +1,7 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using SufiChain.SufiAbp.Caching;
+using Volo.Abp.Mapperly;
 //using SufiChain.SufiAbp.Ddd.Application;
-using SufiChain.SufiAbp.Mapperly;
 using Volo.Abp.Application;
 using Volo.Abp.Caching;
 using Volo.Abp.Modularity;
@@ -13,8 +12,8 @@ namespace SufiChain.SufiAbp.ShortLinkGenerator;
     typeof(SufiAbpShortLinkGeneratorDomainModule),
     typeof(SufiAbpShortLinkGeneratorApplicationContractsModule),
     //typeof(SufiAbpDddApplicationModule),
-    typeof(SufiAbpMapperlyModule),
-    typeof(SufiAbpCachingModule)
+    typeof(AbpMapperlyModule),
+    typeof(AbpCachingModule)
 )]
 public class SufiAbpShortLinkGeneratorApplicationModule : AbpModule
 {

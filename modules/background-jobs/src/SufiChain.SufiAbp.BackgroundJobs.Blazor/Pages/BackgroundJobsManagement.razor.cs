@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Components.Web;
 using SufiChain.SufiBlazor.Components;
 using SufiChain.SufiAbp.BackgroundJobs.Dtos;
 using SufiChain.SufiAbp.UI.Layout;
-using SufiChain.SufiAbp.BackgroundJobs;
 using SufiChain.SufiBlazor.Components.Data;
 using SufiChain.SufiBlazor.Contracts.Data;
 

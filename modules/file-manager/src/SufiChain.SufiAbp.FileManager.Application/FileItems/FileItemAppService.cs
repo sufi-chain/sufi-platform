@@ -21,7 +21,7 @@ using SufiChain.SufiAbp.BlobStoring.S3Provider;
 using Volo.Abp;
 using SufiChain.SufiAbp.Application.Dtos;
 using Volo.Abp.ObjectExtending;
-using Volo.Abp.Application.Services;
+using SufiChain.SufiAbp.Application.Services;
 using Volo.Abp.BlobStoring;
 using Volo.Abp.Data;
 using Volo.Abp.Domain.Repositories;
@@ -32,7 +32,7 @@ using Volo.Abp.Validation;
 namespace SufiChain.SufiAbp.FileManager.FileItems;
 
 [RequiresFeature(SufiAbpFileManagerFeatures.Enable, SufiAbpFileManagerFeatures.FileItems)]
-public partial class FileItemAppService : ApplicationService, IFileItemAppService
+public partial class FileItemAppService : SufiAbpApplicationService, IFileItemAppService
 {
     private readonly IFileItemRepository _fileItemRepository;
     private readonly IFileStructureRepository _fileStructureRepository;

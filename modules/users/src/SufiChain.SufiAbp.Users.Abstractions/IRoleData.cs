@@ -1,5 +1,6 @@
 using System;
-using SufiChain.SufiAbp.Data;
+using Volo.Abp.Data;
+using Volo.Abp.ObjectExtending;
 
 namespace SufiChain.SufiAbp.Users;
 

@@ -7,14 +7,14 @@ using SufiChain.SufiAbp.AI.Features;
 using SufiChain.SufiAbp.AI.MCP.Abstractions;
 using SufiChain.SufiAbp.AI.MCP.Tools;
 using SufiChain.SufiAbp.AI.Permissions;
-using Volo.Abp.Application.Services;
+using SufiChain.SufiAbp.Application.Services;
 using SufiChain.SufiAbp.Features;
 
 namespace SufiChain.SufiAbp.AI.Application.MCP.Tools;
 
 [RequiresFeature(SufiAIFeatures.Enable)]
 [Authorize(AIPermissions.MCPTools.Default)]
-public class MCPToolAppService : ApplicationService, IMCPToolAppService
+public class MCPToolAppService : SufiAbpApplicationService, IMCPToolAppService
 {
     private readonly IMCPToolRegistry _toolRegistry;
     private readonly IMCPToolExecutor _toolExecutor;

@@ -1,7 +1,6 @@
 using System;
-using SufiChain.SufiAbp.EventBus;
-using SufiChain.SufiAbp.MultiTenancy;
 using Volo.Abp.EventBus;
+using Volo.Abp.MultiTenancy;
 
 namespace SufiChain.SufiAbp.Users;
 

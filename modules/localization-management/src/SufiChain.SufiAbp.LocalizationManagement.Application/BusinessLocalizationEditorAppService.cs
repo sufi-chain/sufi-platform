@@ -9,13 +9,13 @@ using SufiChain.SufiAbp.LocalizationManagement.Dtos;
 using SufiChain.SufiAbp.LocalizationManagement.Localization;
 using SufiChain.SufiAbp.LocalizationManagement.Permissions;
 using SufiChain.SufiAbp.LocalizationManagement.Repositories;
-using Volo.Abp.Application.Services;
+using SufiChain.SufiAbp.Application.Services;
 using Volo.Abp.Localization;
 
 namespace SufiChain.SufiAbp.LocalizationManagement;
 
 [Authorize(LocalizationManagementPermissions.Texts.Default)]
-public class BusinessLocalizationEditorAppService : ApplicationService, IBusinessLocalizationEditorAppService
+public class BusinessLocalizationEditorAppService : SufiAbpApplicationService, IBusinessLocalizationEditorAppService
 {
     private readonly ILocalizationTextRepository _textRepository;
     private readonly ILocalizationTextSeeder _localizationTextSeeder;

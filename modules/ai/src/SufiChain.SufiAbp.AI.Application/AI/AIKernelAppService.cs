@@ -2,7 +2,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using SufiChain.SufiAbp.AI.Features;
 using SufiChain.SufiAbp.AI.Workspaces;
-using Volo.Abp.Application.Services;
+using SufiChain.SufiAbp.Application.Services;
 using SufiChain.SufiAbp.Features;
 
 namespace SufiChain.SufiAbp.AI;
@@ -12,7 +12,7 @@ namespace SufiChain.SufiAbp.AI;
 /// Acts as a bridge between HttpApi and Domain layer.
 /// </summary>
 [RequiresFeature(SufiAIFeatures.Enable)]
-public class AIKernelAppService : ApplicationService, IAIKernelAppService
+public class AIKernelAppService : SufiAbpApplicationService, IAIKernelAppService
 {
     private readonly IWorkspaceAccessor _workspaceAccessor;
 
