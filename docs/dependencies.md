@@ -25,7 +25,7 @@ This page is the main reference for libraries and packages used by the public Su
 
 ## Independent products in the platform story
 
-SufiBlazor and KomTheme are part of the broader Sufi Platform offering, but they are developed and versioned independently.
+SufiBlazor and SufiTheme are part of the broader Sufi Platform offering, but they are developed and versioned independently.
 
 In this docs set they are covered from a platform-product perspective, while their detailed technical package documentation should remain in their own repositories.
 

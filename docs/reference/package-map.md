@@ -24,7 +24,7 @@ First-party modules live under `src/modules/` and follow the standard ABP layere
 
 ## Independent products in the platform story
 
-SufiBlazor and KomTheme are important platform products, but they are developed and versioned independently.
+SufiBlazor and SufiTheme are important platform products, but they are developed and versioned independently.
 
 In this documentation set:
 

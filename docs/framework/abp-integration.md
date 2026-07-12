@@ -16,7 +16,7 @@
 ## Features
 
 - **Backend stays ABP**: Domain, application services, DTOs, permissions.  
-- **UI uses SufiAbp**: `SufiAbpComponentBase`, SufiBlazor, and KomTheme; components depend on SufiAbp interfaces, not ABP directly.  
+- **UI uses SufiAbp**: `SufiAbpComponentBase`, SufiBlazor, and SufiTheme; components depend on SufiAbp interfaces, not ABP directly.  
 - **Menus/toolbars**: Existing ABP menu/toolbar contributors can be adapted so they feed SufiAbp’s menu/toolbar system.
 
 ## Usage

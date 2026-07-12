@@ -1,6 +1,6 @@
-# KomTheme Toolbars
+# SufiTheme Toolbars
 
-KomTheme toolbars are built through contributor composition rather than by hard-coding buttons into the shell. Read this page when a host needs to add a top-bar action, show different items based on permissions, or keep Server and WebAssembly toolbar behavior aligned.
+SufiTheme toolbars are built through contributor composition rather than by hard-coding buttons into the shell. Read this page when a host needs to add a top-bar action, show different items based on permissions, or keep Server and WebAssembly toolbar behavior aligned.
 
 ## Toolbar model
 
@@ -22,7 +22,7 @@ Implement `IToolbarContributor` when you need a host-specific toolbar item.
 
 In `ConfigureToolbarAsync`:
 
-- check the target toolbar name, such as `KomToolbars.Main`
+- check the target toolbar name, such as `SufiToolbars.Main`
 - add your component through the toolbar context
 - choose an order that keeps the top bar predictable for users
 

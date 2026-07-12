@@ -2,7 +2,7 @@
 
 Sufi Platform is the reusable open-source base used to build business applications on top of ABP without rebuilding the same technical foundation for every product. Product owners can use this page to understand what the platform already provides, what kind of needs fit the platform, and how to describe new product requests clearly.
 
-For delivery teams, the platform gives each generated solution a starting point: the SufiAbp framework, a standard host structure, reusable first-party modules, SufiBlazor for interactive UI, and KomTheme for the application shell.
+For delivery teams, the platform gives each generated solution a starting point: the SufiAbp framework, a standard host structure, reusable first-party modules, SufiBlazor for interactive UI, and SufiTheme for the application shell.
 
 Sufi Platform is licensed as an LGPL open-source base product. It respects the ABP Framework as the upstream foundation and extends it with a focused Sufi Platform experience for enterprise Blazor applications.
 
@@ -21,7 +21,7 @@ A generated solution starts with a stable set of layers that are meant to be reu
 | ABP | Backend modular architecture, domain and application layering, permissions, settings, tenancy, auditing, persistence |
 | SufiAbp Framework | Platform-aware UI abstractions, shared services, Blazor integration, authentication helpers, CLI support |
 | SufiBlazor | Default interactive component system for forms, tables, dialogs, navigation, and layout primitives |
-| KomTheme | Default application shell, layout, navigation chrome, and branding surface |
+| SufiTheme | Default application shell, layout, navigation chrome, and branding surface |
 | First-party Modules | Reusable platform capabilities such as identity, tenancy, settings, file management, and short links |
 | Product Code | The vertical business workflows, domain rules, and custom UI specific to the generated solution |
 
@@ -107,7 +107,7 @@ For a generated solution, the default order is:
 2. start from the baseline modules already included by the platform
 3. add reusable capability as horizontal modules when the feature should be shared
 4. keep product-specific behavior in the vertical solution itself
-5. use SufiBlazor for reusable UI and KomTheme for the shell unless the product needs a deliberate alternative
+5. use SufiBlazor for reusable UI and SufiTheme for the shell unless the product needs a deliberate alternative
 
 ## Where to go next
 

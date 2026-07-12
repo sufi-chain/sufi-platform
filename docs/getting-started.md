@@ -198,4 +198,4 @@ Once the generated solution is running, continue with:
 - [Architecture](architecture.md)
 - [Module Catalog](modules/index.md)
 - [SufiBlazor Overview](sufi-blazor/overview.md)
-- [KomTheme Overview](kom-theme/kom-theme-overview.md)
+- [SufiTheme Overview](sufi-theme/sufi-theme-overview.md)

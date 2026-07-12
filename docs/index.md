@@ -7,7 +7,7 @@ These docs are written for two groups:
 
 ## ABP foundation
 
-Sufi Platform is built on top of the excellent [ABP Framework](https://abp.io), whose source code is available at [github.com/abpframework/abp](https://github.com/abpframework/abp). ABP provides the modular backend architecture and core application patterns; Sufi Platform extends that foundation with SufiAbp-branded APIs, SufiBlazor, KomTheme, first-party modules, and the `sufi` CLI.
+Sufi Platform is built on top of the excellent [ABP Framework](https://abp.io), whose source code is available at [github.com/abpframework/abp](https://github.com/abpframework/abp). ABP provides the modular backend architecture and core application patterns; Sufi Platform extends that foundation with SufiAbp-branded APIs, SufiBlazor, SufiTheme, first-party modules, and the `sufi` CLI.
 
 ## Start here
 

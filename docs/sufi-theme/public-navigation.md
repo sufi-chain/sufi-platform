@@ -1,19 +1,19 @@
-# KomTheme Public Navigation
+# SufiTheme Public Navigation
 
-KomTheme does **not** ship a separate public layout component. `StandardLayouts.Public` resolves to the same shell as `StandardLayouts.Application` (see [Layouts](layouts.md)).
+SufiTheme does **not** ship a separate public layout component. `StandardLayouts.Public` resolves to the same shell as `StandardLayouts.Application` (see [Layouts](layouts.md)).
 
 Public-facing products differentiate UX through **navigation data**, not a different layout file.
 
 ## IPublicMenuProvider
 
-KomTheme defines `IPublicMenuProvider` for DB-driven or host-specific public menus (knowledge base, marketing site nav, etc.).
+SufiTheme defines `IPublicMenuProvider` for DB-driven or host-specific public menus (knowledge base, marketing site nav, etc.).
 
 | Implementation | Behavior |
 | --- | --- |
 | `NullPublicMenuProvider` | Default — returns empty menu |
 | Host replacement | Register via DI `Replace(ServiceDescriptor.Singleton<IPublicMenuProvider, ...>())` |
 
-Registration in `KomThemeBlazorModule`:
+Registration in `SufiThemeBlazorModule`:
 
 ```csharp
 services.AddSingleton<IPublicMenuProvider, NullPublicMenuProvider>();
@@ -33,7 +33,7 @@ That provider loads public/KB menu items from seeded data while admin navigation
 
 ## When to use Public vs Application layout name
 
-Use `StandardLayouts.Public` in theme/routing when a page should be tagged as public for layout resolution — it still gets the same `SideMenuLayout` / `TopMenuLayout` / `DualSidebarLayout` component configured in `KomThemeBlazorOptions.Layout`.
+Use `StandardLayouts.Public` in theme/routing when a page should be tagged as public for layout resolution — it still gets the same `SideMenuLayout` / `TopMenuLayout` / `DualSidebarLayout` component configured in `SufiThemeBlazorOptions.Layout`.
 
 Combine with:
 

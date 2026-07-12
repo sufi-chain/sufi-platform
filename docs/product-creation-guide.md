@@ -169,7 +169,7 @@ Use these defaults unless the product explicitly needs something different:
 
 - `SufiAbp Framework` for platform-aware UI behavior
 - `SufiBlazor` for interactive components
-- `KomTheme` for the full app shell, navigation, and branded layout
+- `SufiTheme` for the full app shell, navigation, and branded layout
 
 ### Prefer SufiBlazor for
 
@@ -182,7 +182,7 @@ Use these defaults unless the product explicitly needs something different:
 - dashboards and metrics
 - builder or editor UI
 
-### Prefer KomTheme when
+### Prefer SufiTheme when
 
 - the app needs a complete shell
 - the product needs sidebars, topbars, and branded navigation chrome
@@ -244,6 +244,6 @@ Create a host composition that:
 1. includes the needed baseline SufiAbp modules
 2. includes any new horizontal modules
 3. includes domain-specific product modules where required
-4. applies KomTheme when the product should follow the standard shell model
+4. applies SufiTheme when the product should follow the standard shell model
 
 That keeps the solution reusable where it should be reusable and domain-specific only where it has to be.

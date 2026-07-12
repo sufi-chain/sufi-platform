@@ -1,29 +1,29 @@
-# KomTheme Overview
+# SufiTheme Overview
 
-KomTheme is the preferred shell and layout layer used by Sufi Platform hosts. Read this section when you need to understand how a host application assembles top bars, side navigation, layout variants, branding, and toolbar composition on top of SufiAbp and SufiBlazor.
+SufiTheme is the preferred shell and layout layer used by Sufi Platform hosts. Read this section when you need to understand how a host application assembles top bars, side navigation, layout variants, branding, and toolbar composition on top of SufiAbp and SufiBlazor.
 
-KomTheme is not a replacement for SufiBlazor. The two play different roles:
+SufiTheme is not a replacement for SufiBlazor. The two play different roles:
 
 - `SufiBlazor` provides reusable interactive components (standalone — no ABP required)
-- `KomTheme` provides the host shell, page layout, and branded navigation frame
+- `SufiTheme` provides the host shell, page layout, and branded navigation frame
 
 ## Dependencies
 
-KomTheme **requires SufiAbp UI**, not SufiBlazor alone:
+SufiTheme **requires SufiAbp UI**, not SufiBlazor alone:
 
 - `SufiChain.SufiAbp.UI.Blazor` — menus, toolbars, page layout, `AccountLayout`
 - `SufiChain.SufiAbp.Core`, `SufiChain.SufiAbp.Security` — module infrastructure
 
-Product source: `independent-projects/kom-theme/` (independently versioned NuGet packages).
+Product source: `independent-projects/sufi-theme/` (independently versioned NuGet packages).
 
 ## Packages
 
 | Package | Responsibility |
 | --- | --- |
-| `SufiChain.KomTheme` | Core options and shared constants |
-| `SufiChain.KomTheme.Blazor` | Layouts, `KomAppShell`, top bar, sidebar, and navigation rendering |
-| `SufiChain.KomTheme.Blazor.Server` | Server-specific toolbar contributors, branding, and bundling |
-| `SufiChain.KomTheme.Blazor.WebAssembly` | WebAssembly-specific toolbar contributors and host integration |
+| `SufiChain.SufiTheme` | Core options and shared constants |
+| `SufiChain.SufiTheme.Blazor` | Layouts, `SufiAppShell`, top bar, sidebar, and navigation rendering |
+| `SufiChain.SufiTheme.Blazor.Server` | Server-specific toolbar contributors, branding, and bundling |
+| `SufiChain.SufiTheme.Blazor.WebAssembly` | WebAssembly-specific toolbar contributors and host integration |
 
 ## What it gives a host
 

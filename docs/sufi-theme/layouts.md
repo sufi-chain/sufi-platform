@@ -1,6 +1,6 @@
-# KomTheme Layouts
+# SufiTheme Layouts
 
-This page explains the layout variants available in KomTheme and when each one fits a host application. Read it when you are selecting the default shell for a product or changing the layout for a specific route such as account pages or embedded screens.
+This page explains the layout variants available in SufiTheme and when each one fits a host application. Read it when you are selecting the default shell for a product or changing the layout for a specific route such as account pages or embedded screens.
 
 ## Available layouts
 
@@ -14,17 +14,17 @@ This page explains the layout variants available in KomTheme and when each one f
 
 ## Account layout (external definition)
 
-`AccountLayout` is **not** defined inside the KomTheme product repo. At startup, `KomThemeBlazorModule` registers:
+`AccountLayout` is **not** defined inside the SufiTheme product repo. At startup, `SufiThemeBlazorModule` registers:
 
 ```csharp
-KomLayouts.Account = typeof(AccountLayout); // SufiChain.SufiAbp.UI.Blazor.Layouts
+SufiLayouts.Account = typeof(AccountLayout); // SufiChain.SufiAbp.UI.Blazor.Layouts
 ```
 
 Hosts may override account pages with a custom layout. For example, SufiChane.Console uses `ConsoleAccountLayout` (tenant-branded) on all account routes instead of the default `AccountLayout`.
 
 ## Public layout (same shell as Application)
 
-`Kom1Theme.GetLayout` maps `StandardLayouts.Public` to the same type as `StandardLayouts.Application` (`KomThemeBlazorOptions.Layout`). There is no separate public layout component in KomTheme.
+`Sufi1Theme.GetLayout` maps `StandardLayouts.Public` to the same type as `StandardLayouts.Application` (`SufiThemeBlazorOptions.Layout`). There is no separate public layout component in SufiTheme.
 
 For public-facing **navigation** (KB, marketing menus), use `IPublicMenuProvider`. See [Public navigation](public-navigation.md).
 
@@ -39,7 +39,7 @@ All layouts share a few important platform behaviors:
 
 ## How to choose a layout
 
-Choose the default layout in `KomThemeBlazorOptions`, then override it per page only when the route truly needs a different shell.
+Choose the default layout in `SufiThemeBlazorOptions`, then override it per page only when the route truly needs a different shell.
 
 Typical examples:
 

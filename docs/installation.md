@@ -100,7 +100,7 @@ dotnet run
 
 ## Step 5: Explore the generated project
 
-Most generated solutions include authentication, identity management, optional multi-tenancy, audit logging, settings, localization, Blazor UI with KomTheme, and Docker support.
+Most generated solutions include authentication, identity management, optional multi-tenancy, audit logging, settings, localization, Blazor UI with SufiTheme, and Docker support.
 
 ## Common commands
 
@@ -120,4 +120,4 @@ sufi --version
 - [CLI Tool](framework/cli.md)
 - [Module Catalog](modules/index.md)
 - [SufiBlazor](sufi-blazor/overview.md)
-- [KomTheme](kom-theme/kom-theme-overview.md)
+- [SufiTheme](sufi-theme/sufi-theme-overview.md)

@@ -23,12 +23,12 @@ This folder is a pointer only. Do not add or edit component reference files here
 | Theming | `independent-projects/sufi-blazor/docs/theming.md` |
 | Localization | `independent-projects/sufi-blazor/docs/localization.md` |
 | Per-component API | `independent-projects/sufi-blazor/docs/components/` |
-| Shell ownership (KomTheme) | `independent-projects/sufi-blazor/docs/components/layout/LAYOUT_REVIEW.md` |
+| Shell ownership (SufiTheme) | `independent-projects/sufi-blazor/docs/components/layout/LAYOUT_REVIEW.md` |
 
 ## Platform notes
 
-- **SufiBlazor** (`SufiChain.SufiBlazor`) is standalone — no ABP or KomTheme required for the core library.
-- **App shell chrome** (navigation frame, sidebars, top bar) lives in **KomTheme**, not SufiBlazor. See `LAYOUT_REVIEW.md`.
+- **SufiBlazor** (`SufiChain.SufiBlazor`) is standalone — no ABP or SufiTheme required for the core library.
+- **App shell chrome** (navigation frame, sidebars, top bar) lives in **SufiTheme**, not SufiBlazor. See `LAYOUT_REVIEW.md`.
 - **SufiChain.SufiBlazor.Demo** is a platform-hosted gallery; it references `SufiChain.SufiAbp.UI.Blazor` for menu integration only.
 
 ## Obsidian KB

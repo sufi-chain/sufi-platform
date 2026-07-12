@@ -1,6 +1,6 @@
-# KomTheme Font Override
+# SufiTheme Font Override
 
-This page explains how a host application can override the typography used by KomTheme and SufiBlazor. Read it when the product needs custom Latin or RTL fonts but should still keep the shared theme behavior for direction, language switching, and layout composition.
+This page explains how a host application can override the typography used by SufiTheme and SufiBlazor. Read it when the product needs custom Latin or RTL fonts but should still keep the shared theme behavior for direction, language switching, and layout composition.
 
 ## How font selection works
 
@@ -14,15 +14,15 @@ SufiBlazor exposes typography through CSS variables. The most important ones for
 
 Language and direction affect which variable is used. In practice, when the host changes the page language to Persian and sets RTL, the RTL font stack becomes active automatically.
 
-## What KomTheme adds
+## What SufiTheme adds
 
-KomTheme can layer its own RTL font preference on top of the SufiBlazor variables. That means a host usually does not need to fork the theme just to change typography; it only needs to override the right CSS variables after the theme styles are loaded.
+SufiTheme can layer its own RTL font preference on top of the SufiBlazor variables. That means a host usually does not need to fork the theme just to change typography; it only needs to override the right CSS variables after the theme styles are loaded.
 
 ## Host override strategy
 
 Use this order:
 
-1. load SufiBlazor and KomTheme styles first
+1. load SufiBlazor and SufiTheme styles first
 2. load host CSS after them
 3. define any custom `@font-face` rules in the host CSS
 4. override the relevant font variables in the host CSS
@@ -76,4 +76,4 @@ Use this when the host needs a custom brand font for English or other LTR conten
 
 ### Override both
 
-Use this when the host has a full typography system of its own and still wants KomTheme and SufiBlazor to respect it through the standard variables.
+Use this when the host has a full typography system of its own and still wants SufiTheme and SufiBlazor to respect it through the standard variables.

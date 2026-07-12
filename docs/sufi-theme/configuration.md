@@ -1,8 +1,8 @@
-# KomTheme Configuration
+# SufiTheme Configuration
 
-This page explains the main host-level knobs for KomTheme. Read it when you need to change the default layout, enable or disable shell features, plug in branding, or adjust layout hook behavior for a specific host application.
+This page explains the main host-level knobs for SufiTheme. Read it when you need to change the default layout, enable or disable shell features, plug in branding, or adjust layout hook behavior for a specific host application.
 
-## `KomThemeBlazorOptions`
+## `SufiThemeBlazorOptions`
 
 | Option | Purpose | Default |
 | --- | --- | --- |
@@ -14,7 +14,7 @@ This page explains the main host-level knobs for KomTheme. Read it when you need
 | `SidebarCollapsed` | Sets the initial sidebar state | `false` |
 | `MenuStyle` | Controls menu rendering style such as `Tree`, `Flat`, or `Grouped` | `Tree` |
 
-Configure these options through `Configure<KomThemeBlazorOptions>(...)` in module or host setup.
+Configure these options through `Configure<SufiThemeBlazorOptions>(...)` in module or host setup.
 
 ## Branding
 
@@ -33,4 +33,4 @@ Use `LayoutHookOptions` to inject shared components into hook points such as `La
 
 ## CSS and font overrides
 
-Override theme variables in host CSS after loading `kom-theme.css`. For font overrides, especially when the host needs custom Latin or RTL typography, use the guidance in [Font Override](font-override.md).
+Override theme variables in host CSS after loading `sufi-theme.css`. For font overrides, especially when the host needs custom Latin or RTL typography, use the guidance in [Font Override](font-override.md).

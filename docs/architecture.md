@@ -13,7 +13,7 @@ This document explains how the public source is organized and how the platform i
 
 Sufi Platform is built on top of ABP Framework rather than trying to hide that heritage. ABP provides the proven modular architecture, DDD layering, multi-tenancy, authorization, settings, localization, auditing, and persistence model.
 
-Sufi Platform extends that foundation with SufiAbp-branded framework surfaces, SufiBlazor components, KomTheme, first-party modules, templates, and the `sufi` CLI. The goal is to remain compatible with ABP's architectural strengths while providing a focused enterprise Blazor platform and a consistent Sufi Platform developer experience.
+Sufi Platform extends that foundation with SufiAbp-branded framework surfaces, SufiBlazor components, SufiTheme, first-party modules, templates, and the `sufi` CLI. The goal is to remain compatible with ABP's architectural strengths while providing a focused enterprise Blazor platform and a consistent Sufi Platform developer experience.
 
 ## Layered model
 
@@ -35,7 +35,7 @@ From bottom to top:
 3. `SufiBlazor`
    - default component system used by platform modules and hosts
 
-4. `KomTheme`
+4. `SufiTheme`
    - preferred shell, layout, toolbar, and navigation surface
 
 5. first-party modules
@@ -53,7 +53,7 @@ From bottom to top:
 | `src/templates` | Template assets used by the CLI |
 | `docs` | Canonical long-form documentation |
 | `independent-projects/sufi-blazor` | Source dependency for the default component system |
-| `independent-projects/kom-theme` | Source dependency for the preferred shell and theme |
+| `independent-projects/sufi-theme` | Source dependency for the preferred shell and theme |
 
 For most platform work, start in `src/framework` or `src/modules`. Reach for the independent products when you need to understand how the platform consumes them, not to turn this repository into their internal reference manual.
 
@@ -64,7 +64,7 @@ The architectural rule is simple:
 - keep backend behavior aligned with ABP layering
 - keep UI composition aligned with SufiAbp abstractions
 - use SufiBlazor for reusable interactive components
-- use KomTheme for standard shell and layout behavior
+- use SufiTheme for standard shell and layout behavior
 
 This keeps the platform consistent across both shared modules and host applications.
 
