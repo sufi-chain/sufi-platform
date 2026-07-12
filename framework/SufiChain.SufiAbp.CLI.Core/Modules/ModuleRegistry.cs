@@ -210,9 +210,9 @@ public class ModuleRegistry
 
         Register(new ModuleDefinition
         {
-            Key = "kom-theme",
-            DisplayName = "KomTheme",
-            NuGetPackagePrefix = "SufiChain.KomTheme",
+            Key = "sufi-theme",
+            DisplayName = "SufiTheme",
+            NuGetPackagePrefix = "SufiChain.SufiTheme",
             Category = ModuleCategory.Infrastructure,
             IsCore = true,
             Description = "Default Sufi Platform shell, layout, navigation, and theme",

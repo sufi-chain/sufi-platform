@@ -4,11 +4,12 @@ using Volo.Abp.Localization;
 using Volo.Abp.VirtualFileSystem;
 using Volo.Abp.Modularity;
 
+using Volo.Abp.Domain;
 namespace SufiChain.SufiAbp.Ddd;
 
 [DependsOn(
     typeof(AbpDddApplicationContractsModule),
-    typeof(SufiAbpDddDomainSharedModule)
+    typeof(AbpDddDomainSharedModule)
 )]
 public class SufiAbpDddApplicationContractsModule : AbpModule
 {

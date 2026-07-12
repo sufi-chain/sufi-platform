@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using JetBrains.Annotations;
-using SufiChain.SufiAbp.Localization;
 using Volo.Abp;
 using Volo.Abp.Localization;
 

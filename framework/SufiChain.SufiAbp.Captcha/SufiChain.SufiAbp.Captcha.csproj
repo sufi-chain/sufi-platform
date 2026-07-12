@@ -13,7 +13,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\SufiChain.SufiAbp.Caching\SufiChain.SufiAbp.Caching.csproj" />
     <ProjectReference Include="..\..\modules\identity\src\SufiChain.SufiAbp.Identity.Domain.Shared\SufiChain.SufiAbp.Identity.Domain.Shared.csproj" />
   </ItemGroup>
 

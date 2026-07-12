@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using SufiChain.SufiAbp.Communications.Channels.Metadata;
 
 namespace SufiChain.SufiAbp.Communications.Channels.Outbound;
 
@@ -25,9 +26,7 @@ public class DispatchOutboundChannelMessageInput
 
     public Guid? OperatorUserId { get; set; }
 
-    [StringLength(ChannelConsts.MaxMetadataJsonLength)]
-    public string? MetadataJson { get; set; }
+    public ChannelMessageConnectorMetadata? MessageConnectorMetadata { get; set; }
 
-    [StringLength(ChannelConsts.MaxMetadataJsonLength)]
-    public string? SessionMetadataJson { get; set; }
+    public ChannelSessionConnectorMetadata SessionConnectorMetadata { get; set; } = new();
 }

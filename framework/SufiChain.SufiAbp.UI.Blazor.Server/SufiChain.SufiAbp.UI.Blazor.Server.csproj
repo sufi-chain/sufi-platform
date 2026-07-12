@@ -17,7 +17,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\SufiChain.SufiAbp.MultiTenancy\SufiChain.SufiAbp.MultiTenancy.csproj" />
+    <PackageReference Include="Volo.Abp.MultiTenancy" Version="$(AbpVersion)" />
     <ProjectReference Include="..\SufiChain.SufiAbp.UI.Blazor\SufiChain.SufiAbp.UI.Blazor.csproj" />
     <ProjectReference Include="..\SufiChain.SufiAbp.UI.Services\SufiChain.SufiAbp.UI.Services.csproj" />
   </ItemGroup>

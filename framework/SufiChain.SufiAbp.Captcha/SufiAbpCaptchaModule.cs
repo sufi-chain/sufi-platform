@@ -1,6 +1,5 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using SufiChain.SufiAbp.Caching;
 using Volo.Abp.Caching;
 using Volo.Abp.Modularity;
 using Volo.Abp.Settings;
@@ -9,7 +8,7 @@ namespace SufiChain.SufiAbp.Captcha;
 
 [DependsOn(
     typeof(AbpSettingsModule),
-    typeof(SufiAbpCachingModule)
+    typeof(AbpCachingModule)
 )]
 public class SufiAbpCaptchaModule : AbpModule
 {

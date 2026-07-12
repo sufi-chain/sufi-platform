@@ -1,4 +1,4 @@
-using SufiChain.SufiAbp.Localization;
+using Volo.Abp.Localization;
 namespace SufiChain.SufiAbp.Features;
 
 /// <summary>
@@ -40,7 +40,7 @@ public class FeatureDefinitionContext : IFeatureDefinitionContext
     /// <inheritdoc />
     public virtual FeatureGroupDefinition AddGroup(string name, LocalizableString? displayName = null)
     {
-        return new FeatureGroupDefinition(_context.AddGroup(name, displayName?.ToVolo()));
+        return new FeatureGroupDefinition(_context.AddGroup(name, displayName));
     }
 
     /// <inheritdoc />
@@ -103,8 +103,8 @@ public class FeatureGroupDefinition
             _group.AddFeature(
                 name,
                 defaultValue,
-                displayName?.ToVolo(),
-                description?.ToVolo(),
+                displayName,
+                description,
                 valueType,
                 isVisibleToClients,
                 isAvailableToHost));
@@ -222,8 +222,8 @@ public class FeatureDefinition
             _feature.CreateChild(
                 name,
                 defaultValue,
-                displayName?.ToVolo(),
-                description?.ToVolo(),
+                displayName,
+                description,
                 valueType,
                 isVisibleToClients,
                 isAvailableToHost));

@@ -200,37 +200,37 @@ public class SwitchEfProviderStep : ProjectBuildPipelineStep
         {
             EfProviderKind.SqlServer => new EfProviderInfo
             {
-                PackageName = "SufiChain.SufiAbp.EntityFrameworkCore.SqlServer",
-                ModuleNamespace = "SufiChain.SufiAbp.EntityFrameworkCore.SqlServer",
-                ModuleClassName = "SufiAbpEntityFrameworkCoreSqlServerModule",
+                PackageName = "Volo.Abp.EntityFrameworkCore.SqlServer",
+                ModuleNamespace = "Volo.Abp.EntityFrameworkCore.SqlServer",
+                ModuleClassName = "AbpEntityFrameworkCoreSqlServerModule",
                 UseMethod = "UseSqlServer"
             },
             EfProviderKind.PostgreSQL => new EfProviderInfo
             {
-                PackageName = "SufiChain.SufiAbp.EntityFrameworkCore.PostgreSql",
-                ModuleNamespace = "SufiChain.SufiAbp.EntityFrameworkCore.PostgreSql",
-                ModuleClassName = "SufiAbpEntityFrameworkCorePostgreSqlModule",
+                PackageName = "Volo.Abp.EntityFrameworkCore.PostgreSql",
+                ModuleNamespace = "Volo.Abp.EntityFrameworkCore.PostgreSql",
+                ModuleClassName = "AbpEntityFrameworkCorePostgreSqlModule",
                 UseMethod = "UseNpgsql"
             },
             EfProviderKind.MySQL => new EfProviderInfo
             {
-                PackageName = "SufiChain.SufiAbp.EntityFrameworkCore.MySQL",
-                ModuleNamespace = "SufiChain.SufiAbp.EntityFrameworkCore.MySQL",
-                ModuleClassName = "SufiAbpEntityFrameworkCoreMySQLModule",
+                PackageName = "Volo.Abp.EntityFrameworkCore.MySQL",
+                ModuleNamespace = "Volo.Abp.EntityFrameworkCore.MySQL",
+                ModuleClassName = "AbpEntityFrameworkCoreMySQLModule",
                 UseMethod = "UseMySql"
             },
             EfProviderKind.MariaDB => new EfProviderInfo
             {
-                PackageName = "SufiChain.SufiAbp.EntityFrameworkCore.MySQL",
-                ModuleNamespace = "SufiChain.SufiAbp.EntityFrameworkCore.MySQL",
-                ModuleClassName = "SufiAbpEntityFrameworkCoreMySQLModule",
+                PackageName = "Volo.Abp.EntityFrameworkCore.MySQL",
+                ModuleNamespace = "Volo.Abp.EntityFrameworkCore.MySQL",
+                ModuleClassName = "AbpEntityFrameworkCoreMySQLModule",
                 UseMethod = "UseMySql"
             },
             EfProviderKind.Sqlite => new EfProviderInfo
             {
-                PackageName = "SufiChain.SufiAbp.EntityFrameworkCore.Sqlite",
-                ModuleNamespace = "SufiChain.SufiAbp.EntityFrameworkCore.Sqlite",
-                ModuleClassName = "SufiAbpEntityFrameworkCoreSqliteModule",
+                PackageName = "Volo.Abp.EntityFrameworkCore.Sqlite",
+                ModuleNamespace = "Volo.Abp.EntityFrameworkCore.Sqlite",
+                ModuleClassName = "AbpEntityFrameworkCoreSqliteModule",
                 UseMethod = "UseSqlite"
             },
             _ => throw new ArgumentException($"Unsupported EF Core provider: {provider}")

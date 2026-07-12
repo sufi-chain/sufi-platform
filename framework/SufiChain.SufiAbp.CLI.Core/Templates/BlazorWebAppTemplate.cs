@@ -2,7 +2,7 @@ namespace SufiChain.SufiAbp.CLI.Templates;
 
 /// <summary>
 /// Blazor Web App solution template information.
-/// Based on the KomTheme.DemoApp demo solution.
+/// Based on the SufiTheme.DemoApp demo solution.
 /// </summary>
 public class BlazorWebAppTemplate : ITemplateInfo
 {
@@ -20,9 +20,9 @@ public class BlazorWebAppTemplate : ITemplateInfo
     
     public bool SupportsSingle => true;
     
-    public string BaseSolutionName => "KomTheme.DemoApp";
+    public string BaseSolutionName => "SufiTheme.DemoApp";
     
-    public string BaseCompanyName => "KomTheme";
+    public string BaseCompanyName => "SufiTheme";
     
     public string BaseProjectName => "DemoApp";
 }

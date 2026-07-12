@@ -1,8 +1,6 @@
 namespace SufiChain.SufiAbp.Communications.Channels;
 
-/// <summary>
-/// Default channel provider behaviors that cannot live on interfaces when targeting netstandard2.0.
-/// </summary>
+
 public static class ChannelProviderExtensions
 {
     /// <summary>

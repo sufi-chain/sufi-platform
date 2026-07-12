@@ -1,3 +1,4 @@
+using Volo.Abp.Localization;
 namespace SufiChain.SufiAbp.Authorization.Permissions;
 
 public class PermissionDefinitionContextAdapter : IPermissionDefinitionContext
@@ -9,9 +10,9 @@ public class PermissionDefinitionContextAdapter : IPermissionDefinitionContext
         InnerContext = innerContext;
     }
 
-    public virtual PermissionGroupDefinition AddGroup(string name, object displayName = null!)
+    public virtual PermissionGroupDefinition AddGroup(string name, ILocalizableString? displayName = null)
     {
-        return new PermissionGroupDefinition(InnerContext.AddGroup(name, LocalizableStringConverter.ToVolo(displayName)));
+        return new PermissionGroupDefinition(InnerContext.AddGroup(name, displayName));
     }
 
     public virtual PermissionGroupDefinition? GetGroupOrNull(string name)

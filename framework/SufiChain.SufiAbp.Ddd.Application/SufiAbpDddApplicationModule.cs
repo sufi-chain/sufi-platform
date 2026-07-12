@@ -1,9 +1,10 @@
 using Volo.Abp.Modularity;
+using Volo.Abp.Domain;
 
 namespace SufiChain.SufiAbp.Ddd;
 
 [DependsOn(
-    typeof(SufiAbpDddDomainModule),
+    typeof(AbpDddDomainModule),
     typeof(SufiAbpDddApplicationContractsModule)
 )]
 public class SufiAbpDddApplicationModule : AbpModule

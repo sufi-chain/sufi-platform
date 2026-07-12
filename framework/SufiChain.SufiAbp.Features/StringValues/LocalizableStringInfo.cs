@@ -1,3 +1,4 @@
+using Volo.Abp.Localization;
 namespace SufiChain.SufiAbp.Features;
 
 /// <summary>

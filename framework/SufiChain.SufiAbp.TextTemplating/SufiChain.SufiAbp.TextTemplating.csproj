@@ -13,9 +13,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Volo.Abp.Localization" Version="$(AbpVersion)" />
+    <ProjectReference Include="../SufiChain.SufiAbp.UI.Domain.Shared/SufiChain.SufiAbp.UI.Domain.Shared.csproj" />
     <ProjectReference Include="..\SufiChain.SufiAbp.Core\SufiChain.SufiAbp.Core.csproj" />
-    <ProjectReference Include="..\SufiChain.SufiAbp.Localization\SufiChain.SufiAbp.Localization.csproj" />
-    <ProjectReference Include="..\SufiChain.SufiAbp.VirtualFileSystem\SufiChain.SufiAbp.VirtualFileSystem.csproj" />
+    <PackageReference Include="Volo.Abp.VirtualFileSystem" Version="$(AbpVersion)" />
   </ItemGroup>
 
 </Project>

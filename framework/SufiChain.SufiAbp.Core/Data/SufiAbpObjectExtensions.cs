@@ -1,3 +1,4 @@
+using Volo.Abp.ObjectExtending;
 namespace SufiChain.SufiAbp.Data;
 
 public static class SufiAbpObjectExtensions

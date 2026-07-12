@@ -84,12 +84,12 @@ public class SwitchToEfCoreStep : ProjectBuildPipelineStep
     /// </summary>
     private static string GetAbpProviderModuleName(EfProviderKind provider) => provider switch
     {
-        EfProviderKind.SqlServer => "SufiAbpEntityFrameworkCoreSqlServerModule",
-        EfProviderKind.PostgreSQL => "SufiAbpEntityFrameworkCorePostgreSqlModule",
-        EfProviderKind.MySQL => "SufiAbpEntityFrameworkCoreMySQLModule",
-        EfProviderKind.MariaDB => "SufiAbpEntityFrameworkCoreMySQLModule",
-        EfProviderKind.Sqlite => "SufiAbpEntityFrameworkCoreSqliteModule",
-        _ => "SufiAbpEntityFrameworkCoreSqlServerModule"
+        EfProviderKind.SqlServer => "AbpEntityFrameworkCoreSqlServerModule",
+        EfProviderKind.PostgreSQL => "AbpEntityFrameworkCorePostgreSqlModule",
+        EfProviderKind.MySQL => "AbpEntityFrameworkCoreMySQLModule",
+        EfProviderKind.MariaDB => "AbpEntityFrameworkCoreMySQLModule",
+        EfProviderKind.Sqlite => "AbpEntityFrameworkCoreSqliteModule",
+        _ => "AbpEntityFrameworkCoreSqlServerModule"
     };
 
     /// <summary>
@@ -97,12 +97,12 @@ public class SwitchToEfCoreStep : ProjectBuildPipelineStep
     /// </summary>
     private static string GetAbpProviderNamespace(EfProviderKind provider) => provider switch
     {
-        EfProviderKind.SqlServer => "SufiChain.SufiAbp.EntityFrameworkCore.SqlServer",
-        EfProviderKind.PostgreSQL => "SufiChain.SufiAbp.EntityFrameworkCore.PostgreSql",
-        EfProviderKind.MySQL => "SufiChain.SufiAbp.EntityFrameworkCore.MySQL",
-        EfProviderKind.MariaDB => "SufiChain.SufiAbp.EntityFrameworkCore.MySQL",
-        EfProviderKind.Sqlite => "SufiChain.SufiAbp.EntityFrameworkCore.Sqlite",
-        _ => "SufiChain.SufiAbp.EntityFrameworkCore.SqlServer"
+        EfProviderKind.SqlServer => "Volo.Abp.EntityFrameworkCore.SqlServer",
+        EfProviderKind.PostgreSQL => "Volo.Abp.EntityFrameworkCore.PostgreSql",
+        EfProviderKind.MySQL => "Volo.Abp.EntityFrameworkCore.MySQL",
+        EfProviderKind.MariaDB => "Volo.Abp.EntityFrameworkCore.MySQL",
+        EfProviderKind.Sqlite => "Volo.Abp.EntityFrameworkCore.Sqlite",
+        _ => "Volo.Abp.EntityFrameworkCore.SqlServer"
     };
 
     /// <summary>
@@ -312,7 +312,7 @@ public class SwitchToEfCoreStep : ProjectBuildPipelineStep
             if (content.Contains(": SufiAbpModule", StringComparison.Ordinal))
             {
                 content = EnsureUsing(content, "SufiChain.SufiAbp.Core");
-                content = EnsureUsing(content, "SufiChain.SufiAbp.Modularity");
+                content = EnsureUsing(content, "Volo.Abp.Modularity");
             }
             content = EnsureDependsOn(content, "SufiAbpUsersEntityFrameworkCoreModule", "SufiAbpOpenIddictEntityFrameworkCoreModule");
             content = RemoveDuplicateDependsOnEntries(content);
@@ -580,7 +580,7 @@ public class {projectName}DbContext : AbpDbContext<{projectName}DbContext>
 	using {providerNamespace};
 	using SufiChain.SufiAbp.FeatureManagement.EntityFrameworkCore;
 	using SufiChain.SufiAbp.Identity.EntityFrameworkCore;
-	using SufiChain.SufiAbp.Modularity;
+	using Volo.Abp.Modularity;
 	using SufiChain.SufiAbp.OpenIddict.EntityFrameworkCore;
 	using SufiChain.SufiAbp.PermissionManagement.EntityFrameworkCore;
 	using SufiChain.SufiAbp.SettingManagement.EntityFrameworkCore;

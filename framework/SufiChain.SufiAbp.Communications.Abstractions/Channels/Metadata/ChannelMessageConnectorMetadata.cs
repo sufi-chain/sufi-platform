@@ -3,7 +3,7 @@
 namespace SufiChain.SufiAbp.Communications.Channels.Metadata;
 
 /// <summary>
-/// Connector-specific message metadata stored in ChatMessage.MetadataJson.
+/// Connector-specific message metadata persisted as namespaced extra properties.
 /// </summary>
 public class ChannelMessageConnectorMetadata
 {

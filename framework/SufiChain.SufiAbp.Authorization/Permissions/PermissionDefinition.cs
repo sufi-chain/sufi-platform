@@ -1,3 +1,4 @@
+using Volo.Abp.Localization;
 namespace SufiChain.SufiAbp.Authorization.Permissions;
 
 public class PermissionDefinition
@@ -9,8 +10,8 @@ public class PermissionDefinition
         Inner = inner;
     }
 
-    public virtual PermissionDefinition AddChild(string name, object displayName = null!)
+    public virtual PermissionDefinition AddChild(string name, ILocalizableString? displayName = null)
     {
-        return new PermissionDefinition(Inner.AddChild(name, LocalizableStringConverter.ToVolo(displayName)));
+        return new PermissionDefinition(Inner.AddChild(name, displayName));
     }
 }

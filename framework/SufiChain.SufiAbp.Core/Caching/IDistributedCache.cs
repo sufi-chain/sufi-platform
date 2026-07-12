@@ -1,3 +1,4 @@
+using Volo.Abp.Caching;
 namespace SufiChain.SufiAbp.Caching;
 
 public interface IDistributedCache<TCacheItem> : Volo.Abp.Caching.IDistributedCache<TCacheItem>

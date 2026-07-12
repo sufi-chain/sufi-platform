@@ -22,7 +22,7 @@ public interface IBrandingProvider
 
     /// <summary>
     /// Optional copyright text for the footer (e.g. "Copyright © SufiChain").
-    /// When null, the theme may display its own default (e.g. KomTheme uses "Copyright © SufiChain").
+    /// When null, the theme may display its own default (e.g. SufiTheme uses "Copyright © SufiChain").
     /// Hosts can override by providing a custom provider or by configuring theme options.
     /// </summary>
     string? CopyrightText { get; }

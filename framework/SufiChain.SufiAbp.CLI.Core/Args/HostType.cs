@@ -12,7 +12,7 @@ public enum HostType
     HttpApi,
     
     /// <summary>
-    /// Admin panel (Blazor.WebApp) with KomTheme - default UI host.
+    /// Admin panel (Blazor.WebApp) with SufiTheme - default UI host.
     /// In tiered: OIDC client pointing to AuthServer.
     /// In non-tiered: UI + API + Auth + DB all-in-one.
     /// </summary>

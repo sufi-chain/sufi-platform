@@ -3,7 +3,7 @@
 namespace SufiChain.SufiAbp.Communications.Channels.Metadata;
 
 /// <summary>
-/// Connector-specific session metadata stored in ChatSession.MetadataJson.
+/// Connector-specific session metadata persisted as namespaced extra properties.
 /// </summary>
 public class ChannelSessionConnectorMetadata
 {

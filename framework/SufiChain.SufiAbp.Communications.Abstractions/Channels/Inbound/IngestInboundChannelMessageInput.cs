@@ -34,9 +34,6 @@ public class IngestInboundChannelMessageInput
 
     public ChannelInboundSenderInput Sender { get; set; } = new();
 
-    [StringLength(ChannelConsts.MaxMetadataJsonLength)]
-    public string? AdditionalMetadataJson { get; set; }
-
     [StringLength(ChannelConsts.MaxExternalIdLength)]
     public string? ExternalParticipantAddress { get; set; }
 

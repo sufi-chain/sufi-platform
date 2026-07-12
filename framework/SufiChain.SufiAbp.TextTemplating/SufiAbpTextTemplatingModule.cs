@@ -1,13 +1,13 @@
 using Microsoft.Extensions.DependencyInjection;
-using SufiChain.SufiAbp.Localization;
-using SufiChain.SufiAbp.VirtualFileSystem;
 using Volo.Abp.Modularity;
 
+using Volo.Abp.VirtualFileSystem;
+using Volo.Abp.Localization;
 namespace SufiChain.SufiAbp.TextTemplating;
 
 [DependsOn(
-    typeof(SufiAbpLocalizationModule),
-    typeof(SufiAbpVirtualFileSystemModule)
+    typeof(AbpLocalizationModule),
+    typeof(AbpVirtualFileSystemModule)
 )]
 public class SufiAbpTextTemplatingModule : AbpModule
 {

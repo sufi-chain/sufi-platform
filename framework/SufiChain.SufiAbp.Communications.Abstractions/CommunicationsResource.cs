@@ -1,5 +1,4 @@
-﻿using SufiChain.SufiAbp.Localization;
-using Volo.Abp.Localization;
+﻿using Volo.Abp.Localization;
 
 namespace SufiChain.SufiAbp.Communications.Localization;
 

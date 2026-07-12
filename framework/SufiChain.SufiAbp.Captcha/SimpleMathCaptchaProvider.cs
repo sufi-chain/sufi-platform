@@ -1,6 +1,6 @@
-using Microsoft.Extensions.Caching.Distributed;
 using SufiChain.SufiAbp.Identity;
 using SufiChain.SufiAbp.Identity.Settings;
+using Microsoft.Extensions.Caching.Distributed;
 using Volo.Abp.Caching;
 using Volo.Abp.DependencyInjection;
 using Volo.Abp.Settings;
