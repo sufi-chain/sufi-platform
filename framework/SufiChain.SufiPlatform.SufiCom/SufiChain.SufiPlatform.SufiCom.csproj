@@ -1,0 +1,42 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <RootNamespace>SufiChain.SufiPlatform.SufiCom</RootNamespace>
+    <GenerateEmbeddedFilesManifest>true</GenerateEmbeddedFilesManifest>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <PackageId>SufiChain.SufiPlatform.SufiCom</PackageId>
+    <Description>Sufi Platform unified communications abstractions for Email, SMS, Voice Call, and Channels.</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Volo.Abp.Localization" Version="$(AbpVersion)" />
+    <ProjectReference Include="../SufiChain.SufiPlatform.UI.Domain.Shared/SufiChain.SufiPlatform.UI.Domain.Shared.csproj" />
+    <ProjectReference Include="..\SufiChain.SufiPlatform.SufiCom.Abstractions\SufiChain.SufiPlatform.SufiCom.Abstractions.csproj" />
+    <ProjectReference Include="..\SufiChain.SufiPlatform.TextTemplating\SufiChain.SufiPlatform.TextTemplating.csproj" />
+    <ProjectReference Include="..\SufiChain.SufiPlatform.UI.Abstractions\SufiChain.SufiPlatform.UI.Abstractions.csproj" />
+    <PackageReference Include="Volo.Abp.VirtualFileSystem" Version="$(AbpVersion)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.FileProviders.Embedded" Version="$(MicrosoftExtensionsFileProvidersEmbeddedVersion)" />
+    <PackageReference Include="Volo.Abp.BackgroundJobs" Version="$(AbpVersion)" />
+    <PackageReference Include="Volo.Abp.EventBus" Version="$(AbpVersion)" />
+    <PackageReference Include="Volo.Abp.Settings" Version="$(AbpVersion)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Localization\SufiCom\*.json" />
+    <Content Remove="Localization\SufiCom\*.json" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Templates\**\*.tpl" />
+    <Content Remove="Templates\**\*.tpl" />
+  </ItemGroup>
+
+</Project>

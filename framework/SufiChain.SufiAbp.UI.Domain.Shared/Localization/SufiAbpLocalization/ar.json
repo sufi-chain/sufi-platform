@@ -1,7 +1,0 @@
-{
-  "culture": "ar",
-  "texts": {
-    "DisplayName:SufiAbp.Localization.DefaultLanguage": "اللغة الافتراضية",
-    "Description:SufiAbp.Localization.DefaultLanguage": "اللغة الافتراضية للتطبيق."
-  }
-}

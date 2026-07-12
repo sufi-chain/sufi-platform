@@ -1,7 +1,0 @@
-{
-  "culture": "el",
-  "texts": {
-    "DisplayName:SufiAbp.Localization.DefaultLanguage": "Προεπιλεγμένη γλώσσα",
-    "Description:SufiAbp.Localization.DefaultLanguage": "Η προεπιλεγμένη γλώσσα της εφαρμογής."
-  }
-}

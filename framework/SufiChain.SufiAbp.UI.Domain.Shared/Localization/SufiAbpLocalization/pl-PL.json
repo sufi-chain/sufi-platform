@@ -1,7 +1,0 @@
-{
-  "culture": "pl-PL",
-  "texts": {
-    "DisplayName:SufiAbp.Localization.DefaultLanguage": "Domyślny język",
-    "Description:SufiAbp.Localization.DefaultLanguage": "Domyślny język aplikacji."
-  }
-}

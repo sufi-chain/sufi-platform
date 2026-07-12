@@ -1,7 +1,0 @@
-{
-  "culture": "sv",
-  "texts": {
-    "DisplayName:SufiAbp.Localization.DefaultLanguage": "Standardspråk",
-    "Description:SufiAbp.Localization.DefaultLanguage": "Standardspråket för programmet."
-  }
-}

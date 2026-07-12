@@ -1,7 +1,0 @@
-{
-  "culture": "tr",
-  "texts": {
-    "DisplayName:SufiAbp.Localization.DefaultLanguage": "Varsayılan dil",
-    "Description:SufiAbp.Localization.DefaultLanguage": "Varsayılan uygulama dili."
-  }
-}

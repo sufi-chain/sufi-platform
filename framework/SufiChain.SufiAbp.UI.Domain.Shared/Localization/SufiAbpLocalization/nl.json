@@ -1,7 +1,0 @@
-{
-  "culture": "nl",
-  "texts": {
-    "DisplayName:SufiAbp.Localization.DefaultLanguage": "Standaard taal",
-    "Description:SufiAbp.Localization.DefaultLanguage": "De standaardtaal van de applicatie."
-  }
-}

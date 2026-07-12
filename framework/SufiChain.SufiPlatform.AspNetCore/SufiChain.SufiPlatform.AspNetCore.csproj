@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <RootNamespace>SufiChain.SufiPlatform.AspNetCore</RootNamespace>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <PackageId>SufiChain.SufiPlatform.AspNetCore</PackageId>
+    <Description>Sufi Platform ASP.NET Core extensions - audit log fallback contributor for Blazor Server direct service calls.</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\SufiChain.SufiPlatform.Core\SufiChain.SufiPlatform.Core.csproj" />
+    <PackageReference Include="Volo.Abp.AspNetCore" Version="$(AbpVersion)"/>
+    <PackageReference Include="Volo.Abp.Auditing" Version="$(AbpVersion)"/>
+  </ItemGroup>
+
+</Project>

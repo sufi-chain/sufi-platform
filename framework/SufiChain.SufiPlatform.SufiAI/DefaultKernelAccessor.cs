@@ -1,0 +1,20 @@
+using System;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.SemanticKernel;
+using Volo.Abp.DependencyInjection;
+
+namespace SufiChain.SufiPlatform.SufiAI;
+
+[Dependency(ReplaceServices = true)]
+[ExposeServices(typeof(IKernelAccessor))]
+public class DefaultKernelAccessor : IKernelAccessor, ITransientDependency
+{
+    public Kernel? Kernel { get; }
+
+    public DefaultKernelAccessor(IServiceProvider serviceProvider)
+    {
+        Kernel = serviceProvider.GetKeyedService<Kernel>(
+            SufiAIWorkspaceOptions.GetKernelServiceKeyName(
+                SufiAIModule.DefaultWorkspaceName));
+    }
+}

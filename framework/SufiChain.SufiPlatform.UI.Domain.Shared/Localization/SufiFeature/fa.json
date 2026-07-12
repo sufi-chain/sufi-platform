@@ -1,0 +1,10 @@
+{
+  "culture": "fa",
+  "texts": {
+    "Features": "ویژگی ها",
+    "NoFeatureFoundMessage": "هیچ ویژگی ای در دسترس نمی باشد.",
+    "Permission:Features": "مدیریت ویژگی ها",
+    "Permission:Features.ManageHostFeatures": "مدیریت ویژگی های میزبان",
+    "Volo.Abp.Features:InvalidFeatureValue": "{0} مقدار ویژگی صحیح نمی باشد!"
+  }
+}

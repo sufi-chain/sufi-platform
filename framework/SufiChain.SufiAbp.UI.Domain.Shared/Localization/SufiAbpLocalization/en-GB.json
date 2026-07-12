@@ -1,7 +1,0 @@
-{
-  "culture": "en-GB",
-  "texts": {
-    "DisplayName:SufiAbp.Localization.DefaultLanguage": "Default language",
-    "Description:SufiAbp.Localization.DefaultLanguage": "The default language of the application."
-  }
-}

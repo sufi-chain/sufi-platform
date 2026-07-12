@@ -1,0 +1,7 @@
+{
+  "culture": "en",
+  "texts": {
+    "DisplayName:Sufi.Localization.DefaultLanguage": "Default language",
+    "Description:Sufi.Localization.DefaultLanguage": "The default language of the application."
+  }
+}

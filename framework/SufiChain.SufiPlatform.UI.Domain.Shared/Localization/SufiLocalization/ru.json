@@ -1,0 +1,7 @@
+{
+  "culture": "ru",
+  "texts": {
+    "DisplayName:Sufi.Localization.DefaultLanguage": "Язык по умолчанию",
+    "Description:Sufi.Localization.DefaultLanguage": "Язык приложения по умолчанию."
+  }
+}

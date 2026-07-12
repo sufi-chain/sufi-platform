@@ -1,7 +1,0 @@
-{
-  "culture": "ru",
-  "texts": {
-    "DisplayName:SufiAbp.Localization.DefaultLanguage": "Язык по умолчанию",
-    "Description:SufiAbp.Localization.DefaultLanguage": "Язык приложения по умолчанию."
-  }
-}

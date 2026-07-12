@@ -1,0 +1,30 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <RootNamespace>SufiChain.SufiPlatform.AspNetCore.Authentication.Server</RootNamespace>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <PackageId>SufiChain.SufiPlatform.AspNetCore.Authentication.Server</PackageId>
+    <Description>Server-side authentication for Sufi Platform Blazor applications using OIDC.</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+
+  <ItemGroup>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\modules\identity\src\SufiChain.SufiPlatform.Identity.Domain\SufiChain.SufiPlatform.Identity.Domain.csproj" />
+    <ProjectReference Include="..\..\modules\account\src\SufiChain.SufiPlatform.Account.Application.Contracts\SufiChain.SufiPlatform.Account.Application.Contracts.csproj" />
+    <ProjectReference Include="..\SufiChain.SufiPlatform.AspNetCore.Authentication.Abstractions\SufiChain.SufiPlatform.AspNetCore.Authentication.Abstractions.csproj" />
+    <ProjectReference Include="..\SufiChain.SufiPlatform.AspNetCore.Mvc\SufiChain.SufiPlatform.AspNetCore.Mvc.csproj" />
+    <ProjectReference Include="..\SufiChain.SufiPlatform.UI.Abstractions\SufiChain.SufiPlatform.UI.Abstractions.csproj" />
+  </ItemGroup>
+
+</Project>

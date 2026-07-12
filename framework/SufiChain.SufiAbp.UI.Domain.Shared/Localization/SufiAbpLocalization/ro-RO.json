@@ -1,7 +1,0 @@
-{
-  "culture": "ro-RO",
-  "texts": {
-    "DisplayName:SufiAbp.Localization.DefaultLanguage": "Limba implicită",
-    "Description:SufiAbp.Localization.DefaultLanguage": "Limba implicită a aplicaţiei."
-  }
-}

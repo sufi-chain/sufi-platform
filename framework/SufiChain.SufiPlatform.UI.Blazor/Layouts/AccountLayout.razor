@@ -1,0 +1,202 @@
+@namespace SufiChain.SufiPlatform.UI.Blazor.Layouts
+@using SufiChain.SufiBlazor.Components
+@using SufiChain.SufiBlazor.Components.Actions
+@using SufiChain.SufiBlazor.Components.Overlays
+@using SufiChain.SufiBlazor.Components.Surfaces
+@using SufiChain.SufiBlazor.Theming
+@using SufiChain.SufiPlatform.UI.Blazor.Components
+@using SufiChain.SufiPlatform.UI.Blazor.Components.TenantSelector
+@using SufiChain.SufiPlatform.UI.Blazor.Components.LanguageSwitch
+@using SufiChain.SufiPlatform.UI.Branding
+@using SufiChain.SufiPlatform.UI.MultiTenancy
+@using Microsoft.Extensions.Localization
+@using Microsoft.AspNetCore.Components.Web
+@inherits LayoutComponentBase
+@implements IDisposable
+@inject IBrandingProvider BrandingProvider
+@inject IStringLocalizer<SufiChain.SufiPlatform.UI.Localization.SufiFrameworkResource> L
+@inject ITenantSelectorVisibilityService TenantSelectorVisibility
+@inject ITenantSwitchService TenantSwitchService
+@inject PersistentComponentState PersistentState
+
+@*
+    AccountLayout - Centered layout for login/register pages.
+    Uses SufiBlazor design system components. Lives in the framework so that
+    both Identity module pages and theme modules can reference it without
+    creating cross-module coupling.
+*@
+
+<SbThemeProvider Theme="@_currentTheme" Direction="@_direction">
+    <div class="sb-stack sb-stack--column sb-stack--align-center sb-stack--justify-center"
+         style="min-height: 100vh; padding: var(--sb-space-4); background-color: var(--sb-color-background);">
+
+        @* Logo/Branding *@
+        <div style="margin-bottom: var(--sb-space-4); text-align: center;">
+            @if (!string.IsNullOrEmpty(BrandingProvider.LogoUrl))
+            {
+                <img src="@BrandingProvider.LogoUrl" alt="@BrandingProvider.AppName" style="height: 48px; margin-bottom: var(--sb-space-4);" />
+            }
+            <h1 style="font-size: var(--sb-font-size-2xl); font-weight: var(--sb-font-weight-bold); color: var(--sb-color-text);">
+                @BrandingProvider.AppName
+            </h1>
+        </div>
+
+        @* Language switcher - centered between branding and card for visibility and dropdown space *@
+        <div style="margin-bottom: var(--sb-space-6); display: flex; justify-content: center;">
+            <SufiLanguageSwitch Placement="SbPlacement.Bottom" />
+        </div>
+
+        @* Content Card *@
+        <SbCard Class="sb-surface" style="width: 100%; max-width: 420px;">
+            <SufiPageAlert />
+            @Body
+        </SbCard>
+
+        @* Tenant selector (when multi-tenant and feature allows) *@
+        @if (_showTenantSelector)
+        {
+            <ErrorBoundary>
+                <ChildContent>
+                    <div style="margin-top: var(--sb-space-4); text-align: center; display: flex; align-items: center; justify-content: center; gap: var(--sb-space-2); flex-wrap: wrap;">
+                        @* Always show current context (tenant name or Host) + Switch tenant button *@
+                        <span style="font-size: var(--sb-font-size-sm); color: var(--sb-color-text-muted);">
+                            @L["CurrentTenant"]:
+                            <strong style="color: var(--sb-color-text);">@_displayTenantLabel</strong>
+                        </span>
+                        <SbButton Variant="SbButtonVariant.Ghost" Size="SbSize.Sm" Color="SbColor.Secondary" OnClick="OpenTenantSelector">
+                            @L["SwitchTenant"]
+                        </SbButton>
+                    </div>
+                    <SufiTenantSelector @bind-Open="_tenantSelectorOpen" Mode="@_tenantSelectorMode" RenderMode="TenantSelectorRenderMode.Dialog" />
+                </ChildContent>
+                <ErrorContent>
+                    <div style="margin-top: var(--sb-space-4); text-align: center;">
+                        <SbButton Variant="SbButtonVariant.Ghost" Size="SbSize.Sm" Color="SbColor.Secondary" OnClick="OpenTenantSelector">
+                            @L["SwitchTenant"]
+                        </SbButton>
+                    </div>
+                    <SufiTenantSelector @bind-Open="_tenantSelectorOpen" Mode="@_tenantSelectorMode" RenderMode="TenantSelectorRenderMode.Dialog" />
+                </ErrorContent>
+            </ErrorBoundary>
+        }
+
+        @* Footer *@
+        <div style="margin-top: var(--sb-space-8); text-align: center; color: var(--sb-color-text-muted); font-size: var(--sb-font-size-sm);">
+            &copy; @DateTime.Now.Year @BrandingProvider.AppName — @L["PoweredWithLoveBy"]
+        </div>
+    </div>
+    @* Global Message/Confirm Dialog Host *@
+    <SufiOverlayHost />
+</SbThemeProvider>
+
+@code {
+    private SbTheme _currentTheme = SbTheme.Light;
+    private SbDirection _direction = SbDirection.Ltr;
+    private bool _showTenantSelector;
+    private string _tenantSelectorMode = "InputName";
+    private bool _tenantSelectorOpen;
+    private string? _currentTenantName;
+    private PersistingComponentStateSubscription? _persistSubscription;
+
+    /// <summary>
+    /// Display label: tenant name when on a tenant, "Host" when on host, or "..." while resolving.
+    /// </summary>
+    private string _displayTenantLabel => ResolveDisplayLabel();
+
+    private string ResolveDisplayLabel()
+    {
+        try
+        {
+            var hasTenant = TenantSwitchService != null && TenantSwitchService.CurrentTenantId.HasValue;
+            if (hasTenant)
+            {
+                // Prefer _currentTenantName; fallback to live service value (e.g. after redirect from SwitchTenant)
+                var name = !string.IsNullOrEmpty(_currentTenantName)
+                    ? _currentTenantName
+                    : TenantSwitchService?.CurrentTenantName;
+                return !string.IsNullOrEmpty(name)
+                    ? name
+                    : (L["NotSelected"].Value ?? "—");
+            }
+            return L["Host"].Value ?? "Host";
+        }
+        catch
+        {
+            return "—";
+        }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        var culture = System.Globalization.CultureInfo.CurrentUICulture;
+        _direction = culture.TextInfo.IsRightToLeft ? SbDirection.Rtl : SbDirection.Ltr;
+
+        try
+        {
+            var (show, mode) = await TenantSelectorVisibility.GetOptionsAsync();
+            _showTenantSelector = show;
+            _tenantSelectorMode = mode;
+        }
+        catch
+        {
+            _showTenantSelector = true;
+            _tenantSelectorMode = "InputName";
+        }
+
+        try
+        {
+            _persistSubscription = PersistentState.RegisterOnPersisting(PersistTenantState);
+            var serviceName = TenantSwitchService.CurrentTenantName;
+            if (!PersistentState.TryTakeFromJson<string?>("accountLayout_tenantName", out var restoredName))
+            {
+                _currentTenantName = serviceName;
+            }
+            else
+            {
+                // Prefer live service value when non-empty (e.g. after SwitchTenant redirect).
+                // Persisted state can be stale or null from a prior page view.
+                _currentTenantName = !string.IsNullOrEmpty(serviceName) ? serviceName : restoredName;
+            }
+        }
+        catch
+        {
+            _currentTenantName = TenantSwitchService.CurrentTenantName;
+        }
+    }
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender)
+        {
+            // Refresh tenant name after first render — tenant resolution may complete
+            // after prerender (e.g. when returning from /Account/SwitchTenant redirect).
+            RefreshTenantFromService();
+        }
+    }
+
+    private void RefreshTenantFromService()
+    {
+        var serviceName = TenantSwitchService.CurrentTenantName;
+        if (serviceName != _currentTenantName)
+        {
+            _currentTenantName = serviceName;
+            StateHasChanged();
+        }
+    }
+
+    private Task PersistTenantState()
+    {
+        PersistentState.PersistAsJson("accountLayout_tenantName", _currentTenantName);
+        return Task.CompletedTask;
+    }
+
+    private void OpenTenantSelector()
+    {
+        _tenantSelectorOpen = true;
+    }
+
+    public void Dispose()
+    {
+        _persistSubscription?.Dispose();
+    }
+}

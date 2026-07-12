@@ -1,7 +1,0 @@
-{
-  "culture": "vi",
-  "texts": {
-    "DisplayName:SufiAbp.Localization.DefaultLanguage": "Ngôn ngữ mặc định",
-    "Description:SufiAbp.Localization.DefaultLanguage": "Ngôn ngữ mặc định của ứng dụng."
-  }
-}
