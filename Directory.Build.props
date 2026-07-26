@@ -10,7 +10,7 @@
     <Version>$(SufiVersion)</Version>
     <Copyright>Copyright © Sufi Chain Intelligent Solutions $([System.DateTime]::Now.Year)</Copyright>
     <PackageLicenseFile>LICENSE</PackageLicenseFile>
-    <PackageProjectUrl>https://sufiplatform.com</PackageProjectUrl>
+    <PackageProjectUrl>https://sufichain.com</PackageProjectUrl>
     <RepositoryUrl>https://github.com/sufi-chain/sufi-platform.git</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageIcon Condition="Exists('$(MSBuildThisFileDirectory)icon.png')">icon.png</PackageIcon>

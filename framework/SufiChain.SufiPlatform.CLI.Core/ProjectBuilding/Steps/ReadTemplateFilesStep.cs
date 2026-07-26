@@ -72,11 +72,11 @@ public class ReadTemplateFilesStep : ProjectBuildPipelineStep
             "  1. SOPHI_TEMPLATE_ZIP environment variable\n" +
             "  2. SOPHI_TEMPLATE_PATH environment variable\n" +
             "  3. Debug: sufi-platform/templates/app/aspnet-core\n" +
-            "  4. Release: https://cdn.sufiplatform.com/templates/latest.json and versioned template zip\n\n" +
+            "  4. Release: https://cdn.sufichain.com/templates/latest.json and versioned template zip\n\n" +
             "Solutions:\n" +
             "  1. Run from the sufi-platform repository root in Debug mode\n" +
             "  2. Set SOPHI_TEMPLATE_PATH to D:\\Projects\\SCIS\\sufi-chain\\sufi-platform\\templates\n" +
-            "  3. Publish app-blazor-webapp-unified.zip under cdn.sufiplatform.com/templates for Release mode");
+            "  3. Publish app-blazor-webapp-unified.zip under cdn.sufichain.com/templates for Release mode");
     }
 
     private async Task LoadFromFileSystemAsync(ProjectBuildContext context, string basePath)
