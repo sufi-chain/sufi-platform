@@ -1,6 +1,6 @@
 # Getting Started
 
-This guide is the main onboarding path for teams that want to install `sufi`, generate a new solution from the open-source platform templates, start the required infrastructure, and begin building a vertical product. Product owners can start with [Product Overview](product-overview.md) and [Product Creation Guide](product-creation-guide.md) before using this technical setup guide. If your goal is to contribute to the framework or to reusable modules in `src/`, use the workspace-level contributor guide at `docs/framework/contributing/source-contributors.md` instead.
+This guide is the main onboarding path for teams that want to install `sufi`, generate a new solution from the open-source platform templates, start the required infrastructure, and begin building a vertical product. Product owners can start with [Product Overview](product-overview.md) and [Product Creation Guide](product-creation-guide.md) before using this technical setup guide. If your goal is to contribute to `sufi-platform/framework/` or `sufi-platform/modules/`, use the workspace authority at `.obsidian/Docs/Platform Configuration/Contributing and Documentation.md`.
 
 ## Prerequisites
 
@@ -22,12 +22,12 @@ dotnet tool install --global SufiChain.SufiPlatform.CLI
 sufi --version
 ```
 
-### Install from nuget.sabp.ir
+### Install from nuget.sufiplatform.com
 
 If your environment uses the SufiChain package feed, add it once and install from that source:
 
 ```bash
-dotnet nuget add source https://nuget.sabp.ir/v3/index.json \
+dotnet nuget add source https://nuget.sufiplatform.com/v3/index.json \
   --name SufiChain
 
 dotnet tool install --global SufiChain.SufiPlatform.CLI --add-source SufiChain

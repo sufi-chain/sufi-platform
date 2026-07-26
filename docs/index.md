@@ -27,7 +27,7 @@ If you are building a product, begin with:
 
 If you are contributing to the platform itself, read:
 
-- Contributor Guide at `docs/framework/contributing/source-contributors.md` - work in `src/` and validate with `.dev/hosts/`
+- Workspace contributor authority at `.obsidian/Docs/Platform Configuration/Contributing and Documentation.md` - work in `sufi-platform/framework/` or `sufi-platform/modules/` and validate through the current development host
 - [Framework Overview](framework/overview.md) - navigate the shared framework packages
 - [Developer Conventions](framework/developer-conventions.md) - follow the platform rules
 - [Reference](reference/index.md) - look up settings, permissions, and package relationships

@@ -15,13 +15,13 @@ dotnet tool install --global SufiChain.SufiPlatform.CLI
 sufi --version
 ```
 
-### From nuget.sabp.ir
+### From nuget.sufiplatform.com
 
 If your environment uses the SufiChain package feed:
 
 ```bash
 # Add the feed (one-time setup)
-dotnet nuget add source https://nuget.sabp.ir/v3/index.json \
+dotnet nuget add source https://nuget.sufiplatform.com/v3/index.json \
   --name SufiChain
 
 # Install the CLI
@@ -38,7 +38,7 @@ To update to the latest version:
 # From NuGet.org
 dotnet tool update --global SufiChain.SufiPlatform.CLI
 
-# From nuget.sabp.ir
+# From nuget.sufiplatform.com
 dotnet tool update --global SufiChain.SufiPlatform.CLI --add-source SufiChain
 
 # From local build

@@ -7,7 +7,7 @@ This section collects stable reference material that multiple docs pages should 
 - [Package Map](package-map.md) - framework and module package roles
 - [Permissions](permissions.md) - common permission documentation approach
 - [Settings](settings.md) - common setting documentation approach
-- Module Documentation Template at `docs/framework/contributing/module-documentation-template.md` - standard page structure for modules
+- Workspace contributor authority at `.obsidian/Docs/Platform Configuration/Contributing and Documentation.md` - standard module documentation structure and authoring rules
 
 ## Guidance
 
