@@ -351,6 +351,66 @@ public abstract class SufiAccountController : AbpController
     }
 
     /// <summary>
+    /// Switches the authenticated session to a linked user (full re-login, not impersonation).
+    /// Verifies the source login token, confirms the link, sets the target tenant cookie, then signs in.
+    /// </summary>
+    [HttpGet]
+    [Route("/account/link-login")]
+    public async Task<IActionResult> LinkLogin(
+        [FromQuery] Guid sourceLinkUserId,
+        [FromQuery] Guid? sourceLinkTenantId,
+        [FromQuery] string? sourceLinkToken,
+        [FromQuery] Guid targetLinkUserId,
+        [FromQuery] Guid? targetLinkTenantId,
+        [FromQuery] string? returnUrl)
+    {
+        returnUrl = NormalizeReturnUrl(returnUrl);
+
+        if (string.IsNullOrWhiteSpace(sourceLinkToken))
+        {
+            return Redirect($"/account/login?error=LinkLoginFailed&returnUrl={Uri.EscapeDataString(returnUrl)}");
+        }
+
+        var linkUserManager = HttpContext.RequestServices.GetRequiredService<IdentityLinkUserManager>();
+        var sourceInfo = new IdentityLinkUserInfo(sourceLinkUserId, sourceLinkTenantId);
+        var targetInfo = new IdentityLinkUserInfo(targetLinkUserId, targetLinkTenantId);
+
+        if (!await linkUserManager.VerifyLinkTokenAsync(
+                sourceInfo,
+                sourceLinkToken,
+                LinkUserTokenProviderConsts.LinkUserLoginTokenPurpose))
+        {
+            return Redirect($"/account/login?error=LinkLoginFailed&returnUrl={Uri.EscapeDataString(returnUrl)}");
+        }
+
+        if (!await linkUserManager.IsLinkedAsync(sourceInfo, targetInfo))
+        {
+            return Redirect($"/account/login?error=LinkLoginFailed&returnUrl={Uri.EscapeDataString(returnUrl)}");
+        }
+
+        await SetTenantCookieAsync(targetLinkTenantId, tenantName: null);
+
+        IdentityUser? targetUser;
+        using (CurrentTenant.Change(targetLinkTenantId))
+        {
+            targetUser = await _userManager.FindByIdAsync(targetLinkUserId.ToString());
+            if (targetUser == null)
+            {
+                return Redirect($"/account/login?error=UserNotFound&returnUrl={Uri.EscapeDataString(returnUrl)}");
+            }
+
+            await _signInManager.SignInAsync(targetUser, isPersistent: false);
+        }
+
+        await _securityLogAppService.SaveLoginEventAsync(
+            IdentitySecurityLogIdentityConsts.Identity,
+            IdentitySecurityLogActionConsts.LoginSucceeded,
+            targetUser.UserName);
+
+        return LocalRedirect(returnUrl);
+    }
+
+    /// <summary>
     /// Sets the tenant cookie via HTTP response and redirects. Used by Blazor UI to switch tenant
     /// without JavaScript interop (avoids prerender issues). Route: /Account/SwitchTenant
     /// When a tenant name is provided (instead of an ID), the name is resolved to a GUID
@@ -359,44 +419,55 @@ public abstract class SufiAccountController : AbpController
     [HttpGet("SwitchTenant")]
     public async Task<IActionResult> SwitchTenant([FromQuery] Guid? tenantId, [FromQuery] string? tenantName, [FromQuery] string? returnUrl)
     {
-        returnUrl ??= Url.Content("~/");
+        returnUrl = NormalizeReturnUrl(returnUrl);
+        await SetTenantCookieAsync(tenantId, tenantName);
+        return LocalRedirect(returnUrl);
+    }
+
+    protected virtual string NormalizeReturnUrl(string? returnUrl)
+    {
+        returnUrl ??= Url.Content("~/") ?? "/";
         if (!Url.IsLocalUrl(returnUrl))
         {
-            returnUrl = "/";
+            return "/";
         }
 
+        return returnUrl;
+    }
+
+    protected virtual async Task SetTenantCookieAsync(Guid? tenantId, string? tenantName)
+    {
         var cookieName = _tenantOptions.TenantCookieName;
-        if (!string.IsNullOrEmpty(cookieName))
+        if (string.IsNullOrEmpty(cookieName))
         {
-            string value;
-
-            if (tenantId.HasValue)
-            {
-                value = tenantId.Value.ToString();
-            }
-            else if (!string.IsNullOrEmpty(tenantName))
-            {
-                // Resolve tenant name → GUID so ABP's CookieTenantResolveContributor
-                // can parse the cookie value as a GUID directly (avoids normalization issues).
-                var resolvedId = await ResolveTenantIdByNameAsync(tenantName);
-                value = resolvedId?.ToString() ?? tenantName;
-            }
-            else
-            {
-                value = string.Empty;
-            }
-
-
-            Response.Cookies.Append(cookieName, value, new CookieOptions
-            {
-                Path = "/",
-                SameSite = SameSiteMode.Lax,
-                HttpOnly = false, // Cookie must be readable by JS for some scenarios; tenant cookie is not sensitive
-                Secure = Request.IsHttps
-            });
+            return;
         }
 
-        return LocalRedirect(returnUrl);
+        string value;
+
+        if (tenantId.HasValue)
+        {
+            value = tenantId.Value.ToString();
+        }
+        else if (!string.IsNullOrEmpty(tenantName))
+        {
+            // Resolve tenant name → GUID so ABP's CookieTenantResolveContributor
+            // can parse the cookie value as a GUID directly (avoids normalization issues).
+            var resolvedId = await ResolveTenantIdByNameAsync(tenantName);
+            value = resolvedId?.ToString() ?? tenantName;
+        }
+        else
+        {
+            value = string.Empty;
+        }
+
+        Response.Cookies.Append(cookieName, value, new CookieOptions
+        {
+            Path = "/",
+            SameSite = SameSiteMode.Lax,
+            HttpOnly = false, // Cookie must be readable by JS for some scenarios; tenant cookie is not sensitive
+            Secure = Request.IsHttps
+        });
     }
 
     private async Task<Guid?> ResolveTenantIdByNameAsync(string tenantName)

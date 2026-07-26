@@ -36,7 +36,11 @@ public class DefaultLanguageProvider : UI.Localization.ILanguageProvider
 
         if (_options.Languages.Count > 0)
         {
+            // Distinct by culture: hosts own the catalog; modules must not Add languages
+            // (e.g. SufiCom previously added fa/ar and duplicated the host list).
             languages = _options.Languages
+                .GroupBy(language => language.CultureName, StringComparer.OrdinalIgnoreCase)
+                .Select(group => group.First())
                 .Select(language => new SufiLanguageInfo
                 {
                     CultureName = language.CultureName,

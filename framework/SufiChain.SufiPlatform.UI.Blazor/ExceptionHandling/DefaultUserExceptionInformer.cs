@@ -315,12 +315,42 @@ public class DefaultUserExceptionInformer : IUserExceptionInformer
             return localizedMessage;
         }
 
+        var dataError = GetDataString(data, "Error", "Message", "Details");
+        if (!string.IsNullOrWhiteSpace(dataError))
+        {
+            return dataError;
+        }
+
         if (IsGenericExceptionMessage(message))
         {
             return _localizer["DefaultErrorMessage"];
         }
 
         return NormalizeKeyLikeMessage(message!);
+    }
+
+    private static string? GetDataString(IDictionary? data, params string[] keys)
+    {
+        if (data == null || data.Count == 0)
+        {
+            return null;
+        }
+
+        foreach (var key in keys)
+        {
+            if (!data.Contains(key))
+            {
+                continue;
+            }
+
+            var value = data[key]?.ToString();
+            if (!string.IsNullOrWhiteSpace(value) && !IsGenericExceptionMessage(value))
+            {
+                return value;
+            }
+        }
+
+        return null;
     }
 
     private static bool IsGenericExceptionMessage(string? message)

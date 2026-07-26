@@ -337,7 +337,10 @@ public abstract class SufiComponentBase : OwningComponentBase
             {
                 await HandleErrorAsync(ex);
             }
-            throw;
+
+            // Match the non-generic overload: errors are informed to the user, not
+            // rethrown as unhandled render exceptions (especially during prerender).
+            return default;
         }
         finally
         {
@@ -444,22 +447,48 @@ public abstract class SufiComponentBase : OwningComponentBase
     // ====== SAFE UI UPDATES ======
 
     /// <summary>
-    /// Safely invokes StateHasChanged, handling the case where the component may have been disposed.
+    /// Safely notifies the renderer that state changed.
+    /// Never awaits a new dispatcher turn from inside an existing one — doing so during
+    /// <c>OnInitializedAsync</c> / loading helpers can deadlock the Blazor Server circuit
+    /// (UI frozen until a full page reload).
     /// </summary>
-    protected async Task InvokeStateHasChangedSafeAsync()
+    protected Task InvokeStateHasChangedSafeAsync()
     {
         if (_isDisposed)
         {
-            return;
+            return Task.CompletedTask;
         }
 
         try
         {
-            await InvokeAsync(StateHasChanged);
+            var invokeTask = InvokeAsync(() =>
+            {
+                if (!_isDisposed)
+                {
+                    StateHasChanged();
+                }
+            });
+
+            // Inline completion (already on the renderer sync context) is safe to observe.
+            if (invokeTask.IsCompleted)
+            {
+                return invokeTask.IsFaulted
+                    ? Task.FromException(invokeTask.Exception!.InnerException ?? invokeTask.Exception)
+                    : Task.CompletedTask;
+            }
+
+            // Queued on another turn — do not block this turn waiting for it.
+            _ = invokeTask.ContinueWith(
+                static t => _ = t.Exception,
+                CancellationToken.None,
+                TaskContinuationOptions.OnlyOnFaulted | TaskContinuationOptions.ExecuteSynchronously,
+                TaskScheduler.Default);
+
+            return Task.CompletedTask;
         }
         catch (ObjectDisposedException)
         {
-            // Component was disposed - ignore
+            return Task.CompletedTask;
         }
     }
 

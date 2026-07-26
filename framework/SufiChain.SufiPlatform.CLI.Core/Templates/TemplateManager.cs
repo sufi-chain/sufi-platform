@@ -12,7 +12,7 @@ public class TemplateManager
 {
     public const string DefaultTemplateName = "app-blazor-webapp-unified";
 
-    private const string CdnBaseUrl = "https://cdn.sabp.ir/templates";
+    private const string CdnBaseUrl = "https://cdn.sufiplatform.com/templates";
     private const string LatestVersionFileName = "latest.json";
     private const string LocalTemplateEnvironmentVariable = "SOPHI_TEMPLATE_PATH";
     private const string LocalTemplateZipEnvironmentVariable = "SOPHI_TEMPLATE_ZIP";
@@ -45,7 +45,7 @@ public class TemplateManager
 
     /// <summary>
     /// Loads template files from the configured source.
-    /// Debug uses sufi-abp/templates by default. Release uses cdn.sabp.ir/templates zips.
+    /// Debug uses sufi-platform/templates by default. Release uses cdn.sufiplatform.com/templates zips.
     /// </summary>
     public async Task<Dictionary<string, byte[]>> LoadTemplateAsync(
         string templateName,

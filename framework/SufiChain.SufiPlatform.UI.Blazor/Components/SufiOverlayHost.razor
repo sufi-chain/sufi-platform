@@ -237,7 +237,8 @@
     private string? _messageCircuitId;
     private string? _blockUiCircuitId;
     private string? _pageProgressCircuitId;
-    private bool _handlersRegistered;
+    private bool _messageHandlersRegistered;
+    private bool _overlayHandlersRegistered;
 
     private ElementReference _confirmDialogRef;
     private ElementReference _messageDialogRef;
@@ -248,26 +249,76 @@
         // Circuit ID is not available yet in OnInitialized - will register handlers in OnAfterRenderAsync
     }
 
-    private void RegisterHandlers()
+    /// <summary>
+    /// Registers overlay handlers. Message/Confirm require a Blazor Server circuit ID and must
+    /// not be marked registered during SSR prerender (when <see cref="IBlazorCircuitIdAccessor.CurrentCircuitId"/>
+    /// is null) — that left dialogs permanently queued with "Message handler not available for circuit".
+    /// Toast/BlockUi/Progress can use a temporary global-event fallback until the circuit ID appears.
+    /// </summary>
+    private void EnsureHandlersRegistered()
     {
-        // Register message/confirm handlers
         var circuitId = CircuitIdAccessor?.CurrentCircuitId;
-        Logger.LogInformation("SufiOverlayHost.RegisterHandlers - Circuit ID: {CircuitId}", circuitId ?? "null");
-        
-        _handlersRegistered = true;
-        
-        if (MessageService is SufiBlazorMessageService messageService)
+        var isNullAccessor = CircuitIdAccessor is NullBlazorCircuitIdAccessor;
+
+        if (!_messageHandlersRegistered)
         {
-            if (!string.IsNullOrEmpty(circuitId))
+            if (!string.IsNullOrEmpty(circuitId) && MessageService is SufiBlazorMessageService messageService)
             {
+                Logger.LogInformation("SufiOverlayHost: registering message handlers for circuit {CircuitId}", circuitId);
                 _messageCircuitId = circuitId;
+                messageService.RegisterConfirmHandler(HandleConfirmAsync);
+                messageService.RegisterMessageHandler(HandleMessageAsync);
+                _messageHandlersRegistered = true;
             }
-            
-            messageService.RegisterConfirmHandler(HandleConfirmAsync);
-            messageService.RegisterMessageHandler(HandleMessageAsync);
+            else if (isNullAccessor)
+            {
+                // WASM / no circuit isolation: MessageService is circuit-scoped only; stop retrying.
+                _messageHandlersRegistered = true;
+            }
+            else
+            {
+                Logger.LogDebug("SufiOverlayHost: deferring message handler registration until circuit ID is available");
+            }
         }
 
-        // Subscribe to notification events (circuit-keyed in Blazor Server to isolate per user/session)
+        // Upgrade toast/block/progress from prerender event fallback to circuit-scoped handlers.
+        if (!_overlayHandlersRegistered ||
+            (!string.IsNullOrEmpty(circuitId) &&
+             string.IsNullOrEmpty(_notificationCircuitId) &&
+             CircuitIdAccessor is not NullBlazorCircuitIdAccessor))
+        {
+            RegisterOverlaySideEffectHandlers(circuitId);
+        }
+    }
+
+    private void RegisterOverlaySideEffectHandlers(string? circuitId)
+    {
+        // Tear down temporary global subscriptions used during prerender once the circuit is known.
+        if (!string.IsNullOrEmpty(circuitId) && string.IsNullOrEmpty(_notificationCircuitId))
+        {
+            if (_overlayHandlersRegistered && NotificationService is SufiBlazorNotificationService priorNotifications)
+            {
+                priorNotifications.OnNotificationAdded -= OnNotificationAdded;
+                priorNotifications.OnNotificationRemoved -= OnNotificationRemoved;
+            }
+
+            if (_overlayHandlersRegistered && BlockUiService is SufiBlazorBlockUiService priorBlockUi)
+            {
+                priorBlockUi.OnBlockStateChanged -= OnBlockStateChanged;
+            }
+
+            if (_overlayHandlersRegistered && PageProgressService is SufiBlazorPageProgressService priorProgress)
+            {
+                priorProgress.ProgressChanged -= OnProgressChanged;
+            }
+        }
+        else if (_overlayHandlersRegistered)
+        {
+            return;
+        }
+
+        Logger.LogInformation("SufiOverlayHost.RegisterOverlayHandlers - Circuit ID: {CircuitId}", circuitId ?? "null");
+
         if (NotificationService is SufiBlazorNotificationService notificationService)
         {
             if (!string.IsNullOrEmpty(circuitId))
@@ -282,7 +333,6 @@
             }
         }
 
-        // Subscribe to BlockUi events
         if (BlockUiService is SufiBlazorBlockUiService blockUiService)
         {
             if (!string.IsNullOrEmpty(circuitId))
@@ -296,7 +346,6 @@
             }
         }
 
-        // Subscribe to PageProgress events
         if (PageProgressService is SufiBlazorPageProgressService pageProgressService)
         {
             if (!string.IsNullOrEmpty(circuitId))
@@ -309,14 +358,13 @@
                 pageProgressService.ProgressChanged += OnProgressChanged;
             }
         }
+
+        _overlayHandlersRegistered = true;
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (firstRender && !_handlersRegistered)
-        {
-            RegisterHandlers();
-        }
+        EnsureHandlersRegistered();
         
         if (_confirmPendingShow && _showConfirm)
         {

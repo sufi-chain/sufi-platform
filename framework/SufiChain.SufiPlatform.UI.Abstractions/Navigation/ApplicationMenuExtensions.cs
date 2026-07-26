@@ -11,6 +11,11 @@ public static class ApplicationMenuExtensions
     public const string AdministrationMenuName = "Administration";
 
     /// <summary>
+    /// Standard name for the Portal (end-user) menu group.
+    /// </summary>
+    public const string PortalMenuName = "Portal";
+
+    /// <summary>
     /// Standard name for the Demo menu group.
     /// </summary>
     public const string DemoMenuName = "Demo";
@@ -35,6 +40,28 @@ public static class ApplicationMenuExtensions
             menu.Items.Add(administration);
         }
         return administration;
+    }
+
+    /// <summary>
+    /// Gets or creates the Portal menu item (end-user /panel/portal/* pages).
+    /// </summary>
+    public static ApplicationMenuItem GetPortal(this ApplicationMenu menu)
+    {
+        var portal = menu.Items.FirstOrDefault(m => m.Name == PortalMenuName);
+        if (portal == null)
+        {
+            portal = new ApplicationMenuItem(
+                name: PortalMenuName,
+                displayName: "Portal",
+                icon: "user",
+                order: 5
+            )
+            {
+                IsCollapsed = false
+            };
+            menu.Items.Add(portal);
+        }
+        return portal;
     }
 
     /// <summary>
