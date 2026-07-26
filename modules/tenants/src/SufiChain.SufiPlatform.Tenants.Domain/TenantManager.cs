@@ -31,6 +31,15 @@ public class TenantManager : DomainService, ITenantManager
         return tenant;
     }
 
+    public virtual async Task<Tenant> CreateAsync(Guid id, string name)
+    {
+        Check.NotNull(name, nameof(name));
+
+        var tenant = new Tenant(id, name, TenantNormalizer.NormalizeName(name));
+        await TenantValidator.ValidateAsync(tenant);
+        return tenant;
+    }
+
     public virtual async Task ChangeNameAsync(Tenant tenant, string name)
     {
         Check.NotNull(tenant, nameof(tenant));

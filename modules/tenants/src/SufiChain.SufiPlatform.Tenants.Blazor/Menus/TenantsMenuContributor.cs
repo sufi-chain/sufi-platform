@@ -1,11 +1,13 @@
+using Microsoft.Extensions.DependencyInjection;
 using SufiChain.SufiPlatform.Tenants.Localization;
 using SufiChain.SufiPlatform.UI.Navigation;
 using SufiChain.SufiPlatform.Tenants;
+using Volo.Abp.MultiTenancy;
 
 namespace SufiChain.SufiPlatform.Tenants.Blazor.Menus;
 
 /// <summary>
-/// Menu contributor for Tenants pages.
+/// Menu contributor for Tenants pages (host-only).
 /// </summary>
 public class TenantsMenuContributor : IMenuContributor
 {
@@ -19,6 +21,12 @@ public class TenantsMenuContributor : IMenuContributor
 
     private Task ConfigureMainMenuAsync(MenuConfigurationContext context)
     {
+        var currentTenant = context.ServiceProvider.GetRequiredService<ICurrentTenant>();
+        if (currentTenant.Id != null)
+        {
+            return Task.CompletedTask;
+        }
+
         var l = context.GetLocalizer<SufiTenantsResource>();
         var administration = context.Menu.GetAdministration();
 

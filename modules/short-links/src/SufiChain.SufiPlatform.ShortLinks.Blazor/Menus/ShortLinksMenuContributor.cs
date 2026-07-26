@@ -33,7 +33,7 @@ public class ShortLinksMenuContributor : IMenuContributor
         administrationMenu.AddItem(new ApplicationMenuItem(
             ShortLinksMenus.ShortLinks,
             l["Menu:SufiShortLinks"],
-            url: "/panel/short-link/short-links",
+            url: "/panel/admin/short-links",
             icon: "link",
             requiredPermissionName: ShortLinksPermissions.ShortLinks.Default
         ));

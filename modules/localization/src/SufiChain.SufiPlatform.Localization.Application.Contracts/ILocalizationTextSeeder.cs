@@ -24,4 +24,15 @@ public interface ILocalizationTextSeeder
         Guid? tenantId = null,
         bool overwriteExisting = false,
         CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Returns the stored value for a resource/culture/key, or null when missing.
+    /// Uses the ambient unit of work so seed-time inserts are visible before commit.
+    /// </summary>
+    Task<string?> FindValueAsync(
+        string resourceName,
+        string cultureName,
+        string key,
+        Guid? tenantId = null,
+        CancellationToken cancellationToken = default);
 }

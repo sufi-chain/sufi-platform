@@ -5,6 +5,10 @@ namespace SufiChain.SufiPlatform.Tenants;
 
 public class TenantCreateDto : TenantCreateOrUpdateDtoBase
 {
+    public Guid? EditionId { get; set; }
+
+    public Guid? OwnerUserId { get; set; }
+
     [Required]
     [EmailAddress]
     [MaxLength(256)]

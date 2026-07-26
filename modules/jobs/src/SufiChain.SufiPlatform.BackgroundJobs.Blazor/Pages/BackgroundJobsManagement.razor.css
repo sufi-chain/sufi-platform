@@ -1,7 +1,7 @@
 .filter-label {
     font-size: 0.875rem;
     font-weight: 500;
-    color: var(--sb-color-text-secondary, #6b7280);
+    color: var(--sb-color-text-secondary);
     display: flex;
     align-items: center;
     gap: 0.375rem;
@@ -16,17 +16,17 @@
 .filter-field-label {
     font-size: 0.75rem;
     font-weight: 500;
-    color: var(--sb-color-text-secondary, #6b7280);
+    color: var(--sb-color-text-secondary);
     text-transform: uppercase;
     letter-spacing: 0.025em;
 }
 
 .confirm-job-info {
-    background: var(--sb-color-surface-variant, #f3f4f6);
+    background: var(--sb-color-surface-variant);
     padding: 0.5rem 0.75rem;
     border-radius: 0.375rem;
     font-family: ui-monospace, SFMono-Regular, monospace;
-    color: var(--sb-color-text-secondary, #6b7280);
+    color: var(--sb-color-text-secondary);
 }
 
 @media (max-width: 768px) {

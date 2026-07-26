@@ -33,6 +33,8 @@ public class TenantAppService : TenantsAppServiceBase, ITenantAppService
     public virtual async Task<TenantDto> CreateAsync(TenantCreateDto input)
     {
         var tenant = await TenantManager.CreateAsync(input.Name);
+        tenant.SetEditionId(input.EditionId);
+        tenant.SetOwnerUserId(input.OwnerUserId);
         await TenantRepository.InsertAsync(tenant, autoSave: true);
         return MapToDto(tenant);
     }
@@ -42,6 +44,8 @@ public class TenantAppService : TenantsAppServiceBase, ITenantAppService
         var tenant = await TenantRepository.GetAsync(id);
         tenant.ConcurrencyStamp = input.ConcurrencyStamp;
         await TenantManager.ChangeNameAsync(tenant, input.Name);
+        tenant.SetEditionId(input.EditionId);
+        tenant.SetOwnerUserId(input.OwnerUserId);
         await TenantRepository.UpdateAsync(tenant, autoSave: true);
         return MapToDto(tenant);
     }
@@ -77,6 +81,8 @@ public class TenantAppService : TenantsAppServiceBase, ITenantAppService
         {
             Id = tenant.Id,
             Name = tenant.Name,
+            EditionId = tenant.EditionId,
+            OwnerUserId = tenant.OwnerUserId,
             ConcurrencyStamp = tenant.ConcurrencyStamp
         };
     }

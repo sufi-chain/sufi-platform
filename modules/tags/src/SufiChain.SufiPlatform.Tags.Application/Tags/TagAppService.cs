@@ -3,10 +3,12 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using SufiChain.SufiPlatform.Application.Dtos;
+using SufiChain.SufiPlatform.Tags.Caching;
 using SufiChain.SufiPlatform.Tags.Features;
 using SufiChain.SufiPlatform.Tags.Permissions;
 using SufiChain.SufiPlatform.Tags.Settings;
 using Volo.Abp;
+using Volo.Abp.Caching;
 using SufiChain.SufiPlatform.Application.Services;
 using SufiChain.SufiPlatform.Features;
 
@@ -19,15 +21,18 @@ public class TagAppService : SufiApplicationService, ITagAppService
     private readonly ITagRepository _tagRepository;
     private readonly TagManager _tagManager;
     private readonly ITagsPolicyProvider _policyProvider;
+    private readonly IDistributedCache<TagCacheItem> _tagCache;
 
     public TagAppService(
         ITagRepository tagRepository,
         TagManager tagManager,
-        ITagsPolicyProvider policyProvider)
+        ITagsPolicyProvider policyProvider,
+        IDistributedCache<TagCacheItem> tagCache)
     {
         _tagRepository = tagRepository;
         _tagManager = tagManager;
         _policyProvider = policyProvider;
+        _tagCache = tagCache;
     }
 
     public virtual async Task<TagDto> GetAsync(Guid id)
@@ -46,8 +51,14 @@ public class TagAppService : SufiApplicationService, ITagAppService
 
     public virtual async Task<ListResultDto<TagDto>> GetListByScopeAsync(string scope)
     {
-        var items = await _tagRepository.GetListByScopeAsync(scope, CurrentTenant.Id);
-        return new ListResultDto<TagDto>(ObjectMapper.Map<List<Tag>, List<TagDto>>(items));
+        var cacheKey = TagCacheItem.CreateScopeListCacheKey(scope);
+        var cached = await _tagCache.GetOrAddAsync(cacheKey, async () =>
+        {
+            var items = await _tagRepository.GetListByScopeAsync(scope, CurrentTenant.Id);
+            return new TagCacheItem { Tags = ObjectMapper.Map<List<Tag>, List<TagDto>>(items) };
+        });
+
+        return new ListResultDto<TagDto>(cached.Tags);
     }
 
     public virtual async Task<ListResultDto<TagDto>> SearchAsync(SearchTagsInput input)
@@ -78,10 +89,19 @@ public class TagAppService : SufiApplicationService, ITagAppService
         await CheckTagNameLengthAsync(input.Name);
 
         var tag = await _tagRepository.GetAsync(id);
+        var previousScope = tag.Scope;
         tag.SetName(input.Name);
         tag.SetScope(input.Scope);
         tag.SetColor(input.Color);
         await _tagRepository.UpdateAsync(tag, autoSave: true);
+
+        // Scope change: invalidate both old and new scope list caches.
+        await _tagCache.RemoveAsync(TagCacheItem.CreateScopeListCacheKey(previousScope), considerUow: true);
+        if (!string.Equals(previousScope, input.Scope, StringComparison.Ordinal))
+        {
+            await _tagCache.RemoveAsync(TagCacheItem.CreateScopeListCacheKey(input.Scope), considerUow: true);
+        }
+
         return ObjectMapper.Map<Tag, TagDto>(tag);
     }
 

@@ -20,6 +20,7 @@ public partial class TenantToTenantConfigurationMapper : MapperBase<Tenant, Tena
     {
         // Sufi tenants do not carry an activation flag; treat them as always active.
         destination.IsActive = true;
+        destination.EditionId = source.EditionId;
 
         if (source.ConnectionStrings != null)
         {

@@ -1,3 +1,4 @@
+using System;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
 using Volo.Abp.Domain.Services;
@@ -8,6 +9,12 @@ public interface ITenantManager : IDomainService
 {
     [NotNull]
     Task<Tenant> CreateAsync([NotNull] string name);
+
+    /// <summary>
+    /// Creates a tenant with a predetermined id (useful for configuration-driven seeding).
+    /// </summary>
+    [NotNull]
+    Task<Tenant> CreateAsync(Guid id, [NotNull] string name);
 
     Task ChangeNameAsync([NotNull] Tenant tenant, [NotNull] string name);
 }

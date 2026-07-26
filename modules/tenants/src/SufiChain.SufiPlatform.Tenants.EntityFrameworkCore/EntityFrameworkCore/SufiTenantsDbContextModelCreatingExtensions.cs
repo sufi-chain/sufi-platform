@@ -26,11 +26,14 @@ public static class SufiTenantsDbContextModelCreatingExtensions
 
             b.Property(t => t.Name).IsRequired().HasMaxLength(TenantConsts.MaxNameLength);
             b.Property(t => t.NormalizedName).IsRequired().HasMaxLength(TenantConsts.MaxNameLength);
+            b.Property(t => t.EditionId);
+            b.Property(t => t.OwnerUserId);
 
             b.HasMany(u => u.ConnectionStrings).WithOne().HasForeignKey(uc => uc.TenantId).IsRequired();
 
             b.HasIndex(u => u.Name);
             b.HasIndex(u => u.NormalizedName);
+            b.HasIndex(u => u.EditionId);
 
             b.ApplyObjectExtensionMappings();
         });

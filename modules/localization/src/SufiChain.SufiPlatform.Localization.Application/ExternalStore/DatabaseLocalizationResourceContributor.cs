@@ -55,7 +55,8 @@ public class DatabaseLocalizationResourceContributor : ILocalizationResourceCont
 
     public void Fill(string cultureName, Dictionary<string, LocalizedString> dictionary)
     {
-        // Run on thread pool to avoid sync-over-async deadlock when framework calls Fill from Blazor/ASP.NET sync context
+        // DEBT-009 sync bridge: ILocalizationResourceContributor.Fill is sync-only (ABP contract);
+        // Task.Run avoids sync-over-async deadlock when called from Blazor/ASP.NET sync context.
         System.Threading.Tasks.Task.Run(() => FillAsync(cultureName, dictionary)).GetAwaiter().GetResult();
     }
 

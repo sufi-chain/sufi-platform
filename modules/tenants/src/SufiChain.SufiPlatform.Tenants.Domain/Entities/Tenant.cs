@@ -14,6 +14,10 @@ public class Tenant : FullAuditedAggregateRoot<Guid>, IHasEntityVersion
 
     public virtual string NormalizedName { get; protected set; }
 
+    public virtual Guid? EditionId { get; protected set; }
+
+    public virtual Guid? OwnerUserId { get; protected set; }
+
     public virtual int EntityVersion { get; protected set; }
 
     public virtual List<TenantConnectionString> ConnectionStrings { get; protected set; }
@@ -86,5 +90,15 @@ public class Tenant : FullAuditedAggregateRoot<Guid>, IHasEntityVersion
     protected internal virtual void SetNormalizedName([CanBeNull] string normalizedName)
     {
         NormalizedName = normalizedName;
+    }
+
+    public virtual void SetEditionId(Guid? editionId)
+    {
+        EditionId = editionId;
+    }
+
+    public virtual void SetOwnerUserId(Guid? ownerUserId)
+    {
+        OwnerUserId = ownerUserId;
     }
 }
