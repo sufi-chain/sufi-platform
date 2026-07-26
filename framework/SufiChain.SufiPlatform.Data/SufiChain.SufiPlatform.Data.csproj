@@ -10,7 +10,7 @@
 
   <PropertyGroup>
     <PackageId>SufiChain.SufiPlatform.Data</PackageId>
-    <Description>Sufi Platform data configuration - removes Abp prefix from table/collection names.</Description>
+    <Description>Sufi Platform data configuration - shared DB naming (SufiEvents.Inbox / SufiEvents.Outbox) and data-seed options.</Description>
   </PropertyGroup>
 
   <ItemGroup>
