@@ -47,7 +47,7 @@ public class S3PresignedUrlProvider : IS3PresignedUrlProvider, ITransientDepende
         var validityMinutes = Math.Clamp(validity.TotalMinutes, MinValidityMinutes, MaxValidityMinutes);
         var expires = DateTime.UtcNow.AddMinutes(validityMinutes);
 
-        var s3Key = tenantId == null ? $"host/{blobName}" : $"tenants/{tenantId.Value:D}/{blobName}";
+        var s3Key = S3PublicUrlBuilder.BuildObjectKey(blobName, tenantId);
         var bucketName = string.IsNullOrWhiteSpace(s3Config.ContainerName)
             ? containerName
             : s3Config.ContainerName;

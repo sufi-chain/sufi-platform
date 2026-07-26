@@ -116,8 +116,8 @@ public class S3BlobProviderConfiguration
     }
 
     /// <summary>
-    /// When true, blobs are stored with public-read ACL and public URLs can be built via PublicBaseUrl.
-    /// Typically set from FileStructure.IsPublicAccess.
+    /// When true, blobs are stored with public-read ACL and public URLs can be built via PublicBaseUrl
+    /// (or derived from Endpoint/Region/ContainerName). Typically set from FileStructure.IsPublicAccess.
     /// </summary>
     public bool IsPublicAccess
     {
@@ -127,8 +127,8 @@ public class S3BlobProviderConfiguration
 
     /// <summary>
     /// Base URL for constructing direct public URLs (e.g. https://bucket.s3.region.amazonaws.com/ or CDN).
-    /// When set with IsPublicAccess, GetPublicUrl returns direct S3 object URLs.
-    /// Typically set from FileStructure.BaseUrl.
+    /// When set with IsPublicAccess, public URL providers return direct S3 object URLs (no app proxy).
+    /// Typically set from FileStructure.BaseUrl; when empty, derived from Endpoint/Region/ContainerName.
     /// </summary>
     public string? PublicBaseUrl
     {

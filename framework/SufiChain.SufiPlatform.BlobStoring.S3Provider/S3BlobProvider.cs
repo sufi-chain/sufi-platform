@@ -48,6 +48,8 @@ public class S3BlobProvider : BlobProviderBase, ITransientDependency
                 await CreateContainerIfNotExistsAsync(amazonS3Client, containerName);
             }
 
+            // When structure IsPublicAccess is true, store with public-read ACL so the object
+            // is reachable at PublicBaseUrl (or derived S3 URL) without proxying through the app.
             var putRequest = new PutObjectRequest
             {
                 BucketName = containerName,
