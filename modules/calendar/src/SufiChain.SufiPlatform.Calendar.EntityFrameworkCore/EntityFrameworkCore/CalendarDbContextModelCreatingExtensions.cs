@@ -22,6 +22,7 @@ public static class CalendarDbContextModelCreatingExtensions
             b.Property(x => x.Name).IsRequired().HasMaxLength(CalendarConsts.MaxNameLength);
             b.Property(x => x.TimeZoneId).IsRequired().HasMaxLength(CalendarConsts.MaxTimeZoneIdLength);
             b.Property(x => x.OwnerName).HasMaxLength(CalendarConsts.MaxOwnerNameLength);
+            b.Property(x => x.Color).IsRequired().HasMaxLength(CalendarConsts.MaxColorLength).HasDefaultValue(CalendarConsts.DefaultColor);
             b.Property(x => x.Kind).HasConversion<string>().HasMaxLength(32);
             b.HasIndex(x => x.TenantId);
             b.HasIndex(x => x.Kind);

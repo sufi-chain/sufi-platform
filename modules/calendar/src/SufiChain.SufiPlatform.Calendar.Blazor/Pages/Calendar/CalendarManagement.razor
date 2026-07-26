@@ -83,6 +83,13 @@
                         </CellTemplate>
                     </SbColumn>
                     <SbColumn TItem="CalendarDto" Field="Name" Title="@L["Name"]" />
+                    <SbColumn TItem="CalendarDto" Field="Color" Title="@L["Color"]" Width="100px" Sortable="false">
+                        <CellTemplate Context="cellContext">
+                            <span class="sufi-calendar-management__color-swatch"
+                                  style="@($"background:{cellContext.Item.Color}")"
+                                  title="@cellContext.Item.Color"></span>
+                        </CellTemplate>
+                    </SbColumn>
                     <SbColumn TItem="CalendarDto" Field="Kind" Title="@L["Kind"]" Width="140px" />
                     <SbColumn TItem="CalendarDto" Field="TimeZoneId" Title="@L["TimeZone"]" />
                     <SbColumn TItem="CalendarDto" Field="IsDefault" Title="@L["Default"]" Width="120px">
@@ -130,7 +137,13 @@
                                     }
                                 </SbSimpleSelect>
                             </SbGridItem>
-                            <SbGridItem ColumnSpan="2">
+                            <SbGridItem>
+                                <SbColorPicker @bind-Value="EditingCalendar.Color"
+                                               Label="@L["Color"]"
+                                               Required="true"
+                                               Clearable="false" />
+                            </SbGridItem>
+                            <SbGridItem>
                                 <SbTextField @bind-Value="EditingCalendar.OwnerName" Label="@L["OwnerName"]" />
                             </SbGridItem>
                         </SbGrid>

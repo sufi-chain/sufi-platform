@@ -2,9 +2,9 @@ using SufiChain.SufiPlatform.Calendar.Calendars;
 
 namespace SufiChain.SufiPlatform.Calendar.Blazor.Public.Components;
 
-internal static class CalendarSelectionHelper
+public static class CalendarSelectionHelper
 {
-    internal static CalendarLookupDto? ResolveDefaultSelection(
+    public static CalendarLookupDto? ResolveDefaultSelection(
         IReadOnlyList<CalendarLookupDto> options,
         Guid selectedCalendarId,
         Guid? initialCalendarId)

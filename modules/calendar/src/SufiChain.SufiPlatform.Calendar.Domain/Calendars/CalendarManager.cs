@@ -15,14 +15,35 @@ public class CalendarManager : DomainService
         _currentTenant = currentTenant;
     }
 
-    public virtual async Task<Calendar> CreateAsync(Guid id, Guid? tenantId, string name, CalendarKind kind, string timeZoneId, Guid? ownerUserId = null, string? ownerName = null, bool isDefault = false, bool isAlwaysOpen = false, CancellationToken cancellationToken = default)
+    public virtual async Task<Calendar> CreateAsync(
+        Guid id,
+        Guid? tenantId,
+        string name,
+        CalendarKind kind,
+        string timeZoneId,
+        Guid? ownerUserId = null,
+        string? ownerName = null,
+        bool isDefault = false,
+        bool isAlwaysOpen = false,
+        string? color = null,
+        CancellationToken cancellationToken = default)
     {
         if (isDefault)
         {
             await EnsureDefaultIsUniqueAsync(tenantId, kind, cancellationToken);
         }
 
-        var calendar = new Calendar(id, tenantId, name, kind, timeZoneId, ownerUserId, ownerName, isDefault, isAlwaysOpen);
+        var calendar = new Calendar(
+            id,
+            tenantId,
+            name,
+            kind,
+            timeZoneId,
+            ownerUserId,
+            ownerName,
+            isDefault,
+            isAlwaysOpen,
+            color);
 
         await AttachDefaultCalendarInheritanceAsync(calendar, cancellationToken);
 
@@ -67,6 +88,7 @@ public class CalendarManager : DomainService
         }
 
         inheritance.SetInheritedByDefault(isInheritedByDefault);
+        calendar.NotifyChanged();
         return Task.CompletedTask;
     }
 

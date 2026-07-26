@@ -22,6 +22,8 @@ public class Calendar : FullAuditedAggregateRoot<Guid>, IMultiTenant
 
     public virtual bool IsAlwaysOpen { get; private set; }
 
+    public virtual string Color { get; private set; } = CalendarConsts.DefaultColor;
+
     public virtual List<WorkingHourRule> WorkingHourRules { get; private set; } = new();
 
     public virtual List<CalendarException> Exceptions { get; private set; } = new();
@@ -32,7 +34,17 @@ public class Calendar : FullAuditedAggregateRoot<Guid>, IMultiTenant
     {
     }
 
-    public Calendar(Guid id, Guid? tenantId, string name, CalendarKind kind, string timeZoneId, Guid? ownerUserId = null, string? ownerName = null, bool isDefault = false, bool isAlwaysOpen = false)
+    public Calendar(
+        Guid id,
+        Guid? tenantId,
+        string name,
+        CalendarKind kind,
+        string timeZoneId,
+        Guid? ownerUserId = null,
+        string? ownerName = null,
+        bool isDefault = false,
+        bool isAlwaysOpen = false,
+        string? color = null)
         : base(id)
     {
         TenantId = tenantId;
@@ -42,6 +54,7 @@ public class Calendar : FullAuditedAggregateRoot<Guid>, IMultiTenant
         SetOwner(ownerUserId, ownerName);
         SetDefault(isDefault);
         SetAlwaysOpen(isAlwaysOpen);
+        SetColor(color ?? CalendarConsts.GetDefaultColor(kind));
     }
 
     public virtual void SetName(string name)
@@ -58,7 +71,18 @@ public class Calendar : FullAuditedAggregateRoot<Guid>, IMultiTenant
     {
         Check.NotNullOrWhiteSpace(timeZoneId, nameof(timeZoneId), CalendarConsts.MaxTimeZoneIdLength);
         _ = TimeZoneInfo.FindSystemTimeZoneById(timeZoneId);
+        var previous = TimeZoneId;
+        if (previous == timeZoneId)
+        {
+            return;
+        }
+
         TimeZoneId = timeZoneId;
+        // Skip constructor/first-assign noise; only invalidate when an existing value changes.
+        if (!string.IsNullOrEmpty(previous))
+        {
+            AddDistributedEvent(new SufiChain.SufiPlatform.Calendar.Events.CalendarChangedEto(Id, TenantId));
+        }
     }
 
     public virtual void SetOwner(Guid? ownerUserId, string? ownerName)
@@ -77,7 +101,26 @@ public class Calendar : FullAuditedAggregateRoot<Guid>, IMultiTenant
 
     public virtual void SetAlwaysOpen(bool isAlwaysOpen)
     {
+        if (IsAlwaysOpen == isAlwaysOpen)
+        {
+            return;
+        }
+
         IsAlwaysOpen = isAlwaysOpen;
+        AddDistributedEvent(new SufiChain.SufiPlatform.Calendar.Events.CalendarChangedEto(Id, TenantId));
+    }
+
+    /// <summary>
+    /// Raises a cache-invalidation event (e.g. before delete) without mutating availability data.
+    /// </summary>
+    public virtual void NotifyChanged()
+    {
+        AddDistributedEvent(new SufiChain.SufiPlatform.Calendar.Events.CalendarChangedEto(Id, TenantId));
+    }
+
+    public virtual void SetColor(string color)
+    {
+        Color = Check.NotNullOrWhiteSpace(color, nameof(color), CalendarConsts.MaxColorLength);
     }
 
     public virtual void ReplaceWorkingHours(IEnumerable<WorkingHourRule> rules)

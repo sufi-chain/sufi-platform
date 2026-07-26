@@ -1,5 +1,5 @@
 using SufiChain.SufiPlatform.Application.Dtos;
-using SufiChain.SufiPlatform.Data;
+using Volo.Abp.Data;
 
 namespace SufiChain.SufiPlatform.Calendar.Events;
 

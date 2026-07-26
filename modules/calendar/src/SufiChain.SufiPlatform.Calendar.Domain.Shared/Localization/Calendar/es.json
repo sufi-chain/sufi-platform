@@ -26,6 +26,7 @@
     "Name": "Nombre",
     "Kind": "Tipo",
     "TimeZone": "Zona horaria",
+    "Color": "Color",
     "SelectTimeZone": "Seleccione una zona horaria",
     "Default": "Predeterminado",
     "Yes": "Sí",
@@ -127,13 +128,15 @@
     "Enum:RsvpStatus:Tentative": "Tentative",
     "Enum:ReminderChannel:Email": "Email",
     "Enum:ReminderChannel:InApp": "In-app",
-    "CalendarCopilot:Title": "Calendar Assistant",
-    "CalendarCopilot:OpenAssistant": "Ask the Calendar Assistant",
-    "CalendarCopilot:OpenAssistantPage": "Open Calendar Assistant",
-    "CalendarCopilot:Unavailable": "The Calendar Assistant is not available right now.",
+    "CalendarCopilot:Title": "AI Copilot",
+    "CalendarCopilot:OpenAssistant": "AI Copilot",
+    "CalendarCopilot:OpenAssistantPage": "Open AI Copilot",
+    "CalendarCopilot:Unavailable": "AI Copilot is not available right now.",
     "CalendarCopilot:Shortcut:DayAgenda": "¿Cómo se ve mi día?",
     "CalendarCopilot:Shortcut:FreeSlot": "Encuentra un espacio libre de 30 minutos esta semana",
     "CalendarCopilot:Shortcut:ScheduleTomorrow": "Programa una reunión mañana a las 10",
-    "CalendarCopilot:Shortcut:FreeFriday": "¿Estoy libre el viernes por la tarde?"
+    "CalendarCopilot:Shortcut:FreeFriday": "¿Estoy libre el viernes por la tarde?",
+    "SeededCalendar:host-hijri-shamsi:DisplayName": "Hijri Shamsi",
+    "SeededCalendar:host-hijri-shamsi-1405:DisplayName": "Hijri Shamsi"
   }
 }

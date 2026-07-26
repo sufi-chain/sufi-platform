@@ -89,6 +89,7 @@ public class CalendarEventAppService : SufiApplicationService, ICalendarEventApp
             calendarEvent.SetRecurrence(GuidGenerator.Create(), input.RecurrenceRule);
         }
 
+        calendarEvent.NotifyChanged();
         await _eventRepository.InsertAsync(calendarEvent, autoSave: true);
         return CalendarEventDtoMapper.ToDto(calendarEvent);
     }
@@ -117,6 +118,8 @@ public class CalendarEventAppService : SufiApplicationService, ICalendarEventApp
             calendarEvent.SetRecurrence(calendarEvent.RecurrenceRule?.Id ?? GuidGenerator.Create(), input.RecurrenceRule);
         }
 
+        // Ensure expansion cache invalidates even if only title/time/details changed.
+        calendarEvent.NotifyChanged();
         await _eventRepository.UpdateAsync(calendarEvent, autoSave: true);
         return CalendarEventDtoMapper.ToDto(calendarEvent);
     }
@@ -126,6 +129,7 @@ public class CalendarEventAppService : SufiApplicationService, ICalendarEventApp
         await CheckPolicyAsync(CalendarPermissions.Events.Delete);
         var calendarEvent = await _eventRepository.GetAsync(id);
         await EnsureCanSeeCalendarAsync(calendarEvent.CalendarId);
+        calendarEvent.NotifyChanged();
         await _eventRepository.DeleteAsync(calendarEvent, autoSave: true);
     }
 
@@ -133,8 +137,55 @@ public class CalendarEventAppService : SufiApplicationService, ICalendarEventApp
     {
         await CheckPolicyAsync(CalendarPermissions.Events.Default);
         await EnsureCanSeeCalendarAsync(calendarId);
-        var occurrences = await _calendarEventService.ExpandAsync(calendarId, input.FromUtc, input.ToUtc);
-        return new ListResultDto<EventOccurrenceDto>(occurrences.Select(CalendarEventDtoMapper.ToDto).ToList());
+
+        var calendarIds = new[] { calendarId }
+            .Concat(await _calendarRepository.GetInheritedCalendarIdsAsync(calendarId))
+            .Distinct()
+            .ToList();
+
+        // Sequential expand (scoped DbContext is not thread-safe). Each call hits the
+        // versioned distributed occurrence cache — inheritance parents are cached independently.
+        var occurrences = new List<EventOccurrence>();
+        foreach (var id in calendarIds)
+        {
+            occurrences.AddRange(await _calendarEventService.ExpandAsync(id, input.FromUtc, input.ToUtc));
+        }
+
+        var calendarColors = await LoadCalendarColorsAsync(calendarIds);
+        return new ListResultDto<EventOccurrenceDto>(
+            occurrences
+                .OrderBy(x => x.StartUtc)
+                .ThenBy(x => x.EndUtc)
+                .Select(occurrence =>
+                {
+                    var dto = CalendarEventDtoMapper.ToDto(occurrence);
+                    if (string.IsNullOrWhiteSpace(dto.Color) &&
+                        calendarColors.TryGetValue(occurrence.CalendarId, out var calendarColor))
+                    {
+                        dto.Color = calendarColor;
+                    }
+
+                    return dto;
+                })
+                .ToList());
+    }
+
+    protected virtual async Task<Dictionary<Guid, string>> LoadCalendarColorsAsync(IReadOnlyList<Guid> calendarIds)
+    {
+        if (calendarIds.Count == 0)
+        {
+            return new Dictionary<Guid, string>();
+        }
+
+        var query = await _calendarRepository.GetQueryableAsync();
+        var calendars = await _asyncExecuter.ToListAsync(
+            query.Where(x => calendarIds.Contains(x.Id)).Select(x => new { x.Id, x.Color, x.Kind }));
+
+        return calendars.ToDictionary(
+            x => x.Id,
+            x => string.IsNullOrWhiteSpace(x.Color)
+                ? CalendarConsts.GetDefaultColor(x.Kind)
+                : x.Color);
     }
 
     public virtual async Task<CalendarEventDto> SetRecurrenceAsync(Guid id, string recurrenceRule)
@@ -235,14 +286,32 @@ public class CalendarEventAppService : SufiApplicationService, ICalendarEventApp
             query = query.Where(x => calendarIds.Contains(x.CalendarId));
         }
 
-        if (input.FromUtc.HasValue)
+        if (input.FromUtc.HasValue && input.ToUtc.HasValue)
         {
-            query = query.Where(x => x.RecurrenceRule != null || x.EndUtc > input.FromUtc.Value);
+            var fromUtc = input.FromUtc.Value;
+            var toUtc = input.ToUtc.Value;
+            query = query.Where(x =>
+                (x.RecurrenceRule == null && x.StartUtc < toUtc && x.EndUtc > fromUtc) ||
+                (x.RecurrenceRule != null &&
+                 x.StartUtc < toUtc &&
+                 (x.RecurrenceRule.UntilUtc == null || x.RecurrenceRule.UntilUtc >= fromUtc)));
         }
-
-        if (input.ToUtc.HasValue)
+        else
         {
-            query = query.Where(x => x.RecurrenceRule != null || x.StartUtc < input.ToUtc.Value);
+            if (input.FromUtc.HasValue)
+            {
+                var fromUtc = input.FromUtc.Value;
+                query = query.Where(x =>
+                    (x.RecurrenceRule == null && x.EndUtc > fromUtc) ||
+                    (x.RecurrenceRule != null &&
+                     (x.RecurrenceRule.UntilUtc == null || x.RecurrenceRule.UntilUtc >= fromUtc)));
+            }
+
+            if (input.ToUtc.HasValue)
+            {
+                var toUtc = input.ToUtc.Value;
+                query = query.Where(x => x.StartUtc < toUtc);
+            }
         }
 
         if (!string.IsNullOrWhiteSpace(input.SourceType))

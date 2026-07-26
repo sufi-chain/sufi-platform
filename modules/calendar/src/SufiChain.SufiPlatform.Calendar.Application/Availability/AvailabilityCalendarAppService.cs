@@ -3,7 +3,9 @@ using SufiChain.SufiPlatform.Application.Dtos;
 using SufiChain.SufiPlatform.Application.Services;
 using SufiChain.SufiPlatform.Calendar.Calendars;
 using SufiChain.SufiPlatform.Calendar.Permissions;
+using SufiChain.SufiPlatform.Data;
 using Volo.Abp.Linq;
+using Volo.Abp.Data;
 
 namespace SufiChain.SufiPlatform.Calendar.Availability;
 
@@ -14,26 +16,29 @@ public class AvailabilityCalendarAppService : SufiApplicationService, IAvailabil
     private readonly IAsyncQueryableExecuter _asyncExecuter;
     private readonly ICalendarSnapshotProvider _snapshotProvider;
     private readonly BusinessCalendarCalculator _businessCalendarCalculator;
+    private readonly CalendarBusinessLocalizationService _businessLocalization;
 
     public AvailabilityCalendarAppService(
         ICalendarRepository calendarRepository,
         CalendarManager calendarManager,
         IAsyncQueryableExecuter asyncExecuter,
         ICalendarSnapshotProvider snapshotProvider,
-        BusinessCalendarCalculator businessCalendarCalculator)
+        BusinessCalendarCalculator businessCalendarCalculator,
+        CalendarBusinessLocalizationService businessLocalization)
     {
         _calendarRepository = calendarRepository;
         _calendarManager = calendarManager;
         _asyncExecuter = asyncExecuter;
         _snapshotProvider = snapshotProvider;
         _businessCalendarCalculator = businessCalendarCalculator;
+        _businessLocalization = businessLocalization;
     }
 
     public virtual async Task<CalendarDto> GetAsync(Guid id)
     {
         await CheckPolicyAsync(CalendarPermissions.Calendars.Default);
         var calendar = await GetVisibleCalendarAsync(id, includeDetails: true);
-        return CalendarDtoMapper.ToDto(calendar);
+        return ToDto(calendar);
     }
 
     public virtual async Task<PagedResultDto<CalendarDto>> GetListAsync(GetCalendarListInput input)
@@ -46,7 +51,7 @@ public class AvailabilityCalendarAppService : SufiApplicationService, IAvailabil
         query = ApplySorting(query, input.Sorting);
         var totalCount = await _asyncExecuter.CountAsync(query);
         var items = await _asyncExecuter.ToListAsync(query.Skip(input.SkipCount).Take(input.MaxResultCount));
-        return new PagedResultDto<CalendarDto>(totalCount, items.Select(CalendarDtoMapper.ToDto).ToList());
+        return new PagedResultDto<CalendarDto>(totalCount, items.Select(ToDto).ToList());
     }
 
     public virtual async Task<ListResultDto<CalendarLookupDto>> GetLookupAsync(CalendarKind? kind = null)
@@ -61,14 +66,14 @@ public class AvailabilityCalendarAppService : SufiApplicationService, IAvailabil
         }
 
         var items = await _asyncExecuter.ToListAsync(query);
-        return new ListResultDto<CalendarLookupDto>(items.Select(CalendarDtoMapper.ToLookupDto).ToList());
+        return new ListResultDto<CalendarLookupDto>(items.Select(ToLookupDto).ToList());
     }
 
     public virtual async Task<CalendarDto?> GetDefaultAsync(CalendarKind kind)
     {
         await CheckPolicyAsync(CalendarPermissions.Calendars.Default);
         var calendar = await _calendarRepository.FindDefaultAsync(CurrentTenant.Id, kind);
-        return calendar == null || !CanSeeCalendar(calendar) ? null : CalendarDtoMapper.ToDto(calendar);
+        return calendar == null || !CanSeeCalendar(calendar) ? null : ToDto(calendar);
     }
 
     public virtual async Task<CalendarDto> GetOrCreateMyPersonalCalendarAsync()
@@ -85,7 +90,7 @@ public class AvailabilityCalendarAppService : SufiApplicationService, IAvailabil
         var existing = calendars.FirstOrDefault(x => x.Kind == CalendarKind.Personal);
         if (existing != null)
         {
-            return CalendarDtoMapper.ToDto(existing);
+            return ToDto(existing);
         }
 
         await CheckPolicyAsync(CalendarPermissions.Calendars.Create);
@@ -101,7 +106,7 @@ public class AvailabilityCalendarAppService : SufiApplicationService, IAvailabil
             isDefault: false);
 
         await _calendarRepository.InsertAsync(calendar, autoSave: true);
-        return CalendarDtoMapper.ToDto(calendar);
+        return ToDto(calendar);
     }
 
     public virtual async Task<ListResultDto<CalendarLookupDto>> GetMyVisibleCalendarsAsync()
@@ -112,7 +117,7 @@ public class AvailabilityCalendarAppService : SufiApplicationService, IAvailabil
         query = ApplyVisibilityFilter(query);
 
         var items = await _asyncExecuter.ToListAsync(query);
-        return new ListResultDto<CalendarLookupDto>(items.Select(CalendarDtoMapper.ToLookupDto).ToList());
+        return new ListResultDto<CalendarLookupDto>(items.Select(ToLookupDto).ToList());
     }
 
     public virtual async Task<ListResultDto<CalendarLookupDto>> GetOrganizationUnitCalendarsAsync(List<Guid> organizationUnitIds)
@@ -132,7 +137,7 @@ public class AvailabilityCalendarAppService : SufiApplicationService, IAvailabil
         query = ApplyVisibilityFilter(query);
 
         var items = await _asyncExecuter.ToListAsync(query);
-        return new ListResultDto<CalendarLookupDto>(items.Select(CalendarDtoMapper.ToLookupDto).ToList());
+        return new ListResultDto<CalendarLookupDto>(items.Select(ToLookupDto).ToList());
     }
 
     public virtual async Task<CalendarDto> CreateAsync(CreateUpdateCalendarDto input)
@@ -148,11 +153,12 @@ public class AvailabilityCalendarAppService : SufiApplicationService, IAvailabil
             input.OwnerUserId,
             input.OwnerName,
             input.IsDefault,
-            input.IsAlwaysOpen);
+            input.IsAlwaysOpen,
+            string.IsNullOrWhiteSpace(input.Color) ? null : input.Color);
 
         CopyExtraProperties(input.ExtraProperties, calendar.ExtraProperties);
         await _calendarRepository.InsertAsync(calendar, autoSave: true);
-        return CalendarDtoMapper.ToDto(calendar);
+        return ToDto(calendar);
     }
 
     public virtual async Task<CalendarDto> UpdateAsync(Guid id, CreateUpdateCalendarDto input)
@@ -160,22 +166,27 @@ public class AvailabilityCalendarAppService : SufiApplicationService, IAvailabil
         await CheckPolicyAsync(CalendarPermissions.Calendars.Update);
 
         var calendar = await _calendarRepository.GetAsync(id, includeDetails: true);
-        calendar.SetName(input.Name);
+        calendar.SetName(ResolveNameForPersist(calendar.Name, input.Name));
         calendar.SetKind(input.Kind);
         calendar.SetTimeZone(input.TimeZoneId);
         calendar.SetOwner(input.OwnerUserId, input.OwnerName);
         await _calendarManager.SetDefaultAsync(calendar, input.IsDefault);
         calendar.SetAlwaysOpen(input.IsAlwaysOpen);
+        calendar.SetColor(string.IsNullOrWhiteSpace(input.Color)
+            ? CalendarConsts.GetDefaultColor(input.Kind)
+            : input.Color);
         CopyExtraProperties(input.ExtraProperties, calendar.ExtraProperties);
 
         await _calendarRepository.UpdateAsync(calendar, autoSave: true);
-        return CalendarDtoMapper.ToDto(calendar);
+        return ToDto(calendar);
     }
 
     public virtual async Task DeleteAsync(Guid id)
     {
         await CheckPolicyAsync(CalendarPermissions.Calendars.Delete);
-        await _calendarRepository.DeleteAsync(id, autoSave: true);
+        var calendar = await _calendarRepository.GetAsync(id, includeDetails: true);
+        calendar.NotifyChanged();
+        await _calendarRepository.DeleteAsync(calendar, autoSave: true);
     }
 
     public virtual async Task<ListResultDto<WorkingHourRuleDto>> GetWorkingHoursAsync(Guid calendarId)
@@ -207,6 +218,31 @@ public class AvailabilityCalendarAppService : SufiApplicationService, IAvailabil
         await CheckPolicyAsync(CalendarPermissions.Calendars.Default);
         var calendar = await GetVisibleCalendarAsync(calendarId, includeDetails: true);
         return new ListResultDto<CalendarExceptionDto>(calendar.Exceptions.Select(CalendarDtoMapper.ToDto).ToList());
+    }
+
+    public virtual async Task<ListResultDto<CalendarExceptionDto>> GetEffectiveExceptionsAsync(Guid calendarId)
+    {
+        await CheckPolicyAsync(CalendarPermissions.Calendars.Default);
+        await GetVisibleCalendarAsync(calendarId);
+
+        var snapshot = await _snapshotProvider.GetAsync(calendarId);
+        var items = snapshot.Exceptions
+            .Select(x => new CalendarExceptionDto
+            {
+                CalendarId = calendarId,
+                Date = x.Date.ToDateTime(TimeOnly.MinValue),
+                Kind = x.Kind,
+                Description = x.Description,
+                Ranges = x.Ranges.Select(r => new WorkingHourRangeDto
+                {
+                    StartTime = r.StartTime.ToTimeSpan(),
+                    EndTime = r.EndTime.ToTimeSpan()
+                }).ToList()
+            })
+            .OrderBy(x => x.Date)
+            .ToList();
+
+        return new ListResultDto<CalendarExceptionDto>(items);
     }
 
     public virtual async Task<ListResultDto<CalendarExceptionDto>> ReplaceExceptionsAsync(Guid calendarId, List<CreateUpdateCalendarExceptionDto> input)
@@ -243,7 +279,9 @@ public class AvailabilityCalendarAppService : SufiApplicationService, IAvailabil
                 Id = x.Id,
                 CalendarId = x.CalendarId,
                 ParentCalendarId = x.ParentCalendarId,
-                ParentCalendarName = parents.TryGetValue(x.ParentCalendarId, out var parent) ? parent.Name : null,
+                ParentCalendarName = parents.TryGetValue(x.ParentCalendarId, out var parent)
+                    ? _businessLocalization.ResolveDisplayName(parent.Name)
+                    : null,
                 IsInheritedByDefault = x.IsInheritedByDefault
             };
         }).ToList());
@@ -256,7 +294,7 @@ public class AvailabilityCalendarAppService : SufiApplicationService, IAvailabil
         var parentCalendar = await _calendarRepository.GetAsync(input.ParentCalendarId, includeDetails: true);
         await _calendarManager.AddInheritanceAsync(calendar, parentCalendar, input.IsInheritedByDefault);
         await _calendarRepository.UpdateAsync(calendar, autoSave: true);
-        return CalendarDtoMapper.ToDto(calendar);
+        return ToDto(calendar);
     }
 
     public virtual async Task<CalendarInheritanceDto> UpdateInheritanceAsync(Guid calendarId, Guid parentCalendarId, UpdateCalendarInheritanceInput input)
@@ -274,7 +312,9 @@ public class AvailabilityCalendarAppService : SufiApplicationService, IAvailabil
             Id = inheritance.Id,
             CalendarId = inheritance.CalendarId,
             ParentCalendarId = inheritance.ParentCalendarId,
-            ParentCalendarName = parentCalendar?.Name,
+            ParentCalendarName = parentCalendar == null
+                ? null
+                : _businessLocalization.ResolveDisplayName(parentCalendar.Name),
             IsInheritedByDefault = inheritance.IsInheritedByDefault
         };
     }
@@ -311,7 +351,7 @@ public class AvailabilityCalendarAppService : SufiApplicationService, IAvailabil
             .Where(x => !existingParentIds.Contains(x.Id))
             .Where(x => x.Kind == CalendarKind.Default || x.Inheritances.All(i => defaultCalendarIds.Contains(i.ParentCalendarId)))
             .OrderBy(x => x.Name)
-            .Select(CalendarDtoMapper.ToLookupDto)
+            .Select(ToLookupDto)
             .ToList();
 
         return new ListResultDto<CalendarLookupDto>(eligible);
@@ -457,5 +497,31 @@ public class AvailabilityCalendarAppService : SufiApplicationService, IAvailabil
             .OrderBy(x => x.DisplayOrder)
             .ThenBy(x => x.Id)
             .ToList();
+    }
+
+    protected virtual CalendarDto ToDto(Calendars.Calendar calendar) =>
+        CalendarDtoMapper.ToDto(calendar, _businessLocalization);
+
+    protected virtual CalendarLookupDto ToLookupDto(Calendars.Calendar calendar) =>
+        CalendarDtoMapper.ToLookupDto(calendar, _businessLocalization);
+
+    /// <summary>
+    /// Keeps seeded business-localization keys when the client posts back the resolved display text unchanged.
+    /// </summary>
+    protected virtual string ResolveNameForPersist(string existingName, string submittedName)
+    {
+        if (!BusinessLocalizationHelper.IsBusinessLocalizationKey(existingName))
+        {
+            return submittedName;
+        }
+
+        var resolved = _businessLocalization.ResolveDisplayName(existingName);
+        if (string.Equals(submittedName, existingName, StringComparison.Ordinal) ||
+            string.Equals(submittedName, resolved, StringComparison.Ordinal))
+        {
+            return existingName;
+        }
+
+        return submittedName;
     }
 }

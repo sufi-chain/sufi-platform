@@ -2,7 +2,7 @@
     display: flex;
     align-items: center;
     gap: 0.375rem;
-    color: var(--sb-color-text-secondary, #6b7280);
+    color: var(--sb-color-text-secondary);
     font-size: 0.875rem;
     font-weight: 500;
 }
@@ -18,7 +18,7 @@
 }
 
 .sufi-calendar-management__filter-field-label {
-    color: var(--sb-color-text-secondary, #6b7280);
+    color: var(--sb-color-text-secondary);
     font-size: 0.75rem;
     font-weight: 500;
     letter-spacing: 0.025em;
@@ -36,8 +36,18 @@
     padding-block: 0.5rem;
 }
 
+.sufi-calendar-management__color-swatch {
+    display: inline-block;
+    width: 1rem;
+    height: 1rem;
+    border-radius: 999px;
+    border: 1px solid color-mix(in srgb, var(--sb-color-border) 80%, transparent);
+    box-shadow: 0 0 0 3px color-mix(in srgb, currentColor 8%, transparent);
+    vertical-align: middle;
+}
+
 .sufi-calendar-management__editor-options {
-    background: var(--sb-color-surface-secondary, #f9fafb);
+    background: var(--sb-color-surface-secondary, var(--sb-color-surface-muted, var(--sb-color-surface-variant)));
 }
 
 .sufi-calendar-management__section-title {
@@ -45,7 +55,7 @@
 }
 
 .sufi-calendar-management__inheritance-item {
-    border: 1px solid var(--sb-color-border, #e5e7eb);
+    border: 1px solid var(--sb-color-border);
 }
 
 .sufi-calendar-management__inheritance-name {

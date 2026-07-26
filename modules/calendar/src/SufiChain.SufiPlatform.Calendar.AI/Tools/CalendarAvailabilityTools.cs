@@ -28,7 +28,7 @@ public class CalendarTestAvailabilityTool : CalendarAIToolBase
         return await SuccessAsync(await TestAvailabilityAsync(input.CalendarId, input.UtcInstant, cancellationToken));
     }
 
-    [SufiAITool(CalendarAIToolNames.TestAvailability, "Checks whether a Calendar is open at a UTC instant, returning the next open and close times.")]
+    [SufiAiMcpTool(CalendarAIToolNames.TestAvailability, "Checks whether a Calendar is open at a UTC instant, returning the next open and close times.")]
     public virtual async Task<object> TestAvailabilityAsync(
         Guid calendarId,
         DateTime utcInstant,
@@ -79,7 +79,7 @@ public class CalendarListCalendarsTool : CalendarAIToolBase
         return await SuccessAsync(await ListCalendarsAsync(input.Filter, cancellationToken));
     }
 
-    [SufiAITool(CalendarAIToolNames.ListCalendars, "Lists visible calendars with id, name/title, kind, time zone, owner type, and default flag. Use this first to discover the correct calendarId when a user asks about calendar availability, working hours, business hours, opening hours, free/busy time, or scheduling without providing a calendar id. Use the returned TimeZoneId as the default timezone when the user says default timezone; do not ask separately.")]
+    [SufiAiMcpTool(CalendarAIToolNames.ListCalendars, "Lists visible calendars with id, name/title, kind, time zone, owner type, and default flag. Use this first to discover the correct calendarId when a user asks about calendar availability, working hours, business hours, opening hours, free/busy time, or scheduling without providing a calendar id. Use the returned TimeZoneId as the default timezone when the user says default timezone; do not ask separately.")]
     public virtual async Task<object> ListCalendarsAsync(
         string? filter = null,
         CancellationToken cancellationToken = default)
@@ -134,7 +134,7 @@ public class CalendarGetWorkingHoursTool : CalendarAIToolBase
         return await SuccessAsync(await GetWorkingHoursAsync(input.CalendarId, cancellationToken));
     }
 
-    [SufiAITool(CalendarAIToolNames.GetWorkingHours, "Gets configured working-hour, business-hour, or opening-hour rules for a calendar. Requires calendarId; if the user gives a calendar name/title/kind or omits the id, first use calendar.list_calendars to find the best matching calendarId, preferring default calendars when the request is generic.")]
+    [SufiAiMcpTool(CalendarAIToolNames.GetWorkingHours, "Gets configured working-hour, business-hour, or opening-hour rules for a calendar. Requires calendarId; if the user gives a calendar name/title/kind or omits the id, first use calendar.list_calendars to find the best matching calendarId, preferring default calendars when the request is generic.")]
     public virtual async Task<object> GetWorkingHoursAsync(
         Guid calendarId,
         CancellationToken cancellationToken = default)

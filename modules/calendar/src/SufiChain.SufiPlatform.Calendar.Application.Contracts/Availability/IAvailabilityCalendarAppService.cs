@@ -32,6 +32,11 @@ public interface IAvailabilityCalendarAppService : IApplicationService
 
     Task<ListResultDto<CalendarExceptionDto>> GetExceptionsAsync(Guid calendarId);
 
+    /// <summary>
+    /// Exceptions effective for availability (own + one-level inherited parents), from the calendar snapshot.
+    /// </summary>
+    Task<ListResultDto<CalendarExceptionDto>> GetEffectiveExceptionsAsync(Guid calendarId);
+
     Task<ListResultDto<CalendarExceptionDto>> ReplaceExceptionsAsync(Guid calendarId, List<CreateUpdateCalendarExceptionDto> input);
 
     Task<ListResultDto<CalendarInheritanceDto>> GetInheritancesAsync(Guid calendarId);

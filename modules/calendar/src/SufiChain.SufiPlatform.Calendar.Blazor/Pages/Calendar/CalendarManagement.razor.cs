@@ -154,7 +154,12 @@ public partial class CalendarManagementBase : CalendarComponentBase
     protected virtual Task OpenCreateModalAsync()
     {
         EditingCalendarId = Guid.Empty;
-        EditingCalendar = new CreateUpdateCalendarDto { Kind = CalendarKind.Public, TimeZoneId = GetDefaultTimeZoneId() };
+        EditingCalendar = new CreateUpdateCalendarDto
+        {
+            Kind = CalendarKind.Public,
+            TimeZoneId = GetDefaultTimeZoneId(),
+            Color = CalendarConsts.GetDefaultColor(CalendarKind.Public)
+        };
         EditorActiveTab = 0;
         ResetInheritanceEditorState();
         IsEditorOpen = true;
@@ -173,6 +178,9 @@ public partial class CalendarManagementBase : CalendarComponentBase
             OwnerName = calendar.OwnerName,
             IsDefault = calendar.IsDefault,
             IsAlwaysOpen = calendar.IsAlwaysOpen,
+            Color = string.IsNullOrWhiteSpace(calendar.Color)
+                ? CalendarConsts.GetDefaultColor(calendar.Kind)
+                : calendar.Color,
             ExtraProperties = calendar.ExtraProperties
         };
         EditorActiveTab = 0;
@@ -552,7 +560,15 @@ public partial class CalendarManagementBase : CalendarComponentBase
 
     protected virtual Task OnCalendarKindChangedAsync(CalendarKind kind)
     {
+        var previousDefault = CalendarConsts.GetDefaultColor(EditingCalendar.Kind);
         EditingCalendar.Kind = kind;
+        if (string.IsNullOrWhiteSpace(EditingCalendar.Color) ||
+            string.Equals(EditingCalendar.Color, previousDefault, StringComparison.OrdinalIgnoreCase) ||
+            string.Equals(EditingCalendar.Color, CalendarConsts.DefaultColor, StringComparison.OrdinalIgnoreCase))
+        {
+            EditingCalendar.Color = CalendarConsts.GetDefaultColor(kind);
+        }
+
         return Task.CompletedTask;
     }
 

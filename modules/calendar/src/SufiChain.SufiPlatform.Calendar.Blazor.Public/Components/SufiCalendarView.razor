@@ -4,41 +4,54 @@
 <div class="sufi-calendar-view" dir="@Direction">
     <SbCard Class="sufi-calendar-view__card">
         <Header>
-            <SbStack Direction="SbStackDirection.Column" Gap="3" Class="sufi-calendar-view__header">
-                <SbStack Direction="SbStackDirection.Row"
-                         Gap="2"
-                         Align="SbAlign.Center"
-                         Justify="SbJustify.SpaceBetween"
-                         Wrap="true"
-                         Class="sufi-calendar-view__toolbar">
-                    <SbButton Variant="SbButtonVariant.Outline"
-                              Size="SbSize.Sm"
-                              OnClick="PreviousAsync">@PreviousLabel</SbButton>
+            <div class="sufi-calendar-view__header">
+                <div class="sufi-calendar-view__toolbar">
+                    <div class="sufi-calendar-view__nav">
+                        <SbIconButton Size="SbSize.Sm"
+                                      Variant="SbButtonVariant.Ghost"
+                                      OnClick="PreviousAsync"
+                                      AriaLabel="@PreviousLabel">
+                            <Icon><SbIcon Name="@(Direction == "rtl" ? "chevron-right" : "chevron-left")" Size="SbSize.Sm" /></Icon>
+                        </SbIconButton>
+                        <SbButton Variant="SbButtonVariant.Ghost"
+                                  Size="SbSize.Sm"
+                                  Class="sufi-calendar-view__today"
+                                  OnClick="GoToTodayAsync">
+                            @L["Today"]
+                        </SbButton>
+                        <SbIconButton Size="SbSize.Sm"
+                                      Variant="SbButtonVariant.Ghost"
+                                      OnClick="NextAsync"
+                                      AriaLabel="@NextLabel">
+                            <Icon><SbIcon Name="@(Direction == "rtl" ? "chevron-left" : "chevron-right")" Size="SbSize.Sm" /></Icon>
+                        </SbIconButton>
+                    </div>
+
                     <div class="sufi-calendar-view__title">
                         <SbHeading Level="5">@TitleText</SbHeading>
-                        <SbText Variant="SbTextVariant.Caption" Color="SbColor.Muted">@View.ToString()</SbText>
                     </div>
-                    <SbButton Variant="SbButtonVariant.Outline"
-                              Size="SbSize.Sm"
-                              OnClick="NextAsync">@NextLabel</SbButton>
-                </SbStack>
 
-                <SbStack Direction="SbStackDirection.Row"
-                         Gap="1"
-                         Justify="SbJustify.Center"
-                         Wrap="true"
-                         Class="sufi-calendar-view__mode-bar">
-                    @foreach (var mode in Enum.GetValues<SufiCalendarViewMode>())
-                    {
-                        <SbButton Size="SbSize.Sm"
-                                  Color="@(View == mode ? SbColor.Primary : SbColor.Secondary)"
-                                  Variant="@(View == mode ? SbButtonVariant.Solid : SbButtonVariant.Outline)"
-                                  OnClick="@(() => SetViewAsync(mode))">
-                            @L[$"CalendarView:{mode}"]
-                        </SbButton>
-                    }
-                </SbStack>
-            </SbStack>
+                    <div class="sufi-calendar-view__mode-bar" role="tablist" aria-label="@L["Calendar"]">
+                        @foreach (var mode in Enum.GetValues<SufiCalendarViewMode>())
+                        {
+                            <button type="button"
+                                    role="tab"
+                                    class="@(View == mode ? "sufi-calendar-view__mode sufi-calendar-view__mode--active" : "sufi-calendar-view__mode")"
+                                    aria-selected="@(View == mode)"
+                                    @onclick="@(() => SetViewAsync(mode))">
+                                @L[$"CalendarView:{mode}"]
+                            </button>
+                        }
+                    </div>
+                </div>
+
+                @if (ToolbarExtra != null)
+                {
+                    <div class="sufi-calendar-view__toolbar-extra">
+                        @ToolbarExtra
+                    </div>
+                }
+            </div>
         </Header>
 
         <ChildContent>
@@ -51,7 +64,10 @@
                 <div class="sufi-calendar-view__agenda">
                     @foreach (var occurrence in _visibleOccurrences)
                     {
-                        <button type="button" class="sufi-calendar-view__agenda-item" @onclick="@(() => SelectEventAsync(occurrence))">
+                        <button type="button"
+                                class="sufi-calendar-view__agenda-item"
+                                style="@GetEventStyle(occurrence)"
+                                @onclick="@(() => SelectEventAsync(occurrence))">
                             <span>@FormatDateTime(occurrence.StartUtc)</span>
                             <strong>@occurrence.Title</strong>
                         </button>
@@ -60,26 +76,51 @@
             }
             else if (View == SufiCalendarViewMode.Day)
             {
-                <div class="sufi-calendar-view__day-timeline">
-                    @foreach (var hour in DayTimelineHours)
-                    {
-                        <button type="button"
-                                class="sufi-calendar-view__timeline-row"
-                                @onclick="@(() => SelectHourSlotAsync(hour))">
-                            <span class="sufi-calendar-view__timeline-hour">@FormatHour(hour)</span>
-                            <span class="sufi-calendar-view__timeline-lane">
-                                @foreach (var occurrence in GetOccurrencesForHour(hour))
-                                {
-                                    <span class="sufi-calendar-view__timeline-event"
-                                          @onclick="@(() => SelectEventAsync(occurrence))"
-                                          @onclick:stopPropagation="true">
-                                        <strong>@FormatTimeRange(occurrence)</strong>
-                                        <span>@occurrence.Title</span>
-                                    </span>
-                                }
-                            </span>
-                        </button>
+                <div class="sufi-calendar-view__day-panel">
+                    @{
+                        var allDayOccurrences = GetAllDayOccurrences().ToList();
                     }
+                    @if (allDayOccurrences.Count > 0)
+                    {
+                        <div class="sufi-calendar-view__all-day" role="region" aria-label="@L["AllDay"]">
+                            <span class="sufi-calendar-view__all-day-label">@L["AllDay"]</span>
+                            <div class="sufi-calendar-view__all-day-lane">
+                                @foreach (var occurrence in allDayOccurrences)
+                                {
+                                    <button type="button"
+                                            class="sufi-calendar-view__timeline-event sufi-calendar-view__all-day-event"
+                                            style="@GetEventStyle(occurrence)"
+                                            @onclick="@(() => SelectEventAsync(occurrence))">
+                                        <strong>@L["AllDay"]</strong>
+                                        <span>@occurrence.Title</span>
+                                    </button>
+                                }
+                            </div>
+                        </div>
+                    }
+
+                    <div class="sufi-calendar-view__day-timeline">
+                        @foreach (var hour in DayTimelineHours)
+                        {
+                            <button type="button"
+                                    class="sufi-calendar-view__timeline-row"
+                                    @onclick="@(() => SelectHourSlotAsync(hour))">
+                                <span class="sufi-calendar-view__timeline-hour">@FormatHour(hour)</span>
+                                <span class="sufi-calendar-view__timeline-lane">
+                                    @foreach (var occurrence in GetOccurrencesForHour(hour))
+                                    {
+                                        <span class="sufi-calendar-view__timeline-event"
+                                              style="@GetEventStyle(occurrence)"
+                                              @onclick="@(() => SelectEventAsync(occurrence))"
+                                              @onclick:stopPropagation="true">
+                                            <strong>@FormatTimeRange(occurrence)</strong>
+                                            <span>@occurrence.Title</span>
+                                        </span>
+                                    }
+                                </span>
+                            </button>
+                        }
+                    </div>
                 </div>
             }
             else
@@ -93,15 +134,62 @@
                 <div class="@GetGridClass()">
                     @foreach (var day in _days)
                     {
-                        <button type="button" class="@GetDayClass(day)" @onclick="@(() => SelectSlotAsync(day))">
-                            <span class="sufi-calendar-view__day-number">@SbCalendarHelper.GetDayOfMonth(day, _culture)</span>
-                            @foreach (var occurrence in GetOccurrencesForDay(day).Take(MaxEventsPerDay))
+                        var cellDay = day;
+                        var dayOccurrences = GetOccurrencesForDay(cellDay).ToList();
+                        <div class="@GetDayClass(cellDay)"
+                             role="button"
+                             tabindex="0"
+                             @onclick="@(() => SelectSlotAsync(cellDay))"
+                             @onkeydown="@((KeyboardEventArgs e) => HandleDayKeyDownAsync(e, cellDay))">
+                            <span class="sufi-calendar-view__day-number">@SbCalendarHelper.GetDayOfMonth(cellDay, _culture)</span>
+                            @if (dayOccurrences.Count > 0)
                             {
-                                <span class="sufi-calendar-view__event" @onclick="@(() => SelectEventAsync(occurrence))" @onclick:stopPropagation="true">
-                                    @occurrence.Title
-                                </span>
+                                <div class="sufi-calendar-view__events-popover-host"
+                                     @onmouseenter="@(() => SetEventsPopoverOpenAsync(cellDay, true))"
+                                     @onmouseleave="@(() => SetEventsPopoverOpenAsync(cellDay, false))"
+                                     @onclick:stopPropagation="true">
+                                    <SbPopover Open="@IsEventsPopoverOpen(cellDay)"
+                                               OpenChanged="@(EventCallback.Factory.Create<bool>(this, open => SetEventsPopoverOpenAsync(cellDay, open)))"
+                                               Placement="SbPlacement.BottomStart"
+                                               Class="sufi-calendar-view__events-popover"
+                                               FlipPreferredHeight="280"
+                                               CloseOnClickAway="false">
+                                        <AnchorContent>
+                                            <span class="sufi-calendar-view__event-count"
+                                                  style="@GetDayEventsAccentStyle(dayOccurrences)"
+                                                  role="button"
+                                                  tabindex="0"
+                                                  aria-label="@L["EventsCount", dayOccurrences.Count]"
+                                                  @onclick="@(() => ToggleEventsPopoverAsync(cellDay))"
+                                                  @onclick:stopPropagation="true"
+                                                  @onkeydown="@((KeyboardEventArgs e) => HandleEventCountKeyDownAsync(e, cellDay))"
+                                                  @onkeydown:stopPropagation="true">
+                                                <span class="sufi-calendar-view__event-count-dot" aria-hidden="true"></span>
+                                                <span class="sufi-calendar-view__event-count-value">@dayOccurrences.Count</span>
+                                            </span>
+                                        </AnchorContent>
+                                        <ChildContent>
+                                            <div class="sufi-calendar-view__events-popover-panel" role="list">
+                                                @foreach (var occurrence in dayOccurrences)
+                                                {
+                                                    <button type="button"
+                                                            class="sufi-calendar-view__events-popover-item"
+                                                            style="@GetEventStyle(occurrence)"
+                                                            @onclick="@(() => SelectEventFromPopoverAsync(occurrence))">
+                                                        <strong class="sufi-calendar-view__events-popover-title">@occurrence.Title</strong>
+                                                        <span class="sufi-calendar-view__events-popover-time">@FormatTimeRange(occurrence)</span>
+                                                        @if (!string.IsNullOrWhiteSpace(occurrence.Location))
+                                                        {
+                                                            <span class="sufi-calendar-view__events-popover-meta">@occurrence.Location</span>
+                                                        }
+                                                    </button>
+                                                }
+                                            </div>
+                                        </ChildContent>
+                                    </SbPopover>
+                                </div>
                             }
-                        </button>
+                        </div>
                     }
                 </div>
             }

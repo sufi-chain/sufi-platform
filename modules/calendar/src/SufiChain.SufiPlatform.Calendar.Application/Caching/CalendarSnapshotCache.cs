@@ -40,8 +40,12 @@ public class CalendarSnapshotCache : ICalendarSnapshotCache, ITransientDependenc
 
     public virtual async Task RemoveAsync(Guid calendarId, Guid? tenantId = null, CancellationToken cancellationToken = default)
     {
-        var cacheKey = BuildCacheKey(calendarId, tenantId ?? _currentTenant.Id);
-        await _cache.RemoveAsync(cacheKey, token: cancellationToken);
+        var effectiveTenantId = tenantId ?? _currentTenant.Id;
+        using (_currentTenant.Change(effectiveTenantId))
+        {
+            var cacheKey = BuildCacheKey(calendarId, effectiveTenantId);
+            await _cache.RemoveAsync(cacheKey, token: cancellationToken);
+        }
     }
 
     public virtual async Task RemoveWithInheritorsAsync(Guid calendarId, Guid? tenantId = null, CancellationToken cancellationToken = default)

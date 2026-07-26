@@ -14,7 +14,13 @@ public class BusinessCalendarCalculator : ITransientDependency
             return true;
         }
 
-        var localDateTime = ToLocal(snapshot, NormalizeUtc(utcInstant));
+        var normalized = NormalizeUtc(utcInstant);
+        if (normalized >= DateTime.MaxValue)
+        {
+            return false;
+        }
+
+        var localDateTime = ToLocal(snapshot, normalized);
         var date = DateOnly.FromDateTime(localDateTime);
         var time = TimeOnly.FromDateTime(localDateTime);
         var exception = snapshot.Exceptions.FirstOrDefault(x => x.Date == date);
@@ -37,6 +43,11 @@ public class BusinessCalendarCalculator : ITransientDependency
         if (IsOpenAt(snapshot, cursor))
         {
             return cursor;
+        }
+
+        if (!HasOpenableHours(snapshot))
+        {
+            return DateTime.MaxValue;
         }
 
         return FindBoundary(snapshot, cursor, expectedOpenState: true);
@@ -72,15 +83,32 @@ public class BusinessCalendarCalculator : ITransientDependency
 
         if (snapshot.IsAlwaysOpen)
         {
-            return NormalizeUtc(utcStart).Add(working);
+            return TryAdd(NormalizeUtc(utcStart), working, out var result)
+                ? result
+                : DateTime.MaxValue;
+        }
+
+        if (!HasOpenableHours(snapshot))
+        {
+            return DateTime.MaxValue;
         }
 
         var cursor = NextOpenAt(snapshot, utcStart);
+        if (cursor >= DateTime.MaxValue)
+        {
+            return DateTime.MaxValue;
+        }
+
         var remaining = working;
 
         while (remaining > TimeSpan.Zero)
         {
             var close = NextCloseAt(snapshot, cursor);
+            if (close <= cursor || close >= DateTime.MaxValue)
+            {
+                return DateTime.MaxValue;
+            }
+
             var segment = close - cursor;
             if (segment >= remaining)
             {
@@ -88,7 +116,16 @@ public class BusinessCalendarCalculator : ITransientDependency
             }
 
             remaining -= segment;
-            cursor = NextOpenAt(snapshot, close.Add(SearchStep));
+            if (!TryAdd(close, SearchStep, out var nextFrom))
+            {
+                return DateTime.MaxValue;
+            }
+
+            cursor = NextOpenAt(snapshot, nextFrom);
+            if (cursor >= DateTime.MaxValue)
+            {
+                return DateTime.MaxValue;
+            }
         }
 
         return cursor;
@@ -108,27 +145,66 @@ public class BusinessCalendarCalculator : ITransientDependency
             return to - from;
         }
 
+        if (!HasOpenableHours(snapshot))
+        {
+            return TimeSpan.Zero;
+        }
+
         var elapsed = TimeSpan.Zero;
         var cursor = NextOpenAt(snapshot, from);
 
-        while (cursor < to)
+        while (cursor < to && cursor < DateTime.MaxValue)
         {
             var close = NextCloseAt(snapshot, cursor);
+            if (close <= cursor)
+            {
+                break;
+            }
+
             elapsed += (close < to ? close : to) - cursor;
-            cursor = NextOpenAt(snapshot, close.Add(SearchStep));
+            if (!TryAdd(close, SearchStep, out var nextFrom))
+            {
+                break;
+            }
+
+            cursor = NextOpenAt(snapshot, nextFrom);
         }
 
         return elapsed;
     }
 
+    protected virtual bool HasOpenableHours(CalendarSnapshot snapshot)
+    {
+        if (snapshot.IsAlwaysOpen)
+        {
+            return true;
+        }
+
+        if (snapshot.Rules.Count > 0)
+        {
+            return true;
+        }
+
+        return snapshot.Exceptions.Any(x =>
+            x.Kind == CalendarExceptionKind.SpecialHours &&
+            x.Ranges.Count > 0);
+    }
+
     protected virtual DateTime FindBoundary(CalendarSnapshot snapshot, DateTime utcFrom, bool expectedOpenState)
     {
         var cursor = utcFrom;
-        var limit = utcFrom.AddYears(2);
+        if (!TryAddYears(utcFrom, 2, out var limit))
+        {
+            limit = DateTime.MaxValue;
+        }
 
         while (cursor < limit)
         {
-            cursor = cursor.Add(SearchStep);
+            if (!TryAdd(cursor, SearchStep, out cursor))
+            {
+                break;
+            }
+
             if (IsOpenAt(snapshot, cursor) == expectedOpenState)
             {
                 return cursor;
@@ -149,5 +225,39 @@ public class BusinessCalendarCalculator : ITransientDependency
         return value.Kind == DateTimeKind.Utc
             ? value
             : DateTime.SpecifyKind(value, DateTimeKind.Utc);
+    }
+
+    protected static bool TryAdd(DateTime value, TimeSpan offset, out DateTime result)
+    {
+        if (offset >= TimeSpan.Zero)
+        {
+            if (value > DateTime.MaxValue - offset)
+            {
+                result = DateTime.MaxValue;
+                return false;
+            }
+        }
+        else if (value < DateTime.MinValue - offset)
+        {
+            result = DateTime.MinValue;
+            return false;
+        }
+
+        result = value.Add(offset);
+        return true;
+    }
+
+    protected static bool TryAddYears(DateTime value, int years, out DateTime result)
+    {
+        try
+        {
+            result = value.AddYears(years);
+            return true;
+        }
+        catch (ArgumentOutOfRangeException)
+        {
+            result = DateTime.MaxValue;
+            return false;
+        }
     }
 }

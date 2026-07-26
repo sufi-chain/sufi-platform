@@ -21,6 +21,16 @@ public class BusinessCalendarCalculatorTests
     }
 
     [Fact]
+    public void Should_Saturate_Always_Open_Working_Duration_At_DateTime_MaxValue()
+    {
+        var snapshot = CreateAlwaysOpenSnapshot();
+        var start = DateTime.MaxValue.AddMinutes(-30);
+
+        _calculator.AddWorkingDuration(snapshot, start, TimeSpan.FromHours(1))
+            .ShouldBe(DateTime.MaxValue);
+    }
+
+    [Fact]
     public void Should_Exclude_Nights_And_Weekends_From_Elapsed_Working_Time()
     {
         var snapshot = CreateWeekdaySnapshot();
@@ -68,6 +78,20 @@ public class BusinessCalendarCalculatorTests
         _calculator.NextCloseAt(snapshot, Utc(2026, 6, 8, 17)).ShouldBe(Utc(2026, 6, 8, 17));
     }
 
+    [Fact]
+    public void Should_Handle_Calendar_With_No_Business_Hours_Without_Throwing()
+    {
+        var snapshot = CreateEmptyBusinessHoursSnapshot();
+        var start = Utc(2026, 6, 8, 10);
+        var end = Utc(2026, 6, 10, 14);
+
+        _calculator.IsOpenAt(snapshot, start).ShouldBeFalse();
+        _calculator.NextOpenAt(snapshot, start).ShouldBe(DateTime.MaxValue);
+        _calculator.NextCloseAt(snapshot, start).ShouldBe(start);
+        _calculator.ElapsedWorkingTime(snapshot, start, end).ShouldBe(TimeSpan.Zero);
+        _calculator.AddWorkingDuration(snapshot, start, TimeSpan.FromHours(2)).ShouldBe(DateTime.MaxValue);
+    }
+
     private static CalendarSnapshot CreateAlwaysOpenSnapshot()
     {
         return new CalendarSnapshot(
@@ -76,6 +100,18 @@ public class BusinessCalendarCalculatorTests
             CalendarKind.Public,
             "UTC",
             true,
+            Array.Empty<WorkingHourRuleSnapshot>(),
+            Array.Empty<CalendarExceptionSnapshot>());
+    }
+
+    private static CalendarSnapshot CreateEmptyBusinessHoursSnapshot()
+    {
+        return new CalendarSnapshot(
+            Guid.NewGuid(),
+            null,
+            CalendarKind.Public,
+            "UTC",
+            false,
             Array.Empty<WorkingHourRuleSnapshot>(),
             Array.Empty<CalendarExceptionSnapshot>());
     }

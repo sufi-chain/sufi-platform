@@ -8,18 +8,27 @@ public class CalendarMenuContributor : IMenuContributor
 {
     public Task ConfigureMenuAsync(MenuConfigurationContext context)
     {
-        if (context.Menu.Name == StandardMenus.Main)
+        if (context.Menu.Name != StandardMenus.Main)
         {
-            var administrationMenu = context.Menu.GetAdministration();
-            var l = context.GetLocalizer<CalendarResource>();
-
-            administrationMenu.AddItem(new ApplicationMenuItem(
-                CalendarMenus.Calendars,
-                l["Menu:SufiCalendar"],
-                url: "/panel/admin/calendar",
-                icon: "calendar",
-                requiredPermissionName: CalendarPermissions.Calendars.Default));
+            return Task.CompletedTask;
         }
+
+        var l = context.GetLocalizer<CalendarResource>();
+
+        context.Menu.GetAdministration().AddItem(new ApplicationMenuItem(
+            CalendarMenus.Calendars,
+            l["Menu:SufiCalendar"],
+            url: "/panel/admin/calendar",
+            icon: "calendar",
+            requiredPermissionName: CalendarPermissions.Calendars.Default));
+
+        context.Menu.GetPortal().AddItem(new ApplicationMenuItem(
+            CalendarMenus.PortalCalendar,
+            l["Menu:SufiCalendar"],
+            url: "/panel/portal/calendar",
+            icon: "calendar",
+            order: 25,
+            requiredPermissionName: CalendarPermissions.Events.Default));
 
         return Task.CompletedTask;
     }

@@ -18,12 +18,11 @@ public class EfCoreCalendarEventRepository : EfCoreRepository<ICalendarDbContext
     public virtual async Task<List<CalendarEvent>> GetListInWindowAsync(Guid calendarId, DateTime fromUtc, DateTime toUtc, CancellationToken cancellationToken = default)
     {
         var dbSet = await GetDbSetAsync();
+        // Expansion only needs recurrence + occurrence overrides — not attendees/reminders.
         return await dbSet
             .Include(x => x.RecurrenceRule)
             .Include(x => x.OccurrenceExceptions)
-            .Include(x => x.Attendees)
-            .Include(x => x.Reminders)
-            .Where(x => x.CalendarId == calendarId && (x.RecurrenceRule != null || (x.StartUtc < toUtc && x.EndUtc > fromUtc)))
+            .Where(CalendarEventWindowQuery.MatchesWindow(calendarId, fromUtc, toUtc))
             .ToListAsync(cancellationToken);
     }
 

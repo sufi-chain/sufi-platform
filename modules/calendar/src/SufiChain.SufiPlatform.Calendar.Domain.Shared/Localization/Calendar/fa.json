@@ -26,6 +26,7 @@
     "Name": "نام",
     "Kind": "نوع",
     "TimeZone": "منطقه زمانی",
+    "Color": "رنگ",
     "SelectTimeZone": "انتخاب منطقه زمانی",
     "Default": "پیش‌فرض",
     "Yes": "بله",
@@ -110,6 +111,7 @@
     "ReminderChannel": "کانال یادآور",
     "MyCalendar": "تقویم من",
     "Today": "امروز",
+    "EventsCount": "{0} رویداد",
     "NoEventsToday": "امروز رویدادی ندارید",
     "OpenCalendar": "باز کردن تقویم",
     "VisibleCalendarsOnly": "فقط تقویم‌های قابل مشاهده برای شما نمایش داده می‌شود.",
@@ -141,14 +143,16 @@
     "Enum:RsvpStatus:Tentative": "موقت",
     "Enum:ReminderChannel:Email": "ایمیل",
     "Enum:ReminderChannel:InApp": "درون‌برنامه‌ای",
-    "CalendarCopilot:Title": "دستیار تقویم",
-    "CalendarCopilot:OpenAssistant": "پرسش از دستیار تقویم",
-    "CalendarCopilot:OpenAssistantPage": "باز کردن دستیار تقویم",
-    "CalendarCopilot:Unavailable": "دستیار تقویم در حال حاضر در دسترس نیست.",
+    "CalendarCopilot:Title": "هوشواره",
+    "CalendarCopilot:OpenAssistant": "هوشواره",
+    "CalendarCopilot:OpenAssistantPage": "باز کردن هوشواره",
+    "CalendarCopilot:Unavailable": "هوشواره در حال حاضر در دسترس نیست.",
     "CalendarCopilot:Shortcut:DayAgenda": "امروز چه جلساتی دارم؟",
     "CalendarCopilot:Shortcut:FreeSlot": "یک زمان خالی ۳۰ دقیقه‌ای این هفته پیدا کن",
     "CalendarCopilot:Shortcut:ScheduleTomorrow": "فردا ساعت ۱۰ یک جلسه تنظیم کن",
     "CalendarCopilot:Shortcut:FreeFriday": "جمعه بعدازظهر آزاد هستم؟",
-    "MCPTool:Module:Calendar": "تقویم"
+    "MCPTool:Module:Calendar": "تقویم",
+    "SeededCalendar:host-hijri-shamsi:DisplayName": "تقویم هجری شمسی",
+    "SeededCalendar:host-hijri-shamsi-1405:DisplayName": "تقویم هجری شمسی"
   }
 }

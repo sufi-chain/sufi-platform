@@ -52,6 +52,12 @@ public partial class SufiCalendarScheduler : CalendarPublicComponentBase
     [Parameter]
     public EventCallback<CalendarEventDto> EventSaved { get; set; }
 
+    /// <summary>
+    /// Optional content rendered under the calendar view toolbar.
+    /// </summary>
+    [Parameter]
+    public RenderFragment? ToolbarExtra { get; set; }
+
     protected List<CalendarLookupDto> CalendarOptions { get; set; } = new();
     protected string SelectedTimeZoneId { get; set; } = TimeZoneInfo.Local.Id;
     protected SufiCalendarViewMode View { get; set; } = SufiCalendarViewMode.Month;
@@ -63,7 +69,7 @@ public partial class SufiCalendarScheduler : CalendarPublicComponentBase
     protected int RefreshToken { get; set; }
     protected bool HasFocusedInitialDate { get; set; }
     protected IReadOnlyList<Guid> SelectedCalendarIds => SelectedCalendarId == Guid.Empty ? Array.Empty<Guid>() : new[] { SelectedCalendarId };
-    protected string CalendarViewKey => $"{SelectedCalendarId:N}-{View}-{Date:yyyyMMdd}-{RefreshToken}";
+    protected string CalendarViewKey => $"refresh-{RefreshToken}";
     private bool _hasAppliedInitialCalendarId;
 
     protected override async Task OnParametersSetAsync()
@@ -124,7 +130,8 @@ public partial class SufiCalendarScheduler : CalendarPublicComponentBase
                 TimeZoneId = personalCalendar.TimeZoneId,
                 OwnerUserId = personalCalendar.OwnerUserId,
                 OwnerName = personalCalendar.OwnerName,
-                IsDefault = personalCalendar.IsDefault
+                IsDefault = personalCalendar.IsDefault,
+                Color = personalCalendar.Color
             });
 
             var visibleCalendars = await AvailabilityCalendarAppService.GetMyVisibleCalendarsAsync();

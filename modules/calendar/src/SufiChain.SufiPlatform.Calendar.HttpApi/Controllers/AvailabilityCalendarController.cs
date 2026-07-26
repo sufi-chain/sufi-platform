@@ -107,6 +107,13 @@ public class AvailabilityCalendarController : CalendarController, IAvailabilityC
         return _availabilityCalendarAppService.GetExceptionsAsync(calendarId);
     }
 
+    [HttpGet]
+    [Route("{calendarId}/effective-exceptions")]
+    public virtual Task<ListResultDto<CalendarExceptionDto>> GetEffectiveExceptionsAsync(Guid calendarId)
+    {
+        return _availabilityCalendarAppService.GetEffectiveExceptionsAsync(calendarId);
+    }
+
     [HttpPut]
     [Route("{calendarId}/exceptions")]
     public virtual Task<ListResultDto<CalendarExceptionDto>> ReplaceExceptionsAsync(Guid calendarId, List<CreateUpdateCalendarExceptionDto> input)

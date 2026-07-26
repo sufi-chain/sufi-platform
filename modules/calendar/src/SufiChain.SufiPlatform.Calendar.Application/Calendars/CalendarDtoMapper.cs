@@ -1,22 +1,25 @@
-using SufiChain.SufiPlatform.Data;
+using Volo.Abp.Data;
 
 namespace SufiChain.SufiPlatform.Calendar.Calendars;
 
 public static class CalendarDtoMapper
 {
-    public static CalendarDto ToDto(Calendar calendar)
+    public static CalendarDto ToDto(
+        Calendar calendar,
+        CalendarBusinessLocalizationService? localization = null)
     {
         return new CalendarDto
         {
             Id = calendar.Id,
             TenantId = calendar.TenantId,
-            Name = calendar.Name,
+            Name = ResolveName(calendar.Name, localization),
             Kind = calendar.Kind,
             TimeZoneId = calendar.TimeZoneId,
             OwnerUserId = calendar.OwnerUserId,
             OwnerName = calendar.OwnerName,
             IsDefault = calendar.IsDefault,
             IsAlwaysOpen = calendar.IsAlwaysOpen,
+            Color = string.IsNullOrWhiteSpace(calendar.Color) ? CalendarConsts.GetDefaultColor(calendar.Kind) : calendar.Color,
             CreationTime = calendar.CreationTime,
             CreatorId = calendar.CreatorId,
             LastModificationTime = calendar.LastModificationTime,
@@ -37,18 +40,26 @@ public static class CalendarDtoMapper
         };
     }
 
-    public static CalendarLookupDto ToLookupDto(Calendar calendar)
+    public static CalendarLookupDto ToLookupDto(
+        Calendar calendar,
+        CalendarBusinessLocalizationService? localization = null)
     {
         return new CalendarLookupDto
         {
             Id = calendar.Id,
-            Name = calendar.Name,
+            Name = ResolveName(calendar.Name, localization),
             Kind = calendar.Kind,
             TimeZoneId = calendar.TimeZoneId,
             OwnerUserId = calendar.OwnerUserId,
             OwnerName = calendar.OwnerName,
-            IsDefault = calendar.IsDefault
+            IsDefault = calendar.IsDefault,
+            Color = string.IsNullOrWhiteSpace(calendar.Color) ? CalendarConsts.GetDefaultColor(calendar.Kind) : calendar.Color
         };
+    }
+
+    private static string ResolveName(string name, CalendarBusinessLocalizationService? localization)
+    {
+        return localization?.ResolveDisplayName(name) ?? name;
     }
 
     public static WorkingHourRuleDto ToDto(WorkingHourRule rule)

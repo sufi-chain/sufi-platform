@@ -149,7 +149,8 @@ public partial class SufiCalendarSelect : CalendarPublicComponentBase
                 TimeZoneId = personalCalendar.TimeZoneId,
                 OwnerUserId = personalCalendar.OwnerUserId,
                 OwnerName = personalCalendar.OwnerName,
-                IsDefault = personalCalendar.IsDefault
+                IsDefault = personalCalendar.IsDefault,
+                Color = personalCalendar.Color
             });
 
             var visibleCalendars = await AvailabilityCalendarAppService.GetMyVisibleCalendarsAsync();

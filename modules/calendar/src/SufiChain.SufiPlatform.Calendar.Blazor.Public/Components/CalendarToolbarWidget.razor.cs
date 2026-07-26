@@ -61,7 +61,7 @@ public partial class CalendarToolbarWidget : CalendarPublicComponentBase
     protected virtual Task OpenPageAsync()
     {
         IsOpen = false;
-        NavigationManager.NavigateTo("/panel/calendar");
+        NavigationManager.NavigateTo("/panel/portal/calendar");
         return Task.CompletedTask;
     }
 

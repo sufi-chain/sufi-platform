@@ -1,5 +1,5 @@
 using SufiChain.SufiPlatform.Application.Dtos;
-using SufiChain.SufiPlatform.Data;
+using Volo.Abp.Data;
 
 namespace SufiChain.SufiPlatform.Calendar.Calendars;
 
@@ -20,6 +20,8 @@ public class CalendarDto : FullAuditedEntityDto<Guid>
     public bool IsDefault { get; set; }
 
     public bool IsAlwaysOpen { get; set; }
+
+    public string Color { get; set; } = CalendarConsts.DefaultColor;
 
     public ExtraPropertyDictionary ExtraProperties { get; set; } = new();
 

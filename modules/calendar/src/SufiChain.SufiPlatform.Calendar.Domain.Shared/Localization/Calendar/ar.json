@@ -26,6 +26,7 @@
     "Name": "Name",
     "Kind": "Kind",
     "TimeZone": "Time zone",
+    "Color": "اللون",
     "SelectTimeZone": "Select a time zone",
     "Default": "Default",
     "Yes": "Yes",
@@ -127,13 +128,15 @@
     "Enum:RsvpStatus:Tentative": "Tentative",
     "Enum:ReminderChannel:Email": "Email",
     "Enum:ReminderChannel:InApp": "In-app",
-    "CalendarCopilot:Title": "مساعد التقويم",
-    "CalendarCopilot:OpenAssistant": "اسأل مساعد التقويم",
-    "CalendarCopilot:OpenAssistantPage": "فتح مساعد التقويم",
-    "CalendarCopilot:Unavailable": "مساعد التقويم غير متاح حاليًا.",
+    "CalendarCopilot:Title": "مساعد الذكاء الاصطناعي",
+    "CalendarCopilot:OpenAssistant": "مساعد الذكاء الاصطناعي",
+    "CalendarCopilot:OpenAssistantPage": "فتح مساعد الذكاء الاصطناعي",
+    "CalendarCopilot:Unavailable": "مساعد الذكاء الاصطناعي غير متاح حاليًا.",
     "CalendarCopilot:Shortcut:DayAgenda": "كيف يبدو يومي؟",
     "CalendarCopilot:Shortcut:FreeSlot": "ابحث عن موعد فارغ لمدة 30 دقيقة هذا الأسبوع",
     "CalendarCopilot:Shortcut:ScheduleTomorrow": "جدولة اجتماع غدًا الساعة 10 صباحًا",
-    "CalendarCopilot:Shortcut:FreeFriday": "هل أنا متاح بعد ظهر يوم الجمعة؟"
+    "CalendarCopilot:Shortcut:FreeFriday": "هل أنا متاح بعد ظهر يوم الجمعة؟",
+    "SeededCalendar:host-hijri-shamsi:DisplayName": "التقويم الهجري الشمسي",
+    "SeededCalendar:host-hijri-shamsi-1405:DisplayName": "التقويم الهجري الشمسي"
   }
 }

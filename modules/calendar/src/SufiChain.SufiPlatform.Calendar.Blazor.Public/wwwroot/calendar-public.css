@@ -73,21 +73,114 @@
 }
 
 .sufi-calendar-view__header {
+    display: flex;
+    flex-direction: column;
+    gap: var(--sb-space-3, 0.75rem);
     width: 100%;
 }
 
 .sufi-calendar-view__toolbar {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--sb-space-3, 0.75rem);
+    flex-wrap: wrap;
     width: 100%;
+    min-width: 0;
+}
+
+.sufi-calendar-view__nav {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--sb-space-1, 0.25rem);
+    flex: 0 0 auto;
+}
+
+.sufi-calendar-view__today {
+    min-width: 3.5rem;
 }
 
 .sufi-calendar-view__title {
     text-align: center;
-    min-width: 12rem;
+    min-width: 10rem;
     flex: 1 1 auto;
 }
 
+.sufi-calendar-view__title .sb-heading {
+    margin: 0;
+    letter-spacing: -0.01em;
+}
+
 .sufi-calendar-view__mode-bar {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.125rem;
+    padding: 0.2rem;
+    border-radius: 999px;
+    background: var(--sb-color-surface-muted, var(--sb-color-surface-variant));
+    border: 1px solid var(--sb-color-border-subtle, var(--sb-color-border));
+    flex: 0 0 auto;
+}
+
+.sufi-calendar-view__mode {
+    appearance: none;
+    border: 0;
+    background: transparent;
+    color: var(--sb-color-text-muted);
+    font: inherit;
+    font-size: var(--sb-font-size-sm, 0.875rem);
+    font-weight: var(--sb-font-weight-medium, 500);
+    line-height: 1;
+    padding: 0.45rem 0.85rem;
+    border-radius: 999px;
+    cursor: pointer;
+    transition: background-color 140ms ease, color 140ms ease, box-shadow 140ms ease;
+}
+
+.sufi-calendar-view__mode:hover {
+    color: var(--sb-color-text);
+}
+
+.sufi-calendar-view__mode--active {
+    background: var(--sb-color-surface-variant, var(--sb-color-surface));
+    color: var(--sb-color-primary);
+    box-shadow: var(--sb-shadow-sm);
+}
+
+.sufi-calendar-view__toolbar-extra {
     width: 100%;
+    min-width: 0;
+    padding-top: var(--sb-space-1, 0.25rem);
+    border-top: 1px solid var(--sb-color-border-subtle, var(--sb-color-border));
+}
+
+/* Dark: keep event chips readable over recessed day cells */
+.sb-theme-dark .sufi-calendar-view__day--closed {
+    background: color-mix(
+        in srgb,
+        var(--sb-color-danger, #ef4444) 16%,
+        var(--sb-color-surface-variant, var(--sb-color-surface))
+    );
+}
+
+.sb-theme-dark .sufi-calendar-view__event,
+.sb-theme-dark .sufi-calendar-view__timeline-event {
+    background: color-mix(
+        in srgb,
+        var(--sufi-event-color, var(--sb-color-primary)) 32%,
+        var(--sb-color-surface-variant)
+    );
+    color: color-mix(
+        in srgb,
+        var(--sufi-event-color, var(--sb-color-primary-text)) 55%,
+        var(--sb-color-text)
+    );
+}
+
+.sb-theme-dark .sufi-calendar-view__mode--active {
+    background: var(--sb-color-surface);
+    color: var(--sb-color-primary-text, var(--sb-color-primary));
 }
 
 /* Card body holds the active view; let it size to content */
@@ -96,6 +189,11 @@
     flex-direction: column;
     gap: var(--sb-space-2, 0.5rem);
     min-width: 0;
+    overflow: visible;
+}
+
+.sufi-calendar-view__card.sb-card {
+    overflow: visible;
 }
 
 /* Day names + month/week grid share the same 7-column track */
@@ -110,7 +208,7 @@
 .sufi-calendar-view__day-names {
     gap: var(--sb-space-1, 0.25rem);
     margin-bottom: var(--sb-space-1, 0.25rem);
-    color: var(--sb-color-text-muted, #64748b);
+    color: var(--sb-color-text-muted);
     font-size: var(--sb-font-size-sm, 0.875rem);
     font-weight: var(--sb-font-weight-semibold, 600);
     text-align: center;
@@ -122,6 +220,7 @@
 
 .sufi-calendar-view__grid {
     gap: var(--sb-space-1, 0.25rem);
+    overflow: visible;
 }
 
 .sufi-calendar-view__grid--five-rows {
@@ -137,16 +236,19 @@
 }
 
 .sufi-calendar-view__day {
+    position: relative;
+    z-index: 0;
     display: flex;
     flex-direction: column;
     align-items: stretch;
     gap: var(--sb-space-1, 0.25rem);
     min-height: 0;
-    overflow: hidden;
+    /* visible so SbPopover (absolute) is not clipped by the cell */
+    overflow: visible;
     padding: var(--sb-space-2, 0.5rem);
-    border: 1px solid var(--sb-color-border, #e2e8f0);
+    border: 1px solid var(--sb-color-border-subtle, var(--sb-color-border));
     border-radius: var(--sb-radius-md, 0.5rem);
-    background: var(--sb-color-surface, #fff);
+    background: var(--sb-color-surface-variant, var(--sb-color-surface));
     color: inherit;
     text-align: start;
     cursor: pointer;
@@ -154,35 +256,273 @@
                 box-shadow var(--sb-duration-fast, 120ms) var(--sb-easing-default, ease);
 }
 
+/* Keep the open cell above sibling day cells (all are position:relative). */
+.sufi-calendar-view__day--events-open {
+    z-index: 8;
+}
+
+.sufi-calendar-view__day:focus-visible {
+    outline: 2px solid var(--sb-color-primary);
+    outline-offset: 1px;
+}
+
 .sufi-calendar-view__day:hover {
-    border-color: var(--sb-color-primary, #2563eb);
-    box-shadow: var(--sb-shadow-sm, 0 8px 24px rgba(15, 23, 42, .08));
+    border-color: var(--sb-color-primary);
+    box-shadow: var(--sb-shadow-sm);
 }
 
 .sufi-calendar-view__day--muted {
-    opacity: .55;
-    background: var(--sb-color-surface-muted, #f8fafc);
+    opacity: .65;
+    background: var(--sb-color-surface-muted, var(--sb-color-background));
 }
 
 .sufi-calendar-view__day--today {
-    border-color: var(--sb-color-primary, #2563eb);
-    box-shadow: inset 0 0 0 1px var(--sb-color-primary, #2563eb);
+    border-color: var(--sb-color-primary);
+    box-shadow: inset 0 0 0 1px var(--sb-color-primary);
+}
+
+/* Closed / off-day from calendar exceptions (own or inherited parent) */
+.sufi-calendar-view__day--closed {
+    border-color: color-mix(
+        in srgb,
+        var(--sb-color-danger, #dc2626) 45%,
+        var(--sb-color-border-subtle, var(--sb-color-border))
+    );
+    background: color-mix(
+        in srgb,
+        var(--sb-color-danger, #dc2626) 10%,
+        var(--sb-color-surface-variant, var(--sb-color-surface))
+    );
+}
+
+.sufi-calendar-view__day--closed .sufi-calendar-view__day-number {
+    color: var(--sb-color-danger, #dc2626);
+    font-weight: var(--sb-font-weight-bold, 700);
 }
 
 .sufi-calendar-view__day-number {
     font-weight: var(--sb-font-weight-bold, 700);
+    color: var(--sb-color-text);
 }
 
 .sufi-calendar-view__event {
+    display: block;
     overflow: hidden;
-    padding: 0.125rem 0.375rem;
+    padding: 0 0.375rem;
+    min-height: 1.125rem;
+    max-height: 1.125rem;
     border-radius: var(--sb-radius-sm, 0.375rem);
-    background: var(--sb-color-primary-soft, #dbeafe);
-    color: var(--sb-color-primary-text, #1d4ed8);
-    font-size: var(--sb-font-size-xs, 0.8125rem);
-    line-height: 1.25;
+    border-inline-start: 2px solid var(--sufi-event-color, var(--sb-color-primary));
+    background: color-mix(
+        in srgb,
+        var(--sufi-event-color, var(--sb-color-primary)) 22%,
+        var(--sb-color-surface-variant, var(--sb-color-surface))
+    );
+    color: color-mix(
+        in srgb,
+        var(--sufi-event-color, var(--sb-color-primary-text, var(--sb-color-primary))) 72%,
+        var(--sb-color-text)
+    );
+    font-size: 0.6875rem;
+    line-height: 1.125rem;
+    letter-spacing: 0.01em;
     text-overflow: ellipsis;
     white-space: nowrap;
+    cursor: pointer;
+}
+
+.sufi-calendar-view__events-popover-host {
+    align-self: flex-start;
+    width: max-content;
+    max-width: 100%;
+}
+
+.sufi-calendar-view__event-count {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    align-self: flex-start;
+    padding: 0 0.4375rem;
+    min-height: 1.125rem;
+    border-radius: var(--sb-radius-full, 999px);
+    background: color-mix(
+        in srgb,
+        var(--sufi-event-color, var(--sb-color-primary)) 16%,
+        var(--sb-color-surface-variant, var(--sb-color-surface))
+    );
+    color: color-mix(
+        in srgb,
+        var(--sufi-event-color, var(--sb-color-primary-text, var(--sb-color-primary))) 72%,
+        var(--sb-color-text)
+    );
+    font-size: 0.6875rem;
+    font-weight: var(--sb-font-weight-semibold, 600);
+    line-height: 1.125rem;
+    cursor: pointer;
+    user-select: none;
+}
+
+.sufi-calendar-view__event-count:hover,
+.sufi-calendar-view__event-count:focus-visible {
+    background: color-mix(
+        in srgb,
+        var(--sufi-event-color, var(--sb-color-primary)) 28%,
+        var(--sb-color-surface-variant, var(--sb-color-surface))
+    );
+    outline: none;
+}
+
+.sufi-calendar-view__event-count-dot {
+    width: 0.375rem;
+    height: 0.375rem;
+    border-radius: 50%;
+    background: var(--sufi-event-color, var(--sb-color-primary));
+    flex-shrink: 0;
+}
+
+.sufi-calendar-view__event-count-value {
+    font-variant-numeric: tabular-nums;
+}
+
+.sufi-calendar-view__events-popover.sb-popover {
+    z-index: var(--sb-z-popover, 1400);
+    padding: 0;
+    border: none;
+    background: transparent;
+    box-shadow: none;
+}
+
+.sufi-calendar-view__events-popover-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    min-width: 14rem;
+    max-width: min(18rem, 80vw);
+    max-height: 16rem;
+    overflow: auto;
+    padding: var(--sb-space-2, 0.5rem);
+    border: 1px solid var(--sb-color-border-subtle, var(--sb-color-border));
+    border-radius: var(--sb-radius-md, 0.5rem);
+    background: var(--sb-color-surface);
+    box-shadow: var(--sb-shadow-lg, 0 8px 24px rgba(0, 0, 0, 0.18));
+}
+
+.sufi-calendar-view__events-popover-item {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.0625rem;
+    width: 100%;
+    margin: 0;
+    padding: 0.375rem 0.5rem;
+    border: 0;
+    border-radius: var(--sb-radius-sm, 0.375rem);
+    border-inline-start: 2px solid var(--sufi-event-color, var(--sb-color-primary));
+    background: color-mix(
+        in srgb,
+        var(--sufi-event-color, var(--sb-color-primary)) 14%,
+        var(--sb-color-surface)
+    );
+    color: var(--sb-color-text);
+    text-align: start;
+    cursor: pointer;
+}
+
+.sufi-calendar-view__events-popover-item:hover,
+.sufi-calendar-view__events-popover-item:focus-visible {
+    background: color-mix(
+        in srgb,
+        var(--sufi-event-color, var(--sb-color-primary)) 24%,
+        var(--sb-color-surface)
+    );
+    outline: none;
+}
+
+.sufi-calendar-view__events-popover-title {
+    overflow: hidden;
+    font-size: var(--sb-font-size-sm, 0.875rem);
+    font-weight: var(--sb-font-weight-semibold, 600);
+    line-height: 1.3;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.sufi-calendar-view__events-popover-time,
+.sufi-calendar-view__events-popover-meta {
+    color: var(--sb-color-text-muted);
+    font-size: 0.75rem;
+    line-height: 1.3;
+}
+
+.sb-theme-dark .sufi-calendar-view__event-count {
+    background: color-mix(
+        in srgb,
+        var(--sufi-event-color, var(--sb-color-primary)) 28%,
+        var(--sb-color-surface-variant)
+    );
+    color: color-mix(
+        in srgb,
+        var(--sufi-event-color, var(--sb-color-primary-text, var(--sb-color-primary))) 70%,
+        var(--sb-color-text)
+    );
+}
+
+.sb-theme-dark .sufi-calendar-view__events-popover-panel {
+    background: var(--sb-color-surface-variant, var(--sb-color-surface));
+}
+
+.sb-theme-dark .sufi-calendar-view__events-popover-item {
+    background: color-mix(
+        in srgb,
+        var(--sufi-event-color, var(--sb-color-primary)) 22%,
+        var(--sb-color-surface-variant)
+    );
+}
+
+/* Day view: all-day strip above the 24h timeline */
+.sufi-calendar-view__day-panel {
+    display: grid;
+    gap: var(--sb-space-2, 0.5rem);
+    width: 100%;
+    min-width: 0;
+}
+
+.sufi-calendar-view__all-day {
+    display: grid;
+    grid-template-columns: 4.5rem minmax(0, 1fr);
+    align-items: start;
+    border: 1px solid var(--sb-color-border-subtle, var(--sb-color-border));
+    border-radius: var(--sb-radius-lg, 0.75rem);
+    background: var(--sb-color-surface-variant, var(--sb-color-surface));
+    width: 100%;
+    min-width: 0;
+}
+
+.sufi-calendar-view__all-day-label {
+    padding: var(--sb-space-2, 0.5rem);
+    color: var(--sb-color-text-muted);
+    font-size: var(--sb-font-size-xs, 0.8125rem);
+    font-weight: var(--sb-font-weight-semibold, 600);
+    border-inline-end: 1px solid var(--sb-color-border-subtle, var(--sb-color-border));
+}
+
+.sufi-calendar-view__all-day-lane {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--sb-space-1, 0.25rem);
+    min-width: 0;
+    padding: var(--sb-space-1, 0.25rem) var(--sb-space-2, 0.5rem);
+}
+
+.sufi-calendar-view__all-day-event {
+    border: 0;
+    cursor: pointer;
+    text-align: start;
+    max-width: 100%;
+}
+
+.sufi-calendar-view__all-day-event:hover {
+    filter: brightness(0.97);
 }
 
 /* Day timeline (24h) scrolls inside a capped height */
@@ -191,9 +531,9 @@
     gap: 0;
     max-height: 32rem;
     overflow: auto;
-    border: 1px solid var(--sb-color-border, #e2e8f0);
+    border: 1px solid var(--sb-color-border-subtle, var(--sb-color-border));
     border-radius: var(--sb-radius-lg, 0.75rem);
-    background: var(--sb-color-surface, #fff);
+    background: var(--sb-color-surface-variant, var(--sb-color-surface));
     width: 100%;
     min-width: 0;
 }
@@ -204,7 +544,7 @@
     min-height: 3.25rem;
     padding: 0;
     border: 0;
-    border-bottom: 1px solid var(--sb-color-border, #e2e8f0);
+    border-bottom: 1px solid var(--sb-color-border-subtle, var(--sb-color-border));
     background: transparent;
     color: inherit;
     text-align: start;
@@ -217,15 +557,15 @@
 }
 
 .sufi-calendar-view__timeline-row:hover {
-    background: var(--sb-color-surface-muted, #f8fafc);
+    background: var(--sb-color-surface-hover, var(--sb-color-surface-muted, var(--sb-color-surface-variant)));
 }
 
 .sufi-calendar-view__timeline-hour {
     padding: var(--sb-space-2, 0.5rem);
-    color: var(--sb-color-text-muted, #64748b);
+    color: var(--sb-color-text-muted);
     font-size: var(--sb-font-size-xs, 0.8125rem);
     font-weight: var(--sb-font-weight-semibold, 600);
-    border-inline-end: 1px solid var(--sb-color-border, #e2e8f0);
+    border-inline-end: 1px solid var(--sb-color-border-subtle, var(--sb-color-border));
 }
 
 .sufi-calendar-view__timeline-lane {
@@ -245,8 +585,17 @@
     overflow: hidden;
     padding: 0.25rem 0.5rem;
     border-radius: var(--sb-radius-sm, 0.375rem);
-    background: var(--sb-color-primary-soft, #dbeafe);
-    color: var(--sb-color-primary-text, #1d4ed8);
+    border-inline-start: 3px solid var(--sufi-event-color, var(--sb-color-primary));
+    background: color-mix(
+        in srgb,
+        var(--sufi-event-color, var(--sb-color-primary)) 22%,
+        var(--sb-color-surface-variant, var(--sb-color-surface))
+    );
+    color: color-mix(
+        in srgb,
+        var(--sufi-event-color, var(--sb-color-primary-text, var(--sb-color-primary))) 72%,
+        var(--sb-color-text)
+    );
     font-size: var(--sb-font-size-xs, 0.8125rem);
     line-height: 1.25;
 }
@@ -270,9 +619,14 @@
     justify-content: space-between;
     gap: var(--sb-space-2, 0.5rem);
     padding: var(--sb-space-2, 0.5rem) var(--sb-space-3, 0.75rem);
-    border: 1px solid var(--sb-color-border, #e2e8f0);
+    border: 1px solid var(--sb-color-border-subtle, var(--sb-color-border));
+    border-inline-start: 3px solid var(--sufi-event-color, var(--sb-color-primary));
     border-radius: var(--sb-radius-md, 0.5rem);
-    background: var(--sb-color-surface, #fff);
+    background: color-mix(
+        in srgb,
+        var(--sufi-event-color, var(--sb-color-primary)) 14%,
+        var(--sb-color-surface-variant, var(--sb-color-surface))
+    );
     color: inherit;
     text-align: start;
     width: 100%;
@@ -282,7 +636,7 @@
     display: grid;
     min-height: 12rem;
     place-items: center;
-    color: var(--sb-color-text-muted, #64748b);
+    color: var(--sb-color-text-muted);
     width: 100%;
 }
 
@@ -330,13 +684,13 @@
     display: grid;
     gap: 0.25rem;
     padding: var(--sb-space-2, 0.5rem);
-    border: 1px solid var(--sb-color-border, #e2e8f0);
+    border: 1px solid var(--sb-color-border-subtle, var(--sb-color-border));
     border-radius: var(--sb-radius-md, 0.5rem);
-    background: var(--sb-color-surface, #fff);
+    background: var(--sb-color-surface-variant, var(--sb-color-surface));
 }
 
 .sufi-calendar-widget__agenda-item > span {
-    color: var(--sb-color-text-muted, #64748b);
+    color: var(--sb-color-text-muted);
     font-size: var(--sb-font-size-xs, 0.8125rem);
 }
 
@@ -377,8 +731,23 @@
     }
 
     .sufi-calendar-view__event {
-        padding: 0.0625rem 0.1875rem;
-        font-size: 0.7rem;
+        padding: 0 0.25rem;
+        min-height: 1rem;
+        max-height: 1rem;
+        font-size: 0.625rem;
+        line-height: 1rem;
+    }
+
+    .sufi-calendar-view__event-count {
+        padding: 0 0.3125rem;
+        min-height: 1rem;
+        font-size: 0.625rem;
+        line-height: 1rem;
+    }
+
+    .sufi-calendar-view__event-count-dot {
+        width: 0.3125rem;
+        height: 0.3125rem;
     }
 
     .sufi-calendar-view__grid--five-rows {

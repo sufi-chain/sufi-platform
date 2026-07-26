@@ -113,6 +113,14 @@ public class CalendarEvent : FullAuditedAggregateRoot<Guid>, IMultiTenant
         AvailabilityCalendarId = availabilityCalendarId;
     }
 
+    /// <summary>
+    /// Raises a cache-invalidation event for occurrence expansion (create/delete or bulk mutations).
+    /// </summary>
+    public virtual void NotifyChanged()
+    {
+        AddDistributedEvent(new CalendarEventChangedEto(Id, CalendarId, TenantId));
+    }
+
     public virtual void AttachSource(string? sourceType, string? sourceId)
     {
         if (string.IsNullOrWhiteSpace(sourceType) != string.IsNullOrWhiteSpace(sourceId))

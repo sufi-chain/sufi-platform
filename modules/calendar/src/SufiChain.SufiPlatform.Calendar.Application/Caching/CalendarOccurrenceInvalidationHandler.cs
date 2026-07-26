@@ -6,29 +6,26 @@ using Volo.Abp.MultiTenancy;
 
 namespace SufiChain.SufiPlatform.Calendar.Caching;
 
-public class CalendarSnapshotInvalidationHandler : IDistributedEventHandler<CalendarChangedEto>, ITransientDependency
+public class CalendarOccurrenceInvalidationHandler : IDistributedEventHandler<CalendarEventChangedEto>, ITransientDependency
 {
-    private readonly ICalendarSnapshotCache _snapshotCache;
     private readonly ICalendarOccurrenceExpansionCache _occurrenceCache;
     private readonly ICurrentTenant _currentTenant;
 
-    public CalendarSnapshotInvalidationHandler(
-        ICalendarSnapshotCache snapshotCache,
+    public CalendarOccurrenceInvalidationHandler(
         ICalendarOccurrenceExpansionCache occurrenceCache,
         ICurrentTenant currentTenant)
     {
-        _snapshotCache = snapshotCache;
         _occurrenceCache = occurrenceCache;
         _currentTenant = currentTenant;
     }
 
-    public virtual async Task HandleEventAsync(CalendarChangedEto eventData)
+    public virtual async Task HandleEventAsync(CalendarEventChangedEto eventData)
     {
-        // ABP cache keys are prefixed with ambient CurrentTenant — must switch before Remove.
         using (_currentTenant.Change(eventData.TenantId))
         {
-            await _snapshotCache.RemoveWithInheritorsAsync(eventData.CalendarId, eventData.TenantId);
-            // Inheritance changes alter which parent expansions are merged on GET.
+            // Parent calendar event changes must also drop inheritor merged views if we ever
+            // cache merged results; ExpandAsync is per-calendar so only this calendar's stamp
+            // needs bumping — child GETs re-read the parent's (also invalidated) expansion.
             await _occurrenceCache.RemoveAsync(eventData.CalendarId, eventData.TenantId);
         }
     }

@@ -15,4 +15,6 @@ public class CalendarLookupDto : EntityDto<Guid>
     public string? OwnerName { get; set; }
 
     public bool IsDefault { get; set; }
+
+    public string Color { get; set; } = CalendarConsts.DefaultColor;
 }

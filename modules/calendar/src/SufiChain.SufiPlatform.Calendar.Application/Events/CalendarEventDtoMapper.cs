@@ -24,7 +24,7 @@ public static class CalendarEventDtoMapper
             SourceType = calendarEvent.SourceType,
             SourceId = calendarEvent.SourceId,
             RecurrenceRule = calendarEvent.RecurrenceRule?.Rule,
-            ExtraProperties = new ExtraPropertyDictionary(calendarEvent.ExtraProperties),
+            ExtraProperties = calendarEvent.ExtraProperties,
             Attendees = calendarEvent.Attendees.Select(ToDto).ToList(),
             Reminders = calendarEvent.Reminders.Select(ToDto).ToList()
         };

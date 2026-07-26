@@ -18,7 +18,7 @@ public class MongoCalendarEventRepository : MongoDbRepository<ICalendarMongoDbCo
     public virtual async Task<List<CalendarEvent>> GetListInWindowAsync(Guid calendarId, DateTime fromUtc, DateTime toUtc, CancellationToken cancellationToken = default)
     {
         return await (await GetQueryableAsync(cancellationToken))
-            .Where(x => x.CalendarId == calendarId && (x.RecurrenceRule != null || (x.StartUtc < toUtc && x.EndUtc > fromUtc)))
+            .Where(CalendarEventWindowQuery.MatchesWindow(calendarId, fromUtc, toUtc))
             .ToListAsync(cancellationToken);
     }
 
