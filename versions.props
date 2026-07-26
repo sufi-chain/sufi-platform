@@ -11,13 +11,13 @@
 
   <!-- Nedded in Sufi-Abp -->
   <PropertyGroup>
-      <SufiBlazorVersion>1.0.0-rc.2.3</SufiBlazorVersion>
+      <SufiBlazorVersion>0.1.0-alpha.1.0.0</SufiBlazorVersion>
   </PropertyGroup>
 
   <!-- Nedded in Hosts -->
   <PropertyGroup>
-    <SufiVersion>1.0.0-alpha.7.4</SufiVersion>
-    <SufiThemeVersion>1.0.0-rc.2.0</SufiThemeVersion>
+    <SufiVersion>0.1.0-alpha.1.0.0</SufiVersion>
+    <SufiThemeVersion>0.1.0-alpha.1.0.0</SufiThemeVersion>
   </PropertyGroup>
 
 
@@ -50,9 +50,9 @@
 
     <!-- AI and Semantic Kernel Package Versions -->
     <PropertyGroup>
-        <MicrosoftSemanticKernelVersion>1.76.0</MicrosoftSemanticKernelVersion>
-        <MicrosoftSemanticKernelAbstractionsVersion>1.76.0</MicrosoftSemanticKernelAbstractionsVersion>
-        <MicrosoftSemanticKernelConnectorsOpenAIVersion>1.76.0</MicrosoftSemanticKernelConnectorsOpenAIVersion>
+        <MicrosoftSemanticKernelVersion>1.78.0</MicrosoftSemanticKernelVersion>
+        <MicrosoftSemanticKernelAbstractionsVersion>1.78.0</MicrosoftSemanticKernelAbstractionsVersion>
+        <MicrosoftSemanticKernelConnectorsOpenAIVersion>1.78.0</MicrosoftSemanticKernelConnectorsOpenAIVersion>
         <MicrosoftSemanticKernelConnectorsOllamaVersion>1.76.0-alpha</MicrosoftSemanticKernelConnectorsOllamaVersion>
         <MicrosoftExtensionsAIVersion>10.5.2</MicrosoftExtensionsAIVersion>
         <MicrosoftExtensionsAIOpenAIVersion>10.5.2</MicrosoftExtensionsAIOpenAIVersion>

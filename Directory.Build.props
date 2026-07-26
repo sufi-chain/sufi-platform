@@ -10,8 +10,8 @@
     <Version>$(SufiVersion)</Version>
     <Copyright>Copyright © Sufi Chain Intelligent Solutions $([System.DateTime]::Now.Year)</Copyright>
     <PackageLicenseFile>LICENSE</PackageLicenseFile>
-    <PackageProjectUrl>https://sabp.ir</PackageProjectUrl>
-    <RepositoryUrl>https://git.sabp.ir/sufi-chain/sufi-abp.git</RepositoryUrl>
+    <PackageProjectUrl>https://sufiplatform.com</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/sufi-chain/sufi-platform.git</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageIcon Condition="Exists('$(MSBuildThisFileDirectory)icon.png')">icon.png</PackageIcon>
     <PackageReadmeFile Condition="Exists('$(MSBuildThisFileDirectory)README.md')">README.md</PackageReadmeFile>

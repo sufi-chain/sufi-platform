@@ -1,21 +1,21 @@
-# Sufi Platform – Sufi ASP.NET Core Platform
+# Sufi Platform
 
 **Open-Source Enterprise Platform for Blazor Applications**
 
-Sufi Platform is a comprehensive, modular platform for building enterprise-grade Blazor applications. It provides a complete infrastructure layer—authentication, authorization, multi-tenancy, localization, auditing, and more—so you can focus on your domain logic and business features.
+Sufi Platform is a comprehensive, modular platform for building enterprise-grade Blazor applications. It provides a complete infrastructure layer — authentication, authorization, multi-tenancy, localization, auditing, AI integration, and more — so you can focus on your domain logic and business features.
 
-Built on top of ABP Framework , Sufi Platform offers a custom Blazor UI system (SufiBlazor component library + SufiTheme), reimplemented modules with clean branding, and a powerful CLI for rapid development.
+Built on top of ABP Framework, Sufi Platform offers a custom Blazor UI system (SufiBlazor component library + SufiTheme), reimplemented modules with clean branding, and a CLI for rapid scaffolding.
 
 ---
 
 ## What is Sufi Platform?
 
-Sufi Platform is **not a fork** of ABP Framework. It is a strategic platform layer that:
+Sufi Platform is an independent platform built **on top of** ABP Framework. It extends ABP with a custom UI system, branded packages, and original modules:
 
 - **Consumes ABP Framework** as NuGet packages for backend infrastructure (modular architecture, DDD patterns, multi-tenancy, permissions, settings, auditing)
-- **Provides 63 Sufi Platform packages** (43 reimplemented from ABP with custom branding + 20 innovations including custom UI system and authentication)
+- **Provides ~31 value-add framework packages** under `SufiChain.SufiPlatform.*` (UI system, DDD bases, authentication, AI, communications, captcha, CLI)
 - **Replaces ABP's Blazorise-based UI** with a fully custom Blazor component library (SufiBlazor) and theme system (SufiTheme)
-- **Reimplements core ABP modules** (Identity, Tenant Management, etc.) with Sufi Platform UI and branding
+- **Ships 18 first-party modules** — reimplemented ABP modules with Sufi Platform UI plus original modules (Calendar, AI, File Manager, Menu Management, etc.)
 - **Offers custom tooling** (`sufi` CLI) for scaffolding and code generation
 - **Remains fully open-source** under LGPL-3.0 license
 
@@ -23,20 +23,75 @@ Sufi Platform is **not a fork** of ABP Framework. It is a strategic platform lay
 
 ```
 Host Applications & Products
-    ↓
-Sufi Platform Modules (Identity, Tenant Management, File Manager, AI Management, etc.)
-    ├─ SufiTheme Module (Shell, Layout, Navigation, Theming System)
-    ↓
+    |
+Sufi Platform Modules (18 modules)
+    |-- SufiTheme (Shell, Layout, Navigation, Theming System)
+    |
 SufiBlazor (Component Library) - Replaces Blazorise
-    ↓
-Sufi Platform Framework (63 packages)
-    ├─ 43 reimplemented from ABP (with Sufi Platform branding & customizations)
-    └─ 20 Sufi Platform innovations (UI system, Auth, CLI)
-    ↓
-ABP Framework  (consumed as NuGet packages)
-    ↓
+    |
+Sufi Platform Framework (~31 packages)
+    |-- Value-add: UI system, DDD bases, Auth, SufiAI, SufiCom, Captcha, CLI
+    |-- Infrastructure consumed directly from Volo.Abp.* (EF, Mongo, EventBus, Caching, ...)
+    |
+ABP Framework 10.3.0 (consumed as NuGet packages)
+    |
 .NET 10.0 + ASP.NET Core 10.0
 ```
+
+---
+
+## Framework Packages
+
+31 `SufiChain.SufiPlatform.*` packages under `framework/` — each adds real value beyond ABP (UI, branding, AI, communications, captcha, CLI). Thin re-export wrappers were removed as part of Framework Reduction.
+
+| Family | Packages | Description |
+|--------|----------|-------------|
+| **Core / DDD** | Core, Ddd.Application.Contracts, Ddd.Application | Module base (`SufiModule`), DTO bases, `SufiApplicationService` |
+| **UI** | UI.Abstractions, UI.Domain.Shared, UI.Services, UI.Blazor, UI.Blazor.Server, UI.Blazor.WebAssembly | Menu/toolbar/theme contracts, `SufiComponentBase`, localization resources |
+| **SufiAI** | SufiAI, SufiAI.Abstractions | Workspace-based AI integration (chat clients, Semantic Kernel, keyed services) |
+| **SufiCom** | SufiCom, SufiCom.Abstractions | Email, SMS, voice, channels, notifications |
+| **AspNetCore / Auth** | AspNetCore, Mvc, Authentication.Abstractions, Authentication.OpenIdConnect, Authentication.Server, Authentication.WebAssembly, Authorization | `SufiControllerBase`, OIDC, server/WASM auth |
+| **Captcha** | Captcha, Captcha.Recaptcha, Captcha.Turnstile | Math captcha, Google reCAPTCHA, Cloudflare Turnstile |
+| **Data / Infra** | BlobStoring.S3Provider, Data, Features, Validation, TextTemplating, TextTemplating.Scriban | S3 blob provider, seed helpers, feature flags, templating |
+| **CLI** | CLI, CLI.Core | `sufi` global tool, template pipeline, module registry |
+
+Infrastructure packages (EF Core, MongoDB, EventBus, Caching, AutoMapper, etc.) are consumed directly as `Volo.Abp.*` NuGet packages.
+
+---
+
+## Modules
+
+18 first-party modules under `modules/`, each following ABP's layered structure with Sufi Platform UI and branding.
+
+### Reimplemented from ABP
+
+| Module | Folder | Description |
+|--------|--------|-------------|
+| **Identity** | `identity` | Users, roles, organizational units, security logs, dynamic claims |
+| **Account** | `account` | Registration, login, profile, 2FA, captcha, OTP |
+| **Tenant Management** | `tenants` | Tenant CRUD, connection strings, database isolation |
+| **Permission Management** | `permissions` | Dynamic permission store and API |
+| **Setting Management** | `settings` | Hierarchical settings with admin UI (email, timezone, identity) |
+| **Feature Management** | `features` | Host/tenant feature flags |
+| **Audit Logging** | `audit-logging` | Entity change tracking and audit log viewer |
+| **Background Jobs** | `jobs` | Job store, admin UI, retry management |
+| **OpenIddict** | `openiddict` | OAuth 2.0 / OpenID Connect application and token management |
+| **Users** | `users` | User lookup abstractions and public selector components |
+
+### Sufi Platform Originals
+
+| Module | Folder | Description |
+|--------|--------|-------------|
+| **AI Management** | `ai` | AI workspaces, RAG with Qdrant/Pgvector, MCP tool registry, usage analytics |
+| **Calendar** | `calendar` | Calendars, events, recurrence, availability, free/busy, 12 MCP AI tools |
+| **File Manager** | `file-manager` | File/media management with S3, MinIO, FileSystem, Database providers |
+| **Menu Management** | `menus` | Dynamic menu CRUD, tree editor, public menu API |
+| **Short Links** | `short-links` | URL shortening with click analytics |
+| **Tags Management** | `tags` | Tag definitions and tag-to-entity linking |
+| **Localization Management** | `localization` | Dynamic localization management and business editor |
+| **Blob Storing Database** | `blob-database` | Database-backed blob storage provider (EF Core + MongoDB) |
+
+All modules support both EF Core and MongoDB, use SufiBlazor components, and follow the `SufiComponentBase` / `SufiControllerBase` / Sufi Platform DTO conventions.
 
 ---
 
@@ -66,51 +121,37 @@ ABP Framework  (consumed as NuGet packages)
 - **Icon System**: Integrated icon library with consistent styling
 - **Localization**: Seamless integration with backend localization
 
+### AI Integration
+
+- **SufiAI Framework**: Workspace-based configuration over Microsoft.Extensions.AI + Semantic Kernel
+- **Provider Support**: OpenAI, Ollama, and custom OpenAI-compatible endpoints
+- **RAG**: Document indexing and semantic search with Qdrant or Pgvector vector stores
+- **MCP Tools**: Model Context Protocol tool registry with Semantic Kernel plugin integration
+- **Calendar Copilot**: 12 MCP tools for scheduling, availability, and free/busy queries
+
 ### Data Access
 
 - **Entity Framework Core**: Full EF Core support with migrations and LINQ queries
 - **MongoDB**: Native MongoDB support with repository pattern
-- **Dual Database Support**: Modules can support both EF Core and MongoDB
+- **Dual Database Support**: All modules support both EF Core and MongoDB
 - **Repository Pattern**: Generic repositories with async operations
 - **Unit of Work**: Automatic transaction management
-
-### Sufi Platform Modules
-
-**Core Modules (Open Source - LGPL-3.0):**
-
-- **Identity**: User, role, and claim management with ASP.NET Core Identity integration
-- **Tenant Management**: Multi-tenant administration with database isolation
-- **Permission Management**: Dynamic permission system with UI
-- **Setting Management**: Hierarchical settings with UI
-- **Feature Management**: Feature flags and tenant features
-- **Audit Logging**: Entity change tracking and audit log viewer
-- **File Manager**: File upload, storage, and management with multiple providers
-- **Blob Storage**: Abstract blob storage with FileSystem, Database, MinIO, and S3 providers
-- **OpenIddict Integration**: OAuth 2.0 and OpenID Connect server
-- **Background Jobs**: Job management and monitoring
-- **AI Management**: AI service integration and management (NEW)
-- **Chat**: Real-time chat infrastructure (SignalR-based, basic features)
-- **Channels**: Multi-channel communication infrastructure (Email only)
-
-These infrastructure modules provide the foundation for vertical applications but are not end-user products themselves.
-
 
 ---
 
 ## Sufi Platform vs ABP Framework
 
 | Aspect | ABP Framework | Sufi Platform |
-|--------|---------------|------------------|
+|--------|---------------|---------------|
 | **UI System** | Blazorise (3rd party) | SufiBlazor (owned) |
 | **Component Base** | `AbpComponentBase` | `SufiComponentBase` |
 | **DTO Branding** | `Volo.Abp.Application.Dtos.*` | `SufiChain.SufiPlatform.Application.Dtos.*` |
 | **Controller Base** | `AbpControllerBase` | `SufiControllerBase` |
-| **Theme** | LeptonX | SufiTheme  |
+| **Theme** | LeptonX | SufiTheme |
 | **CLI** | `abp` command | `sufi` command |
 | **License** | LGPL-3.0 (framework only) | LGPL-3.0 (framework + modules) |
-| **Commercial** | ABP Commercial for modules | Infrastructure open-source, vertical apps commercial |
 | **Object Mapping** | AutoMapper | Mapperly (compile-time) |
-| **Module UI** | Blazorise-based | SufiBlazor-based |
+| **AI Integration** | — (not in ABP OSS) | SufiAI (workspaces, RAG, MCP) |
 
 ---
 
@@ -118,33 +159,31 @@ These infrastructure modules provide the foundation for vertical applications bu
 
 ### Backend
 
-- **.NET 10.0**: Latest .NET runtime with performance improvements
-- **ASP.NET Core 10.0**: Web framework with Blazor Server and WebAssembly support
-- **Entity Framework Core 10.0**: ORM with migrations and LINQ
-- **MongoDB Driver**: Native MongoDB support
-- **OpenIddict**: OAuth 2.0 and OpenID Connect server
-- **SignalR**: Real-time communication
-- **MediatR**: CQRS and mediator pattern
-- **FluentValidation**: Validation library
-- **Serilog**: Structured logging
-- **Mapperly**: Compile-time object mapping
+- **.NET 10.0** and **ASP.NET Core 10.0**
+- **Entity Framework Core 10.0** with migrations and LINQ
+- **MongoDB Driver** with native repository support
+- **OpenIddict** for OAuth 2.0 and OpenID Connect
+- **Microsoft.Extensions.AI** + **Semantic Kernel** for AI integration
+- **SignalR** for real-time communication
+- **Mapperly** for compile-time object mapping
+- **Serilog** for structured logging
 
 ### Frontend
 
-- **Blazor Server**: Server-side rendering with SignalR
-- **Blazor WebAssembly**: Client-side SPA with .NET in browser
-- **SufiBlazor**: Custom component library
-- **SufiTheme**: Layout and theming system
-- **CSS Variables**: Dynamic theming
-- **Responsive Design**: Mobile-first layouts
+- **Blazor Server** and **Blazor WebAssembly** support
+- **SufiBlazor** custom component library (`Sb*` prefix)
+- **SufiTheme** layout and theming system
+- **CSS Variables** for dynamic theming
+- **LTR/RTL** bidirectional layout support
 
 ### Infrastructure
 
-- **Redis**: Distributed caching and session storage
-- **RabbitMQ**: Message broker for distributed events
-- **MinIO / S3**: Object storage for files and blobs
-- **PostgreSQL / SQL Server / MySQL**: Relational database options
-- **MongoDB**: NoSQL database option
+- **Redis** for distributed caching and session storage
+- **RabbitMQ** for distributed events
+- **MinIO / S3** for object storage
+- **Qdrant / Pgvector** for vector search (AI RAG)
+- **PostgreSQL / SQL Server / MySQL / SQLite** relational databases
+- **MongoDB** NoSQL database
 
 ---
 
@@ -171,80 +210,59 @@ These infrastructure modules provide the foundation for vertical applications bu
    sufi new MyApp -t app
    ```
 
-   Options:
-   - `-t app`: Application template (single-layer, layered, or tiered)
-   - `-t module`: Reusable module template
-   - `-d ef`: Entity Framework Core (default)
-   - `-d mongodb`: MongoDB
+   Architecture variants:
 
-3. **Navigate to the solution:**
+   | Variant | CLI flags |
+   |---------|-----------|
+   | WebApp (all-in-one) | `--solution-kind webapp` |
 
-   ```bash
-   cd MyApp
-   ```
+   Database options: `-d ef` (default) or `-d mongodb`
 
-4. **Run database migrations:**
+3. **Run database migrations:**
 
    ```bash
-   cd src/MyApp.DbMigrator
+   cd MyApp/src/MyApp.DbMigrator
    dotnet run
    ```
 
-5. **Run the application:**
+4. **Run the application:**
 
    ```bash
    cd ../MyApp.Blazor
    dotnet run
    ```
 
-6. **Open in browser:**
+5. **Open in browser:**
 
    Navigate to `https://localhost:44300`
 
-   Default credentials:
-   - Username: `admin`
-   - Password: `1q2w3E*`
+   Default credentials: `admin` / `1q2w3E*`
 
 ---
 
-## Roadmap
+## Project Structure
 
-- ✅ Core framework
-- ✅ Identity module
-- ✅ Tenant Management module
-- ✅ File Manager module
-- ✅ AI Management module
-- ✅ Tags Management module
-- ✅ Blob Storage with multiple providers
-- ✅ CLI tooling
+```
+sufi-platform/
+  framework/        # ~31 SufiChain.SufiPlatform.* packages
+  modules/          # 18 first-party modules (short folders)
+  templates/        # CLI solution templates
+  docs/             # Module and framework documentation
+```
 
-
-### Next Milestone 
-
-- 🔄 Chat - Basic real-time chat infrastructure
-- 🔄 Chat.Channels - Basic multi-channel communication 
-- 🔄 Communication 
-- 🔄 TextTemplating
-   
 ---
 
 ## License
 
-### Open Source Components (LGPL-3.0)
-
-The following components are licensed under LGPL-3.0 and are free to use:
-
-- **Sufi Platform Framework**
-- **Core Modules**: Identity, Tenant Management, File Manager, AI Management, Audit Logging, etc.
-
-You can use these components in both open-source and commercial projects without restrictions.
+All components are licensed under **LGPL-3.0** — framework and modules alike. You can use Sufi Platform in both open-source and commercial projects.
 
 ---
 
 ## Community & Support
 
-- **Documentation**: https://docs.sabp.ir
-- **Git**: https://git.sabp.ir/sufi-chain/sufi-abp
+- **Website**: https://sufiplatform.com
+- **Documentation**: https://docs.sufiplatform.com
+- **GitHub**: https://github.com/sufi-chain/sufi-platform
 
 ### Commercial Support
 
@@ -252,7 +270,6 @@ You can use these components in both open-source and commercial projects without
 - Consulting services for architecture and implementation
 - Custom module development
 - Training and workshops
-
 
 ---
 
@@ -272,11 +289,6 @@ Sufi Platform is an open-source project and welcomes contributions:
 
 Sufi Platform is built on top of [ABP Framework](https://abp.io) and would not be possible without the excellent work of the ABP team. We consume ABP as NuGet packages and extend it with our custom UI system, modules, and tooling.
 
-Special thanks to:
-- ABP Framework team for the solid foundation
-- .NET team for the amazing platform
-- Open-source community for feedback and contributions
-
 ---
 
-**Built with ❤️ by the Sufi Chain Team**
+**Built with care by the Sufi Chain Team**

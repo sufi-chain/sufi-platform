@@ -5,7 +5,7 @@
   "giteaRemoteName": "origin",
   "githubRemoteName": "github",
   "giteaUrl": "https://git.sabp.ir/sufi-chain/sufi-abp.git",
-  "githubUrl": "https://github.com/sufi-chain/sufi-abp.git",
+  "githubUrl": "https://github.com/sufi-chain/sufi-platform.git",
   "githubReadOnly": true,
   "pushDefault": "ask",
   "notes": "Primary development on Gitea; GitHub is a read-only mirror for now."
