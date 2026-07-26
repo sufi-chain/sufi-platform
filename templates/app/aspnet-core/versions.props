@@ -46,9 +46,9 @@
 
   <!-- AI and Semantic Kernel Package Versions -->
   <PropertyGroup>
-    <MicrosoftSemanticKernelVersion>1.76.0</MicrosoftSemanticKernelVersion>
-    <MicrosoftSemanticKernelAbstractionsVersion>1.76.0</MicrosoftSemanticKernelAbstractionsVersion>
-    <MicrosoftSemanticKernelConnectorsOpenAIVersion>1.76.0</MicrosoftSemanticKernelConnectorsOpenAIVersion>
+    <MicrosoftSemanticKernelVersion>1.78.0</MicrosoftSemanticKernelVersion>
+    <MicrosoftSemanticKernelAbstractionsVersion>1.78.0</MicrosoftSemanticKernelAbstractionsVersion>
+    <MicrosoftSemanticKernelConnectorsOpenAIVersion>1.78.0</MicrosoftSemanticKernelConnectorsOpenAIVersion>
     <MicrosoftSemanticKernelConnectorsOllamaVersion>1.76.0-alpha</MicrosoftSemanticKernelConnectorsOllamaVersion>
     <MicrosoftExtensionsAIVersion>10.5.2</MicrosoftExtensionsAIVersion>
     <MicrosoftExtensionsAIOpenAIVersion>10.5.2</MicrosoftExtensionsAIOpenAIVersion>

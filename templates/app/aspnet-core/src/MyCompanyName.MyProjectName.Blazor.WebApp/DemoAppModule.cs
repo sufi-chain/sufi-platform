@@ -490,6 +490,7 @@ public class DemoAppModule : AbpModule
             options.Layout = SufiLayouts.DualSidebar;
             options.IconRailDarkMode = true;
             options.ExpandOnHover = true;
+            options.IconRailHomeUrl = "/panel/dashboard";
             options.MobileShortcuts.Add(new MobileMenuShortcut(
                 "DemoApp.Home",
                 "Home",
