@@ -16,18 +16,18 @@ Providers are separate NuGet packages that:
 
 ```bash
 cd sufi-platform/framework
-mkdir SufiChain.SufiPlatform.Communication.Twilio
-cd SufiChain.SufiPlatform.Communication.Twilio
+mkdir SufiChain.sufichain.communication.Twilio
+cd SufiChain.sufichain.communication.Twilio
 ```
 
 ### Step 2: Create the Project File
 
-**SufiChain.SufiPlatform.Communication.Twilio.csproj:**
+**SufiChain.sufichain.communication.Twilio.csproj:**
 ```xml
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
-    <RootNamespace>SufiChain.SufiPlatform.Communication.Twilio</RootNamespace>
+    <RootNamespace>SufiChain.sufichain.communication.Twilio</RootNamespace>
     <GenerateEmbeddedFilesManifest>true</GenerateEmbeddedFilesManifest>
   </PropertyGroup>
 
@@ -36,7 +36,7 @@ cd SufiChain.SufiPlatform.Communication.Twilio
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\SufiChain.SufiPlatform.Communication\SufiChain.SufiPlatform.Communication.csproj" />
+    <ProjectReference Include="..\SufiChain.sufichain.communication\SufiChain.sufichain.communication.csproj" />
   </ItemGroup>
 
   <ItemGroup>
@@ -49,7 +49,7 @@ cd SufiChain.SufiPlatform.Communication.Twilio
 
 **TwilioMessagingSettingNames.cs:**
 ```csharp
-namespace SufiChain.SufiPlatform.Communication.Twilio;
+namespace SufiChain.sufichain.communication.Twilio;
 
 public static class TwilioMessagingSettingNames
 {
@@ -70,10 +70,10 @@ public static class TwilioMessagingSettingNames
 **TwilioMessagingSettingDefinitionProvider.cs:**
 ```csharp
 using SufiChain.SufiPlatform.Localization;
-using SufiChain.SufiPlatform.Communication.Twilio.Localization;
+using SufiChain.sufichain.communication.Twilio.Localization;
 using SufiChain.SufiPlatform.Settings;
 
-namespace SufiChain.SufiPlatform.Communication.Twilio;
+namespace SufiChain.sufichain.communication.Twilio;
 
 public class TwilioMessagingSettingDefinitionProvider : SettingDefinitionProvider
 {
@@ -141,7 +141,7 @@ using Twilio;
 using Twilio.Rest.Api.V2010.Account;
 using Twilio.Types;
 
-namespace SufiChain.SufiPlatform.Communication.Twilio;
+namespace SufiChain.sufichain.communication.Twilio;
 
 [Dependency(ReplaceServices = true)]
 [ExposeServices(typeof(ISmsSender))]
@@ -201,7 +201,7 @@ using Twilio;
 using Twilio.Rest.Api.V2010.Account;
 using Twilio.Types;
 
-namespace SufiChain.SufiPlatform.Communication.Twilio;
+namespace SufiChain.sufichain.communication.Twilio;
 
 [Dependency(ReplaceServices = true)]
 [ExposeServices(typeof(IVoiceCallSender))]
@@ -266,12 +266,12 @@ public class TwilioVoiceCallSender : VoiceCallSenderBase, ITransientDependency
 ```csharp
 using Microsoft.Extensions.DependencyInjection;
 using SufiChain.SufiPlatform.Localization;
-using SufiChain.SufiPlatform.Communication.Twilio.Localization;
+using SufiChain.sufichain.communication.Twilio.Localization;
 using SufiChain.SufiPlatform.Modularity;
 using SufiChain.SufiPlatform.Settings;
 using SufiChain.SufiPlatform.VirtualFileSystem;
 
-namespace SufiChain.SufiPlatform.Communication.Twilio;
+namespace SufiChain.sufichain.communication.Twilio;
 
 [DependsOn(
     typeof(SufiComModule)
@@ -320,7 +320,7 @@ public class SufiComTwilioModule : SufiModule
 ```csharp
 using SufiChain.SufiPlatform.Localization;
 
-namespace SufiChain.SufiPlatform.Communication.Twilio.Localization;
+namespace SufiChain.sufichain.communication.Twilio.Localization;
 
 [LocalizationResourceName("TwilioMessaging")]
 public class TwilioMessagingResource
@@ -341,7 +341,7 @@ using SufiChain.SufiPlatform.BackgroundJobs;
 using SufiChain.SufiPlatform.DependencyInjection;
 using SufiChain.SufiPlatform.Settings;
 
-namespace SufiChain.SufiPlatform.Communication.SendGrid;
+namespace SufiChain.sufichain.communication.SendGrid;
 
 [Dependency(ReplaceServices = true)]
 [ExposeServices(typeof(IEmailSender))]
@@ -407,7 +407,7 @@ public class SendGridEmailSender : EmailSenderBase, ITransientDependency
 ### Step 1: Install Provider Package
 
 ```bash
-dotnet add package SufiChain.SufiPlatform.Communication.Twilio
+dotnet add package SufiChain.sufichain.communication.Twilio
 ```
 
 ### Step 2: Add Module Dependency

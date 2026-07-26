@@ -33,6 +33,6 @@ Describe the user problem, expected outcome, affected modules, and whether the n
 ## Notes
 
 - Prefer product language over implementation detail.
-- Phase 1 ships as open-source source in this repository. Phases 2+ **Pro** capabilities are **not open source** — they are delivered as **NuGet packages** under a license from [sufiplatform.com](https://sufiplatform.com), including a **free tier** for every licensee.
+- Phase 1 ships as open-source source in this repository. Phases 2+ **Pro** capabilities are **not open source** — they are delivered as **NuGet packages** under a license from [sufichain.com](https://sufichain.com), including a **free tier** for every licensee.
 - Link roadmap items to canonical docs once the open-source feature ships, or to Pro package docs once the NuGet product is published.
 - Open-source base work (CLI templates, Outbox/Inbox, editions, tests) continues under Phase 1 while Phases 2–3 Pro products and Finance are the licensed NuGet focus.

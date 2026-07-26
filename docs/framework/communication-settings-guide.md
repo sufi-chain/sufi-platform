@@ -47,7 +47,7 @@ Create a static class with setting key constants:
 
 **TwilioMessagingSettingNames.cs:**
 ```csharp
-namespace SufiChain.SufiPlatform.Communication.Twilio;
+namespace SufiChain.sufichain.communication.Twilio;
 
 public static class TwilioMessagingSettingNames
 {
@@ -72,10 +72,10 @@ public static class TwilioMessagingSettingNames
 **TwilioMessagingSettingDefinitionProvider.cs:**
 ```csharp
 using SufiChain.SufiPlatform.Localization;
-using SufiChain.SufiPlatform.Communication.Twilio.Localization;
+using SufiChain.sufichain.communication.Twilio.Localization;
 using SufiChain.SufiPlatform.Settings;
 
-namespace SufiChain.SufiPlatform.Communication.Twilio;
+namespace SufiChain.sufichain.communication.Twilio;
 
 public class TwilioMessagingSettingDefinitionProvider : SettingDefinitionProvider
 {
@@ -228,12 +228,12 @@ Use `.WithProperty()` to add metadata for UI rendering:
 ```csharp
 using Microsoft.Extensions.DependencyInjection;
 using SufiChain.SufiPlatform.Localization;
-using SufiChain.SufiPlatform.Communication.Twilio.Localization;
+using SufiChain.sufichain.communication.Twilio.Localization;
 using SufiChain.SufiPlatform.Modularity;
 using SufiChain.SufiPlatform.Settings;
 using SufiChain.SufiPlatform.VirtualFileSystem;
 
-namespace SufiChain.SufiPlatform.Communication.Twilio;
+namespace SufiChain.sufichain.communication.Twilio;
 
 [DependsOn(
     typeof(SufiComModule),

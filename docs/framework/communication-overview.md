@@ -18,7 +18,7 @@ The Sufi Platform Communication system provides a unified, provider-based archit
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│  SufiChain.SufiPlatform.Communication (Core Package)                 │
+│  SufiChain.sufichain.communication (Core Package)                 │
 │  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐      │
 │  │ IEmailSender │  │ ISmsSender   │  │IVoiceCallSender│    │
 │  └──────────────┘  └──────────────┘  └──────────────┘      │
@@ -32,13 +32,13 @@ The Sufi Platform Communication system provides a unified, provider-based archit
 ┌─────────────────────────────────────────────────────────────┐
 │  Provider Modules (Separate Packages - Injected)            │
 │  ┌──────────────────────────────────────────────────────┐   │
-│  │ SufiChain.SufiPlatform.Communication.Twilio                   │   │
+│  │ SufiChain.sufichain.communication.Twilio                   │   │
 │  │  - TwilioSmsSender (replaces NullSmsSender)         │   │
 │  │  - TwilioVoiceCallSender (replaces NullVoiceCall)   │   │
 │  │  - TwilioSettingDefinitionProvider (dynamic settings)│   │
 │  └──────────────────────────────────────────────────────┘   │
 │  ┌──────────────────────────────────────────────────────┐   │
-│  │ SufiChain.SufiPlatform.Communication.SendGrid                 │   │
+│  │ SufiChain.sufichain.communication.SendGrid                 │   │
 │  │  - SendGridEmailSender (replaces SmtpEmailSender)    │   │
 │  │  - SendGridSettingDefinitionProvider                 │   │
 │  └──────────────────────────────────────────────────────┘   │
@@ -47,7 +47,7 @@ The Sufi Platform Communication system provides a unified, provider-based archit
 
 ## Package Structure
 
-### Core Package: `SufiChain.SufiPlatform.Communication`
+### Core Package: `SufiChain.sufichain.communication`
 
 **Included by default in all Sufi Platform applications.**
 
@@ -162,7 +162,7 @@ await _smsSender.SendAsync("+1234567890", "Your verification code is 123456");
 
 1. Install provider package:
    ```bash
-   dotnet add package SufiChain.SufiPlatform.Communication.Twilio
+   dotnet add package SufiChain.sufichain.communication.Twilio
    ```
 
 2. Add module dependency:
@@ -275,7 +275,7 @@ If you're migrating from `SufiChain.SufiPlatform.Emailing`:
 2. **Add new package reference:**
    ```xml
    <!-- Add this (or it's already included via SufiModule) -->
-   <PackageReference Include="SufiChain.SufiPlatform.Communication" Version="*" />
+   <PackageReference Include="SufiChain.sufichain.communication" Version="*" />
    ```
 
 3. **Update module dependencies:**
@@ -293,7 +293,7 @@ If you're migrating from `SufiChain.SufiPlatform.Emailing`:
    using SufiChain.SufiPlatform.Emailing;
    
    // New
-   using SufiChain.SufiPlatform.Communication;
+   using SufiChain.sufichain.communication;
    ```
 
 5. **Update settings keys:**

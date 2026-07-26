@@ -44,4 +44,4 @@ If you are contributing to the platform itself, read:
 | **`SufiChain.SufiPlatform.*`** | Open-source package family under `sufi-platform/` |
 | **`Sufi*` types** | Code prefix for framework and module types |
 | **ABP Framework** | Upstream foundation that Sufi Platform extends |
-| **Pro** | Licensed commercial packages (not open source); free tier via [sufiplatform.com](https://sufiplatform.com) |
+| **Pro** | Licensed commercial packages (not open source); free tier via [sufichain.com](https://sufichain.com) |

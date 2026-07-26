@@ -47,7 +47,7 @@ Choose this path when the capability:
 
 Examples:
 
-- CMS, HelpDesk, Chat, CRM (Phase 2) and Finance (Phase 3) → prefer licensed **Pro** NuGet packages (not open source; free tier via [sufiplatform.com](https://sufiplatform.com))
+- CMS, HelpDesk, Chat, CRM (Phase 2) and Finance (Phase 3) → prefer licensed **Pro** NuGet packages (not open source; free tier via [sufichain.com](https://sufichain.com))
 - Commerce, ERP, HR → planned Pro phases; see [Roadmap](roadmap.md) before inventing parallel OSS modules
 - Domain-only features for one customer → vertical product code
 
