@@ -32,13 +32,15 @@ public class SufiComModule : AbpModule
 
         Configure<AbpLocalizationOptions>(options =>
         {
-            //if (!options.Resources.ContainsKey(typeof(SufiComResource)))
-            //{
-            //    options.Resources.Add<SufiComResource>("en");
-            //}
+            // Distinct from Domain.Shared path /Localization/SufiCom — same RootNamespace would
+            // otherwise overwrite module en.json and break menu keys (Menu:Communication, etc.).
+            if (!options.Resources.ContainsResource(typeof(SufiComResource)))
+            {
+                options.Resources.Add<SufiComResource>("en");
+            }
 
             options.Resources.Get<SufiComResource>()
-                .AddVirtualJson("/Localization/SufiCom");
+                .AddVirtualJson("/Localization/SufiComFramework");
         });
 
         // Use NullEmailSender when SMTP is not configured; otherwise delegate to SmtpEmailSender.

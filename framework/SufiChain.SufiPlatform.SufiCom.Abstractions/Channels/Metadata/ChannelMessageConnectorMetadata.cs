@@ -17,4 +17,10 @@ public class ChannelMessageConnectorMetadata
 
     [StringLength(ChannelConsts.MaxExternalIdLength)]
     public string? InReplyToExternalMessageId { get; set; }
+
+    /// <summary>
+    /// Connection identifier for multi-account channels (e.g. Telegram user phones).
+    /// Null for single-account channels such as Email.
+    /// </summary>
+    public Guid? ConnectionId { get; set; }
 }

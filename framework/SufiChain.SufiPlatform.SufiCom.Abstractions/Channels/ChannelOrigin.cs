@@ -12,5 +12,10 @@ public enum ChannelOrigin
     Admin,
     Sms,
     Voice,
-    Telegram
+    Telegram,
+    /// <summary>
+    /// Telegram user-account (MTProto / TDLib) conversations. Distinct from <see cref="Telegram"/>
+    /// which is reserved for the Bot API track.
+    /// </summary>
+    TelegramUser
 }

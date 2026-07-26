@@ -15,6 +15,7 @@
   <ItemGroup>
     <PackageReference Include="Volo.Abp.Localization" Version="$(AbpVersion)" />
     <ProjectReference Include="../SufiChain.SufiPlatform.UI.Domain.Shared/SufiChain.SufiPlatform.UI.Domain.Shared.csproj" />
+    <ProjectReference Include="../SufiChain.SufiPlatform.EventBus.Abstractions/SufiChain.SufiPlatform.EventBus.Abstractions.csproj" />
     <PackageReference Include="Volo.Abp.Core" Version="$(AbpVersion)" />
     <PackageReference Include="Volo.Abp.EventBus" Version="$(AbpVersion)" />
   </ItemGroup>

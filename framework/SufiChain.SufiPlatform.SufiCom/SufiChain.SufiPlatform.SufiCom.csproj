@@ -30,8 +30,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="Localization\SufiCom\*.json" />
-    <Content Remove="Localization\SufiCom\*.json" />
+    <EmbeddedResource Include="Localization\SufiComFramework\*.json" />
+    <Content Remove="Localization\SufiComFramework\*.json" />
   </ItemGroup>
 
   <ItemGroup>

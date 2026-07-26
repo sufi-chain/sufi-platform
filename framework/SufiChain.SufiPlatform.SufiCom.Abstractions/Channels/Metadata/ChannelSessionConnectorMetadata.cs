@@ -26,4 +26,10 @@ public class ChannelSessionConnectorMetadata
 
     [StringLength(ChannelConsts.MaxDisplayNameLength)]
     public string? ExternalParticipantName { get; set; }
+
+    /// <summary>
+    /// Connection identifier for multi-account channels (e.g. Telegram user phones).
+    /// Null for single-account channels such as Email.
+    /// </summary>
+    public Guid? ConnectionId { get; set; }
 }

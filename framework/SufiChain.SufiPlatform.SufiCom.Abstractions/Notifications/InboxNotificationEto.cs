@@ -1,3 +1,4 @@
+using SufiChain.SufiPlatform.EventBus;
 using Volo.Abp.EventBus;
 
 namespace SufiChain.SufiPlatform.SufiCom.Notifications;
@@ -9,17 +10,12 @@ namespace SufiChain.SufiPlatform.SufiCom.Notifications;
 /// </summary>
 [Serializable]
 [EventName("Sufi.Communication.InboxNotification")]
-public class InboxNotificationEto
+public class InboxNotificationEto : SufiIntegrationEto
 {
     /// <summary>
     /// Unique identifier of the published notification (correlation id for fan-out rows).
     /// </summary>
     public Guid NotificationId { get; set; } = Guid.NewGuid();
-
-    /// <summary>
-    /// Tenant the notification belongs to (null for host).
-    /// </summary>
-    public Guid? TenantId { get; set; }
 
     /// <summary>
     /// Target user ids. Ignored when <see cref="ToAllUsers"/> is true.
@@ -67,7 +63,7 @@ public class InboxNotificationEto
     public Dictionary<string, string> Data { get; set; } = new();
 
     /// <summary>
-    /// UTC creation time of the notification.
+    /// UTC creation time of the notification (legacy; prefer <see cref="SufiIntegrationEto.OccurredAt"/>).
     /// </summary>
     public DateTime CreationTime { get; set; } = DateTime.UtcNow;
 }

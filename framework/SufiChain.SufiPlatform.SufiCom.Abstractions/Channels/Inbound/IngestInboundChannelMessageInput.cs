@@ -43,4 +43,11 @@ public class IngestInboundChannelMessageInput
     public string? AnonymousClientIpHash { get; set; }
 
     public List<Guid> AttachmentFileIds { get; set; } = new();
+
+    /// <summary>
+    /// Connection identifier for multi-account channels (e.g. Telegram user phones).
+    /// Null for single-account channels such as Email. When set, the session is keyed by
+    /// (connectorName, connectionId, externalThreadId) instead of (connectorName, externalThreadId).
+    /// </summary>
+    public Guid? ConnectionId { get; set; }
 }
