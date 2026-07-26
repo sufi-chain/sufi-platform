@@ -8,6 +8,7 @@
   <ItemGroup>
     <PackageReference Include="Volo.Abp.Ddd.Domain" Version="$(AbpVersion)" />
     <PackageReference Include="Volo.Abp.Mapperly" Version="$(AbpVersion)" />
+    <PackageReference Include="Volo.Abp.Caching" Version="$(AbpVersion)" />
     <ProjectReference Include="../../../users/src/SufiChain.SufiPlatform.Users.Domain/SufiChain.SufiPlatform.Users.Domain.csproj" />
     <ProjectReference Include="..\SufiChain.SufiPlatform.Identity.Domain.Shared\SufiChain.SufiPlatform.Identity.Domain.Shared.csproj" />
   </ItemGroup>

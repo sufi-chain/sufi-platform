@@ -38,21 +38,24 @@ public class IdentityUserAppService : SufiApplicationService, IIdentityUserAppSe
 
     public virtual async Task<IdentityUserDto> CreateAsync(IdentityUserCreateDto input)
     {
-        var user = new IdentityUser(GuidGenerator.Create(), input.UserName, input.Email, CurrentTenant.Id)
-        {
-            Name = input.Name,
-            Surname = input.Surname
-        };
-        user.SetIsActive(input.IsActive);
+       var user = new IdentityUser(GuidGenerator.Create(), input.UserName, input.Email, CurrentTenant.Id)
+       {
+           Name = input.Name,
+           Surname = input.Surname
+       };
+       user.SetIsActive(input.IsActive);
 
-        await UserManager.SetPhoneNumberAsync(user, input.PhoneNumber);
-        await UserManager.SetLockoutEnabledAsync(user, input.LockoutEnabled);
-
+        // Persist the user first. UserManager.SetPhoneNumberAsync/SetLockoutEnabledAsync internally
+        // call UpdateAsync (an UPDATE); running them before the INSERT exists in the database throws
+        // DbUpdateConcurrencyException ("expected to affect 1 row(s), but actually affected 0").
         var result = await UserManager.CreateAsync(user, input.Password, validatePassword: true);
         if (!result.Succeeded)
         {
             throw new InvalidOperationException(string.Join("; ", result.Errors.Select(e => e.Description)));
         }
+
+        await UserManager.SetPhoneNumberAsync(user, input.PhoneNumber);
+        await UserManager.SetLockoutEnabledAsync(user, input.LockoutEnabled);
 
         if (input.RoleNames?.Any() == true)
         {

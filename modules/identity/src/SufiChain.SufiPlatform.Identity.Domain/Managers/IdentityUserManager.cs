@@ -20,6 +20,7 @@ public class IdentityUserManager : UserManager<IdentityUser>, IDomainService
     protected IIdentityRoleRepository RoleRepository { get; }
     protected IIdentityUserRepository UserRepository { get; }
     protected IOrganizationUnitRepository OrganizationUnitRepository { get; }
+    protected IIdentityLinkUserRepository IdentityLinkUserRepository { get; }
     protected ICancellationTokenProvider CancellationTokenProvider { get; }
     
     protected override CancellationToken CancellationToken => CancellationTokenProvider.Token;
@@ -37,7 +38,8 @@ public class IdentityUserManager : UserManager<IdentityUser>, IDomainService
         IServiceProvider services,
         ILogger<IdentityUserManager> logger,
         ICancellationTokenProvider cancellationTokenProvider,
-        IOrganizationUnitRepository organizationUnitRepository)
+        IOrganizationUnitRepository organizationUnitRepository,
+        IIdentityLinkUserRepository identityLinkUserRepository)
         : base(
             store,
             optionsAccessor,
@@ -53,6 +55,7 @@ public class IdentityUserManager : UserManager<IdentityUser>, IDomainService
         RoleRepository = roleRepository;
         UserRepository = userRepository;
         CancellationTokenProvider = cancellationTokenProvider;
+        IdentityLinkUserRepository = identityLinkUserRepository;
     }
 
     public virtual async Task<IdentityResult> CreateAsync(IdentityUser user, string password, bool validatePassword)
@@ -73,7 +76,8 @@ public class IdentityUserManager : UserManager<IdentityUser>, IDomainService
         user.Tokens.Clear();
         user.Logins.Clear();
         user.OrganizationUnits.Clear();
-        
+        await IdentityLinkUserRepository.DeleteAsync(new IdentityLinkUserInfo(user.Id, user.TenantId), CancellationToken);
+
         await UpdateAsync(user);
 
         return await base.DeleteAsync(user);

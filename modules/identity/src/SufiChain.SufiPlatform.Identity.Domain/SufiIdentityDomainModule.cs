@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Volo.Abp.Caching;
 using Volo.Abp.Modularity;
 using Volo.Abp.Domain;
 using Volo.Abp.Domain.Entities.Events.Distributed;
@@ -16,10 +17,19 @@ namespace SufiChain.SufiPlatform.Identity;
     typeof(SufiUsersDomainModule),
     typeof(AbpDddDomainModule),
     typeof(AbpMapperlyModule),
-    typeof(AbpSettingsModule)
+    typeof(AbpSettingsModule),
+    typeof(AbpCachingModule)
 )]
 public class SufiIdentityDomainModule : AbpModule
 {
+    public override void PreConfigureServices(ServiceConfigurationContext context)
+    {
+        PreConfigure<AbpClaimsPrincipalFactoryOptions>(options =>
+        {
+            options.IsRemoteRefreshEnabled = false;
+        });
+    }
+
     public override void ConfigureServices(ServiceConfigurationContext context)
     {
         context.Services.AddMapperlyObjectMapper<SufiIdentityDomainModule>();

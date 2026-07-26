@@ -5,6 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using MongoDB.Driver;
 using MongoDB.Driver.Linq;
+using Volo.Abp;
 using Volo.Abp.Domain.Repositories.MongoDB;
 using Volo.Abp.MongoDB;
 
@@ -12,39 +13,29 @@ namespace SufiChain.SufiPlatform.Identity.MongoDB;
 
 public class MongoIdentityLinkUserRepository : MongoDbRepository<ISufiIdentityMongoDbContext, IdentityLinkUser, Guid>, IIdentityLinkUserRepository
 {
-    public MongoIdentityLinkUserRepository(IMongoDbContextProvider<ISufiIdentityMongoDbContext> dbContextProvider) : base(dbContextProvider)
+    public MongoIdentityLinkUserRepository(IMongoDbContextProvider<ISufiIdentityMongoDbContext> dbContextProvider)
+        : base(dbContextProvider)
     {
-    }
-
-    public virtual async Task<IdentityLinkUser> FindAsync(IdentityLinkUserInfo sourceLinkUserInfo, IdentityLinkUserInfo targetLinkUserInfo, CancellationToken cancellationToken = default)
-    {
-        return await (await GetQueryableAsync(cancellationToken))
-            .OrderBy(x => x.Id).FirstOrDefaultAsync(x =>
-                x.SourceUserId == sourceLinkUserInfo.UserId && x.SourceTenantId == sourceLinkUserInfo.TenantId &&
-                x.TargetUserId == targetLinkUserInfo.UserId && x.TargetTenantId == targetLinkUserInfo.TenantId ||
-                x.TargetUserId == sourceLinkUserInfo.UserId && x.TargetTenantId == sourceLinkUserInfo.TenantId &&
-                x.SourceUserId == targetLinkUserInfo.UserId && x.SourceTenantId == targetLinkUserInfo.TenantId
-            , cancellationToken: GetCancellationToken(cancellationToken));
     }
 
     public virtual async Task<IdentityLinkUser?> FindAsync(
-        Guid sourceUserId,
-        Guid? sourceTenantId,
-        Guid targetUserId,
-        Guid? targetTenantId,
+        IdentityLinkUserInfo sourceLinkUserInfo,
+        IdentityLinkUserInfo targetLinkUserInfo,
         CancellationToken cancellationToken = default)
     {
         return await (await GetQueryableAsync(cancellationToken))
             .OrderBy(x => x.Id)
             .FirstOrDefaultAsync(x =>
-                    x.SourceUserId == sourceUserId && x.SourceTenantId == sourceTenantId &&
-                    x.TargetUserId == targetUserId && x.TargetTenantId == targetTenantId ||
-                    x.TargetUserId == sourceUserId && x.TargetTenantId == sourceTenantId &&
-                    x.SourceUserId == targetUserId && x.SourceTenantId == targetTenantId,
+                    x.SourceUserId == sourceLinkUserInfo.UserId && x.SourceTenantId == sourceLinkUserInfo.TenantId &&
+                    x.TargetUserId == targetLinkUserInfo.UserId && x.TargetTenantId == targetLinkUserInfo.TenantId ||
+                    x.TargetUserId == sourceLinkUserInfo.UserId && x.TargetTenantId == sourceLinkUserInfo.TenantId &&
+                    x.SourceUserId == targetLinkUserInfo.UserId && x.SourceTenantId == targetLinkUserInfo.TenantId,
                 cancellationToken: GetCancellationToken(cancellationToken));
     }
 
-    public virtual async Task<List<IdentityLinkUser>> GetListAsync(IdentityLinkUserInfo linkUserInfo, List<IdentityLinkUserInfo> excludes = null,
+    public virtual async Task<List<IdentityLinkUser>> GetListAsync(
+        IdentityLinkUserInfo linkUserInfo,
+        List<IdentityLinkUserInfo>? excludes = null,
         CancellationToken cancellationToken = default)
     {
         var query = (await GetQueryableAsync(cancellationToken)).Where(x =>
@@ -53,7 +44,7 @@ public class MongoIdentityLinkUserRepository : MongoDbRepository<ISufiIdentityMo
 
         if (!excludes.IsNullOrEmpty())
         {
-            foreach (var userInfo in excludes)
+            foreach (var userInfo in excludes!)
             {
                 query = query.Where(x =>
                     (x.SourceTenantId != userInfo.TenantId || x.SourceUserId != userInfo.UserId) &&
@@ -62,18 +53,6 @@ public class MongoIdentityLinkUserRepository : MongoDbRepository<ISufiIdentityMo
         }
 
         return await query.ToListAsync(cancellationToken: GetCancellationToken(cancellationToken));
-    }
-
-    public virtual async Task<List<IdentityLinkUser>> GetListAsync(
-        Guid sourceUserId,
-        Guid? sourceTenantId,
-        CancellationToken cancellationToken = default)
-    {
-        return await (await GetQueryableAsync(cancellationToken))
-            .Where(x =>
-                x.SourceUserId == sourceUserId && x.SourceTenantId == sourceTenantId ||
-                x.TargetUserId == sourceUserId && x.TargetTenantId == sourceTenantId)
-            .ToListAsync(cancellationToken: GetCancellationToken(cancellationToken));
     }
 
     public virtual async Task<List<IdentityLinkUser>> GetListAsync(int batchSize, CancellationToken cancellationToken = default)
@@ -99,7 +78,8 @@ public class MongoIdentityLinkUserRepository : MongoDbRepository<ISufiIdentityMo
 
     public virtual async Task DeleteAsync(IdentityLinkUserInfo linkUserInfo, CancellationToken cancellationToken = default)
     {
-        var linkUsers = await (await GetQueryableAsync(cancellationToken)).Where(x =>
+        var linkUsers = await (await GetQueryableAsync(cancellationToken))
+            .Where(x =>
                 x.SourceUserId == linkUserInfo.UserId && x.SourceTenantId == linkUserInfo.TenantId ||
                 x.TargetUserId == linkUserInfo.UserId && x.TargetTenantId == linkUserInfo.TenantId)
             .ToListAsync(cancellationToken: GetCancellationToken(cancellationToken));

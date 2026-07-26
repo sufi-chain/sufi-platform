@@ -1,6 +1,4 @@
 using System;
-using Volo.Abp.Auditing;
-using Volo.Abp.Domain.Entities;
 using Volo.Abp.Domain.Entities.Auditing;
 using Volo.Abp.MultiTenancy;
 
@@ -22,6 +20,11 @@ public class IdentityLinkUser : CreationAuditedEntity<Guid>, IMultiTenant
     protected IdentityLinkUser()
     {
 
+    }
+
+    public IdentityLinkUser(Guid id, IdentityLinkUserInfo sourceUser, IdentityLinkUserInfo targetUser)
+        : this(id, sourceUser.UserId, sourceUser.TenantId, targetUser.UserId, targetUser.TenantId)
+    {
     }
 
     public IdentityLinkUser(

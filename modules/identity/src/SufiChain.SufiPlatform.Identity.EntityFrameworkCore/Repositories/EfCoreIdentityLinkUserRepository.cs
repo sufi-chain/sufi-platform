@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
+using Volo.Abp;
 using Volo.Abp.Domain.Repositories.EntityFrameworkCore;
 using Volo.Abp.EntityFrameworkCore;
 
@@ -17,30 +18,75 @@ public class EfCoreIdentityLinkUserRepository : EfCoreRepository<ISufiIdentityDb
     }
 
     public virtual async Task<IdentityLinkUser?> FindAsync(
-        Guid sourceUserId,
-        Guid? sourceTenantId,
-        Guid targetUserId,
-        Guid? targetTenantId,
+        IdentityLinkUserInfo sourceLinkUserInfo,
+        IdentityLinkUserInfo targetLinkUserInfo,
         CancellationToken cancellationToken = default)
     {
         return await (await GetDbSetAsync())
-            .FirstOrDefaultAsync(
-                link =>
-                    link.SourceUserId == sourceUserId &&
-                    link.SourceTenantId == sourceTenantId &&
-                    link.TargetUserId == targetUserId &&
-                    link.TargetTenantId == targetTenantId,
-                GetCancellationToken(cancellationToken)
-            );
+            .AsNoTracking()
+            .OrderBy(x => x.Id)
+            .FirstOrDefaultAsync(x =>
+                    x.SourceUserId == sourceLinkUserInfo.UserId && x.SourceTenantId == sourceLinkUserInfo.TenantId &&
+                    x.TargetUserId == targetLinkUserInfo.UserId && x.TargetTenantId == targetLinkUserInfo.TenantId ||
+                    x.TargetUserId == sourceLinkUserInfo.UserId && x.TargetTenantId == sourceLinkUserInfo.TenantId &&
+                    x.SourceUserId == targetLinkUserInfo.UserId && x.SourceTenantId == targetLinkUserInfo.TenantId,
+                cancellationToken: GetCancellationToken(cancellationToken));
     }
 
     public virtual async Task<List<IdentityLinkUser>> GetListAsync(
-        Guid sourceUserId,
-        Guid? sourceTenantId,
+        IdentityLinkUserInfo linkUserInfo,
+        List<IdentityLinkUserInfo>? excludes = null,
         CancellationToken cancellationToken = default)
     {
-        return await (await GetDbSetAsync())
-            .Where(link => link.SourceUserId == sourceUserId && link.SourceTenantId == sourceTenantId)
-            .ToListAsync(GetCancellationToken(cancellationToken));
+        var query = (await GetDbSetAsync())
+            .AsNoTracking()
+            .Where(x =>
+                x.SourceUserId == linkUserInfo.UserId && x.SourceTenantId == linkUserInfo.TenantId ||
+                x.TargetUserId == linkUserInfo.UserId && x.TargetTenantId == linkUserInfo.TenantId);
+
+        if (!excludes.IsNullOrEmpty())
+        {
+            foreach (var userInfo in excludes!)
+            {
+                query = query.Where(x =>
+                    (x.SourceTenantId != userInfo.TenantId || x.SourceUserId != userInfo.UserId) &&
+                    (x.TargetTenantId != userInfo.TenantId || x.TargetUserId != userInfo.UserId));
+            }
+        }
+
+        return await query.ToListAsync(cancellationToken: GetCancellationToken(cancellationToken));
+    }
+
+    public virtual async Task<List<IdentityLinkUser>> GetListAsync(int batchSize, CancellationToken cancellationToken = default)
+    {
+        var result = new List<IdentityLinkUser>();
+
+        var total = await (await GetDbSetAsync()).LongCountAsync(cancellationToken);
+        var pages = (int)Math.Ceiling(total / (double)batchSize);
+
+        for (var page = 0; page < pages; page++)
+        {
+            var batch = await (await GetDbSetAsync())
+                .AsNoTracking()
+                .OrderBy(x => x.Id)
+                .Skip(page * batchSize)
+                .Take(batchSize)
+                .ToListAsync(cancellationToken);
+
+            result.AddRange(batch);
+        }
+
+        return result;
+    }
+
+    public virtual async Task DeleteAsync(IdentityLinkUserInfo linkUserInfo, CancellationToken cancellationToken = default)
+    {
+        var linkUsers = await (await GetDbSetAsync())
+            .Where(x =>
+                x.SourceUserId == linkUserInfo.UserId && x.SourceTenantId == linkUserInfo.TenantId ||
+                x.TargetUserId == linkUserInfo.UserId && x.TargetTenantId == linkUserInfo.TenantId)
+            .ToListAsync(cancellationToken: GetCancellationToken(cancellationToken));
+
+        await DeleteManyAsync(linkUsers, cancellationToken: cancellationToken);
     }
 }

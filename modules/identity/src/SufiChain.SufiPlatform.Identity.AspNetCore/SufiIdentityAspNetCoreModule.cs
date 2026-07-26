@@ -18,7 +18,8 @@ public class SufiIdentityAspNetCoreModule : AbpModule
         {
             builder
                 .AddDefaultTokenProviders()
-                .AddSignInManager<SignInManager<IdentityUser>>();
+                .AddSignInManager<SignInManager<IdentityUser>>()
+                .AddTokenProvider<LinkUserTokenProvider>(LinkUserTokenProviderConsts.LinkUserTokenProviderName);
         });
     }
 

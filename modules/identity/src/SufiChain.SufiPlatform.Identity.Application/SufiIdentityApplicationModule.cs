@@ -24,5 +24,7 @@ public class SufiIdentityApplicationModule : AbpModule
         context.Services.AddTransient<IIdentityRoleAppService, IdentityRoleAppService>();
         context.Services.AddTransient<IIdentityUserAppService, IdentityUserAppService>();
         context.Services.AddTransient<IIdentityUserIntegrationService, IdentityUserIntegrationService>();
+        context.Services.AddTransient<IOrganizationUnitIntegrationService, OrganizationUnitIntegrationService>();
+        context.Services.AddTransient<IIdentitySettingsIntegrationService, IdentitySettingsIntegrationService>();
     }
 }

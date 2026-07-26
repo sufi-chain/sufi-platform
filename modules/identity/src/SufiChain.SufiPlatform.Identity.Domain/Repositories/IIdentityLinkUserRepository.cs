@@ -9,14 +9,20 @@ namespace SufiChain.SufiPlatform.Identity;
 public interface IIdentityLinkUserRepository : IBasicRepository<IdentityLinkUser, Guid>
 {
     Task<IdentityLinkUser?> FindAsync(
-        Guid sourceUserId,
-        Guid? sourceTenantId,
-        Guid targetUserId,
-        Guid? targetTenantId,
+        IdentityLinkUserInfo sourceLinkUserInfo,
+        IdentityLinkUserInfo targetLinkUserInfo,
         CancellationToken cancellationToken = default);
 
     Task<List<IdentityLinkUser>> GetListAsync(
-        Guid sourceUserId,
-        Guid? sourceTenantId,
+        IdentityLinkUserInfo linkUserInfo,
+        List<IdentityLinkUserInfo>? excludes = null,
+        CancellationToken cancellationToken = default);
+
+    Task<List<IdentityLinkUser>> GetListAsync(
+        int batchSize,
+        CancellationToken cancellationToken = default);
+
+    Task DeleteAsync(
+        IdentityLinkUserInfo linkUserInfo,
         CancellationToken cancellationToken = default);
 }
