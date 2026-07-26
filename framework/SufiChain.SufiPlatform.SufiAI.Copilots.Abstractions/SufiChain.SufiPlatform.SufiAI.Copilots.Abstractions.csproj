@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>netstandard2.1;net10.0</TargetFrameworks>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <RootNamespace>SufiChain.SufiPlatform.SufiAI.Copilots</RootNamespace>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <PackageId>SufiChain.SufiPlatform.SufiAI.Copilots.Abstractions</PackageId>
+    <Description>Sufi Platform AI Copilots abstractions — registry integration service, invocation ETOs, CopilotKind, and seed contracts for cross-module consumers.</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Volo.Abp.Core" Version="$(AbpVersion)" />
+    <PackageReference Include="Volo.Abp.EventBus" Version="$(AbpVersion)" />
+    <PackageReference Include="Volo.Abp.Ddd.Application.Contracts" Version="$(AbpVersion)" />
+    <ProjectReference Include="../SufiChain.SufiPlatform.EventBus.Abstractions/SufiChain.SufiPlatform.EventBus.Abstractions.csproj" />
+    <ProjectReference Include="../SufiChain.SufiPlatform.Ddd.Application.Contracts/SufiChain.SufiPlatform.Ddd.Application.Contracts.csproj" />
+  </ItemGroup>
+
+</Project>
