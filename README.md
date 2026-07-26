@@ -1,41 +1,69 @@
 # Sufi Platform
 
-**Open-Source Enterprise Platform for Blazor Applications**
+![Sufi Platform](docs/assets/sufi-platform-baner.png)
 
-Sufi Platform is a comprehensive, modular platform for building enterprise-grade Blazor applications. It provides a complete infrastructure layer — authentication, authorization, multi-tenancy, localization, auditing, AI integration, and more — so you can focus on your domain logic and business features.
+[![GitHub release](https://img.shields.io/github/v/release/sufi-chain/sufi-platform?include_prereleases&sort=semver)](https://github.com/sufi-chain/sufi-platform/releases/latest)
+[![License: LGPL-3.0](https://img.shields.io/github/license/sufi-chain/sufi-platform)](LICENSE)
+[![GitHub stars](https://img.shields.io/github/stars/sufi-chain/sufi-platform)](https://github.com/sufi-chain/sufi-platform/stargazers)
+[![GitHub forks](https://img.shields.io/github/forks/sufi-chain/sufi-platform)](https://github.com/sufi-chain/sufi-platform/network/members)
+[![GitHub issues](https://img.shields.io/github/issues/sufi-chain/sufi-platform)](https://github.com/sufi-chain/sufi-platform/issues)
+[![GitHub last commit](https://img.shields.io/github/last-commit/sufi-chain/sufi-platform)](https://github.com/sufi-chain/sufi-platform/commits)
 
-Built on top of ABP Framework, Sufi Platform offers a custom Blazor UI system (SufiBlazor component library + SufiTheme), reimplemented modules with clean branding, and a CLI for rapid scaffolding.
+**Open-source modular platform for multi-tenant Blazor business applications**
+
+Sufi Platform is the LGPL foundation for building enterprise products on [.NET 10](https://dotnet.microsoft.com/) and [ABP Framework](https://abp.io) without rebuilding identity, tenancy, permissions, settings, auditing, localization, files, AI workspaces, or communications for every solution.
+
+It is not an ABP fork. Backend modularity and infrastructure come from ABP NuGet packages. Sufi Platform adds a focused product layer: **~31 value-add framework packages** (`SufiChain.SufiPlatform.*`), **19 first-party modules**, the **`sufi` CLI** and templates, plus two independent UI products — **[SufiBlazor](https://github.com/sufi-chain/sufi-blazor)** (MIT component library, ~90 `Sb*` controls) and **[SufiTheme](https://github.com/sufi-chain/sufi-theme)** (LGPL app shell, DualSidebar / SideMenu / TopMenu layouts). Together they replace Blazorise-based ABP UI with a branded Blazor experience for admin and portal surfaces.
+
+Generated hosts start with account and identity, tenant and edition foundations, feature/permission/setting management, OpenIddict, audit logging, background jobs, file management, calendar, tags, menus, short links, database blob storage, SufiAI workspaces (RAG/MCP), and SufiCom messaging contracts. **Pro** products — SufiCom, HelpDesk, AI Copilots, Calendar Copilot, CRM, CMS, Forms, Branding, Dashboard, and Finance (payments, wallets, invoicing, inventory) — are **not open source**. They ship as **NuGet packages**. Obtain a license at [sufiplatform.com](https://sufiplatform.com) to use them; a **free tier** is available for every licensee.
 
 ---
 
 ## What is Sufi Platform?
 
-Sufi Platform is an independent platform built **on top of** ABP Framework. It extends ABP with a custom UI system, branded packages, and original modules:
+Sufi Platform is an independent platform **on top of** ABP. It extends ABP with Sufi-branded APIs, a custom UI stack, and original modules:
 
-- **Consumes ABP Framework** as NuGet packages for backend infrastructure (modular architecture, DDD patterns, multi-tenancy, permissions, settings, auditing)
-- **Provides ~31 value-add framework packages** under `SufiChain.SufiPlatform.*` (UI system, DDD bases, authentication, AI, communications, captcha, CLI)
-- **Replaces ABP's Blazorise-based UI** with a fully custom Blazor component library (SufiBlazor) and theme system (SufiTheme)
-- **Ships 18 first-party modules** — reimplemented ABP modules with Sufi Platform UI plus original modules (Calendar, AI, File Manager, Menu Management, etc.)
-- **Offers custom tooling** (`sufi` CLI) for scaffolding and code generation
-- **Remains fully open-source** under LGPL-3.0 license
+- **Consumes ABP** as NuGet for modular DDD, multi-tenancy, permissions, settings, auditing, and persistence (`Volo.Abp.*` used directly where Sufi adds no behavior)
+- **Provides ~31 framework packages** — UI abstractions, DDD bases, authentication, SufiAI, SufiCom, captcha, AspNetCore/MVC, CLI
+- **Ships 19 first-party modules** — reimplemented ABP-style modules with Sufi UI, plus Calendar, AI, File Manager, Menus, Tags, Short Links, Editions, and more
+- **Uses SufiBlazor + SufiTheme** as the default Blazor component system and application shell (independent products, not Blazorise)
+- **Offers the `sufi` CLI** for scaffolding solutions from the unified template
+- **Stays open-source** under LGPL-3.0 (SufiBlazor is MIT)
 
 ### Architecture Stack
 
-```
-Host Applications & Products
-    |
-Sufi Platform Modules (18 modules)
-    |-- SufiTheme (Shell, Layout, Navigation, Theming System)
-    |
-SufiBlazor (Component Library) - Replaces Blazorise
-    |
-Sufi Platform Framework (~31 packages)
-    |-- Value-add: UI system, DDD bases, Auth, SufiAI, SufiCom, Captcha, CLI
-    |-- Infrastructure consumed directly from Volo.Abp.* (EF, Mongo, EventBus, Caching, ...)
-    |
-ABP Framework 10.3.0 (consumed as NuGet packages)
-    |
-.NET 10.0 + ASP.NET Core 10.0
+```mermaid
+flowchart TB
+    Host[Host Applications]
+
+    subgraph Pro["Pro products — NuGet, licensed free tier"]
+        direction TB
+        ProA["SufiCom · HelpDesk · AI Copilots · Calendar Copilot"]
+        ProB["CRM · CMS · Forms · Finance · Branding · Dashboard"]
+    end
+
+    subgraph OSS["Open-source modules — modules/"]
+        direction TB
+        OssA["Account · Identity · Tenants · Editions · Users"]
+        OssB["Permissions · Features · Settings · OpenIddict"]
+        OssC["Audit Logging · Background Jobs · Localization · Menus"]
+        OssD["File Manager · Calendar · AI · Tags · Short Links · Blob Database"]
+    end
+
+    Theme[SufiTheme]
+    Blazor[SufiBlazor]
+    Framework[Sufi Platform Framework]
+    Abp[ABP Framework]
+    DotNet[.NET 10]
+
+    Host --> Pro
+    Host --> OSS
+    Pro --> OSS
+    OSS --> Theme
+    Theme --> Blazor
+    Blazor --> Framework
+    Framework --> Abp
+    Abp --> DotNet
 ```
 
 ---
@@ -61,7 +89,7 @@ Infrastructure packages (EF Core, MongoDB, EventBus, Caching, AutoMapper, etc.) 
 
 ## Modules
 
-18 first-party modules under `modules/`, each following ABP's layered structure with Sufi Platform UI and branding.
+19 first-party modules under `modules/`, each following ABP's layered structure with Sufi Platform UI and branding.
 
 ### Reimplemented from ABP
 
@@ -88,10 +116,30 @@ Infrastructure packages (EF Core, MongoDB, EventBus, Caching, AutoMapper, etc.) 
 | **Menu Management** | `menus` | Dynamic menu CRUD, tree editor, public menu API |
 | **Short Links** | `short-links` | URL shortening with click analytics |
 | **Tags Management** | `tags` | Tag definitions and tag-to-entity linking |
+| **Editions** | `editions` | Plan/edition definitions and entitlement foundations for multi-tenant products |
 | **Localization Management** | `localization` | Dynamic localization management and business editor |
 | **Blob Storing Database** | `blob-database` | Database-backed blob storage provider (EF Core + MongoDB) |
 
 All modules support both EF Core and MongoDB, use SufiBlazor components, and follow the `SufiComponentBase` / `SufiControllerBase` / Sufi Platform DTO conventions.
+
+---
+
+## Pro Products
+
+Licensed capability packages (**not open source**), distributed as **NuGet**. Free tier via a license from [sufiplatform.com](https://sufiplatform.com).
+
+| Product | Package area | Description |
+|---------|--------------|-------------|
+| **SufiCom** | `suficom` | Messaging core, real-time Chat, channels (SMS/voice/email providers) |
+| **HelpDesk** | `helpdesk` | Projects, Knowledge Base, Ticketing, LiveChat |
+| **AI Copilots** | `ai-copilots` | Copilot definitions, runtime orchestration, MCP allowlists |
+| **Calendar Copilot** | `calendar-copilot` | Calendar assistant seeded on the Copilots platform |
+| **CRM** | `crm` | Contacts, onboarding, customer relationship workflows |
+| **CMS** | `cms` | Content types, page builder, themes, publishing, SEO |
+| **Forms** | `forms` | Dynamic forms, records, projections, promote workflows |
+| **Finance** | `finance` | Payments, wallets, invoicing, currencies, exchange rates, inventory |
+| **Branding** | `branding` | Tenant/product branding surfaces |
+| **Dashboard** | `dashboard` | Cross-module dashboard tiles and shortcuts |
 
 ---
 
@@ -136,22 +184,6 @@ All modules support both EF Core and MongoDB, use SufiBlazor components, and fol
 - **Dual Database Support**: All modules support both EF Core and MongoDB
 - **Repository Pattern**: Generic repositories with async operations
 - **Unit of Work**: Automatic transaction management
-
----
-
-## Sufi Platform vs ABP Framework
-
-| Aspect | ABP Framework | Sufi Platform |
-|--------|---------------|---------------|
-| **UI System** | Blazorise (3rd party) | SufiBlazor (owned) |
-| **Component Base** | `AbpComponentBase` | `SufiComponentBase` |
-| **DTO Branding** | `Volo.Abp.Application.Dtos.*` | `SufiChain.SufiPlatform.Application.Dtos.*` |
-| **Controller Base** | `AbpControllerBase` | `SufiControllerBase` |
-| **Theme** | LeptonX | SufiTheme |
-| **CLI** | `abp` command | `sufi` command |
-| **License** | LGPL-3.0 (framework only) | LGPL-3.0 (framework + modules) |
-| **Object Mapping** | AutoMapper | Mapperly (compile-time) |
-| **AI Integration** | — (not in ABP OSS) | SufiAI (workspaces, RAG, MCP) |
 
 ---
 
@@ -245,24 +277,49 @@ All modules support both EF Core and MongoDB, use SufiBlazor components, and fol
 ```
 sufi-platform/
   framework/        # ~31 SufiChain.SufiPlatform.* packages
-  modules/          # 18 first-party modules (short folders)
+  modules/          # 19 first-party modules (short folders)
   templates/        # CLI solution templates
   docs/             # Module and framework documentation
 ```
 
 ---
 
+## Roadmap
+
+Phase 1 (open-source foundation) is in **alpha**. **Phases 2–3 — Pro Products and Finance** are the active development focus.
+
+| Phase | Focus | Status |
+|-------|--------|--------|
+| 1 | Foundation (identity, tenants, audit, jobs, settings, SufiBlazor, SufiTheme, files, calendar, AI, tags, menus, …) | Alpha |
+| 2 | Pro Products (Chat, HelpDesk, messaging, Copilots, CRM, CMS) | **Alpha · active now** |
+| 3 | Finance (wallets, invoices, payments, accounting, inventory) | **Alpha · active now** |
+| 4 | Commerce (subscriptions, booking, events, channels) | Soon |
+| 5 | ERP (workflows, approvals, procurement, projects, documents) | Future |
+| 6 | HR (employees, attendance, leave, payroll, org structure) | Future |
+| 7 | Scale & Enterprise (microservices, custom apps) | Future |
+
+Full detail: [docs/roadmap.md](docs/roadmap.md).
+
+---
+
 ## License
 
-All components are licensed under **LGPL-3.0** — framework and modules alike. You can use Sufi Platform in both open-source and commercial projects.
+**Open-source base** (this repository — framework, first-party modules, CLI, templates) is **LGPL-3.0**. SufiBlazor is **MIT**; SufiTheme is **LGPL-3.0**.
+
+**Pro products** (SufiCom, HelpDesk, AI Copilots, Calendar Copilot, CRM, CMS, Forms, Branding, Dashboard, Finance, and related packages) are **not open source**. They are distributed only as **NuGet packages**. Anyone can obtain a license from [sufiplatform.com](https://sufiplatform.com) and use the **free tier** of Pro products; paid tiers unlock higher limits and commercial support.
+
+You can use the open-source base in open-source and commercial projects under LGPL terms. Pro usage requires a valid Sufi Platform license.
 
 ---
 
 ## Community & Support
 
 - **Website**: https://sufiplatform.com
-- **Documentation**: https://docs.sufiplatform.com
-- **GitHub**: https://github.com/sufi-chain/sufi-platform
+- **Documentation**: https://sufiplatform.com/kb/sufi-platform-docs
+- **User Guide**: https://sufiplatform.com/kb/sufi-platform-docs/kb/sufi-platform-user-guide
+- **GitHub (Sufi Platform)**: https://github.com/sufi-chain/sufi-platform
+- **GitHub (SufiBlazor)**: https://github.com/sufi-chain/sufi-blazor
+- **GitHub (SufiTheme)**: https://github.com/sufi-chain/sufi-theme
 
 ### Commercial Support
 

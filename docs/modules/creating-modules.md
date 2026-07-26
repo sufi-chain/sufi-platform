@@ -5,7 +5,7 @@ Guidelines for building application modules (e.g. Catalog, Orders) that plug int
 ## Structure
 
 - **Blazor project**: Pages, Components (e.g. modals), Menus (menu contributor).  
-- **Module class**: Depends on `SufiAbpUiBlazorModule`, your ABP contracts module; configures **RouterOptions** (additional assemblies) and **NavigationOptions** (menu contributors).
+- **Module class**: Depends on platform UI modules (for example `SufiThemeBlazorServerModule`), your ABP contracts module; configures **RouterOptions** (additional assemblies) and **NavigationOptions** (menu contributors).
 
 ## Menu Contributor
 

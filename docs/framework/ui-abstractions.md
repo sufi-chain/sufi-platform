@@ -1,6 +1,6 @@
 # UI Abstractions
 
-Contracts in **SufiChain.SufiPlatform.UI.Abstractions** define the UI surface. Implementations live in UI.Services, UI.Blazor, or UI.Abp.
+Contracts in **SufiChain.SufiPlatform.UI.Abstractions** define the UI surface. Implementations live in UI.Services and UI.Blazor.
 
 ## Theming
 
@@ -35,6 +35,6 @@ Contracts in **SufiChain.SufiPlatform.UI.Abstractions** define the UI surface. I
 
 - **ICurrentUserAccessor**, **CurrentUserInfo** — Current user.  
 - **ICurrentTenant** — Current tenant.  
-- **ISufiAbpPermissionChecker** — Permission checks.  
+- **ISufiPermissionChecker** — Permission checks.  
 - **IBrandingProvider** — App name, logo, favicon.  
 - **ICookieService**, **ILocalStorageService** — Browser storage.

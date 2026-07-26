@@ -262,7 +262,7 @@ public class TwilioVoiceCallSender : VoiceCallSenderBase, ITransientDependency
 
 ### Step 7: Create the Module Class
 
-**SufiAbpMessagingTwilioModule.cs:**
+**SufiComTwilioModule.cs:**
 ```csharp
 using Microsoft.Extensions.DependencyInjection;
 using SufiChain.SufiPlatform.Localization;
@@ -274,18 +274,18 @@ using SufiChain.SufiPlatform.VirtualFileSystem;
 namespace SufiChain.SufiPlatform.Communication.Twilio;
 
 [DependsOn(
-    typeof(SufiAbpMessagingModule)
+    typeof(SufiComModule)
 )]
-public class SufiAbpMessagingTwilioModule : SufiModule
+public class SufiComTwilioModule : SufiModule
 {
     public override void ConfigureServices(ServiceConfigurationContext context)
     {
-        Configure<SufiAbpVirtualFileSystemOptions>(options =>
+        Configure<AbpVirtualFileSystemOptions>(options =>
         {
-            options.FileSets.AddEmbedded<SufiAbpMessagingTwilioModule>();
+            options.FileSets.AddEmbedded<SufiComTwilioModule>();
         });
 
-        Configure<SufiAbpLocalizationOptions>(options =>
+        Configure<AbpLocalizationOptions>(options =>
         {
             options.Resources
                 .Add<TwilioMessagingResource>("en")
@@ -414,8 +414,8 @@ dotnet add package SufiChain.SufiPlatform.Communication.Twilio
 
 ```csharp
 [DependsOn(
-    typeof(SufiAbpMessagingModule),
-    typeof(SufiAbpMessagingTwilioModule)  // Replaces NullSmsSender and NullVoiceCallSender
+    typeof(SufiComModule),
+    typeof(SufiComTwilioModule)  // Replaces NullSmsSender and NullVoiceCallSender
 )]
 public class MyApplicationModule : SufiModule
 {

@@ -12,7 +12,7 @@ Use this page to map short-link requirements to the management UI, redirect pipe
 
 ## UI capabilities
 
-The Blazor package includes pages under `Pages/ShortLinkGenerator/`, including a management experience for short links.
+The Blazor package includes pages under `Pages/ShortLinks/`, including a management experience for short links.
 
 ## Platform value
 

@@ -4,8 +4,8 @@ The module defines these permissions:
 
 | Permission | Purpose |
 | --- | --- |
-| `ShortLinkGenerator.ShortLinks` | Access short-link functionality |
-| `ShortLinkGenerator.ShortLinks.Create` | Create short links |
-| `ShortLinkGenerator.ShortLinks.Edit` | Edit short links |
-| `ShortLinkGenerator.ShortLinks.Delete` | Delete short links |
-| `ShortLinkGenerator.ShortLinks.ViewAnalytics` | View link analytics |
+| `SufiShortLinks.ShortLinks` | Access short-link functionality |
+| `SufiShortLinks.ShortLinks.Create` | Create short links |
+| `SufiShortLinks.ShortLinks.Edit` | Edit short links |
+| `SufiShortLinks.ShortLinks.Delete` | Delete short links |
+| `SufiShortLinks.ShortLinks.ViewAnalytics` | View link analytics |

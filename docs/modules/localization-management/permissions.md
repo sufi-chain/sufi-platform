@@ -4,13 +4,13 @@ The module defines these permission areas:
 
 | Permission | Purpose |
 | --- | --- |
-| `LocalizationManagement.Texts` | Access localization texts |
-| `LocalizationManagement.Texts.Create` | Create texts |
-| `LocalizationManagement.Texts.Update` | Update texts |
-| `LocalizationManagement.Texts.Delete` | Delete texts |
-| `LocalizationManagement.Texts.Import` | Import texts |
-| `LocalizationManagement.Texts.Export` | Export texts |
-| `LocalizationManagement.Resources` | Access localization resources |
-| `LocalizationManagement.Resources.Create` | Create resources |
-| `LocalizationManagement.Resources.Update` | Update resources |
-| `LocalizationManagement.Resources.Delete` | Delete resources |
+| `SufiLocalization.Texts` | Access localization texts |
+| `SufiLocalization.Texts.Create` | Create texts |
+| `SufiLocalization.Texts.Update` | Update texts |
+| `SufiLocalization.Texts.Delete` | Delete texts |
+| `SufiLocalization.Texts.Import` | Import texts |
+| `SufiLocalization.Texts.Export` | Export texts |
+| `SufiLocalization.Resources` | Access localization resources |
+| `SufiLocalization.Resources.Create` | Create resources |
+| `SufiLocalization.Resources.Update` | Update resources |
+| `SufiLocalization.Resources.Delete` | Delete resources |

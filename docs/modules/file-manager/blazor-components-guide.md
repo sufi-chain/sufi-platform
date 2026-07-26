@@ -10,33 +10,33 @@ SufiChain.SufiPlatform.FileManager provides Blazor components for file upload, b
 
 | Component | Description |
 |-----------|-------------|
-| **SufiAbpFileUploader** | Multi-file uploader with drag-drop, progress, structure selection |
-| **SufiAbpQuickImageUploader** | Simple single-image uploader with preview |
-| **SufiAbpFileBrowser** | Grid/list browser with search, filters, selection, bulk delete |
-| **SufiAbpFileGallery** | Gallery view with pagination, filters, lightbox |
-| **SufiAbpFileSelector** | Modal for selecting existing files |
+| **FileUploader** | Multi-file uploader with drag-drop, progress, structure selection |
+| **QuickImageUploader** | Simple single-image uploader with preview |
+| **FileBrowser** | Grid/list browser with search, filters, selection, bulk delete |
+| **FileGallery** | Gallery view with pagination, filters, lightbox |
+| **FileSelector** | Modal for selecting existing files |
 | **FileManager** | Full file manager (folder tree, browser, toolbar, upload modal, properties) |
-| **SufiAbpFileCard** | Card for a single file (thumbnail, actions) |
-| **SufiAbpFileThumbnail** | Thumbnail with overlay info |
-| **SufiAbpStorageQuotaMeter** | Visual storage quota meter |
-| **SufiAbpUploadProgress** | Upload progress bar |
-| **SufiAbpFileStructureTable** | Table for managing file structures |
+| **FileCard** | Card for a single file (thumbnail, actions) |
+| **FileThumbnail** | Thumbnail with overlay info |
+| **StorageQuotaMeter** | Visual storage quota meter |
+| **UploadProgress** | Upload progress bar |
+| **FileStructureTable** | Table for managing file structures |
 
 ### Public (SufiChain.SufiPlatform.FileManager.Blazor.Public)
 
 | Component | Description |
 |-----------|-------------|
-| **SufiAbpFileImage** | Responsive image with srcset, lazy loading, alt |
-| **SufiAbpFileVideo** | HTML5 video player |
-| **SufiAbpFileDownloadLink** | Download link with icon and size |
-| **SufiAbpFileGallery** | Public gallery component |
-| **SufiAbpFileAttachmentList** | List of file attachments (download links) |
+| **FileImage** | Responsive image with srcset, lazy loading, alt |
+| **FileVideo** | HTML5 video player |
+| **FileDownloadLink** | Download link with icon and size |
+| **FileGallery** | Public gallery component |
+| **FileAttachmentList** | List of file attachments (download links) |
 
 ---
 
 ## Admin Components
 
-### SufiAbpFileUploader
+### FileUploader
 
 Multi-file uploader with drag-drop, progress tracking, and structure validation.
 
@@ -46,7 +46,7 @@ Multi-file uploader with drag-drop, progress tracking, and structure validation.
 @using SufiChain.SufiPlatform.FileManager.Blazor.Components.Upload
 @using SufiChain.SufiPlatform.FileManager.FileItems
 
-<SufiAbpFileUploader 
+<FileUploader 
     StructureKey="Product.Gallery"
     EntityType="Product"
     EntityId="@ProductId"
@@ -84,14 +84,14 @@ Multi-file uploader with drag-drop, progress tracking, and structure validation.
 
 ---
 
-### SufiAbpQuickImageUploader
+### QuickImageUploader
 
 Simple single-image uploader with preview.
 
 **Namespace:** `SufiChain.SufiPlatform.FileManager.Blazor.Components.Upload`
 
 ```razor
-<SufiAbpQuickImageUploader 
+<QuickImageUploader 
     StructureKey="User.Avatar"
     AutoConfirm="true"
     Placeholder="Max 5MB, JPG/PNG/WebP"
@@ -119,14 +119,14 @@ Simple single-image uploader with preview.
 
 ---
 
-### SufiAbpFileBrowser
+### FileBrowser
 
 Grid/list file browser with search, filters, selection, and bulk operations.
 
 **Namespace:** `SufiChain.SufiPlatform.FileManager.Blazor.Components.Browser`
 
 ```razor
-<SufiAbpFileBrowser 
+<FileBrowser 
     StructureKey="Product.Gallery"
     EntityType="Product"
     EntityId="@ProductId"
@@ -151,14 +151,14 @@ Grid/list file browser with search, filters, selection, and bulk operations.
 
 ---
 
-### SufiAbpFileGallery
+### FileGallery
 
 Gallery view with search, filter, pagination, and optional selection.
 
 **Namespace:** `SufiChain.SufiPlatform.FileManager.Blazor.Components.Gallery`
 
 ```razor
-<SufiAbpFileGallery 
+<FileGallery 
     StructureKey="Product.Gallery"
     EntityType="Product"
     EntityId="@ProductId"
@@ -188,7 +188,7 @@ Gallery view with search, filter, pagination, and optional selection.
 
 ---
 
-### SufiAbpFileSelector
+### FileSelector
 
 Modal dialog for browsing and selecting existing files.
 
@@ -197,7 +197,7 @@ Modal dialog for browsing and selecting existing files.
 ```razor
 <SbButton OnClick="@(() => _selectorOpen = true)">Select File</SbButton>
 
-<SufiAbpFileSelector 
+<FileSelector 
     @bind-Open="_selectorOpen"
     StructureKey="Product.Gallery"
     OnFileSelected="@HandleFileSelected" />
@@ -249,14 +249,14 @@ Full-featured file manager with folder tree, browser, toolbar, upload, and prope
 
 ---
 
-### SufiAbpFileCard
+### FileCard
 
 Card for displaying a single file with thumbnail and actions.
 
 **Namespace:** `SufiChain.SufiPlatform.FileManager.Blazor.Components.Common`
 
 ```razor
-<SufiAbpFileCard 
+<FileCard 
     FileItem="@file"
     ShowDetails="true"
     ShowActions="true"
@@ -269,14 +269,14 @@ Card for displaying a single file with thumbnail and actions.
 
 ---
 
-### SufiAbpFileThumbnail
+### FileThumbnail
 
 Thumbnail image with optional title and badge.
 
 **Namespace:** `SufiChain.SufiPlatform.FileManager.Blazor.Components.Common`
 
 ```razor
-<SufiAbpFileThumbnail 
+<FileThumbnail 
     FileItem="@file"
     Width="150"
     Height="150"
@@ -286,28 +286,28 @@ Thumbnail image with optional title and badge.
 
 ---
 
-### SufiAbpStorageQuotaMeter
+### StorageQuotaMeter
 
 Visual meter for storage quota usage.
 
 **Namespace:** `SufiChain.SufiPlatform.FileManager.Blazor.Components.Common`
 
 ```razor
-<SufiAbpStorageQuotaMeter />
+<StorageQuotaMeter />
 ```
 
 Automatically fetches and displays current tenant's storage quota.
 
 ---
 
-### SufiAbpUploadProgress
+### UploadProgress
 
 Progress bar for a single file upload.
 
 **Namespace:** `SufiChain.SufiPlatform.FileManager.Blazor.Components.Common`
 
 ```razor
-<SufiAbpUploadProgress 
+<UploadProgress 
     FileName="@fileName"
     Progress="@progress"
     Status="@status"
@@ -316,14 +316,14 @@ Progress bar for a single file upload.
 
 ---
 
-### SufiAbpFileStructureTable
+### FileStructureTable
 
 Table for viewing and managing file structures.
 
 **Namespace:** `SufiChain.SufiPlatform.FileManager.Blazor.Components.Structures`
 
 ```razor
-<SufiAbpFileStructureTable />
+<FileStructureTable />
 ```
 
 ---
@@ -332,7 +332,7 @@ Table for viewing and managing file structures.
 
 These components are for displaying files to end users (non-admin).
 
-### SufiAbpFileImage
+### FileImage
 
 Responsive image with lazy loading and srcset.
 
@@ -341,7 +341,7 @@ Responsive image with lazy loading and srcset.
 ```razor
 @using SufiChain.SufiPlatform.FileManager.Blazor.Public.Components
 
-<SufiAbpFileImage FileId="@imageId" Alt="Product image" Width="400" />
+<FileImage FileId="@imageId" Alt="Product image" Width="400" />
 ```
 
 **Parameters:**
@@ -357,50 +357,50 @@ Responsive image with lazy loading and srcset.
 
 ---
 
-### SufiAbpFileVideo
+### FileVideo
 
 HTML5 video player.
 
 **Namespace:** `SufiChain.SufiPlatform.FileManager.Blazor.Public.Components`
 
 ```razor
-<SufiAbpFileVideo FileId="@videoId" AutoPlay="false" Controls="true" />
+<FileVideo FileId="@videoId" AutoPlay="false" Controls="true" />
 ```
 
 ---
 
-### SufiAbpFileDownloadLink
+### FileDownloadLink
 
 Download link with file icon and size.
 
 **Namespace:** `SufiChain.SufiPlatform.FileManager.Blazor.Public.Components`
 
 ```razor
-<SufiAbpFileDownloadLink FileId="@fileId" ShowSize="true" />
+<FileDownloadLink FileId="@fileId" ShowSize="true" />
 ```
 
 ---
 
-### SufiAbpFileGallery (Public)
+### FileGallery (Public)
 
 Gallery for displaying images/files to users.
 
 **Namespace:** `SufiChain.SufiPlatform.FileManager.Blazor.Public.Components`
 
 ```razor
-<SufiAbpFileGallery FileIds="@fileIds" Columns="3" />
+<FileGallery FileIds="@fileIds" Columns="3" />
 ```
 
 ---
 
-### SufiAbpFileAttachmentList
+### FileAttachmentList
 
 List of attachments with download links.
 
 **Namespace:** `SufiChain.SufiPlatform.FileManager.Blazor.Public.Components`
 
 ```razor
-<SufiAbpFileAttachmentList FileIds="@attachmentIds" />
+<FileAttachmentList FileIds="@attachmentIds" />
 ```
 
 ---
@@ -414,7 +414,7 @@ When Blazor and API run on different origins, thumbnail/download URLs must point
 ```json
 {
   "RemoteServices": {
-    "SufiAbpFileManager": { "BaseUrl": "https://localhost:44305/" }
+    "SufiFileManager": { "BaseUrl": "https://localhost:44305/" }
   }
 }
 ```
@@ -448,7 +448,7 @@ Components use SufiBlazor (`Sb*`) and standard CSS classes. Override as needed:
 
 ## Localization
 
-Components use ABP localization via `SufiAbpFileManagerResource`. Override in your localization JSON:
+Components use ABP localization via `SufiFileManagerResource`. Override in your localization JSON:
 
 ```json
 {
@@ -468,9 +468,9 @@ Components use ABP localization via `SufiAbpFileManagerResource`. Override in yo
 
 1. **Always use StructureKey** for validation and processing rules.
 2. **Use AutoConfirm=false** for forms with validation; call **ConfirmAsync** on submit.
-3. **Show SufiAbpStorageQuotaMeter** when users upload frequently.
-4. **Use SufiAbpFileImage/SufiAbpFileVideo** (Blazor.Public) for public-facing display.
-5. **Set RemoteServices:SufiAbpFileManager:BaseUrl** in tiered setups.
+3. **Show StorageQuotaMeter** when users upload frequently.
+4. **Use FileImage/FileVideo** (Blazor.Public) for public-facing display.
+5. **Set RemoteServices:SufiFileManager:BaseUrl** in tiered setups.
 
 ---
 
@@ -478,7 +478,7 @@ Components use ABP localization via `SufiAbpFileManagerResource`. Override in yo
 
 | Issue | Check |
 |-------|-------|
-| **Thumbnail 404** | Tiered: set `RemoteServices:SufiAbpFileManager:BaseUrl` in Blazor app |
+| **Thumbnail 404** | Tiered: set `RemoteServices:SufiFileManager:BaseUrl` in Blazor app |
 | **Upload fails** | Structure allowed types/sizes; `MaxUploadFileSizeMB`; quota |
 | **Component not rendering** | Add `@using SufiChain.SufiPlatform.FileManager.Blazor.Components.*` in `_Imports.razor` |
 

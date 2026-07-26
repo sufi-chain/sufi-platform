@@ -6,11 +6,15 @@ For delivery teams, the platform gives each generated solution a starting point:
 
 Sufi Platform is licensed as an LGPL open-source base product. It respects the ABP Framework as the upstream foundation and extends it with a focused Sufi Platform experience for enterprise Blazor applications.
 
+**Pro products** (Chat, HelpDesk, AI Copilots, CRM, CMS, Forms, Branding, SaaS, Finance, and related offerings) are separate from the open-source base. They are **not open source**. They are distributed as **NuGet packages**. Obtain a license from [sufiplatform.com](https://sufiplatform.com); every licensee can use a **free tier** of Pro products, with paid tiers for higher limits and support.
+
 ## Naming model
 
-- `Sufi Platform` is the product and platform name.
-- `Sufi Platform` is the technical foundation and package family behind the platform.
-- `Sufi Platform` is the code prefix used in framework and module types such as `SufiComponentBase`.
+| Term | Meaning |
+|------|---------|
+| **Sufi Platform** | Product and platform name |
+| **`SufiChain.SufiPlatform.*`** | Technical package family |
+| **`Sufi*` types** | Code prefix (for example `SufiComponentBase`) |
 
 ## What a generated product inherits
 
@@ -76,14 +80,19 @@ This distinction still matters even when the reader is primarily building a vert
 
 A horizontal module is a reusable capability that should be shared across multiple products.
 
-Typical examples:
+Typical examples on the **open-source base**:
 
-- CMS
-- HelpDesk
-- Workflow
-- Search
-- Billing
-- Knowledge Base
+- File Manager
+- Calendar
+- AI workspaces
+- Short links
+- Tags and menus
+
+Typical examples as **licensed Pro NuGet products** (not open source; free tier via [sufiplatform.com](https://sufiplatform.com)):
+
+- CMS, HelpDesk, Chat and messaging, CRM, Forms (Phase 2)
+- Finance / billing and inventory primitives (Phase 3)
+- Commerce, ERP, and HR capabilities on later roadmap phases — see [Roadmap](roadmap.md)
 
 ### Vertical product
 
@@ -105,7 +114,7 @@ For a generated solution, the default order is:
 
 1. generate the solution from the CLI templates
 2. start from the baseline modules already included by the platform
-3. add reusable capability as horizontal modules when the feature should be shared
+3. add reusable capability from the open-source catalog, or reference licensed **Pro** NuGet packages when the feature is a Pro product
 4. keep product-specific behavior in the vertical solution itself
 5. use SufiBlazor for reusable UI and SufiTheme for the shell unless the product needs a deliberate alternative
 
@@ -115,3 +124,4 @@ For a generated solution, the default order is:
 - Read [Architecture](architecture.md) to understand the layered platform model.
 - Read [Module Catalog](modules/index.md) to see which reusable modules already exist.
 - Read [Product Creation Guide](product-creation-guide.md) when you start planning product-specific and reusable features.
+- Read [Roadmap](roadmap.md) for the seven-phase delivery order (Foundation, Pro, Finance, Commerce, ERP, HR, Scale).

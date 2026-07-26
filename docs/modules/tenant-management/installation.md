@@ -2,19 +2,19 @@
 
 ## Main packages
 
-- `SufiChain.SufiPlatform.TenantManagement.Application.Contracts`
-- `SufiChain.SufiPlatform.TenantManagement.Application`
-- `SufiChain.SufiPlatform.TenantManagement.Domain.Shared`
-- `SufiChain.SufiPlatform.TenantManagement.Domain`
-- `SufiChain.SufiPlatform.TenantManagement.HttpApi`
-- `SufiChain.SufiPlatform.TenantManagement.HttpApi.Client`
-- `SufiChain.SufiPlatform.TenantManagement.Blazor`
+- `SufiChain.SufiPlatform.Tenants.Application.Contracts`
+- `SufiChain.SufiPlatform.Tenants.Application`
+- `SufiChain.SufiPlatform.Tenants.Domain.Shared`
+- `SufiChain.SufiPlatform.Tenants.Domain`
+- `SufiChain.SufiPlatform.Tenants.HttpApi`
+- `SufiChain.SufiPlatform.Tenants.HttpApi.Client`
+- `SufiChain.SufiPlatform.Tenants.Blazor`
 
 ## Important dependency pattern
 
 The Blazor package references:
 
-- `SufiChain.SufiPlatform.FeatureManagement.Blazor`
-- `SufiChain.SufiPlatform.SettingManagement.Blazor`
+- `SufiChain.SufiPlatform.Features.Blazor`
+- `SufiChain.SufiPlatform.Settings.Blazor`
 
 This indicates that tenant administration is a central place where related administrative capabilities are composed.

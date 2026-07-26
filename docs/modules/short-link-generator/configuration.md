@@ -6,11 +6,11 @@ The module defines a clear settings surface for URL generation and redirect beha
 
 | Setting | Purpose |
 | --- | --- |
-| `ShortLinkGenerator.BaseUrl` | Base URL used when generating full short URLs |
-| `ShortLinkGenerator.ShortUrl.RedirectRoute` | Route prefix used for redirect endpoints |
-| `ShortLinkGenerator.ShortUrl.ShortCodeLength` | Generated short-code length |
-| `ShortLinkGenerator.ShortUrl.CacheExpirationMinutes` | Cache duration for short-link resolution |
-| `ShortLinkGenerator.ShortUrl.DefaultExpirationDays` | Default expiration window for generated links |
+| `SufiShortLinks.BaseUrl` | Base URL used when generating full short URLs |
+| `SufiShortLinks.ShortUrl.RedirectRoute` | Route prefix used for redirect endpoints |
+| `SufiShortLinks.ShortUrl.ShortCodeLength` | Generated short-code length |
+| `SufiShortLinks.ShortUrl.CacheExpirationMinutes` | Cache duration for short-link resolution |
+| `SufiShortLinks.ShortUrl.DefaultExpirationDays` | Default expiration window for generated links |
 
 ## Additional configuration areas
 

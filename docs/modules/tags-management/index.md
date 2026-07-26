@@ -1,19 +1,37 @@
 # Tags Management Module
 
-> **KB:** See workspace Obsidian vault `.obsidian/Sufi Platform/Modules/Tags Management.md` for verified capabilities.
+Tag definitions and tag-to-entity link management with admin Blazor pages.
 
 ## Code location
 
 `sufi-platform/modules/tags/`
 
-## Quick facts
+## Packages
 
-- Tag definitions and tag-to-entity links
-- Assign/unassign tag links
-- Abstractions + Blazor.Server
-- EF Core + MongoDB
+Package segment: **`Tags`** (`SufiChain.SufiPlatform.Tags.*`).
 
-## Start in source
+| Layer | Notes |
+|-------|-------|
+| Domain.Shared / Domain | Tags, tag links, permissions |
+| Application[.Contracts] | Tag and tag-link app services |
+| HttpApi[.Client] | HTTP surface |
+| Blazor / Blazor.Server | Admin UI only (no Public layer) |
+| EntityFrameworkCore / MongoDB | Dual persistence |
 
-- `SufiChain.SufiPlatform.TagsManagement.Application` — tag and tag-link services
-- `SufiChain.SufiPlatform.TagsManagement.Blazor` — admin pages
+## Capabilities
+
+- Tag CRUD
+- Tag link assign / unassign
+- Policy provider for permission-gated tag operations
+
+## Permissions
+
+- `TagsManagement.Tags` — Create, Update, Delete
+- `TagsManagement.TagLinks` — Assign, Unassign
+
+Confirm exact names in Domain.Shared if they differ.
+
+## Related
+
+- [Package Map](../../reference/package-map.md)
+- [Module Catalog](../index.md)

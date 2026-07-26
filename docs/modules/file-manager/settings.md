@@ -6,19 +6,19 @@ The File Manager module defines a rich settings surface for upload limits, stora
 
 | Setting | Default | Scope note |
 | --- | --- | --- |
-| `SufiAbpFileManager.StorageQuota` | `1024` | Inherited setting, client-visible |
-| `SufiAbpFileManager.MaxFileSize` | `104857600` | Inherited setting, client-visible |
-| `SufiAbpFileManager.AllowedImageExtensions` | `jpg,jpeg,png,gif,webp,svg` | Inherited setting, client-visible |
-| `SufiAbpFileManager.AllowedVideoExtensions` | `mp4,webm,ogg,mov,avi` | Inherited setting, client-visible |
-| `SufiAbpFileManager.AllowedDocumentExtensions` | `pdf,doc,docx,xls,xlsx,ppt,pptx,txt` | Inherited setting, client-visible |
-| `SufiAbpFileManager.EnableWebPConversion` | `true` | Inherited setting, client-visible |
-| `SufiAbpFileManager.WebPQuality` | `80` | Inherited setting, client-visible |
-| `SufiAbpFileManager.ThumbnailWidth` | `200` | Inherited setting, client-visible |
-| `SufiAbpFileManager.ThumbnailHeight` | `200` | Inherited setting, client-visible |
-| `SufiAbpFileManager.MaxImageWidth` | `4096` | Inherited setting, client-visible |
-| `SufiAbpFileManager.MaxImageHeight` | `4096` | Inherited setting, client-visible |
-| `SufiAbpFileManager.AutoDeleteTempMediaAfterDays` | `7` | Inherited setting, not client-visible |
-| `SufiAbpFileManager.EnableDuplicateDetection` | `true` | Inherited setting, client-visible |
+| `SufiFileManager.StorageQuota` | `1024` | Inherited setting, client-visible |
+| `SufiFileManager.MaxFileSize` | `104857600` | Inherited setting, client-visible |
+| `SufiFileManager.AllowedImageExtensions` | `jpg,jpeg,png,gif,webp,svg` | Inherited setting, client-visible |
+| `SufiFileManager.AllowedVideoExtensions` | `mp4,webm,ogg,mov,avi` | Inherited setting, client-visible |
+| `SufiFileManager.AllowedDocumentExtensions` | `pdf,doc,docx,xls,xlsx,ppt,pptx,txt` | Inherited setting, client-visible |
+| `SufiFileManager.EnableWebPConversion` | `true` | Inherited setting, client-visible |
+| `SufiFileManager.WebPQuality` | `80` | Inherited setting, client-visible |
+| `SufiFileManager.ThumbnailWidth` | `200` | Inherited setting, client-visible |
+| `SufiFileManager.ThumbnailHeight` | `200` | Inherited setting, client-visible |
+| `SufiFileManager.MaxImageWidth` | `4096` | Inherited setting, client-visible |
+| `SufiFileManager.MaxImageHeight` | `4096` | Inherited setting, client-visible |
+| `SufiFileManager.AutoDeleteTempMediaAfterDays` | `7` | Inherited setting, not client-visible |
+| `SufiFileManager.EnableDuplicateDetection` | `true` | Inherited setting, client-visible |
 
 ## UI integration
 

@@ -119,5 +119,5 @@ sufi --version
 - [Getting Started](getting-started.md)
 - [CLI Tool](framework/cli.md)
 - [Module Catalog](modules/index.md)
-- [SufiBlazor](sufi-blazor/overview.md)
-- [SufiTheme](sufi-theme/sufi-theme-overview.md)
+- [SufiBlazor](../../independent-projects/sufi-blazor/docs/README.md)
+- [SufiTheme](../../independent-projects/sufi-theme/docs/README.md)

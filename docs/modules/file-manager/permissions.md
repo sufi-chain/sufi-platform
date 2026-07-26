@@ -4,14 +4,14 @@ The module defines these permission areas:
 
 | Permission | Purpose |
 | --- | --- |
-| `SufiAbpFileManager.FileItems` | Access file-item functionality |
-| `SufiAbpFileManager.FileItems.Create` | Create/upload file items |
-| `SufiAbpFileManager.FileItems.Update` | Update file items |
-| `SufiAbpFileManager.FileItems.Delete` | Delete file items |
-| `SufiAbpFileManager.FileStructures` | Access file-structure functionality |
-| `SufiAbpFileManager.FileStructures.Create` | Create file structures |
-| `SufiAbpFileManager.FileStructures.Update` | Update file structures |
-| `SufiAbpFileManager.FileStructures.Delete` | Delete file structures |
+| `SufiFileManager.FileItems` | Access file-item functionality |
+| `SufiFileManager.FileItems.Create` | Create/upload file items |
+| `SufiFileManager.FileItems.Update` | Update file items |
+| `SufiFileManager.FileItems.Delete` | Delete file items |
+| `SufiFileManager.FileStructures` | Access file-structure functionality |
+| `SufiFileManager.FileStructures.Create` | Create file structures |
+| `SufiFileManager.FileStructures.Update` | Update file structures |
+| `SufiFileManager.FileStructures.Delete` | Delete file structures |
 
 ## Notes
 

@@ -16,6 +16,6 @@ Feature Management is part of the configuration layer of the platform. It often 
 
 Open these packages first:
 
-- `SufiChain.SufiPlatform.FeatureManagement.Blazor` for the management UI
-- `SufiChain.SufiPlatform.FeatureManagement.Application.Contracts` for feature contracts and permissions
-- `SufiChain.SufiPlatform.FeatureManagement.HttpApi` for the remote surface exposed to hosts
+- `SufiChain.SufiPlatform.Features.Blazor` for the management UI
+- `SufiChain.SufiPlatform.Features.Application.Contracts` for feature contracts and permissions
+- `SufiChain.SufiPlatform.Features.HttpApi` for the remote surface exposed to hosts

@@ -17,6 +17,6 @@ This module is part of the baseline configuration story. It often works together
 
 Open these packages first:
 
-- `SufiChain.SufiPlatform.SettingManagement.Blazor` for the `SettingsManagement` page and group components
-- `SufiChain.SufiPlatform.SettingManagement.Application.Contracts` for settings DTOs and contracts
-- `SufiChain.SufiPlatform.SettingManagement.HttpApi` for the remote surface used by hosts and clients
+- `SufiChain.SufiPlatform.Settings.Blazor` for the `SettingsManagement` page and group components
+- `SufiChain.SufiPlatform.Settings.Application.Contracts` for settings DTOs and contracts
+- `SufiChain.SufiPlatform.Settings.HttpApi` for the remote surface used by hosts and clients

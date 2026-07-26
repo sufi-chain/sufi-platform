@@ -15,11 +15,11 @@ Modular auth for different hosting and identity scenarios in the Sufi Platform f
 
 - **Tiered**: Blazor calls API with Bearer tokens; Server module handles login/logout and token issuance.  
 - **Single**: Auth typically cookie-based in the same process.  
-- **WASM**: Token storage (e.g. localStorage), `SufiAbpAccessTokenProvider`, optional auth callback page.  
+- **WASM**: Token storage (e.g. localStorage), `SufiAccessTokenProvider`, optional auth callback page.  
 - **OIDC**: Authority, client id/secret, scopes; standard OIDC flows.
 
 ## Integration
 
-- Use **SufiAbpAuthorizationMessageHandler** (or equivalent) to attach tokens to HTTP calls when tiered.  
+- Use **SufiBlazorClientHttpMessageHandler** (or equivalent) to attach tokens to HTTP calls when tiered.  
 - Use **AuthorizeView** and **`[Authorize]`** for protected UI.  
 - ABP Identity can back user validation and token creation; auth modules bridge Sufi Platform UI and ABP.

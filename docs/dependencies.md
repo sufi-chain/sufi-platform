@@ -1,48 +1,46 @@
 # Dependencies and Libraries
 
-This page is the main reference for libraries and packages used by the public Sufi Platform source under `/src`.
+Libraries and packages used by the public Sufi Platform source under `sufi-platform/`.
 
 - **Version pinning:** `versions.props`
-- **Package references:** project `.csproj` files and shared `common.props` where applicable
+- **Package inventory:** [Package Map](reference/package-map.md)
+- **Stack overview:** [Technology stack](reference/technology-stack.md)
 
-## Sufi Platform packages in the public source
+## Sufi Platform packages
 
-| Package or group | Role |
+| Group | Role |
 | --- | --- |
-| `SufiChain.SufiPlatform.UI.Abstractions` | UI contracts for theming, menus, toolbars, notifications, branding, and user context |
-| `SufiChain.SufiPlatform.UI.Domain.Shared` | Shared UI-domain types and resources |
-| `SufiChain.SufiPlatform.UI.Services` | Default UI service implementations |
-| `SufiChain.SufiPlatform.UI.Blazor` | Shared Blazor platform layer including `SufiComponentBase` |
-| `SufiChain.SufiPlatform.UI.Blazor.Server` | Server-hosted Blazor support |
-| `SufiChain.SufiPlatform.UI.Blazor.WebAssembly` | WebAssembly-hosted Blazor support |
-| `SufiChain.SufiPlatform.UI.Abp` | ABP adapter layer |
-| `SufiChain.SufiPlatform.AspNetCore` | Shared ASP.NET Core platform infrastructure |
-| `SufiChain.SufiPlatform.AspNetCore.Authentication.*` | Authentication packages for server, WASM, OAuth, and OIDC scenarios |
-| `SufiChain.SufiPlatform.Data` | Shared data-layer support utilities |
-| `SufiChain.SufiPlatform.BlobStoring.S3Provider` | S3-compatible blob storage support |
-| `SufiChain.SufiPlatform.CLI.Core` / `SufiChain.SufiPlatform.CLI` | CLI logic and executable |
-| `SufiChain.SufiPlatform.*` modules under `src/modules` | First-party business and administration modules |
+| Core / DDD | `SufiModule`, `SufiApplicationService`, CRUD contracts |
+| UI.* | Abstractions, services, `SufiComponentBase`, Server/WASM |
+| SufiAI.* | Cross-module chat/kernel workspace options |
+| SufiCom.* | Email, SMS, voice, channels |
+| AspNetCore / Authentication / Authorization | MVC base, OIDC, server/WASM auth |
+| Captcha.* | Math, reCAPTCHA, Turnstile |
+| Data, Features, Validation, TextTemplating.* | Seeds, features, validation, templates |
+| BlobStoring.S3Provider | S3-compatible blobs |
+| CLI / CLI.Core | `sufi` tool |
+| Modules under `modules/` | 19 first-party modules (`SufiChain.SufiPlatform.{Segment}.*`) |
 
-## Independent products in the platform story
+Infrastructure persistence, event bus, and caching come from **`Volo.Abp.*`** after Framework Reduction.
 
-SufiBlazor and SufiTheme are part of the broader Sufi Platform offering, but they are developed and versioned independently.
+## Independent products
 
-In this docs set they are covered from a platform-product perspective, while their detailed technical package documentation should remain in their own repositories.
+SufiBlazor and SufiTheme are developed and versioned independently. Detailed component/layout docs stay in their own repositories under `independent-projects/`.
 
 ## Key third-party libraries
 
 | Area | Libraries | Notes |
 | --- | --- | --- |
-| Framework | ABP Framework (`Volo.Abp.*`) | Core application, modularity, permissions, tenancy, and administrative foundations |
+| Framework | ABP Framework (`Volo.Abp.*`) 10.3.0 | Modularity, permissions, tenancy, persistence foundations |
 | Runtime | ASP.NET Core 10 and Blazor | Main runtime stack |
-| Localization | `Microsoft.Extensions.Localization` | Localization infrastructure across framework and modules |
-| Data | Entity Framework Core 10 | Used by modules and hosts that choose EF Core |
-| Logging | Serilog packages | Structured logging support |
-| Testing | xUnit, NSubstitute, Shouldly, bUnit, Coverlet | Unit, integration, and UI test tooling |
-| Build | Fody / ConfigureAwait.Fody | Build-time weaving support |
-| Media and processing | ImageSharp, FFMpegCore | Used by modules such as file manager |
+| Data | Entity Framework Core 10, MongoDB driver | Dual persistence option |
+| AI | Semantic Kernel, Microsoft.Extensions.AI | Framework SufiAI + AI module |
+| Logging | Serilog packages | Host-configured structured logging |
+| Testing | xUnit, NSubstitute, Shouldly, bUnit, Coverlet | Unit, integration, UI tests |
+| Build | Fody / ConfigureAwait.Fody | Build-time weaving |
+| Media | ImageSharp, FFMpegCore | File Manager and related |
 
 ## Notes
 
 - Exact versions are defined in `versions.props`.
-- Module-specific third-party dependencies should be documented again in module docs where they materially affect installation or behavior.
+- Module-specific third-party dependencies should also appear in that module’s docs when they affect installation or behavior.

@@ -168,8 +168,8 @@ await _smsSender.SendAsync("+1234567890", "Your verification code is 123456");
 2. Add module dependency:
    ```csharp
    [DependsOn(
-       typeof(SufiAbpMessagingModule),
-       typeof(SufiAbpMessagingTwilioModule)  // Replaces NullSmsSender
+       typeof(SufiComModule),
+       typeof(SufiComTwilioModule)  // Replaces NullSmsSender
    )]
    public class MyApplicationModule : SufiModule
    {
@@ -281,10 +281,10 @@ If you're migrating from `SufiChain.SufiPlatform.Emailing`:
 3. **Update module dependencies:**
    ```csharp
    // Old
-   [DependsOn(typeof(SufiAbpEmailingModule))]
+   [DependsOn(typeof(SufiComModule))]
    
    // New
-   [DependsOn(typeof(SufiAbpMessagingModule))]
+   [DependsOn(typeof(SufiComModule))]
    ```
 
 4. **Update code:**

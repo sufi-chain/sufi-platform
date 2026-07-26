@@ -43,4 +43,4 @@ Operator workflows: [Usage](usage.md). Integrators: [API](api.md), [Extending](e
 | `SufiChain.SufiPlatform.SufiAI.HttpApi` | `OpenAICompatibleController` (`/v1/*`) |
 | `SufiChain.SufiPlatform.SufiAI.EntityFrameworkCore` / `.MongoDB` | Persistence |
 
-Implementation root: `src/modules/ai/`.
+Implementation root: `modules/ai/`.

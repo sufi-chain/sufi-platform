@@ -27,7 +27,7 @@ public class YourHostModule : AbpModule
 }
 ```
 
-Reference projects from `src/modules/ai/` during platform development, or NuGet packages `SufiChain.SufiPlatform.SufiAI.*` in consuming solutions.
+Reference projects from `modules/ai/` during platform development, or NuGet packages `SufiChain.SufiPlatform.SufiAI.*` in consuming solutions.
 
 **Blazor WebAssembly:** also add `SufiAIBlazorWebAssemblyModule` on the client and `SufiAIHttpApiClientModule` for proxies.
 

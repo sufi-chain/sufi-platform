@@ -32,8 +32,8 @@ dotnet add package SufiChain.SufiPlatform.FileManager.HttpApi.Client
 ```csharp
 [DependsOn(
     typeof(FileManagerApplicationModule),
-    typeof(FileManagerEntityFrameworkCoreModule), // or SufiAbpFileManagerMongoDbModule
-    typeof(FileManagerHttpApiModule)
+    typeof(SufiFileManagerEntityFrameworkCoreModule), // or SufiFileManagerMongoDbModule
+    typeof(SufiFileManagerHttpApiModule)
 )]
 public class YourHttpApiHostModule : AbpModule { }
 ```
@@ -43,7 +43,7 @@ public class YourHttpApiHostModule : AbpModule { }
 ```csharp
 [DependsOn(
     typeof(FileManagerBlazorModule),
-    typeof(SufiAbpFileManagerHttpApiClientModule)
+    typeof(SufiFileManagerHttpApiClientModule)
 )]
 public class YourBlazorModule : AbpModule { }
 ```
@@ -78,7 +78,7 @@ For **all options** (BaseUrl, quotas, file structures, blob storage, tiered apps
 ### Quick configuration example
 
 ```csharp
-Configure<SufiAbpFileManagerOptions>(options =>
+Configure<FileManagerOptions>(options =>
 {
     options.BaseUrl = "https://yourapp.com/";
     options.DefaultStorageQuotaMB = 2048;
@@ -176,7 +176,7 @@ public class YourAppService : ApplicationService
     <ChildContent>
         <!-- Quick single-image uploader with preview -->
         <SbFormField Label="Main Product Image">
-            <SufiAbpQuickImageUploader 
+            <QuickImageUploader 
                 StructureKey="Product.MainImage"
                 AutoConfirm="true"
                 OnImageUploaded="@OnMainImageUploaded" />
@@ -184,7 +184,7 @@ public class YourAppService : ApplicationService
 
         <!-- Multi-file uploader with drag-drop and progress -->
         <SbFormField Label="Product Gallery">
-            <SufiAbpFileUploader 
+            <FileUploader 
                 StructureKey="Product.Gallery"
                 AllowMultiple="true"
                 AutoConfirm="true"
@@ -193,7 +193,7 @@ public class YourAppService : ApplicationService
 
         <!-- Gallery view of existing files -->
         <SbFormField Label="File Gallery">
-            <SufiAbpFileGallery 
+            <FileGallery 
                 EntityType="Product"
                 EntityId="@ProductId"
                 Selectable="true"
@@ -202,7 +202,7 @@ public class YourAppService : ApplicationService
 
         <!-- File browser with folders, search, bulk operations -->
         <SbFormField Label="File Browser">
-            <SufiAbpFileBrowser 
+            <FileBrowser 
                 EntityType="Product"
                 EntityId="@ProductId"
                 OnFileSelected="@OnFileSelected" />
@@ -274,10 +274,10 @@ await _fileItemAppService.ConfirmAsync(temp.Id);
 
 | Permission | Description |
 |------------|-------------|
-| **SufiAbpFileManager.FileItems** | View file items |
-| **SufiAbpFileManager.FileItems.Create / Update / Delete** | Upload, update metadata, delete |
-| **SufiAbpFileManager.FileStructures** | View file structures |
-| **SufiAbpFileManager.FileStructures.Create / Update / Delete** | Manage structures |
+| **SufiFileManager.FileItems** | View file items |
+| **SufiFileManager.FileItems.Create / Update / Delete** | Upload, update metadata, delete |
+| **SufiFileManager.FileStructures** | View file structures |
+| **SufiFileManager.FileStructures.Create / Update / Delete** | Manage structures |
 
 See [Configuration – Permissions](configuration.md#4-permissions).
 
@@ -289,7 +289,7 @@ See [Configuration – Permissions](configuration.md#4-permissions).
 2. Enable **thumbnails** and **WebP** where appropriate.
 3. Set **MaxUploadFileSizeMB** and **DefaultStorageQuotaMB**; see [Configuration](configuration.md).
 4. Use **AutoConfirm = false** and **ConfirmAsync** for forms with validation.
-5. In **tiered** setups, set **RemoteServices:SufiAbpFileManager:BaseUrl** and **SufiAbpFileManager:BaseUrl**; see [Configuration](configuration.md).
+5. In **tiered** setups, set **RemoteServices:SufiFileManager:BaseUrl** and **SufiFileManager:BaseUrl**; see [Configuration](configuration.md).
 
 ---
 
@@ -297,9 +297,9 @@ See [Configuration – Permissions](configuration.md#4-permissions).
 
 | Issue | Check |
 |-------|--------|
-| **Images/thumbnails 404** | Tiered: set `RemoteServices:SufiAbpFileManager:BaseUrl` in Blazor and `SufiAbpFileManager:BaseUrl` on API. See [Configuration](configuration.md#3-tiered-applications-blazor-and-api-on-different-urls). |
+| **Images/thumbnails 404** | Tiered: set `RemoteServices:SufiFileManager:BaseUrl` in Blazor and `SufiFileManager:BaseUrl` on API. See [Configuration](configuration.md#3-tiered-applications-blazor-and-api-on-different-urls). |
 | **Upload fails** | File size vs `MaxUploadFileSizeMB`, structure allowed types/sizes, storage quota. |
-| **Blob not found** | Blob storage configured for `SufiAbpFileManagerContainer`; DbContext has `ConfigureBlobStoring()` and migrations applied. |
+| **Blob not found** | Blob storage configured for `FileManagerContainer`; DbContext has `ConfigureBlobStoring()` and migrations applied. |
 
 ---
 

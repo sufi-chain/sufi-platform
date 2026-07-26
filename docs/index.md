@@ -1,5 +1,7 @@
 # Sufi Platform Documentation
 
+![Sufi Platform](assets/sufi-platform-baner.png)
+
 These docs are written for two groups:
 
 - product owners who want to understand what can be built on the open-source Sufi Platform base and how to describe new product needs clearly
@@ -16,7 +18,7 @@ If you are a product owner or planner, begin with:
 - [Product Overview](product-overview.md) - understand the platform capabilities and reusable baseline
 - [Product Creation Guide](product-creation-guide.md) - turn a product idea into clear modules, workflows, and priorities
 - [Module Catalog](modules/index.md) - review the reusable modules already available in the open-source base
-- [Roadmap](roadmap.md) - describe future needs at a product level
+- [Roadmap](roadmap.md) - seven product phases (Foundation → Pro → Finance → Commerce → ERP → HR → Scale)
 
 If you are building a product, begin with:
 
@@ -30,11 +32,16 @@ If you are contributing to the platform itself, read:
 - Workspace contributor authority at `.obsidian/Docs/Platform Configuration/Contributing and Documentation.md` - work in `sufi-platform/framework/` or `sufi-platform/modules/` and validate through the current development host
 - [Framework Overview](framework/overview.md) - navigate the shared framework packages
 - [Developer Conventions](framework/developer-conventions.md) - follow the platform rules
+- [Architecture decisions](architecture/decisions.md) - accepted framework and module ADRs
+- [Operations](operations/runbook.md) - deployment, security, and runbook notes
 - [Reference](reference/index.md) - look up settings, permissions, and package relationships
 
 ## Terms
 
-- `Sufi Platform` is the product and platform name.
-- `Sufi Platform` is the technical foundation and package family under `SufiChain.SufiPlatform.*`.
-- `Sufi Platform` is the code prefix used in framework and module types.
-- `ABP Framework` is the upstream open-source framework that Sufi Platform builds on and extends.
+| Term | Meaning |
+|------|---------|
+| **Sufi Platform** | Product and platform name |
+| **`SufiChain.SufiPlatform.*`** | Open-source package family under `sufi-platform/` |
+| **`Sufi*` types** | Code prefix for framework and module types |
+| **ABP Framework** | Upstream foundation that Sufi Platform extends |
+| **Pro** | Licensed commercial packages (not open source); free tier via [sufiplatform.com](https://sufiplatform.com) |

@@ -2,12 +2,12 @@
 
 ## Main packages
 
-- `SufiChain.SufiPlatform.FeatureManagement.Application.Contracts`
-- `SufiChain.SufiPlatform.FeatureManagement.Application`
-- `SufiChain.SufiPlatform.FeatureManagement.HttpApi`
-- `SufiChain.SufiPlatform.FeatureManagement.HttpApi.Client`
-- `SufiChain.SufiPlatform.FeatureManagement.Blazor`
-- `SufiChain.SufiPlatform.FeatureManagement.Domain.Shared`
+- `SufiChain.SufiPlatform.Features.Application.Contracts`
+- `SufiChain.SufiPlatform.Features.Application`
+- `SufiChain.SufiPlatform.Features.HttpApi`
+- `SufiChain.SufiPlatform.Features.HttpApi.Client`
+- `SufiChain.SufiPlatform.Features.Blazor`
+- `SufiChain.SufiPlatform.Features.Domain.Shared`
 
 ## Typical usage
 

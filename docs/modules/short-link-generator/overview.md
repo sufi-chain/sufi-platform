@@ -17,7 +17,7 @@ Treat this module as a horizontal capability. It is useful in marketing flows, i
 
 Open these packages first:
 
-- `SufiChain.SufiPlatform.ShortLinkGenerator.Blazor` for the management UI
-- `SufiChain.SufiPlatform.ShortLinkGenerator.Application` and `.Application.Contracts` for the main use cases and DTOs
-- `SufiChain.SufiPlatform.ShortLinkGenerator.HttpApi` for both management and redirect-related API behavior
-- `SufiChain.SufiPlatform.ShortLinkGenerator.Domain`, `.EntityFrameworkCore`, and `.MongoDB` for the persistence model
+- `SufiChain.SufiPlatform.ShortLinks.Blazor` for the management UI
+- `SufiChain.SufiPlatform.ShortLinks.Application` and `.Application.Contracts` for the main use cases and DTOs
+- `SufiChain.SufiPlatform.ShortLinks.HttpApi` for both management and redirect-related API behavior
+- `SufiChain.SufiPlatform.ShortLinks.Domain`, `.EntityFrameworkCore`, and `.MongoDB` for the persistence model

@@ -1,19 +1,34 @@
 # Users Module
 
-> **KB:** See workspace Obsidian vault `.obsidian/Sufi Platform/Modules/Users.md` for verified capabilities.
+Lightweight user **lookup** module — not a full user admin replacement. Prefer [Identity](../identity/index.md) for administration.
 
 ## Code location
 
 `sufi-platform/modules/users/`
 
-## Quick facts
+## Packages
 
-- Lightweight user lookup — not full user admin (see Identity module)
-- `IUserLookupAppService` and public selector components
-- Blazor.Public only (no admin Blazor or HttpApi)
-- EF Core + MongoDB
+Package segment: **`Users`** (`SufiChain.SufiPlatform.Users.*`).
 
-## Start in source
+| Layer | Notes |
+|-------|-------|
+| Domain.Shared / Domain | Lookup domain |
+| Application[.Contracts] | `IUserLookupAppService` |
+| Blazor.Public | Public selector components |
+| EntityFrameworkCore / MongoDB | Persistence |
+| — | No HttpApi or admin Blazor layers |
 
-- `SufiChain.SufiPlatform.Users.Application` — `UserLookupAppService`
-- `SufiChain.SufiPlatform.Users.Blazor.Public` — `SufiUserSelector`, `SufiUserSelect`
+## Capabilities
+
+- `IUserLookupAppService` / `UserLookupAppService`
+- Public components: `SufiUserSelector`, `SufiUserSelect`, `SufiUserSelectorUserGrid`
+- Inline lookup base for embedding pickers in other modules
+
+## Permissions
+
+- `SufiUsers.UserLookup`
+
+## Related
+
+- [Identity](../identity/index.md)
+- [Package Map](../../reference/package-map.md)

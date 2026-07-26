@@ -1,19 +1,31 @@
 # Blob Storing Database Module
 
-> **KB:** See workspace Obsidian vault `.obsidian/Sufi Platform/Modules/Blob Storing Database.md` for verified capabilities.
+Infrastructure-only blob storage backend that persists blobs in the application database (EF Core or MongoDB). Implements ABP `IBlobProvider` as `DatabaseBlobProvider`. Used by File Manager when database storage is selected. No Application, Blazor, or HttpApi layers.
 
 ## Code location
 
 `sufi-platform/modules/blob-database/`
 
-## Quick facts
+## Packages
 
-- Infrastructure-only blob provider storing blobs in the application database
-- `DatabaseBlobProvider` implements ABP `IBlobProvider`
-- No Application, Blazor, or HttpApi layers
-- EF Core + MongoDB
+Package segment: **`BlobDatabase`** (`SufiChain.SufiPlatform.BlobDatabase.*`).
 
-## Start in source
+| Layer | Project |
+|-------|---------|
+| Domain.Shared | `SufiChain.SufiPlatform.BlobDatabase.Domain.Shared` |
+| Domain | `SufiChain.SufiPlatform.BlobDatabase.Domain` |
+| EntityFrameworkCore | `SufiChain.SufiPlatform.BlobDatabase.EntityFrameworkCore` |
+| MongoDB | `SufiChain.SufiPlatform.BlobDatabase.MongoDB` |
 
-- `SufiChain.SufiPlatform.BlobStoring.Database.Domain` — `DatabaseBlob`, `DatabaseBlobProvider`
-- Used by File Manager when database storage is configured
+## Capabilities
+
+- `DatabaseBlob` and `DatabaseBlobContainer` entities
+- `DatabaseBlobProvider` — save, get, delete, exists
+- Multi-tenant blob storage via `ICurrentTenant`
+- Included in the default CLI module registry for new solutions
+
+## Related
+
+- [File Manager](../file-manager/index.md)
+- Framework S3 provider: `SufiChain.SufiPlatform.BlobStoring.S3Provider`
+- [Package Map](../../reference/package-map.md)

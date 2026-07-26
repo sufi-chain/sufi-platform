@@ -11,4 +11,4 @@
 
 ## Notable dependency
 
-The Blazor package references `SufiChain.SufiPlatform.PermissionManagement.Application.Contracts`, which reflects the close relationship between identity administration and permission assignment.
+The Blazor package references `SufiChain.SufiPlatform.Permissions.Application.Contracts`, which reflects the close relationship between identity administration and permission assignment.

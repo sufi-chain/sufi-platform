@@ -2,7 +2,7 @@
 
 The `sufi` CLI is the starting point for vertical solution teams using Sufi. Its main job is to generate a solution from the platform templates so the team can start building a product without assembling the baseline architecture by hand.
 
-If your team is consuming the platform rather than contributing to `src/`, this is the command surface you care about first.
+If your team is consuming the platform rather than contributing to `sufi-platform/`, this is the command surface you care about first.
 
 ## Install
 
@@ -43,7 +43,7 @@ dotnet tool update --global SufiChain.SufiPlatform.CLI --add-source SufiChain
 
 # From local build
 cd /path/to/sufi-orchestrator
-dotnet pack src/framework/SufiChain.SufiPlatform.CLI -o ./nupkg
+dotnet pack framework/SufiChain.SufiPlatform.CLI -o ./nupkg
 dotnet tool update --global --add-source ./nupkg SufiChain.SufiPlatform.CLI
 ```
 

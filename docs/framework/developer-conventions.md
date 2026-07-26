@@ -42,4 +42,4 @@ Every new module should add or update:
 
 ## Naming and path notes
 
-Use real repository paths in documentation even when a path contains a temporary naming issue. For example, the short-link module currently lives under `src/modules/short-links/`, and docs should stay accurate until that path is intentionally renamed.
+Use real repository paths in documentation even when a path contains a temporary naming issue. For example, the short-link module currently lives under `modules/short-links/`, and docs should stay accurate until that path is intentionally renamed.

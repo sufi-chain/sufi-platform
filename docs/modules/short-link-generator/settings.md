@@ -4,11 +4,11 @@
 
 | Setting | Purpose |
 | --- | --- |
-| `ShortLinkGenerator.BaseUrl` | Base URL used for generated full links |
-| `ShortLinkGenerator.ShortUrl.RedirectRoute` | Redirect route segment |
-| `ShortLinkGenerator.ShortUrl.ShortCodeLength` | Short-code length |
-| `ShortLinkGenerator.ShortUrl.CacheExpirationMinutes` | Cache lifetime for lookups |
-| `ShortLinkGenerator.ShortUrl.DefaultExpirationDays` | Default expiration period |
+| `SufiShortLinks.BaseUrl` | Base URL used for generated full links |
+| `SufiShortLinks.ShortUrl.RedirectRoute` | Redirect route segment |
+| `SufiShortLinks.ShortUrl.ShortCodeLength` | Short-code length |
+| `SufiShortLinks.ShortUrl.CacheExpirationMinutes` | Cache lifetime for lookups |
+| `SufiShortLinks.ShortUrl.DefaultExpirationDays` | Default expiration period |
 
 ## Notes
 

@@ -181,13 +181,13 @@ The {{ app_name }} Team
 **MyAppModule.cs:**
 ```csharp
 [DependsOn(
-    typeof(SufiAbpTextTemplatingScribanModule)
+    typeof(SufiTextTemplatingScribanModule)
 )]
 public class MyAppModule : SufiModule
 {
     public override void ConfigureServices(ServiceConfigurationContext context)
     {
-        Configure<SufiAbpVirtualFileSystemOptions>(options =>
+        Configure<AbpVirtualFileSystemOptions>(options =>
         {
             options.FileSets.AddEmbedded<MyAppModule>();
         });
@@ -390,7 +390,7 @@ public class DatabaseTemplateContentProvider : ITemplateContentProvider, ITransi
 ```csharp
 public override void ConfigureServices(ServiceConfigurationContext context)
 {
-    Configure<SufiAbpTextTemplatingOptions>(options =>
+    Configure<SufiTextTemplatingOptions>(options =>
     {
         options.ContentProviders.Add<DatabaseTemplateContentProvider>();
     });

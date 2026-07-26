@@ -2,11 +2,11 @@
 
 ## Main packages
 
-- `SufiChain.SufiPlatform.SettingManagement.Application.Contracts`
-- `SufiChain.SufiPlatform.SettingManagement.Application`
-- `SufiChain.SufiPlatform.SettingManagement.HttpApi`
-- `SufiChain.SufiPlatform.SettingManagement.HttpApi.Client`
-- `SufiChain.SufiPlatform.SettingManagement.Blazor`
-- `SufiChain.SufiPlatform.SettingManagement.Domain.Shared`
+- `SufiChain.SufiPlatform.Settings.Application.Contracts`
+- `SufiChain.SufiPlatform.Settings.Application`
+- `SufiChain.SufiPlatform.Settings.HttpApi`
+- `SufiChain.SufiPlatform.Settings.HttpApi.Client`
+- `SufiChain.SufiPlatform.Settings.Blazor`
+- `SufiChain.SufiPlatform.Settings.Domain.Shared`
 
 Use this module when the application needs a unified administrative settings experience.

@@ -4,10 +4,12 @@ This document explains how the public source is organized and how the platform i
 
 ## Terminology
 
-- `Sufi Platform` is the platform and product name.
-- `Sufi Platform` is the technical base and the package family under `SufiChain.SufiPlatform.*`.
-- `Sufi Platform` is the code prefix used in framework and module types.
-- `ABP Framework` is the upstream open-source framework that provides the core backend architecture. Website: [abp.io](https://abp.io). Source: [github.com/abpframework/abp](https://github.com/abpframework/abp).
+| Term | Meaning |
+|------|---------|
+| **Sufi Platform** | Product and platform name |
+| **`SufiChain.SufiPlatform.*`** | Technical package family |
+| **`Sufi*` types** | Code prefix (`SufiModule`, `SufiComponentBase`, …) |
+| **ABP Framework** | Upstream modular backend ([abp.io](https://abp.io), [github.com/abpframework/abp](https://github.com/abpframework/abp)) |
 
 ## Relationship with ABP
 
@@ -48,14 +50,14 @@ From bottom to top:
 
 | Path | What lives there |
 | --- | --- |
-| `src/framework` | Sufi Platform framework packages and CLI |
-| `src/modules` | First-party reusable modules |
-| `src/templates` | Template assets used by the CLI |
+| `framework/` | Sufi Platform framework packages and CLI |
+| `modules/` | First-party reusable modules |
+| `templates/` | Template assets used by the CLI |
 | `docs` | Canonical long-form documentation |
 | `independent-projects/sufi-blazor` | Source dependency for the default component system |
 | `independent-projects/sufi-theme` | Source dependency for the preferred shell and theme |
 
-For most platform work, start in `src/framework` or `src/modules`. Reach for the independent products when you need to understand how the platform consumes them, not to turn this repository into their internal reference manual.
+For most platform work, start in `framework/` or `modules/`. Reach for the independent products when you need to understand how the platform consumes them, not to turn this repository into their internal reference manual.
 
 ## Framework direction
 
@@ -83,25 +85,23 @@ Most reusable modules follow the standard ABP split, with optional UI and storag
 - optional `EntityFrameworkCore` and `MongoDB`
 - `test/*`
 
-You can see this shape clearly in modules such as `src/modules/file-manager` and `src/modules/short-link-generator`.
+You can see this shape clearly in modules such as `modules/file-manager` and `modules/short-links`.
 
-## Baseline modules
+## First-party modules
 
-These modules form the baseline platform catalog in `src/modules`:
+There are **19** first-party modules under `modules/`. Source folders use short names (`tenants`, `jobs`, `short-links`, …); docs folders may keep longer display names. See the [Module Catalog](modules/index.md) and [Package Map](reference/package-map.md).
 
-- `account`
-- `audit-logging`
-- `background-jobs`
-- `feature-management`
-- `file-manager`
-- `identity`
-- `localization-management`
-- `permission-management`
-- `setting-management`
-- `short-link-generator`
-- `tenant-management`
+Typical CLI baseline includes account, identity, tenants, permissions, features, settings, OpenIddict, audit logging, background jobs, localization, file manager, calendar, menus, tags, short links, blob database, users, and AI. **Editions** ships in source but is not in the default CLI registry yet.
 
-For a new product, the default assumption is that these are available unless a host intentionally excludes them.
+## Deeper architecture docs
+
+- [Architecture decisions](architecture/decisions.md)
+- [Framework C4](architecture/c4-framework.md)
+- [Modules C4](architecture/c4-modules.md)
+- [Sequence diagrams](architecture/sequences.md)
+- [Deployment](operations/deployment.md)
+- [Security](operations/security.md)
+- [Operational runbook](operations/runbook.md)
 
 ## Horizontal modules and vertical products
 
@@ -113,12 +113,9 @@ Create a horizontal module when the capability is reusable across many products,
 
 Examples include:
 
-- CMS
-- HelpDesk
-- Workflow
-- Billing
-- Search
-- Knowledge Base
+- Open-source baseline capabilities (identity, files, calendar, AI, …) — Phase 1
+- Licensed Pro packages such as CMS, HelpDesk, Chat, CRM, Forms — Phase 2 ([Roadmap](roadmap.md))
+- Finance / billing — Phase 3; Commerce, ERP (workflows), HR — later Pro phases
 
 ### Vertical product
 
@@ -141,4 +138,4 @@ When building a new product, follow this order:
 3. keep truly domain-specific behavior in vertical modules or host code
 4. assemble the host application on top of the shared layers
 
-That order preserves reuse and keeps the platform catalog from filling up with one-off business logic.
+That order preserves reuse and keeps the platform catalog from filling up with one-off business logic. For delivery order across Foundation, Pro, Finance, Commerce, ERP, HR, and Scale, see [Roadmap](roadmap.md).

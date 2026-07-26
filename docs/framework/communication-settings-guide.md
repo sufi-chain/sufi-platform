@@ -224,7 +224,7 @@ Use `.WithProperty()` to add metadata for UI rendering:
 
 ### Step 5: Register Provider in Module
 
-**SufiAbpMessagingTwilioModule.cs:**
+**SufiComTwilioModule.cs:**
 ```csharp
 using Microsoft.Extensions.DependencyInjection;
 using SufiChain.SufiPlatform.Localization;
@@ -236,19 +236,19 @@ using SufiChain.SufiPlatform.VirtualFileSystem;
 namespace SufiChain.SufiPlatform.Communication.Twilio;
 
 [DependsOn(
-    typeof(SufiAbpMessagingModule),
-    typeof(SufiAbpSettingsModule)
+    typeof(SufiComModule),
+    typeof(SufiSettingsBlazorModule)
 )]
-public class SufiAbpMessagingTwilioModule : SufiModule
+public class SufiComTwilioModule : SufiModule
 {
     public override void ConfigureServices(ServiceConfigurationContext context)
     {
-        Configure<SufiAbpVirtualFileSystemOptions>(options =>
+        Configure<AbpVirtualFileSystemOptions>(options =>
         {
-            options.FileSets.AddEmbedded<SufiAbpMessagingTwilioModule>();
+            options.FileSets.AddEmbedded<SufiComTwilioModule>();
         });
 
-        Configure<SufiAbpLocalizationOptions>(options =>
+        Configure<AbpLocalizationOptions>(options =>
         {
             options.Resources
                 .Add<TwilioMessagingResource>("en")
@@ -269,8 +269,8 @@ When the host application includes the Twilio module, settings are automatically
 ```csharp
 // Host application module
 [DependsOn(
-    typeof(SufiAbpMessagingModule),
-    typeof(SufiAbpMessagingTwilioModule)  // Settings auto-discovered
+    typeof(SufiComModule),
+    typeof(SufiComTwilioModule)  // Settings auto-discovered
 )]
 public class MyAppBlazorModule : SufiModule
 {

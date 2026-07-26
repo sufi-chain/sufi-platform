@@ -96,7 +96,7 @@ All under `Pages/AI/`: Workspaces, ModelConfigurations, TestChat, MultiModalTest
 
 `AIComponentBase` — localization, `ExecuteWithLoadingAsync`, `LazyGetRequiredService`.
 
-Pages use `SufiAbpPageToolbar` for actions (platform pattern in this module).
+Pages use `SufiPageToolbar` for actions (platform pattern in this module).
 
 ## Key design patterns
 

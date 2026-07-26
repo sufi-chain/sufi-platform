@@ -1,6 +1,6 @@
 # Product Creation Guide
 
-This guide gives product owners, solution teams, and developers a practical process for describing and creating new capabilities on top of the open-source Sufi Platform base. Use it when the request is something like a CMS, HelpDesk, e-commerce solution, reusable billing module, knowledge base, or a full vertical product built on the existing platform baseline.
+This guide gives product owners, solution teams, and developers a practical process for describing and creating new capabilities on top of the open-source Sufi Platform base. Use it when the request is something like a vertical industry product, or when you need to decide whether to reuse open-source modules, consume licensed **Pro** NuGet packages (CMS, HelpDesk, Finance, and similar), or build product-specific code.
 
 Read this guide together with:
 
@@ -9,11 +9,14 @@ Read this guide together with:
 
 ## Terminology
 
-- Use `Sufi Platform` for the product and application-platform offering.
-- Use `Sufi Platform` for the technical framework and package family.
-- Use `Sufi Platform` for module, type, and code prefixes.
-- Use `ABP Framework` when referring to the upstream open-source foundation that Sufi Platform builds on.
-- Keep planning notes focused on user needs, workflows, roles, permissions, data, and delivery priorities.
+| Term | Meaning |
+|------|---------|
+| **Sufi Platform** | Product and application-platform offering |
+| **`SufiChain.SufiPlatform.*`** | Technical framework and package family |
+| **`Sufi*` types** | Module, type, and code prefixes |
+| **ABP Framework** | Upstream open-source foundation |
+
+Keep planning notes focused on user needs, workflows, roles, permissions, data, and delivery priorities.
 
 ## Product-owner brief
 
@@ -44,12 +47,9 @@ Choose this path when the capability:
 
 Examples:
 
-- CMS
-- HelpDesk
-- Workflow
-- Billing
-- Search
-- Knowledge Base
+- CMS, HelpDesk, Chat, CRM (Phase 2) and Finance (Phase 3) → prefer licensed **Pro** NuGet packages (not open source; free tier via [sufiplatform.com](https://sufiplatform.com))
+- Commerce, ERP, HR → planned Pro phases; see [Roadmap](roadmap.md) before inventing parallel OSS modules
+- Domain-only features for one customer → vertical product code
 
 ### Vertical product
 
@@ -65,9 +65,10 @@ Examples:
 
 ### Interpretation examples
 
-- "Create a CMS module" -> horizontal module
-- "Add HelpDesk to the platform" -> horizontal module
-- "Generate an ecommerce product" -> vertical product or host application
+- "Create a CMS module" -> use the licensed Pro CMS NuGet (Phase 2), not a new open-source fork
+- "Add HelpDesk to the platform" -> consume Pro HelpDesk packages under a Sufi Platform license
+- "Add ERP workflows / HR payroll" -> Phase 5–6 roadmap Pro capabilities; check [Roadmap](roadmap.md) before building a one-off
+- "Generate an ecommerce product" -> vertical product or host (open-source base + Phase 4 Commerce Pro when available)
 - "Build a complete hospital system" -> vertical product
 
 ## Step 2: Start from the platform baseline

@@ -6,19 +6,19 @@ The File Manager module has a meaningful configuration surface across storage, p
 
 | Setting | Default | Purpose |
 | --- | --- | --- |
-| `SufiAbpFileManager.StorageQuota` | `1024` | Per-tenant storage quota in MB |
-| `SufiAbpFileManager.MaxFileSize` | `104857600` | Maximum file size in bytes |
-| `SufiAbpFileManager.AllowedImageExtensions` | `jpg,jpeg,png,gif,webp,svg` | Allowed image file extensions |
-| `SufiAbpFileManager.AllowedVideoExtensions` | `mp4,webm,ogg,mov,avi` | Allowed video file extensions |
-| `SufiAbpFileManager.AllowedDocumentExtensions` | `pdf,doc,docx,xls,xlsx,ppt,pptx,txt` | Allowed document file extensions |
-| `SufiAbpFileManager.EnableWebPConversion` | `true` | Enables WebP conversion |
-| `SufiAbpFileManager.WebPQuality` | `80` | WebP quality level |
-| `SufiAbpFileManager.ThumbnailWidth` | `200` | Default thumbnail width |
-| `SufiAbpFileManager.ThumbnailHeight` | `200` | Default thumbnail height |
-| `SufiAbpFileManager.MaxImageWidth` | `4096` | Maximum image width |
-| `SufiAbpFileManager.MaxImageHeight` | `4096` | Maximum image height |
-| `SufiAbpFileManager.AutoDeleteTempMediaAfterDays` | `7` | Temporary-media cleanup retention |
-| `SufiAbpFileManager.EnableDuplicateDetection` | `true` | Duplicate detection toggle |
+| `SufiFileManager.StorageQuota` | `1024` | Per-tenant storage quota in MB |
+| `SufiFileManager.MaxFileSize` | `104857600` | Maximum file size in bytes |
+| `SufiFileManager.AllowedImageExtensions` | `jpg,jpeg,png,gif,webp,svg` | Allowed image file extensions |
+| `SufiFileManager.AllowedVideoExtensions` | `mp4,webm,ogg,mov,avi` | Allowed video file extensions |
+| `SufiFileManager.AllowedDocumentExtensions` | `pdf,doc,docx,xls,xlsx,ppt,pptx,txt` | Allowed document file extensions |
+| `SufiFileManager.EnableWebPConversion` | `true` | Enables WebP conversion |
+| `SufiFileManager.WebPQuality` | `80` | WebP quality level |
+| `SufiFileManager.ThumbnailWidth` | `200` | Default thumbnail width |
+| `SufiFileManager.ThumbnailHeight` | `200` | Default thumbnail height |
+| `SufiFileManager.MaxImageWidth` | `4096` | Maximum image width |
+| `SufiFileManager.MaxImageHeight` | `4096` | Maximum image height |
+| `SufiFileManager.AutoDeleteTempMediaAfterDays` | `7` | Temporary-media cleanup retention |
+| `SufiFileManager.EnableDuplicateDetection` | `true` | Duplicate detection toggle |
 
 ## Additional configuration areas
 

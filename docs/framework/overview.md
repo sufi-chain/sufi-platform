@@ -1,79 +1,64 @@
 # Framework Overview
 
-The public framework source lives under `src/framework/`. This is the part of the repository you open when you need to understand shared UI composition, host integration, authentication plumbing, storage support, or the CLI used to scaffold and maintain products.
+The public framework source lives under `framework/`. Open it when you need shared UI composition, host integration, authentication, storage helpers, SufiAI/SufiCom, captcha, or the `sufi` CLI.
 
-For contributors, the framework matters because it defines the reusable rules that every module and host should follow. When a behavior belongs to the platform rather than to one business module, it usually starts here.
+After Framework Reduction, EF Core providers, MongoDB, EventBus, Caching, and similar infrastructure are consumed as **`Volo.Abp.*`**. The **31** packages below are value-add only. Full inventory: [Package Map](../reference/package-map.md).
 
-## Framework projects
+## Package families
 
-| Project | Why it matters |
-| --- | --- |
-| `SufiChain.SufiPlatform.UI.Abstractions` | Contracts for themes, menus, toolbars, alerts, notifications, branding, user context, and browser-facing behaviors |
-| `SufiChain.SufiPlatform.UI.Domain.Shared` | Shared UI resources and domain-shared types used across framework and modules |
-| `SufiChain.SufiPlatform.UI.Services` | Default implementations behind menu, toolbar, theme, and alert services |
-| `SufiChain.SufiPlatform.UI.Blazor` | Core Blazor composition, `SufiComponentBase`, and shared platform UI behavior |
-| `SufiChain.SufiPlatform.UI.Blazor.Server` | Server-hosted Blazor integration |
-| `SufiChain.SufiPlatform.UI.Blazor.WebAssembly` | WebAssembly-hosted Blazor integration |
-| `SufiChain.SufiPlatform.UI.Abp` | Bridges from Sufi Platform abstractions into ABP runtime services |
-| `SufiChain.SufiPlatform.AspNetCore` | Shared ASP.NET Core platform infrastructure |
-| `SufiChain.SufiPlatform.AspNetCore.Authentication.Abstractions` | Shared authentication contracts and options |
-| `SufiChain.SufiPlatform.AspNetCore.Authentication.Server` | Server-side authentication integration |
-| `SufiChain.SufiPlatform.AspNetCore.Authentication.WebAssembly` | WebAssembly authentication integration |
-| `SufiChain.SufiPlatform.AspNetCore.Authentication.OpenIdConnect` | OpenID Connect integration |
-| `SufiChain.SufiPlatform.AspNetCore.Authentication.OAuth` | OAuth-oriented integration |
-| `SufiChain.SufiPlatform.Data` | Shared data helpers used across the platform |
-| `SufiChain.SufiPlatform.BlobStoring.S3Provider` | S3-compatible blob storage support |
-| `SufiChain.SufiPlatform.CLI.Core` | Shared CLI logic and scaffolding services |
-| `SufiChain.SufiPlatform.CLI` | The `sufi` command-line entry point |
+| Family | Packages | Why it matters |
+| --- | --- | --- |
+| Core / DDD | Core, Ddd.Application.Contracts, Ddd.Application | `SufiModule`, `SufiApplicationService`, CRUD contracts |
+| UI | UI.Abstractions, UI.Domain.Shared, UI.Services, UI.Blazor, UI.Blazor.Server, UI.Blazor.WebAssembly | Contracts, `SufiComponentBase`, default UI services |
+| SufiAI | SufiAI.Abstractions, SufiAI | Cross-module chat/kernel workspace options |
+| SufiCom | SufiCom.Abstractions, SufiCom | Email, SMS, voice, channel senders |
+| AspNetCore / Auth | AspNetCore, Mvc, Authentication.*, Authorization | `SufiControllerBase`, OIDC, server/WASM auth |
+| Captcha | Captcha, Captcha.Recaptcha, Captcha.Turnstile | Bot protection |
+| Data / Blob / Features / Validation / Templating | Data, BlobStoring.S3Provider, Features, Validation, TextTemplating[.Scriban] | Seeds, S3, features, validation, templates |
+| CLI | CLI.Core, CLI | `sufi` tool and template pipeline |
 
 ## Where developers usually start
 
-Open these areas first depending on the problem you are working on:
-
-- `SufiChain.SufiPlatform.UI.Blazor` when you need to understand shared component behavior or base classes
-- `SufiChain.SufiPlatform.UI.Abstractions` when you need a contract or extension point
-- `SufiChain.SufiPlatform.UI.Services` when you need the default implementation behind a UI abstraction
-- `SufiChain.SufiPlatform.UI.Abp` when platform UI behavior depends on ABP runtime services
-- `SufiChain.SufiPlatform.CLI.Core` when a change affects scaffolding or generation workflow
+- `UI.Blazor` — shared component behavior and `SufiComponentBase`
+- `UI.Abstractions` — contracts and extension points
+- `UI.Services` — default implementations behind those contracts
+- `SufiAI` — keyed chat/kernel registration for modules
+- `CLI.Core` — scaffolding, module registry, template markers
 
 ## Core concepts
 
+### `SufiModule`
+
+Bridges ABP module lifecycle (`PreConfigureServices`, `ConfigureServices`, `OnApplicationInitialization`) into Sufi-namespaced modules.
+
 ### `SufiComponentBase`
 
-`SufiComponentBase` is the standard base type for platform Blazor components. It centralizes common behaviors such as:
-
-- localization through `L["Key"]`
-- user and tenant context access
-- UI communication and notifications
-- loading helpers such as `ExecuteWithLoadingAsync`
-- lazy access to common platform services
+Standard Blazor base for platform components: localization (`L["Key"]`), user/tenant context, notifications, loading helpers, and lazy access to common services.
 
 ### Contributor-based composition
 
-The framework relies on contributors so modules can extend shared UI surfaces without hard-wiring themselves into a single host.
-
-Common extension points include:
+Modules extend shared UI without hard-wiring hosts:
 
 - `IMenuContributor`
 - `IToolbarContributor`
-- theme registration
-- layout composition hooks
-- settings group contributors in relevant modules
+- theme registration and layout hooks
+- settings-group contributors in relevant modules
 
 ## Dependency direction
 
-At a high level:
-
-- abstractions live in `UI.Abstractions`
-- default behavior lives in `UI.Services`
-- shared Blazor behavior lives in `UI.Blazor`
-- host-specific Blazor integration lives in the server and WebAssembly packages
-- ABP bridges live in `UI.Abp`
-- infrastructure concerns such as authentication, storage, and CLI remain adjacent to the UI stack rather than inside business modules
+- Abstractions contracts in `UI.Abstractions`
+- Defaults in `UI.Services`
+- Shared Blazor in `UI.Blazor`
+- Host-specific Blazor in Server / WebAssembly packages
+- Infrastructure (EF, Mongo, EventBus, Caching) via `Volo.Abp.*`, not Sufi wrappers
 
 ## Related docs
 
+- [Package Map](../reference/package-map.md)
 - [ABP Integration](abp-integration.md)
 - [Authentication](authentication.md)
 - [Module Architecture](module-architecture.md)
 - [Developer Conventions](developer-conventions.md)
+- [Architecture decisions](../architecture/decisions.md)
+- [CLI](cli.md)
+- [Communication overview](communication-overview.md)

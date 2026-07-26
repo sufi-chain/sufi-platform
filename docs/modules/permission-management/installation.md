@@ -2,11 +2,11 @@
 
 ## Main packages
 
-- `SufiChain.SufiPlatform.PermissionManagement.Application.Contracts`
-- `SufiChain.SufiPlatform.PermissionManagement.Application`
-- `SufiChain.SufiPlatform.PermissionManagement.HttpApi`
-- `SufiChain.SufiPlatform.PermissionManagement.HttpApi.Client`
-- `SufiChain.SufiPlatform.PermissionManagement.Domain.Shared`
+- `SufiChain.SufiPlatform.Permissions.Application.Contracts`
+- `SufiChain.SufiPlatform.Permissions.Application`
+- `SufiChain.SufiPlatform.Permissions.HttpApi`
+- `SufiChain.SufiPlatform.Permissions.HttpApi.Client`
+- `SufiChain.SufiPlatform.Permissions.Domain.Shared`
 
 ## Notable dependency pattern
 

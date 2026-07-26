@@ -330,14 +330,14 @@ public enum FileType
 
 | Permission | Description |
 |------------|-------------|
-| `SufiAbpFileManager.FileItems` | View file items |
-| `SufiAbpFileManager.FileItems.Create` | Upload |
-| `SufiAbpFileManager.FileItems.Update` | Update metadata |
-| `SufiAbpFileManager.FileItems.Delete` | Delete |
-| `SufiAbpFileManager.FileStructures` | View structures |
-| `SufiAbpFileManager.FileStructures.Create` | Create |
-| `SufiAbpFileManager.FileStructures.Update` | Update |
-| `SufiAbpFileManager.FileStructures.Delete` | Delete |
+| `SufiFileManager.FileItems` | View file items |
+| `SufiFileManager.FileItems.Create` | Upload |
+| `SufiFileManager.FileItems.Update` | Update metadata |
+| `SufiFileManager.FileItems.Delete` | Delete |
+| `SufiFileManager.FileStructures` | View structures |
+| `SufiFileManager.FileStructures.Create` | Create |
+| `SufiFileManager.FileStructures.Update` | Update |
+| `SufiFileManager.FileStructures.Delete` | Delete |
 
 ---
 
@@ -355,7 +355,7 @@ public interface IFileItemUrlProvider
 }
 ```
 
-Reads `RemoteServices:SufiAbpFileManager:BaseUrl` or `RemoteServices:Default:BaseUrl` from configuration.
+Reads `RemoteServices:SufiFileManager:BaseUrl` or `RemoteServices:Default:BaseUrl` from configuration.
 
 ---
 

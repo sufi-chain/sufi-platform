@@ -39,7 +39,7 @@ sufi --version
 If you are working from this repository and want to install the local build:
 
 ```bash
-dotnet pack src/framework/SufiChain.SufiPlatform.CLI -o ./nupkg
+dotnet pack framework/SufiChain.SufiPlatform.CLI -o ./nupkg
 dotnet tool install --global --add-source ./nupkg SufiChain.SufiPlatform.CLI
 sufi --version
 ```
@@ -197,5 +197,5 @@ Once the generated solution is running, continue with:
 - [Product Overview](product-overview.md)
 - [Architecture](architecture.md)
 - [Module Catalog](modules/index.md)
-- [SufiBlazor Overview](sufi-blazor/overview.md)
-- [SufiTheme Overview](sufi-theme/sufi-theme-overview.md)
+- [SufiBlazor](../../independent-projects/sufi-blazor/docs/README.md)
+- [SufiTheme](../../independent-projects/sufi-theme/docs/README.md)
