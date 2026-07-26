@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <RootNamespace>SufiChain.SufiPlatform.Editions</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="../../../../framework/SufiChain.SufiPlatform.Core/SufiChain.SufiPlatform.Core.csproj" />
+    <PackageReference Include="Volo.Abp.Ddd.Domain" Version="$(AbpVersion)" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="../SufiChain.SufiPlatform.Editions.Domain.Shared/SufiChain.SufiPlatform.Editions.Domain.Shared.csproj" />
+    <ProjectReference Include="../../../features/src/SufiChain.SufiPlatform.Features.Domain/SufiChain.SufiPlatform.Features.Domain.csproj" />
+  </ItemGroup>
+</Project>

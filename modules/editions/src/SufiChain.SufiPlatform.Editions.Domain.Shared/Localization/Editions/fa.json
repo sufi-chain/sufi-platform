@@ -1,0 +1,30 @@
+{
+  "culture": "fa",
+  "texts": {
+    "Menu:Editions": "نسخه‌ها",
+    "Editions": "نسخه‌ها",
+    "EditionName": "نام",
+    "EditionDisplayName": "نام نمایشی",
+    "EditionCode": "کد",
+    "EditionIsActive": "فعال",
+    "NewEdition": "نسخه جدید",
+    "EditEdition": "ویرایش نسخه",
+    "EditionFeatures": "ویژگی‌های نسخه",
+    "Permission:Editions": "نسخه‌ها",
+    "Permission:Editions.Editions": "مدیریت نسخه‌ها",
+    "Permission:Editions.Editions.Create": "ایجاد",
+    "Permission:Editions.Editions.Update": "ویرایش",
+    "Permission:Editions.Editions.Delete": "حذف",
+    "Permission:Editions.Editions.ManageFeatures": "مدیریت ویژگی‌ها",
+    "SufiEditions:EditionNameAlreadyExists": "نسخه‌ای با این نام وجود دارد.",
+    "SufiEditions:EditionCodeAlreadyExists": "نسخه‌ای با این کد وجود دارد.",
+    "Actions": "عملیات",
+    "Active": "فعال",
+    "Inactive": "غیرفعال",
+    "Cancel": "انصراف",
+    "Save": "ذخیره",
+    "Delete": "حذف",
+    "ConfirmDeleteEdition": "آیا از حذف این نسخه مطمئن هستید؟",
+    "NoEditions": "هنوز نسخه‌ای وجود ندارد"
+  }
+}

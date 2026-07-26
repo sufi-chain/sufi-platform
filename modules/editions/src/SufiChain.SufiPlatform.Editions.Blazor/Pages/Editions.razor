@@ -1,0 +1,151 @@
+@page "/panel/admin/editions"
+@attribute [Authorize(EditionsPermissions.Editions.Default)]
+@inherits EditionsComponentBase
+
+<SufiPageToolbar>
+    @if (HasCreatePermission)
+    {
+        <SbButton Color="SbColor.Primary" OnClick="ShowCreateModal">
+            <StartIcon><SbIcon Name="plus" /></StartIcon>
+            <ChildContent>@L["NewEdition"]</ChildContent>
+        </SbButton>
+    }
+</SufiPageToolbar>
+
+<SbStack Direction="SbStackDirection.Column" Gap="4">
+    <SbCard>
+        <ChildContent>
+            <SbDataGrid TItem="EditionDto"
+                        Items="@_items"
+                        Loading="@_loading"
+                        Striped="true"
+                        Hoverable="true"
+                        Bordered="false"
+                        ShowColumnFilters="false"
+                        KeySelector="@(item => item.Id.ToString())"
+                        AriaLabel="@L["Editions"]">
+                <ChildContent>
+                    <SbColumn TItem="EditionDto" Field="Name" Title="@L["EditionName"]" Sortable="true">
+                        <CellTemplate Context="ctx">
+                            <SbStack Direction="SbStackDirection.Column" Gap="0">
+                                <SbText Variant="SbTextVariant.BodySmall" Weight="SbFontWeight.Medium">@ctx.Item.Name</SbText>
+                                <SbText Variant="SbTextVariant.Caption" Color="SbColor.Muted">@ctx.Item.DisplayName</SbText>
+                            </SbStack>
+                        </CellTemplate>
+                    </SbColumn>
+                    <SbColumn TItem="EditionDto" Field="Code" Title="@L["EditionCode"]" Width="140px">
+                        <CellTemplate Context="ctx">
+                            <SbChip Color="SbColor.Secondary" Size="SbSize.Sm">@ctx.Item.Code</SbChip>
+                        </CellTemplate>
+                    </SbColumn>
+                    <SbColumn TItem="EditionDto" Field="IsActive" Title="@L["EditionIsActive"]" Width="120px" Align="SbColumnAlign.Center">
+                        <CellTemplate Context="ctx">
+                            @if (ctx.Item.IsActive)
+                            {
+                                <SbChip Color="SbColor.Success" Size="SbSize.Sm">@L["Active"]</SbChip>
+                            }
+                            else
+                            {
+                                <SbChip Color="SbColor.Muted" Size="SbSize.Sm">@L["Inactive"]</SbChip>
+                            }
+                        </CellTemplate>
+                    </SbColumn>
+                    <SbColumn TItem="EditionDto" Title="@L["Actions"]" Width="170px" Align="SbColumnAlign.End">
+                        <CellTemplate Context="ctx">
+                            <SbStack Direction="SbStackDirection.Row" Gap="1" Justify="SbJustify.End">
+                                @if (HasManageFeaturesPermission)
+                                {
+                                    <SbIconButton Size="SbSize.Sm"
+                                                  Variant="SbButtonVariant.Outline"
+                                                  Color="SbColor.Secondary"
+                                                  AriaLabel="@L["EditionFeatures"]"
+                                                  Title="@L["EditionFeatures"]"
+                                                  OnClick="@(() => ShowEditionFeatures(ctx.Item))">
+                                        <Icon><SbIcon Name="sliders" /></Icon>
+                                    </SbIconButton>
+                                }
+                                @if (HasUpdatePermission)
+                                {
+                                    <SbIconButton Size="SbSize.Sm"
+                                                  Variant="SbButtonVariant.Outline"
+                                                  Color="SbColor.Primary"
+                                                  AriaLabel="@L["EditEdition"]"
+                                                  Title="@L["EditEdition"]"
+                                                  OnClick="@(() => ShowEditModal(ctx.Item))">
+                                        <Icon><SbIcon Name="edit" /></Icon>
+                                    </SbIconButton>
+                                }
+                                @if (HasDeletePermission)
+                                {
+                                    <SbIconButton Size="SbSize.Sm"
+                                                  Variant="SbButtonVariant.Outline"
+                                                  Color="SbColor.Danger"
+                                                  AriaLabel="@L["Delete"]"
+                                                  Title="@L["Delete"]"
+                                                  OnClick="@(() => ConfirmDeleteAsync(ctx.Item))">
+                                        <Icon><SbIcon Name="trash" /></Icon>
+                                    </SbIconButton>
+                                }
+                            </SbStack>
+                        </CellTemplate>
+                    </SbColumn>
+                </ChildContent>
+                <EmptyTemplate>
+                    <SbEmptyState IconText="📋" Title="@L["NoEditions"]" />
+                </EmptyTemplate>
+            </SbDataGrid>
+        </ChildContent>
+    </SbCard>
+</SbStack>
+
+<SbDialog Open="@(_showCreate || _showEdit)"
+          OpenChanged="OnModalOpenChanged"
+          Size="SbDialogSize.Md"
+          Title="@(_showCreate ? L["NewEdition"] : L["EditEdition"])">
+    <ChildContent>
+        <SbStack Direction="SbStackDirection.Column" Gap="3">
+            <SbTextField TValue="string"
+                         @bind-Value="_form.Name"
+                         Label="@L["EditionName"]"
+                         Required="true" />
+            <SbTextField TValue="string"
+                         @bind-Value="_form.DisplayName"
+                         Label="@L["EditionDisplayName"]" />
+            <SbTextField TValue="string"
+                         @bind-Value="_form.Code"
+                         Label="@L["EditionCode"]" />
+            <SbSwitch @bind-Value="_form.IsActive" Label="@L["EditionIsActive"]" />
+        </SbStack>
+    </ChildContent>
+    <Footer>
+        <SbStack Direction="SbStackDirection.Row" Gap="2" Justify="SbJustify.End">
+            <SbButton Variant="SbButtonVariant.Outline"
+                      Color="SbColor.Secondary"
+                      OnClick="CloseModal">@L["Cancel"]</SbButton>
+            <SbButton Color="SbColor.Primary"
+                      OnClick="SaveAsync"
+                      Loading="@_saving">@L["Save"]</SbButton>
+        </SbStack>
+    </Footer>
+</SbDialog>
+
+<FeaturesModal @ref="_featuresModal" />
+
+@code {
+    private async Task OnModalOpenChanged(bool open)
+    {
+        if (!open)
+        {
+            CloseModal();
+        }
+    }
+
+    private async Task ConfirmDeleteAsync(EditionDto edition)
+    {
+        var confirmed = await Message.ConfirmAsync(L["ConfirmDeleteEdition"], L["Delete"]);
+        if (confirmed)
+        {
+            await DeleteAsync(edition);
+        }
+    }
+}

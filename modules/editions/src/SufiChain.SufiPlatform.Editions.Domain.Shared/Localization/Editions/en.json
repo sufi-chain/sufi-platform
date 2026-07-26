@@ -1,0 +1,30 @@
+{
+  "culture": "en",
+  "texts": {
+    "Menu:Editions": "Editions",
+    "Editions": "Editions",
+    "EditionName": "Name",
+    "EditionDisplayName": "Display name",
+    "EditionCode": "Code",
+    "EditionIsActive": "Active",
+    "NewEdition": "New edition",
+    "EditEdition": "Edit edition",
+    "EditionFeatures": "Edition features",
+    "Permission:Editions": "Editions",
+    "Permission:Editions.Editions": "Edition management",
+    "Permission:Editions.Editions.Create": "Create",
+    "Permission:Editions.Editions.Update": "Update",
+    "Permission:Editions.Editions.Delete": "Delete",
+    "Permission:Editions.Editions.ManageFeatures": "Manage features",
+    "SufiEditions:EditionNameAlreadyExists": "An edition with this name already exists.",
+    "SufiEditions:EditionCodeAlreadyExists": "An edition with this code already exists.",
+    "Actions": "Actions",
+    "Active": "Active",
+    "Inactive": "Inactive",
+    "Cancel": "Cancel",
+    "Save": "Save",
+    "Delete": "Delete",
+    "ConfirmDeleteEdition": "Are you sure you want to delete this edition?",
+    "NoEditions": "No editions yet"
+  }
+}
