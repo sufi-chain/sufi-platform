@@ -1,11 +1,13 @@
 using System;
+using Volo.Abp.MultiTenancy;
 
 namespace SufiChain.SufiPlatform.Features;
 
 [Serializable]
+[IgnoreMultiTenancy]
 public class FeatureValueCacheItem
 {
-    public string Value { get; set; }
+    public string Value { get; set; } = default!;
 
     public FeatureValueCacheItem()
     {
@@ -16,7 +18,7 @@ public class FeatureValueCacheItem
         Value = value;
     }
 
-    public static string CalculateCacheKey(string name, string providerName, string providerKey)
+    public static string CalculateCacheKey(string name, string providerName, string? providerKey)
     {
         return "pn:" + providerName + ",pk:" + providerKey + ",n:" + name;
     }

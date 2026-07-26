@@ -24,10 +24,13 @@ public static class FeaturesDbContextModelCreatingExtensions
 
             b.Property(x => x.Name).HasMaxLength(FeatureValueConsts.MaxNameLength).IsRequired();
             b.Property(x => x.Value).HasMaxLength(FeatureValueConsts.MaxValueLength).IsRequired();
-            b.Property(x => x.ProviderName).HasMaxLength(FeatureValueConsts.MaxProviderNameLength);
-            b.Property(x => x.ProviderKey).HasMaxLength(FeatureValueConsts.MaxProviderKeyLength);
+            b.Property(x => x.ProviderName).HasMaxLength(FeatureValueConsts.MaxProviderNameLength).IsRequired();
+            // Host-scoped values use ProviderName="T" with null ProviderKey (same as ABP).
+            b.Property(x => x.ProviderKey).HasMaxLength(FeatureValueConsts.MaxProviderKeyLength).IsRequired(false);
 
-            b.HasIndex(x => new { x.Name, x.ProviderName, x.ProviderKey }).IsUnique();
+            b.HasIndex(x => new { x.Name, x.ProviderName, x.ProviderKey })
+                .IsUnique()
+                .HasFilter("[ProviderName] IS NOT NULL AND [ProviderKey] IS NOT NULL");
 
             b.ApplyObjectExtensionMappings();
         });
@@ -53,12 +56,12 @@ public static class FeaturesDbContextModelCreatingExtensions
 
             b.Property(x => x.GroupName).HasMaxLength(FeatureGroupDefinitionRecordConsts.MaxNameLength).IsRequired();
             b.Property(x => x.Name).HasMaxLength(FeatureDefinitionRecordConsts.MaxNameLength).IsRequired();
-            b.Property(x => x.ParentName).HasMaxLength(FeatureDefinitionRecordConsts.MaxNameLength);
+            b.Property(x => x.ParentName).HasMaxLength(FeatureDefinitionRecordConsts.MaxNameLength).IsRequired(false);
             b.Property(x => x.DisplayName).HasMaxLength(FeatureDefinitionRecordConsts.MaxDisplayNameLength).IsRequired();
-            b.Property(x => x.Description).HasMaxLength(FeatureDefinitionRecordConsts.MaxDescriptionLength);
-            b.Property(x => x.DefaultValue).HasMaxLength(FeatureDefinitionRecordConsts.MaxDefaultValueLength);
-            b.Property(x => x.AllowedProviders).HasMaxLength(FeatureDefinitionRecordConsts.MaxAllowedProvidersLength);
-            b.Property(x => x.ValueType).HasMaxLength(FeatureDefinitionRecordConsts.MaxValueTypeLength);
+            b.Property(x => x.Description).HasMaxLength(FeatureDefinitionRecordConsts.MaxDescriptionLength).IsRequired(false);
+            b.Property(x => x.DefaultValue).HasMaxLength(FeatureDefinitionRecordConsts.MaxDefaultValueLength).IsRequired(false);
+            b.Property(x => x.AllowedProviders).HasMaxLength(FeatureDefinitionRecordConsts.MaxAllowedProvidersLength).IsRequired(false);
+            b.Property(x => x.ValueType).HasMaxLength(FeatureDefinitionRecordConsts.MaxValueTypeLength).IsRequired(false);
 
             b.HasIndex(x => new { x.Name }).IsUnique();
             b.HasIndex(x => new { x.GroupName });

@@ -2,20 +2,24 @@ using Microsoft.Extensions.DependencyInjection;
 using SufiChain.SufiPlatform.Features.Localization;
 using SufiChain.SufiPlatform.Tenants;
 using Volo.Abp;
+using Volo.Abp.Caching;
 using Volo.Abp.Data;
 using Volo.Abp.DependencyInjection;
-using SufiChain.SufiPlatform.Features;
+using Volo.Abp.DistributedLocking;
+using Volo.Abp.Features;
+using Volo.Abp.Json;
 using Volo.Abp.Localization.ExceptionHandling;
 using Volo.Abp.Modularity;
 using Volo.Abp.Threading;
 
-using Volo.Abp.Caching;
 namespace SufiChain.SufiPlatform.Features;
 
 [DependsOn(
     typeof(SufiFeaturesDomainSharedModule),
     typeof(SufiFeaturesModule),
-    typeof(AbpCachingModule)
+    typeof(AbpCachingModule),
+    typeof(AbpDistributedLockingAbstractionsModule),
+    typeof(AbpJsonModule)
     )]
 public class SufiFeaturesDomainModule : AbpModule
 {

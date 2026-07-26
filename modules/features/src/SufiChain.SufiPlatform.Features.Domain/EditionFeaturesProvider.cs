@@ -61,7 +61,7 @@ public class EditionFeaturesProvider : FeaturesProvider, ITransientDependency
                 return tenant.EditionId;
             }
         }
-        //ToDo Editation module impilimenting
+        // Editions product module is out of scope; resolve edition from tenant.EditionId or AbpClaimTypes.EditionId.
         var editionId = PrincipalAccessor.Principal?.FindFirst(AbpClaimTypes.EditionId)?.Value;
         return Guid.TryParse(editionId, out var parsedEditionId) ? parsedEditionId : null;
     }

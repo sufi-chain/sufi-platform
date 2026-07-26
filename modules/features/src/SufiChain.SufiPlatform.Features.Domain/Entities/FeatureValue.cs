@@ -16,8 +16,11 @@ public class FeatureValue : Entity<Guid>, IAggregateRoot<Guid>
     [NotNull]
     public virtual string ProviderName { get; protected set; }
 
+    /// <summary>
+    /// Provider key (e.g. tenant id). Null for host-scoped feature values.
+    /// </summary>
     [CanBeNull]
-    public virtual string ProviderKey { get; protected set; }
+    public virtual string? ProviderKey { get; protected set; }
 
     protected FeatureValue()
     {
@@ -29,7 +32,7 @@ public class FeatureValue : Entity<Guid>, IAggregateRoot<Guid>
         [NotNull] string name,
         [NotNull] string value,
         [NotNull] string providerName,
-        [CanBeNull] string providerKey)
+        [CanBeNull] string? providerKey)
     {
         Check.NotNull(name, nameof(name));
 

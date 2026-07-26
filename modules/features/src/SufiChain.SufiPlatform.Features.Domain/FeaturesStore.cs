@@ -67,7 +67,7 @@ public class FeaturesStore : IFeaturesStore, ITransientDependency
     protected virtual async Task<FeatureValueCacheItem> GetCacheItemAsync(string name, string providerName, string providerKey)
     {
         var cacheKey = CalculateCacheKey(name, providerName, providerKey);
-        var cacheItem = await Cache.GetAsync(cacheKey, considerUow: true);
+         var cacheItem = await Cache.GetAsync(cacheKey, considerUow: true);
 
         if (cacheItem != null)
         {
