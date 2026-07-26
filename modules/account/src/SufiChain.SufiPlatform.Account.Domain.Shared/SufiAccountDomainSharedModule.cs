@@ -35,6 +35,7 @@ public class SufiAccountDomainSharedModule : AbpModule
         Configure<AbpExceptionLocalizationOptions>(options =>
         {
             options.MapCodeNamespace("SufiChain.SufiPlatform.Account", typeof(SufiAccountResource));
+            options.MapCodeNamespace("SufiAccount", typeof(SufiAccountResource));
         });
     }
 }

@@ -104,6 +104,17 @@
     "TextTemplate:Sufi.Account.TwoFactorCode.Sms": "رمز SMS للمصادقة الثنائية",
     "TextTemplate:Sufi.Account.TwoFactorCode.Sms:Description": "رمز SMS يستخدم كعامل مصادقة ثانٍ أثناء تسجيل الدخول إلى الحساب.",
     "TextTemplate:Sufi.Account.TwoFactorCode.Voice": "رمز صوتي للمصادقة الثنائية",
-    "TextTemplate:Sufi.Account.TwoFactorCode.Voice:Description": "رمز مكالمة صوتية يستخدم كعامل مصادقة ثانٍ أثناء تسجيل الدخول إلى الحساب."
+    "TextTemplate:Sufi.Account.TwoFactorCode.Voice:Description": "رمز مكالمة صوتية يستخدم كعامل مصادقة ثانٍ أثناء تسجيل الدخول إلى الحساب.",
+    "InvalidLinkUserToken": "رمز ربط الحساب غير صالح أو منتهي الصلاحية.",
+    "Menu:LinkedAccounts": "الحسابات المرتبطة",
+    "LinkedAccounts": "الحسابات المرتبطة",
+    "LinkedAccountsEmpty": "لا توجد حسابات مرتبطة بعد.",
+    "LinkedAccountsLoadFailed": "تعذر تحميل الحسابات المرتبطة.",
+    "LoginAsThisAccount": "تسجيل الدخول بهذا الحساب",
+    "UnlinkAccount": "إلغاء الربط",
+    "UnlinkAccountConfirm": "إلغاء ربط هذا الحساب؟",
+    "HostTenant": "المضيف",
+    "LinkLoginFailed": "تعذر التبديل إلى الحساب المرتبط.",
+    "LinkLoginProcessing": "جاري التبديل إلى الحساب المرتبط..."
   }
 }

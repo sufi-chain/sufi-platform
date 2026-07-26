@@ -104,6 +104,17 @@
     "TextTemplate:Sufi.Account.TwoFactorCode.Sms": "Código SMS de dos factores",
     "TextTemplate:Sufi.Account.TwoFactorCode.Sms:Description": "Código SMS usado como segundo factor de autenticación durante el inicio de sesión.",
     "TextTemplate:Sufi.Account.TwoFactorCode.Voice": "Código de voz de dos factores",
-    "TextTemplate:Sufi.Account.TwoFactorCode.Voice:Description": "Código por llamada de voz usado como segundo factor de autenticación durante el inicio de sesión."
+    "TextTemplate:Sufi.Account.TwoFactorCode.Voice:Description": "Código por llamada de voz usado como segundo factor de autenticación durante el inicio de sesión.",
+    "InvalidLinkUserToken": "El token de vinculación de cuenta no es válido o ha caducado.",
+    "Menu:LinkedAccounts": "Cuentas vinculadas",
+    "LinkedAccounts": "Cuentas vinculadas",
+    "LinkedAccountsEmpty": "Aún no hay cuentas vinculadas.",
+    "LinkedAccountsLoadFailed": "No se pudieron cargar las cuentas vinculadas.",
+    "LoginAsThisAccount": "Iniciar sesión con esta cuenta",
+    "UnlinkAccount": "Desvincular",
+    "UnlinkAccountConfirm": "¿Desvincular esta cuenta?",
+    "HostTenant": "Host",
+    "LinkLoginFailed": "No se pudo cambiar a la cuenta vinculada.",
+    "LinkLoginProcessing": "Cambiando a la cuenta vinculada..."
   }
 }

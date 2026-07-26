@@ -1,5 +1,4 @@
 using SufiChain.SufiPlatform.Account.Localization;
-using SufiChain.SufiPlatform.Account.Localization;
 using SufiChain.SufiPlatform.Identity.Localization;
 using SufiChain.SufiPlatform.UI.Navigation;
 
@@ -49,6 +48,14 @@ public class AccountMenuContributor : IMenuContributor
         ));
 
         context.Menu.AddItem(new ApplicationMenuItem(
+            AccountMenuNames.LinkedAccounts,
+            accountL["Menu:LinkedAccounts"],
+            url: "/account/linked-accounts",
+            icon: "link",
+            order: 260
+        ));
+
+        context.Menu.AddItem(new ApplicationMenuItem(
             AccountMenuNames.Logout,
             l["Logout"],
             url: "/account/logout",
@@ -67,5 +74,6 @@ public static class AccountMenuNames
     public const string Profile = GroupName + ".Profile";
     public const string ChangePassword = GroupName + ".ChangePassword";
     public const string TwoFactor = GroupName + ".TwoFactor";
+    public const string LinkedAccounts = GroupName + ".LinkedAccounts";
     public const string Logout = GroupName + ".Logout";
 }

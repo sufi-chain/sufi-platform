@@ -104,6 +104,17 @@
     "TextTemplate:Sufi.Account.TwoFactorCode.Sms": "Two-Factor SMS Code",
     "TextTemplate:Sufi.Account.TwoFactorCode.Sms:Description": "SMS code used as the second authentication factor during account sign-in.",
     "TextTemplate:Sufi.Account.TwoFactorCode.Voice": "Two-Factor Voice Code",
-    "TextTemplate:Sufi.Account.TwoFactorCode.Voice:Description": "Voice-call code used as the second authentication factor during account sign-in."
+    "TextTemplate:Sufi.Account.TwoFactorCode.Voice:Description": "Voice-call code used as the second authentication factor during account sign-in.",
+    "InvalidLinkUserToken": "The account link token is invalid or has expired.",
+    "Menu:LinkedAccounts": "Linked accounts",
+    "LinkedAccounts": "Linked accounts",
+    "LinkedAccountsEmpty": "No linked accounts yet.",
+    "LinkedAccountsLoadFailed": "Could not load linked accounts.",
+    "LoginAsThisAccount": "Login as this account",
+    "UnlinkAccount": "Unlink",
+    "UnlinkAccountConfirm": "Unlink this account?",
+    "HostTenant": "Host",
+    "LinkLoginFailed": "Could not switch to the linked account.",
+    "LinkLoginProcessing": "Switching to linked account..."
   }
 }

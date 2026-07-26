@@ -104,6 +104,17 @@
     "TextTemplate:Sufi.Account.TwoFactorCode.Sms": "کد پیامکی احراز دو مرحله‌ای",
     "TextTemplate:Sufi.Account.TwoFactorCode.Sms:Description": "کد پیامکی که به‌عنوان عامل دوم احراز هویت هنگام ورود به حساب استفاده می‌شود.",
     "TextTemplate:Sufi.Account.TwoFactorCode.Voice": "کد صوتی احراز دو مرحله‌ای",
-    "TextTemplate:Sufi.Account.TwoFactorCode.Voice:Description": "کد تماس صوتی که به‌عنوان عامل دوم احراز هویت هنگام ورود به حساب استفاده می‌شود."
+    "TextTemplate:Sufi.Account.TwoFactorCode.Voice:Description": "کد تماس صوتی که به‌عنوان عامل دوم احراز هویت هنگام ورود به حساب استفاده می‌شود.",
+    "InvalidLinkUserToken": "توکن پیوند حساب نامعتبر است یا منقضی شده است.",
+    "Menu:LinkedAccounts": "حساب‌های پیوندی",
+    "LinkedAccounts": "حساب‌های پیوندی",
+    "LinkedAccountsEmpty": "هنوز حساب پیوندی وجود ندارد.",
+    "LinkedAccountsLoadFailed": "بارگذاری حساب‌های پیوندی ممکن نشد.",
+    "LoginAsThisAccount": "ورود با این حساب",
+    "UnlinkAccount": "لغو پیوند",
+    "UnlinkAccountConfirm": "این حساب لغو پیوند شود؟",
+    "HostTenant": "میزبان",
+    "LinkLoginFailed": "تغییر به حساب پیوندی ممکن نشد.",
+    "LinkLoginProcessing": "در حال تغییر به حساب پیوندی..."
   }
 }
