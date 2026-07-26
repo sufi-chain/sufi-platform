@@ -13,20 +13,18 @@ namespace SufiChain.SufiPlatform.SufiAI;
 public class NullSufiAIToolRegistry : ISufiAIToolRegistry, ITransientDependency
 {
     /// <inheritdoc />
-    public virtual Task<List<ISufiAITool>> GetToolsForWorkspaceAsync(
-        string workspaceName,
+    public virtual Task<List<ISufiAITool>> GetCatalogAsync(
         CancellationToken cancellationToken = default)
     {
         return Task.FromResult(new List<ISufiAITool>());
     }
 
     /// <inheritdoc />
-    public virtual Task<ISufiAITool?> GetToolAsync(
-        string workspaceName,
-        string toolName,
+    public virtual Task<List<ISufiAITool>> ResolveAsync(
+        IReadOnlyCollection<string> toolNames,
         CancellationToken cancellationToken = default)
     {
-        return Task.FromResult<ISufiAITool?>(null);
+        return Task.FromResult(new List<ISufiAITool>());
     }
 
     /// <inheritdoc />

@@ -5,24 +5,21 @@ using System.Threading.Tasks;
 namespace SufiChain.SufiPlatform.SufiAI;
 
 /// <summary>
-/// Registry for discovering AI tools available in a workspace.
+/// Tenant-aware registry for discovering and explicitly resolving AI tools.
 /// </summary>
 public interface ISufiAIToolRegistry
 {
     /// <summary>
-    /// Gets all tools available for a specific workspace, respecting the
-    /// provider's workspace configuration.
+    /// Gets the tenant-visible tool catalog.
     /// </summary>
-    Task<List<ISufiAITool>> GetToolsForWorkspaceAsync(
-        string workspaceName,
+    Task<List<ISufiAITool>> GetCatalogAsync(
         CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Gets a specific tool by name for a workspace, or <c>null</c> when unknown.
+    /// Resolves only explicitly requested tenant-visible tools.
     /// </summary>
-    Task<ISufiAITool?> GetToolAsync(
-        string workspaceName,
-        string toolName,
+    Task<List<ISufiAITool>> ResolveAsync(
+        IReadOnlyCollection<string> toolNames,
         CancellationToken cancellationToken = default);
 
     /// <summary>

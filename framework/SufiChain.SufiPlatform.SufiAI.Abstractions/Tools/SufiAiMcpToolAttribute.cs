@@ -3,11 +3,11 @@ using System;
 namespace SufiChain.SufiPlatform.SufiAI;
 
 /// <summary>
-/// Marks a service method as an AI-callable tool that providers can discover
+/// Marks a service method as an AI/MCP tool that providers can discover
 /// and expose to AI models.
 /// </summary>
 [AttributeUsage(AttributeTargets.Method, AllowMultiple = false, Inherited = false)]
-public class SufiAIToolAttribute : Attribute
+public class SufiAiMcpToolAttribute : Attribute
 {
     /// <summary>
     /// Tool name (must be unique across all tools).
@@ -37,7 +37,7 @@ public class SufiAIToolAttribute : Attribute
     /// <summary>
     /// Creates the attribute.
     /// </summary>
-    public SufiAIToolAttribute(string name, string description)
+    public SufiAiMcpToolAttribute(string name, string description)
     {
         Name = name ?? throw new ArgumentNullException(nameof(name));
         Description = description ?? throw new ArgumentNullException(nameof(description));

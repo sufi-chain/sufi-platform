@@ -14,4 +14,10 @@ public class SufiAIRagIndexRequest
     /// Document source to index. When <c>null</c>, all registered sources are indexed.
     /// </summary>
     public string? SourceName { get; set; }
+
+    /// <summary>
+    /// Optional exact-match metadata filters applied after the document source harvest
+    /// (for example <c>projectId</c> for HelpDesk KnowledgeBase).
+    /// </summary>
+    public Dictionary<string, string> MetadataFilters { get; set; } = new();
 }
