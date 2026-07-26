@@ -10,10 +10,17 @@
 						@L["OnlyOpenAIProviderAvailable"]
 					</SbAlert>
 
+					@if (ShowsEndpointOverrideHint)
+					{
+						<SbAlert Severity="SbAlertSeverity.Warning">
+							@L["ModelConfigurationOverrideHint"]
+						</SbAlert>
+					}
+
 					<SbGrid Columns="1" ColumnsMd="2" Gap="4">
 						<SbSimpleSelect TValue="AICapabilityType"
 										Value="@_model.CapabilityType"
-										ValueChanged="@((AICapabilityType value) => _model.CapabilityType = value)"
+										ValueChanged="@OnCapabilityChanged"
 										Label="@L["Capability"]"
 										Disabled="_isEditMode">
 							<SbSelectOption TValue="AICapabilityType" Value="@AICapabilityType.ChatCompletion">@L["ChatCompletion"]</SbSelectOption>
@@ -35,11 +42,13 @@
 					<SbGrid Columns="1" ColumnsMd="2" Gap="4">
 						<SbTextField @bind-Value="_model.ApiEndpoint"
 									 Label="@L["ApiEndpoint"]"
-									 Placeholder="@L["ApiEndpointPlaceholder"]" />
+									 Placeholder="@L["ApiEndpointPlaceholder"]"
+									 HelperText="@L["ApiEndpointHelperText"]" />
 
 						<SbTextField @bind-Value="_model.ApiKey"
 									 Label="@L["ApiKey"]"
-									 Placeholder="@L["ApiKeyPlaceholder"]"
+									 Placeholder="@ApiKeyPlaceholder"
+									 HelperText="@ApiKeyHelperText"
 									 Type="password" />
 					</SbGrid>
 
@@ -76,20 +85,23 @@
 						</SbSimpleSelect>
 					}
 
-					<SbRadioGroup TValue="string"
-								  @bind-Value="_openAIApiModeText"
-								  Label="@L["OpenAIApiMode"]"
-								  Orientation="SbOrientation.Horizontal">
-						<SbRadio TValue="string" Value="@string.Empty" Label="@L["InheritWorkspace"]" />
-						<SbRadio TValue="string" Value="@OpenAIApiMode.ChatCompletions.ToString()" Label="@L["ChatCompletions"]" />
-						<SbRadio TValue="string" Value="@OpenAIApiMode.Responses.ToString()" Label="@L["Responses"]" />
-					</SbRadioGroup>
-
-					@if (_openAIApiModeText == OpenAIApiMode.Responses.ToString())
+					@if (ShowsOpenAIApiMode)
 					{
-						<SbAlert Severity="SbAlertSeverity.Warning">
-							@L["ResponsesApiCompatibilityWarning"]
-						</SbAlert>
+						<SbRadioGroup TValue="string"
+									  @bind-Value="_openAIApiModeText"
+									  Label="@L["OpenAIApiMode"]"
+									  Orientation="SbOrientation.Horizontal">
+							<SbRadio TValue="string" Value="@string.Empty" Label="@L["InheritWorkspace"]" />
+							<SbRadio TValue="string" Value="@OpenAIApiMode.ChatCompletions.ToString()" Label="@L["ChatCompletions"]" />
+							<SbRadio TValue="string" Value="@OpenAIApiMode.Responses.ToString()" Label="@L["Responses"]" />
+						</SbRadioGroup>
+
+						@if (_openAIApiModeText == OpenAIApiMode.Responses.ToString())
+						{
+							<SbAlert Severity="SbAlertSeverity.Warning">
+								@L["ResponsesApiCompatibilityWarning"]
+							</SbAlert>
+						}
 					}
 				</SbStack>
 			</SbTab>
@@ -111,11 +123,6 @@
 									 Label="@L["OutputCostPer1MTokens"]"
 									 Placeholder="@L["InheritWorkspace"]" />
 					</SbGrid>
-
-					<SbTextArea @bind-Value="_model.ConfigurationJson"
-								Label="@L["ConfigurationJson"]"
-								Placeholder="@L["ConfigurationJsonPlaceholder"]"
-								Rows="5" />
 				</SbStack>
 			</SbTab>
 		</SbTabs>
@@ -123,6 +130,11 @@
 	<Footer>
 		<SbStack Direction="SbStackDirection.Row" Gap="2" Justify="SbJustify.End">
 			<SbButton OnClick="@CloseModalAsync">@L["Cancel"]</SbButton>
+			<SbButton Variant="SbButtonVariant.Outline"
+					  OnClick="@TestConnectionAsync"
+					  Loading="IsOperationLoading(LoadingKeys.TestConnection)">
+				@L["TestConnection"]
+			</SbButton>
 			<SbButton Color="SbColor.Primary"
 					  OnClick="@SaveConfigurationAsync"
 					  Loading="IsOperationLoading(LoadingKeys.SaveConfiguration)">

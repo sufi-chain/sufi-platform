@@ -16,7 +16,4 @@ public class WorkspaceDto : FullAuditedEntityDto<Guid>
     public decimal? InputCostPer1MTokens { get; set; }
     public decimal? OutputCostPer1MTokens { get; set; }
     public bool IsActive { get; set; }
-    public bool HasEmbedderConfig { get; set; }
-    public bool HasVectorStoreConfig { get; set; }
-    public int EnabledMCPToolCount { get; set; }
 }

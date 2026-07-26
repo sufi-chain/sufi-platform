@@ -29,7 +29,7 @@
 						PageIndexChanged="OnPageIndexChangedAsync"
 						PageSizeChanged="OnPageSizeChangedAsync"
 						KeySelector="@(item => item.Id.ToString())">
-					<SbColumn TItem="WorkspaceDto" Title="@L["Actions"]" Width="150px">
+						<SbColumn TItem="WorkspaceDto" Title="@L["Actions"]" Width="120px">
 						<CellTemplate Context="cellContext">
 							<SbStack Direction="SbStackDirection.Row" Gap="1">
 								<AuthorizeView Policy="@AIPermissions.Workspaces.Edit">
@@ -44,13 +44,7 @@
 											<Icon><SbIcon Name="settings" /></Icon>
 										</SbIconButton>
 									</AuthorizeView>
-									<AuthorizeView Policy="@AIPermissions.Workspaces.Edit">
-										<SbIconButton Size="SbSize.Sm" AriaLabel="@L["ConfigureMCPTools"]"
-													  OnClick="@(() => OpenMCPToolsModal(cellContext.Item))">
-											<Icon><SbIcon Name="mcp" /></Icon>
-										</SbIconButton>
-									</AuthorizeView>
-									<AuthorizeView Policy="@AIPermissions.Workspaces.Delete">
+										<AuthorizeView Policy="@AIPermissions.Workspaces.Delete">
 										<SbIconButton Size="SbSize.Sm" AriaLabel="@L["Delete"]"
 												  Color="SbColor.Danger"
 												  OnClick="@(() => DeleteWorkspaceAsync(cellContext.Item))">
@@ -73,14 +67,7 @@
 					</CellTemplate>
 				</SbColumn>
 					<SbColumn TItem="WorkspaceDto" Field="Model" Title="@L["Model"]" Width="180px" />
-					<SbColumn TItem="WorkspaceDto" Title="@L["MCPTools"]" Width="120px">
-						<CellTemplate Context="cellContext">
-							<SbBadge Color="@(cellContext.Item.EnabledMCPToolCount > 0 ? SbColor.Success : SbColor.Default)">
-								@cellContext.Item.EnabledMCPToolCount
-							</SbBadge>
-						</CellTemplate>
-					</SbColumn>
-					<SbColumn TItem="WorkspaceDto" Title="@L["Status"]" Width="100px">
+						<SbColumn TItem="WorkspaceDto" Title="@L["Status"]" Width="100px">
 					<CellTemplate Context="cellContext">
 						<SbBadge Color="@(cellContext.Item.IsActive ? SbColor.Success : SbColor.Default)">
 							@(cellContext.Item.IsActive ? L["Active"] : L["Inactive"])
@@ -113,6 +100,3 @@
 		<ModelConfigurationsModal @bind-Open="_showModelConfigurationsModal"
 								  WorkspaceId="_modelConfigurationsWorkspaceId"
 								  WorkspaceName="@_modelConfigurationsWorkspaceName" />
-		<WorkspaceMCPToolsModal @bind-Open="_showMCPToolsModal"
-								WorkspaceId="_mcpToolsWorkspaceId"
-								OnSaved="@OnMCPToolsUpdatedAsync" />

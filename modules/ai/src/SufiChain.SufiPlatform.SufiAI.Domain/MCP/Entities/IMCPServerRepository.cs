@@ -12,24 +12,19 @@ namespace SufiChain.SufiPlatform.SufiAI.MCP.Entities;
 public interface IMCPServerRepository : IRepository<MCPServer, Guid>
 {
     /// <summary>
-    /// Find server by name within a workspace.
+    /// Find server by immutable key within the current tenant.
     /// </summary>
-    Task<MCPServer?> FindByNameAsync(
-        Guid workspaceId,
-        string name,
+    Task<MCPServer?> FindByKeyAsync(
+        string key,
         CancellationToken cancellationToken = default);
     
     /// <summary>
-    /// Get all enabled servers for a workspace.
+    /// Get all enabled servers for the current tenant.
     /// </summary>
-    Task<List<MCPServer>> GetEnabledByWorkspaceAsync(
-        Guid workspaceId,
-        CancellationToken cancellationToken = default);
+    Task<List<MCPServer>> GetEnabledListAsync(CancellationToken cancellationToken = default);
     
     /// <summary>
-    /// Get all servers for a workspace (enabled and disabled).
+    /// Get all servers for the current tenant.
     /// </summary>
-    Task<List<MCPServer>> GetByWorkspaceAsync(
-        Guid workspaceId,
-        CancellationToken cancellationToken = default);
+    Task<List<MCPServer>> GetListAsync(CancellationToken cancellationToken = default);
 }

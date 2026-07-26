@@ -2,15 +2,13 @@ using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
 using Microsoft.AspNetCore.Authorization;
-using SufiChain.SufiPlatform.SufiAI.Features;
+using Microsoft.Extensions.Logging;
+using SufiChain.SufiPlatform.Application.Dtos;
 using SufiChain.SufiPlatform.Application.Services;
 using SufiChain.SufiPlatform.Features;
-using Volo.Abp.Security.Encryption;
+using SufiChain.SufiPlatform.SufiAI.Features;
 using SufiChain.SufiPlatform.SufiAI.Permissions;
-using SufiChain.SufiPlatform.Application.Dtos;
-using Microsoft.Extensions.Logging;
-using SufiChain.SufiPlatform.SufiAI.MCP.Abstractions;
-using SufiChain.SufiPlatform.SufiAI.MCP.Tools;
+using Volo.Abp.Security.Encryption;
 
 namespace SufiChain.SufiPlatform.SufiAI.Workspaces;
 
@@ -21,23 +19,29 @@ public class WorkspaceAppService : SufiApplicationService, IWorkspaceAppService
     private const string DefaultOpenAIBaseUrl = "https://api.openai.com/v1";
 
     private readonly IWorkspaceRepository _workspaceRepository;
+    private readonly IAIModelConfigurationRepository _modelConfigurationRepository;
     private readonly WorkspaceManager _workspaceManager;
     private readonly IStringEncryptionService _stringEncryptor;
     private readonly IHttpClientFactory _httpClientFactory;
-    private readonly IMCPToolRegistry _toolRegistry;
+    private readonly IWorkspaceRuntimeConfigurationResolver _runtimeConfigurationResolver;
+    private readonly WorkspaceSyncService _workspaceSyncService;
 
     public WorkspaceAppService(
         IWorkspaceRepository workspaceRepository,
+        IAIModelConfigurationRepository modelConfigurationRepository,
         WorkspaceManager workspaceManager,
         IStringEncryptionService stringEncryptor,
         IHttpClientFactory httpClientFactory,
-        IMCPToolRegistry toolRegistry)
+        IWorkspaceRuntimeConfigurationResolver runtimeConfigurationResolver,
+        WorkspaceSyncService workspaceSyncService)
     {
         _workspaceRepository = workspaceRepository;
+        _modelConfigurationRepository = modelConfigurationRepository;
         _workspaceManager = workspaceManager;
         _stringEncryptor = stringEncryptor;
         _httpClientFactory = httpClientFactory;
-        _toolRegistry = toolRegistry;
+        _runtimeConfigurationResolver = runtimeConfigurationResolver;
+        _workspaceSyncService = workspaceSyncService;
     }
 
     public async Task<PagedResultDto<WorkspaceDto>> GetListAsync(PagedAndSortedResultRequestDto input)
@@ -61,6 +65,47 @@ public class WorkspaceAppService : SufiApplicationService, IWorkspaceAppService
         return ObjectMapper.Map<Workspace, WorkspaceDto>(workspace);
     }
 
+    public async Task<WorkspaceReadinessDto> GetReadinessAsync(Guid id)
+    {
+        var workspace = await _workspaceRepository.GetAsync(id, includeDetails: true);
+        var capabilityResults = new List<WorkspaceRuntimeConfiguration>();
+        foreach (var capabilityType in Enum.GetValues<AICapabilityType>())
+        {
+            capabilityResults.Add(_runtimeConfigurationResolver.Resolve(workspace, capabilityType));
+        }
+
+        var chat = capabilityResults.Single(
+            result => result.CapabilityType == AICapabilityType.ChatCompletion);
+        var mcpFailureCode = chat.FailureCode;
+        if (mcpFailureCode == null && chat.Provider != AIProviderType.OpenAI)
+        {
+            mcpFailureCode = WorkspaceRuntimeFailureCodes.McpProviderNotSupported;
+        }
+        else if (mcpFailureCode == null && chat.OpenAIApiMode != OpenAIApiMode.ChatCompletions)
+        {
+            mcpFailureCode = WorkspaceRuntimeFailureCodes.McpApiModeNotSupported;
+        }
+
+        return new WorkspaceReadinessDto
+        {
+            WorkspaceId = chat.Workspace.Id,
+            WorkspaceName = chat.Workspace.Name,
+            IsActive = chat.Workspace.IsActive,
+            IsConfigured = chat.IsConfigured,
+            IsReady = chat.IsReady,
+            Capabilities = capabilityResults.Select(MapCapabilityReadiness).ToList(),
+            Mcp = new WorkspaceMcpReadinessDto
+            {
+                IsConfigured = chat.IsConfigured,
+                IsReady = mcpFailureCode == null,
+                Provider = chat.Provider,
+                ModelId = NullIfWhiteSpace(chat.ModelId),
+                OpenAIApiMode = chat.OpenAIApiMode,
+                FailureCode = mcpFailureCode
+            }
+        };
+    }
+
     [Authorize(AIPermissions.Workspaces.Create)]
     public async Task<WorkspaceDto> CreateAsync(CreateWorkspaceDto input)
     {
@@ -69,7 +114,7 @@ public class WorkspaceAppService : SufiApplicationService, IWorkspaceAppService
         var workspace = new Workspace(
             GuidGenerator.Create(),
             input.Name,
-            AIProviderType.OpenAI,
+            input.Provider,
             input.Model,
             CurrentTenant.Id
         );
@@ -85,18 +130,6 @@ public class WorkspaceAppService : SufiApplicationService, IWorkspaceAppService
             input.InputCostPer1MTokens,
             input.OutputCostPer1MTokens
         );
-
-        if (input.EmbedderConfig != null)
-        {
-            var embedderConfig = input.EmbedderConfig;
-            embedderConfig.ApiKey = EncryptApiKey(embedderConfig.ApiKey);
-            workspace.SetEmbedderConfig(JsonSerializer.Serialize(embedderConfig));
-        }
-
-        if (input.VectorStoreConfig != null)
-        {
-            workspace.SetVectorStoreConfig(JsonSerializer.Serialize(input.VectorStoreConfig));
-        }
 
         await _workspaceRepository.InsertAsync(workspace, autoSave: true);
 
@@ -133,34 +166,8 @@ public class WorkspaceAppService : SufiApplicationService, IWorkspaceAppService
         else
             workspace.Deactivate();
 
-        if (input.EmbedderConfig != null)
-        {
-            var embedderConfig = input.EmbedderConfig;
-            
-            // Only update embedder API key if a new one is provided
-            if (!string.IsNullOrWhiteSpace(embedderConfig.ApiKey))
-            {
-                embedderConfig.ApiKey = EncryptApiKey(embedderConfig.ApiKey);
-            }
-            else if (!string.IsNullOrWhiteSpace(workspace.EmbedderConfigJson))
-            {
-                // Keep existing API key from current config
-                var existingConfig = JsonSerializer.Deserialize<EmbedderConfigDto>(workspace.EmbedderConfigJson);
-                if (existingConfig != null)
-                {
-                    embedderConfig.ApiKey = existingConfig.ApiKey;
-                }
-            }
-            
-            workspace.SetEmbedderConfig(JsonSerializer.Serialize(embedderConfig));
-        }
-
-        if (input.VectorStoreConfig != null)
-        {
-            workspace.SetVectorStoreConfig(JsonSerializer.Serialize(input.VectorStoreConfig));
-        }
-
         await _workspaceRepository.UpdateAsync(workspace, autoSave: true);
+        _workspaceSyncService.ClearWorkspaceCache(workspace.Name);
 
         return ObjectMapper.Map<Workspace, WorkspaceDto>(workspace);
     }
@@ -168,26 +175,29 @@ public class WorkspaceAppService : SufiApplicationService, IWorkspaceAppService
     [Authorize(AIPermissions.Workspaces.Delete)]
     public async Task DeleteAsync(Guid id)
     {
+        var workspace = await _workspaceRepository.FindAsync(id);
         await _workspaceRepository.DeleteAsync(id, autoSave: true);
+        if (workspace != null)
+        {
+            _workspaceSyncService.ClearWorkspaceCache(workspace.Name);
+        }
     }
 
     public async Task<List<OpenAIModelDto>> GetAvailableModelsAsync(GetOpenAIModelsInput input)
     {
-        var apiKey = input.ApiKey;
-        if (string.IsNullOrWhiteSpace(apiKey) && input.WorkspaceId.HasValue)
-        {
-            var workspace = await _workspaceRepository.GetAsync(input.WorkspaceId.Value);
-            apiKey = DecryptApiKey(workspace.ApiKey);
-        }
+        var credentials = await ResolveConnectionCredentialsAsync(
+            input.WorkspaceId,
+            input.ModelConfigurationId,
+            input.ApiKey,
+            input.ApiBaseUrl);
 
-        if (string.IsNullOrWhiteSpace(apiKey))
+        if (string.IsNullOrWhiteSpace(credentials.ApiKey))
         {
             throw new Volo.Abp.UserFriendlyException(L["ApiKeyRequiredForModelList"]);
         }
 
-        var baseUrl = NormalizeBaseUrl(input.ApiBaseUrl);
-        using var request = new HttpRequestMessage(HttpMethod.Get, $"{baseUrl}/models");
-        request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", apiKey);
+        using var request = new HttpRequestMessage(HttpMethod.Get, $"{credentials.BaseUrl}/models");
+        request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", credentials.ApiKey);
         request.Headers.Add("X-Client-Request-Id", GuidGenerator.Create().ToString("D"));
 
         using var response = await _httpClientFactory.CreateClient().SendAsync(request);
@@ -198,7 +208,7 @@ public class WorkspaceAppService : SufiApplicationService, IWorkspaceAppService
             var requestId = ReadRequestId(response, error);
             Logger.LogWarning(
                 "OpenAI-compatible model list request failed. BaseUrl: {BaseUrl}, Status: {StatusCode}, ErrorCode: {ErrorCode}, Param: {Param}, RequestId: {RequestId}, Body: {Body}",
-                SanitizeBaseUrlForLog(baseUrl),
+                SanitizeBaseUrlForLog(credentials.BaseUrl),
                 (int)response.StatusCode,
                 error.Code,
                 error.Param,
@@ -221,31 +231,23 @@ public class WorkspaceAppService : SufiApplicationService, IWorkspaceAppService
             throw new Volo.Abp.UserFriendlyException(L["ModelIdRequired"]);
         }
 
-        var apiKey = input.ApiKey;
-        if (string.IsNullOrWhiteSpace(apiKey) && input.WorkspaceId.HasValue)
-        {
-            var workspace = await _workspaceRepository.GetAsync(input.WorkspaceId.Value);
-            apiKey = DecryptApiKey(workspace.ApiKey);
-        }
+        var credentials = await ResolveConnectionCredentialsAsync(
+            input.WorkspaceId,
+            input.ModelConfigurationId,
+            input.ApiKey,
+            input.ApiBaseUrl);
 
-        if (string.IsNullOrWhiteSpace(apiKey))
+        if (string.IsNullOrWhiteSpace(credentials.ApiKey))
         {
             throw new Volo.Abp.UserFriendlyException(L["ApiKeyRequiredForConnectionTest"]);
         }
 
-        var baseUrl = NormalizeBaseUrl(input.ApiBaseUrl);
-        var requestUri = input.OpenAIApiMode == OpenAIApiMode.Responses
-            ? $"{baseUrl}/responses"
-            : $"{baseUrl}/chat/completions";
-
-        using var request = new HttpRequestMessage(HttpMethod.Post, requestUri);
-        request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", apiKey);
-        request.Headers.Add("X-Client-Request-Id", GuidGenerator.Create().ToString("D"));
-        request.Content = new StringContent(
-            JsonSerializer.Serialize(CreateTestPayload(input.Model, input.OpenAIApiMode)),
-            Encoding.UTF8,
-            "application/json"
-        );
+        using var request = CreateConnectionTestRequest(
+            credentials.BaseUrl,
+            credentials.ApiKey,
+            input.Model,
+            input.CapabilityType,
+            input.OpenAIApiMode);
 
         using var response = await _httpClientFactory.CreateClient().SendAsync(request);
         if (response.IsSuccessStatusCode)
@@ -257,10 +259,11 @@ public class WorkspaceAppService : SufiApplicationService, IWorkspaceAppService
         var error = ParseProviderError(responseBody);
         var requestId = ReadRequestId(response, error);
         Logger.LogWarning(
-            "OpenAI-compatible workspace connection test failed. Mode: {OpenAIApiMode}, Model: {Model}, BaseUrl: {BaseUrl}, Status: {StatusCode}, ErrorCode: {ErrorCode}, Param: {Param}, RequestId: {RequestId}, Body: {Body}",
+            "OpenAI-compatible connection test failed. Capability: {CapabilityType}, Mode: {OpenAIApiMode}, Model: {Model}, BaseUrl: {BaseUrl}, Status: {StatusCode}, ErrorCode: {ErrorCode}, Param: {Param}, RequestId: {RequestId}, Body: {Body}",
+            input.CapabilityType,
             input.OpenAIApiMode,
             input.Model,
-            SanitizeBaseUrlForLog(baseUrl),
+            SanitizeBaseUrlForLog(credentials.BaseUrl),
             (int)response.StatusCode,
             error.Code,
             error.Param,
@@ -272,42 +275,101 @@ public class WorkspaceAppService : SufiApplicationService, IWorkspaceAppService
         );
     }
 
-    [Authorize(AIPermissions.Workspaces.Edit)]
-    public async Task<WorkspaceMCPToolConfigurationDto> GetMCPToolConfigurationAsync(Guid id)
+    private async Task<(string? ApiKey, string BaseUrl)> ResolveConnectionCredentialsAsync(
+        Guid? workspaceId,
+        Guid? modelConfigurationId,
+        string? apiKey,
+        string? apiBaseUrl)
     {
-        var workspace = await _workspaceRepository.GetAsync(id);
-        var enabledToolNames = ReadEnabledMCPToolNames(workspace);
-        var tools = await _toolRegistry.GetAllToolsForWorkspaceAsync(workspace.Name);
-
-        return new WorkspaceMCPToolConfigurationDto
+        SufiChain.SufiPlatform.SufiAI.AIModelConfiguration? modelConfiguration = null;
+        if (modelConfigurationId.HasValue)
         {
-            AvailableTools = tools.Select(tool => new MCPToolDto
-            {
-                Name = tool.Name,
-                Description = tool.Description,
-                ParameterSchema = tool.ParameterSchema,
-                ToolType = tool.ToolType.ToString(),
-                Source = tool.Source
-            }).ToList(),
-            EnabledToolNames = enabledToolNames
-        };
+            modelConfiguration = await _modelConfigurationRepository.GetAsync(modelConfigurationId.Value);
+            workspaceId ??= modelConfiguration.WorkspaceId;
+        }
+
+        Workspace? workspace = null;
+        if (workspaceId.HasValue)
+        {
+            workspace = await _workspaceRepository.GetAsync(workspaceId.Value);
+        }
+
+        var resolvedKey = apiKey;
+        if (string.IsNullOrWhiteSpace(resolvedKey) && modelConfiguration != null)
+        {
+            resolvedKey = DecryptApiKey(modelConfiguration.ApiKey);
+        }
+
+        if (string.IsNullOrWhiteSpace(resolvedKey) && workspace != null)
+        {
+            resolvedKey = DecryptApiKey(workspace.ApiKey);
+        }
+
+        var resolvedBaseUrl = apiBaseUrl;
+        if (string.IsNullOrWhiteSpace(resolvedBaseUrl) && modelConfiguration != null)
+        {
+            resolvedBaseUrl = modelConfiguration.ApiEndpoint;
+        }
+
+        if (string.IsNullOrWhiteSpace(resolvedBaseUrl) && workspace != null)
+        {
+            resolvedBaseUrl = workspace.ApiBaseUrl;
+        }
+
+        return (resolvedKey, NormalizeBaseUrl(resolvedBaseUrl));
     }
 
-    [Authorize(AIPermissions.Workspaces.Edit)]
-    public async Task UpdateMCPToolConfigurationAsync(Guid id, UpdateWorkspaceMCPToolConfigurationDto input)
+    private HttpRequestMessage CreateConnectionTestRequest(
+        string baseUrl,
+        string apiKey,
+        string model,
+        AICapabilityType capabilityType,
+        OpenAIApiMode openAIApiMode)
     {
-        var workspace = await _workspaceRepository.GetAsync(id);
-        var tools = await _toolRegistry.GetAllToolsForWorkspaceAsync(workspace.Name);
-        var availableToolNames = tools.Select(tool => tool.Name).ToHashSet();
-        var enabledToolNames = input.EnabledToolNames
-            .Where(availableToolNames.Contains)
-            .Distinct()
-            .OrderBy(toolName => toolName)
-            .ToList();
+        HttpRequestMessage request;
+        if (capabilityType == AICapabilityType.Embeddings)
+        {
+            request = new HttpRequestMessage(HttpMethod.Post, $"{baseUrl}/embeddings")
+            {
+                Content = new StringContent(
+                    JsonSerializer.Serialize(CreateEmbeddingsTestPayload(model)),
+                    Encoding.UTF8,
+                    "application/json")
+            };
+        }
+        else if (capabilityType is AICapabilityType.AudioTranscription
+                 or AICapabilityType.TextToSpeech
+                 or AICapabilityType.ImageGeneration)
+        {
+            // Auth + endpoint smoke test; these capabilities need binary/multipart probes.
+            request = new HttpRequestMessage(HttpMethod.Get, $"{baseUrl}/models");
+        }
+        else
+        {
+            var requestUri = openAIApiMode == OpenAIApiMode.Responses
+                ? $"{baseUrl}/responses"
+                : $"{baseUrl}/chat/completions";
+            request = new HttpRequestMessage(HttpMethod.Post, requestUri)
+            {
+                Content = new StringContent(
+                    JsonSerializer.Serialize(CreateTestPayload(model, openAIApiMode)),
+                    Encoding.UTF8,
+                    "application/json")
+            };
+        }
 
-        workspace.SetEnabledMCPTools(JsonSerializer.Serialize(enabledToolNames));
+        request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", apiKey);
+        request.Headers.Add("X-Client-Request-Id", GuidGenerator.Create().ToString("D"));
+        return request;
+    }
 
-        await _workspaceRepository.UpdateAsync(workspace, autoSave: true);
+    private static object CreateEmbeddingsTestPayload(string model)
+    {
+        return new Dictionary<string, object?>
+        {
+            ["model"] = model,
+            ["input"] = "ping"
+        };
     }
 
     private string? EncryptApiKey(string? apiKey)
@@ -318,6 +380,29 @@ public class WorkspaceAppService : SufiApplicationService, IWorkspaceAppService
         }
 
         return _stringEncryptor.Encrypt(apiKey);
+    }
+
+    private static WorkspaceCapabilityReadinessDto MapCapabilityReadiness(
+        WorkspaceRuntimeConfiguration result)
+    {
+        return new WorkspaceCapabilityReadinessDto
+        {
+            CapabilityType = result.CapabilityType,
+            IsConfigured = result.IsConfigured,
+            IsReady = result.IsReady,
+            Provider = result.Provider,
+            ModelId = NullIfWhiteSpace(result.ModelId),
+            OpenAIApiMode = result.OpenAIApiMode,
+            HasApiEndpoint = !string.IsNullOrWhiteSpace(result.ApiEndpoint),
+            HasApiKey = !string.IsNullOrWhiteSpace(result.ApiKey),
+            UsesWorkspaceFallback = result.IsFallback,
+            FailureCode = result.FailureCode
+        };
+    }
+
+    private static string? NullIfWhiteSpace(string? value)
+    {
+        return string.IsNullOrWhiteSpace(value) ? null : value;
     }
 
     private string? DecryptApiKey(string? encryptedApiKey)
@@ -335,23 +420,6 @@ public class WorkspaceAppService : SufiApplicationService, IWorkspaceAppService
         {
             // If decryption fails, assume it's already plain text (backward compatibility)
             return encryptedApiKey;
-        }
-    }
-
-    private static List<string> ReadEnabledMCPToolNames(Workspace workspace)
-    {
-        if (string.IsNullOrWhiteSpace(workspace.EnabledMCPToolsJson))
-        {
-            return new List<string>();
-        }
-
-        try
-        {
-            return JsonSerializer.Deserialize<List<string>>(workspace.EnabledMCPToolsJson) ?? new List<string>();
-        }
-        catch
-        {
-            return new List<string>();
         }
     }
 

@@ -23,7 +23,7 @@ public class AIOptions
     public bool SeedDefaultWorkspace { get; set; } = true;
 
     /// <summary>
-    /// Default workspace seed payload. Bind from configuration section <c>AI:DefaultWorkspace</c>.
+    /// Default workspace seed payload. Bind from configuration section <c>SufiAI:DefaultWorkspace</c>.
     /// </summary>
     public DefaultWorkspaceSeedOptions DefaultWorkspace { get; set; } = new();
 

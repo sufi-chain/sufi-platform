@@ -17,10 +17,10 @@ public class MCPServerController : AIController, IMCPServerAppService
         _mcpServerAppService = mcpServerAppService;
     }
 
-    [HttpGet("by-workspace/{workspaceId}")]
-    public virtual Task<List<MCPServerDto>> GetByWorkspaceAsync(Guid workspaceId)
+    [HttpGet]
+    public virtual Task<List<MCPServerDto>> GetListAsync()
     {
-        return _mcpServerAppService.GetByWorkspaceAsync(workspaceId);
+        return _mcpServerAppService.GetListAsync();
     }
 
     [HttpGet("{id}")]

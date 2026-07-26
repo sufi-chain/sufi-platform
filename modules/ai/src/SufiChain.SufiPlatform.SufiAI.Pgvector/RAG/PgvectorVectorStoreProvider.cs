@@ -88,6 +88,17 @@ public class PgvectorVectorStoreProvider : IVectorStoreProvider, ITransientDepen
 
         var dataSource = GetDataSource(context);
         await using var connection = await dataSource.OpenConnectionAsync(cancellationToken);
+        var sourceFilter = string.IsNullOrWhiteSpace(context.SourceName)
+            ? string.Empty
+            : " and source_name = @source_name";
+        var metadataFilters = context.MetadataFilters
+            .Where(pair => !string.IsNullOrWhiteSpace(pair.Key) && !string.IsNullOrWhiteSpace(pair.Value))
+            .Select((pair, index) => (Key: pair.Key.Trim(), Value: pair.Value.Trim(), Index: index))
+            .ToList();
+        var metadataFilterSql = string.Concat(
+            metadataFilters.Select(filter =>
+                $" and metadata_json ->> @meta_key_{filter.Index} = @meta_value_{filter.Index}"));
+
         await using var command = new NpgsqlCommand($"""
             select source_name,
                    source_id,
@@ -100,6 +111,8 @@ public class PgvectorVectorStoreProvider : IVectorStoreProvider, ITransientDepen
             from {GetQualifiedTableName(context)}
             where tenant_key = @tenant_key
               and workspace_name = @workspace_name
+              {sourceFilter}
+              {metadataFilterSql}
               and 1 - (embedding <=> @embedding) >= @min_similarity
             order by embedding <=> @embedding
             limit @max_results;
@@ -110,6 +123,16 @@ public class PgvectorVectorStoreProvider : IVectorStoreProvider, ITransientDepen
         command.Parameters.AddWithValue("workspace_name", context.WorkspaceName);
         command.Parameters.AddWithValue("min_similarity", minSimilarity);
         command.Parameters.AddWithValue("max_results", maxResults);
+        if (!string.IsNullOrWhiteSpace(context.SourceName))
+        {
+            command.Parameters.AddWithValue("source_name", context.SourceName.Trim());
+        }
+
+        foreach (var filter in metadataFilters)
+        {
+            command.Parameters.AddWithValue($"meta_key_{filter.Index}", filter.Key);
+            command.Parameters.AddWithValue($"meta_value_{filter.Index}", filter.Value);
+        }
 
         var results = new List<DocumentChunk>();
         await using var reader = await command.ExecuteReaderAsync(cancellationToken);

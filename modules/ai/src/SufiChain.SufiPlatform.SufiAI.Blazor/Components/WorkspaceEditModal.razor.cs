@@ -135,7 +135,7 @@ public partial class WorkspaceEditModal : AIComponentBase
                 ApiBaseUrl = _model.ApiBaseUrl,
                 OpenAIApiMode = _model.OpenAIApiMode
             });
-            await Message.SuccessAsync(L["ConnectionTestSuccessful"]);
+            await Notify.SuccessAsync(L["ConnectionTestSuccessful"]);
         }, LoadingKeys.TestConnection);
     }
 

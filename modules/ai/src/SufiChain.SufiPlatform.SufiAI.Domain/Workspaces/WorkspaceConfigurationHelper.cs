@@ -1,9 +1,7 @@
 using Microsoft.Extensions.AI;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel.Embeddings;
-using System.Text.Json;
 using SufiChain.SufiPlatform.SufiAI.RAG;
 
 namespace SufiChain.SufiPlatform.SufiAI.Workspaces;
@@ -14,11 +12,6 @@ namespace SufiChain.SufiPlatform.SufiAI.Workspaces;
 /// </summary>
 public static class WorkspaceConfigurationHelper
 {
-    public static bool HasVectorStoreConfiguration(Workspace workspace)
-    {
-        return ParseVectorStoreConfig(workspace) != null;
-    }
-
     public static void ConfigureChatClient(ChatClientBuilder builder, Workspace workspace)
     {
         if (workspace.Provider != AIProviderType.OpenAI)
@@ -29,33 +22,49 @@ public static class WorkspaceConfigurationHelper
 
     public static void ConfigureKernel(IKernelBuilder builder, Workspace workspace, string? apiKey = null)
     {
-        EnsureOpenAIProvider(workspace.Provider);
-        ConfigureOpenAIKernel(builder, workspace, apiKey);
+        var configuration = workspace.GetPrimaryConfiguration(AICapabilityType.ChatCompletion);
+        ConfigureKernel(
+            builder,
+            new WorkspaceRuntimeConfiguration
+            {
+                Workspace = workspace,
+                ModelConfiguration = configuration,
+                CapabilityType = AICapabilityType.ChatCompletion,
+                Provider = workspace.Provider,
+                ModelId = configuration?.ModelId ?? workspace.DefaultModel,
+                ApiEndpoint = configuration?.ApiEndpoint ?? workspace.ApiBaseUrl,
+                ApiKey = apiKey ?? configuration?.ApiKey ?? workspace.ApiKey,
+                OpenAIApiMode = configuration?.OpenAIApiMode ?? workspace.OpenAIApiMode,
+                InputCostPer1MTokens = configuration?.InputCostPer1MTokens ?? workspace.InputCostPer1MTokens,
+                OutputCostPer1MTokens = configuration?.OutputCostPer1MTokens ?? workspace.OutputCostPer1MTokens,
+                IsFallback = configuration == null,
+                IsConfigured = !string.IsNullOrWhiteSpace(configuration?.ModelId ?? workspace.DefaultModel),
+                IsReady = true
+            });
+    }
+
+    public static void ConfigureKernel(
+        IKernelBuilder builder,
+        WorkspaceRuntimeConfiguration configuration)
+    {
+        EnsureOpenAIProvider(configuration.Provider);
+        ConfigureOpenAIKernel(builder, configuration);
     }
 
     public static IEmbeddingGenerator<string, Embedding<float>> CreateEmbeddingGenerator(
         Workspace workspace,
-        EmbedderConfiguration? embedderConfiguration = null,
-        string? embeddingModel = null)
+        EmbedderConfiguration embedderConfiguration)
     {
-        var config = embedderConfiguration ?? ParseEmbedderConfig(workspace);
-        var provider = config?.Provider ?? workspace.Provider;
+        ArgumentNullException.ThrowIfNull(embedderConfiguration);
+
+        var provider = embedderConfiguration.Provider;
         EnsureOpenAIProvider(provider);
 
-        var model = embeddingModel ?? config?.Model ?? "text-embedding-3-small";
-        return CreateOpenAIEmbeddingGenerator(workspace, config, model);
-    }
+        var model = string.IsNullOrWhiteSpace(embedderConfiguration.Model)
+            ? "text-embedding-3-small"
+            : embedderConfiguration.Model;
 
-    public static EmbedderConfiguration? ParseEmbedderConfig(Workspace workspace)
-    {
-        return string.IsNullOrWhiteSpace(workspace.EmbedderConfigJson)
-            ? null
-            : JsonSerializer.Deserialize<EmbedderConfiguration>(workspace.EmbedderConfigJson);
-    }
-
-    public static VectorStoreConfiguration? ParseVectorStoreConfig(Workspace workspace)
-    {
-        return VectorStoreConfiguration.Parse(workspace.VectorStoreConfigJson);
+        return CreateOpenAIEmbeddingGenerator(workspace, embedderConfiguration, model);
     }
 
     private static void EnsureOpenAIProvider(AIProviderType provider)
@@ -68,16 +77,22 @@ public static class WorkspaceConfigurationHelper
 
     private static IEmbeddingGenerator<string, Embedding<float>> CreateOpenAIEmbeddingGenerator(
         Workspace workspace,
-        EmbedderConfiguration? embedderConfiguration,
+        EmbedderConfiguration embedderConfiguration,
         string model)
     {
-        var apiKey = embedderConfiguration?.ApiKey ?? workspace.ApiKey ?? throw new InvalidOperationException("OpenAI API key is required");
+        var apiKey = embedderConfiguration.ApiKey
+            ?? workspace.ApiKey
+            ?? throw new InvalidOperationException("OpenAI API key is required");
         var kernelBuilder = Kernel.CreateBuilder();
-        var apiBaseUrl = embedderConfiguration?.ApiBaseUrl ?? workspace.ApiBaseUrl;
+        var apiBaseUrl = embedderConfiguration.ApiBaseUrl ?? workspace.ApiBaseUrl;
 
         if (!string.IsNullOrWhiteSpace(apiBaseUrl))
         {
-            var httpClient = new HttpClient { BaseAddress = new Uri(apiBaseUrl) };
+            var httpClient = new HttpClient
+            {
+                BaseAddress = new Uri(apiBaseUrl),
+                Timeout = TimeSpan.FromMinutes(5)
+            };
             kernelBuilder.AddOpenAITextEmbeddingGeneration(
                 modelId: model,
                 apiKey: apiKey,
@@ -98,15 +113,22 @@ public static class WorkspaceConfigurationHelper
         return new SemanticKernelEmbeddingGenerator(embeddingService);
     }
 
-    private static void ConfigureOpenAIKernel(IKernelBuilder builder, Workspace workspace, string? apiKeyOverride)
+    private static void ConfigureOpenAIKernel(
+        IKernelBuilder builder,
+        WorkspaceRuntimeConfiguration configuration)
     {
-        var apiKey = apiKeyOverride ?? workspace.ApiKey ?? throw new InvalidOperationException("OpenAI API key is required");
+        var apiKey = configuration.ApiKey
+            ?? throw new InvalidOperationException("OpenAI API key is required");
 
-        if (!string.IsNullOrWhiteSpace(workspace.ApiBaseUrl))
+        if (!string.IsNullOrWhiteSpace(configuration.ApiEndpoint))
         {
-            var httpClient = new HttpClient { BaseAddress = new Uri(workspace.ApiBaseUrl) };
+            var httpClient = new HttpClient
+            {
+                BaseAddress = new Uri(configuration.ApiEndpoint),
+                Timeout = TimeSpan.FromMinutes(5)
+            };
             builder.AddOpenAIChatCompletion(
-                modelId: workspace.Model,
+                modelId: configuration.ModelId,
                 apiKey: apiKey,
                 httpClient: httpClient
             );
@@ -114,7 +136,7 @@ public static class WorkspaceConfigurationHelper
         else
         {
             builder.AddOpenAIChatCompletion(
-                modelId: workspace.Model,
+                modelId: configuration.ModelId,
                 apiKey: apiKey
             );
         }

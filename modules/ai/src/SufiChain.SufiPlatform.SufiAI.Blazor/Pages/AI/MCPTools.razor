@@ -12,15 +12,14 @@
 
 <SbStack Direction="SbStackDirection.Column" Gap="4">
 
-    <!-- Workspace Selector -->
-    <WorkspaceSelector Value="_selectedWorkspaceId"
-                       ValueChanged="@OnWorkspaceChangedAsync"
-                       Workspaces="_workspaces"
-                       Loading="@IsOperationLoading(LoadingKeys.LoadWorkspaces)" />
-
-    <!-- Tools Grid -->
     <SbCard>
         <ChildContent>
+            @if (!string.IsNullOrWhiteSpace(_catalogLoadError))
+            {
+                <SbText Variant="SbTextVariant.BodySmall" Color="SbColor.Warning" style="margin-bottom: 1rem;">
+                    @_catalogLoadError
+                </SbText>
+            }
             <SbDataGrid TItem="MCPToolDto"
                         Items="@_tools"
                         Loading="IsOperationLoading(LoadingKeys.LoadTools)"
@@ -32,16 +31,15 @@
                         <CellTemplate Context="cellContext">
                             <SbStack Direction="SbStackDirection.Column" Gap="0">
                                 <SbText Variant="SbTextVariant.BodySmall" Weight="SbFontWeight.Medium">
-                                    @ResolveMcpToolDisplayName(cellContext.Item.Name)
+                                    @cellContext.Item.Name
                                 </SbText>
-                                <SbText Variant="SbTextVariant.Caption" Color="SbColor.Muted">@cellContext.Item.Name</SbText>
                             </SbStack>
                         </CellTemplate>
                     </SbColumn>
                     <SbColumn TItem="MCPToolDto" Title="@L["Description"]">
                         <CellTemplate Context="cellContext">
                             <SbText Variant="SbTextVariant.BodySmall">
-                                @ResolveMcpToolDescription(cellContext.Item.Name, cellContext.Item.Description)
+                                @cellContext.Item.Description
                             </SbText>
                         </CellTemplate>
                     </SbColumn>
@@ -49,22 +47,22 @@
                         <CellTemplate Context="cellContext">
                             <SbChip Color="@(cellContext.Item.ToolType == "Internal" ? SbColor.Primary : SbColor.Secondary)"
                                     Size="SbSize.Sm">
-                                @ResolveMcpToolType(cellContext.Item.ToolType)
+                                @cellContext.Item.ToolType
                             </SbChip>
                         </CellTemplate>
                     </SbColumn>
                     <SbColumn TItem="MCPToolDto" Field="Source" Title="@L["Source"]" Width="200px">
                         <CellTemplate Context="cellContext">
                             <SbText Variant="SbTextVariant.BodySmall">
-                                @ResolveMcpToolSource(cellContext.Item.Name, cellContext.Item.Source)
+                                @cellContext.Item.Source
                             </SbText>
                         </CellTemplate>
                     </SbColumn>
                     <SbColumn TItem="MCPToolDto" Title="@L["Actions"]" Width="100px">
                         <CellTemplate Context="cellContext">
-                            <SbIconButton Size="SbSize.Sm" 
+                            <SbIconButton Size="SbSize.Sm"
                                           AriaLabel="@L["ViewSchema"]"
-                                          OnClick="@(() => ViewToolSchema(cellContext.Item))">
+                                          OnClick="@(() => ViewToolSchemaAsync(cellContext.Item))">
                                 <Icon><SbIcon Name="code" /></Icon>
                             </SbIconButton>
                         </CellTemplate>
@@ -76,17 +74,23 @@
 
 </SbStack>
 
-<!-- Schema Dialog -->
 <SbDialog @bind-Open="_schemaDialogOpen" Size="SbDialogSize.Md" Title="@L["ToolSchema"]">
     <ChildContent>
         @if (_selectedTool != null)
         {
             <SbStack Direction="SbStackDirection.Column" Gap="2">
-                <SbHeading Level="6">@ResolveMcpToolDisplayName(_selectedTool.Name)</SbHeading>
+                <SbHeading Level="6">@_selectedTool.Name</SbHeading>
                 <SbText Variant="SbTextVariant.Caption" Color="SbColor.Muted">@_selectedTool.Name</SbText>
-                <SbText Variant="SbTextVariant.BodySmall">@ResolveMcpToolDescription(_selectedTool.Name, _selectedTool.Description)</SbText>
+                <SbText Variant="SbTextVariant.BodySmall">@_selectedTool.Description</SbText>
                 <SbDivider />
-                <pre style="background: #f5f5f5; padding: 16px; border-radius: 4px; overflow-x: auto;">@_selectedTool.ParameterSchema</pre>
+                @if (IsOperationLoading(LoadingKeys.LoadSchema))
+                {
+                    <SbProgress Indeterminate="true" />
+                }
+                else
+                {
+                    <pre style="background: #f5f5f5; padding: 16px; border-radius: 4px; overflow-x: auto;">@_selectedTool.ParameterSchema</pre>
+                }
             </SbStack>
         }
     </ChildContent>

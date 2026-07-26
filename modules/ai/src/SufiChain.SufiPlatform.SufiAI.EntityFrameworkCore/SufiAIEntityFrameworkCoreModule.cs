@@ -15,8 +15,11 @@ public class SufiAIEntityFrameworkCoreModule : AbpModule
     {
         context.Services.AddAbpDbContext<AIDbContext>(options =>
         {
-            options.AddDefaultRepositories(includeAllEntities: true);
+            options.AddDefaultRepositories<IAIDbContext>(includeAllEntities: true);
             options.AddRepository<Workspaces.Workspace, Workspaces.EfCoreWorkspaceRepository>();
+            options.AddRepository<AIModelConfiguration, EfCoreAIModelConfigurationRepository>();
+            options.AddRepository<AIUsageLog, EfCoreAIUsageLogRepository>();
+            options.AddRepository<MCP.Entities.MCPServer, MCPServerRepository>();
         });
     }
 }

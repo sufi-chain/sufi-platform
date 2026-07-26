@@ -66,12 +66,12 @@ Use `context.Services.Replace(ServiceDescriptor.Transient<IAIProvider, YourProvi
 
 ## Internal MCP tools
 
-Mark application service methods with `[MCPTool]`:
+Mark application service methods with `[SufiAiMcpTool]`:
 
 ```csharp
 public class CalculatorAppService : SufiApplicationService
 {
-    [MCPTool("add", "Add two numbers")]
+    [SufiAiMcpTool("add", "Add two numbers")]
     public virtual Task<int> AddAsync(int a, int b) => Task.FromResult(a + b);
 }
 ```

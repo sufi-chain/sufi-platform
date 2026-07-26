@@ -1,4 +1,6 @@
+using System.Diagnostics;
 using System.Text.Json;
+using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using SufiChain.SufiPlatform.SufiAI.MCP.Abstractions;
 using Volo.Abp.DependencyInjection;
@@ -8,27 +10,30 @@ namespace SufiChain.SufiPlatform.SufiAI.MCP.Execution;
 public class MCPKernelToolRegistrar : IMCPKernelToolRegistrar, ITransientDependency
 {
     private readonly IMCPToolRegistry _toolRegistry;
+    private readonly ILogger<MCPKernelToolRegistrar> _logger;
 
-    public MCPKernelToolRegistrar(IMCPToolRegistry toolRegistry)
+    public MCPKernelToolRegistrar(
+        IMCPToolRegistry toolRegistry,
+        ILogger<MCPKernelToolRegistrar> logger)
     {
         _toolRegistry = toolRegistry;
+        _logger = logger;
     }
 
     public virtual async Task RegisterToolsAsync(
         Kernel kernel,
-        string workspaceName,
         WorkspaceContext context,
-        IReadOnlyList<string>? allowedToolNames = null,
+        IReadOnlyList<string> allowedToolNames,
         CancellationToken cancellationToken = default)
     {
-        var tools = await _toolRegistry.GetToolsForWorkspaceAsync(workspaceName, cancellationToken);
-        if (allowedToolNames is { Count: > 0 })
+        if (allowedToolNames.Count == 0)
         {
-            var allowed = allowedToolNames.ToHashSet(StringComparer.OrdinalIgnoreCase);
-            tools = tools.Where(tool => allowed.Contains(tool.Name)).ToList();
+            return;
         }
 
-        foreach (var tool in tools)
+        var resolution = await _toolRegistry.ResolveAsync(allowedToolNames, cancellationToken);
+
+        foreach (var tool in resolution.Tools)
         {
             var pluginName = ToKernelPluginName(tool.Name);
             if (kernel.Plugins.Any(plugin => plugin.Name == pluginName))
@@ -43,8 +48,51 @@ public class MCPKernelToolRegistrar : IMCPKernelToolRegistrar, ITransientDepende
                         .Where(argument => argument.Value is not null)
                         .ToDictionary(argument => argument.Key, argument => argument.Value);
 
-                    var result = await tool.ExecuteAsync(context, parameters, ct);
-                    return result.Success ? result.Result : result.ErrorMessage;
+                    var parameterKeys = string.Join(",", parameters.Keys.OrderBy(key => key, StringComparer.Ordinal));
+                    _logger.LogInformation(
+                        "Executing MCP tool {ToolName} (Type: {ToolType}, Source: {Source}) in workspace {WorkspaceName}. ParameterKeys={ParameterKeys}",
+                        tool.Name,
+                        tool.ToolType,
+                        tool.Source,
+                        context.WorkspaceName,
+                        parameterKeys);
+
+                    var stopwatch = Stopwatch.StartNew();
+                    try
+                    {
+                        var result = await tool.ExecuteAsync(context, parameters, ct);
+                        stopwatch.Stop();
+
+                        if (result.Success)
+                        {
+                            _logger.LogInformation(
+                                "MCP tool {ToolName} executed successfully in {ExecutionTimeMs}ms (MeasuredMs={MeasuredMs})",
+                                tool.Name,
+                                result.ExecutionTimeMs,
+                                stopwatch.ElapsedMilliseconds);
+                        }
+                        else
+                        {
+                            _logger.LogWarning(
+                                "MCP tool {ToolName} execution failed in {ExecutionTimeMs}ms: {ErrorMessage}",
+                                tool.Name,
+                                result.ExecutionTimeMs > 0 ? result.ExecutionTimeMs : stopwatch.ElapsedMilliseconds,
+                                result.ErrorMessage);
+                        }
+
+                        return result.Success ? result.Result : result.ErrorMessage;
+                    }
+                    catch (Exception ex)
+                    {
+                        stopwatch.Stop();
+                        _logger.LogError(
+                            ex,
+                            "Unexpected error executing MCP tool {ToolName} after {ElapsedMilliseconds}ms in workspace {WorkspaceName}",
+                            tool.Name,
+                            stopwatch.ElapsedMilliseconds,
+                            context.WorkspaceName);
+                        throw;
+                    }
                 },
                 functionName: ToKernelFunctionName(tool.Name),
                 description: tool.Description,

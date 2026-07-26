@@ -33,7 +33,7 @@ Grant permissions per [Permissions](permissions.md) before expecting menu items 
 
 **Edit modal:** API key field can be left empty to keep the existing key (`HasApiKey` on the DTO indicates a key is stored).
 
-**RAG readiness:** Embedder and vector store configuration are stored on the workspace entity (`EmbedderConfig`, `VectorStoreConfig` on create/update DTOs). The grid shows whether configs exist via `HasEmbedderConfig` / `HasVectorStoreConfig`. Until a dedicated RAG settings UI exists, configure these via API or direct update. RAG search and indexing require both configs plus a successful index run (see [Indexing](#managing-document-indexing)).
+**RAG readiness:** Configure an **Embeddings** model under Workspace → Model configurations, and configure exactly one host vector store (`VectorStore:Qdrant` or `VectorStore:Pgvector`). RAG search and indexing require both plus a successful index run (see [Indexing](#managing-document-indexing)).
 
 > **Provider note:** The UI currently supports **OpenAI only**. Additional providers are not selectable yet.
 

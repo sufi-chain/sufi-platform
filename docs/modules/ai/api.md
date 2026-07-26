@@ -70,7 +70,7 @@ Task<List<OpenAIModelDto>> GetAvailableModelsAsync(GetOpenAIModelsInput input);
 Task TestConnectionAsync(TestWorkspaceConnectionInput input);
 ```
 
-`CreateWorkspaceDto` / `UpdateWorkspaceDto` support `EmbedderConfig` and `VectorStoreConfig` for RAG.
+RAG uses the workspace **Embeddings** model configuration (see model-configuration APIs) and host `VectorStore:*` settings. Workspace create/update DTOs do not carry embedder/vector JSON.
 
 ### IRAGAppService
 

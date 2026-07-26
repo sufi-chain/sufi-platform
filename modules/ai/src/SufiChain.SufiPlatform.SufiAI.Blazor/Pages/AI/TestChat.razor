@@ -5,7 +5,7 @@
 
 <SbCard>
     <ChildContent>
-        <SbTabs @bind-ActiveIndex="_activeTab">
+        <SbTabs @bind-ActiveIndex="_activeTab" LazyLoad="true">
             <SbTab Label="@L["Chat"]">
                 <AIChatTestPanel />
             </SbTab>

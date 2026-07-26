@@ -52,7 +52,7 @@ public interface IMCPTool
 public enum MCPToolType
 {
     /// <summary>
-    /// Internal ApplicationService method marked with [MCPTool].
+    /// Internal ApplicationService method marked with [SufiAiMcpTool].
     /// </summary>
     Internal,
     

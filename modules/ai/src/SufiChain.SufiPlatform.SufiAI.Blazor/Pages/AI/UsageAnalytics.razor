@@ -1,6 +1,7 @@
 @namespace SufiChain.SufiPlatform.SufiAI.Blazor.Pages.AI
 @page "/panel/admin/ai/usage-analytics"
 @attribute [Authorize(Policy = AIPermissions.AI.ViewUsage)]
+@attribute [Authorize(Policy = AIPermissions.Workspaces.Default)]
 @inherits AIComponentBase
 @using SufiChain.SufiPlatform.SufiAI;
 <SufiPageToolbar>

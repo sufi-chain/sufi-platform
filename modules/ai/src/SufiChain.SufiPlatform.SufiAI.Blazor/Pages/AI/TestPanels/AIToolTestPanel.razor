@@ -9,6 +9,49 @@
 
     <SbCard>
         <ChildContent>
+            <SbStack Direction="SbStackDirection.Column" Gap="2">
+                <SbHeading Level="6">@L["AvailableTenantTools"]</SbHeading>
+                <SbText Variant="SbTextVariant.BodySmall" Color="SbColor.Muted">
+                    @L["SelectToolsForTestRequest"]
+                </SbText>
+                @if (IsOperationLoading(ToolChatLoadingKeys.LoadTools))
+                {
+                    <SbProgress Indeterminate="true" />
+                }
+                else if (!string.IsNullOrWhiteSpace(_catalogLoadError))
+                {
+                    <SbText Variant="SbTextVariant.BodySmall" Color="SbColor.Warning">@_catalogLoadError</SbText>
+                }
+                else if (_tools.Count == 0)
+                {
+                    <SbText Variant="SbTextVariant.BodySmall" Color="SbColor.Muted">@L["NoToolsAvailable"]</SbText>
+                }
+                else
+                {
+                    @* Use DTO name/description only — ResolveMcpTool* localization during render
+                       can sync-block on language-text cache and deadlock the Blazor circuit. *@
+                    @foreach (var tool in _tools)
+                    {
+                        <SbStack Direction="SbStackDirection.Row" Gap="2" Align="SbAlign.Start">
+                            <SbCheckbox Value="@_selectedToolNames.Contains(tool.Name)"
+                                        ValueChanged="@((bool selected) => OnToolSelectionChanged(tool.Name, selected))" />
+                            <SbStack Direction="SbStackDirection.Column" Gap="0">
+                                <SbText Variant="SbTextVariant.BodySmall" Weight="SbFontWeight.Medium">
+                                    @tool.Name
+                                </SbText>
+                                <SbText Variant="SbTextVariant.Caption" Color="SbColor.Muted">
+                                    @tool.Description
+                                </SbText>
+                            </SbStack>
+                        </SbStack>
+                    }
+                }
+            </SbStack>
+        </ChildContent>
+    </SbCard>
+
+    <SbCard>
+        <ChildContent>
             <SbStack Direction="SbStackDirection.Column" Gap="3">
                 <SbStack Direction="SbStackDirection.Row" Gap="2" Justify="SbJustify.SpaceBetween" Align="SbAlign.Center">
                     <SbHeading Level="5">@L["MCPToolChat"]</SbHeading>
@@ -71,13 +114,13 @@
                             Label="@L["Message"]"
                             Rows="3"
                             Placeholder="@L["AskToolEnabledQuestion"]"
-                            Disabled="@string.IsNullOrWhiteSpace(_selectedWorkspaceName)" />
+                            Disabled="@(string.IsNullOrWhiteSpace(_selectedWorkspaceName) || _selectedToolNames.Count == 0)" />
 
                 <SbStack Direction="SbStackDirection.Row" Gap="2" Justify="SbJustify.End">
                     <SbButton Color="SbColor.Primary"
                               OnClick="@SendMessageAsync"
                               Loading="@IsOperationLoading(ToolChatLoadingKeys.SendMessage)"
-                              Disabled="@(string.IsNullOrWhiteSpace(_selectedWorkspaceName) || string.IsNullOrWhiteSpace(_messageInput))">
+                              Disabled="@(string.IsNullOrWhiteSpace(_selectedWorkspaceName) || _selectedToolNames.Count == 0 || string.IsNullOrWhiteSpace(_messageInput))">
                         <StartIcon><SbIcon Name="send" /></StartIcon>
                         <ChildContent>@L["Send"]</ChildContent>
                     </SbButton>

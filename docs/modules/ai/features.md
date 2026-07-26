@@ -10,7 +10,7 @@ Map product requirements to AI Management capabilities before building a custom 
 - Create and edit workspaces (OpenAI provider in UI today)
 - Load available models from provider API, test connection before save
 - Configure default chat model, API key, base URL, OpenAI API mode (Chat Completions vs Responses), temperature, max tokens, optional cost per 1K tokens
-- Workspace DTO exposes `HasEmbedderConfig` / `HasVectorStoreConfig` when RAG JSON is set (embedder/vector config can be supplied via API until dedicated UI exists)
+- RAG embeddings use multimodal `AIModelConfiguration` (Embeddings); vector store is host `VectorStore:*` only
 
 ### Configuration
 

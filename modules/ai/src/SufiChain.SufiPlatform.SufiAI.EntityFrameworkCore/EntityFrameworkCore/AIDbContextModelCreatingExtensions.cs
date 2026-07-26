@@ -33,8 +33,6 @@ public static class AIDbContextModelCreatingExtensions
             b.Property(x => x.InputCostPer1MTokens).HasPrecision(18, 8);
             b.Property(x => x.OutputCostPer1MTokens).HasPrecision(18, 8);
             b.Property(x => x.IsActive).IsRequired();
-            b.Property(x => x.EnabledMCPToolsJson).HasMaxLength(8192);
-
             b.HasIndex(x => x.Name);
             b.HasIndex(x => x.TenantId);
             b.HasIndex(x => new { x.TenantId, x.Name }).IsUnique();
@@ -65,7 +63,6 @@ public static class AIDbContextModelCreatingExtensions
             b.Property(x => x.OpenAIApiMode);
             b.Property(x => x.InputCostPer1MTokens).HasPrecision(18, 8);
             b.Property(x => x.OutputCostPer1MTokens).HasPrecision(18, 8);
-            b.Property(x => x.ConfigurationJson).HasMaxLength(4096);
 
             b.HasIndex(x => new { x.WorkspaceId, x.CapabilityType, x.Priority });
             b.HasIndex(x => x.IsEnabled);
@@ -111,18 +108,16 @@ public static class AIDbContextModelCreatingExtensions
             b.ConfigureFullAuditedAggregateRoot();
             b.ConfigureMultiTenant();
 
+            b.Property(x => x.Key).IsRequired().HasMaxLength(128);
             b.Property(x => x.Name).IsRequired().HasMaxLength(128);
-            b.Property(x => x.WorkspaceId).IsRequired();
             b.Property(x => x.TransportType).IsRequired();
             b.Property(x => x.Endpoint).HasMaxLength(512);
             b.Property(x => x.Command).HasMaxLength(256);
             b.Property(x => x.ArgumentsJson).HasMaxLength(2048);
             b.Property(x => x.IsEnabled).IsRequired();
-            b.Property(x => x.MetadataJson).HasMaxLength(4096);
             b.Property(x => x.LastConnectionError).HasMaxLength(1024);
 
-            b.HasIndex(x => new { x.WorkspaceId, x.Name }).IsUnique();
-            b.HasIndex(x => x.TenantId);
+            b.HasIndex(x => new { x.TenantId, x.Key }).IsUnique();
             b.HasIndex(x => x.IsEnabled);
         });
 

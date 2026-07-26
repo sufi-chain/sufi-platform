@@ -27,36 +27,54 @@ public class MCPToolAppService : SufiApplicationService, IMCPToolAppService
         _toolExecutor = toolExecutor;
     }
     
-    public async Task<List<MCPToolDto>> GetToolsForWorkspaceAsync(string workspaceName)
+    public async Task<List<MCPToolDto>> GetCatalogAsync()
     {
-        var tools = await _toolRegistry.GetToolsForWorkspaceAsync(workspaceName);
-        
-        return tools.Select(t => new MCPToolDto
-        {
-            Name = t.Name,
-            Description = t.Description,
-            ParameterSchema = t.ParameterSchema,
-            ToolType = t.ToolType.ToString(),
-            Source = t.Source
-        }).ToList();
+        var tools = await _toolRegistry.GetCatalogAsync();
+        // Listing pages / test-chat pickers do not need JSON schemas — keep the Blazor
+        // circuit payload small so render cannot stall the dispatcher.
+        return MapTools(tools, includeParameterSchema: false);
     }
-    
-    public async Task<MCPToolDto> GetToolAsync(string workspaceName, string toolName)
+
+    public async Task<MCPToolDto?> GetAsync(string toolName)
     {
-        var tool = await _toolRegistry.GetToolAsync(workspaceName, toolName);
-        
-        if (tool == null)
+        if (string.IsNullOrWhiteSpace(toolName))
         {
-            throw new Volo.Abp.BusinessException(AIErrorCodes.MCPToolNotFound)
-                .WithData("ToolName", toolName)
-                .WithData("WorkspaceName", workspaceName);
+            return null;
         }
-        
+
+        var tools = await _toolRegistry.GetCatalogAsync();
+        var match = tools.FirstOrDefault(tool =>
+            string.Equals(tool.Name, toolName.Trim(), StringComparison.OrdinalIgnoreCase));
+        return match == null ? null : MapTool(match, includeParameterSchema: true);
+    }
+
+    public async Task<MCPToolResolutionResultDto> ResolveAsync(MCPToolResolutionRequestDto request)
+    {
+        var result = await _toolRegistry.ResolveAsync(request.ToolNames);
+        return new MCPToolResolutionResultDto
+        {
+            Tools = MapTools(result.Tools, includeParameterSchema: true),
+            Diagnostics = result.Diagnostics.Select(diagnostic => new MCPToolResolutionDiagnosticDto
+            {
+                ToolName = diagnostic.ToolName,
+                Code = diagnostic.Code,
+                Message = diagnostic.Message
+            }).ToList()
+        };
+    }
+
+    private static List<MCPToolDto> MapTools(IEnumerable<IMCPTool> tools, bool includeParameterSchema)
+    {
+        return tools.Select(tool => MapTool(tool, includeParameterSchema)).ToList();
+    }
+
+    private static MCPToolDto MapTool(IMCPTool tool, bool includeParameterSchema)
+    {
         return new MCPToolDto
         {
             Name = tool.Name,
             Description = tool.Description,
-            ParameterSchema = tool.ParameterSchema,
+            ParameterSchema = includeParameterSchema ? tool.ParameterSchema : string.Empty,
             ToolType = tool.ToolType.ToString(),
             Source = tool.Source
         };

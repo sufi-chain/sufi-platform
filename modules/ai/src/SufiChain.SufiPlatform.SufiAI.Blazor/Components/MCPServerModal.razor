@@ -11,6 +11,13 @@
                                  Placeholder="@L["EnterServerName"]"
                                  FullWidth="true" />
                 </SbFormField>
+
+                <SbFormField Label="@L["ServerKey"]" Required="true">
+                    <SbTextField @bind-Value="_key"
+                                 Placeholder="@L["EnterServerKey"]"
+                                 FullWidth="true"
+                                 Disabled="@(Server != null)" />
+                </SbFormField>
                 
                 <SbFormField Label="@L["TransportType"]" Required="true">
                     <SbSimpleSelect TValue="string"
@@ -47,14 +54,6 @@
                                      FullWidth="true" />
                     </SbFormField>
                 }
-                
-                <SbFormField Label="@L["Metadata"]">
-                    <SbTextField @bind-Value="_metadataJson" 
-                                 Placeholder='{"apiKey": "..."}'
-                                 FullWidth="true"
-                                 Multiline="true"
-                                 Rows="3" />
-                </SbFormField>
                 
             </SbStack>
         </SbForm>

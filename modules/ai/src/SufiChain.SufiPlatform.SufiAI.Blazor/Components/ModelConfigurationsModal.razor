@@ -65,9 +65,16 @@
 							else
 							{
 								<SbText Variant="SbTextVariant.BodySmall" Color="SbColor.Muted">
-									@L["Default"]
+									@L["InheritWorkspace"]
 								</SbText>
 							}
+						</CellTemplate>
+					</SbColumn>
+					<SbColumn TItem="AIModelConfigurationDto" Field="HasApiKey" Title="@L["ApiKey"]" Width="120px">
+						<CellTemplate Context="cellContext">
+							<SbChip Color="@(cellContext.Item.HasApiKey ? SbColor.Success : SbColor.Default)" Size="SbSize.Sm">
+								@(cellContext.Item.HasApiKey ? L["Override"] : L["InheritWorkspace"])
+							</SbChip>
 						</CellTemplate>
 					</SbColumn>
 					<SbColumn TItem="AIModelConfigurationDto" Field="Priority" Title="@L["Priority"]" Width="100px">

@@ -19,21 +19,19 @@ public class SufiAIToolRegistryAdapter : ISufiAIToolRegistry, ISingletonDependen
         ToolRegistry = toolRegistry;
     }
 
-    public virtual async Task<List<ISufiAITool>> GetToolsForWorkspaceAsync(
-        string workspaceName,
+    public virtual async Task<List<ISufiAITool>> GetCatalogAsync(
         CancellationToken cancellationToken = default)
     {
-        var tools = await ToolRegistry.GetToolsForWorkspaceAsync(workspaceName, cancellationToken);
+        var tools = await ToolRegistry.GetCatalogAsync(cancellationToken);
         return tools.Select(tool => (ISufiAITool)new SufiAIToolAdapter(tool)).ToList();
     }
 
-    public virtual async Task<ISufiAITool?> GetToolAsync(
-        string workspaceName,
-        string toolName,
+    public virtual async Task<List<ISufiAITool>> ResolveAsync(
+        IReadOnlyCollection<string> toolNames,
         CancellationToken cancellationToken = default)
     {
-        var tool = await ToolRegistry.GetToolAsync(workspaceName, toolName, cancellationToken);
-        return tool == null ? null : new SufiAIToolAdapter(tool);
+        var result = await ToolRegistry.ResolveAsync(toolNames, cancellationToken);
+        return result.Tools.Select(tool => (ISufiAITool)new SufiAIToolAdapter(tool)).ToList();
     }
 
     public virtual Task RefreshAsync(CancellationToken cancellationToken = default)

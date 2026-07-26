@@ -12,4 +12,8 @@ public class SearchDocumentsInput
     
     [Range(1, 100)]
     public int MaxResults { get; set; } = 10;
+
+    public string? SourceName { get; set; }
+
+    public Dictionary<string, string> MetadataFilters { get; set; } = new();
 }

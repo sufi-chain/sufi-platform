@@ -13,7 +13,7 @@ using Volo.Abp.DependencyInjection;
 namespace SufiChain.SufiPlatform.SufiAI.MCP.Internal;
 
 /// <summary>
-/// Wrapper for internal ApplicationService methods marked with [MCPTool].
+/// Wrapper for internal ApplicationService methods marked with [SufiAiMcpTool].
 /// </summary>
 public class InternalMCPTool : IMCPTool
 {

@@ -12,8 +12,10 @@ namespace SufiChain.SufiPlatform.SufiAI.MCP.External;
 /// </summary>
 public class ExternalMCPTool : IMCPTool
 {
+    private static readonly TimeSpan ExecutionTimeout = TimeSpan.FromSeconds(30);
     private readonly IMCPTransportClient _client;
     private readonly Guid _serverId;
+    private readonly string _remoteName;
     
     public string Name { get; }
     public string Description { get; }
@@ -27,12 +29,14 @@ public class ExternalMCPTool : IMCPTool
         string parameterSchema,
         Guid serverId,
         string serverName,
+        string remoteName,
         IMCPTransportClient client)
     {
         Name = name;
         Description = description;
         ParameterSchema = parameterSchema;
         _serverId = serverId;
+        _remoteName = remoteName;
         Source = serverName;
         _client = client;
     }
@@ -46,7 +50,9 @@ public class ExternalMCPTool : IMCPTool
         
         try
         {
-            var result = await _client.CallToolAsync(Name, parameters, cancellationToken);
+            using var timeoutSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+            timeoutSource.CancelAfter(ExecutionTimeout);
+            var result = await _client.CallToolAsync(_remoteName, parameters, timeoutSource.Token);
             
             stopwatch.Stop();
             

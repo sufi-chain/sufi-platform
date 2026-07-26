@@ -1,8 +1,6 @@
-using System.Text.Json;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using SufiChain.SufiPlatform.SufiAI.Configuration;
-using SufiChain.SufiPlatform.SufiAI.RAG;
 using SufiChain.SufiPlatform.SufiAI.Workspaces;
 using Volo.Abp.Guids;
 using Volo.Abp.MultiTenancy;
@@ -51,7 +49,10 @@ public class DefaultAiWorkspaceSeeder : IDefaultAiWorkspaceSeeder
         var existing = await WorkspaceRepository.FindByNameAsync(workspaceName, cancellationToken);
         if (existing != null)
         {
-            await EnsureEmbedderConfigAsync(existing, seed, cancellationToken);
+            Logger.LogDebug(
+                "Default AI workspace '{WorkspaceName}' already exists for tenant {TenantId}; administrator-owned configuration is unchanged.",
+                workspaceName,
+                CurrentTenant.Id);
             return existing.Id;
         }
 
@@ -66,12 +67,12 @@ public class DefaultAiWorkspaceSeeder : IDefaultAiWorkspaceSeeder
             seed.Model,
             EncryptApiKey(seed.ApiKey),
             seed.ApiBaseUrl,
-            seed.SystemPrompt,
+            null,
             seed.Temperature,
             seed.MaxContextTokens,
             seed.OpenAIApiMode);
 
-        workspace.SetEmbedderConfig(BuildEmbedderConfigJson(seed));
+        EnsureDefaultModelConfigurations(workspace, seed);
 
         await WorkspaceRepository.InsertAsync(workspace, autoSave: true, cancellationToken);
 
@@ -84,50 +85,43 @@ public class DefaultAiWorkspaceSeeder : IDefaultAiWorkspaceSeeder
         return workspace.Id;
     }
 
-    protected virtual async Task EnsureEmbedderConfigAsync(
+    protected virtual void EnsureDefaultModelConfigurations(
         Workspace workspace,
-        DefaultWorkspaceSeedOptions seed,
-        CancellationToken cancellationToken)
+        DefaultWorkspaceSeedOptions seed)
     {
-        if (!string.IsNullOrWhiteSpace(workspace.EmbedderConfigJson))
+        var configuredModels = new (AICapabilityType Capability, string? ModelId)[]
         {
-            return;
-        }
-
-        workspace.SetEmbedderConfig(BuildEmbedderConfigJson(seed, workspace));
-        await WorkspaceRepository.UpdateAsync(workspace, autoSave: true, cancellationToken);
-
-        Logger.LogInformation(
-            "Backfilled embedder config on AI workspace '{WorkspaceName}' ({WorkspaceId}) for tenant {TenantId}.",
-            workspace.Name,
-            workspace.Id,
-            CurrentTenant.Id);
-    }
-
-    protected virtual string BuildEmbedderConfigJson(
-        DefaultWorkspaceSeedOptions seed,
-        Workspace? workspace = null)
-    {
-        var embeddingModel = string.IsNullOrWhiteSpace(seed.EmbeddingModel)
-            ? "text-embedding-3-small"
-            : seed.EmbeddingModel.Trim();
-
-        // Prefer a newly seeded plaintext key (encrypt it). Otherwise reuse the workspace's stored key.
-        var apiKey = !string.IsNullOrWhiteSpace(seed.ApiKey)
-            ? EncryptApiKey(seed.ApiKey)
-            : workspace?.ApiKey;
-
-        var config = new EmbedderConfiguration
-        {
-            Provider = workspace?.Provider ?? seed.Provider,
-            Model = embeddingModel,
-            ApiKey = apiKey,
-            ApiBaseUrl = !string.IsNullOrWhiteSpace(seed.ApiBaseUrl)
-                ? seed.ApiBaseUrl
-                : workspace?.ApiBaseUrl
+            (AICapabilityType.ChatCompletion, seed.Model),
+            (AICapabilityType.Embeddings, seed.EmbeddingModel),
+            (AICapabilityType.AudioTranscription, seed.AudioModel),
+            (AICapabilityType.TextToSpeech, seed.TtsModel),
+            (AICapabilityType.VisionAnalysis, seed.VisionModel),
+            (AICapabilityType.ImageGeneration, seed.ImageModel)
         };
 
-        return JsonSerializer.Serialize(config);
+        foreach (var (capability, configuredModelId) in configuredModels)
+        {
+            if (string.IsNullOrWhiteSpace(configuredModelId))
+            {
+                continue;
+            }
+
+            var modelId = configuredModelId.Trim();
+            workspace.AddModelConfiguration(
+                capability,
+                modelId,
+                apiEndpoint: seed.ApiBaseUrl,
+                apiKey: null,
+                priority: 0,
+                openAIApiMode: seed.OpenAIApiMode);
+
+            Logger.LogInformation(
+                "Seeded AI model configuration {Capability}='{ModelId}' on workspace {WorkspaceId} for tenant {TenantId}.",
+                capability,
+                modelId,
+                workspace.Id,
+                CurrentTenant.Id);
+        }
     }
 
     protected virtual string? EncryptApiKey(string? apiKey)

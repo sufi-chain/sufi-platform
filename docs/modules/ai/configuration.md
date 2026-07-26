@@ -51,48 +51,25 @@ Each workspace stores provider and RAG settings. Create/update via admin UI or `
 | `InputCostPer1KTokens` / `OutputCostPer1KTokens` | Optional cost estimation for analytics |
 | `IsActive` | Enable/disable workspace |
 
-### RAG (embedder and vector store)
+### RAG (embeddings + vector store)
 
-Set on create/update via DTOs (admin UI for JSON may be added later):
+| Concern | Where |
+|---------|--------|
+| Embeddings model | Multimodal `AIModelConfiguration` with `AICapabilityType.Embeddings` (Workspace → Model configurations) |
+| Vector store | Host `appsettings` — exactly one of `VectorStore:Qdrant` or `VectorStore:Pgvector` |
 
-**EmbedderConfigDto**
+Default workspace seed creates Chat, Embeddings, Audio, TTS, Vision, and ImageGeneration model rows. Indexing fails with `AI:EmbeddingsModelNotConfigured` if the Embeddings row is missing, or `AI:RagUnavailable` if the host vector store is not configured.
 
-| Field | Description |
-|-------|-------------|
-| `Provider` | Typically OpenAI |
-| `Model` | Embedding model (e.g. `text-embedding-3-small`) |
-| `ApiKey` / `ApiBaseUrl` | Optional overrides |
-
-**VectorStoreConfigDto**
-
-| Field | Description |
-|-------|-------------|
-| `Type` | `VectorStoreType.MongoDB` (supported today) |
-| `ConnectionString` | Optional; may use host MongoDB |
-| `CollectionName` | Default `ai_documents` |
-| `Dimensions` | e.g. `1536` for text-embedding-3-small |
-
-Indexing and search fail fast if embedder or vector config is missing on the workspace.
-
-Example (application service or seed):
+Example: create an Embeddings model after the workspace exists (or rely on default seed):
 
 ```csharp
-await _workspaceAppService.CreateAsync(new CreateWorkspaceDto
+await _aiAppService.CreateModelConfigurationAsync(new CreateAIModelConfigurationDto
 {
-    Name = "helpdesk-default",
-    Provider = AIProviderType.OpenAI,
-    Model = "gpt-4o",
-    ApiKey = "...",
-    EmbedderConfig = new EmbedderConfigDto
-    {
-        Provider = AIProviderType.OpenAI,
-        Model = "text-embedding-3-small"
-    },
-    VectorStoreConfig = new VectorStoreConfigDto
-    {
-        Type = VectorStoreType.MongoDB,
-        Dimensions = 1536
-    }
+    WorkspaceId = workspaceId,
+    CapabilityType = AICapabilityType.Embeddings,
+    ModelId = "text-embedding-3-small",
+    Priority = 0,
+    IsEnabled = true
 });
 ```
 

@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.DependencyInjection;
@@ -25,6 +24,7 @@ public class SufiAIChatAppService : SufiApplicationService, ISufiAIChatAppServic
 {
     protected ISufiAIChatService ChatService { get; }
     protected IWorkspaceAccessor WorkspaceAccessor { get; }
+    protected WorkspaceSyncService WorkspaceSyncService { get; }
     protected IMCPKernelToolRegistrar ToolRegistrar { get; }
     protected IWorkspaceRepository WorkspaceRepository { get; }
     protected IAIUsageLogRepository UsageLogRepository { get; }
@@ -32,12 +32,14 @@ public class SufiAIChatAppService : SufiApplicationService, ISufiAIChatAppServic
     public SufiAIChatAppService(
         ISufiAIChatService chatService,
         IWorkspaceAccessor workspaceAccessor,
+        WorkspaceSyncService workspaceSyncService,
         IMCPKernelToolRegistrar toolRegistrar,
         IWorkspaceRepository workspaceRepository,
         IAIUsageLogRepository usageLogRepository)
     {
         ChatService = chatService;
         WorkspaceAccessor = workspaceAccessor;
+        WorkspaceSyncService = workspaceSyncService;
         ToolRegistrar = toolRegistrar;
         WorkspaceRepository = workspaceRepository;
         UsageLogRepository = usageLogRepository;
@@ -86,8 +88,11 @@ public class SufiAIChatAppService : SufiApplicationService, ISufiAIChatAppServic
                 .WithData("WorkspaceName", input.WorkspaceName);
         }
 
-        var kernel = await WorkspaceAccessor.GetKernelAsync(input.WorkspaceName);
-        await ToolRegistrar.RegisterToolsAsync(kernel, input.WorkspaceName, CreateWorkspaceContext(input.WorkspaceName));
+        var kernel = await WorkspaceSyncService.CreateRequestKernelAsync(input.WorkspaceName);
+        await ToolRegistrar.RegisterToolsAsync(
+            kernel,
+            CreateWorkspaceContext(input.WorkspaceName),
+            input.AllowedMcpToolNames);
 
         var chatService = kernel.GetRequiredService<IChatCompletionService>();
         var chatHistory = new ChatHistory();
@@ -116,14 +121,16 @@ public class SufiAIChatAppService : SufiApplicationService, ISufiAIChatAppServic
                 kernel);
 
             stopwatch.Stop();
-            var usage = ExtractTokenUsage(response);
+            var usage = SemanticKernelChatTokenUsageExtractor.Extract(response);
             await LogMcpChatUsageAsync(workspace, usage, stopwatch.ElapsedMilliseconds, isSuccess: true);
 
             return new SufiAIChatResponseDto
             {
                 Message = response.Content ?? string.Empty,
                 Model = response.ModelId ?? string.Empty,
-                TokensUsed = usage.EffectiveTotalTokens,
+                TokensUsed = usage.TotalTokens ?? (usage.HasUsage
+                    ? (usage.InputTokens ?? 0) + (usage.OutputTokens ?? 0)
+                    : null),
                 InputTokens = usage.InputTokens,
                 OutputTokens = usage.OutputTokens
             };
@@ -133,7 +140,7 @@ public class SufiAIChatAppService : SufiApplicationService, ISufiAIChatAppServic
             stopwatch.Stop();
             await LogMcpChatUsageAsync(
                 workspace,
-                TokenUsage.Empty,
+                new SufiAITokenUsage(),
                 stopwatch.ElapsedMilliseconds,
                 isSuccess: false,
                 errorMessage: ex.Message);
@@ -177,22 +184,22 @@ public class SufiAIChatAppService : SufiApplicationService, ISufiAIChatAppServic
 
     protected virtual string BuildToolUseSystemMessage()
     {
-        return $"""
+        return """
             You are connected to the workspace's enabled MCP tools.
-            Current UTC time is {DateTime.UtcNow:O}. Use this only to interpret explicit relative dates like today, tomorrow, or next week.
             When the user asks for information that may be available through a tool, use the enabled tools automatically.
-            If a target tool requires an identifier such as an id, calendarId, eventId, documentId, userId, or similar, do not ask the user for that identifier first when there is an enabled list, lookup, search, get, or browse tool that can discover it.
-            First call the appropriate discovery tool, inspect names, titles, kinds, defaults, ownership, and descriptions, then call the target tool with the best matching identifier.
-            For create/update/delete tools, never invent required business data. If date, time, duration/end time, timezone, title, target calendar, participant, or any required field is missing or ambiguous, ask a concise follow-up question before calling the tool.
-            For scheduling, a time like "2pm" is not enough by itself unless the date, timezone, and duration or end time are already clear from the conversation.
-            Ask a follow-up question only when enabled tools cannot discover a suitable target or required create/update/delete data is missing or ambiguous.
+            If a tool requires an identifier, do not ask the user for it first when an enabled list, lookup, search, get, or browse tool can discover it.
+            Use the appropriate discovery tool, inspect its results, then call the target tool with the best matching identifier.
+            Never invent required arguments or business data for create, update, delete, or other state-changing operations.
+            Ask a concise follow-up question when required information is missing or ambiguous and cannot be discovered with the enabled tools.
+            Confirm the intended target and effect before performing a destructive or irreversible operation.
+            Treat tool results as the source of truth and report success only when the tool confirms it.
             Do not expose raw JSON unless the user asks for it; summarize tool results naturally in the user's language.
             """;
     }
 
     protected virtual async Task LogMcpChatUsageAsync(
         Workspace workspace,
-        TokenUsage usage,
+        SufiAITokenUsage usage,
         long latencyMs,
         bool isSuccess,
         string? errorMessage = null)
@@ -216,12 +223,11 @@ public class SufiAIChatAppService : SufiApplicationService, ISufiAIChatAppServic
                 usage.TotalTokens,
                 cost.IsCostCalculated,
                 usage.HasUsage ? null : "ProviderDidNotReturnUsage",
-                cost.CostCalculationNote,
-                requestMetadataJson: "{\"mcp\":true}");
+                cost.CostCalculationNote);
         }
         else
         {
-            log.RecordFailure(errorMessage ?? "Unknown error", latencyMs, "{\"mcp\":true}");
+            log.RecordFailure(errorMessage ?? "Unknown error", latencyMs);
         }
 
         await UsageLogRepository.InsertAsync(log);
@@ -245,113 +251,6 @@ public class SufiAIChatAppService : SufiApplicationService, ISufiAIChatAppServic
                              (outputTokens ?? 0) * (workspace.OutputCostPer1MTokens ?? 0)) / 1000000m;
 
         return new CostCalculationResult(estimatedCost, true, null);
-    }
-
-    protected virtual TokenUsage ExtractTokenUsage(ChatMessageContent response)
-    {
-        var metadataUsage = ExtractTokenUsage(response.Metadata);
-        if (metadataUsage.HasUsage)
-        {
-            return metadataUsage;
-        }
-
-        return response.InnerContent == null
-            ? TokenUsage.Empty
-            : TokenUsage.Create(
-                ReadIntProperty(response.InnerContent, "InputTokens", "PromptTokens", "InputTokenCount"),
-                ReadIntProperty(response.InnerContent, "OutputTokens", "CompletionTokens", "OutputTokenCount"),
-                ReadIntProperty(response.InnerContent, "TotalTokens", "TotalTokenCount"));
-    }
-
-    protected virtual TokenUsage ExtractTokenUsage(IReadOnlyDictionary<string, object?>? metadata)
-    {
-        if (metadata == null)
-        {
-            return TokenUsage.Empty;
-        }
-
-        foreach (var key in new[] { "Usage", "usage", "TokenUsage", "token_usage" })
-        {
-            if (metadata.TryGetValue(key, out var usage) && usage != null)
-            {
-                return TokenUsage.Create(
-                    ReadIntProperty(usage, "InputTokens", "PromptTokens", "InputTokenCount"),
-                    ReadIntProperty(usage, "OutputTokens", "CompletionTokens", "OutputTokenCount"),
-                    ReadIntProperty(usage, "TotalTokens", "TotalTokenCount"));
-            }
-        }
-
-        return TokenUsage.Create(
-            ReadIntMetadata(metadata, "InputTokens", "PromptTokens", "input_tokens", "prompt_tokens"),
-            ReadIntMetadata(metadata, "OutputTokens", "CompletionTokens", "output_tokens", "completion_tokens"),
-            ReadIntMetadata(metadata, "TotalTokens", "total_tokens"));
-    }
-
-    private static int? ReadIntMetadata(IReadOnlyDictionary<string, object?> metadata, params string[] keys)
-    {
-        foreach (var key in keys)
-        {
-            if (metadata.TryGetValue(key, out var value) && TryConvertInt(value, out var result))
-            {
-                return result;
-            }
-        }
-
-        return null;
-    }
-
-    private static int? ReadIntProperty(object source, params string[] propertyNames)
-    {
-        var sourceType = source.GetType();
-        foreach (var propertyName in propertyNames)
-        {
-            var property = sourceType.GetProperty(propertyName, BindingFlags.Instance | BindingFlags.Public);
-            if (property != null && TryConvertInt(property.GetValue(source), out var result))
-            {
-                return result;
-            }
-        }
-
-        return null;
-    }
-
-    private static bool TryConvertInt(object? value, out int result)
-    {
-        switch (value)
-        {
-            case int intValue:
-                result = intValue;
-                return true;
-            case long longValue when longValue <= int.MaxValue:
-                result = (int)longValue;
-                return true;
-            case null:
-                result = 0;
-                return false;
-            default:
-                return int.TryParse(value.ToString(), out result);
-        }
-    }
-
-    protected sealed record TokenUsage(int? InputTokens, int? OutputTokens, int? TotalTokens)
-    {
-        public static TokenUsage Empty { get; } = new(null, null, null);
-
-        public bool HasUsage => InputTokens.HasValue || OutputTokens.HasValue || TotalTokens.HasValue;
-
-        public int? EffectiveTotalTokens => TotalTokens ?? (InputTokens.HasValue || OutputTokens.HasValue
-            ? (InputTokens ?? 0) + (OutputTokens ?? 0)
-            : null);
-
-        public static TokenUsage Create(int? inputTokens, int? outputTokens, int? totalTokens)
-        {
-            return new TokenUsage(
-                inputTokens,
-                outputTokens,
-                totalTokens ?? (inputTokens.HasValue || outputTokens.HasValue
-                    ? (inputTokens ?? 0) + (outputTokens ?? 0)
-                    : null));
-        }
     }
 
     protected sealed record CostCalculationResult(

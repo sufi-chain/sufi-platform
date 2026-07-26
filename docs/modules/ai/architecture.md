@@ -120,7 +120,7 @@ Modules implement `IDocumentSource` (`SourceName`, `SearchAsync`, `GetByIdAsync`
 
 ### MCP tool discovery
 
-- Internal: `[MCPTool]` on application service methods
+- Internal: `[SufiAiMcpTool]` on application service methods
 - External: MCP servers registered per workspace
 
 ## Dependencies

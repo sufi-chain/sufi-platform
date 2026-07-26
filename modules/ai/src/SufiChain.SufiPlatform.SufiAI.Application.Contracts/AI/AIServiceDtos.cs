@@ -82,14 +82,14 @@ public class AIModelConfigurationDto : Application.Dtos.EntityDto<Guid>
 {
     public Guid WorkspaceId { get; set; }
     public AICapabilityType CapabilityType { get; set; }
+    public OpenAIApiMode? OpenAIApiMode { get; set; }
     public string ModelId { get; set; } = string.Empty;
     public string? ApiEndpoint { get; set; }
+    public bool HasApiKey { get; set; }
     public bool IsEnabled { get; set; }
     public int Priority { get; set; }
-    public OpenAIApiMode? OpenAIApiMode { get; set; }
     public decimal? InputCostPer1MTokens { get; set; }
     public decimal? OutputCostPer1MTokens { get; set; }
-    public string? ConfigurationJson { get; set; }
 }
 
 public class CreateAIModelConfigurationDto
@@ -99,11 +99,11 @@ public class CreateAIModelConfigurationDto
     public string ModelId { get; set; } = string.Empty;
     public string? ApiEndpoint { get; set; }
     public string? ApiKey { get; set; }
-    public string? ConfigurationJson { get; set; }
-    public OpenAIApiMode? OpenAIApiMode { get; set; }
     public decimal? InputCostPer1MTokens { get; set; }
     public decimal? OutputCostPer1MTokens { get; set; }
     public int Priority { get; set; }
+    public OpenAIApiMode? OpenAIApiMode { get; set; }
+
 }
 
 public class UpdateAIModelConfigurationDto
@@ -111,7 +111,6 @@ public class UpdateAIModelConfigurationDto
     public string ModelId { get; set; } = string.Empty;
     public string? ApiEndpoint { get; set; }
     public string? ApiKey { get; set; }
-    public string? ConfigurationJson { get; set; }
     public OpenAIApiMode? OpenAIApiMode { get; set; }
     public decimal? InputCostPer1MTokens { get; set; }
     public decimal? OutputCostPer1MTokens { get; set; }

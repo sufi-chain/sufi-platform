@@ -6,17 +6,22 @@ using SufiChain.SufiPlatform.SufiAI.EntityFrameworkCore;
 
 namespace SufiChain.SufiPlatform.SufiAI.Workspaces;
 
-public class EfCoreWorkspaceRepository : EfCoreRepository<AIDbContext, Workspace, Guid>, IWorkspaceRepository
+public class EfCoreWorkspaceRepository : EfCoreRepository<IAIDbContext, Workspace, Guid>, IWorkspaceRepository
 {
-    public EfCoreWorkspaceRepository(IDbContextProvider<AIDbContext> dbContextProvider)
+    public EfCoreWorkspaceRepository(IDbContextProvider<IAIDbContext> dbContextProvider)
         : base(dbContextProvider)
     {
     }
 
+    public override async Task<IQueryable<Workspace>> WithDetailsAsync()
+    {
+        return (await GetQueryableAsync()).Include(x => x.ModelConfigurations);
+    }
+
     public async Task<Workspace?> FindByNameAsync(string name, CancellationToken cancellationToken = default)
     {
-        var dbSet = await GetDbSetAsync();
-        return await dbSet.FirstOrDefaultAsync(x => x.Name == name, cancellationToken);
+        return await (await WithDetailsAsync())
+            .FirstOrDefaultAsync(x => x.Name == name, cancellationToken);
     }
 
     public async Task<List<Workspace>> GetListAsync(
@@ -26,11 +31,9 @@ public class EfCoreWorkspaceRepository : EfCoreRepository<AIDbContext, Workspace
         string sorting = "Name",
         CancellationToken cancellationToken = default)
     {
-        var dbSet = await GetDbSetAsync();
-        
-        var query = dbSet
+        var query = (await WithDetailsAsync())
             .WhereIf(!string.IsNullOrWhiteSpace(filter), 
-                x => x.Name.Contains(filter!) || x.Model.Contains(filter!));
+                x => x.Name.Contains(filter!) || x.DefaultModel.Contains(filter!));
 
         return await query
             .OrderBy(sorting)
@@ -45,7 +48,7 @@ public class EfCoreWorkspaceRepository : EfCoreRepository<AIDbContext, Workspace
         
         return await dbSet
             .WhereIf(!string.IsNullOrWhiteSpace(filter), 
-                x => x.Name.Contains(filter!) || x.Model.Contains(filter!))
+                x => x.Name.Contains(filter!) || x.DefaultModel.Contains(filter!))
             .LongCountAsync(cancellationToken);
     }
 }

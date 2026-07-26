@@ -33,8 +33,6 @@ public partial class Workspaces : AIComponentBase
     private bool _showModelConfigurationsModal;
     private Guid? _modelConfigurationsWorkspaceId;
     private string? _modelConfigurationsWorkspaceName;
-    private bool _showMCPToolsModal;
-    private Guid? _mcpToolsWorkspaceId;
 
     protected override void OnInitialized()
     {
@@ -101,12 +99,6 @@ public partial class Workspaces : AIComponentBase
         _showModelConfigurationsModal = true;
     }
 
-    private void OpenMCPToolsModal(WorkspaceDto workspace)
-    {
-        _mcpToolsWorkspaceId = workspace.Id;
-        _showMCPToolsModal = true;
-    }
-
     private async Task OnWorkspaceCreatedAsync()
     {
         _showCreateModal = false;
@@ -120,15 +112,6 @@ public partial class Workspaces : AIComponentBase
     {
         _showEditModal = false;
         await Message.SuccessAsync(L["WorkspaceUpdatedSuccessfully"]);
-        await ExecuteWithLoadingAsync(
-            () => _gridRef?.RefreshDataAsync() ?? Task.CompletedTask,
-            LoadingKeys.LoadWorkspaces);
-    }
-
-    private async Task OnMCPToolsUpdatedAsync()
-    {
-        _showMCPToolsModal = false;
-        await Message.SuccessAsync(L["MCPToolsUpdatedSuccessfully"]);
         await ExecuteWithLoadingAsync(
             () => _gridRef?.RefreshDataAsync() ?? Task.CompletedTask,
             LoadingKeys.LoadWorkspaces);

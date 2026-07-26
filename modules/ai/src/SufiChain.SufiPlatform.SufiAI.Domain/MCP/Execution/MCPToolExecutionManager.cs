@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -22,27 +23,21 @@ public class MCPToolExecutionManager : IMCPToolExecutor, ITransientDependency
 {
     private readonly IMCPToolRegistry _toolRegistry;
     private readonly IWorkspaceRepository _workspaceRepository;
-    private readonly WorkspaceSyncService _syncService;
     private readonly ICurrentUser _currentUser;
     private readonly IFeatureChecker _featureChecker;
-    private readonly IMCPKernelToolRegistrar _toolRegistrar;
     private readonly ILogger<MCPToolExecutionManager> _logger;
     
     public MCPToolExecutionManager(
         IMCPToolRegistry toolRegistry,
         IWorkspaceRepository workspaceRepository,
-        WorkspaceSyncService syncService,
         ICurrentUser currentUser,
         IFeatureChecker featureChecker,
-        IMCPKernelToolRegistrar toolRegistrar,
         ILogger<MCPToolExecutionManager> logger)
     {
         _toolRegistry = toolRegistry;
         _workspaceRepository = workspaceRepository;
-        _syncService = syncService;
         _currentUser = currentUser;
         _featureChecker = featureChecker;
-        _toolRegistrar = toolRegistrar;
         _logger = logger;
     }
     
@@ -53,7 +48,8 @@ public class MCPToolExecutionManager : IMCPToolExecutor, ITransientDependency
         CancellationToken cancellationToken = default)
     {
         await CheckFeatureAsync();
-        var tool = await _toolRegistry.GetToolAsync(workspaceName, toolName, cancellationToken);
+        var resolution = await _toolRegistry.ResolveAsync(new[] { toolName }, cancellationToken);
+        var tool = resolution.Tools.SingleOrDefault();
         
         if (tool == null)
         {
@@ -97,11 +93,6 @@ public class MCPToolExecutionManager : IMCPToolExecutor, ITransientDependency
         
         try
         {
-            // Get kernel for the workspace from sync service
-            var kernel = await _syncService.GetOrCreateKernelAsync(context.WorkspaceName, cancellationToken);
-            
-            await _toolRegistrar.RegisterToolsAsync(kernel, context.WorkspaceName, context);
-            
             // Execute the tool
             var result = await tool.ExecuteAsync(context, parameters, cancellationToken);
             

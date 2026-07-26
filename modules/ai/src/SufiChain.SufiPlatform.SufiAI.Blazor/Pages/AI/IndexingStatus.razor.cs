@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Components;
+using SufiChain.SufiPlatform.SufiAI.Blazor.Workspaces;
 using SufiChain.SufiPlatform.SufiAI.RAG;
 using SufiChain.SufiPlatform.SufiAI.Workspaces;
 using SufiChain.SufiPlatform.Application.Dtos;
@@ -58,12 +59,7 @@ public partial class IndexingStatus : AIComponentBase
     {
         await ExecuteWithLoadingAsync(async () =>
         {
-            // TODO: Implement proper lazy loading with pagination
-            var result = await WorkspaceAppService.GetListAsync(new PagedAndSortedResultRequestDto
-            {
-                MaxResultCount = 100
-            });
-            _workspaces = result.Items.Where(w => w.IsActive).ToList();
+            _workspaces = await WorkspacePagedListLoader.LoadAllActiveAsync(WorkspaceAppService);
             StateHasChanged();
         }, LoadingKeys.LoadWorkspaces);
     }

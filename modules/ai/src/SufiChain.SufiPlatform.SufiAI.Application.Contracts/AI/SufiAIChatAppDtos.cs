@@ -23,6 +23,8 @@ public class SufiAISendChatMessageInput
     public float? Temperature { get; set; }
 
     public int? MaxTokens { get; set; }
+
+    public List<string> AllowedMcpToolNames { get; set; } = new();
 }
 
 public class SufiAIChatResponseDto

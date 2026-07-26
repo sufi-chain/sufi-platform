@@ -27,13 +27,20 @@ public partial class AIChatTestPanel : AIComponentBase
     private string _messageInput = string.Empty;
     private List<ChatMessage> _messages = new();
     private bool _useStreaming = false;
+    private bool _workspacesLoadStarted;
 
-    protected override async Task OnInitializedAsync()
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        
+        await base.OnAfterRenderAsync(firstRender);
+
+        if (!firstRender || _workspacesLoadStarted || !IsInteractive)
+        {
+            return;
+        }
+
+        _workspacesLoadStarted = true;
         await LoadWorkspacesAsync();
     }
-
 
     private async Task LoadWorkspacesAsync()
     {
@@ -44,7 +51,6 @@ public partial class AIChatTestPanel : AIComponentBase
                 MaxResultCount = 100
             });
             _workspaces = result.Items.Where(w => w.IsActive).ToList();
-            StateHasChanged();
         }, ChatLoadingKeys.LoadWorkspaces);
     }
 

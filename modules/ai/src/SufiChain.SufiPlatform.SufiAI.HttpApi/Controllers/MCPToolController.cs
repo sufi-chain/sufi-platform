@@ -17,16 +17,22 @@ public class MCPToolController : AIController, IMCPToolAppService
         _mcpToolAppService = mcpToolAppService;
     }
 
-    [HttpGet("by-workspace/{workspaceName}")]
-    public virtual Task<List<MCPToolDto>> GetToolsForWorkspaceAsync(string workspaceName)
+    [HttpGet]
+    public virtual Task<List<MCPToolDto>> GetCatalogAsync()
     {
-        return _mcpToolAppService.GetToolsForWorkspaceAsync(workspaceName);
+        return _mcpToolAppService.GetCatalogAsync();
     }
 
-    [HttpGet("by-workspace/{workspaceName}/{toolName}")]
-    public virtual Task<MCPToolDto> GetToolAsync(string workspaceName, string toolName)
+    [HttpGet("by-name")]
+    public virtual Task<MCPToolDto?> GetAsync([FromQuery] string toolName)
     {
-        return _mcpToolAppService.GetToolAsync(workspaceName, toolName);
+        return _mcpToolAppService.GetAsync(toolName);
+    }
+
+    [HttpPost("resolve")]
+    public virtual Task<MCPToolResolutionResultDto> ResolveAsync(MCPToolResolutionRequestDto request)
+    {
+        return _mcpToolAppService.ResolveAsync(request);
     }
 
     [HttpPost("execute")]

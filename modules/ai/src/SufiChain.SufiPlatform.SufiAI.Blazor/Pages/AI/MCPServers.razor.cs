@@ -1,11 +1,8 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 using SufiChain.SufiPlatform.SufiAI.MCP.Servers;
-using SufiChain.SufiPlatform.SufiAI.Workspaces;
-using SufiChain.SufiPlatform.Application.Dtos;
 
 namespace SufiChain.SufiPlatform.SufiAI.Blazor.Pages.AI;
 
@@ -16,57 +13,35 @@ public partial class MCPServers
     private static class LoadingKeys
     {
         public const string LoadServers = nameof(LoadServers);
-        public const string LoadWorkspaces = nameof(LoadWorkspaces);
         public const string ToggleServer = nameof(ToggleServer);
         public const string DeleteServer = nameof(DeleteServer);
         public const string TestConnection = nameof(TestConnection);
     }
     
-    private List<WorkspaceDto> _workspaces = new();
     private List<MCPServerDto> _servers = new();
-    private Guid? _selectedWorkspaceId;
     private bool _modalOpen;
     private MCPServerDto? _editingServer;
-    
-    protected override async Task OnInitializedAsync()
+    private bool _serversLoadStarted;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        await LoadWorkspacesAsync();
-        
-        if (_workspaces.Count > 0)
+        await base.OnAfterRenderAsync(firstRender);
+
+        if (!firstRender || _serversLoadStarted || !IsInteractive)
         {
-            _selectedWorkspaceId = _workspaces[0].Id;
-            await LoadServersAsync();
+            return;
         }
-    }
-    
-    private async Task LoadWorkspacesAsync()
-    {
-        await ExecuteWithLoadingAsync(async () =>
-        {
-            // TODO: Implement proper lazy loading with pagination
-            var result = await WorkspaceAppService.GetListAsync(new PagedAndSortedResultRequestDto
-            {
-                MaxResultCount = 100
-            });
-            _workspaces = result.Items.Where(w => w.IsActive).ToList();
-        }, LoadingKeys.LoadWorkspaces);
+
+        _serversLoadStarted = true;
+        await LoadServersAsync();
     }
     
     private async Task LoadServersAsync()
     {
-        if (!_selectedWorkspaceId.HasValue)
-            return;
-        
         await ExecuteWithLoadingAsync(async () =>
         {
-            _servers = await MCPServerAppService.GetByWorkspaceAsync(_selectedWorkspaceId.Value);
+            _servers = await MCPServerAppService.GetListAsync();
         }, LoadingKeys.LoadServers);
-    }
-    
-    private async Task OnWorkspaceChangedAsync(Guid? workspaceId)
-    {
-        _selectedWorkspaceId = workspaceId;
-        await LoadServersAsync();
     }
     
     private void OpenCreateModal()

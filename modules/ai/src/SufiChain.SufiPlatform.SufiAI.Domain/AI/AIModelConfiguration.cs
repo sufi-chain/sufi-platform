@@ -51,11 +51,6 @@ public class AIModelConfiguration : AuditedEntity<Guid>
 
     public decimal? OutputCostPer1MTokens { get; protected set; }
     
-    /// <summary>
-    /// Additional configuration as JSON (model-specific parameters, temperature, max_tokens, etc.)
-    /// </summary>
-    public string? ConfigurationJson { get; protected set; }
-    
     protected AIModelConfiguration() { }
     
     public AIModelConfiguration(
@@ -77,7 +72,6 @@ public class AIModelConfiguration : AuditedEntity<Guid>
         string modelId,
         string? apiEndpoint,
         string? apiKey,
-        string? configurationJson,
         int priority,
         OpenAIApiMode? openAIApiMode = null,
         decimal? inputCostPer1MTokens = null,
@@ -90,7 +84,6 @@ public class AIModelConfiguration : AuditedEntity<Guid>
         ModelId = Check.NotNullOrWhiteSpace(modelId, nameof(modelId));
         ApiEndpoint = apiEndpoint;
         ApiKey = apiKey;
-        ConfigurationJson = configurationJson;
         Priority = priority;
         OpenAIApiMode = openAIApiMode;
         InputCostPer1MTokens = inputCostPer1MTokens;

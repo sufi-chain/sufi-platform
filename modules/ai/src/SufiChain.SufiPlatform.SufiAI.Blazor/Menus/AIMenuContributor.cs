@@ -30,6 +30,8 @@ public class AIMenuContributor : IMenuContributor
             return;
         }
 
+        var administration = context.Menu.GetAdministration();
+
         var AIMenu = new ApplicationMenuItem(
             AIMenus.GroupName,
             l["Menu:SufiAI"],
@@ -40,7 +42,7 @@ public class AIMenuContributor : IMenuContributor
             IsCollapsed = false
         };
 
-        context.Menu.AddItem(AIMenu);
+        administration.AddItem(AIMenu);
 
         if (await featureChecker.IsEnabledAsync(SufiAIFeatures.Workspaces))
         {
@@ -74,7 +76,9 @@ public class AIMenuContributor : IMenuContributor
                 l["Menu:Analytics"],
                 icon: "analytics",
                 order: 4
-            ).RequirePermissions(AIPermissions.AI.ViewUsage);
+            ).RequirePermissions(
+                AIPermissions.AI.ViewUsage,
+                AIPermissions.Workspaces.Default);
 
             analyticsMenu.AddItem(new ApplicationMenuItem(
                 AIMenus.UsageAnalytics,
@@ -82,7 +86,9 @@ public class AIMenuContributor : IMenuContributor
                 url: "/panel/admin/ai/usage-analytics",
                 icon: "chart-bar",
                 order: 1
-            ).RequirePermissions(AIPermissions.AI.ViewUsage));
+            ).RequirePermissions(
+                AIPermissions.AI.ViewUsage,
+                AIPermissions.Workspaces.Default));
 
             AIMenu.AddItem(analyticsMenu);
         }

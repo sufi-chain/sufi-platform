@@ -76,16 +76,6 @@ public class AIUsageLog : CreationAuditedEntity<Guid>, IMultiTenant
     public string? ErrorMessage { get; protected set; }
     
     /// <summary>
-    /// Additional request metadata as JSON (prompt length, parameters, etc.)
-    /// </summary>
-    public string? RequestMetadataJson { get; protected set; }
-    
-    /// <summary>
-    /// Additional response metadata as JSON (finish reason, model version, etc.)
-    /// </summary>
-    public string? ResponseMetadataJson { get; protected set; }
-    
-    /// <summary>
     /// File ID from File-Manager (for audio/image uploads)
     /// </summary>
     public Guid? FileId { get; protected set; }
@@ -122,9 +112,7 @@ public class AIUsageLog : CreationAuditedEntity<Guid>, IMultiTenant
         int? totalTokens = null,
         bool isCostCalculated = false,
         string? usageUnavailableReason = null,
-        string? costCalculationNote = null,
-        string? requestMetadataJson = null,
-        string? responseMetadataJson = null
+        string? costCalculationNote = null
     )
     {
         InputTokens = inputTokens;
@@ -139,20 +127,16 @@ public class AIUsageLog : CreationAuditedEntity<Guid>, IMultiTenant
         IsCostCalculated = isCostCalculated;
         CostCalculationNote = costCalculationNote;
         IsSuccess = true;
-        RequestMetadataJson = requestMetadataJson;
-        ResponseMetadataJson = responseMetadataJson;
     }
     
     public void RecordFailure(
         string errorMessage,
-        long latencyMs,
-        string? requestMetadataJson = null
+        long latencyMs
     )
     {
         ErrorMessage = errorMessage;
         LatencyMs = latencyMs;
         IsSuccess = false;
-        RequestMetadataJson = requestMetadataJson;
     }
     
     public void SetFileInfo(Guid fileId, string fileUrl)

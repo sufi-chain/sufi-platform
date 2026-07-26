@@ -25,7 +25,7 @@ public class AIService : DomainService, IAIService, ITransientDependency
     private const string PricingNotConfigured = "PricingNotConfigured";
 
     private readonly IWorkspaceRepository _workspaceRepository;
-    private readonly IAIModelConfigurationRepository _configurationRepository;
+    private readonly IWorkspaceRuntimeConfigurationResolver _runtimeConfigurationResolver;
     private readonly IAIUsageLogRepository _usageLogRepository;
     private readonly IEnumerable<IAIProvider> _providers;
     private readonly IFeatureChecker _featureChecker;
@@ -33,14 +33,14 @@ public class AIService : DomainService, IAIService, ITransientDependency
 
     public AIService(
         IWorkspaceRepository workspaceRepository,
-        IAIModelConfigurationRepository configurationRepository,
+        IWorkspaceRuntimeConfigurationResolver runtimeConfigurationResolver,
         IAIUsageLogRepository usageLogRepository,
         IEnumerable<IAIProvider> providers,
         IFeatureChecker featureChecker,
         ILogger<AIService> logger)
     {
         _workspaceRepository = workspaceRepository;
-        _configurationRepository = configurationRepository;
+        _runtimeConfigurationResolver = runtimeConfigurationResolver;
         _usageLogRepository = usageLogRepository;
         _providers = providers;
         _featureChecker = featureChecker;
@@ -426,7 +426,7 @@ public class AIService : DomainService, IAIService, ITransientDependency
         var workspace = await _workspaceRepository.FindByNameAsync(workspaceName, cancellationToken);
         if (workspace == null) return false;
 
-        return workspace.HasCapability(capabilityType);
+        return _runtimeConfigurationResolver.Resolve(workspace, capabilityType).IsConfigured;
     }
 
     private async Task<(Workspace workspace, AIModelConfiguration configuration, IAIProvider provider)> PrepareRequestAsync(
@@ -440,91 +440,14 @@ public class AIService : DomainService, IAIService, ITransientDependency
             workspaceName,
             capabilityType);
 
-        var workspace = await _workspaceRepository.FindByNameAsync(workspaceName, cancellationToken);
-        if (workspace == null)
-        {
-            _logger.LogDebug(
-                "AI workspace not found. WorkspaceName={WorkspaceName}, Capability={Capability}",
-                workspaceName,
-                capabilityType);
-            throw new BusinessException("AI:WorkspaceNotFound")
-                .WithData("WorkspaceName", workspaceName);
-        }
-
-        if (!workspace.IsActive)
-        {
-            _logger.LogDebug(
-                "AI workspace is inactive. WorkspaceId={WorkspaceId}, WorkspaceName={WorkspaceName}, Capability={Capability}",
-                workspace.Id,
-                workspace.Name,
-                capabilityType);
-            throw new BusinessException("AI:WorkspaceNotActive")
-                .WithData("WorkspaceName", workspaceName);
-        }
-
-        var configuration = await _configurationRepository.GetPrimaryConfigurationAsync(
-            workspace.Id,
+        var resolved = await _runtimeConfigurationResolver.ResolveAsync(
+            workspaceName,
             capabilityType,
             cancellationToken);
-
-        if (configuration == null)
-        {
-            var fallbackModelId = workspace.DefaultModel;
-
-            if (string.IsNullOrWhiteSpace(fallbackModelId))
-            {
-                fallbackModelId = capabilityType switch
-                {
-                    AICapabilityType.ChatCompletion => "gpt-3.5-turbo",
-                    AICapabilityType.AudioTranscription => "whisper-1",
-                    AICapabilityType.TextToSpeech => "tts-1",
-                    AICapabilityType.Embeddings => "text-embedding-3-small",
-                    AICapabilityType.ImageGeneration => "dall-e-3",
-                    _ => null
-                };
-            }
-
-            if (string.IsNullOrWhiteSpace(fallbackModelId))
-            {
-                throw new BusinessException("AI:NoModelConfigured")
-                    .WithData("WorkspaceName", workspaceName)
-                    .WithData("CapabilityType", capabilityType.ToString());
-            }
-
-            configuration = new AIModelConfiguration(
-                Guid.NewGuid(),
-                workspace.Id,
-                capabilityType,
-                fallbackModelId,
-                priority: 999);
-
-            configuration.UpdateConfiguration(
-                fallbackModelId,
-                workspace.ApiBaseUrl,
-                workspace.ApiKey,
-                null,
-                999,
-                workspace.OpenAIApiMode,
-                workspace.InputCostPer1MTokens,
-                workspace.OutputCostPer1MTokens);
-
-            _logger.LogDebug(
-                "AI request using workspace fallback model configuration. WorkspaceId={WorkspaceId}, WorkspaceName={WorkspaceName}, Capability={Capability}, Model={Model}",
-                workspace.Id,
-                workspace.Name,
-                capabilityType,
-                configuration.ModelId);
-        }
-        else
-        {
-            _logger.LogDebug(
-                "AI request using primary model configuration. WorkspaceId={WorkspaceId}, WorkspaceName={WorkspaceName}, Capability={Capability}, Model={Model}, ConfigurationId={ConfigurationId}",
-                workspace.Id,
-                workspace.Name,
-                capabilityType,
-                configuration.ModelId,
-                configuration.Id);
-        }
+        ThrowIfNotReady(resolved);
+        var workspace = resolved.Workspace;
+        var configuration = resolved.ModelConfiguration ??
+                            CreateChatFallbackConfiguration(resolved);
 
         var provider = _providers.FirstOrDefault(p => p.ProviderType == workspace.Provider);
         if (provider == null)
@@ -560,6 +483,63 @@ public class AIService : DomainService, IAIService, ITransientDependency
             configuration.ModelId);
 
         return (workspace, configuration, provider);
+    }
+
+    private static AIModelConfiguration CreateChatFallbackConfiguration(
+        WorkspaceRuntimeConfiguration resolved)
+    {
+        if (resolved.CapabilityType != AICapabilityType.ChatCompletion)
+        {
+            throw new BusinessException("AI:NoModelConfigured")
+                .WithData("WorkspaceName", resolved.Workspace.Name)
+                .WithData("CapabilityType", resolved.CapabilityType.ToString());
+        }
+
+        var configuration = new AIModelConfiguration(
+            Guid.NewGuid(),
+            resolved.Workspace.Id,
+            resolved.CapabilityType,
+            resolved.ModelId,
+            priority: 999);
+        configuration.UpdateConfiguration(
+            resolved.ModelId,
+            resolved.ApiEndpoint,
+            resolved.ApiKey,
+            999,
+            resolved.OpenAIApiMode,
+            resolved.InputCostPer1MTokens,
+            resolved.OutputCostPer1MTokens);
+        return configuration;
+    }
+
+    private static void ThrowIfNotReady(WorkspaceRuntimeConfiguration resolved)
+    {
+        var exception = resolved.FailureCode switch
+        {
+            WorkspaceRuntimeFailureCodes.WorkspaceInactive =>
+                new BusinessException(AIErrorCodes.WorkspaceNotActive),
+            WorkspaceRuntimeFailureCodes.ModelNotConfigured =>
+                new BusinessException("AI:NoModelConfigured"),
+            WorkspaceRuntimeFailureCodes.CredentialsMissing =>
+                new BusinessException("AI:ApiKeyRequired"),
+            WorkspaceRuntimeFailureCodes.ProviderNotRegistered =>
+                new BusinessException("AI:ProviderNotSupported"),
+            WorkspaceRuntimeFailureCodes.CapabilityNotSupported =>
+                new BusinessException("AI:CapabilityNotSupported"),
+            WorkspaceRuntimeFailureCodes.EndpointInvalid =>
+                new BusinessException(AIErrorCodes.InvalidProviderConfiguration),
+            _ => null
+        };
+
+        if (exception == null)
+        {
+            return;
+        }
+
+        throw exception
+            .WithData("WorkspaceName", resolved.Workspace.Name)
+            .WithData("Provider", resolved.Provider.ToString())
+            .WithData("CapabilityType", resolved.CapabilityType.ToString());
     }
 
     private async Task CheckFeatureAsync(AICapabilityType capabilityType)

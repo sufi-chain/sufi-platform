@@ -6,8 +6,7 @@ public interface IMCPKernelToolRegistrar
 {
     Task RegisterToolsAsync(
         Kernel kernel,
-        string workspaceName,
         WorkspaceContext context,
-        IReadOnlyList<string>? allowedToolNames = null,
+        IReadOnlyList<string> allowedToolNames,
         CancellationToken cancellationToken = default);
 }

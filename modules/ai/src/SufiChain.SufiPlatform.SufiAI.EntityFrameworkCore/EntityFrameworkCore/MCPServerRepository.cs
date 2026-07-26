@@ -10,41 +10,36 @@ using Volo.Abp.EntityFrameworkCore;
 
 namespace SufiChain.SufiPlatform.SufiAI.EntityFrameworkCore;
 
-public class MCPServerRepository : EfCoreRepository<AIDbContext, MCPServer, Guid>, IMCPServerRepository
+public class MCPServerRepository : EfCoreRepository<IAIDbContext, MCPServer, Guid>, IMCPServerRepository
 {
-    public MCPServerRepository(IDbContextProvider<AIDbContext> dbContextProvider)
+    public MCPServerRepository(IDbContextProvider<IAIDbContext> dbContextProvider)
         : base(dbContextProvider)
     {
     }
     
-    public async Task<MCPServer?> FindByNameAsync(
-        Guid workspaceId,
-        string name,
+    public async Task<MCPServer?> FindByKeyAsync(
+        string key,
         CancellationToken cancellationToken = default)
     {
         var dbSet = await GetDbSetAsync();
         return await dbSet
-            .Where(s => s.WorkspaceId == workspaceId && s.Name == name)
+            .Where(s => s.Key == key)
             .FirstOrDefaultAsync(cancellationToken);
     }
     
-    public async Task<List<MCPServer>> GetEnabledByWorkspaceAsync(
-        Guid workspaceId,
-        CancellationToken cancellationToken = default)
+    public async Task<List<MCPServer>> GetEnabledListAsync(CancellationToken cancellationToken = default)
     {
         var dbSet = await GetDbSetAsync();
         return await dbSet
-            .Where(s => s.WorkspaceId == workspaceId && s.IsEnabled)
+            .Where(s => s.IsEnabled)
             .ToListAsync(cancellationToken);
     }
     
-    public async Task<List<MCPServer>> GetByWorkspaceAsync(
-        Guid workspaceId,
-        CancellationToken cancellationToken = default)
+    public async Task<List<MCPServer>> GetListAsync(CancellationToken cancellationToken = default)
     {
         var dbSet = await GetDbSetAsync();
         return await dbSet
-            .Where(s => s.WorkspaceId == workspaceId)
+            .OrderBy(s => s.Key)
             .ToListAsync(cancellationToken);
     }
 }

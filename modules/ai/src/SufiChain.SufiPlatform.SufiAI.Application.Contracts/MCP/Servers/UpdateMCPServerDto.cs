@@ -16,7 +16,4 @@ public class UpdateMCPServerDto
     
     [StringLength(2048)]
     public string? ArgumentsJson { get; set; }
-    
-    [StringLength(4096)]
-    public string? MetadataJson { get; set; }
 }

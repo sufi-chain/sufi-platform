@@ -1,5 +1,4 @@
 using System;
-using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 using SufiChain.SufiPlatform.SufiAI;
@@ -13,6 +12,7 @@ public partial class ModelConfigurationModal : AIComponentBase
     {
         public const string SaveConfiguration = "save-configuration";
         public const string LoadModels = "load-models";
+        public const string TestConnection = "test-connection";
     }
 
     [Parameter] public bool Open { get; set; }
@@ -27,6 +27,7 @@ public partial class ModelConfigurationModal : AIComponentBase
     private IWorkspaceAppService? _workspaceAppService;
 
     private bool _isEditMode;
+    private bool _hasStoredApiKey;
     private CreateAIModelConfigurationDto _model = new();
     private string _priorityText = "0";
     private string _openAIApiModeText = string.Empty;
@@ -35,6 +36,22 @@ public partial class ModelConfigurationModal : AIComponentBase
     private List<OpenAIModelDto> _availableModels = new();
     private int _activeTab;
     private bool _wasOpen;
+
+    private bool ShowsOpenAIApiMode =>
+        _model.CapabilityType is AICapabilityType.ChatCompletion or AICapabilityType.VisionAnalysis;
+
+    private bool ShowsEndpointOverrideHint =>
+        !string.IsNullOrWhiteSpace(_model.ApiEndpoint);
+
+    private string ApiKeyPlaceholder =>
+        _isEditMode && _hasStoredApiKey
+            ? L["LeaveEmptyToKeepCurrent"]
+            : L["ApiKeyPlaceholder"];
+
+    private string ApiKeyHelperText =>
+        _isEditMode && _hasStoredApiKey
+            ? L["LeaveEmptyToKeepCurrent"]
+            : L["ApiKeyHelperText"];
 
     protected override void OnParametersSet()
     {
@@ -51,13 +68,13 @@ public partial class ModelConfigurationModal : AIComponentBase
     {
         if (_isEditMode && Configuration != null)
         {
+            _hasStoredApiKey = Configuration.HasApiKey;
             _model = new CreateAIModelConfigurationDto
             {
                 WorkspaceId = Configuration.WorkspaceId,
                 CapabilityType = Configuration.CapabilityType,
                 ModelId = Configuration.ModelId,
                 ApiEndpoint = Configuration.ApiEndpoint,
-                ConfigurationJson = Configuration.ConfigurationJson,
                 OpenAIApiMode = Configuration.OpenAIApiMode,
                 InputCostPer1MTokens = Configuration.InputCostPer1MTokens,
                 OutputCostPer1MTokens = Configuration.OutputCostPer1MTokens,
@@ -75,6 +92,7 @@ public partial class ModelConfigurationModal : AIComponentBase
         }
         else
         {
+            _hasStoredApiKey = false;
             _model = new CreateAIModelConfigurationDto
             {
                 WorkspaceId = WorkspaceId ?? Guid.Empty,
@@ -87,6 +105,16 @@ public partial class ModelConfigurationModal : AIComponentBase
             _outputCostPer1MTokensText = string.Empty;
             _availableModels = new List<OpenAIModelDto>();
             _activeTab = 0;
+        }
+    }
+
+    private void OnCapabilityChanged(AICapabilityType value)
+    {
+        _model.CapabilityType = value;
+        if (!ShowsOpenAIApiMode)
+        {
+            _openAIApiModeText = string.Empty;
+            _model.OpenAIApiMode = null;
         }
     }
 
@@ -104,7 +132,6 @@ public partial class ModelConfigurationModal : AIComponentBase
             return;
         }
 
-        // Parse priority
         if (int.TryParse(_priorityText, out var priority))
         {
             _model.Priority = priority;
@@ -113,20 +140,6 @@ public partial class ModelConfigurationModal : AIComponentBase
         {
             await Message.ErrorAsync(L["PriorityMustBeNumber"]);
             return;
-        }
-
-        // Validate JSON if provided
-        if (!string.IsNullOrWhiteSpace(_model.ConfigurationJson))
-        {
-            try
-            {
-                JsonDocument.Parse(_model.ConfigurationJson);
-            }
-            catch
-            {
-                await Message.ErrorAsync(L["InvalidJsonFormat"]);
-                return;
-            }
         }
 
         _model.WorkspaceId = WorkspaceId.Value;
@@ -144,7 +157,6 @@ public partial class ModelConfigurationModal : AIComponentBase
                     ModelId = _model.ModelId,
                     ApiEndpoint = _model.ApiEndpoint,
                     ApiKey = _model.ApiKey,
-                    ConfigurationJson = _model.ConfigurationJson,
                     OpenAIApiMode = _model.OpenAIApiMode,
                     InputCostPer1MTokens = _model.InputCostPer1MTokens,
                     OutputCostPer1MTokens = _model.OutputCostPer1MTokens,
@@ -164,6 +176,41 @@ public partial class ModelConfigurationModal : AIComponentBase
         }, LoadingKeys.SaveConfiguration);
     }
 
+    private async Task TestConnectionAsync()
+    {
+        if (!WorkspaceId.HasValue)
+        {
+            await Message.ErrorAsync(L["WorkspaceRequired"]);
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(_model.ModelId))
+        {
+            await Message.ErrorAsync(L["ModelIdRequired"]);
+            return;
+        }
+
+        if (!TryApplyOpenAIApiMode())
+        {
+            return;
+        }
+
+        await ExecuteWithLoadingAsync(async () =>
+        {
+            await WorkspaceAppService.TestConnectionAsync(new TestWorkspaceConnectionInput
+            {
+                WorkspaceId = WorkspaceId.Value,
+                ModelConfigurationId = Configuration?.Id,
+                CapabilityType = _model.CapabilityType,
+                Model = _model.ModelId,
+                ApiKey = _model.ApiKey,
+                ApiBaseUrl = _model.ApiEndpoint,
+                OpenAIApiMode = _model.OpenAIApiMode ?? OpenAIApiMode.ChatCompletions
+            });
+            await Notify.SuccessAsync(L["ConnectionTestSuccessful"]);
+        }, LoadingKeys.TestConnection);
+    }
+
     private async Task LoadModelsAsync()
     {
         if (!WorkspaceId.HasValue)
@@ -177,6 +224,7 @@ public partial class ModelConfigurationModal : AIComponentBase
             _availableModels = await WorkspaceAppService.GetAvailableModelsAsync(new GetOpenAIModelsInput
             {
                 WorkspaceId = WorkspaceId.Value,
+                ModelConfigurationId = Configuration?.Id,
                 ApiKey = _model.ApiKey,
                 ApiBaseUrl = _model.ApiEndpoint
             });
@@ -210,7 +258,7 @@ public partial class ModelConfigurationModal : AIComponentBase
 
     private bool TryApplyOpenAIApiMode()
     {
-        if (string.IsNullOrWhiteSpace(_openAIApiModeText))
+        if (!ShowsOpenAIApiMode || string.IsNullOrWhiteSpace(_openAIApiModeText))
         {
             _model.OpenAIApiMode = null;
             return true;

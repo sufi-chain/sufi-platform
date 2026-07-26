@@ -2,14 +2,13 @@ using System.Reflection;
 using Microsoft.Extensions.Logging;
 using SufiChain.SufiPlatform.SufiAI;
 using SufiChain.SufiPlatform.SufiAI.MCP.Abstractions;
-using SufiChain.SufiPlatform.SufiAI.MCP.Attributes;
 using SufiChain.SufiPlatform.Application.Services;
 using Volo.Abp.DependencyInjection;
 
 namespace SufiChain.SufiPlatform.SufiAI.MCP.Internal;
 
 /// <summary>
-/// Discovers internal MCP tools by scanning ApplicationService methods.
+/// Discovers internal MCP tools by scanning ApplicationService methods marked with <see cref="SufiAiMcpToolAttribute"/>.
 /// </summary>
 public class ReflectionToolDiscoveryService : IInternalToolDiscoveryService, ISingletonDependency
 {
@@ -139,20 +138,13 @@ public class ReflectionToolDiscoveryService : IInternalToolDiscoveryService, ISi
 
     private static bool HasToolAttribute(MethodInfo method)
     {
-        return method.GetCustomAttribute<MCPToolAttribute>() != null ||
-               method.GetCustomAttribute<SufiAIToolAttribute>() != null;
+        return method.GetCustomAttribute<SufiAiMcpToolAttribute>() != null;
     }
 
     private static ToolAttributeInfo GetToolAttribute(MethodInfo method)
     {
-        var mcpToolAttribute = method.GetCustomAttribute<MCPToolAttribute>();
-        if (mcpToolAttribute != null)
-        {
-            return new ToolAttributeInfo(mcpToolAttribute.Name, mcpToolAttribute.Description);
-        }
-
-        var sufiAbpToolAttribute = method.GetCustomAttribute<SufiAIToolAttribute>()!;
-        return new ToolAttributeInfo(sufiAbpToolAttribute.Name, sufiAbpToolAttribute.Description);
+        var attribute = method.GetCustomAttribute<SufiAiMcpToolAttribute>()!;
+        return new ToolAttributeInfo(attribute.Name, attribute.Description);
     }
 
     private sealed record ToolAttributeInfo(string Name, string Description);

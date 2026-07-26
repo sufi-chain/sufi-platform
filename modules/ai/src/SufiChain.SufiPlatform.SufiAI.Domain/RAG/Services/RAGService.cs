@@ -1,6 +1,7 @@
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using SufiChain.SufiPlatform.SufiAI.Adapters;
 using SufiChain.SufiPlatform.SufiAI.Features;
 using SufiChain.SufiPlatform.SufiAI.Workspaces;
@@ -15,6 +16,7 @@ public class RAGService : DomainService, IRAGService
     private readonly IServiceProvider _serviceProvider;
     private readonly IWorkspaceRepository _workspaceRepository;
     private readonly WorkspaceSyncService _syncService;
+    private readonly IWorkspaceEmbedderResolver _embedderResolver;
     private readonly IFeatureChecker _featureChecker;
     private readonly IConfiguration _configuration;
     private readonly List<IDocumentSource> _documentSources = new();
@@ -23,12 +25,14 @@ public class RAGService : DomainService, IRAGService
         IServiceProvider serviceProvider,
         IWorkspaceRepository workspaceRepository,
         WorkspaceSyncService syncService,
+        IWorkspaceEmbedderResolver embedderResolver,
         IFeatureChecker featureChecker,
         IConfiguration configuration)
     {
         _serviceProvider = serviceProvider;
         _workspaceRepository = workspaceRepository;
         _syncService = syncService;
+        _embedderResolver = embedderResolver;
         _featureChecker = featureChecker;
         _configuration = configuration;
     }
@@ -43,6 +47,8 @@ public class RAGService : DomainService, IRAGService
 
     public List<IDocumentSource> GetDocumentSources()
     {
+        // Sync bridge: IDocumentSource registry is consumed synchronously by Semantic Kernel plugins;
+        // feature check is async-only — blocking here is intentional (DEBT-009).
         CheckFeatureAsync().GetAwaiter().GetResult();
         EnsureSourcesLoaded();
         return _documentSources.ToList();
@@ -55,7 +61,7 @@ public class RAGService : DomainService, IRAGService
         var configuredProvider = GetConfiguredPlatformProvider();
         if (configuredProvider == null)
         {
-            return Unavailable("Configure Qdrant or Pgvector to enable RAG.");
+            return Unavailable("Configure exactly one of Qdrant or Pgvector under VectorStore host settings to enable RAG.");
         }
 
         if (GetVectorStoreProviderOrNull(configuredProvider.Type) == null)
@@ -77,12 +83,16 @@ public class RAGService : DomainService, IRAGService
         string query,
         int maxResults = 10,
         float? minSimilarity = null,
+        string? sourceName = null,
+        IReadOnlyDictionary<string, string>? metadataFilters = null,
         CancellationToken cancellationToken = default)
     {
         await CheckFeatureAsync();
         await EnsureRagAvailableAsync(cancellationToken);
         var workspace = await GetWorkspaceByNameAsync(workspaceName);
-        var vectorStoreContext = GetVectorStoreContext(workspace);
+        var vectorStoreContext = await GetVectorStoreContextAsync(workspace, cancellationToken);
+        vectorStoreContext.SourceName = string.IsNullOrWhiteSpace(sourceName) ? null : sourceName.Trim();
+        vectorStoreContext.MetadataFilters = DocumentChunkMetadataFilter.Normalize(metadataFilters);
 
         var embeddingGenerator = await _syncService.GetOrCreateEmbeddingGeneratorAsync(workspaceName, cancellationToken);
         var embeddings = await embeddingGenerator.GenerateAsync(new[] { query }, cancellationToken: cancellationToken);
@@ -103,6 +113,7 @@ public class RAGService : DomainService, IRAGService
         string workspaceName,
         string sourceName,
         IProgress<IndexingProgress>? progress = null,
+        IReadOnlyDictionary<string, string>? metadataFilters = null,
         CancellationToken cancellationToken = default)
     {
         await CheckFeatureAsync();
@@ -110,7 +121,7 @@ public class RAGService : DomainService, IRAGService
         EnsureSourcesLoaded();
 
         var workspace = await GetWorkspaceByNameAsync(workspaceName);
-        var vectorStoreContext = GetVectorStoreContext(workspace);
+        var vectorStoreContext = await GetVectorStoreContextAsync(workspace, cancellationToken);
         var source = _documentSources.FirstOrDefault(s => s.SourceName == sourceName);
 
         if (source == null)
@@ -119,18 +130,46 @@ public class RAGService : DomainService, IRAGService
                 .WithData("SourceName", sourceName);
         }
 
+        var normalizedFilters = DocumentChunkMetadataFilter.Normalize(metadataFilters);
+
         var indexingProgress = new IndexingProgress
         {
             SourceName = sourceName,
             StartedAt = Clock.Now
         };
 
+        var phase = "LoadDocuments";
         try
         {
-            indexingProgress.TotalDocuments = await source.GetTotalCountAsync(cancellationToken);
+            var harvestCount = await source.GetTotalCountAsync(cancellationToken);
             progress?.Report(indexingProgress);
 
-            var documents = await source.SearchAsync(null, indexingProgress.TotalDocuments, cancellationToken);
+            var documents = await source.SearchAsync(null, Math.Max(harvestCount, 1), cancellationToken);
+            documents = DocumentChunkMetadataFilter.Filter(documents, normalizedFilters);
+            indexingProgress.TotalDocuments = documents.Count;
+            progress?.Report(indexingProgress);
+
+            var vectorStoreProvider = GetVectorStoreProvider(vectorStoreContext.Type);
+
+            if (documents.Count == 0)
+            {
+                indexingProgress.CompletedAt = Clock.Now;
+                progress?.Report(indexingProgress);
+                await vectorStoreProvider.UpdateIndexingStatusAsync(
+                    vectorStoreContext,
+                    new IndexingStatus
+                    {
+                        SourceName = sourceName,
+                        TotalDocuments = 0,
+                        IndexedDocuments = 0,
+                        LastIndexedAt = Clock.Now,
+                        IsIndexing = false
+                    },
+                    cancellationToken);
+                return;
+            }
+
+            phase = "GenerateEmbeddings";
             var embeddingGenerator = await _syncService.GetOrCreateEmbeddingGeneratorAsync(workspaceName, cancellationToken);
             var texts = documents.Select(d => d.Content).ToList();
             var allEmbeddings = await embeddingGenerator.GenerateAsync(texts, cancellationToken: cancellationToken);
@@ -146,7 +185,7 @@ public class RAGService : DomainService, IRAGService
                 index++;
             }
 
-            var vectorStoreProvider = GetVectorStoreProvider(vectorStoreContext.Type);
+            phase = "StoreEmbeddings";
             await vectorStoreProvider.StoreEmbeddingsAsync(vectorStoreContext, documents, cancellationToken);
 
             indexingProgress.CompletedAt = Clock.Now;
@@ -165,28 +204,55 @@ public class RAGService : DomainService, IRAGService
         }
         catch (Exception ex)
         {
-            indexingProgress.FailedDocuments = indexingProgress.TotalDocuments - indexingProgress.IndexedDocuments;
-            await GetVectorStoreProvider(vectorStoreContext.Type).UpdateIndexingStatusAsync(
-                vectorStoreContext,
-                new IndexingStatus
-                {
-                    SourceName = sourceName,
-                    TotalDocuments = indexingProgress.TotalDocuments,
-                    IndexedDocuments = indexingProgress.IndexedDocuments,
-                    LastIndexedAt = Clock.Now,
-                    IsIndexing = false,
-                    ErrorMessage = ex.Message
-                },
-                cancellationToken);
+            var detail = ResolveExceptionDetail(ex);
+            Logger.LogError(
+                ex,
+                "RAG indexing failed. WorkspaceName={WorkspaceName}, SourceName={SourceName}, Phase={Phase}, DocumentCount={DocumentCount}, IndexedDocuments={IndexedDocuments}, Error={Error}",
+                workspaceName,
+                sourceName,
+                phase,
+                indexingProgress.TotalDocuments,
+                indexingProgress.IndexedDocuments,
+                detail);
 
-            throw new BusinessException(AIErrorCodes.EmbeddingGenerationFailed)
-                .WithData("Error", ex.Message);
+            indexingProgress.FailedDocuments = indexingProgress.TotalDocuments - indexingProgress.IndexedDocuments;
+            try
+            {
+                await GetVectorStoreProvider(vectorStoreContext.Type).UpdateIndexingStatusAsync(
+                    vectorStoreContext,
+                    new IndexingStatus
+                    {
+                        SourceName = sourceName,
+                        TotalDocuments = indexingProgress.TotalDocuments,
+                        IndexedDocuments = indexingProgress.IndexedDocuments,
+                        LastIndexedAt = Clock.Now,
+                        IsIndexing = false,
+                        ErrorMessage = detail
+                    },
+                    cancellationToken);
+            }
+            catch (Exception statusEx)
+            {
+                Logger.LogWarning(
+                    statusEx,
+                    "Failed to persist RAG indexing failure status. WorkspaceName={WorkspaceName}, SourceName={SourceName}",
+                    workspaceName,
+                    sourceName);
+            }
+
+            if (ex is BusinessException)
+            {
+                throw;
+            }
+
+            throw CreateIndexingBusinessException(phase, workspaceName, sourceName, ex);
         }
     }
 
     public async Task IndexAllDocumentsAsync(
         string workspaceName,
         IProgress<IndexingProgress>? progress = null,
+        IReadOnlyDictionary<string, string>? metadataFilters = null,
         CancellationToken cancellationToken = default)
     {
         await CheckFeatureAsync();
@@ -195,7 +261,12 @@ public class RAGService : DomainService, IRAGService
 
         foreach (var source in _documentSources)
         {
-            await IndexDocumentsAsync(workspaceName, source.SourceName, progress, cancellationToken);
+            await IndexDocumentsAsync(
+                workspaceName,
+                source.SourceName,
+                progress,
+                metadataFilters,
+                cancellationToken);
         }
     }
 
@@ -217,7 +288,7 @@ public class RAGService : DomainService, IRAGService
 
         var totalDocuments = await source.GetTotalCountAsync(cancellationToken);
         var workspace = await GetWorkspaceByNameAsync(workspaceName);
-        var vectorStoreContext = GetVectorStoreContext(workspace);
+        var vectorStoreContext = await GetVectorStoreContextAsync(workspace, cancellationToken);
         var vectorStoreProvider = GetVectorStoreProvider(vectorStoreContext.Type);
 
         var indexedCount = await vectorStoreProvider.GetCountAsync(vectorStoreContext, cancellationToken);
@@ -296,68 +367,49 @@ public class RAGService : DomainService, IRAGService
             .FirstOrDefault(provider => provider.Type == vectorStoreType);
     }
 
-    private VectorStoreContext GetVectorStoreContext(Workspace workspace)
+    private async Task<VectorStoreContext> GetVectorStoreContextAsync(
+        Workspace workspace,
+        CancellationToken cancellationToken)
     {
-        if (string.IsNullOrWhiteSpace(workspace.EmbedderConfigJson))
-        {
-            throw new BusinessException(AIErrorCodes.EmbedderConfigurationMissing)
-                .WithData("WorkspaceName", workspace.Name);
-        }
+        await _embedderResolver.ResolveAsync(workspace, cancellationToken);
 
-        var vectorStoreConfig = ResolveVectorStoreConfiguration(workspace);
+        var vectorStoreConfig = ResolvePlatformVectorStoreConfiguration(workspace.Name);
         if (string.IsNullOrWhiteSpace(vectorStoreConfig.CollectionName))
         {
             throw new BusinessException(AIErrorCodes.VectorStoreConfigurationInvalid)
                 .WithData("Reason", "CollectionName is required");
         }
 
+        var tenantKey = VectorStoreTenantScope.GetTenantKey(CurrentTenant.Id);
+        var collectionName = VectorStoreTenantScope.BuildName(vectorStoreConfig.CollectionName, tenantKey);
+        var schema = string.IsNullOrWhiteSpace(vectorStoreConfig.Schema)
+            ? null
+            : VectorStoreTenantScope.BuildName(vectorStoreConfig.Schema, tenantKey);
+
         return new VectorStoreContext
         {
             WorkspaceName = workspace.Name,
             Type = vectorStoreConfig.Type,
-            CollectionName = vectorStoreConfig.CollectionName,
+            CollectionName = collectionName,
             ConnectionString = vectorStoreConfig.ConnectionString,
             ApiKey = vectorStoreConfig.ApiKey,
             Dimensions = vectorStoreConfig.Dimensions,
             TenantId = CurrentTenant.Id,
-            TenantKey = GetTenantKey(CurrentTenant.Id),
-            Schema = vectorStoreConfig.Schema,
+            TenantKey = tenantKey,
+            Schema = schema,
             TableName = vectorStoreConfig.TableName,
             ProviderName = vectorStoreConfig.ProviderName
         };
     }
 
-    private VectorStoreConfiguration ResolveVectorStoreConfiguration(Workspace workspace)
+    private VectorStoreConfiguration ResolvePlatformVectorStoreConfiguration(string workspaceName)
     {
-        var workspaceConfig = WorkspaceConfigurationHelper.ParseVectorStoreConfig(workspace);
-        var platformQdrantConfig = GetQdrantConfiguration();
-        var platformPgvectorConfig = GetPgvectorConfiguration();
-
-        if (workspaceConfig != null)
-        {
-            ApplyDefaults(workspaceConfig, workspace.Name);
-            var platformConfig = workspaceConfig.Type switch
-            {
-                VectorStoreType.Qdrant => platformQdrantConfig,
-                VectorStoreType.Pgvector => platformPgvectorConfig,
-                _ => null
-            };
-
-            if (platformConfig == null && string.IsNullOrWhiteSpace(workspaceConfig.ConnectionString))
-            {
-                throw new BusinessException(AIErrorCodes.VectorStoreConfigurationMissing)
-                    .WithData("WorkspaceName", workspace.Name)
-                    .WithData("VectorStoreType", workspaceConfig.Type.ToString());
-            }
-
-            return MergeVectorStoreConfigurations(platformConfig, workspaceConfig, workspace.Name);
-        }
-
         var configuredProvider = GetConfiguredPlatformProvider();
         if (configuredProvider == null)
         {
             throw new BusinessException(AIErrorCodes.RagUnavailable)
-                .WithData("WorkspaceName", workspace.Name);
+                .WithData("WorkspaceName", workspaceName)
+                .WithData("Message", "Configure exactly one of Qdrant or Pgvector under VectorStore host settings.");
         }
 
         return configuredProvider;
@@ -414,71 +466,9 @@ public class RAGService : DomainService, IRAGService
         };
     }
 
-    private static VectorStoreConfiguration MergeVectorStoreConfigurations(
-        VectorStoreConfiguration? platformConfig,
-        VectorStoreConfiguration workspaceConfig,
-        string workspaceName)
-    {
-        if (platformConfig == null)
-        {
-            ApplyDefaults(workspaceConfig, workspaceName);
-            return workspaceConfig;
-        }
-
-        return new VectorStoreConfiguration
-        {
-            Type = workspaceConfig.Type,
-            ConnectionString = string.IsNullOrWhiteSpace(workspaceConfig.ConnectionString)
-                ? platformConfig.ConnectionString
-                : workspaceConfig.ConnectionString,
-            ApiKey = string.IsNullOrWhiteSpace(workspaceConfig.ApiKey)
-                ? platformConfig.ApiKey
-                : workspaceConfig.ApiKey,
-            CollectionName = string.IsNullOrWhiteSpace(workspaceConfig.CollectionName)
-                ? platformConfig.CollectionName
-                : workspaceConfig.CollectionName,
-            Dimensions = workspaceConfig.Dimensions > 0 ? workspaceConfig.Dimensions : platformConfig.Dimensions,
-            Schema = string.IsNullOrWhiteSpace(workspaceConfig.Schema) ? platformConfig.Schema : workspaceConfig.Schema,
-            TableName = string.IsNullOrWhiteSpace(workspaceConfig.TableName) ? platformConfig.TableName : workspaceConfig.TableName,
-            ProviderName = string.IsNullOrWhiteSpace(workspaceConfig.ProviderName) ? platformConfig.ProviderName : workspaceConfig.ProviderName
-        };
-    }
-
-    private static void ApplyDefaults(VectorStoreConfiguration configuration, string workspaceName)
-    {
-        configuration.CollectionName = string.IsNullOrWhiteSpace(configuration.CollectionName)
-            ? GetDefaultCollectionName(workspaceName)
-            : configuration.CollectionName;
-        configuration.Dimensions = configuration.Dimensions > 0 ? configuration.Dimensions : 1536;
-
-        if (configuration.Type == VectorStoreType.Pgvector)
-        {
-            configuration.Schema ??= "rag";
-            configuration.TableName ??= "document_chunks";
-            configuration.ProviderName ??= "Npgsql";
-        }
-    }
-
     private static int ParseDimension(string? value)
     {
         return int.TryParse(value, out var dimensions) && dimensions > 0 ? dimensions : 1536;
-    }
-
-    private static string GetDefaultCollectionName(string workspaceName)
-    {
-        var sanitized = new string(workspaceName
-            .Select(character => char.IsLetterOrDigit(character) ? char.ToLowerInvariant(character) : '_')
-            .ToArray())
-            .Trim('_');
-
-        return string.IsNullOrWhiteSpace(sanitized)
-            ? "ai_documents"
-            : $"ai_{sanitized}";
-    }
-
-    private static string GetTenantKey(Guid? tenantId)
-    {
-        return tenantId?.ToString("N").ToLowerInvariant() ?? "host";
     }
 
     private async Task EnsureRagAvailableAsync(CancellationToken cancellationToken)
@@ -491,7 +481,7 @@ public class RAGService : DomainService, IRAGService
 
         throw new BusinessException(AIErrorCodes.RagUnavailable)
             .WithData("Provider", availability.Provider.ToString())
-            .WithData("Message", availability.Message ?? "Configure Qdrant or Pgvector to enable RAG.");
+            .WithData("Message", availability.Message ?? "Configure exactly one of Qdrant or Pgvector under VectorStore host settings.");
     }
 
     private static RagAvailability Unavailable(string message)
@@ -502,5 +492,55 @@ public class RAGService : DomainService, IRAGService
             Provider = RagProviderKind.None,
             Message = message
         };
+    }
+
+    private static BusinessException CreateIndexingBusinessException(
+        string phase,
+        string workspaceName,
+        string sourceName,
+        Exception exception)
+    {
+        var detail = ResolveExceptionDetail(exception);
+        var code = phase switch
+        {
+            "GenerateEmbeddings" => AIErrorCodes.EmbeddingGenerationFailed,
+            "StoreEmbeddings" => AIErrorCodes.VectorStoreWriteFailed,
+            _ => AIErrorCodes.DocumentIndexingFailed
+        };
+
+        var businessException = new BusinessException(code, detail, innerException: exception);
+        businessException
+            .WithData("WorkspaceName", workspaceName)
+            .WithData("SourceName", sourceName)
+            .WithData("Phase", phase)
+            .WithData("Error", detail);
+        return businessException;
+    }
+
+    private static string ResolveExceptionDetail(Exception exception)
+    {
+        if (exception is AggregateException aggregate)
+        {
+            var innerMessages = aggregate.Flatten().InnerExceptions
+                .Select(inner => inner.Message)
+                .Where(message => !string.IsNullOrWhiteSpace(message))
+                .Distinct()
+                .ToList();
+
+            if (innerMessages.Count > 0)
+            {
+                return string.Join(" | ", innerMessages);
+            }
+        }
+
+        var detail = exception.GetBaseException().Message;
+        if (string.IsNullOrWhiteSpace(detail) ||
+            (detail.StartsWith("Exception of type '", StringComparison.Ordinal) &&
+             detail.EndsWith("' was thrown.", StringComparison.Ordinal)))
+        {
+            detail = exception.Message;
+        }
+
+        return string.IsNullOrWhiteSpace(detail) ? exception.GetType().Name : detail;
     }
 }

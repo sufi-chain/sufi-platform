@@ -50,6 +50,14 @@ public class QdrantVectorStoreProvider : IVectorStoreProvider, ITransientDepende
             }
         }).ToList();
 
+        foreach (var (point, document) in points.Zip(documents))
+        {
+            foreach (var (key, value) in FlattenMetadata(document.Metadata))
+            {
+                point.Payload[ToMetadataPayloadKey(key)] = value;
+            }
+        }
+
         await client.UpsertAsync(context.CollectionName, points, cancellationToken: cancellationToken);
     }
 
@@ -147,17 +155,61 @@ public class QdrantVectorStoreProvider : IVectorStoreProvider, ITransientDepende
             await client.CreatePayloadIndexAsync(context.CollectionName, "sourceName", cancellationToken: cancellationToken);
             await client.CreatePayloadIndexAsync(context.CollectionName, "sourceId", cancellationToken: cancellationToken);
             await client.CreatePayloadIndexAsync(context.CollectionName, "documentId", cancellationToken: cancellationToken);
+            await client.CreatePayloadIndexAsync(context.CollectionName, "meta.projectId", cancellationToken: cancellationToken);
         }
     }
 
     private static Filter BuildWorkspaceFilter(VectorStoreContext context)
     {
-        return MatchKeyword("tenantKey", context.TenantKey) & MatchKeyword("workspaceName", context.WorkspaceName);
+        var filter = MatchKeyword("tenantKey", context.TenantKey) & MatchKeyword("workspaceName", context.WorkspaceName);
+
+        if (!string.IsNullOrWhiteSpace(context.SourceName))
+        {
+            filter &= MatchKeyword("sourceName", context.SourceName.Trim());
+        }
+
+        foreach (var (key, value) in context.MetadataFilters
+                     .Where(pair => !string.IsNullOrWhiteSpace(pair.Key) && !string.IsNullOrWhiteSpace(pair.Value)))
+        {
+            filter &= MatchKeyword(ToMetadataPayloadKey(key.Trim()), value.Trim());
+        }
+
+        return filter;
     }
 
     private static Filter BuildDocumentFilter(VectorStoreContext context, string documentId)
     {
         return BuildWorkspaceFilter(context) & MatchKeyword("documentId", documentId);
+    }
+
+    private static string ToMetadataPayloadKey(string key) => $"meta.{key}";
+
+    private static IEnumerable<KeyValuePair<string, string>> FlattenMetadata(Dictionary<string, object>? metadata)
+    {
+        if (metadata == null || metadata.Count == 0)
+        {
+            yield break;
+        }
+
+        foreach (var (key, raw) in metadata)
+        {
+            if (string.IsNullOrWhiteSpace(key) || raw == null)
+            {
+                continue;
+            }
+
+            var text = raw switch
+            {
+                string s => s,
+                Guid guid => guid.ToString("D"),
+                _ => raw.ToString()
+            };
+
+            if (!string.IsNullOrWhiteSpace(text))
+            {
+                yield return new KeyValuePair<string, string>(key.Trim(), text.Trim());
+            }
+        }
     }
 
     private static QdrantClient CreateClient(VectorStoreContext context)
@@ -167,16 +219,42 @@ public class QdrantVectorStoreProvider : IVectorStoreProvider, ITransientDepende
             throw new InvalidOperationException("Qdrant connection string is required.");
         }
 
-        if (string.IsNullOrWhiteSpace(context.ApiKey))
+        var address = ResolveGrpcAddress(context.ConnectionString);
+        return new QdrantClient(address, apiKey: string.IsNullOrWhiteSpace(context.ApiKey) ? null : context.ApiKey);
+    }
+
+    // gRPC default 6334; remap REST 6333. Accepts host, host:port, or http(s) URI.
+    private static Uri ResolveGrpcAddress(string connectionString)
+    {
+        const int restPort = 6333;
+        const int grpcPort = 6334;
+
+        var value = connectionString.Trim();
+        if (Uri.TryCreate(value, UriKind.Absolute, out var absolute) &&
+            (absolute.Scheme == Uri.UriSchemeHttp || absolute.Scheme == Uri.UriSchemeHttps))
         {
-            return new QdrantClient(context.ConnectionString);
+            var port = absolute.IsDefaultPort ? grpcPort : absolute.Port;
+            if (port == restPort)
+            {
+                port = grpcPort;
+            }
+
+            return new UriBuilder(absolute.Scheme, absolute.Host, port).Uri;
         }
 
-        var channel = QdrantChannel.ForAddress(context.ConnectionString, new ClientConfiguration
+        var host = value;
+        var portNumber = grpcPort;
+        var separator = value.LastIndexOf(':');
+        if (separator > 0 &&
+            separator < value.Length - 1 &&
+            int.TryParse(value[(separator + 1)..], out var parsedPort) &&
+            parsedPort > 0)
         {
-            ApiKey = context.ApiKey
-        });
-        return new QdrantClient(new QdrantGrpcClient(channel));
+            host = value[..separator];
+            portNumber = parsedPort == restPort ? grpcPort : parsedPort;
+        }
+
+        return new UriBuilder(Uri.UriSchemeHttp, host, portNumber).Uri;
     }
 
     private static DocumentChunk? ToDocumentChunk(VectorStoreContext context, ScoredPoint result)

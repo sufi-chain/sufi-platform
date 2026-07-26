@@ -10,6 +10,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\..\..\framework\SufiChain.SufiPlatform.Ddd.Application.Contracts\SufiChain.SufiPlatform.Ddd.Application.Contracts.csproj" />
     <PackageReference Include="Volo.Abp.Ddd.Domain" Version="$(AbpVersion)" />
+    <PackageReference Include="Volo.Abp.Caching" Version="$(AbpVersion)" />
     <ProjectReference Include="..\..\..\..\framework\SufiChain.SufiPlatform.SufiAI\SufiChain.SufiPlatform.SufiAI.csproj" />
     <ProjectReference Include="..\..\..\file-manager\src\SufiChain.SufiPlatform.FileManager.Domain\SufiChain.SufiPlatform.FileManager.Domain.csproj" />
     <ProjectReference Include="..\..\..\file-manager\src\SufiChain.SufiPlatform.FileManager.Domain.Shared\SufiChain.SufiPlatform.FileManager.Domain.Shared.csproj" />

@@ -11,11 +11,11 @@ using Volo.Abp.EntityFrameworkCore;
 namespace SufiChain.SufiPlatform.SufiAI;
 
 public class EfCoreAIModelConfigurationRepository 
-    : EfCoreRepository<AIDbContext, AIModelConfiguration, Guid>, 
+    : EfCoreRepository<IAIDbContext, AIModelConfiguration, Guid>, 
       IAIModelConfigurationRepository
 {
     public EfCoreAIModelConfigurationRepository(
-        IDbContextProvider<AIDbContext> dbContextProvider) 
+        IDbContextProvider<IAIDbContext> dbContextProvider) 
         : base(dbContextProvider)
     {
     }

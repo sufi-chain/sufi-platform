@@ -55,4 +55,14 @@ public class VectorStoreContext
     public string? Schema { get; set; }
     public string? TableName { get; set; }
     public string? ProviderName { get; set; }
+
+    /// <summary>
+    /// Optional source-name filter for similarity search.
+    /// </summary>
+    public string? SourceName { get; set; }
+
+    /// <summary>
+    /// Optional exact-match metadata filters for similarity search.
+    /// </summary>
+    public Dictionary<string, string> MetadataFilters { get; set; } = new();
 }

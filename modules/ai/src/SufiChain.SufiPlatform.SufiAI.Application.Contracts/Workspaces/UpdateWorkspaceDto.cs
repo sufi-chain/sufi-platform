@@ -39,7 +39,4 @@ public class UpdateWorkspaceDto
     public decimal? OutputCostPer1MTokens { get; set; }
     
     public bool IsActive { get; set; } = true;
-    
-    public EmbedderConfigDto? EmbedderConfig { get; set; }
-    public VectorStoreConfigDto? VectorStoreConfig { get; set; }
 }

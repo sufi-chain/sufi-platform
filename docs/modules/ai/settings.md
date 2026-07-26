@@ -37,10 +37,8 @@ Used by usage analytics when operations are logged.
 
 | Setting | Storage |
 |---------|---------|
-| Embedder config | `EmbedderConfigJson` on workspace |
-| Vector store config | `VectorStoreConfigJson` on workspace |
-
-DTO flags: `HasEmbedderConfig`, `HasVectorStoreConfig`.
+| Embeddings model | `AIModelConfiguration` with `AICapabilityType.Embeddings` (Workspace → Model configurations) |
+| Vector store | Host `VectorStore:Qdrant` or `VectorStore:Pgvector` (exactly one) |
 
 ## Model configuration settings
 
@@ -51,7 +49,7 @@ DTO flags: `HasEmbedderConfig`, `HasVectorStoreConfig`.
 | API endpoint / key | Optional overrides |
 | Is enabled | Toggle without delete |
 | Priority | Fallback order (0 = first) |
-| Configuration JSON | Provider-specific parameters |
+| Configuration JSON | Optional provider-specific parameters on the model row |
 
 ## MCP server settings
 

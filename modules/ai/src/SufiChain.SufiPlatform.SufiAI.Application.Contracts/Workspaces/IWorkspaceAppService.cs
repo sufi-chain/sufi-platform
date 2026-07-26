@@ -8,6 +8,8 @@ public interface IWorkspaceAppService : IApplicationService
     Task<PagedResultDto<WorkspaceDto>> GetListAsync(PagedAndSortedResultRequestDto input);
     
     Task<WorkspaceDto> GetAsync(Guid id);
+
+    Task<WorkspaceReadinessDto> GetReadinessAsync(Guid id);
     
     Task<WorkspaceDto> CreateAsync(CreateWorkspaceDto input);
     
@@ -17,9 +19,5 @@ public interface IWorkspaceAppService : IApplicationService
 
     Task TestConnectionAsync(TestWorkspaceConnectionInput input);
 
-    Task<WorkspaceMCPToolConfigurationDto> GetMCPToolConfigurationAsync(Guid id);
-
-    Task UpdateMCPToolConfigurationAsync(Guid id, UpdateWorkspaceMCPToolConfigurationDto input);
-    
     Task DeleteAsync(Guid id);
 }

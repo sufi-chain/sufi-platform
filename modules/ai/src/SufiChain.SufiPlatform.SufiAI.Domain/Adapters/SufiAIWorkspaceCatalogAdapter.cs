@@ -4,7 +4,6 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using SufiChain.SufiPlatform.SufiAI;
-using SufiChain.SufiPlatform.SufiAI;
 using SufiChain.SufiPlatform.SufiAI.Workspaces;
 using Volo.Abp.DependencyInjection;
 
@@ -18,10 +17,14 @@ public class SufiAIWorkspaceCatalogAdapter :
     ITransientDependency
 {
     protected IWorkspaceRepository WorkspaceRepository { get; }
+    protected IWorkspaceRuntimeConfigurationResolver RuntimeConfigurationResolver { get; }
 
-    public SufiAIWorkspaceCatalogAdapter(IWorkspaceRepository workspaceRepository)
+    public SufiAIWorkspaceCatalogAdapter(
+        IWorkspaceRepository workspaceRepository,
+        IWorkspaceRuntimeConfigurationResolver runtimeConfigurationResolver)
     {
         WorkspaceRepository = workspaceRepository;
+        RuntimeConfigurationResolver = runtimeConfigurationResolver;
     }
 
     public virtual async Task<List<SufiAIWorkspaceDescriptor>> GetListAsync(CancellationToken cancellationToken = default)
@@ -31,8 +34,13 @@ public class SufiAIWorkspaceCatalogAdapter :
             sorting: nameof(Workspace.Name),
             cancellationToken: cancellationToken);
 
-        return workspaces
-            .Select(MapWorkspace)
+        var descriptors = new List<SufiAIWorkspaceDescriptor>();
+        foreach (var workspace in workspaces)
+        {
+            descriptors.Add(MapWorkspace(workspace));
+        }
+
+        return descriptors
             .OrderBy(workspace => workspace.DisplayName, StringComparer.OrdinalIgnoreCase)
             .ToList();
     }
@@ -47,7 +55,9 @@ public class SufiAIWorkspaceCatalogAdapter :
         }
 
         var workspace = await WorkspaceRepository.FindByNameAsync(name.Trim(), cancellationToken);
-        return workspace == null ? null : MapWorkspace(workspace);
+        return workspace == null
+            ? null
+            : MapWorkspace(workspace);
     }
 
     public virtual async Task<SufiAIWorkspaceDescriptor?> FindByIdAsync(
@@ -59,8 +69,10 @@ public class SufiAIWorkspaceCatalogAdapter :
             return null;
         }
 
-        var workspace = await WorkspaceRepository.FindAsync(id, cancellationToken: cancellationToken);
-        return workspace == null ? null : MapWorkspace(workspace);
+        var workspace = await WorkspaceRepository.FindAsync(id, includeDetails: true, cancellationToken: cancellationToken);
+        return workspace == null
+            ? null
+            : MapWorkspace(workspace);
     }
 
     public virtual async Task<SufiAIWorkspaceDescriptor?> ResolveAsync(
@@ -81,49 +93,61 @@ public class SufiAIWorkspaceCatalogAdapter :
 
     protected virtual SufiAIWorkspaceDescriptor MapWorkspace(Workspace workspace)
     {
+        var results = new Dictionary<AICapabilityType, WorkspaceRuntimeConfiguration>();
+        foreach (var capabilityType in Enum.GetValues<AICapabilityType>())
+        {
+            results[capabilityType] = RuntimeConfigurationResolver.Resolve(
+                workspace,
+                capabilityType);
+        }
+
+        var chat = results[AICapabilityType.ChatCompletion];
         return new SufiAIWorkspaceDescriptor
         {
             Id = workspace.Id,
             Name = workspace.Name,
             DisplayName = workspace.Name,
-            Model = workspace.Model,
+            Model = chat.ModelId,
             IsActive = workspace.IsActive,
-            IsReady = workspace.IsActive &&
-                      !string.IsNullOrWhiteSpace(workspace.Model) &&
-                      !string.IsNullOrWhiteSpace(workspace.ApiKey),
-            Capabilities = MapCapabilities(workspace)
+            IsReady = chat.IsReady,
+            Capabilities = MapCapabilities(results)
         };
     }
 
-    protected virtual List<SufiAICapability> MapCapabilities(Workspace workspace)
+    protected virtual List<SufiAICapability> MapCapabilities(
+        IReadOnlyDictionary<AICapabilityType, WorkspaceRuntimeConfiguration> results)
     {
         var capabilities = new List<SufiAICapability>();
 
-        if (!string.IsNullOrWhiteSpace(workspace.Model) || workspace.HasCapability(AICapabilityType.ChatCompletion))
+        if (results[AICapabilityType.ChatCompletion].IsReady)
         {
             capabilities.Add(SufiAICapability.Chat);
             capabilities.Add(SufiAICapability.Streaming);
         }
 
-        if (workspace.HasCapability(AICapabilityType.AudioTranscription) ||
-            workspace.HasCapability(AICapabilityType.TextToSpeech))
+        if (results[AICapabilityType.AudioTranscription].IsReady ||
+            results[AICapabilityType.TextToSpeech].IsReady)
         {
             capabilities.Add(SufiAICapability.Audio);
         }
 
-        if (workspace.HasCapability(AICapabilityType.VisionAnalysis))
+        if (results[AICapabilityType.VisionAnalysis].IsReady)
         {
             capabilities.Add(SufiAICapability.Vision);
         }
 
-        if (workspace.HasCapability(AICapabilityType.Embeddings) ||
-            (!string.IsNullOrWhiteSpace(workspace.EmbedderConfigJson) &&
-             !string.IsNullOrWhiteSpace(workspace.VectorStoreConfigJson)))
+        if (results[AICapabilityType.Embeddings].IsReady)
         {
             capabilities.Add(SufiAICapability.Embeddings);
         }
 
-        capabilities.Add(SufiAICapability.Tools);
+        var chat = results[AICapabilityType.ChatCompletion];
+        if (chat.IsReady &&
+            chat.Provider == AIProviderType.OpenAI &&
+            chat.OpenAIApiMode == OpenAIApiMode.ChatCompletions)
+        {
+            capabilities.Add(SufiAICapability.Tools);
+        }
 
         return capabilities.Distinct().ToList();
     }

@@ -8,6 +8,7 @@ using Riok.Mapperly.Abstractions;
 using SufiChain.SufiPlatform.SufiAI;
 using SufiChain.SufiPlatform.SufiAI.Features;
 using SufiChain.SufiPlatform.SufiAI.Permissions;
+using SufiChain.SufiPlatform.SufiAI.Workspaces;
 using Volo.Abp.Security.Encryption;
 using SufiChain.SufiPlatform.Application.Services;
 using SufiChain.SufiPlatform.SufiAI.Storage;
@@ -25,6 +26,8 @@ public class AIAppService : SufiApplicationService, IAIAppService
     private readonly IAIUsageLogRepository _usageLogRepository;
     private readonly IAIFileStorageService _fileStorageService;
     private readonly IStringEncryptionService _stringEncryptor;
+    private readonly IWorkspaceRepository _workspaceRepository;
+    private readonly WorkspaceSyncService _workspaceSyncService;
 
     public AIAppService(
         IAIService aiService,
@@ -32,7 +35,9 @@ public class AIAppService : SufiApplicationService, IAIAppService
         IAIModelConfigurationRepository configurationRepository,
         IAIUsageLogRepository usageLogRepository,
         IStringEncryptionService stringEncryptor,
-        IAIFileStorageService fileStorageService)
+        IAIFileStorageService fileStorageService,
+        IWorkspaceRepository workspaceRepository,
+        WorkspaceSyncService workspaceSyncService)
     {
         _aiService = aiService;
         _aiAudioService = aiAudioService;
@@ -40,6 +45,8 @@ public class AIAppService : SufiApplicationService, IAIAppService
         _usageLogRepository = usageLogRepository;
         _stringEncryptor = stringEncryptor;
         _fileStorageService = fileStorageService;
+        _workspaceRepository = workspaceRepository;
+        _workspaceSyncService = workspaceSyncService;
     }
 
     [Authorize(AIPermissions.AI.Audio)]
@@ -200,7 +207,6 @@ public class AIAppService : SufiApplicationService, IAIAppService
             input.ModelId,
             input.ApiEndpoint,
             EncryptApiKey(input.ApiKey),
-            input.ConfigurationJson,
             input.Priority,
             input.OpenAIApiMode,
             input.InputCostPer1MTokens,
@@ -208,6 +214,7 @@ public class AIAppService : SufiApplicationService, IAIAppService
         );
 
         await _configurationRepository.InsertAsync(configuration);
+        await ClearWorkspaceRuntimeCacheAsync(input.WorkspaceId);
 
         return AIModelConfigurationMapper.ToDto(configuration);
     }
@@ -218,11 +225,14 @@ public class AIAppService : SufiApplicationService, IAIAppService
     {
         var configuration = await _configurationRepository.GetAsync(id);
 
+        var apiKeyToUpdate = string.IsNullOrWhiteSpace(input.ApiKey)
+            ? configuration.ApiKey
+            : EncryptApiKey(input.ApiKey);
+
         configuration.UpdateConfiguration(
             input.ModelId,
             input.ApiEndpoint,
-            EncryptApiKey(input.ApiKey),
-            input.ConfigurationJson,
+            apiKeyToUpdate,
             input.Priority,
             input.OpenAIApiMode,
             input.InputCostPer1MTokens,
@@ -230,6 +240,7 @@ public class AIAppService : SufiApplicationService, IAIAppService
         );
 
         await _configurationRepository.UpdateAsync(configuration);
+        await ClearWorkspaceRuntimeCacheAsync(configuration.WorkspaceId);
 
         return AIModelConfigurationMapper.ToDto(configuration);
     }
@@ -238,7 +249,10 @@ public class AIAppService : SufiApplicationService, IAIAppService
     [RequiresFeature(SufiAIFeatures.Workspaces)]
     public async Task DeleteModelConfigurationAsync(Guid id)
     {
+        var configuration = await _configurationRepository.GetAsync(id);
+        var workspaceId = configuration.WorkspaceId;
         await _configurationRepository.DeleteAsync(id);
+        await ClearWorkspaceRuntimeCacheAsync(workspaceId);
     }
 
     [Authorize(AIPermissions.AI.ViewUsage)]
@@ -285,6 +299,17 @@ public class AIAppService : SufiApplicationService, IAIAppService
         
         return _stringEncryptor.Encrypt(apiKey);
     }
+
+    private async Task ClearWorkspaceRuntimeCacheAsync(Guid workspaceId)
+    {
+        var workspace = await _workspaceRepository.FindAsync(workspaceId);
+        if (workspace == null)
+        {
+            return;
+        }
+
+        _workspaceSyncService.ClearWorkspaceCache(workspace.Name);
+    }
 }
 
 // Mapperly mappers
@@ -300,12 +325,12 @@ public static partial class AIModelConfigurationMapper
             CapabilityType = entity.CapabilityType,
             ModelId = entity.ModelId,
             ApiEndpoint = entity.ApiEndpoint,
+            HasApiKey = !string.IsNullOrWhiteSpace(entity.ApiKey),
             IsEnabled = entity.IsEnabled,
             Priority = entity.Priority,
             OpenAIApiMode = entity.OpenAIApiMode,
             InputCostPer1MTokens = entity.InputCostPer1MTokens,
-            OutputCostPer1MTokens = entity.OutputCostPer1MTokens,
-            ConfigurationJson = entity.ConfigurationJson
+            OutputCostPer1MTokens = entity.OutputCostPer1MTokens
         };
     }
 }

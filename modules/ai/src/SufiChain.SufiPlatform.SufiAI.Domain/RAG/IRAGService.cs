@@ -11,6 +11,8 @@ public interface IRAGService
         string query,
         int maxResults = 10,
         float? minSimilarity = null,
+        string? sourceName = null,
+        IReadOnlyDictionary<string, string>? metadataFilters = null,
         CancellationToken cancellationToken = default
     );
     
@@ -18,12 +20,14 @@ public interface IRAGService
         string workspaceName,
         string sourceName,
         IProgress<IndexingProgress>? progress = null,
+        IReadOnlyDictionary<string, string>? metadataFilters = null,
         CancellationToken cancellationToken = default
     );
     
     Task IndexAllDocumentsAsync(
         string workspaceName,
         IProgress<IndexingProgress>? progress = null,
+        IReadOnlyDictionary<string, string>? metadataFilters = null,
         CancellationToken cancellationToken = default
     );
     

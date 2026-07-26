@@ -47,7 +47,9 @@ public class RAGAppService : SufiApplicationService, IRAGAppService
         var results = await _ragService.SearchAsync(
             input.WorkspaceName,
             input.Query,
-            input.MaxResults
+            input.MaxResults,
+            sourceName: input.SourceName,
+            metadataFilters: input.MetadataFilters
         );
 
         return ObjectMapper.Map<List<DocumentChunk>, List<DocumentChunkDto>>(results);

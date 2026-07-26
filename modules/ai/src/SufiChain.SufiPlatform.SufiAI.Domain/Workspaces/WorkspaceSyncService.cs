@@ -19,6 +19,8 @@ namespace SufiChain.SufiPlatform.SufiAI.Workspaces;
 public class WorkspaceSyncService : ITransientDependency
 {
     private readonly IWorkspaceRepository _workspaceRepository;
+    private readonly IWorkspaceEmbedderResolver _embedderResolver;
+    private readonly IWorkspaceRuntimeConfigurationResolver _runtimeConfigurationResolver;
     private readonly IServiceProvider _serviceProvider;
     private readonly IFeatureChecker _featureChecker;
     private readonly IStringEncryptionService _stringEncryptor;
@@ -31,12 +33,16 @@ public class WorkspaceSyncService : ITransientDependency
 
     public WorkspaceSyncService(
         IWorkspaceRepository workspaceRepository,
+        IWorkspaceEmbedderResolver embedderResolver,
+        IWorkspaceRuntimeConfigurationResolver runtimeConfigurationResolver,
         IServiceProvider serviceProvider,
         IFeatureChecker featureChecker,
         IStringEncryptionService stringEncryptor,
         ILogger<WorkspaceSyncService> logger)
     {
         _workspaceRepository = workspaceRepository;
+        _embedderResolver = embedderResolver;
+        _runtimeConfigurationResolver = runtimeConfigurationResolver;
         _serviceProvider = serviceProvider;
         _featureChecker = featureChecker;
         _stringEncryptor = stringEncryptor;
@@ -61,7 +67,6 @@ public class WorkspaceSyncService : ITransientDependency
         _logger.LogInformation("Creating ChatClient for workspace {WorkspaceName} (Provider: {Provider}, Model: {Model})",
             workspaceName, workspace.Provider, workspace.Model);
 
-        //ToDo
         var builder = new ChatClientBuilder(_serviceProvider.GetService<IChatClient>());
         WorkspaceConfigurationHelper.ConfigureChatClient(builder, workspace);
         var chatClient = builder.Build(_serviceProvider);
@@ -83,18 +88,44 @@ public class WorkspaceSyncService : ITransientDependency
             return cachedKernel;
         }
 
-        var workspace = await GetWorkspaceAsync(workspaceName, cancellationToken);
+        var configuration = await _runtimeConfigurationResolver.ResolveAsync(
+            workspaceName,
+            AICapabilityType.ChatCompletion,
+            cancellationToken);
         
         _logger.LogInformation("Creating Kernel for workspace {WorkspaceName} (Provider: {Provider}, Model: {Model})",
-            workspaceName, workspace.Provider, workspace.Model);
+            workspaceName, configuration.Provider, configuration.ModelId);
 
         var builder = Kernel.CreateBuilder();
         builder.Services.AddSingleton(_serviceProvider);
-        WorkspaceConfigurationHelper.ConfigureKernel(builder, workspace, DecryptApiKey(workspace.ApiKey));
+        WorkspaceConfigurationHelper.ConfigureKernel(builder, configuration);
         var kernel = builder.Build();
 
         _kernelCache.TryAdd(workspaceName, kernel);
         return kernel;
+    }
+
+    public async Task<Kernel> CreateRequestKernelAsync(
+        string workspaceName,
+        CancellationToken cancellationToken = default)
+    {
+        await CheckFeatureAsync(SufiAIFeatures.Workspaces);
+        var configuration = await _runtimeConfigurationResolver.ResolveAsync(
+            workspaceName,
+            AICapabilityType.ChatCompletion,
+            cancellationToken);
+        return await CreateRequestKernelAsync(configuration, cancellationToken);
+    }
+
+    public async Task<Kernel> CreateRequestKernelAsync(
+        WorkspaceRuntimeConfiguration configuration,
+        CancellationToken cancellationToken = default)
+    {
+        await CheckFeatureAsync(SufiAIFeatures.Workspaces);
+        var builder = Kernel.CreateBuilder();
+        builder.Services.AddSingleton(_serviceProvider);
+        WorkspaceConfigurationHelper.ConfigureKernel(builder, configuration);
+        return builder.Build();
     }
 
     /// <summary>
@@ -113,11 +144,15 @@ public class WorkspaceSyncService : ITransientDependency
         }
 
         var workspace = await GetWorkspaceAsync(workspaceName, cancellationToken);
-        
-        _logger.LogInformation("Creating EmbeddingGenerator for workspace {WorkspaceName} (Provider: {Provider})",
-            workspaceName, workspace.Provider);
+        var embedderConfiguration = await _embedderResolver.ResolveAsync(workspace, cancellationToken);
 
-        var embeddingGenerator = WorkspaceConfigurationHelper.CreateEmbeddingGenerator(workspace, ResolveEmbedderConfiguration(workspace));
+        _logger.LogInformation(
+            "Creating EmbeddingGenerator for workspace {WorkspaceName} (Provider: {Provider}, Model: {Model})",
+            workspaceName,
+            workspace.Provider,
+            embedderConfiguration.Model);
+
+        var embeddingGenerator = WorkspaceConfigurationHelper.CreateEmbeddingGenerator(workspace, embedderConfiguration);
 
         _embeddingGeneratorCache.TryAdd(workspaceName, embeddingGenerator);
         return embeddingGenerator;
@@ -197,17 +232,4 @@ public class WorkspaceSyncService : ITransientDependency
         }
     }
 
-    private EmbedderConfiguration? ResolveEmbedderConfiguration(Workspace workspace)
-    {
-        var config = WorkspaceConfigurationHelper.ParseEmbedderConfig(workspace);
-        if (config == null)
-        {
-            return null;
-        }
-
-        config.ApiKey = DecryptApiKey(config.ApiKey);
-        config.ApiBaseUrl ??= workspace.ApiBaseUrl;
-        config.Model = string.IsNullOrWhiteSpace(config.Model) ? workspace.DefaultModel : config.Model;
-        return config;
-    }
 }

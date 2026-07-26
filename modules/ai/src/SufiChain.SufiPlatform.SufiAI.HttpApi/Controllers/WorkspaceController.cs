@@ -30,6 +30,12 @@ public class WorkspaceController : AIController, IWorkspaceAppService
         return _workspaceAppService.GetAsync(id);
     }
 
+    [HttpGet("{id}/readiness")]
+    public virtual Task<WorkspaceReadinessDto> GetReadinessAsync(Guid id)
+    {
+        return _workspaceAppService.GetReadinessAsync(id);
+    }
+
     [HttpPost]
     public virtual Task<WorkspaceDto> CreateAsync(CreateWorkspaceDto input)
     {
@@ -52,18 +58,6 @@ public class WorkspaceController : AIController, IWorkspaceAppService
     public virtual Task TestConnectionAsync(TestWorkspaceConnectionInput input)
     {
         return _workspaceAppService.TestConnectionAsync(input);
-    }
-
-    [HttpGet("{id}/mcp-tools/configuration")]
-    public virtual Task<WorkspaceMCPToolConfigurationDto> GetMCPToolConfigurationAsync(Guid id)
-    {
-        return _workspaceAppService.GetMCPToolConfigurationAsync(id);
-    }
-
-    [HttpPut("{id}/mcp-tools/configuration")]
-    public virtual Task UpdateMCPToolConfigurationAsync(Guid id, UpdateWorkspaceMCPToolConfigurationDto input)
-    {
-        return _workspaceAppService.UpdateMCPToolConfigurationAsync(id, input);
     }
 
     [HttpDelete("{id}")]

@@ -29,11 +29,7 @@ public class Workspace : FullAuditedAggregateRoot<Guid>, IMultiTenant
     public decimal? InputCostPer1MTokens { get; protected set; }
     public decimal? OutputCostPer1MTokens { get; protected set; }
     public bool IsActive { get; protected set; }
-    
-    public string? EmbedderConfigJson { get; protected set; }
-    public string? VectorStoreConfigJson { get; protected set; }
-    public string? EnabledMCPToolsJson { get; protected set; }
-    
+
     /// <summary>
     /// Collection of AI model configurations for different capabilities.
     /// Replaces the single Model property to support multi-modal AI.
@@ -105,7 +101,6 @@ public class Workspace : FullAuditedAggregateRoot<Guid>, IMultiTenant
         string modelId,
         string? apiEndpoint = null,
         string? apiKey = null,
-        string? configurationJson = null,
         int priority = 0,
         OpenAIApiMode? openAIApiMode = null,
         decimal? inputCostPer1MTokens = null,
@@ -124,7 +119,6 @@ public class Workspace : FullAuditedAggregateRoot<Guid>, IMultiTenant
             modelId,
             apiEndpoint,
             apiKey,
-            configurationJson,
             priority,
             openAIApiMode,
             inputCostPer1MTokens,
@@ -159,21 +153,6 @@ public class Workspace : FullAuditedAggregateRoot<Guid>, IMultiTenant
     public bool HasCapability(AICapabilityType capabilityType)
     {
         return _modelConfigurations.Any(c => c.CapabilityType == capabilityType && c.IsEnabled);
-    }
-    
-    public void SetEmbedderConfig(string? configJson)
-    {
-        EmbedderConfigJson = configJson;
-    }
-    
-    public void SetVectorStoreConfig(string? configJson)
-    {
-        VectorStoreConfigJson = configJson;
-    }
-
-    public void SetEnabledMCPTools(string? toolsJson)
-    {
-        EnabledMCPToolsJson = toolsJson;
     }
     
     public void Activate() => IsActive = true;

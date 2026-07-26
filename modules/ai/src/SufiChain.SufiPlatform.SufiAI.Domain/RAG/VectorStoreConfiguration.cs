@@ -1,7 +1,8 @@
-using System.Text.Json;
-
 namespace SufiChain.SufiPlatform.SufiAI.RAG;
 
+/// <summary>
+/// Runtime embedder settings resolved from multimodal <c>AIModelConfiguration</c> (Embeddings).
+/// </summary>
 public class EmbedderConfiguration
 {
     public AIProviderType Provider { get; set; }
@@ -20,11 +21,4 @@ public class VectorStoreConfiguration
     public string? Schema { get; set; }
     public string? TableName { get; set; }
     public string? ProviderName { get; set; }
-
-    public static VectorStoreConfiguration? Parse(string? json)
-    {
-        return string.IsNullOrWhiteSpace(json)
-            ? null
-            : JsonSerializer.Deserialize<VectorStoreConfiguration>(json);
-    }
 }

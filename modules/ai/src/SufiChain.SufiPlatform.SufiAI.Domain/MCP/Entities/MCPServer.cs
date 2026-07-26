@@ -14,14 +14,15 @@ public class MCPServer : FullAuditedAggregateRoot<Guid>, IMultiTenant
     public Guid? TenantId { get; protected set; }
     
     /// <summary>
-    /// Server name (unique per workspace).
+    /// Immutable server key (unique per tenant).
+    /// Used in qualified external tool names.
     /// </summary>
-    public string Name { get; protected set; } = string.Empty;
+    public string Key { get; protected set; } = string.Empty;
     
     /// <summary>
-    /// Workspace ID this server belongs to.
+    /// Mutable display name.
     /// </summary>
-    public Guid WorkspaceId { get; protected set; }
+    public string Name { get; protected set; } = string.Empty;
     
     /// <summary>
     /// Transport type (STDIO, SSE, HTTP).
@@ -51,11 +52,6 @@ public class MCPServer : FullAuditedAggregateRoot<Guid>, IMultiTenant
     public bool IsEnabled { get; protected set; }
     
     /// <summary>
-    /// Additional metadata (authentication tokens, headers, etc.).
-    /// </summary>
-    public string? MetadataJson { get; protected set; }
-    
-    /// <summary>
     /// Last successful connection timestamp.
     /// </summary>
     public DateTime? LastConnectedAt { get; protected set; }
@@ -69,17 +65,22 @@ public class MCPServer : FullAuditedAggregateRoot<Guid>, IMultiTenant
     
     public MCPServer(
         Guid id,
+        string key,
         string name,
-        Guid workspaceId,
         MCPTransportType transportType,
         Guid? tenantId = null
     ) : base(id)
     {
+        SetKey(key);
         SetName(name);
-        WorkspaceId = workspaceId;
         TransportType = transportType;
         TenantId = tenantId;
         IsEnabled = true;
+    }
+
+    private void SetKey(string key)
+    {
+        Key = Check.NotNullOrWhiteSpace(key, nameof(key));
     }
     
     public void SetName(string name)
@@ -111,11 +112,6 @@ public class MCPServer : FullAuditedAggregateRoot<Guid>, IMultiTenant
         Endpoint = Check.NotNullOrWhiteSpace(endpoint, nameof(endpoint));
         Command = null;
         ArgumentsJson = null;
-    }
-    
-    public void SetMetadata(string? metadataJson)
-    {
-        MetadataJson = metadataJson;
     }
     
     public void Enable() => IsEnabled = true;

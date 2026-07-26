@@ -31,6 +31,8 @@ public class SufiAIRagServiceAdapter : ISufiAIRagService, ITransientDependency
             request.WorkspaceName,
             request.Query,
             request.MaxResults,
+            sourceName: request.SourceName,
+            metadataFilters: request.MetadataFilters,
             cancellationToken: cancellationToken);
 
         return new SufiAIRagSearchResult
@@ -43,13 +45,24 @@ public class SufiAIRagServiceAdapter : ISufiAIRagService, ITransientDependency
         SufiAIRagIndexRequest request,
         CancellationToken cancellationToken = default)
     {
+        var metadataFilters = request.MetadataFilters == null || request.MetadataFilters.Count == 0
+            ? null
+            : (IReadOnlyDictionary<string, string>)request.MetadataFilters;
+
         if (string.IsNullOrWhiteSpace(request.SourceName))
         {
-            await RagService.IndexAllDocumentsAsync(request.WorkspaceName, cancellationToken: cancellationToken);
+            await RagService.IndexAllDocumentsAsync(
+                request.WorkspaceName,
+                metadataFilters: metadataFilters,
+                cancellationToken: cancellationToken);
             return;
         }
 
-        await RagService.IndexDocumentsAsync(request.WorkspaceName, request.SourceName, cancellationToken: cancellationToken);
+        await RagService.IndexDocumentsAsync(
+            request.WorkspaceName,
+            request.SourceName,
+            metadataFilters: metadataFilters,
+            cancellationToken: cancellationToken);
     }
 
     public virtual async Task<SufiAIIndexingStatus> GetIndexingStatusAsync(

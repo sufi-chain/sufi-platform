@@ -1,41 +1,50 @@
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using SufiChain.SufiPlatform.SufiAI.MCP.Entities;
 
 namespace SufiChain.SufiPlatform.SufiAI.MCP.Abstractions;
 
 /// <summary>
-/// Registry for discovering and accessing MCP tools available in a workspace.
-/// Merges internal tools (ApplicationService methods) and external tools (MCP servers).
+/// Tenant-aware registry for internal tools and tenant-owned external MCP servers.
 /// </summary>
 public interface IMCPToolRegistry
 {
     /// <summary>
-    /// Get all tools available for a specific workspace.
-    /// Respects workspace configuration (enabled tools, allowed modules, external servers).
+    /// Get catalog descriptors for attribute-registered internal tools as non-executable
+    /// <see cref="CachedMCPTool"/> stubs. Use <see cref="ResolveAsync"/> for execution.
     /// </summary>
-    Task<List<IMCPTool>> GetToolsForWorkspaceAsync(
-        string workspaceName,
+    Task<List<IMCPTool>> GetInternalToolsAsync(
         CancellationToken cancellationToken = default);
 
-    /// <summary>
-    /// Get all discovered tools for a specific workspace, ignoring workspace enabled-tool selection.
-    /// Used by configuration UI.
-    /// </summary>
-    Task<List<IMCPTool>> GetAllToolsForWorkspaceAsync(
-        string workspaceName,
-        CancellationToken cancellationToken = default);
+    Task<List<IMCPTool>> GetCatalogAsync(CancellationToken cancellationToken = default);
     
-    /// <summary>
-    /// Get a specific tool by name for a workspace.
-    /// </summary>
-    Task<IMCPTool?> GetToolAsync(
-        string workspaceName,
-        string toolName,
+    Task<MCPToolResolutionResult> ResolveAsync(
+        IReadOnlyCollection<string> toolNames,
         CancellationToken cancellationToken = default);
     
     /// <summary>
     /// Refresh the tool registry (re-scan internal tools, reconnect external servers).
     /// </summary>
     Task RefreshAsync(CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Attempts a lightweight connection test for an MCP server without persisting the client in the registry cache.
+    /// </summary>
+    Task<(bool Success, string? ErrorMessage)> TestServerConnectionAsync(
+        MCPServer server,
+        CancellationToken cancellationToken = default);
+}
+
+public class MCPToolResolutionResult
+{
+    public List<IMCPTool> Tools { get; set; } = new();
+    public List<MCPToolResolutionDiagnostic> Diagnostics { get; set; } = new();
+}
+
+public class MCPToolResolutionDiagnostic
+{
+    public string ToolName { get; set; } = string.Empty;
+    public string Code { get; set; } = string.Empty;
+    public string Message { get; set; } = string.Empty;
 }

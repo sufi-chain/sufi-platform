@@ -37,23 +37,4 @@ public class CreateWorkspaceDto
 
     [Range(typeof(decimal), "0", "79228162514264337593543950335")]
     public decimal? OutputCostPer1MTokens { get; set; }
-    
-    public EmbedderConfigDto? EmbedderConfig { get; set; }
-    public VectorStoreConfigDto? VectorStoreConfig { get; set; }
-}
-
-public class EmbedderConfigDto
-{
-    public AIProviderType Provider { get; set; }
-    public string Model { get; set; } = string.Empty;
-    public string? ApiKey { get; set; }
-    public string? ApiBaseUrl { get; set; }
-}
-
-public class VectorStoreConfigDto
-{
-    public VectorStoreType Type { get; set; }
-    public string? ConnectionString { get; set; }
-    public string CollectionName { get; set; } = "ai_documents";
-    public int Dimensions { get; set; } = 1536;
 }

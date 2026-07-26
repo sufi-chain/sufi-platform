@@ -14,12 +14,6 @@
 
 <SbStack Direction="SbStackDirection.Column" Gap="4">
 
-    <!-- Workspace Selector -->
-    <WorkspaceSelector Value="_selectedWorkspaceId"
-                       ValueChanged="@OnWorkspaceChangedAsync"
-                       Workspaces="_workspaces"
-                       Loading="@IsOperationLoading(LoadingKeys.LoadWorkspaces)" />
-
     <!-- Servers Grid -->
     <SbCard>
         <ChildContent>
@@ -62,11 +56,21 @@
                             </SbStack>
                         </CellTemplate>
                     </SbColumn>
-                    <SbColumn TItem="MCPServerDto" Field="Name" Title="@L["Name"]" Width="200px">
+                    <SbColumn TItem="MCPServerDto" Field="Name" Title="@L["Name"]" Width="220px">
                         <CellTemplate Context="cellContext">
-                            <SbText Variant="SbTextVariant.BodySmall" Weight="SbFontWeight.Medium">
-                                @cellContext.Item.Name
-                            </SbText>
+                            <SbStack Direction="SbStackDirection.Column" Gap="0">
+                                <SbText Variant="SbTextVariant.BodySmall" Weight="SbFontWeight.Medium">
+                                    @cellContext.Item.Name
+                                </SbText>
+                                <SbText Variant="SbTextVariant.Caption" Color="SbColor.Muted">
+                                    external.@cellContext.Item.Key.*
+                                </SbText>
+                            </SbStack>
+                        </CellTemplate>
+                    </SbColumn>
+                    <SbColumn TItem="MCPServerDto" Field="Key" Title="@L["ServerKey"]" Width="180px">
+                        <CellTemplate Context="cellContext">
+                            <SbText Variant="SbTextVariant.Code">@cellContext.Item.Key</SbText>
                         </CellTemplate>
                     </SbColumn>
                     <SbColumn TItem="MCPServerDto" Field="TransportType" Title="@L["Transport"]" Width="120px">
@@ -118,5 +122,4 @@
 <!-- Create/Edit Modal -->
 <MCPServerModal @bind-Open="_modalOpen"
                 Server="_editingServer"
-                WorkspaceId="_selectedWorkspaceId"
                 OnSaved="@OnServerSavedAsync" />

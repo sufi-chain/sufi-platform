@@ -7,7 +7,7 @@ namespace SufiChain.SufiPlatform.SufiAI.MCP.Servers;
 
 public interface IMCPServerAppService : IApplicationService
 {
-    Task<List<MCPServerDto>> GetByWorkspaceAsync(Guid workspaceId);
+    Task<List<MCPServerDto>> GetListAsync();
     
     Task<MCPServerDto> GetAsync(Guid id);
     

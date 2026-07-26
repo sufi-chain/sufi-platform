@@ -13,7 +13,6 @@ public partial class MCPServerModal
     [Parameter] public bool Open { get; set; }
     [Parameter] public EventCallback<bool> OpenChanged { get; set; }
     [Parameter] public MCPServerDto? Server { get; set; }
-    [Parameter] public Guid? WorkspaceId { get; set; }
     [Parameter] public EventCallback OnSaved { get; set; }
     
     private static class LoadingKeys
@@ -22,11 +21,11 @@ public partial class MCPServerModal
     }
     
     private string _name = string.Empty;
+    private string _key = string.Empty;
     private string _transportType = "STDIO";
     private string? _endpoint;
     private string? _command;
     private string? _argumentsJson;
-    private string? _metadataJson;
     
     private async Task OnTransportTypeChanged(string value)
     {
@@ -39,11 +38,11 @@ public partial class MCPServerModal
         if (Server != null)
         {
             _name = Server.Name;
+            _key = Server.Key;
             _transportType = Server.TransportType;
             _endpoint = Server.Endpoint;
             _command = Server.Command;
             _argumentsJson = Server.ArgumentsJson;
-            _metadataJson = Server.MetadataJson;
         }
         else
         {
@@ -59,9 +58,9 @@ public partial class MCPServerModal
             return;
         }
         
-        if (!WorkspaceId.HasValue && Server == null)
+        if (Server == null && string.IsNullOrWhiteSpace(_key))
         {
-            await Message.ErrorAsync(L["WorkspaceIsRequired"]);
+            await Message.ErrorAsync(L["ServerKeyIsRequired"]);
             return;
         }
         
@@ -72,12 +71,11 @@ public partial class MCPServerModal
                 var input = new CreateMCPServerDto
                 {
                     Name = _name,
-                    WorkspaceId = WorkspaceId!.Value,
+                    Key = _key,
                     TransportType = _transportType,
                     Endpoint = _endpoint,
                     Command = _command,
-                    ArgumentsJson = _argumentsJson,
-                    MetadataJson = _metadataJson
+                    ArgumentsJson = _argumentsJson
                 };
                 
                 await MCPServerAppService.CreateAsync(input);
@@ -89,8 +87,7 @@ public partial class MCPServerModal
                     Name = _name,
                     Endpoint = _endpoint,
                     Command = _command,
-                    ArgumentsJson = _argumentsJson,
-                    MetadataJson = _metadataJson
+                    ArgumentsJson = _argumentsJson
                 };
                 
                 await MCPServerAppService.UpdateAsync(Server.Id, input);
@@ -121,10 +118,10 @@ public partial class MCPServerModal
     private void ResetForm()
     {
         _name = string.Empty;
+        _key = string.Empty;
         _transportType = "STDIO";
         _endpoint = null;
         _command = null;
         _argumentsJson = null;
-        _metadataJson = null;
     }
 }

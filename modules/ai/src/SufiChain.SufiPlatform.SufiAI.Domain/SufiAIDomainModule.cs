@@ -1,16 +1,18 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Logging;
+using Volo.Abp;
 using Volo.Abp.Domain;
 using Volo.Abp.Modularity;
 using SufiChain.SufiPlatform.SufiAI;
 using SufiChain.SufiPlatform.SufiAI.MCP.Abstractions;
+using SufiChain.SufiPlatform.SufiAI.MCP.Cache;
 using SufiChain.SufiPlatform.SufiAI.MCP.Execution;
 using SufiChain.SufiPlatform.SufiAI.MCP.Internal;
 using SufiChain.SufiPlatform.SufiAI.MCP.Registry;
 using SufiChain.SufiPlatform.SufiAI.RAG;
 using SufiChain.SufiPlatform.SufiAI.RAG.Services;
 using SufiChain.SufiPlatform.SufiAI.Storage;
-
 namespace SufiChain.SufiPlatform.SufiAI;
 
 [DependsOn(
@@ -29,6 +31,7 @@ public class SufiAIDomainModule : AbpModule
         context.Services.AddSingleton<IInternalToolDiscoveryService, ReflectionToolDiscoveryService>();
         context.Services.AddSingleton<IMCPToolRegistry, MCPToolRegistry>();
         context.Services.AddTransient<IMCPToolExecutor, MCPToolExecutionManager>();
+        context.Services.AddTransient<IMCPCatalogCache, MCPCatalogCache>();
         
         // Register file storage service (conditional based on File-Manager availability)
         ConfigureFileStorage(context);
@@ -39,6 +42,25 @@ public class SufiAIDomainModule : AbpModule
         // Note: MCP services are explicitly registered above instead of relying on
         // convention-based registration to ensure they're available when needed.
         // This prevents DI resolution issues in complex module dependency scenarios.
+    }
+
+    public override async Task OnApplicationInitializationAsync(ApplicationInitializationContext context)
+    {
+        var logger = context.ServiceProvider
+            .GetRequiredService<ILoggerFactory>()
+            .CreateLogger<SufiAIDomainModule>();
+
+        try
+        {
+            logger.LogInformation("Warming MCP catalog cache at startup");
+           var cache = context.ServiceProvider.GetRequiredService<IMCPCatalogCache>();
+           await cache.RebuildAsync(CancellationToken.None);
+           logger.LogInformation("MCP catalog cache warmed successfully");
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Failed to warm MCP catalog cache at startup; it will rebuild on first read");
+        }
     }
 
     private void ConfigureFileStorage(ServiceConfigurationContext context)
