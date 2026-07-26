@@ -9,6 +9,10 @@
     <PackageReference Include="Polly" Version="8.5.0" />
     <PackageReference Include="Volo.Abp.Caching" Version="$(AbpVersion)" />
     <PackageReference Include="Volo.Abp.Ddd.Domain" Version="$(AbpVersion)" />
+    <PackageReference Include="Volo.Abp.DistributedLocking.Abstractions" Version="$(AbpVersion)" />
+    <PackageReference Include="Volo.Abp.Json" Version="$(AbpVersion)" />
+    <PackageReference Include="Volo.Abp.Localization" Version="$(AbpVersion)" />
+    <PackageReference Include="Volo.Abp.Settings" Version="$(AbpVersion)" />
     <ProjectReference Include="..\SufiChain.SufiPlatform.Settings.Domain.Shared\SufiChain.SufiPlatform.Settings.Domain.Shared.csproj" />
   </ItemGroup>
 </Project>

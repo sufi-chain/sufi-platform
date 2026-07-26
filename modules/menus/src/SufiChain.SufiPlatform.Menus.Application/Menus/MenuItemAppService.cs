@@ -1,8 +1,10 @@
 using Microsoft.AspNetCore.Authorization;
 using SufiChain.SufiPlatform.Application.Dtos;
+using SufiChain.SufiPlatform.Menus.Caching;
 using SufiChain.SufiPlatform.Menus.Features;
 using SufiChain.SufiPlatform.Menus.Permissions;
 using Volo.Abp;
+using Volo.Abp.Caching;
 using SufiChain.SufiPlatform.Application.Services;
 using SufiChain.SufiPlatform.Features;
 
@@ -15,12 +17,21 @@ public class MenuItemAppService : SufiApplicationService, IMenuItemAppService
     private readonly IMenuRepository _menuRepository;
     private readonly IMenuItemRepository _menuItemRepository;
     private readonly MenuManager _menuManager;
+    private readonly IDistributedCache<MenuTreeCacheItem> _treeCache;
+    private readonly IDistributedCache<MenuCacheItem> _menuCache;
 
-    public MenuItemAppService(IMenuRepository menuRepository, IMenuItemRepository menuItemRepository, MenuManager menuManager)
+    public MenuItemAppService(
+        IMenuRepository menuRepository,
+        IMenuItemRepository menuItemRepository,
+        MenuManager menuManager,
+        IDistributedCache<MenuTreeCacheItem> treeCache,
+        IDistributedCache<MenuCacheItem> menuCache)
     {
         _menuRepository = menuRepository;
         _menuItemRepository = menuItemRepository;
         _menuManager = menuManager;
+        _treeCache = treeCache;
+        _menuCache = menuCache;
     }
 
     public virtual async Task<MenuItemDto> GetAsync(Guid id) => (await _menuItemRepository.GetAsync(id)).ToDto();
@@ -38,14 +49,27 @@ public class MenuItemAppService : SufiApplicationService, IMenuItemAppService
     public virtual async Task<List<MenuItemTreeDto>> GetTreeAsync(GetMenuTreeInput input)
     {
         var menuId = await ResolveMenuIdAsync(input);
-        var items = await _menuItemRepository.GetTreeItemsAsync(menuId, CurrentTenant.Id);
-        var query = input.PublicOnly ? items.Where(x => x.IsActive && x.IsVisible).ToList() : items;
-        return BuildTree(query, null);
+        var cacheKey = MenuTreeCacheItem.CreateTreeCacheKey(menuId, input.PublicOnly);
+        var cached = await _treeCache.GetOrAddAsync(cacheKey, async () =>
+        {
+            var items = await _menuItemRepository.GetTreeItemsAsync(menuId, CurrentTenant.Id);
+            var query = input.PublicOnly ? items.Where(x => x.IsActive && x.IsVisible).ToList() : items;
+            return new MenuTreeCacheItem { Tree = BuildTree(query, null) };
+        });
+
+        return cached.Tree;
     }
 
     public virtual async Task<MenuItemDto?> FindBySlugAsync(Guid menuId, string slug)
     {
-        return (await _menuItemRepository.FindBySlugAsync(menuId, slug, CurrentTenant.Id))?.ToDto();
+        var cacheKey = MenuTreeCacheItem.CreateTreeCacheKey(menuId, publicOnly: false) + $":slug:{slug}";
+        var cached = await _treeCache.GetOrAddAsync(cacheKey, async () =>
+        {
+            var item = await _menuItemRepository.FindBySlugAsync(menuId, slug, CurrentTenant.Id);
+            return new MenuTreeCacheItem { Item = item?.ToDto() };
+        });
+
+        return cached.Item;
     }
 
     [Authorize(MenusPermissions.Menus.ManageItems)]
@@ -95,12 +119,12 @@ public class MenuItemAppService : SufiApplicationService, IMenuItemAppService
 
     protected virtual void ApplyInput(MenuItem item, CreateMenuItemDto input)
     {
-        item.SetDescription(input.Description); item.Reorder(input.DisplayOrder); item.SetKind(input.Kind); item.SetDisplayType(input.DisplayType); item.SetLink(input.Url, input.LinkTarget); item.SetTarget(input.TargetType, input.TargetId); item.SetIcon(input.Icon); item.SetCssClass(input.CssClass); item.SetPermissionName(input.PermissionName); item.SetComponentName(input.ComponentName); item.SetMetadataJson(input.MetadataJson); if (input.IsActive) item.Activate(); else item.Deactivate(); if (input.IsVisible) item.Show(); else item.Hide();
+        item.SetDescription(input.Description); item.Reorder(input.DisplayOrder); item.SetKind(input.Kind); item.SetDisplayType(input.DisplayType); item.SetLink(input.Url, input.LinkTarget); item.SetTarget(input.TargetType, input.TargetId); item.SetIcon(input.Icon); item.SetCssClass(input.CssClass); item.SetPermissionName(input.PermissionName); item.SetComponentName(input.ComponentName); if (input.IsActive) item.Activate(); else item.Deactivate(); if (input.IsVisible) item.Show(); else item.Hide();
     }
 
     protected virtual void ApplyInput(MenuItem item, UpdateMenuItemDto input)
     {
-        item.SetDescription(input.Description); item.SetKind(input.Kind); item.SetDisplayType(input.DisplayType); item.SetLink(input.Url, input.LinkTarget); item.SetTarget(input.TargetType, input.TargetId); item.SetIcon(input.Icon); item.SetCssClass(input.CssClass); item.SetPermissionName(input.PermissionName); item.SetComponentName(input.ComponentName); item.SetMetadataJson(input.MetadataJson); if (input.IsActive) item.Activate(); else item.Deactivate(); if (input.IsVisible) item.Show(); else item.Hide();
+        item.SetDescription(input.Description); item.SetKind(input.Kind); item.SetDisplayType(input.DisplayType); item.SetLink(input.Url, input.LinkTarget); item.SetTarget(input.TargetType, input.TargetId); item.SetIcon(input.Icon); item.SetCssClass(input.CssClass); item.SetPermissionName(input.PermissionName); item.SetComponentName(input.ComponentName); if (input.IsActive) item.Activate(); else item.Deactivate(); if (input.IsVisible) item.Show(); else item.Hide();
     }
 
     protected virtual IEnumerable<MenuItem> ApplyFilters(IEnumerable<MenuItem> query, GetMenuItemsInput input)
@@ -130,7 +154,15 @@ public class MenuItemAppService : SufiApplicationService, IMenuItemAppService
     {
         if (input.MenuId.HasValue) return input.MenuId.Value;
         if (string.IsNullOrWhiteSpace(input.ContextType) || string.IsNullOrWhiteSpace(input.MenuName)) throw new BusinessException(MenusErrorCodes.MenuNotFound);
-        var menu = await _menuRepository.FindByNameAsync(input.ContextType, input.ContextId, input.MenuName, CurrentTenant.Id, includeDetails: false) ?? throw new BusinessException(MenusErrorCodes.MenuNotFound).WithData("Name", input.MenuName);
-        return menu.Id;
+
+        var cacheKey = MenuCacheItem.CreateCacheKey(input.ContextType, input.ContextId, input.MenuName);
+        var cached = await _menuCache.GetOrAddAsync(cacheKey, async () =>
+        {
+            var menu = await _menuRepository.FindByNameAsync(input.ContextType, input.ContextId, input.MenuName, CurrentTenant.Id, includeDetails: false)
+                ?? throw new BusinessException(MenusErrorCodes.MenuNotFound).WithData("Name", input.MenuName);
+            return new MenuCacheItem { Menu = menu };
+        });
+
+        return cached.Menu!.Id;
     }
 }

@@ -3,7 +3,6 @@ using SufiChain.SufiPlatform.Data;
 using SufiChain.SufiPlatform.Localization.Blazor.Public.Components;
 using SufiChain.SufiPlatform.Localization.Blazor.Public.Models;
 using SufiChain.SufiPlatform.Menus.Menus;
-using System.Text.Json;
 
 namespace SufiChain.SufiPlatform.Menus.Blazor.Components;
 
@@ -60,7 +59,6 @@ public partial class MenuItemEditModal : MenusComponentBase
                 CssClass = Item.CssClass,
                 PermissionName = Item.PermissionName,
                 ComponentName = Item.ComponentName,
-                MetadataJson = Item.MetadataJson,
                 IsActive = Item.IsActive,
                 IsVisible = Item.IsVisible
             };
@@ -188,19 +186,6 @@ public partial class MenuItemEditModal : MenusComponentBase
         else
         {
             _model.TargetId = null;
-        }
-
-        if (!string.IsNullOrWhiteSpace(_model.MetadataJson))
-        {
-            try
-            {
-                JsonDocument.Parse(_model.MetadataJson);
-            }
-            catch
-            {
-                await Message.ErrorAsync(L["InvalidJsonFormat"]);
-                return;
-            }
         }
 
         _model.DisplayName = _displayNameEditor.GetStoredValue();

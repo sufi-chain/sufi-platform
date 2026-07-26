@@ -19,7 +19,6 @@ public class SettingDynamicInitializer : ITransientDependency
     public SettingDynamicInitializer(IServiceProvider serviceProvider)
     {
         Logger = NullLogger<SettingDynamicInitializer>.Instance;
-
         ServiceProvider = serviceProvider;
     }
 
@@ -43,6 +42,7 @@ public class SettingDynamicInitializer : ITransientDependency
                 {
                     cancellationToken = applicationLifetime.ApplicationStopping;
                 }
+
                 await ExecuteInitializationAsync(options, cancellationToken);
             }, cancellationToken);
 
@@ -91,7 +91,11 @@ public class SettingDynamicInitializer : ITransientDependency
             return;
         }
 
-        var staticSettingSaver = ServiceProvider.GetRequiredService<IStaticSettingSaver>();
+        var staticSettingSaver = ServiceProvider.GetService<IStaticSettingSaver>();
+        if (staticSettingSaver == null)
+        {
+            return;
+        }
 
         await Policy
             .Handle<Exception>()
@@ -112,30 +116,32 @@ public class SettingDynamicInitializer : ITransientDependency
                 catch (Exception ex)
                 {
                     Logger.LogException(ex);
-                    throw; // Polly will catch it
+                    throw;
                 }
             }, cancellationToken);
     }
 
-    protected virtual async Task PreCacheDynamicSettingsAsync(
-        SettingsOptions options)
+    protected virtual async Task PreCacheDynamicSettingsAsync(SettingsOptions options)
     {
         if (!options.IsDynamicSettingStoreEnabled)
         {
             return;
         }
 
-        var dynamicSettingDefinitionStore = ServiceProvider.GetRequiredService<IDynamicSettingDefinitionStore>();
+        var dynamicSettingDefinitionStore = ServiceProvider.GetService<IDynamicSettingDefinitionStore>();
+        if (dynamicSettingDefinitionStore == null)
+        {
+            return;
+        }
 
         try
         {
-            // Pre-cache settings, so first request doesn't wait
             await dynamicSettingDefinitionStore.GetAllAsync();
         }
         catch (Exception ex)
         {
             Logger.LogException(ex);
-            throw; // It will be cached in Initialize()
+            throw;
         }
     }
 }

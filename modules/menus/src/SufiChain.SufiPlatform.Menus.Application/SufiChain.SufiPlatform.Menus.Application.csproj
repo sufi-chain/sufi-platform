@@ -3,6 +3,7 @@
   <ItemGroup>
     <ProjectReference Include="../../../../framework/SufiChain.SufiPlatform.Data/SufiChain.SufiPlatform.Data.csproj" />
     <PackageReference Include="Volo.Abp.Mapperly" Version="$(AbpVersion)" />
+    <PackageReference Include="Volo.Abp.Caching" Version="$(AbpVersion)" />
     <ProjectReference Include="../../../../framework/SufiChain.SufiPlatform.Ddd.Application/SufiChain.SufiPlatform.Ddd.Application.csproj" />
   </ItemGroup>
   <ItemGroup>

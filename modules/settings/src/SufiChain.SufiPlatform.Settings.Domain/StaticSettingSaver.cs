@@ -1,52 +1,238 @@
+using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Text;
+using System.Text.Json;
+using System.Text.Json.Serialization.Metadata;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Caching.Distributed;
+using Microsoft.Extensions.Options;
+using Volo.Abp;
+using Volo.Abp.Caching;
 using Volo.Abp.DependencyInjection;
+using Volo.Abp.DistributedLocking;
+using Volo.Abp.Json.SystemTextJson.Modifiers;
 using Volo.Abp.Settings;
+using Volo.Abp.Threading;
+using Volo.Abp.Uow;
 
 namespace SufiChain.SufiPlatform.Settings;
 
 public class StaticSettingSaver : IStaticSettingSaver, ITransientDependency
 {
-    public ILogger<StaticSettingSaver> Logger { get; set; }
-    
-    protected ISettingDefinitionManager SettingDefinitionManager { get; }
-    protected ISettingsStore SettingsStore { get; }
+    protected IStaticSettingDefinitionStore StaticStore { get; }
+    protected ISettingDefinitionRecordRepository SettingRepository { get; }
+    protected ISettingDefinitionSerializer SettingSerializer { get; }
+    protected IDistributedCache Cache { get; }
+    protected IApplicationInfoAccessor ApplicationInfoAccessor { get; }
+    protected IAbpDistributedLock DistributedLock { get; }
+    protected AbpSettingOptions SettingOptions { get; }
+    protected ICancellationTokenProvider CancellationTokenProvider { get; }
+    protected AbpDistributedCacheOptions CacheOptions { get; }
+    protected IUnitOfWorkManager UnitOfWorkManager { get; }
 
     public StaticSettingSaver(
-        ISettingDefinitionManager settingDefinitionManager,
-        ISettingsStore settingManagementStore)
+        IStaticSettingDefinitionStore staticStore,
+        ISettingDefinitionRecordRepository settingRepository,
+        ISettingDefinitionSerializer settingSerializer,
+        IDistributedCache cache,
+        IOptions<AbpDistributedCacheOptions> cacheOptions,
+        IApplicationInfoAccessor applicationInfoAccessor,
+        IAbpDistributedLock distributedLock,
+        IOptions<AbpSettingOptions> settingOptions,
+        ICancellationTokenProvider cancellationTokenProvider,
+        IUnitOfWorkManager unitOfWorkManager)
     {
-        Logger = NullLogger<StaticSettingSaver>.Instance;
-        SettingDefinitionManager = settingDefinitionManager;
-        SettingsStore = settingManagementStore;
+        StaticStore = staticStore;
+        SettingRepository = settingRepository;
+        SettingSerializer = settingSerializer;
+        Cache = cache;
+        ApplicationInfoAccessor = applicationInfoAccessor;
+        DistributedLock = distributedLock;
+        CancellationTokenProvider = cancellationTokenProvider;
+        SettingOptions = settingOptions.Value;
+        CacheOptions = cacheOptions.Value;
+        UnitOfWorkManager = unitOfWorkManager;
     }
 
     public virtual async Task SaveAsync()
     {
-        var settingDefinitions = await SettingDefinitionManager.GetAllAsync();
-        
-        foreach (var settingDefinition in settingDefinitions)
+        await using var applicationLockHandle = await DistributedLock.TryAcquireAsync(
+            GetApplicationDistributedLockKey()
+        );
+
+        if (applicationLockHandle == null)
         {
-            if (!string.IsNullOrEmpty(settingDefinition.DefaultValue))
+            /* Another application instance is already doing it */
+            return;
+        }
+
+        var cacheKey = GetApplicationHashCacheKey();
+        var cachedHash = await Cache.GetStringAsync(cacheKey, CancellationTokenProvider.Token);
+
+        var settingRecords = await SettingSerializer.SerializeAsync(await StaticStore.GetAllAsync());
+        var currentHash = CalculateHash(settingRecords, SettingOptions.DeletedSettings);
+
+        if (cachedHash == currentHash)
+        {
+            return;
+        }
+
+        await using (var commonLockHandle = await DistributedLock.TryAcquireAsync(
+                         GetCommonDistributedLockKey(),
+                         TimeSpan.FromMinutes(5)))
+        {
+            if (commonLockHandle == null)
             {
-                // Only save default if setting doesn't already exist in database
-                var existingValue = await SettingsStore.GetOrNullAsync(
-                    settingDefinition.Name,
-                    GlobalSettingValueProvider.ProviderName,
-                    string.Empty);
-                
-                if (existingValue == null)
+                /* It will re-try */
+                throw new AbpException("Could not acquire distributed lock for saving static Settings!");
+            }
+
+            using (var unitOfWork = UnitOfWorkManager.Begin(requiresNew: true, isTransactional: true))
+            {
+                try
                 {
-                    await SettingsStore.SetAsync(
-                        settingDefinition.Name,
-                        settingDefinition.DefaultValue,
-                        GlobalSettingValueProvider.ProviderName,
-                        string.Empty
-                    );
+                    var hasChangesInSettings = await UpdateChangedSettingsAsync(settingRecords);
+
+                    if (hasChangesInSettings)
+                    {
+                        await Cache.SetStringAsync(
+                            GetCommonStampCacheKey(),
+                            Guid.NewGuid().ToString(),
+                            new DistributedCacheEntryOptions
+                            {
+                                SlidingExpiration = TimeSpan.FromDays(30)
+                            },
+                            CancellationTokenProvider.Token
+                        );
+                    }
                 }
+                catch
+                {
+                    try
+                    {
+                        await unitOfWork.RollbackAsync();
+                    }
+                    catch
+                    {
+                        /* ignored */
+                    }
+
+                    throw;
+                }
+
+                await unitOfWork.CompleteAsync();
             }
         }
+
+        await Cache.SetStringAsync(
+            cacheKey,
+            currentHash,
+            new DistributedCacheEntryOptions
+            {
+                SlidingExpiration = TimeSpan.FromDays(30)
+            },
+            CancellationTokenProvider.Token
+        );
+    }
+
+    protected virtual async Task<bool> UpdateChangedSettingsAsync(List<SettingDefinitionRecord> settingRecords)
+    {
+        var newRecords = new List<SettingDefinitionRecord>();
+        var changedRecords = new List<SettingDefinitionRecord>();
+
+        var settingRecordsInDatabase = (await SettingRepository.GetListAsync()).ToDictionary(x => x.Name);
+
+        foreach (var record in settingRecords)
+        {
+            var settingRecordInDatabase = settingRecordsInDatabase.GetOrDefault(record.Name);
+            if (settingRecordInDatabase == null)
+            {
+                newRecords.Add(record);
+                continue;
+            }
+
+            if (record.HasSameData(settingRecordInDatabase))
+            {
+                continue;
+            }
+
+            settingRecordInDatabase.Patch(record);
+            changedRecords.Add(settingRecordInDatabase);
+        }
+
+        var deletedRecords = new List<SettingDefinitionRecord>();
+
+        if (SettingOptions.DeletedSettings.Any())
+        {
+            deletedRecords.AddRange(
+                settingRecordsInDatabase.Values.Where(x => SettingOptions.DeletedSettings.Contains(x.Name))
+            );
+        }
+
+        if (newRecords.Any())
+        {
+            await SettingRepository.InsertManyAsync(newRecords);
+        }
+
+        if (changedRecords.Any())
+        {
+            await SettingRepository.UpdateManyAsync(changedRecords);
+        }
+
+        if (deletedRecords.Any())
+        {
+            await SettingRepository.DeleteManyAsync(deletedRecords);
+        }
+
+        return newRecords.Any() || changedRecords.Any() || deletedRecords.Any();
+    }
+
+    protected virtual string GetApplicationDistributedLockKey()
+    {
+        return $"{CacheOptions.KeyPrefix}_{ApplicationInfoAccessor.ApplicationName}_AbpSettingUpdateLock";
+    }
+
+    protected virtual string GetCommonDistributedLockKey()
+    {
+        return $"{CacheOptions.KeyPrefix}_Common_AbpSettingUpdateLock";
+    }
+
+    protected virtual string GetApplicationHashCacheKey()
+    {
+        return $"{CacheOptions.KeyPrefix}_{ApplicationInfoAccessor.ApplicationName}_AbpSettingsHash";
+    }
+
+    protected virtual string GetCommonStampCacheKey()
+    {
+        return $"{CacheOptions.KeyPrefix}_AbpInMemorySettingCacheStamp";
+    }
+
+    protected virtual string CalculateHash(
+        List<SettingDefinitionRecord> settingRecords,
+        IEnumerable<string> deletedSettings)
+    {
+        var jsonSerializerOptions = new JsonSerializerOptions
+        {
+            TypeInfoResolver = new DefaultJsonTypeInfoResolver
+            {
+                Modifiers =
+                {
+                    new AbpIgnorePropertiesModifiers<SettingDefinitionRecord, Guid>().CreateModifyAction(x => x.Id),
+                }
+            }
+        };
+
+        var stringBuilder = new StringBuilder();
+
+        stringBuilder.Append("SettingRecords:");
+        stringBuilder.AppendLine(JsonSerializer.Serialize(settingRecords, jsonSerializerOptions));
+
+        stringBuilder.Append("DeletedSetting:");
+        stringBuilder.Append(deletedSettings.JoinAsString(","));
+
+        return stringBuilder
+            .ToString()
+            .ToMd5();
     }
 }

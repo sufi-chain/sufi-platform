@@ -1,8 +1,10 @@
 using Microsoft.AspNetCore.Authorization;
 using SufiChain.SufiPlatform.Application.Dtos;
+using SufiChain.SufiPlatform.Menus.Caching;
 using SufiChain.SufiPlatform.Menus.Features;
 using SufiChain.SufiPlatform.Menus.Permissions;
 using Volo.Abp;
+using Volo.Abp.Caching;
 using SufiChain.SufiPlatform.Application.Services;
 using SufiChain.SufiPlatform.Features;
 
@@ -15,12 +17,18 @@ public class MenuAppService : SufiApplicationService, IMenuAppService
     private readonly IMenuRepository _menuRepository;
     private readonly IMenuItemRepository _menuItemRepository;
     private readonly MenuManager _menuManager;
+    private readonly IDistributedCache<MenuCacheItem> _menuCache;
 
-    public MenuAppService(IMenuRepository menuRepository, IMenuItemRepository menuItemRepository, MenuManager menuManager)
+    public MenuAppService(
+        IMenuRepository menuRepository,
+        IMenuItemRepository menuItemRepository,
+        MenuManager menuManager,
+        IDistributedCache<MenuCacheItem> menuCache)
     {
         _menuRepository = menuRepository;
         _menuItemRepository = menuItemRepository;
         _menuManager = menuManager;
+        _menuCache = menuCache;
     }
 
     public virtual async Task<MenuDto> GetAsync(Guid id) => (await _menuRepository.GetAsync(id)).ToDto();
@@ -41,8 +49,15 @@ public class MenuAppService : SufiApplicationService, IMenuAppService
 
     public virtual async Task<MenuDto> GetByNameAsync(string contextType, Guid? contextId, string name)
     {
-        var menu = await _menuRepository.FindByNameAsync(contextType, contextId, name, CurrentTenant.Id) ?? throw new BusinessException(MenusErrorCodes.MenuNotFound).WithData("Name", name);
-        return menu.ToDto();
+        var cacheKey = MenuCacheItem.CreateCacheKey(contextType, contextId, name);
+        var cached = await _menuCache.GetOrAddAsync(cacheKey, async () =>
+        {
+            var menu = await _menuRepository.FindByNameAsync(contextType, contextId, name, CurrentTenant.Id)
+                ?? throw new BusinessException(MenusErrorCodes.MenuNotFound).WithData("Name", name);
+            return new MenuCacheItem { Menu = menu };
+        });
+
+        return cached.Menu!.ToDto();
     }
 
     [Authorize(MenusPermissions.Menus.Create)]

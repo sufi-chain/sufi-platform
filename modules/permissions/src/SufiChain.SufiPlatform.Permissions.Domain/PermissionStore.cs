@@ -207,7 +207,13 @@ public class PermissionStore : IPermissionStore, ITransientDependency
 
     protected virtual string GetPermissionNameFormCacheKeyOrNull(string key)
     {
-        //TODO: throw ex when name is null?
-        return PermissionGrantCacheItem.GetPermissionNameFormCacheKeyOrNull(key);
+        var permissionName = PermissionGrantCacheItem.GetPermissionNameFormCacheKeyOrNull(key);
+        if (permissionName == null)
+        {
+            throw new BusinessException(PermissionsErrorCodes.InvalidPermissionName)
+                .WithData("CacheKey", key);
+        }
+
+        return permissionName;
     }
 }

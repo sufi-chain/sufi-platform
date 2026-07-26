@@ -1,4 +1,3 @@
-using System.Text.Json;
 using Volo.Abp;
 using Volo.Abp.Domain.Entities.Auditing;
 using Volo.Abp.MultiTenancy;
@@ -25,7 +24,6 @@ public class MenuItem : FullAuditedAggregateRoot<Guid>, IMultiTenant
     public string? CssClass { get; protected set; }
     public string? PermissionName { get; protected set; }
     public string? ComponentName { get; protected set; }
-    public string? MetadataJson { get; protected set; }
     public bool IsActive { get; protected set; }
     public bool IsVisible { get; protected set; }
 
@@ -80,18 +78,6 @@ public class MenuItem : FullAuditedAggregateRoot<Guid>, IMultiTenant
     public virtual void SetCssClass(string? cssClass) => CssClass = CheckLength(cssClass, MenusConsts.MaxCssClassLength, nameof(cssClass));
     public virtual void SetPermissionName(string? permissionName) => PermissionName = CheckLength(permissionName, MenusConsts.MaxPermissionNameLength, nameof(permissionName));
     public virtual void SetComponentName(string? componentName) => ComponentName = CheckLength(componentName, MenusConsts.MaxComponentNameLength, nameof(componentName));
-    public virtual void SetMetadataJson(string? metadataJson)
-    {
-        if (!string.IsNullOrWhiteSpace(metadataJson))
-        {
-            if (metadataJson.Length > MenusConsts.MaxMetadataJsonLength)
-            {
-                throw new BusinessException(MenusErrorCodes.MenuItemMetadataTooLong).WithData("MaxLength", MenusConsts.MaxMetadataJsonLength);
-            }
-            JsonDocument.Parse(metadataJson);
-        }
-        MetadataJson = metadataJson;
-    }
     public virtual void Activate() => IsActive = true;
     public virtual void Deactivate() => IsActive = false;
     public virtual void Show() => IsVisible = true;

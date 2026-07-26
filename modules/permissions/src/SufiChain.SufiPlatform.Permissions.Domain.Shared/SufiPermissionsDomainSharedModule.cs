@@ -31,6 +31,7 @@ public class SufiPermissionsDomainSharedModule : AbpModule
         Configure<AbpExceptionLocalizationOptions>(options =>
         {
             options.MapCodeNamespace("SufiChain.SufiPlatform.Permissions", typeof(SufiPermissionsResource));
+            options.MapCodeNamespace("Permissions", typeof(SufiPermissionsResource));
         });
     }
 }

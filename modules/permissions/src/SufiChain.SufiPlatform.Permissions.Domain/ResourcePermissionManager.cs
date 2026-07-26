@@ -89,12 +89,14 @@ public class ResourcePermissionManager : IResourcePermissionManager, ISingletonD
         var service = _lazyProviderKeyLookupServices.Value.FirstOrDefault(s => s.Name == serviceName);
         if (service == null)
         {
-            throw new AbpException("Unknown resource permission provider key lookup service: " + serviceName);
+            throw new BusinessException(PermissionsErrorCodes.UnknownProviderKeyLookupService)
+                .WithData("ServiceName", serviceName);
         }
 
         if (!await service.IsAvailableAsync())
         {
-            throw new AbpException("The resource permission provider key lookup service '" + serviceName + "' is not available in the current context.");
+            throw new BusinessException(PermissionsErrorCodes.ProviderKeyLookupServiceUnavailable)
+                .WithData("ServiceName", serviceName);
         }
 
         return service;
@@ -275,20 +277,23 @@ public class ResourcePermissionManager : IResourcePermissionManager, ISingletonD
 
         if (!permission.IsEnabled || !await SimpleStateCheckerManager.IsEnabledAsync(permission))
         {
-            //TODO: BusinessException
-            throw new ApplicationException($"The resource permission named '{permission.Name}' is disabled!");
+            throw new BusinessException(PermissionsErrorCodes.PermissionDisabled)
+                .WithData("PermissionName", permission.Name);
         }
 
         if (permission.Providers.Any() && !permission.Providers.Contains(providerName))
         {
-            //TODO: BusinessException
-            throw new ApplicationException($"The resource permission named '{permission.Name}' has not compatible with the provider named '{providerName}'");
+            throw new BusinessException(PermissionsErrorCodes.ProviderIncompatible)
+                .WithData("PermissionName", permission.Name)
+                .WithData("ProviderName", providerName);
         }
 
         if (!permission.MultiTenancySide.HasFlag(CurrentTenant.GetMultiTenancySide()))
         {
-            //TODO: BusinessException
-            throw new ApplicationException($"The resource permission named '{permission.Name}' has multitenancy side '{permission.MultiTenancySide}' which is not compatible with the current multitenancy side '{CurrentTenant.GetMultiTenancySide()}'");
+            throw new BusinessException(PermissionsErrorCodes.MultiTenancySideIncompatible)
+                .WithData("PermissionName", permission.Name)
+                .WithData("PermissionMultiTenancySide", permission.MultiTenancySide)
+                .WithData("CurrentMultiTenancySide", CurrentTenant.GetMultiTenancySide());
         }
 
         var currentGrantInfo = await GetInternalAsync(permission, resourceName, resourceKey, providerName, providerKey);
@@ -300,14 +305,14 @@ public class ResourcePermissionManager : IResourcePermissionManager, ISingletonD
         var provider = ManagementProviders.FirstOrDefault(m => m.Name == providerName);
         if (provider == null)
         {
-            //TODO: BusinessException
-            throw new AbpException("Unknown resource permission management provider: " + providerName);
+            throw new BusinessException(PermissionsErrorCodes.UnknownProvider)
+                .WithData("ProviderName", providerName);
         }
 
         if (!await provider.IsAvailableAsync())
         {
-            //TODO: BusinessException
-            throw new AbpException($"The resource permission management provider '{providerName}' is not available in the current context.");
+            throw new BusinessException(PermissionsErrorCodes.ResourcePermissionProviderUnavailable)
+                .WithData("ProviderName", providerName);
         }
 
         await provider.SetAsync(permissionName, resourceName, resourceKey, providerKey, isGranted);
@@ -358,7 +363,8 @@ public class ResourcePermissionManager : IResourcePermissionManager, ISingletonD
         var provider = ManagementProviders.FirstOrDefault(m => m.Name == providerName);
         if (provider != null && !await provider.IsAvailableAsync())
         {
-            throw new AbpException($"The resource permission management provider '{providerName}' is not available in the current context.");
+            throw new BusinessException(PermissionsErrorCodes.ResourcePermissionProviderUnavailable)
+                .WithData("ProviderName", providerName);
         }
 
         var permissionGrants = await ResourcePermissionGrantRepository.GetListAsync(resourceName, resourceKey, providerName, providerKey);
@@ -373,7 +379,8 @@ public class ResourcePermissionManager : IResourcePermissionManager, ISingletonD
         var provider = ManagementProviders.FirstOrDefault(m => m.Name == providerName);
         if (provider != null && !await provider.IsAvailableAsync())
         {
-            throw new AbpException($"The resource permission management provider '{providerName}' is not available in the current context.");
+            throw new BusinessException(PermissionsErrorCodes.ResourcePermissionProviderUnavailable)
+                .WithData("ProviderName", providerName);
         }
 
         var permissionGrant = await ResourcePermissionGrantRepository.FindAsync(name, resourceName, resourceKey, providerName, providerKey);

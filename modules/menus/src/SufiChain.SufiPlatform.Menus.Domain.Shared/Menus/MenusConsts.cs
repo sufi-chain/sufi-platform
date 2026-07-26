@@ -15,5 +15,4 @@ public static class MenusConsts
     public const int MaxPermissionNameLength = 256;
     public const int MaxCssClassLength = 256;
     public const int MaxComponentNameLength = 256;
-    public const int MaxMetadataJsonLength = 8000;
 }

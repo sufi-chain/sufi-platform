@@ -138,20 +138,23 @@ public class PermissionManager : IPermissionManager, ISingletonDependency
 
         if (!permission.IsEnabled || !await SimpleStateCheckerManager.IsEnabledAsync(permission))
         {
-            //TODO: BusinessException
-            throw new ApplicationException($"The permission named '{permission.Name}' is disabled!");
+            throw new BusinessException(PermissionsErrorCodes.PermissionDisabled)
+                .WithData("PermissionName", permission.Name);
         }
 
         if (permission.Providers.Any() && !permission.Providers.Contains(providerName))
         {
-            //TODO: BusinessException
-            throw new ApplicationException($"The permission named '{permission.Name}' has not compatible with the provider named '{providerName}'");
+            throw new BusinessException(PermissionsErrorCodes.ProviderIncompatible)
+                .WithData("PermissionName", permission.Name)
+                .WithData("ProviderName", providerName);
         }
 
         if (!permission.MultiTenancySide.HasFlag(CurrentTenant.GetMultiTenancySide()))
         {
-            //TODO: BusinessException
-            throw new ApplicationException($"The permission named '{permission.Name}' has multitenancy side '{permission.MultiTenancySide}' which is not compatible with the current multitenancy side '{CurrentTenant.GetMultiTenancySide()}'");
+            throw new BusinessException(PermissionsErrorCodes.MultiTenancySideIncompatible)
+                .WithData("PermissionName", permission.Name)
+                .WithData("PermissionMultiTenancySide", permission.MultiTenancySide)
+                .WithData("CurrentMultiTenancySide", CurrentTenant.GetMultiTenancySide());
         }
 
         var currentGrantInfo = await GetInternalAsync(permission, providerName, providerKey);
@@ -163,8 +166,8 @@ public class PermissionManager : IPermissionManager, ISingletonDependency
         var provider = ManagementProviders.FirstOrDefault(m => m.Name == providerName);
         if (provider == null)
         {
-            //TODO: BusinessException
-            throw new AbpException("Unknown permission management provider: " + providerName);
+            throw new BusinessException(PermissionsErrorCodes.UnknownProvider)
+                .WithData("ProviderName", providerName);
         }
 
         await provider.SetAsync(permissionName, providerKey, isGranted);

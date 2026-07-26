@@ -8,16 +8,16 @@
 
 .setting-groups-nav {
     width: 220px;
-    border-inline-end: 1px solid var(--sb-border-color, #dee2e6);
+    border-inline-end: 1px solid var(--sb-border-color, var(--sb-color-border));
     overflow-y: auto;
     flex-shrink: 0;
-    background-color: var(--sb-bg-subtle, #f8f9fa);
+    background-color: var(--sb-bg-subtle, var(--sb-color-surface-variant));
 }
 
 .setting-content {
     flex: 1;
     overflow-y: auto;
-    background-color: var(--sb-bg, #fff);
+    background-color: var(--sb-bg, var(--sb-color-surface));
 }
 
 .setting-groups-nav ::deep .setting-group-item {
@@ -34,13 +34,13 @@
 }
 
 .setting-groups-nav ::deep .setting-group-item:hover {
-    background-color: var(--sb-hover-bg, #e9ecef);
+    background-color: var(--sb-hover-bg, var(--sb-color-surface-hover)));
 }
 
 .setting-groups-nav ::deep .setting-group-item.active {
-    background-color: var(--sb-primary-light, #e7f1ff);
-    color: var(--sb-primary, #0d6efd);
-    border-inline-start-color: var(--sb-primary, #0d6efd);
+    background-color: var(--sb-primary-light, var(--sb-color-primary-light));
+    color: var(--sb-primary);
+    border-inline-start-color: var(--sb-primary);
 }
 
 .setting-groups-nav ::deep .setting-group-item .group-name {
@@ -64,7 +64,7 @@
         width: 100%;
         min-width: 0;
         border-inline-end: none;
-        border-block-end: 1px solid var(--sb-border-color, #dee2e6);
+        border-block-end: 1px solid var(--sb-border-color, var(--sb-color-border));
         -webkit-overflow-scrolling: touch;
         scrollbar-width: thin;
     }
@@ -81,7 +81,7 @@
     /* Mobile: active indicator at bottom (horizontal tabs) */
     .setting-groups-nav ::deep .setting-group-item.active {
         border-inline-start-color: transparent;
-        border-block-end: 2px solid var(--sb-primary, #0d6efd);
+        border-block-end: 2px solid var(--sb-primary);
     }
 
     .setting-content {

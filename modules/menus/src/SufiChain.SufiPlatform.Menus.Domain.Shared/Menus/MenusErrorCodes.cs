@@ -10,7 +10,6 @@ public static class MenusErrorCodes
     public const string MenuItemCircularReference = Namespace + ":MenuItemCircularReference";
     public const string MenuItemInvalidParent = Namespace + ":MenuItemInvalidParent";
     public const string MenuItemInvalidTarget = Namespace + ":MenuItemInvalidTarget";
-    public const string MenuItemMetadataTooLong = Namespace + ":MenuItemMetadataTooLong";
     public const string CannotDeleteMenuWithItems = Namespace + ":CannotDeleteMenuWithItems";
     public const string CannotMoveMenuItemAcrossMenus = Namespace + ":CannotMoveMenuItemAcrossMenus";
 }

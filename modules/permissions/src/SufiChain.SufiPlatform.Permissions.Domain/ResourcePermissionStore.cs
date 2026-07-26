@@ -229,8 +229,14 @@ public class ResourcePermissionStore : IResourcePermissionStore, ITransientDepen
 
     protected virtual string GetPermissionNameFormCacheKeyOrNull(string key)
     {
-        //TODO: throw ex when name is null?
-        return ResourcePermissionGrantCacheItem.GetPermissionNameFormCacheKeyOrNull(key);
+        var permissionName = ResourcePermissionGrantCacheItem.GetPermissionNameFormCacheKeyOrNull(key);
+        if (permissionName == null)
+        {
+            throw new BusinessException(PermissionsErrorCodes.InvalidPermissionName)
+                .WithData("CacheKey", key);
+        }
+
+        return permissionName;
     }
 
     protected virtual string CalculateCacheKey(string name, string resourceName, string resourceKey, string providerName, string providerKey)

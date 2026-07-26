@@ -22,7 +22,6 @@ public class MenuItemDto : FullAuditedEntityDto<Guid>
     public string? CssClass { get; set; }
     public string? PermissionName { get; set; }
     public string? ComponentName { get; set; }
-    public string? MetadataJson { get; set; }
     public bool IsActive { get; set; }
     public bool IsVisible { get; set; }
 }
@@ -51,7 +50,6 @@ public class CreateMenuItemDto
     public string? CssClass { get; set; }
     public string? PermissionName { get; set; }
     public string? ComponentName { get; set; }
-    public string? MetadataJson { get; set; }
     public bool IsActive { get; set; } = true;
     public bool IsVisible { get; set; } = true;
 }
@@ -74,7 +72,6 @@ public class UpdateMenuItemDto
     public string? CssClass { get; set; }
     public string? PermissionName { get; set; }
     public string? ComponentName { get; set; }
-    public string? MetadataJson { get; set; }
     public bool IsActive { get; set; } = true;
     public bool IsVisible { get; set; } = true;
 }

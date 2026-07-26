@@ -2,9 +2,9 @@
 /* Matches the pattern used by PermissionManagementModal and FeatureManagementModal */
 
 .setting-groups-nav {
-    background-color: var(--sb-bg-subtle, #f8f9fa);
+    background-color: var(--sb-bg-subtle, var(--sb-color-surface-variant));
     width: 220px;
-    border-inline-end: 1px solid var(--sb-border-color, #dee2e6);
+    border-inline-end: 1px solid var(--sb-border-color, var(--sb-color-border));
     overflow-y: auto;
     flex-shrink: 0;
 }
@@ -23,13 +23,13 @@
 }
 
 .setting-group-item:hover {
-    background-color: var(--sb-hover-bg, #e9ecef);
+    background-color: var(--sb-hover-bg, var(--sb-color-surface-hover)));
 }
 
 .setting-group-item.active {
-    background-color: var(--sb-primary-light, #e7f1ff);
-    color: var(--sb-primary, #0d6efd);
-    border-inline-start-color: var(--sb-primary, #0d6efd);
+    background-color: var(--sb-primary-light, var(--sb-color-primary-light));
+    color: var(--sb-primary);
+    border-inline-start-color: var(--sb-primary);
 }
 
 .setting-group-item .group-name {
@@ -38,7 +38,7 @@
 }
 
 .setting-content {
-    background-color: var(--sb-bg, #fff);
+    background-color: var(--sb-bg, var(--sb-color-surface));
     flex: 1;
     overflow-y: auto;
     max-height: 500px;
@@ -46,6 +46,6 @@
 
 /* RTL Support - CSS logical properties handle this automatically */
 [dir="rtl"] .setting-groups-nav {
-    border-inline-end: 1px solid var(--sb-border-color, #dee2e6);
+    border-inline-end: 1px solid var(--sb-border-color, var(--sb-color-border));
     border-inline-start: none;
 }
