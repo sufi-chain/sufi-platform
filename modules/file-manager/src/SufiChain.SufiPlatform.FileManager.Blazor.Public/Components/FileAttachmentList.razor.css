@@ -1,7 +1,7 @@
 .file-attachment-list {
-    border: 1px solid var(--sb-outline-variant, #e0e0e0);
+    border: 1px solid var(--sb-outline-variant, var(--sb-color-border));
     border-radius: var(--sb-radius-md, 8px);
-    background-color: var(--sb-surface, #fff);
+    background-color: var(--sb-surface, var(--sb-color-surface));
     overflow: hidden;
 }
 
@@ -10,16 +10,16 @@
     padding: 0.75rem 1rem;
     font-size: 0.875rem;
     font-weight: 600;
-    color: var(--sb-on-surface, #333);
-    background-color: var(--sb-surface-variant, #f5f5f5);
-    border-bottom: 1px solid var(--sb-outline-variant, #e0e0e0);
+    color: var(--sb-on-surface);
+    background-color: var(--sb-surface-variant, var(--sb-color-surface-variant));
+    border-bottom: 1px solid var(--sb-outline-variant, var(--sb-color-border));
 }
 
 .file-attachment-list__loading,
 .file-attachment-list__empty {
     padding: 1.5rem;
     text-align: center;
-    color: var(--sb-on-surface-variant, #666);
+    color: var(--sb-on-surface-variant);
     font-size: 0.875rem;
     display: flex;
     align-items: center;
@@ -38,7 +38,7 @@
     align-items: center;
     gap: 0.75rem;
     padding: 0.75rem 1rem;
-    border-bottom: 1px solid var(--sb-outline-variant, #e0e0e0);
+    border-bottom: 1px solid var(--sb-outline-variant, var(--sb-color-border));
     transition: background-color 0.15s ease;
 }
 
@@ -47,7 +47,7 @@
 }
 
 .file-attachment-list__item:hover {
-    background-color: var(--sb-surface-variant, #f5f5f5);
+    background-color: var(--sb-surface-variant, var(--sb-color-surface-variant));
 }
 
 .file-attachment-list__icon {
@@ -65,7 +65,7 @@
 }
 
 .file-attachment-list__name {
-    color: var(--sb-primary, #007bff);
+    color: var(--sb-primary);
     text-decoration: none;
     font-weight: 500;
     overflow: hidden;
@@ -79,7 +79,7 @@
 
 .file-attachment-list__size {
     font-size: 0.75rem;
-    color: var(--sb-on-surface-variant, #666);
+    color: var(--sb-on-surface-variant);
 }
 
 .file-attachment-list__download-btn {
@@ -91,23 +91,23 @@
 }
 
 .file-attachment-list__download-btn:hover {
-    background-color: var(--sb-primary-container, #e3f2fd);
+    background-color: var(--sb-primary-container, var(--sb-color-primary-light));
 }
 
 .file-attachment-list__total {
     padding: 0.5rem 1rem;
     font-size: 0.75rem;
-    color: var(--sb-on-surface-variant, #666);
-    background-color: var(--sb-surface-variant, #f5f5f5);
-    border-top: 1px solid var(--sb-outline-variant, #e0e0e0);
+    color: var(--sb-on-surface-variant);
+    background-color: var(--sb-surface-variant, var(--sb-color-surface-variant));
+    border-top: 1px solid var(--sb-outline-variant, var(--sb-color-border));
     text-align: right;
 }
 
 .file-attachment-list__spinner {
     width: 16px;
     height: 16px;
-    border: 2px solid var(--sb-outline, #ddd);
-    border-top-color: var(--sb-primary, #007bff);
+    border: 2px solid var(--sb-outline, var(--sb-color-border));
+    border-top-color: var(--sb-primary);
     border-radius: 50%;
     animation: file-attachment-spin 0.8s linear infinite;
 }

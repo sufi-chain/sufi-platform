@@ -110,13 +110,14 @@ public class FileStructure : AuditedAggregateRoot<Guid>
     public string? StorageProvider { get; set; }
     
     /// <summary>
-    /// Whether files should be publicly accessible
+    /// Whether files should be publicly accessible.
+    /// For S3 storage, uploads use public-read ACL and links use BaseUrl (or derived S3 URL) directly.
     /// </summary>
     public bool IsPublicAccess { get; set; }
 
     /// <summary>
-    /// Base URL for file links (download/thumbnail/stream). When null, falls back to
-    /// FileManagerOptions.BaseUrl (API) or RemoteServices:FileManager:BaseUrl (Blazor).
+    /// Public object-storage or CDN base URL for file links when IsPublicAccess is true (S3).
+    /// When null with public S3, derived from endpoint/bucket/region. Otherwise falls back to API base URLs.
     /// </summary>
     public string? BaseUrl { get; set; }
     

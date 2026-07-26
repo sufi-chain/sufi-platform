@@ -89,6 +89,24 @@ public class FileManagerController : SufiControllerBase, IFileManagerAppService
         return _fileManagerAppService.DownloadAsZipAsync(input);
     }
 
+    [HttpGet]
+    [Route("zip-downloads/{token}")]
+    public virtual async Task<IActionResult> DownloadZipFileAsync(string token)
+    {
+        var content = await _fileManagerAppService.GetZipDownloadAsync(token);
+        if (content == null)
+        {
+            return NotFound();
+        }
+
+        return File(content.Content, content.ContentType, content.FileName);
+    }
+
+    Task<ZipDownloadContentDto?> IFileManagerAppService.GetZipDownloadAsync(string token)
+    {
+        return _fileManagerAppService.GetZipDownloadAsync(token);
+    }
+
     #endregion
 
     #region Search

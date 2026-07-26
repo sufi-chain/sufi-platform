@@ -63,6 +63,11 @@ public interface IFileManagerAppService : IApplicationService
     /// </summary>
     Task<DownloadResultDto> DownloadAsZipAsync(DownloadInput input);
 
+    /// <summary>
+    /// Retrieves a cached ZIP download by token.
+    /// </summary>
+    Task<ZipDownloadContentDto?> GetZipDownloadAsync(string token);
+
     #endregion
 
     #region Search

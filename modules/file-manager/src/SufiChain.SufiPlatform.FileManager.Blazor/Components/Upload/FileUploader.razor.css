@@ -4,8 +4,8 @@
 	right: var(--sb-space-2);
 	z-index: 2;
 	padding: 4px;
-	background: white;
-	border: 1px solid var(--sb-color-border, #dee2e6);
+	background: var(--sb-color-surface);
+	border: 1px solid var(--sb-color-border);
 	border-radius: var(--sb-radius-md, 6px);
 	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
 }

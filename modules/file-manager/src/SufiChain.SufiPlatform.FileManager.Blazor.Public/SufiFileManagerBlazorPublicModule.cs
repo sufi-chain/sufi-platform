@@ -29,6 +29,7 @@ public class SufiFileManagerBlazorPublicModule : AbpModule
         context.Services.AddScoped<IFilePublicUrlResolver, FilePublicUrlResolver>();
         // Register file item URL provider (thumbnail/download/stream base URL; used by both public and admin)
         context.Services.AddScoped<IFileItemUrlProvider, FileItemUrlProvider>();
+        context.Services.AddScoped<PublicFileUploadJsInterop>();
         context.Services.AddScoped<FileGalleryDialogService>();
         context.Services.AddScoped<IFileGalleryDialogService>(provider => provider.GetRequiredService<FileGalleryDialogService>());
         context.Services.AddMdToolbarContributor<FileManagerMarkdownToolbarContributor>();

@@ -5,7 +5,8 @@ namespace SufiChain.SufiPlatform.FileManager.Blazor.Public.Services;
 
 /// <summary>
 /// Resolves file manager API URLs using RemoteServices:FileManager:BaseUrl or RemoteServices:Default:BaseUrl.
-/// Appends signed tokens to thumbnail/stream URLs so img/video elements can load media without auth headers.
+/// When structure uses S3 with IsPublicAccess and BaseUrl, returns direct object-storage URLs (no API proxy).
+/// Otherwise appends signed tokens to thumbnail/stream URLs so media can load without auth headers.
 /// </summary>
 public class FileItemUrlProvider : IFileItemUrlProvider
 {

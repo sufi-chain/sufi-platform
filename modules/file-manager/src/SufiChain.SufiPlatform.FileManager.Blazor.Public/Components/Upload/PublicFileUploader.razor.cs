@@ -1,14 +1,20 @@
+using System.Text.Json;
 using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Components.Web;
+using Microsoft.JSInterop;
+using SufiChain.SufiPlatform.FileManager.Blazor.Public.Services;
 using SufiChain.SufiPlatform.FileManager.FileItems;
 
 namespace SufiChain.SufiPlatform.FileManager.Blazor.Public.Components.Upload;
 
+/// <summary>
+/// Public file uploader. Uses HTTP multipart upload (not Blazor InputFile/circuit streams)
+/// so large files do not hit SignalR "Did not receive any data in the allotted time".
+/// </summary>
 public partial class PublicFileUploader
 {
     [Inject]
-    protected IFileItemAppService FileItemAppService { get; set; } = default!;
+    protected PublicFileUploadJsInterop JsInterop { get; set; } = default!;
 
     [Parameter]
     public string? StructureKey { get; set; }
@@ -49,6 +55,12 @@ public partial class PublicFileUploader
     [Parameter]
     public string RemoveButtonText { get; set; } = "Remove file";
 
+    /// <summary>
+    /// When false, only the hidden file input and progress list are rendered (for immediate picker UX).
+    /// </summary>
+    [Parameter]
+    public bool ShowDropZone { get; set; } = true;
+
     [Parameter]
     public string? Class { get; set; }
 
@@ -64,7 +76,63 @@ public partial class PublicFileUploader
     private readonly string _fileInputId = $"public-file-uploader-{Guid.NewGuid():N}";
     private readonly List<SelectedUploadFile> _selectedFiles = new();
     private readonly List<string> _errors = new();
+    private readonly List<FileItemDto> _batchUploaded = new();
     private bool _isDragging;
+    private bool _disposed;
+    private bool _changeHandlerRegistered;
+    private bool _pickerReady;
+    private DotNetObjectReference<PublicFileUploader>? _dotNetRef;
+    private int _expectedCompletions;
+    private int _receivedCompletions;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await base.OnAfterRenderAsync(firstRender);
+
+        if (firstRender)
+        {
+            await EnsureChangeHandlerRegisteredAsync();
+        }
+    }
+
+    /// <summary>
+    /// Native file input id (for optional &lt;label for&gt; wiring from a parent).
+    /// </summary>
+    public string FileInputId => _fileInputId;
+
+    /// <summary>
+    /// Opens the native file explorer immediately (no intermediate upload dialog).
+    /// Must be called from a user gesture (e.g. button click) without prior delays.
+    /// </summary>
+    public async Task OpenFilePickerAsync()
+    {
+        if (_disposed)
+        {
+            return;
+        }
+
+        await EnsureChangeHandlerRegisteredAsync();
+
+        if (_disposed || !_pickerReady)
+        {
+            return;
+        }
+
+        await JsInterop.TriggerFileInputAsync(_fileInputId);
+    }
+
+    private async Task EnsureChangeHandlerRegisteredAsync()
+    {
+        if (_changeHandlerRegistered || _disposed)
+        {
+            return;
+        }
+
+        _changeHandlerRegistered = true;
+        _dotNetRef = DotNetObjectReference.Create(this);
+        await JsInterop.RegisterFileInputChangeAsync(_fileInputId, _dotNetRef);
+        _pickerReady = true;
+    }
 
     protected virtual void HandleDragEnter()
     {
@@ -82,72 +150,159 @@ public partial class PublicFileUploader
         return Task.CompletedTask;
     }
 
-    protected virtual async Task OnFilesSelectedAsync(InputFileChangeEventArgs args)
+    /// <summary>
+    /// Called by JS when the file input changes. Starts HTTP upload (bypasses SignalR).
+    /// </summary>
+    [JSInvokable]
+    public async Task OnFileInputChange()
     {
-        _errors.Clear();
-        _selectedFiles.Clear();
-
-        var browserFiles = args.GetMultipleFiles(AllowMultiple ? MaxFiles : 1).ToList();
-        foreach (var browserFile in browserFiles)
+        if (_disposed || _dotNetRef == null)
         {
-            var selectedFile = new SelectedUploadFile(browserFile.Name, browserFile.Size, browserFile.ContentType);
-            _selectedFiles.Add(selectedFile);
-
-            if (browserFile.Size > MaxFileSize)
-            {
-                selectedFile.HasError = true;
-                selectedFile.ErrorMessage = $"File '{browserFile.Name}' exceeds the maximum size of {FormatFileSize(MaxFileSize)}.";
-                _errors.Add(selectedFile.ErrorMessage);
-                continue;
-            }
-
-            await UploadFileAsync(browserFile, selectedFile);
+            return;
         }
 
-        var uploadedFiles = _selectedFiles.Where(x => x.FileItem != null).Select(x => x.FileItem!).ToList();
-        if (uploadedFiles.Any())
+        var metadata = new PublicJsUploadMetadata
         {
-            await Uploaded.InvokeAsync(uploadedFiles);
-        }
+            StructureKey = StructureKey,
+            EntityType = EntityType,
+            EntityId = EntityId,
+            FolderPath = string.IsNullOrWhiteSpace(FolderPath) ? null : FolderPath.Trim(),
+            AutoConfirm = AutoConfirm,
+            MaxFileSize = MaxFileSize
+        };
+
+        await JsInterop.UploadFilesFromInputAsync(_fileInputId, metadata, accessToken: null, _dotNetRef);
     }
 
-    protected virtual async Task UploadFileAsync(IBrowserFile browserFile, SelectedUploadFile selectedFile)
+    /// <summary>
+    /// Called by JS with selected file infos before upload starts.
+    /// </summary>
+    [JSInvokable]
+    public void OnFilesSelected(PublicJsFileInfo[] fileInfos)
     {
-        try
+        if (_disposed || fileInfos == null)
         {
-            selectedFile.IsUploading = true;
-            selectedFile.Progress = 10;
+            return;
+        }
 
-            await using var stream = browserFile.OpenReadStream(MaxFileSize);
-            using var memoryStream = new MemoryStream();
-            await stream.CopyToAsync(memoryStream);
-            selectedFile.Progress = 75;
+        _errors.Clear();
+        _selectedFiles.Clear();
+        _batchUploaded.Clear();
+        _receivedCompletions = 0;
 
-            selectedFile.FileItem = await FileItemAppService.UploadAsync(new UploadFileInput
+        var limited = fileInfos.Take(AllowMultiple ? MaxFiles : 1).ToArray();
+        _expectedCompletions = limited.Length;
+
+        if (fileInfos.Length > limited.Length)
+        {
+            _errors.Add($"Only the first {limited.Length} file(s) will be uploaded.");
+        }
+
+        foreach (var info in limited)
+        {
+            var selected = new SelectedUploadFile(info.Name, info.Size, info.Type);
+            if (info.Size > MaxFileSize)
             {
-                FileName = browserFile.Name,
-                Content = memoryStream.ToArray(),
-                MimeType = browserFile.ContentType,
-                StructureKey = StructureKey,
-                EntityType = EntityType,
-                EntityId = EntityId,
-                FolderPath = FolderPath,
-                AutoConfirm = AutoConfirm
-            });
+                selected.HasError = true;
+                selected.ErrorMessage = $"File '{info.Name}' exceeds the maximum size of {FormatFileSize(MaxFileSize)}.";
+                _errors.Add(selected.ErrorMessage);
+            }
+            else
+            {
+                selected.IsUploading = true;
+                selected.Progress = 0;
+            }
 
-            selectedFile.Progress = 100;
-            selectedFile.IsUploaded = true;
+            _selectedFiles.Add(selected);
         }
-        catch (Exception ex)
+
+        _ = InvokeAsync(StateHasChanged);
+    }
+
+    [JSInvokable]
+    public void OnUploadProgress(int fileIndex, int progress)
+    {
+        if (_disposed || fileIndex < 0 || fileIndex >= _selectedFiles.Count)
         {
+            return;
+        }
+
+        var file = _selectedFiles[fileIndex];
+        if (file.HasError)
+        {
+            return;
+        }
+
+        file.Progress = progress;
+        _ = InvokeAsync(StateHasChanged);
+    }
+
+    [JSInvokable]
+    public async Task OnUploadComplete(int fileIndex, PublicJsUploadResult result)
+    {
+        if (_disposed || fileIndex < 0 || fileIndex >= _selectedFiles.Count)
+        {
+            return;
+        }
+
+        var selectedFile = _selectedFiles[fileIndex];
+        selectedFile.IsUploading = false;
+        _receivedCompletions++;
+
+        if (result.Success && result.Data.HasValue)
+        {
+            try
+            {
+                var dto = result.Data.Value.Deserialize<FileItemDto>(
+                    new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+                if (dto != null)
+                {
+                    selectedFile.Progress = 100;
+                    selectedFile.IsUploaded = true;
+                    selectedFile.FileItem = dto;
+                    _batchUploaded.Add(dto);
+                }
+            }
+            catch (JsonException ex)
+            {
+                selectedFile.HasError = true;
+                selectedFile.ErrorMessage = ex.Message;
+                _errors.Add(ex.Message);
+                await UploadFailed.InvokeAsync(ex.Message);
+            }
+        }
+        else
+        {
+            var error = result.Error ?? selectedFile.ErrorMessage;
+            if (string.IsNullOrWhiteSpace(error))
+            {
+                error = "Upload failed.";
+            }
+
             selectedFile.HasError = true;
-            selectedFile.ErrorMessage = ex.Message;
-            _errors.Add(ex.Message);
-            await UploadFailed.InvokeAsync(ex.Message);
+            selectedFile.ErrorMessage = error;
+            if (!_errors.Contains(error))
+            {
+                _errors.Add(error);
+            }
+
+            await UploadFailed.InvokeAsync(error);
         }
-        finally
+
+        await InvokeAsync(StateHasChanged);
+
+        if (_receivedCompletions >= _expectedCompletions && _batchUploaded.Count > 0)
         {
-            selectedFile.IsUploading = false;
+            var uploaded = _batchUploaded.ToList();
+            await Uploaded.InvokeAsync(uploaded);
+
+            // Compact / immediate-picker mode: clear progress after parent receives files.
+            if (!ShowDropZone)
+            {
+                _selectedFiles.Clear();
+                _errors.Clear();
+                await InvokeAsync(StateHasChanged);
+            }
         }
     }
 
@@ -191,13 +346,25 @@ public partial class PublicFileUploader
         return $"{bytes / 1024d / 1024d:0.#} MB";
     }
 
+    public void Dispose()
+    {
+        if (_disposed)
+        {
+            return;
+        }
+
+        _disposed = true;
+        _dotNetRef?.Dispose();
+        _dotNetRef = null;
+    }
+
     protected sealed class SelectedUploadFile
     {
         public SelectedUploadFile(string name, long size, string contentType)
         {
             Name = name;
             Size = size;
-            ContentType = contentType;
+            ContentType = contentType ?? string.Empty;
         }
 
         public string Name { get; }

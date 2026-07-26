@@ -137,10 +137,41 @@ public class StructureBlobContainerConfigurationProvider : IBlobContainerConfigu
         };
     }
 
+    private BlobContainerConfiguration GetDefaultConfigurationFromSettings(string? structureKey)
+    {
+        ResolveStructurePublicSettings(structureKey, out var baseUrl, out var isPublicAccess);
+        return GetDefaultConfigurationFromSettings(structureKey, baseUrl, isPublicAccess);
+    }
+
+    private void ResolveStructurePublicSettings(string? structureKey, out string? baseUrl, out bool? isPublicAccess)
+    {
+        baseUrl = null;
+        isPublicAccess = null;
+        if (string.IsNullOrEmpty(structureKey))
+        {
+            return;
+        }
+
+        var cached = AsyncHelper.RunSync(() => StructureCache.GetAsync(structureKey));
+        if (cached != null)
+        {
+            baseUrl = cached.BaseUrl;
+            isPublicAccess = cached.IsPublicAccess;
+            return;
+        }
+
+        var structure = AsyncHelper.RunSync(() => FileStructureRepository.FindByKeyAsync(structureKey));
+        if (structure != null)
+        {
+            baseUrl = structure.BaseUrl;
+            isPublicAccess = structure.IsPublicAccess;
+        }
+    }
+
     private BlobContainerConfiguration GetDefaultConfigurationFromSettings(
         string? structureKey,
-        string? structureBaseUrl = null,
-        bool? structureIsPublicAccess = null)
+        string? structureBaseUrl,
+        bool? structureIsPublicAccess)
     {
         var defaultConfig = AsyncHelper.RunSync(() => StorageConfigProvider.GetDefaultConfigAsync());
         return BuildConfigurationFromConfigDto(defaultConfig, structureKey, structureBaseUrl, structureIsPublicAccess);
@@ -218,12 +249,29 @@ public class StructureBlobContainerConfigurationProvider : IBlobContainerConfigu
             s3.ContainerName = dto.S3ContainerName;
             s3.AccessKeyId = dto.S3AccessKeyId;
             s3.SecretAccessKey = dto.S3SecretAccessKey;
-            if (structureIsPublicAccess.HasValue)
-                s3.IsPublicAccess = structureIsPublicAccess.Value;
-            if (!string.IsNullOrWhiteSpace(structureBaseUrl))
-                s3.PublicBaseUrl = structureBaseUrl;
+            ApplyS3PublicAccess(s3, structureIsPublicAccess ?? false, structureBaseUrl);
         });
         return config;
+    }
+
+    /// <summary>
+    /// Marks the S3 container public and sets PublicBaseUrl from structure BaseUrl or derived S3 URL.
+    /// When IsPublicAccess is true, uploads use public-read ACL so objects are reachable without the app API.
+    /// </summary>
+    private static void ApplyS3PublicAccess(S3BlobProviderConfiguration s3, bool isPublicAccess, string? structureBaseUrl)
+    {
+        s3.IsPublicAccess = isPublicAccess;
+        if (!isPublicAccess)
+        {
+            return;
+        }
+
+        s3.PublicBaseUrl = S3PublicUrlBuilder.ResolvePublicBaseUrl(
+            structureBaseUrl,
+            s3.Endpoint,
+            s3.Region,
+            s3.ContainerName,
+            isPublicAccess: true);
     }
 
     private BlobContainerConfiguration BuildDatabaseConfiguration(FileStructures.FileStructure structure)
@@ -400,9 +448,7 @@ public class StructureBlobContainerConfigurationProvider : IBlobContainerConfigu
             s3.ContainerName = containerName;
             s3.AccessKeyId = accessKey;
             s3.SecretAccessKey = secretKey;
-            s3.IsPublicAccess = structure.IsPublicAccess;
-            if (!string.IsNullOrWhiteSpace(structure.BaseUrl))
-                s3.PublicBaseUrl = structure.BaseUrl;
+            ApplyS3PublicAccess(s3, structure.IsPublicAccess, structure.BaseUrl);
         });
         return config;
     }
@@ -439,9 +485,7 @@ public class StructureBlobContainerConfigurationProvider : IBlobContainerConfigu
             s3.ContainerName = containerName;
             s3.AccessKeyId = accessKey;
             s3.SecretAccessKey = secretKey;
-            s3.IsPublicAccess = entry.IsPublicAccess;
-            if (!string.IsNullOrWhiteSpace(entry.BaseUrl))
-                s3.PublicBaseUrl = entry.BaseUrl;
+            ApplyS3PublicAccess(s3, entry.IsPublicAccess, entry.BaseUrl);
         });
         return config;
     }

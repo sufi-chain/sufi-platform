@@ -23,17 +23,17 @@
 
 /* Mobile: file structure card */
 .file-structure-card {
-    border: 1px solid var(--sb-color-border, #dee2e6);
+    border: 1px solid var(--sb-color-border);
     border-radius: var(--sb-radius-md, 0.375rem);
-    background: var(--sb-bg, #fff);
+    background: var(--sb-bg, var(--sb-color-surface));
     box-shadow: var(--sb-shadow-sm, 0 1px 2px 0 rgb(0 0 0 / 0.05));
     overflow: hidden;
 }
 
 .file-structure-card__header {
     padding: var(--sb-space-3);
-    background: var(--sb-bg-subtle, #f8f9fa);
-    border-block-end: 1px solid var(--sb-color-border, #dee2e6);
+    background: var(--sb-bg-subtle, var(--sb-color-surface-variant));
+    border-block-end: 1px solid var(--sb-color-border);
 }
 
 .file-structure-card__header code {
@@ -45,7 +45,7 @@
     display: block;
     margin-top: 0.25rem;
     font-size: var(--sb-font-size-sm, 0.875rem);
-    color: var(--sb-text-muted, #6c757d);
+    color: var(--sb-text-muted, var(--sb-color-surface-variant));
 }
 
 .file-structure-card__body {
@@ -64,7 +64,7 @@
     display: block;
     font-size: 0.75rem;
     font-weight: 600;
-    color: var(--sb-text-muted, #6c757d);
+    color: var(--sb-text-muted, var(--sb-color-surface-variant));
     margin-bottom: 0.25rem;
 }
 

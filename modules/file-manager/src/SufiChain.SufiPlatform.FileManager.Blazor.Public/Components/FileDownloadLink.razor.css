@@ -8,29 +8,29 @@
 
 .file-download-link--button {
     padding: 0.625rem 1rem;
-    background-color: var(--sb-primary, #007bff);
+    background-color: var(--sb-primary);
     color: white;
     border-radius: var(--sb-radius-md, 8px);
     font-weight: 500;
 }
 
 .file-download-link--button:hover {
-    background-color: var(--sb-primary-dark, #0056b3);
+    background-color: var(--sb-primary-dark);
     text-decoration: none;
 }
 
 .file-download-link--link {
-    color: var(--sb-primary, #007bff);
+    color: var(--sb-primary);
 }
 
 .file-download-link--link:hover {
-    color: var(--sb-primary-dark, #0056b3);
+    color: var(--sb-primary-dark);
     text-decoration: underline;
 }
 
 .file-download-link--loading,
 .file-download-link--error {
-    color: var(--sb-on-surface-variant, #666);
+    color: var(--sb-on-surface-variant);
 }
 
 .file-download-link__icon {

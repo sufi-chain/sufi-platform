@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using SufiChain.SufiPlatform.FileManager.AccessControl;
 using SufiChain.SufiPlatform.FileManager.Caching;
 using SufiChain.SufiPlatform.FileManager.Configuration;
 using SufiChain.SufiPlatform.FileManager.Features;
@@ -19,6 +20,7 @@ using SufiChain.SufiPlatform.FileManager.Settings;
 using SufiChain.SufiPlatform.FileManager.Storage;
 using SufiChain.SufiPlatform.BlobStoring.S3Provider;
 using Volo.Abp;
+using Volo.Abp.Authorization;
 using SufiChain.SufiPlatform.Application.Dtos;
 using Volo.Abp.ObjectExtending;
 using SufiChain.SufiPlatform.Application.Services;
@@ -38,6 +40,9 @@ public partial class FileItemAppService : SufiApplicationService, IFileItemAppSe
     private readonly IFileStructureRepository _fileStructureRepository;
     private readonly IStructureCache _structureCache;
     private readonly IFolderAppService _folderAppService;
+    private readonly IFileFolderRepository _folderRepository;
+    private readonly IFolderAccessResolver _folderAccessResolver;
+    private readonly IUserFolderAccessContextProvider _folderAccessContextProvider;
     private readonly IStructureBlobContainerProvider _structureBlobContainerProvider;
     private readonly IImageProcessor _imageProcessor;
     private readonly IVideoProcessor _videoProcessor;
@@ -45,17 +50,19 @@ public partial class FileItemAppService : SufiApplicationService, IFileItemAppSe
     private readonly FileManagerOptions _options;
     private readonly ISettingProvider _settingProvider;
     private readonly IFileManagerTenantPolicyProvider _tenantPolicyProvider;
-    private readonly IFileAccessTokenService _fileAccessTokenService;
     private readonly ILogger<FileItemAppService> _logger;
     private readonly IS3PublicBlobUrlProvider _s3PublicBlobUrlProvider;
-    private readonly IS3PresignedUrlProvider _s3PresignedUrlProvider;
     private readonly FileItemManager _fileItemManager;
+    private readonly FileItemBlobAccessService _blobAccessService;
 
     public FileItemAppService(
         IFileItemRepository fileItemRepository,
         IFileStructureRepository fileStructureRepository,
         IStructureCache structureCache,
         IFolderAppService folderAppService,
+        IFileFolderRepository folderRepository,
+        IFolderAccessResolver folderAccessResolver,
+        IUserFolderAccessContextProvider folderAccessContextProvider,
         IStructureBlobContainerProvider structureBlobContainerProvider,
         IImageProcessor imageProcessor,
         IVideoProcessor videoProcessor,
@@ -63,16 +70,18 @@ public partial class FileItemAppService : SufiApplicationService, IFileItemAppSe
         IOptions<FileManagerOptions> options,
         ISettingProvider settingProvider,
         IFileManagerTenantPolicyProvider tenantPolicyProvider,
-        IFileAccessTokenService fileAccessTokenService,
         ILogger<FileItemAppService> logger,
         IS3PublicBlobUrlProvider s3PublicBlobUrlProvider,
-        IS3PresignedUrlProvider s3PresignedUrlProvider,
-        FileItemManager fileItemManager)
+        FileItemManager fileItemManager,
+        FileItemBlobAccessService blobAccessService)
     {
         _fileItemRepository = fileItemRepository;
         _fileStructureRepository = fileStructureRepository;
         _structureCache = structureCache;
         _folderAppService = folderAppService;
+        _folderRepository = folderRepository;
+        _folderAccessResolver = folderAccessResolver;
+        _folderAccessContextProvider = folderAccessContextProvider;
         _structureBlobContainerProvider = structureBlobContainerProvider;
         _imageProcessor = imageProcessor;
         _videoProcessor = videoProcessor;
@@ -80,15 +89,14 @@ public partial class FileItemAppService : SufiApplicationService, IFileItemAppSe
         _options = options.Value;
         _settingProvider = settingProvider;
         _tenantPolicyProvider = tenantPolicyProvider;
-        _fileAccessTokenService = fileAccessTokenService;
         _logger = logger;
         _s3PublicBlobUrlProvider = s3PublicBlobUrlProvider;
-        _s3PresignedUrlProvider = s3PresignedUrlProvider;
         _fileItemManager = fileItemManager;
+        _blobAccessService = blobAccessService;
     }
 
     [RemoteService(false)]
-    [Authorize(FileManagerPermissions.FileItems.Create)]
+    [Authorize]
     public async Task<UploadValidationResult> ValidateUploadAsync(string fileName, string mimeType, string? structureKey, long fileSize)
     {
         if (string.IsNullOrEmpty(structureKey))
@@ -143,11 +151,65 @@ public partial class FileItemAppService : SufiApplicationService, IFileItemAppSe
         return null;
     }
 
+    /// <summary>
+    /// Authorizes an upload based on its target:
+    /// - Structure-scoped uploads (StructureKey set, no free folder) require only authentication;
+    ///   the calling integration service (e.g. ticket/chat composer) is responsible for the
+    ///   domain-level ownership check, and the structure itself enforces size/type/count limits.
+    /// - Folder uploads (FolderId/FolderPath set) require an explicit folder-level Write grant
+    ///   for the current user, resolved through the FolderPermission OU/Role/User model.
+    /// - Admins (FileItems.Create) bypass the folder grant check.
+    /// This keeps the broad file-manager permission off the end-user role while still allowing
+    /// legitimate per-structure uploads (portal ticket/chat attachments).
+    /// </summary>
+    protected virtual async Task EnsureCanUploadAsync(Guid? folderId, string? structureKey)
+    {
+        if (await AuthorizationService.IsGrantedAsync(FileManagerPermissions.FileItems.Create))
+        {
+            return;
+        }
+
+        // Structure-scoped uploads (no free folder) are gated by the integration caller's
+        // own ownership check and the structure's validation, not by a file-manager permission.
+        if (!string.IsNullOrEmpty(structureKey) && !folderId.HasValue)
+        {
+            return;
+        }
+
+        // Folder uploads require an explicit per-folder Write grant.
+        if (folderId.HasValue)
+        {
+            var folder = await _folderRepository.GetWithPermissionsAsync(folderId.Value);
+            if (folder == null)
+            {
+                throw new AbpAuthorizationException("Target folder was not found.");
+            }
+
+            var context = await _folderAccessContextProvider.GetContextAsync();
+            var canWrite = await _folderAccessResolver.HasPermissionAsync(
+                folder, context, FolderPermissionLevel.Write);
+
+            if (!canWrite)
+            {
+                throw new AbpAuthorizationException(
+                    $"Given policy has not granted: {FileManagerPermissions.FileItems.Create}");
+            }
+
+            return;
+        }
+
+        // No structure and no folder: a free-form upload into the file manager root requires
+        // the broad file-manager permission, which ordinary portal users do not hold.
+        throw new AbpAuthorizationException(
+            $"Given policy has not granted: {FileManagerPermissions.FileItems.Create}");
+    }
+
     [RemoteService(false)]
-    [Authorize(FileManagerPermissions.FileItems.Create)]
+    [Authorize]
     public async Task<FileItemDto> UploadAsync(UploadFileInput input)
     {
         var folderId = await ResolveFolderIdAsync(input.FolderId, input.FolderPath);
+        await EnsureCanUploadAsync(folderId, input.StructureKey);
 
         // Validate against structure if provided
         FileStructure? structure = null;
@@ -283,10 +345,11 @@ public partial class FileItemAppService : SufiApplicationService, IFileItemAppSe
 
     [RemoteService(false)]
     [DisableValidation]
-    [Authorize(FileManagerPermissions.FileItems.Create)]
+    [Authorize]
     public async Task<FileItemDto> UploadStreamAsync(UploadFileStreamInput input)
     {
         var folderId = await ResolveFolderIdAsync(input.FolderId, input.FolderPath);
+        await EnsureCanUploadAsync(folderId, input.StructureKey);
 
         // Validate file size
         var maxFileSizeBytes = (long)_options.MaxUploadFileSizeMB * 1024 * 1024;
@@ -437,7 +500,7 @@ public partial class FileItemAppService : SufiApplicationService, IFileItemAppSe
     }
 
     [RemoteService(false)]
-    [Authorize(FileManagerPermissions.FileItems.Create)]
+    [Authorize]
     public async Task<ListResultDto<FileItemDto>> UploadMultipleAsync(UploadMultipleFileInput input)
     {
         var results = new List<FileItemDto>();
@@ -471,9 +534,7 @@ public partial class FileItemAppService : SufiApplicationService, IFileItemAppSe
         var fileItem = await _fileItemRepository.GetAsync(id);
         var dto = ObjectMapper.Map<FileItem, FileItemDto>(fileItem);
         var entry = await _structureCache.GetAsync(fileItem.StructureKey);
-        dto.StructureIsPublicAccess = entry?.IsPublicAccess ?? false;
-        dto.StructureBaseUrl = entry?.BaseUrl;
-        dto.StructureStorageProvider = entry?.ExtraProperties?.GetOrDefault(FileStructureStorageConstants.Provider) as string;
+        ApplyStructurePublicAccess(dto, entry);
         return dto;
     }
 
@@ -664,98 +725,32 @@ public partial class FileItemAppService : SufiApplicationService, IFileItemAppSe
     public async Task<string> GetDownloadUrlAsync(Guid id)
     {
         var fileItem = await _fileItemRepository.GetAsync(id);
-        if (_s3PublicBlobUrlProvider.TryGetPublicUrl(GetContainerName(fileItem.StructureKey), fileItem.BlobName, fileItem.TenantId, out var directUrl))
-            return directUrl;
-        var entry = await _structureCache.GetAsync(fileItem.StructureKey);
-        // Structure BaseUrl is for direct storage URLs (e.g. S3 bucket); API paths must use app base
-        var baseUrl = _options.BaseUrl ?? "/";
-        var path = $"{baseUrl.TrimEnd('/')}/api/file-manager/file-items/{id}/download";
-        var url = entry?.IsPublicAccess == true
-            ? path
-            : AppendAccessTokenIfConfigured(path, id);
-        if (CurrentTenant.IsAvailable)
-            url += (url.Contains('?') ? "&" : "?") + $"__tenant={CurrentTenant.Id:N}";
-        return url;
+        return await _blobAccessService.GetDownloadUrlAsync(fileItem);
     }
 
     [Authorize(FileManagerPermissions.FileItems.Default)]
     public async Task<string> GetThumbnailUrlAsync(Guid id)
     {
         var fileItem = await _fileItemRepository.GetAsync(id);
-        if (string.IsNullOrEmpty(fileItem.ThumbnailBlobName))
-            throw new UserFriendlyException("Thumbnail not available for this file item");
-        if (_s3PublicBlobUrlProvider.TryGetPublicUrl(GetContainerName(fileItem.StructureKey), fileItem.ThumbnailBlobName, fileItem.TenantId, out var directUrl))
-            return directUrl;
-        var entry = await _structureCache.GetAsync(fileItem.StructureKey);
-        // Structure BaseUrl is for direct storage URLs; API paths must use app base
-        var baseUrl = _options.BaseUrl ?? "/";
-        var path = $"{baseUrl.TrimEnd('/')}/api/file-manager/file-items/{id}/thumbnail";
-        var url = entry?.IsPublicAccess == true
-            ? path
-            : AppendAccessTokenIfConfigured(path, id);
-        if (CurrentTenant.IsAvailable)
-            url += (url.Contains('?') ? "&" : "?") + $"__tenant={CurrentTenant.Id:N}";
-        return url;
+        return await _blobAccessService.GetThumbnailUrlAsync(fileItem);
     }
 
     [Authorize(FileManagerPermissions.FileItems.Default)]
     public async Task<string> GetStreamUrlAsync(Guid id)
     {
         var fileItem = await _fileItemRepository.GetAsync(id);
-        if (_s3PublicBlobUrlProvider.TryGetPublicUrl(GetContainerName(fileItem.StructureKey), fileItem.BlobName, fileItem.TenantId, out var directUrl))
-            return directUrl;
-        var entry = await _structureCache.GetAsync(fileItem.StructureKey);
-        // Structure BaseUrl is for direct storage URLs; API paths must use app base
-        var baseUrl = _options.BaseUrl ?? "/";
-        var path = $"{baseUrl.TrimEnd('/')}/api/file-manager/file-items/{id}/stream";
-        var url = entry?.IsPublicAccess == true
-            ? path
-            : AppendAccessTokenIfConfigured(path, id);
-        if (CurrentTenant.IsAvailable)
-            url += (url.Contains('?') ? "&" : "?") + $"__tenant={CurrentTenant.Id:N}";
-        return url;
-    }
-
-
-    private string AppendAccessTokenIfConfigured(string path, Guid fileItemId)
-    {
-        if (!_fileAccessTokenService.TryGenerateToken(fileItemId, out var token))
-        {
-            return path;
-        }
-
-        return path + (path.Contains('?') ? "&" : "?") + "token=" + Uri.EscapeDataString(token);
+        return await _blobAccessService.GetStreamUrlAsync(fileItem);
     }
 
     [Authorize(FileManagerPermissions.FileItems.Default)]
     public async Task<string> GetTemporaryAccessUrlAsync(Guid id, int durationMinutes)
     {
         var fileItem = await _fileItemRepository.GetAsync(id);
-        var entry = await _structureCache.GetAsync(fileItem.StructureKey);
-        var providerStr = entry?.ExtraProperties?.GetOrDefault(FileStructureStorageConstants.Provider) as string;
-        var isS3 = string.Equals(providerStr, "S3Provider", StringComparison.OrdinalIgnoreCase);
-
-        if (isS3 && entry is { IsPublicAccess: false } && !string.IsNullOrWhiteSpace(entry.BaseUrl))
-        {
-            var validity = TimeSpan.FromMinutes(Math.Clamp(durationMinutes, 1, 10080));
-            var containerName = GetContainerName(fileItem.StructureKey);
-            var presignedUrl = await _s3PresignedUrlProvider.GetPresignedDownloadUrlAsync(
-                containerName, fileItem.BlobName, fileItem.TenantId, validity);
-            if (!string.IsNullOrEmpty(presignedUrl))
-            {
-                if (CurrentTenant.IsAvailable)
-                    presignedUrl += (presignedUrl.Contains('?') ? "&" : "?") + $"__tenant={CurrentTenant.Id:N}";
-                return presignedUrl;
-            }
-        }
-
-        return await GetDownloadUrlAsync(id);
+        return await _blobAccessService.GetTemporaryAccessUrlAsync(fileItem, durationMinutes);
     }
 
     private static string GetContainerName(string? structureKey) =>
-        string.IsNullOrEmpty(structureKey)
-            ? FileStructureStorageConstants.DefaultContainerName
-            : FileStructureStorageConstants.ContainerNamePrefix + structureKey;
+        FileItemBlobAccessService.GetContainerName(structureKey);
 
     [Authorize(FileManagerPermissions.FileItems.Update)]
     public async Task<FileItemDto> ConfirmAsync(Guid id)
@@ -997,194 +992,16 @@ public partial class FileItemAppService : SufiApplicationService, IFileItemAppSe
     }
 
     [AllowAnonymous]
-    public async Task<FileContentResultDto> GetDownloadContentAsync(Guid id, string? token)
-    {
-        var (metadata, isForbidden) = await ResolveAccessMetadataAsync(id, token);
-        if (isForbidden)
-            return new FileContentResultDto { IsForbidden = true };
-        if (metadata == null)
-            return new FileContentResultDto();
-
-        using (CurrentTenant.Change(metadata.TenantId))
-        {
-            var container = await _structureBlobContainerProvider.GetContainerAsync(metadata.StructureKey);
-            await using (var stream = await container.GetOrNullAsync(metadata.BlobName))
-            {
-                if (stream == null)
-                {
-                    _logger.LogWarning("Blob not found for download: FileId={FileId}, BlobName={BlobName}, StructureKey={StructureKey}, TenantId={TenantId}",
-                        id, metadata.BlobName, metadata.StructureKey, metadata.TenantId);
-                    return new FileContentResultDto();
-                }
-                using var ms = new MemoryStream();
-                await stream.CopyToAsync(ms);
-                var blob = ms.ToArray();
-                return new FileContentResultDto
-                {
-                    Content = new FileContentDto
-                    {
-                        Content = blob,
-                        MimeType = metadata.MimeType,
-                        FileName = metadata.OriginalName
-                    }
-                };
-            }
-        }
-    }
+    public Task<FileContentResultDto> GetDownloadContentAsync(Guid id, string? token) =>
+        _blobAccessService.GetDownloadContentAsync(id, token);
 
     [AllowAnonymous]
-    public async Task<StreamContentResultDto> GetStreamContentAsync(Guid id, string? token)
-    {
-        var (metadata, isForbidden) = await ResolveAccessMetadataAsync(id, token);
-        if (isForbidden)
-            return new StreamContentResultDto { IsForbidden = true };
-        if (metadata == null)
-            return new StreamContentResultDto();
-
-        Stream? stream;
-        using (CurrentTenant.Change(metadata.TenantId))
-        {
-            var container = await _structureBlobContainerProvider.GetContainerAsync(metadata.StructureKey);
-            stream = await container.GetOrNullAsync(metadata.BlobName);
-        }
-        if (stream == null)
-            return new StreamContentResultDto();
-
-        return new StreamContentResultDto
-        {
-            Content = new StreamContentDto
-            {
-                Stream = stream,
-                MimeType = metadata.MimeType
-            }
-        };
-    }
+    public Task<StreamContentResultDto> GetStreamContentAsync(Guid id, string? token) =>
+        _blobAccessService.GetStreamContentAsync(id, token);
 
     [AllowAnonymous]
-    public async Task<FileContentResultDto> GetThumbnailContentAsync(Guid id, string? token)
-    {
-        var (metadata, isForbidden) = await ResolveAccessMetadataAsync(id, token);
-        if (isForbidden)
-            return new FileContentResultDto { IsForbidden = true };
-        if (metadata == null)
-            return new FileContentResultDto();
-        if (string.IsNullOrEmpty(metadata.ThumbnailBlobName))
-            return new FileContentResultDto();
-
-        using (CurrentTenant.Change(metadata.TenantId))
-        {
-            var container = await _structureBlobContainerProvider.GetContainerAsync(metadata.StructureKey);
-            await using (var stream = await container.GetOrNullAsync(metadata.ThumbnailBlobName))
-            {
-                if (stream == null)
-                {
-                    _logger.LogWarning("Thumbnail blob not found: FileId={FileId}, ThumbnailBlobName={ThumbnailBlobName}, StructureKey={StructureKey}, TenantId={TenantId}",
-                        id, metadata.ThumbnailBlobName, metadata.StructureKey, metadata.TenantId);
-                    return new FileContentResultDto();
-                }
-                using var ms = new MemoryStream();
-                await stream.CopyToAsync(ms);
-                var blob = ms.ToArray();
-                return new FileContentResultDto
-                {
-                    Content = new FileContentDto
-                    {
-                        Content = blob,
-                        MimeType = "image/webp",
-                        FileName = "thumb.webp"
-                    }
-                };
-            }
-        }
-    }
-
-    /// <summary>
-    /// Resolves file metadata for download/stream/thumbnail: token → public access → authenticated.
-    /// Returns (null, true) when access is forbidden; (null, false) when not found; (metadata, false) when ok.
-    /// </summary>
-    private async Task<(FileStreamMetadataDto? metadata, bool isForbidden)> ResolveAccessMetadataAsync(Guid id, string? token)
-    {
-        if (!string.IsNullOrWhiteSpace(token))
-        {
-            var meta = await GetStreamMetadataByTokenAsync(token);
-            return (meta, false);
-        }
-
-        if (!CurrentUser.IsAuthenticated)
-        {
-            var publicMeta = await TryGetMetadataForPublicAccessAsync(id);
-            if (publicMeta == null)
-                return (null, true); // Forbid: anonymous access to non-public file
-            return (publicMeta, false);
-        }
-
-        var fileItem = await GetAsync(id);
-        return (new FileStreamMetadataDto
-        {
-            BlobName = fileItem.BlobName,
-            MimeType = fileItem.MimeType,
-            ThumbnailBlobName = fileItem.ThumbnailBlobName,
-            OriginalName = fileItem.OriginalName,
-            StructureKey = fileItem.StructureKey,
-            TenantId = fileItem.TenantId
-        }, false);
-    }
-
-    private async Task<FileStreamMetadataDto?> GetStreamMetadataByTokenAsync(string token)
-    {
-        if (!_fileAccessTokenService.TryValidateToken(token, out var fileId))
-        {
-            return null;
-        }
-
-        FileItem? fileItem;
-        using (DataFilter.Disable<IMultiTenant>())
-        {
-            fileItem = await _fileItemRepository.FindAsync(fileId);
-        }
-
-        if (fileItem == null)
-            return null;
-
-        return new FileStreamMetadataDto
-        {
-            BlobName = fileItem.BlobName,
-            MimeType = fileItem.MimeType,
-            ThumbnailBlobName = fileItem.ThumbnailBlobName,
-            OriginalName = fileItem.OriginalName,
-            StructureKey = fileItem.StructureKey,
-            TenantId = fileItem.TenantId
-        };
-    }
-
-    private async Task<FileStreamMetadataDto?> TryGetMetadataForPublicAccessAsync(Guid id)
-    {
-        FileItem? fileItem;
-        using (DataFilter.Disable<IMultiTenant>())
-        {
-            fileItem = await _fileItemRepository.FindAsync(id);
-        }
-
-        if (fileItem == null || string.IsNullOrEmpty(fileItem.StructureKey))
-        {
-            return null;
-        }
-
-        if (!await _structureCache.IsPublicAccessAsync(fileItem.StructureKey))
-        {
-            return null;
-        }
-
-        return new FileStreamMetadataDto
-        {
-            BlobName = fileItem.BlobName,
-            MimeType = fileItem.MimeType,
-            ThumbnailBlobName = fileItem.ThumbnailBlobName,
-            OriginalName = fileItem.OriginalName,
-            StructureKey = fileItem.StructureKey,
-            TenantId = fileItem.TenantId
-        };
-    }
+    public Task<FileContentResultDto> GetThumbnailContentAsync(Guid id, string? token) =>
+        _blobAccessService.GetThumbnailContentAsync(id, token);
 
     #region Private Methods
 
@@ -1418,10 +1235,44 @@ public partial class FileItemAppService : SufiApplicationService, IFileItemAppSe
         {
             if (!string.IsNullOrEmpty(dto.StructureKey) && allStructures.TryGetValue(dto.StructureKey, out var entry))
             {
-                dto.StructureIsPublicAccess = entry.IsPublicAccess;
-                dto.StructureBaseUrl = entry.BaseUrl;
-                var providerStr = entry.ExtraProperties?.GetOrDefault(FileStructureStorageConstants.Provider) as string;
-                dto.StructureStorageProvider = providerStr;
+                ApplyStructurePublicAccess(dto, entry);
+            }
+        }
+    }
+
+    /// <summary>
+    /// Fills StructureIsPublicAccess / StructureBaseUrl / StructureStorageProvider so UI can build
+    /// direct S3 object URLs (no API proxy) when the structure is public and storage is S3.
+    /// </summary>
+    private void ApplyStructurePublicAccess(FileItemDto dto, StructureCacheEntry? entry)
+    {
+        if (entry == null)
+        {
+            return;
+        }
+
+        dto.StructureIsPublicAccess = entry.IsPublicAccess;
+        dto.StructureBaseUrl = entry.BaseUrl;
+        dto.StructureStorageProvider = entry.ExtraProperties?.GetOrDefault(FileStructureStorageConstants.Provider) as string;
+
+        if (!entry.IsPublicAccess)
+        {
+            return;
+        }
+
+        var containerName = GetContainerName(dto.StructureKey);
+        if (_s3PublicBlobUrlProvider.TryGetPublicBaseUrl(containerName, out var publicBaseUrl)
+            && !string.IsNullOrWhiteSpace(publicBaseUrl))
+        {
+            if (string.IsNullOrWhiteSpace(dto.StructureBaseUrl))
+            {
+                dto.StructureBaseUrl = publicBaseUrl;
+            }
+
+            // Default storage settings may not store Provider on the structure — still mark as S3 for direct URLs.
+            if (string.IsNullOrWhiteSpace(dto.StructureStorageProvider))
+            {
+                dto.StructureStorageProvider = nameof(FileStructureStorageProvider.S3Provider);
             }
         }
     }

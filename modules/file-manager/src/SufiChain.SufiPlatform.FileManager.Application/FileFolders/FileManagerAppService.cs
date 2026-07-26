@@ -1,9 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.IO.Compression;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
+using SufiChain.SufiPlatform.FileManager;
 using SufiChain.SufiPlatform.FileManager.Features;
 using SufiChain.SufiPlatform.FileManager.FileItems;
 using SufiChain.SufiPlatform.FileManager.Permissions;
@@ -26,17 +28,22 @@ public class FileManagerAppService : SufiApplicationService, IFileManagerAppServ
     private readonly IFileFolderRepository _folderRepository;
     private readonly IFileItemRepository _fileItemRepository;
     private readonly IDistributedCache<ClipboardStateDto> _clipboardCache;
+    private readonly IDistributedCache<ZipDownloadCacheItem> _zipDownloadCache;
     private readonly IStructureBlobContainerProvider _structureBlobContainerProvider;
+
+    private static readonly TimeSpan ZipDownloadTtl = TimeSpan.FromMinutes(15);
 
     public FileManagerAppService(
         IFileFolderRepository folderRepository,
         IFileItemRepository fileItemRepository,
         IDistributedCache<ClipboardStateDto> clipboardCache,
+        IDistributedCache<ZipDownloadCacheItem> zipDownloadCache,
         IStructureBlobContainerProvider structureBlobContainerProvider)
     {
         _folderRepository = folderRepository;
         _fileItemRepository = fileItemRepository;
         _clipboardCache = clipboardCache;
+        _zipDownloadCache = zipDownloadCache;
         _structureBlobContainerProvider = structureBlobContainerProvider;
     }
 
@@ -381,20 +388,145 @@ public class FileManagerAppService : SufiApplicationService, IFileManagerAppServ
         return result;
     }
 
+    [Authorize(FileManagerPermissions.FileItems.Default)]
     public async Task<DownloadResultDto> DownloadAsZipAsync(DownloadInput input)
     {
-        // TODO: Implement ZIP download functionality
-        // This would require creating a ZIP file with the selected items
-        // and providing a download URL
+        var files = await ResolveFilesForDownloadAsync(input);
 
-        await Task.CompletedTask;
+        if (files.Count == 0)
+        {
+            throw new BusinessException(FileManagerErrorCodes.ZipDownloadNoFiles);
+        }
+
+        await using var zipStream = new MemoryStream();
+        var usedEntryNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+        using (var archive = new ZipArchive(zipStream, ZipArchiveMode.Create, leaveOpen: true))
+        {
+            foreach (var file in files)
+            {
+                var blobContainer = await _structureBlobContainerProvider.GetContainerAsync(file.StructureKey);
+                await using var blobStream = await blobContainer.GetOrNullAsync(file.BlobName);
+                if (blobStream == null)
+                {
+                    continue;
+                }
+
+                var entryName = GetUniqueZipEntryName(file.OriginalName, usedEntryNames);
+                var entry = archive.CreateEntry(entryName, CompressionLevel.Fastest);
+                await using var entryStream = entry.Open();
+                await blobStream.CopyToAsync(entryStream);
+            }
+        }
+
+        var zipBytes = zipStream.ToArray();
+        var token = GuidGenerator.Create().ToString("N");
+        var fileName = $"download-{Clock.Now:yyyyMMdd-HHmmss}.zip";
+
+        await _zipDownloadCache.SetAsync(
+            GetZipDownloadCacheKey(token),
+            new ZipDownloadCacheItem
+            {
+                Content = zipBytes,
+                FileName = fileName,
+                FileSize = zipBytes.LongLength,
+                FileCount = files.Count,
+                UserId = CurrentUser.Id
+            },
+            new DistributedCacheEntryOptions
+            {
+                AbsoluteExpirationRelativeToNow = ZipDownloadTtl
+            });
 
         return new DownloadResultDto
         {
-            Success = false,
-            FileCount = input.FileIds.Count + input.FolderIds.Count
+            Success = true,
+            DownloadUrl = $"/api/file-manager/operations/zip-downloads/{token}",
+            FileName = fileName,
+            FileSize = zipBytes.LongLength,
+            FileCount = files.Count
         };
     }
+
+    [Authorize(FileManagerPermissions.FileItems.Default)]
+    public async Task<ZipDownloadContentDto?> GetZipDownloadAsync(string token)
+    {
+        if (string.IsNullOrWhiteSpace(token))
+        {
+            return null;
+        }
+
+        var cacheItem = await _zipDownloadCache.GetAsync(GetZipDownloadCacheKey(token));
+        if (cacheItem == null)
+        {
+            return null;
+        }
+
+        if (cacheItem.UserId.HasValue && CurrentUser.Id.HasValue && cacheItem.UserId != CurrentUser.Id)
+        {
+            return null;
+        }
+
+        return new ZipDownloadContentDto
+        {
+            Content = cacheItem.Content,
+            FileName = cacheItem.FileName,
+            ContentType = "application/zip"
+        };
+    }
+
+    private async Task<List<FileItems.FileItem>> ResolveFilesForDownloadAsync(DownloadInput input)
+    {
+        var files = new Dictionary<Guid, FileItems.FileItem>();
+
+        foreach (var fileId in input.FileIds)
+        {
+            var file = await _fileItemRepository.FindAsync(fileId);
+            if (file != null)
+            {
+                files[file.Id] = file;
+            }
+        }
+
+        foreach (var folderId in input.FolderIds)
+        {
+            var descendants = await _folderRepository.GetDescendantsAsync(folderId);
+            var folderIds = descendants.Select(d => d.Id).ToList();
+
+            var query = await _fileItemRepository.GetQueryableAsync();
+            var folderFiles = await AsyncExecuter.ToListAsync(
+                query.Where(m => m.FolderId != null && folderIds.Contains(m.FolderId.Value)));
+
+            foreach (var file in folderFiles)
+            {
+                files[file.Id] = file;
+            }
+        }
+
+        return files.Values.ToList();
+    }
+
+    private static string GetUniqueZipEntryName(string originalName, ISet<string> usedEntryNames)
+    {
+        var entryName = string.IsNullOrWhiteSpace(originalName) ? "file" : Path.GetFileName(originalName);
+        if (usedEntryNames.Add(entryName))
+        {
+            return entryName;
+        }
+
+        var extension = Path.GetExtension(entryName);
+        var baseName = Path.GetFileNameWithoutExtension(entryName);
+        var index = 1;
+        string candidate;
+        do
+        {
+            candidate = $"{baseName} ({index++}){extension}";
+        } while (!usedEntryNames.Add(candidate));
+
+        return candidate;
+    }
+
+    private static string GetZipDownloadCacheKey(string token) => $"FileManager:ZipDownload:{token}";
 
     #endregion
 

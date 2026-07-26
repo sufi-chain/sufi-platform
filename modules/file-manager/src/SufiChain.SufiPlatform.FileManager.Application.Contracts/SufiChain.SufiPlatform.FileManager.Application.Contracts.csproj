@@ -14,6 +14,7 @@
   <ItemGroup>
     <ProjectReference Include="../../../../framework/SufiChain.SufiPlatform.Ddd.Application.Contracts/SufiChain.SufiPlatform.Ddd.Application.Contracts.csproj" />
     <ProjectReference Include="../../../../framework/SufiChain.SufiPlatform.Authorization/SufiChain.SufiPlatform.Authorization.csproj" />
+    <ProjectReference Include="..\..\..\..\framework\SufiChain.SufiPlatform.FileManager.Abstractions\SufiChain.SufiPlatform.FileManager.Abstractions.csproj" />
     <ProjectReference Include="..\SufiChain.SufiPlatform.FileManager.Domain.Shared\SufiChain.SufiPlatform.FileManager.Domain.Shared.csproj" />
   </ItemGroup>
 

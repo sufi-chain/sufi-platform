@@ -1,28 +1,33 @@
 @namespace SufiChain.SufiPlatform.FileManager.Blazor.Public.Components.Upload
 
 @inherits SufiChain.SufiPlatform.UI.Blazor.SufiComponentBase
+@implements IDisposable
 
 <div class="public-file-uploader @Class" style="@Style">
-    <div class="public-file-uploader__drop-zone @(_isDragging ? "is-dragging" : string.Empty)"
-         @ondragenter="HandleDragEnter"
-         @ondragleave="HandleDragLeave"
-         @ondragover:preventDefault
-         @ondrop="HandleDrop"
-         @ondrop:preventDefault>
-        <SbIcon Name="upload" Size="SbSize.Xl" Class="text-muted" />
-        <SbHeading Level="6">@Title</SbHeading>
-        <SbText Color="SbColor.Muted">@Description</SbText>
+    @if (ShowDropZone)
+    {
+        <div class="public-file-uploader__drop-zone @(_isDragging ? "is-dragging" : string.Empty)"
+             @ondragenter="HandleDragEnter"
+             @ondragleave="HandleDragLeave"
+             @ondragover:preventDefault
+             @ondrop="HandleDrop"
+             @ondrop:preventDefault>
+            <SbIcon Name="upload" Size="SbSize.Xl" Class="text-muted" />
+            <SbHeading Level="6">@Title</SbHeading>
+            <SbText Color="SbColor.Muted">@Description</SbText>
 
-        <label for="@_fileInputId" class="sb-button sb-button--solid sb-button--primary sb-button--md">
-            <SbIcon Name="folder" /> @BrowseButtonText
-        </label>
+            <label for="@_fileInputId" class="sb-button sb-button--solid sb-button--primary sb-button--md">
+                <SbIcon Name="folder" /> @BrowseButtonText
+            </label>
+        </div>
+    }
 
-        <InputFile id="@_fileInputId"
-                   class="d-none"
-                   OnChange="OnFilesSelectedAsync"
-                   multiple="@AllowMultiple"
-                   accept="@Accept" />
-    </div>
+    @* Native input — not Blazor InputFile — so bytes never travel over the circuit. *@
+    <input type="file"
+           id="@_fileInputId"
+           class="d-none"
+           multiple="@(AllowMultiple ? "multiple" : null)"
+           accept="@Accept" />
 
     @if (_errors.Any())
     {

@@ -13,6 +13,7 @@ using SufiChain.SufiPlatform.BlobStoring.S3Provider;
 using Volo.Abp.Modularity;
 using SufiChain.SufiPlatform.FileManager.BackgroundJobs;
 using SufiChain.SufiPlatform.FileManager.Caching;
+using SufiChain.SufiPlatform.FileManager.FileItems;
 using SufiChain.SufiPlatform.FileManager.Storage;
 using Volo.Abp;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -51,6 +52,7 @@ public class SufiFileManagerApplicationModule : AbpModule
         context.Services.AddMapperlyObjectMapper<SufiFileManagerApplicationModule>();
 
         context.Services.AddTransient<IStructureCache, StructureCacheService>();
+        context.Services.AddTransient<FileItemBlobAccessService>();
 
         context.Services.Replace(
             ServiceDescriptor.Transient<IBlobContainerConfigurationProvider, StructureBlobContainerConfigurationProvider>());
