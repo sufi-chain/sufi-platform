@@ -16,6 +16,11 @@ public static class ApplicationMenuItemExtensions
     public const string RequireAuthenticatedKey = "RequireAuthenticated";
 
     /// <summary>
+    /// Key for marking a menu item as a visual divider/separator (no navigation).
+    /// </summary>
+    public const string IsDividerKey = "IsDivider";
+
+    /// <summary>
     /// Marks this menu item as requiring specific permissions.
     /// The menu item will only be shown if the user has all specified permissions.
     /// </summary>
@@ -68,5 +73,24 @@ public static class ApplicationMenuItemExtensions
             return required;
         }
         return false;
+    }
+
+    /// <summary>
+    /// Marks this menu item as a visual divider (rendered as a separator, not a link).
+    /// </summary>
+    public static ApplicationMenuItem AsDivider(this ApplicationMenuItem item)
+    {
+        item.CustomData[IsDividerKey] = true;
+        item.Url = null;
+        item.IsDisabled = true;
+        return item;
+    }
+
+    /// <summary>
+    /// Returns true when this menu item should render as a divider/separator.
+    /// </summary>
+    public static bool IsDivider(this ApplicationMenuItem item)
+    {
+        return item.CustomData.TryGetValue(IsDividerKey, out var value) && value is true;
     }
 }

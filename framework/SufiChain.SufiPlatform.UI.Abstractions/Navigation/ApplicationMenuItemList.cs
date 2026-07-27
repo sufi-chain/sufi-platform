@@ -30,7 +30,7 @@ public class ApplicationMenuItemList : List<ApplicationMenuItem>
 
     private void RemoveEmptyItems()
     {
-        RemoveAll(item => item.IsLeaf && string.IsNullOrEmpty(item.Url));
+        RemoveAll(item => item.IsLeaf && string.IsNullOrEmpty(item.Url) && !item.IsDivider());
     }
 
     private void OrderItems()
