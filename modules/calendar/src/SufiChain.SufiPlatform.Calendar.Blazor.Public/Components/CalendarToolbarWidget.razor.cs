@@ -33,9 +33,7 @@ public partial class CalendarToolbarWidget : CalendarPublicComponentBase
 
     protected override async Task OnInitializedAsync()
     {
-        CanUseCalendar =
-            await IsGrantedAsync(CalendarPermissions.Calendars.Default) &&
-            await IsGrantedAsync(CalendarPermissions.Events.Default);
+        CanUseCalendar = await IsGrantedAsync(CalendarPermissions.Events.Default);
     }
 
     protected virtual async Task ToggleMenuAsync()

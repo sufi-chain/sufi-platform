@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Volo.Abp;
 using SufiChain.SufiPlatform.Application.Dtos;
 using SufiChain.SufiPlatform.Application.Services;
@@ -78,7 +79,7 @@ public class AvailabilityCalendarAppService : SufiApplicationService, IAvailabil
 
     public virtual async Task<CalendarDto> GetOrCreateMyPersonalCalendarAsync()
     {
-        await CheckPolicyAsync(CalendarPermissions.Calendars.Default);
+        await EnsureCanAccessPortalCalendarsAsync();
 
         var userId = CurrentUser.Id;
         if (!userId.HasValue)
@@ -93,8 +94,8 @@ public class AvailabilityCalendarAppService : SufiApplicationService, IAvailabil
             return ToDto(existing);
         }
 
-        await CheckPolicyAsync(CalendarPermissions.Calendars.Create);
-
+        // Portal bootstrap: create only the caller's own Personal calendar.
+        // Does not require Calendars.Create — arbitrary calendar creation stays on CreateAsync.
         var calendar = await _calendarManager.CreateAsync(
             GuidGenerator.Create(),
             CurrentTenant.Id,
@@ -111,7 +112,7 @@ public class AvailabilityCalendarAppService : SufiApplicationService, IAvailabil
 
     public virtual async Task<ListResultDto<CalendarLookupDto>> GetMyVisibleCalendarsAsync()
     {
-        await CheckPolicyAsync(CalendarPermissions.Calendars.Default);
+        await EnsureCanAccessPortalCalendarsAsync();
 
         var query = await _calendarRepository.GetQueryableAsync();
         query = ApplyVisibilityFilter(query);
@@ -222,7 +223,7 @@ public class AvailabilityCalendarAppService : SufiApplicationService, IAvailabil
 
     public virtual async Task<ListResultDto<CalendarExceptionDto>> GetEffectiveExceptionsAsync(Guid calendarId)
     {
-        await CheckPolicyAsync(CalendarPermissions.Calendars.Default);
+        await EnsureCanAccessPortalCalendarsAsync();
         await GetVisibleCalendarAsync(calendarId);
 
         var snapshot = await _snapshotProvider.GetAsync(calendarId);
@@ -480,6 +481,20 @@ public class AvailabilityCalendarAppService : SufiApplicationService, IAvailabil
                calendar.Kind == CalendarKind.Default ||
                !calendar.OwnerUserId.HasValue ||
                (CurrentUser.Id.HasValue && calendar.OwnerUserId == CurrentUser.Id.Value);
+    }
+
+    /// <summary>
+    /// Portal calendar load paths accept Events.Default (end-user) or Calendars.Default (admin).
+    /// Avoids requiring Calendars.* for portal users (which would also expose admin calendar management).
+    /// </summary>
+    protected virtual async Task EnsureCanAccessPortalCalendarsAsync()
+    {
+        if (await AuthorizationService.IsGrantedAsync(CalendarPermissions.Calendars.Default))
+        {
+            return;
+        }
+
+        await CheckPolicyAsync(CalendarPermissions.Events.Default);
     }
 
     protected virtual void CopyExtraProperties(IDictionary<string, object?> source, IDictionary<string, object?> target)
