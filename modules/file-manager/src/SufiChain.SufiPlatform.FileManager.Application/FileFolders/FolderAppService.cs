@@ -96,7 +96,7 @@ public class FolderAppService : SufiApplicationService, IFolderAppService
        foreach (var child in children)
        {
            var hasChildren = await _folderRepository.HasChildrenAsync(child.Id);
-           var fileCount = await GetFileCountInFolderAsync(child.Id);
+           var fileCount = await GetFileCountForFolderContentsAsync(child, child.StructureKey ?? ResolveStructureKey(child));
             var (canWrite, canDelete) = await EvaluateNodeAccessAsync(child, accessContext);
 
            result.Add(new FolderTreeNodeDto
@@ -164,11 +164,13 @@ public class FolderAppService : SufiApplicationService, IFolderAppService
                 result.Folders.Add(await BuildFolderTreeNodeAsync(subfolder));
             }
 
-            // Get files in folder
+            // Get files in folder. Structure roots also surface structure-scoped uploads
+            // that were stored with FolderId=null (e.g. Chat/Ticket integrations).
             var structureKey = input.StructureKey ?? ResolveStructureKey(folder);
-            var files = await GetFilesInFolderAsync(folder.Id, input.SkipCount, input.MaxResultCount, input.Sorting, input.Filter, structureKey);
+            var files = await GetFilesForFolderContentsAsync(
+                folder, structureKey, input.SkipCount, input.MaxResultCount, input.Sorting, input.Filter);
             result.Files = ObjectMapper.Map<List<FileItem>, List<FileItemDto>>(files);
-            result.TotalFileCount = await GetFileCountInFolderAsync(folder.Id, structureKey);
+            result.TotalFileCount = await GetFileCountForFolderContentsAsync(folder, structureKey);
         }
         else
         {
@@ -186,9 +188,10 @@ public class FolderAppService : SufiApplicationService, IFolderAppService
                 }
 
                 var structureKey = input.StructureKey ?? ResolveStructureKey(firstRoot);
-                var files = await GetFilesInFolderAsync(firstRoot.Id, input.SkipCount, input.MaxResultCount, input.Sorting, input.Filter, structureKey);
+                var files = await GetFilesForFolderContentsAsync(
+                    firstRoot, structureKey, input.SkipCount, input.MaxResultCount, input.Sorting, input.Filter);
                 result.Files = ObjectMapper.Map<List<FileItem>, List<FileItemDto>>(files);
-                result.TotalFileCount = await GetFileCountInFolderAsync(firstRoot.Id, structureKey);
+                result.TotalFileCount = await GetFileCountForFolderContentsAsync(firstRoot, structureKey);
                 result.TotalFolderCount = result.Folders.Count;
                 result.TotalSize = result.Files.Sum(f => f.Size);
                 return result;
@@ -853,7 +856,7 @@ public class FolderAppService : SufiApplicationService, IFolderAppService
    private async Task<FolderTreeNodeDto> BuildFolderTreeNodeAsync(FileFolder folder)
    {
        var hasChildren = await _folderRepository.HasChildrenAsync(folder.Id);
-       var fileCount = await GetFileCountInFolderAsync(folder.Id);
+       var fileCount = await GetFileCountForFolderContentsAsync(folder, folder.StructureKey ?? ResolveStructureKey(folder));
         var accessContext = await _accessContextProvider.GetContextAsync();
         var (canWrite, canDelete) = await EvaluateNodeAccessAsync(folder, accessContext);
 
@@ -906,6 +909,72 @@ public class FolderAppService : SufiApplicationService, IFolderAppService
         return breadcrumbs;
     }
 
+    private async Task<List<FileItem>> GetFilesForFolderContentsAsync(
+        FileFolder folder,
+        string? structureKey,
+        int skipCount = 0,
+        int maxResultCount = 50,
+        string? sorting = null,
+        string? filter = null)
+    {
+        if (folder.Type == FolderType.Structure && !string.IsNullOrEmpty(structureKey))
+        {
+            return await GetFilesInStructureRootAsync(
+                folder.Id, structureKey, skipCount, maxResultCount, sorting, filter);
+        }
+
+        return await GetFilesInFolderAsync(
+            folder.Id, skipCount, maxResultCount, sorting, filter, structureKey);
+    }
+
+    private async Task<int> GetFileCountForFolderContentsAsync(FileFolder folder, string? structureKey)
+    {
+        if (folder.Type == FolderType.Structure && !string.IsNullOrEmpty(structureKey))
+        {
+            return await GetFileCountInStructureRootAsync(folder.Id, structureKey);
+        }
+
+        return await GetFileCountInFolderAsync(folder.Id, structureKey);
+    }
+
+    /// <summary>
+    /// Files belonging to a structure root: either linked to the root folder id, or
+    /// structure-scoped uploads with FolderId unset (integration uploads).
+    /// </summary>
+    private async Task<List<FileItem>> GetFilesInStructureRootAsync(
+        Guid folderId,
+        string structureKey,
+        int skipCount = 0,
+        int maxResultCount = 50,
+        string? sorting = null,
+        string? filter = null)
+    {
+        var query = await _fileItemRepository.GetQueryableAsync();
+        query = query.Where(m =>
+            m.StructureKey == structureKey &&
+            (m.FolderId == folderId ||
+             (m.FolderId == null && m.TenantId == CurrentTenant.Id)));
+
+        if (!string.IsNullOrEmpty(filter))
+        {
+            query = query.Where(m => m.OriginalName.Contains(filter) || m.Name.Contains(filter));
+        }
+
+        query = ApplySorting(query, sorting);
+
+        return await AsyncExecuter.ToListAsync(query.Skip(skipCount).Take(maxResultCount));
+    }
+
+    private async Task<int> GetFileCountInStructureRootAsync(Guid folderId, string structureKey)
+    {
+        var query = await _fileItemRepository.GetQueryableAsync();
+        query = query.Where(m =>
+            m.StructureKey == structureKey &&
+            (m.FolderId == folderId ||
+             (m.FolderId == null && m.TenantId == CurrentTenant.Id)));
+        return await AsyncExecuter.CountAsync(query);
+    }
+
     private async Task<List<FileItem>> GetFilesInFolderAsync(
         Guid folderId,
         int skipCount = 0,
@@ -932,46 +1001,10 @@ public class FolderAppService : SufiApplicationService, IFolderAppService
         return await AsyncExecuter.ToListAsync(query.Skip(skipCount).Take(maxResultCount));
     }
 
-    private async Task<List<FileItem>> GetFilesWithoutFolderAsync(
-        int skipCount = 0,
-        int maxResultCount = 50,
-        string? sorting = null,
-        string? filter = null,
-        string? structureKey = null)
-    {
-        var query = await _fileItemRepository.GetQueryableAsync();
-        query = query.Where(m => m.FolderId == null && m.TenantId == CurrentTenant.Id);
-
-        if (!string.IsNullOrEmpty(filter))
-        {
-            query = query.Where(m => m.OriginalName.Contains(filter) || m.Name.Contains(filter));
-        }
-
-        if (!string.IsNullOrEmpty(structureKey))
-        {
-            query = query.Where(m => m.StructureKey == structureKey);
-        }
-
-        query = ApplySorting(query, sorting);
-
-        return await AsyncExecuter.ToListAsync(query.Skip(skipCount).Take(maxResultCount));
-    }
-
     private async Task<int> GetFileCountInFolderAsync(Guid folderId, string? structureKey = null)
     {
         var query = await _fileItemRepository.GetQueryableAsync();
         query = query.Where(m => m.FolderId == folderId);
-        if (!string.IsNullOrEmpty(structureKey))
-        {
-            query = query.Where(m => m.StructureKey == structureKey);
-        }
-        return await AsyncExecuter.CountAsync(query);
-    }
-
-    private async Task<int> GetFileCountWithoutFolderAsync(string? structureKey = null)
-    {
-        var query = await _fileItemRepository.GetQueryableAsync();
-        query = query.Where(m => m.FolderId == null && m.TenantId == CurrentTenant.Id);
         if (!string.IsNullOrEmpty(structureKey))
         {
             query = query.Where(m => m.StructureKey == structureKey);

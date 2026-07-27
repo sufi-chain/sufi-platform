@@ -1,5 +1,4 @@
 using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Rendering;
 using SufiChain.SufiPlatform.FileManager.Blazor.Public.Services;
 
 namespace SufiChain.SufiPlatform.FileManager.Blazor.Public.Components;
@@ -104,39 +103,12 @@ public partial class FileDownloadLink : ComponentBase
         }
     }
 
-    private RenderFragment RenderContent() => builder =>
-    {
-        if (ChildContent != null)
-        {
-            builder.AddContent(0, ChildContent);
-        }
-        else
-        {
-            var seq = 0;
-            if (ShowIcon)
-            {
-                builder.OpenElement(seq++, "span");
-                builder.AddAttribute(seq++, "class", "file-download-link__icon");
-                builder.AddContent(seq++, GetFileIcon());
-                builder.CloseElement();
-            }
-            builder.OpenElement(seq++, "span");
-            builder.AddAttribute(seq++, "class", "file-download-link__text");
-            builder.AddContent(seq++, Text ?? _fileInfo?.FileName ?? "Download");
-            builder.CloseElement();
-            if (ShowSize && _fileInfo != null)
-            {
-                builder.OpenElement(seq++, "span");
-                builder.AddAttribute(seq++, "class", "file-download-link__size");
-                builder.AddContent(seq++, $"({FormatFileSize(_fileInfo.Size)})");
-                builder.CloseElement();
-            }
-        }
-    };
-
     private string GetFileIcon()
     {
-        if (_fileInfo == null) return "file";
+        if (_fileInfo == null)
+        {
+            return "file";
+        }
 
         return _fileInfo.MimeType.ToLowerInvariant() switch
         {
@@ -159,15 +131,15 @@ public partial class FileDownloadLink : ComponentBase
     private static string FormatFileSize(long bytes)
     {
         string[] sizes = { "B", "KB", "MB", "GB", "TB" };
-        int order = 0;
+        var order = 0;
         double size = bytes;
-        
+
         while (size >= 1024 && order < sizes.Length - 1)
         {
             order++;
             size /= 1024;
         }
-        
+
         return $"{size:0.##} {sizes[order]}";
     }
 }

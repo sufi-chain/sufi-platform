@@ -3,51 +3,61 @@
     align-items: center;
     gap: 0.5rem;
     text-decoration: none;
-    transition: all 0.2s ease;
+    transition: background-color var(--sb-duration-fast, 0.15s) ease,
+                color var(--sb-duration-fast, 0.15s) ease,
+                border-color var(--sb-duration-fast, 0.15s) ease;
+    max-width: 100%;
+    min-width: 0;
 }
 
 .file-download-link--button {
-    padding: 0.625rem 1rem;
-    background-color: var(--sb-primary);
-    color: white;
+    padding: 0.625rem 0.875rem;
+    background-color: var(--sb-color-surface-variant, var(--sb-color-surface-muted, var(--sb-color-surface)));
+    color: var(--sb-color-text, var(--sb-on-surface, inherit));
+    border: 1px solid var(--sb-color-border-subtle, var(--sb-color-border, var(--sb-outline-variant)));
     border-radius: var(--sb-radius-md, 8px);
     font-weight: 500;
 }
 
 .file-download-link--button:hover {
-    background-color: var(--sb-primary-dark);
+    background-color: var(--sb-color-primary-soft, var(--sb-color-primary-alpha, color-mix(in srgb, var(--sb-color-primary) 12%, transparent)));
+    border-color: var(--sb-color-primary, var(--sb-primary));
+    color: var(--sb-color-text, inherit);
     text-decoration: none;
 }
 
 .file-download-link--link {
-    color: var(--sb-primary);
+    color: var(--sb-color-primary, var(--sb-primary));
 }
 
 .file-download-link--link:hover {
-    color: var(--sb-primary-dark);
+    color: var(--sb-color-primary-text, var(--sb-primary-dark, var(--sb-color-primary)));
     text-decoration: underline;
 }
 
 .file-download-link--loading,
 .file-download-link--error {
-    color: var(--sb-on-surface-variant);
+    color: var(--sb-color-muted, var(--sb-on-surface-variant));
 }
 
 .file-download-link__icon {
-    font-size: 1.25rem;
-    line-height: 1;
+    flex-shrink: 0;
+    color: var(--sb-color-primary, var(--sb-primary));
 }
 
 .file-download-link__text {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-    max-width: 200px;
+    min-width: 0;
+    max-width: 14rem;
 }
 
 .file-download-link__size {
-    font-size: 0.875rem;
-    opacity: 0.8;
+    flex-shrink: 0;
+    font-size: 0.8125rem;
+    opacity: 0.75;
+    white-space: nowrap;
 }
 
 .file-download-link__spinner {
@@ -62,5 +72,13 @@
 @keyframes file-download-spin {
     to {
         transform: rotate(360deg);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .file-download-link,
+    .file-download-link__spinner {
+        transition: none;
+        animation: none;
     }
 }

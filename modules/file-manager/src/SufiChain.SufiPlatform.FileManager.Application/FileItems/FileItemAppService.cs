@@ -152,6 +152,33 @@ public partial class FileItemAppService : SufiApplicationService, IFileItemAppSe
     }
 
     /// <summary>
+    /// After auth, attach structure-scoped uploads to the structure root folder so they
+    /// appear under Directory Map (Chat/Ticket integrations omit FolderId on purpose).
+    /// </summary>
+    private async Task<Guid?> ResolveStructureRootFolderIdAsync(string? structureKey)
+    {
+        if (string.IsNullOrWhiteSpace(structureKey))
+        {
+            return null;
+        }
+
+        var folder = await _folderRepository.FindByPathAsync($"/{structureKey.Trim()}", CurrentTenant.Id);
+        return folder?.Id;
+    }
+
+    private async Task<Guid?> ResolveFolderIdAfterAuthorizationAsync(
+        Guid? folderId,
+        string? structureKey)
+    {
+        if (folderId.HasValue)
+        {
+            return folderId;
+        }
+
+        return await ResolveStructureRootFolderIdAsync(structureKey);
+    }
+
+    /// <summary>
     /// Authorizes an upload based on its target:
     /// - Structure-scoped uploads (StructureKey set, no free folder) require only authentication;
     ///   the calling integration service (e.g. ticket/chat composer) is responsible for the
@@ -210,6 +237,7 @@ public partial class FileItemAppService : SufiApplicationService, IFileItemAppSe
     {
         var folderId = await ResolveFolderIdAsync(input.FolderId, input.FolderPath);
         await EnsureCanUploadAsync(folderId, input.StructureKey);
+        folderId = await ResolveFolderIdAfterAuthorizationAsync(folderId, input.StructureKey);
 
         // Validate against structure if provided
         FileStructure? structure = null;
@@ -350,6 +378,7 @@ public partial class FileItemAppService : SufiApplicationService, IFileItemAppSe
     {
         var folderId = await ResolveFolderIdAsync(input.FolderId, input.FolderPath);
         await EnsureCanUploadAsync(folderId, input.StructureKey);
+        folderId = await ResolveFolderIdAfterAuthorizationAsync(folderId, input.StructureKey);
 
         // Validate file size
         var maxFileSizeBytes = (long)_options.MaxUploadFileSizeMB * 1024 * 1024;

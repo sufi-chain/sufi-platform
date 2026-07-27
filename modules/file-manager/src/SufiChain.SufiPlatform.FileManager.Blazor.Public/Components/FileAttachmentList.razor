@@ -38,7 +38,9 @@
             @foreach (var file in _fileInfos)
             {
                 <li class="file-attachment-list__item">
-                    <span class="file-attachment-list__icon">@GetFileIcon(file.MimeType)</span>
+                    <SbIcon Name="@GetFileIcon(file.MimeType)"
+                            Size="SbSize.Md"
+                            Class="file-attachment-list__icon" />
                     
                     <div class="file-attachment-list__details">
                         <a href="@file.DownloadUrl" 
@@ -62,8 +64,9 @@
                            download="@file.FileName"
                            target="_blank"
                            rel="noopener noreferrer"
-                           title="Download">
-                            <span>Download</span>
+                           title="Download"
+                           aria-label="Download">
+                            <SbIcon Name="download" Size="SbSize.Sm" />
                         </a>
                     }
                 </li>

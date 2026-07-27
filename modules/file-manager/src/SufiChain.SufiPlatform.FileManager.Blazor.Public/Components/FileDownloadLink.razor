@@ -1,4 +1,6 @@
 @namespace SufiChain.SufiPlatform.FileManager.Blazor.Public.Components
+@using SufiChain.SufiBlazor.Components.Common
+
 @if (_isLoading)
 {
     <span class="file-download-link file-download-link--loading @Class">
@@ -28,24 +30,28 @@ else if (_hasError || _fileInfo == null)
 }
 else
 {
-    @if (AsButton)
-    {
-        <a href="@_fileInfo.DownloadUrl" 
-           class="file-download-link file-download-link--button @Class"
-           download="@_fileInfo.FileName"
-           target="_blank"
-           rel="noopener noreferrer">
-            @RenderContent()
-        </a>
-    }
-    else
-    {
-        <a href="@_fileInfo.DownloadUrl" 
-           class="file-download-link file-download-link--link @Class"
-           download="@_fileInfo.FileName"
-           target="_blank"
-           rel="noopener noreferrer">
-            @RenderContent()
-        </a>
-    }
+    <a href="@_fileInfo.DownloadUrl"
+       class="file-download-link @(AsButton ? "file-download-link--button" : "file-download-link--link") @Class"
+       download="@_fileInfo.FileName"
+       target="_blank"
+       rel="noopener noreferrer">
+        @if (ChildContent != null)
+        {
+            @ChildContent
+        }
+        else
+        {
+            @if (ShowIcon)
+            {
+                <SbIcon Name="@GetFileIcon()"
+                        Size="SbSize.Sm"
+                        Class="file-download-link__icon" />
+            }
+            <span class="file-download-link__text">@(Text ?? _fileInfo.FileName)</span>
+            @if (ShowSize)
+            {
+                <span class="file-download-link__size">(@FormatFileSize(_fileInfo.Size))</span>
+            }
+        }
+    </a>
 }

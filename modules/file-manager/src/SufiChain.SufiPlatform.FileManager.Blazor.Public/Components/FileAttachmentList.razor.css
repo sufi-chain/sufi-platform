@@ -51,9 +51,8 @@
 }
 
 .file-attachment-list__icon {
-    font-size: 1.5rem;
-    line-height: 1;
     flex-shrink: 0;
+    color: var(--sb-color-primary, var(--sb-primary));
 }
 
 .file-attachment-list__details {
@@ -115,10 +114,6 @@
 /* Compact mode */
 .file-attachment-list--compact .file-attachment-list__item {
     padding: 0.5rem 0.75rem;
-}
-
-.file-attachment-list--compact .file-attachment-list__icon {
-    font-size: 1.25rem;
 }
 
 .file-attachment-list--compact .file-attachment-list__details {
