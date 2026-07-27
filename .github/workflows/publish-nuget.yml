@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
     inputs:
       package_version:
-        description: SemVer package version (required for manual runs). Example: 1.2.3 or 1.2.3-beta.1
+        description: "SemVer package version (required for manual runs). Example: 1.2.3 or 1.2.3-beta.1"
         type: string
         required: true
 
