@@ -106,6 +106,7 @@
     "TextTemplate:Sufi.Account.TwoFactorCode.Voice": "رمز صوتي للمصادقة الثنائية",
     "TextTemplate:Sufi.Account.TwoFactorCode.Voice:Description": "رمز مكالمة صوتية يستخدم كعامل مصادقة ثانٍ أثناء تسجيل الدخول إلى الحساب.",
     "InvalidLinkUserToken": "رمز ربط الحساب غير صالح أو منتهي الصلاحية.",
+    "Menu:Dashboard": "لوحة التحكم",
     "Menu:LinkedAccounts": "الحسابات المرتبطة",
     "LinkedAccounts": "الحسابات المرتبطة",
     "LinkedAccountsEmpty": "لا توجد حسابات مرتبطة بعد.",

@@ -1,14 +1,11 @@
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.Localization;
 using SufiChain.SufiPlatform.Account.Localization;
 using SufiChain.SufiPlatform.Identity.Localization;
 
-namespace SufiChain.SufiPlatform.Account.Blazor.Pages;
+namespace SufiChain.SufiPlatform.Account.Blazor.Components.Profile;
 
-[Authorize]
-public partial class ManageTwoFactor
+public partial class TwoFactorSettings
 {
     [Inject]
     protected IAccountTwoFactorAppService TwoFactorAppService { get; set; } = default!;
@@ -22,7 +19,10 @@ public partial class ManageTwoFactor
     [Inject]
     protected NavigationManager Navigation { get; set; } = default!;
 
-    [SupplyParameterFromQuery]
+    /// <summary>
+    /// Optional return URL after post-login two-factor setup.
+    /// </summary>
+    [Parameter]
     public string? ReturnUrl { get; set; }
 
     protected TwoFactorInfoDto? Info { get; set; }
@@ -187,6 +187,6 @@ public partial class ManageTwoFactor
             return;
         }
 
-        Navigation.NavigateTo("/", forceLoad: true);
+        Navigation.NavigateTo("/panel/dashboard", forceLoad: true);
     }
 }

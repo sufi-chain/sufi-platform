@@ -419,11 +419,13 @@ public class AccountTwoFactorAppService : SufiApplicationService, IAccountTwoFac
 
     protected virtual string BuildManageTwoFactorUrl(string? returnUrl)
     {
+        const string baseUrl = "/panel/portal/profile?tab=two-factor";
+
         if (string.IsNullOrWhiteSpace(returnUrl))
         {
-            return "/account/manage/two-factor";
+            return baseUrl;
         }
 
-        return $"/account/manage/two-factor?returnUrl={Uri.EscapeDataString(returnUrl)}";
+        return $"{baseUrl}&returnUrl={Uri.EscapeDataString(returnUrl)}";
     }
 }
