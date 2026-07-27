@@ -124,9 +124,22 @@ public class DistributedEventNotificationPublisher : INotificationPublisher, ITr
             Severity = (InboxNotificationSeverity)envelope.Severity,
             Category = envelope.Category,
             Source = envelope.Source,
-            Url = envelope.Url
-
+            Url = envelope.Url,
+            Data = ExtractStringData(envelope.TemplateData)
         });
+    }
+
+    protected virtual Dictionary<string, string> ExtractStringData(Dictionary<string, object>? data)
+    {
+        if (data == null || data.Count == 0)
+        {
+            return new Dictionary<string, string>();
+        }
+
+        return data.ToDictionary(
+            kvp => kvp.Key,
+            kvp => kvp.Value?.ToString() ?? string.Empty,
+            StringComparer.OrdinalIgnoreCase);
     }
 
     protected virtual async Task PublishEmailAsync(
