@@ -4,75 +4,106 @@
 <SbDialog @bind-Open="_isOpen" OnCloseButtonClick="Hide" Size="SbDialogSize.Lg" Title="@($"{L["Permissions"]} - {_entityDisplayName}")" Class="permissions-dialog">
 	<ChildContent>
 		<div class="permission-modal__body">
-			@* Search and Select All Row *@
-			<SbStack Direction="SbStackDirection.Column" DirectionMd="SbStackDirection.Row" Gap="3" Align="SbAlign.Center" Class="permission-modal__search">
+			<div class="permission-modal__toolbar">
 				<SbTextField @bind-Value="SearchText"
 							 Placeholder="@L["SearchPermissions"]"
 							 Clearable="true"
-							 Style="flex: 1;">
+							 Class="permission-modal__search-field">
 					<StartAdornment><SbIcon Name="search" /></StartAdornment>
 				</SbTextField>
-				<SbCheckbox Value="@GrantAll"
-							ValueChanged="OnGrantAllChanged"
-							Disabled="@_selectAllDisabled"
-							Label="@L["SelectAllInAllTabs"]" />
-			</SbStack>
 
-			@* Permission Groups - Vertical Layout *@
+				<div class="permission-modal__summary">
+					<span class="permission-modal__summary-count" aria-live="polite">
+						@L["GrantedPermissionCount", GetTotalGrantedCount(), GetTotalPermissionCount()]
+					</span>
+					<SbCheckbox Value="@GrantAll"
+								Indeterminate="@GrantAny"
+								ValueChanged="OnGrantAllChanged"
+								Disabled="@_selectAllDisabled"
+								Label="@L["SelectAllInAllTabs"]" />
+				</div>
+			</div>
+
 			@if (IsOperationLoading(LoadingKeys.LoadPermissions))
 			{
-				<div class="p-5 text-center">
+				<div class="permission-modal__loading">
 					<SbProgress Type="SbProgressType.Circular" />
-					<p class="mt-3 text-muted">@L["LoadingPermissions"]</p>
+					<p class="permission-modal__loading-text">@L["LoadingPermissions"]</p>
 				</div>
 			}
 			else if (_groups.Any())
 			{
-				<div class="permission-modal__panes border rounded">
-					<SbTabs Vertical="true" Class="permission-modal__tabs" @bind-ActiveTab="_selectedTabId">
-						@foreach (var group in _groups)
+				<div class="permission-modal__panes">
+					<nav class="permission-modal__nav" aria-label="@L["Permissions"]">
+						@foreach (var root in _navRoots)
 						{
-							var tabId = GetNormalizedGroupName(group.Name);
-							var grantedCount = GetGrantedCount(group);
-
-							<SbTab Id="@tabId" Label="@group.DisplayName">
-								<Badge>
-									<span class="group-count">(@grantedCount)</span>
-								</Badge>
-								<ChildContent>
-									<SbStack Gap="2">
-										@* Select All in This Group *@
-										<SbCheckbox Value="@(group.Permissions.All(x => x.IsGranted))"
-													ValueChanged="@(v => OnGroupGrantAllChanged(v, group))"
-													Disabled="@(IsPermissionGroupDisabled(group))"
-													Label="@L["SelectAllInThisTab"]" />
-
-										<hr class="my-2" />
-
-										@* Individual Permissions *@
-										@foreach (var permission in group.Permissions)
-										{
-											var depth = GetPermissionDepth(permission.Name);
-											var marginStart = depth * 24;
-											var isDisabled = IsPermissionDisabled(permission);
-
-											<div style="margin-inline-start: @(marginStart)px;">
-												<SbCheckbox Value="@permission.IsGranted"
-															ValueChanged="@(v => OnPermissionChanged(v, group, permission))"
-															Disabled="@isDisabled"
-															Label="@GetPermissionDisplayName(permission)" />
-											</div>
-										}
-									</SbStack>
-								</ChildContent>
-							</SbTab>
+							@RenderNavNode(root, depth: 0)
 						}
-					</SbTabs>
+					</nav>
+
+					<div class="permission-modal__content" role="tabpanel">
+						@if (SelectedGroup is { } group)
+						{
+							var grantedCount = GetGrantedCount(group);
+							var totalCount = group.Permissions.Count;
+
+							<div class="permission-panel">
+								<div class="permission-panel__header">
+									<div class="permission-panel__title-block">
+										<span class="permission-panel__title">@group.DisplayName</span>
+										@if (TryGetParentDisplayName(group, out var parentDisplayName))
+										{
+											<span class="permission-panel__breadcrumb">@parentDisplayName</span>
+										}
+									</div>
+									<SbCheckbox Value="@IsGroupFullyGranted(group)"
+												Indeterminate="@IsGroupPartiallyGranted(group)"
+												ValueChanged="@(v => OnGroupGrantAllChanged(v, group))"
+												Disabled="@(IsPermissionGroupDisabled(group))"
+												Label="@L["SelectAllInThisTab"]" />
+									<span class="permission-panel__meta">
+										@L["GrantedPermissionCount", grantedCount, totalCount]
+									</span>
+								</div>
+
+								<div class="permission-tree" role="group" aria-label="@group.DisplayName">
+									@foreach (var permission in GetVisiblePermissions(group))
+									{
+										var depth = GetPermissionDepth(permission.Name);
+										var isDisabled = IsPermissionDisabled(permission);
+										var isMatch = IsPermissionSearchMatch(permission);
+										var isParent = HasChildPermissions(group, permission);
+										var itemClass = GetPermissionItemClass(depth, isParent, isMatch, permission.IsGranted, isDisabled);
+
+										<div class="@itemClass" style="--permission-depth: @depth">
+											<SbCheckbox Value="@permission.IsGranted"
+														ValueChanged="@(v => OnPermissionChanged(v, group, permission))"
+														Disabled="@isDisabled"
+														Label="@permission.DisplayName" />
+											@if (isDisabled)
+											{
+												<span class="permission-item__inherited"
+													  title="@GetInheritedProvidersLabel(permission)">
+													@GetInheritedProvidersLabel(permission)
+												</span>
+											}
+										</div>
+									}
+								</div>
+							</div>
+						}
+					</div>
 				</div>
+			}
+			else if (!string.IsNullOrWhiteSpace(_searchText))
+			{
+				<SbAlert Severity="SbAlertSeverity.Info" Class="permission-modal__empty">
+					@L["NoPermissionsMatchSearch", _searchText]
+				</SbAlert>
 			}
 			else
 			{
-				<SbAlert Severity="SbAlertSeverity.Info">
+				<SbAlert Severity="SbAlertSeverity.Info" Class="permission-modal__empty">
 					@L["NoPermissionsFound"]
 				</SbAlert>
 			}
@@ -87,3 +118,54 @@
 		</SbStack>
 	</Footer>
 </SbDialog>
+
+@code {
+	private RenderFragment RenderNavNode(PermissionGroupNavNode node, int depth) => __builder =>
+	{
+		var group = node.Group;
+		var tabId = GetNormalizedGroupName(group.Name);
+		var isActive = _selectedTabId == tabId;
+		var (grantedCount, totalCount) = GetSubtreeCounts(node);
+		var hasGrants = grantedCount > 0;
+		var hasChildren = node.Children.Count > 0;
+		var isSectionOnly = node.IsSectionOnly;
+
+		<div class="permission-nav__branch @(hasChildren ? "permission-nav__branch--parent" : null)">
+			@if (isSectionOnly)
+			{
+				<div class="permission-nav__section" style="--nav-depth: @depth">
+					<span class="permission-nav__label">@group.DisplayName</span>
+					<span class="permission-nav__count @(hasGrants ? "permission-nav__count--active" : null)"
+						  title="@L["GrantedPermissionCount", grantedCount, totalCount]">
+						@grantedCount<span class="permission-nav__count-sep">/</span>@totalCount
+					</span>
+				</div>
+			}
+			else
+			{
+				<button type="button"
+						role="tab"
+						class="permission-nav__item @(isActive ? "permission-nav__item--active" : null) @(hasChildren ? "permission-nav__item--parent" : null) @(depth > 0 ? "permission-nav__item--child" : null)"
+						style="--nav-depth: @depth"
+						aria-selected="@isActive"
+						@onclick="() => SelectGroup(group)">
+					<span class="permission-nav__label">@group.DisplayName</span>
+					<span class="permission-nav__count @(hasGrants ? "permission-nav__count--active" : null)"
+						  title="@L["GrantedPermissionCount", grantedCount, totalCount]">
+						@grantedCount<span class="permission-nav__count-sep">/</span>@totalCount
+					</span>
+				</button>
+			}
+
+			@if (hasChildren)
+			{
+				<div class="permission-nav__children" role="group" aria-label="@group.DisplayName">
+					@foreach (var child in node.Children)
+					{
+						@RenderNavNode(child, depth + 1)
+					}
+				</div>
+			}
+		</div>
+	};
+}
