@@ -27,8 +27,15 @@
 
 
 
-  <ItemGroup>
+  <ItemGroup Condition="'$(UseLocalDevelopmentReferences)' == 'true' And Exists('..\..\..\independent-projects\sufi-blazor\src\SufiChain.SufiBlazor\SufiChain.SufiBlazor.csproj')">
     <ProjectReference Include="..\..\..\independent-projects\sufi-blazor\src\SufiChain.SufiBlazor\SufiChain.SufiBlazor.csproj" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(UseLocalDevelopmentReferences)' != 'true' Or !Exists('..\..\..\independent-projects\sufi-blazor\src\SufiChain.SufiBlazor\SufiChain.SufiBlazor.csproj')">
+    <PackageReference Include="SufiChain.SufiBlazor" Version="$(SufiBlazorVersion)" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\SufiChain.SufiPlatform.Authorization\SufiChain.SufiPlatform.Authorization.csproj" />
     <ProjectReference Include="..\SufiChain.SufiPlatform.AspNetCore.Authentication.Abstractions\SufiChain.SufiPlatform.AspNetCore.Authentication.Abstractions.csproj" />
     <ProjectReference Include="..\SufiChain.SufiPlatform.UI.Abstractions\SufiChain.SufiPlatform.UI.Abstractions.csproj" />

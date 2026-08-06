@@ -2,15 +2,15 @@
 set -euo pipefail
 
 TARGET_DIR="${1:-.}"
-REPOSITORY="${REPOSITORY:-sufi-chain/sufi-abp}"
+REPOSITORY="${REPOSITORY:-sufi-chain/sufi-platform}"
 REF_NAME="${REF_NAME:-}"
-GIT_HOST="${GIT_HOST:-git.sabp.ir}"
-SDK_IMAGE="${SDK_IMAGE:-${GIT_CLONE_IMAGE:-reg.sabp.ir/sufi-chain/dotnet-sdk-build:10.0.202}}"
+GIT_SERVER_URL="${GIT_SERVER_URL:-https://github.com}"
+SDK_IMAGE="${SDK_IMAGE:-${GIT_CLONE_IMAGE:-mcr.microsoft.com/dotnet/sdk:10.0}}"
 
 script_dir="$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)"
 workspace="$("$script_dir/resolve-workspace.sh")"
 
-CLONE_URL="https://${GIT_HOST}/${REPOSITORY}.git"
+CLONE_URL="${GIT_SERVER_URL%/}/${REPOSITORY}.git"
 if [ -n "${GITEATOKEN:-}" ]; then
   CLONE_URL="$(printf '%s' "$CLONE_URL" | sed "s#^https://#https://x-access-token:${GITEATOKEN}@#")"
 fi

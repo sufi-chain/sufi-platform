@@ -123,6 +123,14 @@
 									 Label="@L["OutputCostPer1MTokens"]"
 									 Placeholder="@L["InheritWorkspace"]" />
 					</SbGrid>
+
+					@if (ShowsEmbeddingDimensions)
+					{
+						<SbTextField @bind-Value="_dimensionsText"
+									 Label="@L["EmbeddingDimensions"]"
+									 Placeholder="@EmbeddingDimensionsPlaceholder"
+									 HelperText="@L["EmbeddingDimensionsHelperText"]" />
+					}
 				</SbStack>
 			</SbTab>
 		</SbTabs>

@@ -312,6 +312,9 @@
     "ServerKeyIsRequired": "The stable server key is required.",
     "AvailableTenantTools": "Tenant tools",
     "SelectToolsForTestRequest": "Select the exact tools to include in this test request. No tools are sent by default.",
-    "NoToolsAvailable": "No tenant tools are available."
+    "NoToolsAvailable": "No tenant tools are available.",
+    "EmbeddingDimensions": "Embedding dimensions",
+    "EmbeddingDimensionsHelperText": "Leave empty to use the model default (e.g. 3072 for text-embedding-3-large, 1536 for text-embedding-3-small).",
+    "InvalidEmbeddingDimensions": "Embedding dimensions must be a positive whole number or left empty."
   }
 }

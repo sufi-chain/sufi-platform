@@ -2,6 +2,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
 using Volo.Abp;
+using Volo.Abp.Data;
 using Volo.Abp.Domain;
 using Volo.Abp.Modularity;
 using SufiChain.SufiPlatform.SufiAI;
@@ -46,6 +47,14 @@ public class SufiAIDomainModule : AbpModule
 
     public override async Task OnApplicationInitializationAsync(ApplicationInitializationContext context)
     {
+        // The DbMigrator runs module initialization before the database exists, so warming
+        // the catalog here would query a non-existent DB. Skip it in the migration
+        // environment; the catalog rebuilds lazily on first runtime read.
+        if (context.ServiceProvider.IsDataMigrationEnvironment())
+        {
+            return;
+        }
+
         var logger = context.ServiceProvider
             .GetRequiredService<ILoggerFactory>()
             .CreateLogger<SufiAIDomainModule>();

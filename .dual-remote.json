@@ -1,12 +1,12 @@
 {
   "version": 1,
   "defaultBranch": "main",
-  "syncMode": "gitea-to-github",
+  "syncMode": "two-way",
   "giteaRemoteName": "origin",
   "githubRemoteName": "github",
-  "giteaUrl": "https://git.sabp.ir/sufi-chain/sufi-abp.git",
+  "giteaUrl": "https://github.com/sufi-chain/sufi-platform.git",
   "githubUrl": "https://github.com/sufi-chain/sufi-platform.git",
-  "githubReadOnly": true,
+  "githubReadOnly": false,
   "pushDefault": "ask",
-  "notes": "Primary development on Gitea; GitHub is a read-only mirror for now."
+  "notes": "GitHub is the canonical remote."
 }

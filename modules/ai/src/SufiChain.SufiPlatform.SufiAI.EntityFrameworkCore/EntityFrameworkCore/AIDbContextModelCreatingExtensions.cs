@@ -63,6 +63,7 @@ public static class AIDbContextModelCreatingExtensions
             b.Property(x => x.OpenAIApiMode);
             b.Property(x => x.InputCostPer1MTokens).HasPrecision(18, 8);
             b.Property(x => x.OutputCostPer1MTokens).HasPrecision(18, 8);
+            b.Property(x => x.Dimensions);
 
             b.HasIndex(x => new { x.WorkspaceId, x.CapabilityType, x.Priority });
             b.HasIndex(x => x.IsEnabled);

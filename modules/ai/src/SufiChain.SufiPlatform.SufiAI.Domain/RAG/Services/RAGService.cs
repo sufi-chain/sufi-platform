@@ -371,7 +371,7 @@ public class RAGService : DomainService, IRAGService
         Workspace workspace,
         CancellationToken cancellationToken)
     {
-        await _embedderResolver.ResolveAsync(workspace, cancellationToken);
+        var embedderConfiguration = await _embedderResolver.ResolveAsync(workspace, cancellationToken);
 
         var vectorStoreConfig = ResolvePlatformVectorStoreConfiguration(workspace.Name);
         if (string.IsNullOrWhiteSpace(vectorStoreConfig.CollectionName))
@@ -393,7 +393,7 @@ public class RAGService : DomainService, IRAGService
             CollectionName = collectionName,
             ConnectionString = vectorStoreConfig.ConnectionString,
             ApiKey = vectorStoreConfig.ApiKey,
-            Dimensions = vectorStoreConfig.Dimensions,
+            Dimensions = embedderConfiguration.Dimensions,
             TenantId = CurrentTenant.Id,
             TenantKey = tenantKey,
             Schema = schema,
@@ -441,8 +441,7 @@ public class RAGService : DomainService, IRAGService
             Type = VectorStoreType.Qdrant,
             ConnectionString = connectionString,
             ApiKey = _configuration["VectorStore:Qdrant:ApiKey"],
-            CollectionName = _configuration["VectorStore:Qdrant:CollectionName"] ?? "ai_documents",
-            Dimensions = ParseDimension(_configuration["VectorStore:Qdrant:Dimensions"])
+            CollectionName = _configuration["VectorStore:Qdrant:CollectionName"] ?? "ai_documents"
         };
     }
 
@@ -459,16 +458,10 @@ public class RAGService : DomainService, IRAGService
             Type = VectorStoreType.Pgvector,
             ConnectionString = connectionString,
             CollectionName = _configuration["VectorStore:Pgvector:CollectionName"] ?? "ai_documents",
-            Dimensions = ParseDimension(_configuration["VectorStore:Pgvector:Dimensions"]),
             Schema = _configuration["VectorStore:Pgvector:Schema"] ?? "rag",
             TableName = _configuration["VectorStore:Pgvector:TableName"] ?? "document_chunks",
             ProviderName = _configuration["VectorStore:Pgvector:ProviderName"] ?? "Npgsql"
         };
-    }
-
-    private static int ParseDimension(string? value)
-    {
-        return int.TryParse(value, out var dimensions) && dimensions > 0 ? dimensions : 1536;
     }
 
     private async Task EnsureRagAvailableAsync(CancellationToken cancellationToken)

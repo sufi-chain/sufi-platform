@@ -105,6 +105,9 @@ public class TemplateProjectBuilder
         
         // Step 9: Configure modules (keep default platform modules, remove unselected demos)
         pipeline.AddStep(new AddModuleStep());
+
+        // Step 9.5: Add selected published feature-pack packages and module dependencies
+        pipeline.AddStep(new InstallPublishedModulesStep());
         
         // Step 10: Remove unused projects (after host and module configuration)
         pipeline.AddStep(new RemoveProjectStep());
@@ -138,16 +141,14 @@ public class TemplateProjectBuilder
         // Step 17: Create .gitignore
         pipeline.AddStep(new CreateGitIgnoreStep());
         
-        // Step 18: Create output directory and write files
+        // Step 18: Create output directory and write files.
+        // Directory.Build.props and versions.props come from the template unchanged.
         pipeline.AddStep(new CreateOutputStep());
-        
-        // Step 19: Generate Directory.Build.props with version info
-        pipeline.AddStep(new GenerateDirectoryBuildPropsStep());
-        
-        // Step 20: Generate initial EF Core migration (interactive prompt, runs after files are written)
+
+        // Step 19: Generate initial EF Core migration (interactive prompt, runs after files are written)
         pipeline.AddStep(new GenerateInitialMigrationStep());
         
-        // Step 21: Run DbMigrator to seed data (interactive prompt, runs after migration)
+        // Step 20: Run DbMigrator to seed data (interactive prompt, runs after migration)
         pipeline.AddStep(new RunDbMigratorStep());
         
         return pipeline;

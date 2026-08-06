@@ -12,6 +12,7 @@
   <!-- Sufi Platform Package Versions -->
   <PropertyGroup>
     <SufiVersion>1.0.0-alpha.6.3</SufiVersion>
+    <SufiProVersion>$(SufiVersion)</SufiProVersion>
     <SufiThemeVersion>1.0.0-rc.1.1</SufiThemeVersion>
     <SufiBlazorVersion>1.0.0-rc.1.1</SufiBlazorVersion>
   </PropertyGroup>

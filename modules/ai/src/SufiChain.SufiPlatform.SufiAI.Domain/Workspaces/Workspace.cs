@@ -104,7 +104,8 @@ public class Workspace : FullAuditedAggregateRoot<Guid>, IMultiTenant
         int priority = 0,
         OpenAIApiMode? openAIApiMode = null,
         decimal? inputCostPer1MTokens = null,
-        decimal? outputCostPer1MTokens = null
+        decimal? outputCostPer1MTokens = null,
+        int? dimensions = null
     )
     {
         var config = new AIModelConfiguration(
@@ -122,7 +123,8 @@ public class Workspace : FullAuditedAggregateRoot<Guid>, IMultiTenant
             priority,
             openAIApiMode,
             inputCostPer1MTokens,
-            outputCostPer1MTokens);
+            outputCostPer1MTokens,
+            dimensions);
         
         _modelConfigurations.Add(config);
         return config;

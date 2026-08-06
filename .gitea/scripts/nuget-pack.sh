@@ -5,7 +5,7 @@ set -euo pipefail
 : "${ROOT_SLNX:?ROOT_SLNX is required}"
 : "${VERSION:?VERSION is required}"
 
-package_output="/src/${PACKAGE_OUTPUT#./}"
+package_output="${PACKAGE_OUTPUT#./}"
 rm -rf "$package_output"
 mkdir -p "$package_output"
 
@@ -14,8 +14,7 @@ cat > /tmp/ci-nuget.config <<'NUGETEOF'
 <configuration>
   <packageSources>
     <clear />
-    <add key="liara" value="https://package-mirror.liara.ir/repository/nuget/index.json" />
-    <add key="sufi-abp" value="https://nuget.sabp.ir/v3/index.json" />
+    <add key="nuget.org" value="https://api.nuget.org/v3/index.json" />
   </packageSources>
   <auditSources>
     <clear />

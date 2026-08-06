@@ -30,9 +30,6 @@ using SufiChain.SufiPlatform.Identity;
 using SufiChain.SufiPlatform.Localization;
 using SufiChain.SufiPlatform.Localization.EntityFrameworkCore;
 // </TEMPLATE-REMOVE>
-// <TEMPLATE-REMOVE IF-NOT="module:sufi-blazor-demo">
-using SufiChain.SufiBlazor.Demo;
-// </TEMPLATE-REMOVE>
 using SufiChain.SufiPlatform.Permissions;
 using SufiChain.SufiPlatform.Settings;
 // <TEMPLATE-REMOVE IF-NOT="db:efcore">
@@ -119,11 +116,7 @@ namespace MyCompanyName.MyProjectName
         // Localization Management Module (backend services for translation editor)
         typeof(SufiLocalizationApplicationModule),
         typeof(SufiLocalizationHttpApiModule),
-        typeof(SufiLocalizationEntityFrameworkCoreModule),
-        // </TEMPLATE-REMOVE>
-        // <TEMPLATE-REMOVE IF-NOT="module:sufi-blazor-demo">
-        // SufiBlazor Demo localization (Blazor fetches from remote API)
-        typeof(SufiBlazorDemoLocalizationModule)
+        typeof(SufiLocalizationEntityFrameworkCoreModule)
         // </TEMPLATE-REMOVE>
     )]
     public class DemoAppHttpApiHostModule : AbpModule

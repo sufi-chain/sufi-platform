@@ -69,13 +69,13 @@ public class ReadTemplateFilesStep : ProjectBuildPipelineStep
             $"  AppContext.BaseDirectory: {baseDir}\n" +
             $"  Current directory: {currentDir}\n\n" +
             "The CLI looks for templates in this order:\n" +
-            "  1. SOPHI_TEMPLATE_ZIP environment variable\n" +
-            "  2. SOPHI_TEMPLATE_PATH environment variable\n" +
+            "  1. SUFI_TEMPLATE_ZIP environment variable\n" +
+            "  2. SUFI_TEMPLATE_PATH environment variable\n" +
             "  3. Debug: sufi-platform/templates/app/aspnet-core\n" +
             "  4. Release: https://cdn.sufichain.com/templates/latest.json and versioned template zip\n\n" +
             "Solutions:\n" +
             "  1. Run from the sufi-platform repository root in Debug mode\n" +
-            "  2. Set SOPHI_TEMPLATE_PATH to D:\\Projects\\SCIS\\sufi-chain\\sufi-platform\\templates\n" +
+            "  2. Set SUFI_TEMPLATE_PATH to D:\\Projects\\SCIS\\sufi-chain\\sufi-platform\\templates\n" +
             "  3. Publish app-blazor-webapp-unified.zip under cdn.sufichain.com/templates for Release mode");
     }
 
@@ -125,6 +125,11 @@ public class ReadTemplateFilesStep : ProjectBuildPipelineStep
             return true;
 
         if (fileName.EndsWith(".log") || fileName == "logs.txt")
+            return true;
+
+        // Skip SQLite runtime sidecar files that can be left beside template databases
+        if (fileName.EndsWith("-wal", StringComparison.OrdinalIgnoreCase) ||
+            fileName.EndsWith("-shm", StringComparison.OrdinalIgnoreCase))
             return true;
 
         // Skip package-lock files

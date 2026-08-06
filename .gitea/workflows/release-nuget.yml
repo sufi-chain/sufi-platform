@@ -9,29 +9,13 @@ on:
         description: Optional SemVer package version. Defaults to a timestamped dev prerelease.
         type: string
         required: false
-      push_to_baget:
-        description: Push to internal BaGet (nuget.sabp.ir)
-        type: boolean
-        default: true
-      push_to_nuget_org:
-        description: Also push to nuget.org (manual opt-in only)
-        type: boolean
-        default: false
 
 env:
   DOTNET_NOLOGO: true
   DOTNET_CLI_TELEMETRY_OPTOUT: true
   DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
-  HARBOR_REGISTRY: reg.sabp.ir
-  SDK_IMAGE: reg.sabp.ir/sufi-chain/dotnet-sdk-build:10.0.202
-  GIT_HOST: git.sabp.ir
-  REPOSITORY: ${{ gitea.repository }}
-  REF_NAME: ${{ gitea.ref_name }}
   RELEASE_TAG: ${{ gitea.event.release.tag_name }}
   INPUT_PACKAGE_VERSION: ${{ inputs.package_version }}
-  INPUT_PUSH_TO_BAGET: ${{ inputs.push_to_baget }}
-  INPUT_PUSH_TO_NUGET_ORG: ${{ inputs.push_to_nuget_org }}
-  BAGET_SOURCE_URL: https://nuget.sabp.ir/v3/index.json
   NUGET_ORG_SOURCE_URL: https://api.nuget.org/v3/index.json
   NUGET_PUSH_PARALLELISM: 4
   PACKAGE_OUTPUT: ./artifacts/nuget
@@ -45,104 +29,11 @@ concurrency:
 jobs:
   pack-and-push:
     runs-on: ubuntu-latest
+    container:
+      image: mcr.microsoft.com/dotnet/sdk:10.0
     steps:
-      - name: Check runner prerequisites
-        shell: sh
-        run: |
-          set -eu
-          if ! command -v docker >/dev/null 2>&1; then
-            echo "docker CLI is required on the runner." >&2
-            echo "Map ubuntu-latest to docker:27-cli and mount /var/run/docker.sock into act_runner." >&2
-            exit 1
-          fi
-          if ! docker version >/dev/null 2>&1; then
-            echo "docker CLI exists, but cannot reach Docker daemon." >&2
-            echo "Check Docker service and /var/run/docker.sock mount/permissions for the Gitea runner." >&2
-            exit 1
-          fi
-
-      - name: Login to Harbor
-        shell: sh
-        env:
-          HARBOR_USERNAME: ${{ secrets.HARBOR_USERNAME }}
-          HARBOR_PASSWORD: ${{ secrets.HARBOR_PASSWORD }}
-        run: |
-          set -eu
-          if [ -z "${HARBOR_USERNAME:-}" ] || [ -z "${HARBOR_PASSWORD:-}" ]; then
-            echo "HARBOR_USERNAME and HARBOR_PASSWORD secrets are required." >&2
-            exit 1
-          fi
-          echo "Checking DNS for $HARBOR_REGISTRY from the runner host..."
-          if command -v getent >/dev/null 2>&1; then
-            getent hosts "$HARBOR_REGISTRY" || {
-              echo "DNS lookup failed for $HARBOR_REGISTRY." >&2
-              echo "Fix the Gitea runner host DNS/Docker daemon DNS; current /etc/resolv.conf:" >&2
-              cat /etc/resolv.conf >&2 || true
-              exit 1
-            }
-          fi
-          for attempt in 1 2 3; do
-            if echo "$HARBOR_PASSWORD" | docker login "$HARBOR_REGISTRY" \
-              -u "$HARBOR_USERNAME" \
-              --password-stdin; then
-              exit 0
-            fi
-            echo "Harbor login failed (attempt $attempt/3)." >&2
-            sleep $((attempt * 5))
-          done
-          echo "Harbor login failed after 3 attempts." >&2
-          exit 1
-
       - name: Checkout
-        shell: sh
-        env:
-          GITEATOKEN: ${{ secrets.GITEATOKEN }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GITEA_TOKEN: ${{ secrets.GITEA_TOKEN }}
-        run: |
-          set -eu
-          workspace="${WORKSPACE_DIR:-${GITHUB_WORKSPACE:-$PWD}}"
-          cd "$workspace"
-          echo "Using workspace: $workspace"
-
-          if [ -f "$ROOT_SLNX" ] || [ -d ".git" ]; then
-            rm -rf .git modules frameworks templates src test .gitea .gitignore *.slnx *.props *.targets *.md || true
-          fi
-
-          CLONE_URL="https://${GIT_HOST}/${REPOSITORY}.git"
-          clone_token="${GITEATOKEN:-${GITEA_TOKEN:-${GITHUB_TOKEN:-}}}"
-          if [ -n "$clone_token" ]; then
-            GITEATOKEN="$clone_token"
-            CLONE_URL="$(printf '%s' "$CLONE_URL" | sed "s#^https://#https://x-access-token:${GITEATOKEN}@#")"
-          else
-            echo "No GITEATOKEN/GITEA_TOKEN/GITHUB_TOKEN secret was provided; private repository checkout may fail." >&2
-          fi
-          export CLONE_URL
-          container_id="$(docker run -d \
-            -w /src \
-            -e REF_NAME \
-            -e CLONE_URL \
-            "$SDK_IMAGE" \
-            sleep 3600)"
-          trap 'docker rm -f "$container_id" >/dev/null 2>&1 || true' EXIT INT TERM
-          docker exec "$container_id" sh -c '
-            set -eu
-            if [ -n "${REF_NAME:-}" ]; then
-              git clone --depth 1 --branch "$REF_NAME" "$CLONE_URL" /src
-            else
-              git clone --depth 1 "$CLONE_URL" /src
-            fi
-            test -f "'"$ROOT_SLNX"'"
-          '
-          docker cp "${container_id}:/src/." "${workspace}/"
-          docker rm -f "$container_id"
-          trap - EXIT INT TERM
-
-          if [ ! -f "$ROOT_SLNX" ]; then
-            echo "Checkout did not produce $ROOT_SLNX under $workspace" >&2
-            find "$workspace" -maxdepth 2 -type f -name '*.slnx' 2>/dev/null | head -20 >&2 || true
-            exit 1
-          fi
+        uses: actions/checkout@v4
 
       - name: Resolve package version
         id: version
@@ -182,25 +73,10 @@ jobs:
           package_dir="${workspace}/${version_package_output#./}"
           rm -rf "$package_dir"
           mkdir -p "$package_dir"
-          container_id="$(docker run -d \
-            -w /src \
-            -e VERSION \
-            -e PACKAGE_OUTPUT="$version_package_output" \
-            -e ROOT_SLNX \
-            -e DOTNET_NOLOGO \
-            -e DOTNET_CLI_TELEMETRY_OPTOUT \
-            -e DOTNET_SKIP_FIRST_TIME_EXPERIENCE \
-            "$SDK_IMAGE" \
-            sleep 3600)"
-          trap 'docker rm -f "$container_id" >/dev/null 2>&1 || true' EXIT INT TERM
-          
-          docker cp "${workspace}/." "${container_id}:/src/"
-          docker exec "$container_id" bash /src/.gitea/scripts/nuget-pack.sh
-          rm -rf "$package_dir"
-          mkdir -p "$package_dir"
-          docker cp "${container_id}:/src/${version_package_output#./}/." "$package_dir/"
-          docker rm -f "$container_id"
-          trap - EXIT INT TERM
+          PACKAGE_OUTPUT="$version_package_output" \
+          ROOT_SLNX="$ROOT_SLNX" \
+          VERSION="$VERSION" \
+            bash .gitea/scripts/nuget-pack.sh
           if [ ! -d "$package_dir" ]; then
             echo "Package output directory was not created on the runner workspace: $package_dir" >&2
             echo "Workspace contents:" >&2
@@ -220,38 +96,7 @@ jobs:
           fi
           echo "Packed $package_count package(s) for version $VERSION into $package_dir."
 
-      - name: Push packages to BaGet
-        if: ${{ gitea.event_name == 'release' || inputs.push_to_baget == true }}
-        shell: sh
-        env:
-          NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
-          VERSION: ${{ steps.version.outputs.version }}
-        run: |
-          set -eu
-          if [ -z "${NUGET_API_KEY:-}" ]; then
-            echo "NUGET_API_KEY secret is required." >&2
-            exit 1
-          fi
-          workspace="${WORKSPACE_DIR:-${GITHUB_WORKSPACE:-$PWD}}"
-          cd "$workspace"
-          container_id="$(docker run -d \
-            -w /src \
-            -e NUGET_API_KEY \
-            -e VERSION \
-            -e BAGET_SOURCE_URL \
-            -e NUGET_PUSH_PARALLELISM \
-            -e PACKAGE_OUTPUT="${PACKAGE_OUTPUT%/}/${VERSION}" \
-            "$SDK_IMAGE" \
-            sleep 3600)"
-          trap 'docker rm -f "$container_id" >/dev/null 2>&1 || true' EXIT INT TERM
-          
-          docker cp "${workspace}/." "${container_id}:/src/"
-          docker exec "$container_id" bash /src/.gitea/scripts/nuget-push-baget.sh
-          docker rm -f "$container_id"
-          trap - EXIT INT TERM
-
       - name: Push packages to nuget.org
-        if: ${{ gitea.event_name == 'workflow_dispatch' && inputs.push_to_nuget_org == true && inputs.package_version != '' }}
         shell: sh
         env:
           NUGET_ORG_API_KEY: ${{ secrets.NUGET_ORG_API_KEY }}
@@ -264,18 +109,9 @@ jobs:
           fi
           workspace="${WORKSPACE_DIR:-${GITHUB_WORKSPACE:-$PWD}}"
           cd "$workspace"
-          container_id="$(docker run -d \
-            -w /src \
-            -e NUGET_ORG_API_KEY \
-            -e VERSION \
-            -e NUGET_ORG_SOURCE_URL \
-            -e NUGET_PUSH_PARALLELISM \
-            -e PACKAGE_OUTPUT="${PACKAGE_OUTPUT%/}/${VERSION}" \
-            "$SDK_IMAGE" \
-            sleep 3600)"
-          trap 'docker rm -f "$container_id" >/dev/null 2>&1 || true' EXIT INT TERM
-          
-          docker cp "${workspace}/." "${container_id}:/src/"
-          docker exec "$container_id" bash /src/.gitea/scripts/nuget-push-nuget-org.sh
-          docker rm -f "$container_id"
-          trap - EXIT INT TERM
+          PACKAGE_OUTPUT="${PACKAGE_OUTPUT%/}/${VERSION}" \
+          NUGET_ORG_SOURCE_URL="$NUGET_ORG_SOURCE_URL" \
+          NUGET_ORG_API_KEY="$NUGET_ORG_API_KEY" \
+          NUGET_PUSH_PARALLELISM="$NUGET_PUSH_PARALLELISM" \
+          VERSION="$VERSION" \
+            bash .gitea/scripts/nuget-push-nuget-org.sh

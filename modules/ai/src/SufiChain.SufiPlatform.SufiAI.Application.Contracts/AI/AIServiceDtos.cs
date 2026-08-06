@@ -90,6 +90,7 @@ public class AIModelConfigurationDto : Application.Dtos.EntityDto<Guid>
     public int Priority { get; set; }
     public decimal? InputCostPer1MTokens { get; set; }
     public decimal? OutputCostPer1MTokens { get; set; }
+    public int? Dimensions { get; set; }
 }
 
 public class CreateAIModelConfigurationDto
@@ -103,7 +104,7 @@ public class CreateAIModelConfigurationDto
     public decimal? OutputCostPer1MTokens { get; set; }
     public int Priority { get; set; }
     public OpenAIApiMode? OpenAIApiMode { get; set; }
-
+    public int? Dimensions { get; set; }
 }
 
 public class UpdateAIModelConfigurationDto
@@ -115,6 +116,7 @@ public class UpdateAIModelConfigurationDto
     public decimal? InputCostPer1MTokens { get; set; }
     public decimal? OutputCostPer1MTokens { get; set; }
     public int Priority { get; set; }
+    public int? Dimensions { get; set; }
 }
 
 // Usage Log DTOs

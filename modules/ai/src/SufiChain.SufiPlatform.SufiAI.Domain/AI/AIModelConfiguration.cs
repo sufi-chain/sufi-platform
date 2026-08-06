@@ -49,7 +49,9 @@ public class AIModelConfiguration : AuditedEntity<Guid>
 
     public decimal? InputCostPer1MTokens { get; protected set; }
 
-    public decimal? OutputCostPer1MTokens { get; protected set; }
+   public decimal? OutputCostPer1MTokens { get; protected set; }
+   
+   public int? Dimensions { get; protected set; }
     
     protected AIModelConfiguration() { }
     
@@ -73,34 +75,45 @@ public class AIModelConfiguration : AuditedEntity<Guid>
         string? apiEndpoint,
         string? apiKey,
         int priority,
-        OpenAIApiMode? openAIApiMode = null,
-        decimal? inputCostPer1MTokens = null,
-        decimal? outputCostPer1MTokens = null
-    )
-    {
-        ValidatePricing(inputCostPer1MTokens, nameof(inputCostPer1MTokens));
-        ValidatePricing(outputCostPer1MTokens, nameof(outputCostPer1MTokens));
+       OpenAIApiMode? openAIApiMode = null,
+       decimal? inputCostPer1MTokens = null,
+        decimal? outputCostPer1MTokens = null,
+        int? dimensions = null
+   )
+   {
+       ValidatePricing(inputCostPer1MTokens, nameof(inputCostPer1MTokens));
+       ValidatePricing(outputCostPer1MTokens, nameof(outputCostPer1MTokens));
+        ValidateDimensions(dimensions);
 
-        ModelId = Check.NotNullOrWhiteSpace(modelId, nameof(modelId));
-        ApiEndpoint = apiEndpoint;
-        ApiKey = apiKey;
-        Priority = priority;
-        OpenAIApiMode = openAIApiMode;
-        InputCostPer1MTokens = inputCostPer1MTokens;
-        OutputCostPer1MTokens = outputCostPer1MTokens;
-    }
+       ModelId = Check.NotNullOrWhiteSpace(modelId, nameof(modelId));
+       ApiEndpoint = apiEndpoint;
+       ApiKey = apiKey;
+       Priority = priority;
+       OpenAIApiMode = openAIApiMode;
+       InputCostPer1MTokens = inputCostPer1MTokens;
+       OutputCostPer1MTokens = outputCostPer1MTokens;
+        Dimensions = dimensions;
+   }
     
     public void Enable() => IsEnabled = true;
     public void Disable() => IsEnabled = false;
     
     public void SetPriority(int priority) => Priority = priority;
 
-    private static void ValidatePricing(decimal? value, string parameterName)
+   private static void ValidatePricing(decimal? value, string parameterName)
+   {
+       if (value < 0)
+       {
+           throw new BusinessException("AI:InvalidTokenPricing")
+               .WithData("ParameterName", parameterName);
+       }
+   }
+ 
+    private static void ValidateDimensions(int? dimensions)
     {
-        if (value < 0)
+        if (dimensions is <= 0)
         {
-            throw new BusinessException("AI:InvalidTokenPricing")
-                .WithData("ParameterName", parameterName);
+            throw new BusinessException("AI:InvalidEmbeddingDimensions");
         }
     }
 }

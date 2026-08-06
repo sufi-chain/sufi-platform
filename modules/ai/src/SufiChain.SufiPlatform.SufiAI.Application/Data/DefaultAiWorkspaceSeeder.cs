@@ -106,14 +106,18 @@ public class DefaultAiWorkspaceSeeder : IDefaultAiWorkspaceSeeder
                 continue;
             }
 
-            var modelId = configuredModelId.Trim();
+           var modelId = configuredModelId.Trim();
+            var dimensions = capability == AICapabilityType.Embeddings
+                ? (int?)EmbeddingModelDefaults.GetDimensions(modelId)
+                : null;
             workspace.AddModelConfiguration(
                 capability,
                 modelId,
                 apiEndpoint: seed.ApiBaseUrl,
                 apiKey: null,
                 priority: 0,
-                openAIApiMode: seed.OpenAIApiMode);
+                openAIApiMode: seed.OpenAIApiMode,
+                dimensions: dimensions);
 
             Logger.LogInformation(
                 "Seeded AI model configuration {Capability}='{ModelId}' on workspace {WorkspaceId} for tenant {TenantId}.",

@@ -291,6 +291,9 @@
     "ServerKeyIsRequired": "مفتاح الخادم الثابت مطلوب.",
     "AvailableTenantTools": "أدوات المستأجر",
     "SelectToolsForTestRequest": "حدد الأدوات الدقيقة المراد تضمينها في طلب الاختبار. لا تُرسل أدوات افتراضياً.",
-    "NoToolsAvailable": "لا توجد أدوات متاحة للمستأجر."
+    "NoToolsAvailable": "لا توجد أدوات متاحة للمستأجر.",
+    "EmbeddingDimensions": "أبعاد التضمين",
+    "EmbeddingDimensionsHelperText": "اتركه فارغاً لاستخدام القيمة الافتراضية للنموذج (مثلاً 3072 لـ text-embedding-3-large و1536 لـ text-embedding-3-small).",
+    "InvalidEmbeddingDimensions": "يجب أن تكون أبعاد التضمين رقماً صحيحاً موجباً أو فارغة."
   }
 }

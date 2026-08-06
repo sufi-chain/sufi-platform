@@ -53,14 +53,39 @@ etc/docker/
 
 ## CLI Processing
 
-1. User runs: `sufi new MyApp --solution-kind layered --database-provider efcore --ef-provider postgresql`
+1. User runs: `sufi new MyApp --solution-kind layered --database ef --ef-provider postgresql`
 2. CLI copies template, processes markers
-3. CLI selects `docker-compose.efcore-postgresql.yml.template`, renames to `docker-compose.yml`
-4. CLI deletes other docker-compose files
-5. CLI prompts: "Generate Initial migration? (Y/n)"
-6. If yes, runs: `dotnet ef migrations add Initial`
-7. CLI prompts: "Run DbMigrator? (Y/n)"
-8. If yes, runs DbMigrator
+3. CLI installs the default full production module profile from published NuGet packages
+4. CLI applies `--exclude-modules` or `--no-default-modules` reductions and resolves dependencies
+5. CLI selects `docker-compose.efcore-postgresql.yml.template`, renames to `docker-compose.yml`
+6. CLI deletes other docker-compose files
+7. CLI prompts: "Generate Initial migration? (Y/n)"
+8. If yes, runs: `dotnet ef migrations add Initial`
+9. CLI prompts: "Run DbMigrator? (Y/n)"
+10. If yes, runs DbMigrator
+
+### Module Profiles
+
+The default profile keeps the platform foundation and installs every registered production
+feature pack: `ai-copilots`, `branding`, `calendar-copilot`, `cms`, `crm`, `dashboard`,
+`editions`, `finance`, `forms`, `helpdesk`, `saas`, and `suficom`.
+
+Reduce the default profile:
+
+```bash
+sufi new MyCompany.MyProject --exclude-modules finance,helpdesk
+```
+
+Start with the platform foundation and add only selected packs:
+
+```bash
+sufi new MyCompany.MyProject --no-default-modules --modules cms,forms
+```
+
+Use `sufi new --list-modules` to see all keys.
+
+Published feature packs use `SufiProVersion` from `versions.props`. It defaults to
+`SufiVersion` and can be changed independently when pro packages use another release line.
 
 ## Version
 

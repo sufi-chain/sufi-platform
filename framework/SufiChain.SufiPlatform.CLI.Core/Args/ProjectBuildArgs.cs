@@ -102,8 +102,8 @@ public class ProjectBuildArgs
     };
     
     /// <summary>
-    /// Optional demo/sample modules to include beyond the default platform modules.
-    /// Real platform modules registered from sufi-abp/modules are always included.
+    /// Selected module keys after applying the default profile, explicit additions,
+    /// exclusions, and dependency resolution.
     /// </summary>
     public HashSet<string> IncludedModules { get; init; } = new(StringComparer.OrdinalIgnoreCase);
     

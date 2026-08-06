@@ -1,5 +1,3 @@
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.DependencyInjection.Extensions;
 using SufiChain.SufiPlatform.SufiAI;
 using SufiChain.SufiPlatform.AuditLogging;
 using SufiChain.SufiPlatform.Features;
@@ -11,8 +9,6 @@ using SufiChain.SufiPlatform.Permissions.OpenIddict;
 using SufiChain.SufiPlatform.Settings;
 using SufiChain.SufiPlatform.Tenants;
 using SufiChain.SufiPlatform.Users;
-using SufiChain.SufiPlatform.SufiCom;
-using SufiChain.SufiPlatform.SufiCom.Email;
 using MyCompanyName.MyProjectName.MultiTenancy;
 using Volo.Abp.Modularity;
 using Volo.Abp.MultiTenancy;
@@ -32,8 +28,7 @@ namespace MyCompanyName.MyProjectName
         typeof(SufiSettingsDomainModule),
         typeof(SufiTenantsDomainModule),
         typeof(SufiUsersDomainModule),
-        typeof(SufiAIDomainModule),
-        typeof(SufiComModule)
+        typeof(SufiAIDomainModule)
     )]
     public class DemoAppDomainModule : AbpModule
     {
@@ -44,10 +39,6 @@ namespace MyCompanyName.MyProjectName
             {
                 options.IsEnabled = MultiTenancyConsts.IsEnabled;
             });
-
-#if DEBUG
-            context.Services.Replace(ServiceDescriptor.Singleton<IEmailSender, NullEmailSender>());
-#endif
         }
     }
 }

@@ -4,9 +4,11 @@ namespace SufiChain.SufiPlatform.Menus.Caching;
 
 /// <summary>
 /// Caches built menu trees and resolved public items, keyed by the lookup input.
-/// ABP prefixes the cache key with the current tenant automatically.
+/// ABP prefixes the cache key with the current tenant automatically. Uses a distinct
+/// <see cref="CacheNameAttribute"/> from <see cref="MenuCacheItem"/> so ABP keeps
+/// separate unit-of-work cache buckets per item type (they store different generics).
 /// </summary>
-[CacheName("SufiMenus")]
+[CacheName("SufiMenuTrees")]
 public class MenuTreeCacheItem
 {
     public const string TreePrefix = "t:";

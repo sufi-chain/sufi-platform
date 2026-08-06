@@ -54,8 +54,16 @@ public class NewCommand : AsyncCommand<NewCommand.Settings>
         public string? OutputDirectory { get; set; }
         
         [CommandOption("--modules")]
-        [Description("Optional sample/demo modules to include (e.g. sufi-blazor-demo). Real platform modules are enabled by default.")]
+        [Description("Additional module keys to include. Production feature packs are included by default.")]
         public string? Modules { get; set; }
+
+        [CommandOption("--exclude-modules")]
+        [Description("Comma-separated module keys to remove from the default full profile.")]
+        public string? ExcludeModules { get; set; }
+
+        [CommandOption("--no-default-modules")]
+        [Description("Start with the platform foundation only, then add modules from --modules.")]
+        public bool NoDefaultModules { get; set; }
 
         [CommandOption("--include-website")]
         [Description("Include optional Blazor.WebSite and Blazor.WebSite.Client projects (tiered architecture only).")]
@@ -129,6 +137,31 @@ public class NewCommand : AsyncCommand<NewCommand.Settings>
                 {
                     return ValidationResult.Error($"Invalid EF provider: '{EfProvider}'. Valid: sqlserver, postgresql, mysql, mariadb, sqlite");
                 }
+            }
+
+            var registry = new ModuleRegistry();
+            var moduleKeys = ParseModuleList(Modules)
+                .Concat(ParseModuleList(ExcludeModules))
+                .Where(key => !key.Equals("all", StringComparison.OrdinalIgnoreCase))
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .ToArray();
+            var unknownModules = moduleKeys
+                .Where(key => registry.GetModule(key) == null)
+                .ToArray();
+            if (unknownModules.Length > 0)
+            {
+                return ValidationResult.Error($"Unknown module key(s): {string.Join(", ", unknownModules)}");
+            }
+
+            var requiredExclusions = ParseModuleList(ExcludeModules)
+                .Select(registry.GetModule)
+                .Where(module => module?.IsCore == true)
+                .Select(module => module!.Key)
+                .ToArray();
+            if (requiredExclusions.Length > 0)
+            {
+                return ValidationResult.Error(
+                    $"Platform foundation module(s) cannot be excluded: {string.Join(", ", requiredExclusions)}");
             }
 
             return ValidationResult.Success();
@@ -237,15 +270,15 @@ public class NewCommand : AsyncCommand<NewCommand.Settings>
                 module.Key,
                 module.DisplayName,
                 module.Category.ToString(),
-                module.IsCore ? "[green]Yes[/]" : "No",
+                module.IsCore || module.IsDefault ? "[green]Yes[/]" : "No",
                 string.Join(", ", module.ApplicableHosts.Select(h => h.ToString()))
             );
         }
         
         AnsiConsole.Write(table);
         AnsiConsole.WriteLine();
-        AnsiConsole.MarkupLine("[dim]Real platform modules are enabled by default. Optional entries are sample/demo modules only.[/]");
-        AnsiConsole.MarkupLine("[dim]Example: sufi new MyCompany.MyProject --modules sufi-blazor-demo[/]");
+        AnsiConsole.MarkupLine("[dim]Production feature packs are enabled by default. Use --exclude-modules to reduce the generated solution.[/]");
+        AnsiConsole.MarkupLine("[dim]Example: sufi new MyCompany.MyProject --exclude-modules finance,helpdesk[/]");
     }
     
     /// <summary>
@@ -344,20 +377,26 @@ public class NewCommand : AsyncCommand<NewCommand.Settings>
                     { DefaultValue = false });
         }
         
-        // Step 5 -- Optional demo/sample modules
+        // Step 5 -- Production feature packs
         var registry = new ModuleRegistry();
         var optionalModules = registry.GetOptionalModules()
+            .Where(module => module.IsDefault)
             .Select(m => $"{m.Key} - {m.Description}")
             .ToArray();
         
         if (optionalModules.Any())
         {
             var moduleChoices = new MultiSelectionPrompt<string>()
-                .Title("[green]?[/] Select optional demo/sample modules:")
-                .PageSize(10)
+                .Title("[green]?[/] Select production feature packs to install:")
+                .PageSize(15)
                 .NotRequired()
                 .InstructionsText("[grey](Press [blue]<space>[/] to toggle, [green]<enter>[/] to confirm)[/]")
                 .AddChoices(optionalModules);
+
+            foreach (var module in optionalModules)
+            {
+                moduleChoices.Select(module);
+            }
             
             var selectedModules = AnsiConsole.Prompt(moduleChoices);
             var selectedKeys = selectedModules
@@ -367,30 +406,14 @@ public class NewCommand : AsyncCommand<NewCommand.Settings>
             // Validate and resolve dependencies
             if (selectedKeys.Count > 0)
             {
-                var resolved = registry.ResolveWithDependencies(selectedKeys);
-                var allRequired = resolved.Where(m => !m.IsCore).Select(m => m.Key).ToList();
-                
-                // Check if we need to add dependencies
-                var missing = allRequired.Except(selectedKeys, StringComparer.OrdinalIgnoreCase).ToList();
-                if (missing.Any())
-                {
-                    AnsiConsole.MarkupLine("[yellow]⚠ Adding required dependencies:[/]");
-                    foreach (var dep in missing)
-                    {
-                        var depModule = registry.GetModule(dep);
-                        if (depModule != null)
-                        {
-                            AnsiConsole.MarkupLine($"  [grey]→[/] {depModule.DisplayName} [dim](required by selected modules)[/]");
-                        }
-                    }
-                    AnsiConsole.WriteLine();
-                }
-                
-                settings.Modules = string.Join(",", allRequired);
+                var allDefaults = registry.GetDefaultModules().Select(module => module.Key);
+                settings.ExcludeModules = string.Join(
+                    ",",
+                    allDefaults.Except(selectedKeys, StringComparer.OrdinalIgnoreCase));
             }
             else
             {
-                settings.Modules = string.Empty;
+                settings.NoDefaultModules = true;
             }
         }
         
@@ -510,11 +533,14 @@ public class NewCommand : AsyncCommand<NewCommand.Settings>
         // Compute template name
         var templateName = ProjectBuildArgs.ComputeTemplateName(solutionKind, isTiered);
         
-        // Parse included modules with constraint logic
-        var includedModules = ParseModules(settings);
-        
-        // Real platform modules are enabled by default by ModuleRegistry.
-        // --modules is now reserved for optional sample/demo modules.
+        var registry = new ModuleRegistry();
+        var requestedModules = ParseModuleList(settings.Modules);
+        var includeDefaults = !settings.NoDefaultModules ||
+                              requestedModules.Remove("all");
+        var includedModules = registry.ResolveSelection(
+            requestedModules,
+            ParseModuleList(settings.ExcludeModules),
+            includeDefaults);
 
         return new ProjectBuildArgs
         {
@@ -538,13 +564,13 @@ public class NewCommand : AsyncCommand<NewCommand.Settings>
         };
     }
     
-    private static HashSet<string> ParseModules(Settings settings)
+    private static HashSet<string> ParseModuleList(string? value)
     {
         var modules = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         
-        if (!string.IsNullOrEmpty(settings.Modules))
+        if (!string.IsNullOrEmpty(value))
         {
-            var moduleList = settings.Modules.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+            var moduleList = value.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
             foreach (var module in moduleList)
             {
                 modules.Add(module);
@@ -578,10 +604,11 @@ public class NewCommand : AsyncCommand<NewCommand.Settings>
         table.AddRow("Hosts", string.Join(", ", args.IncludedHosts.Select(h => h.ToString())));
         table.AddRow("Template", args.TemplateName);
         
-        if (args.IncludedModules.Count > 0)
-        {
-            table.AddRow("Modules", string.Join(", ", args.IncludedModules));
-        }
+        table.AddRow(
+            "Modules",
+            args.IncludedModules.Count > 0
+                ? string.Join(", ", args.IncludedModules.OrderBy(module => module))
+                : "Platform foundation only");
         
         if (!string.IsNullOrEmpty(args.AppName))
         {

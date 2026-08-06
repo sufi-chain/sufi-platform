@@ -11,7 +11,6 @@
 	    <PackageReference Include="OpenIddict.Abstractions" Version="$(OpenIddictVersion)" />
 	    <ProjectReference Include="..\..\..\..\..\src\framework\SufiChain.SufiPlatform.Core\SufiChain.SufiPlatform.Core.csproj" />
 	    <ProjectReference Include="..\..\..\..\..\src\framework\SufiChain.SufiPlatform.Data\SufiChain.SufiPlatform.Data.csproj" />
-	    <ProjectReference Include="..\..\..\..\..\src\framework\SufiChain.SufiPlatform.SufiCom\SufiChain.SufiPlatform.SufiCom.csproj" />
 	    <ProjectReference Include="..\MyCompanyName.MyProjectName.Domain.Shared\MyCompanyName.MyProjectName.Domain.Shared.csproj" />
 	  </ItemGroup>
 	  <!-- </TEMPLATE-REMOVE> -->
@@ -42,7 +41,6 @@
 	    <PackageReference Include="SufiChain.SufiPlatform.Core" Version="$(SufiVersion)" />
 	    <PackageReference Include="SufiChain.SufiPlatform.Data" Version="$(SufiVersion)" />
 	    <ProjectReference Include="..\MyCompanyName.MyProjectName.Domain.Shared\MyCompanyName.MyProjectName.Domain.Shared.csproj" />
-	    <PackageReference Include="SufiChain.SufiPlatform.SufiCom" Version="$(SufiVersion)" />
 	    <PackageReference Include="SufiChain.SufiPlatform.Calendar.Domain" Version="$(SufiVersion)" />
 	    <PackageReference Include="SufiChain.SufiPlatform.Localization.Domain" Version="$(SufiVersion)" />
 	    <PackageReference Include="SufiChain.SufiPlatform.SufiAI.Domain" Version="$(SufiVersion)" />

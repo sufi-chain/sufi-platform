@@ -48,9 +48,6 @@ public class DemoAppMenuContributor : IMenuContributor
         // <TEMPLATE-REMOVE IF-NOT="module:file-manager-demo">
         hasDemoModules = true;
         // </TEMPLATE-REMOVE>
-        // <TEMPLATE-REMOVE IF-NOT="module:sufi-blazor-demo">
-        hasDemoModules = true;
-        // </TEMPLATE-REMOVE>
         if (hasDemoModules)
         {
             var demo = context.Menu.GetDemo();

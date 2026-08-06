@@ -15,6 +15,7 @@ public class ModuleRegistry
         RegisterInfrastructureModules();
         RegisterAdminModules();
         RegisterFeatureModules();
+        RegisterProModules();
     }
     
     private void RegisterCoreModules()
@@ -269,16 +270,6 @@ public class ModuleRegistry
             ApplicableHosts = new[] { HostType.WebApp, HostType.Web }
         });
 
-        Register(new ModuleDefinition
-        {
-            Key = "sufi-blazor-demo",
-            DisplayName = "Sufi Blazor Demo",
-            NuGetPackagePrefix = "SufiChain.SufiBlazor.Demo",
-            Category = ModuleCategory.Feature,
-            IsCore = false,
-            Description = "SufiBlazor component samples and documentation",
-            ApplicableHosts = new[] { HostType.WebApp, HostType.Web }
-        });
     }
     
     private void RegisterAdminModules()
@@ -289,7 +280,83 @@ public class ModuleRegistry
     
     private void RegisterFeatureModules()
     {
-        // Reserved for future feature modules (e.g. Sufi CMS).
+        Register(new ModuleDefinition
+        {
+            Key = "editions",
+            DisplayName = "Editions",
+            NuGetPackagePrefix = "SufiChain.SufiPlatform.Editions",
+            Category = ModuleCategory.Feature,
+            IsDefault = true,
+            Description = "Edition definitions and feature-plan management",
+            ApplicableHosts = [],
+            Bindings =
+            [
+                new ModuleBinding
+                {
+                    IntegrationPoint = ModuleIntegrationPoint.DomainShared,
+                    PackageId = "SufiChain.SufiPlatform.Editions.Domain.Shared",
+                    ModuleType = "SufiChain.SufiPlatform.Editions.SufiEditionsDomainSharedModule"
+                },
+                new ModuleBinding
+                {
+                    IntegrationPoint = ModuleIntegrationPoint.Domain,
+                    PackageId = "SufiChain.SufiPlatform.Editions.Domain",
+                    ModuleType = "SufiChain.SufiPlatform.Editions.SufiEditionsDomainModule"
+                },
+                new ModuleBinding
+                {
+                    IntegrationPoint = ModuleIntegrationPoint.ApplicationContracts,
+                    PackageId = "SufiChain.SufiPlatform.Editions.Application.Contracts",
+                    ModuleType = "SufiChain.SufiPlatform.Editions.SufiEditionsApplicationContractsModule"
+                },
+                new ModuleBinding
+                {
+                    IntegrationPoint = ModuleIntegrationPoint.Application,
+                    PackageId = "SufiChain.SufiPlatform.Editions.Application",
+                    ModuleType = "SufiChain.SufiPlatform.Editions.SufiEditionsApplicationModule"
+                },
+                new ModuleBinding
+                {
+                    IntegrationPoint = ModuleIntegrationPoint.EntityFrameworkCore,
+                    PackageId = "SufiChain.SufiPlatform.Editions.EntityFrameworkCore",
+                    ModuleType = "SufiChain.SufiPlatform.Editions.EntityFrameworkCore.SufiEditionsEntityFrameworkCoreModule",
+                    DatabaseProvider = DatabaseProvider.EntityFrameworkCore
+                },
+                new ModuleBinding
+                {
+                    IntegrationPoint = ModuleIntegrationPoint.MongoDB,
+                    PackageId = "SufiChain.SufiPlatform.Editions.MongoDB",
+                    ModuleType = "SufiChain.SufiPlatform.Editions.MongoDB.SufiEditionsMongoDbModule",
+                    DatabaseProvider = DatabaseProvider.MongoDB
+                },
+                new ModuleBinding
+                {
+                    IntegrationPoint = ModuleIntegrationPoint.HttpApi,
+                    PackageId = "SufiChain.SufiPlatform.Editions.HttpApi",
+                    ModuleType = "SufiChain.SufiPlatform.Editions.SufiEditionsHttpApiModule"
+                },
+                new ModuleBinding
+                {
+                    IntegrationPoint = ModuleIntegrationPoint.HttpApiClient,
+                    PackageId = "SufiChain.SufiPlatform.Editions.HttpApi.Client",
+                    ModuleType = "SufiChain.SufiPlatform.Editions.SufiEditionsHttpApiClientModule"
+                },
+                new ModuleBinding
+                {
+                    IntegrationPoint = ModuleIntegrationPoint.BlazorWebApp,
+                    PackageId = "SufiChain.SufiPlatform.Editions.Blazor",
+                    ModuleType = "SufiChain.SufiPlatform.Editions.SufiEditionsBlazorModule"
+                }
+            ]
+        });
+    }
+
+    private void RegisterProModules()
+    {
+        foreach (var module in ProModuleCatalog.CreateAll())
+        {
+            Register(module);
+        }
     }
     
     /// <summary>
@@ -330,6 +397,11 @@ public class ModuleRegistry
     public IEnumerable<ModuleDefinition> GetOptionalModules()
     {
         return _modules.Values.Where(m => !m.IsCore);
+    }
+
+    public IEnumerable<ModuleDefinition> GetDefaultModules()
+    {
+        return _modules.Values.Where(m => m.IsDefault);
     }
     
     /// <summary>
@@ -380,5 +452,51 @@ public class ModuleRegistry
         }
         
         return result;
+    }
+
+    public HashSet<string> ResolveSelection(
+        IEnumerable<string> requestedModuleKeys,
+        IEnumerable<string> excludedModuleKeys,
+        bool includeDefaults)
+    {
+        var requested = new HashSet<string>(
+            includeDefaults ? GetDefaultModules().Select(module => module.Key) : [],
+            StringComparer.OrdinalIgnoreCase);
+        requested.UnionWith(requestedModuleKeys);
+
+        var excluded = new HashSet<string>(excludedModuleKeys, StringComparer.OrdinalIgnoreCase);
+        var unknown = requested.Concat(excluded)
+            .Where(key => GetModule(key) == null)
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+
+        if (unknown.Length > 0)
+        {
+            throw new ArgumentException($"Unknown module key(s): {string.Join(", ", unknown)}");
+        }
+
+        var changed = true;
+        while (changed)
+        {
+            changed = false;
+            foreach (var module in GetOptionalModules())
+            {
+                if (excluded.Contains(module.Key) ||
+                    !module.DependsOn.Any(excluded.Contains))
+                {
+                    continue;
+                }
+
+                excluded.Add(module.Key);
+                changed = true;
+            }
+        }
+
+        requested.ExceptWith(excluded);
+        return new HashSet<string>(
+            ResolveWithDependencies(requested)
+                .Where(module => !excluded.Contains(module.Key))
+                .Select(module => module.Key),
+            StringComparer.OrdinalIgnoreCase);
     }
 }

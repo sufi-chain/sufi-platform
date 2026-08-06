@@ -7,8 +7,9 @@ public class EmbedderConfiguration
 {
     public AIProviderType Provider { get; set; }
     public string Model { get; set; } = string.Empty;
-    public string? ApiKey { get; set; }
-    public string? ApiBaseUrl { get; set; }
+   public string? ApiKey { get; set; }
+   public string? ApiBaseUrl { get; set; }
+    public int Dimensions { get; set; } = EmbeddingModelDefaults.FallbackDimensions;
 }
 
 public class VectorStoreConfiguration

@@ -21,7 +21,7 @@ env:
   NUGET_ORG_SOURCE_URL: https://api.nuget.org/v3/index.json
   NUGET_PUSH_PARALLELISM: "4"
   PACKAGE_OUTPUT: ./artifacts/nuget
-  ROOT_SLNX: SufiChain.SufiAbp.slnx
+  ROOT_SLNX: SufiChain.SufiPlatform.slnx
 
 concurrency:
   group: publish-nuget-org-${{ github.ref_name }}
@@ -30,6 +30,7 @@ concurrency:
 jobs:
   publish:
     runs-on: ubuntu-latest
+    environment: nuget-org
     steps:
       - name: Checkout
         uses: actions/checkout@v4

@@ -66,9 +66,6 @@ using SufiChain.SufiTheme.Blazor.Server;
 // </TEMPLATE-REMOVE>
 using SufiChain.SufiTheme.Blazor.Server.Bundling;
 using SufiChain.SufiBlazor;
-// <TEMPLATE-REMOVE IF-NOT="module:sufi-blazor-demo">
-using SufiChain.SufiBlazor.Demo;
-// </TEMPLATE-REMOVE>
 using MyCompanyName.MyProjectName.Blazor.WebApp;
 
 using MyCompanyName.MyProjectName.Data;
@@ -88,7 +85,6 @@ using Volo.Abp.AspNetCore.Mvc.Localization;
 // <TEMPLATE-REMOVE IF-NOT="module:jobs">
 // </TEMPLATE-REMOVE>
 using Volo.Abp.Data;
-using SufiChain.SufiPlatform.SufiCom.Email;
 // <TEMPLATE-REMOVE IF-NOT="db:mongodb">
 // </TEMPLATE-REMOVE>
 // <TEMPLATE-REMOVE IF-NOT="db:mongodb">
@@ -233,11 +229,7 @@ namespace MyCompanyName.MyProjectName;
     typeof(SufiMenusBlazorModule),
     typeof(SufiMenusBlazorServerModule),
     typeof(SufiMenusApplicationModule),
-    typeof(SufiMenusHttpApiModule),
-    // <TEMPLATE-REMOVE IF-NOT="module:sufi-blazor-demo">
-    // SufiBlazor component demo library
-    typeof(SufiBlazorDemoModule)
-    // </TEMPLATE-REMOVE>
+    typeof(SufiMenusHttpApiModule)
 )]
 public class DemoAppModule : AbpModule
 {

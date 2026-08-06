@@ -290,6 +290,9 @@
     "ServerKeyIsRequired": "La clave estable del servidor es obligatoria.",
     "AvailableTenantTools": "Herramientas del inquilino",
     "SelectToolsForTestRequest": "Seleccione las herramientas exactas que se incluirán en esta solicitud de prueba. No se envía ninguna de forma predeterminada.",
-    "NoToolsAvailable": "No hay herramientas disponibles para el inquilino."
+    "NoToolsAvailable": "No hay herramientas disponibles para el inquilino.",
+    "EmbeddingDimensions": "Dimensiones de embedding",
+    "EmbeddingDimensionsHelperText": "Déjelo vacío para usar el valor predeterminado del modelo (p. ej. 3072 para text-embedding-3-large, 1536 para text-embedding-3-small).",
+    "InvalidEmbeddingDimensions": "Las dimensiones de embedding deben ser un número entero positivo o estar vacías."
   }
 }

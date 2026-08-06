@@ -113,8 +113,6 @@
     <ProjectReference Include="..\..\..\..\..\modules\localization\src\SufiChain.SufiPlatform.Localization.Blazor\SufiChain.SufiPlatform.Localization.Blazor.csproj" />
     <ProjectReference Include="..\..\..\..\..\modules\localization\src\SufiChain.SufiPlatform.Localization.Application\SufiChain.SufiPlatform.Localization.Application.csproj" />
     <ProjectReference Include="..\..\..\..\..\modules\localization\src\SufiChain.SufiPlatform.Localization.HttpApi\SufiChain.SufiPlatform.Localization.HttpApi.csproj" />
-    <!-- Sufi Blazor Demo Library -->
-    <PackageReference Include="SufiChain.SufiBlazor.Demo" Version="$(SufiBlazorVersion)" />
   </ItemGroup>
   <!-- </TEMPLATE-REMOVE> -->
   <!-- <TEMPLATE-ONLY>
@@ -174,7 +172,6 @@
 		<PackageReference Include="SufiChain.SufiPlatform.Localization.Application" Version="$(SufiVersion)" />
 		<PackageReference Include="SufiChain.SufiPlatform.Localization.HttpApi" Version="$(SufiVersion)" />
 		<PackageReference Include="SufiChain.SufiBlazor" Version="$(SufiBlazorVersion)" />
-		<PackageReference Include="SufiChain.SufiBlazor.Demo" Version="$(SufiBlazorVersion)" />
 	</ItemGroup>
 	</TEMPLATE-ONLY> -->
   <ItemGroup>
@@ -205,7 +202,6 @@
     </PackageReference>
     <!-- </TEMPLATE-REMOVE> -->
     <PackageReference Include="Volo.Abp.Caching" Version="$(AbpVersion)" />
-    <PackageReference Include="SufiChain.SufiPlatform.SufiCom" Version="$(SufiVersion)" />
   </ItemGroup>
   <ItemGroup>
     <Compile Remove="Logs\**" />

@@ -36,7 +36,9 @@ public class HelpCommand : Command<HelpCommand.Settings>
         table.AddRow("-d, --database", "Database provider: 'ef' or 'mongo'", "mongo");
         table.AddRow("--tiered", "Tiered architecture with separate API + Auth hosts", "false");
         table.AddRow("--solution-kind", "Solution type: webapp or layered", "layered");
-        table.AddRow("--modules", "Optional sample/demo modules only", "none");
+        table.AddRow("--modules", "Additional module keys to include", "none");
+        table.AddRow("--exclude-modules", "Remove modules from the default full profile", "none");
+        table.AddRow("--no-default-modules", "Generate the platform foundation only", "false");
         table.AddRow("--include-website", "Include optional Blazor.WebSite host (tiered only)", "false");
         table.AddRow("-o, --output", "Output directory", "current directory");
 
@@ -48,6 +50,8 @@ public class HelpCommand : Command<HelpCommand.Settings>
         AnsiConsole.MarkupLine("  sufi new MyCompany.MyProject -d ef");
         AnsiConsole.MarkupLine("  sufi new MyCompany.MyProject -d mongo --solution-kind webapp");
         AnsiConsole.MarkupLine("  sufi new MyCompany.MyProject -d ef --tiered -o C:\\Projects");
+        AnsiConsole.MarkupLine("  sufi new MyCompany.MyProject --exclude-modules finance,helpdesk");
+        AnsiConsole.MarkupLine("  sufi new MyCompany.MyProject --no-default-modules --modules cms,forms");
         AnsiConsole.WriteLine();
 
         AnsiConsole.MarkupLine("[bold yellow]Database Providers:[/]");
@@ -61,8 +65,8 @@ public class HelpCommand : Command<HelpCommand.Settings>
         AnsiConsole.MarkupLine("  [green]WebApp[/]              - Integrated Blazor.WebApp with embedded API and cookie auth");
         AnsiConsole.WriteLine();
         AnsiConsole.MarkupLine("[bold yellow]Modules:[/]");
-        AnsiConsole.MarkupLine("  Real platform modules in src/modules are enabled by default.");
-        AnsiConsole.MarkupLine("  Demo/sample modules are opt-in, e.g. [green]--modules sufi-blazor-demo[/].");
+        AnsiConsole.MarkupLine("  The default full profile installs every production feature pack.");
+        AnsiConsole.MarkupLine("  Reduce it with [green]--exclude-modules[/], or start minimal with [green]--no-default-modules[/].");
 
         return 0;
     }

@@ -6,7 +6,7 @@ set -euo pipefail
 : "${NUGET_ORG_API_KEY:?NUGET_ORG_API_KEY is required}"
 : "${VERSION:?VERSION is required}"
 
-package_output="/src/${PACKAGE_OUTPUT#./}"
+package_output="${PACKAGE_OUTPUT#./}"
 
 mapfile -t skipped_packages < <(find "$package_output" -type f -name '*.nupkg' ! -name '*.symbols.nupkg' ! -name "*.${VERSION}.nupkg" | sort)
 if [ ${#skipped_packages[@]} -gt 0 ]; then

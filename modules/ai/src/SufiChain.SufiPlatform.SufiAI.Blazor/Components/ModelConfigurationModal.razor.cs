@@ -33,12 +33,19 @@ public partial class ModelConfigurationModal : AIComponentBase
     private string _openAIApiModeText = string.Empty;
     private string _inputCostPer1MTokensText = string.Empty;
     private string _outputCostPer1MTokensText = string.Empty;
+    private string _dimensionsText = string.Empty;
     private List<OpenAIModelDto> _availableModels = new();
     private int _activeTab;
     private bool _wasOpen;
 
     private bool ShowsOpenAIApiMode =>
         _model.CapabilityType is AICapabilityType.ChatCompletion or AICapabilityType.VisionAnalysis;
+
+    private bool ShowsEmbeddingDimensions =>
+        _model.CapabilityType == AICapabilityType.Embeddings;
+
+    private string EmbeddingDimensionsPlaceholder =>
+        EmbeddingModelDefaults.GetDimensions(_model.ModelId).ToString();
 
     private bool ShowsEndpointOverrideHint =>
         !string.IsNullOrWhiteSpace(_model.ApiEndpoint);
@@ -78,12 +85,14 @@ public partial class ModelConfigurationModal : AIComponentBase
                 OpenAIApiMode = Configuration.OpenAIApiMode,
                 InputCostPer1MTokens = Configuration.InputCostPer1MTokens,
                 OutputCostPer1MTokens = Configuration.OutputCostPer1MTokens,
-                Priority = Configuration.Priority
+                Priority = Configuration.Priority,
+                Dimensions = Configuration.Dimensions
             };
             _priorityText = Configuration.Priority.ToString();
             _openAIApiModeText = Configuration.OpenAIApiMode?.ToString() ?? string.Empty;
             _inputCostPer1MTokensText = Configuration.InputCostPer1MTokens?.ToString() ?? string.Empty;
             _outputCostPer1MTokensText = Configuration.OutputCostPer1MTokens?.ToString() ?? string.Empty;
+            _dimensionsText = Configuration.Dimensions?.ToString() ?? string.Empty;
             _availableModels = new List<OpenAIModelDto>
             {
                 new() { Id = Configuration.ModelId }
@@ -103,6 +112,7 @@ public partial class ModelConfigurationModal : AIComponentBase
             _openAIApiModeText = string.Empty;
             _inputCostPer1MTokensText = string.Empty;
             _outputCostPer1MTokensText = string.Empty;
+            _dimensionsText = string.Empty;
             _availableModels = new List<OpenAIModelDto>();
             _activeTab = 0;
         }
@@ -143,7 +153,7 @@ public partial class ModelConfigurationModal : AIComponentBase
         }
 
         _model.WorkspaceId = WorkspaceId.Value;
-        if (!TryApplyOpenAIApiMode() || !TryApplyPricing())
+        if (!TryApplyOpenAIApiMode() || !TryApplyPricing() || !TryApplyDimensions())
         {
             return;
         }
@@ -160,7 +170,8 @@ public partial class ModelConfigurationModal : AIComponentBase
                     OpenAIApiMode = _model.OpenAIApiMode,
                     InputCostPer1MTokens = _model.InputCostPer1MTokens,
                     OutputCostPer1MTokens = _model.OutputCostPer1MTokens,
-                    Priority = _model.Priority
+                    Priority = _model.Priority,
+                    Dimensions = _model.Dimensions
                 };
                 await AIAppService.UpdateModelConfigurationAsync(Configuration.Id, updateDto);
                 await Message.SuccessAsync(L["ConfigurationUpdated"]);
@@ -291,6 +302,30 @@ public partial class ModelConfigurationModal : AIComponentBase
         _model.InputCostPer1MTokens = inputCost;
         _model.OutputCostPer1MTokens = outputCost;
         return true;
+    }
+
+    private bool TryApplyDimensions()
+    {
+        if (!ShowsEmbeddingDimensions)
+        {
+            _model.Dimensions = null;
+            return true;
+        }
+
+        if (string.IsNullOrWhiteSpace(_dimensionsText))
+        {
+            _model.Dimensions = null;
+            return true;
+        }
+
+        if (int.TryParse(_dimensionsText, out var dimensions) && dimensions > 0)
+        {
+            _model.Dimensions = dimensions;
+            return true;
+        }
+
+        _ = Message.ErrorAsync(L["InvalidEmbeddingDimensions"]);
+        return false;
     }
 
     private static bool TryParseNullableDecimal(string? value, out decimal? result)

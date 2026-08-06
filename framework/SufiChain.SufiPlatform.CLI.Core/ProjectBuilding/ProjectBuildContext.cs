@@ -117,7 +117,7 @@ public class ProjectBuildContext
             Symbols.Add($"host:{host.ToString().ToLowerInvariant()}");
         }
         
-        // Real platform modules are enabled by default. Samples/demos are opt-in.
+        // Add symbols for the resolved foundation and selected feature packs.
         var moduleRegistry = new ModuleRegistry();
         var enabledModules = moduleRegistry.ResolveWithDependencies(Args.IncludedModules);
         foreach (var module in enabledModules)

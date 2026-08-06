@@ -50,8 +50,6 @@
     <!-- Tenant Management Module (Application services and API) -->
     <ProjectReference Include="..\..\..\..\..\modules\tenants\src\SufiChain.SufiPlatform.Tenants.Application\SufiChain.SufiPlatform.Tenants.Application.csproj" />
     <ProjectReference Include="..\..\..\..\..\modules\tenants\src\SufiChain.SufiPlatform.Tenants.HttpApi\SufiChain.SufiPlatform.Tenants.HttpApi.csproj" />
-    <!-- SufiBlazor Demo Localization (Blazor fetches from remote API) -->
-    <ProjectReference Include="..\..\..\..\..\independent-projects\sufi-blazor\src\SufiChain.SufiBlazor.Demo.Localization\SufiChain.SufiBlazor.Demo.Localization.csproj" />
     <!-- Localization Management Module (backend services for translation editor) -->
     <ProjectReference Include="..\..\..\..\..\modules\localization\src\SufiChain.SufiPlatform.Localization.Application\SufiChain.SufiPlatform.Localization.Application.csproj" />
     <ProjectReference Include="..\..\..\..\..\modules\localization\src\SufiChain.SufiPlatform.Localization.HttpApi\SufiChain.SufiPlatform.Localization.HttpApi.csproj" />

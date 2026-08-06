@@ -25,7 +25,7 @@ public class ListCommand : Command<ListCommand.Settings>
         {
             AnsiConsole.MarkupLine("[yellow]No templates found.[/]");
             AnsiConsole.WriteLine();
-            AnsiConsole.MarkupLine("For development, set the [green]SOPHI_TEMPLATE_PATH[/] environment variable to point to the template directory.");
+            AnsiConsole.MarkupLine("For development, set the [green]SUFI_TEMPLATE_PATH[/] environment variable to point to the template directory.");
             return 0;
         }
 
@@ -59,7 +59,7 @@ public class ListCommand : Command<ListCommand.Settings>
         AnsiConsole.WriteLine();
 
         AnsiConsole.MarkupLine("[dim]Usage:[/] sufi new [options]");
-        AnsiConsole.MarkupLine("[dim]Example:[/] sufi new -n MyCompany.MyApp -d ef --tiered");
+        AnsiConsole.MarkupLine("[dim]Example:[/] sufi new MyCompany.MyApp -d ef --tiered");
         
         return 0;
     }

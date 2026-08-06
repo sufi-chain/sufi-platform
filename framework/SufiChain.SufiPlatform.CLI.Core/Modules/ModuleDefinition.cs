@@ -31,6 +31,11 @@ public class ModuleDefinition
     /// Whether this is a core module that is always included.
     /// </summary>
     public bool IsCore { get; init; }
+
+    /// <summary>
+    /// Whether this optional module is included by the full/default profile.
+    /// </summary>
+    public bool IsDefault { get; init; }
     
     /// <summary>
     /// Other modules this module depends on.
@@ -51,6 +56,41 @@ public class ModuleDefinition
     /// Available package types for this module.
     /// </summary>
     public ModulePackageTypes AvailablePackages { get; init; } = ModulePackageTypes.All;
+
+    /// <summary>
+    /// Published packages and module types to inject into generated applications.
+    /// Empty for modules already embedded in the base template.
+    /// </summary>
+    public ModuleBinding[] Bindings { get; init; } = Array.Empty<ModuleBinding>();
+}
+
+public sealed class ModuleBinding
+{
+    public required ModuleIntegrationPoint IntegrationPoint { get; init; }
+
+    public required string PackageId { get; init; }
+
+    public required string ModuleType { get; init; }
+
+    public string VersionProperty { get; init; } = "SufiVersion";
+
+    public DatabaseProvider? DatabaseProvider { get; init; }
+}
+
+public enum ModuleIntegrationPoint
+{
+    DomainShared,
+    Domain,
+    ApplicationContracts,
+    Application,
+    EntityFrameworkCore,
+    MongoDB,
+    HttpApi,
+    HttpApiClient,
+    BackendHost,
+    BlazorWebApp,
+    BlazorWebSite,
+    DbMigrator
 }
 
 /// <summary>

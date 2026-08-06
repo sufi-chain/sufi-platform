@@ -47,11 +47,13 @@ public class WorkspaceEmbedderResolver : IWorkspaceEmbedderResolver, ITransientD
             Provider = workspace.Provider,
             Model = configuration.ModelId,
             ApiKey = apiKey,
-            ApiBaseUrl = !string.IsNullOrWhiteSpace(configuration.ApiEndpoint)
-                ? configuration.ApiEndpoint
-                : workspace.ApiBaseUrl
-        };
-    }
+          ApiBaseUrl = !string.IsNullOrWhiteSpace(configuration.ApiEndpoint)
+              ? configuration.ApiEndpoint
+               : workspace.ApiBaseUrl,
+           Dimensions = configuration.Dimensions
+               ?? EmbeddingModelDefaults.GetDimensions(configuration.ModelId)
+      };
+   }
 
     protected virtual string? DecryptApiKey(string? encryptedApiKey)
     {

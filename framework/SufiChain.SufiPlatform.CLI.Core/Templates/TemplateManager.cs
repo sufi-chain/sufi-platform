@@ -14,8 +14,10 @@ public class TemplateManager
 
     private const string CdnBaseUrl = "https://cdn.sufichain.com/templates";
     private const string LatestVersionFileName = "latest.json";
-    private const string LocalTemplateEnvironmentVariable = "SOPHI_TEMPLATE_PATH";
-    private const string LocalTemplateZipEnvironmentVariable = "SOPHI_TEMPLATE_ZIP";
+    private const string LocalTemplateEnvironmentVariable = "SUFI_TEMPLATE_PATH";
+    private const string LocalTemplateZipEnvironmentVariable = "SUFI_TEMPLATE_ZIP";
+    private const string LegacyLocalTemplateEnvironmentVariable = "SOPHI_TEMPLATE_PATH";
+    private const string LegacyLocalTemplateZipEnvironmentVariable = "SOPHI_TEMPLATE_ZIP";
 
     private static readonly bool IsDebugMode =
 #if DEBUG
@@ -54,13 +56,17 @@ public class TemplateManager
     {
         templateName = NormalizeTemplateName(templateName);
 
-        var explicitZip = Environment.GetEnvironmentVariable(LocalTemplateZipEnvironmentVariable);
+        var explicitZip = GetEnvironmentVariable(
+            LocalTemplateZipEnvironmentVariable,
+            LegacyLocalTemplateZipEnvironmentVariable);
         if (!string.IsNullOrWhiteSpace(explicitZip))
         {
             return ExtractTemplateZip(explicitZip);
         }
 
-        var explicitTemplatePath = Environment.GetEnvironmentVariable(LocalTemplateEnvironmentVariable);
+        var explicitTemplatePath = GetEnvironmentVariable(
+            LocalTemplateEnvironmentVariable,
+            LegacyLocalTemplateEnvironmentVariable);
         if (!string.IsNullOrWhiteSpace(explicitTemplatePath))
         {
             return explicitTemplatePath.EndsWith(".zip", StringComparison.OrdinalIgnoreCase)
@@ -90,7 +96,9 @@ public class TemplateManager
     /// </summary>
     public string? GetTemplatePath(string templateName)
     {
-        var explicitTemplatePath = Environment.GetEnvironmentVariable(LocalTemplateEnvironmentVariable);
+        var explicitTemplatePath = GetEnvironmentVariable(
+            LocalTemplateEnvironmentVariable,
+            LegacyLocalTemplateEnvironmentVariable);
         if (!string.IsNullOrWhiteSpace(explicitTemplatePath) && Directory.Exists(explicitTemplatePath))
         {
             return ResolveTemplateDirectory(explicitTemplatePath);
@@ -116,11 +124,17 @@ public class TemplateManager
                 continue;
             }
 
+            var relativePath = NormalizeEntryPath(entry.FullName);
+            if (ShouldSkipFile(relativePath))
+            {
+                continue;
+            }
+
             using var entryStream = entry.Open();
             using var memoryStream = new MemoryStream();
             entryStream.CopyTo(memoryStream);
 
-            files[NormalizeEntryPath(entry.FullName)] = memoryStream.ToArray();
+            files[relativePath] = memoryStream.ToArray();
         }
 
         return files;
@@ -348,6 +362,12 @@ public class TemplateManager
             : templateName;
     }
 
+    private static string? GetEnvironmentVariable(string currentName, string legacyName)
+    {
+        return Environment.GetEnvironmentVariable(currentName) ??
+               Environment.GetEnvironmentVariable(legacyName);
+    }
+
     private static string GetLatestManifestUrl()
     {
         return $"{CdnBaseUrl}/{LatestVersionFileName}";
@@ -377,6 +397,8 @@ public class TemplateManager
                path.EndsWith(".user", StringComparison.Ordinal) ||
                path.EndsWith(".suo", StringComparison.Ordinal) ||
                path.EndsWith(".log", StringComparison.Ordinal) ||
-               path.EndsWith("logs.txt", StringComparison.Ordinal);
+               path.EndsWith("logs.txt", StringComparison.Ordinal) ||
+               path.EndsWith("-wal", StringComparison.Ordinal) ||
+               path.EndsWith("-shm", StringComparison.Ordinal);
     }
 }
