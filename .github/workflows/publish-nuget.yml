@@ -12,6 +12,7 @@ on:
 
 permissions:
   contents: read
+  id-token: write
 
 env:
   DOTNET_NOLOGO: true
@@ -75,16 +76,22 @@ jobs:
           chmod +x .github/scripts/nuget-pack.sh
           bash .github/scripts/nuget-pack.sh
 
+      - name: Log in to nuget.org with Trusted Publishing
+        id: nuget-login
+        uses: NuGet/login@v1
+        with:
+          user: ${{ vars.NUGET_USER }}
+
       - name: Push packages to nuget.org
         shell: bash
         env:
-          NUGET_ORG_API_KEY: ${{ secrets.NUGET_ORG_API_KEY }}
+          NUGET_ORG_API_KEY: ${{ steps.nuget-login.outputs.NUGET_API_KEY }}
           VERSION: ${{ steps.version.outputs.version }}
           PACKAGE_OUTPUT: ${{ env.PACKAGE_OUTPUT }}/${{ steps.version.outputs.version }}
         run: |
           set -euo pipefail
           if [ -z "${NUGET_ORG_API_KEY:-}" ]; then
-            echo "NUGET_ORG_API_KEY repository secret is required." >&2
+            echo "NuGet Trusted Publishing did not return a temporary API key." >&2
             exit 1
           fi
           chmod +x .github/scripts/nuget-push-nuget-org.sh
