@@ -2,6 +2,7 @@ using SufiChain.SufiPlatform.Account;
 using SufiChain.SufiPlatform.SufiAI;
 using SufiChain.SufiPlatform.AuditLogging;
 using SufiChain.SufiPlatform.AuditLogging.MongoDB;
+using SufiChain.SufiPlatform.BackgroundJobs;
 using SufiChain.SufiPlatform.BackgroundJobs.MongoDB;
 using SufiChain.SufiPlatform.BlobDatabase.MongoDB;
 using SufiChain.SufiPlatform.Features;
