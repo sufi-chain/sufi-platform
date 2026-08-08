@@ -85,18 +85,9 @@ for i in "${!packable_package_ids[@]}"; do
   printf '  [%d] %s (%s)\n' "$((i+1))" "${packable_package_ids[$i]}" "${packable_project_paths[$i]}"
 done
 
-dotnet pack "$ROOT_SLNX" \
-  --configuration Release \
-  --no-build \
-  --output "$package_output" \
-  --verbosity minimal \
-  -p:PackageVersion="$VERSION" \
-  -p:UseLocalDevelopmentReferences=false \
-  -p:ContinuousIntegrationBuild=true
-
 for csproj in "${production_projects[@]}"; do
   if ! printf '%s\n' "${solution_projects[@]}" | grep -Fqx "$csproj"; then
-    echo "Project is not in $ROOT_SLNX; restoring and packing directly: $csproj"
+    echo "Prebuilding and packing project outside $ROOT_SLNX: $csproj"
     dotnet restore "$csproj" \
       --configfile /tmp/ci-nuget.config \
       --verbosity minimal \
@@ -109,10 +100,21 @@ for csproj in "${production_projects[@]}"; do
       --output "$package_output" \
       --verbosity minimal \
       -p:PackageVersion="$VERSION" \
+      -p:GeneratePackageOnBuild=false \
       -p:UseLocalDevelopmentReferences=false \
       -p:ContinuousIntegrationBuild=true
   fi
 done
+
+dotnet pack "$ROOT_SLNX" \
+  --configuration Release \
+  --no-build \
+  --output "$package_output" \
+  --verbosity minimal \
+  -p:PackageVersion="$VERSION" \
+  -p:GeneratePackageOnBuild=false \
+  -p:UseLocalDevelopmentReferences=false \
+  -p:ContinuousIntegrationBuild=true
 
 missing_package_ids=()
 for i in "${!packable_package_ids[@]}"; do
