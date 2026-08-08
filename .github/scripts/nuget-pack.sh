@@ -39,6 +39,7 @@ dotnet build "$ROOT_SLNX" \
   --verbosity minimal \
   -m \
   -p:PackageVersion="$VERSION" \
+  -p:GeneratePackageOnBuild=false \
   -p:UseLocalDevelopmentReferences=false \
   -p:ContinuousIntegrationBuild=true \
   -p:BuildInParallel=true
