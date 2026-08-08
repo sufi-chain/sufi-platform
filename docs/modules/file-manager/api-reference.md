@@ -279,7 +279,7 @@ public enum FileType
 
 ## HTTP API Endpoints
 
-**Base path:** `api/sabp/file-manager`
+**Base path:** `api/sufi/file-manager`
 
 ### File Items
 

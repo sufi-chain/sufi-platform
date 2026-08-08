@@ -9,7 +9,7 @@
 
 @if (alerts.Any())
 {
-    <div class="sabp-page-alerts">
+    <div class="sufi-page-alerts">
         @foreach (var alert in alerts)
         {
             <SbAlert Severity="@GetAlertSeverity(alert.Type)" 

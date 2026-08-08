@@ -22,12 +22,12 @@ public static class FileStructureStorageConstants
     /// <summary>
     /// Default blob container name when no structure-specific config exists
     /// </summary>
-    public const string DefaultContainerName = "sabp-file-manager";
+    public const string DefaultContainerName = "sufi-file-manager";
 
     /// <summary>
     /// Container name prefix for structure-specific storage
     /// </summary>
-    public const string ContainerNamePrefix = "sabp-file-manager-";
+    public const string ContainerNamePrefix = "sufi-file-manager-";
 
     /// <summary>
     /// Standardized root path for file-manager FileSystem storage.

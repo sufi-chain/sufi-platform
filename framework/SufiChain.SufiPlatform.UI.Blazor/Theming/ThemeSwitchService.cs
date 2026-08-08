@@ -9,7 +9,7 @@ namespace SufiChain.SufiPlatform.UI.Blazor.Theming;
 /// </summary>
 public class ThemeSwitchService : IThemeSwitchService
 {
-    private const string StorageKey = "sabp-theme-mode";
+    private const string StorageKey = "sufi-theme-mode";
     
     private readonly ILocalStorageService _localStorage;
     private readonly IJSRuntime _jsRuntime;

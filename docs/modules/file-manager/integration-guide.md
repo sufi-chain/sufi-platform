@@ -240,7 +240,7 @@ var thumbnailUrl = await _fileItemAppService.GetThumbnailUrlAsync(fileId);
 var streamUrl = await _fileItemAppService.GetStreamUrlAsync(fileId);
 ```
 
-**HTTP API base path:** `api/sabp/file-manager/file-items`  
+**HTTP API base path:** `api/sufi/file-manager/file-items`  
 - Download: `GET .../{id}/download` — Thumbnail: `GET .../{id}/thumbnail` — Stream: `GET .../{id}/stream`
 
 In tiered Blazor apps, use **IFileItemUrlProvider** (Blazor.Public) so URLs point to the API. See [Configuration – Tiered applications](configuration.md#3-tiered-applications-blazor-and-api-on-different-urls).

@@ -18,7 +18,7 @@ using Caching = SufiChain.SufiPlatform.FileManager.Caching;
 
 /// <summary>
 /// Provides blob container configuration for file-manager containers.
-/// For sabp-file-manager and sabp-file-manager-{structureKey}, resolves config from FileStructure ExtraProperties.
+/// For sufi-file-manager and sufi-file-manager-{structureKey}, resolves config from FileStructure ExtraProperties.
 /// Uses structure cache when available to avoid database queries.
 /// </summary>
 public class StructureBlobContainerConfigurationProvider : IBlobContainerConfigurationProvider, ITransientDependency

@@ -2,7 +2,7 @@ using Volo.Abp.BlobStoring;
 
 namespace SufiChain.SufiPlatform.FileManager.Storage;
 
-[BlobContainerName("sabp-file-manager")]
+[BlobContainerName("sufi-file-manager")]
 public class FileManagerContainer
 {
 }

@@ -14,7 +14,7 @@ using SufiChain.SufiPlatform.AspNetCore.Mvc.Controllers;
 
 namespace SufiChain.SufiPlatform.FileManager.Controllers;
 
-[Area("sabp-file-manager")]
+[Area("sufi-file-manager")]
 [RemoteService(Name = "FileManager")]
 [Route("api/file-manager/file-items")]
 public class FileItemController : SufiControllerBase, IFileItemAppService

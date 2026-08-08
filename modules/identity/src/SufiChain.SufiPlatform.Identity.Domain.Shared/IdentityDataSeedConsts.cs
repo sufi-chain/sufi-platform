@@ -2,7 +2,7 @@ namespace SufiChain.SufiPlatform.Identity;
 
 public static class IdentityDataSeedConsts
 {
-    public const string AdminEmailDefaultValue = "admin@sabp.com";
+    public const string AdminEmailDefaultValue = "admin@sufichain.com";
     public const string AdminUserNameDefaultValue = "admin";
     public const string AdminRoleNameDefaultValue = "admin";
     public const string UserRoleNameDefaultValue = "user";

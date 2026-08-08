@@ -11,14 +11,14 @@
 @inject IJSRuntime JSRuntime
 @inject IStringLocalizer<SufiFrameworkResource> L
 
-<div class="sabp-error-page" role="alert">
-    <div class="sabp-error-page__card">
-        <div class="sabp-error-page__icon">
+<div class="sufi-error-page" role="alert">
+    <div class="sufi-error-page__card">
+        <div class="sufi-error-page__icon">
             <SbIcon Name="@GetIconName()" Size="SbSize.Xl" Color="@GetIconColor()" />
         </div>
-        <h1 class="sabp-error-page__title" id="sabp-error-page-title">@Title</h1>
-        <p class="sabp-error-page__message">@Message</p>
-        <div class="sabp-error-page__actions">
+        <h1 class="sufi-error-page__title" id="sufi-error-page-title">@Title</h1>
+        <p class="sufi-error-page__message">@Message</p>
+        <div class="sufi-error-page__actions">
             @if (_showGoBack)
             {
                 <SbButton Variant="SbButtonVariant.Outline" Color="SbColor.Secondary" OnClick="GoBackAsync">

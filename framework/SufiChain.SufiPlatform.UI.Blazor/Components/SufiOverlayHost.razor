@@ -33,10 +33,10 @@
 @* ====== BLOCK UI OVERLAY ====== *@
 @if (_isBlocked)
 {
-    <div class="sabp-block-ui-overlay" role="progressbar" aria-busy="true">
+    <div class="sufi-block-ui-overlay" role="progressbar" aria-busy="true">
         @if (_showBusy)
         {
-            <div class="sabp-block-ui-spinner">
+            <div class="sufi-block-ui-spinner">
                 <SbProgress Type="SbProgressType.Circular" Size="SbSize.Lg" />
             </div>
         }
@@ -46,17 +46,17 @@
 @* ====== PAGE PROGRESS BAR ====== *@
 @if (_showPageProgress)
 {
-    <div class="sabp-page-progress">
+    <div class="sufi-page-progress">
         <SbProgress Type="SbProgressType.Linear"
                     Indeterminate="@_pageProgressIndeterminate"
                     Value="@_pageProgressValue"
-                    Class="sabp-page-progress__bar" />
+                    Class="sufi-page-progress__bar" />
     </div>
 }
 
 @* ====== CONFIRM DIALOG (native dialog for top-layer stacking above SbDialog modals) ====== *@
 <dialog @ref="_confirmDialogRef"
-        class="sabp-overlay-host-dialog"
+        class="sufi-overlay-host-dialog"
         @onclick="OnConfirmOverlayClick"
         @oncancel="OnConfirmCancel">
     <div class="sb-confirm-dialog sb-confirm-dialog--default" @onclick:stopPropagation="true" role="alertdialog" aria-modal="true">
@@ -85,7 +85,7 @@
 
 @* ====== MESSAGE DIALOG (native dialog for top-layer stacking above SbDialog modals) ====== *@
 <dialog @ref="_messageDialogRef"
-        class="sabp-overlay-host-dialog"
+        class="sufi-overlay-host-dialog"
         @onclick="CloseMessage"
         @oncancel="CloseMessage">
     <div class="sb-confirm-dialog sb-confirm-dialog--@GetMessageVariant()" @onclick:stopPropagation="true" role="alertdialog" aria-modal="true">
@@ -115,8 +115,8 @@
 @* ====== TOAST NOTIFICATIONS (popover for top-layer stacking above SbDialog modals) ====== *@
 <div @ref="_toastHostRef"
      popover="manual"
-     class="sabp-toast-popover-host">
-    <div class="sb-toast-host sb-toast-host--top-right sabp-overlay-host-toast">
+     class="sufi-toast-popover-host">
+    <div class="sb-toast-host sb-toast-host--top-right sufi-overlay-host-toast">
         @foreach (var toast in GetToastsSnapshot())
         {
             <div class="sb-toast-host__item @(toast.IsLeaving ? "sb-toast-host__item--leaving" : "sb-toast-host__item--entering")">
@@ -131,7 +131,7 @@
 </div>
 
 <style>
-    .sabp-block-ui-overlay {
+    .sufi-block-ui-overlay {
         position: fixed;
         top: 0;
         left: 0;
@@ -144,14 +144,14 @@
         justify-content: center;
     }
 
-    .sabp-block-ui-spinner {
+    .sufi-block-ui-spinner {
         padding: var(--sb-space-6, 1.5rem);
         background: var(--sb-color-surface, white);
         border-radius: var(--sb-radius-lg, 0.5rem);
         box-shadow: var(--sb-shadow-xl, 0 20px 25px -5px rgba(0, 0, 0, 0.1));
     }
 
-    .sabp-page-progress {
+    .sufi-page-progress {
         position: fixed;
         top: 0;
         left: 0;
@@ -159,17 +159,17 @@
         z-index: 2147483645; /* Just below block UI, above all other z-index elements */
     }
 
-    .sabp-page-progress__bar {
+    .sufi-page-progress__bar {
         border-radius: 0;
     }
 
     /* Native dialog styling - uses top layer so always on top of SbDialog modals */
     /* Closed: hide completely (our display:flex would override browser's default display:none) */
-    .sabp-overlay-host-dialog:not([open]) {
+    .sufi-overlay-host-dialog:not([open]) {
         display: none;
     }
 
-    .sabp-overlay-host-dialog[open] {
+    .sufi-overlay-host-dialog[open] {
         position: fixed;
         inset: 0;
         width: 100%;
@@ -186,18 +186,18 @@
         padding: var(--sb-space-4);
     }
 
-    .sabp-overlay-host-dialog::backdrop {
+    .sufi-overlay-host-dialog::backdrop {
         background-color: rgba(0, 0, 0, 0.5);
         backdrop-filter: blur(2px);
     }
 
-    .sabp-overlay-host-toast {
+    .sufi-overlay-host-toast {
         pointer-events: auto; /* Override sb-toast-host's none so toasts are clickable */
         z-index: 2147483644;
     }
 
     /* Toast popover: full viewport, transparent, pointer-events none so modal stays interactive */
-    .sabp-toast-popover-host {
+    .sufi-toast-popover-host {
         position: fixed;
         inset: 0;
         pointer-events: none;

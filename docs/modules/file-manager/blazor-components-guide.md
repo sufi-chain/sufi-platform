@@ -429,19 +429,19 @@ Components use SufiBlazor (`Sb*`) and standard CSS classes. Override as needed:
 
 ```css
 /* Uploader */
-.sabp-file-uploader { }
-.sabp-file-uploader-dropzone { }
+.sufi-file-uploader { }
+.sufi-file-uploader-dropzone { }
 
 /* Gallery */
-.sabp-file-gallery { }
-.sabp-file-gallery-grid { }
+.sufi-file-gallery { }
+.sufi-file-gallery-grid { }
 
 /* Card */
-.sabp-file-card { }
-.sabp-file-card-thumbnail { }
+.sufi-file-card { }
+.sufi-file-card-thumbnail { }
 
 /* Thumbnail */
-.sabp-file-thumbnail { }
+.sufi-file-thumbnail { }
 ```
 
 ---

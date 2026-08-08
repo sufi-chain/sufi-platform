@@ -216,19 +216,19 @@ export function createImagePreview(imageData, elementId) {
  */
 export function openLightbox(imageUrl, title) {
     const overlay = document.createElement('div');
-    overlay.className = 'sabp-fm-lightbox-overlay';
+    overlay.className = 'sufi-fm-lightbox-overlay';
     overlay.innerHTML = `
-        <div class="sabp-fm-lightbox-content">
-            <span class="sabp-fm-lightbox-close">&times;</span>
-            <img src="${imageUrl}" alt="${title}" class="sabp-fm-lightbox-image">
-            <div class="sabp-fm-lightbox-caption">${title}</div>
+        <div class="sufi-fm-lightbox-content">
+            <span class="sufi-fm-lightbox-close">&times;</span>
+            <img src="${imageUrl}" alt="${title}" class="sufi-fm-lightbox-image">
+            <div class="sufi-fm-lightbox-caption">${title}</div>
         </div>
     `;
 
     document.body.appendChild(overlay);
 
     overlay.addEventListener('click', function (e) {
-        if (e.target === overlay || e.target.className === 'sabp-fm-lightbox-close') {
+        if (e.target === overlay || e.target.className === 'sufi-fm-lightbox-close') {
             document.body.removeChild(overlay);
         }
     });
@@ -383,17 +383,17 @@ export function scrollToElement(elementId) {
  */
 export function showToast(message, type = 'info', duration = 3000) {
     const toast = document.createElement('div');
-    toast.className = `sabp-fm-toast sabp-fm-toast-${type}`;
+    toast.className = `sufi-fm-toast sufi-fm-toast-${type}`;
     toast.textContent = message;
 
     document.body.appendChild(toast);
 
     setTimeout(() => {
-        toast.classList.add('sabp-fm-toast-show');
+        toast.classList.add('sufi-fm-toast-show');
     }, 100);
 
     setTimeout(() => {
-        toast.classList.remove('sabp-fm-toast-show');
+        toast.classList.remove('sufi-fm-toast-show');
         setTimeout(() => {
             if (document.body.contains(toast)) {
                 document.body.removeChild(toast);
@@ -423,7 +423,7 @@ export function dispose(elementId) {
 // Inject CSS styles for lightbox and toast
 const style = document.createElement('style');
 style.textContent = `
-    .sabp-fm-lightbox-overlay {
+    .sufi-fm-lightbox-overlay {
         position: fixed;
         top: 0;
         left: 0;
@@ -436,19 +436,19 @@ style.textContent = `
         justify-content: center;
     }
 
-    .sabp-fm-lightbox-content {
+    .sufi-fm-lightbox-content {
         position: relative;
         max-width: 90%;
         max-height: 90%;
     }
 
-    .sabp-fm-lightbox-image {
+    .sufi-fm-lightbox-image {
         max-width: 100%;
         max-height: 80vh;
         object-fit: contain;
     }
 
-    .sabp-fm-lightbox-close {
+    .sufi-fm-lightbox-close {
         position: absolute;
         top: -40px;
         right: 0;
@@ -458,14 +458,14 @@ style.textContent = `
         cursor: pointer;
     }
 
-    .sabp-fm-lightbox-caption {
+    .sufi-fm-lightbox-caption {
         text-align: center;
         color: white;
         padding: 10px;
         font-size: 16px;
     }
 
-    .sabp-fm-toast {
+    .sufi-fm-toast {
         position: fixed;
         bottom: 20px;
         right: 20px;
@@ -479,25 +479,25 @@ style.textContent = `
         transition: all 0.3s ease;
     }
 
-    .sabp-fm-toast-show {
+    .sufi-fm-toast-show {
         opacity: 1;
         transform: translateY(0);
     }
 
-    .sabp-fm-toast-info {
+    .sufi-fm-toast-info {
         background-color: #17a2b8;
     }
 
-    .sabp-fm-toast-success {
+    .sufi-fm-toast-success {
         background-color: #28a745;
     }
 
-    .sabp-fm-toast-warning {
+    .sufi-fm-toast-warning {
         background-color: #ffc107;
         color: #000;
     }
 
-    .sabp-fm-toast-error {
+    .sufi-fm-toast-error {
         background-color: #dc3545;
     }
 `;
