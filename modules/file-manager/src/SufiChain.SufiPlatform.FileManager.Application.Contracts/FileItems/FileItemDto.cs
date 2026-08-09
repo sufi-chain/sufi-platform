@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using SufiChain.SufiPlatform.FileManager.FileTypes;
+using SufiChain.SufiPlatform.FileManager.Storage;
 using SufiChain.SufiPlatform.Application.Dtos;
 
 namespace SufiChain.SufiPlatform.FileManager.FileItems;
@@ -13,6 +14,7 @@ public class FileItemDto : FullAuditedEntityDto<Guid>
     public string BlobName { get; set; } = default!;
     public string MimeType { get; set; } = default!;
     public long Size { get; set; }
+    public FileStructureStorageProvider? StorageProvider { get; set; }
     public FileType FileType { get; set; }
     public int? Width { get; set; }
     public int? Height { get; set; }

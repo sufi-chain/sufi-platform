@@ -46,4 +46,6 @@ public static class FileManagerErrorCodes
     // Storage errors (060xxx)
     public const string StorageQuotaExceeded = "SufiChain.SufiPlatform.FileManager:060001";
     public const string ZipDownloadNoFiles = "SufiChain.SufiPlatform.FileManager:060002";
+    public const string StorageQuotaLockTimeout = "SufiChain.SufiPlatform.FileManager:060003";
+    public const string StorageProviderConfigurationMissing = "SufiChain.SufiPlatform.FileManager:060004";
 }

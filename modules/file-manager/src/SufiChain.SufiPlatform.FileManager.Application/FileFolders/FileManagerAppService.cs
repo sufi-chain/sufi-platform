@@ -30,6 +30,7 @@ public class FileManagerAppService : SufiApplicationService, IFileManagerAppServ
     private readonly IDistributedCache<ClipboardStateDto> _clipboardCache;
     private readonly IDistributedCache<ZipDownloadCacheItem> _zipDownloadCache;
     private readonly IStructureBlobContainerProvider _structureBlobContainerProvider;
+    private readonly IFileStorageQuotaGuard _storageQuotaGuard;
 
     private static readonly TimeSpan ZipDownloadTtl = TimeSpan.FromMinutes(15);
 
@@ -38,13 +39,15 @@ public class FileManagerAppService : SufiApplicationService, IFileManagerAppServ
         IFileItemRepository fileItemRepository,
         IDistributedCache<ClipboardStateDto> clipboardCache,
         IDistributedCache<ZipDownloadCacheItem> zipDownloadCache,
-        IStructureBlobContainerProvider structureBlobContainerProvider)
+        IStructureBlobContainerProvider structureBlobContainerProvider,
+        IFileStorageQuotaGuard storageQuotaGuard)
     {
         _folderRepository = folderRepository;
         _fileItemRepository = fileItemRepository;
         _clipboardCache = clipboardCache;
         _zipDownloadCache = zipDownloadCache;
         _structureBlobContainerProvider = structureBlobContainerProvider;
+        _storageQuotaGuard = storageQuotaGuard;
     }
 
     private string GetClipboardCacheKey() => $"FileManager:Clipboard:{CurrentUser.Id}";
@@ -324,7 +327,9 @@ public class FileManagerAppService : SufiApplicationService, IFileManagerAppServ
             try
             {
                 var fileItem = await _fileItemRepository.GetAsync(fileId);
-                var blobContainer = await _structureBlobContainerProvider.GetContainerAsync(fileItem.StructureKey);
+                var blobContainer = await _structureBlobContainerProvider.GetContainerAsync(
+                    fileItem.StructureKey,
+                    fileItem.StorageProvider);
 
                 // Delete from blob storage
                 await blobContainer.DeleteAsync(fileItem.BlobName);
@@ -405,7 +410,9 @@ public class FileManagerAppService : SufiApplicationService, IFileManagerAppServ
         {
             foreach (var file in files)
             {
-                var blobContainer = await _structureBlobContainerProvider.GetContainerAsync(file.StructureKey);
+                var blobContainer = await _structureBlobContainerProvider.GetContainerAsync(
+                    file.StructureKey,
+                    file.StorageProvider);
                 await using var blobStream = await blobContainer.GetOrNullAsync(file.BlobName);
                 if (blobStream == null)
                 {
@@ -647,11 +654,22 @@ public class FileManagerAppService : SufiApplicationService, IFileManagerAppServ
     private async Task CopyFileToFolderAsync(Guid fileId, Guid? targetFolderId, ConflictResolution conflictResolution)
     {
         var sourceFile = await _fileItemRepository.GetAsync(fileId);
-        var blobContainer = await _structureBlobContainerProvider.GetContainerAsync(sourceFile.StructureKey);
+        await _storageQuotaGuard.ExecuteAsync(
+            sourceFile.Size,
+            () => CopyFileToFolderCoreAsync(sourceFile, targetFolderId));
+    }
+
+    private async Task CopyFileToFolderCoreAsync(FileItem sourceFile, Guid? targetFolderId)
+    {
+        var sourceBlobContainer = await _structureBlobContainerProvider.GetContainerAsync(
+            sourceFile.StructureKey,
+            sourceFile.StorageProvider);
+        var writeContainer = await _structureBlobContainerProvider.GetWriteContainerAsync(sourceFile.StructureKey);
+        var destinationBlobContainer = writeContainer.Container;
 
         // Copy blob data
         byte[] blobData;
-        await using (var stream = await blobContainer.GetOrNullAsync(sourceFile.BlobName))
+        await using (var stream = await sourceBlobContainer.GetOrNullAsync(sourceFile.BlobName))
         {
             if (stream == null)
                 throw new Volo.Abp.UserFriendlyException("Source file blob not found");
@@ -661,13 +679,13 @@ public class FileManagerAppService : SufiApplicationService, IFileManagerAppServ
         }
 
         var newBlobName = GenerateNewBlobName(sourceFile.BlobName);
-        await blobContainer.SaveAsync(newBlobName, new MemoryStream(blobData), overrideExisting: true);
+        await destinationBlobContainer.SaveAsync(newBlobName, new MemoryStream(blobData), overrideExisting: true);
 
         // Copy thumbnail if exists
         string? newThumbnailBlobName = null;
         if (!string.IsNullOrEmpty(sourceFile.ThumbnailBlobName))
         {
-            await using (var thumbStream = await blobContainer.GetOrNullAsync(sourceFile.ThumbnailBlobName))
+            await using (var thumbStream = await sourceBlobContainer.GetOrNullAsync(sourceFile.ThumbnailBlobName))
             {
                 if (thumbStream != null)
                 {
@@ -675,7 +693,7 @@ public class FileManagerAppService : SufiApplicationService, IFileManagerAppServ
                     await thumbStream.CopyToAsync(thumbMs);
                     var thumbnailData = thumbMs.ToArray();
                     newThumbnailBlobName = GenerateNewBlobName(sourceFile.ThumbnailBlobName);
-                    await blobContainer.SaveAsync(newThumbnailBlobName, new MemoryStream(thumbnailData), overrideExisting: true);
+                    await destinationBlobContainer.SaveAsync(newThumbnailBlobName, new MemoryStream(thumbnailData), overrideExisting: true);
                 }
             }
         }
@@ -702,6 +720,7 @@ public class FileManagerAppService : SufiApplicationService, IFileManagerAppServ
             IsProcessed = sourceFile.IsProcessed,
             IsTemp = false
         };
+        newFile.SetStorageProvider(writeContainer.StorageProvider);
 
         await _fileItemRepository.InsertAsync(newFile, autoSave: true);
     }
@@ -822,7 +841,9 @@ public class FileManagerAppService : SufiApplicationService, IFileManagerAppServ
 
         foreach (var file in files)
         {
-            var blobContainer = await _structureBlobContainerProvider.GetContainerAsync(file.StructureKey);
+            var blobContainer = await _structureBlobContainerProvider.GetContainerAsync(
+                file.StructureKey,
+                file.StorageProvider);
             await blobContainer.DeleteAsync(file.BlobName);
             if (!string.IsNullOrEmpty(file.ThumbnailBlobName))
             {

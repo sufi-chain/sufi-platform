@@ -72,11 +72,11 @@ public class MongoFileItemRepository :
         
         var pipeline = new BsonDocument[]
         {
-            // Match stage: filter by tenant and non-temp files
+            // Match stage: filter by tenant. Temporary and archived files are billable
+            // because they still consume storage.
             new BsonDocument("$match", new BsonDocument
             {
-                { "TenantId", new BsonBinaryData(tenantId, GuidRepresentation.Standard) },
-                { "IsTemp", false }
+                { "TenantId", new BsonBinaryData(tenantId, GuidRepresentation.Standard) }
             }),
             // Group stage: sum all Size values
             new BsonDocument("$group", new BsonDocument

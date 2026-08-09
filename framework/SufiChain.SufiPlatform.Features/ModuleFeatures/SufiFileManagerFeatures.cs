@@ -31,4 +31,24 @@ public static class SufiFileManagerFeatures
     /// Automatic file archiving background jobs.
     /// </summary>
     public const string Archiving = GroupName + ".Archiving";
+
+    /// <summary>
+    /// Storage entitlement features shared by editions and tenants.
+    /// </summary>
+    public static class Storage
+    {
+        public const string Provider = GroupName + ".Storage.Provider";
+        public const string MaxBytes = GroupName + ".Storage.MaxBytes";
+
+        public const string DefaultProvider = Providers.Database;
+        public const string DefaultMaxBytes = "100000000";
+
+        public static class Providers
+        {
+            public const string Database = "Database";
+            public const string FileSystem = "FileSystem";
+            public const string MinIO = "MinIO";
+            public const string S3Provider = "S3Provider";
+        }
+    }
 }

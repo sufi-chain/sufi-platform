@@ -1,4 +1,5 @@
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 using Volo.Abp.DependencyInjection;
 using Volo.Abp.Settings;
@@ -21,7 +22,8 @@ public class FileManagerStorageConfigProvider : IFileManagerStorageConfigProvide
         Encryption = encryption;
     }
 
-    public virtual async Task<FileStructureStorageConfigDto> GetDefaultConfigAsync()
+    public virtual async Task<FileStructureStorageConfigDto> GetDefaultConfigAsync(
+        CancellationToken cancellationToken = default)
     {
         var providerStr = await SettingProvider.GetOrNullAsync(FileManagerStorageSettingNames.DefaultProvider)
             ?? FileStructureStorageProvider.Database.ToString();
@@ -31,9 +33,16 @@ public class FileManagerStorageConfigProvider : IFileManagerStorageConfigProvide
             provider = FileStructureStorageProvider.Database;
         }
 
-        var config = new FileStructureStorageConfigDto { StorageProvider = provider };
+        return await GetConfigAsync(provider, cancellationToken);
+    }
 
-        switch (provider)
+    public virtual async Task<FileStructureStorageConfigDto> GetConfigAsync(
+        FileStructureStorageProvider storageProvider,
+        CancellationToken cancellationToken = default)
+    {
+        var config = new FileStructureStorageConfigDto { StorageProvider = storageProvider };
+
+        switch (storageProvider)
         {
             case FileStructureStorageProvider.Database:
                 var connStr = await SettingProvider.GetOrNullAsync(FileManagerStorageSettingNames.Database.ConnectionString);

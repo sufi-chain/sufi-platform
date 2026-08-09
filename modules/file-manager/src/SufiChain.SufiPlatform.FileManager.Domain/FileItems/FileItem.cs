@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using SufiChain.SufiPlatform.FileManager.Storage;
 using SufiChain.SufiPlatform.FileManager.FileTypes;
 using Volo.Abp.Domain.Entities.Auditing;
 using Volo.Abp.MultiTenancy;
@@ -40,6 +41,12 @@ public class FileItem : FullAuditedAggregateRoot<Guid>, IMultiTenant
     /// File size in bytes
     /// </summary>
     public long Size { get; set; }
+
+    /// <summary>
+    /// Actual storage provider used when the blob was written.
+    /// Null identifies legacy rows that still resolve through structure/default configuration.
+    /// </summary>
+    public FileStructureStorageProvider? StorageProvider { get; private set; }
     
     /// <summary>
     /// Type of file content
@@ -173,6 +180,11 @@ public class FileItem : FullAuditedAggregateRoot<Guid>, IMultiTenant
     public void SetThumbnail(string thumbnailBlobName)
     {
         ThumbnailBlobName = thumbnailBlobName;
+    }
+
+    public void SetStorageProvider(FileStructureStorageProvider storageProvider)
+    {
+        StorageProvider = storageProvider;
     }
 
     public void MarkAsProcessed()

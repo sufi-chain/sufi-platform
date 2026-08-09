@@ -1,3 +1,4 @@
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace SufiChain.SufiPlatform.FileManager.Storage;
@@ -13,5 +14,13 @@ public interface IFileManagerStorageConfigProvider
     /// Gets the default storage configuration from settings. Used by StructureBlobContainerConfigurationProvider
     /// when the structure cache/repository does not have provider-specific config (e.g. fallback to defaults).
     /// </summary>
-    Task<FileStructureStorageConfigDto> GetDefaultConfigAsync();
+    Task<FileStructureStorageConfigDto> GetDefaultConfigAsync(CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Gets the configured credentials and options for a specific provider, regardless of which provider
+    /// is currently selected as the default.
+    /// </summary>
+    Task<FileStructureStorageConfigDto> GetConfigAsync(
+        FileStructureStorageProvider storageProvider,
+        CancellationToken cancellationToken = default);
 }

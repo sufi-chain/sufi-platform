@@ -43,6 +43,7 @@ public static class FileManagerDbContextModelCreatingExtensions
             b.Property(x => x.OriginalName).IsRequired().HasMaxLength(512);
             b.Property(x => x.BlobName).IsRequired().HasMaxLength(1024);
             b.Property(x => x.MimeType).IsRequired().HasMaxLength(128);
+            b.Property(x => x.StorageProvider);
             b.Property(x => x.ThumbnailBlobName).HasMaxLength(1024);
             b.Property(x => x.EntityType).HasMaxLength(128);
             b.Property(x => x.Alt).HasMaxLength(512);

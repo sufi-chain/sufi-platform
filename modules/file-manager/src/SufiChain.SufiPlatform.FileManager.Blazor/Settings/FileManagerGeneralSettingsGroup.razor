@@ -14,10 +14,6 @@
     {
         <p class="text-muted">@L["FileManagerGeneralSettingsHint"]</p>
 
-        <SbFormField Label="@L["StorageQuotaMB"]">
-            <SbNumberField TNumber="long" @bind-Value="@_settings.StorageQuotaMB" Min="0" />
-        </SbFormField>
-
         <SbFormField Label="@L["MaxFileSizeBytes"]">
             <SbNumberField TNumber="long" @bind-Value="@_settings.MaxFileSizeBytes" Min="1" />
         </SbFormField>

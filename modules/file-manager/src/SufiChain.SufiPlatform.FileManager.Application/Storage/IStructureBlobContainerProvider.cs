@@ -13,4 +13,19 @@ public interface IStructureBlobContainerProvider
     /// When structureKey is null or empty, returns the default container.
     /// </summary>
     Task<IBlobContainer> GetContainerAsync(string? structureKey, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Gets the container using the provider recorded on a file. Null preserves legacy resolution.
+    /// </summary>
+    Task<IBlobContainer> GetContainerAsync(
+        string? structureKey,
+        FileStructureStorageProvider? storageProvider,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Resolves the effective write policy and returns both the container and provider that must be persisted.
+    /// </summary>
+    Task<StructureBlobContainerResult> GetWriteContainerAsync(
+        string? structureKey,
+        CancellationToken cancellationToken = default);
 }

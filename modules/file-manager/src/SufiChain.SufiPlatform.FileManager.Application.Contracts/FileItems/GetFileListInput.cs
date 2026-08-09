@@ -25,9 +25,12 @@ public class UpdateFileMetadataInput
 
 public class StorageQuotaDto
 {
+    public bool IsUnlimited { get; set; }
     public long UsedBytes { get; set; }
+    public long LimitBytes { get; set; }
+    public long AvailableBytes { get; set; }
     public double UsedMB { get; set; }
-    public long LimitMB { get; set; }
+    public double LimitMB { get; set; }
     public double AvailableMB { get; set; }
     public double PercentageUsed { get; set; }
 }

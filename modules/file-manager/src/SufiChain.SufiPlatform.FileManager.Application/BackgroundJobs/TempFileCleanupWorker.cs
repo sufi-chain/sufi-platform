@@ -126,7 +126,9 @@ public class TempFileCleanupWorker : AsyncPeriodicBackgroundWorkerBase
         {
             try
             {
-                var blobContainer = await structureBlobContainerProvider.GetContainerAsync(fileItem.StructureKey);
+                var blobContainer = await structureBlobContainerProvider.GetContainerAsync(
+                    fileItem.StructureKey,
+                    fileItem.StorageProvider);
                 if (await blobContainer.ExistsAsync(fileItem.BlobName))
                 {
                     await blobContainer.DeleteAsync(fileItem.BlobName);

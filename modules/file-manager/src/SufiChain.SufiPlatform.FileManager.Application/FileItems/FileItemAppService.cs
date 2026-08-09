@@ -49,11 +49,12 @@ public partial class FileItemAppService : SufiApplicationService, IFileItemAppSe
     private readonly IFileBlobNameCalculator _blobNameCalculator;
     private readonly FileManagerOptions _options;
     private readonly ISettingProvider _settingProvider;
-    private readonly IFileManagerTenantPolicyProvider _tenantPolicyProvider;
     private readonly ILogger<FileItemAppService> _logger;
     private readonly IS3PublicBlobUrlProvider _s3PublicBlobUrlProvider;
     private readonly FileItemManager _fileItemManager;
     private readonly FileItemBlobAccessService _blobAccessService;
+    private readonly IFileStorageQuotaGuard _storageQuotaGuard;
+    private readonly IFileManagerStoragePolicyProvider _storagePolicyProvider;
 
     public FileItemAppService(
         IFileItemRepository fileItemRepository,
@@ -69,11 +70,12 @@ public partial class FileItemAppService : SufiApplicationService, IFileItemAppSe
         IFileBlobNameCalculator blobNameCalculator,
         IOptions<FileManagerOptions> options,
         ISettingProvider settingProvider,
-        IFileManagerTenantPolicyProvider tenantPolicyProvider,
         ILogger<FileItemAppService> logger,
         IS3PublicBlobUrlProvider s3PublicBlobUrlProvider,
         FileItemManager fileItemManager,
-        FileItemBlobAccessService blobAccessService)
+        FileItemBlobAccessService blobAccessService,
+        IFileStorageQuotaGuard storageQuotaGuard,
+        IFileManagerStoragePolicyProvider storagePolicyProvider)
     {
         _fileItemRepository = fileItemRepository;
         _fileStructureRepository = fileStructureRepository;
@@ -88,11 +90,12 @@ public partial class FileItemAppService : SufiApplicationService, IFileItemAppSe
         _blobNameCalculator = blobNameCalculator;
         _options = options.Value;
         _settingProvider = settingProvider;
-        _tenantPolicyProvider = tenantPolicyProvider;
         _logger = logger;
         _s3PublicBlobUrlProvider = s3PublicBlobUrlProvider;
         _fileItemManager = fileItemManager;
         _blobAccessService = blobAccessService;
+        _storageQuotaGuard = storageQuotaGuard;
+        _storagePolicyProvider = storagePolicyProvider;
     }
 
     [RemoteService(false)]
@@ -233,7 +236,12 @@ public partial class FileItemAppService : SufiApplicationService, IFileItemAppSe
 
     [RemoteService(false)]
     [Authorize]
-    public async Task<FileItemDto> UploadAsync(UploadFileInput input)
+    public Task<FileItemDto> UploadAsync(UploadFileInput input)
+    {
+        return UploadCoreAsync(input);
+    }
+
+    private async Task<FileItemDto> UploadCoreAsync(UploadFileInput input)
     {
         var folderId = await ResolveFolderIdAsync(input.FolderId, input.FolderPath);
         await EnsureCanUploadAsync(folderId, input.StructureKey);
@@ -249,6 +257,7 @@ public partial class FileItemAppService : SufiApplicationService, IFileItemAppSe
 
         // Determine file type
         var fileType = DetermineFileType(input.MimeType);
+        byte[]? thumbnailData = null;
 
         // Create file item entity
         var fileId = GuidGenerator.Create();
@@ -281,7 +290,7 @@ public partial class FileItemAppService : SufiApplicationService, IFileItemAppSe
         
         if (fileType == FileType.Image)
         {
-            await ProcessImageAsync(fileItem, input.Content, structure);
+            thumbnailData = await ProcessImageMetadataAsync(fileItem, input.Content, structure);
             
             // Convert to WebP if enabled
             if (structure?.EnableWebPConversion == true)
@@ -322,7 +331,7 @@ public partial class FileItemAppService : SufiApplicationService, IFileItemAppSe
         }
         else if (fileType == FileType.Video)
         {
-            await ProcessVideoAsync(fileItem, input.Content, structure);
+            thumbnailData = await ProcessVideoMetadataAsync(fileItem, input.Content, structure);
         }
 
         // Validate data before saving
@@ -331,11 +340,20 @@ public partial class FileItemAppService : SufiApplicationService, IFileItemAppSe
             throw new UserFriendlyException("Failed to process file - no data to store");
         }
 
+        return await _storageQuotaGuard.ExecuteAsync(fileItem.Size, async () =>
+        {
         // Save to blob storage first, track what we've saved for potential rollback
-        var blobContainer = await _structureBlobContainerProvider.GetContainerAsync(input.StructureKey);
+        var writeContainer = await _structureBlobContainerProvider.GetWriteContainerAsync(input.StructureKey);
+        var blobContainer = writeContainer.Container;
+        fileItem.SetStorageProvider(writeContainer.StorageProvider);
         string? savedBlobName = null;
         try
         {
+            if (thumbnailData != null && !string.IsNullOrEmpty(fileItem.ThumbnailBlobName))
+            {
+                await blobContainer.SaveAsync(fileItem.ThumbnailBlobName, thumbnailData, overrideExisting: true);
+            }
+
             await blobContainer.SaveAsync(fileItem.BlobName, dataToStore, overrideExisting: true);
             savedBlobName = fileItem.BlobName;
 
@@ -369,12 +387,18 @@ public partial class FileItemAppService : SufiApplicationService, IFileItemAppSe
             }
             throw;
         }
+        });
     }
 
     [RemoteService(false)]
     [DisableValidation]
     [Authorize]
-    public async Task<FileItemDto> UploadStreamAsync(UploadFileStreamInput input)
+    public Task<FileItemDto> UploadStreamAsync(UploadFileStreamInput input)
+    {
+        return UploadStreamCoreAsync(input);
+    }
+
+    private async Task<FileItemDto> UploadStreamCoreAsync(UploadFileStreamInput input)
     {
         var folderId = await ResolveFolderIdAsync(input.FolderId, input.FolderPath);
         await EnsureCanUploadAsync(folderId, input.StructureKey);
@@ -438,65 +462,30 @@ public partial class FileItemAppService : SufiApplicationService, IFileItemAppSe
                            input.ContentLength <= maxInMemorySizeBytes &&
                            (fileType == FileType.Image || (fileType == FileType.Video && structure?.GenerateThumbnail == true));
 
+        if (shouldProcess)
+        {
+            using var memoryStream = new MemoryStream();
+            await input.ContentStream.CopyToAsync(memoryStream);
+            var content = memoryStream.ToArray();
+            return await UploadProcessedStreamAsync(input, fileItem, fileType, structure, content);
+        }
+
+        return await _storageQuotaGuard.ExecuteAsync(fileItem.Size, async () =>
+        {
         string? savedBlobName = null;
-        var blobContainer = await _structureBlobContainerProvider.GetContainerAsync(input.StructureKey);
+        var writeContainer = await _structureBlobContainerProvider.GetWriteContainerAsync(input.StructureKey);
+        var blobContainer = writeContainer.Container;
+        fileItem.SetStorageProvider(writeContainer.StorageProvider);
         try
         {
-            if (shouldProcess)
-            {
-                // Load into memory for processing (small files only)
-                using var memoryStream = new MemoryStream();
-                await input.ContentStream.CopyToAsync(memoryStream);
-                var content = memoryStream.ToArray();
+            // Stream directly to blob storage without loading into memory
+            _logger.LogInformation("Streaming large file directly to blob storage: {FileName}, Size: {Size} bytes", 
+                input.FileName, input.ContentLength);
 
-                // Process based on file type
-                byte[] dataToStore = content;
+            await blobContainer.SaveAsync(fileItem.BlobName, input.ContentStream, overrideExisting: true);
+            savedBlobName = fileItem.BlobName;
 
-                if (fileType == FileType.Image)
-                {
-                    await ProcessImageAsync(fileItem, content, structure);
-
-                    // Convert to WebP if enabled
-                    if (structure?.EnableWebPConversion == true)
-                    {
-                        try
-                        {
-                            var (webpData, webpMimeType, webpExtension) = await _imageProcessor.ConvertToWebPAsync(content);
-                            if (webpData != null && webpData.Length > 0)
-                            {
-                                dataToStore = webpData;
-                                fileItem.MimeType = webpMimeType;
-                                fileItem.BlobName = Path.ChangeExtension(fileItem.BlobName, webpExtension);
-                                fileItem.OriginalName = Path.ChangeExtension(fileItem.OriginalName, webpExtension);
-                                fileItem.Size = webpData.Length;
-                            }
-                        }
-                        catch (Exception ex)
-                        {
-                            _logger.LogWarning(ex, "WebP conversion failed, keeping original format");
-                        }
-                    }
-                }
-                else if (fileType == FileType.Video)
-                {
-                    await ProcessVideoAsync(fileItem, content, structure);
-                }
-
-                // Save processed data to blob storage
-                await blobContainer.SaveAsync(fileItem.BlobName, dataToStore, overrideExisting: true);
-                savedBlobName = fileItem.BlobName;
-            }
-            else
-            {
-                // Stream directly to blob storage without loading into memory
-                _logger.LogInformation("Streaming large file directly to blob storage: {FileName}, Size: {Size} bytes", 
-                    input.FileName, input.ContentLength);
-
-                await blobContainer.SaveAsync(fileItem.BlobName, input.ContentStream, overrideExisting: true);
-                savedBlobName = fileItem.BlobName;
-            }
-
-            fileItem.IsProcessed = shouldProcess;
+            fileItem.IsProcessed = false;
 
             // Insert to database
             await _fileItemRepository.InsertAsync(fileItem, autoSave: true);
@@ -526,6 +515,82 @@ public partial class FileItemAppService : SufiApplicationService, IFileItemAppSe
             }
             throw;
         }
+        });
+    }
+
+    private async Task<FileItemDto> UploadProcessedStreamAsync(
+        UploadFileStreamInput input,
+        FileItem fileItem,
+        FileType fileType,
+        FileStructure? structure,
+        byte[] content)
+    {
+        byte[] dataToStore = content;
+        byte[]? thumbnailData = null;
+
+        if (fileType == FileType.Image)
+        {
+            thumbnailData = await ProcessImageMetadataAsync(fileItem, content, structure);
+
+            if (structure?.EnableWebPConversion == true)
+            {
+                try
+                {
+                    var (webpData, webpMimeType, webpExtension) = await _imageProcessor.ConvertToWebPAsync(content);
+                    if (webpData != null && webpData.Length > 0)
+                    {
+                        dataToStore = webpData;
+                        fileItem.MimeType = webpMimeType;
+                        fileItem.BlobName = Path.ChangeExtension(fileItem.BlobName, webpExtension);
+                        fileItem.OriginalName = Path.ChangeExtension(fileItem.OriginalName, webpExtension);
+                        fileItem.Size = webpData.Length;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning(ex, "WebP conversion failed, keeping original format");
+                }
+            }
+        }
+        else if (fileType == FileType.Video)
+        {
+            thumbnailData = await ProcessVideoMetadataAsync(fileItem, content, structure);
+        }
+
+        return await _storageQuotaGuard.ExecuteAsync(fileItem.Size, async () =>
+        {
+            var writeContainer = await _structureBlobContainerProvider.GetWriteContainerAsync(input.StructureKey);
+            var blobContainer = writeContainer.Container;
+            fileItem.SetStorageProvider(writeContainer.StorageProvider);
+            var thumbnailSaved = false;
+            var primarySaved = false;
+            try
+            {
+                if (thumbnailData != null && !string.IsNullOrEmpty(fileItem.ThumbnailBlobName))
+                {
+                    await blobContainer.SaveAsync(fileItem.ThumbnailBlobName, thumbnailData, overrideExisting: true);
+                    thumbnailSaved = true;
+                }
+
+                await blobContainer.SaveAsync(fileItem.BlobName, dataToStore, overrideExisting: true);
+                primarySaved = true;
+                fileItem.IsProcessed = true;
+                await _fileItemRepository.InsertAsync(fileItem, autoSave: true);
+                return ObjectMapper.Map<FileItem, FileItemDto>(fileItem);
+            }
+            catch
+            {
+                if (primarySaved)
+                {
+                    await blobContainer.DeleteAsync(fileItem.BlobName);
+                }
+                if (thumbnailSaved && !string.IsNullOrEmpty(fileItem.ThumbnailBlobName))
+                {
+                    await blobContainer.DeleteAsync(fileItem.ThumbnailBlobName);
+                }
+                throw;
+            }
+        });
     }
 
     [RemoteService(false)]
@@ -655,7 +720,9 @@ public partial class FileItemAppService : SufiApplicationService, IFileItemAppSe
         var fileItem = await _fileItemRepository.GetAsync(id);
 
         // Delete from blob storage
-        var blobContainer = await _structureBlobContainerProvider.GetContainerAsync(fileItem.StructureKey);
+        var blobContainer = await _structureBlobContainerProvider.GetContainerAsync(
+            fileItem.StructureKey,
+            fileItem.StorageProvider);
         await blobContainer.DeleteAsync(fileItem.BlobName);
 
         // Delete thumbnail if exists
@@ -706,20 +773,28 @@ public partial class FileItemAppService : SufiApplicationService, IFileItemAppSe
 
         var usedBytes = await AsyncExecuter.SumAsync(query, x => (long?)x.Size) ?? 0;
 
-        var policy = await _tenantPolicyProvider.GetGeneralPolicyAsync();
-        var limitMB = policy.StorageQuotaMB;
-        if (limitMB == 0)
-        {
-            limitMB = 1024;
-        }
+        var policy = await _storagePolicyProvider.GetAsync();
+        var limitBytes = policy.MaxStorageBytes;
+        var availableBytes = limitBytes > 0
+            ? Math.Max(0, limitBytes - usedBytes)
+            : long.MaxValue;
+        var usedMegabytes = usedBytes / (1024.0 * 1024.0);
+        var limitMegabytes = limitBytes / (1024.0 * 1024.0);
 
         return new StorageQuotaDto
         {
+            IsUnlimited = limitBytes == 0,
             UsedBytes = usedBytes,
-            UsedMB = usedBytes / (1024.0 * 1024.0),
-            LimitMB = limitMB,
-            AvailableMB = limitMB - (usedBytes / (1024.0 * 1024.0)),
-            PercentageUsed = limitMB > 0 ? (usedBytes / (1024.0 * 1024.0)) / limitMB * 100 : 0
+            LimitBytes = limitBytes,
+            AvailableBytes = availableBytes,
+            UsedMB = usedMegabytes,
+            LimitMB = limitMegabytes,
+            AvailableMB = limitBytes > 0
+                ? availableBytes / (1024.0 * 1024.0)
+                : 0,
+            PercentageUsed = limitBytes > 0
+                ? Math.Min(100, usedBytes / (double)limitBytes * 100)
+                : 0
         };
     }
 
@@ -799,7 +874,9 @@ public partial class FileItemAppService : SufiApplicationService, IFileItemAppSe
         string? newBlobName = null;
         string? newThumbnailBlobName = null;
 
-        var blobContainer = await _structureBlobContainerProvider.GetContainerAsync(fileItem.StructureKey);
+        var blobContainer = await _structureBlobContainerProvider.GetContainerAsync(
+            fileItem.StructureKey,
+            fileItem.StorageProvider);
         try
         {
             // Move from temp to permanent
@@ -907,7 +984,17 @@ public partial class FileItemAppService : SufiApplicationService, IFileItemAppSe
     public async Task<FileItemDto> ReplaceContentAsync(Guid id, ReplaceFileContentInput input)
     {
         var fileItem = await _fileItemRepository.GetAsync(id);
-        var blobContainer = await _structureBlobContainerProvider.GetContainerAsync(fileItem.StructureKey);
+        var positiveByteDelta = Math.Max(0, input.Content.LongLength - fileItem.Size);
+        return await _storageQuotaGuard.ExecuteAsync(
+            positiveByteDelta,
+            () => ReplaceContentCoreAsync(fileItem, input));
+    }
+
+    private async Task<FileItemDto> ReplaceContentCoreAsync(FileItem fileItem, ReplaceFileContentInput input)
+    {
+        var blobContainer = await _structureBlobContainerProvider.GetContainerAsync(
+            fileItem.StructureKey,
+            fileItem.StorageProvider);
 
         // Save content to blob (same blob name = replace)
         await blobContainer.SaveAsync(fileItem.BlobName, input.Content, overrideExisting: true);
@@ -927,7 +1014,7 @@ public partial class FileItemAppService : SufiApplicationService, IFileItemAppSe
             }
             catch (Exception ex)
             {
-                _logger.LogWarning(ex, "Failed to regenerate thumbnail for file {FileId}", id);
+                _logger.LogWarning(ex, "Failed to regenerate thumbnail for file {FileId}", fileItem.Id);
                 fileItem.ThumbnailBlobName = null;
             }
         }
@@ -966,7 +1053,15 @@ public partial class FileItemAppService : SufiApplicationService, IFileItemAppSe
     public async Task<FileItemDto> SaveAsAsync(Guid sourceId, SaveAsFileInput input)
     {
         var sourceFile = await _fileItemRepository.GetAsync(sourceId);
-        var blobContainer = await _structureBlobContainerProvider.GetContainerAsync(sourceFile.StructureKey);
+        return await _storageQuotaGuard.ExecuteAsync(
+            input.Content.LongLength,
+            () => SaveAsCoreAsync(sourceFile, input));
+    }
+
+    private async Task<FileItemDto> SaveAsCoreAsync(FileItem sourceFile, SaveAsFileInput input)
+    {
+        var writeContainer = await _structureBlobContainerProvider.GetWriteContainerAsync(sourceFile.StructureKey);
+        var blobContainer = writeContainer.Container;
         var fileType = DetermineFileType(input.MimeType);
 
         var fileId = GuidGenerator.Create();
@@ -991,6 +1086,7 @@ public partial class FileItemAppService : SufiApplicationService, IFileItemAppSe
             IsTemp = false,
             IsProcessed = false
         };
+        fileItem.SetStorageProvider(writeContainer.StorageProvider);
 
         if (fileType == FileType.Image)
         {
@@ -1190,7 +1286,10 @@ public partial class FileItemAppService : SufiApplicationService, IFileItemAppSe
         }
     }
 
-    private async Task ProcessImageAsync(FileItem fileItem, byte[] content, FileStructure? structure)
+    private async Task<byte[]?> ProcessImageMetadataAsync(
+        FileItem fileItem,
+        byte[] content,
+        FileStructure? structure)
     {
         // Get dimensions
         var (width, height) = await _imageProcessor.GetDimensionsAsync(content);
@@ -1200,7 +1299,6 @@ public partial class FileItemAppService : SufiApplicationService, IFileItemAppSe
         // Generate thumbnail if needed
         if (structure?.GenerateThumbnail == true)
         {
-            var blobContainer = await _structureBlobContainerProvider.GetContainerAsync(fileItem.StructureKey);
             var thumbnailData = await _imageProcessor.GenerateThumbnailAsync(
                 content,
                 structure.ThumbnailWidth,
@@ -1210,12 +1308,17 @@ public partial class FileItemAppService : SufiApplicationService, IFileItemAppSe
                 Path.GetExtension(fileItem.BlobName),
                 "_thumb.webp");
 
-            await blobContainer.SaveAsync(thumbnailBlobName, thumbnailData, overrideExisting: true);
             fileItem.ThumbnailBlobName = thumbnailBlobName;
+            return thumbnailData;
         }
+
+        return null;
     }
 
-    private async Task ProcessVideoAsync(FileItem fileItem, byte[] content, FileStructure? structure)
+    private async Task<byte[]?> ProcessVideoMetadataAsync(
+        FileItem fileItem,
+        byte[] content,
+        FileStructure? structure)
     {
         using var stream = new MemoryStream(content);
         
@@ -1228,7 +1331,6 @@ public partial class FileItemAppService : SufiApplicationService, IFileItemAppSe
         // Generate thumbnail if needed
         if (structure?.GenerateThumbnail == true)
         {
-            var blobContainer = await _structureBlobContainerProvider.GetContainerAsync(fileItem.StructureKey);
             stream.Position = 0;
             var thumbnailData = await _videoProcessor.GenerateThumbnailAsync(
                 stream,
@@ -1240,9 +1342,11 @@ public partial class FileItemAppService : SufiApplicationService, IFileItemAppSe
                 Path.GetExtension(fileItem.BlobName),
                 "_thumb.jpg");
 
-            await blobContainer.SaveAsync(thumbnailBlobName, thumbnailData, overrideExisting: true);
             fileItem.ThumbnailBlobName = thumbnailBlobName;
+            return thumbnailData;
         }
+
+        return null;
     }
 
     private async Task<bool> GetStructureIsPublicAccessAsync(string? structureKey)
@@ -1267,6 +1371,20 @@ public partial class FileItemAppService : SufiApplicationService, IFileItemAppSe
                 ApplyStructurePublicAccess(dto, entry);
             }
         }
+    }
+
+    private async Task<IBlobContainer> GetWriteContainerAsync(FileItem fileItem)
+    {
+        if (fileItem.StorageProvider.HasValue)
+        {
+            return await _structureBlobContainerProvider.GetContainerAsync(
+                fileItem.StructureKey,
+                fileItem.StorageProvider);
+        }
+
+        var writeContainer = await _structureBlobContainerProvider.GetWriteContainerAsync(fileItem.StructureKey);
+        fileItem.SetStorageProvider(writeContainer.StorageProvider);
+        return writeContainer.Container;
     }
 
     /// <summary>

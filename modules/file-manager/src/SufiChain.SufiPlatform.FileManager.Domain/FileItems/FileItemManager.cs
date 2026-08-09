@@ -4,6 +4,7 @@ using SufiChain.SufiPlatform.Features;
 using SufiChain.SufiPlatform.FileManager.ETOs;
 using SufiChain.SufiPlatform.FileManager.Features;
 using SufiChain.SufiPlatform.FileManager.FileTypes;
+using SufiChain.SufiPlatform.FileManager.Storage;
 using Volo.Abp;
 using Volo.Abp.Domain.Services;
 using Volo.Abp.EventBus.Distributed;
@@ -49,7 +50,8 @@ public class FileItemManager : DomainService
         FileType fileType,
         string? structureKey = null,
         Guid? sourceEntityId = null,
-        string? customMetadata = null)
+        string? customMetadata = null,
+        FileStructureStorageProvider? storageProvider = null)
     {
         await CheckFileItemsFeatureAsync();
 
@@ -63,6 +65,11 @@ public class FileItemManager : DomainService
             size,
             fileType,
             structureKey);
+
+        if (storageProvider.HasValue)
+        {
+            fileItem.SetStorageProvider(storageProvider.Value);
+        }
 
         if (sourceEntityId.HasValue)
         {

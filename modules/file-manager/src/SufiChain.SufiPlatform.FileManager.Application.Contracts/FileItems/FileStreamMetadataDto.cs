@@ -1,3 +1,5 @@
+using SufiChain.SufiPlatform.FileManager.Storage;
+
 namespace SufiChain.SufiPlatform.FileManager.FileItems;
 
 /// <summary>
@@ -15,4 +17,6 @@ public class FileStreamMetadataDto
     public string? StructureKey { get; set; }
     /// <summary>Tenant ID of the file; required for correct blob path resolution (host vs tenants/{id}/).</summary>
     public Guid? TenantId { get; set; }
+    /// <summary>Provider recorded when the blob was written; null uses legacy structure/default resolution.</summary>
+    public FileStructureStorageProvider? StorageProvider { get; set; }
 }

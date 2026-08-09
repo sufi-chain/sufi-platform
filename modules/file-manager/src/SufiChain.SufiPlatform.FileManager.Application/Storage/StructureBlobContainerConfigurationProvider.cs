@@ -8,6 +8,7 @@ using SufiChain.SufiPlatform.BlobDatabase;
 using Volo.Abp.BlobStoring.FileSystem;
 using Volo.Abp.BlobStoring.Minio;
 using SufiChain.SufiPlatform.BlobStoring.S3Provider;
+using Volo.Abp;
 using Volo.Abp.Collections;
 using Volo.Abp.DependencyInjection;
 using Volo.Abp.Threading;
@@ -71,6 +72,83 @@ public class StructureBlobContainerConfigurationProvider : IBlobContainerConfigu
         }
 
         return BuildConfigurationFromStructure(structure);
+    }
+
+    public virtual BlobContainerConfiguration Get(
+        string name,
+        FileStructureStorageProvider storageProvider,
+        bool preferMatchingStructureConfiguration)
+    {
+        var structureKey = ParseStructureKey(name);
+        if (preferMatchingStructureConfiguration && !string.IsNullOrEmpty(structureKey))
+        {
+            var cached = AsyncHelper.RunSync(() => StructureCache.GetAsync(structureKey));
+            if (cached != null && HasProvider(cached, storageProvider))
+            {
+                return EnsureProvider(
+                    BuildConfigurationFromCacheEntry(cached),
+                    storageProvider);
+            }
+
+            var structure = AsyncHelper.RunSync(() => FileStructureRepository.FindByKeyAsync(structureKey));
+            if (structure != null && HasProvider(structure, storageProvider))
+            {
+                return EnsureProvider(
+                    BuildConfigurationFromStructure(structure),
+                    storageProvider);
+            }
+        }
+
+        ResolveStructurePublicSettings(structureKey, out var baseUrl, out var isPublicAccess);
+        var providerConfig = AsyncHelper.RunSync(() => StorageConfigProvider.GetConfigAsync(storageProvider));
+        return EnsureProvider(
+            BuildConfigurationFromConfigDto(providerConfig, structureKey, baseUrl, isPublicAccess),
+            storageProvider);
+    }
+
+    private static BlobContainerConfiguration EnsureProvider(
+        BlobContainerConfiguration configuration,
+        FileStructureStorageProvider storageProvider)
+    {
+        var expectedProviderType = GetProviderType(storageProvider);
+        if (configuration.ProviderType != expectedProviderType)
+        {
+            throw new Volo.Abp.BusinessException(FileManagerErrorCodes.StorageProviderConfigurationMissing)
+                .WithData("Provider", storageProvider);
+        }
+
+        return configuration;
+    }
+
+    private static Type GetProviderType(
+        FileStructureStorageProvider storageProvider)
+    {
+        return storageProvider switch
+        {
+            FileStructureStorageProvider.Database => typeof(DatabaseBlobProvider),
+            FileStructureStorageProvider.FileSystem => typeof(FileSystemBlobProvider),
+            FileStructureStorageProvider.MinIO => typeof(MinioBlobProvider),
+            FileStructureStorageProvider.S3Provider => typeof(S3BlobProvider),
+            _ => throw new ArgumentOutOfRangeException(nameof(storageProvider), storageProvider, null)
+        };
+    }
+
+    private static bool HasProvider(
+        Caching.StructureCacheEntry entry,
+        FileStructureStorageProvider storageProvider)
+    {
+        var provider = entry.ExtraProperties?.GetOrDefault(FileStructureStorageConstants.Provider) as string;
+        return Enum.TryParse<FileStructureStorageProvider>(provider, ignoreCase: true, out var parsed)
+               && parsed == storageProvider;
+    }
+
+    private static bool HasProvider(
+        FileStructures.FileStructure structure,
+        FileStructureStorageProvider storageProvider)
+    {
+        var provider = structure.ExtraProperties?.GetOrDefault(FileStructureStorageConstants.Provider) as string;
+        return Enum.TryParse<FileStructureStorageProvider>(provider, ignoreCase: true, out var parsed)
+               && parsed == storageProvider;
     }
 
     private static bool IsFileManagerContainer(string name)
@@ -213,7 +291,7 @@ public class StructureBlobContainerConfigurationProvider : IBlobContainerConfigu
         if (string.IsNullOrWhiteSpace(dto.MinioEndPoint) || string.IsNullOrWhiteSpace(dto.MinioBucketName)
             || string.IsNullOrWhiteSpace(dto.MinioAccessKey) || string.IsNullOrWhiteSpace(dto.MinioSecretKey))
         {
-            return new BlobContainerConfiguration().UseDatabase();
+            throw CreateMissingProviderConfigurationException(FileStructureStorageProvider.MinIO);
         }
 
         var config = new BlobContainerConfiguration();
@@ -234,7 +312,7 @@ public class StructureBlobContainerConfigurationProvider : IBlobContainerConfigu
     {
         if (string.IsNullOrWhiteSpace(dto.S3ContainerName) || string.IsNullOrWhiteSpace(dto.S3AccessKeyId) || string.IsNullOrWhiteSpace(dto.S3SecretAccessKey))
         {
-            return new BlobContainerConfiguration().UseDatabase();
+            throw CreateMissingProviderConfigurationException(FileStructureStorageProvider.S3Provider);
         }
 
         var config = new BlobContainerConfiguration();
@@ -252,6 +330,14 @@ public class StructureBlobContainerConfigurationProvider : IBlobContainerConfigu
             ApplyS3PublicAccess(s3, structureIsPublicAccess ?? false, structureBaseUrl);
         });
         return config;
+    }
+
+    private static BusinessException CreateMissingProviderConfigurationException(
+        FileStructureStorageProvider storageProvider)
+    {
+        var exception = new BusinessException(FileManagerErrorCodes.StorageProviderConfigurationMissing);
+        exception.WithData("StorageProvider", storageProvider);
+        return exception;
     }
 
     /// <summary>

@@ -62,7 +62,8 @@ public class FileItemBlobAccessService
 
     public virtual async Task<string> GetDownloadUrlAsync(FileItem fileItem)
     {
-        if (_s3PublicBlobUrlProvider.TryGetPublicUrl(GetContainerName(fileItem.StructureKey), fileItem.BlobName, fileItem.TenantId, out var directUrl))
+        if (!fileItem.StorageProvider.HasValue
+            && _s3PublicBlobUrlProvider.TryGetPublicUrl(GetContainerName(fileItem.StructureKey), fileItem.BlobName, fileItem.TenantId, out var directUrl))
         {
             return directUrl;
         }
@@ -88,7 +89,8 @@ public class FileItemBlobAccessService
             throw new UserFriendlyException("Thumbnail not available for this file item");
         }
 
-        if (_s3PublicBlobUrlProvider.TryGetPublicUrl(GetContainerName(fileItem.StructureKey), fileItem.ThumbnailBlobName, fileItem.TenantId, out var directUrl))
+        if (!fileItem.StorageProvider.HasValue
+            && _s3PublicBlobUrlProvider.TryGetPublicUrl(GetContainerName(fileItem.StructureKey), fileItem.ThumbnailBlobName, fileItem.TenantId, out var directUrl))
         {
             return directUrl;
         }
@@ -109,7 +111,8 @@ public class FileItemBlobAccessService
 
     public virtual async Task<string> GetStreamUrlAsync(FileItem fileItem)
     {
-        if (_s3PublicBlobUrlProvider.TryGetPublicUrl(GetContainerName(fileItem.StructureKey), fileItem.BlobName, fileItem.TenantId, out var directUrl))
+        if (!fileItem.StorageProvider.HasValue
+            && _s3PublicBlobUrlProvider.TryGetPublicUrl(GetContainerName(fileItem.StructureKey), fileItem.BlobName, fileItem.TenantId, out var directUrl))
         {
             return directUrl;
         }
@@ -130,6 +133,11 @@ public class FileItemBlobAccessService
 
     public virtual async Task<string> GetTemporaryAccessUrlAsync(FileItem fileItem, int durationMinutes)
     {
+        if (fileItem.StorageProvider.HasValue)
+        {
+            return await GetDownloadUrlAsync(fileItem);
+        }
+
         var entry = await _structureCache.GetAsync(fileItem.StructureKey);
         var providerStr = entry?.ExtraProperties?.GetOrDefault(FileStructureStorageConstants.Provider) as string;
         var isS3 = string.Equals(providerStr, "S3Provider", StringComparison.OrdinalIgnoreCase);
@@ -169,7 +177,9 @@ public class FileItemBlobAccessService
 
         using (_currentTenant.Change(metadata.TenantId))
         {
-            var container = await _structureBlobContainerProvider.GetContainerAsync(metadata.StructureKey);
+            var container = await _structureBlobContainerProvider.GetContainerAsync(
+                metadata.StructureKey,
+                metadata.StorageProvider);
             await using (var stream = await container.GetOrNullAsync(metadata.BlobName))
             {
                 if (stream == null)
@@ -211,7 +221,9 @@ public class FileItemBlobAccessService
         Stream? stream;
         using (_currentTenant.Change(metadata.TenantId))
         {
-            var container = await _structureBlobContainerProvider.GetContainerAsync(metadata.StructureKey);
+            var container = await _structureBlobContainerProvider.GetContainerAsync(
+                metadata.StructureKey,
+                metadata.StorageProvider);
             stream = await container.GetOrNullAsync(metadata.BlobName);
         }
 
@@ -250,7 +262,9 @@ public class FileItemBlobAccessService
 
         using (_currentTenant.Change(metadata.TenantId))
         {
-            var container = await _structureBlobContainerProvider.GetContainerAsync(metadata.StructureKey);
+            var container = await _structureBlobContainerProvider.GetContainerAsync(
+                metadata.StructureKey,
+                metadata.StorageProvider);
             await using (var stream = await container.GetOrNullAsync(metadata.ThumbnailBlobName))
             {
                 if (stream == null)
@@ -368,6 +382,7 @@ public class FileItemBlobAccessService
             ThumbnailBlobName = fileItem.ThumbnailBlobName,
             OriginalName = fileItem.OriginalName,
             StructureKey = fileItem.StructureKey,
-            TenantId = fileItem.TenantId
+            TenantId = fileItem.TenantId,
+            StorageProvider = fileItem.StorageProvider
         };
 }

@@ -30,7 +30,6 @@ public class FileManagerSettingsAppService : SufiApplicationService, IFileManage
     {
         return new FileManagerGeneralSettingsDto
         {
-            StorageQuotaMB = await SettingProvider.GetAsync<long>(FileManagerSettings.StorageQuota),
             MaxFileSizeBytes = await SettingProvider.GetAsync<long>(FileManagerSettings.MaxFileSize),
             AllowedImageExtensions = await SettingProvider.GetOrNullAsync(FileManagerSettings.AllowedImageExtensions) ?? string.Empty,
             AllowedVideoExtensions = await SettingProvider.GetOrNullAsync(FileManagerSettings.AllowedVideoExtensions) ?? string.Empty,
@@ -48,7 +47,6 @@ public class FileManagerSettingsAppService : SufiApplicationService, IFileManage
 
     public virtual async Task UpdateGeneralSettingsAsync(FileManagerGeneralSettingsDto input)
     {
-        await SettingManager.SetForTenantOrGlobalAsync(CurrentTenant.Id, FileManagerSettings.StorageQuota, input.StorageQuotaMB.ToString());
         await SettingManager.SetForTenantOrGlobalAsync(CurrentTenant.Id, FileManagerSettings.MaxFileSize, input.MaxFileSizeBytes.ToString());
         await SettingManager.SetForTenantOrGlobalAsync(CurrentTenant.Id, FileManagerSettings.AllowedImageExtensions, input.AllowedImageExtensions);
         await SettingManager.SetForTenantOrGlobalAsync(CurrentTenant.Id, FileManagerSettings.AllowedVideoExtensions, input.AllowedVideoExtensions);
