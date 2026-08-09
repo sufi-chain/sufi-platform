@@ -13,6 +13,7 @@ public static class TenantsEfCoreQueryableExtensions
         }
 
         return queryable
-            .Include(x => x.ConnectionStrings);
+            .Include(x => x.ConnectionStrings)
+            .Include(x => x.Domains);
     }
 }

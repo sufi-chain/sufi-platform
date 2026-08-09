@@ -13,6 +13,8 @@ public class TenantsDbContext : AbpDbContext<TenantsDbContext>, ITenantsDbContex
 
     public DbSet<TenantConnectionString> TenantConnectionStrings { get; set; }
 
+    public DbSet<TenantDomain> TenantDomains { get; set; }
+
     public TenantsDbContext(DbContextOptions<TenantsDbContext> options)
         : base(options)
     {

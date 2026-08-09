@@ -18,13 +18,20 @@ public class Tenant : FullAuditedAggregateRoot<Guid>, IHasEntityVersion
 
     public virtual Guid? OwnerUserId { get; protected set; }
 
+    public virtual string? DatabaseName { get; protected set; }
+
+    public virtual string? PrimarySubdomain { get; protected set; }
+
     public virtual int EntityVersion { get; protected set; }
 
     public virtual List<TenantConnectionString> ConnectionStrings { get; protected set; }
 
+    public virtual List<TenantDomain> Domains { get; protected set; }
+
     protected Tenant()
     {
-
+        ConnectionStrings = new List<TenantConnectionString>();
+        Domains = new List<TenantDomain>();
     }
 
     protected internal Tenant(Guid id, [NotNull] string name, [CanBeNull] string normalizedName)
@@ -34,6 +41,7 @@ public class Tenant : FullAuditedAggregateRoot<Guid>, IHasEntityVersion
         SetNormalizedName(normalizedName);
 
         ConnectionStrings = new List<TenantConnectionString>();
+        Domains = new List<TenantDomain>();
     }
 
     [CanBeNull]
@@ -100,5 +108,44 @@ public class Tenant : FullAuditedAggregateRoot<Guid>, IHasEntityVersion
     public virtual void SetOwnerUserId(Guid? ownerUserId)
     {
         OwnerUserId = ownerUserId;
+    }
+
+    public virtual void SetDatabaseName(string databaseName)
+    {
+        databaseName = Check.NotNullOrWhiteSpace(
+            databaseName,
+            nameof(databaseName),
+            TenantConsts.MaxDatabaseNameLength);
+
+        if (databaseName.Any(character =>
+                !IsAsciiLetterOrDigit(character) &&
+                character != '_'))
+        {
+            throw new ArgumentException(
+                "Tenant database name may contain only ASCII letters, digits, and underscores.",
+                nameof(databaseName));
+        }
+
+        if (!DatabaseName.IsNullOrWhiteSpace() &&
+            !string.Equals(DatabaseName, databaseName, StringComparison.Ordinal))
+        {
+            throw new BusinessException("TenantManagement:DatabaseNameIsImmutable");
+        }
+
+        DatabaseName = databaseName;
+    }
+
+    protected internal virtual void ConfigureRouting(
+        string primarySubdomain,
+        IEnumerable<TenantDomain> domains)
+    {
+        PrimarySubdomain = TenantDomainName.NormalizeSubdomain(primarySubdomain);
+        Domains.Clear();
+        Domains.AddRange(domains);
+    }
+
+    private static bool IsAsciiLetterOrDigit(char character)
+    {
+        return character is >= 'a' and <= 'z' or >= 'A' and <= 'Z' or >= '0' and <= '9';
     }
 }

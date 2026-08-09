@@ -13,6 +13,21 @@ public interface ITenantRepository : IBasicRepository<Tenant, Guid>
         bool includeDetails = true,
         CancellationToken cancellationToken = default);
 
+    Task<Tenant> FindByDatabaseNameAsync(
+        string databaseName,
+        bool includeDetails = true,
+        CancellationToken cancellationToken = default);
+
+    Task<Tenant> FindByPrimarySubdomainAsync(
+        string primarySubdomain,
+        bool includeDetails = true,
+        CancellationToken cancellationToken = default);
+
+    Task<Tenant> FindByDomainHostAsync(
+        string host,
+        bool includeDetails = true,
+        CancellationToken cancellationToken = default);
+
     Task<List<Tenant>> GetListAsync(
         string sorting = null,
         int maxResultCount = int.MaxValue,

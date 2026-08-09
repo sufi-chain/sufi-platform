@@ -16,4 +16,10 @@ public static class TenantConsts
     /// Default value: 256
     /// </summary>
     public static int MaxAdminEmailAddressLength { get; set; } = 256; 
+
+    public const int MaxDatabaseNameLength = 128;
+
+    public const int MaxSubdomainLength = 63;
+
+    public const int MaxDomainHostLength = 253;
 }

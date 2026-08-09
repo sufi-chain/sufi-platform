@@ -12,4 +12,6 @@ public interface ITenantsDbContext : IEfCoreDbContext
     DbSet<Tenant> Tenants { get; }
 
     DbSet<TenantConnectionString> TenantConnectionStrings { get; }
+
+    DbSet<TenantDomain> TenantDomains { get; }
 }

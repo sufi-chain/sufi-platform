@@ -28,6 +28,39 @@ public class MongoTenantRepository : MongoDbRepository<ITenantsMongoDbContext, T
             .FirstOrDefaultAsync(t => t.NormalizedName == normalizedName, GetCancellationToken(cancellationToken));
     }
 
+    public virtual async Task<Tenant> FindByDatabaseNameAsync(
+        string databaseName,
+        bool includeDetails = true,
+        CancellationToken cancellationToken = default)
+    {
+        return await (await GetQueryableAsync(cancellationToken))
+            .FirstOrDefaultAsync(
+                tenant => tenant.DatabaseName == databaseName,
+                GetCancellationToken(cancellationToken));
+    }
+
+    public virtual async Task<Tenant> FindByPrimarySubdomainAsync(
+        string primarySubdomain,
+        bool includeDetails = true,
+        CancellationToken cancellationToken = default)
+    {
+        return await (await GetQueryableAsync(cancellationToken))
+            .FirstOrDefaultAsync(
+                tenant => tenant.PrimarySubdomain == primarySubdomain,
+                GetCancellationToken(cancellationToken));
+    }
+
+    public virtual async Task<Tenant> FindByDomainHostAsync(
+        string host,
+        bool includeDetails = true,
+        CancellationToken cancellationToken = default)
+    {
+        return await (await GetQueryableAsync(cancellationToken))
+            .FirstOrDefaultAsync(
+                tenant => tenant.Domains.Any(domain => domain.Host == host),
+                GetCancellationToken(cancellationToken));
+    }
+
     public virtual async Task<List<Tenant>> GetListAsync(
         string sorting = null,
         int maxResultCount = int.MaxValue,

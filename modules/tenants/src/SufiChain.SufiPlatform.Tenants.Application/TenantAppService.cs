@@ -15,7 +15,7 @@ public class TenantAppService : TenantsAppServiceBase, ITenantAppService
 
     public virtual async Task<TenantDto> GetAsync(Guid id)
     {
-        return MapToDto(await TenantRepository.GetAsync(id));
+        return MapToDto(await TenantRepository.GetAsync(id, includeDetails: true));
     }
 
     public virtual async Task<PagedResultDto<TenantDto>> GetListAsync(GetTenantsInput input)
@@ -25,7 +25,8 @@ public class TenantAppService : TenantsAppServiceBase, ITenantAppService
             input.Sorting,
             input.MaxResultCount,
             input.SkipCount,
-            input.Filter);
+            input.Filter,
+            includeDetails: true);
 
         return new PagedResultDto<TenantDto>(count, tenants.Select(MapToDto).ToList());
     }
@@ -35,17 +36,19 @@ public class TenantAppService : TenantsAppServiceBase, ITenantAppService
         var tenant = await TenantManager.CreateAsync(input.Name);
         tenant.SetEditionId(input.EditionId);
         tenant.SetOwnerUserId(input.OwnerUserId);
+        await ConfigureRoutingAsync(tenant, input);
         await TenantRepository.InsertAsync(tenant, autoSave: true);
         return MapToDto(tenant);
     }
 
     public virtual async Task<TenantDto> UpdateAsync(Guid id, TenantUpdateDto input)
     {
-        var tenant = await TenantRepository.GetAsync(id);
+        var tenant = await TenantRepository.GetAsync(id, includeDetails: true);
         tenant.ConcurrencyStamp = input.ConcurrencyStamp;
         await TenantManager.ChangeNameAsync(tenant, input.Name);
         tenant.SetEditionId(input.EditionId);
         tenant.SetOwnerUserId(input.OwnerUserId);
+        await ConfigureRoutingAsync(tenant, input);
         await TenantRepository.UpdateAsync(tenant, autoSave: true);
         return MapToDto(tenant);
     }
@@ -83,7 +86,36 @@ public class TenantAppService : TenantsAppServiceBase, ITenantAppService
             Name = tenant.Name,
             EditionId = tenant.EditionId,
             OwnerUserId = tenant.OwnerUserId,
+            DatabaseName = tenant.DatabaseName,
+            PrimarySubdomain = tenant.PrimarySubdomain,
+            Domains = tenant.Domains.Select(domain => new TenantDomainDto
+            {
+                Id = domain.Id,
+                Host = domain.Host,
+                Type = domain.Type,
+                IsVerified = domain.IsVerified,
+                IsActive = domain.IsActive
+            }).ToList(),
             ConcurrencyStamp = tenant.ConcurrencyStamp
         };
+    }
+
+    protected virtual async Task ConfigureRoutingAsync(
+        Tenant tenant,
+        TenantCreateOrUpdateDtoBase input)
+    {
+        if (input.PrimarySubdomain.IsNullOrWhiteSpace())
+        {
+            return;
+        }
+
+        await TenantManager.ConfigureRoutingAsync(
+            tenant,
+            input.PrimarySubdomain,
+            input.Domains.Select(domain => new TenantDomainConfiguration(
+                domain.Host,
+                domain.Type,
+                domain.IsVerified,
+                domain.IsActive)));
     }
 }

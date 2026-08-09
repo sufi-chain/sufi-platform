@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
 using Volo.Abp.Domain.Services;
@@ -17,4 +18,11 @@ public interface ITenantManager : IDomainService
     Task<Tenant> CreateAsync(Guid id, [NotNull] string name);
 
     Task ChangeNameAsync([NotNull] Tenant tenant, [NotNull] string name);
+
+    Task SetDatabaseNameAsync([NotNull] Tenant tenant, [NotNull] string databaseName);
+
+    Task ConfigureRoutingAsync(
+        [NotNull] Tenant tenant,
+        [NotNull] string primarySubdomain,
+        [NotNull] IEnumerable<TenantDomainConfiguration> domains);
 }

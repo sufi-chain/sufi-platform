@@ -28,12 +28,21 @@ public static class SufiTenantsDbContextModelCreatingExtensions
             b.Property(t => t.NormalizedName).IsRequired().HasMaxLength(TenantConsts.MaxNameLength);
             b.Property(t => t.EditionId);
             b.Property(t => t.OwnerUserId);
+            b.Property(t => t.DatabaseName).HasMaxLength(TenantConsts.MaxDatabaseNameLength);
+            b.Property(t => t.PrimarySubdomain).HasMaxLength(TenantConsts.MaxSubdomainLength);
 
             b.HasMany(u => u.ConnectionStrings).WithOne().HasForeignKey(uc => uc.TenantId).IsRequired();
+            b.HasMany(u => u.Domains).WithOne().HasForeignKey(domain => domain.TenantId).IsRequired();
 
             b.HasIndex(u => u.Name);
             b.HasIndex(u => u.NormalizedName);
             b.HasIndex(u => u.EditionId);
+            b.HasIndex(u => u.DatabaseName)
+                .IsUnique()
+                .HasFilter("[DatabaseName] IS NOT NULL");
+            b.HasIndex(u => u.PrimarySubdomain)
+                .IsUnique()
+                .HasFilter("[PrimarySubdomain] IS NOT NULL");
 
             b.ApplyObjectExtensionMappings();
         });
@@ -50,6 +59,23 @@ public static class SufiTenantsDbContextModelCreatingExtensions
             b.Property(cs => cs.Value).IsRequired().HasMaxLength(TenantConnectionStringConsts.MaxValueLength);
 
             b.ApplyObjectExtensionMappings();
+        });
+
+        builder.Entity<TenantDomain>(b =>
+        {
+            b.ToTable(SufiTenantsDbProperties.DbTablePrefix + "TenantDomains", SufiTenantsDbProperties.DbSchema);
+
+            b.ConfigureByConvention();
+
+            b.Property(domain => domain.Host)
+                .IsRequired()
+                .HasMaxLength(TenantConsts.MaxDomainHostLength);
+            b.Property(domain => domain.Type).IsRequired();
+            b.Property(domain => domain.IsVerified).IsRequired();
+            b.Property(domain => domain.IsActive).IsRequired();
+
+            b.HasIndex(domain => domain.Host).IsUnique();
+            b.HasIndex(domain => new { domain.TenantId, domain.IsActive });
         });
 
         builder.TryConfigureObjectExtensions<TenantsDbContext>();
