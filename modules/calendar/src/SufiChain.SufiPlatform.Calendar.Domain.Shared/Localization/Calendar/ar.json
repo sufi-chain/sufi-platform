@@ -34,7 +34,7 @@
     "Inheritances": "Calendaris heredados",
     "AddInheritance": "Heredar calendario",
     "ParentCalendar": "Calendario padre",
-    "IsInheritedByDefault": "Herencia predeterminada",
+    "IsInheritedByDefault": "وراثة ساعات العمل",
     "OwnerName": "Nombre del propietario",
     "Cancel": "Cancel",
     "Save": "Save",
@@ -136,6 +136,11 @@
     "CalendarCopilot:Shortcut:FreeSlot": "ابحث عن موعد فارغ لمدة 30 دقيقة هذا الأسبوع",
     "CalendarCopilot:Shortcut:ScheduleTomorrow": "جدولة اجتماع غدًا الساعة 10 صباحًا",
     "CalendarCopilot:Shortcut:FreeFriday": "هل أنا متاح بعد ظهر يوم الجمعة؟",
+    "Copilot:SufiCalendar:Assistant:DisplayName": "مساعد التقويم",
+    "Copilot:SufiCalendar:Assistant:Shortcut:DayAgenda": "كيف يبدو يومي؟",
+    "Copilot:SufiCalendar:Assistant:Shortcut:FreeSlot": "ابحث عن موعد فارغ لمدة 30 دقيقة هذا الأسبوع",
+    "Copilot:SufiCalendar:Assistant:Shortcut:ScheduleTomorrow": "جدولة اجتماع غدًا الساعة 10 صباحًا",
+    "Copilot:SufiCalendar:Assistant:Shortcut:FreeFriday": "هل أنا متاح بعد ظهر يوم الجمعة؟",
     "SeededCalendar:host-hijri-shamsi:DisplayName": "التقويم الهجري الشمسي",
     "SeededCalendar:host-hijri-shamsi-1405:DisplayName": "التقويم الهجري الشمسي"
   }

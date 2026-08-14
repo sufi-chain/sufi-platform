@@ -1,18 +1,15 @@
 using Volo.Abp;
 using Volo.Abp.Domain.Services;
 
-using Volo.Abp.MultiTenancy;
 namespace SufiChain.SufiPlatform.Calendar.Calendars;
 
 public class CalendarManager : DomainService
 {
     private readonly ICalendarRepository _calendarRepository;
-    private readonly ICurrentTenant _currentTenant;
 
-    public CalendarManager(ICalendarRepository calendarRepository, ICurrentTenant currentTenant)
+    public CalendarManager(ICalendarRepository calendarRepository)
     {
         _calendarRepository = calendarRepository;
-        _currentTenant = currentTenant;
     }
 
     public virtual async Task<Calendar> CreateAsync(
@@ -45,7 +42,7 @@ public class CalendarManager : DomainService
             isAlwaysOpen,
             color);
 
-        await AttachDefaultCalendarInheritanceAsync(calendar, cancellationToken);
+        await EnsureDefaultCalendarInheritanceAsync(calendar, cancellationToken);
 
         return calendar;
     }
@@ -92,6 +89,39 @@ public class CalendarManager : DomainService
         return Task.CompletedTask;
     }
 
+    /// <summary>
+    /// Ensures a non-default calendar inherits the tenant's default calendar.
+    /// The relationship includes shared events and exceptions only; working hours
+    /// remain calendar-specific unless a user explicitly enables them later.
+    /// </summary>
+    public virtual async Task<bool> EnsureDefaultCalendarInheritanceAsync(
+        Calendar calendar,
+        CancellationToken cancellationToken = default)
+    {
+        if (calendar.Kind == CalendarKind.Default)
+        {
+            return false;
+        }
+
+        var defaultCalendar = await _calendarRepository.FindDefaultAsync(
+            calendar.TenantId,
+            CalendarKind.Default,
+            cancellationToken);
+
+        if (defaultCalendar == null ||
+            calendar.Inheritances.Any(x => x.ParentCalendarId == defaultCalendar.Id))
+        {
+            return false;
+        }
+
+        await AddInheritanceAsync(
+            calendar,
+            defaultCalendar,
+            isInheritedByDefault: false,
+            cancellationToken);
+        return true;
+    }
+
     public virtual async Task SetDefaultAsync(Calendar calendar, bool isDefault, CancellationToken cancellationToken = default)
     {
         if (isDefault && !calendar.IsDefault)
@@ -111,28 +141,4 @@ public class CalendarManager : DomainService
         }
     }
 
-    protected virtual async Task AttachDefaultCalendarInheritanceAsync(Calendar calendar, CancellationToken cancellationToken)
-    {
-        if (calendar.Kind == CalendarKind.Default)
-        {
-            return;
-        }
-
-        var defaultCalendar = await _calendarRepository.FindByKindAsync(calendar.TenantId, CalendarKind.Default, cancellationToken);
-
-        if (defaultCalendar == null && calendar.TenantId.HasValue)
-        {
-            using (_currentTenant.Change(null))
-            {
-                defaultCalendar = await _calendarRepository.FindByKindAsync(null, CalendarKind.Default, cancellationToken);
-            }
-        }
-
-        if (defaultCalendar == null)
-        {
-            return;
-        }
-
-        await AddInheritanceAsync(calendar, defaultCalendar, isInheritedByDefault: true, cancellationToken);
-    }
 }

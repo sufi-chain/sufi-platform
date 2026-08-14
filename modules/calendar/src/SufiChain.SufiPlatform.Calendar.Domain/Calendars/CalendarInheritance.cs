@@ -8,6 +8,10 @@ public class CalendarInheritance : Entity<Guid>
 
     public virtual Guid ParentCalendarId { get; private set; }
 
+    /// <summary>
+    /// When enabled, the parent calendar's working-hour rules participate in the
+    /// child's availability. Parent events and exceptions are inherited regardless.
+    /// </summary>
     public virtual bool IsInheritedByDefault { get; private set; }
 
     protected CalendarInheritance()

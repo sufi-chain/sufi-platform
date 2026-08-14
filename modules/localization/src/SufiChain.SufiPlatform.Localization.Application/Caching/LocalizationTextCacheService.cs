@@ -8,6 +8,7 @@ using SufiChain.SufiPlatform.Localization.Caching;
 using SufiChain.SufiPlatform.Localization.Repositories;
 using Volo.Abp.Caching;
 using Volo.Abp.DependencyInjection;
+using Volo.Abp.MultiTenancy;
 
 namespace SufiChain.SufiPlatform.Localization.Caching;
 
@@ -21,15 +22,18 @@ public class LocalizationTextCacheService : ISingletonDependency
 {
     private readonly IDistributedCache<LocalizationTextCacheItem> _cache;
     private readonly IServiceProvider _serviceProvider;
+    private readonly ICurrentTenant _currentTenant;
 
     private static readonly TimeSpan CacheAbsoluteExpiration = TimeSpan.FromMinutes(5);
 
     public LocalizationTextCacheService(
         IDistributedCache<LocalizationTextCacheItem> cache,
-        IServiceProvider serviceProvider)
+        IServiceProvider serviceProvider,
+        ICurrentTenant currentTenant)
     {
         _cache = cache;
         _serviceProvider = serviceProvider;
+        _currentTenant = currentTenant;
     }
 
     /// <summary>
@@ -48,7 +52,8 @@ public class LocalizationTextCacheService : ISingletonDependency
     /// </summary>
     public async Task<string?> GetOrNullAsync(string resourceName, string cultureName, string key)
     {
-        var cacheItem = await GetCacheItemAsync(resourceName, cultureName).ConfigureAwait(false);
+        var tenantId = _currentTenant.Id;
+        var cacheItem = await GetCacheItemAsync(tenantId, resourceName, cultureName).ConfigureAwait(false);
         return cacheItem.Texts.GetValueOrDefault(key);
     }
 
@@ -57,7 +62,8 @@ public class LocalizationTextCacheService : ISingletonDependency
     /// </summary>
     public async Task<Dictionary<string, string>> GetAllAsync(string resourceName, string cultureName)
     {
-        var cacheItem = await GetCacheItemAsync(resourceName, cultureName).ConfigureAwait(false);
+        var tenantId = _currentTenant.Id;
+        var cacheItem = await GetCacheItemAsync(tenantId, resourceName, cultureName).ConfigureAwait(false);
         return cacheItem.Texts;
     }
 
@@ -76,7 +82,10 @@ public class LocalizationTextCacheService : ISingletonDependency
     /// </summary>
     public async Task InvalidateAsync(string resourceName, string cultureName)
     {
-        var cacheKey = LocalizationTextCacheItem.CalculateCacheKey(resourceName, cultureName);
+        var cacheKey = LocalizationTextCacheItem.CalculateCacheKey(
+            _currentTenant.Id,
+            resourceName,
+            cultureName);
         await _cache.RemoveAsync(cacheKey).ConfigureAwait(false);
     }
 
@@ -98,13 +107,19 @@ public class LocalizationTextCacheService : ISingletonDependency
         }
     }
 
-    private async Task<LocalizationTextCacheItem> GetCacheItemAsync(string resourceName, string cultureName)
+    private async Task<LocalizationTextCacheItem> GetCacheItemAsync(
+        Guid? tenantId,
+        string resourceName,
+        string cultureName)
     {
-        var cacheKey = LocalizationTextCacheItem.CalculateCacheKey(resourceName, cultureName);
+        var cacheKey = LocalizationTextCacheItem.CalculateCacheKey(tenantId, resourceName, cultureName);
 
         var cacheItem = await _cache.GetOrAddAsync(
             cacheKey,
-            async () => await LoadFromDatabaseAsync(resourceName, cultureName).ConfigureAwait(false),
+            async () => await LoadFromDatabaseAsync(
+                tenantId,
+                resourceName,
+                cultureName).ConfigureAwait(false),
             () => new Microsoft.Extensions.Caching.Distributed.DistributedCacheEntryOptions
             {
                 AbsoluteExpirationRelativeToNow = CacheAbsoluteExpiration
@@ -113,18 +128,25 @@ public class LocalizationTextCacheService : ISingletonDependency
         return cacheItem ?? new LocalizationTextCacheItem();
     }
 
-    private async Task<LocalizationTextCacheItem> LoadFromDatabaseAsync(string resourceName, string cultureName)
+    private async Task<LocalizationTextCacheItem> LoadFromDatabaseAsync(
+        Guid? tenantId,
+        string resourceName,
+        string cultureName)
     {
         using var scope = _serviceProvider.CreateScope();
+        var currentTenant = scope.ServiceProvider.GetRequiredService<ICurrentTenant>();
         var repository = scope.ServiceProvider.GetRequiredService<ILocalizationTextRepository>();
 
         var cacheItem = new LocalizationTextCacheItem();
-        foreach (var candidateCulture in GetCultureCandidates(cultureName).Reverse())
+        using (currentTenant.Change(tenantId))
         {
-            var texts = await repository.GetListAsync(resourceName, candidateCulture).ConfigureAwait(false);
-            foreach (var text in texts)
+            foreach (var candidateCulture in GetCultureCandidates(cultureName).Reverse())
             {
-                cacheItem.Texts[text.Key] = text.Value;
+                var texts = await repository.GetListAsync(resourceName, candidateCulture).ConfigureAwait(false);
+                foreach (var text in texts)
+                {
+                    cacheItem.Texts[text.Key] = text.Value;
+                }
             }
         }
 

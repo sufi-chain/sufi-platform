@@ -119,12 +119,17 @@ public class WorkspaceAppServiceTests : SufiAITestBase<SufiAIApplicationTestModu
                 AIProviderType.OpenAI,
                 "gpt-3.5-turbo"
             ));
+            workspace.AddModelConfiguration(
+                AICapabilityType.ChatCompletion,
+                "gpt-3.5-turbo",
+                openAIApiMode: OpenAIApiMode.ChatCompletions);
+            await _workspaceRepository.UpdateAsync(workspace, autoSave: true);
             workspaceId = workspace.Id;
         });
 
         var input = new UpdateWorkspaceDto
         {
-            
+            Name = "update-test",
             Provider = AIProviderType.OpenAI,
             Model = "gpt-4",
             ApiKey = "new-key",
@@ -139,6 +144,12 @@ public class WorkspaceAppServiceTests : SufiAITestBase<SufiAIApplicationTestModu
         
         result.Model.ShouldBe(input.Model);
         result.IsActive.ShouldBeFalse();
+
+        var updated = await _workspaceRepository.GetAsync(workspaceId, includeDetails: true);
+        var chatConfiguration = updated.GetPrimaryConfiguration(AICapabilityType.ChatCompletion)!;
+        chatConfiguration.ModelId.ShouldBe(input.Model);
+        chatConfiguration.ApiEndpoint.ShouldBe(input.ApiBaseUrl);
+        chatConfiguration.OpenAIApiMode.ShouldBe(input.OpenAIApiMode);
     }
 
     [Fact]

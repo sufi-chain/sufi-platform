@@ -10,6 +10,7 @@
 @using SufiChain.SufiPlatform.UI.Localization
 
 @inject ILanguageProvider LanguageProvider
+@inject IPreferredLanguageService PreferredLanguageService
 @inject ICookieService CookieService
 @inject IJSRuntime JSRuntime
 @inject IStringLocalizer<SufiFrameworkResource> L
@@ -88,6 +89,8 @@
 
     private async Task ChangeLanguageAsync(LanguageInfo language)
     {
+        await PreferredLanguageService.SetAsync(language.CultureName);
+
         await CookieService.SetAsync(
             ".AspNetCore.Culture",
             $"c={language.CultureName}|uic={language.UiCultureName}",

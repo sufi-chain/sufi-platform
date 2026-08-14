@@ -92,6 +92,30 @@ public class Workspace : FullAuditedAggregateRoot<Guid>, IMultiTenant
         InputCostPer1MTokens = inputCostPer1MTokens;
         OutputCostPer1MTokens = outputCostPer1MTokens;
     }
+
+    public void UpdatePrimaryChatConfiguration(
+        string model,
+        string? apiBaseUrl,
+        OpenAIApiMode openAIApiMode,
+        decimal? inputCostPer1MTokens,
+        decimal? outputCostPer1MTokens)
+    {
+        var configuration = GetPrimaryConfiguration(AICapabilityType.ChatCompletion);
+        if (configuration == null)
+        {
+            return;
+        }
+
+        configuration.UpdateConfiguration(
+            model,
+            apiBaseUrl,
+            configuration.ApiKey,
+            configuration.Priority,
+            openAIApiMode,
+            inputCostPer1MTokens,
+            outputCostPer1MTokens,
+            configuration.Dimensions);
+    }
     
     /// <summary>
     /// Add a model configuration for a specific capability

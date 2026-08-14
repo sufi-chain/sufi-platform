@@ -40,6 +40,11 @@ public class UserPersonalCalendarCreationEventHandler :
 
             if (existingCalendar != null)
             {
+                if (await CalendarManager.EnsureDefaultCalendarInheritanceAsync(existingCalendar))
+                {
+                    await CalendarRepository.UpdateAsync(existingCalendar, autoSave: true);
+                }
+
                 return;
             }
 

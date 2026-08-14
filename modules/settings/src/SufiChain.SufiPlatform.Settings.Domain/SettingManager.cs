@@ -52,6 +52,11 @@ public class SettingManager : ISettingManager, ITransientDependency
             : await GetOrNullGlobalAsync(name);
     }
 
+    public virtual Task<string?> GetOrNullForUserAsync(Guid userId, string name, bool fallback = true)
+    {
+        return GetOrNullInternalAsync(name, UserSettingValueProvider.ProviderName, userId.ToString(), fallback);
+    }
+
     public virtual Task SetGlobalAsync(string name, string? value)
     {
         return SetInternalAsync(name, value, GlobalSettingValueProvider.ProviderName, null);
@@ -60,6 +65,11 @@ public class SettingManager : ISettingManager, ITransientDependency
     public virtual Task SetForTenantAsync(Guid tenantId, string name, string? value)
     {
         return SetInternalAsync(name, value, TenantSettingValueProvider.ProviderName, tenantId.ToString());
+    }
+
+    public virtual Task SetForUserAsync(Guid userId, string name, string? value)
+    {
+        return SetInternalAsync(name, value, UserSettingValueProvider.ProviderName, userId.ToString());
     }
 
     public virtual async Task SetForCurrentTenantAsync(string name, string? value)

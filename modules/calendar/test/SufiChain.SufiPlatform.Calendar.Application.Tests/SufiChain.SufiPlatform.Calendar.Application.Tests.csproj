@@ -4,4 +4,12 @@
     <Nullable>enable</Nullable>
     <RootNamespace>SufiChain.SufiPlatform.Calendar</RootNamespace>
   </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\SufiChain.SufiPlatform.Calendar.Application\SufiChain.SufiPlatform.Calendar.Application.csproj" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="$(MicrosoftNetTestSdkVersion)" />
+    <PackageReference Include="Shouldly" Version="$(ShouldlyVersion)" />
+    <PackageReference Include="xunit" Version="$(XunitVersion)" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="$(XunitRunnerVisualStudioVersion)" PrivateAssets="All" />
+  </ItemGroup>
 </Project>

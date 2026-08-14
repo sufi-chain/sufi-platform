@@ -61,7 +61,7 @@ public class WorkspaceAppService : SufiApplicationService, IWorkspaceAppService
 
     public async Task<WorkspaceDto> GetAsync(Guid id)
     {
-        var workspace = await _workspaceRepository.GetAsync(id);
+        var workspace = await _workspaceRepository.GetAsync(id, includeDetails: true);
         return ObjectMapper.Map<Workspace, WorkspaceDto>(workspace);
     }
 
@@ -139,7 +139,7 @@ public class WorkspaceAppService : SufiApplicationService, IWorkspaceAppService
     [Authorize(AIPermissions.Workspaces.Edit)]
     public async Task<WorkspaceDto> UpdateAsync(Guid id, UpdateWorkspaceDto input)
     {
-        var workspace = await _workspaceRepository.GetAsync(id);
+        var workspace = await _workspaceRepository.GetAsync(id, includeDetails: true);
 
         await _workspaceManager.ValidateNameAsync(input.Name, id);
         workspace.SetName(input.Name);
@@ -160,6 +160,12 @@ public class WorkspaceAppService : SufiApplicationService, IWorkspaceAppService
             input.InputCostPer1MTokens,
             input.OutputCostPer1MTokens
         );
+        workspace.UpdatePrimaryChatConfiguration(
+            input.Model,
+            input.ApiBaseUrl,
+            input.OpenAIApiMode,
+            input.InputCostPer1MTokens,
+            input.OutputCostPer1MTokens);
 
         if (input.IsActive)
             workspace.Activate();

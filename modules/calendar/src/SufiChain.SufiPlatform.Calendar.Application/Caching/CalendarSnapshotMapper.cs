@@ -10,18 +10,28 @@ public static class CalendarSnapshotMapper
         var ownRules = calendar.WorkingHourRules.Select(x => new WorkingHourRuleSnapshot(x.DayOfWeek, x.StartTime, x.EndTime)).ToList();
         var ownExceptions = calendar.Exceptions.Select(x => new CalendarExceptionSnapshot(x.Date, x.Kind, x.Ranges.ToList(), x.Description)).ToList();
 
-        // Merge one-level inherited calendars' rules and exceptions so the calculator
-        // honors parent working hours and parent off-day exceptions transparently.
+        // Parent events are resolved separately by CalendarEventAppService. Availability
+        // always includes parent exceptions (for example shared holidays), while working
+        // hours are inherited only when the relationship explicitly enables them.
         var rules = ownRules;
         var exceptions = ownExceptions;
 
         if (inheritedCalendars is { Count: > 0 })
         {
+            var workingHourParentIds = calendar.Inheritances
+                .Where(x => x.IsInheritedByDefault)
+                .Select(x => x.ParentCalendarId)
+                .ToHashSet();
+
             rules = ownRules
-                .Concat(inheritedCalendars.SelectMany(p => p.WorkingHourRules.Select(x => new WorkingHourRuleSnapshot(x.DayOfWeek, x.StartTime, x.EndTime))))
+                .Concat(inheritedCalendars
+                    .Where(parent => workingHourParentIds.Contains(parent.Id))
+                    .SelectMany(parent => parent.WorkingHourRules.Select(x =>
+                        new WorkingHourRuleSnapshot(x.DayOfWeek, x.StartTime, x.EndTime))))
                 .ToList();
             exceptions = ownExceptions
-                .Concat(inheritedCalendars.SelectMany(p => p.Exceptions.Select(x => new CalendarExceptionSnapshot(x.Date, x.Kind, x.Ranges.ToList(), x.Description))))
+                .Concat(inheritedCalendars.SelectMany(parent => parent.Exceptions.Select(x =>
+                    new CalendarExceptionSnapshot(x.Date, x.Kind, x.Ranges.ToList(), x.Description))))
                 .ToList();
         }
 

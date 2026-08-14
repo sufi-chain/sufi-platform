@@ -34,7 +34,7 @@
     "Inheritances": "Calendarios heredados",
     "AddInheritance": "Heredar calendario",
     "ParentCalendar": "Calendario padre",
-    "IsInheritedByDefault": "Herencia predeterminada",
+    "IsInheritedByDefault": "Heredar horario laboral",
     "OwnerName": "Nombre del propietario",
     "Cancel": "Cancelar",
     "Save": "Guardar",
@@ -136,6 +136,11 @@
     "CalendarCopilot:Shortcut:FreeSlot": "Encuentra un espacio libre de 30 minutos esta semana",
     "CalendarCopilot:Shortcut:ScheduleTomorrow": "Programa una reunión mañana a las 10",
     "CalendarCopilot:Shortcut:FreeFriday": "¿Estoy libre el viernes por la tarde?",
+    "Copilot:SufiCalendar:Assistant:DisplayName": "Asistente de calendario",
+    "Copilot:SufiCalendar:Assistant:Shortcut:DayAgenda": "¿Cómo se ve mi día?",
+    "Copilot:SufiCalendar:Assistant:Shortcut:FreeSlot": "Encuentra un espacio libre de 30 minutos esta semana",
+    "Copilot:SufiCalendar:Assistant:Shortcut:ScheduleTomorrow": "Programa una reunión mañana a las 10",
+    "Copilot:SufiCalendar:Assistant:Shortcut:FreeFriday": "¿Estoy libre el viernes por la tarde?",
     "SeededCalendar:host-hijri-shamsi:DisplayName": "Hijri Shamsi",
     "SeededCalendar:host-hijri-shamsi-1405:DisplayName": "Hijri Shamsi"
   }

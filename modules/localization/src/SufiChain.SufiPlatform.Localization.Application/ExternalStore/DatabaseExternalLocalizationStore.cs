@@ -7,6 +7,8 @@ using SufiChain.SufiPlatform.Localization.Repositories;
 using Volo.Abp.DependencyInjection;
 using Volo.Abp.Localization;
 using Volo.Abp.Localization.External;
+using Volo.Abp.MultiTenancy;
+using LocalizationResourceEntity = SufiChain.SufiPlatform.Localization.Entities.LocalizationResource;
 
 namespace SufiChain.SufiPlatform.Localization.ExternalStore;
 
@@ -18,11 +20,15 @@ namespace SufiChain.SufiPlatform.Localization.ExternalStore;
 public class DatabaseExternalLocalizationStore : IExternalLocalizationStore, ISingletonDependency
 {
     private readonly IServiceProvider _serviceProvider;
+    private readonly ICurrentTenant _currentTenant;
     private readonly ConcurrentDictionary<string, LocalizationResourceBase> _resourceCache = new();
 
-    public DatabaseExternalLocalizationStore(IServiceProvider serviceProvider)
+    public DatabaseExternalLocalizationStore(
+        IServiceProvider serviceProvider,
+        ICurrentTenant currentTenant)
     {
         _serviceProvider = serviceProvider;
+        _currentTenant = currentTenant;
     }
 
     public LocalizationResourceBase? GetResourceOrNull(string resourceName)
@@ -32,15 +38,23 @@ public class DatabaseExternalLocalizationStore : IExternalLocalizationStore, ISi
 
     public async Task<LocalizationResourceBase?> GetResourceOrNullAsync(string resourceName)
     {
-        if (_resourceCache.TryGetValue(resourceName, out var cached))
+        var tenantId = _currentTenant.Id;
+        var cacheKey = CalculateCacheKey(tenantId, resourceName);
+        if (_resourceCache.TryGetValue(cacheKey, out var cached))
         {
             return cached;
         }
 
         using var scope = _serviceProvider.CreateScope();
+        var currentTenant = scope.ServiceProvider.GetRequiredService<ICurrentTenant>();
         var repository = scope.ServiceProvider.GetRequiredService<ILocalizationResourceRepository>();
 
-        var dbResource = await repository.FindByNameAsync(resourceName);
+        LocalizationResourceEntity? dbResource;
+        using (currentTenant.Change(tenantId))
+        {
+            dbResource = await repository.FindByNameAsync(resourceName);
+        }
+
         if (dbResource == null || !dbResource.IsEnabled)
         {
             return null;
@@ -56,16 +70,23 @@ public class DatabaseExternalLocalizationStore : IExternalLocalizationStore, ISi
             resource.BaseResourceNames.Add(baseName);
         }
 
-        _resourceCache.TryAdd(resourceName, resource);
+        _resourceCache.TryAdd(cacheKey, resource);
         return resource;
     }
 
     public async Task<string[]> GetResourceNamesAsync()
     {
+        var tenantId = _currentTenant.Id;
         using var scope = _serviceProvider.CreateScope();
+        var currentTenant = scope.ServiceProvider.GetRequiredService<ICurrentTenant>();
         var repository = scope.ServiceProvider.GetRequiredService<ILocalizationResourceRepository>();
 
-        var names = await repository.GetResourceNamesAsync(enabledOnly: true);
+        List<string> names;
+        using (currentTenant.Change(tenantId))
+        {
+            names = await repository.GetResourceNamesAsync(enabledOnly: true);
+        }
+
         return names.ToArray();
     }
 
@@ -91,7 +112,7 @@ public class DatabaseExternalLocalizationStore : IExternalLocalizationStore, ISi
     /// </summary>
     public void ClearCache(string resourceName)
     {
-        _resourceCache.TryRemove(resourceName, out _);
+        _resourceCache.TryRemove(CalculateCacheKey(_currentTenant.Id, resourceName), out _);
     }
 
     /// <summary>
@@ -100,5 +121,13 @@ public class DatabaseExternalLocalizationStore : IExternalLocalizationStore, ISi
     public void ClearAllCache()
     {
         _resourceCache.Clear();
+    }
+
+    private static string CalculateCacheKey(Guid? tenantId, string resourceName)
+    {
+        var tenantSegment = tenantId.HasValue
+            ? tenantId.Value.ToString("N")
+            : "host";
+        return $"t:{tenantSegment},r:{resourceName}";
     }
 }

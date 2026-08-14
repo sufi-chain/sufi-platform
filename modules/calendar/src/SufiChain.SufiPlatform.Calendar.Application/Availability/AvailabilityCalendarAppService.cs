@@ -91,6 +91,11 @@ public class AvailabilityCalendarAppService : SufiApplicationService, IAvailabil
         var existing = calendars.FirstOrDefault(x => x.Kind == CalendarKind.Personal);
         if (existing != null)
         {
+            if (await _calendarManager.EnsureDefaultCalendarInheritanceAsync(existing))
+            {
+                await _calendarRepository.UpdateAsync(existing, autoSave: true);
+            }
+
             return ToDto(existing);
         }
 

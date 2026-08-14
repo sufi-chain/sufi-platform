@@ -75,6 +75,7 @@ public static class ServiceCollectionExtensions
 
         // Localization
         services.TryAddTransient<ILanguageProvider, DefaultLanguageProvider>();
+        services.TryAddScoped<IPreferredLanguageService, NullPreferredLanguageService>();
 
         // Tenant selector visibility (default: never show; replace when multi-tenant)
         services.TryAddScoped<ITenantSelectorVisibilityService, DefaultTenantSelectorVisibilityService>();

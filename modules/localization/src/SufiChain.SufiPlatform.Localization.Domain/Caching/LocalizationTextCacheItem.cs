@@ -15,8 +15,11 @@ public class LocalizationTextCacheItem
     /// </summary>
     public Dictionary<string, string> Texts { get; set; } = new();
 
-    public static string CalculateCacheKey(string resourceName, string cultureName)
+    public static string CalculateCacheKey(Guid? tenantId, string resourceName, string cultureName)
     {
-        return $"r:{resourceName},c:{cultureName}";
+        var tenantSegment = tenantId.HasValue
+            ? tenantId.Value.ToString("N")
+            : "host";
+        return $"t:{tenantSegment},r:{resourceName},c:{cultureName}";
     }
 }

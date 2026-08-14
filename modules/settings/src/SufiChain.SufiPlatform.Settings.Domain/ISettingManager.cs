@@ -18,9 +18,13 @@ public interface ISettingManager
 
     Task<string?> GetOrNullForCurrentTenantAsync(string name, bool fallback = true);
 
+    Task<string?> GetOrNullForUserAsync(Guid userId, string name, bool fallback = true);
+
     Task SetGlobalAsync(string name, string? value);
 
     Task SetForTenantAsync(Guid tenantId, string name, string? value);
+
+    Task SetForUserAsync(Guid userId, string name, string? value);
 
     Task SetForCurrentTenantAsync(string name, string? value);
 
