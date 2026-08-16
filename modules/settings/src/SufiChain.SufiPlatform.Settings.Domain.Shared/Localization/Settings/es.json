@@ -35,6 +35,7 @@
     "TestEmailSubject": "Asunto del correo de prueba",
     "TestEmailBody": "Cuerpo del correo de prueba",
     "TestEmailSentSuccessfully": "Correo de prueba enviado correctamente",
+    "SmtpNotConfigured": "Guarde una configuración SMTP válida antes de enviar un correo de prueba.",
     "LoadingSettings": "Cargando configuración…",
     "NoSettingsAvailable": "No hay configuraciones disponibles",
     "SaveNotSupportedForThisSettingGroup": "El guardado no es compatible con este grupo de configuración",

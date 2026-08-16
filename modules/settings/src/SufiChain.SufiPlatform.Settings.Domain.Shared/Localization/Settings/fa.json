@@ -38,6 +38,7 @@
     "TestEmailSubject": "موضوع ایمیل آزمایشی",
     "TestEmailBody": "متن ایمیل آزمایشی",
     "TestEmailSentSuccessfully": "ایمیل آزمایشی با موفقیت ارسال شد",
+    "SmtpNotConfigured": "پیش از ارسال ایمیل آزمایشی، یک پیکربندی معتبر SMTP را ذخیره کنید.",
     "LoadingSettings": "در حال بارگذاری تنظیمات…",
     "NoSettingsAvailable": "تنظیماتی در دسترس نیست",
     "SaveNotSupportedForThisSettingGroup": "ذخیره برای این گروه تنظیمات پشتیبانی نمی‌شود",

@@ -15,15 +15,14 @@
             <div>
                 <h6 class="mb-3">@L["SmtpServerSettings"]</h6>
                 <SbStack Gap="3">
-                    <SbStack Direction="SbStackDirection.Column" DirectionMd="SbStackDirection.Row" Gap="3">
-                        <SbTextField @bind-Value="_settings.SmtpHost" 
-                                     Label="@L["SmtpHost"]"
-                                     Placeholder="@L["Placeholder:SmtpHost"]"
-                                     Style="flex: 2;" />
-                        <SbNumberField TValue="int" @bind-Value="_settings.SmtpPort" 
-                                       Label="@L["SmtpPort"]"
-                                       Style="flex: 1;" />
-                    </SbStack>
+                    <SbTextField @bind-Value="_settings.SmtpHost"
+                                 Label="@L["SmtpHost"]"
+                                 Placeholder="@L["Placeholder:SmtpHost"]" />
+                    <SbNumberField TValue="int"
+                                   @bind-Value="_settings.SmtpPort"
+                                   Label="@L["SmtpPort"]"
+                                   Min="1"
+                                   Max="65535" />
                     
                     <SbCheckbox @bind-Value="_settings.SmtpEnableSsl" 
                                 Label="@L["EnableSsl"]" />
