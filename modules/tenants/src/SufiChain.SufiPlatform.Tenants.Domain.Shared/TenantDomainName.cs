@@ -13,44 +13,53 @@ public static class TenantDomainName
             throw new ArgumentException("Tenant domain host can not be empty.", nameof(host));
         }
 
-        host = host.Trim();
-        if (Uri.TryCreate(host, UriKind.Absolute, out var absoluteUri))
-        {
-            host = absoluteUri.Host;
-        }
-        else
-        {
-            var slashIndex = host.IndexOf('/');
-            if (slashIndex >= 0)
-            {
-                host = host[..slashIndex];
-            }
-
-            var colonIndex = host.LastIndexOf(':');
-            if (colonIndex > 0 && host.IndexOf(':') == colonIndex)
-            {
-                host = host[..colonIndex];
-            }
-        }
-
-        host = host.Trim().TrimEnd('.');
-        if (host.Length == 0 || host.Contains('*'))
+        if (!string.Equals(host, host.Trim(), StringComparison.Ordinal) ||
+            host.EndsWith(".", StringComparison.Ordinal) ||
+            host.Contains("://", StringComparison.Ordinal) ||
+            host.IndexOfAny(['/', '\\', ':', '*', '?', '#', '@']) >= 0)
         {
             throw new ArgumentException("Tenant domain host is invalid.", nameof(host));
         }
 
-        var idnMapping = new IdnMapping();
-        var normalizedHost = string.Join(
-            ".",
-            host.Split('.').Select(label => idnMapping.GetAscii(label).ToLowerInvariant()));
+        string normalizedHost;
+        try
+        {
+            var idnMapping = new IdnMapping();
+            normalizedHost = string.Join(
+                ".",
+                host.Split('.').Select(label => idnMapping.GetAscii(label).ToLowerInvariant()));
+        }
+        catch (ArgumentException)
+        {
+            throw new ArgumentException("Tenant domain host is invalid.", nameof(host));
+        }
 
         if (normalizedHost.Length > TenantConsts.MaxDomainHostLength ||
-            Uri.CheckHostName(normalizedHost) != UriHostNameType.Dns)
+            Uri.CheckHostName(normalizedHost) != UriHostNameType.Dns ||
+            normalizedHost.Split('.').Any(label =>
+                label.Length is 0 or > 63 ||
+                label.StartsWith("-", StringComparison.Ordinal) ||
+                label.EndsWith("-", StringComparison.Ordinal) ||
+                label.Any(character => !IsAsciiLetterOrDigit(character) && character != '-')))
         {
             throw new ArgumentException("Tenant domain host is invalid.", nameof(host));
         }
 
         return normalizedHost;
+    }
+
+    public static bool TryNormalizeHost(string? host, out string normalizedHost)
+    {
+        try
+        {
+            normalizedHost = NormalizeHost(host!);
+            return true;
+        }
+        catch (ArgumentException)
+        {
+            normalizedHost = string.Empty;
+            return false;
+        }
     }
 
     public static string NormalizeSubdomain(string subdomain)
