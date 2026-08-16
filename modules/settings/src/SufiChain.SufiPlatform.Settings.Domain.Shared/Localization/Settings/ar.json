@@ -38,6 +38,7 @@
     "TestEmailSubject": "موضوع البريد الاختباري",
     "TestEmailBody": "نص البريد الاختباري",
     "TestEmailSentSuccessfully": "تم إرسال البريد الاختباري بنجاح",
+    "SmtpNotConfigured": "احفظ تكوين SMTP صالحًا قبل إرسال بريد اختباري.",
     "LoadingSettings": "جاري تحميل الإعدادات…",
     "NoSettingsAvailable": "لا توجد إعدادات متاحة",
     "SaveNotSupportedForThisSettingGroup": "الحفظ غير مدعوم لمجموعة الإعدادات هذه",

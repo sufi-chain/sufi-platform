@@ -1,5 +1,6 @@
 using Microsoft.Extensions.Logging;
-using SufiChain.SufiPlatform.SufiCom.Email;
+using SufiChain.SufiPlatform.SufiCom;
+using SufiChain.SufiPlatform.SufiCom.Smtp;
 
 namespace SufiChain.SufiPlatform.Settings;
 
@@ -7,12 +8,12 @@ namespace SufiChain.SufiPlatform.Settings;
 public class EmailSettingsAppService : SettingsAppServiceBase, IEmailSettingsAppService
 {
     protected ISettingManager SettingManager { get; }
-    protected IEmailSender EmailSender { get; }
+    protected ISmtpEmailSender SmtpEmailSender { get; }
 
-    public EmailSettingsAppService(ISettingManager settingManager, IEmailSender emailSender)
+    public EmailSettingsAppService(ISettingManager settingManager, ISmtpEmailSender smtpEmailSender)
     {
         SettingManager = settingManager;
-        EmailSender = emailSender;
+        SmtpEmailSender = smtpEmailSender;
     }
 
     public virtual async Task<EmailSettingsDto> GetAsync()
@@ -21,21 +22,21 @@ public class EmailSettingsAppService : SettingsAppServiceBase, IEmailSettingsApp
 
         var settingsDto = new EmailSettingsDto
         {
-            SmtpHost = await SettingProvider.GetOrNullAsync(EmailSettingNames.Smtp.Host),
-            SmtpPort = ToInt32(await SettingProvider.GetOrNullAsync(EmailSettingNames.Smtp.Port)),
-            SmtpUserName = await SettingProvider.GetOrNullAsync(EmailSettingNames.Smtp.UserName),
-            SmtpDomain = await SettingProvider.GetOrNullAsync(EmailSettingNames.Smtp.Domain),
-            SmtpEnableSsl = ToBoolean(await SettingProvider.GetOrNullAsync(EmailSettingNames.Smtp.EnableSsl)),
-            SmtpUseDefaultCredentials = ToBoolean(await SettingProvider.GetOrNullAsync(EmailSettingNames.Smtp.UseDefaultCredentials)),
-            DefaultFromAddress = await SettingProvider.GetOrNullAsync(EmailSettingNames.DefaultFromAddress),
-            DefaultFromDisplayName = await SettingProvider.GetOrNullAsync(EmailSettingNames.DefaultFromDisplayName),
+            SmtpHost = await SettingProvider.GetOrNullAsync(SufiComSenderSettingNames.Email.SmtpHost),
+            SmtpPort = ToInt32(await SettingProvider.GetOrNullAsync(SufiComSenderSettingNames.Email.SmtpPort)),
+            SmtpUserName = await SettingProvider.GetOrNullAsync(SufiComSenderSettingNames.Email.SmtpUserName),
+            SmtpDomain = await SettingProvider.GetOrNullAsync(SufiComSenderSettingNames.Email.SmtpDomain),
+            SmtpEnableSsl = ToBoolean(await SettingProvider.GetOrNullAsync(SufiComSenderSettingNames.Email.SmtpEnableSsl)),
+            SmtpUseDefaultCredentials = ToBoolean(await SettingProvider.GetOrNullAsync(SufiComSenderSettingNames.Email.SmtpUseDefaultCredentials)),
+            DefaultFromAddress = await SettingProvider.GetOrNullAsync(SufiComSenderSettingNames.Email.DefaultFromAddress),
+            DefaultFromDisplayName = await SettingProvider.GetOrNullAsync(SufiComSenderSettingNames.Email.DefaultFromDisplayName),
         };
 
         if (CurrentTenant.IsAvailable)
         {
-            settingsDto.SmtpHost = await SettingManager.GetOrNullForTenantAsync(EmailSettingNames.Smtp.Host, CurrentTenant.Id!.Value, false);
-            settingsDto.SmtpUserName = await SettingManager.GetOrNullForTenantAsync(EmailSettingNames.Smtp.UserName, CurrentTenant.Id!.Value, false);
-            settingsDto.SmtpDomain = await SettingManager.GetOrNullForTenantAsync(EmailSettingNames.Smtp.Domain, CurrentTenant.Id!.Value, false);
+            settingsDto.SmtpHost = await SettingManager.GetOrNullForTenantAsync(SufiComSenderSettingNames.Email.SmtpHost, CurrentTenant.Id!.Value, false);
+            settingsDto.SmtpUserName = await SettingManager.GetOrNullForTenantAsync(SufiComSenderSettingNames.Email.SmtpUserName, CurrentTenant.Id!.Value, false);
+            settingsDto.SmtpDomain = await SettingManager.GetOrNullForTenantAsync(SufiComSenderSettingNames.Email.SmtpDomain, CurrentTenant.Id!.Value, false);
         }
 
         return settingsDto;
@@ -45,26 +46,32 @@ public class EmailSettingsAppService : SettingsAppServiceBase, IEmailSettingsApp
     {
         await CheckFeatureAsync();
 
-        await SettingManager.SetForTenantOrGlobalAsync(CurrentTenant.Id, EmailSettingNames.Smtp.Host, input.SmtpHost);
-        await SettingManager.SetForTenantOrGlobalAsync(CurrentTenant.Id, EmailSettingNames.Smtp.Port, input.SmtpPort.ToString());
-        await SettingManager.SetForTenantOrGlobalAsync(CurrentTenant.Id, EmailSettingNames.Smtp.UserName, input.SmtpUserName);
+        await SettingManager.SetForTenantOrGlobalAsync(CurrentTenant.Id, SufiComSenderSettingNames.Email.SmtpHost, input.SmtpHost);
+        await SettingManager.SetForTenantOrGlobalAsync(CurrentTenant.Id, SufiComSenderSettingNames.Email.SmtpPort, input.SmtpPort.ToString());
+        await SettingManager.SetForTenantOrGlobalAsync(CurrentTenant.Id, SufiComSenderSettingNames.Email.SmtpUserName, input.SmtpUserName);
 
         if (!string.IsNullOrWhiteSpace(input.SmtpPassword))
         {
-            await SettingManager.SetForTenantOrGlobalAsync(CurrentTenant.Id, EmailSettingNames.Smtp.Password, input.SmtpPassword);
+            await SettingManager.SetForTenantOrGlobalAsync(CurrentTenant.Id, SufiComSenderSettingNames.Email.SmtpPassword, input.SmtpPassword);
         }
 
-        await SettingManager.SetForTenantOrGlobalAsync(CurrentTenant.Id, EmailSettingNames.Smtp.Domain, input.SmtpDomain);
-        await SettingManager.SetForTenantOrGlobalAsync(CurrentTenant.Id, EmailSettingNames.Smtp.EnableSsl, input.SmtpEnableSsl.ToString());
-        await SettingManager.SetForTenantOrGlobalAsync(CurrentTenant.Id, EmailSettingNames.Smtp.UseDefaultCredentials, input.SmtpUseDefaultCredentials.ToString().ToLowerInvariant());
-        await SettingManager.SetForTenantOrGlobalAsync(CurrentTenant.Id, EmailSettingNames.DefaultFromAddress, input.DefaultFromAddress);
-        await SettingManager.SetForTenantOrGlobalAsync(CurrentTenant.Id, EmailSettingNames.DefaultFromDisplayName, input.DefaultFromDisplayName);
+        await SettingManager.SetForTenantOrGlobalAsync(CurrentTenant.Id, SufiComSenderSettingNames.Email.SmtpDomain, input.SmtpDomain);
+        await SettingManager.SetForTenantOrGlobalAsync(CurrentTenant.Id, SufiComSenderSettingNames.Email.SmtpEnableSsl, input.SmtpEnableSsl.ToString().ToLowerInvariant());
+        await SettingManager.SetForTenantOrGlobalAsync(CurrentTenant.Id, SufiComSenderSettingNames.Email.SmtpUseDefaultCredentials, input.SmtpUseDefaultCredentials.ToString().ToLowerInvariant());
+        await SettingManager.SetForTenantOrGlobalAsync(CurrentTenant.Id, SufiComSenderSettingNames.Email.DefaultFromAddress, input.DefaultFromAddress);
+        await SettingManager.SetForTenantOrGlobalAsync(CurrentTenant.Id, SufiComSenderSettingNames.Email.DefaultFromDisplayName, input.DefaultFromDisplayName);
     }
 
     [Microsoft.AspNetCore.Authorization.Authorize(SettingsPermissions.EmailingTest)]
     public virtual async Task SendTestEmailAsync(SendTestEmailInput input)
     {
         await CheckFeatureAsync();
+
+        var smtpHost = await SettingProvider.GetOrNullAsync(SufiComSenderSettingNames.Email.SmtpHost);
+        if (string.IsNullOrWhiteSpace(smtpHost))
+        {
+            throw new ApplicationException(L["SmtpNotConfigured"]);
+        }
 
         try
         {
@@ -93,7 +100,11 @@ public class EmailSettingsAppService : SettingsAppServiceBase, IEmailSettingsApp
 
     protected virtual Task SendEmailByRegisteredSenderAsync(SendTestEmailInput input)
     {
-        return EmailSender.SendAsync(to : input.SenderEmailAddress, from : input.TargetEmailAddress, subject: input.Subject, body: input.Body);
+        return SmtpEmailSender.SendAsync(
+            to: input.TargetEmailAddress,
+            from: input.SenderEmailAddress,
+            subject: input.Subject,
+            body: input.Body ?? string.Empty);
     }
 
     protected virtual int ToInt32(string? value)

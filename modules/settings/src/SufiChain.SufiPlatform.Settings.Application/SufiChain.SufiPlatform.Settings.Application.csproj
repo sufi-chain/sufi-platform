@@ -19,7 +19,6 @@
     <ProjectReference Include="../../../../framework/SufiChain.SufiPlatform.Ddd.Application/SufiChain.SufiPlatform.Ddd.Application.csproj" />
     <ProjectReference Include="../../../../framework/SufiChain.SufiPlatform.SufiCom/SufiChain.SufiPlatform.SufiCom.csproj" />
     <PackageReference Include="Volo.Abp.Timing" Version="$(AbpVersion)" />
-    <ProjectReference Include="..\..\..\..\framework\SufiChain.SufiPlatform.SufiCom\SufiChain.SufiPlatform.SufiCom.csproj" />
     <ProjectReference Include="..\SufiChain.SufiPlatform.Settings.Domain\SufiChain.SufiPlatform.Settings.Domain.csproj" />
   </ItemGroup>
 
