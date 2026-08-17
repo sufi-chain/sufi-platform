@@ -50,7 +50,33 @@ public partial class EmailSettingsGroup : SettingsComponentBase, ISaveableSettin
     /// </summary>
     public Task SaveAsync() => ExecuteWithLoadingAsync(async () =>
     {
-        // Save settings using Application Service (proper DDD approach)
+        await UpdateSettingsAsync();
+        await Notify.SuccessAsync(L["SettingsSavedSuccessfully"]);
+    }, LoadingKeys.Save);
+
+    private void ShowTestEmailModal()
+    {
+        _testEmailAddress = "";
+        _showTestEmailModal = true;
+    }
+
+    private Task SendTestEmailAsync() => ExecuteWithLoadingAsync(async () =>
+    {
+        await UpdateSettingsAsync();
+        await EmailSettingsAppService.SendTestEmailAsync(new SendTestEmailInput
+        {
+            SenderEmailAddress = _settings.DefaultFromAddress ?? "",
+            TargetEmailAddress = _testEmailAddress,
+            Subject = L["TestEmailSubject"],
+            Body = L["TestEmailBody"]
+        });
+        
+        _showTestEmailModal = false;
+        await Notify.SuccessAsync(L["TestEmailSentSuccessfully"]);
+    }, LoadingKeys.SendTest);
+
+    private async Task UpdateSettingsAsync()
+    {
         await EmailSettingsAppService.UpdateAsync(new UpdateEmailSettingsDto
         {
             SmtpHost = _settings.SmtpHost,
@@ -63,27 +89,7 @@ public partial class EmailSettingsGroup : SettingsComponentBase, ISaveableSettin
             DefaultFromAddress = _settings.DefaultFromAddress,
             DefaultFromDisplayName = _settings.DefaultFromDisplayName
         });
-        
-        await Notify.SuccessAsync(L["SettingsSavedSuccessfully"]);
-    }, LoadingKeys.Save);
 
-    private void ShowTestEmailModal()
-    {
-        _testEmailAddress = "";
-        _showTestEmailModal = true;
+        _settings.SmtpPassword = null;
     }
-
-    private Task SendTestEmailAsync() => ExecuteWithLoadingAsync(async () =>
-    {
-        await EmailSettingsAppService.SendTestEmailAsync(new SendTestEmailInput
-        {
-            SenderEmailAddress = _settings.DefaultFromAddress ?? "",
-            TargetEmailAddress = _testEmailAddress,
-            Subject = L["TestEmailSubject"],
-            Body = L["TestEmailBody"]
-        });
-        
-        _showTestEmailModal = false;
-        await Notify.SuccessAsync(L["TestEmailSentSuccessfully"]);
-    }, LoadingKeys.SendTest);
 }

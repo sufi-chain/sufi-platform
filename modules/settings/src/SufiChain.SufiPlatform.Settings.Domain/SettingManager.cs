@@ -7,17 +7,20 @@ namespace SufiChain.SufiPlatform.Settings;
 public class SettingManager : ISettingManager, ITransientDependency
 {
     protected ISettingDefinitionManager SettingDefinitionManager { get; }
+    protected ISettingEncryptionService SettingEncryptionService { get; }
     protected ISettingsStore SettingsStore { get; }
     protected ISettingProvider SettingProvider { get; }
     protected ICurrentTenant CurrentTenant { get; }
 
     public SettingManager(
         ISettingDefinitionManager settingDefinitionManager,
+        ISettingEncryptionService settingEncryptionService,
         ISettingsStore settingManagementStore,
         ISettingProvider settingProvider,
         ICurrentTenant currentTenant)
     {
         SettingDefinitionManager = settingDefinitionManager;
+        SettingEncryptionService = settingEncryptionService;
         SettingsStore = settingManagementStore;
         SettingProvider = settingProvider;
         CurrentTenant = currentTenant;
@@ -92,10 +95,13 @@ public class SettingManager : ISettingManager, ITransientDependency
 
     protected virtual async Task<string?> GetOrNullInternalAsync(string name, string providerName, string? providerKey, bool fallback)
     {
+        var setting = await SettingDefinitionManager.GetAsync(name);
         var value = await SettingsStore.GetOrNullAsync(name, providerName, providerKey);
         if (!fallback || value != null)
         {
-            return value;
+            return setting.IsEncrypted
+                ? SettingEncryptionService.Decrypt(setting, value)
+                : value;
         }
 
         return await SettingProvider.GetOrNullAsync(name);
@@ -109,6 +115,11 @@ public class SettingManager : ISettingManager, ITransientDependency
         {
             await SettingsStore.DeleteAsync(setting.Name, providerName, providerKey);
             return;
+        }
+
+        if (setting.IsEncrypted)
+        {
+            value = SettingEncryptionService.Encrypt(setting, value)!;
         }
 
         await SettingsStore.SetAsync(setting.Name, value, providerName, providerKey);
