@@ -65,6 +65,8 @@ public class AccountTwoFactorAppService : SufiApplicationService, IAccountTwoFac
 
     public virtual async Task<TwoFactorInfoDto> GetTwoFactorInfoAsync()
     {
+        EnsureAuthenticatorKeyStoreSupported();
+
         var user = await GetCurrentUserAsync();
         var hasAuthenticator = !string.IsNullOrEmpty(await UserManager.GetAuthenticatorKeyAsync(user));
 
@@ -83,6 +85,7 @@ public class AccountTwoFactorAppService : SufiApplicationService, IAccountTwoFac
     public virtual async Task<AuthenticatorSetupDto> GenerateAuthenticatorSetupAsync()
     {
         await EnsureUsersCanChangeTwoFactorAsync();
+        EnsureAuthenticatorKeyStoreSupported();
 
         var user = await GetCurrentUserAsync();
         await UserManager.ResetAuthenticatorKeyAsync(user);
@@ -136,6 +139,7 @@ public class AccountTwoFactorAppService : SufiApplicationService, IAccountTwoFac
     public virtual async Task DisableTwoFactorAsync(DisableTwoFactorInput input)
     {
         await EnsureUsersCanChangeTwoFactorAsync();
+        EnsureAuthenticatorKeyStoreSupported();
 
         var user = await GetCurrentUserAsync();
 
@@ -313,6 +317,14 @@ public class AccountTwoFactorAppService : SufiApplicationService, IAccountTwoFac
         if (!await SettingProvider.IsTrueAsync(IdentitySettingNames.TwoFactor.UsersCanChange))
         {
             throw new BusinessException(IdentitySecurityErrorCodes.TwoFactorChangeNotAllowed);
+        }
+    }
+
+    protected virtual void EnsureAuthenticatorKeyStoreSupported()
+    {
+        if (!UserManager.SupportsUserAuthenticatorKey)
+        {
+            throw new BusinessException(IdentitySecurityErrorCodes.AuthenticatorKeyStoreUnavailable);
         }
     }
 

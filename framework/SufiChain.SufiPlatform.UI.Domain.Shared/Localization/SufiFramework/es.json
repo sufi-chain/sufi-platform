@@ -92,6 +92,11 @@
     "ItemWillBeDeletedMessage": "Este elemento se eliminará. ¿Está seguro?",
     "ErrorLoadingPage": "Se produjo un error al cargar esta página.",
     "UnhandledExceptionDev": "Se produjo una excepción no controlada. Consulte las herramientas de desarrollo del navegador para obtener detalles.",
+    "MobileNavigation": "Navegación móvil",
+    "MobileShortcut:Home": "Inicio",
+    "MobileShortcut:ChatInbox": "Bandeja de chat",
+    "MobileShortcut:NotificationInbox": "Bandeja de notificaciones",
+    "MobileShortcut:CalendarPro": "Calendario Pro",
     "ApplicationErrorReload": "Se produjo un error. Es posible que esta aplicación no responda hasta que se recargue."
   }
 }

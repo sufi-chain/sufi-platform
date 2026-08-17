@@ -113,6 +113,11 @@
         "ItemWillBeDeletedMessage": "This item will be deleted. Are you sure?",
         "ErrorLoadingPage": "An error occurred loading this page.",
         "UnhandledExceptionDev": "An unhandled exception has occurred. See browser dev tools for details.",
+        "MobileNavigation": "Mobile navigation",
+        "MobileShortcut:Home": "Home",
+        "MobileShortcut:ChatInbox": "Chat inbox",
+        "MobileShortcut:NotificationInbox": "Notification inbox",
+        "MobileShortcut:CalendarPro": "Calendar Pro",
         "ApplicationErrorReload": "An error has occurred. This application may no longer respond until reloaded."
     }
 }

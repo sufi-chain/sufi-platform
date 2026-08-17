@@ -222,6 +222,7 @@
     "Sufi.Identity:VerificationChannelUnavailable": "El canal seleccionado no está disponible. Configure los proveedores de mensajería o elija otro canal.",
     "Sufi.Identity:PhoneNumberRequired": "Se requiere un número de teléfono para envío por SMS o voz. Agregue un número a su perfil.",
     "Sufi.Identity:PhoneNumberNotConfirmed": "Su número de teléfono debe estar confirmado antes de usar SMS o voz.",
+    "Sufi.Identity:AuthenticatorKeyStoreUnavailable": "La configuración de la aplicación de autenticación no está disponible para esta cuenta. Póngase en contacto con el administrador.",
     "Permission:IdentityManagement": "Gestión de identidad",
     "Permission:RoleManagement": "Gestión de roles",
     "Permission:UserManagement": "Gestión de usuarios",

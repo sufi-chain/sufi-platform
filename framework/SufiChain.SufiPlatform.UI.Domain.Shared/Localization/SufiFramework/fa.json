@@ -113,6 +113,11 @@
     "ItemWillBeDeletedMessage": "این مورد حذف خواهد شد. آیا مطمئن هستید؟",
     "ErrorLoadingPage": "خطایی در بارگذاری این صفحه رخ داد.",
     "UnhandledExceptionDev": "یک استثناء مدیریت‌نشده رخ داده است. ابزار توسعه مرورگر را برای جزئیات بررسی کنید.",
+    "MobileNavigation": "پیمایش موبایل",
+    "MobileShortcut:Home": "خانه",
+    "MobileShortcut:ChatInbox": "صندوق گفتگو",
+    "MobileShortcut:NotificationInbox": "صندوق اعلان‌ها",
+    "MobileShortcut:CalendarPro": "تقویم حرفه‌ای",
     "ApplicationErrorReload": "خطایی رخ داده است. ممکن است این برنامه تا بارگذاری مجدد پاسخ ندهد."
   }
 }

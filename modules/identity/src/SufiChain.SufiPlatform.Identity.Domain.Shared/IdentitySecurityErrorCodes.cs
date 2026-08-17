@@ -14,6 +14,7 @@ public static class IdentitySecurityErrorCodes
     public const string TwoFactorCodeInvalid = "Sufi.Identity:TwoFactorCodeInvalid";
     public const string TwoFactorNotEnabled = "Sufi.Identity:TwoFactorNotEnabled";
     public const string TwoFactorSetupFailed = "Sufi.Identity:TwoFactorSetupFailed";
+    public const string AuthenticatorKeyStoreUnavailable = "Sufi.Identity:AuthenticatorKeyStoreUnavailable";
     public const string TwoFactorCodeDeliveryDisabled = "Sufi.Identity:TwoFactorCodeDeliveryDisabled";
     public const string TwoFactorPendingLoginExpired = "Sufi.Identity:TwoFactorPendingLoginExpired";
     public const string TwoFactorChangeNotAllowed = "Sufi.Identity:TwoFactorChangeNotAllowed";

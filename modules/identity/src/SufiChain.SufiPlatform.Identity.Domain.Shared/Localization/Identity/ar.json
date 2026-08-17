@@ -241,6 +241,7 @@
     "Sufi.Identity:VerificationChannelUnavailable": "قناة التحقق المحددة غير متاحة. قم بتكوين مزودي المراسلة أو اختر قناة أخرى.",
     "Sufi.Identity:PhoneNumberRequired": "رقم الهاتف مطلوب للإرسال عبر SMS أو الصوت. أضف رقم هاتف إلى ملفك الشخصي.",
     "Sufi.Identity:PhoneNumberNotConfirmed": "يجب تأكيد رقم هاتفك قبل استخدام SMS أو الصوت.",
+    "Sufi.Identity:AuthenticatorKeyStoreUnavailable": "إعداد تطبيق المصادقة غير متاح لهذا الحساب. يرجى التواصل مع مسؤول النظام.",
     "Permission:IdentityManagement": "إدارة الهوية",
     "Permission:RoleManagement": "إدارة الأدوار",
     "Permission:UserManagement": "إدارة المستخدمين",

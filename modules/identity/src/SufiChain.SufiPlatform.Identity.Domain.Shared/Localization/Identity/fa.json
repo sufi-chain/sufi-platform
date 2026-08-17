@@ -241,6 +241,7 @@
     "Sufi.Identity:VerificationChannelUnavailable": "کانال انتخاب‌شده در دسترس نیست. ارائه‌دهندگان پیام‌رسانی را پیکربندی کنید یا کانال دیگری انتخاب کنید.",
     "Sufi.Identity:PhoneNumberRequired": "برای ارسال پیامک یا تماس، شماره تلفن لازم است. شماره تلفن را به پروفایل خود اضافه کنید.",
     "Sufi.Identity:PhoneNumberNotConfirmed": "قبل از استفاده از پیامک یا تماس، شماره تلفن شما باید تأیید شود.",
+    "Sufi.Identity:AuthenticatorKeyStoreUnavailable": "راه‌اندازی برنامه احراز هویت برای این حساب در دسترس نیست. لطفاً با مدیر سامانه تماس بگیرید.",
     "Permission:IdentityManagement": "مدیریت هویت",
     "Permission:RoleManagement": "مدیریت نقش‌ها",
     "Permission:UserManagement": "مدیریت کاربران",

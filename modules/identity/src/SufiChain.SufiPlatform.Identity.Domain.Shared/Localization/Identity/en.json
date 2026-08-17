@@ -226,6 +226,7 @@
     "Sufi.Identity:VerificationChannelUnavailable": "The selected verification channel is not available. Configure communication providers or choose another channel.",
     "Sufi.Identity:PhoneNumberRequired": "A phone number is required for SMS or voice delivery. Add a phone number to your profile.",
     "Sufi.Identity:PhoneNumberNotConfirmed": "Your phone number must be confirmed before using SMS or voice delivery.",
+    "Sufi.Identity:AuthenticatorKeyStoreUnavailable": "Authenticator app setup is not available for this account. Please contact your administrator.",
     "Permission:IdentityManagement": "Identity management",
     "Permission:RoleManagement": "Role management",
     "Permission:UserManagement": "User management",
