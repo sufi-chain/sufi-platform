@@ -9,7 +9,7 @@ namespace SufiChain.SufiPlatform.CLI.ProjectBuilding.Steps;
 /// Randomizes ports in configuration files to avoid conflicts between multiple scaffolded projects.
 /// Applies to all hosts (AuthServer, HttpApi.Host, Blazor.WebApp, etc.) and DbMigrator appsettings.json.
 /// OpenIddict Applications RootUrl values must match host ports.
-/// Port sources: .dev/hosts/layered (44305 Api, 44350 Blazor), .dev/hosts/layered-tiered (44316 Blazor, etc.).
+/// Port sources: hosts/layered (44305 Api, 44350 Blazor), hosts/layered-tiered (44316 Blazor, etc.).
 /// </summary>
 public class RandomizePortsStep : ProjectBuildPipelineStep
 {

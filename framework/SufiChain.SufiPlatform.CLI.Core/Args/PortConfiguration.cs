@@ -88,7 +88,7 @@ public class PortConfiguration
 
     /// <summary>
     /// Original port values from the demo templates.
-    /// Aligned with .dev/hosts/layered and .dev/hosts/layered-tiered.
+    /// Aligned with hosts/layered and hosts/layered-tiered.
     /// </summary>
     public static class OriginalPorts
     {
@@ -111,10 +111,10 @@ public class PortConfiguration
         public const int WebSiteClientHttpPort = 65420;
         public const int SingleClientPort = 65463;
         public const int SingleClientHttpPort = 65464;
-        /// <summary>Blazor.WebApp in layered (.dev/hosts/layered) - different from tiered to avoid port conflicts.</summary>
+        /// <summary>Blazor.WebApp in layered (hosts/layered) - different from tiered to avoid port conflicts.</summary>
         public const int LayeredBlazorPort = 44350;
         public const int LayeredBlazorHttpPort = 44351;
-        /// <summary>Blazor.WebApp.Client in layered (.dev/hosts/layered).</summary>
+        /// <summary>Blazor.WebApp.Client in layered (hosts/layered).</summary>
         public const int LayeredBlazorWebAppClientPort = 62590;
         public const int LayeredBlazorWebAppClientHttpPort = 62591;
         /// <summary>Blazor.WebSite in tiered (OpenIddict, DbMigrator, AuthServer appsettings).</summary>

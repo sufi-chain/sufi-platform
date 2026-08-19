@@ -53,7 +53,7 @@ services:
     container_name: sufiplatform-layered-dbmigrator
     build:
       context: ../../..
-      dockerfile: .dev/hosts/layered/src/Sufi.DemoApp.DbMigrator/Dockerfile
+      dockerfile: hosts/layered/src/Sufi.DemoApp.DbMigrator/Dockerfile
     environment:
       # <TEMPLATE-REMOVE IF-NOT="db:efcore">
       - ConnectionStrings__Default=Host=postgres;Port=5432;Database=MyProjectName;Username=postgres;Password=postgres
