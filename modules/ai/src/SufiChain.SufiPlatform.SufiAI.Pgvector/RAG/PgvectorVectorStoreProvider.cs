@@ -14,11 +14,11 @@ namespace SufiChain.SufiPlatform.SufiAI.Pgvector;
 public class PgvectorVectorStoreProvider : IVectorStoreProvider, ITransientDependency
 {
     private static readonly ConcurrentDictionary<string, NpgsqlDataSource> DataSources = new(StringComparer.Ordinal);
-    private readonly IDbContextProvider<AIDbContext> _dbContextProvider;
+    private readonly IDbContextProvider<IAIDbContext> _dbContextProvider;
 
     public VectorStoreType Type => VectorStoreType.Pgvector;
 
-    public PgvectorVectorStoreProvider(IDbContextProvider<AIDbContext> dbContextProvider)
+    public PgvectorVectorStoreProvider(IDbContextProvider<IAIDbContext> dbContextProvider)
     {
         _dbContextProvider = dbContextProvider;
     }

@@ -15,11 +15,11 @@ namespace SufiChain.SufiPlatform.SufiAI.Qdrant;
 
 public class QdrantVectorStoreProvider : IVectorStoreProvider, ITransientDependency
 {
-    private readonly IDbContextProvider<AIDbContext> _dbContextProvider;
+    private readonly IDbContextProvider<IAIDbContext> _dbContextProvider;
 
     public VectorStoreType Type => VectorStoreType.Qdrant;
 
-    public QdrantVectorStoreProvider(IDbContextProvider<AIDbContext> dbContextProvider)
+    public QdrantVectorStoreProvider(IDbContextProvider<IAIDbContext> dbContextProvider)
     {
         _dbContextProvider = dbContextProvider;
     }
