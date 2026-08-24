@@ -15,6 +15,7 @@ public partial class SufiCaptcha : ComponentBase, IAsyncDisposable
     private readonly string _recaptchaElementId = $"recaptcha-{Guid.NewGuid():N}";
     private DotNetObjectReference<SufiCaptcha>? _dotNetRef;
     private bool _externalWidgetRendered;
+    private int _lastResetVersion;
 
     [Inject]
     protected ICaptchaAppService CaptchaAppService { get; set; } = default!;
@@ -43,6 +44,9 @@ public partial class SufiCaptcha : ComponentBase, IAsyncDisposable
     [Parameter]
     public EventCallback<string?> CaptchaTokenChanged { get; set; }
 
+    [Parameter]
+    public int ResetVersion { get; set; }
+
     protected CaptchaOptionsDto? Options { get; set; }
 
     protected CaptchaChallengeDto? Challenge { get; set; }
@@ -67,6 +71,12 @@ public partial class SufiCaptcha : ComponentBase, IAsyncDisposable
     protected override async Task OnParametersSetAsync()
     {
         CaptchaAnswerValue = CaptchaAnswer ?? string.Empty;
+        if (ResetVersion != _lastResetVersion)
+        {
+            _lastResetVersion = ResetVersion;
+            await ResetAsync();
+        }
+
         await base.OnParametersSetAsync();
     }
 
@@ -134,7 +144,42 @@ public partial class SufiCaptcha : ComponentBase, IAsyncDisposable
 
     protected virtual async Task OnRefreshClickAsync()
     {
-        await RefreshChallengeAsync();
+        await ResetAsync();
+    }
+
+    public virtual async Task ResetAsync()
+    {
+        CaptchaAnswer = null;
+        CaptchaAnswerValue = string.Empty;
+        CaptchaToken = null;
+
+        await CaptchaAnswerChanged.InvokeAsync(null);
+        await CaptchaTokenChanged.InvokeAsync(null);
+
+        if (IsSimpleProvider && Options?.IsEnabled == true)
+        {
+            await RefreshChallengeAsync();
+            return;
+        }
+
+        if (_externalWidgetRendered)
+        {
+            try
+            {
+                if (IsTurnstileProvider)
+                {
+                    await JsRuntime.InvokeVoidAsync("sufiAbpCaptcha.resetTurnstile");
+                }
+                else if (IsRecaptchaProvider)
+                {
+                    await JsRuntime.InvokeVoidAsync("sufiAbpCaptcha.resetRecaptcha");
+                }
+            }
+            catch (JSException)
+            {
+                // The widget may not be available during static SSR or teardown.
+            }
+        }
     }
 
     [JSInvokable]

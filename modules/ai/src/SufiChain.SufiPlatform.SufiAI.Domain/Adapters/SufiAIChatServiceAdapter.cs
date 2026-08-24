@@ -60,7 +60,19 @@ public class SufiAIChatServiceAdapter : ISufiAIChatService, ITransientDependency
             Messages = request.Messages.Select(message => new ChatMessage
             {
                 Role = message.Role,
-                Content = message.Content
+                Content = message.Content,
+                MultiModalContent = message.ContentParts.Count == 0
+                    ? null
+                    : message.ContentParts.Select(part => part.Type switch
+                    {
+                        "text" => new MessageContent { Type = "text", Text = part.Text ?? message.Content },
+                        "image" => new MessageContent
+                        {
+                            Type = "image_url",
+                            ImageUrl = new ImageContent { Url = part.DataUrl ?? string.Empty }
+                        },
+                        _ => null
+                    }).Where(part => part != null).Cast<MessageContent>().ToList()
             }).ToList()
         };
     }

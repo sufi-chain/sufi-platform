@@ -82,12 +82,12 @@
 						PageIndexChanged="OnPageIndexChangedAsync"
 						PageSizeChanged="OnPageSizeChangedAsync"
 						KeySelector="@(item => item.Id.ToString())">
-				<SbColumn TItem="AuditLogListItemDto" Title="@L["Actions"]" Width="80px">
+				<SbColumn TItem="AuditLogListItemDto" Title="@L["Actions"]" Width="56px" Sortable="false">
 					<CellTemplate Context="cellContext">
-						<SbIconButton Size="SbSize.Sm" AriaLabel="@L["ViewDetails"]"
+						<SbTooltip Text="@L["ViewDetails"]"><SbIconButton Size="SbSize.Sm" Color="SbColor.Primary" AriaLabel="@L["ViewDetails"]"
 									  OnClick="@(() => ShowDetailModal(cellContext.Item))">
-							<Icon><SbIcon Name="eye" /></Icon>
-						</SbIconButton>
+							<Icon><SbIcon Name="eye" Size="SbSize.Sm" /></Icon>
+						</SbIconButton></SbTooltip>
 					</CellTemplate>
 				</SbColumn>
 				<SbColumn TItem="AuditLogListItemDto" Title="@L["Time"]" Width="160px">
@@ -122,7 +122,7 @@
 					<CellTemplate Context="cellContext">
 						@if (cellContext.Item.HasException)
 						{
-							<SbIcon Name="alert-triangle" Color="SbColor.Danger" />
+							<SbIcon Name="warning" Color="SbColor.Danger" />
 						}
 					</CellTemplate>
 				</SbColumn>

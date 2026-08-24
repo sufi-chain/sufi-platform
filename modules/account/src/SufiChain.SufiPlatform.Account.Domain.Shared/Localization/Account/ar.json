@@ -116,6 +116,7 @@
     "UnlinkAccountConfirm": "إلغاء ربط هذا الحساب؟",
     "HostTenant": "المضيف",
     "LinkLoginFailed": "تعذر التبديل إلى الحساب المرتبط.",
-    "LinkLoginProcessing": "جاري التبديل إلى الحساب المرتبط..."
+    "LinkLoginProcessing": "جاري التبديل إلى الحساب المرتبط...",
+    "RegistrationFailed": "تعذر إكمال التسجيل. يرجى مراجعة النموذج والمحاولة مرة أخرى."
   }
 }

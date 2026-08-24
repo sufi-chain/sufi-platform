@@ -116,6 +116,7 @@
     "UnlinkAccountConfirm": "این حساب لغو پیوند شود؟",
     "HostTenant": "میزبان",
     "LinkLoginFailed": "تغییر به حساب پیوندی ممکن نشد.",
-    "LinkLoginProcessing": "در حال تغییر به حساب پیوندی..."
+    "LinkLoginProcessing": "در حال تغییر به حساب پیوندی...",
+    "RegistrationFailed": "ثبت‌نام انجام نشد. لطفاً فرم را بررسی و دوباره تلاش کنید."
   }
 }

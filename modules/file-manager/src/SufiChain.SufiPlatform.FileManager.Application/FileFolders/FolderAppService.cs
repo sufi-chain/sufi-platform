@@ -133,7 +133,14 @@ public class FolderAppService : SufiApplicationService, IFolderAppService
 
         if (input.FolderId.HasValue)
         {
-            folder = await _folderRepository.GetAsync(input.FolderId.Value);
+            folder = await _folderRepository.FindAsync(input.FolderId.Value);
+            if (folder != null &&
+                folder.TenantId != CurrentTenant.Id &&
+                !(folder.IsShared && CurrentTenant.Id.HasValue &&
+                  folder.GetSharedTenantIds().Contains(CurrentTenant.Id.Value)))
+            {
+                folder = null;
+            }
         }
         else if (!string.IsNullOrEmpty(input.VirtualPath))
         {
@@ -141,6 +148,14 @@ public class FolderAppService : SufiApplicationService, IFolderAppService
         }
 
         var result = new FolderContentsDto();
+
+        // Never fall back to the tenant root when a caller supplied an unknown or
+        // unauthorized folder id. That behavior made a cross-tenant folder probe
+        // look like a successful root listing and could mix structure results.
+        if (input.FolderId.HasValue && folder == null)
+        {
+            return result;
+        }
 
         // Build current folder info
         if (folder != null)
@@ -166,7 +181,12 @@ public class FolderAppService : SufiApplicationService, IFolderAppService
 
             // Get files in folder. Structure roots also surface structure-scoped uploads
             // that were stored with FolderId=null (e.g. Chat/Ticket integrations).
-            var structureKey = input.StructureKey ?? ResolveStructureKey(folder);
+            var structureKey = ResolveRequestedStructureKey(input.StructureKey, folder);
+            if (!string.IsNullOrWhiteSpace(input.StructureKey) &&
+                string.IsNullOrWhiteSpace(structureKey))
+            {
+                return result;
+            }
             var files = await GetFilesForFolderContentsAsync(
                 folder, structureKey, input.SkipCount, input.MaxResultCount, input.Sorting, input.Filter);
             result.Files = ObjectMapper.Map<List<FileItem>, List<FileItemDto>>(files);
@@ -187,7 +207,7 @@ public class FolderAppService : SufiApplicationService, IFolderAppService
                     result.Folders.Add(await BuildFolderTreeNodeAsync(subfolder));
                 }
 
-                var structureKey = input.StructureKey ?? ResolveStructureKey(firstRoot);
+                var structureKey = ResolveRequestedStructureKey(input.StructureKey, firstRoot);
                 var files = await GetFilesForFolderContentsAsync(
                     firstRoot, structureKey, input.SkipCount, input.MaxResultCount, input.Sorting, input.Filter);
                 result.Files = ObjectMapper.Map<List<FileItem>, List<FileItemDto>>(files);
@@ -321,6 +341,19 @@ public class FolderAppService : SufiApplicationService, IFolderAppService
         }
 
         return await AsyncExecuter.ToListAsync(query);
+    }
+
+    private string? ResolveRequestedStructureKey(string? requestedStructureKey, FileFolder folder)
+    {
+        var folderStructureKey = folder.StructureKey ?? ResolveStructureKey(folder);
+        if (string.IsNullOrWhiteSpace(requestedStructureKey))
+        {
+            return folderStructureKey;
+        }
+
+        return string.Equals(requestedStructureKey, folderStructureKey, StringComparison.OrdinalIgnoreCase)
+            ? requestedStructureKey
+            : null;
     }
 
     protected virtual List<BreadcrumbItemDto> BuildBlobPathBreadcrumbs(string currentPath)

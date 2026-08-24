@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+
 namespace SufiChain.SufiPlatform.SufiAI;
 
 /// <summary>
@@ -14,6 +16,17 @@ public class SufiAIChatMessage
     /// Message text content.
     /// </summary>
     public string Content { get; set; } = string.Empty;
+
+    /// <summary>Optional multimodal parts. Text-only callers continue using <see cref="Content"/>.</summary>
+    public List<SufiAIChatContentPart> ContentParts { get; set; } = new();
+}
+
+public class SufiAIChatContentPart
+{
+    public string Type { get; set; } = string.Empty;
+    public string? Text { get; set; }
+    public string? MimeType { get; set; }
+    public string? DataUrl { get; set; }
 }
 
 /// <summary>

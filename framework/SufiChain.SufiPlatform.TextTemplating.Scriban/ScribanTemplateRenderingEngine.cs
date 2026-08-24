@@ -73,7 +73,8 @@ public class ScribanTemplateRenderingEngine : TemplateRenderingEngineBase, ITran
             globalContext["content"] = renderedContent;
             renderedContent = await RenderInternalAsync(
                 templateDefinition.Layout,
-                globalContext
+                globalContext,
+                model
             );
         }
 

@@ -21,21 +21,21 @@
 						Hoverable="true"
 						KeySelector="@(item => item.Id.ToString())">
 				<ChildContent>
-					<SbColumn TItem="AIModelConfigurationDto" Title="@L["Actions"]" Width="150px">
+					<SbColumn TItem="AIModelConfigurationDto" Title="@L["Actions"]" Width="104px" Sortable="false">
 						<CellTemplate Context="cellContext">
 							<SbStack Direction="SbStackDirection.Row" Gap="1">
 								<AuthorizeView Policy="@AIPermissions.AI.ManageConfigurations">
-									<SbIconButton Size="SbSize.Sm" AriaLabel="@L["Edit"]"
+									<SbTooltip Text="@L["Edit"]"><SbIconButton Size="SbSize.Sm" AriaLabel="@L["Edit"]"
 												  OnClick="@(() => OpenEditModal(cellContext.Item))">
-										<Icon><SbIcon Name="edit" /></Icon>
-									</SbIconButton>
+										<Icon><SbIcon Name="edit" Size="SbSize.Sm" /></Icon>
+									</SbIconButton></SbTooltip>
 								</AuthorizeView>
 								<AuthorizeView Policy="@AIPermissions.AI.ManageConfigurations">
-									<SbIconButton Size="SbSize.Sm" AriaLabel="@L["Delete"]"
+									<SbTooltip Text="@L["Delete"]"><SbIconButton Size="SbSize.Sm" AriaLabel="@L["Delete"]"
 												  Color="SbColor.Danger"
 												  OnClick="@(() => DeleteConfigurationAsync(cellContext.Item))">
-										<Icon><SbIcon Name="trash" /></Icon>
-									</SbIconButton>
+										<Icon><SbIcon Name="trash" Size="SbSize.Sm" /></Icon>
+									</SbIconButton></SbTooltip>
 								</AuthorizeView>
 							</SbStack>
 						</CellTemplate>

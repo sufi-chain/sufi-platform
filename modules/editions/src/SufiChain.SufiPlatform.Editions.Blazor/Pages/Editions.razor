@@ -25,6 +25,36 @@
                         KeySelector="@(item => item.Id.ToString())"
                         AriaLabel="@L["Editions"]">
                 <ChildContent>
+                    <SbColumn TItem="EditionDto" Title="@L["Actions"]" Width="152px" Sortable="false">
+                        <CellTemplate Context="ctx">
+                            <SbStack Direction="SbStackDirection.Row" Gap="1">
+                                @if (HasManageFeaturesPermission)
+                                {
+                                    <SbTooltip Text="@L["EditionFeatures"]">
+                                        <SbIconButton Size="SbSize.Sm" Color="SbColor.Default" AriaLabel="@L["EditionFeatures"]" OnClick="@(() => ShowEditionFeatures(ctx.Item))">
+                                            <Icon><SbIcon Name="sliders" Size="SbSize.Sm" /></Icon>
+                                        </SbIconButton>
+                                    </SbTooltip>
+                                }
+                                @if (HasUpdatePermission)
+                                {
+                                    <SbTooltip Text="@L["EditEdition"]">
+                                        <SbIconButton Size="SbSize.Sm" Color="SbColor.Default" AriaLabel="@L["EditEdition"]" OnClick="@(() => ShowEditModal(ctx.Item))">
+                                            <Icon><SbIcon Name="edit" Size="SbSize.Sm" /></Icon>
+                                        </SbIconButton>
+                                    </SbTooltip>
+                                }
+                                @if (HasDeletePermission)
+                                {
+                                    <SbTooltip Text="@L["Delete"]">
+                                        <SbIconButton Size="SbSize.Sm" Color="SbColor.Danger" AriaLabel="@L["Delete"]" OnClick="@(() => ConfirmDeleteAsync(ctx.Item))">
+                                            <Icon><SbIcon Name="trash" Size="SbSize.Sm" /></Icon>
+                                        </SbIconButton>
+                                    </SbTooltip>
+                                }
+                            </SbStack>
+                        </CellTemplate>
+                    </SbColumn>
                     <SbColumn TItem="EditionDto" Field="Name" Title="@L["EditionName"]" Sortable="true">
                         <CellTemplate Context="ctx">
                             <SbStack Direction="SbStackDirection.Column" Gap="0">
@@ -48,45 +78,6 @@
                             {
                                 <SbChip Color="SbColor.Muted" Size="SbSize.Sm">@L["Inactive"]</SbChip>
                             }
-                        </CellTemplate>
-                    </SbColumn>
-                    <SbColumn TItem="EditionDto" Title="@L["Actions"]" Width="170px" Align="SbColumnAlign.End">
-                        <CellTemplate Context="ctx">
-                            <SbStack Direction="SbStackDirection.Row" Gap="1" Justify="SbJustify.End">
-                                @if (HasManageFeaturesPermission)
-                                {
-                                    <SbIconButton Size="SbSize.Sm"
-                                                  Variant="SbButtonVariant.Outline"
-                                                  Color="SbColor.Secondary"
-                                                  AriaLabel="@L["EditionFeatures"]"
-                                                  Title="@L["EditionFeatures"]"
-                                                  OnClick="@(() => ShowEditionFeatures(ctx.Item))">
-                                        <Icon><SbIcon Name="sliders" /></Icon>
-                                    </SbIconButton>
-                                }
-                                @if (HasUpdatePermission)
-                                {
-                                    <SbIconButton Size="SbSize.Sm"
-                                                  Variant="SbButtonVariant.Outline"
-                                                  Color="SbColor.Primary"
-                                                  AriaLabel="@L["EditEdition"]"
-                                                  Title="@L["EditEdition"]"
-                                                  OnClick="@(() => ShowEditModal(ctx.Item))">
-                                        <Icon><SbIcon Name="edit" /></Icon>
-                                    </SbIconButton>
-                                }
-                                @if (HasDeletePermission)
-                                {
-                                    <SbIconButton Size="SbSize.Sm"
-                                                  Variant="SbButtonVariant.Outline"
-                                                  Color="SbColor.Danger"
-                                                  AriaLabel="@L["Delete"]"
-                                                  Title="@L["Delete"]"
-                                                  OnClick="@(() => ConfirmDeleteAsync(ctx.Item))">
-                                        <Icon><SbIcon Name="trash" /></Icon>
-                                    </SbIconButton>
-                                }
-                            </SbStack>
                         </CellTemplate>
                     </SbColumn>
                 </ChildContent>

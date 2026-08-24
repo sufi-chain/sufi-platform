@@ -24,34 +24,42 @@
                         Hoverable="true"
                         KeySelector="@(item => item.Id.ToString())">
                 <ChildContent>
-                    <SbColumn TItem="MCPServerDto" Title="@L["Actions"]" Width="200px">
+                    <SbColumn TItem="MCPServerDto" Title="@L["Actions"]" Width="184px" Sortable="false">
                         <CellTemplate Context="cellContext">
                             <SbStack Direction="SbStackDirection.Row" Gap="1">
-                                <SbIconButton Size="SbSize.Sm" 
-                                              AriaLabel="@L["TestConnection"]"
-                                              Color="SbColor.Info"
-                                              OnClick="@(() => TestConnectionAsync(cellContext.Item))"
-                                              Loading="@IsOperationLoading($"{LoadingKeys.TestConnection}-{cellContext.Item.Id}")">
-                                    <Icon><SbIcon Name="zap" /></Icon>
-                                </SbIconButton>
+                                <SbTooltip Text="@L["TestConnection"]">
+                                    <SbIconButton Size="SbSize.Sm"
+                                                  AriaLabel="@L["TestConnection"]"
+                                                  Color="SbColor.Primary"
+                                                  OnClick="@(() => TestConnectionAsync(cellContext.Item))"
+                                                  Loading="@IsOperationLoading($"{LoadingKeys.TestConnection}-{cellContext.Item.Id}")">
+                                        <Icon><SbIcon Name="refresh" Size="SbSize.Sm" /></Icon>
+                                    </SbIconButton>
+                                </SbTooltip>
                                 <AuthorizeView Policy="@AIPermissions.MCPServers.Edit">
-                                    <SbIconButton Size="SbSize.Sm" AriaLabel="@L["Edit"]"
-                                                  OnClick="@(() => OpenEditModal(cellContext.Item))">
-                                        <Icon><SbIcon Name="edit" /></Icon>
-                                    </SbIconButton>
+                                    <SbTooltip Text="@L["Edit"]">
+                                        <SbIconButton Size="SbSize.Sm" AriaLabel="@L["Edit"]"
+                                                      OnClick="@(() => OpenEditModal(cellContext.Item))">
+                                            <Icon><SbIcon Name="edit" Size="SbSize.Sm" /></Icon>
+                                        </SbIconButton>
+                                    </SbTooltip>
                                 </AuthorizeView>
-                                <SbIconButton Size="SbSize.Sm" 
-                                              AriaLabel="@(cellContext.Item.IsEnabled ? L["Disable"] : L["Enable"])"
-                                              Color="@(cellContext.Item.IsEnabled ? SbColor.Warning : SbColor.Success)"
-                                              OnClick="@(() => ToggleServerAsync(cellContext.Item))">
-                                    <Icon><SbIcon Name="@(cellContext.Item.IsEnabled ? "pause" : "play")" /></Icon>
-                                </SbIconButton>
-                                <AuthorizeView Policy="@AIPermissions.MCPServers.Delete">
-                                    <SbIconButton Size="SbSize.Sm" AriaLabel="@L["Delete"]"
-                                                  Color="SbColor.Danger"
-                                                  OnClick="@(() => DeleteServerAsync(cellContext.Item))">
-                                        <Icon><SbIcon Name="trash" /></Icon>
+                                <SbTooltip Text="@(cellContext.Item.IsEnabled ? L["Disable"] : L["Enable"])">
+                                    <SbIconButton Size="SbSize.Sm"
+                                                  AriaLabel="@(cellContext.Item.IsEnabled ? L["Disable"] : L["Enable"])"
+                                                  Color="SbColor.Warning"
+                                                  OnClick="@(() => ToggleServerAsync(cellContext.Item))">
+                                        <Icon><SbIcon Name="@(cellContext.Item.IsEnabled ? "pause" : "play")" Size="SbSize.Sm" /></Icon>
                                     </SbIconButton>
+                                </SbTooltip>
+                                <AuthorizeView Policy="@AIPermissions.MCPServers.Delete">
+                                    <SbTooltip Text="@L["Delete"]">
+                                        <SbIconButton Size="SbSize.Sm" AriaLabel="@L["Delete"]"
+                                                      Color="SbColor.Danger"
+                                                      OnClick="@(() => DeleteServerAsync(cellContext.Item))">
+                                            <Icon><SbIcon Name="trash" Size="SbSize.Sm" /></Icon>
+                                        </SbIconButton>
+                                    </SbTooltip>
                                 </AuthorizeView>
                             </SbStack>
                         </CellTemplate>

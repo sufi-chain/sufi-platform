@@ -9,8 +9,10 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
+    box-sizing: border-box;
     min-width: 6.5rem;
-    padding: 0.625rem 0.875rem;
+    height: 40px;
+    padding: 0 var(--sb-space-3, 0.75rem);
     border: 1px solid var(--sb-color-border);
     border-radius: var(--sb-radius-md, 0.375rem);
     background: var(--sb-color-surface-variant);
@@ -21,14 +23,56 @@
     line-height: 1.25;
 }
 
-.sufi-abp-captcha-simple__input {
-    width: auto !important;
+.sufi-abp-captcha-simple__input.sb-text-field-wrapper {
     flex: 1 1 8rem;
     min-width: 8rem;
     max-width: 12rem;
+    width: auto;
+}
+
+.sufi-abp-captcha-simple__input .sb-text-field {
+    width: 100%;
+}
+
+.sb-theme-root .sufi-abp-captcha-simple input.sufi-abp-captcha-simple__input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="color"]) {
+    box-sizing: border-box;
+    appearance: none;
+    flex: 1 1 8rem;
+    min-width: 8rem;
+    max-width: 12rem;
+    width: auto;
+    height: 40px;
+    padding: 0 var(--sb-space-3, 0.75rem);
+    border: 1px solid var(--sb-color-border);
+    border-radius: var(--sb-radius-md, 0.375rem);
+    background-color: var(--sb-color-surface);
+    color: var(--sb-color-text);
+    caret-color: var(--sb-color-text);
+    font-family: inherit;
+    font-size: var(--sb-font-size-md, 1rem);
+    line-height: 1.25;
+    outline: none;
+    transition: border-color var(--sb-duration-fast, 150ms) var(--sb-easing-default, ease),
+        box-shadow var(--sb-duration-fast, 150ms) var(--sb-easing-default, ease);
+}
+
+.sb-theme-root .sufi-abp-captcha-simple input.sufi-abp-captcha-simple__input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="color"])::placeholder {
+    color: var(--sb-color-text-muted);
+    opacity: 1;
+}
+
+.sb-theme-root .sufi-abp-captcha-simple input.sufi-abp-captcha-simple__input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="color"]):focus,
+.sb-theme-root .sufi-abp-captcha-simple input.sufi-abp-captcha-simple__input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="color"]):focus-visible {
+    border-color: var(--sb-color-primary);
+    box-shadow: 0 0 0 3px var(--sb-color-primary-light);
 }
 
 .sufi-abp-captcha-simple__refresh {
     flex: 0 0 auto;
     white-space: nowrap;
+}
+
+.sufi-abp-captcha-turnstile,
+.sufi-abp-captcha-recaptcha {
+    min-height: 65px;
 }

@@ -3,7 +3,9 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Localization;
+using System.Reflection;
 using IdentityUser = SufiChain.SufiPlatform.Identity.IdentityUser;
+using SufiChain.SufiPlatform;
 using SufiChain.SufiPlatform.Account.Localization;
 using SufiChain.SufiPlatform.Identity;
 using SufiChain.SufiPlatform.Identity.Localization;
@@ -72,6 +74,8 @@ public partial class Register
     protected string? CaptchaAnswer { get; set; }
 
     protected string? CaptchaToken { get; set; }
+
+    protected int CaptchaResetVersion { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
@@ -149,8 +153,101 @@ public partial class Register
         }
         catch (Exception ex)
         {
-            ErrorMessage = ex.Message;
+            ErrorMessage = GetRegistrationErrorMessage(ex);
         }
+        finally
+        {
+            CaptchaResetVersion++;
+        }
+    }
+
+    protected virtual string GetRegistrationErrorMessage(Exception exception)
+    {
+        if (exception.InnerException != null &&
+            IsGenericExceptionMessage(exception.Message))
+        {
+            var innerMessage = GetRegistrationErrorMessage(exception.InnerException);
+            if (!string.Equals(innerMessage, AccountL["RegistrationFailed"].Value, StringComparison.Ordinal))
+            {
+                return innerMessage;
+            }
+        }
+
+        if (exception is AbpIdentityResultException identityException)
+        {
+            return LocalizeIdentityErrors(identityException.IdentityResult.Errors);
+        }
+
+        var code = GetPropertyValue<string>(exception, "Code");
+        var remoteError = GetPropertyValue<object>(exception, "Error");
+        code ??= GetPropertyValue<string>(remoteError, "Code");
+        code ??= exception.Data["Code"]?.ToString();
+
+        if (!string.IsNullOrWhiteSpace(code))
+        {
+            var localized = L[code];
+            if (!localized.ResourceNotFound)
+            {
+                return localized.Value;
+            }
+        }
+
+        var remoteMessage = GetPropertyValue<string>(remoteError, "Message");
+        if (!string.IsNullOrWhiteSpace(remoteMessage) && !IsGenericExceptionMessage(remoteMessage))
+        {
+            return remoteMessage;
+        }
+
+        var dataMessage = exception.Data["Message"]?.ToString();
+        if (!string.IsNullOrWhiteSpace(dataMessage) && !IsGenericExceptionMessage(dataMessage))
+        {
+            return dataMessage;
+        }
+
+        if (!IsGenericExceptionMessage(exception.Message))
+        {
+            return exception.Message;
+        }
+
+        return AccountL["RegistrationFailed"];
+    }
+
+    private string LocalizeIdentityErrors(IEnumerable<IdentityError> errors)
+    {
+        var messages = errors
+            .Select(error =>
+            {
+                var localized = L[$"IdentityError:{error.Code}"];
+                return localized.ResourceNotFound ? error.Description : localized.Value;
+            })
+            .Where(message => !string.IsNullOrWhiteSpace(message))
+            .Distinct(StringComparer.Ordinal)
+            .ToArray();
+
+        return messages.Length > 0
+            ? string.Join(" ", messages)
+            : AccountL["RegistrationFailed"];
+    }
+
+    private static T? GetPropertyValue<T>(object? instance, string propertyName)
+    {
+        if (instance == null)
+        {
+            return default;
+        }
+
+        var property = instance.GetType().GetProperty(
+            propertyName,
+            BindingFlags.Instance | BindingFlags.Public);
+
+        return property?.GetValue(instance) is T value ? value : default;
+    }
+
+    private static bool IsGenericExceptionMessage(string? message)
+    {
+        return string.IsNullOrWhiteSpace(message) ||
+               (message.StartsWith("Exception of type '", StringComparison.Ordinal) &&
+                message.EndsWith("' was thrown.", StringComparison.Ordinal));
     }
 
     protected virtual async Task<bool> RequiresEmailConfirmationBeforeSignInAsync()

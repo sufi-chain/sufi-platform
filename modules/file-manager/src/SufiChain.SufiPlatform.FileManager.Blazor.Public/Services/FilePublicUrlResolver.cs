@@ -8,10 +8,14 @@ namespace SufiChain.SufiPlatform.FileManager.Blazor.Public.Services;
 public class FilePublicUrlResolver : IFilePublicUrlResolver
 {
     private readonly IFileItemAppService _fileItemAppService;
+    private readonly IFileItemUrlProvider _fileItemUrlProvider;
 
-    public FilePublicUrlResolver(IFileItemAppService fileItemAppService)
+    public FilePublicUrlResolver(
+        IFileItemAppService fileItemAppService,
+        IFileItemUrlProvider fileItemUrlProvider)
     {
         _fileItemAppService = fileItemAppService;
+        _fileItemUrlProvider = fileItemUrlProvider;
     }
 
     public async Task<string?> GetDownloadUrlAsync(Guid fileId)
@@ -38,15 +42,15 @@ public class FilePublicUrlResolver : IFilePublicUrlResolver
         }
     }
 
-    public async Task<string?> GetStreamUrlAsync(Guid fileId)
+    public Task<string?> GetStreamUrlAsync(Guid fileId)
     {
         try
         {
-            return await _fileItemAppService.GetDownloadUrlAsync(fileId); // Use download URL for streaming
+            return Task.FromResult<string?>(_fileItemUrlProvider.GetStreamUrl(fileId));
         }
         catch
         {
-            return null;
+            return Task.FromResult<string?>(null);
         }
     }
 
@@ -103,8 +107,10 @@ public class FilePublicUrlResolver : IFilePublicUrlResolver
                 MimeType = fileItem.MimeType,
                 Size = fileItem.Size,
                 IsImage = IsImageMimeType(fileItem.MimeType),
-                IsVideo = IsVideoMimeType(fileItem.MimeType),
-                IsAudio = IsAudioMimeType(fileItem.MimeType)
+                IsVideo = IsVideoMimeType(fileItem.MimeType) &&
+                          !FilePublicInfo.IsComposerVoiceFileName(fileItem.Name),
+                IsAudio = IsAudioMimeType(fileItem.MimeType) ||
+                          FilePublicInfo.IsComposerVoiceFileName(fileItem.Name)
             };
 
             // Get URLs based on file type, with cache-busting

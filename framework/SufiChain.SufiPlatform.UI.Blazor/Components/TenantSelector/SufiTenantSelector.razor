@@ -71,22 +71,23 @@
                                        PageSize="10"
                                        TotalCount="_totalCount"
                                        PageIndexChanged="OnPageIndexChangedAsync">
-                                <SbColumn TItem="TenantLookupItemDto" Field="Name" Title="@L["Name"]">
-                                    <CellTemplate Context="cellContext">
-                                        <span class="sb-typography sb-typography--body2">@cellContext.Item.Name</span>
-                                    </CellTemplate>
-                                </SbColumn>
-                                <SbColumn TItem="TenantLookupItemDto" Title="@L["Actions"]" Width="200px">
+                                <SbColumn TItem="TenantLookupItemDto" Title="@L["Actions"]" Width="56px" Sortable="false">
                                     <CellTemplate Context="ctx">
                                         @{
                                             var tenant = ctx.Item;
                                         }
-                                        <SbButton Variant="SbButtonVariant.Solid"
-                                                  Size="SbSize.Sm"
-                                                  OnClick="@(() => SwitchToTenantAsync(tenant))"
-                                                  Loading="@IsOperationLoading("switch")">
-                                            <ChildContent>@L["SwitchTenant"]</ChildContent>
-                                        </SbButton>
+                                        <SbTooltip Text="@L["SwitchTenant"]">
+                                            <SbIconButton Size="SbSize.Sm" Color="SbColor.Primary" AriaLabel="@L["SwitchTenant"]"
+                                                          OnClick="@(() => SwitchToTenantAsync(tenant))"
+                                                          Loading="@IsOperationLoading("switch")">
+                                                <Icon><SbIcon Name="server" Size="SbSize.Sm" /></Icon>
+                                            </SbIconButton>
+                                        </SbTooltip>
+                                    </CellTemplate>
+                                </SbColumn>
+                                <SbColumn TItem="TenantLookupItemDto" Field="Name" Title="@L["Name"]">
+                                    <CellTemplate Context="cellContext">
+                                        <span class="sb-typography sb-typography--body2">@cellContext.Item.Name</span>
                                     </CellTemplate>
                                 </SbColumn>
                             </SbDataGrid>
@@ -169,22 +170,23 @@ else
                                PageSize="10"
                                TotalCount="_totalCount"
                                PageIndexChanged="OnPageIndexChangedAsync">
-                        <SbColumn TItem="TenantLookupItemDto" Field="Name" Title="@L["Name"]">
-                            <CellTemplate Context="cellContext">
-                                <span class="sb-typography sb-typography--body2">@cellContext.Item.Name</span>
-                            </CellTemplate>
-                        </SbColumn>
-                        <SbColumn TItem="TenantLookupItemDto" Title="@L["Actions"]" Width="120px">
+                        <SbColumn TItem="TenantLookupItemDto" Title="@L["Actions"]" Width="56px" Sortable="false">
                             <CellTemplate Context="ctx">
                                 @{
                                     var tenant = ctx.Item;
                                 }
-                                <SbButton Variant="SbButtonVariant.Outline"
-                                          Size="SbSize.Sm"
-                                          OnClick="@(() => SwitchToTenantAsync(tenant))"
-                                          Loading="@IsOperationLoading("switch")">
-                                    <ChildContent>@L["SwitchTenant"]</ChildContent>
-                                </SbButton>
+                                <SbTooltip Text="@L["SwitchTenant"]">
+                                    <SbIconButton Size="SbSize.Sm" Color="SbColor.Primary" AriaLabel="@L["SwitchTenant"]"
+                                                  OnClick="@(() => SwitchToTenantAsync(tenant))"
+                                                  Loading="@IsOperationLoading("switch")">
+                                        <Icon><SbIcon Name="server" Size="SbSize.Sm" /></Icon>
+                                    </SbIconButton>
+                                </SbTooltip>
+                            </CellTemplate>
+                        </SbColumn>
+                        <SbColumn TItem="TenantLookupItemDto" Field="Name" Title="@L["Name"]">
+                            <CellTemplate Context="cellContext">
+                                <span class="sb-typography sb-typography--body2">@cellContext.Item.Name</span>
                             </CellTemplate>
                         </SbColumn>
                     </SbDataGrid>

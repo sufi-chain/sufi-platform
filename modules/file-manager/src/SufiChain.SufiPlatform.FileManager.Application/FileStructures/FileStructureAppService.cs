@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using SufiChain.SufiPlatform.FileManager.Configuration;
+using SufiChain.SufiPlatform.FileManager.Caching;
 using SufiChain.SufiPlatform.FileManager.Features;
 using SufiChain.SufiPlatform.FileManager.FileFolders;
 using SufiChain.SufiPlatform.FileManager.Localization;
@@ -15,6 +16,7 @@ using Volo.Abp;
 using SufiChain.SufiPlatform.Application.Dtos;
 using SufiChain.SufiPlatform.Application.Services;
 using Volo.Abp.Data;
+using Volo.Abp.Caching;
 using Volo.Abp.Domain.Repositories;
 using Volo.Abp.Guids;
 using Volo.Abp.ObjectExtending;
@@ -31,13 +33,15 @@ public class FileStructureAppService :
     private readonly IGuidGenerator _guidGenerator;
     private readonly IStructureStorageConfigEncryption _storageConfigEncryption;
     private readonly IFileFolderRepository _folderRepository;
+    private readonly IDistributedCache<StructureCacheItem> _structureCache;
 
     public FileStructureAppService(
         IFileStructureRepository structureRepository,
         IOptions<FileManagerOptions> options,
         IGuidGenerator guidGenerator,
         IStructureStorageConfigEncryption storageConfigEncryption,
-        IFileFolderRepository folderRepository)
+        IFileFolderRepository folderRepository,
+        IDistributedCache<StructureCacheItem> structureCache)
         : base(structureRepository)
     {
         LocalizationResource = typeof(SufiFileManagerResource);
@@ -46,6 +50,7 @@ public class FileStructureAppService :
         _guidGenerator = guidGenerator;
         _storageConfigEncryption = storageConfigEncryption;
         _folderRepository = folderRepository;
+        _structureCache = structureCache;
         
         //GetPolicyName = FileManagerPermissions.FileStructures.Default;
         //GetListPolicyName = FileManagerPermissions.FileStructures.Default;
@@ -143,6 +148,7 @@ public class FileStructureAppService :
         await MapToEntityAsync(input, entity);
         ApplyStorageConfigToEntity(entity, input.StorageConfig);
         await Repository.UpdateAsync(entity);
+        await InvalidateStructureCacheAsync();
         var result = ObjectMapper.Map<FileStructure, FileStructureDto>(entity);
         EnrichStorageConfig(result, entity);
         EnrichWithDefaultInfo(result);
@@ -217,6 +223,7 @@ public class FileStructureAppService :
         structure.ResizeLargeImages = defaultConfig.ResizeLargeImages;
 
         await _structureRepository.UpdateAsync(structure);
+        await InvalidateStructureCacheAsync();
 
         var dto = ObjectMapper.Map<FileStructure, FileStructureDto>(structure);
         EnrichWithDefaultInfo(dto);
@@ -494,6 +501,9 @@ public class FileStructureAppService :
                 break;
         }
     }
+
+    private Task InvalidateStructureCacheAsync() =>
+        _structureCache.RemoveAsync(StructureCacheItem.CacheKey, considerUow: true);
 
     private void EnrichStorageConfig(FileStructureDto dto, FileStructure entity)
     {

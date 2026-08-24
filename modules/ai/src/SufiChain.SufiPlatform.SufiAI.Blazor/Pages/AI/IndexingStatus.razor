@@ -43,17 +43,19 @@
 							PageIndexChanged="OnPageIndexChangedAsync"
 							PageSizeChanged="OnPageSizeChangedAsync"
 							KeySelector="@(item => item.Id.ToString())">
-					<SbColumn TItem="DocumentSourceDto" Title="@L["Actions"]" Width="120px">
+					<SbColumn TItem="DocumentSourceDto" Title="@L["Actions"]" Width="56px" Sortable="false">
 						<CellTemplate Context="cellContext">
 							<AuthorizeView Policy="@AIPermissions.RAG.Index">
-								<SbButton Size="SbSize.Sm" 
-											  Color="SbColor.Primary"
-											  OnClick="@(() => StartIndexingAsync(cellContext.Item))"
-											  Disabled="@(!_availability.IsAvailable || cellContext.Item.Status == IndexingStatusType.Indexing)"
-											  Loading="@IsOperationLoading($"{LoadingKeys.StartIndexing}-{cellContext.Item.Id}")">
-									<StartIcon><SbIcon Name="play" /></StartIcon>
-									<ChildContent>@L["StartIndexing"]</ChildContent>
-								</SbButton>
+								<SbTooltip Text="@L["StartIndexing"]">
+									<SbIconButton Size="SbSize.Sm"
+												  Color="SbColor.Primary"
+												  AriaLabel="@L["StartIndexing"]"
+												  OnClick="@(() => StartIndexingAsync(cellContext.Item))"
+												  Disabled="@(!_availability.IsAvailable || cellContext.Item.Status == IndexingStatusType.Indexing)"
+												  Loading="@IsOperationLoading($"{LoadingKeys.StartIndexing}-{cellContext.Item.Id}")">
+										<Icon><SbIcon Name="play" Size="SbSize.Sm" /></Icon>
+									</SbIconButton>
+								</SbTooltip>
 							</AuthorizeView>
 						</CellTemplate>
 					</SbColumn>

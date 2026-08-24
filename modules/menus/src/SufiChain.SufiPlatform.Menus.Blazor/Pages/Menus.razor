@@ -30,7 +30,7 @@
                             PageSize="_pageSize"
                             TotalCount="_totalCount"
                             PageIndexChanged="OnPageIndexChangedAsync">
-                    <SbColumn TItem="MenuListDto" Title="@L["Actions"]" Width="200px">
+                    <SbColumn TItem="MenuListDto" Title="@L["Actions"]" Width="152px" Sortable="false">
                         <CellTemplate Context="cellContext">
                             <SbStack Direction="SbStackDirection.Row" Gap="1">
                                 <AuthorizeView Policy="@MenusPermissions.Menus.ManageItems">

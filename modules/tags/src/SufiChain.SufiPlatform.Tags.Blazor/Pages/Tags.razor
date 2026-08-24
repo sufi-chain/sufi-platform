@@ -33,7 +33,7 @@
                             PageSize="_pageSize"
                             TotalCount="_totalCount"
                             PageIndexChanged="OnPageIndexChangedAsync">
-                    <SbColumn TItem="TagDto" Title="@L["Actions"]" Width="220px">
+                    <SbColumn TItem="TagDto" Title="@L["Actions"]" Width="152px" Sortable="false">
                         <CellTemplate Context="cellContext">
                             <SbStack Direction="SbStackDirection.Row" Gap="1">
                                 <AuthorizeView Policy="@TagsPermissions.TagLinks.Default">

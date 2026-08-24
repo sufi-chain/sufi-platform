@@ -281,10 +281,8 @@ public class DemoAppModule : AbpModule
         // Add HttpClientFactory for Blazor components
         context.Services.AddHttpClient();
 
-        if (hostingEnvironment.IsDevelopment())
-        {
-            context.Services.Replace(ServiceDescriptor.Singleton<IEmailSender, NullEmailSender>());
-        }
+        // Keep SufiCom DynamicEmailSender. Replacing IEmailSender with NullEmailSender
+        // in Development discarded every auth email even when SMTP was configured.
 
         ConfigureAuthentication(context);
         ConfigureUrls(configuration);

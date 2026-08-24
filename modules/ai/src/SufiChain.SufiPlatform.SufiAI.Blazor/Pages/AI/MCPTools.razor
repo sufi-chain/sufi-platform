@@ -27,6 +27,17 @@
                         Hoverable="true"
                         KeySelector="@(item => item.Name)">
                 <ChildContent>
+                    <SbColumn TItem="MCPToolDto" Title="@L["Actions"]" Width="56px" Sortable="false">
+                        <CellTemplate Context="cellContext">
+                            <SbTooltip Text="@L["ViewSchema"]">
+                                <SbIconButton Size="SbSize.Sm"
+                                              AriaLabel="@L["ViewSchema"]"
+                                              OnClick="@(() => ViewToolSchemaAsync(cellContext.Item))">
+                                    <Icon><SbIcon Name="code" /></Icon>
+                                </SbIconButton>
+                            </SbTooltip>
+                        </CellTemplate>
+                    </SbColumn>
                     <SbColumn TItem="MCPToolDto" Title="@L["ToolName"]" Width="200px">
                         <CellTemplate Context="cellContext">
                             <SbStack Direction="SbStackDirection.Column" Gap="0">
@@ -56,15 +67,6 @@
                             <SbText Variant="SbTextVariant.BodySmall">
                                 @cellContext.Item.Source
                             </SbText>
-                        </CellTemplate>
-                    </SbColumn>
-                    <SbColumn TItem="MCPToolDto" Title="@L["Actions"]" Width="100px">
-                        <CellTemplate Context="cellContext">
-                            <SbIconButton Size="SbSize.Sm"
-                                          AriaLabel="@L["ViewSchema"]"
-                                          OnClick="@(() => ViewToolSchemaAsync(cellContext.Item))">
-                                <Icon><SbIcon Name="code" /></Icon>
-                            </SbIconButton>
                         </CellTemplate>
                     </SbColumn>
                 </ChildContent>

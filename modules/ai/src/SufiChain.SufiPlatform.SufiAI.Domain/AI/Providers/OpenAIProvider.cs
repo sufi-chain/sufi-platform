@@ -275,13 +275,38 @@ public class OpenAIProvider : IAIProvider, ITransientDependency
 
         var responseJson = await response.Content.ReadAsStringAsync(cancellationToken);
         var result = JsonSerializer.Deserialize<JsonElement>(responseJson);
-        var choice = result.GetProperty("choices")[0];
-        var message = choice.GetProperty("message");
+        if (!result.TryGetProperty("choices", out var choices) ||
+            choices.ValueKind != JsonValueKind.Array ||
+            choices.GetArrayLength() == 0)
+        {
+            _logger.LogError(
+                "OpenAI chat completion response did not contain choices. Model={Model} ResponseKeys={ResponseKeys}",
+                configuration.ModelId,
+                string.Join(",", result.EnumerateObject().Select(property => property.Name)));
+            throw new BusinessException("AI:InvalidProviderResponse")
+                .WithData("Model", configuration.ModelId);
+        }
+
+        var choice = choices[0];
+        if (!choice.TryGetProperty("message", out var message))
+        {
+            _logger.LogError(
+                "OpenAI chat completion choice did not contain message. Model={Model} ChoiceKeys={ChoiceKeys}",
+                configuration.ModelId,
+                string.Join(",", choice.EnumerateObject().Select(property => property.Name)));
+            throw new BusinessException("AI:InvalidProviderResponse")
+                .WithData("Model", configuration.ModelId);
+        }
+
         var usage = TryReadUsage(result, out var tokenUsage) ? tokenUsage : TokenUsage.Unavailable;
+        var content = message.TryGetProperty("content", out var contentProperty) &&
+                      contentProperty.ValueKind == JsonValueKind.String
+            ? contentProperty.GetString() ?? string.Empty
+            : string.Empty;
 
         return new ChatCompletionResponse
         {
-            Content = message.GetProperty("content").GetString() ?? string.Empty,
+            Content = content,
             ModelId = configuration.ModelId,
             InputTokens = usage.InputTokens,
             OutputTokens = usage.OutputTokens,

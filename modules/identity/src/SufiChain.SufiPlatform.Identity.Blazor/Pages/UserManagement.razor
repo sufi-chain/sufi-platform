@@ -36,27 +36,27 @@
 							PageSize="_pageSize"
 							TotalCount="_totalCount"
 							PageIndexChanged="OnPageIndexChangedAsync">
-					<SbColumn TItem="IdentityUserDto" Title="@L["Actions"]" Width="160px">
+					<SbColumn TItem="IdentityUserDto" Title="@L["Actions"]" Width="152px" Sortable="false">
 						<CellTemplate Context="cellContext">
 							<SbStack Direction="SbStackDirection.Row" Gap="1">
 								<AuthorizeView Policy="@SufiChain.SufiPlatform.Identity.IdentityPermissions.Users.Update" Context="authContext">
-									<SbIconButton Size="SbSize.Sm" AriaLabel="@L["Edit"]"
+									<SbTooltip Text="@L["Edit"]"><SbIconButton Size="SbSize.Sm" AriaLabel="@L["Edit"]"
 												  OnClick="@(() => ShowEditModal(cellContext.Item))">
-										<Icon><SbIcon Name="edit" /></Icon>
-									</SbIconButton>
+										<Icon><SbIcon Name="edit" Size="SbSize.Sm" /></Icon>
+									</SbIconButton></SbTooltip>
 								</AuthorizeView>
 								@if (_hasManagePermissionsPermission)
 								{
-									<SbIconButton Size="SbSize.Sm" AriaLabel="@L["Permissions"]"
+									<SbTooltip Text="@L["Permissions"]"><SbIconButton Size="SbSize.Sm" AriaLabel="@L["Permissions"]"
 												  OnClick="@(async () => await ShowPermissionModalAsync(cellContext.Item))">
-										<Icon><SbIcon Name="shield" /></Icon>
-									</SbIconButton>
+										<Icon><SbIcon Name="shield" Size="SbSize.Sm" /></Icon>
+									</SbIconButton></SbTooltip>
 								}
 								<AuthorizeView Policy="@SufiChain.SufiPlatform.Identity.IdentityPermissions.Users.Delete" Context="authContext2">
-									<SbIconButton Size="SbSize.Sm" Color="SbColor.Danger" AriaLabel="@L["Delete"]"
+									<SbTooltip Text="@L["Delete"]"><SbIconButton Size="SbSize.Sm" Color="SbColor.Danger" AriaLabel="@L["Delete"]"
 												  OnClick="@(() => DeleteUserAsync(cellContext.Item))">
-										<Icon><SbIcon Name="trash" /></Icon>
-									</SbIconButton>
+										<Icon><SbIcon Name="trash" Size="SbSize.Sm" /></Icon>
+									</SbIconButton></SbTooltip>
 								</AuthorizeView>
 							</SbStack>
 						</CellTemplate>

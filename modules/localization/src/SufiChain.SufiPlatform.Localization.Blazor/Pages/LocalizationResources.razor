@@ -25,12 +25,13 @@
                             Items="_resources"
                             Striped="true"
                             Hoverable="true">
-                    <SbColumn TItem="LocalizationResourceSummaryDto" Title="@L["Actions"]" Width="120px">
+                    <SbColumn TItem="LocalizationResourceSummaryDto" Title="@L["Actions"]" Width="56px" Sortable="false">
                         <CellTemplate Context="ctx3">
-                            <SbButton Size="SbSize.Sm" Variant="SbButtonVariant.Link" OnClick="@(() => ViewTexts(ctx3.Item.ResourceName))">
-                                <StartIcon><SbIcon Name="list" /></StartIcon>
-                                <ChildContent>@L["View"]</ChildContent>
-                            </SbButton>
+                            <SbTooltip Text="@L["View"]">
+                                <SbIconButton Size="SbSize.Sm" Color="SbColor.Primary" AriaLabel="@L["View"]" OnClick="@(() => ViewTexts(ctx3.Item.ResourceName))">
+                                    <Icon><SbIcon Name="list" Size="SbSize.Sm" /></Icon>
+                                </SbIconButton>
+                            </SbTooltip>
                         </CellTemplate>
                     </SbColumn>
                     <SbColumn TItem="LocalizationResourceSummaryDto" Field="ResourceName" Title="@L["ResourceName"]" />

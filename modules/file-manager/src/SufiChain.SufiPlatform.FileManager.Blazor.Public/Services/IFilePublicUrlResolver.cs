@@ -1,3 +1,5 @@
+using System.IO;
+
 namespace SufiChain.SufiPlatform.FileManager.Blazor.Public.Services;
 
 /// <summary>
@@ -80,4 +82,18 @@ public class FilePublicInfo
     public bool IsImage { get; set; }
     public bool IsVideo { get; set; }
     public bool IsAudio { get; set; }
+
+    public bool IsPlayableAudio =>
+        IsAudio || IsComposerVoiceFileName(FileName);
+
+    public static bool IsComposerVoiceFileName(string? fileName)
+    {
+        if (string.IsNullOrWhiteSpace(fileName))
+        {
+            return false;
+        }
+
+        var name = Path.GetFileName(fileName.Trim());
+        return name.StartsWith("voice_", StringComparison.OrdinalIgnoreCase);
+    }
 }

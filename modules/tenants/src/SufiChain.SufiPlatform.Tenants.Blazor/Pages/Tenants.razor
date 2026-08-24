@@ -42,7 +42,7 @@
 							PageSize="_pageSize"
 							TotalCount="_totalCount"
 							PageIndexChanged="OnPageIndexChangedAsync">
-					<SbColumn TItem="TenantDto" Title="@L["Actions"]" Width="180px">
+					<SbColumn TItem="TenantDto" Title="@L["Actions"]" Width="152px" Sortable="false">
 						<CellTemplate Context="cellContext">
 							<SbStack Direction="SbStackDirection.Row" Gap="1">
 								<AuthorizeView Policy="@TenantsPermissions.Tenants.Update" Context="authContext">

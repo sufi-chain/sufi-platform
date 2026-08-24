@@ -116,6 +116,7 @@
     "UnlinkAccountConfirm": "Unlink this account?",
     "HostTenant": "Host",
     "LinkLoginFailed": "Could not switch to the linked account.",
-    "LinkLoginProcessing": "Switching to linked account..."
+    "LinkLoginProcessing": "Switching to linked account...",
+    "RegistrationFailed": "Registration could not be completed. Please review the form and try again."
   }
 }

@@ -79,22 +79,22 @@
 								PageIndexChanged="OnPageIndexChangedAsync"
 								PageSizeChanged="OnPageSizeChangedAsync"
 								KeySelector="@(item => item.Key)">
-						<SbColumn TItem="LocalizationTextWithBaseValueDto" Title="@L["Actions"]" Width="120px">
+						<SbColumn TItem="LocalizationTextWithBaseValueDto" Title="@L["Actions"]" Width="104px" Sortable="false">
 							<CellTemplate Context="ctx">
 								<SbStack Direction="SbStackDirection.Row" Gap="1">
 									<AuthorizeView Policy="@LocalizationPermissions.Texts.Update" Context="authContext">
-										<SbIconButton Size="SbSize.Sm" AriaLabel="@L["Edit"]"
+										<SbTooltip Text="@L["Edit"]"><SbIconButton Size="SbSize.Sm" AriaLabel="@L["Edit"]"
 													  OnClick="@(() => ShowEditDialogForMerged(ctx.Item))">
-											<Icon><SbIcon Name="edit" /></Icon>
-										</SbIconButton>
+											<Icon><SbIcon Name="edit" Size="SbSize.Sm" /></Icon>
+										</SbIconButton></SbTooltip>
 									</AuthorizeView>
 									@if (ctx.Item.IsOverride && ctx.Item.Id != Guid.Empty)
 									{
 										<AuthorizeView Policy="@LocalizationPermissions.Texts.Delete" Context="authContext2">
-											<SbIconButton Size="SbSize.Sm" Color="SbColor.Danger" AriaLabel="@L["Delete"]"
+											<SbTooltip Text="@L["Delete"]"><SbIconButton Size="SbSize.Sm" Color="SbColor.Danger" AriaLabel="@L["Delete"]"
 														  OnClick="@(() => DeleteMergedAsync(ctx.Item))">
-												<Icon><SbIcon Name="trash" /></Icon>
-											</SbIconButton>
+												<Icon><SbIcon Name="trash" Size="SbSize.Sm" /></Icon>
+											</SbIconButton></SbTooltip>
 										</AuthorizeView>
 									}
 								</SbStack>
@@ -132,20 +132,20 @@
 								PageIndexChanged="OnPageIndexChangedAsync"
 								PageSizeChanged="OnPageSizeChangedAsync"
 								KeySelector="@(item => item.Id.ToString())">
-						<SbColumn TItem="LocalizationTextDto" Title="@L["Actions"]" Width="120px">
+						<SbColumn TItem="LocalizationTextDto" Title="@L["Actions"]" Width="104px" Sortable="false">
 							<CellTemplate Context="ctx">
 								<SbStack Direction="SbStackDirection.Row" Gap="1">
 									<AuthorizeView Policy="@LocalizationPermissions.Texts.Update" Context="authContext">
-										<SbIconButton Size="SbSize.Sm" AriaLabel="@L["Edit"]"
+										<SbTooltip Text="@L["Edit"]"><SbIconButton Size="SbSize.Sm" AriaLabel="@L["Edit"]"
 													  OnClick="@(() => ShowEditDialog(ctx.Item))">
-											<Icon><SbIcon Name="edit" /></Icon>
-										</SbIconButton>
+											<Icon><SbIcon Name="edit" Size="SbSize.Sm" /></Icon>
+										</SbIconButton></SbTooltip>
 									</AuthorizeView>
 									<AuthorizeView Policy="@LocalizationPermissions.Texts.Delete" Context="authContext2">
-										<SbIconButton Size="SbSize.Sm" Color="SbColor.Danger" AriaLabel="@L["Delete"]"
+										<SbTooltip Text="@L["Delete"]"><SbIconButton Size="SbSize.Sm" Color="SbColor.Danger" AriaLabel="@L["Delete"]"
 													  OnClick="@(() => DeleteAsync(ctx.Item))">
-											<Icon><SbIcon Name="trash" /></Icon>
-										</SbIconButton>
+											<Icon><SbIcon Name="trash" Size="SbSize.Sm" /></Icon>
+										</SbIconButton></SbTooltip>
 									</AuthorizeView>
 								</SbStack>
 							</CellTemplate>

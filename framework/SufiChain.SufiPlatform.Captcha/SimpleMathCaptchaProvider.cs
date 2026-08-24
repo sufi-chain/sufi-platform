@@ -71,7 +71,7 @@ public class SimpleMathCaptchaProvider : ICaptchaProvider, ITransientDependency
             return CaptchaValidationResult.Failure(IdentitySecurityErrorCodes.CaptchaValidationFailed);
         }
 
-        var answerHash = CaptchaAnswerHasher.Hash(context.Answer);
+        var answerHash = CaptchaAnswerHasher.Hash(context.Answer.Trim());
         if (!string.Equals(cacheItem.AnswerHash, answerHash, StringComparison.OrdinalIgnoreCase))
         {
             return CaptchaValidationResult.Failure(IdentitySecurityErrorCodes.CaptchaValidationFailed);

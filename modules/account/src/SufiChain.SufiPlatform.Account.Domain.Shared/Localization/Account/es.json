@@ -116,6 +116,7 @@
     "UnlinkAccountConfirm": "¿Desvincular esta cuenta?",
     "HostTenant": "Host",
     "LinkLoginFailed": "No se pudo cambiar a la cuenta vinculada.",
-    "LinkLoginProcessing": "Cambiando a la cuenta vinculada..."
+    "LinkLoginProcessing": "Cambiando a la cuenta vinculada...",
+    "RegistrationFailed": "No se pudo completar el registro. Revise el formulario e inténtelo de nuevo."
   }
 }

@@ -13,6 +13,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="../SufiChain.SufiPlatform.FileManager.Abstractions/SufiChain.SufiPlatform.FileManager.Abstractions.csproj" />
     <PackageReference Include="Volo.Abp.Core" Version="$(AbpVersion)" />
     <PackageReference Include="Microsoft.Extensions.AI.Abstractions" Version="10.5.2" />
     <PackageReference Include="Microsoft.SemanticKernel.Abstractions" Version="$(MicrosoftSemanticKernelAbstractionsVersion)" />

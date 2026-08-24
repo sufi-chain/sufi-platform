@@ -53,5 +53,17 @@ window.sufiAbpCaptcha = {
         });
 
         return true;
+    },
+
+    resetTurnstile: function () {
+        if (window.turnstile && typeof window.turnstile.reset === 'function') {
+            window.turnstile.reset();
+        }
+    },
+
+    resetRecaptcha: function () {
+        if (window.grecaptcha && typeof window.grecaptcha.reset === 'function') {
+            window.grecaptcha.reset();
+        }
     }
 };

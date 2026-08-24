@@ -1,0 +1,42 @@
+@namespace SufiChain.SufiPlatform.FileManager.Blazor.Public.Components
+@if (_isLoading)
+{
+    <div class="file-audio file-audio--loading @Class" style="@Style">
+        <div class="file-audio__placeholder">
+            @if (LoadingTemplate != null)
+            {
+                @LoadingTemplate
+            }
+            else
+            {
+                <span class="file-audio__spinner"></span>
+            }
+        </div>
+    </div>
+}
+else if (_hasError || string.IsNullOrEmpty(_playerUrl))
+{
+    <div class="file-audio file-audio--error @Class" style="@Style">
+        @if (ErrorTemplate != null)
+        {
+            @ErrorTemplate
+        }
+        else
+        {
+            <div class="file-audio__placeholder file-audio__placeholder--error">
+                <span>Audio not available</span>
+            </div>
+        }
+    </div>
+}
+else
+{
+    <div class="file-audio @Class" style="@Style">
+        <audio class="file-audio__player"
+               src="@_playerUrl"
+               controls="@Controls"
+               preload="@Preload">
+            Your browser does not support the audio tag.
+        </audio>
+    </div>
+}

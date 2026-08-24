@@ -74,9 +74,10 @@
                                              AutoComplete="new-password"
                                              name="Input.Password" />
                             </SbFormField>
-                            <SufiCaptcha @bind-CaptchaChallengeId="CaptchaChallengeId"
-                                            @bind-CaptchaAnswer="CaptchaAnswer"
-                                            @bind-CaptchaToken="CaptchaToken" />
+            <SufiCaptcha @bind-CaptchaChallengeId="CaptchaChallengeId"
+                            @bind-CaptchaAnswer="CaptchaAnswer"
+                            @bind-CaptchaToken="CaptchaToken"
+                            ResetVersion="CaptchaResetVersion" />
                             @if (!string.IsNullOrEmpty(ErrorMessage))
                             {
                                 <SbAlert Severity="SbAlertSeverity.Danger">@ErrorMessage</SbAlert>
