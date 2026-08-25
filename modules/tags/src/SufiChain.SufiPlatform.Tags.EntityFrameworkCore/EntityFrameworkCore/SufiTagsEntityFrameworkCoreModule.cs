@@ -1,4 +1,5 @@
 using Microsoft.Extensions.DependencyInjection;
+using Volo.Abp.Data;
 using Volo.Abp.EntityFrameworkCore;
 using Volo.Abp.Modularity;
 
@@ -17,6 +18,14 @@ public class SufiTagsEntityFrameworkCoreModule : AbpModule
             options.AddDefaultRepositories(includeAllEntities: true);
             options.AddRepository<Tags.Tag, Repositories.EfCoreTagRepository>();
             options.AddRepository<Tags.TagLink, Repositories.EfCoreTagLinkRepository>();
+        });
+
+        Configure<AbpDbConnectionOptions>(options =>
+        {
+            options.Databases.Configure(SufiTagsDbProperties.ConnectionStringName, db =>
+            {
+                db.IsUsedByTenants = true;
+            });
         });
     }
 }

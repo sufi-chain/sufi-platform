@@ -1,5 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
 using SufiChain.SufiPlatform.Menus.Menus;
+using Volo.Abp.Data;
 using Volo.Abp.EntityFrameworkCore;
 using Volo.Abp.Modularity;
 
@@ -15,6 +16,14 @@ public class SufiMenusEntityFrameworkCoreModule : AbpModule
             options.AddDefaultRepositories(includeAllEntities: true);
             options.AddRepository<Menu, Repositories.EfCoreMenuRepository>();
             options.AddRepository<MenuItem, Repositories.EfCoreMenuItemRepository>();
+        });
+
+        Configure<AbpDbConnectionOptions>(options =>
+        {
+            options.Databases.Configure(SufiMenusDbProperties.ConnectionStringName, db =>
+            {
+                db.IsUsedByTenants = true;
+            });
         });
     }
 }

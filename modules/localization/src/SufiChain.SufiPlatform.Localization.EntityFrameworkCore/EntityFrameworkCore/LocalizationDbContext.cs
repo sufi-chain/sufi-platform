@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using SufiChain.SufiPlatform.Localization.Entities;
+using SufiChain.SufiPlatform.Localization;
 using Volo.Abp.Data;
 using Volo.Abp.EntityFrameworkCore;
 
@@ -19,5 +20,6 @@ public class LocalizationDbContext : AbpDbContext<LocalizationDbContext>, ISufiL
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
+        builder.ConfigureSufiLocalization();
     }
 }

@@ -5,7 +5,10 @@ using Volo.Abp.EntityFrameworkCore;
 namespace SufiChain.SufiPlatform.AuditLogging.EntityFrameworkCore;
 
 [ConnectionStringName(SufiAuditLoggingDbProperties.ConnectionStringName)]
-public class SufiAuditLoggingDbContext : AbpDbContext<SufiAuditLoggingDbContext>, IAuditLoggingDbContext
+public class SufiAuditLoggingDbContext :
+    AbpDbContext<SufiAuditLoggingDbContext>,
+    IAuditLoggingDbContext,
+    ISufiAuditLoggingDbContext
 {
     public DbSet<AuditLog> AuditLogs { get; set; }
 

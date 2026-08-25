@@ -1,4 +1,5 @@
 using Microsoft.Extensions.DependencyInjection;
+using Volo.Abp.Data;
 using Volo.Abp.EntityFrameworkCore;
 using Volo.Abp.Modularity;
 using SufiChain.SufiPlatform.SufiAI.EntityFrameworkCore;
@@ -20,6 +21,14 @@ public class SufiAIEntityFrameworkCoreModule : AbpModule
             options.AddRepository<AIModelConfiguration, EfCoreAIModelConfigurationRepository>();
             options.AddRepository<AIUsageLog, EfCoreAIUsageLogRepository>();
             options.AddRepository<MCP.Entities.MCPServer, MCPServerRepository>();
+        });
+
+        Configure<AbpDbConnectionOptions>(options =>
+        {
+            options.Databases.Configure(SufiAIDbProperties.ConnectionStringName, database =>
+            {
+                database.IsUsedByTenants = true;
+            });
         });
     }
 }

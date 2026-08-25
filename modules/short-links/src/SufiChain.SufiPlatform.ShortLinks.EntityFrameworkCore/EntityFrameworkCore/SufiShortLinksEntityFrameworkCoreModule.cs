@@ -1,4 +1,5 @@
 using Microsoft.Extensions.DependencyInjection;
+using Volo.Abp.Data;
 using Volo.Abp.EntityFrameworkCore;
 using Volo.Abp.Modularity;
 
@@ -15,6 +16,14 @@ public class SufiShortLinksEntityFrameworkCoreModule : AbpModule
         context.Services.AddAbpDbContext<ShortLinksDbContext>(options =>
         {
             options.AddDefaultRepositories(includeAllEntities: true);
+        });
+
+        Configure<AbpDbConnectionOptions>(options =>
+        {
+            options.Databases.Configure(SufiShortLinksDbProperties.ConnectionStringName, db =>
+            {
+                db.IsUsedByTenants = true;
+            });
         });
     }
 }

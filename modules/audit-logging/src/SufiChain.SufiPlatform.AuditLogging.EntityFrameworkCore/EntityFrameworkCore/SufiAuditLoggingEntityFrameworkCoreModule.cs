@@ -1,4 +1,5 @@
 using Microsoft.Extensions.DependencyInjection;
+using Volo.Abp.Data;
 using Volo.Abp.EntityFrameworkCore;
 using Volo.Abp.Modularity;
 
@@ -17,6 +18,14 @@ public class SufiAuditLoggingEntityFrameworkCoreModule : AbpModule
             options.AddDefaultRepositories(includeAllEntities: true);
             
             options.AddRepository<AuditLog, EfCoreAuditLogRepository>();
+        });
+
+        Configure<AbpDbConnectionOptions>(options =>
+        {
+            options.Databases.Configure(SufiAuditLoggingDbProperties.ConnectionStringName, db =>
+            {
+                db.IsUsedByTenants = true;
+            });
         });
     }
 }

@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using SufiChain.SufiPlatform.ShortLinks;
 using Volo.Abp.Data;
 using Volo.Abp.EntityFrameworkCore;
 
@@ -18,5 +19,6 @@ public class ShortLinksDbContext : AbpDbContext<ShortLinksDbContext>, ISufiShort
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
+        builder.ConfigureSufiShortLinks();
     }
 }

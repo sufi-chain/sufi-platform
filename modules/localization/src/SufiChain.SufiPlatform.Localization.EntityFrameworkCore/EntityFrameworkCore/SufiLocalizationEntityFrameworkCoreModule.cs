@@ -1,6 +1,8 @@
 using Microsoft.Extensions.DependencyInjection;
 using SufiChain.SufiPlatform.Localization.Entities;
 using SufiChain.SufiPlatform.Localization.Repositories;
+using SufiChain.SufiPlatform.Localization;
+using Volo.Abp.Data;
 using Volo.Abp.Modularity;
 
 using Volo.Abp.EntityFrameworkCore;
@@ -20,6 +22,14 @@ public class SufiLocalizationEntityFrameworkCoreModule : AbpModule
 
             options.AddRepository<LocalizationResource, EfCoreLocalizationResourceRepository>();
             options.AddRepository<LocalizationText, EfCoreLocalizationTextRepository>();
+        });
+
+        Configure<AbpDbConnectionOptions>(options =>
+        {
+            options.Databases.Configure(SufiLocalizationDbProperties.ConnectionStringName, database =>
+            {
+                database.IsUsedByTenants = true;
+            });
         });
     }
 }
