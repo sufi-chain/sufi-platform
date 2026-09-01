@@ -22,9 +22,6 @@ public class CopilotInvocationRequestedEto : SufiIntegrationEto
 
     public string? LinkedEntityId { get; set; }
 
-    /// <summary>Caller correlation id echoed on <see cref="CopilotResponseReadyEto"/>.</summary>
-    public string? CorrelationId { get; set; }
-
     public string? MetadataJson { get; set; }
 }
 
@@ -47,5 +44,4 @@ public class CopilotResponseReadyEto : SufiIntegrationEto
 
     public string? ErrorMessage { get; set; }
 
-    public string? CorrelationId { get; set; }
 }

@@ -48,11 +48,6 @@ public class InboxNotificationEto : SufiIntegrationEto
     public string? Category { get; set; }
 
     /// <summary>
-    /// Logical source of the notification (usually the publishing module name).
-    /// </summary>
-    public string? Source { get; set; }
-
-    /// <summary>
     /// Optional URL to navigate to when the notification is clicked.
     /// </summary>
     public string? Url { get; set; }
