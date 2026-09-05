@@ -114,6 +114,7 @@ public partial class Register
         }
 
         IsSubmitting = true;
+        var navigationStarted = false;
 
         try
         {
@@ -131,6 +132,7 @@ public partial class Register
 
             if (await RequiresEmailConfirmationBeforeSignInAsync())
             {
+                navigationStarted = true;
                 Navigation.NavigateTo(
                     $"/account/email-confirmation-sent?email={Uri.EscapeDataString(Input.EmailAddress)}",
                     forceLoad: true);
@@ -144,6 +146,7 @@ public partial class Register
                 {
                     var token = await TokenStore.CreateAsync(user.Id, ReturnUrl, rememberMe: false);
                     var returnUrlEnc = Uri.EscapeDataString(ReturnUrl ?? "/");
+                    navigationStarted = true;
                     Navigation.NavigateTo(
                         $"/account/complete-login?token={Uri.EscapeDataString(token)}&returnUrl={returnUrlEnc}",
                         forceLoad: true);
@@ -153,11 +156,13 @@ public partial class Register
                 if (HttpContext != null)
                 {
                     await SignInManager.SignInAsync(user, isPersistent: false);
+                    navigationStarted = true;
                     HttpContext.Response.Redirect(ReturnUrl ?? "/");
                     return;
                 }
             }
 
+            navigationStarted = true;
             Navigation.NavigateTo("/account/login?registered=true", forceLoad: true);
         }
         catch (Exception ex)
@@ -166,8 +171,11 @@ public partial class Register
         }
         finally
         {
-            IsSubmitting = false;
-            CaptchaResetVersion++;
+            if (!navigationStarted)
+            {
+                IsSubmitting = false;
+                CaptchaResetVersion++;
+            }
         }
     }
 
