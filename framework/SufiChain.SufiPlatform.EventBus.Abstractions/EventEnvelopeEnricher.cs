@@ -23,7 +23,10 @@ public sealed class EventEnvelopeEnricher : IEventEnvelopeEnricher, ITransientDe
 
     public void Enrich(SufiIntegrationEto integrationEvent, string source, string sourceId)
     {
-        ArgumentNullException.ThrowIfNull(integrationEvent);
+        if (integrationEvent is null)
+        {
+            throw new ArgumentNullException(nameof(integrationEvent));
+        }
 
         if (integrationEvent.Id == Guid.Empty)
             integrationEvent.Id = Guid.NewGuid();

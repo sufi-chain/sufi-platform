@@ -26,9 +26,20 @@ public sealed class IntegrationEventPublisher : IIntegrationEventPublisher, ITra
         CancellationToken cancellationToken = default)
         where TEvent : SufiIntegrationEto
     {
-        ArgumentNullException.ThrowIfNull(integrationEvent);
-        ArgumentException.ThrowIfNullOrWhiteSpace(source);
-        ArgumentException.ThrowIfNullOrWhiteSpace(sourceId);
+        if (integrationEvent is null)
+        {
+            throw new ArgumentNullException(nameof(integrationEvent));
+        }
+
+        if (string.IsNullOrWhiteSpace(source))
+        {
+            throw new ArgumentException("Value cannot be null or whitespace.", nameof(source));
+        }
+
+        if (string.IsNullOrWhiteSpace(sourceId))
+        {
+            throw new ArgumentException("Value cannot be null or whitespace.", nameof(sourceId));
+        }
 
         cancellationToken.ThrowIfCancellationRequested();
         _enricher.Enrich(integrationEvent, source, sourceId);
