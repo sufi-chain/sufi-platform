@@ -35,7 +35,8 @@
         <ChildContent>
             @foreach (var language in _languages)
             {
-                <SbMenuItem OnClick="() => ChangeLanguageAsync(language)"
+                <SbMenuItem @key="language.CultureName"
+                            OnClick="@EventCallback.Factory.Create(this, () => ChangeLanguageAsync(language.CultureName, language.UiCultureName))"
                             Class="@(language.CultureName == _currentLanguage?.CultureName ? "language-item--active" : "")">
                     <span class="language-code">@GetLanguageCode(language.CultureName)</span>
                     <span class="language-name">@language.DisplayName</span>
@@ -87,11 +88,20 @@
         _menuOpen = !_menuOpen;
     }
 
-    private async Task ChangeLanguageAsync(LanguageInfo language)
+    private async Task ChangeLanguageAsync(string cultureName, string uiCultureName)
     {
+        var language = _languages?.FirstOrDefault(item =>
+            string.Equals(item.CultureName, cultureName, StringComparison.OrdinalIgnoreCase));
+        if (language == null)
+        {
+            return;
+        }
+
+        _currentLanguage = language;
+
         await CookieService.SetAsync(
             ".AspNetCore.Culture",
-            $"c={language.CultureName}|uic={language.UiCultureName}",
+            $"c={cultureName}|uic={uiCultureName}",
             new CookieOptions { Path = "/", MaxAge = (int)TimeSpan.FromDays(365).TotalSeconds }
         );
 
@@ -100,7 +110,7 @@
         // the switcher stuck on the previous culture.
         try
         {
-            await PreferredLanguageService.SetAsync(language.CultureName);
+            await PreferredLanguageService.SetAsync(cultureName);
         }
         catch
         {
