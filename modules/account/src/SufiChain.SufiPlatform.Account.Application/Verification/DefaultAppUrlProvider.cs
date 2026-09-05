@@ -58,6 +58,17 @@ public class DefaultAppUrlProvider : IAppUrlProvider, ITransientDependency
             ? configuredRoot
             : Options.DefaultRootUrl;
 
+        return BuildUrlFromRoot(rootUrl, path, userId, token, returnUrl, returnUrlHash);
+    }
+
+    protected string BuildUrlFromRoot(
+        string rootUrl,
+        string path,
+        Guid userId,
+        string token,
+        string? returnUrl,
+        string? returnUrlHash)
+    {
         rootUrl = rootUrl.TrimEnd('/');
 
         var url = $"{rootUrl}/{path}?userId={userId}&token={Uri.EscapeDataString(token)}";
