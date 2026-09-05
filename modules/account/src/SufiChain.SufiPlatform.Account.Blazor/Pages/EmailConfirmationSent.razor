@@ -27,8 +27,9 @@
                                          name="ResendEmail" />
                         </SbFormField>
                         <SufiCaptcha @bind-CaptchaChallengeId="CaptchaChallengeId"
-                                        @bind-CaptchaAnswer="CaptchaAnswer"
-                                        @bind-CaptchaToken="CaptchaToken" />
+                                     @bind-CaptchaAnswer="CaptchaAnswer"
+                                     @bind-CaptchaToken="CaptchaToken"
+                                     Purpose="CaptchaPurpose.EmailConfirmationResend" />
                         @if (!string.IsNullOrEmpty(SuccessMessage))
                         {
                             <SbAlert Severity="SbAlertSeverity.Success">@SuccessMessage</SbAlert>

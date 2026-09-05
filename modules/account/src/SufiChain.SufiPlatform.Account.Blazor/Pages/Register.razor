@@ -77,6 +77,7 @@
             <SufiCaptcha @bind-CaptchaChallengeId="CaptchaChallengeId"
                             @bind-CaptchaAnswer="CaptchaAnswer"
                             @bind-CaptchaToken="CaptchaToken"
+                            Purpose="CaptchaPurpose.Register"
                             ResetVersion="CaptchaResetVersion" />
                             @if (!string.IsNullOrEmpty(ErrorMessage))
                             {

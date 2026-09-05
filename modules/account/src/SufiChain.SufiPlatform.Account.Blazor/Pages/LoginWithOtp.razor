@@ -45,8 +45,9 @@
                         @if (!CodeSent)
                         {
                             <SufiCaptcha @bind-CaptchaChallengeId="CaptchaChallengeId"
-                                            @bind-CaptchaAnswer="CaptchaAnswer"
-                                            @bind-CaptchaToken="CaptchaToken" />
+                                         @bind-CaptchaAnswer="CaptchaAnswer"
+                                         @bind-CaptchaToken="CaptchaToken"
+                                         Purpose="CaptchaPurpose.OtpSend" />
                             <SbButton Type="button"
                                       Color="SbColor.Primary"
                                       FullWidth="true"

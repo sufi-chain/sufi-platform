@@ -47,6 +47,9 @@ public partial class SufiCaptcha : ComponentBase, IAsyncDisposable
     [Parameter]
     public int ResetVersion { get; set; }
 
+    [Parameter]
+    public CaptchaPurpose Purpose { get; set; }
+
     protected CaptchaOptionsDto? Options { get; set; }
 
     protected CaptchaChallengeDto? Challenge { get; set; }
@@ -55,7 +58,17 @@ public partial class SufiCaptcha : ComponentBase, IAsyncDisposable
 
     protected string? LoadError { get; set; }
 
-    protected bool IsVisible => Options?.IsEnabled == true;
+    protected bool IsVisible => Options?.IsEnabled == true && IsRequiredForPurpose;
+
+    protected bool IsRequiredForPurpose => Purpose switch
+    {
+        CaptchaPurpose.Register => Options?.RequiredOnRegister == true,
+        CaptchaPurpose.Login => Options?.RequiredOnLogin == true,
+        CaptchaPurpose.ForgotPassword => Options?.RequiredOnForgotPassword == true,
+        CaptchaPurpose.OtpSend => Options?.RequiredOnOtpSend == true,
+        CaptchaPurpose.EmailConfirmationResend => Options?.RequiredOnEmailConfirmationResend == true,
+        _ => false
+    };
 
     protected bool IsSimpleProvider =>
         string.Equals(Options?.Provider, CaptchaProviderNames.Simple, StringComparison.OrdinalIgnoreCase);
