@@ -67,6 +67,8 @@ public partial class Register
 
     protected string? ErrorMessage { get; set; }
 
+    protected bool IsSubmitting { get; set; }
+
     protected IList<AuthenticationScheme> ExternalSchemes { get; set; } = Array.Empty<AuthenticationScheme>();
 
     protected string? CaptchaChallengeId { get; set; }
@@ -96,6 +98,11 @@ public partial class Register
 
     protected virtual async Task OnRegisterAsync()
     {
+        if (IsSubmitting)
+        {
+            return;
+        }
+
         Input ??= new RegisterInputModel();
 
         if (string.IsNullOrWhiteSpace(Input.UserName) ||
@@ -105,6 +112,8 @@ public partial class Register
             ErrorMessage = L["PleaseEnterAllFields"];
             return;
         }
+
+        IsSubmitting = true;
 
         try
         {
@@ -157,6 +166,7 @@ public partial class Register
         }
         finally
         {
+            IsSubmitting = false;
             CaptchaResetVersion++;
         }
     }
