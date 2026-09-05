@@ -89,13 +89,23 @@
 
     private async Task ChangeLanguageAsync(LanguageInfo language)
     {
-        await PreferredLanguageService.SetAsync(language.CultureName);
-
         await CookieService.SetAsync(
             ".AspNetCore.Culture",
             $"c={language.CultureName}|uic={language.UiCultureName}",
             new CookieOptions { Path = "/", MaxAge = (int)TimeSpan.FromDays(365).TotalSeconds }
         );
+
+        // The cookie is the immediate browser-side source of truth. Persisting the
+        // preference is best effort so an unavailable settings endpoint cannot leave
+        // the switcher stuck on the previous culture.
+        try
+        {
+            await PreferredLanguageService.SetAsync(language.CultureName);
+        }
+        catch
+        {
+            // The culture cookie is still valid and will be applied after reload.
+        }
 
         await JSRuntime.InvokeVoidAsync("location.reload");
     }
