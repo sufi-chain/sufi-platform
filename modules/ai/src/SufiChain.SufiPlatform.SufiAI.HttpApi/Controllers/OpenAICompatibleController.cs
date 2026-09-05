@@ -25,14 +25,75 @@ namespace SufiChain.SufiPlatform.SufiAI.Controllers;
 public class OpenAICompatibleController : SufiControllerBase
 {
     private readonly IAIKernelAppService _kernelAppService;
+    private readonly IAIService _aiService;
     private readonly ILogger<OpenAICompatibleController> _logger;
 
     public OpenAICompatibleController(
         IAIKernelAppService kernelAppService,
+        IAIService aiService,
         ILogger<OpenAICompatibleController> logger)
     {
         _kernelAppService = kernelAppService;
+        _aiService = aiService;
         _logger = logger;
+    }
+
+    [HttpPost("search")]
+    [Authorize(AIPermissions.AI.WebSearch)]
+    public async Task<WebSearchDto> SearchAsync(
+        [FromBody] WebSearchInput request,
+        CancellationToken cancellationToken = default)
+    {
+        var response = await _aiService.SearchWebAsync(new WebSearchRequest
+        {
+            WorkspaceName = request.WorkspaceName,
+            Query = request.Query,
+            Culture = request.Culture,
+            SafeSearch = request.SafeSearch,
+            MaxResults = request.MaxResults,
+            TimeRange = request.TimeRange
+        }, cancellationToken);
+
+        return new WebSearchDto
+        {
+            Model = response.ModelId,
+            Results = response.Results.Select(item => new WebSearchResultDto
+            {
+                Title = item.Title,
+                Url = item.Url,
+                Snippet = item.Snippet,
+                PublishedAt = item.PublishedAt,
+                Source = item.Source,
+                Rank = item.Rank
+            }).ToList()
+        };
+    }
+
+    [HttpPost("web/fetch")]
+    [Authorize(AIPermissions.AI.WebFetch)]
+    public async Task<WebFetchDto> FetchAsync(
+        [FromBody] WebFetchInput request,
+        CancellationToken cancellationToken = default)
+    {
+        var response = await _aiService.FetchWebAsync(new WebFetchRequest
+        {
+            WorkspaceName = request.WorkspaceName,
+            Url = request.Url,
+            TimeoutSeconds = request.TimeoutSeconds,
+            MaxBytes = request.MaxBytes
+        }, cancellationToken);
+
+        return new WebFetchDto
+        {
+            Url = response.Url,
+            CanonicalUrl = response.CanonicalUrl,
+            Title = response.Title,
+            Content = response.Content,
+            ContentType = response.ContentType,
+            Truncated = response.Truncated,
+            RetrievedAt = response.RetrievedAt,
+            StatusCode = response.StatusCode
+        };
     }
 
     /// <summary>

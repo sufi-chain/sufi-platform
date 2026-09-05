@@ -53,6 +53,8 @@ public class AIPermissionDefinitionProvider : PermissionDefinitionProvider
         aiPermission.AddChild(AIPermissions.AI.Audio, L("Permission:SufiAI.Audio"));
         aiPermission.AddChild(AIPermissions.AI.Vision, L("Permission:SufiAI.Vision"));
         aiPermission.AddChild(AIPermissions.AI.Embeddings, L("Permission:SufiAI.Embeddings"));
+        aiPermission.AddChild(AIPermissions.AI.WebSearch, L("Permission:SufiAI.WebSearch"));
+        aiPermission.AddChild(AIPermissions.AI.WebFetch, L("Permission:SufiAI.WebFetch"));
         aiPermission.AddChild(AIPermissions.AI.FunctionCalling, L("Permission:SufiAI.FunctionCalling"));
         aiPermission.AddChild(AIPermissions.AI.ManageConfigurations, L("Permission:SufiAI.ManageConfigurations"));
         aiPermission.AddChild(AIPermissions.AI.ViewUsage, L("Permission:SufiAI.ViewUsage"));

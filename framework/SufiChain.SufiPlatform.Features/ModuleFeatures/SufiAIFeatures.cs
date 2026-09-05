@@ -38,6 +38,16 @@ public static class SufiAIFeatures
     public const string Embeddings = GroupName + ".Embeddings";
 
     /// <summary>
+    /// Provider-backed web search.
+    /// </summary>
+    public const string WebSearch = GroupName + ".WebSearch";
+
+    /// <summary>
+    /// Provider-backed safe web fetching and extraction.
+    /// </summary>
+    public const string WebFetch = GroupName + ".WebFetch";
+
+    /// <summary>
     /// Retrieval-augmented generation and vector search.
     /// </summary>
     public const string RAG = GroupName + ".RAG";

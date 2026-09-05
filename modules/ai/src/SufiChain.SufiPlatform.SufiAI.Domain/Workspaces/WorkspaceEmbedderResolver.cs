@@ -42,17 +42,23 @@ public class WorkspaceEmbedderResolver : IWorkspaceEmbedderResolver, ITransientD
                 .WithData("WorkspaceName", workspace.Name);
         }
 
+        var apiBaseUrl = !string.IsNullOrWhiteSpace(configuration.ApiEndpoint)
+            ? configuration.ApiEndpoint
+            : workspace.ApiBaseUrl;
+
         return new EmbedderConfiguration
         {
             Provider = workspace.Provider,
             Model = configuration.ModelId,
             ApiKey = apiKey,
-          ApiBaseUrl = !string.IsNullOrWhiteSpace(configuration.ApiEndpoint)
-              ? configuration.ApiEndpoint
-               : workspace.ApiBaseUrl,
-           Dimensions = configuration.Dimensions
-               ?? EmbeddingModelDefaults.GetDimensions(configuration.ModelId)
-      };
+            ApiBaseUrl = apiBaseUrl,
+            Dimensions = configuration.Dimensions
+                ?? EmbeddingModelDefaults.GetDimensions(configuration.ModelId),
+            EncodingFormat = EmbeddingModelDefaults.GetEncodingFormat(configuration.ModelId, apiBaseUrl),
+            SupportsDimensionsParameter = !EmbeddingModelDefaults.RequiresCustomTransport(
+                configuration.ModelId,
+                apiBaseUrl)
+        };
    }
 
     protected virtual string? DecryptApiKey(string? encryptedApiKey)

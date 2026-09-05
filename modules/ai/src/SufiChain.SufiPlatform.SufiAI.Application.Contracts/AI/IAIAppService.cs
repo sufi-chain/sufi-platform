@@ -19,6 +19,9 @@ public interface IAIAppService : IApplicationService
     
     // Embeddings operations
     Task<EmbeddingsDto> GenerateEmbeddingsAsync(GenerateEmbeddingsInput input);
+
+    Task<WebSearchDto> SearchWebAsync(WebSearchInput input);
+    Task<WebFetchDto> FetchWebAsync(WebFetchInput input);
     
     // Capability check
     Task<bool> HasCapabilityAsync(string workspaceName, AICapabilityType capabilityType);

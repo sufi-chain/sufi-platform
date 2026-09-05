@@ -51,6 +51,14 @@ public interface IAIService
     Task<EmbeddingsResponse> GenerateEmbeddingsAsync(
         EmbeddingsRequest request,
         CancellationToken cancellationToken = default);
+
+    Task<WebSearchResponse> SearchWebAsync(
+        WebSearchRequest request,
+        CancellationToken cancellationToken = default);
+
+    Task<WebFetchResponse> FetchWebAsync(
+        WebFetchRequest request,
+        CancellationToken cancellationToken = default);
     
     /// <summary>
     /// Check if a workspace has a specific capability enabled

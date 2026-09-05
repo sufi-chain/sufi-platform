@@ -24,6 +24,8 @@ public partial class AIMultiModalTestPanel : AIComponentBase
         public const string GenerateSpeech = "generate-speech";
         public const string AnalyzeImage = "analyze-image";
         public const string GenerateEmbeddings = "generate-embeddings";
+        public const string SearchWeb = "search-web";
+        public const string FetchWeb = "fetch-web";
     }
 
     [Inject] private IJSRuntime JSRuntime { get; set; } = default!;
@@ -79,6 +81,13 @@ public partial class AIMultiModalTestPanel : AIComponentBase
     private string _embeddingsText = string.Empty;
     private float[]? _embeddingsVector;
     private string _embeddingsModel = string.Empty;
+
+    // Web search/fetch
+    private string _webSearchQuery = string.Empty;
+    private List<WebSearchResultDto> _webSearchResults = new();
+    private string _webSearchModel = string.Empty;
+    private string _webFetchUrl = string.Empty;
+    private WebFetchDto? _webFetchResult;
 
     protected override async Task OnInitializedAsync()
     {
@@ -147,6 +156,12 @@ public partial class AIMultiModalTestPanel : AIComponentBase
         _embeddingsText = string.Empty;
         _embeddingsVector = null;
         _embeddingsModel = string.Empty;
+
+        _webSearchQuery = string.Empty;
+        _webSearchResults = new();
+        _webSearchModel = string.Empty;
+        _webFetchUrl = string.Empty;
+        _webFetchResult = null;
     }
 
     // Chat
@@ -289,5 +304,46 @@ public partial class AIMultiModalTestPanel : AIComponentBase
             _embeddingsVector = response.Embedding;
             _embeddingsModel = response.Model;
         }, MultiModalLoadingKeys.GenerateEmbeddings);
+    }
+
+    private async Task SearchWebAsync()
+    {
+        if (string.IsNullOrWhiteSpace(_webSearchQuery))
+        {
+            return;
+        }
+
+        await ExecuteWithLoadingAsync(async () =>
+        {
+            var response = await AIAppService.SearchWebAsync(new WebSearchInput
+            {
+                WorkspaceName = _selectedWorkspaceName,
+                Query = _webSearchQuery.Trim(),
+                SafeSearch = true,
+                MaxResults = 10
+            });
+
+            _webSearchResults = response.Results;
+            _webSearchModel = response.Model;
+        }, MultiModalLoadingKeys.SearchWeb);
+    }
+
+    private async Task FetchWebAsync()
+    {
+        if (string.IsNullOrWhiteSpace(_webFetchUrl))
+        {
+            return;
+        }
+
+        await ExecuteWithLoadingAsync(async () =>
+        {
+            _webFetchResult = await AIAppService.FetchWebAsync(new WebFetchInput
+            {
+                WorkspaceName = _selectedWorkspaceName,
+                Url = _webFetchUrl.Trim(),
+                TimeoutSeconds = 20,
+                MaxBytes = 2_000_000
+            });
+        }, MultiModalLoadingKeys.FetchWeb);
     }
 }

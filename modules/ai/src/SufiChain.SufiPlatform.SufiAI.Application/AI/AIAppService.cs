@@ -178,6 +178,58 @@ public class AIAppService : SufiApplicationService, IAIAppService
         };
     }
 
+    [Authorize(AIPermissions.AI.WebSearch)]
+    public async Task<WebSearchDto> SearchWebAsync(WebSearchInput input)
+    {
+        var response = await _aiService.SearchWebAsync(new WebSearchRequest
+        {
+            WorkspaceName = input.WorkspaceName,
+            Query = input.Query,
+            Culture = input.Culture,
+            SafeSearch = input.SafeSearch,
+            MaxResults = input.MaxResults,
+            TimeRange = input.TimeRange
+        });
+
+        return new WebSearchDto
+        {
+            Model = response.ModelId,
+            Results = response.Results.Select(item => new WebSearchResultDto
+            {
+                Title = item.Title,
+                Url = item.Url,
+                Snippet = item.Snippet,
+                PublishedAt = item.PublishedAt,
+                Source = item.Source,
+                Rank = item.Rank
+            }).ToList()
+        };
+    }
+
+    [Authorize(AIPermissions.AI.WebFetch)]
+    public async Task<WebFetchDto> FetchWebAsync(WebFetchInput input)
+    {
+        var response = await _aiService.FetchWebAsync(new WebFetchRequest
+        {
+            WorkspaceName = input.WorkspaceName,
+            Url = input.Url,
+            TimeoutSeconds = input.TimeoutSeconds,
+            MaxBytes = input.MaxBytes
+        });
+
+        return new WebFetchDto
+        {
+            Url = response.Url,
+            CanonicalUrl = response.CanonicalUrl,
+            Title = response.Title,
+            Content = response.Content,
+            ContentType = response.ContentType,
+            Truncated = response.Truncated,
+            RetrievedAt = response.RetrievedAt,
+            StatusCode = response.StatusCode
+        };
+    }
+
     public async Task<bool> HasCapabilityAsync(string workspaceName, AICapabilityType capabilityType)
     {
         return await _aiService.HasCapabilityAsync(workspaceName, capabilityType);

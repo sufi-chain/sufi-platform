@@ -3,6 +3,9 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Microsoft.SemanticKernel.Embeddings;
 using SufiChain.SufiPlatform.SufiAI.RAG;
+using System.Net.Http.Headers;
+using System.Text;
+using System.Text.Json;
 
 namespace SufiChain.SufiPlatform.SufiAI.Workspaces;
 
@@ -64,7 +67,9 @@ public static class WorkspaceConfigurationHelper
             ? "text-embedding-3-small"
             : embedderConfiguration.Model;
 
-        return CreateOpenAIEmbeddingGenerator(workspace, embedderConfiguration, model);
+        return string.Equals(embedderConfiguration.EncodingFormat, "float", StringComparison.OrdinalIgnoreCase)
+            ? CreateCompatibleEmbeddingGenerator(workspace, embedderConfiguration, model)
+            : CreateOpenAIEmbeddingGenerator(workspace, embedderConfiguration, model);
     }
 
     private static void EnsureOpenAIProvider(AIProviderType provider)
@@ -111,6 +116,18 @@ public static class WorkspaceConfigurationHelper
         var embeddingService = kernel.GetRequiredService<ITextEmbeddingGenerationService>();
 
         return new SemanticKernelEmbeddingGenerator(embeddingService);
+    }
+
+    private static IEmbeddingGenerator<string, Embedding<float>> CreateCompatibleEmbeddingGenerator(
+        Workspace workspace,
+        EmbedderConfiguration configuration,
+        string model)
+    {
+        var apiKey = configuration.ApiKey
+            ?? workspace.ApiKey
+            ?? throw new InvalidOperationException("OpenAI API key is required");
+        var baseUrl = (configuration.ApiBaseUrl ?? workspace.ApiBaseUrl ?? "https://api.openai.com/v1").TrimEnd('/');
+        return new CompatibleEmbeddingGenerator(baseUrl, apiKey, model);
     }
 
     private static void ConfigureOpenAIKernel(
@@ -175,5 +192,75 @@ public static class WorkspaceConfigurationHelper
         void IDisposable.Dispose()
         {
         }
+    }
+
+    private sealed class CompatibleEmbeddingGenerator : IEmbeddingGenerator<string, Embedding<float>>
+    {
+        private readonly HttpClient _httpClient = new();
+        private readonly string _model;
+
+        public CompatibleEmbeddingGenerator(string baseUrl, string apiKey, string model)
+        {
+            _model = model;
+            _httpClient.BaseAddress = new Uri(baseUrl + "/");
+            _httpClient.Timeout = TimeSpan.FromMinutes(5);
+            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", apiKey);
+        }
+
+        public async Task<GeneratedEmbeddings<Embedding<float>>> GenerateAsync(
+            IEnumerable<string> values,
+            EmbeddingGenerationOptions? options = null,
+            CancellationToken cancellationToken = default)
+        {
+            var inputs = values.ToList();
+            var payload = JsonSerializer.Serialize(new
+            {
+                model = _model,
+                input = inputs,
+                encoding_format = "float"
+            });
+
+            using var response = await _httpClient.PostAsync(
+                "embeddings",
+                new StringContent(payload, Encoding.UTF8, "application/json"),
+                cancellationToken);
+            var body = await response.Content.ReadAsStringAsync(cancellationToken);
+            if (!response.IsSuccessStatusCode)
+            {
+                throw new InvalidOperationException(
+                    $"Embedding provider returned HTTP {(int)response.StatusCode}: {body}");
+            }
+
+            using var document = JsonDocument.Parse(body);
+            if (!document.RootElement.TryGetProperty("data", out var data) ||
+                data.ValueKind != JsonValueKind.Array)
+            {
+                throw new InvalidOperationException("Embedding provider returned no data.");
+            }
+
+            var result = data.EnumerateArray()
+                .OrderBy(item => item.TryGetProperty("index", out var index) ? index.GetInt32() : 0)
+                .Select(item => item.GetProperty("embedding")
+                    .EnumerateArray()
+                    .Select(value => value.GetSingle())
+                    .ToArray())
+                .Select(vector => new Embedding<float>(vector))
+                .ToList();
+
+            if (result.Count != inputs.Count)
+            {
+                throw new InvalidOperationException(
+                    $"Expected {inputs.Count} text embedding(s), but received {result.Count}.");
+            }
+
+            return new GeneratedEmbeddings<Embedding<float>>(result);
+        }
+
+        public object? GetService(Type serviceType, object? serviceKey = null) => null;
+
+        public TService? GetService<TService>(object? key = null) where TService : class =>
+            GetService(typeof(TService), key) as TService;
+
+        void IDisposable.Dispose() => _httpClient.Dispose();
     }
 }

@@ -304,6 +304,17 @@
     "NoToolsAvailable": "هیچ ابزار مستأجری در دسترس نیست.",
     "EmbeddingDimensions": "ابعاد امبدینگ",
     "EmbeddingDimensionsHelperText": "خالی بگذارید تا مقدار پیش‌فرض مدل استفاده شود (مثلاً ۳۰۷۲ برای text-embedding-3-large و ۱۵۳۶ برای text-embedding-3-small).",
-    "InvalidEmbeddingDimensions": "ابعاد امبدینگ باید عدد صحیح مثبت یا خالی باشد."
+    "InvalidEmbeddingDimensions": "ابعاد امبدینگ باید عدد صحیح مثبت یا خالی باشد.",
+    "WebSearchCapabilityDescription": "جستجو در منابع وب پیکربندی‌شده و مشاهده نتایج نرمال‌شده.",
+    "WebFetchCapabilityDescription": "دریافت و استخراج امن محتوای یک صفحه وب.",
+    "EnterWebUrl": "https://example.com/article",
+    "Fetch": "دریافت",
+    "WebContentTruncated": "پاسخ به دلیل محدودیت اندازه کوتاه شده است.",
+    "Permission:SufiAI.WebSearch": "جستجوی وب",
+    "Permission:SufiAI.WebFetch": "دریافت وب",
+    "Feature:SufiAI.WebSearch": "جستجوی وب هوش مصنوعی",
+    "Feature:SufiAI.WebSearch.Description": "اجازه ارسال درخواست‌های جستجوی وب از طریق ارائه‌دهنده.",
+    "Feature:SufiAI.WebFetch": "دریافت وب هوش مصنوعی",
+    "Feature:SufiAI.WebFetch.Description": "اجازه دریافت و استخراج امن صفحات وب از طریق ارائه‌دهنده."
   }
 }

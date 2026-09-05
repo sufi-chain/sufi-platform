@@ -2,6 +2,8 @@ using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using System.Security.Cryptography;
+using System.Text;
 using SufiChain.SufiPlatform.SufiAI.Adapters;
 using SufiChain.SufiPlatform.SufiAI.Features;
 using SufiChain.SufiPlatform.SufiAI.Workspaces;
@@ -381,7 +383,10 @@ public class RAGService : DomainService, IRAGService
         }
 
         var tenantKey = VectorStoreTenantScope.GetTenantKey(CurrentTenant.Id);
-        var collectionName = VectorStoreTenantScope.BuildName(vectorStoreConfig.CollectionName, tenantKey);
+        var fingerprint = BuildEmbedderFingerprint(embedderConfiguration, vectorStoreConfig);
+        var collectionName = VectorStoreTenantScope.BuildName(
+            $"{vectorStoreConfig.CollectionName}_{fingerprint}",
+            tenantKey);
         var schema = string.IsNullOrWhiteSpace(vectorStoreConfig.Schema)
             ? null
             : VectorStoreTenantScope.BuildName(vectorStoreConfig.Schema, tenantKey);
@@ -397,9 +402,31 @@ public class RAGService : DomainService, IRAGService
             TenantId = CurrentTenant.Id,
             TenantKey = tenantKey,
             Schema = schema,
-            TableName = vectorStoreConfig.TableName,
+            TableName = string.IsNullOrWhiteSpace(vectorStoreConfig.TableName)
+                ? null
+                : VectorStoreTenantScope.BuildName(
+                    $"{vectorStoreConfig.TableName}_{fingerprint}",
+                    tenantKey),
+            EmbedderFingerprint = fingerprint,
             ProviderName = vectorStoreConfig.ProviderName
         };
+    }
+
+    private static string BuildEmbedderFingerprint(
+        EmbedderConfiguration embedderConfiguration,
+        VectorStoreConfiguration vectorStoreConfiguration)
+    {
+        var material = string.Join(
+            "|",
+            embedderConfiguration.Provider,
+            embedderConfiguration.Model.Trim(),
+            embedderConfiguration.Dimensions,
+            embedderConfiguration.EncodingFormat ?? string.Empty,
+            embedderConfiguration.ApiBaseUrl?.TrimEnd('/') ?? string.Empty,
+            vectorStoreConfiguration.Type);
+
+        var hash = SHA256.HashData(Encoding.UTF8.GetBytes(material));
+        return Convert.ToHexString(hash)[..12].ToLowerInvariant();
     }
 
     private VectorStoreConfiguration ResolvePlatformVectorStoreConfiguration(string workspaceName)

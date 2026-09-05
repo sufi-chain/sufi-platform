@@ -151,3 +151,49 @@ public class EmbeddingsResponse
     public int? TotalTokens { get; set; }
     public string? UsageUnavailableReason { get; set; }
 }
+
+public sealed class WebSearchRequest
+{
+    public string WorkspaceName { get; set; } = string.Empty;
+    public string Query { get; set; } = string.Empty;
+    public string? Culture { get; set; }
+    public bool SafeSearch { get; set; } = true;
+    public int MaxResults { get; set; } = 10;
+    public string? TimeRange { get; set; }
+}
+
+public sealed class WebSearchResponse
+{
+    public List<WebSearchResult> Results { get; set; } = new();
+    public string ModelId { get; set; } = string.Empty;
+}
+
+public sealed class WebSearchResult
+{
+    public string Title { get; set; } = string.Empty;
+    public string Url { get; set; } = string.Empty;
+    public string? Snippet { get; set; }
+    public DateTimeOffset? PublishedAt { get; set; }
+    public string? Source { get; set; }
+    public int Rank { get; set; }
+}
+
+public sealed class WebFetchRequest
+{
+    public string WorkspaceName { get; set; } = string.Empty;
+    public string Url { get; set; } = string.Empty;
+    public int TimeoutSeconds { get; set; } = 20;
+    public int MaxBytes { get; set; } = 2_000_000;
+}
+
+public sealed class WebFetchResponse
+{
+    public string Url { get; set; } = string.Empty;
+    public string? CanonicalUrl { get; set; }
+    public string? Title { get; set; }
+    public string Content { get; set; } = string.Empty;
+    public string? ContentType { get; set; }
+    public bool Truncated { get; set; }
+    public DateTimeOffset RetrievedAt { get; set; }
+    public int StatusCode { get; set; }
+}

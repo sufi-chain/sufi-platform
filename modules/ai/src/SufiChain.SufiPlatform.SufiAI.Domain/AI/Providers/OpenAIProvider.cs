@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
+using System.Net;
+using System.Net.Sockets;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.Json;
@@ -13,6 +15,7 @@ using SufiChain.SufiPlatform.SufiAI.Workspaces;
 using Volo.Abp;
 using Volo.Abp.DependencyInjection;
 using Volo.Abp.Security.Encryption;
+using Volo.Abp.Timing;
 
 namespace SufiChain.SufiPlatform.SufiAI.Providers;
 
@@ -29,20 +32,43 @@ public class OpenAIProvider : IAIProvider, ITransientDependency
         DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
     };
 
+    private static bool TryValidateHttpUrl(string? value, out string safeUrl)
+    {
+        safeUrl = string.Empty;
+        if (!Uri.TryCreate(value, UriKind.Absolute, out var uri) ||
+            (uri.Scheme != Uri.UriSchemeHttp && uri.Scheme != Uri.UriSchemeHttps) ||
+            !string.IsNullOrWhiteSpace(uri.UserInfo) ||
+            !string.IsNullOrWhiteSpace(uri.Fragment))
+        {
+            return false;
+        }
+
+        if (uri.IsDefaultPort || uri.Port is 80 or 443)
+        {
+            safeUrl = uri.ToString();
+            return true;
+        }
+
+        return false;
+    }
+
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly ILogger<OpenAIProvider> _logger;
     private readonly IStringEncryptionService _stringEncryptor;
+    private readonly IClock _clock;
 
     public AIProviderType ProviderType => AIProviderType.OpenAI;
 
     public OpenAIProvider(
         IHttpClientFactory httpClientFactory,
         ILogger<OpenAIProvider> logger,
-        IStringEncryptionService stringEncryptor)
+        IStringEncryptionService stringEncryptor,
+        IClock clock)
     {
         _httpClientFactory = httpClientFactory;
         _logger = logger;
         _stringEncryptor = stringEncryptor;
+        _clock = clock;
     }
 
     public bool SupportsCapability(AICapabilityType capabilityType)
@@ -55,6 +81,8 @@ public class OpenAIProvider : IAIProvider, ITransientDependency
             AICapabilityType.VisionAnalysis => true,
             AICapabilityType.Embeddings => true,
             AICapabilityType.ImageGeneration => true,
+            AICapabilityType.WebSearch => true,
+            AICapabilityType.WebFetch => true,
             _ => false
         };
     }
@@ -249,6 +277,155 @@ public class OpenAIProvider : IAIProvider, ITransientDependency
             ModelId = configuration.ModelId,
             TotalTokens = usage.TotalTokens,
             UsageUnavailableReason = usage.HasUsage ? null : ProviderDidNotReturnUsage
+        };
+    }
+
+    public async Task<WebSearchResponse> SearchWebAsync(
+        Workspace workspace,
+        AIModelConfiguration configuration,
+        WebSearchRequest request,
+        CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrWhiteSpace(request.Query))
+        {
+            throw new BusinessException("AI:WebSearchQueryRequired");
+        }
+
+        var httpClient = CreateHttpClient(workspace, configuration);
+        var baseUrl = GetBaseUrl(workspace, configuration);
+        var requestBody = new
+        {
+            model = configuration.ModelId,
+            query = request.Query.Trim(),
+            culture = request.Culture,
+            safe_search = request.SafeSearch,
+            max_results = Math.Clamp(request.MaxResults, 1, 50),
+            time_range = request.TimeRange
+        };
+
+        using var response = await httpClient.PostAsync(
+            $"{baseUrl}/search",
+            CreateJsonContent(requestBody),
+            cancellationToken);
+        await EnsureProviderSuccessAsync(response, "search", configuration.ModelId, cancellationToken);
+        var root = JsonSerializer.Deserialize<JsonElement>(
+            await response.Content.ReadAsStringAsync(cancellationToken));
+        var results = new List<WebSearchResult>();
+        if (root.TryGetProperty("results", out var items) && items.ValueKind == JsonValueKind.Array)
+        {
+            var rank = 0;
+            foreach (var item in items.EnumerateArray())
+            {
+                var url = item.TryGetProperty("url", out var urlProperty) ? urlProperty.GetString() : null;
+                if (!TryValidateHttpUrl(url, out var safeUrl))
+                {
+                    continue;
+                }
+
+                DateTimeOffset? publishedAt = null;
+                if (item.TryGetProperty("published_at", out var published) &&
+                    published.ValueKind == JsonValueKind.String &&
+                    DateTimeOffset.TryParse(published.GetString(), out var parsed))
+                {
+                    publishedAt = parsed;
+                }
+
+                results.Add(new WebSearchResult
+                {
+                    Title = item.TryGetProperty("title", out var title) ? title.GetString() ?? safeUrl : safeUrl,
+                    Url = safeUrl,
+                    Snippet = item.TryGetProperty("snippet", out var snippet) ? snippet.GetString() : null,
+                    PublishedAt = publishedAt,
+                    Source = item.TryGetProperty("source", out var source) ? source.GetString() : null,
+                    Rank = ++rank
+                });
+            }
+        }
+
+        return new WebSearchResponse
+        {
+            Results = results,
+            ModelId = configuration.ModelId
+        };
+    }
+
+    public async Task<WebFetchResponse> FetchWebAsync(
+        Workspace workspace,
+        AIModelConfiguration configuration,
+        WebFetchRequest request,
+        CancellationToken cancellationToken = default)
+    {
+        if (!TryValidateHttpUrl(request.Url, out var safeUrl))
+        {
+            throw new BusinessException("AI:WebFetchUrlNotAllowed");
+        }
+
+        using var httpClient = _httpClientFactory.CreateClient();
+        httpClient.Timeout = TimeSpan.FromSeconds(Math.Clamp(request.TimeoutSeconds, 1, 60));
+        using var httpRequest = new HttpRequestMessage(HttpMethod.Get, safeUrl);
+        httpRequest.Headers.UserAgent.ParseAdd("SufiAI/1.0 (+web-fetch)");
+        using var response = await httpClient.SendAsync(
+            httpRequest,
+            HttpCompletionOption.ResponseHeadersRead,
+            cancellationToken);
+        if (!response.IsSuccessStatusCode)
+        {
+            throw new BusinessException("AI:WebFetchRequestFailed")
+                .WithData("StatusCode", (int)response.StatusCode);
+        }
+
+        var contentType = response.Content.Headers.ContentType?.MediaType;
+        if (contentType is not ("text/html" or "text/plain" or "application/xhtml+xml"))
+        {
+            throw new BusinessException("AI:WebFetchContentTypeNotSupported")
+                .WithData("ContentType", contentType ?? string.Empty);
+        }
+
+        var maxBytes = Math.Clamp(request.MaxBytes, 1_024, 10_000_000);
+        await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken);
+        using var buffer = new MemoryStream();
+        var chunk = new byte[8192];
+        var truncated = false;
+        while (buffer.Length < maxBytes)
+        {
+            var remaining = maxBytes - (int)buffer.Length;
+            var read = await stream.ReadAsync(
+                chunk.AsMemory(0, Math.Min(chunk.Length, remaining)),
+                cancellationToken);
+            if (read == 0)
+            {
+                break;
+            }
+
+            await buffer.WriteAsync(chunk.AsMemory(0, read), cancellationToken);
+        }
+
+        if (buffer.Length >= maxBytes)
+        {
+            truncated = true;
+        }
+
+        var content = Encoding.UTF8.GetString(buffer.ToArray());
+        if (contentType is "text/html" or "application/xhtml+xml")
+        {
+            content = System.Text.RegularExpressions.Regex.Replace(
+                content,
+                "<script[^>]*>.*?</script>|<style[^>]*>.*?</style>",
+                string.Empty,
+                System.Text.RegularExpressions.RegexOptions.Singleline |
+                System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+            content = System.Text.RegularExpressions.Regex.Replace(content, "<[^>]+>", " ");
+        }
+
+        return new WebFetchResponse
+        {
+            Url = safeUrl,
+            CanonicalUrl = response.RequestMessage?.RequestUri?.ToString(),
+            Content = WebUtility.HtmlDecode(content).Trim(),
+            ContentType = contentType,
+            Truncated = truncated,
+            RetrievedAt = _clock.Now,
+            StatusCode = (int)response.StatusCode
         };
     }
 

@@ -44,6 +44,38 @@ public partial class ModelConfigurationModal : AIComponentBase
     private bool ShowsEmbeddingDimensions =>
         _model.CapabilityType == AICapabilityType.Embeddings;
 
+    private bool ModelChanged =>
+        _isEditMode &&
+        Configuration != null &&
+        !string.Equals(Configuration.ModelId?.Trim(), _model.ModelId?.Trim(), StringComparison.OrdinalIgnoreCase);
+
+    private string CapabilityTitle =>
+        L[_model.CapabilityType switch
+        {
+            AICapabilityType.ChatCompletion => "ChatCompletion",
+            AICapabilityType.AudioTranscription => "AudioTranscription",
+            AICapabilityType.TextToSpeech => "TextToSpeech",
+            AICapabilityType.VisionAnalysis => "VisionAnalysis",
+            AICapabilityType.Embeddings => "Embeddings",
+            AICapabilityType.ImageGeneration => "ImageGeneration",
+            AICapabilityType.WebSearch => "WebSearch",
+            AICapabilityType.WebFetch => "WebFetch",
+            _ => "Capability"
+        }];
+
+    private string CapabilityDescription =>
+        L[_model.CapabilityType switch
+        {
+            AICapabilityType.Embeddings => "EmbeddingCapabilityDescription",
+            AICapabilityType.WebSearch => "WebSearchCapabilityDescription",
+            AICapabilityType.WebFetch => "WebFetchCapabilityDescription",
+            AICapabilityType.AudioTranscription => "AudioCapabilityDescription",
+            AICapabilityType.TextToSpeech => "TextToSpeechCapabilityDescription",
+            AICapabilityType.VisionAnalysis => "VisionCapabilityDescription",
+            AICapabilityType.ImageGeneration => "ImageGenerationCapabilityDescription",
+            _ => "ChatCapabilityDescription"
+        }];
+
     private string EmbeddingDimensionsPlaceholder =>
         EmbeddingModelDefaults.GetDimensions(_model.ModelId).ToString();
 
@@ -125,6 +157,12 @@ public partial class ModelConfigurationModal : AIComponentBase
         {
             _openAIApiModeText = string.Empty;
             _model.OpenAIApiMode = null;
+        }
+
+        if (!ShowsEmbeddingDimensions)
+        {
+            _dimensionsText = string.Empty;
+            _model.Dimensions = null;
         }
     }
 

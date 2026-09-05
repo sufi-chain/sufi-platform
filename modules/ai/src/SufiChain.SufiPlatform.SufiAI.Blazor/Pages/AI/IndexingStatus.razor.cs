@@ -148,7 +148,7 @@ public partial class IndexingStatus : AIComponentBase
         await ExecuteWithLoadingAsync(async () =>
         {
             await RAGAppService.StartIndexingAsync(workspace.Name, source.Name);
-            await Message.Success(L["IndexingStartedSuccessfully"]);
+            await Message.SuccessAsync(L["IndexingStartedSuccessfully"]);
             if (_gridRef != null)
             {
                 await _gridRef.RefreshDataAsync();

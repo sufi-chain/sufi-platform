@@ -297,6 +297,17 @@
     "NoToolsAvailable": "لا توجد أدوات متاحة للمستأجر.",
     "EmbeddingDimensions": "أبعاد التضمين",
     "EmbeddingDimensionsHelperText": "اتركه فارغاً لاستخدام القيمة الافتراضية للنموذج (مثلاً 3072 لـ text-embedding-3-large و1536 لـ text-embedding-3-small).",
-    "InvalidEmbeddingDimensions": "يجب أن تكون أبعاد التضمين رقماً صحيحاً موجباً أو فارغة."
+    "InvalidEmbeddingDimensions": "يجب أن تكون أبعاد التضمين رقماً صحيحاً موجباً أو فارغة.",
+    "WebSearchCapabilityDescription": "ابحث في مصادر الويب المكوّنة واعرض النتائج الموحدة.",
+    "WebFetchCapabilityDescription": "اجلب صفحة ويب عبر مسار الاستخراج الآمن.",
+    "EnterWebUrl": "https://example.com/article",
+    "Fetch": "جلب",
+    "WebContentTruncated": "تم اقتطاع الاستجابة عند حد الحجم المكوّن.",
+    "Permission:SufiAI.WebSearch": "بحث الويب",
+    "Permission:SufiAI.WebFetch": "جلب الويب",
+    "Feature:SufiAI.WebSearch": "بحث الويب بالذكاء الاصطناعي",
+    "Feature:SufiAI.WebSearch.Description": "السماح بطلبات بحث الويب المدعومة من المزود.",
+    "Feature:SufiAI.WebFetch": "جلب الويب بالذكاء الاصطناعي",
+    "Feature:SufiAI.WebFetch.Description": "السماح بجلب واستخراج صفحات الويب بأمان."
   }
 }

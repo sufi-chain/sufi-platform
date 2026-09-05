@@ -20,6 +20,8 @@ public class AIFeatureDefinitionProvider : FeatureDefinitionProvider
         AddToggle(group, SufiAIFeatures.Audio);
         AddToggle(group, SufiAIFeatures.Vision);
         AddToggle(group, SufiAIFeatures.Embeddings);
+        AddToggle(group, SufiAIFeatures.WebSearch);
+        AddToggle(group, SufiAIFeatures.WebFetch);
         AddToggle(group, SufiAIFeatures.RAG);
         AddToggle(group, SufiAIFeatures.MCP);
         AddToggle(group, SufiAIFeatures.UsageAnalytics);

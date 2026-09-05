@@ -10,6 +10,8 @@ public class EmbedderConfiguration
    public string? ApiKey { get; set; }
    public string? ApiBaseUrl { get; set; }
     public int Dimensions { get; set; } = EmbeddingModelDefaults.FallbackDimensions;
+    public string? EncodingFormat { get; set; }
+    public bool SupportsDimensionsParameter { get; set; }
 }
 
 public class VectorStoreConfiguration
@@ -19,6 +21,7 @@ public class VectorStoreConfiguration
     public string? ApiKey { get; set; }
     public string CollectionName { get; set; } = "ai_documents";
     public int Dimensions { get; set; } = 1536;
+    public string? EmbedderFingerprint { get; set; }
     public string? Schema { get; set; }
     public string? TableName { get; set; }
     public string? ProviderName { get; set; }

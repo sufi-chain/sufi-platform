@@ -77,6 +77,52 @@ public class EmbeddingsDto
     public int? TotalTokens { get; set; }
 }
 
+public class WebSearchInput
+{
+    public string WorkspaceName { get; set; } = string.Empty;
+    public string Query { get; set; } = string.Empty;
+    public string? Culture { get; set; }
+    public bool SafeSearch { get; set; } = true;
+    public int MaxResults { get; set; } = 10;
+    public string? TimeRange { get; set; }
+}
+
+public class WebSearchResultDto
+{
+    public string Title { get; set; } = string.Empty;
+    public string Url { get; set; } = string.Empty;
+    public string? Snippet { get; set; }
+    public DateTimeOffset? PublishedAt { get; set; }
+    public string? Source { get; set; }
+    public int Rank { get; set; }
+}
+
+public class WebSearchDto
+{
+    public List<WebSearchResultDto> Results { get; set; } = new();
+    public string Model { get; set; } = string.Empty;
+}
+
+public class WebFetchInput
+{
+    public string WorkspaceName { get; set; } = string.Empty;
+    public string Url { get; set; } = string.Empty;
+    public int TimeoutSeconds { get; set; } = 20;
+    public int MaxBytes { get; set; } = 2_000_000;
+}
+
+public class WebFetchDto
+{
+    public string Url { get; set; } = string.Empty;
+    public string? CanonicalUrl { get; set; }
+    public string? Title { get; set; }
+    public string Content { get; set; } = string.Empty;
+    public string? ContentType { get; set; }
+    public bool Truncated { get; set; }
+    public DateTimeOffset RetrievedAt { get; set; }
+    public int StatusCode { get; set; }
+}
+
 // Model Configuration DTOs
 public class AIModelConfigurationDto : Application.Dtos.EntityDto<Guid>
 {

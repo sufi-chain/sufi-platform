@@ -296,6 +296,17 @@
     "NoToolsAvailable": "No hay herramientas disponibles para el inquilino.",
     "EmbeddingDimensions": "Dimensiones de embedding",
     "EmbeddingDimensionsHelperText": "Déjelo vacío para usar el valor predeterminado del modelo (p. ej. 3072 para text-embedding-3-large, 1536 para text-embedding-3-small).",
-    "InvalidEmbeddingDimensions": "Las dimensiones de embedding deben ser un número entero positivo o estar vacías."
+    "InvalidEmbeddingDimensions": "Las dimensiones de embedding deben ser un número entero positivo o estar vacías.",
+    "WebSearchCapabilityDescription": "Busque en fuentes web configuradas y revise resultados normalizados.",
+    "WebFetchCapabilityDescription": "Obtenga una página web mediante el flujo de extracción segura.",
+    "EnterWebUrl": "https://example.com/article",
+    "Fetch": "Obtener",
+    "WebContentTruncated": "La respuesta se truncó en el límite de tamaño configurado.",
+    "Permission:SufiAI.WebSearch": "Búsqueda web",
+    "Permission:SufiAI.WebFetch": "Obtención web",
+    "Feature:SufiAI.WebSearch": "Búsqueda web de IA",
+    "Feature:SufiAI.WebSearch.Description": "Permite solicitudes de búsqueda web respaldadas por el proveedor.",
+    "Feature:SufiAI.WebFetch": "Obtención web de IA",
+    "Feature:SufiAI.WebFetch.Description": "Permite obtener y extraer páginas web de forma segura."
   }
 }

@@ -29,6 +29,8 @@
 							<SbSelectOption TValue="AICapabilityType" Value="@AICapabilityType.VisionAnalysis">@L["VisionAnalysis"]</SbSelectOption>
 							<SbSelectOption TValue="AICapabilityType" Value="@AICapabilityType.Embeddings">@L["Embeddings"]</SbSelectOption>
 							<SbSelectOption TValue="AICapabilityType" Value="@AICapabilityType.ImageGeneration">@L["ImageGeneration"]</SbSelectOption>
+							<SbSelectOption TValue="AICapabilityType" Value="@AICapabilityType.WebSearch">@L["WebSearch"]</SbSelectOption>
+							<SbSelectOption TValue="AICapabilityType" Value="@AICapabilityType.WebFetch">@L["WebFetch"]</SbSelectOption>
 						</SbSimpleSelect>
 
 						<SbSimpleSelect TValue="AIProviderType"
@@ -38,6 +40,13 @@
 							<SbSelectOption TValue="AIProviderType" Value="@AIProviderType.OpenAI">OpenAI</SbSelectOption>
 						</SbSimpleSelect>
 					</SbGrid>
+
+					<SbAlert Severity="SbAlertSeverity.Info">
+						<SbStack Direction="SbStackDirection.Column" Gap="1">
+							<SbText Variant="SbTextVariant.Body" Weight="SbFontWeight.Medium">@CapabilityTitle</SbText>
+							<SbText Variant="SbTextVariant.BodySmall">@CapabilityDescription</SbText>
+						</SbStack>
+					</SbAlert>
 
 					<SbGrid Columns="1" ColumnsMd="2" Gap="4">
 						<SbTextField @bind-Value="_model.ApiEndpoint"
@@ -103,6 +112,13 @@
 							</SbAlert>
 						}
 					}
+
+					@if (ShowsEmbeddingDimensions && ModelChanged)
+					{
+						<SbAlert Severity="SbAlertSeverity.Warning">
+							@L["EmbeddingModelChangeWarning"]
+						</SbAlert>
+					}
 				</SbStack>
 			</SbTab>
 
@@ -130,6 +146,9 @@
 									 Label="@L["EmbeddingDimensions"]"
 									 Placeholder="@EmbeddingDimensionsPlaceholder"
 									 HelperText="@L["EmbeddingDimensionsHelperText"]" />
+						<SbText Variant="SbTextVariant.Caption" Color="SbColor.Muted">
+							@L["EmbeddingDimensionsAutoHint"]
+						</SbText>
 					}
 				</SbStack>
 			</SbTab>

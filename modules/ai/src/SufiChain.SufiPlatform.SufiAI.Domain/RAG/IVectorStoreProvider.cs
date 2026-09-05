@@ -50,6 +50,7 @@ public class VectorStoreContext
     public string? ConnectionString { get; set; }
     public string? ApiKey { get; set; }
     public int Dimensions { get; set; } = 1536;
+    public string? EmbedderFingerprint { get; set; }
     public Guid? TenantId { get; set; }
     public string TenantKey { get; set; } = "host";
     public string? Schema { get; set; }

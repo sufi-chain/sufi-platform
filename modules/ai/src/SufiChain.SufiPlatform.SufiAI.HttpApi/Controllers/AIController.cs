@@ -40,6 +40,18 @@ public class AIAppController : AIController, IAIAppService
         return _aiAppService.GenerateEmbeddingsAsync(input);
     }
 
+    [HttpPost("web/search")]
+    public virtual Task<WebSearchDto> SearchWebAsync(WebSearchInput input)
+    {
+        return _aiAppService.SearchWebAsync(input);
+    }
+
+    [HttpPost("web/fetch")]
+    public virtual Task<WebFetchDto> FetchWebAsync(WebFetchInput input)
+    {
+        return _aiAppService.FetchWebAsync(input);
+    }
+
     [HttpGet("workspaces/{workspaceName}/capabilities/{capabilityType}")]
     public virtual Task<bool> HasCapabilityAsync(string workspaceName, AICapabilityType capabilityType)
     {

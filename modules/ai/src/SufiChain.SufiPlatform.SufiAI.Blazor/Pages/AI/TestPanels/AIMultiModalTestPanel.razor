@@ -13,12 +13,17 @@
 	<!-- Capability Tabs -->
 	@if (!string.IsNullOrEmpty(_selectedWorkspaceName))
 	{
+		<SbStack Direction="SbStackDirection.Column" Gap="1">
+			<SbHeading Level="4">@L["CapabilityWorkbench"]</SbHeading>
+			<SbText Variant="SbTextVariant.BodySmall" Color="SbColor.Muted">@L["CapabilityWorkbenchDescription"]</SbText>
+		</SbStack>
+
 		<SbCard>
 			<ChildContent>
 				<SbStack Direction="SbStackDirection.Column" Gap="3">
 					
 					<!-- Tab Buttons -->
-					<SbStack Direction="SbStackDirection.Row" Gap="2">
+					<SbGrid Columns="2" ColumnsSm="3" ColumnsMd="5" Gap="2">
 						<AuthorizeView Policy="@AIPermissions.AI.Chat">
 							<SbButton Color="@(_selectedCapability == AICapabilityType.ChatCompletion ? SbColor.Primary : SbColor.Default)"
 									  OnClick="@(() => SelectCapability(AICapabilityType.ChatCompletion))">
@@ -49,7 +54,21 @@
 								@L["Embeddings"]
 							</SbButton>
 						</AuthorizeView>
-					</SbStack>
+						<AuthorizeView Policy="@AIPermissions.AI.WebSearch">
+							<SbButton Color="@(_selectedCapability == AICapabilityType.WebSearch ? SbColor.Primary : SbColor.Default)"
+									  OnClick="@(() => SelectCapability(AICapabilityType.WebSearch))">
+								<StartIcon><SbIcon Name="search" Size="SbSize.Sm" /></StartIcon>
+								<ChildContent>@L["WebSearch"]</ChildContent>
+							</SbButton>
+						</AuthorizeView>
+						<AuthorizeView Policy="@AIPermissions.AI.WebFetch">
+							<SbButton Color="@(_selectedCapability == AICapabilityType.WebFetch ? SbColor.Primary : SbColor.Default)"
+									  OnClick="@(() => SelectCapability(AICapabilityType.WebFetch))">
+								<StartIcon><SbIcon Name="globe" Size="SbSize.Sm" /></StartIcon>
+								<ChildContent>@L["WebFetch"]</ChildContent>
+							</SbButton>
+						</AuthorizeView>
+					</SbGrid>
 
 					<SbDivider />
 
@@ -294,6 +313,78 @@
 								</SbCard>
 							}
 						</SbStack>
+					}
+
+					@if (_selectedCapability is AICapabilityType.WebSearch or AICapabilityType.WebFetch)
+					{
+						@if (_selectedCapability == AICapabilityType.WebSearch)
+						{
+							<SbStack Direction="SbStackDirection.Column" Gap="3">
+								<SbTextArea @bind-Value="_webSearchQuery"
+											Label="@L["SearchQuery"]"
+											Rows="3"
+											Placeholder="@L["EnterSearchQuery"]" />
+								<SbButton Color="SbColor.Primary"
+										  OnClick="@SearchWebAsync"
+										  Loading="IsOperationLoading(MultiModalLoadingKeys.SearchWeb)"
+										  Disabled="string.IsNullOrWhiteSpace(_webSearchQuery)">
+									<StartIcon><SbIcon Name="search" /></StartIcon>
+									<ChildContent>@L["Search"]</ChildContent>
+								</SbButton>
+								@if (_webSearchResults.Count > 0)
+								{
+									<SbStack Direction="SbStackDirection.Column" Gap="2">
+										<SbText Variant="SbTextVariant.BodySmall" Color="SbColor.Muted">@L["Model"]: @_webSearchModel</SbText>
+										@foreach (var result in _webSearchResults)
+										{
+											<SbCard Elevation="1">
+												<ChildContent>
+													<SbStack Direction="SbStackDirection.Column" Gap="1">
+														<SbText Variant="SbTextVariant.Body" Weight="SbFontWeight.Medium">@(result.Rank). @result.Title</SbText>
+														<a href="@result.Url" target="_blank" rel="noopener noreferrer">@result.Url</a>
+														@if (!string.IsNullOrWhiteSpace(result.Snippet))
+														{
+															<SbText Variant="SbTextVariant.BodySmall">@result.Snippet</SbText>
+														}
+													</SbStack>
+												</ChildContent>
+											</SbCard>
+										}
+									</SbStack>
+								}
+							</SbStack>
+						}
+						else
+						{
+							<SbStack Direction="SbStackDirection.Column" Gap="3">
+								<SbTextField @bind-Value="_webFetchUrl"
+											 Label="@L["Url"]"
+											 Placeholder="@L["EnterWebUrl"]" />
+								<SbButton Color="SbColor.Primary"
+										  OnClick="@FetchWebAsync"
+										  Loading="IsOperationLoading(MultiModalLoadingKeys.FetchWeb)"
+										  Disabled="string.IsNullOrWhiteSpace(_webFetchUrl)">
+									<StartIcon><SbIcon Name="globe" /></StartIcon>
+									<ChildContent>@L["Fetch"]</ChildContent>
+								</SbButton>
+								@if (_webFetchResult != null)
+								{
+									<SbCard Elevation="1">
+										<ChildContent>
+											<SbStack Direction="SbStackDirection.Column" Gap="2">
+												<SbText Variant="SbTextVariant.Body" Weight="SbFontWeight.Medium">@(_webFetchResult.Title ?? _webFetchResult.Url)</SbText>
+												<SbText Variant="SbTextVariant.Caption" Color="SbColor.Muted">@_webFetchResult.ContentType · HTTP @_webFetchResult.StatusCode</SbText>
+												<SbText Variant="SbTextVariant.BodySmall">@_webFetchResult.Content</SbText>
+												@if (_webFetchResult.Truncated)
+												{
+													<SbAlert Severity="SbAlertSeverity.Warning">@L["WebContentTruncated"]</SbAlert>
+												}
+											</SbStack>
+										</ChildContent>
+									</SbCard>
+								}
+							</SbStack>
+						}
 					}
 
 				</SbStack>

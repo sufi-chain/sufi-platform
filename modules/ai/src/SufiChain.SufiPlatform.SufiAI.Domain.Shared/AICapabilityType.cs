@@ -35,4 +35,15 @@ public enum AICapabilityType
     /// Image generation (e.g., DALL-E, Stable Diffusion)
     /// </summary>
     ImageGeneration = 5
+    ,
+
+    /// <summary>
+    /// Search the web for current, external information.
+    /// </summary>
+    WebSearch = 6,
+
+    /// <summary>
+    /// Fetch and extract readable content from a web page.
+    /// </summary>
+    WebFetch = 7
 }

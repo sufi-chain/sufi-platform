@@ -74,4 +74,16 @@ public interface IAIProvider
         AIModelConfiguration configuration,
         EmbeddingsRequest request,
         CancellationToken cancellationToken = default);
+
+    Task<WebSearchResponse> SearchWebAsync(
+        Workspace workspace,
+        AIModelConfiguration configuration,
+        WebSearchRequest request,
+        CancellationToken cancellationToken = default);
+
+    Task<WebFetchResponse> FetchWebAsync(
+        Workspace workspace,
+        AIModelConfiguration configuration,
+        WebFetchRequest request,
+        CancellationToken cancellationToken = default);
 }

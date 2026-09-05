@@ -46,6 +46,8 @@ public static class AIPermissions
         public const string Audio = Default + ".Audio";
         public const string Vision = Default + ".Vision";
         public const string Embeddings = Default + ".Embeddings";
+        public const string WebSearch = Default + ".WebSearch";
+        public const string WebFetch = Default + ".WebFetch";
         public const string FunctionCalling = Default + ".FunctionCalling";
         public const string ManageConfigurations = Default + ".ManageConfigurations";
         public const string ViewUsage = Default + ".ViewUsage";

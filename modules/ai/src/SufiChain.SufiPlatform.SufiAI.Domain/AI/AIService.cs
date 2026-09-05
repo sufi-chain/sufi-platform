@@ -418,6 +418,58 @@ public class AIService : DomainService, IAIService, ITransientDependency
         }
     }
 
+    public async Task<WebSearchResponse> SearchWebAsync(
+        WebSearchRequest request,
+        CancellationToken cancellationToken = default)
+    {
+        var (workspace, configuration, provider) = await PrepareRequestAsync(
+            request.WorkspaceName,
+            AICapabilityType.WebSearch,
+            cancellationToken);
+        var stopwatch = Stopwatch.StartNew();
+        try
+        {
+            var response = await provider.SearchWebAsync(workspace, configuration, request, cancellationToken);
+            stopwatch.Stop();
+            await LogUsageAsync(workspace, configuration, AICapabilityType.WebSearch, null, null, null,
+                UsageUnavailable, stopwatch.ElapsedMilliseconds, true, cancellationToken: cancellationToken);
+            return response;
+        }
+        catch (Exception ex)
+        {
+            stopwatch.Stop();
+            await LogUsageAsync(workspace, configuration, AICapabilityType.WebSearch, null, null, null,
+                UsageUnavailable, stopwatch.ElapsedMilliseconds, false, ex.Message, cancellationToken);
+            throw;
+        }
+    }
+
+    public async Task<WebFetchResponse> FetchWebAsync(
+        WebFetchRequest request,
+        CancellationToken cancellationToken = default)
+    {
+        var (workspace, configuration, provider) = await PrepareRequestAsync(
+            request.WorkspaceName,
+            AICapabilityType.WebFetch,
+            cancellationToken);
+        var stopwatch = Stopwatch.StartNew();
+        try
+        {
+            var response = await provider.FetchWebAsync(workspace, configuration, request, cancellationToken);
+            stopwatch.Stop();
+            await LogUsageAsync(workspace, configuration, AICapabilityType.WebFetch, null, null, null,
+                UsageUnavailable, stopwatch.ElapsedMilliseconds, true, cancellationToken: cancellationToken);
+            return response;
+        }
+        catch (Exception ex)
+        {
+            stopwatch.Stop();
+            await LogUsageAsync(workspace, configuration, AICapabilityType.WebFetch, null, null, null,
+                UsageUnavailable, stopwatch.ElapsedMilliseconds, false, ex.Message, cancellationToken);
+            throw;
+        }
+    }
+
     public async Task<bool> HasCapabilityAsync(
         string workspaceName,
         AICapabilityType capabilityType,
@@ -557,6 +609,8 @@ public class AIService : DomainService, IAIService, ITransientDependency
             AICapabilityType.VisionAnalysis => SufiAIFeatures.Vision,
             AICapabilityType.Embeddings => SufiAIFeatures.Embeddings,
             AICapabilityType.ImageGeneration => SufiAIFeatures.Vision,
+            AICapabilityType.WebSearch => SufiAIFeatures.WebSearch,
+            AICapabilityType.WebFetch => SufiAIFeatures.WebFetch,
             _ => SufiAIFeatures.Enable
         };
 
