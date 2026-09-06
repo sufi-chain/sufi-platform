@@ -16,7 +16,7 @@ public class AccountTemplateDefinitionProvider : TemplateDefinitionProvider
                 displayName: LocalizableString.Create<SufiAccountResource>("TextTemplate:AccountLayout"),
                 layout: StandardMessageTemplates.Layout,
                 localizationResource: typeof(SufiAccountResource)
-            ).WithVirtualFilePath("/Templates/Layout.tpl", isInlineLocalized: false),
+            ).WithVirtualFilePath("/Templates/Layout", isInlineLocalized: true),
 
             new TemplateDefinition(
                 AccountTemplates.EmailConfirmation,
