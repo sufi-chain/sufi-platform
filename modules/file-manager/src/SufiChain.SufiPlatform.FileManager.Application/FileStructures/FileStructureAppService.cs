@@ -503,7 +503,9 @@ public class FileStructureAppService :
     }
 
     private Task InvalidateStructureCacheAsync() =>
-        _structureCache.RemoveAsync(StructureCacheItem.CacheKey, considerUow: true);
+        _structureCache.RemoveAsync(
+            StructureCacheItem.GetCacheKey(CurrentTenant.Id),
+            considerUow: true);
 
     private void EnrichStorageConfig(FileStructureDto dto, FileStructure entity)
     {

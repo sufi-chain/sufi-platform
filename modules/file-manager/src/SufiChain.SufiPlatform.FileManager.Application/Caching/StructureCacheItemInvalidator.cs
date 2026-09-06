@@ -4,6 +4,7 @@ using Volo.Abp.Caching;
 using Volo.Abp.DependencyInjection;
 using Volo.Abp.Domain.Entities.Events;
 using Volo.Abp.EventBus;
+using Volo.Abp.MultiTenancy;
 
 namespace SufiChain.SufiPlatform.FileManager.Caching;
 
@@ -16,13 +17,16 @@ public class StructureCacheItemInvalidator :
 {
     private readonly IDistributedCache<StructureCacheItem> _cache;
     private readonly IFeatureChecker _featureChecker;
+    private readonly ICurrentTenant _currentTenant;
 
     public StructureCacheItemInvalidator(
         IDistributedCache<StructureCacheItem> cache,
-        IFeatureChecker featureChecker)
+        IFeatureChecker featureChecker,
+        ICurrentTenant currentTenant)
     {
         _cache = cache;
         _featureChecker = featureChecker;
+        _currentTenant = currentTenant;
     }
 
     public async Task HandleEventAsync(EntityChangedEventData<FileStructures.FileStructure> eventData)
@@ -33,6 +37,8 @@ public class StructureCacheItemInvalidator :
             return;
         }
 
-        await _cache.RemoveAsync(StructureCacheItem.CacheKey, considerUow: true);
+        await _cache.RemoveAsync(
+            StructureCacheItem.GetCacheKey(_currentTenant.Id),
+            considerUow: true);
     }
 }

@@ -9,6 +9,7 @@ using Volo.Abp.Caching;
 using Volo.Abp.DependencyInjection;
 using Volo.Abp.Domain.Repositories;
 using Volo.Abp.Linq;
+using Volo.Abp.MultiTenancy;
 
 namespace SufiChain.SufiPlatform.FileManager.Caching;
 
@@ -18,6 +19,7 @@ public class StructureCacheService : IStructureCache, ITransientDependency
     private readonly IFileStructureRepository _structureRepository;
     private readonly IAsyncQueryableExecuter _asyncExecuter;
     private readonly ILogger<StructureCacheService> _logger;
+    private readonly ICurrentTenant _currentTenant;
 
     private static readonly Microsoft.Extensions.Caching.Distributed.DistributedCacheEntryOptions CacheOptions = new()
     {
@@ -28,12 +30,14 @@ public class StructureCacheService : IStructureCache, ITransientDependency
         IDistributedCache<StructureCacheItem> cache,
         IFileStructureRepository structureRepository,
         IAsyncQueryableExecuter asyncExecuter,
-        ILogger<StructureCacheService> logger)
+        ILogger<StructureCacheService> logger,
+        ICurrentTenant currentTenant)
     {
         _cache = cache;
         _structureRepository = structureRepository;
         _asyncExecuter = asyncExecuter;
         _logger = logger;
+        _currentTenant = currentTenant;
     }
 
     public async Task<StructureCacheEntry?> GetAsync(string? structureKey, CancellationToken cancellationToken = default)
@@ -63,7 +67,7 @@ public class StructureCacheService : IStructureCache, ITransientDependency
     public async Task<IReadOnlyDictionary<string, StructureCacheEntry>> GetAllAsync(CancellationToken cancellationToken = default)
     {
         var item = await _cache.GetOrAddAsync(
-            StructureCacheItem.CacheKey,
+            StructureCacheItem.GetCacheKey(_currentTenant.Id),
             async () => await LoadFromDatabaseAsync(cancellationToken),
             () => CacheOptions);
 

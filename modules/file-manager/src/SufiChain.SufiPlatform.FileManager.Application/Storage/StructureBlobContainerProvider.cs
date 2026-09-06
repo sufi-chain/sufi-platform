@@ -68,13 +68,16 @@ public class StructureBlobContainerProvider : IStructureBlobContainerProvider, I
         string? structureKey,
         CancellationToken cancellationToken = default)
     {
-        var policy = await _storagePolicyProvider.GetAsync(cancellationToken);
+        var storageProvider = string.IsNullOrWhiteSpace(structureKey)
+            ? (await _storagePolicyProvider.GetAsync(cancellationToken)).Provider
+            : _configurationProvider.GetConfiguredProvider(structureKey);
+
         return new StructureBlobContainerResult(
             CreateContainer(
                 structureKey,
-                policy.Provider,
-                preferMatchingStructureConfiguration: false),
-            policy.Provider);
+                storageProvider,
+                preferMatchingStructureConfiguration: true),
+            storageProvider);
     }
 
     protected virtual IBlobContainer CreateContainer(

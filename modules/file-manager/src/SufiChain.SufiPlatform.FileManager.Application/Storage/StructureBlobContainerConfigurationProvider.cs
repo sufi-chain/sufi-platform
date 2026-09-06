@@ -106,6 +106,41 @@ public class StructureBlobContainerConfigurationProvider : IBlobContainerConfigu
             storageProvider);
     }
 
+    public virtual FileStructureStorageProvider GetConfiguredProvider(string? structureKey)
+    {
+        if (!string.IsNullOrEmpty(structureKey))
+        {
+            // Write resolution must observe the latest persisted provider even when
+            // distributed cache invalidation is deferred until the surrounding UoW
+            // completes. Cached configuration remains appropriate for read paths.
+            var structure = AsyncHelper.RunSync(() => FileStructureRepository.FindByKeyAsync(structureKey));
+            if (structure != null)
+            {
+                return GetProviderFromConfiguration(BuildConfigurationFromStructure(structure));
+            }
+        }
+
+        var containerName = string.IsNullOrEmpty(structureKey)
+            ? FileStructureStorageConstants.DefaultContainerName
+            : FileStructureStorageConstants.ContainerNamePrefix + structureKey;
+
+        var configuration = Get(containerName);
+        return GetProviderFromConfiguration(configuration);
+    }
+
+    private static FileStructureStorageProvider GetProviderFromConfiguration(
+        BlobContainerConfiguration configuration)
+    {
+        return configuration.ProviderType switch
+        {
+            not null when configuration.ProviderType == typeof(DatabaseBlobProvider) => FileStructureStorageProvider.Database,
+            not null when configuration.ProviderType == typeof(FileSystemBlobProvider) => FileStructureStorageProvider.FileSystem,
+            not null when configuration.ProviderType == typeof(MinioBlobProvider) => FileStructureStorageProvider.MinIO,
+            not null when configuration.ProviderType == typeof(S3BlobProvider) => FileStructureStorageProvider.S3Provider,
+            _ => FileStructureStorageProvider.Database
+        };
+    }
+
     private static BlobContainerConfiguration EnsureProvider(
         BlobContainerConfiguration configuration,
         FileStructureStorageProvider storageProvider)
