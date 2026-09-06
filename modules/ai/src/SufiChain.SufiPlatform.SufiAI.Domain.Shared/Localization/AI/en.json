@@ -342,6 +342,13 @@
     "Feature:SufiAI.WebSearch": "AI Web Search",
     "Feature:SufiAI.WebSearch.Description": "Allows provider-backed web search requests.",
     "Feature:SufiAI.WebFetch": "AI Web Fetch",
-    "Feature:SufiAI.WebFetch.Description": "Allows safe provider-backed web page fetching and extraction."
+    "Feature:SufiAI.WebFetch.Description": "Allows safe provider-backed web page fetching and extraction.",
+    "Guardrails": "Usage guardrails",
+    "GuardrailAmountMustBeNonNegative": "Guardrail amount must be a non-negative number.",
+    "InheritedReadOnly": "Inherited (read-only)",
+    "InheritedWorkspaceReadOnly": "Inherited workspaces are read-only. Create a custom workspace to edit configuration or guardrails.",
+    "Guardrail:Daily": "Daily USD limit",
+    "Guardrail:Weekly": "Weekly USD limit",
+    "Guardrail:Monthly": "Monthly USD limit"
   }
 }

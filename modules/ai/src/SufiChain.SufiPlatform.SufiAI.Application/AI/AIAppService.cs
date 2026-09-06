@@ -28,6 +28,7 @@ public class AIAppService : SufiApplicationService, IAIAppService
     private readonly IStringEncryptionService _stringEncryptor;
     private readonly IWorkspaceRepository _workspaceRepository;
     private readonly WorkspaceSyncService _workspaceSyncService;
+    private readonly IWorkspaceGuardrailService _workspaceGuardrailService;
 
     public AIAppService(
         IAIService aiService,
@@ -37,7 +38,8 @@ public class AIAppService : SufiApplicationService, IAIAppService
         IStringEncryptionService stringEncryptor,
         IAIFileStorageService fileStorageService,
         IWorkspaceRepository workspaceRepository,
-        WorkspaceSyncService workspaceSyncService)
+        WorkspaceSyncService workspaceSyncService,
+        IWorkspaceGuardrailService workspaceGuardrailService)
     {
         _aiService = aiService;
         _aiAudioService = aiAudioService;
@@ -47,12 +49,14 @@ public class AIAppService : SufiApplicationService, IAIAppService
         _fileStorageService = fileStorageService;
         _workspaceRepository = workspaceRepository;
         _workspaceSyncService = workspaceSyncService;
+        _workspaceGuardrailService = workspaceGuardrailService;
     }
 
     [Authorize(AIPermissions.AI.Audio)]
     [RequiresFeature(SufiAIFeatures.Audio)]
     public async Task<AudioTranscriptionDto> TranscribeAudioAsync(TranscribeAudioInput input)
     {
+        await EnsureGuardrailAsync(input.WorkspaceName);
         // Upload audio file to storage
         var storageResult = await _fileStorageService.UploadFileAsync(
             content: input.AudioData,
@@ -125,6 +129,7 @@ public class AIAppService : SufiApplicationService, IAIAppService
     [RequiresFeature(SufiAIFeatures.Vision)]
     public async Task<VisionAnalysisDto> AnalyzeImageAsync(AnalyzeImageInput input)
     {
+        await EnsureGuardrailAsync(input.WorkspaceName);
         // Upload image to storage
         var storageResult = await _fileStorageService.UploadFileAsync(
             content: input.ImageData,
@@ -162,6 +167,7 @@ public class AIAppService : SufiApplicationService, IAIAppService
     [RequiresFeature(SufiAIFeatures.Embeddings)]
     public async Task<EmbeddingsDto> GenerateEmbeddingsAsync(GenerateEmbeddingsInput input)
     {
+        await EnsureGuardrailAsync(input.WorkspaceName);
         var request = new EmbeddingsRequest
         {
             WorkspaceName = input.WorkspaceName,
@@ -176,6 +182,16 @@ public class AIAppService : SufiApplicationService, IAIAppService
             Model = response.ModelId,
             TotalTokens = response.TotalTokens
         };
+    }
+
+    private async Task EnsureGuardrailAsync(string workspaceName)
+    {
+        var workspace = await _workspaceRepository.FindByNameAsync(workspaceName);
+        if (workspace == null)
+            throw new Volo.Abp.BusinessException(AIErrorCodes.WorkspaceNotFound)
+                .WithData("WorkspaceName", workspaceName);
+
+        await _workspaceGuardrailService.EnsureCanExecuteAsync(workspace.Id);
     }
 
     [Authorize(AIPermissions.AI.WebSearch)]

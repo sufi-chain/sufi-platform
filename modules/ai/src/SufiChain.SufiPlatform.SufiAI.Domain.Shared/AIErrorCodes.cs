@@ -30,4 +30,5 @@ public static class AIErrorCodes
     public const string MCPHttpTransportNotImplemented = "AI:MCPHttpTransportNotImplemented";
 
     public const string ProviderRequestFailed = "AI:ProviderRequestFailed";
+    public const string WorkspaceGuardrailExceeded = "AI:WorkspaceGuardrailExceeded";
 }

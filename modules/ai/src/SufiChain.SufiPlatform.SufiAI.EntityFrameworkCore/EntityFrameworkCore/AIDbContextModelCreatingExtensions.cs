@@ -33,8 +33,12 @@ public static class AIDbContextModelCreatingExtensions
             b.Property(x => x.InputCostPer1MTokens).HasPrecision(18, 8);
             b.Property(x => x.OutputCostPer1MTokens).HasPrecision(18, 8);
             b.Property(x => x.IsActive).IsRequired();
+            b.Property(x => x.IsInherited).IsRequired();
+            b.Property(x => x.SourceWorkspaceId);
+            b.Property(x => x.AssignmentId);
             b.HasIndex(x => x.Name);
             b.HasIndex(x => x.TenantId);
+            b.HasIndex(x => x.SourceWorkspaceId);
             b.HasIndex(x => new { x.TenantId, x.Name }).IsUnique();
             
             // Configure the collection navigation using the backing field
@@ -45,6 +49,34 @@ public static class AIDbContextModelCreatingExtensions
             
             // Tell EF Core to use the private backing field for the collection
             b.Navigation(x => x.ModelConfigurations).UsePropertyAccessMode(PropertyAccessMode.Field);
+
+            b.HasMany(x => x.Guardrails)
+                .WithOne()
+                .HasForeignKey(g => g.WorkspaceId)
+                .OnDelete(DeleteBehavior.Cascade);
+            b.Navigation(x => x.Guardrails).UsePropertyAccessMode(PropertyAccessMode.Field);
+        });
+
+        builder.Entity<WorkspaceAssignment>(b =>
+        {
+            b.ToTable(SufiAIDbProperties.DbTablePrefix + "WorkspaceAssignments", SufiAIDbProperties.DbSchema);
+            b.ConfigureByConvention();
+            b.ConfigureMultiTenant();
+            b.Property(x => x.SourceWorkspaceId).IsRequired();
+            b.Property(x => x.TargetWorkspaceId).IsRequired();
+            b.Property(x => x.Version).IsRequired();
+            b.Property(x => x.IsActive).IsRequired();
+            b.HasIndex(x => new { x.TenantId, x.SourceWorkspaceId }).IsUnique();
+        });
+
+        builder.Entity<WorkspaceGuardrail>(b =>
+        {
+            b.ToTable(SufiAIDbProperties.DbTablePrefix + "WorkspaceGuardrails", SufiAIDbProperties.DbSchema);
+            b.ConfigureByConvention();
+            b.Property(x => x.WorkspaceId).IsRequired();
+            b.Property(x => x.Period).IsRequired();
+            b.Property(x => x.AmountUsd).HasPrecision(18, 8).IsRequired();
+            b.HasIndex(x => new { x.WorkspaceId, x.Period }).IsUnique();
         });
         
         builder.Entity<AIModelConfiguration>(b =>

@@ -136,10 +136,70 @@ public class WorkspaceAppService : SufiApplicationService, IWorkspaceAppService
         return ObjectMapper.Map<Workspace, WorkspaceDto>(workspace);
     }
 
+    [Authorize(AIPermissions.Workspaces.Create)]
+    public async Task<WorkspaceDto> CloneAsync(Guid id, CloneWorkspaceDto input)
+    {
+        var source = await _workspaceRepository.GetAsync(id, includeDetails: true);
+        await _workspaceManager.ValidateNameAsync(input.Name);
+
+        var clone = new Workspace(
+            GuidGenerator.Create(),
+            input.Name,
+            source.Provider,
+            source.DefaultModel,
+            CurrentTenant.Id);
+
+        // API keys are already encrypted at rest. Copy the ciphertext inside the
+        // application boundary without returning or decrypting it through a DTO.
+        clone.UpdateConfiguration(
+            source.DefaultModel,
+            source.ApiKey,
+            source.ApiBaseUrl,
+            source.SystemPrompt,
+            source.Temperature,
+            source.MaxContextTokens,
+            source.OpenAIApiMode,
+            source.InputCostPer1MTokens,
+            source.OutputCostPer1MTokens);
+
+        if (!source.IsActive)
+        {
+            clone.Deactivate();
+        }
+
+        foreach (var sourceConfiguration in source.ModelConfigurations)
+        {
+            var clonedConfiguration = clone.AddModelConfiguration(
+                sourceConfiguration.CapabilityType,
+                sourceConfiguration.ModelId,
+                sourceConfiguration.ApiEndpoint,
+                sourceConfiguration.ApiKey,
+                sourceConfiguration.Priority,
+                sourceConfiguration.OpenAIApiMode,
+                sourceConfiguration.InputCostPer1MTokens,
+                sourceConfiguration.OutputCostPer1MTokens,
+                sourceConfiguration.Dimensions);
+
+            if (!sourceConfiguration.IsEnabled)
+            {
+                clonedConfiguration.Disable();
+            }
+        }
+
+        foreach (var sourceGuardrail in source.Guardrails)
+        {
+            clone.SetGuardrail(sourceGuardrail.Period, sourceGuardrail.AmountUsd);
+        }
+
+        await _workspaceRepository.InsertAsync(clone, autoSave: true);
+        return ObjectMapper.Map<Workspace, WorkspaceDto>(clone);
+    }
+
     [Authorize(AIPermissions.Workspaces.Edit)]
     public async Task<WorkspaceDto> UpdateAsync(Guid id, UpdateWorkspaceDto input)
     {
         var workspace = await _workspaceRepository.GetAsync(id, includeDetails: true);
+        EnsureEditable(workspace);
 
         await _workspaceManager.ValidateNameAsync(input.Name, id);
         workspace.SetName(input.Name);
@@ -178,14 +238,41 @@ public class WorkspaceAppService : SufiApplicationService, IWorkspaceAppService
         return ObjectMapper.Map<Workspace, WorkspaceDto>(workspace);
     }
 
+    [Authorize(AIPermissions.Workspaces.Edit)]
+    public async Task<WorkspaceDto> UpdateGuardrailsAsync(Guid id, UpdateWorkspaceGuardrailsDto input)
+    {
+        var workspace = await _workspaceRepository.GetAsync(id, includeDetails: true);
+        if (workspace.IsInherited)
+            throw new Volo.Abp.UserFriendlyException(L["AI:InheritedWorkspaceReadOnly"]);
+
+        foreach (var item in input.Items)
+            workspace.SetGuardrail(item.Period, item.AmountUsd);
+
+        await _workspaceRepository.UpdateAsync(workspace, autoSave: true);
+        _workspaceSyncService.ClearWorkspaceCache(workspace.Name);
+        return ObjectMapper.Map<Workspace, WorkspaceDto>(workspace);
+    }
+
     [Authorize(AIPermissions.Workspaces.Delete)]
     public async Task DeleteAsync(Guid id)
     {
         var workspace = await _workspaceRepository.FindAsync(id);
+        if (workspace != null)
+        {
+            EnsureEditable(workspace);
+        }
         await _workspaceRepository.DeleteAsync(id, autoSave: true);
         if (workspace != null)
         {
             _workspaceSyncService.ClearWorkspaceCache(workspace.Name);
+        }
+    }
+
+    private static void EnsureEditable(Workspace workspace)
+    {
+        if (workspace.IsInherited)
+        {
+            throw new Volo.Abp.UserFriendlyException("AI:InheritedWorkspaceReadOnly");
         }
     }
 

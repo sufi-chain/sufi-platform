@@ -31,6 +31,13 @@ public partial class WorkspaceEditModal : AIComponentBase
     private List<OpenAIModelDto> _availableModels = new();
     private int _activeTab;
     private bool _wasOpen;
+    private readonly List<GuardrailEditRow> _guardrailRows = new();
+
+    private sealed class GuardrailEditRow
+    {
+        public WorkspaceGuardrailPeriod Period { get; init; }
+        public string AmountText { get; set; } = string.Empty;
+    }
 
     protected override async Task OnParametersSetAsync()
     {
@@ -74,6 +81,16 @@ public partial class WorkspaceEditModal : AIComponentBase
             {
                 new() { Id = _workspace.Model }
             };
+            _guardrailRows.Clear();
+            foreach (var period in Enum.GetValues<WorkspaceGuardrailPeriod>())
+            {
+                var value = _workspace.Guardrails.FirstOrDefault(x => x.Period == period)?.AmountUsd;
+                _guardrailRows.Add(new GuardrailEditRow
+                {
+                    Period = period,
+                    AmountText = value?.ToString("0.##", CultureInfo.InvariantCulture) ?? string.Empty
+                });
+            }
             _activeTab = 0;
             StateHasChanged();
         }, LoadingKeys.LoadWorkspace);
@@ -103,12 +120,45 @@ public partial class WorkspaceEditModal : AIComponentBase
             return;
         }
 
+        if (!TryBuildGuardrails(out var guardrails))
+        {
+            await Message.ErrorAsync(L["GuardrailAmountMustBeNonNegative"]);
+            return;
+        }
+
         await ExecuteWithLoadingAsync(async () =>
         {
             await WorkspaceAppService.UpdateAsync(WorkspaceId.Value, _model);
+            if (guardrails != null)
+            {
+                await WorkspaceAppService.UpdateGuardrailsAsync(WorkspaceId.Value, guardrails);
+            }
             await CloseModal();
             await OnUpdated.InvokeAsync();
         }, LoadingKeys.UpdateWorkspace);
+    }
+
+    private bool TryBuildGuardrails(out UpdateWorkspaceGuardrailsDto? guardrails)
+    {
+        guardrails = null;
+        if (_workspace?.IsInherited == true)
+        {
+            return true;
+        }
+
+        guardrails = new UpdateWorkspaceGuardrailsDto();
+        foreach (var row in _guardrailRows)
+        {
+            if (!TryParseDecimal(row.AmountText, out var amount) || amount < 0)
+            {
+                guardrails = null;
+                return false;
+            }
+
+            guardrails.Items.Add(new WorkspaceGuardrailDto { Period = row.Period, AmountUsd = amount });
+        }
+
+        return true;
     }
 
     private async Task TestConnectionAsync()

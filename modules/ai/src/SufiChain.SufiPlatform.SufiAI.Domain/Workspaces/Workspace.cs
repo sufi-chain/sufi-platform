@@ -11,6 +11,11 @@ namespace SufiChain.SufiPlatform.SufiAI.Workspaces;
 public class Workspace : FullAuditedAggregateRoot<Guid>, IMultiTenant
 {
     public Guid? TenantId { get; protected set; }
+
+    /// <summary>Host-owned workspace projection metadata.</summary>
+    public bool IsInherited { get; protected set; }
+    public Guid? SourceWorkspaceId { get; protected set; }
+    public Guid? AssignmentId { get; protected set; }
     
     public string Name { get; protected set; } = string.Empty;
     public AIProviderType Provider { get; protected set; }
@@ -36,6 +41,9 @@ public class Workspace : FullAuditedAggregateRoot<Guid>, IMultiTenant
     /// </summary>
     private readonly List<AIModelConfiguration> _modelConfigurations = new();
     public IReadOnlyList<AIModelConfiguration> ModelConfigurations => _modelConfigurations.AsReadOnly();
+
+    private readonly List<WorkspaceGuardrail> _guardrails = new();
+    public IReadOnlyList<WorkspaceGuardrail> Guardrails => _guardrails.AsReadOnly();
     
     /// <summary>
     /// Gets the model ID - returns primary chat completion model or the workspace's default model
@@ -183,6 +191,46 @@ public class Workspace : FullAuditedAggregateRoot<Guid>, IMultiTenant
     
     public void Activate() => IsActive = true;
     public void Deactivate() => IsActive = false;
+
+    public void MarkAsInherited(Guid sourceWorkspaceId, Guid assignmentId)
+    {
+        if (TenantId == null)
+        {
+            throw new BusinessException("AI:InheritedWorkspaceMustBelongToTenant");
+        }
+
+        IsInherited = true;
+        SourceWorkspaceId = sourceWorkspaceId;
+        AssignmentId = assignmentId;
+    }
+
+    public void ClearInheritance()
+    {
+        IsInherited = false;
+        SourceWorkspaceId = null;
+        AssignmentId = null;
+    }
+
+    public WorkspaceGuardrail SetGuardrail(WorkspaceGuardrailPeriod period, decimal amountUsd)
+    {
+        var guardrail = _guardrails.FirstOrDefault(x => x.Period == period);
+        if (guardrail == null)
+        {
+            guardrail = new WorkspaceGuardrail(Guid.NewGuid(), Id, period, amountUsd);
+            _guardrails.Add(guardrail);
+        }
+        else
+        {
+            guardrail.Set(period, amountUsd);
+        }
+        return guardrail;
+    }
+
+    public void RemoveGuardrail(WorkspaceGuardrailPeriod period)
+    {
+        var guardrail = _guardrails.FirstOrDefault(x => x.Period == period);
+        if (guardrail != null) _guardrails.Remove(guardrail);
+    }
 
     private static void ValidatePricing(decimal? value, string parameterName)
     {

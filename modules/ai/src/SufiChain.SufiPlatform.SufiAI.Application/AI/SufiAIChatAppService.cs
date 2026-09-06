@@ -28,6 +28,7 @@ public class SufiAIChatAppService : SufiApplicationService, ISufiAIChatAppServic
     protected IMCPKernelToolRegistrar ToolRegistrar { get; }
     protected IWorkspaceRepository WorkspaceRepository { get; }
     protected IAIUsageLogRepository UsageLogRepository { get; }
+    protected IWorkspaceGuardrailService WorkspaceGuardrailService { get; }
 
     public SufiAIChatAppService(
         ISufiAIChatService chatService,
@@ -35,7 +36,8 @@ public class SufiAIChatAppService : SufiApplicationService, ISufiAIChatAppServic
         WorkspaceSyncService workspaceSyncService,
         IMCPKernelToolRegistrar toolRegistrar,
         IWorkspaceRepository workspaceRepository,
-        IAIUsageLogRepository usageLogRepository)
+        IAIUsageLogRepository usageLogRepository,
+        IWorkspaceGuardrailService workspaceGuardrailService)
     {
         ChatService = chatService;
         WorkspaceAccessor = workspaceAccessor;
@@ -43,11 +45,13 @@ public class SufiAIChatAppService : SufiApplicationService, ISufiAIChatAppServic
         ToolRegistrar = toolRegistrar;
         WorkspaceRepository = workspaceRepository;
         UsageLogRepository = usageLogRepository;
+        WorkspaceGuardrailService = workspaceGuardrailService;
     }
 
     [RequiresFeature(SufiAIFeatures.Chat)]
     public virtual async Task<SufiAIChatResponseDto> SendMessageAsync(SufiAISendChatMessageInput input)
     {
+        await EnsureGuardrailAsync(input.WorkspaceName);
         var request = MapRequest(input);
         var response = await ChatService.CompleteAsync(request);
 
@@ -64,6 +68,7 @@ public class SufiAIChatAppService : SufiApplicationService, ISufiAIChatAppServic
     [RequiresFeature(SufiAIFeatures.Chat)]
     public virtual async IAsyncEnumerable<SufiAIChatResponseDto> StreamMessageAsync(SufiAISendChatMessageInput input)
     {
+        await EnsureGuardrailAsync(input.WorkspaceName);
         await foreach (var chunk in ChatService.StreamAsync(MapRequest(input)))
         {
             yield return new SufiAIChatResponseDto
@@ -87,6 +92,8 @@ public class SufiAIChatAppService : SufiApplicationService, ISufiAIChatAppServic
             throw new BusinessException(AIErrorCodes.WorkspaceNotFound)
                 .WithData("WorkspaceName", input.WorkspaceName);
         }
+
+        await WorkspaceGuardrailService.EnsureCanExecuteAsync(workspace.Id);
 
         var kernel = await WorkspaceSyncService.CreateRequestKernelAsync(input.WorkspaceName);
         await ToolRegistrar.RegisterToolsAsync(
@@ -170,6 +177,18 @@ public class SufiAIChatAppService : SufiApplicationService, ISufiAIChatAppServic
         });
 
         return request;
+    }
+
+    protected virtual async Task EnsureGuardrailAsync(string workspaceName)
+    {
+        var workspace = await WorkspaceRepository.FindByNameAsync(workspaceName);
+        if (workspace == null)
+        {
+            throw new BusinessException(AIErrorCodes.WorkspaceNotFound)
+                .WithData("WorkspaceName", workspaceName);
+        }
+
+        await WorkspaceGuardrailService.EnsureCanExecuteAsync(workspace.Id);
     }
 
     protected virtual WorkspaceContext CreateWorkspaceContext(string workspaceName)

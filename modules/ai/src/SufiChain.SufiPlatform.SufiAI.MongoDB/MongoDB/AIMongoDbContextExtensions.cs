@@ -14,5 +14,9 @@ public static class AIMongoDbContextExtensions
         {
             b.CollectionName = SufiAIDbProperties.DbTablePrefix + "Workspaces";
         });
+        builder.Entity<WorkspaceAssignment>(b =>
+        {
+            b.CollectionName = SufiAIDbProperties.DbTablePrefix + "WorkspaceAssignments";
+        });
     }
 }

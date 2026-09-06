@@ -315,6 +315,13 @@
     "Feature:SufiAI.WebSearch": "جستجوی وب هوش مصنوعی",
     "Feature:SufiAI.WebSearch.Description": "اجازه ارسال درخواست‌های جستجوی وب از طریق ارائه‌دهنده.",
     "Feature:SufiAI.WebFetch": "دریافت وب هوش مصنوعی",
-    "Feature:SufiAI.WebFetch.Description": "اجازه دریافت و استخراج امن صفحات وب از طریق ارائه‌دهنده."
+    "Feature:SufiAI.WebFetch.Description": "اجازه دریافت و استخراج امن صفحات وب از طریق ارائه‌دهنده.",
+    "Guardrails": "سقف‌های مصرف",
+    "GuardrailAmountMustBeNonNegative": "مبلغ سقف مصرف باید عددی نامنفی باشد.",
+    "InheritedReadOnly": "ارث‌برده‌شده (فقط خواندنی)",
+    "InheritedWorkspaceReadOnly": "فضای کاری ارث‌برده‌شده فقط خواندنی است. برای ویرایش پیکربندی یا سقف‌ها یک فضای کاری اختصاصی بسازید.",
+    "Guardrail:Daily": "سقف روزانه (دلار)",
+    "Guardrail:Weekly": "سقف هفتگی (دلار)",
+    "Guardrail:Monthly": "سقف ماهانه (دلار)"
   }
 }

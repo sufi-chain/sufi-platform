@@ -48,6 +48,18 @@ public class WorkspaceController : AIController, IWorkspaceAppService
         return _workspaceAppService.UpdateAsync(id, input);
     }
 
+    [HttpPost("{id}/clone")]
+    public virtual Task<WorkspaceDto> CloneAsync(Guid id, CloneWorkspaceDto input)
+    {
+        return _workspaceAppService.CloneAsync(id, input);
+    }
+
+    [HttpPut("{id}/guardrails")]
+    public virtual Task<WorkspaceDto> UpdateGuardrailsAsync(Guid id, UpdateWorkspaceGuardrailsDto input)
+    {
+        return _workspaceAppService.UpdateGuardrailsAsync(id, input);
+    }
+
     [HttpPost("available-models")]
     public virtual Task<List<OpenAIModelDto>> GetAvailableModelsAsync(GetOpenAIModelsInput input)
     {

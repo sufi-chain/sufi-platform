@@ -9,4 +9,5 @@ namespace SufiChain.SufiPlatform.SufiAI.MongoDB;
 public interface IAIMongoDbContext : IAbpMongoDbContext
 {
     IMongoCollection<Workspace> Workspaces { get; }
+    IMongoCollection<WorkspaceAssignment> WorkspaceAssignments { get; }
 }

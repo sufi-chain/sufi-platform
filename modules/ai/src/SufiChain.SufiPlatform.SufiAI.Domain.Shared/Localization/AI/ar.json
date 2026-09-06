@@ -308,6 +308,13 @@
     "Feature:SufiAI.WebSearch": "بحث الويب بالذكاء الاصطناعي",
     "Feature:SufiAI.WebSearch.Description": "السماح بطلبات بحث الويب المدعومة من المزود.",
     "Feature:SufiAI.WebFetch": "جلب الويب بالذكاء الاصطناعي",
-    "Feature:SufiAI.WebFetch.Description": "السماح بجلب واستخراج صفحات الويب بأمان."
+    "Feature:SufiAI.WebFetch.Description": "السماح بجلب واستخراج صفحات الويب بأمان.",
+    "Guardrails": "حدود الاستخدام",
+    "GuardrailAmountMustBeNonNegative": "يجب أن يكون مبلغ الحد رقماً غير سالب.",
+    "InheritedReadOnly": "موروث (للقراءة فقط)",
+    "InheritedWorkspaceReadOnly": "مساحات العمل الموروثة للقراءة فقط. أنشئ مساحة عمل مخصصة لتعديل الإعدادات أو الحدود.",
+    "Guardrail:Daily": "الحد اليومي بالدولار",
+    "Guardrail:Weekly": "الحد الأسبوعي بالدولار",
+    "Guardrail:Monthly": "الحد الشهري بالدولار"
   }
 }

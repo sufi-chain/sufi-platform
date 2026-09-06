@@ -9,6 +9,7 @@ namespace SufiChain.SufiPlatform.SufiAI.MongoDB;
 public class AIMongoDbContext : AbpMongoDbContext, IAIMongoDbContext
 {
     public IMongoCollection<Workspace> Workspaces => Collection<Workspace>();
+    public IMongoCollection<WorkspaceAssignment> WorkspaceAssignments => Collection<WorkspaceAssignment>();
 
     protected override void CreateModel(IMongoModelBuilder modelBuilder)
     {

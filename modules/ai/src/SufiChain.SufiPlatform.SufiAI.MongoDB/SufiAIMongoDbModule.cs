@@ -17,6 +17,7 @@ public class SufiAIMongoDbModule : AbpModule
         {
             options.AddDefaultRepositories(includeAllEntities: true);
             options.AddRepository<Workspaces.Workspace, Workspaces.MongoWorkspaceRepository>();
+            options.AddRepository<Workspaces.WorkspaceAssignment, Workspaces.MongoWorkspaceAssignmentRepository>();
         });
     }
 }

@@ -16,4 +16,8 @@ public class WorkspaceDto : FullAuditedEntityDto<Guid>
     public decimal? InputCostPer1MTokens { get; set; }
     public decimal? OutputCostPer1MTokens { get; set; }
     public bool IsActive { get; set; }
+    public bool IsInherited { get; set; }
+    public Guid? SourceWorkspaceId { get; set; }
+    public Guid? AssignmentId { get; set; }
+    public List<WorkspaceGuardrailDto> Guardrails { get; set; } = new();
 }

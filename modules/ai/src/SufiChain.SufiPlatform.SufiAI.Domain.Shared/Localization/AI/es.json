@@ -307,6 +307,13 @@
     "Feature:SufiAI.WebSearch": "Búsqueda web de IA",
     "Feature:SufiAI.WebSearch.Description": "Permite solicitudes de búsqueda web respaldadas por el proveedor.",
     "Feature:SufiAI.WebFetch": "Obtención web de IA",
-    "Feature:SufiAI.WebFetch.Description": "Permite obtener y extraer páginas web de forma segura."
+    "Feature:SufiAI.WebFetch.Description": "Permite obtener y extraer páginas web de forma segura.",
+    "Guardrails": "Límites de uso",
+    "GuardrailAmountMustBeNonNegative": "El importe del límite debe ser un número no negativo.",
+    "InheritedReadOnly": "Heredado (solo lectura)",
+    "InheritedWorkspaceReadOnly": "Los espacios de trabajo heredados son de solo lectura. Crea uno personalizado para editar la configuración o los límites.",
+    "Guardrail:Daily": "Límite diario en USD",
+    "Guardrail:Weekly": "Límite semanal en USD",
+    "Guardrail:Monthly": "Límite mensual en USD"
   }
 }

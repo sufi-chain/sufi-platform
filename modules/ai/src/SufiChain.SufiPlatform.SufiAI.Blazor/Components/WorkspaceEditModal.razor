@@ -110,6 +110,19 @@
 						</SbGrid>
 					</SbStack>
 				</SbTab>
+
+				<SbTab Label="@L["Guardrails"]" Disabled="@(_workspace?.IsInherited == true)">
+					<SbStack Direction="SbStackDirection.Column" Gap="3">
+						@if (_workspace?.IsInherited == true)
+						{
+							<SbAlert Severity="SbAlertSeverity.Info">@L["InheritedWorkspaceReadOnly"]</SbAlert>
+						}
+						@foreach (var row in _guardrailRows)
+						{
+							<SbTextField @bind-Value="row.AmountText" Label="@L[$"Guardrail:{row.Period}"]" Disabled="@(_workspace?.IsInherited == true)" />
+						}
+					</SbStack>
+				</SbTab>
 			</SbTabs>
 		}
 		else if (IsOperationLoading(LoadingKeys.LoadWorkspace))

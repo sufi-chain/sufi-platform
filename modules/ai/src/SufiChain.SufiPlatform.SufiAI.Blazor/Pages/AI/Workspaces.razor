@@ -32,18 +32,23 @@
 						<SbColumn TItem="WorkspaceDto" Title="@L["Actions"]" Width="120px">
 						<CellTemplate Context="cellContext">
 							<SbStack Direction="SbStackDirection.Row" Gap="1">
+								@if (!cellContext.Item.IsInherited)
+								{
 								<AuthorizeView Policy="@AIPermissions.Workspaces.Edit">
 									<SbIconButton Size="SbSize.Sm" AriaLabel="@L["Edit"]"
-												  OnClick="@(() => OpenEditModal(cellContext.Item))">
+											  OnClick="@(() => OpenEditModal(cellContext.Item))">
 										<Icon><SbIcon Name="edit" /></Icon>
 									</SbIconButton>
 								</AuthorizeView>
+								}
 									<AuthorizeView Policy="@AIPermissions.AI.ManageConfigurations">
 										<SbIconButton Size="SbSize.Sm" AriaLabel="@L["ModelConfigurations"]"
 													  OnClick="@(() => OpenModelConfigurationsModal(cellContext.Item))">
 											<Icon><SbIcon Name="settings" /></Icon>
 										</SbIconButton>
 									</AuthorizeView>
+										@if (!cellContext.Item.IsInherited)
+										{
 										<AuthorizeView Policy="@AIPermissions.Workspaces.Delete">
 										<SbIconButton Size="SbSize.Sm" AriaLabel="@L["Delete"]"
 												  Color="SbColor.Danger"
@@ -51,12 +56,22 @@
 										<Icon><SbIcon Name="trash" /></Icon>
 									</SbIconButton>
 								</AuthorizeView>
+								}
 							</SbStack>
 						</CellTemplate>
 					</SbColumn>
 				<SbColumn TItem="WorkspaceDto" Field="Name" Title="@L["Name"]" Width="200px">
 					<CellTemplate Context="cellContext">
 						<strong>@cellContext.Item.Name</strong>
+						@if (cellContext.Item.IsInherited)
+						{
+							<SbBadge Color="SbColor.Info">@L["InheritedReadOnly"]</SbBadge>
+						}
+					</CellTemplate>
+				</SbColumn>
+				<SbColumn TItem="WorkspaceDto" Title="@L["Guardrails"]" Width="180px">
+					<CellTemplate Context="cellContext">
+						@string.Join(" / ", cellContext.Item.Guardrails.OrderBy(x => x.Period).Select(x => $"{x.Period}: ${x.AmountUsd:0.##}"))
 					</CellTemplate>
 				</SbColumn>
 				<SbColumn TItem="WorkspaceDto" Title="@L["Provider"]" Width="120px">
