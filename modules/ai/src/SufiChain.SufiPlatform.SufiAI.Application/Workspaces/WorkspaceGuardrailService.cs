@@ -3,11 +3,12 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Volo.Abp;
+using Volo.Abp.DependencyInjection;
 using Volo.Abp.Domain.Repositories;
 
 namespace SufiChain.SufiPlatform.SufiAI.Workspaces;
 
-public sealed class WorkspaceGuardrailService : IWorkspaceGuardrailService
+public sealed class WorkspaceGuardrailService : IWorkspaceGuardrailService, ITransientDependency
 {
     private readonly IRepository<Workspace, Guid> _workspaceRepository;
     private readonly IAIUsageLogRepository _usageLogRepository;
