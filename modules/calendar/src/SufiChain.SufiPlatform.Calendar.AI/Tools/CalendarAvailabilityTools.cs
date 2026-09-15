@@ -50,16 +50,16 @@ public class CalendarTestAvailabilityTool : CalendarAIToolBase
 
 public class CalendarListCalendarsTool : CalendarAIToolBase
 {
-    private readonly IAvailabilityCalendarAppService _availabilityCalendarAppService;
+    private readonly ICalendarCatalogIntegrationService _calendarCatalog;
 
-    public CalendarListCalendarsTool(IAvailabilityCalendarAppService availabilityCalendarAppService)
+    public CalendarListCalendarsTool(ICalendarCatalogIntegrationService calendarCatalog)
     {
-        _availabilityCalendarAppService = availabilityCalendarAppService;
+        _calendarCatalog = calendarCatalog;
     }
 
     public override string Name => CalendarAIToolNames.ListCalendars;
 
-    public override string Description => "Lists visible calendars with id, name/title, kind, time zone, owner type, and default flag. Use this first to discover the correct calendarId when a user asks about calendar availability, working hours, business hours, opening hours, free/busy time, or scheduling without providing a calendar id. Use the returned TimeZoneId as the default timezone when the user says default timezone; do not ask separately.";
+    public override string Description => "Lists every calendar the user can see: personal, inherited, and shared. Returns id, name, kind (Personal, Public, Default), time zone, owner, default flag, and inheritances. Use calendar names and kinds when judging availability. Default/holiday calendars are observances. Personal and Public inherited or shared calendars occupy time. Use this first when calendarId is unknown.";
 
     public override string ParameterSchema => """
         {
@@ -79,25 +79,27 @@ public class CalendarListCalendarsTool : CalendarAIToolBase
         return await SuccessAsync(await ListCalendarsAsync(input.Filter, cancellationToken));
     }
 
-    [SufiAiMcpTool(CalendarAIToolNames.ListCalendars, "Lists visible calendars with id, name/title, kind, time zone, owner type, and default flag. Use this first to discover the correct calendarId when a user asks about calendar availability, working hours, business hours, opening hours, free/busy time, or scheduling without providing a calendar id. Use the returned TimeZoneId as the default timezone when the user says default timezone; do not ask separately.")]
+    [SufiAiMcpTool(CalendarAIToolNames.ListCalendars, "Lists every calendar the user can see: personal, inherited, and shared. Returns id, name, kind (Personal, Public, Default), time zone, owner, default flag, and inheritances. Use calendar names and kinds when judging availability. Default/holiday calendars are observances. Personal and Public inherited or shared calendars occupy time. Use this first when calendarId is unknown.")]
     public virtual async Task<object> ListCalendarsAsync(
         string? filter = null,
         CancellationToken cancellationToken = default)
     {
-        var result = await _availabilityCalendarAppService.GetListAsync(new GetCalendarListInput
-        {
-            Filter = filter,
-            MaxResultCount = 10
-        });
-
-        return result.Items.Select(calendar => new
+        var calendars = await _calendarCatalog.GetVisibleCalendarsAsync(filter);
+        return calendars.Select(calendar => new
         {
             calendar.Id,
             calendar.Name,
             Kind = calendar.Kind.ToString(),
             calendar.TimeZoneId,
             OwnerName = calendar.OwnerName,
-            calendar.IsDefault
+            calendar.IsDefault,
+            Inheritances = calendar.Inheritances.Select(inheritance => new
+            {
+                inheritance.ParentCalendarId,
+                ParentCalendarName = inheritance.ParentCalendarName,
+                ParentKind = inheritance.ParentCalendarKind?.ToString(),
+                inheritance.IsInheritedByDefault
+            }).ToList()
         }).ToList();
     }
 }

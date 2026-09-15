@@ -280,14 +280,16 @@ public class AvailabilityCalendarAppService : SufiApplicationService, IAvailabil
 
         return new ListResultDto<CalendarInheritanceDto>(calendar.Inheritances.Select(x =>
         {
+            parents.TryGetValue(x.ParentCalendarId, out var parent);
             return new CalendarInheritanceDto
             {
                 Id = x.Id,
                 CalendarId = x.CalendarId,
                 ParentCalendarId = x.ParentCalendarId,
-                ParentCalendarName = parents.TryGetValue(x.ParentCalendarId, out var parent)
-                    ? _businessLocalization.ResolveDisplayName(parent.Name)
-                    : null,
+                ParentCalendarName = parent == null
+                    ? null
+                    : _businessLocalization.ResolveDisplayName(parent.Name),
+                ParentCalendarKind = parent?.Kind,
                 IsInheritedByDefault = x.IsInheritedByDefault
             };
         }).ToList());
@@ -321,6 +323,7 @@ public class AvailabilityCalendarAppService : SufiApplicationService, IAvailabil
             ParentCalendarName = parentCalendar == null
                 ? null
                 : _businessLocalization.ResolveDisplayName(parentCalendar.Name),
+            ParentCalendarKind = parentCalendar?.Kind,
             IsInheritedByDefault = inheritance.IsInheritedByDefault
         };
     }

@@ -30,13 +30,7 @@ public static class CalendarDtoMapper
             ExtraProperties = new ExtraPropertyDictionary(calendar.ExtraProperties),
             WorkingHourRules = calendar.WorkingHourRules.OrderBy(x => x.DisplayOrder).ThenBy(x => x.Id).Select(ToDto).ToList(),
             Exceptions = calendar.Exceptions.Select(ToDto).ToList(),
-            Inheritances = calendar.Inheritances.Select(x => new CalendarInheritanceDto
-            {
-                Id = x.Id,
-                CalendarId = x.CalendarId,
-                ParentCalendarId = x.ParentCalendarId,
-                IsInheritedByDefault = x.IsInheritedByDefault
-            }).ToList()
+            Inheritances = calendar.Inheritances.Select(ToInheritanceDto).ToList()
         };
     }
 
@@ -54,6 +48,17 @@ public static class CalendarDtoMapper
             OwnerName = calendar.OwnerName,
             IsDefault = calendar.IsDefault,
             Color = string.IsNullOrWhiteSpace(calendar.Color) ? CalendarConsts.GetDefaultColor(calendar.Kind) : calendar.Color
+        };
+    }
+
+    public static CalendarInheritanceDto ToInheritanceDto(CalendarInheritance inheritance)
+    {
+        return new CalendarInheritanceDto
+        {
+            Id = inheritance.Id,
+            CalendarId = inheritance.CalendarId,
+            ParentCalendarId = inheritance.ParentCalendarId,
+            IsInheritedByDefault = inheritance.IsInheritedByDefault
         };
     }
 

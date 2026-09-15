@@ -47,7 +47,8 @@ public partial class SufiCalendarView : CalendarPublicComponentBase
     public int MaxEventsPerDay { get; set; } = 3;
 
     /// <summary>
-    /// Optional content rendered under the main calendar toolbar (e.g. Pro calendar selector chrome).
+    /// Optional compact chrome in the calendar toolbar, after the month title
+    /// (e.g. Pro calendar selector chip).
     /// </summary>
     [Parameter]
     public RenderFragment? ToolbarExtra { get; set; }

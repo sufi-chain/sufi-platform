@@ -46,7 +46,8 @@ public static class CalendarAIToolGuidance
         "Prefer calendarId so TimeZoneId is inherited. Never answer 'what is today' from memory; always call this tool and quote its returned fields.";
 
     public const string ListCalendars =
-        "Lists visible calendars with id, name, kind, TimeZoneId, owner type, and default flag. " +
+        "Lists every visible calendar: personal, inherited, and shared, with name, kind, TimeZoneId, and inheritances. " +
+        "Use names and kinds when judging availability. Default/holiday calendars are observances; Personal and Public inherited or shared calendars occupy time. " +
         "Use first when calendarId is unknown. Use returned TimeZoneId as default timezone; do not ask separately.";
 
     public const string GetWorkingHours =
@@ -58,13 +59,15 @@ public static class CalendarAIToolGuidance
         UtcParameters;
 
     public const string GetFreeBusy =
-        "Gets busy blocks and free slots for calendars in a UTC range. " +
+        "Gets busy blocks and free slots from each requested calendar's own events only; inherited holidays are omitted. " +
+        "For personal 'am I free' questions, prefer calendar.search_events so observances can be named. " +
         SchedulingWorkflow + " " +
         MandatoryGetCurrentTime + " " +
         UtcParameters;
 
     public const string FindFreeSlots =
-        "Finds available slots for calendars in a UTC range. " +
+        "Finds open slots from each requested calendar's own events only; inherited holidays do not occupy slots. " +
+        "Also call calendar.search_events when the user asks whether they are free, so public observances can be mentioned. " +
         SchedulingWorkflow + " " +
         MandatoryGetCurrentTime + " " +
         UtcParameters;
@@ -78,7 +81,11 @@ public static class CalendarAIToolGuidance
         "If calendarId is unknown, use default/first from list_calendars. If date, start, or duration is missing, ask one short question. Report success only from returned event id/times.";
 
     public const string SearchEvents =
-        "Searches events for update/move/cancel. Call before changes when the user gives title/day/conversation reference only. " +
+        "Searches events on every calendar the user can see (personal, inherited, and shared). " +
+        "Results include CalendarName, CalendarKind, VisibilityRelation, BlocksPersonalTime, and AvailabilityRole. " +
+        "Default/holiday observances must be mentioned and must not mark the person busy. Personal and Public inherited or shared events occupy time. " +
+        "Omit calendarId for availability across all visible calendars. " +
+        "Call before changes when the user gives title/day/conversation reference only. " +
         MandatoryGetCurrentTime + " " +
         UtcParameters + " " +
         "Use a narrow fromUtc/toUtc range derived from get_current_time. Use titleContains when possible. If multiple matches, ask the user; never invent an eventId.";

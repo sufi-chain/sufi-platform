@@ -14,7 +14,7 @@ public class CalendarGetFreeBusyTool : CalendarAIToolBase
 
     public override string Name => CalendarAIToolNames.GetFreeBusy;
 
-    public override string Description => "Gets busy blocks and free slots for one or more calendars in a UTC range. Before converting relative dates, Persian dates, or local business-day ranges into UTC, call calendar.get_current_time using the selected calendar timezone.";
+    public override string Description => "Gets busy blocks and free slots from each requested calendar's own events only. Inherited Default/Public holidays are not included. For 'am I free' questions, prefer calendar.search_events on the Personal calendar so observances can be named without treating them as personal busy time. Call calendar.get_current_time before relative or Persian dates.";
 
     public override string ParameterSchema => CalendarAIToolSchemas.FreeBusy;
 
@@ -27,7 +27,7 @@ public class CalendarGetFreeBusyTool : CalendarAIToolBase
         return await SuccessAsync(await GetFreeBusyAsync(input.CalendarIds, input.FromUtc, input.ToUtc, cancellationToken));
     }
 
-    [SufiAiMcpTool(CalendarAIToolNames.GetFreeBusy, "Gets busy blocks and free slots for one or more calendars in a UTC range. Before converting relative dates, Persian dates, or local business-day ranges into UTC, call calendar.get_current_time using the selected calendar timezone.")]
+    [SufiAiMcpTool(CalendarAIToolNames.GetFreeBusy, "Gets busy blocks and free slots from each requested calendar's own events only. Inherited Default/Public holidays are not included. For 'am I free' questions, prefer calendar.search_events on the Personal calendar so observances can be named without treating them as personal busy time. Call calendar.get_current_time before relative or Persian dates.")]
     public virtual async Task<object> GetFreeBusyAsync(
         List<Guid> calendarIds,
         DateTime fromUtc,
@@ -62,7 +62,7 @@ public class CalendarFindFreeSlotsTool : CalendarAIToolBase
 
     public override string Name => CalendarAIToolNames.FindFreeSlots;
 
-    public override string Description => "Finds available slots for one or more calendars in a UTC range. Before converting relative dates, Persian dates, or first-working-day requests into UTC, call calendar.get_current_time using the selected calendar timezone.";
+    public override string Description => "Finds open slots from each requested calendar's own events only. Inherited Default/Public holidays do not occupy these slots. For 'am I free' questions, also call calendar.search_events on the Personal calendar so public observances can be mentioned. Call calendar.get_current_time before relative or Persian dates.";
 
     public override string ParameterSchema => CalendarAIToolSchemas.FindFreeSlots;
 
@@ -75,7 +75,7 @@ public class CalendarFindFreeSlotsTool : CalendarAIToolBase
         return await SuccessAsync(await FindFreeSlotsAsync(input.CalendarIds, input.FromUtc, input.ToUtc, input.Duration, cancellationToken));
     }
 
-    [SufiAiMcpTool(CalendarAIToolNames.FindFreeSlots, "Finds available slots for one or more calendars in a UTC range. Before converting relative dates, Persian dates, or first-working-day requests into UTC, call calendar.get_current_time using the selected calendar timezone.")]
+    [SufiAiMcpTool(CalendarAIToolNames.FindFreeSlots, "Finds open slots from each requested calendar's own events only. Inherited Default/Public holidays do not occupy these slots. For 'am I free' questions, also call calendar.search_events on the Personal calendar so public observances can be mentioned. Call calendar.get_current_time before relative or Persian dates.")]
     public virtual async Task<object> FindFreeSlotsAsync(
         List<Guid> calendarIds,
         DateTime fromUtc,

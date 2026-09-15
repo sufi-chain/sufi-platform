@@ -35,6 +35,13 @@ public static class CalendarMcpToolSeedTexts
         TestAvailability
     ];
 
+    public static IReadOnlyDictionary<string, string> ModuleSourceNames { get; } =
+        Cultures(
+            fa: "تقویم",
+            en: "Calendar",
+            ar: "التقويم",
+            es: "Calendario");
+
     private static readonly Dictionary<string, McpToolSeedTextSet> Texts =
         new(StringComparer.OrdinalIgnoreCase)
         {

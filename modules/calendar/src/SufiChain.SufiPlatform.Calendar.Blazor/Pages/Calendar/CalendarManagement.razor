@@ -59,7 +59,10 @@
 
     <SbCard>
         <ChildContent>
-            <SbDataGrid TItem="CalendarDto" @ref="_gridRef" ItemsProvider="LoadCalendarsDataAsync" Loading="IsOperationLoading(LoadingKeys.LoadCalendars)" Striped="true" Hoverable="true" PageIndex="PageIndex" PageSize="PageSize" TotalCount="TotalCount" PageIndexChanged="OnPageIndexChangedAsync" PageSizeChanged="OnPageSizeChangedAsync" KeySelector="@(item => item.Id.ToString())">
+            <SbDataGrid TItem="CalendarDto" @ref="_gridRef" ItemsProvider="LoadCalendarsDataAsync" Loading="IsOperationLoading(LoadingKeys.LoadCalendars)" Striped="true" Hoverable="true" PageIndex="PageIndex" PageSize="PageSize" TotalCount="TotalCount" PageIndexChanged="OnPageIndexChangedAsync" PageSizeChanged="OnPageSizeChangedAsync" KeySelector="@(item => item.Id.ToString())"
+                        ShowFilterRow="true"
+                        ShowColumnChooser="true"
+                        SelectionMode="SbSelectionMode.MultipleRows">
                 <EmptyTemplate>
                     <SbEmptyState Class="text-center p-5" Title="@L["Calendar"]" Description="@L["NoCalendarsFound"]">
                         <Icon><SbIcon Name="calendar" Size="SbSize.Xl" /></Icon>
@@ -82,20 +85,20 @@
                             </SbStack>
                         </CellTemplate>
                     </SbColumn>
-                    <SbColumn TItem="CalendarDto" Field="Name" Title="@L["Name"]" />
-                    <SbColumn TItem="CalendarDto" Field="Color" Title="@L["Color"]" Width="100px" Sortable="false">
+                    <SbColumn TItem="CalendarDto" Field="Name" Title="@L["Name"]" Filterable="true" Sortable="true"/>
+                    <SbColumn TItem="CalendarDto" Field="Color" Title="@L["Color"]" Width="100px" Sortable="false" Filterable="true">
                         <CellTemplate Context="cellContext">
                             <span class="sufi-calendar-management__color-swatch"
                                   style="@($"background:{cellContext.Item.Color}")"
                                   title="@cellContext.Item.Color"></span>
                         </CellTemplate>
                     </SbColumn>
-                    <SbColumn TItem="CalendarDto" Field="Kind" Title="@L["Kind"]" Width="140px" />
-                    <SbColumn TItem="CalendarDto" Field="TimeZoneId" Title="@L["TimeZone"]" />
-                    <SbColumn TItem="CalendarDto" Field="IsDefault" Title="@L["Default"]" Width="120px">
+                    <SbColumn TItem="CalendarDto" Field="Kind" Title="@L["Kind"]" Width="140px" Filterable="true" Sortable="true"/>
+                    <SbColumn TItem="CalendarDto" Field="TimeZoneId" Title="@L["TimeZone"]" Filterable="true" Sortable="true"/>
+                    <SbColumn TItem="CalendarDto" Field="IsDefault" Title="@L["Default"]" Width="120px" Filterable="true" Sortable="true">
                         <CellTemplate Context="cellContext"><SbBadge Color="@(cellContext.Item.IsDefault ? SbColor.Success : SbColor.Secondary)">@(cellContext.Item.IsDefault ? L["Yes"] : L["No"])</SbBadge></CellTemplate>
                     </SbColumn>
-                    <SbColumn TItem="CalendarDto" Field="IsAlwaysOpen" Title="@L["AlwaysOpen"]" Width="130px">
+                    <SbColumn TItem="CalendarDto" Field="IsAlwaysOpen" Title="@L["AlwaysOpen"]" Width="130px" Filterable="true" Sortable="true">
                         <CellTemplate Context="cellContext"><SbBadge Color="@(cellContext.Item.IsAlwaysOpen ? SbColor.Success : SbColor.Secondary)">@(cellContext.Item.IsAlwaysOpen ? L["Yes"] : L["No"])</SbBadge></CellTemplate>
                     </SbColumn>
                     <SbColumn TItem="CalendarDto" Title="@L["InheritanceCount"]" Width="120px" Sortable="false">

@@ -17,4 +17,6 @@ public class CalendarLookupDto : EntityDto<Guid>
     public bool IsDefault { get; set; }
 
     public string Color { get; set; } = CalendarConsts.DefaultColor;
+
+    public List<CalendarInheritanceDto> Inheritances { get; set; } = new();
 }

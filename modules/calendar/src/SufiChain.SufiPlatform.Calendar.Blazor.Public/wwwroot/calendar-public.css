@@ -74,20 +74,15 @@
 
 .sufi-calendar-view__header {
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
     gap: var(--sb-space-3, 0.75rem);
     width: 100%;
 }
 
 .sufi-calendar-view__toolbar {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    justify-content: space-between;
-    gap: var(--sb-space-3, 0.75rem);
-    flex-wrap: wrap;
-    width: 100%;
-    min-width: 0;
+    display: contents;
 }
 
 .sufi-calendar-view__nav {
@@ -95,6 +90,7 @@
     align-items: center;
     gap: var(--sb-space-1, 0.25rem);
     flex: 0 0 auto;
+    order: 1;
 }
 
 .sufi-calendar-view__today {
@@ -105,6 +101,7 @@
     text-align: center;
     min-width: 10rem;
     flex: 1 1 auto;
+    order: 2;
 }
 
 .sufi-calendar-view__title .sb-heading {
@@ -121,6 +118,7 @@
     background: var(--sb-color-surface-muted, var(--sb-color-surface-variant));
     border: 1px solid var(--sb-color-border-subtle, var(--sb-color-border));
     flex: 0 0 auto;
+    order: 4;
 }
 
 .sufi-calendar-view__mode {
@@ -144,15 +142,16 @@
 
 .sufi-calendar-view__mode--active {
     background: var(--sb-color-surface-variant, var(--sb-color-surface));
-    color: var(--sb-color-primary);
+    color: var(--sb-color-primary-text);
     box-shadow: var(--sb-shadow-sm);
 }
 
 .sufi-calendar-view__toolbar-extra {
-    width: 100%;
+    flex: 0 0 auto;
+    width: auto;
     min-width: 0;
-    padding-top: var(--sb-space-1, 0.25rem);
-    border-top: 1px solid var(--sb-color-border-subtle, var(--sb-color-border));
+    max-width: min(12rem, 42vw);
+    order: 3;
 }
 
 /* Dark: keep event chips readable over recessed day cells */
@@ -296,7 +295,7 @@
 }
 
 .sufi-calendar-view__day--closed .sufi-calendar-view__day-number {
-    color: var(--sb-color-danger, #dc2626);
+    color: var(--sb-color-danger-text, #dc2626);
     font-weight: var(--sb-font-weight-bold, 700);
 }
 
@@ -721,6 +720,42 @@
    ============================================ */
 
 @media (max-width: 768px) {
+    .sufi-calendar-view__card .sb-card__header {
+        padding: var(--sb-space-2, 0.5rem) var(--sb-space-3, 0.75rem);
+    }
+
+    .sufi-calendar-view__card .sb-card__body {
+        padding: var(--sb-space-2, 0.5rem) var(--sb-space-3, 0.75rem);
+    }
+
+    .sufi-calendar-view__header {
+        gap: var(--sb-space-2, 0.5rem);
+    }
+
+    .sufi-calendar-view__title {
+        min-width: 0;
+        text-align: start;
+    }
+
+    .sufi-calendar-view__title .sb-heading {
+        font-size: var(--sb-font-size-lg, 1.125rem);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .sufi-calendar-view__mode-bar {
+        flex: 1 1 100%;
+        justify-content: stretch;
+        width: 100%;
+    }
+
+    .sufi-calendar-view__mode {
+        flex: 1 1 auto;
+        text-align: center;
+        padding: 0.45rem 0.4rem;
+    }
+
     .sufi-calendar-view__grid {
         gap: 0.1875rem;
     }

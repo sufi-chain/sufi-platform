@@ -18,6 +18,12 @@ public class CalendarMcpToolLocalizationSeedContributor : IDataSeedContributor, 
 
     public virtual async Task SeedAsync(DataSeedContext context)
     {
+        await LocalizationTextSeeder.UpsertAsync(
+            context,
+            ResourceName,
+            "MCPTool:Module:Calendar",
+            CalendarMcpToolSeedTexts.ModuleSourceNames);
+
         foreach (var toolName in CalendarMcpToolSeedTexts.ToolNames)
         {
             var texts = CalendarMcpToolSeedTexts.Get(toolName);

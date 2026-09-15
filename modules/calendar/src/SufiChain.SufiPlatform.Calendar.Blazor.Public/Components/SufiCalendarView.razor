@@ -31,6 +31,13 @@
                         <SbHeading Level="5">@TitleText</SbHeading>
                     </div>
 
+                    @if (ToolbarExtra != null)
+                    {
+                        <div class="sufi-calendar-view__toolbar-extra">
+                            @ToolbarExtra
+                        </div>
+                    }
+
                     <div class="sufi-calendar-view__mode-bar" role="tablist" aria-label="@L["Calendar"]">
                         @foreach (var mode in Enum.GetValues<SufiCalendarViewMode>())
                         {
@@ -44,13 +51,6 @@
                         }
                     </div>
                 </div>
-
-                @if (ToolbarExtra != null)
-                {
-                    <div class="sufi-calendar-view__toolbar-extra">
-                        @ToolbarExtra
-                    </div>
-                }
             </div>
         </Header>
 

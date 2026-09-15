@@ -1,4 +1,5 @@
-  using SufiChain.SufiPlatform.SufiAI;
+using SufiChain.SufiPlatform.SufiAI;
+using SufiChain.SufiPlatform.Calendar.Calendars;
 using SufiChain.SufiPlatform.Calendar.Events;
 using Volo.Abp.Data;
 
@@ -77,15 +78,19 @@ public class CalendarCreateEventTool : CalendarAIToolBase
 public class CalendarSearchEventsTool : CalendarAIToolBase
 {
     private readonly ICalendarEventAppService _calendarEventAppService;
+    private readonly ICalendarCatalogIntegrationService _calendarCatalog;
 
-    public CalendarSearchEventsTool(ICalendarEventAppService calendarEventAppService)
+    public CalendarSearchEventsTool(
+        ICalendarEventAppService calendarEventAppService,
+        ICalendarCatalogIntegrationService calendarCatalog)
     {
         _calendarEventAppService = calendarEventAppService;
+        _calendarCatalog = calendarCatalog;
     }
 
     public override string Name => CalendarAIToolNames.SearchEvents;
 
-    public override string Description => "Searches existing calendar events and returns event ids needed for update, move, cancel, or delete requests. Use this before changing an event when the user gives only a title, day, or conversational reference. Before converting relative dates or Persian dates into fromUtc/toUtc, call calendar.get_current_time using the selected calendar timezone. Prefer a narrow date range from the conversation and a titleContains filter. If multiple likely matches are returned, ask the user to choose; do not invent an event id.";
+    public override string Description => "Searches events on every calendar the user can see: personal, inherited, and shared. Each result includes CalendarName, CalendarKind, VisibilityRelation (Own, Inherited, Shared), BlocksPersonalTime, and AvailabilityRole (PersonalBusy, WorkCommitment, PublicObservance). Default/holiday observances do not occupy personal time. Personal and Public (inherited or shared) calendars do. Omit calendarId for availability across all visible calendars. Call calendar.get_current_time before relative or Persian dates. Never invent an event id.";
 
     public override string ParameterSchema => CalendarAIToolSchemas.SearchEvents;
 
@@ -104,7 +109,7 @@ public class CalendarSearchEventsTool : CalendarAIToolBase
             cancellationToken));
     }
 
-    [SufiAiMcpTool(CalendarAIToolNames.SearchEvents, "Searches existing calendar events and returns event ids needed for update, move, cancel, or delete requests. Use this before changing an event when the user gives only a title, day, or conversational reference. Before converting relative dates or Persian dates into fromUtc/toUtc, call calendar.get_current_time using the selected calendar timezone. Prefer a narrow date range from the conversation and a titleContains filter. If multiple likely matches are returned, ask the user to choose; do not invent an event id.")]
+    [SufiAiMcpTool(CalendarAIToolNames.SearchEvents, "Searches events on every calendar the user can see: personal, inherited, and shared. Each result includes CalendarName, CalendarKind, VisibilityRelation (Own, Inherited, Shared), BlocksPersonalTime, and AvailabilityRole (PersonalBusy, WorkCommitment, PublicObservance). Default/holiday observances do not occupy personal time. Personal and Public (inherited or shared) calendars do. Omit calendarId for availability across all visible calendars. Call calendar.get_current_time before relative or Persian dates. Never invent an event id.")]
     public virtual async Task<object> SearchEventsAsync(
         Guid? calendarId = null,
         DateTime? fromUtc = null,
@@ -113,12 +118,15 @@ public class CalendarSearchEventsTool : CalendarAIToolBase
         int maxResultCount = 10,
         CancellationToken cancellationToken = default)
     {
+        var calendars = await _calendarCatalog.GetVisibleCalendarsAsync();
+        var calendarsById = calendars.ToDictionary(calendar => calendar.Id);
+        var inheritedCalendarIds = CollectInheritedCalendarIds(calendars, calendarId);
+
         var result = await _calendarEventAppService.GetListAsync(new GetEventListInput
         {
-            CalendarId = calendarId,
             FromUtc = fromUtc,
             ToUtc = toUtc,
-            MaxResultCount = Math.Clamp(maxResultCount, 1, 20)
+            MaxResultCount = Math.Clamp(maxResultCount, 1, 50)
         });
 
         var events = result.Items.AsEnumerable();
@@ -128,17 +136,66 @@ public class CalendarSearchEventsTool : CalendarAIToolBase
                 calendarEvent.Title.Contains(titleContains, StringComparison.OrdinalIgnoreCase));
         }
 
-        return events.Select(calendarEvent => new
+        return events.Select(calendarEvent =>
         {
-            calendarEvent.Id,
-            calendarEvent.CalendarId,
-            calendarEvent.Title,
-            calendarEvent.StartUtc,
-            calendarEvent.EndUtc,
-            calendarEvent.TimeZoneId,
-            Status = calendarEvent.Status.ToString(),
-            calendarEvent.Location
+            calendarsById.TryGetValue(calendarEvent.CalendarId, out var source);
+            var visibilityRelation = CalendarEventAvailabilitySemantics.GetVisibilityRelation(
+                calendarEvent.CalendarId,
+                calendarId,
+                inheritedCalendarIds);
+            var kind = source?.Kind
+                       ?? InferKind(visibilityRelation);
+
+            return new
+            {
+                calendarEvent.Id,
+                calendarEvent.CalendarId,
+                CalendarName = source?.Name,
+                CalendarKind = kind.ToString(),
+                calendarEvent.Title,
+                calendarEvent.StartUtc,
+                calendarEvent.EndUtc,
+                calendarEvent.IsAllDay,
+                calendarEvent.TimeZoneId,
+                Status = calendarEvent.Status.ToString(),
+                calendarEvent.Location,
+                VisibilityRelation = visibilityRelation,
+                IsInherited = visibilityRelation == CalendarEventAvailabilitySemantics.InheritedRelation,
+                BlocksPersonalTime = CalendarEventAvailabilitySemantics.BlocksPersonalTime(kind),
+                AvailabilityRole = CalendarEventAvailabilitySemantics.GetAvailabilityRole(kind)
+            };
         }).ToList();
+    }
+
+    private static HashSet<Guid> CollectInheritedCalendarIds(
+        IReadOnlyList<CalendarLookupDto> calendars,
+        Guid? activeCalendarId)
+    {
+        var inheritedIds = new HashSet<Guid>();
+        foreach (var calendar in calendars)
+        {
+            var include = !activeCalendarId.HasValue
+                          || calendar.Id == activeCalendarId.Value
+                          || calendar.Kind == CalendarKind.Personal;
+            if (!include)
+            {
+                continue;
+            }
+
+            foreach (var inheritance in calendar.Inheritances)
+            {
+                inheritedIds.Add(inheritance.ParentCalendarId);
+            }
+        }
+
+        return inheritedIds;
+    }
+
+    private static CalendarKind InferKind(string visibilityRelation)
+    {
+        return visibilityRelation == CalendarEventAvailabilitySemantics.OwnRelation
+            ? CalendarKind.Personal
+            : CalendarKind.Public;
     }
 }
 

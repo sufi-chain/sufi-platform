@@ -10,5 +10,7 @@ public class CalendarInheritanceDto : EntityDto<Guid>
 
     public string? ParentCalendarName { get; set; }
 
+    public CalendarKind? ParentCalendarKind { get; set; }
+
     public bool IsInheritedByDefault { get; set; }
 }
