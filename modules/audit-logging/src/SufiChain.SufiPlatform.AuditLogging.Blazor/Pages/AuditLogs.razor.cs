@@ -82,9 +82,10 @@ public partial class AuditLogs : AuditLoggingComponentBase
             EndTime = _endDate.HasValue
                 ? DateTime.SpecifyKind(_endDate.Value.ToDateTime(TimeOnly.MaxValue), DateTimeKind.Utc)
                 : null,
-            UserName = string.IsNullOrWhiteSpace(_userName) ? null : _userName,
+            UserName = request.GetFilterValue("UserName") ?? (string.IsNullOrWhiteSpace(_userName) ? null : _userName),
             HttpMethod = _httpMethod,
-            Url = string.IsNullOrWhiteSpace(_url) ? null : _url,
+            Url = request.GetFilterValue("Url") ?? (string.IsNullOrWhiteSpace(_url) ? null : _url),
+            ClientIpAddress = request.GetFilterValue("ClientIpAddress"),
             MinExecutionDuration = MinDuration,
             MaxExecutionDuration = MaxDuration,
             HasException = _hasException,

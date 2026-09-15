@@ -6,7 +6,8 @@ Granular permissions control admin UI and API access.
 
 ### Workspaces
 
-- `AI.Workspaces.Default` — View workspaces and OpenAI `/v1` endpoints using workspace default policy
+- `AI.Workspaces.Default` — View workspaces
+- `AI.Chat` — Chat operations and OpenAI-compatible `/v1/chat/completions` plus `/v1/models`
 - `AI.Workspaces.Create`
 - `AI.Workspaces.Edit`
 - `AI.Workspaces.Delete`

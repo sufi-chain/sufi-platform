@@ -81,7 +81,10 @@
 						TotalCount="_totalCount"
 						PageIndexChanged="OnPageIndexChangedAsync"
 						PageSizeChanged="OnPageSizeChangedAsync"
-						KeySelector="@(item => item.Id.ToString())">
+						KeySelector="@(item => item.Id.ToString())"
+                        ShowFilterRow="true"
+                        ShowColumnChooser="true"
+                        SelectionMode="SbSelectionMode.MultipleRows">
 				<SbColumn TItem="AuditLogListItemDto" Title="@L["Actions"]" Width="56px" Sortable="false">
 					<CellTemplate Context="cellContext">
 						<SbTooltip Text="@L["ViewDetails"]"><SbIconButton Size="SbSize.Sm" Color="SbColor.Primary" AriaLabel="@L["ViewDetails"]"
@@ -95,7 +98,7 @@
 						@cellContext.Item.ExecutionTime.ToString("yyyy-MM-dd HH:mm:ss")
 					</CellTemplate>
 				</SbColumn>
-				<SbColumn TItem="AuditLogListItemDto" Field="UserName" Title="@L["User"]" Width="120px" />
+				<SbColumn TItem="AuditLogListItemDto" Field="UserName" Title="@L["User"]" Width="120px" Filterable="true" Sortable="true"/>
 				<SbColumn TItem="AuditLogListItemDto" Title="@L["Method"]" Width="80px">
 					<CellTemplate Context="cellContext">
 						<SbBadge Color="@GetMethodColor(cellContext.Item.HttpMethod)">
@@ -103,7 +106,7 @@
 						</SbBadge>
 					</CellTemplate>
 				</SbColumn>
-				<SbColumn TItem="AuditLogListItemDto" Field="Url" Title="@L["Url"]" />
+				<SbColumn TItem="AuditLogListItemDto" Field="Url" Title="@L["Url"]" Filterable="true" Sortable="true"/>
 				<SbColumn TItem="AuditLogListItemDto" Title="@L["Status"]" Width="80px">
 					<CellTemplate Context="cellContext">
 						<SbBadge Color="@GetStatusColor(cellContext.Item.HttpStatusCode)">
@@ -126,7 +129,7 @@
 						}
 					</CellTemplate>
 				</SbColumn>
-				<SbColumn TItem="AuditLogListItemDto" Field="ClientIpAddress" Title="@L["IpAddress"]" Width="130px" />
+				<SbColumn TItem="AuditLogListItemDto" Field="ClientIpAddress" Title="@L["IpAddress"]" Width="130px" Filterable="true" Sortable="true"/>
 			</SbDataGrid>
 		</ChildContent>
 	</SbCard>

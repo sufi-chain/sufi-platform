@@ -49,7 +49,7 @@ public partial class Menus : MenusComponentBase
     {
         var result = await MenuAppService.GetListAsync(new GetMenusInput
         {
-            Keyword = _keyword,
+            Keyword = request.GetFilterValue("Name") ?? _keyword,
             SkipCount = Math.Max(0, request.PageIndex * request.PageSize),
             MaxResultCount = request.PageSize
         });

@@ -1,6 +1,7 @@
 {
   "culture": "en",
   "texts": {
+    "SettingsSaveScope": "Save applies to {0}. Save your changes before switching groups.",
     "Feature:SettingsGroup": "Setting management",
     "Feature:SettingsEnable": "Enable setting management",
     "Feature:SettingsEnableDescription": "Enable the setting management system in the application.",

@@ -110,7 +110,11 @@
 						PageIndex="_pageIndex"
 						PageSize="_pageSize"
 						TotalCount="_totalCount"
-						PageIndexChanged="OnPageIndexChangedAsync">
+						PageIndexChanged="OnPageIndexChangedAsync"
+						KeySelector="@(item => item.Id.ToString())"
+                        ShowFilterRow="true"
+                        ShowColumnChooser="true"
+                        SelectionMode="SbSelectionMode.MultipleRows">
 				<SbColumn TItem="BackgroundJobListItemDto" Title="@L["Actions"]" Width="140px">
 					<CellTemplate Context="cellContext">
 						<SbStack Direction="SbStackDirection.Row" Gap="1">
@@ -139,15 +143,15 @@
 						</SbStack>
 					</CellTemplate>
 				</SbColumn>
-				<SbColumn TItem="BackgroundJobListItemDto" Field="JobName" Title="@L["JobName"]" Width="180px" />
-				<SbColumn TItem="BackgroundJobListItemDto" Title="@L["Status"]" Width="100px">
+				<SbColumn TItem="BackgroundJobListItemDto" Field="JobName" Title="@L["JobName"]" Width="180px" Filterable="true" Sortable="true"/>
+				<SbColumn TItem="BackgroundJobListItemDto" Field="IsAbandoned" Title="@L["Status"]" Width="100px" Filterable="true" Sortable="true">
 					<CellTemplate Context="cellContext">
 						<SbBadge Color="@GetStatusColor(cellContext.Item)">
 							@GetStatusText(cellContext.Item)
 						</SbBadge>
 					</CellTemplate>
 				</SbColumn>
-				<SbColumn TItem="BackgroundJobListItemDto" Title="@L["Priority"]" Width="100px">
+				<SbColumn TItem="BackgroundJobListItemDto" Field="Priority" Title="@L["Priority"]" Width="100px" Filterable="true" Sortable="true">
 					<CellTemplate Context="cellContext">
 						<SbBadge Color="@GetPriorityColor(cellContext.Item.Priority)">
 							@cellContext.Item.Priority
@@ -169,7 +173,7 @@
 						@(cellContext.Item.NextTryTime?.ToString("yyyy-MM-dd HH:mm") ?? "-")
 					</CellTemplate>
 				</SbColumn>
-				<SbColumn TItem="BackgroundJobListItemDto" Field="ApplicationName" Title="@L["Application"]" Width="150px" />
+				<SbColumn TItem="BackgroundJobListItemDto" Field="ApplicationName" Title="@L["Application"]" Width="150px" Filterable="true" Sortable="true"/>
 			</SbDataGrid>
 		</ChildContent>
 	</SbCard>

@@ -76,7 +76,7 @@ public partial class UserManagement : IdentityComponentBase
     {
         var result = await UserAppService.GetListAsync(new GetIdentityUsersInput
         {
-            Filter = _filter,
+            Filter = request.GetFilterValue("UserName", "Email", "PhoneNumber") ?? _filter,
             SkipCount = Math.Max(0, request.PageIndex * request.PageSize),
             MaxResultCount = request.PageSize
         });

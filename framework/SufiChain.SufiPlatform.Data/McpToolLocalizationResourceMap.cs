@@ -10,13 +10,19 @@ public static class McpToolLocalizationResourceMap
     private static readonly (string Prefix, string ResourceName)[] PrefixMappings =
     {
         ("calendar.", "Calendar"),
-        ("contacts.", "CRMContacts"),
+        ("contacts.", "SufiCRMContacts"),
+        ("forms.", "SufiForms"),
+        ("cms.", "SufiCMS"),
+        ("helpdesk.", "KnowledgeBase"),
     };
 
     private static readonly (string Prefix, string ModuleSourceKey)[] ModuleSourceKeys =
     {
         ("calendar.", "MCPTool:Module:Calendar"),
         ("contacts.", "MCPTool:Module:Contacts"),
+        ("forms.", "MCPTool:Module:Forms"),
+        ("cms.", "MCPTool:Module:Cms"),
+        ("helpdesk.", "MCPTool:Module:KnowledgeBase"),
     };
 
     public static string GetResourceName(string toolName)
@@ -64,6 +70,23 @@ public static class McpToolLocalizationResourceMap
             fallbackSource.Contains("Contact", StringComparison.OrdinalIgnoreCase))
         {
             return "MCPTool:Module:Contacts";
+        }
+
+        if (fallbackSource.StartsWith("Forms", StringComparison.OrdinalIgnoreCase))
+        {
+            return "MCPTool:Module:Forms";
+        }
+
+        if (fallbackSource.StartsWith("CMS", StringComparison.OrdinalIgnoreCase) ||
+            fallbackSource.Contains("SufiCMS", StringComparison.OrdinalIgnoreCase))
+        {
+            return "MCPTool:Module:Cms";
+        }
+
+        if (fallbackSource.Contains("Knowledge", StringComparison.OrdinalIgnoreCase) ||
+            fallbackSource.StartsWith("HelpDesk", StringComparison.OrdinalIgnoreCase))
+        {
+            return "MCPTool:Module:KnowledgeBase";
         }
 
         return null;

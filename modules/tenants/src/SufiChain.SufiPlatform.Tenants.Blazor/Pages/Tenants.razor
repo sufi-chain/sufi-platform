@@ -41,7 +41,11 @@
 							PageIndex="_pageIndex"
 							PageSize="_pageSize"
 							TotalCount="_totalCount"
-							PageIndexChanged="OnPageIndexChangedAsync">
+							PageIndexChanged="OnPageIndexChangedAsync"
+							KeySelector="@(item => item.Id.ToString())"
+                        ShowFilterRow="true"
+                        ShowColumnChooser="true"
+                        SelectionMode="SbSelectionMode.MultipleRows">
 					<SbColumn TItem="TenantDto" Title="@L["Actions"]" Width="152px" Sortable="false">
 						<CellTemplate Context="cellContext">
 							<SbStack Direction="SbStackDirection.Row" Gap="1">
@@ -73,7 +77,7 @@
 							</SbStack>
 						</CellTemplate>
 					</SbColumn>
-					<SbColumn TItem="TenantDto" Field="Name" Title="@L["TenantName"]" Sortable="true" />
+					<SbColumn TItem="TenantDto" Field="Name" Title="@L["TenantName"]" Sortable="true" Filterable="true"/>
 				</SbDataGrid>
 			</SbStack>
 		</ChildContent>

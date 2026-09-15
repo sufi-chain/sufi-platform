@@ -29,7 +29,11 @@
                             PageIndex="_pageIndex"
                             PageSize="_pageSize"
                             TotalCount="_totalCount"
-                            PageIndexChanged="OnPageIndexChangedAsync">
+                            PageIndexChanged="OnPageIndexChangedAsync"
+                            KeySelector="@(item => item.Id.ToString())"
+                        ShowFilterRow="true"
+                        ShowColumnChooser="true"
+                        SelectionMode="SbSelectionMode.MultipleRows">
                     <SbColumn TItem="MenuListDto" Title="@L["Actions"]" Width="152px" Sortable="false">
                         <CellTemplate Context="cellContext">
                             <SbStack Direction="SbStackDirection.Row" Gap="1">
@@ -60,14 +64,14 @@
                             </SbStack>
                         </CellTemplate>
                     </SbColumn>
-                    <SbColumn TItem="MenuListDto" Field="Name" Title="@L["MenuName"]" Sortable="true" />
+                    <SbColumn TItem="MenuListDto" Field="Name" Title="@L["MenuName"]" Sortable="true" Filterable="true"/>
                     <SbColumn TItem="MenuListDto" Title="@L["ContextType"]" Sortable="true">
                         <CellTemplate Context="cellContext">@ResolveContextType(cellContext.Item.ContextType)</CellTemplate>
                     </SbColumn>
                     <SbColumn TItem="MenuListDto" Title="@L["DisplayName"]" Sortable="true">
                         <CellTemplate Context="cellContext">@ResolveMenuDisplayName(cellContext.Item)</CellTemplate>
                     </SbColumn>
-                    <SbColumn TItem="MenuListDto" Field="IsActive" Title="@L["IsActive"]">
+                    <SbColumn TItem="MenuListDto" Field="IsActive" Title="@L["IsActive"]" Filterable="true" Sortable="true">
                         <CellTemplate Context="cellContext">
                             <SbText Color="@(cellContext.Item.IsActive ? SbColor.Success : SbColor.Muted)">
                                 @(cellContext.Item.IsActive ? "✓" : "—")

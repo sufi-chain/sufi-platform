@@ -72,7 +72,10 @@
                         TotalCount="TotalCount"
                         PageIndexChanged="OnPageIndexChangedAsync"
                         OnSortChanged="OnSortChangedAsync"
-                        KeySelector="@(item => item.Id.ToString())">
+                        KeySelector="@(item => item.Id.ToString())"
+                        ShowFilterRow="true"
+                        ShowColumnChooser="true"
+                        SelectionMode="SbSelectionMode.MultipleRows">
                 <EmptyTemplate>
                     <SbEmptyState Class="text-center p-5"
                                   Title="@L["ShortLinks"]"
@@ -113,7 +116,7 @@
                         </CellTemplate>
                     </SbColumn>
 
-                    <SbColumn TItem="ShortUrlDto" Field="ShortCode" Title="@L["ShortCode"]" Sortable="true">
+                    <SbColumn TItem="ShortUrlDto" Field="ShortCode" Title="@L["ShortCode"]" Sortable="true" Filterable="true">
                         <CellTemplate Context="cellContext">
                             <SbStack Gap="1">
                                 <SbText Class="fw-semibold">@cellContext.Item.ShortCode</SbText>
@@ -125,19 +128,19 @@
                         </CellTemplate>
                     </SbColumn>
 
-                    <SbColumn TItem="ShortUrlDto" Field="DestinationUrl" Title="@L["DestinationUrl"]">
+                    <SbColumn TItem="ShortUrlDto" Field="DestinationUrl" Title="@L["DestinationUrl"]" Filterable="true" Sortable="true">
                         <CellTemplate Context="cellContext">
                             @GetTrimmedUrl(cellContext.Item.DestinationUrl)
                         </CellTemplate>
                     </SbColumn>
 
-                    <SbColumn TItem="ShortUrlDto" Field="ClickCount" Title="@L["ClickCount"]" Sortable="true" Width="120px">
+                    <SbColumn TItem="ShortUrlDto" Field="ClickCount" Title="@L["ClickCount"]" Sortable="true" Width="120px" Filterable="true">
                         <CellTemplate Context="cellContext">
                             <SbBadge Color="SbColor.Primary">@cellContext.Item.ClickCount</SbBadge>
                         </CellTemplate>
                     </SbColumn>
 
-                    <SbColumn TItem="ShortUrlDto" Field="IsActive" Title="@L["IsActive"]" Sortable="true" Width="120px">
+                    <SbColumn TItem="ShortUrlDto" Field="IsActive" Title="@L["IsActive"]" Sortable="true" Width="120px" Filterable="true">
                         <CellTemplate Context="cellContext">
                             <SbBadge Color="@(cellContext.Item.IsActive ? SbColor.Success : SbColor.Secondary)">
                                 @(cellContext.Item.IsActive ? L["Yes"] : L["No"])
@@ -145,7 +148,7 @@
                         </CellTemplate>
                     </SbColumn>
 
-                    <SbColumn TItem="ShortUrlDto" Field="CreationTime" Title="@L["CreatedAt"]" Sortable="true" Width="180px" Format="yyyy-MM-dd HH:mm" />
+                    <SbColumn TItem="ShortUrlDto" Field="CreationTime" Title="@L["CreatedAt"]" Sortable="true" Width="180px" Format="yyyy-MM-dd HH:mm" Filterable="true"/>
                 </ChildContent>
             </SbDataGrid>
         </ChildContent>

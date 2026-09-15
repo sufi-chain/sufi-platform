@@ -2,14 +2,17 @@
 
 Tracks admin UI and platform gaps. Backend support may exist before UI.
 
-**Last updated:** 2026-05-17
+**Last updated:** 2026-09-07
 
 ## Completed
 
 - Workspaces CRUD with tabbed create/edit modals
 - Workspace **Test connection** and **Load models**
-- OpenAI API mode (Chat Completions / Responses) on workspace
-- Cost per 1K tokens on workspace for analytics
+- OpenAI API mode (Chat Completions / Responses) on the model route
+- Cost per 1M tokens on workspace and optional per-route override
+- `OpenAICompatibleController` (`/v1/chat/completions`, embeddings, models) via `IAIService`; chat permission `AI.Chat`
+- Selectable-route catalog for the composer; cached admin provider model list
+- Per-route usage analytics inside a workspace
 - Model configurations CRUD with enable toggle and priority
 - **Test Chat** with streaming toggle and usage chips
 - **Multi-Modal Test** with permission-gated capability tabs
@@ -18,8 +21,7 @@ Tracks admin UI and platform gaps. Backend support may exist before UI.
 - **MCP Servers** CRUD with **Test connection** on grid
 - **MCP Tools** browser with view schema
 - Grouped admin menu (Configuration, Testing, Analytics, RAG, MCP)
-- `OpenAICompatibleController` (`/v1/chat/completions`, embeddings, models)
-- `WorkspaceSyncService` on-demand client/kernel cache
+- `WorkspaceSyncService` on-demand per-request kernel; cached admin model list
 - File-Manager AI structure seeding via `AIOptions`
 
 ## Remaining

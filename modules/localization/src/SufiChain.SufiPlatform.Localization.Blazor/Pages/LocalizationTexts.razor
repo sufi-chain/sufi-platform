@@ -78,7 +78,10 @@
 								TotalCount="_totalCount"
 								PageIndexChanged="OnPageIndexChangedAsync"
 								PageSizeChanged="OnPageSizeChangedAsync"
-								KeySelector="@(item => item.Key)">
+								KeySelector="@(item => item.Key)"
+                        ShowFilterRow="true"
+                        ShowColumnChooser="true"
+                        SelectionMode="SbSelectionMode.MultipleRows">
 						<SbColumn TItem="LocalizationTextWithBaseValueDto" Title="@L["Actions"]" Width="104px" Sortable="false">
 							<CellTemplate Context="ctx">
 								<SbStack Direction="SbStackDirection.Row" Gap="1">
@@ -100,9 +103,9 @@
 								</SbStack>
 							</CellTemplate>
 						</SbColumn>
-						<SbColumn TItem="LocalizationTextWithBaseValueDto" Field="Key" Title="@L["Key"]" Sortable="true" />
-						<SbColumn TItem="LocalizationTextWithBaseValueDto" Field="BaseValue" Title="@L["BaseValue"]" />
-						<SbColumn TItem="LocalizationTextWithBaseValueDto" Field="Value" Title="@L["Value"]" />
+						<SbColumn TItem="LocalizationTextWithBaseValueDto" Field="Key" Title="@L["Key"]" Sortable="true" Filterable="true"/>
+						<SbColumn TItem="LocalizationTextWithBaseValueDto" Field="BaseValue" Title="@L["BaseValue"]" Filterable="true" Sortable="true"/>
+						<SbColumn TItem="LocalizationTextWithBaseValueDto" Field="Value" Title="@L["Value"]" Filterable="true" Sortable="true"/>
 						<SbColumn TItem="LocalizationTextWithBaseValueDto" Title="@L["Status"]" Width="120px">
 							<CellTemplate Context="ctx2">
 								@if (ctx2.Item.IsOverride)
@@ -131,7 +134,10 @@
 								TotalCount="_totalCount"
 								PageIndexChanged="OnPageIndexChangedAsync"
 								PageSizeChanged="OnPageSizeChangedAsync"
-								KeySelector="@(item => item.Id.ToString())">
+								KeySelector="@(item => item.Id.ToString())"
+                        ShowFilterRow="true"
+                        ShowColumnChooser="true"
+                        SelectionMode="SbSelectionMode.MultipleRows">
 						<SbColumn TItem="LocalizationTextDto" Title="@L["Actions"]" Width="104px" Sortable="false">
 							<CellTemplate Context="ctx">
 								<SbStack Direction="SbStackDirection.Row" Gap="1">
@@ -150,10 +156,10 @@
 								</SbStack>
 							</CellTemplate>
 						</SbColumn>
-						<SbColumn TItem="LocalizationTextDto" Field="ResourceName" Title="@L["ResourceName"]" Sortable="true" />
-						<SbColumn TItem="LocalizationTextDto" Field="CultureName" Title="@L["CultureName"]" Width="100px" Sortable="true" />
-						<SbColumn TItem="LocalizationTextDto" Field="Key" Title="@L["Key"]" Sortable="true" />
-						<SbColumn TItem="LocalizationTextDto" Field="Value" Title="@L["Value"]" />
+						<SbColumn TItem="LocalizationTextDto" Field="ResourceName" Title="@L["ResourceName"]" Sortable="true" Filterable="true"/>
+						<SbColumn TItem="LocalizationTextDto" Field="CultureName" Title="@L["CultureName"]" Width="100px" Sortable="true" Filterable="true"/>
+						<SbColumn TItem="LocalizationTextDto" Field="Key" Title="@L["Key"]" Sortable="true" Filterable="true"/>
+						<SbColumn TItem="LocalizationTextDto" Field="Value" Title="@L["Value"]" Filterable="true" Sortable="true"/>
 					</SbDataGrid>
 				}
 			</SbStack>

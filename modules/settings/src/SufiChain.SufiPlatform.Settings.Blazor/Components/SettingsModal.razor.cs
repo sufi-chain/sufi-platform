@@ -7,8 +7,7 @@ using SufiChain.SufiPlatform.UI.Blazor;
 namespace SufiChain.SufiPlatform.Settings.Blazor.Components;
 
 /// <summary>
-/// Modal component for managing settings with vertical tab navigation.
-/// Matches the pattern used by PermissionsModal and FeaturesModal.
+/// Modal component for managing settings with responsive group navigation.
 /// Settings are managed for the current context using Application Services (DDD-compliant).
 /// </summary>
 public partial class SettingsModal : SettingsComponentBase
@@ -27,13 +26,22 @@ public partial class SettingsModal : SettingsComponentBase
     private List<SettingComponentGroup> _groups = new();
     private string? _selectedTabId;
     private DynamicComponent? _currentComponentRef;
+    private SettingComponentGroup? SelectedGroup => _groups.FirstOrDefault(group => group.Id == _selectedTabId);
 
     /// <summary>
     /// Opens the setting management modal for the current context.
     /// </summary>
     public async Task OpenAsync()
     {
+        if (_isOpen || IsOperationLoading(LoadingKeys.LoadGroups))
+        {
+            return;
+        }
+
         _selectedTabId = null;
+        _currentComponentRef = null;
+        _groups.Clear();
+        _isOpen = true;
 
         await ExecuteWithLoadingAsync(async () =>
         {
@@ -53,24 +61,25 @@ public partial class SettingsModal : SettingsComponentBase
             // Select first tab if not already selected
             if (_groups.Count > 0 && string.IsNullOrEmpty(_selectedTabId))
             {
-                _selectedTabId = GetNormalizedGroupId(_groups.First().Id);
+                _selectedTabId = _groups.First().Id;
             }
         }, LoadingKeys.LoadGroups);
 
-        _isOpen = true;
         StateHasChanged();
     }
 
     private void SelectGroup(string groupId)
     {
+        if (IsOperationLoading(LoadingKeys.Save) || groupId == _selectedTabId)
+        {
+            return;
+        }
+
+        _currentComponentRef = null;
         _selectedTabId = groupId;
         StateHasChanged();
     }
 
-    private string GetNormalizedGroupId(string id)
-    {
-        return "SettingGroup_" + id.Replace(".", "_");
-    }
 
     private Dictionary<string, object?>? GetComponentParameters(SettingComponentGroup group)
     {
@@ -92,7 +101,9 @@ public partial class SettingsModal : SettingsComponentBase
         StateHasChanged();
     }
 
-    private Task SaveAsync() => ExecuteWithLoadingAsync(async () =>
+    private Task SaveAsync() => IsOperationLoading(LoadingKeys.Save) || IsOperationLoading(LoadingKeys.LoadGroups)
+        ? Task.CompletedTask
+        : ExecuteWithLoadingAsync(async () =>
     {
         // Get the current component instance from DynamicComponent
         if (_currentComponentRef?.Instance is ISaveableSettingGroup saveableComponent)

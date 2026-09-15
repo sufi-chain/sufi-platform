@@ -32,7 +32,11 @@
                             PageIndex="_pageIndex"
                             PageSize="_pageSize"
                             TotalCount="_totalCount"
-                            PageIndexChanged="OnPageIndexChangedAsync">
+                            PageIndexChanged="OnPageIndexChangedAsync"
+                            KeySelector="@(item => item.Id.ToString())"
+                        ShowFilterRow="true"
+                        ShowColumnChooser="true"
+                        SelectionMode="SbSelectionMode.MultipleRows">
                     <SbColumn TItem="TagDto" Title="@L["Actions"]" Width="152px" Sortable="false">
                         <CellTemplate Context="cellContext">
                             <SbStack Direction="SbStackDirection.Row" Gap="1">
@@ -63,9 +67,9 @@
                             </SbStack>
                         </CellTemplate>
                     </SbColumn>
-                    <SbColumn TItem="TagDto" Field="Name" Title="@L["TagName"]" Sortable="true" />
-                    <SbColumn TItem="TagDto" Field="Scope" Title="@L["Scope"]" Sortable="true" />
-                    <SbColumn TItem="TagDto" Field="Color" Title="@L["Color"]">
+                    <SbColumn TItem="TagDto" Field="Name" Title="@L["TagName"]" Sortable="true" Filterable="true"/>
+                    <SbColumn TItem="TagDto" Field="Scope" Title="@L["Scope"]" Sortable="true" Filterable="true"/>
+                    <SbColumn TItem="TagDto" Field="Color" Title="@L["Color"]" Filterable="true" Sortable="true">
                         <CellTemplate Context="cellContext">
                             @if (!string.IsNullOrWhiteSpace(cellContext.Item.Color))
                             {
@@ -76,7 +80,7 @@
                             }
                         </CellTemplate>
                     </SbColumn>
-                    <SbColumn TItem="TagDto" Field="CreationTime" Title="@L["Created"]" Sortable="true">
+                    <SbColumn TItem="TagDto" Field="CreationTime" Title="@L["Created"]" Sortable="true" Filterable="true">
                         <CellTemplate Context="cellContext">
                             @cellContext.Item.CreationTime.ToString("yyyy-MM-dd")
                         </CellTemplate>

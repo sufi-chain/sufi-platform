@@ -19,9 +19,9 @@ AI Management follows Sufi Platform layered module structure with domain-driven 
 
 ### Entities
 
-- `Workspace` — aggregate root: provider credentials, chat defaults, embedder/vector JSON, costs
-- `AIModelConfiguration` — per-capability model with priority
-- `AIUsageLog` — usage and cost tracking
+- `Workspace` — aggregate root: provider credentials, connection, tenancy, costs, and policy
+- `AIModelConfiguration` — per-capability route: model id, protocol (`OpenAIApiMode`), context window, selectability, optional per-route cost
+- `AIUsageLog` — usage and cost tracking, including `ModelConfigurationId`
 - `MCPServer` — external MCP connection config
 - `DocumentChunk` — RAG chunks (content + embedding metadata)
 
@@ -30,9 +30,9 @@ AI Management follows Sufi Platform layered module structure with domain-driven 
 - `AIService` / `IAIService` — orchestrates capabilities via `IAIProvider` and model configuration
 - `OpenAIProvider` — only provider implementation today
 - `RAGService` / `IRAGService` — document source registry, indexing, semantic search
-- `WorkspaceSyncService` — loads workspace from DB and caches `IChatClient`, `Kernel`, embedding generator per workspace name
+- `WorkspaceSyncService` — per-request chat kernels; process-local embedding generators; distributed stamps for embedder and admin model-list caches
 - `WorkspaceManager` — workspace business rules
-- `MCPToolRegistry` — discovers and executes MCP tools
+- `MCPToolRegistry` — discovers and executes MCP tools; `ResolveAsync` persists `UpdateLastConnection`
 
 ### Repositories
 
@@ -45,12 +45,12 @@ AI Management follows Sufi Platform layered module structure with domain-driven 
 
 | Service | Role |
 |---------|------|
-| `AIAppService` | Multi-modal operations, model config CRUD, usage queries |
-| `WorkspaceAppService` | Workspace CRUD, list models, test connection |
+| `AIAppService` | Multi-modal operations, model config CRUD, usage queries (including `CostByRoute`) |
+| `WorkspaceAppService` | Workspace CRUD, cached provider model list, test connection |
+| `AIModelCatalogAppService` | End-user selectable routes for the composer picker |
 | `AIChatAppService` | Thin chat wrapper |
 | `RAGAppService` | RAG search, indexing, source listing |
 | `MCPServerAppService` / `MCPToolAppService` | MCP management and execution |
-| `AIKernelAppService` | Returns Semantic Kernel for workspace |
 
 Object mapping uses Mapperly (or project-standard mapper) for entity ↔ DTO.
 
@@ -76,9 +76,10 @@ Object mapping uses Mapperly (or project-standard mapper) for entity ↔ DTO.
 
 1. **ABP dynamic API** — conventional controllers generated from `I*AppService` in `Application.Contracts` (standard ABP remote service pattern).
 2. **`OpenAICompatibleController`** — explicit routes under `/v1`:
-   - `POST /v1/chat/completions` (streaming supported)
-   - Embeddings and models endpoints
-   - Requires `WorkspaceName` on the request body; uses `IAIKernelAppService`
+   - `POST /v1/chat/completions` (streaming supported; `AIPermissions.AI.Chat`)
+   - `POST /v1/embeddings` (`AIPermissions.AI.Embeddings`)
+   - `GET /v1/models` (ready chat routes for `workspaceName`)
+   - Requires `WorkspaceName`; executes through `IAIService`. No kernel accessor.
 
 ## Blazor layer
 
@@ -110,7 +111,7 @@ Operations are scoped by workspace name and tenant. Usage logs and configuration
 
 ### On-demand workspace sync
 
-`WorkspaceSyncService` builds provider clients from DB workspace rows and caches them in static concurrent dictionaries until cache clear/restart.
+`WorkspaceSyncService` builds per-request kernels from DB workspace rows. Embedding generators are process-local. Admin `GetAvailableModelsAsync` uses a distributed cache with a salted credential fingerprint. `ClearWorkspaceCache` invalidates both.
 
 ### RAG document sources
 
@@ -121,7 +122,7 @@ Modules implement `IDocumentSource` (`SourceName`, `SearchAsync`, `GetByIdAsync`
 ### MCP tool discovery
 
 - Internal: `[SufiAiMcpTool]` on application service methods
-- External: MCP servers registered per workspace
+- External: MCP servers registered per tenant
 
 ## Dependencies
 

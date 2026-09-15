@@ -1,6 +1,7 @@
 {
   "culture": "ar",
   "texts": {
+    "SettingsSaveScope": "يُطبّق الحفظ على {0}. احفظ تغييراتك قبل الانتقال إلى مجموعة أخرى.",
     "Feature:SettingsGroup": "إدارة الإعدادات",
     "Feature:SettingsEnable": "تمكين إدارة الإعدادات",
     "Feature:SettingsEnableDescription": "تمكين نظام إدارة الإعدادات في التطبيق.",

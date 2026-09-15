@@ -9,8 +9,9 @@ Map product requirements to AI Management capabilities before building a custom 
 - **Route:** `/admin/ai/workspaces`
 - Create and edit workspaces (OpenAI provider in UI today)
 - Load available models from provider API, test connection before save
-- Configure default chat model, API key, base URL, OpenAI API mode (Chat Completions vs Responses), temperature, max tokens, optional cost per 1K tokens
-- RAG embeddings use multimodal `AIModelConfiguration` (Embeddings); vector store is host `VectorStore:*` only
+- Configure default chat model, API key, base URL, optional cost per 1M tokens
+- Chat protocol (`OpenAIApiMode`), context window, display name, and user-selectability live on each `AIModelConfiguration`
+- RAG embeddings use multimodal `AIModelConfiguration` (Embeddings); vector store is host `VectorStore:*` only. MCP/RAG authorization is copilot policy, not workspace configuration.
 
 ### Configuration
 
@@ -43,15 +44,15 @@ Application services (also exposed as ABP dynamic HTTP API unless disabled):
 
 | Service | Purpose |
 |---------|---------|
-| `IAIAppService` | Chat (incl. stream), audio, vision, embeddings, model configs, usage stats |
-| `IWorkspaceAppService` | Workspace CRUD, list models, test connection |
+| `IAIAppService` | Chat (incl. stream), audio, vision, embeddings, model configs, usage stats (including per-route cost) |
+| `IWorkspaceAppService` | Workspace CRUD, cached list models, test connection |
+| `IAIModelCatalogAppService` | Selectable routes for the composer picker |
 | `IAIChatAppService` | Simplified single-message chat |
 | `IRAGAppService` | Document sources list, search, indexing status, start indexing |
 | `IMCPServerAppService` | MCP server CRUD, test connection |
 | `IMCPToolAppService` | List tools, execute tool, refresh registry |
-| `IAIKernelAppService` | Resolve Semantic Kernel for a workspace |
 
-**OpenAI-compatible HTTP API:** `POST /v1/chat/completions`, embeddings and models endpoints via `OpenAICompatibleController` (requires `WorkspaceName` on requests). See [API](api.md).
+**OpenAI-compatible HTTP API:** `POST /v1/chat/completions`, embeddings, and `GET /v1/models` via `OpenAICompatibleController`. Chat requires `AIPermissions.AI.Chat` and a `WorkspaceName`. Model names map to ready workspace routes; there is no hardcoded llama/mistral list. See [API](api.md).
 
 ## AI capabilities
 

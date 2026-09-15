@@ -154,7 +154,9 @@
 												PageIndex="_memberPageIndex"
 												PageSize="_memberPageSize"
 												TotalCount="_memberTotalCount"
-												PageIndexChanged="OnMemberPageIndexChangedAsync">
+												PageIndexChanged="OnMemberPageIndexChangedAsync"
+                        ShowFilterRow="true"
+                        ShowColumnChooser="true">
 										<SbColumn TItem="OrganizationUnitMemberDto" Title="@L["UserName"]">
 											<CellTemplate Context="cellContext">
 												@cellContext.Item.UserName
@@ -208,7 +210,9 @@
 												PageIndex="_rolePageIndex"
 												PageSize="_rolePageSize"
 												TotalCount="_roleTotalCount"
-												PageIndexChanged="OnRolePageIndexChangedAsync">
+												PageIndexChanged="OnRolePageIndexChangedAsync"
+                        ShowFilterRow="true"
+                        ShowColumnChooser="true">
 										<SbColumn TItem="OrganizationUnitRoleDto" Title="@L["RoleName"]">
 											<CellTemplate Context="cellContext">
 												<SbStack Direction="SbStackDirection.Row" Gap="2" Align="SbAlign.Center">
@@ -344,7 +348,9 @@
 									</AuthorizeView>
 								</SbStack>
 								<SbDataGrid TItem="OrganizationUnitMemberDto" @ref="_membersGridRefMobile" ItemsProvider="LoadMembersDataAsync" Loading="IsOperationLoading(LoadingKeys.LoadMembers)" Striped="true" Hoverable="true"
-											PageIndex="_memberPageIndex" PageSize="_memberPageSize" TotalCount="_memberTotalCount" PageIndexChanged="OnMemberPageIndexChangedAsync">
+											PageIndex="_memberPageIndex" PageSize="_memberPageSize" TotalCount="_memberTotalCount" PageIndexChanged="OnMemberPageIndexChangedAsync"
+                        ShowFilterRow="true"
+                        ShowColumnChooser="true">
 									<SbColumn TItem="OrganizationUnitMemberDto" Title="@L["UserName"]">
 										<CellTemplate Context="cellContext">@cellContext.Item.UserName</CellTemplate>
 									</SbColumn>
@@ -378,7 +384,9 @@
 									</AuthorizeView>
 								</SbStack>
 								<SbDataGrid TItem="OrganizationUnitRoleDto" @ref="_rolesGridRefMobile" ItemsProvider="LoadRolesDataAsync" Loading="IsOperationLoading(LoadingKeys.LoadRoles)" Striped="true" Hoverable="true"
-											PageIndex="_rolePageIndex" PageSize="_rolePageSize" TotalCount="_roleTotalCount" PageIndexChanged="OnRolePageIndexChangedAsync">
+											PageIndex="_rolePageIndex" PageSize="_rolePageSize" TotalCount="_roleTotalCount" PageIndexChanged="OnRolePageIndexChangedAsync"
+                        ShowFilterRow="true"
+                        ShowColumnChooser="true">
 									<SbColumn TItem="OrganizationUnitRoleDto" Title="@L["RoleName"]">
 										<CellTemplate Context="cellContext">
 											<SbStack Direction="SbStackDirection.Row" Gap="2" Align="SbAlign.Center">

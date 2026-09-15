@@ -197,7 +197,7 @@
 
 .permission-nav__count--active,
 .permission-nav__item--active .permission-nav__count {
-    color: var(--sb-color-primary, var(--sb-primary));
+    color: var(--sb-color-primary-text, var(--sb-primary));
     font-weight: 650;
 }
 

@@ -25,6 +25,7 @@ public partial class SettingsManagement : SettingsComponentBase
     private List<SettingComponentGroup> _groups = new();
     private string? _selectedTabId;
     private DynamicComponent? _currentComponentRef;
+    private SettingComponentGroup? SelectedGroup => _groups.FirstOrDefault(group => group.Id == _selectedTabId);
 
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -61,22 +62,30 @@ public partial class SettingsManagement : SettingsComponentBase
         // Select first tab if not already selected
         if (_groups.Count > 0 && string.IsNullOrEmpty(_selectedTabId))
         {
-            _selectedTabId = GetNormalizedGroupId(_groups.First().Id);
+            _selectedTabId = _groups.First().Id;
         }
     }, LoadingKeys.LoadGroups);
 
     private void SelectGroup(string groupId)
     {
+        if (IsOperationLoading(LoadingKeys.Save) || groupId == _selectedTabId)
+        {
+            return;
+        }
+
+        _currentComponentRef = null;
         _selectedTabId = groupId;
         StateHasChanged();
     }
 
-    private string GetNormalizedGroupId(string id)
+    private static Dictionary<string, object?>? GetComponentParameters(SettingComponentGroup group)
     {
-        return "SettingGroup_" + id.Replace(".", "_");
+        return group.Parameter == null ? null : new Dictionary<string, object?> { ["Parameter"] = group.Parameter };
     }
 
-    private Task SaveAsync() => ExecuteWithLoadingAsync(async () =>
+    private Task SaveAsync() => IsOperationLoading(LoadingKeys.Save) || IsOperationLoading(LoadingKeys.LoadGroups)
+        ? Task.CompletedTask
+        : ExecuteWithLoadingAsync(async () =>
     {
         // Get the current component instance from DynamicComponent
         if (_currentComponentRef?.Instance is ISaveableSettingGroup saveableComponent)

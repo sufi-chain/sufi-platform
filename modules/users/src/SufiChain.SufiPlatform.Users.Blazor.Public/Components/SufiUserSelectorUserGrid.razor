@@ -16,6 +16,8 @@
             PageIndexChanged="PageIndexChanged"
             SelectionMode="SelectionMode"
             KeySelector="@(item => item.Id.ToString())"
+                        ShowFilterRow="true"
+                        ShowColumnChooser="true"
             SelectedKeys="SelectedKeys"
             SelectedKeysChanged="SelectedKeysChanged"
             OnRowClicked="OnRowClicked">
@@ -26,13 +28,13 @@
         </SbStack>
     </EmptyTemplate>
     <ChildContent>
-        <SbColumn TItem="UserLookupDto" Field="UserName" Title="@L["UserName"]" />
+        <SbColumn TItem="UserLookupDto" Field="UserName" Title="@L["UserName"]" Filterable="true" Sortable="true"/>
         <SbColumn TItem="UserLookupDto" Title="@L["DisplayName"]">
             <CellTemplate Context="cellContext">
                 @cellContext.Item.DisplayName
             </CellTemplate>
         </SbColumn>
-        <SbColumn TItem="UserLookupDto" Field="Email" Title="@L["Email"]" />
-        <SbColumn TItem="UserLookupDto" Field="PhoneNumber" Title="@L["PhoneNumber"]" Width="140px" />
+        <SbColumn TItem="UserLookupDto" Field="Email" Title="@L["Email"]" Filterable="true" Sortable="true"/>
+        <SbColumn TItem="UserLookupDto" Field="PhoneNumber" Title="@L["PhoneNumber"]" Width="140px" Filterable="true" Sortable="true"/>
     </ChildContent>
 </SbDataGrid>

@@ -1,6 +1,7 @@
 {
   "culture": "fa",
   "texts": {
+    "SettingsSaveScope": "ذخیره برای {0} اعمال می‌شود. پیش از تغییر گروه، تغییرات خود را ذخیره کنید.",
     "Feature:SettingsGroup": "مدیریت تنظیمات",
     "Feature:SettingsEnable": "فعال‌سازی مدیریت تنظیمات",
     "Feature:SettingsEnableDescription": "سیستم مدیریت تنظیمات را در برنامه فعال می‌کند.",

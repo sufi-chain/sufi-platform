@@ -23,6 +23,9 @@
                         Bordered="false"
                         ShowColumnFilters="false"
                         KeySelector="@(item => item.Id.ToString())"
+                        ShowFilterRow="true"
+                        ShowColumnChooser="true"
+                        SelectionMode="SbSelectionMode.MultipleRows"
                         AriaLabel="@L["Editions"]">
                 <ChildContent>
                     <SbColumn TItem="EditionDto" Title="@L["Actions"]" Width="152px" Sortable="false">
@@ -55,7 +58,7 @@
                             </SbStack>
                         </CellTemplate>
                     </SbColumn>
-                    <SbColumn TItem="EditionDto" Field="Name" Title="@L["EditionName"]" Sortable="true">
+                    <SbColumn TItem="EditionDto" Field="Name" Title="@L["EditionName"]" Sortable="true" Filterable="true">
                         <CellTemplate Context="ctx">
                             <SbStack Direction="SbStackDirection.Column" Gap="0">
                                 <SbText Variant="SbTextVariant.BodySmall" Weight="SbFontWeight.Medium">@ctx.Item.Name</SbText>
@@ -63,12 +66,12 @@
                             </SbStack>
                         </CellTemplate>
                     </SbColumn>
-                    <SbColumn TItem="EditionDto" Field="Code" Title="@L["EditionCode"]" Width="140px">
+                    <SbColumn TItem="EditionDto" Field="Code" Title="@L["EditionCode"]" Width="140px" Filterable="true" Sortable="true">
                         <CellTemplate Context="ctx">
                             <SbChip Color="SbColor.Secondary" Size="SbSize.Sm">@ctx.Item.Code</SbChip>
                         </CellTemplate>
                     </SbColumn>
-                    <SbColumn TItem="EditionDto" Field="IsActive" Title="@L["EditionIsActive"]" Width="120px" Align="SbColumnAlign.Center">
+                    <SbColumn TItem="EditionDto" Field="IsActive" Title="@L["EditionIsActive"]" Width="120px" Align="SbColumnAlign.Center" Filterable="true" Sortable="true">
                         <CellTemplate Context="ctx">
                             @if (ctx.Item.IsActive)
                             {

@@ -60,10 +60,10 @@ public partial class SecurityLogManagement : IdentityComponentBase
         {
             StartTime = _startDate?.ToDateTime(TimeOnly.MinValue),
             EndTime = _endDate?.ToDateTime(TimeOnly.MaxValue),
-            UserName = _userName,
-            Action = _action,
-            ClientIpAddress = _clientIpAddress,
-            ApplicationName = _applicationName,
+            UserName = request.GetFilterValue("UserName") ?? _userName,
+            Action = request.GetFilterValue("Action") ?? _action,
+            ClientIpAddress = request.GetFilterValue("ClientIpAddress") ?? _clientIpAddress,
+            ApplicationName = request.GetFilterValue("ApplicationName") ?? _applicationName,
             SkipCount = Math.Max(0, request.PageIndex * request.PageSize),
             MaxResultCount = request.PageSize,
             Sorting = "CreationTime DESC"

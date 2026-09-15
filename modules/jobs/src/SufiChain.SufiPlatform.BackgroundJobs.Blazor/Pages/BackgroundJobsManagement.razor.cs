@@ -88,10 +88,14 @@ public partial class BackgroundJobsManagement : BackgroundJobsComponentBase
     {
         var result = await BackgroundJobAppService.GetListAsync(new GetBackgroundJobListInput
         {
-            JobName = _jobName,
-            ApplicationName = _applicationName,
-            IsAbandoned = _isAbandoned,
-            Priority = _priority,
+            JobName = request.GetFilterValue("JobName") ?? _jobName,
+            ApplicationName = request.GetFilterValue("ApplicationName") ?? _applicationName,
+            IsAbandoned = bool.TryParse(request.GetFilterValue("IsAbandoned"), out var abandoned)
+                ? abandoned
+                : _isAbandoned,
+            Priority = Enum.TryParse<BackgroundJobPriority>(request.GetFilterValue("Priority"), out var priority)
+                ? priority
+                : _priority,
             SkipCount = Math.Max(0, request.PageIndex * request.PageSize),
             MaxResultCount = request.PageSize
         });

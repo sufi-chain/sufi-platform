@@ -65,7 +65,7 @@ public partial class RoleManagement : IdentityComponentBase
     {
         var result = await RoleAppService.GetListAsync(new GetIdentityRolesInput
         {
-            Filter = _filter,
+            Filter = request.GetFilterValue("Name") ?? _filter,
             SkipCount = Math.Max(0, request.PageIndex * request.PageSize),
             MaxResultCount = request.PageSize
         });

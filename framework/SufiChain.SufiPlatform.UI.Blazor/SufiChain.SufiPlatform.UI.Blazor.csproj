@@ -27,11 +27,11 @@
 
 
 
-  <ItemGroup Condition="'$(UseLocalDevelopmentReferences)' == 'true' And Exists('..\..\..\independent-projects\sufi-blazor\src\SufiChain.SufiBlazor\SufiChain.SufiBlazor.csproj')">
+  <ItemGroup Condition="Exists('..\..\..\independent-projects\sufi-blazor\src\SufiChain.SufiBlazor\SufiChain.SufiBlazor.csproj')">
     <ProjectReference Include="..\..\..\independent-projects\sufi-blazor\src\SufiChain.SufiBlazor\SufiChain.SufiBlazor.csproj" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(UseLocalDevelopmentReferences)' != 'true' Or !Exists('..\..\..\independent-projects\sufi-blazor\src\SufiChain.SufiBlazor\SufiChain.SufiBlazor.csproj')">
+  <ItemGroup Condition="!Exists('..\..\..\independent-projects\sufi-blazor\src\SufiChain.SufiBlazor\SufiChain.SufiBlazor.csproj')">
     <PackageReference Include="SufiChain.SufiBlazor" Version="$(SufiBlazorVersion)" />
   </ItemGroup>
 

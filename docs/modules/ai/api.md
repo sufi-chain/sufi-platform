@@ -111,13 +111,16 @@ Task RefreshToolRegistryAsync();
 Task<ChatResponseDto> SendMessageAsync(SendChatMessageInput input);
 ```
 
-### IAIKernelAppService
+### IAIModelCatalogAppService
+
+End-user selectable routes for the composer picker. Authorized with `AIPermissions.AI.Chat`.
 
 ```csharp
-Task<object> GetKernelAsync(string workspaceName, CancellationToken cancellationToken = default);
+Task<List<AIModelRouteDto>> GetSelectableRoutesAsync(GetSelectableModelRoutesInput input);
 ```
 
-Cast result to `Microsoft.SemanticKernel.Kernel` in advanced scenarios.
+`GetSelectableModelRoutesInput`: `WorkspaceId`, `CapabilityType` (default ChatCompletion), optional `CopilotId`.
+`AIModelRouteDto` omits endpoint and credentials.
 
 ## HTTP API
 
@@ -135,7 +138,7 @@ Explicit OpenAI-style routes (see `SufiChain.SufiPlatform.SufiAI.HttpApi`):
 | POST | `/v1/embeddings` | Workspace-scoped embeddings |
 | GET | `/v1/models` | Lists models for workspace |
 
-Authorization uses `AIPermissions.Workspaces.Default` on chat completions. Pass the configured workspace **name** (not GUID) on requests.
+Authorization uses `AIPermissions.AI.Chat` on chat completions and `GET /v1/models`. Embeddings use `AIPermissions.AI.Embeddings`. Pass the configured workspace **name** (not GUID) on requests. `GET /v1/models` lists ready enabled chat routes (`id` = `ModelId`). `POST /v1/chat/completions` maps `request.Model` to a ready route by `ModelId`; unknown names return `model_not_found` and duplicates return `model_ambiguous`. Both chat and embeddings execute through `IAIService` (guardrails and usage logging). `IWorkspaceAccessor` / `IAIKernelAppService` are removed.
 
 ## Usage examples
 

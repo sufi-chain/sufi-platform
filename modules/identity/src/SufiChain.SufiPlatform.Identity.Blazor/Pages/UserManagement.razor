@@ -35,7 +35,11 @@
 							PageIndex="_pageIndex"
 							PageSize="_pageSize"
 							TotalCount="_totalCount"
-							PageIndexChanged="OnPageIndexChangedAsync">
+							PageIndexChanged="OnPageIndexChangedAsync"
+							KeySelector="@(item => item.Id.ToString())"
+                        ShowFilterRow="true"
+                        ShowColumnChooser="true"
+                        SelectionMode="SbSelectionMode.MultipleRows">
 					<SbColumn TItem="IdentityUserDto" Title="@L["Actions"]" Width="152px" Sortable="false">
 						<CellTemplate Context="cellContext">
 							<SbStack Direction="SbStackDirection.Row" Gap="1">
@@ -61,10 +65,10 @@
 							</SbStack>
 						</CellTemplate>
 					</SbColumn>
-					<SbColumn TItem="IdentityUserDto" Field="UserName" Title="@L["Username"]" Sortable="true" />
-					<SbColumn TItem="IdentityUserDto" Field="Email" Title="@L["Email"]" Sortable="true" />
-					<SbColumn TItem="IdentityUserDto" Field="PhoneNumber" Title="@L["Phone"]" />
-					<SbColumn TItem="IdentityUserDto" Title="@L["Status"]">
+					<SbColumn TItem="IdentityUserDto" Field="UserName" Title="@L["Username"]" Sortable="true" Filterable="true"/>
+					<SbColumn TItem="IdentityUserDto" Field="Email" Title="@L["Email"]" Sortable="true" Filterable="true"/>
+					<SbColumn TItem="IdentityUserDto" Field="PhoneNumber" Title="@L["Phone"]" Filterable="true" Sortable="true"/>
+					<SbColumn TItem="IdentityUserDto" Field="IsActive" Title="@L["Status"]" Filterable="true" Sortable="true">
 						<CellTemplate Context="cellContext">
 							@if (cellContext.Item.IsActive)
 							{

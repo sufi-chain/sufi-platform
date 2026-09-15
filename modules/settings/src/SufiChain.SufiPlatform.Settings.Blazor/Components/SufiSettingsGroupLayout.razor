@@ -1,0 +1,22 @@
+@namespace SufiChain.SufiPlatform.Settings.Blazor.Components
+@inherits SettingsComponentBase
+
+<div class="settings-layout" aria-busy="@(Busy ? "true" : "false")">
+    <nav class="settings-navigation" aria-label="@L["Settings"]">
+        @foreach (var group in Groups)
+        {
+            <button type="button"
+                    class="settings-navigation-item @(group.Id == SelectedGroupId ? "active" : "")"
+                    aria-current="@(group.Id == SelectedGroupId ? "true" : null)"
+                    aria-controls="@_contentId"
+                    disabled="@Busy"
+                    @onclick="@(() => SelectedGroupIdChanged.InvokeAsync(group.Id))">
+                @group.DisplayName
+            </button>
+        }
+    </nav>
+    <section id="@_contentId" class="settings-content" aria-labelledby="@_headingId">
+        <h3 id="@_headingId" class="settings-heading">@(Groups.FirstOrDefault(group => group.Id == SelectedGroupId)?.DisplayName)</h3>
+        @ChildContent
+    </section>
+</div>

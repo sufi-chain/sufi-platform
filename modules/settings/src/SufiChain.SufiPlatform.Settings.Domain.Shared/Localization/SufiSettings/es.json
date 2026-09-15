@@ -1,6 +1,7 @@
 {
   "culture": "es",
   "texts": {
+    "SettingsSaveScope": "Guardar se aplica a {0}. Guarda los cambios antes de cambiar de grupo.",
     "Feature:SettingsGroup": "Gestión de la configuración",
     "Feature:SettingsEnable": "Habilitar la gestión de la configuración",
     "Feature:SettingsEnableDescription": "Habilite el sistema de gestión de la configuración en la aplicación.",

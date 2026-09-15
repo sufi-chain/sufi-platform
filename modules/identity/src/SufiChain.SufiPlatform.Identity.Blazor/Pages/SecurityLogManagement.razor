@@ -81,24 +81,28 @@
 						PageIndex="_pageIndex"
 						PageSize="_pageSize"
 						TotalCount="_totalCount"
-						PageIndexChanged="OnPageIndexChangedAsync">
+						PageIndexChanged="OnPageIndexChangedAsync"
+						KeySelector="@(item => item.Id.ToString())"
+                        ShowFilterRow="true"
+                        ShowColumnChooser="true"
+                        SelectionMode="SbSelectionMode.MultipleRows">
 				<SbColumn TItem="SecurityLogListItemDto" Title="@L["Time"]" Width="160px" Style="min-width: 160px">
 					<CellTemplate Context="cellContext">
 						@cellContext.Item.CreationTime.ToString("yyyy-MM-dd HH:mm:ss")
 					</CellTemplate>
 				</SbColumn>
-				<SbColumn TItem="SecurityLogListItemDto" Title="@L["Action"]" Width="180px" Style="min-width: 180px">
+				<SbColumn TItem="SecurityLogListItemDto" Field="Action" Title="@L["Action"]" Width="180px" Style="min-width: 180px" Filterable="true" Sortable="true">
 					<CellTemplate Context="cellContext">
 						<SbBadge Color="@GetActionColor(cellContext.Item.Action)">
 							@GetActionDisplayName(cellContext.Item.Action)
 						</SbBadge>
 					</CellTemplate>
 				</SbColumn>
-				<SbColumn TItem="SecurityLogListItemDto" Field="UserName" Title="@L["User"]" Width="150px" Style="min-width: 150px" />
-				<SbColumn TItem="SecurityLogListItemDto" Field="ClientIpAddress" Title="@L["IpAddress"]" Width="130px" Style="min-width: 130px" />
-				<SbColumn TItem="SecurityLogListItemDto" Field="BrowserInfo" Title="@L["Browser"]" />
-				<SbColumn TItem="SecurityLogListItemDto" Field="ApplicationName" Title="@L["Application"]" Width="150px" Style="min-width: 150px" />
-				<SbColumn TItem="SecurityLogListItemDto" Field="Identity" Title="@L["Identity"]" Width="130px" Style="min-width: 130px" />
+				<SbColumn TItem="SecurityLogListItemDto" Field="UserName" Title="@L["User"]" Width="150px" Style="min-width: 150px" Filterable="true" Sortable="true"/>
+				<SbColumn TItem="SecurityLogListItemDto" Field="ClientIpAddress" Title="@L["IpAddress"]" Width="130px" Style="min-width: 130px" Filterable="true" Sortable="true"/>
+				<SbColumn TItem="SecurityLogListItemDto" Field="BrowserInfo" Title="@L["Browser"]" Filterable="true" Sortable="true"/>
+				<SbColumn TItem="SecurityLogListItemDto" Field="ApplicationName" Title="@L["Application"]" Width="150px" Style="min-width: 150px" Filterable="true" Sortable="true"/>
+				<SbColumn TItem="SecurityLogListItemDto" Field="Identity" Title="@L["Identity"]" Width="130px" Style="min-width: 130px" Filterable="true" Sortable="true"/>
 			</SbDataGrid>
 		</ChildContent>
 	</SbCard>

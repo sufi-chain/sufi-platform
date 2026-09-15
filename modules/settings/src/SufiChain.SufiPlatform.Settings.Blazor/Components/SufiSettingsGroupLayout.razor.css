@@ -1,0 +1,103 @@
+.settings-layout {
+    display: grid;
+    grid-template-columns: minmax(10rem, 14rem) minmax(0, 1fr);
+    min-block-size: 25rem;
+    border: 1px solid var(--sb-color-border);
+    border-radius: var(--sb-radius-md, 0.5rem);
+    background: var(--sb-color-surface);
+}
+
+.settings-navigation {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    min-inline-size: 0;
+    padding: 0.75rem;
+    border-inline-end: 1px solid var(--sb-color-border);
+    background: var(--sb-color-surface-variant);
+}
+
+.settings-navigation-item {
+    inline-size: 100%;
+    min-block-size: 2.75rem;
+    padding: 0.75rem;
+    border: 1px solid transparent;
+    border-inline-start: 3px solid transparent;
+    border-radius: var(--sb-radius-sm, 0.25rem);
+    background: transparent;
+    color: var(--sb-color-text);
+    font: inherit;
+    line-height: 1.5;
+    text-align: start;
+    white-space: normal;
+    overflow-wrap: anywhere;
+    cursor: pointer;
+    transition: background-color 150ms ease;
+}
+
+.settings-navigation-item:hover:not(:disabled) {
+    background: var(--sb-color-surface-hover);
+}
+
+.settings-navigation-item.active {
+    border-inline-start-color: var(--sb-color-primary);
+    background: var(--sb-color-primary-light);
+    color: var(--sb-color-primary);
+    font-weight: 600;
+}
+
+.settings-navigation-item:focus-visible {
+    outline: 2px solid var(--sb-color-primary);
+    outline-offset: 2px;
+}
+
+.settings-navigation-item:disabled {
+    opacity: 0.6;
+    cursor: wait;
+}
+
+.settings-content {
+    min-inline-size: 0;
+    overflow-wrap: anywhere;
+}
+
+.settings-heading {
+    margin: 0;
+    padding: 1.25rem 1.5rem;
+    border-block-end: 1px solid var(--sb-color-border);
+    font-size: 1.125rem;
+    font-weight: 600;
+    line-height: 1.5;
+}
+
+@media (max-width: 767px) {
+    .settings-layout {
+        grid-template-columns: minmax(0, 1fr);
+        min-block-size: 0;
+    }
+
+    .settings-navigation {
+        flex-direction: row;
+        flex-wrap: wrap;
+        border-inline-end: 0;
+        border-block-end: 1px solid var(--sb-color-border);
+    }
+
+    .settings-navigation-item {
+        flex: 1 1 9rem;
+        inline-size: auto;
+        min-inline-size: 0;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .settings-navigation-item {
+        transition: none;
+    }
+}
+
+@media (forced-colors: active) {
+    .settings-navigation-item.active {
+        border-color: Highlight;
+    }
+}

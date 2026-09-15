@@ -64,7 +64,7 @@ public partial class Tenants : TenantsComponentBase
     {
         var result = await TenantAppService.GetListAsync(new GetTenantsInput
         {
-            Filter = _filter,
+            Filter = request.GetFilterValue("Name") ?? _filter,
             SkipCount = Math.Max(0, request.PageIndex * request.PageSize),
             MaxResultCount = request.PageSize
         });
