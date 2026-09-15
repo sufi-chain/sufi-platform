@@ -2,6 +2,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
 using Volo.Abp;
+using Volo.Abp.Caching;
 using Volo.Abp.Data;
 using Volo.Abp.Domain;
 using Volo.Abp.Modularity;
@@ -18,13 +19,16 @@ namespace SufiChain.SufiPlatform.SufiAI;
 
 [DependsOn(
     typeof(AbpDddDomainModule),
+    typeof(AbpCachingModule),
     typeof(SufiAIDomainSharedModule),
-    typeof(SufiAIModule)
+    typeof(SufiAIAbstractionsModule)
 )]
 public class SufiAIDomainModule : AbpModule
 {
     public override void ConfigureServices(ServiceConfigurationContext context)
     {
+        context.Services.AddTransient<Web.IWebSearchService, Web.SearXngWebSearchService>();
+        context.Services.AddTransient<Web.IWebContentFetcher, Web.WebContentFetcher>();
         // Register RAG service
         context.Services.AddTransient<IRAGService, RAGService>();
         

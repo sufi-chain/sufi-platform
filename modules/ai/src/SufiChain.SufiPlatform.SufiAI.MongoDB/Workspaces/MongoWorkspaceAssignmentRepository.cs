@@ -27,4 +27,16 @@ public class MongoWorkspaceAssignmentRepository
         var queryable = await GetMongoQueryableAsync(cancellationToken);
         return await queryable.FirstOrDefaultAsync(x => x.TenantId == tenantId && x.SourceWorkspaceId == sourceWorkspaceId, cancellationToken);
     }
+
+    public async Task<List<WorkspaceAssignment>> GetListBySourceWorkspaceAsync(Guid sourceWorkspaceId, CancellationToken cancellationToken = default)
+    {
+        var queryable = await GetMongoQueryableAsync(cancellationToken);
+        return await queryable.Where(x => x.SourceWorkspaceId == sourceWorkspaceId).ToListAsync(cancellationToken);
+    }
+
+    public async Task<WorkspaceAssignment?> FindByTargetWorkspaceAsync(Guid targetWorkspaceId, CancellationToken cancellationToken = default)
+    {
+        var queryable = await GetMongoQueryableAsync(cancellationToken);
+        return await queryable.FirstOrDefaultAsync(x => x.TargetWorkspaceId == targetWorkspaceId, cancellationToken);
+    }
 }

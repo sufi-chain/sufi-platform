@@ -174,21 +174,66 @@ public class PgvectorVectorStoreProvider : IVectorStoreProvider, ITransientDepen
         await command.ExecuteNonQueryAsync(cancellationToken);
     }
 
-    public async Task<int> GetCountAsync(VectorStoreContext context, CancellationToken cancellationToken = default)
+    public async Task DeleteBySourceAsync(VectorStoreContext context, string sourceName, string sourceId, CancellationToken cancellationToken = default)
     {
         await EnsureSchemaAsync(context, cancellationToken);
 
         var dataSource = GetDataSource(context);
         await using var connection = await dataSource.OpenConnectionAsync(cancellationToken);
         await using var command = new NpgsqlCommand($"""
-            select count(*)
-            from {GetQualifiedTableName(context)}
+            delete from {GetQualifiedTableName(context)}
             where tenant_key = @tenant_key
-              and workspace_name = @workspace_name;
+              and workspace_name = @workspace_name
+              and source_name = @source_name
+              and source_id = @source_id;
             """, connection);
 
         command.Parameters.AddWithValue("tenant_key", context.TenantKey);
         command.Parameters.AddWithValue("workspace_name", context.WorkspaceName);
+        command.Parameters.AddWithValue("source_name", sourceName.Trim());
+        command.Parameters.AddWithValue("source_id", sourceId.Trim());
+        await command.ExecuteNonQueryAsync(cancellationToken);
+    }
+
+    public async Task<int> GetCountAsync(VectorStoreContext context, CancellationToken cancellationToken = default)
+    {
+        await EnsureSchemaAsync(context, cancellationToken);
+
+        var dataSource = GetDataSource(context);
+        await using var connection = await dataSource.OpenConnectionAsync(cancellationToken);
+        var sourceFilter = string.IsNullOrWhiteSpace(context.SourceName)
+            ? string.Empty
+            : " and source_name = @source_name";
+        var metadataFilters = context.MetadataFilters
+            .Where(pair => !string.IsNullOrWhiteSpace(pair.Key) && !string.IsNullOrWhiteSpace(pair.Value))
+            .Select((pair, index) => (Key: pair.Key.Trim(), Value: pair.Value.Trim(), Index: index))
+            .ToList();
+        var metadataFilterSql = string.Concat(
+            metadataFilters.Select(filter =>
+                $" and metadata_json ->> @meta_key_{filter.Index} = @meta_value_{filter.Index}"));
+
+        await using var command = new NpgsqlCommand($"""
+            select count(*)
+            from {GetQualifiedTableName(context)}
+            where tenant_key = @tenant_key
+              and workspace_name = @workspace_name
+              {sourceFilter}
+              {metadataFilterSql};
+            """, connection);
+
+        command.Parameters.AddWithValue("tenant_key", context.TenantKey);
+        command.Parameters.AddWithValue("workspace_name", context.WorkspaceName);
+        if (!string.IsNullOrWhiteSpace(context.SourceName))
+        {
+            command.Parameters.AddWithValue("source_name", context.SourceName.Trim());
+        }
+
+        foreach (var filter in metadataFilters)
+        {
+            command.Parameters.AddWithValue($"meta_key_{filter.Index}", filter.Key);
+            command.Parameters.AddWithValue($"meta_value_{filter.Index}", filter.Value);
+        }
+
         return Convert.ToInt32(await command.ExecuteScalarAsync(cancellationToken), CultureInfo.InvariantCulture);
     }
 

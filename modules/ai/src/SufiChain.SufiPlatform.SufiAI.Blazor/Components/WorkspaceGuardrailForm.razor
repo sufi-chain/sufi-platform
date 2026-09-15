@@ -1,0 +1,40 @@
+@namespace SufiChain.SufiPlatform.SufiAI.Blazor.Components
+@inherits AIComponentBase
+
+<SbStack Direction="SbStackDirection.Column" Gap="3">
+	<SbAlert Severity="SbAlertSeverity.Info">
+		@L["GuardrailsHelp"]
+	</SbAlert>
+
+	@if (Disabled)
+	{
+		<SbAlert Severity="SbAlertSeverity.Info">@L["InheritedWorkspaceReadOnly"]</SbAlert>
+	}
+
+	@foreach (var row in Rows)
+	{
+		<SbStack Direction="SbStackDirection.Column" Gap="2">
+			<SbTextField @bind-Value="row.AmountText"
+						 Label="@L[$"Guardrail:{row.Period}"]"
+						 Placeholder="@L["GuardrailUnlimitedPlaceholder"]"
+						 Disabled="@Disabled" />
+			@{
+				var status = Status.FirstOrDefault(item => item.Period == row.Period);
+			}
+			@if (status != null)
+			{
+				<SbStack Direction="SbStackDirection.Column" Gap="1">
+					<SbStack Direction="SbStackDirection.Row" Gap="2" Justify="SbJustify.SpaceBetween">
+						<SbText Variant="SbTextVariant.Caption" Color="@(status.IsExceeded ? SbColor.Danger : SbColor.Muted)">
+							@L["GuardrailUsedOfLimit", status.UsedUsd.ToString("0.##"), status.LimitUsd.ToString("0.##")]
+						</SbText>
+						<SbText Variant="SbTextVariant.Caption" Color="@(status.IsExceeded ? SbColor.Danger : SbColor.Muted)">
+							@(status.IsExceeded ? L["GuardrailExceeded"] : L["GuardrailRemaining", status.RemainingUsd.ToString("0.##")])
+						</SbText>
+					</SbStack>
+					<SbProgress Value="@GetUsagePercent(status)" Color="@(status.IsExceeded ? SbColor.Danger : SbColor.Primary)" />
+				</SbStack>
+			}
+		</SbStack>
+	}
+</SbStack>

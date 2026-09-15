@@ -15,7 +15,9 @@ public class EfCoreWorkspaceRepository : EfCoreRepository<IAIDbContext, Workspac
 
     public override async Task<IQueryable<Workspace>> WithDetailsAsync()
     {
-        return (await GetQueryableAsync()).Include(x => x.ModelConfigurations);
+        return (await GetQueryableAsync())
+            .Include(x => x.ModelConfigurations)
+            .Include(x => x.Guardrails);
     }
 
     public async Task<Workspace?> FindByNameAsync(string name, CancellationToken cancellationToken = default)

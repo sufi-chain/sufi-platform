@@ -27,10 +27,6 @@ public class Workspace : FullAuditedAggregateRoot<Guid>, IMultiTenant
     
     public string? ApiKey { get; protected set; }
     public string? ApiBaseUrl { get; protected set; }
-    public string? SystemPrompt { get; protected set; }
-    public float Temperature { get; protected set; }
-    public int MaxContextTokens { get; protected set; }
-    public OpenAIApiMode OpenAIApiMode { get; protected set; }
     public decimal? InputCostPer1MTokens { get; protected set; }
     public decimal? OutputCostPer1MTokens { get; protected set; }
     public bool IsActive { get; protected set; }
@@ -62,12 +58,9 @@ public class Workspace : FullAuditedAggregateRoot<Guid>, IMultiTenant
     {
         SetName(name);
         Provider = provider;
-        DefaultModel = model;
+        DefaultModel = Check.NotNullOrWhiteSpace(model, nameof(model));
         TenantId = tenantId;
         IsActive = true;
-        Temperature = 0.7f;
-        MaxContextTokens = 200000;
-        OpenAIApiMode = OpenAIApiMode.ChatCompletions;
     }
     
     public void SetName(string name)
@@ -79,10 +72,6 @@ public class Workspace : FullAuditedAggregateRoot<Guid>, IMultiTenant
         string model,
         string? apiKey,
         string? apiBaseUrl,
-        string? systemPrompt,
-        float temperature,
-        int maxContextTokens,
-        OpenAIApiMode openAIApiMode = OpenAIApiMode.ChatCompletions,
         decimal? inputCostPer1MTokens = null,
         decimal? outputCostPer1MTokens = null
     )
@@ -90,23 +79,16 @@ public class Workspace : FullAuditedAggregateRoot<Guid>, IMultiTenant
         ValidatePricing(inputCostPer1MTokens, nameof(inputCostPer1MTokens));
         ValidatePricing(outputCostPer1MTokens, nameof(outputCostPer1MTokens));
 
-        DefaultModel = model;
+        DefaultModel = Check.NotNullOrWhiteSpace(model, nameof(model));
         ApiKey = apiKey;
         ApiBaseUrl = apiBaseUrl;
-        SystemPrompt = systemPrompt;
-        Temperature = temperature;
-        MaxContextTokens = maxContextTokens;
-        OpenAIApiMode = openAIApiMode;
         InputCostPer1MTokens = inputCostPer1MTokens;
         OutputCostPer1MTokens = outputCostPer1MTokens;
     }
 
     public void UpdatePrimaryChatConfiguration(
         string model,
-        string? apiBaseUrl,
-        OpenAIApiMode openAIApiMode,
-        decimal? inputCostPer1MTokens,
-        decimal? outputCostPer1MTokens)
+        string? apiBaseUrl)
     {
         var configuration = GetPrimaryConfiguration(AICapabilityType.ChatCompletion);
         if (configuration == null)
@@ -119,10 +101,14 @@ public class Workspace : FullAuditedAggregateRoot<Guid>, IMultiTenant
             apiBaseUrl,
             configuration.ApiKey,
             configuration.Priority,
-            openAIApiMode,
-            inputCostPer1MTokens,
-            outputCostPer1MTokens,
-            configuration.Dimensions);
+            configuration.OpenAIApiMode,
+            configuration.InputCostPer1MTokens,
+            configuration.OutputCostPer1MTokens,
+            configuration.Dimensions,
+            configuration.DisplayName,
+            configuration.IsUserSelectable,
+            configuration.Description,
+            configuration.MaxContextTokens);
     }
     
     /// <summary>
@@ -134,10 +120,14 @@ public class Workspace : FullAuditedAggregateRoot<Guid>, IMultiTenant
         string? apiEndpoint = null,
         string? apiKey = null,
         int priority = 0,
-        OpenAIApiMode? openAIApiMode = null,
+        OpenAIApiMode openAIApiMode = OpenAIApiMode.ChatCompletions,
         decimal? inputCostPer1MTokens = null,
         decimal? outputCostPer1MTokens = null,
-        int? dimensions = null
+        int? dimensions = null,
+        string? displayName = null,
+        bool isUserSelectable = false,
+        string? description = null,
+        int maxContextTokens = AIModelConfiguration.DefaultMaxContextTokens
     )
     {
         var config = new AIModelConfiguration(
@@ -156,20 +146,16 @@ public class Workspace : FullAuditedAggregateRoot<Guid>, IMultiTenant
             openAIApiMode,
             inputCostPer1MTokens,
             outputCostPer1MTokens,
-            dimensions);
+            dimensions,
+            displayName,
+            isUserSelectable,
+            description,
+            maxContextTokens);
         
         _modelConfigurations.Add(config);
         return config;
     }
-    
-    /// <summary>
-    /// Remove a model configuration
-    /// </summary>
-    public void RemoveModelConfiguration(AIModelConfiguration configuration)
-    {
-        _modelConfigurations.Remove(configuration);
-    }
-    
+
     /// <summary>
     /// Get the primary (highest priority) configuration for a capability
     /// </summary>
@@ -180,15 +166,7 @@ public class Workspace : FullAuditedAggregateRoot<Guid>, IMultiTenant
             .OrderBy(c => c.Priority)
             .FirstOrDefault();
     }
-    
-    /// <summary>
-    /// Check if a capability is configured and enabled
-    /// </summary>
-    public bool HasCapability(AICapabilityType capabilityType)
-    {
-        return _modelConfigurations.Any(c => c.CapabilityType == capabilityType && c.IsEnabled);
-    }
-    
+
     public void Activate() => IsActive = true;
     public void Deactivate() => IsActive = false;
 
@@ -196,7 +174,7 @@ public class Workspace : FullAuditedAggregateRoot<Guid>, IMultiTenant
     {
         if (TenantId == null)
         {
-            throw new BusinessException("AI:InheritedWorkspaceMustBelongToTenant");
+            throw new BusinessException(AIErrorCodes.InheritedWorkspaceMustBelongToTenant);
         }
 
         IsInherited = true;

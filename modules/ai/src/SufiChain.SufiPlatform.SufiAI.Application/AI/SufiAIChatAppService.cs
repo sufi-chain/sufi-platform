@@ -1,9 +1,7 @@
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
@@ -23,28 +21,25 @@ namespace SufiChain.SufiPlatform.SufiAI;
 public class SufiAIChatAppService : SufiApplicationService, ISufiAIChatAppService
 {
     protected ISufiAIChatService ChatService { get; }
-    protected IWorkspaceAccessor WorkspaceAccessor { get; }
-    protected WorkspaceSyncService WorkspaceSyncService { get; }
+    protected IAIToolChatExecutor ToolChatExecutor { get; }
     protected IMCPKernelToolRegistrar ToolRegistrar { get; }
     protected IWorkspaceRepository WorkspaceRepository { get; }
-    protected IAIUsageLogRepository UsageLogRepository { get; }
+    protected IWorkspaceRuntimeConfigurationResolver RuntimeConfigurationResolver { get; }
     protected IWorkspaceGuardrailService WorkspaceGuardrailService { get; }
 
     public SufiAIChatAppService(
         ISufiAIChatService chatService,
-        IWorkspaceAccessor workspaceAccessor,
-        WorkspaceSyncService workspaceSyncService,
+        IAIToolChatExecutor toolChatExecutor,
         IMCPKernelToolRegistrar toolRegistrar,
         IWorkspaceRepository workspaceRepository,
-        IAIUsageLogRepository usageLogRepository,
+        IWorkspaceRuntimeConfigurationResolver runtimeConfigurationResolver,
         IWorkspaceGuardrailService workspaceGuardrailService)
     {
         ChatService = chatService;
-        WorkspaceAccessor = workspaceAccessor;
-        WorkspaceSyncService = workspaceSyncService;
+        ToolChatExecutor = toolChatExecutor;
         ToolRegistrar = toolRegistrar;
         WorkspaceRepository = workspaceRepository;
-        UsageLogRepository = usageLogRepository;
+        RuntimeConfigurationResolver = runtimeConfigurationResolver;
         WorkspaceGuardrailService = workspaceGuardrailService;
     }
 
@@ -86,25 +81,17 @@ public class SufiAIChatAppService : SufiApplicationService, ISufiAIChatAppServic
     [Authorize(AIPermissions.MCPTools.Execute)]
     public virtual async Task<SufiAIChatResponseDto> SendMessageWithToolsAsync(SufiAISendChatMessageInput input)
     {
-        var workspace = await WorkspaceRepository.FindByNameAsync(input.WorkspaceName);
-        if (workspace == null)
-        {
-            throw new BusinessException(AIErrorCodes.WorkspaceNotFound)
-                .WithData("WorkspaceName", input.WorkspaceName);
-        }
+        var configuration = await RuntimeConfigurationResolver.ResolveAsync(
+            input.WorkspaceName,
+            AICapabilityType.ChatCompletion,
+            new AIModelRouteSelection
+            {
+                ModelConfigurationId = input.ModelConfigurationId,
+                RequiresToolCalling = true
+            });
 
-        await WorkspaceGuardrailService.EnsureCanExecuteAsync(workspace.Id);
-
-        var kernel = await WorkspaceSyncService.CreateRequestKernelAsync(input.WorkspaceName);
-        await ToolRegistrar.RegisterToolsAsync(
-            kernel,
-            CreateWorkspaceContext(input.WorkspaceName),
-            input.AllowedMcpToolNames);
-
-        var chatService = kernel.GetRequiredService<IChatCompletionService>();
         var chatHistory = new ChatHistory();
         chatHistory.AddSystemMessage(BuildToolUseSystemMessage());
-
         foreach (var message in input.ConversationHistory)
         {
             chatHistory.AddMessage(new AuthorRole(message.Role), message.Content);
@@ -119,41 +106,30 @@ public class SufiAIChatAppService : SufiApplicationService, ISufiAIChatAppServic
             ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions
         };
 
-        var stopwatch = Stopwatch.StartNew();
-        try
+        var executed = await ToolChatExecutor.ExecuteAsync(new AIToolChatExecutionRequest
         {
-            var response = await chatService.GetChatMessageContentAsync(
-                chatHistory,
-                executionSettings,
-                kernel);
+            Configuration = configuration,
+            History = chatHistory,
+            ExecutionSettings = executionSettings,
+            RequiresToolCalling = true,
+            ConfigureKernelAsync = (kernel, cancellationToken) => ToolRegistrar.RegisterToolsAsync(
+                kernel,
+                CreateWorkspaceContext(input.WorkspaceName),
+                input.AllowedMcpToolNames,
+                cancellationToken)
+        });
 
-            stopwatch.Stop();
-            var usage = SemanticKernelChatTokenUsageExtractor.Extract(response);
-            await LogMcpChatUsageAsync(workspace, usage, stopwatch.ElapsedMilliseconds, isSuccess: true);
-
-            return new SufiAIChatResponseDto
-            {
-                Message = response.Content ?? string.Empty,
-                Model = response.ModelId ?? string.Empty,
-                TokensUsed = usage.TotalTokens ?? (usage.HasUsage
-                    ? (usage.InputTokens ?? 0) + (usage.OutputTokens ?? 0)
-                    : null),
-                InputTokens = usage.InputTokens,
-                OutputTokens = usage.OutputTokens
-            };
-        }
-        catch (Exception ex)
+        var usage = executed.Usage;
+        return new SufiAIChatResponseDto
         {
-            stopwatch.Stop();
-            await LogMcpChatUsageAsync(
-                workspace,
-                new SufiAITokenUsage(),
-                stopwatch.ElapsedMilliseconds,
-                isSuccess: false,
-                errorMessage: ex.Message);
-
-            throw;
-        }
+            Message = executed.Response.Content ?? string.Empty,
+            Model = executed.Response.ModelId ?? configuration.ModelId,
+            TokensUsed = usage.TotalTokens ?? (usage.HasUsage
+                ? (usage.InputTokens ?? 0) + (usage.OutputTokens ?? 0)
+                : null),
+            InputTokens = usage.InputTokens,
+            OutputTokens = usage.OutputTokens
+        };
     }
 
     protected virtual SufiAIChatRequest MapRequest(SufiAISendChatMessageInput input)
@@ -161,8 +137,8 @@ public class SufiAIChatAppService : SufiApplicationService, ISufiAIChatAppServic
         var request = new SufiAIChatRequest
         {
             WorkspaceName = input.WorkspaceName,
+            ModelConfigurationId = input.ModelConfigurationId,
             Temperature = input.Temperature,
-            MaxTokens = input.MaxTokens,
             Messages = input.ConversationHistory.Select(message => new SufiAIChatMessage
             {
                 Role = message.Role,
@@ -215,65 +191,4 @@ public class SufiAIChatAppService : SufiApplicationService, ISufiAIChatAppServic
             Do not expose raw JSON unless the user asks for it; summarize tool results naturally in the user's language.
             """;
     }
-
-    protected virtual async Task LogMcpChatUsageAsync(
-        Workspace workspace,
-        SufiAITokenUsage usage,
-        long latencyMs,
-        bool isSuccess,
-        string? errorMessage = null)
-    {
-        var log = new AIUsageLog(
-            GuidGenerator.Create(),
-            workspace.Id,
-            AICapabilityType.ChatCompletion,
-            workspace.Model,
-            workspace.Provider,
-            workspace.TenantId);
-
-        if (isSuccess)
-        {
-            var cost = CalculateCost(workspace, usage.InputTokens, usage.OutputTokens);
-            log.RecordSuccess(
-                usage.InputTokens,
-                usage.OutputTokens,
-                latencyMs,
-                cost.EstimatedCost,
-                usage.TotalTokens,
-                cost.IsCostCalculated,
-                usage.HasUsage ? null : "ProviderDidNotReturnUsage",
-                cost.CostCalculationNote);
-        }
-        else
-        {
-            log.RecordFailure(errorMessage ?? "Unknown error", latencyMs);
-        }
-
-        await UsageLogRepository.InsertAsync(log);
-    }
-
-    protected virtual CostCalculationResult CalculateCost(Workspace workspace, int? inputTokens, int? outputTokens)
-    {
-        var hasTokenUsage = inputTokens.HasValue || outputTokens.HasValue;
-        if (!hasTokenUsage)
-        {
-            return new CostCalculationResult(0, false, "UsageUnavailable");
-        }
-
-        var hasPricing = workspace.InputCostPer1MTokens.HasValue || workspace.OutputCostPer1MTokens.HasValue;
-        if (!hasPricing)
-        {
-            return new CostCalculationResult(0, false, "PricingNotConfigured");
-        }
-
-        var estimatedCost = ((inputTokens ?? 0) * (workspace.InputCostPer1MTokens ?? 0) +
-                             (outputTokens ?? 0) * (workspace.OutputCostPer1MTokens ?? 0)) / 1000000m;
-
-        return new CostCalculationResult(estimatedCost, true, null);
-    }
-
-    protected sealed record CostCalculationResult(
-        decimal EstimatedCost,
-        bool IsCostCalculated,
-        string? CostCalculationNote);
 }

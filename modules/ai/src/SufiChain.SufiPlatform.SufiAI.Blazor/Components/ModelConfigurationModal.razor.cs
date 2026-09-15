@@ -1,4 +1,5 @@
 using System;
+using System.Globalization;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 using SufiChain.SufiPlatform.SufiAI;
@@ -30,16 +31,18 @@ public partial class ModelConfigurationModal : AIComponentBase
     private bool _hasStoredApiKey;
     private CreateAIModelConfigurationDto _model = new();
     private string _priorityText = "0";
-    private string _openAIApiModeText = string.Empty;
+    private string _maxContextTokensText = "200000";
     private string _inputCostPer1MTokensText = string.Empty;
     private string _outputCostPer1MTokensText = string.Empty;
     private string _dimensionsText = string.Empty;
     private List<OpenAIModelDto> _availableModels = new();
-    private int _activeTab;
     private bool _wasOpen;
 
     private bool ShowsOpenAIApiMode =>
         _model.CapabilityType is AICapabilityType.ChatCompletion or AICapabilityType.VisionAnalysis;
+
+    private bool ShowsUserSelectable =>
+        _model.CapabilityType == AICapabilityType.ChatCompletion;
 
     private bool ShowsEmbeddingDimensions =>
         _model.CapabilityType == AICapabilityType.Embeddings;
@@ -75,6 +78,9 @@ public partial class ModelConfigurationModal : AIComponentBase
             AICapabilityType.ImageGeneration => "ImageGenerationCapabilityDescription",
             _ => "ChatCapabilityDescription"
         }];
+
+    private OpenAIPublicListPrice? SuggestedListPrice =>
+        OpenAIPublicListPriceCatalog.TryGet(_model.ModelId, out var price) ? price : null;
 
     private string EmbeddingDimensionsPlaceholder =>
         EmbeddingModelDefaults.GetDimensions(_model.ModelId).ToString();
@@ -113,23 +119,28 @@ public partial class ModelConfigurationModal : AIComponentBase
                 WorkspaceId = Configuration.WorkspaceId,
                 CapabilityType = Configuration.CapabilityType,
                 ModelId = Configuration.ModelId,
+                DisplayName = Configuration.DisplayName,
+                Description = Configuration.Description,
+                IsUserSelectable = Configuration.IsUserSelectable,
                 ApiEndpoint = Configuration.ApiEndpoint,
                 OpenAIApiMode = Configuration.OpenAIApiMode,
+                MaxContextTokens = Configuration.MaxContextTokens > 0
+                    ? Configuration.MaxContextTokens
+                    : AIModelConfigurationConsts.DefaultMaxContextTokens,
                 InputCostPer1MTokens = Configuration.InputCostPer1MTokens,
                 OutputCostPer1MTokens = Configuration.OutputCostPer1MTokens,
                 Priority = Configuration.Priority,
                 Dimensions = Configuration.Dimensions
             };
-            _priorityText = Configuration.Priority.ToString();
-            _openAIApiModeText = Configuration.OpenAIApiMode?.ToString() ?? string.Empty;
-            _inputCostPer1MTokensText = Configuration.InputCostPer1MTokens?.ToString() ?? string.Empty;
-            _outputCostPer1MTokensText = Configuration.OutputCostPer1MTokens?.ToString() ?? string.Empty;
-            _dimensionsText = Configuration.Dimensions?.ToString() ?? string.Empty;
+            _priorityText = Configuration.Priority.ToString(CultureInfo.InvariantCulture);
+            _maxContextTokensText = _model.MaxContextTokens.ToString(CultureInfo.InvariantCulture);
+            _inputCostPer1MTokensText = Configuration.InputCostPer1MTokens?.ToString(CultureInfo.InvariantCulture) ?? string.Empty;
+            _outputCostPer1MTokensText = Configuration.OutputCostPer1MTokens?.ToString(CultureInfo.InvariantCulture) ?? string.Empty;
+            _dimensionsText = Configuration.Dimensions?.ToString(CultureInfo.InvariantCulture) ?? string.Empty;
             _availableModels = new List<OpenAIModelDto>
             {
                 new() { Id = Configuration.ModelId }
             };
-            _activeTab = 0;
         }
         else
         {
@@ -138,15 +149,16 @@ public partial class ModelConfigurationModal : AIComponentBase
             {
                 WorkspaceId = WorkspaceId ?? Guid.Empty,
                 CapabilityType = AICapabilityType.ChatCompletion,
-                Priority = 0
+                Priority = 0,
+                OpenAIApiMode = OpenAIApiMode.ChatCompletions,
+                MaxContextTokens = AIModelConfigurationConsts.DefaultMaxContextTokens
             };
             _priorityText = "0";
-            _openAIApiModeText = string.Empty;
+            _maxContextTokensText = AIModelConfigurationConsts.DefaultMaxContextTokens.ToString(CultureInfo.InvariantCulture);
             _inputCostPer1MTokensText = string.Empty;
             _outputCostPer1MTokensText = string.Empty;
             _dimensionsText = string.Empty;
             _availableModels = new List<OpenAIModelDto>();
-            _activeTab = 0;
         }
     }
 
@@ -155,8 +167,12 @@ public partial class ModelConfigurationModal : AIComponentBase
         _model.CapabilityType = value;
         if (!ShowsOpenAIApiMode)
         {
-            _openAIApiModeText = string.Empty;
-            _model.OpenAIApiMode = null;
+            _model.OpenAIApiMode = OpenAIApiMode.ChatCompletions;
+        }
+
+        if (!ShowsUserSelectable)
+        {
+            _model.IsUserSelectable = false;
         }
 
         if (!ShowsEmbeddingDimensions)
@@ -164,6 +180,54 @@ public partial class ModelConfigurationModal : AIComponentBase
             _dimensionsText = string.Empty;
             _model.Dimensions = null;
         }
+    }
+
+    private void OnModelIdChanged(string? value)
+    {
+        _model.ModelId = value ?? string.Empty;
+        TryApplySuggestedListPriceIfEmpty();
+    }
+
+    private void ApplyOpenAIListPrice()
+    {
+        if (SuggestedListPrice is not { } listPrice)
+        {
+            return;
+        }
+
+        ApplyListPrice(listPrice);
+    }
+
+    private void TryApplySuggestedListPriceIfEmpty()
+    {
+        if (!string.IsNullOrWhiteSpace(_inputCostPer1MTokensText)
+            || !string.IsNullOrWhiteSpace(_outputCostPer1MTokensText)
+            || SuggestedListPrice is not { } listPrice)
+        {
+            return;
+        }
+
+        ApplyListPrice(listPrice);
+    }
+
+    private void ApplyListPrice(OpenAIPublicListPrice listPrice)
+    {
+        _inputCostPer1MTokensText = listPrice.InputCostPer1MTokens.ToString("0.####", CultureInfo.InvariantCulture);
+        _outputCostPer1MTokensText = listPrice.OutputCostPer1MTokens?.ToString("0.####", CultureInfo.InvariantCulture)
+            ?? string.Empty;
+    }
+
+    private string FormatOpenAIListPriceHint(OpenAIPublicListPrice listPrice)
+    {
+        var asOf = OpenAIPublicListPriceCatalog.AsOf;
+        var input = listPrice.InputCostPer1MTokens.ToString("0.####", CultureInfo.InvariantCulture);
+        if (!listPrice.OutputCostPer1MTokens.HasValue)
+        {
+            return L["OpenAIListPriceHintInputOnly", listPrice.ModelId, asOf, input];
+        }
+
+        var output = listPrice.OutputCostPer1MTokens.Value.ToString("0.####", CultureInfo.InvariantCulture);
+        return L["OpenAIListPriceHint", listPrice.ModelId, asOf, input, output];
     }
 
     private async Task SaveConfigurationAsync()
@@ -191,7 +255,12 @@ public partial class ModelConfigurationModal : AIComponentBase
         }
 
         _model.WorkspaceId = WorkspaceId.Value;
-        if (!TryApplyOpenAIApiMode() || !TryApplyPricing() || !TryApplyDimensions())
+        if (!ShowsUserSelectable)
+        {
+            _model.IsUserSelectable = false;
+        }
+
+        if (!TryApplyOpenAIApiMode() || !TryApplyMaxContextTokens() || !TryApplyPricing() || !TryApplyDimensions())
         {
             return;
         }
@@ -203,9 +272,13 @@ public partial class ModelConfigurationModal : AIComponentBase
                 var updateDto = new UpdateAIModelConfigurationDto
                 {
                     ModelId = _model.ModelId,
+                    DisplayName = _model.DisplayName,
+                    Description = _model.Description,
+                    IsUserSelectable = _model.IsUserSelectable,
                     ApiEndpoint = _model.ApiEndpoint,
                     ApiKey = _model.ApiKey,
                     OpenAIApiMode = _model.OpenAIApiMode,
+                    MaxContextTokens = _model.MaxContextTokens,
                     InputCostPer1MTokens = _model.InputCostPer1MTokens,
                     OutputCostPer1MTokens = _model.OutputCostPer1MTokens,
                     Priority = _model.Priority,
@@ -254,7 +327,7 @@ public partial class ModelConfigurationModal : AIComponentBase
                 Model = _model.ModelId,
                 ApiKey = _model.ApiKey,
                 ApiBaseUrl = _model.ApiEndpoint,
-                OpenAIApiMode = _model.OpenAIApiMode ?? OpenAIApiMode.ChatCompletions
+                OpenAIApiMode = _model.OpenAIApiMode
             });
             await Notify.SuccessAsync(L["ConnectionTestSuccessful"]);
         }, LoadingKeys.TestConnection);
@@ -286,7 +359,7 @@ public partial class ModelConfigurationModal : AIComponentBase
 
             if (string.IsNullOrWhiteSpace(_model.ModelId))
             {
-                _model.ModelId = _availableModels[0].Id;
+                OnModelIdChanged(_availableModels[0].Id);
             }
 
             await Message.SuccessAsync(L["ModelsLoadedSuccessfully"]);
@@ -307,20 +380,38 @@ public partial class ModelConfigurationModal : AIComponentBase
 
     private bool TryApplyOpenAIApiMode()
     {
-        if (!ShowsOpenAIApiMode || string.IsNullOrWhiteSpace(_openAIApiModeText))
+        if (!ShowsOpenAIApiMode)
         {
-            _model.OpenAIApiMode = null;
+            _model.OpenAIApiMode = OpenAIApiMode.ChatCompletions;
             return true;
         }
 
-        if (Enum.TryParse<OpenAIApiMode>(_openAIApiModeText, out var apiMode))
+        return true;
+    }
+
+    private bool TryApplyMaxContextTokens()
+    {
+        if (string.IsNullOrWhiteSpace(_maxContextTokensText))
         {
-            _model.OpenAIApiMode = apiMode;
+            _model.MaxContextTokens = AIModelConfigurationConsts.DefaultMaxContextTokens;
             return true;
         }
 
-        _ = Message.ErrorAsync(L["InvalidOpenAIApiMode"]);
-        return false;
+        if (!int.TryParse(_maxContextTokensText, NumberStyles.Integer, CultureInfo.InvariantCulture, out var tokens)
+            && !int.TryParse(_maxContextTokensText, NumberStyles.Integer, CultureInfo.CurrentCulture, out tokens))
+        {
+            _ = Message.ErrorAsync(L["MaxContextTokensMustBeNumber"]);
+            return false;
+        }
+
+        if (tokens < 1)
+        {
+            _model.MaxContextTokens = AIModelConfigurationConsts.DefaultMaxContextTokens;
+            return true;
+        }
+
+        _model.MaxContextTokens = tokens;
+        return true;
     }
 
     private bool TryApplyPricing()
@@ -374,7 +465,9 @@ public partial class ModelConfigurationModal : AIComponentBase
             return true;
         }
 
-        if (decimal.TryParse(value, out var parsed) && parsed >= 0)
+        if ((decimal.TryParse(value, NumberStyles.Number, CultureInfo.InvariantCulture, out var parsed)
+             || decimal.TryParse(value, NumberStyles.Number, CultureInfo.CurrentCulture, out parsed))
+            && parsed >= 0)
         {
             result = parsed;
             return true;

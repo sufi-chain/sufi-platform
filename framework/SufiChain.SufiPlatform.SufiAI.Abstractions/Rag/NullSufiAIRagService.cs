@@ -36,6 +36,22 @@ public class NullSufiAIRagService : ISufiAIRagService, ITransientDependency
     }
 
     /// <inheritdoc />
+    public virtual Task<SufiAIRagIndexDocumentResult> IndexDocumentAsync(
+        SufiAIRagIndexDocumentRequest request,
+        CancellationToken cancellationToken = default)
+    {
+        throw new BusinessException(SufiAIErrorCodes.ProviderNotAvailable);
+    }
+
+    /// <inheritdoc />
+    public virtual Task<int> CountAsync(
+        SufiAIRagCountRequest request,
+        CancellationToken cancellationToken = default)
+    {
+        return Task.FromResult(0);
+    }
+
+    /// <inheritdoc />
     public virtual Task<SufiAIIndexingStatus> GetIndexingStatusAsync(
         string workspaceName,
         string sourceName,

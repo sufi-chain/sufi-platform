@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 
 namespace SufiChain.SufiPlatform.SufiAI;
@@ -11,6 +12,12 @@ public class SufiAIChatRequest
     /// Name of the AI workspace to execute against.
     /// </summary>
     public string WorkspaceName { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Optional selectable model route inside the named workspace.
+    /// Null keeps the workspace default chat route.
+    /// </summary>
+    public Guid? ModelConfigurationId { get; set; }
 
     /// <summary>
     /// Conversation messages, oldest first. The last message is typically the
@@ -27,9 +34,4 @@ public class SufiAIChatRequest
     /// Optional sampling temperature.
     /// </summary>
     public float? Temperature { get; set; }
-
-    /// <summary>
-    /// Optional maximum number of output tokens.
-    /// </summary>
-    public int? MaxTokens { get; set; }
 }

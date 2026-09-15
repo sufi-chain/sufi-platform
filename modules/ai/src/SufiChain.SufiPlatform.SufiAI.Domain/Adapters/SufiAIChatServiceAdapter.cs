@@ -53,9 +53,9 @@ public class SufiAIChatServiceAdapter : ISufiAIChatService, ITransientDependency
         return new ChatCompletionRequest
         {
             WorkspaceName = request.WorkspaceName,
+            ModelConfigurationId = request.ModelConfigurationId,
             SystemPrompt = request.SystemPrompt,
             Temperature = request.Temperature,
-            MaxTokens = request.MaxTokens,
             Stream = stream,
             Messages = request.Messages.Select(message => new ChatMessage
             {

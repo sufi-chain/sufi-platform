@@ -6,6 +6,7 @@ using SufiChain.SufiBlazor.Components.Feedback;
 using SufiChain.SufiPlatform.UI.Layout;
 using SufiChain.SufiPlatform.Application.Dtos;
 using SufiChain.SufiBlazor.Components;
+using Volo.Abp.MultiTenancy;
 
 namespace SufiChain.SufiPlatform.SufiAI.Blazor.Pages.AI;
 
@@ -15,9 +16,11 @@ public partial class Workspaces : AIComponentBase
     {
         public const string LoadWorkspaces = "load-workspaces";
         public const string DeleteWorkspace = "delete-workspace";
+        public const string ConvertWorkspace = "convert-workspace";
     }
 
     [Inject] protected IPageLayout PageLayout { get; set; } = default!;
+    [Inject] protected ICurrentTenant CurrentTenant { get; set; } = default!;
     
     private IWorkspaceAppService WorkspaceAppService => LazyGetRequiredService(ref _workspaceAppService);
     private IWorkspaceAppService? _workspaceAppService;
@@ -30,9 +33,17 @@ public partial class Workspaces : AIComponentBase
     private bool _showCreateModal;
     private bool _showEditModal;
     private Guid? _editingWorkspaceId;
-    private bool _showModelConfigurationsModal;
-    private Guid? _modelConfigurationsWorkspaceId;
-    private string? _modelConfigurationsWorkspaceName;
+    private bool _showCloneModal;
+    private Guid? _cloneWorkspaceId;
+    private string? _cloneSourceName;
+    private bool _showAssignModal;
+    private Guid? _assignWorkspaceId;
+    private string? _assignSourceName;
+
+    private bool IsHost => CurrentTenant.Id == null;
+
+    [Inject]
+    protected NavigationManager Navigation { get; set; } = default!;
 
     protected override void OnInitialized()
     {
@@ -92,11 +103,23 @@ public partial class Workspaces : AIComponentBase
         _showEditModal = true;
     }
 
-    private void OpenModelConfigurationsModal(WorkspaceDto workspace)
+    private void OpenCloneModal(WorkspaceDto workspace)
     {
-        _modelConfigurationsWorkspaceId = workspace.Id;
-        _modelConfigurationsWorkspaceName = workspace.Name;
-        _showModelConfigurationsModal = true;
+        _cloneWorkspaceId = workspace.Id;
+        _cloneSourceName = workspace.Name;
+        _showCloneModal = true;
+    }
+
+    private void OpenAssignModal(WorkspaceDto workspace)
+    {
+        _assignWorkspaceId = workspace.Id;
+        _assignSourceName = workspace.Name;
+        _showAssignModal = true;
+    }
+
+    private void OpenModelConfigurations(WorkspaceDto workspace)
+    {
+        Navigation.NavigateTo($"/panel/admin/ai/workspaces/{workspace.Id}/model-configurations");
     }
 
     private async Task OnWorkspaceCreatedAsync()
@@ -115,6 +138,52 @@ public partial class Workspaces : AIComponentBase
         await ExecuteWithLoadingAsync(
             () => _gridRef?.RefreshDataAsync() ?? Task.CompletedTask,
             LoadingKeys.LoadWorkspaces);
+    }
+
+    private async Task OnWorkspaceConvertedAsync()
+    {
+        _showEditModal = false;
+        await Message.SuccessAsync(L["WorkspaceConvertedSuccessfully"]);
+        await ExecuteWithLoadingAsync(
+            () => _gridRef?.RefreshDataAsync() ?? Task.CompletedTask,
+            LoadingKeys.LoadWorkspaces);
+    }
+
+    private async Task OnWorkspaceClonedAsync()
+    {
+        _showCloneModal = false;
+        await Message.SuccessAsync(L["WorkspaceClonedSuccessfully"]);
+        await ExecuteWithLoadingAsync(
+            () => _gridRef?.RefreshDataAsync() ?? Task.CompletedTask,
+            LoadingKeys.LoadWorkspaces);
+    }
+
+    private async Task OnWorkspaceAssignedAsync()
+    {
+        _showAssignModal = false;
+        await Message.SuccessAsync(L["WorkspaceAssignedSuccessfully"]);
+        await ExecuteWithLoadingAsync(
+            () => _gridRef?.RefreshDataAsync() ?? Task.CompletedTask,
+            LoadingKeys.LoadWorkspaces);
+    }
+
+    private async Task ConvertToCustomAsync(WorkspaceDto workspace)
+    {
+        var confirmed = await Message.ConfirmAsync(
+            L["ConvertToCustomConfirmation", workspace.Name],
+            L["AreYouSure"]);
+
+        if (!confirmed)
+        {
+            return;
+        }
+
+        await ExecuteWithLoadingAsync(async () =>
+        {
+            await WorkspaceAppService.ConvertToCustomAsync(workspace.Id);
+            await Message.SuccessAsync(L["WorkspaceConvertedSuccessfully"]);
+            await (_gridRef?.RefreshDataAsync() ?? Task.CompletedTask);
+        }, LoadingKeys.ConvertWorkspace);
     }
 
     private async Task DeleteWorkspaceAsync(WorkspaceDto workspace)

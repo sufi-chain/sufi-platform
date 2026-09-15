@@ -4,38 +4,34 @@ using System.Text.Json;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
-using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.ChatCompletion;
-using Microsoft.SemanticKernel.Embeddings;
-using SufiChain.SufiPlatform.SufiAI;
-using SufiChain.SufiPlatform.SufiAI.Permissions;
 using SufiChain.SufiPlatform.AspNetCore.Mvc.Controllers;
+using SufiChain.SufiPlatform.SufiAI.OpenAI;
+using SufiChain.SufiPlatform.SufiAI.Permissions;
+using SufiChain.SufiPlatform.SufiAI.Workspaces;
 using Volo.Abp;
 
 namespace SufiChain.SufiPlatform.SufiAI.Controllers;
 
-/// <summary>
-/// OpenAI-compatible API endpoints for AI Management.
-/// Provides /v1/chat/completions, /v1/embeddings, /v1/models endpoints.
-/// </summary>
 [Area("ai")]
 [Route("v1")]
 [RemoteService(IsEnabled = true)]
 public class OpenAICompatibleController : SufiControllerBase
 {
-    private readonly IAIKernelAppService _kernelAppService;
     private readonly IAIService _aiService;
-    private readonly ILogger<OpenAICompatibleController> _logger;
+    private readonly IWorkspaceRepository _workspaceRepository;
+    private readonly IWorkspaceRuntimeConfigurationResolver _runtimeConfigurationResolver;
+    private readonly IWorkspaceGuardrailService _workspaceGuardrailService;
 
     public OpenAICompatibleController(
-        IAIKernelAppService kernelAppService,
         IAIService aiService,
-        ILogger<OpenAICompatibleController> logger)
+        IWorkspaceRepository workspaceRepository,
+        IWorkspaceRuntimeConfigurationResolver runtimeConfigurationResolver,
+        IWorkspaceGuardrailService workspaceGuardrailService)
     {
-        _kernelAppService = kernelAppService;
         _aiService = aiService;
-        _logger = logger;
+        _workspaceRepository = workspaceRepository;
+        _runtimeConfigurationResolver = runtimeConfigurationResolver;
+        _workspaceGuardrailService = workspaceGuardrailService;
     }
 
     [HttpPost("search")]
@@ -96,268 +92,279 @@ public class OpenAICompatibleController : SufiControllerBase
         };
     }
 
-    /// <summary>
-    /// OpenAI-compatible chat completions endpoint with streaming support.
-    /// POST /v1/chat/completions
-    /// </summary>
     [HttpPost("chat/completions")]
-    [Authorize(AIPermissions.Workspaces.Default)]
+    [Authorize(AIPermissions.AI.Chat)]
     public async Task<IActionResult> CreateChatCompletionAsync(
-        [FromBody] ChatCompletionRequest request,
+        [FromBody] OpenAIChatCompletionRequest request,
         CancellationToken cancellationToken = default)
     {
-        try
+        var workspace = await LoadWorkspaceAsync(request.WorkspaceName, cancellationToken);
+        if (workspace == null)
         {
-            var kernel = (Kernel)await _kernelAppService.GetKernelAsync(request.WorkspaceName, cancellationToken);
-            var chatService = kernel.GetRequiredService<IChatCompletionService>();
+            return OpenAIError(404, $"Unknown workspace '{request.WorkspaceName}'.", "workspace_name", "workspace_not_found");
+        }
 
-            var chatHistory = new ChatHistory();
-            foreach (var message in request.Messages)
-            {
-                chatHistory.AddMessage(
-                    new AuthorRole(message.Role),
-                    message.Content
-                );
-            }
+        await _workspaceGuardrailService.EnsureCanExecuteAsync(workspace.Id, cancellationToken);
 
-            var executionSettings = new PromptExecutionSettings
+        var resolved = ResolveReadyRoute(workspace, AICapabilityType.ChatCompletion, request.Model);
+        if (resolved.Error != null)
+        {
+            return resolved.Error;
+        }
+
+        var chatRequest = new ChatCompletionRequest
+        {
+            WorkspaceName = workspace.Name,
+            ModelConfigurationId = resolved.ConfigurationId,
+            Messages = request.Messages.Select(message => new ChatMessage
             {
-                ExtensionData = new Dictionary<string, object>
+                Role = message.Role,
+                Content = message.Content
+            }).ToList(),
+            Temperature = request.Temperature.HasValue ? (float)request.Temperature.Value : null,
+            MaxTokens = request.MaxTokens,
+            Stream = request.Stream
+        };
+
+        if (request.Stream)
+        {
+            return new OpenAIStreamingChatCompletionResult(
+                _aiService.StreamChatMessageAsync(chatRequest, cancellationToken),
+                request.Model,
+                cancellationToken);
+        }
+
+        var executed = await _aiService.SendChatMessageAsync(chatRequest, cancellationToken);
+        return Ok(new OpenAIChatCompletionResponse
+        {
+            Id = $"chatcmpl-{Guid.NewGuid():N}",
+            Object = "chat.completion",
+            Created = DateTimeOffset.UtcNow.ToUnixTimeSeconds(),
+            Model = request.Model,
+            Choices =
+            [
+                new OpenAIChatCompletionChoice
                 {
-                    ["temperature"] = request.Temperature ?? 0.7,
-                    ["max_tokens"] = request.MaxTokens ?? 1000,
-                    ["top_p"] = request.TopP ?? 1.0
-                }
-            };
-
-            if (request.Stream)
-            {
-                return new StreamingChatCompletionResult(
-                    chatService,
-                    chatHistory,
-                    executionSettings,
-                    request.Model,
-                    cancellationToken
-                );
-            }
-
-            var response = await chatService.GetChatMessageContentAsync(
-                chatHistory,
-                executionSettings,
-                kernel,
-                cancellationToken
-            );
-
-            return Ok(new ChatCompletionResponse
-            {
-                Id = $"chatcmpl-{Guid.NewGuid():N}",
-                Object = "chat.completion",
-                Created = DateTimeOffset.UtcNow.ToUnixTimeSeconds(),
-                Model = request.Model,
-                Choices = new List<ChatCompletionChoice>
-                {
-                    new()
+                    Index = 0,
+                    Message = new OpenAIChatMessage
                     {
-                        Index = 0,
-                        Message = new ChatMessage
-                        {
-                            Role = "assistant",
-                            Content = response.Content ?? string.Empty
-                        },
-                        FinishReason = "stop"
-                    }
-                },
-                Usage = new UsageInfo
-                {
-                    PromptTokens = null,
-                    CompletionTokens = null,
-                    TotalTokens = null
+                        Role = "assistant",
+                        Content = executed.Content ?? string.Empty
+                    },
+                    FinishReason = executed.FinishReason ?? "stop"
                 }
-            });
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error in chat completion for workspace {WorkspaceName}", request.WorkspaceName);
-            throw new UserFriendlyException($"Chat completion failed: {ex.Message}");
-        }
-    }
-
-    /// <summary>
-    /// OpenAI-compatible embeddings endpoint.
-    /// POST /v1/embeddings
-    /// </summary>
-    [HttpPost("embeddings")]
-    [Authorize(AIPermissions.Workspaces.Default)]
-    public async Task<IActionResult> CreateEmbeddingsAsync(
-        [FromBody] EmbeddingRequest request,
-        CancellationToken cancellationToken = default)
-    {
-        try
-        {
-            var kernel = (Kernel)await _kernelAppService.GetKernelAsync(request.WorkspaceName, cancellationToken);
-            var embeddingService = kernel.GetRequiredService<ITextEmbeddingGenerationService>();
-
-            var inputs = request.Input is string singleInput
-                ? new[] { singleInput }
-                : ((JsonElement)request.Input).EnumerateArray().Select(e => e.GetString()!).ToArray();
-
-            var embeddings = new List<EmbeddingData>();
-            for (int i = 0; i < inputs.Length; i++)
+            ],
+            Usage = new OpenAIUsageInfo
             {
-                var embedding = await embeddingService.GenerateEmbeddingAsync(inputs[i], cancellationToken: cancellationToken);
-                embeddings.Add(new EmbeddingData
-                {
-                    Index = i,
-                    Embedding = embedding.ToArray(),
-                    Object = "embedding"
-                });
-            }
-
-            return Ok(new EmbeddingResponse
-            {
-                Object = "list",
-                Data = embeddings,
-                Model = request.Model,
-                Usage = new UsageInfo
-                {
-                    PromptTokens = null,
-                    TotalTokens = null
-                }
-            });
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error generating embeddings for workspace {WorkspaceName}", request.WorkspaceName);
-            throw new UserFriendlyException($"Embedding generation failed: {ex.Message}");
-        }
-    }
-
-    /// <summary>
-    /// OpenAI-compatible models list endpoint.
-    /// GET /v1/models
-    /// </summary>
-    [HttpGet("models")]
-    [Authorize(AIPermissions.Workspaces.Default)]
-    public IActionResult ListModels([FromQuery] string workspaceName)
-    {
-        // Return a static list - in production, this could query available models from providers
-        return Ok(new ModelsResponse
-        {
-            Object = "list",
-            Data = new List<ModelInfo>
-            {
-                new() { Id = "gpt-4", Object = "model", OwnedBy = "openai" },
-                new() { Id = "gpt-5", Object = "model", OwnedBy = "openai" },
-                new() { Id = "llama3.2", Object = "model", OwnedBy = "ollama" },
-                new() { Id = "mistral", Object = "model", OwnedBy = "ollama" }
+                PromptTokens = executed.InputTokens,
+                CompletionTokens = executed.OutputTokens,
+                TotalTokens = executed.TotalTokens
             }
         });
     }
+
+    [HttpPost("embeddings")]
+    [Authorize(AIPermissions.AI.Embeddings)]
+    public async Task<IActionResult> CreateEmbeddingsAsync(
+        [FromBody] OpenAIEmbeddingRequest request,
+        CancellationToken cancellationToken = default)
+    {
+        var workspace = await LoadWorkspaceAsync(request.WorkspaceName, cancellationToken);
+        if (workspace == null)
+        {
+            return OpenAIError(404, $"Unknown workspace '{request.WorkspaceName}'.", "workspace_name", "workspace_not_found");
+        }
+
+        await _workspaceGuardrailService.EnsureCanExecuteAsync(workspace.Id, cancellationToken);
+
+        var resolved = ResolveReadyRoute(workspace, AICapabilityType.Embeddings, request.Model);
+        if (resolved.Error != null)
+        {
+            return resolved.Error;
+        }
+
+        var inputs = ParseEmbeddingInputs(request.Input);
+        var embeddings = new List<OpenAIEmbeddingData>();
+        int? promptTokens = null;
+        for (var i = 0; i < inputs.Count; i++)
+        {
+            var response = await _aiService.GenerateEmbeddingsAsync(new EmbeddingsRequest
+            {
+                WorkspaceName = workspace.Name,
+                ModelConfigurationId = resolved.ConfigurationId,
+                Text = inputs[i]
+            }, cancellationToken);
+
+            embeddings.Add(new OpenAIEmbeddingData
+            {
+                Index = i,
+                Embedding = response.Embedding,
+                Object = "embedding"
+            });
+
+            if (response.TotalTokens.HasValue)
+            {
+                promptTokens = (promptTokens ?? 0) + response.TotalTokens.Value;
+            }
+        }
+
+        return Ok(new OpenAIEmbeddingResponse
+        {
+            Object = "list",
+            Data = embeddings,
+            Model = request.Model,
+            Usage = new OpenAIUsageInfo
+            {
+                PromptTokens = promptTokens,
+                TotalTokens = promptTokens
+            }
+        });
+    }
+
+    [HttpGet("models")]
+    [Authorize(AIPermissions.AI.Chat)]
+    public async Task<IActionResult> ListModels(
+        [FromQuery] string workspaceName,
+        CancellationToken cancellationToken = default)
+    {
+        var workspace = await LoadWorkspaceAsync(workspaceName, cancellationToken);
+        if (workspace == null)
+        {
+            return OpenAIError(404, $"Unknown workspace '{workspaceName}'.", "workspace_name", "workspace_not_found");
+        }
+
+        var data = workspace.ModelConfigurations
+            .Where(configuration => configuration.CapabilityType == AICapabilityType.ChatCompletion && configuration.IsEnabled)
+            .Select(configuration => _runtimeConfigurationResolver.Resolve(
+                workspace,
+                AICapabilityType.ChatCompletion,
+                configuration))
+            .Where(snapshot => snapshot.IsReady)
+            .Select(snapshot => new OpenAIModelInfo
+            {
+                Id = snapshot.ModelId,
+                Object = "model",
+                OwnedBy = workspace.Name
+            })
+            .ToList();
+
+        return Ok(new OpenAIModelsResponse
+        {
+            Object = "list",
+            Data = data
+        });
+    }
+
+    private async Task<Workspace?> LoadWorkspaceAsync(string? workspaceName, CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrWhiteSpace(workspaceName))
+        {
+            return null;
+        }
+
+        return await _workspaceRepository.FindByNameAsync(workspaceName.Trim(), cancellationToken);
+    }
+
+    private (Guid? ConfigurationId, IActionResult? Error) ResolveReadyRoute(
+        Workspace workspace,
+        AICapabilityType capabilityType,
+        string modelId)
+    {
+        if (string.IsNullOrWhiteSpace(modelId))
+        {
+            return (null, OpenAIError(400, "Model is required.", "model", "invalid_request_error"));
+        }
+
+        var matches = workspace.ModelConfigurations
+            .Where(configuration =>
+                configuration.IsEnabled &&
+                configuration.CapabilityType == capabilityType &&
+                string.Equals(configuration.ModelId, modelId, StringComparison.OrdinalIgnoreCase))
+            .Select(configuration => _runtimeConfigurationResolver.Resolve(workspace, capabilityType, configuration))
+            .Where(snapshot => snapshot.IsReady)
+            .ToList();
+
+        if (matches.Count == 0)
+        {
+            return (null, OpenAIError(
+                404,
+                $"The model '{modelId}' does not match a ready {capabilityType} route in workspace '{workspace.Name}'.",
+                "model",
+                "model_not_found"));
+        }
+
+        if (matches.Count > 1)
+        {
+            return (null, OpenAIError(
+                400,
+                $"The model '{modelId}' matches more than one ready route in workspace '{workspace.Name}'.",
+                "model",
+                "model_ambiguous"));
+        }
+
+        return (matches[0].ModelConfigurationId, null);
+    }
+
+    private static IActionResult OpenAIError(int statusCode, string message, string? param, string? code)
+    {
+        return new ObjectResult(new OpenAIErrorResponse
+        {
+            Error = new OpenAIError
+            {
+                Message = message,
+                Type = "invalid_request_error",
+                Param = param,
+                Code = code
+            }
+        })
+        {
+            StatusCode = statusCode
+        };
+    }
+
+    private static List<string> ParseEmbeddingInputs(object input)
+    {
+        if (input is string text)
+        {
+            return [text];
+        }
+
+        if (input is JsonElement element)
+        {
+            if (element.ValueKind == JsonValueKind.String)
+            {
+                return [element.GetString() ?? string.Empty];
+            }
+
+            if (element.ValueKind == JsonValueKind.Array)
+            {
+                return element.EnumerateArray()
+                    .Select(item => item.GetString() ?? string.Empty)
+                    .ToList();
+            }
+        }
+
+        return [input?.ToString() ?? string.Empty];
+    }
 }
 
-#region DTOs
-
-public class ChatCompletionRequest
+public class OpenAIStreamingChatCompletionResult : IActionResult
 {
-    public required string WorkspaceName { get; set; }
-    public required string Model { get; set; }
-    public required List<ChatMessage> Messages { get; set; }
-    public double? Temperature { get; set; }
-    public int? MaxTokens { get; set; }
-    public double? TopP { get; set; }
-    public bool Stream { get; set; }
-}
+    private static readonly JsonSerializerOptions JsonOptions = new()
+    {
+        PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+    };
 
-public class ChatMessage
-{
-    public required string Role { get; set; }
-    public required string Content { get; set; }
-}
-
-public class ChatCompletionResponse
-{
-    public required string Id { get; set; }
-    public required string Object { get; set; }
-    public required long Created { get; set; }
-    public required string Model { get; set; }
-    public required List<ChatCompletionChoice> Choices { get; set; }
-    public required UsageInfo Usage { get; set; }
-}
-
-public class ChatCompletionChoice
-{
-    public required int Index { get; set; }
-    public required ChatMessage Message { get; set; }
-    public required string FinishReason { get; set; }
-}
-
-public class EmbeddingRequest
-{
-    public required string WorkspaceName { get; set; }
-    public required string Model { get; set; }
-    public required object Input { get; set; } // string or string[]
-}
-
-public class EmbeddingResponse
-{
-    public required string Object { get; set; }
-    public required List<EmbeddingData> Data { get; set; }
-    public required string Model { get; set; }
-    public required UsageInfo Usage { get; set; }
-}
-
-public class EmbeddingData
-{
-    public required int Index { get; set; }
-    public required string Object { get; set; }
-    public required float[] Embedding { get; set; }
-}
-
-public class UsageInfo
-{
-    public int? PromptTokens { get; set; }
-    public int? CompletionTokens { get; set; }
-    public int? TotalTokens { get; set; }
-}
-
-public class ModelsResponse
-{
-    public required string Object { get; set; }
-    public required List<ModelInfo> Data { get; set; }
-}
-
-public class ModelInfo
-{
-    public required string Id { get; set; }
-    public required string Object { get; set; }
-    public required string OwnedBy { get; set; }
-}
-
-#endregion
-
-#region Streaming Result
-
-/// <summary>
-/// Custom IActionResult for Server-Sent Events (SSE) streaming.
-/// </summary>
-public class StreamingChatCompletionResult : IActionResult
-{
-    private readonly IChatCompletionService _chatService;
-    private readonly ChatHistory _chatHistory;
-    private readonly PromptExecutionSettings _settings;
+    private readonly IAsyncEnumerable<ChatCompletionResponse> _stream;
     private readonly string _model;
     private readonly CancellationToken _cancellationToken;
 
-    public StreamingChatCompletionResult(
-        IChatCompletionService chatService,
-        ChatHistory chatHistory,
-        PromptExecutionSettings settings,
+    public OpenAIStreamingChatCompletionResult(
+        IAsyncEnumerable<ChatCompletionResponse> stream,
         string model,
         CancellationToken cancellationToken)
     {
-        _chatService = chatService;
-        _chatHistory = chatHistory;
-        _settings = settings;
+        _stream = stream;
         _model = model;
         _cancellationToken = cancellationToken;
     }
@@ -372,10 +379,7 @@ public class StreamingChatCompletionResult : IActionResult
         var chatId = $"chatcmpl-{Guid.NewGuid():N}";
         var created = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
 
-        await foreach (var chunk in _chatService.GetStreamingChatMessageContentsAsync(
-            _chatHistory,
-            _settings,
-            cancellationToken: _cancellationToken))
+        await foreach (var chunk in _stream.WithCancellation(_cancellationToken))
         {
             var streamChunk = new
             {
@@ -394,13 +398,12 @@ public class StreamingChatCompletionResult : IActionResult
                 }
             };
 
-            var json = JsonSerializer.Serialize(streamChunk);
+            var json = JsonSerializer.Serialize(streamChunk, JsonOptions);
             var data = Encoding.UTF8.GetBytes($"data: {json}\n\n");
             await response.Body.WriteAsync(data, _cancellationToken);
             await response.Body.FlushAsync(_cancellationToken);
         }
 
-        // Send final chunk with finish_reason
         var finalChunk = new
         {
             id = chatId,
@@ -418,11 +421,9 @@ public class StreamingChatCompletionResult : IActionResult
             }
         };
 
-        var finalJson = JsonSerializer.Serialize(finalChunk);
+        var finalJson = JsonSerializer.Serialize(finalChunk, JsonOptions);
         var finalData = Encoding.UTF8.GetBytes($"data: {finalJson}\n\ndata: [DONE]\n\n");
         await response.Body.WriteAsync(finalData, _cancellationToken);
         await response.Body.FlushAsync(_cancellationToken);
     }
 }
-
-#endregion

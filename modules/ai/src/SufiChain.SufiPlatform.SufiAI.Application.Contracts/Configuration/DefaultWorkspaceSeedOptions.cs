@@ -53,15 +53,4 @@ public class DefaultWorkspaceSeedOptions
     public string? ApiKey { get; set; }
 
     public string? ApiBaseUrl { get; set; } = "https://api.openai.com/v1";
-
-    /// <summary>
-    /// Retained for configuration compatibility. Default workspace seeding keeps the prompt module-neutral.
-    /// </summary>
-    public string? SystemPrompt { get; set; }
-
-    public float Temperature { get; set; } = 0.7f;
-
-    public int MaxContextTokens { get; set; } = 200000;
-
-    public OpenAIApiMode OpenAIApiMode { get; set; } = OpenAIApiMode.ChatCompletions;
 }

@@ -5,116 +5,55 @@ using Microsoft.SemanticKernel;
 using SufiChain.SufiPlatform.SufiAI;
 using SufiChain.SufiPlatform.SufiAI.Features;
 using SufiChain.SufiPlatform.SufiAI.RAG;
+using Volo.Abp.Caching;
 using Volo.Abp.DependencyInjection;
-using Volo.Abp.Security.Encryption;
+using Volo.Abp.MultiTenancy;
 using SufiChain.SufiPlatform.Features;
 using System.Collections.Concurrent;
 
 namespace SufiChain.SufiPlatform.SufiAI.Workspaces;
 
 /// <summary>
-/// Synchronizes workspace configuration from database to Sufi AI framework.
-/// Creates and caches ChatClient, Kernel, and EmbeddingGenerator instances on-demand per workspace.
+/// Synchronizes workspace configuration from the database.
+/// Kernels are created per request. Embedding generators are process-local
+/// instances keyed by tenant, workspace id, and configuration id, invalidated
+/// by a distributed stamp.
 /// </summary>
 public class WorkspaceSyncService : ITransientDependency
 {
     private readonly IWorkspaceRepository _workspaceRepository;
     private readonly IWorkspaceEmbedderResolver _embedderResolver;
     private readonly IWorkspaceRuntimeConfigurationResolver _runtimeConfigurationResolver;
+    private readonly IDistributedCache<WorkspaceEmbedderCacheStamp> _embedderStampCache;
+    private readonly IDistributedCache<WorkspaceProviderModelCacheStamp> _providerModelStampCache;
+    private readonly ICurrentTenant _currentTenant;
     private readonly IServiceProvider _serviceProvider;
     private readonly IFeatureChecker _featureChecker;
-    private readonly IStringEncryptionService _stringEncryptor;
     private readonly ILogger<WorkspaceSyncService> _logger;
-    
-    // Cache for workspace instances
-    private static readonly ConcurrentDictionary<string, IChatClient> _chatClientCache = new();
-    private static readonly ConcurrentDictionary<string, Kernel> _kernelCache = new();
-    private static readonly ConcurrentDictionary<string, IEmbeddingGenerator<string, Embedding<float>>> _embeddingGeneratorCache = new();
+
+    private static readonly ConcurrentDictionary<string, CachedEmbeddingGenerator> EmbeddingGenerators = new();
+    private static readonly SemaphoreSlim EmbeddingConstructionLock = new(1, 1);
 
     public WorkspaceSyncService(
         IWorkspaceRepository workspaceRepository,
         IWorkspaceEmbedderResolver embedderResolver,
         IWorkspaceRuntimeConfigurationResolver runtimeConfigurationResolver,
+        IDistributedCache<WorkspaceEmbedderCacheStamp> embedderStampCache,
+        IDistributedCache<WorkspaceProviderModelCacheStamp> providerModelStampCache,
+        ICurrentTenant currentTenant,
         IServiceProvider serviceProvider,
         IFeatureChecker featureChecker,
-        IStringEncryptionService stringEncryptor,
         ILogger<WorkspaceSyncService> logger)
     {
         _workspaceRepository = workspaceRepository;
         _embedderResolver = embedderResolver;
         _runtimeConfigurationResolver = runtimeConfigurationResolver;
+        _embedderStampCache = embedderStampCache;
+        _providerModelStampCache = providerModelStampCache;
+        _currentTenant = currentTenant;
         _serviceProvider = serviceProvider;
         _featureChecker = featureChecker;
-        _stringEncryptor = stringEncryptor;
         _logger = logger;
-    }
-
-    /// <summary>
-    /// Gets or creates a ChatClient for the workspace.
-    /// </summary>
-    public async Task<IChatClient> GetOrCreateChatClientAsync(string workspaceName, CancellationToken cancellationToken = default)
-    {
-        await CheckFeatureAsync(SufiAIFeatures.Chat);
-
-        if (_chatClientCache.TryGetValue(workspaceName, out var cachedClient))
-        {
-            _logger.LogDebug("Using cached ChatClient for workspace {WorkspaceName}", workspaceName);
-            return cachedClient;
-        }
-
-        var workspace = await GetWorkspaceAsync(workspaceName, cancellationToken);
-        
-        _logger.LogInformation("Creating ChatClient for workspace {WorkspaceName} (Provider: {Provider}, Model: {Model})",
-            workspaceName, workspace.Provider, workspace.Model);
-
-        var builder = new ChatClientBuilder(_serviceProvider.GetService<IChatClient>());
-        WorkspaceConfigurationHelper.ConfigureChatClient(builder, workspace);
-        var chatClient = builder.Build(_serviceProvider);
-
-        _chatClientCache.TryAdd(workspaceName, chatClient);
-        return chatClient;
-    }
-
-    /// <summary>
-    /// Gets or creates a Kernel for the workspace.
-    /// </summary>
-    public async Task<Kernel> GetOrCreateKernelAsync(string workspaceName, CancellationToken cancellationToken = default)
-    {
-        await CheckFeatureAsync(SufiAIFeatures.Workspaces);
-
-        if (_kernelCache.TryGetValue(workspaceName, out var cachedKernel))
-        {
-            _logger.LogDebug("Using cached Kernel for workspace {WorkspaceName}", workspaceName);
-            return cachedKernel;
-        }
-
-        var configuration = await _runtimeConfigurationResolver.ResolveAsync(
-            workspaceName,
-            AICapabilityType.ChatCompletion,
-            cancellationToken);
-        
-        _logger.LogInformation("Creating Kernel for workspace {WorkspaceName} (Provider: {Provider}, Model: {Model})",
-            workspaceName, configuration.Provider, configuration.ModelId);
-
-        var builder = Kernel.CreateBuilder();
-        builder.Services.AddSingleton(_serviceProvider);
-        WorkspaceConfigurationHelper.ConfigureKernel(builder, configuration);
-        var kernel = builder.Build();
-
-        _kernelCache.TryAdd(workspaceName, kernel);
-        return kernel;
-    }
-
-    public async Task<Kernel> CreateRequestKernelAsync(
-        string workspaceName,
-        CancellationToken cancellationToken = default)
-    {
-        await CheckFeatureAsync(SufiAIFeatures.Workspaces);
-        var configuration = await _runtimeConfigurationResolver.ResolveAsync(
-            workspaceName,
-            AICapabilityType.ChatCompletion,
-            cancellationToken);
-        return await CreateRequestKernelAsync(configuration, cancellationToken);
     }
 
     public async Task<Kernel> CreateRequestKernelAsync(
@@ -129,44 +68,166 @@ public class WorkspaceSyncService : ITransientDependency
     }
 
     /// <summary>
-    /// Gets or creates an EmbeddingGenerator for the workspace.
+    /// Gets or creates an embedding generator for the workspace.
+    /// Instances stay in-process; a distributed stamp invalidates them across hosts.
     /// </summary>
     public async Task<IEmbeddingGenerator<string, Embedding<float>>> GetOrCreateEmbeddingGeneratorAsync(
-        string workspaceName, 
+        string workspaceName,
         CancellationToken cancellationToken = default)
     {
         await CheckFeatureAsync(SufiAIFeatures.Embeddings);
 
-        if (_embeddingGeneratorCache.TryGetValue(workspaceName, out var cachedGenerator))
-        {
-            _logger.LogDebug("Using cached EmbeddingGenerator for workspace {WorkspaceName}", workspaceName);
-            return cachedGenerator;
-        }
-
         var workspace = await GetWorkspaceAsync(workspaceName, cancellationToken);
         var embedderConfiguration = await _embedderResolver.ResolveAsync(workspace, cancellationToken);
+        var stamp = await GetEmbedderStampAsync(workspace.Name, cancellationToken);
+        var cacheKey = BuildEmbeddingCacheKey(workspace.Id, embedderConfiguration.ConfigurationId);
 
-        _logger.LogInformation(
-            "Creating EmbeddingGenerator for workspace {WorkspaceName} (Provider: {Provider}, Model: {Model})",
-            workspaceName,
-            workspace.Provider,
-            embedderConfiguration.Model);
+        if (TryGetValidGenerator(cacheKey, stamp, out var cached))
+        {
+            _logger.LogDebug(
+                "Using cached EmbeddingGenerator for workspace {WorkspaceName} (WorkspaceId={WorkspaceId}, ConfigurationId={ConfigurationId})",
+                workspaceName,
+                workspace.Id,
+                embedderConfiguration.ConfigurationId);
+            return cached;
+        }
 
-        var embeddingGenerator = WorkspaceConfigurationHelper.CreateEmbeddingGenerator(workspace, embedderConfiguration);
+        await EmbeddingConstructionLock.WaitAsync(cancellationToken);
+        try
+        {
+            stamp = await GetEmbedderStampAsync(workspace.Name, cancellationToken);
+            if (TryGetValidGenerator(cacheKey, stamp, out cached))
+            {
+                return cached;
+            }
 
-        _embeddingGeneratorCache.TryAdd(workspaceName, embeddingGenerator);
-        return embeddingGenerator;
+            _logger.LogInformation(
+                "Creating EmbeddingGenerator for workspace {WorkspaceName} (WorkspaceId={WorkspaceId}, ConfigurationId={ConfigurationId}, Provider: {Provider}, Model: {Model})",
+                workspaceName,
+                workspace.Id,
+                embedderConfiguration.ConfigurationId,
+                workspace.Provider,
+                embedderConfiguration.Model);
+
+            var embeddingGenerator = WorkspaceConfigurationHelper.CreateEmbeddingGenerator(workspace, embedderConfiguration);
+            ReplaceGenerator(cacheKey, new CachedEmbeddingGenerator
+            {
+                Generator = embeddingGenerator,
+                Stamp = stamp,
+                WorkspaceName = workspace.Name
+            });
+            return embeddingGenerator;
+        }
+        finally
+        {
+            EmbeddingConstructionLock.Release();
+        }
     }
 
     /// <summary>
-    /// Clears cached instances for a workspace (e.g., after configuration changes).
+    /// Invalidates cached embedding generators for a workspace across processes.
     /// </summary>
-    public void ClearWorkspaceCache(string workspaceName)
+    public async Task ClearWorkspaceCache(string workspaceName)
     {
-        _chatClientCache.TryRemove(workspaceName, out _);
-        _kernelCache.TryRemove(workspaceName, out _);
-        _embeddingGeneratorCache.TryRemove(workspaceName, out _);
-        _logger.LogInformation("Cleared cache for workspace {WorkspaceName}", workspaceName);
+        await _embedderStampCache.SetAsync(
+            workspaceName,
+            new WorkspaceEmbedderCacheStamp { Stamp = Guid.NewGuid().ToString("N") });
+
+        await _providerModelStampCache.SetAsync(
+            workspaceName,
+            new WorkspaceProviderModelCacheStamp { Stamp = Guid.NewGuid().ToString("N") });
+
+        RemoveLocalGenerators(workspaceName);
+        _logger.LogInformation("Cleared embedder and provider model-list cache for workspace {WorkspaceName}", workspaceName);
+    }
+
+    public async Task<string> GetProviderModelStampAsync(
+        string workspaceName,
+        CancellationToken cancellationToken = default)
+    {
+        var item = await _providerModelStampCache.GetAsync(workspaceName, token: cancellationToken);
+        if (item != null && !string.IsNullOrWhiteSpace(item.Stamp))
+        {
+            return item.Stamp;
+        }
+
+        var stamp = Guid.NewGuid().ToString("N");
+        await _providerModelStampCache.SetAsync(
+            workspaceName,
+            new WorkspaceProviderModelCacheStamp { Stamp = stamp },
+            token: cancellationToken);
+        return stamp;
+    }
+
+    private async Task<string> GetEmbedderStampAsync(string workspaceName, CancellationToken cancellationToken)
+    {
+        var item = await _embedderStampCache.GetAsync(workspaceName, token: cancellationToken);
+        if (item != null && !string.IsNullOrWhiteSpace(item.Stamp))
+        {
+            return item.Stamp;
+        }
+
+        var stamp = Guid.NewGuid().ToString("N");
+        await _embedderStampCache.SetAsync(
+            workspaceName,
+            new WorkspaceEmbedderCacheStamp { Stamp = stamp },
+            token: cancellationToken);
+        return stamp;
+    }
+
+    private string BuildEmbeddingCacheKey(Guid workspaceId, Guid configurationId)
+    {
+        var tenantKey = _currentTenant.Id?.ToString("N") ?? "host";
+        return $"{tenantKey}:{workspaceId:N}:{configurationId:N}";
+    }
+
+    private static bool TryGetValidGenerator(
+        string cacheKey,
+        string stamp,
+        out IEmbeddingGenerator<string, Embedding<float>> generator)
+    {
+        if (EmbeddingGenerators.TryGetValue(cacheKey, out var cached) &&
+            string.Equals(cached.Stamp, stamp, StringComparison.Ordinal))
+        {
+            generator = cached.Generator;
+            return true;
+        }
+
+        generator = null!;
+        return false;
+    }
+
+    private static void ReplaceGenerator(string cacheKey, CachedEmbeddingGenerator next)
+    {
+        if (EmbeddingGenerators.TryRemove(cacheKey, out var previous))
+        {
+            DisposeGenerator(previous.Generator);
+        }
+
+        EmbeddingGenerators[cacheKey] = next;
+    }
+
+    private void RemoveLocalGenerators(string workspaceName)
+    {
+        var tenantPrefix = (_currentTenant.Id?.ToString("N") ?? "host") + ":";
+        foreach (var pair in EmbeddingGenerators)
+        {
+            if (!pair.Key.StartsWith(tenantPrefix, StringComparison.Ordinal) ||
+                !string.Equals(pair.Value.WorkspaceName, workspaceName, StringComparison.Ordinal))
+            {
+                continue;
+            }
+
+            if (EmbeddingGenerators.TryRemove(pair.Key, out var removed))
+            {
+                DisposeGenerator(removed.Generator);
+            }
+        }
+    }
+
+    private static void DisposeGenerator(IEmbeddingGenerator<string, Embedding<float>> generator)
+    {
+        (generator as IDisposable)?.Dispose();
     }
 
     private async Task<Workspace> GetWorkspaceAsync(string workspaceName, CancellationToken cancellationToken)
@@ -215,21 +276,10 @@ public class WorkspaceSyncService : ITransientDependency
         }
     }
 
-    private string? DecryptApiKey(string? encryptedApiKey)
+    private sealed class CachedEmbeddingGenerator
     {
-        if (string.IsNullOrWhiteSpace(encryptedApiKey))
-        {
-            return encryptedApiKey;
-        }
-
-        try
-        {
-            return _stringEncryptor.Decrypt(encryptedApiKey);
-        }
-        catch
-        {
-            return encryptedApiKey;
-        }
+        public required IEmbeddingGenerator<string, Embedding<float>> Generator { get; init; }
+        public required string Stamp { get; init; }
+        public required string WorkspaceName { get; init; }
     }
-
 }

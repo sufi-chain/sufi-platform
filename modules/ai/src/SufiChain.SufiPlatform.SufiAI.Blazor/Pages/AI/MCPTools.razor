@@ -25,7 +25,10 @@
                         Loading="IsOperationLoading(LoadingKeys.LoadTools)"
                         Striped="true"
                         Hoverable="true"
-                        KeySelector="@(item => item.Name)">
+                        KeySelector="@(item => item.Name)"
+                        ShowFilterRow="true"
+                        ShowColumnChooser="true"
+                        SelectionMode="SbSelectionMode.MultipleRows">
                 <ChildContent>
                     <SbColumn TItem="MCPToolDto" Title="@L["Actions"]" Width="56px" Sortable="false">
                         <CellTemplate Context="cellContext">
@@ -54,7 +57,7 @@
                             </SbText>
                         </CellTemplate>
                     </SbColumn>
-                    <SbColumn TItem="MCPToolDto" Field="ToolType" Title="@L["Type"]" Width="120px">
+                    <SbColumn TItem="MCPToolDto" Field="ToolType" Title="@L["Type"]" Width="120px" Filterable="true" Sortable="true">
                         <CellTemplate Context="cellContext">
                             <SbChip Color="@(cellContext.Item.ToolType == "Internal" ? SbColor.Primary : SbColor.Secondary)"
                                     Size="SbSize.Sm">
@@ -62,7 +65,7 @@
                             </SbChip>
                         </CellTemplate>
                     </SbColumn>
-                    <SbColumn TItem="MCPToolDto" Field="Source" Title="@L["Source"]" Width="200px">
+                    <SbColumn TItem="MCPToolDto" Field="Source" Title="@L["Source"]" Width="200px" Filterable="true" Sortable="true">
                         <CellTemplate Context="cellContext">
                             <SbText Variant="SbTextVariant.BodySmall">
                                 @cellContext.Item.Source
@@ -91,7 +94,7 @@
                 }
                 else
                 {
-                    <pre style="background: #f5f5f5; padding: 16px; border-radius: 4px; overflow-x: auto;">@_selectedTool.ParameterSchema</pre>
+                    <pre style="background: var(--sb-color-surface-variant); padding: 16px; border-radius: 4px; overflow-x: auto;">@_selectedTool.ParameterSchema</pre>
                 }
             </SbStack>
         }

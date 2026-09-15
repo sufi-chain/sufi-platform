@@ -18,17 +18,21 @@ public class SufiAIWorkspaceCatalogAdapter :
 {
     protected IWorkspaceRepository WorkspaceRepository { get; }
     protected IWorkspaceRuntimeConfigurationResolver RuntimeConfigurationResolver { get; }
+    protected IInheritedWorkspaceProjectionSynchronizer InheritedWorkspaceProjectionSynchronizer { get; }
 
     public SufiAIWorkspaceCatalogAdapter(
         IWorkspaceRepository workspaceRepository,
-        IWorkspaceRuntimeConfigurationResolver runtimeConfigurationResolver)
+        IWorkspaceRuntimeConfigurationResolver runtimeConfigurationResolver,
+        IInheritedWorkspaceProjectionSynchronizer inheritedWorkspaceProjectionSynchronizer)
     {
         WorkspaceRepository = workspaceRepository;
         RuntimeConfigurationResolver = runtimeConfigurationResolver;
+        InheritedWorkspaceProjectionSynchronizer = inheritedWorkspaceProjectionSynchronizer;
     }
 
     public virtual async Task<List<SufiAIWorkspaceDescriptor>> GetListAsync(CancellationToken cancellationToken = default)
     {
+        await InheritedWorkspaceProjectionSynchronizer.EnsureCurrentTenantAsync(cancellationToken);
         var workspaces = await WorkspaceRepository.GetListAsync(
             maxResultCount: int.MaxValue,
             sorting: nameof(Workspace.Name),
@@ -54,6 +58,7 @@ public class SufiAIWorkspaceCatalogAdapter :
             return null;
         }
 
+        await InheritedWorkspaceProjectionSynchronizer.EnsureCurrentTenantAsync(cancellationToken);
         var workspace = await WorkspaceRepository.FindByNameAsync(name.Trim(), cancellationToken);
         return workspace == null
             ? null
@@ -69,6 +74,7 @@ public class SufiAIWorkspaceCatalogAdapter :
             return null;
         }
 
+        await InheritedWorkspaceProjectionSynchronizer.EnsureCurrentTenantAsync(cancellationToken);
         var workspace = await WorkspaceRepository.FindAsync(id, includeDetails: true, cancellationToken: cancellationToken);
         return workspace == null
             ? null
@@ -110,6 +116,7 @@ public class SufiAIWorkspaceCatalogAdapter :
             Model = chat.ModelId,
             IsActive = workspace.IsActive,
             IsReady = chat.IsReady,
+            IsInherited = workspace.IsInherited,
             Capabilities = MapCapabilities(results)
         };
     }

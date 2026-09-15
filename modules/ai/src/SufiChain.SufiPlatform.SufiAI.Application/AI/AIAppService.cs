@@ -13,6 +13,7 @@ using Volo.Abp.Security.Encryption;
 using SufiChain.SufiPlatform.Application.Services;
 using SufiChain.SufiPlatform.SufiAI.Storage;
 using SufiChain.SufiPlatform.Features;
+using Volo.Abp;
 
 namespace SufiChain.SufiPlatform.SufiAI;
 
@@ -263,6 +264,8 @@ public class AIAppService : SufiApplicationService, IAIAppService
     [RequiresFeature(SufiAIFeatures.Workspaces)]
     public async Task<AIModelConfigurationDto> CreateModelConfigurationAsync(CreateAIModelConfigurationDto input)
     {
+        await EnsureWorkspaceEditableAsync(input.WorkspaceId);
+
         var configuration = new AIModelConfiguration(
             GuidGenerator.Create(),
             input.WorkspaceId,
@@ -279,7 +282,11 @@ public class AIAppService : SufiApplicationService, IAIAppService
             input.OpenAIApiMode,
             input.InputCostPer1MTokens,
             input.OutputCostPer1MTokens,
-            input.Dimensions
+            input.Dimensions,
+            input.DisplayName,
+            input.IsUserSelectable,
+            input.Description,
+            AIModelConfiguration.NormalizeMaxContextTokens(input.MaxContextTokens)
         );
 
         await _configurationRepository.InsertAsync(configuration);
@@ -293,6 +300,7 @@ public class AIAppService : SufiApplicationService, IAIAppService
     public async Task<AIModelConfigurationDto> UpdateModelConfigurationAsync(Guid id, UpdateAIModelConfigurationDto input)
     {
         var configuration = await _configurationRepository.GetAsync(id);
+        await EnsureWorkspaceEditableAsync(configuration.WorkspaceId);
 
         var apiKeyToUpdate = string.IsNullOrWhiteSpace(input.ApiKey)
             ? configuration.ApiKey
@@ -306,7 +314,11 @@ public class AIAppService : SufiApplicationService, IAIAppService
             input.OpenAIApiMode,
             input.InputCostPer1MTokens,
             input.OutputCostPer1MTokens,
-            input.Dimensions
+            input.Dimensions,
+            input.DisplayName,
+            input.IsUserSelectable,
+            input.Description,
+            AIModelConfiguration.NormalizeMaxContextTokens(input.MaxContextTokens)
         );
 
         await _configurationRepository.UpdateAsync(configuration);
@@ -320,6 +332,7 @@ public class AIAppService : SufiApplicationService, IAIAppService
     public async Task DeleteModelConfigurationAsync(Guid id)
     {
         var configuration = await _configurationRepository.GetAsync(id);
+        await EnsureWorkspaceEditableAsync(configuration.WorkspaceId);
         var workspaceId = configuration.WorkspaceId;
         await _configurationRepository.DeleteAsync(id);
         await ClearWorkspaceRuntimeCacheAsync(workspaceId);
@@ -330,7 +343,24 @@ public class AIAppService : SufiApplicationService, IAIAppService
     public async Task<List<AIUsageLogDto>> GetUsageLogsAsync(Guid workspaceId, DateTime? startDate = null, DateTime? endDate = null)
     {
         var logs = await _usageLogRepository.GetByWorkspaceAsync(workspaceId, startDate, endDate);
-        return logs.Select(l => AIUsageLogMapper.ToDto(l)).ToList();
+        var configurations = await _configurationRepository.GetByWorkspaceIdAsync(workspaceId);
+        var displayNames = configurations.ToDictionary(
+            configuration => configuration.Id,
+            configuration => string.IsNullOrWhiteSpace(configuration.DisplayName)
+                ? configuration.ModelId
+                : configuration.DisplayName);
+
+        return logs.Select(log =>
+        {
+            var dto = AIUsageLogMapper.ToDto(log);
+            if (log.ModelConfigurationId.HasValue
+                && displayNames.TryGetValue(log.ModelConfigurationId.Value, out var displayName))
+            {
+                dto.RouteDisplayName = displayName;
+            }
+
+            return dto;
+        }).ToList();
     }
 
     [Authorize(AIPermissions.AI.ViewUsage)]
@@ -340,6 +370,13 @@ public class AIAppService : SufiApplicationService, IAIAppService
         var logs = await _usageLogRepository.GetByWorkspaceAsync(workspaceId, startDate, endDate);
         var totalCost = await _usageLogRepository.GetTotalCostAsync(workspaceId, startDate, endDate);
         var totalTokens = await _usageLogRepository.GetTotalTokensAsync(workspaceId, startDate, endDate);
+
+        var configurations = await _configurationRepository.GetByWorkspaceIdAsync(workspaceId);
+        var displayNames = configurations.ToDictionary(
+            configuration => configuration.Id,
+            configuration => string.IsNullOrWhiteSpace(configuration.DisplayName)
+                ? configuration.ModelId
+                : configuration.DisplayName);
 
         return new UsageStatisticsDto
         {
@@ -356,7 +393,31 @@ public class AIAppService : SufiApplicationService, IAIAppService
             CostByModel = logs
                 .Where(l => l.IsSuccess)
                 .GroupBy(l => l.ModelId)
-                .ToDictionary(g => g.Key, g => g.Sum(l => l.EstimatedCost))
+                .ToDictionary(g => g.Key, g => g.Sum(l => l.EstimatedCost)),
+            CostByRoute = logs
+                .Where(l => l.IsSuccess)
+                .GroupBy(l => l.ModelConfigurationId ?? Guid.Empty)
+                .Select(group =>
+                {
+                    var sample = group.First();
+                    var routeId = sample.ModelConfigurationId;
+                    var isUnattributed = !routeId.HasValue;
+                    displayNames.TryGetValue(routeId ?? Guid.Empty, out var displayName);
+                    return new UsageByRouteDto
+                    {
+                        ModelConfigurationId = routeId,
+                        ModelId = sample.ModelId,
+                        DisplayName = isUnattributed
+                            ? string.Empty
+                            : (string.IsNullOrWhiteSpace(displayName) ? sample.ModelId : displayName),
+                        IsUnattributed = isUnattributed,
+                        Requests = group.Count(),
+                        Cost = group.Sum(item => item.EstimatedCost),
+                        Tokens = group.Sum(item => (long)(item.TotalTokens ?? 0))
+                    };
+                })
+                .OrderByDescending(item => item.Cost)
+                .ToList()
         };
     }
     
@@ -370,6 +431,16 @@ public class AIAppService : SufiApplicationService, IAIAppService
         return _stringEncryptor.Encrypt(apiKey);
     }
 
+    private async Task EnsureWorkspaceEditableAsync(Guid workspaceId)
+    {
+        var workspace = await _workspaceRepository.GetAsync(workspaceId);
+        if (workspace.IsInherited)
+        {
+            throw new BusinessException(AIErrorCodes.InheritedWorkspaceReadOnly)
+                .WithData("WorkspaceId", workspaceId);
+        }
+    }
+
     private async Task ClearWorkspaceRuntimeCacheAsync(Guid workspaceId)
     {
         var workspace = await _workspaceRepository.FindAsync(workspaceId);
@@ -378,7 +449,7 @@ public class AIAppService : SufiApplicationService, IAIAppService
             return;
         }
 
-        _workspaceSyncService.ClearWorkspaceCache(workspace.Name);
+        await _workspaceSyncService.ClearWorkspaceCache(workspace.Name);
     }
 }
 
@@ -394,11 +465,15 @@ public static partial class AIModelConfigurationMapper
             WorkspaceId = entity.WorkspaceId,
             CapabilityType = entity.CapabilityType,
             ModelId = entity.ModelId,
+            DisplayName = entity.DisplayName,
+            Description = entity.Description,
+            IsUserSelectable = entity.IsUserSelectable,
             ApiEndpoint = entity.ApiEndpoint,
             HasApiKey = !string.IsNullOrWhiteSpace(entity.ApiKey),
             IsEnabled = entity.IsEnabled,
             Priority = entity.Priority,
             OpenAIApiMode = entity.OpenAIApiMode,
+            MaxContextTokens = AIModelConfiguration.NormalizeMaxContextTokens(entity.MaxContextTokens),
             InputCostPer1MTokens = entity.InputCostPer1MTokens,
             OutputCostPer1MTokens = entity.OutputCostPer1MTokens,
             Dimensions = entity.Dimensions
@@ -415,6 +490,7 @@ public static partial class AIUsageLogMapper
         {
             Id = entity.Id,
             WorkspaceId = entity.WorkspaceId,
+            ModelConfigurationId = entity.ModelConfigurationId,
             CapabilityType = entity.CapabilityType,
             ModelId = entity.ModelId,
             Provider = entity.Provider,
@@ -429,6 +505,8 @@ public static partial class AIUsageLogMapper
             LatencyMs = entity.LatencyMs,
             IsSuccess = entity.IsSuccess,
             ErrorMessage = entity.ErrorMessage,
+            FileId = entity.FileId,
+            FileUrl = entity.FileUrl,
             CreationTime = entity.CreationTime
         };
     }

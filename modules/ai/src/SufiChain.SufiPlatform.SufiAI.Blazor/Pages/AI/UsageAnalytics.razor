@@ -33,6 +33,34 @@
 
 	@if (_selectedWorkspaceId.HasValue && _statistics != null)
 	{
+		@if (_guardrailStatus.Count > 0)
+		{
+			<SbCard>
+				<ChildContent>
+					<SbStack Direction="SbStackDirection.Column" Gap="3">
+						<SbHeading Level="6">@L["Guardrails"]</SbHeading>
+						<SbStack Direction="SbStackDirection.Row" Gap="4" Wrap="true">
+							@foreach (var status in _guardrailStatus)
+							{
+								<SbCard style="flex: 1; min-width: 200px;" Outlined="true">
+									<ChildContent>
+										<SbStack Direction="SbStackDirection.Column" Gap="2">
+											<SbText Variant="SbTextVariant.Caption" Color="SbColor.Muted">@L[$"Guardrail:{status.Period}"]</SbText>
+											<SbHeading Level="5">$@status.UsedUsd.ToString("F2") / $@status.LimitUsd.ToString("F2")</SbHeading>
+											<SbProgress Value="@GetGuardrailPercent(status)" Color="@(status.IsExceeded ? SbColor.Danger : SbColor.Primary)" />
+											<SbText Variant="SbTextVariant.Caption" Color="@(status.IsExceeded ? SbColor.Danger : SbColor.Muted)">
+												@(status.IsExceeded ? L["GuardrailExceeded"] : L["GuardrailRemaining", status.RemainingUsd.ToString("F2")])
+											</SbText>
+										</SbStack>
+									</ChildContent>
+								</SbCard>
+							}
+						</SbStack>
+					</SbStack>
+				</ChildContent>
+			</SbCard>
+		}
+
 		<!-- Statistics Cards -->
 		<SbStack Direction="SbStackDirection.Row" Gap="4" Wrap="true">
 			<SbCard style="flex: 1; min-width: 200px;">
@@ -40,6 +68,24 @@
 					<SbStack Direction="SbStackDirection.Column" Gap="2">
 						<SbText Variant="SbTextVariant.Caption" Color="SbColor.Muted">@L["TotalCost"]</SbText>
 						<SbHeading Level="4">$@_statistics.TotalCost.ToString("F2")</SbHeading>
+						<SbText Variant="SbTextVariant.Caption" Color="SbColor.Muted">@L["UsageCostCaption"]</SbText>
+						@if (_selectedWorkspaceId.HasValue)
+						{
+							<SbButton Variant="SbButtonVariant.Outline"
+									  Size="SbSize.Sm"
+									  Href="@GetModelConfigurationsUrl(_selectedWorkspaceId.Value)">
+								@L["OpenModelConfigurations"]
+							</SbButton>
+						}
+						<SbText Variant="SbTextVariant.Caption" Color="SbColor.Muted">@L["UsageCostCaption"]</SbText>
+						@if (_selectedWorkspaceId.HasValue)
+						{
+							<SbButton Variant="SbButtonVariant.Outline"
+									  Size="SbSize.Sm"
+									  Href="@GetModelConfigurationsUrl(_selectedWorkspaceId.Value)">
+								@L["OpenModelConfigurations"]
+							</SbButton>
+						}
 					</SbStack>
 				</ChildContent>
 			</SbCard>
@@ -91,7 +137,7 @@
 						{
 							<SbStack Direction="SbStackDirection.Row" Gap="2" Align="SbAlign.Center">
 								<SbText Variant="SbTextVariant.BodySmall" style="min-width: 150px;">
-									@kvp.Key.ToString()
+									@FormatCapability(kvp.Key)
 								</SbText>
 								<SbProgress Value="@GetPercentage(kvp.Value, _statistics.TotalRequests)" style="flex: 1;" />
 								<SbText Variant="SbTextVariant.BodySmall" Weight="SbFontWeight.Medium" style="min-width: 80px; text-align: right;">
@@ -127,36 +173,108 @@
 			</ChildContent>
 		</SbCard>
 
+		<SbCard>
+			<ChildContent>
+				<SbStack Direction="SbStackDirection.Column" Gap="3">
+					<SbStack Direction="SbStackDirection.Row" Gap="3" Align="SbAlign.Center" Justify="SbJustify.SpaceBetween" Wrap="true">
+						<SbHeading Level="6">@L["CostByRoute"]</SbHeading>
+						@if (_statistics.CostByRoute.Count > 0)
+						{
+							<SbSimpleSelect TValue="string"
+											Value="@_routeFilter"
+											ValueChanged="@OnRouteFilterChangedAsync"
+											Label="@L["FilterByRoute"]"
+											style="min-width: 240px;">
+								<SbSelectOption TValue="string" Value="@AllRoutesFilter">@L["AllRoutes"]</SbSelectOption>
+								<SbSelectOption TValue="string" Value="@UnattributedRouteFilter">@L["UnattributedRoute"]</SbSelectOption>
+								@foreach (var route in _statistics.CostByRoute.Where(item => !item.IsUnattributed))
+								{
+									<SbSelectOption TValue="string" Value="@(route.ModelConfigurationId?.ToString() ?? string.Empty)">
+										@FormatRouteLabel(route)
+									</SbSelectOption>
+								}
+							</SbSimpleSelect>
+						}
+					</SbStack>
+					@if (_statistics.CostByRoute.Count == 0)
+					{
+						<SbEmptyState Title="@L["CostByRouteEmpty"]"
+									  Description="@L["CostByRouteEmptyDescription"]" />
+					}
+					else
+					{
+						<SbStack Direction="SbStackDirection.Column" Gap="2">
+							@foreach (var route in FilteredCostByRoute)
+							{
+								<SbStack Direction="SbStackDirection.Row" Gap="2" Align="SbAlign.Center">
+									<SbStack Direction="SbStackDirection.Column" Gap="0" style="min-width: 220px;">
+										<SbText Variant="SbTextVariant.BodySmall">
+											@FormatRouteLabel(route)
+										</SbText>
+										@if (!route.IsUnattributed)
+										{
+											<SbText Variant="SbTextVariant.Caption" Color="SbColor.Muted">
+												@route.ModelId
+											</SbText>
+										}
+									</SbStack>
+									<SbProgress Value="@GetPercentage((double)route.Cost, (double)_statistics.TotalCost)" style="flex: 1;" />
+									<SbStack Direction="SbStackDirection.Column" Gap="0" style="min-width: 140px; text-align: right;">
+										<SbText Variant="SbTextVariant.BodySmall" Weight="SbFontWeight.Medium">
+											$@route.Cost.ToString("F2")
+										</SbText>
+										<SbText Variant="SbTextVariant.Caption" Color="SbColor.Muted">
+											@L["RouteRequestsAndTokens", route.Requests.ToString("N0"), route.Tokens.ToString("N0")]
+										</SbText>
+									</SbStack>
+								</SbStack>
+							}
+						</SbStack>
+					}
+				</SbStack>
+			</ChildContent>
+		</SbCard>
+
 		<!-- Recent Usage Logs -->
 		<SbCard>
 			<ChildContent>
 				<SbStack Direction="SbStackDirection.Column" Gap="3">
 					<SbHeading Level="6">@L["RecentUsageLogs"]</SbHeading>
 					<SbDataGrid TItem="AIUsageLogDto"
-								Items="@_usageLogs"
+								Items="@VisibleUsageLogs"
 								Loading="IsOperationLoading(LoadingKeys.LoadUsageLogs)"
 								Striped="true"
 								Hoverable="true"
-								KeySelector="@(item => item.Id.ToString())">
+								KeySelector="@(item => item.Id.ToString())"
+                        ShowFilterRow="true"
+                        ShowColumnChooser="true"
+                        SelectionMode="SbSelectionMode.MultipleRows">
 						<ChildContent>
-							<SbColumn TItem="AIUsageLogDto" Field="CreationTime" Title="@L["Time"]" Width="160px">
+							<SbColumn TItem="AIUsageLogDto" Field="CreationTime" Title="@L["Time"]" Width="160px" Filterable="true" Sortable="true">
 								<CellTemplate Context="cellContext">
 									<SbText Variant="SbTextVariant.BodySmall">
 										@cellContext.Item.CreationTime.ToString("yyyy-MM-dd HH:mm:ss")
 									</SbText>
 								</CellTemplate>
 							</SbColumn>
-							<SbColumn TItem="AIUsageLogDto" Field="CapabilityType" Title="@L["Capability"]" Width="150px">
+							<SbColumn TItem="AIUsageLogDto" Field="CapabilityType" Title="@L["Capability"]" Width="150px" Filterable="true" Sortable="true">
 								<CellTemplate Context="cellContext">
-									<SbChip Size="SbSize.Sm">@cellContext.Item.CapabilityType.ToString()</SbChip>
+									<SbChip Size="SbSize.Sm">@FormatCapability(cellContext.Item.CapabilityType)</SbChip>
 								</CellTemplate>
 							</SbColumn>
-							<SbColumn TItem="AIUsageLogDto" Field="ModelId" Title="@L["Model"]" Width="180px">
+							<SbColumn TItem="AIUsageLogDto" Field="ModelId" Title="@L["Model"]" Width="220px" Filterable="true" Sortable="true">
 								<CellTemplate Context="cellContext">
-									<SbText Variant="SbTextVariant.BodySmall">@cellContext.Item.ModelId</SbText>
+									<SbStack Direction="SbStackDirection.Column" Gap="1">
+										<SbText Variant="SbTextVariant.BodySmall">
+											@FormatLogRouteName(cellContext.Item)
+										</SbText>
+										<SbText Variant="SbTextVariant.Caption" Color="SbColor.Muted">
+											@cellContext.Item.ModelId
+										</SbText>
+									</SbStack>
 								</CellTemplate>
 							</SbColumn>
-								<SbColumn TItem="AIUsageLogDto" Field="TotalTokens" Title="@L["Tokens"]" Width="100px">
+								<SbColumn TItem="AIUsageLogDto" Field="TotalTokens" Title="@L["Tokens"]" Width="100px" Filterable="true" Sortable="true">
 									<CellTemplate Context="cellContext">
 										@if (cellContext.Item.HasTokenUsage)
 										{
@@ -168,7 +286,7 @@
 										}
 									</CellTemplate>
 								</SbColumn>
-								<SbColumn TItem="AIUsageLogDto" Field="EstimatedCost" Title="@L["Cost"]" Width="100px">
+								<SbColumn TItem="AIUsageLogDto" Field="EstimatedCost" Title="@L["Cost"]" Width="100px" Filterable="true" Sortable="true">
 									<CellTemplate Context="cellContext">
 										<SbStack Direction="SbStackDirection.Column" Gap="1">
 											<SbText Variant="SbTextVariant.BodySmall">$@cellContext.Item.EstimatedCost.ToString("F4")</SbText>
@@ -183,24 +301,43 @@
 										</SbStack>
 									</CellTemplate>
 								</SbColumn>
-							<SbColumn TItem="AIUsageLogDto" Field="LatencyMs" Title="@L["Latency"]" Width="100px">
+							<SbColumn TItem="AIUsageLogDto" Field="LatencyMs" Title="@L["Latency"]" Width="100px" Filterable="true" Sortable="true">
 								<CellTemplate Context="cellContext">
 									<SbText Variant="SbTextVariant.BodySmall">@cellContext.Item.LatencyMs ms</SbText>
 								</CellTemplate>
 							</SbColumn>
-							<SbColumn TItem="AIUsageLogDto" Field="IsSuccess" Title="@L["Status"]" Width="100px">
+							<SbColumn TItem="AIUsageLogDto" Field="IsSuccess" Title="@L["Status"]" Width="100px" Filterable="true" Sortable="true">
 								<CellTemplate Context="cellContext">
 									<SbChip Color="@(cellContext.Item.IsSuccess ? SbColor.Success : SbColor.Danger)" Size="SbSize.Sm">
 										@(cellContext.Item.IsSuccess ? L["Success"] : L["Failed"])
 									</SbChip>
 								</CellTemplate>
 							</SbColumn>
-							<SbColumn TItem="AIUsageLogDto" Field="ErrorMessage" Title="@L["Error"]">
+							<SbColumn TItem="AIUsageLogDto" Field="ErrorMessage" Title="@L["Error"]" Filterable="true" Sortable="true">
 								<CellTemplate Context="cellContext">
 									@if (!string.IsNullOrEmpty(cellContext.Item.ErrorMessage))
 									{
 										<SbText Variant="SbTextVariant.BodySmall" Color="SbColor.Danger">
-											@cellContext.Item.ErrorMessage
+											@FormatUsageError(cellContext.Item.ErrorMessage)
+										</SbText>
+									}
+								</CellTemplate>
+							</SbColumn>
+							<SbColumn TItem="AIUsageLogDto" Title="@L["File"]" Width="140px" Sortable="false">
+								<CellTemplate Context="cellContext">
+									@if (!string.IsNullOrWhiteSpace(cellContext.Item.FileUrl))
+									{
+										<SbButton Variant="SbButtonVariant.Ghost"
+												  Size="SbSize.Sm"
+												  Href="@cellContext.Item.FileUrl"
+												  Target="_blank">
+											@L["OpenFile"]
+										</SbButton>
+									}
+									else if (cellContext.Item.FileId.HasValue)
+									{
+										<SbText Variant="SbTextVariant.Caption" Color="SbColor.Muted">
+											@cellContext.Item.FileId.Value.ToString("N")[..8]
 										</SbText>
 									}
 								</CellTemplate>

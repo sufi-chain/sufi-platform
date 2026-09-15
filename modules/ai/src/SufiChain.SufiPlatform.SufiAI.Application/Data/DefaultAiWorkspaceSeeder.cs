@@ -1,5 +1,6 @@
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using SufiChain.SufiPlatform.SufiAI;
 using SufiChain.SufiPlatform.SufiAI.Configuration;
 using SufiChain.SufiPlatform.SufiAI.Workspaces;
 using Volo.Abp.Guids;
@@ -66,11 +67,7 @@ public class DefaultAiWorkspaceSeeder : IDefaultAiWorkspaceSeeder
         workspace.UpdateConfiguration(
             seed.Model,
             EncryptApiKey(seed.ApiKey),
-            seed.ApiBaseUrl,
-            null,
-            seed.Temperature,
-            seed.MaxContextTokens,
-            seed.OpenAIApiMode);
+            seed.ApiBaseUrl);
 
         EnsureDefaultModelConfigurations(workspace, seed);
 
@@ -116,8 +113,9 @@ public class DefaultAiWorkspaceSeeder : IDefaultAiWorkspaceSeeder
                 apiEndpoint: seed.ApiBaseUrl,
                 apiKey: null,
                 priority: 0,
-                openAIApiMode: seed.OpenAIApiMode,
-                dimensions: dimensions);
+                openAIApiMode: OpenAIApiMode.ChatCompletions,
+                dimensions: dimensions,
+                maxContextTokens: AIModelConfiguration.DefaultMaxContextTokens);
 
             Logger.LogInformation(
                 "Seeded AI model configuration {Capability}='{ModelId}' on workspace {WorkspaceId} for tenant {TenantId}.",

@@ -1,29 +1,47 @@
+using System.Linq;
 using Volo.Abp;
-using Volo.Abp.Security.Encryption;
+using Volo.Abp.Domain.Services;
+using SufiChain.SufiPlatform.SufiAI;
 
 namespace SufiChain.SufiPlatform.SufiAI.Workspaces;
 
-public class WorkspaceRuntimeConfigurationResolver : IWorkspaceRuntimeConfigurationResolver
+public class WorkspaceRuntimeConfigurationResolver : DomainService, IWorkspaceRuntimeConfigurationResolver
 {
     protected IWorkspaceRepository WorkspaceRepository { get; }
 
     protected IReadOnlyList<IAIProvider> Providers { get; }
 
-    protected IStringEncryptionService StringEncryptor { get; }
+    protected IAICredentialResolver CredentialResolver { get; }
+
+    protected IAIModelRouteResolver RouteResolver =>
+        LazyServiceProvider.LazyGetRequiredService<IAIModelRouteResolver>();
 
     public WorkspaceRuntimeConfigurationResolver(
         IWorkspaceRepository workspaceRepository,
         IEnumerable<IAIProvider> providers,
-        IStringEncryptionService stringEncryptor)
+        IAICredentialResolver credentialResolver)
     {
         WorkspaceRepository = workspaceRepository;
         Providers = providers.ToList();
-        StringEncryptor = stringEncryptor;
+        CredentialResolver = credentialResolver;
+    }
+
+    public virtual Task<WorkspaceRuntimeConfiguration> ResolveAsync(
+        string workspaceName,
+        AICapabilityType capabilityType,
+        CancellationToken cancellationToken = default)
+    {
+        return ResolveAsync(
+            workspaceName,
+            capabilityType,
+            AIModelRouteSelection.Implicit,
+            cancellationToken);
     }
 
     public virtual async Task<WorkspaceRuntimeConfiguration> ResolveAsync(
         string workspaceName,
         AICapabilityType capabilityType,
+        AIModelRouteSelection selection,
         CancellationToken cancellationToken = default)
     {
         var workspace = await WorkspaceRepository.FindByNameAsync(workspaceName, cancellationToken);
@@ -33,45 +51,56 @@ public class WorkspaceRuntimeConfigurationResolver : IWorkspaceRuntimeConfigurat
                 .WithData("WorkspaceName", workspaceName);
         }
 
-        return Resolve(workspace, capabilityType);
+        return RouteResolver.Resolve(workspace, capabilityType, selection);
     }
 
-    public virtual async Task<WorkspaceRuntimeConfiguration> ResolveAsync(
+    public virtual Task<WorkspaceRuntimeConfiguration> ResolveAsync(
         Guid workspaceId,
         AICapabilityType capabilityType,
         CancellationToken cancellationToken = default)
     {
-        var workspace = await WorkspaceRepository.FindAsync(
+        return ResolveAsync(
             workspaceId,
-            includeDetails: true,
-            cancellationToken: cancellationToken);
-        if (workspace == null)
-        {
-            throw new BusinessException(AIErrorCodes.WorkspaceNotFound)
-                .WithData("WorkspaceId", workspaceId);
-        }
+            capabilityType,
+            AIModelRouteSelection.Implicit,
+            cancellationToken);
+    }
 
-        return Resolve(workspace, capabilityType);
+    public virtual Task<WorkspaceRuntimeConfiguration> ResolveAsync(
+        Guid workspaceId,
+        AICapabilityType capabilityType,
+        AIModelRouteSelection selection,
+        CancellationToken cancellationToken = default)
+    {
+        return RouteResolver.ResolveAsync(
+            workspaceId,
+            capabilityType,
+            selection,
+            cancellationToken);
     }
 
     public virtual WorkspaceRuntimeConfiguration Resolve(
         Workspace workspace,
-        AICapabilityType capabilityType)
+        AICapabilityType capabilityType,
+        AIModelConfiguration? configuration = null,
+        bool isExplicitSelection = false)
     {
-        var configuration = workspace.GetPrimaryConfiguration(capabilityType);
+        configuration ??= workspace.GetPrimaryConfiguration(capabilityType);
         var fallbackModel = capabilityType == AICapabilityType.ChatCompletion
             ? workspace.DefaultModel
             : null;
         var modelId = configuration?.ModelId ?? fallbackModel ?? string.Empty;
         var isConfigured = !string.IsNullOrWhiteSpace(modelId);
         var provider = Providers.FirstOrDefault(item => item.ProviderType == workspace.Provider);
-        var effectiveApiKey = DecryptApiKey(configuration?.ApiKey ?? workspace.ApiKey);
+        var effectiveApiKey = CredentialResolver.DecryptApiKey(configuration?.ApiKey)
+            ?? CredentialResolver.DecryptApiKey(workspace.ApiKey);
+        var effectiveApiEndpoint = configuration?.ApiEndpoint ?? workspace.ApiBaseUrl;
         var failureCode = GetFailureCode(
             workspace,
             capabilityType,
             provider,
             isConfigured,
-            configuration?.ApiEndpoint ?? workspace.ApiBaseUrl,
+            effectiveApiEndpoint,
             effectiveApiKey);
 
         return new WorkspaceRuntimeConfiguration
@@ -81,16 +110,120 @@ public class WorkspaceRuntimeConfigurationResolver : IWorkspaceRuntimeConfigurat
             CapabilityType = capabilityType,
             Provider = workspace.Provider,
             ModelId = modelId,
-            ApiEndpoint = configuration?.ApiEndpoint ?? workspace.ApiBaseUrl,
+            ApiEndpoint = effectiveApiEndpoint,
             ApiKey = effectiveApiKey,
-            OpenAIApiMode = configuration?.OpenAIApiMode ?? workspace.OpenAIApiMode,
+            OpenAIApiMode = configuration?.OpenAIApiMode ?? OpenAIApiMode.ChatCompletions,
+            MaxContextTokens = configuration?.MaxContextTokens > 0
+                ? configuration.MaxContextTokens
+                : AIModelConfiguration.DefaultMaxContextTokens,
             InputCostPer1MTokens = configuration?.InputCostPer1MTokens ?? workspace.InputCostPer1MTokens,
             OutputCostPer1MTokens = configuration?.OutputCostPer1MTokens ?? workspace.OutputCostPer1MTokens,
             IsFallback = configuration == null && isConfigured,
+            ModelConfigurationId = configuration?.Id,
+            IsExplicitSelection = isExplicitSelection,
             IsConfigured = isConfigured,
             IsReady = failureCode == null,
             FailureCode = failureCode
         };
+    }
+
+    public virtual void EnsureReady(
+        WorkspaceRuntimeConfiguration configuration,
+        bool requiresToolCalling = false)
+    {
+        if (requiresToolCalling)
+        {
+            EnsureToolCallingCompatible(configuration);
+            return;
+        }
+
+        ThrowIfNotReady(configuration);
+    }
+
+    protected virtual void EnsureToolCallingCompatible(WorkspaceRuntimeConfiguration configuration)
+    {
+        if (configuration.Provider != AIProviderType.OpenAI ||
+            string.Equals(
+                configuration.FailureCode,
+                WorkspaceRuntimeFailureCodes.ProviderNotRegistered,
+                StringComparison.Ordinal))
+        {
+            throw CreateToolCallingException(
+                    AIErrorCodes.McpProviderNotSupported,
+                    configuration)
+                .WithData("ModelId", configuration.ModelId);
+        }
+
+        if (configuration.OpenAIApiMode != OpenAIApiMode.ChatCompletions)
+        {
+            throw CreateToolCallingException(
+                    AIErrorCodes.McpRequiresChatCompletions,
+                    configuration)
+                .WithData("ModelId", configuration.ModelId)
+                .WithData("ApiMode", configuration.OpenAIApiMode.ToString());
+        }
+
+        if (!string.IsNullOrWhiteSpace(configuration.ApiEndpoint) &&
+            (!Uri.TryCreate(configuration.ApiEndpoint, UriKind.Absolute, out var endpoint) ||
+             (endpoint.Scheme != Uri.UriSchemeHttp && endpoint.Scheme != Uri.UriSchemeHttps)))
+        {
+            throw CreateToolCallingException(
+                    AIErrorCodes.McpWorkspaceNotReady,
+                    configuration)
+                .WithData("FailureCode", WorkspaceRuntimeFailureCodes.EndpointInvalid)
+                .WithData("ModelId", configuration.ModelId)
+                .WithData("ApiMode", configuration.OpenAIApiMode.ToString());
+        }
+
+        if (!configuration.IsReady)
+        {
+            throw CreateToolCallingException(
+                    AIErrorCodes.McpWorkspaceNotReady,
+                    configuration)
+                .WithData("FailureCode", configuration.FailureCode ?? string.Empty)
+                .WithData("ModelId", configuration.ModelId)
+                .WithData("ApiMode", configuration.OpenAIApiMode.ToString());
+        }
+    }
+
+    protected virtual void ThrowIfNotReady(WorkspaceRuntimeConfiguration resolved)
+    {
+        var exception = resolved.FailureCode switch
+        {
+            WorkspaceRuntimeFailureCodes.WorkspaceInactive =>
+                new BusinessException(AIErrorCodes.WorkspaceNotActive),
+            WorkspaceRuntimeFailureCodes.ModelNotConfigured =>
+                new BusinessException(AIErrorCodes.NoModelConfigured),
+            WorkspaceRuntimeFailureCodes.CredentialsMissing =>
+                new BusinessException(AIErrorCodes.ApiKeyRequired),
+            WorkspaceRuntimeFailureCodes.ProviderNotRegistered =>
+                new BusinessException(AIErrorCodes.ProviderNotSupported),
+            WorkspaceRuntimeFailureCodes.CapabilityNotSupported =>
+                new BusinessException(AIErrorCodes.CapabilityNotSupported),
+            WorkspaceRuntimeFailureCodes.EndpointInvalid =>
+                new BusinessException(AIErrorCodes.InvalidProviderConfiguration),
+            _ => null
+        };
+
+        if (exception == null)
+        {
+            return;
+        }
+
+        throw exception
+            .WithData("WorkspaceName", resolved.Workspace.Name)
+            .WithData("Provider", resolved.Provider.ToString())
+            .WithData("CapabilityType", resolved.CapabilityType.ToString());
+    }
+
+    protected virtual BusinessException CreateToolCallingException(
+        string errorCode,
+        WorkspaceRuntimeConfiguration configuration)
+    {
+        return new BusinessException(errorCode)
+            .WithData("WorkspaceName", configuration.Workspace.Name)
+            .WithData("Provider", configuration.Provider.ToString())
+            .WithData("CapabilityType", configuration.CapabilityType.ToString());
     }
 
     protected virtual string? GetFailureCode(
@@ -131,22 +264,5 @@ public class WorkspaceRuntimeConfigurationResolver : IWorkspaceRuntimeConfigurat
         return string.IsNullOrWhiteSpace(effectiveApiKey)
             ? WorkspaceRuntimeFailureCodes.CredentialsMissing
             : null;
-    }
-
-    protected virtual string? DecryptApiKey(string? encryptedApiKey)
-    {
-        if (string.IsNullOrWhiteSpace(encryptedApiKey))
-        {
-            return encryptedApiKey;
-        }
-
-        try
-        {
-            return StringEncryptor.Decrypt(encryptedApiKey);
-        }
-        catch
-        {
-            return encryptedApiKey;
-        }
     }
 }

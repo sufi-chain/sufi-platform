@@ -1,0 +1,87 @@
+@namespace SufiChain.SufiPlatform.SufiAI.Blazor.Components
+@inherits AIComponentBase
+
+<SbDialog Open="@Open" OpenChanged="@SetOpenAsync" Size="SbDialogSize.Lg" Title="@L["AssignToTenant"]">
+	<ChildContent>
+		<SbStack Direction="SbStackDirection.Column" Gap="4">
+			<SbAlert Severity="SbAlertSeverity.Info">@L["AssignToTenantHelp"]</SbAlert>
+
+			<SbText Weight="SbFontWeight.Semibold">@L["TenantAssignments"]</SbText>
+			@if (_assignments.Count == 0)
+			{
+				<SbText Variant="SbTextVariant.Caption" Color="SbColor.Muted">@L["NoTenantAssignments"]</SbText>
+			}
+			else
+			{
+				<SbDataGrid TItem="WorkspaceAssignmentDto"
+							Items="@_assignments"
+							Loading="IsOperationLoading(LoadingKeys.LoadAssignments)"
+							Striped="true"
+							Hoverable="true"
+							KeySelector="@(item => item.Id.ToString())"
+                        ShowFilterRow="true"
+                        ShowColumnChooser="true"
+                        SelectionMode="SbSelectionMode.MultipleRows">
+					<SbColumn TItem="WorkspaceAssignmentDto" Title="@L["Actions"]" Width="72px" Sortable="false">
+						<CellTemplate Context="cellContext">
+							@if (cellContext.Item.IsActive)
+							{
+								<AuthorizeView Policy="@AIPermissions.Workspaces.Edit">
+									<SbIconButton Size="SbSize.Sm"
+												  AriaLabel="@L["DeactivateAssignment"]"
+												  OnClick="@(() => DeactivateAssignmentAsync(cellContext.Item))">
+										<Icon><SbIcon Name="user-minus" /></Icon>
+									</SbIconButton>
+								</AuthorizeView>
+							}
+						</CellTemplate>
+					</SbColumn>
+					<SbColumn TItem="WorkspaceAssignmentDto" Title="@L["Tenant"]" Width="200px">
+						<CellTemplate Context="cellContext">
+							@(cellContext.Item.TenantName ?? cellContext.Item.TenantId?.ToString())
+						</CellTemplate>
+					</SbColumn>
+					<SbColumn TItem="WorkspaceAssignmentDto" Title="@L["Status"]" Width="110px">
+						<CellTemplate Context="cellContext">
+							<SbBadge Color="@(cellContext.Item.IsActive ? SbColor.Success : SbColor.Default)">
+								@(cellContext.Item.IsActive ? L["Active"] : L["Inactive"])
+							</SbBadge>
+						</CellTemplate>
+					</SbColumn>
+					<SbColumn TItem="WorkspaceAssignmentDto" Title="@L["AssignmentVersion"]" Width="90px">
+						<CellTemplate Context="cellContext">
+							@cellContext.Item.Version
+						</CellTemplate>
+					</SbColumn>
+				</SbDataGrid>
+			}
+
+			<SbDivider />
+
+			<SbSimpleSelect TValue="Guid"
+							@bind-Value="_tenantId"
+							Label="@L["Tenant"]"
+							Searchable="true"
+							SearchPlaceholder="@L["SearchTenants"]">
+				<SbSelectOption TValue="Guid" Value="@Guid.Empty">@L["SelectTenant"]</SbSelectOption>
+				@foreach (var tenant in UnassignedTenants)
+				{
+					<SbSelectOption TValue="Guid" Value="@tenant.Id">@tenant.Name</SbSelectOption>
+				}
+			</SbSimpleSelect>
+			<SbTextField @bind-Value="_name"
+						 Label="@L["Name"]"
+						 Placeholder="@L["AssignToTenantNamePlaceholder"]" />
+		</SbStack>
+	</ChildContent>
+	<Footer>
+		<SbStack Direction="SbStackDirection.Row" Gap="2" Justify="SbJustify.End">
+			<SbButton Variant="SbButtonVariant.Outline" OnClick="@CloseModal">@L["Cancel"]</SbButton>
+			<SbButton Color="SbColor.Primary"
+					  OnClick="@AssignAsync"
+					  Loading="IsOperationLoading(LoadingKeys.Assign)">
+				@L["Assign"]
+			</SbButton>
+		</SbStack>
+	</Footer>
+</SbDialog>

@@ -30,6 +30,27 @@ public interface IRAGService
         IReadOnlyDictionary<string, string>? metadataFilters = null,
         CancellationToken cancellationToken = default
     );
+
+    /// <summary>
+    /// (Re)indexes one source document by identifier. When the source no longer exposes the
+    /// document, stale chunks are deleted and <see cref="DocumentIndexResult.StoredChunkCount"/> is 0.
+    /// </summary>
+    Task<DocumentIndexResult> IndexDocumentAsync(
+        string workspaceName,
+        string sourceName,
+        string documentId,
+        CancellationToken cancellationToken = default
+    );
+
+    /// <summary>
+    /// Counts stored chunks matching the workspace, optional source, and metadata filters.
+    /// </summary>
+    Task<int> CountAsync(
+        string workspaceName,
+        string? sourceName = null,
+        IReadOnlyDictionary<string, string>? metadataFilters = null,
+        CancellationToken cancellationToken = default
+    );
     
     Task<IndexingStatus> GetIndexingStatusAsync(
         string workspaceName,
@@ -47,6 +68,13 @@ public class IndexingProgress
     public string? CurrentDocument { get; set; }
     public DateTime StartedAt { get; set; }
     public DateTime? CompletedAt { get; set; }
+}
+
+public class DocumentIndexResult
+{
+    public string DocumentId { get; set; } = string.Empty;
+    public int StoredChunkCount { get; set; }
+    public bool Removed { get; set; }
 }
 
 public class IndexingStatus

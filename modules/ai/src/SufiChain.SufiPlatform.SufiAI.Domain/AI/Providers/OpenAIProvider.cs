@@ -11,10 +11,10 @@ using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using SufiChain.SufiPlatform.SufiAI.RAG;
 using SufiChain.SufiPlatform.SufiAI.Workspaces;
 using Volo.Abp;
 using Volo.Abp.DependencyInjection;
-using Volo.Abp.Security.Encryption;
 using Volo.Abp.Timing;
 
 namespace SufiChain.SufiPlatform.SufiAI.Providers;
@@ -54,21 +54,23 @@ public class OpenAIProvider : IAIProvider, ITransientDependency
 
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly ILogger<OpenAIProvider> _logger;
-    private readonly IStringEncryptionService _stringEncryptor;
+    private readonly IAICredentialResolver _credentialResolver;
     private readonly IClock _clock;
+    private readonly Web.IWebContentFetcher _webContentFetcher;
 
     public AIProviderType ProviderType => AIProviderType.OpenAI;
 
     public OpenAIProvider(
         IHttpClientFactory httpClientFactory,
         ILogger<OpenAIProvider> logger,
-        IStringEncryptionService stringEncryptor,
-        IClock clock)
+        IAICredentialResolver credentialResolver,
+        IClock clock, Web.IWebContentFetcher? webContentFetcher = null)
     {
         _httpClientFactory = httpClientFactory;
         _logger = logger;
-        _stringEncryptor = stringEncryptor;
+        _credentialResolver = credentialResolver;
         _clock = clock;
+        _webContentFetcher = webContentFetcher ?? new Web.WebContentFetcher();
     }
 
     public bool SupportsCapability(AICapabilityType capabilityType)
@@ -93,7 +95,7 @@ public class OpenAIProvider : IAIProvider, ITransientDependency
         ChatCompletionRequest request,
         CancellationToken cancellationToken = default)
     {
-        return ResolveApiMode(workspace, configuration) == OpenAIApiMode.Responses
+        return ResolveApiMode(configuration) == OpenAIApiMode.Responses
             ? await SendResponsesMessageAsync(workspace, configuration, request, cancellationToken)
             : await SendChatCompletionsMessageAsync(workspace, configuration, request, cancellationToken);
     }
@@ -104,7 +106,7 @@ public class OpenAIProvider : IAIProvider, ITransientDependency
         ChatCompletionRequest request,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        var stream = ResolveApiMode(workspace, configuration) == OpenAIApiMode.Responses
+        var stream = ResolveApiMode(configuration) == OpenAIApiMode.Responses
             ? StreamResponsesMessageAsync(workspace, configuration, request, cancellationToken)
             : StreamChatCompletionsMessageAsync(workspace, configuration, request, cancellationToken);
 
@@ -194,7 +196,7 @@ public class OpenAIProvider : IAIProvider, ITransientDependency
         VisionAnalysisRequest request,
         CancellationToken cancellationToken = default)
     {
-        if (ResolveApiMode(workspace, configuration) == OpenAIApiMode.Responses)
+        if (ResolveApiMode(configuration) == OpenAIApiMode.Responses)
         {
             return await AnalyzeImageWithResponsesAsync(workspace, configuration, request, cancellationToken);
         }
@@ -249,12 +251,19 @@ public class OpenAIProvider : IAIProvider, ITransientDependency
     {
         var httpClient = CreateHttpClient(workspace, configuration);
         var baseUrl = GetBaseUrl(workspace, configuration);
+        var input = EmbeddingInputGuard.FitToBudget(
+            request.Text,
+            EmbeddingModelDefaults.GetMaxInputTokens(configuration.ModelId));
 
-        var requestBody = new
+        var requestBody = new Dictionary<string, object?>
         {
-            model = configuration.ModelId,
-            input = request.Text
+            ["model"] = configuration.ModelId,
+            ["input"] = input
         };
+        if (EmbeddingModelDefaults.SupportsInputTruncation(configuration.ModelId))
+        {
+            requestBody["truncate"] = "END";
+        }
 
         var response = await httpClient.PostAsync($"{baseUrl}/embeddings", CreateJsonContent(requestBody), cancellationToken);
         await EnsureProviderSuccessAsync(response, "embeddings", configuration.ModelId, cancellationToken);
@@ -350,83 +359,19 @@ public class OpenAIProvider : IAIProvider, ITransientDependency
     }
 
     public async Task<WebFetchResponse> FetchWebAsync(
-        Workspace workspace,
-        AIModelConfiguration configuration,
-        WebFetchRequest request,
+        Workspace workspace, AIModelConfiguration configuration, WebFetchRequest request,
         CancellationToken cancellationToken = default)
     {
-        if (!TryValidateHttpUrl(request.Url, out var safeUrl))
+        try { return await _webContentFetcher.FetchAsync(request, cancellationToken); }
+        catch (Web.WebResearchException ex)
         {
-            throw new BusinessException("AI:WebFetchUrlNotAllowed");
-        }
-
-        using var httpClient = _httpClientFactory.CreateClient();
-        httpClient.Timeout = TimeSpan.FromSeconds(Math.Clamp(request.TimeoutSeconds, 1, 60));
-        using var httpRequest = new HttpRequestMessage(HttpMethod.Get, safeUrl);
-        httpRequest.Headers.UserAgent.ParseAdd("SufiAI/1.0 (+web-fetch)");
-        using var response = await httpClient.SendAsync(
-            httpRequest,
-            HttpCompletionOption.ResponseHeadersRead,
-            cancellationToken);
-        if (!response.IsSuccessStatusCode)
-        {
-            throw new BusinessException("AI:WebFetchRequestFailed")
-                .WithData("StatusCode", (int)response.StatusCode);
-        }
-
-        var contentType = response.Content.Headers.ContentType?.MediaType;
-        if (contentType is not ("text/html" or "text/plain" or "application/xhtml+xml"))
-        {
-            throw new BusinessException("AI:WebFetchContentTypeNotSupported")
-                .WithData("ContentType", contentType ?? string.Empty);
-        }
-
-        var maxBytes = Math.Clamp(request.MaxBytes, 1_024, 10_000_000);
-        await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken);
-        using var buffer = new MemoryStream();
-        var chunk = new byte[8192];
-        var truncated = false;
-        while (buffer.Length < maxBytes)
-        {
-            var remaining = maxBytes - (int)buffer.Length;
-            var read = await stream.ReadAsync(
-                chunk.AsMemory(0, Math.Min(chunk.Length, remaining)),
-                cancellationToken);
-            if (read == 0)
+            throw new BusinessException(ex.Code switch
             {
-                break;
-            }
-
-            await buffer.WriteAsync(chunk.AsMemory(0, read), cancellationToken);
+                "UrlNotAllowed" => "AI:WebFetchUrlNotAllowed",
+                "ContentTypeNotSupported" => "AI:WebFetchContentTypeNotSupported",
+                _ => "AI:WebFetchRequestFailed"
+            });
         }
-
-        if (buffer.Length >= maxBytes)
-        {
-            truncated = true;
-        }
-
-        var content = Encoding.UTF8.GetString(buffer.ToArray());
-        if (contentType is "text/html" or "application/xhtml+xml")
-        {
-            content = System.Text.RegularExpressions.Regex.Replace(
-                content,
-                "<script[^>]*>.*?</script>|<style[^>]*>.*?</style>",
-                string.Empty,
-                System.Text.RegularExpressions.RegexOptions.Singleline |
-                System.Text.RegularExpressions.RegexOptions.IgnoreCase);
-            content = System.Text.RegularExpressions.Regex.Replace(content, "<[^>]+>", " ");
-        }
-
-        return new WebFetchResponse
-        {
-            Url = safeUrl,
-            CanonicalUrl = response.RequestMessage?.RequestUri?.ToString(),
-            Content = WebUtility.HtmlDecode(content).Trim(),
-            ContentType = contentType,
-            Truncated = truncated,
-            RetrievedAt = _clock.Now,
-            StatusCode = (int)response.StatusCode
-        };
     }
 
     private async Task<ChatCompletionResponse> SendChatCompletionsMessageAsync(
@@ -441,8 +386,8 @@ public class OpenAIProvider : IAIProvider, ITransientDependency
         var requestBody = new
         {
             model = configuration.ModelId,
-            messages = BuildChatCompletionsMessages(request.Messages, request.SystemPrompt ?? workspace.SystemPrompt),
-            temperature = request.Temperature ?? workspace.Temperature,
+            messages = BuildChatCompletionsMessages(request.Messages, request.SystemPrompt),
+            temperature = request.Temperature,
             max_tokens = request.MaxTokens,
             stream = false
         };
@@ -505,8 +450,8 @@ public class OpenAIProvider : IAIProvider, ITransientDependency
         var requestBody = new
         {
             model = configuration.ModelId,
-            messages = BuildChatCompletionsMessages(request.Messages, request.SystemPrompt ?? workspace.SystemPrompt),
-            temperature = request.Temperature ?? workspace.Temperature,
+            messages = BuildChatCompletionsMessages(request.Messages, request.SystemPrompt),
+            temperature = request.Temperature,
             max_tokens = request.MaxTokens,
             stream = true,
             stream_options = new { include_usage = true }
@@ -714,9 +659,9 @@ public class OpenAIProvider : IAIProvider, ITransientDependency
         return new
         {
             model = configuration.ModelId,
-            instructions = request.SystemPrompt ?? workspace.SystemPrompt,
+            instructions = request.SystemPrompt,
             input = BuildResponsesInput(request.Messages),
-            temperature = request.Temperature ?? workspace.Temperature,
+            temperature = request.Temperature,
             max_output_tokens = request.MaxTokens,
             stream
         };
@@ -1064,14 +1009,14 @@ public class OpenAIProvider : IAIProvider, ITransientDependency
         return new StringContent(json, Encoding.UTF8, "application/json");
     }
 
-    private static OpenAIApiMode ResolveApiMode(Workspace workspace, AIModelConfiguration configuration)
+    private static OpenAIApiMode ResolveApiMode(AIModelConfiguration configuration)
     {
-        return configuration.OpenAIApiMode ?? workspace.OpenAIApiMode;
+        return configuration.OpenAIApiMode;
     }
 
     private static string GetBaseUrl(Workspace workspace, AIModelConfiguration configuration)
     {
-        return (configuration.ApiEndpoint ?? workspace.ApiBaseUrl ?? DefaultBaseUrl).TrimEnd('/');
+        return (configuration.ApiEndpoint ?? DefaultBaseUrl).TrimEnd('/');
     }
 
     private static string ToDataUrl(byte[] data, string format)
@@ -1083,10 +1028,10 @@ public class OpenAIProvider : IAIProvider, ITransientDependency
     {
         var httpClient = _httpClientFactory.CreateClient();
 
-        var apiKey = DecryptApiKey(configuration.ApiKey ?? workspace.ApiKey);
+        var apiKey = _credentialResolver.DecryptApiKey(configuration.ApiKey);
         if (string.IsNullOrEmpty(apiKey))
         {
-            throw new BusinessException("AI:ApiKeyRequired")
+            throw new BusinessException(AIErrorCodes.ApiKeyRequired)
                 .WithData("WorkspaceName", workspace.Name)
                 .WithData("Provider", workspace.Provider.ToString());
         }
@@ -1096,23 +1041,6 @@ public class OpenAIProvider : IAIProvider, ITransientDependency
         httpClient.Timeout = TimeSpan.FromMinutes(5);
 
         return httpClient;
-    }
-
-    private string? DecryptApiKey(string? encryptedApiKey)
-    {
-        if (string.IsNullOrWhiteSpace(encryptedApiKey))
-        {
-            return encryptedApiKey;
-        }
-
-        try
-        {
-            return _stringEncryptor.Decrypt(encryptedApiKey);
-        }
-        catch
-        {
-            return encryptedApiKey;
-        }
     }
 
     private sealed record TokenUsage(int? InputTokens, int? OutputTokens, int? TotalTokens)

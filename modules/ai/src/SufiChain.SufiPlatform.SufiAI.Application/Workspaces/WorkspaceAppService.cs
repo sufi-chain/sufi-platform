@@ -1,13 +1,22 @@
 using System.Net.Http.Headers;
+using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using SufiChain.SufiPlatform.Application.Dtos;
 using SufiChain.SufiPlatform.Application.Services;
 using SufiChain.SufiPlatform.Features;
+using SufiChain.SufiPlatform.SufiAI.Configuration;
 using SufiChain.SufiPlatform.SufiAI.Features;
 using SufiChain.SufiPlatform.SufiAI.Permissions;
+using SufiChain.SufiPlatform.Tenants;
+using Volo.Abp;
+using Volo.Abp.Caching;
+using Volo.Abp.Data;
+using Volo.Abp.MultiTenancy;
 using Volo.Abp.Security.Encryption;
 
 namespace SufiChain.SufiPlatform.SufiAI.Workspaces;
@@ -20,32 +29,51 @@ public class WorkspaceAppService : SufiApplicationService, IWorkspaceAppService
 
     private readonly IWorkspaceRepository _workspaceRepository;
     private readonly IAIModelConfigurationRepository _modelConfigurationRepository;
+    private readonly IWorkspaceAssignmentRepository _assignmentRepository;
+    private readonly IWorkspaceGuardrailService _workspaceGuardrailService;
+    private readonly IInheritedWorkspaceProjectionSynchronizer _inheritedWorkspaceProjectionSynchronizer;
+    private readonly ITenantStore _tenantStore;
     private readonly WorkspaceManager _workspaceManager;
     private readonly IStringEncryptionService _stringEncryptor;
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly IWorkspaceRuntimeConfigurationResolver _runtimeConfigurationResolver;
     private readonly WorkspaceSyncService _workspaceSyncService;
+    private readonly IDistributedCache<ProviderModelListCacheItem> _providerModelListCache;
+    private readonly AIOptions _aiOptions;
 
     public WorkspaceAppService(
         IWorkspaceRepository workspaceRepository,
         IAIModelConfigurationRepository modelConfigurationRepository,
+        IWorkspaceAssignmentRepository assignmentRepository,
+        IWorkspaceGuardrailService workspaceGuardrailService,
+        IInheritedWorkspaceProjectionSynchronizer inheritedWorkspaceProjectionSynchronizer,
+        ITenantStore tenantStore,
         WorkspaceManager workspaceManager,
         IStringEncryptionService stringEncryptor,
         IHttpClientFactory httpClientFactory,
         IWorkspaceRuntimeConfigurationResolver runtimeConfigurationResolver,
-        WorkspaceSyncService workspaceSyncService)
+        WorkspaceSyncService workspaceSyncService,
+        IDistributedCache<ProviderModelListCacheItem> providerModelListCache,
+        IOptions<AIOptions> aiOptions)
     {
         _workspaceRepository = workspaceRepository;
         _modelConfigurationRepository = modelConfigurationRepository;
+        _assignmentRepository = assignmentRepository;
+        _workspaceGuardrailService = workspaceGuardrailService;
+        _inheritedWorkspaceProjectionSynchronizer = inheritedWorkspaceProjectionSynchronizer;
+        _tenantStore = tenantStore;
         _workspaceManager = workspaceManager;
         _stringEncryptor = stringEncryptor;
         _httpClientFactory = httpClientFactory;
         _runtimeConfigurationResolver = runtimeConfigurationResolver;
         _workspaceSyncService = workspaceSyncService;
+        _providerModelListCache = providerModelListCache;
+        _aiOptions = aiOptions.Value;
     }
 
     public async Task<PagedResultDto<WorkspaceDto>> GetListAsync(PagedAndSortedResultRequestDto input)
     {
+        await _inheritedWorkspaceProjectionSynchronizer.EnsureCurrentTenantAsync();
         var totalCount = await _workspaceRepository.GetCountAsync();
         var workspaces = await _workspaceRepository.GetListAsync(
             skipCount: input.SkipCount,
@@ -59,14 +87,26 @@ public class WorkspaceAppService : SufiApplicationService, IWorkspaceAppService
         );
     }
 
+    public async Task<List<WorkspaceDto>> GetLookupAsync()
+    {
+        await _inheritedWorkspaceProjectionSynchronizer.EnsureCurrentTenantAsync();
+        var workspaces = await _workspaceRepository.GetListAsync(
+            skipCount: 0,
+            maxResultCount: int.MaxValue,
+            sorting: "Name");
+        return ObjectMapper.Map<List<Workspace>, List<WorkspaceDto>>(workspaces);
+    }
+
     public async Task<WorkspaceDto> GetAsync(Guid id)
     {
+        await _inheritedWorkspaceProjectionSynchronizer.EnsureCurrentTenantAsync();
         var workspace = await _workspaceRepository.GetAsync(id, includeDetails: true);
         return ObjectMapper.Map<Workspace, WorkspaceDto>(workspace);
     }
 
     public async Task<WorkspaceReadinessDto> GetReadinessAsync(Guid id)
     {
+        await _inheritedWorkspaceProjectionSynchronizer.EnsureCurrentTenantAsync();
         var workspace = await _workspaceRepository.GetAsync(id, includeDetails: true);
         var capabilityResults = new List<WorkspaceRuntimeConfiguration>();
         foreach (var capabilityType in Enum.GetValues<AICapabilityType>())
@@ -94,7 +134,7 @@ public class WorkspaceAppService : SufiApplicationService, IWorkspaceAppService
             IsConfigured = chat.IsConfigured,
             IsReady = chat.IsReady,
             Capabilities = capabilityResults.Select(MapCapabilityReadiness).ToList(),
-            Mcp = new WorkspaceMcpReadinessDto
+            ToolCapability = new WorkspaceToolCapabilityDto
             {
                 IsConfigured = chat.IsConfigured,
                 IsReady = mcpFailureCode == null,
@@ -123,14 +163,11 @@ public class WorkspaceAppService : SufiApplicationService, IWorkspaceAppService
             input.Model,
             EncryptApiKey(input.ApiKey),
             input.ApiBaseUrl,
-            input.SystemPrompt,
-            input.Temperature,
-            input.MaxContextTokens,
-            input.OpenAIApiMode,
             input.InputCostPer1MTokens,
             input.OutputCostPer1MTokens
         );
 
+        ApplyGuardrails(workspace, input.Guardrails);
         await _workspaceRepository.InsertAsync(workspace, autoSave: true);
 
         return ObjectMapper.Map<Workspace, WorkspaceDto>(workspace);
@@ -142,57 +179,190 @@ public class WorkspaceAppService : SufiApplicationService, IWorkspaceAppService
         var source = await _workspaceRepository.GetAsync(id, includeDetails: true);
         await _workspaceManager.ValidateNameAsync(input.Name);
 
-        var clone = new Workspace(
-            GuidGenerator.Create(),
-            input.Name,
-            source.Provider,
-            source.DefaultModel,
-            CurrentTenant.Id);
+        var clone = _workspaceManager.CreateCopy(source, input.Name, CurrentTenant.Id);
+        await _workspaceRepository.InsertAsync(clone, autoSave: true);
+        return ObjectMapper.Map<Workspace, WorkspaceDto>(clone);
+    }
 
-        // API keys are already encrypted at rest. Copy the ciphertext inside the
-        // application boundary without returning or decrypting it through a DTO.
-        clone.UpdateConfiguration(
-            source.DefaultModel,
-            source.ApiKey,
-            source.ApiBaseUrl,
-            source.SystemPrompt,
-            source.Temperature,
-            source.MaxContextTokens,
-            source.OpenAIApiMode,
-            source.InputCostPer1MTokens,
-            source.OutputCostPer1MTokens);
-
-        if (!source.IsActive)
+    [Authorize(AIPermissions.Workspaces.Edit)]
+    public async Task<WorkspaceDto> ConvertToCustomAsync(Guid id)
+    {
+        var workspace = await _workspaceRepository.GetAsync(id, includeDetails: true);
+        if (!workspace.IsInherited)
         {
-            clone.Deactivate();
+            throw new BusinessException(AIErrorCodes.WorkspaceNotInherited)
+                .WithData("WorkspaceId", id);
         }
 
-        foreach (var sourceConfiguration in source.ModelConfigurations)
-        {
-            var clonedConfiguration = clone.AddModelConfiguration(
-                sourceConfiguration.CapabilityType,
-                sourceConfiguration.ModelId,
-                sourceConfiguration.ApiEndpoint,
-                sourceConfiguration.ApiKey,
-                sourceConfiguration.Priority,
-                sourceConfiguration.OpenAIApiMode,
-                sourceConfiguration.InputCostPer1MTokens,
-                sourceConfiguration.OutputCostPer1MTokens,
-                sourceConfiguration.Dimensions);
+        var assignmentId = workspace.AssignmentId;
+        workspace.ClearInheritance();
+        await _workspaceRepository.UpdateAsync(workspace, autoSave: true);
+        await _workspaceSyncService.ClearWorkspaceCache(workspace.Name);
 
-            if (!sourceConfiguration.IsEnabled)
+        if (assignmentId.HasValue)
+        {
+            await _inheritedWorkspaceProjectionSynchronizer.DeactivateHostAssignmentAsync(assignmentId.Value);
+        }
+
+        return ObjectMapper.Map<Workspace, WorkspaceDto>(workspace);
+    }
+
+    [Authorize(AIPermissions.Workspaces.Create)]
+    public async Task<WorkspaceDto> AssignToTenantAsync(Guid id, AssignWorkspaceToTenantDto input)
+    {
+        EnsureHost();
+
+        var source = await _workspaceRepository.GetAsync(id, includeDetails: true);
+        if (source.IsInherited)
+        {
+            throw new BusinessException(AIErrorCodes.CannotAssignInheritedWorkspace)
+                .WithData("WorkspaceId", id);
+        }
+
+        if (source.TenantId != null)
+        {
+            throw new BusinessException(AIErrorCodes.CannotAssignTenantWorkspace)
+                .WithData("WorkspaceId", id);
+        }
+
+        var tenant = await _tenantStore.FindAsync(input.TenantId);
+        if (tenant == null)
+        {
+            throw new BusinessException(AIErrorCodes.TenantNotFound)
+                .WithData("TenantId", input.TenantId);
+        }
+
+        WorkspaceAssignment? existing;
+        using (DataFilter.Disable<IMultiTenant>())
+        {
+            existing = await _assignmentRepository.FindAsync(input.TenantId, source.Id);
+        }
+
+        var assignmentId = existing?.Id ?? GuidGenerator.Create();
+        var targetId = existing is { IsActive: true }
+            ? existing.TargetWorkspaceId
+            : GuidGenerator.Create();
+        var targetName = string.IsNullOrWhiteSpace(input.Name) ? source.Name : input.Name.Trim();
+
+        if (existing == null)
+        {
+            await _assignmentRepository.InsertAsync(
+                new WorkspaceAssignment(assignmentId, input.TenantId, source.Id, targetId),
+                autoSave: true);
+        }
+        else if (!existing.IsActive || existing.TargetWorkspaceId != targetId)
+        {
+            existing.ReplaceTarget(targetId);
+            existing.Activate();
+            using (DataFilter.Disable<IMultiTenant>())
             {
-                clonedConfiguration.Disable();
+                await _assignmentRepository.UpdateAsync(existing, autoSave: true);
             }
         }
 
-        foreach (var sourceGuardrail in source.Guardrails)
+        var target = await _inheritedWorkspaceProjectionSynchronizer.CreateTenantProjectionAsync(
+            source,
+            input.TenantId,
+            assignmentId,
+            targetId,
+            source.Id,
+            targetName);
+
+        return ObjectMapper.Map<Workspace, WorkspaceDto>(target);
+    }
+
+    [Authorize(AIPermissions.Workspaces.Default)]
+    public async Task<List<WorkspaceAssignmentDto>> GetAssignmentsAsync(Guid id)
+    {
+        EnsureHost();
+        await _workspaceRepository.GetAsync(id);
+
+        List<WorkspaceAssignment> assignments;
+        using (DataFilter.Disable<IMultiTenant>())
         {
-            clone.SetGuardrail(sourceGuardrail.Period, sourceGuardrail.AmountUsd);
+            assignments = await _assignmentRepository.GetListBySourceWorkspaceAsync(id);
         }
 
-        await _workspaceRepository.InsertAsync(clone, autoSave: true);
-        return ObjectMapper.Map<Workspace, WorkspaceDto>(clone);
+        var result = new List<WorkspaceAssignmentDto>(assignments.Count);
+        foreach (var assignment in assignments.OrderByDescending(x => x.CreationTime))
+        {
+            string? tenantName = null;
+            if (assignment.TenantId.HasValue)
+            {
+                var tenant = await _tenantStore.FindAsync(assignment.TenantId.Value);
+                tenantName = tenant?.Name;
+            }
+
+            result.Add(new WorkspaceAssignmentDto
+            {
+                Id = assignment.Id,
+                TenantId = assignment.TenantId,
+                TenantName = tenantName,
+                SourceWorkspaceId = assignment.SourceWorkspaceId,
+                TargetWorkspaceId = assignment.TargetWorkspaceId,
+                Version = assignment.Version,
+                IsActive = assignment.IsActive,
+                CreationTime = assignment.CreationTime,
+                CreatorId = assignment.CreatorId,
+                LastModificationTime = assignment.LastModificationTime,
+                LastModifierId = assignment.LastModifierId
+            });
+        }
+
+        return result;
+    }
+
+    [Authorize(AIPermissions.Workspaces.Edit)]
+    public async Task DeactivateAssignmentAsync(Guid assignmentId)
+    {
+        EnsureHost();
+
+        WorkspaceAssignment assignment;
+        using (DataFilter.Disable<IMultiTenant>())
+        {
+            assignment = await _assignmentRepository.GetAsync(assignmentId);
+            if (!assignment.IsActive)
+            {
+                return;
+            }
+
+            assignment.Deactivate();
+            await _assignmentRepository.UpdateAsync(assignment, autoSave: true);
+        }
+
+        if (assignment.TenantId.HasValue)
+        {
+            await _inheritedWorkspaceProjectionSynchronizer.DeactivateTenantProjectionAsync(
+                assignment.TenantId.Value,
+                assignment.TargetWorkspaceId);
+        }
+    }
+
+    [Authorize(AIPermissions.Workspaces.Default)]
+    public async Task<List<AssignableTenantDto>> GetAssignableTenantsAsync()
+    {
+        EnsureHost();
+
+        var tenantRepository = LazyServiceProvider.LazyGetService<ITenantRepository>();
+        if (tenantRepository == null)
+        {
+            return [];
+        }
+
+        var tenants = await tenantRepository.GetListAsync(
+            sorting: nameof(Tenant.Name),
+            maxResultCount: int.MaxValue,
+            skipCount: 0,
+            filter: null,
+            includeDetails: false);
+        return tenants
+            .OrderBy(tenant => tenant.Name, StringComparer.OrdinalIgnoreCase)
+            .Select(tenant => new AssignableTenantDto
+            {
+                Id = tenant.Id,
+                Name = tenant.Name
+            })
+            .ToList();
     }
 
     [Authorize(AIPermissions.Workspaces.Edit)]
@@ -213,19 +383,12 @@ public class WorkspaceAppService : SufiApplicationService, IWorkspaceAppService
             input.Model,
             apiKeyToUpdate,
             input.ApiBaseUrl,
-            input.SystemPrompt,
-            input.Temperature,
-            input.MaxContextTokens,
-            input.OpenAIApiMode,
             input.InputCostPer1MTokens,
             input.OutputCostPer1MTokens
         );
         workspace.UpdatePrimaryChatConfiguration(
             input.Model,
-            input.ApiBaseUrl,
-            input.OpenAIApiMode,
-            input.InputCostPer1MTokens,
-            input.OutputCostPer1MTokens);
+            input.ApiBaseUrl);
 
         if (input.IsActive)
             workspace.Activate();
@@ -233,7 +396,7 @@ public class WorkspaceAppService : SufiApplicationService, IWorkspaceAppService
             workspace.Deactivate();
 
         await _workspaceRepository.UpdateAsync(workspace, autoSave: true);
-        _workspaceSyncService.ClearWorkspaceCache(workspace.Name);
+        await _workspaceSyncService.ClearWorkspaceCache(workspace.Name);
 
         return ObjectMapper.Map<Workspace, WorkspaceDto>(workspace);
     }
@@ -242,15 +405,18 @@ public class WorkspaceAppService : SufiApplicationService, IWorkspaceAppService
     public async Task<WorkspaceDto> UpdateGuardrailsAsync(Guid id, UpdateWorkspaceGuardrailsDto input)
     {
         var workspace = await _workspaceRepository.GetAsync(id, includeDetails: true);
-        if (workspace.IsInherited)
-            throw new Volo.Abp.UserFriendlyException(L["AI:InheritedWorkspaceReadOnly"]);
-
-        foreach (var item in input.Items)
-            workspace.SetGuardrail(item.Period, item.AmountUsd);
-
+        EnsureEditable(workspace);
+        ApplyGuardrails(workspace, input.Items);
         await _workspaceRepository.UpdateAsync(workspace, autoSave: true);
-        _workspaceSyncService.ClearWorkspaceCache(workspace.Name);
+        await _workspaceSyncService.ClearWorkspaceCache(workspace.Name);
         return ObjectMapper.Map<Workspace, WorkspaceDto>(workspace);
+    }
+
+    [Authorize(AIPermissions.Workspaces.Default)]
+    public async Task<List<WorkspaceGuardrailStatusDto>> GetGuardrailStatusAsync(Guid id)
+    {
+        await _inheritedWorkspaceProjectionSynchronizer.EnsureCurrentTenantAsync();
+        return await _workspaceGuardrailService.GetStatusAsync(id);
     }
 
     [Authorize(AIPermissions.Workspaces.Delete)]
@@ -264,7 +430,7 @@ public class WorkspaceAppService : SufiApplicationService, IWorkspaceAppService
         await _workspaceRepository.DeleteAsync(id, autoSave: true);
         if (workspace != null)
         {
-            _workspaceSyncService.ClearWorkspaceCache(workspace.Name);
+            await _workspaceSyncService.ClearWorkspaceCache(workspace.Name);
         }
     }
 
@@ -272,7 +438,36 @@ public class WorkspaceAppService : SufiApplicationService, IWorkspaceAppService
     {
         if (workspace.IsInherited)
         {
-            throw new Volo.Abp.UserFriendlyException("AI:InheritedWorkspaceReadOnly");
+            throw new BusinessException(AIErrorCodes.InheritedWorkspaceReadOnly)
+                .WithData("WorkspaceId", workspace.Id);
+        }
+    }
+
+    private void EnsureHost()
+    {
+        if (CurrentTenant.Id != null)
+        {
+            throw new BusinessException(AIErrorCodes.WorkspaceAssignmentHostOnly);
+        }
+    }
+
+    private static void ApplyGuardrails(Workspace workspace, IReadOnlyList<WorkspaceGuardrailDto>? items)
+    {
+        var requested = (items ?? Array.Empty<WorkspaceGuardrailDto>())
+            .Where(item => item.AmountUsd > 0)
+            .GroupBy(item => item.Period)
+            .ToDictionary(group => group.Key, group => group.Last().AmountUsd);
+
+        foreach (var period in Enum.GetValues<WorkspaceGuardrailPeriod>())
+        {
+            if (requested.TryGetValue(period, out var amount))
+            {
+                workspace.SetGuardrail(period, amount);
+            }
+            else
+            {
+                workspace.RemoveGuardrail(period);
+            }
         }
     }
 
@@ -287,6 +482,21 @@ public class WorkspaceAppService : SufiApplicationService, IWorkspaceAppService
         if (string.IsNullOrWhiteSpace(credentials.ApiKey))
         {
             throw new Volo.Abp.UserFriendlyException(L["ApiKeyRequiredForModelList"]);
+        }
+
+        var cacheKey = await BuildProviderModelListCacheKeyAsync(
+            input.WorkspaceId,
+            input.ModelConfigurationId,
+            credentials.BaseUrl,
+            credentials.ApiKey);
+        var ttlSeconds = _aiOptions.ProviderModelDiscoveryCacheSeconds;
+        if (ttlSeconds > 0 && !string.IsNullOrWhiteSpace(cacheKey))
+        {
+            var cached = await _providerModelListCache.GetAsync(cacheKey);
+            if (cached?.Models is { Count: > 0 })
+            {
+                return cached.Models;
+            }
         }
 
         using var request = new HttpRequestMessage(HttpMethod.Get, $"{credentials.BaseUrl}/models");
@@ -314,7 +524,19 @@ public class WorkspaceAppService : SufiApplicationService, IWorkspaceAppService
         }
 
         var json = await response.Content.ReadAsStringAsync();
-        return ParseModels(json);
+        var models = ParseModels(json);
+        if (ttlSeconds > 0 && !string.IsNullOrWhiteSpace(cacheKey))
+        {
+            await _providerModelListCache.SetAsync(
+                cacheKey,
+                new ProviderModelListCacheItem { Models = models },
+                new DistributedCacheEntryOptions
+                {
+                    AbsoluteExpirationRelativeToNow = TimeSpan.FromSeconds(ttlSeconds)
+                });
+        }
+
+        return models;
     }
 
     public async Task TestConnectionAsync(TestWorkspaceConnectionInput input)
@@ -388,25 +610,22 @@ public class WorkspaceAppService : SufiApplicationService, IWorkspaceAppService
         }
 
         var resolvedKey = apiKey;
-        if (string.IsNullOrWhiteSpace(resolvedKey) && modelConfiguration != null)
-        {
-            resolvedKey = DecryptApiKey(modelConfiguration.ApiKey);
-        }
-
-        if (string.IsNullOrWhiteSpace(resolvedKey) && workspace != null)
-        {
-            resolvedKey = DecryptApiKey(workspace.ApiKey);
-        }
-
         var resolvedBaseUrl = apiBaseUrl;
-        if (string.IsNullOrWhiteSpace(resolvedBaseUrl) && modelConfiguration != null)
+        if (workspace != null)
         {
-            resolvedBaseUrl = modelConfiguration.ApiEndpoint;
-        }
+            var resolved = _runtimeConfigurationResolver.Resolve(
+                workspace,
+                AICapabilityType.ChatCompletion,
+                modelConfiguration);
+            if (string.IsNullOrWhiteSpace(resolvedKey))
+            {
+                resolvedKey = resolved.ApiKey;
+            }
 
-        if (string.IsNullOrWhiteSpace(resolvedBaseUrl) && workspace != null)
-        {
-            resolvedBaseUrl = workspace.ApiBaseUrl;
+            if (string.IsNullOrWhiteSpace(resolvedBaseUrl))
+            {
+                resolvedBaseUrl = resolved.ApiEndpoint;
+            }
         }
 
         return (resolvedKey, NormalizeBaseUrl(resolvedBaseUrl));
@@ -498,22 +717,37 @@ public class WorkspaceAppService : SufiApplicationService, IWorkspaceAppService
         return string.IsNullOrWhiteSpace(value) ? null : value;
     }
 
-    private string? DecryptApiKey(string? encryptedApiKey)
+    private async Task<string?> BuildProviderModelListCacheKeyAsync(
+        Guid? workspaceId,
+        Guid? modelConfigurationId,
+        string normalizedEndpoint,
+        string apiKey)
     {
-        if (string.IsNullOrWhiteSpace(encryptedApiKey))
+        var tenantKey = CurrentTenant.Id?.ToString("N") ?? "host";
+        var workspaceKey = workspaceId?.ToString("N") ?? "none";
+        var configurationKey = modelConfigurationId?.ToString("N") ?? "none";
+        var endpointKey = (normalizedEndpoint ?? string.Empty).Trim().TrimEnd('/').ToLowerInvariant();
+        var fingerprint = FingerprintCredential(apiKey);
+        var stamp = "nostamp";
+        if (workspaceId.HasValue)
         {
-            return encryptedApiKey;
+            var workspace = await _workspaceRepository.FindAsync(workspaceId.Value);
+            if (workspace != null)
+            {
+                stamp = await _workspaceSyncService.GetProviderModelStampAsync(workspace.Name);
+            }
         }
 
-        try
-        {
-            return _stringEncryptor.Decrypt(encryptedApiKey);
-        }
-        catch
-        {
-            // If decryption fails, assume it's already plain text (backward compatibility)
-            return encryptedApiKey;
-        }
+        return $"ai:models:{tenantKey}:{workspaceKey}:{configurationKey}:{endpointKey}:{fingerprint}:{stamp}";
+    }
+
+    private string FingerprintCredential(string apiKey)
+    {
+        var salt = string.IsNullOrWhiteSpace(_aiOptions.ProviderModelCacheSalt)
+            ? "SufiAI.ProviderModelDiscovery"
+            : _aiOptions.ProviderModelCacheSalt;
+        var bytes = SHA256.HashData(Encoding.UTF8.GetBytes(salt + "\n" + apiKey));
+        return Convert.ToHexString(bytes)[..12];
     }
 
     private static string NormalizeBaseUrl(string? apiBaseUrl)

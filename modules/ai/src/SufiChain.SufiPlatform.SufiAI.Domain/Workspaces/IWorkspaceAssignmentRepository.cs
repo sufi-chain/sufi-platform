@@ -10,4 +10,6 @@ public interface IWorkspaceAssignmentRepository : IRepository<WorkspaceAssignmen
 {
     Task<List<WorkspaceAssignment>> GetActiveByTenantAsync(Guid tenantId, CancellationToken cancellationToken = default);
     Task<WorkspaceAssignment?> FindAsync(Guid tenantId, Guid sourceWorkspaceId, CancellationToken cancellationToken = default);
+    Task<List<WorkspaceAssignment>> GetListBySourceWorkspaceAsync(Guid sourceWorkspaceId, CancellationToken cancellationToken = default);
+    Task<WorkspaceAssignment?> FindByTargetWorkspaceAsync(Guid targetWorkspaceId, CancellationToken cancellationToken = default);
 }

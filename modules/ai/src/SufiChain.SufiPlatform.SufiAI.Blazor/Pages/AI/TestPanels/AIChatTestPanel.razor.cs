@@ -46,11 +46,8 @@ public partial class AIChatTestPanel : AIComponentBase
     {
         await ExecuteWithLoadingAsync(async () =>
         {
-            var result = await WorkspaceAppService.GetListAsync(new PagedAndSortedResultRequestDto
-            {
-                MaxResultCount = 100
-            });
-            _workspaces = result.Items.Where(w => w.IsActive).ToList();
+            var result = await WorkspaceAppService.GetLookupAsync();
+            _workspaces = result.Where(w => w.IsActive).ToList();
         }, ChatLoadingKeys.LoadWorkspaces);
     }
 

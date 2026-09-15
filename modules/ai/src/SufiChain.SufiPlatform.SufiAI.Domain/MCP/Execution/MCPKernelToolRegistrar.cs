@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Text.Json;
 using Microsoft.Extensions.Logging;
@@ -9,6 +10,9 @@ namespace SufiChain.SufiPlatform.SufiAI.MCP.Execution;
 
 public class MCPKernelToolRegistrar : IMCPKernelToolRegistrar, ITransientDependency
 {
+    /// <summary>Original registry name, before conversion to Semantic Kernel identifiers.</summary>
+    public const string ToolNameMetadataKey = "SufiAI.MCP.ToolName";
+
     private readonly IMCPToolRegistry _toolRegistry;
     private readonly ILogger<MCPKernelToolRegistrar> _logger;
 
@@ -94,9 +98,17 @@ public class MCPKernelToolRegistrar : IMCPKernelToolRegistrar, ITransientDepende
                         throw;
                     }
                 },
-                functionName: ToKernelFunctionName(tool.Name),
-                description: tool.Description,
-                parameters: CreateParameterMetadata(tool.ParameterSchema));
+                new KernelFunctionFromMethodOptions
+                {
+                    FunctionName = ToKernelFunctionName(tool.Name),
+                    Description = tool.Description,
+                    Parameters = CreateParameterMetadata(tool.ParameterSchema),
+                    AdditionalMetadata = new ReadOnlyDictionary<string, object?>(
+                        new Dictionary<string, object?>
+                        {
+                            [ToolNameMetadataKey] = tool.Name
+                        })
+                });
 
             kernel.Plugins.AddFromFunctions(pluginName, new[] { function });
         }

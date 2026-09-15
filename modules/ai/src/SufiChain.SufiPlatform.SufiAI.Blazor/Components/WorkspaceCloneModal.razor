@@ -1,0 +1,24 @@
+@namespace SufiChain.SufiPlatform.SufiAI.Blazor.Components
+@inherits AIComponentBase
+
+<SbDialog Open="@Open" OpenChanged="@SetOpenAsync" Size="SbDialogSize.Md" Title="@L["CloneWorkspace"]">
+	<ChildContent>
+		<SbStack Direction="SbStackDirection.Column" Gap="4">
+			<SbAlert Severity="SbAlertSeverity.Info">@L["CloneWorkspaceHelp"]</SbAlert>
+			<SbTextField @bind-Value="_name"
+						 Label="@L["Name"]"
+						 Required="true"
+						 Placeholder="@L["WorkspaceNamePlaceholder"]" />
+		</SbStack>
+	</ChildContent>
+	<Footer>
+		<SbStack Direction="SbStackDirection.Row" Gap="2" Justify="SbJustify.End">
+			<SbButton Variant="SbButtonVariant.Outline" OnClick="@CloseModal">@L["Cancel"]</SbButton>
+			<SbButton Color="SbColor.Primary"
+					  OnClick="@CloneAsync"
+					  Loading="IsOperationLoading(LoadingKeys.Clone)">
+				@L["Clone"]
+			</SbButton>
+		</SbStack>
+	</Footer>
+</SbDialog>

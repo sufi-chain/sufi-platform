@@ -97,7 +97,8 @@ public class RAGService : DomainService, IRAGService
         vectorStoreContext.MetadataFilters = DocumentChunkMetadataFilter.Normalize(metadataFilters);
 
         var embeddingGenerator = await _syncService.GetOrCreateEmbeddingGeneratorAsync(workspaceName, cancellationToken);
-        var embeddings = await embeddingGenerator.GenerateAsync(new[] { query }, cancellationToken: cancellationToken);
+        var queryText = EmbeddingInputGuard.FitToBudget(query, vectorStoreContext.MaxInputTokens);
+        var embeddings = await embeddingGenerator.GenerateAsync(new[] { queryText }, cancellationToken: cancellationToken);
         var queryEmbedding = embeddings.First().Vector.ToArray();
 
         var vectorStoreProvider = GetVectorStoreProvider(vectorStoreContext.Type);
@@ -148,6 +149,7 @@ public class RAGService : DomainService, IRAGService
 
             var documents = await source.SearchAsync(null, Math.Max(harvestCount, 1), cancellationToken);
             documents = DocumentChunkMetadataFilter.Filter(documents, normalizedFilters);
+            documents = EmbeddingInputGuard.SplitDocuments(documents, vectorStoreContext.MaxInputTokens);
             indexingProgress.TotalDocuments = documents.Count;
             progress?.Report(indexingProgress);
 
@@ -173,19 +175,13 @@ public class RAGService : DomainService, IRAGService
 
             phase = "GenerateEmbeddings";
             var embeddingGenerator = await _syncService.GetOrCreateEmbeddingGeneratorAsync(workspaceName, cancellationToken);
-            var texts = documents.Select(d => d.Content).ToList();
-            var allEmbeddings = await embeddingGenerator.GenerateAsync(texts, cancellationToken: cancellationToken);
-
-            var index = 0;
-            foreach (var embedding in allEmbeddings)
-            {
-                documents[index].WorkspaceName = workspaceName;
-                documents[index].Embedding = embedding.Vector.ToArray();
-                indexingProgress.IndexedDocuments = index + 1;
-                indexingProgress.CurrentDocument = documents[index].Id;
-                progress?.Report(indexingProgress);
-                index++;
-            }
+            await AssignEmbeddingsAsync(
+                documents,
+                embeddingGenerator,
+                workspaceName,
+                indexingProgress,
+                progress,
+                cancellationToken);
 
             phase = "StoreEmbeddings";
             await vectorStoreProvider.StoreEmbeddingsAsync(vectorStoreContext, documents, cancellationToken);
@@ -272,6 +268,104 @@ public class RAGService : DomainService, IRAGService
         }
     }
 
+    public async Task<DocumentIndexResult> IndexDocumentAsync(
+        string workspaceName,
+        string sourceName,
+        string documentId,
+        CancellationToken cancellationToken = default)
+    {
+        await CheckFeatureAsync();
+        await EnsureRagAvailableAsync(cancellationToken);
+        EnsureSourcesLoaded();
+
+        var normalizedDocumentId = Check.NotNullOrWhiteSpace(documentId, nameof(documentId)).Trim();
+        var workspace = await GetWorkspaceByNameAsync(workspaceName);
+        var vectorStoreContext = await GetVectorStoreContextAsync(workspace, cancellationToken);
+        var source = _documentSources.FirstOrDefault(s => s.SourceName == sourceName);
+        if (source == null)
+        {
+            throw new BusinessException(AIErrorCodes.DocumentSourceNotFound)
+                .WithData("SourceName", sourceName);
+        }
+
+        var vectorStoreProvider = GetVectorStoreProvider(vectorStoreContext.Type);
+        var phase = "LoadDocuments";
+        try
+        {
+            var document = await source.GetByIdAsync(normalizedDocumentId, cancellationToken);
+            if (document == null)
+            {
+                // The source no longer exposes the document (unpublished, deleted, or filtered out):
+                // stale vectors must not stay retrievable.
+                phase = "StoreEmbeddings";
+                await vectorStoreProvider.DeleteBySourceAsync(vectorStoreContext, sourceName, normalizedDocumentId, cancellationToken);
+                return new DocumentIndexResult
+                {
+                    DocumentId = normalizedDocumentId,
+                    StoredChunkCount = 0,
+                    Removed = true
+                };
+            }
+
+            var documents = EmbeddingInputGuard.SplitDocuments(new[] { document }, vectorStoreContext.MaxInputTokens);
+
+            phase = "GenerateEmbeddings";
+            var embeddingGenerator = await _syncService.GetOrCreateEmbeddingGeneratorAsync(workspaceName, cancellationToken);
+            await AssignEmbeddingsAsync(
+                documents,
+                embeddingGenerator,
+                workspaceName,
+                new IndexingProgress { SourceName = sourceName, StartedAt = Clock.Now, TotalDocuments = documents.Count },
+                progress: null,
+                cancellationToken);
+
+            phase = "StoreEmbeddings";
+            // Replace instead of append so a shorter re-chunked document leaves no orphan chunks behind.
+            await vectorStoreProvider.DeleteBySourceAsync(
+                vectorStoreContext,
+                sourceName,
+                string.IsNullOrWhiteSpace(document.SourceId) ? normalizedDocumentId : document.SourceId,
+                cancellationToken);
+            await vectorStoreProvider.StoreEmbeddingsAsync(vectorStoreContext, documents, cancellationToken);
+
+            return new DocumentIndexResult
+            {
+                DocumentId = normalizedDocumentId,
+                StoredChunkCount = documents.Count,
+                Removed = false
+            };
+        }
+        catch (Exception ex) when (ex is not BusinessException)
+        {
+            Logger.LogError(
+                ex,
+                "RAG document indexing failed. WorkspaceName={WorkspaceName}, SourceName={SourceName}, DocumentId={DocumentId}, Phase={Phase}",
+                workspaceName,
+                sourceName,
+                normalizedDocumentId,
+                phase);
+            throw CreateIndexingBusinessException(phase, workspaceName, sourceName, ex);
+        }
+    }
+
+    public async Task<int> CountAsync(
+        string workspaceName,
+        string? sourceName = null,
+        IReadOnlyDictionary<string, string>? metadataFilters = null,
+        CancellationToken cancellationToken = default)
+    {
+        await CheckFeatureAsync();
+        await EnsureRagAvailableAsync(cancellationToken);
+
+        var workspace = await GetWorkspaceByNameAsync(workspaceName);
+        var vectorStoreContext = await GetVectorStoreContextAsync(workspace, cancellationToken);
+        vectorStoreContext.SourceName = string.IsNullOrWhiteSpace(sourceName) ? null : sourceName.Trim();
+        vectorStoreContext.MetadataFilters = DocumentChunkMetadataFilter.Normalize(metadataFilters);
+
+        var vectorStoreProvider = GetVectorStoreProvider(vectorStoreContext.Type);
+        return await vectorStoreProvider.GetCountAsync(vectorStoreContext, cancellationToken);
+    }
+
     public async Task<IndexingStatus> GetIndexingStatusAsync(
         string workspaceName,
         string sourceName,
@@ -305,6 +399,46 @@ public class RAGService : DomainService, IRAGService
             IsIndexing = persistedStatus?.IsIndexing ?? false,
             ErrorMessage = persistedStatus?.ErrorMessage
         };
+    }
+
+    private static async Task AssignEmbeddingsAsync(
+        List<DocumentChunk> documents,
+        IEmbeddingGenerator<string, Embedding<float>> embeddingGenerator,
+        string workspaceName,
+        IndexingProgress indexingProgress,
+        IProgress<IndexingProgress>? progress,
+        CancellationToken cancellationToken)
+    {
+        const int batchSize = 32;
+        var offset = 0;
+        while (offset < documents.Count)
+        {
+            var batchCount = Math.Min(batchSize, documents.Count - offset);
+            var batch = documents.GetRange(offset, batchCount);
+            var embeddings = await embeddingGenerator.GenerateAsync(
+                batch.Select(document => document.Content),
+                cancellationToken: cancellationToken);
+
+            var batchIndex = 0;
+            foreach (var embedding in embeddings)
+            {
+                var document = documents[offset + batchIndex];
+                document.WorkspaceName = workspaceName;
+                document.Embedding = embedding.Vector.ToArray();
+                indexingProgress.IndexedDocuments = offset + batchIndex + 1;
+                indexingProgress.CurrentDocument = document.Id;
+                progress?.Report(indexingProgress);
+                batchIndex++;
+            }
+
+            if (batchIndex != batchCount)
+            {
+                throw new InvalidOperationException(
+                    $"Expected {batchCount} text embedding(s), but received {batchIndex}.");
+            }
+
+            offset += batchCount;
+        }
     }
 
     private void EnsureSourcesLoaded()
@@ -399,6 +533,7 @@ public class RAGService : DomainService, IRAGService
             ConnectionString = vectorStoreConfig.ConnectionString,
             ApiKey = vectorStoreConfig.ApiKey,
             Dimensions = embedderConfiguration.Dimensions,
+            MaxInputTokens = embedderConfiguration.MaxInputTokens,
             TenantId = CurrentTenant.Id,
             TenantKey = tenantKey,
             Schema = schema,

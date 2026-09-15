@@ -175,11 +175,13 @@ public class MCPToolRegistry : IMCPToolRegistry, ISingletonDependency
                     }
                 }
                 server.UpdateLastConnection(true);
+                await _serverRepository.UpdateAsync(server, autoSave: true);
                 _logger.LogDebug("External server {Key} resolved in {Elapsed}ms", group.Key, serverStep.ElapsedMilliseconds);
             }
             catch (Exception exception)
             {
                 server.UpdateLastConnection(false, exception.Message);
+                await _serverRepository.UpdateAsync(server, autoSave: true);
                 foreach (var name in group)
                 {
                     result.Diagnostics.Add(Diagnostic(name, "ConnectionFailed", exception.Message));

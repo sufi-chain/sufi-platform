@@ -12,32 +12,31 @@ public partial class WorkspaceEditModal : AIComponentBase
         public const string UpdateWorkspace = "update-workspace";
         public const string TestConnection = "test-connection";
         public const string LoadModels = "load-models";
+        public const string ConvertWorkspace = "convert-workspace";
     }
 
     [Parameter] public bool Open { get; set; }
     [Parameter] public EventCallback<bool> OpenChanged { get; set; }
     [Parameter] public Guid? WorkspaceId { get; set; }
     [Parameter] public EventCallback OnUpdated { get; set; }
+    [Parameter] public EventCallback OnConverted { get; set; }
 
     private IWorkspaceAppService WorkspaceAppService => LazyGetRequiredService(ref _workspaceAppService);
     private IWorkspaceAppService? _workspaceAppService;
 
     private WorkspaceDto? _workspace;
     private UpdateWorkspaceDto _model = new();
-    private string _temperatureText = "0.7";
-    private string _maxContextTokensText = "200000";
     private string _inputCostPer1MTokensText = string.Empty;
     private string _outputCostPer1MTokensText = string.Empty;
     private List<OpenAIModelDto> _availableModels = new();
     private int _activeTab;
     private bool _wasOpen;
-    private readonly List<GuardrailEditRow> _guardrailRows = new();
+    private List<WorkspaceGuardrailFormRow> _guardrailRows = WorkspaceGuardrailForm.CreateRows();
+    private List<WorkspaceGuardrailStatusDto> _guardrailStatus = new();
 
-    private sealed class GuardrailEditRow
-    {
-        public WorkspaceGuardrailPeriod Period { get; init; }
-        public string AmountText { get; set; } = string.Empty;
-    }
+    private bool IsReadOnly => _workspace?.IsInherited == true;
+
+    private string DialogTitle => IsReadOnly ? L["ViewWorkspace"] : L["EditWorkspace"];
 
     protected override async Task OnParametersSetAsync()
     {
@@ -65,32 +64,18 @@ public partial class WorkspaceEditModal : AIComponentBase
                 Provider = AIProviderType.OpenAI,
                 Model = _workspace.Model,
                 ApiBaseUrl = _workspace.ApiBaseUrl,
-                SystemPrompt = _workspace.SystemPrompt,
-                Temperature = _workspace.Temperature,
-                MaxContextTokens = _workspace.MaxContextTokens,
                 IsActive = _workspace.IsActive,
-                OpenAIApiMode = _workspace.OpenAIApiMode,
                 InputCostPer1MTokens = _workspace.InputCostPer1MTokens,
                 OutputCostPer1MTokens = _workspace.OutputCostPer1MTokens
             };
-            _temperatureText = _workspace.Temperature.ToString("0.##", CultureInfo.InvariantCulture);
-            _maxContextTokensText = _workspace.MaxContextTokens.ToString(CultureInfo.InvariantCulture);
             _inputCostPer1MTokensText = _workspace.InputCostPer1MTokens?.ToString(CultureInfo.InvariantCulture) ?? string.Empty;
             _outputCostPer1MTokensText = _workspace.OutputCostPer1MTokens?.ToString(CultureInfo.InvariantCulture) ?? string.Empty;
             _availableModels = new List<OpenAIModelDto>
             {
                 new() { Id = _workspace.Model }
             };
-            _guardrailRows.Clear();
-            foreach (var period in Enum.GetValues<WorkspaceGuardrailPeriod>())
-            {
-                var value = _workspace.Guardrails.FirstOrDefault(x => x.Period == period)?.AmountUsd;
-                _guardrailRows.Add(new GuardrailEditRow
-                {
-                    Period = period,
-                    AmountText = value?.ToString("0.##", CultureInfo.InvariantCulture) ?? string.Empty
-                });
-            }
+            _guardrailRows = WorkspaceGuardrailForm.CreateRows(_workspace.Guardrails);
+            _guardrailStatus = await WorkspaceAppService.GetGuardrailStatusAsync(WorkspaceId.Value);
             _activeTab = 0;
             StateHasChanged();
         }, LoadingKeys.LoadWorkspace);
@@ -98,7 +83,7 @@ public partial class WorkspaceEditModal : AIComponentBase
 
     private async Task UpdateWorkspaceAsync()
     {
-        if (!WorkspaceId.HasValue)
+        if (!WorkspaceId.HasValue || IsReadOnly)
         {
             return;
         }
@@ -110,17 +95,12 @@ public partial class WorkspaceEditModal : AIComponentBase
             return;
         }
 
-        if (!await TryApplyGenerationSettingsAsync())
-        {
-            return;
-        }
-
         if (!await TryApplyPricingAsync())
         {
             return;
         }
 
-        if (!TryBuildGuardrails(out var guardrails))
+        if (!WorkspaceGuardrailForm.TryBuildItems(_guardrailRows, out var guardrailItems))
         {
             await Message.ErrorAsync(L["GuardrailAmountMustBeNonNegative"]);
             return;
@@ -129,36 +109,12 @@ public partial class WorkspaceEditModal : AIComponentBase
         await ExecuteWithLoadingAsync(async () =>
         {
             await WorkspaceAppService.UpdateAsync(WorkspaceId.Value, _model);
-            if (guardrails != null)
-            {
-                await WorkspaceAppService.UpdateGuardrailsAsync(WorkspaceId.Value, guardrails);
-            }
+            await WorkspaceAppService.UpdateGuardrailsAsync(
+                WorkspaceId.Value,
+                new UpdateWorkspaceGuardrailsDto { Items = guardrailItems });
             await CloseModal();
             await OnUpdated.InvokeAsync();
         }, LoadingKeys.UpdateWorkspace);
-    }
-
-    private bool TryBuildGuardrails(out UpdateWorkspaceGuardrailsDto? guardrails)
-    {
-        guardrails = null;
-        if (_workspace?.IsInherited == true)
-        {
-            return true;
-        }
-
-        guardrails = new UpdateWorkspaceGuardrailsDto();
-        foreach (var row in _guardrailRows)
-        {
-            if (!TryParseDecimal(row.AmountText, out var amount) || amount < 0)
-            {
-                guardrails = null;
-                return false;
-            }
-
-            guardrails.Items.Add(new WorkspaceGuardrailDto { Period = row.Period, AmountUsd = amount });
-        }
-
-        return true;
     }
 
     private async Task TestConnectionAsync()
@@ -183,7 +139,7 @@ public partial class WorkspaceEditModal : AIComponentBase
                 Model = _model.Model,
                 ApiKey = _model.ApiKey,
                 ApiBaseUrl = _model.ApiBaseUrl,
-                OpenAIApiMode = _model.OpenAIApiMode
+                OpenAIApiMode = OpenAIApiMode.ChatCompletions
             });
             await Notify.SuccessAsync(L["ConnectionTestSuccessful"]);
         }, LoadingKeys.TestConnection);
@@ -237,23 +193,28 @@ public partial class WorkspaceEditModal : AIComponentBase
         return true;
     }
 
-    private async Task<bool> TryApplyGenerationSettingsAsync()
+    private async Task ConvertToCustomAsync()
     {
-        if (!TryParseFloat(_temperatureText, out var temp))
+        if (_workspace == null)
         {
-            await Message.ErrorAsync(L["TemperatureMustBeNumber"]);
-            return false;
+            return;
         }
 
-        if (!int.TryParse(_maxContextTokensText, out var tokens))
+        var confirmed = await Message.ConfirmAsync(
+            L["ConvertToCustomConfirmation", _workspace.Name],
+            L["AreYouSure"]);
+
+        if (!confirmed)
         {
-            await Message.ErrorAsync(L["MaxContextTokensMustBeNumber"]);
-            return false;
+            return;
         }
 
-        _model.Temperature = temp;
-        _model.MaxContextTokens = tokens;
-        return true;
+        await ExecuteWithLoadingAsync(async () =>
+        {
+            await WorkspaceAppService.ConvertToCustomAsync(_workspace.Id);
+            await CloseModal();
+            await OnConverted.InvokeAsync();
+        }, LoadingKeys.ConvertWorkspace);
     }
 
     private async Task CloseModal()
@@ -308,12 +269,6 @@ public partial class WorkspaceEditModal : AIComponentBase
         }
 
         return false;
-    }
-
-    private static bool TryParseFloat(string? value, out float result)
-    {
-        return float.TryParse(value, NumberStyles.Float, CultureInfo.InvariantCulture, out result) ||
-               float.TryParse(value, NumberStyles.Float, CultureInfo.CurrentCulture, out result);
     }
 
     private static bool TryParseDecimal(string value, out decimal result)

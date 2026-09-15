@@ -50,6 +50,18 @@ public class PlatformCopilotSeedDefinition
     public List<string> RequiredContextKeys { get; set; } = new();
 
     /// <summary>
+    /// When true, end users may pick a chat route inside the bound workspace.
+    /// This is a seed capability, not a tenant override.
+    /// </summary>
+    public bool AllowUserModelSelection { get; set; }
+
+    /// <summary>
+    /// Optional route allowlist. Empty means every enabled, user-selectable chat route
+    /// in the bound workspace. A non-empty list narrows that set.
+    /// </summary>
+    public List<Guid> AllowedModelConfigurationIds { get; set; } = new();
+
+    /// <summary>
     /// Bump when seed content changes. Existing rows update only when greater than stored entity version.
     /// </summary>
     public int EntityVersion { get; set; } = 1;

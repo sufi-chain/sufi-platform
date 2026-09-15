@@ -21,13 +21,12 @@ public partial class WorkspaceCreateModal : AIComponentBase
     private IWorkspaceAppService? _workspaceAppService;
 
     private CreateWorkspaceDto _model = new();
-    private string _temperatureText = "0.7";
-    private string _maxContextTokensText = "200000";
     private string _inputCostPer1MTokensText = string.Empty;
     private string _outputCostPer1MTokensText = string.Empty;
     private List<OpenAIModelDto> _availableModels = new();
     private int _activeTab;
     private bool _wasOpen;
+    private List<WorkspaceGuardrailFormRow> _guardrailRows = WorkspaceGuardrailForm.CreateRows();
 
     protected override void OnParametersSet()
     {
@@ -43,16 +42,12 @@ public partial class WorkspaceCreateModal : AIComponentBase
     {
         _model = new CreateWorkspaceDto
         {
-            Provider = AIProviderType.OpenAI,
-            Temperature = 0.7f,
-            MaxContextTokens = 200000,
-            OpenAIApiMode = OpenAIApiMode.ChatCompletions
+            Provider = AIProviderType.OpenAI
         };
-        _temperatureText = "0.7";
-        _maxContextTokensText = "200000";
         _inputCostPer1MTokensText = string.Empty;
         _outputCostPer1MTokensText = string.Empty;
         _availableModels = new List<OpenAIModelDto>();
+        _guardrailRows = WorkspaceGuardrailForm.CreateRows();
         _activeTab = 0;
     }
 
@@ -65,15 +60,18 @@ public partial class WorkspaceCreateModal : AIComponentBase
             return;
         }
 
-        if (!await TryApplyGenerationSettingsAsync())
-        {
-            return;
-        }
-
         if (!await TryApplyPricingAsync())
         {
             return;
         }
+
+        if (!WorkspaceGuardrailForm.TryBuildItems(_guardrailRows, out var guardrails))
+        {
+            await Message.ErrorAsync(L["GuardrailAmountMustBeNonNegative"]);
+            return;
+        }
+
+        _model.Guardrails = guardrails;
 
         await ExecuteWithLoadingAsync(async () =>
         {
@@ -99,7 +97,7 @@ public partial class WorkspaceCreateModal : AIComponentBase
                 Model = _model.Model,
                 ApiKey = _model.ApiKey,
                 ApiBaseUrl = _model.ApiBaseUrl,
-                OpenAIApiMode = _model.OpenAIApiMode
+                OpenAIApiMode = OpenAIApiMode.ChatCompletions
             });
             await Notify.SuccessAsync(L["ConnectionTestSuccessful"]);
         }, LoadingKeys.TestConnection);
@@ -159,25 +157,6 @@ public partial class WorkspaceCreateModal : AIComponentBase
         return true;
     }
 
-    private async Task<bool> TryApplyGenerationSettingsAsync()
-    {
-        if (!TryParseFloat(_temperatureText, out var temp))
-        {
-            await Message.ErrorAsync(L["TemperatureMustBeNumber"]);
-            return false;
-        }
-
-        if (!int.TryParse(_maxContextTokensText, out var tokens))
-        {
-            await Message.ErrorAsync(L["MaxContextTokensMustBeNumber"]);
-            return false;
-        }
-
-        _model.Temperature = temp;
-        _model.MaxContextTokens = tokens;
-        return true;
-    }
-
     private async Task CloseModal()
     {
         await SetOpenAsync(false);
@@ -224,12 +203,6 @@ public partial class WorkspaceCreateModal : AIComponentBase
         }
 
         return false;
-    }
-
-    private static bool TryParseFloat(string? value, out float result)
-    {
-        return float.TryParse(value, NumberStyles.Float, CultureInfo.InvariantCulture, out result) ||
-               float.TryParse(value, NumberStyles.Float, CultureInfo.CurrentCulture, out result);
     }
 
     private static bool TryParseDecimal(string value, out decimal result)

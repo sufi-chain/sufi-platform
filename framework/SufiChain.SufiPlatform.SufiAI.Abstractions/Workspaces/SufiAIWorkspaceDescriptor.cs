@@ -42,6 +42,11 @@ public class SufiAIWorkspaceDescriptor
     public bool IsReady { get; set; }
 
     /// <summary>
+    /// Whether this workspace is a host-assigned inherited projection.
+    /// </summary>
+    public bool IsInherited { get; set; }
+
+    /// <summary>
     /// Capabilities enabled for this workspace.
     /// </summary>
     public List<SufiAICapability> Capabilities { get; set; } = new();

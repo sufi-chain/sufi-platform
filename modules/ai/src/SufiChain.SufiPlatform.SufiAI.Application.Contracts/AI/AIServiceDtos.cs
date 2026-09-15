@@ -128,12 +128,16 @@ public class AIModelConfigurationDto : Application.Dtos.EntityDto<Guid>
 {
     public Guid WorkspaceId { get; set; }
     public AICapabilityType CapabilityType { get; set; }
-    public OpenAIApiMode? OpenAIApiMode { get; set; }
+    public OpenAIApiMode OpenAIApiMode { get; set; }
     public string ModelId { get; set; } = string.Empty;
+    public string? DisplayName { get; set; }
+    public string? Description { get; set; }
+    public bool IsUserSelectable { get; set; }
     public string? ApiEndpoint { get; set; }
     public bool HasApiKey { get; set; }
     public bool IsEnabled { get; set; }
     public int Priority { get; set; }
+    public int MaxContextTokens { get; set; }
     public decimal? InputCostPer1MTokens { get; set; }
     public decimal? OutputCostPer1MTokens { get; set; }
     public int? Dimensions { get; set; }
@@ -144,21 +148,29 @@ public class CreateAIModelConfigurationDto
     public Guid WorkspaceId { get; set; }
     public AICapabilityType CapabilityType { get; set; }
     public string ModelId { get; set; } = string.Empty;
+    public string? DisplayName { get; set; }
+    public string? Description { get; set; }
+    public bool IsUserSelectable { get; set; }
     public string? ApiEndpoint { get; set; }
     public string? ApiKey { get; set; }
     public decimal? InputCostPer1MTokens { get; set; }
     public decimal? OutputCostPer1MTokens { get; set; }
     public int Priority { get; set; }
-    public OpenAIApiMode? OpenAIApiMode { get; set; }
+    public OpenAIApiMode OpenAIApiMode { get; set; } = OpenAIApiMode.ChatCompletions;
+    public int MaxContextTokens { get; set; } = 200000;
     public int? Dimensions { get; set; }
 }
 
 public class UpdateAIModelConfigurationDto
 {
     public string ModelId { get; set; } = string.Empty;
+    public string? DisplayName { get; set; }
+    public string? Description { get; set; }
+    public bool IsUserSelectable { get; set; }
     public string? ApiEndpoint { get; set; }
     public string? ApiKey { get; set; }
-    public OpenAIApiMode? OpenAIApiMode { get; set; }
+    public OpenAIApiMode OpenAIApiMode { get; set; } = OpenAIApiMode.ChatCompletions;
+    public int MaxContextTokens { get; set; } = 200000;
     public decimal? InputCostPer1MTokens { get; set; }
     public decimal? OutputCostPer1MTokens { get; set; }
     public int Priority { get; set; }
@@ -169,6 +181,7 @@ public class UpdateAIModelConfigurationDto
 public class AIUsageLogDto : Application.Dtos.EntityDto<Guid>
 {
     public Guid WorkspaceId { get; set; }
+    public Guid? ModelConfigurationId { get; set; }
     public AICapabilityType CapabilityType { get; set; }
     public string ModelId { get; set; } = string.Empty;
     public AIProviderType Provider { get; set; }
@@ -183,6 +196,9 @@ public class AIUsageLogDto : Application.Dtos.EntityDto<Guid>
     public long LatencyMs { get; set; }
     public bool IsSuccess { get; set; }
     public string? ErrorMessage { get; set; }
+    public Guid? FileId { get; set; }
+    public string? FileUrl { get; set; }
+    public string? RouteDisplayName { get; set; }
     public DateTime CreationTime { get; set; }
 }
 
@@ -197,4 +213,22 @@ public class UsageStatisticsDto
     public int FailedRequests { get; set; }
     public Dictionary<AICapabilityType, int> RequestsByCapability { get; set; } = new();
     public Dictionary<string, decimal> CostByModel { get; set; } = new();
+    public List<UsageByRouteDto> CostByRoute { get; set; } = new();
+}
+
+public class UsageByRouteDto
+{
+    public Guid? ModelConfigurationId { get; set; }
+
+    public string ModelId { get; set; } = string.Empty;
+
+    public string DisplayName { get; set; } = string.Empty;
+
+    public bool IsUnattributed { get; set; }
+
+    public int Requests { get; set; }
+
+    public decimal Cost { get; set; }
+
+    public long Tokens { get; set; }
 }

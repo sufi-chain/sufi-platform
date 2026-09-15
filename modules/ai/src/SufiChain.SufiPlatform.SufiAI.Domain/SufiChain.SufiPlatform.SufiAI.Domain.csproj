@@ -7,11 +7,16 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
-  <ItemGroup>
+    <ItemGroup>
     <ProjectReference Include="..\..\..\..\framework\SufiChain.SufiPlatform.Ddd.Application.Contracts\SufiChain.SufiPlatform.Ddd.Application.Contracts.csproj" />
+    <PackageReference Include="AngleSharp" Version="$(AngleSharpVersion)" />
     <PackageReference Include="Volo.Abp.Ddd.Domain" Version="$(AbpVersion)" />
     <PackageReference Include="Volo.Abp.Caching" Version="$(AbpVersion)" />
-    <ProjectReference Include="..\..\..\..\framework\SufiChain.SufiPlatform.SufiAI\SufiChain.SufiPlatform.SufiAI.csproj" />
+    <PackageReference Include="Microsoft.Extensions.AI" Version="$(MicrosoftExtensionsAIVersion)" />
+    <PackageReference Include="Microsoft.SemanticKernel" Version="$(MicrosoftSemanticKernelVersion)" />
+    <PackageReference Include="Microsoft.SemanticKernel.Connectors.OpenAI" Version="$(MicrosoftSemanticKernelConnectorsOpenAIVersion)" />
+    <PackageReference Include="Microsoft.Extensions.Http" Version="$(AspNetCoreVersion)" />
+    <ProjectReference Include="..\..\..\..\framework\SufiChain.SufiPlatform.SufiAI.Abstractions\SufiChain.SufiPlatform.SufiAI.Abstractions.csproj" />
     <ProjectReference Include="..\..\..\file-manager\src\SufiChain.SufiPlatform.FileManager.Domain\SufiChain.SufiPlatform.FileManager.Domain.csproj" />
     <ProjectReference Include="..\..\..\file-manager\src\SufiChain.SufiPlatform.FileManager.Domain.Shared\SufiChain.SufiPlatform.FileManager.Domain.Shared.csproj" />
     <ProjectReference Include="..\..\..\file-manager\src\SufiChain.SufiPlatform.FileManager.Application.Contracts\SufiChain.SufiPlatform.FileManager.Application.Contracts.csproj" />

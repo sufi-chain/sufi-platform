@@ -3,21 +3,20 @@ using System.Threading.Tasks;
 using SufiChain.SufiPlatform.SufiAI.RAG;
 using Volo.Abp;
 using Volo.Abp.DependencyInjection;
-using Volo.Abp.Security.Encryption;
 
 namespace SufiChain.SufiPlatform.SufiAI.Workspaces;
 
 public class WorkspaceEmbedderResolver : IWorkspaceEmbedderResolver, ITransientDependency
 {
     protected IAIModelConfigurationRepository ConfigurationRepository { get; }
-    protected IStringEncryptionService StringEncryptor { get; }
+    protected IAICredentialResolver CredentialResolver { get; }
 
     public WorkspaceEmbedderResolver(
         IAIModelConfigurationRepository configurationRepository,
-        IStringEncryptionService stringEncryptor)
+        IAICredentialResolver credentialResolver)
     {
         ConfigurationRepository = configurationRepository;
-        StringEncryptor = stringEncryptor;
+        CredentialResolver = credentialResolver;
     }
 
     public virtual async Task<EmbedderConfiguration> ResolveAsync(
@@ -35,7 +34,8 @@ public class WorkspaceEmbedderResolver : IWorkspaceEmbedderResolver, ITransientD
                 .WithData("WorkspaceName", workspace.Name);
         }
 
-        var apiKey = DecryptApiKey(configuration.ApiKey) ?? DecryptApiKey(workspace.ApiKey);
+        var apiKey = CredentialResolver.DecryptApiKey(configuration.ApiKey)
+            ?? CredentialResolver.DecryptApiKey(workspace.ApiKey);
         if (string.IsNullOrWhiteSpace(apiKey))
         {
             throw new BusinessException(AIErrorCodes.EmbeddingsCredentialsMissing)
@@ -48,33 +48,18 @@ public class WorkspaceEmbedderResolver : IWorkspaceEmbedderResolver, ITransientD
 
         return new EmbedderConfiguration
         {
+            ConfigurationId = configuration.Id,
             Provider = workspace.Provider,
             Model = configuration.ModelId,
             ApiKey = apiKey,
             ApiBaseUrl = apiBaseUrl,
             Dimensions = configuration.Dimensions
                 ?? EmbeddingModelDefaults.GetDimensions(configuration.ModelId),
+            MaxInputTokens = EmbeddingModelDefaults.GetMaxInputTokens(configuration.ModelId),
             EncodingFormat = EmbeddingModelDefaults.GetEncodingFormat(configuration.ModelId, apiBaseUrl),
             SupportsDimensionsParameter = !EmbeddingModelDefaults.RequiresCustomTransport(
                 configuration.ModelId,
                 apiBaseUrl)
         };
-   }
-
-    protected virtual string? DecryptApiKey(string? encryptedApiKey)
-    {
-        if (string.IsNullOrWhiteSpace(encryptedApiKey))
-        {
-            return encryptedApiKey;
-        }
-
-        try
-        {
-            return StringEncryptor.Decrypt(encryptedApiKey);
-        }
-        catch
-        {
-            return encryptedApiKey;
-        }
     }
 }

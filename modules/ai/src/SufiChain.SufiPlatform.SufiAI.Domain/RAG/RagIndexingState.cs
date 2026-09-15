@@ -25,9 +25,4 @@ public class RagIndexingState : Entity<Guid>, IMultiTenant
         WorkspaceName = workspaceName;
         SourceName = sourceName;
     }
-
-    public override object[] GetKeys()
-    {
-        return new object[] { Id };
-    }
 }

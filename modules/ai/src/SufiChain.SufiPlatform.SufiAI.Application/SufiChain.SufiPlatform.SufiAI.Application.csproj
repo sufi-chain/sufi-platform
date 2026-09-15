@@ -17,6 +17,8 @@
   <ItemGroup>
     <ProjectReference Include="..\SufiChain.SufiPlatform.SufiAI.Application.Contracts\SufiChain.SufiPlatform.SufiAI.Application.Contracts.csproj" />
     <ProjectReference Include="..\SufiChain.SufiPlatform.SufiAI.Domain\SufiChain.SufiPlatform.SufiAI.Domain.csproj" />
+    <ProjectReference Include="..\..\..\tenants\src\SufiChain.SufiPlatform.Tenants.Domain\SufiChain.SufiPlatform.Tenants.Domain.csproj" />
   </ItemGroup>
 
+  <ItemGroup><ProjectReference Include="..\..\..\settings\src\SufiChain.SufiPlatform.Settings.Domain\SufiChain.SufiPlatform.Settings.Domain.csproj" /></ItemGroup>
 </Project>

@@ -46,17 +46,10 @@ public class QdrantVectorStoreProvider : IVectorStoreProvider, ITransientDepende
                 ["content"] = document.Content,
                 ["metadataJson"] = JsonSerializer.Serialize(document.Metadata),
                 ["createdAt"] = document.CreatedAt.ToString("O"),
-                ["updatedAt"] = document.UpdatedAt?.ToString("O") ?? string.Empty
+                ["updatedAt"] = document.UpdatedAt?.ToString("O") ?? string.Empty,
+                [QdrantPayloadMetadata.RootKey] = QdrantPayloadMetadata.BuildPayloadValue(document.Metadata)
             }
         }).ToList();
-
-        foreach (var (point, document) in points.Zip(documents))
-        {
-            foreach (var (key, value) in FlattenMetadata(document.Metadata))
-            {
-                point.Payload[ToMetadataPayloadKey(key)] = value;
-            }
-        }
 
         await client.UpsertAsync(context.CollectionName, points, cancellationToken: cancellationToken);
     }
@@ -88,6 +81,13 @@ public class QdrantVectorStoreProvider : IVectorStoreProvider, ITransientDepende
         var client = CreateClient(context);
         await EnsureCollectionExistsAsync(client, context, cancellationToken);
         await client.DeleteAsync(context.CollectionName, BuildDocumentFilter(context, documentId), cancellationToken: cancellationToken);
+    }
+
+    public async Task DeleteBySourceAsync(VectorStoreContext context, string sourceName, string sourceId, CancellationToken cancellationToken = default)
+    {
+        var client = CreateClient(context);
+        await EnsureCollectionExistsAsync(client, context, cancellationToken);
+        await client.DeleteAsync(context.CollectionName, BuildSourceDocumentFilter(context, sourceName, sourceId), cancellationToken: cancellationToken);
     }
 
     public async Task<int> GetCountAsync(VectorStoreContext context, CancellationToken cancellationToken = default)
@@ -155,11 +155,13 @@ public class QdrantVectorStoreProvider : IVectorStoreProvider, ITransientDepende
             await client.CreatePayloadIndexAsync(context.CollectionName, "sourceName", cancellationToken: cancellationToken);
             await client.CreatePayloadIndexAsync(context.CollectionName, "sourceId", cancellationToken: cancellationToken);
             await client.CreatePayloadIndexAsync(context.CollectionName, "documentId", cancellationToken: cancellationToken);
-            await client.CreatePayloadIndexAsync(context.CollectionName, "meta.projectId", cancellationToken: cancellationToken);
+            await client.CreatePayloadIndexAsync(context.CollectionName, QdrantPayloadMetadata.ToFilterKey("projectId"), cancellationToken: cancellationToken);
+            await client.CreatePayloadIndexAsync(context.CollectionName, QdrantPayloadMetadata.ToFilterKey("articleId"), cancellationToken: cancellationToken);
         }
     }
 
-    private static Filter BuildWorkspaceFilter(VectorStoreContext context)
+    // Public for contract tests: the filter must address the same nested `meta` path that StoreEmbeddingsAsync writes.
+    public static Filter BuildWorkspaceFilter(VectorStoreContext context)
     {
         var filter = MatchKeyword("tenantKey", context.TenantKey) & MatchKeyword("workspaceName", context.WorkspaceName);
 
@@ -171,7 +173,7 @@ public class QdrantVectorStoreProvider : IVectorStoreProvider, ITransientDepende
         foreach (var (key, value) in context.MetadataFilters
                      .Where(pair => !string.IsNullOrWhiteSpace(pair.Key) && !string.IsNullOrWhiteSpace(pair.Value)))
         {
-            filter &= MatchKeyword(ToMetadataPayloadKey(key.Trim()), value.Trim());
+            filter &= MatchKeyword(QdrantPayloadMetadata.ToFilterKey(key), value.Trim());
         }
 
         return filter;
@@ -182,34 +184,12 @@ public class QdrantVectorStoreProvider : IVectorStoreProvider, ITransientDepende
         return BuildWorkspaceFilter(context) & MatchKeyword("documentId", documentId);
     }
 
-    private static string ToMetadataPayloadKey(string key) => $"meta.{key}";
-
-    private static IEnumerable<KeyValuePair<string, string>> FlattenMetadata(Dictionary<string, object>? metadata)
+    private static Filter BuildSourceDocumentFilter(VectorStoreContext context, string sourceName, string sourceId)
     {
-        if (metadata == null || metadata.Count == 0)
-        {
-            yield break;
-        }
-
-        foreach (var (key, raw) in metadata)
-        {
-            if (string.IsNullOrWhiteSpace(key) || raw == null)
-            {
-                continue;
-            }
-
-            var text = raw switch
-            {
-                string s => s,
-                Guid guid => guid.ToString("D"),
-                _ => raw.ToString()
-            };
-
-            if (!string.IsNullOrWhiteSpace(text))
-            {
-                yield return new KeyValuePair<string, string>(key.Trim(), text.Trim());
-            }
-        }
+        return MatchKeyword("tenantKey", context.TenantKey)
+               & MatchKeyword("workspaceName", context.WorkspaceName)
+               & MatchKeyword("sourceName", sourceName.Trim())
+               & MatchKeyword("sourceId", sourceId.Trim());
     }
 
     private static QdrantClient CreateClient(VectorStoreContext context)

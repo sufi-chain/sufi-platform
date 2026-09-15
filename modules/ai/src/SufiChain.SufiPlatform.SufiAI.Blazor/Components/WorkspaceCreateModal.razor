@@ -37,9 +37,10 @@
 
 						<SbStack Direction="SbStackDirection.Row" Gap="2" Align="SbAlign.End">
 							<SbTextField @bind-Value="_model.Model"
-										 Label="@L["Model"]"
+										 Label="@L["DefaultChatModel"]"
 										 Required="true"
-										 Placeholder="@L["ModelIdPlaceholder"]" />
+										 Placeholder="@L["ModelIdPlaceholder"]"
+										 HelperText="@L["DefaultChatModelHelp"]" />
 							<SbButton Variant="SbButtonVariant.Outline"
 									  OnClick="@LoadModelsAsync"
 									  Loading="IsOperationLoading(LoadingKeys.LoadModels)">
@@ -66,50 +67,22 @@
 						</SbSimpleSelect>
 					}
 
-					<SbRadioGroup TValue="OpenAIApiMode"
-								  @bind-Value="_model.OpenAIApiMode"
-								  Label="@L["OpenAIApiMode"]"
-								  Orientation="SbOrientation.Horizontal">
-						<SbRadio TValue="OpenAIApiMode" Value="@OpenAIApiMode.ChatCompletions" Label="@L["ChatCompletions"]" />
-						<SbRadio TValue="OpenAIApiMode" Value="@OpenAIApiMode.Responses" Label="@L["Responses"]" />
-					</SbRadioGroup>
-
-					@if (_model.OpenAIApiMode == OpenAIApiMode.Responses)
-					{
-						<SbAlert Severity="SbAlertSeverity.Warning">
-							@L["ResponsesApiCompatibilityWarning"]
-						</SbAlert>
-					}
-
-					<SbTextArea @bind-Value="_model.SystemPrompt"
-								Label="@L["SystemPrompt"]"
-								Rows="5"
-								Placeholder="@L["SystemPromptPlaceholder"]" />
-				</SbStack>
-			</SbTab>
-
-			<SbTab Label="@L["GenerationAndCost"]">
-				<SbStack Direction="SbStackDirection.Column" Gap="4">
-					<SbGrid Columns="1" ColumnsMd="2" Gap="4">
-						<SbTextField @bind-Value="_temperatureText"
-									 Label="@L["Temperature"]"
-									 Placeholder="0.7" />
-
-						<SbTextField @bind-Value="_maxContextTokensText"
-									 Label="@L["MaxContextTokens"]"
-									 Placeholder="200000" />
-					</SbGrid>
-
 					<SbGrid Columns="1" ColumnsMd="2" Gap="4">
 						<SbTextField @bind-Value="_inputCostPer1MTokensText"
 									 Label="@L["InputCostPer1MTokens"]"
-									 Placeholder="0.0000" />
+									 Placeholder="0.0000"
+									 HelperText="@L["WorkspaceCostFallbackHelp"]" />
 
 						<SbTextField @bind-Value="_outputCostPer1MTokensText"
 									 Label="@L["OutputCostPer1MTokens"]"
-									 Placeholder="0.0000" />
+									 Placeholder="0.0000"
+									 HelperText="@L["WorkspaceCostFallbackHelp"]" />
 					</SbGrid>
 				</SbStack>
+			</SbTab>
+
+			<SbTab Label="@L["Guardrails"]">
+				<WorkspaceGuardrailForm Rows="_guardrailRows" />
 			</SbTab>
 		</SbTabs>
 	</ChildContent>

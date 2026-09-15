@@ -9,6 +9,7 @@ namespace SufiChain.SufiPlatform.SufiAI;
 public class ChatCompletionRequest
 {
     public string WorkspaceName { get; set; } = string.Empty;
+    public Guid? ModelConfigurationId { get; set; }
     public List<ChatMessage> Messages { get; set; } = new();
     public string? SystemPrompt { get; set; }
     public float? Temperature { get; set; }
@@ -137,6 +138,7 @@ public class VisionAnalysisResponse
 public class EmbeddingsRequest
 {
     public string WorkspaceName { get; set; } = string.Empty;
+    public Guid? ModelConfigurationId { get; set; }
     public string Text { get; set; } = string.Empty;
     public string? EncodingFormat { get; set; } // "float", "base64"
 }

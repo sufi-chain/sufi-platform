@@ -30,5 +30,30 @@ public static class AIErrorCodes
     public const string MCPHttpTransportNotImplemented = "AI:MCPHttpTransportNotImplemented";
 
     public const string ProviderRequestFailed = "AI:ProviderRequestFailed";
+    public const string ApiKeyRequired = "AI:ApiKeyRequired";
+    public const string NoModelConfigured = "AI:NoModelConfigured";
+    public const string ProviderNotSupported = "AI:ProviderNotSupported";
+    public const string CapabilityNotSupported = "AI:CapabilityNotSupported";
+    public const string McpWorkspaceNotReady = "AI:McpWorkspaceNotReady";
+    public const string McpRequiresChatCompletions = "AI:McpRequiresChatCompletions";
+    public const string McpProviderNotSupported = "AI:McpProviderNotSupported";
     public const string WorkspaceGuardrailExceeded = "AI:WorkspaceGuardrailExceeded";
+    public const string InheritedWorkspaceReadOnly = "AI:InheritedWorkspaceReadOnly";
+    public const string InheritedWorkspaceMustBelongToTenant = "AI:InheritedWorkspaceMustBelongToTenant";
+    public const string WorkspaceAssignmentHostOnly = "AI:WorkspaceAssignmentHostOnly";
+    public const string TenantRequired = "AI:TenantRequired";
+    public const string TenantNotFound = "AI:TenantNotFound";
+    public const string CannotAssignInheritedWorkspace = "AI:CannotAssignInheritedWorkspace";
+    public const string CannotAssignTenantWorkspace = "AI:CannotAssignTenantWorkspace";
+    public const string WorkspaceAlreadyAssignedToTenant = "AI:WorkspaceAlreadyAssignedToTenant";
+    public const string WorkspaceNotInherited = "AI:WorkspaceNotInherited";
+    public const string AssignmentNotFound = "AI:AssignmentNotFound";
+    public const string InvalidMaxContextTokens = "AI:InvalidMaxContextTokens";
+    public const string ModelRouteNotFound = "AI:ModelRouteNotFound";
+    public const string ModelRouteNotSelectable = "AI:ModelRouteNotSelectable";
+    public const string ModelRouteCapabilityMismatch = "AI:ModelRouteCapabilityMismatch";
+    public const string ModelRouteRequiresChatCompletions = "AI:ModelRouteRequiresChatCompletions";
+    public const string ModelRouteOutsideWorkspace = "AI:ModelRouteOutsideWorkspace";
+    public const string ModelRouteNotAllowedForCopilot = "AI:ModelRouteNotAllowedForCopilot";
+    public const string ModelRouteCopilotNotFound = "AI:ModelRouteCopilotNotFound";
 }

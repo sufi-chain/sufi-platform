@@ -149,11 +149,8 @@ public partial class AIToolTestPanel : AIComponentBase
             {
                 await using var scope = ServiceScopeFactory.CreateAsyncScope();
                 var workspaceApp = scope.ServiceProvider.GetRequiredService<IWorkspaceAppService>();
-                var result = await workspaceApp.GetListAsync(new PagedAndSortedResultRequestDto
-                {
-                    MaxResultCount = 100
-                });
-                return result.Items.Where(w => w.IsActive).ToList();
+                var workspaces = await workspaceApp.GetLookupAsync();
+                return workspaces.Where(w => w.IsActive).ToList();
             }, ComponentCancellationToken);
 
             _workspaces = workspaces;

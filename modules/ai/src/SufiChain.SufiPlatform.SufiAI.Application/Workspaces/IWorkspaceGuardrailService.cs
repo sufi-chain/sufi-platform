@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -11,4 +12,8 @@ namespace SufiChain.SufiPlatform.SufiAI.Workspaces;
 public interface IWorkspaceGuardrailService
 {
     Task EnsureCanExecuteAsync(Guid workspaceId, CancellationToken cancellationToken = default);
+
+    Task<List<WorkspaceGuardrailStatusDto>> GetStatusAsync(
+        Guid workspaceId,
+        CancellationToken cancellationToken = default);
 }

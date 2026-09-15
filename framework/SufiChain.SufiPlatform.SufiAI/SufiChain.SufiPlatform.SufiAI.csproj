@@ -9,21 +9,15 @@
 
   <PropertyGroup>
     <PackageId>SufiChain.SufiPlatform.SufiAI</PackageId>
-    <Description>Sufi Platform AI framework - workspace configuration, typed accessors, and Semantic Kernel integration.</Description>
+    <Description>Sufi Platform AI framework module. Product chat, kernels, and workspaces are owned by the AI module.</Description>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="Volo.Abp.Core" Version="$(AbpVersion)" />
-    <PackageReference Include="Microsoft.Extensions.AI" Version="$(MicrosoftExtensionsAIVersion)" />
-    <PackageReference Include="Microsoft.SemanticKernel" Version="$(MicrosoftSemanticKernelVersion)" />
-    <PackageReference Include="Microsoft.SemanticKernel.Connectors.OpenAI" Version="$(MicrosoftSemanticKernelConnectorsOpenAIVersion)" />
-    <PackageReference Include="Microsoft.SemanticKernel.Connectors.Ollama" Version="$(MicrosoftSemanticKernelConnectorsOllamaVersion)" />
-    <PackageReference Include="Microsoft.Extensions.Http" Version="$(AspNetCoreVersion)" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\SufiChain.SufiPlatform.SufiAI.Abstractions\SufiChain.SufiPlatform.SufiAI.Abstractions.csproj" />
-    <ProjectReference Include="..\SufiChain.SufiPlatform.Core\SufiChain.SufiPlatform.Core.csproj" />
   </ItemGroup>
 
 </Project>

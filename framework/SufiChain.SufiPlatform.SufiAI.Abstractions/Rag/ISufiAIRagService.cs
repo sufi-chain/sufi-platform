@@ -34,6 +34,23 @@ public interface ISufiAIRagService
         CancellationToken cancellationToken = default);
 
     /// <summary>
+    /// (Re)indexes a single source document by identifier. Removes stale chunks when the
+    /// source no longer exposes the document. Returns how many chunks were stored so callers
+    /// can report an indexed state only when vectors exist.
+    /// </summary>
+    Task<SufiAIRagIndexDocumentResult> IndexDocumentAsync(
+        SufiAIRagIndexDocumentRequest request,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Counts stored chunks that match the workspace, source, and metadata filters.
+    /// Returns <c>0</c> for the Null fallback.
+    /// </summary>
+    Task<int> CountAsync(
+        SufiAIRagCountRequest request,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// Gets the indexing status of a document source within a workspace.
     /// </summary>
     Task<SufiAIIndexingStatus> GetIndexingStatusAsync(

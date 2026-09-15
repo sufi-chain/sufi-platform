@@ -24,6 +24,21 @@ public interface IVectorStoreProvider
         CancellationToken cancellationToken = default
     );
 
+    /// <summary>
+    /// Deletes every chunk that originated from one source document, including split chunks
+    /// whose <see cref="DocumentChunk.Id"/> differs from the source identifier.
+    /// </summary>
+    Task DeleteBySourceAsync(
+        VectorStoreContext context,
+        string sourceName,
+        string sourceId,
+        CancellationToken cancellationToken = default
+    );
+
+    /// <summary>
+    /// Counts chunks in the workspace scope. Honors <see cref="VectorStoreContext.SourceName"/>
+    /// and <see cref="VectorStoreContext.MetadataFilters"/> when they are set.
+    /// </summary>
     Task<int> GetCountAsync(
         VectorStoreContext context,
         CancellationToken cancellationToken = default
@@ -50,6 +65,7 @@ public class VectorStoreContext
     public string? ConnectionString { get; set; }
     public string? ApiKey { get; set; }
     public int Dimensions { get; set; } = 1536;
+    public int MaxInputTokens { get; set; } = EmbeddingModelDefaults.FallbackMaxInputTokens;
     public string? EmbedderFingerprint { get; set; }
     public Guid? TenantId { get; set; }
     public string TenantKey { get; set; } = "host";

@@ -12,6 +12,7 @@ namespace SufiChain.SufiPlatform.SufiAI.EntityFrameworkCore;
 public interface IAIDbContext : IEfCoreDbContext
 {
     DbSet<Workspace> Workspaces { get; }
+    DbSet<WorkspaceAssignment> WorkspaceAssignments { get; }
     DbSet<AIModelConfiguration> AIModelConfigurations { get; }
     DbSet<AIUsageLog> AIUsageLogs { get; }
     DbSet<MCPServer> MCPServers { get; }

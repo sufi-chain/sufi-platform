@@ -26,10 +26,6 @@ public static class AIDbContextModelCreatingExtensions
             b.Property(x => x.DefaultModel).IsRequired().HasMaxLength(256);
             b.Property(x => x.ApiKey).HasMaxLength(512);
             b.Property(x => x.ApiBaseUrl).HasMaxLength(512);
-            b.Property(x => x.SystemPrompt).HasMaxLength(4096);
-            b.Property(x => x.Temperature).IsRequired();
-            b.Property(x => x.MaxContextTokens).IsRequired();
-            b.Property(x => x.OpenAIApiMode).IsRequired();
             b.Property(x => x.InputCostPer1MTokens).HasPrecision(18, 8);
             b.Property(x => x.OutputCostPer1MTokens).HasPrecision(18, 8);
             b.Property(x => x.IsActive).IsRequired();
@@ -88,16 +84,21 @@ public static class AIDbContextModelCreatingExtensions
             b.Property(x => x.WorkspaceId).IsRequired();
             b.Property(x => x.CapabilityType).IsRequired();
             b.Property(x => x.ModelId).IsRequired().HasMaxLength(256);
+            b.Property(x => x.DisplayName).HasMaxLength(AIModelConfiguration.MaxDisplayNameLength);
+            b.Property(x => x.Description).HasMaxLength(AIModelConfiguration.MaxDescriptionLength);
+            b.Property(x => x.IsUserSelectable).IsRequired();
             b.Property(x => x.ApiEndpoint).HasMaxLength(512);
             b.Property(x => x.ApiKey).HasMaxLength(512);
             b.Property(x => x.IsEnabled).IsRequired();
             b.Property(x => x.Priority).IsRequired();
-            b.Property(x => x.OpenAIApiMode);
+            b.Property(x => x.OpenAIApiMode).IsRequired();
+            b.Property(x => x.MaxContextTokens).IsRequired();
             b.Property(x => x.InputCostPer1MTokens).HasPrecision(18, 8);
             b.Property(x => x.OutputCostPer1MTokens).HasPrecision(18, 8);
             b.Property(x => x.Dimensions);
 
             b.HasIndex(x => new { x.WorkspaceId, x.CapabilityType, x.Priority });
+            b.HasIndex(x => new { x.WorkspaceId, x.CapabilityType, x.IsEnabled, x.IsUserSelectable });
             b.HasIndex(x => x.IsEnabled);
         });
         
@@ -109,6 +110,7 @@ public static class AIDbContextModelCreatingExtensions
             b.ConfigureMultiTenant();
 
             b.Property(x => x.WorkspaceId).IsRequired();
+            b.Property(x => x.ModelConfigurationId);
             b.Property(x => x.CapabilityType).IsRequired();
             b.Property(x => x.ModelId).IsRequired().HasMaxLength(256);
             b.Property(x => x.Provider).IsRequired();
@@ -129,6 +131,7 @@ public static class AIDbContextModelCreatingExtensions
             b.Property(x => x.FileUrl).HasMaxLength(2048);
 
             b.HasIndex(x => new { x.WorkspaceId, x.CreationTime });
+            b.HasIndex(x => new { x.WorkspaceId, x.ModelConfigurationId, x.CreationTime });
             b.HasIndex(x => x.TenantId);
             b.HasIndex(x => x.FileId);
         });

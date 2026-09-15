@@ -31,5 +31,7 @@ public class WorkspaceAssignment : FullAuditedEntity<Guid>, IMultiTenant
         Version++;
     }
 
+    public void Activate() => IsActive = true;
+
     public void Deactivate() => IsActive = false;
 }

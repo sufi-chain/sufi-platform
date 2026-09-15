@@ -1,13 +1,19 @@
 @namespace SufiChain.SufiPlatform.SufiAI.Blazor.Components
 @inherits AIComponentBase
 
-<SbDialog Open="@Open" OpenChanged="@SetOpenAsync" Size="SbDialogSize.Lg" Title="@L["EditWorkspace"]" AllowDropdownOverflow="true">
+<SbDialog Open="@Open" OpenChanged="@SetOpenAsync" Size="SbDialogSize.Lg" Title="@DialogTitle" AllowDropdownOverflow="true">
 	<ChildContent>
 		@if (_workspace != null)
 		{
 			<SbTabs @bind-ActiveIndex="_activeTab">
 				<SbTab Label="@L["ConnectionSettings"]">
 					<SbStack Direction="SbStackDirection.Column" Gap="4">
+						@if (IsReadOnly)
+						{
+							<SbAlert Severity="SbAlertSeverity.Info">
+								@L["InheritedWorkspaceReadOnly"]
+							</SbAlert>
+						}
 						<SbAlert Severity="SbAlertSeverity.Info">
 							@L["OnlyOpenAIProviderAvailable"]
 						</SbAlert>
@@ -24,26 +30,32 @@
 						<SbGrid Columns="1" ColumnsMd="2" Gap="4">
 							<SbTextField @bind-Value="_model.Name"
 										 Label="@L["Name"]"
-										 Required="true" />
+										 Required="true"
+										 Disabled="@IsReadOnly" />
 
 							<SbTextField @bind-Value="_model.ApiBaseUrl"
-										 Label="@L["ApiBaseUrl"]" />
+										 Label="@L["ApiBaseUrl"]"
+										 Disabled="@IsReadOnly" />
 						</SbGrid>
 
 						<SbGrid Columns="1" ColumnsMd="2" Gap="4">
 							<SbTextField @bind-Value="_model.ApiKey"
 										 Label="@L["ApiKey"]"
 										 Type="password"
-										 Placeholder="@L["LeaveEmptyToKeepCurrent"]" />
+										 Placeholder="@L["LeaveEmptyToKeepCurrent"]"
+										 Disabled="@IsReadOnly" />
 
 							<SbStack Direction="SbStackDirection.Row" Gap="2" Align="SbAlign.End">
 								<SbTextField @bind-Value="_model.Model"
-											 Label="@L["Model"]"
+											 Label="@L["DefaultChatModel"]"
 											 Required="true"
-											 Placeholder="@L["ModelIdPlaceholder"]" />
+											 Placeholder="@L["ModelIdPlaceholder"]"
+											 HelperText="@L["DefaultChatModelHelp"]"
+											 Disabled="@IsReadOnly" />
 								<SbButton Variant="SbButtonVariant.Outline"
 										  OnClick="@LoadModelsAsync"
-										  Loading="IsOperationLoading(LoadingKeys.LoadModels)">
+										  Loading="IsOperationLoading(LoadingKeys.LoadModels)"
+										  Disabled="@IsReadOnly">
 									@L["LoadModels"]
 								</SbButton>
 							</SbStack>
@@ -55,7 +67,8 @@
 											@bind-Value="_model.Model"
 											Label="@L["AvailableModels"]"
 											Searchable="true"
-											SearchPlaceholder="@L["SearchModels"]">
+											SearchPlaceholder="@L["SearchModels"]"
+											Disabled="@IsReadOnly">
 								@if (!string.IsNullOrWhiteSpace(_model.Model) && !_availableModels.Any(m => m.Id == _model.Model))
 								{
 									<SbSelectOption TValue="string" Value="@_model.Model">@_model.Model</SbSelectOption>
@@ -67,61 +80,24 @@
 							</SbSimpleSelect>
 						}
 
-						<SbRadioGroup TValue="OpenAIApiMode"
-									  @bind-Value="_model.OpenAIApiMode"
-									  Label="@L["OpenAIApiMode"]"
-									  Orientation="SbOrientation.Horizontal">
-							<SbRadio TValue="OpenAIApiMode" Value="@OpenAIApiMode.ChatCompletions" Label="@L["ChatCompletions"]" />
-							<SbRadio TValue="OpenAIApiMode" Value="@OpenAIApiMode.Responses" Label="@L["Responses"]" />
-						</SbRadioGroup>
-
-						@if (_model.OpenAIApiMode == OpenAIApiMode.Responses)
-						{
-							<SbAlert Severity="SbAlertSeverity.Warning">
-								@L["ResponsesApiCompatibilityWarning"]
-							</SbAlert>
-						}
-
-						<SbTextArea @bind-Value="_model.SystemPrompt"
-									Label="@L["SystemPrompt"]"
-									Rows="5"
-									Placeholder="@L["SystemPromptPlaceholder"]" />
-					</SbStack>
-				</SbTab>
-
-				<SbTab Label="@L["GenerationAndCost"]">
-					<SbStack Direction="SbStackDirection.Column" Gap="4">
-						<SbGrid Columns="1" ColumnsMd="2" Gap="4">
-							<SbTextField @bind-Value="_temperatureText"
-										 Label="@L["Temperature"]" />
-
-							<SbTextField @bind-Value="_maxContextTokensText"
-										 Label="@L["MaxContextTokens"]" />
-						</SbGrid>
-
 						<SbGrid Columns="1" ColumnsMd="2" Gap="4">
 							<SbTextField @bind-Value="_inputCostPer1MTokensText"
 										 Label="@L["InputCostPer1MTokens"]"
-										 Placeholder="0.0000" />
+										 Placeholder="0.0000"
+										 HelperText="@L["WorkspaceCostFallbackHelp"]"
+										 Disabled="@IsReadOnly" />
 
 							<SbTextField @bind-Value="_outputCostPer1MTokensText"
 										 Label="@L["OutputCostPer1MTokens"]"
-										 Placeholder="0.0000" />
+										 Placeholder="0.0000"
+										 HelperText="@L["WorkspaceCostFallbackHelp"]"
+										 Disabled="@IsReadOnly" />
 						</SbGrid>
 					</SbStack>
 				</SbTab>
 
-				<SbTab Label="@L["Guardrails"]" Disabled="@(_workspace?.IsInherited == true)">
-					<SbStack Direction="SbStackDirection.Column" Gap="3">
-						@if (_workspace?.IsInherited == true)
-						{
-							<SbAlert Severity="SbAlertSeverity.Info">@L["InheritedWorkspaceReadOnly"]</SbAlert>
-						}
-						@foreach (var row in _guardrailRows)
-						{
-							<SbTextField @bind-Value="row.AmountText" Label="@L[$"Guardrail:{row.Period}"]" Disabled="@(_workspace?.IsInherited == true)" />
-						}
-					</SbStack>
+				<SbTab Label="@L["Guardrails"]">
+					<WorkspaceGuardrailForm Rows="_guardrailRows" Status="_guardrailStatus" Disabled="@IsReadOnly" />
 				</SbTab>
 			</SbTabs>
 		}
@@ -138,18 +114,31 @@
 			<SbButton Variant="SbButtonVariant.Outline" OnClick="@CloseModal">
 				@L["Cancel"]
 			</SbButton>
-			<SbButton Variant="SbButtonVariant.Outline"
-					  OnClick="@TestConnectionAsync"
-					  Loading="IsOperationLoading(LoadingKeys.TestConnection)"
-					  Disabled="_workspace == null">
-				@L["TestConnection"]
-			</SbButton>
-			<SbButton Color="SbColor.Primary"
-					  OnClick="@UpdateWorkspaceAsync"
-					  Loading="IsOperationLoading(LoadingKeys.UpdateWorkspace)"
-					  Disabled="_workspace == null">
-				@L["Save"]
-			</SbButton>
+			@if (IsReadOnly)
+			{
+				<AuthorizeView Policy="@AIPermissions.Workspaces.Edit">
+					<SbButton Color="SbColor.Primary"
+							  OnClick="@ConvertToCustomAsync"
+							  Loading="IsOperationLoading(LoadingKeys.ConvertWorkspace)">
+						@L["ConvertToCustom"]
+					</SbButton>
+				</AuthorizeView>
+			}
+			else
+			{
+				<SbButton Variant="SbButtonVariant.Outline"
+						  OnClick="@TestConnectionAsync"
+						  Loading="IsOperationLoading(LoadingKeys.TestConnection)"
+						  Disabled="_workspace == null">
+					@L["TestConnection"]
+				</SbButton>
+				<SbButton Color="SbColor.Primary"
+						  OnClick="@UpdateWorkspaceAsync"
+						  Loading="IsOperationLoading(LoadingKeys.UpdateWorkspace)"
+						  Disabled="_workspace == null">
+					@L["Save"]
+				</SbButton>
+			}
 		</SbStack>
 	</Footer>
 </SbDialog>

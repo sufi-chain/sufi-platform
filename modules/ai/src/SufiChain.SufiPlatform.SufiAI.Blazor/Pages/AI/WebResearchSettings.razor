@@ -1,0 +1,96 @@
+@namespace SufiChain.SufiPlatform.SufiAI.Blazor.Pages.AI
+@page "/panel/admin/ai/web-research"
+@attribute [Authorize(Policy = "SufiAI.WebSearchSettings.Default")]
+@inherits AIComponentBase
+
+<SufiPageToolbar>
+    @if (_model != null)
+    {
+        @if (_canEdit)
+        {
+            <SbButton Type="submit" form="web-research-settings-form" Color="SbColor.Primary" Loading="@_busy" Disabled="@_busy">
+                <StartIcon><SbIcon Name="save" /></StartIcon>
+                <ChildContent>@L["Save"]</ChildContent>
+            </SbButton>
+        }
+        @if (_canTest)
+        {
+            <SbButton Variant="SbButtonVariant.Outline" OnClick="TestAsync" Disabled="@_busy" aria-describedby="web-research-test-help">
+                <ChildContent>@L["WebResearchTestConnection"]</ChildContent>
+            </SbButton>
+        }
+    }
+    else if (_loadFailed)
+    {
+        <SbButton Variant="SbButtonVariant.Outline" OnClick="LoadAsync">
+            <StartIcon><SbIcon Name="refresh" /></StartIcon>
+            <ChildContent>@L["Refresh"]</ChildContent>
+        </SbButton>
+    }
+</SufiPageToolbar>
+
+<div class="web-research-settings">
+    <header class="web-research-heading">
+        <h1>@L["WebResearchSettings"]</h1>
+        <p>@L["WebResearchSetupHint"]</p>
+        @if (_model != null && _canTest)
+        {
+            <p id="web-research-test-help">@L["WebResearchTestSaved"]</p>
+        }
+    </header>
+    @if (_model != null)
+    {
+        <EditForm id="web-research-settings-form" Model="_model" OnValidSubmit="SaveAsync" OnInvalidSubmit="ShowAdvancedErrors">
+            <DataAnnotationsValidator />
+            <ValidationSummary />
+            <fieldset disabled="@(_busy || !_canEdit)" class="web-research-fields">
+                <section class="web-research-section" aria-labelledby="research-connection">
+                    <h2 id="research-connection">@L["WebResearchConnectionSection"]</h2>
+                    <SbCheckbox @bind-Value="_model.Enabled" Label="@L["WebResearchEnabled"]" />
+                    <SbTextField @bind-Value="_model.Endpoint" Label="@L["WebResearchEndpoint"]" />
+                    <SbTextField @bind-Value="_model.AuthorizationBearerToken"
+                                 Label="@L["WebResearchToken"]"
+                                 Type="password"
+                                 AutoComplete="new-password"
+                                 Disabled="@(_busy || !_canEdit || _model.ClearToken)"
+                                 HelperText="@L[_model.HasStoredToken ? "WebResearchTokenStored" : "WebResearchTokenEmpty"]" />
+                    @if (_model.HasStoredToken)
+                    {
+                        <SbCheckbox @bind-Value="_model.ClearToken" Label="@L["WebResearchClearToken"]" />
+                    }
+                </section>
+                <section class="web-research-section" aria-labelledby="research-results">
+                    <h2 id="research-results">@L["WebResearchResultsSection"]</h2>
+                    <p>@L["WebResearchResultsHint"]</p>
+                    <SbSimpleSelect TValue="int" @bind-Value="_model.SafeSearch" Label="@L["WebResearchSafeSearchLabel"]">
+                        <SbSelectOption TValue="int" Value="0">@L["WebResearchSafeOff"]</SbSelectOption>
+                        <SbSelectOption TValue="int" Value="1">@L["WebResearchSafeModerate"]</SbSelectOption>
+                        <SbSelectOption TValue="int" Value="2">@L["WebResearchSafeStrict"]</SbSelectOption>
+                    </SbSimpleSelect>
+                    <SbGrid Columns="1" ColumnsMd="2" Gap="3">
+                        <SbTextField TValue="int" @bind-Value="_model.MaxSearchResults" Label="@L["WebResearchMaxResults"]" Type="number" InputMode="numeric" min="1" max="10" step="1" Disabled="@(_busy || !_canEdit)" />
+                        <SbTextField TValue="int" @bind-Value="_model.MaxPagesToFetch" Label="@L["WebResearchMaxPages"]" Type="number" InputMode="numeric" min="0" max="5" step="1" Disabled="@(_busy || !_canEdit)" />
+                    </SbGrid>
+                </section>
+                <details class="web-research-section web-research-advanced" open="@_advancedOpen" @key="_validationVersion">
+                    <summary>@L["WebResearchAdvancedSection"]</summary>
+                    <div class="web-research-advanced-body">
+                        <p>@L["WebResearchAdvancedHint"]</p>
+                        <SbGrid Columns="1" ColumnsMd="2" Gap="3">
+                            <SbTextField TValue="int" @bind-Value="_model.SearchTimeoutSeconds" Label="@L["WebResearchSearchTimeout"]" Type="number" InputMode="numeric" min="2" max="30" step="1" Disabled="@(_busy || !_canEdit)" />
+                            <SbTextField TValue="int" @bind-Value="_model.FetchTimeoutSeconds" Label="@L["WebResearchFetchTimeout"]" Type="number" InputMode="numeric" min="2" max="30" step="1" Disabled="@(_busy || !_canEdit)" />
+                            <SbTextField TValue="int" @bind-Value="_model.MaxPageBytes" Label="@L["WebResearchMaxBytes"]" Type="number" InputMode="numeric" min="1024" max="5242880" step="1" Disabled="@(_busy || !_canEdit)" />
+                            <SbTextField TValue="int" @bind-Value="_model.MaxExtractedCharactersPerPage" Label="@L["WebResearchPageCharacters"]" Type="number" InputMode="numeric" min="100" max="24000" step="1" Disabled="@(_busy || !_canEdit)" />
+                            <SbTextField TValue="int" @bind-Value="_model.MaxTotalContextCharacters" Label="@L["WebResearchContextCharacters"]" Type="number" InputMode="numeric" min="1000" max="60000" step="1" Disabled="@(_busy || !_canEdit)" />
+                        </SbGrid>
+                    </div>
+                </details>
+            </fieldset>
+        </EditForm>
+    }
+    else if (!_loadFailed)
+    {
+        <p role="status">@L["WebResearchLoading"]</p>
+    }
+    <div role="status" aria-live="polite" aria-atomic="true">@_status</div>
+</div>

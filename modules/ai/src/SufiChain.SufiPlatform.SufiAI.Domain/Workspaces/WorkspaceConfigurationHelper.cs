@@ -3,6 +3,7 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Microsoft.SemanticKernel.Embeddings;
 using SufiChain.SufiPlatform.SufiAI.RAG;
+using System.Collections.Generic;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
@@ -15,37 +16,6 @@ namespace SufiChain.SufiPlatform.SufiAI.Workspaces;
 /// </summary>
 public static class WorkspaceConfigurationHelper
 {
-    public static void ConfigureChatClient(ChatClientBuilder builder, Workspace workspace)
-    {
-        if (workspace.Provider != AIProviderType.OpenAI)
-        {
-            throw new ArgumentException($"Unsupported provider type: {workspace.Provider}");
-        }
-    }
-
-    public static void ConfigureKernel(IKernelBuilder builder, Workspace workspace, string? apiKey = null)
-    {
-        var configuration = workspace.GetPrimaryConfiguration(AICapabilityType.ChatCompletion);
-        ConfigureKernel(
-            builder,
-            new WorkspaceRuntimeConfiguration
-            {
-                Workspace = workspace,
-                ModelConfiguration = configuration,
-                CapabilityType = AICapabilityType.ChatCompletion,
-                Provider = workspace.Provider,
-                ModelId = configuration?.ModelId ?? workspace.DefaultModel,
-                ApiEndpoint = configuration?.ApiEndpoint ?? workspace.ApiBaseUrl,
-                ApiKey = apiKey ?? configuration?.ApiKey ?? workspace.ApiKey,
-                OpenAIApiMode = configuration?.OpenAIApiMode ?? workspace.OpenAIApiMode,
-                InputCostPer1MTokens = configuration?.InputCostPer1MTokens ?? workspace.InputCostPer1MTokens,
-                OutputCostPer1MTokens = configuration?.OutputCostPer1MTokens ?? workspace.OutputCostPer1MTokens,
-                IsFallback = configuration == null,
-                IsConfigured = !string.IsNullOrWhiteSpace(configuration?.ModelId ?? workspace.DefaultModel),
-                IsReady = true
-            });
-    }
-
     public static void ConfigureKernel(
         IKernelBuilder builder,
         WorkspaceRuntimeConfiguration configuration)
@@ -198,10 +168,12 @@ public static class WorkspaceConfigurationHelper
     {
         private readonly HttpClient _httpClient = new();
         private readonly string _model;
+        private readonly bool _truncateLongInputs;
 
         public CompatibleEmbeddingGenerator(string baseUrl, string apiKey, string model)
         {
             _model = model;
+            _truncateLongInputs = EmbeddingModelDefaults.SupportsInputTruncation(model);
             _httpClient.BaseAddress = new Uri(baseUrl + "/");
             _httpClient.Timeout = TimeSpan.FromMinutes(5);
             _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", apiKey);
@@ -213,16 +185,20 @@ public static class WorkspaceConfigurationHelper
             CancellationToken cancellationToken = default)
         {
             var inputs = values.ToList();
-            var payload = JsonSerializer.Serialize(new
+            var payload = new Dictionary<string, object?>
             {
-                model = _model,
-                input = inputs,
-                encoding_format = "float"
-            });
+                ["model"] = _model,
+                ["input"] = inputs,
+                ["encoding_format"] = "float"
+            };
+            if (_truncateLongInputs)
+            {
+                payload["truncate"] = "END";
+            }
 
             using var response = await _httpClient.PostAsync(
                 "embeddings",
-                new StringContent(payload, Encoding.UTF8, "application/json"),
+                new StringContent(JsonSerializer.Serialize(payload), Encoding.UTF8, "application/json"),
                 cancellationToken);
             var body = await response.Content.ReadAsStringAsync(cancellationToken);
             if (!response.IsSuccessStatusCode)

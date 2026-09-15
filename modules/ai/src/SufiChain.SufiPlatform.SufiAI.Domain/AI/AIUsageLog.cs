@@ -16,6 +16,12 @@ public class AIUsageLog : CreationAuditedEntity<Guid>, IMultiTenant
     /// The workspace that made this API call
     /// </summary>
     public Guid WorkspaceId { get; protected set; }
+
+    /// <summary>
+    /// The model route that served this call, when the request used a stored configuration.
+    /// Null for workspace default-model fallback.
+    /// </summary>
+    public Guid? ModelConfigurationId { get; protected set; }
     
     /// <summary>
     /// The capability type used (Chat, Audio, Vision, etc.)
@@ -102,6 +108,11 @@ public class AIUsageLog : CreationAuditedEntity<Guid>, IMultiTenant
         Provider = provider;
         TenantId = tenantId;
         IsSuccess = true;
+    }
+
+    public void SetModelConfigurationId(Guid? modelConfigurationId)
+    {
+        ModelConfigurationId = modelConfigurationId;
     }
     
     public void RecordSuccess(

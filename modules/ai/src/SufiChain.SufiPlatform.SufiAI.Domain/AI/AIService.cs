@@ -22,11 +22,10 @@ public class AIService : DomainService, IAIService, ITransientDependency
 {
     private const string ProviderDidNotReturnUsage = "ProviderDidNotReturnUsage";
     private const string UsageUnavailable = "UsageUnavailable";
-    private const string PricingNotConfigured = "PricingNotConfigured";
 
     private readonly IWorkspaceRepository _workspaceRepository;
     private readonly IWorkspaceRuntimeConfigurationResolver _runtimeConfigurationResolver;
-    private readonly IAIUsageLogRepository _usageLogRepository;
+    private readonly IAIUsageRecorder _usageRecorder;
     private readonly IEnumerable<IAIProvider> _providers;
     private readonly IFeatureChecker _featureChecker;
     private readonly ILogger<AIService> _logger;
@@ -34,14 +33,14 @@ public class AIService : DomainService, IAIService, ITransientDependency
     public AIService(
         IWorkspaceRepository workspaceRepository,
         IWorkspaceRuntimeConfigurationResolver runtimeConfigurationResolver,
-        IAIUsageLogRepository usageLogRepository,
+        IAIUsageRecorder usageRecorder,
         IEnumerable<IAIProvider> providers,
         IFeatureChecker featureChecker,
         ILogger<AIService> logger)
     {
         _workspaceRepository = workspaceRepository;
         _runtimeConfigurationResolver = runtimeConfigurationResolver;
-        _usageLogRepository = usageLogRepository;
+        _usageRecorder = usageRecorder;
         _providers = providers;
         _featureChecker = featureChecker;
         _logger = logger;
@@ -58,9 +57,8 @@ public class AIService : DomainService, IAIService, ITransientDependency
             !string.IsNullOrWhiteSpace(request.SystemPrompt),
             request.Stream);
 
-        var (workspace, configuration, provider) = await PrepareRequestAsync(
-            request.WorkspaceName,
-            AICapabilityType.ChatCompletion,
+        var (workspace, configuration, provider, resolved) = await PrepareRequestAsync(
+            request,
             cancellationToken);
 
         var stopwatch = Stopwatch.StartNew();
@@ -89,8 +87,7 @@ public class AIService : DomainService, IAIService, ITransientDependency
                 stopwatch.ElapsedMilliseconds);
 
             await LogUsageAsync(
-                workspace,
-                configuration,
+                resolved,
                 AICapabilityType.ChatCompletion,
                 response.InputTokens,
                 response.OutputTokens,
@@ -116,8 +113,7 @@ public class AIService : DomainService, IAIService, ITransientDependency
                 stopwatch.ElapsedMilliseconds);
 
             await LogUsageAsync(
-                workspace,
-                configuration,
+                resolved,
                 AICapabilityType.ChatCompletion,
                 null,
                 null,
@@ -125,7 +121,7 @@ public class AIService : DomainService, IAIService, ITransientDependency
                 ProviderDidNotReturnUsage,
                 stopwatch.ElapsedMilliseconds,
                 isSuccess: false,
-                errorMessage: ex.Message,
+                errorMessage: FormatLoggedError(ex),
                 cancellationToken: cancellationToken);
 
             throw;
@@ -136,9 +132,8 @@ public class AIService : DomainService, IAIService, ITransientDependency
         ChatCompletionRequest request,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        var (workspace, configuration, provider) = await PrepareRequestAsync(
-            request.WorkspaceName,
-            AICapabilityType.ChatCompletion,
+        var (workspace, configuration, provider, resolved) = await PrepareRequestAsync(
+            request,
             cancellationToken);
 
         var stopwatch = Stopwatch.StartNew();
@@ -164,7 +159,7 @@ public class AIService : DomainService, IAIService, ITransientDependency
                 catch (Exception ex)
                 {
                     hasError = true;
-                    errorMessage = ex.Message;
+                    errorMessage = FormatLoggedError(ex);
                     _logger.LogError(ex, "Error during streaming chat completion");
                     throw;
                 }
@@ -195,8 +190,7 @@ public class AIService : DomainService, IAIService, ITransientDependency
             try
             {
                 await LogUsageAsync(
-                    workspace,
-                    configuration,
+                    resolved,
                     AICapabilityType.ChatCompletion,
                     inputTokens,
                     outputTokens,
@@ -218,7 +212,7 @@ public class AIService : DomainService, IAIService, ITransientDependency
         AudioTranscriptionRequest request,
         CancellationToken cancellationToken = default)
     {
-        var (workspace, configuration, provider) = await PrepareRequestAsync(
+        var (workspace, configuration, provider, resolved) = await PrepareRequestAsync(
             request.WorkspaceName,
             AICapabilityType.AudioTranscription,
             cancellationToken);
@@ -231,8 +225,7 @@ public class AIService : DomainService, IAIService, ITransientDependency
             stopwatch.Stop();
 
             await LogUsageAsync(
-                workspace,
-                configuration,
+                resolved,
                 AICapabilityType.AudioTranscription,
                 response.InputTokens,
                 response.OutputTokens,
@@ -249,8 +242,7 @@ public class AIService : DomainService, IAIService, ITransientDependency
             stopwatch.Stop();
 
             await LogUsageAsync(
-                workspace,
-                configuration,
+                resolved,
                 AICapabilityType.AudioTranscription,
                 null,
                 null,
@@ -258,7 +250,7 @@ public class AIService : DomainService, IAIService, ITransientDependency
                 ProviderDidNotReturnUsage,
                 stopwatch.ElapsedMilliseconds,
                 isSuccess: false,
-                errorMessage: ex.Message,
+                errorMessage: FormatLoggedError(ex),
                 cancellationToken: cancellationToken);
 
             throw;
@@ -269,7 +261,7 @@ public class AIService : DomainService, IAIService, ITransientDependency
         TextToSpeechRequest request,
         CancellationToken cancellationToken = default)
     {
-        var (workspace, configuration, provider) = await PrepareRequestAsync(
+        var (workspace, configuration, provider, resolved) = await PrepareRequestAsync(
             request.WorkspaceName,
             AICapabilityType.TextToSpeech,
             cancellationToken);
@@ -282,8 +274,7 @@ public class AIService : DomainService, IAIService, ITransientDependency
             stopwatch.Stop();
 
             await LogUsageAsync(
-                workspace,
-                configuration,
+                resolved,
                 AICapabilityType.TextToSpeech,
                 null,
                 null,
@@ -300,8 +291,7 @@ public class AIService : DomainService, IAIService, ITransientDependency
             stopwatch.Stop();
 
             await LogUsageAsync(
-                workspace,
-                configuration,
+                resolved,
                 AICapabilityType.TextToSpeech,
                 null,
                 null,
@@ -309,7 +299,7 @@ public class AIService : DomainService, IAIService, ITransientDependency
                 ProviderDidNotReturnUsage,
                 stopwatch.ElapsedMilliseconds,
                 isSuccess: false,
-                errorMessage: ex.Message,
+                errorMessage: FormatLoggedError(ex),
                 cancellationToken: cancellationToken);
 
             throw;
@@ -320,7 +310,7 @@ public class AIService : DomainService, IAIService, ITransientDependency
         VisionAnalysisRequest request,
         CancellationToken cancellationToken = default)
     {
-        var (workspace, configuration, provider) = await PrepareRequestAsync(
+        var (workspace, configuration, provider, resolved) = await PrepareRequestAsync(
             request.WorkspaceName,
             AICapabilityType.VisionAnalysis,
             cancellationToken);
@@ -333,8 +323,7 @@ public class AIService : DomainService, IAIService, ITransientDependency
             stopwatch.Stop();
 
             await LogUsageAsync(
-                workspace,
-                configuration,
+                resolved,
                 AICapabilityType.VisionAnalysis,
                 response.InputTokens,
                 response.OutputTokens,
@@ -351,8 +340,7 @@ public class AIService : DomainService, IAIService, ITransientDependency
             stopwatch.Stop();
 
             await LogUsageAsync(
-                workspace,
-                configuration,
+                resolved,
                 AICapabilityType.VisionAnalysis,
                 null,
                 null,
@@ -360,7 +348,7 @@ public class AIService : DomainService, IAIService, ITransientDependency
                 ProviderDidNotReturnUsage,
                 stopwatch.ElapsedMilliseconds,
                 isSuccess: false,
-                errorMessage: ex.Message,
+                errorMessage: FormatLoggedError(ex),
                 cancellationToken: cancellationToken);
 
             throw;
@@ -371,9 +359,13 @@ public class AIService : DomainService, IAIService, ITransientDependency
         EmbeddingsRequest request,
         CancellationToken cancellationToken = default)
     {
-        var (workspace, configuration, provider) = await PrepareRequestAsync(
+        var (workspace, configuration, provider, resolved) = await PrepareRequestAsync(
             request.WorkspaceName,
             AICapabilityType.Embeddings,
+            new AIModelRouteSelection
+            {
+                ModelConfigurationId = request.ModelConfigurationId
+            },
             cancellationToken);
 
         var stopwatch = Stopwatch.StartNew();
@@ -384,8 +376,7 @@ public class AIService : DomainService, IAIService, ITransientDependency
             stopwatch.Stop();
 
             await LogUsageAsync(
-                workspace,
-                configuration,
+                resolved,
                 AICapabilityType.Embeddings,
                 response.TotalTokens,
                 response.TotalTokens.HasValue ? 0 : null,
@@ -402,8 +393,7 @@ public class AIService : DomainService, IAIService, ITransientDependency
             stopwatch.Stop();
 
             await LogUsageAsync(
-                workspace,
-                configuration,
+                resolved,
                 AICapabilityType.Embeddings,
                 null,
                 null,
@@ -411,7 +401,7 @@ public class AIService : DomainService, IAIService, ITransientDependency
                 ProviderDidNotReturnUsage,
                 stopwatch.ElapsedMilliseconds,
                 isSuccess: false,
-                errorMessage: ex.Message,
+                errorMessage: FormatLoggedError(ex),
                 cancellationToken: cancellationToken);
 
             throw;
@@ -422,7 +412,7 @@ public class AIService : DomainService, IAIService, ITransientDependency
         WebSearchRequest request,
         CancellationToken cancellationToken = default)
     {
-        var (workspace, configuration, provider) = await PrepareRequestAsync(
+        var (workspace, configuration, provider, resolved) = await PrepareRequestAsync(
             request.WorkspaceName,
             AICapabilityType.WebSearch,
             cancellationToken);
@@ -431,15 +421,15 @@ public class AIService : DomainService, IAIService, ITransientDependency
         {
             var response = await provider.SearchWebAsync(workspace, configuration, request, cancellationToken);
             stopwatch.Stop();
-            await LogUsageAsync(workspace, configuration, AICapabilityType.WebSearch, null, null, null,
+            await LogUsageAsync(resolved, AICapabilityType.WebSearch, null, null, null,
                 UsageUnavailable, stopwatch.ElapsedMilliseconds, true, cancellationToken: cancellationToken);
             return response;
         }
         catch (Exception ex)
         {
             stopwatch.Stop();
-            await LogUsageAsync(workspace, configuration, AICapabilityType.WebSearch, null, null, null,
-                UsageUnavailable, stopwatch.ElapsedMilliseconds, false, ex.Message, cancellationToken);
+            await LogUsageAsync(resolved, AICapabilityType.WebSearch, null, null, null,
+                UsageUnavailable, stopwatch.ElapsedMilliseconds, false, FormatLoggedError(ex), cancellationToken);
             throw;
         }
     }
@@ -448,7 +438,7 @@ public class AIService : DomainService, IAIService, ITransientDependency
         WebFetchRequest request,
         CancellationToken cancellationToken = default)
     {
-        var (workspace, configuration, provider) = await PrepareRequestAsync(
+        var (workspace, configuration, provider, resolved) = await PrepareRequestAsync(
             request.WorkspaceName,
             AICapabilityType.WebFetch,
             cancellationToken);
@@ -457,15 +447,15 @@ public class AIService : DomainService, IAIService, ITransientDependency
         {
             var response = await provider.FetchWebAsync(workspace, configuration, request, cancellationToken);
             stopwatch.Stop();
-            await LogUsageAsync(workspace, configuration, AICapabilityType.WebFetch, null, null, null,
+            await LogUsageAsync(resolved, AICapabilityType.WebFetch, null, null, null,
                 UsageUnavailable, stopwatch.ElapsedMilliseconds, true, cancellationToken: cancellationToken);
             return response;
         }
         catch (Exception ex)
         {
             stopwatch.Stop();
-            await LogUsageAsync(workspace, configuration, AICapabilityType.WebFetch, null, null, null,
-                UsageUnavailable, stopwatch.ElapsedMilliseconds, false, ex.Message, cancellationToken);
+            await LogUsageAsync(resolved, AICapabilityType.WebFetch, null, null, null,
+                UsageUnavailable, stopwatch.ElapsedMilliseconds, false, FormatLoggedError(ex), cancellationToken);
             throw;
         }
     }
@@ -481,25 +471,54 @@ public class AIService : DomainService, IAIService, ITransientDependency
         return _runtimeConfigurationResolver.Resolve(workspace, capabilityType).IsConfigured;
     }
 
-    private async Task<(Workspace workspace, AIModelConfiguration configuration, IAIProvider provider)> PrepareRequestAsync(
+    private async Task<(Workspace workspace, AIModelConfiguration configuration, IAIProvider provider, WorkspaceRuntimeConfiguration resolved)> PrepareRequestAsync(
+        ChatCompletionRequest request,
+        CancellationToken cancellationToken)
+    {
+        return await PrepareRequestAsync(
+            request.WorkspaceName,
+            AICapabilityType.ChatCompletion,
+            new AIModelRouteSelection
+            {
+                ModelConfigurationId = request.ModelConfigurationId
+            },
+            cancellationToken);
+    }
+
+    private async Task<(Workspace workspace, AIModelConfiguration configuration, IAIProvider provider, WorkspaceRuntimeConfiguration resolved)> PrepareRequestAsync(
         string workspaceName,
         AICapabilityType capabilityType,
         CancellationToken cancellationToken)
     {
+        return await PrepareRequestAsync(
+            workspaceName,
+            capabilityType,
+            AIModelRouteSelection.Implicit,
+            cancellationToken);
+    }
+
+    private async Task<(Workspace workspace, AIModelConfiguration configuration, IAIProvider provider, WorkspaceRuntimeConfiguration resolved)> PrepareRequestAsync(
+        string workspaceName,
+        AICapabilityType capabilityType,
+        AIModelRouteSelection selection,
+        CancellationToken cancellationToken)
+    {
         await CheckFeatureAsync(capabilityType);
         _logger.LogDebug(
-            "Preparing AI request. WorkspaceName={WorkspaceName}, Capability={Capability}",
+            "Preparing AI request. WorkspaceName={WorkspaceName}, Capability={Capability}, ModelConfigurationId={ModelConfigurationId}, IsExplicitSelection={IsExplicitSelection}",
             workspaceName,
-            capabilityType);
+            capabilityType,
+            selection.ModelConfigurationId,
+            selection.ModelConfigurationId.HasValue);
 
         var resolved = await _runtimeConfigurationResolver.ResolveAsync(
             workspaceName,
             capabilityType,
+            selection,
             cancellationToken);
-        ThrowIfNotReady(resolved);
+        _runtimeConfigurationResolver.EnsureReady(resolved);
         var workspace = resolved.Workspace;
-        var configuration = resolved.ModelConfiguration ??
-                            CreateChatFallbackConfiguration(resolved);
+        var configuration = resolved.ToRequestModelConfiguration();
 
         var provider = _providers.FirstOrDefault(p => p.ProviderType == workspace.Provider);
         if (provider == null)
@@ -509,7 +528,7 @@ public class AIService : DomainService, IAIService, ITransientDependency
                 workspace.Id,
                 workspace.Name,
                 workspace.Provider);
-            throw new BusinessException("AI:ProviderNotSupported")
+            throw new BusinessException(AIErrorCodes.ProviderNotSupported)
                 .WithData("Provider", workspace.Provider.ToString());
         }
 
@@ -521,7 +540,7 @@ public class AIService : DomainService, IAIService, ITransientDependency
                 workspace.Name,
                 workspace.Provider,
                 capabilityType);
-            throw new BusinessException("AI:CapabilityNotSupported")
+            throw new BusinessException(AIErrorCodes.CapabilityNotSupported)
                 .WithData("Provider", workspace.Provider.ToString())
                 .WithData("CapabilityType", capabilityType.ToString());
         }
@@ -534,64 +553,7 @@ public class AIService : DomainService, IAIService, ITransientDependency
             capabilityType,
             configuration.ModelId);
 
-        return (workspace, configuration, provider);
-    }
-
-    private static AIModelConfiguration CreateChatFallbackConfiguration(
-        WorkspaceRuntimeConfiguration resolved)
-    {
-        if (resolved.CapabilityType != AICapabilityType.ChatCompletion)
-        {
-            throw new BusinessException("AI:NoModelConfigured")
-                .WithData("WorkspaceName", resolved.Workspace.Name)
-                .WithData("CapabilityType", resolved.CapabilityType.ToString());
-        }
-
-        var configuration = new AIModelConfiguration(
-            Guid.NewGuid(),
-            resolved.Workspace.Id,
-            resolved.CapabilityType,
-            resolved.ModelId,
-            priority: 999);
-        configuration.UpdateConfiguration(
-            resolved.ModelId,
-            resolved.ApiEndpoint,
-            resolved.ApiKey,
-            999,
-            resolved.OpenAIApiMode,
-            resolved.InputCostPer1MTokens,
-            resolved.OutputCostPer1MTokens);
-        return configuration;
-    }
-
-    private static void ThrowIfNotReady(WorkspaceRuntimeConfiguration resolved)
-    {
-        var exception = resolved.FailureCode switch
-        {
-            WorkspaceRuntimeFailureCodes.WorkspaceInactive =>
-                new BusinessException(AIErrorCodes.WorkspaceNotActive),
-            WorkspaceRuntimeFailureCodes.ModelNotConfigured =>
-                new BusinessException("AI:NoModelConfigured"),
-            WorkspaceRuntimeFailureCodes.CredentialsMissing =>
-                new BusinessException("AI:ApiKeyRequired"),
-            WorkspaceRuntimeFailureCodes.ProviderNotRegistered =>
-                new BusinessException("AI:ProviderNotSupported"),
-            WorkspaceRuntimeFailureCodes.CapabilityNotSupported =>
-                new BusinessException("AI:CapabilityNotSupported"),
-            WorkspaceRuntimeFailureCodes.EndpointInvalid =>
-                new BusinessException(AIErrorCodes.InvalidProviderConfiguration),
-            _ => null
-        };
-
-        if (exception == null)
-        {
-            return;
-        }
-
-        throw exception
-            .WithData("WorkspaceName", resolved.Workspace.Name)
-            .WithData("Provider", resolved.Provider.ToString())
-            .WithData("CapabilityType", resolved.CapabilityType.ToString());
+        return (workspace, configuration, provider, resolved);
     }
 
     private async Task CheckFeatureAsync(AICapabilityType capabilityType)
@@ -620,9 +582,8 @@ public class AIService : DomainService, IAIService, ITransientDependency
         }
     }
 
-    private async Task LogUsageAsync(
-        Workspace workspace,
-        AIModelConfiguration configuration,
+    private Task LogUsageAsync(
+        WorkspaceRuntimeConfiguration resolved,
         AICapabilityType capabilityType,
         int? inputTokens,
         int? outputTokens,
@@ -633,72 +594,37 @@ public class AIService : DomainService, IAIService, ITransientDependency
         string? errorMessage = null,
         CancellationToken cancellationToken = default)
     {
-        try
-        {
-            var log = new AIUsageLog(
-                GuidGenerator.Create(),
-                workspace.Id,
-                capabilityType,
-                configuration.ModelId,
-                workspace.Provider,
-                workspace.TenantId);
-
-            if (isSuccess)
+        return _usageRecorder.RecordAsync(
+            new AIUsageRecord
             {
-                var cost = CalculateCost(workspace, configuration, inputTokens, outputTokens, totalTokens);
-                log.RecordSuccess(
-                    inputTokens,
-                    outputTokens,
-                    latencyMs,
-                    cost.EstimatedCost,
-                    totalTokens,
-                    cost.IsCostCalculated,
-                    usageUnavailableReason,
-                    cost.CostCalculationNote);
-            }
-            else
-            {
-                log.RecordFailure(errorMessage ?? "Unknown error", latencyMs);
-            }
-
-            await _usageLogRepository.InsertAsync(log, cancellationToken: cancellationToken);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Failed to log AI usage for workspace {WorkspaceName}", workspace.Name);
-        }
+                Configuration = resolved,
+                CapabilityType = capabilityType,
+                InputTokens = inputTokens,
+                OutputTokens = outputTokens,
+                TotalTokens = totalTokens,
+                UsageUnavailableReason = usageUnavailableReason,
+                LatencyMs = latencyMs,
+                IsSuccess = isSuccess,
+                ErrorMessage = errorMessage
+            },
+            cancellationToken);
     }
 
-    private static CostCalculationResult CalculateCost(
-        Workspace workspace,
-        AIModelConfiguration configuration,
-        int? inputTokens,
-        int? outputTokens,
-        int? totalTokens)
+    private static string FormatLoggedError(Exception exception)
     {
-        var hasTokenUsage = inputTokens.HasValue || outputTokens.HasValue || totalTokens.HasValue;
-        if (!hasTokenUsage)
+        if (exception is BusinessException businessException
+            && !string.IsNullOrWhiteSpace(businessException.Code))
         {
-            return new CostCalculationResult(0, false, UsageUnavailable);
+            return businessException.Code;
         }
 
-        var inputCostPer1MTokens = configuration.InputCostPer1MTokens ?? workspace.InputCostPer1MTokens;
-        var outputCostPer1MTokens = configuration.OutputCostPer1MTokens ?? workspace.OutputCostPer1MTokens;
-        var hasPricing = inputCostPer1MTokens.HasValue || outputCostPer1MTokens.HasValue;
-
-        if (!hasPricing)
+        var message = exception.Message;
+        if (string.IsNullOrWhiteSpace(message)
+            || message.StartsWith("Exception of type '", StringComparison.Ordinal))
         {
-            return new CostCalculationResult(0, false, PricingNotConfigured);
+            return exception.GetType().Name;
         }
 
-        var estimatedCost = ((inputTokens ?? 0) * (inputCostPer1MTokens ?? 0) +
-                             (outputTokens ?? 0) * (outputCostPer1MTokens ?? 0)) / 1000000m;
-
-        return new CostCalculationResult(estimatedCost, true, null);
+        return message;
     }
-
-    private sealed record CostCalculationResult(
-        decimal EstimatedCost,
-        bool IsCostCalculated,
-        string? CostCalculationNote);
 }

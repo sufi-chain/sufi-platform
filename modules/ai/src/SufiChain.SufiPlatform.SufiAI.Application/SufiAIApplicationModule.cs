@@ -9,6 +9,7 @@ using Volo.Abp.Mapperly;
 namespace SufiChain.SufiPlatform.SufiAI;
 
 [DependsOn(
+    typeof(SufiChain.SufiPlatform.Settings.SufiSettingsDomainModule),
     typeof(SufiAIDomainModule),
     typeof(SufiAIApplicationContractsModule),
     typeof(SufiLocalizationApplicationContractsModule),

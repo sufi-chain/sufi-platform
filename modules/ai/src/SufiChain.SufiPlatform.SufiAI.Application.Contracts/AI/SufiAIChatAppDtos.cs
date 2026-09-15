@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
@@ -14,6 +15,8 @@ public class SufiAISendChatMessageInput
 {
     [Required]
     public string WorkspaceName { get; set; } = string.Empty;
+
+    public Guid? ModelConfigurationId { get; set; }
 
     [Required]
     public string Message { get; set; } = string.Empty;

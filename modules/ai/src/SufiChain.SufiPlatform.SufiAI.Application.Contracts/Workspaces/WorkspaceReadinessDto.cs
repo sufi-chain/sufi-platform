@@ -14,7 +14,7 @@ public class WorkspaceReadinessDto
 
     public List<WorkspaceCapabilityReadinessDto> Capabilities { get; set; } = new();
 
-    public WorkspaceMcpReadinessDto Mcp { get; set; } = new();
+    public WorkspaceToolCapabilityDto ToolCapability { get; set; } = new();
 }
 
 public class WorkspaceCapabilityReadinessDto
@@ -39,7 +39,7 @@ public class WorkspaceCapabilityReadinessDto
     public string? FailureCode { get; set; }
 }
 
-public class WorkspaceMcpReadinessDto
+public class WorkspaceToolCapabilityDto
 {
     public bool IsConfigured { get; set; }
 

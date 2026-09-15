@@ -10,6 +10,9 @@ public class AIPermissionDefinitionProvider : PermissionDefinitionProvider
     {
         var AIGroup = context.AddGroup(AIPermissions.GroupName, L("Permission:SufiAI"));
 
+        var webSettings = AIGroup.AddPermission("SufiAI.WebSearchSettings.Default", L("WebResearchSettings"));
+        webSettings.AddChild("SufiAI.WebSearchSettings.Update", L("Permission:Edit"));
+        webSettings.AddChild("SufiAI.WebSearchSettings.Test", L("WebResearchTestConnection"));
         var workspacesPermission = AIGroup.AddPermission(
             AIPermissions.Workspaces.Default, 
             L("Permission:Workspaces")

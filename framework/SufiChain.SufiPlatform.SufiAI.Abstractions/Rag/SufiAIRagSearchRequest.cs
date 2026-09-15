@@ -26,6 +26,13 @@ public class SufiAIRagSearchRequest
     public string? SourceName { get; set; }
 
     /// <summary>
+    /// Minimum similarity score (0..1) a chunk must reach to be returned.
+    /// When <c>null</c>, the provider default (0.7) applies. Diagnostics such as the
+    /// KnowledgeBase smoke test lower this to tell "no vectors" apart from "low similarity".
+    /// </summary>
+    public float? MinSimilarity { get; set; }
+
+    /// <summary>
     /// Exact-match filters against document metadata keys (for example <c>projectId</c>).
     /// Applied at search time when the vector store supports them; callers should still
     /// treat results as scoped to the requested tenant workspace.

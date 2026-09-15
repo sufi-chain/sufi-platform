@@ -43,6 +43,9 @@ public class AIMenuContributor : IMenuContributor
         };
 
         administration.AddItem(AIMenu);
+        AIMenu.AddItem(new ApplicationMenuItem("SufiAI.WebResearch", l["WebResearchSettings"],
+            url: "/panel/admin/ai/web-research", icon: "search", order: 8)
+            .RequirePermissions("SufiAI.WebSearchSettings.Default"));
 
         if (await featureChecker.IsEnabledAsync(SufiAIFeatures.Workspaces))
         {
@@ -71,26 +74,15 @@ public class AIMenuContributor : IMenuContributor
 
         if (await featureChecker.IsEnabledAsync(SufiAIFeatures.UsageAnalytics))
         {
-            var analyticsMenu = new ApplicationMenuItem(
-                AIMenus.AnalyticsGroup,
-                l["Menu:Analytics"],
-                icon: "analytics",
-                order: 4
-            ).RequirePermissions(
-                AIPermissions.AI.ViewUsage,
-                AIPermissions.Workspaces.Default);
-
-            analyticsMenu.AddItem(new ApplicationMenuItem(
+            AIMenu.AddItem(new ApplicationMenuItem(
                 AIMenus.UsageAnalytics,
                 l["Menu:UsageAnalytics"],
                 url: "/panel/admin/ai/usage-analytics",
                 icon: "chart-bar",
-                order: 1
+                order: 4
             ).RequirePermissions(
                 AIPermissions.AI.ViewUsage,
                 AIPermissions.Workspaces.Default));
-
-            AIMenu.AddItem(analyticsMenu);
         }
 
         if (await featureChecker.IsEnabledAsync(SufiAIFeatures.RAG))
@@ -162,14 +154,13 @@ public static class AIMenus
     
     // Standalone items
     public const string Workspaces = GroupName + ".Workspaces";
+    public const string ModelConfigurations = GroupName + ".ModelConfigurations";
     
     // Testing group
     public const string TestingGroup = GroupName + ".Testing";
     public const string TestChat = TestingGroup + ".TestChat";
     
-    // Analytics group
-    public const string AnalyticsGroup = GroupName + ".Analytics";
-    public const string UsageAnalytics = AnalyticsGroup + ".UsageAnalytics";
+    public const string UsageAnalytics = GroupName + ".UsageAnalytics";
     
     // RAG group
     public const string RAGGroup = GroupName + ".RAG";

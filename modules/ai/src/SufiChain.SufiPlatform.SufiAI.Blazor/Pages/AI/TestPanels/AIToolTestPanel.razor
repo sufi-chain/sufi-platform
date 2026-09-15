@@ -97,16 +97,7 @@
 
                     @if (IsOperationLoading(ToolChatLoadingKeys.SendMessage))
                     {
-                        <SbStack Direction="SbStackDirection.Row" Justify="SbJustify.Start">
-                            <SbCard Elevation="1">
-                                <ChildContent>
-                                    <SbStack Direction="SbStackDirection.Row" Gap="2" Align="SbAlign.Center">
-                                        <SbProgress Indeterminate="true" style="width: 100px;" />
-                                        <SbText Variant="SbTextVariant.BodySmall" Color="SbColor.Muted">@L["Thinking"]...</SbText>
-                                    </SbStack>
-                                </ChildContent>
-                            </SbCard>
-                        </SbStack>
+                        <SbConversationThinkingBubble Text="@($"{L["Thinking"]}…")" />
                     }
                 </SbStack>
 

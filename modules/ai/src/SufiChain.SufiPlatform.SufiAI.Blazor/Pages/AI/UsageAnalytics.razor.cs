@@ -30,6 +30,11 @@ public partial class UsageAnalytics : AIComponentBase
     private Guid? _selectedWorkspaceId;
     private UsageStatisticsDto? _statistics;
     private List<AIUsageLogDto> _usageLogs = new();
+    private List<WorkspaceGuardrailStatusDto> _guardrailStatus = new();
+    private string _routeFilter = AllRoutesFilter;
+
+    private const string AllRoutesFilter = "all";
+    private const string UnattributedRouteFilter = "unattributed";
 
     private SbDateRange? _dateRange = new(DateOnly.FromDateTime(DateTime.Now.AddDays(-30)), DateOnly.FromDateTime(DateTime.Now));
 
@@ -43,11 +48,7 @@ public partial class UsageAnalytics : AIComponentBase
     {
         await ExecuteWithLoadingAsync(async () =>
         {
-            var result = await WorkspaceAppService.GetListAsync(new PagedAndSortedResultRequestDto
-            {
-                MaxResultCount = 1000
-            });
-            _workspaces = result.Items.ToList();
+            _workspaces = await WorkspaceAppService.GetLookupAsync();
 
             if (_workspaces.Any() && !_selectedWorkspaceId.HasValue)
             {
@@ -60,6 +61,7 @@ public partial class UsageAnalytics : AIComponentBase
     private async Task OnWorkspaceChangedAsync(Guid? workspaceId)
     {
         _selectedWorkspaceId = workspaceId;
+        _routeFilter = AllRoutesFilter;
         if (_selectedWorkspaceId.HasValue)
         {
             await LoadDataAsync();
@@ -68,6 +70,8 @@ public partial class UsageAnalytics : AIComponentBase
         {
             _statistics = null;
             _usageLogs.Clear();
+            _guardrailStatus.Clear();
+            _routeFilter = AllRoutesFilter;
         }
     }
 
@@ -107,6 +111,18 @@ public partial class UsageAnalytics : AIComponentBase
             // Show most recent first
             _usageLogs = _usageLogs.OrderByDescending(x => x.CreationTime).Take(100).ToList();
         }, LoadingKeys.LoadUsageLogs);
+
+        _guardrailStatus = await WorkspaceAppService.GetGuardrailStatusAsync(_selectedWorkspaceId.Value);
+    }
+
+    private static double GetGuardrailPercent(WorkspaceGuardrailStatusDto status)
+    {
+        if (status.LimitUsd <= 0)
+        {
+            return status.IsExceeded ? 100 : 0;
+        }
+
+        return Math.Min(100, Math.Max(0, (double)(status.UsedUsd / status.LimitUsd) * 100));
     }
 
     private string GetSuccessRate()
@@ -131,4 +147,104 @@ public partial class UsageAnalytics : AIComponentBase
         if (total == 0) return 0;
         return (value / total) * 100;
     }
+
+    private IEnumerable<UsageByRouteDto> FilteredCostByRoute
+    {
+        get
+        {
+            if (_statistics == null)
+            {
+                return Array.Empty<UsageByRouteDto>();
+            }
+
+            return _statistics.CostByRoute.Where(MatchesRouteFilter);
+        }
+    }
+
+    private IReadOnlyList<AIUsageLogDto> VisibleUsageLogs =>
+        _usageLogs.Where(MatchesLogFilter).ToList();
+
+    private Task OnRouteFilterChangedAsync(string value)
+    {
+        _routeFilter = string.IsNullOrWhiteSpace(value) ? AllRoutesFilter : value;
+        return Task.CompletedTask;
+    }
+
+    private bool MatchesRouteFilter(UsageByRouteDto route)
+    {
+        if (_routeFilter == AllRoutesFilter)
+        {
+            return true;
+        }
+
+        if (_routeFilter == UnattributedRouteFilter)
+        {
+            return route.IsUnattributed;
+        }
+
+        return route.ModelConfigurationId.HasValue
+            && string.Equals(route.ModelConfigurationId.Value.ToString(), _routeFilter, StringComparison.OrdinalIgnoreCase);
+    }
+
+    private bool MatchesLogFilter(AIUsageLogDto log)
+    {
+        if (_routeFilter == AllRoutesFilter)
+        {
+            return true;
+        }
+
+        if (_routeFilter == UnattributedRouteFilter)
+        {
+            return !log.ModelConfigurationId.HasValue;
+        }
+
+        return log.ModelConfigurationId.HasValue
+            && string.Equals(log.ModelConfigurationId.Value.ToString(), _routeFilter, StringComparison.OrdinalIgnoreCase);
+    }
+
+    private string FormatRouteLabel(UsageByRouteDto route)
+    {
+        return route.IsUnattributed
+            ? L["UnattributedRoute"]
+            : (string.IsNullOrWhiteSpace(route.DisplayName) ? route.ModelId : route.DisplayName);
+    }
+
+    private string FormatLogRouteName(AIUsageLogDto log)
+    {
+        if (!log.ModelConfigurationId.HasValue)
+        {
+            return L["UnattributedRoute"];
+        }
+
+        return string.IsNullOrWhiteSpace(log.RouteDisplayName) ? log.ModelId : log.RouteDisplayName;
+    }
+
+    private string FormatCapability(AICapabilityType capabilityType)
+    {
+        var key = capabilityType.ToString();
+        var localized = L[key];
+        return localized.ResourceNotFound || string.Equals(localized.Value, key, StringComparison.Ordinal)
+            ? key
+            : localized.Value;
+    }
+
+    private string FormatUsageError(string errorMessage)
+    {
+        if (string.IsNullOrWhiteSpace(errorMessage)
+            || errorMessage.StartsWith("Exception of type '", StringComparison.Ordinal))
+        {
+            return L["UnknownError"];
+        }
+
+        var localized = L[errorMessage];
+        if (!localized.ResourceNotFound && !string.Equals(localized.Value, errorMessage, StringComparison.Ordinal))
+        {
+            return localized.Value;
+        }
+
+        return errorMessage;
+    }
+
+    private static string GetModelConfigurationsUrl(Guid workspaceId) =>
+        $"/panel/admin/ai/workspaces/{workspaceId}/model-configurations";
 }

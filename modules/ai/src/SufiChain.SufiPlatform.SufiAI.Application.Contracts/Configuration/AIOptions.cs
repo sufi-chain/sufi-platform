@@ -28,6 +28,18 @@ public class AIOptions
     public DefaultWorkspaceSeedOptions DefaultWorkspace { get; set; } = new();
 
     /// <summary>
+    /// TTL for cached OpenAI-compatible <c>/models</c> discovery used by admin workspace UI.
+    /// Set to 0 to disable caching. Default is 300 seconds.
+    /// </summary>
+    public int ProviderModelDiscoveryCacheSeconds { get; set; } = 300;
+
+    /// <summary>
+    /// Salt mixed into the credential fingerprint for the provider model-list cache key.
+    /// The API key itself is never stored in cache.
+    /// </summary>
+    public string ProviderModelCacheSalt { get; set; } = "SufiAI.ProviderModelDiscovery";
+
+    /// <summary>
     /// Adds the default "AI" file structure configuration.
     /// This structure supports all AI-related file types (images, audio, video, documents)
     /// with permissive settings suitable for AI workspaces.

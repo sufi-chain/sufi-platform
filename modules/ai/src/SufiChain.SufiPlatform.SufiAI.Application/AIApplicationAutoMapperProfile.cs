@@ -9,13 +9,11 @@ namespace SufiChain.SufiPlatform.SufiAI;
 public partial class WorkspaceToWorkspaceDtoMapper : MapperBase<Workspace, WorkspaceDto>
 {
     [MapperIgnoreTarget(nameof(WorkspaceDto.HasApiKey))]
-    [MapperIgnoreTarget(nameof(WorkspaceDto.OpenAIApiMode))]
     [MapperIgnoreTarget(nameof(WorkspaceDto.InputCostPer1MTokens))]
     [MapperIgnoreTarget(nameof(WorkspaceDto.OutputCostPer1MTokens))]
     public override partial WorkspaceDto Map(Workspace source);
 
     [MapperIgnoreTarget(nameof(WorkspaceDto.HasApiKey))]
-    [MapperIgnoreTarget(nameof(WorkspaceDto.OpenAIApiMode))]
     [MapperIgnoreTarget(nameof(WorkspaceDto.InputCostPer1MTokens))]
     [MapperIgnoreTarget(nameof(WorkspaceDto.OutputCostPer1MTokens))]
     public override partial void Map(Workspace source, WorkspaceDto destination);
@@ -23,7 +21,6 @@ public partial class WorkspaceToWorkspaceDtoMapper : MapperBase<Workspace, Works
     public override void AfterMap(Workspace source, WorkspaceDto destination)
     {
         destination.HasApiKey = !string.IsNullOrEmpty(source.ApiKey);
-        destination.OpenAIApiMode = source.OpenAIApiMode;
         destination.InputCostPer1MTokens = source.InputCostPer1MTokens;
         destination.OutputCostPer1MTokens = source.OutputCostPer1MTokens;
     }

@@ -31,6 +31,7 @@ public class SufiAIRagServiceAdapter : ISufiAIRagService, ITransientDependency
             request.WorkspaceName,
             request.Query,
             request.MaxResults,
+            minSimilarity: request.MinSimilarity,
             sourceName: request.SourceName,
             metadataFilters: request.MetadataFilters,
             cancellationToken: cancellationToken);
@@ -39,6 +40,39 @@ public class SufiAIRagServiceAdapter : ISufiAIRagService, ITransientDependency
         {
             Chunks = chunks.Select(MapChunk).ToList()
         };
+    }
+
+    public virtual async Task<SufiAIRagIndexDocumentResult> IndexDocumentAsync(
+        SufiAIRagIndexDocumentRequest request,
+        CancellationToken cancellationToken = default)
+    {
+        var result = await RagService.IndexDocumentAsync(
+            request.WorkspaceName,
+            request.SourceName,
+            request.DocumentId,
+            cancellationToken);
+
+        return new SufiAIRagIndexDocumentResult
+        {
+            DocumentId = result.DocumentId,
+            StoredChunkCount = result.StoredChunkCount,
+            Removed = result.Removed
+        };
+    }
+
+    public virtual Task<int> CountAsync(
+        SufiAIRagCountRequest request,
+        CancellationToken cancellationToken = default)
+    {
+        var metadataFilters = request.MetadataFilters == null || request.MetadataFilters.Count == 0
+            ? null
+            : (IReadOnlyDictionary<string, string>)request.MetadataFilters;
+
+        return RagService.CountAsync(
+            request.WorkspaceName,
+            request.SourceName,
+            metadataFilters,
+            cancellationToken);
     }
 
     public virtual async Task IndexAsync(

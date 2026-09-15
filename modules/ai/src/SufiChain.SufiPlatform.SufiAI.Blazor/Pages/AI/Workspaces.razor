@@ -28,22 +28,50 @@
 						TotalCount="_totalCount"
 						PageIndexChanged="OnPageIndexChangedAsync"
 						PageSizeChanged="OnPageSizeChangedAsync"
-						KeySelector="@(item => item.Id.ToString())">
-						<SbColumn TItem="WorkspaceDto" Title="@L["Actions"]" Width="120px">
+						KeySelector="@(item => item.Id.ToString())"
+                        ShowFilterRow="true"
+                        ShowColumnChooser="true"
+                        SelectionMode="SbSelectionMode.MultipleRows">
+						<SbColumn TItem="WorkspaceDto" Title="@L["Actions"]" Width="220px">
 						<CellTemplate Context="cellContext">
 							<SbStack Direction="SbStackDirection.Row" Gap="1">
-								@if (!cellContext.Item.IsInherited)
-								{
 								<AuthorizeView Policy="@AIPermissions.Workspaces.Edit">
-									<SbIconButton Size="SbSize.Sm" AriaLabel="@L["Edit"]"
-											  OnClick="@(() => OpenEditModal(cellContext.Item))">
-										<Icon><SbIcon Name="edit" /></Icon>
+									<SbIconButton Size="SbSize.Sm"
+												  AriaLabel="@(cellContext.Item.IsInherited ? L["View"] : L["Edit"])"
+												  OnClick="@(() => OpenEditModal(cellContext.Item))">
+										<Icon><SbIcon Name="@(cellContext.Item.IsInherited ? "eye" : "edit")" /></Icon>
 									</SbIconButton>
 								</AuthorizeView>
+								<AuthorizeView Policy="@AIPermissions.Workspaces.Create">
+									<SbIconButton Size="SbSize.Sm"
+												  AriaLabel="@L["Clone"]"
+												  OnClick="@(() => OpenCloneModal(cellContext.Item))">
+										<Icon><SbIcon Name="copy" /></Icon>
+									</SbIconButton>
+								</AuthorizeView>
+								@if (IsHost && !cellContext.Item.IsInherited)
+								{
+									<AuthorizeView Policy="@AIPermissions.Workspaces.Create">
+										<SbIconButton Size="SbSize.Sm"
+													  AriaLabel="@L["AssignToTenant"]"
+													  OnClick="@(() => OpenAssignModal(cellContext.Item))">
+											<Icon><SbIcon Name="share" /></Icon>
+										</SbIconButton>
+									</AuthorizeView>
+								}
+								@if (cellContext.Item.IsInherited)
+								{
+									<AuthorizeView Policy="@AIPermissions.Workspaces.Edit">
+										<SbIconButton Size="SbSize.Sm"
+													  AriaLabel="@L["ConvertToCustom"]"
+													  OnClick="@(() => ConvertToCustomAsync(cellContext.Item))">
+											<Icon><SbIcon Name="unlock" /></Icon>
+										</SbIconButton>
+									</AuthorizeView>
 								}
 									<AuthorizeView Policy="@AIPermissions.AI.ManageConfigurations">
 										<SbIconButton Size="SbSize.Sm" AriaLabel="@L["ModelConfigurations"]"
-													  OnClick="@(() => OpenModelConfigurationsModal(cellContext.Item))">
+													  OnClick="@(() => OpenModelConfigurations(cellContext.Item))">
 											<Icon><SbIcon Name="settings" /></Icon>
 										</SbIconButton>
 									</AuthorizeView>
@@ -60,7 +88,7 @@
 							</SbStack>
 						</CellTemplate>
 					</SbColumn>
-				<SbColumn TItem="WorkspaceDto" Field="Name" Title="@L["Name"]" Width="200px">
+				<SbColumn TItem="WorkspaceDto" Field="Name" Title="@L["Name"]" Width="200px" Filterable="true" Sortable="true">
 					<CellTemplate Context="cellContext">
 						<strong>@cellContext.Item.Name</strong>
 						@if (cellContext.Item.IsInherited)
@@ -69,9 +97,16 @@
 						}
 					</CellTemplate>
 				</SbColumn>
-				<SbColumn TItem="WorkspaceDto" Title="@L["Guardrails"]" Width="180px">
+				<SbColumn TItem="WorkspaceDto" Title="@L["Guardrails"]" Width="220px">
 					<CellTemplate Context="cellContext">
-						@string.Join(" / ", cellContext.Item.Guardrails.OrderBy(x => x.Period).Select(x => $"{x.Period}: ${x.AmountUsd:0.##}"))
+						@if (cellContext.Item.Guardrails.Count == 0)
+						{
+							<SbText Variant="SbTextVariant.Caption" Color="SbColor.Muted">@L["NoGuardrails"]</SbText>
+						}
+						else
+						{
+							@string.Join(" / ", cellContext.Item.Guardrails.OrderBy(x => x.Period).Select(x => $"{L[$"Guardrail:{x.Period}"]} ${x.AmountUsd:0.##}"))
+						}
 					</CellTemplate>
 				</SbColumn>
 				<SbColumn TItem="WorkspaceDto" Title="@L["Provider"]" Width="120px">
@@ -81,22 +116,12 @@
 						</SbBadge>
 					</CellTemplate>
 				</SbColumn>
-					<SbColumn TItem="WorkspaceDto" Field="Model" Title="@L["Model"]" Width="180px" />
+					<SbColumn TItem="WorkspaceDto" Field="Model" Title="@L["DefaultChatModel"]" Width="220px" Filterable="true" Sortable="true"/>
 						<SbColumn TItem="WorkspaceDto" Title="@L["Status"]" Width="100px">
 					<CellTemplate Context="cellContext">
 						<SbBadge Color="@(cellContext.Item.IsActive ? SbColor.Success : SbColor.Default)">
 							@(cellContext.Item.IsActive ? L["Active"] : L["Inactive"])
 						</SbBadge>
-					</CellTemplate>
-				</SbColumn>
-				<SbColumn TItem="WorkspaceDto" Title="@L["Temperature"]" Width="120px">
-					<CellTemplate Context="cellContext">
-						@cellContext.Item.Temperature.ToString("F2")
-					</CellTemplate>
-				</SbColumn>
-				<SbColumn TItem="WorkspaceDto" Title="@L["MaxContextTokens"]" Width="120px">
-					<CellTemplate Context="cellContext">
-						@cellContext.Item.MaxContextTokens.ToString("N0")
 					</CellTemplate>
 				</SbColumn>
 				<SbColumn TItem="WorkspaceDto" Title="@L["CreationTime"]" Width="160px">
@@ -111,7 +136,15 @@
 </SbStack>
 
 	<WorkspaceCreateModal @bind-Open="_showCreateModal" OnCreated="@OnWorkspaceCreatedAsync" />
-	<WorkspaceEditModal @bind-Open="_showEditModal" WorkspaceId="_editingWorkspaceId" OnUpdated="@OnWorkspaceUpdatedAsync" />
-		<ModelConfigurationsModal @bind-Open="_showModelConfigurationsModal"
-								  WorkspaceId="_modelConfigurationsWorkspaceId"
-								  WorkspaceName="@_modelConfigurationsWorkspaceName" />
+	<WorkspaceEditModal @bind-Open="_showEditModal"
+						WorkspaceId="_editingWorkspaceId"
+						OnUpdated="@OnWorkspaceUpdatedAsync"
+						OnConverted="@OnWorkspaceConvertedAsync" />
+	<WorkspaceCloneModal @bind-Open="_showCloneModal"
+						 WorkspaceId="_cloneWorkspaceId"
+						 SourceName="@_cloneSourceName"
+						 OnCloned="@OnWorkspaceClonedAsync" />
+	<WorkspaceAssignToTenantModal @bind-Open="_showAssignModal"
+								  WorkspaceId="_assignWorkspaceId"
+								  SourceName="@_assignSourceName"
+								  OnAssigned="@OnWorkspaceAssignedAsync" />
