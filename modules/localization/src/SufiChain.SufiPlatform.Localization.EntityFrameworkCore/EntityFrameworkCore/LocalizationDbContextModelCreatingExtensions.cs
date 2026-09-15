@@ -54,10 +54,10 @@ public static class LocalizationDbContextModelCreatingExtensions
            b.HasIndex(x => x.CultureName);
             b.HasIndex(x => new { x.TenantId, x.ResourceName, x.CultureName, x.Key }).IsUnique();
 
-           b.Property(x => x.ResourceName).IsRequired().HasMaxLength(128);
-            b.Property(x => x.CultureName).IsRequired().HasMaxLength(16);
-            b.Property(x => x.Key).IsRequired().HasMaxLength(512);
-            b.Property(x => x.Value).IsRequired().HasMaxLength(4096);
+           b.Property(x => x.ResourceName).IsRequired().HasMaxLength(LocalizationTextConsts.MaxResourceNameLength);
+            b.Property(x => x.CultureName).IsRequired().HasMaxLength(LocalizationTextConsts.MaxCultureNameLength);
+            b.Property(x => x.Key).IsRequired().HasMaxLength(LocalizationTextConsts.MaxKeyLength);
+            b.Property(x => x.Value).IsRequired().HasMaxLength(LocalizationTextConsts.MaxValueLength);
         });
     }
 }

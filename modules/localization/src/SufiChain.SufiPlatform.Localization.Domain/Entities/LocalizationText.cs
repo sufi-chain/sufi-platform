@@ -57,22 +57,28 @@ public class LocalizationText : AuditedAggregateRoot<Guid>, IMultiTenant
 
     public void SetResourceName(string resourceName)
     {
-        ResourceName = Check.NotNullOrWhiteSpace(resourceName, nameof(resourceName), maxLength: 128);
+        ResourceName = Check.NotNullOrWhiteSpace(
+            resourceName,
+            nameof(resourceName),
+            maxLength: LocalizationTextConsts.MaxResourceNameLength);
     }
 
     public void SetCultureName(string cultureName)
     {
-        CultureName = Check.NotNullOrWhiteSpace(cultureName, nameof(cultureName), maxLength: 16);
+        CultureName = Check.NotNullOrWhiteSpace(
+            cultureName,
+            nameof(cultureName),
+            maxLength: LocalizationTextConsts.MaxCultureNameLength);
     }
 
     public void SetKey(string key)
     {
-        Key = Check.NotNullOrWhiteSpace(key, nameof(key), maxLength: 512);
+        Key = Check.NotNullOrWhiteSpace(key, nameof(key), maxLength: LocalizationTextConsts.MaxKeyLength);
     }
 
     public void SetValue(string value)
     {
-        Value = Check.NotNullOrWhiteSpace(value, nameof(value), maxLength: 4096);
+        Value = Check.NotNullOrWhiteSpace(value, nameof(value), maxLength: LocalizationTextConsts.MaxValueLength);
     }
 
     public void UpdateValue(string value)
