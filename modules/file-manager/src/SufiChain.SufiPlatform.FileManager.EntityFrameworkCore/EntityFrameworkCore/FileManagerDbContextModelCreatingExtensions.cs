@@ -20,7 +20,7 @@ public static class FileManagerDbContextModelCreatingExtensions
 
         builder.Entity<FileItem>(b =>
         {
-            b.ToTable(SufiFileManagerDbProperties.DbTablePrefix + "FileItems", SufiFileManagerDbProperties.DbSchema);
+            b.ToTable("FileItems", SufiFileManagerDbProperties.DbSchema);
 
             b.ConfigureByConvention();
 
@@ -70,7 +70,7 @@ public static class FileManagerDbContextModelCreatingExtensions
 
         builder.Entity<FileStructure>(b =>
         {
-            b.ToTable(SufiFileManagerDbProperties.DbTablePrefix + "FileStructures", SufiFileManagerDbProperties.DbSchema);
+            b.ToTable("FileStructures", SufiFileManagerDbProperties.DbSchema);
 
             b.ConfigureByConvention();
 
@@ -89,7 +89,7 @@ public static class FileManagerDbContextModelCreatingExtensions
 
         builder.Entity<FileFolder>(b =>
         {
-            b.ToTable(SufiFileManagerDbProperties.DbTablePrefix + "FileFolders", SufiFileManagerDbProperties.DbSchema);
+            b.ToTable("FileFolders", SufiFileManagerDbProperties.DbSchema);
 
             b.ConfigureByConvention();
 
@@ -125,7 +125,7 @@ public static class FileManagerDbContextModelCreatingExtensions
 
         builder.Entity<FolderPermission>(b =>
         {
-            b.ToTable(SufiFileManagerDbProperties.DbTablePrefix + "FolderPermissions", SufiFileManagerDbProperties.DbSchema);
+            b.ToTable("FolderPermissions", SufiFileManagerDbProperties.DbSchema);
 
             b.ConfigureByConvention();
 

@@ -30,6 +30,11 @@ public class ImageProcessor : IImageProcessor, ITransientDependency
     {
         try
         {
+            if (imageData == null || imageData.Length == 0)
+            {
+                throw new ArgumentException("Image data is null or empty", nameof(imageData));
+            }
+
             using var inStream = new MemoryStream(imageData);
             using var image = await Image.LoadAsync(inStream, cancellationToken);
 
@@ -62,6 +67,11 @@ public class ImageProcessor : IImageProcessor, ITransientDependency
 
             await image.SaveAsync(outStream, encoder, cancellationToken);
             return outStream.ToArray();
+        }
+        catch (UnknownImageFormatException ex)
+        {
+            _logger.LogWarning(ex, "Failed to generate thumbnail: unsupported or invalid image format");
+            throw;
         }
         catch (Exception ex)
         {
@@ -126,10 +136,20 @@ public class ImageProcessor : IImageProcessor, ITransientDependency
     {
         try
         {
+            if (imageData == null || imageData.Length == 0)
+            {
+                return (0, 0);
+            }
+
             using var inStream = new MemoryStream(imageData);
             var info = await Image.IdentifyAsync(inStream, cancellationToken);
             
             return info != null ? (info.Width, info.Height) : (0, 0);
+        }
+        catch (UnknownImageFormatException ex)
+        {
+            _logger.LogWarning(ex, "Failed to get image dimensions: unsupported or invalid image format");
+            return (0, 0);
         }
         catch (Exception ex)
         {

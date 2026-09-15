@@ -40,7 +40,7 @@
     background: var(--sb-color-primary-50);
     padding: var(--sb-space-1) var(--sb-space-3);
     border-radius: var(--sb-radius-md);
-    color: var(--sb-color-primary);
+    color: var(--sb-color-primary-text);
 }
 
 .flex-1 {

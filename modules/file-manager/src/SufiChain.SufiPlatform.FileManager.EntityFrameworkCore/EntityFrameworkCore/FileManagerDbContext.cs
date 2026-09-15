@@ -2,7 +2,6 @@ using Microsoft.EntityFrameworkCore;
 using SufiChain.SufiPlatform.FileManager.FileFolders;
 using SufiChain.SufiPlatform.FileManager.FileItems;
 using SufiChain.SufiPlatform.FileManager.FileStructures;
-using SufiChain.SufiPlatform.BlobDatabase.EntityFrameworkCore;
 using Volo.Abp.Data;
 using Volo.Abp.EntityFrameworkCore;
 
@@ -24,6 +23,6 @@ public class FileManagerDbContext : AbpDbContext<FileManagerDbContext>, ISufiFil
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
-        builder.ConfigureSufiBlobDatabase();
+        builder.ConfigureSufiFileManager();
     }
 }

@@ -32,6 +32,6 @@ public class SufiFileManagerBlazorPublicModule : AbpModule
         context.Services.AddScoped<PublicFileUploadJsInterop>();
         context.Services.AddScoped<FileGalleryDialogService>();
         context.Services.AddScoped<IFileGalleryDialogService>(provider => provider.GetRequiredService<FileGalleryDialogService>());
-        context.Services.AddMdToolbarContributor<FileManagerMarkdownToolbarContributor>();
+        context.Services.AddEditorToolbarContributor<SufiFileManagerEditorContributor>();
     }
 }

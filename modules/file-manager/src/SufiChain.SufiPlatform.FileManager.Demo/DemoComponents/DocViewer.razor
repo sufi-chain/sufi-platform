@@ -11,7 +11,7 @@
             }
             else if (!string.IsNullOrEmpty(markdownContent))
             {
-                <SbMarkdownViewer Content="@markdownContent" Class="demo-docs-block__content" />
+                <SbDocumentViewer Content="@markdownContent" Class="demo-docs-block__content" />
             }
             else if (error is { Length: > 0 })
             {

@@ -2,6 +2,7 @@
 @using SufiChain.SufiBlazor.Components.Forms
 @using SufiChain.SufiBlazor.Components.Surfaces
 @using SufiChain.SufiBlazor.Components.Typography
+@using SufiChain.SufiBlazor.Contracts.Editors
 @using SufiChain.SufiPlatform.FileManager.Blazor.Public.Editors
 @inherits FileManagerComponentBase
 
@@ -25,12 +26,11 @@
                     @L["Demo:FileManagerMarkdownEditorToolbarHint"]
                 </SbAlert>
                 <SbFormField Label="@L["Menu:FileManagerDemoMarkdownEditor"]">
-                    <SbMarkEditor @bind-Value="_content"
-                                  MinHeight="420px"
-                                  Mode="SufiChain.SufiBlazor.Contracts.Editors.SbMarkEditorMode.Markdown"
-                                  UseToolbarContributors="true"
-                                  EnableMermaid="true"
-                                  EnableHighlight="true" />
+                    <SbRichTextEditor @bind-Value="_content"
+                                      MinHeight="420px"
+                                      ContentFormat="SbContentFormat.Markdown"
+                                      Mode="SbEditorMode.Wysiwyg"
+                                      UseToolbarContributors="true" />
                 </SbFormField>
             </SbStack>
         </ExampleContent>
@@ -65,10 +65,8 @@
 
     private const string mdCode = @"<FileGalleryHost />
 
-<SbMarkEditor @bind-Value=""_content""
-              MinHeight=""420px""
-              Mode=""SufiChain.SufiBlazor.Contracts.Editors.SbMarkEditorMode.Markdown""
-              UseToolbarContributors=""true""
-              EnableMermaid=""true""
-              EnableHighlight=""true"" />";
+<SbRichTextEditor @bind-Value=""_content""
+                  MinHeight=""420px""
+                  ContentFormat=""SbContentFormat.Markdown""
+                  UseToolbarContributors=""true"" />";
 }

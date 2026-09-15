@@ -27,7 +27,7 @@
 }
 
 .file-download-link--link {
-    color: var(--sb-color-primary, var(--sb-primary));
+    color: var(--sb-color-primary-text, var(--sb-primary));
 }
 
 .file-download-link--link:hover {
@@ -42,7 +42,7 @@
 
 .file-download-link__icon {
     flex-shrink: 0;
-    color: var(--sb-color-primary, var(--sb-primary));
+    color: var(--sb-color-primary-text, var(--sb-primary));
 }
 
 .file-download-link__text {

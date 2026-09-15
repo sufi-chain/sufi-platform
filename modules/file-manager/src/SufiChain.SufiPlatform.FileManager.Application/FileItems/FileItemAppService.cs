@@ -292,8 +292,8 @@ public partial class FileItemAppService : SufiApplicationService, IFileItemAppSe
         {
             thumbnailData = await ProcessImageMetadataAsync(fileItem, input.Content, structure);
             
-            // Convert to WebP if enabled
-            if (structure?.EnableWebPConversion == true)
+            // Convert to WebP if enabled and ImageSharp can decode the payload
+            if (structure?.EnableWebPConversion == true && CanProcessRasterImage(input.MimeType, input.Content))
             {
                 _logger.LogInformation("WebP conversion enabled for structure: {StructureKey}", structure.Key);
                 try
@@ -532,7 +532,7 @@ public partial class FileItemAppService : SufiApplicationService, IFileItemAppSe
         {
             thumbnailData = await ProcessImageMetadataAsync(fileItem, content, structure);
 
-            if (structure?.EnableWebPConversion == true)
+            if (structure?.EnableWebPConversion == true && CanProcessRasterImage(input.MimeType, content))
             {
                 try
                 {
@@ -1242,9 +1242,9 @@ public partial class FileItemAppService : SufiApplicationService, IFileItemAppSe
             throw new UserFriendlyException($"File extension '.{extension}' is not allowed. Allowed types: {structure.AllowedExtensions}");
         }
 
-        // Validate image dimensions if applicable
+        // Validate image dimensions if applicable (raster formats ImageSharp can decode)
         var fileType = DetermineFileType(mimeType);
-        if (fileType == FileType.Image)
+        if (fileType == FileType.Image && CanProcessRasterImage(mimeType, content))
         {
             var (width, height) = await _imageProcessor.GetDimensionsAsync(content);
 
@@ -1286,23 +1286,71 @@ public partial class FileItemAppService : SufiApplicationService, IFileItemAppSe
         }
     }
 
+    /// <summary>
+    /// ImageSharp can decode raster formats (JPEG, PNG, GIF, WebP, BMP, TIFF, …).
+    /// Vector and container types such as SVG are still <see cref="FileType.Image"/>
+    /// for storage/display, but must skip thumbnail, dimension, and WebP pipelines.
+    /// </summary>
+    private static bool CanProcessRasterImage(string? mimeType, byte[]? content)
+    {
+        if (content == null || content.Length == 0)
+        {
+            return false;
+        }
+
+        if (string.IsNullOrWhiteSpace(mimeType) ||
+            !mimeType.StartsWith("image/", StringComparison.OrdinalIgnoreCase))
+        {
+            return false;
+        }
+
+        return !mimeType.Equals("image/svg+xml", StringComparison.OrdinalIgnoreCase)
+            && !mimeType.Equals("image/svg", StringComparison.OrdinalIgnoreCase)
+            && !mimeType.Equals("image/x-icon", StringComparison.OrdinalIgnoreCase)
+            && !mimeType.Equals("image/vnd.microsoft.icon", StringComparison.OrdinalIgnoreCase)
+            && !mimeType.Equals("image/avif", StringComparison.OrdinalIgnoreCase)
+            && !mimeType.Equals("image/heic", StringComparison.OrdinalIgnoreCase)
+            && !mimeType.Equals("image/heif", StringComparison.OrdinalIgnoreCase);
+    }
+
     private async Task<byte[]?> ProcessImageMetadataAsync(
         FileItem fileItem,
         byte[] content,
         FileStructure? structure)
     {
-        // Get dimensions
+        if (!CanProcessRasterImage(fileItem.MimeType, content))
+        {
+            return null;
+        }
+
         var (width, height) = await _imageProcessor.GetDimensionsAsync(content);
         fileItem.Width = width;
         fileItem.Height = height;
 
-        // Generate thumbnail if needed
-        if (structure?.GenerateThumbnail == true)
+        if (structure?.GenerateThumbnail != true)
+        {
+            return null;
+        }
+
+        if (width <= 0 || height <= 0)
+        {
+            _logger.LogWarning(
+                "Skipping thumbnail for {FileName}: image dimensions could not be read",
+                fileItem.OriginalName);
+            return null;
+        }
+
+        try
         {
             var thumbnailData = await _imageProcessor.GenerateThumbnailAsync(
                 content,
                 structure.ThumbnailWidth,
                 structure.ThumbnailHeight);
+
+            if (thumbnailData == null || thumbnailData.Length == 0)
+            {
+                return null;
+            }
 
             var thumbnailBlobName = fileItem.BlobName.Replace(
                 Path.GetExtension(fileItem.BlobName),
@@ -1311,8 +1359,15 @@ public partial class FileItemAppService : SufiApplicationService, IFileItemAppSe
             fileItem.ThumbnailBlobName = thumbnailBlobName;
             return thumbnailData;
         }
-
-        return null;
+        catch (Exception ex)
+        {
+            _logger.LogWarning(
+                ex,
+                "Thumbnail generation failed for {FileName}; continuing without thumbnail",
+                fileItem.OriginalName);
+            fileItem.ThumbnailBlobName = null;
+            return null;
+        }
     }
 
     private async Task<byte[]?> ProcessVideoMetadataAsync(

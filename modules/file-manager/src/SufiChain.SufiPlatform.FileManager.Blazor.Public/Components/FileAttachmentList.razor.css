@@ -52,7 +52,7 @@
 
 .file-attachment-list__icon {
     flex-shrink: 0;
-    color: var(--sb-color-primary, var(--sb-primary));
+    color: var(--sb-color-primary-text, var(--sb-primary));
 }
 
 .file-attachment-list__details {

@@ -14,14 +14,14 @@ Place `FileGalleryHost` once on the page or layout that contains your editor.
 <FileGalleryHost />
 ```
 
-### FileManagerMarkdownToolbarContributor
+### SufiFileManagerEditorContributor
 
 When `UseToolbarContributors="true"` is enabled, the public file manager integration adds:
 
 | Button | Action |
 |--------|--------|
-| Insert Image | Inserts `![alt](url)` markdown |
-| Attach File | Inserts `[filename](url)` markdown |
+| Insert Image | Inserts an image through `ISbEditorDocument` |
+| Attach File | Inserts a file link through `ISbEditorDocument` |
 
 ## Setup
 
@@ -31,20 +31,19 @@ When `UseToolbarContributors="true"` is enabled, the public file manager integra
 [DependsOn(typeof(SufiFileManagerBlazorPublicModule))]
 ```
 
-2. Add `FileGalleryHost` and use `SbMarkEditor` or `SbMarkdownEditor`:
+2. Add `FileGalleryHost` and use `SbRichTextEditor` with markdown content:
 
 ```razor
 @using SufiChain.SufiPlatform.FileManager.Blazor.Public.Editors
 @using SufiChain.SufiBlazor.Components.Forms
+@using SufiChain.SufiBlazor.Contracts.Editors
 
 <FileGalleryHost />
 
-<SbMarkEditor @bind-Value="_content"
-              MinHeight="400px"
-              Mode="SufiChain.SufiBlazor.Contracts.Editors.SbMarkEditorMode.Markdown"
-              UseToolbarContributors="true"
-              EnableMermaid="true"
-              EnableHighlight="true" />
+<SbRichTextEditor @bind-Value="_content"
+                  MinHeight="400px"
+                  ContentFormat="SbContentFormat.Markdown"
+                  UseToolbarContributors="true" />
 ```
 
 3. Keep `UseToolbarContributors="true"` enabled so the contributor can register the gallery actions.

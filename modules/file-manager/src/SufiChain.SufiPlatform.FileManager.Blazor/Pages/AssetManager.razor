@@ -35,7 +35,7 @@
     <ChildContent>
         @if (_viewingItem != null)
         {
-            <div style="background: #1e1e2e; padding: 0;">
+            <div style="background: var(--sb-color-surface); padding: 0;">
                 @if (_viewingItem.FileType == FileType.Image)
                 {
                     <FileImage @key="GetViewerMediaKey(_viewingItem)" FileId="@_viewingItem.Id" Size="FileImageSize.Large" />

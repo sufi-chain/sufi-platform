@@ -118,11 +118,11 @@
 }
 
 .fm-menu-item--danger {
-    color: var(--sb-color-danger) !important;
+    color: var(--sb-color-danger-text) !important;
 }
 
 .fm-menu-item--danger:hover:not(:disabled) {
-    color: var(--sb-color-danger) !important;
+    color: var(--sb-color-danger-text) !important;
     background: var(--sb-color-danger-50);
 }
 
