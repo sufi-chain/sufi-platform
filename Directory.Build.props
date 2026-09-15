@@ -16,9 +16,12 @@
     <PackageIcon Condition="Exists('$(MSBuildThisFileDirectory)icon.png')">icon.png</PackageIcon>
     <PackageReadmeFile Condition="Exists('$(MSBuildThisFileDirectory)README.md')">README.md</PackageReadmeFile>
     
-    <!-- Local development hosts under .dev can opt into workspace project references. -->
+    <!-- Prefer workspace project references when independent products are present. -->
+    <UseLocalDevelopmentReferences Condition="'$(UseLocalDevelopmentReferences)' == '' And Exists('$(MSBuildThisFileDirectory)..\independent-projects\sufi-blazor\src\SufiChain.SufiBlazor\SufiChain.SufiBlazor.csproj')">true</UseLocalDevelopmentReferences>
     <UseLocalDevelopmentReferences Condition="'$(UseLocalDevelopmentReferences)' == '' And $([System.String]::Copy('$(MSBuildStartupDirectory)').Contains('.dev'))">true</UseLocalDevelopmentReferences>
     <UseLocalDevelopmentReferences Condition="'$(UseLocalDevelopmentReferences)' == '' And $([System.String]::Copy('$(SolutionDir)').Contains('.dev'))">true</UseLocalDevelopmentReferences>
+    <UseLocalDevelopmentReferences Condition="'$(UseLocalDevelopmentReferences)' == '' And $([System.String]::Copy('$(MSBuildStartupDirectory)').Contains('SufiChane.SufiPlatform'))">true</UseLocalDevelopmentReferences>
+    <UseLocalDevelopmentReferences Condition="'$(UseLocalDevelopmentReferences)' == '' And $([System.String]::Copy('$(SolutionDir)').Contains('SufiChane.SufiPlatform'))">true</UseLocalDevelopmentReferences>
     <UseLocalDevelopmentReferences Condition="'$(UseLocalDevelopmentReferences)' == ''">false</UseLocalDevelopmentReferences>
 
     <!-- Build Settings -->
