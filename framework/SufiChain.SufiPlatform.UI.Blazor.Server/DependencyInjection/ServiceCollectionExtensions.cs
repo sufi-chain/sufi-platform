@@ -4,6 +4,8 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using SufiChain.SufiPlatform.UI.Authorization;
 using SufiChain.SufiPlatform.UI.Blazor.Circuit;
 using SufiChain.SufiPlatform.UI.Blazor.Server.Circuit;
+using SufiChain.SufiPlatform.UI.Blazor.Server.MultiTenancy;
+using SufiChain.SufiPlatform.UI.MultiTenancy;
 using SufiChain.SufiPlatform.UI.Services.Authorization;
 
 namespace SufiChain.SufiPlatform.UI.Blazor.Server.DependencyInjection;
@@ -20,6 +22,16 @@ public static class ServiceCollectionExtensions
     public static IServiceCollection AddSufiBlazorServerAuthorization(this IServiceCollection services)
     {
         services.Replace(ServiceDescriptor.Scoped<ISufiPermissionChecker, AbpPermissionCheckerAdapter>());
+        return services;
+    }
+
+    /// <summary>
+    /// Replaces the no-op UI <see cref="ICurrentTenant"/> with ABP's resolved tenant.
+    /// Call after <see cref="SufiChain.SufiPlatform.UI.Blazor.DependencyInjection.ServiceCollectionExtensions.AddSufiUIBlazor"/>.
+    /// </summary>
+    public static IServiceCollection AddSufiBlazorServerCurrentTenant(this IServiceCollection services)
+    {
+        services.Replace(ServiceDescriptor.Scoped<ICurrentTenant, AbpCurrentTenantAdapter>());
         return services;
     }
 

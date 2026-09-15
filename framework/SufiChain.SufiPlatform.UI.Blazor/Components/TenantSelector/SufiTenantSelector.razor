@@ -70,7 +70,9 @@
                                        PageIndex="_pageIndex"
                                        PageSize="10"
                                        TotalCount="_totalCount"
-                                       PageIndexChanged="OnPageIndexChangedAsync">
+                                       PageIndexChanged="OnPageIndexChangedAsync"
+                        ShowFilterRow="true"
+                        ShowColumnChooser="true">
                                 <SbColumn TItem="TenantLookupItemDto" Title="@L["Actions"]" Width="56px" Sortable="false">
                                     <CellTemplate Context="ctx">
                                         @{
@@ -85,7 +87,7 @@
                                         </SbTooltip>
                                     </CellTemplate>
                                 </SbColumn>
-                                <SbColumn TItem="TenantLookupItemDto" Field="Name" Title="@L["Name"]">
+                                <SbColumn TItem="TenantLookupItemDto" Field="Name" Title="@L["Name"]" Filterable="true" Sortable="true">
                                     <CellTemplate Context="cellContext">
                                         <span class="sb-typography sb-typography--body2">@cellContext.Item.Name</span>
                                     </CellTemplate>
@@ -169,7 +171,9 @@ else
                                PageIndex="_pageIndex"
                                PageSize="10"
                                TotalCount="_totalCount"
-                               PageIndexChanged="OnPageIndexChangedAsync">
+                               PageIndexChanged="OnPageIndexChangedAsync"
+                        ShowFilterRow="true"
+                        ShowColumnChooser="true">
                         <SbColumn TItem="TenantLookupItemDto" Title="@L["Actions"]" Width="56px" Sortable="false">
                             <CellTemplate Context="ctx">
                                 @{
@@ -184,7 +188,7 @@ else
                                 </SbTooltip>
                             </CellTemplate>
                         </SbColumn>
-                        <SbColumn TItem="TenantLookupItemDto" Field="Name" Title="@L["Name"]">
+                        <SbColumn TItem="TenantLookupItemDto" Field="Name" Title="@L["Name"]" Filterable="true" Sortable="true">
                             <CellTemplate Context="cellContext">
                                 <span class="sb-typography sb-typography--body2">@cellContext.Item.Name</span>
                             </CellTemplate>
