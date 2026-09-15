@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>netstandard2.1;net10.0</TargetFrameworks>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <RootNamespace>SufiChain.SufiPlatform.Content.Rendering</RootNamespace>
+    <PackageId>SufiChain.SufiPlatform.Content.Rendering</PackageId>
+    <Description>Shared Markdig markdown rendering and Ganss HTML sanitizer policies for KB, CMS, chat, and email.</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Volo.Abp.Core" Version="$(AbpVersion)" />
+    <PackageReference Include="Markdig" Version="$(MarkdigVersion)" />
+    <PackageReference Include="HtmlSanitizer" Version="$(HtmlSanitizerVersion)" />
+  </ItemGroup>
+
+</Project>
