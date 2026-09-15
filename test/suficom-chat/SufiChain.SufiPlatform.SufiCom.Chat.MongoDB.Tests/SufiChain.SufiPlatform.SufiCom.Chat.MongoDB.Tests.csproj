@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <RootNamespace>SufiChain.SufiPlatform.SufiCom.Chat</RootNamespace>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="$(MicrosoftNetTestSdkVersion)" />
+    <PackageReference Include="Mongo2Go" Version="$(Mongo2GoVersion)" />
+    <PackageReference Include="Shouldly" Version="$(ShouldlyVersion)" />
+    <PackageReference Include="xunit" Version="$(XunitVersion)" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="$(XunitRunnerVisualStudioVersion)" />
+    <ProjectReference Include="..\..\..\..\pro-modules\suficom\chat\src\SufiChain.SufiPlatform.SufiCom.Chat.MongoDB\SufiChain.SufiPlatform.SufiCom.Chat.MongoDB.csproj" />
+    <ProjectReference Include="..\SufiChain.SufiPlatform.SufiCom.Chat.Application.Tests\SufiChain.SufiPlatform.SufiCom.Chat.Application.Tests.csproj" />
+  </ItemGroup>
+</Project>

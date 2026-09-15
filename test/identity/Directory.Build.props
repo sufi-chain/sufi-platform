@@ -1,0 +1,4 @@
+<Project>
+  <!-- Must import parent so versions.props / common.props still apply (MSBuild stops at the nearest Directory.Build.props). -->
+  <Import Project="../../Directory.Build.props" />
+</Project>

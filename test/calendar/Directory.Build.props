@@ -1,0 +1,3 @@
+<Project>
+  <Import Project="../../modules/calendar/Directory.Build.props" />
+</Project>

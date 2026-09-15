@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <RootNamespace>SufiChain.SufiPlatform.Calendar</RootNamespace>
+    <IsTestProject>true</IsTestProject>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="$(MicrosoftNetTestSdkVersion)" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="$(XunitRunnerVisualStudioVersion)" PrivateAssets="all" />
+    <PackageReference Include="Volo.Abp.EntityFrameworkCore.Sqlite" Version="$(AbpVersion)" />
+    <ProjectReference Include="..\SufiChain.SufiPlatform.Calendar.TestBase\SufiChain.SufiPlatform.Calendar.TestBase.csproj" />
+    <ProjectReference Include="..\..\..\modules\calendar\src\SufiChain.SufiPlatform.Calendar.Application\SufiChain.SufiPlatform.Calendar.Application.csproj" />
+    <ProjectReference Include="..\..\..\modules\calendar\src\SufiChain.SufiPlatform.Calendar.EntityFrameworkCore\SufiChain.SufiPlatform.Calendar.EntityFrameworkCore.csproj" />
+  </ItemGroup>
+</Project>

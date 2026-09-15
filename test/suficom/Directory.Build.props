@@ -1,0 +1,3 @@
+<Project>
+  <Import Project="../../../pro-modules/suficom/Directory.Build.props" />
+</Project>

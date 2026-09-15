@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <RootNamespace>SufiChain.SufiPlatform.SufiCom.Channels</RootNamespace>
+    <Nullable>enable</Nullable>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\framework\SufiChain.SufiPlatform.SufiCom.Abstractions\SufiChain.SufiPlatform.SufiCom.Abstractions.csproj" />
+    <ProjectReference Include="..\..\..\..\pro-modules\suficom\channels\src\SufiChain.SufiPlatform.SufiCom.Channels.Email\SufiChain.SufiPlatform.SufiCom.Channels.Email.csproj" />
+    <ProjectReference Include="..\..\..\..\pro-modules\suficom\channels\src\SufiChain.SufiPlatform.SufiCom.Channels\SufiChain.SufiPlatform.SufiCom.Channels.csproj" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.14.1" />
+    <PackageReference Include="Shouldly" Version="4.3.0" />
+    <PackageReference Include="xunit" Version="2.9.3" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="3.1.4" />
+  </ItemGroup>
+</Project>

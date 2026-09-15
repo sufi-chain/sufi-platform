@@ -1,0 +1,3 @@
+<Project>
+  <Import Project="../../../pro-modules/finance/Directory.Build.props" />
+</Project>

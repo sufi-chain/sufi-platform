@@ -17,8 +17,8 @@
     <Project Path="src/SufiChain.SufiPlatform.SufiAI.Qdrant/SufiChain.SufiPlatform.SufiAI.Qdrant.csproj" />
   </Folder>
   <Folder Name="/test/">
-    <Project Path="test/SufiChain.SufiPlatform.SufiAI.Application.Tests/SufiChain.SufiPlatform.SufiAI.Application.Tests.csproj" />
-    <Project Path="test/SufiChain.SufiPlatform.SufiAI.Domain.Tests/SufiChain.SufiPlatform.SufiAI.Domain.Tests.csproj" />
-    <Project Path="test/SufiChain.SufiPlatform.SufiAI.TestBase/SufiChain.SufiPlatform.SufiAI.TestBase.csproj" />
+    <Project Path="../../test/ai/SufiChain.SufiPlatform.SufiAI.Application.Tests/SufiChain.SufiPlatform.SufiAI.Application.Tests.csproj" />
+    <Project Path="../../test/ai/SufiChain.SufiPlatform.SufiAI.Domain.Tests/SufiChain.SufiPlatform.SufiAI.Domain.Tests.csproj" />
+    <Project Path="../../test/ai/SufiChain.SufiPlatform.SufiAI.TestBase/SufiChain.SufiPlatform.SufiAI.TestBase.csproj" />
   </Folder>
 </Solution>

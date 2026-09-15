@@ -1,0 +1,30 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="../../../../pro-modules/finance/src/SufiChain.SufiPlatform.SufiFinance.Domain/SufiChain.SufiPlatform.SufiFinance.Domain.csproj" />
+    <ProjectReference Include="../../../../pro-modules/finance/src/SufiChain.SufiPlatform.SufiFinance.Payments.Domain/SufiChain.SufiPlatform.SufiFinance.Payments.Domain.csproj" />
+    <ProjectReference Include="../../../../pro-modules/finance/src/SufiChain.SufiPlatform.SufiFinance.Wallets.Domain/SufiChain.SufiPlatform.SufiFinance.Wallets.Domain.csproj" />
+    <ProjectReference Include="../../../../pro-modules/finance/src/SufiChain.SufiPlatform.SufiFinance.Invoicing.Domain/SufiChain.SufiPlatform.SufiFinance.Invoicing.Domain.csproj" />
+    <ProjectReference Include="../../../../pro-modules/finance/src/SufiChain.SufiPlatform.SufiFinance.ExchangeRates.Domain/SufiChain.SufiPlatform.SufiFinance.ExchangeRates.Domain.csproj" />
+    <ProjectReference Include="../../../../pro-modules/finance/src/SufiChain.SufiPlatform.SufiFinance.Payments.Virtual/SufiChain.SufiPlatform.SufiFinance.Payments.Virtual.csproj" />
+    <ProjectReference Include="../../../../pro-modules/finance/src/SufiChain.SufiPlatform.SufiFinance.Payments.Stripe/SufiChain.SufiPlatform.SufiFinance.Payments.Stripe.csproj" />
+    <ProjectReference Include="../../../../pro-modules/finance/src/SufiChain.SufiPlatform.SufiFinance.Payments.PayPal/SufiChain.SufiPlatform.SufiFinance.Payments.PayPal.csproj" />
+    <ProjectReference Include="../../../../pro-modules/finance/src/SufiChain.SufiPlatform.SufiFinance.Payments.Shaparak.AsanPardakht/SufiChain.SufiPlatform.SufiFinance.Payments.Shaparak.AsanPardakht.csproj" />
+    <ProjectReference Include="../../../../pro-modules/finance/src/SufiChain.SufiPlatform.SufiFinance.Payments.Shaparak.IdPay/SufiChain.SufiPlatform.SufiFinance.Payments.Shaparak.IdPay.csproj" />
+    <ProjectReference Include="../../../../pro-modules/finance/src/SufiChain.SufiPlatform.SufiFinance.Payments.Shaparak.IranKish/SufiChain.SufiPlatform.SufiFinance.Payments.Shaparak.IranKish.csproj" />
+    <ProjectReference Include="../../../../pro-modules/finance/src/SufiChain.SufiPlatform.SufiFinance.Payments.Shaparak.Mellat/SufiChain.SufiPlatform.SufiFinance.Payments.Shaparak.Mellat.csproj" />
+    <ProjectReference Include="../../../../pro-modules/finance/src/SufiChain.SufiPlatform.SufiFinance.Payments.Shaparak.Melli/SufiChain.SufiPlatform.SufiFinance.Payments.Shaparak.Melli.csproj" />
+    <ProjectReference Include="../../../../pro-modules/finance/src/SufiChain.SufiPlatform.SufiFinance.Payments.Shaparak.Parsian/SufiChain.SufiPlatform.SufiFinance.Payments.Shaparak.Parsian.csproj" />
+    <ProjectReference Include="../../../../pro-modules/finance/src/SufiChain.SufiPlatform.SufiFinance.Payments.Shaparak.Pasargad/SufiChain.SufiPlatform.SufiFinance.Payments.Shaparak.Pasargad.csproj" />
+    <ProjectReference Include="../../../../pro-modules/finance/src/SufiChain.SufiPlatform.SufiFinance.Payments.Shaparak.Saman/SufiChain.SufiPlatform.SufiFinance.Payments.Shaparak.Saman.csproj" />
+    <ProjectReference Include="../../../../pro-modules/finance/src/SufiChain.SufiPlatform.SufiFinance.Payments.Shaparak.Sepehr/SufiChain.SufiPlatform.SufiFinance.Payments.Shaparak.Sepehr.csproj" />
+    <ProjectReference Include="../../../../pro-modules/finance/src/SufiChain.SufiPlatform.SufiFinance.Payments.Shaparak.Zibal/SufiChain.SufiPlatform.SufiFinance.Payments.Shaparak.Zibal.csproj" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.14.1" />
+    <PackageReference Include="Shouldly" Version="4.3.0" />
+    <PackageReference Include="xunit" Version="2.9.3" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="3.1.4" PrivateAssets="All" />
+  </ItemGroup>
+</Project>

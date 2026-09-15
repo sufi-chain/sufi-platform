@@ -232,27 +232,27 @@
   </Folder>
   <Folder Name="/Tests/" />
   <Folder Name="/Tests/AI/">
-    <Project Path="modules/ai/test/SufiChain.SufiPlatform.SufiAI.Application.Tests/SufiChain.SufiPlatform.SufiAI.Application.Tests.csproj" />
-    <Project Path="modules/ai/test/SufiChain.SufiPlatform.SufiAI.Domain.Tests/SufiChain.SufiPlatform.SufiAI.Domain.Tests.csproj" />
-    <Project Path="modules/ai/test/SufiChain.SufiPlatform.SufiAI.TestBase/SufiChain.SufiPlatform.SufiAI.TestBase.csproj" />
+    <Project Path="test/ai/SufiChain.SufiPlatform.SufiAI.Application.Tests/SufiChain.SufiPlatform.SufiAI.Application.Tests.csproj" />
+    <Project Path="test/ai/SufiChain.SufiPlatform.SufiAI.Domain.Tests/SufiChain.SufiPlatform.SufiAI.Domain.Tests.csproj" />
+    <Project Path="test/ai/SufiChain.SufiPlatform.SufiAI.TestBase/SufiChain.SufiPlatform.SufiAI.TestBase.csproj" />
   </Folder>
   <Folder Name="/Tests/Calendar/">
-    <Project Path="modules/calendar/test/SufiChain.SufiPlatform.Calendar.Application.Tests/SufiChain.SufiPlatform.Calendar.Application.Tests.csproj" />
-    <Project Path="modules/calendar/test/SufiChain.SufiPlatform.Calendar.Domain.Tests/SufiChain.SufiPlatform.Calendar.Domain.Tests.csproj" />
-    <Project Path="modules/calendar/test/SufiChain.SufiPlatform.Calendar.EntityFrameworkCore.Tests/SufiChain.SufiPlatform.Calendar.EntityFrameworkCore.Tests.csproj" />
-    <Project Path="modules/calendar/test/SufiChain.SufiPlatform.Calendar.MongoDB.Tests/SufiChain.SufiPlatform.Calendar.MongoDB.Tests.csproj" />
-    <Project Path="modules/calendar/test/SufiChain.SufiPlatform.Calendar.TestBase/SufiChain.SufiPlatform.Calendar.TestBase.csproj" />
+    <Project Path="test/calendar/SufiChain.SufiPlatform.Calendar.Application.Tests/SufiChain.SufiPlatform.Calendar.Application.Tests.csproj" />
+    <Project Path="test/calendar/SufiChain.SufiPlatform.Calendar.Domain.Tests/SufiChain.SufiPlatform.Calendar.Domain.Tests.csproj" />
+    <Project Path="test/calendar/SufiChain.SufiPlatform.Calendar.EntityFrameworkCore.Tests/SufiChain.SufiPlatform.Calendar.EntityFrameworkCore.Tests.csproj" />
+    <Project Path="test/calendar/SufiChain.SufiPlatform.Calendar.MongoDB.Tests/SufiChain.SufiPlatform.Calendar.MongoDB.Tests.csproj" />
+    <Project Path="test/calendar/SufiChain.SufiPlatform.Calendar.TestBase/SufiChain.SufiPlatform.Calendar.TestBase.csproj" />
   </Folder>
   <Folder Name="/Tests/FileManager/">
-    <Project Path="modules/file-manager/test/SufiChain.SufiPlatform.FileManager.Application.Tests/SufiChain.SufiPlatform.FileManager.Application.Tests.csproj" />
-    <Project Path="modules/file-manager/test/SufiChain.SufiPlatform.FileManager.Domain.Tests/SufiChain.SufiPlatform.FileManager.Domain.Tests.csproj" />
-    <Project Path="modules/file-manager/test/SufiChain.SufiPlatform.FileManager.EntityFrameworkCore.Tests/SufiChain.SufiPlatform.FileManager.EntityFrameworkCore.Tests.csproj" />
-    <Project Path="modules/file-manager/test/SufiChain.SufiPlatform.FileManager.TestBase/SufiChain.SufiPlatform.FileManager.TestBase.csproj" />
+    <Project Path="test/file-manager/SufiChain.SufiPlatform.FileManager.Application.Tests/SufiChain.SufiPlatform.FileManager.Application.Tests.csproj" />
+    <Project Path="test/file-manager/SufiChain.SufiPlatform.FileManager.Domain.Tests/SufiChain.SufiPlatform.FileManager.Domain.Tests.csproj" />
+    <Project Path="test/file-manager/SufiChain.SufiPlatform.FileManager.EntityFrameworkCore.Tests/SufiChain.SufiPlatform.FileManager.EntityFrameworkCore.Tests.csproj" />
+    <Project Path="test/file-manager/SufiChain.SufiPlatform.FileManager.TestBase/SufiChain.SufiPlatform.FileManager.TestBase.csproj" />
   </Folder>
   <Folder Name="/Tests/ShortLinks/" />
   <Folder Name="/Tests/SmokeTest/">
-    <Project Path="test/SufiChain.SufiPlatform.BlazorBuildTest.Console/SufiChain.SufiPlatform.BlazorBuildTest.Console.csproj" />
-    <Project Path="test/SufiChain.SufiPlatform.SmokeTest.Console/SufiChain.SufiPlatform.SmokeTest.Console.csproj" />
+    <Project Path="test/platform/SufiChain.SufiPlatform.BlazorBuildTest.Console/SufiChain.SufiPlatform.BlazorBuildTest.Console.csproj" />
+    <Project Path="test/platform/SufiChain.SufiPlatform.SmokeTest.Console/SufiChain.SufiPlatform.SmokeTest.Console.csproj" />
   </Folder>
   <Folder Name="/Solution Items/">
     <File Path=".gitea/workflows/release-nuget.yml" />

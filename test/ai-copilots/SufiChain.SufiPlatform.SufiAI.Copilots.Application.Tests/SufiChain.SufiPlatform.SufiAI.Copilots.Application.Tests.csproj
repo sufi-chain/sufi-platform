@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <RootNamespace>SufiChain.SufiPlatform.SufiAI.Copilots</RootNamespace>
+    <IsPackable>false</IsPackable>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../../../../pro-modules/ai-copilots/src/SufiChain.SufiPlatform.SufiAI.Copilots.Application/SufiChain.SufiPlatform.SufiAI.Copilots.Application.csproj" />
+    <ProjectReference Include="../../../modules/ai/src/SufiChain.SufiPlatform.SufiAI.Application/SufiChain.SufiPlatform.SufiAI.Application.csproj" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="$(MicrosoftNetTestSdkVersion)" />
+    <PackageReference Include="NSubstitute" Version="$(NSubstituteVersion)" />
+    <PackageReference Include="Shouldly" Version="$(ShouldlyVersion)" />
+    <PackageReference Include="xunit" Version="$(XunitVersion)" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="$(XunitRunnerVisualStudioVersion)" PrivateAssets="All" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="../../../../pro-modules/suficom/chat/src/SufiChain.SufiPlatform.SufiCom.Chat.Blazor.Public/Localization/ChatPublic/*.json"
+                      LogicalName="ChatPublic.%(Filename).json" WithCulture="false" />
+  </ItemGroup>
+</Project>

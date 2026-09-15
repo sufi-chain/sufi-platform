@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <RootNamespace>SufiChain.SufiPlatform.SufiCom</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\..\pro-modules\suficom\src\SufiChain.SufiPlatform.SufiCom.Domain\SufiChain.SufiPlatform.SufiCom.Domain.csproj" />
+    <ProjectReference Include="..\..\..\modules\settings\src\SufiChain.SufiPlatform.Settings.EntityFrameworkCore\SufiChain.SufiPlatform.Settings.EntityFrameworkCore.csproj" />
+    <ProjectReference Include="..\..\..\..\pro-modules\suficom\channels\src\SufiChain.SufiPlatform.SufiCom.Channels.Sms.Kavenegar\SufiChain.SufiPlatform.SufiCom.Channels.Sms.Kavenegar.csproj" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.14.1" />
+    <PackageReference Include="NSubstitute" Version="5.3.0" />
+    <PackageReference Include="Shouldly" Version="4.3.0" />
+    <PackageReference Include="xunit" Version="2.9.3" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="3.1.4" />
+    <PackageReference Include="Volo.Abp.Autofac" Version="$(AbpVersion)" />
+    <ProjectReference Include="..\..\..\framework\SufiChain.SufiPlatform.Authorization\SufiChain.SufiPlatform.Authorization.csproj" />
+    <PackageReference Include="Volo.Abp.TestBase" Version="$(AbpVersion)" />
+  </ItemGroup>
+
+</Project>

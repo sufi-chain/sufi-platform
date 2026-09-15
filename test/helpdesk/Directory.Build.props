@@ -1,0 +1,3 @@
+<Project>
+  <Import Project="../../../pro-modules/helpdesk/Directory.Build.props" />
+</Project>
