@@ -15,6 +15,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\SufiChain.SufiPlatform.SufiAI.Domain.Shared\SufiChain.SufiPlatform.SufiAI.Domain.Shared.csproj" />
+    <ProjectReference Include="..\..\..\..\framework\SufiChain.SufiPlatform.Tags.Abstractions\SufiChain.SufiPlatform.Tags.Abstractions.csproj" />
   </ItemGroup>
 
 </Project>

@@ -17,4 +17,6 @@ public interface IAIDbContext : IEfCoreDbContext
     DbSet<AIUsageLog> AIUsageLogs { get; }
     DbSet<MCPServer> MCPServers { get; }
     DbSet<RagIndexingState> RagIndexingStates { get; }
+    DbSet<Knowledge.KnowledgeRelationProposal> KnowledgeRelationProposals { get; }
+    DbSet<Knowledge.KnowledgeRelationApplicationIntent> KnowledgeRelationApplicationIntents { get; }
 }

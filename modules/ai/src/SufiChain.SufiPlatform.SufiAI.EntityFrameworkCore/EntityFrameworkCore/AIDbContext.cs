@@ -17,6 +17,8 @@ public class AIDbContext : AbpDbContext<AIDbContext>, IAIDbContext
     public DbSet<AIModelConfiguration> AIModelConfigurations { get; set; }
     public DbSet<AIUsageLog> AIUsageLogs { get; set; }
     public DbSet<RagIndexingState> RagIndexingStates { get; set; }
+    public DbSet<Knowledge.KnowledgeRelationProposal> KnowledgeRelationProposals { get; set; }
+    public DbSet<Knowledge.KnowledgeRelationApplicationIntent> KnowledgeRelationApplicationIntents { get; set; }
 
     public AIDbContext(DbContextOptions<AIDbContext> options)
         : base(options)

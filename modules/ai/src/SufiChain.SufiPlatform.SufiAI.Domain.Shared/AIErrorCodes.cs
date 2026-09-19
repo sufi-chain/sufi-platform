@@ -2,6 +2,8 @@ namespace SufiChain.SufiPlatform.SufiAI;
 
 public static class AIErrorCodes
 {
+    public const string KnowledgeReviewInvalid = "AI:KnowledgeReviewInvalid";
+    public const string KnowledgeReviewDenied = "AI:KnowledgeReviewDenied";
     public const string WorkspaceNameAlreadyExists = "AI:WorkspaceNameAlreadyExists";
     public const string WorkspaceNotFound = "AI:WorkspaceNotFound";
     public const string WorkspaceNotActive = "AI:WorkspaceNotActive";

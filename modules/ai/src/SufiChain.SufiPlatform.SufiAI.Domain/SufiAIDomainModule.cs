@@ -18,6 +18,7 @@ using SufiChain.SufiPlatform.SufiAI.Storage;
 namespace SufiChain.SufiPlatform.SufiAI;
 
 [DependsOn(
+    typeof(SufiChain.SufiPlatform.Tags.SufiTagsAbstractionsModule),
     typeof(AbpDddDomainModule),
     typeof(AbpCachingModule),
     typeof(SufiAIDomainSharedModule),
@@ -27,6 +28,7 @@ public class SufiAIDomainModule : AbpModule
 {
     public override void ConfigureServices(ServiceConfigurationContext context)
     {
+        Configure<AITransportOptions>(context.Services.GetConfiguration().GetSection(AITransportOptions.SectionName));
         context.Services.AddTransient<Web.IWebSearchService, Web.SearXngWebSearchService>();
         context.Services.AddTransient<Web.IWebContentFetcher, Web.WebContentFetcher>();
         // Register RAG service

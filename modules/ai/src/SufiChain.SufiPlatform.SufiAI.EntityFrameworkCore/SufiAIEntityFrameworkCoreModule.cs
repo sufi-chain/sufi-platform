@@ -22,6 +22,8 @@ public class SufiAIEntityFrameworkCoreModule : AbpModule
             options.AddRepository<AIModelConfiguration, EfCoreAIModelConfigurationRepository>();
             options.AddRepository<AIUsageLog, EfCoreAIUsageLogRepository>();
             options.AddRepository<MCP.Entities.MCPServer, MCPServerRepository>();
+            options.AddRepository<Knowledge.KnowledgeRelationProposal, Knowledge.EfCoreKnowledgeRelationProposalRepository>();
+            options.AddRepository<Knowledge.KnowledgeRelationApplicationIntent, Knowledge.EfCoreKnowledgeRelationApplicationIntentRepository>();
         });
 
         Configure<AbpDbConnectionOptions>(options =>

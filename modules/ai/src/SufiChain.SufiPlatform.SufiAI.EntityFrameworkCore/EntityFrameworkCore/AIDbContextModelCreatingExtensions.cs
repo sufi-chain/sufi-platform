@@ -14,6 +14,54 @@ public static class AIDbContextModelCreatingExtensions
     {
         Check.NotNull(builder, nameof(builder));
 
+        builder.Entity<Knowledge.KnowledgeRelationProposal>(b =>
+        {
+            b.ToTable(SufiAIDbProperties.DbTablePrefix + "KnowledgeRelationProposals", SufiAIDbProperties.DbSchema);
+            b.ConfigureByConvention();
+            b.Property(x => x.TenantScopeKey).IsRequired().HasMaxLength(32);
+            b.Property(x => x.ScopeType).IsRequired().HasMaxLength(96);
+            b.Property(x => x.SourceType).IsRequired().HasMaxLength(96);
+            b.Property(x => x.TargetType).IsRequired().HasMaxLength(96);
+            b.Property(x => x.EvidenceType).IsRequired().HasMaxLength(96);
+            b.Property(x => x.Reason).IsRequired().HasMaxLength(1024);
+            b.Property(x => x.EvidenceVersion).IsRequired().HasMaxLength(128);
+            b.Property(x => x.EvidenceSha256).IsRequired().HasMaxLength(64);
+            b.Property(x => x.EvidenceLocator).IsRequired().HasMaxLength(512);
+            b.Property(x => x.ReviewReason).HasMaxLength(1024);
+            b.Property(x => x.RevocationReason).HasMaxLength(1024);
+            b.Property(x => x.ProposedAtUtc).HasConversion(
+                value => value, value => DateTime.SpecifyKind(value, DateTimeKind.Utc));
+            b.Property(x => x.ReviewedAtUtc).HasConversion(
+                value => value, value => value.HasValue ? DateTime.SpecifyKind(value.Value, DateTimeKind.Utc) : value);
+            b.Property(x => x.ExpiresAtUtc).HasConversion(
+                value => value, value => value.HasValue ? DateTime.SpecifyKind(value.Value, DateTimeKind.Utc) : value);
+            b.Property(x => x.RevokedAtUtc).HasConversion(
+                value => value, value => value.HasValue ? DateTime.SpecifyKind(value.Value, DateTimeKind.Utc) : value);
+            b.HasIndex(x => new { x.TenantScopeKey, x.ProposalId, x.ProposalVersion }).IsUnique();
+            b.HasIndex(x => new { x.TenantScopeKey, x.RequestId }).IsUnique();
+            b.HasIndex(x => new { x.TenantId, x.State, x.ProposedAtUtc });
+        });
+
+        builder.Entity<Knowledge.KnowledgeRelationApplicationIntent>(b =>
+        {
+            b.ToTable(SufiAIDbProperties.DbTablePrefix + "KnowledgeRelationApplicationIntents", SufiAIDbProperties.DbSchema);
+            b.ConfigureByConvention();
+            b.Property(x => x.TenantScopeKey).IsRequired().HasMaxLength(32);
+            b.Property(x => x.ScopeType).IsRequired().HasMaxLength(96);
+            b.Property(x => x.SourceType).IsRequired().HasMaxLength(96);
+            b.Property(x => x.TargetType).IsRequired().HasMaxLength(96);
+            b.Property(x => x.Reason).IsRequired().HasMaxLength(1024);
+            b.Property(x => x.FailureReason).HasMaxLength(1024);
+            b.Property(x => x.CreatedAtUtc).HasConversion(
+                value => value, value => DateTime.SpecifyKind(value, DateTimeKind.Utc));
+            b.Property(x => x.AppliedAtUtc).HasConversion(
+                value => value, value => value.HasValue ? DateTime.SpecifyKind(value.Value, DateTimeKind.Utc) : value);
+            b.Property(x => x.NeedsReviewAtUtc).HasConversion(
+                value => value, value => value.HasValue ? DateTime.SpecifyKind(value.Value, DateTimeKind.Utc) : value);
+            b.HasIndex(x => new { x.TenantId, x.State, x.CreatedAtUtc });
+            b.HasIndex(x => new { x.TenantScopeKey, x.ProposalId, x.ProposalVersion }).IsUnique();
+        });
+
         builder.Entity<Workspace>(b =>
         {
             b.ToTable(SufiAIDbProperties.DbTablePrefix + "Workspaces", SufiAIDbProperties.DbSchema);

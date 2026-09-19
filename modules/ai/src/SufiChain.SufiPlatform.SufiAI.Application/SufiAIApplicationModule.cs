@@ -3,6 +3,7 @@ using SufiChain.SufiPlatform.SufiAI.Configuration;
 using SufiChain.SufiPlatform.Ddd;
 using SufiChain.SufiPlatform.FileManager.Configuration;
 using SufiChain.SufiPlatform.Localization;
+using SufiChain.SufiPlatform.Tags;
 using Volo.Abp.Modularity;
 
 using Volo.Abp.Mapperly;
@@ -12,6 +13,8 @@ namespace SufiChain.SufiPlatform.SufiAI;
     typeof(SufiChain.SufiPlatform.Settings.SufiSettingsDomainModule),
     typeof(SufiAIDomainModule),
     typeof(SufiAIApplicationContractsModule),
+    typeof(SufiTagsAbstractionsModule),
+    typeof(SufiTagsDomainSharedModule),
     typeof(SufiLocalizationApplicationContractsModule),
     typeof(SufiDddApplicationModule),
     typeof(AbpMapperlyModule)

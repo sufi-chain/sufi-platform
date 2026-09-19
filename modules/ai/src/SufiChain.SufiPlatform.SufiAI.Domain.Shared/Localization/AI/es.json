@@ -1,6 +1,8 @@
 {
   "culture": "es",
   "texts": {
+    "AI:KnowledgeReviewInvalid": "La revisión de conocimiento está desactualizada o su cambio de estado no es válido.",
+    "AI:KnowledgeReviewDenied": "La propuesta de conocimiento no puede crearse ni revisarse con la identidad, el permiso o la evidencia actuales.",
     "AI:ApiBaseUrlRequired": "Se requiere la URL base de la API para el proveedor {Provider} en el espacio de trabajo '{WorkspaceName}'.",
     "AI:ApiKeyRequired": "Se requiere la clave API para el proveedor {Provider} en el espacio de trabajo '{WorkspaceName}'.",
     "AI:UnsupportedProvider": "El proveedor de IA '{Provider}' no es compatible.",

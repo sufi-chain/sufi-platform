@@ -1,6 +1,8 @@
 {
   "culture": "ar",
   "texts": {
+    "AI:KnowledgeReviewInvalid": "مراجعة المعرفة قديمة أو أن انتقال حالتها غير صالح.",
+    "AI:KnowledgeReviewDenied": "لا يمكن إنشاء مقترح المعرفة أو مراجعته بالهوية أو الإذن أو الدليل الحالي.",
     "AI:ApiBaseUrlRequired": "عنوان URL الأساسي لواجهة برمجة التطبيقات مطلوب لمزود {Provider} في مساحة العمل '{WorkspaceName}'.",
     "AI:ApiKeyRequired": "مفتاح API مطلوب لمزود {Provider} في مساحة العمل '{WorkspaceName}'.",
     "AI:ProviderRequestFailed": "تعذّر على مزود الذكاء الاصطناعي إكمال الطلب (HTTP {StatusCode}). يرجى المحاولة مرة أخرى بعد لحظات.",
