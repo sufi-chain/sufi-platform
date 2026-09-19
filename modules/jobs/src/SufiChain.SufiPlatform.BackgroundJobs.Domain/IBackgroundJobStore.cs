@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
+using BackgroundJobNameFilter = Volo.Abp.BackgroundJobs.BackgroundJobNameFilter;
 
 namespace SufiChain.SufiPlatform.BackgroundJobs;
 
@@ -24,7 +26,7 @@ public interface IBackgroundJobStore
 
     /// <summary>
     /// Gets waiting jobs. It should get jobs based on these:
-    /// Conditions: ApplicationName is applicationName And !IsAbandoned And NextTryTime &lt;= Clock.Now.
+    /// Conditions: ApplicationName is applicationName And !IsAbandoned And CompletionTime == null And NextTryTime &lt;= Clock.Now.
     /// Order by: Priority DESC, TryCount ASC, NextTryTime ASC.
     /// Maximum result: <paramref name="maxResultCount"/>.
     /// </summary>
@@ -33,10 +35,28 @@ public interface IBackgroundJobStore
     Task<List<BackgroundJobInfo>> GetWaitingJobsAsync(string? applicationName, int maxResultCount);
 
     /// <summary>
+    /// Gets waiting jobs, additionally filtered by job name according to <paramref name="jobNameFilter"/>.
+    /// </summary>
+    Task<List<BackgroundJobInfo>> GetWaitingJobsAsync(
+        string? applicationName,
+        int maxResultCount,
+        BackgroundJobNameFilter? jobNameFilter);
+
+    /// <summary>
     /// Deletes a job.
     /// </summary>
     /// <param name="jobId">The Job Unique Identifier.</param>
     Task DeleteAsync(Guid jobId);
+
+    /// <summary>
+    /// Deletes successfully completed jobs of the given application that completed before
+    /// <paramref name="completedBefore"/>. Used by the retention cleanup.
+    /// </summary>
+    Task<int> DeleteAsync(
+        string? applicationName,
+        DateTime completedBefore,
+        int maxResultCount,
+        CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Updates a job.

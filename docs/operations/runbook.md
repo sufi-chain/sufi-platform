@@ -45,7 +45,7 @@ Module-specific notes:
 ## Maintenance cadence
 
 - Review NuGet updates against `versions.props`
-- Align ABP upgrades with the pinned ABP minor line (currently 10.3.0)
+- Align ABP upgrades with the pinned ABP minor line (currently 10.6.1)
 - Rotate TLS certificates with overlap so hosts stay available
 
 ## Related

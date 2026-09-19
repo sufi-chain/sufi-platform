@@ -8,7 +8,7 @@ Exact versions are defined in `sufi-platform/versions.props`. Treat that file as
 |------------|-------|
 | .NET 10 | Runtime and SDK for hosts, modules, and framework implementations |
 | ASP.NET Core / Blazor 10 | Server and WebAssembly hosts |
-| ABP Framework 10.3.0 | Upstream modular platform (`Volo.Abp.*`); Sufi Platform is not a fork |
+| ABP Framework 10.6.1 | Upstream modular platform (`Volo.Abp.*`); Sufi Platform is not a fork |
 
 ## Data and storage
 

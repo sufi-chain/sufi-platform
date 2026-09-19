@@ -31,7 +31,7 @@ SufiBlazor and SufiTheme are developed and versioned independently. Detailed com
 
 | Area | Libraries | Notes |
 | --- | --- | --- |
-| Framework | ABP Framework (`Volo.Abp.*`) 10.3.0 | Modularity, permissions, tenancy, persistence foundations |
+| Framework | ABP Framework (`Volo.Abp.*`) 10.6.1 | Modularity, permissions, tenancy, persistence foundations |
 | Runtime | ASP.NET Core 10 and Blazor | Main runtime stack |
 | Data | Entity Framework Core 10, MongoDB driver | Dual persistence option |
 | AI | Semantic Kernel, Microsoft.Extensions.AI | Framework SufiAI + AI module |
