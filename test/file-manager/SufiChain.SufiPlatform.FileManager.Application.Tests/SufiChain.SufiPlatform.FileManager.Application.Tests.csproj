@@ -8,8 +8,10 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\modules\file-manager\src\SufiChain.SufiPlatform.FileManager.Application\SufiChain.SufiPlatform.FileManager.Application.csproj" />
+    <ProjectReference Include="..\..\..\framework\SufiChain.SufiPlatform.BlobStoring.S3Provider\SufiChain.SufiPlatform.BlobStoring.S3Provider.csproj" />
     <ProjectReference Include="..\SufiChain.SufiPlatform.FileManager.Domain.Tests\SufiChain.SufiPlatform.FileManager.Domain.Tests.csproj" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="$(MicrosoftNetTestSdkVersion)" />
+    <PackageReference Include="NSubstitute" Version="$(NSubstituteVersion)" />
     <PackageReference Include="Shouldly" Version="$(ShouldlyVersion)" />
     <PackageReference Include="xunit" Version="$(XunitVersion)" />
     <PackageReference Include="xunit.runner.visualstudio" Version="$(XunitRunnerVisualStudioVersion)" PrivateAssets="All" />

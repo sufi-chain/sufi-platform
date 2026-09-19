@@ -175,34 +175,19 @@ public class FileItemBlobAccessService
             return new FileContentResultDto();
         }
 
-        using (_currentTenant.Change(metadata.TenantId))
-        {
-            var container = await _structureBlobContainerProvider.GetContainerAsync(
-                metadata.StructureKey,
-                metadata.StorageProvider);
-            await using (var stream = await container.GetOrNullAsync(metadata.BlobName))
-            {
-                if (stream == null)
-                {
-                    _logger.LogWarning("Blob not found for download: FileId={FileId}, BlobName={BlobName}, StructureKey={StructureKey}, TenantId={TenantId}",
-                        id, metadata.BlobName, metadata.StructureKey, metadata.TenantId);
-                    return new FileContentResultDto();
-                }
+        return await ReadBlobContentAsync(id, metadata);
+    }
 
-                using var ms = new MemoryStream();
-                await stream.CopyToAsync(ms);
-                var blob = ms.ToArray();
-                return new FileContentResultDto
-                {
-                    Content = new FileContentDto
-                    {
-                        Content = blob,
-                        MimeType = metadata.MimeType,
-                        FileName = metadata.OriginalName
-                    }
-                };
-            }
-        }
+    /// <summary>
+    /// Reads bytes for trusted in-process module callers.
+    /// Does not apply token, public-structure, or HTTP-user checks.
+    /// The current tenant data filter still applies.
+    /// Callers must authorize the file in their own domain.
+    /// </summary>
+    public virtual async Task<FileContentResultDto> GetContentForIntegrationAsync(Guid id)
+    {
+        var fileItem = await _fileItemRepository.GetAsync(id);
+        return await ReadBlobContentAsync(id, MapToStreamMetadata(fileItem));
     }
 
     public virtual async Task<StreamContentResultDto> GetStreamContentAsync(Guid id, string? token)
@@ -284,6 +269,38 @@ public class FileItemBlobAccessService
                         Content = blob,
                         MimeType = "image/webp",
                         FileName = "thumb.webp"
+                    }
+                };
+            }
+        }
+    }
+
+    protected virtual async Task<FileContentResultDto> ReadBlobContentAsync(Guid id, FileStreamMetadataDto metadata)
+    {
+        using (_currentTenant.Change(metadata.TenantId))
+        {
+            var container = await _structureBlobContainerProvider.GetContainerAsync(
+                metadata.StructureKey,
+                metadata.StorageProvider);
+            await using (var stream = await container.GetOrNullAsync(metadata.BlobName))
+            {
+                if (stream == null)
+                {
+                    _logger.LogWarning("Blob not found for download: FileId={FileId}, BlobName={BlobName}, StructureKey={StructureKey}, TenantId={TenantId}",
+                        id, metadata.BlobName, metadata.StructureKey, metadata.TenantId);
+                    return new FileContentResultDto();
+                }
+
+                using var ms = new MemoryStream();
+                await stream.CopyToAsync(ms);
+                var blob = ms.ToArray();
+                return new FileContentResultDto
+                {
+                    Content = new FileContentDto
+                    {
+                        Content = blob,
+                        MimeType = metadata.MimeType,
+                        FileName = metadata.OriginalName
                     }
                 };
             }

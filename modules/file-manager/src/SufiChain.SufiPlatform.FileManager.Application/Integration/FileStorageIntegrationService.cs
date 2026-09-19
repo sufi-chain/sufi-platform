@@ -5,6 +5,9 @@ namespace SufiChain.SufiPlatform.FileManager.Integration;
 
 /// <summary>
 /// Cross-module file storage integration service.
+/// Get and content reads use the File Manager repository and blob access path.
+/// They do not require <c>SufiFileManager.FileItems</c>.
+/// Callers must authorize the file in their own domain.
 /// </summary>
 public class FileStorageIntegrationService : SufiApplicationService, IFileStorageIntegrationService
 {
@@ -12,12 +15,20 @@ public class FileStorageIntegrationService : SufiApplicationService, IFileStorag
 
     protected IFileAccessTokenService FileAccessTokenService { get; }
 
+    protected IFileItemRepository FileItemRepository { get; }
+
+    protected FileItemBlobAccessService BlobAccessService { get; }
+
     public FileStorageIntegrationService(
         IFileItemAppService fileItemAppService,
-        IFileAccessTokenService fileAccessTokenService)
+        IFileAccessTokenService fileAccessTokenService,
+        IFileItemRepository fileItemRepository,
+        FileItemBlobAccessService blobAccessService)
     {
         FileItemAppService = fileItemAppService;
         FileAccessTokenService = fileAccessTokenService;
+        FileItemRepository = fileItemRepository;
+        BlobAccessService = blobAccessService;
     }
 
     public virtual async Task<FileReferenceDto> UploadAsync(FileUploadRequest input)
@@ -42,13 +53,13 @@ public class FileStorageIntegrationService : SufiApplicationService, IFileStorag
 
     public virtual async Task<FileReferenceDto> GetAsync(Guid id)
     {
-        var fileItem = await FileItemAppService.GetAsync(id);
+        var fileItem = await FileItemRepository.GetAsync(id, cancellationToken: default);
         return MapToFileReferenceDto(fileItem);
     }
 
     public virtual async Task<FileContentBytesDto> GetContentAsync(Guid id)
     {
-        var result = await FileItemAppService.GetDownloadContentAsync(id, token: null);
+        var result = await BlobAccessService.GetContentForIntegrationAsync(id);
         if (result.IsForbidden)
         {
             throw new Volo.Abp.Authorization.AbpAuthorizationException(
@@ -82,23 +93,57 @@ public class FileStorageIntegrationService : SufiApplicationService, IFileStorag
 
     protected virtual FileReferenceDto MapToFileReferenceDto(FileItemDto fileItem)
     {
+        return MapToFileReferenceDto(
+            fileItem.Id,
+            fileItem.OriginalName,
+            fileItem.MimeType,
+            fileItem.Size,
+            fileItem.StructureKey,
+            fileItem.EntityType,
+            fileItem.EntityId,
+            fileItem.TenantId);
+    }
+
+    protected virtual FileReferenceDto MapToFileReferenceDto(FileItem fileItem)
+    {
+        return MapToFileReferenceDto(
+            fileItem.Id,
+            fileItem.OriginalName,
+            fileItem.MimeType,
+            fileItem.Size,
+            fileItem.StructureKey,
+            fileItem.EntityType,
+            fileItem.EntityId,
+            fileItem.TenantId);
+    }
+
+    protected virtual FileReferenceDto MapToFileReferenceDto(
+        Guid id,
+        string fileName,
+        string mimeType,
+        long sizeInBytes,
+        string? structureKey,
+        string? entityType,
+        Guid? entityId,
+        Guid? tenantId)
+    {
         string? accessToken = null;
-        if (FileAccessTokenService.TryGenerateToken(fileItem.Id, out var token))
+        if (FileAccessTokenService.TryGenerateToken(id, out var token))
         {
             accessToken = token;
         }
 
         return new FileReferenceDto
         {
-            Id = fileItem.Id,
-            FileName = fileItem.OriginalName,
-            MimeType = fileItem.MimeType,
-            SizeInBytes = fileItem.Size,
+            Id = id,
+            FileName = fileName,
+            MimeType = mimeType,
+            SizeInBytes = sizeInBytes,
             AccessToken = accessToken,
-            StructureKey = fileItem.StructureKey,
-            EntityType = fileItem.EntityType,
-            EntityId = fileItem.EntityId,
-            TenantId = fileItem.TenantId
+            StructureKey = structureKey,
+            EntityType = entityType,
+            EntityId = entityId,
+            TenantId = tenantId
         };
     }
 }
