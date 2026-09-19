@@ -122,7 +122,7 @@ public partial class SufiCalendarView : CalendarPublicComponentBase
     protected virtual async Task GoToTodayAsync()
     {
         CloseEventsPopover();
-        Date = DateTime.Today;
+        Date = GetTodayLocalDate();
         await DateChanged.InvokeAsync(Date);
         BuildVisibleDays();
         await LoadOccurrencesAsync();
@@ -315,6 +315,11 @@ public partial class SufiCalendarView : CalendarPublicComponentBase
             classes += " sufi-calendar-view__day--closed";
         }
 
+        if (day.Date == GetTodayLocalDate())
+        {
+            classes += " sufi-calendar-view__day--today";
+        }
+
         if (IsEventsPopoverOpen(day))
         {
             classes += " sufi-calendar-view__day--events-open";
@@ -454,6 +459,22 @@ public partial class SufiCalendarView : CalendarPublicComponentBase
     private DateTime ToUtc(DateTime local)
     {
         return TimeZoneInfo.ConvertTimeToUtc(DateTime.SpecifyKind(local, DateTimeKind.Unspecified), ResolveTimeZone());
+    }
+
+    private DateTime GetTodayLocalDate()
+    {
+        try
+        {
+            return TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, ResolveTimeZone()).Date;
+        }
+        catch (TimeZoneNotFoundException)
+        {
+            return DateTime.Today;
+        }
+        catch (InvalidTimeZoneException)
+        {
+            return DateTime.Today;
+        }
     }
 
     private TimeZoneInfo ResolveTimeZone()

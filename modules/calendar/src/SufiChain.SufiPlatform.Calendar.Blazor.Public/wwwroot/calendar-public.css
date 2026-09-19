@@ -280,6 +280,18 @@
     box-shadow: inset 0 0 0 1px var(--sb-color-primary);
 }
 
+.sufi-calendar-view__day--today .sufi-calendar-view__day-number {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 1.75rem;
+    height: 1.75rem;
+    padding-inline: 0.35rem;
+    border-radius: 999px;
+    background: var(--sb-color-primary);
+    color: var(--sb-color-on-primary, #fff);
+}
+
 /* Closed / off-day from calendar exceptions (own or inherited parent) */
 .sufi-calendar-view__day--closed {
     border-color: color-mix(
