@@ -21,6 +21,32 @@ public partial class CopilotRuntimeRagWorkspaceTests
     private const string IndexingWorkspaceName = "helpdesk-rag-indexing";
 
     [Fact]
+    public async Task Structured_response_contract_survives_orchestration_without_enabling_tools()
+    {
+        var fixture = CreateFixture(Guid.NewGuid(), [], null);
+        fixture.Definition.SetRuntimeOptions(new CopilotRuntimeOptions { UseRag = false, UseMcpTools = false });
+        var schema = new SufiAIJsonResponseSchema
+        {
+            Name = "reply", SchemaJson = """{"type":"object","properties":{},"additionalProperties":false}"""
+        };
+        var result = await fixture.Orchestrator.PrepareRequestAsync(fixture.Definition, new CopilotRuntimeRequestDto
+        {
+            CopilotId = fixture.Definition.Id, Message = "Return JSON", ResponseSchema = schema
+        });
+        result.Request.ResponseSchema.ShouldBeSameAs(schema);
+        result.UsedMcp.ShouldBeFalse();
+        // The application request audit includes the effective schema.
+        System.Text.Json.JsonSerializer.Serialize(result.Request).ShouldContain("ResponseSchema");
+    }
+
+    [Fact]
+    public void Incoming_chat_json_cannot_override_the_server_response_contract()
+    {
+        const string json = """{"Message":"hi","ResponseSchema":{"Name":"untrusted","SchemaJson":"{}"}}""";
+        System.Text.Json.JsonSerializer.Deserialize<CopilotRuntimeRequestDto>(json)!.ResponseSchema.ShouldBeNull();
+    }
+
+    [Fact]
     public async Task Should_Search_Project_RagIndexing_Workspace_When_Bound_Even_If_Chat_Workspace_Differs()
     {
         var projectId = Guid.NewGuid();
@@ -43,7 +69,7 @@ public partial class CopilotRuntimeRagWorkspaceTests
         result.WorkspaceBinding.WorkspaceName.ShouldBe(ChatWorkspaceName);
         result.Request.SystemPrompt.ShouldContain("Retrieved context:");
         result.Request.Messages.ShouldNotContain(message =>
-            message.Role == "system" && (message.Content?.Contains("Retrieved context:") ?? false));
+            message.Role == "system" && message.Content != null && message.Content.Contains("Retrieved context:"));
 
         await fixture.Rag.Received(1).SearchAsync(
             Arg.Is<SufiAIRagSearchRequest>(request =>
@@ -181,7 +207,7 @@ public partial class CopilotRuntimeRagWorkspaceTests
         result.Request.SystemPrompt.ShouldContain("Retrieved context:");
         result.Request.SystemPrompt.ShouldContain("سیستم‌عامل کسب‌وکار");
         result.Request.Messages.ShouldNotContain(message =>
-            message.Role == "system" && (message.Content?.Contains("Retrieved context:") ?? false));
+            message.Role == "system" && message.Content != null && message.Content.Contains("Retrieved context:"));
         await fixture.Rag.Received().SearchAsync(
             Arg.Is<SufiAIRagSearchRequest>(request =>
                 request.MinSimilarity == CopilotRagRuntimeOptionsDefaults.ArticleExpandMinSimilarity &&
@@ -228,6 +254,142 @@ public partial class CopilotRuntimeRagWorkspaceTests
 
         exception.Code.ShouldBe("SufiAICopilots:RagProjectBindingRequired");
         await fixture.Rag.DidNotReceive().SearchAsync(Arg.Any<SufiAIRagSearchRequest>(), Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task Should_Continue_Without_Throwing_When_Rag_Search_Fails()
+    {
+        var projectId = Guid.NewGuid();
+        var fixture = CreateFixture(projectId, boundProjectIds: [projectId], indexingWorkspaceName: IndexingWorkspaceName);
+        fixture.Rag.SearchAsync(Arg.Any<SufiAIRagSearchRequest>(), Arg.Any<CancellationToken>())
+            .Returns(Task.FromException<SufiAIRagSearchResult>(
+                new InvalidOperationException("Embedding provider returned HTTP 401")));
+        var input = new CopilotRuntimeRequestDto
+        {
+            CopilotId = fixture.Definition.Id,
+            Message = "What is Sufi Platform?",
+            MetadataJson = CopilotRequestContextMetadata.Merge(
+                null,
+                new Dictionary<string, string> { ["projectId"] = projectId.ToString("D") })
+        };
+
+        var result = await fixture.Orchestrator.PrepareRequestAsync(fixture.Definition, input);
+
+        result.UsedRag.ShouldBeFalse();
+        result.RetrievedChunkCount.ShouldBe(0);
+        result.RagSearch.Outcome.ShouldBe(CopilotRagSearchOutcome.Unavailable);
+        result.Request.SystemPrompt.ShouldContain(CopilotRagRuntimeOptionsDefaults.RagUnavailableNotice);
+        result.Request.SystemPrompt.ShouldContain("RAG Indexing");
+        result.Request.SystemPrompt.ShouldContain("assign a copilot using a workspace whose Embeddings connection test succeeds");
+        result.Request.SystemPrompt.ShouldNotContain("Embedding provider returned HTTP 401");
+        result.Request.SystemPrompt.ShouldNotContain("Retrieved context:");
+        await fixture.Circuit.Received(1).OpenAsync(
+            IndexingWorkspaceName,
+            nameof(InvalidOperationException),
+            Arg.Any<CancellationToken>());
+        await fixture.ProgressReporter.Received().ReportAsync(
+            Arg.Is<CopilotTurnProgressDto>(progress =>
+                progress.Stage == CopilotTurnProgressStages.SearchingKb
+                && progress.Status == CopilotTurnProgressStatuses.Failed),
+            Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task Should_Skip_Rag_Search_When_Circuit_Is_Open()
+    {
+        var projectId = Guid.NewGuid();
+        var fixture = CreateFixture(projectId, boundProjectIds: [projectId], indexingWorkspaceName: IndexingWorkspaceName);
+        fixture.Circuit.IsOpenAsync(Arg.Any<string>(), Arg.Any<CancellationToken>()).Returns(true);
+        var input = new CopilotRuntimeRequestDto
+        {
+            CopilotId = fixture.Definition.Id,
+            Message = "What is Sufi Platform?",
+            MetadataJson = CopilotRequestContextMetadata.Merge(
+                null,
+                new Dictionary<string, string> { ["projectId"] = projectId.ToString("D") })
+        };
+
+        var result = await fixture.Orchestrator.PrepareRequestAsync(fixture.Definition, input);
+
+        result.RagSearch.Outcome.ShouldBe(CopilotRagSearchOutcome.SkippedCircuitOpen);
+        result.Request.SystemPrompt.ShouldContain(CopilotRagRuntimeOptionsDefaults.RagUnavailableNotice);
+        result.Request.SystemPrompt.ShouldContain("RAG Indexing");
+        result.Request.SystemPrompt.ShouldContain("assign a copilot using a workspace whose Embeddings connection test succeeds");
+        result.Request.SystemPrompt.ShouldNotContain("Embedding provider returned HTTP 401");
+        await fixture.Planner.DidNotReceive().DecideAsync(Arg.Any<CopilotRagPlannerRequest>(), Arg.Any<CancellationToken>());
+        await fixture.Rag.DidNotReceive().SearchAsync(Arg.Any<SufiAIRagSearchRequest>(), Arg.Any<CancellationToken>());
+        await fixture.ProgressReporter.DidNotReceive().ReportAsync(
+            Arg.Is<CopilotTurnProgressDto>(progress => progress.Stage == CopilotTurnProgressStages.SearchingKb),
+            Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task Should_Skip_Rag_Search_When_Planner_Does_Not_Need_Knowledge()
+    {
+        var projectId = Guid.NewGuid();
+        var fixture = CreateFixture(projectId, boundProjectIds: [projectId], indexingWorkspaceName: IndexingWorkspaceName);
+        fixture.Planner.DecideAsync(Arg.Any<CopilotRagPlannerRequest>(), Arg.Any<CancellationToken>())
+            .Returns(new CopilotRagPlannerDecision
+            {
+                SearchKb = false,
+                Memory = "User greeted; no product question yet.",
+                Succeeded = true
+            });
+        var input = new CopilotRuntimeRequestDto
+        {
+            CopilotId = fixture.Definition.Id,
+            Message = "سلام",
+            SessionSummary = "Earlier the user asked about licensing.",
+            MetadataJson = CopilotRequestContextMetadata.Merge(
+                null,
+                new Dictionary<string, string> { ["projectId"] = projectId.ToString("D") })
+        };
+
+        var result = await fixture.Orchestrator.PrepareRequestAsync(fixture.Definition, input);
+
+        result.RagSearch.Outcome.ShouldBe(CopilotRagSearchOutcome.SkippedByPlanner);
+        result.UsedRag.ShouldBeFalse();
+        result.SessionMemory.ShouldBe("User greeted; no product question yet.");
+        result.SessionMemoryChanged.ShouldBeTrue();
+        result.Request.Messages.ShouldContain(message =>
+            message.Role == "system"
+            && message.Content != null
+            && message.Content.Contains("User greeted; no product question yet."));
+        await fixture.Rag.DidNotReceive().SearchAsync(Arg.Any<SufiAIRagSearchRequest>(), Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task Should_Search_With_Planner_Query_When_Planner_Requests_Knowledge()
+    {
+        var projectId = Guid.NewGuid();
+        var fixture = CreateFixture(projectId, boundProjectIds: [projectId], indexingWorkspaceName: IndexingWorkspaceName);
+        fixture.Planner.DecideAsync(Arg.Any<CopilotRagPlannerRequest>(), Arg.Any<CancellationToken>())
+            .Returns(new CopilotRagPlannerDecision
+            {
+                SearchKb = true,
+                Query = "Sufi Platform license",
+                Memory = "User wants licensing facts.",
+                Succeeded = true
+            });
+        var input = new CopilotRuntimeRequestDto
+        {
+            CopilotId = fixture.Definition.Id,
+            Message = "what about its license?",
+            MetadataJson = CopilotRequestContextMetadata.Merge(
+                null,
+                new Dictionary<string, string> { ["projectId"] = projectId.ToString("D") })
+        };
+
+        var result = await fixture.Orchestrator.PrepareRequestAsync(fixture.Definition, input);
+
+        result.UsedRag.ShouldBeTrue();
+        result.RagSearch.QueryMode.ShouldBe(CopilotRagQueryMode.Planned);
+        result.SessionMemory.ShouldBe("User wants licensing facts.");
+        await fixture.Rag.Received().SearchAsync(
+            Arg.Is<SufiAIRagSearchRequest>(request =>
+                request.Query == "Sufi Platform license"
+                && request.WorkspaceName == IndexingWorkspaceName),
+            Arg.Any<CancellationToken>());
     }
 
     private static Fixture CreateFixture(Guid projectId, Guid[] boundProjectIds, string? indexingWorkspaceName)
@@ -301,8 +463,29 @@ public partial class CopilotRuntimeRagWorkspaceTests
 
         var localizers = Substitute.For<IStringLocalizerFactory>();
         var progressReporter = Substitute.For<ICopilotTurnProgressReporter>();
-        var orchestrator = new CopilotRuntimeOrchestrator(
+        var planner = Substitute.For<ICopilotRagSearchPlanner>();
+        planner.DecideAsync(Arg.Any<CopilotRagPlannerRequest>(), Arg.Any<CancellationToken>())
+            .Returns(call =>
+            {
+                var request = call.Arg<CopilotRagPlannerRequest>();
+                return new CopilotRagPlannerDecision
+                {
+                    SearchKb = true,
+                    Query = request.Input.Message,
+                    Memory = request.PriorMemory,
+                    Succeeded = true
+                };
+            });
+        var circuit = Substitute.For<ICopilotRagCircuitStore>();
+        circuit.IsOpenAsync(Arg.Any<string>(), Arg.Any<CancellationToken>()).Returns(false);
+        var retrieval = new CopilotRagRetrievalService(
             rag,
+            planner,
+            circuit,
+            progressReporter,
+            NullLogger<CopilotRagRetrievalService>.Instance);
+        var orchestrator = new CopilotRuntimeOrchestrator(
+            retrieval,
             bindings,
             Substitute.For<IMCPToolRegistry>(),
             new CopilotBusinessLocalizationService(localizers),
@@ -310,13 +493,12 @@ public partial class CopilotRuntimeRagWorkspaceTests
             workspaceResolver,
             runtimeResolver,
             new CopilotContextTokenEstimator(),
-            progressReporter,
             Substitute.For<IWorkspaceGuardrailService>(),
             indexingWorkspaceResolver,
             Substitute.For<ICopilotContextFieldRegistry>(),
             NullLogger<CopilotRuntimeOrchestrator>.Instance);
 
-        return new Fixture(definition, rag, indexingWorkspaceResolver, orchestrator, progressReporter);
+        return new Fixture(definition, rag, indexingWorkspaceResolver, orchestrator, progressReporter, planner, circuit);
     }
 
     private sealed record Fixture(
@@ -324,5 +506,7 @@ public partial class CopilotRuntimeRagWorkspaceTests
         ISufiAIRagService Rag,
         ICopilotRagIndexingWorkspaceResolver IndexingWorkspaceResolver,
         CopilotRuntimeOrchestrator Orchestrator,
-        ICopilotTurnProgressReporter ProgressReporter);
+        ICopilotTurnProgressReporter ProgressReporter,
+        ICopilotRagSearchPlanner Planner,
+        ICopilotRagCircuitStore Circuit);
 }

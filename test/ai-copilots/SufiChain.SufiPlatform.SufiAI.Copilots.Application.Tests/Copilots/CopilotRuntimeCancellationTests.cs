@@ -31,7 +31,7 @@ public class CopilotRuntimeCancellationTests
             .Do(call => call.Arg<CancellationToken>().ThrowIfCancellationRequested());
 
         var orchestrator = new CopilotRuntimeOrchestrator(
-            Substitute.For<ISufiAIRagService>(),
+            CopilotRuntimeTestSupport.CreateRagRetrieval(),
             Substitute.For<ICopilotRagProjectBindingRepository>(),
             Substitute.For<IMCPToolRegistry>(),
             new CopilotBusinessLocalizationService(Substitute.For<IStringLocalizerFactory>()),
@@ -39,7 +39,6 @@ public class CopilotRuntimeCancellationTests
             workspaceResolver,
             Substitute.For<IWorkspaceRuntimeConfigurationResolver>(),
             new CopilotContextTokenEstimator(),
-            Substitute.For<ICopilotTurnProgressReporter>(),
             Substitute.For<IWorkspaceGuardrailService>(),
             Substitute.For<ICopilotRagIndexingWorkspaceResolver>(),
             Substitute.For<ICopilotContextFieldRegistry>(),

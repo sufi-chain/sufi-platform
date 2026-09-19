@@ -63,9 +63,8 @@ public class CopilotRuntimeContextSegmentsTests
                 IsReady = true
             });
         var orchestrator = new CopilotRuntimeOrchestrator(
-            rag, Substitute.For<ICopilotRagProjectBindingRepository>(), tools,
+            CopilotRuntimeTestSupport.CreateRagRetrieval(rag, searchKb: true), Substitute.For<ICopilotRagProjectBindingRepository>(), tools,
             new CopilotBusinessLocalizationService(localizers), localizers, resolver, runtimeResolver, estimator,
-            Substitute.For<ICopilotTurnProgressReporter>(),
             Substitute.For<IWorkspaceGuardrailService>(),
             new NullCopilotRagIndexingWorkspaceResolver(),
             Substitute.For<ICopilotContextFieldRegistry>(),

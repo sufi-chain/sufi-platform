@@ -177,7 +177,7 @@ public class CopilotRuntimeModelSelectionTests
             });
 
         var orchestrator = new CopilotRuntimeOrchestrator(
-            Substitute.For<ISufiAIRagService>(),
+            CopilotRuntimeTestSupport.CreateRagRetrieval(),
             Substitute.For<ICopilotRagProjectBindingRepository>(),
             tools,
             new CopilotBusinessLocalizationService(Substitute.For<IStringLocalizerFactory>()),
@@ -185,7 +185,6 @@ public class CopilotRuntimeModelSelectionTests
             resolver,
             runtimeResolver,
             new CopilotContextTokenEstimator(),
-            Substitute.For<ICopilotTurnProgressReporter>(),
             Substitute.For<IWorkspaceGuardrailService>(),
             new NullCopilotRagIndexingWorkspaceResolver(),
             Substitute.For<ICopilotContextFieldRegistry>(),
