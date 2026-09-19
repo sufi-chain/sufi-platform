@@ -9,25 +9,25 @@ public static class BusinessLocalizationKeys
 
     public static string FileStructureDescription(string structureKey) => $"Structure:{structureKey}:Description";
 
-    public static string CopilotDisplayName(string copilotKey) => $"Copilot:{copilotKey}:DisplayName";
+    public static string HooshvareDisplayName(string hooshvareKey) => $"Hooshvare:{hooshvareKey}:DisplayName";
 
-    public static string CopilotDescription(string copilotKey) => $"Copilot:{copilotKey}:Description";
+    public static string HooshvareDescription(string hooshvareKey) => $"Hooshvare:{hooshvareKey}:Description";
 
-    public static string CopilotSystemPrompt(string copilotKey) => $"Copilot:{copilotKey}:SystemPrompt";
+    public static string HooshvareSystemPrompt(string hooshvareKey) => $"Hooshvare:{hooshvareKey}:SystemPrompt";
 
-    public static string CopilotShortcut(string copilotKey, string shortcutId) => $"Copilot:{copilotKey}:Shortcut:{shortcutId}";
+    public static string HooshvareShortcut(string hooshvareKey, string shortcutId) => $"Hooshvare:{hooshvareKey}:Shortcut:{shortcutId}";
 
-    [Obsolete("Use copilot Key overloads. Guid-based keys break tenant-scoped copilots.")]
-    public static string CopilotDisplayName(Guid copilotId) => $"Copilot:{copilotId:D}:DisplayName";
+    [Obsolete("Use hooshvare Key overloads. Guid-based keys break tenant-scoped hooshvares.")]
+    public static string HooshvareDisplayName(Guid hooshvareId) => $"Hooshvare:{hooshvareId:D}:DisplayName";
 
-    [Obsolete("Use copilot Key overloads.")]
-    public static string CopilotDescription(Guid copilotId) => $"Copilot:{copilotId:D}:Description";
+    [Obsolete("Use hooshvare Key overloads.")]
+    public static string HooshvareDescription(Guid hooshvareId) => $"Hooshvare:{hooshvareId:D}:Description";
 
-    [Obsolete("Use copilot Key overloads.")]
-    public static string CopilotSystemPrompt(Guid copilotId) => $"Copilot:{copilotId:D}:SystemPrompt";
+    [Obsolete("Use hooshvare Key overloads.")]
+    public static string HooshvareSystemPrompt(Guid hooshvareId) => $"Hooshvare:{hooshvareId:D}:SystemPrompt";
 
-    [Obsolete("Use copilot Key overloads.")]
-    public static string CopilotShortcut(Guid copilotId, string shortcutId) => $"Copilot:{copilotId:D}:Shortcut:{shortcutId}";
+    [Obsolete("Use hooshvare Key overloads.")]
+    public static string HooshvareShortcut(Guid hooshvareId, string shortcutId) => $"Hooshvare:{hooshvareId:D}:Shortcut:{shortcutId}";
 
     public static string McpToolDisplayName(string toolName) => $"MCPTool:{toolName}:DisplayName";
 

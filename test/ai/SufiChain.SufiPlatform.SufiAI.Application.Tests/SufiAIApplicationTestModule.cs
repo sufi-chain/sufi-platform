@@ -27,7 +27,7 @@ public class SufiAIApplicationTestModule : AbpModule
     {
         context.Services.AddHttpClient();
         context.Services.Replace(
-            ServiceDescriptor.Transient<IAICopilotModelSelectionPolicyProvider, TestCopilotModelSelectionPolicyProvider>());
+            ServiceDescriptor.Transient<IAIHooshvareModelSelectionPolicyProvider, TestHooshvareModelSelectionPolicyProvider>());
         ConfigureInMemorySqlite(context.Services);
     }
 

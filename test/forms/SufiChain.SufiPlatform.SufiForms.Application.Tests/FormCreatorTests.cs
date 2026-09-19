@@ -3,8 +3,8 @@ using System.Net.Http;
 using Microsoft.Extensions.Logging;
 using NSubstitute;
 using Shouldly;
-using SufiChain.SufiPlatform.SufiAI.Copilots.Copilots;
-using SufiChain.SufiPlatform.SufiForms.Copilots;
+using SufiChain.SufiPlatform.SufiAI.Hooshvare.Hooshvare;
+using SufiChain.SufiPlatform.SufiForms.Hooshvare;
 using SufiChain.SufiPlatform.SufiForms.Enums;
 using SufiChain.SufiPlatform.SufiForms.Forms;
 using SufiChain.SufiPlatform.SufiForms.Forms.Dtos;
@@ -22,11 +22,11 @@ public class FormCreatorTests
     public async Task Conversation_requires_the_reply_schema_in_discovery_and_proposal(bool prepareProposal)
     {
         var turnId = Guid.NewGuid();
-        var runtime = Substitute.For<ICopilotRuntimeAppService>();
-        runtime.SendAsync(Arg.Any<CopilotRuntimeRequestDto>(), Arg.Any<CancellationToken>()).Returns(call =>
+        var runtime = Substitute.For<IHooshvareRuntimeAppService>();
+        runtime.SendAsync(Arg.Any<HooshvareRuntimeRequestDto>(), Arg.Any<CancellationToken>()).Returns(call =>
         {
-            var schema = call.Arg<CopilotRuntimeRequestDto>().ResponseSchema;
-            call.Arg<CopilotRuntimeRequestDto>().ProgressTurnId.ShouldBe(turnId);
+            var schema = call.Arg<HooshvareRuntimeRequestDto>().ResponseSchema;
+            call.Arg<HooshvareRuntimeRequestDto>().ProgressTurnId.ShouldBe(turnId);
             schema.ShouldNotBeNull();
             schema.Name.ShouldBe("form_creator_reply");
             using var json = JsonDocument.Parse(schema.SchemaJson);
@@ -35,7 +35,7 @@ public class FormCreatorTests
             json.RootElement.GetProperty("additionalProperties").GetBoolean().ShouldBeFalse();
             json.RootElement.GetProperty("properties").GetProperty("proposal").GetProperty("type")
                 .EnumerateArray().Select(x => x.GetString()).ShouldBe(new[] { "string", "null" });
-            return new CopilotRuntimeResultDto { Message = "{\"message\":\"Ready\",\"proposal\":null}", FinishReason = "stop" };
+            return new HooshvareRuntimeResultDto { Message = "{\"message\":\"Ready\",\"proposal\":null}", FinishReason = "stop" };
         });
         await new AuthorizedCreator(runtime, Substitute.For<IFormDefinitionAppService>())
             .ConverseAsync(new() { Message = "Design a form", PrepareProposal = prepareProposal, ProgressTurnId = turnId });
@@ -46,9 +46,9 @@ public class FormCreatorTests
     [InlineData("content_filter")]
     public async Task Incomplete_reply_is_rejected_even_when_it_contains_valid_json(string finishReason)
     {
-        var runtime = Substitute.For<ICopilotRuntimeAppService>();
-        runtime.SendAsync(Arg.Any<CopilotRuntimeRequestDto>(), Arg.Any<CancellationToken>())
-            .Returns(new CopilotRuntimeResultDto
+        var runtime = Substitute.For<IHooshvareRuntimeAppService>();
+        runtime.SendAsync(Arg.Any<HooshvareRuntimeRequestDto>(), Arg.Any<CancellationToken>())
+            .Returns(new HooshvareRuntimeResultDto
             {
                 Message = "{\"message\":\"Ready\",\"proposal\":\"Partial proposal\"}", FinishReason = finishReason
             });
@@ -56,7 +56,7 @@ public class FormCreatorTests
             new AuthorizedCreator(runtime, Substitute.For<IFormDefinitionAppService>())
                 .ConverseAsync(new() { Message = "Prepare proposal", PrepareProposal = true }));
         error.Code.ShouldBe("SufiForms:CreatorInvalidReply");
-        await runtime.Received(1).SendAsync(Arg.Any<CopilotRuntimeRequestDto>(), Arg.Any<CancellationToken>());
+        await runtime.Received(1).SendAsync(Arg.Any<HooshvareRuntimeRequestDto>(), Arg.Any<CancellationToken>());
     }
 
     [Theory]
@@ -66,14 +66,14 @@ public class FormCreatorTests
     [InlineData("```\n{\"message\":\"Ready\",\"proposal\":\"# Form\\n- Email\"}\n```")]
     public async Task Complete_reply_envelopes_preserve_proposal_markdown(string response)
     {
-        var runtime = Substitute.For<ICopilotRuntimeAppService>();
-        runtime.SendAsync(Arg.Any<CopilotRuntimeRequestDto>(), Arg.Any<CancellationToken>())
-            .Returns(new CopilotRuntimeResultDto { Message = response });
+        var runtime = Substitute.For<IHooshvareRuntimeAppService>();
+        runtime.SendAsync(Arg.Any<HooshvareRuntimeRequestDto>(), Arg.Any<CancellationToken>())
+            .Returns(new HooshvareRuntimeResultDto { Message = response });
         var reply = await new AuthorizedCreator(runtime, Substitute.For<IFormDefinitionAppService>())
             .ConverseAsync(new() { Message = "Prepare proposal", PrepareProposal = true });
         reply.Message.ShouldBe("Ready");
         reply.Proposal.ShouldBe("# Form\n- Email");
-        await runtime.Received(1).SendAsync(Arg.Any<CopilotRuntimeRequestDto>(), Arg.Any<CancellationToken>());
+        await runtime.Received(1).SendAsync(Arg.Any<HooshvareRuntimeRequestDto>(), Arg.Any<CancellationToken>());
     }
 
     [Theory]
@@ -91,14 +91,14 @@ public class FormCreatorTests
     [InlineData("```text\n{\"message\":\"Ready\"}\n```")]
     public async Task Invalid_reply_does_not_replay_tools_or_accept_a_proposal(string response)
     {
-        var runtime = Substitute.For<ICopilotRuntimeAppService>();
+        var runtime = Substitute.For<IHooshvareRuntimeAppService>();
         var forms = Substitute.For<IFormDefinitionAppService>();
-        runtime.SendAsync(Arg.Any<CopilotRuntimeRequestDto>(), Arg.Any<CancellationToken>())
-            .Returns(new CopilotRuntimeResultDto { Message = response });
+        runtime.SendAsync(Arg.Any<HooshvareRuntimeRequestDto>(), Arg.Any<CancellationToken>())
+            .Returns(new HooshvareRuntimeResultDto { Message = response });
         var error = await Should.ThrowAsync<BusinessException>(() => new AuthorizedCreator(runtime, forms)
             .ConverseAsync(new() { Message = "Prepare proposal", PrepareProposal = true }));
         error.Code.ShouldBe("SufiForms:CreatorInvalidReply");
-        await runtime.Received(1).SendAsync(Arg.Any<CopilotRuntimeRequestDto>(), Arg.Any<CancellationToken>());
+        await runtime.Received(1).SendAsync(Arg.Any<HooshvareRuntimeRequestDto>(), Arg.Any<CancellationToken>());
         await forms.DidNotReceiveWithAnyArgs().CreateAsync(default!);
     }
 
@@ -107,9 +107,9 @@ public class FormCreatorTests
     [InlineData(false)]
     public async Task Reply_fields_cannot_exceed_the_next_request_limits(bool oversizedMessage)
     {
-        var runtime = Substitute.For<ICopilotRuntimeAppService>();
-        runtime.SendAsync(Arg.Any<CopilotRuntimeRequestDto>(), Arg.Any<CancellationToken>())
-            .Returns(new CopilotRuntimeResultDto { Message = JsonSerializer.Serialize(new
+        var runtime = Substitute.For<IHooshvareRuntimeAppService>();
+        runtime.SendAsync(Arg.Any<HooshvareRuntimeRequestDto>(), Arg.Any<CancellationToken>())
+            .Returns(new HooshvareRuntimeResultDto { Message = JsonSerializer.Serialize(new
             {
                 message = oversizedMessage ? new string('x', 32001) : "Ready",
                 proposal = oversizedMessage ? null : new string('x', 32001)
@@ -123,18 +123,18 @@ public class FormCreatorTests
     [Fact]
     public async Task Assistant_history_uses_the_json_reply_contract_without_inventing_a_proposal()
     {
-        var runtime = Substitute.For<ICopilotRuntimeAppService>();
-        runtime.SendAsync(Arg.Any<CopilotRuntimeRequestDto>(), Arg.Any<CancellationToken>())
+        var runtime = Substitute.For<IHooshvareRuntimeAppService>();
+        runtime.SendAsync(Arg.Any<HooshvareRuntimeRequestDto>(), Arg.Any<CancellationToken>())
             .Returns(call =>
             {
-                var history = call.Arg<CopilotRuntimeRequestDto>().ConversationHistory;
+                var history = call.Arg<HooshvareRuntimeRequestDto>().ConversationHistory;
                 history[0].Role.ShouldBe("user");
                 history[0].Content.ShouldBe("Registration");
                 history[1].Role.ShouldBe("assistant");
                 using var envelope = JsonDocument.Parse(history[1].Content);
                 envelope.RootElement.GetProperty("message").GetString().ShouldBe("Which fields?\nName or email?");
                 envelope.RootElement.GetProperty("proposal").ValueKind.ShouldBe(JsonValueKind.Null);
-                return new CopilotRuntimeResultDto { Message = "{\"message\":\"Ready\",\"proposal\":null}" };
+                return new HooshvareRuntimeResultDto { Message = "{\"message\":\"Ready\",\"proposal\":null}" };
             });
         var reply = await new AuthorizedCreator(runtime, Substitute.For<IFormDefinitionAppService>()).ConverseAsync(new()
         {
@@ -150,28 +150,28 @@ public class FormCreatorTests
     [Fact]
     public async Task Conversation_forwards_the_selected_model_to_the_runtime_policy()
     {
-        var runtime = Substitute.For<ICopilotRuntimeAppService>();
+        var runtime = Substitute.For<IHooshvareRuntimeAppService>();
         var model = Guid.NewGuid();
-        runtime.SendAsync(Arg.Any<CopilotRuntimeRequestDto>(), Arg.Any<CancellationToken>())
-            .Returns(new CopilotRuntimeResultDto { Message = "{\"message\":\"Ready\"}" });
+        runtime.SendAsync(Arg.Any<HooshvareRuntimeRequestDto>(), Arg.Any<CancellationToken>())
+            .Returns(new HooshvareRuntimeResultDto { Message = "{\"message\":\"Ready\"}" });
         await new AuthorizedCreator(runtime, Substitute.For<IFormDefinitionAppService>()).ConverseAsync(
             new() { Message = "Prepare proposal", ModelConfigurationId = model });
         await runtime.Received(1).SendAsync(
-            Arg.Is<CopilotRuntimeRequestDto>(request => request.ModelConfigurationId == model), Arg.Any<CancellationToken>());
+            Arg.Is<HooshvareRuntimeRequestDto>(request => request.ModelConfigurationId == model), Arg.Any<CancellationToken>());
     }
 
     [Fact]
     public async Task Premature_response_is_reported_as_recoverable_without_replaying_the_turn()
     {
         var forms = Substitute.For<IFormDefinitionAppService>();
-        var runtime = Substitute.For<ICopilotRuntimeAppService>();
-        runtime.SendAsync(Arg.Any<CopilotRuntimeRequestDto>(), Arg.Any<CancellationToken>())
-            .Returns(Task.FromException<CopilotRuntimeResultDto>(
+        var runtime = Substitute.For<IHooshvareRuntimeAppService>();
+        runtime.SendAsync(Arg.Any<HooshvareRuntimeRequestDto>(), Arg.Any<CancellationToken>())
+            .Returns(Task.FromException<HooshvareRuntimeResultDto>(
                 new HttpIOException(HttpRequestError.ResponseEnded, "response ended")));
         var exception = await Should.ThrowAsync<BusinessException>(() =>
             new AuthorizedCreator(runtime, forms).ConverseAsync(new() { Message = "Prepare proposal", PrepareProposal = true }));
         exception.Code.ShouldBe("SufiForms:CreatorResponseInterrupted");
-        await runtime.Received(1).SendAsync(Arg.Any<CopilotRuntimeRequestDto>(), Arg.Any<CancellationToken>());
+        await runtime.Received(1).SendAsync(Arg.Any<HooshvareRuntimeRequestDto>(), Arg.Any<CancellationToken>());
         await forms.DidNotReceiveWithAnyArgs().CreateAsync(default!);
     }
 
@@ -314,12 +314,12 @@ public class FormCreatorTests
     public async Task Provider_failure_after_tool_staging_does_not_save_a_partial_form()
     {
         var forms = Substitute.For<IFormDefinitionAppService>();
-        var runtime = Substitute.For<ICopilotRuntimeAppService>();
-        runtime.SendAsync(Arg.Any<CopilotRuntimeRequestDto>(), Arg.Any<CancellationToken>())
+        var runtime = Substitute.For<IHooshvareRuntimeAppService>();
+        runtime.SendAsync(Arg.Any<HooshvareRuntimeRequestDto>(), Arg.Any<CancellationToken>())
             .Returns(async _ =>
             {
                 await new FormDesignerMcpAppService(forms).CreateDefinitionAsync(Definition());
-                return await Task.FromException<CopilotRuntimeResultDto>(new InvalidOperationException("provider failed after tool"));
+                return await Task.FromException<HooshvareRuntimeResultDto>(new InvalidOperationException("provider failed after tool"));
             });
         var service = new AuthorizedCreator(runtime, forms);
         await Should.ThrowAsync<InvalidOperationException>(() => service.BuildAsync(new() { Confirmed = true, Proposal = "Approved requirements" }));
@@ -330,20 +330,20 @@ public class FormCreatorTests
     public async Task Build_uses_current_proposal_and_returns_persisted_identity_not_model_claims()
     {
         var forms = Substitute.For<IFormDefinitionAppService>();
-        var runtime = Substitute.For<ICopilotRuntimeAppService>();
+        var runtime = Substitute.For<IHooshvareRuntimeAppService>();
         var saved = new FormDefinitionDto { Id = Guid.NewGuid(), Key = "registration" };
         var model = Guid.NewGuid();
         var turnId = Guid.NewGuid();
         forms.CreateAsync(Arg.Any<CreateUpdateFormDefinitionDto>()).Returns(saved);
-        runtime.SendAsync(Arg.Any<CopilotRuntimeRequestDto>(), Arg.Any<CancellationToken>())
+        runtime.SendAsync(Arg.Any<HooshvareRuntimeRequestDto>(), Arg.Any<CancellationToken>())
             .Returns(async call =>
             {
-                call.Arg<CopilotRuntimeRequestDto>().MetadataJson.ShouldContain("Manually revised proposal");
-                call.Arg<CopilotRuntimeRequestDto>().ModelConfigurationId.ShouldBe(model);
-                call.Arg<CopilotRuntimeRequestDto>().ProgressTurnId.ShouldBe(turnId);
-                call.Arg<CopilotRuntimeRequestDto>().ResponseSchema.ShouldBeNull();
+                call.Arg<HooshvareRuntimeRequestDto>().MetadataJson.ShouldContain("Manually revised proposal");
+                call.Arg<HooshvareRuntimeRequestDto>().ModelConfigurationId.ShouldBe(model);
+                call.Arg<HooshvareRuntimeRequestDto>().ProgressTurnId.ShouldBe(turnId);
+                call.Arg<HooshvareRuntimeRequestDto>().ResponseSchema.ShouldBeNull();
                 await new FormDesignerMcpAppService(forms).CreateDefinitionAsync(Definition());
-                return new CopilotRuntimeResultDto { Message = "a fabricated identity" };
+                return new HooshvareRuntimeResultDto { Message = "a fabricated identity" };
             });
         var result = await new AuthorizedCreator(runtime, forms).BuildAsync(new()
             { Confirmed = true, Proposal = "Manually revised proposal", ModelConfigurationId = model, ProgressTurnId = turnId });
@@ -360,7 +360,7 @@ public class FormCreatorTests
     public async Task Interrupted_build_preserves_atomicity_and_does_not_replay(string failure, bool stage)
     {
         var forms = Substitute.For<IFormDefinitionAppService>();
-        var runtime = Substitute.For<ICopilotRuntimeAppService>();
+        var runtime = Substitute.For<IHooshvareRuntimeAppService>();
         Exception cause = failure switch
         {
             "ended" => new HttpIOException(HttpRequestError.ResponseEnded, "incomplete body"),
@@ -368,17 +368,17 @@ public class FormCreatorTests
             "timeout" => new TimeoutException(),
             _ => new TaskCanceledException("request timeout", new TimeoutException())
         };
-        runtime.SendAsync(Arg.Any<CopilotRuntimeRequestDto>(), Arg.Any<CancellationToken>())
+        runtime.SendAsync(Arg.Any<HooshvareRuntimeRequestDto>(), Arg.Any<CancellationToken>())
             .Returns(async _ =>
             {
                 if (stage) await new FormDesignerMcpAppService(forms).CreateDefinitionAsync(Definition());
-                return await Task.FromException<CopilotRuntimeResultDto>(cause);
+                return await Task.FromException<HooshvareRuntimeResultDto>(cause);
             });
         var error = await Should.ThrowAsync<BusinessException>(() =>
             new AuthorizedCreator(runtime, forms).BuildAsync(new() { Confirmed = true, Proposal = "Approved" }));
         error.Code.ShouldBe(failure.Contains("timeout")
             ? "SufiForms:CreatorResponseTimedOut" : "SufiForms:CreatorResponseInterrupted");
-        await runtime.Received(1).SendAsync(Arg.Any<CopilotRuntimeRequestDto>(), Arg.Any<CancellationToken>());
+        await runtime.Received(1).SendAsync(Arg.Any<HooshvareRuntimeRequestDto>(), Arg.Any<CancellationToken>());
         await forms.DidNotReceiveWithAnyArgs().CreateAsync(default!);
         await forms.DidNotReceiveWithAnyArgs().UpdateAsync(default, default!);
         // The failed request must not leave ambient permission to invoke a build tool.
@@ -389,9 +389,9 @@ public class FormCreatorTests
     public async Task Caller_cancellation_is_not_misreported_as_provider_timeout()
     {
         var forms = Substitute.For<IFormDefinitionAppService>();
-        var runtime = Substitute.For<ICopilotRuntimeAppService>();
-        runtime.SendAsync(Arg.Any<CopilotRuntimeRequestDto>(), Arg.Any<CancellationToken>())
-            .Returns(Task.FromCanceled<CopilotRuntimeResultDto>(new CancellationToken(true)));
+        var runtime = Substitute.For<IHooshvareRuntimeAppService>();
+        runtime.SendAsync(Arg.Any<HooshvareRuntimeRequestDto>(), Arg.Any<CancellationToken>())
+            .Returns(Task.FromCanceled<HooshvareRuntimeResultDto>(new CancellationToken(true)));
         await Should.ThrowAsync<OperationCanceledException>(() =>
             new AuthorizedCreator(runtime, forms).BuildAsync(new() { Confirmed = true, Proposal = "Approved" }));
         await forms.DidNotReceiveWithAnyArgs().CreateAsync(default!);
@@ -401,12 +401,12 @@ public class FormCreatorTests
     public async Task Confirmation_is_required_before_runtime_and_empty_tool_result_cannot_claim_success()
     {
         var forms = Substitute.For<IFormDefinitionAppService>();
-        var runtime = Substitute.For<ICopilotRuntimeAppService>();
+        var runtime = Substitute.For<IHooshvareRuntimeAppService>();
         var service = new AuthorizedCreator(runtime, forms);
         await Should.ThrowAsync<BusinessException>(() => service.BuildAsync(new() { Proposal = "Create it" }));
         await runtime.DidNotReceiveWithAnyArgs().SendAsync(default!, default);
-        runtime.SendAsync(Arg.Any<CopilotRuntimeRequestDto>(), Arg.Any<CancellationToken>())
-            .Returns(new CopilotRuntimeResultDto { Message = "Done" });
+        runtime.SendAsync(Arg.Any<HooshvareRuntimeRequestDto>(), Arg.Any<CancellationToken>())
+            .Returns(new HooshvareRuntimeResultDto { Message = "Done" });
         await Should.ThrowAsync<BusinessException>(() => service.BuildAsync(new() { Proposal = "Create it", Confirmed = true }));
         await forms.DidNotReceiveWithAnyArgs().CreateAsync(default!);
     }
@@ -437,8 +437,8 @@ public class FormCreatorTests
     }
 
     // These tests isolate orchestration and tool boundaries. Host permission interception needs integration validation.
-    private sealed class AuthorizedCreator(ICopilotRuntimeAppService runtime, IFormDefinitionAppService forms)
-        : FormCreatorAppService(Substitute.For<IPlatformCopilotResolver>(), runtime, forms)
+    private sealed class AuthorizedCreator(IHooshvareRuntimeAppService runtime, IFormDefinitionAppService forms)
+        : FormCreatorAppService(Substitute.For<IPlatformHooshvareResolver>(), runtime, forms)
     {
         protected override Task CheckOperationAsync(Guid? id) => Task.CompletedTask;
     }

@@ -11,7 +11,7 @@ Map product requirements to AI Management capabilities before building a custom 
 - Load available models from provider API, test connection before save
 - Configure default chat model, API key, base URL, optional cost per 1M tokens
 - Chat protocol (`OpenAIApiMode`), context window, display name, and user-selectability live on each `AIModelConfiguration`
-- RAG embeddings use multimodal `AIModelConfiguration` (Embeddings); vector store is host `VectorStore:*` only. MCP/RAG authorization is copilot policy, not workspace configuration.
+- RAG embeddings use multimodal `AIModelConfiguration` (Embeddings); vector store is host `VectorStore:*` only. MCP/RAG authorization is hooshvare policy, not workspace configuration.
 
 ### Configuration
 

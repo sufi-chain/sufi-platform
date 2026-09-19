@@ -7,19 +7,19 @@ internal static class ProModuleCatalog
     public static IEnumerable<ModuleDefinition> CreateAll()
     {
         yield return Feature(
-            "ai-copilots",
-            "AI Copilots",
-            "AI copilot definitions, runtime configuration, and management UI",
+            "ai-hooshvare",
+            "AI Hooshvares",
+            "AI hooshvare definitions, runtime configuration, and management UI",
             ["ai", "file-manager"],
-            B(ModuleIntegrationPoint.DomainShared, "SufiChain.SufiPlatform.SufiAI.Copilots.Domain.Shared", "SufiChain.SufiPlatform.SufiAI.Copilots.SufiAICopilotsDomainSharedModule"),
-            B(ModuleIntegrationPoint.Domain, "SufiChain.SufiPlatform.SufiAI.Copilots.Domain", "SufiChain.SufiPlatform.SufiAI.Copilots.SufiAICopilotsDomainModule"),
-            B(ModuleIntegrationPoint.ApplicationContracts, "SufiChain.SufiPlatform.SufiAI.Copilots.Application.Contracts", "SufiChain.SufiPlatform.SufiAI.Copilots.SufiAICopilotsApplicationContractsModule"),
-            B(ModuleIntegrationPoint.Application, "SufiChain.SufiPlatform.SufiAI.Copilots.Application", "SufiChain.SufiPlatform.SufiAI.Copilots.SufiAICopilotsApplicationModule"),
-            B(ModuleIntegrationPoint.EntityFrameworkCore, "SufiChain.SufiPlatform.SufiAI.Copilots.EntityFrameworkCore", "SufiChain.SufiPlatform.SufiAI.Copilots.EntityFrameworkCore.SufiAICopilotsEntityFrameworkCoreModule", DatabaseProvider.EntityFrameworkCore),
-            B(ModuleIntegrationPoint.MongoDB, "SufiChain.SufiPlatform.SufiAI.Copilots.MongoDB", "SufiChain.SufiPlatform.SufiAI.Copilots.MongoDB.SufiAICopilotsMongoDBModule", DatabaseProvider.MongoDB),
-            B(ModuleIntegrationPoint.HttpApi, "SufiChain.SufiPlatform.SufiAI.Copilots.HttpApi", "SufiChain.SufiPlatform.SufiAI.Copilots.SufiAICopilotsHttpApiModule"),
-            B(ModuleIntegrationPoint.HttpApiClient, "SufiChain.SufiPlatform.SufiAI.Copilots.HttpApi.Client", "SufiChain.SufiPlatform.SufiAI.Copilots.SufiAICopilotsHttpApiClientModule"),
-            B(ModuleIntegrationPoint.BlazorWebApp, "SufiChain.SufiPlatform.SufiAI.Copilots.Blazor.Server", "SufiChain.SufiPlatform.SufiAI.Copilots.Blazor.SufiAICopilotsBlazorServerModule"));
+            B(ModuleIntegrationPoint.DomainShared, "SufiChain.SufiPlatform.SufiAI.Hooshvare.Domain.Shared", "SufiChain.SufiPlatform.SufiAI.Hooshvare.SufiAIHooshvareDomainSharedModule"),
+            B(ModuleIntegrationPoint.Domain, "SufiChain.SufiPlatform.SufiAI.Hooshvare.Domain", "SufiChain.SufiPlatform.SufiAI.Hooshvare.SufiAIHooshvareDomainModule"),
+            B(ModuleIntegrationPoint.ApplicationContracts, "SufiChain.SufiPlatform.SufiAI.Hooshvare.Application.Contracts", "SufiChain.SufiPlatform.SufiAI.Hooshvare.SufiAIHooshvareApplicationContractsModule"),
+            B(ModuleIntegrationPoint.Application, "SufiChain.SufiPlatform.SufiAI.Hooshvare.Application", "SufiChain.SufiPlatform.SufiAI.Hooshvare.SufiAIHooshvareApplicationModule"),
+            B(ModuleIntegrationPoint.EntityFrameworkCore, "SufiChain.SufiPlatform.SufiAI.Hooshvare.EntityFrameworkCore", "SufiChain.SufiPlatform.SufiAI.Hooshvare.EntityFrameworkCore.SufiAIHooshvareEntityFrameworkCoreModule", DatabaseProvider.EntityFrameworkCore),
+            B(ModuleIntegrationPoint.MongoDB, "SufiChain.SufiPlatform.SufiAI.Hooshvare.MongoDB", "SufiChain.SufiPlatform.SufiAI.Hooshvare.MongoDB.SufiAIHooshvareMongoDBModule", DatabaseProvider.MongoDB),
+            B(ModuleIntegrationPoint.HttpApi, "SufiChain.SufiPlatform.SufiAI.Hooshvare.HttpApi", "SufiChain.SufiPlatform.SufiAI.Hooshvare.SufiAIHooshvareHttpApiModule"),
+            B(ModuleIntegrationPoint.HttpApiClient, "SufiChain.SufiPlatform.SufiAI.Hooshvare.HttpApi.Client", "SufiChain.SufiPlatform.SufiAI.Hooshvare.SufiAIHooshvareHttpApiClientModule"),
+            B(ModuleIntegrationPoint.BlazorWebApp, "SufiChain.SufiPlatform.SufiAI.Hooshvare.Blazor.Server", "SufiChain.SufiPlatform.SufiAI.Hooshvare.Blazor.SufiAIHooshvareBlazorServerModule"));
 
         yield return Feature(
             "branding",
@@ -34,12 +34,12 @@ internal static class ProModuleCatalog
             B(ModuleIntegrationPoint.DbMigrator, "SufiChain.SufiPlatform.Branding.Application", "SufiChain.SufiPlatform.Branding.SufiBrandingApplicationModule"));
 
         yield return Feature(
-            "calendar-copilot",
-            "Calendar Copilot",
+            "calendar-hooshvare",
+            "Calendar Hooshvare",
             "AI assistance for calendar workflows",
-            ["calendar", "ai-copilots"],
-            B(ModuleIntegrationPoint.Application, "SufiChain.SufiPlatform.Calendar.Copilot.Application", "SufiChain.SufiPlatform.Calendar.Copilot.CalendarCopilotApplicationModule"),
-            B(ModuleIntegrationPoint.BlazorWebApp, "SufiChain.SufiPlatform.Calendar.Copilot.Blazor", "SufiChain.SufiPlatform.Calendar.Copilot.Blazor.CalendarCopilotBlazorModule"));
+            ["calendar", "ai-hooshvare"],
+            B(ModuleIntegrationPoint.Application, "SufiChain.SufiPlatform.Calendar.Hooshvare.Application", "SufiChain.SufiPlatform.Calendar.Hooshvare.CalendarHooshvareApplicationModule"),
+            B(ModuleIntegrationPoint.BlazorWebApp, "SufiChain.SufiPlatform.Calendar.Hooshvare.Blazor", "SufiChain.SufiPlatform.Calendar.Hooshvare.Blazor.CalendarHooshvareBlazorModule"));
 
         yield return Feature(
             "cms",
@@ -117,7 +117,7 @@ internal static class ProModuleCatalog
             "helpdesk",
             "HelpDesk Suite",
             "HelpDesk core, knowledge base, ticketing, and live chat",
-            ["file-manager", "ai-copilots", "suficom"],
+            ["file-manager", "ai-hooshvare", "suficom"],
             FullStackBindings("SufiChain.SufiPlatform.HelpDesk", "SufiChain.SufiPlatform.HelpDesk", "HelpDesk", mongoTypeSuffix: "MongoDb")
                 .Where(binding => binding.IntegrationPoint is not ModuleIntegrationPoint.HttpApi and not ModuleIntegrationPoint.HttpApiClient)
                 .ToArray(),

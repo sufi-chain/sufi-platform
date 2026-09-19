@@ -13,17 +13,19 @@ namespace SufiChain.SufiPlatform.Tags;
 public class TagsMigrationTests
 {
     [Fact]
-    public void Upgrade_Should_Preserve_Classification_And_Only_Add_Tags_Schema()
+    public void Initial_Should_Create_Classification_And_Relation_Schema()
     {
-        var migration = new AddTagsRelations();
-        var columns = migration.UpOperations.OfType<AddColumnOperation>().ToList();
-        columns.Count.ShouldBe(2);
-        columns.Single(x => x.Name == "Kind").DefaultValue.ShouldBe(0);
-        columns.Single(x => x.Name == "StableKey").IsNullable.ShouldBeTrue();
-        migration.UpOperations.OfType<CreateTableOperation>().Select(x => x.Name).OrderBy(x => x)
-            .ShouldBe(new[] { "SufiTags.RelationDefinitions", "SufiTags.RelationRevisions", "SufiTags.Relations" }.OrderBy(x => x));
+        var migration = new InitialTags();
+        var tables = migration.UpOperations.OfType<CreateTableOperation>().Select(x => x.Name).ToList();
+        tables.ShouldContain("SufiTags.Tags");
+        tables.ShouldContain("SufiTags.RelationDefinitions");
+        tables.ShouldContain("SufiTags.Relations");
+        tables.ShouldContain("SufiTags.RelationRevisions");
+        tables.ShouldContain("SufiTags.RelationMutationReceipts");
+        var tags = migration.UpOperations.OfType<CreateTableOperation>().Single(x => x.Name == "SufiTags.Tags");
+        tags.Columns.Single(x => x.Name == "Kind").DefaultValue.ShouldBe(0);
+        tags.Columns.Single(x => x.Name == "StableKey").IsNullable.ShouldBeTrue();
         migration.UpOperations.ShouldNotContain(x => x is DropTableOperation || x is DropColumnOperation);
-        migration.DownOperations.OfType<SqlOperation>().First().Sql.ShouldContain("THROW 51000");
     }
 
     [Fact]
@@ -31,37 +33,17 @@ public class TagsMigrationTests
     {
         var options = new DbContextOptionsBuilder<TagsDbContext>().UseSqlServer(
             "Server=localhost;Database=TagsMigrationModelOnly;Integrated Security=true;TrustServerCertificate=true",
-            sql => sql.MigrationsAssembly(typeof(AddTagsRelations).Assembly.GetName().Name)
+            sql => sql.MigrationsAssembly(typeof(InitialTags).Assembly.GetName().Name)
                 .MigrationsHistoryTable("__EFMigrationsHistory_Tags")).Options;
         using var context = new TagsDbContext(options);
         context.Database.HasPendingModelChanges().ShouldBeFalse();
-        var migrator = context.GetService<IMigrator>();
-        var upgrade = migrator.GenerateScript("20260825171531_InitialTags", "20260916191244_AddTagsRelations",
+        var script = context.GetService<IMigrator>().GenerateScript(
+            fromMigration: null,
+            toMigration: "20260825171531_InitialTags",
             MigrationsSqlGenerationOptions.Idempotent);
-        upgrade.ShouldContain("[__EFMigrationsHistory_Tags]");
-        upgrade.ShouldContain("ADD [Kind] int NOT NULL DEFAULT 0");
-        upgrade.ShouldNotContain("DROP TABLE");
-        var rollback = migrator.GenerateScript("20260916191244_AddTagsRelations", "20260825171531_InitialTags");
-        rollback.ShouldContain("THROW 51000");
-    }
-
-    [Fact]
-    public void Upgrade_Should_Add_Receipt_Table_And_Guard_Populated_Downgrade()
-    {
-        var migration = new AddTagRelationMutationReceipts();
-        migration.UpOperations.OfType<CreateTableOperation>().Single().Name.ShouldBe("SufiTags.RelationMutationReceipts");
-        migration.UpOperations.ShouldNotContain(x => x is DropTableOperation || x is DropColumnOperation);
-        migration.DownOperations.First().ShouldBeOfType<SqlOperation>().Sql.ShouldContain("THROW 51000");
-        var options = new DbContextOptionsBuilder<TagsDbContext>().UseSqlServer(
-            "Server=localhost;Database=TagsMigrationModelOnly;Integrated Security=true;TrustServerCertificate=true",
-            sql => sql.MigrationsAssembly(typeof(AddTagsRelations).Assembly.GetName().Name)
-                .MigrationsHistoryTable("__EFMigrationsHistory_Tags")).Options;
-        using var context = new TagsDbContext(options);
-        context.Database.HasPendingModelChanges().ShouldBeFalse();
-        var upgrade = context.GetService<IMigrator>().GenerateScript(
-            "20260916191244_AddTagsRelations", "20260916204920_AddTagRelationMutationReceipts",
-            MigrationsSqlGenerationOptions.Idempotent);
-        upgrade.ShouldContain("CREATE TABLE [SufiTags.RelationMutationReceipts]");
-        upgrade.ShouldContain("[__EFMigrationsHistory_Tags]");
+        script.ShouldContain("[__EFMigrationsHistory_Tags]");
+        script.ShouldContain("CREATE TABLE [SufiTags.Relations]");
+        script.ShouldContain("CREATE TABLE [SufiTags.RelationMutationReceipts]");
+        script.ShouldNotContain("DROP TABLE");
     }
 }

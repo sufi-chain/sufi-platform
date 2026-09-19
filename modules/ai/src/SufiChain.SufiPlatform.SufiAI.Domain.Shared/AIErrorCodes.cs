@@ -56,6 +56,6 @@ public static class AIErrorCodes
     public const string ModelRouteCapabilityMismatch = "AI:ModelRouteCapabilityMismatch";
     public const string ModelRouteRequiresChatCompletions = "AI:ModelRouteRequiresChatCompletions";
     public const string ModelRouteOutsideWorkspace = "AI:ModelRouteOutsideWorkspace";
-    public const string ModelRouteNotAllowedForCopilot = "AI:ModelRouteNotAllowedForCopilot";
-    public const string ModelRouteCopilotNotFound = "AI:ModelRouteCopilotNotFound";
+    public const string ModelRouteNotAllowedForHooshvare = "AI:ModelRouteNotAllowedForHooshvare";
+    public const string ModelRouteHooshvareNotFound = "AI:ModelRouteHooshvareNotFound";
 }

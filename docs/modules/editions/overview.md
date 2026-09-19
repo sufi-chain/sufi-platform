@@ -7,11 +7,11 @@
 - Entitlement resolution through `IEntitlementSource` with `FeatureCheckerEntitlementSource` at runtime
 - `ILicenseApiEntitlementSource` exists as a contract for on-prem license confirmation (not implemented yet)
 
-## Relationship to SaaS and copilots
+## Relationship to SaaS and hooshvares
 
-- Commercial SufiSaas plans can reference `EditionId` and seed feature caps (for example AI Copilot limits)
-- There is no Editions-specific copilot in the current alpha
-- Do not expose connection strings, license secrets, or ManageFeatures mutations through copilots without a separate approval packet
+- Commercial SufiSaas plans can reference `EditionId` and seed feature caps (for example AI Hooshvare limits)
+- There is no Editions-specific hooshvare in the current alpha
+- Do not expose connection strings, license secrets, or ManageFeatures mutations through hooshvares without a separate approval packet
 
 ## CLI note
 

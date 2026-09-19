@@ -17,7 +17,7 @@ public class AIOptions
     public bool SeedFileStructure { get; set; } = true;
 
     /// <summary>
-    /// Whether to seed the default host AI workspace used by platform copilots.
+    /// Whether to seed the default host AI workspace used by platform hooshvares.
     /// Default is true.
     /// </summary>
     public bool SeedDefaultWorkspace { get; set; } = true;

@@ -7,7 +7,7 @@ Product roadmap for Sufi Platform. Canonical short form also lives in the reposi
 | Phase | Focus | Status |
 | --- | --- | --- |
 | 1 | Foundation (identity, tenants, audit, jobs, settings, SufiBlazor, SufiTheme, files, calendar, AI, tags, menus, …) | Alpha |
-| 2 | Pro Products (Chat, HelpDesk, messaging, Copilots, CRM, CMS) | **Alpha · active now** |
+| 2 | Pro Products (Chat, HelpDesk, messaging, Hooshvares, CRM, CMS) | **Alpha · active now** |
 | 3 | Finance (wallets, invoices, payments, accounting, inventory) | **Alpha · active now** |
 | 4 | Commerce (subscriptions, booking, events, channels) | Soon |
 | 5 | ERP (workflows, approvals, procurement, projects, documents) | Future |
@@ -19,7 +19,7 @@ Product roadmap for Sufi Platform. Canonical short form also lives in the reposi
 | Phase | Distribution | Detail |
 | --- | --- | --- |
 | 1 | Open-source (`sufi-platform/`) | Identity, tenancy, editions, permissions, features, settings, localization, OpenIddict, audit, jobs, SufiBlazor, SufiTheme, File Manager, calendar, AI workspaces, tags, menus, short links, blob database |
-| 2 | Pro NuGet (licensed; free tier) | SufiCom/Chat, HelpDesk, AI Copilots, Calendar Copilot, CRM, CMS, Forms, Branding, Dashboard |
+| 2 | Pro NuGet (licensed; free tier) | SufiCom/Chat, HelpDesk, AI Hooshvares, Calendar Hooshvare, CRM, CMS, Forms, Branding, Dashboard |
 | 3 | Pro NuGet (licensed; free tier) | Payments, wallets, invoicing, accounting, inventory |
 | 4 | Pro NuGet (planned) | Subscriptions, services, booking, events, dynamic channels |
 | 5 | Pro NuGet (planned) | Workflows, approvals, procurement, projects, documents |

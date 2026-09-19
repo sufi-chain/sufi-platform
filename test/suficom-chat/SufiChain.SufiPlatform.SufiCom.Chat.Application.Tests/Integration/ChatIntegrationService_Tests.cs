@@ -26,7 +26,7 @@ public class ChatIntegrationService_Tests : ChatApplicationTestBase<SufiComChatA
             var session = await _integrationService.CreateOwnedPlaygroundSessionAsync(
                 new CreateOwnedPlaygroundSessionInput
                 {
-                    Title = "Copilot playground",
+                    Title = "Hooshvare playground",
                     AssistantId = assistantId
                 });
 
@@ -35,7 +35,7 @@ public class ChatIntegrationService_Tests : ChatApplicationTestBase<SufiComChatA
             session.ConversationKind.ShouldBe(ConversationKind.Assistant);
             session.AssistantId.ShouldBe(assistantId);
             session.IsExternallyOrchestrated.ShouldBeTrue();
-            session.Origin.ShouldBe(ChatSessionOrigin.CopilotPlayground);
+            session.Origin.ShouldBe(ChatSessionOrigin.HooshvarePlayground);
             session.Participants.ShouldContain(participant =>
                 participant.UserId == ChatTestData.UserAId &&
                 participant.ParticipantKind == ChatMessageSenderKind.Operator);
@@ -43,7 +43,7 @@ public class ChatIntegrationService_Tests : ChatApplicationTestBase<SufiComChatA
             var sessions = await _integrationService.GetMySessionsAsync(new GetMyChatSessionsInput
             {
                 AssistantId = assistantId,
-                Origin = ChatSessionOrigin.CopilotPlayground,
+                Origin = ChatSessionOrigin.HooshvarePlayground,
                 ExternalOrchestration = true,
                 MaxResultCount = 10
             });

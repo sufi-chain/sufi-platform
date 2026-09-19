@@ -119,7 +119,7 @@ End-user selectable routes for the composer picker. Authorized with `AIPermissio
 Task<List<AIModelRouteDto>> GetSelectableRoutesAsync(GetSelectableModelRoutesInput input);
 ```
 
-`GetSelectableModelRoutesInput`: `WorkspaceId`, `CapabilityType` (default ChatCompletion), optional `CopilotId`.
+`GetSelectableModelRoutesInput`: `WorkspaceId`, `CapabilityType` (default ChatCompletion), optional `HooshvareId`.
 `AIModelRouteDto` omits endpoint and credentials.
 
 ## HTTP API

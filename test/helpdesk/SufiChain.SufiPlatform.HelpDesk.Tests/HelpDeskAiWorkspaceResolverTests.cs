@@ -5,7 +5,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 using SufiChain.SufiPlatform.HelpDesk.Ai;
 using SufiChain.SufiPlatform.HelpDesk.Options;
 using SufiChain.SufiPlatform.HelpDesk.Projects;
-using SufiChain.SufiPlatform.SufiAI.Copilots.Copilots;
+using SufiChain.SufiPlatform.SufiAI.Hooshvare.Hooshvare;
 using Volo.Abp.Caching;
 using Volo.Abp.MultiTenancy;
 using Xunit;
@@ -18,9 +18,9 @@ public class HelpDeskAiWorkspaceResolverTests
     private readonly IDistributedCache<HelpDeskProjectAiWorkspaceAssignmentCacheItem> _cache;
     private readonly IHelpDeskOptionsProvider _optionsProvider;
     private readonly ICurrentTenant _currentTenant;
-    private readonly ICopilotDefinitionRepository _copilotDefinitionRepository;
-    private readonly CopilotBusinessLocalizationService _businessLocalization;
-    private readonly ICopilotWorkspaceResolver _copilotWorkspaceResolver;
+    private readonly IHooshvareDefinitionRepository _hooshvareDefinitionRepository;
+    private readonly HooshvareBusinessLocalizationService _businessLocalization;
+    private readonly IHooshvareWorkspaceResolver _hooshvareWorkspaceResolver;
     private readonly HelpDeskAiWorkspaceResolver _resolver;
 
     public HelpDeskAiWorkspaceResolverTests()
@@ -29,9 +29,9 @@ public class HelpDeskAiWorkspaceResolverTests
         _cache = Substitute.For<IDistributedCache<HelpDeskProjectAiWorkspaceAssignmentCacheItem>>();
         _optionsProvider = Substitute.For<IHelpDeskOptionsProvider>();
         _currentTenant = Substitute.For<ICurrentTenant>();
-        _copilotDefinitionRepository = Substitute.For<ICopilotDefinitionRepository>();
-        _businessLocalization = new CopilotBusinessLocalizationService(Substitute.For<IStringLocalizerFactory>());
-        _copilotWorkspaceResolver = Substitute.For<ICopilotWorkspaceResolver>();
+        _hooshvareDefinitionRepository = Substitute.For<IHooshvareDefinitionRepository>();
+        _businessLocalization = new HooshvareBusinessLocalizationService(Substitute.For<IStringLocalizerFactory>());
+        _hooshvareWorkspaceResolver = Substitute.For<IHooshvareWorkspaceResolver>();
 
         _cache
             .GetOrAddAsync(
@@ -48,10 +48,10 @@ public class HelpDeskAiWorkspaceResolverTests
             _cache,
             _optionsProvider,
             _currentTenant,
-            _copilotDefinitionRepository,
+            _hooshvareDefinitionRepository,
             _businessLocalization,
             new HelpDeskAiBindingEnricher(
-                _copilotWorkspaceResolver,
+                _hooshvareWorkspaceResolver,
                 NullLogger<HelpDeskAiBindingEnricher>.Instance),
             NullLogger<HelpDeskAiWorkspaceResolver>.Instance);
     }
@@ -60,8 +60,8 @@ public class HelpDeskAiWorkspaceResolverTests
     public async Task Should_Return_Purpose_Assignment_First()
     {
         var projectId = Guid.NewGuid();
-        var defaultCopilotId = Guid.NewGuid();
-        var contentCopilotId = Guid.NewGuid();
+        var defaultHooshvareId = Guid.NewGuid();
+        var contentHooshvareId = Guid.NewGuid();
         var contentWorkspaceId = Guid.NewGuid();
 
         _assignmentRepository.GetListByProjectAsync(projectId)
@@ -71,19 +71,19 @@ public class HelpDeskAiWorkspaceResolverTests
                     Guid.NewGuid(),
                     projectId,
                     HelpDeskAiWorkspacePurpose.Default,
-                    defaultCopilotId,
-                    "Default Copilot"),
+                    defaultHooshvareId,
+                    "Default Hooshvare"),
                 new ProjectAiWorkspaceAssignment(
                     Guid.NewGuid(),
                     projectId,
                     HelpDeskAiWorkspacePurpose.ContentEditing,
-                    contentCopilotId,
-                    "Content Copilot")
+                    contentHooshvareId,
+                    "Content Hooshvare")
             ]);
-        _copilotDefinitionRepository.GetAsync(contentCopilotId, cancellationToken: Arg.Any<CancellationToken>())
-            .Returns(CreateCopilot(contentCopilotId, "Content Copilot", contentWorkspaceId));
-        _copilotWorkspaceResolver.ResolveAsync(contentWorkspaceId)
-            .Returns(new CopilotWorkspaceBinding
+        _hooshvareDefinitionRepository.GetAsync(contentHooshvareId, cancellationToken: Arg.Any<CancellationToken>())
+            .Returns(CreateHooshvare(contentHooshvareId, "Content Hooshvare", contentWorkspaceId));
+        _hooshvareWorkspaceResolver.ResolveAsync(contentWorkspaceId)
+            .Returns(new HooshvareWorkspaceBinding
             {
                 WorkspaceId = contentWorkspaceId,
                 WorkspaceName = "content-workspace",
@@ -94,8 +94,8 @@ public class HelpDeskAiWorkspaceResolverTests
 
         result.IsReady.ShouldBeTrue();
         result.Source.ShouldBe(HelpDeskAiBindingSource.Project);
-        result.CopilotId.ShouldBe(contentCopilotId);
-        result.CopilotName.ShouldBe("Content Copilot");
+        result.HooshvareId.ShouldBe(contentHooshvareId);
+        result.HooshvareName.ShouldBe("Content Hooshvare");
         result.WorkspaceId.ShouldBe(contentWorkspaceId);
         result.WorkspaceName.ShouldBe("content-workspace");
     }
@@ -104,7 +104,7 @@ public class HelpDeskAiWorkspaceResolverTests
     public async Task Should_Fallback_To_Project_Default_Assignment()
     {
         var projectId = Guid.NewGuid();
-        var defaultCopilotId = Guid.NewGuid();
+        var defaultHooshvareId = Guid.NewGuid();
         var defaultWorkspaceId = Guid.NewGuid();
 
         _assignmentRepository.GetListByProjectAsync(projectId)
@@ -114,13 +114,13 @@ public class HelpDeskAiWorkspaceResolverTests
                     Guid.NewGuid(),
                     projectId,
                     HelpDeskAiWorkspacePurpose.Default,
-                    defaultCopilotId,
-                    "Default Copilot")
+                    defaultHooshvareId,
+                    "Default Hooshvare")
             ]);
-        _copilotDefinitionRepository.GetAsync(defaultCopilotId, cancellationToken: Arg.Any<CancellationToken>())
-            .Returns(CreateCopilot(defaultCopilotId, "Default Copilot", defaultWorkspaceId));
-        _copilotWorkspaceResolver.ResolveAsync(defaultWorkspaceId)
-            .Returns(new CopilotWorkspaceBinding
+        _hooshvareDefinitionRepository.GetAsync(defaultHooshvareId, cancellationToken: Arg.Any<CancellationToken>())
+            .Returns(CreateHooshvare(defaultHooshvareId, "Default Hooshvare", defaultWorkspaceId));
+        _hooshvareWorkspaceResolver.ResolveAsync(defaultWorkspaceId)
+            .Returns(new HooshvareWorkspaceBinding
             {
                 WorkspaceId = defaultWorkspaceId,
                 WorkspaceName = "default-workspace",
@@ -131,25 +131,25 @@ public class HelpDeskAiWorkspaceResolverTests
 
         result.IsReady.ShouldBeTrue();
         result.Source.ShouldBe(HelpDeskAiBindingSource.ProjectDefault);
-        result.CopilotId.ShouldBe(defaultCopilotId);
-        result.CopilotName.ShouldBe("Default Copilot");
+        result.HooshvareId.ShouldBe(defaultHooshvareId);
+        result.HooshvareName.ShouldBe("Default Hooshvare");
         result.WorkspaceId.ShouldBe(defaultWorkspaceId);
         result.WorkspaceName.ShouldBe("default-workspace");
     }
 
     [Fact]
-    public async Task Should_Fallback_To_Tenant_Default_Copilot_When_Project_Assignment_Is_Missing()
+    public async Task Should_Fallback_To_Tenant_Default_Hooshvare_When_Project_Assignment_Is_Missing()
     {
         var projectId = Guid.NewGuid();
-        var tenantCopilotId = Guid.NewGuid();
+        var tenantHooshvareId = Guid.NewGuid();
         var tenantWorkspaceId = Guid.NewGuid();
 
         _assignmentRepository.GetListByProjectAsync(projectId).Returns([]);
-        _optionsProvider.GetAsync().Returns(new HelpDeskOptions { DefaultAiCopilotId = tenantCopilotId });
-        _copilotDefinitionRepository.GetAsync(tenantCopilotId, cancellationToken: Arg.Any<CancellationToken>())
-            .Returns(CreateCopilot(tenantCopilotId, "Tenant Copilot", tenantWorkspaceId));
-        _copilotWorkspaceResolver.ResolveAsync(tenantWorkspaceId)
-            .Returns(new CopilotWorkspaceBinding
+        _optionsProvider.GetAsync().Returns(new HelpDeskOptions { DefaultAiHooshvareId = tenantHooshvareId });
+        _hooshvareDefinitionRepository.GetAsync(tenantHooshvareId, cancellationToken: Arg.Any<CancellationToken>())
+            .Returns(CreateHooshvare(tenantHooshvareId, "Tenant Hooshvare", tenantWorkspaceId));
+        _hooshvareWorkspaceResolver.ResolveAsync(tenantWorkspaceId)
+            .Returns(new HooshvareWorkspaceBinding
             {
                 WorkspaceId = tenantWorkspaceId,
                 WorkspaceName = "tenant-workspace",
@@ -160,8 +160,8 @@ public class HelpDeskAiWorkspaceResolverTests
 
         result.IsReady.ShouldBeTrue();
         result.Source.ShouldBe(HelpDeskAiBindingSource.TenantDefault);
-        result.CopilotId.ShouldBe(tenantCopilotId);
-        result.CopilotName.ShouldBe("Tenant Copilot");
+        result.HooshvareId.ShouldBe(tenantHooshvareId);
+        result.HooshvareName.ShouldBe("Tenant Hooshvare");
         result.WorkspaceId.ShouldBe(tenantWorkspaceId);
         result.WorkspaceName.ShouldBe("tenant-workspace");
     }
@@ -171,7 +171,7 @@ public class HelpDeskAiWorkspaceResolverTests
     {
         var projectId = Guid.NewGuid();
         _assignmentRepository.GetListByProjectAsync(projectId).Returns([]);
-        _optionsProvider.GetAsync().Returns(new HelpDeskOptions { DefaultAiCopilotId = null });
+        _optionsProvider.GetAsync().Returns(new HelpDeskOptions { DefaultAiHooshvareId = null });
 
         var result = await _resolver.ResolveAsync(projectId, HelpDeskAiWorkspacePurpose.ContentEditing);
 
@@ -181,10 +181,10 @@ public class HelpDeskAiWorkspaceResolverTests
     }
 
     [Fact]
-    public async Task Should_Return_MissingWorkspace_When_Copilot_Has_No_Workspace()
+    public async Task Should_Return_MissingWorkspace_When_Hooshvare_Has_No_Workspace()
     {
         var projectId = Guid.NewGuid();
-        var copilotId = Guid.NewGuid();
+        var hooshvareId = Guid.NewGuid();
         var workspaceId = Guid.NewGuid();
 
         _assignmentRepository.GetListByProjectAsync(projectId)
@@ -193,32 +193,32 @@ public class HelpDeskAiWorkspaceResolverTests
                     Guid.NewGuid(),
                     projectId,
                     HelpDeskAiWorkspacePurpose.ContentEditing,
-                    copilotId,
-                    "Content Copilot")
+                    hooshvareId,
+                    "Content Hooshvare")
             ]);
-        _copilotDefinitionRepository.GetAsync(copilotId, cancellationToken: Arg.Any<CancellationToken>())
-            .Returns(CreateCopilot(copilotId, "Content Copilot", workspaceId));
-        _copilotWorkspaceResolver.ResolveAsync(workspaceId, Arg.Any<CancellationToken>())
-            .Returns(Task.FromException<CopilotWorkspaceBinding>(
+        _hooshvareDefinitionRepository.GetAsync(hooshvareId, cancellationToken: Arg.Any<CancellationToken>())
+            .Returns(CreateHooshvare(hooshvareId, "Content Hooshvare", workspaceId));
+        _hooshvareWorkspaceResolver.ResolveAsync(workspaceId, Arg.Any<CancellationToken>())
+            .Returns(Task.FromException<HooshvareWorkspaceBinding>(
                 new InvalidOperationException("Workspace not found")));
 
         var result = await _resolver.ResolveAsync(projectId, HelpDeskAiWorkspacePurpose.ContentEditing);
 
         result.Readiness.ShouldBe(HelpDeskAiBindingReadiness.MissingWorkspace);
-        result.CopilotId.ShouldBe(copilotId);
-        result.CopilotName.ShouldBe("Content Copilot");
+        result.HooshvareId.ShouldBe(hooshvareId);
+        result.HooshvareName.ShouldBe("Content Hooshvare");
     }
 
     [Fact]
     public async Task Should_Use_Tenant_Default_When_ProjectId_Is_Null()
     {
-        var tenantCopilotId = Guid.NewGuid();
+        var tenantHooshvareId = Guid.NewGuid();
         var tenantWorkspaceId = Guid.NewGuid();
-        _optionsProvider.GetAsync().Returns(new HelpDeskOptions { DefaultAiCopilotId = tenantCopilotId });
-        _copilotDefinitionRepository.GetAsync(tenantCopilotId, cancellationToken: Arg.Any<CancellationToken>())
-            .Returns(CreateCopilot(tenantCopilotId, "Tenant Copilot", tenantWorkspaceId));
-        _copilotWorkspaceResolver.ResolveAsync(tenantWorkspaceId)
-            .Returns(new CopilotWorkspaceBinding
+        _optionsProvider.GetAsync().Returns(new HelpDeskOptions { DefaultAiHooshvareId = tenantHooshvareId });
+        _hooshvareDefinitionRepository.GetAsync(tenantHooshvareId, cancellationToken: Arg.Any<CancellationToken>())
+            .Returns(CreateHooshvare(tenantHooshvareId, "Tenant Hooshvare", tenantWorkspaceId));
+        _hooshvareWorkspaceResolver.ResolveAsync(tenantWorkspaceId)
+            .Returns(new HooshvareWorkspaceBinding
             {
                 WorkspaceId = tenantWorkspaceId,
                 WorkspaceName = "tenant-workspace",
@@ -229,20 +229,20 @@ public class HelpDeskAiWorkspaceResolverTests
 
         result.IsReady.ShouldBeTrue();
         result.Source.ShouldBe(HelpDeskAiBindingSource.TenantDefault);
-        result.CopilotName.ShouldBe("Tenant Copilot");
+        result.HooshvareName.ShouldBe("Tenant Hooshvare");
         result.WorkspaceId.ShouldBe(tenantWorkspaceId);
         result.WorkspaceName.ShouldBe("tenant-workspace");
         await _assignmentRepository.DidNotReceiveWithAnyArgs().GetListByProjectAsync(default);
     }
 
-    private static CopilotDefinition CreateCopilot(Guid id, string displayName, Guid workspaceId)
+    private static HooshvareDefinition CreateHooshvare(Guid id, string displayName, Guid workspaceId)
     {
-        return new CopilotDefinition(
+        return new HooshvareDefinition(
             id,
             tenantId: null,
             sourceModule: "HelpDesk.LiveChat",
             displayName,
-            CopilotKind.Copilot,
+            HooshvareKind.Hooshvare,
             HelpDeskAiWorkspacePurpose.LiveChat.ToString(),
             workspaceId,
             systemPrompt: "System prompt",

@@ -15,7 +15,7 @@ Sufi Platform is the LGPL foundation for building enterprise products on [.NET 1
 
 It is not an ABP fork. Backend modularity and infrastructure come from ABP NuGet packages. Sufi Platform adds a focused product layer: **~31 value-add framework packages** (`SufiChain.SufiPlatform.*`), **19 first-party modules**, the **`sufi` CLI** and templates, plus two independent UI products — **[SufiBlazor](https://github.com/sufi-chain/sufi-blazor)** (MIT component library, ~90 `Sb*` controls) and **[SufiTheme](https://github.com/sufi-chain/sufi-theme)** (LGPL app shell, DualSidebar / SideMenu / TopMenu layouts). Together they replace Blazorise-based ABP UI with a branded Blazor experience for admin and portal surfaces.
 
-Generated hosts start with account and identity, tenant and edition foundations, feature/permission/setting management, OpenIddict, audit logging, background jobs, file management, calendar, tags, menus, short links, database blob storage, SufiAI workspaces (RAG/MCP), and SufiCom messaging contracts. **Pro** products — SufiCom, HelpDesk, AI Copilots, Calendar Copilot, CRM, CMS, Forms, Branding, Dashboard, and Finance (payments, wallets, invoicing, inventory) — are **not open source**. They ship as **NuGet packages**. Obtain a license at [sufichain.com](https://sufichain.com) to use them; a **free tier** is available for every licensee.
+Generated hosts start with account and identity, tenant and edition foundations, feature/permission/setting management, OpenIddict, audit logging, background jobs, file management, calendar, tags, menus, short links, database blob storage, SufiAI workspaces (RAG/MCP), and SufiCom messaging contracts. **Pro** products — SufiCom, HelpDesk, AI Hooshvares, Calendar Hooshvare, CRM, CMS, Forms, Branding, Dashboard, and Finance (payments, wallets, invoicing, inventory) — are **not open source**. They ship as **NuGet packages**. Obtain a license at [sufichain.com](https://sufichain.com) to use them; a **free tier** is available for every licensee.
 
 ---
 
@@ -38,7 +38,7 @@ flowchart TB
 
     subgraph Pro["Pro products — NuGet, licensed free tier"]
         direction TB
-        ProA["SufiCom · HelpDesk · AI Copilots · Calendar Copilot"]
+        ProA["SufiCom · HelpDesk · AI Hooshvares · Calendar Hooshvare"]
         ProB["CRM · CMS · Forms · Finance · Branding · Dashboard"]
     end
 
@@ -132,8 +132,8 @@ Licensed capability packages (**not open source**), distributed as **NuGet**. Fr
 |---------|--------------|-------------|
 | **SufiCom** | `suficom` | Messaging core, real-time Chat, channels (SMS/voice/email providers) |
 | **HelpDesk** | `helpdesk` | Projects, Knowledge Base, Ticketing, LiveChat |
-| **AI Copilots** | `ai-copilots` | Copilot definitions, runtime orchestration, MCP allowlists |
-| **Calendar Copilot** | `calendar-copilot` | Calendar assistant seeded on the Copilots platform |
+| **AI Hooshvares** | `ai-hooshvare` | Hooshvare definitions, runtime orchestration, MCP allowlists |
+| **Calendar Hooshvare** | `calendar-hooshvare` | Calendar assistant seeded on the Hooshvares platform |
 | **CRM** | `crm` | Contacts, onboarding, customer relationship workflows |
 | **CMS** | `cms` | Content types, page builder, themes, publishing, SEO |
 | **Forms** | `forms` | Dynamic forms, records, projections, promote workflows |
@@ -175,7 +175,7 @@ Licensed capability packages (**not open source**), distributed as **NuGet**. Fr
 - **Provider Support**: OpenAI, Ollama, and custom OpenAI-compatible endpoints
 - **RAG**: Document indexing and semantic search with Qdrant or Pgvector vector stores
 - **MCP Tools**: Model Context Protocol tool registry with Semantic Kernel plugin integration
-- **Calendar Copilot**: 12 MCP tools for scheduling, availability, and free/busy queries
+- **Calendar Hooshvare**: 12 MCP tools for scheduling, availability, and free/busy queries
 
 ### Data Access
 
@@ -291,7 +291,7 @@ Phase 1 (open-source foundation) is in **alpha**. **Phases 2–3 — Pro Product
 | Phase | Focus | Status |
 |-------|--------|--------|
 | 1 | Foundation (identity, tenants, audit, jobs, settings, SufiBlazor, SufiTheme, files, calendar, AI, tags, menus, …) | Alpha |
-| 2 | Pro Products (Chat, HelpDesk, messaging, Copilots, CRM, CMS) | **Alpha · active now** |
+| 2 | Pro Products (Chat, HelpDesk, messaging, Hooshvares, CRM, CMS) | **Alpha · active now** |
 | 3 | Finance (wallets, invoices, payments, accounting, inventory) | **Alpha · active now** |
 | 4 | Commerce (subscriptions, booking, events, channels) | Soon |
 | 5 | ERP (workflows, approvals, procurement, projects, documents) | Future |
@@ -306,7 +306,7 @@ Full detail: [docs/roadmap.md](docs/roadmap.md).
 
 **Open-source base** (this repository — framework, first-party modules, CLI, templates) is **LGPL-3.0**. SufiBlazor is **MIT**; SufiTheme is **LGPL-3.0**.
 
-**Pro products** (SufiCom, HelpDesk, AI Copilots, Calendar Copilot, CRM, CMS, Forms, Branding, Dashboard, Finance, and related packages) are **not open source**. They are distributed only as **NuGet packages**. Anyone can obtain a license from [sufichain.com](https://sufichain.com) and use the **free tier** of Pro products; paid tiers unlock higher limits and commercial support.
+**Pro products** (SufiCom, HelpDesk, AI Hooshvares, Calendar Hooshvare, CRM, CMS, Forms, Branding, Dashboard, Finance, and related packages) are **not open source**. They are distributed only as **NuGet packages**. Anyone can obtain a license from [sufichain.com](https://sufichain.com) and use the **free tier** of Pro products; paid tiers unlock higher limits and commercial support.
 
 You can use the open-source base in open-source and commercial projects under LGPL terms. Pro usage requires a valid Sufi Platform license.
 

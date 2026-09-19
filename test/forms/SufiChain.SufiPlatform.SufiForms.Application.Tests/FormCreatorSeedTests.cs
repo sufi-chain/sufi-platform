@@ -1,7 +1,7 @@
 using NSubstitute;
 using Shouldly;
 using SufiChain.SufiPlatform.Localization;
-using SufiChain.SufiPlatform.SufiAI.Copilots.Copilots;
+using SufiChain.SufiPlatform.SufiAI.Hooshvare.Hooshvare;
 using SufiChain.SufiPlatform.SufiForms.Data;
 using Volo.Abp.Data;
 using Xunit;
@@ -13,20 +13,20 @@ public class FormCreatorSeedTests
     [Fact]
     public async Task Seed_is_private_tenant_aware_and_allows_only_definition_tools()
     {
-        var definitions = new List<PlatformCopilotSeedDefinition>();
-        var seeder = Substitute.For<IPlatformCopilotDefinitionSeeder>();
+        var definitions = new List<PlatformHooshvareSeedDefinition>();
+        var seeder = Substitute.For<IPlatformHooshvareDefinitionSeeder>();
         var tenantId = Guid.NewGuid();
-        seeder.SeedAsync(Arg.Any<PlatformCopilotSeedDefinition>(), Arg.Any<DataSeedContext>(), Arg.Any<CancellationToken>())
+        seeder.SeedAsync(Arg.Any<PlatformHooshvareSeedDefinition>(), Arg.Any<DataSeedContext>(), Arg.Any<CancellationToken>())
             .Returns(call =>
             {
                 call.Arg<DataSeedContext>().TenantId.ShouldBe(tenantId);
-                definitions.Add(call.Arg<PlatformCopilotSeedDefinition>());
+                definitions.Add(call.Arg<PlatformHooshvareSeedDefinition>());
                 return Task.CompletedTask;
             });
-        var contributor = new FormCreatorCopilotDataSeedContributor(seeder, Substitute.For<ILocalizationTextSeeder>());
+        var contributor = new FormCreatorHooshvareDataSeedContributor(seeder, Substitute.For<ILocalizationTextSeeder>());
         await contributor.SeedAsync(new DataSeedContext(tenantId));
         var definition = definitions.ShouldHaveSingleItem();
-        definition.Key.ShouldBe(PlatformCopilotKeys.SufiFormsFormCreator);
+        definition.Key.ShouldBe(PlatformHooshvareKeys.SufiFormsFormCreator);
         definition.IsPublic.ShouldBeFalse();
         definition.PersistChatSession.ShouldBeFalse();
         definition.RuntimeOptions.AllowedMcpToolNames.ShouldBe(new List<string>
@@ -36,8 +36,8 @@ public class FormCreatorSeedTests
         definition.RequiredContextKeys.ShouldBe(new List<string> { "operation", "definitionId", "phase", "proposal" });
         foreach (var culture in new[] { "en", "fa", "ar", "es" })
         {
-            FormCreatorCopilotSeedTexts.Texts.DisplayName[culture].ShouldNotBeNullOrWhiteSpace();
-            FormCreatorCopilotSeedTexts.Texts.SystemPrompt[culture].ShouldContain("RendererLimitations");
+            FormCreatorHooshvareSeedTexts.Texts.DisplayName[culture].ShouldNotBeNullOrWhiteSpace();
+            FormCreatorHooshvareSeedTexts.Texts.SystemPrompt[culture].ShouldContain("RendererLimitations");
             foreach (var name in definition.RuntimeOptions.AllowedMcpToolNames)
             {
                 FormsMcpToolSeedTexts.Get(name).DisplayNames[culture].ShouldNotBeNullOrWhiteSpace();

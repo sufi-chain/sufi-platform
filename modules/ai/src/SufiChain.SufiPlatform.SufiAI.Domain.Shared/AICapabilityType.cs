@@ -3,7 +3,7 @@ namespace SufiChain.SufiPlatform.SufiAI;
 /// <summary>
 /// Model-route capabilities that a workspace can configure.
 /// Chat, embeddings, vision, audio, image, and web routes are workspace-owned.
-/// RAG authorization and MCP tool policy live on the copilot.
+/// RAG authorization and MCP tool policy live on the hooshvare.
 /// MCP servers are tenant-scoped, not workspace configuration.
 /// </summary>
 public enum AICapabilityType

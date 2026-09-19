@@ -9,8 +9,8 @@
     <ProjectReference Include="../../../../pro-modules/helpdesk/src/SufiChain.SufiPlatform.HelpDesk.Ticketing.Application/SufiChain.SufiPlatform.HelpDesk.Ticketing.Application.csproj" />
     <ProjectReference Include="../../../../pro-modules/helpdesk/src/SufiChain.SufiPlatform.HelpDesk.Ticketing.Domain/SufiChain.SufiPlatform.HelpDesk.Ticketing.Domain.csproj" />
     <ProjectReference Include="../../../../pro-modules/helpdesk/src/SufiChain.SufiPlatform.HelpDesk.Ticketing.Domain.Shared/SufiChain.SufiPlatform.HelpDesk.Ticketing.Domain.Shared.csproj" />
-    <ProjectReference Include="..\..\..\..\pro-modules\ai-copilots\src\SufiChain.SufiPlatform.SufiAI.Copilots.Application\SufiChain.SufiPlatform.SufiAI.Copilots.Application.csproj" />
-    <ProjectReference Include="..\..\..\..\pro-modules\ai-copilots\src\SufiChain.SufiPlatform.SufiAI.Copilots.Domain\SufiChain.SufiPlatform.SufiAI.Copilots.Domain.csproj" />
+    <ProjectReference Include="..\..\..\..\pro-modules\ai-hooshvare\src\SufiChain.SufiPlatform.SufiAI.Hooshvare.Application\SufiChain.SufiPlatform.SufiAI.Hooshvare.Application.csproj" />
+    <ProjectReference Include="..\..\..\..\pro-modules\ai-hooshvare\src\SufiChain.SufiPlatform.SufiAI.Hooshvare.Domain\SufiChain.SufiPlatform.SufiAI.Hooshvare.Domain.csproj" />
     <ProjectReference Include="..\..\..\framework\SufiChain.SufiPlatform.Data\SufiChain.SufiPlatform.Data.csproj" />
     <PackageReference Include="Volo.Abp.TestBase" Version="$(AbpVersion)" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.14.1" />

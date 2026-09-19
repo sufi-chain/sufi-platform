@@ -78,7 +78,7 @@ Accepted decisions for the Sufi Platform framework and first-party modules. Hist
 
 **Decision:** The AI module persists workspaces and related configuration through the module’s EF Core / MongoDB packages. Vector search is implemented via MongoDB (`VectorStoreType.MongoDB`). Pgvector and Qdrant remain future options, not current defaults.
 
-**Consequences:** Prefer [AI Architecture](../modules/ai/architecture.md) over older notes that assume pgvector-first or `CopilotDefinition` aggregates.
+**Consequences:** Prefer [AI Architecture](../modules/ai/architecture.md) over older notes that assume pgvector-first or `HooshvareDefinition` aggregates.
 
 ### ADR-M003: Calendar recurrence
 

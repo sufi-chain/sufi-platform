@@ -33,7 +33,7 @@ High-level views of the Sufi Platform framework. Package inventory details live 
 | PostgreSQL / MongoDB | Host choice | Relational or document persistence |
 | S3-compatible storage | AWS SDK / compatible | Blob and file content |
 | OpenIddict | OpenIddict module | OAuth2 / OIDC for tiered hosts |
-| Semantic Kernel / M.E.AI | Framework SufiAI | Chat, embeddings, and copilot orchestration |
+| Semantic Kernel / M.E.AI | Framework SufiAI | Chat, embeddings, and hooshvare orchestration |
 
 ## Framework package families
 

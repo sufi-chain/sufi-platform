@@ -8,10 +8,10 @@ using SufiChain.SufiPlatform.HelpDesk.KnowledgeBase.Articles;
 using SufiChain.SufiPlatform.HelpDesk.Ai;
 using SufiChain.SufiPlatform.HelpDesk.KnowledgeBase.Permissions;
 using SufiChain.SufiPlatform.HelpDesk.KnowledgeBase.RAG;
-using SufiChain.SufiPlatform.HelpDesk.KnowledgeBase.Copilots;
+using SufiChain.SufiPlatform.HelpDesk.KnowledgeBase.Hooshvare;
 using SufiChain.SufiPlatform.HelpDesk.KnowledgeBase.Data;
 using SufiChain.SufiPlatform.SufiAI;
-using SufiChain.SufiPlatform.SufiAI.Copilots.Copilots;
+using SufiChain.SufiPlatform.SufiAI.Hooshvare.Hooshvare;
 using Xunit;
 
 namespace SufiChain.SufiPlatform.HelpDesk.KnowledgeBase;
@@ -118,12 +118,12 @@ public class KBArticleRagContractTests
     }
 
     [Fact]
-    public void Editor_Ai_Moderator_Should_Use_Copilot_Runtime_And_Workspace_Resolver()
+    public void Editor_Ai_Moderator_Should_Use_Hooshvare_Runtime_And_Workspace_Resolver()
     {
         var constructor = typeof(KBEditorAiModeratorAppService).GetConstructors().Single();
         var parameterTypes = constructor.GetParameters().Select(x => x.ParameterType).ToList();
 
-        parameterTypes.ShouldContain(typeof(ICopilotRuntimeAppService));
+        parameterTypes.ShouldContain(typeof(IHooshvareRuntimeAppService));
         parameterTypes.ShouldContain(typeof(IHelpDeskAiWorkspaceResolver));
         parameterTypes.ShouldContain(typeof(ISufiAIAudioService));
     }
@@ -133,23 +133,23 @@ public class KBArticleRagContractTests
     {
         KBEditorAiModeratorAppService.LinkedEntityType.ShouldBe("KBArticle");
         KBEditorAiModeratorAppService.LinkRole.ShouldBe("PrimaryAssistant");
-        HelpDeskKbArticleEditorCopilotKeys.Key.ShouldNotBeNullOrWhiteSpace();
+        HelpDeskKbArticleEditorHooshvareKeys.Key.ShouldNotBeNullOrWhiteSpace();
 
         Enum.GetNames(typeof(ConversationKind)).ShouldContain(nameof(ConversationKind.Assistant));
         Enum.GetNames(typeof(ChatMessageSenderKind)).ShouldContain(nameof(ChatMessageSenderKind.Assistant));
     }
 
     [Fact]
-    public void Editor_Copilot_Seed_Should_Require_Current_Draft_Context_In_All_Cultures()
+    public void Editor_Hooshvare_Seed_Should_Require_Current_Draft_Context_In_All_Cultures()
     {
-        HelpDeskKbArticleEditorCopilotKeys.EntityVersion.ShouldBe(8);
+        HelpDeskKbArticleEditorHooshvareKeys.EntityVersion.ShouldBe(0);
         typeof(SendEditorAiMessageInput).GetProperty(nameof(SendEditorAiMessageInput.VersionId)).ShouldNotBeNull();
 
         foreach (var culture in new[] { "en", "fa", "ar", "es" })
         {
-            var prompt = HelpDeskKbArticleEditorCopilotSeedTexts.Texts.SystemPrompt[culture];
+            var prompt = HelpDeskKbArticleEditorHooshvareSeedTexts.Texts.SystemPrompt[culture];
 
-            prompt.ShouldContain("copilotContext");
+            prompt.ShouldContain("hooshvareContext");
             prompt.ShouldContain("projectId");
             prompt.ShouldContain("articleId");
             prompt.ShouldContain("versionId");
@@ -160,11 +160,11 @@ public class KBArticleRagContractTests
     }
 
     [Fact]
-    public void Editor_Copilot_Seed_Should_Enable_Project_Scoped_Rag()
+    public void Editor_Hooshvare_Seed_Should_Enable_Project_Scoped_Rag()
     {
-        HelpDeskKbArticleEditorCopilotKeys.EntityVersion.ShouldBe(8);
+        HelpDeskKbArticleEditorHooshvareKeys.EntityVersion.ShouldBe(0);
 
-        var runtimeOptions = new CopilotRuntimeOptions
+        var runtimeOptions = new HooshvareRuntimeOptions
         {
             UseRag = true,
             RagTopK = 5,

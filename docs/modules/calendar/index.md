@@ -1,6 +1,6 @@
 # Calendar Module
 
-Calendars, events, availability, free/busy, recurrence, and reminders — including public scheduler components and **12 MCP tools** for copilot scheduling.
+Calendars, events, availability, free/busy, recurrence, and reminders — including public scheduler components and **12 MCP tools** for hooshvare scheduling.
 
 ## Code location
 

@@ -8,7 +8,7 @@ namespace SufiChain.SufiPlatform.SufiAI.Web;
 
 public static class WebResearchSettings
 {
-    public const string Prefix = "SufiAI.Copilots.WebSearch.";
+    public const string Prefix = "SufiAI.Hooshvare.WebSearch.";
     public const string Enabled = Prefix + "Enabled";
     public const string Endpoint = Prefix + "Endpoint";
     public const string Token = Prefix + "AuthorizationBearerToken";

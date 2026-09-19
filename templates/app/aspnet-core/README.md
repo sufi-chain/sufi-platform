@@ -67,7 +67,7 @@ etc/docker/
 ### Module Profiles
 
 The default profile keeps the platform foundation and installs every registered production
-feature pack: `ai-copilots`, `branding`, `calendar-copilot`, `cms`, `crm`, `dashboard`,
+feature pack: `ai-hooshvare`, `branding`, `calendar-hooshvare`, `cms`, `crm`, `dashboard`,
 `editions`, `finance`, `forms`, `helpdesk`, `saas`, and `suficom`.
 
 Reduce the default profile:

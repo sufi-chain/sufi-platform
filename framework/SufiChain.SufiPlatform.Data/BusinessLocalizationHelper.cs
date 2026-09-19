@@ -12,7 +12,7 @@ public static class BusinessLocalizationHelper
     private static readonly string[] BusinessKeyPrefixes = new[]
     {
         "Structure:",
-        "Copilot:",
+        "Hooshvare:",
         "MCPTool:",
         "MCPToolType:",
         "InboxCategory:",

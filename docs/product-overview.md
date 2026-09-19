@@ -6,7 +6,7 @@ For delivery teams, the platform gives each generated solution a starting point:
 
 Sufi Platform is licensed as an LGPL open-source base product. It respects the ABP Framework as the upstream foundation and extends it with a focused Sufi Platform experience for enterprise Blazor applications.
 
-**Pro products** (Chat, HelpDesk, AI Copilots, CRM, CMS, Forms, Branding, SaaS, Finance, and related offerings) are separate from the open-source base. They are **not open source**. They are distributed as **NuGet packages**. Obtain a license from [sufichain.com](https://sufichain.com); every licensee can use a **free tier** of Pro products, with paid tiers for higher limits and support.
+**Pro products** (Chat, HelpDesk, AI Hooshvares, CRM, CMS, Forms, Branding, SaaS, Finance, and related offerings) are separate from the open-source base. They are **not open source**. They are distributed as **NuGet packages**. Obtain a license from [sufichain.com](https://sufichain.com); every licensee can use a **free tier** of Pro products, with paid tiers for higher limits and support.
 
 ## Naming model
 
