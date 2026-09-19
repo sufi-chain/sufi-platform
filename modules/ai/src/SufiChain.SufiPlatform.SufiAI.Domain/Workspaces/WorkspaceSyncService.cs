@@ -1,5 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Microsoft.Extensions.AI;
 using Microsoft.SemanticKernel;
 using SufiChain.SufiPlatform.SufiAI;
@@ -63,7 +64,8 @@ public class WorkspaceSyncService : ITransientDependency
         await CheckFeatureAsync(SufiAIFeatures.Workspaces);
         var builder = Kernel.CreateBuilder();
         builder.Services.AddSingleton(_serviceProvider);
-        WorkspaceConfigurationHelper.ConfigureKernel(builder, configuration);
+        WorkspaceConfigurationHelper.ConfigureKernel(builder, configuration,
+            _serviceProvider.GetRequiredService<IOptions<AITransportOptions>>().Value);
         return builder.Build();
     }
 

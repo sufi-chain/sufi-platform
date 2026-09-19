@@ -75,7 +75,7 @@ public class AIModelRouteResolverTests
         AddRoute(workspace, "primary-chat", isUserSelectable: false);
 
         var missingId = Guid.NewGuid();
-        var exception = Should.Throw<BusinessException>(() =>
+        var exception = Should.Throw<global::Volo.Abp.BusinessException>(() =>
             CreateResolver(workspace).Resolve(
                 workspace,
                 AICapabilityType.ChatCompletion,
@@ -107,7 +107,7 @@ public class AIModelRouteResolverTests
             .FindAsync(Arg.Is(foreign.Id), Arg.Any<bool>(), Arg.Any<CancellationToken>())
             .Returns(foreign);
 
-        var exception = await Should.ThrowAsync<BusinessException>(() =>
+        var exception = await Should.ThrowAsync<global::Volo.Abp.BusinessException>(() =>
             CreateResolver(workspace, configurationRepository).ResolveAsync(
                 workspace.Id,
                 AICapabilityType.ChatCompletion,
@@ -124,7 +124,7 @@ public class AIModelRouteResolverTests
         var route = AddRoute(workspace, "disabled-chat", isUserSelectable: true);
         route.Disable();
 
-        var exception = Should.Throw<BusinessException>(() =>
+        var exception = Should.Throw<global::Volo.Abp.BusinessException>(() =>
             CreateResolver(workspace).Resolve(
                 workspace,
                 AICapabilityType.ChatCompletion,
@@ -144,7 +144,7 @@ public class AIModelRouteResolverTests
             isUserSelectable: true,
             capabilityType: AICapabilityType.Embeddings);
 
-        var exception = Should.Throw<BusinessException>(() =>
+        var exception = Should.Throw<global::Volo.Abp.BusinessException>(() =>
             CreateResolver(workspace).Resolve(
                 workspace,
                 AICapabilityType.ChatCompletion,
@@ -159,7 +159,7 @@ public class AIModelRouteResolverTests
         var workspace = CreateWorkspace();
         var internalRoute = AddRoute(workspace, "internal-chat", isUserSelectable: false);
 
-        var exception = Should.Throw<BusinessException>(() =>
+        var exception = Should.Throw<global::Volo.Abp.BusinessException>(() =>
             CreateResolver(workspace).Resolve(
                 workspace,
                 AICapabilityType.ChatCompletion,
@@ -176,7 +176,7 @@ public class AIModelRouteResolverTests
         var allowed = AddRoute(workspace, "allowed-chat", isUserSelectable: true, priority: 0);
         var blocked = AddRoute(workspace, "blocked-chat", isUserSelectable: true, priority: 1);
 
-        var exception = Should.Throw<BusinessException>(() =>
+        var exception = Should.Throw<global::Volo.Abp.BusinessException>(() =>
             CreateResolver(workspace).Resolve(
                 workspace,
                 AICapabilityType.ChatCompletion,
@@ -218,7 +218,7 @@ public class AIModelRouteResolverTests
             isUserSelectable: true,
             openAIApiMode: OpenAIApiMode.Responses);
 
-        var exception = Should.Throw<BusinessException>(() =>
+        var exception = Should.Throw<global::Volo.Abp.BusinessException>(() =>
             CreateResolver(workspace).Resolve(
                 workspace,
                 AICapabilityType.ChatCompletion,

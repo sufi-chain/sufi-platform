@@ -60,7 +60,7 @@ public class WorkspaceManagerTests : SufiAITestBase<SufiAIDomainTestModule>
             .Returns(Task.FromResult<Workspace?>(existingWorkspace));
 
         // Act & Assert
-        await Should.ThrowAsync<BusinessException>(async () =>
+        await Should.ThrowAsync<global::Volo.Abp.BusinessException>(async () =>
         {
             await _workspaceManager.ValidateNameAsync(
                 AITestData.Workspaces.DefaultWorkspaceName
@@ -114,7 +114,7 @@ public class WorkspaceManagerTests : SufiAITestBase<SufiAIDomainTestModule>
             .Returns(Task.FromResult<Workspace?>(existingWorkspace));
 
         // Act & Assert
-        await Should.ThrowAsync<BusinessException>(async () =>
+        await Should.ThrowAsync<global::Volo.Abp.BusinessException>(async () =>
         {
             await _workspaceManager.ValidateNameAsync("new-name", workspace.Id);
         });

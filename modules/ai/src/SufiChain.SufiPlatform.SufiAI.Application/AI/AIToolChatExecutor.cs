@@ -1,6 +1,10 @@
 using System.Diagnostics;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
+using Microsoft.SemanticKernel.Connectors.OpenAI;
+using OpenAI.Chat;
 using SufiChain.SufiPlatform.SufiAI.Workspaces;
 using Volo.Abp;
 using Volo.Abp.DependencyInjection;
@@ -13,17 +17,20 @@ public class AIToolChatExecutor : IAIToolChatExecutor, ITransientDependency
     protected WorkspaceSyncService WorkspaceSyncService { get; }
     protected IWorkspaceGuardrailService WorkspaceGuardrailService { get; }
     protected IAIUsageRecorder UsageRecorder { get; }
+    protected ILogger<AIToolChatExecutor> Logger { get; }
 
     public AIToolChatExecutor(
         IWorkspaceRuntimeConfigurationResolver runtimeConfigurationResolver,
         WorkspaceSyncService workspaceSyncService,
         IWorkspaceGuardrailService workspaceGuardrailService,
-        IAIUsageRecorder usageRecorder)
+        IAIUsageRecorder usageRecorder,
+        ILogger<AIToolChatExecutor>? logger = null)
     {
         RuntimeConfigurationResolver = runtimeConfigurationResolver;
         WorkspaceSyncService = workspaceSyncService;
         WorkspaceGuardrailService = workspaceGuardrailService;
         UsageRecorder = usageRecorder;
+        Logger = logger ?? NullLogger<AIToolChatExecutor>.Instance;
     }
 
     public virtual async Task<AIPreparedKernel> PrepareKernelAsync(
@@ -73,14 +80,25 @@ public class AIToolChatExecutor : IAIToolChatExecutor, ITransientDependency
         }
 
         var chatService = kernel.GetRequiredService<IChatCompletionService>();
+        var executionSettings = request.ExecutionSettings;
+        if (request.ResponseSchema != null)
+        {
+            var settings = (OpenAIPromptExecutionSettings)OpenAIPromptExecutionSettings
+                .FromExecutionSettings(executionSettings).Clone();
+            settings.ResponseFormat = ChatResponseFormat.CreateJsonSchemaFormat(
+                request.ResponseSchema.Name,
+                BinaryData.FromString(request.ResponseSchema.SchemaJson),
+                jsonSchemaIsStrict: true);
+            executionSettings = settings;
+        }
         var stopwatch = Stopwatch.StartNew();
         try
         {
-            var response = await chatService.GetChatMessageContentAsync(
-                request.History,
-                request.ExecutionSettings,
-                kernel,
-                cancellationToken);
+            var response = request.BufferStreamingResponse
+                ? await AIStreamingChatResponseReader.ReadAsync(chatService.GetStreamingChatMessageContentsAsync(
+                    request.History, executionSettings, kernel, cancellationToken), cancellationToken)
+                : await chatService.GetChatMessageContentAsync(
+                    request.History, executionSettings, kernel, cancellationToken);
             stopwatch.Stop();
 
             var usage = SemanticKernelChatTokenUsageExtractor.Extract(response);
@@ -103,6 +121,30 @@ public class AIToolChatExecutor : IAIToolChatExecutor, ITransientDependency
         catch (Exception exception) when (exception is not BusinessException)
         {
             stopwatch.Stop();
+            // Diagnose protocol pairing without recording prompts, arguments, results, or credentials.
+            var pendingCalls = new HashSet<string>(StringComparer.Ordinal);
+            var callCount = 0;
+            var resultCount = 0;
+            var unmatchedResults = 0;
+            foreach (var message in request.History)
+            {
+                foreach (var call in message.Items.OfType<FunctionCallContent>())
+                {
+                    callCount++;
+                    if (message.Role == AuthorRole.Assistant && !string.IsNullOrEmpty(call.Id))
+                        pendingCalls.Add(call.Id);
+                }
+                foreach (var result in message.Items.OfType<FunctionResultContent>())
+                {
+                    resultCount++;
+                    if (string.IsNullOrEmpty(result.CallId) || !pendingCalls.Remove(result.CallId))
+                        unmatchedResults++;
+                }
+            }
+            Logger.LogWarning(
+                "AI tool turn failed. BufferedStream={BufferedStream}, ToolCalls={ToolCalls}, ToolResults={ToolResults}, UnmatchedResults={UnmatchedResults}, PendingCalls={PendingCalls}, ElapsedMs={ElapsedMs}, ExceptionType={ExceptionType}, CallerCancelled={CallerCancelled}",
+                request.BufferStreamingResponse, callCount, resultCount, unmatchedResults, pendingCalls.Count,
+                stopwatch.ElapsedMilliseconds, exception.GetType().Name, cancellationToken.IsCancellationRequested);
             await RecordAsync(
                 request.Configuration,
                 request.Configuration.ModelId,

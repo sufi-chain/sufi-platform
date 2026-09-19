@@ -30,7 +30,11 @@ public sealed class AIToolChatExecutionRequest
 
     public PromptExecutionSettings? ExecutionSettings { get; init; }
 
+    public SufiAIJsonResponseSchema? ResponseSchema { get; init; }
+
     public bool RequiresToolCalling { get; init; }
+    /// <summary>Read provider chunks but return one complete response to the caller.</summary>
+    public bool BufferStreamingResponse { get; init; }
 
     public Func<Kernel, CancellationToken, Task>? ConfigureKernelAsync { get; init; }
 
@@ -40,6 +44,24 @@ public sealed class AIToolChatExecutionRequest
 public sealed class AIToolChatExecutionResult
 {
     public required ChatMessageContent Response { get; init; }
+
+    public string? FinishReason
+    {
+        get
+        {
+            var reason = Response.Metadata != null && Response.Metadata.TryGetValue("FinishReason", out var value)
+                ? value?.ToString()
+                : null;
+            // Semantic Kernel uses SDK enum names; expose the wire names used by the direct provider.
+            return reason?.ToLowerInvariant() switch
+            {
+                "toolcalls" => "tool_calls",
+                "contentfilter" => "content_filter",
+                "functioncall" => "function_call",
+                var other => other
+            };
+        }
+    }
 
     public required SufiAITokenUsage Usage { get; init; }
 

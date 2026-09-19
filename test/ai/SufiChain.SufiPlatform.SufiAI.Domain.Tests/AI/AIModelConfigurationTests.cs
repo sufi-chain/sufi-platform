@@ -24,8 +24,10 @@ public class AIModelConfigurationTests
         configuration.Description.ShouldBeNull();
     }
 
-    [Fact]
-    public void Should_Reject_Invalid_Max_Context_Tokens()
+    [Theory]
+    [InlineData(-1)]
+    [InlineData(int.MinValue)]
+    public void Should_Reject_Negative_Max_Context_Tokens(int maxContextTokens)
     {
         var configuration = new AIModelConfiguration(
             Guid.NewGuid(),
@@ -33,15 +35,26 @@ public class AIModelConfigurationTests
             AICapabilityType.ChatCompletion,
             "gpt-4o");
 
-        var exception = Should.Throw<BusinessException>(() =>
+        var exception = Should.Throw<global::Volo.Abp.BusinessException>(() =>
             configuration.UpdateConfiguration(
                 "gpt-4o",
                 apiEndpoint: null,
                 apiKey: null,
                 priority: 0,
-                maxContextTokens: 0));
+                maxContextTokens: maxContextTokens));
 
         exception.Code.ShouldBe(AIErrorCodes.InvalidMaxContextTokens);
+    }
+
+    [Fact]
+    public void Should_Normalize_Legacy_Zero_Max_Context_Tokens_To_Default()
+    {
+        var configuration = new AIModelConfiguration(
+            Guid.NewGuid(), Guid.NewGuid(), AICapabilityType.ChatCompletion, "gpt-4o");
+        configuration.UpdateConfiguration("gpt-4o", null, null, 0, maxContextTokens: 128000);
+        configuration.UpdateConfiguration("gpt-4o", null, null, 0, maxContextTokens: 0);
+
+        configuration.MaxContextTokens.ShouldBe(AIModelConfiguration.DefaultMaxContextTokens);
     }
 
     [Fact]

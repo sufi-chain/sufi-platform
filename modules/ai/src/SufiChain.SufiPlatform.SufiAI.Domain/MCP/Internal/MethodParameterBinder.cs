@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using Volo.Abp;
 
 namespace SufiChain.SufiPlatform.SufiAI.MCP.Internal;
@@ -12,6 +13,11 @@ namespace SufiChain.SufiPlatform.SufiAI.MCP.Internal;
 /// </summary>
 public class MethodParameterBinder
 {
+    private static readonly JsonSerializerOptions SerializerOptions = new()
+    {
+        PropertyNameCaseInsensitive = true,
+        Converters = { new JsonStringEnumConverter() }
+    };
     public object?[] BindParameters(
         MethodInfo method,
         Dictionary<string, object?> parameters)
@@ -121,7 +127,7 @@ public class MethodParameterBinder
         if (underlyingType.IsClass || (underlyingType.IsGenericType && underlyingType.GetGenericTypeDefinition() == typeof(List<>)))
         {
             var json = value is string str ? str : JsonSerializer.Serialize(value);
-            return JsonSerializer.Deserialize(json, underlyingType);
+            return JsonSerializer.Deserialize(json, underlyingType, SerializerOptions);
         }
         
         throw new InvalidOperationException($"Cannot convert value to type {targetType.Name}");
@@ -145,8 +151,12 @@ public class MethodParameterBinder
                     return TimeSpan.Parse(str!);
                 if (targetType.IsEnum)
                     return Enum.Parse(targetType, str!, ignoreCase: true);
+                if (targetType.IsClass && targetType != typeof(string))
+                    return JsonSerializer.Deserialize(str!, targetType, SerializerOptions);
                 return str;
             case JsonValueKind.Number:
+                if (targetType.IsEnum)
+                    return Enum.ToObject(targetType, element.GetInt64());
                 if (targetType == typeof(int))
                     return element.GetInt32();
                 if (targetType == typeof(long))
@@ -163,7 +173,7 @@ public class MethodParameterBinder
                 return element.GetBoolean();
             case JsonValueKind.Array:
             case JsonValueKind.Object:
-                return JsonSerializer.Deserialize(element.GetRawText(), targetType);
+                return JsonSerializer.Deserialize(element.GetRawText(), targetType, SerializerOptions);
             default:
                 throw new InvalidOperationException($"Unsupported JsonElement kind: {element.ValueKind}");
         }

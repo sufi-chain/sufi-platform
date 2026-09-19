@@ -34,4 +34,7 @@ public class SufiAIChatRequest
     /// Optional sampling temperature.
     /// </summary>
     public float? Temperature { get; set; }
+
+    /// <summary>Optional strict output schema. Requires a provider route supporting structured outputs.</summary>
+    public SufiAIJsonResponseSchema? ResponseSchema { get; set; }
 }

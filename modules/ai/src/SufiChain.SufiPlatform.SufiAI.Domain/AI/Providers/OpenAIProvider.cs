@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Net;
 using System.Net.Sockets;
 using System.Runtime.CompilerServices;
@@ -11,6 +12,7 @@ using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using SufiChain.SufiPlatform.SufiAI.RAG;
 using SufiChain.SufiPlatform.SufiAI.Workspaces;
 using Volo.Abp;
@@ -57,6 +59,7 @@ public class OpenAIProvider : IAIProvider, ITransientDependency
     private readonly IAICredentialResolver _credentialResolver;
     private readonly IClock _clock;
     private readonly Web.IWebContentFetcher _webContentFetcher;
+    private readonly AITransportOptions _transportOptions;
 
     public AIProviderType ProviderType => AIProviderType.OpenAI;
 
@@ -64,13 +67,15 @@ public class OpenAIProvider : IAIProvider, ITransientDependency
         IHttpClientFactory httpClientFactory,
         ILogger<OpenAIProvider> logger,
         IAICredentialResolver credentialResolver,
-        IClock clock, Web.IWebContentFetcher? webContentFetcher = null)
+        IClock clock, Web.IWebContentFetcher? webContentFetcher = null,
+        IOptions<AITransportOptions>? transportOptions = null)
     {
         _httpClientFactory = httpClientFactory;
         _logger = logger;
         _credentialResolver = credentialResolver;
         _clock = clock;
         _webContentFetcher = webContentFetcher ?? new Web.WebContentFetcher();
+        _transportOptions = transportOptions?.Value ?? new AITransportOptions();
     }
 
     public bool SupportsCapability(AICapabilityType capabilityType)
@@ -125,22 +130,44 @@ public class OpenAIProvider : IAIProvider, ITransientDependency
         var httpClient = CreateHttpClient(workspace, configuration);
         var baseUrl = GetBaseUrl(workspace, configuration);
 
-        using var formData = new MultipartFormDataContent();
-        formData.Add(new ByteArrayContent(request.AudioData), "file", $"audio.{request.AudioFormat}");
-        formData.Add(new StringContent(configuration.ModelId), "model");
-        formData.Add(new StringContent("json"), "response_format");
+        var boundary = "sufi-audio-" + Guid.NewGuid().ToString("N");
+        using var formData = new MultipartFormDataContent(boundary);
+        // Use browser-style form headers for OpenAI-compatible multipart parsers.
+        formData.Headers.ContentType!.Parameters.Single(p => p.Name == "boundary").Value = boundary;
+        var format = (request.AudioFormat ?? string.Empty).Trim().TrimStart('.').ToLowerInvariant();
+        var mediaType = format switch
+        {
+            "webm" => "audio/webm",
+            "ogg" or "oga" => "audio/ogg",
+            "wav" => "audio/wav",
+            "mp3" or "mpeg" or "mpga" => "audio/mpeg",
+            "mp4" or "m4a" => "audio/mp4",
+            "flac" => "audio/flac",
+            _ => "application/octet-stream"
+        };
+        var extension = format.Length > 0 && format.All(char.IsAsciiLetterOrDigit) ? format : "bin";
+        var audioContent = new ByteArrayContent(request.AudioData);
+        audioContent.Headers.ContentType = new MediaTypeHeaderValue(mediaType);
+        audioContent.Headers.ContentDisposition = new ContentDispositionHeaderValue("form-data")
+        {
+            Name = "\"file\"",
+            FileName = $"\"audio.{extension}\""
+        };
+        formData.Add(audioContent);
+        formData.Add(new StringContent(configuration.ModelId), "\"model\"");
+        formData.Add(new StringContent("json"), "\"response_format\"");
 
         if (!string.IsNullOrEmpty(request.Language))
         {
-            formData.Add(new StringContent(request.Language), "language");
+            formData.Add(new StringContent(request.Language), "\"language\"");
         }
 
         if (!string.IsNullOrEmpty(request.Prompt))
         {
-            formData.Add(new StringContent(request.Prompt), "prompt");
+            formData.Add(new StringContent(request.Prompt), "\"prompt\"");
         }
 
-        var response = await httpClient.PostAsync($"{baseUrl}/audio/transcriptions", formData, cancellationToken);
+        using var response = await httpClient.PostAsync($"{baseUrl}/audio/transcriptions", formData, cancellationToken);
         await EnsureProviderSuccessAsync(response, "audio/transcriptions", configuration.ModelId, cancellationToken);
 
         var responseJson = await response.Content.ReadAsStringAsync(cancellationToken);
@@ -389,6 +416,7 @@ public class OpenAIProvider : IAIProvider, ITransientDependency
             messages = BuildChatCompletionsMessages(request.Messages, request.SystemPrompt),
             temperature = request.Temperature,
             max_tokens = request.MaxTokens,
+            response_format = BuildChatResponseFormat(request.ResponseSchema),
             stream = false
         };
 
@@ -453,6 +481,7 @@ public class OpenAIProvider : IAIProvider, ITransientDependency
             messages = BuildChatCompletionsMessages(request.Messages, request.SystemPrompt),
             temperature = request.Temperature,
             max_tokens = request.MaxTokens,
+            response_format = BuildChatResponseFormat(request.ResponseSchema),
             stream = true,
             stream_options = new { include_usage = true }
         };
@@ -511,6 +540,7 @@ public class OpenAIProvider : IAIProvider, ITransientDependency
         return new ChatCompletionResponse
         {
             Content = ReadResponsesOutputText(result),
+            FinishReason = ReadResponsesFinishReason(result),
             ModelId = configuration.ModelId,
             InputTokens = usage.InputTokens,
             OutputTokens = usage.OutputTokens,
@@ -663,9 +693,32 @@ public class OpenAIProvider : IAIProvider, ITransientDependency
             input = BuildResponsesInput(request.Messages),
             temperature = request.Temperature,
             max_output_tokens = request.MaxTokens,
+            text = request.ResponseSchema == null ? null : new { format = BuildResponsesFormat(request.ResponseSchema) },
             stream
         };
     }
+
+    private static object? BuildChatResponseFormat(SufiAIJsonResponseSchema? schema)
+    {
+        return schema == null ? null : new
+        {
+            type = "json_schema",
+            json_schema = new
+            {
+                name = schema.Name,
+                strict = true,
+                schema = JsonSerializer.Deserialize<JsonElement>(schema.SchemaJson)
+            }
+        };
+    }
+
+    private static object BuildResponsesFormat(SufiAIJsonResponseSchema schema) => new
+    {
+        type = "json_schema",
+        name = schema.Name,
+        strict = true,
+        schema = JsonSerializer.Deserialize<JsonElement>(schema.SchemaJson)
+    };
 
     private static List<object> BuildResponsesInput(IEnumerable<ChatMessage> messages)
     {
@@ -755,6 +808,17 @@ public class OpenAIProvider : IAIProvider, ITransientDependency
         return element.TryGetProperty(propertyName, out var property) && property.ValueKind == JsonValueKind.Number
             ? property.GetInt32()
             : null;
+    }
+
+    private static string? ReadResponsesFinishReason(JsonElement result)
+    {
+        if (!result.TryGetProperty("status", out var status)) return null;
+        if (status.GetString() == "completed") return "stop";
+        if (status.GetString() == "incomplete" &&
+            result.TryGetProperty("incomplete_details", out var details) &&
+            details.ValueKind == JsonValueKind.Object && details.TryGetProperty("reason", out var reason))
+            return reason.GetString() == "max_output_tokens" ? "length" : reason.GetString();
+        return status.GetString();
     }
 
     private static string ReadResponsesOutputText(JsonElement result)
@@ -1038,7 +1102,7 @@ public class OpenAIProvider : IAIProvider, ITransientDependency
 
         httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {apiKey}");
         httpClient.DefaultRequestHeaders.Add("X-Client-Request-Id", Guid.NewGuid().ToString("D"));
-        httpClient.Timeout = TimeSpan.FromMinutes(5);
+        httpClient.Timeout = _transportOptions.GetRequestTimeout();
 
         return httpClient;
     }

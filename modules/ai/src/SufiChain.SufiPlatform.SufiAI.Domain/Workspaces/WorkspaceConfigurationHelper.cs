@@ -1,4 +1,7 @@
 using Microsoft.Extensions.AI;
+using OpenAI;
+using System.ClientModel;
+using System.ClientModel.Primitives;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Microsoft.SemanticKernel.Embeddings;
@@ -18,10 +21,11 @@ public static class WorkspaceConfigurationHelper
 {
     public static void ConfigureKernel(
         IKernelBuilder builder,
-        WorkspaceRuntimeConfiguration configuration)
+        WorkspaceRuntimeConfiguration configuration,
+        AITransportOptions? transportOptions = null)
     {
         EnsureOpenAIProvider(configuration.Provider);
-        ConfigureOpenAIKernel(builder, configuration);
+        ConfigureOpenAIKernel(builder, configuration, transportOptions ?? new AITransportOptions());
     }
 
     public static IEmbeddingGenerator<string, Embedding<float>> CreateEmbeddingGenerator(
@@ -102,31 +106,23 @@ public static class WorkspaceConfigurationHelper
 
     private static void ConfigureOpenAIKernel(
         IKernelBuilder builder,
-        WorkspaceRuntimeConfiguration configuration)
+        WorkspaceRuntimeConfiguration configuration,
+        AITransportOptions transportOptions)
     {
         var apiKey = configuration.ApiKey
             ?? throw new InvalidOperationException("OpenAI API key is required");
 
+        // Configure the SDK pipeline explicitly, including the default OpenAI endpoint.
+        // Preserve the no-retry behavior of Semantic Kernel's previous custom-HttpClient path.
+        var options = new OpenAIClientOptions
+        {
+            NetworkTimeout = transportOptions.GetRequestTimeout(),
+            RetryPolicy = new ClientRetryPolicy(maxRetries: 0)
+        };
         if (!string.IsNullOrWhiteSpace(configuration.ApiEndpoint))
-        {
-            var httpClient = new HttpClient
-            {
-                BaseAddress = new Uri(configuration.ApiEndpoint),
-                Timeout = TimeSpan.FromMinutes(5)
-            };
-            builder.AddOpenAIChatCompletion(
-                modelId: configuration.ModelId,
-                apiKey: apiKey,
-                httpClient: httpClient
-            );
-        }
-        else
-        {
-            builder.AddOpenAIChatCompletion(
-                modelId: configuration.ModelId,
-                apiKey: apiKey
-            );
-        }
+            options.Endpoint = new Uri(configuration.ApiEndpoint);
+        builder.AddOpenAIChatCompletion(configuration.ModelId,
+            new OpenAIClient(new ApiKeyCredential(apiKey), options));
     }
 
     private class SemanticKernelEmbeddingGenerator : IEmbeddingGenerator<string, Embedding<float>>

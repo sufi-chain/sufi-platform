@@ -13,6 +13,7 @@ public class ChatCompletionRequest
     public List<ChatMessage> Messages { get; set; } = new();
     public string? SystemPrompt { get; set; }
     public float? Temperature { get; set; }
+    public SufiAIJsonResponseSchema? ResponseSchema { get; set; }
     public int? MaxTokens { get; set; }
     public bool Stream { get; set; }
 }

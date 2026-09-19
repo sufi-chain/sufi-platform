@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Diagnostics;
 using System.Reflection;
 using System.Text.Json;
@@ -9,6 +10,7 @@ using Microsoft.Extensions.DependencyInjection;
 using SufiChain.SufiPlatform.SufiAI.MCP.Abstractions;
 using Volo.Abp;
 using Volo.Abp.DependencyInjection;
+using Volo.Abp.Validation;
 
 namespace SufiChain.SufiPlatform.SufiAI.MCP.Internal;
 
@@ -99,7 +101,20 @@ public class InternalMCPTool : IMCPTool
         {
             stopwatch.Stop();
             
-            var innerException = ex.InnerException ?? ex;
+            var innerException = ex is TargetInvocationException { InnerException: not null } ? ex.InnerException : ex;
+            if (innerException is AbpValidationException validation)
+            {
+                var errors = validation.ValidationErrors.Take(12)
+                    .Select(error => $"{string.Join(", ", error.MemberNames)}: {error.ErrorMessage}");
+                return MCPToolExecutionResult.CreateFailure("Invalid tool arguments. " + string.Join("; ", errors));
+            }
+
+            if (innerException is Volo.Abp.BusinessException business && !string.IsNullOrWhiteSpace(business.Code))
+            {
+                // Default business-exception messages omit the code. Preserve the domain
+                // failure for tool callers without exposing exception data or stack traces.
+                return MCPToolExecutionResult.CreateFailure(business.Code);
+            }
             
             return MCPToolExecutionResult.CreateFailure(
                 innerException.Message,
