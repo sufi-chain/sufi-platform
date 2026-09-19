@@ -17,6 +17,9 @@ public class TagsFeatureDefinitionProvider : FeatureDefinitionProvider
         AddToggle(group, SufiTagsFeatures.Enable);
         AddToggle(group, SufiTagsFeatures.Tags);
         AddToggle(group, SufiTagsFeatures.TagLinks);
+        group.AddFeature(SufiTagsFeatures.Relations, defaultValue: "false",
+            displayName: L("Feature:SufiTags.Relations"),
+            description: L("Feature:SufiTags.Relations.Description"), valueType: new ToggleStringValueType());
     }
 
     private static void AddToggle(FeatureGroupDefinition group, string name)

@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <RootNamespace>SufiChain.SufiPlatform.Tags</RootNamespace>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="../../../../hosts/SufiChane.SufiPlatform/src/SufiChane.SufiPlatform.EntityFrameworkCore/Migrations/Tags/*.cs" Link="Migrations/Tags/%(Filename)%(Extension)" />
+    <ProjectReference Include="../../../modules/tags/src/SufiChain.SufiPlatform.Tags.EntityFrameworkCore/SufiChain.SufiPlatform.Tags.EntityFrameworkCore.csproj" />
+    <ProjectReference Include="../../../modules/tags/src/SufiChain.SufiPlatform.Tags.MongoDB/SufiChain.SufiPlatform.Tags.MongoDB.csproj" />
+    <PackageReference Include="Volo.Abp.TestBase" Version="$(AbpVersion)" />
+    <PackageReference Include="Volo.Abp.Autofac" Version="$(AbpVersion)" />
+    <PackageReference Include="Volo.Abp.EntityFrameworkCore.Sqlite" Version="$(AbpVersion)" />
+    <PackageReference Include="Mongo2Go" Version="$(Mongo2GoVersion)" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="$(MicrosoftNetTestSdkVersion)" />
+    <PackageReference Include="xunit" Version="$(XunitVersion)" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="$(XunitRunnerVisualStudioVersion)" PrivateAssets="All" />
+    <PackageReference Include="Shouldly" Version="$(ShouldlyVersion)" />
+  </ItemGroup>
+</Project>

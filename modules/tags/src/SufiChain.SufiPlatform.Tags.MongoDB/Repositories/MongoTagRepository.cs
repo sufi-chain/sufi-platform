@@ -26,7 +26,8 @@ public class MongoTagRepository : MongoDbRepository<ITagsMongoDbContext, Tags.Ta
     public virtual async Task<List<Tags.Tag>> GetListByScopeAsync(string scope, Guid? tenantId = null, CancellationToken cancellationToken = default)
     {
         var collection = await GetCollectionAsync(cancellationToken);
-        return await collection.Find(x => x.Scope == scope && x.TenantId == tenantId).ToListAsync(cancellationToken);
+        return await collection.Find(x => x.Scope == scope && x.TenantId == tenantId && !x.IsDeleted &&
+            x.Kind != TagKind.RelationPredicate).ToListAsync(cancellationToken);
     }
 
     public virtual async Task<List<Tags.Tag>> SearchAsync(
@@ -41,7 +42,10 @@ public class MongoTagRepository : MongoDbRepository<ITagsMongoDbContext, Tags.Ta
         var builder = Builders<Tags.Tag>.Filter;
         var filters = new List<FilterDefinition<Tags.Tag>>
         {
-            builder.Eq(x => x.TenantId, tenantId)
+            builder.Eq(x => x.TenantId, tenantId),
+            builder.Eq(x => x.IsDeleted, false),
+            // Missing Kind on legacy documents must retain classification behavior.
+            builder.Ne(x => x.Kind, TagKind.RelationPredicate)
         };
 
         if (!string.IsNullOrWhiteSpace(scope))

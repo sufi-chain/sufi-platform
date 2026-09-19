@@ -1,4 +1,5 @@
 using MongoDB.Driver;
+using SufiChain.SufiPlatform.Tags.Relations;
 using SufiChain.SufiPlatform.Tags.Tags;
 using Volo.Abp.Data;
 using Volo.Abp.MongoDB;
@@ -10,4 +11,7 @@ public interface ITagsMongoDbContext : IAbpMongoDbContext
 {
     IMongoCollection<Tags.Tag> Tags { get; }
     IMongoCollection<TagLink> TagLinks { get; }
+    IMongoCollection<TagRelationDefinition> RelationDefinitions { get; }
+    IMongoCollection<EntityRelation> Relations { get; }
+    IMongoCollection<TagRelationMutationReceipt> RelationMutationReceipts { get; }
 }

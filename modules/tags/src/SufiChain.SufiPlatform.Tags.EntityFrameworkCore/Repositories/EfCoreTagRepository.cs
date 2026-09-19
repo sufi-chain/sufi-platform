@@ -29,7 +29,7 @@ public class EfCoreTagRepository : EfCoreRepository<ITagsDbContext, Tag, Guid>, 
     public virtual async Task<List<Tag>> GetListByScopeAsync(string scope, Guid? tenantId = null, CancellationToken cancellationToken = default)
     {
         var dbSet = await GetDbSetAsync();
-        return await dbSet.Where(x => x.Scope == scope && x.TenantId == tenantId).OrderBy(x => x.Name).ToListAsync(cancellationToken);
+        return await dbSet.Where(x => x.Scope == scope && x.TenantId == tenantId && x.Kind == TagKind.Classification).OrderBy(x => x.Name).ToListAsync(cancellationToken);
     }
 
     public virtual async Task<List<Tag>> SearchAsync(
@@ -41,7 +41,7 @@ public class EfCoreTagRepository : EfCoreRepository<ITagsDbContext, Tag, Guid>, 
         CancellationToken cancellationToken = default)
     {
         var dbSet = await GetDbSetAsync();
-        var query = dbSet.AsQueryable().Where(x => x.TenantId == tenantId);
+        var query = dbSet.AsQueryable().Where(x => x.TenantId == tenantId && x.Kind == TagKind.Classification);
 
         if (!string.IsNullOrWhiteSpace(scope))
         {

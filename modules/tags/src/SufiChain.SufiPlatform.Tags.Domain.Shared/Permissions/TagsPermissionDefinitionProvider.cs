@@ -10,6 +10,11 @@ public class TagsPermissionDefinitionProvider : PermissionDefinitionProvider
     {
         var group = context.AddGroup(TagsPermissions.GroupName, L("Permission:SufiTags"));
 
+        var relations = group.AddPermission(TagsPermissions.Relations.Default, L("Permission:SufiTags.Relations"));
+        relations.AddChild(TagsPermissions.Relations.ManageDefinitions, L("Permission:SufiTags.Relations.ManageDefinitions"));
+        relations.AddChild(TagsPermissions.Relations.Review, L("Permission:SufiTags.Relations.Review"));
+        relations.AddChild(TagsPermissions.Relations.Mutate, L("Permission:SufiTags.Relations.Mutate"));
+
         var tags = group.AddPermission(TagsPermissions.Tags.Default, L("Permission:SufiTags.Tags"));
         tags.AddChild(TagsPermissions.Tags.Create, L("Permission:SufiTags.Tags"));
         tags.AddChild(TagsPermissions.Tags.Update, L("Permission:SufiTags.Tags"));

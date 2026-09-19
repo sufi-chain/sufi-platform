@@ -4,6 +4,14 @@ public static class TagsPermissions
 {
     public const string GroupName = "SufiTags";
 
+    public static class Relations
+    {
+        public const string Default = GroupName + ".Relations";
+        public const string ManageDefinitions = Default + ".ManageDefinitions";
+        public const string Review = Default + ".Review";
+        public const string Mutate = Default + ".Mutate";
+    }
+
     public static class Tags
     {
         public const string Default = GroupName + ".Tags";

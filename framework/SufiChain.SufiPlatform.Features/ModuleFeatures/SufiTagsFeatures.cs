@@ -21,4 +21,5 @@ public static class SufiTagsFeatures
     /// Assigning tags to entities.
     /// </summary>
     public const string TagLinks = GroupName + ".TagLinks";
+    public const string Relations = GroupName + ".Relations";
 }

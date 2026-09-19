@@ -5,6 +5,7 @@ namespace SufiChain.SufiPlatform.Tags;
 
 [DependsOn(
     typeof(AbpDddDomainModule),
+    typeof(SufiTagsAbstractionsModule),
     typeof(SufiTagsDomainSharedModule)
 )]
 public class SufiTagsDomainModule : AbpModule

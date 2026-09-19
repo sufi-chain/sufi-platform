@@ -38,12 +38,15 @@ public class TagAppService : SufiApplicationService, ITagAppService
     public virtual async Task<TagDto> GetAsync(Guid id)
     {
         var tag = await _tagRepository.GetAsync(id);
+        tag.EnsureClassification();
         return ObjectMapper.Map<Tag, TagDto>(tag);
     }
 
     public virtual async Task<PagedResultDto<TagDto>> GetListAsync(PagedAndSortedResultRequestDto input)
     {
         var query = await _tagRepository.GetQueryableAsync();
+        // MongoDB documents created before Kind was introduced have no field.
+        query = query.Where(x => x.Kind != TagKind.RelationPredicate);
         var totalCount = query.LongCount();
         var items = query.Skip(input.SkipCount).Take(input.MaxResultCount).ToList();
         return new PagedResultDto<TagDto>(totalCount, ObjectMapper.Map<List<Tag>, List<TagDto>>(items));
@@ -90,6 +93,7 @@ public class TagAppService : SufiApplicationService, ITagAppService
 
         var tag = await _tagRepository.GetAsync(id);
         var previousScope = tag.Scope;
+        tag.EnsureClassification();
         tag.SetName(input.Name);
         tag.SetScope(input.Scope);
         tag.SetColor(input.Color);
@@ -108,6 +112,7 @@ public class TagAppService : SufiApplicationService, ITagAppService
     [Authorize(TagsPermissions.Tags.Delete)]
     public virtual async Task DeleteAsync(Guid id)
     {
+        (await _tagRepository.GetAsync(id)).EnsureClassification();
         await _tagRepository.DeleteAsync(id, autoSave: true);
     }
 

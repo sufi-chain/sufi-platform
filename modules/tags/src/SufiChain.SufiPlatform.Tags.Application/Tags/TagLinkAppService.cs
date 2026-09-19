@@ -44,6 +44,7 @@ public class TagLinkAppService : SufiApplicationService, ITagLinkAppService
             throw new BusinessException(TagsErrorCodes.TagNotFound).WithData("TagId", input.TagId);
         }
 
+        tag.EnsureClassification();
         var exists = await _tagLinkRepository.ExistsAsync(input.TagId, input.EntityType, input.EntityId, CurrentTenant.Id);
         if (exists)
         {
@@ -93,7 +94,7 @@ public class TagLinkAppService : SufiApplicationService, ITagLinkAppService
 
             var tagIds = links.Select(x => x.TagId).ToHashSet();
             var query = await _tagRepository.GetQueryableAsync();
-            var tags = query.Where(x => tagIds.Contains(x.Id)).ToList();
+            var tags = query.Where(x => tagIds.Contains(x.Id) && x.Kind != TagKind.RelationPredicate).ToList();
             return new TagLinkCacheItem { Tags = ObjectMapper.Map<List<Tag>, List<TagDto>>(tags) };
         });
 
@@ -108,6 +109,7 @@ public class TagLinkAppService : SufiApplicationService, ITagLinkAppService
             throw new BusinessException(TagsErrorCodes.TagNotFound).WithData("TagId", tagId);
         }
 
+        tag.EnsureClassification();
         var links = await _tagLinkRepository.GetListByTagAsync(tagId, CurrentTenant.Id);
         return ObjectMapper.Map<List<TagLink>, List<TagLinkDto>>(links);
     }

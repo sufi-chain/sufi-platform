@@ -9,6 +9,7 @@
     <PackageReference Include="Volo.Abp.Ddd.Domain" Version="$(AbpVersion)" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="../../../../framework/SufiChain.SufiPlatform.Tags.Abstractions/SufiChain.SufiPlatform.Tags.Abstractions.csproj" />
     <ProjectReference Include="../SufiChain.SufiPlatform.Tags.Domain.Shared/SufiChain.SufiPlatform.Tags.Domain.Shared.csproj" />
   </ItemGroup>
 </Project>
