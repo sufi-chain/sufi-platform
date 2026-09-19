@@ -12,6 +12,7 @@ namespace SufiChain.SufiPlatform.UI.Services.Layout;
 public class DefaultPageLayout : IPageLayout
 {
     private string? _title;
+    private string? _subtitle;
     private object? _toolbarContent;
 
     /// <inheritdoc/>
@@ -21,6 +22,17 @@ public class DefaultPageLayout : IPageLayout
         set
         {
             _title = value;
+            OnPropertyChanged();
+        }
+    }
+
+    /// <inheritdoc/>
+    public string? Subtitle
+    {
+        get => _subtitle;
+        set
+        {
+            _subtitle = value;
             OnPropertyChanged();
         }
     }
@@ -59,6 +71,7 @@ public class DefaultPageLayout : IPageLayout
     {
         //Console.WriteLine("[DefaultPageLayout] Reset() called");
         Title = null;
+        Subtitle = null;
         ToolbarContent = null;
         BreadcrumbItems.Clear();
         ToolbarItems.Clear();

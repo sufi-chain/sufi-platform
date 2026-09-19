@@ -15,6 +15,11 @@ public interface IPageLayout : INotifyPropertyChanged
     string? Title { get; set; }
 
     /// <summary>
+    /// Optional muted subtitle shown under the title in the page header.
+    /// </summary>
+    string? Subtitle { get; set; }
+
+    /// <summary>
     /// The breadcrumb items for the current page.
     /// </summary>
     ObservableCollection<BreadcrumbItem> BreadcrumbItems { get; }
