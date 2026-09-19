@@ -3,6 +3,7 @@ using Shouldly;
 using SufiChain.SufiPlatform.HelpDesk.KnowledgeBase.RAG;
 using SufiChain.SufiPlatform.SufiAI;
 using Xunit;
+using Volo.Abp;
 
 namespace SufiChain.SufiPlatform.HelpDesk.KnowledgeBase;
 
@@ -13,6 +14,34 @@ namespace SufiChain.SufiPlatform.HelpDesk.KnowledgeBase;
 public class KBArticleRagIndexerTests
 {
     private const string WorkspaceName = "helpdesk-rag";
+
+    [Theory]
+    [InlineData("AI:EmbeddingGenerationFailed", true)]
+    [InlineData("AI:VectorStoreWriteFailed", false)]
+    public async Task Should_Map_Only_Embedding_Failures_To_Project_Assignment_Guidance(string code, bool maps)
+    {
+        var rag = Substitute.For<ISufiAIRagService>();
+        var providerError = new BusinessException(code, "private provider response")
+            .WithData("Error", "private provider response");
+        rag.IndexDocumentAsync(Arg.Any<SufiAIRagIndexDocumentRequest>(), Arg.Any<CancellationToken>())
+            .Returns(Task.FromException<SufiAIRagIndexDocumentResult>(providerError));
+
+        var error = await Should.ThrowAsync<BusinessException>(() =>
+            new KBArticleRagIndexer(rag).IndexArticleAsync(WorkspaceName, Guid.NewGuid()));
+
+        if (maps)
+        {
+            error.Code.ShouldBe(KnowledgeBaseErrorCodes.RagEmbeddingFailed);
+            error.Data["WorkspaceName"].ShouldBe(WorkspaceName);
+            error.Data.Contains("Error").ShouldBeFalse();
+            error.InnerException.ShouldBeSameAs(providerError);
+            error.Message.ShouldNotContain("private provider response");
+        }
+        else
+        {
+            error.ShouldBeSameAs(providerError);
+        }
+    }
 
     [Fact]
     public async Task Should_Not_Report_Indexed_When_Zero_Chunks_Were_Stored()
