@@ -28,4 +28,10 @@ public class OrganizationUnitIntegrationController : SufiControllerBase, IOrgani
     {
         return OrganizationUnitIntegrationService.GetMemberUserIdsAsync(organizationUnitId, includeChildren);
     }
+
+    [HttpPost("display-names")]
+    public virtual Task<List<OrganizationUnitDisplayNameDto>> GetDisplayNamesAsync(OrganizationUnitDisplayNamesInput input)
+    {
+        return OrganizationUnitIntegrationService.GetDisplayNamesAsync(input);
+    }
 }
