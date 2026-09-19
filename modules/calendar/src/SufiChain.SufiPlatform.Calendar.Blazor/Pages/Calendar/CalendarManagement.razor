@@ -71,7 +71,7 @@
                 <ChildContent>
                     <SbColumn TItem="CalendarDto" Title="@L["Actions"]" Width="190px" Sortable="false">
                         <CellTemplate Context="cellContext">
-                            <SbStack Direction="SbStackDirection.Row" Gap="1">
+                            <SbStack Wrap="true" Direction="SbStackDirection.Row" Gap="1">
                                 @if (HasEditPermission)
 	                                {
 	                                    <SbTooltip Text="@L["Edit"]"><SbIconButton Size="SbSize.Sm" OnClick="@(() => OpenEditModalAsync(cellContext.Item))" AriaLabel="@L["Edit"]"><Icon><SbIcon Name="edit" /></Icon></SbIconButton></SbTooltip>
@@ -178,7 +178,7 @@
                         @if (IsOperationLoading(LoadingKeys.LoadInheritances))
                         {
                             <SbStack Align="SbAlign.Center" Justify="SbJustify.Center" Class="sufi-calendar-management__inheritance-loading">
-                                <SbProgress Circular="true" />
+                                <SbProgress Indeterminate="true" aria-label="@L["Loading"]" Circular="true" />
                                 <SbText>@L["Loading"]</SbText>
                             </SbStack>
                         }
@@ -257,7 +257,7 @@
                                                     </SbSimpleSelect>
                                                 </div>
                                                 <SbCheckbox @bind-Value="NewInheritanceIsDefault" Label="@L["IsInheritedByDefault"]" />
-                                                <SbButton Color="SbColor.Primary"
+                                                <SbButton Loading="@IsOperationLoading(LoadingKeys.SaveInheritance)" Color="SbColor.Primary"
                                                           Disabled="@(!SelectedParentCalendarId.HasValue || IsOperationLoading(LoadingKeys.SaveInheritance))"
                                                           OnClick="AddInheritanceAsync">
                                                     <StartIcon><SbIcon Name="plus" /></StartIcon>
@@ -275,7 +275,7 @@
         </SbTabs>
     </ChildContent>
     <Footer>
-        <SbStack Direction="SbStackDirection.Row" Gap="2" Justify="SbJustify.End">
+        <SbStack Wrap="true" Direction="SbStackDirection.Row" Gap="2" Justify="SbJustify.End">
             <SbButton Variant="SbButtonVariant.Outline" OnClick="CloseEditorAsync">@L["Cancel"]</SbButton>
             @if (EditorActiveTab == 0)
             {
@@ -292,7 +292,7 @@
                 <SbStack Gap="3">
                     @foreach (var rule in EditingHours)
                     {
-                        <SbStack @key="rule.RowKey" Direction="SbStackDirection.Row" Gap="2" Align="SbAlign.Center">
+                        <SbStack Wrap="true" @key="rule.RowKey" Direction="SbStackDirection.Row" Gap="2" Align="SbAlign.Center">
                             <SbSelect TItem="DayOfWeek"
                                       TValue="DayOfWeek"
                                       Items="DayOfWeekOptions"
@@ -312,7 +312,7 @@
                 <SbStack Gap="3">
                     @foreach (var exception in EditingExceptions)
                     {
-                        <SbStack Direction="SbStackDirection.Row" Gap="2" Align="SbAlign.Center">
+                        <SbStack Wrap="true" Direction="SbStackDirection.Row" Gap="2" Align="SbAlign.Center">
                             <SbDatePicker Value="exception.ExceptionDate" ValueChanged="@(value => exception.ExceptionDate = value)" Label="@L["Date"]" />
                             <SbSimpleSelect TValue="CalendarExceptionKind" @bind-Value="exception.Kind" Label="@L["Kind"]">
                                 @foreach (var kind in CalendarExceptionKindOptions)
@@ -345,7 +345,7 @@
         </SbTabs>
     </ChildContent>
     <Footer>
-        <SbStack Direction="SbStackDirection.Row" Gap="2" Justify="SbJustify.End">
+        <SbStack Wrap="true" Direction="SbStackDirection.Row" Gap="2" Justify="SbJustify.End">
             <SbButton Variant="SbButtonVariant.Outline" OnClick="CloseBusinessHoursAsync">@L["Close"]</SbButton>
             <SbButton Color="SbColor.Primary" OnClick="SaveBusinessHoursAsync">@L["Save"]</SbButton>
         </SbStack>

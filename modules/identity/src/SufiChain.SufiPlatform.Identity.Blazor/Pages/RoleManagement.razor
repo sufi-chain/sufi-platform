@@ -42,7 +42,7 @@
                         SelectionMode="SbSelectionMode.MultipleRows">
 					<SbColumn TItem="IdentityRoleDto" Title="@L["Actions"]" Width="152px" Sortable="false">
 						<CellTemplate Context="cellContext">
-							<SbStack Direction="SbStackDirection.Row" Gap="1">
+							<SbStack Wrap="true" Direction="SbStackDirection.Row" Gap="1">
 								<AuthorizeView Policy="@SufiChain.SufiPlatform.Identity.IdentityPermissions.Roles.Update" Context="authContext">
 									<SbTooltip Text="@L["Edit"]"><SbIconButton Size="SbSize.Sm" AriaLabel="@L["Edit"]"
 												  OnClick="@(() => ShowEditModal(cellContext.Item))">
@@ -68,7 +68,7 @@
 					</SbColumn>
 					<SbColumn TItem="IdentityRoleDto" Field="Name" Title="@L["RoleName"]" Sortable="true" Filterable="true">
 						<CellTemplate Context="cellContext">
-							<SbStack Direction="SbStackDirection.Row" Gap="2" Align="SbAlign.Center">
+							<SbStack Wrap="true" Direction="SbStackDirection.Row" Gap="2" Align="SbAlign.Center">
 								<span>@cellContext.Item.Name</span>
 								@if (cellContext.Item.IsDefault)
 								{

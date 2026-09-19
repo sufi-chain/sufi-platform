@@ -27,10 +27,10 @@
                                          Type="email"
                                          Required="true" />
 
-                            <SbTextField @bind-Value="_model.PhoneNumber" Label="@L["PhoneNumber"]" />
+                            <SbTextField Type="tel" InputMode="tel" @bind-Value="_model.PhoneNumber" Label="@L["PhoneNumber"]" />
                         </SbGrid>
 
-                        <SbStack Direction="SbStackDirection.Row" Gap="4">
+                        <SbStack Wrap="true" Direction="SbStackDirection.Row" Gap="4">
                             <SbCheckbox @bind-Value="_model.IsActive" Label="@L["Active"]" />
                             <SbCheckbox @bind-Value="_model.LockoutEnabled" Label="@L["LockoutEnabled"]" />
                         </SbStack>
@@ -50,7 +50,7 @@
         </SbForm>
     </ChildContent>
     <Footer>
-        <SbStack Direction="SbStackDirection.Row" Gap="2" Justify="SbJustify.End">
+        <SbStack Wrap="true" Direction="SbStackDirection.Row" Gap="2" Justify="SbJustify.End">
             <SbButton Variant="SbButtonVariant.Outline" OnClick="Hide">@L["Cancel"]</SbButton>
             <SbButton Color="SbColor.Primary" Loading="IsOperationLoading(LoadingKeys.Save)" OnClick="OnValidSubmitAsync">@L["Save"]</SbButton>
         </SbStack>

@@ -27,7 +27,7 @@
 			@if (IsOperationLoading(LoadingKeys.LoadPermissions))
 			{
 				<div class="permission-modal__loading">
-					<SbProgress Type="SbProgressType.Circular" />
+					<SbProgress Indeterminate="true" aria-label="@L["Loading"]" Type="SbProgressType.Circular" />
 					<p class="permission-modal__loading-text">@L["LoadingPermissions"]</p>
 				</div>
 			}
@@ -110,7 +110,7 @@
 		</div>
 	</ChildContent>
 	<Footer>
-		<SbStack Direction="SbStackDirection.Row" Gap="2" Justify="SbJustify.End">
+		<SbStack Wrap="true" Direction="SbStackDirection.Row" Gap="2" Justify="SbJustify.End">
 			<SbButton Variant="SbButtonVariant.Outline" OnClick="Hide">@L["Cancel"]</SbButton>
 			<SbButton Color="SbColor.Primary"
 					  Loading="IsOperationLoading(LoadingKeys.Save)"

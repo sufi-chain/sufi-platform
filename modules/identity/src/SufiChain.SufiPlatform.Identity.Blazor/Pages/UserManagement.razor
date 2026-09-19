@@ -42,7 +42,7 @@
                         SelectionMode="SbSelectionMode.MultipleRows">
 					<SbColumn TItem="IdentityUserDto" Title="@L["Actions"]" Width="152px" Sortable="false">
 						<CellTemplate Context="cellContext">
-							<SbStack Direction="SbStackDirection.Row" Gap="1">
+							<SbStack Wrap="true" Direction="SbStackDirection.Row" Gap="1">
 								<AuthorizeView Policy="@SufiChain.SufiPlatform.Identity.IdentityPermissions.Users.Update" Context="authContext">
 									<SbTooltip Text="@L["Edit"]"><SbIconButton Size="SbSize.Sm" AriaLabel="@L["Edit"]"
 												  OnClick="@(() => ShowEditModal(cellContext.Item))">

@@ -27,7 +27,7 @@
 
             @if (_selectedFolderId.HasValue)
             {
-                <SbStack Direction="SbStackDirection.Row" Gap="2">
+                <SbStack Wrap="true" Direction="SbStackDirection.Row" Gap="2">
                     <SbFormField Label="@L["FolderAccess:GrantType"]" Style="flex:1">
                         <SbSimpleSelect TValue="FolderGrantType"
                                         Value="@_addGrant.GrantType"
@@ -60,7 +60,7 @@
                     </div>
                 </SbStack>
 
-                <SbStack Direction="SbStackDirection.Row" Gap="2">
+                <SbStack Wrap="true" Direction="SbStackDirection.Row" Gap="2">
                     <SbFormField Label="@L["FolderAccess:Level"]" Style="flex:1">
                         <SbSimpleSelect TValue="FolderPermissionLevelDto"
                                         Value="@_addGrant.Level"
@@ -78,7 +78,7 @@
                     </SbFormField>
                 </SbStack>
 
-                <SbStack Direction="SbStackDirection.Row" Gap="2">
+                <SbStack Wrap="true" Direction="SbStackDirection.Row" Gap="2">
                     <SbButton Color="SbColor.Primary" OnClick="@AddGrantAsync">@L["Add"]</SbButton>
                     <SbButton Color="SbColor.Danger" Variant="SbButtonVariant.Outline" OnClick="@ClearAllAsync">@L["FolderAccess:ClearAll"]</SbButton>
                 </SbStack>

@@ -24,7 +24,7 @@
 			@if (IsOperationLoading(LoadingKeys.LoadFeatures))
 			{
 				<div class="p-5 text-center">
-					<SbProgress Type="SbProgressType.Circular" />
+					<SbProgress Indeterminate="true" aria-label="@L["Loading"]" Type="SbProgressType.Circular" />
 					<p class="mt-3 text-muted">@L["LoadingFeatures"]</p>
 				</div>
 			}
@@ -124,14 +124,14 @@
 		</SbStack>
 	</ChildContent>
 	<Footer>
-		<SbStack Direction="SbStackDirection.Row" Gap="2" Justify="SbJustify.SpaceBetween" class="w-100">
+		<SbStack Wrap="true" Direction="SbStackDirection.Row" Gap="2" Justify="SbJustify.SpaceBetween" class="w-100">
 			<SbButton Variant="SbButtonVariant.Outline" Color="SbColor.Warning"
 					  OnClick="@ResetToDefaultAsync"
 					  Loading="IsOperationLoading(LoadingKeys.ResetFeatures)"
 					  Disabled="@(!_groups.Any())">
 				@L["ResetToDefault"]
 			</SbButton>
-			<SbStack Direction="SbStackDirection.Row" Gap="2">
+			<SbStack Wrap="true" Direction="SbStackDirection.Row" Gap="2">
 				<SbButton Variant="SbButtonVariant.Outline" OnClick="HideAsync">@L["Cancel"]</SbButton>
 				<SbButton Color="SbColor.Primary"
 						  OnClick="@SaveAsync"

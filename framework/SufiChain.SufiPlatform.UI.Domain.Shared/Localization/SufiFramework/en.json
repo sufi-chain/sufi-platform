@@ -1,6 +1,8 @@
 {
     "culture": "en",
     "texts": {
+        "Theme:SwitchToLightMode": "Switch to light mode",
+        "Theme:SwitchToDarkMode": "Switch to dark mode",
         "Administration": "Administration",
         "AllRightsReserved": "All rights reserved",
         "PoweredWithLoveBy": "Powered with ❤️ by SufiChain",

@@ -39,7 +39,7 @@
                         SelectionMode="SbSelectionMode.MultipleRows">
                     <SbColumn TItem="TagDto" Title="@L["Actions"]" Width="152px" Sortable="false">
                         <CellTemplate Context="cellContext">
-                            <SbStack Direction="SbStackDirection.Row" Gap="1">
+                            <SbStack Wrap="true" Direction="SbStackDirection.Row" Gap="1">
                                 <AuthorizeView Policy="@TagsPermissions.TagLinks.Default">
                                     <SbTooltip Text="@L["ViewTagLinks"]">
                                         <SbIconButton Size="SbSize.Sm" AriaLabel="@L["ViewTagLinks"]"
@@ -73,7 +73,7 @@
                         <CellTemplate Context="cellContext">
                             @if (!string.IsNullOrWhiteSpace(cellContext.Item.Color))
                             {
-                                <SbStack Direction="SbStackDirection.Row" Gap="2" Align="SbAlign.Center">
+                                <SbStack Wrap="true" Direction="SbStackDirection.Row" Gap="2" Align="SbAlign.Center">
                                     <span class="tags-color-swatch" style="@($"background:{cellContext.Item.Color}")"></span>
                                     <SbText>@cellContext.Item.Color</SbText>
                                 </SbStack>

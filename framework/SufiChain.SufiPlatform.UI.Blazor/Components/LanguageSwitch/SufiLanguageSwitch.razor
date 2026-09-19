@@ -22,6 +22,8 @@
         <AnchorContent>
             <SbButton Variant="@SbButtonVariant.Ghost" Size="@SbSize.Sm"
                       OnClick="ToggleMenu"
+                      aria-haspopup="menu" aria-expanded="@(_menuOpen ? "true" : "false")"
+                      aria-label="@(_currentLanguage != null ? $"{L["Language"]}: {_currentLanguage.DisplayName}" : L["Language"].Value)"
                       title="@(_currentLanguage != null ? $"{L["Language"]}: {_currentLanguage.DisplayName}" : L["Language"].Value)">
                 <span dir="ltr" style="display: inline-flex; align-items: center; gap: var(--sb-space-1);">
                     <span style="flex-shrink: 0; display: inline-flex; align-items: center;"><SbIcon Name="globe" Size="@SbSize.Md" /></span>

@@ -5,7 +5,7 @@
 @if (_loading)
 {
     <SbStack Align="SbAlign.Center" class="p-4">
-        <SbProgress Type="SbProgressType.Circular" />
+        <SbProgress Indeterminate="true" aria-label="@L["Loading"]" Type="SbProgressType.Circular" />
     </SbStack>
 }
 else if (_profile != null)
@@ -18,7 +18,7 @@ else if (_profile != null)
                          Label="@L["UserName"]"
                          Required="true" />
 
-            <SbStack Direction="SbStackDirection.Row" Gap="3">
+            <SbStack Wrap="true" Direction="SbStackDirection.Row" Gap="3">
                 <SbTextField @bind-Value="_profile.Name" Label="@L["Name"]" />
                 <SbTextField @bind-Value="_profile.Surname" Label="@L["Surname"]" />
             </SbStack>
@@ -28,7 +28,7 @@ else if (_profile != null)
                          Type="email"
                          Required="true" />
 
-            <SbTextField @bind-Value="_profile.PhoneNumber" Label="@L["PhoneNumber"]" />
+            <SbTextField Type="tel" InputMode="tel" @bind-Value="_profile.PhoneNumber" Label="@L["PhoneNumber"]" />
 
             @if (!string.IsNullOrEmpty(_successMessage))
             {
@@ -40,7 +40,7 @@ else if (_profile != null)
                 <SbAlert Severity="SbAlertSeverity.Danger">@_errorMessage</SbAlert>
             }
 
-            <SbStack Direction="SbStackDirection.Row" Justify="SbJustify.End">
+            <SbStack Wrap="true" Direction="SbStackDirection.Row" Justify="SbJustify.End">
                 <SbButton Type="submit" Color="SbColor.Primary" Loading="_saving">
                     @L["Save"]
                 </SbButton>

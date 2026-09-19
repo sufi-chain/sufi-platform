@@ -6,7 +6,7 @@
 @attribute [Authorize(FileManagerPermissions.FileStructures.Default)]
 
 <SufiPageToolbar>
-	<SbStack Direction="SbStackDirection.Row" Gap="2">
+	<SbStack Wrap="true" Direction="SbStackDirection.Row" Gap="2">
 		<SbButton Color="SbColor.Primary" OnClick="@OpenCreateModal">
 			<StartIcon><SbIcon Name="plus" /></StartIcon>
 			<ChildContent>@L["AddStructure"]</ChildContent>
@@ -37,7 +37,7 @@
 	</SbGrid>
 
 	<!-- Search Box -->
-	<SbStack Direction="SbStackDirection.Row" Justify="SbJustify.Start" Align="SbAlign.Center">
+	<SbStack Wrap="true" Direction="SbStackDirection.Row" Justify="SbJustify.Start" Align="SbAlign.Center">
 		<div style="width: 300px;">
 			<SbTextField Placeholder="@L["SearchStructures"]" @bind-Value="@_searchTerm" @oninput="OnSearchChanged">
 				<StartAdornment><SbIcon Name="search" /></StartAdornment>
@@ -51,7 +51,7 @@
 			@if (_loading)
 			{
 				<div class="text-center py-5">
-					<SbProgress Type="SbProgressType.Circular" />
+					<SbProgress Indeterminate="true" aria-label="@L["Loading"]" Type="SbProgressType.Circular" />
 					<p class="mt-3 text-muted">@L["LoadingStructures"]</p>
 				</div>
 			}
@@ -127,7 +127,7 @@
 							}
 						</td>
 						<td>
-							<SbStack Direction="SbStackDirection.Row" Gap="1">
+							<SbStack Wrap="true" Direction="SbStackDirection.Row" Gap="1">
 								<SbTooltip Text="@L["ViewDetails"]">
 									<SbIconButton Color="SbColor.Success" Size="SbSize.Sm" OnClick="@(async () => await OpenViewModal(structure))" AriaLabel="@L["ViewDetails"]">
 										<Icon><SbIcon Name="eye" /></Icon>
@@ -226,24 +226,24 @@
 						<SbStep Label="@L["CreateWizard:FileSettings"]" Description="@L["CreateWizard:FileSettingsDescription"]">
 							<div class="p-4">
 								<SbStack Gap="4">
-									<SbStack Direction="SbStackDirection.Row" Justify="SbJustify.SpaceBetween" Align="SbAlign.Center">
+									<SbStack Wrap="true" Direction="SbStackDirection.Row" Justify="SbJustify.SpaceBetween" Align="SbAlign.Center">
 										<div>
 											<strong>@L["MaxFileSize"]</strong>
 											<br /><small class="text-muted">@L["MaxFileSizeHint"]</small>
 										</div>
-										<SbStack Direction="SbStackDirection.Row" Gap="2" Align="SbAlign.Center">
+										<SbStack Wrap="true" Direction="SbStackDirection.Row" Gap="2" Align="SbAlign.Center">
 											<SbNumberField TNumber="decimal" Value="@(_editModel.MaxFileSize / 1024m / 1024m)" ValueChanged="@(v => _editModel.MaxFileSize = (long)(v * 1024 * 1024))" Min="1" Style="width: 100px;" />
 											<span>MB</span>
 										</SbStack>
 									</SbStack>
-									<SbStack Direction="SbStackDirection.Row" Justify="SbJustify.SpaceBetween" Align="SbAlign.Center">
+									<SbStack Wrap="true" Direction="SbStackDirection.Row" Justify="SbJustify.SpaceBetween" Align="SbAlign.Center">
 										<div>
 											<strong>@L["Required"]</strong>
 											<br /><small class="text-muted">@L["RequiredHint"]</small>
 										</div>
 										<SbSwitch @bind-Value="@_editModel.IsRequired" />
 									</SbStack>
-									<SbStack Direction="SbStackDirection.Row" Justify="SbJustify.SpaceBetween" Align="SbAlign.Center">
+									<SbStack Wrap="true" Direction="SbStackDirection.Row" Justify="SbJustify.SpaceBetween" Align="SbAlign.Center">
 										<div>
 											<strong>@L["MultipleFiles"]</strong>
 											<br /><small class="text-muted">@L["MultipleFilesHint"]</small>
@@ -252,7 +252,7 @@
 									</SbStack>
 									@if (_editModel.IsMultiple)
 									{
-										<SbStack Direction="SbStackDirection.Row" Justify="SbJustify.SpaceBetween" Align="SbAlign.Center" Class="ps-4">
+										<SbStack Wrap="true" Direction="SbStackDirection.Row" Justify="SbJustify.SpaceBetween" Align="SbAlign.Center" Class="ps-4">
 											<div>
 												<strong>@L["MaxFiles"]</strong>
 												<br /><small class="text-muted">@L["MaxFilesHint"]</small>
@@ -263,14 +263,14 @@
 									<SbDivider />
 									<h5 class="m-0">@L["ImageDimensionsOptional"]</h5>
 									<SbStack Direction="SbStackDirection.Column" Gap="4">
-										<SbStack Direction="SbStackDirection.Row" Gap="2" Align="SbAlign.Center" Class="flex-1">
+										<SbStack Wrap="true" Direction="SbStackDirection.Row" Gap="2" Align="SbAlign.Center" Class="flex-1">
 											<span class="text-muted">@L["MinLabel"]:</span>
 											<SbNumberField TNumber="int" Value="@(_editModel.MinImageWidth ?? 0)" ValueChanged="@(v => _editModel.MinImageWidth = v > 0 ? v : null)" Min="0" Placeholder="W" Style="width: 80px;" />
 											<span>×</span>
 											<SbNumberField TNumber="int" Value="@(_editModel.MinImageHeight ?? 0)" ValueChanged="@(v => _editModel.MinImageHeight = v > 0 ? v : null)" Min="0" Placeholder="H" Style="width: 80px;" />
 											<span>px</span>
 										</SbStack>
-										<SbStack Direction="SbStackDirection.Row" Gap="2" Align="SbAlign.Center" Class="flex-1">
+										<SbStack Wrap="true" Direction="SbStackDirection.Row" Gap="2" Align="SbAlign.Center" Class="flex-1">
 											<span class="text-muted">@L["MaxLabel"]:</span>
 											<SbNumberField TNumber="int" Value="@(_editModel.MaxImageWidth ?? 0)" ValueChanged="@(v => _editModel.MaxImageWidth = v > 0 ? v : null)" Min="0" Placeholder="W" Style="width: 80px;" />
 											<span>×</span>
@@ -286,7 +286,7 @@
 								@if (HasFileType(FileType.Image))
 								{
 									<SbStack Gap="4">
-										<SbStack Direction="SbStackDirection.Row" Justify="SbJustify.SpaceBetween" Align="SbAlign.Center">
+										<SbStack Wrap="true" Direction="SbStackDirection.Row" Justify="SbJustify.SpaceBetween" Align="SbAlign.Center">
 											<div>
 												<strong>@L["GenerateThumbnail"]</strong>
 												<br /><small class="text-muted">@L["GenerateThumbnailHint"]</small>
@@ -295,16 +295,16 @@
 										</SbStack>
 										@if (_editModel.GenerateThumbnail)
 										{
-											<SbStack Direction="SbStackDirection.Row" Justify="SbJustify.SpaceBetween" Align="SbAlign.Center">
+											<SbStack Wrap="true" Direction="SbStackDirection.Row" Justify="SbJustify.SpaceBetween" Align="SbAlign.Center">
 												<strong>@L["ThumbnailSize"]</strong>
-												<SbStack Direction="SbStackDirection.Row" Gap="2" Align="SbAlign.Center">
+												<SbStack Wrap="true" Direction="SbStackDirection.Row" Gap="2" Align="SbAlign.Center">
 													<SbNumberField TNumber="int" @bind-Value="@_editModel.ThumbnailWidth" Min="16" Max="1000" Style="width: 100px;" />
 													<span>×</span>
 													<SbNumberField TNumber="int" @bind-Value="@_editModel.ThumbnailHeight" Min="16" Max="1000" Style="width: 100px;" />
 												</SbStack>
 											</SbStack>
 										}
-										<SbStack Direction="SbStackDirection.Row" Justify="SbJustify.SpaceBetween" Align="SbAlign.Center">
+										<SbStack Wrap="true" Direction="SbStackDirection.Row" Justify="SbJustify.SpaceBetween" Align="SbAlign.Center">
 											<div>
 												<strong>@L["WebPConversion"]</strong>
 												<br /><small class="text-muted">@L["WebPConversionHint"]</small>
@@ -313,15 +313,15 @@
 										</SbStack>
 										@if (_editModel.EnableWebPConversion)
 										{
-											<SbStack Direction="SbStackDirection.Row" Justify="SbJustify.SpaceBetween" Align="SbAlign.Center" Class="ps-4">
+											<SbStack Wrap="true" Direction="SbStackDirection.Row" Justify="SbJustify.SpaceBetween" Align="SbAlign.Center" Class="ps-4">
 												<strong>@L["Quality"]</strong>
-												<SbStack Direction="SbStackDirection.Row" Gap="2" Align="SbAlign.Center">
+												<SbStack Wrap="true" Direction="SbStackDirection.Row" Gap="2" Align="SbAlign.Center">
 													<SbNumberField TNumber="int" @bind-Value="@_editModel.WebPQuality" Min="1" Max="100" Style="width: 80px;" />
 													<span>%</span>
 												</SbStack>
 											</SbStack>
 										}
-										<SbStack Direction="SbStackDirection.Row" Justify="SbJustify.SpaceBetween" Align="SbAlign.Center">
+										<SbStack Wrap="true" Direction="SbStackDirection.Row" Justify="SbJustify.SpaceBetween" Align="SbAlign.Center">
 											<div>
 												<strong>@L["ResizeLargeImages"]</strong>
 												<br /><small class="text-muted">@L["ResizeLargeImagesHint"]</small>
@@ -402,8 +402,8 @@
 		</div>
 	</ChildContent>
 	<Footer>
-		<SbStack Direction="SbStackDirection.Row" Gap="2" Justify="SbJustify.SpaceBetween" Align="SbAlign.Center">
-			<SbStack Direction="SbStackDirection.Row" Gap="2">
+		<SbStack Wrap="true" Direction="SbStackDirection.Row" Gap="2" Justify="SbJustify.SpaceBetween" Align="SbAlign.Center">
+			<SbStack Wrap="true" Direction="SbStackDirection.Row" Gap="2">
 				@if (_wizardStep > 0)
 				{
 					<SbButton Color="SbColor.Default" OnClick="@WizardBack">
@@ -457,7 +457,7 @@
 						<SbTextField @bind-Value="@_editModel.Description" Placeholder="@L["BriefDescription"]" />
 					</SbFormField>
 
-					<SbStack Direction="SbStackDirection.Row" Justify="SbJustify.SpaceBetween" Align="SbAlign.Center">
+					<SbStack Wrap="true" Direction="SbStackDirection.Row" Justify="SbJustify.SpaceBetween" Align="SbAlign.Center">
 						<div>
 							<strong>@L["PublicAccess"]</strong>
 							<br /><small class="text-muted">@L["PublicAccessHint"]</small>
@@ -514,12 +514,12 @@
 			<SbTab Id="files" Label="@L["Files"]">
 				<div class="p-4">
 					<SbStack Gap="4">
-						<SbStack Direction="SbStackDirection.Row" Justify="SbJustify.SpaceBetween" Align="SbAlign.Center">
+						<SbStack Wrap="true" Direction="SbStackDirection.Row" Justify="SbJustify.SpaceBetween" Align="SbAlign.Center">
 							<div>
 								<strong>@L["MaxFileSize"]</strong>
 								<br /><small class="text-muted">@L["MaxFileSizeHint"]</small>
 							</div>
-							<SbStack Direction="SbStackDirection.Row" Gap="2" Align="SbAlign.Center">
+							<SbStack Wrap="true" Direction="SbStackDirection.Row" Gap="2" Align="SbAlign.Center">
 								<SbNumberField TNumber="decimal" Value="@(_editModel.MaxFileSize / 1024m / 1024m)"
 											   ValueChanged="@(v => _editModel.MaxFileSize = (long)(v * 1024 * 1024))"
 											   Min="0" Style="width: 100px;" />
@@ -527,7 +527,7 @@
 							</SbStack>
 						</SbStack>
 
-						<SbStack Direction="SbStackDirection.Row" Justify="SbJustify.SpaceBetween" Align="SbAlign.Center">
+						<SbStack Wrap="true" Direction="SbStackDirection.Row" Justify="SbJustify.SpaceBetween" Align="SbAlign.Center">
 							<div>
 								<strong>@L["Required"]</strong>
 								<br /><small class="text-muted">@L["RequiredHint"]</small>
@@ -535,7 +535,7 @@
 							<SbSwitch @bind-Value="@_editModel.IsRequired" />
 						</SbStack>
 
-						<SbStack Direction="SbStackDirection.Row" Justify="SbJustify.SpaceBetween" Align="SbAlign.Center">
+						<SbStack Wrap="true" Direction="SbStackDirection.Row" Justify="SbJustify.SpaceBetween" Align="SbAlign.Center">
 							<div>
 								<strong>@L["MultipleFiles"]</strong>
 								<br /><small class="text-muted">@L["MultipleFilesHint"]</small>
@@ -545,7 +545,7 @@
 
 						@if (_editModel.IsMultiple)
 						{
-							<SbStack Direction="SbStackDirection.Row" Justify="SbJustify.SpaceBetween" Align="SbAlign.Center">
+							<SbStack Wrap="true" Direction="SbStackDirection.Row" Justify="SbJustify.SpaceBetween" Align="SbAlign.Center">
 								<div>
 									<strong>@L["MaxFiles"]</strong>
 									<br /><small class="text-muted">@L["MaxFilesHint"]</small>
@@ -560,7 +560,7 @@
 						<h5 class="m-0">@L["ImageDimensionsOptional"]</h5>
 
 						<SbStack Direction="SbStackDirection.Column" Gap="4">
-							<SbStack Direction="SbStackDirection.Row" Gap="2" Align="SbAlign.Center" Class="flex-1">
+							<SbStack Wrap="true" Direction="SbStackDirection.Row" Gap="2" Align="SbAlign.Center" Class="flex-1">
 								<span class="text-muted">@L["MinLabel"]:</span>
 								<SbNumberField TNumber="int" Value="@(_editModel.MinImageWidth ?? 0)"
 											   ValueChanged="@(v => _editModel.MinImageWidth = v > 0 ? v : null)"
@@ -571,7 +571,7 @@
 											   Min="0" Placeholder="H" Style="width: 80px;" />
 								<span>px</span>
 							</SbStack>
-							<SbStack Direction="SbStackDirection.Row" Gap="2" Align="SbAlign.Center" Class="flex-1">
+							<SbStack Wrap="true" Direction="SbStackDirection.Row" Gap="2" Align="SbAlign.Center" Class="flex-1">
 								<span class="text-muted">@L["MaxLabel"]:</span>
 								<SbNumberField TNumber="int" Value="@(_editModel.MaxImageWidth ?? 0)"
 											   ValueChanged="@(v => _editModel.MaxImageWidth = v > 0 ? v : null)"
@@ -590,7 +590,7 @@
 			<SbTab Id="processing" Label="@L["ImgProcessing"]">
 				<div class="p-4">
 					<SbStack Gap="4">
-						<SbStack Direction="SbStackDirection.Row" Justify="SbJustify.SpaceBetween" Align="SbAlign.Center">
+						<SbStack Wrap="true" Direction="SbStackDirection.Row" Justify="SbJustify.SpaceBetween" Align="SbAlign.Center">
 							<div>
 								<strong>@L["GenerateThumbnail"]</strong>
 								<br /><small class="text-muted">@L["GenerateThumbnailHint"]</small>
@@ -600,9 +600,9 @@
 
 						@if (_editModel.GenerateThumbnail)
 						{
-							<SbStack Direction="SbStackDirection.Row" Justify="SbJustify.SpaceBetween" Align="SbAlign.Center">
+							<SbStack Wrap="true" Direction="SbStackDirection.Row" Justify="SbJustify.SpaceBetween" Align="SbAlign.Center">
 								<strong>@L["ThumbnailSize"]</strong>
-								<SbStack Direction="SbStackDirection.Row" Gap="2" Align="SbAlign.Center">
+								<SbStack Wrap="true" Direction="SbStackDirection.Row" Gap="2" Align="SbAlign.Center">
 									<SbNumberField TNumber="int" @bind-Value="@_editModel.ThumbnailWidth" Min="16" Max="1000" Style="width: 100px;" />
 									<span>×</span>
 									<SbNumberField TNumber="int" @bind-Value="@_editModel.ThumbnailHeight" Min="16" Max="1000" Style="width: 100px;" />
@@ -610,7 +610,7 @@
 							</SbStack>
 						}
 
-						<SbStack Direction="SbStackDirection.Row" Justify="SbJustify.SpaceBetween" Align="SbAlign.Center">
+						<SbStack Wrap="true" Direction="SbStackDirection.Row" Justify="SbJustify.SpaceBetween" Align="SbAlign.Center">
 							<div>
 								<strong>@L["WebPConversion"]</strong>
 								<br /><small class="text-muted">@L["WebPConversionHint"]</small>
@@ -620,16 +620,16 @@
 
 						@if (_editModel.EnableWebPConversion)
 						{
-							<SbStack Direction="SbStackDirection.Row" Justify="SbJustify.SpaceBetween" Align="SbAlign.Center">
+							<SbStack Wrap="true" Direction="SbStackDirection.Row" Justify="SbJustify.SpaceBetween" Align="SbAlign.Center">
 								<strong>@L["Quality"]</strong>
-								<SbStack Direction="SbStackDirection.Row" Gap="2" Align="SbAlign.Center">
+								<SbStack Wrap="true" Direction="SbStackDirection.Row" Gap="2" Align="SbAlign.Center">
 									<SbNumberField TNumber="int" @bind-Value="@_editModel.WebPQuality" Min="1" Max="100" Style="width: 80px;" />
 									<span>%</span>
 								</SbStack>
 							</SbStack>
 						}
 
-						<SbStack Direction="SbStackDirection.Row" Justify="SbJustify.SpaceBetween" Align="SbAlign.Center">
+						<SbStack Wrap="true" Direction="SbStackDirection.Row" Justify="SbJustify.SpaceBetween" Align="SbAlign.Center">
 							<div>
 								<strong>@L["ResizeLargeImages"]</strong>
 								<br /><small class="text-muted">@L["ResizeLargeImagesHint"]</small>
@@ -658,7 +658,7 @@
 								<SbFormField Label="@L["DatabaseConnectionString"]" HelperText="@L["DatabaseConnectionStringHint"]">
 									@if (_editModel.StorageConfig.HasDatabaseConnectionString && _showDbConnectionString == false)
 									{
-										<SbStack Direction="SbStackDirection.Row" Gap="2" Align="SbAlign.Center">
+										<SbStack Wrap="true" Direction="SbStackDirection.Row" Gap="2" Align="SbAlign.Center">
 											<div class="form-control" style="flex: 1; opacity: 0.8;">••••••</div>
 											<SbButton Variant="SbButtonVariant.Outline" Size="SbSize.Sm" OnClick="@(() => _showDbConnectionString = true)">
 												@L["Change"]
@@ -692,7 +692,7 @@
 								<SbFormField Label="@L["MinioAccessKey"]">
 									@if (_editModel.StorageConfig.HasMinioAccessKey && _showMinioAccessKey == false)
 									{
-										<SbStack Direction="SbStackDirection.Row" Gap="2" Align="SbAlign.Center">
+										<SbStack Wrap="true" Direction="SbStackDirection.Row" Gap="2" Align="SbAlign.Center">
 											<div class="form-control" style="flex: 1; opacity: 0.8;">••••••</div>
 											<SbButton Variant="SbButtonVariant.Outline" Size="SbSize.Sm" OnClick="@(() => _showMinioAccessKey = true)">@L["Change"]</SbButton>
 										</SbStack>
@@ -705,7 +705,7 @@
 								<SbFormField Label="@L["MinioSecretKey"]">
 									@if (_editModel.StorageConfig.HasMinioSecretKey && _showMinioSecretKey == false)
 									{
-										<SbStack Direction="SbStackDirection.Row" Gap="2" Align="SbAlign.Center">
+										<SbStack Wrap="true" Direction="SbStackDirection.Row" Gap="2" Align="SbAlign.Center">
 											<div class="form-control" style="flex: 1; opacity: 0.8;">••••••</div>
 											<SbButton Variant="SbButtonVariant.Outline" Size="SbSize.Sm" OnClick="@(() => _showMinioSecretKey = true)">@L["Change"]</SbButton>
 										</SbStack>
@@ -735,7 +735,7 @@
 								<SbFormField Label="@L["S3AccessKeyId"]">
 									@if (_editModel.StorageConfig.HasS3AccessKey && _showS3AccessKey == false)
 									{
-										<SbStack Direction="SbStackDirection.Row" Gap="2" Align="SbAlign.Center">
+										<SbStack Wrap="true" Direction="SbStackDirection.Row" Gap="2" Align="SbAlign.Center">
 											<div class="form-control" style="flex: 1; opacity: 0.8;">••••••</div>
 											<SbButton Variant="SbButtonVariant.Outline" Size="SbSize.Sm" OnClick="@(() => _showS3AccessKey = true)">@L["Change"]</SbButton>
 										</SbStack>
@@ -748,7 +748,7 @@
 								<SbFormField Label="@L["S3SecretAccessKey"]">
 									@if (_editModel.StorageConfig.HasS3SecretKey && _showS3SecretKey == false)
 									{
-										<SbStack Direction="SbStackDirection.Row" Gap="2" Align="SbAlign.Center">
+										<SbStack Wrap="true" Direction="SbStackDirection.Row" Gap="2" Align="SbAlign.Center">
 											<div class="form-control" style="flex: 1; opacity: 0.8;">••••••</div>
 											<SbButton Variant="SbButtonVariant.Outline" Size="SbSize.Sm" OnClick="@(() => _showS3SecretKey = true)">@L["Change"]</SbButton>
 										</SbStack>
@@ -762,7 +762,7 @@
 
 							@if (_editModel.StorageConfig != null)
 							{
-								<SbStack Direction="SbStackDirection.Row" Gap="2" Justify="SbJustify.End">
+								<SbStack Wrap="true" Direction="SbStackDirection.Row" Gap="2" Justify="SbJustify.End">
 									<SbButton Variant="SbButtonVariant.Outline" Size="SbSize.Sm" OnClick="@TestStorageConnectionAsync" Loading="@_testingConnection">
 										<StartIcon><SbIcon Name="refresh" /></StartIcon>
 										<ChildContent>@L["TestConnection"]</ChildContent>
@@ -776,7 +776,7 @@
 		</SbTabs>
 	</ChildContent>
 	<Footer>
-		<SbStack Direction="SbStackDirection.Row" Gap="2" Justify="SbJustify.End">
+		<SbStack Wrap="true" Direction="SbStackDirection.Row" Gap="2" Justify="SbJustify.End">
 			<SbButton Color="SbColor.Default" OnClick="@CloseEditModal">
 				<ChildContent>@L["Cancel"]</ChildContent>
 			</SbButton>
@@ -1081,7 +1081,7 @@
 		}
 	</ChildContent>
 	<Footer>
-		<SbStack Direction="SbStackDirection.Row" Gap="2" Justify="SbJustify.End">
+		<SbStack Wrap="true" Direction="SbStackDirection.Row" Gap="2" Justify="SbJustify.End">
 			<SbButton Color="SbColor.Default" OnClick="@CloseViewModal">
 				<ChildContent>@L["Close"]</ChildContent>
 			</SbButton>
@@ -1099,7 +1099,7 @@
 		<p>@L["ConfirmDeleteStructureMessage"]</p>
 	</ChildContent>
 	<Footer>
-		<SbStack Direction="SbStackDirection.Row" Gap="2" Justify="SbJustify.End">
+		<SbStack Wrap="true" Direction="SbStackDirection.Row" Gap="2" Justify="SbJustify.End">
 			<SbButton Color="SbColor.Default" OnClick="@CancelDeleteStructure">
 				<ChildContent>@L["Cancel"]</ChildContent>
 			</SbButton>
@@ -1116,7 +1116,7 @@
 		<p>@L["ConfirmResetStructureMessage"]</p>
 	</ChildContent>
 	<Footer>
-		<SbStack Direction="SbStackDirection.Row" Gap="2" Justify="SbJustify.End">
+		<SbStack Wrap="true" Direction="SbStackDirection.Row" Gap="2" Justify="SbJustify.End">
 			<SbButton Color="SbColor.Default" OnClick="@CancelReset">
 				<ChildContent>@L["Cancel"]</ChildContent>
 			</SbButton>

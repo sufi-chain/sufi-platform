@@ -46,7 +46,7 @@
 					<ChildContent>
 						<SbColumn TItem="AIModelConfigurationDto" Title="@L["Actions"]" Width="104px" Sortable="false">
 							<CellTemplate Context="cellContext">
-								<SbStack Direction="SbStackDirection.Row" Gap="1">
+								<SbStack Wrap="true" Direction="SbStackDirection.Row" Gap="1">
 									@if (!_readOnly)
 									{
 										<AuthorizeView Policy="@AIPermissions.AI.ManageConfigurations">

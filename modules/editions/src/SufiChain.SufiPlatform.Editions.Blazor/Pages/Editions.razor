@@ -30,7 +30,7 @@
                 <ChildContent>
                     <SbColumn TItem="EditionDto" Title="@L["Actions"]" Width="152px" Sortable="false">
                         <CellTemplate Context="ctx">
-                            <SbStack Direction="SbStackDirection.Row" Gap="1">
+                            <SbStack Wrap="true" Direction="SbStackDirection.Row" Gap="1">
                                 @if (HasManageFeaturesPermission)
                                 {
                                     <SbTooltip Text="@L["EditionFeatures"]">
@@ -112,7 +112,7 @@
         </SbStack>
     </ChildContent>
     <Footer>
-        <SbStack Direction="SbStackDirection.Row" Gap="2" Justify="SbJustify.End">
+        <SbStack Wrap="true" Direction="SbStackDirection.Row" Gap="2" Justify="SbJustify.End">
             <SbButton Variant="SbButtonVariant.Outline"
                       Color="SbColor.Secondary"
                       OnClick="CloseModal">@L["Cancel"]</SbButton>

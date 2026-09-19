@@ -50,7 +50,7 @@
 						</StartAdornment>
 					</SbTextField>
 				</SbGrid>
-				<SbStack Direction="SbStackDirection.Row" Gap="2" Justify="SbJustify.End">
+				<SbStack Wrap="true" Direction="SbStackDirection.Row" Gap="2" Justify="SbJustify.End">
 					<SbButton OnClick="@ClearFilterAsync" Variant="SbButtonVariant.Outline">
 						<ChildContent>@L["ClearFilters"]</ChildContent>
 					</SbButton>
@@ -84,7 +84,7 @@
                         SelectionMode="SbSelectionMode.MultipleRows">
 						<SbColumn TItem="LocalizationTextWithBaseValueDto" Title="@L["Actions"]" Width="104px" Sortable="false">
 							<CellTemplate Context="ctx">
-								<SbStack Direction="SbStackDirection.Row" Gap="1">
+								<SbStack Wrap="true" Direction="SbStackDirection.Row" Gap="1">
 									<AuthorizeView Policy="@LocalizationPermissions.Texts.Update" Context="authContext">
 										<SbTooltip Text="@L["Edit"]"><SbIconButton Size="SbSize.Sm" AriaLabel="@L["Edit"]"
 													  OnClick="@(() => ShowEditDialogForMerged(ctx.Item))">
@@ -140,7 +140,7 @@
                         SelectionMode="SbSelectionMode.MultipleRows">
 						<SbColumn TItem="LocalizationTextDto" Title="@L["Actions"]" Width="104px" Sortable="false">
 							<CellTemplate Context="ctx">
-								<SbStack Direction="SbStackDirection.Row" Gap="1">
+								<SbStack Wrap="true" Direction="SbStackDirection.Row" Gap="1">
 									<AuthorizeView Policy="@LocalizationPermissions.Texts.Update" Context="authContext">
 										<SbTooltip Text="@L["Edit"]"><SbIconButton Size="SbSize.Sm" AriaLabel="@L["Edit"]"
 													  OnClick="@(() => ShowEditDialog(ctx.Item))">
@@ -189,7 +189,7 @@
 		</SbStack>
 	</ChildContent>
 	<Footer>
-		<SbStack Direction="SbStackDirection.Row" Gap="2" Justify="SbJustify.End">
+		<SbStack Wrap="true" Direction="SbStackDirection.Row" Gap="2" Justify="SbJustify.End">
 			<SbButton Variant="SbButtonVariant.Solid" OnClick="@(() => _showCreateDialog = false)">
 				@L["Cancel"]
 			</SbButton>
@@ -222,7 +222,7 @@
 		</SbStack>
 	</ChildContent>
 	<Footer>
-		<SbStack Direction="SbStackDirection.Row" Gap="2" Justify="SbJustify.End">
+		<SbStack Wrap="true" Direction="SbStackDirection.Row" Gap="2" Justify="SbJustify.End">
 			<SbButton Variant="SbButtonVariant.Solid" OnClick="@(() => _showEditDialog = false)">
 				@L["Cancel"]
 			</SbButton>

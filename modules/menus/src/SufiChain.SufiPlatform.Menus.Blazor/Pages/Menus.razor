@@ -36,7 +36,7 @@
                         SelectionMode="SbSelectionMode.MultipleRows">
                     <SbColumn TItem="MenuListDto" Title="@L["Actions"]" Width="152px" Sortable="false">
                         <CellTemplate Context="cellContext">
-                            <SbStack Direction="SbStackDirection.Row" Gap="1">
+                            <SbStack Wrap="true" Direction="SbStackDirection.Row" Gap="1">
                                 <AuthorizeView Policy="@MenusPermissions.Menus.ManageItems">
                                     <SbTooltip Text="@L["ManageItems"]">
                                         <SbIconButton Size="SbSize.Sm" AriaLabel="@L["ManageItems"]"

@@ -19,7 +19,7 @@
                 </SbStack>
             </ChildContent>
             <FooterContent>
-                <SbStack Direction="SbStackDirection.Row" Gap="2" Justify="SbJustify.End">
+                <SbStack Wrap="true" Direction="SbStackDirection.Row" Gap="2" Justify="SbJustify.End">
                     <SbButton Variant="SbButtonVariant.Outline" OnClick="Hide">@L["Cancel"]</SbButton>
                     <SbButton Type="submit" Color="SbColor.Primary" Loading="IsOperationLoading(LoadingKeys.Create)">@L["CreateTag"]</SbButton>
                 </SbStack>

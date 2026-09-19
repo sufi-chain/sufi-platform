@@ -8,7 +8,7 @@
 @if (_loading)
 {
     <SbStack Align="SbAlign.Center" class="p-4">
-        <SbProgress Type="SbProgressType.Circular" />
+        <SbProgress Indeterminate="true" aria-label="@AccountL["Loading"]" Type="SbProgressType.Circular" />
     </SbStack>
 }
 else if (!string.IsNullOrEmpty(_errorMessage))
@@ -24,7 +24,7 @@ else
     <SbStack Gap="2">
         @foreach (var link in _links)
         {
-            <SbStack Direction="SbStackDirection.Row"
+            <SbStack Wrap="true" Direction="SbStackDirection.Row"
                      Justify="SbJustify.SpaceBetween"
                      Align="SbAlign.Center"
                      Gap="3"
@@ -38,7 +38,7 @@ else
 
                 @if (link.DirectlyLinked)
                 {
-                    <SbStack Direction="SbStackDirection.Row" Gap="2">
+                    <SbStack Wrap="true" Direction="SbStackDirection.Row" Gap="2">
                         <SbButton Color="SbColor.Primary"
                                   Variant="SbButtonVariant.Outline"
                                   Loading="_busyUserId == link.TargetUserId"

@@ -1,6 +1,8 @@
 {
   "culture": "fa",
   "texts": {
+        "Theme:SwitchToLightMode": "تغییر به حالت روشن",
+        "Theme:SwitchToDarkMode": "تغییر به حالت تاریک",
     "Administration": "مدیریت",
     "AllRightsReserved": "تمامی حقوق محفوظ است.",
     "PoweredWithLoveBy": "توسعه یافته با ❤️ در زنجیره صوفی ",

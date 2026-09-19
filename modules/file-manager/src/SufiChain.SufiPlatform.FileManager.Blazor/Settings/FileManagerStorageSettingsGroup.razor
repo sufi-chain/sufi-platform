@@ -8,7 +8,7 @@
     @if (IsOperationLoading(LoadingKeys.Load))
     {
         <div class="text-center py-4">
-            <SbProgress Type="SbProgressType.Circular" />
+            <SbProgress Indeterminate="true" aria-label="@L["Loading"]" Type="SbProgressType.Circular" />
         </div>
     }
     else
@@ -66,7 +66,7 @@
             </SbFormField>
         }
 
-        <SbStack Direction="SbStackDirection.Row" Gap="2" Justify="SbJustify.End">
+        <SbStack Wrap="true" Direction="SbStackDirection.Row" Gap="2" Justify="SbJustify.End">
             <SbButton Variant="SbButtonVariant.Outline" OnClick="TestConnectionAsync" Loading="IsOperationLoading(LoadingKeys.Test)">
                 <StartIcon><SbIcon Name="refresh" /></StartIcon>
                 <ChildContent>@L["TestConnection"]</ChildContent>

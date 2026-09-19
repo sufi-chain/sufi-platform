@@ -84,7 +84,7 @@
 				</SbText>
 			}
 
-			<SbStack Direction="SbStackDirection.Row" Gap="2" Align="SbAlign.End">
+			<SbStack Wrap="true" Direction="SbStackDirection.Row" Gap="2" Align="SbAlign.End">
 				<SbButton Variant="SbButtonVariant.Outline"
 						  OnClick="@LoadModelsAsync"
 						  Loading="IsOperationLoading(LoadingKeys.LoadModels)">
@@ -195,7 +195,7 @@
 		</SbStack>
 	</ChildContent>
 	<Footer>
-		<SbStack Direction="SbStackDirection.Row" Gap="2" Justify="SbJustify.End">
+		<SbStack Wrap="true" Direction="SbStackDirection.Row" Gap="2" Justify="SbJustify.End">
 			<SbButton OnClick="@CloseModalAsync">@L["Cancel"]</SbButton>
 			<SbButton Variant="SbButtonVariant.Outline"
 					  OnClick="@TestConnectionAsync"

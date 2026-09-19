@@ -21,12 +21,12 @@
 
 	<!-- Desktop: Split view (tree left, details right). Hidden on mobile. -->
 	<div class="ou-layout ou-layout-desktop">
-		<SbStack Direction="SbStackDirection.Row" Gap="4">
+		<SbStack Wrap="true" Direction="SbStackDirection.Row" Gap="4">
 
 			<!-- Left Panel: Tree View -->
 			<SbCard Class="ou-tree-card">
 				<Header>
-					<SbStack Direction="SbStackDirection.Row" Justify="SbJustify.SpaceBetween" Align="SbAlign.Center">
+					<SbStack Wrap="true" Direction="SbStackDirection.Row" Justify="SbJustify.SpaceBetween" Align="SbAlign.Center">
 						<span>@L["OrganizationUnits"]</span>
 						<SbIconButton Size="SbSize.Sm" AriaLabel="@L["Refresh"]" OnClick="@LoadTreeAsync">
 							<Icon><SbIcon Name="refresh-cw" /></Icon>
@@ -37,7 +37,7 @@
 					@if (IsOperationLoading(LoadingKeys.LoadTree))
 					{
 						<SbStack Justify="SbJustify.Center" Align="SbAlign.Center" Class="p-8">
-							<SbProgress Type="SbProgressType.Circular" />
+							<SbProgress Indeterminate="true" aria-label="@L["Loading"]" Type="SbProgressType.Circular" />
 						</SbStack>
 					}
 					else if (_organizationUnits.Count == 0)
@@ -76,12 +76,12 @@
 			{
 				<SbCard Class="flex-grow-1" Style="min-height: 500px;">
 					<Header>
-						<SbStack Direction="SbStackDirection.Row" Justify="SbJustify.SpaceBetween" Align="SbAlign.Center">
-							<SbStack Direction="SbStackDirection.Row" Gap="2" Align="SbAlign.Center" Class="ou-unit-name-container">
+						<SbStack Wrap="true" Direction="SbStackDirection.Row" Justify="SbJustify.SpaceBetween" Align="SbAlign.Center">
+							<SbStack Wrap="true" Direction="SbStackDirection.Row" Gap="2" Align="SbAlign.Center" Class="ou-unit-name-container">
 								<SbIcon Name="folder" />
 								<span class="ou-unit-name fw-semibold" title="@_selectedUnit.DisplayName">@_selectedUnit.DisplayName</span>
 							</SbStack>
-							<SbStack Direction="SbStackDirection.Row" Gap="1">
+							<SbStack Wrap="true" Direction="SbStackDirection.Row" Gap="1">
 								<AuthorizeView Policy="@SufiChain.SufiPlatform.Identity.IdentityPermissions.OrganizationUnits.Create">
 									<SbIconButton Size="SbSize.Sm" AriaLabel="@L["AddSubUnit"]"
 												  OnClick="ShowCreateChildModal">
@@ -109,15 +109,15 @@
 							<SbTab Label="@L["Overview"]">
 								<SbStack Gap="4">
 									<SbStack Direction="SbStackDirection.Column" Gap="4">
-										<SbStack Direction="SbStackDirection.Row" Gap="2" Align="SbAlign.Center">
+										<SbStack Wrap="true" Direction="SbStackDirection.Row" Gap="2" Align="SbAlign.Center">
 											<span class="text-muted">@L["Code"]:</span>
 											<span class="fw-medium">@_selectedUnit.Code</span>
 										</SbStack>
-										<SbStack Direction="SbStackDirection.Row" Gap="2" Align="SbAlign.Center">
+										<SbStack Wrap="true" Direction="SbStackDirection.Row" Gap="2" Align="SbAlign.Center">
 											<span class="text-muted">@L["Members"]:</span>
 											<SbBadge Color="SbColor.Primary" Style="width: max-content">@_selectedUnitDetails?.MemberCount</SbBadge>
 										</SbStack>
-										<SbStack Direction="SbStackDirection.Row" Gap="2" Align="SbAlign.Center">
+										<SbStack Wrap="true" Direction="SbStackDirection.Row" Gap="2" Align="SbAlign.Center">
 											<span class="text-muted">@L["Roles"]:</span>
 											<SbBadge Color="SbColor.Info" Style="width: max-content">@_selectedUnitDetails?.RoleCount</SbBadge>
 										</SbStack>
@@ -128,7 +128,7 @@
 							<!-- Members Tab -->
 							<SbTab Label="@L["Members"]">
 								<SbStack Gap="3">
-									<SbStack Direction="SbStackDirection.Row" Justify="SbJustify.SpaceBetween" Align="SbAlign.Center">
+									<SbStack Wrap="true" Direction="SbStackDirection.Row" Justify="SbJustify.SpaceBetween" Align="SbAlign.Center">
 										<SbTextField @bind-Value="_memberFilter"
 													 Placeholder="@L["SearchMembers"]"
 													 Clearable="true"
@@ -189,7 +189,7 @@
 							<!-- Roles Tab -->
 							<SbTab Label="@L["Roles"]">
 								<SbStack Gap="3">
-									<SbStack Direction="SbStackDirection.Row" Justify="SbJustify.SpaceBetween" Align="SbAlign.Center">
+									<SbStack Wrap="true" Direction="SbStackDirection.Row" Justify="SbJustify.SpaceBetween" Align="SbAlign.Center">
 										<SbAlert Severity="@SbAlertSeverity.Info" Class="mb-0 flex-grow-1">
 											@L["OrganizationUnitRolesInfo"]
 										</SbAlert>
@@ -215,7 +215,7 @@
                         ShowColumnChooser="true">
 										<SbColumn TItem="OrganizationUnitRoleDto" Title="@L["RoleName"]">
 											<CellTemplate Context="cellContext">
-												<SbStack Direction="SbStackDirection.Row" Gap="2" Align="SbAlign.Center">
+												<SbStack Wrap="true" Direction="SbStackDirection.Row" Gap="2" Align="SbAlign.Center">
 													<SbIcon Name="shield" />
 													@cellContext.Item.RoleName
 												</SbStack>
@@ -247,7 +247,7 @@
 		{
 			<SbCard Class="ou-tree-card" Style="min-height: 400px;">
 				<Header>
-					<SbStack Direction="SbStackDirection.Row" Justify="SbJustify.SpaceBetween" Align="SbAlign.Center">
+					<SbStack Wrap="true" Direction="SbStackDirection.Row" Justify="SbJustify.SpaceBetween" Align="SbAlign.Center">
 						<span>@L["OrganizationUnits"]</span>
 						<SbIconButton Size="SbSize.Sm" AriaLabel="@L["Refresh"]" OnClick="@LoadTreeAsync">
 							<Icon><SbIcon Name="refresh-cw" /></Icon>
@@ -258,7 +258,7 @@
 					@if (IsOperationLoading(LoadingKeys.LoadTree))
 					{
 						<SbStack Justify="SbJustify.Center" Align="SbAlign.Center" Class="p-8">
-							<SbProgress Type="SbProgressType.Circular" />
+							<SbProgress Indeterminate="true" aria-label="@L["Loading"]" Type="SbProgressType.Circular" />
 						</SbStack>
 					}
 					else if (_organizationUnits.Count == 0)
@@ -287,7 +287,7 @@
 				<Header>
 					<SbStack Direction="SbStackDirection.Column" Gap="2" Class="ou-mobile-details-header">
 						@* Line 1: Back button + unit name *@
-						<SbStack Direction="SbStackDirection.Row" Gap="2" Align="SbAlign.Center" Class="ou-unit-name-container">
+						<SbStack Wrap="true" Direction="SbStackDirection.Row" Gap="2" Align="SbAlign.Center" Class="ou-unit-name-container">
 							<SbIconButton Size="SbSize.Sm" AriaLabel="@L["Back"]" OnClick="@(() => OnUnitSelectedAsync(null))">
 								<Icon><SbIcon Name="arrow-left" /></Icon>
 							</SbIconButton>
@@ -295,7 +295,7 @@
 							<span class="ou-unit-name fw-semibold" title="@_selectedUnit.DisplayName">@_selectedUnit.DisplayName</span>
 						</SbStack>
 						@* Line 2: 3 action buttons *@
-						<SbStack Direction="SbStackDirection.Row" Gap="1" Justify="SbJustify.End">
+						<SbStack Wrap="true" Direction="SbStackDirection.Row" Gap="1" Justify="SbJustify.End">
 							<AuthorizeView Policy="@SufiChain.SufiPlatform.Identity.IdentityPermissions.OrganizationUnits.Create">
 								<SbIconButton Size="SbSize.Sm" AriaLabel="@L["AddSubUnit"]" OnClick="ShowCreateChildModal">
 									<Icon><SbIcon Name="folder-plus" /></Icon>
@@ -389,7 +389,7 @@
                         ShowColumnChooser="true">
 									<SbColumn TItem="OrganizationUnitRoleDto" Title="@L["RoleName"]">
 										<CellTemplate Context="cellContext">
-											<SbStack Direction="SbStackDirection.Row" Gap="2" Align="SbAlign.Center">
+											<SbStack Wrap="true" Direction="SbStackDirection.Row" Gap="2" Align="SbAlign.Center">
 												<SbIcon Name="shield" />
 												@cellContext.Item.RoleName
 											</SbStack>

@@ -35,7 +35,7 @@
 									 Label="@L["ApiKey"]"
 									 Type="password" />
 
-						<SbStack Direction="SbStackDirection.Row" Gap="2" Align="SbAlign.End">
+						<SbStack Wrap="true" Direction="SbStackDirection.Row" Gap="2" Align="SbAlign.End">
 							<SbTextField @bind-Value="_model.Model"
 										 Label="@L["DefaultChatModel"]"
 										 Required="true"
@@ -87,7 +87,7 @@
 		</SbTabs>
 	</ChildContent>
 	<Footer>
-		<SbStack Direction="SbStackDirection.Row" Gap="2" Justify="SbJustify.End">
+		<SbStack Wrap="true" Direction="SbStackDirection.Row" Gap="2" Justify="SbJustify.End">
 			<SbButton Variant="SbButtonVariant.Outline" OnClick="@CloseModal">
 				@L["Cancel"]
 			</SbButton>

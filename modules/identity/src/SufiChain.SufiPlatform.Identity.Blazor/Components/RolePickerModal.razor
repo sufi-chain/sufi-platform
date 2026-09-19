@@ -52,7 +52,7 @@
                     </SbColumn>
                     <SbColumn TItem="OrganizationUnitRoleDto" Title="@L["RoleName"]">
                         <CellTemplate Context="cellContext">
-                            <SbStack Direction="SbStackDirection.Row" Gap="2" Align="SbAlign.Center">
+                            <SbStack Wrap="true" Direction="SbStackDirection.Row" Gap="2" Align="SbAlign.Center">
                                 <SbIcon Name="shield" />
                                 @cellContext.Item.RoleName
                             </SbStack>
@@ -71,7 +71,7 @@
         </SbStack>
     </ChildContent>
     <Footer>
-        <SbStack Direction="SbStackDirection.Row" Gap="2" Justify="SbJustify.End">
+        <SbStack Wrap="true" Direction="SbStackDirection.Row" Gap="2" Justify="SbJustify.End">
             <SbButton Variant="SbButtonVariant.Outline" OnClick="Hide">@L["Cancel"]</SbButton>
             <SbButton Color="SbColor.Primary" 
                       Loading="IsOperationLoading(LoadingKeys.AddRoles)" 

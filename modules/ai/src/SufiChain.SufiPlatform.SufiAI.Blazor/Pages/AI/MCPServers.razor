@@ -29,7 +29,7 @@
                 <ChildContent>
                     <SbColumn TItem="MCPServerDto" Title="@L["Actions"]" Width="184px" Sortable="false">
                         <CellTemplate Context="cellContext">
-                            <SbStack Direction="SbStackDirection.Row" Gap="1">
+                            <SbStack Wrap="true" Direction="SbStackDirection.Row" Gap="1">
                                 <SbTooltip Text="@L["TestConnection"]">
                                     <SbIconButton Size="SbSize.Sm"
                                                   AriaLabel="@L["TestConnection"]"
