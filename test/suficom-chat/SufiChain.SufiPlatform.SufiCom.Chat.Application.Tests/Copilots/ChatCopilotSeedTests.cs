@@ -14,7 +14,7 @@ public class ChatCopilotSeedTests
         ChatCopilotKeys.PublicAssistant.ShortcutIds.ShouldBeEmpty();
         ChatCopilotSeedTexts.PublicAssistant.Texts.Shortcuts.ShouldBeEmpty();
         ChatCopilotSeedTexts.PublicAssistant.Texts.DisplayName["en"].ShouldBe("Everyday Assistant");
-        ChatCopilotSeedTexts.PublicAssistant.Texts.DisplayName["fa"].ShouldBe("دستیار روزمره");
+        ChatCopilotSeedTexts.PublicAssistant.Texts.DisplayName["fa"].ShouldBe("هوشواره روزمره");
     }
 
     [Fact]
