@@ -151,7 +151,7 @@ public class ModuleRegistry
         Register(new ModuleDefinition
         {
             Key = "ai",
-            DisplayName = "AI Management",
+            DisplayName = "AI Infrastructure",
             NuGetPackagePrefix = "SufiChain.SufiPlatform.SufiAI",
             Category = ModuleCategory.Infrastructure,
             IsCore = true,

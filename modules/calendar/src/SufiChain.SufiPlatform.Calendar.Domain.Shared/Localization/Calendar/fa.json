@@ -151,7 +151,7 @@
     "CalendarCopilot:Shortcut:FreeSlot": "یک زمان خالی ۳۰ دقیقه‌ای این هفته پیدا کن",
     "CalendarCopilot:Shortcut:ScheduleTomorrow": "فردا ساعت ۱۰ یک جلسه تنظیم کن",
     "CalendarCopilot:Shortcut:FreeFriday": "جمعه بعدازظهر آزاد هستم؟",
-    "Copilot:SufiCalendar:Assistant:DisplayName": "دستیار تقویم",
+    "Copilot:SufiCalendar:Assistant:DisplayName": "هوشواره تقویم",
     "Copilot:SufiCalendar:Assistant:Shortcut:DayAgenda": "امروز چه جلسه‌هایی دارم؟",
     "Copilot:SufiCalendar:Assistant:Shortcut:FreeSlot": "یه وقت خالی ۳۰ دقیقه‌ای این هفته پیدا کن",
     "Copilot:SufiCalendar:Assistant:Shortcut:ScheduleTomorrow": "فردا ساعت ۱۰ یه جلسه بذار",
