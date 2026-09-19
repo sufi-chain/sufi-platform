@@ -27,11 +27,23 @@ if [ ! -f "$ROOT_SLNX" ]; then
   exit 1
 fi
 
+extra_msbuild_props=()
+if [ -n "${SUFI_VERSION:-}" ]; then
+  extra_msbuild_props+=("-p:SufiVersion=$SUFI_VERSION")
+fi
+if [ -n "${SUFI_BLAZOR_VERSION:-}" ]; then
+  extra_msbuild_props+=("-p:SufiBlazorVersion=$SUFI_BLAZOR_VERSION")
+fi
+if [ -n "${SUFI_THEME_VERSION:-}" ]; then
+  extra_msbuild_props+=("-p:SufiThemeVersion=$SUFI_THEME_VERSION")
+fi
+
 dotnet restore "$ROOT_SLNX" \
   --configfile /tmp/ci-nuget.config \
   --verbosity minimal \
   -p:UseLocalDevelopmentReferences=false \
-  -p:NuGetAudit=false
+  -p:NuGetAudit=false \
+  "${extra_msbuild_props[@]}"
 
 dotnet build "$ROOT_SLNX" \
   --configuration Release \
@@ -42,7 +54,8 @@ dotnet build "$ROOT_SLNX" \
   -p:GeneratePackageOnBuild=false \
   -p:UseLocalDevelopmentReferences=false \
   -p:ContinuousIntegrationBuild=true \
-  -p:BuildInParallel=true
+  -p:BuildInParallel=true \
+  "${extra_msbuild_props[@]}"
 
 mapfile -t solution_projects < <(
   sed -n 's:.*<Project Path="\([^"]\+\)".*:\1:p' "$ROOT_SLNX" |
@@ -92,7 +105,8 @@ for csproj in "${production_projects[@]}"; do
       --configfile /tmp/ci-nuget.config \
       --verbosity minimal \
       -p:UseLocalDevelopmentReferences=false \
-      -p:NuGetAudit=false
+      -p:NuGetAudit=false \
+      "${extra_msbuild_props[@]}"
 
     dotnet pack "$csproj" \
       --configuration Release \
@@ -102,7 +116,8 @@ for csproj in "${production_projects[@]}"; do
       -p:PackageVersion="$VERSION" \
       -p:GeneratePackageOnBuild=false \
       -p:UseLocalDevelopmentReferences=false \
-      -p:ContinuousIntegrationBuild=true
+      -p:ContinuousIntegrationBuild=true \
+      "${extra_msbuild_props[@]}"
   fi
 done
 
@@ -114,7 +129,8 @@ dotnet pack "$ROOT_SLNX" \
   -p:PackageVersion="$VERSION" \
   -p:GeneratePackageOnBuild=false \
   -p:UseLocalDevelopmentReferences=false \
-  -p:ContinuousIntegrationBuild=true
+  -p:ContinuousIntegrationBuild=true \
+  "${extra_msbuild_props[@]}"
 
 missing_package_ids=()
 for i in "${!packable_package_ids[@]}"; do
