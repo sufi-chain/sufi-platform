@@ -40,12 +40,16 @@
                 <SbMenuItem @key="language.CultureName"
                             OnClick="@EventCallback.Factory.Create(this, () => ChangeLanguageAsync(language.CultureName, language.UiCultureName))"
                             Class="@(language.CultureName == _currentLanguage?.CultureName ? "language-item--active" : "")">
-                    <span class="language-code">@GetLanguageCode(language.CultureName)</span>
-                    <span class="language-name">@language.DisplayName</span>
-                    @if (language.CultureName == _currentLanguage?.CultureName)
-                    {
-                        <SbIcon Name="check" Size="@SbSize.Sm" Class="language-check" />
-                    }
+                    <Icon>
+                        <span class="language-code">@GetLanguageCode(language.CultureName)</span>
+                    </Icon>
+                    <ChildContent>
+                        <span class="language-name">@language.DisplayName</span>
+                        @if (language.CultureName == _currentLanguage?.CultureName)
+                        {
+                            <SbIcon Name="check" Size="@SbSize.Sm" Class="language-check" />
+                        }
+                    </ChildContent>
                 </SbMenuItem>
             }
         </ChildContent>

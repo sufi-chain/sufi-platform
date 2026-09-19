@@ -2,7 +2,11 @@
   "culture": "es",
   "texts": {
         "Theme:SwitchToLightMode": "Cambiar al modo claro",
-        "Theme:SwitchToDarkMode": "Cambiar al modo oscuro","PwaInstallTitle":"Instala la aplicación","PwaInstallDescription":"Abre tu espacio de trabajo desde la pantalla de inicio o el escritorio.","PwaInstallAction":"Instalar aplicación","PwaInstallHowTo":"Cómo instalar","PwaInstallNotNow":"Ahora no","PwaInstallIosInstructions":"Abre esta página en Safari. Pulsa Compartir y luego Añadir a la pantalla de inicio. Activa Abrir como app web si aparece y pulsa Añadir.","PwaInstallUnavailable":"La instalación no está disponible ahora. Inténtalo de nuevo más tarde.",
+        "Theme:SwitchToDarkMode": "Cambiar al modo oscuro",
+        "Theme": "Tema",
+        "Theme:Light": "Claro",
+        "Theme:Dark": "Oscuro",
+        "Theme:System": "Sistema","PwaInstallTitle":"Instala la aplicación","PwaInstallDescription":"Abre tu espacio de trabajo desde la pantalla de inicio o el escritorio.","PwaInstallAction":"Instalar aplicación","PwaInstallHowTo":"Cómo instalar","PwaInstallNotNow":"Ahora no","PwaInstallIosInstructions":"Abre esta página en Safari. Pulsa Compartir y luego Añadir a la pantalla de inicio. Activa Abrir como app web si aparece y pulsa Añadir.","PwaInstallUnavailable":"La instalación no está disponible ahora. Inténtalo de nuevo más tarde.",
     "Administration": "Administración",
     "AllRightsReserved": "Todos los derechos reservados",
     "PoweredWithLoveBy": "Desarrollado con ❤️ por SufiChain",

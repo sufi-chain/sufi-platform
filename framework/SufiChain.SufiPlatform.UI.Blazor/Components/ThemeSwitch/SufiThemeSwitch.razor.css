@@ -1,0 +1,20 @@
+::deep(.theme-menu) {
+    z-index: var(--sb-z-menu, 1300);
+    min-width: 10.5rem;
+}
+
+::deep(.sb-menu-item__text) {
+    display: flex;
+    align-items: center;
+    gap: var(--sb-space-2);
+}
+
+::deep(.theme-item__label) {
+    flex: 1;
+    text-align: start;
+}
+
+::deep(.theme-check) {
+    flex-shrink: 0;
+    color: var(--sb-color-primary);
+}

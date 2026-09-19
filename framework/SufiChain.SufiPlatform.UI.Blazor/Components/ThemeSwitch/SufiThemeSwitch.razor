@@ -1,0 +1,117 @@
+@namespace SufiChain.SufiPlatform.UI.Blazor.Components.ThemeSwitch
+@using Microsoft.AspNetCore.Components
+@using Microsoft.Extensions.Localization
+@using SufiChain.SufiBlazor.Components
+@using SufiChain.SufiBlazor.Components.Actions
+@using SufiChain.SufiBlazor.Components.Common
+@using SufiChain.SufiBlazor.Components.Overlays
+@using SufiChain.SufiPlatform.UI.Localization
+@using SufiChain.SufiPlatform.UI.Theming
+@implements IDisposable
+
+@inject IThemeSwitchService ThemeSwitchService
+@inject IStringLocalizer<SufiFrameworkResource> L
+
+@* Theme selector for account layout and standalone use. *@
+<SbMenu Open="@_menuOpen" OpenChanged="@OnMenuOpenChanged" Class="theme-menu" Placement="@Placement">
+    <AnchorContent>
+        <SbButton Variant="@SbButtonVariant.Ghost" Size="@SbSize.Sm"
+                  OnClick="ToggleMenu"
+                  aria-haspopup="menu" aria-expanded="@(_menuOpen ? "true" : "false")"
+                  aria-label="@AnchorLabel"
+                  title="@AnchorLabel">
+            <SbIcon Name="@CurrentAnchorIcon" Size="@SbSize.Md" />
+        </SbButton>
+    </AnchorContent>
+    <ChildContent>
+        @foreach (var mode in Modes)
+        {
+            <SbMenuItem @key="mode"
+                        OnClick="@EventCallback.Factory.Create(this, () => ChangeThemeAsync(mode))"
+                        Class="@(IsActive(mode) ? "theme-item--active" : "")">
+                <Icon>
+                    <SbIcon Name="@GetIcon(mode)" Size="@SbSize.Sm" />
+                </Icon>
+                <ChildContent>
+                    <span class="theme-item__label">@GetModeLabel(mode)</span>
+                    @if (IsActive(mode))
+                    {
+                        <SbIcon Name="check" Size="@SbSize.Sm" Class="theme-check" />
+                    }
+                </ChildContent>
+            </SbMenuItem>
+        }
+    </ChildContent>
+</SbMenu>
+
+@code {
+    private static readonly ThemeMode[] Modes = [ThemeMode.Light, ThemeMode.Dark];
+
+    private string CurrentAnchorIcon => ThemeSwitchService.IsDarkMode ? "moon" : "sun";
+
+    private string EffectiveModeLabel =>
+        GetModeLabel(ThemeSwitchService.IsDarkMode ? ThemeMode.Dark : ThemeMode.Light);
+
+    /// <summary>
+    /// Menu placement relative to the anchor. Default is BottomEnd for top-end positioning.
+    /// </summary>
+    [Parameter]
+    public SbPlacement Placement { get; set; } = SbPlacement.BottomEnd;
+
+    private bool _menuOpen;
+    private bool _subscribed;
+
+    private string AnchorLabel => $"{L["Theme"]}: {EffectiveModeLabel}";
+
+    private bool IsActive(ThemeMode mode) =>
+        ThemeSwitchService.CurrentMode == mode
+        || (ThemeSwitchService.CurrentMode == ThemeMode.System
+            && ((mode == ThemeMode.Dark && ThemeSwitchService.IsDarkMode)
+                || (mode == ThemeMode.Light && !ThemeSwitchService.IsDarkMode)));
+
+    protected override async Task OnInitializedAsync()
+    {
+        await ThemeSwitchService.GetStoredThemeAsync();
+        ThemeSwitchService.ThemeChanged += OnThemeChanged;
+        _subscribed = true;
+    }
+
+    private void OnThemeChanged(ThemeMode mode)
+    {
+        _ = InvokeAsync(StateHasChanged);
+    }
+
+    private void OnMenuOpenChanged(bool open)
+    {
+        _menuOpen = open;
+    }
+
+    private void ToggleMenu()
+    {
+        _menuOpen = !_menuOpen;
+    }
+
+    private async Task ChangeThemeAsync(ThemeMode mode)
+    {
+        _menuOpen = false;
+        await ThemeSwitchService.SetThemeModeAsync(mode);
+    }
+
+    private string GetModeLabel(ThemeMode mode) => mode switch
+    {
+        ThemeMode.Light => L["Theme:Light"].Value,
+        ThemeMode.Dark => L["Theme:Dark"].Value,
+        _ => mode.ToString()
+    };
+
+    private static string GetIcon(ThemeMode mode) =>
+        mode == ThemeMode.Dark ? "moon" : "sun";
+
+    public void Dispose()
+    {
+        if (_subscribed)
+        {
+            ThemeSwitchService.ThemeChanged -= OnThemeChanged;
+        }
+    }
+}

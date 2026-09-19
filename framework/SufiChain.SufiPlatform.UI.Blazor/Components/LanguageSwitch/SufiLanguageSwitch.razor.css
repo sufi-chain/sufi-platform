@@ -1,0 +1,32 @@
+::deep(.language-menu) {
+    z-index: var(--sb-z-menu, 1300);
+    min-width: 12.5rem;
+}
+
+::deep(.sb-menu-item__icon) {
+    width: auto;
+    min-width: 1.75rem;
+}
+
+::deep(.language-code) {
+    font-family: var(--sb-font-family-latin, system-ui, sans-serif);
+    font-size: var(--sb-font-size-xs);
+    font-weight: var(--sb-font-weight-semibold);
+    letter-spacing: 0.04em;
+}
+
+::deep(.sb-menu-item__text) {
+    display: flex;
+    align-items: center;
+    gap: var(--sb-space-2);
+}
+
+::deep(.language-name) {
+    flex: 1;
+    text-align: start;
+}
+
+::deep(.language-check) {
+    flex-shrink: 0;
+    color: var(--sb-color-primary);
+}

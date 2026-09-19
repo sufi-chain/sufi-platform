@@ -3,6 +3,10 @@
   "texts": {
         "Theme:SwitchToLightMode": "تغییر به حالت روشن",
         "Theme:SwitchToDarkMode": "تغییر به حالت تاریک",
+        "Theme": "پوسته",
+        "Theme:Light": "روشن",
+        "Theme:Dark": "تاریک",
+        "Theme:System": "سیستم",
     "Administration": "مدیریت",
     "AllRightsReserved": "تمامی حقوق محفوظ است.",
     "PoweredWithLoveBy": "توسعه یافته با ❤️ در زنجیره صوفی ",
