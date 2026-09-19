@@ -7,10 +7,10 @@
 @using SufiChain.SufiBlazor.Components.Overlays
 @inject IFileItemAppService FileItemAppService
 @inject IFileItemUrlProvider FileItemUrlProvider
-@inject IStringLocalizer<SufiFileManagerResource> L
+@inject IStringLocalizer<SufiFileManagerResource> FileManagerL
 @inherits SufiChain.SufiPlatform.UI.Blazor.SufiComponentBase
 
-<SbDialog Open="@IsOpen" OpenChanged="@IsOpenChanged" Title="@(Title ?? L["SelectFile"].Value)" Size="SbDialogSize.Lg">
+<SbDialog Open="@IsOpen" OpenChanged="@IsOpenChanged" Title="@(Title ?? FileManagerL["SelectFile"].Value)" Size="SbDialogSize.Lg">
     <ChildContent>
         <div class="file-gallery-dialog">
             @if (!string.IsNullOrEmpty(Description))
@@ -18,19 +18,19 @@
                 <p class="text-muted mb-3">@Description</p>
             }
             <div class="gallery-search mb-3">
-                <SbTextField Placeholder="@L["SearchFilesPlaceholder"]" @bind-Value="@_searchKeyword" />
+                <SbTextField Placeholder="@FileManagerL["SearchFilesPlaceholder"]" @bind-Value="@_searchKeyword" />
             <SbButton Color="SbColor.Primary" Size="SbSize.Sm" OnClick="@SearchFilesAsync">
-                    <ChildContent>@L["Search"]</ChildContent>
+                    <ChildContent>@FileManagerL["Search"]</ChildContent>
                 </SbButton>
             </div>
 
             @if (_isLoading)
             {
-                <div class="text-center py-5"><p>@L["LoadingFiles"]</p></div>
+                <div class="text-center py-5"><p>@FileManagerL["LoadingFiles"]</p></div>
             }
             else if (!_fileItems.Any())
             {
-                <div class="text-center py-5"><p class="text-muted">@L["NoFilesFound"]</p></div>
+                <div class="text-center py-5"><p class="text-muted">@FileManagerL["NoFilesFound"]</p></div>
             }
             else
             {
@@ -62,8 +62,8 @@
     </ChildContent>
     <Footer>
         <div class="d-flex justify-content-end gap-2">
-            <SbButton Color="SbColor.Default" OnClick="@CancelAsync"><ChildContent>@L["Cancel"]</ChildContent></SbButton>
-            <SbButton Color="SbColor.Primary" OnClick="@ConfirmAsync" Disabled="@(_selectedItem == null)"><ChildContent>@L["SelectFile"]</ChildContent></SbButton>
+            <SbButton Color="SbColor.Default" OnClick="@CancelAsync"><ChildContent>@FileManagerL["Cancel"]</ChildContent></SbButton>
+            <SbButton Color="SbColor.Primary" OnClick="@ConfirmAsync" Disabled="@(_selectedItem == null)"><ChildContent>@FileManagerL["SelectFile"]</ChildContent></SbButton>
         </div>
     </Footer>
 </SbDialog>

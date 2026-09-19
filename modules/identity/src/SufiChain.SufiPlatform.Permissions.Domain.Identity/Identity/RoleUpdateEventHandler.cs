@@ -4,7 +4,6 @@ using Volo.Abp.DependencyInjection;
 using Volo.Abp.EventBus.Distributed;
 using SufiChain.SufiPlatform.Identity;
 using Volo.Abp.Uow;
-using Volo.Abp.Uow;
 
 namespace SufiChain.SufiPlatform.Permissions.Identity;
 

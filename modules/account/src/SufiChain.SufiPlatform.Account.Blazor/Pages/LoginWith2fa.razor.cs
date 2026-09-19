@@ -44,7 +44,7 @@ public partial class LoginWith2fa
     public string? PendingToken { get; set; }
 
     [SupplyParameterFromForm]
-    public LoginWith2faInputModel Input { get; set; } = new();
+    public LoginWith2faInputModel? Input { get; set; }
 
     protected TwoFactorLoginOptionsDto? Options { get; set; }
 

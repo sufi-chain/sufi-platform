@@ -17,7 +17,7 @@ public class CopilotRuntimeCitationMappingTests
                 SourceName = "KnowledgeBase",
                 Content = $"Body {i}",
                 Score = 1f - (i * 0.1f),
-                Metadata = new Dictionary<string, object?> { ["title"] = $"Title {i}" }
+                Metadata = new Dictionary<string, object> { ["title"] = $"Title {i}" }
             })
             .ToList();
 

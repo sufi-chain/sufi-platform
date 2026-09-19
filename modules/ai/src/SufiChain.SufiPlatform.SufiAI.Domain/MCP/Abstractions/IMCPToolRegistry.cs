@@ -12,7 +12,7 @@ public interface IMCPToolRegistry
 {
     /// <summary>
     /// Get catalog descriptors for attribute-registered internal tools as non-executable
-    /// <see cref="CachedMCPTool"/> stubs. Use <see cref="ResolveAsync"/> for execution.
+    /// <c>CachedMCPTool</c> stubs. Use <see cref="ResolveAsync"/> for execution.
     /// </summary>
     Task<List<IMCPTool>> GetInternalToolsAsync(
         CancellationToken cancellationToken = default);

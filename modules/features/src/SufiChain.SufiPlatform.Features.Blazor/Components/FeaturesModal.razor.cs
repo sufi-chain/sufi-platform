@@ -5,7 +5,6 @@ using SufiChain.SufiPlatform.Features.Blazor;
 using SufiChain.SufiPlatform.Features;
 using Volo.Abp.Localization;
 using Volo.Abp.Localization.External;
-using SufiChain.SufiPlatform.Features;
 
 namespace SufiChain.SufiPlatform.Features.Blazor.Components;
 

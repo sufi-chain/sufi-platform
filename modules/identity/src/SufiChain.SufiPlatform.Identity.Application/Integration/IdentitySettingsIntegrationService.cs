@@ -10,7 +10,7 @@ namespace SufiChain.SufiPlatform.Identity;
 /// </summary>
 public class IdentitySettingsIntegrationService : SufiApplicationService, IIdentitySettingsIntegrationService
 {
-    protected ISettingProvider SettingProvider { get; }
+    new ISettingProvider SettingProvider { get; }
 
     public IdentitySettingsIntegrationService(ISettingProvider settingProvider)
     {

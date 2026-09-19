@@ -20,7 +20,7 @@ public partial class ForgotPassword
     public string? ReturnUrl { get; set; }
 
     [SupplyParameterFromForm]
-    public ForgotPasswordInputModel Input { get; set; } = new();
+    public ForgotPasswordInputModel? Input { get; set; }
 
     protected string? CaptchaChallengeId { get; set; }
 

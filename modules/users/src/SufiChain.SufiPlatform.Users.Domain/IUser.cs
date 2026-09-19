@@ -12,20 +12,20 @@ public interface IUser : IAggregateRoot<Guid>, IMultiTenant, IHasExtraProperties
     string UserName { get; }
 
     [CanBeNull]
-    string Email { get; }
+    string? Email { get; }
 
     [CanBeNull]
-    string Name { get; }
+    string? Name { get; }
 
     [CanBeNull]
-    string Surname { get; }
+    string? Surname { get; }
 
     bool IsActive { get; }
 
     bool EmailConfirmed { get; }
 
     [CanBeNull]
-    string PhoneNumber { get; }
+    string? PhoneNumber { get; }
 
     bool PhoneNumberConfirmed { get; }
 }

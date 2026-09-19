@@ -67,7 +67,7 @@ public partial class CopilotRuntimeRagWorkspaceTests
         result.ResolvedRagProjectId.ShouldBe(projectId);
         result.ResolvedRagWorkspaceName.ShouldBe(IndexingWorkspaceName);
         result.WorkspaceBinding.WorkspaceName.ShouldBe(ChatWorkspaceName);
-        result.Request.SystemPrompt.ShouldContain("Retrieved context:");
+        result.Request.SystemPrompt!.ShouldContain("Retrieved context:");
         result.Request.Messages.ShouldNotContain(message =>
             message.Role == "system" && message.Content != null && message.Content.Contains("Retrieved context:"));
 
@@ -204,8 +204,8 @@ public partial class CopilotRuntimeRagWorkspaceTests
         var result = await fixture.Orchestrator.PrepareRequestAsync(fixture.Definition, input);
 
         result.RetrievedChunkCount.ShouldBe(2);
-        result.Request.SystemPrompt.ShouldContain("Retrieved context:");
-        result.Request.SystemPrompt.ShouldContain("سیستم‌عامل کسب‌وکار");
+        result.Request.SystemPrompt!.ShouldContain("Retrieved context:");
+        result.Request.SystemPrompt!.ShouldContain("سیستم‌عامل کسب‌وکار");
         result.Request.Messages.ShouldNotContain(message =>
             message.Role == "system" && message.Content != null && message.Content.Contains("Retrieved context:"));
         await fixture.Rag.Received().SearchAsync(
@@ -278,11 +278,11 @@ public partial class CopilotRuntimeRagWorkspaceTests
         result.UsedRag.ShouldBeFalse();
         result.RetrievedChunkCount.ShouldBe(0);
         result.RagSearch.Outcome.ShouldBe(CopilotRagSearchOutcome.Unavailable);
-        result.Request.SystemPrompt.ShouldContain(CopilotRagRuntimeOptionsDefaults.RagUnavailableNotice);
-        result.Request.SystemPrompt.ShouldContain("RAG Indexing");
-        result.Request.SystemPrompt.ShouldContain("assign a copilot using a workspace whose Embeddings connection test succeeds");
-        result.Request.SystemPrompt.ShouldNotContain("Embedding provider returned HTTP 401");
-        result.Request.SystemPrompt.ShouldNotContain("Retrieved context:");
+        result.Request.SystemPrompt!.ShouldContain(CopilotRagRuntimeOptionsDefaults.RagUnavailableNotice);
+        result.Request.SystemPrompt!.ShouldContain("RAG Indexing");
+        result.Request.SystemPrompt!.ShouldContain("assign a copilot using a workspace whose Embeddings connection test succeeds");
+        result.Request.SystemPrompt!.ShouldNotContain("Embedding provider returned HTTP 401");
+        result.Request.SystemPrompt!.ShouldNotContain("Retrieved context:");
         await fixture.Circuit.Received(1).OpenAsync(
             IndexingWorkspaceName,
             nameof(InvalidOperationException),
@@ -312,10 +312,10 @@ public partial class CopilotRuntimeRagWorkspaceTests
         var result = await fixture.Orchestrator.PrepareRequestAsync(fixture.Definition, input);
 
         result.RagSearch.Outcome.ShouldBe(CopilotRagSearchOutcome.SkippedCircuitOpen);
-        result.Request.SystemPrompt.ShouldContain(CopilotRagRuntimeOptionsDefaults.RagUnavailableNotice);
-        result.Request.SystemPrompt.ShouldContain("RAG Indexing");
-        result.Request.SystemPrompt.ShouldContain("assign a copilot using a workspace whose Embeddings connection test succeeds");
-        result.Request.SystemPrompt.ShouldNotContain("Embedding provider returned HTTP 401");
+        result.Request.SystemPrompt!.ShouldContain(CopilotRagRuntimeOptionsDefaults.RagUnavailableNotice);
+        result.Request.SystemPrompt!.ShouldContain("RAG Indexing");
+        result.Request.SystemPrompt!.ShouldContain("assign a copilot using a workspace whose Embeddings connection test succeeds");
+        result.Request.SystemPrompt!.ShouldNotContain("Embedding provider returned HTTP 401");
         await fixture.Planner.DidNotReceive().DecideAsync(Arg.Any<CopilotRagPlannerRequest>(), Arg.Any<CancellationToken>());
         await fixture.Rag.DidNotReceive().SearchAsync(Arg.Any<SufiAIRagSearchRequest>(), Arg.Any<CancellationToken>());
         await fixture.ProgressReporter.DidNotReceive().ReportAsync(

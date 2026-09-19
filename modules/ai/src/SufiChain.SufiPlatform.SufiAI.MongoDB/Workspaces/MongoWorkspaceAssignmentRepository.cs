@@ -18,25 +18,25 @@ public class MongoWorkspaceAssignmentRepository
 
     public async Task<List<WorkspaceAssignment>> GetActiveByTenantAsync(Guid tenantId, CancellationToken cancellationToken = default)
     {
-        var queryable = await GetMongoQueryableAsync(cancellationToken);
+        var queryable = await GetQueryableAsync(cancellationToken);
         return await queryable.Where(x => x.TenantId == tenantId && x.IsActive).ToListAsync(cancellationToken);
     }
 
     public async Task<WorkspaceAssignment?> FindAsync(Guid tenantId, Guid sourceWorkspaceId, CancellationToken cancellationToken = default)
     {
-        var queryable = await GetMongoQueryableAsync(cancellationToken);
+        var queryable = await GetQueryableAsync(cancellationToken);
         return await queryable.FirstOrDefaultAsync(x => x.TenantId == tenantId && x.SourceWorkspaceId == sourceWorkspaceId, cancellationToken);
     }
 
     public async Task<List<WorkspaceAssignment>> GetListBySourceWorkspaceAsync(Guid sourceWorkspaceId, CancellationToken cancellationToken = default)
     {
-        var queryable = await GetMongoQueryableAsync(cancellationToken);
+        var queryable = await GetQueryableAsync(cancellationToken);
         return await queryable.Where(x => x.SourceWorkspaceId == sourceWorkspaceId).ToListAsync(cancellationToken);
     }
 
     public async Task<WorkspaceAssignment?> FindByTargetWorkspaceAsync(Guid targetWorkspaceId, CancellationToken cancellationToken = default)
     {
-        var queryable = await GetMongoQueryableAsync(cancellationToken);
+        var queryable = await GetQueryableAsync(cancellationToken);
         return await queryable.FirstOrDefaultAsync(x => x.TargetWorkspaceId == targetWorkspaceId, cancellationToken);
     }
 }

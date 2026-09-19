@@ -9,6 +9,7 @@ using Volo.Abp.Mapperly;
 
 namespace SufiChain.SufiPlatform.FileManager;
 
+#pragma warning disable RMG066
 [Mapper(RequiredMappingStrategy = RequiredMappingStrategy.Target)]
 [MapExtraProperties]
 public partial class FileItemToFileItemDtoMapper : MapperBase<FileItem, FileItemDto>
@@ -16,13 +17,16 @@ public partial class FileItemToFileItemDtoMapper : MapperBase<FileItem, FileItem
     [MapperIgnoreTarget(nameof(FileItemDto.StructureIsPublicAccess))]
     [MapperIgnoreTarget(nameof(FileItemDto.StructureBaseUrl))]
     [MapperIgnoreTarget(nameof(FileItemDto.StructureStorageProvider))]
+    [MapperIgnoreTarget(nameof(FileItemDto.SourceEntityType))]
     public override partial FileItemDto Map(FileItem source);
 
     [MapperIgnoreTarget(nameof(FileItemDto.StructureIsPublicAccess))]
     [MapperIgnoreTarget(nameof(FileItemDto.StructureBaseUrl))]
     [MapperIgnoreTarget(nameof(FileItemDto.StructureStorageProvider))]
+    [MapperIgnoreTarget(nameof(FileItemDto.SourceEntityType))]
     public override partial void Map(FileItem source, FileItemDto destination);
 }
+#pragma warning restore RMG066
 
 [Mapper(RequiredMappingStrategy = RequiredMappingStrategy.Target)]
 [MapExtraProperties]
@@ -32,12 +36,14 @@ public partial class FileStructureToFileStructureDtoMapper : MapperBase<FileStru
     [MapperIgnoreTarget(nameof(FileStructureDto.IsModifiedFromDefault))]
     [MapperIgnoreTarget(nameof(FileStructureDto.IsStatic))]
     [MapperIgnoreTarget(nameof(FileStructureDto.StorageConfig))]
+    [MapperIgnoreTarget(nameof(FileStructureDto.LocalizationResourceName))]
     public override partial FileStructureDto Map(FileStructure source);
 
     [MapperIgnoreTarget(nameof(FileStructureDto.HasDefaultConfig))]
     [MapperIgnoreTarget(nameof(FileStructureDto.IsModifiedFromDefault))]
     [MapperIgnoreTarget(nameof(FileStructureDto.IsStatic))]
     [MapperIgnoreTarget(nameof(FileStructureDto.StorageConfig))]
+    [MapperIgnoreTarget(nameof(FileStructureDto.LocalizationResourceName))]
     public override partial void Map(FileStructure source, FileStructureDto destination);
 }
 

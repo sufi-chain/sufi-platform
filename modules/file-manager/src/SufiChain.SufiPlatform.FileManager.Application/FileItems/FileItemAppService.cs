@@ -102,6 +102,12 @@ public partial class FileItemAppService : SufiApplicationService, IFileItemAppSe
     [Authorize]
     public async Task<UploadValidationResult> ValidateUploadAsync(string fileName, string mimeType, string? structureKey, long fileSize)
     {
+        var nameCheck = CheckUploadFileName(fileName);
+        if (!nameCheck.IsValid)
+        {
+            return nameCheck;
+        }
+
         if (string.IsNullOrEmpty(structureKey))
             return new UploadValidationResult { IsValid = true };
 
@@ -243,6 +249,7 @@ public partial class FileItemAppService : SufiApplicationService, IFileItemAppSe
 
     private async Task<FileItemDto> UploadCoreAsync(UploadFileInput input)
     {
+        EnsureSafeUploadFileName(input.FileName);
         var folderId = await ResolveFolderIdAsync(input.FolderId, input.FolderPath);
         await EnsureCanUploadAsync(folderId, input.StructureKey);
         folderId = await ResolveFolderIdAfterAuthorizationAsync(folderId, input.StructureKey);
@@ -1181,8 +1188,41 @@ public partial class FileItemAppService : SufiApplicationService, IFileItemAppSe
         return structure;
     }
 
+    private static UploadValidationResult CheckUploadFileName(string fileName)
+    {
+        if (!FilePathSecurity.IsSafeUploadFileName(fileName))
+        {
+            return new UploadValidationResult
+            {
+                IsValid = false,
+                ErrorMessage = "The file name is not allowed."
+            };
+        }
+
+        if (FilePathSecurity.IsBlockedExtension(fileName))
+        {
+            return new UploadValidationResult
+            {
+                IsValid = false,
+                ErrorMessage = $"File extension '{Path.GetExtension(fileName)}' is not allowed."
+            };
+        }
+
+        return new UploadValidationResult { IsValid = true };
+    }
+
+    private static void EnsureSafeUploadFileName(string fileName)
+    {
+        var check = CheckUploadFileName(fileName);
+        if (!check.IsValid)
+        {
+            throw new UserFriendlyException(check.ErrorMessage);
+        }
+    }
+
     private void ValidateMimeTypeAndExtension(string fileName, string mimeType, FileStructure structure)
     {
+        EnsureSafeUploadFileName(fileName);
         // Validate mime type - normalize to lowercase
         var allowedMimeTypes = (structure.AllowedMimeTypes ?? "")
             .Split(',', StringSplitOptions.RemoveEmptyEntries)
@@ -1211,6 +1251,7 @@ public partial class FileItemAppService : SufiApplicationService, IFileItemAppSe
 
     private async Task ValidateUploadContentAsync(byte[] content, string fileName, string mimeType, FileStructure structure)
     {
+        EnsureSafeUploadFileName(fileName);
         // Validate file size
         if (content.Length > structure.MaxFileSize)
         {

@@ -17,9 +17,6 @@ public partial class WorkspaceCreateModal : AIComponentBase
     [Parameter] public EventCallback<bool> OpenChanged { get; set; }
     [Parameter] public EventCallback OnCreated { get; set; }
 
-    private IWorkspaceAppService WorkspaceAppService => LazyGetRequiredService(ref _workspaceAppService);
-    private IWorkspaceAppService? _workspaceAppService;
-
     private CreateWorkspaceDto _model = new();
     private string _inputCostPer1MTokensText = string.Empty;
     private string _outputCostPer1MTokensText = string.Empty;

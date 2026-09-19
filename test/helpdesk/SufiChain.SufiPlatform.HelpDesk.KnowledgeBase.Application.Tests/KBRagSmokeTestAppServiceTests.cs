@@ -7,6 +7,7 @@ using SufiChain.SufiPlatform.HelpDesk.KnowledgeBase.Localization;
 using SufiChain.SufiPlatform.HelpDesk.KnowledgeBase.RAG;
 using SufiChain.SufiPlatform.HelpDesk.KnowledgeBase.Repositories;
 using SufiChain.SufiPlatform.SufiAI;
+using SufiChain.SufiPlatform.SufiAI.Copilots.Copilots;
 using Volo.Abp.DependencyInjection;
 using Volo.Abp.Timing;
 using Xunit;
@@ -168,12 +169,14 @@ public class KBRagSmokeTestAppServiceTests
             rag.SearchAsync(Arg.Any<SufiAIRagSearchRequest>(), Arg.Any<CancellationToken>())
                 .Returns(new SufiAIRagSearchResult { Chunks = searchHits });
 
+            var ragCircuit = Substitute.For<ICopilotRagCircuitStore>();
             var service = new TestableKBRagSmokeTestAppService(
                 articles,
                 workspaceResolver,
                 rag,
                 catalog,
-                new KBArticleRagIndexer(rag));
+                new KBArticleRagIndexer(rag),
+                ragCircuit);
 
             return new Fixture { ProjectId = projectId, Article = article, Rag = rag, Service = service };
         }
@@ -189,8 +192,9 @@ public class KBRagSmokeTestAppServiceTests
             IKBProjectAIWorkspaceResolver workspaceResolver,
             ISufiAIRagService ragService,
             ISufiAIWorkspaceCatalog workspaceCatalog,
-            KBArticleRagIndexer articleIndexer)
-            : base(articleRepository, workspaceResolver, ragService, workspaceCatalog, articleIndexer)
+            KBArticleRagIndexer articleIndexer,
+            ICopilotRagCircuitStore ragCircuit)
+            : base(articleRepository, workspaceResolver, ragService, workspaceCatalog, articleIndexer, ragCircuit)
         {
             LocalizationResource = typeof(KnowledgeBaseResource);
 

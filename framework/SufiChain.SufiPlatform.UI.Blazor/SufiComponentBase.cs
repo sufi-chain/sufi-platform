@@ -37,7 +37,7 @@ public abstract class SufiComponentBase : OwningComponentBase
     /// <summary>
     /// Gets whether the component has been disposed.
     /// </summary>
-    protected bool IsDisposed => _isDisposed;
+    protected new bool IsDisposed => _isDisposed;
 
     /// <summary>
     /// Gets whether the component is in interactive mode (after first render).

@@ -1229,10 +1229,7 @@ public class FolderAppService : SufiApplicationService, IFolderAppService
 
     private static string SanitizeFolderName(string name)
     {
-        // Remove invalid path characters
-        var invalid = System.IO.Path.GetInvalidFileNameChars();
-        var sanitized = new string(name.Where(c => !invalid.Contains(c)).ToArray());
-        return sanitized.Trim().Replace(' ', '-').ToLowerInvariant();
+        return FilePathSecurity.SanitizeFolderName(name);
     }
 
     private static string GetParentPath(string path)

@@ -4,7 +4,7 @@ namespace SufiChain.SufiPlatform.SufiAI;
 
 /// <summary>
 /// Resolves a sensible default embedding dimension for a model when the configured
-/// <see cref="AIModelConfiguration.Dimensions"/> is left blank. Dimensions are inferred from
+/// configured embedding dimensions are left blank. Dimensions are inferred from
 /// well-known model identifiers (case-insensitive). Unknown models use the compatibility
 /// fallback until the provider probe supplies the authoritative dimension.
 /// Native sizes for OpenRouter embedding models were taken from

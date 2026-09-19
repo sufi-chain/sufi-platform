@@ -107,7 +107,7 @@
 	/// Form input model bound from POST data.
 	/// </summary>
 	[SupplyParameterFromForm]
-	public LoginInputModel Input { get; set; } = new();
+	public LoginInputModel? Input { get; set; }
 
 	private string? ErrorMessage { get; set; }
 	private IReadOnlyList<string> _externalProviderNames { get; set; } = Array.Empty<string>();

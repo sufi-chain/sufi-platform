@@ -96,10 +96,10 @@ public class CopilotRuntimeContextSegmentsTests
             .Append("- title: ").AppendLine(title).ToString();
         withRag.Segments.Single(segment => segment.Key == CopilotContextSegmentKeys.Metadata)
             .EstimatedTokens.ShouldBe(estimator.EstimateText(expectedContext));
-        withRag.Request.SystemPrompt.ShouldContain(title);
-        withRag.Request.SystemPrompt.ShouldNotContain("\\u0622");
-        withRag.Request.SystemPrompt.ShouldNotContain("not prompt context");
-        withRag.Request.SystemPrompt.ShouldNotContain("Previous message");
+        withRag.Request.SystemPrompt!.ShouldContain(title);
+        withRag.Request.SystemPrompt!.ShouldNotContain("\\u0622");
+        withRag.Request.SystemPrompt!.ShouldNotContain("not prompt context");
+        withRag.Request.SystemPrompt!.ShouldNotContain("Previous message");
         withRag.Request.Messages.ShouldNotContain(message => message.Role == "system");
         withRag.Request.Messages.Count(message => message.Content == "Previous message").ShouldBe(1);
         withRag.Request.Messages.Count(message => message.Content == "Current message").ShouldBe(1);

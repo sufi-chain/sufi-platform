@@ -20,10 +20,8 @@ public partial class Workspaces : AIComponentBase
     }
 
     [Inject] protected IPageLayout PageLayout { get; set; } = default!;
-    [Inject] protected ICurrentTenant CurrentTenant { get; set; } = default!;
+    [Inject] protected new ICurrentTenant CurrentTenant { get; set; } = default!;
     
-    private IWorkspaceAppService WorkspaceAppService => LazyGetRequiredService(ref _workspaceAppService);
-    private IWorkspaceAppService? _workspaceAppService;
 
     private SbDataGrid<WorkspaceDto>? _gridRef;
     private int _pageIndex = 0;

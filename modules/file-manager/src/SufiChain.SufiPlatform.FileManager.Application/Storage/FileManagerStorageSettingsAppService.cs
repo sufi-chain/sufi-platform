@@ -12,7 +12,7 @@ namespace SufiChain.SufiPlatform.FileManager.Storage;
 [Authorize(FileManagerPermissions.StorageSettings.Manage)]
 public class FileManagerStorageSettingsAppService : SufiApplicationService, IFileManagerStorageSettingsAppService
 {
-    protected ISettingProvider SettingProvider { get; }
+    new ISettingProvider SettingProvider { get; }
     protected ISettingManager SettingManager { get; }
     protected IStructureStorageConfigEncryption Encryption { get; }
     protected StorageConnectionTester ConnectionTester { get; }

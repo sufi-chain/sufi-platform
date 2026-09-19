@@ -4,7 +4,7 @@ namespace SufiChain.SufiPlatform.SufiCom.Channels;
 
 /// <summary>
 /// Bidirectional channel connector that can dispatch outbound messages to an external channel.
-/// Inbound ingest is handled by <see cref="IChannelInboundMessageAppService"/>.
+/// Inbound ingest is handled by <c>IChannelInboundMessageAppService</c>.
 /// </summary>
 public interface IChannelConnector : IChannel
 {

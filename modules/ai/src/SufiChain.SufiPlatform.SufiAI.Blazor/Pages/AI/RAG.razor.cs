@@ -16,11 +16,6 @@ public partial class RAG : AIComponentBase
 
     [Inject] protected IPageLayout PageLayout { get; set; } = default!;
     
-    private IWorkspaceAppService WorkspaceAppService => LazyGetRequiredService(ref _workspaceAppService);
-    private IWorkspaceAppService? _workspaceAppService;
-
-    private IRAGAppService RAGAppService => LazyGetRequiredService(ref _ragAppService);
-    private IRAGAppService? _ragAppService;
 
     private List<WorkspaceDto> _workspaces = new();
     private Guid? _selectedWorkspaceId;

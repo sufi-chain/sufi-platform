@@ -8,8 +8,6 @@ namespace SufiChain.SufiPlatform.SufiAI.Blazor.Components;
 
 public partial class MCPServerModal 
 {
-    [Inject] private IMCPServerAppService MCPServerAppService { get; set; } = default!;
-    
     [Parameter] public bool Open { get; set; }
     [Parameter] public EventCallback<bool> OpenChanged { get; set; }
     [Parameter] public MCPServerDto? Server { get; set; }

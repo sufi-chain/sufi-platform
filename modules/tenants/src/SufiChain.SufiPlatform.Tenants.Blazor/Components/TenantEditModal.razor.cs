@@ -52,6 +52,6 @@ public partial class TenantEditModal : TenantsComponentBase
     {
         await TenantAppService.UpdateAsync(_tenantId, _model);
         await OnTenantUpdated.InvokeAsync();
-        Hide();
+        await Hide();
     }, LoadingKeys.Save);
 }

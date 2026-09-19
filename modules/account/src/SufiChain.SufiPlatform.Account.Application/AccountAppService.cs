@@ -20,7 +20,7 @@ public class AccountAppService : SufiApplicationService, IAccountAppService
     protected IdentityUserToIdentityUserDtoMapper UserMapper { get; }
     protected ILocalEventBus LocalEventBus { get; }
     protected ICaptchaValidator CaptchaValidator { get; }
-    protected ISettingProvider SettingProvider { get; }
+    new ISettingProvider SettingProvider { get; }
 
     public AccountAppService(
         IdentityUserManager userManager,

@@ -13,9 +13,9 @@ public interface IFileItemRepository : IRepository<FileItem, Guid>
     Task<FileItem> GetAsync(Guid id, CancellationToken cancellationToken = default);
     Task<FileItem?> FindAsync(Guid id, CancellationToken cancellationToken = default);
     Task<IQueryable<FileItem>> GetQueryableAsync(CancellationToken cancellationToken = default);
-    Task<FileItem> InsertAsync(FileItem entity, bool autoSave = false, CancellationToken cancellationToken = default);
-    Task<FileItem> UpdateAsync(FileItem entity, bool autoSave = false, CancellationToken cancellationToken = default);
-    Task DeleteAsync(Guid id, bool autoSave = false, CancellationToken cancellationToken = default);
+    new Task<FileItem> InsertAsync(FileItem entity, bool autoSave = false, CancellationToken cancellationToken = default);
+    new Task<FileItem> UpdateAsync(FileItem entity, bool autoSave = false, CancellationToken cancellationToken = default);
+    new Task DeleteAsync(Guid id, bool autoSave = false, CancellationToken cancellationToken = default);
 
     Task<List<FileItem>> GetByEntityAsync(
         string entityType,

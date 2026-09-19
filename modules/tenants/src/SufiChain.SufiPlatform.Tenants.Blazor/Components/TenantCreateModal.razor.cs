@@ -47,6 +47,6 @@ public partial class TenantCreateModal : TenantsComponentBase
     {
         await TenantAppService.CreateAsync(_model);
         await OnTenantCreated.InvokeAsync();
-        Hide();
+        await Hide();
     }, LoadingKeys.Create);
 }

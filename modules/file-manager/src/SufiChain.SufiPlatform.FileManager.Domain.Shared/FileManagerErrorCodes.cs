@@ -25,6 +25,8 @@ public static class FileManagerErrorCodes
     public const string FailedToProcessFile = "SufiChain.SufiPlatform.FileManager:020005";
     public const string ThumbnailNotAvailable = "SufiChain.SufiPlatform.FileManager:020006";
     public const string FileItemNotFound = "SufiChain.SufiPlatform.FileManager:020007";
+    public const string UnsafeFileName = "SufiChain.SufiPlatform.FileManager:020008";
+    public const string BlockedFileExtension = "SufiChain.SufiPlatform.FileManager:020009";
     
     // Image validation errors (030xxx)
     public const string ImageWidthTooSmall = "SufiChain.SufiPlatform.FileManager:030001";

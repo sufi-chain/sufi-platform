@@ -44,5 +44,4 @@ public interface IFileStructureAppService : ISufiCrudAppService<
     /// Check if a structure has been modified from its default configuration
     /// </summary>
     Task<bool> IsModifiedFromDefaultAsync(Guid id);
-    Task<PagedResultDto<FileStructureDto>> GetListAsync(PagedAndSortedResultRequestDto input);
 }

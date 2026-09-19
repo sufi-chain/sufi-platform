@@ -24,7 +24,7 @@ public class AccountOtpAppService : SufiApplicationService, IAccountOtpAppServic
 
     protected IdentityUserToIdentityUserDtoMapper UserMapper { get; }
 
-    protected ISettingProvider SettingProvider { get; }
+    new ISettingProvider SettingProvider { get; }
 
     protected ICaptchaValidator CaptchaValidator { get; }
 

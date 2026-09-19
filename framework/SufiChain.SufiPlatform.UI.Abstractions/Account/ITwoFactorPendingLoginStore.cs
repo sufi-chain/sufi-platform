@@ -2,7 +2,7 @@ namespace SufiChain.SufiPlatform.UI.Abstractions.Account;
 
 /// <summary>
 /// Stores a short-lived pending login after password validation when two-factor authentication is required.
-/// Used by Blazor Interactive Server where <see cref="SignInManager{TUser}.PasswordSignInAsync"/> cannot set the 2FA cookie in-circuit.
+/// Used by Blazor Interactive Server where password sign-in cannot set the 2FA cookie in-circuit.
 /// </summary>
 public interface ITwoFactorPendingLoginStore
 {

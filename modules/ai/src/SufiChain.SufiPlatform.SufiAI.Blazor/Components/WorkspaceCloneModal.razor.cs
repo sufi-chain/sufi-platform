@@ -16,9 +16,6 @@ public partial class WorkspaceCloneModal : AIComponentBase
     [Parameter] public string? SourceName { get; set; }
     [Parameter] public EventCallback OnCloned { get; set; }
 
-    private IWorkspaceAppService WorkspaceAppService => LazyGetRequiredService(ref _workspaceAppService);
-    private IWorkspaceAppService? _workspaceAppService;
-
     private string _name = string.Empty;
     private bool _wasOpen;
 

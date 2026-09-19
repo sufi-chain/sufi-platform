@@ -36,7 +36,7 @@ public interface IOrganizationUnitRepository : IBasicRepository<OrganizationUnit
         bool includeDetails = true,
         CancellationToken cancellationToken = default);
 
-    Task<long> GetCountAsync(
+    new Task<long> GetCountAsync(
         CancellationToken cancellationToken = default);
 
     Task<List<OrganizationUnit>> GetListByRoleIdAsync(

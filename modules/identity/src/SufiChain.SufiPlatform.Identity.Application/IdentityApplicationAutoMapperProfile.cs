@@ -59,17 +59,11 @@ public partial class IdentityUserToOrganizationUnitMemberDtoMapper : MapperBase<
 [Mapper(RequiredMappingStrategy = RequiredMappingStrategy.Target)]
 public partial class IdentityRoleToOrganizationUnitRoleDtoMapper : MapperBase<IdentityRole, OrganizationUnitRoleDto>
 {
-    [MapperIgnoreTarget(nameof(OrganizationUnitRoleDto.RoleId))]
-    [MapperIgnoreTarget(nameof(OrganizationUnitRoleDto.RoleName))]
+    [MapProperty(nameof(IdentityRole.Id), nameof(OrganizationUnitRoleDto.RoleId))]
+    [MapProperty(nameof(IdentityRole.Name), nameof(OrganizationUnitRoleDto.RoleName))]
     public override partial OrganizationUnitRoleDto Map(IdentityRole source);
 
-    [MapperIgnoreTarget(nameof(OrganizationUnitRoleDto.RoleId))]
-    [MapperIgnoreTarget(nameof(OrganizationUnitRoleDto.RoleName))]
+    [MapProperty(nameof(IdentityRole.Id), nameof(OrganizationUnitRoleDto.RoleId))]
+    [MapProperty(nameof(IdentityRole.Name), nameof(OrganizationUnitRoleDto.RoleName))]
     public override partial void Map(IdentityRole source, OrganizationUnitRoleDto destination);
-
-    public override void AfterMap(IdentityRole source, OrganizationUnitRoleDto destination)
-    {
-        destination.RoleId = source.Id;
-        destination.RoleName = source.Name;
-    }
 }

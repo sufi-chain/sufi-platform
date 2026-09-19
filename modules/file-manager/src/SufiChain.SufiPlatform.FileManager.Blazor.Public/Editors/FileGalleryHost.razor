@@ -3,7 +3,7 @@
 @using SufiChain.SufiPlatform.FileManager.Localization
 @using Microsoft.Extensions.Localization
 @implements IDisposable
-@inject IStringLocalizer<SufiFileManagerResource> L
+@inject IStringLocalizer<SufiFileManagerResource> FileManagerL
 @inherits SufiChain.SufiPlatform.UI.Blazor.SufiComponentBase
 
 @if (_isImageGalleryOpen)
@@ -20,7 +20,7 @@
     <FileGalleryDialog IsOpen="@_isFileGalleryOpen"
                        IsOpenChanged="@OnFileGalleryOpenChangedAsync"
                        Title="Select File"
-                       Description="@L["SelectFileToInsertAsLink"].Value"
+                       Description="@FileManagerL["SelectFileToInsertAsLink"].Value"
                        ImagesOnly="false"
                        OnFileSelected="@OnFileSelected" />
 }

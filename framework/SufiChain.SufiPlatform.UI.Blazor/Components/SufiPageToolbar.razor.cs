@@ -55,14 +55,10 @@ public partial class SufiPageToolbar : ComponentBase
             {
                 ToolbarItemRenders.Add(builder =>
                 {
-                    var sequence = 0;
-                    builder.OpenComponent(sequence++, item.ComponentType);
+                    builder.OpenComponent(0, item.ComponentType);
                     if (item.Arguments != null)
                     {
-                        foreach (var argument in item.Arguments)
-                        {
-                            builder.AddAttribute(sequence++, argument.Key, argument.Value);
-                        }
+                        builder.AddMultipleAttributes(1, item.Arguments);
                     }
                     builder.CloseComponent();
                 });
@@ -84,7 +80,7 @@ public partial class SufiPageToolbar : ComponentBase
         // Compare against PageLayout.ToolbarContent (actual current state) instead of _lastToolbarContent
         // This handles the case where PageLayout.Reset() cleared the content but this component was reused
         //Console.WriteLine($"[SufiPageToolbar] OnParametersSetAsync: ChildContent={ChildContent?.GetType().Name ?? "null"}, newToolbarContent={newToolbarContent?.GetType().Name ?? "null"}, PageLayout.ToolbarContent={PageLayout.ToolbarContent?.GetType().Name ?? "null"}");
-        if (PageLayout.ToolbarContent != newToolbarContent)
+        if (!Equals(PageLayout.ToolbarContent, newToolbarContent))
         {
            //Console.WriteLine($"[SufiPageToolbar] Setting PageLayout.ToolbarContent = {newToolbarContent?.GetType().Name ?? "null"}");
             PageLayout.ToolbarContent = newToolbarContent;

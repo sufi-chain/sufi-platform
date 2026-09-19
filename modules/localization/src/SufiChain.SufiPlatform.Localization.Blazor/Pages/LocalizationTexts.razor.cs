@@ -30,7 +30,7 @@ public partial class LocalizationTexts : LocalizationComponentBase
     // Pagination state (SbDataGrid uses 0-based PageIndex)
     private int _pageIndex = 0;
     private int _pageSize = 10;
-    private int _totalCount;
+    private long _totalCount;
 
     // Data: DB-only mode (uses ItemsProvider for server-side paging)
     private SbDataGrid<LocalizationTextDto>? _dbOnlyGridRef;
@@ -122,6 +122,7 @@ public partial class LocalizationTexts : LocalizationComponentBase
         };
 
         var result = await AppService.GetMergedListAsync(input);
+        _totalCount = result.TotalCount;
         return new SbDataResponse<LocalizationTextWithBaseValueDto>(result.Items, result.TotalCount);
     }
 
@@ -139,6 +140,7 @@ public partial class LocalizationTexts : LocalizationComponentBase
         };
 
         var result = await AppService.GetListAsync(input);
+        _totalCount = result.TotalCount;
         return new SbDataResponse<LocalizationTextDto>(result.Items, result.TotalCount);
     }
 

@@ -23,7 +23,7 @@ public class CopilotMcpMediaHistoryTests
 
         history.Count.ShouldBe(1);
         history[0].Items.OfType<TextContent>().Single().Text.ShouldBe("Use this layout");
-        history[0].Items.OfType<ImageContent>().Count().ShouldBe(1);
+        history[0].Items.OfType<Microsoft.SemanticKernel.ImageContent>().Count().ShouldBe(1);
     }
 
     private sealed class Runtime() : CopilotRuntimeAppService(

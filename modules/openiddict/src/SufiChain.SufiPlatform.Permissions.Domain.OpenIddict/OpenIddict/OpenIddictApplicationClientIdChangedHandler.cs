@@ -1,6 +1,5 @@
 using System.Threading.Tasks;
 using SufiChain.SufiPlatform.Permissions;
-using SufiChain.SufiPlatform.Permissions;
 using Volo.Abp.DependencyInjection;
 using Volo.Abp.EventBus.Distributed;
 using SufiChain.SufiPlatform.OpenIddict.Applications;

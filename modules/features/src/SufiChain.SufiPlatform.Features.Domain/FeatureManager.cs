@@ -93,7 +93,7 @@ public class FeatureManager : IFeatureManager, ISingletonDependency
             var featureNameValueWithGrantedProvider = new FeatureNameValueWithGrantedProvider(feature.Name, null);
             foreach (var provider in providerList)
             {
-                string pk = null;
+                string? pk = null;
                 if (provider.Compatible(providerName))
                 {
                     pk = providerKey;
@@ -119,7 +119,7 @@ public class FeatureManager : IFeatureManager, ISingletonDependency
 
     public virtual async Task SetAsync(
         string name,
-        string value,
+        string? value,
         string providerName,
         string providerKey,
         bool forceToSet = false)
@@ -172,7 +172,7 @@ public class FeatureManager : IFeatureManager, ISingletonDependency
         {
             foreach (var provider in providers)
             {
-                await provider.SetAsync(feature, value, providerKey);
+                await provider.SetAsync(feature, value!, providerKey);
             }
         }
     }
@@ -195,7 +195,7 @@ public class FeatureManager : IFeatureManager, ISingletonDependency
         var featureNameValueWithGrantedProvider = new FeatureNameValueWithGrantedProvider(name, null);
         foreach (var provider in providers)
         {
-            string pk = null;
+            string? pk = null;
             if (provider.Compatible(providerName))
             {
                 pk = providerKey;

@@ -29,6 +29,7 @@ public interface IFileItemUrlProvider
     /// <summary>
     /// Gets the download URL for a file item.
     /// </summary>
+    /// <param name="fileItemId">File item identifier.</param>
     /// <param name="structureBaseUrl">Optional structure-specific base URL. When null, uses config default.</param>
     /// <param name="structureIsPublicAccess">When true, URL has no token (plain URL for anonymous access).</param>
     /// <param name="blobName">Blob name. When provided with S3Provider+public+baseUrl, builds direct S3 URL.</param>

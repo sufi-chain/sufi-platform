@@ -15,9 +15,6 @@ public partial class AIChatTestPanel : AIComponentBase
     }
 
     
-    private IWorkspaceAppService WorkspaceAppService => LazyGetRequiredService(ref _workspaceAppService);
-    private IWorkspaceAppService? _workspaceAppService;
-
     private ISufiAIChatAppService AIChatAppService => LazyGetRequiredService(ref _aiChatAppService);
     private ISufiAIChatAppService? _aiChatAppService;
 

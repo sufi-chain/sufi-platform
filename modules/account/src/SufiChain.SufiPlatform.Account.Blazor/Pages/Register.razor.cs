@@ -63,7 +63,7 @@ public partial class Register
     public string? ErrorFromQuery { get; set; }
 
     [SupplyParameterFromForm]
-    public RegisterInputModel Input { get; set; } = new();
+    public RegisterInputModel? Input { get; set; }
 
     protected string? ErrorMessage { get; set; }
 

@@ -22,11 +22,6 @@ public partial class IndexingStatus : AIComponentBase
 
     [Inject] protected IPageLayout PageLayout { get; set; } = default!;
     
-    private IWorkspaceAppService WorkspaceAppService => LazyGetRequiredService(ref _workspaceAppService);
-    private IWorkspaceAppService? _workspaceAppService;
-
-    private IRAGAppService RAGAppService => LazyGetRequiredService(ref _ragAppService);
-    private IRAGAppService? _ragAppService;
 
     private SbDataGrid<DocumentSourceDto>? _gridRef;
     private int _pageIndex = 0;

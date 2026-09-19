@@ -48,7 +48,7 @@ public class IdentityRoleManager : RoleManager<IdentityRole>, IDomainService
         return role;
     }
 
-    public virtual async Task<IdentityResult> SetRoleNameAsync(IdentityRole role, [NotNull] string name)
+    public new virtual async Task<IdentityResult> SetRoleNameAsync(IdentityRole role, [NotNull] string name)
     {
         Check.NotNull(role, nameof(role));
         Check.NotNull(name, nameof(name));

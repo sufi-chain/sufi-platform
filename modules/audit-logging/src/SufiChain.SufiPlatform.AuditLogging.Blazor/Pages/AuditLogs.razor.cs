@@ -95,6 +95,7 @@ public partial class AuditLogs : AuditLoggingComponentBase
         };
 
         var result = await AuditLogAppService.GetListAsync(input);
+        _totalCount = result.TotalCount;
         return new SbDataResponse<AuditLogListItemDto>(result.Items, result.TotalCount);
     }
 

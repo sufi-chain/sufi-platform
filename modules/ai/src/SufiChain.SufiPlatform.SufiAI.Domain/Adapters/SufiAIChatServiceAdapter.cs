@@ -1,6 +1,5 @@
 using System.Runtime.CompilerServices;
 using SufiChain.SufiPlatform.SufiAI;
-using SufiChain.SufiPlatform.SufiAI;
 using Volo.Abp.DependencyInjection;
 using DependencyAttribute = Volo.Abp.DependencyInjection.DependencyAttribute;
 

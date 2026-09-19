@@ -21,9 +21,6 @@ public partial class WorkspaceEditModal : AIComponentBase
     [Parameter] public EventCallback OnUpdated { get; set; }
     [Parameter] public EventCallback OnConverted { get; set; }
 
-    private IWorkspaceAppService WorkspaceAppService => LazyGetRequiredService(ref _workspaceAppService);
-    private IWorkspaceAppService? _workspaceAppService;
-
     private WorkspaceDto? _workspace;
     private UpdateWorkspaceDto _model = new();
     private string _inputCostPer1MTokensText = string.Empty;

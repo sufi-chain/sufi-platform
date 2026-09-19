@@ -19,9 +19,6 @@ public partial class WorkspaceAssignToTenantModal : AIComponentBase
     [Parameter] public string? SourceName { get; set; }
     [Parameter] public EventCallback OnAssigned { get; set; }
 
-    private IWorkspaceAppService WorkspaceAppService => LazyGetRequiredService(ref _workspaceAppService);
-    private IWorkspaceAppService? _workspaceAppService;
-
     private List<AssignableTenantDto> _tenants = new();
     private List<WorkspaceAssignmentDto> _assignments = new();
     private Guid _tenantId;

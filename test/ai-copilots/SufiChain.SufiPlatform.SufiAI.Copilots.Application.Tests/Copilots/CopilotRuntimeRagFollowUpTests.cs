@@ -56,8 +56,8 @@ public partial class CopilotRuntimeRagWorkspaceTests
         result.RagSearch.QueryMode.ShouldBe(CopilotRagQueryMode.ContextualRetry);
         result.RagSearch.Outcome.ShouldBe(CopilotRagSearchOutcome.Retrieved);
         result.RagSearch.AttemptCount.ShouldBe(2);
-        result.Request.SystemPrompt.ShouldContain("Retrieved context:");
-        result.Request.SystemPrompt.ShouldContain("Fresh indexed passage");
+        result.Request.SystemPrompt!.ShouldContain("Retrieved context:");
+        result.Request.SystemPrompt!.ShouldContain("Fresh indexed passage");
         result.Request.Messages.Last().Content.ShouldBe(message);
         fixture.Definition.SystemPrompt.ShouldBe("System instructions");
         await AssertSingleSearchProgressAsync(fixture, "1");
@@ -82,7 +82,7 @@ public partial class CopilotRuntimeRagWorkspaceTests
         result.RagSearch.QueryMode.ShouldBe(CopilotRagQueryMode.Raw);
         result.RagSearch.Outcome.ShouldBe(CopilotRagSearchOutcome.NoMatches);
         result.UsedRag.ShouldBeFalse();
-        result.Request.SystemPrompt.ShouldNotContain("Retrieved context:");
+        result.Request.SystemPrompt!.ShouldNotContain("Retrieved context:");
         await fixture.Rag.Received(1).SearchAsync(Arg.Any<SufiAIRagSearchRequest>(), Arg.Any<CancellationToken>());
     }
 
@@ -100,7 +100,7 @@ public partial class CopilotRuntimeRagWorkspaceTests
         result.RetrievedChunkCount.ShouldBe(0);
         result.RagSearch.AttemptCount.ShouldBe(2);
         result.RagSearch.Outcome.ShouldBe(CopilotRagSearchOutcome.NoMatches);
-        result.Request.SystemPrompt.ShouldNotContain("Retrieved context:");
+        result.Request.SystemPrompt!.ShouldNotContain("Retrieved context:");
         result.Request.Messages.ShouldContain(message => message.Role == "assistant" && message.Content == "assistant-only-invention");
         await fixture.Rag.Received(2).SearchAsync(Arg.Any<SufiAIRagSearchRequest>(), Arg.Any<CancellationToken>());
         await AssertSingleSearchProgressAsync(fixture, "0");

@@ -11,7 +11,7 @@ public class AccountCaptchaAppService : SufiApplicationService, ICaptchaAppServi
 {
     protected ICaptchaProviderResolver ProviderResolver { get; }
 
-    protected ISettingProvider SettingProvider { get; }
+    new ISettingProvider SettingProvider { get; }
 
     public AccountCaptchaAppService(
         ICaptchaProviderResolver providerResolver,

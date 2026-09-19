@@ -3,7 +3,6 @@ using Volo.Abp.Localization;
 using SufiChain.SufiPlatform.Settings.Localization;
 using Volo.Abp.Localization.ExceptionHandling;
 using SufiChain.SufiPlatform.Settings;
-using SufiChain.SufiPlatform.Settings.Localization;
 using Volo.Abp.VirtualFileSystem;
 using SufiChain.SufiPlatform.Features;
 

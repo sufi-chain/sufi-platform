@@ -1,6 +1,5 @@
 using System.Threading.Tasks;
 using SufiChain.SufiPlatform.Permissions;
-using SufiChain.SufiPlatform.Permissions;
 using Volo.Abp.DependencyInjection;
 using Volo.Abp.Domain.Entities.Events.Distributed;
 using Volo.Abp.EventBus.Distributed;

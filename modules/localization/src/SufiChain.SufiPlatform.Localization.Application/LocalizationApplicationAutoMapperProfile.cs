@@ -16,8 +16,10 @@ public partial class LocalizationTextToLocalizationTextDtoMapper : MapperBase<Lo
 public partial class LocalizationTextToLocalizationTextWithBaseValueDtoMapper : MapperBase<LocalizationText, LocalizationTextWithBaseValueDto>
 {
     [MapperIgnoreTarget(nameof(LocalizationTextWithBaseValueDto.BaseValue))]
+    [MapperIgnoreTarget(nameof(LocalizationTextWithBaseValueDto.IsOverride))]
     public override partial LocalizationTextWithBaseValueDto Map(LocalizationText source);
     [MapperIgnoreTarget(nameof(LocalizationTextWithBaseValueDto.BaseValue))]
+    [MapperIgnoreTarget(nameof(LocalizationTextWithBaseValueDto.IsOverride))]
     public override partial void Map(LocalizationText source, LocalizationTextWithBaseValueDto destination);
 }
 

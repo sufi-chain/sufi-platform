@@ -55,7 +55,6 @@ public class FormCreateWizardNavigationTests
 
         wizard.Settings.ShouldBeNull();
         wizard.IsLoadingCatalog.ShouldBeFalse();
-        wizard.Failure.ShouldBeNull();
         wizard.Prompts.ShouldBeEmpty();
     }
 
@@ -71,7 +70,6 @@ public class FormCreateWizardNavigationTests
 
         wizard.Settings.ShouldBeNull();
         wizard.IsLoadingCatalog.ShouldBeFalse();
-        wizard.Failure.ShouldBeNull();
     }
 
     [Fact]
@@ -151,7 +149,6 @@ public class FormCreateWizardNavigationTests
         public void SetBusy(bool busy) => Busy = busy;
         public CopilotCatalogItemDto? Settings => Copilot;
         public bool IsLoadingCatalog => LoadingCatalog;
-        public string? Failure => Error;
         public IReadOnlyList<string> Prompts => ShortcutPrompts;
         public Guid? SelectedModel => ModelConfigurationId;
         public bool EmojiAvailable => Messenger.ComposerCapabilities?.CanUseRichComposer == true;

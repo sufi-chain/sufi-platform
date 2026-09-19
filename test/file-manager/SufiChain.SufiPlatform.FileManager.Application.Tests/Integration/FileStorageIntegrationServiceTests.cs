@@ -99,6 +99,24 @@ public class FileStorageIntegrationServiceTests
         await appService.DidNotReceive().GetDownloadContentAsync(fileId, Arg.Any<string?>());
     }
 
+    [Fact]
+    public async Task GetContentAsync_Should_Forbid_When_Blob_Access_Is_Forbidden()
+    {
+        var fileId = Guid.NewGuid();
+        var blobAccess = CreateBlobAccess();
+        blobAccess.GetContentForIntegrationAsync(fileId)
+            .Returns(new FileContentResultDto { IsForbidden = true });
+
+        var sut = new FileStorageIntegrationService(
+            Substitute.For<IFileItemAppService>(),
+            Substitute.For<IFileAccessTokenService>(),
+            Substitute.For<IFileItemRepository>(),
+            blobAccess);
+
+        await Should.ThrowAsync<Volo.Abp.Authorization.AbpAuthorizationException>(
+            () => sut.GetContentAsync(fileId));
+    }
+
     private static FileItemBlobAccessService CreateBlobAccess()
     {
         return Substitute.For<FileItemBlobAccessService>(

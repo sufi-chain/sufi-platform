@@ -16,7 +16,7 @@ public class MongoWorkspaceRepository : MongoDbRepository<AIMongoDbContext, Work
 
     public async Task<Workspace?> FindByNameAsync(string name, CancellationToken cancellationToken = default)
     {
-        var queryable = await GetMongoQueryableAsync(cancellationToken);
+        var queryable = await GetQueryableAsync(cancellationToken);
         return await queryable.FirstOrDefaultAsync(x => x.Name == name, cancellationToken);
     }
 
@@ -27,7 +27,7 @@ public class MongoWorkspaceRepository : MongoDbRepository<AIMongoDbContext, Work
         string sorting = "Name",
         CancellationToken cancellationToken = default)
     {
-        var queryable = await GetMongoQueryableAsync(cancellationToken);
+        var queryable = await GetQueryableAsync(cancellationToken);
         
         return await queryable
             .WhereIf(!string.IsNullOrWhiteSpace(filter), 
@@ -40,7 +40,7 @@ public class MongoWorkspaceRepository : MongoDbRepository<AIMongoDbContext, Work
 
     public async Task<long> GetCountAsync(string? filter = null, CancellationToken cancellationToken = default)
     {
-        var queryable = await GetMongoQueryableAsync(cancellationToken);
+        var queryable = await GetQueryableAsync(cancellationToken);
         
         return await queryable
             .WhereIf(!string.IsNullOrWhiteSpace(filter), 

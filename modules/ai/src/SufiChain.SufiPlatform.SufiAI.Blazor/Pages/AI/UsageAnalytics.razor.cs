@@ -23,9 +23,6 @@ public partial class UsageAnalytics : AIComponentBase
     private IAIAppService AIAppService => LazyGetRequiredService(ref _aiAppService);
     private IAIAppService? _aiAppService;
 
-    private IWorkspaceAppService WorkspaceAppService => LazyGetRequiredService(ref _workspaceAppService);
-    private IWorkspaceAppService? _workspaceAppService;
-
     private List<WorkspaceDto> _workspaces = new();
     private Guid? _selectedWorkspaceId;
     private UsageStatisticsDto? _statistics;

@@ -55,8 +55,7 @@ public partial class OrganizationUnitManagement : IdentityComponentBase
     private bool _showMemberPickerModal;
     private bool _showRolePickerModal;
 
-    // Confirm dialog
-    private SbConfirmDialog _confirmDialog = default!;
+    // Confirm dialog is rendered from the razor file when delete is rewired.
 
     protected override void OnInitialized()
     {

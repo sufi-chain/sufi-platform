@@ -4,7 +4,6 @@ using System.ClientModel;
 using System.ClientModel.Primitives;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
-using Microsoft.SemanticKernel.Embeddings;
 using SufiChain.SufiPlatform.SufiAI.RAG;
 using System.Collections.Generic;
 using System.Net.Http.Headers;
@@ -54,6 +53,7 @@ public static class WorkspaceConfigurationHelper
         }
     }
 
+#pragma warning disable SKEXP0010 // AddOpenAIEmbeddingGenerator is the current SK replacement for the obsolete text-embedding API.
     private static IEmbeddingGenerator<string, Embedding<float>> CreateOpenAIEmbeddingGenerator(
         Workspace workspace,
         EmbedderConfiguration embedderConfiguration,
@@ -72,7 +72,7 @@ public static class WorkspaceConfigurationHelper
                 BaseAddress = new Uri(apiBaseUrl),
                 Timeout = TimeSpan.FromMinutes(5)
             };
-            kernelBuilder.AddOpenAITextEmbeddingGeneration(
+            kernelBuilder.AddOpenAIEmbeddingGenerator(
                 modelId: model,
                 apiKey: apiKey,
                 httpClient: httpClient
@@ -80,17 +80,16 @@ public static class WorkspaceConfigurationHelper
         }
         else
         {
-            kernelBuilder.AddOpenAITextEmbeddingGeneration(
+            kernelBuilder.AddOpenAIEmbeddingGenerator(
                 modelId: model,
                 apiKey: apiKey
             );
         }
 
         var kernel = kernelBuilder.Build();
-        var embeddingService = kernel.GetRequiredService<ITextEmbeddingGenerationService>();
-
-        return new SemanticKernelEmbeddingGenerator(embeddingService);
+        return kernel.GetRequiredService<IEmbeddingGenerator<string, Embedding<float>>>();
     }
+#pragma warning restore SKEXP0010
 
     private static IEmbeddingGenerator<string, Embedding<float>> CreateCompatibleEmbeddingGenerator(
         Workspace workspace,
@@ -123,41 +122,6 @@ public static class WorkspaceConfigurationHelper
             options.Endpoint = new Uri(configuration.ApiEndpoint);
         builder.AddOpenAIChatCompletion(configuration.ModelId,
             new OpenAIClient(new ApiKeyCredential(apiKey), options));
-    }
-
-    private class SemanticKernelEmbeddingGenerator : IEmbeddingGenerator<string, Embedding<float>>
-    {
-        private readonly ITextEmbeddingGenerationService _embeddingService;
-
-        public SemanticKernelEmbeddingGenerator(ITextEmbeddingGenerationService embeddingService)
-        {
-            _embeddingService = embeddingService;
-        }
-
-        public async Task<GeneratedEmbeddings<Embedding<float>>> GenerateAsync(
-            IEnumerable<string> values,
-            EmbeddingGenerationOptions? options = null,
-            CancellationToken cancellationToken = default)
-        {
-            var embeddings = await _embeddingService.GenerateEmbeddingsAsync(values.ToList(), cancellationToken: cancellationToken);
-            var result = embeddings.Select(e => new Embedding<float>(e.ToArray())).ToList();
-
-            return new GeneratedEmbeddings<Embedding<float>>(result);
-        }
-
-        public object? GetService(Type serviceType, object? serviceKey = null)
-        {
-            return serviceKey is null && serviceType.IsInstanceOfType(_embeddingService) ? _embeddingService : null;
-        }
-
-        public TService? GetService<TService>(object? key = null) where TService : class
-        {
-            return GetService(typeof(TService), key) as TService;
-        }
-
-        void IDisposable.Dispose()
-        {
-        }
     }
 
     private sealed class CompatibleEmbeddingGenerator : IEmbeddingGenerator<string, Embedding<float>>

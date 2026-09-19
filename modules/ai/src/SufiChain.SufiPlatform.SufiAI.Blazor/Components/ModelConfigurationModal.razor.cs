@@ -24,8 +24,6 @@ public partial class ModelConfigurationModal : AIComponentBase
 
     private IAIAppService AIAppService => LazyGetRequiredService(ref _aiAppService);
     private IAIAppService? _aiAppService;
-    private IWorkspaceAppService WorkspaceAppService => LazyGetRequiredService(ref _workspaceAppService);
-    private IWorkspaceAppService? _workspaceAppService;
 
     private bool _isEditMode;
     private bool _hasStoredApiKey;

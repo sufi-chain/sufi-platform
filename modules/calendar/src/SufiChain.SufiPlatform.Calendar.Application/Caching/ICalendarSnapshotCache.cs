@@ -4,7 +4,7 @@ namespace SufiChain.SufiPlatform.Calendar.Caching;
 
 public interface ICalendarSnapshotCache : ICalendarSnapshotProvider
 {
-    Task<CalendarSnapshot> GetAsync(Guid calendarId, CancellationToken cancellationToken = default);
+    new Task<CalendarSnapshot> GetAsync(Guid calendarId, CancellationToken cancellationToken = default);
 
     Task RemoveAsync(Guid calendarId, Guid? tenantId = null, CancellationToken cancellationToken = default);
 

@@ -3,15 +3,19 @@ namespace SufiChain.SufiPlatform.EventBus;
 /// <summary>
 /// Deduplicates distributed event handling by event id (+ tenant + optional handler key).
 /// Handlers should call <see cref="TryBeginAsync"/> before side effects and skip when false.
-/// Multiple handlers of the same ETO must pass distinct <paramref name="handlerKey"/> values
+/// Multiple handlers of the same ETO must pass distinct <c>handlerKey</c> values
 /// so one handler's claim does not starve another.
 /// </summary>
 public interface IDistributedEventIdempotencyStore
 {
     /// <summary>
-    /// Attempts to mark <paramref name="eventId"/> as in-flight/handled for this handler.
+    /// Attempts to mark the event as in-flight/handled for this handler.
     /// Returns <c>false</c> if the event was already processed (or is being processed) for the same key.
     /// </summary>
+    /// <param name="eventId">Distributed event identifier.</param>
+    /// <param name="tenantId">Tenant that owns the event, when applicable.</param>
+    /// <param name="ttl">Optional claim lifetime before the store may forget the event.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
     /// <param name="handlerKey">
     /// Stable handler discriminator (e.g. type name). Required when more than one handler
     /// consumes the same event id; omit only for single-consumer ETOs.

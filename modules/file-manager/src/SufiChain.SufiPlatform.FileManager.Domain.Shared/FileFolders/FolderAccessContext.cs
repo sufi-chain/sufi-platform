@@ -26,7 +26,7 @@ public sealed class FolderAccessContext
     public IReadOnlyList<string> Roles { get; set; } = Array.Empty<string>();
 
     /// <summary>
-    /// Role ids granted to the current user (matched against <see cref="FolderPermission.RoleId"/>).
+    /// Role ids granted to the current user (matched against folder permission role ids).
     /// </summary>
     public IReadOnlyList<Guid> RoleIds { get; set; } = Array.Empty<Guid>();
 

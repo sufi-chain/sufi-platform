@@ -24,7 +24,7 @@ public class CopilotPlaygroundSessionStateTests
 
         state.DraftConfigurationJson.ShouldContain("Updated");
         state.BaseConfigurationFingerprint.ShouldBe("updated-fingerprint");
-        state.LastPreviewJson.ShouldContain("Preview");
+        state.LastPreviewJson!.ShouldContain("Preview");
     }
 
     [Fact]

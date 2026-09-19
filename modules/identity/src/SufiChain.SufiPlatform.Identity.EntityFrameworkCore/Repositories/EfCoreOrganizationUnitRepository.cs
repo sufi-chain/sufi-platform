@@ -78,7 +78,7 @@ public class EfCoreOrganizationUnitRepository : EfCoreRepository<ISufiIdentityDb
             );
     }
 
-    public virtual async Task<long> GetCountAsync(
+    public override async Task<long> GetCountAsync(
         CancellationToken cancellationToken = default)
     {
         return await (await GetDbSetAsync())

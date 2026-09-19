@@ -1,6 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
 using SufiChain.SufiPlatform.SufiAI;
-using SufiChain.SufiPlatform.SufiAI;
 using Volo.Abp;
 
 namespace SufiChain.SufiPlatform.SufiAI.Controllers;

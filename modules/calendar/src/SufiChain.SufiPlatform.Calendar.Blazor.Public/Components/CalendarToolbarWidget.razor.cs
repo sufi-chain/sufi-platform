@@ -21,8 +21,6 @@ public partial class CalendarToolbarWidget : CalendarPublicComponentBase
 
     protected bool IsOpen { get; set; }
 
-    protected bool IsLoading { get; set; }
-
     protected bool CanUseCalendar { get; set; }
 
     protected List<EventOccurrenceDto> Agenda { get; } = new();

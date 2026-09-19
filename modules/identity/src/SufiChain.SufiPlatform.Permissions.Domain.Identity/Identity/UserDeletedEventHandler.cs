@@ -5,7 +5,6 @@ using Volo.Abp.Domain.Entities.Events.Distributed;
 using Volo.Abp.EventBus.Distributed;
 using Volo.Abp.Uow;
 using SufiChain.SufiPlatform.Users;
-using Volo.Abp.Uow;
 
 namespace SufiChain.SufiPlatform.Permissions.Identity;
 

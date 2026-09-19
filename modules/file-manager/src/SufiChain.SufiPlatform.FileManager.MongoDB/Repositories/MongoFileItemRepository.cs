@@ -28,8 +28,8 @@ public class MongoFileItemRepository :
     public Task<FileItem?> FindAsync(Guid id, CancellationToken cancellationToken = default) => base.FindAsync(id, false, cancellationToken);
     public Task<IQueryable<FileItem>> GetQueryableAsync(CancellationToken cancellationToken = default) => base.GetQueryableAsync(cancellationToken);
 
-    public Task<FileItem> InsertAsync(FileItem entity, bool autoSave = false, CancellationToken cancellationToken = default) => base.InsertAsync(entity, autoSave, cancellationToken);
-    public Task<FileItem> UpdateAsync(FileItem entity, bool autoSave = false, CancellationToken cancellationToken = default) => base.UpdateAsync(entity, autoSave, cancellationToken);
+    public new Task<FileItem> InsertAsync(FileItem entity, bool autoSave = false, CancellationToken cancellationToken = default) => base.InsertAsync(entity, autoSave, cancellationToken);
+    public new Task<FileItem> UpdateAsync(FileItem entity, bool autoSave = false, CancellationToken cancellationToken = default) => base.UpdateAsync(entity, autoSave, cancellationToken);
 
     public async Task<List<FileItem>> GetByEntityAsync(
         string entityType,

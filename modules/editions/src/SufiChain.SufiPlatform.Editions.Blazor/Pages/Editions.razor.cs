@@ -10,7 +10,7 @@ public partial class Editions
     private const string EditionFeatureProviderName = EditionFeatureValueProvider.ProviderName;
 
     [Inject] protected IEditionAppService EditionAppService { get; set; } = default!;
-    [Inject] protected IAuthorizationService AuthorizationService { get; set; } = default!;
+    [Inject] protected new IAuthorizationService AuthorizationService { get; set; } = default!;
 
     private FeaturesModal _featuresModal = default!;
     private List<EditionDto>? _items;

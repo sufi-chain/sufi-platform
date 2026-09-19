@@ -11,7 +11,7 @@ namespace SufiChain.SufiPlatform.Data;
 public class TenantSeedCultureProvider : ITransientDependency
 {
     /// <summary>
-    /// Matches <see cref="Localization.Settings.LocalizationSettingNames.DefaultCulture"/>.
+    /// Matches <c>Localization.Settings.LocalizationSettingNames.DefaultCulture</c>.
     /// </summary>
     public const string DefaultCultureSettingName = "Localization.DefaultCulture";
 

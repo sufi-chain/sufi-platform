@@ -20,7 +20,7 @@ public class AccountTwoFactorAppService : SufiApplicationService, IAccountTwoFac
 {
     protected IdentityUserManager UserManager { get; }
 
-    protected ISettingProvider SettingProvider { get; }
+    new ISettingProvider SettingProvider { get; }
 
     protected ILocalEventBus LocalEventBus { get; }
 

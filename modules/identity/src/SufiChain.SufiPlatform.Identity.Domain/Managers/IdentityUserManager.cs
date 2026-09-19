@@ -318,7 +318,7 @@ public class IdentityUserManager : UserManager<IdentityUser>, IDomainService
         return await UpdateAsync(user);
     }
 
-    protected virtual async Task<IdentityResult> UpdatePasswordHash(
+    protected override async Task<IdentityResult> UpdatePasswordHash(
         IdentityUser user,
         string newPassword,
         bool validatePassword = true)

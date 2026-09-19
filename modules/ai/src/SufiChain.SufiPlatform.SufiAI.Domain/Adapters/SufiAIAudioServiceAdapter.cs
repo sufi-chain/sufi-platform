@@ -1,7 +1,6 @@
 using System.Threading;
 using System.Threading.Tasks;
 using SufiChain.SufiPlatform.SufiAI;
-using SufiChain.SufiPlatform.SufiAI;
 using Volo.Abp.DependencyInjection;
 
 namespace SufiChain.SufiPlatform.SufiAI.Adapters;

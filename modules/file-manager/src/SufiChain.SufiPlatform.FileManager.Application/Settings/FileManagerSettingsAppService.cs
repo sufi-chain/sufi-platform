@@ -15,7 +15,7 @@ namespace SufiChain.SufiPlatform.FileManager.Settings;
 [Authorize(FileManagerPermissions.Settings.Default)]
 public class FileManagerSettingsAppService : SufiApplicationService, IFileManagerSettingsAppService
 {
-    protected ISettingProvider SettingProvider { get; }
+    new ISettingProvider SettingProvider { get; }
     protected ISettingManager SettingManager { get; }
 
     public FileManagerSettingsAppService(

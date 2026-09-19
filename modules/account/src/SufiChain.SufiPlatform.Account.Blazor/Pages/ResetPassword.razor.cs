@@ -26,7 +26,7 @@ public partial class ResetPassword
     public string? Token { get; set; }
 
     [SupplyParameterFromForm]
-    public ResetPasswordInputModel Input { get; set; } = new();
+    public ResetPasswordInputModel? Input { get; set; }
 
     protected bool IsTokenValid { get; set; }
 

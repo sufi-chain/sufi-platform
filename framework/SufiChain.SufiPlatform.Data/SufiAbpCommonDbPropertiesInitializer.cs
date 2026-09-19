@@ -8,7 +8,9 @@ namespace SufiChain.SufiPlatform.Data;
 /// </summary>
 internal static class SufiAbpCommonDbPropertiesInitializer
 {
+#pragma warning disable CA2255
     [ModuleInitializer]
+#pragma warning restore CA2255
     internal static void Initialize()
     {
         SufiCommonDbProperties.ApplyToAbp();

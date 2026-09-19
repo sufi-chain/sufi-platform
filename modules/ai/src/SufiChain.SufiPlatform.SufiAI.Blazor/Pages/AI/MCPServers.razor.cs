@@ -8,8 +8,6 @@ namespace SufiChain.SufiPlatform.SufiAI.Blazor.Pages.AI;
 
 public partial class MCPServers
 {
-    [Inject] private IMCPServerAppService MCPServerAppService { get; set; } = default!;
-    
     private static class LoadingKeys
     {
         public const string LoadServers = nameof(LoadServers);

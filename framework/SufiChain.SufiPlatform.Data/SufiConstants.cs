@@ -9,7 +9,7 @@ public static class SufiConstants
     public const string AdminEmailDefaultValue = "admin@sufichain.ir";
 
     /// <summary>
-    /// Property name for admin email in DataSeedContext (same as <see cref="SufiChain.SufiPlatform.Identity.IdentityDataSeedContributor.AdminEmailPropertyName"/>).
+    /// Property name for admin email in DataSeedContext (same as <c>IdentityDataSeedContributor.AdminEmailPropertyName</c>).
     /// </summary>
     public const string AdminEmailPropertyName = "AdminEmail";
 

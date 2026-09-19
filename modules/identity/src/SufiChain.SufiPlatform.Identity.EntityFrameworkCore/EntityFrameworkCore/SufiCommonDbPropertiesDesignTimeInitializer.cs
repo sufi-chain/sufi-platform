@@ -10,7 +10,9 @@ namespace SufiChain.SufiPlatform.Identity.EntityFrameworkCore;
 /// </summary>
 internal static class SufiCommonDbPropertiesDesignTimeInitializer
 {
+#pragma warning disable CA2255
     [ModuleInitializer]
+#pragma warning restore CA2255
     internal static void Initialize()
     {
         SufiCommonDbProperties.ApplyToAbp();

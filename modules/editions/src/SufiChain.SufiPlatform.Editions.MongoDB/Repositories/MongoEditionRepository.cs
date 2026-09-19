@@ -16,14 +16,14 @@ public class MongoEditionRepository : MongoDbRepository<IEditionsMongoDbContext,
 
     public virtual async Task<Edition?> FindByNameAsync(string name, CancellationToken cancellationToken = default)
     {
-        return await (await GetMongoQueryableAsync(cancellationToken))
+        return await (await GetQueryableAsync(cancellationToken))
             .FirstOrDefaultAsync(x => x.Name == name, cancellationToken);
     }
 
     public virtual async Task<Edition?> FindByCodeAsync(string code, CancellationToken cancellationToken = default)
     {
         var normalized = code.Trim().ToUpperInvariant();
-        return await (await GetMongoQueryableAsync(cancellationToken))
+        return await (await GetQueryableAsync(cancellationToken))
             .FirstOrDefaultAsync(x => x.Code == normalized, cancellationToken);
     }
 }

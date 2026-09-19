@@ -36,9 +36,6 @@ public partial class AIMultiModalTestPanel : AIComponentBase
     private ISufiAIChatAppService AIChatAppService => LazyGetRequiredService(ref _aiChatAppService);
     private ISufiAIChatAppService? _aiChatAppService;
 
-    private IWorkspaceAppService WorkspaceAppService => LazyGetRequiredService(ref _workspaceAppService);
-    private IWorkspaceAppService? _workspaceAppService;
-
     private List<WorkspaceDto> _workspaces = new();
     private Guid? _selectedWorkspaceId;
     private string _selectedWorkspaceName = string.Empty;
