@@ -61,7 +61,16 @@ public class IdentitySettingDefinitionProvider : SettingDefinitionProvider
             new SettingDefinition(IdentitySettingNames.Captcha.Recaptcha.SiteKey, "", L("Setting:CaptchaRecaptchaSiteKey")),
             new SettingDefinition(IdentitySettingNames.Captcha.Recaptcha.SecretKey, "", L("Setting:CaptchaRecaptchaSecretKey"), isEncrypted: true),
             new SettingDefinition(IdentitySettingNames.Captcha.Recaptcha.Version, "v2checkbox", L("Setting:CaptchaRecaptchaVersion")),
-            new SettingDefinition(IdentitySettingNames.Captcha.Recaptcha.MinScore, "0.5", L("Setting:CaptchaRecaptchaMinScore"))
+            new SettingDefinition(IdentitySettingNames.Captcha.Recaptcha.MinScore, "0.5", L("Setting:CaptchaRecaptchaMinScore")),
+            new SettingDefinition(IdentitySettingNames.ExternalAuth.Google.Enabled, "false", L("Setting:ExternalAuthGoogleEnabled")),
+            new SettingDefinition(IdentitySettingNames.ExternalAuth.Google.ClientId, "", L("Setting:ExternalAuthGoogleClientId")),
+            new SettingDefinition(IdentitySettingNames.ExternalAuth.Google.ClientSecret, "", L("Setting:ExternalAuthGoogleClientSecret"), isEncrypted: true),
+            new SettingDefinition(IdentitySettingNames.ExternalAuth.Microsoft.Enabled, "false", L("Setting:ExternalAuthMicrosoftEnabled")),
+            new SettingDefinition(IdentitySettingNames.ExternalAuth.Microsoft.ClientId, "", L("Setting:ExternalAuthMicrosoftClientId")),
+            new SettingDefinition(IdentitySettingNames.ExternalAuth.Microsoft.ClientSecret, "", L("Setting:ExternalAuthMicrosoftClientSecret"), isEncrypted: true),
+            new SettingDefinition(IdentitySettingNames.ExternalAuth.GitHub.Enabled, "false", L("Setting:ExternalAuthGitHubEnabled")),
+            new SettingDefinition(IdentitySettingNames.ExternalAuth.GitHub.ClientId, "", L("Setting:ExternalAuthGitHubClientId")),
+            new SettingDefinition(IdentitySettingNames.ExternalAuth.GitHub.ClientSecret, "", L("Setting:ExternalAuthGitHubClientSecret"), isEncrypted: true)
         );
     }
 

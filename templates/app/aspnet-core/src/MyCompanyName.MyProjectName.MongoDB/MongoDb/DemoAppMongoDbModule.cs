@@ -29,7 +29,7 @@ namespace MyCompanyName.MyProjectName.MongoDB;
     typeof(SufiUsersMongoDbModule),
     typeof(SufiOpenIddictMongoDbModule),
     typeof(SufiTenantsMongoDbModule),
-    typeof(SufiBlobDatabaseDatabaseMongoDbModule),
+            typeof(SufiBlobDatabaseMongoDbModule),
     typeof(SufiFileManagerMongoDbModule),
     typeof(SufiLocalizationMongoDbModule),
     typeof(SufiShortLinksMongoDbModule),

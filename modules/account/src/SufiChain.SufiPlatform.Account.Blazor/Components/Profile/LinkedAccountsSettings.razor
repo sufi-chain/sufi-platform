@@ -4,6 +4,7 @@
 @inject ICurrentUser CurrentUser
 @inject ICurrentTenant CurrentTenant
 @inject IStringLocalizer<SufiAccountResource> AccountL
+@inject ILogger<LinkedAccountsSettings> Logger
 
 @if (_loading)
 {
@@ -78,9 +79,13 @@ else
             var result = await LinkUserAppService.GetAllListAsync();
             _links = result.Items?.ToList() ?? new List<LinkUserDto>();
         }
-        catch
+        catch (Exception ex)
         {
-            _errorMessage = AccountL["LinkedAccountsLoadFailed"];
+            _errorMessage = AccountUiErrors.LocalizedFailure(
+                Logger,
+                AccountL,
+                ex,
+                "LinkedAccountsLoadFailed");
             _links = new List<LinkUserDto>();
         }
         finally
@@ -106,9 +111,13 @@ else
 
             Navigation.NavigateTo(url, forceLoad: true);
         }
-        catch
+        catch (Exception ex)
         {
-            _errorMessage = AccountL["LinkLoginFailed"];
+            _errorMessage = AccountUiErrors.LocalizedFailure(
+                Logger,
+                AccountL,
+                ex,
+                "LinkLoginFailed");
             _busyUserId = null;
         }
     }
@@ -126,9 +135,13 @@ else
             });
             await LoadAsync();
         }
-        catch
+        catch (Exception ex)
         {
-            _errorMessage = AccountL["LinkedAccountsLoadFailed"];
+            _errorMessage = AccountUiErrors.LocalizedFailure(
+                Logger,
+                AccountL,
+                ex,
+                "LinkedAccountsLoadFailed");
         }
         finally
         {

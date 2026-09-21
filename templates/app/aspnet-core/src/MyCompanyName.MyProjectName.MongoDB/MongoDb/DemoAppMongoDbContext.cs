@@ -4,6 +4,8 @@ using SufiChain.SufiPlatform.SufiAI.MongoDB;
 using SufiChain.SufiPlatform.SufiAI.Workspaces;
 using SufiChain.SufiPlatform.AuditLogging.MongoDB;
 using SufiChain.SufiPlatform.BackgroundJobs.MongoDB;
+using SufiChain.SufiPlatform.BlobDatabase;
+using SufiChain.SufiPlatform.BlobDatabase.MongoDB;
 using SufiChain.SufiPlatform.Features.MongoDB;
 using SufiChain.SufiPlatform.FileManager.FileFolders;
 using SufiChain.SufiPlatform.FileManager.FileItems;
@@ -24,11 +26,16 @@ namespace MyCompanyName.MyProjectName.MongoDB;
 
 [ConnectionStringName("Default")]
 public class DemoAppMongoDbContext : AbpMongoDbContext,
+    ISufiBlobDatabaseMongoDbContext,
     IFileManagerMongoDbContext,
     ILocalizationManagementMongoDbContext,
     IShortLinkGeneratorMongoDbContext,
     IAIMongoDbContext
 {
+    // Database Blob Storage
+    public IMongoCollection<DatabaseBlobContainer> BlobContainers => Collection<DatabaseBlobContainer>();
+    public IMongoCollection<DatabaseBlob> Blobs => Collection<DatabaseBlob>();
+
     // File Manager
     public IMongoCollection<FileItem> FileItems => Collection<FileItem>();
     public IMongoCollection<FileFolder> FileFolders => Collection<FileFolder>();
@@ -59,6 +66,7 @@ public class DemoAppMongoDbContext : AbpMongoDbContext,
         modelBuilder.ConfigureBackgroundJobs();
         modelBuilder.ConfigureSufiOpenIddict();
         
+        modelBuilder.ConfigureSufiBlobDatabase();
         modelBuilder.ConfigureSufiFileManager();
         modelBuilder.ConfigureSufiLocalization();
         modelBuilder.ConfigureSufiShortLinks();

@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.Localization;
+using Microsoft.Extensions.Logging;
 using SufiChain.SufiPlatform.Account.Localization;
 using SufiChain.SufiPlatform.Identity.Localization;
 
@@ -15,6 +16,9 @@ public partial class EmailConfirmationSent
 
     [Inject]
     protected IStringLocalizer<SufiAccountResource> AccountL { get; set; } = default!;
+
+    [Inject]
+    protected ILogger<EmailConfirmationSent> Logger { get; set; } = default!;
 
     [SupplyParameterFromQuery]
     public string? Email { get; set; }
@@ -69,7 +73,11 @@ public partial class EmailConfirmationSent
         }
         catch (Exception ex)
         {
-            ErrorMessage = ex.Message;
+            ErrorMessage = AccountUiErrors.LocalizedFailure(
+                Logger,
+                AccountL,
+                ex,
+                "EmailConfirmationResendFailed");
         }
         finally
         {

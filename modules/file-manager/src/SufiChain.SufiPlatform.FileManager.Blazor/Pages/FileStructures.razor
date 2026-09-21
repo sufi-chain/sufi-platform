@@ -138,6 +138,11 @@
 										<Icon><SbIcon Name="edit" /></Icon>
 									</SbIconButton>
 								</SbTooltip>
+								<SbTooltip Text="@L["MigrateStructureFiles"]">
+									<SbIconButton Color="SbColor.Primary" Size="SbSize.Sm" OnClick="@(() => MigrateStructureFilesAsync(structure))" AriaLabel="@L["MigrateStructureFiles"]">
+										<Icon><SbIcon Name="cloud-upload" /></Icon>
+									</SbIconButton>
+								</SbTooltip>
 								@if (structure.HasDefaultConfig && structure.IsModifiedFromDefault)
 								{
 									<SbTooltip Text="@L["ResetToDefault"]">

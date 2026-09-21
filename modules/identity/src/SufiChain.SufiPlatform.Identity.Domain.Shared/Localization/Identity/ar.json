@@ -12,6 +12,8 @@
     "Roles": "الأدوار",
     "SelectRole": "اختر دورًا",
     "SelectOrganizationUnit": "اختر وحدة تنظيمية",
+    "OrganizationUnitRequired": "اختر وحدة تنظيمية أولاً.",
+    "FailedToLoadPickerData": "تعذر تحميل القائمة. حاول مرة أخرى.",
     "NoRolesFound": "لم يتم العثور على أدوار",
     "NoOrganizationUnitsFound": "لم يتم العثور على وحدات تنظيمية",
     "OrganizationUnits": "الوحدات التنظيمية",

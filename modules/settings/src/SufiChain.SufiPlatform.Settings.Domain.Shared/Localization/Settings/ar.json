@@ -61,6 +61,16 @@
     "Permission:Settings": "إدارة الإعدادات",
     "Permission:Emailing": "البريد الإلكتروني",
     "Permission:EmailingTest": "اختبار البريد الإلكتروني",
-    "Permission:TimeZone": "المنطقة الزمنية"
+    "Permission:TimeZone": "المنطقة الزمنية",
+    "Permission:ExternalAuth": "المصادقة الخارجية",
+    "ExternalAuthSettings": "تسجيل الدخول الخارجي",
+    "ExternalAuthSettingsHint": "فعّل تسجيل الدخول عبر Google أو Microsoft أو GitHub لهذا المستأجر. اترك السر فارغاً للإبقاء على القيمة المخزنة.",
+    "ExternalAuth:Google": "Google",
+    "ExternalAuth:Microsoft": "Microsoft",
+    "ExternalAuth:GitHub": "GitHub",
+    "ExternalAuth:Enabled": "تفعيل هذا الموفر",
+    "ExternalAuth:ClientId": "معرّف العميل",
+    "ExternalAuth:ClientSecret": "سر العميل",
+    "ExternalAuth:ClientSecretKeep": "سر العميل (اتركه فارغاً للإبقاء)"
   }
 }

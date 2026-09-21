@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.Localization;
+using Microsoft.Extensions.Logging;
 using SufiChain.SufiPlatform.Account.Localization;
 using SufiChain.SufiPlatform.Identity.Localization;
 using SufiChain.SufiPlatform.Identity.Settings;
@@ -17,6 +18,9 @@ public partial class RegisterWithOtp
 
     [Inject]
     protected IStringLocalizer<SufiAccountResource> AccountL { get; set; } = default!;
+
+    [Inject]
+    protected ILogger<RegisterWithOtp> Logger { get; set; } = default!;
 
     [Inject]
     protected NavigationManager Navigation { get; set; } = default!;
@@ -122,7 +126,11 @@ public partial class RegisterWithOtp
         }
         catch (Exception ex)
         {
-            ErrorMessage = ex.Message;
+            ErrorMessage = AccountUiErrors.LocalizedFailure(
+                Logger,
+                AccountL,
+                ex,
+                "OtpSendFailed");
         }
         finally
         {
@@ -156,7 +164,11 @@ public partial class RegisterWithOtp
         }
         catch (Exception ex)
         {
-            ErrorMessage = ex.Message;
+            ErrorMessage = AccountUiErrors.LocalizedFailure(
+                Logger,
+                AccountL,
+                ex,
+                "OtpVerifyFailed");
         }
         finally
         {
@@ -202,7 +214,11 @@ public partial class RegisterWithOtp
         }
         catch (Exception ex)
         {
-            ErrorMessage = ex.Message;
+            ErrorMessage = AccountUiErrors.LocalizedFailure(
+                Logger,
+                AccountL,
+                ex,
+                "RegistrationFailed");
         }
         finally
         {

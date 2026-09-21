@@ -28,6 +28,15 @@ public class SmsProviderConfigurationUiContractTests
         method.ShouldNotContain("GetConfigurationAsync");
     }
 
+    [Fact]
+    public void CanSave_Must_Accept_Stored_Sensitive_Settings()
+    {
+        var source = File.ReadAllText(FindPageSource());
+        source.ShouldContain("HasRequiredSettings(requireTestPhone: false)");
+        source.ShouldContain("HasStoredSensitiveSettings");
+        source.ShouldNotContain("ProviderSettings.ContainsKey(\"ApiKey\")");
+    }
+
     private static string FindPageSource()
     {
         for (var directory = new DirectoryInfo(AppContext.BaseDirectory);

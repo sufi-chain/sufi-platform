@@ -1,4 +1,7 @@
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
+using Volo.Abp;
+using Volo.Abp.BackgroundWorkers;
 using Volo.Abp.Caching;
 using Volo.Abp.DistributedLocking;
 using Volo.Abp.Domain;
@@ -24,6 +27,7 @@ namespace SufiChain.SufiPlatform.OpenIddict;
     typeof(AbpDistributedLockingAbstractionsModule),
     typeof(AbpCachingModule),
     typeof(AbpGuidsModule),
+    typeof(AbpBackgroundWorkersModule),
     typeof(AbpMapperlyModule)
 )]
 public class SufiOpenIddictDomainModule : AbpModule
@@ -64,6 +68,18 @@ public class SufiOpenIddictDomainModule : AbpModule
             });
 
         services.ExecutePreConfiguredActions(openIddictBuilder);
+    }
+
+    public override async Task OnApplicationInitializationAsync(ApplicationInitializationContext context)
+    {
+        var cleanupOptions = context.ServiceProvider
+            .GetRequiredService<IOptions<OpenIddictCleanupOptions>>()
+            .Value;
+
+        if (cleanupOptions.IsCleanupEnabled)
+        {
+            await context.AddBackgroundWorkerAsync<OpenIddictCleanupWorker>();
+        }
     }
 
     public override void PostConfigureServices(ServiceConfigurationContext context)

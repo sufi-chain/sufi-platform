@@ -178,6 +178,12 @@ public partial class ModelConfigurationModal : AIComponentBase
             _dimensionsText = string.Empty;
             _model.Dimensions = null;
         }
+
+        _availableModels = new List<OpenAIModelDto>();
+        if (!string.IsNullOrWhiteSpace(_model.ModelId))
+        {
+            _availableModels.Add(new OpenAIModelDto { Id = _model.ModelId });
+        }
     }
 
     private void OnModelIdChanged(string? value)
@@ -346,12 +352,13 @@ public partial class ModelConfigurationModal : AIComponentBase
                 WorkspaceId = WorkspaceId.Value,
                 ModelConfigurationId = Configuration?.Id,
                 ApiKey = _model.ApiKey,
-                ApiBaseUrl = _model.ApiEndpoint
+                ApiBaseUrl = _model.ApiEndpoint,
+                CapabilityType = _model.CapabilityType
             });
 
             if (_availableModels.Count == 0)
             {
-                await Message.ErrorAsync(L["NoModelsReturned"]);
+                await Message.ErrorAsync(L["NoModelsMatchCapability"]);
                 return;
             }
 

@@ -57,7 +57,7 @@ public partial class RolePickerModal : IdentityComponentBase
     {
         if (OrganizationUnitId == Guid.Empty)
         {
-            _errorMessage = "OrganizationUnitId is empty";
+            _errorMessage = L["OrganizationUnitRequired"];
             return new SbDataResponse<OrganizationUnitRoleDto>(Array.Empty<OrganizationUnitRoleDto>(), 0);
         }
 
@@ -77,7 +77,7 @@ public partial class RolePickerModal : IdentityComponentBase
         }
         catch (Exception ex)
         {
-            _errorMessage = ex.Message;
+            _errorMessage = L["FailedToLoadPickerData"];
             Logger.LogError(ex, "Failed to load available roles for OU {OrganizationUnitId}", OrganizationUnitId);
             return new SbDataResponse<OrganizationUnitRoleDto>(Array.Empty<OrganizationUnitRoleDto>(), 0);
         }

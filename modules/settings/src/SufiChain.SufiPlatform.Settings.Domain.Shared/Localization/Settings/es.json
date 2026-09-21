@@ -60,6 +60,16 @@
     "Permission:Settings": "Gestión de configuración",
     "Permission:Emailing": "Correo electrónico",
     "Permission:EmailingTest": "Prueba de correo electrónico",
-    "Permission:TimeZone": "Zona horaria"
+    "Permission:TimeZone": "Zona horaria",
+    "Permission:ExternalAuth": "Autenticación externa",
+    "ExternalAuthSettings": "Inicio de sesión externo",
+    "ExternalAuthSettingsHint": "Active el inicio de sesión con Google, Microsoft o GitHub para este inquilino. Deje el secreto en blanco para conservar el valor guardado.",
+    "ExternalAuth:Google": "Google",
+    "ExternalAuth:Microsoft": "Microsoft",
+    "ExternalAuth:GitHub": "GitHub",
+    "ExternalAuth:Enabled": "Activar este proveedor",
+    "ExternalAuth:ClientId": "Id. de cliente",
+    "ExternalAuth:ClientSecret": "Secreto de cliente",
+    "ExternalAuth:ClientSecretKeep": "Secreto de cliente (déjelo en blanco para conservar)"
   }
 }

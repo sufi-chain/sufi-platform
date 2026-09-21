@@ -31,7 +31,8 @@ public class SettingsMenuContributor : IMenuContributor
         ).RequirePermissions(
             SettingsPermissions.Emailing,
             SettingsPermissions.TimeZone,
-            SettingsPermissions.Identity));
+            SettingsPermissions.Identity,
+            SettingsPermissions.ExternalAuth));
 
         return Task.CompletedTask;
     }

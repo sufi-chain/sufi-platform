@@ -12,6 +12,8 @@
     "Roles": "نقش‌ها",
     "SelectRole": "انتخاب نقش",
     "SelectOrganizationUnit": "انتخاب واحد سازمانی",
+    "OrganizationUnitRequired": "ابتدا یک واحد سازمانی انتخاب کنید.",
+    "FailedToLoadPickerData": "بارگذاری فهرست انجام نشد. دوباره تلاش کنید.",
     "NoRolesFound": "نقشی یافت نشد",
     "NoOrganizationUnitsFound": "واحد سازمانی یافت نشد",
     "OrganizationUnits": "واحدهای سازمانی",

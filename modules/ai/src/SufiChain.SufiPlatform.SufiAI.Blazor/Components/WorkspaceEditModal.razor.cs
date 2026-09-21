@@ -1,5 +1,6 @@
 using System.Globalization;
 using Microsoft.AspNetCore.Components;
+using SufiChain.SufiPlatform.SufiAI;
 using SufiChain.SufiPlatform.SufiAI.Workspaces;
 
 namespace SufiChain.SufiPlatform.SufiAI.Blazor.Components;
@@ -155,7 +156,8 @@ public partial class WorkspaceEditModal : AIComponentBase
             {
                 WorkspaceId = WorkspaceId.Value,
                 ApiKey = _model.ApiKey,
-                ApiBaseUrl = _model.ApiBaseUrl
+                ApiBaseUrl = _model.ApiBaseUrl,
+                CapabilityType = AICapabilityType.ChatCompletion
             });
 
             if (_availableModels.Count == 0)

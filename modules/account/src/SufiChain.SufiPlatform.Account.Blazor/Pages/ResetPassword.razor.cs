@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.Localization;
+using Microsoft.Extensions.Logging;
 using SufiChain.SufiPlatform.Account.Localization;
 using SufiChain.SufiPlatform.Identity.Localization;
 
@@ -17,6 +18,9 @@ public partial class ResetPassword
     protected IStringLocalizer<SufiAccountResource> AccountL { get; set; } = default!;
 
     [Inject]
+    protected ILogger<ResetPassword> Logger { get; set; } = default!;
+
+    [Inject]
     protected NavigationManager Navigation { get; set; } = default!;
 
     [SupplyParameterFromQuery]
@@ -26,7 +30,7 @@ public partial class ResetPassword
     public string? Token { get; set; }
 
     [SupplyParameterFromForm]
-    public ResetPasswordInputModel? Input { get; set; }
+    public ResetPasswordInputModel Input { get; set; } = new();
 
     protected bool IsTokenValid { get; set; }
 
@@ -61,7 +65,11 @@ public partial class ResetPassword
         }
         catch (Exception ex)
         {
-            ErrorMessage = ex.Message;
+            ErrorMessage = AccountUiErrors.LocalizedFailure(
+                Logger,
+                AccountL,
+                ex,
+                "ResetPasswordInvalidLink");
         }
         finally
         {
@@ -105,7 +113,11 @@ public partial class ResetPassword
         }
         catch (Exception ex)
         {
-            ErrorMessage = ex.Message;
+            ErrorMessage = AccountUiErrors.LocalizedFailure(
+                Logger,
+                AccountL,
+                ex,
+                "PasswordResetFailed");
         }
         finally
         {

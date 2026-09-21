@@ -74,7 +74,7 @@ public partial class FileStats : FileManagerComponentBase
         }
         catch (Exception ex)
         {
-            await Notify.ErrorAsync(L["FailedToLoadFiles", ex.Message]);
+            await NotifyOperationFailedAsync(ex, "FailedToLoadFiles");
         }
     }
 
@@ -87,7 +87,7 @@ public partial class FileStats : FileManagerComponentBase
         }
         catch (Exception ex)
         {
-            await Notify.ErrorAsync(L["FailedToLoadStructures", ex.Message]);
+            await NotifyOperationFailedAsync(ex, "FailedToLoadStructures");
         }
     }
 
@@ -105,7 +105,7 @@ public partial class FileStats : FileManagerComponentBase
         }
         catch (Exception ex)
         {
-            await Notify.ErrorAsync(L["FailedToLoadStatistics", ex.Message]);
+            await NotifyOperationFailedAsync(ex, "FailedToLoadStatistics");
         }
     }
 
@@ -131,7 +131,7 @@ public partial class FileStats : FileManagerComponentBase
         }
         catch (Exception ex)
         {
-            await Notify.ErrorAsync(L["FailedToDelete", ex.Message]);
+            await NotifyOperationFailedAsync(ex, "FailedToDelete");
         }
     }
 

@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.Localization;
+using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop;
 using SufiChain.SufiPlatform.Account.Localization;
 using SufiChain.SufiPlatform.Captcha;
@@ -22,6 +23,9 @@ public partial class SufiCaptcha : ComponentBase, IAsyncDisposable
 
     [Inject]
     protected IStringLocalizer<SufiAccountResource> AccountL { get; set; } = default!;
+
+    [Inject]
+    protected ILogger<SufiCaptcha> Logger { get; set; } = default!;
 
     [Inject]
     protected IJSRuntime JsRuntime { get; set; } = default!;
@@ -130,7 +134,11 @@ public partial class SufiCaptcha : ComponentBase, IAsyncDisposable
         }
         catch (Exception ex)
         {
-            LoadError = ex.Message;
+            LoadError = AccountUiErrors.LocalizedFailure(
+                Logger,
+                AccountL,
+                ex,
+                "CaptchaLoadFailed");
         }
         finally
         {
@@ -225,7 +233,11 @@ public partial class SufiCaptcha : ComponentBase, IAsyncDisposable
         }
         catch (Exception ex)
         {
-            LoadError = ex.Message;
+            LoadError = AccountUiErrors.LocalizedFailure(
+                Logger,
+                AccountL,
+                ex,
+                "CaptchaLoadFailed");
         }
     }
 
@@ -252,7 +264,11 @@ public partial class SufiCaptcha : ComponentBase, IAsyncDisposable
         }
         catch (Exception ex)
         {
-            LoadError = ex.Message;
+            LoadError = AccountUiErrors.LocalizedFailure(
+                Logger,
+                AccountL,
+                ex,
+                "CaptchaLoadFailed");
         }
     }
 

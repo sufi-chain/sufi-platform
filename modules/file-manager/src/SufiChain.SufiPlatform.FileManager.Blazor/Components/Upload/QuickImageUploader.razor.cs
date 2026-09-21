@@ -1,6 +1,7 @@
 using System.Text.Json;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
+using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop;
 using SufiChain.SufiBlazor.Components.Feedback;
 using SufiChain.SufiPlatform.FileManager.Blazor.Public.Services;
@@ -97,7 +98,7 @@ public partial class QuickImageUploader : FileManagerComponentBase, IDisposable
                 }
                 catch (Exception ex)
                 {
-                    await Notify.ErrorAsync(L["FailedToLoadStructures", ex.Message]);
+                    await NotifyOperationFailedAsync(ex, "FailedToLoadStructures");
                 }
             }
             StateHasChanged();
@@ -201,8 +202,9 @@ public partial class QuickImageUploader : FileManagerComponentBase, IDisposable
             }
             else
             {
-                _errorMessage = result.Error ?? L["UploadFailed", ""].Value;
-                await Notify.ErrorAsync(L["UploadFailed", _errorMessage]);
+                Logger.LogWarning("Quick image upload failed: {Error}", result.Error);
+                _errorMessage = L["UploadFailed"];
+                await Notify.ErrorAsync(L["UploadFailed"]);
             }
         }
         finally
@@ -247,7 +249,7 @@ public partial class QuickImageUploader : FileManagerComponentBase, IDisposable
             }
             catch (Exception ex)
             {
-                await Notify.ErrorAsync(L["FailedToRemoveImage", ex.Message]);
+                await NotifyOperationFailedAsync(ex, "FailedToRemoveImage");
             }
         }
     }

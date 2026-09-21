@@ -2,6 +2,7 @@ using Microsoft.Extensions.DependencyInjection;
 using SufiChain.SufiPlatform.SufiAI;
 using SufiChain.SufiPlatform.AuditLogging.EntityFrameworkCore;
 using SufiChain.SufiPlatform.BackgroundJobs.EntityFrameworkCore;
+using SufiChain.SufiPlatform.BlobDatabase.EntityFrameworkCore;
 using SufiChain.SufiPlatform.Calendar.EntityFrameworkCore;
 using SufiChain.SufiPlatform.Data;
 using SufiChain.SufiPlatform.Features.EntityFrameworkCore;
@@ -35,6 +36,7 @@ namespace MyCompanyName.MyProjectName.EntityFrameworkCore;
     typeof(SufiBackgroundJobsEntityFrameworkCoreModule),
     typeof(SufiOpenIddictEntityFrameworkCoreModule),
     typeof(SufiUsersEntityFrameworkCoreModule),
+    typeof(SufiBlobDatabaseEntityFrameworkCoreModule),
     
     // Sufi Platform Business Modules
     typeof(SufiFileManagerEntityFrameworkCoreModule),

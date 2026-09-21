@@ -331,7 +331,7 @@
         }
         catch (Exception ex)
         {
-            await Notify.ErrorAsync($"Failed to load folder contents: {ex.Message}");
+            await NotifyOperationFailedAsync(ex, "FailedToLoadFolderContents");
         }
         finally
         {
@@ -463,7 +463,7 @@
         }
         catch (Exception ex)
         {
-            await Notify.ErrorAsync($"Cut failed: {ex.Message}");
+            await NotifyOperationFailedAsync(ex, "CutFailed");
         }
     }
 
@@ -484,7 +484,7 @@
         }
         catch (Exception ex)
         {
-            await Notify.ErrorAsync($"Copy failed: {ex.Message}");
+            await NotifyOperationFailedAsync(ex, "CopyFailed");
         }
     }
 
@@ -514,7 +514,7 @@
         }
         catch (Exception ex)
         {
-            await Notify.ErrorAsync(L["PasteFailed", ex.Message]);
+            await NotifyOperationFailedAsync(ex, "PasteFailed");
         }
     }
 
@@ -558,7 +558,7 @@
         }
         catch (Exception ex)
         {
-            await Notify.ErrorAsync(L["FailedToCreateFolder", ex.Message]);
+            await NotifyOperationFailedAsync(ex, "FailedToCreateFolder");
         }
     }
 
@@ -599,7 +599,7 @@
         }
         catch (Exception ex)
         {
-            await Notify.ErrorAsync(L["DeleteFailed", ex.Message]);
+            await NotifyOperationFailedAsync(ex, "DeleteFailed");
         }
     }
 
@@ -704,7 +704,7 @@
         }
         catch (Exception ex)
         {
-            await Notify.ErrorAsync($"Rename failed: {ex.Message}");
+            await NotifyOperationFailedAsync(ex, "RenameFailed");
         }
     }
 
@@ -741,7 +741,7 @@
         }
         catch (Exception ex)
         {
-            await Notify.ErrorAsync($"Failed to load file: {ex.Message}");
+            await NotifyOperationFailedAsync(ex, "FailedToLoadFile");
         }
     }
 
@@ -768,7 +768,7 @@
         }
         catch (Exception ex)
         {
-            await Notify.ErrorAsync($"Failed to update file: {ex.Message}");
+            await NotifyOperationFailedAsync(ex, "FailedToUpdateFile");
         }
     }
 
@@ -802,7 +802,7 @@
         }
         catch (Exception ex)
         {
-            await Notify.ErrorAsync($"Move failed: {ex.Message}");
+            await NotifyOperationFailedAsync(ex, "MoveFailed");
         }
     }
 

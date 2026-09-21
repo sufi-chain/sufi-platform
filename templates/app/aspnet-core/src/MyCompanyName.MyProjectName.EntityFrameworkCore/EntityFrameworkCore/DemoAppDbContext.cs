@@ -168,7 +168,7 @@ public class DemoAppDbContext :
         builder.ConfigureSufiOpenIddict();
         
         builder.ConfigureSufiFileManager();
-        builder.ConfigureSufiBlobDatabaseDatabase();
+        builder.ConfigureSufiBlobDatabase();
         builder.ConfigureSufiLocalization();
         builder.ConfigureSufiShortLinks();
         builder.ConfigureSufiAI();

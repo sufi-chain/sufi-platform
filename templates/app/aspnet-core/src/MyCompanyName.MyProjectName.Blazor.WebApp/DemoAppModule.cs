@@ -35,6 +35,7 @@ using SufiChain.SufiPlatform.FileManager.Blazor.Server;
 using SufiChain.SufiPlatform.FileManager.Demo;
 // </TEMPLATE-REMOVE>
 using SufiChain.SufiPlatform.Identity;
+using SufiChain.SufiPlatform.Identity.AspNetCore.ExternalAuth;
 using SufiChain.SufiPlatform.Identity.Blazor;
 using SufiChain.SufiPlatform.Localization;
 using SufiChain.SufiPlatform.Localization.Blazor;
@@ -314,28 +315,7 @@ public class DemoAppModule : AbpModule
     {
         var configuration = context.Services.GetConfiguration();
         var authBuilder = context.Services.AddAuthentication();
-
-        var googleClientId = configuration["ExternalAuth:Google:ClientId"];
-        if (!string.IsNullOrEmpty(googleClientId))
-        {
-            authBuilder.AddGoogle(options =>
-            {
-                options.ClientId = googleClientId;
-                options.ClientSecret = configuration["ExternalAuth:Google:ClientSecret"] ?? "";
-                options.ClaimActions.MapAbpClaimTypes();
-            });
-        }
-
-        var microsoftClientId = configuration["ExternalAuth:Microsoft:ClientId"];
-        if (!string.IsNullOrEmpty(microsoftClientId))
-        {
-            authBuilder.AddMicrosoftAccount(options =>
-            {
-                options.ClientId = microsoftClientId;
-                options.ClientSecret = configuration["ExternalAuth:Microsoft:ClientSecret"] ?? "";
-                options.ClaimActions.MapAbpClaimTypes();
-            });
-        }
+        authBuilder.AddSufiExternalAuthProviders(configuration);
 
         var facebookAppId = configuration["ExternalAuth:Facebook:AppId"];
         if (!string.IsNullOrEmpty(facebookAppId))

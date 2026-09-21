@@ -117,6 +117,18 @@
     "MobileShortcut:ChatInbox": "Bandeja de chat",
     "MobileShortcut:NotificationInbox": "Bandeja de notificaciones",
     "MobileShortcut:CalendarPro": "Calendario Pro",
-    "ApplicationErrorReload": "Se produjo un error. Es posible que esta aplicación no responda hasta que se recargue."
+    "ApplicationErrorReload": "Se produjo un error. Es posible que esta aplicación no responda hasta que se recargue.",
+    "SkipToContent": "Saltar al contenido",
+    "OpenNavigation": "Abrir navegación",
+    "PrimaryNavigation": "Navegación principal",
+    "ChooseLanguage": "Elegir idioma",
+    "SignIn": "Iniciar sesión",
+    "GoToConsole": "Ir a la consola",
+    "CreateAccount": "Crear una cuenta",
+    "BrandTagline": "Base de aplicaciones de código abierto",
+    "FooterDescription": "Fundamentos de aplicaciones .NET modulares en desarrollo alfa activo.",
+    "FooterNotice": "Los nombres y capacidades de los módulos pueden cambiar mientras continúa el alfa.",
+    "FooterContact": "Contáctenos",
+    "FooterRelease": "Alfa / 2026"
   }
 }

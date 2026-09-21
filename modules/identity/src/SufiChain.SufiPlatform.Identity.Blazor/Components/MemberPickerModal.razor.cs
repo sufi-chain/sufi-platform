@@ -56,7 +56,7 @@ public partial class MemberPickerModal : IdentityComponentBase
     {
         if (OrganizationUnitId == Guid.Empty)
         {
-            _errorMessage = "OrganizationUnitId is empty";
+            _errorMessage = L["OrganizationUnitRequired"];
             return new SbDataResponse<OrganizationUnitMemberDto>(Array.Empty<OrganizationUnitMemberDto>(), 0);
         }
 
@@ -76,7 +76,7 @@ public partial class MemberPickerModal : IdentityComponentBase
         }
         catch (Exception ex)
         {
-            _errorMessage = ex.Message;
+            _errorMessage = L["FailedToLoadPickerData"];
             Logger.LogError(ex, "Failed to load available members for OU {OrganizationUnitId}", OrganizationUnitId);
             return new SbDataResponse<OrganizationUnitMemberDto>(Array.Empty<OrganizationUnitMemberDto>(), 0);
         }

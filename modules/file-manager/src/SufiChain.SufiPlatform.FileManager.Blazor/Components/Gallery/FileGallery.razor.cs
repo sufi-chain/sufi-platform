@@ -95,7 +95,7 @@ public partial class FileGallery : FileManagerComponentBase
         catch (Exception ex)
         {
             Logger.LogError(ex, "Failed to load files");
-            await Notify.ErrorAsync(L["FailedToLoadFiles", ex.Message]);
+            await NotifyOperationFailedAsync(ex, "FailedToLoadFiles");
         }
         finally
         {
@@ -158,7 +158,7 @@ public partial class FileGallery : FileManagerComponentBase
         }
         catch (Exception ex)
         {
-            await Notify.ErrorAsync(L["FailedToDelete", ex.Message]);
+            await NotifyOperationFailedAsync(ex, "FailedToDelete");
         }
     }
 

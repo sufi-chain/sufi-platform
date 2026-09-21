@@ -77,6 +77,8 @@ public class EmbeddingModelDefaultsTests
     {
         EmbeddingModelDefaults.GetDimensions("unknown-embedder").ShouldBe(1536);
         EmbeddingModelDefaults.GetDimensions(null).ShouldBe(1536);
+        EmbeddingModelDefaults.IsKnownModel("unknown-embedder").ShouldBeFalse();
+        EmbeddingModelDefaults.IsKnownModel("openai/text-embedding-3-small").ShouldBeTrue();
     }
 
     [Fact]

@@ -7,6 +7,7 @@
     "Feature:SettingsEnableDescription": "سیستم مدیریت تنظیمات را در برنامه فعال می‌کند.",
     "Feature:AllowChangingEmailSettings": "اجازه تغییر تنظیمات ایمیل",
     "Feature:AllowChangingEmailSettingsDescription": "اجازه تغییر تنظیمات ایمیل را می‌دهد.",
-    "Permission:Identity": "تنظیمات هویت"
+    "Permission:Identity": "تنظیمات هویت",
+    "Permission:ExternalAuth": "ورود خارجی"
   }
 }

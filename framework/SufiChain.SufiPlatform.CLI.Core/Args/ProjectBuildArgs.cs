@@ -85,10 +85,16 @@ public class ProjectBuildArgs
     public required string OutputDirectory { get; init; }
     
     /// <summary>
-    /// Template source name, computed from <see cref="SolutionKind"/> and <see cref="IsTiered"/>.
-    /// Examples: "blazor-webapp", "blazor-webapp-layered", "blazor-webapp-layered-tiered"
+    /// Published template zip name. Architecture variants use
+    /// <see cref="SolutionKind"/> and <see cref="IsTiered"/>, not separate zips.
+    /// Legacy aliases such as "blazor-webapp" still load this source.
     /// </summary>
-    public string TemplateName { get; init; } = "blazor-webapp-layered-tiered";
+    public string TemplateName { get; init; } = UnifiedTemplateName;
+
+    /// <summary>
+    /// Single published application template source name.
+    /// </summary>
+    public const string UnifiedTemplateName = "app-blazor-webapp-unified";
     
     /// <summary>
     /// Hosts to include in the generated solution.
@@ -118,17 +124,19 @@ public class ProjectBuildArgs
     public string? LogoUrl { get; init; }
     
     /// <summary>
-    /// Computes the template name from <see cref="SolutionKind"/> and <see cref="IsTiered"/>.
+    /// Returns the published template source name.
+    /// <paramref name="solutionKind"/> and <paramref name="isTiered"/> select hosts
+    /// and pipeline steps, not a different zip.
     /// </summary>
     public static string ComputeTemplateName(SolutionKind solutionKind, bool isTiered)
     {
-        return solutionKind switch
+        _ = isTiered;
+        if (solutionKind is not (SolutionKind.WebApp or SolutionKind.Layered))
         {
-            SolutionKind.WebApp => "blazor-webapp",
-            SolutionKind.Layered when isTiered => "blazor-webapp-layered-tiered",
-            SolutionKind.Layered => "blazor-webapp-layered",
-            _ => throw new ArgumentOutOfRangeException(nameof(solutionKind))
-        };
+            throw new ArgumentOutOfRangeException(nameof(solutionKind));
+        }
+
+        return UnifiedTemplateName;
     }
     
     /// <summary>

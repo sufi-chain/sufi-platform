@@ -12,7 +12,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\..\..\framework\SufiChain.SufiPlatform.Core\SufiChain.SufiPlatform.Core.csproj" />
     <ProjectReference Include="..\..\..\..\framework\SufiChain.SufiPlatform.UI.Domain.Shared\SufiChain.SufiPlatform.UI.Domain.Shared.csproj" />
-    <ProjectReference Include="..\SufiChain.SufiPlatform.Users\SufiChain.SufiPlatform.Users.csproj" />
+    <ProjectReference Include="..\SufiChain.SufiPlatform.Users.Abstractions\SufiChain.SufiPlatform.Users.Abstractions.csproj" />
   </ItemGroup>
 
   <ItemGroup>

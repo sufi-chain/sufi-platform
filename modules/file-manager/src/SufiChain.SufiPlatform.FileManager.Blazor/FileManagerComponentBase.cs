@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Logging;
 using SufiChain.SufiPlatform.Data;
 using SufiChain.SufiPlatform.FileManager.Configuration;
 using SufiChain.SufiPlatform.FileManager.FileStructures;
@@ -15,6 +16,12 @@ public abstract class FileManagerComponentBase : SufiComponentBase
     protected FileManagerComponentBase()
     {
         LocalizationResource = typeof(SufiFileManagerResource);
+    }
+
+    protected async Task NotifyOperationFailedAsync(Exception exception, string localizationKey)
+    {
+        Logger.LogError(exception, "File Manager UI operation failed: {LocalizationKey}", localizationKey);
+        await Notify.ErrorAsync(L[localizationKey]);
     }
 
     protected string ResolveBusinessText(string resourceName, string? keyOrText, string fallback = "")

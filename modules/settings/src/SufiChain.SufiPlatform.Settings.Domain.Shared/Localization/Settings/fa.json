@@ -61,6 +61,16 @@
     "Permission:Settings": "مدیریت تنظیمات",
     "Permission:Emailing": "ایمیل",
     "Permission:EmailingTest": "آزمایش ایمیل",
-    "Permission:TimeZone": "منطقه زمانی"
+    "Permission:TimeZone": "منطقه زمانی",
+    "Permission:ExternalAuth": "ورود خارجی",
+    "ExternalAuthSettings": "ورود خارجی",
+    "ExternalAuthSettingsHint": "ورود با گوگل، مایکروسافت یا گیت‌هاب را برای این مستأجر فعال کنید. راز را خالی بگذارید تا مقدار ذخیره‌شده حفظ شود.",
+    "ExternalAuth:Google": "گوگل",
+    "ExternalAuth:Microsoft": "مایکروسافت",
+    "ExternalAuth:GitHub": "گیت‌هاب",
+    "ExternalAuth:Enabled": "فعال‌سازی این ارائه‌دهنده",
+    "ExternalAuth:ClientId": "شناسه کلاینت",
+    "ExternalAuth:ClientSecret": "راز کلاینت",
+    "ExternalAuth:ClientSecretKeep": "راز کلاینت (برای حفظ مقدار خالی بگذارید)"
   }
 }

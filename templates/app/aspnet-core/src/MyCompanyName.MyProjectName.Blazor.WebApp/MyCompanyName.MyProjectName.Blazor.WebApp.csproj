@@ -53,6 +53,7 @@
 <!-- Framework Sufi Platform Account controller (complete-login, OIDC Login/Logout) -->
     <ProjectReference Include="..\..\..\..\..\framework\SufiChain.SufiPlatform.AspNetCore.Authentication.Server\SufiChain.SufiPlatform.AspNetCore.Authentication.Server.csproj" />
     <!-- Sufi Platform UI Modules (admin identity + account) -->
+    <ProjectReference Include="..\..\..\..\..\modules\identity\src\SufiChain.SufiPlatform.Identity.AspNetCore\SufiChain.SufiPlatform.Identity.AspNetCore.csproj" />
     <ProjectReference Include="..\..\..\..\..\modules\identity\src\SufiChain.SufiPlatform.Identity.Blazor\SufiChain.SufiPlatform.Identity.Blazor.csproj" />
     <ProjectReference Include="..\..\..\..\..\modules\account\src\SufiChain.SufiPlatform.Account.Blazor\SufiChain.SufiPlatform.Account.Blazor.csproj" />
     <ProjectReference Include="..\..\..\..\..\modules\identity\src\SufiChain.SufiPlatform.Identity.Application\SufiChain.SufiPlatform.Identity.Application.csproj" />

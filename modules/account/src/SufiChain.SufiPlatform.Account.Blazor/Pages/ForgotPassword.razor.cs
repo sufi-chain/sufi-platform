@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.Localization;
+using Microsoft.Extensions.Logging;
 using SufiChain.SufiPlatform.Account.Localization;
 using SufiChain.SufiPlatform.Identity.Localization;
 
@@ -16,11 +17,14 @@ public partial class ForgotPassword
     [Inject]
     protected IStringLocalizer<SufiAccountResource> AccountL { get; set; } = default!;
 
+    [Inject]
+    protected ILogger<ForgotPassword> Logger { get; set; } = default!;
+
     [SupplyParameterFromQuery]
     public string? ReturnUrl { get; set; }
 
     [SupplyParameterFromForm]
-    public ForgotPasswordInputModel? Input { get; set; }
+    public ForgotPasswordInputModel Input { get; set; } = new();
 
     protected string? CaptchaChallengeId { get; set; }
 
@@ -62,7 +66,11 @@ public partial class ForgotPassword
         }
         catch (Exception ex)
         {
-            ErrorMessage = ex.Message;
+            ErrorMessage = AccountUiErrors.LocalizedFailure(
+                Logger,
+                AccountL,
+                ex,
+                "PasswordResetRequestFailed");
         }
         finally
         {

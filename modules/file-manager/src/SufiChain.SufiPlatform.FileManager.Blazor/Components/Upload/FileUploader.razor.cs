@@ -2,6 +2,7 @@ using System.Text.Json;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop;
 using SufiChain.SufiBlazor.Components.Feedback;
 using SufiChain.SufiPlatform.FileManager.Blazor.Services;
@@ -110,7 +111,7 @@ public partial class FileUploader : FileManagerComponentBase, IDisposable
                 }
                 catch (Exception ex)
                 {
-                    await Notify.ErrorAsync(L["FailedToLoadStructures", ex.Message]);
+                    await NotifyOperationFailedAsync(ex, "FailedToLoadStructures");
                 }
             }
 
@@ -148,7 +149,7 @@ public partial class FileUploader : FileManagerComponentBase, IDisposable
         }
         catch (Exception ex)
         {
-            await Notify.ErrorAsync(L["FailedToLoadStructures", ex.Message]);
+            await NotifyOperationFailedAsync(ex, "FailedToLoadStructures");
             _structure = null;
         }
     }
@@ -264,15 +265,23 @@ public partial class FileUploader : FileManagerComponentBase, IDisposable
                     await OnUploadCompleted.InvokeAsync(new List<FileItemDto> { dto });
                 }
             }
-            catch (JsonException) { /* ignore */ }
+            catch (JsonException exception)
+            {
+                Logger.LogWarning(exception, "File upload response JSON could not be parsed.");
+                uploadingFile.HasError = true;
+                uploadingFile.ErrorMessage = L["UploadFailed"];
+                uploadingFile.StatusMessage = uploadingFile.ErrorMessage;
+                await Message.ErrorAsync(L["UploadFailed"]);
+            }
         }
         else
         {
             uploadingFile.HasError = true;
             uploadingFile.Progress = 0;
-            uploadingFile.ErrorMessage = result.Error ?? L["UploadFailed", ""].Value;
+            Logger.LogWarning("File upload failed: {Error}", result.Error);
+            uploadingFile.ErrorMessage = L["UploadFailed"];
             uploadingFile.StatusMessage = uploadingFile.ErrorMessage;
-            await Message.ErrorAsync(uploadingFile.ErrorMessage);
+            await Message.ErrorAsync(L["UploadFailed"]);
             await OnUploadError.InvokeAsync(uploadingFile.ErrorMessage);
         }
 

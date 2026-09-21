@@ -57,6 +57,8 @@ public class SmsProviderConfigurationAppServiceTests : SufiComTestBase<SufiComAp
         saved!.ProviderCode.ShouldBe("Kavenegar");
         saved.IsEnabled.ShouldBeFalse();
         saved.ExtraProperties["SenderNumber"].ShouldBe("1000");
+        saved.HasStoredSensitiveSettings.ShouldBeTrue();
+        saved.ExtraProperties.ContainsKey("ApiKey").ShouldBeFalse();
     }
 
     [Fact]

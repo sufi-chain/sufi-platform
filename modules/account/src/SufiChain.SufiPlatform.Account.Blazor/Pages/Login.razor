@@ -17,6 +17,7 @@
 @inject ILoginCompletionTokenStore TokenStore
 @inject ITwoFactorPendingLoginStore TwoFactorPendingStore
 @inject IAccountTwoFactorAppService TwoFactorAppService
+@inject IExternalAuthLoginProviderFilter ExternalAuthLoginProviderFilter
 
 @*
     Login page: works in Static SSR and Interactive Server hosts.
@@ -107,7 +108,7 @@
 	/// Form input model bound from POST data.
 	/// </summary>
 	[SupplyParameterFromForm]
-	public LoginInputModel? Input { get; set; }
+	public LoginInputModel Input { get; set; } = new();
 
 	private string? ErrorMessage { get; set; }
 	private IReadOnlyList<string> _externalProviderNames { get; set; } = Array.Empty<string>();
@@ -126,10 +127,10 @@
 		}
 		// Get external login schemes (Google, Microsoft, Facebook, etc.) from host configuration
 		var allSchemes = await SchemeProvider.GetAllSchemesAsync();
-		_externalProviderNames = allSchemes
+		var candidateNames = allSchemes
 			.Where(s => !string.IsNullOrEmpty(s.DisplayName) && !_nonExternalSchemes.Contains(s.Name))
-			.Select(s => s.Name)
-			.ToArray();
+			.Select(s => s.Name);
+		_externalProviderNames = await ExternalAuthLoginProviderFilter.FilterEnabledAsync(candidateNames);
 	}
 
 	private async Task HandleLogin()

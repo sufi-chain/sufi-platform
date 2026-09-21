@@ -10,7 +10,7 @@ namespace SufiChain.SufiPlatform.UI.Blazor.Components;
 /// Use ChildContent to provide inline toolbar buttons, or Toolbar to use the PageToolbar system.
 /// To customize breadcrumbs, inject IPageLayout and add items to BreadcrumbItems in OnInitializedAsync.
 /// </summary>
-public partial class SufiPageToolbar : ComponentBase
+public partial class SufiPageToolbar : ComponentBase, IDisposable
 {
     [Inject]
     protected IPageLayout PageLayout { get; set; } = default!;
@@ -19,6 +19,7 @@ public partial class SufiPageToolbar : ComponentBase
     protected IPageToolbarManager PageToolbarManager { get; set; } = default!;
 
     private List<RenderFragment> ToolbarItemRenders { get; set; } = new();
+    private object? _registeredToolbarContent;
 
     /// <summary>
     /// Optional page toolbar to render using the PageToolbar contributor system.
@@ -77,17 +78,20 @@ public partial class SufiPageToolbar : ComponentBase
             }
         }
 
-        // Compare against PageLayout.ToolbarContent (actual current state) instead of _lastToolbarContent
-        // This handles the case where PageLayout.Reset() cleared the content but this component was reused
-        //Console.WriteLine($"[SufiPageToolbar] OnParametersSetAsync: ChildContent={ChildContent?.GetType().Name ?? "null"}, newToolbarContent={newToolbarContent?.GetType().Name ?? "null"}, PageLayout.ToolbarContent={PageLayout.ToolbarContent?.GetType().Name ?? "null"}");
-        if (!Equals(PageLayout.ToolbarContent, newToolbarContent))
+        // Always assign. Razor ChildContent is often the same delegate target across
+        // parent renders, so Equals() stays true while Disabled/Loading already changed.
+        // Skipping here leaves SufiTopBar on the first-render button state.
+        _registeredToolbarContent = newToolbarContent;
+        PageLayout.ToolbarContent = newToolbarContent;
+    }
+
+    public void Dispose()
+    {
+        if (ReferenceEquals(PageLayout.ToolbarContent, _registeredToolbarContent))
         {
-           //Console.WriteLine($"[SufiPageToolbar] Setting PageLayout.ToolbarContent = {newToolbarContent?.GetType().Name ?? "null"}");
-            PageLayout.ToolbarContent = newToolbarContent;
+            PageLayout.ToolbarContent = null;
         }
-        else
-        {
-            //Console.WriteLine("[SufiPageToolbar] PageLayout.ToolbarContent already matches, skipping update");
-        }
+
+        _registeredToolbarContent = null;
     }
 }

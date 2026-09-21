@@ -152,20 +152,30 @@ public abstract class SufiCrudPageBase<TGetOutputDto, TGetListOutputDto, TKey, T
 
     protected override async Task OnInitializedAsync()
     {
-        await SetPermissionsAsync();
-        await SetEntityActionsAsync();
-        await SetTableColumnsAsync();
-        await InvokeAsync(StateHasChanged);
+        await ExecuteWithLoadingAsync(async () =>
+        {
+            await SetPermissionsAsync();
+            await SetEntityActionsAsync();
+            await SetTableColumnsAsync();
+            await InvokeAsync(StateHasChanged);
+        }, "initialized", LoadingBehavior.None);
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (firstRender)
+        try
         {
-            await SetToolbarItemsAsync();
-            await SetBreadcrumbItemsAsync();
+            if (firstRender)
+            {
+                await SetToolbarItemsAsync();
+                await SetBreadcrumbItemsAsync();
+            }
+
+            await base.OnAfterRenderAsync(firstRender);
         }
-        await base.OnAfterRenderAsync(firstRender);
+        catch (Exception exception) when (IsIgnorableLifetimeException(exception))
+        {
+        }
     }
 
     // ====== PERMISSIONS ======

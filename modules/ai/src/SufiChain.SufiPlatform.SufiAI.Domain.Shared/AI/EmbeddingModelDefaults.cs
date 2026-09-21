@@ -68,23 +68,37 @@ public static class EmbeddingModelDefaults
         ("all-mpnet-base-v2", 768)
     };
 
+    public static bool IsKnownModel(string? modelId)
+    {
+        return TryGetKnownDimensions(modelId, out _);
+    }
+
     public static int GetDimensions(string? modelId)
     {
+        return TryGetKnownDimensions(modelId, out var dimensions)
+            ? dimensions
+            : FallbackDimensions;
+    }
+
+    private static bool TryGetKnownDimensions(string? modelId, out int dimensions)
+    {
+        dimensions = FallbackDimensions;
         if (string.IsNullOrWhiteSpace(modelId))
         {
-            return FallbackDimensions;
+            return false;
         }
 
         var id = modelId.Trim();
-        foreach (var (needle, dimensions) in KnownDimensions)
+        foreach (var (needle, knownDimensions) in KnownDimensions)
         {
             if (id.Contains(needle, StringComparison.OrdinalIgnoreCase))
             {
-                return dimensions;
+                dimensions = knownDimensions;
+                return true;
             }
         }
 
-        return FallbackDimensions;
+        return false;
     }
 
     public static int GetMaxInputTokens(string? modelId)

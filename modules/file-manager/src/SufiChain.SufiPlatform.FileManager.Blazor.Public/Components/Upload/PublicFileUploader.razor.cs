@@ -1,9 +1,11 @@
 using System.Text.Json;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
+using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop;
 using SufiChain.SufiPlatform.FileManager.Blazor.Public.Services;
 using SufiChain.SufiPlatform.FileManager.FileItems;
+using SufiChain.SufiPlatform.FileManager.Localization;
 
 namespace SufiChain.SufiPlatform.FileManager.Blazor.Public.Components.Upload;
 
@@ -13,6 +15,11 @@ namespace SufiChain.SufiPlatform.FileManager.Blazor.Public.Components.Upload;
 /// </summary>
 public partial class PublicFileUploader
 {
+    public PublicFileUploader()
+    {
+        LocalizationResource = typeof(SufiFileManagerResource);
+    }
+
     [Inject]
     protected PublicFileUploadJsInterop JsInterop { get; set; } = default!;
 
@@ -263,30 +270,29 @@ public partial class PublicFileUploader
                     _batchUploaded.Add(dto);
                 }
             }
-            catch (JsonException ex)
+            catch (JsonException exception)
             {
+                Logger.LogWarning(exception, "Public file upload response JSON could not be parsed.");
+                var message = L["UploadFailed"].Value;
                 selectedFile.HasError = true;
-                selectedFile.ErrorMessage = ex.Message;
-                _errors.Add(ex.Message);
-                await UploadFailed.InvokeAsync(ex.Message);
+                selectedFile.ErrorMessage = message;
+                _errors.Add(message);
+                await UploadFailed.InvokeAsync(message);
             }
         }
         else
         {
-            var error = result.Error ?? selectedFile.ErrorMessage;
-            if (string.IsNullOrWhiteSpace(error))
-            {
-                error = "Upload failed.";
-            }
+            Logger.LogWarning("Public file upload failed: {Error}", result.Error);
+            var message = L["UploadFailed"].Value;
 
             selectedFile.HasError = true;
-            selectedFile.ErrorMessage = error;
-            if (!_errors.Contains(error))
+            selectedFile.ErrorMessage = message;
+            if (!_errors.Contains(message))
             {
-                _errors.Add(error);
+                _errors.Add(message);
             }
 
-            await UploadFailed.InvokeAsync(error);
+            await UploadFailed.InvokeAsync(message);
         }
 
         await InvokeAsync(StateHasChanged);

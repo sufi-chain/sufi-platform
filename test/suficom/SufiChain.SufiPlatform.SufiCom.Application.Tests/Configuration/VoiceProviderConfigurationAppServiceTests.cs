@@ -45,6 +45,8 @@ public class VoiceProviderConfigurationAppServiceTests : SufiComTestBase<SufiCom
         saved.ShouldNotBeNull();
         saved!.ProviderCode.ShouldBe("Kavenegar");
         saved.IsEnabled.ShouldBeFalse();
+        saved.HasStoredSensitiveSettings.ShouldBeTrue();
+        saved.ExtraProperties.ContainsKey("ApiKey").ShouldBeFalse();
     }
 
     [Fact]

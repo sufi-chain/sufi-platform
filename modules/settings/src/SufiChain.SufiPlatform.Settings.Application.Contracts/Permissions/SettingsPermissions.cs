@@ -8,4 +8,5 @@ public static class SettingsPermissions
     public const string EmailingTest = Emailing + ".Test";
     public const string TimeZone = GroupName + ".TimeZone";
     public const string Identity = GroupName + ".Identity";
+    public const string ExternalAuth = GroupName + ".ExternalAuth";
 }

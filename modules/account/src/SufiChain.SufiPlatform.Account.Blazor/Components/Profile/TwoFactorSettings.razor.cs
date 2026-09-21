@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.Localization;
+using Microsoft.Extensions.Logging;
 using SufiChain.SufiPlatform.Account.Localization;
 using SufiChain.SufiPlatform.Identity.Localization;
 
@@ -15,6 +16,9 @@ public partial class TwoFactorSettings
 
     [Inject]
     protected IStringLocalizer<SufiAccountResource> AccountL { get; set; } = default!;
+
+    [Inject]
+    protected ILogger<TwoFactorSettings> Logger { get; set; } = default!;
 
     [Inject]
     protected NavigationManager Navigation { get; set; } = default!;
@@ -59,7 +63,11 @@ public partial class TwoFactorSettings
         }
         catch (Exception ex)
         {
-            ErrorMessage = ex.Message;
+            ErrorMessage = AccountUiErrors.LocalizedFailure(
+                Logger,
+                AccountL,
+                ex,
+                "TwoFactorLoadFailed");
         }
         finally
         {
@@ -80,7 +88,11 @@ public partial class TwoFactorSettings
         }
         catch (Exception ex)
         {
-            ErrorMessage = ex.Message;
+            ErrorMessage = AccountUiErrors.LocalizedFailure(
+                Logger,
+                AccountL,
+                ex,
+                "TwoFactorActionFailed");
         }
         finally
         {
@@ -115,7 +127,11 @@ public partial class TwoFactorSettings
         }
         catch (Exception ex)
         {
-            ErrorMessage = ex.Message;
+            ErrorMessage = AccountUiErrors.LocalizedFailure(
+                Logger,
+                AccountL,
+                ex,
+                "TwoFactorActionFailed");
         }
         finally
         {
@@ -150,7 +166,11 @@ public partial class TwoFactorSettings
         }
         catch (Exception ex)
         {
-            ErrorMessage = ex.Message;
+            ErrorMessage = AccountUiErrors.LocalizedFailure(
+                Logger,
+                AccountL,
+                ex,
+                "TwoFactorActionFailed");
         }
         finally
         {
@@ -171,7 +191,11 @@ public partial class TwoFactorSettings
         }
         catch (Exception ex)
         {
-            ErrorMessage = ex.Message;
+            ErrorMessage = AccountUiErrors.LocalizedFailure(
+                Logger,
+                AccountL,
+                ex,
+                "TwoFactorActionFailed");
         }
         finally
         {

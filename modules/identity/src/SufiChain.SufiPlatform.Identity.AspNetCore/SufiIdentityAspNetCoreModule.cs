@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.DependencyInjection;
 using SufiChain.SufiPlatform.Identity;
+using SufiChain.SufiPlatform.Identity.AspNetCore.ExternalAuth;
 using Volo.Abp.Modularity;
 using Volo.Abp.Settings;
 
@@ -39,5 +40,6 @@ public class SufiIdentityAspNetCoreModule : AbpModule
         }
 
         context.Services.ConfigureOptions<IdentityTokenOptionsConfigurator>();
+        context.Services.ConfigureOptions<ExternalAuthOptionsConfigurator>();
     }
 }

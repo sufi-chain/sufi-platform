@@ -117,6 +117,17 @@
     "HostTenant": "Host",
     "LinkLoginFailed": "No se pudo cambiar a la cuenta vinculada.",
     "LinkLoginProcessing": "Cambiando a la cuenta vinculada...",
-    "RegistrationFailed": "No se pudo completar el registro. Revise el formulario e inténtelo de nuevo."
+    "RegistrationFailed": "No se pudo completar el registro. Revise el formulario e inténtelo de nuevo.",
+    "PasswordResetRequestFailed": "No se pudo enviar la solicitud de restablecimiento de contraseña. Inténtelo de nuevo.",
+    "PasswordResetFailed": "No se pudo restablecer la contraseña. Solicite un enlace nuevo e inténtelo de nuevo.",
+    "TwoFactorSendFailed": "No se pudo enviar el código de dos factores. Inténtelo de nuevo.",
+    "TwoFactorVerifyFailed": "La verificación de dos factores falló. Revise el código e inténtelo de nuevo.",
+    "TwoFactorActionFailed": "No se pudo completar la acción de dos factores. Inténtelo de nuevo.",
+    "OtpSendFailed": "No se pudo enviar el código de un solo uso. Inténtelo de nuevo.",
+    "OtpVerifyFailed": "No se pudo verificar el código de un solo uso. Inténtelo de nuevo.",
+    "EmailConfirmationResendFailed": "No se pudo enviar el correo de confirmación. Inténtelo de nuevo.",
+    "CaptchaLoadFailed": "No se pudo cargar el captcha. Actualice la página e inténtelo de nuevo.",
+    "ProfileSaveFailed": "No se pudo guardar el perfil. Inténtelo de nuevo.",
+    "PasswordChangeFailed": "No se pudo cambiar la contraseña. Inténtelo de nuevo."
   }
 }

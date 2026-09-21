@@ -495,7 +495,7 @@ public class WorkspaceAppService : SufiApplicationService, IWorkspaceAppService
             var cached = await _providerModelListCache.GetAsync(cacheKey);
             if (cached?.Models is { Count: > 0 })
             {
-                return cached.Models;
+                return FilterModelsForCapability(cached.Models, input.CapabilityType);
             }
         }
 
@@ -536,7 +536,7 @@ public class WorkspaceAppService : SufiApplicationService, IWorkspaceAppService
                 });
         }
 
-        return models;
+        return FilterModelsForCapability(models, input.CapabilityType);
     }
 
     public async Task TestConnectionAsync(TestWorkspaceConnectionInput input)
@@ -851,15 +851,78 @@ public class WorkspaceAppService : SufiApplicationService, IWorkspaceAppService
         return data
             .EnumerateArray()
             .Where(item => item.ValueKind == JsonValueKind.Object)
-            .Select(item => new OpenAIModelDto
-            {
-                Id = TryGetString(item, "id") ?? string.Empty,
-                OwnedBy = TryGetString(item, "owned_by"),
-                Created = TryGetInt64(item, "created")
-            })
+            .Select(ParseModel)
             .Where(model => !string.IsNullOrWhiteSpace(model.Id))
             .OrderBy(model => model.Id)
             .ToList();
+    }
+
+    private static OpenAIModelDto ParseModel(JsonElement item)
+    {
+        JsonElement? architecture = item.TryGetProperty("architecture", out var architectureElement) &&
+                                    architectureElement.ValueKind == JsonValueKind.Object
+            ? architectureElement
+            : null;
+
+        return new OpenAIModelDto
+        {
+            Id = TryGetString(item, "id") ?? string.Empty,
+            OwnedBy = TryGetString(item, "owned_by"),
+            Created = TryGetInt64(item, "created"),
+            Mode = TryGetString(item, "mode"),
+            Modality = architecture.HasValue ? TryGetString(architecture.Value, "modality") : null,
+            InputModalities = architecture.HasValue
+                ? TryGetStringList(architecture.Value, "input_modalities")
+                : null,
+            OutputModalities = architecture.HasValue
+                ? TryGetStringList(architecture.Value, "output_modalities")
+                : null
+        };
+    }
+
+    private static List<OpenAIModelDto> FilterModelsForCapability(
+        List<OpenAIModelDto> models,
+        AICapabilityType capabilityType)
+    {
+        return models
+            .Where(model => ProviderModelCapabilityClassifier.Matches(
+                model.Id,
+                capabilityType,
+                new ProviderModelDiscoveryHints
+                {
+                    Mode = model.Mode,
+                    Modality = model.Modality,
+                    InputModalities = model.InputModalities,
+                    OutputModalities = model.OutputModalities
+                }))
+            .ToList();
+    }
+
+    private static List<string>? TryGetStringList(JsonElement element, string propertyName)
+    {
+        if (element.ValueKind != JsonValueKind.Object ||
+            !element.TryGetProperty(propertyName, out var property) ||
+            property.ValueKind != JsonValueKind.Array)
+        {
+            return null;
+        }
+
+        var values = new List<string>();
+        foreach (var item in property.EnumerateArray())
+        {
+            if (item.ValueKind != JsonValueKind.String)
+            {
+                continue;
+            }
+
+            var value = item.GetString();
+            if (!string.IsNullOrWhiteSpace(value))
+            {
+                values.Add(value);
+            }
+        }
+
+        return values.Count == 0 ? null : values;
     }
 
     private static long? TryGetInt64(JsonElement element, string propertyName)

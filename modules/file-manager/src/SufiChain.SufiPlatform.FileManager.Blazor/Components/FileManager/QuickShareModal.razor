@@ -113,7 +113,7 @@
         }
         catch (Exception ex)
         {
-            await Notify.ErrorAsync(ex.Message);
+            await NotifyOperationFailedAsync(ex, "FailedToCreateShareLink");
         }
         finally
         {

@@ -145,6 +145,18 @@
     "PwaInstallNotNow": "فعلاً نه",
     "PwaInstallIosInstructions": "این صفحه را در Safari باز کنید. اشتراک‌گذاری (Share) و سپس افزودن به صفحهٔ اصلی (Add to Home Screen) را بزنید. اگر گزینهٔ Open as Web App نمایش داده شد، آن را روشن کنید و سپس افزودن (Add) را بزنید.",
     "PwaInstallUnavailable": "نصب در حال حاضر در دسترس نیست. لطفاً بعداً دوباره تلاش کنید.",
-    "ApplicationErrorReload": "خطایی رخ داده است. ممکن است این برنامه تا بارگذاری مجدد پاسخ ندهد."
+    "ApplicationErrorReload": "خطایی رخ داده است. ممکن است این برنامه تا بارگذاری مجدد پاسخ ندهد.",
+    "SkipToContent": "رفتن به محتوای اصلی",
+    "OpenNavigation": "باز کردن منو",
+    "PrimaryNavigation": "منوی اصلی",
+    "ChooseLanguage": "انتخاب زبان",
+    "SignIn": "ورود",
+    "GoToConsole": "ورود به کنسول",
+    "CreateAccount": "ساخت حساب",
+    "BrandTagline": "زیرساخت متن‌باز توسعه نرم‌افزار",
+    "FooterDescription": "زیرساخت ماژولار دات‌نت برای برنامه‌ها، در نسخه آلفا و توسعه فعال.",
+    "FooterNotice": "نام و قابلیت ماژول‌ها ممکن است با ادامه توسعه آلفا تغییر کند.",
+    "FooterContact": "تماس با ما",
+    "FooterRelease": "آلفا / ۲۰۲۶"
   }
 }

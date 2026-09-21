@@ -75,7 +75,7 @@ namespace MyCompanyName.MyProjectName
         // </TEMPLATE-REMOVE>
         // <TEMPLATE-REMOVE IF-NOT="module:file-manager">
         // Blob storage for file manager (must load before SufiFileManagerEntityFrameworkCoreModule)
-        typeof(SufiBlobDatabaseDatabaseEntityFrameworkCoreModule),
+        typeof(SufiBlobDatabaseEntityFrameworkCoreModule),
         // File Manager Module (data layer first for blob storage, then Application + API)
         typeof(SufiFileManagerEntityFrameworkCoreModule),
         typeof(SufiFileManagerApplicationModule),

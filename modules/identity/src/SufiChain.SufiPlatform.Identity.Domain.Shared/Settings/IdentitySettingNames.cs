@@ -120,4 +120,30 @@ public static class IdentitySettingNames
             public const string MinScore = CaptchaPrefix + ".Recaptcha.MinScore";
         }
     }
+
+    public static class ExternalAuth
+    {
+        private const string ExternalAuthPrefix = Prefix + ".ExternalAuth";
+
+        public static class Google
+        {
+            public const string Enabled = ExternalAuthPrefix + ".Google.Enabled";
+            public const string ClientId = ExternalAuthPrefix + ".Google.ClientId";
+            public const string ClientSecret = ExternalAuthPrefix + ".Google.ClientSecret";
+        }
+
+        public static class Microsoft
+        {
+            public const string Enabled = ExternalAuthPrefix + ".Microsoft.Enabled";
+            public const string ClientId = ExternalAuthPrefix + ".Microsoft.ClientId";
+            public const string ClientSecret = ExternalAuthPrefix + ".Microsoft.ClientSecret";
+        }
+
+        public static class GitHub
+        {
+            public const string Enabled = ExternalAuthPrefix + ".GitHub.Enabled";
+            public const string ClientId = ExternalAuthPrefix + ".GitHub.ClientId";
+            public const string ClientSecret = ExternalAuthPrefix + ".GitHub.ClientSecret";
+        }
+    }
 }

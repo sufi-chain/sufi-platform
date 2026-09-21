@@ -142,6 +142,7 @@
     "CalendarHooshvare:OpenAssistant": "AI Hooshvare",
     "CalendarHooshvare:OpenAssistantPage": "Open AI Hooshvare",
     "CalendarHooshvare:Unavailable": "AI Hooshvare is not available right now.",
+    "CalendarHooshvare:ReplyFailed": "The calendar assistant could not reply. Please try again.",
     "CalendarHooshvare:Shortcut:DayAgenda": "What does my day look like?",
     "CalendarHooshvare:Shortcut:FreeSlot": "Find a free 30 minute slot this week",
     "CalendarHooshvare:Shortcut:ScheduleTomorrow": "Schedule a meeting tomorrow at 10am",

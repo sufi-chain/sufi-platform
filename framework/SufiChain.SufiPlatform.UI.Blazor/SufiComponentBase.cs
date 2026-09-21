@@ -1,4 +1,5 @@
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.DependencyInjection;
@@ -22,7 +23,7 @@ namespace SufiChain.SufiPlatform.UI.Blazor;
 /// Base class for Blazor components in the Sufi Platform.
 /// Provides common services, loading state management, and exception handling.
 /// </summary>
-public abstract class SufiComponentBase : OwningComponentBase
+public abstract class SufiComponentBase : OwningComponentBase, IHandleEvent
 {
     private readonly CancellationTokenSource _cts = new();
     private bool _isDisposed;
@@ -81,13 +82,28 @@ public abstract class SufiComponentBase : OwningComponentBase
     {
         get
         {
-            if (_localizer == null)
+            if (_localizer != null)
+            {
+                return _localizer;
+            }
+
+            if (_isDisposed)
+            {
+                return DisposedStringLocalizer.Instance;
+            }
+
+            try
             {
                 _localizer = LocalizationResource != null
                     ? StringLocalizerFactory.Create(LocalizationResource)
                     : StringLocalizerFactory.Create(typeof(SufiFrameworkResource));
+                return _localizer;
             }
-            return _localizer;
+            catch (Exception exception) when (IsIgnorableLifetimeException(exception))
+            {
+                _isDisposed = true;
+                return DisposedStringLocalizer.Instance;
+            }
         }
     }
 
@@ -100,11 +116,26 @@ public abstract class SufiComponentBase : OwningComponentBase
     {
         get
         {
-            if (_logger == null)
+            if (_logger != null)
+            {
+                return _logger;
+            }
+
+            if (_isDisposed)
+            {
+                return NullLogger.Instance;
+            }
+
+            try
             {
                 var loggerFactory = ScopedServices.GetService<ILoggerFactory>();
                 _logger = loggerFactory?.CreateLogger(GetType()) ?? NullLogger.Instance;
             }
+            catch (Exception exception) when (IsIgnorableLifetimeException(exception))
+            {
+                return NullLogger.Instance;
+            }
+
             return _logger;
         }
     }
@@ -194,6 +225,11 @@ public abstract class SufiComponentBase : OwningComponentBase
     /// </summary>
     protected virtual async Task HandleErrorAsync(Exception exception)
     {
+        if (IsIgnorableLifetimeException(exception))
+        {
+            return;
+        }
+
         Logger.LogException(exception);
 
         // During prerendering, we can only log - JS interop is not available
@@ -413,7 +449,25 @@ public abstract class SufiComponentBase : OwningComponentBase
     /// </summary>
     protected T LazyGetRequiredService<T>(ref T? reference) where T : class
     {
-        return reference ??= ScopedServices.GetRequiredService<T>();
+        if (reference != null)
+        {
+            return reference;
+        }
+
+        if (_isDisposed)
+        {
+            throw new OperationCanceledException();
+        }
+
+        try
+        {
+            return reference ??= ScopedServices.GetRequiredService<T>();
+        }
+        catch (Exception exception) when (IsIgnorableLifetimeException(exception))
+        {
+            _isDisposed = true;
+            throw new OperationCanceledException();
+        }
     }
 
     /// <summary>
@@ -421,14 +475,67 @@ public abstract class SufiComponentBase : OwningComponentBase
     /// </summary>
     protected T? LazyGetService<T>(ref T? reference) where T : class
     {
-        if (reference == null)
+        if (reference != null)
+        {
+            return reference;
+        }
+
+        if (_isDisposed)
+        {
+            return null;
+        }
+
+        try
         {
             reference = ScopedServices.GetService<T>();
         }
+        catch (Exception exception) when (IsIgnorableLifetimeException(exception))
+        {
+            _isDisposed = true;
+            return null;
+        }
+
         return reference;
     }
 
+    /// <summary>
+    /// True when Autofac/OwningComponentBase already tore down the scope
+    /// (prerender HTTP request ended, user navigated away, or the circuit disposed).
+    /// </summary>
+    protected static bool IsIgnorableLifetimeException(Exception exception)
+    {
+        switch (exception)
+        {
+            case ObjectDisposedException:
+            case OperationCanceledException:
+                return true;
+            case HttpRequestException http
+                when http.InnerException is OperationCanceledException or TaskCanceledException:
+                return true;
+            case AggregateException aggregate:
+                return aggregate.InnerExceptions.Any(IsIgnorableLifetimeException);
+            default:
+                return exception.InnerException != null
+                    && IsIgnorableLifetimeException(exception.InnerException);
+        }
+    }
+
     // ====== LIFECYCLE ======
+
+    /// <summary>
+    /// Wraps parameter assignment and <see cref="OnInitializedAsync"/> so a disposed
+    /// Autofac scope during prerender teardown or fast navigation is not an error page.
+    /// </summary>
+    public override async Task SetParametersAsync(ParameterView parameters)
+    {
+        try
+        {
+            await base.SetParametersAsync(parameters);
+        }
+        catch (Exception exception) when (IsIgnorableLifetimeException(exception))
+        {
+        }
+    }
 
     /// <summary>
     /// Called after each render. Sets IsInteractive to true on first render.
@@ -436,12 +543,54 @@ public abstract class SufiComponentBase : OwningComponentBase
     /// </summary>
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (firstRender)
+        try
         {
-            _isInteractive = true;
-        }
+            if (firstRender)
+            {
+                _isInteractive = true;
+            }
 
-        await base.OnAfterRenderAsync(firstRender);
+            await base.OnAfterRenderAsync(firstRender);
+        }
+        catch (Exception exception) when (IsIgnorableLifetimeException(exception))
+        {
+        }
+    }
+
+    async Task IHandleEvent.HandleEventAsync(EventCallbackWorkItem callback, object? arg)
+    {
+        try
+        {
+            var task = callback.InvokeAsync(arg);
+            var shouldAwaitTask = !task.IsCompletedSuccessfully && !task.IsCanceled;
+
+            if (!_isDisposed)
+            {
+                StateHasChanged();
+            }
+
+            if (!shouldAwaitTask)
+            {
+                return;
+            }
+
+            try
+            {
+                await task;
+            }
+            catch (Exception exception) when (IsIgnorableLifetimeException(exception))
+            {
+                return;
+            }
+
+            if (!_isDisposed)
+            {
+                StateHasChanged();
+            }
+        }
+        catch (Exception exception) when (IsIgnorableLifetimeException(exception))
+        {
+        }
     }
 
     // ====== SAFE UI UPDATES ======
@@ -521,6 +670,19 @@ public abstract class SufiComponentBase : OwningComponentBase
 
         base.Dispose(disposing);
     }
+}
+
+file sealed class DisposedStringLocalizer : IStringLocalizer
+{
+    public static readonly DisposedStringLocalizer Instance = new();
+
+    public LocalizedString this[string name] => new(name, name, resourceNotFound: true);
+
+    public LocalizedString this[string name, params object[] arguments] =>
+        new(name, string.Format(name, arguments), resourceNotFound: true);
+
+    public IEnumerable<LocalizedString> GetAllStrings(bool includeParentCultures) =>
+        Array.Empty<LocalizedString>();
 }
 
 /// <summary>

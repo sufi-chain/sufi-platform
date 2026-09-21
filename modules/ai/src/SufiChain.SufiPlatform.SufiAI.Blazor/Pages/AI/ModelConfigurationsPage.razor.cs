@@ -36,17 +36,38 @@ public partial class ModelConfigurationsPage : AIComponentBase
     private bool _modelConfigurationModalOpen;
     private AIModelConfigurationDto? _editingConfiguration;
     private bool _readOnly;
+    private Guid _loadedWorkspaceId;
+
+    protected override void OnInitialized()
+    {
+        PageLayout.Title = L["ModelConfigurations"];
+    }
 
     protected override async Task OnParametersSetAsync()
     {
+        if (!IsInteractive || WorkspaceId == _loadedWorkspaceId)
+        {
+            return;
+        }
+
         await LoadAsync();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await base.OnAfterRenderAsync(firstRender);
+        if (firstRender)
+        {
+            await LoadAsync();
+        }
     }
 
     private async Task LoadAsync()
     {
+        var workspaceId = WorkspaceId;
         await ExecuteWithLoadingAsync(async () =>
         {
-            _workspace = await WorkspaceAppService.GetAsync(WorkspaceId);
+            _workspace = await WorkspaceAppService.GetAsync(workspaceId);
             _readOnly = _workspace.IsInherited;
             PageLayout.Title = string.IsNullOrWhiteSpace(_workspace.Name)
                 ? L["ModelConfigurations"]
@@ -54,6 +75,7 @@ public partial class ModelConfigurationsPage : AIComponentBase
         }, LoadingKeys.LoadWorkspace);
 
         await LoadConfigurationsAsync();
+        _loadedWorkspaceId = workspaceId;
     }
 
     private async Task LoadConfigurationsAsync()

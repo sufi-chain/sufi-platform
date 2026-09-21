@@ -18,6 +18,7 @@ public class SufiSettingsApplicationModule : AbpModule
         context.Services.AddTransient<IEmailSettingsAppService, EmailSettingsAppService>();
         context.Services.AddTransient<ITimeZoneSettingsAppService, TimeZoneSettingsAppService>();
         context.Services.AddTransient<IIdentitySettingsAppService, IdentitySettingsAppService>();
+        context.Services.AddTransient<IExternalAuthSettingsAppService, ExternalAuthSettingsAppService>();
         context.Services.AddTransient<
             ICurrentUserLanguagePreferenceAppService,
             CurrentUserLanguagePreferenceAppService>();

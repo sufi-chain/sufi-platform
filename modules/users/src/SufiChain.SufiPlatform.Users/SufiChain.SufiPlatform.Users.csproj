@@ -6,6 +6,7 @@
     <AssemblyName>SufiChain.SufiPlatform.Users</AssemblyName>
     <PackageId>SufiChain.SufiPlatform.Users</PackageId>
     <RootNamespace>SufiChain.SufiPlatform.Users</RootNamespace>
+    <Description>Compatibility package that type-forwards to SufiChain.SufiPlatform.Users.Abstractions.</Description>
   </PropertyGroup>
 
   <ItemGroup>

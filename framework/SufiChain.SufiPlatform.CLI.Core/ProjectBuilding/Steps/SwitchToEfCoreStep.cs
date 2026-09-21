@@ -853,6 +853,12 @@ public class EntityFrameworkCore{projectName}DbSchemaMigrator : I{projectName}Db
             ["SufiChain.SufiPlatform.Localization.MongoDB"] = "SufiChain.SufiPlatform.Localization.EntityFrameworkCore",
             ["LocalizationMongoDbModule"] = "LocalizationEntityFrameworkCoreModule",
             ["using SufiChain.SufiPlatform.Localization.MongoDB;"] = "using SufiChain.SufiPlatform.Localization.EntityFrameworkCore;",
+
+            // BlobDatabase
+            ["SufiChain.SufiPlatform.BlobDatabase.MongoDB"] = "SufiChain.SufiPlatform.BlobDatabase.EntityFrameworkCore",
+            ["SufiBlobDatabaseMongoDbModule"] = "SufiBlobDatabaseEntityFrameworkCoreModule",
+            ["SufiBlobDatabaseDatabaseMongoDbModule"] = "SufiBlobDatabaseEntityFrameworkCoreModule",
+            ["using SufiChain.SufiPlatform.BlobDatabase.MongoDB;"] = "using SufiChain.SufiPlatform.BlobDatabase.EntityFrameworkCore;",
         };
 
         // Process .csproj files
@@ -880,6 +886,15 @@ public class EntityFrameworkCore{projectName}DbSchemaMigrator : I{projectName}Db
                 modified = true;
             }
 
+            if (content.Contains("SufiChain.SufiPlatform.BlobDatabase.MongoDB"))
+            {
+                content = content.Replace(
+                    "SufiChain.SufiPlatform.BlobDatabase.MongoDB",
+                    "SufiChain.SufiPlatform.BlobDatabase.EntityFrameworkCore"
+                );
+                modified = true;
+            }
+
             if (modified)
                 context.Files[file] = Encoding.UTF8.GetBytes(content);
         }
@@ -898,6 +913,22 @@ public class EntityFrameworkCore{projectName}DbSchemaMigrator : I{projectName}Db
                     content = content.Replace(mongoVal, efVal);
                     modified = true;
                 }
+            }
+
+            if (content.Contains("SufiBlobDatabaseDatabaseEntityFrameworkCoreModule"))
+            {
+                content = content.Replace(
+                    "SufiBlobDatabaseDatabaseEntityFrameworkCoreModule",
+                    "SufiBlobDatabaseEntityFrameworkCoreModule");
+                modified = true;
+            }
+
+            if (content.Contains("ConfigureSufiBlobDatabaseDatabase()"))
+            {
+                content = content.Replace(
+                    "ConfigureSufiBlobDatabaseDatabase()",
+                    "ConfigureSufiBlobDatabase()");
+                modified = true;
             }
 
             if (modified)
@@ -922,6 +953,7 @@ public class EntityFrameworkCore{projectName}DbSchemaMigrator : I{projectName}Db
             ["SufiChain.SufiPlatform.Features.MongoDB"] = "SufiChain.SufiPlatform.Features.EntityFrameworkCore",
             ["SufiChain.SufiPlatform.Settings.MongoDB"] = "SufiChain.SufiPlatform.Settings.EntityFrameworkCore",
             ["SufiChain.SufiPlatform.BackgroundJobs.MongoDB"] = "SufiChain.SufiPlatform.BackgroundJobs.EntityFrameworkCore",
+            ["SufiChain.SufiPlatform.BlobDatabase.MongoDB"] = "SufiChain.SufiPlatform.BlobDatabase.EntityFrameworkCore",
         };
 
         var csprojFiles = context.Files.Keys

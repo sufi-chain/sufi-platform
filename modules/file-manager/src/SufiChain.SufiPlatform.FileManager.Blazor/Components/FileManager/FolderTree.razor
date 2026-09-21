@@ -1,4 +1,6 @@
+@using Microsoft.Extensions.Logging
 @inject IFolderAppService FolderAppService
+@inherits FileManagerComponentBase
 
 <div class="fm-folder-tree">
     @if (_isLoading)
@@ -61,8 +63,9 @@
                 node.IsExpanded = true;
             }
         }
-        catch (Exception)
+        catch (Exception exception)
         {
+            Logger.LogWarning(exception, "File Manager folder tree failed to load.");
             _rootNodes = new List<FolderTreeNodeDto>();
         }
         finally
@@ -84,8 +87,9 @@
             node.Children = children;
             StateHasChanged();
         }
-        catch (Exception)
+        catch (Exception exception)
         {
+            Logger.LogWarning(exception, "File Manager folder tree children failed to load for {FolderId}.", node.Id);
             node.Children = new List<FolderTreeNodeDto>();
         }
     }

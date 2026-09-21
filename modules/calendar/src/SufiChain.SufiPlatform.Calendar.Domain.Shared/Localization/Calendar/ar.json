@@ -132,6 +132,7 @@
     "CalendarHooshvare:OpenAssistant": "مساعد الذكاء الاصطناعي",
     "CalendarHooshvare:OpenAssistantPage": "فتح مساعد الذكاء الاصطناعي",
     "CalendarHooshvare:Unavailable": "مساعد الذكاء الاصطناعي غير متاح حاليًا.",
+    "CalendarHooshvare:ReplyFailed": "تعذّر على مساعد التقويم الرد. يرجى المحاولة مرة أخرى.",
     "CalendarHooshvare:Shortcut:DayAgenda": "كيف يبدو يومي؟",
     "CalendarHooshvare:Shortcut:FreeSlot": "ابحث عن موعد فارغ لمدة 30 دقيقة هذا الأسبوع",
     "CalendarHooshvare:Shortcut:ScheduleTomorrow": "جدولة اجتماع غدًا الساعة 10 صباحًا",

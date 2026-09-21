@@ -1,6 +1,8 @@
 @namespace SufiChain.SufiPlatform.Account.Blazor.Components.Profile
 @inject IProfileAppService ProfileAppService
 @inject IStringLocalizer<SufiIdentityResource> L
+@inject IStringLocalizer<SufiAccountResource> AccountL
+@inject ILogger<ProfileSettings> Logger
 
 @if (_loading)
 {
@@ -96,7 +98,11 @@ else if (_profile != null)
         }
         catch (Exception ex)
         {
-            _errorMessage = ex.Message;
+            _errorMessage = AccountUiErrors.LocalizedFailure(
+                Logger,
+                AccountL,
+                ex,
+                "ProfileSaveFailed");
         }
         finally
         {

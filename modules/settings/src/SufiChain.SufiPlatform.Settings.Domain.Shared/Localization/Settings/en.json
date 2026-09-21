@@ -60,6 +60,16 @@
     "Permission:Settings": "Setting management",
     "Permission:Emailing": "Emailing",
     "Permission:EmailingTest": "Emailing test",
-    "Permission:TimeZone": "Time zone"
+    "Permission:TimeZone": "Time zone",
+    "Permission:ExternalAuth": "External authentication",
+    "ExternalAuthSettings": "External login",
+    "ExternalAuthSettingsHint": "Enable Google, Microsoft, or GitHub login for this tenant. Leave a secret blank to keep the stored value. Host appsettings remain the fallback.",
+    "ExternalAuth:Google": "Google",
+    "ExternalAuth:Microsoft": "Microsoft",
+    "ExternalAuth:GitHub": "GitHub",
+    "ExternalAuth:Enabled": "Enable this provider",
+    "ExternalAuth:ClientId": "Client ID",
+    "ExternalAuth:ClientSecret": "Client secret",
+    "ExternalAuth:ClientSecretKeep": "Client secret (leave blank to keep)"
   }
 }

@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.Localization;
+using Microsoft.Extensions.Logging;
 using SufiChain.SufiPlatform.Account.Localization;
 using SufiChain.SufiPlatform.Identity.Localization;
 
@@ -15,6 +16,9 @@ public partial class ConfirmEmail
 
     [Inject]
     protected IStringLocalizer<SufiAccountResource> AccountL { get; set; } = default!;
+
+    [Inject]
+    protected ILogger<ConfirmEmail> Logger { get; set; } = default!;
 
     [Inject]
     protected NavigationManager Navigation { get; set; } = default!;
@@ -68,7 +72,11 @@ public partial class ConfirmEmail
         }
         catch (Exception ex)
         {
-            ErrorMessage = ex.Message;
+            ErrorMessage = AccountUiErrors.LocalizedFailure(
+                Logger,
+                AccountL,
+                ex,
+                "ConfirmEmailFailed");
         }
         finally
         {

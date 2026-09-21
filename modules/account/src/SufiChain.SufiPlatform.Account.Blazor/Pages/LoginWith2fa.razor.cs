@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Localization;
+using Microsoft.Extensions.Logging;
 using SufiChain.SufiPlatform.Account.Localization;
 using IdentityUser = SufiChain.SufiPlatform.Identity.IdentityUser;
 using SufiChain.SufiPlatform.Identity.AspNetCore;
@@ -32,6 +33,9 @@ public partial class LoginWith2fa
     protected IStringLocalizer<SufiAccountResource> AccountL { get; set; } = default!;
 
     [Inject]
+    protected ILogger<LoginWith2fa> Logger { get; set; } = default!;
+
+    [Inject]
     protected NavigationManager Navigation { get; set; } = default!;
 
     [CascadingParameter]
@@ -44,7 +48,7 @@ public partial class LoginWith2fa
     public string? PendingToken { get; set; }
 
     [SupplyParameterFromForm]
-    public LoginWith2faInputModel? Input { get; set; }
+    public LoginWith2faInputModel Input { get; set; } = new();
 
     protected TwoFactorLoginOptionsDto? Options { get; set; }
 
@@ -139,7 +143,11 @@ public partial class LoginWith2fa
         }
         catch (Exception ex)
         {
-            ErrorMessage = ex.Message;
+            ErrorMessage = AccountUiErrors.LocalizedFailure(
+                Logger,
+                AccountL,
+                ex,
+                "TwoFactorSendFailed");
         }
         finally
         {
@@ -170,7 +178,11 @@ public partial class LoginWith2fa
         }
         catch (Exception ex)
         {
-            ErrorMessage = ex.Message;
+            ErrorMessage = AccountUiErrors.LocalizedFailure(
+                Logger,
+                AccountL,
+                ex,
+                "TwoFactorVerifyFailed");
         }
         finally
         {

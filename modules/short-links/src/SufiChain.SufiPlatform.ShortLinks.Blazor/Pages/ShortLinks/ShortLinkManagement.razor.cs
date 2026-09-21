@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
+using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop;
 using SufiChain.SufiBlazor.Components.Data;
 using SufiChain.SufiPlatform.ShortLinks.Permissions;
@@ -296,8 +297,9 @@ public partial class ShortLinkManagementBase : ShortLinksComponentBase
                 await Message.SuccessAsync(L["LinkCopiedToClipboard"]);
             }
         }
-        catch
+        catch (Exception exception)
         {
+            Logger.LogDebug(exception, "Clipboard write failed for a short link.");
             await Message.WarnAsync(L["FailedToCopyLink"]);
         }
     }
@@ -312,8 +314,4 @@ public partial class ShortLinkManagementBase : ShortLinksComponentBase
         return value.Length > 60 ? value[..60] + "..." : value;
     }
 
-    protected override async Task HandleErrorAsync(Exception exception)
-    {
-        await Message.ErrorAsync(exception.Message);
-    }
 }

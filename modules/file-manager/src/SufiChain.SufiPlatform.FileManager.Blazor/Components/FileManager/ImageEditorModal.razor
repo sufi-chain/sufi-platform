@@ -310,7 +310,7 @@
         }
         catch (Exception ex)
         {
-            await Notify.ErrorAsync(L["FailedToLoadImageEditor", ex.Message].Value ?? ex.Message);
+            await NotifyOperationFailedAsync(ex, "FailedToLoadImageEditor");
         }
         StateHasChanged();
     }
@@ -478,7 +478,7 @@
         }
         catch (Exception ex)
         {
-            await Notify.ErrorAsync(L["SaveFailed", ex.Message].Value ?? ex.Message);
+            await NotifyOperationFailedAsync(ex, "SaveFailed");
         }
         finally
         {
@@ -541,7 +541,7 @@
         }
         catch (Exception ex)
         {
-            await Notify.ErrorAsync(L["SaveFailed", ex.Message].Value ?? ex.Message);
+            await NotifyOperationFailedAsync(ex, "SaveFailed");
         }
         finally
         {

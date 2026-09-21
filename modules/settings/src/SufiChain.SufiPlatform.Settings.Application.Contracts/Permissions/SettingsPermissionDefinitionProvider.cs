@@ -16,6 +16,7 @@ public class SettingsPermissionDefinitionProvider : PermissionDefinitionProvider
             .AddChild(SettingsPermissions.EmailingTest, L("Permission:EmailingTest"));
         group.AddPermission(SettingsPermissions.TimeZone, L("Permission:TimeZone"));
         group.AddPermission(SettingsPermissions.Identity, L("Permission:Identity"));
+        group.AddPermission(SettingsPermissions.ExternalAuth, L("Permission:ExternalAuth"));
     }
 
     private static LocalizableString L(string name)

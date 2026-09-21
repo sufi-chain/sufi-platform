@@ -74,9 +74,16 @@ public partial class Workspaces : AIComponentBase
             Sorting = "CreationTime DESC"
         };
 
-        var result = await WorkspaceAppService.GetListAsync(input);
-        _totalCount = result.TotalCount;
-        return new SbDataResponse<WorkspaceDto>(result.Items, result.TotalCount);
+        try
+        {
+            var result = await WorkspaceAppService.GetListAsync(input);
+            _totalCount = result.TotalCount;
+            return new SbDataResponse<WorkspaceDto>(result.Items, result.TotalCount);
+        }
+        catch (ObjectDisposedException)
+        {
+            return new SbDataResponse<WorkspaceDto>(Array.Empty<WorkspaceDto>(), _totalCount);
+        }
     }
 
     private async Task OnPageIndexChangedAsync(int pageIndex)

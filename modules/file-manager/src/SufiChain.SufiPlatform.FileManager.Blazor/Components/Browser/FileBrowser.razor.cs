@@ -123,7 +123,7 @@ public partial class FileBrowser : FileManagerComponentBase, IDisposable
         }
         catch (Exception ex)
         {
-            await Notify.ErrorAsync(L["FailedToLoadFiles", ex.Message]);
+            await NotifyOperationFailedAsync(ex, "FailedToLoadFiles");
         }
         finally
         {
@@ -268,7 +268,7 @@ public partial class FileBrowser : FileManagerComponentBase, IDisposable
         }
         catch (Exception ex)
         {
-            await Notify.ErrorAsync(L["FailedToDelete", ex.Message]);
+            await NotifyOperationFailedAsync(ex, "FailedToDelete");
         }
         finally
         {

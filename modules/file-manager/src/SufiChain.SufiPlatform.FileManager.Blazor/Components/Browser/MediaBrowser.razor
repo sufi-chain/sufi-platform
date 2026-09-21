@@ -358,7 +358,7 @@
         }
         catch (Exception ex)
         {
-            await Notify.ErrorAsync(L["FailedToLoadFiles", ex.Message]);
+            await NotifyOperationFailedAsync(ex, "FailedToLoadFiles");
         }
         finally
         {
@@ -468,7 +468,7 @@
         }
         catch (Exception ex)
         {
-            await Notify.ErrorAsync($"Failed to delete files: {ex.Message}");
+            await NotifyOperationFailedAsync(ex, "FailedToDelete");
         }
         finally
         {
@@ -500,7 +500,7 @@
         }
         catch (Exception ex)
         {
-            await Notify.ErrorAsync($"Failed to delete file: {ex.Message}");
+            await NotifyOperationFailedAsync(ex, "FailedToDelete");
         }
     }
 

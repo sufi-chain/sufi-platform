@@ -16,4 +16,10 @@ public class GetOpenAIModelsInput
 
     [StringLength(512)]
     public string? ApiBaseUrl { get; set; }
+
+    /// <summary>
+    /// Filters the provider catalog to models that match this route capability.
+    /// Defaults to chat so workspace default-model pickers stay LLM-only.
+    /// </summary>
+    public AICapabilityType CapabilityType { get; set; } = AICapabilityType.ChatCompletion;
 }

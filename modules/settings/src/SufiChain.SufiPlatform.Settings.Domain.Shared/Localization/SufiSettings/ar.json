@@ -7,6 +7,7 @@
     "Feature:SettingsEnableDescription": "تمكين نظام إدارة الإعدادات في التطبيق.",
     "Feature:AllowChangingEmailSettings": "السماح بتغيير إعدادات البريد الإلكتروني",
     "Feature:AllowChangingEmailSettingsDescription": "السماح بتغيير إعدادات البريد الإلكتروني.",
-    "Permission:Identity": "إعدادات الهوية"
+    "Permission:Identity": "إعدادات الهوية",
+    "Permission:ExternalAuth": "المصادقة الخارجية"
   }
 }

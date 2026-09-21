@@ -11,6 +11,8 @@
     "Users": "Usuarios",
     "Roles": "Roles",
     "OrganizationUnits": "Unidades organizativas",
+    "OrganizationUnitRequired": "Seleccione primero una unidad organizativa.",
+    "FailedToLoadPickerData": "No se pudo cargar la lista. Inténtelo de nuevo.",
     "SecurityLogs": "Registros de seguridad",
     "NewUser": "Nuevo Usuario",
     "NewRole": "Nuevo rol",

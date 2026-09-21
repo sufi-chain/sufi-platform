@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Localization;
+using Microsoft.Extensions.Logging;
 using System.Reflection;
 using IdentityUser = SufiChain.SufiPlatform.Identity.IdentityUser;
 using SufiChain.SufiPlatform;
@@ -36,6 +37,9 @@ public partial class Register
     protected IStringLocalizer<SufiAccountResource> AccountL { get; set; } = default!;
 
     [Inject]
+    protected ILogger<Register> Logger { get; set; } = default!;
+
+    [Inject]
     protected NavigationManager Navigation { get; set; } = default!;
 
     [Inject]
@@ -63,7 +67,7 @@ public partial class Register
     public string? ErrorFromQuery { get; set; }
 
     [SupplyParameterFromForm]
-    public RegisterInputModel? Input { get; set; }
+    public RegisterInputModel Input { get; set; } = new();
 
     protected string? ErrorMessage { get; set; }
 
@@ -167,6 +171,7 @@ public partial class Register
         }
         catch (Exception ex)
         {
+            Logger.LogError(ex, "Account UI operation failed ({Key}).", "RegistrationFailed");
             ErrorMessage = GetRegistrationErrorMessage(ex);
         }
         finally
@@ -220,11 +225,6 @@ public partial class Register
         if (!string.IsNullOrWhiteSpace(dataMessage) && !IsGenericExceptionMessage(dataMessage))
         {
             return dataMessage;
-        }
-
-        if (!IsGenericExceptionMessage(exception.Message))
-        {
-            return exception.Message;
         }
 
         return AccountL["RegistrationFailed"];

@@ -7,6 +7,7 @@
     "Feature:SettingsEnableDescription": "Habilite el sistema de gestión de la configuración en la aplicación.",
     "Feature:AllowChangingEmailSettings": "Permitir cambiar la configuración de correo electrónico",
     "Feature:AllowChangingEmailSettingsDescription": "Permitir cambiar la configuración de correo electrónico.",
-    "Permission:Identity": "Configuración de identidad"
+    "Permission:Identity": "Configuración de identidad",
+    "Permission:ExternalAuth": "Autenticación externa"
   }
 }

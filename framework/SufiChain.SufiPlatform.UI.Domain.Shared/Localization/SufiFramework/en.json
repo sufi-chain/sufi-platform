@@ -145,6 +145,18 @@
         "PwaInstallNotNow": "Not now",
         "PwaInstallIosInstructions": "Open this page in Safari. Tap Share, then Add to Home Screen. Turn on Open as Web App if shown, then tap Add.",
         "PwaInstallUnavailable": "Installation is unavailable right now. Please try again later.",
-        "ApplicationErrorReload": "An error has occurred. This application may no longer respond until reloaded."
+        "ApplicationErrorReload": "An error has occurred. This application may no longer respond until reloaded.",
+        "SkipToContent": "Skip to content",
+        "OpenNavigation": "Open navigation",
+        "PrimaryNavigation": "Primary navigation",
+        "ChooseLanguage": "Choose language",
+        "SignIn": "Sign in",
+        "GoToConsole": "Go to console",
+        "CreateAccount": "Create an account",
+        "BrandTagline": "Open-source application foundation",
+        "FooterDescription": "Modular .NET application foundations under active alpha development.",
+        "FooterNotice": "Module names and capabilities may change as alpha development continues.",
+        "FooterContact": "Contact us",
+        "FooterRelease": "Alpha / 2026"
     }
 }

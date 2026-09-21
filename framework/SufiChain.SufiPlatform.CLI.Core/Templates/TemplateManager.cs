@@ -1,6 +1,7 @@
 using System.IO.Compression;
 using System.Security.Cryptography;
 using System.Text.Json;
+using SufiChain.SufiPlatform.CLI.Args;
 
 namespace SufiChain.SufiPlatform.CLI.Templates;
 
@@ -10,7 +11,7 @@ namespace SufiChain.SufiPlatform.CLI.Templates;
 /// </summary>
 public class TemplateManager
 {
-    public const string DefaultTemplateName = "app-blazor-webapp-unified";
+    public const string DefaultTemplateName = ProjectBuildArgs.UnifiedTemplateName;
 
     private const string CdnBaseUrl = "https://cdn.sufichain.com/templates";
     private const string LatestVersionFileName = "latest.json";

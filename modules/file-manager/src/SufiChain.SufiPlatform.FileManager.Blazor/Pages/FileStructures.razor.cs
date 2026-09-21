@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
 using SufiChain.SufiBlazor.Components;
+using SufiChain.SufiPlatform.FileManager.FileMigration;
 using SufiChain.SufiPlatform.FileManager.FileStructures;
 using SufiChain.SufiPlatform.FileManager.FileTypes;
 using SufiChain.SufiPlatform.FileManager.Localization;
@@ -15,6 +16,7 @@ public partial class FileStructures : FileManagerComponentBase, IDisposable
 {
 
     [Inject] private IFileStructureAppService FileStructureAppService { get; set; } = default!;
+    [Inject] private IFileMigrationAppService FileMigrationAppService { get; set; } = default!;
     [Inject] private IFileManagerStorageSettingsAppService StorageSettingsAppService { get; set; } = default!;
     [Inject] protected IPageLayout PageLayout { get; set; } = default!;
 
@@ -109,7 +111,7 @@ public partial class FileStructures : FileManagerComponentBase, IDisposable
         }
         catch (Exception ex)
         {
-            await Notify.ErrorAsync(L["FailedToLoadStructures", ex.Message]);
+            await NotifyOperationFailedAsync(ex, "FailedToLoadStructures");
         }
         finally
         {
@@ -321,7 +323,7 @@ public partial class FileStructures : FileManagerComponentBase, IDisposable
         }
         catch (Exception ex)
         {
-            await Notify.ErrorAsync(L["FailedToSaveStructure", ex.Message]);
+            await NotifyOperationFailedAsync(ex, "FailedToSaveStructure");
         }
         finally
         {
@@ -397,7 +399,7 @@ public partial class FileStructures : FileManagerComponentBase, IDisposable
         }
         catch (Exception ex)
         {
-            await Notify.ErrorAsync(L["FailedToSaveStructure", ex.Message]);
+            await NotifyOperationFailedAsync(ex, "FailedToSaveStructure");
         }
         finally
         {
@@ -427,6 +429,23 @@ public partial class FileStructures : FileManagerComponentBase, IDisposable
         return Task.CompletedTask;
     }
 
+    private async Task MigrateStructureFilesAsync(FileStructureDto structure)
+    {
+        try
+        {
+            var result = await FileMigrationAppService.MigrateStructureAsync(new StartStructureMigrationInput
+            {
+                StructureKey = structure.Key,
+                DeleteSourceAfterVerify = true
+            });
+            await Notify.SuccessAsync(L["MigrateStructureFilesResult", result.Migrated, result.Skipped, result.Failed]);
+        }
+        catch (Exception ex)
+        {
+            await NotifyOperationFailedAsync(ex, "FailedToMigrateStructureFiles");
+        }
+    }
+
     private void ResetToDefault(FileStructureDto structure)
     {
         _structureToReset = structure;
@@ -452,7 +471,7 @@ public partial class FileStructures : FileManagerComponentBase, IDisposable
         }
         catch (Exception ex)
         {
-            await Notify.ErrorAsync(L["FailedToResetStructure", ex.Message]);
+            await NotifyOperationFailedAsync(ex, "FailedToResetStructure");
         }
         finally
         {
@@ -485,7 +504,7 @@ public partial class FileStructures : FileManagerComponentBase, IDisposable
         }
         catch (Exception ex)
         {
-            await Notify.ErrorAsync(L["FailedToDeleteStructure", ex.Message]);
+            await NotifyOperationFailedAsync(ex, "FailedToDeleteStructure");
         }
         finally
         {

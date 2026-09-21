@@ -15,7 +15,7 @@
     <PackageReference Include="Volo.Abp.Threading" Version="$(AbpVersion)" />
     <PackageReference Include="Volo.Abp.Mapperly" Version="$(AbpVersion)" />
     <PackageReference Include="OpenIddict.Core" Version="$(OpenIddictVersion)" />
-    <ProjectReference Include="../../../users/src/SufiChain.SufiPlatform.Users/SufiChain.SufiPlatform.Users.csproj" />
+    <ProjectReference Include="../../../users/src/SufiChain.SufiPlatform.Users.Abstractions/SufiChain.SufiPlatform.Users.Abstractions.csproj" />
     <ProjectReference Include="..\SufiChain.SufiPlatform.OpenIddict.Domain.Shared\SufiChain.SufiPlatform.OpenIddict.Domain.Shared.csproj" />
     <ProjectReference Include="../../../identity/src/SufiChain.SufiPlatform.Identity.Domain/SufiChain.SufiPlatform.Identity.Domain.csproj" />
   </ItemGroup>
