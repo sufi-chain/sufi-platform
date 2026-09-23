@@ -117,4 +117,4 @@ For File Manager storage details, document the final integration in the File Man
 
 ## Consuming modules (HelpDesk)
 
-HelpDesk-style knowledge bases can register `IDocumentSource` with a source name such as `KnowledgeBase`, index through `IRAGAppService.StartIndexingAsync(workspaceName, "KnowledgeBase")`, and answer by combining `SearchDocumentsAsync` with `IAIAppService`.
+HelpDesk-style knowledge bases can register `IDocumentSource` with a source name such as `HelpDesk.KnowledgeBase`, index through `IRAGAppService.StartIndexingAsync(workspaceName, "HelpDesk.KnowledgeBase")`, and answer by combining `SearchDocumentsAsync` with `IAIAppService`.

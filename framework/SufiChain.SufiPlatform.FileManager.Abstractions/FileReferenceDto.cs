@@ -36,4 +36,10 @@ public class FileReferenceDto
 
     /// <summary>Owning tenant (null for host).</summary>
     public Guid? TenantId { get; set; }
+
+    /// <summary>Upload time, when known.</summary>
+    public DateTime? CreationTime { get; set; }
+
+    /// <summary>String extra properties set by integration callers.</summary>
+    public Dictionary<string, string> Properties { get; set; } = new();
 }

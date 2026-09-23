@@ -107,6 +107,18 @@ public class FileStructureBuilder
         return this;
     }
 
+    public FileStructureBuilder AlsoAllowExtensions(params string[] extensions)
+    {
+        var existing = (_config.AllowedExtensions ?? "")
+            .Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
+            .Select(x => x.Trim())
+            .Where(x => !string.IsNullOrEmpty(x))
+            .ToList();
+        existing.AddRange(extensions.Select(x => x.Trim().TrimStart('.')));
+        _config.AllowedExtensions = string.Join(",", existing.Distinct(StringComparer.OrdinalIgnoreCase));
+        return this;
+    }
+
     public FileStructureBuilder WithMaxSize(long sizeInBytes)
     {
         _config.MaxFileSize = sizeInBytes;

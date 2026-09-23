@@ -13,7 +13,7 @@ public class SufiAIRagIndexDocumentRequest
     public string WorkspaceName { get; set; } = string.Empty;
 
     /// <summary>
-    /// Document source that owns the document (for example <c>KnowledgeBase</c>).
+    /// Document source that owns the document (for example <c>HelpDesk.KnowledgeBase</c>).
     /// </summary>
     public string SourceName { get; set; } = string.Empty;
 

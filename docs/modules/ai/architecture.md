@@ -117,7 +117,9 @@ Operations are scoped by workspace name and tenant. Usage logs and configuration
 
 Modules implement `IDocumentSource` (`SourceName`, `SearchAsync`, `GetByIdAsync`, `GetTotalCountAsync`). At host startup, register with `IRAGService.RegisterDocumentSource`. Indexing chunks content and stores vectors in the configured MongoDB collection.
 
-**HelpDesk:** a product knowledge base can register a source such as `KnowledgeBase` and index it through the same document-source extension points described in [Extending](extending.md).
+**HelpDesk:** the product knowledge base registers `HelpDesk.KnowledgeBase` and indexes it through the same document-source extension points described in [Extending](extending.md).
+
+**Hooshvares:** `Hooshvare.KnowledgeBase` serves each hooshvare's own file library, stored as a folder under `/AI/Hooshvares` in the `AI` file structure. Uploaded md, txt, docx, xlsx/xls, pdf, and image files are converted to Markdown, with a Persian-safe PDF pipeline: PdfPig text plus rendered-page vision. Only the Markdown is indexed, into the hooshvare's workspace with `meta.hooshvareId` and `meta.fileId`. Allowing `md`/`txt` on the `AI` structure also lets other AI features accept Markdown and plain-text uploads.
 
 ### MCP tool discovery
 

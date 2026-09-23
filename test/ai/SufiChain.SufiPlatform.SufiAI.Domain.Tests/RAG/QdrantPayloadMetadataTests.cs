@@ -50,7 +50,7 @@ public class QdrantPayloadMetadataTests
         {
             TenantKey = "host",
             WorkspaceName = "default",
-            SourceName = "KnowledgeBase",
+            SourceName = "HelpDesk.KnowledgeBase",
             MetadataFilters = new Dictionary<string, string> { ["projectId"] = ProjectId.ToString("D") }
         });
 
@@ -81,7 +81,7 @@ public class QdrantPayloadMetadataTests
         {
             TenantKey = "t1",
             WorkspaceName = "ws",
-            SourceName = "KnowledgeBase",
+            SourceName = "HelpDesk.KnowledgeBase",
             MetadataFilters = new Dictionary<string, string> { ["projectId"] = ProjectId.ToString("D") }
         });
 

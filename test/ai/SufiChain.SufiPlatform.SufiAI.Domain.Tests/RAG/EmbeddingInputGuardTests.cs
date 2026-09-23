@@ -66,7 +66,7 @@ public class EmbeddingInputGuardTests
         {
             Id = id,
             SourceId = id,
-            SourceName = "KnowledgeBase",
+            SourceName = "HelpDesk.KnowledgeBase",
             Content = content,
             Metadata = new Dictionary<string, object>
             {

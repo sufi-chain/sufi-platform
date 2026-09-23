@@ -157,6 +157,8 @@ public class QdrantVectorStoreProvider : IVectorStoreProvider, ITransientDepende
             await client.CreatePayloadIndexAsync(context.CollectionName, "documentId", cancellationToken: cancellationToken);
             await client.CreatePayloadIndexAsync(context.CollectionName, QdrantPayloadMetadata.ToFilterKey("projectId"), cancellationToken: cancellationToken);
             await client.CreatePayloadIndexAsync(context.CollectionName, QdrantPayloadMetadata.ToFilterKey("articleId"), cancellationToken: cancellationToken);
+            await client.CreatePayloadIndexAsync(context.CollectionName, QdrantPayloadMetadata.ToFilterKey("hooshvareId"), cancellationToken: cancellationToken);
+            await client.CreatePayloadIndexAsync(context.CollectionName, QdrantPayloadMetadata.ToFilterKey("fileId"), cancellationToken: cancellationToken);
         }
     }
 

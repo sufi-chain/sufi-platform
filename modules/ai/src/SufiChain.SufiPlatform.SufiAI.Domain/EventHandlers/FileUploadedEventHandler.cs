@@ -15,6 +15,9 @@ namespace SufiChain.SufiPlatform.SufiAI.EventHandlers;
 /// </summary>
 public class FileUploadedEventHandler : IDistributedEventHandler<FileUploadedEto>, ITransientDependency
 {
+    /// <summary>Hooshvare knowledge-library files live in the AI structure but their entity id is a hooshvare, not a usage log.</summary>
+    private const string HooshvareKnowledgeFileEntityType = "Hooshvare.KnowledgeFile";
+
     private readonly IAIUsageLogRepository _usageLogRepository;
     private readonly IFeatureChecker _featureChecker;
     private readonly ILogger<FileUploadedEventHandler> _logger;
@@ -38,6 +41,11 @@ public class FileUploadedEventHandler : IDistributedEventHandler<FileUploadedEto
 
         // Only handle AI file structures.
         if (eventData.StructureKey?.StartsWith(AIFileStructureKeys.AI, StringComparison.OrdinalIgnoreCase) != true)
+        {
+            return;
+        }
+
+        if (string.Equals(eventData.SourceEntityType, HooshvareKnowledgeFileEntityType, StringComparison.Ordinal))
         {
             return;
         }

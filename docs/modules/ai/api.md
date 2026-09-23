@@ -193,7 +193,7 @@ await foreach (var chunk in _aiAppService.StreamChatMessageAsync(new SendChatMes
 ### Start KB indexing
 
 ```csharp
-await _ragAppService.StartIndexingAsync("helpdesk-default", "KnowledgeBase");
+await _ragAppService.StartIndexingAsync("helpdesk-default", "HelpDesk.KnowledgeBase");
 ```
 
 ### MCP tool execution

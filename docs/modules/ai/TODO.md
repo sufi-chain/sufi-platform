@@ -65,7 +65,7 @@ When shipping features above, update:
 HelpDesk KB/LiveChat/Ticketing plans rely on:
 
 - Workspace + RAG config
-- `KnowledgeBase` document source indexing
+- `HelpDesk.KnowledgeBase` document source indexing
 - `IAIAppService` / `IRAGAppService`
 
 See repo `docs/HELPDESK-*.md` plans.

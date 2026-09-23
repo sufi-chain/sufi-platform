@@ -30,4 +30,9 @@ public class FileUploadRequest
     public bool AutoConfirm { get; set; }
 
     public string? Alt { get; set; }
+
+    /// <summary>
+    /// Optional string extra properties applied after upload. Honored by <see cref="IFileStorageTrustedService"/>.
+    /// </summary>
+    public Dictionary<string, string>? Properties { get; set; }
 }

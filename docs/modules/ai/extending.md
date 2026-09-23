@@ -20,7 +20,7 @@ public override void OnApplicationInitialization(ApplicationInitializationContex
 2. **Index content** after publish or on schedule:
 
 ```csharp
-await _ragAppService.StartIndexingAsync("helpdesk-default", "KnowledgeBase");
+await _ragAppService.StartIndexingAsync("helpdesk-default", "HelpDesk.KnowledgeBase");
 ```
 
 3. **Answer with RAG context**:
@@ -39,7 +39,8 @@ var chunks = await _ragAppService.SearchDocumentsAsync(new SearchDocumentsInput
 
 | Item | Value |
 |------|--------|
-| KB RAG source name | `KnowledgeBase` |
+| HelpDesk KB RAG source name | `HelpDesk.KnowledgeBase` (formerly `KnowledgeBase`) |
+| Hooshvare file-library RAG source name | `Hooshvare.KnowledgeBase` (Markdown derived from uploads in `/AI/Hooshvares/{key}`) |
 | Default workspace | Host setting `DefaultAiWorkspaceName` (e.g. `helpdesk-default`) |
 
 Keep product-specific Knowledge Base and Live Chat implementation plans in the consuming product documentation. This page should document the reusable AI Management extension points.

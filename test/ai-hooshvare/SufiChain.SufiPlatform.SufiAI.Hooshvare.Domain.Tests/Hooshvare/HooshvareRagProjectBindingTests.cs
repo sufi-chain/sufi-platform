@@ -32,7 +32,7 @@ public class HooshvareRagProjectBindingTests
 
 
 
-        binding.SourceName.ShouldBe("KnowledgeBase");
+        binding.SourceName.ShouldBe("HelpDesk.KnowledgeBase");
 
         binding.IsEnabled.ShouldBeTrue();
 
@@ -56,7 +56,7 @@ public class HooshvareRagProjectBindingTests
 
             Guid.NewGuid(),
 
-            "KnowledgeBase");
+            "HelpDesk.KnowledgeBase");
 
 
 
@@ -90,7 +90,7 @@ public class HooshvareRagProjectBindingTests
 
             Guid.NewGuid(),
 
-            "KnowledgeBase"));
+            "HelpDesk.KnowledgeBase"));
 
 
 
@@ -104,7 +104,7 @@ public class HooshvareRagProjectBindingTests
 
             Guid.Empty,
 
-            "KnowledgeBase"));
+            "HelpDesk.KnowledgeBase"));
 
     }
 

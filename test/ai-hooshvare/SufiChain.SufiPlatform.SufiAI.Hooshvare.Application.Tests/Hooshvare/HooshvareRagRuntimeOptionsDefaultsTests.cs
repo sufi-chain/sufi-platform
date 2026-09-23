@@ -42,7 +42,7 @@ public class HooshvareRagRuntimeOptionsDefaultsTests
 
 
 
-        result.RagSourceName.ShouldBe("KnowledgeBase");
+        result.RagSourceName.ShouldBe("HelpDesk.KnowledgeBase");
 
         result.RagFilterByProjectId.ShouldBeTrue();
 

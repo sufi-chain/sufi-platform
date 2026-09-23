@@ -168,14 +168,14 @@ public class KBArticleRagContractTests
         {
             UseRag = true,
             RagTopK = 5,
-            RagSourceName = "KnowledgeBase",
+            RagSourceName = "HelpDesk.KnowledgeBase",
             RagFilterByProjectId = true,
             UseMcpTools = false
         };
 
         runtimeOptions.UseRag.ShouldBeTrue();
         runtimeOptions.RagFilterByProjectId.ShouldBeTrue();
-        runtimeOptions.RagSourceName.ShouldBe("KnowledgeBase");
+        runtimeOptions.RagSourceName.ShouldBe("HelpDesk.KnowledgeBase");
 
         typeof(SufiAIRagIndexRequest)
             .GetProperty(nameof(SufiAIRagIndexRequest.MetadataFilters))!

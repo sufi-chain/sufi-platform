@@ -35,7 +35,7 @@ public class HooshvareRuntimeOptions
 
     /// <summary>
     /// Optional document source name filter applied when <see cref="UseRag"/> is true
-    /// (for example <c>KnowledgeBase</c>).
+    /// (<c>HelpDesk.KnowledgeBase</c> or <c>Hooshvare.KnowledgeBase</c>).
     /// </summary>
     public string? RagSourceName { get; set; }
 

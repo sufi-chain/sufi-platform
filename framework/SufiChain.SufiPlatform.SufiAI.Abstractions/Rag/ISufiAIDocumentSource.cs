@@ -12,7 +12,7 @@ namespace SufiChain.SufiPlatform.SufiAI;
 public interface ISufiAIDocumentSource
 {
     /// <summary>
-    /// Unique source name (e.g. <c>KnowledgeBase</c>).
+    /// Unique source name (e.g. <c>HelpDesk.KnowledgeBase</c>).
     /// </summary>
     string SourceName { get; }
 

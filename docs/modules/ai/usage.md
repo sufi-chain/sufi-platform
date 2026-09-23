@@ -109,7 +109,7 @@ If no results appear, confirm indexing completed on [Indexing Status](#managing-
 **Permission:** `AI.RAG.Default` (start indexing may require `AI.RAG.Index` when enforced on the action)
 
 1. Select a workspace.
-2. View registered **document sources** (e.g. `KnowledgeBase` from HelpDesk KB).
+2. View registered **document sources** (e.g. `HelpDesk.KnowledgeBase` from HelpDesk KB, `Hooshvare.KnowledgeBase` from hooshvare file libraries).
 3. Note document count, last indexed time, and status (Pending, Indexing, Complete, Failed).
 4. Click **Start indexing** to index or re-index a source.
 5. Monitor progress (progress indicator when available).

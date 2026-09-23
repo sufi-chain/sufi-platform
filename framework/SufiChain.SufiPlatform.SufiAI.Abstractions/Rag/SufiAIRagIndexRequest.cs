@@ -17,7 +17,7 @@ public class SufiAIRagIndexRequest
 
     /// <summary>
     /// Optional exact-match metadata filters applied after the document source harvest
-    /// (for example <c>projectId</c> for HelpDesk KnowledgeBase).
+    /// (for example <c>projectId</c> for <c>HelpDesk.KnowledgeBase</c>, <c>hooshvareId</c> for <c>Hooshvare.KnowledgeBase</c>).
     /// </summary>
     public Dictionary<string, string> MetadataFilters { get; set; } = new();
 }

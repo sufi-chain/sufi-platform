@@ -1,3 +1,6 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -95,6 +98,14 @@ public class AIFileStructureDataSeedContributor : IDataSeedContributor, ITransie
 
         if (existing != null)
         {
+            if (MergeAllowedTypes(existing, config))
+            {
+                await _fileStructureRepository.UpdateAsync(existing, autoSave: true);
+                _logger.LogInformation(
+                    "Added missing allowed file types to structure '{StructureKey}'.",
+                    config.Key);
+            }
+
             await EnsureStructureRootFolderAsync(existing);
             _logger.LogDebug(
                 "File structure '{StructureKey}' already exists with ID {Id}.",
@@ -138,6 +149,37 @@ public class AIFileStructureDataSeedContributor : IDataSeedContributor, ITransie
             "Seeded file structure '{StructureKey}' with ID {Id}.",
             config.Key,
             entity.Id);
+    }
+
+    /// <summary>
+    /// Adds configured extensions and MIME types missing from an existing row without removing admin additions.
+    /// </summary>
+    private static bool MergeAllowedTypes(FileStructure existing, FileStructureConfig config)
+    {
+        var extensions = Merge(existing.AllowedExtensions, config.AllowedExtensions, out var extensionsChanged);
+        var mimeTypes = Merge(existing.AllowedMimeTypes, config.AllowedMimeTypes, out var mimeTypesChanged);
+        if (!extensionsChanged && !mimeTypesChanged)
+        {
+            return false;
+        }
+
+        existing.AllowedExtensions = extensions;
+        existing.AllowedMimeTypes = mimeTypes;
+        return true;
+
+        static string Merge(string? current, string? configured, out bool changed)
+        {
+            var values = Split(current);
+            var added = Split(configured).Where(value => !values.Contains(value, StringComparer.OrdinalIgnoreCase)).ToList();
+            changed = added.Count > 0;
+            return string.Join(",", values.Concat(added));
+        }
+
+        static List<string> Split(string? value) => (value ?? string.Empty)
+            .Split(',', StringSplitOptions.RemoveEmptyEntries)
+            .Select(item => item.Trim())
+            .Where(item => item.Length > 0)
+            .ToList();
     }
 
     private async Task EnsureStructureRootFolderAsync(FileStructure structure)

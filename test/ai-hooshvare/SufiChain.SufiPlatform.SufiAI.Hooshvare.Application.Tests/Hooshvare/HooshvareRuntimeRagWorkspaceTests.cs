@@ -150,7 +150,7 @@ public partial class HooshvareRuntimeRagWorkspaceTests
 
                 request.WorkspaceName == IndexingWorkspaceName &&
 
-                request.SourceName == "KnowledgeBase" &&
+                request.SourceName == "HelpDesk.KnowledgeBase" &&
 
                 request.MinSimilarity == HooshvareRagRuntimeOptionsDefaults.SearchMinSimilarity &&
 
@@ -270,7 +270,7 @@ public partial class HooshvareRuntimeRagWorkspaceTests
 
                 request.WorkspaceName == IndexingWorkspaceName &&
 
-                request.SourceName == "KnowledgeBase" &&
+                request.SourceName == "HelpDesk.KnowledgeBase" &&
 
                 request.MinSimilarity == HooshvareRagRuntimeOptionsDefaults.SearchMinSimilarity &&
 
@@ -800,7 +800,7 @@ public partial class HooshvareRuntimeRagWorkspaceTests
 
             UseRag = true,
 
-            RagSourceName = "KnowledgeBase",
+            RagSourceName = "HelpDesk.KnowledgeBase",
 
             RagFilterByProjectId = true
 
@@ -810,11 +810,11 @@ public partial class HooshvareRuntimeRagWorkspaceTests
 
         var bindings = Substitute.For<IHooshvareRagProjectBindingRepository>();
 
-        bindings.GetListByHooshvareAsync(definition.Id, "KnowledgeBase", Arg.Any<bool>(), Arg.Any<CancellationToken>())
+        bindings.GetListByHooshvareAsync(definition.Id, "HelpDesk.KnowledgeBase", Arg.Any<bool>(), Arg.Any<CancellationToken>())
 
             .Returns(boundProjectIds
 
-                .Select(id => new HooshvareRagProjectBinding(Guid.NewGuid(), null, definition.Id, id, "KnowledgeBase"))
+                .Select(id => new HooshvareRagProjectBinding(Guid.NewGuid(), null, definition.Id, id, "HelpDesk.KnowledgeBase"))
 
                 .ToList());
 
@@ -840,7 +840,7 @@ public partial class HooshvareRuntimeRagWorkspaceTests
 
                         Content = "Reset your password from the profile page.",
 
-                        SourceName = "KnowledgeBase",
+                        SourceName = "HelpDesk.KnowledgeBase",
 
                         Score = 0.9f
 
@@ -854,7 +854,7 @@ public partial class HooshvareRuntimeRagWorkspaceTests
 
         var indexingWorkspaceResolver = Substitute.For<IHooshvareRagIndexingWorkspaceResolver>();
 
-        indexingWorkspaceResolver.ResolveAsync(projectId, "KnowledgeBase", Arg.Any<CancellationToken>())
+        indexingWorkspaceResolver.ResolveAsync(projectId, "HelpDesk.KnowledgeBase", Arg.Any<CancellationToken>())
 
             .Returns(indexingWorkspaceName == null
 
@@ -866,7 +866,7 @@ public partial class HooshvareRuntimeRagWorkspaceTests
 
                     ProjectId = projectId,
 
-                    SourceName = "KnowledgeBase",
+                    SourceName = "HelpDesk.KnowledgeBase",
 
                     WorkspaceId = Guid.NewGuid(),
 

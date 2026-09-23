@@ -40,6 +40,18 @@ public class AIOptions
     public string ProviderModelCacheSalt { get; set; } = "SufiAI.ProviderModelDiscovery";
 
     /// <summary>
+    /// Text formats accepted for knowledge libraries (converted to Markdown before RAG indexing).
+    /// </summary>
+    public static readonly string[] KnowledgeTextExtensions = { "md", "markdown", "txt" };
+
+    public static readonly string[] KnowledgeTextMimeTypes =
+    {
+        "text/plain",
+        "text/markdown",
+        "text/x-markdown"
+    };
+
+    /// <summary>
     /// Adds the default "AI" file structure configuration.
     /// This structure supports all AI-related file types (images, audio, video, documents)
     /// with permissive settings suitable for AI workspaces.
@@ -56,6 +68,8 @@ public class AIOptions
             .WithDescriptionKey("Structure:AI:Description")
             .WithLocalizationResource("AI")
             .ForFileTypes(FileType.Image | FileType.Video | FileType.Document | FileType.Audio)
+            .AlsoAllowExtensions(KnowledgeTextExtensions)
+            .AlsoAllowMimeTypes(KnowledgeTextMimeTypes)
             .WithMaxSize(100.MB())
             .MultipleFiles()
             .GenerateThumbnail(true, 200, 200)

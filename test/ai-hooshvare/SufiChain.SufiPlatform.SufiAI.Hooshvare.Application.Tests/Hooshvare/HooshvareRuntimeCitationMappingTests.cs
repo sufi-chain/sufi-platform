@@ -30,7 +30,7 @@ public class HooshvareRuntimeCitationMappingTests
 
                 SourceId = $"article-{i}",
 
-                SourceName = "KnowledgeBase",
+                SourceName = "HelpDesk.KnowledgeBase",
 
                 Content = $"Body {i}",
 
@@ -78,7 +78,7 @@ public class HooshvareRuntimeCitationMappingTests
 
                 SourceId = "doc-1",
 
-                SourceName = "KnowledgeBase",
+                SourceName = "HelpDesk.KnowledgeBase",
 
                 Content = new string('a', 500),
 

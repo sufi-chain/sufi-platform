@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using SufiChain.SufiPlatform.FileManager.Configuration;
@@ -84,7 +86,7 @@ public class FileItemController : SufiControllerBase, IFileItemAppService
         try
         {
             // Validate mime/extension/size against structure without throwing (avoids app service exception)
-            var validation = await _fileItemAppService.ValidateUploadAsync(file.FileName, file.ContentType ?? "", request.StructureKey, file.Length);
+            var validation = await _fileItemAppService.ValidateUploadAsync(file.FileName, ResolveContentType(file), request.StructureKey, file.Length);
             if (!validation.IsValid)
                 return BadRequest(new { error = new { message = validation.ErrorMessage } });
 
@@ -103,7 +105,7 @@ public class FileItemController : SufiControllerBase, IFileItemAppService
                     FileName = file.FileName,
                     ContentStream = file.OpenReadStream(),
                     ContentLength = file.Length,
-                    MimeType = file.ContentType,
+                    MimeType = ResolveContentType(file),
                     StructureKey = request.StructureKey,
                     EntityType = request.EntityType,
                     EntityId = request.EntityId,
@@ -128,7 +130,7 @@ public class FileItemController : SufiControllerBase, IFileItemAppService
             {
                 FileName = file.FileName,
                 Content = buffer,
-                MimeType = file.ContentType,
+                MimeType = ResolveContentType(file),
                 StructureKey = request.StructureKey,
                 EntityType = request.EntityType,
                 EntityId = request.EntityId,
@@ -169,7 +171,7 @@ public class FileItemController : SufiControllerBase, IFileItemAppService
 
         try
         {
-            var validation = await _fileItemAppService.ValidateUploadAsync(file.FileName, file.ContentType ?? "", request.StructureKey, file.Length);
+            var validation = await _fileItemAppService.ValidateUploadAsync(file.FileName, ResolveContentType(file), request.StructureKey, file.Length);
             if (!validation.IsValid)
                 return BadRequest(new { error = new { message = validation.ErrorMessage } });
 
@@ -179,7 +181,7 @@ public class FileItemController : SufiControllerBase, IFileItemAppService
                 FileName = file.FileName,
                 ContentStream = file.OpenReadStream(),
                 ContentLength = file.Length,
-                MimeType = file.ContentType,
+                MimeType = ResolveContentType(file),
                 StructureKey = request.StructureKey,
                 EntityType = request.EntityType,
                 EntityId = request.EntityId,
@@ -201,6 +203,26 @@ public class FileItemController : SufiControllerBase, IFileItemAppService
         {
             return CreateUploadErrorResult(ex, file.FileName, file.Length, request.StructureKey);
         }
+    }
+
+    private static readonly FileExtensionContentTypeProvider ContentTypeProvider = new();
+
+    /// <summary>
+    /// Browsers on Windows often send an empty or generic content type for text formats such as
+    /// <c>.md</c>; infer it from the extension so structure MIME allow-lists can match.
+    /// </summary>
+    private static string ResolveContentType(IFormFile file)
+    {
+        var contentType = file.ContentType;
+        if (!string.IsNullOrWhiteSpace(contentType)
+            && !string.Equals(contentType, "application/octet-stream", StringComparison.OrdinalIgnoreCase))
+        {
+            return contentType;
+        }
+
+        return ContentTypeProvider.TryGetContentType(file.FileName, out var inferred)
+            ? inferred
+            : contentType ?? string.Empty;
     }
 
     private IActionResult CreateUploadErrorResult(Exception exception, string fileName, long fileLength, string? structureKey)
@@ -262,7 +284,7 @@ public class FileItemController : SufiControllerBase, IFileItemAppService
                     FileName = file.FileName,
                     ContentStream = file.OpenReadStream(),
                     ContentLength = file.Length,
-                    MimeType = file.ContentType,
+                    MimeType = ResolveContentType(file),
                     StructureKey = request.StructureKey,
                     EntityType = request.EntityType,
                     EntityId = request.EntityId,
@@ -288,7 +310,7 @@ public class FileItemController : SufiControllerBase, IFileItemAppService
                 {
                     FileName = file.FileName,
                     Content = buffer,
-                    MimeType = file.ContentType,
+                    MimeType = ResolveContentType(file),
                     StructureKey = request.StructureKey,
                     EntityType = request.EntityType,
                     EntityId = request.EntityId,

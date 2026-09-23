@@ -38,7 +38,7 @@ public partial class HooshvareRuntimeRagWorkspaceTests
                 var request = call.Arg<SufiAIRagSearchRequest>();
                 queries.Add(request.Query);
                 request.WorkspaceName.ShouldBe(IndexingWorkspaceName);
-                request.SourceName.ShouldBe("KnowledgeBase");
+                request.SourceName.ShouldBe("HelpDesk.KnowledgeBase");
                 request.MetadataFilters["projectId"].ShouldBe(projectId.ToString("D"));
                 request.MinSimilarity.ShouldBe(HooshvareRagRuntimeOptionsDefaults.SearchMinSimilarity);
                 return request.Query == message ? new SufiAIRagSearchResult() : CreateRetrievedPassage();
@@ -115,7 +115,7 @@ public partial class HooshvareRuntimeRagWorkspaceTests
         fixture.Definition.SetRuntimeOptions(new HooshvareRuntimeOptions
         {
             UseRag = true,
-            RagSourceName = "KnowledgeBase",
+            RagSourceName = "HelpDesk.KnowledgeBase",
             RagFilterByProjectId = true,
             RagMetadataFilters = new Dictionary<string, string> { ["culture"] = "fa", ["visibility"] = "public" }
         });
@@ -129,7 +129,7 @@ public partial class HooshvareRuntimeRagWorkspaceTests
                 request.MetadataFilters["culture"].ShouldBe("fa");
                 request.MetadataFilters["visibility"].ShouldBe("public");
                 request.WorkspaceName.ShouldBe(IndexingWorkspaceName);
-                request.SourceName.ShouldBe("KnowledgeBase");
+                request.SourceName.ShouldBe("HelpDesk.KnowledgeBase");
                 if (request.Query == input.Message)
                 {
                     return new SufiAIRagSearchResult();
@@ -256,7 +256,7 @@ public partial class HooshvareRuntimeRagWorkspaceTests
                 {
                     Id = "fresh-passage",
                     Content = "Fresh indexed passage",
-                    SourceName = "KnowledgeBase",
+                    SourceName = "HelpDesk.KnowledgeBase",
                     Score = 0.6f,
                     Metadata = articleId == null
                         ? new Dictionary<string, object>()
