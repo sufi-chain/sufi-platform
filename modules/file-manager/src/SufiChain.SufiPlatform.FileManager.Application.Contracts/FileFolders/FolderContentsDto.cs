@@ -66,6 +66,16 @@ public class BreadcrumbItemDto
     public string Name { get; set; } = default!;
 
     /// <summary>
+    /// Localization resource used to resolve <see cref="Name"/> when it is a business localization key.
+    /// </summary>
+    public string? LocalizationResourceName { get; set; }
+
+    /// <summary>
+    /// Structure key of the folder, used to resolve structure-scoped localization keys.
+    /// </summary>
+    public string? StructureKey { get; set; }
+
+    /// <summary>
     /// Full path
     /// </summary>
     public string Path { get; set; } = default!;

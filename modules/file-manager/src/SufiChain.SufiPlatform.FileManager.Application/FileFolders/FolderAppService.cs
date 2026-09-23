@@ -12,6 +12,7 @@ using SufiChain.SufiPlatform.Features;
 using Volo.Abp;
 using SufiChain.SufiPlatform.Application.Services;
 using Volo.Abp.Authorization;
+using Volo.Abp.Data;
 using Volo.Abp.Domain.Repositories;
 
 namespace SufiChain.SufiPlatform.FileManager.FileFolders;
@@ -103,6 +104,7 @@ public class FolderAppService : SufiApplicationService, IFolderAppService
            {
                Id = child.Id,
                Name = child.Name,
+               LocalizationResourceName = GetLocalizationResourceName(child),
                Path = child.Path,
                ParentId = child.ParentId,
                Type = MapFolderType(child.Type),
@@ -859,6 +861,7 @@ public class FolderAppService : SufiApplicationService, IFolderAppService
             {
                 Id = folder.Id,
                 Name = folder.Name,
+                LocalizationResourceName = GetLocalizationResourceName(folder),
                 Path = folder.Path,
                 ParentId = folder.ParentId,
                 Type = MapFolderType(folder.Type),
@@ -897,6 +900,7 @@ public class FolderAppService : SufiApplicationService, IFolderAppService
         {
             Id = folder.Id,
             Name = folder.Name,
+            LocalizationResourceName = GetLocalizationResourceName(folder),
             Path = folder.Path,
             ParentId = folder.ParentId,
             Type = MapFolderType(folder.Type),
@@ -924,6 +928,8 @@ public class FolderAppService : SufiApplicationService, IFolderAppService
             {
                 Id = current.Id,
                 Name = current.Name,
+                LocalizationResourceName = GetLocalizationResourceName(current),
+                StructureKey = current.StructureKey,
                 Path = current.Path,
                 Icon = current.Icon ?? GetDefaultIcon(current.Type),
                 IsCurrent = current.Id == folder.Id
@@ -1217,6 +1223,11 @@ public class FolderAppService : SufiApplicationService, IFolderAppService
         FolderPermissionLevel.Full => FolderPermissionLevelDto.Full,
         _ => FolderPermissionLevelDto.None
     };
+
+    private static string? GetLocalizationResourceName(FileFolder folder)
+    {
+        return folder.GetProperty<string?>(FileFolderPropertyNames.LocalizationResourceName);
+    }
 
     private static string GetDefaultIcon(FolderType type) => type switch
     {

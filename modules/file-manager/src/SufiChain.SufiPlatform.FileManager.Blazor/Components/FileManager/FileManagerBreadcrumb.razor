@@ -30,12 +30,16 @@
 
     private string GetBreadcrumbDisplayName(BreadcrumbItemDto item)
     {
-        var structureKey = item.Path.Split('/', StringSplitOptions.RemoveEmptyEntries).FirstOrDefault();
-        if (!string.IsNullOrWhiteSpace(structureKey) && item.Path.Trim('/') == structureKey)
+        var structureKey = item.StructureKey ?? item.Path.Split('/', StringSplitOptions.RemoveEmptyEntries).FirstOrDefault();
+        if (string.IsNullOrWhiteSpace(structureKey))
         {
-            return ResolveStructureDisplayName(structureKey, item.Name);
+            return item.Name;
         }
 
-        return item.Name;
+        return ResolveFolderDisplayName(
+            structureKey,
+            item.Name,
+            item.Path.Trim('/') == structureKey,
+            item.LocalizationResourceName);
     }
 }

@@ -63,6 +63,38 @@ public abstract class FileManagerComponentBase : SufiComponentBase
             null);
     }
 
+    protected string ResolveFolderDisplayName(
+        string? structureKey,
+        string? name,
+        bool isStructureFolder,
+        string? localizationResourceName = null)
+    {
+        if (isStructureFolder && !string.IsNullOrWhiteSpace(structureKey))
+        {
+            return ResolveStructureDisplayName(structureKey, name);
+        }
+
+        if (string.IsNullOrWhiteSpace(name))
+        {
+            return string.Empty;
+        }
+
+        if (!string.IsNullOrWhiteSpace(localizationResourceName) &&
+            FileStructureLocalizationHelper.IsBusinessLocalizationKey(name))
+        {
+            return ResolveBusinessText(localizationResourceName, name, name);
+        }
+
+        if (!string.IsNullOrWhiteSpace(structureKey) &&
+            FileStructureLocalizationHelper.IsBusinessLocalizationKey(name))
+        {
+            var resourceName = FileStructureLocalizationRegistry.GetResourceName(structureKey);
+            return ResolveBusinessText(resourceName, name, name);
+        }
+
+        return name;
+    }
+
     protected string ResolveStructureDescription(string structureKey, string? storedDescriptionKey)
     {
         if (string.IsNullOrWhiteSpace(storedDescriptionKey))

@@ -144,20 +144,88 @@ public partial class FileItemAppService : SufiApplicationService, IFileItemAppSe
         return new UploadValidationResult { IsValid = true };
     }
 
-    private async Task<Guid?> ResolveFolderIdAsync(Guid? folderId, string? folderPath)
+    private async Task<Guid?> ResolveFolderIdAsync(Guid? folderId, string? folderPath, string? structureKey)
     {
         if (folderId.HasValue)
         {
             return folderId;
         }
 
-        if (!string.IsNullOrWhiteSpace(folderPath))
+        if (string.IsNullOrWhiteSpace(folderPath))
         {
-            var folder = await _folderAppService.GetOrCreateFolderByPathAsync(folderPath.Trim());
-            return folder?.Id;
+            return null;
         }
 
-        return null;
+        var normalizedPath = folderPath.Trim();
+        if (IsPathUnderStructure(normalizedPath, structureKey))
+        {
+            var folder = await EnsureStructureFolderByPathAsync(normalizedPath, structureKey!);
+            return folder.Id;
+        }
+
+        var created = await _folderAppService.GetOrCreateFolderByPathAsync(normalizedPath);
+        return created?.Id;
+    }
+
+    /// <summary>
+    /// Creates missing folders under a structure without the file-manager create permission.
+    /// Integration uploads (ticket comments, knowledge base articles) target these folders.
+    /// </summary>
+    private async Task<FileFolder> EnsureStructureFolderByPathAsync(string path, string structureKey)
+    {
+        var normalized = path.Trim().TrimEnd('/');
+        var segments = normalized.Split('/', StringSplitOptions.RemoveEmptyEntries);
+        FileFolder? current = null;
+        var currentPath = string.Empty;
+
+        foreach (var segment in segments)
+        {
+            var segmentName = segment.Trim();
+            if (string.IsNullOrEmpty(segmentName))
+            {
+                continue;
+            }
+
+            currentPath = string.IsNullOrEmpty(currentPath) ? "/" + segmentName : currentPath + "/" + segmentName;
+            var existing = await _folderRepository.FindByPathAsync(currentPath, CurrentTenant.Id);
+            if (existing != null)
+            {
+                current = existing;
+                continue;
+            }
+
+            var isRoot = current == null;
+            var folder = new FileFolder(
+                GuidGenerator.Create(),
+                CurrentTenant.Id,
+                segmentName,
+                currentPath,
+                isRoot ? FolderType.Structure : FolderType.Custom,
+                current?.Id,
+                structureKey);
+            await _folderRepository.InsertAsync(folder, autoSave: true);
+            current = folder;
+        }
+
+        if (current == null)
+        {
+            throw new AbpAuthorizationException("Target folder was not found.");
+        }
+
+        return current;
+    }
+
+    private static bool IsPathUnderStructure(string folderPath, string? structureKey)
+    {
+        if (string.IsNullOrWhiteSpace(structureKey))
+        {
+            return false;
+        }
+
+        var root = "/" + structureKey.Trim().Trim('/');
+        var normalized = folderPath.Trim().TrimEnd('/');
+        return string.Equals(normalized, root, StringComparison.OrdinalIgnoreCase)
+            || normalized.StartsWith(root + "/", StringComparison.OrdinalIgnoreCase);
     }
 
     /// <summary>
@@ -189,11 +257,13 @@ public partial class FileItemAppService : SufiApplicationService, IFileItemAppSe
 
     /// <summary>
     /// Authorizes an upload based on its target:
-    /// - Structure-scoped uploads (StructureKey set, no free folder) require only authentication;
-    ///   the calling integration service (e.g. ticket/chat composer) is responsible for the
-    ///   domain-level ownership check, and the structure itself enforces size/type/count limits.
-    /// - Folder uploads (FolderId/FolderPath set) require an explicit folder-level Write grant
-    ///   for the current user, resolved through the FolderPermission OU/Role/User model.
+    /// - Structure-scoped uploads (StructureKey set, including a folder under that structure)
+    ///   require only authentication. The calling integration service (e.g. ticket/chat composer)
+    ///   is responsible for the domain-level ownership check, and the structure itself enforces
+    ///   size/type/count limits.
+    /// - Other folder uploads (FolderId/FolderPath set outside the structure) require an explicit
+    ///   folder-level Write grant for the current user, resolved through the FolderPermission
+    ///   OU/Role/User model.
     /// - Admins (FileItems.Create) bypass the folder grant check.
     /// This keeps the broad file-manager permission off the end-user role while still allowing
     /// legitimate per-structure uploads (portal ticket/chat attachments).
@@ -212,13 +282,19 @@ public partial class FileItemAppService : SufiApplicationService, IFileItemAppSe
             return;
         }
 
-        // Folder uploads require an explicit per-folder Write grant.
+        // Folder uploads require an explicit per-folder Write grant,
+        // unless the folder belongs to the same structure the caller is uploading into.
         if (folderId.HasValue)
         {
             var folder = await _folderRepository.GetWithPermissionsAsync(folderId.Value);
             if (folder == null)
             {
                 throw new AbpAuthorizationException("Target folder was not found.");
+            }
+
+            if (IsStructureOwnedFolder(folder, structureKey))
+            {
+                return;
             }
 
             var context = await _folderAccessContextProvider.GetContextAsync();
@@ -240,6 +316,23 @@ public partial class FileItemAppService : SufiApplicationService, IFileItemAppSe
             $"Given policy has not granted: {FileManagerPermissions.FileItems.Create}");
     }
 
+    private static bool IsStructureOwnedFolder(FileFolder folder, string? structureKey)
+    {
+        if (string.IsNullOrWhiteSpace(structureKey))
+        {
+            return false;
+        }
+
+        if (string.Equals(folder.StructureKey, structureKey, StringComparison.OrdinalIgnoreCase))
+        {
+            return true;
+        }
+
+        var root = "/" + structureKey.Trim().Trim('/');
+        return string.Equals(folder.Path, root, StringComparison.OrdinalIgnoreCase)
+            || folder.Path.StartsWith(root + "/", StringComparison.OrdinalIgnoreCase);
+    }
+
     [RemoteService(false)]
     [Authorize]
     public Task<FileItemDto> UploadAsync(UploadFileInput input)
@@ -247,10 +340,21 @@ public partial class FileItemAppService : SufiApplicationService, IFileItemAppSe
         return UploadCoreAsync(input);
     }
 
+    /// <summary>
+    /// Uploads a file for trusted in-process integration callers (for example background jobs that
+    /// store derived documents). Callers authorize the target in their own domain; structure
+    /// validation and folder ownership rules still apply.
+    /// </summary>
+    [RemoteService(false)]
+    public virtual Task<FileItemDto> UploadForIntegrationAsync(UploadFileInput input)
+    {
+        return UploadCoreAsync(input);
+    }
+
     private async Task<FileItemDto> UploadCoreAsync(UploadFileInput input)
     {
         EnsureSafeUploadFileName(input.FileName);
-        var folderId = await ResolveFolderIdAsync(input.FolderId, input.FolderPath);
+        var folderId = await ResolveFolderIdAsync(input.FolderId, input.FolderPath, input.StructureKey);
         await EnsureCanUploadAsync(folderId, input.StructureKey);
         folderId = await ResolveFolderIdAfterAuthorizationAsync(folderId, input.StructureKey);
 
@@ -407,7 +511,7 @@ public partial class FileItemAppService : SufiApplicationService, IFileItemAppSe
 
     private async Task<FileItemDto> UploadStreamCoreAsync(UploadFileStreamInput input)
     {
-        var folderId = await ResolveFolderIdAsync(input.FolderId, input.FolderPath);
+        var folderId = await ResolveFolderIdAsync(input.FolderId, input.FolderPath, input.StructureKey);
         await EnsureCanUploadAsync(folderId, input.StructureKey);
         folderId = await ResolveFolderIdAfterAuthorizationAsync(folderId, input.StructureKey);
 
@@ -722,7 +826,21 @@ public partial class FileItemAppService : SufiApplicationService, IFileItemAppSe
     }
 
     [Authorize(FileManagerPermissions.FileItems.Delete)]
-    public async Task DeleteAsync(Guid id)
+    public Task DeleteAsync(Guid id)
+    {
+        return DeleteCoreAsync(id);
+    }
+
+    /// <summary>
+    /// Deletes a file for trusted in-process integration callers that authorize the file in their own domain.
+    /// </summary>
+    [RemoteService(false)]
+    public virtual Task DeleteForIntegrationAsync(Guid id)
+    {
+        return DeleteCoreAsync(id);
+    }
+
+    private async Task DeleteCoreAsync(Guid id)
     {
         var fileItem = await _fileItemRepository.GetAsync(id);
 

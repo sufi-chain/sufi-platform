@@ -85,12 +85,11 @@
 
     private string GetNodeDisplayName()
     {
-        if (Node.Type == FolderTypeDto.Structure && !string.IsNullOrWhiteSpace(Node.StructureKey))
-        {
-            return ResolveStructureDisplayName(Node.StructureKey, Node.Name);
-        }
-
-        return Node.Name;
+        return ResolveFolderDisplayName(
+            Node.StructureKey,
+            Node.Name,
+            Node.Type == FolderTypeDto.Structure,
+            Node.LocalizationResourceName);
     }
 
     private string GetIconStyle()

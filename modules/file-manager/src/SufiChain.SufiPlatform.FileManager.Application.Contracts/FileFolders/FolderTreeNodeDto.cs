@@ -19,6 +19,12 @@ public class FolderTreeNodeDto
     public string Name { get; set; } = default!;
 
     /// <summary>
+    /// Localization resource used to resolve <see cref="Name"/> when it is a business localization key
+    /// owned by a module other than the folder's structure (see <see cref="FileFolderPropertyNames.LocalizationResourceName"/>).
+    /// </summary>
+    public string? LocalizationResourceName { get; set; }
+
+    /// <summary>
     /// Full path
     /// </summary>
     public string Path { get; set; } = default!;

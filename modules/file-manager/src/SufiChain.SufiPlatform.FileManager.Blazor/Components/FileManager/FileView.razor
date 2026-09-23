@@ -34,7 +34,7 @@
                             <div class="fm-item-icon">
                                 <span style="@GetFolderIconStyle(folder)"><SbIcon Name="@GetFolderIconName(folder)" /></span>
                             </div>
-                            <div class="fm-item-name" title="@folder.Name">
+                            <div class="fm-item-name" title="@GetFolderDisplayName(folder)">
                                 @if (State.IsRenaming && State.RenamingItemId == folder.Id)
                                 {
                                     <input type="text" class="fm-rename-input" 
@@ -219,12 +219,11 @@
 
     private string GetFolderDisplayName(FolderTreeNodeDto folder)
     {
-        if (folder.Type == FolderTypeDto.Structure && !string.IsNullOrWhiteSpace(folder.StructureKey))
-        {
-            return ResolveStructureDisplayName(folder.StructureKey, folder.Name);
-        }
-
-        return folder.Name;
+        return ResolveFolderDisplayName(
+            folder.StructureKey,
+            folder.Name,
+            folder.Type == FolderTypeDto.Structure,
+            folder.LocalizationResourceName);
     }
 
     /// <summary>

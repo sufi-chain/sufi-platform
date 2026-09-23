@@ -1,5 +1,4 @@
-@using SufiChain.SufiPlatform.FileManager.Localization
-@inject Microsoft.Extensions.Localization.IStringLocalizer<SufiFileManagerResource> L
+@inherits FileManagerComponentBase
 
 <div class="fm-properties-panel">
     @if (SelectedFiles.Count == 1 && !SelectedFolders.Any())
@@ -131,7 +130,7 @@
             <div class="fm-properties-icon" style="color: @(folder.Color ?? "#f59e0b")">
                 <SbIcon Name="@GetFolderIconName(folder)" Size="SbSize.Xl" />
             </div>
-            <div class="fm-properties-title">@folder.Name</div>
+            <div class="fm-properties-title">@GetFolderDisplayName(folder)</div>
         </div>
         <div class="fm-properties-body">
             <dl>
@@ -219,6 +218,15 @@
         FileType.Document => "Document",
         _ => "File"
     };
+
+    private string GetFolderDisplayName(FolderTreeNodeDto folder)
+    {
+        return ResolveFolderDisplayName(
+            folder.StructureKey,
+            folder.Name,
+            folder.Type == FolderTypeDto.Structure,
+            folder.LocalizationResourceName);
+    }
 
     private string GetFolderTypeName(FolderTreeNodeDto folder) => folder.Type switch
     {

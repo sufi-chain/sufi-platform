@@ -154,9 +154,11 @@ public partial class FolderAccess
 
     private string GetFolderDisplayLabel(FolderTreeNodeDto node)
     {
-        var displayName = node.Type == FolderTypeDto.Structure && !string.IsNullOrWhiteSpace(node.StructureKey)
-            ? ResolveStructureDisplayName(node.StructureKey, node.Name)
-            : node.Name;
+        var displayName = ResolveFolderDisplayName(
+            node.StructureKey,
+            node.Name,
+            node.Type == FolderTypeDto.Structure,
+            node.LocalizationResourceName);
 
         return $"({node.Path}) {displayName}";
     }

@@ -29,6 +29,7 @@ public partial class FileSelector : FileManagerComponentBase
     [Parameter] public bool AllowMultiple { get; set; } = false;
     [Parameter] public FileType? FilterFileType { get; set; }
     [Parameter] public string? StructureKey { get; set; }
+    [Parameter] public string? EntityType { get; set; }
     [Parameter] public EventCallback<List<FileItemDto>> OnFileSelected { get; set; }
 
     private bool _isOpen = false;
@@ -75,6 +76,7 @@ public partial class FileSelector : FileManagerComponentBase
                 Keyword = _searchKeyword,
                 FileType = _selectedFileType,
                 StructureKey = _filterStructureKey,
+                EntityType = EntityType,
                 SkipCount = (_currentPage - 1) * PageSize,
                 MaxResultCount = PageSize,
                 Sorting = "CreationTime DESC"
