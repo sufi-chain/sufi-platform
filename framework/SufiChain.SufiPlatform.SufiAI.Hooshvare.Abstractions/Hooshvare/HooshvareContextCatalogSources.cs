@@ -8,8 +8,6 @@ public static class HooshvareContextCatalogSources
 
     public const string HelpDeskProjects = "helpdesk-projects";
 
-    public const string HelpDeskProjectSlugs = "helpdesk-project-slugs";
-
     public const string KbArticles = "kb-articles";
 
     public const string KbVersions = "kb-versions";
@@ -22,9 +20,7 @@ public static class HooshvareContextCatalogSources
 
     public const string Forms = "forms";
 
-    public const string CmsWidgets = "cms-widgets";
-
-    public const string CmsPageDefaults = "cms-page-defaults";
+    public const string CmsPages = "cms-pages";
 
     public const string PlaygroundSession = "playground-session";
 
