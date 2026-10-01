@@ -14,7 +14,7 @@ public class StandardMessageTemplateDefinitionProvider : TemplateDefinitionProvi
                 displayName: LocalizableString.Create<SufiComResource>("TextTemplate:Layout"),
                 layout: null,
                 localizationResource: typeof(SufiComResource)
-            ).WithVirtualFilePath("/Templates/Layout", isInlineLocalized: true),
+            ).WithVirtualFilePath("/Templates/StandardMessageLayout", isInlineLocalized: true),
             
             new TemplateDefinition(
                 StandardMessageTemplates.Message,

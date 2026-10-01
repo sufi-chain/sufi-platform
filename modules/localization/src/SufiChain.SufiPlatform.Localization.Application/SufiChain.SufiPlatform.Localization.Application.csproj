@@ -18,6 +18,7 @@
     <PackageReference Include="Volo.Abp.Caching" Version="$(AbpVersion)" />
     <ProjectReference Include="..\SufiChain.SufiPlatform.Localization.Application.Contracts\SufiChain.SufiPlatform.Localization.Application.Contracts.csproj" />
     <ProjectReference Include="..\SufiChain.SufiPlatform.Localization.Domain\SufiChain.SufiPlatform.Localization.Domain.csproj" />
+    <ProjectReference Include="..\..\..\..\..\pro-modules\ai-hooshvare\src\SufiChain.SufiPlatform.SufiAI.Hooshvare.Application\SufiChain.SufiPlatform.SufiAI.Hooshvare.Application.csproj" />
   </ItemGroup>
 
 </Project>

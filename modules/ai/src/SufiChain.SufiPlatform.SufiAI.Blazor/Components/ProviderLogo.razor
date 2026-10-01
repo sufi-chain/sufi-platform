@@ -1,0 +1,26 @@
+@namespace SufiChain.SufiPlatform.SufiAI.Blazor.Components
+
+<span class="ai-mark ai-mark--square @(Small ? "ai-mark--sm" : null)" title="@Provider.ToString()">
+	<img src="@Src" alt="" aria-hidden="true" />
+</span>
+
+@code {
+	[Parameter, EditorRequired]
+	public AIProviderType Provider { get; set; }
+
+	[Parameter]
+	public bool Small { get; set; }
+
+	private string Src => Provider switch
+	{
+		AIProviderType.OpenAI => Asset("openai"),
+		AIProviderType.OpenRouter => Asset("openrouter"),
+		AIProviderType.HuggingFace => Asset("huggingface"),
+		AIProviderType.AvalAI => Asset("avalai"),
+		AIProviderType.Liara => Asset("liara"),
+		_ => Asset("compatible")
+	};
+
+	private static string Asset(string name) =>
+		$"_content/SufiChain.SufiPlatform.SufiAI.Blazor/logos/providers/{name}.svg";
+}

@@ -109,7 +109,7 @@ public class CalendarSearchEventsTool : CalendarAIToolBase
             cancellationToken));
     }
 
-    [SufiAiMcpTool(CalendarAIToolNames.SearchEvents, "Searches events on every calendar the user can see: personal, inherited, and shared. Each result includes CalendarName, CalendarKind, VisibilityRelation (Own, Inherited, Shared), BlocksPersonalTime, and AvailabilityRole (PersonalBusy, WorkCommitment, PublicObservance). Default/holiday observances do not occupy personal time. Personal and Public (inherited or shared) calendars do. Omit calendarId for availability across all visible calendars. Call calendar.get_current_time before relative or Persian dates. Never invent an event id.")]
+    [SufiAiMcpTool(CalendarAIToolNames.SearchEvents, "Searches events on every calendar the user can see: personal, inherited, and shared. Each result includes CalendarName, CalendarKind, VisibilityRelation (Own, Inherited, Shared), BlocksPersonalTime, and AvailabilityRole (PersonalBusy, WorkCommitment, PublicObservance). Default/holiday observances do not occupy personal time. Personal and Public (inherited or shared) calendars do. Omit calendarId for availability across all visible calendars. Call calendar.get_current_time before relative or Persian dates. Never invent an event id.", ReadOnly = true)]
     public virtual async Task<object> SearchEventsAsync(
         Guid? calendarId = null,
         DateTime? fromUtc = null,

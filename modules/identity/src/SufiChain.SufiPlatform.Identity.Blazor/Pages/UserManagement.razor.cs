@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Components;
 using SufiChain.SufiPlatform.Identity.Blazor.Components;
 using SufiChain.SufiPlatform.UI.Layout;
 using SufiChain.SufiPlatform.Identity;
+using SufiChain.SufiPlatform.Identity.Hooshvare;
 using SufiChain.SufiBlazor.Components.Data;
 using SufiChain.SufiBlazor.Contracts.Data;
 
@@ -148,5 +149,16 @@ public partial class UserManagement : IdentityComponentBase
                 user.UserName
             );
         }
+    }
+
+    private IReadOnlyDictionary<string, string> BuildHooshvareContext()
+    {
+        var context = new Dictionary<string, string>(StringComparer.Ordinal);
+        if (_selectedUser != null)
+        {
+            context[IdentityAdminAdvisorHooshvareKeys.Context.UserId] = _selectedUser.Id.ToString();
+        }
+
+        return context;
     }
 }

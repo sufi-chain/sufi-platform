@@ -4,6 +4,7 @@ using System.ClientModel;
 using System.ClientModel.Primitives;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
+using SufiChain.SufiPlatform.SufiAI;
 using SufiChain.SufiPlatform.SufiAI.RAG;
 using System.Collections.Generic;
 using System.Net.Http.Headers;
@@ -23,7 +24,7 @@ public static class WorkspaceConfigurationHelper
         WorkspaceRuntimeConfiguration configuration,
         AITransportOptions? transportOptions = null)
     {
-        EnsureOpenAIProvider(configuration.Provider);
+        EnsureOpenAICompatible(configuration.Provider);
         ConfigureOpenAIKernel(builder, configuration, transportOptions ?? new AITransportOptions());
     }
 
@@ -34,7 +35,7 @@ public static class WorkspaceConfigurationHelper
         ArgumentNullException.ThrowIfNull(embedderConfiguration);
 
         var provider = embedderConfiguration.Provider;
-        EnsureOpenAIProvider(provider);
+        EnsureOpenAICompatible(provider);
 
         var model = string.IsNullOrWhiteSpace(embedderConfiguration.Model)
             ? "text-embedding-3-small"
@@ -45,12 +46,19 @@ public static class WorkspaceConfigurationHelper
             : CreateOpenAIEmbeddingGenerator(workspace, embedderConfiguration, model);
     }
 
-    private static void EnsureOpenAIProvider(AIProviderType provider)
+    private static void EnsureOpenAICompatible(AIProviderType provider)
     {
-        if (provider != AIProviderType.OpenAI)
+        if (provider is AIProviderType.OpenAI
+            or AIProviderType.OpenAICompatible
+            or AIProviderType.OpenRouter
+            or AIProviderType.HuggingFace
+            or AIProviderType.AvalAI
+            or AIProviderType.Liara)
         {
-            throw new ArgumentException($"Unsupported provider type: {provider}");
+            return;
         }
+
+        throw new ArgumentException($"Unsupported provider type: {provider}");
     }
 
 #pragma warning disable SKEXP0010 // AddOpenAIEmbeddingGenerator is the current SK replacement for the obsolete text-embedding API.
@@ -116,7 +124,9 @@ public static class WorkspaceConfigurationHelper
         var options = new OpenAIClientOptions
         {
             NetworkTimeout = transportOptions.GetRequestTimeout(),
-            RetryPolicy = new ClientRetryPolicy(maxRetries: 0)
+            RetryPolicy = new ClientRetryPolicy(maxRetries: 0),
+            // Buffer a finished JSON/SSE body even when the gateway leaves the connection open.
+            Transport = new HttpClientPipelineTransport(ProviderResponseCompletionHandler.SharedClient)
         };
         if (!string.IsNullOrWhiteSpace(configuration.ApiEndpoint))
             options.Endpoint = new Uri(configuration.ApiEndpoint);

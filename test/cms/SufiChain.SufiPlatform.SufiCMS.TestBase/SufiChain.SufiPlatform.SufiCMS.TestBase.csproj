@@ -6,6 +6,7 @@
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="../../../../pro-modules/cms/src/SufiChain.SufiPlatform.SufiCMS.Domain/SufiChain.SufiPlatform.SufiCMS.Domain.csproj" />
+    <PackageReference Include="Volo.Abp.Autofac" Version="$(AbpVersion)" />
     <PackageReference Include="Volo.Abp.TestBase" Version="$(AbpVersion)" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.14.1" />
     <PackageReference Include="Shouldly" Version="4.3.0" />

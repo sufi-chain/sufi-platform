@@ -11,6 +11,17 @@ public class SufiAIChatMessageDto
     public string Content { get; set; } = string.Empty;
 }
 
+public class SufiAIChatAttachmentInput
+{
+    public string Type { get; set; } = string.Empty;
+
+    public string? DataUrl { get; set; }
+
+    public string? FileName { get; set; }
+
+    public string? MimeType { get; set; }
+}
+
 public class SufiAISendChatMessageInput
 {
     [Required]
@@ -26,6 +37,15 @@ public class SufiAISendChatMessageInput
     public float? Temperature { get; set; }
 
     public int? MaxTokens { get; set; }
+
+    public string? ReasoningEffort { get; set; }
+
+    /// <summary>
+    /// Admin chat choice. Null keeps the product default: Responses only when the selected model supports it.
+    /// </summary>
+    public OpenAIApiMode? OpenAIApiMode { get; set; }
+
+    public List<SufiAIChatAttachmentInput> Attachments { get; set; } = new();
 
     public List<string> AllowedMcpToolNames { get; set; } = new();
 }

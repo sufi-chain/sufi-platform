@@ -31,6 +31,7 @@ public interface IAIAppService : IApplicationService
     Task<AIModelConfigurationDto> CreateModelConfigurationAsync(CreateAIModelConfigurationDto input);
     Task<AIModelConfigurationDto> UpdateModelConfigurationAsync(Guid id, UpdateAIModelConfigurationDto input);
     Task DeleteModelConfigurationAsync(Guid id);
+    Task SetWorkspaceDefaultModelConfigurationAsync(Guid id);
     
     // Usage statistics
     Task<List<AIUsageLogDto>> GetUsageLogsAsync(Guid workspaceId, DateTime? startDate = null, DateTime? endDate = null);

@@ -17,6 +17,7 @@
     "ChannelVoice": "مكالمة صوتية",
     "EmailConfirmation:Subject": "أكد بريدك الإلكتروني",
     "PasswordReset:Subject": "أعد تعيين كلمة المرور",
+    "EmailSender:DisplayName": "الحساب",
     "VerificationCode:Subject": "رمز التحقق الخاص بك",
     "CaptchaLoading": "جاري تحميل فحص الأمان...",
     "CaptchaQuestion": "فحص الأمان",
@@ -128,6 +129,13 @@
     "EmailConfirmationResendFailed": "تعذر إرسال رسالة التأكيد. يرجى المحاولة مرة أخرى.",
     "CaptchaLoadFailed": "تعذر تحميل التحقق البشري. يرجى تحديث الصفحة والمحاولة مرة أخرى.",
     "ProfileSaveFailed": "تعذر حفظ الملف الشخصي. يرجى المحاولة مرة أخرى.",
-    "PasswordChangeFailed": "تعذر تغيير كلمة المرور. يرجى المحاولة مرة أخرى."
+    "PasswordChangeFailed": "تعذر تغيير كلمة المرور. يرجى المحاولة مرة أخرى.",
+    "LinkNewAccount": "ربط حساب جديد",
+    "LinkAccountSignInHint": "سجّل الدخول بالحساب الذي تريد ربطه. بعد تسجيل الدخول يكتمل الربط.",
+    "LinkAccountProcessing": "جارٍ ربط الحسابات...",
+    "LinkAccountSucceeded": "تم ربط الحسابات.",
+    "LinkAccountFailed": "تعذر ربط الحساب. ابدأ مرة أخرى من الحسابات المرتبطة.",
+    "LinkAccountSameUser": "لقد سجلت الدخول بنفس الحساب. سجّل الخروج ثم ادخل بالحساب الآخر لإكمال الربط.",
+    "LinkAccountSignInOther": "تسجيل الدخول بحساب آخر"
   }
 }

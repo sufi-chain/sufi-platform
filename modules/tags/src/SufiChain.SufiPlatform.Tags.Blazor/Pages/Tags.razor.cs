@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Components;
 using SufiChain.SufiPlatform.Application.Dtos;
+using SufiChain.SufiPlatform.Tags.Hooshvare;
 using SufiChain.SufiPlatform.Tags.Tags;
 using SufiChain.SufiPlatform.UI.Layout;
 using SufiChain.SufiBlazor.Components.Data;
@@ -149,5 +150,26 @@ public partial class Tags : TagsComponentBase
             await Notify.SuccessAsync(L["TagDeletedSuccessfully"]);
             await RefreshGridAsync();
         }, LoadingKeys.DeleteTag);
+    }
+
+    private IReadOnlyDictionary<string, string> BuildHooshvareContext()
+    {
+        var context = new Dictionary<string, string>(StringComparer.Ordinal);
+        var tag = _selectedTag ?? _selectedTagForLinks;
+        if (!string.IsNullOrWhiteSpace(_scopeFilter))
+        {
+            context[TagsTaxonomyHooshvareKeys.Context.Scope] = _scopeFilter;
+        }
+        else if (tag != null && !string.IsNullOrWhiteSpace(tag.Scope))
+        {
+            context[TagsTaxonomyHooshvareKeys.Context.Scope] = tag.Scope;
+        }
+
+        if (tag != null)
+        {
+            context[TagsTaxonomyHooshvareKeys.Context.TagId] = tag.Id.ToString();
+        }
+
+        return context;
     }
 }

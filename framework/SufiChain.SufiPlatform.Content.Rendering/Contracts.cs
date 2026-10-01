@@ -19,6 +19,12 @@ public static class HtmlSanitizerPolicies
 {
     public const string KnowledgeBasePublic = "KnowledgeBasePublic";
     public const string CmsPublic = "CmsPublic";
+
+    /// <summary>
+    /// Editor-authored CMS page markup: layout tags, inline styles, media and https embeds; never scripts,
+    /// event handlers or forms (forms come from the <c>form</c> block).
+    /// </summary>
+    public const string CmsPage = "CmsPage";
     public const string Email = "Email";
     public const string Chat = "Chat";
 }

@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Components;
 using SufiChain.SufiPlatform.Identity.Blazor.Components;
 using SufiChain.SufiPlatform.UI.Layout;
 using SufiChain.SufiPlatform.Identity;
+using SufiChain.SufiPlatform.Identity.Hooshvare;
 using SufiChain.SufiBlazor.Components.Data;
 using SufiChain.SufiBlazor.Contracts.Data;
 
@@ -140,5 +141,16 @@ public partial class RoleManagement : IdentityComponentBase
                 role.Name
             );
         }
+    }
+
+    private IReadOnlyDictionary<string, string> BuildHooshvareContext()
+    {
+        var context = new Dictionary<string, string>(StringComparer.Ordinal);
+        if (_selectedRole != null)
+        {
+            context[IdentityAdminAdvisorHooshvareKeys.Context.RoleId] = _selectedRole.Id.ToString();
+        }
+
+        return context;
     }
 }

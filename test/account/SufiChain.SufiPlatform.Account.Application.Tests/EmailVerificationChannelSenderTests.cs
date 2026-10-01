@@ -57,7 +57,8 @@ public class EmailVerificationChannelSenderTests
             Arg.Any<IEnumerable<string>?>(),
             Arg.Any<IEnumerable<string>?>(),
             Arg.Any<IEnumerable<SufiChain.SufiPlatform.SufiCom.MessageAttachment>?>(),
-            Arg.Any<SufiChain.SufiPlatform.SufiCom.AdditionalMessageSendingArgs?>());
+            Arg.Is<SufiChain.SufiPlatform.SufiCom.AdditionalMessageSendingArgs?>(args =>
+                args != null && args.FromDisplayName == "EmailSender:DisplayName"));
 
         await emailSender.DidNotReceive().SendAsync(
             Arg.Any<string>(),

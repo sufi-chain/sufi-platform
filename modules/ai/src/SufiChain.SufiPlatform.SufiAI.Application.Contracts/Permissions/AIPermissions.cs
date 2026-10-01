@@ -19,9 +19,9 @@ public static class AIPermissions
         public const string Index = Default + ".Index";
     }
 
-    public static class TestChat
+    public static class WorkspaceChat
     {
-        public const string Default = GroupName + ".TestChat";
+        public const string Default = GroupName + ".WorkspaceChat";
     }
     
     public static class MCPTools

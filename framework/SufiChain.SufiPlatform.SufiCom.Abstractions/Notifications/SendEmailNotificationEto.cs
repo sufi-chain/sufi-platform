@@ -30,6 +30,11 @@ public class SendEmailNotificationEto : NotificationMessageEto
     public bool IsBodyHtml { get; set; } = true;
 
     /// <summary>
+    /// Inbox title for this delivery. When empty, the SMTP default display name is used.
+    /// </summary>
+    public string? FromDisplayName { get; set; }
+
+    /// <summary>
     /// When set, the handler renders subject + body via TextTemplating using
     /// <see cref="TemplateData"/> and <see cref="NotificationMessageEto.Culture"/>
     /// instead of using <see cref="Subject"/>/<see cref="Body"/> directly.

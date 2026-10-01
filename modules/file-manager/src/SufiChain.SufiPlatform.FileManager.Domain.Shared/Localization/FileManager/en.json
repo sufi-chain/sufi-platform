@@ -155,6 +155,8 @@
     "ImageUploadedSuccessfully": "Image uploaded successfully",
     "ImageRemoved": "Image removed",
     "UploadFailed": "Upload failed. Try again.",
+    "OperationFailed": "The file operation could not be completed.",
+    "StorageConnectionFailed": "The storage connection test failed.",
     "FailedToRemoveImage": "Could not remove the image. Try again.",
     "FileSizeExceedsMaximum": "File size exceeds maximum allowed size of {0}MB",
     "OnlyImageFilesAllowed": "Only image files are allowed",

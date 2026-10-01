@@ -22,6 +22,12 @@ public sealed class AIUsageRecord
 
     public int? TotalTokens { get; init; }
 
+    public decimal? AudioSeconds { get; init; }
+
+    public int? CharacterCount { get; init; }
+
+    public int? ImageCount { get; init; }
+
     public string? UsageUnavailableReason { get; init; }
 
     public long LatencyMs { get; init; }

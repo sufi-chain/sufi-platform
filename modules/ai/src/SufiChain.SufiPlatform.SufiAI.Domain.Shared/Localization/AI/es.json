@@ -132,6 +132,14 @@
 
     "Default": "Predeterminado",
 
+    "SetAsWorkspaceDefault": "Establecer como predeterminado del espacio de trabajo",
+
+    "SetAsWorkspaceDefaultConfirmation": "¿Establecer \"{0}\" como el modelo predeterminado de este espacio de trabajo? Los chats que no elijan una ruta lo usarán.",
+
+    "WorkspaceDefault": "Predeterminado del espacio de trabajo",
+
+    "WorkspaceDefaultUpdated": "Este modelo ahora es el predeterminado del espacio de trabajo.",
+
     "Delete": "Eliminar",
 
     "DeleteConfigurationConfirmation": "¿Está seguro de que desea eliminar la configuración del modelo '{0}'?",
@@ -244,9 +252,7 @@
 
     "Menu:RAGSources": "Fuentes RAG",
 
-    "Menu:TestChat": "Probar Chat",
-
-    "Menu:Testing": "Pruebas",
+    "Menu:WorkspaceChat": "Chat del espacio de trabajo",
 
     "Menu:UsageAnalytics": "Análisis de Uso",
 
@@ -313,6 +319,9 @@
     "Prompt": "Indicación",
 
     "Provider": "Proveedor",
+    "OpenAICompatible": "Compatible con OpenAI",
+    "Decisions": "Decisiones",
+    "DecisionsModelNone": "Sin modelo de decisiones",
 
     "Query": "Consulta",
 
@@ -374,7 +383,16 @@
 
     "Temperature": "Temperatura",
 
-    "TestChat": "Probar Chat",
+    "WorkspaceChat": "Chat del espacio de trabajo",
+    "WorkspaceChat:Greeting": "¿En qué puedo ayudarte?",
+    "WorkspaceChat:Saved": "Guardado",
+    "WorkspaceChat:Anonymous": "Anónimo",
+    "WorkspaceChat:NoSavedThreads": "Aún no hay chats guardados",
+    "WorkspaceChat:SelectWorkspace": "Elige un espacio de trabajo para empezar",
+    "WorkspaceChat:ModelSelector": "Modelo",
+    "WorkspaceChat:NoSelectableChatRoutes": "No hay modelos de chat disponibles",
+    "WorkspaceChat:ModelSelectorNeedMoreRoutes": "Añade otro modelo de chat seleccionable para poder elegir",
+    "WorkspaceChat:ReplyFailed": "La respuesta falló",
 
     "TestConnection": "Probar Conexión",
 
@@ -387,6 +405,9 @@
     "Time": "Tiempo",
 
     "Tokens": "Tokens",
+    "LoggedAudioSeconds": "{0} s",
+    "LoggedCharacters": "{0} caracteres",
+    "LoggedImages": "{0} imágenes",
 
     "ToolName": "Nombre de Herramienta",
 
@@ -467,6 +488,17 @@
     "ApiKeyRequiredForConnectionTest": "La clave API es obligatoria para probar la conexión.",
 
     "AvailableModels": "Modelos disponibles",
+    "UseWorkspaceConnection": "Usar la conexión del espacio de trabajo",
+    "UseCustomConnection": "Usar otra conexión",
+    "WorkspaceConnectionSummary": "Esta ruta usa la dirección, la clave y los precios del espacio de trabajo.",
+    "EnterModelId": "Escribir un id de modelo",
+    "RefreshModels": "Actualizar modelos",
+    "ModelsNotLoaded": "Los modelos aún no se han cargado.",
+    "NoMatchingModels": "Ningún modelo coincide con esa búsqueda.",
+    "SavedApiKeyKeptHint": "La clave guardada se conserva. Sustitúyela si este proveedor usa otra cuenta.",
+    "ProviderEndpointDefault": "Dirección predeterminada del proveedor.",
+    "ProviderEndpointRequired": "Este proveedor necesita una dirección base.",
+    "ProviderEndpointCustom": "Dirección personalizada. Cambiar de proveedor la sustituye.",
 
     "ConnectionSettings": "Conexión",
 
@@ -554,7 +586,7 @@
 
     "Permission:Index": "Indexar",
 
-    "Permission:TestChat": "Chat de prueba",
+    "Permission:WorkspaceChat": "Chat del espacio de trabajo",
 
     "Permission:MCPTools": "Herramientas MCP",
 
@@ -581,6 +613,29 @@
     "InputCostPer1MTokens": "Costo de entrada / 1 millón de tokens",
 
     "OutputCostPer1MTokens": "Costo de salida / 1 millón de tokens",
+    "RouteInputPrice": "Precio de entrada",
+    "RouteOutputPrice": "Precio de salida",
+    "CostPerMinute": "Costo / minuto",
+    "CostPerHour": "Costo / hora",
+    "CostPerMillionCharacters": "Costo / 1 millón de caracteres",
+    "CostPerImage": "Costo / imagen",
+    "CostPerRequest": "Costo / solicitud",
+    "NotPriced": "Sin precio",
+    "PriceSuffixMillionTokens": "/ 1M tokens",
+    "PriceSuffixMinute": "/ min",
+    "PriceSuffixHour": "/ h",
+    "PriceSuffixMillionCharacters": "/ 1M caracteres",
+    "PriceSuffixImage": "/ imagen",
+    "PriceSuffixRequest": "/ solicitud",
+    "CostPerMinuteHelp": "USD por minuto de audio. Las tarifas por duración de OpenRouter son por segundo y aquí se muestran por minuto. Vacío no usa el precio por token del espacio de trabajo.",
+    "CostPerHourHelp": "USD por hora de audio. Vacío no usa el precio por token del espacio de trabajo.",
+    "CostPerMillionCharactersHelp": "USD por 1 millón de caracteres del texto de entrada.",
+    "CostPerImageHelp": "USD por imagen.",
+    "CostPerRequestHelp": "USD por solicitud.",
+    "EquivalentHourlyPrice": "Unos {0} por hora.",
+    "EquivalentMinutePrice": "Unos {0} por minuto.",
+    "InputPriceMustBeNonNegative": "El precio de entrada debe ser un número no negativo",
+    "OutputPriceMustBeNonNegative": "El precio de salida debe ser un número no negativo",
 
     "AvailableTools": "Herramientas disponibles",
 
@@ -768,6 +823,14 @@
 
     "AI:ModelRouteHooshvareNotFound": "No se encontró el hooshvare seleccionado.",
 
+    "AI:ModelConfigurationNotFound": "No se encontró la configuración del modelo.",
+
+    "AI:WorkspaceDefaultRequiresChatCompletion": "Solo un modelo de chat puede ser el predeterminado del espacio de trabajo.",
+
+    "AI:WorkspaceDefaultRequiresEnabledConfiguration": "Habilite esta configuración de modelo antes de establecerla como predeterminada del espacio de trabajo.",
+
+    "AI:CannotDeleteWorkspaceDefault": "El predeterminado del espacio de trabajo no se puede eliminar. Establezca primero otro modelo de chat como predeterminado.",
+
     "RouteUnavailable:WorkspaceInactive": "Este espacio de trabajo no está activo.",
 
     "RouteUnavailable:ModelNotConfigured": "Esta ruta no tiene un modelo configurado.",
@@ -894,7 +957,27 @@
 
     "WebResearchWorking": "Procesando…",
 
-    "WebResearchLoading": "Cargando la configuración de investigación web…"
+    "WebResearchLoading": "Cargando la configuración de investigación web…",
+    "ChatRouteCapabilities": "Capacidades de la ruta de chat",
+    "AcceptsImageInput": "Acepta imágenes",
+    "AcceptsFileInput": "Acepta PDF",
+    "SupportsReasoning": "Admite razonamiento",
+    "ReasoningEfforts": "Niveles de razonamiento",
+    "ReasoningEffortsHelp": "Elija los niveles que permite esta ruta. El predeterminado es uno de ellos, normalmente medium.",
+    "DefaultReasoningEffort": "Nivel de razonamiento predeterminado",
+    "ReasoningEffort": "Nivel de razonamiento",
+    "CapabilitySource:LiveCatalog": "Sugerido por la lista del espacio",
+    "CapabilitySource:ExternalCatalog": "Sugerido por el catálogo",
+    "CapabilitySource:Manual": "Manual",
+    "CatalogPriceHint": "Precio del catálogo por 1M de tokens: entrada {0}, salida {1}.",
+    "ApplyCatalogPrice": "Aplicar precio del catálogo",
+    "Feature:SufiAI.PriceMarkupPercent": "Porcentaje de recargo",
+    "Feature:SufiAI.PriceMarkupPercent.Description": "Porcentaje del host que se suma al precio del catálogo para todos los inquilinos. El valor predeterminado es 0.",
+    "AI:ImageInputNotSupported": "Esta ruta no acepta imágenes.",
+    "AI:FileInputNotSupported": "Esta ruta no acepta PDF.",
+    "AI:ReasoningNotSupported": "Esta ruta no admite razonamiento.",
+    "AI:ReasoningEffortNotAllowed": "Ese nivel de razonamiento no está permitido en esta ruta.",
+    "AI:PdfNotSupportedByToolTurn": "Este turno no puede llevar un PDF."
 
   }
 

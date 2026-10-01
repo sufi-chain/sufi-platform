@@ -17,6 +17,7 @@
     "ChannelVoice": "تماس صوتی",
     "EmailConfirmation:Subject": "ایمیل خود را تأیید کنید",
     "PasswordReset:Subject": "بازنشانی رمز عبور",
+    "EmailSender:DisplayName": "حساب کاربری",
     "VerificationCode:Subject": "کد تأیید شما",
     "CaptchaLoading": "در حال بارگذاری بررسی امنیتی...",
     "CaptchaQuestion": "بررسی امنیتی",
@@ -128,6 +129,13 @@
     "EmailConfirmationResendFailed": "ایمیل تأیید ارسال نشد. لطفاً دوباره تلاش کنید.",
     "CaptchaLoadFailed": "بارگذاری کپچا ممکن نشد. لطفاً صفحه را تازه‌سازی و دوباره تلاش کنید.",
     "ProfileSaveFailed": "ذخیره نمایه انجام نشد. لطفاً دوباره تلاش کنید.",
-    "PasswordChangeFailed": "تغییر گذرواژه انجام نشد. لطفاً دوباره تلاش کنید."
+    "PasswordChangeFailed": "تغییر گذرواژه انجام نشد. لطفاً دوباره تلاش کنید.",
+    "LinkNewAccount": "پیوند حساب جدید",
+    "LinkAccountSignInHint": "با حسابی که می‌خواهید پیوند دهید وارد شوید. پس از ورود، پیوند کامل می‌شود.",
+    "LinkAccountProcessing": "در حال پیوند حساب‌ها...",
+    "LinkAccountSucceeded": "حساب‌ها پیوند شدند.",
+    "LinkAccountFailed": "پیوند حساب انجام نشد. لطفاً از حساب‌های پیوندی دوباره شروع کنید.",
+    "LinkAccountSameUser": "با همان حساب وارد شدید. برای تکمیل پیوند، خارج شوید و با حساب دیگر وارد شوید.",
+    "LinkAccountSignInOther": "ورود با حساب دیگر"
   }
 }

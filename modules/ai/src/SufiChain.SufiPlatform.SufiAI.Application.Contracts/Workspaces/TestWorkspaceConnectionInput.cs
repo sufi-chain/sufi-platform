@@ -27,4 +27,9 @@ public class TestWorkspaceConnectionInput
     public string? ApiBaseUrl { get; set; }
 
     public OpenAIApiMode OpenAIApiMode { get; set; } = OpenAIApiMode.ChatCompletions;
+
+    /// <summary>
+    /// Provider used to choose the probe when the workspace has not been saved yet.
+    /// </summary>
+    public AIProviderType? Provider { get; set; }
 }

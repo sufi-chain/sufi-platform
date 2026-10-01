@@ -7,6 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using SufiChain.SufiPlatform.SufiAI.MCP.Abstractions;
+using SufiChain.SufiPlatform.SufiAI.MCP;
 using Volo.Abp;
 
 namespace SufiChain.SufiPlatform.SufiAI.MCP.External;
@@ -188,10 +189,11 @@ public class StdioTransportClient : IMCPTransportClient
         }
         catch (Exception ex)
         {
+            var requestId = _requestId > 0 ? _requestId.ToString() : null;
             return new MCPServerToolResult
             {
                 Success = false,
-                ErrorMessage = ex.Message
+                ErrorMessage = McpSanitizedError.FromException(ex, requestId).ToClientMessage()
             };
         }
     }

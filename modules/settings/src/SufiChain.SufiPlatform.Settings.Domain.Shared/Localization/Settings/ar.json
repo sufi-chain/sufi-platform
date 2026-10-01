@@ -10,6 +10,7 @@
     "EmailSettings": "إعدادات البريد الإلكتروني",
     "TimeZoneSettings": "إعدادات المنطقة الزمنية",
     "DefaultFromDisplayName": "اسم العرض الافتراضي للمرسل",
+    "DefaultFromDisplayName:Hint": "الاسم الاحتياطي عندما لا يحدد القسم اسماً خاصاً. يبقى عنوان الصندوق كما هو.",
     "DefaultFromAddress": "عنوان المرسل الافتراضي",
     "SmtpHost": "خادم SMTP",
     "SmtpPort": "منفذ SMTP",

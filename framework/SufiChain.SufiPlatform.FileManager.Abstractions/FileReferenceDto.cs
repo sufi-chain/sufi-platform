@@ -37,6 +37,12 @@ public class FileReferenceDto
     /// <summary>Owning tenant (null for host).</summary>
     public Guid? TenantId { get; set; }
 
+    /// <summary>Image width in pixels, when known.</summary>
+    public int? Width { get; set; }
+
+    /// <summary>Image height in pixels, when known.</summary>
+    public int? Height { get; set; }
+
     /// <summary>Upload time, when known.</summary>
     public DateTime? CreationTime { get; set; }
 

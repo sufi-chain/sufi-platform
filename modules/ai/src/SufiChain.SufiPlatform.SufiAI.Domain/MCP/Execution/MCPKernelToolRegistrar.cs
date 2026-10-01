@@ -14,13 +14,16 @@ public class MCPKernelToolRegistrar : IMCPKernelToolRegistrar, ITransientDepende
     public const string ToolNameMetadataKey = "SufiAI.MCP.ToolName";
 
     private readonly IMCPToolRegistry _toolRegistry;
+    private readonly IEnumerable<IMcpToolDecisionGate> _gates;
     private readonly ILogger<MCPKernelToolRegistrar> _logger;
 
     public MCPKernelToolRegistrar(
         IMCPToolRegistry toolRegistry,
+        IEnumerable<IMcpToolDecisionGate> gates,
         ILogger<MCPKernelToolRegistrar> logger)
     {
         _toolRegistry = toolRegistry;
+        _gates = gates;
         _logger = logger;
     }
 
@@ -53,6 +56,19 @@ public class MCPKernelToolRegistrar : IMCPKernelToolRegistrar, ITransientDepende
                         .ToDictionary(argument => argument.Key, argument => argument.Value);
 
                     var parameterKeys = string.Join(",", parameters.Keys.OrderBy(key => key, StringComparer.Ordinal));
+                    foreach (var gate in _gates)
+                    {
+                        var blockReason = await gate.GetBlockReasonAsync(context, tool.Name, parameters, ct);
+                        if (!string.IsNullOrWhiteSpace(blockReason))
+                        {
+                            _logger.LogInformation(
+                                "MCP tool {ToolName} was blocked before execution in workspace {WorkspaceName}.",
+                                tool.Name,
+                                context.WorkspaceName);
+                            return blockReason;
+                        }
+                    }
+
                     _logger.LogInformation(
                         "Executing MCP tool {ToolName} (Type: {ToolType}, Source: {Source}) in workspace {WorkspaceName}. ParameterKeys={ParameterKeys}",
                         tool.Name,

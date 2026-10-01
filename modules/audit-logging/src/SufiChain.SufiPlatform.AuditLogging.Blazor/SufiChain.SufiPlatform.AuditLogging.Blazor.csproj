@@ -30,4 +30,7 @@
     <ProjectReference Include="..\SufiChain.SufiPlatform.AuditLogging.Application.Contracts\SufiChain.SufiPlatform.AuditLogging.Application.Contracts.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\..\..\pro-modules\ai-hooshvare\src\SufiChain.SufiPlatform.SufiAI.Hooshvare.Blazor.Public\SufiChain.SufiPlatform.SufiAI.Hooshvare.Blazor.Public.csproj" />
+  </ItemGroup>
 </Project>

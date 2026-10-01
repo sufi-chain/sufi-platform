@@ -56,6 +56,13 @@ public class SufiAIChatServiceAdapter : ISufiAIChatService, ITransientDependency
             SystemPrompt = request.SystemPrompt,
             Temperature = request.Temperature,
             ResponseSchema = request.ResponseSchema,
+            ReasoningEffort = request.ReasoningEffort,
+            RequestedApiMode = request.UseResponses switch
+            {
+                true => OpenAIApiMode.Responses,
+                false => OpenAIApiMode.ChatCompletions,
+                _ => null
+            },
             Stream = stream,
             Messages = request.Messages.Select(message => new ChatMessage
             {
@@ -70,6 +77,12 @@ public class SufiAIChatServiceAdapter : ISufiAIChatService, ITransientDependency
                         {
                             Type = "image_url",
                             ImageUrl = new ImageContent { Url = part.DataUrl ?? string.Empty }
+                        },
+                        "file" => new MessageContent
+                        {
+                            Type = "file",
+                            FileName = part.FileName,
+                            FileData = part.DataUrl
                         },
                         _ => null
                     }).Where(part => part != null).Cast<MessageContent>().ToList()

@@ -58,4 +58,13 @@ public static class AIErrorCodes
     public const string ModelRouteOutsideWorkspace = "AI:ModelRouteOutsideWorkspace";
     public const string ModelRouteNotAllowedForHooshvare = "AI:ModelRouteNotAllowedForHooshvare";
     public const string ModelRouteHooshvareNotFound = "AI:ModelRouteHooshvareNotFound";
+    public const string ModelConfigurationNotFound = "AI:ModelConfigurationNotFound";
+    public const string WorkspaceDefaultRequiresChatCompletion = "AI:WorkspaceDefaultRequiresChatCompletion";
+    public const string WorkspaceDefaultRequiresEnabledConfiguration = "AI:WorkspaceDefaultRequiresEnabledConfiguration";
+    public const string CannotDeleteWorkspaceDefault = "AI:CannotDeleteWorkspaceDefault";
+    public const string ImageInputNotSupported = "AI:ImageInputNotSupported";
+    public const string FileInputNotSupported = "AI:FileInputNotSupported";
+    public const string ReasoningNotSupported = "AI:ReasoningNotSupported";
+    public const string ReasoningEffortNotAllowed = "AI:ReasoningEffortNotAllowed";
+    public const string PdfNotSupportedByToolTurn = "AI:PdfNotSupportedByToolTurn";
 }

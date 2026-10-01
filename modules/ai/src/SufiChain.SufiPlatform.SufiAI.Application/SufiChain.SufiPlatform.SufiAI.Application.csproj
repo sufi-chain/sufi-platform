@@ -10,8 +10,12 @@
   <ItemGroup>
     <ProjectReference Include="..\..\..\..\framework\SufiChain.SufiPlatform.Ddd.Application\SufiChain.SufiPlatform.Ddd.Application.csproj" />
     <PackageReference Include="Volo.Abp.Mapperly" Version="$(AbpVersion)" />
+    <PackageReference Include="Volo.Abp.DistributedLocking.Abstractions" Version="$(AbpVersion)" />
     <ProjectReference Include="..\..\..\file-manager\src\SufiChain.SufiPlatform.FileManager.Application\SufiChain.SufiPlatform.FileManager.Application.csproj" />
     <ProjectReference Include="..\..\..\localization\src\SufiChain.SufiPlatform.Localization.Application.Contracts\SufiChain.SufiPlatform.Localization.Application.Contracts.csproj" />
+    <ProjectReference Include="..\..\..\..\framework\SufiChain.SufiPlatform.Data\SufiChain.SufiPlatform.Data.csproj" />
+    <ProjectReference Include="..\..\..\..\framework\SufiChain.SufiPlatform.Features\SufiChain.SufiPlatform.Features.csproj" />
+    <ProjectReference Include="..\..\..\..\..\pro-modules\ai-hooshvare\src\SufiChain.SufiPlatform.SufiAI.Hooshvare.Application.Contracts\SufiChain.SufiPlatform.SufiAI.Hooshvare.Application.Contracts.csproj" />
   </ItemGroup>
 
   <ItemGroup>

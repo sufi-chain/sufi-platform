@@ -16,5 +16,7 @@
     <ItemGroup>
       <ProjectReference Include="..\SufiChain.SufiPlatform.ShortLinks.Domain\SufiChain.SufiPlatform.ShortLinks.Domain.csproj" />
       <ProjectReference Include="..\SufiChain.SufiPlatform.ShortLinks.Application.Contracts\SufiChain.SufiPlatform.ShortLinks.Application.Contracts.csproj" />
+      <ProjectReference Include="../../../../framework/SufiChain.SufiPlatform.Features/SufiChain.SufiPlatform.Features.csproj" />
+      <ProjectReference Include="../../../../../pro-modules/ai-hooshvare/src/SufiChain.SufiPlatform.SufiAI.Hooshvare.Application/SufiChain.SufiPlatform.SufiAI.Hooshvare.Application.csproj" />
     </ItemGroup>
 </Project>

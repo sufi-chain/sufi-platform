@@ -1,0 +1,89 @@
+@namespace SufiChain.SufiPlatform.SufiAI.Blazor.Components
+@using System.Globalization
+@inherits AIComponentBase
+
+<span class="catalog-model-option">
+	<ModelFamilyLogo ModelId="@Model.Id" IconUrl="@Model.IconUrl" Small="@Compact" />
+	<span class="catalog-model-option__copy">
+		<span class="catalog-model-option__name">@Title</span>
+		@if (!string.IsNullOrWhiteSpace(Meta))
+		{
+			<span class="catalog-model-option__meta">@Meta</span>
+		}
+	</span>
+	@if (!Compact && Price != null)
+	{
+		<span class="catalog-model-option__price">@Price</span>
+	}
+</span>
+
+@code {
+	[Parameter, EditorRequired]
+	public OpenAIModelDto Model { get; set; } = new();
+
+	[Parameter]
+	public bool Compact { get; set; }
+
+	private string Title =>
+		string.IsNullOrWhiteSpace(Model.DisplayName) ? Model.Id : Model.DisplayName;
+
+	private string Meta
+	{
+		get
+		{
+			var parts = new List<string>();
+			if (!string.Equals(Title, Model.Id, StringComparison.Ordinal))
+			{
+				parts.Add(Model.Id);
+			}
+
+			if (Model.AcceptsImageInput == true)
+			{
+				parts.Add(L["AcceptsImageInput"]);
+			}
+
+			if (Model.AcceptsFileInput == true)
+			{
+				parts.Add(L["AcceptsFileInput"]);
+			}
+
+			if (Model.SupportsReasoning == true)
+			{
+				parts.Add(L["SupportsReasoning"]);
+			}
+
+			return string.Join(" · ", parts);
+		}
+	}
+
+	private string? Price
+	{
+		get
+		{
+			if (Model.SuggestedInputPrice is not decimal input)
+			{
+				return Model.SuggestedOutputPrice is decimal outputOnly
+					? outputOnly.ToString("0.####", CultureInfo.InvariantCulture) + " " + UnitSuffix(Model.SuggestedOutputPriceUnit)
+					: null;
+			}
+
+			var text = input.ToString("0.####", CultureInfo.InvariantCulture) + " " + UnitSuffix(Model.SuggestedInputPriceUnit);
+			if (Model.SuggestOutputPrice && Model.SuggestedOutputPrice is decimal output)
+			{
+				text += " / " + output.ToString("0.####", CultureInfo.InvariantCulture) + " " + UnitSuffix(Model.SuggestedOutputPriceUnit);
+			}
+
+			return text;
+		}
+	}
+
+	private string UnitSuffix(AIPriceUnit unit) => unit switch
+	{
+		AIPriceUnit.PerMinute => L["PriceSuffixMinute"],
+		AIPriceUnit.PerHour => L["PriceSuffixHour"],
+		AIPriceUnit.PerMillionCharacters => L["PriceSuffixMillionCharacters"],
+		AIPriceUnit.PerImage => L["PriceSuffixImage"],
+		AIPriceUnit.PerRequest => L["PriceSuffixRequest"],
+		_ => L["PriceSuffixMillionTokens"]
+	};
+}

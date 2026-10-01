@@ -14,85 +14,16 @@
 								@L["InheritedWorkspaceReadOnly"]
 							</SbAlert>
 						}
-						<SbAlert Severity="SbAlertSeverity.Info">
-							@L["OnlyOpenAIProviderAvailable"]
-						</SbAlert>
-
-						@* Provider selection is intentionally hidden until more providers are supported.
-						<SbSimpleSelect TValue="AIProviderType"
-										@bind-Value="_model.Provider"
-										Label="@L["Provider"]"
-										Disabled="true">
-							<SbSelectOption TValue="AIProviderType" Value="@AIProviderType.OpenAI">OpenAI</SbSelectOption>
-						</SbSimpleSelect>
-						*@
-
-						<SbGrid Columns="1" ColumnsMd="2" Gap="4">
-							<SbTextField @bind-Value="_model.Name"
-										 Label="@L["Name"]"
-										 Required="true"
-										 Disabled="@IsReadOnly" />
-
-							<SbTextField @bind-Value="_model.ApiBaseUrl"
-										 Label="@L["ApiBaseUrl"]"
-										 Disabled="@IsReadOnly" />
-						</SbGrid>
-
-						<SbGrid Columns="1" ColumnsMd="2" Gap="4">
-							<SbTextField @bind-Value="_model.ApiKey"
-										 Label="@L["ApiKey"]"
-										 Type="password"
-										 Placeholder="@L["LeaveEmptyToKeepCurrent"]"
-										 Disabled="@IsReadOnly" />
-
-							<SbStack Wrap="true" Direction="SbStackDirection.Row" Gap="2" Align="SbAlign.End">
-								<SbTextField @bind-Value="_model.Model"
-											 Label="@L["DefaultChatModel"]"
-											 Required="true"
-											 Placeholder="@L["ModelIdPlaceholder"]"
-											 HelperText="@L["DefaultChatModelHelp"]"
-											 Disabled="@IsReadOnly" />
-								<SbButton Variant="SbButtonVariant.Outline"
-										  OnClick="@LoadModelsAsync"
-										  Loading="IsOperationLoading(LoadingKeys.LoadModels)"
-										  Disabled="@IsReadOnly">
-									@L["LoadModels"]
-								</SbButton>
-							</SbStack>
-						</SbGrid>
-
-						@if (_availableModels.Count > 0)
-						{
-							<SbSimpleSelect TValue="string"
-											@bind-Value="_model.Model"
-											Label="@L["AvailableModels"]"
-											Searchable="true"
-											SearchPlaceholder="@L["SearchModels"]"
-											Disabled="@IsReadOnly">
-								@if (!string.IsNullOrWhiteSpace(_model.Model) && !_availableModels.Any(m => m.Id == _model.Model))
-								{
-									<SbSelectOption TValue="string" Value="@_model.Model">@_model.Model</SbSelectOption>
-								}
-								@foreach (var model in _availableModels)
-								{
-									<SbSelectOption TValue="string" Value="@model.Id">@model.Id</SbSelectOption>
-								}
-							</SbSimpleSelect>
-						}
-
-						<SbGrid Columns="1" ColumnsMd="2" Gap="4">
-							<SbTextField @bind-Value="_inputCostPer1MTokensText"
-										 Label="@L["InputCostPer1MTokens"]"
-										 Placeholder="0.0000"
-										 HelperText="@L["WorkspaceCostFallbackHelp"]"
-										 Disabled="@IsReadOnly" />
-
-							<SbTextField @bind-Value="_outputCostPer1MTokensText"
-										 Label="@L["OutputCostPer1MTokens"]"
-										 Placeholder="0.0000"
-										 HelperText="@L["WorkspaceCostFallbackHelp"]"
-										 Disabled="@IsReadOnly" />
-						</SbGrid>
+						<WorkspaceConnectionFields Draft="_draft"
+												   Profiles="_profiles"
+												   AvailableModels="_availableModels"
+												   DecisionModels="_decisionModels"
+												   ModelsLoaded="_modelsLoaded"
+												   ReadOnly="IsReadOnly"
+												   ShowSavedKeyHint="true"
+												   LoadingModels="IsOperationLoading(LoadingKeys.LoadModels)"
+												   LoadModels="LoadModelsAsync"
+												   ProviderReset="OnProviderReset" />
 					</SbStack>
 				</SbTab>
 

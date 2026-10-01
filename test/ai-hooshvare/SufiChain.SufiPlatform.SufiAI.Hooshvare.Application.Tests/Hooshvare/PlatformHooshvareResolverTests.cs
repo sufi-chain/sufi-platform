@@ -96,7 +96,7 @@ public class PlatformHooshvareResolverTests
 
         var featureChecker = Substitute.For<IFeatureChecker>();
 
-        featureChecker.GetOrNullAsync(Arg.Any<string>()).Returns(featureEnabled ? "true" : "false");
+        featureChecker.IsEnabledAsync(Arg.Any<string>()).Returns(featureEnabled);
 
 
 

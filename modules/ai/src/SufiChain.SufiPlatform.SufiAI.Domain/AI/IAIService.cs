@@ -46,6 +46,13 @@ public interface IAIService
         CancellationToken cancellationToken = default);
     
     /// <summary>
+    /// Generate an image from a text prompt (text-to-image)
+    /// </summary>
+    Task<ImageGenerationResponse> GenerateImageAsync(
+        ImageGenerationRequest request,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// Generate text embeddings for semantic search and RAG
     /// </summary>
     Task<EmbeddingsResponse> GenerateEmbeddingsAsync(

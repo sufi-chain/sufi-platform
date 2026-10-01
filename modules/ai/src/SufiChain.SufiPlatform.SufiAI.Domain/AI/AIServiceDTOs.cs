@@ -16,6 +16,12 @@ public class ChatCompletionRequest
     public SufiAIJsonResponseSchema? ResponseSchema { get; set; }
     public int? MaxTokens { get; set; }
     public bool Stream { get; set; }
+    public string? ReasoningEffort { get; set; }
+
+    /// <summary>
+    /// Chat-page choice. Null lets the product pick Responses when the model catalog lists that endpoint.
+    /// </summary>
+    public OpenAIApiMode? RequestedApiMode { get; set; }
 }
 
 /// <summary>
@@ -48,9 +54,11 @@ public class ChatMessage
 /// </summary>
 public class MessageContent
 {
-    public string Type { get; set; } = string.Empty; // "text", "image_url"
+    public string Type { get; set; } = string.Empty; // "text", "image_url", "file"
     public string? Text { get; set; }
     public ImageContent? ImageUrl { get; set; }
+    public string? FileName { get; set; }
+    public string? FileData { get; set; }
 }
 
 public class ImageContent
@@ -80,6 +88,10 @@ public class AudioTranscriptionResponse
     public string ModelId { get; set; } = string.Empty;
     public string? Language { get; set; }
     public TimeSpan? Duration { get; set; }
+
+    /// <summary>Audio seconds reported by the provider. Duration-priced speech-to-text uses this, not tokens.</summary>
+    public decimal? BilledSeconds { get; set; }
+
     public int? InputTokens { get; set; }
     public int? OutputTokens { get; set; }
     public int? TotalTokens { get; set; }
@@ -131,6 +143,29 @@ public class VisionAnalysisResponse
     public int? OutputTokens { get; set; }
     public int? TotalTokens { get; set; }
     public string? UsageUnavailableReason { get; set; }
+}
+
+/// <summary>
+/// Request for text-to-image generation
+/// </summary>
+public class ImageGenerationRequest
+{
+    public string WorkspaceName { get; set; } = string.Empty;
+    public string Prompt { get; set; } = string.Empty;
+    public string Size { get; set; } = "1024x1024";
+    public string? Quality { get; set; }
+    public string OutputFormat { get; set; } = "png";
+}
+
+/// <summary>
+/// Response from text-to-image generation
+/// </summary>
+public class ImageGenerationResponse
+{
+    public byte[] ImageData { get; set; } = Array.Empty<byte>();
+    public string MimeType { get; set; } = "image/png";
+    public string? RevisedPrompt { get; set; }
+    public string ModelId { get; set; } = string.Empty;
 }
 
 /// <summary>

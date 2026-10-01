@@ -24,6 +24,7 @@
         "UserNotAllowedToAccessClient": "The logged in user is not allowed to access this client application.",
         "ConsentRequired": "Interactive user consent is required.",
         "Loading": "Loading...",
+        "Authorizing": "Authorizing...",
         "Saving": "Saving...",
         "Processing": "Processing...",
         "PleaseWait": "Please wait...",

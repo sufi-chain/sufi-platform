@@ -7,6 +7,12 @@ public class BackgroundEmailSendingJobArgs
     public string Body { get; set; } = default!;
     public bool IsBodyHtml { get; set; }
     public string? From { get; set; }
+
+    /// <summary>
+    /// Caller-specific inbox title. Null means the send resolves the SMTP default display name.
+    /// </summary>
+    public string? FromDisplayName { get; set; }
+
     public string? ReplyTo { get; set; }
     public string[]? Cc { get; set; }
     public string[]? Bcc { get; set; }

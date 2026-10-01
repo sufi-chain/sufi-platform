@@ -37,4 +37,7 @@
     <ProjectReference Include="..\..\..\settings\src\SufiChain.SufiPlatform.Settings.Blazor\SufiChain.SufiPlatform.Settings.Blazor.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\..\..\pro-modules\ai-hooshvare\src\SufiChain.SufiPlatform.SufiAI.Hooshvare.Blazor.Public\SufiChain.SufiPlatform.SufiAI.Hooshvare.Blazor.Public.csproj" />
+  </ItemGroup>
 </Project>

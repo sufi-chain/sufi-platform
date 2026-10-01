@@ -1,0 +1,142 @@
+@namespace SufiChain.SufiPlatform.SufiAI.Blazor.Components
+@inherits AIComponentBase
+
+<SbStack Direction="SbStackDirection.Column" Gap="4">
+	<SbSelect TItem="AiProviderProfileDto"
+			  TValue="AIProviderType"
+			  Items="Profiles"
+			  Value="Draft.Provider"
+			  ValueChanged="OnProviderChangedAsync"
+			  TextField="@(profile => profile.DisplayName)"
+			  ValueField="@(profile => profile.ProviderType)"
+			  Label="@L["Provider"]"
+			  Disabled="@ReadOnly">
+		<ItemTemplate Context="profile">
+			<span class="connection-option">
+				<ProviderLogo Provider="profile.ProviderType" />
+				<span class="connection-option__copy">
+					<span class="connection-option__name">@profile.DisplayName</span>
+					<span class="connection-option__meta">@ProviderHint(profile)</span>
+				</span>
+			</span>
+		</ItemTemplate>
+		<SelectedValueTemplate Context="profile">
+			<span class="connection-option">
+				<ProviderLogo Provider="profile.ProviderType" Small="true" />
+				<span class="connection-option__name">@profile.DisplayName</span>
+			</span>
+		</SelectedValueTemplate>
+	</SbSelect>
+
+	<SbGrid Columns="1" ColumnsMd="2" Gap="4">
+		<SbTextField @bind-Value="Draft.Name"
+					 Label="@L["Name"]"
+					 Required="true"
+					 Disabled="@ReadOnly" />
+
+		<SbTextField @bind-Value="Draft.ApiBaseUrl"
+					 Label="@L["ApiBaseUrl"]"
+					 Required="@RequiresBaseUrl"
+					 Placeholder="@(SelectedProfile?.DefaultBaseUrl ?? L["ApiBaseUrl"].Value)"
+					 HelperText="@EndpointHint"
+					 Disabled="@ReadOnly" />
+	</SbGrid>
+
+	<SbTextField @bind-Value="Draft.ApiKey"
+				 Label="@L["ApiKey"]"
+				 Type="password"
+				 Placeholder="@(ShowSavedKeyHint ? L["LeaveEmptyToKeepCurrent"].Value : null)"
+				 HelperText="@(ShowSavedKeyHint ? L["SavedApiKeyKeptHint"].Value : null)"
+				 Disabled="@ReadOnly" />
+
+	<SbSelect TItem="OpenAIModelDto"
+			  TValue="string"
+			  Items="ChatModels"
+			  Value="@ChatValue"
+			  ValueChanged="OnChatModelChangedAsync"
+			  TextField="WorkspaceConnectionDraft.SearchText"
+			  ValueField="@(model => model.Id)"
+			  Searchable="true"
+			  SearchPlaceholder="@L["SearchModels"]"
+			  Label="@L["DefaultChatModel"]"
+			  Required="true"
+			  Disabled="@ReadOnly">
+		<ItemTemplate Context="model">
+			<CatalogModelOption Model="model" />
+		</ItemTemplate>
+		<SelectedValueTemplate Context="model">
+			<CatalogModelOption Model="model" Compact="true" />
+		</SelectedValueTemplate>
+		<NoResultsTemplate>
+			<span>@(ModelsLoaded ? L["NoMatchingModels"] : L["ModelsNotLoaded"])</span>
+		</NoResultsTemplate>
+		<MenuFooter>
+			<div @onclick:stopPropagation="true">
+				<SbButton Variant="SbButtonVariant.Outline"
+						  Size="SbSize.Sm"
+						  OnClick="InvokeLoadModels"
+						  Loading="@LoadingModels"
+						  Disabled="@ReadOnly">
+					@(ModelsLoaded ? L["RefreshModels"] : L["LoadModels"])
+				</SbButton>
+			</div>
+		</MenuFooter>
+	</SbSelect>
+
+	<SbTextField @bind-Value="Draft.ModelDisplayName"
+				 Label="@L["DisplayName"]"
+				 Placeholder="@L["ModelDisplayNamePlaceholder"]"
+				 Disabled="@ReadOnly" />
+
+	@if (SelectedProfile?.SupportsDecisions == true)
+	{
+		<SbSelect TItem="OpenAIModelDto"
+				  TValue="string"
+				  Items="DecisionChoices"
+				  Value="Draft.DecisionsModelId"
+				  ValueChanged="OnDecisionsChangedAsync"
+				  TextField="WorkspaceConnectionDraft.SearchText"
+				  ValueField="@(model => model.Id)"
+				  Searchable="true"
+				  SearchPlaceholder="@L["SearchModels"]"
+				  Clearable="true"
+				  Label="@L["Decisions"]"
+			  Placeholder="@L["DecisionsModelNone"]"
+			  Disabled="@ReadOnly">
+			<ItemTemplate Context="model">
+				<CatalogModelOption Model="model" />
+			</ItemTemplate>
+			<SelectedValueTemplate Context="model">
+				<CatalogModelOption Model="model" Compact="true" />
+			</SelectedValueTemplate>
+			<NoResultsTemplate>
+				<span>@(ModelsLoaded ? L["NoMatchingModels"] : L["ModelsNotLoaded"])</span>
+			</NoResultsTemplate>
+			<MenuFooter>
+				<div @onclick:stopPropagation="true">
+					<SbButton Variant="SbButtonVariant.Outline"
+							  Size="SbSize.Sm"
+							  OnClick="InvokeLoadModels"
+							  Loading="@LoadingModels"
+							  Disabled="@ReadOnly">
+						@(ModelsLoaded ? L["RefreshModels"] : L["LoadModels"])
+					</SbButton>
+				</div>
+			</MenuFooter>
+		</SbSelect>
+	}
+
+	<SbGrid Columns="1" ColumnsMd="2" Gap="4">
+		<SbTextField @bind-Value="Draft.InputCostText"
+					 Label="@L["InputCostPer1MTokens"]"
+					 Placeholder="0.0000"
+					 HelperText="@L["WorkspaceCostFallbackHelp"]"
+					 Disabled="@ReadOnly" />
+
+		<SbTextField @bind-Value="Draft.OutputCostText"
+					 Label="@L["OutputCostPer1MTokens"]"
+					 Placeholder="0.0000"
+					 HelperText="@L["WorkspaceCostFallbackHelp"]"
+					 Disabled="@ReadOnly" />
+	</SbGrid>
+</SbStack>

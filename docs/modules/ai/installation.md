@@ -69,7 +69,7 @@ See [Permissions](permissions.md).
 1. Run the host application.
 2. Open `/admin/ai/workspaces`.
 3. Create a workspace: name, API key, model → **Test connection** → **Save**.
-4. Open `/admin/ai/test-chat`, select the workspace, send a message (try **Use streaming**).
+4. Open `/panel/admin/ai/chat`, select the workspace, and send a message.
 5. Optional: add model configurations, configure RAG on workspace, index a document source, test `/admin/ai/rag`.
 
 ## File-Manager

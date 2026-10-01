@@ -24,6 +24,7 @@
     "UserNotAllowedToAccessClient": "El usuario autenticado no tiene permitido acceder a esta aplicación cliente.",
     "ConsentRequired": "Se requiere el consentimiento interactivo del usuario.",
     "Loading": "Cargando...",
+    "Authorizing": "Autorizando...",
     "Saving": "Guardando...",
     "Processing": "Procesando...",
     "PleaseWait": "Espere, por favor...",

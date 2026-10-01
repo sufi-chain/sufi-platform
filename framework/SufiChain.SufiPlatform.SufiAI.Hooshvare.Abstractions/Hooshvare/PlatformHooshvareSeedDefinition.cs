@@ -63,7 +63,8 @@ public class PlatformHooshvareSeedDefinition
 
     /// <summary>
     /// Seed generation. Existing rows update only when this value is greater than the stored entity version.
-    /// Fresh beta seeds start at 0. New definitions are created at -1 so the first seed apply succeeds.
+    /// Platform seed constants start at 1. An unset value stays 0.
+    /// New definitions are created at -1 so the first seed apply succeeds.
     /// </summary>
     public int EntityVersion { get; set; } = 0;
 }

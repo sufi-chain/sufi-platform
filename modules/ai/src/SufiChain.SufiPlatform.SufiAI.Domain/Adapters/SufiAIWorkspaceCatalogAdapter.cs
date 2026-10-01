@@ -117,7 +117,8 @@ public class SufiAIWorkspaceCatalogAdapter :
             IsActive = workspace.IsActive,
             IsReady = chat.IsReady,
             IsInherited = workspace.IsInherited,
-            Capabilities = MapCapabilities(results)
+            Capabilities = MapCapabilities(results),
+            ChatAcceptsImageInput = chat.IsReady && chat.ModelConfiguration?.AcceptsImageInput == true
         };
     }
 
@@ -150,8 +151,13 @@ public class SufiAIWorkspaceCatalogAdapter :
 
         var chat = results[AICapabilityType.ChatCompletion];
         if (chat.IsReady &&
-            chat.Provider == AIProviderType.OpenAI &&
-            chat.OpenAIApiMode == OpenAIApiMode.ChatCompletions)
+            chat.OpenAIApiMode == OpenAIApiMode.ChatCompletions &&
+            chat.Provider is AIProviderType.OpenAI
+                or AIProviderType.OpenAICompatible
+                or AIProviderType.OpenRouter
+                or AIProviderType.HuggingFace
+                or AIProviderType.AvalAI
+                or AIProviderType.Liara)
         {
             capabilities.Add(SufiAICapability.Tools);
         }

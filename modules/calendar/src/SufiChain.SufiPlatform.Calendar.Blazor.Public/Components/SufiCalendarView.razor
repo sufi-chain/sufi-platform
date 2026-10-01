@@ -135,58 +135,64 @@
                     @foreach (var day in _days)
                     {
                         var cellDay = day;
-                        var dayOccurrences = GetOccurrencesForDay(cellDay).ToList();
+                        var dayGroups = GetDayEventGroups(GetOccurrencesForDay(cellDay));
                         <div class="@GetDayClass(cellDay)"
                              role="button"
                              tabindex="0"
                              @onclick="@(() => SelectSlotAsync(cellDay))"
                              @onkeydown="@((KeyboardEventArgs e) => HandleDayKeyDownAsync(e, cellDay))">
                             <span class="sufi-calendar-view__day-number">@SbCalendarHelper.GetDayOfMonth(cellDay, _culture)</span>
-                            @if (dayOccurrences.Count > 0)
+                            @if (dayGroups.Count > 0)
                             {
-                                <div class="sufi-calendar-view__events-popover-host"
-                                     @onmouseenter="@(() => SetEventsPopoverOpenAsync(cellDay, true))"
-                                     @onmouseleave="@(() => SetEventsPopoverOpenAsync(cellDay, false))"
-                                     @onclick:stopPropagation="true">
-                                    <SbPopover Open="@IsEventsPopoverOpen(cellDay)"
-                                               OpenChanged="@(EventCallback.Factory.Create<bool>(this, open => SetEventsPopoverOpenAsync(cellDay, open)))"
-                                               Placement="SbPlacement.BottomStart"
-                                               Class="sufi-calendar-view__events-popover"
-                                               FlipPreferredHeight="280"
-                                               CloseOnClickAway="false">
-                                        <AnchorContent>
-                                            <span class="sufi-calendar-view__event-count"
-                                                  style="@GetDayEventsAccentStyle(dayOccurrences)"
-                                                  role="button"
-                                                  tabindex="0"
-                                                  aria-label="@L["EventsCount", dayOccurrences.Count]"
-                                                  @onclick="@(() => ToggleEventsPopoverAsync(cellDay))"
-                                                  @onclick:stopPropagation="true"
-                                                  @onkeydown="@((KeyboardEventArgs e) => HandleEventCountKeyDownAsync(e, cellDay))"
-                                                  @onkeydown:stopPropagation="true">
-                                                <span class="sufi-calendar-view__event-count-dot" aria-hidden="true"></span>
-                                                <span class="sufi-calendar-view__event-count-value">@dayOccurrences.Count</span>
-                                            </span>
-                                        </AnchorContent>
-                                        <ChildContent>
-                                            <div class="sufi-calendar-view__events-popover-panel" role="list">
-                                                @foreach (var occurrence in dayOccurrences)
-                                                {
-                                                    <button type="button"
-                                                            class="sufi-calendar-view__events-popover-item"
-                                                            style="@GetEventStyle(occurrence)"
-                                                            @onclick="@(() => SelectEventFromPopoverAsync(occurrence))">
-                                                        <strong class="sufi-calendar-view__events-popover-title">@occurrence.Title</strong>
-                                                        <span class="sufi-calendar-view__events-popover-time">@FormatTimeRange(occurrence)</span>
-                                                        @if (!string.IsNullOrWhiteSpace(occurrence.Location))
+                                <div class="sufi-calendar-view__event-counts">
+                                    @foreach (var group in dayGroups)
+                                    {
+                                        var eventGroup = group;
+                                        <div class="sufi-calendar-view__events-popover-host"
+                                             @onmouseenter="@(() => SetEventsPopoverOpenAsync(cellDay, eventGroup.CalendarId, true))"
+                                             @onmouseleave="@(() => SetEventsPopoverOpenAsync(cellDay, eventGroup.CalendarId, false))"
+                                             @onclick:stopPropagation="true">
+                                            <SbPopover Open="@IsEventsPopoverOpen(cellDay, eventGroup.CalendarId)"
+                                                       OpenChanged="@(EventCallback.Factory.Create<bool>(this, open => SetEventsPopoverOpenAsync(cellDay, eventGroup.CalendarId, open)))"
+                                                       Placement="SbPlacement.BottomStart"
+                                                       Class="sufi-calendar-view__events-popover"
+                                                       FlipPreferredHeight="280"
+                                                       CloseOnClickAway="false">
+                                                <AnchorContent>
+                                                    <span class="sufi-calendar-view__event-count"
+                                                          style="@GetGroupAccentStyle(eventGroup)"
+                                                          role="button"
+                                                          tabindex="0"
+                                                          aria-label="@L["EventsCount", eventGroup.Occurrences.Count]"
+                                                          @onclick="@(() => ToggleEventsPopoverAsync(cellDay, eventGroup.CalendarId))"
+                                                          @onclick:stopPropagation="true"
+                                                          @onkeydown="@((KeyboardEventArgs e) => HandleEventCountKeyDownAsync(e, cellDay, eventGroup.CalendarId))"
+                                                          @onkeydown:stopPropagation="true">
+                                                        <span class="sufi-calendar-view__event-count-dot" aria-hidden="true"></span>
+                                                        <span class="sufi-calendar-view__event-count-value">@eventGroup.Occurrences.Count</span>
+                                                    </span>
+                                                </AnchorContent>
+                                                <ChildContent>
+                                                    <div class="sufi-calendar-view__events-popover-panel" role="list">
+                                                        @foreach (var occurrence in eventGroup.Occurrences)
                                                         {
-                                                            <span class="sufi-calendar-view__events-popover-meta">@occurrence.Location</span>
+                                                            <button type="button"
+                                                                    class="sufi-calendar-view__events-popover-item"
+                                                                    style="@GetEventStyle(occurrence)"
+                                                                    @onclick="@(() => SelectEventFromPopoverAsync(occurrence))">
+                                                                <strong class="sufi-calendar-view__events-popover-title">@occurrence.Title</strong>
+                                                                <span class="sufi-calendar-view__events-popover-time">@FormatTimeRange(occurrence)</span>
+                                                                @if (!string.IsNullOrWhiteSpace(occurrence.Location))
+                                                                {
+                                                                    <span class="sufi-calendar-view__events-popover-meta">@occurrence.Location</span>
+                                                                }
+                                                            </button>
                                                         }
-                                                    </button>
-                                                }
-                                            </div>
-                                        </ChildContent>
-                                    </SbPopover>
+                                                    </div>
+                                                </ChildContent>
+                                            </SbPopover>
+                                        </div>
+                                    }
                                 </div>
                             }
                         </div>

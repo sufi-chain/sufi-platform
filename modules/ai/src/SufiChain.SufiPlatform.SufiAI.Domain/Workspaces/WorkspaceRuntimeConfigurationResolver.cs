@@ -11,6 +11,8 @@ public class WorkspaceRuntimeConfigurationResolver : DomainService, IWorkspaceRu
 
     protected IReadOnlyList<IAIProvider> Providers { get; }
 
+    protected IReadOnlyList<IAiProviderProfile> Profiles { get; }
+
     protected IAICredentialResolver CredentialResolver { get; }
 
     protected IAIModelRouteResolver RouteResolver =>
@@ -19,10 +21,12 @@ public class WorkspaceRuntimeConfigurationResolver : DomainService, IWorkspaceRu
     public WorkspaceRuntimeConfigurationResolver(
         IWorkspaceRepository workspaceRepository,
         IEnumerable<IAIProvider> providers,
+        IEnumerable<IAiProviderProfile> profiles,
         IAICredentialResolver credentialResolver)
     {
         WorkspaceRepository = workspaceRepository;
         Providers = providers.ToList();
+        Profiles = profiles.ToList();
         CredentialResolver = credentialResolver;
     }
 
@@ -91,7 +95,8 @@ public class WorkspaceRuntimeConfigurationResolver : DomainService, IWorkspaceRu
             : null;
         var modelId = configuration?.ModelId ?? fallbackModel ?? string.Empty;
         var isConfigured = !string.IsNullOrWhiteSpace(modelId);
-        var provider = Providers.FirstOrDefault(item => item.ProviderType == workspace.Provider);
+        var profile = AiProviderProfiles.Find(Profiles, workspace.Provider);
+        var provider = ResolveExecutor(workspace.Provider, profile);
         var effectiveApiKey = CredentialResolver.DecryptApiKey(configuration?.ApiKey)
             ?? CredentialResolver.DecryptApiKey(workspace.ApiKey);
         var effectiveApiEndpoint = configuration?.ApiEndpoint ?? workspace.ApiBaseUrl;
@@ -102,6 +107,13 @@ public class WorkspaceRuntimeConfigurationResolver : DomainService, IWorkspaceRu
             isConfigured,
             effectiveApiEndpoint,
             effectiveApiKey);
+        if (failureCode == null &&
+            profile != null &&
+            capabilityType == AICapabilityType.ChatCompletion &&
+            !profile.SupportsApiMode(configuration?.OpenAIApiMode ?? OpenAIApiMode.ChatCompletions))
+        {
+            failureCode = WorkspaceRuntimeFailureCodes.CapabilityNotSupported;
+        }
 
         return new WorkspaceRuntimeConfiguration
         {
@@ -116,8 +128,18 @@ public class WorkspaceRuntimeConfigurationResolver : DomainService, IWorkspaceRu
             MaxContextTokens = configuration?.MaxContextTokens > 0
                 ? configuration.MaxContextTokens
                 : AIModelConfiguration.DefaultMaxContextTokens,
-            InputCostPer1MTokens = configuration?.InputCostPer1MTokens ?? workspace.InputCostPer1MTokens,
-            OutputCostPer1MTokens = configuration?.OutputCostPer1MTokens ?? workspace.OutputCostPer1MTokens,
+            InputPrice = FirstPrice(
+                configuration?.InputPrice,
+                workspace.InputCostPer1MTokens,
+                configuration == null || configuration.InputPriceUnit == AIPriceUnit.PerMillionTokens),
+            InputPriceUnit = configuration?.InputPriceUnit ?? AIPriceUnit.PerMillionTokens,
+            OutputPrice = FirstPrice(
+                configuration?.OutputPrice,
+                workspace.OutputCostPer1MTokens,
+                configuration == null ||
+                (configuration.InputPriceUnit == AIPriceUnit.PerMillionTokens &&
+                 configuration.OutputPriceUnit == AIPriceUnit.PerMillionTokens)),
+            OutputPriceUnit = configuration?.OutputPriceUnit ?? AIPriceUnit.PerMillionTokens,
             IsFallback = configuration == null && isConfigured,
             ModelConfigurationId = configuration?.Id,
             IsExplicitSelection = isExplicitSelection,
@@ -125,6 +147,19 @@ public class WorkspaceRuntimeConfigurationResolver : DomainService, IWorkspaceRu
             IsReady = failureCode == null,
             FailureCode = failureCode
         };
+    }
+
+    /// <summary>
+    /// Workspace prices are a token fallback. A minute, hour, character, image, or request route does not inherit them.
+    /// </summary>
+    private static decimal? FirstPrice(decimal? routePrice, decimal? workspaceTokenPrice, bool inheritWorkspace)
+    {
+        if (routePrice.HasValue)
+        {
+            return routePrice;
+        }
+
+        return inheritWorkspace ? workspaceTokenPrice : null;
     }
 
     public virtual void EnsureReady(
@@ -142,7 +177,7 @@ public class WorkspaceRuntimeConfigurationResolver : DomainService, IWorkspaceRu
 
     protected virtual void EnsureToolCallingCompatible(WorkspaceRuntimeConfiguration configuration)
     {
-        if (configuration.Provider != AIProviderType.OpenAI ||
+        if (!AiProviderProfiles.IsOpenAICompatible(Profiles, configuration.Provider) ||
             string.Equals(
                 configuration.FailureCode,
                 WorkspaceRuntimeFailureCodes.ProviderNotRegistered,
@@ -152,15 +187,6 @@ public class WorkspaceRuntimeConfigurationResolver : DomainService, IWorkspaceRu
                     AIErrorCodes.McpProviderNotSupported,
                     configuration)
                 .WithData("ModelId", configuration.ModelId);
-        }
-
-        if (configuration.OpenAIApiMode != OpenAIApiMode.ChatCompletions)
-        {
-            throw CreateToolCallingException(
-                    AIErrorCodes.McpRequiresChatCompletions,
-                    configuration)
-                .WithData("ModelId", configuration.ModelId)
-                .WithData("ApiMode", configuration.OpenAIApiMode.ToString());
         }
 
         if (!string.IsNullOrWhiteSpace(configuration.ApiEndpoint) &&
@@ -249,6 +275,12 @@ public class WorkspaceRuntimeConfigurationResolver : DomainService, IWorkspaceRu
             return WorkspaceRuntimeFailureCodes.ProviderNotRegistered;
         }
 
+        var profile = AiProviderProfiles.Find(Profiles, workspace.Provider);
+        if (profile != null && !profile.SupportsCapability(capabilityType))
+        {
+            return WorkspaceRuntimeFailureCodes.CapabilityNotSupported;
+        }
+
         if (!provider.SupportsCapability(capabilityType))
         {
             return WorkspaceRuntimeFailureCodes.CapabilityNotSupported;
@@ -264,5 +296,15 @@ public class WorkspaceRuntimeConfigurationResolver : DomainService, IWorkspaceRu
         return string.IsNullOrWhiteSpace(effectiveApiKey)
             ? WorkspaceRuntimeFailureCodes.CredentialsMissing
             : null;
+    }
+
+    private IAIProvider? ResolveExecutor(AIProviderType providerType, IAiProviderProfile? profile)
+    {
+        if (profile != null)
+        {
+            return Providers.FirstOrDefault(item => item.CapabilityKind == profile.CapabilityKind);
+        }
+
+        return Providers.FirstOrDefault(item => item.ProviderType == providerType);
     }
 }

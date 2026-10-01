@@ -15,4 +15,6 @@ public sealed class ProviderModelDiscoveryHints
     public IReadOnlyList<string>? InputModalities { get; set; }
 
     public IReadOnlyList<string>? OutputModalities { get; set; }
+
+    public IReadOnlyList<string>? SupportedParameters { get; set; }
 }

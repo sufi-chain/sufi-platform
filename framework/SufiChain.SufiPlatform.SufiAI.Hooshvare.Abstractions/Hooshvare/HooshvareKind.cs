@@ -5,7 +5,15 @@ namespace SufiChain.SufiPlatform.SufiAI.Hooshvare.Hooshvare;
 /// </summary>
 public enum HooshvareKind
 {
+    /// <summary>
+    /// Answers and reads. Its edit dialog offers read-only tools.
+    /// </summary>
     Assistant = 0,
-    Hooshvare = 1,
+
+    /// <summary>
+    /// Integrates into a module and can change that module's data.
+    /// </summary>
+    Copilot = 1,
+
     Agent = 2
 }

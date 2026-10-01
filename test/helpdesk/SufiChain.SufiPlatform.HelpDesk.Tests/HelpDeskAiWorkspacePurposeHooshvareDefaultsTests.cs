@@ -56,7 +56,7 @@ public class PlatformHooshvareBusinessLocalizationKeysTests
     [Fact]
     public void AgentReply_Should_Include_Summarize_Shortcut_And_Entity_Version_2()
     {
-        HelpDeskAgentReplyHooshvareKeys.EntityVersion.ShouldBe(0);
+        HelpDeskAgentReplyHooshvareKeys.EntityVersion.ShouldBe(1);
         HelpDeskAgentReplyHooshvareKeys.ShortcutIds.ShouldContain("Summarize");
     }
 

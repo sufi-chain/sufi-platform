@@ -62,8 +62,15 @@ public class HooshvareRuntimeContextSegmentsTests
                 IsConfigured = true,
                 IsReady = true
             });
+        var bindings = Substitute.For<IHooshvareRagProjectBindingRepository>();
+        bindings.GetListByHooshvareAsync(
+                Arg.Any<Guid>(),
+                Arg.Any<string?>(),
+                Arg.Any<bool>(),
+                Arg.Any<CancellationToken>())
+            .Returns(new List<HooshvareRagProjectBinding>());
         var orchestrator = new HooshvareRuntimeOrchestrator(
-            HooshvareRuntimeTestSupport.CreateRagRetrieval(rag, searchKb: true), Substitute.For<IHooshvareRagProjectBindingRepository>(), tools,
+            HooshvareRuntimeTestSupport.CreateRagRetrieval(rag, searchKb: true), bindings, tools,
             new HooshvareBusinessLocalizationService(localizers), localizers, resolver, runtimeResolver, estimator,
             Substitute.For<IWorkspaceGuardrailService>(),
             new NullHooshvareRagIndexingWorkspaceResolver(),
@@ -97,11 +104,32 @@ public class HooshvareRuntimeContextSegmentsTests
         withRag.Segments.Single(segment => segment.Key == HooshvareContextSegmentKeys.Metadata)
             .EstimatedTokens.ShouldBe(estimator.EstimateText(expectedContext));
         withRag.Request.SystemPrompt!.ShouldContain(title);
+        withRag.Request.SystemPrompt!.ShouldContain("Reply language");
+        withRag.Request.SystemPrompt!.ShouldContain("Persian latest message: Persian only");
+        withRag.Request.SystemPrompt!.ShouldContain("Do not write MCP");
+        withRag.Request.SystemPrompt!.ShouldContain("Never write those names, the word MCP");
+        withRag.Segments.ShouldContain(segment => segment.Key == HooshvareReplyPolicy.ContextSegmentKey);
         withRag.Request.SystemPrompt!.ShouldNotContain("\\u0622");
         withRag.Request.SystemPrompt!.ShouldNotContain("not prompt context");
         withRag.Request.SystemPrompt!.ShouldNotContain("Previous message");
         withRag.Request.Messages.ShouldNotContain(message => message.Role == "system");
         withRag.Request.Messages.Count(message => message.Content == "Previous message").ShouldBe(1);
         withRag.Request.Messages.Count(message => message.Content == "Current message").ShouldBe(1);
+    }
+
+    [Fact]
+    public void Reply_policy_locks_language_from_the_first_user_message()
+    {
+        var history = new List<HooshvareChatMessageDto>
+        {
+            new() { Role = "user", Content = "\u067E\u06CC\u0634\u0646\u0647\u0627\u062F \u0638\u0627\u0647\u0631 \u062A\u0627\u0632\u0647" },
+            new() { Role = "assistant", Content = "English reply that must not set the language." }
+        };
+
+        HooshvareReplyLanguage.Detect(history, "Please answer in English").ShouldBe("Persian");
+
+        var policy = HooshvareReplyPolicy.Build(hideInternalNames: true, "Persian");
+        policy.ShouldContain("Response language for this conversation: Persian.");
+        policy.ShouldContain("locked from the user's first message");
     }
 }

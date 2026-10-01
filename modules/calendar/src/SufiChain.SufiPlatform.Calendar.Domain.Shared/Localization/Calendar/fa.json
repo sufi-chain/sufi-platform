@@ -2,6 +2,7 @@
   "culture": "fa",
   "texts": {
     "Calendar": "تقویم",
+    "EmailSender:DisplayName": "تقویم",
     "Permission:SufiCalendar": "تقویم",
     "Permission:SufiCalendar.Calendars": "تقویم‌ها",
     "Permission:Create": "ایجاد",

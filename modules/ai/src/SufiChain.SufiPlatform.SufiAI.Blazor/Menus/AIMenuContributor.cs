@@ -30,51 +30,49 @@ public class AIMenuContributor : IMenuContributor
             return;
         }
 
-        var administration = context.Menu.GetAdministration();
-
-        var AIMenu = new ApplicationMenuItem(
-            AIMenus.GroupName,
-            l["Menu:SufiAI"],
-            icon: "sparkles",
-            order: 20
-        )
+        var aiMenu = context.Menu.Items.FirstOrDefault(item => item.Name == AIMenus.GroupName);
+        if (aiMenu == null)
         {
-            IsCollapsed = false
-        };
+            aiMenu = new ApplicationMenuItem(
+                AIMenus.GroupName,
+                l["Menu:SufiAI"],
+                icon: "sparkles",
+                order: 20)
+            {
+                IsCollapsed = false
+            };
+            context.Menu.AddItem(aiMenu);
+        }
 
-        administration.AddItem(AIMenu);
-        AIMenu.AddItem(new ApplicationMenuItem("SufiAI.WebResearch", l["WebResearchSettings"],
+        aiMenu.AddItem(new ApplicationMenuItem("SufiAI.WebResearch", l["WebResearchSettings"],
             url: "/panel/admin/ai/web-research", icon: "search", order: 8)
             .RequirePermissions("SufiAI.WebSearchSettings.Default"));
 
         if (await featureChecker.IsEnabledAsync(SufiAIFeatures.Workspaces))
         {
-            AIMenu.AddItem(new ApplicationMenuItem(
+            aiMenu.AddItem(new ApplicationMenuItem(
                 AIMenus.Workspaces,
                 l["Menu:Workspaces"],
                 url: "/panel/admin/ai/workspaces",
                 icon: "workspace",
-                order: 1
+                order: -1
             ).RequirePermissions(AIPermissions.Workspaces.Default));
         }
 
         if (await featureChecker.IsEnabledAsync(SufiAIFeatures.Chat))
         {
-            var testingMenu = new ApplicationMenuItem(
-                AIMenus.TestChat,
-                l["Menu:Testing"],
-                url: "/panel/admin/ai/test-chat",
+            aiMenu.AddItem(new ApplicationMenuItem(
+                AIMenus.WorkspaceChat,
+                l["Menu:WorkspaceChat"],
+                url: "/panel/admin/ai/chat",
                 icon: "chat",
-                order: 1
-            ).RequirePermissions(AIPermissions.TestChat.Default);
-
-
-            AIMenu.AddItem(testingMenu);
+                order: 0
+            ).RequirePermissions(AIPermissions.WorkspaceChat.Default));
         }
 
         if (await featureChecker.IsEnabledAsync(SufiAIFeatures.UsageAnalytics))
         {
-            AIMenu.AddItem(new ApplicationMenuItem(
+            aiMenu.AddItem(new ApplicationMenuItem(
                 AIMenus.UsageAnalytics,
                 l["Menu:UsageAnalytics"],
                 url: "/panel/admin/ai/usage-analytics",
@@ -110,7 +108,7 @@ public class AIMenuContributor : IMenuContributor
                 order: 2
             ).RequirePermissions(AIPermissions.RAG.Default));
 
-            AIMenu.AddItem(ragMenu);
+            aiMenu.AddItem(ragMenu);
         }
 
         if (await featureChecker.IsEnabledAsync(SufiAIFeatures.MCP))
@@ -138,7 +136,7 @@ public class AIMenuContributor : IMenuContributor
                 order: 2
             ).RequirePermissions(AIPermissions.MCPServers.Default));
 
-            AIMenu.AddItem(mcpMenu);
+            aiMenu.AddItem(mcpMenu);
         }
 
         return;
@@ -156,9 +154,7 @@ public static class AIMenus
     public const string Workspaces = GroupName + ".Workspaces";
     public const string ModelConfigurations = GroupName + ".ModelConfigurations";
     
-    // Testing group
-    public const string TestingGroup = GroupName + ".Testing";
-    public const string TestChat = TestingGroup + ".TestChat";
+    public const string WorkspaceChat = GroupName + ".WorkspaceChat";
     
     public const string UsageAnalytics = GroupName + ".UsageAnalytics";
     

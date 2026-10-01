@@ -1,0 +1,121 @@
+@namespace SufiChain.SufiPlatform.SufiAI.Blazor.Pages.AI
+@page "/panel/admin/ai/chat"
+@attribute [Authorize(Policy = AIPermissions.WorkspaceChat.Default)]
+@inherits AIComponentBase
+
+<div class="workspace-chat-page">
+    <ChatMessengerShell State="MessengerState"
+                        ShowContextPanel="false"
+                        ShowComposer="@HasSelectedSession"
+                        ComposerProfile="ChatComposerProfile.Messenger"
+                        RequireSessionForRichActions="true"
+                        HideEmoji="true"
+                        HideVoice="@HideVoice"
+                        HideAttachments="@HideAttachments"
+                        ModelAcceptsImageInput="@AcceptsImage"
+                        ModelAcceptsFileInput="@AcceptsFile"
+                        ComposerToolbar="@ModelToolbar"
+                        AllowNewAssistantSession="@CanStartSavedChat"
+                        OnNewAssistantSession="StartNewSavedChatAsync"
+                        OnSessionSelected="OnSessionSelectedAsync"
+                        OnSendMessage="OnSendAsync"
+                        Class="workspace-chat-page__shell">
+        <ListHeader>
+            <div class="workspace-chat-page__list-header">
+                <SbHeading Level="6">@L["WorkspaceChat"]</SbHeading>
+                <WorkspaceSelector Workspaces="@_workspaces"
+                                   Loading="@_loadingWorkspaces"
+                                   Value="@_workspaceId"
+                                   ValueChanged="OnWorkspaceChangedAsync" />
+                <SbStack Direction="SbStackDirection.Row" Gap="2">
+                    <SbButton Size="SbSize.Sm"
+                              Variant="@(_savedMode ? SbButtonVariant.Solid : SbButtonVariant.Outline)"
+                              Color="SbColor.Primary"
+                              Disabled="@(!_workspaceId.HasValue)"
+                              OnClick="@(_ => SetModeAsync(true))">
+                        @L["WorkspaceChat:Saved"]
+                    </SbButton>
+                    <SbButton Size="SbSize.Sm"
+                              Variant="@(!_savedMode ? SbButtonVariant.Solid : SbButtonVariant.Outline)"
+                              Color="SbColor.Primary"
+                              Disabled="@(!_workspaceId.HasValue)"
+                              OnClick="@(_ => SetModeAsync(false))">
+                        @L["WorkspaceChat:Anonymous"]
+                    </SbButton>
+                </SbStack>
+            </div>
+        </ListHeader>
+        <EmptyTemplate>
+            <SbText Variant="SbTextVariant.BodySmall" Color="SbColor.Muted">
+                @L["WorkspaceChat:NoSavedThreads"]
+            </SbText>
+        </EmptyTemplate>
+        <EmptySelection>
+            <div class="workspace-chat-home">
+                @if (!_workspaceId.HasValue)
+                {
+                    <div class="workspace-chat-home__greeting">
+                        <SbHeading Level="5">@L["WorkspaceChat:SelectWorkspace"]</SbHeading>
+                    </div>
+                }
+                else if (!_savedMode)
+                {
+                    <div class="workspace-chat-home__thread">
+                        @if (_anonymousMessages.Count == 0 && !_sending)
+                        {
+                            <div class="workspace-chat-home__greeting">
+                                <SbHeading Level="4">@L["WorkspaceChat:Greeting"]</SbHeading>
+                            </div>
+                        }
+                        else
+                        {
+                            <ChatMessageTimeline Messages="@_anonymousMessages"
+                                                 IsWaitingForAiResponse="@_sending"
+                                                 EmptyText="@L["WorkspaceChat:Greeting"]" />
+                        }
+                    </div>
+                    <ChatComposer Profile="ChatComposerProfile.Messenger"
+                                  Capabilities="@_capabilities"
+                                  DraftMessage="@_anonymousDraft"
+                                  DraftMessageChanged="OnAnonymousDraftChangedAsync"
+                                  OnSend="OnSendAsync"
+                                  IsDisabled="@_sending"
+                                  IsSending="@_sending"
+                                  HideEmoji="true"
+                                  HideVoice="true"
+                                  HideAttachments="true"
+                                  RequireSessionForRichActions="true"
+                                  IsAssistantConversation="true">
+                        <ComposerToolbar>
+                            @ModelToolbar
+                        </ComposerToolbar>
+                    </ChatComposer>
+                }
+                else
+                {
+                    <div class="workspace-chat-home__thread">
+                        <div class="workspace-chat-home__greeting">
+                            <SbHeading Level="4">@L["WorkspaceChat:Greeting"]</SbHeading>
+                        </div>
+                    </div>
+                    <ChatComposer Profile="ChatComposerProfile.Messenger"
+                                  Capabilities="@_capabilities"
+                                  DraftMessage="@MessengerState.DraftMessage"
+                                  DraftMessageChanged="OnSavedDraftChangedAsync"
+                                  OnSend="OnSendAsync"
+                                  IsDisabled="@_sending"
+                                  IsSending="@_sending"
+                                  HideEmoji="true"
+                                  HideVoice="true"
+                                  HideAttachments="true"
+                                  RequireSessionForRichActions="true"
+                                  IsAssistantConversation="true">
+                        <ComposerToolbar>
+                            @ModelToolbar
+                        </ComposerToolbar>
+                    </ChatComposer>
+                }
+            </div>
+        </EmptySelection>
+    </ChatMessengerShell>
+</div>

@@ -82,6 +82,12 @@ public class AIAppController : AIController, IAIAppService
         return _aiAppService.DeleteModelConfigurationAsync(id);
     }
 
+    [HttpPost("model-configurations/{id}/workspace-default")]
+    public virtual Task SetWorkspaceDefaultModelConfigurationAsync(Guid id)
+    {
+        return _aiAppService.SetWorkspaceDefaultModelConfigurationAsync(id);
+    }
+
     [HttpGet("workspaces/{workspaceId}/usage-logs")]
     public virtual Task<List<AIUsageLogDto>> GetUsageLogsAsync(
         Guid workspaceId,

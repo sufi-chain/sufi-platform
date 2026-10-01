@@ -23,6 +23,7 @@
   <ItemGroup>
     <!-- Project References -->
     <ProjectReference Include="..\SufiChain.SufiPlatform.BackgroundJobs.Application.Contracts\SufiChain.SufiPlatform.BackgroundJobs.Application.Contracts.csproj" />
+    <ProjectReference Include="..\..\..\..\..\pro-modules\ai-hooshvare\src\SufiChain.SufiPlatform.SufiAI.Hooshvare.Application\SufiChain.SufiPlatform.SufiAI.Hooshvare.Application.csproj" />
   </ItemGroup>
 
 </Project>

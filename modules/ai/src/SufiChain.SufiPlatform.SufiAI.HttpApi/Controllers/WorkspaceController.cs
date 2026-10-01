@@ -30,6 +30,12 @@ public class WorkspaceController : AIController, IWorkspaceAppService
         return _workspaceAppService.GetLookupAsync();
     }
 
+    [HttpGet("provider-profiles")]
+    public virtual Task<List<AiProviderProfileDto>> GetProviderProfilesAsync()
+    {
+        return _workspaceAppService.GetProviderProfilesAsync();
+    }
+
     [HttpGet("{id}")]
     public virtual Task<WorkspaceDto> GetAsync(Guid id)
     {

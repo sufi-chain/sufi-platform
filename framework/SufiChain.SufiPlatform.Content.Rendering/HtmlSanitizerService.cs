@@ -8,6 +8,7 @@ public sealed class HtmlSanitizerService : IHtmlSanitizer
     {
         [HtmlSanitizerPolicies.KnowledgeBasePublic] = CreatePublic(),
         [HtmlSanitizerPolicies.CmsPublic] = CreatePublic(),
+        [HtmlSanitizerPolicies.CmsPage] = CreateCmsPage(),
         [HtmlSanitizerPolicies.Chat] = CreatePublic(),
         [HtmlSanitizerPolicies.Email] = CreateEmail()
     };
@@ -109,6 +110,52 @@ public sealed class HtmlSanitizerService : IHtmlSanitizer
         sanitizer.AllowedAttributes.Add("data-sb-callout");
         sanitizer.AllowedSchemes.Add("mailto");
         sanitizer.AllowedSchemes.Add("tel");
+        return sanitizer;
+    }
+
+    private static HtmlSanitizer CreateCmsPage()
+    {
+        var sanitizer = CreatePublic();
+        foreach (var tag in new[] { "iframe", "picture", "source", "video", "audio", "track", "details", "summary", "time", "mark", "address", "dialog" })
+        {
+            sanitizer.AllowedTags.Add(tag);
+        }
+
+        foreach (var tag in new[] { "input", "select", "option", "optgroup", "textarea", "button", "label", "fieldset", "legend" })
+        {
+            sanitizer.AllowedTags.Remove(tag);
+        }
+
+        foreach (var attribute in new[]
+                 {
+                     "style", "srcset", "sizes", "loading", "decoding", "fetchpriority", "target", "rel", "title", "lang", "dir",
+                     "controls", "poster", "autoplay", "muted", "loop", "playsinline", "preload", "kind", "srclang", "label",
+                     "allow", "allowfullscreen", "referrerpolicy", "sandbox", "open", "datetime", "media", "type",
+                     "aria-describedby", "aria-labelledby", "aria-live", "aria-level"
+                 })
+        {
+            sanitizer.AllowedAttributes.Add(attribute);
+        }
+
+        // Embeds must be https and are sandboxed by default (video players need their own origin's storage).
+        sanitizer.PostProcessNode += (_, e) =>
+        {
+            if (e.Node is not AngleSharp.Dom.IElement { LocalName: "iframe" } frame)
+            {
+                return;
+            }
+
+            if (!(frame.GetAttribute("src") ?? string.Empty).StartsWith("https://", StringComparison.OrdinalIgnoreCase))
+            {
+                frame.RemoveAttribute("src");
+            }
+
+            if (!frame.HasAttribute("sandbox"))
+            {
+                frame.SetAttribute("sandbox", "allow-scripts allow-same-origin allow-popups allow-presentation");
+            }
+        };
+
         return sanitizer;
     }
 

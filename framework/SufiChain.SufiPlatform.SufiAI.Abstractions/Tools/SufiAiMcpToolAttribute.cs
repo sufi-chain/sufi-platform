@@ -35,6 +35,11 @@ public class SufiAiMcpToolAttribute : Attribute
     public string? PermissionName { get; set; }
 
     /// <summary>
+    /// The tool only reads data. Assistant hooshvares can select it. Copilots can select every tool.
+    /// </summary>
+    public bool ReadOnly { get; set; }
+
+    /// <summary>
     /// Creates the attribute.
     /// </summary>
     public SufiAiMcpToolAttribute(string name, string description)

@@ -242,7 +242,7 @@ public class HelpDeskAiWorkspaceResolverTests
             tenantId: null,
             sourceModule: "HelpDesk.LiveChat",
             displayName,
-            HooshvareKind.Hooshvare,
+            HooshvareKind.Copilot,
             HelpDeskAiWorkspacePurpose.LiveChat.ToString(),
             workspaceId,
             systemPrompt: "System prompt",

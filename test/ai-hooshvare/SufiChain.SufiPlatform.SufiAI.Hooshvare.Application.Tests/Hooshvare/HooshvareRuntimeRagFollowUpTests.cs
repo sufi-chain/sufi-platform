@@ -177,7 +177,7 @@ public partial class HooshvareRuntimeRagWorkspaceTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task Should_Report_Failed_Search_And_Propagate_Raw_Or_Retry_Failure(bool failRetry)
+    public async Task Should_Report_Failed_Search_And_Continue_After_Raw_Or_Retry_Failure(bool failRetry)
     {
         var projectId = Guid.NewGuid();
         var fixture = CreateFixture(projectId, [projectId], IndexingWorkspaceName);
@@ -187,8 +187,14 @@ public partial class HooshvareRuntimeRagWorkspaceTests
                 ? Task.FromResult(new SufiAIRagSearchResult())
                 : Task.FromException<SufiAIRagSearchResult>(new InvalidOperationException("Search provider unavailable")));
 
-        await Should.ThrowAsync<InvalidOperationException>(() => fixture.Orchestrator.PrepareRequestAsync(fixture.Definition, input));
+        var result = await fixture.Orchestrator.PrepareRequestAsync(fixture.Definition, input);
 
+        result.UsedRag.ShouldBeFalse();
+        result.RetrievedChunkCount.ShouldBe(0);
+        result.RagSearch.Outcome.ShouldBe(HooshvareRagSearchOutcome.Unavailable);
+        result.RagSearch.AttemptCount.ShouldBe(failRetry ? 2 : 1);
+        result.Request.SystemPrompt!.ShouldContain(HooshvareRagRuntimeOptionsDefaults.RagUnavailableNotice);
+        result.Request.SystemPrompt!.ShouldNotContain("Search provider unavailable");
         await fixture.Rag.Received(failRetry ? 2 : 1).SearchAsync(Arg.Any<SufiAIRagSearchRequest>(), Arg.Any<CancellationToken>());
         await fixture.ProgressReporter.Received(1).ReportAsync(
             Arg.Is<HooshvareTurnProgressDto>(progress => progress.Stage == HooshvareTurnProgressStages.SearchingKb && progress.Status == HooshvareTurnProgressStatuses.Started),
@@ -223,9 +229,13 @@ public partial class HooshvareRuntimeRagWorkspaceTests
         fixture.Rag.SearchAsync(Arg.Any<SufiAIRagSearchRequest>(), Arg.Any<CancellationToken>())
             .Returns(Task.FromException<SufiAIRagSearchResult>(new OperationCanceledException("Provider timeout")));
 
-        await Should.ThrowAsync<OperationCanceledException>(() => fixture.Orchestrator.PrepareRequestAsync(
-            fixture.Definition, CreateFollowUpInput(fixture, "لایسنسش چیه؟")));
+        var result = await fixture.Orchestrator.PrepareRequestAsync(
+            fixture.Definition, CreateFollowUpInput(fixture, "لایسنسش چیه؟"));
 
+        result.UsedRag.ShouldBeFalse();
+        result.RagSearch.Outcome.ShouldBe(HooshvareRagSearchOutcome.Unavailable);
+        result.Request.SystemPrompt!.ShouldContain(HooshvareRagRuntimeOptionsDefaults.RagUnavailableNotice);
+        result.Request.SystemPrompt!.ShouldNotContain("Provider timeout");
         await fixture.Rag.Received(1).SearchAsync(Arg.Any<SufiAIRagSearchRequest>(), Arg.Any<CancellationToken>());
         await fixture.ProgressReporter.Received(1).ReportAsync(
             Arg.Is<HooshvareTurnProgressDto>(progress => progress.Stage == HooshvareTurnProgressStages.SearchingKb && progress.Status == HooshvareTurnProgressStatuses.Failed),

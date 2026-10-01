@@ -10,11 +10,11 @@ public class ChatHooshvareSeedTests
     [Fact]
     public void Public_Assistant_Should_Be_General_Purpose_Without_Support_Shortcuts()
     {
-        ChatHooshvareKeys.EntityVersion.ShouldBe(0);
+        ChatHooshvareKeys.EntityVersion.ShouldBe(1);
         ChatHooshvareKeys.PublicAssistant.ShortcutIds.ShouldBeEmpty();
         ChatHooshvareSeedTexts.PublicAssistant.Texts.Shortcuts.ShouldBeEmpty();
         ChatHooshvareSeedTexts.PublicAssistant.Texts.DisplayName["en"].ShouldBe("Everyday Assistant");
-        ChatHooshvareSeedTexts.PublicAssistant.Texts.DisplayName["fa"].ShouldBe("هوشواره روزمره");
+        ChatHooshvareSeedTexts.PublicAssistant.Texts.DisplayName["fa"].ShouldBe("دستیار روزمره");
     }
 
     [Fact]
@@ -34,7 +34,7 @@ public class ChatHooshvareSeedTests
         }
 
         ChatHooshvareSeedTexts.PublicAssistant.Texts.SystemPrompt["en"]
-            .ShouldContain("general-purpose AI assistant");
+            .ShouldContain("You are Everyday, the Assistant for everyday work and conversation.");
         ChatHooshvareSeedTexts.PublicAssistant.Texts.SystemPrompt["en"]
             .ShouldContain("only when the runtime supplies sources");
         ChatHooshvareSeedTexts.PublicAssistant.Texts.SystemPrompt["en"]

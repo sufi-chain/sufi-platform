@@ -95,3 +95,6 @@
 <RoleCreateModal @bind-Open="_showCreateModal" OnRoleCreated="OnRoleCreatedAsync" />
 <RoleEditModal @bind-Open="_showEditModal" Role="_selectedRole" OnRoleUpdated="OnRoleUpdatedAsync" />
 <PermissionsModal @ref="_permissionManagementModal" />
+<ReadOnlyHooshvareDrawer HooshvareKey="@IdentityAdminAdvisorHooshvareKeys.Key"
+                         Title="@L["Hooshvare:SufiIdentity:AdminAdvisor:DisplayName"]"
+                         ContextProvider="BuildHooshvareContext" />

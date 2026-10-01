@@ -49,6 +49,22 @@ public class WorkspaceTests : SufiAITestBase<SufiAIDomainTestModule>
         workspace.Model.ShouldBe("gpt-4");
         workspace.ApiKey.ShouldBe("new-api-key");
         workspace.ApiBaseUrl.ShouldBe("https://custom.openai.com/v1");
+        workspace.Provider.ShouldBe(AIProviderType.OpenAI);
+    }
+
+    [Fact]
+    public void Should_Change_Provider()
+    {
+        var workspace = new Workspace(
+            Guid.NewGuid(),
+            "test",
+            AIProviderType.OpenAI,
+            "gpt-4"
+        );
+
+        workspace.SetProvider(AIProviderType.OpenRouter);
+
+        workspace.Provider.ShouldBe(AIProviderType.OpenRouter);
     }
 
     [Fact]
@@ -119,8 +135,8 @@ public class WorkspaceTests : SufiAITestBase<SufiAIDomainTestModule>
         var configuration = workspace.AddModelConfiguration(
             AICapabilityType.ChatCompletion,
             "gpt-3.5-turbo",
-            inputCostPer1MTokens: 1.5m,
-            outputCostPer1MTokens: 2.5m);
+            inputPrice: 1.5m,
+            outputPrice: 2.5m);
 
         workspace.UpdateConfiguration(
             "gpt-4",
@@ -130,12 +146,13 @@ public class WorkspaceTests : SufiAITestBase<SufiAIDomainTestModule>
             outputCostPer1MTokens: 11m);
         workspace.UpdatePrimaryChatConfiguration(
             "gpt-4",
-            "https://workspace.example/v1");
+            "https://workspace.example/v1",
+            displayName: null);
 
         configuration.ModelId.ShouldBe("gpt-4");
         configuration.ApiEndpoint.ShouldBe("https://workspace.example/v1");
-        configuration.InputCostPer1MTokens.ShouldBe(1.5m);
-        configuration.OutputCostPer1MTokens.ShouldBe(2.5m);
+        configuration.InputPrice.ShouldBe(1.5m);
+        configuration.OutputPrice.ShouldBe(2.5m);
         configuration.MaxContextTokens.ShouldBe(AIModelConfiguration.DefaultMaxContextTokens);
     }
 

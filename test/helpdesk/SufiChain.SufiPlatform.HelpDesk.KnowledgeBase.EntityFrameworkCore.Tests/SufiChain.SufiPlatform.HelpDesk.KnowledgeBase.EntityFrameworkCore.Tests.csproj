@@ -3,9 +3,12 @@
     <TargetFramework>net10.0</TargetFramework>
     <RootNamespace>SufiChain.SufiPlatform.HelpDesk.KnowledgeBase</RootNamespace>
     <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="../SufiChain.SufiPlatform.HelpDesk.KnowledgeBase.TestBase/SufiChain.SufiPlatform.HelpDesk.KnowledgeBase.TestBase.csproj" />
+    <ProjectReference Include="../../../../pro-modules/helpdesk/src/SufiChain.SufiPlatform.HelpDesk.KnowledgeBase.EntityFrameworkCore/SufiChain.SufiPlatform.HelpDesk.KnowledgeBase.EntityFrameworkCore.csproj" />
+    <PackageReference Include="Volo.Abp.EntityFrameworkCore.Sqlite" Version="$(AbpVersion)" />
     <PackageReference Include="Volo.Abp.TestBase" Version="$(AbpVersion)" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.14.1" />
     <PackageReference Include="Shouldly" Version="4.3.0" />

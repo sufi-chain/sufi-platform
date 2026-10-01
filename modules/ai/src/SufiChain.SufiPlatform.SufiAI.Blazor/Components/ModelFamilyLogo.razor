@@ -1,0 +1,40 @@
+@namespace SufiChain.SufiPlatform.SufiAI.Blazor.Components
+
+<span class="ai-mark ai-mark--round @(Small ? "ai-mark--sm" : null)">
+	@if (IconSrc != null)
+	{
+		<img src="@IconSrc" alt="" aria-hidden="true" />
+	}
+	else
+	{
+		<span class="ai-mark__mono" aria-hidden="true">@ModelFamilyKey.Monogram(ModelId)</span>
+	}
+</span>
+
+@code {
+	[Parameter]
+	public string? ModelId { get; set; }
+
+	[Parameter]
+	public string? IconUrl { get; set; }
+
+	[Parameter]
+	public bool Small { get; set; }
+
+	private string? IconSrc
+	{
+		get
+		{
+			var remote = ModelCatalogIconUrl.Normalize(IconUrl);
+			if (remote != null)
+			{
+				return remote;
+			}
+
+			var family = ModelFamilyKey.Resolve(ModelId);
+			return family == null
+				? null
+				: $"_content/SufiChain.SufiPlatform.SufiAI.Blazor/logos/families/{family}.svg";
+		}
+	}
+}

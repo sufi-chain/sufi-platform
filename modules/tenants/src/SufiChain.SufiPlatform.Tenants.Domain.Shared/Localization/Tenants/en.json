@@ -51,5 +51,5 @@
     "Permission:Delete": "Delete",
     "Permission:ManageFeatures": "Manage features",
     "Permission:ManageConnectionStrings": "Manage connection strings"
-  }
+  ,"Hooshvare:SufiTenants:Diagnostics:DisplayName":"Tenant Diagnostics"}
 }

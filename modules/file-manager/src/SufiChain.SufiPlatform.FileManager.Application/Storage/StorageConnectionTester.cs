@@ -1,6 +1,8 @@
 using Amazon;
 using Amazon.S3;
 using Microsoft.Data.SqlClient;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Minio;
 using Volo.Abp.DependencyInjection;
 
@@ -8,6 +10,9 @@ namespace SufiChain.SufiPlatform.FileManager.Storage;
 
 public class StorageConnectionTester : ITransientDependency
 {
+    private const string ConnectionFailedMessage = "The storage connection test failed.";
+
+    public ILogger<StorageConnectionTester> Logger { get; set; } = NullLogger<StorageConnectionTester>.Instance;
 
     public virtual async Task<TestStorageConnectionResult> TestAsync(TestStorageConnectionInput input)
     {
@@ -21,7 +26,7 @@ public class StorageConnectionTester : ITransientDependency
         };
     }
 
-    private static async Task<TestStorageConnectionResult> TestDatabaseAsync(TestStorageConnectionInput input)
+    private async Task<TestStorageConnectionResult> TestDatabaseAsync(TestStorageConnectionInput input)
     {
         var connStr = input.DatabaseConnectionString;
         if (string.IsNullOrWhiteSpace(connStr))
@@ -38,11 +43,12 @@ public class StorageConnectionTester : ITransientDependency
         }
         catch (Exception ex)
         {
-            return new TestStorageConnectionResult { Success = false, Message = ex.Message };
+            Logger.LogWarning(ex, "Storage connection test failed.");
+            return new TestStorageConnectionResult { Success = false, Message = ConnectionFailedMessage };
         }
     }
 
-    private static Task<TestStorageConnectionResult> TestFileSystemAsync(TestStorageConnectionInput input)
+    private Task<TestStorageConnectionResult> TestFileSystemAsync(TestStorageConnectionInput input)
     {
         var basePath = input.FileSystemBasePath;
         if (string.IsNullOrWhiteSpace(basePath))
@@ -66,11 +72,12 @@ public class StorageConnectionTester : ITransientDependency
         }
         catch (Exception ex)
         {
-            return Task.FromResult(new TestStorageConnectionResult { Success = false, Message = ex.Message });
+            Logger.LogWarning(ex, "Storage connection test failed.");
+            return Task.FromResult(new TestStorageConnectionResult { Success = false, Message = ConnectionFailedMessage });
         }
     }
 
-    private static async Task<TestStorageConnectionResult> TestMinioAsync(TestStorageConnectionInput input)
+    private async Task<TestStorageConnectionResult> TestMinioAsync(TestStorageConnectionInput input)
     {
         if (string.IsNullOrWhiteSpace(input.MinioEndPoint) || string.IsNullOrWhiteSpace(input.MinioAccessKey)
             || string.IsNullOrWhiteSpace(input.MinioSecretKey))
@@ -90,11 +97,12 @@ public class StorageConnectionTester : ITransientDependency
         }
         catch (Exception ex)
         {
-            return new TestStorageConnectionResult { Success = false, Message = ex.Message };
+            Logger.LogWarning(ex, "Storage connection test failed.");
+            return new TestStorageConnectionResult { Success = false, Message = ConnectionFailedMessage };
         }
     }
 
-    private static async Task<TestStorageConnectionResult> TestS3Async(TestStorageConnectionInput input)
+    private async Task<TestStorageConnectionResult> TestS3Async(TestStorageConnectionInput input)
     {
         if (string.IsNullOrWhiteSpace(input.S3AccessKeyId) || string.IsNullOrWhiteSpace(input.S3SecretAccessKey))
         {
@@ -126,7 +134,8 @@ public class StorageConnectionTester : ITransientDependency
         }
         catch (Exception ex)
         {
-            return new TestStorageConnectionResult { Success = false, Message = ex.Message };
+            Logger.LogWarning(ex, "Storage connection test failed.");
+            return new TestStorageConnectionResult { Success = false, Message = ConnectionFailedMessage };
         }
     }
 }

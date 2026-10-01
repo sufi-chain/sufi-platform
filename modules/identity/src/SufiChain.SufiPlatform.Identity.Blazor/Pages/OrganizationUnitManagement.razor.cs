@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Components;
 using SufiChain.SufiBlazor.Components.Overlays;
+using SufiChain.SufiPlatform.Identity.Hooshvare;
 using SufiChain.SufiPlatform.Identity.OrganizationUnits;
 using SufiChain.SufiPlatform.Identity.OrganizationUnits.Dtos;
 using SufiChain.SufiPlatform.UI.Layout;
@@ -330,6 +331,17 @@ public partial class OrganizationUnitManagement : IdentityComponentBase
             await RefreshRolesGridAsync();
             await LoadUnitDetailsAsync();
         }, LoadingKeys.LoadRoles);
+    }
+
+    private IReadOnlyDictionary<string, string> BuildHooshvareContext()
+    {
+        var context = new Dictionary<string, string>(StringComparer.Ordinal);
+        if (_selectedUnit != null)
+        {
+            context[IdentityAdminAdvisorHooshvareKeys.Context.OrganizationUnitId] = _selectedUnit.Id.ToString();
+        }
+
+        return context;
     }
 
     #endregion

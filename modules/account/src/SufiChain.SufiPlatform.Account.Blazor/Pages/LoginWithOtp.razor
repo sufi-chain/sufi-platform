@@ -8,12 +8,16 @@
         <ChildContent>
             <SbStack Gap="4" Align="SbAlign.Center">
                 <SbHeading Level="2">@AccountL["LoginWithOtp"]</SbHeading>
+                @if (CreateLink)
+                {
+                    <SbAlert Severity="SbAlertSeverity.Info">@AccountL["LinkAccountSignInHint"]</SbAlert>
+                }
                 <SbText Color="SbColor.Muted">@AccountL["LoginWithOtpInstructions"]</SbText>
 
                 @if (Options is { IsEnabled: false } or { AllowLogin: false })
                 {
                     <SbAlert Severity="SbAlertSeverity.Warning">@(ErrorMessage ?? AccountL["OtpLoginDisabled"])</SbAlert>
-                    <SbLink Href="/account/login">@L["SignIn"]</SbLink>
+                    <SbLink Href="@PasswordLoginHref">@L["SignIn"]</SbLink>
                 }
                 else
                 {
@@ -85,7 +89,7 @@
                         }
                     </SbStack>
 
-                    <SbLink Href="/account/login">@L["SignInWithPassword"]</SbLink>
+                    <SbLink Href="@PasswordLoginHref">@L["SignInWithPassword"]</SbLink>
                 }
             </SbStack>
         </ChildContent>

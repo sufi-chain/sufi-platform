@@ -14,6 +14,12 @@ public class UpdateWorkspaceDto
     [Required]
     [StringLength(256)]
     public string Model { get; set; } = string.Empty;
+
+    [StringLength(256)]
+    public string? ModelDisplayName { get; set; }
+
+    [StringLength(256)]
+    public string? DecisionsModelId { get; set; }
     
     [StringLength(512)]
     public string? ApiKey { get; set; }

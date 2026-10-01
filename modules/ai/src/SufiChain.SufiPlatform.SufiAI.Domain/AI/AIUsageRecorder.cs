@@ -41,7 +41,14 @@ public class AIUsageRecorder : DomainService, IAIUsageRecorder
 
             if (record.IsSuccess)
             {
-                var cost = CalculateCost(configuration, record.InputTokens, record.OutputTokens, record.TotalTokens);
+                var cost = CalculateCost(
+                    configuration,
+                    record.InputTokens,
+                    record.OutputTokens,
+                    record.TotalTokens,
+                    record.AudioSeconds,
+                    record.CharacterCount,
+                    record.ImageCount);
                 log.RecordSuccess(
                     record.InputTokens,
                     record.OutputTokens,
@@ -50,7 +57,10 @@ public class AIUsageRecorder : DomainService, IAIUsageRecorder
                     record.TotalTokens,
                     cost.IsCostCalculated,
                     record.UsageUnavailableReason,
-                    cost.CostCalculationNote);
+                    cost.CostCalculationNote,
+                    record.AudioSeconds,
+                    record.CharacterCount,
+                    record.ImageCount);
             }
             else
             {
@@ -72,29 +82,95 @@ public class AIUsageRecorder : DomainService, IAIUsageRecorder
         WorkspaceRuntimeConfiguration configuration,
         int? inputTokens,
         int? outputTokens,
-        int? totalTokens)
+        int? totalTokens,
+        decimal? audioSeconds = null,
+        int? characterCount = null,
+        int? imageCount = null)
     {
-        var hasTokenUsage = inputTokens.HasValue || outputTokens.HasValue || totalTokens.HasValue;
-        if (!hasTokenUsage)
-        {
-            return new CostCalculationResult(0, false, UsageUnavailable);
-        }
-
-        var inputCostPer1MTokens = configuration.InputCostPer1MTokens
-            ?? configuration.ModelConfiguration?.InputCostPer1MTokens
-            ?? configuration.Workspace.InputCostPer1MTokens;
-        var outputCostPer1MTokens = configuration.OutputCostPer1MTokens
-            ?? configuration.ModelConfiguration?.OutputCostPer1MTokens
-            ?? configuration.Workspace.OutputCostPer1MTokens;
-        if (!(inputCostPer1MTokens.HasValue || outputCostPer1MTokens.HasValue))
+        var inputPrice = configuration.InputPrice;
+        var outputPrice = configuration.OutputPrice;
+        if (!(inputPrice.HasValue || outputPrice.HasValue))
         {
             return new CostCalculationResult(0, false, PricingNotConfigured);
         }
 
-        var estimatedCost = ((inputTokens ?? 0) * (inputCostPer1MTokens ?? 0) +
-                             (outputTokens ?? 0) * (outputCostPer1MTokens ?? 0)) / 1_000_000m;
+        if (!TryCharge(inputPrice, configuration.InputPriceUnit, inputTokens, outputTokens, totalTokens, audioSeconds, characterCount, imageCount, isOutput: false, out var inputCharge) ||
+            !TryCharge(outputPrice, configuration.OutputPriceUnit, inputTokens, outputTokens, totalTokens, audioSeconds, characterCount, imageCount, isOutput: true, out var outputCharge))
+        {
+            return new CostCalculationResult(0, false, UsageUnavailable);
+        }
 
-        return new CostCalculationResult(estimatedCost, true, null);
+        return new CostCalculationResult(inputCharge + outputCharge, true, null);
+    }
+
+    private static bool TryCharge(
+        decimal? price,
+        AIPriceUnit unit,
+        int? inputTokens,
+        int? outputTokens,
+        int? totalTokens,
+        decimal? audioSeconds,
+        int? characterCount,
+        int? imageCount,
+        bool isOutput,
+        out decimal charge)
+    {
+        charge = 0;
+        if (price is not decimal rate)
+        {
+            return true;
+        }
+
+        var hasTokens = inputTokens.HasValue || outputTokens.HasValue || totalTokens.HasValue;
+        switch (unit)
+        {
+            case AIPriceUnit.PerMillionTokens:
+                if (!hasTokens)
+                {
+                    return false;
+                }
+
+                var tokens = isOutput ? outputTokens ?? 0 : inputTokens ?? 0;
+                charge = tokens * rate / 1_000_000m;
+                return true;
+            case AIPriceUnit.PerMinute:
+                if (audioSeconds is not decimal minutesSource)
+                {
+                    return false;
+                }
+
+                charge = minutesSource / 60m * rate;
+                return true;
+            case AIPriceUnit.PerHour:
+                if (audioSeconds is not decimal hoursSource)
+                {
+                    return false;
+                }
+
+                charge = hoursSource / 3600m * rate;
+                return true;
+            case AIPriceUnit.PerMillionCharacters:
+                if (characterCount is not int characters)
+                {
+                    return false;
+                }
+
+                charge = characters * rate / 1_000_000m;
+                return true;
+            case AIPriceUnit.PerImage:
+                if (imageCount is not int images)
+                {
+                    return false;
+                }
+
+                charge = images * rate;
+                return true;
+            case AIPriceUnit.PerRequest:
+                charge = rate;
+                return true;
+            default:
+                return false;
+        }
     }
 
     protected sealed record CostCalculationResult(

@@ -26,6 +26,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\SufiChain.SufiPlatform.Core\SufiChain.SufiPlatform.Core.csproj" />
     <ProjectReference Include="..\SufiChain.SufiPlatform.Ddd.Application.Contracts\SufiChain.SufiPlatform.Ddd.Application.Contracts.csproj" />
     <PackageReference Include="Volo.Abp.Ddd.Domain" Version="$(AbpVersion)" />
   </ItemGroup>

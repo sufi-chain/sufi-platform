@@ -12,9 +12,15 @@ namespace SufiChain.SufiPlatform.SufiAI;
 public interface IAIProvider
 {
     /// <summary>
-    /// The provider type this implementation supports
+    /// The provider type this implementation was originally registered as.
+    /// Resolution uses <see cref="CapabilityKind"/> once a profile is known.
     /// </summary>
     AIProviderType ProviderType { get; }
+
+    /// <summary>
+    /// Protocol family this executor implements.
+    /// </summary>
+    AIProviderCapabilityKind CapabilityKind { get; }
     
     /// <summary>
     /// Check if this provider supports a specific capability
@@ -66,6 +72,16 @@ public interface IAIProvider
         VisionAnalysisRequest request,
         CancellationToken cancellationToken = default);
     
+    /// <summary>
+    /// Generate an image from a text prompt. Providers without the capability throw
+    /// <see cref="AIErrorCodes.CapabilityNotSupported"/>.
+    /// </summary>
+    Task<ImageGenerationResponse> GenerateImageAsync(
+        Workspace workspace,
+        AIModelConfiguration configuration,
+        ImageGenerationRequest request,
+        CancellationToken cancellationToken = default);
+
     /// <summary>
     /// Generate text embeddings
     /// </summary>

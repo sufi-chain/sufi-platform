@@ -23,12 +23,25 @@ public partial class WorkspaceEditModal : AIComponentBase
     [Parameter] public EventCallback OnConverted { get; set; }
 
     private WorkspaceDto? _workspace;
-    private UpdateWorkspaceDto _model = new();
-    private string _inputCostPer1MTokensText = string.Empty;
-    private string _outputCostPer1MTokensText = string.Empty;
+    private readonly WorkspaceConnectionDraft _draft = new();
+    private List<AiProviderProfileDto> _profiles = WorkspaceProviderCatalog.Fallback();
+    private AiProviderProfileDto? SelectedProfile =>
+        _profiles.FirstOrDefault(profile => profile.ProviderType == _draft.Provider);
+
+    private Task OnProviderReset()
+    {
+        _availableModels = new List<OpenAIModelDto>();
+        _decisionModels = new List<OpenAIModelDto>();
+        _modelsLoaded = false;
+        return WorkspaceId.HasValue ? LoadModelsAsync(announce: false) : Task.CompletedTask;
+    }
+
     private List<OpenAIModelDto> _availableModels = new();
+    private List<OpenAIModelDto> _decisionModels = new();
+    private bool _modelsLoaded;
     private int _activeTab;
     private bool _wasOpen;
+    private bool _opening;
     private List<WorkspaceGuardrailFormRow> _guardrailRows = WorkspaceGuardrailForm.CreateRows();
     private List<WorkspaceGuardrailStatusDto> _guardrailStatus = new();
 
@@ -38,9 +51,22 @@ public partial class WorkspaceEditModal : AIComponentBase
 
     protected override async Task OnParametersSetAsync()
     {
-        if (Open && WorkspaceId.HasValue && (!_wasOpen || _workspace == null || _workspace.Id != WorkspaceId.Value))
+        if (Open &&
+            !_opening &&
+            WorkspaceId.HasValue &&
+            (!_wasOpen || _workspace == null || _workspace.Id != WorkspaceId.Value))
         {
-            await LoadWorkspaceAsync();
+            _opening = true;
+            _wasOpen = true;
+            try
+            {
+                await LoadWorkspaceAsync();
+                await LoadModelsAsync(announce: false);
+            }
+            finally
+            {
+                _opening = false;
+            }
         }
 
         _wasOpen = Open;
@@ -55,23 +81,33 @@ public partial class WorkspaceEditModal : AIComponentBase
 
         await ExecuteWithLoadingAsync(async () =>
         {
+            try
+            {
+                var loadedProfiles = await WorkspaceAppService.GetProviderProfilesAsync();
+                if (loadedProfiles.Count > 0)
+                {
+                    _profiles = loadedProfiles;
+                }
+            }
+            catch (Exception ex)
+            {
+                await HandleErrorAsync(ex);
+            }
+
             _workspace = await WorkspaceAppService.GetAsync(WorkspaceId.Value);
-            _model = new UpdateWorkspaceDto
-            {
-                Name = _workspace.Name,
-                Provider = AIProviderType.OpenAI,
-                Model = _workspace.Model,
-                ApiBaseUrl = _workspace.ApiBaseUrl,
-                IsActive = _workspace.IsActive,
-                InputCostPer1MTokens = _workspace.InputCostPer1MTokens,
-                OutputCostPer1MTokens = _workspace.OutputCostPer1MTokens
-            };
-            _inputCostPer1MTokensText = _workspace.InputCostPer1MTokens?.ToString(CultureInfo.InvariantCulture) ?? string.Empty;
-            _outputCostPer1MTokensText = _workspace.OutputCostPer1MTokens?.ToString(CultureInfo.InvariantCulture) ?? string.Empty;
-            _availableModels = new List<OpenAIModelDto>
-            {
-                new() { Id = _workspace.Model }
-            };
+            var loaded = WorkspaceConnectionDraft.From(_workspace);
+            _draft.Name = loaded.Name;
+            _draft.Provider = loaded.Provider;
+            _draft.Model = loaded.Model;
+            _draft.ModelDisplayName = loaded.ModelDisplayName;
+            _draft.DecisionsModelId = loaded.DecisionsModelId;
+            _draft.ApiKey = null;
+            _draft.ApiBaseUrl = loaded.ApiBaseUrl;
+            _draft.InputCostText = loaded.InputCostText;
+            _draft.OutputCostText = loaded.OutputCostText;
+            _availableModels = new List<OpenAIModelDto>();
+            _decisionModels = new List<OpenAIModelDto>();
+            _modelsLoaded = false;
             _guardrailRows = WorkspaceGuardrailForm.CreateRows(_workspace.Guardrails);
             _guardrailStatus = await WorkspaceAppService.GetGuardrailStatusAsync(WorkspaceId.Value);
             _activeTab = 0;
@@ -86,17 +122,23 @@ public partial class WorkspaceEditModal : AIComponentBase
             return;
         }
 
-        _model.Provider = AIProviderType.OpenAI;
-
         if (!await ValidateRequiredFieldsAsync(requireName: true))
         {
             return;
         }
 
-        if (!await TryApplyPricingAsync())
+        if (_workspace == null)
         {
             return;
         }
+
+        var pricing = await TryParsePricingAsync();
+        if (!pricing.Ok)
+        {
+            return;
+        }
+
+        var model = _draft.ToUpdate(pricing.Input, pricing.Output, _workspace.IsActive);
 
         if (!WorkspaceGuardrailForm.TryBuildItems(_guardrailRows, out var guardrailItems))
         {
@@ -106,7 +148,7 @@ public partial class WorkspaceEditModal : AIComponentBase
 
         await ExecuteWithLoadingAsync(async () =>
         {
-            await WorkspaceAppService.UpdateAsync(WorkspaceId.Value, _model);
+            await WorkspaceAppService.UpdateAsync(WorkspaceId.Value, model);
             await WorkspaceAppService.UpdateGuardrailsAsync(
                 WorkspaceId.Value,
                 new UpdateWorkspaceGuardrailsDto { Items = guardrailItems });
@@ -122,8 +164,6 @@ public partial class WorkspaceEditModal : AIComponentBase
             return;
         }
 
-        _model.Provider = AIProviderType.OpenAI;
-
         if (!await ValidateRequiredFieldsAsync(requireName: false))
         {
             return;
@@ -134,16 +174,19 @@ public partial class WorkspaceEditModal : AIComponentBase
             await WorkspaceAppService.TestConnectionAsync(new TestWorkspaceConnectionInput
             {
                 WorkspaceId = WorkspaceId.Value,
-                Model = _model.Model,
-                ApiKey = _model.ApiKey,
-                ApiBaseUrl = _model.ApiBaseUrl,
+                Model = _draft.Model,
+                ApiKey = _draft.ApiKey,
+                ApiBaseUrl = _draft.ApiBaseUrl,
+                Provider = _draft.Provider,
                 OpenAIApiMode = OpenAIApiMode.ChatCompletions
             });
             await Notify.SuccessAsync(L["ConnectionTestSuccessful"]);
         }, LoadingKeys.TestConnection);
     }
 
-    private async Task LoadModelsAsync()
+    private Task LoadModelsAsync() => LoadModelsAsync(announce: true);
+
+    private async Task LoadModelsAsync(bool announce)
     {
         if (!WorkspaceId.HasValue)
         {
@@ -152,38 +195,57 @@ public partial class WorkspaceEditModal : AIComponentBase
 
         await ExecuteWithLoadingAsync(async () =>
         {
-            _availableModels = await WorkspaceAppService.GetAvailableModelsAsync(new GetOpenAIModelsInput
+            try
             {
-                WorkspaceId = WorkspaceId.Value,
-                ApiKey = _model.ApiKey,
-                ApiBaseUrl = _model.ApiBaseUrl,
-                CapabilityType = AICapabilityType.ChatCompletion
-            });
-
-            if (_availableModels.Count == 0)
+                _availableModels = await WorkspaceAppService.GetAvailableModelsAsync(new GetOpenAIModelsInput
+                {
+                    WorkspaceId = WorkspaceId.Value,
+                    ApiKey = _draft.ApiKey,
+                    ApiBaseUrl = _draft.ApiBaseUrl,
+                    Provider = _draft.Provider,
+                    CapabilityType = AICapabilityType.ChatCompletion
+                });
+                _decisionModels = SelectedProfile?.SupportsDecisions == true
+                    ? await WorkspaceAppService.GetAvailableModelsAsync(new GetOpenAIModelsInput
+                    {
+                        WorkspaceId = WorkspaceId.Value,
+                        ApiKey = _draft.ApiKey,
+                        ApiBaseUrl = _draft.ApiBaseUrl,
+                        Provider = _draft.Provider,
+                        CapabilityType = AICapabilityType.Decisions
+                    })
+                    : new List<OpenAIModelDto>();
+            }
+            catch (Exception ex)
             {
-                await Message.ErrorAsync(L["NoModelsReturned"]);
+                await Notify.ErrorAsync(ex.Message);
                 return;
             }
 
-            if (string.IsNullOrWhiteSpace(_model.Model))
+            _modelsLoaded = _availableModels.Count > 0;
+
+            if (_availableModels.Count == 0)
             {
-                _model.Model = _availableModels[0].Id;
+                await Notify.WarnAsync(L["NoModelsReturned"]);
+                return;
             }
 
-            await Message.SuccessAsync(L["ModelsLoadedSuccessfully"]);
+            if (announce)
+            {
+                await Notify.SuccessAsync(L["ModelsLoadedSuccessfully"]);
+            }
         }, LoadingKeys.LoadModels);
     }
 
     private async Task<bool> ValidateRequiredFieldsAsync(bool requireName)
     {
-        if (requireName && string.IsNullOrWhiteSpace(_model.Name))
+        if (requireName && string.IsNullOrWhiteSpace(_draft.Name))
         {
             await Message.ErrorAsync(L["WorkspaceNameRequired"]);
             return false;
         }
 
-        if (string.IsNullOrWhiteSpace(_model.Model))
+        if (string.IsNullOrWhiteSpace(_draft.Model))
         {
             await Message.ErrorAsync(L["ModelIdRequired"]);
             return false;
@@ -234,23 +296,21 @@ public partial class WorkspaceEditModal : AIComponentBase
         await OpenChanged.InvokeAsync(open);
     }
 
-    private async Task<bool> TryApplyPricingAsync()
+    private async Task<(bool Ok, decimal? Input, decimal? Output)> TryParsePricingAsync()
     {
-        if (!TryParseNullableDecimal(_inputCostPer1MTokensText, out var inputCost))
+        if (!TryParseNullableDecimal(_draft.InputCostText, out var inputCost))
         {
             await Message.ErrorAsync(L["InputCostPer1MTokensMustBeNonNegative"]);
-            return false;
+            return (false, null, null);
         }
 
-        if (!TryParseNullableDecimal(_outputCostPer1MTokensText, out var outputCost))
+        if (!TryParseNullableDecimal(_draft.OutputCostText, out var outputCost))
         {
             await Message.ErrorAsync(L["OutputCostPer1MTokensMustBeNonNegative"]);
-            return false;
+            return (false, null, null);
         }
 
-        _model.InputCostPer1MTokens = inputCost;
-        _model.OutputCostPer1MTokens = outputCost;
-        return true;
+        return (true, inputCost, outputCost);
     }
 
     private static bool TryParseNullableDecimal(string? value, out decimal? result)

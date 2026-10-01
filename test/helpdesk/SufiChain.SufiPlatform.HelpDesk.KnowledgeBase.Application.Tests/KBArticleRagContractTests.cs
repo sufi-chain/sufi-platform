@@ -142,7 +142,7 @@ public class KBArticleRagContractTests
     [Fact]
     public void Editor_Hooshvare_Seed_Should_Require_Current_Draft_Context_In_All_Cultures()
     {
-        HelpDeskKbArticleEditorHooshvareKeys.EntityVersion.ShouldBe(0);
+        HelpDeskKbArticleEditorHooshvareKeys.EntityVersion.ShouldBe(1);
         typeof(SendEditorAiMessageInput).GetProperty(nameof(SendEditorAiMessageInput.VersionId)).ShouldNotBeNull();
 
         foreach (var culture in new[] { "en", "fa", "ar", "es" })
@@ -162,7 +162,7 @@ public class KBArticleRagContractTests
     [Fact]
     public void Editor_Hooshvare_Seed_Should_Enable_Project_Scoped_Rag()
     {
-        HelpDeskKbArticleEditorHooshvareKeys.EntityVersion.ShouldBe(0);
+        HelpDeskKbArticleEditorHooshvareKeys.EntityVersion.ShouldBe(1);
 
         var runtimeOptions = new HooshvareRuntimeOptions
         {

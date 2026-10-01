@@ -1,6 +1,5 @@
 using System.Text;
 using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.Extensions.Options;
 using NSubstitute;
 using Shouldly;
 using SufiChain.SufiPlatform.FileManager;
@@ -110,7 +109,7 @@ public class HooshvareKnowledgeIndexerCostTests
             Substitute.For<IHooshvareWorkspaceResolver>(),
             Substitute.For<ISufiAIRagService>(),
             Substitute.For<IClock>(),
-            Options.Create(new HooshvareKnowledgeOptions()),
+            Microsoft.Extensions.Options.Options.Create(new HooshvareKnowledgeOptions()),
             NullLogger<HooshvareKnowledgeIndexer>.Instance)
     {
         public Task StoreAsync(FileReferenceDto file, bool forceReconvert) =>

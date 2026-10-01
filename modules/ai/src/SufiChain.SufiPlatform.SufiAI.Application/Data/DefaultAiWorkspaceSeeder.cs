@@ -50,10 +50,25 @@ public class DefaultAiWorkspaceSeeder : IDefaultAiWorkspaceSeeder
         var existing = await WorkspaceRepository.FindByNameAsync(workspaceName, cancellationToken);
         if (existing != null)
         {
-            Logger.LogDebug(
-                "Default AI workspace '{WorkspaceName}' already exists for tenant {TenantId}; administrator-owned configuration is unchanged.",
-                workspaceName,
-                CurrentTenant.Id);
+            var preview = DefaultWorkspaceManagedFieldReconciler.Preview(existing, seed);
+            if (preview.HasChanges)
+            {
+                DefaultWorkspaceManagedFieldReconciler.Apply(existing, seed, preview);
+                await WorkspaceRepository.UpdateAsync(existing, autoSave: true, cancellationToken);
+                Logger.LogInformation(
+                    "Reconciled managed default-workspace fields on '{WorkspaceName}' for tenant {TenantId}. Added capabilities: {Capabilities}.",
+                    workspaceName,
+                    CurrentTenant.Id,
+                    string.Join(", ", preview.MissingCapabilities));
+            }
+            else
+            {
+                Logger.LogDebug(
+                    "Default AI workspace '{WorkspaceName}' already exists for tenant {TenantId}; administrator-owned configuration is unchanged.",
+                    workspaceName,
+                    CurrentTenant.Id);
+            }
+
             return existing.Id;
         }
 

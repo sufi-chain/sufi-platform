@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using Volo.Abp;
 using Volo.Abp.Domain.Entities.Auditing;
 
@@ -71,10 +73,28 @@ public class AIModelConfiguration : AuditedEntity<Guid>
     /// </summary>
     public int MaxContextTokens { get; protected set; }
 
-    public decimal? InputCostPer1MTokens { get; protected set; }
+    /// <summary>Route price in <see cref="InputPriceUnit"/>. Null inherits the workspace token price only when the unit is per million tokens.</summary>
+    public decimal? InputPrice { get; protected set; }
 
-    public decimal? OutputCostPer1MTokens { get; protected set; }
-   
+    public AIPriceUnit InputPriceUnit { get; protected set; }
+
+    /// <summary>Route price in <see cref="OutputPriceUnit"/>.</summary>
+    public decimal? OutputPrice { get; protected set; }
+
+    public AIPriceUnit OutputPriceUnit { get; protected set; }
+
+    public bool? AcceptsImageInput { get; protected set; }
+
+    public bool? AcceptsFileInput { get; protected set; }
+
+    public bool? SupportsReasoning { get; protected set; }
+
+    public string? ReasoningEfforts { get; protected set; }
+
+    public string? DefaultReasoningEffort { get; protected set; }
+
+    public ModelCapabilitySource? CapabilitySource { get; protected set; }
+
     public int? Dimensions { get; protected set; }
     
     protected AIModelConfiguration() { }
@@ -103,32 +123,105 @@ public class AIModelConfiguration : AuditedEntity<Guid>
         string? apiKey,
         int priority,
         OpenAIApiMode openAIApiMode = OpenAIApiMode.ChatCompletions,
-        decimal? inputCostPer1MTokens = null,
-        decimal? outputCostPer1MTokens = null,
+        decimal? inputPrice = null,
+        decimal? outputPrice = null,
         int? dimensions = null,
         string? displayName = null,
         bool isUserSelectable = false,
         string? description = null,
-        int maxContextTokens = DefaultMaxContextTokens
+        int maxContextTokens = DefaultMaxContextTokens,
+        AIPriceUnit inputPriceUnit = AIPriceUnit.PerMillionTokens,
+        AIPriceUnit outputPriceUnit = AIPriceUnit.PerMillionTokens
    )
    {
-        ValidatePricing(inputCostPer1MTokens, nameof(inputCostPer1MTokens));
-       ValidatePricing(outputCostPer1MTokens, nameof(outputCostPer1MTokens));
+        ValidatePricing(inputPrice, nameof(inputPrice));
+        ValidatePricing(outputPrice, nameof(outputPrice));
         ValidateDimensions(dimensions);
 
-       ModelId = Check.NotNullOrWhiteSpace(modelId, nameof(modelId));
-       DisplayName = NormalizeOptionalText(displayName, MaxDisplayNameLength, nameof(displayName));
-       Description = NormalizeOptionalText(description, MaxDescriptionLength, nameof(description));
-       IsUserSelectable = isUserSelectable;
-       ApiEndpoint = apiEndpoint;
-       ApiKey = apiKey;
-       Priority = priority;
-       OpenAIApiMode = openAIApiMode;
-       MaxContextTokens = NormalizeMaxContextTokens(maxContextTokens);
-       InputCostPer1MTokens = inputCostPer1MTokens;
-       OutputCostPer1MTokens = outputCostPer1MTokens;
+        ModelId = Check.NotNullOrWhiteSpace(modelId, nameof(modelId));
+        DisplayName = NormalizeOptionalText(displayName, MaxDisplayNameLength, nameof(displayName));
+        Description = NormalizeOptionalText(description, MaxDescriptionLength, nameof(description));
+        IsUserSelectable = isUserSelectable;
+        ApiEndpoint = apiEndpoint;
+        ApiKey = apiKey;
+        Priority = priority;
+        OpenAIApiMode = openAIApiMode;
+        MaxContextTokens = NormalizeMaxContextTokens(maxContextTokens);
+        InputPrice = inputPrice;
+        OutputPrice = outputPrice;
+        InputPriceUnit = inputPriceUnit;
+        OutputPriceUnit = outputPriceUnit;
         Dimensions = dimensions;
    }
+
+    public void SetChatCapabilities(
+        bool? acceptsImageInput,
+        bool? acceptsFileInput,
+        bool? supportsReasoning,
+        string? reasoningEfforts,
+        string? defaultReasoningEffort,
+        ModelCapabilitySource? capabilitySource)
+    {
+        if (CapabilityType != AICapabilityType.ChatCompletion)
+        {
+            AcceptsImageInput = null;
+            AcceptsFileInput = null;
+            SupportsReasoning = null;
+            ReasoningEfforts = null;
+            DefaultReasoningEffort = null;
+            CapabilitySource = null;
+            return;
+        }
+
+        AcceptsImageInput = acceptsImageInput;
+        AcceptsFileInput = acceptsFileInput;
+        SupportsReasoning = supportsReasoning;
+        ReasoningEfforts = NormalizeEffortList(reasoningEfforts);
+        DefaultReasoningEffort = NormalizeEffort(defaultReasoningEffort);
+        if (!string.IsNullOrEmpty(DefaultReasoningEffort) &&
+            !GetReasoningEffortList().Contains(DefaultReasoningEffort, StringComparer.OrdinalIgnoreCase))
+        {
+            throw new BusinessException(AIErrorCodes.ReasoningEffortNotAllowed)
+                .WithData("ReasoningEffort", DefaultReasoningEffort);
+        }
+
+        CapabilitySource = capabilitySource;
+    }
+
+    public void CopyChatCapabilitiesFrom(AIModelConfiguration? source)
+    {
+        if (source == null)
+        {
+            return;
+        }
+
+        AcceptsImageInput = source.AcceptsImageInput;
+        AcceptsFileInput = source.AcceptsFileInput;
+        SupportsReasoning = source.SupportsReasoning;
+        ReasoningEfforts = source.ReasoningEfforts;
+        DefaultReasoningEffort = source.DefaultReasoningEffort;
+        CapabilitySource = source.CapabilitySource;
+    }
+
+    public void ReplaceCatalogPrices(CatalogPriceQuote quote)
+    {
+        ValidatePricing(quote.InputPrice, nameof(quote.InputPrice));
+        ValidatePricing(quote.OutputPrice, nameof(quote.OutputPrice));
+        InputPrice = quote.InputPrice;
+        OutputPrice = quote.OutputPrice;
+        InputPriceUnit = quote.InputUnit;
+        OutputPriceUnit = quote.OutputUnit;
+    }
+
+    public IReadOnlyList<string> GetReasoningEffortList()
+    {
+        if (string.IsNullOrWhiteSpace(ReasoningEfforts))
+        {
+            return Array.Empty<string>();
+        }
+
+        return ReasoningEfforts.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+    }
 
     /// <summary>
     /// Legacy rows from the selectable-route migration stored <c>0</c>. Treat that as unset.
@@ -144,7 +237,11 @@ public class AIModelConfiguration : AuditedEntity<Guid>
         return maxContextTokens < 1 ? DefaultMaxContextTokens : maxContextTokens;
     }
 
+    public void Enable() => IsEnabled = true;
+
     public void Disable() => IsEnabled = false;
+
+    public void SetPriority(int priority) => Priority = priority;
 
    private static void ValidatePricing(decimal? value, string parameterName)
    {
@@ -171,5 +268,28 @@ public class AIModelConfiguration : AuditedEntity<Guid>
         }
 
         return Check.Length(value.Trim(), parameterName, maxLength);
+    }
+
+    private static string? NormalizeEffortList(string? value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            return null;
+        }
+
+        var efforts = value.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+        return efforts.Length == 0 ? null : Check.Length(string.Join(",", efforts), nameof(ReasoningEfforts), 512);
+    }
+
+    private static string? NormalizeEffort(string? value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            return null;
+        }
+
+        return Check.Length(value.Trim(), nameof(DefaultReasoningEffort), 64);
     }
 }

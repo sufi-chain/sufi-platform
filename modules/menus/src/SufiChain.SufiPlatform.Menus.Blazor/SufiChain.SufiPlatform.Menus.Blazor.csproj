@@ -11,4 +11,7 @@
     <ProjectReference Include="../SufiChain.SufiPlatform.Menus.Application.Contracts/SufiChain.SufiPlatform.Menus.Application.Contracts.csproj" />
     <ProjectReference Include="../../../localization/src/SufiChain.SufiPlatform.Localization.Blazor.Public/SufiChain.SufiPlatform.Localization.Blazor.Public.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\..\..\pro-modules\ai-hooshvare\src\SufiChain.SufiPlatform.SufiAI.Hooshvare.Blazor.Public\SufiChain.SufiPlatform.SufiAI.Hooshvare.Blazor.Public.csproj" />
+  </ItemGroup>
 </Project>

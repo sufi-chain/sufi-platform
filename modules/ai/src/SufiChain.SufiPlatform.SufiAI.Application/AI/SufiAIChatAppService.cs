@@ -139,6 +139,13 @@ public class SufiAIChatAppService : SufiApplicationService, ISufiAIChatAppServic
             WorkspaceName = input.WorkspaceName,
             ModelConfigurationId = input.ModelConfigurationId,
             Temperature = input.Temperature,
+            ReasoningEffort = input.ReasoningEffort,
+            UseResponses = input.OpenAIApiMode switch
+            {
+                OpenAIApiMode.Responses => true,
+                OpenAIApiMode.ChatCompletions => false,
+                _ => null
+            },
             Messages = input.ConversationHistory.Select(message => new SufiAIChatMessage
             {
                 Role = message.Role,
@@ -146,11 +153,31 @@ public class SufiAIChatAppService : SufiApplicationService, ISufiAIChatAppServic
             }).ToList()
         };
 
-        request.Messages.Add(new SufiAIChatMessage
+        var userMessage = new SufiAIChatMessage
         {
             Role = SufiAIChatRoles.User,
             Content = input.Message
-        });
+        };
+        if (input.Attachments.Count > 0)
+        {
+            userMessage.ContentParts.Add(new SufiAIChatContentPart
+            {
+                Type = "text",
+                Text = input.Message
+            });
+            foreach (var attachment in input.Attachments)
+            {
+                userMessage.ContentParts.Add(new SufiAIChatContentPart
+                {
+                    Type = attachment.Type,
+                    DataUrl = attachment.DataUrl,
+                    FileName = attachment.FileName,
+                    MimeType = attachment.MimeType
+                });
+            }
+        }
+
+        request.Messages.Add(userMessage);
 
         return request;
     }

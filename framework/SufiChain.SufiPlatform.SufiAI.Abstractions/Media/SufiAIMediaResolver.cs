@@ -9,7 +9,7 @@ using Volo.Abp.DependencyInjection;
 
 namespace SufiChain.SufiPlatform.SufiAI;
 
-public enum SufiAIMediaKind { Image, Audio, Unsupported }
+public enum SufiAIMediaKind { Image, Audio, Pdf, Unsupported }
 
 public sealed class SufiAIMedia
 {
@@ -90,7 +90,9 @@ public sealed class SufiAIMediaResolver : ISufiAIMediaResolver, ITransientDepend
                 ? SufiAIMediaKind.Image
                 : metadata.MimeType.StartsWith("audio/", StringComparison.OrdinalIgnoreCase)
                     ? SufiAIMediaKind.Audio
-                    : SufiAIMediaKind.Unsupported;
+                    : string.Equals(metadata.MimeType, "application/pdf", StringComparison.OrdinalIgnoreCase)
+                        ? SufiAIMediaKind.Pdf
+                        : SufiAIMediaKind.Unsupported;
             if (kind == SufiAIMediaKind.Unsupported)
                 throw new BusinessException(SufiAIMediaErrorCodes.Unsupported);
 

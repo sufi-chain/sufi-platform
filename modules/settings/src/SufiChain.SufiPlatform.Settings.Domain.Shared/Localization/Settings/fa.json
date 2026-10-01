@@ -10,6 +10,7 @@
     "EmailSettings": "تنظیمات ایمیل",
     "TimeZoneSettings": "تنظیمات منطقه زمانی",
     "DefaultFromDisplayName": "نام نمایشی پیش‌فرض فرستنده",
+    "DefaultFromDisplayName:Hint": "نام جایگزین، وقتی یک بخش نام خودش را تعیین نکند. آدرس صندوق همان می‌ماند.",
     "DefaultFromAddress": "آدرس پیش‌فرض فرستنده",
     "SmtpHost": "سرور SMTP",
     "SmtpPort": "پورت SMTP",

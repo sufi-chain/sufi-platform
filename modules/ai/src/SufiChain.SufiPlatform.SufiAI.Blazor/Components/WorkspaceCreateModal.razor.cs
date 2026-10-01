@@ -18,47 +18,82 @@ public partial class WorkspaceCreateModal : AIComponentBase
     [Parameter] public EventCallback<bool> OpenChanged { get; set; }
     [Parameter] public EventCallback OnCreated { get; set; }
 
-    private CreateWorkspaceDto _model = new();
-    private string _inputCostPer1MTokensText = string.Empty;
-    private string _outputCostPer1MTokensText = string.Empty;
+    private readonly WorkspaceConnectionDraft _draft = WorkspaceConnectionDraft.ForCreate();
     private List<OpenAIModelDto> _availableModels = new();
+    private List<OpenAIModelDto> _decisionModels = new();
+    private bool _modelsLoaded;
     private int _activeTab;
     private bool _wasOpen;
     private List<WorkspaceGuardrailFormRow> _guardrailRows = WorkspaceGuardrailForm.CreateRows();
+    private List<AiProviderProfileDto> _profiles = WorkspaceProviderCatalog.Fallback();
+    private AiProviderProfileDto? SelectedProfile =>
+        _profiles.FirstOrDefault(profile => profile.ProviderType == _draft.Provider);
 
     protected override void OnParametersSet()
     {
         if (Open && !_wasOpen)
         {
             ResetForm();
+            _ = LoadProfilesAsync();
         }
 
         _wasOpen = Open;
     }
 
+    private Task LoadProfilesAsync()
+    {
+        return ExecuteWithLoadingAsync(async () =>
+        {
+            var loadedProfiles = await WorkspaceAppService.GetProviderProfilesAsync();
+            if (loadedProfiles.Count > 0)
+            {
+                _profiles = loadedProfiles;
+            }
+            if (string.IsNullOrWhiteSpace(_draft.ApiBaseUrl) &&
+                SelectedProfile is { RequiresExplicitBaseUrl: false, DefaultBaseUrl: { Length: > 0 } } profile)
+            {
+                _draft.ApiBaseUrl = profile.DefaultBaseUrl;
+            }
+        });
+    }
+
+    private Task OnProviderReset()
+    {
+        _availableModels = new List<OpenAIModelDto>();
+        _decisionModels = new List<OpenAIModelDto>();
+        _modelsLoaded = false;
+        return Task.CompletedTask;
+    }
+
     private void ResetForm()
     {
-        _model = new CreateWorkspaceDto
-        {
-            Provider = AIProviderType.OpenAI
-        };
-        _inputCostPer1MTokensText = string.Empty;
-        _outputCostPer1MTokensText = string.Empty;
+        var fresh = WorkspaceConnectionDraft.ForCreate();
+        _draft.Name = fresh.Name;
+        _draft.Provider = fresh.Provider;
+        _draft.Model = fresh.Model;
+        _draft.ModelDisplayName = fresh.ModelDisplayName;
+        _draft.DecisionsModelId = fresh.DecisionsModelId;
+        _draft.ApiKey = fresh.ApiKey;
+        _draft.ApiBaseUrl = fresh.ApiBaseUrl;
+        _draft.InputCostText = fresh.InputCostText;
+        _draft.OutputCostText = fresh.OutputCostText;
         _availableModels = new List<OpenAIModelDto>();
+        _decisionModels = new List<OpenAIModelDto>();
+        _modelsLoaded = false;
         _guardrailRows = WorkspaceGuardrailForm.CreateRows();
         _activeTab = 0;
     }
 
     private async Task CreateWorkspaceAsync()
     {
-        _model.Provider = AIProviderType.OpenAI;
 
         if (!await ValidateRequiredFieldsAsync(requireName: true, requireApiKey: false))
         {
             return;
         }
 
-        if (!await TryApplyPricingAsync())
+        var pricing = await TryParsePricingAsync();
+        if (!pricing.Ok)
         {
             return;
         }
@@ -69,11 +104,12 @@ public partial class WorkspaceCreateModal : AIComponentBase
             return;
         }
 
-        _model.Guardrails = guardrails;
+        var model = _draft.ToCreate(pricing.Input, pricing.Output);
+        model.Guardrails = guardrails;
 
         await ExecuteWithLoadingAsync(async () =>
         {
-            await WorkspaceAppService.CreateAsync(_model);
+            await WorkspaceAppService.CreateAsync(model);
             await CloseModal();
             await OnCreated.InvokeAsync();
         }, LoadingKeys.CreateWorkspace);
@@ -81,8 +117,6 @@ public partial class WorkspaceCreateModal : AIComponentBase
 
     private async Task TestConnectionAsync()
     {
-        _model.Provider = AIProviderType.OpenAI;
-
         if (!await ValidateRequiredFieldsAsync(requireName: false, requireApiKey: true))
         {
             return;
@@ -92,9 +126,10 @@ public partial class WorkspaceCreateModal : AIComponentBase
         {
             await WorkspaceAppService.TestConnectionAsync(new TestWorkspaceConnectionInput
             {
-                Model = _model.Model,
-                ApiKey = _model.ApiKey,
-                ApiBaseUrl = _model.ApiBaseUrl,
+                Model = _draft.Model,
+                ApiKey = _draft.ApiKey,
+                ApiBaseUrl = _draft.ApiBaseUrl,
+                Provider = _draft.Provider,
                 OpenAIApiMode = OpenAIApiMode.ChatCompletions
             });
             await Notify.SuccessAsync(L["ConnectionTestSuccessful"]);
@@ -103,51 +138,66 @@ public partial class WorkspaceCreateModal : AIComponentBase
 
     private async Task LoadModelsAsync()
     {
-        if (string.IsNullOrWhiteSpace(_model.ApiKey))
+        if (string.IsNullOrWhiteSpace(_draft.ApiKey))
         {
-            await Message.ErrorAsync(L["ApiKeyRequiredForModelList"]);
+            await Notify.ErrorAsync(L["ApiKeyRequiredForModelList"]);
             return;
         }
 
         await ExecuteWithLoadingAsync(async () =>
         {
-            _availableModels = await WorkspaceAppService.GetAvailableModelsAsync(new GetOpenAIModelsInput
+            try
             {
-                ApiKey = _model.ApiKey,
-                ApiBaseUrl = _model.ApiBaseUrl,
-                CapabilityType = AICapabilityType.ChatCompletion
-            });
-
-            if (_availableModels.Count == 0)
+                _availableModels = await WorkspaceAppService.GetAvailableModelsAsync(new GetOpenAIModelsInput
+                {
+                    ApiKey = _draft.ApiKey,
+                    ApiBaseUrl = _draft.ApiBaseUrl,
+                    Provider = _draft.Provider,
+                    CapabilityType = AICapabilityType.ChatCompletion
+                });
+                _decisionModels = SelectedProfile?.SupportsDecisions == true
+                    ? await WorkspaceAppService.GetAvailableModelsAsync(new GetOpenAIModelsInput
+                    {
+                        ApiKey = _draft.ApiKey,
+                        ApiBaseUrl = _draft.ApiBaseUrl,
+                        Provider = _draft.Provider,
+                        CapabilityType = AICapabilityType.Decisions
+                    })
+                    : new List<OpenAIModelDto>();
+            }
+            catch (Exception ex)
             {
-                await Message.ErrorAsync(L["NoModelsReturned"]);
+                await Notify.ErrorAsync(ex.Message);
                 return;
             }
 
-            if (string.IsNullOrWhiteSpace(_model.Model))
+            _modelsLoaded = _availableModels.Count > 0;
+
+            if (_availableModels.Count == 0)
             {
-                _model.Model = _availableModels[0].Id;
+                await Notify.WarnAsync(L["NoModelsReturned"]);
+                return;
             }
 
-            await Message.SuccessAsync(L["ModelsLoadedSuccessfully"]);
+            await Notify.SuccessAsync(L["ModelsLoadedSuccessfully"]);
         }, LoadingKeys.LoadModels);
     }
 
     private async Task<bool> ValidateRequiredFieldsAsync(bool requireName, bool requireApiKey)
     {
-        if (requireName && string.IsNullOrWhiteSpace(_model.Name))
+        if (requireName && string.IsNullOrWhiteSpace(_draft.Name))
         {
             await Message.ErrorAsync(L["WorkspaceNameRequired"]);
             return false;
         }
 
-        if (string.IsNullOrWhiteSpace(_model.Model))
+        if (string.IsNullOrWhiteSpace(_draft.Model))
         {
             await Message.ErrorAsync(L["ModelIdRequired"]);
             return false;
         }
 
-        if (requireApiKey && string.IsNullOrWhiteSpace(_model.ApiKey))
+        if (requireApiKey && string.IsNullOrWhiteSpace(_draft.ApiKey))
         {
             await Message.ErrorAsync(L["ApiKeyRequiredForConnectionTest"]);
             return false;
@@ -168,23 +218,21 @@ public partial class WorkspaceCreateModal : AIComponentBase
         await OpenChanged.InvokeAsync(open);
     }
 
-    private async Task<bool> TryApplyPricingAsync()
+    private async Task<(bool Ok, decimal? Input, decimal? Output)> TryParsePricingAsync()
     {
-        if (!TryParseNullableDecimal(_inputCostPer1MTokensText, out var inputCost))
+        if (!TryParseNullableDecimal(_draft.InputCostText, out var inputCost))
         {
             await Message.ErrorAsync(L["InputCostPer1MTokensMustBeNonNegative"]);
-            return false;
+            return (false, null, null);
         }
 
-        if (!TryParseNullableDecimal(_outputCostPer1MTokensText, out var outputCost))
+        if (!TryParseNullableDecimal(_draft.OutputCostText, out var outputCost))
         {
             await Message.ErrorAsync(L["OutputCostPer1MTokensMustBeNonNegative"]);
-            return false;
+            return (false, null, null);
         }
 
-        _model.InputCostPer1MTokens = inputCost;
-        _model.OutputCostPer1MTokens = outputCost;
-        return true;
+        return (true, inputCost, outputCost);
     }
 
     private static bool TryParseNullableDecimal(string? value, out decimal? result)

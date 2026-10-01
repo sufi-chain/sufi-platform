@@ -17,6 +17,7 @@
     "ChannelVoice": "Voice call",
     "EmailConfirmation:Subject": "Confirm your email",
     "PasswordReset:Subject": "Reset your password",
+    "EmailSender:DisplayName": "Account",
     "VerificationCode:Subject": "Your verification code",
     "CaptchaLoading": "Loading security check...",
     "CaptchaQuestion": "Security check",
@@ -128,6 +129,13 @@
     "EmailConfirmationResendFailed": "The confirmation email could not be sent. Please try again.",
     "CaptchaLoadFailed": "The captcha challenge could not be loaded. Please refresh and try again.",
     "ProfileSaveFailed": "The profile could not be saved. Please try again.",
-    "PasswordChangeFailed": "The password could not be changed. Please try again."
+    "PasswordChangeFailed": "The password could not be changed. Please try again.",
+    "LinkNewAccount": "Link new account",
+    "LinkAccountSignInHint": "Sign in with the account you want to link. After you sign in, the link is completed.",
+    "LinkAccountProcessing": "Linking accounts...",
+    "LinkAccountSucceeded": "The accounts are linked.",
+    "LinkAccountFailed": "The account could not be linked. Start again from linked accounts.",
+    "LinkAccountSameUser": "You signed in with the same account. Sign out and sign in with the other account to finish the link.",
+    "LinkAccountSignInOther": "Sign in with another account"
   }
 }

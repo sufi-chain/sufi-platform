@@ -261,6 +261,8 @@ public class FileStorageTrustedService : IFileStorageTrustedService, ITransientD
             EntityType = item.EntityType,
             EntityId = item.EntityId,
             TenantId = item.TenantId,
+            Width = item.Width,
+            Height = item.Height,
             CreationTime = item.CreationTime,
             Properties = item.ExtraProperties
                 .Where(pair => pair.Value != null)

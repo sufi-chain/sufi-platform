@@ -53,6 +53,29 @@ public class OpenAIProviderApiModeTests
         handler.LastBody.ShouldNotContain("filename*=");
     }
 
+    [Fact]
+    public async Task Transcription_keeps_duration_seconds_when_the_response_also_has_tokens()
+    {
+        using var handler = new CapturingHandler("""
+            {"text":"hello","usage":{"cost":0.000508,"input_tokens":83,"output_tokens":30,"seconds":9.2,"total_tokens":113}}
+            """);
+        var workspace = CreateWorkspace();
+        var route = workspace.AddModelConfiguration(AICapabilityType.AudioTranscription, "openai/whisper-large-v3",
+            apiEndpoint: "https://api.example/v1", apiKey: "test-key");
+
+        var result = await CreateProvider(handler).TranscribeAudioAsync(workspace, route, new AudioTranscriptionRequest
+        {
+            AudioData = Encoding.UTF8.GetBytes("audio"),
+            AudioFormat = "wav"
+        });
+
+        result.BilledSeconds.ShouldBe(9.2m);
+        result.InputTokens.ShouldBe(83);
+        result.OutputTokens.ShouldBe(30);
+        result.TotalTokens.ShouldBe(113);
+        result.UsageUnavailableReason.ShouldBeNull();
+    }
+
     [Theory]
     [InlineData(OpenAIApiMode.ChatCompletions, true)]
     [InlineData(OpenAIApiMode.ChatCompletions, false)]
@@ -182,6 +205,92 @@ public class OpenAIProviderApiModeTests
 
         handler.LastUri.ShouldNotBeNull();
         handler.LastUri!.AbsolutePath.ShouldEndWith("/chat/completions");
+    }
+
+    [Fact]
+    public async Task Chat_completions_send_image_pdf_and_reasoning_effort()
+    {
+        using var handler = new CapturingHandler("""{"choices":[{"message":{"content":"ok"},"finish_reason":"stop"}]}""");
+        var workspace = CreateWorkspace();
+        var route = workspace.AddModelConfiguration(AICapabilityType.ChatCompletion, "test-model",
+            apiEndpoint: "https://api.example/v1", apiKey: "test-key");
+        route.SetChatCapabilities(true, true, true, "low,high", "low", ModelCapabilitySource.ExternalCatalog);
+
+        await CreateProvider(handler).SendChatMessageAsync(workspace, route, new ChatCompletionRequest
+        {
+            ReasoningEffort = "high",
+            Messages =
+            {
+                new ChatMessage
+                {
+                    Role = "user",
+                    MultiModalContent =
+                    {
+                        new MessageContent { Type = "text", Text = "look" },
+                        new MessageContent { Type = "image_url", ImageUrl = new ImageContent { Url = "data:image/png;base64,QQ" } },
+                        new MessageContent { Type = "file", FileName = "note.pdf", FileData = "data:application/pdf;base64,QQ" }
+                    }
+                }
+            }
+        });
+
+        handler.LastBody.ShouldContain("image_url");
+        handler.LastBody.ShouldContain("\"type\":\"file\"");
+        handler.LastBody.ShouldContain("note.pdf");
+        handler.LastBody.ShouldContain("\"reasoning_effort\":\"high\"");
+    }
+
+    [Fact]
+    public async Task Responses_send_input_file_and_reasoning_object()
+    {
+        using var handler = new CapturingHandler("""{"status":"completed","output_text":"ok"}""");
+        var workspace = CreateWorkspace();
+        var route = workspace.AddModelConfiguration(AICapabilityType.ChatCompletion, "test-model",
+            apiEndpoint: "https://api.example/v1", apiKey: "test-key", openAIApiMode: OpenAIApiMode.Responses);
+        route.SetChatCapabilities(true, true, true, "low", "low", ModelCapabilitySource.Manual);
+
+        await CreateProvider(handler).SendChatMessageAsync(workspace, route, new ChatCompletionRequest
+        {
+            Messages =
+            {
+                new ChatMessage
+                {
+                    Role = "user",
+                    MultiModalContent =
+                    {
+                        new MessageContent { Type = "file", FileName = "note.pdf", FileData = "data:application/pdf;base64,QQ" }
+                    }
+                }
+            }
+        });
+
+        handler.LastBody.ShouldContain("input_file");
+        handler.LastBody.ShouldContain("\"effort\":\"low\"");
+    }
+
+    [Fact]
+    public async Task Rejects_image_when_the_saved_flag_is_not_true()
+    {
+        using var handler = new CapturingHandler("{}");
+        var workspace = CreateWorkspace();
+        var route = workspace.AddModelConfiguration(AICapabilityType.ChatCompletion, "test-model",
+            apiEndpoint: "https://api.example/v1", apiKey: "test-key");
+
+        var exception = await Should.ThrowAsync<Volo.Abp.BusinessException>(() =>
+            CreateProvider(handler).SendChatMessageAsync(workspace, route, new ChatCompletionRequest
+            {
+                Messages =
+                {
+                    new ChatMessage
+                    {
+                        Role = "user",
+                        MultiModalContent = { new MessageContent { Type = "image_url", ImageUrl = new ImageContent { Url = "data:image/png;base64,QQ" } } }
+                    }
+                }
+            }));
+
+        exception.Code.ShouldBe(AIErrorCodes.ImageInputNotSupported);
+        handler.LastBody.ShouldBeNull();
     }
 
     private static OpenAIProvider CreateProvider(CapturingHandler handler)

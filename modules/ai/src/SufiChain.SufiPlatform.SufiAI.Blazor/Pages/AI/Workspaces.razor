@@ -116,7 +116,12 @@
 						</SbBadge>
 					</CellTemplate>
 				</SbColumn>
-					<SbColumn TItem="WorkspaceDto" Field="Model" Title="@L["DefaultChatModel"]" Width="220px" Filterable="true" Sortable="true"/>
+					<SbColumn TItem="WorkspaceDto" Field="Model" Title="@L["DefaultChatModel"]" Width="220px" Filterable="true" Sortable="true"
+							  ValueFunc="@(item => FormatModelLabel(item))">
+						<CellTemplate Context="cellContext">
+							@FormatModelLabel(cellContext.Item)
+						</CellTemplate>
+					</SbColumn>
 						<SbColumn TItem="WorkspaceDto" Title="@L["Status"]" Width="100px">
 					<CellTemplate Context="cellContext">
 						<SbBadge Color="@(cellContext.Item.IsActive ? SbColor.Success : SbColor.Default)">
@@ -148,3 +153,6 @@
 								  WorkspaceId="_assignWorkspaceId"
 								  SourceName="@_assignSourceName"
 								  OnAssigned="@OnWorkspaceAssignedAsync" />
+	<ReadOnlyHooshvareDrawer HooshvareKey="@WorkspaceReadinessHooshvareKeys.Key"
+							 Title="@L["Hooshvare:SufiAI:WorkspaceReadiness:DisplayName"]"
+							 ContextProvider="BuildHooshvareContext" />

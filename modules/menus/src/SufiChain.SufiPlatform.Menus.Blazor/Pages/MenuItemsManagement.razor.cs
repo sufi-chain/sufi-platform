@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Components;
 using SufiChain.SufiPlatform.Menus.Blazor.Components;
+using SufiChain.SufiPlatform.Menus.Hooshvare;
 using SufiChain.SufiPlatform.Menus.Menus;
 using SufiChain.SufiPlatform.UI.Layout;
 
@@ -181,5 +182,50 @@ public partial class MenuItemsManagement : MenusComponentBase
         _showMoveModal = false;
         await Notify.SuccessAsync(L["ItemMovedSuccessfully"]);
         await LoadTreeAsync();
+    }
+
+    private IReadOnlyDictionary<string, string> BuildHooshvareContext()
+    {
+        var context = new Dictionary<string, string>(StringComparer.Ordinal)
+        {
+            [MenusDesignerHooshvareKeys.Context.MenuId] = MenuId.ToString()
+        };
+        if (!string.IsNullOrWhiteSpace(_menuDisplayName))
+        {
+            context[MenusDesignerHooshvareKeys.Context.MenuName] = _menuDisplayName;
+        }
+
+        if (_selectedItem != null)
+        {
+            context[MenusDesignerHooshvareKeys.Context.SelectedItemId] = _selectedItem.Id.ToString();
+            if (!string.IsNullOrWhiteSpace(_selectedItem.Url) && !_selectedItem.Url.Contains('?'))
+            {
+                context[MenusDesignerHooshvareKeys.Context.RouteConstraints] = _selectedItem.Url;
+            }
+        }
+
+        var tree = DescribeMenuTree(_tree);
+        if (!string.IsNullOrWhiteSpace(tree))
+        {
+            context[MenusDesignerHooshvareKeys.Context.Tree] = tree;
+        }
+
+        return context;
+    }
+
+    private static string DescribeMenuTree(IEnumerable<MenuItemTreeDto> items, int depth = 0)
+    {
+        var lines = new List<string>();
+        foreach (var item in items)
+        {
+            lines.Add($"{new string(' ', depth * 2)}{item.DisplayName} ({item.Id:D})");
+            if (item.Children.Count > 0)
+            {
+                lines.Add(DescribeMenuTree(item.Children, depth + 1));
+            }
+        }
+
+        var text = string.Join('\n', lines.Where(line => !string.IsNullOrWhiteSpace(line)));
+        return text.Length > 2000 ? text[..2000] : text;
     }
 }

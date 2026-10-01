@@ -274,16 +274,30 @@
 									</SbStack>
 								</CellTemplate>
 							</SbColumn>
-								<SbColumn TItem="AIUsageLogDto" Field="TotalTokens" Title="@L["Tokens"]" Width="100px" Filterable="true" Sortable="true">
+								<SbColumn TItem="AIUsageLogDto" Field="TotalTokens" Title="@L["Tokens"]" Width="120px" Filterable="true" Sortable="true">
 									<CellTemplate Context="cellContext">
-										@if (cellContext.Item.HasTokenUsage)
-										{
-											<SbText Variant="SbTextVariant.BodySmall">@((cellContext.Item.TotalTokens ?? 0).ToString("N0"))</SbText>
-										}
-										else
-										{
-											<SbChip Color="SbColor.Warning" Size="SbSize.Sm">@L["UsageUnavailable"]</SbChip>
-										}
+										<SbStack Direction="SbStackDirection.Column" Gap="1">
+											@if (cellContext.Item.HasTokenUsage)
+											{
+												<SbText Variant="SbTextVariant.BodySmall">@((cellContext.Item.TotalTokens ?? 0).ToString("N0"))</SbText>
+											}
+											@if (cellContext.Item.AudioSeconds is decimal seconds)
+											{
+												<SbText Variant="@(cellContext.Item.HasTokenUsage ? SbTextVariant.Caption : SbTextVariant.BodySmall)" Color="@(cellContext.Item.HasTokenUsage ? SbColor.Muted : SbColor.Default)">@string.Format(System.Globalization.CultureInfo.CurrentCulture, L["LoggedAudioSeconds"], seconds.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture))</SbText>
+											}
+											else if (cellContext.Item.CharacterCount is int characters)
+											{
+												<SbText Variant="SbTextVariant.BodySmall">@string.Format(System.Globalization.CultureInfo.CurrentCulture, L["LoggedCharacters"], characters.ToString("N0"))</SbText>
+											}
+											else if (cellContext.Item.ImageCount is int images)
+											{
+												<SbText Variant="SbTextVariant.BodySmall">@string.Format(System.Globalization.CultureInfo.CurrentCulture, L["LoggedImages"], images.ToString("N0"))</SbText>
+											}
+											else if (!cellContext.Item.HasTokenUsage && !cellContext.Item.IsCostCalculated)
+											{
+												<SbChip Color="SbColor.Warning" Size="SbSize.Sm">@L["UsageUnavailable"]</SbChip>
+											}
+										</SbStack>
 									</CellTemplate>
 								</SbColumn>
 								<SbColumn TItem="AIUsageLogDto" Field="EstimatedCost" Title="@L["Cost"]" Width="100px" Filterable="true" Sortable="true">

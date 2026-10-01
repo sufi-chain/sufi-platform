@@ -127,7 +127,7 @@
                                         {
                                             <details>
                                                 <summary class="small text-muted cursor-pointer">@L["Parameters"]</summary>
-                                                <pre class="mb-0 mt-2 small" style="white-space: pre-wrap; max-height: 200px; overflow-y: auto;">@action.Parameters</pre>
+                                                <pre dir="ltr" class="mb-0 mt-2 small" style="direction: ltr; text-align: left; unicode-bidi: isolate; white-space: pre-wrap; max-height: 200px; overflow-y: auto;">@action.Parameters</pre>
                                             </details>
                                         }
                                         else
@@ -205,7 +205,7 @@
                         @if (HasException)
                         {
                             <SbAlert Severity="SbAlertSeverity.Danger">
-                                <pre class="mb-0" style="white-space: pre-wrap; font-size: 0.85em;">@_auditLog.Exceptions</pre>
+                                <pre dir="ltr" class="mb-0" style="direction: ltr; text-align: left; unicode-bidi: isolate; white-space: pre-wrap; font-size: 0.85em;">@_auditLog.Exceptions</pre>
                             </SbAlert>
                         }
                         else

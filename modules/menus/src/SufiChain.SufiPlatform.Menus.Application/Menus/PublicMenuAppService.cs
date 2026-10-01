@@ -49,6 +49,17 @@ public class PublicMenuAppService : SufiApplicationService, IPublicMenuAppServic
         return cached.Tree;
     }
 
+    public virtual async Task<List<MenuItemTreeDto>?> GetTreeByIdAsync(Guid menuId)
+    {
+        var menu = await _menuRepository.FindAsync(menuId);
+        if (menu == null || !menu.IsActive)
+        {
+            return null;
+        }
+
+        return await GetTreeAsync(menu.ContextType, menu.ContextId, menu.Name);
+    }
+
     public virtual async Task<MenuItemDto?> FindItemBySlugAsync(string contextType, Guid? contextId, string menuName, string slug)
     {
         var cacheKey = MenuTreeCacheItem.CreatePublicItemCacheKey(contextType, contextId, menuName, slug);

@@ -37,4 +37,15 @@ public class SufiAIChatRequest
 
     /// <summary>Optional strict output schema. Requires a provider route supporting structured outputs.</summary>
     public SufiAIJsonResponseSchema? ResponseSchema { get; set; }
+
+    /// <summary>
+    /// Optional reasoning effort. Sent only when the saved chat route lists that effort.
+    /// </summary>
+    public string? ReasoningEffort { get; set; }
+
+    /// <summary>
+    /// Explicit chat-page choice. Null lets send-time policy pick Responses when the catalog lists that endpoint.
+    /// False stays on Chat Completions. True asks for Responses when the model supports it.
+    /// </summary>
+    public bool? UseResponses { get; set; }
 }

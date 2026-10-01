@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.Extensions.Logging;
 using SufiChain.SufiPlatform.Application.Services;
 using SufiChain.SufiPlatform.FileManager.FileItems;
 using SufiChain.SufiPlatform.FileManager.Permissions;
@@ -21,6 +22,7 @@ public class FileMigrationAppService : SufiApplicationService, IFileMigrationApp
     {
         _fileItemRepository = fileItemRepository;
         _blobMigrationService = blobMigrationService;
+        LocalizationResource = typeof(SufiChain.SufiPlatform.FileManager.Localization.SufiFileManagerResource);
     }
 
     public virtual async Task<FileMigrationResultDto> MigrateStructureAsync(StartStructureMigrationInput input)
@@ -92,8 +94,9 @@ public class FileMigrationAppService : SufiApplicationService, IFileMigrationApp
         }
         catch (Exception ex)
         {
+            Logger.LogWarning(ex, "File migration failed.");
             result.Failed = 1;
-            result.Error = ex.Message;
+            result.Error = L["OperationFailed"];
         }
 
         return result;

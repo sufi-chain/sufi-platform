@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop;
 using SufiChain.SufiBlazor.Components.Data;
+using SufiChain.SufiPlatform.ShortLinks.Hooshvare;
 using SufiChain.SufiPlatform.ShortLinks.Permissions;
 using SufiChain.SufiBlazor.Contracts.Data;
 using Microsoft.AspNetCore.Authorization;
@@ -312,6 +313,22 @@ public partial class ShortLinkManagementBase : ShortLinksComponentBase
         }
 
         return value.Length > 60 ? value[..60] + "..." : value;
+    }
+
+    protected virtual IReadOnlyDictionary<string, string> BuildHooshvareContext()
+    {
+        var context = new Dictionary<string, string>(StringComparer.Ordinal);
+        if (EditingEntityId != Guid.Empty)
+        {
+            context[ShortLinksAnalyticsHooshvareKeys.Context.ShortUrlId] = EditingEntityId.ToString();
+        }
+
+        if (!string.IsNullOrWhiteSpace(EditingEntityDto.ShortCode))
+        {
+            context[ShortLinksAnalyticsHooshvareKeys.Context.ShortCode] = EditingEntityDto.ShortCode;
+        }
+
+        return context;
     }
 
 }

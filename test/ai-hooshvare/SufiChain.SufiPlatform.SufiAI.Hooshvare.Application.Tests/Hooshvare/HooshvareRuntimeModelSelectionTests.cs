@@ -58,6 +58,12 @@ public class HooshvareRuntimeModelSelectionTests
 
 
 
+        result.Request.SystemPrompt!.ShouldContain("Reply language");
+
+        result.Request.SystemPrompt.ShouldContain("English latest message: English only");
+
+        result.Request.SystemPrompt.ShouldNotContain("Do not write MCP");
+
         result.Request.ModelConfigurationId.ShouldBe(routeId);
 
         result.RuntimeConfiguration.ModelConfigurationId.ShouldBe(routeId);

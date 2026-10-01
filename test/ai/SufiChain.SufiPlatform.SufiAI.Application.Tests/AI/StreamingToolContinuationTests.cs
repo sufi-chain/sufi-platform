@@ -1,8 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.IO;
 using System.Net;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
 using System.Threading;
@@ -88,8 +90,83 @@ public class StreamingToolContinuationTests
             stream.Append("data: [DONE]\n\n");
             return new HttpResponseMessage(HttpStatusCode.OK)
             {
-                Content = new StringContent(stream.ToString(), Encoding.UTF8, "text/event-stream")
+                Content = new EventStreamContent(stream.ToString())
             };
+        }
+    }
+
+    /// <summary>
+    /// StringContent is seekable. The OpenAI client throws on SSE dispose when that stream is no longer at position 0.
+    /// </summary>
+    private sealed class EventStreamContent : HttpContent
+    {
+        private readonly byte[] _bytes;
+
+        public EventStreamContent(string body)
+        {
+            _bytes = Encoding.UTF8.GetBytes(body);
+            Headers.ContentType = new MediaTypeHeaderValue("text/event-stream");
+        }
+
+        protected override Task SerializeToStreamAsync(Stream stream, TransportContext? context) =>
+            stream.WriteAsync(_bytes, 0, _bytes.Length);
+
+        protected override bool TryComputeLength(out long length)
+        {
+            length = _bytes.Length;
+            return true;
+        }
+
+        protected override Stream CreateContentReadStream(CancellationToken cancellationToken) =>
+            new NonSeekableStream(_bytes);
+
+        protected override Task<Stream> CreateContentReadStreamAsync() =>
+            Task.FromResult<Stream>(new NonSeekableStream(_bytes));
+
+        private sealed class NonSeekableStream : Stream
+        {
+            private readonly byte[] _bytes;
+            private int _offset;
+
+            public NonSeekableStream(byte[] bytes) => _bytes = bytes;
+
+            public override bool CanRead => true;
+            public override bool CanSeek => false;
+            public override bool CanWrite => false;
+            public override long Length => throw new NotSupportedException();
+            public override long Position
+            {
+                get => throw new NotSupportedException();
+                set => throw new NotSupportedException();
+            }
+
+            public override void Flush()
+            {
+            }
+
+            public override int Read(byte[] buffer, int offset, int count) =>
+                Read(buffer.AsSpan(offset, count));
+
+            public override int Read(Span<byte> buffer)
+            {
+                var remaining = _bytes.Length - _offset;
+                if (remaining <= 0)
+                {
+                    return 0;
+                }
+
+                var read = Math.Min(buffer.Length, remaining);
+                _bytes.AsSpan(_offset, read).CopyTo(buffer);
+                _offset += read;
+                return read;
+            }
+
+            public override ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken cancellationToken = default) =>
+                ValueTask.FromResult(Read(buffer.Span));
+
+            public override long Seek(long offset, SeekOrigin origin) => throw new NotSupportedException();
+            public override void SetLength(long value) => throw new NotSupportedException();
+            public override void Write(byte[] buffer, int offset, int count) => throw new NotSupportedException();
         }
     }
 }

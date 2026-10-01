@@ -7,6 +7,8 @@ public class WorkspaceDto : FullAuditedEntityDto<Guid>
     public string Name { get; set; } = string.Empty;
     public AIProviderType Provider { get; set; }
     public string Model { get; set; } = string.Empty;
+    public string? ModelDisplayName { get; set; }
+    public string? DecisionsModelId { get; set; }
     public bool HasApiKey { get; set; }
     public string? ApiBaseUrl { get; set; }
     public decimal? InputCostPer1MTokens { get; set; }

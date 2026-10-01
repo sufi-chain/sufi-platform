@@ -21,6 +21,7 @@
     <PackageReference Include="Volo.Abp.Mapperly" Version="$(AbpVersion)" />
     <ProjectReference Include="..\SufiChain.SufiPlatform.Tenants.Application.Contracts\SufiChain.SufiPlatform.Tenants.Application.Contracts.csproj" />
     <ProjectReference Include="..\SufiChain.SufiPlatform.Tenants.Domain\SufiChain.SufiPlatform.Tenants.Domain.csproj" />
+    <ProjectReference Include="..\..\..\..\..\pro-modules\ai-hooshvare\src\SufiChain.SufiPlatform.SufiAI.Hooshvare.Application\SufiChain.SufiPlatform.SufiAI.Hooshvare.Application.csproj" />
   </ItemGroup>
 
 </Project>

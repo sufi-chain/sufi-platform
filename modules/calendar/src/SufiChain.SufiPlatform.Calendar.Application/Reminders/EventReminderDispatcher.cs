@@ -1,7 +1,10 @@
+using Microsoft.Extensions.Localization;
 using SufiChain.SufiPlatform.Calendar.Events;
+using SufiChain.SufiPlatform.Calendar.Localization;
 using SufiChain.SufiPlatform.Calendar.Reminders;
-using Volo.Abp.DependencyInjection;
+using SufiChain.SufiPlatform.SufiCom;
 using SufiChain.SufiPlatform.SufiCom.Email;
+using Volo.Abp.DependencyInjection;
 
 namespace SufiChain.SufiPlatform.Calendar.Reminders;
 
@@ -9,13 +12,16 @@ public class EventReminderDispatcher : IEventReminderDispatcher, ITransientDepen
 {
     private readonly ICalendarEventRepository _eventRepository;
     private readonly IEmailSender _emailSender;
+    private readonly IStringLocalizer<CalendarResource> _localizer;
 
     public EventReminderDispatcher(
         ICalendarEventRepository eventRepository,
-        IEmailSender emailSender)
+        IEmailSender emailSender,
+        IStringLocalizer<CalendarResource> localizer)
     {
         _eventRepository = eventRepository;
         _emailSender = emailSender;
+        _localizer = localizer;
     }
 
     public virtual async Task<int> DispatchDueAsync(DateTime nowUtc, CancellationToken cancellationToken = default)
@@ -31,7 +37,11 @@ public class EventReminderDispatcher : IEventReminderDispatcher, ITransientDepen
                     item.Attendee.Email,
                     $"Reminder: {item.Event.Title}",
                     BuildEmailBody(item),
-                    isBodyHtml: false);
+                    isBodyHtml: false,
+                    additionalArgs: new AdditionalMessageSendingArgs
+                    {
+                        FromDisplayName = _localizer["EmailSender:DisplayName"]
+                    });
             }
 
             item.Reminder.MarkSent(nowUtc);

@@ -141,8 +141,16 @@ public static class AIDbContextModelCreatingExtensions
             b.Property(x => x.Priority).IsRequired();
             b.Property(x => x.OpenAIApiMode).IsRequired();
             b.Property(x => x.MaxContextTokens).IsRequired();
-            b.Property(x => x.InputCostPer1MTokens).HasPrecision(18, 8);
-            b.Property(x => x.OutputCostPer1MTokens).HasPrecision(18, 8);
+            b.Property(x => x.InputPrice).HasPrecision(18, 8);
+            b.Property(x => x.InputPriceUnit).IsRequired();
+            b.Property(x => x.OutputPrice).HasPrecision(18, 8);
+            b.Property(x => x.OutputPriceUnit).IsRequired();
+            b.Property(x => x.AcceptsImageInput);
+            b.Property(x => x.AcceptsFileInput);
+            b.Property(x => x.SupportsReasoning);
+            b.Property(x => x.ReasoningEfforts).HasMaxLength(512);
+            b.Property(x => x.DefaultReasoningEffort).HasMaxLength(64);
+            b.Property(x => x.CapabilitySource);
             b.Property(x => x.Dimensions);
 
             b.HasIndex(x => new { x.WorkspaceId, x.CapabilityType, x.Priority });
@@ -165,6 +173,9 @@ public static class AIDbContextModelCreatingExtensions
             b.Property(x => x.InputTokens);
             b.Property(x => x.OutputTokens);
             b.Property(x => x.TotalTokens);
+            b.Property(x => x.AudioSeconds).HasPrecision(18, 4);
+            b.Property(x => x.CharacterCount);
+            b.Property(x => x.ImageCount);
             b.Property(x => x.HasTokenUsage).IsRequired();
             b.Property(x => x.UsageUnavailableReason).HasMaxLength(256);
             b.Property(x => x.EstimatedCost).HasPrecision(18, 8);

@@ -20,9 +20,13 @@ public class WorkspaceRuntimeConfiguration
 
     public int MaxContextTokens { get; init; }
 
-    public decimal? InputCostPer1MTokens { get; init; }
+    public decimal? InputPrice { get; init; }
 
-    public decimal? OutputCostPer1MTokens { get; init; }
+    public AIPriceUnit InputPriceUnit { get; init; }
+
+    public decimal? OutputPrice { get; init; }
+
+    public AIPriceUnit OutputPriceUnit { get; init; }
 
     public bool IsFallback { get; init; }
 
@@ -35,6 +39,52 @@ public class WorkspaceRuntimeConfiguration
     public bool IsReady { get; init; }
 
     public string? FailureCode { get; init; }
+
+    public WorkspaceRuntimeConfiguration WithOutputPrice(decimal? outputPrice)
+    {
+        if (OutputPrice == outputPrice)
+        {
+            return this;
+        }
+
+        return Copy(OpenAIApiMode, outputPrice);
+    }
+
+    public WorkspaceRuntimeConfiguration WithOpenAIApiMode(OpenAIApiMode mode)
+    {
+        if (OpenAIApiMode == mode)
+        {
+            return this;
+        }
+
+        return Copy(mode, OutputPrice);
+    }
+
+    private WorkspaceRuntimeConfiguration Copy(OpenAIApiMode mode, decimal? outputPrice)
+    {
+        return new WorkspaceRuntimeConfiguration
+        {
+            Workspace = Workspace,
+            ModelConfiguration = ModelConfiguration,
+            CapabilityType = CapabilityType,
+            Provider = Provider,
+            ModelId = ModelId,
+            ApiEndpoint = ApiEndpoint,
+            ApiKey = ApiKey,
+            OpenAIApiMode = mode,
+            MaxContextTokens = MaxContextTokens,
+            InputPrice = InputPrice,
+            InputPriceUnit = InputPriceUnit,
+            OutputPrice = outputPrice,
+            OutputPriceUnit = OutputPriceUnit,
+            IsFallback = IsFallback,
+            ModelConfigurationId = ModelConfigurationId,
+            IsExplicitSelection = IsExplicitSelection,
+            IsConfigured = IsConfigured,
+            IsReady = IsReady,
+            FailureCode = FailureCode
+        };
+    }
 
     public AIModelConfiguration ToRequestModelConfiguration()
     {
@@ -50,13 +100,16 @@ public class WorkspaceRuntimeConfiguration
             ApiKey,
             ModelConfiguration?.Priority ?? 999,
             OpenAIApiMode,
-            InputCostPer1MTokens,
-            OutputCostPer1MTokens,
+            InputPrice,
+            OutputPrice,
             ModelConfiguration?.Dimensions,
             ModelConfiguration?.DisplayName,
             ModelConfiguration?.IsUserSelectable ?? false,
             ModelConfiguration?.Description,
-            MaxContextTokens > 0 ? MaxContextTokens : AIModelConfiguration.DefaultMaxContextTokens);
+            MaxContextTokens > 0 ? MaxContextTokens : AIModelConfiguration.DefaultMaxContextTokens,
+            InputPriceUnit,
+            OutputPriceUnit);
+        configuration.CopyChatCapabilitiesFrom(ModelConfiguration);
         return configuration;
     }
 }

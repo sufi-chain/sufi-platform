@@ -1,6 +1,7 @@
 using System.Web;
 using Microsoft.AspNetCore.Components;
 using SufiChain.SufiPlatform.Localization.Dtos;
+using SufiChain.SufiPlatform.Localization.Hooshvare;
 using SufiChain.SufiBlazor.Components.Data;
 using SufiChain.SufiBlazor.Contracts.Data;
 
@@ -287,5 +288,38 @@ public partial class LocalizationTexts : LocalizationComponentBase
             await Notify.SuccessAsync(L["TranslationDeleted"]);
             await LoadItemsAsync();
         });
+    }
+
+    private IReadOnlyDictionary<string, string> BuildHooshvareContext()
+    {
+        var context = new Dictionary<string, string>(StringComparer.Ordinal);
+        if (!string.IsNullOrWhiteSpace(_selectedResource))
+        {
+            context[LocalizationEditorHooshvareKeys.Context.ResourceName] = _selectedResource;
+        }
+
+        if (!string.IsNullOrWhiteSpace(_selectedCulture))
+        {
+            context[LocalizationEditorHooshvareKeys.Context.Cultures] = _selectedCulture;
+            context[LocalizationEditorHooshvareKeys.Context.SourceCulture] = _selectedCulture;
+            context[LocalizationEditorHooshvareKeys.Context.TargetCulture] = _selectedCulture;
+        }
+
+        if (!string.IsNullOrWhiteSpace(_keyFilter))
+        {
+            context[LocalizationEditorHooshvareKeys.Context.Key] = _keyFilter;
+        }
+        else if (_showEditDialog && !string.IsNullOrWhiteSpace(_editingItem.Key))
+        {
+            context[LocalizationEditorHooshvareKeys.Context.Key] = _editingItem.Key;
+        }
+
+        if (_showEditDialog && !string.IsNullOrWhiteSpace(_editingItem.Value))
+        {
+            var value = _editingItem.Value.Length > 500 ? _editingItem.Value[..500] : _editingItem.Value;
+            context[LocalizationEditorHooshvareKeys.Context.CurrentTexts] = value;
+        }
+
+        return context;
     }
 }

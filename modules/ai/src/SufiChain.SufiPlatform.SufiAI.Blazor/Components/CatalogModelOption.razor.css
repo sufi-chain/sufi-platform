@@ -1,0 +1,38 @@
+.catalog-model-option {
+	display: flex;
+	align-items: center;
+	gap: 0.65rem;
+	width: 100%;
+	min-width: 0;
+	text-align: start;
+}
+
+.catalog-model-option__copy {
+	display: flex;
+	flex-direction: column;
+	min-width: 0;
+	flex: 1 1 auto;
+	gap: 0.1rem;
+}
+
+.catalog-model-option__name,
+.catalog-model-option__meta,
+.catalog-model-option__price {
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.catalog-model-option__name {
+	font-size: 0.875rem;
+}
+
+.catalog-model-option__meta,
+.catalog-model-option__price {
+	font-size: 0.75rem;
+	color: var(--sb-color-text-muted, var(--sb-color-muted));
+}
+
+.catalog-model-option__price {
+	flex: 0 0 auto;
+}

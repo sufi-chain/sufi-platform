@@ -51,6 +51,11 @@ public class AIToolChatExecutor : IAIToolChatExecutor, ITransientDependency
         CancellationToken cancellationToken = default)
     {
         await WorkspaceGuardrailService.EnsureCanExecuteAsync(configuration.Workspace.Id, cancellationToken);
+        if (requiresToolCalling && configuration.OpenAIApiMode != OpenAIApiMode.ChatCompletions)
+        {
+            configuration = configuration.WithOpenAIApiMode(OpenAIApiMode.ChatCompletions);
+        }
+
         RuntimeConfigurationResolver.EnsureReady(configuration, requiresToolCalling);
         var kernel = await WorkspaceSyncService.CreateRequestKernelAsync(configuration, cancellationToken);
         return new AIPreparedKernel

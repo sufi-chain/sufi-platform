@@ -1,5 +1,5 @@
+using System.Globalization;
 using System.Net.Http.Headers;
-using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using Microsoft.AspNetCore.Authorization;
@@ -9,6 +9,7 @@ using Microsoft.Extensions.Options;
 using SufiChain.SufiPlatform.Application.Dtos;
 using SufiChain.SufiPlatform.Application.Services;
 using SufiChain.SufiPlatform.Features;
+using SufiChain.SufiPlatform.SufiAI.Catalog;
 using SufiChain.SufiPlatform.SufiAI.Configuration;
 using SufiChain.SufiPlatform.SufiAI.Features;
 using SufiChain.SufiPlatform.SufiAI.Permissions;
@@ -39,6 +40,12 @@ public class WorkspaceAppService : SufiApplicationService, IWorkspaceAppService
     private readonly IWorkspaceRuntimeConfigurationResolver _runtimeConfigurationResolver;
     private readonly WorkspaceSyncService _workspaceSyncService;
     private readonly IDistributedCache<ProviderModelListCacheItem> _providerModelListCache;
+    private readonly IDistributedCache<OpenRouterConnectionCatalogCacheItem> _openRouterCatalogCache;
+    private readonly IModelCatalogSource _modelCatalog;
+    private readonly IEnumerable<IAiProviderProfile> _profiles;
+    private readonly IModelEndpointLookup _endpointLookup;
+    private readonly DistributedRefreshGate _refresh;
+    private readonly HostPriceMarkup _hostPriceMarkup;
     private readonly AIOptions _aiOptions;
 
     public WorkspaceAppService(
@@ -54,6 +61,12 @@ public class WorkspaceAppService : SufiApplicationService, IWorkspaceAppService
         IWorkspaceRuntimeConfigurationResolver runtimeConfigurationResolver,
         WorkspaceSyncService workspaceSyncService,
         IDistributedCache<ProviderModelListCacheItem> providerModelListCache,
+        IDistributedCache<OpenRouterConnectionCatalogCacheItem> openRouterCatalogCache,
+        IModelCatalogSource modelCatalog,
+        IEnumerable<IAiProviderProfile> profiles,
+        IModelEndpointLookup endpointLookup,
+        DistributedRefreshGate refresh,
+        HostPriceMarkup hostPriceMarkup,
         IOptions<AIOptions> aiOptions)
     {
         _workspaceRepository = workspaceRepository;
@@ -68,7 +81,30 @@ public class WorkspaceAppService : SufiApplicationService, IWorkspaceAppService
         _runtimeConfigurationResolver = runtimeConfigurationResolver;
         _workspaceSyncService = workspaceSyncService;
         _providerModelListCache = providerModelListCache;
+        _openRouterCatalogCache = openRouterCatalogCache;
+        _modelCatalog = modelCatalog;
+        _profiles = profiles;
+        _endpointLookup = endpointLookup;
+        _refresh = refresh;
+        _hostPriceMarkup = hostPriceMarkup;
         _aiOptions = aiOptions.Value;
+    }
+
+    public Task<List<AiProviderProfileDto>> GetProviderProfilesAsync()
+    {
+        var profiles = _profiles
+            .OrderBy(profile => profile.DisplayName ?? string.Empty, StringComparer.Ordinal)
+            .Select(profile => new AiProviderProfileDto
+            {
+                ProviderType = profile.ProviderType,
+                CapabilityKind = profile.CapabilityKind,
+                DisplayName = profile.DisplayName,
+                DefaultBaseUrl = profile.DefaultBaseUrl,
+                RequiresExplicitBaseUrl = profile.RequiresExplicitBaseUrl,
+                SupportsDecisions = profile.SupportsDecisions
+            })
+            .ToList();
+        return Task.FromResult(profiles);
     }
 
     public async Task<PagedResultDto<WorkspaceDto>> GetListAsync(PagedAndSortedResultRequestDto input)
@@ -117,15 +153,16 @@ public class WorkspaceAppService : SufiApplicationService, IWorkspaceAppService
         var chat = capabilityResults.Single(
             result => result.CapabilityType == AICapabilityType.ChatCompletion);
         var mcpFailureCode = chat.FailureCode;
-        if (mcpFailureCode == null && chat.Provider != AIProviderType.OpenAI)
+        if (mcpFailureCode == null && chat.Provider is not (
+                AIProviderType.OpenAI
+                or AIProviderType.OpenAICompatible
+                or AIProviderType.OpenRouter
+                or AIProviderType.HuggingFace
+                or AIProviderType.AvalAI
+                or AIProviderType.Liara))
         {
             mcpFailureCode = WorkspaceRuntimeFailureCodes.McpProviderNotSupported;
         }
-        else if (mcpFailureCode == null && chat.OpenAIApiMode != OpenAIApiMode.ChatCompletions)
-        {
-            mcpFailureCode = WorkspaceRuntimeFailureCodes.McpApiModeNotSupported;
-        }
-
         return new WorkspaceReadinessDto
         {
             WorkspaceId = chat.Workspace.Id,
@@ -167,6 +204,8 @@ public class WorkspaceAppService : SufiApplicationService, IWorkspaceAppService
             input.OutputCostPer1MTokens
         );
 
+        workspace.UpdatePrimaryChatConfiguration(input.Model, input.ApiBaseUrl, input.ModelDisplayName);
+        ApplyDecisionsModel(workspace, input.Provider, input.DecisionsModelId);
         ApplyGuardrails(workspace, input.Guardrails);
         await _workspaceRepository.InsertAsync(workspace, autoSave: true);
 
@@ -373,6 +412,7 @@ public class WorkspaceAppService : SufiApplicationService, IWorkspaceAppService
 
         await _workspaceManager.ValidateNameAsync(input.Name, id);
         workspace.SetName(input.Name);
+        workspace.SetProvider(input.Provider);
 
         // Only update API key if a new one is provided
         var apiKeyToUpdate = string.IsNullOrWhiteSpace(input.ApiKey) 
@@ -388,7 +428,9 @@ public class WorkspaceAppService : SufiApplicationService, IWorkspaceAppService
         );
         workspace.UpdatePrimaryChatConfiguration(
             input.Model,
-            input.ApiBaseUrl);
+            input.ApiBaseUrl,
+            input.ModelDisplayName);
+        ApplyDecisionsModel(workspace, input.Provider, input.DecisionsModelId);
 
         if (input.IsActive)
             workspace.Activate();
@@ -484,22 +526,63 @@ public class WorkspaceAppService : SufiApplicationService, IWorkspaceAppService
             throw new Volo.Abp.UserFriendlyException(L["ApiKeyRequiredForModelList"]);
         }
 
-        var cacheKey = await BuildProviderModelListCacheKeyAsync(
-            input.WorkspaceId,
-            input.ModelConfigurationId,
+        var provider = input.Provider ?? credentials.Provider;
+        var cacheKey = BuildProviderModelListCacheKey(
             credentials.BaseUrl,
-            credentials.ApiKey);
-        var ttlSeconds = _aiOptions.ProviderModelDiscoveryCacheSeconds;
+            provider,
+            input.CapabilityType);
+        var ttlSeconds = ProviderModelListCacheSeconds();
         if (ttlSeconds > 0 && !string.IsNullOrWhiteSpace(cacheKey))
         {
-            var cached = await _providerModelListCache.GetAsync(cacheKey);
-            if (cached?.Models is { Count: > 0 })
+            var loaded = await _refresh.ReadOrRefreshAsync(
+                _providerModelListCache,
+                cacheKey,
+                "SufiAI:AccountModels:" + cacheKey,
+                ttlSeconds,
+                () => LoadAccountModelsAsync(credentials, provider, input.CapabilityType),
+                item => item.Unavailable);
+            if (loaded?.Unavailable == true)
             {
-                return FilterModelsForCapability(cached.Models, input.CapabilityType);
+                throw new Volo.Abp.UserFriendlyException(L["LoadModelsFailed"]);
+            }
+
+            if (loaded != null)
+            {
+                var catalog = ConnectionCatalog(loaded, provider);
+                if (provider == AIProviderType.OpenRouter && !loaded.CatalogLoaded)
+                {
+                    catalog = await LoadOpenRouterConnectionCatalogAsync(credentials.BaseUrl, credentials.ApiKey!);
+                }
+
+                return await ComposeAvailableModelsAsync(
+                    loaded.Models,
+                    input.CapabilityType,
+                    provider,
+                    catalog);
             }
         }
 
-        using var request = new HttpRequestMessage(HttpMethod.Get, $"{credentials.BaseUrl}/models");
+        var models = await LoadAccountModelsAsync(credentials, provider, input.CapabilityType);
+        if (models.Unavailable)
+        {
+            throw new Volo.Abp.UserFriendlyException(L["LoadModelsFailed"]);
+        }
+
+        return await ComposeAvailableModelsAsync(
+            models.Models,
+            input.CapabilityType,
+            provider,
+            ConnectionCatalog(models, provider));
+    }
+
+    private async Task<ProviderModelListCacheItem> LoadAccountModelsAsync(
+        (string? ApiKey, string BaseUrl, AIProviderType Provider) credentials,
+        AIProviderType provider,
+        AICapabilityType capabilityType)
+    {
+        using var request = new HttpRequestMessage(
+            HttpMethod.Get,
+            AccountModelsUri(credentials.BaseUrl, provider, capabilityType));
         request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", credentials.ApiKey);
         request.Headers.Add("X-Client-Request-Id", GuidGenerator.Create().ToString("D"));
 
@@ -517,26 +600,132 @@ public class WorkspaceAppService : SufiApplicationService, IWorkspaceAppService
                 error.Param,
                 requestId,
                 TrimError(responseBody));
-
-            throw new Volo.Abp.UserFriendlyException(
-                BuildModelListErrorMessage(response, error, requestId)
-            );
+            return new ProviderModelListCacheItem { Unavailable = true };
         }
 
         var json = await response.Content.ReadAsStringAsync();
-        var models = ParseModels(json);
-        if (ttlSeconds > 0 && !string.IsNullOrWhiteSpace(cacheKey))
+        var item = new ProviderModelListCacheItem { Models = ParseModels(json) };
+        if (provider == AIProviderType.OpenRouter)
         {
-            await _providerModelListCache.SetAsync(
-                cacheKey,
-                new ProviderModelListCacheItem { Models = models },
-                new DistributedCacheEntryOptions
-                {
-                    AbsoluteExpirationRelativeToNow = TimeSpan.FromSeconds(ttlSeconds)
-                });
+            var catalog = await LoadOpenRouterConnectionCatalogAsync(credentials.BaseUrl, credentials.ApiKey!);
+            if (catalog != null)
+            {
+                item.Catalog = catalog.ToList();
+                item.CatalogLoaded = true;
+            }
         }
 
-        return FilterModelsForCapability(models, input.CapabilityType);
+        return item;
+    }
+
+    private static IReadOnlyList<ModelCatalogEntry>? ConnectionCatalog(
+        ProviderModelListCacheItem item,
+        AIProviderType provider)
+    {
+        return provider == AIProviderType.OpenRouter && item.CatalogLoaded
+            ? item.Catalog
+            : null;
+    }
+
+    private async Task<IReadOnlyList<ModelCatalogEntry>?> LoadOpenRouterConnectionCatalogAsync(
+        string baseUrl,
+        string apiKey)
+    {
+        var ttlSeconds = ProviderModelListCacheSeconds();
+        var cacheKey = OpenRouterCatalogCacheKey(baseUrl);
+        if (ttlSeconds > 0 && !string.IsNullOrWhiteSpace(cacheKey))
+        {
+            var cached = await _refresh.ReadOrRefreshAsync(
+                _openRouterCatalogCache,
+                cacheKey,
+                "SufiAI:OpenRouterConnectionCatalog:" + cacheKey,
+                ttlSeconds,
+                () => ReadOpenRouterConnectionCatalogAsync(baseUrl, apiKey),
+                item => item.Unavailable);
+            return cached is { Unavailable: false, Models.Count: > 0 } ? cached.Models : null;
+        }
+
+        var fresh = await ReadOpenRouterConnectionCatalogAsync(baseUrl, apiKey);
+        return fresh is { Unavailable: false, Models.Count: > 0 } ? fresh.Models : null;
+    }
+
+    private async Task<OpenRouterConnectionCatalogCacheItem> ReadOpenRouterConnectionCatalogAsync(
+        string baseUrl,
+        string apiKey)
+    {
+        var listed = await TryReadOpenRouterCatalogAsync(baseUrl, apiKey, "output_modalities=all");
+        var decisions = await TryReadOpenRouterCatalogAsync(baseUrl, apiKey, "output_modalities=decisions");
+        if (listed == null && decisions == null)
+        {
+            return new OpenRouterConnectionCatalogCacheItem { Unavailable = true };
+        }
+
+        var merged = OpenRouterModelCatalogSource.Merge(listed, decisions);
+        return new OpenRouterConnectionCatalogCacheItem
+        {
+            Models = merged?.ToList() ?? new List<ModelCatalogEntry>()
+        };
+    }
+
+    private async Task<IReadOnlyList<ModelCatalogEntry>?> TryReadOpenRouterCatalogAsync(
+        string baseUrl,
+        string apiKey,
+        string query)
+    {
+        var uri = OpenRouterModelCatalogSource.ModelsUri(baseUrl, query);
+        try
+        {
+            using var request = new HttpRequestMessage(HttpMethod.Get, uri);
+            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", apiKey);
+            request.Headers.Add("X-Client-Request-Id", GuidGenerator.Create().ToString("D"));
+            using var response = await _httpClientFactory.CreateClient().SendAsync(request);
+            if (!response.IsSuccessStatusCode)
+            {
+                Logger.LogWarning(
+                    "OpenRouter connection catalog failed. BaseUrl: {BaseUrl}, Query: {Query}, Status: {StatusCode}.",
+                    SanitizeBaseUrlForLog(baseUrl),
+                    query,
+                    (int)response.StatusCode);
+                return null;
+            }
+
+            return OpenRouterModelCatalogSource.ParseList(await response.Content.ReadAsStringAsync());
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            Logger.LogWarning(
+                ex,
+                "OpenRouter connection catalog is unavailable. BaseUrl: {BaseUrl}, Query: {Query}.",
+                SanitizeBaseUrlForLog(baseUrl),
+                query);
+            return null;
+        }
+    }
+
+    private async Task<List<OpenAIModelDto>> ComposeAvailableModelsAsync(
+        List<OpenAIModelDto> workspaceModels,
+        AICapabilityType capabilityType,
+        AIProviderType provider,
+        IReadOnlyList<ModelCatalogEntry>? connectionCatalog)
+    {
+        IReadOnlyList<ModelCatalogEntry>? catalog = connectionCatalog;
+        if (provider != AIProviderType.OpenRouter)
+        {
+            try
+            {
+                var catalogName = AiProviderProfiles.Find(_profiles, provider)?.CatalogName;
+                catalog = string.IsNullOrWhiteSpace(catalogName)
+                    ? null
+                    : await _modelCatalog.GetModelsAsync(catalogName);
+            }
+            catch (Exception ex) when (ex is not OperationCanceledException)
+            {
+                Logger.LogWarning(ex, "Model catalog is unavailable. Load Models will use the workspace list only.");
+            }
+        }
+
+        var markupPercent = await _hostPriceMarkup.GetPercentAsync();
+        return AvailableModelListComposer.Compose(workspaceModels, catalog, capabilityType, markupPercent);
     }
 
     public async Task TestConnectionAsync(TestWorkspaceConnectionInput input)
@@ -557,12 +746,13 @@ public class WorkspaceAppService : SufiApplicationService, IWorkspaceAppService
             throw new Volo.Abp.UserFriendlyException(L["ApiKeyRequiredForConnectionTest"]);
         }
 
+        var apiMode = await ResolveConnectionTestApiModeAsync(input, credentials.Provider);
         using var request = CreateConnectionTestRequest(
             credentials.BaseUrl,
             credentials.ApiKey,
             input.Model,
             input.CapabilityType,
-            input.OpenAIApiMode);
+            apiMode);
 
         using var response = await _httpClientFactory.CreateClient().SendAsync(request);
         if (response.IsSuccessStatusCode)
@@ -576,7 +766,7 @@ public class WorkspaceAppService : SufiApplicationService, IWorkspaceAppService
         Logger.LogWarning(
             "OpenAI-compatible connection test failed. Capability: {CapabilityType}, Mode: {OpenAIApiMode}, Model: {Model}, BaseUrl: {BaseUrl}, Status: {StatusCode}, ErrorCode: {ErrorCode}, Param: {Param}, RequestId: {RequestId}, Body: {Body}",
             input.CapabilityType,
-            input.OpenAIApiMode,
+            apiMode,
             input.Model,
             SanitizeBaseUrlForLog(credentials.BaseUrl),
             (int)response.StatusCode,
@@ -590,7 +780,7 @@ public class WorkspaceAppService : SufiApplicationService, IWorkspaceAppService
         );
     }
 
-    private async Task<(string? ApiKey, string BaseUrl)> ResolveConnectionCredentialsAsync(
+    private async Task<(string? ApiKey, string BaseUrl, AIProviderType Provider)> ResolveConnectionCredentialsAsync(
         Guid? workspaceId,
         Guid? modelConfigurationId,
         string? apiKey,
@@ -609,13 +799,14 @@ public class WorkspaceAppService : SufiApplicationService, IWorkspaceAppService
             workspace = await _workspaceRepository.GetAsync(workspaceId.Value);
         }
 
+        var provider = workspace?.Provider ?? AIProviderType.OpenAI;
         var resolvedKey = apiKey;
         var resolvedBaseUrl = apiBaseUrl;
-        if (workspace != null)
+        if (modelConfiguration != null && workspace != null)
         {
             var resolved = _runtimeConfigurationResolver.Resolve(
                 workspace,
-                AICapabilityType.ChatCompletion,
+                modelConfiguration.CapabilityType,
                 modelConfiguration);
             if (string.IsNullOrWhiteSpace(resolvedKey))
             {
@@ -624,11 +815,84 @@ public class WorkspaceAppService : SufiApplicationService, IWorkspaceAppService
 
             if (string.IsNullOrWhiteSpace(resolvedBaseUrl))
             {
-                resolvedBaseUrl = resolved.ApiEndpoint;
+                resolvedBaseUrl = FirstNonWhiteSpace(modelConfiguration.ApiEndpoint, workspace.ApiBaseUrl);
+            }
+        }
+        else if (workspace != null)
+        {
+            if (string.IsNullOrWhiteSpace(resolvedKey))
+            {
+                resolvedKey = DecryptStoredApiKey(workspace.ApiKey);
+            }
+
+            if (string.IsNullOrWhiteSpace(resolvedBaseUrl))
+            {
+                resolvedBaseUrl = workspace.ApiBaseUrl;
             }
         }
 
-        return (resolvedKey, NormalizeBaseUrl(resolvedBaseUrl));
+        return (resolvedKey, NormalizeBaseUrl(resolvedBaseUrl, provider), provider);
+    }
+
+    private static string? FirstNonWhiteSpace(params string?[] values)
+    {
+        foreach (var value in values)
+        {
+            if (!string.IsNullOrWhiteSpace(value))
+            {
+                return value;
+            }
+        }
+
+        return null;
+    }
+
+    private string? DecryptStoredApiKey(string? encryptedApiKey)
+    {
+        if (string.IsNullOrWhiteSpace(encryptedApiKey))
+        {
+            return null;
+        }
+
+        try
+        {
+            var decrypted = _stringEncryptor.Decrypt(encryptedApiKey);
+            return string.IsNullOrWhiteSpace(decrypted) ? null : decrypted;
+        }
+        catch
+        {
+            return encryptedApiKey;
+        }
+    }
+
+    private void ApplyDecisionsModel(Workspace workspace, AIProviderType provider, string? decisionsModelId)
+    {
+        var profile = AiProviderProfiles.Find(_profiles, provider);
+        if (profile?.SupportsDecisions != true)
+        {
+            return;
+        }
+
+        workspace.SetDecisionsModel(decisionsModelId);
+    }
+
+    private async Task<OpenAIApiMode> ResolveConnectionTestApiModeAsync(
+        TestWorkspaceConnectionInput input,
+        AIProviderType workspaceProvider)
+    {
+        if (input.CapabilityType is not (AICapabilityType.ChatCompletion or AICapabilityType.VisionAnalysis))
+        {
+            return input.OpenAIApiMode;
+        }
+
+        var provider = input.Provider ?? workspaceProvider;
+        var profile = AiProviderProfiles.Find(_profiles, provider);
+        var endpoints = await _endpointLookup.GetSupportedEndpointsAsync(provider, input.Model);
+        return OpenAIApiModePolicy.Select(
+            profile?.SupportsApiMode(OpenAIApiMode.Responses) == true,
+            endpoints,
+            requiresTools: false,
+            requested: null);
     }
 
     private HttpRequestMessage CreateConnectionTestRequest(
@@ -639,7 +903,34 @@ public class WorkspaceAppService : SufiApplicationService, IWorkspaceAppService
         OpenAIApiMode openAIApiMode)
     {
         HttpRequestMessage request;
-        if (capabilityType == AICapabilityType.Embeddings)
+        if (capabilityType == AICapabilityType.Decisions)
+        {
+            request = new HttpRequestMessage(HttpMethod.Post, $"{baseUrl}/systemone")
+            {
+                Content = new StringContent(
+                    JsonSerializer.Serialize(new Dictionary<string, object?>
+                    {
+                        ["model"] = model,
+                        ["state"] = "ping",
+                        ["questions"] = new Dictionary<string, object?>
+                        {
+                            ["ready"] = new Dictionary<string, object?>
+                            {
+                                ["type"] = "noul",
+                                ["instructions"] = "The state is the word ping.",
+                                ["criteria"] = new Dictionary<string, string>
+                                {
+                                    ["true"] = "The state is exactly the word ping.",
+                                    ["false"] = "The state is anything else."
+                                }
+                            }
+                        }
+                    }),
+                    Encoding.UTF8,
+                    "application/json")
+            };
+        }
+        else if (capabilityType == AICapabilityType.Embeddings)
         {
             request = new HttpRequestMessage(HttpMethod.Post, $"{baseUrl}/embeddings")
             {
@@ -717,42 +1008,74 @@ public class WorkspaceAppService : SufiApplicationService, IWorkspaceAppService
         return string.IsNullOrWhiteSpace(value) ? null : value;
     }
 
-    private async Task<string?> BuildProviderModelListCacheKeyAsync(
-        Guid? workspaceId,
-        Guid? modelConfigurationId,
-        string normalizedEndpoint,
-        string apiKey)
+    private static string AccountModelsUri(
+        string baseUrl,
+        AIProviderType provider,
+        AICapabilityType capabilityType)
     {
-        var tenantKey = CurrentTenant.Id?.ToString("N") ?? "host";
-        var workspaceKey = workspaceId?.ToString("N") ?? "none";
-        var configurationKey = modelConfigurationId?.ToString("N") ?? "none";
-        var endpointKey = (normalizedEndpoint ?? string.Empty).Trim().TrimEnd('/').ToLowerInvariant();
-        var fingerprint = FingerprintCredential(apiKey);
-        var stamp = "nostamp";
-        if (workspaceId.HasValue)
+        var uri = $"{baseUrl.TrimEnd('/')}/models";
+        if (provider == AIProviderType.OpenRouter && capabilityType == AICapabilityType.Decisions)
         {
-            var workspace = await _workspaceRepository.FindAsync(workspaceId.Value);
-            if (workspace != null)
-            {
-                stamp = await _workspaceSyncService.GetProviderModelStampAsync(workspace.Name);
-            }
+            return uri + "?output_modalities=decisions";
         }
 
-        return $"ai:models:{tenantKey}:{workspaceKey}:{configurationKey}:{endpointKey}:{fingerprint}:{stamp}";
+        return uri;
     }
 
-    private string FingerprintCredential(string apiKey)
+    private int ProviderModelListCacheSeconds()
     {
-        var salt = string.IsNullOrWhiteSpace(_aiOptions.ProviderModelCacheSalt)
-            ? "SufiAI.ProviderModelDiscovery"
-            : _aiOptions.ProviderModelCacheSalt;
-        var bytes = SHA256.HashData(Encoding.UTF8.GetBytes(salt + "\n" + apiKey));
-        return Convert.ToHexString(bytes)[..12];
+        var configured = _aiOptions.ProviderModelDiscoveryCacheSeconds;
+        if (configured <= 0)
+        {
+            return 0;
+        }
+
+        return Math.Max(configured, AIOptions.MinimumProviderModelDiscoveryCacheSeconds);
     }
 
-    private static string NormalizeBaseUrl(string? apiBaseUrl)
+    /// <summary>
+    /// One entry per gateway base URL. OpenRouter decisions uses a separate list URL, so it has its own variant.
+    /// Other capabilities share the default <c>/models</c> payload.
+    /// </summary>
+    private static string? BuildProviderModelListCacheKey(
+        string normalizedEndpoint,
+        AIProviderType provider,
+        AICapabilityType capabilityType)
     {
-        return (string.IsNullOrWhiteSpace(apiBaseUrl) ? DefaultOpenAIBaseUrl : apiBaseUrl.Trim()).TrimEnd('/');
+        var endpointKey = (normalizedEndpoint ?? string.Empty).Trim().TrimEnd('/').ToLowerInvariant();
+        if (string.IsNullOrWhiteSpace(endpointKey))
+        {
+            return null;
+        }
+
+        var listVariant = provider == AIProviderType.OpenRouter && capabilityType == AICapabilityType.Decisions
+            ? "decisions"
+            : "default";
+        return "ai:models:" + endpointKey + ":" + listVariant;
+    }
+
+    private static string? OpenRouterCatalogCacheKey(string baseUrl)
+    {
+        var endpointKey = (baseUrl ?? string.Empty).Trim().TrimEnd('/').ToLowerInvariant();
+        return string.IsNullOrWhiteSpace(endpointKey)
+            ? null
+            : "ai:openrouter-catalog:" + endpointKey;
+    }
+
+    private string NormalizeBaseUrl(string? apiBaseUrl, AIProviderType provider)
+    {
+        if (!string.IsNullOrWhiteSpace(apiBaseUrl))
+        {
+            return apiBaseUrl.Trim().TrimEnd('/');
+        }
+
+        var profile = AiProviderProfiles.Find(_profiles, provider);
+        if (profile?.RequiresExplicitBaseUrl == true)
+        {
+            return string.Empty;
+        }
+
+        return (profile?.DefaultBaseUrl ?? DefaultOpenAIBaseUrl).Trim().TrimEnd('/');
     }
 
     private static object CreateTestPayload(string model, OpenAIApiMode openAIApiMode)
@@ -863,39 +1186,55 @@ public class WorkspaceAppService : SufiApplicationService, IWorkspaceAppService
                                     architectureElement.ValueKind == JsonValueKind.Object
             ? architectureElement
             : null;
+        JsonElement? pricing = item.TryGetProperty("pricing", out var pricingElement) &&
+                               pricingElement.ValueKind == JsonValueKind.Object
+            ? pricingElement
+            : null;
+        var reasoning = OpenRouterModelCatalogSource.ReadReasoning(item);
 
         return new OpenAIModelDto
         {
             Id = TryGetString(item, "id") ?? string.Empty,
             OwnedBy = TryGetString(item, "owned_by"),
             Created = TryGetInt64(item, "created"),
-            Mode = TryGetString(item, "mode"),
+            Mode = DecisionsMode(item, architecture),
             Modality = architecture.HasValue ? TryGetString(architecture.Value, "modality") : null,
             InputModalities = architecture.HasValue
                 ? TryGetStringList(architecture.Value, "input_modalities")
                 : null,
             OutputModalities = architecture.HasValue
                 ? TryGetStringList(architecture.Value, "output_modalities")
-                : null
+                : null,
+            SupportedParameters = TryGetStringList(item, "supported_parameters"),
+            ContextLength = OpenRouterModelCatalogSource.ReadContextLength(item),
+            ReasoningEfforts = reasoning.Efforts.Count == 0 ? null : reasoning.Efforts,
+            DefaultReasoningEffort = reasoning.DefaultEffort,
+            PromptPricePerToken = pricing.HasValue ? TryGetDecimal(pricing.Value, "prompt") : null,
+            CompletionPricePerToken = pricing.HasValue ? TryGetDecimal(pricing.Value, "completion") : null,
+            ImagePrice = pricing.HasValue ? TryGetDecimal(pricing.Value, "image") : null,
+            ImageOutputPrice = pricing.HasValue ? TryGetDecimal(pricing.Value, "image_output") : null,
+            ImageTokenPrice = pricing.HasValue ? TryGetDecimal(pricing.Value, "image_token") : null,
+            RequestPrice = pricing.HasValue ? TryGetDecimal(pricing.Value, "request") : null,
+            WebSearchPrice = pricing.HasValue ? TryGetDecimal(pricing.Value, "web_search") : null
         };
     }
 
-    private static List<OpenAIModelDto> FilterModelsForCapability(
-        List<OpenAIModelDto> models,
-        AICapabilityType capabilityType)
+    private static string? DecisionsMode(JsonElement item, JsonElement? architecture)
     {
-        return models
-            .Where(model => ProviderModelCapabilityClassifier.Matches(
-                model.Id,
-                capabilityType,
-                new ProviderModelDiscoveryHints
-                {
-                    Mode = model.Mode,
-                    Modality = model.Modality,
-                    InputModalities = model.InputModalities,
-                    OutputModalities = model.OutputModalities
-                }))
-            .ToList();
+        var outputs = architecture.HasValue ? TryGetStringList(architecture.Value, "output_modalities") : null;
+        if (outputs?.Any(value => string.Equals(value, "decisions", StringComparison.OrdinalIgnoreCase)) == true)
+        {
+            return "decisions";
+        }
+
+        var modality = architecture.HasValue ? TryGetString(architecture.Value, "modality") : null;
+        if (!string.IsNullOrWhiteSpace(modality) &&
+            modality.Contains("decisions", StringComparison.OrdinalIgnoreCase))
+        {
+            return "decisions";
+        }
+
+        return TryGetString(item, "mode");
     }
 
     private static List<string>? TryGetStringList(JsonElement element, string propertyName)
@@ -923,6 +1262,27 @@ public class WorkspaceAppService : SufiApplicationService, IWorkspaceAppService
         }
 
         return values.Count == 0 ? null : values;
+    }
+
+    private static decimal? TryGetDecimal(JsonElement element, string propertyName)
+    {
+        if (!element.TryGetProperty(propertyName, out var property))
+        {
+            return null;
+        }
+
+        if (property.ValueKind == JsonValueKind.Number && property.TryGetDecimal(out var number))
+        {
+            return number;
+        }
+
+        if (property.ValueKind == JsonValueKind.String &&
+            decimal.TryParse(property.GetString(), NumberStyles.Number, CultureInfo.InvariantCulture, out var parsed))
+        {
+            return parsed;
+        }
+
+        return null;
     }
 
     private static long? TryGetInt64(JsonElement element, string propertyName)

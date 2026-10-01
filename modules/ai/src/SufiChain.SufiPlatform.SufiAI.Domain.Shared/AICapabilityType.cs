@@ -47,5 +47,10 @@ public enum AICapabilityType
     /// <summary>
     /// Fetch and extract readable content from a web page.
     /// </summary>
-    WebFetch = 7
+    WebFetch = 7,
+
+    /// <summary>
+    /// Structured decisions such as TypeSafe Jev. Not a chat completion.
+    /// </summary>
+    Decisions = 8
 }

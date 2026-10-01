@@ -22,4 +22,9 @@ public class GetOpenAIModelsInput
     /// Defaults to chat so workspace default-model pickers stay LLM-only.
     /// </summary>
     public AICapabilityType CapabilityType { get; set; } = AICapabilityType.ChatCompletion;
+
+    /// <summary>
+    /// Provider whose catalog classifies the list. Used before a workspace exists.
+    /// </summary>
+    public AIProviderType? Provider { get; set; }
 }

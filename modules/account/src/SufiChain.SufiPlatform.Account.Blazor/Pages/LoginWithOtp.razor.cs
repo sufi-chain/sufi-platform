@@ -26,6 +26,12 @@ public partial class LoginWithOtp
     [SupplyParameterFromQuery]
     public string? ReturnUrl { get; set; }
 
+    [SupplyParameterFromQuery]
+    public bool CreateLink { get; set; }
+
+    protected string PasswordLoginHref =>
+        LinkAccountHandshake.BuildSignInPath("/account/login", CreateLink, ReturnUrl);
+
     protected OtpOptionsDto? Options { get; set; }
 
     protected string Identifier { get; set; } = string.Empty;

@@ -30,6 +30,11 @@
 	<SbStack Gap="4" Align="SbAlign.Center">
 		<SbHeading Level="2">@L["SignIn"]</SbHeading>
 
+		@if (CreateLink)
+		{
+			<SbAlert Severity="SbAlertSeverity.Info">@AccountL["LinkAccountSignInHint"]</SbAlert>
+		}
+
 		<form method="post" @onsubmit="HandleLogin" @formname="login" class="w-full">
 			<AntiforgeryToken />
 			<input type="hidden" name="ReturnUrl" value="@ReturnUrl" />
@@ -76,10 +81,10 @@
 		                       ReturnUrl="@(ReturnUrl ?? "/")" />
 
 		<SbStack Gap="2" Align="SbAlign.Center">
-			<SbLink Href="/account/login-otp">@AccountL["SignInWithCode"]</SbLink>
+			<SbLink Href="@OtpLoginHref">@AccountL["SignInWithCode"]</SbLink>
 			<SbStack Direction="SbStackDirection.Row" Gap="1">
 				<SbText>@L["DontHaveAccount"]</SbText>
-				<SbLink Href="/account/register">@L["Register"]</SbLink>
+				<SbLink Href="@RegisterHref">@L["Register"]</SbLink>
 			</SbStack>
 		</SbStack>
 	</SbStack>
@@ -97,6 +102,15 @@
 	/// </summary>
 	[SupplyParameterFromQuery]
 	public string? ReturnUrl { get; set; }
+
+	[SupplyParameterFromQuery]
+	public bool CreateLink { get; set; }
+
+	private string OtpLoginHref =>
+		LinkAccountHandshake.BuildSignInPath("/account/login-otp", CreateLink, ReturnUrl);
+
+	private string RegisterHref =>
+		LinkAccountHandshake.BuildSignInPath("/account/register", CreateLink, ReturnUrl);
 
 	/// <summary>
 	/// Error message from query string (for redirect-based errors).

@@ -11,5 +11,6 @@ public enum ProviderModelKinds
     AudioTranscription = 4,
     TextToSpeech = 8,
     ImageGeneration = 16,
-    Vision = 32
+    Vision = 32,
+    Decisions = 64
 }

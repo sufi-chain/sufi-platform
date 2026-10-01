@@ -29,9 +29,9 @@ Granular permissions control admin UI and API access.
 - `AI.RAG.Manage` — Manage RAG configuration (reserved for future UI)
 - `AI.RAG.Index` — Start indexing operations
 
-### Test Chat
+### Workspace chat
 
-- `AI.TestChat.Default` — Test Chat page and Testing menu group visibility
+- `SufiAI.WorkspaceChat` — Workspace chat page and menu. Send uses the existing `SufiAI.AI.Chat` permission.
 
 ### MCP tools
 
@@ -52,8 +52,7 @@ Granular permissions control admin UI and API access.
 |-------|------|------------|
 | `/admin/ai/workspaces` | Workspaces | `Workspaces.Default` (create/edit/delete on actions) |
 | `/admin/ai/model-configurations` | Model Configurations | `AI.ManageConfigurations` |
-| `/admin/ai/test-chat` | Test Chat | `TestChat.Default` |
-| `/admin/ai/multimodal-test` | Multi-Modal Test | Menu: `TestChat.Default`; tabs: `AI.Chat`, `.Audio`, `.Vision`, `.Embeddings` |
+| `/panel/admin/ai/chat` | Workspace chat | `WorkspaceChat.Default` |
 | `/admin/ai/usage-analytics` | Usage Analytics | `AI.ViewUsage` |
 | `/admin/ai/rag` | RAG Search | `RAG.Default` |
 | `/admin/ai/indexing-status` | Indexing Status | `RAG.Default` |
@@ -69,7 +68,7 @@ AI
 ├── Workspaces (Default, Create, Edit, Delete)
 ├── AI (Default, Chat, Audio, Vision, Embeddings, FunctionCalling, ManageConfigurations, ViewUsage)
 ├── RAG (Default, Manage, Index)
-├── TestChat (Default)
+├── WorkspaceChat (Default)
 ├── MCPTools (Default, Execute, Manage)
 └── MCPServers (Default, Create, Edit, Delete)
 ```
@@ -84,13 +83,13 @@ Grant all `AI.*` permissions.
 
 - `Workspaces.Default`, `Create`, `Edit`
 - `AI.ManageConfigurations`, `AI.ViewUsage`
-- `TestChat.Default`, `RAG.Default`, `MCPServers.*`
+- `WorkspaceChat.Default`, `RAG.Default`, `MCPServers.*`
 
 ### Developer / integrator
 
 - `Workspaces.Default`
 - `AI.Chat`, `AI.Audio`, `AI.Vision`, `AI.Embeddings`
-- `TestChat.Default`, `RAG.Default`, `MCPTools.Default`, `MCPTools.Execute`
+- `WorkspaceChat.Default`, `AI.Chat`, `RAG.Default`, `MCPTools.Default`, `MCPTools.Execute`
 
 ### End user (via product module)
 

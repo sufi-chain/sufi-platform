@@ -1,3 +1,4 @@
+using System.Reflection;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
@@ -39,11 +40,15 @@ public class TagsMigrationTests
         context.Database.HasPendingModelChanges().ShouldBeFalse();
         var script = context.GetService<IMigrator>().GenerateScript(
             fromMigration: null,
-            toMigration: "20260825171531_InitialTags",
+            toMigration: MigrationId<InitialTags>(),
             MigrationsSqlGenerationOptions.Idempotent);
         script.ShouldContain("[__EFMigrationsHistory_Tags]");
         script.ShouldContain("CREATE TABLE [SufiTags.Relations]");
         script.ShouldContain("CREATE TABLE [SufiTags.RelationMutationReceipts]");
         script.ShouldNotContain("DROP TABLE");
     }
+
+    private static string MigrationId<TMigration>()
+        where TMigration : Migration
+        => typeof(TMigration).GetCustomAttribute<MigrationAttribute>()!.Id;
 }

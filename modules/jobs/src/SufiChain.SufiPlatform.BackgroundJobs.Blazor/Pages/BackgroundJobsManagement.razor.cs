@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using SufiChain.SufiBlazor.Components;
 using SufiChain.SufiPlatform.BackgroundJobs.Dtos;
+using SufiChain.SufiPlatform.BackgroundJobs.Hooshvare;
 using SufiChain.SufiPlatform.UI.Layout;
 using SufiChain.SufiBlazor.Components.Data;
 using SufiChain.SufiBlazor.Contracts.Data;
@@ -272,5 +273,26 @@ public partial class BackgroundJobsManagement : BackgroundJobsComponentBase
             BackgroundJobPriority.Low => SbColor.Secondary,
             _ => SbColor.Default
         };
+    }
+
+    private IReadOnlyDictionary<string, string> BuildHooshvareContext()
+    {
+        var context = new Dictionary<string, string>(StringComparer.Ordinal);
+        if (_selectedJob != null)
+        {
+            context[JobsInvestigatorHooshvareKeys.Context.JobId] = _selectedJob.Id.ToString();
+            if (!string.IsNullOrWhiteSpace(_selectedJob.JobName))
+            {
+                context[JobsInvestigatorHooshvareKeys.Context.JobName] = _selectedJob.JobName;
+            }
+
+            context[JobsInvestigatorHooshvareKeys.Context.Status] = _selectedJob.IsAbandoned ? "abandoned" : "active";
+        }
+        else if (!string.IsNullOrWhiteSpace(_jobName))
+        {
+            context[JobsInvestigatorHooshvareKeys.Context.JobName] = _jobName;
+        }
+
+        return context;
     }
 }

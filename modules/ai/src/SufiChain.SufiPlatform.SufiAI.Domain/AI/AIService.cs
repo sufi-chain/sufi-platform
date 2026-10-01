@@ -27,6 +27,8 @@ public class AIService : DomainService, IAIService, ITransientDependency
     private readonly IWorkspaceRuntimeConfigurationResolver _runtimeConfigurationResolver;
     private readonly IAIUsageRecorder _usageRecorder;
     private readonly IEnumerable<IAIProvider> _providers;
+    private readonly IEnumerable<IAiProviderProfile> _profiles;
+    private readonly IModelEndpointLookup _endpointLookup;
     private readonly IFeatureChecker _featureChecker;
     private readonly ILogger<AIService> _logger;
 
@@ -35,6 +37,8 @@ public class AIService : DomainService, IAIService, ITransientDependency
         IWorkspaceRuntimeConfigurationResolver runtimeConfigurationResolver,
         IAIUsageRecorder usageRecorder,
         IEnumerable<IAIProvider> providers,
+        IEnumerable<IAiProviderProfile> profiles,
+        IModelEndpointLookup endpointLookup,
         IFeatureChecker featureChecker,
         ILogger<AIService> logger)
     {
@@ -42,6 +46,8 @@ public class AIService : DomainService, IAIService, ITransientDependency
         _runtimeConfigurationResolver = runtimeConfigurationResolver;
         _usageRecorder = usageRecorder;
         _providers = providers;
+        _profiles = profiles;
+        _endpointLookup = endpointLookup;
         _featureChecker = featureChecker;
         _logger = logger;
     }
@@ -233,6 +239,7 @@ public class AIService : DomainService, IAIService, ITransientDependency
                 response.UsageUnavailableReason,
                 stopwatch.ElapsedMilliseconds,
                 isSuccess: true,
+                audioSeconds: response.BilledSeconds,
                 cancellationToken: cancellationToken);
 
             return response;
@@ -282,6 +289,7 @@ public class AIService : DomainService, IAIService, ITransientDependency
                 ProviderDidNotReturnUsage,
                 stopwatch.ElapsedMilliseconds,
                 isSuccess: true,
+                characterCount: request.Text?.Length,
                 cancellationToken: cancellationToken);
 
             return response;
@@ -351,6 +359,34 @@ public class AIService : DomainService, IAIService, ITransientDependency
                 errorMessage: FormatLoggedError(ex),
                 cancellationToken: cancellationToken);
 
+            throw;
+        }
+    }
+
+    public async Task<ImageGenerationResponse> GenerateImageAsync(
+        ImageGenerationRequest request,
+        CancellationToken cancellationToken = default)
+    {
+        var (workspace, configuration, provider, resolved) = await PrepareRequestAsync(
+            request.WorkspaceName,
+            AICapabilityType.ImageGeneration,
+            cancellationToken);
+
+        var stopwatch = Stopwatch.StartNew();
+
+        try
+        {
+            var response = await provider.GenerateImageAsync(workspace, configuration, request, cancellationToken);
+            stopwatch.Stop();
+            await LogUsageAsync(resolved, AICapabilityType.ImageGeneration, null, null, null,
+                UsageUnavailable, stopwatch.ElapsedMilliseconds, true, imageCount: 1, cancellationToken: cancellationToken);
+            return response;
+        }
+        catch (Exception ex)
+        {
+            stopwatch.Stop();
+            await LogUsageAsync(resolved, AICapabilityType.ImageGeneration, null, null, null,
+                UsageUnavailable, stopwatch.ElapsedMilliseconds, false, FormatLoggedError(ex), cancellationToken: cancellationToken);
             throw;
         }
     }
@@ -429,7 +465,7 @@ public class AIService : DomainService, IAIService, ITransientDependency
         {
             stopwatch.Stop();
             await LogUsageAsync(resolved, AICapabilityType.WebSearch, null, null, null,
-                UsageUnavailable, stopwatch.ElapsedMilliseconds, false, FormatLoggedError(ex), cancellationToken);
+                UsageUnavailable, stopwatch.ElapsedMilliseconds, false, FormatLoggedError(ex), cancellationToken: cancellationToken);
             throw;
         }
     }
@@ -455,7 +491,7 @@ public class AIService : DomainService, IAIService, ITransientDependency
         {
             stopwatch.Stop();
             await LogUsageAsync(resolved, AICapabilityType.WebFetch, null, null, null,
-                UsageUnavailable, stopwatch.ElapsedMilliseconds, false, FormatLoggedError(ex), cancellationToken);
+                UsageUnavailable, stopwatch.ElapsedMilliseconds, false, FormatLoggedError(ex), cancellationToken: cancellationToken);
             throw;
         }
     }
@@ -482,7 +518,8 @@ public class AIService : DomainService, IAIService, ITransientDependency
             {
                 ModelConfigurationId = request.ModelConfigurationId
             },
-            cancellationToken);
+            cancellationToken,
+            request.RequestedApiMode);
     }
 
     private async Task<(Workspace workspace, AIModelConfiguration configuration, IAIProvider provider, WorkspaceRuntimeConfiguration resolved)> PrepareRequestAsync(
@@ -501,7 +538,8 @@ public class AIService : DomainService, IAIService, ITransientDependency
         string workspaceName,
         AICapabilityType capabilityType,
         AIModelRouteSelection selection,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken,
+        OpenAIApiMode? requestedApiMode = null)
     {
         await CheckFeatureAsync(capabilityType);
         _logger.LogDebug(
@@ -519,8 +557,20 @@ public class AIService : DomainService, IAIService, ITransientDependency
         _runtimeConfigurationResolver.EnsureReady(resolved);
         var workspace = resolved.Workspace;
         var configuration = resolved.ToRequestModelConfiguration();
+        if (capabilityType is AICapabilityType.ChatCompletion or AICapabilityType.VisionAnalysis)
+        {
+            await ApplySendTimeApiModeAsync(
+                workspace,
+                configuration,
+                selection.RequiresToolCalling,
+                requestedApiMode,
+                cancellationToken);
+        }
 
-        var provider = _providers.FirstOrDefault(p => p.ProviderType == workspace.Provider);
+        var profile = AiProviderProfiles.Find(_profiles, workspace.Provider);
+        var provider = profile == null
+            ? _providers.FirstOrDefault(item => item.ProviderType == workspace.Provider)
+            : _providers.FirstOrDefault(item => item.CapabilityKind == profile.CapabilityKind);
         if (provider == null)
         {
             _logger.LogDebug(
@@ -554,6 +604,45 @@ public class AIService : DomainService, IAIService, ITransientDependency
             configuration.ModelId);
 
         return (workspace, configuration, provider, resolved);
+    }
+
+    private async Task ApplySendTimeApiModeAsync(
+        Workspace workspace,
+        AIModelConfiguration configuration,
+        bool requiresTools,
+        OpenAIApiMode? requestedApiMode,
+        CancellationToken cancellationToken)
+    {
+        var profile = AiProviderProfiles.Find(_profiles, workspace.Provider);
+        var endpoints = await _endpointLookup.GetSupportedEndpointsAsync(
+            workspace.Provider,
+            configuration.ModelId,
+            cancellationToken);
+        var mode = OpenAIApiModePolicy.Select(
+            profile?.SupportsApiMode(OpenAIApiMode.Responses) == true,
+            endpoints,
+            requiresTools,
+            requestedApiMode);
+        if (configuration.OpenAIApiMode == mode)
+        {
+            return;
+        }
+
+        configuration.UpdateConfiguration(
+            configuration.ModelId,
+            configuration.ApiEndpoint,
+            configuration.ApiKey,
+            configuration.Priority,
+            mode,
+            configuration.InputPrice,
+            configuration.OutputPrice,
+            configuration.Dimensions,
+            configuration.DisplayName,
+            configuration.IsUserSelectable,
+            configuration.Description,
+            configuration.MaxContextTokens,
+            configuration.InputPriceUnit,
+            configuration.OutputPriceUnit);
     }
 
     private async Task CheckFeatureAsync(AICapabilityType capabilityType)
@@ -592,6 +681,9 @@ public class AIService : DomainService, IAIService, ITransientDependency
         long latencyMs,
         bool isSuccess,
         string? errorMessage = null,
+        decimal? audioSeconds = null,
+        int? characterCount = null,
+        int? imageCount = null,
         CancellationToken cancellationToken = default)
     {
         return _usageRecorder.RecordAsync(
@@ -602,6 +694,9 @@ public class AIService : DomainService, IAIService, ITransientDependency
                 InputTokens = inputTokens,
                 OutputTokens = outputTokens,
                 TotalTokens = totalTokens,
+                AudioSeconds = audioSeconds,
+                CharacterCount = characterCount,
+                ImageCount = imageCount,
                 UsageUnavailableReason = usageUnavailableReason,
                 LatencyMs = latencyMs,
                 IsSuccess = isSuccess,

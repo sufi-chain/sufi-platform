@@ -1,0 +1,163 @@
+.workspace-model-selector--compact-row {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    max-width: 100%;
+    min-width: 0;
+}
+
+.workspace-model-selector--compact {
+    display: inline-flex;
+    align-items: center;
+    max-width: min(14rem, 100%);
+    position: relative;
+    z-index: 1;
+}
+
+.workspace-model-selector__effort-mark {
+    box-sizing: border-box;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    width: 1.375rem;
+    height: 1.375rem;
+    border-radius: 0.4rem;
+    background: color-mix(in srgb, var(--sb-color-primary) 16%, transparent);
+    color: var(--sb-color-primary);
+}
+
+.workspace-model-selector__effort-mark ::deep .sb-icon {
+    width: 0.95rem;
+    height: 0.95rem;
+    display: block;
+}
+
+.workspace-model-selector__trigger {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    box-sizing: border-box;
+    min-height: var(--chat-composer-tool-size, 2.75rem);
+    max-width: min(14rem, 100%);
+    padding: 0.2rem 0.55rem 0.2rem 0.3rem;
+    border: 1px solid var(--sb-color-border-subtle, var(--sb-color-border));
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--sb-color-surface, transparent) 88%, transparent);
+    color: var(--sb-color-text, inherit);
+    cursor: pointer;
+}
+
+.workspace-model-selector__trigger:hover,
+.workspace-model-selector__trigger:focus-visible,
+.workspace-model-selector__trigger--open {
+    background: color-mix(in srgb, var(--sb-color-fg, currentColor) 8%, transparent);
+    border-color: var(--sb-color-border);
+    outline: none;
+}
+
+.workspace-model-selector__trigger:focus-visible {
+    box-shadow: var(--sb-focus-ring, 0 0 0 2px var(--sb-color-primary));
+}
+
+.workspace-model-selector__trigger:disabled {
+    cursor: default;
+    opacity: 0.72;
+}
+
+.workspace-model-selector__copy {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    min-width: 0;
+    line-height: 1.15;
+}
+
+.workspace-model-selector__label {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 8.5rem;
+    font-size: 0.75rem;
+    font-weight: var(--sb-font-weight-medium, 500);
+}
+
+.workspace-model-selector__menu {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    min-width: min(18rem, calc(100vw - 1.5rem));
+    max-width: min(22rem, calc(100vw - 1.5rem));
+    padding: 0.375rem;
+}
+
+.workspace-model-selector__option {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    width: 100%;
+    min-height: 2.75rem;
+    padding: 0.4rem 0.55rem;
+    border: 0;
+    border-radius: var(--sb-radius-md, 0.5rem);
+    background: transparent;
+    color: inherit;
+    text-align: start;
+    cursor: pointer;
+}
+
+.workspace-model-selector__row {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    width: 100%;
+    min-width: 0;
+    text-align: start;
+}
+
+.workspace-model-selector__option-copy {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    gap: 0.1rem;
+}
+
+.workspace-model-selector__option-name {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 0.875rem;
+}
+
+.workspace-model-selector__option-meta {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 0.6875rem;
+    color: var(--sb-color-text-muted, var(--sb-color-muted));
+}
+
+.workspace-model-selector__option:hover,
+.workspace-model-selector__option:focus-visible {
+    background: color-mix(in srgb, var(--sb-color-fg, currentColor) 8%, transparent);
+    outline: none;
+}
+
+.workspace-model-selector__option--selected {
+    background: color-mix(in srgb, var(--sb-color-primary, currentColor) 12%, transparent);
+}
+
+.workspace-model-selector__option:disabled {
+    cursor: default;
+    opacity: 0.6;
+}
+
+@media (pointer: fine) {
+    .workspace-model-selector__trigger {
+        min-height: 2rem;
+    }
+
+    .workspace-model-selector__option {
+        min-height: 2.5rem;
+    }
+}

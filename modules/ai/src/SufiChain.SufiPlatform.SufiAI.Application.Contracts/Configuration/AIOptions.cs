@@ -28,16 +28,32 @@ public class AIOptions
     public DefaultWorkspaceSeedOptions DefaultWorkspace { get; set; } = new();
 
     /// <summary>
-    /// TTL for cached OpenAI-compatible <c>/models</c> discovery used by admin workspace UI.
-    /// Set to 0 to disable caching. Default is 300 seconds.
+    /// Shortest TTL for provider <c>/models</c> discovery. Positive configuration below this is raised to 12 hours.
     /// </summary>
-    public int ProviderModelDiscoveryCacheSeconds { get; set; } = 300;
+    public const int MinimumProviderModelDiscoveryCacheSeconds = 12 * 60 * 60;
 
     /// <summary>
-    /// Salt mixed into the credential fingerprint for the provider model-list cache key.
-    /// The API key itself is never stored in cache.
+    /// TTL for cached OpenAI-compatible <c>/models</c> discovery used by admin workspace UI.
+    /// The cache key is the normalized connection base URL. Set to 0 to disable caching.
+    /// Values above 0 are at least <see cref="MinimumProviderModelDiscoveryCacheSeconds"/>.
+    /// </summary>
+    public int ProviderModelDiscoveryCacheSeconds { get; set; } = MinimumProviderModelDiscoveryCacheSeconds;
+
+    /// <summary>
+    /// TTL for the shared public model catalog. Set to 0 to disable caching. Default is 3600 seconds.
+    /// </summary>
+    public int ProviderCatalogCacheSeconds { get; set; } = 3600;
+
+    /// <summary>
+    /// Retained so existing <c>SufiAI:ProviderModelCacheSalt</c> configuration still binds.
+    /// Provider model discovery is keyed by base URL and does not store the API key.
     /// </summary>
     public string ProviderModelCacheSalt { get; set; } = "SufiAI.ProviderModelDiscovery";
+
+    /// <summary>
+    /// Name kept for existing configuration. Catalog selection now follows the workspace provider profile.
+    /// </summary>
+    public string ModelCatalogProvider { get; set; } = "OpenRouter";
 
     /// <summary>
     /// Text formats accepted for knowledge libraries (converted to Markdown before RAG indexing).

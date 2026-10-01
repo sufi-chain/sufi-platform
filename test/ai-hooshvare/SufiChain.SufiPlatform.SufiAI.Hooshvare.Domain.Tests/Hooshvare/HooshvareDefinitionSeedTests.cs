@@ -152,8 +152,6 @@ public class HooshvareDefinitionSeedTests
 
     [InlineData("test.assistant", "SufiAI.Hooshvare", "OtherPurpose", HooshvareKind.Assistant)]
 
-    [InlineData("test.assistant", "SufiAI.Hooshvare", "Assistant", HooshvareKind.Agent)]
-
     public void Seed_Identity_Drift_Should_Be_Rejected(
 
         string key,
@@ -185,6 +183,34 @@ public class HooshvareDefinitionSeedTests
 
 
         exception.Code.ShouldBe(AIHooshvareErrorCodes.SeedIdentityMismatch);
+
+    }
+
+
+
+    [Fact]
+
+    public void Seed_Upgrade_Should_Apply_Kind()
+
+    {
+
+        var definition = CreateDefinition(defaultEnabled: true);
+
+        definition.TryApplySeed(CreateSeed(entityVersion: 1)).ShouldBeTrue();
+
+        definition.Kind.ShouldBe(HooshvareKind.Assistant);
+
+
+
+        var upgraded = CreateSeed(entityVersion: 2);
+
+        upgraded.Kind = HooshvareKind.Copilot;
+
+
+
+        definition.TryApplySeed(upgraded).ShouldBeTrue();
+
+        definition.Kind.ShouldBe(HooshvareKind.Copilot);
 
     }
 

@@ -2,6 +2,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Localization;
 using SufiChain.SufiPlatform.Account.Localization;
 using SufiChain.SufiPlatform.Account.Templates;
+using SufiChain.SufiPlatform.SufiCom;
 using SufiChain.SufiPlatform.SufiCom.Email;
 using SufiChain.SufiPlatform.TextTemplating;
 using Volo.Abp.DependencyInjection;
@@ -46,7 +47,11 @@ public class EmailVerificationChannelSender : IVerificationChannelSender, ITrans
             message.Recipient,
             Localizer[subjectKey],
             body,
-            isBodyHtml: true);
+            isBodyHtml: true,
+            additionalArgs: new AdditionalMessageSendingArgs
+            {
+                FromDisplayName = Localizer["EmailSender:DisplayName"]
+            });
     }
 
     protected virtual (string TemplateName, string SubjectKey) GetTemplateInfo(VerificationPurpose purpose)

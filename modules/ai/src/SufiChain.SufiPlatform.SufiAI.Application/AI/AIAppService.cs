@@ -9,6 +9,7 @@ using SufiChain.SufiPlatform.SufiAI;
 using SufiChain.SufiPlatform.SufiAI.Features;
 using SufiChain.SufiPlatform.SufiAI.Permissions;
 using SufiChain.SufiPlatform.SufiAI.Workspaces;
+using Volo.Abp.Domain.Repositories;
 using Volo.Abp.Security.Encryption;
 using SufiChain.SufiPlatform.Application.Services;
 using SufiChain.SufiPlatform.SufiAI.Storage;
@@ -279,15 +280,24 @@ public class AIAppService : SufiApplicationService, IAIAppService
             input.ApiEndpoint,
             EncryptApiKey(input.ApiKey),
             input.Priority,
-            input.OpenAIApiMode,
-            input.InputCostPer1MTokens,
-            input.OutputCostPer1MTokens,
+            OpenAIApiMode.ChatCompletions,
+            input.InputPrice,
+            input.OutputPrice,
             input.Dimensions,
             input.DisplayName,
             input.IsUserSelectable,
             input.Description,
-            AIModelConfiguration.NormalizeMaxContextTokens(input.MaxContextTokens)
+            AIModelConfiguration.NormalizeMaxContextTokens(input.MaxContextTokens),
+            input.InputPriceUnit,
+            input.OutputPriceUnit
         );
+        configuration.SetChatCapabilities(
+            input.AcceptsImageInput,
+            input.AcceptsFileInput,
+            input.SupportsReasoning,
+            input.ReasoningEfforts,
+            input.DefaultReasoningEffort,
+            input.CapabilitySource);
 
         await _configurationRepository.InsertAsync(configuration);
         await ClearWorkspaceRuntimeCacheAsync(input.WorkspaceId);
@@ -302,24 +312,35 @@ public class AIAppService : SufiApplicationService, IAIAppService
         var configuration = await _configurationRepository.GetAsync(id);
         await EnsureWorkspaceEditableAsync(configuration.WorkspaceId);
 
-        var apiKeyToUpdate = string.IsNullOrWhiteSpace(input.ApiKey)
-            ? configuration.ApiKey
-            : EncryptApiKey(input.ApiKey);
+        var apiKeyToUpdate = input.ClearApiKey
+            ? null
+            : string.IsNullOrWhiteSpace(input.ApiKey)
+                ? configuration.ApiKey
+                : EncryptApiKey(input.ApiKey);
 
         configuration.UpdateConfiguration(
             input.ModelId,
             input.ApiEndpoint,
             apiKeyToUpdate,
             input.Priority,
-            input.OpenAIApiMode,
-            input.InputCostPer1MTokens,
-            input.OutputCostPer1MTokens,
+            OpenAIApiMode.ChatCompletions,
+            input.InputPrice,
+            input.OutputPrice,
             input.Dimensions,
             input.DisplayName,
             input.IsUserSelectable,
             input.Description,
-            AIModelConfiguration.NormalizeMaxContextTokens(input.MaxContextTokens)
+            AIModelConfiguration.NormalizeMaxContextTokens(input.MaxContextTokens),
+            input.InputPriceUnit,
+            input.OutputPriceUnit
         );
+        configuration.SetChatCapabilities(
+            input.AcceptsImageInput,
+            input.AcceptsFileInput,
+            input.SupportsReasoning,
+            input.ReasoningEfforts,
+            input.DefaultReasoningEffort,
+            input.CapabilitySource);
 
         await _configurationRepository.UpdateAsync(configuration);
         await ClearWorkspaceRuntimeCacheAsync(configuration.WorkspaceId);
@@ -329,10 +350,40 @@ public class AIAppService : SufiApplicationService, IAIAppService
 
     [Authorize(AIPermissions.AI.ManageConfigurations)]
     [RequiresFeature(SufiAIFeatures.Workspaces)]
+    public async Task SetWorkspaceDefaultModelConfigurationAsync(Guid id)
+    {
+        Guid workspaceId;
+        using (_configurationRepository.DisableTracking())
+        {
+            var configuration = await _configurationRepository.GetAsync(id);
+            workspaceId = configuration.WorkspaceId;
+        }
+
+        var workspace = await _workspaceRepository.GetAsync(workspaceId, includeDetails: true);
+        if (workspace.IsInherited)
+        {
+            throw new BusinessException(AIErrorCodes.InheritedWorkspaceReadOnly)
+                .WithData("WorkspaceId", workspaceId);
+        }
+
+        workspace.SetDefaultModelConfiguration(id);
+        await _workspaceRepository.UpdateAsync(workspace, autoSave: true);
+        await _workspaceSyncService.ClearWorkspaceCache(workspace.Name);
+    }
+
+    [Authorize(AIPermissions.AI.ManageConfigurations)]
+    [RequiresFeature(SufiAIFeatures.Workspaces)]
     public async Task DeleteModelConfigurationAsync(Guid id)
     {
         var configuration = await _configurationRepository.GetAsync(id);
         await EnsureWorkspaceEditableAsync(configuration.WorkspaceId);
+        if (await IsWorkspaceDefaultConfigurationAsync(configuration))
+        {
+            throw new BusinessException(AIErrorCodes.CannotDeleteWorkspaceDefault)
+                .WithData("ModelConfigurationId", configuration.Id)
+                .WithData("ModelId", configuration.ModelId);
+        }
+
         var workspaceId = configuration.WorkspaceId;
         await _configurationRepository.DeleteAsync(id);
         await ClearWorkspaceRuntimeCacheAsync(workspaceId);
@@ -431,6 +482,20 @@ public class AIAppService : SufiApplicationService, IAIAppService
         return _stringEncryptor.Encrypt(apiKey);
     }
 
+    private async Task<bool> IsWorkspaceDefaultConfigurationAsync(AIModelConfiguration configuration)
+    {
+        if (!configuration.IsEnabled || configuration.CapabilityType != AICapabilityType.ChatCompletion)
+        {
+            return false;
+        }
+
+        var enabledChatRoutes = await _configurationRepository.GetEnabledByCapabilityAsync(
+            configuration.WorkspaceId,
+            AICapabilityType.ChatCompletion);
+        return !enabledChatRoutes.Any(item =>
+            item.Id != configuration.Id && item.Priority < configuration.Priority);
+    }
+
     private async Task EnsureWorkspaceEditableAsync(Guid workspaceId)
     {
         var workspace = await _workspaceRepository.GetAsync(workspaceId);
@@ -474,8 +539,16 @@ public static partial class AIModelConfigurationMapper
             Priority = entity.Priority,
             OpenAIApiMode = entity.OpenAIApiMode,
             MaxContextTokens = AIModelConfiguration.NormalizeMaxContextTokens(entity.MaxContextTokens),
-            InputCostPer1MTokens = entity.InputCostPer1MTokens,
-            OutputCostPer1MTokens = entity.OutputCostPer1MTokens,
+            InputPrice = entity.InputPrice,
+            InputPriceUnit = entity.InputPriceUnit,
+            OutputPrice = entity.OutputPrice,
+            OutputPriceUnit = entity.OutputPriceUnit,
+            AcceptsImageInput = entity.AcceptsImageInput,
+            AcceptsFileInput = entity.AcceptsFileInput,
+            SupportsReasoning = entity.SupportsReasoning,
+            ReasoningEfforts = entity.ReasoningEfforts,
+            DefaultReasoningEffort = entity.DefaultReasoningEffort,
+            CapabilitySource = entity.CapabilitySource,
             Dimensions = entity.Dimensions
         };
     }
@@ -497,6 +570,9 @@ public static partial class AIUsageLogMapper
             InputTokens = entity.InputTokens,
             OutputTokens = entity.OutputTokens,
             TotalTokens = entity.TotalTokens,
+            AudioSeconds = entity.AudioSeconds,
+            CharacterCount = entity.CharacterCount,
+            ImageCount = entity.ImageCount,
             HasTokenUsage = entity.HasTokenUsage,
             UsageUnavailableReason = entity.UsageUnavailableReason,
             EstimatedCost = entity.EstimatedCost,

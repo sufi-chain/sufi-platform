@@ -24,6 +24,7 @@
     <!-- Project References -->
     <ProjectReference Include="..\SufiChain.SufiPlatform.Identity.Application.Contracts\SufiChain.SufiPlatform.Identity.Application.Contracts.csproj" />
     <ProjectReference Include="..\..\..\..\framework\SufiChain.SufiPlatform.Data\SufiChain.SufiPlatform.Data.csproj" />
+    <ProjectReference Include="..\..\..\..\..\pro-modules\ai-hooshvare\src\SufiChain.SufiPlatform.SufiAI.Hooshvare.Application\SufiChain.SufiPlatform.SufiAI.Hooshvare.Application.csproj" />
   </ItemGroup>
 
 </Project>

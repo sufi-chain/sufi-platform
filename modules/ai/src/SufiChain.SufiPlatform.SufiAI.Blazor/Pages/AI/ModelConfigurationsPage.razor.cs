@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 using SufiChain.SufiPlatform.SufiAI;
@@ -17,6 +18,7 @@ public partial class ModelConfigurationsPage : AIComponentBase
         public const string LoadWorkspace = "load-workspace";
         public const string LoadConfigurations = "load-configurations";
         public const string DeleteConfiguration = "delete-configuration";
+        public const string SetWorkspaceDefault = "set-workspace-default";
     }
 
     [Parameter]
@@ -120,9 +122,54 @@ public partial class ModelConfigurationsPage : AIComponentBase
         await LoadConfigurationsAsync();
     }
 
+    private bool IsWorkspaceDefault(AIModelConfigurationDto configuration)
+    {
+        if (!configuration.IsEnabled || configuration.CapabilityType != AICapabilityType.ChatCompletion)
+        {
+            return false;
+        }
+
+        return !_configurations.Any(item =>
+            item.Id != configuration.Id
+            && item.IsEnabled
+            && item.CapabilityType == AICapabilityType.ChatCompletion
+            && item.Priority < configuration.Priority);
+    }
+
+    private bool CanSetWorkspaceDefault(AIModelConfigurationDto configuration)
+    {
+        return !_readOnly
+            && configuration.IsEnabled
+            && configuration.CapabilityType == AICapabilityType.ChatCompletion
+            && !IsWorkspaceDefault(configuration);
+    }
+
+    private async Task SetWorkspaceDefaultAsync(AIModelConfigurationDto configuration)
+    {
+        if (!CanSetWorkspaceDefault(configuration))
+        {
+            return;
+        }
+
+        var confirmed = await Message.ConfirmAsync(
+            L["SetAsWorkspaceDefaultConfirmation", FormatModelLabel(configuration)],
+            L["SetAsWorkspaceDefault"]);
+        if (!confirmed)
+        {
+            return;
+        }
+
+        await ExecuteWithLoadingAsync(async () =>
+        {
+            await AIAppService.SetWorkspaceDefaultModelConfigurationAsync(configuration.Id);
+            await Message.SuccessAsync(L["WorkspaceDefaultUpdated"]);
+            await LoadConfigurationsAsync();
+        }, LoadingKeys.SetWorkspaceDefault);
+    }
+
     private async Task DeleteConfigurationAsync(AIModelConfigurationDto configuration)
     {
-        if (_readOnly)
+        if (_readOnly || IsWorkspaceDefault(configuration))
         {
             return;
         }
@@ -164,25 +211,57 @@ public partial class ModelConfigurationsPage : AIComponentBase
             : localized.Value;
     }
 
-    private string FormatApiMode(AIModelConfigurationDto configuration)
-    {
-        if (configuration.CapabilityType is not (AICapabilityType.ChatCompletion or AICapabilityType.VisionAnalysis))
-        {
-            return L["NotApplicable"];
-        }
-
-        return configuration.OpenAIApiMode == OpenAIApiMode.Responses
-            ? L["Responses"]
-            : L["ChatCompletions"];
-    }
-
-    private string FormatRouteCost(decimal? value)
+    private string FormatRoutePrice(decimal? value, AIPriceUnit unit)
     {
         if (!value.HasValue)
         {
-            return L["InheritWorkspace"];
+            return unit == AIPriceUnit.PerMillionTokens ? L["InheritWorkspace"] : L["NotPriced"];
         }
 
-        return value.Value.ToString("0.####", CultureInfo.InvariantCulture);
+        return value.Value.ToString("0.####", CultureInfo.InvariantCulture) + " " + PriceSuffix(unit);
+    }
+
+    private string FormatOutputPrice(AIModelConfigurationDto route)
+    {
+        if (!route.OutputPrice.HasValue && route.InputPriceUnit != AIPriceUnit.PerMillionTokens)
+        {
+            return L["NotPriced"];
+        }
+
+        return FormatRoutePrice(route.OutputPrice, route.OutputPriceUnit);
+    }
+
+    private string PriceSuffix(AIPriceUnit unit) => unit switch
+    {
+        AIPriceUnit.PerMinute => L["PriceSuffixMinute"],
+        AIPriceUnit.PerHour => L["PriceSuffixHour"],
+        AIPriceUnit.PerMillionCharacters => L["PriceSuffixMillionCharacters"],
+        AIPriceUnit.PerImage => L["PriceSuffixImage"],
+        AIPriceUnit.PerRequest => L["PriceSuffixRequest"],
+        _ => L["PriceSuffixMillionTokens"]
+    };
+
+    private static string FormatModelLabel(AIModelConfigurationDto route) =>
+        string.IsNullOrWhiteSpace(route.DisplayName) ? route.ModelId : route.DisplayName;
+
+    private string FormatChatFlags(AIModelConfigurationDto route)
+    {
+        var parts = new List<string>();
+        if (route.AcceptsImageInput == true)
+        {
+            parts.Add(L["AcceptsImageInput"]);
+        }
+
+        if (route.AcceptsFileInput == true)
+        {
+            parts.Add(L["AcceptsFileInput"]);
+        }
+
+        if (route.SupportsReasoning == true)
+        {
+            parts.Add(L["SupportsReasoning"]);
+        }
+
+        return string.Join(" · ", parts);
     }
 }

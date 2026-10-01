@@ -10,7 +10,7 @@ public class SufiComTemplateEditorHooshvareSeedTests
     [Fact]
     public void Template_Editor_Seed_Should_Require_Current_Context_In_All_Cultures()
     {
-        SufiComTemplateEditorHooshvareKeys.EntityVersion.ShouldBe(0);
+        SufiComTemplateEditorHooshvareKeys.EntityVersion.ShouldBe(1);
 
         foreach (var culture in new[] { "en", "fa", "ar", "es" })
         {

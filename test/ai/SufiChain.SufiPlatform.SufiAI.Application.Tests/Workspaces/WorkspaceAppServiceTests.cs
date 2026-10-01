@@ -143,6 +143,7 @@ public class WorkspaceAppServiceTests : SufiAITestBase<SufiAIApplicationTestModu
         // Assert
         
         result.Model.ShouldBe(input.Model);
+        result.Provider.ShouldBe(AIProviderType.OpenAI);
         result.IsActive.ShouldBeFalse();
 
         var updated = await _workspaceRepository.GetAsync(workspaceId, includeDetails: true);
@@ -150,6 +151,41 @@ public class WorkspaceAppServiceTests : SufiAITestBase<SufiAIApplicationTestModu
         chatConfiguration.ModelId.ShouldBe(input.Model);
         chatConfiguration.ApiEndpoint.ShouldBe(input.ApiBaseUrl);
         chatConfiguration.OpenAIApiMode.ShouldBe(OpenAIApiMode.ChatCompletions);
+    }
+
+    [Fact]
+    public async Task Should_Persist_Provider_When_Updating_Workspace()
+    {
+        Guid workspaceId = Guid.Empty;
+        await WithUnitOfWorkAsync(async () =>
+        {
+            var workspace = await _workspaceRepository.InsertAsync(new Workspace(
+                Guid.NewGuid(),
+                "provider-update",
+                AIProviderType.OpenAI,
+                "gpt-4"
+            ));
+            workspaceId = workspace.Id;
+        });
+
+        var input = new UpdateWorkspaceDto
+        {
+            Name = "provider-update",
+            Provider = AIProviderType.OpenRouter,
+            Model = "openrouter/free",
+            ModelDisplayName = "sufi-free",
+            ApiBaseUrl = "https://or-gateway.sufichain.com/v1",
+            IsActive = true
+        };
+
+        var result = await _workspaceAppService.UpdateAsync(workspaceId, input);
+
+        result.Provider.ShouldBe(AIProviderType.OpenRouter);
+        result.Model.ShouldBe("openrouter/free");
+        result.ApiBaseUrl.ShouldBe("https://or-gateway.sufichain.com/v1");
+
+        var reloaded = await _workspaceAppService.GetAsync(workspaceId);
+        reloaded.Provider.ShouldBe(AIProviderType.OpenRouter);
     }
 
     [Fact]
@@ -239,8 +275,8 @@ public class WorkspaceAppServiceTests : SufiAITestBase<SufiAIApplicationTestModu
         chat.HasApiEndpoint.ShouldBeTrue();
         chat.HasApiKey.ShouldBeTrue();
         chat.UsesWorkspaceFallback.ShouldBeFalse();
-        result.ToolCapability.IsReady.ShouldBeFalse();
-        result.ToolCapability.FailureCode.ShouldBe(WorkspaceRuntimeFailureCodes.McpApiModeNotSupported);
+        result.ToolCapability.IsReady.ShouldBeTrue();
+        result.ToolCapability.FailureCode.ShouldBeNull();
     }
 
     [Fact]

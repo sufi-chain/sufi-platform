@@ -21,6 +21,8 @@ public class OpenAIChatCompletionRequest
     public double? TopP { get; set; }
 
     public bool Stream { get; set; }
+
+    public string? ReasoningEffort { get; set; }
 }
 
 public class OpenAIChatMessage

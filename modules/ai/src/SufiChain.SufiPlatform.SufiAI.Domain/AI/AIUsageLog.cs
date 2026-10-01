@@ -53,6 +53,15 @@ public class AIUsageLog : CreationAuditedEntity<Guid>, IMultiTenant
     /// </summary>
     public int? TotalTokens { get; protected set; }
 
+    /// <summary>Audio seconds used when the route is priced per minute or per hour.</summary>
+    public decimal? AudioSeconds { get; protected set; }
+
+    /// <summary>Input characters used when the route is priced per million characters.</summary>
+    public int? CharacterCount { get; protected set; }
+
+    /// <summary>Images used when the route is priced per image.</summary>
+    public int? ImageCount { get; protected set; }
+
     public bool HasTokenUsage { get; protected set; }
 
     public string? UsageUnavailableReason { get; protected set; }
@@ -123,7 +132,10 @@ public class AIUsageLog : CreationAuditedEntity<Guid>, IMultiTenant
         int? totalTokens = null,
         bool isCostCalculated = false,
         string? usageUnavailableReason = null,
-        string? costCalculationNote = null
+        string? costCalculationNote = null,
+        decimal? audioSeconds = null,
+        int? characterCount = null,
+        int? imageCount = null
     )
     {
         InputTokens = inputTokens;
@@ -131,8 +143,13 @@ public class AIUsageLog : CreationAuditedEntity<Guid>, IMultiTenant
         TotalTokens = totalTokens ?? (inputTokens.HasValue || outputTokens.HasValue
             ? (inputTokens ?? 0) + (outputTokens ?? 0)
             : null);
+        AudioSeconds = audioSeconds;
+        CharacterCount = characterCount;
+        ImageCount = imageCount;
         HasTokenUsage = InputTokens.HasValue || OutputTokens.HasValue || TotalTokens.HasValue;
-        UsageUnavailableReason = HasTokenUsage ? null : usageUnavailableReason ?? "ProviderDidNotReturnUsage";
+        UsageUnavailableReason = HasTokenUsage || isCostCalculated
+            ? null
+            : usageUnavailableReason ?? "ProviderDidNotReturnUsage";
         LatencyMs = latencyMs;
         EstimatedCost = estimatedCost;
         IsCostCalculated = isCostCalculated;

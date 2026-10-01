@@ -10,6 +10,7 @@
     "EmailSettings": "Email Settings",
     "TimeZoneSettings": "Time Zone Settings",
     "DefaultFromDisplayName": "Default From Display Name",
+    "DefaultFromDisplayName:Hint": "Fallback name when a feature does not set its own. The mailbox address stays the same.",
     "DefaultFromAddress": "Default From Address",
     "SmtpHost": "SMTP Host",
     "SmtpPort": "SMTP Port",

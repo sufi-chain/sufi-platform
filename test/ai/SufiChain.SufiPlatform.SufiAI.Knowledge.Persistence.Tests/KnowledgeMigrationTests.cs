@@ -1,3 +1,4 @@
+using System.Reflection;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
@@ -32,11 +33,15 @@ public class KnowledgeMigrationTests
         context.Database.HasPendingModelChanges().ShouldBeFalse();
         var script = context.GetService<IMigrator>().GenerateScript(
             fromMigration: null,
-            toMigration: "20260907181329_InitialAI",
+            toMigration: MigrationId<InitialAI>(),
             MigrationsSqlGenerationOptions.Idempotent);
         script.ShouldContain("[__EFMigrationsHistory_AI]");
         script.ShouldContain("CREATE TABLE [SufiAI.KnowledgeRelationProposals]");
         script.ShouldContain("CREATE TABLE [SufiAI.KnowledgeRelationApplicationIntents]");
         script.ShouldNotContain("DROP TABLE");
     }
+
+    private static string MigrationId<TMigration>()
+        where TMigration : Migration
+        => typeof(TMigration).GetCustomAttribute<MigrationAttribute>()!.Id;
 }

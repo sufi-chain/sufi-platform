@@ -25,6 +25,7 @@ public class MCPToolExecutionManager : IMCPToolExecutor, ITransientDependency
     private readonly IWorkspaceRepository _workspaceRepository;
     private readonly ICurrentUser _currentUser;
     private readonly IFeatureChecker _featureChecker;
+    private readonly IEnumerable<IMcpToolDecisionGate> _gates;
     private readonly ILogger<MCPToolExecutionManager> _logger;
     
     public MCPToolExecutionManager(
@@ -32,12 +33,14 @@ public class MCPToolExecutionManager : IMCPToolExecutor, ITransientDependency
         IWorkspaceRepository workspaceRepository,
         ICurrentUser currentUser,
         IFeatureChecker featureChecker,
+        IEnumerable<IMcpToolDecisionGate> gates,
         ILogger<MCPToolExecutionManager> logger)
     {
         _toolRegistry = toolRegistry;
         _workspaceRepository = workspaceRepository;
         _currentUser = currentUser;
         _featureChecker = featureChecker;
+        _gates = gates;
         _logger = logger;
     }
     
@@ -93,7 +96,15 @@ public class MCPToolExecutionManager : IMCPToolExecutor, ITransientDependency
         
         try
         {
-            // Execute the tool
+            foreach (var gate in _gates)
+            {
+                var blockReason = await gate.GetBlockReasonAsync(context, tool.Name, parameters, cancellationToken);
+                if (!string.IsNullOrWhiteSpace(blockReason))
+                {
+                    return MCPToolExecutionResult.CreateFailure(blockReason);
+                }
+            }
+
             var result = await tool.ExecuteAsync(context, parameters, cancellationToken);
             
             if (result.Success)

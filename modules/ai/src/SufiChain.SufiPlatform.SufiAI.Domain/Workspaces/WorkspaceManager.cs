@@ -66,13 +66,15 @@ public class WorkspaceManager : DomainService
                 sourceConfiguration.ApiKey,
                 sourceConfiguration.Priority,
                 sourceConfiguration.OpenAIApiMode,
-                sourceConfiguration.InputCostPer1MTokens,
-                sourceConfiguration.OutputCostPer1MTokens,
+                sourceConfiguration.InputPrice,
+                sourceConfiguration.OutputPrice,
                 sourceConfiguration.Dimensions,
                 sourceConfiguration.DisplayName,
                 sourceConfiguration.IsUserSelectable,
                 sourceConfiguration.Description,
-                sourceConfiguration.MaxContextTokens);
+                sourceConfiguration.MaxContextTokens,
+                sourceConfiguration.InputPriceUnit,
+                sourceConfiguration.OutputPriceUnit);
 
             if (!sourceConfiguration.IsEnabled)
             {

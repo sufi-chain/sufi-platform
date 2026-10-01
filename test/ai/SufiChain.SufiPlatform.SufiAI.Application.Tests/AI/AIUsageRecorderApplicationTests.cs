@@ -31,8 +31,8 @@ public class AIUsageRecorderApplicationTests : SufiAITestBase<SufiAIApplicationT
             route,
             isExplicitSelection: true);
 
-        configuration.InputCostPer1MTokens.ShouldBe(10m);
-        configuration.OutputCostPer1MTokens.ShouldBe(20m);
+        configuration.InputPrice.ShouldBe(10m);
+        configuration.OutputPrice.ShouldBe(20m);
 
         await WithUnitOfWorkAsync(async services =>
         {
@@ -138,8 +138,8 @@ public class AIUsageRecorderApplicationTests : SufiAITestBase<SufiAIApplicationT
                 apiEndpoint: "https://api.example/v1",
                 apiKey: "sk-priced",
                 priority: 0,
-                inputCostPer1MTokens: 10m,
-                outputCostPer1MTokens: 20m,
+                inputPrice: 10m,
+                outputPrice: 20m,
                 isUserSelectable: true);
             workspace.AddModelConfiguration(
                 AICapabilityType.ChatCompletion,

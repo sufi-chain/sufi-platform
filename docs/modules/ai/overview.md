@@ -25,7 +25,7 @@ Under **Administration → AI Management**, pages are grouped as follows:
 |-------|--------|--------------|
 | (standalone) | Workspaces | `/admin/ai/workspaces` |
 | Configuration | Model Configurations | `/admin/ai/model-configurations` |
-| Testing | Test Chat, Multi-Modal Test | `/admin/ai/test-chat`, `.../multimodal-test` |
+| (standalone) | Workspace chat | `/panel/admin/ai/chat` |
 | Analytics | Usage Analytics | `/admin/ai/usage-analytics` |
 | RAG | RAG Search, Indexing Status | `/admin/ai/rag`, `.../indexing-status` |
 | MCP | MCP Tools, MCP Servers | `/admin/ai/mcp-tools`, `.../mcp-servers` |

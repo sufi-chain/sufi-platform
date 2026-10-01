@@ -1,4 +1,5 @@
 using System.Net.Mail;
+using System.Text;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using SufiChain.SufiPlatform.SufiCom.BackgroundJobs;
@@ -48,8 +49,9 @@ public abstract class EmailSenderBase : IEmailSender
         }
 
         from ??= await Configuration.GetDefaultFromAddressAsync();
+        var fromDisplayName = await ResolveFromDisplayNameAsync(additionalArgs);
 
-        var mail = BuildMailMessage(to, subject, body, isBodyHtml, from, replyTo, cc, bcc, attachments);
+        var mail = BuildMailMessage(to, subject, body, isBodyHtml, from, fromDisplayName, replyTo, cc, bcc, attachments);
 
         try
         {
@@ -83,6 +85,7 @@ public abstract class EmailSenderBase : IEmailSender
                 Body = body,
                 IsBodyHtml = isBodyHtml,
                 From = from,
+                FromDisplayName = additionalArgs?.FromDisplayName,
                 ReplyTo = replyTo,
                 Cc = cc?.ToArray(),
                 Bcc = bcc?.ToArray(),
@@ -104,6 +107,7 @@ public abstract class EmailSenderBase : IEmailSender
         string body,
         bool isBodyHtml,
         string from,
+        string? fromDisplayName,
         string? replyTo,
         IEnumerable<string>? cc,
         IEnumerable<string>? bcc,
@@ -111,7 +115,7 @@ public abstract class EmailSenderBase : IEmailSender
     {
         var mail = new MailMessage
         {
-            From = new MailAddress(from),
+            From = CreateFromAddress(from, fromDisplayName),
             Subject = subject,
             Body = body,
             IsBodyHtml = isBodyHtml
@@ -160,6 +164,27 @@ public abstract class EmailSenderBase : IEmailSender
         }
 
         return mail;
+    }
+
+    /// <summary>
+    /// Caller title wins. Otherwise the SMTP default display name is the fallback.
+    /// </summary>
+    protected virtual async Task<string?> ResolveFromDisplayNameAsync(AdditionalMessageSendingArgs? additionalArgs)
+    {
+        if (!string.IsNullOrWhiteSpace(additionalArgs?.FromDisplayName))
+        {
+            return additionalArgs.FromDisplayName.Trim();
+        }
+
+        var configured = await Configuration.GetDefaultFromDisplayNameAsync();
+        return string.IsNullOrWhiteSpace(configured) ? null : configured.Trim();
+    }
+
+    protected virtual MailAddress CreateFromAddress(string from, string? displayName)
+    {
+        return string.IsNullOrWhiteSpace(displayName)
+            ? new MailAddress(from)
+            : new MailAddress(from, displayName.Trim(), Encoding.UTF8);
     }
 
     /// <summary>

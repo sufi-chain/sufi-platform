@@ -140,6 +140,8 @@
     "ImageUploadedSuccessfully": "تصویر با موفقیت آپلود شد",
     "ImageRemoved": "تصویر حذف شد",
     "UploadFailed": "آپلود انجام نشد. دوباره تلاش کنید.",
+    "OperationFailed": "عملیات فایل انجام نشد.",
+    "StorageConnectionFailed": "آزمایش اتصال ذخیره‌سازی ناموفق بود.",
     "FailedToRemoveImage": "حذف تصویر انجام نشد. دوباره تلاش کنید.",
     "FileSizeExceedsMaximum": "حجم فایل از حداکثر مجاز {0} مگابایت بیشتر است",
     "OnlyImageFilesAllowed": "فقط فایل‌های تصویری مجاز هستند",

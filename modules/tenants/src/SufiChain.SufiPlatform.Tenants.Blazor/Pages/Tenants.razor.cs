@@ -3,6 +3,7 @@ using SufiChain.SufiPlatform.Features.Blazor.Components;
 using SufiChain.SufiPlatform.Settings.Blazor.Components;
 using SufiChain.SufiPlatform.UI.Layout;
 using SufiChain.SufiPlatform.Tenants;
+using SufiChain.SufiPlatform.Tenants.Hooshvare;
 using SufiChain.SufiBlazor.Components.Data;
 using SufiChain.SufiBlazor.Contracts.Data;
 
@@ -150,5 +151,14 @@ public partial class Tenants : TenantsComponentBase
         );
     }
 
+    private IReadOnlyDictionary<string, string> BuildHooshvareContext()
+    {
+        var context = new Dictionary<string, string>(StringComparer.Ordinal);
+        if (_selectedTenant != null)
+        {
+            context[TenantsDiagnosticsHooshvareKeys.Context.TenantId] = _selectedTenant.Id.ToString();
+        }
 
+        return context;
+    }
 }

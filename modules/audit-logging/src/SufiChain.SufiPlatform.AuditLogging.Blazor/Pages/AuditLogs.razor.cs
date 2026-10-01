@@ -3,6 +3,7 @@ using SufiChain.SufiBlazor.Components;
 using SufiChain.SufiBlazor.Components.Data;
 using SufiChain.SufiBlazor.Contracts.Data;
 using SufiChain.SufiPlatform.AuditLogging.Dtos;
+using SufiChain.SufiPlatform.AuditLogging.Hooshvare;
 using SufiChain.SufiPlatform.AuditLogging.Localization;
 using SufiChain.SufiPlatform.UI.Blazor;
 using SufiChain.SufiPlatform.UI.Layout;
@@ -163,5 +164,26 @@ public partial class AuditLogs : AuditLoggingComponentBase
             "PATCH" => SbColor.Primary,
             _ => SbColor.Default
         };
+    }
+
+    private IReadOnlyDictionary<string, string> BuildHooshvareContext()
+    {
+        var context = new Dictionary<string, string>(StringComparer.Ordinal);
+        if (_selectedAuditLogId.HasValue)
+        {
+            context[AuditInvestigatorHooshvareKeys.Context.AuditLogId] = _selectedAuditLogId.Value.ToString();
+        }
+
+        if (_startDate.HasValue)
+        {
+            context[AuditInvestigatorHooshvareKeys.Context.FromUtc] = _startDate.Value.ToString("yyyy-MM-dd");
+        }
+
+        if (_endDate.HasValue)
+        {
+            context[AuditInvestigatorHooshvareKeys.Context.ToUtc] = _endDate.Value.ToString("yyyy-MM-dd");
+        }
+
+        return context;
     }
 }

@@ -34,8 +34,8 @@ public class AIUsageRecorderTests
             "priced-chat",
             apiEndpoint: "https://api.example/v1",
             apiKey: "sk-route",
-            inputCostPer1MTokens: 10m,
-            outputCostPer1MTokens: 20m);
+            inputPrice: 10m,
+            outputPrice: 20m);
 
         var configuration = new WorkspaceRuntimeConfiguration
         {
@@ -44,8 +44,10 @@ public class AIUsageRecorderTests
             CapabilityType = AICapabilityType.ChatCompletion,
             Provider = AIProviderType.OpenAI,
             ModelId = route.ModelId,
-            InputCostPer1MTokens = route.InputCostPer1MTokens ?? workspace.InputCostPer1MTokens,
-            OutputCostPer1MTokens = route.OutputCostPer1MTokens ?? workspace.OutputCostPer1MTokens,
+            InputPrice = route.InputPrice ?? workspace.InputCostPer1MTokens,
+            InputPriceUnit = route.InputPriceUnit,
+            OutputPrice = route.OutputPrice ?? workspace.OutputCostPer1MTokens,
+            OutputPriceUnit = route.OutputPriceUnit,
             ModelConfigurationId = route.Id,
             IsConfigured = true,
             IsReady = true
@@ -57,6 +59,86 @@ public class AIUsageRecorderTests
         cost.IsCostCalculated.ShouldBeTrue();
         cost.EstimatedCost.ShouldBe(0.02m);
         cost.CostCalculationNote.ShouldBeNull();
+    }
+
+    [Fact]
+    public void Minute_price_bills_audio_seconds_and_ignores_the_workspace_token_rate()
+    {
+        var workspace = new Workspace(
+            Guid.NewGuid(),
+            "cost-tests",
+            AIProviderType.OpenAI,
+            "workspace-default");
+        workspace.UpdateConfiguration(
+            "workspace-default",
+            "sk-workspace",
+            "https://api.example/v1",
+            inputCostPer1MTokens: 100m,
+            outputCostPer1MTokens: 100m);
+        var configuration = new WorkspaceRuntimeConfiguration
+        {
+            Workspace = workspace,
+            CapabilityType = AICapabilityType.AudioTranscription,
+            Provider = AIProviderType.OpenAI,
+            ModelId = "openai/whisper-1",
+            InputPrice = 0.006m,
+            InputPriceUnit = AIPriceUnit.PerMinute,
+            IsConfigured = true,
+            IsReady = true
+        };
+
+        var recorder = new TestableAIUsageRecorder();
+        var cost = recorder.Calculate(configuration, 1000, 500, 1500, audioSeconds: 30m);
+        cost.IsCostCalculated.ShouldBeTrue();
+        cost.EstimatedCost.ShouldBe(0.003m);
+
+        var missing = recorder.Calculate(configuration, 1000, 0, 1000);
+        missing.IsCostCalculated.ShouldBeFalse();
+        missing.CostCalculationNote.ShouldBe(AIUsageRecorder.UsageUnavailable);
+    }
+
+    [Fact]
+    public void Character_price_bills_input_text_length()
+    {
+        var configuration = new WorkspaceRuntimeConfiguration
+        {
+            Workspace = new Workspace(Guid.NewGuid(), "cost-tests", AIProviderType.OpenAI, "workspace-default"),
+            CapabilityType = AICapabilityType.TextToSpeech,
+            Provider = AIProviderType.OpenAI,
+            ModelId = "deepgram/aura-2",
+            InputPrice = 15m,
+            InputPriceUnit = AIPriceUnit.PerMillionCharacters,
+            IsConfigured = true,
+            IsReady = true
+        };
+
+        var recorder = new TestableAIUsageRecorder();
+        var cost = recorder.Calculate(configuration, null, null, null, characterCount: 1_000_000);
+        cost.IsCostCalculated.ShouldBeTrue();
+        cost.EstimatedCost.ShouldBe(15m);
+    }
+
+    [Fact]
+    public void Decision_input_price_ignores_an_empty_output_side()
+    {
+        var configuration = new WorkspaceRuntimeConfiguration
+        {
+            Workspace = new Workspace(Guid.NewGuid(), "cost-tests", AIProviderType.OpenRouter, "workspace-default"),
+            CapabilityType = AICapabilityType.Decisions,
+            Provider = AIProviderType.OpenRouter,
+            ModelId = "typesafe/jev-1.13",
+            InputPrice = 0.042m,
+            InputPriceUnit = AIPriceUnit.PerMillionTokens,
+            OutputPrice = null,
+            OutputPriceUnit = AIPriceUnit.PerMillionTokens,
+            IsConfigured = true,
+            IsReady = true
+        };
+
+        var recorder = new TestableAIUsageRecorder();
+        var cost = recorder.Calculate(configuration, 476, 70, 546);
+        cost.IsCostCalculated.ShouldBeTrue();
+        cost.EstimatedCost.ShouldBe(0.000019992m);
     }
 
     [Fact]
@@ -78,15 +160,15 @@ public class AIUsageRecorderTests
             "shared-chat",
             apiEndpoint: "https://east.example/v1",
             apiKey: "sk-east",
-            inputCostPer1MTokens: 10m,
-            outputCostPer1MTokens: 20m);
+            inputPrice: 10m,
+            outputPrice: 20m);
         var second = workspace.AddModelConfiguration(
             AICapabilityType.ChatCompletion,
             "shared-chat",
             apiEndpoint: "https://west.example/v1",
             apiKey: "sk-west",
-            inputCostPer1MTokens: 10m,
-            outputCostPer1MTokens: 20m);
+            inputPrice: 10m,
+            outputPrice: 20m);
 
         var inserted = new List<AIUsageLog>();
         var repository = Substitute.For<IAIUsageLogRepository>();
@@ -121,8 +203,10 @@ public class AIUsageRecorderTests
                 CapabilityType = AICapabilityType.ChatCompletion,
                 Provider = AIProviderType.OpenAI,
                 ModelId = route.ModelId,
-                InputCostPer1MTokens = route.InputCostPer1MTokens ?? workspace.InputCostPer1MTokens,
-                OutputCostPer1MTokens = route.OutputCostPer1MTokens ?? workspace.OutputCostPer1MTokens,
+                InputPrice = route.InputPrice ?? workspace.InputCostPer1MTokens,
+                InputPriceUnit = route.InputPriceUnit,
+                OutputPrice = route.OutputPrice ?? workspace.OutputCostPer1MTokens,
+                OutputPriceUnit = route.OutputPriceUnit,
                 ModelConfigurationId = route.Id,
                 IsConfigured = true,
                 IsReady = true
@@ -154,9 +238,17 @@ public class AIUsageRecorderTests
             WorkspaceRuntimeConfiguration configuration,
             int? inputTokens,
             int? outputTokens,
-            int? totalTokens)
+            int? totalTokens,
+            decimal? audioSeconds = null,
+            int? characterCount = null)
         {
-            var result = CalculateCost(configuration, inputTokens, outputTokens, totalTokens);
+            var result = CalculateCost(
+                configuration,
+                inputTokens,
+                outputTokens,
+                totalTokens,
+                audioSeconds,
+                characterCount);
             return (result.EstimatedCost, result.IsCostCalculated, result.CostCalculationNote);
         }
     }

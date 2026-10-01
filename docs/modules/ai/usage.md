@@ -52,32 +52,15 @@ Example priorities for one workspace:
 - Audio: `whisper-1` (0)
 - Embeddings: `text-embedding-3-small` (0)
 
-## Test Chat
+## Workspace chat
 
-**Path:** `/admin/ai/test-chat`  
-**Permission:** `AI.TestChat.Default`
-
-1. Select a workspace in the **workspace selector** (horizontal cards).
-2. Optional: enable **Use streaming** for token-by-token responses.
-3. Type a message and send.
-4. View the transcript (user vs assistant). Assistant messages can show **tokens** and **latency** chips when returned by the API.
-5. **Clear chat** resets the conversation.
-
-Use this page to validate workspace credentials and chat models before wiring product features (e.g. HelpDesk LiveChat).
-
-## Multi-Modal Test
-
-**Path:** `/admin/ai/multimodal-test`  
-**Permission:** Testing menu requires `AI.TestChat.Default`; each capability tab requires its own permission (`AI.AI.Chat`, `.Audio`, `.Vision`, `.Embeddings`).
+**Path:** `/panel/admin/ai/chat`  
+**Permission:** `SufiAI.WorkspaceChat` to open the page. Send still requires `SufiAI.AI.Chat`.
 
 1. Select a workspace.
-2. Open a capability tab (only tabs you are allowed to see are shown):
-   - **Chat** — message in, response with usage metadata
-   - **Audio transcription** — upload audio, transcribe
-   - **Text-to-speech** — enter text, generate and play/download audio
-   - **Vision** — upload image + prompt, analyze
-   - **Embeddings** — enter text, view dimensions and sample values
-3. **Reset** clears the current tab’s form and results.
+2. Choose a selectable chat route when more than one exists. Image, PDF, and reasoning effort follow that route’s stored flags.
+3. **Saved** keeps the thread as a chat session. **Anonymous** keeps it in the browser tab only.
+4. Send a message. The reply streams through `ISufiAIChatAppService`, and usage is written to `AIUsageLog`.
 
 ## Usage analytics
 

@@ -5,6 +5,7 @@ using System.IO.Compression;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.Extensions.Logging;
 using SufiChain.SufiPlatform.FileManager;
 using SufiChain.SufiPlatform.FileManager.Features;
 using SufiChain.SufiPlatform.FileManager.FileItems;
@@ -48,6 +49,7 @@ public class FileManagerAppService : SufiApplicationService, IFileManagerAppServ
         _zipDownloadCache = zipDownloadCache;
         _structureBlobContainerProvider = structureBlobContainerProvider;
         _storageQuotaGuard = storageQuotaGuard;
+        LocalizationResource = typeof(SufiChain.SufiPlatform.FileManager.Localization.SufiFileManagerResource);
     }
 
     private string GetClipboardCacheKey() => $"FileManager:Clipboard:{CurrentUser.Id}";
@@ -154,7 +156,8 @@ public class FileManagerAppService : SufiApplicationService, IFileManagerAppServ
             }
             catch (Exception ex)
             {
-                result.Errors.Add($"Failed to process file {fileId}: {ex.Message}");
+                Logger.LogWarning(ex, "Clipboard file {FileId} could not be processed.", fileId);
+                result.Errors.Add(L["OperationFailed"]);
             }
         }
 
@@ -176,7 +179,8 @@ public class FileManagerAppService : SufiApplicationService, IFileManagerAppServ
             }
             catch (Exception ex)
             {
-                result.Errors.Add($"Failed to process folder {folderId}: {ex.Message}");
+                Logger.LogWarning(ex, "Clipboard folder {FolderId} could not be processed.", folderId);
+                result.Errors.Add(L["OperationFailed"]);
             }
         }
 
@@ -226,12 +230,13 @@ public class FileManagerAppService : SufiApplicationService, IFileManagerAppServ
             }
             catch (Exception ex)
             {
+                Logger.LogWarning(ex, "Bulk file operation failed.");
                 result.FailedCount++;
                 result.Errors.Add(new BulkOperationErrorDto
                 {
                     ItemId = fileId,
                     ItemName = "File",
-                    ErrorMessage = ex.Message
+                    ErrorMessage = L["OperationFailed"]
                 });
             }
         }
@@ -246,12 +251,13 @@ public class FileManagerAppService : SufiApplicationService, IFileManagerAppServ
             }
             catch (Exception ex)
             {
+                Logger.LogWarning(ex, "Bulk file operation failed.");
                 result.FailedCount++;
                 result.Errors.Add(new BulkOperationErrorDto
                 {
                     ItemId = folderId,
                     ItemName = "Folder",
-                    ErrorMessage = ex.Message
+                    ErrorMessage = L["OperationFailed"]
                 });
             }
         }
@@ -282,12 +288,13 @@ public class FileManagerAppService : SufiApplicationService, IFileManagerAppServ
             }
             catch (Exception ex)
             {
+                Logger.LogWarning(ex, "Bulk file operation failed.");
                 result.FailedCount++;
                 result.Errors.Add(new BulkOperationErrorDto
                 {
                     ItemId = fileId,
                     ItemName = "File",
-                    ErrorMessage = ex.Message
+                    ErrorMessage = L["OperationFailed"]
                 });
             }
         }
@@ -302,12 +309,13 @@ public class FileManagerAppService : SufiApplicationService, IFileManagerAppServ
             }
             catch (Exception ex)
             {
+                Logger.LogWarning(ex, "Bulk file operation failed.");
                 result.FailedCount++;
                 result.Errors.Add(new BulkOperationErrorDto
                 {
                     ItemId = folderId,
                     ItemName = "Folder",
-                    ErrorMessage = ex.Message
+                    ErrorMessage = L["OperationFailed"]
                 });
             }
         }
@@ -343,12 +351,13 @@ public class FileManagerAppService : SufiApplicationService, IFileManagerAppServ
             }
             catch (Exception ex)
             {
+                Logger.LogWarning(ex, "Bulk file operation failed.");
                 result.FailedCount++;
                 result.Errors.Add(new BulkOperationErrorDto
                 {
                     ItemId = fileId,
                     ItemName = "File",
-                    ErrorMessage = ex.Message
+                    ErrorMessage = L["OperationFailed"]
                 });
             }
         }
@@ -379,12 +388,13 @@ public class FileManagerAppService : SufiApplicationService, IFileManagerAppServ
             }
             catch (Exception ex)
             {
+                Logger.LogWarning(ex, "Bulk file operation failed.");
                 result.FailedCount++;
                 result.Errors.Add(new BulkOperationErrorDto
                 {
                     ItemId = folderId,
                     ItemName = "Folder",
-                    ErrorMessage = ex.Message
+                    ErrorMessage = L["OperationFailed"]
                 });
             }
         }

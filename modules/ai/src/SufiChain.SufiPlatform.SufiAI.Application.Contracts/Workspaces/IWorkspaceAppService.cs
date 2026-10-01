@@ -8,6 +8,8 @@ public interface IWorkspaceAppService : IApplicationService
     Task<PagedResultDto<WorkspaceDto>> GetListAsync(PagedAndSortedResultRequestDto input);
 
     Task<List<WorkspaceDto>> GetLookupAsync();
+
+    Task<List<AiProviderProfileDto>> GetProviderProfilesAsync();
     
     Task<WorkspaceDto> GetAsync(Guid id);
 

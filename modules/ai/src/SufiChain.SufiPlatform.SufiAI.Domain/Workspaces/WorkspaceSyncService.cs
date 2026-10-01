@@ -26,7 +26,6 @@ public class WorkspaceSyncService : ITransientDependency
     private readonly IWorkspaceEmbedderResolver _embedderResolver;
     private readonly IWorkspaceRuntimeConfigurationResolver _runtimeConfigurationResolver;
     private readonly IDistributedCache<WorkspaceEmbedderCacheStamp> _embedderStampCache;
-    private readonly IDistributedCache<WorkspaceProviderModelCacheStamp> _providerModelStampCache;
     private readonly ICurrentTenant _currentTenant;
     private readonly IServiceProvider _serviceProvider;
     private readonly IFeatureChecker _featureChecker;
@@ -40,7 +39,6 @@ public class WorkspaceSyncService : ITransientDependency
         IWorkspaceEmbedderResolver embedderResolver,
         IWorkspaceRuntimeConfigurationResolver runtimeConfigurationResolver,
         IDistributedCache<WorkspaceEmbedderCacheStamp> embedderStampCache,
-        IDistributedCache<WorkspaceProviderModelCacheStamp> providerModelStampCache,
         ICurrentTenant currentTenant,
         IServiceProvider serviceProvider,
         IFeatureChecker featureChecker,
@@ -50,7 +48,6 @@ public class WorkspaceSyncService : ITransientDependency
         _embedderResolver = embedderResolver;
         _runtimeConfigurationResolver = runtimeConfigurationResolver;
         _embedderStampCache = embedderStampCache;
-        _providerModelStampCache = providerModelStampCache;
         _currentTenant = currentTenant;
         _serviceProvider = serviceProvider;
         _featureChecker = featureChecker;
@@ -64,6 +61,7 @@ public class WorkspaceSyncService : ITransientDependency
         await CheckFeatureAsync(SufiAIFeatures.Workspaces);
         var builder = Kernel.CreateBuilder();
         builder.Services.AddSingleton(_serviceProvider);
+        ProviderResponseCompletionHandler.Logger = _logger;
         WorkspaceConfigurationHelper.ConfigureKernel(builder, configuration,
             _serviceProvider.GetRequiredService<IOptions<AITransportOptions>>().Value);
         return builder.Build();
@@ -135,30 +133,8 @@ public class WorkspaceSyncService : ITransientDependency
             workspaceName,
             new WorkspaceEmbedderCacheStamp { Stamp = Guid.NewGuid().ToString("N") });
 
-        await _providerModelStampCache.SetAsync(
-            workspaceName,
-            new WorkspaceProviderModelCacheStamp { Stamp = Guid.NewGuid().ToString("N") });
-
         RemoveLocalGenerators(workspaceName);
-        _logger.LogInformation("Cleared embedder and provider model-list cache for workspace {WorkspaceName}", workspaceName);
-    }
-
-    public async Task<string> GetProviderModelStampAsync(
-        string workspaceName,
-        CancellationToken cancellationToken = default)
-    {
-        var item = await _providerModelStampCache.GetAsync(workspaceName, token: cancellationToken);
-        if (item != null && !string.IsNullOrWhiteSpace(item.Stamp))
-        {
-            return item.Stamp;
-        }
-
-        var stamp = Guid.NewGuid().ToString("N");
-        await _providerModelStampCache.SetAsync(
-            workspaceName,
-            new WorkspaceProviderModelCacheStamp { Stamp = stamp },
-            token: cancellationToken);
-        return stamp;
+        _logger.LogInformation("Cleared embedder cache for workspace {WorkspaceName}", workspaceName);
     }
 
     private async Task<string> GetEmbedderStampAsync(string workspaceName, CancellationToken cancellationToken)

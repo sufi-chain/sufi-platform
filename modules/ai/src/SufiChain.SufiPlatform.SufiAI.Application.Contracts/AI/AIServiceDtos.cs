@@ -138,8 +138,16 @@ public class AIModelConfigurationDto : Application.Dtos.EntityDto<Guid>
     public bool IsEnabled { get; set; }
     public int Priority { get; set; }
     public int MaxContextTokens { get; set; }
-    public decimal? InputCostPer1MTokens { get; set; }
-    public decimal? OutputCostPer1MTokens { get; set; }
+    public decimal? InputPrice { get; set; }
+    public AIPriceUnit InputPriceUnit { get; set; }
+    public decimal? OutputPrice { get; set; }
+    public AIPriceUnit OutputPriceUnit { get; set; }
+    public bool? AcceptsImageInput { get; set; }
+    public bool? AcceptsFileInput { get; set; }
+    public bool? SupportsReasoning { get; set; }
+    public string? ReasoningEfforts { get; set; }
+    public string? DefaultReasoningEffort { get; set; }
+    public ModelCapabilitySource? CapabilitySource { get; set; }
     public int? Dimensions { get; set; }
 }
 
@@ -153,12 +161,20 @@ public class CreateAIModelConfigurationDto
     public bool IsUserSelectable { get; set; }
     public string? ApiEndpoint { get; set; }
     public string? ApiKey { get; set; }
-    public decimal? InputCostPer1MTokens { get; set; }
-    public decimal? OutputCostPer1MTokens { get; set; }
+    public decimal? InputPrice { get; set; }
+    public AIPriceUnit InputPriceUnit { get; set; }
+    public decimal? OutputPrice { get; set; }
+    public AIPriceUnit OutputPriceUnit { get; set; }
     public int Priority { get; set; }
     public OpenAIApiMode OpenAIApiMode { get; set; } = OpenAIApiMode.ChatCompletions;
     public int MaxContextTokens { get; set; } = 200000;
     public int? Dimensions { get; set; }
+    public bool? AcceptsImageInput { get; set; }
+    public bool? AcceptsFileInput { get; set; }
+    public bool? SupportsReasoning { get; set; }
+    public string? ReasoningEfforts { get; set; }
+    public string? DefaultReasoningEffort { get; set; }
+    public ModelCapabilitySource? CapabilitySource { get; set; }
 }
 
 public class UpdateAIModelConfigurationDto
@@ -169,12 +185,24 @@ public class UpdateAIModelConfigurationDto
     public bool IsUserSelectable { get; set; }
     public string? ApiEndpoint { get; set; }
     public string? ApiKey { get; set; }
+
+    /// <summary>Drops a stored route key so the route uses the workspace key.</summary>
+    public bool ClearApiKey { get; set; }
+
     public OpenAIApiMode OpenAIApiMode { get; set; } = OpenAIApiMode.ChatCompletions;
     public int MaxContextTokens { get; set; } = 200000;
-    public decimal? InputCostPer1MTokens { get; set; }
-    public decimal? OutputCostPer1MTokens { get; set; }
+    public decimal? InputPrice { get; set; }
+    public AIPriceUnit InputPriceUnit { get; set; }
+    public decimal? OutputPrice { get; set; }
+    public AIPriceUnit OutputPriceUnit { get; set; }
     public int Priority { get; set; }
     public int? Dimensions { get; set; }
+    public bool? AcceptsImageInput { get; set; }
+    public bool? AcceptsFileInput { get; set; }
+    public bool? SupportsReasoning { get; set; }
+    public string? ReasoningEfforts { get; set; }
+    public string? DefaultReasoningEffort { get; set; }
+    public ModelCapabilitySource? CapabilitySource { get; set; }
 }
 
 // Usage Log DTOs
@@ -188,6 +216,9 @@ public class AIUsageLogDto : Application.Dtos.EntityDto<Guid>
     public int? InputTokens { get; set; }
     public int? OutputTokens { get; set; }
     public int? TotalTokens { get; set; }
+    public decimal? AudioSeconds { get; set; }
+    public int? CharacterCount { get; set; }
+    public int? ImageCount { get; set; }
     public bool HasTokenUsage { get; set; }
     public string? UsageUnavailableReason { get; set; }
     public decimal EstimatedCost { get; set; }

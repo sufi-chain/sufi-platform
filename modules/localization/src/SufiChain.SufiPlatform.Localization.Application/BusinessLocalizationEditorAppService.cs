@@ -119,9 +119,9 @@ public class BusinessLocalizationEditorAppService : SufiApplicationService, IBus
         return _dataSeedOptions.SupportedCultures?.ToList() ?? new List<string> { "fa", "en", "ar", "es" };
     }
 
-    protected virtual IReadOnlyList<LanguageInfo> GetConfiguredCultures()
+    protected virtual IReadOnlyList<Volo.Abp.Localization.LanguageInfo> GetConfiguredCultures()
     {
-        IReadOnlyList<LanguageInfo> cultures;
+        IReadOnlyList<Volo.Abp.Localization.LanguageInfo> cultures;
 
         if (_localizationOptions.Languages.Count > 0)
         {
@@ -131,7 +131,7 @@ public class BusinessLocalizationEditorAppService : SufiApplicationService, IBus
         {
             cultures = (_dataSeedOptions.SupportedCultures ?? Array.Empty<string>())
                 .Where(x => !string.IsNullOrWhiteSpace(x))
-                .Select(x => new LanguageInfo(x, x, x))
+                .Select(x => new Volo.Abp.Localization.LanguageInfo(x, x, x))
                 .ToList();
         }
 

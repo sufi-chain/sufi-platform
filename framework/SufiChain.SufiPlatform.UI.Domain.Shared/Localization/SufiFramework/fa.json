@@ -24,6 +24,7 @@
     "UserNotAllowedToAccessClient": "کاربر وارد شده مجاز به دسترسی به این برنامه نیست.",
     "ConsentRequired": "رضایت تعاملی کاربر لازم است.",
     "Loading": "در حال بارگذاری...",
+    "Authorizing": "در حال احراز هویت...",
     "Saving": "در حال ذخیره...",
     "Processing": "در حال پردازش...",
     "PleaseWait": "لطفاً صبر کنید...",

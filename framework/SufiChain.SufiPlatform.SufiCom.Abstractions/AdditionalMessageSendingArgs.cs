@@ -31,6 +31,12 @@ public class AdditionalMessageSendingArgs
     /// Template model data
     /// </summary>
     public object? TemplateModel { get; set; }
+
+    /// <summary>
+    /// Inbox title for this message. The mailbox address stays the configured sender address.
+    /// When empty, the SMTP default display name is used.
+    /// </summary>
+    public string? FromDisplayName { get; set; }
 }
 
 public enum MessagePriority

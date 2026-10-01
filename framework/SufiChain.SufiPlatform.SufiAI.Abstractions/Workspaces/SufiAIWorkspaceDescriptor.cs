@@ -50,4 +50,9 @@ public class SufiAIWorkspaceDescriptor
     /// Capabilities enabled for this workspace.
     /// </summary>
     public List<SufiAICapability> Capabilities { get; set; } = new();
+
+    /// <summary>
+    /// True when the ready chat route accepts image input on the chat request.
+    /// </summary>
+    public bool ChatAcceptsImageInput { get; set; }
 }

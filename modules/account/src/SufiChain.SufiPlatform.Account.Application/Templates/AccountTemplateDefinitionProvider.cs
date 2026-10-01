@@ -1,6 +1,5 @@
 using SufiChain.SufiPlatform.Account.Localization;
 using SufiChain.SufiPlatform.Account.Templates;
-using SufiChain.SufiPlatform.SufiCom.Templates;
 using SufiChain.SufiPlatform.TextTemplating;
 using Volo.Abp.Localization;
 
@@ -14,9 +13,8 @@ public class AccountTemplateDefinitionProvider : TemplateDefinitionProvider
             new TemplateDefinition(
                 AccountTemplates.Layout,
                 displayName: LocalizableString.Create<SufiAccountResource>("TextTemplate:AccountLayout"),
-                layout: StandardMessageTemplates.Layout,
                 localizationResource: typeof(SufiAccountResource)
-            ).WithVirtualFilePath("/Templates/Layout", isInlineLocalized: true),
+            ).WithVirtualFilePath("/Templates/AccountLayout", isInlineLocalized: true),
 
             new TemplateDefinition(
                 AccountTemplates.EmailConfirmation,

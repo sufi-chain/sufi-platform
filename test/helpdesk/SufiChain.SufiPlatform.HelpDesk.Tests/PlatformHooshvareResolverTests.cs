@@ -140,7 +140,7 @@ public class HooshvareDefinitionStaticDeleteTests
             null,
             "HelpDesk.KnowledgeBase",
             BusinessLocalizationKeys.HooshvareDisplayName(key),
-            HooshvareKind.Hooshvare,
+            HooshvareKind.Copilot,
 
             "ArticleEditor",
 

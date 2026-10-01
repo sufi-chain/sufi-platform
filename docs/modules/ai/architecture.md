@@ -30,7 +30,7 @@ AI Management follows Sufi Platform layered module structure with domain-driven 
 - `AIService` / `IAIService` — orchestrates capabilities via `IAIProvider` and model configuration
 - `OpenAIProvider` — only provider implementation today
 - `RAGService` / `IRAGService` — document source registry, indexing, semantic search
-- `WorkspaceSyncService` — per-request chat kernels; process-local embedding generators; distributed stamps for embedder and admin model-list caches
+- `WorkspaceSyncService` — per-request chat kernels; process-local embedding generators; distributed stamp for embedder caches. Admin model lists are cached in the application layer by connection base URL.
 - `WorkspaceManager` — workspace business rules
 - `MCPToolRegistry` — discovers and executes MCP tools; `ResolveAsync` persists `UpdateLastConnection`
 
@@ -85,11 +85,12 @@ Object mapping uses Mapperly (or project-standard mapper) for entity ↔ DTO.
 
 ### Pages
 
-All under `Pages/AI/`: Workspaces, ModelConfigurations, TestChat, MultiModalTest, UsageAnalytics, RAG, IndexingStatus, MCPTools, MCPServers.
+All under `Pages/AI/`: Workspaces, WorkspaceChat, ModelConfigurations, UsageAnalytics, RAG, IndexingStatus, MCPTools, MCPServers.
 
 ### Components
 
 - `WorkspaceSelector` — horizontal workspace cards
+- `WorkspaceModelSelector` — selectable chat routes for workspace chat
 - `WorkspaceCreateModal` / `WorkspaceEditModal` — tabbed connection + cost
 - `ModelConfigurationModal`, `MCPServerModal`
 

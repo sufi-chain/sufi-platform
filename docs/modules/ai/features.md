@@ -19,10 +19,9 @@ Map product requirements to AI Management capabilities before building a custom 
 - Per-workspace models per capability (Chat, Audio, Vision, Embeddings, TTS, Image Generation)
 - Priority-based fallback, enable/disable without delete
 
-### Testing
+### Workspace chat
 
-- **Test Chat** (`/admin/ai/test-chat`) — conversational UI with optional streaming, token/latency display
-- **Multi-Modal Test** (`/admin/ai/multimodal-test`) — tabs for chat, audio transcription, TTS, vision, embeddings (tabs respect capability permissions)
+- **Workspace chat** (`/panel/admin/ai/chat`) — chat with a workspace. Saved threads are chat sessions. Anonymous threads stay in the browser session. Image, PDF, voice, and reasoning effort follow the selected chat route.
 
 ### Analytics
 

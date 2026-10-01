@@ -41,7 +41,7 @@ public partial class SufiCalendarView : CalendarPublicComponentBase
     public EventCallback<SufiCalendarSlotSelectArgs> OnSlotSelect { get; set; }
 
     /// <summary>
-    /// Retained for callers; month/week cells show a count badge with hover popover details.
+    /// Retained for callers; month/week cells show one count badge per calendar.
     /// </summary>
     [Parameter]
     public int MaxEventsPerDay { get; set; } = 3;
@@ -62,6 +62,7 @@ public partial class SufiCalendarView : CalendarPublicComponentBase
     private int _loadVersion;
     private string? _lastLoadKey;
     private DateTime? _eventsPopoverDay;
+    private Guid? _eventsPopoverCalendarId;
 
     protected string Direction => SbCalendarHelper.IsRtl(SbCalendarHelper.GetCalendarSystemFromCulture(_culture)) ? "rtl" : "ltr";
 
@@ -140,33 +141,62 @@ public partial class SufiCalendarView : CalendarPublicComponentBase
         await OnSlotSelect.InvokeAsync(new SufiCalendarSlotSelectArgs(startUtc, startUtc.AddDays(1), CalendarIds));
     }
 
-    protected bool IsEventsPopoverOpen(DateTime day) =>
+    protected bool IsDayEventsPopoverOpen(DateTime day) =>
         _eventsPopoverDay.HasValue && _eventsPopoverDay.Value.Date == day.Date;
 
-    protected Task SetEventsPopoverOpenAsync(DateTime day, bool open)
+    protected bool IsEventsPopoverOpen(DateTime day, Guid calendarId) =>
+        IsDayEventsPopoverOpen(day) && _eventsPopoverCalendarId == calendarId;
+
+    protected Task SetEventsPopoverOpenAsync(DateTime day, Guid calendarId, bool open)
     {
-        var next = open ? day.Date : (DateTime?)null;
-        if (_eventsPopoverDay == next)
+        if (!open)
+        {
+            if (!IsEventsPopoverOpen(day, calendarId))
+            {
+                return Task.CompletedTask;
+            }
+
+            _eventsPopoverDay = null;
+            _eventsPopoverCalendarId = null;
+            return InvokeAsync(StateHasChanged);
+        }
+
+        var nextDay = day.Date;
+        if (_eventsPopoverDay == nextDay && _eventsPopoverCalendarId == calendarId)
         {
             return Task.CompletedTask;
         }
 
-        _eventsPopoverDay = next;
+        _eventsPopoverDay = nextDay;
+        _eventsPopoverCalendarId = calendarId;
         return InvokeAsync(StateHasChanged);
     }
 
-    protected Task ToggleEventsPopoverAsync(DateTime day)
+    protected Task ToggleEventsPopoverAsync(DateTime day, Guid calendarId)
     {
-        return SetEventsPopoverOpenAsync(day, !IsEventsPopoverOpen(day));
+        return SetEventsPopoverOpenAsync(day, calendarId, !IsEventsPopoverOpen(day, calendarId));
     }
 
     /// <summary>
-    /// Accent for the month-cell count badge (dot + chip) from the first colored event that day.
+    /// One bullet tag per calendar on that day, in first-occurrence order.
+    /// Inherited calendars keep their own color and count instead of folding into the selected calendar.
     /// </summary>
-    protected virtual string? GetDayEventsAccentStyle(IReadOnlyList<EventOccurrenceDto> occurrences)
+    protected virtual IReadOnlyList<DayCalendarEventGroup> GetDayEventGroups(IEnumerable<EventOccurrenceDto> occurrences)
     {
-        var colored = occurrences.FirstOrDefault(x => !string.IsNullOrWhiteSpace(x.Color));
-        return colored is null ? null : GetEventStyle(colored);
+        return occurrences
+            .GroupBy(occurrence => occurrence.CalendarId)
+            .Select(group =>
+            {
+                var items = group.ToList();
+                var color = items.Select(item => item.Color).FirstOrDefault(itemColor => !string.IsNullOrWhiteSpace(itemColor));
+                return new DayCalendarEventGroup(group.Key, color, items);
+            })
+            .ToList();
+    }
+
+    protected virtual string? GetGroupAccentStyle(DayCalendarEventGroup group)
+    {
+        return string.IsNullOrWhiteSpace(group.Color) ? null : $"--sufi-event-color:{group.Color}";
     }
 
     protected async Task SelectEventFromPopoverAsync(EventOccurrenceDto occurrence)
@@ -183,17 +213,18 @@ public partial class SufiCalendarView : CalendarPublicComponentBase
         }
     }
 
-    protected async Task HandleEventCountKeyDownAsync(KeyboardEventArgs e, DateTime day)
+    protected async Task HandleEventCountKeyDownAsync(KeyboardEventArgs e, DateTime day, Guid calendarId)
     {
         if (e.Key is "Enter" or " ")
         {
-            await ToggleEventsPopoverAsync(day);
+            await ToggleEventsPopoverAsync(day, calendarId);
         }
     }
 
     private void CloseEventsPopover()
     {
         _eventsPopoverDay = null;
+        _eventsPopoverCalendarId = null;
     }
 
     protected virtual async Task SelectHourSlotAsync(int hour)
@@ -320,7 +351,7 @@ public partial class SufiCalendarView : CalendarPublicComponentBase
             classes += " sufi-calendar-view__day--today";
         }
 
-        if (IsEventsPopoverOpen(day))
+        if (IsDayEventsPopoverOpen(day))
         {
             classes += " sufi-calendar-view__day--events-open";
         }
@@ -481,4 +512,6 @@ public partial class SufiCalendarView : CalendarPublicComponentBase
     {
         return TimeZoneInfo.FindSystemTimeZoneById(TimeZoneId);
     }
+
+    protected sealed record DayCalendarEventGroup(Guid CalendarId, string? Color, IReadOnlyList<EventOccurrenceDto> Occurrences);
 }

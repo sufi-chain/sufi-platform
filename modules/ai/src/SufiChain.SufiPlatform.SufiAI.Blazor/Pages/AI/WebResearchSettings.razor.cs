@@ -9,7 +9,6 @@ public partial class WebResearchSettings
     [Inject] private IWebResearchSettingsAppService SettingsService { get; set; } = default!;
     private UpdateWebResearchSettingsInput? _model;
     private bool _busy, _canEdit, _canTest;
-    private string? _status;
     private bool _advancedOpen, _loadFailed;
     private int _validationVersion;
 
@@ -36,9 +35,8 @@ public partial class WebResearchSettings
     private async Task SaveAsync()
     {
         if (_model == null || _busy || !_canEdit) return;
-        _status = null;
         _busy = true;
-        try { await SettingsService.UpdateAsync(_model); await LoadAsync(); _status = L["WebResearchSaved"]; }
+        try { await SettingsService.UpdateAsync(_model); await LoadAsync(); await Message.SuccessAsync(L["WebResearchSaved"]); }
         catch (Exception ex) { await HandleErrorAsync(ex); }
         finally { _busy = false; }
     }
@@ -46,9 +44,13 @@ public partial class WebResearchSettings
     private async Task TestAsync()
     {
         if (_busy || !_canTest) return;
-        _status = null;
         _busy = true;
-        try { var result = await SettingsService.TestAsync(); _status = L[result.Ready ? "WebResearchReady" : "WebResearchUnavailable"]; }
+        try
+        {
+            var result = await SettingsService.TestAsync();
+            if (result.Ready) await Message.SuccessAsync(L["WebResearchReady"]);
+            else await Message.WarnAsync(L["WebResearchUnavailable"]);
+        }
         catch (Exception ex) { await HandleErrorAsync(ex); }
         finally { _busy = false; }
     }

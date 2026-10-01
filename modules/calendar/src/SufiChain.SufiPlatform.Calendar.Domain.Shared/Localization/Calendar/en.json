@@ -2,6 +2,7 @@
   "culture": "en",
   "texts": {
     "Calendar": "Calendar",
+    "EmailSender:DisplayName": "Calendar",
     "Permission:SufiCalendar": "Calendar",
     "Permission:SufiCalendar.Calendars": "Calendars",
     "Permission:Create": "Create",

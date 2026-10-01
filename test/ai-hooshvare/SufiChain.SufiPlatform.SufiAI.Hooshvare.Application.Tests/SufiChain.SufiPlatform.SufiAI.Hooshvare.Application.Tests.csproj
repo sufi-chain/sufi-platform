@@ -8,6 +8,7 @@
 
   <ItemGroup>
     <ProjectReference Include="../../../../pro-modules/ai-hooshvare/src/SufiChain.SufiPlatform.SufiAI.Hooshvare.Application/SufiChain.SufiPlatform.SufiAI.Hooshvare.Application.csproj" />
+    <ProjectReference Include="../../../../pro-modules/ai-hooshvare/src/SufiChain.SufiPlatform.SufiAI.Hooshvare.Blazor.Public/SufiChain.SufiPlatform.SufiAI.Hooshvare.Blazor.Public.csproj" />
     <ProjectReference Include="../../../modules/ai/src/SufiChain.SufiPlatform.SufiAI.Application/SufiChain.SufiPlatform.SufiAI.Application.csproj" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="$(MicrosoftNetTestSdkVersion)" />
     <PackageReference Include="NSubstitute" Version="$(NSubstituteVersion)" />

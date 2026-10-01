@@ -137,3 +137,6 @@
 </SbStack>
 
 <AuditLogDetailModal @bind-Open="_showDetailModal" AuditLogId="_selectedAuditLogId" />
+<ReadOnlyHooshvareDrawer HooshvareKey="@AuditInvestigatorHooshvareKeys.Key"
+						 Title="@L["Hooshvare:SufiAudit:Investigator:DisplayName"]"
+						 ContextProvider="BuildHooshvareContext" />

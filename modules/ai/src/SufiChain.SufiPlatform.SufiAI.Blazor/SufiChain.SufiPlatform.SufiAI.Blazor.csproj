@@ -22,6 +22,12 @@
     <ProjectReference Include="..\SufiChain.SufiPlatform.SufiAI.Domain.Shared\SufiChain.SufiPlatform.SufiAI.Domain.Shared.csproj" />
     <!-- Sufi AI Application Contracts -->
     <ProjectReference Include="..\SufiChain.SufiPlatform.SufiAI.Application.Contracts\SufiChain.SufiPlatform.SufiAI.Application.Contracts.csproj" />
+    <ProjectReference Include="..\..\..\..\framework\SufiChain.SufiPlatform.FileManager.Abstractions\SufiChain.SufiPlatform.FileManager.Abstractions.csproj" />
+    <ProjectReference Include="..\..\..\..\..\pro-modules\suficom\chat\src\SufiChain.SufiPlatform.SufiCom.Chat.Application.Contracts\SufiChain.SufiPlatform.SufiCom.Chat.Application.Contracts.csproj" />
+    <ProjectReference Include="..\..\..\..\..\pro-modules\suficom\chat\src\SufiChain.SufiPlatform.SufiCom.Chat.Blazor.Public\SufiChain.SufiPlatform.SufiCom.Chat.Blazor.Public.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\..\..\pro-modules\ai-hooshvare\src\SufiChain.SufiPlatform.SufiAI.Hooshvare.Blazor.Public\SufiChain.SufiPlatform.SufiAI.Hooshvare.Blazor.Public.csproj" />
+  </ItemGroup>
 </Project>

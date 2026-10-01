@@ -431,3 +431,6 @@
 <RolePickerModal @bind-Open="_showRolePickerModal"
 				 OrganizationUnitId="_selectedUnit?.Id ?? Guid.Empty"
 				 OnRolesAdded="OnRolesAddedAsync" />
+<ReadOnlyHooshvareDrawer HooshvareKey="@IdentityAdminAdvisorHooshvareKeys.Key"
+						 Title="@L["Hooshvare:SufiIdentity:AdminAdvisor:DisplayName"]"
+						 ContextProvider="BuildHooshvareContext" />

@@ -47,4 +47,10 @@ public class NotificationEnvelope
     public NotificationSeverity Severity { get; set; } = NotificationSeverity.Info;
 
     public string? Url { get; set; }
+
+    /// <summary>
+    /// Inbox title for the email channel. The mailbox address stays the SMTP sender address.
+    /// When empty, the SMTP default display name is used.
+    /// </summary>
+    public string? EmailFromDisplayName { get; set; }
 }

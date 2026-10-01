@@ -27,7 +27,7 @@ public class CalendarGetFreeBusyTool : CalendarAIToolBase
         return await SuccessAsync(await GetFreeBusyAsync(input.CalendarIds, input.FromUtc, input.ToUtc, cancellationToken));
     }
 
-    [SufiAiMcpTool(CalendarAIToolNames.GetFreeBusy, "Gets busy blocks and free slots from each requested calendar's own events only. Inherited Default/Public holidays are not included. For 'am I free' questions, prefer calendar.search_events on the Personal calendar so observances can be named without treating them as personal busy time. Call calendar.get_current_time before relative or Persian dates.")]
+    [SufiAiMcpTool(CalendarAIToolNames.GetFreeBusy, "Gets busy blocks and free slots from each requested calendar's own events only. Inherited Default/Public holidays are not included. For 'am I free' questions, prefer calendar.search_events on the Personal calendar so observances can be named without treating them as personal busy time. Call calendar.get_current_time before relative or Persian dates.", ReadOnly = true)]
     public virtual async Task<object> GetFreeBusyAsync(
         List<Guid> calendarIds,
         DateTime fromUtc,
@@ -75,7 +75,7 @@ public class CalendarFindFreeSlotsTool : CalendarAIToolBase
         return await SuccessAsync(await FindFreeSlotsAsync(input.CalendarIds, input.FromUtc, input.ToUtc, input.Duration, cancellationToken));
     }
 
-    [SufiAiMcpTool(CalendarAIToolNames.FindFreeSlots, "Finds open slots from each requested calendar's own events only. Inherited Default/Public holidays do not occupy these slots. For 'am I free' questions, also call calendar.search_events on the Personal calendar so public observances can be mentioned. Call calendar.get_current_time before relative or Persian dates.")]
+    [SufiAiMcpTool(CalendarAIToolNames.FindFreeSlots, "Finds open slots from each requested calendar's own events only. Inherited Default/Public holidays do not occupy these slots. For 'am I free' questions, also call calendar.search_events on the Personal calendar so public observances can be mentioned. Call calendar.get_current_time before relative or Persian dates.", ReadOnly = true)]
     public virtual async Task<object> FindFreeSlotsAsync(
         List<Guid> calendarIds,
         DateTime fromUtc,

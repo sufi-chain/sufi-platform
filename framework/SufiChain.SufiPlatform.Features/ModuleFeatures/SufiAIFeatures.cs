@@ -66,4 +66,10 @@ public static class SufiAIFeatures
     /// File Manager integration for generated/processed AI files.
     /// </summary>
     public const string FileManagerIntegration = GroupName + ".FileManagerIntegration";
+
+    /// <summary>
+    /// Host-wide percent added to catalog token prices. Default is 0.
+    /// Tenant edition values are ignored; every read uses the host value.
+    /// </summary>
+    public const string PriceMarkupPercent = GroupName + ".PriceMarkupPercent";
 }

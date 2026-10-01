@@ -4,9 +4,9 @@ using System.Collections.Generic;
 namespace SufiChain.SufiPlatform.SufiAI;
 
 /// <summary>
-/// Maps OpenAI-compatible catalog rows onto workspace capability routes.
-/// Provider metadata wins; model-id heuristics cover OpenAI-style lists that
-/// only return <c>id</c> / <c>owned_by</c>.
+/// Maps catalog modalities onto workspace capability routes.
+/// A row with no modalities and no LiteLLM mode matches nothing.
+/// Model ids are not used. Image and file input do not create a vision route.
 /// </summary>
 public static class ProviderModelCapabilityClassifier
 {
@@ -15,6 +15,12 @@ public static class ProviderModelCapabilityClassifier
         AICapabilityType capabilityType,
         ProviderModelDiscoveryHints? hints = null)
     {
+        _ = modelId;
+        if (capabilityType == AICapabilityType.VisionAnalysis)
+        {
+            return false;
+        }
+
         var kinds = Classify(modelId, hints);
         return capabilityType switch
         {
@@ -22,24 +28,37 @@ public static class ProviderModelCapabilityClassifier
             AICapabilityType.AudioTranscription => kinds.HasFlag(ProviderModelKinds.AudioTranscription),
             AICapabilityType.TextToSpeech => kinds.HasFlag(ProviderModelKinds.TextToSpeech),
             AICapabilityType.ImageGeneration => kinds.HasFlag(ProviderModelKinds.ImageGeneration),
-            AICapabilityType.VisionAnalysis => kinds.HasFlag(ProviderModelKinds.Vision) ||
-                                               kinds.HasFlag(ProviderModelKinds.Chat),
             AICapabilityType.ChatCompletion or
                 AICapabilityType.WebSearch or
                 AICapabilityType.WebFetch => kinds.HasFlag(ProviderModelKinds.Chat),
-            _ => kinds.HasFlag(ProviderModelKinds.Chat)
+            AICapabilityType.Decisions => kinds.HasFlag(ProviderModelKinds.Decisions),
+            _ => false
         };
     }
 
     public static ProviderModelKinds Classify(string? modelId, ProviderModelDiscoveryHints? hints = null)
     {
-        var fromHints = ClassifyFromHints(hints);
-        if (fromHints != ProviderModelKinds.None)
-        {
-            return fromHints;
-        }
+        _ = modelId;
+        return ClassifyFromHints(hints);
+    }
 
-        return ClassifyFromModelId(modelId);
+    public static bool AcceptsImageInput(ProviderModelDiscoveryHints? hints)
+    {
+        return ContainsToken(hints?.InputModalities, "image", "images");
+    }
+
+    public static bool AcceptsFileInput(ProviderModelDiscoveryHints? hints)
+    {
+        return ContainsToken(hints?.InputModalities, "file", "files");
+    }
+
+    public static bool SupportsReasoning(ProviderModelDiscoveryHints? hints)
+    {
+        return ContainsToken(
+            hints?.SupportedParameters,
+            "reasoning",
+            "include_reasoning",
+            "reasoning_effort");
     }
 
     private static ProviderModelKinds ClassifyFromHints(ProviderModelDiscoveryHints? hints)
@@ -64,25 +83,11 @@ public static class ProviderModelCapabilityClassifier
             return ProviderModelKinds.None;
         }
 
+        _ = inputs;
         if (ContainsAny(outputs, "embedding", "embeddings") ||
             modality.Contains("embedding", StringComparison.Ordinal))
         {
             return ProviderModelKinds.Embeddings;
-        }
-
-        if (ContainsAny(outputs, "image", "images") && !ContainsAny(outputs, "text"))
-        {
-            return ProviderModelKinds.ImageGeneration;
-        }
-
-        if (ContainsAny(outputs, "audio", "speech") && !ContainsAny(inputs, "audio"))
-        {
-            return ProviderModelKinds.TextToSpeech;
-        }
-
-        if (ContainsAny(inputs, "audio") && ContainsAny(outputs, "text"))
-        {
-            return ProviderModelKinds.AudioTranscription;
         }
 
         var kinds = ProviderModelKinds.None;
@@ -91,14 +96,24 @@ public static class ProviderModelCapabilityClassifier
             kinds |= ProviderModelKinds.Chat;
         }
 
-        if (ContainsAny(inputs, "image", "images") && ContainsAny(outputs, "text"))
+        if (ContainsAny(outputs, "image", "images"))
         {
-            kinds |= ProviderModelKinds.Vision | ProviderModelKinds.Chat;
+            kinds |= ProviderModelKinds.ImageGeneration;
         }
 
-        if (ContainsAny(outputs, "image", "images") && ContainsAny(outputs, "text"))
+        if (ContainsAny(outputs, "speech"))
         {
-            kinds |= ProviderModelKinds.Chat | ProviderModelKinds.ImageGeneration;
+            kinds |= ProviderModelKinds.TextToSpeech;
+        }
+
+        if (ContainsAny(outputs, "transcription"))
+        {
+            kinds |= ProviderModelKinds.AudioTranscription;
+        }
+
+        if (ContainsAny(outputs, "decisions") || modality.Contains("decisions", StringComparison.Ordinal))
+        {
+            kinds |= ProviderModelKinds.Decisions;
         }
 
         return kinds;
@@ -137,62 +152,17 @@ public static class ProviderModelCapabilityClassifier
             return ProviderModelKinds.Chat;
         }
 
+        if (normalized is "decisions" or "decision")
+        {
+            return ProviderModelKinds.Decisions;
+        }
+
         return ProviderModelKinds.None;
     }
 
-    private static ProviderModelKinds ClassifyFromModelId(string? modelId)
+    private static bool ContainsToken(IReadOnlyList<string>? values, params string[] needles)
     {
-        var id = Normalize(modelId);
-        if (id.Length == 0)
-        {
-            return ProviderModelKinds.None;
-        }
-
-        if (IsEmbeddingModelId(modelId, id))
-        {
-            return ProviderModelKinds.Embeddings;
-        }
-
-        if (ContainsAny(id, "dall-e", "dall.e", "gpt-image", "imagen", "stable-diffusion",
-                "stable-diff", "sdxl", "black-forest", "recraft", "ideogram", "seedream",
-                "flux.", "flux-", "/flux", "playground-v", "kandinsky", "luma-photon"))
-        {
-            return ProviderModelKinds.ImageGeneration;
-        }
-
-        if (ContainsAny(id, "tts-", "-tts", "_tts", "/tts", "text-to-speech", "gpt-4o-mini-tts",
-                "gpt-4o-tts"))
-        {
-            return ProviderModelKinds.TextToSpeech;
-        }
-
-        if (ContainsAny(id, "whisper", "transcri", "speech-to-text", "parakeet") ||
-            (id.Contains("asr", StringComparison.Ordinal) &&
-             !id.Contains("chat", StringComparison.Ordinal)))
-        {
-            return ProviderModelKinds.AudioTranscription;
-        }
-
-        var kinds = ProviderModelKinds.Chat;
-        if (ContainsAny(id, "vision", "-vl", "_vl", "/vl", "pixtral", "llava", "internvl",
-                "gpt-4o", "gpt-4.1", "gpt-4-turbo", "gpt-4-vision", "o3", "o4",
-                "claude-3", "claude-4", "gemini", "qwen-vl", "qwen2-vl", "qwen2.5-vl"))
-        {
-            kinds |= ProviderModelKinds.Vision;
-        }
-
-        return kinds;
-    }
-
-    private static bool IsEmbeddingModelId(string? originalId, string normalizedId)
-    {
-        if (EmbeddingModelDefaults.IsKnownModel(originalId))
-        {
-            return true;
-        }
-
-        return normalizedId.Contains("embedding", StringComparison.Ordinal) ||
-               ContainsAny(normalizedId, "-embed", "_embed", "/embed", "embed-", "embed_", "embed/");
+        return ContainsAny(NormalizeTokens(values), needles);
     }
 
     private static HashSet<string> NormalizeTokens(IReadOnlyList<string>? values)

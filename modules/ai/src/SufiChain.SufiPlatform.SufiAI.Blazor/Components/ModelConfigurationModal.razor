@@ -4,17 +4,6 @@
 <SbDialog Open="@Open" OpenChanged="@SetOpenAsync" Size="SbDialogSize.Lg" Title="@(_isEditMode ? L["EditModelConfiguration"] : L["NewModelConfiguration"])" AllowDropdownOverflow="true">
 	<ChildContent>
 		<SbStack Direction="SbStackDirection.Column" Gap="4">
-			<SbAlert Severity="SbAlertSeverity.Info">
-				@L["OnlyOpenAIProviderAvailable"]
-			</SbAlert>
-
-			@if (ShowsEndpointOverrideHint)
-			{
-				<SbAlert Severity="SbAlertSeverity.Warning">
-					@L["ModelConfigurationOverrideHint"]
-				</SbAlert>
-			}
-
 			<SbGrid Columns="1" ColumnsMd="2" Gap="4">
 				<SbSimpleSelect TValue="AICapabilityType"
 								Value="@_model.CapabilityType"
@@ -31,12 +20,13 @@
 					<SbSelectOption TValue="AICapabilityType" Value="@AICapabilityType.WebFetch">@L["WebFetch"]</SbSelectOption>
 				</SbSimpleSelect>
 
-				<SbSimpleSelect TValue="AIProviderType"
-								Value="@AIProviderType.OpenAI"
-								Label="@L["Provider"]"
-								Disabled="true">
-					<SbSelectOption TValue="AIProviderType" Value="@AIProviderType.OpenAI">OpenAI</SbSelectOption>
-				</SbSimpleSelect>
+				<SbStack Direction="SbStackDirection.Column" Gap="1">
+					<SbText Variant="SbTextVariant.Caption" Color="SbColor.Muted">@L["Provider"]</SbText>
+					<SbStack Direction="SbStackDirection.Row" Gap="2" Align="SbAlign.Center">
+						<ProviderLogo Provider="WorkspaceProvider" Small="true" />
+						<SbText Variant="SbTextVariant.Body">@ProviderDisplayName</SbText>
+					</SbStack>
+				</SbStack>
 			</SbGrid>
 
 			<SbAlert Severity="SbAlertSeverity.Info">
@@ -46,28 +36,129 @@
 				</SbStack>
 			</SbAlert>
 
-			<SbGrid Columns="1" ColumnsMd="2" Gap="4">
-				<SbTextField @bind-Value="_model.ApiEndpoint"
-							 Label="@L["ApiEndpoint"]"
-							 Placeholder="@L["ApiEndpointPlaceholder"]"
-							 HelperText="@L["ApiEndpointHelperText"]" />
+			<SbToggleGroup @key="@($"{_formKey}-connection")"
+						   TValue="bool"
+						   FullWidth="true"
+						   CheckMark="true"
+						   Color="SbColor.Primary"
+						   Value="@_useWorkspaceConnection"
+						   ValueChanged="OnConnectionPathChanged"
+						   Label="@L["ConnectionSettings"]">
+				<SbToggleItem TValue="bool" Value="@true" Text="@L["UseWorkspaceConnection"]" />
+				<SbToggleItem TValue="bool" Value="@false" Text="@L["UseCustomConnection"]" />
+			</SbToggleGroup>
 
-				<SbTextField @bind-Value="_model.ApiKey"
-							 Label="@L["ApiKey"]"
-							 Placeholder="@ApiKeyPlaceholder"
-							 HelperText="@ApiKeyHelperText"
-							 Type="password" />
+			@if (_useWorkspaceConnection)
+			{
+				<SbText Variant="SbTextVariant.BodySmall" Color="SbColor.Muted">
+					@L["WorkspaceConnectionSummary"]
+				</SbText>
+			}
+			else
+			{
+				@if (ShowsEndpointOverrideHint)
+				{
+					<SbAlert Severity="SbAlertSeverity.Warning">
+						@L["ModelConfigurationOverrideHint"]
+					</SbAlert>
+				}
+
+				<SbGrid Columns="1" ColumnsMd="2" Gap="4">
+					<SbTextField @bind-Value="_model.ApiEndpoint"
+								 Label="@L["ApiEndpoint"]"
+								 Placeholder="@L["ApiEndpointPlaceholder"]"
+								 HelperText="@L["ApiEndpointHelperText"]" />
+
+					<SbTextField @bind-Value="_model.ApiKey"
+								 Label="@L["ApiKey"]"
+								 Placeholder="@ApiKeyPlaceholder"
+								 HelperText="@ApiKeyHelperText"
+								 Type="password" />
+				</SbGrid>
+
+			}
+
+			<SbSelect TItem="OpenAIModelDto"
+					  TValue="string"
+					  Items="SelectableModels"
+					  Value="@ModelSelectValue"
+					  ValueChanged="OnModelIdChanged"
+					  TextField="WorkspaceConnectionDraft.SearchText"
+					  ValueField="@(model => model.Id)"
+					  Searchable="true"
+					  SearchPlaceholder="@L["SearchModels"]"
+					  Label="@L["AvailableModels"]"
+					  Required="true">
+				<ItemTemplate Context="model">
+					<CatalogModelOption Model="model" />
+				</ItemTemplate>
+				<SelectedValueTemplate Context="model">
+					<CatalogModelOption Model="model" Compact="true" />
+				</SelectedValueTemplate>
+				<NoResultsTemplate>
+					<span>@ModelListEmptyText</span>
+				</NoResultsTemplate>
+				<MenuFooter>
+					<div @onclick:stopPropagation="true">
+					<SbStack Direction="SbStackDirection.Column" Gap="2">
+						@if (ShowManualModelIdField)
+						{
+							<SbTextField @bind-Value="ManualModelId"
+										 Label="@L["ModelId"]"
+										 Placeholder="@L["ModelIdPlaceholder"]" />
+						}
+						<SbStack Direction="SbStackDirection.Row" Gap="2" Wrap="true">
+							<SbButton Variant="SbButtonVariant.Outline"
+									  Size="SbSize.Sm"
+									  OnClick="@(() => LoadModelsAsync())"
+									  Loading="IsOperationLoading(LoadingKeys.LoadModels)">
+								@(_modelsLoaded ? L["RefreshModels"] : L["LoadModels"])
+							</SbButton>
+							@if (!ShowManualModelIdField)
+							{
+								<SbButton Variant="SbButtonVariant.Outline"
+										  Size="SbSize.Sm"
+										  OnClick="@ShowManualModelEntry">
+									@L["EnterModelId"]
+								</SbButton>
+							}
+						</SbStack>
+					</SbStack>
+					</div>
+				</MenuFooter>
+			</SbSelect>
+
+			<SbText Variant="SbTextVariant.Body" Weight="SbFontWeight.Medium">@L["RoutePricingSection"]</SbText>
+			<SbText Variant="SbTextVariant.Caption" Color="SbColor.Muted">
+				@L["RoutePriceWinsHelp"]
+			</SbText>
+			<SbGrid Columns="1" ColumnsMd="2" Gap="4">
+				<SbTextField @bind-Value="_inputPriceText"
+							 Label="@InputPriceLabel"
+							 Placeholder="@InputPricePlaceholder"
+							 HelperText="@InputPriceHelp" />
+
+				@if (_showOutputPrice)
+				{
+					<SbTextField @bind-Value="_outputPriceText"
+								 Label="@OutputPriceLabel"
+								 Placeholder="@OutputPricePlaceholder"
+								 HelperText="@OutputPriceHelp" />
+				}
 			</SbGrid>
+			@if (!string.IsNullOrWhiteSpace(EquivalentPriceText))
+			{
+				<SbText Variant="SbTextVariant.Caption" Color="SbColor.Muted">@EquivalentPriceText</SbText>
+			}
 
 			<SbGrid Columns="1" ColumnsMd="2" Gap="4">
-				<SbTextField @bind-Value="_model.ModelId"
-							 Label="@L["ModelId"]"
-							 Required="true"
-							 Placeholder="@L["ModelIdPlaceholder"]" />
-
 				<SbTextField @bind-Value="_model.DisplayName"
 							 Label="@L["DisplayName"]"
 							 Placeholder="@L["ModelDisplayNamePlaceholder"]" />
+
+				<SbTextField @bind-Value="_priorityText"
+							 Label="@L["Priority"]"
+							 Placeholder="0" />
 			</SbGrid>
 
 			<SbTextArea @bind-Value="_model.Description"
@@ -77,104 +168,55 @@
 
 			@if (ShowsUserSelectable)
 			{
-				<SbSwitch @bind-Value="_model.IsUserSelectable"
+				<SbSwitch @key="@($"{_formKey}-selectable")"
+						  @bind-Value="_model.IsUserSelectable"
 						  Label="@L["IsUserSelectable"]" />
 				<SbText Variant="SbTextVariant.Caption" Color="SbColor.Muted">
 					@L["IsUserSelectableHelp"]
 				</SbText>
-			}
-
-			<SbStack Wrap="true" Direction="SbStackDirection.Row" Gap="2" Align="SbAlign.End">
-				<SbButton Variant="SbButtonVariant.Outline"
-						  OnClick="@LoadModelsAsync"
-						  Loading="IsOperationLoading(LoadingKeys.LoadModels)">
-					@L["LoadModels"]
-				</SbButton>
-			</SbStack>
-
-			@if (_availableModels.Count > 0)
-			{
-				<SbSimpleSelect TValue="string"
-								Value="@_model.ModelId"
-								ValueChanged="@OnModelIdChanged"
-								Label="@L["AvailableModels"]"
-								Searchable="true"
-								SearchPlaceholder="@L["SearchModels"]">
-					@if (!string.IsNullOrWhiteSpace(_model.ModelId) && !_availableModels.Any(m => m.Id == _model.ModelId))
-					{
-						<SbSelectOption TValue="string" Value="@_model.ModelId">@_model.ModelId</SbSelectOption>
-					}
-					@foreach (var model in _availableModels)
-					{
-						<SbSelectOption TValue="string" Value="@model.Id">@model.Id</SbSelectOption>
-					}
-				</SbSimpleSelect>
-			}
-
-			@if (ShowsOpenAIApiMode)
-			{
-				<SbRadioGroup TValue="OpenAIApiMode"
-							  @bind-Value="_model.OpenAIApiMode"
-							  Label="@L["OpenAIApiMode"]"
-							  Orientation="SbOrientation.Horizontal">
-					<SbRadio TValue="OpenAIApiMode" Value="@OpenAIApiMode.ChatCompletions" Label="@L["ChatCompletions"]" />
-					<SbRadio TValue="OpenAIApiMode" Value="@OpenAIApiMode.Responses" Label="@L["Responses"]" />
-				</SbRadioGroup>
-
-				@if (_model.OpenAIApiMode == OpenAIApiMode.Responses)
+				<SbText Variant="SbTextVariant.Body" Weight="SbFontWeight.Medium">@L["ChatRouteCapabilities"]</SbText>
+				<SbCheckbox @key="@($"{_formKey}-image")" @bind-Value="AcceptsImageInputValue" Label="@L["AcceptsImageInput"]" />
+				<SbCheckbox @key="@($"{_formKey}-file")" @bind-Value="AcceptsFileInputValue" Label="@L["AcceptsFileInput"]" />
+				<SbCheckbox @key="@($"{_formKey}-reasoning")" @bind-Value="SupportsReasoningValue" Label="@L["SupportsReasoning"]" />
+				@if (SupportsReasoningValue && EffortOptions.Count > 0)
 				{
-					<SbAlert Severity="SbAlertSeverity.Warning">
-						@L["ResponsesApiCompatibilityWarning"]
-					</SbAlert>
-					<SbAlert Severity="SbAlertSeverity.Warning">
-						@L["ResponsesMcpIncompatibleHint"]
-					</SbAlert>
-				}
-			}
-
-			<SbText Variant="SbTextVariant.Body" Weight="SbFontWeight.Medium">@L["RoutePricingSection"]</SbText>
-			<SbText Variant="SbTextVariant.Caption" Color="SbColor.Muted">
-				@L["RoutePriceWinsHelp"]
-			</SbText>
-
-			@if (SuggestedListPrice is { } listPrice)
-			{
-				<SbAlert Severity="SbAlertSeverity.Info">
-					<SbStack Direction="SbStackDirection.Column" Gap="2">
-						<SbText Variant="SbTextVariant.BodySmall">
-							@FormatOpenAIListPriceHint(listPrice)
-						</SbText>
-						<SbButton Variant="SbButtonVariant.Outline"
-								  Size="SbSize.Sm"
-								  OnClick="@ApplyOpenAIListPrice">
-							@L["ApplyOpenAIListPrice"]
-						</SbButton>
+					<SbText Variant="SbTextVariant.BodySmall" Weight="SbFontWeight.Medium">@L["ReasoningEfforts"]</SbText>
+					<SbText Variant="SbTextVariant.Caption" Color="SbColor.Muted">@L["ReasoningEffortsHelp"]</SbText>
+					<SbStack Direction="SbStackDirection.Row" Gap="2" Wrap="true">
+						@foreach (var effort in EffortOptions)
+						{
+							var selected = IsEffortAllowed(effort);
+							<SbChip Size="SbSize.Sm"
+									Variant="@(selected ? SbChipVariant.Filled : SbChipVariant.Outlined)"
+									Color="@(selected ? SbColor.Primary : SbColor.Default)"
+									OnClick="@(_ => ToggleEffort(effort))">
+								@effort
+							</SbChip>
+						}
 					</SbStack>
-				</SbAlert>
-			}
-
-			<SbGrid Columns="1" ColumnsMd="2" Gap="4">
-				<SbTextField @bind-Value="_inputCostPer1MTokensText"
-							 Label="@L["InputCostPer1MTokens"]"
-							 Placeholder="@L["InheritWorkspace"]"
-							 HelperText="@L["RoutePriceWinsHelp"]" />
-
-				<SbTextField @bind-Value="_outputCostPer1MTokensText"
-							 Label="@L["OutputCostPer1MTokens"]"
-							 Placeholder="@L["InheritWorkspace"]"
-							 HelperText="@L["RoutePriceWinsHelp"]" />
-			</SbGrid>
-
-			<SbGrid Columns="1" ColumnsMd="2" Gap="4">
-				<SbTextField @bind-Value="_priorityText"
-							 Label="@L["Priority"]"
-							 Placeholder="0" />
-
+					<SbText Variant="SbTextVariant.BodySmall" Weight="SbFontWeight.Medium">@L["DefaultReasoningEffort"]</SbText>
+					<SbStack Direction="SbStackDirection.Row" Gap="2" Wrap="true">
+						@foreach (var effort in AllowedEfforts)
+						{
+							var selected = string.Equals(_model.DefaultReasoningEffort, effort, StringComparison.OrdinalIgnoreCase);
+							<SbChip Size="SbSize.Sm"
+									Variant="@(selected ? SbChipVariant.Filled : SbChipVariant.Outlined)"
+									Color="@(selected ? SbColor.Primary : SbColor.Default)"
+									OnClick="@(_ => SelectDefaultEffort(effort))">
+								@effort
+							</SbChip>
+						}
+					</SbStack>
+				}
 				<SbTextField @bind-Value="_maxContextTokensText"
 							 Label="@L["MaxContextTokens"]"
 							 Placeholder="200000"
 							 HelperText="@L["MaxContextTokensHelp"]" />
-			</SbGrid>
+				@if (_model.CapabilitySource is ModelCapabilitySource source)
+				{
+					<SbText Variant="SbTextVariant.Caption" Color="SbColor.Muted">@L[$"CapabilitySource:{source}"]</SbText>
+				}
+			}
 
 			@if (ShowsEmbeddingDimensions)
 			{

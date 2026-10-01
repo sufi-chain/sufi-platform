@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using SufiChain.SufiPlatform.FileManager.Configuration;
+using SufiChain.SufiPlatform.FileManager.Localization;
 using SufiChain.SufiPlatform.FileManager.FileItems;
 using Volo.Abp;
 using SufiChain.SufiPlatform.Application.Dtos;
@@ -36,6 +37,7 @@ public class FileItemController : SufiControllerBase, IFileItemAppService
         _fileItemAppService = fileItemAppService;
         _options = options.Value;
         _logger = logger;
+        LocalizationResource = typeof(SufiFileManagerResource);
     }
 
     [NonAction]
@@ -227,7 +229,6 @@ public class FileItemController : SufiControllerBase, IFileItemAppService
 
     private IActionResult CreateUploadErrorResult(Exception exception, string fileName, long fileLength, string? structureKey)
     {
-        var rootException = exception.GetBaseException();
         _logger.LogError(exception,
             "File upload failed. FileName: {FileName}, Size: {Size}, StructureKey: {StructureKey}",
             fileName,
@@ -238,8 +239,8 @@ public class FileItemController : SufiControllerBase, IFileItemAppService
         {
             error = new
             {
-                message = $"File upload failed: {rootException.Message}",
-                details = rootException.GetType().FullName
+                message = L["UploadFailed"].Value,
+                details = L["UploadFailed"].Value
             }
         });
     }

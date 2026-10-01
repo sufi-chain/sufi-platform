@@ -27,6 +27,7 @@ public class SufiAIChatContentPart
     public string? Text { get; set; }
     public string? MimeType { get; set; }
     public string? DataUrl { get; set; }
+    public string? FileName { get; set; }
 }
 
 /// <summary>

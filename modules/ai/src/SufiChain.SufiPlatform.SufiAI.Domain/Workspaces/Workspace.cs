@@ -67,6 +67,11 @@ public class Workspace : FullAuditedAggregateRoot<Guid>, IMultiTenant
     {
         Name = Check.NotNullOrWhiteSpace(name, nameof(name));
     }
+
+    public void SetProvider(AIProviderType provider)
+    {
+        Provider = provider;
+    }
     
     public void UpdateConfiguration(
         string model,
@@ -88,11 +93,18 @@ public class Workspace : FullAuditedAggregateRoot<Guid>, IMultiTenant
 
     public void UpdatePrimaryChatConfiguration(
         string model,
-        string? apiBaseUrl)
+        string? apiBaseUrl,
+        string? displayName)
     {
         var configuration = GetPrimaryConfiguration(AICapabilityType.ChatCompletion);
         if (configuration == null)
         {
+            AddModelConfiguration(
+                AICapabilityType.ChatCompletion,
+                model,
+                apiEndpoint: apiBaseUrl,
+                displayName: displayName,
+                isUserSelectable: true);
             return;
         }
 
@@ -101,14 +113,65 @@ public class Workspace : FullAuditedAggregateRoot<Guid>, IMultiTenant
             apiBaseUrl,
             configuration.ApiKey,
             configuration.Priority,
-            configuration.OpenAIApiMode,
-            configuration.InputCostPer1MTokens,
-            configuration.OutputCostPer1MTokens,
+            OpenAIApiMode.ChatCompletions,
+            configuration.InputPrice,
+            configuration.OutputPrice,
             configuration.Dimensions,
-            configuration.DisplayName,
+            displayName,
             configuration.IsUserSelectable,
             configuration.Description,
-            configuration.MaxContextTokens);
+            configuration.MaxContextTokens,
+            configuration.InputPriceUnit,
+            configuration.OutputPriceUnit);
+    }
+
+    public void SetDecisionsModel(string? modelId)
+    {
+        var existing = _modelConfigurations
+            .Where(configuration => configuration.CapabilityType == AICapabilityType.Decisions)
+            .ToList();
+        if (string.IsNullOrWhiteSpace(modelId))
+        {
+            foreach (var configuration in existing)
+            {
+                configuration.Disable();
+            }
+
+            return;
+        }
+
+        var trimmed = modelId.Trim();
+        var primary = existing.FirstOrDefault(configuration => configuration.IsEnabled)
+            ?? existing.FirstOrDefault();
+        if (primary == null)
+        {
+            AddModelConfiguration(AICapabilityType.Decisions, trimmed);
+            return;
+        }
+
+        primary.Enable();
+        primary.UpdateConfiguration(
+            trimmed,
+            primary.ApiEndpoint,
+            primary.ApiKey,
+            primary.Priority,
+            OpenAIApiMode.ChatCompletions,
+            primary.InputPrice,
+            primary.OutputPrice,
+            primary.Dimensions,
+            primary.DisplayName,
+            primary.IsUserSelectable,
+            primary.Description,
+            primary.MaxContextTokens,
+            primary.InputPriceUnit,
+            primary.OutputPriceUnit);
+        foreach (var configuration in existing)
+        {
+            if (!ReferenceEquals(configuration, primary))
+            {
+                configuration.Disable();
+            }
+        }
     }
     
     /// <summary>
@@ -121,13 +184,15 @@ public class Workspace : FullAuditedAggregateRoot<Guid>, IMultiTenant
         string? apiKey = null,
         int priority = 0,
         OpenAIApiMode openAIApiMode = OpenAIApiMode.ChatCompletions,
-        decimal? inputCostPer1MTokens = null,
-        decimal? outputCostPer1MTokens = null,
+        decimal? inputPrice = null,
+        decimal? outputPrice = null,
         int? dimensions = null,
         string? displayName = null,
         bool isUserSelectable = false,
         string? description = null,
-        int maxContextTokens = AIModelConfiguration.DefaultMaxContextTokens
+        int maxContextTokens = AIModelConfiguration.DefaultMaxContextTokens,
+        AIPriceUnit? inputPriceUnit = null,
+        AIPriceUnit? outputPriceUnit = null
     )
     {
         var config = new AIModelConfiguration(
@@ -137,23 +202,81 @@ public class Workspace : FullAuditedAggregateRoot<Guid>, IMultiTenant
             modelId,
             priority
         );
-        
+        var priceDefaults = CatalogPriceQuote.Default(capabilityType);
+
         config.UpdateConfiguration(
             modelId,
             apiEndpoint,
             apiKey,
             priority,
             openAIApiMode,
-            inputCostPer1MTokens,
-            outputCostPer1MTokens,
+            inputPrice,
+            outputPrice,
             dimensions,
             displayName,
             isUserSelectable,
             description,
-            maxContextTokens);
+            maxContextTokens,
+            inputPriceUnit ?? priceDefaults.InputUnit,
+            outputPriceUnit ?? priceDefaults.OutputUnit);
         
         _modelConfigurations.Add(config);
         return config;
+    }
+
+    /// <summary>
+    /// Makes an enabled chat configuration the implicit workspace default.
+    /// It becomes the lowest-priority enabled chat route, and <see cref="DefaultModel"/> is set to its model id.
+    /// </summary>
+    public void SetDefaultModelConfiguration(Guid configurationId)
+    {
+        var configuration = _modelConfigurations.FirstOrDefault(item => item.Id == configurationId);
+        if (configuration == null)
+        {
+            throw new BusinessException(AIErrorCodes.ModelConfigurationNotFound)
+                .WithData("ModelConfigurationId", configurationId);
+        }
+
+        if (configuration.CapabilityType != AICapabilityType.ChatCompletion)
+        {
+            throw new BusinessException(AIErrorCodes.WorkspaceDefaultRequiresChatCompletion)
+                .WithData("CapabilityType", configuration.CapabilityType.ToString());
+        }
+
+        if (!configuration.IsEnabled)
+        {
+            throw new BusinessException(AIErrorCodes.WorkspaceDefaultRequiresEnabledConfiguration)
+                .WithData("ModelConfigurationId", configurationId);
+        }
+
+        var peers = _modelConfigurations
+            .Where(item =>
+                item.Id != configuration.Id &&
+                item.CapabilityType == AICapabilityType.ChatCompletion &&
+                item.IsEnabled)
+            .OrderBy(item => item.Priority)
+            .ThenBy(item => item.Id)
+            .ToList();
+
+        if (peers.Count > 0 && configuration.Priority >= peers[0].Priority)
+        {
+            if (peers[0].Priority == int.MinValue)
+            {
+                configuration.SetPriority(0);
+                var nextPriority = 1;
+                foreach (var peer in peers)
+                {
+                    peer.SetPriority(nextPriority);
+                    nextPriority++;
+                }
+            }
+            else
+            {
+                configuration.SetPriority(peers[0].Priority - 1);
+            }
+        }
+
+        DefaultModel = configuration.ModelId;
     }
 
     /// <summary>

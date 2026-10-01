@@ -26,7 +26,6 @@ namespace SufiChain.SufiPlatform.SufiAI.Providers;
 /// </summary>
 public class OpenAIProvider : IAIProvider, ITransientDependency
 {
-    private const string DefaultBaseUrl = "https://api.openai.com/v1";
     private const string ProviderDidNotReturnUsage = "ProviderDidNotReturnUsage";
 
     private static readonly JsonSerializerOptions JsonOptions = new()
@@ -63,12 +62,17 @@ public class OpenAIProvider : IAIProvider, ITransientDependency
 
     public AIProviderType ProviderType => AIProviderType.OpenAI;
 
+    public AIProviderCapabilityKind CapabilityKind => AIProviderCapabilityKind.OpenAICompatible;
+
+    private readonly IEnumerable<IAiProviderProfile> _profiles;
+
     public OpenAIProvider(
         IHttpClientFactory httpClientFactory,
         ILogger<OpenAIProvider> logger,
         IAICredentialResolver credentialResolver,
         IClock clock, Web.IWebContentFetcher? webContentFetcher = null,
-        IOptions<AITransportOptions>? transportOptions = null)
+        IOptions<AITransportOptions>? transportOptions = null,
+        IEnumerable<IAiProviderProfile>? profiles = null)
     {
         _httpClientFactory = httpClientFactory;
         _logger = logger;
@@ -76,6 +80,7 @@ public class OpenAIProvider : IAIProvider, ITransientDependency
         _clock = clock;
         _webContentFetcher = webContentFetcher ?? new Web.WebContentFetcher();
         _transportOptions = transportOptions?.Value ?? new AITransportOptions();
+        _profiles = profiles ?? Array.Empty<IAiProviderProfile>();
     }
 
     public bool SupportsCapability(AICapabilityType capabilityType)
@@ -90,6 +95,7 @@ public class OpenAIProvider : IAIProvider, ITransientDependency
             AICapabilityType.ImageGeneration => true,
             AICapabilityType.WebSearch => true,
             AICapabilityType.WebFetch => true,
+            AICapabilityType.Decisions => true,
             _ => false
         };
     }
@@ -100,6 +106,7 @@ public class OpenAIProvider : IAIProvider, ITransientDependency
         ChatCompletionRequest request,
         CancellationToken cancellationToken = default)
     {
+        ChatRouteRequestGuard.EnsureAllowed(configuration, request);
         return ResolveApiMode(configuration) == OpenAIApiMode.Responses
             ? await SendResponsesMessageAsync(workspace, configuration, request, cancellationToken)
             : await SendChatCompletionsMessageAsync(workspace, configuration, request, cancellationToken);
@@ -111,6 +118,7 @@ public class OpenAIProvider : IAIProvider, ITransientDependency
         ChatCompletionRequest request,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
+        ChatRouteRequestGuard.EnsureAllowed(configuration, request);
         var stream = ResolveApiMode(configuration) == OpenAIApiMode.Responses
             ? StreamResponsesMessageAsync(workspace, configuration, request, cancellationToken)
             : StreamChatCompletionsMessageAsync(workspace, configuration, request, cancellationToken);
@@ -173,16 +181,19 @@ public class OpenAIProvider : IAIProvider, ITransientDependency
         var responseJson = await response.Content.ReadAsStringAsync(cancellationToken);
         var result = JsonSerializer.Deserialize<JsonElement>(responseJson);
         var usage = TryReadUsage(result, out var tokenUsage) ? tokenUsage : TokenUsage.Unavailable;
+        var billedSeconds = usage.AudioSeconds ?? ReadDecimalProperty(result, "duration");
 
         return new AudioTranscriptionResponse
         {
             Text = result.GetProperty("text").GetString() ?? string.Empty,
             ModelId = configuration.ModelId,
             Language = result.TryGetProperty("language", out var lang) ? lang.GetString() : null,
+            Duration = billedSeconds is decimal seconds ? TimeSpan.FromSeconds((double)seconds) : null,
+            BilledSeconds = billedSeconds,
             InputTokens = usage.InputTokens,
             OutputTokens = usage.OutputTokens,
             TotalTokens = usage.TotalTokens,
-            UsageUnavailableReason = usage.HasUsage ? null : ProviderDidNotReturnUsage
+            UsageUnavailableReason = usage.HasUsage || billedSeconds.HasValue ? null : ProviderDidNotReturnUsage
         };
     }
 
@@ -214,6 +225,74 @@ public class OpenAIProvider : IAIProvider, ITransientDependency
             AudioData = audioData,
             ModelId = configuration.ModelId,
             AudioFormat = request.AudioFormat ?? "mp3"
+        };
+    }
+
+    public async Task<ImageGenerationResponse> GenerateImageAsync(
+        Workspace workspace,
+        AIModelConfiguration configuration,
+        ImageGenerationRequest request,
+        CancellationToken cancellationToken = default)
+    {
+        var httpClient = CreateHttpClient(workspace, configuration);
+        var baseUrl = GetBaseUrl(workspace, configuration);
+        var isDallE = configuration.ModelId.StartsWith("dall-e", StringComparison.OrdinalIgnoreCase);
+        var format = NormalizeImageFormat(request.OutputFormat);
+
+        // DALL-E models return URLs unless asked for base64; GPT image models always return base64 and accept output_format.
+        var requestBody = new Dictionary<string, object?>
+        {
+            ["model"] = configuration.ModelId,
+            ["prompt"] = request.Prompt,
+            ["size"] = string.IsNullOrWhiteSpace(request.Size) ? "1024x1024" : request.Size,
+            ["n"] = 1
+        };
+        if (isDallE)
+        {
+            requestBody["response_format"] = "b64_json";
+            format = "png";
+        }
+        else
+        {
+            requestBody["output_format"] = format;
+        }
+        if (!string.IsNullOrWhiteSpace(request.Quality))
+        {
+            requestBody["quality"] = request.Quality;
+        }
+
+        using var response = await httpClient.PostAsync($"{baseUrl}/{ImagePath(workspace)}", CreateJsonContent(requestBody), cancellationToken);
+        await EnsureProviderSuccessAsync(response, ImagePath(workspace), configuration.ModelId, cancellationToken);
+
+        var result = JsonSerializer.Deserialize<JsonElement>(await response.Content.ReadAsStringAsync(cancellationToken));
+        var image = result.GetProperty("data")[0];
+        if (!image.TryGetProperty("b64_json", out var base64) || base64.ValueKind != JsonValueKind.String)
+        {
+            throw new BusinessException(AIErrorCodes.CapabilityNotSupported)
+                .WithData("Provider", ProviderType.ToString())
+                .WithData("CapabilityType", AICapabilityType.ImageGeneration.ToString());
+        }
+
+        var data = Convert.FromBase64String(base64.GetString()!);
+
+        return new ImageGenerationResponse
+        {
+            ImageData = data,
+            MimeType = format == "jpeg" ? "image/jpeg" : "image/" + format,
+            RevisedPrompt = image.TryGetProperty("revised_prompt", out var revised) && revised.ValueKind == JsonValueKind.String
+                ? revised.GetString()
+                : null,
+            ModelId = configuration.ModelId
+        };
+    }
+
+    private static string NormalizeImageFormat(string? format)
+    {
+        return (format ?? "png").Trim().ToLowerInvariant() switch
+        {
+            "jpg" or "jpeg" => "jpeg",
+            "webp" => "webp",
+            _ => "png"
         };
     }
 
@@ -410,15 +489,13 @@ public class OpenAIProvider : IAIProvider, ITransientDependency
         var httpClient = CreateHttpClient(workspace, configuration);
         var baseUrl = GetBaseUrl(workspace, configuration);
 
-        var requestBody = new
+        var requestBody = new Dictionary<string, object?>
         {
-            model = configuration.ModelId,
-            messages = BuildChatCompletionsMessages(request.Messages, request.SystemPrompt),
-            temperature = request.Temperature,
-            max_tokens = request.MaxTokens,
-            response_format = BuildChatResponseFormat(request.ResponseSchema),
-            stream = false
+            ["model"] = configuration.ModelId,
+            ["messages"] = BuildChatCompletionsMessages(request.Messages, request.SystemPrompt),
+            ["stream"] = false
         };
+        AddOptionalChatFields(requestBody, configuration, request);
 
         var response = await httpClient.PostAsync($"{baseUrl}/chat/completions", CreateJsonContent(requestBody), cancellationToken);
         await EnsureProviderSuccessAsync(response, "chat/completions", configuration.ModelId, cancellationToken);
@@ -475,16 +552,14 @@ public class OpenAIProvider : IAIProvider, ITransientDependency
         var httpClient = CreateHttpClient(workspace, configuration);
         var baseUrl = GetBaseUrl(workspace, configuration);
 
-        var requestBody = new
+        var requestBody = new Dictionary<string, object?>
         {
-            model = configuration.ModelId,
-            messages = BuildChatCompletionsMessages(request.Messages, request.SystemPrompt),
-            temperature = request.Temperature,
-            max_tokens = request.MaxTokens,
-            response_format = BuildChatResponseFormat(request.ResponseSchema),
-            stream = true,
-            stream_options = new { include_usage = true }
+            ["model"] = configuration.ModelId,
+            ["messages"] = BuildChatCompletionsMessages(request.Messages, request.SystemPrompt),
+            ["stream"] = true,
+            ["stream_options"] = new { include_usage = true }
         };
+        AddOptionalChatFields(requestBody, configuration, request);
 
         await foreach (var chunk in StreamJsonLinesAsync(httpClient, $"{baseUrl}/chat/completions", requestBody, cancellationToken))
         {
@@ -668,6 +743,34 @@ public class OpenAIProvider : IAIProvider, ITransientDependency
         return result;
     }
 
+    private static void AddOptionalChatFields(
+        Dictionary<string, object?> requestBody,
+        AIModelConfiguration configuration,
+        ChatCompletionRequest request)
+    {
+        if (request.Temperature.HasValue)
+        {
+            requestBody["temperature"] = request.Temperature;
+        }
+
+        if (request.MaxTokens.HasValue)
+        {
+            requestBody["max_tokens"] = request.MaxTokens;
+        }
+
+        var format = BuildChatResponseFormat(request.ResponseSchema);
+        if (format != null)
+        {
+            requestBody["response_format"] = format;
+        }
+
+        var effort = ChatRouteRequestGuard.ResolveEffort(configuration, request.ReasoningEffort);
+        if (!string.IsNullOrWhiteSpace(effort))
+        {
+            requestBody["reasoning_effort"] = effort;
+        }
+    }
+
     private static object BuildChatCompletionsContent(ChatMessage message)
     {
         if (message.MultiModalContent == null || !message.MultiModalContent.Any())
@@ -675,9 +778,16 @@ public class OpenAIProvider : IAIProvider, ITransientDependency
             return message.Content;
         }
 
-        return message.MultiModalContent.Select(content => content.Type == "text"
-            ? (object)new { type = "text", text = content.Text }
-            : new { type = "image_url", image_url = new { url = content.ImageUrl?.Url, detail = content.ImageUrl?.Detail } }).ToList();
+        return message.MultiModalContent.Select(content => content.Type switch
+        {
+            "text" => (object)new { type = "text", text = content.Text },
+            "file" => new
+            {
+                type = "file",
+                file = new { filename = content.FileName, file_data = content.FileData }
+            },
+            _ => (object)new { type = "image_url", image_url = new { url = content.ImageUrl?.Url, detail = content.ImageUrl?.Detail } }
+        }).ToList();
     }
 
     private static object BuildResponsesRequest(
@@ -686,16 +796,39 @@ public class OpenAIProvider : IAIProvider, ITransientDependency
         ChatCompletionRequest request,
         bool stream)
     {
-        return new
+        var body = new Dictionary<string, object?>
         {
-            model = configuration.ModelId,
-            instructions = request.SystemPrompt,
-            input = BuildResponsesInput(request.Messages),
-            temperature = request.Temperature,
-            max_output_tokens = request.MaxTokens,
-            text = request.ResponseSchema == null ? null : new { format = BuildResponsesFormat(request.ResponseSchema) },
-            stream
+            ["model"] = configuration.ModelId,
+            ["input"] = BuildResponsesInput(request.Messages),
+            ["stream"] = stream
         };
+        if (!string.IsNullOrWhiteSpace(request.SystemPrompt))
+        {
+            body["instructions"] = request.SystemPrompt;
+        }
+
+        if (request.Temperature.HasValue)
+        {
+            body["temperature"] = request.Temperature;
+        }
+
+        if (request.MaxTokens.HasValue)
+        {
+            body["max_output_tokens"] = request.MaxTokens;
+        }
+
+        if (request.ResponseSchema != null)
+        {
+            body["text"] = new { format = BuildResponsesFormat(request.ResponseSchema) };
+        }
+
+        var effort = ChatRouteRequestGuard.ResolveEffort(configuration, request.ReasoningEffort);
+        if (!string.IsNullOrWhiteSpace(effort))
+        {
+            body["reasoning"] = new { effort };
+        }
+
+        return body;
     }
 
     private static object? BuildChatResponseFormat(SufiAIJsonResponseSchema? schema)
@@ -736,9 +869,12 @@ public class OpenAIProvider : IAIProvider, ITransientDependency
             return new List<object> { new { type = "input_text", text = message.Content } };
         }
 
-        return message.MultiModalContent.Select(content => content.Type == "text"
-            ? (object)new { type = "input_text", text = content.Text }
-            : new { type = "input_image", image_url = content.ImageUrl?.Url, detail = content.ImageUrl?.Detail }).ToList();
+        return message.MultiModalContent.Select(content => content.Type switch
+        {
+            "text" => (object)new { type = "input_text", text = content.Text },
+            "file" => new { type = "input_file", filename = content.FileName, file_data = content.FileData },
+            _ => (object)new { type = "input_image", image_url = content.ImageUrl?.Url, detail = content.ImageUrl?.Detail }
+        }).ToList();
     }
 
     private async IAsyncEnumerable<JsonElement> StreamJsonLinesAsync(
@@ -802,15 +938,36 @@ public class OpenAIProvider : IAIProvider, ITransientDependency
         var inputTokens = TryGetInt32(usageElement, "prompt_tokens") ?? TryGetInt32(usageElement, "input_tokens");
         var outputTokens = TryGetInt32(usageElement, "completion_tokens") ?? TryGetInt32(usageElement, "output_tokens");
         var totalTokens = TryGetInt32(usageElement, "total_tokens");
+        var audioSeconds = ReadDecimalProperty(usageElement, "seconds");
 
-        usage = new TokenUsage(inputTokens, outputTokens, totalTokens);
+        usage = new TokenUsage(inputTokens, outputTokens, totalTokens, audioSeconds);
         return usage.HasUsage;
     }
 
     private static int? TryGetInt32(JsonElement element, string propertyName)
     {
-        return element.TryGetProperty(propertyName, out var property) && property.ValueKind == JsonValueKind.Number
-            ? property.GetInt32()
+        return element.TryGetProperty(propertyName, out var property) &&
+               property.ValueKind == JsonValueKind.Number &&
+               property.TryGetInt32(out var value)
+            ? value
+            : null;
+    }
+
+    private static decimal? ReadDecimalProperty(JsonElement element, string propertyName)
+    {
+        if (!element.TryGetProperty(propertyName, out var property))
+        {
+            return null;
+        }
+
+        if (property.ValueKind == JsonValueKind.Number && property.TryGetDecimal(out var number))
+        {
+            return number;
+        }
+
+        return property.ValueKind == JsonValueKind.String &&
+               decimal.TryParse(property.GetString(), System.Globalization.NumberStyles.Number, System.Globalization.CultureInfo.InvariantCulture, out var parsed)
+            ? parsed
             : null;
     }
 
@@ -1082,9 +1239,27 @@ public class OpenAIProvider : IAIProvider, ITransientDependency
         return configuration.OpenAIApiMode;
     }
 
-    private static string GetBaseUrl(Workspace workspace, AIModelConfiguration configuration)
+    private string GetBaseUrl(Workspace workspace, AIModelConfiguration configuration)
     {
-        return (configuration.ApiEndpoint ?? DefaultBaseUrl).TrimEnd('/');
+        var profile = AiProviderProfiles.Find(_profiles, workspace.Provider);
+        var configured = configuration.ApiEndpoint ?? workspace.ApiBaseUrl;
+        if (!string.IsNullOrWhiteSpace(configured))
+        {
+            return configured.Trim().TrimEnd('/');
+        }
+
+        if (!string.IsNullOrWhiteSpace(profile?.DefaultBaseUrl))
+        {
+            return profile.DefaultBaseUrl.Trim().TrimEnd('/');
+        }
+
+        return "https://api.openai.com/v1";
+    }
+
+    private string ImagePath(Workspace workspace)
+    {
+        return AiProviderProfiles.Find(_profiles, workspace.Provider)?.ImageGenerationPath
+            ?? "images/generations";
     }
 
     private static string ToDataUrl(byte[] data, string format)
@@ -1106,15 +1281,16 @@ public class OpenAIProvider : IAIProvider, ITransientDependency
 
         httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {apiKey}");
         httpClient.DefaultRequestHeaders.Add("X-Client-Request-Id", Guid.NewGuid().ToString("D"));
+        AiProviderProfiles.Find(_profiles, workspace.Provider)?.ApplyDefaultHeaders(httpClient);
         httpClient.Timeout = _transportOptions.GetRequestTimeout();
 
         return httpClient;
     }
 
-    private sealed record TokenUsage(int? InputTokens, int? OutputTokens, int? TotalTokens)
+    private sealed record TokenUsage(int? InputTokens, int? OutputTokens, int? TotalTokens, decimal? AudioSeconds = null)
     {
         public static TokenUsage Unavailable { get; } = new(null, null, null);
-        public bool HasUsage => InputTokens.HasValue || OutputTokens.HasValue || TotalTokens.HasValue;
+        public bool HasUsage => InputTokens.HasValue || OutputTokens.HasValue || TotalTokens.HasValue || AudioSeconds.HasValue;
     }
 
     private sealed record ProviderError(

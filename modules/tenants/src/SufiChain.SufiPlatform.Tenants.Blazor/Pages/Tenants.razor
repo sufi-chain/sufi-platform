@@ -89,3 +89,6 @@
 <TenantEditModal @bind-Open="_showEditModal" Tenant="_selectedTenant" OnTenantUpdated="OnTenantUpdatedAsync" />
 <FeaturesModal @ref="_featureManagementModal" />
 <SettingsModal @ref="_settingManagementModal" />
+<ReadOnlyHooshvareDrawer HooshvareKey="@TenantsDiagnosticsHooshvareKeys.Key"
+                         Title="@L["Hooshvare:SufiTenants:Diagnostics:DisplayName"]"
+                         ContextProvider="BuildHooshvareContext" />

@@ -44,7 +44,7 @@
                         ShowColumnChooser="true"
                         SelectionMode="SbSelectionMode.MultipleRows">
 					<ChildContent>
-						<SbColumn TItem="AIModelConfigurationDto" Title="@L["Actions"]" Width="104px" Sortable="false">
+						<SbColumn TItem="AIModelConfigurationDto" Title="@L["Actions"]" Width="148px" Sortable="false">
 							<CellTemplate Context="cellContext">
 								<SbStack Wrap="true" Direction="SbStackDirection.Row" Gap="1">
 									@if (!_readOnly)
@@ -58,16 +58,32 @@
 												</SbIconButton>
 											</SbTooltip>
 										</AuthorizeView>
-										<AuthorizeView Policy="@AIPermissions.AI.ManageConfigurations">
-											<SbTooltip Text="@L["Delete"]">
-												<SbIconButton Size="SbSize.Sm"
-															  AriaLabel="@L["Delete"]"
-															  Color="SbColor.Danger"
-															  OnClick="@(() => DeleteConfigurationAsync(cellContext.Item))">
-													<Icon><SbIcon Name="trash" Size="SbSize.Sm" /></Icon>
-												</SbIconButton>
-											</SbTooltip>
-										</AuthorizeView>
+										@if (CanSetWorkspaceDefault(cellContext.Item))
+										{
+											<AuthorizeView Policy="@AIPermissions.AI.ManageConfigurations">
+												<SbTooltip Text="@L["SetAsWorkspaceDefault"]">
+													<SbIconButton Size="SbSize.Sm"
+																  AriaLabel="@L["SetAsWorkspaceDefault"]"
+																  Color="SbColor.Warning"
+																  OnClick="@(() => SetWorkspaceDefaultAsync(cellContext.Item))">
+														<Icon><SbIcon Name="star" Size="SbSize.Sm" /></Icon>
+													</SbIconButton>
+												</SbTooltip>
+											</AuthorizeView>
+										}
+										@if (!IsWorkspaceDefault(cellContext.Item))
+										{
+											<AuthorizeView Policy="@AIPermissions.AI.ManageConfigurations">
+												<SbTooltip Text="@L["Delete"]">
+													<SbIconButton Size="SbSize.Sm"
+																  AriaLabel="@L["Delete"]"
+																  Color="SbColor.Danger"
+																  OnClick="@(() => DeleteConfigurationAsync(cellContext.Item))">
+														<Icon><SbIcon Name="trash" Size="SbSize.Sm" /></Icon>
+													</SbIconButton>
+												</SbTooltip>
+											</AuthorizeView>
+										}
 									}
 								</SbStack>
 							</CellTemplate>
@@ -79,16 +95,30 @@
 								</SbChip>
 							</CellTemplate>
 						</SbColumn>
-						<SbColumn TItem="AIModelConfigurationDto" Field="ModelId" Title="@L["ModelId"]" Width="220px" Filterable="true" Sortable="true">
+						<SbColumn TItem="AIModelConfigurationDto" Field="ModelId" Title="@L["DisplayName"]" Width="220px" Filterable="true" Sortable="true"
+								  ValueFunc="@(item => FormatModelLabel(item))">
 							<CellTemplate Context="cellContext">
 								<SbStack Direction="SbStackDirection.Column" Gap="0">
-									<SbText Variant="SbTextVariant.BodySmall" Weight="SbFontWeight.Medium">
-										@(string.IsNullOrWhiteSpace(cellContext.Item.DisplayName) ? cellContext.Item.ModelId : cellContext.Item.DisplayName)
-									</SbText>
-									@if (!string.IsNullOrWhiteSpace(cellContext.Item.DisplayName))
+									<SbStack Direction="SbStackDirection.Row" Gap="1" Align="SbAlign.Center" Wrap="true">
+										<SbText Variant="SbTextVariant.BodySmall" Weight="SbFontWeight.Medium">
+											@FormatModelLabel(cellContext.Item)
+										</SbText>
+										@if (IsWorkspaceDefault(cellContext.Item))
+										{
+											<SbChip Color="SbColor.Warning" Size="SbSize.Sm">
+												@L["WorkspaceDefault"]
+											</SbChip>
+										}
+									</SbStack>
+									@{
+										var chatFlags = cellContext.Item.CapabilityType == AICapabilityType.ChatCompletion
+											? FormatChatFlags(cellContext.Item)
+											: string.Empty;
+									}
+									@if (!string.IsNullOrWhiteSpace(chatFlags))
 									{
 										<SbText Variant="SbTextVariant.Caption" Color="SbColor.Muted">
-											@cellContext.Item.ModelId
+											@chatFlags
 										</SbText>
 									}
 								</SbStack>
@@ -124,13 +154,6 @@
 								</SbChip>
 							</CellTemplate>
 						</SbColumn>
-						<SbColumn TItem="AIModelConfigurationDto" Title="@L["OpenAIApiMode"]" Width="150px">
-							<CellTemplate Context="cellContext">
-								<SbText Variant="SbTextVariant.BodySmall">
-									@FormatApiMode(cellContext.Item)
-								</SbText>
-							</CellTemplate>
-						</SbColumn>
 						<SbColumn TItem="AIModelConfigurationDto" Field="MaxContextTokens" Title="@L["MaxContextTokens"]" Width="120px" Filterable="true" Sortable="true">
 							<CellTemplate Context="cellContext">
 								<SbText Variant="SbTextVariant.BodySmall">
@@ -138,17 +161,17 @@
 								</SbText>
 							</CellTemplate>
 						</SbColumn>
-						<SbColumn TItem="AIModelConfigurationDto" Title="@L["InputCostPer1MTokens"]" Width="140px">
+						<SbColumn TItem="AIModelConfigurationDto" Title="@L["RouteInputPrice"]" Width="160px">
 							<CellTemplate Context="cellContext">
-								<SbText Variant="SbTextVariant.BodySmall" Color="@(cellContext.Item.InputCostPer1MTokens.HasValue ? SbColor.Default : SbColor.Muted)">
-									@FormatRouteCost(cellContext.Item.InputCostPer1MTokens)
+								<SbText Variant="SbTextVariant.BodySmall" Color="@(cellContext.Item.InputPrice.HasValue ? SbColor.Default : SbColor.Muted)">
+									@FormatRoutePrice(cellContext.Item.InputPrice, cellContext.Item.InputPriceUnit)
 								</SbText>
 							</CellTemplate>
 						</SbColumn>
-						<SbColumn TItem="AIModelConfigurationDto" Title="@L["OutputCostPer1MTokens"]" Width="140px">
+						<SbColumn TItem="AIModelConfigurationDto" Title="@L["RouteOutputPrice"]" Width="160px">
 							<CellTemplate Context="cellContext">
-								<SbText Variant="SbTextVariant.BodySmall" Color="@(cellContext.Item.OutputCostPer1MTokens.HasValue ? SbColor.Default : SbColor.Muted)">
-									@FormatRouteCost(cellContext.Item.OutputCostPer1MTokens)
+								<SbText Variant="SbTextVariant.BodySmall" Color="@(cellContext.Item.OutputPrice.HasValue ? SbColor.Default : SbColor.Muted)">
+									@FormatOutputPrice(cellContext.Item)
 								</SbText>
 							</CellTemplate>
 						</SbColumn>
@@ -193,4 +216,5 @@
 <ModelConfigurationModal @bind-Open="_modelConfigurationModalOpen"
 						 Configuration="_editingConfiguration"
 						 WorkspaceId="WorkspaceId"
+						 WorkspaceProvider="@(_workspace?.Provider ?? AIProviderType.OpenAI)"
 						 OnSaved="@OnConfigurationSavedAsync" />

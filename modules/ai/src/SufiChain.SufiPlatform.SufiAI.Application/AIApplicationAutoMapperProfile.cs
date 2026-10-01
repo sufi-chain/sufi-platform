@@ -11,11 +11,15 @@ public partial class WorkspaceToWorkspaceDtoMapper : MapperBase<Workspace, Works
     [MapperIgnoreTarget(nameof(WorkspaceDto.HasApiKey))]
     [MapperIgnoreTarget(nameof(WorkspaceDto.InputCostPer1MTokens))]
     [MapperIgnoreTarget(nameof(WorkspaceDto.OutputCostPer1MTokens))]
+    [MapperIgnoreTarget(nameof(WorkspaceDto.ModelDisplayName))]
+    [MapperIgnoreTarget(nameof(WorkspaceDto.DecisionsModelId))]
     public override partial WorkspaceDto Map(Workspace source);
 
     [MapperIgnoreTarget(nameof(WorkspaceDto.HasApiKey))]
     [MapperIgnoreTarget(nameof(WorkspaceDto.InputCostPer1MTokens))]
     [MapperIgnoreTarget(nameof(WorkspaceDto.OutputCostPer1MTokens))]
+    [MapperIgnoreTarget(nameof(WorkspaceDto.ModelDisplayName))]
+    [MapperIgnoreTarget(nameof(WorkspaceDto.DecisionsModelId))]
     public override partial void Map(Workspace source, WorkspaceDto destination);
 
     public override void AfterMap(Workspace source, WorkspaceDto destination)
@@ -23,6 +27,8 @@ public partial class WorkspaceToWorkspaceDtoMapper : MapperBase<Workspace, Works
         destination.HasApiKey = !string.IsNullOrEmpty(source.ApiKey);
         destination.InputCostPer1MTokens = source.InputCostPer1MTokens;
         destination.OutputCostPer1MTokens = source.OutputCostPer1MTokens;
+        destination.ModelDisplayName = source.GetPrimaryConfiguration(AICapabilityType.ChatCompletion)?.DisplayName;
+        destination.DecisionsModelId = source.GetPrimaryConfiguration(AICapabilityType.Decisions)?.ModelId;
     }
 }
 

@@ -1,8 +1,9 @@
 using SufiChain.SufiPlatform.SufiAI.Features;
 using SufiChain.SufiPlatform.SufiAI.Localization;
 using SufiChain.SufiPlatform.Features;
-
 using Volo.Abp.Localization;
+using NumericValueValidator = Volo.Abp.Validation.StringValues.NumericValueValidator;
+
 namespace SufiChain.SufiPlatform.SufiAI.Features;
 
 /// <summary>
@@ -26,6 +27,12 @@ public class AIFeatureDefinitionProvider : FeatureDefinitionProvider
         AddToggle(group, SufiAIFeatures.MCP);
         AddToggle(group, SufiAIFeatures.UsageAnalytics);
         AddToggle(group, SufiAIFeatures.FileManagerIntegration);
+        group.AddFeature(
+            SufiAIFeatures.PriceMarkupPercent,
+            defaultValue: "0",
+            displayName: L($"Feature:{SufiAIFeatures.PriceMarkupPercent}"),
+            description: L($"Feature:{SufiAIFeatures.PriceMarkupPercent}.Description"),
+            valueType: new FreeTextStringValueType(new NumericValueValidator(0)));
     }
 
     private static void AddToggle(FeatureGroupDefinition group, string name)

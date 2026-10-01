@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Components;
+using SufiChain.SufiPlatform.SufiAI.Hooshvare;
 using SufiChain.SufiPlatform.SufiAI.Workspaces;
 using SufiChain.SufiBlazor.Components.Data;
 using SufiChain.SufiBlazor.Contracts.Data;
@@ -210,6 +211,9 @@ public partial class Workspaces : AIComponentBase
         }, LoadingKeys.DeleteWorkspace);
     }
 
+    private static string FormatModelLabel(WorkspaceDto workspace) =>
+        string.IsNullOrWhiteSpace(workspace.ModelDisplayName) ? workspace.Model : workspace.ModelDisplayName;
+
     private SbColor GetProviderColor(AIProviderType provider)
     {
         return provider switch
@@ -217,5 +221,16 @@ public partial class Workspaces : AIComponentBase
             AIProviderType.OpenAI => SbColor.Primary,
             _ => SbColor.Default
         };
+    }
+
+    private IReadOnlyDictionary<string, string> BuildHooshvareContext()
+    {
+        var context = new Dictionary<string, string>(StringComparer.Ordinal);
+        if (_editingWorkspaceId.HasValue)
+        {
+            context[WorkspaceReadinessHooshvareKeys.Context.WorkspaceId] = _editingWorkspaceId.Value.ToString();
+        }
+
+        return context;
     }
 }

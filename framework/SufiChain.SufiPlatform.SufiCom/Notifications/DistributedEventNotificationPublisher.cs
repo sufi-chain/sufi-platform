@@ -163,7 +163,8 @@ public class DistributedEventNotificationPublisher : INotificationPublisher, ITr
             Subject = envelope.InboxTitle ?? string.Empty,
             Body = envelope.InboxBody ?? string.Empty,
             TemplateName = envelope.TemplateName,
-            TemplateData = envelope.TemplateData
+            TemplateData = envelope.TemplateData,
+            FromDisplayName = envelope.EmailFromDisplayName
         });
     }
 

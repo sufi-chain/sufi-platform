@@ -39,7 +39,34 @@ public class HooshvareMcpProgressFunctionFilterTests
     [InlineData("contacts.register_onboarded_user")]
     [InlineData("contacts.complete_onboarding")]
     [InlineData("helpdesk.kb.search_project_guidance")]
-    [InlineData("cms.get_designer_catalog")]
+    [InlineData("cms.get_site_context")]
+    [InlineData("cms.list_blocks")]
+    [InlineData("cms.list_pages")]
+    [InlineData("cms.get_page")]
+    [InlineData("cms.get_section")]
+    [InlineData("cms.list_tags")]
+    [InlineData("cms.media.search")]
+    [InlineData("cms.media.describe")]
+    [InlineData("cms.media.usage")]
+    [InlineData("cms.seo.audit")]
+    [InlineData("cms.audit.accessibility")]
+    [InlineData("cms.audit.performance")]
+    [InlineData("cms.analytics.summary")]
+    [InlineData("cms.engagement.pending")]
+    [InlineData("cms.patch_page_section")]
+    [InlineData("cms.insert_section")]
+    [InlineData("cms.save_page_draft")]
+    [InlineData("cms.save_translation_draft")]
+    [InlineData("cms.seo.save_draft_meta")]
+    [InlineData("cms.engagement.draft_reply")]
+    [InlineData("cms.media.request_upload")]
+    [InlineData("cms.media.propose_generate")]
+    [InlineData("cms.media.promote_attachment")]
+    [InlineData("cms.propose_style_change")]
+    [InlineData("cms.save_site_draft")]
+    [InlineData("cms.propose_css_cleanup")]
+    [InlineData("cms.redirect.propose")]
+    [InlineData("cms.import_from_url")]
     public async Task Registered_Tool_Progress_Should_Resolve_Specific_Activity_In_Every_Culture(string toolName)
     {
         var (kernel, function, progress) = await RegisterToolAsync(toolName);
@@ -132,7 +159,10 @@ public class HooshvareMcpProgressFunctionFilterTests
             .Returns(new MCPToolResolutionResult { Tools = [tool] });
         var kernel = Kernel.CreateBuilder().Build();
         var progress = AttachReporter(kernel);
-        var registrar = new MCPKernelToolRegistrar(registry, NullLogger<MCPKernelToolRegistrar>.Instance);
+        var registrar = new MCPKernelToolRegistrar(
+            registry,
+            Array.Empty<IMcpToolDecisionGate>(),
+            NullLogger<MCPKernelToolRegistrar>.Instance);
 
         await registrar.RegisterToolsAsync(kernel, new WorkspaceContext { WorkspaceName = "test" }, [toolName]);
 

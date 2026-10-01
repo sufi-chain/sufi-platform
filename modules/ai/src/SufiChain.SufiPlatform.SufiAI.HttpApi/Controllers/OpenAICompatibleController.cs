@@ -123,6 +123,7 @@ public class OpenAICompatibleController : SufiControllerBase
             }).ToList(),
             Temperature = request.Temperature.HasValue ? (float)request.Temperature.Value : null,
             MaxTokens = request.MaxTokens,
+            ReasoningEffort = request.ReasoningEffort,
             Stream = request.Stream
         };
 

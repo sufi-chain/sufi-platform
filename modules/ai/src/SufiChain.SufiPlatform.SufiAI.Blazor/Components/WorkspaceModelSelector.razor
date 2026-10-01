@@ -1,0 +1,159 @@
+@namespace SufiChain.SufiPlatform.SufiAI.Blazor.Components
+@inherits AIComponentBase
+
+@if (Compact && (ShouldRenderPicker || EffortOptions.Count > 0))
+{
+    <div class="workspace-model-selector workspace-model-selector--compact-row">
+        @if (ShouldRenderPicker)
+        {
+        <div class="workspace-model-selector workspace-model-selector--compact">
+            <SbPopover @bind-Open="_compactOpen"
+                       Placement="SbPlacement.TopStart"
+                       FlipBehavior="false"
+                       Class="workspace-model-selector__popover">
+                <AnchorContent>
+                    <button type="button"
+                            class="@CompactTriggerCssClass"
+                            title="@CompactTriggerTitle"
+                            aria-label="@CompactTriggerTitle"
+                            aria-haspopup="listbox"
+                            aria-expanded="@_compactOpen"
+                            disabled="@Disabled"
+                            @onclick="ToggleCompactAsync"
+                            @onclick:stopPropagation="true">
+                        @if (!string.IsNullOrWhiteSpace(SelectedRoute?.ModelId))
+                        {
+                            <ModelFamilyLogo ModelId="@SelectedRoute?.ModelId" Small="true" />
+                        }
+                        <span class="workspace-model-selector__copy">
+                            <span class="workspace-model-selector__label">@CompactTriggerLabel</span>
+                        </span>
+                    </button>
+                </AnchorContent>
+                <ChildContent>
+                    <div class="workspace-model-selector__menu" role="listbox" aria-label="@L["WorkspaceChat:ModelSelector"]">
+                        @foreach (var route in _routes)
+                        {
+                            <button type="button"
+                                    class="@GetCompactOptionCssClass(route)"
+                                    role="option"
+                                    aria-selected="@(route.Id == SelectedRouteId)"
+                                    disabled="@(!route.IsReady)"
+                                    @onclick="@(() => OnCompactRouteChosenAsync(route.Id))">
+                                <ModelFamilyLogo ModelId="@route.ModelId" Small="true" />
+                                <span class="workspace-model-selector__option-copy">
+                                    <span class="workspace-model-selector__option-name">@FormatRouteName(route)</span>
+                                    <span class="workspace-model-selector__option-meta">@FormatRouteMeta(route)</span>
+                                </span>
+                            </button>
+                        }
+                    </div>
+                </ChildContent>
+            </SbPopover>
+        </div>
+        }
+        @if (EffortOptions.Count > 0)
+        {
+            <div class="workspace-model-selector workspace-model-selector--compact">
+                <SbPopover @bind-Open="_effortOpen"
+                           Placement="SbPlacement.TopStart"
+                           FlipBehavior="false"
+                           Class="workspace-model-selector__popover">
+                    <AnchorContent>
+                        <button type="button"
+                                class="@EffortTriggerCssClass"
+                                title="@EffortTriggerTitle"
+                                aria-label="@EffortTriggerTitle"
+                                aria-haspopup="listbox"
+                                aria-expanded="@_effortOpen"
+                                disabled="@Disabled"
+                                @onclick="ToggleEffortAsync"
+                                @onclick:stopPropagation="true">
+                            <span class="workspace-model-selector__effort-mark" aria-hidden="true">
+                                <SbIcon Name="sparkles" Size="SbSize.Sm" />
+                            </span>
+                            <span class="workspace-model-selector__copy">
+                                <span class="workspace-model-selector__label">@FormatEffort(SelectedEffort)</span>
+                            </span>
+                        </button>
+                    </AnchorContent>
+                    <ChildContent>
+                        <div class="workspace-model-selector__menu" role="listbox" aria-label="@L["ReasoningEffort"]">
+                            @foreach (var effort in EffortOptions)
+                            {
+                                <button type="button"
+                                        class="@GetEffortOptionCssClass(effort)"
+                                        role="option"
+                                        aria-selected="@IsSelectedEffort(effort)"
+                                        @onclick="@(() => OnCompactEffortChosenAsync(effort))">
+                                    <span class="workspace-model-selector__option-name">@FormatEffort(effort)</span>
+                                </button>
+                            }
+                        </div>
+                    </ChildContent>
+                </SbPopover>
+            </div>
+        }
+    </div>
+}
+else if (ShouldRenderPicker)
+{
+    <div class="workspace-model-selector">
+            <SbSelect TItem="AIModelRouteDto"
+                      TValue="Guid"
+                      Items="_routes"
+                      Value="@SelectedRouteId"
+                      ValueChanged="@OnRouteChangedAsync"
+                      TextField="@RouteSearchText"
+                      ValueField="@(route => route.Id)"
+                      ItemDisabled="@(route => !route.IsReady)"
+                      Label="@L["WorkspaceChat:ModelSelector"]"
+                      Disabled="@Disabled">
+                <ItemTemplate Context="route">
+                    <span class="workspace-model-selector__row">
+                        <ModelFamilyLogo ModelId="@route.ModelId" />
+                        <span class="workspace-model-selector__option-copy">
+                            <span class="workspace-model-selector__option-name">@FormatRouteName(route)</span>
+                            <span class="workspace-model-selector__option-meta">@FormatRouteMeta(route)</span>
+                        </span>
+                    </span>
+                </ItemTemplate>
+                <SelectedValueTemplate Context="route">
+                    <span class="workspace-model-selector__row">
+                        <ModelFamilyLogo ModelId="@route.ModelId" Small="true" />
+                        <span class="workspace-model-selector__option-name">@FormatRouteName(route)</span>
+                    </span>
+                </SelectedValueTemplate>
+            </SbSelect>
+    </div>
+}
+else if (ShowCatalogHints && _catalogLoaded && WorkspaceId != Guid.Empty)
+{
+    <SbText Variant="SbTextVariant.Caption" Color="SbColor.Muted">
+        @(_routes.Count == 0 ? L["WorkspaceChat:NoSelectableChatRoutes"] : L["WorkspaceChat:ModelSelectorNeedMoreRoutes"])
+    </SbText>
+}
+@if (SelectedRoute?.SupportsResponses == true)
+{
+    <SbSimpleSelect TValue="OpenAIApiMode"
+                    Value="@ApiMode"
+                    ValueChanged="@OnApiModeChangedAsync"
+                    Label="@L["OpenAIApiMode"]"
+                    Disabled="@Disabled">
+        <SbSelectOption TValue="OpenAIApiMode" Value="@OpenAIApiMode.ChatCompletions">@L["ChatCompletions"]</SbSelectOption>
+        <SbSelectOption TValue="OpenAIApiMode" Value="@OpenAIApiMode.Responses">@L["Responses"]</SbSelectOption>
+    </SbSimpleSelect>
+}
+@if (!Compact && EffortOptions.Count > 0)
+{
+    <SbSimpleSelect TValue="string"
+                    Value="@SelectedEffort"
+                    ValueChanged="@OnEffortChangedAsync"
+                    Label="@L["ReasoningEffort"]"
+                    Disabled="@Disabled">
+        @foreach (var effort in EffortOptions)
+        {
+            <SbSelectOption TValue="string" Value="@effort">@effort</SbSelectOption>
+        }
+    </SbSimpleSelect>
+}

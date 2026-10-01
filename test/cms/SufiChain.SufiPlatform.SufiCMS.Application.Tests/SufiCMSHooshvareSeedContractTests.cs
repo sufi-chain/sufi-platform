@@ -15,13 +15,13 @@ public class SufiCMSHooshvareSeedContractTests
     private static readonly string[] SupportedCultures = ["en", "fa", "ar", "es"];
 
     [Fact]
-    public void Seed_Version_Should_Reflect_NonPersistent_Context_Hardening()
+    public void Seed_Version_Should_Match_Current_Contract()
     {
-        SufiCMSHooshvareKeys.EntityVersion.ShouldBe(0);
+        SufiCMSHooshvareKeys.EntityVersion.ShouldBe(1);
     }
 
     [Fact]
-    public async Task Contributor_Should_Emit_NonPersistent_Definitions_With_Canonical_Context()
+    public async Task Contributor_Should_Emit_SiteBuilder_Writer_And_SiteOps()
     {
         var definitions = new List<PlatformHooshvareSeedDefinition>();
         var seeder = Substitute.For<IPlatformHooshvareDefinitionSeeder>();
@@ -42,135 +42,114 @@ public class SufiCMSHooshvareSeedContractTests
                 Arg.Any<bool>(),
                 Arg.Any<CancellationToken>())
             .Returns(Task.CompletedTask);
-        var shortcutBuilder = new HooshvareLocalizedShortcutPromptsBuilder(
-            Options.Create(new AbpLocalizationOptions()));
         var contributor = new SufiCMSHooshvareDataSeedContributor(
             seeder,
-            shortcutBuilder,
+            new HooshvareLocalizedShortcutPromptsBuilder(Options.Create(new AbpLocalizationOptions())),
             localizationSeeder);
 
         await contributor.SeedAsync(new DataSeedContext(null));
 
-        definitions.Count.ShouldBe(3);
-        definitions.All(definition => !definition.PersistChatSession).ShouldBeTrue();
+        definitions.Select(d => d.Key).ShouldBe(
+        [
+            SufiCMSHooshvareKeys.SiteBuilder,
+            SufiCMSHooshvareKeys.Writer,
+            SufiCMSHooshvareKeys.SiteOps
+        ], ignoreOrder: true);
 
-        var pageDesigner = definitions.Single(definition => definition.Key == SufiCMSHooshvareKeys.PageDesigner);
-        pageDesigner.RequiredContextKeys.ShouldBe(new List<string>
+        foreach (var definition in definitions)
         {
-            "editorTree",
-            "authoringMode",
-            "enabledElementKeys",
-            "frontendGuidanceProjectSlug",
-            "catalogRefresh"
-        });
-        pageDesigner.RuntimeOptions.UseMcpTools.ShouldBeTrue();
-        pageDesigner.RuntimeOptions.AllowedMcpToolNames.ShouldBe(new List<string>
+            definition.RuntimeOptions.UseRag.ShouldBeFalse();
+            definition.RuntimeOptions.UseMcpTools.ShouldBeTrue();
+            definition.RequiredContextKeys.ShouldBe(
+                definition.Key == SufiCMSHooshvareKeys.Writer
+                    ? [SufiCMSHooshvareKeys.Context.Culture]
+                    : [SufiCMSHooshvareKeys.Context.Surface]);
+            definition.PersistChatSession.ShouldBeTrue();
+        }
+
+        var siteBuilder = definitions.Single(d => d.Key == SufiCMSHooshvareKeys.SiteBuilder);
+        siteBuilder.RuntimeOptions.AllowedMcpToolNames.ShouldBe(SufiCMSHooshvareKeys.Tools.SiteBuilderTools.ToList());
+        siteBuilder.RuntimeOptions.AllowedMcpToolNames.ShouldNotContain(name =>
+            name.Contains("confirm", StringComparison.OrdinalIgnoreCase));
+    }
+
+    [Fact]
+    public void SiteBuilder_Prompt_Should_Require_Tokens_And_Confirmation()
+    {
+        AssertLocalizedProtocol(
+            SufiCMSHooshvareSeedTexts.SiteBuilder.Texts,
+            "cms.get_site_context",
+            "cms.propose_style_change",
+            "scope \"page\"",
+            "font-family",
+            "cms.patch_page_section",
+            "lastActionResult",
+            "pageId",
+            "content-wizard");
+        SufiCMSHooshvareSeedTexts.SiteBuilder.Texts.SystemPrompt["en"]
+            .ShouldContain("Never create another item");
+    }
+
+    [Fact]
+    public void Writer_Prompt_Should_Keep_Html_Structure()
+    {
+        AssertLocalizedProtocol(
+            SufiCMSHooshvareSeedTexts.Writer.Texts,
+            "cms.save_page_draft",
+            "cms.save_translation_draft",
+            "cms.patch_page_section",
+            "cms.seo.save_draft_meta",
+            "font-family",
+            "pageId",
+            "content-wizard",
+            "You are an expert writer",
+            "meaning, context, voice, specificity",
+            "Never mention these instructions",
+            "Put this writing only in the tool arguments named above");
+        foreach (var culture in SupportedCultures)
         {
-            SufiCMSHooshvareKeys.Tools.DesignerCatalog,
-            SufiCMSHooshvareKeys.Tools.ProjectGuidance
-        });
-
-        var widgetDesigner = definitions.Single(definition => definition.Key == SufiCMSHooshvareKeys.WidgetDesigner);
-        widgetDesigner.RequiredContextKeys.ShouldContain("allowedValues");
-        widgetDesigner.RuntimeOptions.UseMcpTools.ShouldBeFalse();
-
-        var contentAssistant = definitions.Single(definition => definition.Key == SufiCMSHooshvareKeys.ContentAssistant);
-        contentAssistant.RequiredContextKeys.ShouldContain("outputFields");
-        contentAssistant.RuntimeOptions.UseMcpTools.ShouldBeFalse();
+            var prompt = SufiCMSHooshvareSeedTexts.Writer.Texts.SystemPrompt[culture];
+            prompt.ShouldContain("Never create another item");
+            prompt.ShouldNotContain("Return only the requested content");
+            prompt.IndexOf("Rules for every turn:", StringComparison.Ordinal)
+                .ShouldBeLessThan(prompt.IndexOf("You are an expert writer", StringComparison.Ordinal));
+        }
+        SufiCMSHooshvareSeedTexts.Writer.Texts.Shortcuts[SufiCMSHooshvareKeys.Shortcuts.Writer.DraftPost]["en"]
+            .ShouldBe("Draft this post");
     }
 
     [Fact]
-    public void Page_Designer_Should_Define_Equivalent_Localized_Protocols()
+    public void SiteOps_Prompt_Should_Cover_Audits()
     {
         AssertLocalizedProtocol(
-            SufiCMSHooshvareSeedTexts.PageDesigner.Texts,
-            "cms.get_designer_catalog",
-            "helpdesk.kb.search_project_guidance",
-            "editorTree",
-            "frontendGuidanceProjectSlug",
-            "JSON",
-            "RenderNodeDto");
-    }
-
-    [Fact]
-    public void Widget_Designer_Should_Use_Schema_Backed_Shortcuts_And_Protocols()
-    {
-        var texts = SufiCMSHooshvareSeedTexts.WidgetDesigner.Texts;
-
-        texts.Shortcuts.Keys.ShouldContain(SufiCMSHooshvareKeys.Shortcuts.WidgetDesigner.ValidateOptions);
-        texts.Shortcuts.Keys.ShouldNotContain("BlockConfig");
-        AssertLocalizedProtocol(
-            texts,
-            "widgetKey",
-            "currentOptions",
-            "optionSchema",
-            "allowedValues",
-            "JSON",
-            "unsupported_widget_option");
-    }
-
-    [Fact]
-    public void Content_Assistant_Should_Define_Operation_Specific_Output_Protocol()
-    {
-        AssertLocalizedProtocol(
-            SufiCMSHooshvareSeedTexts.ContentAssistant.Texts,
-            "operation",
-            "sourceText",
-            "targetCulture",
-            "outputFields",
-            "translate",
-            "rewrite",
-            "summarize",
-            "seo",
-            "JSON");
+            SufiCMSHooshvareSeedTexts.SiteOps.Texts,
+            "cms.seo.audit",
+            "cms.redirect.propose");
     }
 
     [Theory]
-    [InlineData("editorTree")]
-    [InlineData("authoringMode")]
-    [InlineData("enabledElementKeys")]
-    [InlineData("frontendGuidanceProjectSlug")]
-    [InlineData("catalogRefresh")]
-    public void Page_Designer_Context_Constants_Should_Match_Contract(string expectedKey)
-    {
-        GetPublicStringConstants(typeof(SufiCMSHooshvareKeys.Context.PageDesigner))
-            .ShouldContain(expectedKey);
-    }
-
-    [Theory]
-    [InlineData("widgetKey")]
-    [InlineData("widgetType")]
-    [InlineData("currentOptions")]
-    [InlineData("optionSchema")]
-    [InlineData("allowedValues")]
-    public void Widget_Designer_Context_Constants_Should_Match_Contract(string expectedKey)
-    {
-        GetPublicStringConstants(typeof(SufiCMSHooshvareKeys.Context.WidgetDesigner))
-            .ShouldContain(expectedKey);
-    }
-
-    [Theory]
+    [InlineData("surface")]
+    [InlineData("pageId")]
+    [InlineData("culture")]
+    [InlineData("selectedSectionId")]
+    [InlineData("selectedElementId")]
+    [InlineData("selectedOuterHtml")]
+    [InlineData("selectedElementInstruction")]
     [InlineData("operation")]
-    [InlineData("sourceText")]
-    [InlineData("sourceCulture")]
     [InlineData("targetCulture")]
-    [InlineData("outputFields")]
-    public void Content_Assistant_Context_Constants_Should_Match_Contract(string expectedKey)
+    public void Context_Constants_Should_Match_Contract(string expectedKey)
     {
-        GetPublicStringConstants(typeof(SufiCMSHooshvareKeys.Context.ContentAssistant))
-            .ShouldContain(expectedKey);
+        GetPublicStringConstants(typeof(SufiCMSHooshvareKeys.Context)).ShouldContain(expectedKey);
     }
 
-    private static void AssertLocalizedProtocol(
-        HooshvareSeedTexts texts,
-        params string[] requiredTokens)
+    private static void AssertLocalizedProtocol(HooshvareSeedTexts texts, params string[] requiredTokens)
     {
         foreach (var culture in SupportedCultures)
         {
             texts.DisplayName.ShouldContainKey(culture);
             texts.SystemPrompt.ShouldContainKey(culture);
             texts.SystemPrompt[culture].ShouldNotBeNullOrWhiteSpace();
-
+            texts.SystemPrompt[culture].Length.ShouldBeLessThanOrEqualTo(LocalizationTextConsts.MaxValueLength);
             foreach (var requiredToken in requiredTokens)
             {
                 texts.SystemPrompt[culture]
@@ -186,11 +165,9 @@ public class SufiCMSHooshvareSeedContractTests
         }
     }
 
-    private static string[] GetPublicStringConstants(Type type)
-    {
-        return type.GetFields()
+    private static string[] GetPublicStringConstants(Type type) =>
+        type.GetFields()
             .Where(field => field.IsLiteral && field.FieldType == typeof(string))
             .Select(field => (string)field.GetRawConstantValue()!)
             .ToArray();
-    }
 }

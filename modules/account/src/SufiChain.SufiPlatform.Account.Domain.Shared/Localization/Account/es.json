@@ -17,6 +17,7 @@
     "ChannelVoice": "Llamada de voz",
     "EmailConfirmation:Subject": "Confirme su correo electrónico",
     "PasswordReset:Subject": "Restablezca su contraseña",
+    "EmailSender:DisplayName": "Cuenta",
     "VerificationCode:Subject": "Su código de verificación",
     "CaptchaLoading": "Cargando verificación de seguridad...",
     "CaptchaQuestion": "Verificación de seguridad",
@@ -128,6 +129,13 @@
     "EmailConfirmationResendFailed": "No se pudo enviar el correo de confirmación. Inténtelo de nuevo.",
     "CaptchaLoadFailed": "No se pudo cargar el captcha. Actualice la página e inténtelo de nuevo.",
     "ProfileSaveFailed": "No se pudo guardar el perfil. Inténtelo de nuevo.",
-    "PasswordChangeFailed": "No se pudo cambiar la contraseña. Inténtelo de nuevo."
+    "PasswordChangeFailed": "No se pudo cambiar la contraseña. Inténtelo de nuevo.",
+    "LinkNewAccount": "Vincular cuenta nueva",
+    "LinkAccountSignInHint": "Inicie sesión con la cuenta que desea vincular. El vínculo se completa después del inicio de sesión.",
+    "LinkAccountProcessing": "Vinculando cuentas...",
+    "LinkAccountSucceeded": "Las cuentas están vinculadas.",
+    "LinkAccountFailed": "No se pudo vincular la cuenta. Empiece de nuevo desde las cuentas vinculadas.",
+    "LinkAccountSameUser": "Inició sesión con la misma cuenta. Cierre sesión e inicie sesión con la otra cuenta para terminar el vínculo.",
+    "LinkAccountSignInOther": "Iniciar sesión con otra cuenta"
   }
 }

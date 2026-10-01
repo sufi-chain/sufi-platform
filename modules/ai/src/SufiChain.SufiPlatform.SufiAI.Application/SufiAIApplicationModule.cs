@@ -1,9 +1,12 @@
 using Microsoft.Extensions.DependencyInjection;
+using SufiChain.SufiPlatform.SufiAI.BackgroundJobs;
 using SufiChain.SufiPlatform.SufiAI.Configuration;
 using SufiChain.SufiPlatform.Ddd;
 using SufiChain.SufiPlatform.FileManager.Configuration;
 using SufiChain.SufiPlatform.Localization;
 using SufiChain.SufiPlatform.Tags;
+using Volo.Abp;
+using Volo.Abp.BackgroundWorkers;
 using Volo.Abp.Modularity;
 
 using Volo.Abp.Mapperly;
@@ -17,7 +20,9 @@ namespace SufiChain.SufiPlatform.SufiAI;
     typeof(SufiTagsDomainSharedModule),
     typeof(SufiLocalizationApplicationContractsModule),
     typeof(SufiDddApplicationModule),
-    typeof(AbpMapperlyModule)
+    typeof(AbpMapperlyModule),
+    typeof(AbpBackgroundWorkersModule),
+    typeof(Volo.Abp.DistributedLocking.AbpDistributedLockingAbstractionsModule)
 )]
 public class SufiAIApplicationModule : AbpModule
 {
@@ -30,5 +35,10 @@ public class SufiAIApplicationModule : AbpModule
         Configure<FileManagerOptions>(options => new AIOptions().AddDefaultFileStructure(options));
 
         context.Services.AddMapperlyObjectMapper<SufiAIApplicationModule>();
+    }
+
+    public override async Task OnApplicationInitializationAsync(ApplicationInitializationContext context)
+    {
+        await context.AddBackgroundWorkerAsync<ModelCatalogPriceReviewWorker>();
     }
 }

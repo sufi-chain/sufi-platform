@@ -29,8 +29,8 @@ public class AIPermissionDefinitionProvider : PermissionDefinitionProvider
         ragPermission.AddChild(AIPermissions.RAG.Index, L("Permission:Index"));
 
         AIGroup.AddPermission(
-            AIPermissions.TestChat.Default,
-            L("Permission:TestChat")
+            AIPermissions.WorkspaceChat.Default,
+            L("Permission:WorkspaceChat")
         );
         
         var mcpToolsPermission = AIGroup.AddPermission(

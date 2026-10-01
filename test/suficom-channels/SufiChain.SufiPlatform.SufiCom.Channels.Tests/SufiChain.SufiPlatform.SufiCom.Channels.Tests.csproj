@@ -10,6 +10,7 @@
     <ProjectReference Include="..\..\..\framework\SufiChain.SufiPlatform.SufiCom.Abstractions\SufiChain.SufiPlatform.SufiCom.Abstractions.csproj" />
     <ProjectReference Include="..\..\..\..\pro-modules\suficom\channels\src\SufiChain.SufiPlatform.SufiCom.Channels.Email\SufiChain.SufiPlatform.SufiCom.Channels.Email.csproj" />
     <ProjectReference Include="..\..\..\..\pro-modules\suficom\channels\src\SufiChain.SufiPlatform.SufiCom.Channels\SufiChain.SufiPlatform.SufiCom.Channels.csproj" />
+    <ProjectReference Include="..\..\..\..\pro-modules\suficom\channels\src\SufiChain.SufiPlatform.SufiCom.Channels.Sms.Kavenegar\SufiChain.SufiPlatform.SufiCom.Channels.Sms.Kavenegar.csproj" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.14.1" />
     <PackageReference Include="Shouldly" Version="4.3.0" />
     <PackageReference Include="xunit" Version="2.9.3" />

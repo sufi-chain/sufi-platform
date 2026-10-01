@@ -33,6 +33,7 @@ public class BackgroundEmailSendingJob : AsyncBackgroundJob<BackgroundEmailSendi
             additionalArgs: new AdditionalMessageSendingArgs
             {
                 Priority = args.Priority,
+                FromDisplayName = args.FromDisplayName,
                 QueueMessage = false // Already queued, send directly
             }
         );
