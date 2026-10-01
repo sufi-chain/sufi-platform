@@ -191,7 +191,7 @@ public class ChatMessageAppService_Tests : ChatApplicationTestBase<SufiComChatAp
             });
         });
 
-        exception.Code.ShouldBe("AuthenticationRequired");
+        exception.Code.ShouldBe("Chat:AuthenticationRequired");
     }
 
     private async Task<ChatSessionDto> CreateAuthenticatedSessionAsync()

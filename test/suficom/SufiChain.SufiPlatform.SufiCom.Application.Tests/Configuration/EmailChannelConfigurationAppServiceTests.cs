@@ -161,10 +161,12 @@ public class EmailChannelConfigurationAppServiceTests : SufiComTestBase<SufiComA
             InboundUseSsl = true
         };
 
-        var exception = await Should.ThrowAsync<BusinessException>(
+        var exception = await Should.ThrowAsync<Volo.Abp.Validation.AbpValidationException>(
             () => WithUnitOfWorkAsync(() => _configurationAppService.UpdateAsync(input)));
 
-        exception.Code.ShouldBe(SufiComDomainErrorCodes.InvalidEmailChannelConfiguration);
+        var invalidMembers = exception.ValidationErrors.SelectMany(error => error.MemberNames).ToList();
+        invalidMembers.ShouldContain(nameof(UpdateEmailChannelConfigurationInput.InboundHost));
+        invalidMembers.ShouldContain(nameof(UpdateEmailChannelConfigurationInput.InboundUserName));
     }
 
     [Fact]

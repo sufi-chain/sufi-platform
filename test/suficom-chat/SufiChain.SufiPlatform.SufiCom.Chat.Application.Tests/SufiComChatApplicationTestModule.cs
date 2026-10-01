@@ -6,11 +6,15 @@ using Microsoft.Extensions.DependencyInjection;
 using SufiChain.SufiPlatform.SufiCom.Channels;
 using SufiChain.SufiPlatform.SufiCom.Channels.Telegram;
 using SufiChain.SufiPlatform.SufiCom.Chat.EntityFrameworkCore;
+using SufiChain.SufiPlatform.Settings;
 using SufiChain.SufiPlatform.Settings.EntityFrameworkCore;
 using SufiChain.SufiPlatform.Features;
 using Volo.Abp;
+using Volo.Abp.BackgroundJobs;
+using Volo.Abp.BackgroundWorkers;
 using Volo.Abp.EntityFrameworkCore;
 using Volo.Abp.Modularity;
+using Volo.Abp.Uow;
 
 using Volo.Abp.EntityFrameworkCore.Sqlite;
 namespace SufiChain.SufiPlatform.SufiCom.Chat;
@@ -43,6 +47,18 @@ public class SufiComChatApplicationTestModule : AbpModule
             {
                 configuration.DbContextOptions.UseSqlite(_sqliteConnection, contextOwnsConnection: false);
             });
+        });
+
+        // The chat and settings contexts share one in-memory SQLite connection, which cannot
+        // hold two transactions or serve background workers concurrently.
+        Configure<AbpUnitOfWorkDefaultOptions>(options =>
+            options.TransactionBehavior = UnitOfWorkTransactionBehavior.Disabled);
+        context.Services.Configure<AbpBackgroundWorkerOptions>(options => options.IsEnabled = false);
+        context.Services.Configure<AbpBackgroundJobOptions>(options => options.IsJobExecutionEnabled = false);
+        Configure<SettingsOptions>(options =>
+        {
+            options.SaveStaticSettingsToDatabase = false;
+            options.IsDynamicSettingStoreEnabled = false;
         });
 
         ChatTestServiceConfiguration.ConfigureTestServices(context);

@@ -28,6 +28,17 @@ public class PlanCrudWorkflowTests
         created.Code.ShouldBe("STARTER");
         created.IsActive.ShouldBeTrue();
         created.EditionId.ShouldBe(edition.Id);
+        created.Price.ShouldBe(10m);
+    }
+
+    [Fact]
+    public async Task Create_Should_Reject_A_Zero_Price_Without_Unpaid_Use()
+    {
+        var edition = new Edition(Guid.NewGuid(), "Pro", "Pro", "PRO", true);
+        var service = NewService(Substitute.For<IPlanRepository>(), edition, hasSubscription: false);
+        var error = await Should.ThrowAsync<BusinessException>(() =>
+            service.CreateAsync(Input(edition.Id, "starter", isActive: true, price: 0m)));
+        error.Code.ShouldBe(SufiSaasErrorCodes.InvalidPlanPricing);
     }
 
     [Fact]
@@ -71,12 +82,13 @@ public class PlanCrudWorkflowTests
         return service;
     }
 
-    private static CreateUpdatePlanDto Input(Guid editionId, string code, bool isActive) => new()
+    private static CreateUpdatePlanDto Input(Guid editionId, string code, bool isActive, decimal price = 10m) => new()
     {
         Code = code,
         DisplayName = "Starter",
         EditionId = editionId,
         IsActive = isActive,
+        Price = price,
         CurrencyCode = "USD"
     };
 }

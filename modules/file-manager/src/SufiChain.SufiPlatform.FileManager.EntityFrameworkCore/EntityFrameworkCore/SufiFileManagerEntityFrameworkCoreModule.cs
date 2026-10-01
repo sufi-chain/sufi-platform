@@ -1,4 +1,5 @@
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using SufiChain.SufiPlatform.BlobDatabase.EntityFrameworkCore;
 using SufiChain.SufiPlatform.FileManager.FileFolders;
 using SufiChain.SufiPlatform.FileManager.FileItems;
@@ -31,6 +32,9 @@ public class SufiFileManagerEntityFrameworkCoreModule : AbpModule
             options.AddRepository<FileStructure, EfCoreFileStructureRepository>();
             options.AddRepository<FileFolder, EfCoreFileFolderRepository>();
         });
+
+        context.Services.TryAddScoped<ISufiFileManagerDbContext>(serviceProvider =>
+            serviceProvider.GetRequiredService<FileManagerDbContext>());
 
         // Configure FileManagerContainer to use database blob storage.
         // Host can override by calling Configure<AbpBlobStoringOptions> again (e.g. UseFileSystem, UseAzure).

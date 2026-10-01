@@ -115,7 +115,7 @@ public class SufiAIMediaResolver_Tests
         {
             Id = fileId,
             TenantId = null,
-            MimeType = "application/pdf",
+            MimeType = "application/zip",
             EntityType = "Chat.Session",
             EntityId = sessionId
         });

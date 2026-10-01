@@ -7,6 +7,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\..\pro-modules\suficom\chat\src\SufiChain.SufiPlatform.SufiCom.Chat.Domain\SufiChain.SufiPlatform.SufiCom.Chat.Domain.csproj" />
+    <ProjectReference Include="..\..\..\..\pro-modules\licensing\src\SufiChain.SufiPlatform.Licensing.Abstractions\SufiChain.SufiPlatform.Licensing.Abstractions.csproj" />
     <PackageReference Include="Volo.Abp.Autofac" Version="$(AbpVersion)" />
     <ProjectReference Include="..\..\..\framework\SufiChain.SufiPlatform.Authorization\SufiChain.SufiPlatform.Authorization.csproj" />
     <PackageReference Include="Volo.Abp.TestBase" Version="$(AbpVersion)" />

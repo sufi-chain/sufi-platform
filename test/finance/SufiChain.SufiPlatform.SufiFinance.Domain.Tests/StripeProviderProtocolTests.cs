@@ -29,8 +29,10 @@ public class StripeProviderProtocolTests
         handler.LastRequest!.Headers.Authorization!.Parameter.ShouldBe("sk_test_secret");
         handler.LastRequest.Headers.GetValues("Idempotency-Key").Single()
             .ShouldBe("sufifinance-payment-11111111111111111111111111111111");
-        handler.LastBody.ShouldContain("line_items%5B0%5D%5Bprice_data%5D%5Bunit_amount%5D=1234");
-        handler.LastBody.ShouldContain("session_id=%7BCHECKOUT_SESSION_ID%7D");
+        var form = System.Web.HttpUtility.ParseQueryString(handler.LastBody!);
+        form["line_items[0][price_data][unit_amount]"].ShouldBe("1234");
+        form["success_url"].ShouldBe(
+            "https://edge.example/api/finance/payments/callback/Stripe/token?session_id={CHECKOUT_SESSION_ID}");
     }
 
     [Fact]

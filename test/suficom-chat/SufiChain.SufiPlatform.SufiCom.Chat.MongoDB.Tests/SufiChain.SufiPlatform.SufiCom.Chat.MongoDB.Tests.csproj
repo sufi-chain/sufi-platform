@@ -12,6 +12,7 @@
     <PackageReference Include="xunit" Version="$(XunitVersion)" />
     <PackageReference Include="xunit.runner.visualstudio" Version="$(XunitRunnerVisualStudioVersion)" />
     <ProjectReference Include="..\..\..\..\pro-modules\suficom\chat\src\SufiChain.SufiPlatform.SufiCom.Chat.MongoDB\SufiChain.SufiPlatform.SufiCom.Chat.MongoDB.csproj" />
+    <ProjectReference Include="..\..\..\modules\settings\src\SufiChain.SufiPlatform.Settings.MongoDB\SufiChain.SufiPlatform.Settings.MongoDB.csproj" />
     <ProjectReference Include="..\SufiChain.SufiPlatform.SufiCom.Chat.Application.Tests\SufiChain.SufiPlatform.SufiCom.Chat.Application.Tests.csproj" />
   </ItemGroup>
 </Project>

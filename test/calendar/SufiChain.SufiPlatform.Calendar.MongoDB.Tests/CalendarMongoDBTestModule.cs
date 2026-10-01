@@ -8,21 +8,24 @@ using Volo.Abp.Uow;
 
 namespace SufiChain.SufiPlatform.Calendar.MongoDB;
 
-public sealed class CalendarMongoDBFixture : IDisposable
+/// <summary>
+/// One mongod per test process, released on process exit, so it cannot leak when module
+/// initialization throws in a test constructor.
+/// </summary>
+public static class CalendarMongoDBRunner
 {
-    private readonly MongoDbRunner _runner;
-    public string ConnectionString { get; }
-
-    public CalendarMongoDBFixture()
+    private static readonly Lazy<MongoDbRunner> Runner = new(() =>
     {
-        _runner = MongoDbRunner.Start(singleNodeReplSet: true);
-        ConnectionString = new MongoUrlBuilder(_runner.ConnectionString)
+        var runner = MongoDbRunner.Start(singleNodeReplSet: true);
+        AppDomain.CurrentDomain.ProcessExit += (_, _) => runner.Dispose();
+        return runner;
+    });
+
+    public static string CreateDatabaseConnectionString() =>
+        new MongoUrlBuilder(Runner.Value.ConnectionString)
         {
             DatabaseName = $"CalendarTests_{Guid.NewGuid():N}"
         }.ToString();
-    }
-
-    public void Dispose() => _runner.Dispose();
 }
 
 [DependsOn(typeof(AbpAutofacModule), typeof(SufiCalendarMongoDbModule),
@@ -31,14 +34,13 @@ public class CalendarMongoDBTestModule : AbpModule
 {
     public override void ConfigureServices(ServiceConfigurationContext context)
     {
-        // Each integrated test owns a service provider, database, and disposable server process.
-        context.Services.AddSingleton<CalendarMongoDBFixture>();
-        context.Services.AddOptions<AbpDbConnectionOptions>()
-            .Configure<CalendarMongoDBFixture>((options, fixture) =>
-            {
-                options.ConnectionStrings.Default = fixture.ConnectionString;
-                options.ConnectionStrings[SufiCalendarDbProperties.ConnectionStringName] = fixture.ConnectionString;
-            });
+        // Each integrated test owns a service provider and database on the shared server process.
+        var connectionString = CalendarMongoDBRunner.CreateDatabaseConnectionString();
+        Configure<AbpDbConnectionOptions>(options =>
+        {
+            options.ConnectionStrings.Default = connectionString;
+            options.ConnectionStrings[SufiCalendarDbProperties.ConnectionStringName] = connectionString;
+        });
         Configure<AbpUnitOfWorkDefaultOptions>(options =>
             options.TransactionBehavior = UnitOfWorkTransactionBehavior.Disabled);
         // These scenarios verify business visibility; permission-policy denial is a separate suite.

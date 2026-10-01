@@ -48,7 +48,7 @@ public class ShortUrlManagerTests
 
         var error = await Should.ThrowAsync<BusinessException>(() =>
             manager.CreateAsync("https://example.com", "CMS"));
-        error.Message.ShouldContain(SufiShortLinksFeatures.Enable);
+        error.Code.ShouldBe($"Feature is disabled: {SufiShortLinksFeatures.Enable}");
     }
 
     private static IAbpLazyServiceProvider LazyGuids()

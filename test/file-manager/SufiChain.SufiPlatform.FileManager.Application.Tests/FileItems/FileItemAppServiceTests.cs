@@ -219,6 +219,7 @@ public class FileItemAppServiceTests : FileManagerApplicationTestBase<SufiFileMa
 
         var input = new UploadMultipleFileInput
         {
+            StructureKey = FileStructureKeys.General,
             Files = files,
             AutoConfirm = true
         };

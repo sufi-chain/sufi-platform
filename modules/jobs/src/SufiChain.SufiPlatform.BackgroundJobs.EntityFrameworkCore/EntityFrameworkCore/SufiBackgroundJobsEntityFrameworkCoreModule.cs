@@ -1,4 +1,5 @@
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Volo.Abp.EntityFrameworkCore;
 using Volo.Abp.Modularity;
 
@@ -18,5 +19,8 @@ public class SufiBackgroundJobsEntityFrameworkCoreModule : AbpModule
             
             options.AddRepository<BackgroundJobRecord, EfCoreBackgroundJobRepository>();
         });
+
+        context.Services.TryAddScoped<ISufiBackgroundJobsDbContext>(serviceProvider =>
+            serviceProvider.GetRequiredService<BackgroundJobsDbContext>());
     }
 }

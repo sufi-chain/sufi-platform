@@ -25,6 +25,8 @@ public class TelegramRateLimiter_Tests
             Guid.NewGuid(), null, "+989120000001", "Support", "Support", isEnabled: true);
         connection.PrepareForAuth("session-abc");
         connection.MarkReady();
+        // The limiter derives connection age from CreationTime, which the repository normally stamps.
+        Volo.Abp.ObjectHelper.TrySetProperty(connection, c => c.CreationTime, () => DateTime.UtcNow);
         return connection;
     }
 

@@ -40,8 +40,9 @@ public class AccountingTests
         entry.Post(new DateTime(2026, 8, 31));
 
         entry.Status.ShouldBe(JournalEntryStatus.Posted);
-        Should.Throw<BusinessException>(() => entry.AddLine(
-            Guid.NewGuid(), Guid.NewGuid(), 1m, 0m, 1m, 0m));
+        Should.Throw<Volo.Abp.BusinessException>(() => entry.AddLine(
+            Guid.NewGuid(), Guid.NewGuid(), 1m, 0m, 1m, 0m))
+            .Code.ShouldBe(SufiFinanceErrorCodes.AccountingJournalEntryNotEditable);
     }
 
     [Fact]
@@ -61,7 +62,8 @@ public class AccountingTests
         entry.AddLine(Guid.NewGuid(), Guid.NewGuid(), 100m, 0m, 100m, 0m);
         entry.AddLine(Guid.NewGuid(), Guid.NewGuid(), 0m, 90m, 0m, 90m);
 
-        Should.Throw<BusinessException>(() => entry.Post(new DateTime(2026, 8, 31)));
+        Should.Throw<Volo.Abp.BusinessException>(() => entry.Post(new DateTime(2026, 8, 31)))
+            .Code.ShouldBe(SufiFinanceErrorCodes.AccountingJournalEntryMustBalance);
         entry.Status.ShouldBe(JournalEntryStatus.Draft);
     }
 
@@ -81,15 +83,17 @@ public class AccountingTests
             new DateTime(2026, 1, 1),
             new DateTime(2026, 1, 31));
 
-        Should.Throw<BusinessException>(() => year.AddPeriod(
+        Should.Throw<Volo.Abp.BusinessException>(() => year.AddPeriod(
             Guid.NewGuid(),
             "Overlap",
             new DateTime(2026, 1, 15),
-            new DateTime(2026, 2, 15)));
+            new DateTime(2026, 2, 15)))
+            .Code.ShouldBe(SufiFinanceErrorCodes.AccountingFiscalPeriodInvalidDates);
 
         year.ClosePeriod(period.Id);
         year.LockPeriod(period.Id);
-        Should.Throw<BusinessException>(() => year.ReopenPeriod(period.Id));
+        Should.Throw<Volo.Abp.BusinessException>(() => year.ReopenPeriod(period.Id))
+            .Code.ShouldBe(SufiFinanceErrorCodes.AccountingFiscalPeriodCannotReopen);
     }
 
     [Fact]
@@ -98,7 +102,8 @@ public class AccountingTests
         var dimension = new Dimension(Guid.NewGuid(), null, "Department", "Department");
         dimension.AddValue(Guid.NewGuid(), "SALES", "Sales");
 
-        Should.Throw<BusinessException>(() => dimension.AddValue(
-            Guid.NewGuid(), "sales", "Duplicate"));
+        Should.Throw<Volo.Abp.BusinessException>(() => dimension.AddValue(
+            Guid.NewGuid(), "sales", "Duplicate"))
+            .Code.ShouldBe(SufiFinanceErrorCodes.AccountingCodeAlreadyExists);
     }
 }

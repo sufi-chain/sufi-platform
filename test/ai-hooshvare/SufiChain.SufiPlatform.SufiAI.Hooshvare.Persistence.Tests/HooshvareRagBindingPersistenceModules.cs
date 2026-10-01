@@ -49,16 +49,24 @@ public class HooshvareRagBindingSqliteTestModule : AbpModule
     public override void OnApplicationShutdown(ApplicationShutdownContext context) => _connection.Dispose();
 }
 
-public sealed class HooshvareRagBindingMongoFixture : IDisposable
+/// <summary>
+/// One mongod per test process, released on process exit, so it cannot leak when module
+/// initialization throws in a test constructor.
+/// </summary>
+public static class HooshvareRagBindingMongoRunner
 {
-    private readonly MongoDbRunner _runner = MongoDbRunner.Start();
-
-    public string ConnectionString => new MongoUrlBuilder(_runner.ConnectionString)
+    private static readonly Lazy<MongoDbRunner> Runner = new(() =>
     {
-        DatabaseName = "HooshvareRagBindingTests"
-    }.ToString();
+        var runner = MongoDbRunner.Start();
+        AppDomain.CurrentDomain.ProcessExit += (_, _) => runner.Dispose();
+        return runner;
+    });
 
-    public void Dispose() => _runner.Dispose();
+    public static string CreateDatabaseConnectionString() =>
+        new MongoUrlBuilder(Runner.Value.ConnectionString)
+        {
+            DatabaseName = $"HooshvareRagBindingTests_{Guid.NewGuid():N}"
+        }.ToString();
 }
 
 [DependsOn(typeof(AbpAutofacModule), typeof(AbpTestBaseModule), typeof(SufiAIHooshvareMongoDBModule))]
@@ -66,11 +74,11 @@ public class HooshvareRagBindingMongoTestModule : AbpModule
 {
     public override void ConfigureServices(ServiceConfigurationContext context)
     {
-        context.Services.AddSingleton<HooshvareRagBindingMongoFixture>();
-        context.Services.AddOptions<AbpDbConnectionOptions>().Configure<HooshvareRagBindingMongoFixture>((options, fixture) =>
+        var connectionString = HooshvareRagBindingMongoRunner.CreateDatabaseConnectionString();
+        Configure<AbpDbConnectionOptions>(options =>
         {
-            options.ConnectionStrings.Default = fixture.ConnectionString;
-            options.ConnectionStrings["AIHooshvare"] = fixture.ConnectionString;
+            options.ConnectionStrings.Default = connectionString;
+            options.ConnectionStrings["AIHooshvare"] = connectionString;
         });
     }
 }

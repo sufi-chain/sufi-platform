@@ -1,4 +1,3 @@
-using Microsoft.Extensions.DependencyInjection;
 using Mongo2Go;
 using MongoDB.Driver;
 using SufiChain.SufiPlatform.HelpDesk.KnowledgeBase.MongoDB;
@@ -7,16 +6,24 @@ using Volo.Abp.Modularity;
 
 namespace SufiChain.SufiPlatform.HelpDesk.KnowledgeBase;
 
-public sealed class KnowledgeBaseMongoFixture : IDisposable
+/// <summary>
+/// One mongod per test process, released on process exit, so it cannot leak when module
+/// initialization throws in a test constructor.
+/// </summary>
+public static class KnowledgeBaseMongoDbRunner
 {
-    private readonly MongoDbRunner _runner = MongoDbRunner.Start();
-
-    public string ConnectionString => new MongoUrlBuilder(_runner.ConnectionString)
+    private static readonly Lazy<MongoDbRunner> Runner = new(() =>
     {
-        DatabaseName = "KnowledgeBaseArticleTests"
-    }.ToString();
+        var runner = MongoDbRunner.Start();
+        AppDomain.CurrentDomain.ProcessExit += (_, _) => runner.Dispose();
+        return runner;
+    });
 
-    public void Dispose() => _runner.Dispose();
+    public static string CreateDatabaseConnectionString() =>
+        new MongoUrlBuilder(Runner.Value.ConnectionString)
+        {
+            DatabaseName = $"KnowledgeBaseArticleTests_{Guid.NewGuid():N}"
+        }.ToString();
 }
 
 [DependsOn(typeof(HelpDeskKnowledgeBaseTestModule), typeof(HelpDeskKnowledgeBaseMongoDbModule))]
@@ -24,11 +31,11 @@ public class KnowledgeBaseMongoTestModule : AbpModule
 {
     public override void ConfigureServices(ServiceConfigurationContext context)
     {
-        context.Services.AddSingleton<KnowledgeBaseMongoFixture>();
-        context.Services.AddOptions<AbpDbConnectionOptions>().Configure<KnowledgeBaseMongoFixture>((options, fixture) =>
+        var connectionString = KnowledgeBaseMongoDbRunner.CreateDatabaseConnectionString();
+        Configure<AbpDbConnectionOptions>(options =>
         {
-            options.ConnectionStrings.Default = fixture.ConnectionString;
-            options.ConnectionStrings[HelpDeskKnowledgeBaseDbProperties.ConnectionStringName] = fixture.ConnectionString;
+            options.ConnectionStrings.Default = connectionString;
+            options.ConnectionStrings[HelpDeskKnowledgeBaseDbProperties.ConnectionStringName] = connectionString;
         });
     }
 }

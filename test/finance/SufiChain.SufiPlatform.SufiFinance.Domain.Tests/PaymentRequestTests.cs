@@ -46,8 +46,9 @@ public class PaymentRequestTests
         payment.MarkRedirected("gateway-reference");
         payment.BeginVerification();
 
-        Should.Throw<BusinessException>(() =>
-            payment.Complete(999m, "provider-reference", Guid.NewGuid(), DateTime.UtcNow));
+        Should.Throw<Volo.Abp.BusinessException>(() =>
+            payment.Complete(999m, "provider-reference", Guid.NewGuid(), DateTime.UtcNow))
+            .Code.ShouldBe(SufiFinancePaymentsErrorCodes.VerifiedAmountMismatch);
     }
 
     [Fact]

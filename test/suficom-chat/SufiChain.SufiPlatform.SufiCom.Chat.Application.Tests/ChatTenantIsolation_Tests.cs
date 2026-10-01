@@ -5,6 +5,7 @@ using SufiChain.SufiPlatform.SufiCom.Chat.Supports;
 using Shouldly;
 using Volo.Abp;
 using Volo.Abp.MultiTenancy;
+using Volo.Abp.Uow;
 using Xunit;
 
 namespace SufiChain.SufiPlatform.SufiCom.Chat;
@@ -64,11 +65,13 @@ public class ChatTenantIsolation_Tests : ChatApplicationTestBase<SufiComChatAppl
     {
         using (CurrentTenant.Change(ChatTestData.TenantAId))
         {
-            await _sessionRepository.InsertAsync(
-                (await GetRequiredService<ChatSessionManager>().GetOrCreateDirectSessionAsync(
+            using (var uow = GetRequiredService<IUnitOfWorkManager>().Begin())
+            {
+                await GetRequiredService<ChatSessionManager>().GetOrCreateDirectSessionAsync(
                     ChatTestData.UserAId,
-                    ChatTestData.UserBId)),
-                autoSave: true);
+                    ChatTestData.UserBId);
+                await uow.CompleteAsync();
+            }
         }
 
         using (CurrentTenant.Change(ChatTestData.TenantBId))

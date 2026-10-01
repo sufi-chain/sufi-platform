@@ -23,11 +23,13 @@ public abstract class KnowledgeBaseArticlePersistenceTests<TModule> : AbpIntegra
     {
         var tenantA = Guid.NewGuid();
         var tenantB = Guid.NewGuid();
-        var article = new KBArticle(Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(), tenantA);
+        var projectId = Guid.NewGuid();
+        var article = new KBArticle(Guid.NewGuid(), projectId, Guid.NewGuid(), tenantA);
         article.AddTranslation(Guid.NewGuid(), "en", "Title", "title", "Body");
 
         using (GetRequiredService<ICurrentTenant>().Change(tenantA))
         {
+            await SeedProjectAsync(projectId, tenantA);
             await InUnitAsync(repository => repository.InsertAsync(article, autoSave: true));
             await InUnitAsync(async repository =>
             {
@@ -55,6 +57,11 @@ public abstract class KnowledgeBaseArticlePersistenceTests<TModule> : AbpIntegra
                 (await repository.FindAsync(article.Id)).ShouldNotBeNull());
         }
     }
+
+    /// <summary>
+    /// Creates the owning project row for providers that enforce the article's project foreign key.
+    /// </summary>
+    protected virtual Task SeedProjectAsync(Guid projectId, Guid tenantId) => Task.CompletedTask;
 
     private async Task InUnitAsync(Func<IKBArticleRepository, Task> action)
     {

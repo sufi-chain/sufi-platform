@@ -224,7 +224,7 @@ public class OpenAIProviderApiModeTests
                 new ChatMessage
                 {
                     Role = "user",
-                    MultiModalContent =
+                    MultiModalContent = new List<MessageContent>
                     {
                         new MessageContent { Type = "text", Text = "look" },
                         new MessageContent { Type = "image_url", ImageUrl = new ImageContent { Url = "data:image/png;base64,QQ" } },
@@ -256,7 +256,7 @@ public class OpenAIProviderApiModeTests
                 new ChatMessage
                 {
                     Role = "user",
-                    MultiModalContent =
+                    MultiModalContent = new List<MessageContent>
                     {
                         new MessageContent { Type = "file", FileName = "note.pdf", FileData = "data:application/pdf;base64,QQ" }
                     }
@@ -284,7 +284,7 @@ public class OpenAIProviderApiModeTests
                     new ChatMessage
                     {
                         Role = "user",
-                        MultiModalContent = { new MessageContent { Type = "image_url", ImageUrl = new ImageContent { Url = "data:image/png;base64,QQ" } } }
+                        MultiModalContent = new List<MessageContent> { new MessageContent { Type = "image_url", ImageUrl = new ImageContent { Url = "data:image/png;base64,QQ" } } }
                     }
                 }
             }));

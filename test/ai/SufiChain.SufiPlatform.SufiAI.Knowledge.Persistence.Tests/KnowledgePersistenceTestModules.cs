@@ -29,14 +29,24 @@ public class KnowledgeSqliteTestModule : AbpModule
     public override void OnApplicationShutdown(ApplicationShutdownContext context) => _connection.Dispose();
 }
 
-public sealed class KnowledgeMongoFixture : IDisposable
+/// <summary>
+/// One mongod per test process, released on process exit, so it cannot leak when module
+/// initialization throws in a test constructor.
+/// </summary>
+public static class KnowledgeMongoRunner
 {
-    private readonly MongoDbRunner _runner = MongoDbRunner.Start();
-    public string ConnectionString => new MongoUrlBuilder(_runner.ConnectionString)
+    private static readonly Lazy<MongoDbRunner> Runner = new(() =>
     {
-        DatabaseName = "KnowledgeApprovalTests"
-    }.ToString();
-    public void Dispose() => _runner.Dispose();
+        var runner = MongoDbRunner.Start();
+        AppDomain.CurrentDomain.ProcessExit += (_, _) => runner.Dispose();
+        return runner;
+    });
+
+    public static string CreateDatabaseConnectionString() =>
+        new MongoUrlBuilder(Runner.Value.ConnectionString)
+        {
+            DatabaseName = $"KnowledgeApprovalTests_{Guid.NewGuid():N}"
+        }.ToString();
 }
 
 [DependsOn(typeof(AbpAutofacModule), typeof(SufiAIMongoDbModule))]
@@ -44,11 +54,11 @@ public class KnowledgeMongoTestModule : AbpModule
 {
     public override void ConfigureServices(ServiceConfigurationContext context)
     {
-        context.Services.AddSingleton<KnowledgeMongoFixture>();
-        context.Services.AddOptions<AbpDbConnectionOptions>().Configure<KnowledgeMongoFixture>((options, fixture) =>
+        var connectionString = KnowledgeMongoRunner.CreateDatabaseConnectionString();
+        Configure<AbpDbConnectionOptions>(options =>
         {
-            options.ConnectionStrings.Default = fixture.ConnectionString;
-            options.ConnectionStrings[SufiAIDbProperties.ConnectionStringName] = fixture.ConnectionString;
+            options.ConnectionStrings.Default = connectionString;
+            options.ConnectionStrings[SufiAIDbProperties.ConnectionStringName] = connectionString;
         });
     }
 }

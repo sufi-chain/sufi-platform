@@ -31,14 +31,24 @@ public class RelationSqliteTestModule : AbpModule
     public override void OnApplicationShutdown(ApplicationShutdownContext context) => _connection.Dispose();
 }
 
-public sealed class RelationMongoFixture : IDisposable
+/// <summary>
+/// One mongod per test process, released on process exit, so it cannot leak when module
+/// initialization throws in a test constructor.
+/// </summary>
+public static class RelationMongoRunner
 {
-    private readonly MongoDbRunner _runner = MongoDbRunner.Start();
-    public string ConnectionString => new MongoUrlBuilder(_runner.ConnectionString)
+    private static readonly Lazy<MongoDbRunner> Runner = new(() =>
     {
-        DatabaseName = "TagsRelationsTests"
-    }.ToString();
-    public void Dispose() => _runner.Dispose();
+        var runner = MongoDbRunner.Start();
+        AppDomain.CurrentDomain.ProcessExit += (_, _) => runner.Dispose();
+        return runner;
+    });
+
+    public static string CreateDatabaseConnectionString() =>
+        new MongoUrlBuilder(Runner.Value.ConnectionString)
+        {
+            DatabaseName = $"TagsRelationsTests_{Guid.NewGuid():N}"
+        }.ToString();
 }
 
 [DependsOn(typeof(AbpAutofacModule), typeof(SufiTagsMongoDbModule))]
@@ -46,11 +56,11 @@ public class RelationMongoTestModule : AbpModule
 {
     public override void ConfigureServices(ServiceConfigurationContext context)
     {
-        context.Services.AddSingleton<RelationMongoFixture>();
-        context.Services.AddOptions<AbpDbConnectionOptions>().Configure<RelationMongoFixture>((options, fixture) =>
+        var connectionString = RelationMongoRunner.CreateDatabaseConnectionString();
+        Configure<AbpDbConnectionOptions>(options =>
         {
-            options.ConnectionStrings.Default = fixture.ConnectionString;
-            options.ConnectionStrings[SufiTagsDbProperties.ConnectionStringName] = fixture.ConnectionString;
+            options.ConnectionStrings.Default = connectionString;
+            options.ConnectionStrings[SufiTagsDbProperties.ConnectionStringName] = connectionString;
         });
     }
 }

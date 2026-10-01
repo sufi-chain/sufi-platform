@@ -12,6 +12,8 @@
     <ProjectReference Include="..\SufiChain.SufiPlatform.SufiCom.TestBase\SufiChain.SufiPlatform.SufiCom.TestBase.csproj" />
     <ProjectReference Include="..\..\..\..\pro-modules\suficom\src\SufiChain.SufiPlatform.SufiCom.Application\SufiChain.SufiPlatform.SufiCom.Application.csproj" />
     <ProjectReference Include="..\..\..\..\pro-modules\suficom\src\SufiChain.SufiPlatform.SufiCom.EntityFrameworkCore\SufiChain.SufiPlatform.SufiCom.EntityFrameworkCore.csproj" />
+    <ProjectReference Include="..\..\..\..\pro-modules\suficom\channels\src\SufiChain.SufiPlatform.SufiCom.Channels.Voice.Kavenegar\SufiChain.SufiPlatform.SufiCom.Channels.Voice.Kavenegar.csproj" />
+    <ProjectReference Include="..\..\..\modules\tags\src\SufiChain.SufiPlatform.Tags.EntityFrameworkCore\SufiChain.SufiPlatform.Tags.EntityFrameworkCore.csproj" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.14.1" />
     <PackageReference Include="Shouldly" Version="4.3.0" />
     <PackageReference Include="xunit" Version="2.9.3" />

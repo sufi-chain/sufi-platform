@@ -156,7 +156,7 @@ public class KBRagSmokeTestAppServiceTests
 
                     Content = "Reset your password from the profile page.",
 
-                    Score = 0.42f
+                    Score = 0.30f
 
                 }
 
@@ -184,9 +184,9 @@ public class KBRagSmokeTestAppServiceTests
 
         result.HitCount.ShouldBe(1);
 
-        result.TopScore.ShouldBe(0.42f);
+        result.TopScore.ShouldBe(0.30f);
 
-        result.ArticleScore.ShouldBe(0.42f);
+        result.ArticleScore.ShouldBe(0.30f);
 
         result.MinSimilarityUsed.ShouldBe(KBRagSmokeTestAppService.SmokeTestMinSimilarity);
 

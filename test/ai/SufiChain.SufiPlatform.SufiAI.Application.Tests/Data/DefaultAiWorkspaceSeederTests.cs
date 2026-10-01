@@ -10,6 +10,7 @@ using SufiChain.SufiPlatform.SufiAI;
 using SufiChain.SufiPlatform.SufiAI.Configuration;
 using SufiChain.SufiPlatform.SufiAI.Data;
 using SufiChain.SufiPlatform.SufiAI.Workspaces;
+using Volo.Abp.Data;
 using Volo.Abp.Guids;
 using Volo.Abp.MultiTenancy;
 using Volo.Abp.Security.Encryption;
@@ -20,7 +21,7 @@ namespace SufiChain.SufiPlatform.SufiAI.Application.Tests.Data;
 public class DefaultAiWorkspaceSeederTests
 {
     [Fact]
-    public async Task Should_Not_Change_Existing_Workspace()
+    public async Task Should_Keep_Administrator_Fields_And_Add_Only_Missing_Managed_Capabilities()
     {
         var repository = Substitute.For<IWorkspaceRepository>();
         var existing = new Workspace(
@@ -42,8 +43,43 @@ public class DefaultAiWorkspaceSeederTests
 
         workspaceId.ShouldBe(existing.Id);
         existing.DefaultModel.ShouldBe("administrator-model");
-        existing.ModelConfigurations.Count.ShouldBe(1);
-        existing.ModelConfigurations[0].ModelId.ShouldBe("administrator-chat");
+        existing.ModelConfigurations.Count.ShouldBe(2);
+        existing.GetPrimaryConfiguration(AICapabilityType.ChatCompletion)!.ModelId.ShouldBe("administrator-chat");
+        existing.GetPrimaryConfiguration(AICapabilityType.Embeddings)!.ModelId.ShouldBe("seed-embedding");
+        await repository.Received(1)
+            .UpdateAsync(existing, Arg.Any<bool>(), Arg.Any<CancellationToken>());
+        await repository.DidNotReceive()
+            .InsertAsync(Arg.Any<Workspace>(), Arg.Any<bool>(), Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task Should_Not_Change_A_Reconciled_Existing_Workspace()
+    {
+        var repository = Substitute.For<IWorkspaceRepository>();
+        var existing = new Workspace(
+            Guid.NewGuid(),
+            AIWorkspaceNames.Default,
+            AIProviderType.OpenAI,
+            "administrator-model");
+        existing.AddModelConfiguration(AICapabilityType.ChatCompletion, "administrator-chat");
+        existing.AddModelConfiguration(AICapabilityType.Embeddings, "administrator-embedding");
+        existing.SetProperty(
+            DefaultWorkspaceManagedFieldReconciler.SeedVersionProperty,
+            DefaultWorkspaceManagedFieldReconciler.CurrentSeedVersion);
+        repository.FindByNameAsync(AIWorkspaceNames.Default, Arg.Any<CancellationToken>())
+            .Returns(existing);
+
+        var seeder = CreateSeeder(repository, new DefaultWorkspaceSeedOptions
+        {
+            Model = "seed-chat",
+            EmbeddingModel = "seed-embedding"
+        });
+
+        var workspaceId = await seeder.EnsureDefaultWorkspaceAsync();
+
+        workspaceId.ShouldBe(existing.Id);
+        existing.ModelConfigurations.Count.ShouldBe(2);
+        existing.GetPrimaryConfiguration(AICapabilityType.Embeddings)!.ModelId.ShouldBe("administrator-embedding");
         await repository.DidNotReceive()
             .UpdateAsync(Arg.Any<Workspace>(), Arg.Any<bool>(), Arg.Any<CancellationToken>());
         await repository.DidNotReceive()

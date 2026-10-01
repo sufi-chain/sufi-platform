@@ -5,6 +5,7 @@ using SufiChain.SufiPlatform.SufiCom.Channels;
 using SufiChain.SufiPlatform.SufiCom.Channels.Metadata;
 using Shouldly;
 using Volo.Abp.Modularity;
+using Volo.Abp.Uow;
 using Xunit;
 
 namespace SufiChain.SufiPlatform.SufiCom.Chat.EntityFrameworkCore;
@@ -62,11 +63,13 @@ public class EfCoreChatWorkflow_Tests : ChatApplicationTestBase<SufiComChatEntit
     {
         using (CurrentTenant.Change(ChatTestData.TenantAId))
         {
-            await _sessionRepository.InsertAsync(
-                (await GetRequiredService<ChatSessionManager>().GetOrCreateDirectSessionAsync(
+            using (var uow = GetRequiredService<IUnitOfWorkManager>().Begin())
+            {
+                await GetRequiredService<ChatSessionManager>().GetOrCreateDirectSessionAsync(
                     ChatTestData.UserAId,
-                    ChatTestData.UserBId)),
-                autoSave: true);
+                    ChatTestData.UserBId);
+                await uow.CompleteAsync();
+            }
         }
 
         using (CurrentTenant.Change(ChatTestData.TenantBId))

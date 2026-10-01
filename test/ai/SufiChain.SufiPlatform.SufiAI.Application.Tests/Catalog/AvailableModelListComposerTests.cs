@@ -20,6 +20,7 @@ using Volo.Abp.BackgroundWorkers;
 using Volo.Abp.Caching;
 using Volo.Abp.DependencyInjection;
 using Volo.Abp.DistributedLocking;
+using Volo.Abp.MultiTenancy;
 using Volo.Abp.Threading;
 using Xunit;
 
@@ -483,6 +484,16 @@ public class AvailableModelListComposerTests
             if (serviceType == typeof(HostPriceMarkup))
             {
                 return new HostPriceMarkup(null!, null!);
+            }
+
+            if (serviceType == typeof(IServiceScopeFactory))
+            {
+                return new SingleScopeFactory(this);
+            }
+
+            if (serviceType == typeof(ICurrentTenant))
+            {
+                return Substitute.For<ICurrentTenant>();
             }
 
             return null;

@@ -23,8 +23,17 @@ public class HelpDeskAiWorkspacePurposeHooshvareDefaultsTests
     [Fact]
     public void Should_Include_All_Purposes()
     {
-        HelpDeskAiWorkspacePurposeHooshvareDefaults.AllPurposes.Count.ShouldBe(6);
-        foreach (var purpose in Enum.GetValues<HelpDeskAiWorkspacePurpose>())
+        // Summarization is not assigned per project; every other purpose is seeded and shown.
+        HelpDeskAiWorkspacePurposeHooshvareDefaults.AllPurposes.ShouldBe(
+        [
+            HelpDeskAiWorkspacePurpose.Default,
+            HelpDeskAiWorkspacePurpose.RagIndexing,
+            HelpDeskAiWorkspacePurpose.LiveChat,
+            HelpDeskAiWorkspacePurpose.Ticketing,
+            HelpDeskAiWorkspacePurpose.ContentEditing
+        ]);
+        foreach (var purpose in Enum.GetValues<HelpDeskAiWorkspacePurpose>()
+                     .Where(purpose => purpose != HelpDeskAiWorkspacePurpose.Summarization))
         {
             HelpDeskAiWorkspacePurposeHooshvareDefaults.AllPurposes.ShouldContain(purpose);
         }
@@ -39,11 +48,11 @@ public class PlatformHooshvareBusinessLocalizationKeysTests
         const string hooshvareKey = PlatformHooshvareKeys.ChatPublicAssistant;
 
         BusinessLocalizationKeys.HooshvareDisplayName(hooshvareKey)
-            .ShouldBe("Hooshvare:Chat:PublicAssistant:DisplayName");
+            .ShouldBe("Hooshvare:SufiComChat:PublicAssistant:DisplayName");
         BusinessLocalizationKeys.HooshvareSystemPrompt(hooshvareKey)
-            .ShouldBe("Hooshvare:Chat:PublicAssistant:SystemPrompt");
+            .ShouldBe("Hooshvare:SufiComChat:PublicAssistant:SystemPrompt");
         BusinessLocalizationKeys.HooshvareShortcut(hooshvareKey, "AskHours")
-            .ShouldBe("Hooshvare:Chat:PublicAssistant:Shortcut:AskHours");
+            .ShouldBe("Hooshvare:SufiComChat:PublicAssistant:Shortcut:AskHours");
     }
 
     [Fact]

@@ -3,6 +3,7 @@ using Volo.Abp.DependencyInjection;
 
 namespace SufiChain.SufiPlatform.SufiCom.Channels;
 
+[ExposeServices(typeof(IChannelConnector), IncludeSelf = true)]
 public class TestChatConnector : IChannelConnector, ISingletonDependency
 {
     public string Name => "Test";

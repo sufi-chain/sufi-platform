@@ -47,7 +47,12 @@ public class ChatWalletResolver_Tests : ChatApplicationTestBase<SufiComChatAppli
             WorkspaceName = ChatTestData.DefaultWorkspaceName
         });
 
-        var reservation = await GetRequiredService<IChatAiUsageReservationRepository>().GetAsync(reservationId);
+        ChatAiUsageReservation reservation;
+        using (CurrentTenant.Change(ChatTestData.TenantAId))
+        {
+            reservation = await GetRequiredService<IChatAiUsageReservationRepository>().GetAsync(reservationId);
+        }
+
         reservation.WalletId.ShouldBe(testResolver.Context.WalletId);
         reservation.WalletProviderName.ShouldBe("TestWallet");
         reservation.ProviderName.ShouldBe("openai");

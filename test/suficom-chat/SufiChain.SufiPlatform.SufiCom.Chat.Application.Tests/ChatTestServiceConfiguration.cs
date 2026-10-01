@@ -28,6 +28,8 @@ using SufiChain.SufiPlatform.FileManager;
 
 using SufiChain.SufiPlatform.Identity;
 
+using SufiChain.SufiPlatform.Identity.Integration;
+
 using Volo.Abp.DependencyInjection;
 
 using Volo.Abp.Modularity;
@@ -70,6 +72,16 @@ public static class ChatTestServiceConfiguration
 
             sp.GetRequiredService<TestHooshvareCatalogAppService>()));
 
+        context.Services.Replace(ServiceDescriptor.Transient<IPlatformHooshvareResolver, TestPlatformHooshvareResolver>());
+
+        context.Services.AddSingleton<TestHooshvareRuntimeAppService>();
+        context.Services.Replace(ServiceDescriptor.Singleton<IHooshvareRuntimeAppService>(sp =>
+            sp.GetRequiredService<TestHooshvareRuntimeAppService>()));
+
+        context.Services.AddSingleton<TestSufiAIWorkspaceCatalog>();
+        context.Services.Replace(ServiceDescriptor.Singleton<ISufiAIWorkspaceCatalog>(sp =>
+            sp.GetRequiredService<TestSufiAIWorkspaceCatalog>()));
+
 
 
         context.Services.Replace(ServiceDescriptor.Singleton<ISufiAIAudioService>(_ =>
@@ -105,6 +117,15 @@ public static class ChatTestServiceConfiguration
             .Returns(new List<IdentityRole>());
 
         context.Services.Replace(ServiceDescriptor.Singleton<IIdentityRoleRepository>(roleRepository));
+        // The chat host loads the Identity domain without its persistence; IdentityUserManager
+        // needs these repositories to activate. Chat display names come from TestIdentityUserIntegrationService.
+        context.Services.Replace(ServiceDescriptor.Singleton(_ => Substitute.For<IIdentityUserRepository>()));
+        context.Services.Replace(ServiceDescriptor.Singleton(_ => Substitute.For<IOrganizationUnitRepository>()));
+        context.Services.Replace(ServiceDescriptor.Singleton(_ => Substitute.For<IIdentityLinkUserRepository>()));
+
+        context.Services.AddSingleton<TestIdentityUserIntegrationService>();
+        context.Services.Replace(ServiceDescriptor.Singleton<IIdentityUserIntegrationService>(sp =>
+            sp.GetRequiredService<TestIdentityUserIntegrationService>()));
 
 
 
@@ -115,6 +136,14 @@ public static class ChatTestServiceConfiguration
         // connector registers cleanly. Outbound dispatch is covered by dedicated unit tests.
 
         context.Services.AddSingleton(_ => Substitute.For<ITelegramConnectionRepository>());
+        context.Services.AddSingleton<ITelegramRateLimiter>(_ =>
+        {
+            var rateLimiter = Substitute.For<ITelegramRateLimiter>();
+            rateLimiter
+                .CheckAsync(Arg.Any<TelegramConnection>(), Arg.Any<string>(), Arg.Any<bool>(), Arg.Any<CancellationToken>())
+                .Returns(SufiChain.SufiPlatform.SufiCom.Configuration.TelegramRateLimitDecision.Allow());
+            return rateLimiter;
+        });
 
         context.Services.AddSingleton<ITelegramForeignGateway>(_ =>
 
