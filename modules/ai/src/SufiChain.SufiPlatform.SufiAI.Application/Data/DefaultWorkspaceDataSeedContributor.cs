@@ -6,7 +6,9 @@ using Volo.Abp.MultiTenancy;
 namespace SufiChain.SufiPlatform.SufiAI.Data;
 
 /// <summary>
-/// Seeds the default AI workspace for each host and tenant data seed scope.
+/// Seeds the host default AI workspace. For tenants, resolves an existing dedicated
+/// workspace or ensures inheritance of the host default — tenants are never given a
+/// separately seeded dedicated default workspace.
 /// </summary>
 public class DefaultWorkspaceDataSeedContributor : IDataSeedContributor, ITransientDependency
 {

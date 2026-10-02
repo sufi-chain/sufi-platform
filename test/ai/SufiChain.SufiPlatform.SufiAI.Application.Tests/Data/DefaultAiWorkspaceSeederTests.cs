@@ -10,6 +10,7 @@ using SufiChain.SufiPlatform.SufiAI;
 using SufiChain.SufiPlatform.SufiAI.Configuration;
 using SufiChain.SufiPlatform.SufiAI.Data;
 using SufiChain.SufiPlatform.SufiAI.Workspaces;
+using Volo.Abp;
 using Volo.Abp.Data;
 using Volo.Abp.Guids;
 using Volo.Abp.MultiTenancy;
@@ -124,20 +125,136 @@ public class DefaultAiWorkspaceSeederTests
         inserted.ModelConfigurations[0].MaxContextTokens.ShouldBe(AIModelConfiguration.DefaultMaxContextTokens);
     }
 
+    [Fact]
+    public async Task Should_Not_Mutate_Inherited_Default_Workspace()
+    {
+        var tenantId = Guid.NewGuid();
+        var repository = Substitute.For<IWorkspaceRepository>();
+        var existing = new Workspace(
+            Guid.NewGuid(),
+            AIWorkspaceNames.Default,
+            AIProviderType.OpenAI,
+            "host-model",
+            tenantId);
+        existing.MarkAsInherited(Guid.NewGuid(), Guid.NewGuid());
+        existing.AddModelConfiguration(AICapabilityType.ChatCompletion, "host-chat");
+        repository.FindByNameAsync(AIWorkspaceNames.Default, Arg.Any<CancellationToken>())
+            .Returns(existing);
+
+        var seeder = CreateSeeder(
+            repository,
+            new DefaultWorkspaceSeedOptions
+            {
+                Model = "seed-chat",
+                EmbeddingModel = "seed-embedding"
+            },
+            tenantId);
+
+        var workspaceId = await seeder.EnsureDefaultWorkspaceAsync();
+
+        workspaceId.ShouldBe(existing.Id);
+        existing.ModelConfigurations.Count.ShouldBe(1);
+        await repository.DidNotReceive()
+            .UpdateAsync(Arg.Any<Workspace>(), Arg.Any<bool>(), Arg.Any<CancellationToken>());
+        await repository.DidNotReceive()
+            .InsertAsync(Arg.Any<Workspace>(), Arg.Any<bool>(), Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task Should_Inherit_Host_Default_For_Tenant_Instead_Of_Seeding_Dedicated()
+    {
+        var tenantId = Guid.NewGuid();
+        var hostWorkspaceId = Guid.NewGuid();
+        var projectionId = Guid.NewGuid();
+        var repository = Substitute.For<IWorkspaceRepository>();
+        var assignments = Substitute.For<IWorkspaceAssignmentRepository>();
+        var synchronizer = Substitute.For<IInheritedWorkspaceProjectionSynchronizer>();
+
+        var hostWorkspace = new Workspace(
+            hostWorkspaceId,
+            AIWorkspaceNames.Default,
+            AIProviderType.OpenAI,
+            "host-model");
+        var projection = new Workspace(
+            projectionId,
+            AIWorkspaceNames.Default,
+            AIProviderType.OpenAI,
+            "host-model",
+            tenantId);
+        projection.MarkAsInherited(hostWorkspaceId, Guid.NewGuid());
+
+        // active + soft-delete probes before sync, again after sync, then host lookup.
+        repository.FindByNameAsync(AIWorkspaceNames.Default, Arg.Any<CancellationToken>())
+            .Returns(
+                (Workspace?)null,
+                (Workspace?)null,
+                (Workspace?)null,
+                (Workspace?)null,
+                hostWorkspace);
+
+        assignments.FindAsync(tenantId, hostWorkspaceId, Arg.Any<CancellationToken>())
+            .Returns((WorkspaceAssignment?)null);
+        assignments.InsertAsync(Arg.Any<WorkspaceAssignment>(), Arg.Any<bool>(), Arg.Any<CancellationToken>())
+            .Returns(callInfo => callInfo.Arg<WorkspaceAssignment>());
+
+        synchronizer.CreateTenantProjectionAsync(
+                hostWorkspace,
+                tenantId,
+                Arg.Any<Guid>(),
+                Arg.Any<Guid>(),
+                hostWorkspaceId,
+                AIWorkspaceNames.Default,
+                Arg.Any<CancellationToken>())
+            .Returns(projection);
+
+        var seeder = CreateSeeder(
+            repository,
+            new DefaultWorkspaceSeedOptions { Model = "seed-chat" },
+            tenantId,
+            assignments,
+            synchronizer);
+
+        var workspaceId = await seeder.EnsureDefaultWorkspaceAsync();
+
+        workspaceId.ShouldBe(projectionId);
+        await repository.DidNotReceive()
+            .InsertAsync(Arg.Any<Workspace>(), Arg.Any<bool>(), Arg.Any<CancellationToken>());
+        await synchronizer.Received(1).EnsureCurrentTenantAsync(Arg.Any<CancellationToken>());
+        await assignments.Received(1)
+            .InsertAsync(Arg.Any<WorkspaceAssignment>(), Arg.Any<bool>(), Arg.Any<CancellationToken>());
+    }
+
     private static DefaultAiWorkspaceSeeder CreateSeeder(
         IWorkspaceRepository repository,
-        DefaultWorkspaceSeedOptions seedOptions)
+        DefaultWorkspaceSeedOptions seedOptions,
+        Guid? tenantId = null,
+        IWorkspaceAssignmentRepository? assignments = null,
+        IInheritedWorkspaceProjectionSynchronizer? synchronizer = null)
     {
         var guidGenerator = Substitute.For<IGuidGenerator>();
-        guidGenerator.Create().Returns(Guid.NewGuid());
+        guidGenerator.Create().Returns(_ => Guid.NewGuid());
 
         var currentTenant = Substitute.For<ICurrentTenant>();
-        currentTenant.Id.Returns((Guid?)null);
+        currentTenant.Id.Returns(tenantId);
+        currentTenant.Change(Arg.Any<Guid?>())
+            .Returns(ci =>
+            {
+                var previous = currentTenant.Id;
+                currentTenant.Id.Returns(ci.Arg<Guid?>());
+                return new DisposeAction(() => currentTenant.Id.Returns(previous));
+            });
+
+        var dataFilter = Substitute.For<IDataFilter>();
+        dataFilter.Disable<ISoftDelete>().Returns(new DisposeAction(() => { }));
+        dataFilter.Disable<IMultiTenant>().Returns(new DisposeAction(() => { }));
 
         return new DefaultAiWorkspaceSeeder(
             repository,
+            assignments ?? Substitute.For<IWorkspaceAssignmentRepository>(),
+            synchronizer ?? Substitute.For<IInheritedWorkspaceProjectionSynchronizer>(),
             guidGenerator,
             currentTenant,
+            dataFilter,
             Substitute.For<IStringEncryptionService>(),
             Options.Create(new AIOptions
             {
@@ -145,5 +262,14 @@ public class DefaultAiWorkspaceSeederTests
                 DefaultWorkspace = seedOptions
             }),
             NullLogger<DefaultAiWorkspaceSeeder>.Instance);
+    }
+
+    private sealed class DisposeAction : IDisposable
+    {
+        private readonly Action _action;
+
+        public DisposeAction(Action action) => _action = action;
+
+        public void Dispose() => _action();
     }
 }
