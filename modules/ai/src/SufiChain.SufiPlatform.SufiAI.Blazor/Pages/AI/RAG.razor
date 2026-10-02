@@ -36,9 +36,12 @@
 							Placeholder="@L["EnterSearchQuery"]" />
 
 				<SbStack Direction="SbStackDirection.Row" Gap="4">
-					<SbTextField @bind-Value="_maxResultsText"
+					<SbNumberField TNumber="int"
+								 @bind-Value="_maxResults"
 								 Label="@L["MaxResults"]"
-								 Placeholder="10" />
+								 Min="1"
+								 Max="50"
+								 Step="1" />
 				</SbStack>
 
 				<SbStack Direction="SbStackDirection.Row" Gap="2" Justify="SbJustify.End">

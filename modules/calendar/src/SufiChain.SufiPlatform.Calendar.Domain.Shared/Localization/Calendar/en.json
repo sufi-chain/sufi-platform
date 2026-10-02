@@ -109,7 +109,7 @@
     "Role": "Role",
     "AddAttendee": "Add attendee",
     "Reminders": "Reminders",
-    "ReminderOffset": "Reminder offset",
+    "ReminderOffset": "Minutes before",
     "ReminderChannel": "Reminder channel",
     "MyCalendar": "My calendar",
     "Today": "Today",

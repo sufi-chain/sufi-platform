@@ -11,7 +11,7 @@
         else
         {
             <span class="file-download-link__spinner"></span>
-            <span>Loading...</span>
+            <span>@L["Loading"]...</span>
         }
     </span>
 }
@@ -24,7 +24,7 @@ else if (_hasError || _fileInfo == null)
     else
     {
         <span class="file-download-link file-download-link--error @Class">
-            File not available
+            @L["FileNotAvailable"]
         </span>
     }
 }

@@ -2,7 +2,6 @@ using Microsoft.AspNetCore.Components;
 using SufiChain.SufiPlatform.Identity.Blazor.Components;
 using SufiChain.SufiPlatform.UI.Layout;
 using SufiChain.SufiPlatform.Identity;
-using SufiChain.SufiPlatform.Identity.Hooshvare;
 using SufiChain.SufiBlazor.Components.Data;
 using SufiChain.SufiBlazor.Contracts.Data;
 
@@ -13,31 +12,25 @@ public partial class UserManagement : IdentityComponentBase
 
     private const string PermissionProviderName = "U"; // User provider
 
+    private const string CreateUserRoute = "/panel/admin/identity/users/new";
+
     private static class LoadingKeys
     {
         public const string LoadUsers = "load-users";
-        public const string LoadRoles = "load-roles";
         public const string DeleteUser = "delete-user";
     }
 
     [Inject] protected IPageLayout PageLayout { get; set; } = default!;
+    [Inject] private NavigationManager NavigationManager { get; set; } = default!;
 
     private IIdentityUserAppService UserAppService => LazyGetRequiredService(ref _userAppService);
     private IIdentityUserAppService? _userAppService;
 
-    private IIdentityRoleAppService RoleAppService => LazyGetRequiredService(ref _roleAppService);
-    private IIdentityRoleAppService? _roleAppService;
-
     private SbDataGrid<IdentityUserDto>? _gridRef;
-    private List<IdentityRoleDto> _roles = new();
     private string? _filter;
     private int _pageIndex = 0;
     private int _pageSize = 10;
     private long _totalCount;
-
-    private bool _showCreateModal;
-    private bool _showEditModal;
-    private IdentityUserDto? _selectedUser;
 
     // Permission management
     private PermissionsModal? _permissionManagementModal;
@@ -54,15 +47,7 @@ public partial class UserManagement : IdentityComponentBase
         
         if (firstRender)
         {
-            // Check if user has permission to manage permissions
             _hasManagePermissionsPermission = await IsGrantedAsync(IdentityPermissions.Users.ManagePermissions);
-
-            await ExecuteWithLoadingAsync(async () =>
-            {
-                var result = await RoleAppService.GetAllListAsync();
-                _roles = result.Items.ToList();
-            }, LoadingKeys.LoadRoles);
-
             await RefreshGridAsync();
         }
     }
@@ -131,29 +116,14 @@ public partial class UserManagement : IdentityComponentBase
         await RefreshGridAsync();
     }
 
-    private void ShowCreateModal()
+    private void GoToCreateUser()
     {
-        _showCreateModal = true;
+        NavigationManager.NavigateTo(CreateUserRoute);
     }
 
-    private void ShowEditModal(IdentityUserDto user)
+    private void GoToEditUser(IdentityUserDto user)
     {
-        _selectedUser = user;
-        _showEditModal = true;
-    }
-
-    private async Task OnUserCreatedAsync()
-    {
-        _showCreateModal = false;
-        await Notify.SuccessAsync(L["UserCreatedSuccessfully"]);
-        await RefreshGridAsync();
-    }
-
-    private async Task OnUserUpdatedAsync()
-    {
-        _showEditModal = false;
-        await Notify.SuccessAsync(L["UserUpdatedSuccessfully"]);
-        await RefreshGridAsync();
+        NavigationManager.NavigateTo($"/panel/admin/identity/users/{user.Id}");
     }
 
     private async Task DeleteUserAsync(IdentityUserDto user)
@@ -183,14 +153,8 @@ public partial class UserManagement : IdentityComponentBase
         }
     }
 
-    private IReadOnlyDictionary<string, string> BuildHooshvareContext()
+    private static IReadOnlyDictionary<string, string> BuildHooshvareContext()
     {
-        var context = new Dictionary<string, string>(StringComparer.Ordinal);
-        if (_selectedUser != null)
-        {
-            context[IdentityAdminAdvisorHooshvareKeys.Context.UserId] = _selectedUser.Id.ToString();
-        }
-
-        return context;
+        return new Dictionary<string, string>(StringComparer.Ordinal);
     }
 }

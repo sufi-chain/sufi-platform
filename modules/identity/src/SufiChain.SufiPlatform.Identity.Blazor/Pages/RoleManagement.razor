@@ -40,7 +40,7 @@
                         ShowFilterRow="true"
                         ShowColumnChooser="true"
                         SelectionMode="SbSelectionMode.MultipleRows">
-					<SbColumn TItem="IdentityRoleDto" Title="@L["Actions"]" Width="152px" Sortable="false">
+					<SbColumn TItem="IdentityRoleDto" Title="@L["Actions"]" MinWidth="152px" Sortable="false">
 						<CellTemplate Context="cellContext">
 							<SbStack Wrap="true" Direction="SbStackDirection.Row" Gap="1">
 								<AuthorizeView Policy="@SufiChain.SufiPlatform.Identity.IdentityPermissions.Roles.Update" Context="authContext">

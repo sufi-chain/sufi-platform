@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop;
 using SufiChain.SufiBlazor.Components.Data;
+using SufiChain.SufiBlazor.Components.Overlays;
 using SufiChain.SufiPlatform.ShortLinks.Hooshvare;
 using SufiChain.SufiPlatform.ShortLinks.Permissions;
 using SufiChain.SufiBlazor.Contracts.Data;
@@ -42,7 +43,7 @@ public partial class ShortLinkManagementBase : ShortLinksComponentBase
 
     protected bool IsCreateDialogOpen { get; set; }
     protected bool IsEditDialogOpen { get; set; }
-    protected bool IsDeleteDialogOpen { get; set; }
+    protected SbConfirmDialog? DeleteConfirmDialog;
 
     protected bool HasCreatePermission { get; set; }
     protected bool HasEditPermission { get; set; }
@@ -242,31 +243,20 @@ public partial class ShortLinkManagementBase : ShortLinksComponentBase
     protected virtual Task PromptDeleteAsync(ShortUrlDto entity)
     {
         PendingDeleteEntity = entity;
-        IsDeleteDialogOpen = true;
+        DeleteConfirmDialog?.Show();
         return Task.CompletedTask;
     }
 
     protected virtual Task CancelDelete()
     {
         PendingDeleteEntity = null;
-        IsDeleteDialogOpen = false;
         return Task.CompletedTask;
-    }
-
-    protected void OnDeleteDialogOpenChanged(bool open)
-    {
-        IsDeleteDialogOpen = open;
-        if (!open)
-        {
-            PendingDeleteEntity = null;
-        }
     }
 
     protected virtual async Task DeleteConfirmedAsync()
     {
         if (PendingDeleteEntity == null)
         {
-            IsDeleteDialogOpen = false;
             return;
         }
 

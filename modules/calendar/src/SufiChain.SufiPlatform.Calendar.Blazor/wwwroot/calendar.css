@@ -74,3 +74,18 @@
 .sufi-calendar-management__inheritance-loading {
     min-height: 6rem;
 }
+
+.sufi-calendar-business-hours__time {
+    flex: 1 1 10rem;
+    min-width: 9rem;
+}
+
+.sufi-calendar-business-hours__footer {
+    position: sticky;
+    bottom: 0;
+    z-index: 2;
+    margin-top: var(--sb-space-4, 1rem);
+    padding: var(--sb-space-3, 0.75rem) 0;
+    background: var(--sb-color-surface, #fff);
+    border-top: 1px solid var(--sb-color-border, #e5e7eb);
+}

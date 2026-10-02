@@ -21,7 +21,7 @@ public partial class RAG : AIComponentBase
     private Guid? _selectedWorkspaceId;
     private RagAvailabilityDto _availability = new();
     private string _query = string.Empty;
-    private string _maxResultsText = "10";
+    private int _maxResults = 10;
     private List<DocumentChunkDto> _searchResults = new();
     private bool _hasSearched = false;
 
@@ -80,7 +80,7 @@ public partial class RAG : AIComponentBase
             {
                 WorkspaceName = workspace.Name,
                 Query = _query,
-                MaxResults = int.TryParse(_maxResultsText, out var max) ? max : 10
+                MaxResults = _maxResults < 1 ? 10 : _maxResults
             };
 
             _searchResults = await RAGAppService.SearchDocumentsAsync(input);
@@ -94,7 +94,7 @@ public partial class RAG : AIComponentBase
         _query = string.Empty;
         _searchResults.Clear();
         _hasSearched = false;
-        _maxResultsText = "10";
+        _maxResults = 10;
     }
 
     private string GetAvailabilityMessage()

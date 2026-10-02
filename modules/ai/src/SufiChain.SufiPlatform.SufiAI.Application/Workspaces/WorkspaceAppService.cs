@@ -47,6 +47,7 @@ public class WorkspaceAppService : SufiApplicationService, IWorkspaceAppService
     private readonly DistributedRefreshGate _refresh;
     private readonly HostPriceMarkup _hostPriceMarkup;
     private readonly AIOptions _aiOptions;
+    private readonly IEnumerable<IAiWorkspaceUsageChecker> _workspaceUsageCheckers;
 
     public WorkspaceAppService(
         IWorkspaceRepository workspaceRepository,
@@ -67,7 +68,8 @@ public class WorkspaceAppService : SufiApplicationService, IWorkspaceAppService
         IModelEndpointLookup endpointLookup,
         DistributedRefreshGate refresh,
         HostPriceMarkup hostPriceMarkup,
-        IOptions<AIOptions> aiOptions)
+        IOptions<AIOptions> aiOptions,
+        IEnumerable<IAiWorkspaceUsageChecker> workspaceUsageCheckers)
     {
         _workspaceRepository = workspaceRepository;
         _modelConfigurationRepository = modelConfigurationRepository;
@@ -88,6 +90,7 @@ public class WorkspaceAppService : SufiApplicationService, IWorkspaceAppService
         _refresh = refresh;
         _hostPriceMarkup = hostPriceMarkup;
         _aiOptions = aiOptions.Value;
+        _workspaceUsageCheckers = workspaceUsageCheckers;
     }
 
     public Task<List<AiProviderProfileDto>> GetProviderProfilesAsync()
@@ -469,11 +472,35 @@ public class WorkspaceAppService : SufiApplicationService, IWorkspaceAppService
         {
             EnsureEditable(workspace);
         }
+
+        await EnsureNoActiveUsageAsync(id);
         await _workspaceRepository.DeleteAsync(id, autoSave: true);
         if (workspace != null)
         {
             await _workspaceSyncService.ClearWorkspaceCache(workspace.Name);
         }
+    }
+
+    private async Task EnsureNoActiveUsageAsync(Guid workspaceId)
+    {
+        var blocking = new List<AiWorkspaceUsage>();
+        foreach (var checker in _workspaceUsageCheckers)
+        {
+            var usages = await checker.FindActiveUsagesAsync(workspaceId);
+            blocking.AddRange(usages.Where(usage => usage.ActiveCount > 0));
+        }
+
+        if (blocking.Count == 0)
+        {
+            return;
+        }
+
+        var details = string.Join(
+            ", ",
+            blocking.Select(usage => L[usage.RelationKey, usage.ActiveCount].Value));
+        throw new BusinessException(AIErrorCodes.WorkspaceInUse)
+            .WithData("WorkspaceId", workspaceId)
+            .WithData("Details", details);
     }
 
     private static void EnsureEditable(Workspace workspace)

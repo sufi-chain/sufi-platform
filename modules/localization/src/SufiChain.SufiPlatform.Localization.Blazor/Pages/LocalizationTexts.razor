@@ -33,6 +33,7 @@
 									Value="@_selectedCulture"
 									ValueChanged="@((string? v) => { _selectedCulture = v; })"
 									Placeholder="@L["SelectCulture"]"
+									Searchable="true"
 									Style="min-width: 150px;">
 						@foreach (var culture in _cultureNames)
 						{
@@ -82,7 +83,7 @@
                         ShowFilterRow="true"
                         ShowColumnChooser="true"
                         SelectionMode="SbSelectionMode.MultipleRows">
-						<SbColumn TItem="LocalizationTextWithBaseValueDto" Title="@L["Actions"]" Width="104px" Sortable="false">
+						<SbColumn TItem="LocalizationTextWithBaseValueDto" Title="@L["Actions"]" MinWidth="104px" Sortable="false">
 							<CellTemplate Context="ctx">
 								<SbStack Wrap="true" Direction="SbStackDirection.Row" Gap="1">
 									<AuthorizeView Policy="@LocalizationPermissions.Texts.Update" Context="authContext">
@@ -106,7 +107,7 @@
 						<SbColumn TItem="LocalizationTextWithBaseValueDto" Field="Key" Title="@L["Key"]" Sortable="true" Filterable="true"/>
 						<SbColumn TItem="LocalizationTextWithBaseValueDto" Field="BaseValue" Title="@L["BaseValue"]" Filterable="true" Sortable="true"/>
 						<SbColumn TItem="LocalizationTextWithBaseValueDto" Field="Value" Title="@L["Value"]" Filterable="true" Sortable="true"/>
-						<SbColumn TItem="LocalizationTextWithBaseValueDto" Title="@L["Status"]" Width="120px">
+						<SbColumn TItem="LocalizationTextWithBaseValueDto" Title="@L["Status"]" MinWidth="120px">
 							<CellTemplate Context="ctx2">
 								@if (ctx2.Item.IsOverride)
 								{
@@ -138,7 +139,7 @@
                         ShowFilterRow="true"
                         ShowColumnChooser="true"
                         SelectionMode="SbSelectionMode.MultipleRows">
-						<SbColumn TItem="LocalizationTextDto" Title="@L["Actions"]" Width="104px" Sortable="false">
+						<SbColumn TItem="LocalizationTextDto" Title="@L["Actions"]" MinWidth="104px" Sortable="false">
 							<CellTemplate Context="ctx">
 								<SbStack Wrap="true" Direction="SbStackDirection.Row" Gap="1">
 									<AuthorizeView Policy="@LocalizationPermissions.Texts.Update" Context="authContext">
@@ -157,7 +158,7 @@
 							</CellTemplate>
 						</SbColumn>
 						<SbColumn TItem="LocalizationTextDto" Field="ResourceName" Title="@L["ResourceName"]" Sortable="true" Filterable="true"/>
-						<SbColumn TItem="LocalizationTextDto" Field="CultureName" Title="@L["CultureName"]" Width="100px" Sortable="true" Filterable="true"/>
+						<SbColumn TItem="LocalizationTextDto" Field="CultureName" Title="@L["CultureName"]" MinWidth="100px" Sortable="true" Filterable="true"/>
 						<SbColumn TItem="LocalizationTextDto" Field="Key" Title="@L["Key"]" Sortable="true" Filterable="true"/>
 						<SbColumn TItem="LocalizationTextDto" Field="Value" Title="@L["Value"]" Filterable="true" Sortable="true"/>
 					</SbDataGrid>
@@ -175,10 +176,27 @@
 						 @bind-Value="_newItem.ResourceName"
 						 Label="@L["ResourceName"]"
 						 Required="true" />
-			<SbTextField TValue="string"
-						 @bind-Value="_newItem.CultureName"
-						 Label="@L["CultureName"]"
-						 Required="true" />
+			@if (_cultureNames.Count > 0)
+			{
+				<SbFormField Label="@L["CultureName"]" Required="true">
+					<SbSimpleSelect TValue="string"
+									Value="@_newItem.CultureName"
+									ValueChanged="@((string? value) => _newItem.CultureName = value ?? string.Empty)"
+									Searchable="true">
+						@foreach (var culture in CultureChoices(_newItem.CultureName))
+						{
+							<SbSelectOption TValue="string" Value="@culture">@culture</SbSelectOption>
+						}
+					</SbSimpleSelect>
+				</SbFormField>
+			}
+			else
+			{
+				<SbTextField TValue="string"
+							 @bind-Value="_newItem.CultureName"
+							 Label="@L["CultureName"]"
+							 Required="true" />
+			}
 			<SbTextField TValue="string"
 						 @bind-Value="_newItem.Key"
 						 Label="@L["Key"]"
@@ -208,10 +226,27 @@
 						 @bind-Value="_editingItem.ResourceName"
 						 Label="@L["ResourceName"]"
 						 Disabled="true" />
-			<SbTextField TValue="string"
-						 @bind-Value="_editingItem.CultureName"
-						 Label="@L["CultureName"]"
-						 Disabled="true" />
+			@if (_cultureNames.Count > 0)
+			{
+				<SbSimpleSelect TValue="string"
+								Value="@_editingItem.CultureName"
+								ValueChanged="@((string? value) => _editingItem.CultureName = value ?? string.Empty)"
+								Label="@L["CultureName"]"
+								Searchable="true"
+								Disabled="true">
+					@foreach (var culture in CultureChoices(_editingItem.CultureName))
+					{
+						<SbSelectOption TValue="string" Value="@culture">@culture</SbSelectOption>
+					}
+				</SbSimpleSelect>
+			}
+			else
+			{
+				<SbTextField TValue="string"
+							 @bind-Value="_editingItem.CultureName"
+							 Label="@L["CultureName"]"
+							 Disabled="true" />
+			}
 			<SbTextField TValue="string"
 						 @bind-Value="_editingItem.Key"
 						 Label="@L["Key"]"

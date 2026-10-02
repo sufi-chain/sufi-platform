@@ -1,3 +1,4 @@
+using System.Globalization;
 using Microsoft.AspNetCore.Components;
 using SufiChain.SufiPlatform.SufiAI;
 using SufiChain.SufiPlatform.SufiAI.Blazor;
@@ -74,6 +75,35 @@ public partial class WorkspaceConnectionFields : AIComponentBase
         string.IsNullOrWhiteSpace(profile.DefaultBaseUrl)
             ? L["ProviderEndpointRequired"].Value
             : profile.DefaultBaseUrl;
+
+    private decimal InputCostValue => ParseCost(Draft.InputCostText);
+
+    private decimal OutputCostValue => ParseCost(Draft.OutputCostText);
+
+    private void OnInputCostChanged(decimal value) =>
+        Draft.InputCostText = FormatCost(value);
+
+    private void OnOutputCostChanged(decimal value) =>
+        Draft.OutputCostText = FormatCost(value);
+
+    private static decimal ParseCost(string? text)
+    {
+        if (string.IsNullOrWhiteSpace(text))
+        {
+            return 0m;
+        }
+
+        if (decimal.TryParse(text, NumberStyles.Number, CultureInfo.InvariantCulture, out var invariant) ||
+            decimal.TryParse(text, NumberStyles.Number, CultureInfo.CurrentCulture, out invariant))
+        {
+            return invariant < 0 ? 0m : invariant;
+        }
+
+        return 0m;
+    }
+
+    private static string FormatCost(decimal value) =>
+        value.ToString("0.####", CultureInfo.InvariantCulture);
 
     private Task InvokeLoadModels() => LoadModels.InvokeAsync();
 

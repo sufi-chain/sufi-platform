@@ -1,4 +1,5 @@
 @namespace SufiChain.SufiPlatform.SufiAI.Blazor.Components
+@using SufiChain.SufiBlazor.Contracts.Editors
 @inherits AIComponentBase
 
 <SbDialog Open="@Open" OpenChanged="@SetOpenAsync" Size="SbDialogSize.Md" Title="@(Server == null ? L["NewMCPServer"] : L["EditMCPServer"])" AllowDropdownOverflow="true">
@@ -24,9 +25,9 @@
                               Value="_transportType"
                               ValueChanged="@OnTransportTypeChanged"
                               Disabled="@(Server != null)">
-						<SbSelectOption TValue="string" Value="@("STDIO")">STDIO</SbSelectOption>
-						<SbSelectOption TValue="string" Value="@("SSE")">SSE</SbSelectOption>
-						<SbSelectOption TValue="string" Value="@("HTTP")">HTTP</SbSelectOption>
+						<SbSelectOption TValue="string" Value="@("STDIO")">@L["MCPTransport:STDIO"]</SbSelectOption>
+						<SbSelectOption TValue="string" Value="@("SSE")">@L["MCPTransport:SSE"]</SbSelectOption>
+						<SbSelectOption TValue="string" Value="@("HTTP")">@L["MCPTransport:HTTP"]</SbSelectOption>
                     </SbSimpleSelect>
                 </SbFormField>
                 
@@ -39,17 +40,18 @@
                     </SbFormField>
                     
                     <SbFormField Label="@L["Arguments"]">
-                        <SbTextField @bind-Value="_argumentsJson" 
-                                     Placeholder='["modelcontextprotocol/server-filesystem", "/path"]'
-                                     FullWidth="true"
-                                     Multiline="true"
-                                     Rows="3" />
+                        <SbCodeEditor @bind-Value="_argumentsJson"
+                                      Language="SbCodeLanguage.Json"
+                                      Placeholder='["modelcontextprotocol/server-filesystem", "/path"]'
+                                      MinHeight="120px"
+                                      WordWrap="true" />
                     </SbFormField>
                 }
                 else
                 {
                     <SbFormField Label="@L["Endpoint"]" Required="true">
                         <SbTextField @bind-Value="_endpoint" 
+                                     Type="url"
                                      Placeholder="https://mcp-server.example.com"
                                      FullWidth="true" />
                     </SbFormField>

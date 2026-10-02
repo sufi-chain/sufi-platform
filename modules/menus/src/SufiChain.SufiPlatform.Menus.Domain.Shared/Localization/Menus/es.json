@@ -11,6 +11,12 @@
     "Menu:SufiMenus.Menus": "Menús",
     "ContextType:Public": "Público",
     "ContextType:KnowledgeBase.Project": "Proyecto de base de conocimiento",
-    "DisplayNameLocalizationMode": "Modo del nombre para mostrar"
+    "DisplayNameLocalizationMode": "Modo del nombre para mostrar",
+    "MenuItemSection:Link": "Enlace",
+    "MenuItemSection:Display": "Presentación",
+    "MenuItemSection:Visibility": "Visibilidad",
+    "Save": "Guardar",
+    "Cancel": "Cancelar",
+    "ContextTypeExample": "p. ej. Public"
   }
 }

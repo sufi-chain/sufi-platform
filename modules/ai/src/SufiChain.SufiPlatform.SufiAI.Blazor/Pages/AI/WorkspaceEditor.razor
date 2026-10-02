@@ -1,0 +1,79 @@
+@namespace SufiChain.SufiPlatform.SufiAI.Blazor.Pages.AI
+@page "/panel/admin/ai/workspaces/new"
+@page "/panel/admin/ai/workspaces/{WorkspaceId:guid}/edit"
+@attribute [Authorize(Policy = AIPermissions.Workspaces.Default)]
+@inherits AIComponentBase
+
+<div class="workspace-editor">
+	@if (IsOperationLoading(LoadingKeys.LoadPage))
+	{
+		<p role="status">@L["Loading"]</p>
+	}
+	else if (_notFound)
+	{
+		<SbAlert Severity="SbAlertSeverity.Warning">@L["AI:WorkspaceEditorNotFound"]</SbAlert>
+	}
+	else if (_ready)
+	{
+		<SbTabs @bind-ActiveIndex="_activeTab">
+			<SbTab Label="@L["ConnectionSettings"]">
+				<SbStack Direction="SbStackDirection.Column" Gap="4">
+					@if (IsReadOnly)
+					{
+						<SbAlert Severity="SbAlertSeverity.Info">
+							@L["InheritedWorkspaceReadOnly"]
+						</SbAlert>
+						<AuthorizeView Policy="@AIPermissions.Workspaces.Edit">
+							<SbButton Color="SbColor.Primary"
+									  OnClick="@ConvertToCustomAsync"
+									  Loading="IsOperationLoading(LoadingKeys.ConvertWorkspace)">
+								@L["ConvertToCustom"]
+							</SbButton>
+						</AuthorizeView>
+					}
+					<WorkspaceConnectionFields Draft="_draft"
+											   Profiles="_profiles"
+											   AvailableModels="_availableModels"
+											   DecisionModels="_decisionModels"
+											   ModelsLoaded="_modelsLoaded"
+											   ReadOnly="IsReadOnly"
+											   ShowSavedKeyHint="IsEdit"
+											   LoadingModels="IsOperationLoading(LoadingKeys.LoadModels)"
+											   LoadModels="LoadModelsAsync"
+											   ProviderReset="OnProviderReset" />
+					@if (!IsReadOnly)
+					{
+						<SbButton Variant="SbButtonVariant.Outline"
+								  OnClick="@TestConnectionAsync"
+								  Loading="IsOperationLoading(LoadingKeys.TestConnection)">
+							@L["TestConnection"]
+						</SbButton>
+					}
+				</SbStack>
+			</SbTab>
+
+			<SbTab Label="@L["Guardrails"]">
+				<WorkspaceGuardrailForm Rows="_guardrailRows"
+										Status="_guardrailStatus"
+										Disabled="@IsReadOnly" />
+			</SbTab>
+		</SbTabs>
+	}
+
+	<div class="workspace-editor__footer">
+		<SbStack Wrap="true" Direction="SbStackDirection.Row" Gap="2" Justify="SbJustify.End">
+			<SbButton Variant="SbButtonVariant.Outline" OnClick="@Cancel">@L["Cancel"]</SbButton>
+			@if (_ready)
+			{
+				<AuthorizeView Policy="@SavePolicy">
+					<SbButton Color="SbColor.Primary"
+							  OnClick="@SaveAsync"
+							  Disabled="@IsReadOnly"
+							  Loading="@IsSaving">
+						@L["Save"]
+					</SbButton>
+				</AuthorizeView>
+			}
+		</SbStack>
+	</div>
+</div>

@@ -21,6 +21,11 @@ public class DefaultPageLayout : IPageLayout
         get => _title;
         set
         {
+            if (string.Equals(_title, value, StringComparison.Ordinal))
+            {
+                return;
+            }
+
             _title = value;
             OnPropertyChanged();
         }
@@ -32,6 +37,11 @@ public class DefaultPageLayout : IPageLayout
         get => _subtitle;
         set
         {
+            if (string.Equals(_subtitle, value, StringComparison.Ordinal))
+            {
+                return;
+            }
+
             _subtitle = value;
             OnPropertyChanged();
         }
@@ -49,7 +59,9 @@ public class DefaultPageLayout : IPageLayout
         get => _toolbarContent;
         set
         {
-            //Console.WriteLine($"[DefaultPageLayout] ToolbarContent setter: {_toolbarContent?.GetType().Name ?? "null"} -> {value?.GetType().Name ?? "null"}");
+            // Always notify. Razor ChildContent is often the same delegate across parent
+            // renders, while Disabled/Loading inside that fragment already changed.
+            // Skipping a same-instance assign leaves the top bar on the first button state.
             _toolbarContent = value;
             OnPropertyChanged();
         }

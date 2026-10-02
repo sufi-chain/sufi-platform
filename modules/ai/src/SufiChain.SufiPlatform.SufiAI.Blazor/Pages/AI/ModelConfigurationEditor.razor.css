@@ -1,0 +1,41 @@
+.model-configuration-editor {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    max-width: 64rem;
+}
+
+.model-configuration-editor__fields {
+    display: grid;
+    gap: 1.5rem;
+    border: 0;
+    padding: 0;
+    margin: 0;
+    min-width: 0;
+}
+
+.model-configuration-editor__section {
+    display: grid;
+    gap: 1rem;
+    padding: 1.5rem;
+    border: 1px solid var(--sb-color-border);
+    border-radius: var(--sb-radius-lg, 12px);
+    background: var(--sb-color-surface);
+    min-width: 0;
+}
+
+.model-configuration-editor__footer {
+    position: sticky;
+    bottom: 0;
+    z-index: 2;
+    margin-top: var(--sb-space-2, 0.5rem);
+    padding: var(--sb-space-3, 0.75rem) 0;
+    background: var(--sb-color-surface, #fff);
+    border-top: 1px solid var(--sb-color-border, #e5e7eb);
+}
+
+@media (max-width: 640px) {
+    .model-configuration-editor__section {
+        padding: 1rem;
+    }
+}

@@ -22,7 +22,7 @@
                         ShowFilterRow="true"
                         ShowColumnChooser="true"
                         SelectionMode="SbSelectionMode.MultipleRows">
-					<SbColumn TItem="WorkspaceAssignmentDto" Title="@L["Actions"]" Width="72px" Sortable="false">
+					<SbColumn TItem="WorkspaceAssignmentDto" Title="@L["Actions"]" MinWidth="72px" Sortable="false">
 						<CellTemplate Context="cellContext">
 							@if (cellContext.Item.IsActive)
 							{
@@ -36,19 +36,19 @@
 							}
 						</CellTemplate>
 					</SbColumn>
-					<SbColumn TItem="WorkspaceAssignmentDto" Title="@L["Tenant"]" Width="200px">
+					<SbColumn TItem="WorkspaceAssignmentDto" Title="@L["Tenant"]" MinWidth="200px">
 						<CellTemplate Context="cellContext">
 							@(cellContext.Item.TenantName ?? cellContext.Item.TenantId?.ToString())
 						</CellTemplate>
 					</SbColumn>
-					<SbColumn TItem="WorkspaceAssignmentDto" Title="@L["Status"]" Width="110px">
+					<SbColumn TItem="WorkspaceAssignmentDto" Title="@L["Status"]" MinWidth="110px">
 						<CellTemplate Context="cellContext">
 							<SbBadge Color="@(cellContext.Item.IsActive ? SbColor.Success : SbColor.Default)">
 								@(cellContext.Item.IsActive ? L["Active"] : L["Inactive"])
 							</SbBadge>
 						</CellTemplate>
 					</SbColumn>
-					<SbColumn TItem="WorkspaceAssignmentDto" Title="@L["AssignmentVersion"]" Width="90px">
+					<SbColumn TItem="WorkspaceAssignmentDto" Title="@L["AssignmentVersion"]" MinWidth="90px">
 						<CellTemplate Context="cellContext">
 							@cellContext.Item.Version
 						</CellTemplate>

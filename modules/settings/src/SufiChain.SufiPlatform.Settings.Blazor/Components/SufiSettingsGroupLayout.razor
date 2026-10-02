@@ -5,14 +5,16 @@
     <nav class="settings-navigation" aria-label="@L["Settings"]">
         @foreach (var group in Groups)
         {
-            <button type="button"
-                    class="settings-navigation-item @(group.Id == SelectedGroupId ? "active" : "")"
-                    aria-current="@(group.Id == SelectedGroupId ? "true" : null)"
-                    aria-controls="@_contentId"
-                    disabled="@Busy"
-                    @onclick="@(() => SelectedGroupIdChanged.InvokeAsync(group.Id))">
+            <SbButton Type="button"
+                      Variant="SbButtonVariant.Ghost"
+                      Color="SbColor.Default"
+                      Class="@($"settings-navigation-item {(group.Id == SelectedGroupId ? "active" : "")}")"
+                      aria-current="@(group.Id == SelectedGroupId ? "true" : null)"
+                      aria-controls="@_contentId"
+                      Disabled="@Busy"
+                      OnClick="@(() => SelectedGroupIdChanged.InvokeAsync(group.Id))">
                 @group.DisplayName
-            </button>
+            </SbButton>
         }
     </nav>
     <section id="@_contentId" class="settings-content" aria-labelledby="@_headingId">

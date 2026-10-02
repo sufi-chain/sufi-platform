@@ -101,22 +101,22 @@
                         <td>@item.OriginalName</td>
                         <td>
                             <SbChip Color="@GetFileTypeColor(item.FileType)" Size="SbSize.Sm">
-                                @item.FileType
+                                @FormatFileType(item.FileType)
                             </SbChip>
                         </td>
                         <td>@FormatFileSize(item.Size)</td>
                         <td>@item.CreationTime.ToString("g")</td>
                         <td>
                             <SbStack Direction="SbStackDirection.Row" Gap="1">
-                                <SbIconButton Color="SbColor.Primary" Size="SbSize.Sm" OnClick="@(() => ViewFileItem(item))" AriaLabel="View file">
+                                <SbIconButton Color="SbColor.Primary" Size="SbSize.Sm" OnClick="@(() => ViewFileItem(item))" AriaLabel="@L["ViewFile"]">
                                     <Icon><SbIcon Name="eye" /></Icon>
                                 </SbIconButton>
                                 @if (ShowActions)
                                 {
-                                    <SbIconButton Color="SbColor.Default" Size="SbSize.Sm" OnClick="@(() => EditFileItem(item))" AriaLabel="Edit file">
+                                    <SbIconButton Color="SbColor.Default" Size="SbSize.Sm" OnClick="@(() => EditFileItem(item))" AriaLabel="@L["EditFile"]">
                                         <Icon><SbIcon Name="edit" /></Icon>
                                     </SbIconButton>
-                                    <SbIconButton Color="SbColor.Danger" Size="SbSize.Sm" OnClick="@(() => DeleteFileItem(item))" AriaLabel="Delete file">
+                                    <SbIconButton Color="SbColor.Danger" Size="SbSize.Sm" OnClick="@(() => DeleteFileItem(item))" AriaLabel="@L["DeleteFile"]">
                                         <Icon><SbIcon Name="trash" /></Icon>
                                     </SbIconButton>
                                 }
@@ -131,7 +131,7 @@
             {
                 <div class="p-3">
                     <SbStack Direction="SbStackDirection.Row" Justify="SbJustify.SpaceBetween" Align="SbAlign.Center">
-                        <span class="text-muted">Showing @_fileItems.Count of @_totalCount items</span>
+                        <span class="text-muted">@L["ShowingItemsCount", _fileItems.Count, _totalCount]</span>
                         <SbPagination PageIndex="@(_currentPage - 1)" PageSize="@PageSize" TotalCount="@_totalCount" PageIndexChanged="@(p => LoadPage(p + 1))" />
                     </SbStack>
                 </div>
@@ -141,7 +141,7 @@
     </SbCard>
 
     <!-- Lightbox Modal -->
-    <SbDialog @bind-Open="_lightboxOpen" Title="@(_selectedFileItem?.OriginalName ?? "Preview")" Size="SbDialogSize.Xl">
+    <SbDialog @bind-Open="_lightboxOpen" Title="@(_selectedFileItem?.OriginalName ?? L["Preview"].Value)" Size="SbDialogSize.Xl">
         <ChildContent>
             @if (_selectedFileItem != null)
             {
@@ -162,7 +162,7 @@
                         <p>@_selectedFileItem.OriginalName</p>
                         <SbButton Href="@GetDownloadUrl(_selectedFileItem)" Color="SbColor.Primary">
                             <StartIcon><SbIcon Name="download" /></StartIcon>
-                            <ChildContent>Download</ChildContent>
+                            <ChildContent>@L["Download"]</ChildContent>
                         </SbButton>
                     </SbEmptyState>
                 }

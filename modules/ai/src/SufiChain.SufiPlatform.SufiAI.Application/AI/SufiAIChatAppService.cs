@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
@@ -44,11 +45,18 @@ public class SufiAIChatAppService : SufiApplicationService, ISufiAIChatAppServic
     }
 
     [RequiresFeature(SufiAIFeatures.Chat)]
-    public virtual async Task<SufiAIChatResponseDto> SendMessageAsync(SufiAISendChatMessageInput input)
+    public virtual async Task<SufiAIChatResponseDto> SendMessageAsync(
+        SufiAISendChatMessageInput input,
+        CancellationToken cancellationToken = default)
     {
+        Logger.LogDebug(
+            "SendMessageAsync started. WorkspaceName={WorkspaceName}, ModelConfigurationId={ModelConfigurationId}, MessageLength={MessageLength}",
+            input.WorkspaceName,
+            input.ModelConfigurationId,
+            input.Message?.Length ?? 0);
         await EnsureGuardrailAsync(input.WorkspaceName);
         var request = MapRequest(input);
-        var response = await ChatService.CompleteAsync(request);
+        var response = await ChatService.CompleteAsync(request, cancellationToken);
 
         return new SufiAIChatResponseDto
         {
@@ -63,6 +71,11 @@ public class SufiAIChatAppService : SufiApplicationService, ISufiAIChatAppServic
     [RequiresFeature(SufiAIFeatures.Chat)]
     public virtual async IAsyncEnumerable<SufiAIChatResponseDto> StreamMessageAsync(SufiAISendChatMessageInput input)
     {
+        Logger.LogDebug(
+            "StreamMessageAsync started. WorkspaceName={WorkspaceName}, ModelConfigurationId={ModelConfigurationId}, MessageLength={MessageLength}",
+            input.WorkspaceName,
+            input.ModelConfigurationId,
+            input.Message?.Length ?? 0);
         await EnsureGuardrailAsync(input.WorkspaceName);
         await foreach (var chunk in ChatService.StreamAsync(MapRequest(input)))
         {

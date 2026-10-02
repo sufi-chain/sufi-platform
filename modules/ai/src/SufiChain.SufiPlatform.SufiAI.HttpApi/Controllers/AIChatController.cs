@@ -1,3 +1,4 @@
+using System.Threading;
 using Microsoft.AspNetCore.Mvc;
 using SufiChain.SufiPlatform.SufiAI;
 using Volo.Abp;
@@ -17,9 +18,11 @@ public class AIChatController : AIController, ISufiAIChatAppService
     }
 
     [HttpPost("messages")]
-    public virtual Task<SufiAIChatResponseDto> SendMessageAsync(SufiAISendChatMessageInput input)
+    public virtual Task<SufiAIChatResponseDto> SendMessageAsync(
+        SufiAISendChatMessageInput input,
+        CancellationToken cancellationToken = default)
     {
-        return _chatAppService.SendMessageAsync(input);
+        return _chatAppService.SendMessageAsync(input, cancellationToken);
     }
 
     [HttpPost("messages/with-tools")]

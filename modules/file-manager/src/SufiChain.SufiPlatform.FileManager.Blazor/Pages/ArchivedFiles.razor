@@ -78,15 +78,15 @@
 				<SbTable TItem="FileItemDto" Items="@_archivedFiles" Hover>
 					<HeaderContent>
 						<tr>
-							<th style="width: 5%;">
+							<th style="min-width: 5%;">
 								<SbCheckbox @bind-Value="_selectAll" @bind-Value:after="@ToggleSelectAll" />
 							</th>
-							<th style="width: 5%;"></th>
-							<th style="width: 30%;">@L["Name"]</th>
-							<th style="width: 15%;">@L["FileStructure"]</th>
-							<th style="width: 10%;">@L["Size"]</th>
-							<th style="width: 15%;">@L["ArchivedAt"]</th>
-							<th style="width: 10%;">@L["Actions"]</th>
+							<th style="min-width: 5%;"></th>
+							<th style="min-width: 30%;">@L["Name"]</th>
+							<th style="min-width: 15%;">@L["FileStructure"]</th>
+							<th style="min-width: 10%;">@L["Size"]</th>
+							<th style="min-width: 15%;">@L["ArchivedAt"]</th>
+							<th style="min-width: 10%;">@L["Actions"]</th>
 						</tr>
 					</HeaderContent>
 					<RowTemplate Context="file">

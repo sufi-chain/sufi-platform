@@ -2,8 +2,9 @@
 @using SufiChain.SufiBlazor.Components.Navigation
 @inherits CalendarPublicComponentBase
 
-<SbDialog Open="@Open" OpenChanged="SetOpenAsync" Size="SbDialogSize.Lg" Title="@DialogTitle" AllowDropdownOverflow="true">
-    <ChildContent>
+<div class="sufi-event-editor-page">
+    @if (_ready)
+    {
         <EditForm Model="_model" OnValidSubmit="SaveAsync">
             <DataAnnotationsValidator />
             <SbTabs @bind-ActiveIndex="_activeTab">
@@ -11,8 +12,8 @@
                     <div class="sufi-event-editor">
                         <SbTextField @bind-Value="_model.Title" Label="@L["Title"]" />
                         <SbDateRangePicker Value="@_dateRange" ValueChanged="OnDateRangeChanged" Label="@L["Date"]" />
-                        <SbTextField @bind-Value="_startTimeText" Label="@L["StartTime"]" />
-                        <SbTextField @bind-Value="_endTimeText" Label="@L["EndTime"]" />
+                        <SbTimePicker @bind-Value="_startTime" Label="@L["StartTime"]" Clearable="false" />
+                        <SbTimePicker @bind-Value="_endTime" Label="@L["EndTime"]" Clearable="false" />
                         <SbCheckbox @bind-Value="_model.IsAllDay" Label="@L["AllDay"]" />
                         <SbSimpleSelect TValue="string" @bind-Value="_model.TimeZoneId" Label="@L["TimeZone"]" Searchable="true" Placeholder="@L["SelectTimeZone"]">
                             @foreach (var timeZone in TimeZoneOptions)
@@ -27,7 +28,7 @@
                             }
                         </SbSimpleSelect>
                         <SbTextField @bind-Value="_model.Location" Label="@L["Location"]" />
-                        <SbTextField @bind-Value="_model.Color" Label="@L["Color"]" />
+                        <SbColorPicker @bind-Value="_model.Color" Label="@L["Color"]" />
                         <SbTextField @bind-Value="_model.Description" Label="@L["Description"]" Multiline="true" Rows="4" />
                     </div>
                 </SbTab>
@@ -59,7 +60,7 @@
                             </SbStack>
                         }
                         <SbTextField @bind-Value="_newAttendeeDisplayName" Label="@L["DisplayName"]" />
-                        <SbTextField @bind-Value="_newAttendeeEmail" Label="@L["Email"]" />
+                        <SbTextField @bind-Value="_newAttendeeEmail" Label="@L["Email"]" Type="email" />
                         <SbSimpleSelect TValue="AttendeeRole" @bind-Value="_newAttendeeRole" Label="@L["Role"]">
                             @foreach (var role in AttendeeRoleOptions)
                             {
@@ -79,7 +80,11 @@
                                 <SbIconButton Color="SbColor.Danger" OnClick="@(() => RemoveReminderAsync(reminder))" AriaLabel="@L["Delete"]"><Icon><SbIcon Name="trash" /></Icon></SbIconButton>
                             </SbStack>
                         }
-                        <SbTextField @bind-Value="_newReminderOffsetText" Label="@L["ReminderOffset"]" />
+                        <SbNumberField TNumber="int"
+                                       @bind-Value="_newReminderOffsetMinutes"
+                                       Min="0"
+                                       Max="ReminderOffsetMinuteMax"
+                                       Label="@L["ReminderOffset"]" />
                         <SbSimpleSelect TValue="ReminderChannel" @bind-Value="_newReminderChannel" Label="@L["ReminderChannel"]">
                             @foreach (var channel in ReminderChannelOptions)
                             {
@@ -91,15 +96,26 @@
                 </SbTab>
             </SbTabs>
         </EditForm>
-    </ChildContent>
-    <Footer>
-        <SbStack Direction="SbStackDirection.Row" Gap="2" Justify="SbJustify.End">
-            @if (EventId.HasValue)
-            {
-                <SbButton Color="SbColor.Danger" Variant="SbButtonVariant.Outline" OnClick="DeleteAsync">@L["Delete"]</SbButton>
-            }
-            <SbButton Variant="SbButtonVariant.Outline" OnClick="HideAsync">@L["Cancel"]</SbButton>
-            <SbButton Color="SbColor.Primary" Loading="@IsOperationLoading(LoadingKeys.Save)" OnClick="SaveAsync">@L["Save"]</SbButton>
+    }
+    else if (!_loadFailed)
+    {
+        <SbStack Align="SbAlign.Center" Justify="SbJustify.Center" Gap="2">
+            <SbProgress Indeterminate="true" Circular="true" aria-label="@L["Loading"]" />
         </SbStack>
-    </Footer>
-</SbDialog>
+    }
+
+    <div class="sufi-event-editor-page__footer">
+        <SbStack Direction="SbStackDirection.Row" Gap="2" Align="SbAlign.Center" Justify="SbJustify.SpaceBetween" Wrap="true">
+            <div>
+                @if (_ready && EventId.HasValue)
+                {
+                    <SbButton Color="SbColor.Danger" Variant="SbButtonVariant.Outline" Loading="@IsOperationLoading(LoadingKeys.Delete)" OnClick="DeleteAsync">@L["Delete"]</SbButton>
+                }
+            </div>
+            <SbStack Direction="SbStackDirection.Row" Gap="2" Justify="SbJustify.End">
+                <SbButton Variant="SbButtonVariant.Outline" OnClick="LeaveAsync">@L["Cancel"]</SbButton>
+                <SbButton Color="SbColor.Primary" Loading="@IsOperationLoading(LoadingKeys.Save)" Disabled="@(!_ready)" OnClick="SaveAsync">@L["Save"]</SbButton>
+            </SbStack>
+        </SbStack>
+    </div>
+</div>

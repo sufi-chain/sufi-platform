@@ -6,6 +6,7 @@ public static class AIErrorCodes
     public const string KnowledgeReviewDenied = "AI:KnowledgeReviewDenied";
     public const string WorkspaceNameAlreadyExists = "AI:WorkspaceNameAlreadyExists";
     public const string WorkspaceNotFound = "AI:WorkspaceNotFound";
+    public const string WorkspaceInUse = "AI:WorkspaceInUse";
     public const string WorkspaceNotActive = "AI:WorkspaceNotActive";
     public const string InvalidProviderConfiguration = "AI:InvalidProviderConfiguration";
     public const string EmbeddingsModelNotConfigured = "AI:EmbeddingsModelNotConfigured";
@@ -31,6 +32,7 @@ public static class AIErrorCodes
     public const string MCPDuplicateToolName = "AI:MCPDuplicateToolName";
     public const string MCPHttpTransportNotImplemented = "AI:MCPHttpTransportNotImplemented";
 
+    public const string GuardModelReply = "AI:GuardModelReply";
     public const string ProviderRequestFailed = "AI:ProviderRequestFailed";
     public const string ApiKeyRequired = "AI:ApiKeyRequired";
     public const string NoModelConfigured = "AI:NoModelConfigured";

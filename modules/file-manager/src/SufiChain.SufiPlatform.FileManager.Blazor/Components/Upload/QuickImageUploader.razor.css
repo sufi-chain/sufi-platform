@@ -35,7 +35,7 @@
     object-fit: cover;
 }
 
-.remove-btn {
+::deep .remove-btn {
     position: absolute;
     top: 10px;
     right: 10px;
@@ -52,7 +52,7 @@
     transition: background 0.2s;
 }
 
-.remove-btn:hover {
+::deep .remove-btn:hover {
     background: var(--sb-color-danger-hover);
 }
 

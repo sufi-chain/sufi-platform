@@ -23,7 +23,7 @@
                         <ChildContent>@L["DeleteSelectedCount", _selectedItems.Count]</ChildContent>
                     </SbButton>
                 </SbStack>
-                <SbStack Direction="SbStackDirection.Row" Gap="1" role="radiogroup" aria-label="View mode">
+                <SbStack Direction="SbStackDirection.Row" Gap="1" role="radiogroup" aria-label="@L["ViewMode"]">
  
                 </SbStack>
             </SbStack>
@@ -129,15 +129,15 @@
                 <SbTable TItem="FileItemDto" Items="@_fileItems" Striped Hover>
                     <HeaderContent>
                         <tr>
-                            <th style="width: 40px;">
+                            <th style="min-width: 40px;">
                                 <SbCheckbox Value="@_selectAll" ValueChanged="@ToggleSelectAll" />
                             </th>
-                            <th>Preview</th>
-                            <th>Name</th>
-                            <th>Type</th>
-                            <th>Size</th>
-                            <th>Uploaded</th>
-                            <th>Actions</th>
+                            <th>@L["Preview"]</th>
+                            <th>@L["Name"]</th>
+                            <th>@L["Type"]</th>
+                            <th>@L["Size"]</th>
+                            <th>@L["Uploaded"]</th>
+                            <th>@L["Actions"]</th>
                         </tr>
                     </HeaderContent>
                     <RowTemplate Context="item">
@@ -145,7 +145,7 @@
                             <SbCheckbox Value="@_selectedItems.Contains(item.Id)" 
                                        ValueChanged="@((val) => ToggleSelection(item.Id, val))" />
                         </td>
-                        <td style="width: 60px;">
+                        <td style="min-width: 60px;">
                             @if (item.FileType == FileType.Image && !string.IsNullOrEmpty(item.ThumbnailBlobName))
                             {
                                 <img src="@GetThumbnailUrl(item)" alt="@item.Alt" 
@@ -159,20 +159,20 @@
                         <td>@item.OriginalName</td>
                         <td>
                             <SbChip Color="@GetFileTypeColor(item.FileType)" Size="SbSize.Sm">
-                                @item.FileType
+                                @FormatFileType(item.FileType)
                             </SbChip>
                         </td>
                         <td>@FormatFileSize(item.Size)</td>
                         <td>@item.CreationTime.ToString("yyyy-MM-dd HH:mm")</td>
                         <td>
                             <SbStack Direction="SbStackDirection.Row" Gap="1">
-                                <SbIconButton Color="SbColor.Info" Size="SbSize.Sm" OnClick="@(() => OpenPreview(item))" AriaLabel="Preview file">
+                                <SbIconButton Color="SbColor.Info" Size="SbSize.Sm" OnClick="@(() => OpenPreview(item))" AriaLabel="@L["PreviewFile"]">
                                     <Icon><SbIcon Name="eye" /></Icon>
                                 </SbIconButton>
-                                <SbIconButton Color="SbColor.Primary" Size="SbSize.Sm" OnClick="@(() => NavigationManager.NavigateTo(GetDownloadUrl(item)))" AriaLabel="Download file">
+                                <SbIconButton Color="SbColor.Primary" Size="SbSize.Sm" OnClick="@(() => NavigationManager.NavigateTo(GetDownloadUrl(item)))" AriaLabel="@L["DownloadFile"]">
                                     <Icon><SbIcon Name="download" /></Icon>
                                 </SbIconButton>
-                                <SbIconButton Color="SbColor.Danger" Size="SbSize.Sm" OnClick="@(() => DeleteFile(item.Id))" AriaLabel="Delete file">
+                                <SbIconButton Color="SbColor.Danger" Size="SbSize.Sm" OnClick="@(() => DeleteFile(item.Id))" AriaLabel="@L["DeleteFile"]">
                                     <Icon><SbIcon Name="trash" /></Icon>
                                 </SbIconButton>
                             </SbStack>
@@ -189,7 +189,7 @@
                                   PageSize="@_pageSize"
                                   TotalCount="@_totalCount"
                                   PageIndexChanged="@(p => ChangePage(p + 1))" />
-                    <p class="text-muted text-center mt-2">Showing @_fileItems.Count of @_totalCount items</p>
+                    <p class="text-muted text-center mt-2">@L["ShowingItemsCount", _fileItems.Count, _totalCount]</p>
                 </div>
             }
         }
@@ -220,7 +220,7 @@
     .media-item-select {
         position: absolute;
         top: 8px;
-        left: 8px;
+        inset-inline-start: 8px;
         z-index: 1;
     }
     
@@ -256,7 +256,7 @@
 </style>
 
 <!-- Upload Modal -->
-<SbDialog @bind-Open="_uploadModalOpen" Title="Upload Files" Size="SbDialogSize.Lg">
+<SbDialog @bind-Open="_uploadModalOpen" Title="@L["UploadFiles"]" Size="SbDialogSize.Lg">
     <ChildContent>
         <FileUploader 
             StructureKey="@StructureKey"
@@ -266,18 +266,13 @@
     </ChildContent>
 </SbDialog>
 
-<!-- Delete Confirmation Modal -->
-<SbDialog @bind-Open="_deleteModalOpen" Title="@L["ConfirmDeleteTitle"]">
-    <ChildContent>
-        <p>@L["ConfirmDeleteSelectedFiles", _selectedItems.Count]</p>
-    </ChildContent>
-    <Footer>
-        <SbStack Direction="SbStackDirection.Row" Gap="2" Justify="SbJustify.End">
-            <SbButton Color="SbColor.Default" OnClick="@CancelDelete">@L["Cancel"]</SbButton>
-            <SbButton Color="SbColor.Danger" OnClick="@ConfirmDeleteSelected">@L["Delete"]</SbButton>
-        </SbStack>
-    </Footer>
-</SbDialog>
+<SbConfirmDialog @ref="_deleteConfirm"
+                 Title="@L["ConfirmDeleteTitle"]"
+                 Message="@L["ConfirmDeleteSelectedFiles", _selectedItems.Count]"
+                 Variant="SbConfirmDialogVariant.Danger"
+                 ConfirmText="@L["Delete"]"
+                 CancelText="@L["Cancel"]"
+                 OnConfirm="ConfirmDeleteSelected" />
 
 @code {
     [Parameter] public string? StructureKey { get; set; }
@@ -290,7 +285,7 @@
     private static readonly FileType?[] _fileTypeOptions = 
         new FileType?[] { null, FileType.Image, FileType.Video, FileType.Document, FileType.Audio };
 
-    private string GetFileTypeLabel(FileType? type) => type?.ToString() ?? L["AllTypes"];
+    private string GetFileTypeLabel(FileType? type) => type.HasValue ? FormatFileType(type.Value) : L["AllTypes"];
 
     private SortOption[] _sortOptions = Array.Empty<SortOption>();
 
@@ -305,7 +300,7 @@
     private bool _selectAll = false;
     private StorageQuotaDto? _storageQuota;
     private bool _uploadModalOpen = false;
-    private bool _deleteModalOpen = false;
+    private SbConfirmDialog? _deleteConfirm;
     private readonly CancellationTokenSource _cts = new();
 
 
@@ -447,12 +442,7 @@
     private void DeleteSelected()
     {
         if (!_selectedItems.Any()) return;
-        _deleteModalOpen = true;
-    }
-
-    private void CancelDelete()
-    {
-        _deleteModalOpen = false;
+        _deleteConfirm?.Show();
     }
 
     private async Task ConfirmDeleteSelected()
@@ -462,7 +452,7 @@
         try
         {
             await FileItemAppService.DeleteManyAsync(_selectedItems.ToArray());
-            await Notify.SuccessAsync("Files deleted successfully");
+            await Notify.SuccessAsync(L["FilesDeletedSuccessfully"]);
             _selectedItems.Clear();
             await RefreshFiles();
         }
@@ -470,17 +460,13 @@
         {
             await NotifyOperationFailedAsync(ex, "FailedToDelete");
         }
-        finally
-        {
-            _deleteModalOpen = false;
-        }
     }
 
     private void DeleteFile(Guid id)
     {
         _selectedItems.Clear();
         _selectedItems.Add(id);
-        _deleteModalOpen = true;
+        _deleteConfirm?.Show();
     }
 
     private async Task ConfirmDeleteFile()
@@ -495,7 +481,7 @@
         try
         {
             await FileItemAppService.DeleteAsync(id);
-            await Notify.SuccessAsync("File deleted successfully");
+            await Notify.SuccessAsync(L["FileDeletedSuccessfully"]);
             await RefreshFiles();
         }
         catch (Exception ex)
@@ -515,7 +501,7 @@
         
         if (uploadedFiles.Count > 0)
         {
-            await Notify.SuccessAsync($"Successfully uploaded {uploadedFiles.Count} file(s)");
+            await Notify.SuccessAsync(L["SuccessfullyUploadedFiles", uploadedFiles.Count]);
         }
         
         await RefreshFiles();

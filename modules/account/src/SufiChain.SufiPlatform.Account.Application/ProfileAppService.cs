@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using SufiChain.SufiPlatform.Identity;
 using Volo.Abp;
@@ -73,17 +74,42 @@ public class ProfileAppService : SufiApplicationService, IProfileAppService
             user.Name = input.Name?.Trim();
             user.Surname = input.Surname?.Trim();
 
-            input.MapExtraPropertiesTo(user);
+            try
+            {
+                input.MapExtraPropertiesTo(user);
+            }
+            catch (Exception ex)
+            {
+                Logger.LogWarning(ex, "Profile extra properties were not copied before save.");
+            }
 
             (await UserManager.UpdateAsync(user)).CheckErrors();
             await CurrentUnitOfWork.SaveChangesAsync();
+            return MapSavedProfile(user);
+        }
+        catch (Exception)
+        {
+            // The write can land and a later concurrency or mapping failure still throws.
+            // If the stored user already matches the form, the save succeeded.
+            try
+            {
+                var saved = await UserManager.GetByIdAsync(CurrentUser.GetId());
+                if (MatchesSubmittedProfile(saved, input))
+                {
+                    return MapSavedProfile(saved);
+                }
+            }
+            catch (Exception reloadEx)
+            {
+                Logger.LogWarning(reloadEx, "Profile save failed and the stored profile could not be reloaded.");
+            }
+
+            throw;
         }
         finally
         {
             UserStore.AutoSaveChanges = previousAutoSave;
         }
-
-        return MapToProfileDto(user);
     }
 
     public virtual async Task ChangePasswordAsync(ChangePasswordInput input)
@@ -123,5 +149,37 @@ public class ProfileAppService : SufiApplicationService, IProfileAppService
         user.MapExtraPropertiesTo(dto);
 
         return dto;
+    }
+
+    private ProfileDto MapSavedProfile(IdentityUser user)
+    {
+        try
+        {
+            return MapToProfileDto(user);
+        }
+        catch (Exception ex)
+        {
+            Logger.LogWarning(ex, "Saved profile extra properties could not be copied onto the response.");
+            return new ProfileDto
+            {
+                UserName = user.UserName,
+                Email = user.Email,
+                Name = user.Name,
+                Surname = user.Surname,
+                PhoneNumber = user.PhoneNumber,
+                IsExternal = user.IsExternal,
+                HasPassword = !string.IsNullOrWhiteSpace(user.PasswordHash),
+                ConcurrencyStamp = user.ConcurrencyStamp
+            };
+        }
+    }
+
+    private static bool MatchesSubmittedProfile(IdentityUser user, UpdateProfileDto input)
+    {
+        return string.Equals(user.UserName, input.UserName, StringComparison.OrdinalIgnoreCase)
+               && string.Equals(user.Email, input.Email, StringComparison.OrdinalIgnoreCase)
+               && string.Equals(user.Name, input.Name?.Trim(), StringComparison.Ordinal)
+               && string.Equals(user.Surname, input.Surname?.Trim(), StringComparison.Ordinal)
+               && string.Equals(user.PhoneNumber ?? string.Empty, input.PhoneNumber ?? string.Empty, StringComparison.Ordinal);
     }
 }

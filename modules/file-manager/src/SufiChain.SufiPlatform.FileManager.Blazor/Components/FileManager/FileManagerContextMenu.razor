@@ -1,3 +1,4 @@
+@inherits FileManagerComponentBase
 <div class="fm-context-menu @(_isVisible ? "visible" : "")" style="left: @(_posX)px; top: @(_posY)px;" @onclick:stopPropagation>
     @if (_isVisible)
     {
@@ -6,23 +7,23 @@
             {
                 <div class="fm-menu-item" @onclick="@HandleOpen">
                     <SbIcon Name="folder-open" />
-                    <span>Open</span>
+                    <span>@L["Open"]</span>
                 </div>
                 <div class="fm-menu-divider"></div>
                 <div class="fm-menu-item" @onclick="@HandleCut">
                     <SbIcon Name="cut" />
-                    <span>Cut</span>
+                    <span>@L["Cut"]</span>
                     <span class="fm-shortcut">Ctrl+X</span>
                 </div>
                 <div class="fm-menu-item" @onclick="@HandleCopy">
                     <SbIcon Name="copy" />
-                    <span>Copy</span>
+                    <span>@L["Copy"]</span>
                     <span class="fm-shortcut">Ctrl+C</span>
                 </div>
             }
             <div class="fm-menu-item @(CanPaste ? "" : "disabled")" @onclick="@HandlePaste">
                 <SbIcon Name="paste" />
-                <span>Paste</span>
+                <span>@L["Paste"]</span>
                 <span class="fm-shortcut">Ctrl+V</span>
             </div>
             @if (_hasSelection)
@@ -30,19 +31,19 @@
                 <div class="fm-menu-divider"></div>
                 <div class="fm-menu-item" @onclick="@HandleDelete">
                     <SbIcon Name="trash" />
-                    <span>Delete</span>
+                    <span>@L["Delete"]</span>
                     <span class="fm-shortcut">Del</span>
                 </div>
                 <div class="fm-menu-item" @onclick="@HandleRename">
                     <SbIcon Name="edit" />
-                    <span>Rename</span>
+                    <span>@L["Rename"]</span>
                     <span class="fm-shortcut">F2</span>
                 </div>
             }
             <div class="fm-menu-divider"></div>
             <div class="fm-menu-item" @onclick="@HandleNewFolder">
                 <SbIcon Name="plus" />
-                <span>New Folder</span>
+                <span>@L["NewFolder"]</span>
                 <span class="fm-shortcut">Ctrl+Shift+N</span>
             </div>
             @if (_isFile)
@@ -52,20 +53,20 @@
                 {
                     <div class="fm-menu-item" @onclick="@HandleEditImage">
                         <SbIcon Name="image" />
-                        <span>@EditImageLabel</span>
+                        <span>@(EditImageLabel ?? L["EditImage"])</span>
                     </div>
                 }
                 <div class="fm-menu-item" @onclick="@HandleEdit">
                     <SbIcon Name="edit" />
-                    <span>Edit Properties</span>
+                    <span>@L["EditProperties"]</span>
                 </div>
                 <div class="fm-menu-item" @onclick="@HandleDownload">
                     <SbIcon Name="download" />
-                    <span>Download</span>
+                    <span>@L["Download"]</span>
                 </div>
                 <div class="fm-menu-item" @onclick="@HandleQuickShare">
                     <SbIcon Name="share" />
-                    <span>@QuickShareLabel</span>
+                    <span>@(QuickShareLabel ?? L["QuickShare"])</span>
                 </div>
             }
         </div>
@@ -89,10 +90,10 @@
     [Parameter] public EventCallback OnDownload { get; set; }
     [Parameter] public EventCallback OnQuickShare { get; set; }
     [Parameter] public EventCallback<Guid> OnEdit { get; set; }
-    [Parameter] public string QuickShareLabel { get; set; } = "Quick Share";
+    [Parameter] public string? QuickShareLabel { get; set; }
     [Parameter] public EventCallback<Guid> OnEditImage { get; set; }
     [Parameter] public bool IsImageFile { get; set; }
-    [Parameter] public string EditImageLabel { get; set; } = "Edit Image";
+    [Parameter] public string? EditImageLabel { get; set; }
     [Parameter] public bool CanPaste { get; set; }
 
     private bool _isVisible = false;

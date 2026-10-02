@@ -54,7 +54,7 @@ else
                         ShowFilterRow="true"
                         ShowColumnChooser="true"
                         SelectionMode="SbSelectionMode.MultipleRows">
-					<SbColumn TItem="TenantDto" Title="@L["Actions"]" Width="152px" Sortable="false">
+					<SbColumn TItem="TenantDto" Title="@L["Actions"]" MinWidth="204px" Sortable="false">
 						<CellTemplate Context="cellContext">
 							<SbStack Wrap="true" Direction="SbStackDirection.Row" Gap="1">
 								<AuthorizeView Policy="@TenantsPermissions.Tenants.Update" Context="authContext">
@@ -62,6 +62,14 @@ else
 										<SbIconButton Size="SbSize.Sm" AriaLabel="@L["Edit"]"
 													  OnClick="@(() => ShowEditModal(cellContext.Item))">
 											<Icon><SbIcon Name="edit" /></Icon>
+										</SbIconButton>
+									</SbTooltip>
+								</AuthorizeView>
+								<AuthorizeView Policy="@TenantsPermissions.Tenants.Update" Context="settingsAuth">
+									<SbTooltip Text="@L["Settings"]">
+										<SbIconButton Size="SbSize.Sm" AriaLabel="@L["Settings"]"
+													  OnClick="@(() => OpenTenantSettings(cellContext.Item))">
+											<Icon><SbIcon Name="settings" /></Icon>
 										</SbIconButton>
 									</SbTooltip>
 								</AuthorizeView>
@@ -96,7 +104,6 @@ else
 <TenantCreateModal @bind-Open="_showCreateModal" OnTenantCreated="OnTenantCreatedAsync" />
 <TenantEditModal @bind-Open="_showEditModal" Tenant="_selectedTenant" OnTenantUpdated="OnTenantUpdatedAsync" />
 <FeaturesModal @ref="_featureManagementModal" />
-<SettingsModal @ref="_settingManagementModal" />
 <ReadOnlyHooshvareDrawer HooshvareKey="@TenantsDiagnosticsHooshvareKeys.Key"
                          Title="@L["Hooshvare:SufiTenants:Diagnostics:DisplayName"]"
                          ContextProvider="BuildHooshvareContext" />

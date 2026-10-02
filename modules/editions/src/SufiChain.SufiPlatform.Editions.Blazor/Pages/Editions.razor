@@ -28,7 +28,7 @@
                         SelectionMode="SbSelectionMode.MultipleRows"
                         AriaLabel="@L["Editions"]">
                 <ChildContent>
-                    <SbColumn TItem="EditionDto" Title="@L["Actions"]" Width="152px" Sortable="false">
+                    <SbColumn TItem="EditionDto" Title="@L["Actions"]" MinWidth="152px" Sortable="false">
                         <CellTemplate Context="ctx">
                             <SbStack Wrap="true" Direction="SbStackDirection.Row" Gap="1">
                                 @if (HasManageFeaturesPermission)
@@ -66,12 +66,12 @@
                             </SbStack>
                         </CellTemplate>
                     </SbColumn>
-                    <SbColumn TItem="EditionDto" Field="Code" Title="@L["EditionCode"]" Width="140px" Filterable="true" Sortable="true">
+                    <SbColumn TItem="EditionDto" Field="Code" Title="@L["EditionCode"]" MinWidth="140px" Filterable="true" Sortable="true">
                         <CellTemplate Context="ctx">
                             <SbChip Color="SbColor.Secondary" Size="SbSize.Sm">@ctx.Item.Code</SbChip>
                         </CellTemplate>
                     </SbColumn>
-                    <SbColumn TItem="EditionDto" Field="IsActive" Title="@L["EditionIsActive"]" Width="120px" Align="SbColumnAlign.Center" Filterable="true" Sortable="true">
+                    <SbColumn TItem="EditionDto" Field="IsActive" Title="@L["EditionIsActive"]" MinWidth="120px" Align="SbColumnAlign.Center" Filterable="true" Sortable="true">
                         <CellTemplate Context="ctx">
                             @if (ctx.Item.IsActive)
                             {

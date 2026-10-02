@@ -136,6 +136,7 @@
     "LinkAccountSucceeded": "Las cuentas están vinculadas.",
     "LinkAccountFailed": "No se pudo vincular la cuenta. Empiece de nuevo desde las cuentas vinculadas.",
     "LinkAccountSameUser": "Inició sesión con la misma cuenta. Cierre sesión e inicie sesión con la otra cuenta para terminar el vínculo.",
-    "LinkAccountSignInOther": "Iniciar sesión con otra cuenta"
+    "LinkAccountSignInOther": "Iniciar sesión con otra cuenta",
+    "ContinueWith": "Continuar con"
   }
 }

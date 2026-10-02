@@ -33,12 +33,21 @@ public partial class AuditLogs : AuditLoggingComponentBase
     private string? _userName;
     private string? _httpMethod;
     private string? _url;
-    private string? _minDurationText;
-    private string? _maxDurationText;
+    private int? _minDuration;
+    private int? _maxDuration;
     private bool? _hasException;
 
-    private int? MinDuration => int.TryParse(_minDurationText, out var val) ? val : null;
-    private int? MaxDuration => int.TryParse(_maxDurationText, out var val) ? val : null;
+    private int MinDurationInput
+    {
+        get => _minDuration ?? 0;
+        set => _minDuration = value > 0 ? value : null;
+    }
+
+    private int MaxDurationInput
+    {
+        get => _maxDuration ?? 0;
+        set => _maxDuration = value > 0 ? value : null;
+    }
 
     private bool _showDetailModal;
     private Guid? _selectedAuditLogId;
@@ -87,8 +96,8 @@ public partial class AuditLogs : AuditLoggingComponentBase
             HttpMethod = _httpMethod,
             Url = request.GetFilterValue("Url") ?? (string.IsNullOrWhiteSpace(_url) ? null : _url),
             ClientIpAddress = request.GetFilterValue("ClientIpAddress"),
-            MinExecutionDuration = MinDuration,
-            MaxExecutionDuration = MaxDuration,
+            MinExecutionDuration = _minDuration,
+            MaxExecutionDuration = _maxDuration,
             HasException = _hasException,
             SkipCount = Math.Max(0, request.PageIndex * request.PageSize),
             MaxResultCount = request.PageSize,
@@ -126,8 +135,8 @@ public partial class AuditLogs : AuditLoggingComponentBase
         _userName = null;
         _httpMethod = null;
         _url = null;
-        _minDurationText = null;
-        _maxDurationText = null;
+        _minDuration = null;
+        _maxDuration = null;
         _hasException = null;
         _pageIndex = 0;
         await ExecuteWithLoadingAsync(

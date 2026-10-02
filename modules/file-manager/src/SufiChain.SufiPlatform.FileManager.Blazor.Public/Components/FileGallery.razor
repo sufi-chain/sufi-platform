@@ -23,18 +23,20 @@
         <div class="file-gallery-lightbox__backdrop"></div>
         
         <div class="file-gallery-lightbox__content" @onclick:stopPropagation>
-            <button class="file-gallery-lightbox__close" @onclick="CloseLightbox" aria-label="Close">
+            <SbIconButton Class="file-gallery-lightbox__close"
+                          OnClick="CloseLightbox"
+                          AriaLabel="Close">
                 <span>&times;</span>
-            </button>
+            </SbIconButton>
             
             @if (_fileInfos.Count > 1)
             {
-                <button class="file-gallery-lightbox__nav file-gallery-lightbox__nav--prev" 
-                        @onclick="PreviousImage" 
-                        disabled="@(_currentIndex <= 0)"
-                        aria-label="Previous">
+                <SbIconButton Class="file-gallery-lightbox__nav file-gallery-lightbox__nav--prev"
+                              OnClick="PreviousImage"
+                              Disabled="@(_currentIndex <= 0)"
+                              AriaLabel="Previous">
                     <span>&lsaquo;</span>
-                </button>
+                </SbIconButton>
             }
             
             <div class="file-gallery-lightbox__image-container">
@@ -47,12 +49,12 @@
             
             @if (_fileInfos.Count > 1)
             {
-                <button class="file-gallery-lightbox__nav file-gallery-lightbox__nav--next" 
-                        @onclick="NextImage" 
-                        disabled="@(_currentIndex >= _fileInfos.Count - 1)"
-                        aria-label="Next">
+                <SbIconButton Class="file-gallery-lightbox__nav file-gallery-lightbox__nav--next"
+                              OnClick="NextImage"
+                              Disabled="@(_currentIndex >= _fileInfos.Count - 1)"
+                              AriaLabel="Next">
                     <span>&rsaquo;</span>
-                </button>
+                </SbIconButton>
             }
             
             <div class="file-gallery-lightbox__footer">

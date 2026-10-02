@@ -64,5 +64,5 @@
         "Placeholder:DurationExample": "0",
         "IdLabel": "شناسه",
         "EmptyValue": "-"
-    ,"Hooshvare:SufiAudit:Investigator:DisplayName":"بازرس ممیزی"}
+    ,"Hooshvare:SufiAudit:Investigator:DisplayName":"بازرس ممیزی","HttpMethodPost":"ایجاد","HttpMethodDelete":"حذف","HttpMethodPatch":"ویرایش جزئی"}
 }

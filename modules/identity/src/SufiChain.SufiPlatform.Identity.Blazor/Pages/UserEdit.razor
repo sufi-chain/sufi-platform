@@ -1,0 +1,6 @@
+@namespace SufiChain.SufiPlatform.Identity.Blazor.Pages
+@page "/panel/admin/identity/users/{UserId:guid}"
+@attribute [Authorize(Policy = SufiChain.SufiPlatform.Identity.IdentityPermissions.Users.Update)]
+@inherits IdentityComponentBase
+
+<UserEditor UserId="UserId" />

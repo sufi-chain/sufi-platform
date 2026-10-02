@@ -37,7 +37,7 @@
                         ShowFilterRow="true"
                         ShowColumnChooser="true"
                         SelectionMode="SbSelectionMode.MultipleRows">
-                    <SbColumn TItem="TagDto" Title="@L["Actions"]" Width="152px" Sortable="false">
+                    <SbColumn TItem="TagDto" Title="@L["Actions"]" MinWidth="152px" Sortable="false">
                         <CellTemplate Context="cellContext">
                             <SbStack Wrap="true" Direction="SbStackDirection.Row" Gap="1">
                                 <AuthorizeView Policy="@TagsPermissions.TagLinks.Default">

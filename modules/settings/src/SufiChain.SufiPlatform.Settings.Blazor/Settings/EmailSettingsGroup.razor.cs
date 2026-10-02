@@ -19,7 +19,6 @@ public partial class EmailSettingsGroup : SettingsComponentBase, ISaveableSettin
     private IEmailSettingsAppService? _emailSettingsAppService;
 
     private EmailSettingsDto _settings = new();
-    private bool _showTestEmailModal;
     private string _testEmailAddress = "";
 
     /// <summary>
@@ -54,12 +53,6 @@ public partial class EmailSettingsGroup : SettingsComponentBase, ISaveableSettin
         await Notify.SuccessAsync(L["SettingsSavedSuccessfully"]);
     }, LoadingKeys.Save);
 
-    private void ShowTestEmailModal()
-    {
-        _testEmailAddress = "";
-        _showTestEmailModal = true;
-    }
-
     private Task SendTestEmailAsync() => ExecuteWithLoadingAsync(async () =>
     {
         await UpdateSettingsAsync();
@@ -70,8 +63,7 @@ public partial class EmailSettingsGroup : SettingsComponentBase, ISaveableSettin
             Subject = L["TestEmailSubject"],
             Body = L["TestEmailBody"]
         });
-        
-        _showTestEmailModal = false;
+
         await Notify.SuccessAsync(L["TestEmailSentSuccessfully"]);
     }, LoadingKeys.SendTest);
 

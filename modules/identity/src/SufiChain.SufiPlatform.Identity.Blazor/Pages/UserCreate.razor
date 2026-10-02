@@ -1,0 +1,6 @@
+@namespace SufiChain.SufiPlatform.Identity.Blazor.Pages
+@page "/panel/admin/identity/users/new"
+@attribute [Authorize(Policy = SufiChain.SufiPlatform.Identity.IdentityPermissions.Users.Create)]
+@inherits IdentityComponentBase
+
+<UserEditor />

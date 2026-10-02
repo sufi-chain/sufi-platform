@@ -10,7 +10,7 @@
             else
             {
                 <span class="file-attachment-list__spinner"></span>
-                <span>Loading attachments...</span>
+                <span>@L["LoadingAttachments"]</span>
             }
         </div>
     }
@@ -23,7 +23,7 @@
         else
         {
             <div class="file-attachment-list__empty">
-                No attachments
+                @L["NoAttachments"]
             </div>
         }
     }
@@ -64,8 +64,8 @@
                            download="@file.FileName"
                            target="_blank"
                            rel="noopener noreferrer"
-                           title="Download"
-                           aria-label="Download">
+                           title="@L["Download"]"
+                           aria-label="@L["Download"]">
                             <SbIcon Name="download" Size="SbSize.Sm" />
                         </a>
                     }
@@ -76,7 +76,7 @@
         @if (ShowTotalSize && _fileInfos.Count > 1)
         {
             <div class="file-attachment-list__total">
-                Total: @_fileInfos.Count files (@FormatFileSize(_fileInfos.Sum(f => f.Size)))
+                @L["TotalAttachments", _fileInfos.Count, FormatFileSize(_fileInfos.Sum(f => f.Size))]
             </div>
         }
     }

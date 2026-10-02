@@ -5,8 +5,8 @@
 @if (Loading)
 {
 	<SbStack Direction="SbStackDirection.Row" Gap="2" Align="SbAlign.Center">
-		<SbSkeleton Variant="SbSkeletonVariant.Text" Width="120px" />
-		<SbSkeleton Variant="SbSkeletonVariant.Text" Width="180px" />
+		<SbSkeleton Variant="SbSkeletonVariant.Text" Width="max(120px, 30%)" />
+		<SbSkeleton Variant="SbSkeletonVariant.Text" Width="max(180px, 45%)" />
 	</SbStack>
 }
 else if (!Workspaces.Any())
@@ -55,5 +55,5 @@ else
 			  ValueField="@(workspace => workspace.Id)"
 			  Label="@L["Workspace"]"
 			  Placeholder="@L["SelectWorkspace"]"
-			  style="max-width: 420px;" />
+			  style="flex: 1; min-width: 16rem; width: 100%;" />
 }

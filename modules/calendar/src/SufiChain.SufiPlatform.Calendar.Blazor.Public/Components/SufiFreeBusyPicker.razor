@@ -15,10 +15,14 @@
             }
             @foreach (var slot in _slots)
             {
-                <button type="button" class="sufi-free-busy-picker__slot" @onclick="@(() => SelectSlotAsync(slot))">
+                <SbButton Type="button"
+                          Variant="SbButtonVariant.Ghost"
+                          Color="SbColor.Default"
+                          Class="sufi-free-busy-picker__slot"
+                          OnClick="@(() => SelectSlotAsync(slot))">
                     <span>@FormatSlot(slot)</span>
                     <SbBadge Color="SbColor.Success">@L["Available"]</SbBadge>
-                </button>
+                </SbButton>
             }
         </div>
     </SbCard>

@@ -136,6 +136,7 @@
     "LinkAccountSucceeded": "تم ربط الحسابات.",
     "LinkAccountFailed": "تعذر ربط الحساب. ابدأ مرة أخرى من الحسابات المرتبطة.",
     "LinkAccountSameUser": "لقد سجلت الدخول بنفس الحساب. سجّل الخروج ثم ادخل بالحساب الآخر لإكمال الربط.",
-    "LinkAccountSignInOther": "تسجيل الدخول بحساب آخر"
+    "LinkAccountSignInOther": "تسجيل الدخول بحساب آخر",
+    "ContinueWith": "المتابعة باستخدام"
   }
 }

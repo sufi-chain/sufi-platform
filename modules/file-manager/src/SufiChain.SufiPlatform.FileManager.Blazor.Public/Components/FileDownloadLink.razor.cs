@@ -1,5 +1,7 @@
 using Microsoft.AspNetCore.Components;
+using Microsoft.Extensions.Localization;
 using SufiChain.SufiPlatform.FileManager.Blazor.Public.Services;
+using SufiChain.SufiPlatform.FileManager.Localization;
 
 namespace SufiChain.SufiPlatform.FileManager.Blazor.Public.Components;
 
@@ -10,6 +12,9 @@ public partial class FileDownloadLink : ComponentBase
 {
     [Inject]
     protected IFilePublicUrlResolver UrlResolver { get; set; } = default!;
+
+    [Inject]
+    protected IStringLocalizer<SufiFileManagerResource> L { get; set; } = default!;
 
     /// <summary>
     /// The file ID to provide download for.

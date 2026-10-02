@@ -31,6 +31,7 @@
 									Value="@_action"
 									ValueChanged="@((string? v) => _action = v)"
 									Label="@((string)L["Action"])"
+									Searchable="true"
 									Style="min-width: 220px;">
 						<SbSelectOption TValue="string" Value="@((string?)null)">@L["All"]</SbSelectOption>
 						@* Authentication Events *@
@@ -86,23 +87,23 @@
                         ShowFilterRow="true"
                         ShowColumnChooser="true"
                         SelectionMode="SbSelectionMode.MultipleRows">
-				<SbColumn TItem="SecurityLogListItemDto" Title="@L["Time"]" Width="160px" Style="min-width: 160px">
+				<SbColumn TItem="SecurityLogListItemDto" Title="@L["Time"]" MinWidth="160px">
 					<CellTemplate Context="cellContext">
 						@cellContext.Item.CreationTime.ToString("yyyy-MM-dd HH:mm:ss")
 					</CellTemplate>
 				</SbColumn>
-				<SbColumn TItem="SecurityLogListItemDto" Field="Action" Title="@L["Action"]" Width="180px" Style="min-width: 180px" Filterable="true" Sortable="true">
+				<SbColumn TItem="SecurityLogListItemDto" Field="Action" Title="@L["Action"]" MinWidth="180px" Filterable="true" Sortable="true">
 					<CellTemplate Context="cellContext">
 						<SbBadge Color="@GetActionColor(cellContext.Item.Action)">
 							@GetActionDisplayName(cellContext.Item.Action)
 						</SbBadge>
 					</CellTemplate>
 				</SbColumn>
-				<SbColumn TItem="SecurityLogListItemDto" Field="UserName" Title="@L["User"]" Width="150px" Style="min-width: 150px" Filterable="true" Sortable="true"/>
-				<SbColumn TItem="SecurityLogListItemDto" Field="ClientIpAddress" Title="@L["IpAddress"]" Width="130px" Style="min-width: 130px" Filterable="true" Sortable="true"/>
+				<SbColumn TItem="SecurityLogListItemDto" Field="UserName" Title="@L["User"]" MinWidth="150px" Filterable="true" Sortable="true"/>
+				<SbColumn TItem="SecurityLogListItemDto" Field="ClientIpAddress" Title="@L["IpAddress"]" MinWidth="130px" Filterable="true" Sortable="true"/>
 				<SbColumn TItem="SecurityLogListItemDto" Field="BrowserInfo" Title="@L["Browser"]" Filterable="true" Sortable="true"/>
-				<SbColumn TItem="SecurityLogListItemDto" Field="ApplicationName" Title="@L["Application"]" Width="150px" Style="min-width: 150px" Filterable="true" Sortable="true"/>
-				<SbColumn TItem="SecurityLogListItemDto" Field="Identity" Title="@L["Identity"]" Width="130px" Style="min-width: 130px" Filterable="true" Sortable="true"/>
+				<SbColumn TItem="SecurityLogListItemDto" Field="ApplicationName" Title="@L["Application"]" MinWidth="150px" Filterable="true" Sortable="true"/>
+				<SbColumn TItem="SecurityLogListItemDto" Field="Identity" Title="@L["Identity"]" MinWidth="130px" Filterable="true" Sortable="true"/>
 			</SbDataGrid>
 		</ChildContent>
 	</SbCard>

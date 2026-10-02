@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using SufiChain.SufiBlazor.Components;
 using SufiChain.SufiBlazor.Components.Feedback;
+using SufiChain.SufiBlazor.Components.Overlays;
 using SufiChain.SufiPlatform.FileManager.Blazor.Public.Services;
 using SufiChain.SufiPlatform.FileManager.FileItems;
 using SufiChain.SufiPlatform.FileManager.FileStructures;
@@ -78,7 +79,7 @@ public partial class FileBrowser : FileManagerComponentBase, IDisposable
     private bool _selectAll = false;
     private StorageQuotaDto? _storageQuota;
     private bool _uploadModalOpen = false;
-    private bool _deleteModalOpen = false;
+    private SbConfirmDialog? _deleteConfirm;
     private readonly CancellationTokenSource _cts = new();
 
 
@@ -247,12 +248,7 @@ public partial class FileBrowser : FileManagerComponentBase, IDisposable
     private void DeleteSelected()
     {
         if (!_selectedItems.Any()) return;
-        _deleteModalOpen = true;
-    }
-
-    private void CancelDelete()
-    {
-        _deleteModalOpen = false;
+        _deleteConfirm?.Show();
     }
 
     private async Task ConfirmDeleteSelected()
@@ -270,17 +266,13 @@ public partial class FileBrowser : FileManagerComponentBase, IDisposable
         {
             await NotifyOperationFailedAsync(ex, "FailedToDelete");
         }
-        finally
-        {
-            _deleteModalOpen = false;
-        }
     }
 
     private void DeleteFile(Guid id)
     {
         _selectedItems.Clear();
         _selectedItems.Add(id);
-        _deleteModalOpen = true;
+        _deleteConfirm?.Show();
     }
 
     private void ShowUploadModal()

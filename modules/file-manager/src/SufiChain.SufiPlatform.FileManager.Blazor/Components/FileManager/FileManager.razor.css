@@ -38,13 +38,13 @@
 
 /* Folder Tree Panel */
 .file-manager-tree {
-    width: 240px;
+    width: min(100%, 40%);
     min-width: 180px;
     max-width: 400px;
     background: var(--sb-color-surface-variant);
-    border-right: 1px solid var(--sb-color-border);
+    border-inline-end: 1px solid var(--sb-color-border);
     overflow-y: auto;
-    resize: horizontal;
+    resize: inline;
 }
 
 /* File View Panel */
@@ -61,11 +61,11 @@
 
 /* Properties Panel */
 .file-manager-properties {
-    width: 280px;
+    width: min(100%, 40%);
     min-width: 200px;
     max-width: 400px;
     background: var(--sb-color-surface-variant);
-    border-left: 1px solid var(--sb-color-border);
+    border-inline-start: 1px solid var(--sb-color-border);
     overflow-y: auto;
 }
 
@@ -179,7 +179,7 @@
 }
 
 ::deep .fm-tree-children {
-    padding-left: 16px;
+    padding-inline-start: 16px;
 }
 
 ::deep .fm-tree-node {
@@ -356,12 +356,26 @@
 
 ::deep .fm-rename-input {
     width: 100%;
-    text-align: center;
-    font-size: 0.8rem;
-    padding: 2px 4px;
+}
+
+::deep .fm-rename-input .sb-text-field {
+    height: auto;
+    min-height: 0;
+    padding-inline: 4px;
     border: 1px solid var(--sb-color-primary);
     border-radius: 2px;
     background: var(--sb-color-surface-variant);
+    box-shadow: none;
+}
+
+::deep .fm-rename-input .sb-text-field:focus-within {
+    box-shadow: none;
+}
+
+::deep .fm-rename-input .sb-text-field__input {
+    text-align: center;
+    font-size: 0.8rem;
+    padding: 2px 0;
     color: var(--sb-color-text);
 }
 
@@ -404,7 +418,7 @@
 }
 
 ::deep .fm-details-table th {
-    text-align: left;
+    text-align: start;
     padding: 8px 12px;
     background: var(--sb-color-surface-variant);
     border-bottom: 1px solid var(--sb-color-border);
@@ -436,7 +450,7 @@
 }
 
 ::deep .fm-col-icon {
-    width: 32px;
+    min-width: 32px;
     text-align: center;
 }
 
@@ -445,16 +459,16 @@
 }
 
 ::deep .fm-col-date {
-    width: 150px;
+    min-width: 150px;
 }
 
 ::deep .fm-col-type {
-    width: 100px;
+    min-width: 100px;
 }
 
 ::deep .fm-col-size {
-    width: 80px;
-    text-align: right;
+    min-width: 80px;
+    text-align: end;
 }
 
 /* ============================================
@@ -526,20 +540,18 @@
 
 ::deep .fm-context-menu-backdrop {
     position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
+    inset: 0;
     z-index: 9998;
 }
 
 /* Mobile: center context menu and keep it above bottom nav, scroll if needed */
 @media (max-width: 767px) {
     ::deep .fm-context-menu.visible {
-        left: 50% !important;
-        top: 50% !important;
-        right: auto !important;
-        transform: translate(-50%, -50%) !important;
+        inset: 0 !important;
+        margin: auto !important;
+        width: max-content;
+        height: fit-content;
+        transform: none !important;
         max-height: min(400px, calc(100vh - 140px));
         overflow-y: auto;
     }

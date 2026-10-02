@@ -136,6 +136,7 @@
     "LinkAccountSucceeded": "حساب‌ها پیوند شدند.",
     "LinkAccountFailed": "پیوند حساب انجام نشد. لطفاً از حساب‌های پیوندی دوباره شروع کنید.",
     "LinkAccountSameUser": "با همان حساب وارد شدید. برای تکمیل پیوند، خارج شوید و با حساب دیگر وارد شوید.",
-    "LinkAccountSignInOther": "ورود با حساب دیگر"
+    "LinkAccountSignInOther": "ورود با حساب دیگر",
+    "ContinueWith": "ادامه با"
   }
 }

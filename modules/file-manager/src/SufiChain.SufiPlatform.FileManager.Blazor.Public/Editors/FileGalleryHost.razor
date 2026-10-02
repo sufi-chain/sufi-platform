@@ -10,7 +10,7 @@
 {
     <FileGalleryDialog IsOpen="@_isImageGalleryOpen"
                        IsOpenChanged="@OnImageGalleryOpenChangedAsync"
-                       Title="Select Image"
+                       Title="@FileManagerL["SelectImage"].Value"
                        ImagesOnly="true"
                        OnFileSelected="@OnImageSelected" />
 }
@@ -19,7 +19,7 @@
 {
     <FileGalleryDialog IsOpen="@_isFileGalleryOpen"
                        IsOpenChanged="@OnFileGalleryOpenChangedAsync"
-                       Title="Select File"
+                       Title="@FileManagerL["SelectFile"].Value"
                        Description="@FileManagerL["SelectFileToInsertAsLink"].Value"
                        ImagesOnly="false"
                        OnFileSelected="@OnFileSelected" />

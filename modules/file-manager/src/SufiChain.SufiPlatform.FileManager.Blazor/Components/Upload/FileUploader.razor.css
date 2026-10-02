@@ -1,13 +1,18 @@
-.fm-uploader-config-btn {
-	position: absolute;
-	top: var(--sb-space-2);
-	right: var(--sb-space-2);
-	z-index: 2;
-	padding: 4px;
-	background: var(--sb-color-surface);
-	border: 1px solid var(--sb-color-border);
-	border-radius: var(--sb-radius-md, 6px);
-	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+.fm-uploader-settings {
+	border-bottom: 1px solid var(--sb-color-border);
+	padding: var(--sb-space-3) var(--sb-space-4);
+}
+
+.fm-uploader-settings summary {
+	display: flex;
+	align-items: center;
+	gap: var(--sb-space-2);
+	cursor: pointer;
+	font-weight: 600;
+}
+
+.fm-uploader-settings__body {
+	padding-top: var(--sb-space-3);
 }
 
 .upload-area {

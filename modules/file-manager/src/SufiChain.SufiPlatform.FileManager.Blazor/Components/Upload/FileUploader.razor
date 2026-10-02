@@ -16,24 +16,51 @@
 	}
 
 	<SbCard>
+		@if (_hasConfigOptions)
+		{
+			<details class="fm-uploader-settings" open="@_settingsOpen" @key="_settingsOpen">
+				<summary @onclick="@(() => _settingsOpen = !_settingsOpen)" @onclick:preventDefault>
+					<SbIcon Name="settings" Size="SbSize.Sm" />
+					@L["UploadSettings"]
+				</summary>
+				<div class="fm-uploader-settings__body">
+					<SbStack Gap="4">
+						@if (ShowStructureSelector && _availableStructures.Any())
+						{
+							<SbFormField Label="@L["FileStructure"]">
+								<SbSelect TItem="FileStructureDto"
+										  TValue="string?"
+										  Items="@_availableStructures"
+										  Value="@_selectedStructureKey"
+										  ValueChanged="@OnStructureChanged"
+										  TextField="@(s => ResolveStructureText(s))"
+										  ValueField="@(s => s.Key)"
+										  Placeholder="@L["SelectFileStructure"]" />
+							</SbFormField>
+						}
+						@if (ShowFolderPathField && string.IsNullOrEmpty(FolderPath))
+						{
+							<SbFormField Label="@L["FolderPath"]" HelpText="@L["FolderPathHint"]">
+								<SbTextField TValue="string"
+											 @bind-Value="_userFolderPath"
+											 Placeholder="/web/tourist" />
+							</SbFormField>
+						}
+						<SbStack Direction="SbStackDirection.Row" Justify="SbJustify.End">
+							<SbButton Color="SbColor.Primary" OnClick="@(() => _settingsOpen = false)">
+								@L["Save"]
+							</SbButton>
+						</SbStack>
+					</SbStack>
+				</div>
+			</details>
+		}
 		<div class="upload-area @(_isDragging ? "dragging" : "")"
 			 @ondragenter="HandleDragEnter"
 			 @ondragleave="HandleDragLeave"
 			 @ondragover:preventDefault
 			 @ondrop="HandleDrop"
 			 @ondrop:preventDefault>
-			@if (_hasConfigOptions)
-			{
-				<div class="fm-uploader-config-btn" @onclick:stopPropagation>
-					<SbIconButton AriaLabel="@L["UploadSettings"]"
-								  Title="@L["UploadSettings"]"
-								  Size="SbSize.Sm"
-								  Color="SbColor.Default"
-								  OnClick="@(() => _configModalOpen = true)">
-						<Icon><SbIcon Name="settings" Size="SbSize.Sm" /></Icon>
-					</SbIconButton>
-				</div>
-			}
 			<div class="text-center py-4">
 				<SbIcon Name="upload" Size="SbSize.Xl" Class="text-muted mb-3" />
 				<h5>@(DropZoneTitle ?? L["DragDropFilesHere"])</h5>
@@ -111,41 +138,4 @@
 			</div>
 		}
 	</SbCard>
-
-	@* Config modal: Structure selector and/or Folder Path *@
-	@if (_hasConfigOptions)
-	{
-		<SbDialog @bind-Open="_configModalOpen" Title="@L["UploadSettings"]" Size="SbDialogSize.Sm" AllowDropdownOverflow="true">
-			<ChildContent>
-				<SbStack Gap="4">
-					@if (ShowStructureSelector && _availableStructures.Any())
-					{
-						<SbFormField Label="@L["FileStructure"]">
-							<SbSelect TItem="FileStructureDto"
-									  TValue="string?"
-									  Items="@_availableStructures"
-									  Value="@_selectedStructureKey"
-									  ValueChanged="@OnStructureChanged"
-									  TextField="@(s => ResolveStructureText(s))"
-									  ValueField="@(s => s.Key)"
-									  Placeholder="@L["SelectFileStructure"]" />
-						</SbFormField>
-					}
-					@if (ShowFolderPathField && string.IsNullOrEmpty(FolderPath))
-					{
-						<SbFormField Label="@L["FolderPath"]" HelpText="@L["FolderPathHint"]">
-							<SbTextField TValue="string"
-										 @bind-Value="_userFolderPath"
-										 Placeholder="/web/tourist" />
-						</SbFormField>
-					}
-				</SbStack>
-			</ChildContent>
-			<Footer>
-				<SbButton Color="SbColor.Primary" OnClick="@(() => _configModalOpen = false)">
-					@L["Save"]
-				</SbButton>
-			</Footer>
-		</SbDialog>
-	}
 </div>

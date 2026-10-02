@@ -50,13 +50,20 @@ public class DefaultUserExceptionInformer : IUserExceptionInformer
 
         var errorInfo = GetErrorInfo(context);
 
-        if (string.IsNullOrEmpty(errorInfo.Details))
+        try
         {
-            await _messageService.ErrorAsync(errorInfo.Message, errorInfo.Title);
+            if (string.IsNullOrEmpty(errorInfo.Details))
+            {
+                await _messageService.ErrorAsync(errorInfo.Message, errorInfo.Title);
+            }
+            else
+            {
+                await _messageService.ErrorAsync(errorInfo.Details, errorInfo.Title ?? errorInfo.Message);
+            }
         }
-        else
+        catch (Exception exception)
         {
-            await _messageService.ErrorAsync(errorInfo.Details, errorInfo.Title ?? errorInfo.Message);
+            _logger.LogWarning(exception, "Could not display the user-facing error dialog.");
         }
     }
 

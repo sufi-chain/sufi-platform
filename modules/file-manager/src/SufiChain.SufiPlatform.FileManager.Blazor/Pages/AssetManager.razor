@@ -17,7 +17,6 @@
     OnFileOpen="@HandleFileOpen"
     OnSelectionChanged="@HandleSelectionChanged"
     OnEditImage="@HandleEditImage"
-    RefreshTrigger="@_refreshTrigger"
     Class="asset-manager-full-height" />
 
 <!-- Upload Modal -->
@@ -85,11 +84,3 @@
 </SbDialog>
 
 <QuickShareModal Open="_quickShareOpen" OpenChanged="@((v) => { _quickShareOpen = v; if (!v) _quickShareFileId = null; })" FileId="_quickShareFileId" />
-
-<!-- Image Editor Modal -->
-<ImageEditorModal 
-    File="_imageEditingFile" 
-    Open="_imageEditorOpen" 
-    OpenChanged="@((v) => _imageEditorOpen = v)"
-    OnSaved="@OnImageEditorSaved"
-    CurrentFolderId="_currentFolderId" />

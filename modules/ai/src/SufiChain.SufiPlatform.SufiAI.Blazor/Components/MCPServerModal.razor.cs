@@ -23,7 +23,7 @@ public partial class MCPServerModal
     private string _transportType = "STDIO";
     private string? _endpoint;
     private string? _command;
-    private string? _argumentsJson;
+    private string _argumentsJson = string.Empty;
     
     private async Task OnTransportTypeChanged(string value)
     {
@@ -40,7 +40,7 @@ public partial class MCPServerModal
             _transportType = Server.TransportType;
             _endpoint = Server.Endpoint;
             _command = Server.Command;
-            _argumentsJson = Server.ArgumentsJson;
+            _argumentsJson = Server.ArgumentsJson ?? string.Empty;
         }
         else
         {
@@ -73,7 +73,7 @@ public partial class MCPServerModal
                     TransportType = _transportType,
                     Endpoint = _endpoint,
                     Command = _command,
-                    ArgumentsJson = _argumentsJson
+                    ArgumentsJson = ArgumentsJsonForSave()
                 };
                 
                 await MCPServerAppService.CreateAsync(input);
@@ -85,7 +85,7 @@ public partial class MCPServerModal
                     Name = _name,
                     Endpoint = _endpoint,
                     Command = _command,
-                    ArgumentsJson = _argumentsJson
+                    ArgumentsJson = ArgumentsJsonForSave()
                 };
                 
                 await MCPServerAppService.UpdateAsync(Server.Id, input);
@@ -120,6 +120,9 @@ public partial class MCPServerModal
         _transportType = "STDIO";
         _endpoint = null;
         _command = null;
-        _argumentsJson = null;
+        _argumentsJson = string.Empty;
     }
+
+    private string? ArgumentsJsonForSave() =>
+        string.IsNullOrWhiteSpace(_argumentsJson) ? null : _argumentsJson;
 }

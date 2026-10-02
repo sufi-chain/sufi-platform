@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.JSInterop;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -230,22 +231,48 @@ public abstract class SufiComponentBase : OwningComponentBase, IHandleEvent
             return;
         }
 
-        Logger.LogException(exception);
+        try
+        {
+            Logger.LogException(exception);
+        }
+        catch (Exception logException) when (IsIgnorableLifetimeException(logException))
+        {
+        }
 
-        // During prerendering, we can only log - JS interop is not available
-        // The UserExceptionInformer is now prerender-safe, but we still want to
-        // avoid unnecessary processing during static rendering
-        if (_isInteractive)
+        // During prerendering, we can only log - JS interop is not available.
+        // A failure while showing the dialog must not escape and tear down the circuit.
+        if (!_isInteractive)
+        {
+            try
+            {
+                Logger.LogWarning(
+                    "Exception occurred during prerendering and cannot be shown to user: {Message}",
+                    exception.Message);
+            }
+            catch (Exception logException) when (IsIgnorableLifetimeException(logException))
+            {
+            }
+
+            return;
+        }
+
+        try
         {
             await UserExceptionInformer.InformAsync(new UserExceptionInformerContext(exception));
         }
-        else
+        catch (Exception informException) when (IsIgnorableLifetimeException(informException) ||
+                                                informException is JSException or JSDisconnectedException)
         {
-            // During prerendering, just log the error - it will be handled properly
-            // when the component becomes interactive
-            Logger.LogWarning(
-                "Exception occurred during prerendering and cannot be shown to user: {Message}",
-                exception.Message);
+        }
+        catch (Exception informException)
+        {
+            try
+            {
+                Logger.LogWarning(informException, "Could not show the error dialog.");
+            }
+            catch (Exception logException) when (IsIgnorableLifetimeException(logException))
+            {
+            }
         }
     }
 
@@ -274,6 +301,29 @@ public abstract class SufiComponentBase : OwningComponentBase, IHandleEvent
     protected bool IsAnyOperationLoading => !LoadingStates.IsEmpty;
 
     /// <summary>
+    /// Set by the host tenant-settings page. Group components load and save in their own
+    /// <see cref="ExecuteWithLoadingAsync(Func{Task}, string, LoadingBehavior)"/> after render,
+    /// so the tenant change has to be cascaded onto those calls.
+    /// </summary>
+    [CascadingParameter]
+    private SettingsTenantScope? CascadedSettingsTenant { get; set; }
+
+    /// <summary>
+    /// Enters <see cref="ICurrentTenant.Change(Guid?, string?)"/> when a settings page cascaded
+    /// a different tenant. Host setting rows stay unchanged: application services write the
+    /// changed tenant via tenant-or-global helpers, and a non-null id does not call global set.
+    /// </summary>
+    private IDisposable? EnterCascadedSettingsTenant()
+    {
+        if (CascadedSettingsTenant == null || CurrentTenant.Id == CascadedSettingsTenant.TenantId)
+        {
+            return null;
+        }
+
+        return CurrentTenant.Change(CascadedSettingsTenant.TenantId);
+    }
+
+    /// <summary>
     /// Executes an async action with loading state management.
     /// Handles exceptions, cancellations, and StateHasChanged automatically.
     /// </summary>
@@ -296,7 +346,10 @@ public abstract class SufiComponentBase : OwningComponentBase, IHandleEvent
             await StartLoadingUiAsync(loadingBehavior);
             await InvokeStateHasChangedSafeAsync();
 
-            await action();
+            using (EnterCascadedSettingsTenant())
+            {
+                await action();
+            }
         }
         catch (OperationCanceledException)
         {
@@ -350,7 +403,10 @@ public abstract class SufiComponentBase : OwningComponentBase, IHandleEvent
             await StartLoadingUiAsync(loadingBehavior);
             await InvokeStateHasChangedSafeAsync();
 
-            return await action();
+            using (EnterCascadedSettingsTenant())
+            {
+                return await action();
+            }
         }
         catch (OperationCanceledException)
         {

@@ -77,54 +77,7 @@
     white-space: nowrap;
 }
 
-/* Create Structure Wizard - mobile stepper */
 @media (max-width: 767px) {
-    .create-wizard-stepper-container {
-        width: 100%;
-    }
-
-    .create-wizard-stepper-container ::deep .create-wizard-stepper.sb-stepper {
-        display: flex;
-        flex-direction: column;
-        min-height: 0;
-    }
-
-    .create-wizard-stepper-container ::deep .create-wizard-stepper .sb-stepper__steps {
-        flex: 0 0 auto;
-        overflow-x: auto;
-        overflow-y: hidden;
-        -webkit-overflow-scrolling: touch;
-        flex-wrap: nowrap;
-        padding-bottom: var(--sb-space-2);
-        scrollbar-width: thin;
-    }
-
-    .create-wizard-stepper-container ::deep .create-wizard-stepper .sb-stepper__step {
-        flex: 0 0 auto;
-        min-width: 88px;
-    }
-
-    .create-wizard-stepper-container ::deep .create-wizard-stepper .sb-stepper__step-description {
-        display: none;
-    }
-
-    .create-wizard-stepper-container ::deep .create-wizard-stepper .sb-stepper__step-label {
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        max-width: 80px;
-    }
-
-    .create-wizard-stepper-container ::deep .create-wizard-stepper .sb-stepper__connector {
-        display: none;
-    }
-
-    .create-wizard-stepper-container ::deep .create-wizard-stepper .sb-stepper__content {
-        flex: 1;
-        min-height: 0;
-        overflow-y: auto;
-    }
-
     .detail-row {
         flex-direction: column;
     }

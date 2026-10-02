@@ -36,6 +36,7 @@
 
 		<SbTextField @bind-Value="Draft.ApiBaseUrl"
 					 Label="@L["ApiBaseUrl"]"
+					 Type="url"
 					 Required="@RequiresBaseUrl"
 					 Placeholder="@(SelectedProfile?.DefaultBaseUrl ?? L["ApiBaseUrl"].Value)"
 					 HelperText="@EndpointHint"
@@ -127,14 +128,22 @@
 	}
 
 	<SbGrid Columns="1" ColumnsMd="2" Gap="4">
-		<SbTextField @bind-Value="Draft.InputCostText"
+		<SbNumberField TNumber="decimal"
+					 Value="@InputCostValue"
+					 ValueChanged="@OnInputCostChanged"
 					 Label="@L["InputCostPer1MTokens"]"
+					 Min="0"
+					 Step="0.0001m"
 					 Placeholder="0.0000"
 					 HelperText="@L["WorkspaceCostFallbackHelp"]"
 					 Disabled="@ReadOnly" />
 
-		<SbTextField @bind-Value="Draft.OutputCostText"
+		<SbNumberField TNumber="decimal"
+					 Value="@OutputCostValue"
+					 ValueChanged="@OnOutputCostChanged"
 					 Label="@L["OutputCostPer1MTokens"]"
+					 Min="0"
+					 Step="0.0001m"
 					 Placeholder="0.0000"
 					 HelperText="@L["WorkspaceCostFallbackHelp"]"
 					 Disabled="@ReadOnly" />

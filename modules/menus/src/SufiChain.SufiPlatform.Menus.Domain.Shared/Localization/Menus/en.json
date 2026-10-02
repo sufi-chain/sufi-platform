@@ -99,6 +99,13 @@
     "DisplayOrderMustBeNumber": "Display order must be a number.",
     "ContextType:Public": "Public",
     "ContextType:KnowledgeBase.Project": "Knowledge Base project",
-    "DisplayNameLocalizationMode": "Display name mode"
-  ,"Hooshvare:SufiMenus:Designer:DisplayName":"Menu Designer"}
+    "DisplayNameLocalizationMode": "Display name mode",
+    "MenuItemSection:Link": "Link",
+    "MenuItemSection:Display": "Display",
+    "MenuItemSection:Visibility": "Visibility",
+    "Hooshvare:SufiMenus:Designer:DisplayName": "Menu Designer",
+    "Save": "Save",
+    "Cancel": "Cancel",
+    "ContextTypeExample": "e.g. Public"
+  }
 }

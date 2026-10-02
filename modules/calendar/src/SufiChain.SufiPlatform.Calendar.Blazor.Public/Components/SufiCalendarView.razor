@@ -41,13 +41,15 @@
                     <div class="sufi-calendar-view__mode-bar" role="tablist" aria-label="@L["Calendar"]">
                         @foreach (var mode in Enum.GetValues<SufiCalendarViewMode>())
                         {
-                            <button type="button"
-                                    role="tab"
-                                    class="@(View == mode ? "sufi-calendar-view__mode sufi-calendar-view__mode--active" : "sufi-calendar-view__mode")"
-                                    aria-selected="@(View == mode)"
-                                    @onclick="@(() => SetViewAsync(mode))">
+                            <SbButton Type="button"
+                                      Variant="SbButtonVariant.Ghost"
+                                      Color="SbColor.Default"
+                                      role="tab"
+                                      Class="@(View == mode ? "sufi-calendar-view__mode sufi-calendar-view__mode--active" : "sufi-calendar-view__mode")"
+                                      aria-selected="@(View == mode ? "true" : "false")"
+                                      OnClick="@(() => SetViewAsync(mode))">
                                 @L[$"CalendarView:{mode}"]
-                            </button>
+                            </SbButton>
                         }
                     </div>
                 </div>
@@ -64,13 +66,15 @@
                 <div class="sufi-calendar-view__agenda">
                     @foreach (var occurrence in _visibleOccurrences)
                     {
-                        <button type="button"
-                                class="sufi-calendar-view__agenda-item"
-                                style="@GetEventStyle(occurrence)"
-                                @onclick="@(() => SelectEventAsync(occurrence))">
+                        <SbButton Type="button"
+                                  Variant="SbButtonVariant.Ghost"
+                                  Color="SbColor.Default"
+                                  Class="sufi-calendar-view__agenda-item"
+                                  Style="@GetEventStyle(occurrence)"
+                                  OnClick="@(() => SelectEventAsync(occurrence))">
                             <span>@FormatDateTime(occurrence.StartUtc)</span>
                             <strong>@occurrence.Title</strong>
-                        </button>
+                        </SbButton>
                     }
                 </div>
             }
@@ -87,13 +91,15 @@
                             <div class="sufi-calendar-view__all-day-lane">
                                 @foreach (var occurrence in allDayOccurrences)
                                 {
-                                    <button type="button"
-                                            class="sufi-calendar-view__timeline-event sufi-calendar-view__all-day-event"
-                                            style="@GetEventStyle(occurrence)"
-                                            @onclick="@(() => SelectEventAsync(occurrence))">
+                                    <SbButton Type="button"
+                                              Variant="SbButtonVariant.Ghost"
+                                              Color="SbColor.Default"
+                                              Class="sufi-calendar-view__timeline-event sufi-calendar-view__all-day-event"
+                                              Style="@GetEventStyle(occurrence)"
+                                              OnClick="@(() => SelectEventAsync(occurrence))">
                                         <strong>@L["AllDay"]</strong>
                                         <span>@occurrence.Title</span>
-                                    </button>
+                                    </SbButton>
                                 }
                             </div>
                         </div>
@@ -102,9 +108,11 @@
                     <div class="sufi-calendar-view__day-timeline">
                         @foreach (var hour in DayTimelineHours)
                         {
-                            <button type="button"
-                                    class="sufi-calendar-view__timeline-row"
-                                    @onclick="@(() => SelectHourSlotAsync(hour))">
+                            <SbButton Type="button"
+                                      Variant="SbButtonVariant.Ghost"
+                                      Color="SbColor.Default"
+                                      Class="sufi-calendar-view__timeline-row"
+                                      OnClick="@(() => SelectHourSlotAsync(hour))">
                                 <span class="sufi-calendar-view__timeline-hour">@FormatHour(hour)</span>
                                 <span class="sufi-calendar-view__timeline-lane">
                                     @foreach (var occurrence in GetOccurrencesForHour(hour))
@@ -118,7 +126,7 @@
                                         </span>
                                     }
                                 </span>
-                            </button>
+                            </SbButton>
                         }
                     </div>
                 </div>
@@ -176,17 +184,19 @@
                                                     <div class="sufi-calendar-view__events-popover-panel" role="list">
                                                         @foreach (var occurrence in eventGroup.Occurrences)
                                                         {
-                                                            <button type="button"
-                                                                    class="sufi-calendar-view__events-popover-item"
-                                                                    style="@GetEventStyle(occurrence)"
-                                                                    @onclick="@(() => SelectEventFromPopoverAsync(occurrence))">
+                                                            <SbButton Type="button"
+                                                                      Variant="SbButtonVariant.Ghost"
+                                                                      Color="SbColor.Default"
+                                                                      Class="sufi-calendar-view__events-popover-item"
+                                                                      Style="@GetEventStyle(occurrence)"
+                                                                      OnClick="@(() => SelectEventFromPopoverAsync(occurrence))">
                                                                 <strong class="sufi-calendar-view__events-popover-title">@occurrence.Title</strong>
                                                                 <span class="sufi-calendar-view__events-popover-time">@FormatTimeRange(occurrence)</span>
                                                                 @if (!string.IsNullOrWhiteSpace(occurrence.Location))
                                                                 {
                                                                     <span class="sufi-calendar-view__events-popover-meta">@occurrence.Location</span>
                                                                 }
-                                                            </button>
+                                                            </SbButton>
                                                         }
                                                     </div>
                                                 </ChildContent>

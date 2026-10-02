@@ -27,7 +27,7 @@
                         ShowColumnChooser="true"
                         SelectionMode="SbSelectionMode.MultipleRows">
                 <ChildContent>
-                    <SbColumn TItem="MCPServerDto" Title="@L["Actions"]" Width="184px" Sortable="false">
+                    <SbColumn TItem="MCPServerDto" Title="@L["Actions"]" MinWidth="184px" Sortable="false">
                         <CellTemplate Context="cellContext">
                             <SbStack Wrap="true" Direction="SbStackDirection.Row" Gap="1">
                                 <SbTooltip Text="@L["TestConnection"]">
@@ -67,7 +67,7 @@
                             </SbStack>
                         </CellTemplate>
                     </SbColumn>
-                    <SbColumn TItem="MCPServerDto" Field="Name" Title="@L["Name"]" Width="220px" Filterable="true" Sortable="true">
+                    <SbColumn TItem="MCPServerDto" Field="Name" Title="@L["Name"]" MinWidth="220px" Filterable="true" Sortable="true">
                         <CellTemplate Context="cellContext">
                             <SbStack Direction="SbStackDirection.Column" Gap="0">
                                 <SbText Variant="SbTextVariant.BodySmall" Weight="SbFontWeight.Medium">
@@ -79,17 +79,17 @@
                             </SbStack>
                         </CellTemplate>
                     </SbColumn>
-                    <SbColumn TItem="MCPServerDto" Field="Key" Title="@L["ServerKey"]" Width="180px" Filterable="true" Sortable="true">
+                    <SbColumn TItem="MCPServerDto" Field="Key" Title="@L["ServerKey"]" MinWidth="180px" Filterable="true" Sortable="true">
                         <CellTemplate Context="cellContext">
                             <SbText Variant="SbTextVariant.Code">@cellContext.Item.Key</SbText>
                         </CellTemplate>
                     </SbColumn>
-                    <SbColumn TItem="MCPServerDto" Field="TransportType" Title="@L["Transport"]" Width="120px" Filterable="true" Sortable="true">
+                    <SbColumn TItem="MCPServerDto" Field="TransportType" Title="@L["Transport"]" MinWidth="120px" Filterable="true" Sortable="true">
                         <CellTemplate Context="cellContext">
                             <SbChip Size="SbSize.Sm">@cellContext.Item.TransportType</SbChip>
                         </CellTemplate>
                     </SbColumn>
-                    <SbColumn TItem="MCPServerDto" Field="IsEnabled" Title="@L["Status"]" Width="100px" Filterable="true" Sortable="true">
+                    <SbColumn TItem="MCPServerDto" Field="IsEnabled" Title="@L["Status"]" MinWidth="100px" Filterable="true" Sortable="true">
                         <CellTemplate Context="cellContext">
                             <SbChip Color="@(cellContext.Item.IsEnabled ? SbColor.Success : SbColor.Default)"
                                     Size="SbSize.Sm">
@@ -97,7 +97,7 @@
                             </SbChip>
                         </CellTemplate>
                     </SbColumn>
-                    <SbColumn TItem="MCPServerDto" Field="LastConnectedAt" Title="@L["LastConnected"]" Width="180px" Filterable="true" Sortable="true">
+                    <SbColumn TItem="MCPServerDto" Field="LastConnectedAt" Title="@L["LastConnected"]" MinWidth="180px" Filterable="true" Sortable="true">
                         <CellTemplate Context="cellContext">
                             @if (cellContext.Item.LastConnectedAt.HasValue)
                             {

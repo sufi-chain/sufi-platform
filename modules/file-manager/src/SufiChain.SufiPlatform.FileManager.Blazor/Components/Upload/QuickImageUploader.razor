@@ -21,16 +21,22 @@
             {
                 <div class="image-preview">
                     <img src="@GetPreviewUrl()" alt="Preview" />
-                    <button class="remove-btn" type="button" @onclick="RemoveImage">
-                        <SbIcon Name="x" />
-                    </button>
+                    <SbIconButton Class="remove-btn"
+                                  AriaLabel="@L["Delete"]"
+                                  Title="@L["Delete"]"
+                                  Variant="SbButtonVariant.Solid"
+                                  Color="SbColor.Danger"
+                                  Size="SbSize.Sm"
+                                  OnClick="RemoveImage">
+                        <Icon><SbIcon Name="x" /></Icon>
+                    </SbIconButton>
                 </div>
             }
             else
             {
                 <label for="@_fileInputId" class="upload-placeholder">
                     <SbIcon Name="upload" Size="SbSize.Xl" Class="text-muted" />
-                    <p class="mt-2">Click to upload</p>
+                    <p class="mt-2">@L["ClickToUpload"]</p>
                     @if (!string.IsNullOrEmpty(Placeholder))
                     {
                         <small class="text-muted">@Placeholder</small>

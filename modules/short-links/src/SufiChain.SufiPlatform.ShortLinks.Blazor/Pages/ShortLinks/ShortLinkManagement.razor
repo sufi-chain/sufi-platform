@@ -86,7 +86,7 @@
                     </SbEmptyState>
                 </EmptyTemplate>
                 <ChildContent>
-                    <SbColumn TItem="ShortUrlDto" Title="@L["Actions"]" Width="152px" Sortable="false">
+                    <SbColumn TItem="ShortUrlDto" Title="@L["Actions"]" MinWidth="152px" Sortable="false">
                         <CellTemplate Context="cellContext">
                             <SbStack Direction="SbStackDirection.Row" Gap="1">
                                 @if (HasEditPermission)
@@ -134,13 +134,13 @@
                         </CellTemplate>
                     </SbColumn>
 
-                    <SbColumn TItem="ShortUrlDto" Field="ClickCount" Title="@L["ClickCount"]" Sortable="true" Width="120px" Filterable="true">
+                    <SbColumn TItem="ShortUrlDto" Field="ClickCount" Title="@L["ClickCount"]" Sortable="true" MinWidth="120px" Filterable="true">
                         <CellTemplate Context="cellContext">
                             <SbBadge Color="SbColor.Primary">@cellContext.Item.ClickCount</SbBadge>
                         </CellTemplate>
                     </SbColumn>
 
-                    <SbColumn TItem="ShortUrlDto" Field="IsActive" Title="@L["IsActive"]" Sortable="true" Width="120px" Filterable="true">
+                    <SbColumn TItem="ShortUrlDto" Field="IsActive" Title="@L["IsActive"]" Sortable="true" MinWidth="120px" Filterable="true">
                         <CellTemplate Context="cellContext">
                             <SbBadge Color="@(cellContext.Item.IsActive ? SbColor.Success : SbColor.Secondary)">
                                 @(cellContext.Item.IsActive ? L["Yes"] : L["No"])
@@ -148,7 +148,7 @@
                         </CellTemplate>
                     </SbColumn>
 
-                    <SbColumn TItem="ShortUrlDto" Field="CreationTime" Title="@L["CreatedAt"]" Sortable="true" Width="180px" Format="yyyy-MM-dd HH:mm" Filterable="true"/>
+                    <SbColumn TItem="ShortUrlDto" Field="CreationTime" Title="@L["CreatedAt"]" Sortable="true" MinWidth="180px" Format="yyyy-MM-dd HH:mm" Filterable="true"/>
                 </ChildContent>
             </SbDataGrid>
         </ChildContent>
@@ -159,7 +159,7 @@
     <ChildContent>
         <SbForm Model="NewEntity" OnValidSubmit="CreateShortUrlAsync">
             <SbStack Gap="3">
-                <SbTextField @bind-Value="NewEntity.DestinationUrl" Label="@L["DestinationUrl"]" Placeholder="@L["EnterDestinationUrl"]" Required="true" />
+                <SbTextField @bind-Value="NewEntity.DestinationUrl" Label="@L["DestinationUrl"]" Type="url" Placeholder="@L["EnterDestinationUrl"]" Required="true" />
                 <SbTextArea @bind-Value="NewEntity.Description" Label="@L["Description"]" Rows="3" HelperText="@L["DescriptionHelp"]" />
                 <SbDatePicker Value="NewEntityExpiresAt" ValueChanged="OnNewEntityExpiresAtChanged" Label="@L["ExpiresAt"]" Placeholder="@L["ExpiresAt"]" />
                 <SbTextField @bind-Value="NewEntity.CreatedByModule" Label="@L["CreatedByModule"]" />
@@ -179,7 +179,7 @@
         <SbForm Model="EditingEntity" OnValidSubmit="UpdateShortUrlAsync">
             <SbStack Gap="3">
                 <SbTextField @bind-Value="EditingEntityDto.ShortCode" Label="@L["ShortCode"]" ReadOnly="true" />
-                <SbTextField @bind-Value="EditingEntity.DestinationUrl" Label="@L["DestinationUrl"]" Required="true" />
+                <SbTextField @bind-Value="EditingEntity.DestinationUrl" Label="@L["DestinationUrl"]" Type="url" Required="true" />
                 <SbTextArea @bind-Value="EditingEntity.Description" Label="@L["Description"]" Rows="3" HelperText="@L["DescriptionHelp"]" />
                 <SbDatePicker Value="EditingEntityExpiresAt" ValueChanged="OnEditingEntityExpiresAtChanged" Label="@L["ExpiresAt"]" Placeholder="@L["ExpiresAt"]" />
                 <SbCheckbox @bind-Value="EditingEntity.IsActive" Label="@L["IsActive"]" />
@@ -194,18 +194,18 @@
     </Footer>
 </SbDialog>
 
-<SbDialog Open="IsDeleteDialogOpen" OpenChanged="OnDeleteDialogOpenChanged" Size="SbDialogSize.Sm" Title="@L["Delete"]">
+<SbConfirmDialog @ref="DeleteConfirmDialog"
+                 Title="@L["Delete"]"
+                 Message="@L["AreYouSureToDelete"]"
+                 Variant="SbConfirmDialogVariant.Danger"
+                 ConfirmText="@L["Delete"]"
+                 CancelText="@L["Cancel"]"
+                 OnConfirm="DeleteConfirmedAsync"
+                 OnCancel="CancelDelete">
     <ChildContent>
-        <SbText>@L["AreYouSureToDelete"]</SbText>
         <SbText Color="SbColor.Muted">@L["ThisActionCannotBeUndone"]</SbText>
     </ChildContent>
-    <Footer>
-        <SbStack Direction="SbStackDirection.Row" Gap="2" Justify="SbJustify.End">
-            <SbButton Variant="SbButtonVariant.Outline" OnClick="CancelDelete">@L["Cancel"]</SbButton>
-            <SbButton Color="SbColor.Danger" OnClick="DeleteConfirmedAsync">@L["Delete"]</SbButton>
-        </SbStack>
-    </Footer>
-</SbDialog>
+</SbConfirmDialog>
 <ReadOnlyHooshvareDrawer HooshvareKey="@ShortLinksAnalyticsHooshvareKeys.Key"
                          Title="@L["Hooshvare:SufiShortLinks:Analytics:DisplayName"]"
                          ContextProvider="BuildHooshvareContext" />

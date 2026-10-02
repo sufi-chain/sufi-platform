@@ -140,7 +140,7 @@
 									@FormatCapability(kvp.Key)
 								</SbText>
 								<SbProgress Value="@GetPercentage(kvp.Value, _statistics.TotalRequests)" style="flex: 1;" />
-								<SbText Variant="SbTextVariant.BodySmall" Weight="SbFontWeight.Medium" style="min-width: 80px; text-align: right;">
+								<SbText Variant="SbTextVariant.BodySmall" Weight="SbFontWeight.Medium" style="min-width: 80px; text-align: end;">
 									@kvp.Value.ToString("N0") (@GetPercentage(kvp.Value, _statistics.TotalRequests).ToString("F1")%)
 								</SbText>
 							</SbStack>
@@ -163,7 +163,7 @@
 									@kvp.Key
 								</SbText>
 								<SbProgress Value="@GetPercentage((double)kvp.Value, (double)_statistics.TotalCost)" style="flex: 1;" />
-								<SbText Variant="SbTextVariant.BodySmall" Weight="SbFontWeight.Medium" style="min-width: 100px; text-align: right;">
+								<SbText Variant="SbTextVariant.BodySmall" Weight="SbFontWeight.Medium" style="min-width: 100px; text-align: end;">
 									$@kvp.Value.ToString("F2")
 								</SbText>
 							</SbStack>
@@ -219,7 +219,7 @@
 										}
 									</SbStack>
 									<SbProgress Value="@GetPercentage((double)route.Cost, (double)_statistics.TotalCost)" style="flex: 1;" />
-									<SbStack Direction="SbStackDirection.Column" Gap="0" style="min-width: 140px; text-align: right;">
+									<SbStack Direction="SbStackDirection.Column" Gap="0" style="min-width: 140px; text-align: end;">
 										<SbText Variant="SbTextVariant.BodySmall" Weight="SbFontWeight.Medium">
 											$@route.Cost.ToString("F2")
 										</SbText>
@@ -250,19 +250,19 @@
                         ShowColumnChooser="true"
                         SelectionMode="SbSelectionMode.MultipleRows">
 						<ChildContent>
-							<SbColumn TItem="AIUsageLogDto" Field="CreationTime" Title="@L["Time"]" Width="160px" Filterable="true" Sortable="true">
+							<SbColumn TItem="AIUsageLogDto" Field="CreationTime" Title="@L["Time"]" MinWidth="160px" Filterable="true" Sortable="true">
 								<CellTemplate Context="cellContext">
 									<SbText Variant="SbTextVariant.BodySmall">
 										@cellContext.Item.CreationTime.ToString("yyyy-MM-dd HH:mm:ss")
 									</SbText>
 								</CellTemplate>
 							</SbColumn>
-							<SbColumn TItem="AIUsageLogDto" Field="CapabilityType" Title="@L["Capability"]" Width="150px" Filterable="true" Sortable="true">
+							<SbColumn TItem="AIUsageLogDto" Field="CapabilityType" Title="@L["Capability"]" MinWidth="150px" Filterable="true" Sortable="true">
 								<CellTemplate Context="cellContext">
 									<SbChip Size="SbSize.Sm">@FormatCapability(cellContext.Item.CapabilityType)</SbChip>
 								</CellTemplate>
 							</SbColumn>
-							<SbColumn TItem="AIUsageLogDto" Field="ModelId" Title="@L["Model"]" Width="220px" Filterable="true" Sortable="true">
+							<SbColumn TItem="AIUsageLogDto" Field="ModelId" Title="@L["Model"]" MinWidth="220px" Filterable="true" Sortable="true">
 								<CellTemplate Context="cellContext">
 									<SbStack Direction="SbStackDirection.Column" Gap="1">
 										<SbText Variant="SbTextVariant.BodySmall">
@@ -274,7 +274,7 @@
 									</SbStack>
 								</CellTemplate>
 							</SbColumn>
-								<SbColumn TItem="AIUsageLogDto" Field="TotalTokens" Title="@L["Tokens"]" Width="120px" Filterable="true" Sortable="true">
+								<SbColumn TItem="AIUsageLogDto" Field="TotalTokens" Title="@L["Tokens"]" MinWidth="120px" Filterable="true" Sortable="true">
 									<CellTemplate Context="cellContext">
 										<SbStack Direction="SbStackDirection.Column" Gap="1">
 											@if (cellContext.Item.HasTokenUsage)
@@ -300,7 +300,7 @@
 										</SbStack>
 									</CellTemplate>
 								</SbColumn>
-								<SbColumn TItem="AIUsageLogDto" Field="EstimatedCost" Title="@L["Cost"]" Width="100px" Filterable="true" Sortable="true">
+								<SbColumn TItem="AIUsageLogDto" Field="EstimatedCost" Title="@L["Cost"]" MinWidth="100px" Filterable="true" Sortable="true">
 									<CellTemplate Context="cellContext">
 										<SbStack Direction="SbStackDirection.Column" Gap="1">
 											<SbText Variant="SbTextVariant.BodySmall">$@cellContext.Item.EstimatedCost.ToString("F4")</SbText>
@@ -315,12 +315,12 @@
 										</SbStack>
 									</CellTemplate>
 								</SbColumn>
-							<SbColumn TItem="AIUsageLogDto" Field="LatencyMs" Title="@L["Latency"]" Width="100px" Filterable="true" Sortable="true">
+							<SbColumn TItem="AIUsageLogDto" Field="LatencyMs" Title="@L["Latency"]" MinWidth="100px" Filterable="true" Sortable="true">
 								<CellTemplate Context="cellContext">
 									<SbText Variant="SbTextVariant.BodySmall">@cellContext.Item.LatencyMs ms</SbText>
 								</CellTemplate>
 							</SbColumn>
-							<SbColumn TItem="AIUsageLogDto" Field="IsSuccess" Title="@L["Status"]" Width="100px" Filterable="true" Sortable="true">
+							<SbColumn TItem="AIUsageLogDto" Field="IsSuccess" Title="@L["Status"]" MinWidth="100px" Filterable="true" Sortable="true">
 								<CellTemplate Context="cellContext">
 									<SbChip Color="@(cellContext.Item.IsSuccess ? SbColor.Success : SbColor.Danger)" Size="SbSize.Sm">
 										@(cellContext.Item.IsSuccess ? L["Success"] : L["Failed"])
@@ -337,7 +337,7 @@
 									}
 								</CellTemplate>
 							</SbColumn>
-							<SbColumn TItem="AIUsageLogDto" Title="@L["File"]" Width="140px" Sortable="false">
+							<SbColumn TItem="AIUsageLogDto" Title="@L["File"]" MinWidth="140px" Sortable="false">
 								<CellTemplate Context="cellContext">
 									@if (!string.IsNullOrWhiteSpace(cellContext.Item.FileUrl))
 									{

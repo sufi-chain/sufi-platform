@@ -1,12 +1,14 @@
 @namespace SufiChain.SufiPlatform.FileManager.Blazor.Components.Common
+@using Microsoft.Extensions.Localization
+@inject IStringLocalizer<SufiFileManagerResource> L
 <div class="storage-quota-meter @CssClass">
     @if (Quota != null)
     {
         <SbStack Direction="SbStackDirection.Row" Justify="SbJustify.SpaceBetween" Align="SbAlign.Center" Class="mb-2">
-            <span class="fw-bold">Storage Usage</span>
+            <span class="fw-bold">@L["StorageUsage"]</span>
             <span class="text-muted">
-                @Quota.UsedMB.ToString("0.##") MB /
-                @(Quota.IsUnlimited ? "Unlimited" : $"{Quota.LimitMB:0.##} MB")
+                @L["Megabytes", Quota.UsedMB.ToString("0.##")] /
+                @(Quota.IsUnlimited ? L["Unlimited"] : L["Megabytes", Quota.LimitMB.ToString("0.##")])
             </span>
         </SbStack>
 
@@ -22,19 +24,19 @@
             <div class="mt-2">
                 <small class="text-muted">
                     <div>
-                        Available:
-                        @(Quota.IsUnlimited ? "Unlimited" : $"{Quota.AvailableMB:0.##} MB")
+                        @L["Available"]:
+                        @(Quota.IsUnlimited ? L["Unlimited"] : L["Megabytes", Quota.AvailableMB.ToString("0.##")])
                     </div>
                     @if (Quota.PercentageUsed >= 90 && Quota.PercentageUsed < 100)
                     {
                         <SbAlert Severity="SbAlertSeverity.Warning" Class="mt-2 py-1 px-2">
-                            Storage is almost full
+                            @L["StorageAlmostFull"]
                         </SbAlert>
                     }
                     else if (Quota.PercentageUsed >= 100)
                     {
                         <SbAlert Severity="SbAlertSeverity.Danger" Class="mt-2 py-1 px-2">
-                            Storage quota exceeded
+                            @L["StorageQuotaExceededLabel"]
                         </SbAlert>
                     }
                 </small>
@@ -45,7 +47,7 @@
     {
         <div class="text-center py-3">
             <SbProgress Type="SbProgressType.Circular" Size="SbSize.Sm" />
-            <span class="ms-2 text-muted">Loading storage info...</span>
+            <span class="ms-2 text-muted">@L["LoadingStorageInfo"]</span>
         </div>
     }
 </div>

@@ -4,6 +4,7 @@
 
   "texts": {
 
+    "AI:GuardModelReply": "El modelo seleccionado devolvió un veredicto de seguridad en lugar de una respuesta. Elija un modelo de chat para este espacio de trabajo e inténtelo de nuevo.",
     "AI:KnowledgeReviewInvalid": "La revisión de conocimiento está desactualizada o su cambio de estado no es válido.",
 
     "AI:KnowledgeReviewDenied": "La propuesta de conocimiento no puede crearse ni revisarse con la identidad, el permiso o la evidencia actuales.",
@@ -23,6 +24,8 @@
     "AI:WorkspaceNotActive": "El espacio de trabajo '{WorkspaceName}' no está activo.",
 
     "AI:WorkspaceNotFound": "Espacio de trabajo '{WorkspaceName}' no encontrado.",
+
+    "AI:WorkspaceEditorNotFound": "No se encontró el espacio de trabajo.",
 
     "AI:NoModelConfigured": "No hay modelo configurado para el espacio de trabajo '{WorkspaceName}'. Por favor configure un modelo o establezca un modelo predeterminado para el espacio de trabajo.",
 
@@ -320,6 +323,15 @@
 
     "Provider": "Proveedor",
     "OpenAICompatible": "Compatible con OpenAI",
+    "AIProviderType:OpenAI": "OpenAI",
+    "AIProviderType:OpenAICompatible": "Compatible con OpenAI",
+    "AIProviderType:OpenRouter": "OpenRouter",
+    "AIProviderType:HuggingFace": "Hugging Face",
+    "AIProviderType:AvalAI": "AvalAI",
+    "AIProviderType:Liara": "Liara",
+    "MCPTransport:STDIO": "Entrada estándar (STDIO)",
+    "MCPTransport:SSE": "Eventos enviados por el servidor (SSE)",
+    "MCPTransport:HTTP": "HTTP",
     "Decisions": "Decisiones",
     "DecisionsModelNone": "Sin modelo de decisiones",
 
@@ -792,6 +804,10 @@
     "AI:WorkspaceGuardrailExceeded": "Este espacio de trabajo alcanzó su límite de uso de {Period} (${LimitUsd}). Usado: ${UsedUsd}.",
 
     "AI:InheritedWorkspaceReadOnly": "Los espacios de trabajo heredados son de solo lectura. Conviértelo en personalizado para editarlo.",
+    "AI:WorkspaceInUse": "No se puede eliminar este espacio de trabajo porque todavía está en uso ({Details}). Mueva o elimine primero las relaciones activas.",
+    "WorkspaceUsage:Hooshvare": "{0} hooshvare(s)",
+    "WorkspaceUsage:Assignment": "{0} asignación(es) activa(s)",
+    "WorkspaceUsage:InheritedWorkspace": "{0} espacio(s) de trabajo heredado(s) activo(s)",
 
     "AI:WorkspaceAssignmentHostOnly": "Asignar espacios de trabajo a inquilinos solo se puede hacer desde el host.",
 
@@ -854,6 +870,10 @@
     "RoutePriceWinsHelp": "El precio de la ruta prevalece. Déjelo vacío para heredar el valor del espacio de trabajo. Ambos vacíos registran $0.",
 
     "RoutePricingSection": "Precio de la ruta",
+
+    "Pricing": "Precios",
+
+    "Limits": "Límites",
 
     "ApplyOpenAIListPrice": "Aplicar precio de lista de OpenAI",
 

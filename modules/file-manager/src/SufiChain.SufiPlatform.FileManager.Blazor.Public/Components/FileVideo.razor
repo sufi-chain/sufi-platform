@@ -24,7 +24,7 @@ else if (_hasError || _fileInfo == null || string.IsNullOrEmpty(_fileInfo.Stream
         else
         {
             <div class="file-video__placeholder file-video__placeholder--error">
-                <span>Video not available</span>
+                <span>@L["VideoNotAvailable"]</span>
             </div>
         }
     </div>
@@ -43,14 +43,14 @@ else
                preload="@Preload"
                width="@(Width > 0 ? Width.ToString() : null)"
                height="@(Height > 0 ? Height.ToString() : null)">
-            Your browser does not support the video tag.
+            @L["BrowserVideoUnsupported"]
         </video>
         
         @if (ShowDownloadLink && !string.IsNullOrEmpty(_fileInfo.DownloadUrl))
         {
             <div class="file-video__download">
                 <a href="@_fileInfo.DownloadUrl" download="@_fileInfo.FileName" target="_blank">
-                    Download video
+                    @L["DownloadVideo"]
                 </a>
             </div>
         }

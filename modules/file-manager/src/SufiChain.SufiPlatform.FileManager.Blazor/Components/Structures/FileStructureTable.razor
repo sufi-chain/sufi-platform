@@ -4,12 +4,12 @@
 <SbTable TItem="FileStructureDto" Items="@FileStructures" Hover>
     <HeaderContent>
         <tr>
-            <th>Key</th>
-            <th>Display Name</th>
-            <th>File Types</th>
-            <th>Max Size</th>
-            <th>Status</th>
-            <th style="width: 180px;">Actions</th>
+            <th>@L["Key"]</th>
+            <th>@L["DisplayName"]</th>
+            <th>@L["FileTypes"]</th>
+            <th>@L["MaxSize"]</th>
+            <th>@L["Status"]</th>
+            <th style="min-width: 180px;">@L["Actions"]</th>
         </tr>
     </HeaderContent>
     <RowTemplate Context="structure">
@@ -28,7 +28,7 @@
             @foreach (var type in GetFileTypes(structure.AllowedFileTypes))
             {
                 <SbChip Color="@GetFileTypeColor(type)" Size="SbSize.Sm" Class="me-1">
-                    @type
+                    @FormatFileType(type)
                 </SbChip>
             }
         </td>
@@ -38,15 +38,15 @@
         <td>
             @if (!structure.HasDefaultConfig)
             {
-                <SbChip Color="SbColor.Primary" Size="SbSize.Sm">Custom</SbChip>
+                <SbChip Color="SbColor.Primary" Size="SbSize.Sm">@L["Custom"]</SbChip>
             }
             else if (structure.IsModifiedFromDefault)
             {
-                <SbChip Color="SbColor.Warning" Size="SbSize.Sm">Modified</SbChip>
+                <SbChip Color="SbColor.Warning" Size="SbSize.Sm">@L["Modified"]</SbChip>
             }
             else
             {
-                <SbChip Color="SbColor.Success" Size="SbSize.Sm">Default</SbChip>
+                <SbChip Color="SbColor.Success" Size="SbSize.Sm">@L["Default"]</SbChip>
             }
         </td>
         <td>

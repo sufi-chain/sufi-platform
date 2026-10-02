@@ -1,6 +1,7 @@
 using System.Text;
 using System.Text.Json;
 using Microsoft.AspNetCore.Components;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.DependencyInjection;
 using SufiChain.SufiPlatform.FileManager;
 using SufiChain.SufiPlatform.SufiAI;
@@ -275,6 +276,7 @@ public partial class WorkspaceChat : AIComponentBase
         }
         catch (Exception exception)
         {
+            MessengerState.IsWaitingForAiResponse = false;
             if (!IsDisposed)
             {
                 await HandleErrorAsync(exception);
@@ -352,7 +354,6 @@ public partial class WorkspaceChat : AIComponentBase
             })
             .ToList();
         var attachments = await BuildAttachmentsAsync(request.AttachmentFileIds);
-        var reply = new StringBuilder();
         var preview = new ChatMessageDto
         {
             Id = Guid.NewGuid(),
@@ -362,7 +363,7 @@ public partial class WorkspaceChat : AIComponentBase
         };
         MessengerState.IsWaitingForAiResponse = true;
         MessengerState.NotifyStateChanged();
-        await foreach (var chunk in ChatAppService.StreamMessageAsync(new SufiAISendChatMessageInput
+        var replyText = await ReadChatReplyAsync(new SufiAISendChatMessageInput
         {
             WorkspaceName = _workspaceName,
             ModelConfigurationId = _modelConfigurationId,
@@ -371,19 +372,15 @@ public partial class WorkspaceChat : AIComponentBase
             OpenAIApiMode = _apiMode,
             Attachments = attachments,
             ConversationHistory = history
-        }))
+        }, sessionId, text =>
         {
-            if (string.IsNullOrEmpty(chunk.Message))
-            {
-                continue;
-            }
-
-            reply.Append(chunk.Message);
-            preview.Body = reply.ToString();
+            preview.Body = text;
             MessengerState.IsWaitingForAiResponse = false;
             MessengerState.AddMessageIfMissing(preview);
             MessengerState.NotifyStateChanged();
-        }
+            return Task.CompletedTask;
+        });
+        var reply = new StringBuilder(replyText);
 
         MessengerState.Messages.RemoveAll(message => message.Id == preview.Id);
         MessengerState.IsWaitingForAiResponse = false;
@@ -423,14 +420,14 @@ public partial class WorkspaceChat : AIComponentBase
             CreationTime = DateTime.UtcNow
         });
         _anonymousDraft = string.Empty;
-        var reply = new StringBuilder();
         var preview = new ChatMessageDto
         {
             Id = Guid.NewGuid(),
             SenderKind = ChatMessageSenderKind.Assistant,
             CreationTime = DateTime.UtcNow
         };
-        await foreach (var chunk in ChatAppService.StreamMessageAsync(new SufiAISendChatMessageInput
+        MessengerState.IsWaitingForAiResponse = true;
+        var replyText = await ReadChatReplyAsync(new SufiAISendChatMessageInput
         {
             WorkspaceName = _workspaceName,
             ModelConfigurationId = _modelConfigurationId,
@@ -438,22 +435,18 @@ public partial class WorkspaceChat : AIComponentBase
             ReasoningEffort = _reasoningEffort,
             OpenAIApiMode = _apiMode,
             ConversationHistory = history
-        }))
+        }, sessionId: null, async text =>
         {
-            if (string.IsNullOrEmpty(chunk.Message))
-            {
-                continue;
-            }
-
-            reply.Append(chunk.Message);
-            preview.Body = reply.ToString();
+            preview.Body = text;
+            MessengerState.IsWaitingForAiResponse = false;
             if (_anonymousMessages.All(message => message.Id != preview.Id))
             {
                 _anonymousMessages.Add(preview);
             }
 
             await InvokeAsync(StateHasChanged);
-        }
+        });
+        var reply = new StringBuilder(replyText);
 
         _anonymousMessages.RemoveAll(message => message.Id == preview.Id);
 
@@ -473,6 +466,56 @@ public partial class WorkspaceChat : AIComponentBase
         }
 
         await SaveAnonymousTranscriptAsync();
+    }
+
+    private static readonly TimeSpan ChatReplyTimeout = TimeSpan.FromSeconds(60);
+
+    private async Task<string> ReadChatReplyAsync(
+        SufiAISendChatMessageInput input,
+        Guid? sessionId,
+        Func<string, Task> onPreview)
+    {
+        using var timeout = new CancellationTokenSource(ChatReplyTimeout);
+        try
+        {
+            var response = await ChatAppService.SendMessageAsync(input, timeout.Token);
+            var text = response.Message ?? string.Empty;
+            if (text.Length > 0)
+            {
+                await onPreview(text);
+            }
+
+            return text;
+        }
+        catch (Exception exception) when (timeout.IsCancellationRequested)
+        {
+            MessengerState.IsWaitingForAiResponse = false;
+            Logger.LogWarning(
+                exception,
+                "Workspace chat reply timed out. SessionId={SessionId}",
+                sessionId);
+            return string.Empty;
+        }
+        catch (Exception exception) when (exception is Volo.Abp.BusinessException or AbpAuthorizationException)
+        {
+            // Actionable errors (for example a localized business error or missing permission)
+            // go to the page error handler instead of the generic "reply failed" message.
+            MessengerState.IsWaitingForAiResponse = false;
+            Logger.LogWarning(
+                exception,
+                "Workspace chat reply rejected. SessionId={SessionId}",
+                sessionId);
+            throw;
+        }
+        catch (Exception exception)
+        {
+            MessengerState.IsWaitingForAiResponse = false;
+            Logger.LogWarning(
+                exception,
+                "Workspace chat reply failed. SessionId={SessionId}",
+                sessionId);
+            return string.Empty;
+        }
     }
 
     private async Task<List<SufiAIChatAttachmentInput>> BuildAttachmentsAsync(IReadOnlyList<Guid> fileIds)

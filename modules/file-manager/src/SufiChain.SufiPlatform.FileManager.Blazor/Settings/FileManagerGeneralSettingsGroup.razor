@@ -14,20 +14,20 @@
     {
         <p class="text-muted">@L["FileManagerGeneralSettingsHint"]</p>
 
-        <SbFormField Label="@L["MaxFileSizeBytes"]">
-            <SbNumberField TNumber="long" @bind-Value="@_settings.MaxFileSizeBytes" Min="1" />
+        <SbFormField Label="@L["MaxFileSizeMegabytes"]" HelperText="@L["MaxFileSizeMegabytesHint"]">
+            <SbNumberField TNumber="long" @bind-Value="@_maxFileSizeMegabytes" Min="1" />
         </SbFormField>
 
         <SbFormField Label="@L["AllowedImageExtensions"]">
-            <SbTextField @bind-Value="_settings.AllowedImageExtensions" />
+            <SbTagInput Tags="_imageExtensions" TagsChanged="OnImageExtensionsChanged" Placeholder="@L["AddExtension"]" />
         </SbFormField>
 
         <SbFormField Label="@L["AllowedVideoExtensions"]">
-            <SbTextField @bind-Value="_settings.AllowedVideoExtensions" />
+            <SbTagInput Tags="_videoExtensions" TagsChanged="OnVideoExtensionsChanged" Placeholder="@L["AddExtension"]" />
         </SbFormField>
 
         <SbFormField Label="@L["AllowedDocumentExtensions"]">
-            <SbTextField @bind-Value="_settings.AllowedDocumentExtensions" />
+            <SbTagInput Tags="_documentExtensions" TagsChanged="OnDocumentExtensionsChanged" Placeholder="@L["AddExtension"]" />
         </SbFormField>
 
         <SbFormField Label="@L["EnableWebPConversion"]">

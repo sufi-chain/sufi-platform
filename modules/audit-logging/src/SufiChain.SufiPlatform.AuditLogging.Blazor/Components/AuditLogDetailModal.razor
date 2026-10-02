@@ -1,7 +1,7 @@
 @namespace SufiChain.SufiPlatform.AuditLogging.Blazor.Components
 @inherits AuditLoggingComponentBase
 
-<SbDialog Open="@Open" OpenChanged="@SetOpenAsync" Size="SbDialogSize.Xl" Title="@L["AuditLogDetails"]">
+<SbDrawer Open="@Open" OpenChanged="@SetOpenAsync" Placement="SbDrawerPlacement.End" Width="min(100vw, max(480px, 40vw))" Style="max-width: min(100vw, max(480px, 40vw))" Title="@L["AuditLogDetails"]">
     <ChildContent>
         @if (IsOperationLoading(LoadingKeys.LoadAuditLog))
         {
@@ -106,8 +106,8 @@
                                     <tr>
                                         <th>@L["ServiceName"]</th>
                                         <th>@L["MethodName"]</th>
-                                        <th style="width: 120px;">@L["Duration"]</th>
-                                        <th style="width: 160px;">@L["ExecutionTime"]</th>
+                                        <th style="min-width: 120px;">@L["Duration"]</th>
+                                        <th style="min-width: 160px;">@L["ExecutionTime"]</th>
                                         <th>@L["Parameters"]</th>
                                     </tr>
                                 </HeaderContent>
@@ -232,4 +232,4 @@
             <SbButton Variant="SbButtonVariant.Outline" OnClick="Hide">@L["Close"]</SbButton>
         </SbStack>
     </Footer>
-</SbDialog>
+</SbDrawer>

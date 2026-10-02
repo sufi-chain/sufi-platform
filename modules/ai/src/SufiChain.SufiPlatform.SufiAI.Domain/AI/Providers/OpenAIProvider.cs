@@ -534,7 +534,7 @@ public class OpenAIProvider : IAIProvider, ITransientDependency
         return new ChatCompletionResponse
         {
             Content = content,
-            ModelId = configuration.ModelId,
+            ModelId = ReadUpstreamModelId(result, configuration.ModelId),
             InputTokens = usage.InputTokens,
             OutputTokens = usage.OutputTokens,
             TotalTokens = usage.TotalTokens,
@@ -563,11 +563,12 @@ public class OpenAIProvider : IAIProvider, ITransientDependency
 
         await foreach (var chunk in StreamJsonLinesAsync(httpClient, $"{baseUrl}/chat/completions", requestBody, cancellationToken))
         {
+            var upstreamModelId = ReadUpstreamModelId(chunk, configuration.ModelId);
             if (TryReadUsage(chunk, out var usage))
             {
                 yield return new ChatCompletionResponse
                 {
-                    ModelId = configuration.ModelId,
+                    ModelId = upstreamModelId,
                     IsUsageChunk = true,
                     InputTokens = usage.InputTokens,
                     OutputTokens = usage.OutputTokens,
@@ -590,7 +591,7 @@ public class OpenAIProvider : IAIProvider, ITransientDependency
             yield return new ChatCompletionResponse
             {
                 Content = contentProp.GetString() ?? string.Empty,
-                ModelId = configuration.ModelId
+                ModelId = upstreamModelId
             };
         }
     }
@@ -616,7 +617,7 @@ public class OpenAIProvider : IAIProvider, ITransientDependency
         {
             Content = ReadResponsesOutputText(result),
             FinishReason = ReadResponsesFinishReason(result),
-            ModelId = configuration.ModelId,
+            ModelId = ReadUpstreamModelId(result, configuration.ModelId),
             InputTokens = usage.InputTokens,
             OutputTokens = usage.OutputTokens,
             TotalTokens = usage.TotalTokens,
@@ -647,7 +648,7 @@ public class OpenAIProvider : IAIProvider, ITransientDependency
                 yield return new ChatCompletionResponse
                 {
                     Content = delta.GetString() ?? string.Empty,
-                    ModelId = configuration.ModelId
+                    ModelId = ReadUpstreamModelId(chunk, configuration.ModelId)
                 };
                 continue;
             }
@@ -657,7 +658,7 @@ public class OpenAIProvider : IAIProvider, ITransientDependency
                 var usage = TryReadUsage(response, out var tokenUsage) ? tokenUsage : TokenUsage.Unavailable;
                 yield return new ChatCompletionResponse
                 {
-                    ModelId = configuration.ModelId,
+                    ModelId = ReadUpstreamModelId(response, configuration.ModelId),
                     IsUsageChunk = true,
                     InputTokens = usage.InputTokens,
                     OutputTokens = usage.OutputTokens,
@@ -925,6 +926,22 @@ public class OpenAIProvider : IAIProvider, ITransientDependency
 
             yield return chunk;
         }
+    }
+
+    private static string ReadUpstreamModelId(JsonElement payload, string configuredModelId)
+    {
+        if (payload.ValueKind == JsonValueKind.Object &&
+            payload.TryGetProperty("model", out var model) &&
+            model.ValueKind == JsonValueKind.String)
+        {
+            var value = model.GetString();
+            if (!string.IsNullOrWhiteSpace(value))
+            {
+                return value;
+            }
+        }
+
+        return configuredModelId;
     }
 
     private static bool TryReadUsage(JsonElement result, out TokenUsage usage)

@@ -160,6 +160,8 @@
         "FooterDescription": "Modular .NET application foundations under active alpha development.",
         "FooterNotice": "Module names and capabilities may change as alpha development continues.",
         "FooterContact": "Contact us",
-        "FooterRelease": "Alpha / 2026"
+        "FooterRelease": "Alpha / 2026",
+        "SufiPlatform": "Sufi Platform",
+        "MadeInIran": "Made in Iran"
     }
 }

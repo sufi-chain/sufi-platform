@@ -1,19 +1,19 @@
 using Microsoft.AspNetCore.Components;
 using SufiChain.SufiBlazor.Utilities.DateUtils;
+using SufiChain.SufiPlatform.Calendar.Blazor.Public;
 using SufiChain.SufiPlatform.Calendar.Events;
 
 namespace SufiChain.SufiPlatform.Calendar.Blazor.Public.Components;
 
 public partial class SufiEventEditor : CalendarPublicComponentBase
 {
+    private const int ReminderOffsetMinuteMax = EventConsts.MaxReminderOffsetDays * 24 * 60;
+
     [Inject]
     protected ICalendarEventAppService CalendarEventAppService { get; set; } = default!;
 
-    [Parameter]
-    public bool Open { get; set; }
-
-    [Parameter]
-    public EventCallback<bool> OpenChanged { get; set; }
+    [Inject]
+    protected NavigationManager NavigationManager { get; set; } = default!;
 
     [Parameter]
     public Guid? EventId { get; set; }
@@ -31,16 +31,15 @@ public partial class SufiEventEditor : CalendarPublicComponentBase
     public string TimeZoneId { get; set; } = TimeZoneInfo.Local.Id;
 
     [Parameter]
-    public EventCallback<CalendarEventDto> Saved { get; set; }
-
-    [Parameter]
-    public EventCallback Deleted { get; set; }
+    public string? ReturnUrl { get; set; }
 
     private CreateUpdateCalendarEventDto _model = new();
     private SbDateRange? _dateRange;
-    private string _startTimeText = "09:00";
-    private string _endTimeText = "10:00";
-    private Guid? _loadedEventId;
+    private TimeOnly? _startTime = new TimeOnly(9, 0);
+    private TimeOnly? _endTime = new TimeOnly(10, 0);
+    private string? _loadKey;
+    private bool _ready;
+    private bool _loadFailed;
     private int _activeTab;
     private RecurrenceFrequency _recurrenceFrequency;
     private int _recurrenceInterval = 1;
@@ -50,10 +49,9 @@ public partial class SufiEventEditor : CalendarPublicComponentBase
     private string _newAttendeeDisplayName = string.Empty;
     private string? _newAttendeeEmail;
     private AttendeeRole _newAttendeeRole = AttendeeRole.Required;
-    private string _newReminderOffsetText = "-00:15:00";
+    private int _newReminderOffsetMinutes = 15;
     private ReminderChannel _newReminderChannel = ReminderChannel.Email;
 
-    protected string DialogTitle => EventId.HasValue ? L["EditEvent"] : L["CreateEvent"];
     protected IReadOnlyList<TimeZoneInfo> TimeZoneOptions { get; } = TimeZoneInfo.GetSystemTimeZones();
     protected IReadOnlyList<EventStatus> EventStatusOptions { get; } = Enum.GetValues<EventStatus>();
     protected IReadOnlyList<RecurrenceFrequency> RecurrenceFrequencyOptions { get; } = Enum.GetValues<RecurrenceFrequency>();
@@ -62,52 +60,41 @@ public partial class SufiEventEditor : CalendarPublicComponentBase
 
     protected override async Task OnParametersSetAsync()
     {
-        if (Open && EventId.HasValue && _loadedEventId != EventId)
+        var key = EventId.HasValue
+            ? $"edit:{EventId.Value:N}"
+            : $"new:{CalendarId:N}:{InitialStartUtc:o}:{InitialEndUtc:o}:{TimeZoneId}";
+        if (key == _loadKey)
         {
-            var existing = await CalendarEventAppService.GetAsync(EventId.Value);
-            _model = new CreateUpdateCalendarEventDto
+            return;
+        }
+
+        _loadKey = key;
+        _ready = false;
+        _loadFailed = false;
+        try
+        {
+            if (EventId.HasValue)
             {
-                CalendarId = existing.CalendarId,
-                Title = existing.Title,
-                StartUtc = existing.StartUtc,
-                EndUtc = existing.EndUtc,
-                IsAllDay = existing.IsAllDay,
-                TimeZoneId = existing.TimeZoneId,
-                Location = existing.Location,
-                Description = existing.Description,
-                Color = existing.Color,
-                Status = existing.Status,
-                AvailabilityCalendarId = existing.AvailabilityCalendarId,
-                SourceType = existing.SourceType,
-                SourceId = existing.SourceId,
-                RecurrenceRule = existing.RecurrenceRule,
-                ExtraProperties = existing.ExtraProperties
-            };
-            _attendees = existing.Attendees.ToList();
-            _reminders = existing.Reminders.ToList();
-            SyncDateFields();
-            SyncRecurrenceFields();
-            _loadedEventId = EventId;
+                await LoadExistingAsync(EventId.Value);
+            }
+            else
+            {
+                ResetModel();
+            }
+
+            _ready = true;
         }
-        else if (Open && !EventId.HasValue && _loadedEventId != null)
+        catch (Exception exception)
         {
-            ResetModel();
-        }
-        else if (Open && _model.CalendarId == Guid.Empty)
-        {
-            ResetModel();
+            _loadFailed = true;
+            await HandleErrorAsync(exception);
         }
     }
 
-    protected virtual async Task SetOpenAsync(bool value)
+    protected virtual Task LeaveAsync()
     {
-        Open = value;
-        await OpenChanged.InvokeAsync(value);
-    }
-
-    protected virtual async Task HideAsync()
-    {
-        await SetOpenAsync(false);
+        NavigationManager.NavigateTo(CalendarPageRoutes.ResolveReturnUrl(ReturnUrl, CalendarPageRoutes.CurrentLocation(NavigationManager)));
+        return Task.CompletedTask;
     }
 
     protected virtual void OnDateRangeChanged(SbDateRange? value)
@@ -134,12 +121,11 @@ public partial class SufiEventEditor : CalendarPublicComponentBase
             var saved = EventId.HasValue
                 ? await CalendarEventAppService.UpdateAsync(EventId.Value, _model)
                 : await CalendarEventAppService.CreateAsync(_model);
-            await Saved.InvokeAsync(saved);
             EventId = saved.Id;
             _attendees = saved.Attendees.ToList();
             _reminders = saved.Reminders.ToList();
             await Message.SuccessAsync(L["SavedSuccessfully"]);
-            await HideAsync();
+            await LeaveAsync();
         }, LoadingKeys.Save);
     }
 
@@ -153,9 +139,8 @@ public partial class SufiEventEditor : CalendarPublicComponentBase
         await ExecuteWithLoadingAsync(async () =>
         {
             await CalendarEventAppService.DeleteAsync(EventId.Value);
-            await Deleted.InvokeAsync();
             await Message.SuccessAsync(L["DeletedSuccessfully"]);
-            await HideAsync();
+            await LeaveAsync();
         }, LoadingKeys.Delete);
     }
 
@@ -211,14 +196,15 @@ public partial class SufiEventEditor : CalendarPublicComponentBase
 
     protected virtual async Task AddReminderAsync()
     {
-        if (!EventId.HasValue || !TimeSpan.TryParse(_newReminderOffsetText, out var offset))
+        if (!EventId.HasValue)
         {
             return;
         }
 
+        var minutes = Math.Clamp(_newReminderOffsetMinutes, 0, ReminderOffsetMinuteMax);
         var updated = await CalendarEventAppService.AddReminderAsync(EventId.Value, new CreateEventReminderDto
         {
-            Offset = offset,
+            Offset = TimeSpan.FromMinutes(-minutes),
             Channel = _newReminderChannel
         });
         _reminders = updated.Reminders.ToList();
@@ -262,7 +248,35 @@ public partial class SufiEventEditor : CalendarPublicComponentBase
 
     protected virtual string FormatReminderOffset(TimeSpan offset)
     {
-        return offset.ToString(@"hh\:mm\:ss");
+        var minutes = (int)Math.Abs(offset.TotalMinutes);
+        return minutes.ToString(System.Globalization.CultureInfo.CurrentCulture);
+    }
+
+    private async Task LoadExistingAsync(Guid eventId)
+    {
+        var existing = await CalendarEventAppService.GetAsync(eventId);
+        _model = new CreateUpdateCalendarEventDto
+        {
+            CalendarId = existing.CalendarId,
+            Title = existing.Title,
+            StartUtc = existing.StartUtc,
+            EndUtc = existing.EndUtc,
+            IsAllDay = existing.IsAllDay,
+            TimeZoneId = existing.TimeZoneId,
+            Location = existing.Location,
+            Description = existing.Description,
+            Color = existing.Color,
+            Status = existing.Status,
+            AvailabilityCalendarId = existing.AvailabilityCalendarId,
+            SourceType = existing.SourceType,
+            SourceId = existing.SourceId,
+            RecurrenceRule = existing.RecurrenceRule,
+            ExtraProperties = existing.ExtraProperties
+        };
+        _attendees = existing.Attendees.ToList();
+        _reminders = existing.Reminders.ToList();
+        SyncDateFields();
+        SyncRecurrenceFields();
     }
 
     private void ResetModel()
@@ -278,7 +292,6 @@ public partial class SufiEventEditor : CalendarPublicComponentBase
             TimeZoneId = TimeZoneId,
             Status = EventStatus.Confirmed
         };
-        _loadedEventId = null;
         _attendees = new List<EventAttendeeDto>();
         _reminders = new List<EventReminderDto>();
         _activeTab = 0;
@@ -292,21 +305,19 @@ public partial class SufiEventEditor : CalendarPublicComponentBase
         var startLocal = TimeZoneInfo.ConvertTimeFromUtc(DateTime.SpecifyKind(_model.StartUtc, DateTimeKind.Utc), timeZone);
         var endLocal = TimeZoneInfo.ConvertTimeFromUtc(DateTime.SpecifyKind(_model.EndUtc, DateTimeKind.Utc), timeZone);
         _dateRange = new SbDateRange(DateOnly.FromDateTime(startLocal), DateOnly.FromDateTime(endLocal));
-        _startTimeText = startLocal.ToString("HH:mm");
-        _endTimeText = endLocal.ToString("HH:mm");
+        _startTime = TimeOnly.FromDateTime(startLocal);
+        _endTime = TimeOnly.FromDateTime(endLocal);
     }
 
     private bool TryApplyDateTimeFields()
     {
-        if (_dateRange?.Start is null || _dateRange.End is null ||
-            !TimeSpan.TryParse(_startTimeText, out var startTime) ||
-            !TimeSpan.TryParse(_endTimeText, out var endTime))
+        if (_dateRange?.Start is null || _dateRange.End is null || _startTime is null || _endTime is null)
         {
             return false;
         }
 
-        var startLocal = _dateRange.Start.Value.ToDateTime(TimeOnly.MinValue).Add(startTime);
-        var endLocal = _dateRange.End.Value.ToDateTime(TimeOnly.MinValue).Add(endTime);
+        var startLocal = _dateRange.Start.Value.ToDateTime(_startTime.Value);
+        var endLocal = _dateRange.End.Value.ToDateTime(_endTime.Value);
         if (endLocal <= startLocal)
         {
             return false;

@@ -53,6 +53,9 @@
     "Permission:EntityChanges": "Ver cambios de entidad",
     "Placeholder:DurationExample": "0",
     "IdLabel": "ID",
-    "EmptyValue": "-"
+    "EmptyValue": "-",
+    "HttpMethodPost": "Crear",
+    "HttpMethodDelete": "Eliminar",
+    "HttpMethodPatch": "Actualización parcial"
   }
 }

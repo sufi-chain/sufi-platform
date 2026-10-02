@@ -46,7 +46,7 @@
                         ShowFilterRow="true"
                         ShowColumnChooser="true"
                         SelectionMode="SbSelectionMode.MultipleRows">
-					<SbColumn TItem="DocumentSourceDto" Title="@L["Actions"]" Width="56px" Sortable="false">
+					<SbColumn TItem="DocumentSourceDto" Title="@L["Actions"]" MinWidth="56px" Sortable="false">
 						<CellTemplate Context="cellContext">
 							<AuthorizeView Policy="@AIPermissions.RAG.Index">
 								<SbTooltip Text="@L["StartIndexing"]">
@@ -62,19 +62,19 @@
 							</AuthorizeView>
 						</CellTemplate>
 					</SbColumn>
-					<SbColumn TItem="DocumentSourceDto" Field="Name" Title="@L["SourceName"]" Width="200px" Filterable="true" Sortable="true">
+					<SbColumn TItem="DocumentSourceDto" Field="Name" Title="@L["SourceName"]" MinWidth="200px" Filterable="true" Sortable="true">
 						<CellTemplate Context="cellContext">
 							<strong>@cellContext.Item.Name</strong>
 						</CellTemplate>
 					</SbColumn>
-					<SbColumn TItem="DocumentSourceDto" Title="@L["Status"]" Width="150px">
+					<SbColumn TItem="DocumentSourceDto" Title="@L["Status"]" MinWidth="150px">
 						<CellTemplate Context="cellContext">
 							<SbBadge Color="@GetStatusColor(cellContext.Item.Status)">
 								@GetStatusText(cellContext.Item.Status)
 							</SbBadge>
 						</CellTemplate>
 					</SbColumn>
-					<SbColumn TItem="DocumentSourceDto" Title="@L["Progress"]" Width="200px">
+					<SbColumn TItem="DocumentSourceDto" Title="@L["Progress"]" MinWidth="200px">
 						<CellTemplate Context="cellContext">
 							@if (cellContext.Item.Status == IndexingStatusType.Indexing && cellContext.Item.Progress.HasValue)
 							{
@@ -99,12 +99,12 @@
 							}
 						</CellTemplate>
 					</SbColumn>
-					<SbColumn TItem="DocumentSourceDto" Field="DocumentCount" Title="@L["DocumentCount"]" Width="120px" Filterable="true" Sortable="true">
+					<SbColumn TItem="DocumentSourceDto" Field="DocumentCount" Title="@L["DocumentCount"]" MinWidth="120px" Filterable="true" Sortable="true">
 						<CellTemplate Context="cellContext">
 							@cellContext.Item.DocumentCount.ToString("N0")
 						</CellTemplate>
 					</SbColumn>
-					<SbColumn TItem="DocumentSourceDto" Title="@L["LastIndexed"]" Width="180px">
+					<SbColumn TItem="DocumentSourceDto" Title="@L["LastIndexed"]" MinWidth="180px">
 						<CellTemplate Context="cellContext">
 							@if (cellContext.Item.LastIndexedAt.HasValue)
 							{
@@ -118,7 +118,7 @@
 							}
 						</CellTemplate>
 					</SbColumn>
-					<SbColumn TItem="DocumentSourceDto" Title="@L["Error"]" Width="200px">
+					<SbColumn TItem="DocumentSourceDto" Title="@L["Error"]" MinWidth="200px">
 						<CellTemplate Context="cellContext">
 							@if (!string.IsNullOrEmpty(cellContext.Item.ErrorMessage))
 							{

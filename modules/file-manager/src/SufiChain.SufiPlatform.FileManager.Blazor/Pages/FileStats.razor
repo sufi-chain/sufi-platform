@@ -51,11 +51,11 @@
 					<SbTable TItem="FileStructureDto" Items="@_structures" Hover>
 						<HeaderContent>
 							<tr>
-								<th style="width: 10%;">@L["Key"]</th>
-								<th style="width: 10%;">@L["DisplayName"]</th>
-								<th style="width: 20%;">@L["Type"]</th>
-								<th style="width: 10%;">@L["MaxSize"]</th>
-								<th style="width: 50%;">@L["Extensions"]</th>
+								<th style="min-width: 10%;">@L["Key"]</th>
+								<th style="min-width: 10%;">@L["DisplayName"]</th>
+								<th style="min-width: 20%;">@L["Type"]</th>
+								<th style="min-width: 10%;">@L["MaxSize"]</th>
+								<th style="min-width: 50%;">@L["Extensions"]</th>
 							</tr>
 						</HeaderContent>
 						<RowTemplate Context="structure">
@@ -65,7 +65,7 @@
 								<SbStack Direction="SbStackDirection.Row" Gap="1" Wrap="true">
 									@foreach (var type in GetFileTypes(structure.AllowedFileTypes))
 									{
-										<SbChip Color="@GetFileTypeColor(type)" Size="SbSize.Sm">@type</SbChip>
+										<SbChip Color="@GetFileTypeColor(type)" Size="SbSize.Sm">@FormatFileType(type)</SbChip>
 									}
 								</SbStack>
 							</td>
@@ -98,7 +98,7 @@
 										<SbStack Direction="SbStackDirection.Row" Gap="1" Wrap="true">
 											@foreach (var type in GetFileTypes(structure.AllowedFileTypes))
 											{
-												<SbChip Color="@GetFileTypeColor(type)" Size="SbSize.Sm">@type</SbChip>
+												<SbChip Color="@GetFileTypeColor(type)" Size="SbSize.Sm">@FormatFileType(type)</SbChip>
 											}
 										</SbStack>
 									</div>
@@ -144,14 +144,14 @@
 			<SbTable TItem="FileItemDto" Items="@_recentFiles" Striped Hover>
 				<HeaderContent>
 					<tr>
-						<th style="width: 85px;">Preview</th>
-						<th style="min-width: 150px">File Name</th>
-						<th style="min-width: 100px">Type</th>
-						<th style="min-width: 130px">Size</th>
+						<th style="min-width: 85px;">@L["Preview"]</th>
+						<th style="min-width: 150px">@L["FileName"]</th>
+						<th style="min-width: 100px">@L["Type"]</th>
+						<th style="min-width: 130px">@L["Size"]</th>
 						<th style="min-width: 130px">@L["Status"]</th>
-						<th style="min-width: 150px">Uploaded By</th>
-						<th style="min-width: 150px">Date</th>
-						<th style="min-width: 150px">Actions</th>
+						<th style="min-width: 150px">@L["UploadedBy"]</th>
+						<th style="min-width: 150px">@L["Date"]</th>
+						<th style="min-width: 150px">@L["Actions"]</th>
 					</tr>
 				</HeaderContent>
 				<RowTemplate Context="item">
@@ -173,7 +173,7 @@
 					</td>
 					<td>
 						<SbChip Color="@GetFileTypeColor(item.FileType)" Size="SbSize.Sm">
-							@item.FileType
+							@FormatFileType(item.FileType)
 						</SbChip>
 					</td>
 					<td>@FormatSize(item.Size)</td>
@@ -187,19 +187,19 @@
 							<span class="text-muted">-</span>
 						}
 					</td>
-					<td>@(item.CreatorId?.ToString() ?? "System")</td>
+					<td>@(item.CreatorId?.ToString() ?? L["System"])</td>
 					<td>@item.CreationTime.ToString("yyyy-MM-dd HH:mm")</td>
 					<td>
 						<SbStack Direction="SbStackDirection.Row" Gap="1">
-							<SbIconButton Color="SbColor.Info" Size="SbSize.Sm" OnClick="@(() => ViewFile(item))" AriaLabel="View file">
+							<SbIconButton Color="SbColor.Info" Size="SbSize.Sm" OnClick="@(() => ViewFile(item))" AriaLabel="@L["ViewFile"]">
 								<Icon><SbIcon Name="eye" /></Icon>
 							</SbIconButton>
-							<SbIconButton Color="SbColor.Primary" Size="SbSize.Sm" OnClick="@(() => DownloadFile(item))" AriaLabel="Download file">
+							<SbIconButton Color="SbColor.Primary" Size="SbSize.Sm" OnClick="@(() => DownloadFile(item))" AriaLabel="@L["DownloadFile"]">
 								<Icon><SbIcon Name="download" /></Icon>
 							</SbIconButton>
 							@if (CanDelete())
 							{
-								<SbIconButton Color="SbColor.Danger" Size="SbSize.Sm" OnClick="@(() => DeleteFile(item.Id))" AriaLabel="Delete file">
+								<SbIconButton Color="SbColor.Danger" Size="SbSize.Sm" OnClick="@(() => DeleteFile(item.Id))" AriaLabel="@L["DeleteFile"]">
 									<Icon><SbIcon Name="trash" /></Icon>
 								</SbIconButton>
 							}

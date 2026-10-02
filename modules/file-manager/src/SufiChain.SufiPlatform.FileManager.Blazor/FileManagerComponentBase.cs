@@ -2,6 +2,7 @@ using Microsoft.Extensions.Logging;
 using SufiChain.SufiPlatform.Data;
 using SufiChain.SufiPlatform.FileManager.Configuration;
 using SufiChain.SufiPlatform.FileManager.FileStructures;
+using SufiChain.SufiPlatform.FileManager.FileTypes;
 using SufiChain.SufiPlatform.FileManager.Localization;
 using SufiChain.SufiPlatform.UI.Blazor;
 
@@ -129,6 +130,15 @@ public abstract class FileManagerComponentBase : SufiComponentBase
             config.DisplayName,
             config.LocalizationResourceName);
     }
+
+    protected string FormatFileType(FileType fileType) => fileType switch
+    {
+        FileType.Image => L["FileTypeImage"],
+        FileType.Video => L["FileTypeVideo"],
+        FileType.Audio => L["FileTypeAudio"],
+        FileType.Document => L["FileTypeDocument"],
+        _ => L["FileItem"]
+    };
 
     protected string ResolveStructureDescription(FileStructureDefaultDto config)
     {

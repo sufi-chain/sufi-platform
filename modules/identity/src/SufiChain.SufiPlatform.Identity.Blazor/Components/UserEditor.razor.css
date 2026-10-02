@@ -1,0 +1,18 @@
+.user-editor {
+    display: flex;
+    flex-direction: column;
+    min-height: calc(100dvh - 9rem);
+}
+
+.user-editor ::deep .user-editor__form {
+    flex: 1 1 auto;
+    min-height: 100%;
+}
+
+.user-editor ::deep .user-editor__form > .sb-form__footer {
+    position: sticky;
+    bottom: 0;
+    z-index: 4;
+    margin-top: auto;
+    background-color: var(--sb-color-surface);
+}

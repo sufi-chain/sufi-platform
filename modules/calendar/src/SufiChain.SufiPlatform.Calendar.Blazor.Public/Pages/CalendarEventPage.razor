@@ -1,0 +1,16 @@
+@namespace SufiChain.SufiPlatform.Calendar.Blazor.Public.Pages
+@page "/panel/admin/calendar/events/new"
+@page "/panel/admin/calendar/events/{EventId:guid}"
+@page "/panel/portal/calendar/events/new"
+@page "/panel/portal/calendar/events/{EventId:guid}"
+@page "/panel/portal/calendar-pro/events/new"
+@page "/panel/portal/calendar-pro/events/{EventId:guid}"
+@attribute [Authorize(CalendarPermissions.Events.Default)]
+@inherits CalendarEventPageBase
+
+<SufiEventEditor EventId="EventId"
+                 CalendarId="CalendarId"
+                 InitialStartUtc="InitialStartUtc"
+                 InitialEndUtc="InitialEndUtc"
+                 TimeZoneId="TimeZoneId"
+                 ReturnUrl="ReturnUrl" />

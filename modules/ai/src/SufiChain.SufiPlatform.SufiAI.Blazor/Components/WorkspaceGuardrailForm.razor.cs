@@ -1,4 +1,3 @@
-using System.Globalization;
 using Microsoft.AspNetCore.Components;
 using SufiChain.SufiPlatform.SufiAI.Workspaces;
 
@@ -19,11 +18,14 @@ public partial class WorkspaceGuardrailForm : AIComponentBase
     {
         var current = existing?.ToList() ?? [];
         return Enum.GetValues<WorkspaceGuardrailPeriod>()
-            .Select(period => new WorkspaceGuardrailFormRow
+            .Select(period =>
             {
-                Period = period,
-                AmountText = current.FirstOrDefault(item => item.Period == period)?.AmountUsd
-                    .ToString("0.##", CultureInfo.InvariantCulture) ?? string.Empty
+                var amount = current.FirstOrDefault(item => item.Period == period)?.AmountUsd;
+                return new WorkspaceGuardrailFormRow
+                {
+                    Period = period,
+                    Amount = amount is > 0 ? amount : null
+                };
             })
             .ToList();
     }
@@ -33,18 +35,7 @@ public partial class WorkspaceGuardrailForm : AIComponentBase
         items = new List<WorkspaceGuardrailDto>();
         foreach (var row in rows)
         {
-            if (string.IsNullOrWhiteSpace(row.AmountText))
-            {
-                continue;
-            }
-
-            if (!TryParseDecimal(row.AmountText, out var amount) || amount < 0)
-            {
-                items = [];
-                return false;
-            }
-
-            if (amount == 0)
+            if (row.Amount is not decimal amount || amount <= 0)
             {
                 continue;
             }
@@ -69,17 +60,11 @@ public partial class WorkspaceGuardrailForm : AIComponentBase
         var percent = (double)(status.UsedUsd / status.LimitUsd) * 100;
         return Math.Min(100, Math.Max(0, percent));
     }
-
-    private static bool TryParseDecimal(string value, out decimal result)
-    {
-        return decimal.TryParse(value, NumberStyles.Number, CultureInfo.InvariantCulture, out result) ||
-               decimal.TryParse(value, NumberStyles.Number, CultureInfo.CurrentCulture, out result);
-    }
 }
 
 public sealed class WorkspaceGuardrailFormRow
 {
     public WorkspaceGuardrailPeriod Period { get; init; }
 
-    public string AmountText { get; set; } = string.Empty;
+    public decimal? Amount { get; set; }
 }

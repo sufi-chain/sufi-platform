@@ -1,0 +1,83 @@
+@namespace SufiChain.SufiPlatform.Identity.Blazor.Components
+@inherits IdentityComponentBase
+
+<div class="user-editor">
+	<SbForm Class="user-editor__form" Model="@FormModel" OnValidSubmit="SaveAsync">
+		<ChildContent>
+			<div class="user-editor__body">
+				@if (!_ready && !_loadFailed)
+				{
+					<SbProgress Indeterminate="true" aria-label="@L["Loading"]" Type="SbProgressType.Circular" />
+				}
+				else if (_ready)
+				{
+					<SbCard>
+						<ChildContent>
+							<SbTabs @bind-ActiveIndex="_activeTab">
+								<SbTab Label="@L["UserInformation"]">
+									<SbStack Gap="3">
+										<SbGrid Columns="1" ColumnsMd="2" Gap="4">
+											<SbTextField @bind-Value="Editor.Name" Label="@L["Name"]" />
+
+											<SbTextField @bind-Value="Editor.Surname" Label="@L["Surname"]" />
+
+											<SbTextField @bind-Value="Editor.UserName"
+														 Label="@L["Username"]"
+														 Required="true" />
+
+											@if (IsEdit)
+											{
+												<SbTextField @bind-Value="_updateModel.Password"
+															 Label="@L["Password"]"
+															 Type="password"
+															 AutoComplete="new-password"
+															 Placeholder="@L["LeaveEmptyToKeepCurrentPassword"]" />
+											}
+											else
+											{
+												<SbTextField @bind-Value="_createModel.Password"
+															 Label="@L["Password"]"
+															 Type="password"
+															 AutoComplete="new-password"
+															 Required="true" />
+											}
+
+											<SbTextField @bind-Value="Editor.Email"
+														 Label="@L["Email"]"
+														 Type="email"
+														 Required="true" />
+
+											<SbTextField Type="tel" InputMode="tel" @bind-Value="Editor.PhoneNumber" Label="@L["PhoneNumber"]" />
+										</SbGrid>
+
+										<SbStack Wrap="true" Direction="SbStackDirection.Row" Gap="4">
+											<SbCheckbox @bind-Value="Editor.IsActive" Label="@L["Active"]" />
+											<SbCheckbox @bind-Value="Editor.LockoutEnabled" Label="@L["LockoutEnabled"]" />
+										</SbStack>
+									</SbStack>
+								</SbTab>
+								<SbTab Label="@L["Roles"]">
+									<SbStack Gap="2">
+										@foreach (var role in _roles)
+										{
+											<SbCheckbox Value="@_selectedRoles.Contains(role.Name)"
+														ValueChanged="@(v => OnRoleToggled(role.Name, v))"
+														Label="@role.Name" />
+										}
+									</SbStack>
+								</SbTab>
+							</SbTabs>
+						</ChildContent>
+					</SbCard>
+				}
+			</div>
+		</ChildContent>
+		<FooterContent>
+			<SbButton Variant="SbButtonVariant.Outline" Type="button" OnClick="Cancel">@L["Cancel"]</SbButton>
+			<SbButton Color="SbColor.Primary"
+					  Type="submit"
+					  Disabled="@(!_ready)"
+					  Loading="IsOperationLoading(LoadingKeys.Save)">@L["Save"]</SbButton>
+		</FooterContent>
+	</SbForm>
+</div>

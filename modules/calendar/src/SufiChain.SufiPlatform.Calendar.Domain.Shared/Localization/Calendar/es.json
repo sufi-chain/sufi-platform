@@ -99,7 +99,7 @@
     "Role": "Role",
     "AddAttendee": "Add attendee",
     "Reminders": "Reminders",
-    "ReminderOffset": "Reminder offset",
+    "ReminderOffset": "Minutos antes",
     "ReminderChannel": "Reminder channel",
     "AddReminder": "Add reminder",
     "UserId": "User ID",

@@ -9,6 +9,7 @@ namespace SufiChain.SufiPlatform.FileManager.Blazor.Pages;
 public partial class AssetManager : FileManagerComponentBase, IDisposable
 {
     [Inject] protected IPageLayout PageLayout { get; set; } = default!;
+    [Inject] protected NavigationManager NavigationManager { get; set; } = default!;
     [Inject] protected IFileItemUrlProvider FileItemUrlProvider { get; set; } = default!;
     [Inject] protected IFileItemAppService FileItemAppService { get; set; } = default!;
 
@@ -19,11 +20,6 @@ public partial class AssetManager : FileManagerComponentBase, IDisposable
     private bool _showProperties = false;
     private readonly CancellationTokenSource _cts = new();
     private bool _disposed = false;
-
-    private bool _imageEditorOpen;
-    private FileItemDto? _imageEditingFile;
-    private Guid? _currentFolderId;
-    private int _refreshTrigger;
 
     private bool _quickShareOpen;
     private Guid? _quickShareFileId;
@@ -74,9 +70,7 @@ public partial class AssetManager : FileManagerComponentBase, IDisposable
 
     private void HandleEditImage(FileItemDto file)
     {
-        _imageEditingFile = file;
-        _currentFolderId = file.FolderId;
-        _imageEditorOpen = true;
+        NavigationManager.NavigateTo(ImageEditor.GetRoute(file.Id));
     }
 
     private void OpenQuickShare()
@@ -92,22 +86,8 @@ public partial class AssetManager : FileManagerComponentBase, IDisposable
     {
         if (_viewingItem != null)
         {
-            _imageEditingFile = _viewingItem;
-            _currentFolderId = _viewingItem.FolderId;
-            _viewerModalOpen = false;
-            _imageEditorOpen = true;
+            NavigationManager.NavigateTo(ImageEditor.GetRoute(_viewingItem.Id));
         }
-    }
-
-    private void OnImageEditorSaved(FileItemDto savedFile)
-    {
-        _imageEditorOpen = false;
-        _imageEditingFile = null;
-        if (_viewingItem != null && _viewingItem.Id == savedFile.Id)
-        {
-            _viewingItem = savedFile;
-        }
-        _refreshTrigger++;
     }
 
     private void CloseViewerModal()

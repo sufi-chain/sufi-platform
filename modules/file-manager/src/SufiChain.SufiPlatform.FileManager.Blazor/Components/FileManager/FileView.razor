@@ -8,7 +8,7 @@
     {
         <div class="fm-empty-folder">
             <SbIcon Name="folder-open" Size="SbSize.Xl" Class="text-muted" />
-            <p class="text-muted mt-3">This folder is empty</p>
+            <p class="text-muted mt-3">@L["FolderIsEmpty"]</p>
         </div>
     }
     else
@@ -37,11 +37,13 @@
                             <div class="fm-item-name" title="@GetFolderDisplayName(folder)">
                                 @if (State.IsRenaming && State.RenamingItemId == folder.Id)
                                 {
-                                    <input type="text" class="fm-rename-input" 
-                                           @bind="@_renameText" 
-                                           @onblur="@(() => FinishRename(folder.Id!.Value, true))"
-                                           @onkeyup="@(e => HandleRenameKeyUp(e, folder.Id!.Value, true))"
-                                           autofocus />
+                                    <SbTextField TValue="string"
+                                                 Class="fm-rename-input"
+                                                 aria-label="@L["Rename"]"
+                                                 @bind-Value="_renameText"
+                                                 @onblur="@(() => FinishRename(folder.Id!.Value, true))"
+                                                 @onkeyup="@((KeyboardEventArgs e) => HandleRenameKeyUp(e, folder.Id!.Value, true))"
+                                                 autofocus />
                                 }
                                 else
                                 {
@@ -50,7 +52,7 @@
                             </div>
                             @if (State.ViewMode == FileViewMode.Tiles && folder.FileCount > 0)
                             {
-                                <div class="fm-item-details">@folder.FileCount files</div>
+                                <div class="fm-item-details">@L["FileCount", folder.FileCount]</div>
                             }
                         </div>
                     }
@@ -80,11 +82,13 @@
                             <div class="fm-item-name" title="@GetFileDisplayName(file)">
                                 @if (State.IsRenaming && State.RenamingItemId == file.Id)
                                 {
-                                    <input type="text" class="fm-rename-input" 
-                                           @bind="@_renameText" 
-                                           @onblur="@(() => FinishRename(file.Id, false))"
-                                           @onkeyup="@(e => HandleRenameKeyUp(e, file.Id, false))"
-                                           autofocus />
+                                    <SbTextField TValue="string"
+                                                 Class="fm-rename-input"
+                                                 aria-label="@L["Rename"]"
+                                                 @bind-Value="_renameText"
+                                                 @onblur="@(() => FinishRename(file.Id, false))"
+                                                 @onkeyup="@((KeyboardEventArgs e) => HandleRenameKeyUp(e, file.Id, false))"
+                                                 autofocus />
                                 }
                                 else
                                 {
@@ -172,7 +176,7 @@
                                 <td class="fm-col-name">@GetFolderDisplayName(folder)</td>
                                 <td class="fm-col-status">-</td>
                                 <td class="fm-col-date">-</td>
-                                <td class="fm-col-type">Folder</td>
+                                <td class="fm-col-type">@L["Folder"]</td>
                                 <td class="fm-col-size">-</td>
                             </tr>
                         }

@@ -18,13 +18,16 @@ public partial class TagCreateModal : TagsComponentBase
     [Parameter] public EventCallback OnTagCreated { get; set; }
 
     private CreateTagDto _model = new();
+    private bool _wasOpen;
 
     protected override void OnParametersSet()
     {
-        if (Open)
+        if (Open && !_wasOpen)
         {
             _model = new CreateTagDto();
         }
+
+        _wasOpen = Open;
     }
 
     private Task Hide() => SetOpenAsync(false);

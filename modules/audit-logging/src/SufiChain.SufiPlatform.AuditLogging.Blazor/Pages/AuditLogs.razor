@@ -34,10 +34,10 @@
 									Label="@((string)L["HttpMethod"])">
 						<SbSelectOption TValue="string" Value="@((string?)null)">@L["All"]</SbSelectOption>
 						<SbSelectOption TValue="string" Value="@("GET")">GET</SbSelectOption>
-						<SbSelectOption TValue="string" Value="@("POST")">POST</SbSelectOption>
+						<SbSelectOption TValue="string" Value="@("POST")">POST · @L["HttpMethodPost"]</SbSelectOption>
 						<SbSelectOption TValue="string" Value="@("PUT")">PUT</SbSelectOption>
-						<SbSelectOption TValue="string" Value="@("DELETE")">DELETE</SbSelectOption>
-						<SbSelectOption TValue="string" Value="@("PATCH")">PATCH</SbSelectOption>
+						<SbSelectOption TValue="string" Value="@("DELETE")">DELETE · @L["HttpMethodDelete"]</SbSelectOption>
+						<SbSelectOption TValue="string" Value="@("PATCH")">PATCH · @L["HttpMethodPatch"]</SbSelectOption>
 					</SbSimpleSelect>
 					<SbSimpleSelect TValue="bool?"
 									Value="@_hasException"
@@ -47,11 +47,17 @@
 						<SbSelectOption TValue="bool?" Value="@true">@L["Yes"]</SbSelectOption>
 						<SbSelectOption TValue="bool?" Value="@false">@L["No"]</SbSelectOption>
 					</SbSimpleSelect>
-					<SbTextField @bind-Value="_minDurationText"
+					<SbNumberField TNumber="int"
+								 @bind-Value="MinDurationInput"
 								 Label="@L["MinDurationMs"]"
+								 Min="0"
+								 Step="1"
 								 Placeholder="@L["Placeholder:DurationExample"]" />
-					<SbTextField @bind-Value="_maxDurationText"
+					<SbNumberField TNumber="int"
+								 @bind-Value="MaxDurationInput"
 								 Label="@L["MaxDurationMs"]"
+								 Min="0"
+								 Step="1"
 								 Placeholder="@L["Placeholder:DurationExample"]" />
 				</SbGrid>
 				<SbStack Direction="SbStackDirection.Row" Gap="2" Justify="SbJustify.End">
@@ -85,7 +91,7 @@
                         ShowFilterRow="true"
                         ShowColumnChooser="true"
                         SelectionMode="SbSelectionMode.MultipleRows">
-				<SbColumn TItem="AuditLogListItemDto" Title="@L["Actions"]" Width="56px" Sortable="false">
+				<SbColumn TItem="AuditLogListItemDto" Title="@L["Actions"]" MinWidth="56px" Sortable="false">
 					<CellTemplate Context="cellContext">
 						<SbTooltip Text="@L["ViewDetails"]"><SbIconButton Size="SbSize.Sm" Color="SbColor.Primary" AriaLabel="@L["ViewDetails"]"
 									  OnClick="@(() => ShowDetailModal(cellContext.Item))">
@@ -93,13 +99,13 @@
 						</SbIconButton></SbTooltip>
 					</CellTemplate>
 				</SbColumn>
-				<SbColumn TItem="AuditLogListItemDto" Title="@L["Time"]" Width="160px">
+				<SbColumn TItem="AuditLogListItemDto" Title="@L["Time"]" MinWidth="160px">
 					<CellTemplate Context="cellContext">
 						@cellContext.Item.ExecutionTime.ToString("yyyy-MM-dd HH:mm:ss")
 					</CellTemplate>
 				</SbColumn>
-				<SbColumn TItem="AuditLogListItemDto" Field="UserName" Title="@L["User"]" Width="120px" Filterable="true" Sortable="true"/>
-				<SbColumn TItem="AuditLogListItemDto" Title="@L["Method"]" Width="80px">
+				<SbColumn TItem="AuditLogListItemDto" Field="UserName" Title="@L["User"]" MinWidth="120px" Filterable="true" Sortable="true"/>
+				<SbColumn TItem="AuditLogListItemDto" Title="@L["Method"]" MinWidth="80px">
 					<CellTemplate Context="cellContext">
 						<SbBadge Color="@GetMethodColor(cellContext.Item.HttpMethod)">
 							@cellContext.Item.HttpMethod
@@ -107,21 +113,21 @@
 					</CellTemplate>
 				</SbColumn>
 				<SbColumn TItem="AuditLogListItemDto" Field="Url" Title="@L["Url"]" Filterable="true" Sortable="true"/>
-				<SbColumn TItem="AuditLogListItemDto" Title="@L["Status"]" Width="80px">
+				<SbColumn TItem="AuditLogListItemDto" Title="@L["Status"]" MinWidth="80px">
 					<CellTemplate Context="cellContext">
 						<SbBadge Color="@GetStatusColor(cellContext.Item.HttpStatusCode)">
 							@cellContext.Item.HttpStatusCode
 						</SbBadge>
 					</CellTemplate>
 				</SbColumn>
-				<SbColumn TItem="AuditLogListItemDto" Title="@L["Duration"]" Width="100px">
+				<SbColumn TItem="AuditLogListItemDto" Title="@L["Duration"]" MinWidth="100px">
 					<CellTemplate Context="cellContext">
 						<span class="@(cellContext.Item.ExecutionDuration > 1000 ? "text-warning" : "")">
 							@cellContext.Item.ExecutionDuration ms
 						</span>
 					</CellTemplate>
 				</SbColumn>
-				<SbColumn TItem="AuditLogListItemDto" Title="@L["Exception"]" Width="80px">
+				<SbColumn TItem="AuditLogListItemDto" Title="@L["Exception"]" MinWidth="80px">
 					<CellTemplate Context="cellContext">
 						@if (cellContext.Item.HasException)
 						{
@@ -129,7 +135,7 @@
 						}
 					</CellTemplate>
 				</SbColumn>
-				<SbColumn TItem="AuditLogListItemDto" Field="ClientIpAddress" Title="@L["IpAddress"]" Width="130px" Filterable="true" Sortable="true"/>
+				<SbColumn TItem="AuditLogListItemDto" Field="ClientIpAddress" Title="@L["IpAddress"]" MinWidth="130px" Filterable="true" Sortable="true"/>
 			</SbDataGrid>
 		</ChildContent>
 	</SbCard>

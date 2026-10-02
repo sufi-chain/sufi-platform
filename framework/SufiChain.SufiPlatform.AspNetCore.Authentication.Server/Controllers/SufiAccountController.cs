@@ -275,18 +275,6 @@ public abstract class SufiAccountController : AbpController
     }
 
     /// <summary>
-    /// Handles access denied scenarios.
-    /// </summary>
-    /// <param name="returnUrl">The URL that was denied.</param>
-    [HttpGet("AccessDenied")]
-    public IActionResult AccessDenied(string? returnUrl = null)
-    {
-        // You can customize this to redirect to an access denied page
-        // or show a specific error view
-        return Forbid();
-    }
-
-    /// <summary>
     /// Handles front-channel logout from the identity provider.
     /// Called by IdP when user logs out from another application.
     /// Only effective when <see cref="SufiAuthenticationOptions.UseOidcClientFlow"/> is true.

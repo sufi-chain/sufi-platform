@@ -115,7 +115,7 @@
         return result;
     }
 
-    private string GetButtonText(ExternalAuthProviderInfo provider) => $"{L["ContinueWith"].Value ?? "Continue with"} {provider.DisplayName}";
+    private string GetButtonText(ExternalAuthProviderInfo provider) => $"{L["ContinueWith"]} {provider.DisplayName}";
 
     private async Task OnProviderClickInternal(ExternalAuthProviderInfo provider)
     {

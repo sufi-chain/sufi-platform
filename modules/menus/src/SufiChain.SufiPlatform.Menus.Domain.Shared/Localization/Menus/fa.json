@@ -34,6 +34,12 @@
     "MenuLinkTarget:NewTab": "زبانه جدید",
     "MenuLinkTarget:Modal": "پنجره",
     "MenuLinkTarget:Drawer": "کشویی",
-    "Hooshvare:SufiMenus:Designer:DisplayName": "طراح منو"
+    "Hooshvare:SufiMenus:Designer:DisplayName": "طراح منو",
+    "MenuItemSection:Link": "پیوند",
+    "MenuItemSection:Display": "نمایش",
+    "MenuItemSection:Visibility": "نمایان بودن",
+    "Save": "ذخیره",
+    "Cancel": "انصراف",
+    "ContextTypeExample": "مثلاً Public"
   }
 }

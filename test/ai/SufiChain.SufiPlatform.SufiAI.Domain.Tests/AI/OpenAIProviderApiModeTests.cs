@@ -118,6 +118,22 @@ public class OpenAIProviderApiModeTests
     }
 
     [Fact]
+    public async Task Chat_completion_records_the_upstream_model_id()
+    {
+        using var handler = new CapturingHandler(
+            """{"model":"nvidia/nemotron-3.5-content-safety:free","choices":[{"message":{"role":"assistant","content":"ok"},"finish_reason":"stop"}]}""");
+        var workspace = CreateWorkspace();
+        var route = workspace.AddModelConfiguration(AICapabilityType.ChatCompletion, "openrouter/free",
+            apiEndpoint: "https://api.example/v1", apiKey: "test-key");
+        var response = await CreateProvider(handler).SendChatMessageAsync(workspace, route, new ChatCompletionRequest
+        {
+            Messages = { new ChatMessage { Role = "user", Content = "hi" } }
+        });
+
+        response.ModelId.ShouldBe("nvidia/nemotron-3.5-content-safety:free");
+    }
+
+    [Fact]
     public async Task Responses_token_limit_is_reported_as_length()
     {
         using var handler = new CapturingHandler("""{"status":"incomplete","incomplete_details":{"reason":"max_output_tokens"},"output_text":"partial"}""");

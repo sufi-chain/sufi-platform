@@ -94,17 +94,33 @@ else if (_profile != null)
                 ConcurrencyStamp = _profile.ConcurrencyStamp
             };
 
-            _profile.MapExtraPropertiesTo(input);
+            try
+            {
+                _profile.MapExtraPropertiesTo(input);
+            }
+            catch (Exception mapException)
+            {
+                Logger.LogWarning(mapException, "Profile extra properties were skipped on save.");
+            }
+
             _profile = await ProfileAppService.UpdateAsync(input);
             _successMessage = L["ProfileUpdatedSuccessfully"];
         }
         catch (Exception ex)
         {
-            _errorMessage = AccountUiErrors.LocalizedFailure(
-                Logger,
-                AccountL,
-                ex,
-                "ProfileSaveFailed");
+            try
+            {
+                _errorMessage = AccountUiErrors.LocalizedFailure(
+                    Logger,
+                    AccountL,
+                    ex,
+                    "ProfileSaveFailed");
+            }
+            catch (Exception informException)
+            {
+                Logger.LogError(informException, "Profile save failed and the message could not be shown.");
+                _errorMessage = AccountL["ProfileSaveFailed"];
+            }
         }
         finally
         {

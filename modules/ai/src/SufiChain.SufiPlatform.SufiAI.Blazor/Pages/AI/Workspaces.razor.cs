@@ -1,5 +1,4 @@
 using Microsoft.AspNetCore.Components;
-using SufiChain.SufiPlatform.SufiAI.Hooshvare;
 using SufiChain.SufiPlatform.SufiAI.Workspaces;
 using SufiChain.SufiBlazor.Components.Data;
 using SufiChain.SufiBlazor.Contracts.Data;
@@ -29,9 +28,6 @@ public partial class Workspaces : AIComponentBase
     private int _pageSize = 20;
     private long _totalCount;
 
-    private bool _showCreateModal;
-    private bool _showEditModal;
-    private Guid? _editingWorkspaceId;
     private bool _showCloneModal;
     private Guid? _cloneWorkspaceId;
     private string? _cloneSourceName;
@@ -98,15 +94,14 @@ public partial class Workspaces : AIComponentBase
         _pageIndex = 0;
     }
 
-    private void OpenCreateModal()
+    private void OpenCreatePage()
     {
-        _showCreateModal = true;
+        Navigation.NavigateTo("/panel/admin/ai/workspaces/new");
     }
 
-    private void OpenEditModal(WorkspaceDto workspace)
+    private void OpenEditPage(WorkspaceDto workspace)
     {
-        _editingWorkspaceId = workspace.Id;
-        _showEditModal = true;
+        Navigation.NavigateTo($"/panel/admin/ai/workspaces/{workspace.Id}/edit");
     }
 
     private void OpenCloneModal(WorkspaceDto workspace)
@@ -126,33 +121,6 @@ public partial class Workspaces : AIComponentBase
     private void OpenModelConfigurations(WorkspaceDto workspace)
     {
         Navigation.NavigateTo($"/panel/admin/ai/workspaces/{workspace.Id}/model-configurations");
-    }
-
-    private async Task OnWorkspaceCreatedAsync()
-    {
-        _showCreateModal = false;
-        await Message.SuccessAsync(L["WorkspaceCreatedSuccessfully"]);
-        await ExecuteWithLoadingAsync(
-            () => _gridRef?.RefreshDataAsync() ?? Task.CompletedTask,
-            LoadingKeys.LoadWorkspaces);
-    }
-
-    private async Task OnWorkspaceUpdatedAsync()
-    {
-        _showEditModal = false;
-        await Message.SuccessAsync(L["WorkspaceUpdatedSuccessfully"]);
-        await ExecuteWithLoadingAsync(
-            () => _gridRef?.RefreshDataAsync() ?? Task.CompletedTask,
-            LoadingKeys.LoadWorkspaces);
-    }
-
-    private async Task OnWorkspaceConvertedAsync()
-    {
-        _showEditModal = false;
-        await Message.SuccessAsync(L["WorkspaceConvertedSuccessfully"]);
-        await ExecuteWithLoadingAsync(
-            () => _gridRef?.RefreshDataAsync() ?? Task.CompletedTask,
-            LoadingKeys.LoadWorkspaces);
     }
 
     private async Task OnWorkspaceClonedAsync()
@@ -225,12 +193,6 @@ public partial class Workspaces : AIComponentBase
 
     private IReadOnlyDictionary<string, string> BuildHooshvareContext()
     {
-        var context = new Dictionary<string, string>(StringComparer.Ordinal);
-        if (_editingWorkspaceId.HasValue)
-        {
-            context[WorkspaceReadinessHooshvareKeys.Context.WorkspaceId] = _editingWorkspaceId.Value.ToString();
-        }
-
-        return context;
+        return new Dictionary<string, string>(StringComparer.Ordinal);
     }
 }

@@ -1,0 +1,82 @@
+@namespace SufiChain.SufiPlatform.Calendar.Blazor.Pages.Calendar
+@page "/panel/admin/calendar/business-hours/{CalendarId:guid}"
+@using SufiChain.SufiBlazor.Components.Navigation
+@attribute [Authorize(CalendarPermissions.Calendars.Update)]
+@inherits CalendarBusinessHoursBase
+
+@if (IsReady)
+{
+    <SbTabs @bind-ActiveIndex="BusinessHoursActiveTab">
+        <SbTab Label="@L["ManageHours"]">
+            <SbStack Gap="3">
+                @foreach (var rule in EditingHours)
+                {
+                    <SbStack Wrap="true" @key="rule.RowKey" Direction="SbStackDirection.Row" Gap="2" Align="SbAlign.End">
+                        <SbSelect TItem="DayOfWeek"
+                                  TValue="DayOfWeek"
+                                  Items="DayOfWeekOptions"
+                                  Value="@rule.DayOfWeek"
+                                  ValueChanged="@(value => OnWorkingHourDayChangedAsync(rule, value))"
+                                  TextField="@GetDayOfWeekText"
+                                  Label="@L["DayOfWeek"]" />
+                        <div class="sufi-calendar-business-hours__time">
+                            <SbTimePicker @bind-Value="rule.StartTime" Label="@L["StartTime"]" Clearable="false" />
+                        </div>
+                        <div class="sufi-calendar-business-hours__time">
+                            <SbTimePicker @bind-Value="rule.EndTime" Label="@L["EndTime"]" Clearable="false" />
+                        </div>
+                        <SbIconButton Color="SbColor.Danger" OnClick="@(() => RemoveHour(rule))" AriaLabel="@L["Delete"]"><Icon><SbIcon Name="trash" /></Icon></SbIconButton>
+                    </SbStack>
+                }
+                <SbButton Variant="SbButtonVariant.Outline" OnClick="AddHour">@L["AddWorkingHour"]</SbButton>
+            </SbStack>
+        </SbTab>
+        <SbTab Label="@L["Exceptions"]">
+            <SbStack Gap="3">
+                @foreach (var exception in EditingExceptions)
+                {
+                    <SbStack Wrap="true" @key="exception.RowKey" Direction="SbStackDirection.Row" Gap="2" Align="SbAlign.Center">
+                        <SbDatePicker Value="exception.ExceptionDate" ValueChanged="@(value => exception.ExceptionDate = value)" Label="@L["Date"]" />
+                        <SbSimpleSelect TValue="CalendarExceptionKind" @bind-Value="exception.Kind" Label="@L["Kind"]">
+                            @foreach (var kind in CalendarExceptionKindOptions)
+                            {
+                                <SbSelectOption TValue="CalendarExceptionKind" Value="@kind" Text="@GetCalendarExceptionKindText(kind)">@GetCalendarExceptionKindText(kind)</SbSelectOption>
+                            }
+                        </SbSimpleSelect>
+                        <SbTextField @bind-Value="exception.Description" Label="@L["Description"]" />
+                        <SbIconButton Color="SbColor.Danger" OnClick="@(() => RemoveException(exception))" AriaLabel="@L["Delete"]"><Icon><SbIcon Name="trash" /></Icon></SbIconButton>
+                    </SbStack>
+                }
+                <SbButton Variant="SbButtonVariant.Outline" OnClick="AddException">@L["AddException"]</SbButton>
+            </SbStack>
+        </SbTab>
+        <SbTab Label="@L["TestInstant"]">
+            <SbStack Gap="3">
+                <SbDatePicker Value="TestDate" ValueChanged="OnTestDateChanged" Label="@L["Date"]" />
+                <SbTextField @bind-Value="TestTimeText" Label="@L["TimeUtc"]" />
+                <SbButton Color="SbColor.Primary" OnClick="RunTestAsync">@L["TestInstant"]</SbButton>
+                @if (TestResult != null)
+                {
+                    <SbAlert Severity="@(TestResult.IsOpen ? SbAlertSeverity.Success : SbAlertSeverity.Warning)">
+                        @(TestResult.IsOpen ? L["Open"] : L["Closed"])
+                        <br />@L["NextOpenAt"]: @TestResult.NextOpenAtUtc
+                        <br />@L["NextCloseAt"]: @TestResult.NextCloseAtUtc
+                    </SbAlert>
+                }
+            </SbStack>
+        </SbTab>
+    </SbTabs>
+}
+else if (!IsLoadFailed)
+{
+    <SbStack Align="SbAlign.Center" Justify="SbJustify.Center" Gap="2">
+        <SbProgress Indeterminate="true" Circular="true" aria-label="@L["Loading"]" />
+    </SbStack>
+}
+
+<div class="sufi-calendar-business-hours__footer">
+    <SbStack Wrap="true" Direction="SbStackDirection.Row" Gap="2" Justify="SbJustify.End">
+        <SbButton Variant="SbButtonVariant.Outline" OnClick="CancelAsync">@L["Cancel"]</SbButton>
+        <SbButton Color="SbColor.Primary" Disabled="@(!IsReady)" OnClick="SaveBusinessHoursAsync">@L["Save"]</SbButton>
+    </SbStack>
+</div>

@@ -11,6 +11,12 @@
     "Menu:SufiMenus.Menus": "القوائم",
     "ContextType:Public": "عام",
     "ContextType:KnowledgeBase.Project": "مشروع قاعدة المعرفة",
-    "DisplayNameLocalizationMode": "وضع اسم العرض"
+    "DisplayNameLocalizationMode": "وضع اسم العرض",
+    "MenuItemSection:Link": "الرابط",
+    "MenuItemSection:Display": "العرض",
+    "MenuItemSection:Visibility": "الظهور",
+    "Save": "حفظ",
+    "Cancel": "إلغاء",
+    "ContextTypeExample": "مثال: Public"
   }
 }

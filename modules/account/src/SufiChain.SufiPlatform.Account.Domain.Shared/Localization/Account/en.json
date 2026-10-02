@@ -136,6 +136,7 @@
     "LinkAccountSucceeded": "The accounts are linked.",
     "LinkAccountFailed": "The account could not be linked. Start again from linked accounts.",
     "LinkAccountSameUser": "You signed in with the same account. Sign out and sign in with the other account to finish the link.",
-    "LinkAccountSignInOther": "Sign in with another account"
+    "LinkAccountSignInOther": "Sign in with another account",
+    "ContinueWith": "Continue with"
   }
 }

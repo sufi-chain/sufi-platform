@@ -24,7 +24,7 @@ else if (_hasError || string.IsNullOrEmpty(_playerUrl))
         else
         {
             <div class="file-audio__placeholder file-audio__placeholder--error">
-                <span>Audio not available</span>
+                <span>@L["AudioNotAvailable"]</span>
             </div>
         }
     </div>
@@ -36,7 +36,7 @@ else
                src="@_playerUrl"
                controls="@Controls"
                preload="@Preload">
-            Your browser does not support the audio tag.
+            @L["BrowserAudioUnsupported"]
         </audio>
     </div>
 }

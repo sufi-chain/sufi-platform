@@ -67,7 +67,7 @@ public partial class FileUploader : FileManagerComponentBase, IDisposable
     private List<FileStructureDto> _availableStructures = new();
     private string? _selectedStructureKey;
     private string _userFolderPath = "";
-    private bool _configModalOpen;
+    private bool _settingsOpen;
     private readonly string _fileInputId = $"fileUploader-fileInput-{Guid.NewGuid():N}";
 
     private bool _hasConfigOptions =>

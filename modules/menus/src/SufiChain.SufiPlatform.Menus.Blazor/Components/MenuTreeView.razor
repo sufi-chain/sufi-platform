@@ -6,7 +6,10 @@
         @foreach (var item in Items)
         {
             <li>
-                <button type="button" @onclick="() => SelectAsync(item)">@ResolveMenuItemDisplayName(item, ContextType)</button>
+                <SbButton Type="button"
+                          Variant="SbButtonVariant.Ghost"
+                          Color="SbColor.Default"
+                          OnClick="@(() => SelectAsync(item))">@ResolveMenuItemDisplayName(item, ContextType)</SbButton>
                 @if (item.Children.Count > 0)
                 {
                     <MenuTreeView Items="item.Children" ContextType="ContextType" OnItemSelected="OnItemSelected" />

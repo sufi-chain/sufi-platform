@@ -44,6 +44,19 @@ public partial class LocalizationTexts : LocalizationComponentBase
     /// </summary>
     private bool HasValidSelection => !string.IsNullOrEmpty(_selectedResource) && !string.IsNullOrEmpty(_selectedCulture);
 
+    private IEnumerable<string> CultureChoices(string? current)
+    {
+        if (!string.IsNullOrWhiteSpace(current) && !_cultureNames.Contains(current))
+        {
+            yield return current;
+        }
+
+        foreach (var culture in _cultureNames)
+        {
+            yield return culture;
+        }
+    }
+
     /// <summary>
     /// Whether the page is showing the merged view (base JSON + DB overrides)
     /// vs. DB-only mode.

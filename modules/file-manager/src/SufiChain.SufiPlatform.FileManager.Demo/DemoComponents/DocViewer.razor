@@ -1,13 +1,14 @@
+@inherits FileManagerComponentBase
 @* Loads and renders markdown documentation from RCL wwwroot/docs *@
 
 @if (DocName is { Length: > 0 })
 {
     <div class="demo-docs-block" dir="ltr" lang="en">
-        <SbHeading Level="2" Size="4" Class="demo-docs-block__heading">Documentation</SbHeading>
+        <SbHeading Level="2" Size="4" Class="demo-docs-block__heading">@L["Documentation"]</SbHeading>
         <div class="demo-docs-block__scroll">
             @if (loading)
             {
-                <SbText Color="SbColor.Muted">Loading documentation…</SbText>
+                <SbText Color="SbColor.Muted">@L["LoadingDocumentation"]</SbText>
             }
             else if (!string.IsNullOrEmpty(markdownContent))
             {
@@ -63,7 +64,7 @@
         }
         catch (Exception ex)
         {
-            error = $"Could not load documentation: {ex.Message}";
+            error = L["CouldNotLoadDocumentation", ex.Message];
         }
         finally
         {

@@ -1,0 +1,16 @@
+.workspace-editor {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    max-width: 64rem;
+}
+
+.workspace-editor__footer {
+    position: sticky;
+    bottom: 0;
+    z-index: 2;
+    margin-top: var(--sb-space-2, 0.5rem);
+    padding: var(--sb-space-3, 0.75rem) 0;
+    background: var(--sb-color-surface, #fff);
+    border-top: 1px solid var(--sb-color-border, #e5e7eb);
+}

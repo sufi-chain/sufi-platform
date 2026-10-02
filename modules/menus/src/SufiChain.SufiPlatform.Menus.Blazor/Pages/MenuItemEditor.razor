@@ -1,0 +1,184 @@
+@namespace SufiChain.SufiPlatform.Menus.Blazor.Pages
+@page "/panel/admin/menu-management/menus/{MenuId:guid}/items/new"
+@page "/panel/admin/menu-management/menus/{MenuId:guid}/items/{ItemId:guid}"
+@attribute [Authorize(Policy = MenusPermissions.Menus.ManageItems)]
+@inherits MenusComponentBase
+
+@if (_ready)
+{
+    <SbForm Model="_model" OnValidSubmit="OnValidSubmitAsync" Class="menu-item-editor" novalidate>
+        <ChildContent>
+            <SbCard>
+                <ChildContent>
+            <SbStack Gap="5">
+                <SbStack Gap="3">
+                    <SbHeading Level="2" Size="5">@L["MenuItemSection:Link"]</SbHeading>
+                    <div class="menu-item-editor__grid">
+                        <SbSimpleSelect TValue="MenuItemKind"
+                                        @bind-Value="_model.Kind"
+                                        Label="@L["Kind"]">
+                            <SbSelectOption TValue="MenuItemKind" Value="@MenuItemKind.Container">@L["MenuItemKind:Container"]</SbSelectOption>
+                            <SbSelectOption TValue="MenuItemKind" Value="@MenuItemKind.InternalRoute">@L["MenuItemKind:InternalRoute"]</SbSelectOption>
+                            <SbSelectOption TValue="MenuItemKind" Value="@MenuItemKind.ExternalUrl">@L["MenuItemKind:ExternalUrl"]</SbSelectOption>
+                            <SbSelectOption TValue="MenuItemKind" Value="@MenuItemKind.EntityTarget">@L["MenuItemKind:EntityTarget"]</SbSelectOption>
+                            <SbSelectOption TValue="MenuItemKind" Value="@MenuItemKind.Separator">@L["MenuItemKind:Separator"]</SbSelectOption>
+                            <SbSelectOption TValue="MenuItemKind" Value="@MenuItemKind.Heading">@L["MenuItemKind:Heading"]</SbSelectOption>
+                        </SbSimpleSelect>
+
+                        <SbTextField @bind-Value="_model.Url" Label="@L["Url"]" Type="url" />
+
+                        <SbSimpleSelect TValue="MenuLinkTarget"
+                                        @bind-Value="_model.LinkTarget"
+                                        Label="@L["LinkTarget"]">
+                            <SbSelectOption TValue="MenuLinkTarget" Value="@MenuLinkTarget.SameTab">@L["MenuLinkTarget:SameTab"]</SbSelectOption>
+                            <SbSelectOption TValue="MenuLinkTarget" Value="@MenuLinkTarget.NewTab">@L["MenuLinkTarget:NewTab"]</SbSelectOption>
+                            <SbSelectOption TValue="MenuLinkTarget" Value="@MenuLinkTarget.Modal">@L["MenuLinkTarget:Modal"]</SbSelectOption>
+                            <SbSelectOption TValue="MenuLinkTarget" Value="@MenuLinkTarget.Drawer">@L["MenuLinkTarget:Drawer"]</SbSelectOption>
+                        </SbSimpleSelect>
+
+                        <SbTextField @bind-Value="_model.TargetType" Label="@L["TargetType"]" />
+
+                        <div class="menu-item-editor__wide">
+                            <SbTextField @bind-Value="_targetIdText" Label="@L["TargetId"]" />
+                        </div>
+                    </div>
+                </SbStack>
+
+                <SbStack Gap="3">
+                    <SbHeading Level="2" Size="5">@L["MenuItemSection:Display"]</SbHeading>
+                    <div class="menu-item-editor__grid">
+                        <div class="menu-item-editor__wide">
+                            <SbSimpleSelect TValue="string"
+                                            @bind-Value="_parentIdText"
+                                            Label="@L["Parent"]"
+                                            Searchable="true">
+                                <SbSelectOption TValue="string" Value="string.Empty">@L["NoParent"]</SbSelectOption>
+                                @foreach (var option in _parentOptions)
+                                {
+                                    <SbSelectOption TValue="string" Value="@option.Id.ToString()">@option.Path</SbSelectOption>
+                                }
+                            </SbSimpleSelect>
+                        </div>
+
+                        <SbTextField TValue="string"
+                                     Value="_model.Name"
+                                     ValueChanged="OnNameChangedAsync"
+                                     ValueExpression="@(() => _model.Name)"
+                                     Label="@L["MenuName"]"
+                                     Required="true" />
+
+                        <SbTextField TValue="string"
+                                     Value="@(_model.Slug ?? string.Empty)"
+                                     ValueChanged="OnSlugChangedAsync"
+                                     ValueExpression="@(() => _model.Slug!)"
+                                     Label="@L["Slug"]" />
+
+                        <div class="menu-item-editor__wide">
+                            <SbStack Gap="1">
+                                <SbText Weight="SbFontWeight.Medium">@L["DisplayNameLocalizationMode"]</SbText>
+                                <BusinessLocalizationModeSwitch Mode="_displayNameMode"
+                                                                ModeChanged="OnDisplayNameModeChangedAsync" />
+                            </SbStack>
+                        </div>
+
+                        <div class="menu-item-editor__wide">
+                            <BusinessTextEditor @ref="_displayNameEditor"
+                                                Label="@L["DisplayName"]"
+                                                ResourceName="_localizationResourceName"
+                                                LocalizationKey="_localizationKey"
+                                                Mode="_displayNameMode"
+                                                LiteralValue="_literalDisplayName"
+                                                LiteralValueChanged="OnLiteralDisplayNameChangedAsync"
+                                                Required="true" />
+                        </div>
+
+                        <div class="menu-item-editor__wide">
+                            <SbTextArea @bind-Value="_model.Description" Label="@L["Description"]" Rows="2" />
+                        </div>
+
+                        <SbTextField @bind-Value="_displayOrderText" Label="@L["DisplayOrder"]" Type="number" />
+
+                        <SbSimpleSelect TValue="MenuItemDisplayType"
+                                        @bind-Value="_model.DisplayType"
+                                        Label="@L["DisplayType"]">
+                            <SbSelectOption TValue="MenuItemDisplayType" Value="@MenuItemDisplayType.Default">@L["MenuItemDisplayType:Default"]</SbSelectOption>
+                            <SbSelectOption TValue="MenuItemDisplayType" Value="@MenuItemDisplayType.Category">@L["MenuItemDisplayType:Category"]</SbSelectOption>
+                            <SbSelectOption TValue="MenuItemDisplayType" Value="@MenuItemDisplayType.Link">@L["MenuItemDisplayType:Link"]</SbSelectOption>
+                            <SbSelectOption TValue="MenuItemDisplayType" Value="@MenuItemDisplayType.Button">@L["MenuItemDisplayType:Button"]</SbSelectOption>
+                            <SbSelectOption TValue="MenuItemDisplayType" Value="@MenuItemDisplayType.Card">@L["MenuItemDisplayType:Card"]</SbSelectOption>
+                            <SbSelectOption TValue="MenuItemDisplayType" Value="@MenuItemDisplayType.MegaMenu">@L["MenuItemDisplayType:MegaMenu"]</SbSelectOption>
+                            <SbSelectOption TValue="MenuItemDisplayType" Value="@MenuItemDisplayType.Promo">@L["MenuItemDisplayType:Promo"]</SbSelectOption>
+                            <SbSelectOption TValue="MenuItemDisplayType" Value="@MenuItemDisplayType.Separator">@L["MenuItemDisplayType:Separator"]</SbSelectOption>
+                            <SbSelectOption TValue="MenuItemDisplayType" Value="@MenuItemDisplayType.Heading">@L["MenuItemDisplayType:Heading"]</SbSelectOption>
+                        </SbSimpleSelect>
+
+                        <SbTextField @bind-Value="_model.Icon" Label="@L["Icon"]" />
+                        <SbTextField @bind-Value="_model.CssClass" Label="@L["CssClass"]" />
+                        <SbTextField @bind-Value="_model.ComponentName" Label="@L["ComponentName"]" />
+                    </div>
+                </SbStack>
+
+                <SbStack Gap="3">
+                    <SbHeading Level="2" Size="5">@L["MenuItemSection:Visibility"]</SbHeading>
+                    <div class="menu-item-editor__grid">
+                        <div class="menu-item-editor__wide">
+                            <SbTextField @bind-Value="_model.PermissionName" Label="@L["PermissionName"]" />
+                        </div>
+                        <SbSwitch @bind-Value="_model.IsActive" Label="@L["IsActive"]" />
+                        <SbSwitch @bind-Value="_model.IsVisible" Label="@L["IsVisible"]" />
+                    </div>
+                </SbStack>
+            </SbStack>
+                </ChildContent>
+            </SbCard>
+
+            <div class="menu-item-editor__footer">
+                <SbStack Wrap="true" Direction="SbStackDirection.Row" Gap="2" Justify="SbJustify.End">
+                    <SbButton Variant="SbButtonVariant.Outline" OnClick="GoBack">@L["Cancel"]</SbButton>
+                    <SbButton Type="submit" Color="SbColor.Primary" Loading="IsOperationLoading(LoadingKeys.Save)">@L["Save"]</SbButton>
+                </SbStack>
+            </div>
+        </ChildContent>
+    </SbForm>
+}
+else if (_loadFailed)
+{
+    <div class="menu-item-editor__footer">
+        <SbStack Wrap="true" Direction="SbStackDirection.Row" Gap="2" Justify="SbJustify.End">
+            <SbButton Variant="SbButtonVariant.Outline" OnClick="GoBack">@L["Cancel"]</SbButton>
+        </SbStack>
+    </div>
+}
+
+<style>
+    .menu-item-editor {
+        max-width: 56rem;
+    }
+
+    .menu-item-editor__grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: var(--sb-space-3, 0.75rem) var(--sb-space-4, 1rem);
+        align-items: start;
+    }
+
+    .menu-item-editor__wide {
+        grid-column: 1 / -1;
+    }
+
+    .menu-item-editor__footer {
+        position: sticky;
+        bottom: 0;
+        z-index: 2;
+        margin-top: var(--sb-space-2, 0.5rem);
+        padding: var(--sb-space-3, 0.75rem) 0;
+        background: var(--sb-color-surface, #fff);
+        border-top: 1px solid var(--sb-color-border, #e5e7eb);
+    }
+
+    @@media (max-width: 720px) {
+        .menu-item-editor__grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>

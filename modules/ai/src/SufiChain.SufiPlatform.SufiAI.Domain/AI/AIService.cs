@@ -80,13 +80,60 @@ public class AIService : DomainService, IAIService, ITransientDependency
                 AICapabilityType.ChatCompletion);
 
             var response = await provider.SendChatMessageAsync(workspace, configuration, request, cancellationToken);
-            stopwatch.Stop();
+            if (GuardModelReply.IsVerdict(response.Content))
+            {
+                stopwatch.Stop();
+                _logger.LogWarning(
+                    "Guard-model verdict returned as chat content. Retrying once. WorkspaceId={WorkspaceId}, ConfiguredModel={ConfiguredModel}, UpstreamModel={UpstreamModel}",
+                    workspace.Id,
+                    configuration.ModelId,
+                    response.ModelId);
+                await LogUsageAsync(
+                    resolved,
+                    AICapabilityType.ChatCompletion,
+                    response.InputTokens,
+                    response.OutputTokens,
+                    response.TotalTokens,
+                    response.UsageUnavailableReason,
+                    stopwatch.ElapsedMilliseconds,
+                    isSuccess: false,
+                    errorMessage: AIErrorCodes.GuardModelReply,
+                    modelId: response.ModelId,
+                    cancellationToken: cancellationToken);
+
+                stopwatch.Restart();
+                response = await provider.SendChatMessageAsync(workspace, configuration, request, cancellationToken);
+                stopwatch.Stop();
+                if (GuardModelReply.IsVerdict(response.Content))
+                {
+                    await LogUsageAsync(
+                        resolved,
+                        AICapabilityType.ChatCompletion,
+                        response.InputTokens,
+                        response.OutputTokens,
+                        response.TotalTokens,
+                        response.UsageUnavailableReason,
+                        stopwatch.ElapsedMilliseconds,
+                        isSuccess: false,
+                        errorMessage: AIErrorCodes.GuardModelReply,
+                        modelId: response.ModelId,
+                        cancellationToken: cancellationToken);
+                    throw new BusinessException(AIErrorCodes.GuardModelReply)
+                        .WithData("ConfiguredModel", configuration.ModelId)
+                        .WithData("UpstreamModel", response.ModelId ?? string.Empty);
+                }
+            }
+            else
+            {
+                stopwatch.Stop();
+            }
 
             _logger.LogDebug(
-                "AI provider chat completion completed. WorkspaceId={WorkspaceId}, WorkspaceName={WorkspaceName}, Provider={Provider}, Model={Model}, ContentLength={ContentLength}, TotalTokens={TotalTokens}, LatencyMs={LatencyMs}",
+                "AI provider chat completion completed. WorkspaceId={WorkspaceId}, WorkspaceName={WorkspaceName}, Provider={Provider}, Model={Model}, UpstreamModel={UpstreamModel}, ContentLength={ContentLength}, TotalTokens={TotalTokens}, LatencyMs={LatencyMs}",
                 workspace.Id,
                 workspace.Name,
                 workspace.Provider,
+                configuration.ModelId,
                 response.ModelId,
                 response.Content?.Length ?? 0,
                 response.TotalTokens,
@@ -101,9 +148,14 @@ public class AIService : DomainService, IAIService, ITransientDependency
                 response.UsageUnavailableReason,
                 stopwatch.ElapsedMilliseconds,
                 isSuccess: true,
+                modelId: response.ModelId,
                 cancellationToken: cancellationToken);
 
             return response;
+        }
+        catch (BusinessException ex) when (ex.Code == AIErrorCodes.GuardModelReply)
+        {
+            throw;
         }
         catch (Exception ex)
         {
@@ -152,6 +204,7 @@ public class AIService : DomainService, IAIService, ITransientDependency
 
         var stream = provider.StreamChatMessageAsync(workspace, configuration, request, cancellationToken);
         var enumerator = stream.GetAsyncEnumerator(cancellationToken);
+        string? upstreamModel = null;
 
         try
         {
@@ -176,6 +229,11 @@ public class AIService : DomainService, IAIService, ITransientDependency
                 }
 
                 var chunk = enumerator.Current;
+                if (!string.IsNullOrWhiteSpace(chunk.ModelId))
+                {
+                    upstreamModel = chunk.ModelId;
+                }
+
                 if (chunk.IsUsageChunk)
                 {
                     inputTokens = chunk.InputTokens;
@@ -205,6 +263,7 @@ public class AIService : DomainService, IAIService, ITransientDependency
                     stopwatch.ElapsedMilliseconds,
                     isSuccess: !hasError,
                     errorMessage: hasError ? errorMessage : null,
+                    modelId: upstreamModel,
                     cancellationToken: cancellationToken);
             }
             catch (Exception logEx)
@@ -681,6 +740,7 @@ public class AIService : DomainService, IAIService, ITransientDependency
         long latencyMs,
         bool isSuccess,
         string? errorMessage = null,
+        string? modelId = null,
         decimal? audioSeconds = null,
         int? characterCount = null,
         int? imageCount = null,
@@ -691,6 +751,7 @@ public class AIService : DomainService, IAIService, ITransientDependency
             {
                 Configuration = resolved,
                 CapabilityType = capabilityType,
+                ModelId = modelId,
                 InputTokens = inputTokens,
                 OutputTokens = outputTokens,
                 TotalTokens = totalTokens,

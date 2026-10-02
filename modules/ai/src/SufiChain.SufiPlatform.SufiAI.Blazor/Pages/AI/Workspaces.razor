@@ -5,7 +5,7 @@
 
 <SufiPageToolbar>
 	<AuthorizeView Policy="@AIPermissions.Workspaces.Create">
-		<SbButton Color="SbColor.Primary" OnClick="@OpenCreateModal">
+		<SbButton Color="SbColor.Primary" OnClick="@OpenCreatePage">
 			<StartIcon><SbIcon Name="plus" /></StartIcon>
 			<ChildContent>@L["NewWorkspace"]</ChildContent>
 		</SbButton>
@@ -32,13 +32,13 @@
                         ShowFilterRow="true"
                         ShowColumnChooser="true"
                         SelectionMode="SbSelectionMode.MultipleRows">
-						<SbColumn TItem="WorkspaceDto" Title="@L["Actions"]" Width="220px">
+						<SbColumn TItem="WorkspaceDto" Title="@L["Actions"]" MinWidth="220px">
 						<CellTemplate Context="cellContext">
 							<SbStack Wrap="true" Direction="SbStackDirection.Row" Gap="1">
 								<AuthorizeView Policy="@AIPermissions.Workspaces.Edit">
 									<SbIconButton Size="SbSize.Sm"
 												  AriaLabel="@(cellContext.Item.IsInherited ? L["View"] : L["Edit"])"
-												  OnClick="@(() => OpenEditModal(cellContext.Item))">
+												  OnClick="@(() => OpenEditPage(cellContext.Item))">
 										<Icon><SbIcon Name="@(cellContext.Item.IsInherited ? "eye" : "edit")" /></Icon>
 									</SbIconButton>
 								</AuthorizeView>
@@ -88,7 +88,7 @@
 							</SbStack>
 						</CellTemplate>
 					</SbColumn>
-				<SbColumn TItem="WorkspaceDto" Field="Name" Title="@L["Name"]" Width="200px" Filterable="true" Sortable="true">
+				<SbColumn TItem="WorkspaceDto" Field="Name" Title="@L["Name"]" MinWidth="200px" Filterable="true" Sortable="true">
 					<CellTemplate Context="cellContext">
 						<strong>@cellContext.Item.Name</strong>
 						@if (cellContext.Item.IsInherited)
@@ -97,7 +97,7 @@
 						}
 					</CellTemplate>
 				</SbColumn>
-				<SbColumn TItem="WorkspaceDto" Title="@L["Guardrails"]" Width="220px">
+				<SbColumn TItem="WorkspaceDto" Title="@L["Guardrails"]" MinWidth="220px">
 					<CellTemplate Context="cellContext">
 						@if (cellContext.Item.Guardrails.Count == 0)
 						{
@@ -109,27 +109,27 @@
 						}
 					</CellTemplate>
 				</SbColumn>
-				<SbColumn TItem="WorkspaceDto" Title="@L["Provider"]" Width="120px">
+				<SbColumn TItem="WorkspaceDto" Title="@L["Provider"]" MinWidth="120px">
 					<CellTemplate Context="cellContext">
 						<SbBadge Color="@GetProviderColor(cellContext.Item.Provider)">
-							@cellContext.Item.Provider.ToString()
+							@L[$"AIProviderType:{cellContext.Item.Provider}"]
 						</SbBadge>
 					</CellTemplate>
 				</SbColumn>
-					<SbColumn TItem="WorkspaceDto" Field="Model" Title="@L["DefaultChatModel"]" Width="220px" Filterable="true" Sortable="true"
+					<SbColumn TItem="WorkspaceDto" Field="Model" Title="@L["DefaultChatModel"]" MinWidth="220px" Filterable="true" Sortable="true"
 							  ValueFunc="@(item => FormatModelLabel(item))">
 						<CellTemplate Context="cellContext">
 							@FormatModelLabel(cellContext.Item)
 						</CellTemplate>
 					</SbColumn>
-						<SbColumn TItem="WorkspaceDto" Title="@L["Status"]" Width="100px">
+						<SbColumn TItem="WorkspaceDto" Title="@L["Status"]" MinWidth="100px">
 					<CellTemplate Context="cellContext">
 						<SbBadge Color="@(cellContext.Item.IsActive ? SbColor.Success : SbColor.Default)">
 							@(cellContext.Item.IsActive ? L["Active"] : L["Inactive"])
 						</SbBadge>
 					</CellTemplate>
 				</SbColumn>
-				<SbColumn TItem="WorkspaceDto" Title="@L["CreationTime"]" Width="160px">
+				<SbColumn TItem="WorkspaceDto" Title="@L["CreationTime"]" MinWidth="160px">
 					<CellTemplate Context="cellContext">
 						@cellContext.Item.CreationTime.ToString("yyyy-MM-dd HH:mm")
 					</CellTemplate>
@@ -140,11 +140,6 @@
 
 </SbStack>
 
-	<WorkspaceCreateModal @bind-Open="_showCreateModal" OnCreated="@OnWorkspaceCreatedAsync" />
-	<WorkspaceEditModal @bind-Open="_showEditModal"
-						WorkspaceId="_editingWorkspaceId"
-						OnUpdated="@OnWorkspaceUpdatedAsync"
-						OnConverted="@OnWorkspaceConvertedAsync" />
 	<WorkspaceCloneModal @bind-Open="_showCloneModal"
 						 WorkspaceId="_cloneWorkspaceId"
 						 SourceName="@_cloneSourceName"

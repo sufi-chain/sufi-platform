@@ -53,7 +53,7 @@
         {
             <SbDrawer @bind-Open="_foldersDrawerOpen"
                       Placement="SbDrawerPlacement.Start"
-                      Width="280px"
+                      Width="min(100%, 280px)"
                       Title="@L["Folders"]">
                 <div class="fm-folders-drawer-content">
                     @if (AllowCreateFolders)
@@ -164,19 +164,17 @@
         </ChildContent>
     </SbDialog>
 
-    @* Delete Confirmation Modal *@
-    <SbDialog @bind-Open="_deleteModalOpen" Title="@L["ConfirmDelete"]">
+    <SbConfirmDialog @ref="_deleteConfirm"
+                     Title="@L["ConfirmDelete"]"
+                     Message="@L["ConfirmDeleteItems", _state.SelectionCount]"
+                     Variant="SbConfirmDialogVariant.Danger"
+                     ConfirmText="@L["Delete"]"
+                     CancelText="@L["Cancel"]"
+                     OnConfirm="ConfirmDelete">
         <ChildContent>
-            <p>@L["ConfirmDeleteItems", _state.SelectionCount]</p>
             <p class="text-muted">@L["ActionCannotBeUndone"]</p>
         </ChildContent>
-        <Footer>
-            <SbStack Direction="SbStackDirection.Row" Gap="2" Justify="SbJustify.End">
-                <SbButton Color="SbColor.Default" OnClick="@(() => _deleteModalOpen = false)">@L["Cancel"]</SbButton>
-                <SbButton Color="SbColor.Danger" OnClick="@ConfirmDelete">@L["Delete"]</SbButton>
-            </SbStack>
-        </Footer>
-    </SbDialog>
+    </SbConfirmDialog>
 
     @* Edit File Modal *@
     <SbDialog @bind-Open="_editModalOpen" Title="@L["EditFileProperties"]" Size="SbDialogSize.Lg">
@@ -184,7 +182,7 @@
             @if (_editingFile != null)
             {
                 <SbStack Direction="SbStackDirection.Row" Gap="4">
-                    <div class="text-center" style="width: 200px;">
+                    <div class="text-center" style="width: min(100%, 40%);">
                         @if (_editingFile.FileType == FileType.Image && !string.IsNullOrEmpty(_editingFile.ThumbnailBlobName))
                         {
                             <img src="@FileItemUrlProvider.GetThumbnailUrl(_editingFile.Id, (_editingFile.LastModificationTime ?? _editingFile.CreationTime).Ticks, _editingFile.StructureBaseUrl, _editingFile.StructureIsPublicAccess, _editingFile.ThumbnailBlobName, _editingFile.TenantId, _editingFile.StructureStorageProvider)" 
@@ -259,7 +257,7 @@
     private bool _foldersDrawerOpen;
     private bool _newFolderModalOpen;
     private bool _uploadModalOpen;
-    private bool _deleteModalOpen;
+    private SbConfirmDialog? _deleteConfirm;
     private bool _editModalOpen;
     private string _newFolderName = "";
     private readonly CancellationTokenSource _cts = new();
@@ -459,7 +457,7 @@
             });
 
             await LoadClipboardState();
-            await Notify.SuccessAsync(result.Message ?? "Items cut to clipboard");
+            await Notify.SuccessAsync(result.Message ?? L["ItemsCutToClipboard"]);
         }
         catch (Exception ex)
         {
@@ -480,7 +478,7 @@
             });
 
             await LoadClipboardState();
-            await Notify.SuccessAsync(result.Message ?? "Items copied to clipboard");
+            await Notify.SuccessAsync(result.Message ?? L["ItemsCopiedToClipboard"]);
         }
         catch (Exception ex)
         {
@@ -569,7 +567,7 @@
     private void HandleDelete()
     {
         if (!_state.HasSelection || _state.SourceMode == FileExplorerSourceMode.BlobPath) return;
-        _deleteModalOpen = true;
+        _deleteConfirm?.Show();
     }
 
     private async Task ConfirmDelete()
@@ -582,7 +580,6 @@
                 FolderIds = _state.SelectedFolders.ToList()
             });
 
-            _deleteModalOpen = false;
             _state.ClearSelection();
             if (result.Success && result.SuccessCount > 0)
                 _treeRefreshTrigger++;

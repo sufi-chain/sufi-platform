@@ -14,7 +14,7 @@
         <SbStack Gap="4">
             <SbFormField Label="@L["DisplayName:ShortLinks.BaseUrl"]"
                          HelperText="@L["Description:ShortLinks.BaseUrl"]">
-                <SbTextField @bind-Value="_settings.BaseUrl" />
+                <SbTextField @bind-Value="_settings.BaseUrl" Type="url" />
             </SbFormField>
 
             <SbFormField Label="@L["DisplayName:ShortLinks.ShortUrl.RedirectRoute"]"

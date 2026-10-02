@@ -1,0 +1,200 @@
+@namespace SufiChain.SufiPlatform.FileManager.Blazor.Pages
+@page "/panel/admin/file-manager/assets/{AssetId:guid}/edit"
+@attribute [Authorize(FileManagerPermissions.FileItems.Default)]
+@inherits FileManagerComponentBase
+
+@if (_assetLoading && _file == null)
+{
+    <div class="text-center py-5">
+        <SbProgress Indeterminate="true" aria-label="@L["Loading"]" Type="SbProgressType.Circular" />
+    </div>
+}
+else if (_notFound || _file == null)
+{
+    <SbStack Gap="3">
+        <SbAlert Severity="SbAlertSeverity.Warning">@L["FailedToLoadImage"]</SbAlert>
+        <div>
+            <SbButton Color="SbColor.Default" OnClick="CancelAsync">@L["Cancel"]</SbButton>
+        </div>
+    </SbStack>
+}
+else
+{
+    <div class="fm-image-editor-page">
+        <SbSurface Elevation="0" Padding="10px 16px" Class="fm-image-editor-toolbar">
+            <div class="fm-editor-toolbar-desktop">
+                <div class="fm-editor-toolbar-row">
+                    <div class="fm-editor-toolbar-scroll">
+                        <div class="fm-editor-toolbar-group">
+                            <span class="fm-editor-toolbar-group__label">@L["Transform"]</span>
+                            <div class="fm-editor-toolbar-buttons">
+                                <SbIconButton Size="SbSize.Sm" OnClick="@(() => RotateAsync(90))" Title="@L["RotateRight"]"><SbIcon Name="rotate-right" /></SbIconButton>
+                                <SbIconButton Size="SbSize.Sm" OnClick="@(() => RotateAsync(-90))" Title="@L["RotateLeft"]"><SbIcon Name="rotate-left" /></SbIconButton>
+                                <SbIconButton Size="SbSize.Sm" OnClick="FlipXAsync" Title="@L["FlipHorizontal"]"><SbIcon Name="flip-horizontal" /></SbIconButton>
+                                <SbIconButton Size="SbSize.Sm" OnClick="FlipYAsync" Title="@L["FlipVertical"]"><SbIcon Name="flip-vertical" /></SbIconButton>
+                                <SbButton Size="SbSize.Sm" Color="SbColor.Default" OnClick="ResetAsync" Title="@L["Reset"]">
+                                    <SbIcon Name="refresh" /><span class="fm-editor-btn-label">@L["Reset"]</span>
+                                </SbButton>
+                            </div>
+                        </div>
+                        <div class="fm-editor-toolbar-divider" aria-hidden="true"></div>
+                        <div class="fm-editor-toolbar-group">
+                            <div class="fm-editor-toolbar-buttons">
+                                <SbIconButton Size="SbSize.Sm" OnClick="UndoAsync" Disabled="@(!_canUndo)" Title="@L["Undo"]"><SbIcon Name="undo" /></SbIconButton>
+                                <SbIconButton Size="SbSize.Sm" OnClick="RedoAsync" Disabled="@(!_canRedo)" Title="@L["Redo"]"><SbIcon Name="redo" /></SbIconButton>
+                                <SbIconButton Size="SbSize.Sm" OnClick="@(() => ZoomAsync(0.1))" Title="@L["Zoom"]"><SbIcon Name="zoom-in" /></SbIconButton>
+                                <SbIconButton Size="SbSize.Sm" OnClick="@(() => ZoomAsync(-0.1))" Title="@L["Zoom"]"><SbIcon Name="zoom-out" /></SbIconButton>
+                            </div>
+                        </div>
+                        <div class="fm-editor-toolbar-divider" aria-hidden="true"></div>
+                        <div class="fm-editor-toolbar-group">
+                            <span class="fm-editor-toolbar-group__label">@L["Crop"]</span>
+                            <div class="fm-editor-toolbar-buttons">
+                                <SbButton Size="SbSize.Sm" Color="SbColor.Default" OnClick="ToggleCropBoxAsync" Title="@(_cropBoxVisible ? L["HideCropBox"] : L["ShowCropBox"])">
+                                    <SbIcon Name="@(_cropBoxVisible ? "crop" : "expand")" /><span class="fm-editor-btn-label">@(_cropBoxVisible ? L["HideCropBox"] : L["ShowCropBox"])</span>
+                                </SbButton>
+                            </div>
+                        </div>
+                        <div class="fm-editor-toolbar-divider" aria-hidden="true"></div>
+                        <div class="fm-editor-toolbar-group">
+                            <span class="fm-editor-toolbar-group__label">@L["AspectRatio"]</span>
+                            <div class="fm-editor-toolbar-buttons">
+                                <SbFormField Class="fm-editor-form-field-inline">
+                                    <SbSimpleSelect TValue="string" Value="_aspectRatioKey" ValueChanged="OnAspectRatioChanged" Style="min-width: 90px;">
+                                        <SbSelectOption TValue="string" Value="@("free")">@L["FreeCrop"]</SbSelectOption>
+                                        <SbSelectOption TValue="string" Value="@("1")">1:1</SbSelectOption>
+                                        <SbSelectOption TValue="string" Value="@("4:3")">4:3</SbSelectOption>
+                                        <SbSelectOption TValue="string" Value="@("16:9")">16:9</SbSelectOption>
+                                    </SbSimpleSelect>
+                                </SbFormField>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="fm-editor-toolbar-mobile">
+                <SbStack Direction="SbStackDirection.Column" Gap="2" Class="fm-editor-toolbar-mobile__stack">
+                    <SbStack Direction="SbStackDirection.Row" Gap="2" Align="SbAlign.Center">
+                        <SbButton Size="SbSize.Sm" Color="SbColor.Default" OnClick="ToggleCropBoxAsync" Title="@(_cropBoxVisible ? L["HideCropBox"] : L["ShowCropBox"])">
+                            <StartIcon><SbIcon Name="@(_cropBoxVisible ? "crop" : "expand")" /></StartIcon>
+                            <ChildContent>@L["Crop"]</ChildContent>
+                        </SbButton>
+                        <div class="fm-editor-toolbar-spacer"></div>
+                        <SbMenu @bind-Open="_mobileEditorMenuOpen" Placement="SbPlacement.BottomEnd" Class="fm-editor-toolbar-mobile-menu">
+                            <AnchorContent>
+                                <SbButton Color="SbColor.Default" Size="SbSize.Sm" aria-label="@L["MoreActions"]" OnClick="@(() => _mobileEditorMenuOpen = !_mobileEditorMenuOpen)">
+                                    <StartIcon><SbIcon Name="more-horizontal" /></StartIcon>
+                                </SbButton>
+                            </AnchorContent>
+                            <ChildContent>
+                                <SbMenuItem OnClick="@(() => RotateAsync(90))"><SbIcon Name="rotate-right" Class="me-2" />@L["RotateRight"]</SbMenuItem>
+                                <SbMenuItem OnClick="@(() => RotateAsync(-90))"><SbIcon Name="rotate-left" Class="me-2" />@L["RotateLeft"]</SbMenuItem>
+                                <SbMenuItem OnClick="FlipXAsync"><SbIcon Name="flip-horizontal" Class="me-2" />@L["FlipHorizontal"]</SbMenuItem>
+                                <SbMenuItem OnClick="FlipYAsync"><SbIcon Name="flip-vertical" Class="me-2" />@L["FlipVertical"]</SbMenuItem>
+                                <SbMenuItem OnClick="ResetAsync"><SbIcon Name="refresh" Class="me-2" />@L["Reset"]</SbMenuItem>
+                                <div class="fm-menu-divider"></div>
+                                <SbMenuItem OnClick="UndoAsync" Disabled="@(!_canUndo)"><SbIcon Name="undo" Class="me-2" />@L["Undo"]</SbMenuItem>
+                                <SbMenuItem OnClick="RedoAsync" Disabled="@(!_canRedo)"><SbIcon Name="redo" Class="me-2" />@L["Redo"]</SbMenuItem>
+                                <SbMenuItem OnClick="@(() => ZoomAsync(0.1))"><SbIcon Name="zoom-in" Class="me-2" />@L["Zoom"] +</SbMenuItem>
+                                <SbMenuItem OnClick="@(() => ZoomAsync(-0.1))"><SbIcon Name="zoom-out" Class="me-2" />@L["Zoom"] -</SbMenuItem>
+                                <div class="fm-menu-divider"></div>
+                                <SbMenuItem OnClick="@(() => OnAspectRatioChanged("free"))"><SbIcon Name="crop" Class="me-2" />@L["FreeCrop"]</SbMenuItem>
+                                <SbMenuItem OnClick="@(() => OnAspectRatioChanged("1"))">1:1</SbMenuItem>
+                                <SbMenuItem OnClick="@(() => OnAspectRatioChanged("4:3"))">4:3</SbMenuItem>
+                                <SbMenuItem OnClick="@(() => OnAspectRatioChanged("16:9"))">16:9</SbMenuItem>
+                            </ChildContent>
+                        </SbMenu>
+                    </SbStack>
+                    <div class="fm-editor-toolbar-mobile-row2">
+                        <SbFormField Class="fm-editor-form-field-inline fm-editor-form-field--mobile">
+                            <SbSimpleSelect TValue="string" Value="_aspectRatioKey" ValueChanged="OnAspectRatioChanged" Style="min-width: 0;">
+                                <SbSelectOption TValue="string" Value="@("free")">@L["FreeCrop"]</SbSelectOption>
+                                <SbSelectOption TValue="string" Value="@("1")">1:1</SbSelectOption>
+                                <SbSelectOption TValue="string" Value="@("4:3")">4:3</SbSelectOption>
+                                <SbSelectOption TValue="string" Value="@("16:9")">16:9</SbSelectOption>
+                            </SbSimpleSelect>
+                        </SbFormField>
+                    </div>
+                </SbStack>
+            </div>
+        </SbSurface>
+
+        <div class="fm-image-editor-workspace">
+            <div class="fm-image-editor-canvas">
+                <div class="fm-cropper-wrapper">
+                    <img @key="AssetId"
+                         src="@_imageSrc"
+                         alt="@_file.OriginalName"
+                         @ref="_imageElement"
+                         style="max-width: 100%; max-height: 100%; display: block; @(_isLoading ? "opacity: 0;" : "")"
+                         @onload="OnImageLoaded"
+                         @onerror="OnImageError" />
+                </div>
+                @if (_isLoading)
+                {
+                    <SbStack Justify="SbJustify.Center" Align="SbAlign.Center" Class="fm-image-editor-loading">
+                        <SbProgress Type="SbProgressType.Circular" />
+                    </SbStack>
+                }
+            </div>
+
+            <aside class="fm-image-editor-inspector">
+                <SbStack Gap="3">
+                    <SbText Weight="SbFontWeight.Semibold">@_file.OriginalName</SbText>
+
+                    <SbText Weight="SbFontWeight.Semibold" Size="SbSize.Xs">@L["Adjustments"]</SbText>
+                    <SbFormField Label="@L["Brightness"]">
+                        <SbSlider TNumber="int" Value="_brightness" ValueChanged="OnBrightnessChanged" Min="-100" Max="100" />
+                    </SbFormField>
+                    <SbFormField Label="@L["Contrast"]">
+                        <SbSlider TNumber="int" Value="_contrast" ValueChanged="OnContrastChanged" Min="-100" Max="100" />
+                    </SbFormField>
+                    <SbFormField Label="@L["Saturation"]">
+                        <SbSlider TNumber="int" Value="_saturation" ValueChanged="OnSaturationChanged" Min="-100" Max="100" />
+                    </SbFormField>
+
+                    <SbDivider />
+                    <SbText Weight="SbFontWeight.Semibold" Size="SbSize.Xs">@L["Effects"]</SbText>
+                    <SbStack Direction="SbStackDirection.Row" Gap="2">
+                        <SbCheckbox Value="_grayscale" ValueChanged="OnGrayscaleChanged" Label="@L["Grayscale"]" />
+                        <SbCheckbox Value="_sepia" ValueChanged="OnSepiaChanged" Label="@L["Sepia"]" />
+                    </SbStack>
+
+                    <SbDivider />
+                    <SbText Weight="SbFontWeight.Semibold" Size="SbSize.Xs">@L["Format"]</SbText>
+                    <SbFormField Label="@L["Format"]">
+                        <SbSimpleSelect TValue="string" Value="_saveFormat" ValueChanged="OnSaveFormatChanged">
+                            <SbSelectOption TValue="string" Value="@("image/png")">@L["ImageFormatPng"]</SbSelectOption>
+                            <SbSelectOption TValue="string" Value="@("image/jpeg")">@L["ImageFormatJpeg"]</SbSelectOption>
+                            <SbSelectOption TValue="string" Value="@("image/webp")">@L["ImageFormatWebP"]</SbSelectOption>
+                        </SbSimpleSelect>
+                    </SbFormField>
+                    @if (_saveFormat != "image/png")
+                    {
+                        <SbFormField Label="@L["Quality"]">
+                            <SbStack Direction="SbStackDirection.Row" Gap="2" Align="SbAlign.Center">
+                                <SbSlider TNumber="double" Value="_saveQuality" ValueChanged="OnSaveQualityChanged" Min="0.1" Max="1" Step="0.1" Style="flex: 1;" />
+                                <SbText Variant="SbTextVariant.Caption" Color="SbColor.Secondary">@((int)(_saveQuality * 100))%</SbText>
+                            </SbStack>
+                        </SbFormField>
+                    }
+
+                    <SbDivider />
+                    <section class="fm-image-editor-save-as">
+                        <SbText Weight="SbFontWeight.Semibold" Size="SbSize.Xs">@L["SaveAs"]</SbText>
+                        <SbFormField Label="@L["FileName"]">
+                            <SbTextField @bind-Value="_saveAsFileName" Placeholder="@L["EnterFileName"]" />
+                        </SbFormField>
+                        <SbButton Color="SbColor.Secondary" OnClick="SaveAsAsync" Loading="_isSaving">@L["SaveAs"]</SbButton>
+                    </section>
+
+                    <SbStack Direction="SbStackDirection.Row" Gap="2" Justify="SbJustify.End">
+                        <SbButton Color="SbColor.Default" OnClick="CancelAsync">@L["Cancel"]</SbButton>
+                        <SbButton Color="SbColor.Primary" OnClick="SaveAsync" Loading="_isSaving">@L["Save"]</SbButton>
+                    </SbStack>
+                </SbStack>
+            </aside>
+        </div>
+    </div>
+}

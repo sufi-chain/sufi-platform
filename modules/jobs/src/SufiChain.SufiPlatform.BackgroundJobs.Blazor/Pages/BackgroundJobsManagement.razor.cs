@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using SufiChain.SufiBlazor.Components;
+using SufiChain.SufiBlazor.Components.Overlays;
 using SufiChain.SufiPlatform.BackgroundJobs.Dtos;
 using SufiChain.SufiPlatform.BackgroundJobs.Hooshvare;
 using SufiChain.SufiPlatform.UI.Layout;
@@ -58,10 +59,10 @@ public partial class BackgroundJobsManagement : BackgroundJobsComponentBase
     private BackgroundJobListItemDto? _selectedJob;
 
     // Confirmation dialog state
-    private bool _showDeleteConfirm;
+    private SbConfirmDialog? _deleteConfirm;
     private BackgroundJobListItemDto? _jobToDelete;
-    
-    private bool _showAbandonConfirm;
+
+    private SbConfirmDialog? _abandonConfirm;
     private BackgroundJobListItemDto? _jobToAbandon;
 
     protected override void OnInitialized()
@@ -183,12 +184,11 @@ public partial class BackgroundJobsManagement : BackgroundJobsComponentBase
     private void ShowDeleteConfirm(BackgroundJobListItemDto job)
     {
         _jobToDelete = job;
-        _showDeleteConfirm = true;
+        _deleteConfirm?.Show();
     }
 
     private void CancelDelete()
     {
-        _showDeleteConfirm = false;
         _jobToDelete = null;
     }
 
@@ -197,7 +197,6 @@ public partial class BackgroundJobsManagement : BackgroundJobsComponentBase
         if (_jobToDelete == null) return;
         
         var job = _jobToDelete;
-        _showDeleteConfirm = false;
         _jobToDelete = null;
 
         await ExecuteWithLoadingAsync(async () =>
@@ -221,12 +220,11 @@ public partial class BackgroundJobsManagement : BackgroundJobsComponentBase
     private void ShowAbandonConfirm(BackgroundJobListItemDto job)
     {
         _jobToAbandon = job;
-        _showAbandonConfirm = true;
+        _abandonConfirm?.Show();
     }
 
     private void CancelAbandon()
     {
-        _showAbandonConfirm = false;
         _jobToAbandon = null;
     }
 
@@ -235,7 +233,6 @@ public partial class BackgroundJobsManagement : BackgroundJobsComponentBase
         if (_jobToAbandon == null) return;
         
         var job = _jobToAbandon;
-        _showAbandonConfirm = false;
         _jobToAbandon = null;
 
         await ExecuteWithLoadingAsync(async () =>

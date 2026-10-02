@@ -5,7 +5,7 @@
 
 <SufiPageToolbar>
 	<AuthorizeView Policy="@SufiChain.SufiPlatform.Identity.IdentityPermissions.Users.Create">
-		<SbButton Color="SbColor.Primary" OnClick="@ShowCreateModal">
+		<SbButton Color="SbColor.Primary" OnClick="@GoToCreateUser">
 			<StartIcon><SbIcon Name="plus" /></StartIcon>
 			<ChildContent>@L["NewUser"]</ChildContent>
 		</SbButton>
@@ -29,6 +29,8 @@
 				<SbDataGrid TItem="IdentityUserDto"
 							@ref="_gridRef"
 							ItemsProvider="LoadUsersDataAsync"
+							InitialSortField="UserName"
+							InitialSortDirection="SbSortDirection.Ascending"
 							Loading="IsOperationLoading(LoadingKeys.LoadUsers)"
 							Striped="true"
 							Hoverable="true"
@@ -40,12 +42,12 @@
                         ShowFilterRow="true"
                         ShowColumnChooser="true"
                         SelectionMode="SbSelectionMode.MultipleRows">
-					<SbColumn TItem="IdentityUserDto" Title="@L["Actions"]" Width="152px" Sortable="false">
+					<SbColumn TItem="IdentityUserDto" Title="@L["Actions"]" MinWidth="152px" Sortable="false">
 						<CellTemplate Context="cellContext">
 							<SbStack Wrap="true" Direction="SbStackDirection.Row" Gap="1">
 								<AuthorizeView Policy="@SufiChain.SufiPlatform.Identity.IdentityPermissions.Users.Update" Context="authContext">
 									<SbTooltip Text="@L["Edit"]"><SbIconButton Size="SbSize.Sm" AriaLabel="@L["Edit"]"
-												  OnClick="@(() => ShowEditModal(cellContext.Item))">
+												  OnClick="@(() => GoToEditUser(cellContext.Item))">
 										<Icon><SbIcon Name="edit" Size="SbSize.Sm" /></Icon>
 									</SbIconButton></SbTooltip>
 								</AuthorizeView>
@@ -87,8 +89,6 @@
 
 </SbStack>
 
-<UserCreateModal @bind-Open="_showCreateModal" OnUserCreated="OnUserCreatedAsync" Roles="_roles" />
-<UserEditModal @bind-Open="_showEditModal" User="_selectedUser" OnUserUpdated="OnUserUpdatedAsync" Roles="_roles" />
 <PermissionsModal @ref="_permissionManagementModal" />
 <ReadOnlyHooshvareDrawer HooshvareKey="@IdentityAdminAdvisorHooshvareKeys.Key"
                          Title="@L["Hooshvare:SufiIdentity:AdminAdvisor:DisplayName"]"

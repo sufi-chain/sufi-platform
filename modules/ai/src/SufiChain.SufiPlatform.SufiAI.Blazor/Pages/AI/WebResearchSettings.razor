@@ -47,7 +47,7 @@
                 <section class="web-research-section" aria-labelledby="research-connection">
                     <h2 id="research-connection">@L["WebResearchConnectionSection"]</h2>
                     <SbCheckbox @bind-Value="_model.Enabled" Label="@L["WebResearchEnabled"]" />
-                    <SbTextField @bind-Value="_model.Endpoint" Label="@L["WebResearchEndpoint"]" />
+                    <SbTextField @bind-Value="_model.Endpoint" Label="@L["WebResearchEndpoint"]" Type="url" />
                     <SbTextField @bind-Value="_model.AuthorizationBearerToken"
                                  Label="@L["WebResearchToken"]"
                                  Type="password"
@@ -68,8 +68,8 @@
                         <SbSelectOption TValue="int" Value="2">@L["WebResearchSafeStrict"]</SbSelectOption>
                     </SbSimpleSelect>
                     <SbGrid Columns="1" ColumnsMd="2" Gap="3">
-                        <SbTextField TValue="int" @bind-Value="_model.MaxSearchResults" Label="@L["WebResearchMaxResults"]" Type="number" InputMode="numeric" min="1" max="10" step="1" Disabled="@(_busy || !_canEdit)" />
-                        <SbTextField TValue="int" @bind-Value="_model.MaxPagesToFetch" Label="@L["WebResearchMaxPages"]" Type="number" InputMode="numeric" min="0" max="5" step="1" Disabled="@(_busy || !_canEdit)" />
+                        <SbNumberField TNumber="int" @bind-Value="_model.MaxSearchResults" Label="@L["WebResearchMaxResults"]" Min="1" Max="10" Step="1" Disabled="@(_busy || !_canEdit)" />
+                        <SbNumberField TNumber="int" @bind-Value="_model.MaxPagesToFetch" Label="@L["WebResearchMaxPages"]" Min="0" Max="5" Step="1" Disabled="@(_busy || !_canEdit)" />
                     </SbGrid>
                 </section>
                 <details class="web-research-section web-research-advanced" open="@_advancedOpen" @key="_validationVersion">
@@ -77,11 +77,11 @@
                     <div class="web-research-advanced-body">
                         <p>@L["WebResearchAdvancedHint"]</p>
                         <SbGrid Columns="1" ColumnsMd="2" Gap="3">
-                            <SbTextField TValue="int" @bind-Value="_model.SearchTimeoutSeconds" Label="@L["WebResearchSearchTimeout"]" Type="number" InputMode="numeric" min="2" max="30" step="1" Disabled="@(_busy || !_canEdit)" />
-                            <SbTextField TValue="int" @bind-Value="_model.FetchTimeoutSeconds" Label="@L["WebResearchFetchTimeout"]" Type="number" InputMode="numeric" min="2" max="30" step="1" Disabled="@(_busy || !_canEdit)" />
-                            <SbTextField TValue="int" @bind-Value="_model.MaxPageBytes" Label="@L["WebResearchMaxBytes"]" Type="number" InputMode="numeric" min="1024" max="5242880" step="1" Disabled="@(_busy || !_canEdit)" />
-                            <SbTextField TValue="int" @bind-Value="_model.MaxExtractedCharactersPerPage" Label="@L["WebResearchPageCharacters"]" Type="number" InputMode="numeric" min="100" max="24000" step="1" Disabled="@(_busy || !_canEdit)" />
-                            <SbTextField TValue="int" @bind-Value="_model.MaxTotalContextCharacters" Label="@L["WebResearchContextCharacters"]" Type="number" InputMode="numeric" min="1000" max="60000" step="1" Disabled="@(_busy || !_canEdit)" />
+                            <SbNumberField TNumber="int" @bind-Value="_model.SearchTimeoutSeconds" Label="@L["WebResearchSearchTimeout"]" Min="2" Max="30" Step="1" Disabled="@(_busy || !_canEdit)" />
+                            <SbNumberField TNumber="int" @bind-Value="_model.FetchTimeoutSeconds" Label="@L["WebResearchFetchTimeout"]" Min="2" Max="30" Step="1" Disabled="@(_busy || !_canEdit)" />
+                            <SbNumberField TNumber="int" @bind-Value="_model.MaxPageBytes" Label="@L["WebResearchMaxBytes"]" Min="1024" Max="5242880" Step="1" Disabled="@(_busy || !_canEdit)" />
+                            <SbNumberField TNumber="int" @bind-Value="_model.MaxExtractedCharactersPerPage" Label="@L["WebResearchPageCharacters"]" Min="100" Max="24000" Step="1" Disabled="@(_busy || !_canEdit)" />
+                            <SbNumberField TNumber="int" @bind-Value="_model.MaxTotalContextCharacters" Label="@L["WebResearchContextCharacters"]" Min="1000" Max="60000" Step="1" Disabled="@(_busy || !_canEdit)" />
                         </SbGrid>
                     </div>
                 </details>

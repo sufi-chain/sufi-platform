@@ -31,16 +31,6 @@
                               OnSlotSelect="OpenCreateEventFromSlotAsync"
                               ToolbarExtra="ToolbarExtra" />
         }
-
-        <SufiEventEditor Open="@IsEventEditorOpen"
-                         OpenChanged="OnEventEditorOpenChangedAsync"
-                         EventId="@EditingEventId"
-                         CalendarId="@SelectedCalendarId"
-                         InitialStartUtc="@InitialEventStartUtc"
-                         InitialEndUtc="@InitialEventEndUtc"
-                         TimeZoneId="@SelectedTimeZoneId"
-                         Saved="OnEventSavedAsync"
-                         Deleted="OnEventDeletedAsync" />
     </SbStack>
 }
 else
@@ -104,16 +94,6 @@ else
                                       ToolbarExtra="ToolbarExtra" />
                 }
             </SbStack>
-
-            <SufiEventEditor Open="@IsEventEditorOpen"
-                             OpenChanged="OnEventEditorOpenChangedAsync"
-                             EventId="@EditingEventId"
-                             CalendarId="@SelectedCalendarId"
-                             InitialStartUtc="@InitialEventStartUtc"
-                             InitialEndUtc="@InitialEventEndUtc"
-                             TimeZoneId="@SelectedTimeZoneId"
-                             Saved="OnEventSavedAsync"
-                             Deleted="OnEventDeletedAsync" />
         </ChildContent>
         <Footer>
             <SbButton Variant="SbButtonVariant.Outline" OnClick="CloseAsync">@L["Close"]</SbButton>

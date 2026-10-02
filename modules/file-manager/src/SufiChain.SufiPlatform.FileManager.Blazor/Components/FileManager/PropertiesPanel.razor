@@ -19,45 +19,45 @@
         </div>
         <div class="fm-properties-body">
             <dl>
-                <dt>Type</dt>
+                <dt>@L["Type"]</dt>
                 <dd>@GetFileTypeName(file)</dd>
                 
-                <dt>Size</dt>
+                <dt>@L["Size"]</dt>
                 <dd>@FormatFileSize(file.Size)</dd>
                 
                 @if (file.Width.HasValue && file.Height.HasValue)
                 {
-                    <dt>Dimensions</dt>
+                    <dt>@L["Dimensions"]</dt>
                     <dd>@(file.Width)×@(file.Height) px</dd>
                 }
                 
                 @if (file.Duration.HasValue)
                 {
-                    <dt>Duration</dt>
+                    <dt>@L["Duration"]</dt>
                     <dd>@file.Duration.Value.ToString(@"hh\:mm\:ss")</dd>
                 }
                 
-                <dt>Created</dt>
+                <dt>@L["Created"]</dt>
                 <dd>@file.CreationTime.ToString("yyyy-MM-dd HH:mm:ss")</dd>
                 
                 @if (file.LastModificationTime.HasValue)
                 {
-                    <dt>Modified</dt>
+                    <dt>@L["Modified"]</dt>
                     <dd>@file.LastModificationTime.Value.ToString("yyyy-MM-dd HH:mm:ss")</dd>
                 }
                 
-                <dt>MIME Type</dt>
+                <dt>@L["MimeType"]</dt>
                 <dd>@file.MimeType</dd>
                 
                 @if (!string.IsNullOrEmpty(file.Alt))
                 {
-                    <dt>Alt Text</dt>
+                    <dt>@L["AltText"]</dt>
                     <dd>@file.Alt</dd>
                 }
                 
                 @if (file.Tags != null && file.Tags.Any())
                 {
-                    <dt>Tags</dt>
+                    <dt>@L["Tags"]</dt>
                     <dd>
                         @foreach (var tag in file.Tags)
                         {
@@ -86,9 +86,9 @@
                 
                 @if (file.IsArchived)
                 {
-                    <dt>Status</dt>
+                    <dt>@L["Status"]</dt>
                     <dd>
-                        <SbChip Color="SbColor.Warning" Size="SbSize.Sm">Archived</SbChip>
+                        <SbChip Color="SbColor.Warning" Size="SbSize.Sm">@L["Archived"]</SbChip>
                         @if (file.ArchivedAt.HasValue)
                         {
                             <span class="text-muted ms-2">@file.ArchivedAt.Value.ToString("yyyy-MM-dd")</span>
@@ -98,7 +98,7 @@
                 
                 @if (IsAIStructure(file))
                 {
-                    <dt>AI Processing</dt>
+                    <dt>@L["AIProcessing"]</dt>
                     <dd>
                         @if (file.FileType == FileType.Audio)
                         {
@@ -134,19 +134,19 @@
         </div>
         <div class="fm-properties-body">
             <dl>
-                <dt>Type</dt>
+                <dt>@L["Type"]</dt>
                 <dd>@GetFolderTypeName(folder)</dd>
                 
-                <dt>Path</dt>
+                <dt>@L["Path"]</dt>
                 <dd>@folder.Path</dd>
                 
-                <dt>Files</dt>
+                <dt>@L["Files"]</dt>
                 <dd>@folder.FileCount</dd>
                 
                 @if (folder.IsShared)
                 {
-                    <dt>Shared</dt>
-                    <dd>Yes</dd>
+                    <dt>@L["Shared"]</dt>
+                    <dd>@L["Yes"]</dd>
                 }
             </dl>
         </div>
@@ -157,17 +157,17 @@
             <div class="fm-properties-icon">
                 <SbIcon Name="file" Size="SbSize.Xl" />
             </div>
-            <div class="fm-properties-title">@(SelectedFiles.Count + SelectedFolders.Count) items selected</div>
+            <div class="fm-properties-title">@L["ItemsSelected", SelectedFiles.Count + SelectedFolders.Count]</div>
         </div>
         <div class="fm-properties-body">
             <dl>
-                <dt>Files</dt>
+                <dt>@L["Files"]</dt>
                 <dd>@SelectedFiles.Count</dd>
                 
-                <dt>Folders</dt>
+                <dt>@L["Folders"]</dt>
                 <dd>@SelectedFolders.Count</dd>
                 
-                <dt>Total Size</dt>
+                <dt>@L["TotalSize"]</dt>
                 <dd>@FormatFileSize(SelectedFiles.Sum(f => f.Size))</dd>
             </dl>
         </div>
@@ -175,7 +175,7 @@
     else
     {
         <div class="fm-properties-empty">
-            <p class="text-muted">Select an item to view properties</p>
+            <p class="text-muted">@L["SelectItemToViewProperties"]</p>
         </div>
     }
 </div>
@@ -210,14 +210,7 @@
         _ => "file"
     };
 
-    private string GetFileTypeName(FileItemDto file) => file.FileType switch
-    {
-        FileType.Image => "Image",
-        FileType.Video => "Video",
-        FileType.Audio => "Audio",
-        FileType.Document => "Document",
-        _ => "File"
-    };
+    private string GetFileTypeName(FileItemDto file) => FormatFileType(file.FileType);
 
     private string GetFolderDisplayName(FolderTreeNodeDto folder)
     {
@@ -230,11 +223,11 @@
 
     private string GetFolderTypeName(FolderTreeNodeDto folder) => folder.Type switch
     {
-        FolderTypeDto.TenantRoot => "Tenant Root",
-        FolderTypeDto.Structure => "Structure Folder",
-        FolderTypeDto.YearMonth => "Date Folder",
-        FolderTypeDto.Custom => "Folder",
-        _ => "Folder"
+        FolderTypeDto.TenantRoot => L["TenantRoot"],
+        FolderTypeDto.Structure => L["StructureFolder"],
+        FolderTypeDto.YearMonth => L["DateFolder"],
+        FolderTypeDto.Custom => L["Folder"],
+        _ => L["Folder"]
     };
 
     private string FormatFileSize(long bytes)

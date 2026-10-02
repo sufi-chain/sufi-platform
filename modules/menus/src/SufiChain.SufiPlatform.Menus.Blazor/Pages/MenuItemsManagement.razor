@@ -4,7 +4,7 @@
 @inherits MenusComponentBase
 
 <SufiPageToolbar>
-    <SbButton Color="SbColor.Primary" OnClick="@ShowCreateRootModal">
+    <SbButton Color="SbColor.Primary" OnClick="@GoToNewItem">
         <StartIcon><SbIcon Name="plus" /></StartIcon>
         <ChildContent>@L["NewRootItem"]</ChildContent>
     </SbButton>
@@ -38,17 +38,6 @@
         </ChildContent>
     </SbCard>
 </SbStack>
-
-<MenuItemCreateModal Open="_showCreateModal" OpenChanged="SetCreateOpen"
-                     MenuId="MenuId" ParentId="_createParentId"
-                     MenuKey="_menuKey" ResourceName="_menuResourceName" ContextType="_menuContextType"
-                     ParentOptions="_parentOptions"
-                     OnItemCreated="OnItemCreatedAsync" />
-
-<MenuItemEditModal Open="_showEditModal" OpenChanged="SetEditOpen"
-                   Item="_selectedItem" ParentOptions="_parentOptions"
-                   MenuKey="_menuKey" ResourceName="_menuResourceName" ContextType="_menuContextType"
-                   OnItemUpdated="OnItemUpdatedAsync" />
 
 <MenuItemMoveModal Open="_showMoveModal" OpenChanged="SetMoveOpen"
                    Item="_selectedItem" ParentOptions="_parentOptions"

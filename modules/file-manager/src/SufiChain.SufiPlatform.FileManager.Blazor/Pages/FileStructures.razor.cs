@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Forms;
 using SufiChain.SufiBlazor.Components;
+using SufiChain.SufiBlazor.Components.Overlays;
 using SufiChain.SufiPlatform.FileManager.FileMigration;
 using SufiChain.SufiPlatform.FileManager.FileStructures;
 using SufiChain.SufiPlatform.FileManager.FileTypes;
@@ -17,55 +17,24 @@ public partial class FileStructures : FileManagerComponentBase, IDisposable
 
     [Inject] private IFileStructureAppService FileStructureAppService { get; set; } = default!;
     [Inject] private IFileMigrationAppService FileMigrationAppService { get; set; } = default!;
-    [Inject] private IFileManagerStorageSettingsAppService StorageSettingsAppService { get; set; } = default!;
     [Inject] protected IPageLayout PageLayout { get; set; } = default!;
+    [Inject] protected NavigationManager NavigationManager { get; set; } = default!;
 
     private bool _loading = true;
-    private bool _saving = false;
-    private bool _testingConnection = false;
-    private bool _isEditing = false;
     private string _searchTerm = "";
-    private string? _selectedTab = "basic";
-    private bool _showExtensionDetails = false;
-    private List<string> _extensionTags = new();
-    private List<string> _mimeTypeTags = new();
     private readonly CancellationTokenSource _cts = new();
     private bool _disposed = false;
     
     private List<FileStructureDto> _structures = new();
-    private bool _editModalOpen;
-    private bool _createWizardOpen;
-    private int _wizardStep;
-    private EditContext? _createEditContext;
     private bool _viewModalOpen;
-    private bool _deleteConfirmOpen;
-    private bool _resetConfirmOpen;
+    private SbConfirmDialog? _deleteConfirm;
+    private SbConfirmDialog? _resetConfirm;
     private FileStructureDto? _structureToDelete;
     private FileStructureDto? _structureToReset;
     
-    private CreateUpdateFileStructureDto _editModel = new();
-    private Guid? _editingId;
-
-    private const int WizardStepCount = 7;
-
-    private static readonly FileStructureStorageProvider[] _storageProviderOptions =
-    {
-        FileStructureStorageProvider.Database,
-        FileStructureStorageProvider.FileSystem,
-        FileStructureStorageProvider.MinIO,
-        FileStructureStorageProvider.S3Provider
-    };
-    private bool _showDbConnectionString;
-    private bool _showMinioAccessKey;
-    private bool _showMinioSecretKey;
-    private bool _showS3AccessKey;
-    private bool _showS3SecretKey;
-
     private FileStructureDto? _viewStructure;
     private FileStructureDefaultDto? _defaultConfig;
 
-    private FileStructureStorageConfigDto? _defaultStorageConfig;
-    private bool _hasDefaultStorageConfigured;
 
     private IEnumerable<FileStructureDto> FilteredStructures =>
         string.IsNullOrWhiteSpace(_searchTerm)
@@ -125,287 +94,16 @@ public partial class FileStructures : FileManagerComponentBase, IDisposable
         _searchTerm = e.Value?.ToString() ?? "";
     }
 
-    private Task OpenCreateModal()
+    private void OpenCreatePage()
     {
-        _isEditing = false;
-        _editingId = null;
-        _wizardStep = 0;
-        _selectedTab = "basic";
-        _showExtensionDetails = false;
-        _editModel = new CreateUpdateFileStructureDto
-        {
-            AllowedFileTypes = FileType.Image,
-            AllowedExtensions = "jpg,jpeg,png,gif,webp",
-            AllowedMimeTypes = "image/jpeg,image/png,image/gif,image/webp",
-            MaxFileSize = 10 * 1024 * 1024,
-            GenerateThumbnail = true,
-            ThumbnailWidth = 200,
-            ThumbnailHeight = 200,
-            WebPQuality = 80,
-            StorageConfig = new FileStructureStorageConfigDto { StorageProvider = FileStructureStorageProvider.Database }
-        };
-        _createEditContext = new EditContext(_editModel);
-        _showDbConnectionString = false;
-        _showMinioAccessKey = false;
-        _showMinioSecretKey = false;
-        _extensionTags = ParseCsvToList(_editModel.AllowedExtensions);
-        _mimeTypeTags = ParseCsvToList(_editModel.AllowedMimeTypes);
-        _defaultStorageConfig = null;
-        _hasDefaultStorageConfigured = false;
-        _createWizardOpen = true;
-        return Task.CompletedTask;
+        NavigationManager.NavigateTo(FileStructureWizard.ListRoute + "/new");
     }
 
-    private void CloseCreateWizard()
+    private void OpenEditPage(FileStructureDto structure)
     {
-        _createWizardOpen = false;
+        NavigationManager.NavigateTo($"{FileStructureWizard.ListRoute}/{structure.Id}/edit");
     }
 
-    private async Task WizardNext()
-    {
-        if (!await ValidateCurrentStepAsync())
-            return;
-        _wizardStep = Math.Min(_wizardStep + 1, WizardStepCount - 1);
-        if (_wizardStep == 5)
-            await LoadDefaultStorageConfigAsync();
-    }
-
-    private void WizardBack()
-    {
-        _wizardStep = Math.Max(0, _wizardStep - 1);
-    }
-
-    private async Task WizardFinish()
-    {
-        if (_createEditContext == null || !_createEditContext.Validate())
-            return;
-        await SaveStructureFromWizard();
-    }
-
-    private async Task LoadDefaultStorageConfigAsync()
-    {
-        try
-        {
-            _defaultStorageConfig = await StorageSettingsAppService.GetDefaultConfigAsync();
-            _hasDefaultStorageConfigured = ComputeHasDefaultStorageConfigured(_defaultStorageConfig);
-            if (_editModel.StorageConfig != null && _defaultStorageConfig != null)
-            {
-                _editModel.StorageConfig.StorageProvider = _defaultStorageConfig.StorageProvider;
-            }
-        }
-        catch
-        {
-            _defaultStorageConfig = null;
-            _hasDefaultStorageConfigured = false;
-        }
-        StateHasChanged();
-    }
-
-    private static bool ComputeHasDefaultStorageConfigured(FileStructureStorageConfigDto? config)
-    {
-        if (config == null) return false;
-        return config.StorageProvider switch
-        {
-            FileStructureStorageProvider.Database => true,
-            FileStructureStorageProvider.FileSystem => true,
-            FileStructureStorageProvider.MinIO => !string.IsNullOrWhiteSpace(config.MinioEndPoint) && !string.IsNullOrWhiteSpace(config.MinioBucketName),
-            FileStructureStorageProvider.S3Provider => !string.IsNullOrWhiteSpace(config.S3Region) && !string.IsNullOrWhiteSpace(config.S3ContainerName),
-            _ => false
-        };
-    }
-
-    private async Task<bool> ValidateCurrentStepAsync()
-    {
-        if (_createEditContext == null) return true;
-
-        if (_wizardStep == 1) // Step 2 Identity
-        {
-            _createEditContext.Validate();
-            if (_createEditContext.GetValidationMessages().Any())
-                return false;
-            return true;
-        }
-
-        if (_wizardStep == 2) // Step 3 File Types
-        {
-            if (_editModel.AllowedFileTypes == 0)
-            {
-                await Notify.WarnAsync(L["CreateWizard:ValidationFileTypeRequired"].Value ?? "Select at least one file type.");
-                return false;
-            }
-            if (string.IsNullOrWhiteSpace(_editModel.AllowedExtensions) || string.IsNullOrWhiteSpace(_editModel.AllowedMimeTypes))
-            {
-                await Notify.WarnAsync(L["CreateWizard:ValidationFileTypeRequired"].Value ?? "Select at least one file type.");
-                return false;
-            }
-            return true;
-        }
-
-        if (_wizardStep == 3) // Step 4 File Settings
-        {
-            const long oneMB = 1024 * 1024;
-            if (_editModel.MaxFileSize < oneMB)
-            {
-                await Notify.WarnAsync(L["CreateWizard:ValidationMaxFileSizeMin"].Value ?? "Max file size must be at least 1 MB.");
-                return false;
-            }
-            if (_editModel.IsMultiple && (_editModel.MaxCount < 1 || _editModel.MaxCount > 100))
-            {
-                await Notify.WarnAsync(L["CreateWizard:ValidationMaxCountRange"].Value ?? "Max files must be between 1 and 100.");
-                return false;
-            }
-            return true;
-        }
-
-        if (_wizardStep == 4) // Step 5 Image Processing (only validate when Image type is selected)
-        {
-            if (!HasFileType(FileType.Image))
-                return true;
-            if (_editModel.GenerateThumbnail)
-            {
-                var w = _editModel.ThumbnailWidth;
-                var h = _editModel.ThumbnailHeight;
-                if (w < 16 || w > 1000 || h < 16 || h > 1000)
-                {
-                    await Notify.WarnAsync(L["CreateWizard:ValidationThumbnailSize"].Value ?? "Thumbnail size must be between 16 and 1000 px.");
-                    return false;
-                }
-            }
-            if (_editModel.EnableWebPConversion)
-            {
-                var q = _editModel.WebPQuality;
-                if (q < 1 || q > 100)
-                {
-                    await Notify.WarnAsync(L["CreateWizard:ValidationWebPQuality"].Value ?? "WebP quality must be between 1 and 100.");
-                    return false;
-                }
-            }
-            return true;
-        }
-
-        if (_wizardStep == 5) // Step 6 Storage
-        {
-            if (_hasDefaultStorageConfigured)
-                return true;
-            var cfg = _editModel.StorageConfig;
-            if (cfg == null) return true;
-            if (cfg.StorageProvider == FileStructureStorageProvider.MinIO)
-            {
-                if (string.IsNullOrWhiteSpace(cfg.MinioEndPoint) || string.IsNullOrWhiteSpace(cfg.MinioBucketName))
-                {
-                    await Notify.WarnAsync(L["CreateWizard:ValidationMinioRequired"].Value ?? "MinIO EndPoint and Bucket Name are required.");
-                    return false;
-                }
-            }
-            if (cfg.StorageProvider == FileStructureStorageProvider.S3Provider)
-            {
-                if (string.IsNullOrWhiteSpace(cfg.S3Region) || string.IsNullOrWhiteSpace(cfg.S3ContainerName))
-                {
-                    await Notify.WarnAsync(L["CreateWizard:ValidationS3Required"].Value ?? "S3 Region and Container Name are required.");
-                    return false;
-                }
-            }
-            return true;
-        }
-
-        return true;
-    }
-
-    private async Task SaveStructureFromWizard()
-    {
-        _saving = true;
-        try
-        {
-            await FileStructureAppService.CreateAsync(_editModel);
-            await Notify.SuccessAsync(L["StructureCreatedSuccessfully"]);
-            CloseCreateWizard();
-            await LoadStructures();
-        }
-        catch (Exception ex)
-        {
-            await NotifyOperationFailedAsync(ex, "FailedToSaveStructure");
-        }
-        finally
-        {
-            _saving = false;
-        }
-    }
-
-    private Task OpenEditModal(FileStructureDto structure)
-    {
-        _isEditing = true;
-        _editingId = structure.Id;
-        _selectedTab = "basic";
-        _showExtensionDetails = false;
-        _editModel = new CreateUpdateFileStructureDto
-        {
-            Key = structure.Key,
-            DisplayName = structure.DisplayName,
-            Description = structure.Description,
-            AllowedFileTypes = structure.AllowedFileTypes,
-            AllowedExtensions = structure.AllowedExtensions,
-            AllowedMimeTypes = structure.AllowedMimeTypes,
-            MaxFileSize = structure.MaxFileSize,
-            MinImageWidth = structure.MinImageWidth,
-            MinImageHeight = structure.MinImageHeight,
-            MaxImageWidth = structure.MaxImageWidth,
-            MaxImageHeight = structure.MaxImageHeight,
-            IsMultiple = structure.IsMultiple,
-            MaxCount = structure.MaxCount,
-            IsRequired = structure.IsRequired,
-            GenerateThumbnail = structure.GenerateThumbnail,
-            ThumbnailWidth = structure.ThumbnailWidth,
-            ThumbnailHeight = structure.ThumbnailHeight,
-            EnableWebPConversion = structure.EnableWebPConversion,
-            WebPQuality = structure.WebPQuality,
-            ResizeLargeImages = structure.ResizeLargeImages,
-            StorageProvider = structure.StorageProvider,
-            IsPublicAccess = structure.IsPublicAccess,
-            BaseUrl = structure.BaseUrl,
-            StorageConfig = structure.StorageConfig ?? new FileStructureStorageConfigDto { StorageProvider = FileStructureStorageProvider.Database }
-        };
-        _showDbConnectionString = false;
-        _showMinioAccessKey = false;
-        _showMinioSecretKey = false;
-        _extensionTags = ParseCsvToList(_editModel.AllowedExtensions);
-        _mimeTypeTags = ParseCsvToList(_editModel.AllowedMimeTypes);
-        _editModalOpen = true;
-        return Task.CompletedTask;
-    }
-
-    private void CloseEditModal()
-    {
-        _editModalOpen = false;
-    }
-
-    private async Task SaveStructure()
-    {
-        _saving = true;
-        try
-        {
-            if (_isEditing && _editingId.HasValue)
-            {
-                await FileStructureAppService.UpdateAsync(_editingId.Value, _editModel);
-                await Notify.SuccessAsync(L["StructureUpdatedSuccessfully"]);
-            }
-            else
-            {
-                await FileStructureAppService.CreateAsync(_editModel);
-                await Notify.SuccessAsync(L["StructureCreatedSuccessfully"]);
-            }
-            
-            CloseEditModal();
-            await LoadStructures();
-        }
-        catch (Exception ex)
-        {
-            await NotifyOperationFailedAsync(ex, "FailedToSaveStructure");
-        }
-        finally
-        {
-            _saving = false;
-        }
-    }
 
     private async Task OpenViewModal(FileStructureDto structure)
     {
@@ -449,12 +147,11 @@ public partial class FileStructures : FileManagerComponentBase, IDisposable
     private void ResetToDefault(FileStructureDto structure)
     {
         _structureToReset = structure;
-        _resetConfirmOpen = true;
+        _resetConfirm?.Show();
     }
 
     private void CancelReset()
     {
-        _resetConfirmOpen = false;
         _structureToReset = null;
     }
 
@@ -475,7 +172,6 @@ public partial class FileStructures : FileManagerComponentBase, IDisposable
         }
         finally
         {
-            _resetConfirmOpen = false;
             _structureToReset = null;
         }
     }
@@ -483,12 +179,11 @@ public partial class FileStructures : FileManagerComponentBase, IDisposable
     private void DeleteStructure(FileStructureDto structure)
     {
         _structureToDelete = structure;
-        _deleteConfirmOpen = true;
+        _deleteConfirm?.Show();
     }
 
     private void CancelDeleteStructure()
     {
-        _deleteConfirmOpen = false;
         _structureToDelete = null;
     }
 
@@ -508,60 +203,10 @@ public partial class FileStructures : FileManagerComponentBase, IDisposable
         }
         finally
         {
-            _deleteConfirmOpen = false;
             _structureToDelete = null;
         }
     }
 
-    private bool HasFileType(FileType type) => _editModel.AllowedFileTypes.HasFlag(type);
-
-    private void ToggleFileType(FileType type, bool enabled)
-    {
-        if (enabled)
-        {
-            _editModel.AllowedFileTypes |= type;
-        }
-        else
-        {
-            _editModel.AllowedFileTypes &= ~type;
-        }
-        UpdateExtensionsAndMimeTypes();
-    }
-
-    private void UpdateExtensionsAndMimeTypes()
-    {
-        var extensions = new List<string>();
-        var mimeTypes = new List<string>();
-
-        if (_editModel.AllowedFileTypes.HasFlag(FileType.Image))
-        {
-            extensions.AddRange(new[] { "jpg", "jpeg", "png", "gif", "webp", "bmp", "svg" });
-            mimeTypes.AddRange(new[] { "image/jpeg", "image/png", "image/gif", "image/webp", "image/bmp", "image/svg+xml" });
-        }
-
-        if (_editModel.AllowedFileTypes.HasFlag(FileType.Video))
-        {
-            extensions.AddRange(new[] { "mp4", "webm", "mov", "avi", "mkv" });
-            mimeTypes.AddRange(new[] { "video/mp4", "video/webm", "video/quicktime", "video/x-msvideo", "video/x-matroska" });
-        }
-
-        if (_editModel.AllowedFileTypes.HasFlag(FileType.Document))
-        {
-            extensions.AddRange(new[] { "pdf", "doc", "docx", "xls", "xlsx", "ppt", "pptx", "txt" });
-            mimeTypes.AddRange(new[] { "application/pdf", "application/msword", "application/vnd.openxmlformats-officedocument.wordprocessingml.document" });
-        }
-
-        if (_editModel.AllowedFileTypes.HasFlag(FileType.Audio))
-        {
-            extensions.AddRange(new[] { "mp3", "wav", "ogg", "flac" });
-            mimeTypes.AddRange(new[] { "audio/mpeg", "audio/wav", "audio/ogg", "audio/flac" });
-        }
-
-        _editModel.AllowedExtensions = string.Join(",", extensions.Distinct());
-        _editModel.AllowedMimeTypes = string.Join(",", mimeTypes.Distinct());
-        _extensionTags = ParseCsvToList(_editModel.AllowedExtensions);
-        _mimeTypeTags = ParseCsvToList(_editModel.AllowedMimeTypes);
-    }
 
     private static List<string> ParseCsvToList(string? csv)
     {
@@ -572,15 +217,6 @@ public partial class FileStructures : FileManagerComponentBase, IDisposable
             .ToList();
     }
 
-    private void SyncExtensionsToModel(List<string> tags)
-    {
-        _editModel.AllowedExtensions = string.Join(",", tags);
-    }
-
-    private void SyncMimeTypesToModel(List<string> tags)
-    {
-        _editModel.AllowedMimeTypes = string.Join(",", tags);
-    }
 
     private List<string> GetFileTypes(FileType types)
     {
@@ -618,40 +254,6 @@ public partial class FileStructures : FileManagerComponentBase, IDisposable
     private string TruncateText(string text, int maxLength) =>
         text.Length <= maxLength ? text : text.Substring(0, maxLength) + "...";
 
-    private async Task TestStorageConnectionAsync()
-    {
-        if (_editModel.StorageConfig == null) return;
-        _testingConnection = true;
-        StateHasChanged();
-        try
-        {
-            var input = new TestStorageConnectionInput
-            {
-                StorageProvider = _editModel.StorageConfig.StorageProvider,
-                DatabaseConnectionString = _editModel.StorageConfig.DatabaseConnectionString,
-                FileSystemBasePath = _editModel.StorageConfig.FileSystemBasePath,
-                MinioEndPoint = _editModel.StorageConfig.MinioEndPoint,
-                MinioAccessKey = _editModel.StorageConfig.MinioAccessKey,
-                MinioSecretKey = _editModel.StorageConfig.MinioSecretKey,
-                MinioBucketName = _editModel.StorageConfig.MinioBucketName,
-                S3EndPoint = _editModel.StorageConfig.S3EndPoint,
-                S3Region = _editModel.StorageConfig.S3Region ?? "us-east-1",
-                S3AccessKeyId = _editModel.StorageConfig.S3AccessKeyId,
-                S3SecretAccessKey = _editModel.StorageConfig.S3SecretAccessKey,
-                S3ContainerName = _editModel.StorageConfig.S3ContainerName
-            };
-            var result = await StorageSettingsAppService.TestConnectionAsync(input);
-            if (result.Success)
-                await Notify.SuccessAsync(result.Message);
-            else
-                await Notify.ErrorAsync(result.Message);
-        }
-        finally
-        {
-            _testingConnection = false;
-            StateHasChanged();
-        }
-    }
 
     private string GetStorageProviderLabel(FileStructureStorageProvider provider) =>
         provider switch
@@ -661,16 +263,6 @@ public partial class FileStructures : FileManagerComponentBase, IDisposable
             FileStructureStorageProvider.MinIO => L["StorageProviderMinIO"],
             FileStructureStorageProvider.S3Provider => L["StorageProviderS3"],
             _ => provider.ToString()
-        };
-
-    private string GetStorageProviderBriefKey(FileStructureStorageProvider provider) =>
-        provider switch
-        {
-            FileStructureStorageProvider.Database => "CreateWizard:StorageProviderBrief:Database",
-            FileStructureStorageProvider.FileSystem => "CreateWizard:StorageProviderBrief:FileSystem",
-            FileStructureStorageProvider.MinIO => "CreateWizard:StorageProviderBrief:MinIO",
-            FileStructureStorageProvider.S3Provider => "CreateWizard:StorageProviderBrief:S3",
-            _ => "StorageProvider"
         };
 
     private string GetStorageProviderDisplay(FileStructureStorageProvider? provider, string? providerStr)

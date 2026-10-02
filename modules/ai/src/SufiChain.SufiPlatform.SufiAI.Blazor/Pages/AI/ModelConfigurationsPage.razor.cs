@@ -35,8 +35,6 @@ public partial class ModelConfigurationsPage : AIComponentBase
 
     private WorkspaceDto? _workspace;
     private List<AIModelConfigurationDto> _configurations = new();
-    private bool _modelConfigurationModalOpen;
-    private AIModelConfigurationDto? _editingConfiguration;
     private bool _readOnly;
     private Guid _loadedWorkspaceId;
 
@@ -93,33 +91,24 @@ public partial class ModelConfigurationsPage : AIComponentBase
         Navigation.NavigateTo("/panel/admin/ai/workspaces");
     }
 
-    private void OpenCreateModal()
+    private void OpenCreatePage()
+    {
+        if (_readOnly || _workspace == null)
+        {
+            return;
+        }
+
+        Navigation.NavigateTo($"/panel/admin/ai/workspaces/{WorkspaceId}/model-configurations/new");
+    }
+
+    private void OpenEditPage(AIModelConfigurationDto configuration)
     {
         if (_readOnly)
         {
             return;
         }
 
-        _editingConfiguration = null;
-        _modelConfigurationModalOpen = true;
-    }
-
-    private void OpenEditModal(AIModelConfigurationDto configuration)
-    {
-        if (_readOnly)
-        {
-            return;
-        }
-
-        _editingConfiguration = configuration;
-        _modelConfigurationModalOpen = true;
-    }
-
-    private async Task OnConfigurationSavedAsync()
-    {
-        _modelConfigurationModalOpen = false;
-        _editingConfiguration = null;
-        await LoadConfigurationsAsync();
+        Navigation.NavigateTo($"/panel/admin/ai/workspaces/{WorkspaceId}/model-configurations/{configuration.Id}");
     }
 
     private bool IsWorkspaceDefault(AIModelConfigurationDto configuration)

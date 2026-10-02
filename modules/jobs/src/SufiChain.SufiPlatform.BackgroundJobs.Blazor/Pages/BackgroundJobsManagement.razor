@@ -115,7 +115,7 @@
                         ShowFilterRow="true"
                         ShowColumnChooser="true"
                         SelectionMode="SbSelectionMode.MultipleRows">
-				<SbColumn TItem="BackgroundJobListItemDto" Title="@L["Actions"]" Width="140px">
+				<SbColumn TItem="BackgroundJobListItemDto" Title="@L["Actions"]" MinWidth="140px">
 					<CellTemplate Context="cellContext">
 						<SbStack Direction="SbStackDirection.Row" Gap="1">
 							<SbIconButton Size="SbSize.Sm" AriaLabel="@L["ViewDetails"]"
@@ -143,37 +143,37 @@
 						</SbStack>
 					</CellTemplate>
 				</SbColumn>
-				<SbColumn TItem="BackgroundJobListItemDto" Field="JobName" Title="@L["JobName"]" Width="180px" Filterable="true" Sortable="true"/>
-				<SbColumn TItem="BackgroundJobListItemDto" Field="IsAbandoned" Title="@L["Status"]" Width="100px" Filterable="true" Sortable="true">
+				<SbColumn TItem="BackgroundJobListItemDto" Field="JobName" Title="@L["JobName"]" MinWidth="180px" Filterable="true" Sortable="true"/>
+				<SbColumn TItem="BackgroundJobListItemDto" Field="IsAbandoned" Title="@L["Status"]" MinWidth="100px" Filterable="true" Sortable="true">
 					<CellTemplate Context="cellContext">
 						<SbBadge Color="@GetStatusColor(cellContext.Item)">
 							@GetStatusText(cellContext.Item)
 						</SbBadge>
 					</CellTemplate>
 				</SbColumn>
-				<SbColumn TItem="BackgroundJobListItemDto" Field="Priority" Title="@L["Priority"]" Width="100px" Filterable="true" Sortable="true">
+				<SbColumn TItem="BackgroundJobListItemDto" Field="Priority" Title="@L["Priority"]" MinWidth="100px" Filterable="true" Sortable="true">
 					<CellTemplate Context="cellContext">
 						<SbBadge Color="@GetPriorityColor(cellContext.Item.Priority)">
-							@cellContext.Item.Priority
+							@L[$"BackgroundJobPriority:{cellContext.Item.Priority}"]
 						</SbBadge>
 					</CellTemplate>
 				</SbColumn>
-				<SbColumn TItem="BackgroundJobListItemDto" Title="@L["TryCount"]" Width="80px">
+				<SbColumn TItem="BackgroundJobListItemDto" Title="@L["TryCount"]" MinWidth="80px">
 					<CellTemplate Context="cellContext">
 						@cellContext.Item.TryCount
 					</CellTemplate>
 				</SbColumn>
-				<SbColumn TItem="BackgroundJobListItemDto" Title="@L["CreationTime"]" Width="160px">
+				<SbColumn TItem="BackgroundJobListItemDto" Title="@L["CreationTime"]" MinWidth="160px">
 					<CellTemplate Context="cellContext">
 						@cellContext.Item.CreationTime.ToString("yyyy-MM-dd HH:mm")
 					</CellTemplate>
 				</SbColumn>
-				<SbColumn TItem="BackgroundJobListItemDto" Title="@L["NextTryTime"]" Width="160px">
+				<SbColumn TItem="BackgroundJobListItemDto" Title="@L["NextTryTime"]" MinWidth="160px">
 					<CellTemplate Context="cellContext">
 						@(cellContext.Item.NextTryTime?.ToString("yyyy-MM-dd HH:mm") ?? "-")
 					</CellTemplate>
 				</SbColumn>
-				<SbColumn TItem="BackgroundJobListItemDto" Field="ApplicationName" Title="@L["Application"]" Width="150px" Filterable="true" Sortable="true"/>
+				<SbColumn TItem="BackgroundJobListItemDto" Field="ApplicationName" Title="@L["Application"]" MinWidth="150px" Filterable="true" Sortable="true"/>
 			</SbDataGrid>
 		</ChildContent>
 	</SbCard>
@@ -182,53 +182,41 @@
 
 <BackgroundJobDetailModal @bind-Open="_showDetailModal" Job="_selectedJob" />
 
-<!-- Delete Confirmation Dialog -->
-<SbDialog Open="@_showDeleteConfirm" OpenChanged="@(v => { if (!v) CancelDelete(); })" Size="SbDialogSize.Sm" Title="@L["ConfirmDelete"]">
+<SbConfirmDialog @ref="_deleteConfirm"
+				 Title="@L["ConfirmDelete"]"
+				 Message="@L["DeleteJobConfirmation", _jobToDelete?.JobName ?? ""]"
+				 Variant="SbConfirmDialogVariant.Danger"
+				 ConfirmText="@L["Delete"]"
+				 CancelText="@L["Cancel"]"
+				 OnConfirm="ConfirmDeleteAsync"
+				 OnCancel="CancelDelete">
 	<ChildContent>
-		<SbStack Gap="3">
-			<p style="margin: 0;">@L["DeleteJobConfirmation", _jobToDelete?.JobName ?? ""]</p>
-			@if (_jobToDelete != null)
-			{
-				<div class="confirm-job-info">
-					<small>ID: @_jobToDelete.Id</small>
-				</div>
-			}
-		</SbStack>
+		@if (_jobToDelete != null)
+		{
+			<div class="confirm-job-info">
+				<small>ID: @_jobToDelete.Id</small>
+			</div>
+		}
 	</ChildContent>
-	<Footer>
-		<SbStack Direction="SbStackDirection.Row" Gap="2" Justify="SbJustify.End">
-			<SbButton Variant="SbButtonVariant.Outline" OnClick="@CancelDelete">@L["Cancel"]</SbButton>
-			<SbButton Color="SbColor.Danger" OnClick="@ConfirmDeleteAsync">
-				<StartIcon><SbIcon Name="trash" /></StartIcon>
-				<ChildContent>@L["Delete"]</ChildContent>
-			</SbButton>
-		</SbStack>
-	</Footer>
-</SbDialog>
+</SbConfirmDialog>
 
-<!-- Abandon Confirmation Dialog -->
-<SbDialog Open="@_showAbandonConfirm" OpenChanged="@(v => { if (!v) CancelAbandon(); })" Size="SbDialogSize.Sm" Title="@L["ConfirmAbandon"]">
+<SbConfirmDialog @ref="_abandonConfirm"
+				 Title="@L["ConfirmAbandon"]"
+				 Message="@L["AbandonJobConfirmation", _jobToAbandon?.JobName ?? ""]"
+				 Variant="SbConfirmDialogVariant.Danger"
+				 ConfirmText="@L["Abandon"]"
+				 CancelText="@L["Cancel"]"
+				 OnConfirm="ConfirmAbandonAsync"
+				 OnCancel="CancelAbandon">
 	<ChildContent>
-		<SbStack Gap="3">
-			<p style="margin: 0;">@L["AbandonJobConfirmation", _jobToAbandon?.JobName ?? ""]</p>
-			@if (_jobToAbandon != null)
-			{
-				<div class="confirm-job-info">
-					<small>ID: @_jobToAbandon.Id</small>
-				</div>
-			}
-		</SbStack>
+		@if (_jobToAbandon != null)
+		{
+			<div class="confirm-job-info">
+				<small>ID: @_jobToAbandon.Id</small>
+			</div>
+		}
 	</ChildContent>
-	<Footer>
-		<SbStack Direction="SbStackDirection.Row" Gap="2" Justify="SbJustify.End">
-			<SbButton Variant="SbButtonVariant.Outline" OnClick="@CancelAbandon">@L["Cancel"]</SbButton>
-			<SbButton Color="SbColor.Warning" OnClick="@ConfirmAbandonAsync">
-				<StartIcon><SbIcon Name="ban" /></StartIcon>
-				<ChildContent>@L["Abandon"]</ChildContent>
-			</SbButton>
-		</SbStack>
-	</Footer>
-</SbDialog>
+</SbConfirmDialog>
 <ReadOnlyHooshvareDrawer HooshvareKey="@JobsInvestigatorHooshvareKeys.Key"
 						 Title="@L["Hooshvare:SufiJobs:Investigator:DisplayName"]"
 						 ContextProvider="BuildHooshvareContext" />

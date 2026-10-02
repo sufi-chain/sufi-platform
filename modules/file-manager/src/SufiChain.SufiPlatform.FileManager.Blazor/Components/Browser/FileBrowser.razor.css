@@ -20,7 +20,7 @@
 .file-item-select {
     position: absolute;
     top: 8px;
-    left: 8px;
+    inset-inline-start: 8px;
     z-index: 1;
 }
 

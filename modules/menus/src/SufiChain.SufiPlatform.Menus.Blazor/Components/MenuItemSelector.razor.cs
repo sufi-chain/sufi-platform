@@ -1,5 +1,4 @@
 using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Web;
 using SufiChain.SufiPlatform.Menus.Menus;
 
 namespace SufiChain.SufiPlatform.Menus.Blazor.Components;
@@ -25,11 +24,8 @@ public partial class MenuItemSelector
             FlattenedItems = Flatten(Items).ToList();
         }
     }
-    protected virtual async Task OnChangedAsync(ChangeEventArgs e)
-    {
-        var value = e.Value?.ToString();
-        await SelectedItemIdChanged.InvokeAsync(Guid.TryParse(value, out var id) ? id : null);
-    }
+    protected virtual Task OnChangedAsync(Guid? value)
+        => SelectedItemIdChanged.InvokeAsync(value);
     protected virtual IEnumerable<MenuItemTreeDto> Flatten(IEnumerable<MenuItemTreeDto> items)
     {
         foreach (var item in items)

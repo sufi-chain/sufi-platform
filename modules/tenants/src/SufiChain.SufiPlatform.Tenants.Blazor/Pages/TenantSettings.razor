@@ -1,0 +1,63 @@
+@namespace SufiChain.SufiPlatform.Tenants.Blazor.Pages
+@page "/panel/admin/tenant-management/tenants/{TenantId:guid}/settings"
+@attribute [Authorize(Policy = TenantsPermissions.Tenants.Update)]
+@using SufiChain.SufiPlatform.Settings.Blazor
+@inherits SettingsComponentBase
+
+@if (CurrentTenant.Id != null)
+{
+    <SufiErrorPage StatusCode="403"
+                   Title="@TenantLocalizer["TenantManagementHostOnly"]"
+                   Message="@TenantLocalizer["TenantManagementHostOnlyMessage"]" />
+}
+else if (_settingsTenantScope is { } settingsTenantScope)
+{
+    <SufiPageToolbar />
+
+    <CascadingValue Value="settingsTenantScope">
+        <SbStack Direction="SbStackDirection.Column" Gap="4">
+            <SbCard>
+                <ChildContent>
+                    @if (IsOperationLoading(LoadingKeys.LoadGroups))
+                    {
+                        <div class="p-5 text-center" role="status">
+                            <SbProgress Indeterminate="true" aria-label="@L["Loading"]" Type="SbProgressType.Circular" />
+                            <p class="mt-3 text-muted">@L["LoadingSettings"]</p>
+                        </div>
+                    }
+                    else if (_groups.Any())
+                    {
+                        <SufiSettingsGroupLayout Groups="_groups" SelectedGroupId="@_selectedTabId"
+                                                 SelectedGroupIdChanged="SelectGroup" Busy="IsOperationLoading(LoadingKeys.Save)">
+                            @if (SelectedGroup is { } selectedGroup)
+                            {
+                                <DynamicComponent @key="selectedGroup.Id" Type="@selectedGroup.ComponentType"
+                                                  Parameters="@GetComponentParameters(selectedGroup)"
+                                                  @ref="_currentComponentRef" />
+                            }
+                        </SufiSettingsGroupLayout>
+                    }
+                    else
+                    {
+                        <SbEmptyState class="p-5">
+                            <SbIcon Name="settings" Size="SbSize.Xl" />
+                            <p>@L["NoSettingsAvailable"]</p>
+                        </SbEmptyState>
+                    }
+                </ChildContent>
+                <Footer>
+                    <div class="settings-actions">
+                        @if (SelectedGroup is { } activeGroup)
+                        {
+                            <span class="text-muted">@L["SettingsSaveScope", activeGroup.DisplayName]</span>
+                        }
+                        <SbButton Color="SbColor.Primary"
+                                  Loading="IsOperationLoading(LoadingKeys.Save)"
+                                  OnClick="SaveAsync"
+                                  Disabled="@(SelectedGroup == null || IsOperationLoading(LoadingKeys.LoadGroups))">@L["Save"]</SbButton>
+                    </div>
+                </Footer>
+            </SbCard>
+        </SbStack>
+    </CascadingValue>
+}

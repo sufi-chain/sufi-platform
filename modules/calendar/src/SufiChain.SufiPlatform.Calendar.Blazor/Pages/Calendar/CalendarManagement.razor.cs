@@ -1,12 +1,12 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
-using System.Globalization;
 using SufiChain.SufiPlatform.Calendar.Availability;
 using SufiChain.SufiPlatform.Calendar.Calendars;
 using SufiChain.SufiPlatform.Calendar.Permissions;
 using SufiChain.SufiPlatform.UI.Layout;
 using SufiChain.SufiBlazor.Components.Data;
+using SufiChain.SufiBlazor.Components.Overlays;
 using SufiChain.SufiBlazor.Contracts.Data;
 
 namespace SufiChain.SufiPlatform.Calendar.Blazor.Pages.Calendar;
@@ -22,6 +22,7 @@ public partial class CalendarManagementBase : CalendarComponentBase
 
     [Inject] protected IAvailabilityCalendarAppService AvailabilityCalendarAppService { get; set; } = null!;
     [Inject] protected IPageLayout PageLayout { get; set; } = default!;
+    [Inject] protected NavigationManager NavigationManager { get; set; } = default!;
 
     protected SbDataGrid<CalendarDto>? _gridRef;
     protected int PageSize { get; set; } = 10;
@@ -35,26 +36,18 @@ public partial class CalendarManagementBase : CalendarComponentBase
     protected bool HasDeletePermission { get; set; }
 
     protected bool IsEditorOpen { get; set; }
-    protected bool IsBusinessHoursOpen { get; set; }
     protected bool IsSchedulerOpen { get; set; }
-    protected bool IsDeleteOpen { get; set; }
+    protected SbConfirmDialog? DeleteConfirmDialog;
     protected int EditorActiveTab { get; set; }
 
     protected Guid EditingCalendarId { get; set; }
     protected CreateUpdateCalendarDto EditingCalendar { get; set; } = new() { TimeZoneId = "UTC" };
-    protected CalendarDto? SelectedCalendar { get; set; }
     protected CalendarDto? PendingDeleteCalendar { get; set; }
     protected List<CalendarInheritanceDto> EditingInheritances { get; set; } = new();
     protected List<CalendarLookupDto> EligibleParentCalendars { get; set; } = new();
     protected Dictionary<Guid, CalendarLookupDto> CalendarLookupById { get; set; } = new();
     protected Guid? SelectedParentCalendarId { get; set; }
     protected bool NewInheritanceIsDefault { get; set; }
-    protected List<WorkingHourEditorModel> EditingHours { get; set; } = new();
-    protected List<ExceptionEditorModel> EditingExceptions { get; set; } = new();
-    protected DateOnly? TestDate { get; set; } = DateOnly.FromDateTime(DateTime.UtcNow);
-    protected string TestTimeText { get; set; } = DateTime.UtcNow.ToString("HH:mm");
-    protected TestAvailabilityResultDto? TestResult { get; set; }
-    protected int BusinessHoursActiveTab { get; set; }
     protected Guid? SchedulerCalendarId { get; set; }
 
     protected string EditorTitle => EditingCalendarId == Guid.Empty ? L["CreateCalendar"] : L["EditCalendar"];
@@ -62,8 +55,6 @@ public partial class CalendarManagementBase : CalendarComponentBase
     protected bool CanManageInheritances => IsEditingExistingCalendar && HasEditPermission;
     protected IReadOnlyList<TimeZoneInfo> TimeZoneOptions { get; } = TimeZoneInfo.GetSystemTimeZones();
     protected IReadOnlyList<CalendarKind> CalendarKindOptions { get; } = Enum.GetValues<CalendarKind>();
-    protected IReadOnlyList<CalendarExceptionKind> CalendarExceptionKindOptions { get; } = Enum.GetValues<CalendarExceptionKind>();
-    protected IReadOnlyList<DayOfWeek> DayOfWeekOptions { get; } = Enum.GetValues<DayOfWeek>();
 
     protected override async Task OnInitializedAsync()
     {
@@ -364,67 +355,10 @@ public partial class CalendarManagementBase : CalendarComponentBase
         }
     }
 
-    protected virtual async Task OpenBusinessHoursModalAsync(CalendarDto calendar)
+    protected virtual Task OpenBusinessHoursAsync(CalendarDto calendar)
     {
-        SelectedCalendar = calendar;
-        TestResult = null;
-        BusinessHoursActiveTab = 0;
-        var hoursResult = await AvailabilityCalendarAppService.GetWorkingHoursAsync(calendar.Id);
-        var exceptionsResult = await AvailabilityCalendarAppService.GetExceptionsAsync(calendar.Id);
-        EditingHours = hoursResult.Items.Select(x => new WorkingHourEditorModel(x)).ToList();
-        EditingExceptions = exceptionsResult.Items.Select(x => new ExceptionEditorModel(x)).ToList();
-        IsBusinessHoursOpen = true;
-    }
-
-    protected virtual void AddHour()
-    {
-        EditingHours.Add(new WorkingHourEditorModel());
-    }
-
-    protected virtual void RemoveHour(WorkingHourEditorModel rule)
-    {
-        EditingHours.Remove(rule);
-    }
-
-    protected virtual async Task SaveBusinessHoursAsync()
-    {
-        if (SelectedCalendar == null)
-        {
-            return;
-        }
-
-        try
-        {
-            if (!await ValidateWorkingHoursAsync())
-            {
-                return;
-            }
-
-            await AvailabilityCalendarAppService.ReplaceWorkingHoursAsync(SelectedCalendar.Id, EditingHours.Select(x => x.ToDto()).ToList());
-            await AvailabilityCalendarAppService.ReplaceExceptionsAsync(SelectedCalendar.Id, EditingExceptions.Select(x => x.ToDto()).ToList());
-            IsBusinessHoursOpen = false;
-            await Message.SuccessAsync(L["SavedSuccessfully"]);
-        }
-        catch (Exception exception)
-        {
-            await HandleErrorAsync(exception);
-        }
-    }
-
-    protected virtual Task CloseBusinessHoursAsync()
-    {
-        IsBusinessHoursOpen = false;
+        NavigationManager.NavigateTo($"/panel/admin/calendar/business-hours/{calendar.Id:D}");
         return Task.CompletedTask;
-    }
-
-    protected virtual void AddException()
-    {
-        EditingExceptions.Add(new ExceptionEditorModel());
-    }
-
-    protected virtual void RemoveException(ExceptionEditorModel exception)
-    {
-        EditingExceptions.Remove(exception);
     }
 
     protected virtual Task OpenSchedulerModalAsync(CalendarDto calendar)
@@ -440,36 +374,16 @@ public partial class CalendarManagementBase : CalendarComponentBase
         return Task.CompletedTask;
     }
 
-    protected virtual Task OnTestDateChanged(DateOnly? value)
-    {
-        TestDate = value;
-        return Task.CompletedTask;
-    }
-
-    protected virtual async Task RunTestAsync()
-    {
-        if (SelectedCalendar == null || TestDate == null || !TimeSpan.TryParse(TestTimeText, out var time))
-        {
-            return;
-        }
-
-        TestResult = await AvailabilityCalendarAppService.TestAsync(SelectedCalendar.Id, new TestAvailabilityInput
-        {
-            UtcInstant = TestDate.Value.ToDateTime(TimeOnly.MinValue).Add(time)
-        });
-    }
-
     protected virtual Task PromptDeleteAsync(CalendarDto calendar)
     {
         PendingDeleteCalendar = calendar;
-        IsDeleteOpen = true;
+        DeleteConfirmDialog?.Show();
         return Task.CompletedTask;
     }
 
     protected virtual Task CancelDeleteAsync()
     {
         PendingDeleteCalendar = null;
-        IsDeleteOpen = false;
         return Task.CompletedTask;
     }
 
@@ -505,59 +419,6 @@ public partial class CalendarManagementBase : CalendarComponentBase
         return L[$"Enum:CalendarKind:{kind}"];
     }
 
-    protected virtual string GetCalendarExceptionKindText(CalendarExceptionKind kind)
-    {
-        return L[$"Enum:CalendarExceptionKind:{kind}"];
-    }
-
-    protected virtual string GetDayOfWeekText(DayOfWeek dayOfWeek)
-    {
-        return CultureInfo.CurrentUICulture.DateTimeFormat.GetDayName(dayOfWeek);
-    }
-
-    protected virtual Task OnWorkingHourDayChangedAsync(WorkingHourEditorModel rule, DayOfWeek dayOfWeek)
-    {
-        rule.DayOfWeek = dayOfWeek;
-        return Task.CompletedTask;
-    }
-
-    protected virtual async Task<bool> ValidateWorkingHoursAsync()
-    {
-        foreach (var dayGroup in EditingHours.GroupBy(x => x.DayOfWeek))
-        {
-            var ranges = new List<(TimeSpan Start, TimeSpan End)>();
-
-            foreach (var hour in dayGroup)
-            {
-                if (!TimeSpan.TryParse(hour.StartTimeText, out var start) || !TimeSpan.TryParse(hour.EndTimeText, out var end))
-                {
-                    await Message.ErrorAsync(L["InvalidTimeRange"]);
-                    return false;
-                }
-
-                if (end <= start)
-                {
-                    await Message.ErrorAsync(L["InvalidTimeRange"]);
-                    return false;
-                }
-
-                ranges.Add((start, end));
-            }
-
-            var orderedRanges = ranges.OrderBy(x => x.Start).ToList();
-            for (var index = 1; index < orderedRanges.Count; index++)
-            {
-                if (orderedRanges[index].Start < orderedRanges[index - 1].End)
-                {
-                    await Message.ErrorAsync(L["OverlappingWorkingHours"]);
-                    return false;
-                }
-            }
-        }
-
-        return true;
-    }
-
     protected virtual Task OnCalendarKindChangedAsync(CalendarKind kind)
     {
         var previousDefault = CalendarConsts.GetDefaultColor(EditingCalendar.Kind);
@@ -575,65 +436,5 @@ public partial class CalendarManagementBase : CalendarComponentBase
     protected virtual Task<bool> ValidateCalendarEditorAsync()
     {
         return Task.FromResult(true);
-    }
-
-    protected sealed class WorkingHourEditorModel
-    {
-        public Guid RowKey { get; } = Guid.NewGuid();
-
-        public DayOfWeek DayOfWeek { get; set; } = DayOfWeek.Monday;
-        public string StartTimeText { get; set; } = "09:00";
-        public string EndTimeText { get; set; } = "17:00";
-
-        public WorkingHourEditorModel()
-        {
-        }
-
-        public WorkingHourEditorModel(WorkingHourRuleDto dto)
-        {
-            DayOfWeek = dto.DayOfWeek;
-            StartTimeText = dto.StartTime.ToString(@"hh\:mm");
-            EndTimeText = dto.EndTime.ToString(@"hh\:mm");
-        }
-
-        public CreateUpdateWorkingHourRuleDto ToDto()
-        {
-            return new CreateUpdateWorkingHourRuleDto
-            {
-                DayOfWeek = DayOfWeek,
-                StartTime = TimeSpan.TryParse(StartTimeText, out var start) ? start : TimeSpan.FromHours(9),
-                EndTime = TimeSpan.TryParse(EndTimeText, out var end) ? end : TimeSpan.FromHours(17)
-            };
-        }
-    }
-
-    protected sealed class ExceptionEditorModel
-    {
-        public DateOnly? ExceptionDate { get; set; }
-
-        public CalendarExceptionKind Kind { get; set; } = CalendarExceptionKind.Closed;
-        public string? Description { get; set; }
-
-        public ExceptionEditorModel()
-        {
-            ExceptionDate = DateOnly.FromDateTime(DateTime.UtcNow.Date);
-        }
-
-        public ExceptionEditorModel(CalendarExceptionDto dto)
-        {
-            ExceptionDate = DateOnly.FromDateTime(dto.Date);
-            Kind = dto.Kind;
-            Description = dto.Description;
-        }
-
-        public CreateUpdateCalendarExceptionDto ToDto()
-        {
-            return new CreateUpdateCalendarExceptionDto
-            {
-                Date = (ExceptionDate ?? DateOnly.FromDateTime(DateTime.UtcNow.Date)).ToDateTime(TimeOnly.MinValue),
-                Kind = Kind,
-                Description = Description
-            };
-        }
     }
 }

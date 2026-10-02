@@ -12,40 +12,45 @@
                        FlipBehavior="false"
                        Class="workspace-model-selector__popover">
                 <AnchorContent>
-                    <button type="button"
-                            class="@CompactTriggerCssClass"
-                            title="@CompactTriggerTitle"
-                            aria-label="@CompactTriggerTitle"
-                            aria-haspopup="listbox"
-                            aria-expanded="@_compactOpen"
-                            disabled="@Disabled"
-                            @onclick="ToggleCompactAsync"
-                            @onclick:stopPropagation="true">
-                        @if (!string.IsNullOrWhiteSpace(SelectedRoute?.ModelId))
-                        {
-                            <ModelFamilyLogo ModelId="@SelectedRoute?.ModelId" Small="true" />
-                        }
-                        <span class="workspace-model-selector__copy">
-                            <span class="workspace-model-selector__label">@CompactTriggerLabel</span>
-                        </span>
-                    </button>
+                    <span @onclick:stopPropagation="true">
+                        <SbButton Type="button"
+                                  Variant="SbButtonVariant.Ghost"
+                                  Color="SbColor.Default"
+                                  Class="@CompactTriggerCssClass"
+                                  title="@CompactTriggerTitle"
+                                  aria-label="@CompactTriggerTitle"
+                                  aria-haspopup="listbox"
+                                  aria-expanded="@(_compactOpen ? "true" : "false")"
+                                  Disabled="@Disabled"
+                                  OnClick="ToggleCompactAsync">
+                            @if (!string.IsNullOrWhiteSpace(SelectedRoute?.ModelId))
+                            {
+                                <ModelFamilyLogo ModelId="@SelectedRoute?.ModelId" Small="true" />
+                            }
+                            <span class="workspace-model-selector__copy">
+                                <span class="workspace-model-selector__label">@CompactTriggerLabel</span>
+                            </span>
+                        </SbButton>
+                    </span>
                 </AnchorContent>
                 <ChildContent>
                     <div class="workspace-model-selector__menu" role="listbox" aria-label="@L["WorkspaceChat:ModelSelector"]">
                         @foreach (var route in _routes)
                         {
-                            <button type="button"
-                                    class="@GetCompactOptionCssClass(route)"
-                                    role="option"
-                                    aria-selected="@(route.Id == SelectedRouteId)"
-                                    disabled="@(!route.IsReady)"
-                                    @onclick="@(() => OnCompactRouteChosenAsync(route.Id))">
+                            <SbButton Type="button"
+                                      Variant="SbButtonVariant.Ghost"
+                                      Color="SbColor.Default"
+                                      Class="@GetCompactOptionCssClass(route)"
+                                      role="option"
+                                      aria-selected="@(route.Id == SelectedRouteId ? "true" : "false")"
+                                      Disabled="@(!route.IsReady)"
+                                      OnClick="@(() => OnCompactRouteChosenAsync(route.Id))">
                                 <ModelFamilyLogo ModelId="@route.ModelId" Small="true" />
                                 <span class="workspace-model-selector__option-copy">
                                     <span class="workspace-model-selector__option-name">@FormatRouteName(route)</span>
                                     <span class="workspace-model-selector__option-meta">@FormatRouteMeta(route)</span>
                                 </span>
-                            </button>
+                            </SbButton>
                         }
                     </div>
                 </ChildContent>
@@ -60,34 +65,39 @@
                            FlipBehavior="false"
                            Class="workspace-model-selector__popover">
                     <AnchorContent>
-                        <button type="button"
-                                class="@EffortTriggerCssClass"
-                                title="@EffortTriggerTitle"
-                                aria-label="@EffortTriggerTitle"
-                                aria-haspopup="listbox"
-                                aria-expanded="@_effortOpen"
-                                disabled="@Disabled"
-                                @onclick="ToggleEffortAsync"
-                                @onclick:stopPropagation="true">
-                            <span class="workspace-model-selector__effort-mark" aria-hidden="true">
-                                <SbIcon Name="sparkles" Size="SbSize.Sm" />
-                            </span>
-                            <span class="workspace-model-selector__copy">
-                                <span class="workspace-model-selector__label">@FormatEffort(SelectedEffort)</span>
-                            </span>
-                        </button>
+                        <span @onclick:stopPropagation="true">
+                            <SbButton Type="button"
+                                      Variant="SbButtonVariant.Ghost"
+                                      Color="SbColor.Default"
+                                      Class="@EffortTriggerCssClass"
+                                      title="@EffortTriggerTitle"
+                                      aria-label="@EffortTriggerTitle"
+                                      aria-haspopup="listbox"
+                                      aria-expanded="@(_effortOpen ? "true" : "false")"
+                                      Disabled="@Disabled"
+                                      OnClick="ToggleEffortAsync">
+                                <span class="workspace-model-selector__effort-mark" aria-hidden="true">
+                                    <SbIcon Name="sparkles" Size="SbSize.Sm" />
+                                </span>
+                                <span class="workspace-model-selector__copy">
+                                    <span class="workspace-model-selector__label">@FormatEffort(SelectedEffort)</span>
+                                </span>
+                            </SbButton>
+                        </span>
                     </AnchorContent>
                     <ChildContent>
                         <div class="workspace-model-selector__menu" role="listbox" aria-label="@L["ReasoningEffort"]">
                             @foreach (var effort in EffortOptions)
                             {
-                                <button type="button"
-                                        class="@GetEffortOptionCssClass(effort)"
-                                        role="option"
-                                        aria-selected="@IsSelectedEffort(effort)"
-                                        @onclick="@(() => OnCompactEffortChosenAsync(effort))">
+                                <SbButton Type="button"
+                                          Variant="SbButtonVariant.Ghost"
+                                          Color="SbColor.Default"
+                                          Class="@GetEffortOptionCssClass(effort)"
+                                          role="option"
+                                          aria-selected="@(IsSelectedEffort(effort) ? "true" : "false")"
+                                          OnClick="@(() => OnCompactEffortChosenAsync(effort))">
                                     <span class="workspace-model-selector__option-name">@FormatEffort(effort)</span>
-                                </button>
+                                </SbButton>
                             }
                         </div>
                     </ChildContent>

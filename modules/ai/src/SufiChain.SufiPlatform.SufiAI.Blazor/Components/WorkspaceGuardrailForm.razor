@@ -14,8 +14,12 @@
 	@foreach (var row in Rows)
 	{
 		<SbStack Direction="SbStackDirection.Column" Gap="2">
-			<SbTextField @bind-Value="row.AmountText"
+			<SbNumberField TNumber="decimal"
+						 Value="@(row.Amount ?? 0m)"
+						 ValueChanged="@(value => row.Amount = value > 0m ? value : null)"
 						 Label="@L[$"Guardrail:{row.Period}"]"
+						 Min="0"
+						 Step="0.01m"
 						 Placeholder="@L["GuardrailUnlimitedPlaceholder"]"
 						 Disabled="@Disabled" />
 			@{

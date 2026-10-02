@@ -146,7 +146,7 @@
                 <SbTable TItem="FileItemDto" Items="@_fileItems" Striped Hover>
                     <HeaderContent>
                         <tr>
-                            <th style="width: 40px;">
+                            <th style="min-width: 40px;">
                                 <SbCheckbox Value="@_selectAll" ValueChanged="@ToggleSelectAll" />
                             </th>
                             <th>@L["Preview"]</th>
@@ -162,7 +162,7 @@
                             <SbCheckbox Value="@_selectedItems.Contains(item.Id)" 
                                        ValueChanged="@((val) => ToggleSelection(item.Id, val))" />
                         </td>
-                        <td style="width: 60px;">
+                        <td style="min-width: 60px;">
                             @if (item.FileType == FileType.Image && !string.IsNullOrEmpty(item.ThumbnailBlobName))
                             {
                                 <img src="@GetThumbnailUrl(item)" alt="@item.Alt" 
@@ -226,15 +226,10 @@
     </ChildContent>
 </SbDialog>
 
-<!-- Delete Confirmation Modal -->
-<SbDialog @bind-Open="_deleteModalOpen" Title="@L["ConfirmDelete"]">
-    <ChildContent>
-        <p>@L["ConfirmDeleteSelectedFiles", _selectedItems.Count]</p>
-    </ChildContent>
-    <Footer>
-        <SbStack Direction="SbStackDirection.Row" Gap="2" Justify="SbJustify.End">
-            <SbButton Color="SbColor.Default" OnClick="@CancelDelete">@L["Cancel"]</SbButton>
-            <SbButton Color="SbColor.Danger" OnClick="@ConfirmDeleteSelected">@L["Delete"]</SbButton>
-        </SbStack>
-    </Footer>
-</SbDialog>
+<SbConfirmDialog @ref="_deleteConfirm"
+                 Title="@L["ConfirmDelete"]"
+                 Message="@L["ConfirmDeleteSelectedFiles", _selectedItems.Count]"
+                 Variant="SbConfirmDialogVariant.Danger"
+                 ConfirmText="@L["Delete"]"
+                 CancelText="@L["Cancel"]"
+                 OnConfirm="ConfirmDeleteSelected" />

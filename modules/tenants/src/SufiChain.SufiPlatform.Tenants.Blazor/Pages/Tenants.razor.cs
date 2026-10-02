@@ -1,6 +1,5 @@
 using Microsoft.AspNetCore.Components;
 using SufiChain.SufiPlatform.Features.Blazor.Components;
-using SufiChain.SufiPlatform.Settings.Blazor.Components;
 using SufiChain.SufiPlatform.UI.Layout;
 using SufiChain.SufiPlatform.Tenants;
 using SufiChain.SufiPlatform.Tenants.Hooshvare;
@@ -23,6 +22,7 @@ public partial class Tenants : TenantsComponentBase
     }
 
     [Inject] protected IPageLayout PageLayout { get; set; } = default!;
+    [Inject] protected NavigationManager NavigationManager { get; set; } = default!;
 
     private ITenantAppService TenantAppService => LazyGetRequiredService(ref _tenantAppService);
     private ITenantAppService? _tenantAppService;
@@ -38,7 +38,6 @@ public partial class Tenants : TenantsComponentBase
     private TenantDto? _selectedTenant;
 
     private FeaturesModal _featureManagementModal = default!;
-    private SettingsModal _settingManagementModal = default!;
 
     protected override void OnInitialized()
     {
@@ -96,6 +95,11 @@ public partial class Tenants : TenantsComponentBase
     {
         _selectedTenant = tenant;
         _showEditModal = true;
+    }
+
+    private void OpenTenantSettings(TenantDto tenant)
+    {
+        NavigationManager.NavigateTo($"/panel/admin/tenant-management/tenants/{tenant.Id}/settings");
     }
 
     private async Task OnTenantCreatedAsync()

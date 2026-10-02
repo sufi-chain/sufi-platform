@@ -1,5 +1,7 @@
+using System.Globalization;
 using Microsoft.AspNetCore.Components;
 using SufiChain.SufiPlatform.Calendar.Availability;
+using SufiChain.SufiPlatform.Calendar.Blazor.Public;
 using SufiChain.SufiPlatform.Calendar.Calendars;
 using SufiChain.SufiPlatform.Calendar.Events;
 
@@ -12,6 +14,9 @@ public partial class SufiCalendarScheduler : CalendarPublicComponentBase
 
     [Inject]
     protected ICalendarEventAppService CalendarEventAppService { get; set; } = default!;
+
+    [Inject]
+    protected NavigationManager NavigationManager { get; set; } = default!;
 
     [Parameter]
     public bool Open { get; set; }
@@ -62,10 +67,6 @@ public partial class SufiCalendarScheduler : CalendarPublicComponentBase
     protected string SelectedTimeZoneId { get; set; } = TimeZoneInfo.Local.Id;
     protected SufiCalendarViewMode View { get; set; } = SufiCalendarViewMode.Month;
     protected DateTime Date { get; set; } = DateTime.Today;
-    protected bool IsEventEditorOpen { get; set; }
-    protected Guid? EditingEventId { get; set; }
-    protected DateTime? InitialEventStartUtc { get; set; }
-    protected DateTime? InitialEventEndUtc { get; set; }
     protected int RefreshToken { get; set; }
     protected bool HasFocusedInitialDate { get; set; }
     protected IReadOnlyList<Guid> SelectedCalendarIds => SelectedCalendarId == Guid.Empty ? Array.Empty<Guid>() : new[] { SelectedCalendarId };
@@ -184,29 +185,24 @@ public partial class SufiCalendarScheduler : CalendarPublicComponentBase
 
     protected virtual Task OpenCreateEventAsync()
     {
-        if (!AllowEventEditing)
+        if (!AllowEventEditing || SelectedCalendarId == Guid.Empty)
         {
             return Task.CompletedTask;
         }
 
-        EditingEventId = null;
-        InitialEventStartUtc = DateTime.UtcNow;
-        InitialEventEndUtc = InitialEventStartUtc.Value.AddHours(1);
-        IsEventEditorOpen = true;
+        var startUtc = DateTime.UtcNow;
+        NavigateToCreateEvent(startUtc, startUtc.AddHours(1));
         return Task.CompletedTask;
     }
 
     protected virtual Task OpenCreateEventFromSlotAsync(SufiCalendarSlotSelectArgs args)
     {
-        if (!AllowEventEditing)
+        if (!AllowEventEditing || SelectedCalendarId == Guid.Empty)
         {
             return Task.CompletedTask;
         }
 
-        EditingEventId = null;
-        InitialEventStartUtc = args.StartUtc;
-        InitialEventEndUtc = args.EndUtc;
-        IsEventEditorOpen = true;
+        NavigateToCreateEvent(args.StartUtc, args.EndUtc);
         return Task.CompletedTask;
     }
 
@@ -217,30 +213,21 @@ public partial class SufiCalendarScheduler : CalendarPublicComponentBase
             return Task.CompletedTask;
         }
 
-        EditingEventId = occurrence.EventId;
-        InitialEventStartUtc = null;
-        InitialEventEndUtc = null;
-        IsEventEditorOpen = true;
+        var prefix = CalendarPageRoutes.ResolveEditorPrefix(CalendarPageRoutes.CurrentLocation(NavigationManager));
+        var returnUrl = Uri.EscapeDataString(CalendarPageRoutes.CurrentLocation(NavigationManager));
+        NavigationManager.NavigateTo($"{prefix}/events/{occurrence.EventId:D}?returnUrl={returnUrl}");
         return Task.CompletedTask;
     }
 
-    protected virtual Task OnEventEditorOpenChangedAsync(bool value)
+    private void NavigateToCreateEvent(DateTime startUtc, DateTime endUtc)
     {
-        IsEventEditorOpen = value;
-        return Task.CompletedTask;
-    }
-
-    protected virtual async Task OnEventSavedAsync(CalendarEventDto calendarEvent)
-    {
-        await EventSaved.InvokeAsync(calendarEvent);
-        Date = TimeZoneInfo.ConvertTimeFromUtc(DateTime.SpecifyKind(calendarEvent.StartUtc, DateTimeKind.Utc), ResolveSelectedTimeZone()).Date;
-        RefreshToken++;
-    }
-
-    protected virtual Task OnEventDeletedAsync()
-    {
-        RefreshToken++;
-        return Task.CompletedTask;
+        var prefix = CalendarPageRoutes.ResolveEditorPrefix(CalendarPageRoutes.CurrentLocation(NavigationManager));
+        var returnUrl = Uri.EscapeDataString(CalendarPageRoutes.CurrentLocation(NavigationManager));
+        var start = Uri.EscapeDataString(startUtc.ToString("o", CultureInfo.InvariantCulture));
+        var end = Uri.EscapeDataString(endUtc.ToString("o", CultureInfo.InvariantCulture));
+        var timeZone = Uri.EscapeDataString(SelectedTimeZoneId);
+        NavigationManager.NavigateTo(
+            $"{prefix}/events/new?calendarId={SelectedCalendarId:D}&start={start}&end={end}&timeZone={timeZone}&returnUrl={returnUrl}");
     }
 
     public virtual async Task RefreshAsync()
@@ -316,10 +303,5 @@ public partial class SufiCalendarScheduler : CalendarPublicComponentBase
         {
             SelectedTimeZoneId = string.IsNullOrWhiteSpace(calendar.TimeZoneId) ? TimeZoneInfo.Local.Id : calendar.TimeZoneId;
         }
-    }
-
-    private TimeZoneInfo ResolveSelectedTimeZone()
-    {
-        return TimeZoneInfo.FindSystemTimeZoneById(SelectedTimeZoneId);
     }
 }

@@ -3,10 +3,10 @@
 @if (Open)
 {
     <div class="sufi-menu-dialog">
-        <input @bind="Model.DisplayName" placeholder="Display name" />
-        <input @bind="Model.Slug" placeholder="Slug" />
-        <textarea @bind="Model.Description" placeholder="Description"></textarea>
-        <button type="button" @onclick="SaveAsync">Save</button>
-        <button type="button" @onclick="CloseAsync">Cancel</button>
+        <SbTextField TValue="string" @bind-Value="Model.DisplayName" Placeholder="@L["DisplayName"]" />
+        <SbTextField @bind-Value="Model.Slug" Placeholder="@L["Slug"]" />
+        <SbTextArea @bind-Value="Model.Description" Placeholder="@L["Description"]" />
+        <SbButton Type="button" OnClick="SaveAsync">@L["Save"]</SbButton>
+        <SbButton Type="button" Variant="SbButtonVariant.Outline" OnClick="CloseAsync">@L["Cancel"]</SbButton>
     </div>
 }

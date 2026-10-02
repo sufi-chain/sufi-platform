@@ -132,7 +132,7 @@
 										<SbTextField @bind-Value="_memberFilter"
 													 Placeholder="@L["SearchMembers"]"
 													 Clearable="true"
-													 Style="width: 300px;">
+													 Style="flex: 1; min-width: 300px;">
 											<StartAdornment>
 												<SbIcon Name="search" />
 											</StartAdornment>
@@ -172,7 +172,7 @@
 												@($"{cellContext.Item.Name} {cellContext.Item.Surname}".Trim())
 											</CellTemplate>
 										</SbColumn>
-										<SbColumn TItem="OrganizationUnitMemberDto" Title="@L["Actions"]" Width="80px">
+										<SbColumn TItem="OrganizationUnitMemberDto" Title="@L["Actions"]" MinWidth="80px">
 											<CellTemplate Context="cellContext">
 												<AuthorizeView Policy="@SufiChain.SufiPlatform.Identity.IdentityPermissions.OrganizationUnits.ManageMembers">
 													<SbIconButton Size="SbSize.Sm" Color="SbColor.Danger" AriaLabel="@L["Remove"]"
@@ -221,7 +221,7 @@
 												</SbStack>
 											</CellTemplate>
 										</SbColumn>
-										<SbColumn TItem="OrganizationUnitRoleDto" Title="@L["Actions"]" Width="80px">
+										<SbColumn TItem="OrganizationUnitRoleDto" Title="@L["Actions"]" MinWidth="80px">
 											<CellTemplate Context="cellContext">
 												<AuthorizeView Policy="@SufiChain.SufiPlatform.Identity.IdentityPermissions.OrganizationUnits.ManageRoles">
 													<SbIconButton Size="SbSize.Sm" Color="SbColor.Danger" AriaLabel="@L["Remove"]"
@@ -360,7 +360,7 @@
 									<SbColumn TItem="OrganizationUnitMemberDto" Title="@L["Name"]">
 										<CellTemplate Context="cellContext">@($"{cellContext.Item.Name} {cellContext.Item.Surname}".Trim())</CellTemplate>
 									</SbColumn>
-									<SbColumn TItem="OrganizationUnitMemberDto" Title="@L["Actions"]" Width="80px">
+									<SbColumn TItem="OrganizationUnitMemberDto" Title="@L["Actions"]" MinWidth="80px">
 										<CellTemplate Context="cellContext">
 											<AuthorizeView Policy="@SufiChain.SufiPlatform.Identity.IdentityPermissions.OrganizationUnits.ManageMembers">
 												<SbIconButton Size="SbSize.Sm" Color="SbColor.Danger" AriaLabel="@L["Remove"]" OnClick="@(() => RemoveMemberAsync(cellContext.Item))">
@@ -395,7 +395,7 @@
 											</SbStack>
 										</CellTemplate>
 									</SbColumn>
-									<SbColumn TItem="OrganizationUnitRoleDto" Title="@L["Actions"]" Width="80px">
+									<SbColumn TItem="OrganizationUnitRoleDto" Title="@L["Actions"]" MinWidth="80px">
 										<CellTemplate Context="cellContext">
 											<AuthorizeView Policy="@SufiChain.SufiPlatform.Identity.IdentityPermissions.OrganizationUnits.ManageRoles">
 												<SbIconButton Size="SbSize.Sm" Color="SbColor.Danger" AriaLabel="@L["Remove"]" OnClick="@(() => RemoveRoleAsync(cellContext.Item))">

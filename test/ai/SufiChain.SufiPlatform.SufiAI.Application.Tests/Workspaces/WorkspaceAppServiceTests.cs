@@ -216,6 +216,48 @@ public class WorkspaceAppServiceTests : SufiAITestBase<SufiAIApplicationTestModu
     }
 
     [Fact]
+    public async Task Should_Not_Delete_Workspace_When_Active_Assignment_Exists()
+    {
+        var workspaceId = Guid.NewGuid();
+        await WithUnitOfWorkAsync(async () =>
+        {
+            await _workspaceRepository.InsertAsync(
+                new Workspace(workspaceId, "assignment-blocks-delete", AIProviderType.OpenAI, "gpt-4"),
+                autoSave: true);
+            await GetRequiredService<IWorkspaceAssignmentRepository>().InsertAsync(
+                new WorkspaceAssignment(Guid.NewGuid(), Guid.NewGuid(), workspaceId, Guid.NewGuid()),
+                autoSave: true);
+        });
+
+        var error = await Should.ThrowAsync<BusinessException>(
+            () => _workspaceAppService.DeleteAsync(workspaceId));
+        error.Code.ShouldBe(AIErrorCodes.WorkspaceInUse);
+    }
+
+    [Fact]
+    public async Task Should_Delete_Workspace_When_Assignment_Is_Inactive()
+    {
+        var workspaceId = Guid.NewGuid();
+        await WithUnitOfWorkAsync(async () =>
+        {
+            await _workspaceRepository.InsertAsync(
+                new Workspace(workspaceId, "inactive-assignment-allows-delete", AIProviderType.OpenAI, "gpt-4"),
+                autoSave: true);
+            var assignment = new WorkspaceAssignment(Guid.NewGuid(), Guid.NewGuid(), workspaceId, Guid.NewGuid());
+            assignment.Deactivate();
+            await GetRequiredService<IWorkspaceAssignmentRepository>().InsertAsync(assignment, autoSave: true);
+        });
+
+        await _workspaceAppService.DeleteAsync(workspaceId);
+
+        await WithUnitOfWorkAsync(async () =>
+        {
+            var workspace = await _workspaceRepository.FindAsync(workspaceId);
+            workspace.ShouldBeNull();
+        });
+    }
+
+    [Fact]
     public async Task Should_Get_Workspace_By_Id()
     {
         // Arrange

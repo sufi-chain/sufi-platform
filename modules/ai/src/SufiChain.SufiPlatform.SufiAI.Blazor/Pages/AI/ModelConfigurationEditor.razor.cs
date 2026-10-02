@@ -1,27 +1,34 @@
-using System;
 using System.Globalization;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 using SufiChain.SufiPlatform.SufiAI;
+using SufiChain.SufiPlatform.SufiAI.Blazor.Components;
 using SufiChain.SufiPlatform.SufiAI.Workspaces;
+using SufiChain.SufiPlatform.UI.Layout;
+using SufiChain.SufiPlatform.SufiAI.Blazor;
 
-namespace SufiChain.SufiPlatform.SufiAI.Blazor.Components;
+namespace SufiChain.SufiPlatform.SufiAI.Blazor.Pages.AI;
 
-public partial class ModelConfigurationModal : AIComponentBase
+public partial class ModelConfigurationEditor : AIComponentBase
 {
     private static class LoadingKeys
     {
+        public const string LoadPage = "load-page";
         public const string SaveConfiguration = "save-configuration";
         public const string LoadModels = "load-models";
         public const string TestConnection = "test-connection";
     }
 
-    [Parameter] public bool Open { get; set; }
-    [Parameter] public EventCallback<bool> OpenChanged { get; set; }
-    [Parameter] public AIModelConfigurationDto? Configuration { get; set; }
-    [Parameter] public Guid? WorkspaceId { get; set; }
-    [Parameter] public AIProviderType WorkspaceProvider { get; set; }
-    [Parameter] public EventCallback OnSaved { get; set; }
+    [Parameter]
+    public Guid WorkspaceId { get; set; }
+
+    [Parameter]
+    public Guid? ConfigurationId { get; set; }
+
+    [Inject]
+    protected IPageLayout PageLayout { get; set; } = default!;
+
+    [Inject]
+    protected NavigationManager Navigation { get; set; } = default!;
 
     private IAIAppService AIAppService => LazyGetRequiredService(ref _aiAppService);
     private IAIAppService? _aiAppService;
@@ -29,18 +36,40 @@ public partial class ModelConfigurationModal : AIComponentBase
     private bool _isEditMode;
     private bool _hasStoredApiKey;
     private bool _useWorkspaceConnection = true;
+    private bool _ready;
+    private bool _notFound;
+    private bool _readOnly;
+    private bool _hasLoaded;
+    private string? _appliedTitle;
+    private Guid _loadedWorkspaceId;
+    private Guid? _loadedConfigurationId;
     private int _formKey;
     private bool _showManualModelId;
     private CreateAIModelConfigurationDto _model = new();
-    private string _priorityText = "0";
-    private string _maxContextTokensText = "200000";
-    private string _inputPriceText = string.Empty;
-    private string _outputPriceText = string.Empty;
+    private AIModelConfigurationDto? _editing;
+    private WorkspaceDto? _workspace;
+    private bool _inputPriceSpecified;
+    private decimal _inputPriceValue;
+    private bool _outputPriceSpecified;
+    private decimal _outputPriceValue;
     private bool _showOutputPrice = true;
-    private string _dimensionsText = string.Empty;
     private List<OpenAIModelDto> _availableModels = new();
     private bool _modelsLoaded;
-    private bool _wasOpen;
+    private List<AiProviderProfileDto> _profiles = new();
+
+    private bool IsCreateRoute
+    {
+        get
+        {
+            var relative = Navigation.ToBaseRelativePath(Navigation.Uri);
+            var path = relative.Split('?', '#')[0].TrimEnd('/');
+            return path.EndsWith("/model-configurations/new", StringComparison.OrdinalIgnoreCase);
+        }
+    }
+
+    private Guid? ResolvedConfigurationId => IsCreateRoute ? null : ConfigurationId;
+
+    private bool IsEdit => ResolvedConfigurationId.HasValue;
 
     private string? ModelSelectValue => string.IsNullOrWhiteSpace(_model.ModelId) ? null : _model.ModelId;
 
@@ -64,12 +93,12 @@ public partial class ModelConfigurationModal : AIComponentBase
 
     private string? ConnectionBaseUrl => _useWorkspaceConnection ? null : _model.ApiEndpoint;
 
-    private Guid? ConnectionConfigurationId => _useWorkspaceConnection ? null : Configuration?.Id;
+    private Guid? ConnectionConfigurationId => _useWorkspaceConnection ? null : _editing?.Id;
 
     private IReadOnlyList<OpenAIModelDto> SelectableModels =>
         WorkspaceConnectionDraft.WithCurrent(_availableModels, _model.ModelId, _model.DisplayName);
 
-    private List<AiProviderProfileDto> _profiles = new();
+    private AIProviderType WorkspaceProvider => _workspace?.Provider ?? AIProviderType.OpenAI;
 
     private string ProviderDisplayName =>
         _profiles.FirstOrDefault(profile => profile.ProviderType == WorkspaceProvider)?.DisplayName
@@ -83,8 +112,8 @@ public partial class ModelConfigurationModal : AIComponentBase
 
     private bool ModelChanged =>
         _isEditMode &&
-        Configuration != null &&
-        !string.Equals(Configuration.ModelId?.Trim(), _model.ModelId?.Trim(), StringComparison.OrdinalIgnoreCase);
+        _editing != null &&
+        !string.Equals(_editing.ModelId?.Trim(), _model.ModelId?.Trim(), StringComparison.OrdinalIgnoreCase);
 
     private string CapabilityTitle =>
         L[_model.CapabilityType switch
@@ -159,6 +188,40 @@ public partial class ModelConfigurationModal : AIComponentBase
         }
     }
 
+    private decimal InputPriceValue
+    {
+        get => _inputPriceValue;
+        set
+        {
+            _inputPriceValue = value < 0m ? 0m : value;
+            _inputPriceSpecified = true;
+        }
+    }
+
+    private decimal OutputPriceValue
+    {
+        get => _outputPriceValue;
+        set
+        {
+            _outputPriceValue = value < 0m ? 0m : value;
+            _outputPriceSpecified = true;
+        }
+    }
+
+    private int MaxContextTokensValue
+    {
+        get => _model.MaxContextTokens;
+        set => _model.MaxContextTokens = value < 1
+            ? AIModelConfigurationConsts.DefaultMaxContextTokens
+            : value;
+    }
+
+    private int DimensionsValue
+    {
+        get => _model.Dimensions ?? 0;
+        set => _model.Dimensions = value > 0 ? value : null;
+    }
+
     private string EmbeddingDimensionsPlaceholder =>
         EmbeddingModelDefaults.GetDimensions(_model.ModelId).ToString();
 
@@ -175,30 +238,89 @@ public partial class ModelConfigurationModal : AIComponentBase
             ? L["LeaveEmptyToKeepCurrent"]
             : L["ApiKeyHelperText"];
 
-    protected override void OnParametersSet()
+    protected override async Task OnParametersSetAsync()
     {
-        if (Open && !_wasOpen)
+        ApplyTitle();
+        if (!IsInteractive || SameLoad())
         {
-            _wasOpen = true;
-            _isEditMode = Configuration != null;
-            ResetForm();
-            _ = LoadModelsAsync(announce: false);
+            return;
         }
 
-        if (Open && _profiles.Count == 0)
-        {
-            _ = LoadProfilesAsync();
-        }
-
-        _wasOpen = Open;
+        await LoadPageAsync();
     }
 
-    private Task LoadProfilesAsync()
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        return ExecuteWithLoadingAsync(async () =>
+        await base.OnAfterRenderAsync(firstRender);
+        if (firstRender)
         {
+            await LoadPageAsync();
+        }
+    }
+
+    private bool SameLoad() =>
+        _hasLoaded && WorkspaceId == _loadedWorkspaceId && ResolvedConfigurationId == _loadedConfigurationId;
+
+    private void ApplyTitle()
+    {
+        var title = IsEdit ? L["EditModelConfiguration"].Value : L["NewModelConfiguration"].Value;
+        if (string.Equals(_appliedTitle, title, StringComparison.Ordinal))
+        {
+            return;
+        }
+
+        _appliedTitle = title;
+        PageLayout.Title = title;
+    }
+
+    private async Task LoadPageAsync()
+    {
+        if (SameLoad())
+        {
+            return;
+        }
+
+        var workspaceId = WorkspaceId;
+        var configurationId = ResolvedConfigurationId;
+        _ready = false;
+        _notFound = false;
+
+        await ExecuteWithLoadingAsync(async () =>
+        {
+            _workspace = await WorkspaceAppService.GetAsync(workspaceId);
+            _readOnly = _workspace.IsInherited;
             _profiles = await WorkspaceAppService.GetProviderProfilesAsync();
-        });
+
+            if (configurationId.HasValue)
+            {
+                var configurations = await AIAppService.GetModelConfigurationsAsync(workspaceId);
+                _editing = configurations.FirstOrDefault(item =>
+                    item.Id == configurationId.Value && item.WorkspaceId == workspaceId);
+                if (_editing == null)
+                {
+                    _notFound = true;
+                    _isEditMode = false;
+                    return;
+                }
+            }
+            else
+            {
+                _editing = null;
+            }
+
+            _isEditMode = _editing != null;
+            ResetForm();
+            _ready = true;
+        }, LoadingKeys.LoadPage);
+
+        _loadedWorkspaceId = workspaceId;
+        _loadedConfigurationId = configurationId;
+        _hasLoaded = true;
+
+        if (_ready)
+        {
+            await LoadModelsAsync(announce: false);
+        }
     }
 
     private static bool UsesWorkspaceConnection(AIModelConfigurationDto configuration) =>
@@ -207,42 +329,39 @@ public partial class ModelConfigurationModal : AIComponentBase
     private void ResetForm()
     {
         _formKey++;
-        if (_isEditMode && Configuration != null)
+        if (_isEditMode && _editing != null)
         {
-            _hasStoredApiKey = Configuration.HasApiKey;
+            _hasStoredApiKey = _editing.HasApiKey;
             _model = new CreateAIModelConfigurationDto
             {
-                WorkspaceId = Configuration.WorkspaceId,
-                CapabilityType = Configuration.CapabilityType,
-                ModelId = Configuration.ModelId,
-                DisplayName = Configuration.DisplayName,
-                Description = Configuration.Description,
-                IsUserSelectable = Configuration.IsUserSelectable,
-                ApiEndpoint = Configuration.ApiEndpoint,
+                WorkspaceId = _editing.WorkspaceId,
+                CapabilityType = _editing.CapabilityType,
+                ModelId = _editing.ModelId,
+                DisplayName = _editing.DisplayName,
+                Description = _editing.Description,
+                IsUserSelectable = _editing.IsUserSelectable,
+                ApiEndpoint = _editing.ApiEndpoint,
                 OpenAIApiMode = OpenAIApiMode.ChatCompletions,
-                MaxContextTokens = Configuration.MaxContextTokens > 0
-                    ? Configuration.MaxContextTokens
+                MaxContextTokens = _editing.MaxContextTokens > 0
+                    ? _editing.MaxContextTokens
                     : AIModelConfigurationConsts.DefaultMaxContextTokens,
-                InputPrice = Configuration.InputPrice,
-                InputPriceUnit = Configuration.InputPriceUnit,
-                OutputPrice = Configuration.OutputPrice,
-                OutputPriceUnit = Configuration.OutputPriceUnit,
-                Priority = Configuration.Priority,
-                Dimensions = Configuration.Dimensions,
-                AcceptsImageInput = Configuration.AcceptsImageInput,
-                AcceptsFileInput = Configuration.AcceptsFileInput,
-                SupportsReasoning = Configuration.SupportsReasoning,
-                ReasoningEfforts = Configuration.ReasoningEfforts,
-                DefaultReasoningEffort = Configuration.DefaultReasoningEffort,
-                CapabilitySource = Configuration.CapabilitySource
+                InputPrice = _editing.InputPrice,
+                InputPriceUnit = _editing.InputPriceUnit,
+                OutputPrice = _editing.OutputPrice,
+                OutputPriceUnit = _editing.OutputPriceUnit,
+                Priority = _editing.Priority,
+                Dimensions = _editing.Dimensions,
+                AcceptsImageInput = _editing.AcceptsImageInput,
+                AcceptsFileInput = _editing.AcceptsFileInput,
+                SupportsReasoning = _editing.SupportsReasoning,
+                ReasoningEfforts = _editing.ReasoningEfforts,
+                DefaultReasoningEffort = _editing.DefaultReasoningEffort,
+                CapabilitySource = _editing.CapabilitySource
             };
-            _priorityText = Configuration.Priority.ToString(CultureInfo.InvariantCulture);
-            _maxContextTokensText = _model.MaxContextTokens.ToString(CultureInfo.InvariantCulture);
-            _inputPriceText = Configuration.InputPrice?.ToString(CultureInfo.InvariantCulture) ?? string.Empty;
-            _outputPriceText = Configuration.OutputPrice?.ToString(CultureInfo.InvariantCulture) ?? string.Empty;
-            _showOutputPrice = Configuration.OutputPrice.HasValue || CatalogPriceQuote.Default(Configuration.CapabilityType).ShowOutput;
-            _dimensionsText = Configuration.Dimensions?.ToString(CultureInfo.InvariantCulture) ?? string.Empty;
-            _useWorkspaceConnection = UsesWorkspaceConnection(Configuration);
+            SetInputPrice(_editing.InputPrice);
+            SetOutputPrice(_editing.OutputPrice);
+            _showOutputPrice = _editing.OutputPrice.HasValue || CatalogPriceQuote.Default(_editing.CapabilityType).ShowOutput;
+            _useWorkspaceConnection = UsesWorkspaceConnection(_editing);
             _showManualModelId = false;
             _availableModels = new List<OpenAIModelDto>();
             _modelsLoaded = false;
@@ -254,26 +373,37 @@ public partial class ModelConfigurationModal : AIComponentBase
             _showManualModelId = false;
             _model = new CreateAIModelConfigurationDto
             {
-                WorkspaceId = WorkspaceId ?? Guid.Empty,
+                WorkspaceId = WorkspaceId,
                 CapabilityType = AICapabilityType.ChatCompletion,
                 Priority = 0,
                 OpenAIApiMode = OpenAIApiMode.ChatCompletions,
                 MaxContextTokens = AIModelConfigurationConsts.DefaultMaxContextTokens
             };
-            _priorityText = "0";
-            _maxContextTokensText = AIModelConfigurationConsts.DefaultMaxContextTokens.ToString(CultureInfo.InvariantCulture);
-            _inputPriceText = string.Empty;
-            _outputPriceText = string.Empty;
+            SetInputPrice(null);
+            SetOutputPrice(null);
             ApplyDefaultPriceUnits(AICapabilityType.ChatCompletion);
-            _dimensionsText = string.Empty;
             _availableModels = new List<OpenAIModelDto>();
             _modelsLoaded = false;
         }
     }
 
+    private void SetInputPrice(decimal? value)
+    {
+        _inputPriceSpecified = value.HasValue;
+        _inputPriceValue = value ?? 0m;
+        _model.InputPrice = value;
+    }
+
+    private void SetOutputPrice(decimal? value)
+    {
+        _outputPriceSpecified = value.HasValue;
+        _outputPriceValue = value ?? 0m;
+        _model.OutputPrice = value;
+    }
+
     private void OnCapabilityChanged(AICapabilityType value)
     {
-        if (_isEditMode || _model.CapabilityType == value)
+        if (_readOnly || _isEditMode || _model.CapabilityType == value)
         {
             return;
         }
@@ -290,15 +420,12 @@ public partial class ModelConfigurationModal : AIComponentBase
 
         if (!ShowsEmbeddingDimensions)
         {
-            _dimensionsText = string.Empty;
             _model.Dimensions = null;
         }
 
         ApplyDefaultPriceUnits(value);
-        _inputPriceText = string.Empty;
-        _outputPriceText = string.Empty;
-        _model.InputPrice = null;
-        _model.OutputPrice = null;
+        SetInputPrice(null);
+        SetOutputPrice(null);
 
         UnloadModels();
         _ = LoadModelsAsync(announce: false);
@@ -306,7 +433,7 @@ public partial class ModelConfigurationModal : AIComponentBase
 
     private Task OnConnectionPathChanged(bool useWorkspaceConnection)
     {
-        if (_useWorkspaceConnection == useWorkspaceConnection)
+        if (_readOnly || _useWorkspaceConnection == useWorkspaceConnection)
         {
             return Task.CompletedTask;
         }
@@ -332,6 +459,11 @@ public partial class ModelConfigurationModal : AIComponentBase
 
     private void OnModelIdChanged(string? value)
     {
+        if (_readOnly)
+        {
+            return;
+        }
+
         var next = value ?? string.Empty;
         var changed = !string.Equals(_model.ModelId, next, StringComparison.OrdinalIgnoreCase);
         _model.ModelId = next;
@@ -367,7 +499,6 @@ public partial class ModelConfigurationModal : AIComponentBase
                 if (selected.ContextLength is int contextLength && contextLength > 0)
                 {
                     _model.MaxContextTokens = contextLength;
-                    _maxContextTokensText = contextLength.ToString(CultureInfo.InvariantCulture);
                 }
             }
             else
@@ -377,9 +508,7 @@ public partial class ModelConfigurationModal : AIComponentBase
         }
 
         var fillPrices = replaceFlags ||
-                         (!_isEditMode &&
-                          string.IsNullOrWhiteSpace(_inputPriceText) &&
-                          string.IsNullOrWhiteSpace(_outputPriceText));
+                         (!_isEditMode && !_inputPriceSpecified && !_outputPriceSpecified);
         if (!fillPrices)
         {
             return;
@@ -388,18 +517,8 @@ public partial class ModelConfigurationModal : AIComponentBase
         _model.InputPriceUnit = selected.SuggestedInputPriceUnit;
         _model.OutputPriceUnit = selected.SuggestedOutputPriceUnit;
         _showOutputPrice = selected.SuggestOutputPrice;
-        _inputPriceText = selected.SuggestedInputPrice?.ToString("0.####", CultureInfo.InvariantCulture) ?? string.Empty;
-        _model.InputPrice = selected.SuggestedInputPrice;
-        if (selected.SuggestOutputPrice)
-        {
-            _outputPriceText = selected.SuggestedOutputPrice?.ToString("0.####", CultureInfo.InvariantCulture) ?? string.Empty;
-            _model.OutputPrice = selected.SuggestedOutputPrice;
-        }
-        else
-        {
-            _outputPriceText = string.Empty;
-            _model.OutputPrice = null;
-        }
+        SetInputPrice(selected.SuggestedInputPrice);
+        SetOutputPrice(selected.SuggestOutputPrice ? selected.SuggestedOutputPrice : null);
     }
 
     private void ApplyInheritedCapabilitySuggestions(OpenAIModelDto selected)
@@ -460,6 +579,11 @@ public partial class ModelConfigurationModal : AIComponentBase
 
     private void ToggleEffort(string effort)
     {
+        if (_readOnly)
+        {
+            return;
+        }
+
         var allowed = AllowedEfforts.ToList();
         var existing = allowed.FirstOrDefault(item => item.Equals(effort, StringComparison.OrdinalIgnoreCase));
         if (existing == null)
@@ -482,6 +606,11 @@ public partial class ModelConfigurationModal : AIComponentBase
 
     private void SelectDefaultEffort(string effort)
     {
+        if (_readOnly)
+        {
+            return;
+        }
+
         if (!IsEffortAllowed(effort))
         {
             ToggleEffort(effort);
@@ -522,7 +651,12 @@ public partial class ModelConfigurationModal : AIComponentBase
 
     private async Task SaveConfigurationAsync()
     {
-        if (!WorkspaceId.HasValue)
+        if (_readOnly)
+        {
+            return;
+        }
+
+        if (WorkspaceId == Guid.Empty)
         {
             await Message.ErrorAsync(L["WorkspaceRequired"]);
             return;
@@ -534,17 +668,13 @@ public partial class ModelConfigurationModal : AIComponentBase
             return;
         }
 
-        if (int.TryParse(_priorityText, out var priority))
-        {
-            _model.Priority = priority;
-        }
-        else
+        if (_model.Priority < 0)
         {
             await Message.ErrorAsync(L["PriorityMustBeNumber"]);
             return;
         }
 
-        _model.WorkspaceId = WorkspaceId.Value;
+        _model.WorkspaceId = WorkspaceId;
         if (!ShowsUserSelectable)
         {
             _model.IsUserSelectable = false;
@@ -567,7 +697,7 @@ public partial class ModelConfigurationModal : AIComponentBase
 
         await ExecuteWithLoadingAsync(async () =>
         {
-            if (_isEditMode && Configuration != null)
+            if (_isEditMode && _editing != null)
             {
                 var updateDto = new UpdateAIModelConfigurationDto
                 {
@@ -593,7 +723,7 @@ public partial class ModelConfigurationModal : AIComponentBase
                     DefaultReasoningEffort = _model.DefaultReasoningEffort,
                     CapabilitySource = _model.CapabilitySource
                 };
-                await AIAppService.UpdateModelConfigurationAsync(Configuration.Id, updateDto);
+                await AIAppService.UpdateModelConfigurationAsync(_editing.Id, updateDto);
                 await Message.SuccessAsync(L["ConfigurationUpdated"]);
             }
             else
@@ -602,14 +732,18 @@ public partial class ModelConfigurationModal : AIComponentBase
                 await Message.SuccessAsync(L["ConfigurationCreated"]);
             }
 
-            await CloseModalAsync();
-            await OnSaved.InvokeAsync();
+            Cancel();
         }, LoadingKeys.SaveConfiguration);
     }
 
     private async Task TestConnectionAsync()
     {
-        if (!WorkspaceId.HasValue)
+        if (_readOnly)
+        {
+            return;
+        }
+
+        if (WorkspaceId == Guid.Empty)
         {
             await Message.ErrorAsync(L["WorkspaceRequired"]);
             return;
@@ -630,7 +764,7 @@ public partial class ModelConfigurationModal : AIComponentBase
         {
             await WorkspaceAppService.TestConnectionAsync(new TestWorkspaceConnectionInput
             {
-                WorkspaceId = WorkspaceId.Value,
+                WorkspaceId = WorkspaceId,
                 ModelConfigurationId = ConnectionConfigurationId,
                 CapabilityType = _model.CapabilityType,
                 Model = _model.ModelId,
@@ -646,7 +780,7 @@ public partial class ModelConfigurationModal : AIComponentBase
 
     private async Task LoadModelsAsync(bool announce)
     {
-        if (!WorkspaceId.HasValue)
+        if (WorkspaceId == Guid.Empty)
         {
             if (announce)
             {
@@ -662,7 +796,7 @@ public partial class ModelConfigurationModal : AIComponentBase
             {
                 _availableModels = await WorkspaceAppService.GetAvailableModelsAsync(new GetOpenAIModelsInput
                 {
-                    WorkspaceId = WorkspaceId.Value,
+                    WorkspaceId = WorkspaceId,
                     ModelConfigurationId = ConnectionConfigurationId,
                     ApiKey = ConnectionApiKey,
                     ApiBaseUrl = ConnectionBaseUrl,
@@ -672,11 +806,7 @@ public partial class ModelConfigurationModal : AIComponentBase
             catch (Exception ex)
             {
                 _modelsLoaded = true;
-                if (announce || Open)
-                {
-                    await Notify.ErrorAsync(ex.Message);
-                }
-
+                await Notify.ErrorAsync(ex.Message);
                 return;
             }
 
@@ -700,16 +830,9 @@ public partial class ModelConfigurationModal : AIComponentBase
         }, LoadingKeys.LoadModels);
     }
 
-    private async Task CloseModalAsync()
+    private void Cancel()
     {
-        await SetOpenAsync(false);
-    }
-
-    private async Task SetOpenAsync(bool open)
-    {
-        Open = open;
-        _wasOpen = open;
-        await OpenChanged.InvokeAsync(open);
+        Navigation.NavigateTo($"/panel/admin/ai/workspaces/{WorkspaceId}/model-configurations");
     }
 
     private bool TryApplyOpenAIApiMode()
@@ -720,26 +843,11 @@ public partial class ModelConfigurationModal : AIComponentBase
 
     private bool TryApplyMaxContextTokens()
     {
-        if (string.IsNullOrWhiteSpace(_maxContextTokensText))
+        if (_model.MaxContextTokens < 1)
         {
             _model.MaxContextTokens = AIModelConfigurationConsts.DefaultMaxContextTokens;
-            return true;
         }
 
-        if (!int.TryParse(_maxContextTokensText, NumberStyles.Integer, CultureInfo.InvariantCulture, out var tokens)
-            && !int.TryParse(_maxContextTokensText, NumberStyles.Integer, CultureInfo.CurrentCulture, out tokens))
-        {
-            _ = Message.ErrorAsync(L["MaxContextTokensMustBeNumber"]);
-            return false;
-        }
-
-        if (tokens < 1)
-        {
-            _model.MaxContextTokens = AIModelConfigurationConsts.DefaultMaxContextTokens;
-            return true;
-        }
-
-        _model.MaxContextTokens = tokens;
         return true;
     }
 
@@ -769,15 +877,15 @@ public partial class ModelConfigurationModal : AIComponentBase
     {
         get
         {
-            if (!TryParseNullableDecimal(_inputPriceText, out var amount) || amount is not decimal price)
+            if (!_inputPriceSpecified)
             {
                 return null;
             }
 
             return _model.InputPriceUnit switch
             {
-                AIPriceUnit.PerMinute => string.Format(CultureInfo.CurrentCulture, L["EquivalentHourlyPrice"], (price * 60m).ToString("0.####", CultureInfo.InvariantCulture)),
-                AIPriceUnit.PerHour => string.Format(CultureInfo.CurrentCulture, L["EquivalentMinutePrice"], (price / 60m).ToString("0.####", CultureInfo.InvariantCulture)),
+                AIPriceUnit.PerMinute => string.Format(CultureInfo.CurrentCulture, L["EquivalentHourlyPrice"], (_inputPriceValue * 60m).ToString("0.####", CultureInfo.InvariantCulture)),
+                AIPriceUnit.PerHour => string.Format(CultureInfo.CurrentCulture, L["EquivalentMinutePrice"], (_inputPriceValue / 60m).ToString("0.####", CultureInfo.InvariantCulture)),
                 _ => null
             };
         }
@@ -805,64 +913,30 @@ public partial class ModelConfigurationModal : AIComponentBase
 
     private bool TryApplyPricing()
     {
-        if (!TryParseNullableDecimal(_inputPriceText, out var inputCost))
+        if (_inputPriceSpecified && _inputPriceValue < 0)
         {
             _ = Message.ErrorAsync(L["InputPriceMustBeNonNegative"]);
             return false;
         }
 
-        decimal? outputCost = null;
-        if (_showOutputPrice && !TryParseNullableDecimal(_outputPriceText, out outputCost))
+        if (_showOutputPrice && _outputPriceSpecified && _outputPriceValue < 0)
         {
             _ = Message.ErrorAsync(L["OutputPriceMustBeNonNegative"]);
             return false;
         }
 
-        _model.InputPrice = inputCost;
-        _model.OutputPrice = _showOutputPrice ? outputCost : null;
+        _model.InputPrice = _inputPriceSpecified ? _inputPriceValue : null;
+        _model.OutputPrice = _showOutputPrice && _outputPriceSpecified ? _outputPriceValue : null;
         return true;
     }
 
     private bool TryApplyDimensions()
     {
-        if (!ShowsEmbeddingDimensions)
+        if (!ShowsEmbeddingDimensions || _model.Dimensions is not int dimensions || dimensions <= 0)
         {
             _model.Dimensions = null;
-            return true;
         }
 
-        if (string.IsNullOrWhiteSpace(_dimensionsText))
-        {
-            _model.Dimensions = null;
-            return true;
-        }
-
-        if (int.TryParse(_dimensionsText, out var dimensions) && dimensions > 0)
-        {
-            _model.Dimensions = dimensions;
-            return true;
-        }
-
-        _ = Message.ErrorAsync(L["InvalidEmbeddingDimensions"]);
-        return false;
-    }
-
-    private static bool TryParseNullableDecimal(string? value, out decimal? result)
-    {
-        result = null;
-        if (string.IsNullOrWhiteSpace(value))
-        {
-            return true;
-        }
-
-        if ((decimal.TryParse(value, NumberStyles.Number, CultureInfo.InvariantCulture, out var parsed)
-             || decimal.TryParse(value, NumberStyles.Number, CultureInfo.CurrentCulture, out parsed))
-            && parsed >= 0)
-        {
-            result = parsed;
-            return true;
-        }
-
-        return false;
+        return true;
     }
 }
