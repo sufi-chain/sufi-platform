@@ -112,6 +112,8 @@
     "Completed": "کامل شده",
     "Failed": "ناموفق",
     "Active": "فعال",
+    "Activate": "فعال‌سازی",
+    "Deactivate": "غیرفعال‌سازی",
     "Inactive": "غیرفعال",
     "ViewDetails": "مشاهده جزئیات",
     "CreatedSuccessfully": "با موفقیت ایجاد شد",

@@ -39,84 +39,78 @@ public class DefaultBreadcrumbService : IBreadcrumbService
             return breadcrumbs;
         }
 
-        // Find the menu item matching the current URL and build breadcrumb trail
         var trail = new List<ApplicationMenuItem>();
-        if (FindMenuItemPath(menu.Items, path, trail))
+        var bestScore = -1;
+        FindBestMenuPath(menu.Items, path, new List<ApplicationMenuItem>(), ref trail, ref bestScore);
+        if (bestScore < 0)
         {
-            // Build breadcrumbs from the trail
-            foreach (var item in trail)
-            {
-                var isLast = item == trail[trail.Count - 1];
-                breadcrumbs.Add(new BreadcrumbItem(
-                    item.DisplayName,
-                    isLast ? null : item.Url, // Last item has no link
-                    item.Icon
-                ));
-            }
+            return breadcrumbs;
+        }
+
+        foreach (var item in trail)
+        {
+            var isLast = item == trail[^1];
+            breadcrumbs.Add(new BreadcrumbItem(
+                item.DisplayName,
+                isLast ? null : item.Url,
+                item.Icon
+            ));
         }
 
         return breadcrumbs;
     }
 
     /// <summary>
-    /// Recursively searches the menu tree to find the item matching targetPath
-    /// and builds a trail of items from root to target.
+    /// Picks the deepest menu item whose URL matches the target.
+    /// An exact URL wins over a shorter parent prefix such as
+    /// /payments matching /payments/gateways.
     /// </summary>
-    private bool FindMenuItemPath(
+    private static void FindBestMenuPath(
         IEnumerable<ApplicationMenuItem> items,
         string targetPath,
-        List<ApplicationMenuItem> trail)
+        List<ApplicationMenuItem> current,
+        ref List<ApplicationMenuItem> best,
+        ref int bestScore)
     {
         foreach (var item in items)
         {
-            // Add current item to trail
-            trail.Add(item);
-
-            // Check if this item matches
-            if (PathMatches(item.Url, targetPath))
+            current.Add(item);
+            var score = MatchScore(item.Url, targetPath);
+            if (score > bestScore)
             {
-                return true;
+                bestScore = score;
+                best = current.ToList();
             }
 
-            // Recursively check children
-            if (item.Items != null && item.Items.Any())
+            if (score != int.MaxValue && item.Items is { Count: > 0 })
             {
-                if (FindMenuItemPath(item.Items, targetPath, trail))
-                {
-                    return true;
-                }
+                FindBestMenuPath(item.Items, targetPath, current, ref best, ref bestScore);
             }
 
-            // No match found in this branch, remove from trail
-            trail.RemoveAt(trail.Count - 1);
+            current.RemoveAt(current.Count - 1);
         }
-
-        return false;
     }
 
-    /// <summary>
-    /// Checks if a menu path matches the target path.
-    /// Handles exact matches and parent path matches.
-    /// </summary>
-    private bool PathMatches(string? menuPath, string targetPath)
+    private static int MatchScore(string? menuPath, string targetPath)
     {
         if (string.IsNullOrEmpty(menuPath))
-            return false;
+        {
+            return -1;
+        }
 
-        // Normalize paths (remove trailing slashes)
         menuPath = menuPath.TrimEnd('/');
         targetPath = targetPath.TrimEnd('/');
-
-        // Exact match
         if (string.Equals(menuPath, targetPath, StringComparison.OrdinalIgnoreCase))
-            return true;
+        {
+            return int.MaxValue;
+        }
 
-        // Check if target is a child path of menu path
-        // e.g., menu="/admin" should match target="/admin/users"
         if (targetPath.StartsWith(menuPath + "/", StringComparison.OrdinalIgnoreCase))
-            return true;
+        {
+            return menuPath.Length;
+        }
 
-        return false;
+        return -1;
     }
 
     /// <summary>

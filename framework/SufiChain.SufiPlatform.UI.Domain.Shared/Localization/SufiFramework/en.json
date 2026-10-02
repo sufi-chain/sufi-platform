@@ -112,6 +112,8 @@
         "Completed": "Completed",
         "Failed": "Failed",
         "Active": "Active",
+        "Activate": "Activate",
+        "Deactivate": "Deactivate",
         "Inactive": "Inactive",
         "ViewDetails": "View Details",
         "CreatedSuccessfully": "Created successfully",
