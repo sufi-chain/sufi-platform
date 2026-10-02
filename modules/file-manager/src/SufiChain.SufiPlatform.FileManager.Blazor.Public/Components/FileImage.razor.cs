@@ -18,6 +18,12 @@ public partial class FileImage : ComponentBase
     public Guid FileId { get; set; }
 
     /// <summary>
+    /// When set, the image is loaded from this URL and the file-manager permission lookup is skipped.
+    /// </summary>
+    [Parameter]
+    public string? DirectUrl { get; set; }
+
+    /// <summary>
     /// The preferred image size to display.
     /// </summary>
     [Parameter]
@@ -104,6 +110,14 @@ public partial class FileImage : ComponentBase
 
     protected override async Task OnParametersSetAsync()
     {
+        if (!string.IsNullOrWhiteSpace(DirectUrl))
+        {
+            _imageUrl = DirectUrl;
+            _isLoading = false;
+            _hasError = false;
+            return;
+        }
+
         if (FileId != _lastFileId && FileId != Guid.Empty)
         {
             _lastFileId = FileId;

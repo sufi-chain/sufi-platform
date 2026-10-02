@@ -160,6 +160,12 @@ public partial class MenuItemEditModal : MenusComponentBase
             return;
         }
 
+        if (!MenuItemUrlRules.IsAcceptable(_model.Kind, _model.Url))
+        {
+            await Message.ErrorAsync(L["Sufi.Menus:MenuItemInvalidUrl"]);
+            return;
+        }
+
         if (!int.TryParse(_displayOrderText, out var displayOrder))
         {
             await Message.ErrorAsync(L["DisplayOrderMustBeNumber"]);

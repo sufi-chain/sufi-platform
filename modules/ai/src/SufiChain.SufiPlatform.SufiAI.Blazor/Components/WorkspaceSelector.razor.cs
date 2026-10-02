@@ -24,6 +24,26 @@ public partial class WorkspaceSelector : AIComponentBase
 
     private bool UseCompactChips => FilteredWorkspaceList.Count <= CompactChipThreshold;
 
+    private bool _appliedSingleWorkspace;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await base.OnParametersSetAsync();
+        if (_appliedSingleWorkspace || Value.HasValue || Loading)
+        {
+            return;
+        }
+
+        var active = FilteredWorkspaceList.Where(workspace => workspace.IsActive).ToList();
+        if (active.Count != 1)
+        {
+            return;
+        }
+
+        _appliedSingleWorkspace = true;
+        await ValueChanged.InvokeAsync(active[0].Id);
+    }
+
     private async Task OnWorkspaceClickAsync(Guid workspaceId)
     {
         if (Value != workspaceId)

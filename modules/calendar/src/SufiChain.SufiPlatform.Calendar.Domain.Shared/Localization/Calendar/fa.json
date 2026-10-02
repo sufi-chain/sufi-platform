@@ -85,6 +85,7 @@
     "Available": "آزاد",
     "Loading": "در حال بارگذاری",
     "InvalidTimeRange": "بازه زمانی نامعتبر",
+    "TitleRequired": "عنوان الزامی است.",
     "OverlappingWorkingHours": "ساعت‌های کاری یک روز نمی‌توانند همپوشانی داشته باشند.",
     "OverlappingExceptionHours": "ساعت‌های استثنا نمی‌توانند همپوشانی داشته باشند.",
     "InheritanceCycleDetected": "یک تقویم نمی‌تواند از خودش ارث‌بری کند، مستقیماً یا غیرمستقیم.",

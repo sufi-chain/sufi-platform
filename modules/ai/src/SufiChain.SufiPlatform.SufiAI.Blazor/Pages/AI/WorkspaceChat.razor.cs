@@ -230,10 +230,7 @@ public partial class WorkspaceChat : AIComponentBase
     private async Task OnRouteChangedAsync(AIModelRouteDto? route)
     {
         _selectedRoute = route;
-        if (route != null)
-        {
-            _modelConfigurationId = route.Id;
-        }
+        _modelConfigurationId = route is { IsUserSelectable: true } ? route.Id : null;
 
         await RefreshCapabilitiesAsync();
     }

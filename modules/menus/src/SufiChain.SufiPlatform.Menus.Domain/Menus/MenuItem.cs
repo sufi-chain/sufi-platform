@@ -1,3 +1,4 @@
+using SufiChain.SufiPlatform.Menus;
 using Volo.Abp;
 using Volo.Abp.Domain.Entities.Auditing;
 using Volo.Abp.MultiTenancy;
@@ -66,7 +67,12 @@ public class MenuItem : FullAuditedAggregateRoot<Guid>, IMultiTenant
     public virtual void SetDisplayType(MenuItemDisplayType displayType) => DisplayType = displayType;
     public virtual void SetLink(string? url, MenuLinkTarget linkTarget)
     {
-        Url = CheckLength(url, MenusConsts.MaxUrlLength, nameof(url));
+        if (!MenuItemUrlRules.IsAcceptable(Kind, url))
+        {
+            throw new BusinessException(MenusErrorCodes.MenuItemInvalidUrl);
+        }
+
+        Url = CheckLength(string.IsNullOrWhiteSpace(url) ? null : url.Trim(), MenusConsts.MaxUrlLength, nameof(url));
         LinkTarget = linkTarget;
     }
     public virtual void SetTarget(string? targetType, Guid? targetId)

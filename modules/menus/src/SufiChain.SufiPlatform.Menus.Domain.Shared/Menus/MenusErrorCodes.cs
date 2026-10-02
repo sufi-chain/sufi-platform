@@ -11,5 +11,6 @@ public static class MenusErrorCodes
     public const string MenuItemInvalidParent = Namespace + ":MenuItemInvalidParent";
     public const string MenuItemInvalidTarget = Namespace + ":MenuItemInvalidTarget";
     public const string CannotDeleteMenuWithItems = Namespace + ":CannotDeleteMenuWithItems";
+    public const string MenuItemInvalidUrl = Namespace + ":MenuItemInvalidUrl";
     public const string CannotMoveMenuItemAcrossMenus = Namespace + ":CannotMoveMenuItemAcrossMenus";
 }

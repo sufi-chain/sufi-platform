@@ -153,19 +153,31 @@ public partial class WorkspaceModelSelector : AIComponentBase
 
         _catalogLoaded = true;
         var stored = await ReadStoredSelectionAsync();
-        var selected = stored?.RouteId is Guid storedId && _routes.Any(route => route.Id == storedId)
+        var selected = stored?.RouteId is Guid storedId && _routes.Any(route => route.Id == storedId && route.IsUserSelectable)
             ? storedId
             : _routes.FirstOrDefault(route => route.IsReady && route.IsDefault)?.Id
               ?? _routes.FirstOrDefault(route => route.IsReady)?.Id;
+        var selectableId = SelectableRouteId(selected);
 
-        if (selected != ModelConfigurationId)
+        if (selectableId != ModelConfigurationId)
         {
-            await ModelConfigurationIdChanged.InvokeAsync(selected);
+            await ModelConfigurationIdChanged.InvokeAsync(selectableId);
         }
 
         await AlignEffortAsync(selected, stored?.ReasoningEffort);
         await AlignApiModeAsync(selected, stored?.ApiMode ?? OpenAIApiMode.ChatCompletions);
         await PublishRouteAsync(selected);
+    }
+
+    private Guid? SelectableRouteId(Guid? routeId)
+    {
+        if (routeId is not Guid id)
+        {
+            return null;
+        }
+
+        var route = _routes.FirstOrDefault(item => item.Id == id);
+        return route is { IsUserSelectable: true } ? id : null;
     }
 
     private Task PublishSelectedRouteAsync() => PublishRouteAsync(SelectedRoute?.Id);

@@ -294,6 +294,16 @@ public class DefaultUserExceptionInformer : IUserExceptionInformer
 
     protected virtual string GetUserFriendlyMessage(Exception exception)
     {
+        if (IsConcurrencyException(exception))
+        {
+            var concurrencyMessage = _stringLocalizerFactory?
+                .Create(typeof(SufiExceptionHandlingResource))["AbpDbConcurrencyErrorMessage"];
+            if (concurrencyMessage is { ResourceNotFound: false })
+            {
+                return concurrencyMessage.Value;
+            }
+        }
+
         // Handle common exception types with user-friendly messages
         return exception switch
         {
@@ -305,6 +315,20 @@ public class DefaultUserExceptionInformer : IUserExceptionInformer
             ArgumentException ex => ex.Message,
             _ => exception.Message // Show the actual message instead of generic text
         };
+    }
+
+    private static bool IsConcurrencyException(Exception exception)
+    {
+        for (var current = exception; current != null; current = current.InnerException)
+        {
+            var name = current.GetType().Name;
+            if (name is "DbUpdateConcurrencyException" or "AbpDbConcurrencyException")
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private string NormalizeMessage(string? message, string? errorCode = null, IDictionary? data = null)

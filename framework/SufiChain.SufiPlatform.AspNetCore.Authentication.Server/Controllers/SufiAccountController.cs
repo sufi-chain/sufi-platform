@@ -27,6 +27,9 @@ namespace SufiChain.SufiPlatform.AspNetCore.Authentication.Server.Controllers;
 [ApiExplorerSettings(IgnoreApi = true)]
 public abstract class SufiAccountController : AbpController
 {
+    protected const string DefaultAuthenticatedReturnPath = "/panel/dashboard";
+    protected const string DefaultLogoutReturnPath = "/account/login";
+
     private readonly SufiAuthenticationOptions _options;
     private readonly ILoginCompletionTokenStore _tokenStore;
     private readonly SignInManager<IdentityUser> _signInManager;
@@ -59,7 +62,7 @@ public abstract class SufiAccountController : AbpController
     [HttpGet("OidcLogin")]
     public IActionResult OidcLogin(string? returnUrl = null)
     {
-        returnUrl ??= Url.Content("~/");
+        returnUrl = NormalizeReturnUrl(returnUrl);
 
         // If already authenticated, redirect to return URL
         if (User.Identity?.IsAuthenticated == true)
@@ -87,7 +90,11 @@ public abstract class SufiAccountController : AbpController
     [HttpPost("Logout")]
     public async Task<IActionResult> Logout(string? returnUrl = null)
     {
-        returnUrl ??= Url.Content("~/");
+        returnUrl ??= DefaultLogoutReturnPath;
+        if (!Url.IsLocalUrl(returnUrl) || IsRootPath(returnUrl))
+        {
+            returnUrl = DefaultLogoutReturnPath;
+        }
 
         var userName = User.Identity?.Name;
 
@@ -119,7 +126,7 @@ public abstract class SufiAccountController : AbpController
     [HttpPost("ExternalLogin")]
     public IActionResult ExternalLogin(string provider, string? returnUrl = null)
     {
-        returnUrl ??= Url.Content("~/");
+        returnUrl = NormalizeReturnUrl(returnUrl);
         var callbackUrl = Url.Action(
             nameof(ExternalLoginCallback),
             "Account",
@@ -140,9 +147,7 @@ public abstract class SufiAccountController : AbpController
     [HttpGet("ExternalLoginCallback")]
     public async Task<IActionResult> ExternalLoginCallback(string? returnUrl = null, string? remoteError = null)
     {
-        returnUrl ??= "/";
-        if (!Url.IsLocalUrl(returnUrl))
-            returnUrl = "/";
+        returnUrl = NormalizeReturnUrl(returnUrl);
 
         if (!string.IsNullOrEmpty(remoteError))
         {
@@ -225,9 +230,7 @@ public abstract class SufiAccountController : AbpController
         string externalLoginAuthSchema,
         string? returnUrl = null)
     {
-        returnUrl ??= "/";
-        if (!Url.IsLocalUrl(returnUrl))
-            returnUrl = "/";
+        returnUrl = NormalizeReturnUrl(returnUrl);
 
         var loginInfo = await _signInManager.GetExternalLoginInfoAsync();
         if (loginInfo == null)
@@ -316,20 +319,20 @@ public abstract class SufiAccountController : AbpController
     {
         if (string.IsNullOrWhiteSpace(token))
         {
-            return Redirect($"/account/login?error=InvalidOrExpiredToken&returnUrl={Uri.EscapeDataString(returnUrl ?? "/")}");
+            return Redirect($"/account/login?error=InvalidOrExpiredToken&returnUrl={Uri.EscapeDataString(NormalizeReturnUrl(returnUrl))}");
         }
 
         var consumed = await _tokenStore.ConsumeAsync(token, cancellationToken);
         if (consumed == null)
         {
-            return Redirect($"/account/login?error=InvalidOrExpiredToken&returnUrl={Uri.EscapeDataString(returnUrl ?? "/")}");
+            return Redirect($"/account/login?error=InvalidOrExpiredToken&returnUrl={Uri.EscapeDataString(NormalizeReturnUrl(returnUrl))}");
         }
 
         var (userId, redirectUrl, rememberMe) = consumed.Value;
         var user = await _userManager.FindByIdAsync(userId.ToString());
         if (user == null)
         {
-            return Redirect($"/account/login?error=UserNotFound&returnUrl={Uri.EscapeDataString(returnUrl ?? "/")}");
+            return Redirect($"/account/login?error=UserNotFound&returnUrl={Uri.EscapeDataString(NormalizeReturnUrl(returnUrl))}");
         }
 
         await _signInManager.SignInAsync(user, rememberMe);
@@ -346,7 +349,19 @@ public abstract class SufiAccountController : AbpController
             }
         }
 
-        var target = !string.IsNullOrEmpty(redirectUrl) && Url.IsLocalUrl(redirectUrl) ? redirectUrl : "/";
+        var target = !string.IsNullOrEmpty(redirectUrl) && Url.IsLocalUrl(redirectUrl)
+            ? redirectUrl
+            : DefaultAuthenticatedReturnPath;
+        if (user.ShouldChangePasswordOnNextLogin)
+        {
+            return Redirect("/panel/portal/profile?tab=password");
+        }
+
+        if (IsRootPath(target))
+        {
+            target = DefaultAuthenticatedReturnPath;
+        }
+
         return Redirect(target);
     }
 
@@ -426,13 +441,28 @@ public abstract class SufiAccountController : AbpController
 
     protected virtual string NormalizeReturnUrl(string? returnUrl)
     {
-        returnUrl ??= Url.Content("~/") ?? "/";
+        returnUrl ??= DefaultAuthenticatedReturnPath;
         if (!Url.IsLocalUrl(returnUrl))
         {
-            return "/";
+            return DefaultAuthenticatedReturnPath;
+        }
+
+        if (IsRootPath(returnUrl))
+        {
+            return DefaultAuthenticatedReturnPath;
         }
 
         return returnUrl;
+    }
+
+    protected virtual bool IsRootPath(string url)
+    {
+        if (string.IsNullOrWhiteSpace(url))
+        {
+            return true;
+        }
+
+        return url is "/" or "~/" or "~/";
     }
 
     protected virtual async Task SetTenantCookieAsync(Guid? tenantId, string? tenantName)

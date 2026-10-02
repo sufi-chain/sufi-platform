@@ -6,6 +6,8 @@
     "Tenants": "مستاجرین",
     "Tenant": "مستاجر",
     "NewTenant": "مستاجر جدید",
+    "TenantManagementHostOnly": "مدیریت مستاجر فقط روی میزبان است",
+    "TenantManagementHostOnlyMessage": "این صفحه از فضای کاری میزبان در دسترس است، نه از داخل یک مستاجر.",
     "TenantName": "نام مستاجر",
     "SearchTenants": "جستجوی مستاجرین",
     "ManageHostFeatures": "مدیریت ویژگی‌های میزبان",

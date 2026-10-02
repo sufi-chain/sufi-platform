@@ -127,7 +127,7 @@ else if (ShouldRenderPicker)
             </SbSelect>
     </div>
 }
-else if (ShowCatalogHints && _catalogLoaded && WorkspaceId != Guid.Empty)
+else if (ShowCatalogHints && _catalogLoaded && WorkspaceId != Guid.Empty && !_routes.Any(route => route.IsReady))
 {
     <SbText Variant="SbTextVariant.Caption" Color="SbColor.Muted">
         @(_routes.Count == 0 ? L["WorkspaceChat:NoSelectableChatRoutes"] : L["WorkspaceChat:ModelSelectorNeedMoreRoutes"])

@@ -6,6 +6,8 @@
     "Tenants": "Tenants",
     "Tenant": "Tenant",
     "NewTenant": "New Tenant",
+    "TenantManagementHostOnly": "Tenant management is host-only",
+    "TenantManagementHostOnlyMessage": "This page is available from the host workspace, not from a tenant.",
     "TenantName": "Tenant Name",
     "SearchTenants": "Search tenants",
     "ManageHostFeatures": "Manage host features",

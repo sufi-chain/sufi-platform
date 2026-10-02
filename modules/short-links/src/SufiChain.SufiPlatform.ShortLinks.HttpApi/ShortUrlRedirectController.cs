@@ -50,12 +50,12 @@ public class ShortUrlRedirectController : SufiControllerBase
     {
         if (!await IsPublicRedirectEnabledAsync())
         {
-            return NotFound();
+            return RedirectToNotFound(baseKey, shortCode);
         }
 
         if (!await IsValidBaseKeyAsync(baseKey))
         {
-            return NotFound();
+            return RedirectToNotFound(baseKey, shortCode);
         }
 
         var incomingToken = Request.Query.TryGetValue("c", out var c) ? c.ToString() : null;
@@ -69,7 +69,7 @@ public class ShortUrlRedirectController : SufiControllerBase
         if (cached != null)
         {
             if (!IsValid(cached.ExpiresAt, cached.IsActive))
-                return NotFound();
+                return RedirectToNotFound(baseKey, shortCode);
                 
             // Track click asynchronously (fire and forget)
             _ = TrackClickAsync(cached.Id, shortCode, incomingToken);
@@ -81,7 +81,7 @@ public class ShortUrlRedirectController : SufiControllerBase
         shortUrl = await _repository.FindByShortCodeAsync(shortCode);
         
         if (shortUrl == null || !IsValid(shortUrl.ExpiresAt, shortUrl.IsActive))
-            return NotFound();
+            return RedirectToNotFound(baseKey, shortCode);
         
         // Cache for future requests
         await _cache.SetAsync(cacheKey, new ShortUrlCacheItem
@@ -96,6 +96,12 @@ public class ShortUrlRedirectController : SufiControllerBase
         _ = TrackClickAsync(shortUrl.Id, shortCode, incomingToken);
 
         return Redirect(ShortLinkRedirectHelper.AppendToken(shortUrl.DestinationUrl, incomingToken));
+    }
+
+    private RedirectResult RedirectToNotFound(string baseKey, string shortCode)
+    {
+        var original = "/" + baseKey + "/" + shortCode;
+        return Redirect("/404?from=" + Uri.EscapeDataString(original));
     }
     
     private bool IsValid(DateTime? expiresAt, bool isActive)

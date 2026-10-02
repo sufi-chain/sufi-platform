@@ -84,6 +84,17 @@ public class AIModelCatalogAppService : SufiApplicationService, IAIModelCatalogA
             routes.Add(await MapRouteAsync(snapshot, implicitRoute));
         }
 
+        if (implicitRoute.IsReady &&
+            implicitRoute.ModelConfigurationId is Guid implicitId &&
+            implicitId != Guid.Empty &&
+            routes.All(route => route.Id != implicitId) &&
+            (allowlist == null || allowlist.Contains(implicitId)))
+        {
+            var fallback = await MapRouteAsync(implicitRoute, implicitRoute);
+            fallback.IsUserSelectable = false;
+            routes.Insert(0, fallback);
+        }
+
         return routes;
     }
 
@@ -109,6 +120,7 @@ public class AIModelCatalogAppService : SufiApplicationService, IAIModelCatalogA
             OpenAIApiMode = snapshot.OpenAIApiMode,
             IsDefault = implicitRoute.ModelConfigurationId.HasValue &&
                         implicitRoute.ModelConfigurationId == snapshot.ModelConfigurationId,
+            IsUserSelectable = snapshot.ModelConfiguration?.IsUserSelectable ?? false,
             IsReady = snapshot.IsReady,
             UnavailableReason = snapshot.IsReady
                 ? null

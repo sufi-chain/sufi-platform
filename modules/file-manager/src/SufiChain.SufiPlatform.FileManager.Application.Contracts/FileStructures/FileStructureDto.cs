@@ -63,7 +63,7 @@ public class CreateUpdateFileStructureDto
 {
     [Required]
     [StringLength(256)]
-    [RegularExpression(@"^[A-Za-z0-9][\w.]*$", ErrorMessage = "FileManager:KeyFormatInvalid")]
+    [RegularExpression(@"^[A-Za-z0-9][\w.]*$", ErrorMessage = "KeyFormatInvalid")]
     public string Key { get; set; } = default!;
 
     [Required]

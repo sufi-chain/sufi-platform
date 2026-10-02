@@ -1,4 +1,5 @@
 @namespace SufiChain.SufiPlatform.Account.Blazor.Components.Profile
+@using Volo.Abp.ObjectExtending
 @inject IProfileAppService ProfileAppService
 @inject IStringLocalizer<SufiIdentityResource> L
 @inject IStringLocalizer<SufiAccountResource> AccountL
@@ -93,6 +94,7 @@ else if (_profile != null)
                 ConcurrencyStamp = _profile.ConcurrencyStamp
             };
 
+            _profile.MapExtraPropertiesTo(input);
             _profile = await ProfileAppService.UpdateAsync(input);
             _successMessage = L["ProfileUpdatedSuccessfully"];
         }

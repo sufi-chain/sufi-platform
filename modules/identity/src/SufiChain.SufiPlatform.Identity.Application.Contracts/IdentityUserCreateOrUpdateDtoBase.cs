@@ -7,6 +7,7 @@ namespace SufiChain.SufiPlatform.Identity;
 public abstract class IdentityUserCreateOrUpdateDtoBase : ExtensibleObject
 {
     [Required]
+    [Display(Name = "UserName")]
     [StringLength(256)]
     public string UserName { get; set; } = string.Empty;
 
@@ -18,6 +19,7 @@ public abstract class IdentityUserCreateOrUpdateDtoBase : ExtensibleObject
 
     [Required]
     [EmailAddress]
+    [Display(Name = "Email")]
     [StringLength(256)]
     public string Email { get; set; } = string.Empty;
 

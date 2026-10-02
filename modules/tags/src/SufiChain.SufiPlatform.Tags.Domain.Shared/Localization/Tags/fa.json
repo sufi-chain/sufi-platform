@@ -15,6 +15,7 @@
     "Tags:RelationRequestConflict": "این شناسه درخواست قبلاً برای تغییر دیگری استفاده شده است.",
     "Tags:RelationHistoryLimit": "سقف تاریخچه رابطه رسیده است.",
     "Tags:RelationRetracted": "این رابطه پس گرفته شده است.",
+    "Tags:TagAlreadyExists": "برچسبی با این نام از قبل وجود دارد.",
     "Permission:SufiTags": "مدیریت برچسب‌ها",
     "Permission:SufiTags.Tags": "برچسب‌ها",
     "Permission:SufiTags.TagLinks": "پیوندهای برچسب",

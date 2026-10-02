@@ -8,15 +8,18 @@ public class IdentityUserAppService : SufiApplicationService, IIdentityUserAppSe
     protected IIdentityUserRepository UserRepository { get; }
     protected IIdentityRoleRepository RoleRepository { get; }
     protected IdentityUserManager UserManager { get; }
+    protected IdentityUserStore UserStore { get; }
 
     public IdentityUserAppService(
         IIdentityUserRepository userRepository,
         IIdentityRoleRepository roleRepository,
-        IdentityUserManager userManager)
+        IdentityUserManager userManager,
+        IdentityUserStore userStore)
     {
         UserRepository = userRepository;
         RoleRepository = roleRepository;
         UserManager = userManager;
+        UserStore = userStore;
     }
 
     public virtual async Task<IdentityUserDto> GetAsync(Guid id)
@@ -73,36 +76,48 @@ public class IdentityUserAppService : SufiApplicationService, IIdentityUserAppSe
     {
         var user = await UserManager.GetByIdAsync(id);
         user.ConcurrencyStamp = input.ConcurrencyStamp;
-        await UserManager.SetUserNameAsync(user, input.UserName);
-        await UserManager.SetEmailAsync(user, input.Email);
-        await UserManager.SetPhoneNumberAsync(user, input.PhoneNumber);
-        await UserManager.SetLockoutEnabledAsync(user, input.LockoutEnabled);
-        user.Name = input.Name;
-        user.Surname = input.Surname;
-        user.SetIsActive(input.IsActive);
 
-        if (!string.IsNullOrWhiteSpace(input.Password))
+        var previousAutoSave = UserStore.AutoSaveChanges;
+        UserStore.AutoSaveChanges = false;
+        try
         {
-            var token = await UserManager.GeneratePasswordResetTokenAsync(user);
-            var passwordResult = await UserManager.ResetPasswordAsync(user, token, input.Password);
-            if (!passwordResult.Succeeded)
+            await UserManager.SetUserNameAsync(user, input.UserName);
+            await UserManager.SetEmailAsync(user, input.Email);
+            await UserManager.SetPhoneNumberAsync(user, input.PhoneNumber);
+            await UserManager.SetLockoutEnabledAsync(user, input.LockoutEnabled);
+            user.Name = input.Name;
+            user.Surname = input.Surname;
+            user.SetIsActive(input.IsActive);
+
+            if (!string.IsNullOrWhiteSpace(input.Password))
             {
-                throw new InvalidOperationException(string.Join("; ", passwordResult.Errors.Select(e => e.Description)));
+                var token = await UserManager.GeneratePasswordResetTokenAsync(user);
+                var passwordResult = await UserManager.ResetPasswordAsync(user, token, input.Password);
+                if (!passwordResult.Succeeded)
+                {
+                    throw new InvalidOperationException(string.Join("; ", passwordResult.Errors.Select(e => e.Description)));
+                }
             }
-        }
 
-        var result = await UserManager.UpdateAsync(user);
-        if (!result.Succeeded)
+            var result = await UserManager.UpdateAsync(user);
+            if (!result.Succeeded)
+            {
+                throw new InvalidOperationException(string.Join("; ", result.Errors.Select(e => e.Description)));
+            }
+
+            await CurrentUnitOfWork.SaveChangesAsync();
+        }
+        finally
         {
-            throw new InvalidOperationException(string.Join("; ", result.Errors.Select(e => e.Description)));
+            UserStore.AutoSaveChanges = previousAutoSave;
         }
 
         if (input.RoleNames != null)
         {
-            result = await UserManager.SetRolesAsync(user, input.RoleNames);
-            if (!result.Succeeded)
+            var roleResult = await UserManager.SetRolesAsync(user, input.RoleNames);
+            if (!roleResult.Succeeded)
             {
-                throw new InvalidOperationException(string.Join("; ", result.Errors.Select(e => e.Description)));
+                throw new InvalidOperationException(string.Join("; ", roleResult.Errors.Select(e => e.Description)));
             }
         }
 

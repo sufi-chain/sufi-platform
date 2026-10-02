@@ -85,6 +85,7 @@
     "Available": "Available",
     "Loading": "Loading",
     "InvalidTimeRange": "Invalid time range",
+    "TitleRequired": "Title is required.",
     "OverlappingWorkingHours": "Working hours for the same day cannot overlap.",
     "OverlappingExceptionHours": "Exception hours cannot overlap.",
     "InheritanceCycleDetected": "A calendar cannot inherit from itself, directly or indirectly.",

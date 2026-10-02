@@ -3,6 +3,14 @@
 @attribute [Authorize(Policy = TenantsPermissions.Tenants.Default)]
 @inherits TenantsComponentBase
 
+@if (CurrentTenant.Id != null)
+{
+	<SufiErrorPage StatusCode="403"
+	               Title="@L["TenantManagementHostOnly"]"
+	               Message="@L["TenantManagementHostOnlyMessage"]" />
+}
+else
+{
 <SufiPageToolbar>
 	<AuthorizeView Policy="@TenantsPermissions.Tenants.Create">
 		<SbButton Color="SbColor.Primary" OnClick="@ShowCreateModal">
@@ -92,3 +100,4 @@
 <ReadOnlyHooshvareDrawer HooshvareKey="@TenantsDiagnosticsHooshvareKeys.Key"
                          Title="@L["Hooshvare:SufiTenants:Diagnostics:DisplayName"]"
                          ContextProvider="BuildHooshvareContext" />
+}

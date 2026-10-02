@@ -11,6 +11,29 @@
     "Menu:SufiMenus.Menus": "منوها",
     "ContextType:Public": "عمومی",
     "ContextType:KnowledgeBase.Project": "پروژه پایگاه دانش",
-    "DisplayNameLocalizationMode": "حالت نام نمایشی"
-  ,"Hooshvare:SufiMenus:Designer:DisplayName":"طراح منو"}
+    "DisplayNameLocalizationMode": "حالت نام نمایشی",
+    "NameIsRequired": "نام الزامی است.",
+    "Sufi.Menus:CannotDeleteMenuWithItems": "پیش از حذف منو، آیتم‌های آن را بردارید.",
+    "Sufi.Menus:MenuItemInvalidUrl": "برای این آیتم یک نشانی معتبر وارد کنید. مسیر داخلی با / شروع می‌شود و نشانی خارجی با http یا https.",
+    "MenuItemKind:Container": "گروه",
+    "MenuItemKind:InternalRoute": "مسیر داخلی",
+    "MenuItemKind:ExternalUrl": "نشانی خارجی",
+    "MenuItemKind:EntityTarget": "موجودیت",
+    "MenuItemKind:Separator": "جداکننده",
+    "MenuItemKind:Heading": "عنوان",
+    "MenuItemDisplayType:Default": "پیش‌فرض",
+    "MenuItemDisplayType:Category": "دسته",
+    "MenuItemDisplayType:Link": "پیوند",
+    "MenuItemDisplayType:Button": "دکمه",
+    "MenuItemDisplayType:Card": "کارت",
+    "MenuItemDisplayType:MegaMenu": "مگا منو",
+    "MenuItemDisplayType:Promo": "تبلیغ",
+    "MenuItemDisplayType:Separator": "جداکننده",
+    "MenuItemDisplayType:Heading": "عنوان",
+    "MenuLinkTarget:SameTab": "همان زبانه",
+    "MenuLinkTarget:NewTab": "زبانه جدید",
+    "MenuLinkTarget:Modal": "پنجره",
+    "MenuLinkTarget:Drawer": "کشویی",
+    "Hooshvare:SufiMenus:Designer:DisplayName": "طراح منو"
+  }
 }

@@ -78,12 +78,44 @@ public partial class UserManagement : IdentityComponentBase
         var result = await UserAppService.GetListAsync(new GetIdentityUsersInput
         {
             Filter = request.GetFilterValue("UserName", "Email", "PhoneNumber") ?? _filter,
+            Sorting = BuildUserSorting(request),
             SkipCount = Math.Max(0, request.PageIndex * request.PageSize),
             MaxResultCount = request.PageSize
         });
 
         _totalCount = result.TotalCount;
         return new SbDataResponse<IdentityUserDto>(result.Items, result.TotalCount);
+    }
+
+    private static readonly HashSet<string> UserSortFields = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "UserName",
+        "Email",
+        "PhoneNumber",
+        "IsActive",
+        "Name",
+        "Surname"
+    };
+
+    private static string? BuildUserSorting(SbDataRequest request)
+    {
+        if (request.Sorts.Count == 0)
+        {
+            return null;
+        }
+
+        var parts = new List<string>();
+        foreach (var sort in request.Sorts)
+        {
+            if (string.IsNullOrWhiteSpace(sort.Field) || !UserSortFields.Contains(sort.Field))
+            {
+                continue;
+            }
+
+            parts.Add(sort.Direction == SbSortDirection.Descending ? sort.Field + " DESC" : sort.Field);
+        }
+
+        return parts.Count == 0 ? null : string.Join(",", parts);
     }
 
     private Task RefreshGridAsync()

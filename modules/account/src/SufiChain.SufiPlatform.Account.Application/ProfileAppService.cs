@@ -16,11 +16,15 @@ public class ProfileAppService : SufiApplicationService, IProfileAppService
     protected IdentityUserManager UserManager { get; }
     protected IOptions<IdentityOptions> IdentityOptions { get; }
 
+    protected IdentityUserStore UserStore { get; }
+
     public ProfileAppService(
         IdentityUserManager userManager,
+        IdentityUserStore userStore,
         IOptions<IdentityOptions> identityOptions)
     {
         UserManager = userManager;
+        UserStore = userStore;
         IdentityOptions = identityOptions;
     }
 
@@ -39,34 +43,45 @@ public class ProfileAppService : SufiApplicationService, IProfileAppService
 
         user.SetConcurrencyStampIfNotNull(input.ConcurrencyStamp);
 
-        if (!string.Equals(user.UserName, input.UserName, StringComparison.InvariantCultureIgnoreCase))
+        // Each UserManager.Set* call updates the user. With AutoSaveChanges those updates
+        // persist one at a time and the later save fails optimistic concurrency after the
+        // first field has already been written.
+        var previousAutoSave = UserStore.AutoSaveChanges;
+        UserStore.AutoSaveChanges = false;
+        try
         {
-            (await UserManager.SetUserNameAsync(user, input.UserName)).CheckErrors();
-        }
+            if (!string.Equals(user.UserName, input.UserName, StringComparison.InvariantCultureIgnoreCase))
+            {
+                (await UserManager.SetUserNameAsync(user, input.UserName)).CheckErrors();
+            }
 
-        if (!string.Equals(user.Email, input.Email, StringComparison.InvariantCultureIgnoreCase))
+            if (!string.Equals(user.Email, input.Email, StringComparison.InvariantCultureIgnoreCase))
+            {
+                (await UserManager.SetEmailAsync(user, input.Email)).CheckErrors();
+            }
+
+            if (string.IsNullOrWhiteSpace(user.PhoneNumber) && string.IsNullOrWhiteSpace(input.PhoneNumber))
+            {
+                input.PhoneNumber = user.PhoneNumber;
+            }
+
+            if (!string.Equals(user.PhoneNumber, input.PhoneNumber, StringComparison.InvariantCultureIgnoreCase))
+            {
+                (await UserManager.SetPhoneNumberAsync(user, input.PhoneNumber)).CheckErrors();
+            }
+
+            user.Name = input.Name?.Trim();
+            user.Surname = input.Surname?.Trim();
+
+            input.MapExtraPropertiesTo(user);
+
+            (await UserManager.UpdateAsync(user)).CheckErrors();
+            await CurrentUnitOfWork.SaveChangesAsync();
+        }
+        finally
         {
-            (await UserManager.SetEmailAsync(user, input.Email)).CheckErrors();
+            UserStore.AutoSaveChanges = previousAutoSave;
         }
-
-        if (string.IsNullOrWhiteSpace(user.PhoneNumber) && string.IsNullOrWhiteSpace(input.PhoneNumber))
-        {
-            input.PhoneNumber = user.PhoneNumber;
-        }
-
-        if (!string.Equals(user.PhoneNumber, input.PhoneNumber, StringComparison.InvariantCultureIgnoreCase))
-        {
-            (await UserManager.SetPhoneNumberAsync(user, input.PhoneNumber)).CheckErrors();
-        }
-
-        user.Name = input.Name?.Trim();
-        user.Surname = input.Surname?.Trim();
-
-        input.MapExtraPropertiesTo(user);
-
-        (await UserManager.UpdateAsync(user)).CheckErrors();
-
-        await CurrentUnitOfWork.SaveChangesAsync();
 
         return MapToProfileDto(user);
     }

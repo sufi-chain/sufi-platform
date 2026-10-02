@@ -14,17 +14,20 @@ public class CalendarEventAppService : SufiApplicationService, ICalendarEventApp
     private readonly ICalendarEventService _calendarEventService;
     private readonly ICalendarRepository _calendarRepository;
     private readonly IAsyncQueryableExecuter _asyncExecuter;
+    private readonly ICalendarOccurrenceExpansionCache _occurrenceCache;
 
     public CalendarEventAppService(
         ICalendarEventRepository eventRepository,
         ICalendarEventService calendarEventService,
         ICalendarRepository calendarRepository,
-        IAsyncQueryableExecuter asyncExecuter)
+        IAsyncQueryableExecuter asyncExecuter,
+        ICalendarOccurrenceExpansionCache occurrenceCache)
     {
         _eventRepository = eventRepository;
         _calendarEventService = calendarEventService;
         _calendarRepository = calendarRepository;
         _asyncExecuter = asyncExecuter;
+        _occurrenceCache = occurrenceCache;
     }
 
     public virtual async Task<CalendarEventDto> GetAsync(Guid id)
@@ -91,6 +94,7 @@ public class CalendarEventAppService : SufiApplicationService, ICalendarEventApp
 
         calendarEvent.NotifyChanged();
         await _eventRepository.InsertAsync(calendarEvent, autoSave: true);
+        await _occurrenceCache.RemoveAsync(calendarEvent.CalendarId, calendarEvent.TenantId);
         return CalendarEventDtoMapper.ToDto(calendarEvent);
     }
 
@@ -121,6 +125,7 @@ public class CalendarEventAppService : SufiApplicationService, ICalendarEventApp
         // Ensure expansion cache invalidates even if only title/time/details changed.
         calendarEvent.NotifyChanged();
         await _eventRepository.UpdateAsync(calendarEvent, autoSave: true);
+        await _occurrenceCache.RemoveAsync(calendarEvent.CalendarId, calendarEvent.TenantId);
         return CalendarEventDtoMapper.ToDto(calendarEvent);
     }
 
@@ -131,6 +136,7 @@ public class CalendarEventAppService : SufiApplicationService, ICalendarEventApp
         await EnsureCanSeeCalendarAsync(calendarEvent.CalendarId);
         calendarEvent.NotifyChanged();
         await _eventRepository.DeleteAsync(calendarEvent, autoSave: true);
+        await _occurrenceCache.RemoveAsync(calendarEvent.CalendarId, calendarEvent.TenantId);
     }
 
     public virtual async Task<ListResultDto<EventOccurrenceDto>> GetOccurrencesAsync(Guid calendarId, GetOccurrencesInput input)

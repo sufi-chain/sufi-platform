@@ -261,6 +261,11 @@ public partial class SufiCalendarView : CalendarPublicComponentBase
         var timeZone = ResolveTimeZone();
         var start = TimeZoneInfo.ConvertTimeFromUtc(DateTime.SpecifyKind(occurrence.StartUtc, DateTimeKind.Utc), timeZone);
         var end = TimeZoneInfo.ConvertTimeFromUtc(DateTime.SpecifyKind(occurrence.EndUtc, DateTimeKind.Utc), timeZone);
+        if (start.Date != end.Date)
+        {
+            return $"{start.ToString("g", _culture)} - {end.ToString("g", _culture)}";
+        }
+
         return $"{start.ToString("HH:mm", _culture)} - {end.ToString("HH:mm", _culture)}";
     }
 

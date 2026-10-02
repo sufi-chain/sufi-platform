@@ -26,7 +26,9 @@ public class IdentityUserStore :
     IUserLockoutStore<IdentityUser>,
     IUserSecurityStampStore<IdentityUser>,
     IUserClaimStore<IdentityUser>,
-    IUserAuthenticationTokenStore<IdentityUser>
+    IUserAuthenticationTokenStore<IdentityUser>,
+    IUserAuthenticatorKeyStore<IdentityUser>,
+    IUserTwoFactorRecoveryCodeStore<IdentityUser>
 {
     protected IIdentityUserRepository UserRepository { get; }
     protected IIdentityRoleRepository RoleRepository { get; }
@@ -35,6 +37,10 @@ public class IdentityUserStore :
     protected IUnitOfWorkManager UnitOfWorkManager { get; }
 
     public virtual bool AutoSaveChanges { get; set; } = true;
+
+    private const string AuthenticatorLoginProvider = "[AspNetUserStore]";
+    private const string AuthenticatorKeyTokenName = "AuthenticatorKey";
+    private const string RecoveryCodeTokenName = "RecoveryCodes";
 
     public IdentityUserStore(
         IIdentityUserRepository userRepository,
@@ -446,6 +452,51 @@ public class IdentityUserStore :
     {
         await UserRepository.EnsureCollectionLoadedAsync(user, u => u.Tokens, GetCancellationToken(cancellationToken));
         return user.FindToken(loginProvider, name)?.Value;
+    }
+
+    #endregion
+
+    #region IUserAuthenticatorKeyStore
+
+    public virtual Task SetAuthenticatorKeyAsync(IdentityUser user, string key, CancellationToken cancellationToken)
+    {
+        return SetTokenAsync(user, AuthenticatorLoginProvider, AuthenticatorKeyTokenName, key, cancellationToken);
+    }
+
+    public virtual Task<string?> GetAuthenticatorKeyAsync(IdentityUser user, CancellationToken cancellationToken)
+    {
+        return GetTokenAsync(user, AuthenticatorLoginProvider, AuthenticatorKeyTokenName, cancellationToken);
+    }
+
+    #endregion
+
+    #region IUserTwoFactorRecoveryCodeStore
+
+    public virtual Task ReplaceCodesAsync(IdentityUser user, IEnumerable<string> recoveryCodes, CancellationToken cancellationToken)
+    {
+        var mergedCodes = string.Join(";", recoveryCodes);
+        return SetTokenAsync(user, AuthenticatorLoginProvider, RecoveryCodeTokenName, mergedCodes, cancellationToken);
+    }
+
+    public virtual async Task<bool> RedeemCodeAsync(IdentityUser user, string code, CancellationToken cancellationToken)
+    {
+        var mergedCodes = await GetTokenAsync(user, AuthenticatorLoginProvider, RecoveryCodeTokenName, cancellationToken) ?? string.Empty;
+        var splitCodes = mergedCodes.Split(';', StringSplitOptions.RemoveEmptyEntries);
+        if (!splitCodes.Contains(code))
+        {
+            return false;
+        }
+
+        await ReplaceCodesAsync(user, splitCodes.Where(splitCode => splitCode != code), cancellationToken);
+        return true;
+    }
+
+    public virtual async Task<int> CountCodesAsync(IdentityUser user, CancellationToken cancellationToken)
+    {
+        var mergedCodes = await GetTokenAsync(user, AuthenticatorLoginProvider, RecoveryCodeTokenName, cancellationToken) ?? string.Empty;
+        return string.IsNullOrEmpty(mergedCodes)
+            ? 0
+            : mergedCodes.Split(';', StringSplitOptions.RemoveEmptyEntries).Length;
     }
 
     #endregion

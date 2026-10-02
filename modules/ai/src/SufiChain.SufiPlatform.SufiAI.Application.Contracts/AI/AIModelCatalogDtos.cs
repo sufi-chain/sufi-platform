@@ -29,6 +29,11 @@ public class AIModelRouteDto
 
     public bool IsDefault { get; set; }
 
+    /// <summary>
+    /// True when the user may pick this route. The workspace default can still be used when this is false.
+    /// </summary>
+    public bool IsUserSelectable { get; set; }
+
     public bool IsReady { get; set; }
 
     public string? UnavailableReason { get; set; }

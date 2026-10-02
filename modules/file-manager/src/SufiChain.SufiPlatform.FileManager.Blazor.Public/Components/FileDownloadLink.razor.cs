@@ -18,6 +18,12 @@ public partial class FileDownloadLink : ComponentBase
     public Guid FileId { get; set; }
 
     /// <summary>
+    /// When set, the link uses this URL and skips the file-manager permission lookup.
+    /// </summary>
+    [Parameter]
+    public string? DirectUrl { get; set; }
+
+    /// <summary>
     /// Whether to render as a button style (default) or link style.
     /// </summary>
     [Parameter]
@@ -72,6 +78,18 @@ public partial class FileDownloadLink : ComponentBase
 
     protected override async Task OnParametersSetAsync()
     {
+        if (!string.IsNullOrWhiteSpace(DirectUrl))
+        {
+            _fileInfo = new FilePublicInfo
+            {
+                FileName = Text ?? "file",
+                DownloadUrl = DirectUrl
+            };
+            _isLoading = false;
+            _hasError = false;
+            return;
+        }
+
         if (FileId != _lastFileId && FileId != Guid.Empty)
         {
             _lastFileId = FileId;

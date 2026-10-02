@@ -7,6 +7,7 @@ public class IdentityUserCreateDto : IdentityUserCreateOrUpdateDtoBase
 {
     [DisableAuditing]
     [Required]
+    [Display(Name = "Password")]
     [StringLength(256)]
     public string Password { get; set; } = string.Empty;
 }

@@ -51,26 +51,26 @@
                     <SbSimpleSelect TValue="MenuItemKind"
                                     @bind-Value="_model.Kind"
                                     Label="@L["Kind"]">
-                        <SbSelectOption TValue="MenuItemKind" Value="@MenuItemKind.Container">@MenuItemKind.Container</SbSelectOption>
-                        <SbSelectOption TValue="MenuItemKind" Value="@MenuItemKind.InternalRoute">@MenuItemKind.InternalRoute</SbSelectOption>
-                        <SbSelectOption TValue="MenuItemKind" Value="@MenuItemKind.ExternalUrl">@MenuItemKind.ExternalUrl</SbSelectOption>
-                        <SbSelectOption TValue="MenuItemKind" Value="@MenuItemKind.EntityTarget">@MenuItemKind.EntityTarget</SbSelectOption>
-                        <SbSelectOption TValue="MenuItemKind" Value="@MenuItemKind.Separator">@MenuItemKind.Separator</SbSelectOption>
-                        <SbSelectOption TValue="MenuItemKind" Value="@MenuItemKind.Heading">@MenuItemKind.Heading</SbSelectOption>
+                        <SbSelectOption TValue="MenuItemKind" Value="@MenuItemKind.Container">@L["MenuItemKind:Container"]</SbSelectOption>
+                        <SbSelectOption TValue="MenuItemKind" Value="@MenuItemKind.InternalRoute">@L["MenuItemKind:InternalRoute"]</SbSelectOption>
+                        <SbSelectOption TValue="MenuItemKind" Value="@MenuItemKind.ExternalUrl">@L["MenuItemKind:ExternalUrl"]</SbSelectOption>
+                        <SbSelectOption TValue="MenuItemKind" Value="@MenuItemKind.EntityTarget">@L["MenuItemKind:EntityTarget"]</SbSelectOption>
+                        <SbSelectOption TValue="MenuItemKind" Value="@MenuItemKind.Separator">@L["MenuItemKind:Separator"]</SbSelectOption>
+                        <SbSelectOption TValue="MenuItemKind" Value="@MenuItemKind.Heading">@L["MenuItemKind:Heading"]</SbSelectOption>
                     </SbSimpleSelect>
 
                     <SbSimpleSelect TValue="MenuItemDisplayType"
                                     @bind-Value="_model.DisplayType"
                                     Label="@L["DisplayType"]">
-                        <SbSelectOption TValue="MenuItemDisplayType" Value="@MenuItemDisplayType.Default">@MenuItemDisplayType.Default</SbSelectOption>
-                        <SbSelectOption TValue="MenuItemDisplayType" Value="@MenuItemDisplayType.Category">@MenuItemDisplayType.Category</SbSelectOption>
-                        <SbSelectOption TValue="MenuItemDisplayType" Value="@MenuItemDisplayType.Link">@MenuItemDisplayType.Link</SbSelectOption>
-                        <SbSelectOption TValue="MenuItemDisplayType" Value="@MenuItemDisplayType.Button">@MenuItemDisplayType.Button</SbSelectOption>
-                        <SbSelectOption TValue="MenuItemDisplayType" Value="@MenuItemDisplayType.Card">@MenuItemDisplayType.Card</SbSelectOption>
-                        <SbSelectOption TValue="MenuItemDisplayType" Value="@MenuItemDisplayType.MegaMenu">@MenuItemDisplayType.MegaMenu</SbSelectOption>
-                        <SbSelectOption TValue="MenuItemDisplayType" Value="@MenuItemDisplayType.Promo">@MenuItemDisplayType.Promo</SbSelectOption>
-                        <SbSelectOption TValue="MenuItemDisplayType" Value="@MenuItemDisplayType.Separator">@MenuItemDisplayType.Separator</SbSelectOption>
-                        <SbSelectOption TValue="MenuItemDisplayType" Value="@MenuItemDisplayType.Heading">@MenuItemDisplayType.Heading</SbSelectOption>
+                        <SbSelectOption TValue="MenuItemDisplayType" Value="@MenuItemDisplayType.Default">@L["MenuItemDisplayType:Default"]</SbSelectOption>
+                        <SbSelectOption TValue="MenuItemDisplayType" Value="@MenuItemDisplayType.Category">@L["MenuItemDisplayType:Category"]</SbSelectOption>
+                        <SbSelectOption TValue="MenuItemDisplayType" Value="@MenuItemDisplayType.Link">@L["MenuItemDisplayType:Link"]</SbSelectOption>
+                        <SbSelectOption TValue="MenuItemDisplayType" Value="@MenuItemDisplayType.Button">@L["MenuItemDisplayType:Button"]</SbSelectOption>
+                        <SbSelectOption TValue="MenuItemDisplayType" Value="@MenuItemDisplayType.Card">@L["MenuItemDisplayType:Card"]</SbSelectOption>
+                        <SbSelectOption TValue="MenuItemDisplayType" Value="@MenuItemDisplayType.MegaMenu">@L["MenuItemDisplayType:MegaMenu"]</SbSelectOption>
+                        <SbSelectOption TValue="MenuItemDisplayType" Value="@MenuItemDisplayType.Promo">@L["MenuItemDisplayType:Promo"]</SbSelectOption>
+                        <SbSelectOption TValue="MenuItemDisplayType" Value="@MenuItemDisplayType.Separator">@L["MenuItemDisplayType:Separator"]</SbSelectOption>
+                        <SbSelectOption TValue="MenuItemDisplayType" Value="@MenuItemDisplayType.Heading">@L["MenuItemDisplayType:Heading"]</SbSelectOption>
                     </SbSimpleSelect>
 
                     <SbTextField @bind-Value="_model.Url" Label="@L["Url"]" />
@@ -82,10 +82,10 @@
                     <SbSimpleSelect TValue="MenuLinkTarget"
                                     @bind-Value="_model.LinkTarget"
                                     Label="@L["LinkTarget"]">
-                        <SbSelectOption TValue="MenuLinkTarget" Value="@MenuLinkTarget.SameTab">@MenuLinkTarget.SameTab</SbSelectOption>
-                        <SbSelectOption TValue="MenuLinkTarget" Value="@MenuLinkTarget.NewTab">@MenuLinkTarget.NewTab</SbSelectOption>
-                        <SbSelectOption TValue="MenuLinkTarget" Value="@MenuLinkTarget.Modal">@MenuLinkTarget.Modal</SbSelectOption>
-                        <SbSelectOption TValue="MenuLinkTarget" Value="@MenuLinkTarget.Drawer">@MenuLinkTarget.Drawer</SbSelectOption>
+                        <SbSelectOption TValue="MenuLinkTarget" Value="@MenuLinkTarget.SameTab">@L["MenuLinkTarget:SameTab"]</SbSelectOption>
+                        <SbSelectOption TValue="MenuLinkTarget" Value="@MenuLinkTarget.NewTab">@L["MenuLinkTarget:NewTab"]</SbSelectOption>
+                        <SbSelectOption TValue="MenuLinkTarget" Value="@MenuLinkTarget.Modal">@L["MenuLinkTarget:Modal"]</SbSelectOption>
+                        <SbSelectOption TValue="MenuLinkTarget" Value="@MenuLinkTarget.Drawer">@L["MenuLinkTarget:Drawer"]</SbSelectOption>
                     </SbSimpleSelect>
 
                     <SbTextField @bind-Value="_model.TargetType" Label="@L["TargetType"]" />

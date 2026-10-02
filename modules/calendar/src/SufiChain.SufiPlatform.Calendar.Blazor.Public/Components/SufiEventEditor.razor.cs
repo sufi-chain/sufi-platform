@@ -117,6 +117,12 @@ public partial class SufiEventEditor : CalendarPublicComponentBase
 
     protected virtual async Task SaveAsync()
     {
+        if (string.IsNullOrWhiteSpace(_model.Title))
+        {
+            await Message.ErrorAsync(L["TitleRequired"]);
+            return;
+        }
+
         if (!TryApplyDateTimeFields())
         {
             await Message.ErrorAsync(L["InvalidTimeRange"]);
