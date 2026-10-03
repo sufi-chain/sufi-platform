@@ -72,7 +72,7 @@ public static class VerificationIdentifierHelper
             throw new BusinessException(IdentitySecurityErrorCodes.PhoneNumberRequired);
         }
 
-        if (await settingProvider.IsTrueAsync(IdentitySettingNames.SignIn.RequireConfirmedPhoneNumber) &&
+        if (await IdentityPhoneConfirmationRules.IsRequiredForRegistrationAsync(settingProvider) &&
             !user.PhoneNumberConfirmed)
         {
             throw new BusinessException(IdentitySecurityErrorCodes.PhoneNumberNotConfirmed);

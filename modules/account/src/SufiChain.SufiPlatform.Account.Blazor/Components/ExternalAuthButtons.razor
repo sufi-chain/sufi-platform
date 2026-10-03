@@ -15,9 +15,9 @@
 
 @if (EnabledProviders.Count > 0)
 {
-    <SbStack Gap="2" Align="SbAlign.Center">
-        <SbText Color="SbColor.Muted">@L["OrSignInWith"]</SbText>
-        <SbStack Gap="2" Direction="SbStackDirection.Column">
+    <SbStack Gap="2" Align="SbAlign.Center" Class="w-full">
+        <SbText Color="SbColor.Muted">@(string.IsNullOrWhiteSpace(IntroText) ? L["OrSignInWith"] : IntroText)</SbText>
+        <SbStack Gap="2" Direction="SbStackDirection.Row" Justify="SbJustify.Center" Class="account-provider-list">
             @foreach (var provider in GetProvidersToRender())
             {
                 @if (UseFormSubmit)
@@ -70,7 +70,13 @@
     /// Provider IDs to display. Pass scheme names from IAuthenticationSchemeProvider for server-configured providers.
     /// </summary>
     [Parameter]
-    public IReadOnlyList<string> EnabledProviders { get; set; } = new List<string> { "Google" };
+    public IReadOnlyList<string> EnabledProviders { get; set; } = Array.Empty<string>();
+
+    /// <summary>
+    /// Text shown above the provider buttons. Defaults to the sign-in wording.
+    /// </summary>
+    [Parameter]
+    public string? IntroText { get; set; }
 
     /// <summary>
     /// Return URL after successful external login. When set, uses form POST to /Account/ExternalLogin.

@@ -18,7 +18,7 @@ public interface IAccountTwoFactorAppService : IApplicationService
 
     Task<RecoveryCodesDto> GenerateRecoveryCodesAsync();
 
-    Task SendTwoFactorCodeAsync(SendTwoFactorCodeInput input);
+    Task<OtpSendResultDto> SendTwoFactorCodeAsync(SendTwoFactorCodeInput input);
 
     Task<CompleteTwoFactorLoginResultDto> CompleteTwoFactorLoginAsync(CompleteTwoFactorLoginInput input);
 

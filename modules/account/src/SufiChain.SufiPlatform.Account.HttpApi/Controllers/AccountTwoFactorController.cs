@@ -62,7 +62,7 @@ public class AccountTwoFactorController : SufiControllerBase, IAccountTwoFactorA
 
     [HttpPost]
     [Route("send-code")]
-    public virtual Task SendTwoFactorCodeAsync(SendTwoFactorCodeInput input)
+    public virtual Task<OtpSendResultDto> SendTwoFactorCodeAsync(SendTwoFactorCodeInput input)
     {
         return _twoFactorAppService.SendTwoFactorCodeAsync(input);
     }

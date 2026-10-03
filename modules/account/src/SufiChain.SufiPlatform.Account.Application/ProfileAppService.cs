@@ -120,7 +120,7 @@ public class ProfileAppService : SufiApplicationService, IProfileAppService
 
         if (currentUser.IsExternal)
         {
-            throw new UserFriendlyException("External users cannot change password.");
+            throw new BusinessException(AccountErrorCodes.ExternalUserCannotChangePassword);
         }
 
         if (currentUser.PasswordHash == null)

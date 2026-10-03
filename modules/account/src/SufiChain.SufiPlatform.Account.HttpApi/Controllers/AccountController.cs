@@ -67,4 +67,25 @@ public class AccountController : SufiControllerBase, IAccountAppService
     {
         return _accountAppService.VerifyEmailConfirmationTokenAsync(input);
     }
+
+    [HttpGet]
+    [Route("phone-confirmation-state")]
+    public virtual Task<PhoneConfirmationStateDto> GetPhoneConfirmationStateAsync(Guid userId)
+    {
+        return _accountAppService.GetPhoneConfirmationStateAsync(userId);
+    }
+
+    [HttpPost]
+    [Route("send-phone-confirmation-code")]
+    public virtual Task<OtpSendResultDto> SendPhoneConfirmationCodeAsync(SendPhoneConfirmationCodeDto input)
+    {
+        return _accountAppService.SendPhoneConfirmationCodeAsync(input);
+    }
+
+    [HttpPost]
+    [Route("confirm-phone")]
+    public virtual Task<ConfirmPhoneNumberResultDto> ConfirmPhoneNumberAsync(ConfirmPhoneNumberDto input)
+    {
+        return _accountAppService.ConfirmPhoneNumberAsync(input);
+    }
 }

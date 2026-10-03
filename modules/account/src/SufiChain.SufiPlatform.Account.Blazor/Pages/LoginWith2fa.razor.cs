@@ -64,6 +64,8 @@ public partial class LoginWith2fa
 
     protected bool IsSendingCode { get; set; }
 
+    protected DateTimeOffset? ResendAvailableAt { get; set; }
+
     protected string SelectedProvider { get; set; } = TwoFactorProviderNames.Authenticator;
 
     protected VerificationDeliveryChannel SelectedCodeChannel { get; set; } = VerificationDeliveryChannel.Email;
@@ -131,23 +133,26 @@ public partial class LoginWith2fa
 
         try
         {
-            await TwoFactorAppService.SendTwoFactorCodeAsync(new SendTwoFactorCodeInput
+            var result = await TwoFactorAppService.SendTwoFactorCodeAsync(new SendTwoFactorCodeInput
             {
                 PendingToken = PendingToken,
                 PreferredChannel = SelectedCodeChannel,
                 AppName = "DemoApp"
             });
 
+            ResendAvailableAt = AccountUiErrors.ToResendAvailableAt(result);
             SuccessMessage = AccountL["TwoFactorCodeSent"];
             SelectedProvider = GetProviderForChannel(SelectedCodeChannel);
         }
         catch (Exception ex)
         {
-            ErrorMessage = AccountUiErrors.LocalizedFailure(
+            ErrorMessage = AccountUiErrors.OtpSendFailure(
                 Logger,
                 AccountL,
                 ex,
-                "TwoFactorSendFailed");
+                "TwoFactorSendFailed",
+                out var resendAvailableAt);
+            ResendAvailableAt = resendAvailableAt ?? ResendAvailableAt;
         }
         finally
         {

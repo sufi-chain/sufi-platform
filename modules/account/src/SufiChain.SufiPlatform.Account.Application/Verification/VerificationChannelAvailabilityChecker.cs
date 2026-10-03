@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using SufiChain.SufiPlatform.Identity;
 using SufiChain.SufiPlatform.SufiCom;
 using SufiChain.SufiPlatform.SufiCom.Sms;
 using SufiChain.SufiPlatform.SufiCom.VoiceCall;
@@ -35,7 +36,8 @@ public class VerificationChannelAvailabilityChecker : IVerificationChannelAvaila
             channels.Add(VerificationDeliveryChannel.Email);
         }
 
-        if (SmsSender is not NullSmsSender)
+        if (SmsSender is not NullSmsSender &&
+            await IdentityPhoneConfirmationRules.IsSmsProviderConfiguredAsync(SettingProvider))
         {
             channels.Add(VerificationDeliveryChannel.Sms);
         }

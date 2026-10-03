@@ -1,6 +1,8 @@
+using System;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using SufiChain.SufiPlatform.Account.Templates;
-using SufiChain.SufiPlatform.SufiCom;
 using SufiChain.SufiPlatform.SufiCom.VoiceCall;
 using SufiChain.SufiPlatform.TextTemplating;
 using Volo.Abp.DependencyInjection;
@@ -8,11 +10,14 @@ using Volo.Abp.DependencyInjection;
 namespace SufiChain.SufiPlatform.Account;
 
 /// <summary>
-/// Delivers verification codes via text-to-speech voice call using <see cref="IVoiceCallSender"/>.
+/// Delivers verification codes via voice call using <see cref="IVoiceCallSender.SendOtpAsync"/>,
+/// which uses the provider's transactional OTP route.
 /// </summary>
 public class VoiceVerificationChannelSender : IVerificationChannelSender, ITransientDependency
 {
     public VerificationDeliveryChannel Channel => VerificationDeliveryChannel.Voice;
+
+    public ILogger<VoiceVerificationChannelSender> Logger { get; set; } = NullLogger<VoiceVerificationChannelSender>.Instance;
 
     protected IVoiceCallSender VoiceCallSender { get; }
 
@@ -39,10 +44,15 @@ public class VoiceVerificationChannelSender : IVerificationChannelSender, ITrans
                 appName = message.AppName
             });
 
-        await VoiceCallSender.QueueAsync(
-            message.Recipient,
-            body,
-            additionalArgs: new AdditionalMessageSendingArgs { QueueMessage = true });
+        try
+        {
+            await VoiceCallSender.SendOtpAsync(SmsVerificationChannelSender.CreateOtpMessage(message, body));
+        }
+        catch (Exception ex)
+        {
+            // Delivery failures are logged and audited, never surfaced: the caller must not learn whether the recipient exists.
+            Logger.LogError(ex, "Verification call for purpose {Purpose} could not be placed.", message.Purpose);
+        }
     }
 
     protected virtual string GetTemplateName(VerificationPurpose purpose)

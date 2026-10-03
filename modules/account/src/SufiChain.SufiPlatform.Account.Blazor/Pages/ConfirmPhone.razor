@@ -1,0 +1,75 @@
+@namespace SufiChain.SufiPlatform.Account.Blazor.Pages
+@page "/account/confirm-phone"
+@layout AccountLayout
+
+<div class="account-page">
+    <SbCard Class="account-card">
+        <ChildContent>
+            <SbStack Gap="4" Align="SbAlign.Center">
+                <SbHeading Level="2">@AccountL["ConfirmPhoneTitle"]</SbHeading>
+
+                @if (IsLoading)
+                {
+                    <SbText Color="SbColor.Muted">@AccountL["ConfirmEmailProcessing"]</SbText>
+                }
+                else if (NeedsPhoneNumber)
+                {
+                    <SbText>@AccountL["ConfirmPhoneEnterNumber"]</SbText>
+                    <form method="post" @onsubmit="OnSendCodeAsync" @formname="confirm-phone-send" class="w-full">
+                        <AntiforgeryToken />
+                        <SbStack Gap="3">
+                            <SbFormField Label="@L["PhoneNumber"]" InputId="PhoneNumber" Required="true">
+                                <SbTextField @bind-Value="PhoneNumber"
+                                             Id="PhoneNumber"
+                                             Type="tel"
+                                             AutoComplete="tel"
+                                             name="PhoneNumber" />
+                            </SbFormField>
+                            @if (!string.IsNullOrEmpty(ErrorMessage))
+                            {
+                                <SbAlert Severity="SbAlertSeverity.Danger">@ErrorMessage</SbAlert>
+                            }
+                            <SbButton Type="submit" Color="SbColor.Primary" FullWidth="true" Loading="IsBusy">
+                                @AccountL["ConfirmPhoneSendCode"]
+                            </SbButton>
+                        </SbStack>
+                    </form>
+                }
+                else
+                {
+                    <SbText>@AccountL["ConfirmPhoneInstructions"]</SbText>
+                    @if (!string.IsNullOrWhiteSpace(PhoneNumber))
+                    {
+                        <SbText Variant="SbTextVariant.BodySmall" Color="SbColor.Muted">@PhoneNumber</SbText>
+                    }
+                    <form method="post" @onsubmit="OnConfirmAsync" @formname="confirm-phone" class="w-full">
+                        <AntiforgeryToken />
+                        <SbStack Gap="3">
+                            <SbFormField Label="@AccountL["ConfirmPhoneCode"]" InputId="Code" Required="true">
+                                <SbTextField @bind-Value="Code"
+                                             Id="Code"
+                                             Type="text"
+                                             AutoComplete="one-time-code"
+                                             name="Code" />
+                            </SbFormField>
+                            @if (!string.IsNullOrEmpty(SuccessMessage))
+                            {
+                                <SbAlert Severity="SbAlertSeverity.Success">@SuccessMessage</SbAlert>
+                            }
+                            @if (!string.IsNullOrEmpty(ErrorMessage))
+                            {
+                                <SbAlert Severity="SbAlertSeverity.Danger">@ErrorMessage</SbAlert>
+                            }
+                            <SbButton Type="submit" Color="SbColor.Primary" FullWidth="true" Loading="IsBusy">
+                                @AccountL["Continue"]
+                            </SbButton>
+                            <OtpResendButton Disabled="IsBusy" AvailableAt="ResendAvailableAt" OnResend="OnResendAsync">
+                                @AccountL["ConfirmPhoneResend"]
+                            </OtpResendButton>
+                        </SbStack>
+                    </form>
+                }
+            </SbStack>
+        </ChildContent>
+    </SbCard>
+</div>

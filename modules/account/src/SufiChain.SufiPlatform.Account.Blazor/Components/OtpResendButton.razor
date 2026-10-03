@@ -1,0 +1,22 @@
+@namespace SufiChain.SufiPlatform.Account.Blazor.Components
+
+<SbButton Type="button"
+          Color="Color"
+          Variant="Variant"
+          FullWidth="FullWidth"
+          Loading="Loading"
+          Disabled="@(Disabled || RemainingSeconds > 0)"
+          OnClick="OnResend">
+    @if (RemainingSeconds > 0)
+    {
+        @AccountL["ResendOtpCodeIn", FormatRemaining(RemainingSeconds)]
+    }
+    else if (ChildContent != null)
+    {
+        @ChildContent
+    }
+    else
+    {
+        @AccountL["ResendOtpCode"]
+    }
+</SbButton>

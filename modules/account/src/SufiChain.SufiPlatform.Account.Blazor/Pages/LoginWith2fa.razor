@@ -49,13 +49,13 @@
                                     </SbFormField>
                                 }
                                 <SbStack Direction="SbStackDirection.Row" Gap="2" Align="SbAlign.Center">
-                                    <SbButton Type="button"
-                                              Color="SbColor.Secondary"
-                                              Variant="SbButtonVariant.Outline"
-                                              Loading="IsSendingCode"
-                                              OnClick="OnSendCodeAsync">
+                                    <OtpResendButton Color="SbColor.Secondary"
+                                                     Variant="SbButtonVariant.Outline"
+                                                     Loading="IsSendingCode"
+                                                     AvailableAt="ResendAvailableAt"
+                                                     OnResend="OnSendCodeAsync">
                                         @AccountL["SendTwoFactorCode"]
-                                    </SbButton>
+                                    </OtpResendButton>
                                 </SbStack>
                             }
 

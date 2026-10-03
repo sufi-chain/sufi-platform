@@ -8,11 +8,11 @@ public interface IAccountOtpAppService : IApplicationService
 {
     Task<OtpOptionsDto> GetOtpOptionsAsync();
 
-    Task SendLoginOtpAsync(SendOtpInput input);
+    Task<OtpSendResultDto> SendLoginOtpAsync(SendOtpInput input);
 
     Task<VerifyLoginOtpResultDto> VerifyLoginOtpAsync(VerifyLoginOtpInput input);
 
-    Task SendRegistrationOtpAsync(SendOtpInput input);
+    Task<OtpSendResultDto> SendRegistrationOtpAsync(SendOtpInput input);
 
     Task<VerifyRegistrationOtpResultDto> VerifyRegistrationOtpAsync(VerifyOtpInput input);
 

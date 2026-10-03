@@ -1,5 +1,5 @@
 using System.Threading.Tasks;
-using SufiChain.SufiPlatform.Identity.Settings;
+using SufiChain.SufiPlatform.Identity;
 using Volo.Abp.DependencyInjection;
 using Volo.Abp.EventBus;
 using Volo.Abp.Settings;
@@ -35,10 +35,7 @@ public class AccountVerificationEventHandler :
             return;
         }
 
-        var requireEmailConfirmation = await SettingProvider.IsTrueAsync(
-            IdentitySettingNames.Registration.RequireEmailConfirmation);
-
-        if (!requireEmailConfirmation)
+        if (!await IdentityEmailConfirmationRules.ShouldSendRegistrationConfirmationEmailAsync(SettingProvider))
         {
             return;
         }

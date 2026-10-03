@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Authentication;
+using SufiChain.SufiPlatform.Account;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
@@ -48,6 +49,9 @@ public partial class Register
     [Inject]
     protected ISettingProvider SettingProvider { get; set; } = default!;
 
+    [Inject]
+    protected IExternalAuthLoginProviderFilter ExternalAuthLoginProviderFilter { get; set; } = default!;
+
     [CascadingParameter]
     public HttpContext? HttpContext { get; set; }
 
@@ -75,6 +79,13 @@ public partial class Register
 
     protected IList<AuthenticationScheme> ExternalSchemes { get; set; } = Array.Empty<AuthenticationScheme>();
 
+    protected IReadOnlyList<string> ExternalSchemeNames =>
+        ExternalSchemes.Select(scheme => scheme.Name).ToList();
+
+    protected bool IsOtpRegistrationEnabled { get; private set; }
+
+    protected bool RequiresPhoneConfirmation { get; private set; }
+
     protected string? CaptchaChallengeId { get; set; }
 
     protected string? CaptchaAnswer { get; set; }
@@ -97,7 +108,14 @@ public partial class Register
         }
 
         var allSchemes = await SchemeProvider.GetAllSchemesAsync();
-        ExternalSchemes = allSchemes.Where(s => !string.IsNullOrEmpty(s.DisplayName)).ToList();
+        var namedSchemes = allSchemes.Where(scheme => !string.IsNullOrEmpty(scheme.DisplayName)).ToList();
+        var enabledNames = await ExternalAuthLoginProviderFilter.FilterEnabledAsync(namedSchemes.Select(scheme => scheme.Name));
+        var enabled = new HashSet<string>(enabledNames, StringComparer.OrdinalIgnoreCase);
+        ExternalSchemes = namedSchemes.Where(scheme => enabled.Contains(scheme.Name)).ToList();
+        IsOtpRegistrationEnabled =
+            await SettingProvider.IsTrueAsync(IdentitySettingNames.Otp.IsEnabled)
+            && await SettingProvider.IsTrueAsync(IdentitySettingNames.Otp.AllowRegistration);
+        RequiresPhoneConfirmation = await IdentityPhoneConfirmationRules.IsRequiredForRegistrationAsync(SettingProvider);
     }
 
     protected virtual async Task OnRegisterAsync()
@@ -111,7 +129,8 @@ public partial class Register
 
         if (string.IsNullOrWhiteSpace(Input.UserName) ||
             string.IsNullOrWhiteSpace(Input.EmailAddress) ||
-            string.IsNullOrWhiteSpace(Input.Password))
+            string.IsNullOrWhiteSpace(Input.Password) ||
+            (RequiresPhoneConfirmation && string.IsNullOrWhiteSpace(Input.PhoneNumber)))
         {
             ErrorMessage = L["PleaseEnterAllFields"];
             return;
@@ -122,17 +141,27 @@ public partial class Register
 
         try
         {
-            await AccountAppService.RegisterAsync(new RegisterDto
+            var registered = await AccountAppService.RegisterAsync(new RegisterDto
             {
                 UserName = Input.UserName,
                 EmailAddress = Input.EmailAddress,
                 Password = Input.Password,
+                PhoneNumber = RequiresPhoneConfirmation ? Input.PhoneNumber : null,
                 AppName = "DemoApp",
                 ReturnUrl = ReturnUrl,
                 CaptchaChallengeId = CaptchaChallengeId,
                 CaptchaAnswer = CaptchaAnswer,
                 CaptchaToken = CaptchaToken
             });
+
+            if (RequiresPhoneConfirmation)
+            {
+                navigationStarted = true;
+                Navigation.NavigateTo(
+                    $"/account/confirm-phone?userId={registered.Id}&sent=true",
+                    forceLoad: true);
+                return;
+            }
 
             if (await RequiresEmailConfirmationBeforeSignInAsync())
             {
@@ -270,8 +299,7 @@ public partial class Register
 
     protected virtual async Task<bool> RequiresEmailConfirmationBeforeSignInAsync()
     {
-        return await SettingProvider.IsTrueAsync(IdentitySettingNames.Registration.RequireConfirmedAccount)
-               || await SettingProvider.IsTrueAsync(IdentitySettingNames.SignIn.RequireConfirmedEmail);
+        return await IdentityEmailConfirmationRules.IsSignInBlockedUntilEmailConfirmedAsync(SettingProvider);
     }
 
     public class RegisterInputModel
@@ -281,5 +309,7 @@ public partial class Register
         public string EmailAddress { get; set; } = string.Empty;
 
         public string Password { get; set; } = string.Empty;
+
+        public string PhoneNumber { get; set; } = string.Empty;
     }
 }

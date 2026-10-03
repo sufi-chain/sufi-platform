@@ -38,6 +38,8 @@ public class AccountOtpAppService : SufiApplicationService, IAccountOtpAppServic
 
     protected ILoginCompletionTokenStore LoginCompletionTokenStore { get; }
 
+    protected OtpResendCooldownGuard ResendCooldownGuard { get; }
+
     public AccountOtpAppService(
         IdentityUserManager userManager,
         IIdentityUserRepository userRepository,
@@ -48,7 +50,8 @@ public class AccountOtpAppService : SufiApplicationService, IAccountOtpAppServic
         IVerificationChannelAvailabilityChecker channelAvailabilityChecker,
         IOtpCodeStore otpCodeStore,
         ILocalEventBus localEventBus,
-        ILoginCompletionTokenStore loginCompletionTokenStore)
+        ILoginCompletionTokenStore loginCompletionTokenStore,
+        OtpResendCooldownGuard resendCooldownGuard)
     {
         UserManager = userManager;
         UserRepository = userRepository;
@@ -60,6 +63,7 @@ public class AccountOtpAppService : SufiApplicationService, IAccountOtpAppServic
         OtpCodeStore = otpCodeStore;
         LocalEventBus = localEventBus;
         LoginCompletionTokenStore = loginCompletionTokenStore;
+        ResendCooldownGuard = resendCooldownGuard;
     }
 
     [AllowAnonymous]
@@ -84,7 +88,7 @@ public class AccountOtpAppService : SufiApplicationService, IAccountOtpAppServic
     }
 
     [AllowAnonymous]
-    public virtual async Task SendLoginOtpAsync(SendOtpInput input)
+    public virtual async Task<OtpSendResultDto> SendLoginOtpAsync(SendOtpInput input)
     {
         await EnsureOtpLoginEnabledAsync();
         await ValidateCaptchaAsync(input, CaptchaPurpose.OtpSend);
@@ -92,13 +96,18 @@ public class AccountOtpAppService : SufiApplicationService, IAccountOtpAppServic
         var channel = await ChannelResolver.ResolveAsync(VerificationPurpose.OtpLogin, input.Channel);
         var identifier = VerificationIdentifierHelper.NormalizeIdentifier(channel, input.Identifier);
 
+        var result = new OtpSendResultDto
+        {
+            ResendAfterSeconds = await ResendCooldownGuard.EnsureAllowedAsync(channel, identifier)
+        };
+
         await EnsureRateLimitAsync(VerificationPurpose.OtpLogin, channel, identifier);
 
         var user = await VerificationIdentifierHelper.FindUserByIdentifierAsync(
             UserManager, UserRepository, channel, input.Identifier);
         if (user == null)
         {
-            return;
+            return result;
         }
 
         if (channel.IsPhoneChannel())
@@ -118,6 +127,8 @@ public class AccountOtpAppService : SufiApplicationService, IAccountOtpAppServic
             PreferredChannel = channel,
             AppName = input.AppName
         });
+
+        return result;
     }
 
     [AllowAnonymous]
@@ -141,7 +152,7 @@ public class AccountOtpAppService : SufiApplicationService, IAccountOtpAppServic
         }
 
         if (!await UserManager.IsEmailConfirmedAsync(user) &&
-            await SettingProvider.IsTrueAsync(IdentitySettingNames.SignIn.RequireConfirmedEmail))
+            await IdentityEmailConfirmationRules.IsSignInBlockedUntilEmailConfirmedAsync(SettingProvider))
         {
             throw new BusinessException(IdentitySecurityErrorCodes.EmailConfirmationRequired);
         }
@@ -159,13 +170,18 @@ public class AccountOtpAppService : SufiApplicationService, IAccountOtpAppServic
     }
 
     [AllowAnonymous]
-    public virtual async Task SendRegistrationOtpAsync(SendOtpInput input)
+    public virtual async Task<OtpSendResultDto> SendRegistrationOtpAsync(SendOtpInput input)
     {
         await EnsureOtpRegistrationEnabledAsync();
         await ValidateCaptchaAsync(input, CaptchaPurpose.OtpSend);
 
         var channel = await ChannelResolver.ResolveAsync(VerificationPurpose.OtpRegistration, input.Channel);
         var identifier = VerificationIdentifierHelper.NormalizeIdentifier(channel, input.Identifier);
+
+        var result = new OtpSendResultDto
+        {
+            ResendAfterSeconds = await ResendCooldownGuard.EnsureAllowedAsync(channel, identifier)
+        };
 
         await EnsureRateLimitAsync(VerificationPurpose.OtpRegistration, channel, identifier);
 
@@ -174,7 +190,7 @@ public class AccountOtpAppService : SufiApplicationService, IAccountOtpAppServic
             : await VerificationIdentifierHelper.FindByPhoneNumberAsync(UserRepository, identifier);
         if (existingUser != null)
         {
-            return;
+            return result;
         }
 
         var code = await GenerateAndStoreOtpAsync(VerificationPurpose.OtpRegistration, channel, identifier, null);
@@ -187,6 +203,8 @@ public class AccountOtpAppService : SufiApplicationService, IAccountOtpAppServic
             PreferredChannel = channel,
             AppName = input.AppName
         });
+
+        return result;
     }
 
     [AllowAnonymous]
@@ -423,9 +441,7 @@ public class AccountOtpAppService : SufiApplicationService, IAccountOtpAppServic
 
     protected static string GenerateNumericCode(int length)
     {
-        var max = (int)Math.Pow(10, length);
-        var value = Random.Shared.Next(0, max);
-        return value.ToString($"D{length}");
+        return OtpCodeGenerator.Generate(length);
     }
 
 }

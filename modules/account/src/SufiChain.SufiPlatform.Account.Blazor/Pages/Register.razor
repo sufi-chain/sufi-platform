@@ -66,6 +66,16 @@
                                              AutoComplete="email"
                                              name="Input.EmailAddress" />
                             </SbFormField>
+                            @if (RequiresPhoneConfirmation)
+                            {
+                                <SbFormField Label="@L["PhoneNumber"]" InputId="PhoneNumber" Required="true">
+                                    <SbTextField @bind-Value="Input.PhoneNumber"
+                                                 Id="PhoneNumber"
+                                                 Type="tel"
+                                                 AutoComplete="tel"
+                                                 name="Input.PhoneNumber" />
+                                </SbFormField>
+                            }
                             <SbFormField Label="@L["Password"]" InputId="Password" Required="true">
                                 <SbTextField @bind-Value="Input.Password"
                                              Id="Password"
@@ -92,26 +102,16 @@
 
                 @if (!IsExternalLogin && ExternalSchemes.Count > 0)
                 {
-                    <SbStack Gap="2" Align="SbAlign.Center">
-                        <SbText Color="SbColor.Muted">@L["OrRegisterWith"]</SbText>
-                        <SbStack Direction="SbStackDirection.Row" Gap="2" Justify="SbJustify.Center">
-                            @foreach (var scheme in ExternalSchemes)
-                            {
-                                <form method="post" action="/Account/ExternalLogin" style="display:inline">
-                                    <AntiforgeryToken />
-                                    <input type="hidden" name="provider" value="@scheme.Name" />
-                                    <input type="hidden" name="returnUrl" value="@(ReturnUrl ?? "/")" />
-                                    <SbButton Type="submit" Color="SbColor.Secondary" Variant="SbButtonVariant.Outline">
-                                        @scheme.DisplayName
-                                    </SbButton>
-                                </form>
-                            }
-                        </SbStack>
-                    </SbStack>
+                    <ExternalAuthButtons EnabledProviders="@ExternalSchemeNames"
+                                         ReturnUrl="@(ReturnUrl ?? "/")"
+                                         IntroText="@L["OrRegisterWith"]" />
                 }
 
                 <SbStack Gap="2" Align="SbAlign.Center">
-                    <SbLink Href="/account/register-otp">@AccountL["RegisterWithCode"]</SbLink>
+                    @if (IsOtpRegistrationEnabled)
+                    {
+                        <SbLink Href="/account/register-otp">@AccountL["RegisterWithCode"]</SbLink>
+                    }
                     <SbStack Direction="SbStackDirection.Row" Gap="1">
                         <SbText>@L["AlreadyHaveAccount"]</SbText>
                         <SbLink Href="/account/login">@L["SignIn"]</SbLink>

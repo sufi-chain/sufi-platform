@@ -75,6 +75,8 @@ public partial class LoginWithOtp
 
     protected bool IsBusy { get; set; }
 
+    protected DateTimeOffset? ResendAvailableAt { get; set; }
+
     protected override async Task OnInitializedAsync()
     {
         Options = await OtpAppService.GetOtpOptionsAsync();
@@ -96,6 +98,19 @@ public partial class LoginWithOtp
         _ => AccountL["ChannelEmail"]
     };
 
+    protected virtual string GetChannelIcon(VerificationDeliveryChannel channel) => channel switch
+    {
+        VerificationDeliveryChannel.Sms => "chat",
+        VerificationDeliveryChannel.Voice => "phone",
+        _ => "mail"
+    };
+
+    protected Task OnChannelChangedAsync(VerificationDeliveryChannel channel)
+    {
+        SelectedChannel = channel;
+        return Task.CompletedTask;
+    }
+
     protected virtual async Task OnSendCodeAsync()
     {
         if (string.IsNullOrWhiteSpace(Identifier))
@@ -110,7 +125,7 @@ public partial class LoginWithOtp
 
         try
         {
-            await OtpAppService.SendLoginOtpAsync(new SendOtpInput
+            var result = await OtpAppService.SendLoginOtpAsync(new SendOtpInput
             {
                 Identifier = Identifier,
                 Channel = SelectedChannel,
@@ -120,21 +135,36 @@ public partial class LoginWithOtp
                 CaptchaToken = CaptchaToken
             });
 
+            ResendAvailableAt = AccountUiErrors.ToResendAvailableAt(result);
             CodeSent = true;
             SuccessMessage = AccountL["OtpCodeSent"];
         }
         catch (Exception ex)
         {
-            ErrorMessage = AccountUiErrors.LocalizedFailure(
+            ErrorMessage = AccountUiErrors.OtpSendFailure(
                 Logger,
                 AccountL,
                 ex,
-                "OtpSendFailed");
+                "OtpSendFailed",
+                out var resendAvailableAt);
+            ResendAvailableAt = resendAvailableAt ?? ResendAvailableAt;
         }
         finally
         {
             IsBusy = false;
         }
+    }
+
+    /// <summary>
+    /// Returns to the send step so a fresh captcha is solved before the next code is requested.
+    /// </summary>
+    protected virtual Task OnRequestNewCodeAsync()
+    {
+        CodeSent = false;
+        Code = string.Empty;
+        SuccessMessage = null;
+        ErrorMessage = null;
+        return Task.CompletedTask;
     }
 
     protected virtual async Task OnVerifyAsync()

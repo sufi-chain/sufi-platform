@@ -24,6 +24,8 @@ public class RegisterDto : CaptchaInputDto
     [Required]
     public string AppName { get; set; }
 
+    public string? PhoneNumber { get; set; }
+
     public string? ReturnUrl { get; set; }
 
     public string? ReturnUrlHash { get; set; }

@@ -25,6 +25,29 @@ public class AccountVerificationEventHandlerTests
     }
 
     [Fact]
+    public async Task UserRegistered_Dispatches_When_SignIn_Requires_Confirmed_Email()
+    {
+        var (handler, dispatcher, urls) = CreateHandler(
+            requireEmailConfirmation: false,
+            blockSignInUntilEmailConfirmed: true);
+        var userId = Guid.NewGuid();
+        urls.GetEmailConfirmationUrlAsync("MVC", userId, "token", null, null)
+            .Returns("https://app.example/confirm");
+
+        await handler.HandleEventAsync(new UserRegisteredEvent
+        {
+            UserId = userId,
+            Email = "user@example.com",
+            AppName = "MVC",
+            EmailConfirmationToken = "token"
+        });
+
+        await dispatcher.Received(1).SendAsync(Arg.Is<VerificationMessage>(message =>
+            message.Purpose == VerificationPurpose.EmailConfirmation &&
+            message.Recipient == "user@example.com"));
+    }
+
+    [Fact]
     public async Task UserRegistered_Does_Not_Dispatch_When_Confirmation_Is_Disabled()
     {
         var (handler, dispatcher, _) = CreateHandler(requireEmailConfirmation: false);
@@ -123,11 +146,17 @@ public class AccountVerificationEventHandlerTests
     private static (
         AccountVerificationEventHandler Handler,
         IVerificationCodeDispatcher Dispatcher,
-        IAppUrlProvider Urls) CreateHandler(bool requireEmailConfirmation)
+        IAppUrlProvider Urls) CreateHandler(
+        bool requireEmailConfirmation,
+        bool blockSignInUntilEmailConfirmed = false)
     {
         var settings = Substitute.For<ISettingProvider>();
         settings.GetOrNullAsync(IdentitySettingNames.Registration.RequireEmailConfirmation)
             .Returns(requireEmailConfirmation ? "true" : "false");
+        settings.GetOrNullAsync(IdentitySettingNames.SignIn.RequireConfirmedEmail)
+            .Returns(blockSignInUntilEmailConfirmed ? "true" : "false");
+        settings.GetOrNullAsync(IdentitySettingNames.Registration.RequireConfirmedAccount)
+            .Returns("false");
 
         var urls = Substitute.For<IAppUrlProvider>();
         var dispatcher = Substitute.For<IVerificationCodeDispatcher>();

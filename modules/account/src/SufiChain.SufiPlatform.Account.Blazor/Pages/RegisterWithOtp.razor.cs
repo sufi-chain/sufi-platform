@@ -2,8 +2,8 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
 using SufiChain.SufiPlatform.Account.Localization;
+using SufiChain.SufiPlatform.Identity;
 using SufiChain.SufiPlatform.Identity.Localization;
-using SufiChain.SufiPlatform.Identity.Settings;
 using Volo.Abp.Settings;
 
 namespace SufiChain.SufiPlatform.Account.Blazor.Pages;
@@ -76,6 +76,8 @@ public partial class RegisterWithOtp
 
     protected bool IsBusy { get; set; }
 
+    protected DateTimeOffset? ResendAvailableAt { get; set; }
+
     protected override async Task OnInitializedAsync()
     {
         Options = await OtpAppService.GetOtpOptionsAsync();
@@ -97,6 +99,19 @@ public partial class RegisterWithOtp
         _ => AccountL["ChannelEmail"]
     };
 
+    protected virtual string GetChannelIcon(VerificationDeliveryChannel channel) => channel switch
+    {
+        VerificationDeliveryChannel.Sms => "chat",
+        VerificationDeliveryChannel.Voice => "phone",
+        _ => "mail"
+    };
+
+    protected Task OnChannelChangedAsync(VerificationDeliveryChannel channel)
+    {
+        SelectedChannel = channel;
+        return Task.CompletedTask;
+    }
+
     protected virtual async Task OnSendCodeAsync()
     {
         if (string.IsNullOrWhiteSpace(Identifier))
@@ -111,7 +126,7 @@ public partial class RegisterWithOtp
 
         try
         {
-            await OtpAppService.SendRegistrationOtpAsync(new SendOtpInput
+            var result = await OtpAppService.SendRegistrationOtpAsync(new SendOtpInput
             {
                 Identifier = Identifier,
                 Channel = SelectedChannel,
@@ -121,21 +136,36 @@ public partial class RegisterWithOtp
                 CaptchaToken = CaptchaToken
             });
 
+            ResendAvailableAt = AccountUiErrors.ToResendAvailableAt(result);
             Step = 2;
             SuccessMessage = AccountL["OtpCodeSent"];
         }
         catch (Exception ex)
         {
-            ErrorMessage = AccountUiErrors.LocalizedFailure(
+            ErrorMessage = AccountUiErrors.OtpSendFailure(
                 Logger,
                 AccountL,
                 ex,
-                "OtpSendFailed");
+                "OtpSendFailed",
+                out var resendAvailableAt);
+            ResendAvailableAt = resendAvailableAt ?? ResendAvailableAt;
         }
         finally
         {
             IsBusy = false;
         }
+    }
+
+    /// <summary>
+    /// Returns to the send step so a fresh captcha is solved before the next code is requested.
+    /// </summary>
+    protected virtual Task OnRequestNewCodeAsync()
+    {
+        Step = 1;
+        Code = string.Empty;
+        SuccessMessage = null;
+        ErrorMessage = null;
+        return Task.CompletedTask;
     }
 
     protected virtual async Task OnVerifyCodeAsync()
@@ -192,7 +222,7 @@ public partial class RegisterWithOtp
 
         try
         {
-            await OtpAppService.RegisterWithOtpAsync(new RegisterWithOtpDto
+            var registered = await OtpAppService.RegisterWithOtpAsync(new RegisterWithOtpDto
             {
                 RegistrationToken = RegistrationToken,
                 UserName = UserName,
@@ -202,11 +232,10 @@ public partial class RegisterWithOtp
                 ReturnUrl = ReturnUrl
             });
 
-            if (await RequiresEmailConfirmationBeforeSignInAsync())
+            if (!SelectedChannel.IsPhoneChannel() &&
+                await IdentityPhoneConfirmationRules.IsRequiredForRegistrationAsync(SettingProvider))
             {
-                Navigation.NavigateTo(
-                    $"/account/email-confirmation-sent?email={Uri.EscapeDataString(EmailAddress)}",
-                    forceLoad: true);
+                Navigation.NavigateTo($"/account/confirm-phone?userId={registered.Id}", forceLoad: true);
                 return;
             }
 
@@ -226,9 +255,4 @@ public partial class RegisterWithOtp
         }
     }
 
-    protected virtual async Task<bool> RequiresEmailConfirmationBeforeSignInAsync()
-    {
-        return await SettingProvider.IsTrueAsync(IdentitySettingNames.Registration.RequireConfirmedAccount)
-               || await SettingProvider.IsTrueAsync(IdentitySettingNames.SignIn.RequireConfirmedEmail);
-    }
 }

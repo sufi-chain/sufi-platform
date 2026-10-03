@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Identity;
+using SufiChain.SufiPlatform.Account.Otp;
 using SufiChain.SufiPlatform.Identity;
 using SufiChain.SufiPlatform.Identity.Settings;
 using SufiChain.SufiPlatform.UI.Abstractions.Account;
@@ -32,6 +33,10 @@ public class AccountTwoFactorAppService : SufiApplicationService, IAccountTwoFac
 
     protected IAccountSecurityLogAppService SecurityLogAppService { get; }
 
+    protected IOtpCodeStore OtpCodeStore { get; }
+
+    protected OtpResendCooldownGuard ResendCooldownGuard { get; }
+
     public AccountTwoFactorAppService(
         IdentityUserManager userManager,
         ISettingProvider settingProvider,
@@ -39,7 +44,9 @@ public class AccountTwoFactorAppService : SufiApplicationService, IAccountTwoFac
         IVerificationChannelAvailabilityChecker channelAvailabilityChecker,
         ITwoFactorPendingLoginStore pendingLoginStore,
         ILoginCompletionTokenStore loginCompletionTokenStore,
-        IAccountSecurityLogAppService securityLogAppService)
+        IAccountSecurityLogAppService securityLogAppService,
+        IOtpCodeStore otpCodeStore,
+        OtpResendCooldownGuard resendCooldownGuard)
     {
         UserManager = userManager;
         SettingProvider = settingProvider;
@@ -48,6 +55,8 @@ public class AccountTwoFactorAppService : SufiApplicationService, IAccountTwoFac
         PendingLoginStore = pendingLoginStore;
         LoginCompletionTokenStore = loginCompletionTokenStore;
         SecurityLogAppService = securityLogAppService;
+        OtpCodeStore = otpCodeStore;
+        ResendCooldownGuard = resendCooldownGuard;
     }
 
     [AllowAnonymous]
@@ -176,7 +185,7 @@ public class AccountTwoFactorAppService : SufiApplicationService, IAccountTwoFac
     }
 
     [AllowAnonymous]
-    public virtual async Task SendTwoFactorCodeAsync(SendTwoFactorCodeInput input)
+    public virtual async Task<OtpSendResultDto> SendTwoFactorCodeAsync(SendTwoFactorCodeInput input)
     {
         if (!await SettingProvider.IsTrueAsync(IdentitySettingNames.TwoFactor.AllowCodeDelivery))
         {
@@ -201,6 +210,18 @@ public class AccountTwoFactorAppService : SufiApplicationService, IAccountTwoFac
             user, UserManager, SettingProvider, preferred);
 
         var recipient = await VerificationIdentifierHelper.ResolveRecipientAsync(user, UserManager, preferred);
+
+        var resendAfterSeconds = await ResendCooldownGuard.EnsureAllowedAsync(preferred, recipient);
+        var maxPerHour = await SettingProvider.GetAsync<int>(IdentitySettingNames.Otp.RateLimitPerIdentifierPerHour);
+        if (!await OtpCodeStore.TryIncrementRateLimitAsync(
+                VerificationPurpose.TwoFactorCode,
+                preferred,
+                recipient,
+                maxPerHour))
+        {
+            throw new BusinessException(IdentitySecurityErrorCodes.OtpRateLimitExceeded);
+        }
+
         var tokenProvider = VerificationIdentifierHelper.GetTwoFactorTokenProvider(preferred);
         var code = await UserManager.GenerateTwoFactorTokenAsync(user, tokenProvider);
 
@@ -213,6 +234,8 @@ public class AccountTwoFactorAppService : SufiApplicationService, IAccountTwoFac
             PreferredChannel = preferred,
             AppName = input.AppName
         });
+
+        return new OtpSendResultDto { ResendAfterSeconds = resendAfterSeconds };
     }
 
     [AllowAnonymous]

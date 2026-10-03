@@ -6,5 +6,6 @@ public enum VerificationPurpose
     OtpRegistration = 1,
     TwoFactorCode = 2,
     EmailConfirmation = 3,
-    PasswordReset = 4
+    PasswordReset = 4,
+    PhoneConfirmation = 5
 }

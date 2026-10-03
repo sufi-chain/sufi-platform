@@ -27,7 +27,7 @@ public class AccountOtpController : SufiControllerBase, IAccountOtpAppService
 
     [HttpPost]
     [Route("send-login")]
-    public virtual Task SendLoginOtpAsync(SendOtpInput input)
+    public virtual Task<OtpSendResultDto> SendLoginOtpAsync(SendOtpInput input)
     {
         return _otpAppService.SendLoginOtpAsync(input);
     }
@@ -41,7 +41,7 @@ public class AccountOtpController : SufiControllerBase, IAccountOtpAppService
 
     [HttpPost]
     [Route("send-registration")]
-    public virtual Task SendRegistrationOtpAsync(SendOtpInput input)
+    public virtual Task<OtpSendResultDto> SendRegistrationOtpAsync(SendOtpInput input)
     {
         return _otpAppService.SendRegistrationOtpAsync(input);
     }

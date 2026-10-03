@@ -19,6 +19,7 @@
     <ProjectReference Include="../../../../framework/SufiChain.SufiPlatform.Captcha/SufiChain.SufiPlatform.Captcha.csproj" />
     <ProjectReference Include="../../../../framework/SufiChain.SufiPlatform.Ddd.Application/SufiChain.SufiPlatform.Ddd.Application.csproj" />
     <PackageReference Include="Volo.Abp.Mapperly" Version="$(AbpVersion)" />
+    <PackageReference Include="Volo.Abp.DistributedLocking.Abstractions" Version="$(AbpVersion)" />
     <ProjectReference Include="../../../../framework/SufiChain.SufiPlatform.SufiCom/SufiChain.SufiPlatform.SufiCom.csproj" />
     <ProjectReference Include="../../../../framework/SufiChain.SufiPlatform.TextTemplating.Scriban/SufiChain.SufiPlatform.TextTemplating.Scriban.csproj" />
     <ProjectReference Include="../../../../framework/SufiChain.SufiPlatform.UI.Abstractions/SufiChain.SufiPlatform.UI.Abstractions.csproj" />

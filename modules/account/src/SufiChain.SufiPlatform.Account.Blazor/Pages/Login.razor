@@ -5,6 +5,8 @@
 @using Microsoft.AspNetCore.Identity
 @using SufiChain.SufiPlatform.Identity
 @using SufiChain.SufiPlatform.Identity.AspNetCore
+@using SufiChain.SufiPlatform.Identity.Settings
+@using Volo.Abp.Settings
 @using SufiChain.SufiPlatform.Account.Localization
 @using SufiChain.SufiPlatform.UI.Abstractions.Account
 @inject SignInManager<SufiChain.SufiPlatform.Identity.IdentityUser> SignInManager
@@ -18,6 +20,7 @@
 @inject ITwoFactorPendingLoginStore TwoFactorPendingStore
 @inject IAccountTwoFactorAppService TwoFactorAppService
 @inject IExternalAuthLoginProviderFilter ExternalAuthLoginProviderFilter
+@inject ISettingProvider SettingProvider
 
 @*
     Login page: works in Static SSR and Interactive Server hosts.
@@ -81,7 +84,10 @@
 		                       ReturnUrl="@(ReturnUrl ?? "/")" />
 
 		<SbStack Gap="2" Align="SbAlign.Center">
-			<SbLink Href="@OtpLoginHref">@AccountL["SignInWithCode"]</SbLink>
+			@if (_otpLoginEnabled)
+			{
+				<SbLink Href="@OtpLoginHref">@AccountL["SignInWithCode"]</SbLink>
+			}
 			<SbStack Direction="SbStackDirection.Row" Gap="1">
 				<SbText>@L["DontHaveAccount"]</SbText>
 				<SbLink Href="@RegisterHref">@L["Register"]</SbLink>
@@ -126,6 +132,7 @@
 
 	private string? ErrorMessage { get; set; }
 	private IReadOnlyList<string> _externalProviderNames { get; set; } = Array.Empty<string>();
+	private bool _otpLoginEnabled;
 
 	private static readonly HashSet<string> _nonExternalSchemes = new(StringComparer.OrdinalIgnoreCase)
 	{
@@ -137,7 +144,9 @@
 		// Show error from query string if present
 		if (!string.IsNullOrEmpty(ErrorFromQuery))
 		{
-			ErrorMessage = ErrorFromQuery;
+			ErrorMessage = string.Equals(ErrorFromQuery, "EmailConfirmationRequired", StringComparison.Ordinal)
+				? L["AccountNotActive"]
+				: ErrorFromQuery;
 		}
 		// Get external login schemes (Google, Microsoft, Facebook, etc.) from host configuration
 		var allSchemes = await SchemeProvider.GetAllSchemesAsync();
@@ -145,6 +154,8 @@
 			.Where(s => !string.IsNullOrEmpty(s.DisplayName) && !_nonExternalSchemes.Contains(s.Name))
 			.Select(s => s.Name);
 		_externalProviderNames = await ExternalAuthLoginProviderFilter.FilterEnabledAsync(candidateNames);
+		_otpLoginEnabled = await SettingProvider.IsTrueAsync(IdentitySettingNames.Otp.IsEnabled)
+			&& await SettingProvider.IsTrueAsync(IdentitySettingNames.Otp.AllowLogin);
 	}
 
 	private async Task HandleLogin()
@@ -173,7 +184,7 @@
 		if (TokenStore.IsSupported)
 		{
 			// Blazor Interactive: response has already been sent; cannot set cookies here.
-			// Validate password only, then create token and navigate to complete-login.
+			// Validate password and sign-in policy, then create a token and navigate to complete-login.
 			if (await UserManager.IsLockedOutAsync(user))
 			{
 				await SecurityLogAppService.SaveLoginEventAsync(IdentitySecurityLogIdentityConsts.Identity, IdentitySecurityLogActionConsts.LoginLockedout, user.UserName);
@@ -188,6 +199,23 @@
 				return;
 			}
 			await UserManager.ResetAccessFailedCountAsync(user);
+
+			if (!await SignInManager.CanSignInAsync(user))
+			{
+				await SecurityLogAppService.SaveLoginEventAsync(
+					IdentitySecurityLogIdentityConsts.Identity,
+					IdentitySecurityLogActionConsts.LoginNotAllowed,
+					user.UserName);
+				ErrorMessage = L["AccountNotActive"];
+				return;
+			}
+
+			if (await IdentityPhoneConfirmationRules.IsRequiredForRegistrationAsync(SettingProvider) &&
+			    !user.PhoneNumberConfirmed)
+			{
+				Navigation.NavigateTo($"/account/confirm-phone?userId={user.Id}", forceLoad: true);
+				return;
+			}
 
 			if (user.TwoFactorEnabled && TwoFactorPendingStore.IsSupported)
 			{
@@ -221,6 +249,20 @@
 
 		if (result.Succeeded)
 		{
+			if (await IdentityPhoneConfirmationRules.IsRequiredForRegistrationAsync(SettingProvider) &&
+			    !user.PhoneNumberConfirmed)
+			{
+				await SignInManager.SignOutAsync();
+				if (HttpContext != null)
+				{
+					HttpContext.Response.Redirect($"/account/confirm-phone?userId={user.Id}");
+					return;
+				}
+
+				Navigation.NavigateTo($"/account/confirm-phone?userId={user.Id}", forceLoad: true);
+				return;
+			}
+
 			await SecurityLogAppService.SaveLoginEventAsync(IdentitySecurityLogIdentityConsts.Identity, IdentitySecurityLogActionConsts.LoginSucceeded, user.UserName);
 
 			var enforceUrl = await TwoFactorAppService.GetPostLoginRedirectUrlAsync(user.Id, ReturnUrl);

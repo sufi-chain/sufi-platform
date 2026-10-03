@@ -24,18 +24,25 @@
                     <SbStack Gap="3" class="w-full">
                         @if (ShowChannelPicker)
                         {
-                            <SbFormField Label="@AccountL["OtpDeliveryChannel"]" InputId="OtpChannel">
-                                <SbSimpleSelect TValue="VerificationDeliveryChannel"
-                                                @bind-Value="SelectedChannel"
-                                                Id="OtpChannel">
-                                    @foreach (var channel in Options!.AvailableChannels)
-                                    {
-                                        <SbSelectOption TValue="VerificationDeliveryChannel" Value="@channel">
-                                            @GetChannelLabel(channel)
-                                        </SbSelectOption>
-                                    }
-                                </SbSimpleSelect>
-                            </SbFormField>
+                            <SbToggleGroup TValue="VerificationDeliveryChannel"
+                                           Value="SelectedChannel"
+                                           ValueChanged="OnChannelChangedAsync"
+                                           Label="@AccountL["OtpDeliveryChannel"]"
+                                           FullWidth="true"
+                                           Color="SbColor.Primary">
+                                @foreach (var channel in Options!.AvailableChannels)
+                                {
+                                    var option = channel;
+                                    <SbToggleItem TValue="VerificationDeliveryChannel" Value="option">
+                                        <ChildContent Context="selected">
+                                            <span class="account-channel-option">
+                                                <SbIcon Name="@GetChannelIcon(option)" Size="SbSize.Sm" />
+                                                <span>@GetChannelLabel(option)</span>
+                                            </span>
+                                        </ChildContent>
+                                    </SbToggleItem>
+                                }
+                            </SbToggleGroup>
                         }
 
                         <SbFormField Label="@IdentifierLabel" InputId="Identifier" Required="true">
@@ -52,13 +59,13 @@
                                          @bind-CaptchaAnswer="CaptchaAnswer"
                                          @bind-CaptchaToken="CaptchaToken"
                                          Purpose="CaptchaPurpose.OtpSend" />
-                            <SbButton Type="button"
-                                      Color="SbColor.Primary"
-                                      FullWidth="true"
-                                      Loading="IsBusy"
-                                      OnClick="OnSendCodeAsync">
+                            <OtpResendButton Variant="SbButtonVariant.Solid"
+                                             FullWidth="true"
+                                             Loading="IsBusy"
+                                             AvailableAt="ResendAvailableAt"
+                                             OnResend="OnSendCodeAsync">
                                 @AccountL["SendOtpCode"]
-                            </SbButton>
+                            </OtpResendButton>
                         }
                         else
                         {
@@ -77,6 +84,9 @@
                                       OnClick="OnVerifyAsync">
                                 @L["SignIn"]
                             </SbButton>
+                            <OtpResendButton Disabled="IsBusy"
+                                             AvailableAt="ResendAvailableAt"
+                                             OnResend="OnRequestNewCodeAsync" />
                         }
 
                         @if (!string.IsNullOrEmpty(SuccessMessage))
@@ -89,7 +99,7 @@
                         }
                     </SbStack>
 
-                    <SbLink Href="@PasswordLoginHref">@L["SignInWithPassword"]</SbLink>
+                    <SbLink Href="@PasswordLoginHref">@AccountL["SignInWithPassword"]</SbLink>
                 }
             </SbStack>
         </ChildContent>

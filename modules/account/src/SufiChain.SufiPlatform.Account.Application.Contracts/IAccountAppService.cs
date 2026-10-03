@@ -18,4 +18,10 @@ public interface IAccountAppService : IApplicationService
     Task ConfirmEmailAsync(ConfirmEmailDto input);
 
     Task<bool> VerifyEmailConfirmationTokenAsync(VerifyEmailConfirmationTokenInput input);
+
+    Task<PhoneConfirmationStateDto> GetPhoneConfirmationStateAsync(Guid userId);
+
+    Task<OtpSendResultDto> SendPhoneConfirmationCodeAsync(SendPhoneConfirmationCodeDto input);
+
+    Task<ConfirmPhoneNumberResultDto> ConfirmPhoneNumberAsync(ConfirmPhoneNumberDto input);
 }

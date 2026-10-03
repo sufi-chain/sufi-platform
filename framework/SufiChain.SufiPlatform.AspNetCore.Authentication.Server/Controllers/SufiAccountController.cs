@@ -12,6 +12,7 @@ using SufiChain.SufiPlatform.UI.Abstractions.Account;
 using SufiChain.SufiPlatform.UI.MultiTenancy;
 using Volo.Abp;
 using Volo.Abp.AspNetCore.Mvc;
+using Volo.Abp.Settings;
 using Volo.Abp.MultiTenancy;
 using Volo.Abp.Security.Claims;
 using IdentityUser = SufiChain.SufiPlatform.Identity.IdentityUser;
@@ -268,6 +269,12 @@ public abstract class SufiAccountController : AbpController
             throw new UserFriendlyException($"Failed to link external login: {errors}");
         }
 
+        var settingProvider = HttpContext.RequestServices.GetRequiredService<ISettingProvider>();
+        if (await IdentityPhoneConfirmationRules.IsRequiredForRegistrationAsync(settingProvider))
+        {
+            return Redirect($"/account/confirm-phone?userId={user.Id}");
+        }
+
         await _signInManager.SignInAsync(user, isPersistent: true, externalLoginAuthSchema);
         await _securityLogAppService.SaveLoginEventAsync(IdentitySecurityLogIdentityConsts.IdentityExternal, IdentitySecurityLogActionConsts.LoginSucceeded, user.UserName);
 
@@ -321,6 +328,22 @@ public abstract class SufiAccountController : AbpController
         if (user == null)
         {
             return Redirect($"/account/login?error=UserNotFound&returnUrl={Uri.EscapeDataString(NormalizeReturnUrl(returnUrl))}");
+        }
+
+        if (!await _signInManager.CanSignInAsync(user))
+        {
+            await _securityLogAppService.SaveLoginEventAsync(
+                IdentitySecurityLogIdentityConsts.Identity,
+                IdentitySecurityLogActionConsts.LoginNotAllowed,
+                user.UserName);
+            return Redirect($"/account/login?error=EmailConfirmationRequired&returnUrl={Uri.EscapeDataString(NormalizeReturnUrl(returnUrl))}");
+        }
+
+        var settingProvider = HttpContext.RequestServices.GetRequiredService<ISettingProvider>();
+        if (await IdentityPhoneConfirmationRules.IsRequiredForRegistrationAsync(settingProvider) &&
+            !user.PhoneNumberConfirmed)
+        {
+            return Redirect($"/account/confirm-phone?userId={user.Id}");
         }
 
         await _signInManager.SignInAsync(user, rememberMe);

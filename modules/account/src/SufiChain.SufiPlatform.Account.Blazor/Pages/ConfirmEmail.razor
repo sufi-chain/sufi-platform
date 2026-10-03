@@ -15,7 +15,7 @@
                 else if (IsSuccess)
                 {
                     <SbAlert Severity="SbAlertSeverity.Success">@AccountL["ConfirmEmailSuccess"]</SbAlert>
-                    <SbButton Color="SbColor.Primary" OnClick="NavigateToLogin">@L["SignIn"]</SbButton>
+                    <SbButton Color="SbColor.Primary" OnClick="ContinueAfterConfirmationAsync">@AccountL["Continue"]</SbButton>
                 }
                 else
                 {

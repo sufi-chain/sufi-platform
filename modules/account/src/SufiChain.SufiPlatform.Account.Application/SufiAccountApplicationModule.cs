@@ -9,6 +9,7 @@ using Volo.Abp.Settings;
 using Volo.Abp.VirtualFileSystem;
 
 using Volo.Abp.Caching;
+using Volo.Abp.DistributedLocking;
 namespace SufiChain.SufiPlatform.Account;
 
 [DependsOn(
@@ -19,6 +20,7 @@ namespace SufiChain.SufiPlatform.Account;
     typeof(SufiCaptchaModule),
     typeof(AbpMapperlyModule),
     typeof(AbpCachingModule),
+    typeof(AbpDistributedLockingAbstractionsModule),
     typeof(AbpSettingsModule)
 )]
 public class SufiAccountApplicationModule : AbpModule

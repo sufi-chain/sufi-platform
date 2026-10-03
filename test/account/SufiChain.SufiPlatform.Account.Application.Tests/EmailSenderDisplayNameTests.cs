@@ -26,6 +26,23 @@ public class EmailSenderDisplayNameTests
             });
 
         sender.CapturedAddress.ShouldBe("no-reply@sufichain.com");
+        sender.CapturedDisplayName.ShouldBe("SufiAPP - Account");
+    }
+
+    [Fact]
+    public async Task SendAsync_Uses_The_Feature_Name_When_The_Application_Name_Is_Empty()
+    {
+        var sender = CreateSender("  ");
+
+        await sender.SendAsync(
+            "user@example.com",
+            "subject",
+            "body",
+            additionalArgs: new AdditionalMessageSendingArgs
+            {
+                FromDisplayName = "Account"
+            });
+
         sender.CapturedDisplayName.ShouldBe("Account");
     }
 
