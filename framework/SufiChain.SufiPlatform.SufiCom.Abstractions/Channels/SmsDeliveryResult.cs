@@ -7,4 +7,9 @@ public class SmsDeliveryResult
     public string? ErrorMessage { get; set; }
     public int? StatusCode { get; set; }
     public string? AdditionalData { get; set; }
+
+    /// <summary>
+    /// True when the provider reports a temporary failure and the same request may be retried.
+    /// </summary>
+    public bool IsTransientFailure { get; set; }
 }

@@ -4,7 +4,7 @@
     "DisplayName:SufiCom.Email.DefaultFromAddress": "Default From Email Address",
     "Description:SufiCom.Email.DefaultFromAddress": "The default email address to use as the sender",
     "DisplayName:SufiCom.Email.DefaultFromDisplayName": "Default From Display Name",
-    "Description:SufiCom.Email.DefaultFromDisplayName": "Fallback inbox title when a feature does not set its own sender name",
+    "Description:SufiCom.Email.DefaultFromDisplayName": "Application name shown first in the inbox title, then the feature name",
     "DisplayName:SufiCom.Email.SmtpHost": "SMTP Host",
     "Description:SufiCom.Email.SmtpHost": "SMTP server hostname or IP address",
     "DisplayName:SufiCom.Email.SmtpPort": "SMTP Port",

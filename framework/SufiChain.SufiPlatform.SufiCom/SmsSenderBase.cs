@@ -55,6 +55,11 @@ public abstract class SmsSenderBase : ISmsSender, ITransientDependency
         );
     }
 
+    public virtual Task SendOtpAsync(OtpMessage message)
+    {
+        return SendSmsAsync(message.Phone, message.Content, null);
+    }
+
     /// <summary>
     /// Implement this method to send SMS using your provider
     /// </summary>

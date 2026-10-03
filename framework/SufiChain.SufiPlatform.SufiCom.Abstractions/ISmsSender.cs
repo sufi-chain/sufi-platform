@@ -30,4 +30,10 @@ public interface ISmsSender : IMessageSender
         string? from = null,
         AdditionalMessageSendingArgs? additionalArgs = null
     );
+
+    /// <summary>
+    /// Sends a one-time password immediately through the provider's transactional OTP route.
+    /// OTP messages are never queued so the code is not persisted in background job arguments.
+    /// </summary>
+    Task SendOtpAsync(OtpMessage message);
 }

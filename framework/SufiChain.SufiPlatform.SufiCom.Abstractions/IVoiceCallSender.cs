@@ -47,4 +47,10 @@ public interface IVoiceCallSender : IMessageSender
         VoiceCallOptions? voiceOptions = null,
         AdditionalMessageSendingArgs? additionalArgs = null
     );
+
+    /// <summary>
+    /// Places a one-time password call immediately through the provider's transactional OTP route.
+    /// OTP calls are never queued so the code is not persisted in background job arguments.
+    /// </summary>
+    Task SendOtpAsync(OtpMessage message);
 }

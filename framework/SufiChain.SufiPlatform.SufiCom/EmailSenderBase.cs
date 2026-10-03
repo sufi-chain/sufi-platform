@@ -167,17 +167,38 @@ public abstract class EmailSenderBase : IEmailSender
     }
 
     /// <summary>
-    /// Caller title wins. Otherwise the SMTP default display name is the fallback.
+    /// Inbox title is "{application name} - {feature name}" when both are set.
+    /// The application name is the SMTP default display name. The feature name
+    /// comes from the caller. Either part is used alone when the other is empty.
     /// </summary>
     protected virtual async Task<string?> ResolveFromDisplayNameAsync(AdditionalMessageSendingArgs? additionalArgs)
     {
-        if (!string.IsNullOrWhiteSpace(additionalArgs?.FromDisplayName))
+        var applicationName = await Configuration.GetDefaultFromDisplayNameAsync();
+        return CombineDisplayName(applicationName, additionalArgs?.FromDisplayName);
+    }
+
+    public static string? CombineDisplayName(string? applicationName, string? featureName)
+    {
+        var application = string.IsNullOrWhiteSpace(applicationName) ? null : applicationName.Trim();
+        var feature = string.IsNullOrWhiteSpace(featureName) ? null : featureName.Trim();
+
+        if (application == null)
         {
-            return additionalArgs.FromDisplayName.Trim();
+            return feature;
         }
 
-        var configured = await Configuration.GetDefaultFromDisplayNameAsync();
-        return string.IsNullOrWhiteSpace(configured) ? null : configured.Trim();
+        if (feature == null || string.Equals(application, feature, StringComparison.Ordinal))
+        {
+            return application;
+        }
+
+        var prefix = application + " - ";
+        if (feature.StartsWith(prefix, StringComparison.Ordinal))
+        {
+            return feature;
+        }
+
+        return prefix + feature;
     }
 
     protected virtual MailAddress CreateFromAddress(string from, string? displayName)

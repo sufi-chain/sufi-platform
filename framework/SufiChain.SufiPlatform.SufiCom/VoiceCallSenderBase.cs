@@ -67,6 +67,11 @@ public abstract class VoiceCallSenderBase : IVoiceCallSender, ITransientDependen
         );
     }
 
+    public virtual Task SendOtpAsync(OtpMessage message)
+    {
+        return SendVoiceCallAsync(message.Phone, message.Content, null, null);
+    }
+
     /// <summary>
     /// Implement this method to send voice call with text-to-speech using your provider
     /// </summary>

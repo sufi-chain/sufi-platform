@@ -38,4 +38,10 @@ public class NullSmsSender : ISmsSender, ISingletonDependency
         Logger.LogWarning($"NullSmsSender: Skipping SMS queue to {phoneNumber}: {message}");
         return Task.CompletedTask;
     }
+
+    public Task SendOtpAsync(OtpMessage message)
+    {
+        Logger.LogWarning("NullSmsSender: Skipping OTP SMS to {Phone}", message.Phone);
+        return Task.CompletedTask;
+    }
 }

@@ -50,4 +50,10 @@ public class NullVoiceCallSender : IVoiceCallSender, ISingletonDependency
         Logger.LogWarning($"NullVoiceCallSender: Skipping voice call queue to {phoneNumber}: {message}");
         return Task.CompletedTask;
     }
+
+    public Task SendOtpAsync(OtpMessage message)
+    {
+        Logger.LogWarning("NullVoiceCallSender: Skipping OTP call to {Phone}", message.Phone);
+        return Task.CompletedTask;
+    }
 }
