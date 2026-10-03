@@ -1,0 +1,37 @@
+---
+description: Consistent Git commit and push policy for every SufiLabs repository
+alwaysApply: true
+---
+
+# Git commit and push
+
+Canonical product text: `../documents/developer-wiki/Agent Operating Rules.md` (Git Commit and Push). Apply this in every repository: `sufi-chain`, `sufi-chain-servers`, `sufi-platform`, `sufi-blazor`, and `sufi-theme`.
+
+## Commit
+
+- Commit only when the user explicitly asks to commit in the current turn.
+- Inspect `git status`, `git diff`, and recent `git log` in the owning repository before staging.
+- One intent per commit. Split unrelated work. Several commits per repo when needed.
+- Nested repositories first, then parent submodule pointers.
+- Conventional messages: `type(scope): why.` Types: `feat`, `fix`, `docs`, `test`, `chore`, `refactor`, `ci`.
+- Path-scoped `git add`. Leave unrelated dirty files unstaged.
+- Never commit secrets, private keys, credentials, tokens, certificates, backups, `.env`, extra `appsettings.*.json` (keep tracked `appsettings.json` and `appsettings.Development.json`), `bin/`, `obj/`, `.vs/`, or runtime state.
+- Never skip hooks unless the user explicitly requests it.
+- Never amend unless the user asked to amend, or a hook rewrote files in a commit this agent just created that has not been pushed. If a hook rejects a commit, fix and create a new commit.
+- Never force-reset, discard, or rewrite history unless the user requests that exact operation.
+- On Windows PowerShell:
+
+```powershell
+git commit -m @"
+type(scope): explain why the change exists.
+
+"@
+```
+
+## Push
+
+- Push only when the user explicitly asks to push in the current turn. Commit is not push.
+- Push only named repositories and branches. Use `git push -u <remote> HEAD` when there is no upstream.
+- Honor each repository's remotes (`origin`, `github`). Do not push a second remote unless asked.
+- Never force-push `main` or `master`. Warn if the user requests it.
+- When the user asked to push all, push nested repositories before the parent.
