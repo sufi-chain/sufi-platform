@@ -91,6 +91,11 @@ public static class IdentitySettingNames
         public const string AllowedChannels = OtpPrefix + ".AllowedChannels";
         public const string MaxAttemptsPerCode = OtpPrefix + ".MaxAttemptsPerCode";
         public const string RateLimitPerIdentifierPerHour = OtpPrefix + ".RateLimitPerIdentifierPerHour";
+        public const string ResendCooldownSeconds = OtpPrefix + ".ResendCooldownSeconds";
+        public const string ResendBackoffAfterAttempts = OtpPrefix + ".ResendBackoffAfterAttempts";
+        public const string ResendBackoffMultiplier = OtpPrefix + ".ResendBackoffMultiplier";
+        public const string ResendMaxCooldownSeconds = OtpPrefix + ".ResendMaxCooldownSeconds";
+        public const string ResendCounterResetHours = OtpPrefix + ".ResendCounterResetHours";
     }
 
     public static class Captcha

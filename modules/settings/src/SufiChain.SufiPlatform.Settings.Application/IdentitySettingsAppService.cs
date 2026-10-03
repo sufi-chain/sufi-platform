@@ -28,12 +28,16 @@ public class IdentitySettingsAppService : SettingsAppServiceBase, IIdentitySetti
     {
         await CheckFeatureAsync();
 
+        var blockSignInUntilEmailConfirmed =
+            await GetBoolAsync(IdentitySettingNames.SignIn.RequireConfirmedEmail)
+            || await GetBoolAsync(IdentitySettingNames.Registration.RequireConfirmedAccount);
+
         var dto = new IdentitySettingsDto
         {
             EnableSelfRegistration = await GetBoolAsync(IdentitySettingNames.Registration.EnableSelfRegistration, true),
-            RequireEmailConfirmation = await GetBoolAsync(IdentitySettingNames.Registration.RequireEmailConfirmation),
-            RequireConfirmedAccount = await GetBoolAsync(IdentitySettingNames.Registration.RequireConfirmedAccount),
-            RequireConfirmedEmail = await GetBoolAsync(IdentitySettingNames.SignIn.RequireConfirmedEmail),
+            RequireEmailConfirmation = await GetBoolAsync(IdentitySettingNames.Registration.RequireEmailConfirmation)
+                || blockSignInUntilEmailConfirmed,
+            RequireConfirmedEmail = blockSignInUntilEmailConfirmed,
             RequireConfirmedPhoneNumber = await GetBoolAsync(IdentitySettingNames.SignIn.RequireConfirmedPhoneNumber),
             RequireUniqueEmail = await GetBoolAsync(IdentitySettingNames.User.RequireUniqueEmail, true),
             PasswordRequiredLength = await GetIntAsync(IdentitySettingNames.Password.RequiredLength, 6),
@@ -73,6 +77,11 @@ public class IdentitySettingsAppService : SettingsAppServiceBase, IIdentitySetti
             OtpMaxAttemptsPerCode = await GetIntAsync(IdentitySettingNames.Otp.MaxAttemptsPerCode, 5),
             OtpRateLimitPerIdentifierPerHour = await GetIntAsync(
                 IdentitySettingNames.Otp.RateLimitPerIdentifierPerHour, 10),
+            OtpResendCooldownSeconds = await GetIntAsync(IdentitySettingNames.Otp.ResendCooldownSeconds, 120),
+            OtpResendBackoffAfterAttempts = await GetIntAsync(IdentitySettingNames.Otp.ResendBackoffAfterAttempts, 5),
+            OtpResendBackoffMultiplier = await GetIntAsync(IdentitySettingNames.Otp.ResendBackoffMultiplier, 2),
+            OtpResendMaxCooldownSeconds = await GetIntAsync(IdentitySettingNames.Otp.ResendMaxCooldownSeconds, 86400),
+            OtpResendCounterResetHours = await GetIntAsync(IdentitySettingNames.Otp.ResendCounterResetHours, 24),
             CaptchaIsEnabled = await GetBoolAsync(IdentitySettingNames.Captcha.IsEnabled, true),
             CaptchaProvider = await GetStringAsync(IdentitySettingNames.Captcha.Provider, "Simple"),
             CaptchaRequiredOnRegister = await GetBoolAsync(IdentitySettingNames.Captcha.RequiredOnRegister, true),
@@ -106,11 +115,21 @@ public class IdentitySettingsAppService : SettingsAppServiceBase, IIdentitySetti
     {
         await CheckFeatureAsync();
 
+        var blockSignInUntilEmailConfirmed = input.RequireConfirmedEmail;
+
         await SetBoolAsync(IdentitySettingNames.Registration.EnableSelfRegistration, input.EnableSelfRegistration);
-        await SetBoolAsync(IdentitySettingNames.Registration.RequireEmailConfirmation, input.RequireEmailConfirmation);
-        await SetBoolAsync(IdentitySettingNames.Registration.RequireConfirmedAccount, input.RequireConfirmedAccount);
-        await SetBoolAsync(IdentitySettingNames.SignIn.RequireConfirmedEmail, input.RequireConfirmedEmail);
-        await SetBoolAsync(IdentitySettingNames.SignIn.RequireConfirmedPhoneNumber, input.RequireConfirmedPhoneNumber);
+        await SetBoolAsync(
+            IdentitySettingNames.Registration.RequireEmailConfirmation,
+            input.RequireEmailConfirmation || blockSignInUntilEmailConfirmed);
+        await SetBoolAsync(IdentitySettingNames.Registration.RequireConfirmedAccount, false);
+        await SetBoolAsync(IdentitySettingNames.SignIn.RequireConfirmedEmail, blockSignInUntilEmailConfirmed);
+        var smsConfigured = ChannelAvailabilityChecker != null &&
+            (await ChannelAvailabilityChecker.GetAvailableChannelsAsync()).Contains(VerificationDeliveryChannel.Sms);
+        var storedPhoneConfirmation = await GetBoolAsync(IdentitySettingNames.SignIn.RequireConfirmedPhoneNumber);
+        var requirePhoneConfirmation = smsConfigured
+            ? input.RequireConfirmedPhoneNumber
+            : storedPhoneConfirmation && input.RequireConfirmedPhoneNumber;
+        await SetBoolAsync(IdentitySettingNames.SignIn.RequireConfirmedPhoneNumber, requirePhoneConfirmation);
         await SetBoolAsync(IdentitySettingNames.User.RequireUniqueEmail, input.RequireUniqueEmail);
         await SetIntAsync(IdentitySettingNames.Password.RequiredLength, input.PasswordRequiredLength);
         await SetIntAsync(IdentitySettingNames.Password.RequiredUniqueChars, input.PasswordRequiredUniqueChars);
@@ -158,6 +177,11 @@ public class IdentitySettingsAppService : SettingsAppServiceBase, IIdentitySetti
         await SetIntAsync(
             IdentitySettingNames.Otp.RateLimitPerIdentifierPerHour,
             input.OtpRateLimitPerIdentifierPerHour);
+        await SetIntAsync(IdentitySettingNames.Otp.ResendCooldownSeconds, input.OtpResendCooldownSeconds);
+        await SetIntAsync(IdentitySettingNames.Otp.ResendBackoffAfterAttempts, input.OtpResendBackoffAfterAttempts);
+        await SetIntAsync(IdentitySettingNames.Otp.ResendBackoffMultiplier, input.OtpResendBackoffMultiplier);
+        await SetIntAsync(IdentitySettingNames.Otp.ResendMaxCooldownSeconds, input.OtpResendMaxCooldownSeconds);
+        await SetIntAsync(IdentitySettingNames.Otp.ResendCounterResetHours, input.OtpResendCounterResetHours);
         await SetBoolAsync(IdentitySettingNames.Captcha.IsEnabled, input.CaptchaIsEnabled);
         await SetStringAsync(IdentitySettingNames.Captcha.Provider, input.CaptchaProvider);
         await SetBoolAsync(IdentitySettingNames.Captcha.RequiredOnRegister, input.CaptchaRequiredOnRegister);

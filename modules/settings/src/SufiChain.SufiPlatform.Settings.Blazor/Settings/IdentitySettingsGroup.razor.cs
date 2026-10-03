@@ -42,6 +42,19 @@ public partial class IdentitySettingsGroup : SettingsComponentBase, ISaveableSet
 
     public bool IsSaving => IsOperationLoading(LoadingKeys.Save);
 
+    protected bool RequireConfirmedEmail
+    {
+        get => _settings.RequireConfirmedEmail;
+        set
+        {
+            _settings.RequireConfirmedEmail = value;
+            if (value)
+            {
+                _settings.RequireEmailConfirmation = true;
+            }
+        }
+    }
+
     protected bool IsTurnstileCaptchaProvider =>
         string.Equals(_settings.CaptchaProvider, TurnstileCaptchaProvider, StringComparison.OrdinalIgnoreCase);
 
@@ -104,7 +117,6 @@ public partial class IdentitySettingsGroup : SettingsComponentBase, ISaveableSet
     {
             EnableSelfRegistration = _settings.EnableSelfRegistration,
             RequireEmailConfirmation = _settings.RequireEmailConfirmation,
-            RequireConfirmedAccount = _settings.RequireConfirmedAccount,
             RequireConfirmedEmail = _settings.RequireConfirmedEmail,
             RequireConfirmedPhoneNumber = _settings.RequireConfirmedPhoneNumber,
             RequireUniqueEmail = _settings.RequireUniqueEmail,
@@ -144,6 +156,11 @@ public partial class IdentitySettingsGroup : SettingsComponentBase, ISaveableSet
             OtpAllowVoiceChannel = _settings.OtpAllowVoiceChannel,
             OtpMaxAttemptsPerCode = _settings.OtpMaxAttemptsPerCode,
             OtpRateLimitPerIdentifierPerHour = _settings.OtpRateLimitPerIdentifierPerHour,
+            OtpResendCooldownSeconds = _settings.OtpResendCooldownSeconds,
+            OtpResendBackoffAfterAttempts = _settings.OtpResendBackoffAfterAttempts,
+            OtpResendBackoffMultiplier = _settings.OtpResendBackoffMultiplier,
+            OtpResendMaxCooldownSeconds = _settings.OtpResendMaxCooldownSeconds,
+            OtpResendCounterResetHours = _settings.OtpResendCounterResetHours,
             CaptchaIsEnabled = _settings.CaptchaIsEnabled,
             CaptchaProvider = _settings.CaptchaProvider,
             CaptchaRequiredOnRegister = _settings.CaptchaRequiredOnRegister,

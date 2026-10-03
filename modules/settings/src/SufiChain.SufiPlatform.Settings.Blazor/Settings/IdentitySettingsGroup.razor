@@ -16,10 +16,9 @@
             <SbTab Label="@L["IdentityTabSignup"]">
                 <SbStack Gap="3" class="pt-3">
                     <div><SbCheckbox @bind-Value="_settings.EnableSelfRegistration" Label="@IdentityL["Setting:EnableSelfRegistration"]" /><SbText Variant="SbTextVariant.BodySmall" Color="SbColor.Muted">@IdentityL["SettingHint:EnableSelfRegistration"]</SbText></div>
-                    <div><SbCheckbox @bind-Value="_settings.RequireEmailConfirmation" Label="@IdentityL["Setting:RequireEmailConfirmation"]" /><SbText Variant="SbTextVariant.BodySmall" Color="SbColor.Muted">@IdentityL["SettingHint:RequireEmailConfirmation"]</SbText></div>
-                    <div><SbCheckbox @bind-Value="_settings.RequireConfirmedAccount" Label="@IdentityL["Setting:RequireConfirmedAccount"]" /><SbText Variant="SbTextVariant.BodySmall" Color="SbColor.Muted">@IdentityL["SettingHint:RequireConfirmedAccount"]</SbText></div>
-                    <div><SbCheckbox @bind-Value="_settings.RequireConfirmedEmail" Label="@IdentityL["Setting:RequireConfirmedEmail"]" /><SbText Variant="SbTextVariant.BodySmall" Color="SbColor.Muted">@IdentityL["SettingHint:RequireConfirmedEmail"]</SbText></div>
-                    <div><SbCheckbox @bind-Value="_settings.RequireConfirmedPhoneNumber" Label="@IdentityL["Setting:RequireConfirmedPhoneNumber"]" /><SbText Variant="SbTextVariant.BodySmall" Color="SbColor.Muted">@IdentityL["SettingHint:RequireConfirmedPhoneNumber"]</SbText></div>
+                    <div><SbCheckbox @bind-Value="_settings.RequireEmailConfirmation" Disabled="@_settings.RequireConfirmedEmail" Label="@IdentityL["Setting:RequireEmailConfirmation"]" /><SbText Variant="SbTextVariant.BodySmall" Color="SbColor.Muted">@IdentityL["SettingHint:RequireEmailConfirmation"]</SbText></div>
+                    <div><SbCheckbox @bind-Value="RequireConfirmedEmail" Label="@IdentityL["Setting:RequireConfirmedEmail"]" /><SbText Variant="SbTextVariant.BodySmall" Color="SbColor.Muted">@IdentityL["SettingHint:RequireConfirmedEmail"]</SbText></div>
+                    <div><SbCheckbox @bind-Value="_settings.RequireConfirmedPhoneNumber" Disabled="@(!IsChannelAvailable(VerificationDeliveryChannel.Sms))" Label="@IdentityL["Setting:RequireConfirmedPhoneNumber"]" /><SbText Variant="SbTextVariant.BodySmall" Color="SbColor.Muted">@IdentityL["SettingHint:RequireConfirmedPhoneNumber"]</SbText></div>
                     <div><SbCheckbox @bind-Value="_settings.RequireUniqueEmail" Label="@IdentityL["Setting:RequireUniqueEmail"]" /><SbText Variant="SbTextVariant.BodySmall" Color="SbColor.Muted">@IdentityL["SettingHint:RequireUniqueEmail"]</SbText></div>
                 </SbStack>
             </SbTab>
@@ -108,6 +107,11 @@
                     <div><SbCheckbox @bind-Value="_settings.OtpAllowVoiceChannel" Label="@GetChannelLabel(VerificationDeliveryChannel.Voice)" Disabled="@(!IsChannelAvailable(VerificationDeliveryChannel.Voice))" /><SbText Variant="SbTextVariant.BodySmall" Color="SbColor.Muted">@IdentityL["SettingHint:OtpAllowVoiceChannel"]</SbText></div>
                     <SbNumberField TValue="int" @bind-Value="_settings.OtpMaxAttemptsPerCode" Label="@IdentityL["Setting:OtpMaxAttemptsPerCode"]" HelperText="@IdentityL["SettingHint:OtpMaxAttemptsPerCode"]" />
                     <SbNumberField TValue="int" @bind-Value="_settings.OtpRateLimitPerIdentifierPerHour" Label="@IdentityL["Setting:OtpRateLimitPerIdentifierPerHour"]" HelperText="@IdentityL["SettingHint:OtpRateLimitPerIdentifierPerHour"]" />
+                    <SbNumberField TValue="int" @bind-Value="_settings.OtpResendCooldownSeconds" Label="@IdentityL["Setting:OtpResendCooldownSeconds"]" HelperText="@IdentityL["SettingHint:OtpResendCooldownSeconds"]" />
+                    <SbNumberField TValue="int" @bind-Value="_settings.OtpResendBackoffAfterAttempts" Label="@IdentityL["Setting:OtpResendBackoffAfterAttempts"]" HelperText="@IdentityL["SettingHint:OtpResendBackoffAfterAttempts"]" />
+                    <SbNumberField TValue="int" @bind-Value="_settings.OtpResendBackoffMultiplier" Label="@IdentityL["Setting:OtpResendBackoffMultiplier"]" HelperText="@IdentityL["SettingHint:OtpResendBackoffMultiplier"]" />
+                    <SbNumberField TValue="int" @bind-Value="_settings.OtpResendMaxCooldownSeconds" Label="@IdentityL["Setting:OtpResendMaxCooldownSeconds"]" HelperText="@IdentityL["SettingHint:OtpResendMaxCooldownSeconds"]" />
+                    <SbNumberField TValue="int" @bind-Value="_settings.OtpResendCounterResetHours" Label="@IdentityL["Setting:OtpResendCounterResetHours"]" HelperText="@IdentityL["SettingHint:OtpResendCounterResetHours"]" />
                 </SbStack>
             </SbTab>
 

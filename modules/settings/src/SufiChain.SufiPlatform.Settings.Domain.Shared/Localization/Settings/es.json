@@ -10,7 +10,7 @@
     "EmailSettings": "Configuración de correo electrónico",
     "TimeZoneSettings": "Configuración de zona horaria",
     "DefaultFromDisplayName": "Nombre para mostrar predeterminado del remitente",
-    "DefaultFromDisplayName:Hint": "Nombre de reserva cuando una función no define el suyo. La dirección del buzón no cambia.",
+    "DefaultFromDisplayName:Hint": "Nombre de la aplicación. El título empieza por este nombre y luego el de la función: SufiAPP - Account.",
     "DefaultFromAddress": "Dirección predeterminada del remitente",
     "SmtpHost": "Host SMTP",
     "SmtpPort": "Puerto SMTP",

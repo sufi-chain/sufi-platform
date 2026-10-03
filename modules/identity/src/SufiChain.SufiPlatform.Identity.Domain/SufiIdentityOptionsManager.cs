@@ -21,8 +21,8 @@ public class SufiIdentityOptionsManager : AbpDynamicOptionsManager<IdentityOptio
 
     protected override async Task OverrideOptionsAsync(string name, IdentityOptions options)
     {
-        options.SignIn.RequireConfirmedEmail = await GetBoolAsync(IdentitySettingNames.SignIn.RequireConfirmedEmail);
-        options.SignIn.RequireConfirmedPhoneNumber = await GetBoolAsync(IdentitySettingNames.SignIn.RequireConfirmedPhoneNumber);
+        options.SignIn.RequireConfirmedEmail = await IdentityEmailConfirmationRules.IsSignInBlockedUntilEmailConfirmedAsync(SettingProvider);
+        options.SignIn.RequireConfirmedPhoneNumber = false;
         options.User.RequireUniqueEmail = await GetBoolAsync(IdentitySettingNames.User.RequireUniqueEmail);
         options.Password.RequiredLength = await GetIntAsync(IdentitySettingNames.Password.RequiredLength, options.Password.RequiredLength);
         options.Password.RequiredUniqueChars = await GetIntAsync(IdentitySettingNames.Password.RequiredUniqueChars, options.Password.RequiredUniqueChars);

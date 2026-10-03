@@ -1,6 +1,9 @@
 using System.Linq;
 using JetBrains.Annotations;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Localization;
+using SufiChain.SufiPlatform.Identity.Localization;
 using Volo.Abp;
 using Volo.Abp.ExceptionHandling;
 using Volo.Abp.Localization;
@@ -19,6 +22,21 @@ public class AbpIdentityResultException : BusinessException, ILocalizeErrorMessa
 
     public string LocalizeMessage(LocalizationContext context)
     {
-        return Message;
+        var localizer = context.ServiceProvider.GetRequiredService<IStringLocalizer<SufiIdentityResource>>();
+        return IdentityResult.Errors
+            .Select(error => LocalizeError(localizer, error))
+            .Where(message => !string.IsNullOrWhiteSpace(message))
+            .JoinAsString(", ");
+    }
+
+    private static string LocalizeError(IStringLocalizer localizer, IdentityError error)
+    {
+        if (string.IsNullOrWhiteSpace(error.Code))
+        {
+            return error.Description;
+        }
+
+        var localized = localizer[$"IdentityError:{error.Code}"];
+        return localized.ResourceNotFound ? error.Description : localized.Value;
     }
 }

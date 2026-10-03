@@ -10,7 +10,7 @@
     "EmailSettings": "تنظیمات ایمیل",
     "TimeZoneSettings": "تنظیمات منطقه زمانی",
     "DefaultFromDisplayName": "نام نمایشی پیش‌فرض فرستنده",
-    "DefaultFromDisplayName:Hint": "نام جایگزین، وقتی یک بخش نام خودش را تعیین نکند. آدرس صندوق همان می‌ماند.",
+    "DefaultFromDisplayName:Hint": "نام برنامه. عنوان صندوق با این نام شروع می‌شود و بعد نام بخش می‌آید: SufiAPP - Account.",
     "DefaultFromAddress": "آدرس پیش‌فرض فرستنده",
     "SmtpHost": "سرور SMTP",
     "SmtpPort": "پورت SMTP",

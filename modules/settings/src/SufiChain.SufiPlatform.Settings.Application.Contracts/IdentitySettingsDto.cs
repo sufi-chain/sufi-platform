@@ -9,8 +9,6 @@ public class IdentitySettingsDto
 
     public bool RequireEmailConfirmation { get; set; }
 
-    public bool RequireConfirmedAccount { get; set; }
-
     public bool RequireConfirmedEmail { get; set; }
 
     public bool RequireConfirmedPhoneNumber { get; set; }
@@ -88,6 +86,16 @@ public class IdentitySettingsDto
     public int OtpMaxAttemptsPerCode { get; set; } = 5;
 
     public int OtpRateLimitPerIdentifierPerHour { get; set; } = 10;
+
+    public int OtpResendCooldownSeconds { get; set; } = 120;
+
+    public int OtpResendBackoffAfterAttempts { get; set; } = 5;
+
+    public int OtpResendBackoffMultiplier { get; set; } = 2;
+
+    public int OtpResendMaxCooldownSeconds { get; set; } = 86400;
+
+    public int OtpResendCounterResetHours { get; set; } = 24;
 
     public bool CaptchaIsEnabled { get; set; } = true;
 

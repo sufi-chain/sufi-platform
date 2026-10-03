@@ -10,7 +10,7 @@
     "EmailSettings": "إعدادات البريد الإلكتروني",
     "TimeZoneSettings": "إعدادات المنطقة الزمنية",
     "DefaultFromDisplayName": "اسم العرض الافتراضي للمرسل",
-    "DefaultFromDisplayName:Hint": "الاسم الاحتياطي عندما لا يحدد القسم اسماً خاصاً. يبقى عنوان الصندوق كما هو.",
+    "DefaultFromDisplayName:Hint": "اسم التطبيق. يبدأ عنوان البريد بهذا الاسم ثم اسم القسم: SufiAPP - Account.",
     "DefaultFromAddress": "عنوان المرسل الافتراضي",
     "SmtpHost": "خادم SMTP",
     "SmtpPort": "منفذ SMTP",

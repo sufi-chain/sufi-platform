@@ -7,6 +7,7 @@ public static class IdentitySecurityErrorCodes
     public const string EmailConfirmationRequired = "Sufi.Identity:EmailConfirmationRequired";
     public const string OtpDisabled = "Sufi.Identity:OtpDisabled";
     public const string OtpRateLimitExceeded = "Sufi.Identity:OtpRateLimitExceeded";
+    public const string OtpResendCooldown = "Sufi.Identity:OtpResendCooldown";
     public const string OtpInvalidOrExpired = "Sufi.Identity:OtpInvalidOrExpired";
     public const string VerificationChannelUnavailable = "Sufi.Identity:VerificationChannelUnavailable";
     public const string PhoneNumberRequired = "Sufi.Identity:PhoneNumberRequired";
