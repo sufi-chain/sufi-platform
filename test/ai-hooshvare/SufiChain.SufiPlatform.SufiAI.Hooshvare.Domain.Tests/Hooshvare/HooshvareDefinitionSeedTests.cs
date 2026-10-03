@@ -340,6 +340,30 @@ public class HooshvareDefinitionSeedTests
 
 
 
+    [Fact]
+    public void Constructor_Should_Allow_An_Unbound_Workspace()
+    {
+        var definition = new HooshvareDefinition(
+            Guid.NewGuid(),
+            tenantId: null,
+            sourceModule: "SufiAI.Hooshvare",
+            displayName: "Test Assistant",
+            kind: HooshvareKind.Assistant,
+            purpose: "Assistant",
+            workspaceId: Guid.Empty,
+            systemPrompt: "Test system prompt",
+            persistChatSession: true,
+            key: "test.unbound",
+            isStatic: true);
+
+        definition.WorkspaceId.ShouldBe(Guid.Empty);
+
+        var error = Should.Throw<BusinessException>(() => definition.SetWorkspaceId(Guid.Empty));
+        error.Code.ShouldBe(AIHooshvareErrorCodes.InvalidWorkspace);
+    }
+
+
+
     private static HooshvareDefinition CreateDefinition(bool defaultEnabled)
 
     {
