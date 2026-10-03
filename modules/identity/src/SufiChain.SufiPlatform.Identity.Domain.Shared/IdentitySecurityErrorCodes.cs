@@ -12,6 +12,8 @@ public static class IdentitySecurityErrorCodes
     public const string VerificationChannelUnavailable = "Sufi.Identity:VerificationChannelUnavailable";
     public const string PhoneNumberRequired = "Sufi.Identity:PhoneNumberRequired";
     public const string PhoneNumberNotConfirmed = "Sufi.Identity:PhoneNumberNotConfirmed";
+    public const string PhoneNumberAlreadyConfirmed = "Sufi.Identity:PhoneNumberAlreadyConfirmed";
+    public const string PhoneConfirmationSessionInvalid = "Sufi.Identity:PhoneConfirmationSessionInvalid";
     public const string TwoFactorCodeInvalid = "Sufi.Identity:TwoFactorCodeInvalid";
     public const string TwoFactorNotEnabled = "Sufi.Identity:TwoFactorNotEnabled";
     public const string TwoFactorSetupFailed = "Sufi.Identity:TwoFactorSetupFailed";

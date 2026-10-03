@@ -321,6 +321,8 @@
     "Sufi.Identity:VerificationChannelUnavailable": "کانال انتخاب‌شده در دسترس نیست. ارائه‌دهندگان پیام‌رسانی را پیکربندی کنید یا کانال دیگری انتخاب کنید.",
     "Sufi.Identity:PhoneNumberRequired": "برای ارسال پیامک یا تماس، شماره تلفن لازم است. شماره تلفن را به پروفایل خود اضافه کنید.",
     "Sufi.Identity:PhoneNumberNotConfirmed": "قبل از استفاده از پیامک یا تماس، شماره تلفن شما باید تأیید شود.",
+    "Sufi.Identity:PhoneNumberAlreadyConfirmed": "این شماره تلفن قبلاً تأیید شده است. برای تغییر آن از پروفایل استفاده کنید.",
+    "Sufi.Identity:PhoneConfirmationSessionInvalid": "نشست تأیید تلفن نامعتبر است یا منقضی شده. دوباره از ثبت‌نام یا ورود شروع کنید.",
     "Sufi.Identity:AuthenticatorKeyStoreUnavailable": "راه‌اندازی برنامه احراز هویت برای این حساب در دسترس نیست. لطفاً با مدیر سامانه تماس بگیرید.",
     "Sufi.Identity:CaptchaValidationFailed": "بررسی امنیتی ناموفق بود یا منقضی شد. لطفاً بررسی امنیتی جدید را تکمیل کنید.",
     "Sufi.Identity:SelfRegistrationDisabled": "ثبت‌نام حساب جدید در حال حاضر غیرفعال است.",

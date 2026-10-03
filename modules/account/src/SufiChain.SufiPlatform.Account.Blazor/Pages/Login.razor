@@ -17,6 +17,7 @@
 @inject IStringLocalizer<SufiAccountResource> AccountL
 @inject NavigationManager Navigation
 @inject ILoginCompletionTokenStore TokenStore
+@inject IPhoneConfirmationSessionStore PhoneConfirmationSessions
 @inject ITwoFactorPendingLoginStore TwoFactorPendingStore
 @inject IAccountTwoFactorAppService TwoFactorAppService
 @inject IExternalAuthLoginProviderFilter ExternalAuthLoginProviderFilter
@@ -144,9 +145,12 @@
 		// Show error from query string if present
 		if (!string.IsNullOrEmpty(ErrorFromQuery))
 		{
-			ErrorMessage = string.Equals(ErrorFromQuery, "EmailConfirmationRequired", StringComparison.Ordinal)
-				? L["AccountNotActive"]
-				: ErrorFromQuery;
+			ErrorMessage = ErrorFromQuery switch
+			{
+				"EmailConfirmationRequired" => L["AccountNotActive"],
+				"PhoneConfirmationSessionInvalid" => AccountL["ConfirmPhoneSessionInvalid"],
+				_ => ErrorFromQuery
+			};
 		}
 		// Get external login schemes (Google, Microsoft, Facebook, etc.) from host configuration
 		var allSchemes = await SchemeProvider.GetAllSchemesAsync();
@@ -210,10 +214,8 @@
 				return;
 			}
 
-			if (await IdentityPhoneConfirmationRules.IsRequiredForRegistrationAsync(SettingProvider) &&
-			    !user.PhoneNumberConfirmed)
+			if (await TryRedirectToPhoneConfirmationAsync(user, useHttpContext: false))
 			{
-				Navigation.NavigateTo($"/account/confirm-phone?userId={user.Id}", forceLoad: true);
 				return;
 			}
 
@@ -253,14 +255,10 @@
 			    !user.PhoneNumberConfirmed)
 			{
 				await SignInManager.SignOutAsync();
-				if (HttpContext != null)
+				if (await TryRedirectToPhoneConfirmationAsync(user, useHttpContext: true))
 				{
-					HttpContext.Response.Redirect($"/account/confirm-phone?userId={user.Id}");
 					return;
 				}
-
-				Navigation.NavigateTo($"/account/confirm-phone?userId={user.Id}", forceLoad: true);
-				return;
 			}
 
 			await SecurityLogAppService.SaveLoginEventAsync(IdentitySecurityLogIdentityConsts.Identity, IdentitySecurityLogActionConsts.LoginSucceeded, user.UserName);
@@ -301,6 +299,32 @@
 		{
 			ErrorMessage = L["InvalidCredentials"];
 		}
+	}
+
+	private async Task<bool> TryRedirectToPhoneConfirmationAsync(IdentityUser user, bool useHttpContext)
+	{
+		if (!await IdentityPhoneConfirmationRules.IsRequiredForRegistrationAsync(SettingProvider) ||
+		    user.PhoneNumberConfirmed)
+		{
+			return false;
+		}
+
+		if (!PhoneConfirmationSessions.IsSupported)
+		{
+			ErrorMessage = AccountL["ConfirmPhoneSessionInvalid"];
+			return true;
+		}
+
+		var sessionToken = await PhoneConfirmationSessions.CreateAsync(user.Id);
+		var url = "/account/confirm-phone?token=" + Uri.EscapeDataString(sessionToken);
+		if (useHttpContext && HttpContext != null)
+		{
+			HttpContext.Response.Redirect(url);
+			return true;
+		}
+
+		Navigation.NavigateTo(url, forceLoad: true);
+		return true;
 	}
 
 	/// <summary>
