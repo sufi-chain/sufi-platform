@@ -16,6 +16,12 @@ public interface IThemeSwitchService
     bool IsDarkMode { get; }
 
     /// <summary>
+    /// Gets whether the stored browser preference has been read.
+    /// Until this is true, callers should keep the theme already chosen from the request cookie.
+    /// </summary>
+    bool IsPreferenceResolved { get; }
+
+    /// <summary>
     /// Event raised when the theme mode changes.
     /// </summary>
     event Action<ThemeMode>? ThemeChanged;

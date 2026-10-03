@@ -9,16 +9,18 @@ namespace SufiChain.SufiPlatform.UI.Blazor.Theming;
 /// </summary>
 public class ThemeSwitchService : IThemeSwitchService
 {
-    private const string StorageKey = "sufi-theme-mode";
-    
+    public const string StorageKey = "sufi-theme-mode";
+    public const string ResolvedCookieName = "sufi-theme-resolved";
+
     private readonly ILocalStorageService _localStorage;
     private readonly IJSRuntime _jsRuntime;
-    private ThemeMode _currentMode = ThemeMode.Light;
+    private ThemeMode _currentMode = ThemeMode.System;
     private bool _systemPrefersDark;
     private bool _initialized;
 
     public ThemeMode CurrentMode => _currentMode;
-    public bool IsDarkMode => _currentMode == ThemeMode.Dark || 
+    public bool IsPreferenceResolved => _initialized;
+    public bool IsDarkMode => _currentMode == ThemeMode.Dark ||
                               (_currentMode == ThemeMode.System && _systemPrefersDark);
 
     public event Action<ThemeMode>? ThemeChanged;
@@ -67,7 +69,7 @@ public class ThemeSwitchService : IThemeSwitchService
         {
             // Detect system preference via JS interop
             _systemPrefersDark = await DetectSystemDarkModeAsync();
-            
+
             var stored = await _localStorage.GetItemAsync(StorageKey);
             if (!string.IsNullOrEmpty(stored) && Enum.TryParse<ThemeMode>(stored, out var mode))
             {
@@ -75,16 +77,19 @@ public class ThemeSwitchService : IThemeSwitchService
             }
             else
             {
-                // Default to system preference
+                // No explicit choice yet: follow the operating system.
                 _currentMode = ThemeMode.System;
             }
+
+            _initialized = true;
         }
         catch
         {
-            _currentMode = ThemeMode.Light;
+            // Browser storage is unavailable during prerender. Leave the mode unresolved
+            // so a later call can read it, and do not replace a cookie-seeded theme.
+            return _currentMode;
         }
 
-        _initialized = true;
         await ApplyThemeToDomAsync();
         return _currentMode;
     }
@@ -94,34 +99,27 @@ public class ThemeSwitchService : IThemeSwitchService
     /// </summary>
     private async Task<bool> DetectSystemDarkModeAsync()
     {
-        try
-        {
-            return await _jsRuntime.InvokeAsync<bool>("eval", 
-                "window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches");
-        }
-        catch
-        {
-            // JS interop may not be available during prerendering
-            return false;
-        }
+        return await _jsRuntime.InvokeAsync<bool>(
+            "eval",
+            "window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches");
     }
 
     private async Task ApplyThemeToDomAsync()
     {
         try
         {
-            var isDark = IsDarkMode;
-            
-            // Apply dark class to document element
-            if (isDark)
+            var isLight = !IsDarkMode;
+            try
             {
-                await _jsRuntime.InvokeVoidAsync("eval", 
-                    "document.documentElement.classList.add('sb-theme-dark'); document.documentElement.classList.remove('sb-theme-light');");
+                await _jsRuntime.InvokeVoidAsync("sufiTheme.apply", isLight);
             }
-            else
+            catch (JSException)
             {
-                await _jsRuntime.InvokeVoidAsync("eval", 
-                    "document.documentElement.classList.add('sb-theme-light'); document.documentElement.classList.remove('sb-theme-dark');");
+                await _jsRuntime.InvokeVoidAsync(
+                    "eval",
+                    isLight
+                        ? "document.documentElement.classList.add('sufi-theme-light','sufi-startup-theme-light'); document.documentElement.classList.remove('sufi-theme-dark','sufi-startup-theme-dark','sb-theme-dark','sb-theme-light'); document.cookie='sufi-theme-resolved=Light;path=/;max-age=31536000;SameSite=Lax';"
+                        : "document.documentElement.classList.add('sufi-theme-dark','sufi-startup-theme-dark'); document.documentElement.classList.remove('sufi-theme-light','sufi-startup-theme-light','sb-theme-dark','sb-theme-light'); document.cookie='sufi-theme-resolved=Dark;path=/;max-age=31536000;SameSite=Lax';");
             }
         }
         catch
