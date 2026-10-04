@@ -46,6 +46,12 @@ public class AccountOtpController : SufiControllerBase, IAccountOtpAppService
         return _otpAppService.SendRegistrationOtpAsync(input);
     }
 
+    [NonAction]
+    public virtual Task<OtpSendResultDto> SendVerifiedRegistrationOtpAsync(SendOtpInput input)
+    {
+        throw new BusinessException(IdentitySecurityErrorCodes.CaptchaValidationFailed);
+    }
+
     [HttpPost]
     [Route("verify-registration")]
     public virtual Task<VerifyRegistrationOtpResultDto> VerifyRegistrationOtpAsync(VerifyOtpInput input)
@@ -55,7 +61,7 @@ public class AccountOtpController : SufiControllerBase, IAccountOtpAppService
 
     [HttpPost]
     [Route("register")]
-    public virtual Task<IdentityUserDto> RegisterWithOtpAsync(RegisterWithOtpDto input)
+    public virtual Task<AccountRegistrationResultDto> RegisterWithOtpAsync(RegisterWithOtpDto input)
     {
         return _otpAppService.RegisterWithOtpAsync(input);
     }
