@@ -33,7 +33,12 @@
 	}
 	else if (_workspacesFailed)
 	{
-		<SbAlert Severity="SbAlertSeverity.Danger">@L["DataLoadFailed"]</SbAlert>
+		<SbAlert Severity="SbAlertSeverity.Danger">
+			<SbStack Direction="SbStackDirection.Row" Gap="3" Align="SbAlign.Center" Wrap="true">
+				<span>@L["DataLoadFailedGeneric"]</span>
+				<SbButton Size="SbSize.Sm" Variant="SbButtonVariant.Outline" OnClick="@LoadWorkspacesAsync">@L["Retry"]</SbButton>
+			</SbStack>
+		</SbAlert>
 	}
 	else if (_selectedWorkspaceId.HasValue)
 	{

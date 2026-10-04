@@ -21,7 +21,12 @@
 	}
 	else if (_statsFailed)
 	{
-		<SbAlert Severity="SbAlertSeverity.Danger">@L["DataLoadFailed"]</SbAlert>
+		<SbAlert Severity="SbAlertSeverity.Danger">
+			<SbStack Direction="SbStackDirection.Row" Gap="3" Align="SbAlign.Center" Wrap="true">
+				<span>@L["DataLoadFailedGeneric"]</span>
+				<SbButton Size="SbSize.Sm" Variant="SbButtonVariant.Outline" OnClick="@RefreshStats">@L["Retry"]</SbButton>
+			</SbStack>
+		</SbAlert>
 	}
 	else
 	{
@@ -57,11 +62,16 @@
 		<ChildContent>
 			@if (!_structuresReady)
 			{
-				<SbLoadingSkeleton Preset="SbLoadingSkeletonPreset.Table" Count="4" />
+				<SbLoadingSkeleton Preset="SbLoadingSkeletonPreset.Table" Count="4" Announce="false" />
 			}
 			else if (_structuresFailed)
 			{
-				<SbAlert Severity="SbAlertSeverity.Danger">@L["DataLoadFailed"]</SbAlert>
+				<SbAlert Severity="SbAlertSeverity.Danger">
+					<SbStack Direction="SbStackDirection.Row" Gap="3" Align="SbAlign.Center" Wrap="true">
+						<span>@L["DataLoadFailed"]</span>
+						<SbButton Size="SbSize.Sm" Variant="SbButtonVariant.Outline" OnClick="@LoadStructures">@L["Retry"]</SbButton>
+					</SbStack>
+				</SbAlert>
 			}
 			else if (_structures.Any())
 			{
@@ -160,11 +170,16 @@
 		<ChildContent>
 		@if (!_recentReady)
 		{
-			<SbLoadingSkeleton Preset="SbLoadingSkeletonPreset.Table" Count="4" />
+			<SbLoadingSkeleton Preset="SbLoadingSkeletonPreset.Table" Count="4" Announce="false" />
 		}
 		else if (_recentFailed)
 		{
-			<SbAlert Severity="SbAlertSeverity.Danger">@L["DataLoadFailed"]</SbAlert>
+			<SbAlert Severity="SbAlertSeverity.Danger">
+				<SbStack Direction="SbStackDirection.Row" Gap="3" Align="SbAlign.Center" Wrap="true">
+					<span>@L["DataLoadFailed"]</span>
+					<SbButton Size="SbSize.Sm" Variant="SbButtonVariant.Outline" OnClick="@LoadRecentFiles">@L["Retry"]</SbButton>
+				</SbStack>
+			</SbAlert>
 		}
 		else if (_recentFiles.Any())
 		{

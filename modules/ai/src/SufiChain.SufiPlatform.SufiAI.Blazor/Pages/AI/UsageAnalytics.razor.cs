@@ -29,6 +29,7 @@ public partial class UsageAnalytics : AIComponentBase
     private Guid? _selectedWorkspaceId;
     private UsageStatisticsDto? _statistics;
     private bool _statisticsFailed;
+    private bool _logsFailed;
     private List<AIUsageLogDto> _usageLogs = new();
     private List<WorkspaceGuardrailStatusDto> _guardrailStatus = new();
     private string _routeFilter = AllRoutesFilter;
@@ -49,9 +50,15 @@ public partial class UsageAnalytics : AIComponentBase
         await LoadWorkspacesAsync();
     }
 
-    private async Task LoadWorkspacesAsync()
+    private Task LoadWorkspacesAsync()
     {
-        await ExecuteWithLoadingAsync(async () =>
+        _workspacesFailed = false;
+        if (_workspaces.Count == 0)
+        {
+            _workspacesResolved = false;
+        }
+
+        return ExecuteWithLoadingAsync(async () =>
         {
             try
             {
@@ -67,7 +74,6 @@ public partial class UsageAnalytics : AIComponentBase
             catch
             {
                 _workspacesFailed = true;
-                throw;
             }
             finally
             {
@@ -92,6 +98,8 @@ public partial class UsageAnalytics : AIComponentBase
             _routeFilter = AllRoutesFilter;
         }
     }
+
+    private Task RetryAnalyticsAsync() => _workspacesFailed ? LoadWorkspacesAsync() : LoadDataAsync();
 
     private async Task RefreshDataAsync()
     {
@@ -118,8 +126,9 @@ public partial class UsageAnalytics : AIComponentBase
         var startDate = _dateRange?.Start?.ToDateTime(TimeOnly.MinValue);
         var endDate = _dateRange?.End?.ToDateTime(TimeOnly.MaxValue);
 
-        _statistics = null;
         _statisticsFailed = false;
+        _logsFailed = false;
+        LoadingStates[LoadingKeys.LoadUsageLogs] = true;
         await ExecuteWithLoadingAsync(async () =>
         {
             try
@@ -129,18 +138,38 @@ public partial class UsageAnalytics : AIComponentBase
             catch
             {
                 _statisticsFailed = true;
-                throw;
+                LoadingStates.TryRemove(LoadingKeys.LoadUsageLogs, out _);
             }
         }, LoadingKeys.LoadStatistics);
 
+        if (_statisticsFailed || !_selectedWorkspaceId.HasValue)
+        {
+            LoadingStates.TryRemove(LoadingKeys.LoadUsageLogs, out _);
+            return;
+        }
+
         await ExecuteWithLoadingAsync(async () =>
         {
-            _usageLogs = await AIAppService.GetUsageLogsAsync(_selectedWorkspaceId.Value, startDate, endDate);
-            // Show most recent first
-            _usageLogs = _usageLogs.OrderByDescending(x => x.CreationTime).Take(100).ToList();
+            try
+            {
+                var logs = await AIAppService.GetUsageLogsAsync(_selectedWorkspaceId.Value, startDate, endDate);
+                _usageLogs = logs.OrderByDescending(x => x.CreationTime).Take(100).ToList();
+                _logsFailed = false;
+            }
+            catch
+            {
+                _logsFailed = true;
+            }
         }, LoadingKeys.LoadUsageLogs);
 
-        _guardrailStatus = await WorkspaceAppService.GetGuardrailStatusAsync(_selectedWorkspaceId.Value);
+        try
+        {
+            _guardrailStatus = await WorkspaceAppService.GetGuardrailStatusAsync(_selectedWorkspaceId.Value);
+        }
+        catch
+        {
+            // Keep the counters and logs that already loaded. Guardrails are secondary.
+        }
     }
 
     private static double GetGuardrailPercent(WorkspaceGuardrailStatusDto status)

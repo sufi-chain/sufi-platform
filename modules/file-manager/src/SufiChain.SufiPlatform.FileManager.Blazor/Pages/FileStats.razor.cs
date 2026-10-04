@@ -29,10 +29,13 @@ public partial class FileStats : FileManagerComponentBase
     private bool _canDelete;
     private bool _statsReady;
     private bool _statsFailed;
+    private bool _statsLoaded;
     private bool _structuresReady;
     private bool _structuresFailed;
+    private bool _structuresLoaded;
     private bool _recentReady;
     private bool _recentFailed;
+    private bool _recentLoaded;
 
     protected override void OnInitialized()
     {
@@ -69,6 +72,12 @@ public partial class FileStats : FileManagerComponentBase
 
     private async Task LoadRecentFiles()
     {
+        _recentFailed = false;
+        if (!_recentLoaded)
+        {
+            _recentReady = false;
+        }
+
         try
         {
             var result = await FileItemAppService.GetListAsync(new GetFileListInput
@@ -77,13 +86,16 @@ public partial class FileStats : FileManagerComponentBase
                 MaxResultCount = 10
             });
             _recentFiles = result.Items.ToList();
+            _recentLoaded = true;
             _recentFailed = false;
         }
-        catch (Exception ex)
+        catch (Exception)
         {
             _recentFailed = true;
-            _recentFiles = new();
-            await NotifyOperationFailedAsync(ex, "FailedToLoadFiles");
+            if (!_recentLoaded)
+            {
+                _recentFiles = new();
+            }
         }
         finally
         {
@@ -93,17 +105,26 @@ public partial class FileStats : FileManagerComponentBase
 
     private async Task LoadStructures()
     {
+        _structuresFailed = false;
+        if (!_structuresLoaded)
+        {
+            _structuresReady = false;
+        }
+
         try
         {
             var result = await FileStructureAppService.GetListAsync(new PagedAndSortedResultRequestDto());
             _structures = result.Items.ToList();
+            _structuresLoaded = true;
             _structuresFailed = false;
         }
-        catch (Exception ex)
+        catch (Exception)
         {
             _structuresFailed = true;
-            _structures = new();
-            await NotifyOperationFailedAsync(ex, "FailedToLoadStructures");
+            if (!_structuresLoaded)
+            {
+                _structures = new();
+            }
         }
         finally
         {
@@ -113,6 +134,12 @@ public partial class FileStats : FileManagerComponentBase
 
     private async Task RefreshStats()
     {
+        _statsFailed = false;
+        if (!_statsLoaded)
+        {
+            _statsReady = false;
+        }
+
         try
         {
             var stats = await FileItemAppService.GetStatisticsAsync();
@@ -122,12 +149,12 @@ public partial class FileStats : FileManagerComponentBase
             _statistics.DocumentCount = (int)stats.DocumentCount;
             _statistics.AudioCount = (int)stats.AudioCount;
             _statistics.TotalSize = stats.TotalSize;
+            _statsLoaded = true;
             _statsFailed = false;
         }
-        catch (Exception ex)
+        catch (Exception)
         {
             _statsFailed = true;
-            await NotifyOperationFailedAsync(ex, "FailedToLoadStatistics");
         }
         finally
         {

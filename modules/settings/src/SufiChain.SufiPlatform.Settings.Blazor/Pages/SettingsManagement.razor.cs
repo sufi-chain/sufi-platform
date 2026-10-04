@@ -51,45 +51,53 @@ public partial class SettingsManagement : SettingsComponentBase
         // Breadcrumbs are auto-generated from menu hierarchy by the layout
     }
 
-    private Task LoadGroupsAsync() => ExecuteWithLoadingAsync(async () =>
+    private Task LoadGroupsAsync()
     {
-        try
+        _groupsLoadFailed = false;
+        if (_groups.Count == 0)
         {
-            using (await SettingComponentAuthorizationScope.EnterAsync(AuthenticationStateProvider, PrincipalAccessor))
-            {
-                var context = new SettingComponentCreationContext(ServiceProvider);
+            _groupsResolved = false;
+        }
 
-                foreach (var contributor in Options.Value.Contributors)
+        return ExecuteWithLoadingAsync(async () =>
+        {
+            try
+            {
+                using (await SettingComponentAuthorizationScope.EnterAsync(AuthenticationStateProvider, PrincipalAccessor))
                 {
-                    if (await contributor.CheckPermissionsAsync(context))
+                    var context = new SettingComponentCreationContext(ServiceProvider);
+
+                    foreach (var contributor in Options.Value.Contributors)
                     {
-                        await contributor.ConfigureAsync(context);
+                        if (await contributor.CheckPermissionsAsync(context))
+                        {
+                            await contributor.ConfigureAsync(context);
+                        }
                     }
+
+                    context.Normalize();
+                    _groups = context.Groups;
                 }
 
-                context.Normalize();
-                _groups = context.Groups;
+                _groupsLoadFailed = false;
+
+                // Select first tab if not already selected
+                if (_groups.Count > 0 && string.IsNullOrEmpty(_selectedTabId))
+                {
+                    _selectedTabId = _groups.First().Id;
+                }
             }
-
-            _groupsLoadFailed = false;
-
-            // Select first tab if not already selected
-            if (_groups.Count > 0 && string.IsNullOrEmpty(_selectedTabId))
+            catch
             {
-                _selectedTabId = _groups.First().Id;
+                _groupsLoadFailed = true;
+                _groups = new();
             }
-        }
-        catch
-        {
-            _groupsLoadFailed = true;
-            _groups = new();
-            throw;
-        }
-        finally
-        {
-            _groupsResolved = true;
-        }
-    }, LoadingKeys.LoadGroups);
+            finally
+            {
+                _groupsResolved = true;
+            }
+        }, LoadingKeys.LoadGroups);
+    }
 
     private void SelectGroup(string groupId)
     {

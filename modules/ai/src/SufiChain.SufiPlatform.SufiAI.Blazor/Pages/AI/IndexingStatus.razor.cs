@@ -59,9 +59,15 @@ public partial class IndexingStatus : AIComponentBase
         _availabilityResolved = true;
     }
 
-    private async Task LoadWorkspacesAsync()
+    private Task LoadWorkspacesAsync()
     {
-        await ExecuteWithLoadingAsync(async () =>
+        _workspacesFailed = false;
+        if (_workspaces.Count == 0)
+        {
+            _workspacesResolved = false;
+        }
+
+        return ExecuteWithLoadingAsync(async () =>
         {
             try
             {
@@ -72,7 +78,6 @@ public partial class IndexingStatus : AIComponentBase
             catch
             {
                 _workspacesFailed = true;
-                throw;
             }
             finally
             {
