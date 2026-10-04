@@ -9,6 +9,7 @@ using SufiChain.SufiPlatform.SufiAI.Features;
 using SufiChain.SufiPlatform.SufiAI.Permissions;
 using SufiChain.SufiPlatform.SufiAI.Workspaces;
 using Volo.Abp;
+using Volo.Abp.Authorization;
 
 namespace SufiChain.SufiPlatform.SufiAI;
 
@@ -43,7 +44,7 @@ public class AIModelCatalogAppService : SufiApplicationService, IAIModelCatalogA
     {
         if (input.HooshvareId is not Guid)
         {
-            await AuthorizationService.CheckAsync(AIPermissions.AI.Chat);
+            await EnsureWorkspaceCatalogAccessAsync();
         }
 
         var workspace = await _workspaceRepository.GetAsync(input.WorkspaceId, includeDetails: true);
@@ -96,6 +97,30 @@ public class AIModelCatalogAppService : SufiApplicationService, IAIModelCatalogA
         }
 
         return routes;
+    }
+
+    protected virtual async Task EnsureWorkspaceCatalogAccessAsync()
+    {
+        if (await IsGrantedAnyAsync(AIModelCatalogAccess.WorkspaceRoutePermissions))
+        {
+            return;
+        }
+
+        throw new AbpAuthorizationException(
+            AIModelCatalogAccess.DescribeDenial(CurrentUser.Id.HasValue));
+    }
+
+    private async Task<bool> IsGrantedAnyAsync(IEnumerable<string> permissionNames)
+    {
+        foreach (var permissionName in permissionNames)
+        {
+            if (await AuthorizationService.IsGrantedAsync(permissionName))
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private async Task<AIModelRouteDto> MapRouteAsync(
