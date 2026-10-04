@@ -7,6 +7,7 @@ using SufiChain.SufiPlatform.Account.Localization;
 using SufiChain.SufiPlatform.Identity;
 using SufiChain.SufiPlatform.Identity.Localization;
 using SufiChain.SufiPlatform.UI.Abstractions.Account;
+using Volo.Abp;
 using IdentityUser = SufiChain.SufiPlatform.Identity.IdentityUser;
 
 namespace SufiChain.SufiPlatform.Account.Blazor.Pages;
@@ -42,11 +43,13 @@ public partial class ConfirmPhone
     [CascadingParameter]
     public HttpContext? HttpContext { get; set; }
 
-    [SupplyParameterFromQuery]
-    public Guid? UserId { get; set; }
+    [SupplyParameterFromQuery(Name = "token")]
+    public string? SessionToken { get; set; }
 
     [SupplyParameterFromQuery]
     public bool Sent { get; set; }
+
+    protected Guid? ConfirmedUserId { get; set; }
 
     protected bool IsLoading { get; set; } = true;
 
@@ -66,16 +69,17 @@ public partial class ConfirmPhone
 
     protected override async Task OnInitializedAsync()
     {
-        if (!UserId.HasValue)
+        if (string.IsNullOrWhiteSpace(SessionToken))
         {
             IsLoading = false;
-            ErrorMessage = AccountL["ConfirmPhoneInvalid"];
+            ErrorMessage = AccountL["ConfirmPhoneSessionInvalid"];
             return;
         }
 
         try
         {
-            var state = await AccountAppService.GetPhoneConfirmationStateAsync(UserId.Value);
+            var state = await AccountAppService.GetPhoneConfirmationStateAsync(SessionToken);
+            ConfirmedUserId = state.UserId;
             if (state.PhoneNumberConfirmed)
             {
                 await FinishAsync(state.EmailConfirmationRequired, state.Email);
@@ -88,7 +92,7 @@ public partial class ConfirmPhone
             {
                 var result = await AccountAppService.SendPhoneConfirmationCodeAsync(new SendPhoneConfirmationCodeDto
                 {
-                    UserId = UserId.Value
+                    SessionToken = SessionToken
                 });
                 ResendAvailableAt = AccountUiErrors.ToResendAvailableAt(result);
                 SuccessMessage = AccountL["ConfirmPhoneCodeSent"];
@@ -96,7 +100,7 @@ public partial class ConfirmPhone
         }
         catch (Exception ex)
         {
-            ErrorMessage = AccountUiErrors.OtpSendFailure(Logger, AccountL, ex, "ConfirmPhoneInvalid", out var resendAvailableAt);
+            ErrorMessage = PhoneConfirmationFailure(ex, out var resendAvailableAt);
             ResendAvailableAt = resendAvailableAt ?? ResendAvailableAt;
         }
         finally
@@ -107,9 +111,11 @@ public partial class ConfirmPhone
 
     protected virtual async Task OnSendCodeAsync()
     {
-        if (!UserId.HasValue || string.IsNullOrWhiteSpace(PhoneNumber))
+        if (string.IsNullOrWhiteSpace(SessionToken) || string.IsNullOrWhiteSpace(PhoneNumber))
         {
-            ErrorMessage = L["PleaseEnterAllFields"];
+            ErrorMessage = string.IsNullOrWhiteSpace(SessionToken)
+                ? AccountL["ConfirmPhoneSessionInvalid"]
+                : L["PleaseEnterAllFields"];
             return;
         }
 
@@ -119,7 +125,7 @@ public partial class ConfirmPhone
         {
             var result = await AccountAppService.SendPhoneConfirmationCodeAsync(new SendPhoneConfirmationCodeDto
             {
-                UserId = UserId.Value,
+                SessionToken = SessionToken,
                 PhoneNumber = PhoneNumber
             });
             ResendAvailableAt = AccountUiErrors.ToResendAvailableAt(result);
@@ -129,7 +135,7 @@ public partial class ConfirmPhone
         catch (Exception ex)
         {
             SuccessMessage = null;
-            ErrorMessage = AccountUiErrors.OtpSendFailure(Logger, AccountL, ex, "ConfirmPhoneInvalid", out var resendAvailableAt);
+            ErrorMessage = PhoneConfirmationFailure(ex, out var resendAvailableAt);
             ResendAvailableAt = resendAvailableAt ?? ResendAvailableAt;
         }
         finally
@@ -145,9 +151,11 @@ public partial class ConfirmPhone
 
     protected virtual async Task OnConfirmAsync()
     {
-        if (!UserId.HasValue || string.IsNullOrWhiteSpace(Code))
+        if (string.IsNullOrWhiteSpace(SessionToken) || string.IsNullOrWhiteSpace(Code))
         {
-            ErrorMessage = L["PleaseEnterAllFields"];
+            ErrorMessage = string.IsNullOrWhiteSpace(SessionToken)
+                ? AccountL["ConfirmPhoneSessionInvalid"]
+                : L["PleaseEnterAllFields"];
             return;
         }
 
@@ -157,14 +165,16 @@ public partial class ConfirmPhone
         {
             var result = await AccountAppService.ConfirmPhoneNumberAsync(new ConfirmPhoneNumberDto
             {
-                UserId = UserId.Value,
+                SessionToken = SessionToken,
                 Code = Code
             });
             await FinishAsync(result.EmailConfirmationStillRequired, result.Email);
         }
         catch (Exception ex)
         {
-            ErrorMessage = AccountUiErrors.LocalizedFailure(Logger, AccountL, ex, "ConfirmPhoneInvalid");
+            ErrorMessage = ex is BusinessException { Code: IdentitySecurityErrorCodes.PhoneConfirmationSessionInvalid }
+                ? AccountL["ConfirmPhoneSessionInvalid"]
+                : AccountUiErrors.LocalizedFailure(Logger, AccountL, ex, "ConfirmPhoneInvalid");
         }
         finally
         {
@@ -181,18 +191,18 @@ public partial class ConfirmPhone
             return;
         }
 
-        if (UserId.HasValue && TokenStore.IsSupported)
+        if (ConfirmedUserId.HasValue && TokenStore.IsSupported)
         {
-            var token = await TokenStore.CreateAsync(UserId.Value, PanelPath, rememberMe: false);
+            var token = await TokenStore.CreateAsync(ConfirmedUserId.Value, PanelPath, rememberMe: false);
             Navigation.NavigateTo(
                 $"/account/complete-login?token={Uri.EscapeDataString(token)}&returnUrl={Uri.EscapeDataString(PanelPath)}",
                 forceLoad: true);
             return;
         }
 
-        if (UserId.HasValue && HttpContext != null)
+        if (ConfirmedUserId.HasValue && HttpContext != null)
         {
-            var user = await UserManager.FindByIdAsync(UserId.Value.ToString());
+            var user = await UserManager.FindByIdAsync(ConfirmedUserId.Value.ToString());
             if (user != null)
             {
                 await SignInManager.SignInAsync(user, isPersistent: false);
@@ -202,5 +212,17 @@ public partial class ConfirmPhone
         }
 
         Navigation.NavigateTo("/account/login?phoneConfirmed=true", forceLoad: true);
+    }
+
+    protected virtual string PhoneConfirmationFailure(Exception exception, out DateTimeOffset? resendAvailableAt)
+    {
+        if (exception is BusinessException { Code: IdentitySecurityErrorCodes.PhoneConfirmationSessionInvalid })
+        {
+            resendAvailableAt = null;
+            Logger.LogWarning(exception, "Phone confirmation session was rejected.");
+            return AccountL["ConfirmPhoneSessionInvalid"];
+        }
+
+        return AccountUiErrors.OtpSendFailure(Logger, AccountL, exception, "ConfirmPhoneInvalid", out resendAvailableAt);
     }
 }

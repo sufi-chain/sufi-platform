@@ -6,7 +6,12 @@
     <IsTestProject>true</IsTestProject>
   </PropertyGroup>
   <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+  <ItemGroup>
     <ProjectReference Include="../SufiChain.SufiPlatform.SmokeTest.Console/SufiChain.SufiPlatform.SmokeTest.Console.csproj" />
+    <ProjectReference Include="../../../framework/SufiChain.SufiPlatform.UI.Blazor.Server/SufiChain.SufiPlatform.UI.Blazor.Server.csproj" />
+    <PackageReference Include="Volo.Abp.Security" Version="$(AbpVersion)" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="$(MicrosoftNetTestSdkVersion)" />
     <PackageReference Include="xunit" Version="$(XunitVersion)" />
     <PackageReference Include="xunit.runner.visualstudio" Version="$(XunitRunnerVisualStudioVersion)" PrivateAssets="All" />
