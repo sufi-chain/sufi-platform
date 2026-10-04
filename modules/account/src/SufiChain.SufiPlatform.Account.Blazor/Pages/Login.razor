@@ -7,6 +7,7 @@
 @using SufiChain.SufiPlatform.Identity.AspNetCore
 @using SufiChain.SufiPlatform.Identity.Settings
 @using Volo.Abp.Settings
+@using SufiChain.SufiPlatform.Account
 @using SufiChain.SufiPlatform.Account.Localization
 @using SufiChain.SufiPlatform.UI.Abstractions.Account
 @inject SignInManager<SufiChain.SufiPlatform.Identity.IdentityUser> SignInManager
@@ -22,6 +23,7 @@
 @inject IAccountTwoFactorAppService TwoFactorAppService
 @inject IExternalAuthLoginProviderFilter ExternalAuthLoginProviderFilter
 @inject ISettingProvider SettingProvider
+@inject IPasswordHasher<SufiChain.SufiPlatform.Identity.IdentityUser> PasswordHasher
 
 @*
     Login page: works in Static SSR and Interactive Server hosts.
@@ -195,14 +197,31 @@
 				ErrorMessage = L["AccountLockedOut"];
 				return;
 			}
-			if (!await UserManager.CheckPasswordAsync(user, Input.Password))
+			var verification = PasswordLoginVerifier.Verify(PasswordHasher, user, Input.Password, out _);
+			if (!PasswordLoginDecision.IsPasswordAccepted(verification))
 			{
-				await UserManager.AccessFailedAsync(user);
+				try
+				{
+					await UserManager.AccessFailedAsync(user);
+				}
+				catch (Exception)
+				{
+					// A failed lockout write must not hide an invalid password.
+				}
+
 				await SecurityLogAppService.SaveLoginEventAsync(IdentitySecurityLogIdentityConsts.Identity, IdentitySecurityLogActionConsts.LoginInvalidUserNameOrPassword, user.UserName);
 				ErrorMessage = L["InvalidCredentials"];
 				return;
 			}
-			await UserManager.ResetAccessFailedCountAsync(user);
+
+			try
+			{
+				await UserManager.ResetAccessFailedCountAsync(user);
+			}
+			catch (Exception)
+			{
+				// The password is valid. A failed counter reset must not block sign-in.
+			}
 
 			if (!await SignInManager.CanSignInAsync(user))
 			{
