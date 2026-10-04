@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Components;
+using Microsoft.JSInterop;
 using SufiChain.SufiPlatform.Localization;
 using SufiChain.SufiPlatform.Menus.Menus;
 
@@ -22,12 +24,92 @@ public partial class MenuItemEditor
     private string? _nameError;
     private string? _displayOrderError;
     private string? _targetIdError;
+    private int _errorSummaryCount;
+    private bool _focusSummary;
+    private bool _openAdvancedOnRender;
+    private ElementReference _summaryRef;
+    private ElementReference _advancedRef;
+    private IJSObjectReference? _editorModule;
+
+    [Inject] private IJSRuntime JsRuntime { get; set; } = default!;
     private readonly List<MenuCultureUrlRow> _cultureUrlRows = new();
     private List<MenuLinkCulture> _linkCultures = FallbackCultures();
     private IBusinessLocalizationEditorAppService? _businessLocalizationEditorAppService;
 
     private IBusinessLocalizationEditorAppService BusinessLocalizationEditorAppService =>
         LazyGetRequiredService(ref _businessLocalizationEditorAppService);
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await base.OnAfterRenderAsync(firstRender);
+        if (_openAdvancedOnRender)
+        {
+            _openAdvancedOnRender = false;
+            try
+            {
+                _editorModule ??= await JsRuntime.InvokeAsync<IJSObjectReference>(
+                    "import",
+                    "./_content/SufiChain.SufiPlatform.Menus.Blazor/menu-item-editor.js");
+                await _editorModule.InvokeVoidAsync("openDetails", _advancedRef);
+            }
+            catch (Exception)
+            {
+                // The summary still names the errors when the panel cannot be opened from script.
+            }
+        }
+
+        if (!_focusSummary)
+        {
+            return;
+        }
+
+        _focusSummary = false;
+        try
+        {
+            await _summaryRef.FocusAsync();
+        }
+        catch (Exception)
+        {
+            // The summary is still announced by role="alert" when focus is not available.
+        }
+    }
+
+    private void PublishValidation(bool displayNameFailed)
+    {
+        _errorSummaryCount = CountValidationErrors(displayNameFailed);
+        _openAdvancedOnRender = HasAdvancedErrors();
+        _focusSummary = _errorSummaryCount > 0;
+    }
+
+    private int CountValidationErrors(bool displayNameFailed)
+    {
+        var count = displayNameFailed ? 1 : 0;
+        if (!string.IsNullOrEmpty(_nameError))
+        {
+            count++;
+        }
+
+        if (!string.IsNullOrEmpty(_linkError))
+        {
+            count++;
+        }
+
+        if (!string.IsNullOrEmpty(_displayOrderError))
+        {
+            count++;
+        }
+
+        if (!string.IsNullOrEmpty(_targetIdError))
+        {
+            count++;
+        }
+
+        count += _cultureUrlRows.Count(row => !string.IsNullOrEmpty(row.Error));
+        return count;
+    }
+
+    private bool HasAdvancedErrors() =>
+        !string.IsNullOrEmpty(_targetIdError) || _cultureUrlRows.Any(row => !string.IsNullOrEmpty(row.Error));
 
     private void OnLinkChoiceChanged(MenuLinkChoice choice)
     {
@@ -100,6 +182,7 @@ public partial class MenuItemEditor
         _nameError = null;
         _displayOrderError = null;
         _targetIdError = null;
+        _errorSummaryCount = 0;
         _structuralKindText = string.Empty;
         _pagePath = string.Empty;
         _sectionIsCurrentPage = true;
@@ -332,13 +415,13 @@ public partial class MenuItemEditor
             return;
         }
 
-        sectionId = url.Substring(hash + 1);
-        var path = url.Substring(0, hash);
-        if (path.Length == 0)
+        if (MenuItemUrlRules.TryReadRootSection(url, out sectionId))
         {
             return;
         }
 
+        sectionId = url.Substring(hash + 1);
+        var path = url.Substring(0, hash);
         currentPage = false;
         pagePath = path;
     }
@@ -375,6 +458,8 @@ public enum MenuLinkChoice
 
 public sealed class MenuCultureUrlRow
 {
+    public string FieldId { get; } = "menu-culture-" + Guid.NewGuid().ToString("N");
+
     public string Culture { get; set; } = string.Empty;
 
     public string Url { get; set; } = string.Empty;

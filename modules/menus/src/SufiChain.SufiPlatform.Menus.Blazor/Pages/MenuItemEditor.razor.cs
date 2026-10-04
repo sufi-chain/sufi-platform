@@ -254,16 +254,14 @@ public partial class MenuItemEditor : MenusComponentBase
 
     private Task OnValidSubmitAsync() => ExecuteWithLoadingAsync(async () =>
     {
-        if (_displayNameEditor == null || !await _displayNameEditor.ValidateAsync())
-        {
-            return;
-        }
+        var displayNameOk = _displayNameEditor != null && await _displayNameEditor.ValidateAsync();
 
         _nameError = null;
         _displayOrderError = null;
         _targetIdError = null;
         _linkError = null;
-        var invalid = false;
+        _errorSummaryCount = 0;
+        var invalid = !displayNameOk;
 
         if (string.IsNullOrWhiteSpace(_model.Name))
         {
@@ -291,11 +289,6 @@ public partial class MenuItemEditor : MenusComponentBase
             _model.DisplayOrder = displayOrder;
         }
 
-        if (invalid)
-        {
-            return;
-        }
-
         if (string.IsNullOrWhiteSpace(_parentIdText))
         {
             _model.ParentId = null;
@@ -316,6 +309,12 @@ public partial class MenuItemEditor : MenusComponentBase
         else
         {
             _targetIdError = L["Menus:MenuItemInvalidTarget"];
+            invalid = true;
+        }
+
+        if (invalid)
+        {
+            PublishValidation(!displayNameOk);
             return;
         }
 

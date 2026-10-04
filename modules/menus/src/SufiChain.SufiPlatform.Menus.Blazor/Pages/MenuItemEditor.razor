@@ -11,6 +11,12 @@
             <SbCard>
                 <ChildContent>
             <SbStack Gap="5">
+                @if (_errorSummaryCount > 0)
+                {
+                    <div class="menu-item-editor__summary" role="alert" tabindex="-1" @ref="_summaryRef">
+                        @L["MenuLink:ErrorSummary", _errorSummaryCount]
+                    </div>
+                }
                 <SbStack Gap="3">
                     <SbHeading Level="2" Size="5">@L["MenuItemSection:Link"]</SbHeading>
                     @if (string.IsNullOrEmpty(_structuralKindText))
@@ -30,28 +36,28 @@
 
                         @if (_linkChoice == MenuLinkChoice.SitePage)
                         {
-                            <SbTextField @bind-Value="_pagePath" Label="@L["MenuLink:PagePath"]" dir="ltr" />
+                            <SbTextField @bind-Value="_pagePath" Id="menu-item-page-path" Label="@L["MenuLink:PagePath"]" dir="ltr" />
                         }
                         else if (_linkChoice == MenuLinkChoice.PageSection)
                         {
                             <SbSwitch @bind-Value="_sectionIsCurrentPage" Label="@L["MenuLink:CurrentPage"]" />
                             @if (!_sectionIsCurrentPage)
                             {
-                                <SbTextField @bind-Value="_sectionPagePath" Label="@L["MenuLink:PagePath"]" dir="ltr" />
+                                <SbTextField @bind-Value="_sectionPagePath" Id="menu-item-section-path" Label="@L["MenuLink:PagePath"]" dir="ltr" />
                             }
-                            <SbTextField @bind-Value="_sectionId" Label="@L["MenuLink:SectionId"]" dir="ltr" />
+                            <SbTextField @bind-Value="_sectionId" Id="menu-item-section-id" Label="@L["MenuLink:SectionId"]" dir="ltr" />
                         }
                         else if (_linkChoice == MenuLinkChoice.Website)
                         {
-                            <SbTextField @bind-Value="_websiteUrl" Label="@L["MenuLink:WebsiteUrl"]" dir="ltr" />
+                            <SbTextField @bind-Value="_websiteUrl" Id="menu-item-website" Label="@L["MenuLink:WebsiteUrl"]" dir="ltr" />
                         }
                         else if (_linkChoice == MenuLinkChoice.Email)
                         {
-                            <SbTextField @bind-Value="_email" Label="@L["MenuLink:EmailAddress"]" Type="email" dir="ltr" />
+                            <SbTextField @bind-Value="_email" Id="menu-item-email" Label="@L["MenuLink:EmailAddress"]" Type="email" dir="ltr" />
                         }
                         else if (_linkChoice == MenuLinkChoice.Phone)
                         {
-                            <SbTextField @bind-Value="_phone" Label="@L["MenuLink:PhoneNumber"]" Type="tel" dir="ltr" />
+                            <SbTextField @bind-Value="_phone" Id="menu-item-phone" Label="@L["MenuLink:PhoneNumber"]" Type="tel" dir="ltr" />
                         }
 
                         @if (!string.IsNullOrEmpty(_linkError))
@@ -94,6 +100,7 @@
                                          Value="_model.Name"
                                          ValueChanged="OnNameChangedAsync"
                                          ValueExpression="@(() => _model.Name)"
+                                         Id="menu-item-name"
                                          Label="@L["MenuName"]"
                                          Required="true" />
                             @if (!string.IsNullOrEmpty(_nameError))
@@ -133,7 +140,7 @@
                         </div>
 
                         <div>
-                            <SbTextField @bind-Value="_displayOrderText" Label="@L["DisplayOrder"]" dir="ltr" inputmode="numeric" />
+                            <SbTextField @bind-Value="_displayOrderText" Id="menu-item-order" Label="@L["DisplayOrder"]" dir="ltr" inputmode="numeric" />
                             @if (!string.IsNullOrEmpty(_displayOrderError))
                             {
                                 <div class="menu-item-editor__error" role="alert">@_displayOrderError</div>
@@ -150,7 +157,7 @@
                     </div>
                 </SbStack>
 
-                <details class="menu-item-editor__advanced">
+                <details @ref="_advancedRef" class="menu-item-editor__advanced">
                     <summary>@L["MenuLink:Advanced"]</summary>
                     <div class="menu-item-editor__grid">
                         <SbSimpleSelect TValue="string"
@@ -164,7 +171,7 @@
 
                         <SbTextField @bind-Value="_model.TargetType" Label="@L["TargetType"]" dir="ltr" />
                         <div>
-                            <SbTextField @bind-Value="_targetIdText" Label="@L["TargetId"]" dir="ltr" />
+                            <SbTextField @bind-Value="_targetIdText" Id="menu-item-target-id" Label="@L["TargetId"]" dir="ltr" />
                             @if (!string.IsNullOrEmpty(_targetIdError))
                             {
                                 <div class="menu-item-editor__error" role="alert">@_targetIdError</div>
@@ -200,7 +207,7 @@
                                         }
                                     </SbSimpleSelect>
                                     <div>
-                                        <SbTextField @bind-Value="row.Url" Label="@L["Url"]" dir="ltr" />
+                                        <SbTextField @bind-Value="row.Url" Id="@row.FieldId" Label="@L["Url"]" dir="ltr" />
                                         @if (!string.IsNullOrEmpty(row.Error))
                                         {
                                             <div class="menu-item-editor__error" role="alert">@row.Error</div>
@@ -249,6 +256,19 @@ else if (_loadFailed)
 
     .menu-item-editor__wide {
         grid-column: 1 / -1;
+    }
+
+    .menu-item-editor__summary {
+        padding: 0.75rem 1rem;
+        border: 1px solid var(--sb-color-danger, #b91c1c);
+        border-radius: 0.5rem;
+        color: var(--sb-color-danger, #b91c1c);
+        background: var(--sb-color-danger-subtle, #fef2f2);
+    }
+
+    .menu-item-editor__summary:focus {
+        outline: 2px solid var(--sb-color-danger, #b91c1c);
+        outline-offset: 2px;
     }
 
     .menu-item-editor__error {

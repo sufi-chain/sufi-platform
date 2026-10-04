@@ -116,10 +116,11 @@ public static class MenuItemUrlRules
     }
 
     /// <summary>
-    /// A stored <c>#id</c> is rendered on the current culture path so <c>&lt;base href="/"&gt;</c>
-    /// does not send the visitor to the unprefixed root.
+    /// A stored <c>#id</c> or root <c>/#id</c> is a section of the page the visitor is on.
+    /// It is rendered on <paramref name="currentPath"/> so <c>&lt;base href="/"&gt;</c> does not
+    /// send it to the unprefixed root, and so it does not jump to that culture's home page.
     /// </summary>
-    public static string? ToPublicHref(string? url, string? culturePath)
+    public static string? ToPublicHref(string? url, string? currentPath)
     {
         var normalized = Normalize(url);
         if (normalized == null)
@@ -127,17 +128,86 @@ public static class MenuItemUrlRules
             return null;
         }
 
-        if (normalized[0] != '#')
+        if (normalized[0] == '#' || normalized.StartsWith("/#", StringComparison.Ordinal))
         {
-            return normalized;
+            return TryReadRootSection(normalized, out var sectionId)
+                ? CurrentPagePath(currentPath) + "#" + sectionId
+                : null;
         }
 
-        if (!IsSectionId(normalized.Substring(1)))
+        return normalized;
+    }
+
+    /// <summary>
+    /// True for <c>#id</c> and <c>/#id</c>. A path such as <c>/about#id</c> is a section of that page.
+    /// </summary>
+    public static bool TryReadRootSection(string? url, out string sectionId)
+    {
+        sectionId = string.Empty;
+        var normalized = Normalize(url);
+        if (normalized == null)
         {
-            return null;
+            return false;
         }
 
-        var path = string.IsNullOrWhiteSpace(culturePath) ? "/" : culturePath.Trim();
+        if (normalized[0] == '#')
+        {
+            sectionId = normalized.Substring(1);
+            return IsSectionId(sectionId);
+        }
+
+        if (normalized.StartsWith("/#", StringComparison.Ordinal))
+        {
+            sectionId = normalized.Substring(2);
+            return IsSectionId(sectionId);
+        }
+
+        return false;
+    }
+
+    /// <summary>
+    /// A section link is the current page only when its path and fragment both match.
+    /// A link without a fragment matches the path alone.
+    /// </summary>
+    public static bool IsPageCurrent(string? linkHref, string? currentPath, string? currentFragment)
+    {
+        if (string.IsNullOrWhiteSpace(linkHref))
+        {
+            return false;
+        }
+
+        var hash = linkHref.IndexOf('#');
+        var linkPath = hash switch
+        {
+            < 0 => linkHref,
+            0 => "/",
+            _ => linkHref.Substring(0, hash)
+        };
+
+        if (!PagePathsEqual(linkPath, CurrentPagePath(currentPath)))
+        {
+            return false;
+        }
+
+        if (hash < 0)
+        {
+            return true;
+        }
+
+        var linkFragment = linkHref.Substring(hash + 1);
+        return linkFragment.Length > 0
+            && string.Equals(linkFragment, currentFragment ?? string.Empty, StringComparison.Ordinal);
+    }
+
+    private static string CurrentPagePath(string? currentPath)
+    {
+        var path = string.IsNullOrWhiteSpace(currentPath) ? "/" : currentPath.Trim();
+        var cut = path.IndexOfAny(new[] { '?', '#' });
+        if (cut >= 0)
+        {
+            path = path.Substring(0, cut);
+        }
+
         if (!path.StartsWith("/", StringComparison.Ordinal))
         {
             path = "/" + path;
@@ -148,7 +218,19 @@ public static class MenuItemUrlRules
             path = path.TrimEnd('/');
         }
 
-        return path + normalized;
+        return path.Length == 0 ? "/" : path;
+    }
+
+    private static bool PagePathsEqual(string left, string right)
+    {
+        var a = CurrentPagePath(left);
+        var b = CurrentPagePath(right);
+        if (string.Equals(a, b, StringComparison.OrdinalIgnoreCase))
+        {
+            return true;
+        }
+
+        return (a == "/" && b.Length == 0) || (b == "/" && a.Length == 0);
     }
 
     public static bool TryNormalizeSitePage(string? input, out string? url)

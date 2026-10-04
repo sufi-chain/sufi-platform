@@ -182,9 +182,15 @@ public class MenuItemUrlRulesTests
     [InlineData("#solve", "/ar", "/ar#solve")]
     [InlineData("#solve", "/es", "/es#solve")]
     [InlineData("#solve", "/fa/", "/fa#solve")]
+    [InlineData("#solve", "/fa/about", "/fa/about#solve")]
+    [InlineData("/#solve", "/fa", "/fa#solve")]
+    [InlineData("/#solve", "/", "/#solve")]
+    [InlineData("/#solve", "/ar", "/ar#solve")]
+    [InlineData("/#top", "/fa/about", "/fa/about#top")]
+    [InlineData("/#opensource", "/es", "/es#opensource")]
     [InlineData("/about#solve", "/fa", "/about#solve")]
     [InlineData("https://example.com", "/fa", "https://example.com")]
-    public void ToPublicHref_Should_Place_Bare_Anchors_On_The_Culture_Path(string url, string culturePath, string expected)
+    public void ToPublicHref_Should_Place_Root_Anchors_On_The_Current_Path(string url, string culturePath, string expected)
     {
         MenuItemUrlRules.ToPublicHref(url, culturePath).ShouldBe(expected);
     }
@@ -194,6 +200,29 @@ public class MenuItemUrlRulesTests
     {
         MenuItemUrlRules.ToPublicHref("#", "/fa").ShouldBeNull();
         MenuItemUrlRules.ToPublicHref("#1solve", "/fa").ShouldBeNull();
+        MenuItemUrlRules.ToPublicHref("/#", "/fa").ShouldBeNull();
+        MenuItemUrlRules.ToPublicHref("/#1solve", "/fa").ShouldBeNull();
+    }
+
+    [Fact]
+    public void Root_Section_Should_Include_Stored_Slash_Hash_Links()
+    {
+        MenuItemUrlRules.TryReadRootSection("/#solve", out var slash).ShouldBeTrue();
+        slash.ShouldBe("solve");
+        MenuItemUrlRules.TryReadRootSection("#top", out var bare).ShouldBeTrue();
+        bare.ShouldBe("top");
+        MenuItemUrlRules.TryReadRootSection("/about#solve", out _).ShouldBeFalse();
+        MenuItemUrlRules.IsAcceptable(MenuItemKind.InternalRoute, "/#opensource").ShouldBeTrue();
+    }
+
+    [Fact]
+    public void IsPageCurrent_Should_Match_Only_The_Section_Fragment()
+    {
+        MenuItemUrlRules.IsPageCurrent("/fa#solve", "/fa", "solve").ShouldBeTrue();
+        MenuItemUrlRules.IsPageCurrent("/fa#top", "/fa", "solve").ShouldBeFalse();
+        MenuItemUrlRules.IsPageCurrent("/fa#opensource", "/fa", "").ShouldBeFalse();
+        MenuItemUrlRules.IsPageCurrent("/fa", "/fa", "solve").ShouldBeTrue();
+        MenuItemUrlRules.IsPageCurrent("/about", "/fa", "").ShouldBeFalse();
     }
 
     [Fact]
