@@ -77,7 +77,7 @@
     "RegenerateRecoveryCodes": "إنشاء رموز استرداد جديدة",
     "RecoveryCodesRegenerated": "تم إنشاء رموز استرداد جديدة.",
     "Continue": "متابعة",
-    "Loading": "جاري التحميل...",
+    "Loading": "جارٍ التحميل…",
     "LoginWithOtp": "تسجيل الدخول برمز",
     "LoginWithOtpInstructions": "اختر كيفية استلام رمز تسجيل الدخول لمرة واحدة.",
     "RegisterWithOtp": "التسجيل برمز",
