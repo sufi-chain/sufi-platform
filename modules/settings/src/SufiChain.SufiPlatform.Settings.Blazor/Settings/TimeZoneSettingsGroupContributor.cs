@@ -19,8 +19,9 @@ public class TimeZoneSettingsGroupContributor : ISettingComponentContributor
         {
             Id = "timezone",
             DisplayName = l["TimeZoneSettings"],
+            Icon = "clock",
             ComponentType = typeof(TimeZoneSettingsGroup),
-            Order = 200
+            Order = 201
         });
 
         return Task.CompletedTask;
