@@ -5,7 +5,7 @@ namespace SufiChain.SufiPlatform.Account;
 
 public interface IAccountAppService : IApplicationService
 {
-    Task<IdentityUserDto> RegisterAsync(RegisterDto input);
+    Task<AccountRegistrationResultDto> RegisterAsync(RegisterDto input);
 
     Task SendPasswordResetCodeAsync(SendPasswordResetCodeDto input);
 
@@ -19,7 +19,7 @@ public interface IAccountAppService : IApplicationService
 
     Task<bool> VerifyEmailConfirmationTokenAsync(VerifyEmailConfirmationTokenInput input);
 
-    Task<PhoneConfirmationStateDto> GetPhoneConfirmationStateAsync(Guid userId);
+    Task<PhoneConfirmationStateDto> GetPhoneConfirmationStateAsync(string? sessionToken);
 
     Task<OtpSendResultDto> SendPhoneConfirmationCodeAsync(SendPhoneConfirmationCodeDto input);
 

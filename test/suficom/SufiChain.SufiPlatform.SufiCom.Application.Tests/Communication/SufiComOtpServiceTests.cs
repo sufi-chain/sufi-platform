@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Localization;
 using Shouldly;
@@ -66,5 +67,41 @@ public class SufiComOtpServiceTests : SufiComTestBase<SufiComApplicationTestModu
         audit.FailureReason.ShouldBe(
             _localizer[SufiComDomainErrorCodes.OtpRouteNotConfigured].Value + " " +
             _localizer[OtpProviderSettingKeys.TemplateRequiredError].Value);
+    }
+
+    [Theory]
+    [InlineData(OtpFailureMessages.KavenegarRejected, "418", "Kavenegar", "کاوه")]
+    [InlineData(OtpFailureMessages.SmsIrRejected, "400", "SMS.ir", "SMS.ir")]
+    [InlineData(OtpFailureMessages.FanapRejected, "26", "Fanap", "فناپ")]
+    [InlineData(OtpFailureMessages.TimedOut, "", "timeout", "مهلت")]
+    [InlineData(OtpFailureMessages.InvalidPhone, "", "Iranian", "ایرانی")]
+    public void Failure_Text_Should_Localize_In_English_And_Persian(
+        string key,
+        string status,
+        string englishWord,
+        string persianWord)
+    {
+        var coded = string.IsNullOrEmpty(status)
+            ? key
+            : key == OtpFailureMessages.SmsIrRejected
+                ? OtpFailureMessages.Format(key, 400, 0)
+                : OtpFailureMessages.Format(key, status);
+        var previous = CultureInfo.CurrentUICulture;
+        try
+        {
+            CultureInfo.CurrentUICulture = new CultureInfo("en");
+            var english = OtpFailureMessages.Localize(_localizer, coded);
+            english.ShouldContain(englishWord);
+            english.ShouldNotContain(key);
+
+            CultureInfo.CurrentUICulture = new CultureInfo("fa");
+            var persian = OtpFailureMessages.Localize(_localizer, coded);
+            persian.ShouldContain(persianWord);
+            persian.ShouldNotContain(key);
+        }
+        finally
+        {
+            CultureInfo.CurrentUICulture = previous;
+        }
     }
 }

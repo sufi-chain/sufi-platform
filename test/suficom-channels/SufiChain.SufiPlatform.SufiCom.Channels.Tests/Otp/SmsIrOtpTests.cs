@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
@@ -29,6 +30,8 @@ public class SmsIrOtpTests
         request.Method.ShouldBe(HttpMethod.Post);
         request.RequestUri!.ToString().ShouldBe("https://api.sms.ir/v1/send/verify");
         request.Headers.GetValues("x-api-key").Single().ShouldBe("test-key");
+        string.Join(",", request.Headers.GetValues("Accept")).ShouldContain("text/plain");
+        request.Content!.Headers.ContentType!.CharSet.ShouldBe("utf-8");
 
         using var json = JsonDocument.Parse(body);
         json.RootElement.GetProperty("mobile").GetString().ShouldBe("09121234567");
@@ -95,10 +98,144 @@ public class SmsIrOtpTests
         result.Success.ShouldBeTrue();
         result.ExternalId.ShouldBe("7");
         var call = restClient.Calls.ShouldHaveSingleItem();
-        call.Mobile.ShouldBe("09121234567");
+        call.Mobile.ShouldBe("9121234567");
         call.TemplateId.ShouldBe(123456);
         call.ParameterName.ShouldBe("OTP");
         call.Value.ShouldBe("4321");
+    }
+
+    [Theory]
+    [InlineData("09121234567")]
+    [InlineData("+989121234567")]
+    [InlineData("۰۹۱۲۱۲۳۴۵۶۷")]
+    public async Task Channel_Should_Post_The_National_Number_On_The_Verify_Route(string phone)
+    {
+        var handler = new RecordingHttpMessageHandler(
+            """{"status":1,"message":"موفق","data":{"messageId":89545112,"cost":1.0}}""");
+        var logger = new CapturingLogger<IdehPardazanSmsChannel>();
+        var channel = NewHttpChannel(handler, logger);
+
+        var result = await channel.SendOtpAsync(NewOtp(phone, "654321"));
+
+        result.Success.ShouldBeTrue();
+        result.ExternalId.ShouldBe("89545112");
+        var (request, body) = handler.Requests.ShouldHaveSingleItem();
+        request.RequestUri!.ToString().ShouldBe("https://api.sms.ir/v1/send/verify");
+        using var json = JsonDocument.Parse(body);
+        json.RootElement.GetProperty("mobile").GetString().ShouldBe("9121234567");
+        json.RootElement.GetProperty("parameters")[0].GetProperty("value").GetString().ShouldBe("654321");
+        logger.Lines.ShouldAllBe(line => !line.Contains("super-secret-key") && !line.Contains("654321"));
+    }
+
+    [Fact]
+    public async Task Verify_Should_Keep_Persian_Parameter_Text_As_Utf8()
+    {
+        var handler = new RecordingHttpMessageHandler(
+            """{"status":1,"message":"موفق","data":{"messageId":1,"cost":1}}""");
+        var client = new SmsIrRestClient(new HttpClient(handler));
+
+        await client.VerifySendAsync("test-key", "9121234567", 10, "Name", "علی");
+
+        handler.Requests.ShouldHaveSingleItem().Body.ShouldContain("علی");
+        handler.Requests.Single().Body.ShouldNotContain("\\u");
+    }
+
+    [Fact]
+    public async Task Channel_Should_Report_A_Provider_Error_As_A_Localization_Key()
+    {
+        var handler = new RecordingHttpMessageHandler(
+            """{"status":0,"message":"ناموفق","data":null}""",
+            HttpStatusCode.BadRequest);
+        var channel = NewHttpChannel(handler, new CapturingLogger<IdehPardazanSmsChannel>());
+
+        var result = await channel.SendOtpAsync(NewOtp());
+
+        result.Success.ShouldBeFalse();
+        result.IsTransientFailure.ShouldBeFalse();
+        result.ErrorMessage.ShouldBe(OtpFailureMessages.Format(OtpFailureMessages.SmsIrRejected, 400, 0));
+    }
+
+    [Fact]
+    public async Task Channel_Should_Reject_A_Non_Iranian_Number_Without_Calling_The_Gateway()
+    {
+        var handler = new RecordingHttpMessageHandler("{}");
+        var channel = NewHttpChannel(handler, new CapturingLogger<IdehPardazanSmsChannel>());
+
+        var result = await channel.SendOtpAsync(NewOtp("+14155550100"));
+
+        result.Success.ShouldBeFalse();
+        result.ErrorMessage.ShouldBe(OtpFailureMessages.InvalidPhone);
+        handler.Requests.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public async Task Verify_Should_Cancel_When_The_Timeout_Elapses()
+    {
+        var handler = new RecordingHttpMessageHandler("{}") { WaitUntilCancelled = true };
+        var client = new SmsIrRestClient(new HttpClient(handler));
+
+        await Should.ThrowAsync<OperationCanceledException>(() => client.VerifySendAsync(
+            "super-secret-key",
+            "9121234567",
+            10,
+            "Code",
+            "654321",
+            TimeSpan.FromMilliseconds(50)));
+    }
+
+    [Fact]
+    public async Task Channel_Should_Report_A_Timeout_Without_Logging_The_Api_Key_Or_Code()
+    {
+        var handler = new RecordingHttpMessageHandler("{}") { WaitUntilCancelled = true };
+        var logger = new CapturingLogger<IdehPardazanSmsChannel>();
+        var channel = NewHttpChannel(handler, logger, timeoutSeconds: "1");
+
+        var result = await channel.SendOtpAsync(NewOtp(code: "654321"));
+
+        result.Success.ShouldBeFalse();
+        result.IsTransientFailure.ShouldBeTrue();
+        result.ErrorMessage.ShouldBe(OtpFailureMessages.TimedOut);
+        logger.Lines.ShouldAllBe(line => !line.Contains("super-secret-key") && !line.Contains("654321"));
+    }
+
+    [Fact]
+    public async Task Channel_Should_Report_A_Transport_Fault_Without_Logging_The_Api_Key_Or_Code()
+    {
+        var handler = new RecordingHttpMessageHandler("{}")
+        {
+            Fault = new HttpRequestException("SMS.ir failed for key super-secret-key")
+        };
+        var logger = new CapturingLogger<IdehPardazanSmsChannel>();
+        var channel = NewHttpChannel(handler, logger);
+
+        var result = await channel.SendOtpAsync(NewOtp(code: "654321"));
+
+        result.Success.ShouldBeFalse();
+        result.IsTransientFailure.ShouldBeTrue();
+        result.ErrorMessage.ShouldBe(OtpFailureMessages.RequestFailed);
+        logger.Lines.ShouldAllBe(line => !line.Contains("super-secret-key") && !line.Contains("654321"));
+    }
+
+    private static IdehPardazanSmsChannel NewHttpChannel(
+        RecordingHttpMessageHandler handler,
+        CapturingLogger<IdehPardazanSmsChannel> logger,
+        string? timeoutSeconds = null)
+    {
+        var settings = new Dictionary<string, string>
+        {
+            ["ApiKey"] = "super-secret-key",
+            ["SenderNumber"] = "30001234",
+            [OtpProviderSettingKeys.Template] = "123456",
+            [OtpProviderSettingKeys.CodeParameterName] = "Code"
+        };
+        if (timeoutSeconds != null)
+        {
+            settings["TimeoutSeconds"] = timeoutSeconds;
+        }
+
+        var channel = new IdehPardazanSmsChannel(logger, new SmsIrRestClient(new HttpClient(handler)));
+        channel.Configure(settings);
+        return channel;
     }
 
     private static IdehPardazanSmsChannel NewChannel(
@@ -127,13 +264,13 @@ public class SmsIrOtpTests
         return channel;
     }
 
-    private static OtpMessage NewOtp() => new()
+    private static OtpMessage NewOtp(string phone = "+989121234567", string code = "4321") => new()
     {
-        Phone = "+989121234567",
-        Code = "4321",
+        Phone = phone,
+        Code = code,
         Purpose = OtpPurposes.Login,
-        Content = "Your code is 4321",
-        IdempotencyKey = "Login:+989121234567:1"
+        Content = "کد شما " + code,
+        IdempotencyKey = "Login:" + phone + ":1"
     };
 
     private sealed class FakeRestClient : SmsIrRestClient
@@ -151,6 +288,7 @@ public class SmsIrOtpTests
             int templateId,
             string parameterName,
             string parameterValue,
+            TimeSpan timeout,
             CancellationToken cancellationToken = default)
         {
             Calls.Add((mobile, templateId, parameterName, parameterValue));

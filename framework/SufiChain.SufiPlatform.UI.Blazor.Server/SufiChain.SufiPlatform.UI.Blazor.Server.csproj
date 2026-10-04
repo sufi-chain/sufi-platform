@@ -18,6 +18,7 @@
 
   <ItemGroup>
     <PackageReference Include="Volo.Abp.MultiTenancy" Version="$(AbpVersion)" />
+    <PackageReference Include="Volo.Abp.Security" Version="$(AbpVersion)" />
     <ProjectReference Include="..\SufiChain.SufiPlatform.UI.Blazor\SufiChain.SufiPlatform.UI.Blazor.csproj" />
     <ProjectReference Include="..\SufiChain.SufiPlatform.UI.Services\SufiChain.SufiPlatform.UI.Services.csproj" />
   </ItemGroup>
