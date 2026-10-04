@@ -15,6 +15,7 @@ using Volo.Abp.Data;
 using Volo.Abp.Guids;
 using Volo.Abp.MultiTenancy;
 using Volo.Abp.Security.Encryption;
+using Volo.Abp.Uow;
 using Xunit;
 
 namespace SufiChain.SufiPlatform.SufiAI.Application.Tests.Data;
@@ -113,6 +114,7 @@ public class DefaultAiWorkspaceSeederTests
         await seeder.EnsureDefaultWorkspaceAsync();
 
         inserted.ShouldNotBeNull();
+        inserted.TenantId.ShouldBeNull();
         inserted.ModelConfigurations
             .Select(configuration => configuration.CapabilityType)
             .ShouldBe(new[]
@@ -207,12 +209,18 @@ public class DefaultAiWorkspaceSeederTests
                 Arg.Any<CancellationToken>())
             .Returns(projection);
 
+        var unitOfWork = Substitute.For<IUnitOfWork>();
+        unitOfWork.CompleteAsync(Arg.Any<CancellationToken>()).Returns(Task.CompletedTask);
+        var unitOfWorkManager = Substitute.For<IUnitOfWorkManager>();
+        unitOfWorkManager.Begin(Arg.Any<AbpUnitOfWorkOptions>(), Arg.Any<bool>()).Returns(unitOfWork);
+
         var seeder = CreateSeeder(
             repository,
             new DefaultWorkspaceSeedOptions { Model = "seed-chat" },
             tenantId,
             assignments,
-            synchronizer);
+            synchronizer,
+            unitOfWorkManager);
 
         var workspaceId = await seeder.EnsureDefaultWorkspaceAsync();
 
@@ -222,6 +230,10 @@ public class DefaultAiWorkspaceSeederTests
         await synchronizer.Received(1).EnsureCurrentTenantAsync(Arg.Any<CancellationToken>());
         await assignments.Received(1)
             .InsertAsync(Arg.Any<WorkspaceAssignment>(), Arg.Any<bool>(), Arg.Any<CancellationToken>());
+        unitOfWorkManager.Received(1).Begin(
+            Arg.Is<AbpUnitOfWorkOptions>(options => options.IsTransactional == false),
+            true);
+        await unitOfWork.Received(1).CompleteAsync(Arg.Any<CancellationToken>());
     }
 
     private static DefaultAiWorkspaceSeeder CreateSeeder(
@@ -229,7 +241,8 @@ public class DefaultAiWorkspaceSeederTests
         DefaultWorkspaceSeedOptions seedOptions,
         Guid? tenantId = null,
         IWorkspaceAssignmentRepository? assignments = null,
-        IInheritedWorkspaceProjectionSynchronizer? synchronizer = null)
+        IInheritedWorkspaceProjectionSynchronizer? synchronizer = null,
+        IUnitOfWorkManager? unitOfWorkManager = null)
     {
         var guidGenerator = Substitute.For<IGuidGenerator>();
         guidGenerator.Create().Returns(_ => Guid.NewGuid());
@@ -248,6 +261,14 @@ public class DefaultAiWorkspaceSeederTests
         dataFilter.Disable<ISoftDelete>().Returns(new DisposeAction(() => { }));
         dataFilter.Disable<IMultiTenant>().Returns(new DisposeAction(() => { }));
 
+        if (unitOfWorkManager == null)
+        {
+            var unitOfWork = Substitute.For<IUnitOfWork>();
+            unitOfWork.CompleteAsync(Arg.Any<CancellationToken>()).Returns(Task.CompletedTask);
+            unitOfWorkManager = Substitute.For<IUnitOfWorkManager>();
+            unitOfWorkManager.Begin(Arg.Any<AbpUnitOfWorkOptions>(), Arg.Any<bool>()).Returns(unitOfWork);
+        }
+
         return new DefaultAiWorkspaceSeeder(
             repository,
             assignments ?? Substitute.For<IWorkspaceAssignmentRepository>(),
@@ -255,6 +276,7 @@ public class DefaultAiWorkspaceSeederTests
             guidGenerator,
             currentTenant,
             dataFilter,
+            unitOfWorkManager,
             Substitute.For<IStringEncryptionService>(),
             Options.Create(new AIOptions
             {

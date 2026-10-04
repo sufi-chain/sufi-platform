@@ -11,6 +11,7 @@ namespace SufiChain.SufiPlatform.SufiAI.Workspaces;
 /// Model configurations and guardrails are owned by the workspace. Usage logs are history.
 /// Soft-deleted rows are ignored. Inactive assignments and inactive copies are ignored.
 /// </summary>
+[ExposeServices(typeof(IAiWorkspaceUsageChecker))]
 public class WorkspaceStructuralUsageChecker : IAiWorkspaceUsageChecker, ITransientDependency
 {
     private readonly IWorkspaceRepository _workspaceRepository;

@@ -1,8 +1,10 @@
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.Extensions.Options;
 using SufiChain.SufiPlatform.Settings.Blazor.Settings;
 using SufiChain.SufiPlatform.Settings.Localization;
 using SufiChain.SufiPlatform.UI.Blazor;
+using Volo.Abp.Security.Claims;
 
 namespace SufiChain.SufiPlatform.Settings.Blazor.Components;
 
@@ -21,6 +23,8 @@ public partial class SettingsModal : SettingsComponentBase
 
     [Inject] private IOptions<SettingsComponentOptions> Options { get; set; } = default!;
     [Inject] private IServiceProvider ServiceProvider { get; set; } = default!;
+    [Inject] private AuthenticationStateProvider AuthenticationStateProvider { get; set; } = default!;
+    [Inject] private ICurrentPrincipalAccessor PrincipalAccessor { get; set; } = default!;
 
     private bool _isOpen;
     private List<SettingComponentGroup> _groups = new();
@@ -45,18 +49,21 @@ public partial class SettingsModal : SettingsComponentBase
 
         await ExecuteWithLoadingAsync(async () =>
         {
-            var context = new SettingComponentCreationContext(ServiceProvider);
-
-            foreach (var contributor in Options.Value.Contributors)
+            using (await SettingComponentAuthorizationScope.EnterAsync(AuthenticationStateProvider, PrincipalAccessor))
             {
-                if (await contributor.CheckPermissionsAsync(context))
-                {
-                    await contributor.ConfigureAsync(context);
-                }
-            }
+                var context = new SettingComponentCreationContext(ServiceProvider);
 
-            context.Normalize();
-            _groups = context.Groups;
+                foreach (var contributor in Options.Value.Contributors)
+                {
+                    if (await contributor.CheckPermissionsAsync(context))
+                    {
+                        await contributor.ConfigureAsync(context);
+                    }
+                }
+
+                context.Normalize();
+                _groups = context.Groups;
+            }
 
             // Select first tab if not already selected
             if (_groups.Count > 0 && string.IsNullOrEmpty(_selectedTabId))
