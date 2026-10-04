@@ -51,6 +51,14 @@
 								</AuthorizeView>
 								@if (IsHost && !cellContext.Item.IsInherited)
 								{
+									<AuthorizeView Policy="@AIPermissions.Workspaces.Edit">
+										<SbIconButton Size="SbSize.Sm"
+													  AriaLabel="@L["SetHostDefaultWorkspace"]"
+													  Disabled="@cellContext.Item.IsDefault"
+													  OnClick="@(() => SetHostDefaultAsync(cellContext.Item))">
+											<Icon><SbIcon Name="star" /></Icon>
+										</SbIconButton>
+									</AuthorizeView>
 									<AuthorizeView Policy="@AIPermissions.Workspaces.Create">
 										<SbIconButton Size="SbSize.Sm"
 													  AriaLabel="@L["AssignToTenant"]"
@@ -91,6 +99,10 @@
 				<SbColumn TItem="WorkspaceDto" Field="Name" Title="@L["Name"]" MinWidth="200px" Filterable="true" Sortable="true">
 					<CellTemplate Context="cellContext">
 						<strong>@cellContext.Item.Name</strong>
+						@if (cellContext.Item.IsDefault)
+						{
+							<SbBadge Color="SbColor.Primary">@L["HostDefaultWorkspace"]</SbBadge>
+						}
 						@if (cellContext.Item.IsInherited)
 						{
 							<SbBadge Color="SbColor.Info">@L["InheritedReadOnly"]</SbBadge>
