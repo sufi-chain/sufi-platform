@@ -41,8 +41,9 @@ public class CaptchaValidator : ICaptchaValidator, ITransientDependency
 
     protected virtual async Task<bool> IsEnabledAsync()
     {
-        return bool.Parse(
-            await SettingProvider.GetOrNullAsync(IdentitySettingNames.Captcha.IsEnabled) ?? bool.TrueString);
+        return ReadBool(
+            await SettingProvider.GetOrNullAsync(IdentitySettingNames.Captcha.IsEnabled),
+            defaultValue: true);
     }
 
     protected virtual async Task<bool> IsRequiredForPurposeAsync(CaptchaPurpose purpose)
@@ -57,6 +58,11 @@ public class CaptchaValidator : ICaptchaValidator, ITransientDependency
             _ => throw new ArgumentOutOfRangeException(nameof(purpose), purpose, null)
         };
 
-        return bool.Parse(await SettingProvider.GetOrNullAsync(settingName) ?? bool.FalseString);
+        return ReadBool(await SettingProvider.GetOrNullAsync(settingName), defaultValue: false);
+    }
+
+    private static bool ReadBool(string? value, bool defaultValue)
+    {
+        return bool.TryParse(value, out var parsed) ? parsed : defaultValue;
     }
 }

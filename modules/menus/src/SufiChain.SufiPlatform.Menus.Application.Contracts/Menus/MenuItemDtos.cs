@@ -9,6 +9,11 @@ public class MenuItemDto : FullAuditedEntityDto<Guid>
     public Guid? ParentId { get; set; }
     public string Name { get; set; } = string.Empty;
     public string DisplayName { get; set; } = string.Empty;
+
+    public Dictionary<string, string>? DisplayNames { get; set; }
+
+    public Dictionary<string, string>? DisplayNameBases { get; set; }
+
     public string Slug { get; set; } = string.Empty;
     public string? Description { get; set; }
     public int DisplayOrder { get; set; }
@@ -37,6 +42,9 @@ public class CreateMenuItemDto
     public Guid? ParentId { get; set; }
     public string Name { get; set; } = string.Empty;
     public string DisplayName { get; set; } = string.Empty;
+
+    public Dictionary<string, string>? DisplayNames { get; set; }
+
     public string? Slug { get; set; }
     public string? Description { get; set; }
     public int DisplayOrder { get; set; }
@@ -59,6 +67,8 @@ public class UpdateMenuItemDto
     public Guid? ParentId { get; set; }
     public string Name { get; set; } = string.Empty;
     public string DisplayName { get; set; } = string.Empty;
+
+    public Dictionary<string, string>? DisplayNames { get; set; }
     public string? Slug { get; set; }
     public string? Description { get; set; }
     public int DisplayOrder { get; set; }

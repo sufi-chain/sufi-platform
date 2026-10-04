@@ -143,6 +143,31 @@ public class IdentityLinkUserManager : DomainService
         }
     }
 
+    /// <summary>
+    /// Explains a direct-link miss. Call this only after <see cref="IsLinkedAsync"/> returned false.
+    /// A source user with no rows is <see cref="LinkLoginRejectionReasons.NotLinked"/>.
+    /// A source user linked to a different tenant, or to a different user in the requested tenant, is
+    /// <see cref="LinkLoginRejectionReasons.TenantMismatch"/>.
+    /// </summary>
+    public virtual async Task<string> DescribeMissingDirectLinkAsync(
+        IdentityLinkUserInfo sourceLinkUser,
+        IdentityLinkUserInfo targetLinkUser,
+        CancellationToken cancellationToken = default)
+    {
+        using (CurrentTenant.Change(null))
+        {
+            var links = await IdentityLinkUserRepository.GetListAsync(
+                sourceLinkUser,
+                cancellationToken: cancellationToken);
+            if (links.Count == 0)
+            {
+                return LinkLoginRejectionReasons.NotLinked;
+            }
+
+            return LinkLoginRejectionReasons.TenantMismatch;
+        }
+    }
+
     public virtual async Task UnlinkAsync(
         IdentityLinkUserInfo sourceLinkUser,
         IdentityLinkUserInfo targetLinkUser,

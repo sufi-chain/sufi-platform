@@ -21,13 +21,16 @@ public class OpenRouterModelCatalogSource : IModelCatalogProvider, ITransientDep
     public const string DecisionsListPath = "v1/models?output_modalities=decisions";
 
     private readonly IHttpClientFactory _httpClientFactory;
+    private readonly IOpenRouterCatalogEndpointResolver _endpoints;
     private readonly ILogger<OpenRouterModelCatalogSource> _logger;
 
     public OpenRouterModelCatalogSource(
         IHttpClientFactory httpClientFactory,
+        IOpenRouterCatalogEndpointResolver endpoints,
         ILogger<OpenRouterModelCatalogSource> logger)
     {
         _httpClientFactory = httpClientFactory;
+        _endpoints = endpoints;
         _logger = logger;
     }
 
@@ -35,24 +38,35 @@ public class OpenRouterModelCatalogSource : IModelCatalogProvider, ITransientDep
 
     public async Task<IReadOnlyList<ModelCatalogEntry>?> TryListAsync(CancellationToken cancellationToken = default)
     {
-        var listedTask = TryGetListAsync(ListPath, cancellationToken);
-        var decisionsTask = TryGetListAsync(DecisionsListPath, cancellationToken);
+        var endpoint = await _endpoints.ResolveAsync(cancellationToken);
+        if (string.IsNullOrWhiteSpace(endpoint.BaseUrl))
+        {
+            _logger.LogWarning(
+                "OpenRouter model list has no workspace API base URL. Falling back to the catalog client. Set the workspace base URL, such as https://or-gateway.sufichain.com/v1, so production does not call openrouter.ai directly.");
+        }
+
+        var listedTask = TryGetListAsync(endpoint, "output_modalities=all", cancellationToken);
+        var decisionsTask = TryGetListAsync(endpoint, "output_modalities=decisions", cancellationToken);
         await Task.WhenAll(listedTask, decisionsTask);
         return Merge(await listedTask, await decisionsTask);
     }
 
     private async Task<IReadOnlyList<ModelCatalogEntry>?> TryGetListAsync(
-        string path,
+        OpenRouterCatalogEndpoint endpoint,
+        string query,
         CancellationToken cancellationToken)
     {
+        var requestUri = DescribeListTarget(endpoint.BaseUrl, query);
         try
         {
-            using var response = await CreateClient().GetAsync(path, cancellationToken);
+            using var request = CreateListRequest(endpoint, query);
+            using var response = await CreateClient().SendAsync(request, cancellationToken);
             if (!response.IsSuccessStatusCode)
             {
                 _logger.LogWarning(
-                    "Model catalog list failed. Path={Path}, Status={StatusCode}.",
-                    path,
+                    "Model catalog list failed. Path={Path}, Url={Url}, Status={StatusCode}.",
+                    query,
+                    requestUri,
                     (int)response.StatusCode);
                 return null;
             }
@@ -62,9 +76,29 @@ public class OpenRouterModelCatalogSource : IModelCatalogProvider, ITransientDep
         }
         catch (Exception ex) when (ex is not OperationCanceledException)
         {
-            _logger.LogWarning(ex, "Model catalog list is unavailable. Path={Path}.", path);
+            _logger.LogWarning(ex, "Model catalog list is unavailable. Path={Path}, Url={Url}.", query, requestUri);
             return null;
         }
+    }
+
+    private static HttpRequestMessage CreateListRequest(OpenRouterCatalogEndpoint endpoint, string query)
+    {
+        var request = string.IsNullOrWhiteSpace(endpoint.BaseUrl)
+            ? new HttpRequestMessage(HttpMethod.Get, "v1/models?" + query)
+            : new HttpRequestMessage(HttpMethod.Get, ModelsUri(endpoint.BaseUrl, query));
+        if (!string.IsNullOrWhiteSpace(endpoint.ApiKey))
+        {
+            request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", endpoint.ApiKey);
+        }
+
+        return request;
+    }
+
+    private static string DescribeListTarget(string? workspaceBaseUrl, string query)
+    {
+        return string.IsNullOrWhiteSpace(workspaceBaseUrl)
+            ? "v1/models?" + query
+            : ModelsUri(workspaceBaseUrl, query);
     }
 
     /// <summary>
@@ -124,9 +158,19 @@ public class OpenRouterModelCatalogSource : IModelCatalogProvider, ITransientDep
     public async Task<ModelCatalogLookup> TryFindAsync(string modelId, CancellationToken cancellationToken = default)
     {
         var id = ModelCatalogMatcher.StripNitro(modelId.Trim()).Trim('/');
+        var endpoint = await _endpoints.ResolveAsync(cancellationToken);
+        var path = string.IsNullOrWhiteSpace(endpoint.BaseUrl)
+            ? "v1/model/" + id
+            : endpoint.BaseUrl.Trim().TrimEnd('/') + "/model/" + id;
         try
         {
-            using var response = await CreateClient().GetAsync("v1/model/" + id, cancellationToken);
+            using var request = new HttpRequestMessage(HttpMethod.Get, path);
+            if (!string.IsNullOrWhiteSpace(endpoint.ApiKey))
+            {
+                request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", endpoint.ApiKey);
+            }
+
+            using var response = await CreateClient().SendAsync(request, cancellationToken);
             if (response.StatusCode == HttpStatusCode.NotFound)
             {
                 return new ModelCatalogLookup { Status = ModelCatalogLookupStatus.Unknown };

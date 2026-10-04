@@ -12,6 +12,7 @@ using SufiChain.SufiPlatform.UI.Abstractions.Account;
 using SufiChain.SufiPlatform.UI.MultiTenancy;
 using Volo.Abp;
 using Volo.Abp.AspNetCore.Mvc;
+using Volo.Abp.Domain.Entities;
 using Volo.Abp.Settings;
 using Volo.Abp.MultiTenancy;
 using Volo.Abp.Security.Claims;
@@ -272,7 +273,7 @@ public abstract class SufiAccountController : AbpController
         var settingProvider = HttpContext.RequestServices.GetRequiredService<ISettingProvider>();
         if (await IdentityPhoneConfirmationRules.IsRequiredForRegistrationAsync(settingProvider))
         {
-            return Redirect($"/account/confirm-phone?userId={user.Id}");
+            return await RedirectToPhoneConfirmationAsync(user);
         }
 
         await _signInManager.SignInAsync(user, isPersistent: true, externalLoginAuthSchema);
@@ -314,41 +315,88 @@ public abstract class SufiAccountController : AbpController
     {
         if (string.IsNullOrWhiteSpace(token))
         {
-            return Redirect($"/account/login?error=InvalidOrExpiredToken&returnUrl={Uri.EscapeDataString(NormalizeReturnUrl(returnUrl))}");
+            Logger.LogWarning("Complete login rejected. Reason {Reason}.", "InvalidOrExpiredToken");
+            return Redirect($"/account/login?error=LoginTokenExpired&returnUrl={Uri.EscapeDataString(NormalizeReturnUrl(returnUrl))}");
         }
 
         var consumed = await _tokenStore.ConsumeAsync(token, cancellationToken);
         if (consumed == null)
         {
-            return Redirect($"/account/login?error=InvalidOrExpiredToken&returnUrl={Uri.EscapeDataString(NormalizeReturnUrl(returnUrl))}");
+            Logger.LogWarning("Complete login rejected. Reason {Reason}.", "InvalidOrExpiredToken");
+            return Redirect($"/account/login?error=LoginTokenExpired&returnUrl={Uri.EscapeDataString(NormalizeReturnUrl(returnUrl))}");
         }
 
         var (userId, redirectUrl, rememberMe) = consumed.Value;
         var user = await _userManager.FindByIdAsync(userId.ToString());
         if (user == null)
         {
-            return Redirect($"/account/login?error=UserNotFound&returnUrl={Uri.EscapeDataString(NormalizeReturnUrl(returnUrl))}");
+            Logger.LogWarning("Complete login rejected. Reason {Reason} UserId {UserId}.", "UserNotFound", userId);
+            return Redirect($"/account/login?error=LoginTokenExpired&returnUrl={Uri.EscapeDataString(NormalizeReturnUrl(returnUrl))}");
+        }
+
+        if (!user.IsActive)
+        {
+            Logger.LogWarning("Complete login rejected. Reason {Reason} UserId {UserId}.", "Inactive", user.Id);
+            return Redirect($"/account/login?error=LoginAccountInactive&returnUrl={Uri.EscapeDataString(NormalizeReturnUrl(returnUrl))}");
         }
 
         if (!await _signInManager.CanSignInAsync(user))
         {
-            await _securityLogAppService.SaveLoginEventAsync(
-                IdentitySecurityLogIdentityConsts.Identity,
-                IdentitySecurityLogActionConsts.LoginNotAllowed,
-                user.UserName);
-            return Redirect($"/account/login?error=EmailConfirmationRequired&returnUrl={Uri.EscapeDataString(NormalizeReturnUrl(returnUrl))}");
+            var emailConfirmed = await _userManager.IsEmailConfirmedAsync(user);
+            var reason = emailConfirmed ? "LoginAccountInactive" : "EmailConfirmationRequired";
+            try
+            {
+                await _securityLogAppService.SaveLoginEventAsync(
+                    IdentitySecurityLogIdentityConsts.Identity,
+                    IdentitySecurityLogActionConsts.LoginNotAllowed,
+                    user.UserName);
+            }
+            catch (Exception ex)
+            {
+                Logger.LogWarning(
+                    ex,
+                    "Complete login security log was not saved. Reason {Reason} UserId {UserId}.",
+                    ex.GetType().Name,
+                    user.Id);
+            }
+
+            Logger.LogWarning("Complete login rejected. Reason {Reason} UserId {UserId}.", reason, user.Id);
+            return Redirect($"/account/login?error={reason}&returnUrl={Uri.EscapeDataString(NormalizeReturnUrl(returnUrl))}");
         }
 
         var settingProvider = HttpContext.RequestServices.GetRequiredService<ISettingProvider>();
         if (await IdentityPhoneConfirmationRules.IsRequiredForRegistrationAsync(settingProvider) &&
             !user.PhoneNumberConfirmed)
         {
-            return Redirect($"/account/confirm-phone?userId={user.Id}");
+            return await RedirectToPhoneConfirmationAsync(user);
         }
 
-        await _signInManager.SignInAsync(user, rememberMe);
+        try
+        {
+            await _signInManager.SignInAsync(user, rememberMe);
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(
+                ex,
+                "Complete login could not issue the cookie. Reason {Reason} UserId {UserId}.",
+                ex.GetType().Name,
+                user.Id);
+            return Redirect($"/account/login?error=LoginAccountStoreUnavailable&returnUrl={Uri.EscapeDataString(NormalizeReturnUrl(returnUrl))}");
+        }
 
-        await _securityLogAppService.SaveLoginEventAsync(IdentitySecurityLogIdentityConsts.Identity, IdentitySecurityLogActionConsts.LoginSucceeded, user.UserName);
+        try
+        {
+            await _securityLogAppService.SaveLoginEventAsync(IdentitySecurityLogIdentityConsts.Identity, IdentitySecurityLogActionConsts.LoginSucceeded, user.UserName);
+        }
+        catch (Exception ex)
+        {
+            Logger.LogWarning(
+                ex,
+                "Complete login security log was not saved. Reason {Reason} UserId {UserId}.",
+                ex.GetType().Name,
+                user.Id);
+        }
 
         var twoFactorAppService = HttpContext.RequestServices.GetService<IAccountTwoFactorAppService>();
         if (twoFactorAppService != null)
@@ -391,26 +439,46 @@ public abstract class SufiAccountController : AbpController
         [FromQuery] string? returnUrl)
     {
         returnUrl = NormalizeReturnUrl(returnUrl);
+        var sourceInfo = new IdentityLinkUserInfo(sourceLinkUserId, sourceLinkTenantId);
+        var targetInfo = new IdentityLinkUserInfo(targetLinkUserId, targetLinkTenantId);
+        var linkUserManager = HttpContext.RequestServices.GetRequiredService<IdentityLinkUserManager>();
 
         if (string.IsNullOrWhiteSpace(sourceLinkToken))
         {
+            RejectLinkLogin(sourceInfo, targetInfo, LinkLoginRejectionReasons.MissingToken);
             return Redirect($"/account/login?error=LinkLoginFailed&returnUrl={Uri.EscapeDataString(returnUrl)}");
         }
 
-        var linkUserManager = HttpContext.RequestServices.GetRequiredService<IdentityLinkUserManager>();
-        var sourceInfo = new IdentityLinkUserInfo(sourceLinkUserId, sourceLinkTenantId);
-        var targetInfo = new IdentityLinkUserInfo(targetLinkUserId, targetLinkTenantId);
-
-        if (!await linkUserManager.VerifyLinkTokenAsync(
+        bool tokenValid;
+        try
+        {
+            tokenValid = await linkUserManager.VerifyLinkTokenAsync(
                 sourceInfo,
                 sourceLinkToken,
-                LinkUserTokenProviderConsts.LinkUserLoginTokenPurpose))
+                LinkUserTokenProviderConsts.LinkUserLoginTokenPurpose);
+        }
+        catch (Exception ex) when (ex is EntityNotFoundException)
         {
+            RejectLinkLogin(sourceInfo, targetInfo, LinkLoginRejectionReasons.SourceUserNotFound);
+            return Redirect($"/account/login?error=LinkLoginFailed&returnUrl={Uri.EscapeDataString(returnUrl)}");
+        }
+        catch (Exception)
+        {
+            RejectLinkLogin(sourceInfo, targetInfo, LinkLoginRejectionReasons.TokenInvalid);
+            return Redirect($"/account/login?error=LinkLoginFailed&returnUrl={Uri.EscapeDataString(returnUrl)}");
+        }
+
+        if (!tokenValid)
+        {
+            var reason = await DescribeTokenFailureAsync(sourceInfo, sourceLinkToken);
+            RejectLinkLogin(sourceInfo, targetInfo, reason);
             return Redirect($"/account/login?error=LinkLoginFailed&returnUrl={Uri.EscapeDataString(returnUrl)}");
         }
 
         if (!await linkUserManager.IsLinkedAsync(sourceInfo, targetInfo))
         {
+            var reason = await linkUserManager.DescribeMissingDirectLinkAsync(sourceInfo, targetInfo);
+            RejectLinkLogin(sourceInfo, targetInfo, reason);
             return Redirect($"/account/login?error=LinkLoginFailed&returnUrl={Uri.EscapeDataString(returnUrl)}");
         }
 
@@ -422,6 +490,7 @@ public abstract class SufiAccountController : AbpController
             targetUser = await _userManager.FindByIdAsync(targetLinkUserId.ToString());
             if (targetUser == null)
             {
+                RejectLinkLogin(sourceInfo, targetInfo, LinkLoginRejectionReasons.TargetUserNotFound);
                 return Redirect($"/account/login?error=UserNotFound&returnUrl={Uri.EscapeDataString(returnUrl)}");
             }
 
@@ -434,6 +503,46 @@ public abstract class SufiAccountController : AbpController
             targetUser.UserName);
 
         return LocalRedirect(returnUrl);
+    }
+
+    protected virtual void RejectLinkLogin(
+        IdentityLinkUserInfo source,
+        IdentityLinkUserInfo target,
+        string reason)
+    {
+        LinkLoginRejectionLog.Write(
+            Logger,
+            reason,
+            source.UserId,
+            source.TenantId,
+            target.UserId,
+            target.TenantId);
+    }
+
+    protected virtual async Task<string> DescribeTokenFailureAsync(
+        IdentityLinkUserInfo source,
+        string sourceLinkToken)
+    {
+        var describer = HttpContext.RequestServices.GetService<ILinkLoginTokenFailureDescriber>();
+        if (describer == null)
+        {
+            return LinkLoginRejectionReasons.TokenInvalid;
+        }
+
+        try
+        {
+            var reason = await describer.DescribeAsync(
+                source,
+                sourceLinkToken,
+                LinkUserTokenProviderConsts.LinkUserLoginTokenPurpose);
+            return string.IsNullOrWhiteSpace(reason)
+                ? LinkLoginRejectionReasons.TokenInvalid
+                : reason;
+        }
+        catch (Exception)
+        {
+            return LinkLoginRejectionReasons.TokenInvalid;
+        }
     }
 
     /// <summary>
@@ -530,5 +639,17 @@ public abstract class SufiAccountController : AbpController
             Logger.LogError(ex, "Error resolving tenant name '{TenantName}' via ITenantStore", tenantName);
             return null;
         }
+    }
+
+    private async Task<IActionResult> RedirectToPhoneConfirmationAsync(IdentityUser user)
+    {
+        var sessions = LazyServiceProvider.LazyGetRequiredService<IPhoneConfirmationSessionStore>();
+        if (!sessions.IsSupported)
+        {
+            return Redirect("/account/login?error=PhoneConfirmationSessionInvalid");
+        }
+
+        var sessionToken = await sessions.CreateAsync(user.Id);
+        return Redirect("/account/confirm-phone?token=" + Uri.EscapeDataString(sessionToken));
     }
 }

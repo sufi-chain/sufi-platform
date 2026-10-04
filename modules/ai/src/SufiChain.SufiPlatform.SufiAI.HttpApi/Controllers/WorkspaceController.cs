@@ -60,6 +60,12 @@ public class WorkspaceController : AIController, IWorkspaceAppService
         return _workspaceAppService.UpdateAsync(id, input);
     }
 
+    [HttpPost("{id}/host-default")]
+    public virtual Task<WorkspaceDto> SetHostDefaultAsync(Guid id)
+    {
+        return _workspaceAppService.SetHostDefaultAsync(id);
+    }
+
     [HttpPost("{id}/clone")]
     public virtual Task<WorkspaceDto> CloneAsync(Guid id, CloneWorkspaceDto input)
     {

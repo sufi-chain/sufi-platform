@@ -38,6 +38,7 @@
     "ConfirmPhoneResend": "ارسال مجدد کد",
     "ConfirmPhoneCodeSent": "کد تأیید پیامک شد.",
     "ConfirmPhoneInvalid": "این کد تأیید نامعتبر است یا منقضی شده.",
+    "ConfirmPhoneSessionInvalid": "این پیوند تأیید تلفن نامعتبر است یا منقضی شده. دوباره ثبت‌نام یا وارد شوید.",
     "EmailConfirmationSentTitle": "ایمیل خود را بررسی کنید",
     "EmailConfirmationSentMessage": "لینک تأیید به آدرس ایمیل شما ارسال شد. برای فعال‌سازی حساب، لینک را باز کنید.",
     "ResendConfirmationEmail": "ارسال مجدد ایمیل تأیید",
