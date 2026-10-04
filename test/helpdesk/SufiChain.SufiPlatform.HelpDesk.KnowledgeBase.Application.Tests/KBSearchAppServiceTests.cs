@@ -136,12 +136,27 @@ public class KBSearchAppServiceTests
 
             var projects = Substitute.For<IHelpDeskProjectRepository>();
             var projectList = articles
-                .Select(article => article.ProjectId)
-                .Distinct()
-                .Select(id =>
+                .GroupBy(article => article.ProjectId)
+                .Select(group =>
                 {
-                    var project = new HelpDeskProject(id, "Knowledge base", "kb-" + id.ToString("N")[..8]);
+                    var project = new HelpDeskProject(group.Key, "Knowledge base", "kb-" + group.Key.ToString("N")[..8]);
                     project.SetIsKnowledgeBasePublic(true);
+                    var languages = group
+                        .SelectMany(article => article.Translations)
+                        .Select(translation => translation.LanguageCode)
+                        .Distinct(StringComparer.OrdinalIgnoreCase)
+                        .Select(code => new HelpDeskProjectLanguageDto
+                        {
+                            LanguageCode = code,
+                            DisplayName = code
+                        })
+                        .ToList();
+                    if (languages.Count > 0)
+                    {
+                        project.SetLanguages(languages);
+                        project.SetDefaultLanguage(languages[0].LanguageCode);
+                    }
+
                     return project;
                 })
                 .ToList();
