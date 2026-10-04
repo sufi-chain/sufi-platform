@@ -1,5 +1,6 @@
 using System.Linq.Dynamic.Core;
 using Microsoft.EntityFrameworkCore;
+using Volo.Abp;
 using Volo.Abp.Data;
 using Volo.Abp.Domain.Repositories.EntityFrameworkCore;
 using Volo.Abp.EntityFrameworkCore;
@@ -34,7 +35,12 @@ public class EfCoreWorkspaceRepository : EfCoreRepository<IAIDbContext, Workspac
             query = query.Where(x => !x.IsDeleted);
         }
 
-        return query.AsNoTrackingIf(!ShouldTrackingEntityChange());
+        if (!ShouldTrackingEntityChange())
+        {
+            query = query.AsNoTracking();
+        }
+
+        return query;
     }
 
     public override async Task<IQueryable<Workspace>> WithDetailsAsync()

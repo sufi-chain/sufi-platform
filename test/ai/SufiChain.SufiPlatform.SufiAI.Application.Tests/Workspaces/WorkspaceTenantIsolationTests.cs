@@ -1,5 +1,6 @@
 using Shouldly;
 using SufiChain.SufiPlatform.SufiAI.Workspaces;
+using Volo.Abp;
 using Volo.Abp.Data;
 using Volo.Abp.MultiTenancy;
 using Xunit;

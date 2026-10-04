@@ -230,7 +230,7 @@ public class DefaultAiWorkspaceSeederTests
         await synchronizer.Received(1).EnsureCurrentTenantAsync(Arg.Any<CancellationToken>());
         await assignments.Received(1)
             .InsertAsync(Arg.Any<WorkspaceAssignment>(), Arg.Any<bool>(), Arg.Any<CancellationToken>());
-        await unitOfWorkManager.Received(1).Begin(
+        unitOfWorkManager.Received(1).Begin(
             Arg.Is<AbpUnitOfWorkOptions>(options => options.IsTransactional == false),
             true);
         await unitOfWork.Received(1).CompleteAsync(Arg.Any<CancellationToken>());
