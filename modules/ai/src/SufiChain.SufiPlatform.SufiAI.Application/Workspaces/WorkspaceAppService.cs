@@ -11,6 +11,7 @@ using SufiChain.SufiPlatform.Application.Services;
 using SufiChain.SufiPlatform.Features;
 using SufiChain.SufiPlatform.SufiAI.Catalog;
 using SufiChain.SufiPlatform.SufiAI.Configuration;
+using SufiChain.SufiPlatform.SufiAI.Data;
 using SufiChain.SufiPlatform.SufiAI.Features;
 using SufiChain.SufiPlatform.SufiAI.Permissions;
 using SufiChain.SufiPlatform.Tenants;
@@ -48,6 +49,7 @@ public class WorkspaceAppService : SufiApplicationService, IWorkspaceAppService
     private readonly HostPriceMarkup _hostPriceMarkup;
     private readonly AIOptions _aiOptions;
     private readonly IEnumerable<IAiWorkspaceUsageChecker> _workspaceUsageCheckers;
+    private readonly IDefaultAiWorkspaceSeeder _defaultAiWorkspaceSeeder;
 
     public WorkspaceAppService(
         IWorkspaceRepository workspaceRepository,
@@ -69,7 +71,8 @@ public class WorkspaceAppService : SufiApplicationService, IWorkspaceAppService
         DistributedRefreshGate refresh,
         HostPriceMarkup hostPriceMarkup,
         IOptions<AIOptions> aiOptions,
-        IEnumerable<IAiWorkspaceUsageChecker> workspaceUsageCheckers)
+        IEnumerable<IAiWorkspaceUsageChecker> workspaceUsageCheckers,
+        IDefaultAiWorkspaceSeeder defaultAiWorkspaceSeeder)
     {
         _workspaceRepository = workspaceRepository;
         _modelConfigurationRepository = modelConfigurationRepository;
@@ -91,6 +94,7 @@ public class WorkspaceAppService : SufiApplicationService, IWorkspaceAppService
         _hostPriceMarkup = hostPriceMarkup;
         _aiOptions = aiOptions.Value;
         _workspaceUsageCheckers = workspaceUsageCheckers;
+        _defaultAiWorkspaceSeeder = defaultAiWorkspaceSeeder;
     }
 
     public Task<List<AiProviderProfileDto>> GetProviderProfilesAsync()
@@ -113,6 +117,7 @@ public class WorkspaceAppService : SufiApplicationService, IWorkspaceAppService
     public async Task<PagedResultDto<WorkspaceDto>> GetListAsync(PagedAndSortedResultRequestDto input)
     {
         await _inheritedWorkspaceProjectionSynchronizer.EnsureCurrentTenantAsync();
+        await EnsureHostDefaultWorkspaceWhenNoneExistAsync();
         var totalCount = await _workspaceRepository.GetCountAsync();
         var workspaces = await _workspaceRepository.GetListAsync(
             skipCount: input.SkipCount,
@@ -129,6 +134,7 @@ public class WorkspaceAppService : SufiApplicationService, IWorkspaceAppService
     public async Task<List<WorkspaceDto>> GetLookupAsync()
     {
         await _inheritedWorkspaceProjectionSynchronizer.EnsureCurrentTenantAsync();
+        await EnsureHostDefaultWorkspaceWhenNoneExistAsync();
         var workspaces = await _workspaceRepository.GetListAsync(
             skipCount: 0,
             maxResultCount: int.MaxValue,
@@ -184,6 +190,25 @@ public class WorkspaceAppService : SufiApplicationService, IWorkspaceAppService
                 FailureCode = mcpFailureCode
             }
         };
+    }
+
+    /// <summary>
+    /// Host admins have no tenant workspace. Create the configured host default
+    /// only when the host scope is empty, so an existing host row is not duplicated.
+    /// </summary>
+    protected virtual async Task EnsureHostDefaultWorkspaceWhenNoneExistAsync()
+    {
+        if (CurrentTenant.Id != null)
+        {
+            return;
+        }
+
+        if (await _workspaceRepository.GetCountAsync() > 0)
+        {
+            return;
+        }
+
+        await _defaultAiWorkspaceSeeder.EnsureDefaultWorkspaceAsync();
     }
 
     [Authorize(AIPermissions.Workspaces.Create)]

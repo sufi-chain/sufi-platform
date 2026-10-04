@@ -6,6 +6,7 @@ using SufiChain.SufiPlatform.Account.Otp;
 using SufiChain.SufiPlatform.Captcha;
 using SufiChain.SufiPlatform.Identity;
 using SufiChain.SufiPlatform.Identity.Settings;
+using SufiChain.SufiPlatform.UI.Abstractions.Account;
 using Volo.Abp;
 using SufiChain.SufiPlatform.Application.Services;
 using Volo.Abp.EventBus.Local;
@@ -23,6 +24,7 @@ public class AccountAppService : SufiApplicationService, IAccountAppService
     protected ICaptchaValidator CaptchaValidator { get; }
     protected IOtpCodeStore OtpCodeStore { get; }
     protected OtpResendCooldownGuard ResendCooldownGuard { get; }
+    protected IPhoneConfirmationSessionStore PhoneConfirmationSessions { get; }
     new ISettingProvider SettingProvider { get; }
 
     public AccountAppService(
@@ -34,7 +36,8 @@ public class AccountAppService : SufiApplicationService, IAccountAppService
         ICaptchaValidator captchaValidator,
         IOtpCodeStore otpCodeStore,
         ISettingProvider settingProvider,
-        OtpResendCooldownGuard resendCooldownGuard)
+        OtpResendCooldownGuard resendCooldownGuard,
+        IPhoneConfirmationSessionStore phoneConfirmationSessions)
     {
         UserManager = userManager;
         UserRepository = userRepository;
@@ -45,9 +48,10 @@ public class AccountAppService : SufiApplicationService, IAccountAppService
         OtpCodeStore = otpCodeStore;
         SettingProvider = settingProvider;
         ResendCooldownGuard = resendCooldownGuard;
+        PhoneConfirmationSessions = phoneConfirmationSessions;
     }
 
-    public virtual async Task<IdentityUserDto> RegisterAsync(RegisterDto input)
+    public virtual async Task<AccountRegistrationResultDto> RegisterAsync(RegisterDto input)
     {
         await ValidateCaptchaAsync(input, CaptchaPurpose.Register);
 
@@ -98,7 +102,7 @@ public class AccountAppService : SufiApplicationService, IAccountAppService
             ReturnUrlHash = input.ReturnUrlHash
         });
 
-        return UserMapper.Map(user);
+        return await ToRegistrationResultAsync(user);
     }
 
     public virtual async Task SendPasswordResetCodeAsync(SendPasswordResetCodeDto input)
@@ -178,11 +182,13 @@ public class AccountAppService : SufiApplicationService, IAccountAppService
         (await UserManager.ConfirmEmailAsync(user, input.ConfirmationToken)).CheckErrors();
     }
 
-    public virtual async Task<PhoneConfirmationStateDto> GetPhoneConfirmationStateAsync(Guid userId)
+    public virtual async Task<PhoneConfirmationStateDto> GetPhoneConfirmationStateAsync(string? sessionToken)
     {
+        var userId = await PhoneConfirmationAccess.ResolveUserIdAsync(CurrentUser, PhoneConfirmationSessions, sessionToken);
         var user = await UserRepository.GetAsync(userId);
         return new PhoneConfirmationStateDto
         {
+            UserId = user.Id,
             PhoneNumber = user.PhoneNumber,
             PhoneNumberConfirmed = user.PhoneNumberConfirmed,
             EmailConfirmed = user.EmailConfirmed,
@@ -194,7 +200,11 @@ public class AccountAppService : SufiApplicationService, IAccountAppService
 
     public virtual async Task<OtpSendResultDto> SendPhoneConfirmationCodeAsync(SendPhoneConfirmationCodeDto input)
     {
-        var user = await UserRepository.GetAsync(input.UserId);
+        var userId = await PhoneConfirmationAccess.ResolveUserIdAsync(
+            CurrentUser,
+            PhoneConfirmationSessions,
+            input.SessionToken);
+        var user = await UserRepository.GetAsync(userId);
         if (!await IdentityPhoneConfirmationRules.IsSmsProviderConfiguredAsync(SettingProvider))
         {
             throw new BusinessException(IdentitySecurityErrorCodes.VerificationChannelUnavailable);
@@ -208,9 +218,15 @@ public class AccountAppService : SufiApplicationService, IAccountAppService
             throw new BusinessException(IdentitySecurityErrorCodes.PhoneNumberRequired);
         }
 
+        PhoneConfirmationPhoneChange.EnsureCanAssign(user, phone);
+        if (user.PhoneNumberConfirmed)
+        {
+            return new OtpSendResultDto();
+        }
+
         var resendAfterSeconds = await ResendCooldownGuard.EnsureAllowedAsync(VerificationDeliveryChannel.Sms, phone);
 
-        if (!string.Equals(user.PhoneNumber, phone, StringComparison.Ordinal) || user.PhoneNumberConfirmed)
+        if (!string.Equals(user.PhoneNumber, phone, StringComparison.Ordinal))
         {
             user.SetPhoneNumber(phone, confirmed: false);
             (await UserManager.UpdateAsync(user)).CheckErrors();
@@ -223,7 +239,11 @@ public class AccountAppService : SufiApplicationService, IAccountAppService
 
     public virtual async Task<ConfirmPhoneNumberResultDto> ConfirmPhoneNumberAsync(ConfirmPhoneNumberDto input)
     {
-        var user = await UserRepository.GetAsync(input.UserId);
+        var userId = await PhoneConfirmationAccess.ResolveUserIdAsync(
+            CurrentUser,
+            PhoneConfirmationSessions,
+            input.SessionToken);
+        var user = await UserRepository.GetAsync(userId);
         if (string.IsNullOrWhiteSpace(user.PhoneNumber))
         {
             throw new BusinessException(IdentitySecurityErrorCodes.PhoneNumberRequired);
@@ -239,6 +259,7 @@ public class AccountAppService : SufiApplicationService, IAccountAppService
 
             user.SetPhoneNumber(phone, confirmed: true);
             (await UserManager.UpdateAsync(user)).CheckErrors();
+            await PhoneConfirmationSessions.RevokeAsync(input.SessionToken);
         }
 
         var emailConfirmationRequired = await IdentityEmailConfirmationRules.IsSignInBlockedUntilEmailConfirmedAsync(SettingProvider)
@@ -355,6 +376,18 @@ public class AccountAppService : SufiApplicationService, IAccountAppService
 
         await OtpCodeStore.RemoveAsync(VerificationPurpose.PhoneConfirmation, VerificationDeliveryChannel.Sms, phone);
         return true;
+    }
+
+    protected virtual async Task<AccountRegistrationResultDto> ToRegistrationResultAsync(IdentityUser user)
+    {
+        var result = new AccountRegistrationResultDto();
+        UserMapper.Map(user, result);
+        if (!user.PhoneNumberConfirmed && PhoneConfirmationSessions.IsSupported)
+        {
+            result.PhoneConfirmationToken = await PhoneConfirmationSessions.CreateAsync(user.Id);
+        }
+
+        return result;
     }
 
     protected virtual async Task ValidateCaptchaAsync(CaptchaInputDto input, CaptchaPurpose purpose)

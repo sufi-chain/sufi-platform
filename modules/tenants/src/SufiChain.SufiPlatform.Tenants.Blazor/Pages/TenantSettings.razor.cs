@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Options;
 using SufiChain.SufiPlatform.Settings.Blazor;
@@ -6,6 +7,7 @@ using SufiChain.SufiPlatform.Settings.Blazor.Settings;
 using SufiChain.SufiPlatform.Tenants.Localization;
 using SufiChain.SufiPlatform.UI.Blazor;
 using SufiChain.SufiPlatform.UI.Layout;
+using Volo.Abp.Security.Claims;
 
 namespace SufiChain.SufiPlatform.Tenants.Blazor.Pages;
 
@@ -36,6 +38,8 @@ public partial class TenantSettings : SettingsComponentBase
     [Inject] protected IOptions<SettingsComponentOptions> Options { get; set; } = default!;
     [Inject] protected IServiceProvider ServiceProvider { get; set; } = default!;
     [Inject] protected IStringLocalizer<SufiTenantsResource> TenantLocalizer { get; set; } = default!;
+    [Inject] protected AuthenticationStateProvider AuthenticationStateProvider { get; set; } = default!;
+    [Inject] protected ICurrentPrincipalAccessor PrincipalAccessor { get; set; } = default!;
 
     private List<SettingComponentGroup> _groups = new();
     private string? _selectedTabId;
@@ -74,18 +78,21 @@ public partial class TenantSettings : SettingsComponentBase
     {
         // Permission checks stay on the host. They decide which groups the host admin may see.
         // Setting values are loaded later by each group, inside the cascaded tenant change.
-        var context = new SettingComponentCreationContext(ServiceProvider);
-
-        foreach (var contributor in Options.Value.Contributors)
+        using (await SettingComponentAuthorizationScope.EnterAsync(AuthenticationStateProvider, PrincipalAccessor))
         {
-            if (await contributor.CheckPermissionsAsync(context))
-            {
-                await contributor.ConfigureAsync(context);
-            }
-        }
+            var context = new SettingComponentCreationContext(ServiceProvider);
 
-        context.Normalize();
-        _groups = context.Groups;
+            foreach (var contributor in Options.Value.Contributors)
+            {
+                if (await contributor.CheckPermissionsAsync(context))
+                {
+                    await contributor.ConfigureAsync(context);
+                }
+            }
+
+            context.Normalize();
+            _groups = context.Groups;
+        }
 
         if (_groups.Count > 0 && string.IsNullOrEmpty(_selectedTabId))
         {

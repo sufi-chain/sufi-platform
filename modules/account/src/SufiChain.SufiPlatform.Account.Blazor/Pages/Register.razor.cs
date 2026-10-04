@@ -156,9 +156,15 @@ public partial class Register
 
             if (RequiresPhoneConfirmation)
             {
+                if (string.IsNullOrWhiteSpace(registered.PhoneConfirmationToken))
+                {
+                    ErrorMessage = AccountL["ConfirmPhoneSessionInvalid"];
+                    return;
+                }
+
                 navigationStarted = true;
                 Navigation.NavigateTo(
-                    $"/account/confirm-phone?userId={registered.Id}&sent=true",
+                    "/account/confirm-phone?token=" + Uri.EscapeDataString(registered.PhoneConfirmationToken) + "&sent=true",
                     forceLoad: true);
                 return;
             }

@@ -1,5 +1,7 @@
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using SufiChain.SufiPlatform.Captcha;
+using SufiChain.SufiPlatform.UI.Abstractions.Account;
 using SufiChain.SufiPlatform.Identity;
 using SufiChain.SufiPlatform.SufiCom;
 using SufiChain.SufiPlatform.TextTemplating.Scriban;
@@ -27,6 +29,8 @@ public class SufiAccountApplicationModule : AbpModule
 {
     public override void ConfigureServices(ServiceConfigurationContext context)
     {
+        context.Services.Replace(ServiceDescriptor.Singleton<IPhoneConfirmationSessionStore, PhoneConfirmationSessionStore>());
+
         context.Services.AddMapperlyObjectMapper<SufiAccountApplicationModule>();
 
         Configure<AbpVirtualFileSystemOptions>(options =>
