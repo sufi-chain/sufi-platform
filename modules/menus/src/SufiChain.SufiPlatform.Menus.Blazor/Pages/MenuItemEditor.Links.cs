@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.JSInterop;
 using SufiChain.SufiPlatform.Localization;
 using SufiChain.SufiPlatform.Menus.Menus;
@@ -14,7 +15,7 @@ public partial class MenuItemEditor
     private MenuLinkChoice _linkChoice = MenuLinkChoice.SitePage;
     private string _structuralKindText = string.Empty;
     private string _pagePath = string.Empty;
-    private bool _sectionIsCurrentPage = true;
+    private MenuSectionPage _sectionPage = MenuSectionPage.CurrentPage;
     private string _sectionPagePath = string.Empty;
     private string _sectionId = string.Empty;
     private string _websiteUrl = string.Empty;
@@ -24,11 +25,19 @@ public partial class MenuItemEditor
     private string? _nameError;
     private string? _displayOrderError;
     private string? _targetIdError;
-    private int _errorSummaryCount;
-    private bool _focusSummary;
+    private readonly List<MenuEditorError> _errorFields = new();
+    private string? _focusFieldId;
     private bool _openAdvancedOnRender;
-    private ElementReference _summaryRef;
+    private bool _openLabelAdvancedOnRender;
+    private bool _linkTargetTouched;
+    private string? _linkErrorFieldId;
+    private string? _linkErrorLabel;
+    private object? _linkErrorModel;
+    private string? _linkErrorMember;
     private ElementReference _advancedRef;
+    private ElementReference _labelAdvancedRef;
+    private EditContext? _submittedContext;
+    private ValidationMessageStore? _validationMessages;
     private IJSObjectReference? _editorModule;
 
     [Inject] private IJSRuntime JsRuntime { get; set; } = default!;
@@ -42,84 +51,152 @@ public partial class MenuItemEditor
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         await base.OnAfterRenderAsync(firstRender);
-        if (_openAdvancedOnRender)
+        if (_openAdvancedOnRender || _openLabelAdvancedOnRender)
         {
-            _openAdvancedOnRender = false;
             try
             {
                 _editorModule ??= await JsRuntime.InvokeAsync<IJSObjectReference>(
                     "import",
                     "./_content/SufiChain.SufiPlatform.Menus.Blazor/menu-item-editor.js");
-                await _editorModule.InvokeVoidAsync("openDetails", _advancedRef);
+                if (_openLabelAdvancedOnRender)
+                {
+                    await _editorModule.InvokeVoidAsync("openDetails", _labelAdvancedRef);
+                }
+
+                if (_openAdvancedOnRender)
+                {
+                    await _editorModule.InvokeVoidAsync("openDetails", _advancedRef);
+                }
             }
             catch (Exception)
             {
-                // The summary still names the errors when the panel cannot be opened from script.
+                // The summary still names the errors when a panel cannot be opened from script.
             }
+
+            _openAdvancedOnRender = false;
+            _openLabelAdvancedOnRender = false;
         }
 
-        if (!_focusSummary)
+        if (string.IsNullOrEmpty(_focusFieldId))
         {
             return;
         }
 
-        _focusSummary = false;
+        var fieldId = _focusFieldId;
+        _focusFieldId = null;
         try
         {
-            await _summaryRef.FocusAsync();
+            _editorModule ??= await JsRuntime.InvokeAsync<IJSObjectReference>(
+                "import",
+                "./_content/SufiChain.SufiPlatform.Menus.Blazor/menu-item-editor.js");
+            await _editorModule.InvokeVoidAsync("focusField", fieldId);
         }
         catch (Exception)
         {
-            // The summary is still announced by role="alert" when focus is not available.
+            // The summary still names the field when focus is not available.
         }
     }
 
     private void PublishValidation(bool displayNameFailed)
     {
-        _errorSummaryCount = CountValidationErrors(displayNameFailed);
-        _openAdvancedOnRender = HasAdvancedErrors();
-        _focusSummary = _errorSummaryCount > 0;
-    }
+        _errorFields.Clear();
+        if (displayNameFailed)
+        {
+            _errorFields.Add(new MenuEditorError(L["DisplayName"].ToString(), null));
+        }
 
-    private int CountValidationErrors(bool displayNameFailed)
-    {
-        var count = displayNameFailed ? 1 : 0;
         if (!string.IsNullOrEmpty(_nameError))
         {
-            count++;
+            _errorFields.Add(new MenuEditorError(L["MenuName"].ToString(), "menu-item-name"));
         }
 
         if (!string.IsNullOrEmpty(_linkError))
         {
-            count++;
+            _errorFields.Add(new MenuEditorError(_linkErrorLabel ?? L["MenuItemSection:Link"].ToString(), _linkErrorFieldId));
         }
 
         if (!string.IsNullOrEmpty(_displayOrderError))
         {
-            count++;
+            _errorFields.Add(new MenuEditorError(L["DisplayOrder"].ToString(), "menu-item-order"));
         }
 
         if (!string.IsNullOrEmpty(_targetIdError))
         {
-            count++;
+            _errorFields.Add(new MenuEditorError(L["TargetId"].ToString(), "menu-item-target-id"));
         }
 
-        count += _cultureUrlRows.Count(row => !string.IsNullOrEmpty(row.Error));
-        return count;
+        foreach (var row in _cultureUrlRows.Where(row => !string.IsNullOrEmpty(row.Error)))
+        {
+            _errorFields.Add(new MenuEditorError(CultureLabel(row.Culture), row.FieldId));
+        }
+
+        _openAdvancedOnRender = HasAdvancedErrors();
+        _openLabelAdvancedOnRender = !string.IsNullOrEmpty(_nameError);
+        _focusFieldId = displayNameFailed
+            ? null
+            : _errorFields.Select(field => field.FieldId).FirstOrDefault(id => !string.IsNullOrEmpty(id));
+        ApplyAccessibilityState();
     }
+
+    private void ApplyAccessibilityState()
+    {
+        if (_submittedContext == null)
+        {
+            return;
+        }
+
+        _validationMessages ??= new ValidationMessageStore(_submittedContext);
+        _validationMessages.Clear();
+        if (!string.IsNullOrEmpty(_nameError))
+        {
+            _validationMessages.Add(new FieldIdentifier(_model, nameof(CreateMenuItemDto.Name)), _nameError);
+        }
+
+        if (!string.IsNullOrEmpty(_linkError) && _linkErrorModel != null && !string.IsNullOrEmpty(_linkErrorMember))
+        {
+            _validationMessages.Add(new FieldIdentifier(_linkErrorModel, _linkErrorMember), _linkError);
+        }
+
+        if (!string.IsNullOrEmpty(_displayOrderError))
+        {
+            _validationMessages.Add(new FieldIdentifier(this, nameof(_displayOrderText)), _displayOrderError);
+        }
+
+        if (!string.IsNullOrEmpty(_targetIdError))
+        {
+            _validationMessages.Add(new FieldIdentifier(this, nameof(_targetIdText)), _targetIdError);
+        }
+
+        foreach (var row in _cultureUrlRows.Where(row => !string.IsNullOrEmpty(row.Error)))
+        {
+            _validationMessages.Add(new FieldIdentifier(row, nameof(MenuCultureUrlRow.Url)), row.Error!);
+        }
+
+        _submittedContext.NotifyValidationStateChanged();
+    }
+
+    private string? DescribedBy(string fieldId, string? error) =>
+        string.IsNullOrEmpty(error) ? null : fieldId + "-error";
 
     private bool HasAdvancedErrors() =>
         !string.IsNullOrEmpty(_targetIdError) || _cultureUrlRows.Any(row => !string.IsNullOrEmpty(row.Error));
 
     private void OnLinkChoiceChanged(MenuLinkChoice choice)
     {
+        var previous = _linkChoice;
         _linkChoice = choice;
         _structuralKindText = string.Empty;
         _linkError = null;
-        if (_linkChoice == MenuLinkChoice.Website)
+        if (choice == MenuLinkChoice.Website && previous != MenuLinkChoice.Website && !_linkTargetTouched)
         {
             _model.LinkTarget = MenuLinkTarget.NewTab;
         }
+    }
+
+    private void OnLinkTargetChanged(MenuLinkTarget target)
+    {
+        _linkTargetTouched = true;
+        _model.LinkTarget = target;
     }
 
     private void AddCultureUrlRow()
@@ -182,10 +259,11 @@ public partial class MenuItemEditor
         _nameError = null;
         _displayOrderError = null;
         _targetIdError = null;
-        _errorSummaryCount = 0;
+        _errorFields.Clear();
         _structuralKindText = string.Empty;
         _pagePath = string.Empty;
-        _sectionIsCurrentPage = true;
+        _sectionPage = MenuSectionPage.CurrentPage;
+        _linkTargetTouched = item != null;
         _sectionPagePath = string.Empty;
         _sectionId = string.Empty;
         _websiteUrl = string.Empty;
@@ -224,6 +302,10 @@ public partial class MenuItemEditor
     private bool TryApplyLinkChoice()
     {
         _linkError = null;
+        _linkErrorFieldId = null;
+        _linkErrorLabel = null;
+        _linkErrorModel = null;
+        _linkErrorMember = null;
         if (!string.IsNullOrEmpty(_structuralKindText)
             && Enum.TryParse<MenuItemKind>(_structuralKindText, out var structuralKind))
         {
@@ -242,7 +324,7 @@ public partial class MenuItemEditor
             case MenuLinkChoice.SitePage:
                 if (!MenuItemUrlRules.TryNormalizeSitePage(_pagePath, out var page))
                 {
-                    _linkError = L["MenuLink:PageInvalid"];
+                    SetLinkFieldError("menu-item-page-path", L["MenuLink:PagePath"], L["MenuLink:PageInvalid"], this, nameof(_pagePath));
                     return false;
                 }
 
@@ -250,11 +332,17 @@ public partial class MenuItemEditor
                 _model.Url = page;
                 return true;
             case MenuLinkChoice.PageSection:
-                if (!MenuItemUrlRules.TryNormalizeSection(_sectionIsCurrentPage, _sectionPagePath, _sectionId, out var section))
+                if (!MenuItemUrlRules.TryNormalizeSection(_sectionPage, _sectionPagePath, _sectionId, out var section))
                 {
-                    _linkError = string.IsNullOrWhiteSpace(_sectionId) || !MenuItemUrlRules.IsSectionId(_sectionId.Trim())
-                        ? L["MenuLink:SectionInvalid"]
-                        : L["MenuLink:PageInvalid"];
+                    if (string.IsNullOrWhiteSpace(_sectionId) || !MenuItemUrlRules.IsSectionId(_sectionId.Trim()))
+                    {
+                        SetLinkFieldError("menu-item-section-id", L["MenuLink:SectionId"], L["MenuLink:SectionInvalid"], this, nameof(_sectionId));
+                    }
+                    else
+                    {
+                        SetLinkFieldError("menu-item-section-path", L["MenuLink:PagePath"], L["MenuLink:PageInvalid"], this, nameof(_sectionPagePath));
+                    }
+
                     return false;
                 }
 
@@ -264,7 +352,7 @@ public partial class MenuItemEditor
             case MenuLinkChoice.Website:
                 if (!MenuItemUrlRules.TryNormalizeWebsite(_websiteUrl, out var website))
                 {
-                    _linkError = L["MenuLink:WebsiteInvalid"];
+                    SetLinkFieldError("menu-item-website", L["MenuLink:WebsiteUrl"], L["MenuLink:WebsiteInvalid"], this, nameof(_websiteUrl));
                     return false;
                 }
 
@@ -275,7 +363,7 @@ public partial class MenuItemEditor
             case MenuLinkChoice.Email:
                 if (!MenuItemUrlRules.TryNormalizeEmail(_email, out var email))
                 {
-                    _linkError = L["MenuLink:EmailInvalid"];
+                    SetLinkFieldError("menu-item-email", L["MenuLink:EmailAddress"], L["MenuLink:EmailInvalid"], this, nameof(_email));
                     return false;
                 }
 
@@ -285,7 +373,7 @@ public partial class MenuItemEditor
             case MenuLinkChoice.Phone:
                 if (!MenuItemUrlRules.TryNormalizePhone(_phone, out var phone))
                 {
-                    _linkError = L["MenuLink:PhoneInvalid"];
+                    SetLinkFieldError("menu-item-phone", L["MenuLink:PhoneNumber"], L["MenuLink:PhoneInvalid"], this, nameof(_phone));
                     return false;
                 }
 
@@ -358,7 +446,7 @@ public partial class MenuItemEditor
                 _pagePath = url ?? string.Empty;
                 break;
             case MenuLinkChoice.PageSection:
-                SplitSection(url, out _sectionIsCurrentPage, out _sectionPagePath, out _sectionId);
+                SplitSection(url, out _sectionPage, out _sectionPagePath, out _sectionId);
                 break;
             case MenuLinkChoice.Website:
                 _websiteUrl = url ?? string.Empty;
@@ -399,9 +487,18 @@ public partial class MenuItemEditor
         return MenuLinkChoice.NoLink;
     }
 
-    private static void SplitSection(string? url, out bool currentPage, out string pagePath, out string sectionId)
+    private void SetLinkFieldError(string fieldId, string label, string message, object model, string member)
     {
-        currentPage = true;
+        _linkError = message;
+        _linkErrorFieldId = fieldId;
+        _linkErrorLabel = label;
+        _linkErrorModel = model;
+        _linkErrorMember = member;
+    }
+
+    private static void SplitSection(string? url, out MenuSectionPage page, out string pagePath, out string sectionId)
+    {
+        page = MenuSectionPage.CurrentPage;
         pagePath = string.Empty;
         sectionId = string.Empty;
         if (string.IsNullOrWhiteSpace(url))
@@ -415,15 +512,21 @@ public partial class MenuItemEditor
             return;
         }
 
-        if (MenuItemUrlRules.TryReadRootSection(url, out sectionId))
+        sectionId = url.Substring(hash + 1);
+        if (url.StartsWith("/#", StringComparison.Ordinal))
         {
+            page = MenuSectionPage.HomePage;
             return;
         }
 
-        sectionId = url.Substring(hash + 1);
-        var path = url.Substring(0, hash);
-        currentPage = false;
-        pagePath = path;
+        if (url[0] == '#')
+        {
+            page = MenuSectionPage.CurrentPage;
+            return;
+        }
+
+        page = MenuSectionPage.OtherPage;
+        pagePath = url.Substring(0, hash);
     }
 
     private static string StripScheme(string? url, string scheme)
@@ -472,4 +575,17 @@ public sealed class MenuLinkCulture
     public string CultureName { get; set; } = string.Empty;
 
     public string DisplayName { get; set; } = string.Empty;
+}
+
+public sealed class MenuEditorError
+{
+    public MenuEditorError(string label, string? fieldId)
+    {
+        Label = label;
+        FieldId = fieldId;
+    }
+
+    public string Label { get; }
+
+    public string? FieldId { get; }
 }

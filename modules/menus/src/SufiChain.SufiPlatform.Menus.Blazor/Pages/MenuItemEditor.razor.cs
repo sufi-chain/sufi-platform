@@ -1,5 +1,6 @@
 using System.Linq;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Forms;
 using SufiChain.SufiPlatform.Data;
 using SufiChain.SufiPlatform.Localization.Blazor.Public.Components;
 using SufiChain.SufiPlatform.Localization.Blazor.Public.Models;
@@ -7,6 +8,7 @@ using SufiChain.SufiPlatform.Menus.Blazor.Components;
 using SufiChain.SufiPlatform.Menus.Menus;
 using SufiChain.SufiPlatform.UI.Blazor;
 using SufiChain.SufiPlatform.UI.Layout;
+using Volo.Abp;
 
 namespace SufiChain.SufiPlatform.Menus.Blazor.Pages;
 
@@ -41,12 +43,22 @@ public partial class MenuItemEditor : MenusComponentBase
     private string _displayOrderText = "0";
     private string _targetIdText = string.Empty;
     private string _parentIdText = string.Empty;
-    private BusinessTextEditorMode _displayNameMode = BusinessTextEditorMode.Literal;
-    private string? _localizationResourceName;
-    private string? _localizationKey;
-    private string? _literalDisplayName;
-    private BusinessTextEditor? _displayNameEditor;
-    private string? _menuKey;
+    private Dictionary<string, string> _displayNames = new(StringComparer.OrdinalIgnoreCase);
+    private Dictionary<string, string> _displayNameBases = new(StringComparer.OrdinalIgnoreCase);
+    private static readonly Dictionary<string, object> KeyFieldAttributes = new()
+    {
+        ["dir"] = "ltr",
+        ["lang"] = "en"
+    };
+
+    private string LabelKeyText => _labelKey ?? string.Empty;
+    private List<MultilingualCulture> _labelCultures = new();
+    private MultilingualTextField? _labels;
+    private string? _labelKey;
+    private bool _labelBroken;
+    private bool _sameForAll;
+    private bool _culturesFailed;
+    private string? _saveError;
     private string? _menuContextType;
     private string? _loadKey;
     private int _loadVersion;
@@ -91,6 +103,7 @@ public partial class MenuItemEditor : MenusComponentBase
         {
             MenuId = menuId
         });
+        await LoadCulturesAsync();
         MenuItemDto? item = null;
         if (!isCreate)
         {
@@ -103,10 +116,9 @@ public partial class MenuItemEditor : MenusComponentBase
         }
 
         _menuContextType = menu.ContextType;
-        _menuKey = MenuLocalizationKeyHelper.ResolveMenuKey(menu.DisplayName, menu.ContextType, menu.Name);
-        _localizationResourceName = MenuLocalizationRegistry.GetResourceName(_menuKey, menu.ContextType);
         _tree.Clear();
         _tree.AddRange(tree);
+        _saveError = null;
 
         await LoadLinkCulturesAsync();
         if (version != _loadVersion)
@@ -127,13 +139,12 @@ public partial class MenuItemEditor : MenusComponentBase
             _targetIdText = string.Empty;
             ResetLinkEditor(null);
             _parentIdText = parentId?.ToString() ?? string.Empty;
-            _displayNameMode = string.Equals(_menuContextType, "Public", StringComparison.OrdinalIgnoreCase)
-                ? BusinessTextEditorMode.Localized
-                : BusinessTextEditorMode.Literal;
-            _literalDisplayName = string.Empty;
-            _localizationKey = null;
+            _displayNames = EmptyNames();
+            _displayNameBases = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            _labelKey = null;
+            _labelBroken = false;
+            _sameForAll = false;
             _parentOptions = BuildOptions(null);
-            UpdateLocalizationBinding();
             _ready = true;
             return;
         }
@@ -172,96 +183,117 @@ public partial class MenuItemEditor : MenusComponentBase
         ResetLinkEditor(item);
         _parentIdText = item.ParentId?.ToString() ?? string.Empty;
         _parentOptions = BuildOptions(item.Id);
-        InitializeDisplayNameEditor(item);
+        ApplyLoadedLabel(item.DisplayName, item.Name, item.DisplayNames, item.DisplayNameBases);
         _ready = true;
     }, LoadingKeys.Load, LoadingBehavior.PageProgress);
 
-    private void InitializeDisplayNameEditor(MenuItemDto item)
+    private async Task LoadCulturesAsync()
     {
-        if (BusinessLocalizationHelper.IsBusinessLocalizationKey(item.DisplayName))
+        try
         {
-            _displayNameMode = BusinessTextEditorMode.Localized;
-            _localizationKey = item.DisplayName;
-            _literalDisplayName = string.Empty;
+            _labelCultures = MenuLabelCultureMapper.Map(await MenuAppService.GetLabelCulturesAsync());
+            _culturesFailed = _labelCultures.Count == 0;
+        }
+        catch (Exception)
+        {
+            _labelCultures = new List<MultilingualCulture>();
+            _culturesFailed = true;
+        }
+    }
+
+    private void ApplyLoadedLabel(
+        string? stored,
+        string? name,
+        IReadOnlyDictionary<string, string>? displayNames,
+        IReadOnlyDictionary<string, string>? baseValues)
+    {
+        _labelBroken = BusinessTextEditorStorage.IsPlaceholder(stored);
+        _labelKey = BusinessLocalizationHelper.IsBusinessLocalizationKey(stored) && !_labelBroken
+            ? stored!.Trim()
+            : null;
+        _displayNames = EmptyNames();
+        _displayNameBases = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        if (baseValues != null)
+        {
+            foreach (var pair in baseValues)
+            {
+                _displayNameBases[pair.Key] = pair.Value ?? string.Empty;
+            }
+        }
+
+        if (displayNames == null)
+        {
             return;
         }
 
-        _displayNameMode = BusinessTextEditorMode.Literal;
-        _literalDisplayName = item.DisplayName;
-        _localizationKey = null;
+        foreach (var pair in displayNames)
+        {
+            _displayNames[pair.Key] = pair.Value ?? string.Empty;
+        }
+
+        if (_labelBroken)
+        {
+            foreach (var key in _displayNames.Keys.ToList())
+            {
+                _displayNames[key] = string.Empty;
+            }
+        }
+    }
+
+    private Dictionary<string, string> EmptyNames()
+    {
+        var values = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        foreach (var culture in _labelCultures)
+        {
+            values[culture.CultureName] = string.Empty;
+        }
+
+        if (values.Count == 0)
+        {
+            values["fa"] = string.Empty;
+        }
+
+        return values;
     }
 
     private Task OnNameChangedAsync(string value)
     {
         _model.Name = value;
-        UpdateLocalizationBinding();
         return Task.CompletedTask;
     }
 
     private Task OnSlugChangedAsync(string value)
     {
         _model.Slug = value;
-        UpdateLocalizationBinding();
         return Task.CompletedTask;
     }
 
-    private Task OnDisplayNameModeChangedAsync(BusinessTextEditorMode mode)
+    private Task OnDisplayNamesChanged(Dictionary<string, string> values)
     {
-        _displayNameMode = mode;
-        UpdateLocalizationBinding();
+        _displayNames = values;
         return Task.CompletedTask;
     }
 
-    private Task OnLiteralDisplayNameChangedAsync(string? value)
+    private Task OnValidSubmitAsync(EditContext context) => ExecuteWithLoadingAsync(async () =>
     {
-        _literalDisplayName = value;
-        return Task.CompletedTask;
-    }
-
-    private void UpdateLocalizationBinding()
-    {
-        _localizationResourceName = MenuLocalizationRegistry.GetResourceName(_menuKey, _menuContextType);
-
-        if (!IsCreate)
-        {
-            if (_displayNameMode != BusinessTextEditorMode.Localized
-                || string.IsNullOrWhiteSpace(_menuKey))
-            {
-                return;
-            }
-
-            if (BusinessLocalizationHelper.IsBusinessLocalizationKey(_localizationKey))
-            {
-                return;
-            }
-        }
-
-        if (string.IsNullOrWhiteSpace(_menuKey))
-        {
-            _localizationKey = null;
-            return;
-        }
-
-        var itemSlug = MenuLocalizationKeyHelper.NormalizeItemSlug(_model.Slug, _model.Name);
-        if (string.IsNullOrWhiteSpace(itemSlug))
-        {
-            _localizationKey = null;
-            return;
-        }
-
-        _localizationKey = BusinessLocalizationKeys.SeededMenuItemDisplayName(_menuKey, itemSlug);
-    }
-
-    private Task OnValidSubmitAsync() => ExecuteWithLoadingAsync(async () =>
-    {
-        var displayNameOk = _displayNameEditor != null && await _displayNameEditor.ValidateAsync();
-
+        _saveError = null;
+        _submittedContext = context;
         _nameError = null;
         _displayOrderError = null;
         _targetIdError = null;
         _linkError = null;
-        _errorSummaryCount = 0;
+        _errorFields.Clear();
+        var displayNameOk = _labels != null && await _labels.ValidateAsync();
         var invalid = !displayNameOk;
+
+        if (string.IsNullOrWhiteSpace(_model.Name))
+        {
+            var defaultCulture = _labelCultures.FirstOrDefault(x => x.IsDefault)?.CultureName ?? "fa";
+            if (_displayNames.TryGetValue(defaultCulture, out var label) && !string.IsNullOrWhiteSpace(label))
+            {
+                _model.Name = label.Trim();
+            }
+        }
 
         if (string.IsNullOrWhiteSpace(_model.Name))
         {
@@ -318,20 +350,27 @@ public partial class MenuItemEditor : MenusComponentBase
             return;
         }
 
-        _model.DisplayName = _displayNameEditor.GetStoredValue();
+        _model.DisplayNames = _labels.GetValuesForSave();
+        _model.DisplayName = _labelKey ?? _model.Name;
 
-        if (IsCreate)
+        try
         {
-            _model.MenuId = MenuId;
-            await MenuItemAppService.CreateAsync(_model);
-            await _displayNameEditor.SaveAsync();
-            await Notify.SuccessAsync(L["ItemCreatedSuccessfully"]);
+            if (IsCreate)
+            {
+                _model.MenuId = MenuId;
+                await MenuItemAppService.CreateAsync(_model);
+                await Notify.SuccessAsync(L["ItemCreatedSuccessfully"]);
+            }
+            else
+            {
+                await MenuItemAppService.UpdateAsync(ItemId!.Value, ToUpdateDto());
+                await Notify.SuccessAsync(L["ItemUpdatedSuccessfully"]);
+            }
         }
-        else
+        catch (Exception ex) when (ex is BusinessException or UserFriendlyException)
         {
-            await MenuItemAppService.UpdateAsync(ItemId!.Value, ToUpdateDto());
-            await _displayNameEditor.SaveAsync();
-            await Notify.SuccessAsync(L["ItemUpdatedSuccessfully"]);
+            _saveError = string.IsNullOrWhiteSpace(ex.Message) ? L["Sufi.Menus:DisplayNameRequired"] : ex.Message;
+            return;
         }
 
         GoBack();
@@ -342,6 +381,7 @@ public partial class MenuItemEditor : MenusComponentBase
         ParentId = _model.ParentId,
         Name = _model.Name,
         DisplayName = _model.DisplayName,
+        DisplayNames = _model.DisplayNames,
         Slug = _model.Slug,
         Description = _model.Description,
         DisplayOrder = _model.DisplayOrder,
@@ -359,6 +399,8 @@ public partial class MenuItemEditor : MenusComponentBase
         IsActive = _model.IsActive,
         IsVisible = _model.IsVisible
     };
+
+    private Task CopyLabelKeyAsync() => CopyTextAsync(_labelKey);
 
     private void GoBack() => NavigationManager.NavigateTo(ItemsRoute);
 

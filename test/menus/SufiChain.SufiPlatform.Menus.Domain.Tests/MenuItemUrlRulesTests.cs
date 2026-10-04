@@ -183,16 +183,29 @@ public class MenuItemUrlRulesTests
     [InlineData("#solve", "/es", "/es#solve")]
     [InlineData("#solve", "/fa/", "/fa#solve")]
     [InlineData("#solve", "/fa/about", "/fa/about#solve")]
+    [InlineData("#solve", "/fa/p/about", "/fa/p/about#solve")]
+    [InlineData("#solve", "/blog/x", "/blog/x#solve")]
     [InlineData("/#solve", "/fa", "/fa#solve")]
     [InlineData("/#solve", "/", "/#solve")]
     [InlineData("/#solve", "/ar", "/ar#solve")]
-    [InlineData("/#top", "/fa/about", "/fa/about#top")]
+    [InlineData("/#top", "/fa/about", "/fa#top")]
+    [InlineData("/#solve", "/fa/p/about", "/fa#solve")]
+    [InlineData("/#solve", "/blog/x", "/#solve")]
     [InlineData("/#opensource", "/es", "/es#opensource")]
     [InlineData("/about#solve", "/fa", "/about#solve")]
     [InlineData("https://example.com", "/fa", "https://example.com")]
-    public void ToPublicHref_Should_Place_Root_Anchors_On_The_Current_Path(string url, string culturePath, string expected)
+    public void ToPublicHref_Should_Keep_Current_Page_Sections_And_Home_Sections(string url, string currentPath, string expected)
     {
-        MenuItemUrlRules.ToPublicHref(url, culturePath).ShouldBe(expected);
+        MenuItemUrlRules.ToPublicHref(url, currentPath).ShouldBe(expected);
+    }
+
+    [Fact]
+    public void ToPublicHref_Should_Treat_Only_Enabled_Cultures_As_A_Home_Prefix()
+    {
+        var enabled = new[] { "fa", "en" };
+        MenuItemUrlRules.ToPublicHref("/#solve", "/faq/help", enabled).ShouldBe("/#solve");
+        MenuItemUrlRules.ToPublicHref("/#solve", "/fa/p/about", enabled).ShouldBe("/fa#solve");
+        MenuItemUrlRules.ToPublicHref("#solve", "/fa/blog/x", enabled).ShouldBe("/fa/blog/x#solve");
     }
 
     [Fact]
@@ -254,11 +267,13 @@ public class MenuItemUrlRulesTests
     [Fact]
     public void Section_Should_Store_A_Bare_Id_For_The_Current_Page()
     {
-        MenuItemUrlRules.TryNormalizeSection(currentPage: true, pagePath: "/ignored", sectionId: "solve", out var current).ShouldBeTrue();
+        MenuItemUrlRules.TryNormalizeSection(MenuSectionPage.CurrentPage, "/ignored", "solve", out var current).ShouldBeTrue();
         current.ShouldBe("#solve");
-        MenuItemUrlRules.TryNormalizeSection(currentPage: false, pagePath: "/about", sectionId: "solve", out var page).ShouldBeTrue();
+        MenuItemUrlRules.TryNormalizeSection(MenuSectionPage.HomePage, null, "solve", out var home).ShouldBeTrue();
+        home.ShouldBe("/#solve");
+        MenuItemUrlRules.TryNormalizeSection(MenuSectionPage.OtherPage, "/about", "solve", out var page).ShouldBeTrue();
         page.ShouldBe("/about#solve");
-        MenuItemUrlRules.TryNormalizeSection(currentPage: true, pagePath: null, sectionId: "راه", out _).ShouldBeFalse();
+        MenuItemUrlRules.TryNormalizeSection(MenuSectionPage.CurrentPage, null, "راه", out _).ShouldBeFalse();
         MenuItemUrlRules.IsAcceptable(MenuItemKind.InternalRoute, "#solve").ShouldBeTrue();
         MenuItemUrlRules.IsAcceptable(MenuItemKind.ExternalUrl, "#solve").ShouldBeFalse();
     }

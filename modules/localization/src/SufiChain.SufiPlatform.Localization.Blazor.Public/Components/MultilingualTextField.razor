@@ -1,0 +1,103 @@
+@namespace SufiChain.SufiPlatform.Localization.Blazor.Public.Components
+@using SufiChain.SufiPlatform.Data
+
+<div class="mltf">
+    @if (!string.IsNullOrWhiteSpace(Label))
+    {
+        <div class="mltf__label">@Label</div>
+    }
+    @if (!string.IsNullOrWhiteSpace(HelpText))
+    {
+        <div class="mltf__help">@HelpText</div>
+    }
+    @if (ShowBrokenBanner)
+    {
+        <div class="mltf__banner" role="status">@T("MultilingualTextField:Broken")</div>
+    }
+    @if (CulturesFailed || Cultures == null || Cultures.Count == 0)
+    {
+        <div class="mltf__note">@T("MultilingualTextField:CulturesFailed")</div>
+    }
+
+    @foreach (var culture in VisibleRows())
+    {
+        var cultureName = culture.CultureName;
+        var row = culture;
+        var state = StateFor(row);
+        var filled = !MenuDisplayNamePlanner.IsBlankLabel(state.Text);
+        var invalid = _errors.ContainsKey(cultureName);
+        var rowRequired = row.IsDefault && Required;
+        <div class="mltf__row">
+            <label class="mltf__row-label" for="@RowId(row)">
+                <span>@row.DisplayName</span>
+                @if (row.IsDefault)
+                {
+                    <span> @T("MultilingualTextField:Primary")</span>
+                    @if (Required)
+                    {
+                        <span class="mltf__required" aria-hidden="true">*</span>
+                    }
+                }
+            </label>
+            <SbTextField TValue="string"
+                         Id="@RowId(row)"
+                         Value="@state.Text"
+                         ValueChanged="@(value => OnValueChangedAsync(row, state, value))"
+                         ValueExpression="@(() => state.Text)"
+                         Placeholder="@PlaceholderFor(row)"
+                         Disabled="@Disabled"
+                         Required="@rowRequired"
+                         AriaDescribedBy="@(invalid ? ErrorId(row) : null)"
+                         AdditionalAttributes="@RowAttributes(row)" />
+            <span class="mltf__status">
+                @if (IsBase(row))
+                {
+                    <span>@T("MultilingualTextField:BaseText")</span>
+                }
+                else if (filled)
+                {
+                    <span aria-hidden="true">✓</span>
+                    <span class="mltf__sr">@T("MultilingualTextField:Translated")</span>
+                }
+                else
+                {
+                    <span>@T("MultilingualTextField:Untranslated")</span>
+                }
+            </span>
+            @if (_errors.TryGetValue(cultureName, out var error))
+            {
+                <div class="mltf__error" id="@ErrorId(row)">@error</div>
+            }
+            else if (_warnings.TryGetValue(cultureName, out var warning) && !string.IsNullOrWhiteSpace(warning))
+            {
+                <div class="mltf__warning">@warning</div>
+            }
+        </div>
+    }
+</div>
+
+<style>
+    .mltf { display: flex; flex-direction: column; gap: 0.75rem; }
+    .mltf__label { font-weight: 600; }
+    .mltf__help, .mltf__note, .mltf__status { color: var(--sb-color-muted, #6b7280); font-size: 0.875rem; }
+    .mltf__banner, .mltf__error { color: var(--sb-color-danger, #b91c1c); }
+    .mltf__warning { color: var(--sb-color-warning, #a16207); font-size: 0.875rem; }
+    .mltf__row { display: grid; grid-template-columns: minmax(7rem, 10rem) minmax(0, 1fr); gap: 0.25rem 0.75rem; align-items: center; }
+    .mltf__status, .mltf__error, .mltf__warning { grid-column: 2; }
+    .mltf__required { margin-inline-start: 0.15rem; }
+    .mltf__sr {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        white-space: nowrap;
+        border: 0;
+    }
+    @@media (max-width: 720px) {
+        .mltf__row { grid-template-columns: 1fr; }
+        .mltf__status, .mltf__error, .mltf__warning { grid-column: 1; }
+    }
+</style>

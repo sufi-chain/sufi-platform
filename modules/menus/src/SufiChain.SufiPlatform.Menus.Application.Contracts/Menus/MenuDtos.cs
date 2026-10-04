@@ -9,6 +9,11 @@ public class MenuDto : FullAuditedEntityDto<Guid>
     public Guid? ContextId { get; set; }
     public string Name { get; set; } = string.Empty;
     public string DisplayName { get; set; } = string.Empty;
+
+    public Dictionary<string, string>? DisplayNames { get; set; }
+
+    public Dictionary<string, string>? DisplayNameBases { get; set; }
+
     public string? Description { get; set; }
     public bool IsActive { get; set; }
 }
@@ -28,12 +33,17 @@ public class CreateMenuDto
     public Guid? ContextId { get; set; }
     public string Name { get; set; } = string.Empty;
     public string DisplayName { get; set; } = string.Empty;
+
+    public Dictionary<string, string>? DisplayNames { get; set; }
+
     public string? Description { get; set; }
 }
 
 public class UpdateMenuDto
 {
     public string DisplayName { get; set; } = string.Empty;
+
+    public Dictionary<string, string>? DisplayNames { get; set; }
     public string? Description { get; set; }
     public bool IsActive { get; set; } = true;
 }

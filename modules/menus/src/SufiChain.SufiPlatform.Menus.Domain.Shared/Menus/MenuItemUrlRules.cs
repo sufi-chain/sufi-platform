@@ -3,6 +3,19 @@ using System.Text;
 
 namespace SufiChain.SufiPlatform.Menus.Menus;
 
+/// <summary>Where a page-section link points.</summary>
+public enum MenuSectionPage
+{
+    /// <summary>Stored as <c>#id</c> and rendered on the page the visitor is on.</summary>
+    CurrentPage = 0,
+
+    /// <summary>Stored as <c>/#id</c> and rendered on the current culture's home page.</summary>
+    HomePage = 1,
+
+    /// <summary>Stored as <c>/path#id</c>.</summary>
+    OtherPage = 2
+}
+
 /// <summary>
 /// Accepts root-relative paths, in-page anchors, and http, https, mailto, and tel URLs.
 /// Rejects javascript and every other scheme. Culture overrides are stored as text in
@@ -116,11 +129,16 @@ public static class MenuItemUrlRules
     }
 
     /// <summary>
-    /// A stored <c>#id</c> or root <c>/#id</c> is a section of the page the visitor is on.
-    /// It is rendered on <paramref name="currentPath"/> so <c>&lt;base href="/"&gt;</c> does not
-    /// send it to the unprefixed root, and so it does not jump to that culture's home page.
+    /// A stored <c>#id</c> is a section of <paramref name="currentPath"/>.
+    /// A stored <c>/#id</c> is a section of the current culture's home
+    /// (<c>/fa#id</c> from <c>/fa/...</c>, <c>/#id</c> when the path has no culture prefix).
+    /// <paramref name="enabledCultures"/> limits which path prefix counts as a culture.
+    /// When it is omitted, a 2–3 letter prefix is treated as a culture.
     /// </summary>
-    public static string? ToPublicHref(string? url, string? currentPath)
+    public static string? ToPublicHref(
+        string? url,
+        string? currentPath,
+        IReadOnlyCollection<string>? enabledCultures = null)
     {
         var normalized = Normalize(url);
         if (normalized == null)
@@ -128,14 +146,38 @@ public static class MenuItemUrlRules
             return null;
         }
 
-        if (normalized[0] == '#' || normalized.StartsWith("/#", StringComparison.Ordinal))
+        if (normalized.StartsWith("/#", StringComparison.Ordinal))
         {
-            return TryReadRootSection(normalized, out var sectionId)
-                ? CurrentPagePath(currentPath) + "#" + sectionId
+            return IsSectionId(normalized.Substring(2))
+                ? CultureHomePath(currentPath, enabledCultures) + "#" + normalized.Substring(2)
+                : null;
+        }
+
+        if (normalized[0] == '#')
+        {
+            return IsSectionId(normalized.Substring(1))
+                ? CurrentPagePath(currentPath) + normalized
                 : null;
         }
 
         return normalized;
+    }
+
+    /// <summary>
+    /// Home path for the culture implied by <paramref name="currentPath"/>.
+    /// The default culture is unprefixed, so a path with no enabled culture prefix returns <c>/</c>.
+    /// </summary>
+    public static string CultureHomePath(string? currentPath, IReadOnlyCollection<string>? enabledCultures = null)
+    {
+        var path = CurrentPagePath(currentPath);
+        if (path.Length < 2)
+        {
+            return "/";
+        }
+
+        var end = path.IndexOf('/', 1);
+        var segment = end < 0 ? path.Substring(1) : path.Substring(1, end - 1);
+        return IsCulturePrefix(segment, enabledCultures) ? "/" + segment.ToLowerInvariant() : "/";
     }
 
     /// <summary>
@@ -251,7 +293,7 @@ public static class MenuItemUrlRules
         return IsInternalUrl(url);
     }
 
-    public static bool TryNormalizeSection(bool currentPage, string? pagePath, string? sectionId, out string? url)
+    public static bool TryNormalizeSection(MenuSectionPage page, string? pagePath, string? sectionId, out string? url)
     {
         url = null;
         var id = sectionId?.Trim() ?? string.Empty;
@@ -260,20 +302,50 @@ public static class MenuItemUrlRules
             return false;
         }
 
-        if (currentPage || string.IsNullOrWhiteSpace(pagePath))
+        if (page == MenuSectionPage.CurrentPage)
         {
             url = "#" + id;
             return true;
         }
 
-        var path = pagePath.Trim();
-        if (!TryNormalizeSitePage(path, out var page))
+        if (page == MenuSectionPage.HomePage)
+        {
+            url = "/#" + id;
+            return true;
+        }
+
+        if (!TryNormalizeSitePage(pagePath, out var otherPage) || otherPage == null)
         {
             return false;
         }
 
-        url = page + "#" + id;
+        url = otherPage == "/" ? "/#" + id : otherPage + "#" + id;
         return true;
+    }
+
+    public static bool IsCulturePrefix(string? segment, IReadOnlyCollection<string>? enabledCultures = null)
+    {
+        var culture = CanonicalCulture(segment);
+        if (culture == null)
+        {
+            return false;
+        }
+
+        if (enabledCultures == null)
+        {
+            return culture.IndexOf('-') < 0;
+        }
+
+        foreach (var enabled in enabledCultures)
+        {
+            var canonical = CanonicalCulture(enabled);
+            if (canonical != null && string.Equals(canonical, culture, StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     public static bool TryNormalizeWebsite(string? input, out string? url)

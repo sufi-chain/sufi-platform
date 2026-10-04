@@ -1,0 +1,11 @@
+@namespace SufiChain.SufiPlatform.Localization.Blazor.Tests
+@using SufiChain.SufiPlatform.Localization.Blazor.Public.Components
+@using SufiChain.SufiPlatform.Localization.Blazor.Public.Models
+
+<BusinessTextEditor Binding="_binding" />
+
+@code {
+    private readonly BusinessTextBinding _binding = new("SufiPlatform", "SeededMenu:public-default:Item:home:DisplayName");
+
+    public BusinessTextBinding Binding => _binding;
+}

@@ -11,12 +11,79 @@
             <SbCard>
                 <ChildContent>
             <SbStack Gap="5">
-                @if (_errorSummaryCount > 0)
+                @if (_errorFields.Count > 0)
                 {
-                    <div class="menu-item-editor__summary" role="alert" tabindex="-1" @ref="_summaryRef">
-                        @L["MenuLink:ErrorSummary", _errorSummaryCount]
+                    <div class="menu-item-editor__summary" role="alert">
+                        <p>@L["MenuLink:ErrorSummary", _errorFields.Count]</p>
+                        <ul>
+                            @foreach (var field in _errorFields)
+                            {
+                                <li>@field.Label</li>
+                            }
+                        </ul>
                     </div>
                 }
+                <SbStack Gap="3">
+                    <SbHeading Level="2" Size="5">@L["DisplayName"]</SbHeading>
+                    @if (!string.IsNullOrWhiteSpace(_saveError))
+                    {
+                        <SbText Color="SbColor.Danger">@_saveError</SbText>
+                    }
+                    <MultilingualTextField @ref="_labels"
+                                           Label="@L["DisplayName"]"
+                                           HelpText="@L["MenuLabel:Help"]"
+                                           Values="_displayNames"
+                                           ValuesChanged="OnDisplayNamesChanged"
+                                           BaseValues="_displayNameBases"
+                                           Cultures="_labelCultures"
+                                           CulturesFailed="_culturesFailed"
+                                           Required="true"
+                                           MaxLength="256"
+                                           FallbackText="@_model.Name"
+                                           SameForAll="_sameForAll"
+                                           ShowBrokenBanner="_labelBroken" />
+                    <details @ref="_labelAdvancedRef" class="menu-label-advanced">
+                        <summary>@L["MenuLabel:Advanced"]</summary>
+                        <SbStack Gap="3" Class="menu-label-advanced__body">
+                            @if (!string.IsNullOrWhiteSpace(_labelKey))
+                            {
+                                <div class="menu-label-key">
+                                    <SbTextField TValue="string"
+                                                 Value="@LabelKeyText"
+                                                 ValueChanged="@(_ => Task.CompletedTask)"
+                                                 ValueExpression="@(() => LabelKeyText)"
+                                                 Label="@L["MenuLabel:Key"]"
+                                                 ReadOnly="true"
+                                                 AdditionalAttributes="@KeyFieldAttributes" />
+                                    <SbButton Type="button"
+                                              Variant="SbButtonVariant.Outline"
+                                              OnClick="CopyLabelKeyAsync">@L["MenuLabel:Copy"]</SbButton>
+                                </div>
+                            }
+                            <SbSwitch @bind-Value="_sameForAll" Label="@L["MenuLabel:SameForAll"]" />
+                            <div>
+                                <SbTextField TValue="string"
+                                             Value="_model.Name"
+                                             ValueChanged="OnNameChangedAsync"
+                                             ValueExpression="@(() => _model.Name)"
+                                             Id="menu-item-name"
+                                             Label="@L["MenuName"]"
+                                             AriaDescribedBy="@DescribedBy("menu-item-name", _nameError)" />
+                                @if (!string.IsNullOrEmpty(_nameError))
+                                {
+                                    <div id="menu-item-name-error" class="menu-item-editor__error" role="alert">@_nameError</div>
+                                }
+                            </div>
+                            <SbTextField TValue="string"
+                                         Value="@(_model.Slug ?? string.Empty)"
+                                         ValueChanged="OnSlugChangedAsync"
+                                         ValueExpression="@(() => _model.Slug!)"
+                                         Label="@L["Slug"]"
+                                         dir="ltr" />
+                        </SbStack>
+                    </details>
+                </SbStack>
+
                 <SbStack Gap="3">
                     <SbHeading Level="2" Size="5">@L["MenuItemSection:Link"]</SbHeading>
                     @if (string.IsNullOrEmpty(_structuralKindText))
@@ -36,39 +103,47 @@
 
                         @if (_linkChoice == MenuLinkChoice.SitePage)
                         {
-                            <SbTextField @bind-Value="_pagePath" Id="menu-item-page-path" Label="@L["MenuLink:PagePath"]" dir="ltr" />
+                            <SbTextField @bind-Value="_pagePath" Id="menu-item-page-path" Label="@L["MenuLink:PagePath"]" dir="ltr" AriaDescribedBy="@DescribedBy("menu-item-page-path", _linkErrorFieldId == "menu-item-page-path" ? _linkError : null)" />
                         }
                         else if (_linkChoice == MenuLinkChoice.PageSection)
                         {
-                            <SbSwitch @bind-Value="_sectionIsCurrentPage" Label="@L["MenuLink:CurrentPage"]" />
-                            @if (!_sectionIsCurrentPage)
+                            <SbSimpleSelect TValue="MenuSectionPage"
+                                            @bind-Value="_sectionPage"
+                                            Label="@L["MenuLink:SectionPage"]">
+                                <SbSelectOption TValue="MenuSectionPage" Value="@MenuSectionPage.CurrentPage">@L["MenuLink:CurrentPage"]</SbSelectOption>
+                                <SbSelectOption TValue="MenuSectionPage" Value="@MenuSectionPage.HomePage">@L["MenuLink:HomePage"]</SbSelectOption>
+                                <SbSelectOption TValue="MenuSectionPage" Value="@MenuSectionPage.OtherPage">@L["MenuLink:OtherPage"]</SbSelectOption>
+                            </SbSimpleSelect>
+                            @if (_sectionPage == MenuSectionPage.OtherPage)
                             {
-                                <SbTextField @bind-Value="_sectionPagePath" Id="menu-item-section-path" Label="@L["MenuLink:PagePath"]" dir="ltr" />
+                                <SbTextField @bind-Value="_sectionPagePath" Id="menu-item-section-path" Label="@L["MenuLink:PagePath"]" dir="ltr" AriaDescribedBy="@DescribedBy("menu-item-section-path", _linkErrorFieldId == "menu-item-section-path" ? _linkError : null)" />
                             }
-                            <SbTextField @bind-Value="_sectionId" Id="menu-item-section-id" Label="@L["MenuLink:SectionId"]" dir="ltr" />
+                            <SbTextField @bind-Value="_sectionId" Id="menu-item-section-id" Label="@L["MenuLink:SectionId"]" dir="ltr" AriaDescribedBy="@DescribedBy("menu-item-section-id", _linkErrorFieldId == "menu-item-section-id" ? _linkError : null)" />
                         }
                         else if (_linkChoice == MenuLinkChoice.Website)
                         {
-                            <SbTextField @bind-Value="_websiteUrl" Id="menu-item-website" Label="@L["MenuLink:WebsiteUrl"]" dir="ltr" />
+                            <SbTextField @bind-Value="_websiteUrl" Id="menu-item-website" Label="@L["MenuLink:WebsiteUrl"]" dir="ltr" AriaDescribedBy="@DescribedBy("menu-item-website", _linkErrorFieldId == "menu-item-website" ? _linkError : null)" />
                         }
                         else if (_linkChoice == MenuLinkChoice.Email)
                         {
-                            <SbTextField @bind-Value="_email" Id="menu-item-email" Label="@L["MenuLink:EmailAddress"]" Type="email" dir="ltr" />
+                            <SbTextField @bind-Value="_email" Id="menu-item-email" Label="@L["MenuLink:EmailAddress"]" Type="email" dir="ltr" AriaDescribedBy="@DescribedBy("menu-item-email", _linkErrorFieldId == "menu-item-email" ? _linkError : null)" />
                         }
                         else if (_linkChoice == MenuLinkChoice.Phone)
                         {
-                            <SbTextField @bind-Value="_phone" Id="menu-item-phone" Label="@L["MenuLink:PhoneNumber"]" Type="tel" dir="ltr" />
+                            <SbTextField @bind-Value="_phone" Id="menu-item-phone" Label="@L["MenuLink:PhoneNumber"]" Type="tel" dir="ltr" AriaDescribedBy="@DescribedBy("menu-item-phone", _linkErrorFieldId == "menu-item-phone" ? _linkError : null)" />
                         }
 
-                        @if (!string.IsNullOrEmpty(_linkError))
+                        @if (!string.IsNullOrEmpty(_linkError) && !string.IsNullOrEmpty(_linkErrorFieldId))
                         {
-                            <div class="menu-item-editor__error" role="alert">@_linkError</div>
+                            <div id="@(_linkErrorFieldId + "-error")" class="menu-item-editor__error" role="alert">@_linkError</div>
                         }
 
                         @if (_linkChoice != MenuLinkChoice.NoLink)
                         {
                             <SbSimpleSelect TValue="MenuLinkTarget"
-                                            @bind-Value="_model.LinkTarget"
+                                            Value="_model.LinkTarget"
+                                            ValueChanged="OnLinkTargetChanged"
+                                            ValueExpression="@(() => _model.LinkTarget)"
                                             Label="@L["LinkTarget"]">
                                 <SbSelectOption TValue="MenuLinkTarget" Value="@MenuLinkTarget.SameTab">@L["MenuLinkTarget:SameTab"]</SbSelectOption>
                                 <SbSelectOption TValue="MenuLinkTarget" Value="@MenuLinkTarget.NewTab">@L["MenuLinkTarget:NewTab"]</SbSelectOption>
@@ -95,55 +170,15 @@
                             </SbSimpleSelect>
                         </div>
 
-                        <div>
-                            <SbTextField TValue="string"
-                                         Value="_model.Name"
-                                         ValueChanged="OnNameChangedAsync"
-                                         ValueExpression="@(() => _model.Name)"
-                                         Id="menu-item-name"
-                                         Label="@L["MenuName"]"
-                                         Required="true" />
-                            @if (!string.IsNullOrEmpty(_nameError))
-                            {
-                                <div class="menu-item-editor__error" role="alert">@_nameError</div>
-                            }
-                        </div>
-
-                        <SbTextField TValue="string"
-                                     Value="@(_model.Slug ?? string.Empty)"
-                                     ValueChanged="OnSlugChangedAsync"
-                                     ValueExpression="@(() => _model.Slug!)"
-                                     Label="@L["Slug"]"
-                                     dir="ltr" />
-
-                        <div class="menu-item-editor__wide">
-                            <SbStack Gap="1">
-                                <SbText Weight="SbFontWeight.Medium">@L["DisplayNameLocalizationMode"]</SbText>
-                                <BusinessLocalizationModeSwitch Mode="_displayNameMode"
-                                                                ModeChanged="OnDisplayNameModeChangedAsync" />
-                            </SbStack>
-                        </div>
-
-                        <div class="menu-item-editor__wide">
-                            <BusinessTextEditor @ref="_displayNameEditor"
-                                                Label="@L["DisplayName"]"
-                                                ResourceName="_localizationResourceName"
-                                                LocalizationKey="_localizationKey"
-                                                Mode="_displayNameMode"
-                                                LiteralValue="_literalDisplayName"
-                                                LiteralValueChanged="OnLiteralDisplayNameChangedAsync"
-                                                Required="true" />
-                        </div>
-
                         <div class="menu-item-editor__wide">
                             <SbTextArea @bind-Value="_model.Description" Label="@L["Description"]" Rows="2" />
                         </div>
 
                         <div>
-                            <SbTextField @bind-Value="_displayOrderText" Id="menu-item-order" Label="@L["DisplayOrder"]" dir="ltr" inputmode="numeric" />
+                            <SbTextField @bind-Value="_displayOrderText" Id="menu-item-order" Label="@L["DisplayOrder"]" dir="ltr" inputmode="numeric" AriaDescribedBy="@DescribedBy("menu-item-order", _displayOrderError)" />
                             @if (!string.IsNullOrEmpty(_displayOrderError))
                             {
-                                <div class="menu-item-editor__error" role="alert">@_displayOrderError</div>
+                                <div id="menu-item-order-error" class="menu-item-editor__error" role="alert">@_displayOrderError</div>
                             }
                         </div>
                     </div>
@@ -171,10 +206,10 @@
 
                         <SbTextField @bind-Value="_model.TargetType" Label="@L["TargetType"]" dir="ltr" />
                         <div>
-                            <SbTextField @bind-Value="_targetIdText" Id="menu-item-target-id" Label="@L["TargetId"]" dir="ltr" />
+                            <SbTextField @bind-Value="_targetIdText" Id="menu-item-target-id" Label="@L["TargetId"]" dir="ltr" AriaDescribedBy="@DescribedBy("menu-item-target-id", _targetIdError)" />
                             @if (!string.IsNullOrEmpty(_targetIdError))
                             {
-                                <div class="menu-item-editor__error" role="alert">@_targetIdError</div>
+                                <div id="menu-item-target-id-error" class="menu-item-editor__error" role="alert">@_targetIdError</div>
                             }
                         </div>
                         <SbTextField @bind-Value="_model.Icon" Label="@L["Icon"]" dir="ltr" />
@@ -207,10 +242,10 @@
                                         }
                                     </SbSimpleSelect>
                                     <div>
-                                        <SbTextField @bind-Value="row.Url" Id="@row.FieldId" Label="@L["Url"]" dir="ltr" />
+                                        <SbTextField @bind-Value="row.Url" Id="@row.FieldId" Label="@L["Url"]" dir="ltr" AriaDescribedBy="@DescribedBy(row.FieldId, row.Error)" />
                                         @if (!string.IsNullOrEmpty(row.Error))
                                         {
-                                            <div class="menu-item-editor__error" role="alert">@row.Error</div>
+                                            <div id="@(row.FieldId + "-error")" class="menu-item-editor__error" role="alert">@row.Error</div>
                                         }
                                     </div>
                                     <SbButton Type="button" Variant="SbButtonVariant.Outline" OnClick="@(_ => RemoveCultureUrlRow(row))">@L["MenuLink:RemoveCultureUrl"]</SbButton>
@@ -266,9 +301,9 @@ else if (_loadFailed)
         background: var(--sb-color-danger-subtle, #fef2f2);
     }
 
-    .menu-item-editor__summary:focus {
-        outline: 2px solid var(--sb-color-danger, #b91c1c);
-        outline-offset: 2px;
+    .menu-item-editor__summary ul {
+        margin: 0.35rem 0 0;
+        padding-inline-start: 1.25rem;
     }
 
     .menu-item-editor__error {
@@ -287,6 +322,16 @@ else if (_loadFailed)
         gap: 0.75rem;
         align-items: start;
         margin-top: 0.75rem;
+    }
+
+    .menu-label-key {
+        display: flex;
+        gap: 0.5rem;
+        align-items: end;
+    }
+
+    .menu-label-key .sb-text-field-wrapper {
+        flex: 1;
     }
 
     .menu-item-editor__footer {
