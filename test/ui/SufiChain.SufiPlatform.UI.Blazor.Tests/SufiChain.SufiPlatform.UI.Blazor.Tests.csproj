@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk.Razor">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+    <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
+    <DisableFody>true</DisableFody>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="../../../framework/SufiChain.SufiPlatform.UI.Blazor/SufiChain.SufiPlatform.UI.Blazor.csproj" />
+    <ProjectReference Include="../../../modules/settings/src/SufiChain.SufiPlatform.Settings.Blazor/SufiChain.SufiPlatform.Settings.Blazor.csproj" />
+    <PackageReference Include="bunit" Version="$(BunitVersion)" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="$(MicrosoftNetTestSdkVersion)" />
+    <PackageReference Include="xunit" Version="$(XunitVersion)" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="$(XunitRunnerVisualStudioVersion)" PrivateAssets="All" />
+    <PackageReference Include="Shouldly" Version="$(ShouldlyVersion)" />
+  </ItemGroup>
+</Project>
