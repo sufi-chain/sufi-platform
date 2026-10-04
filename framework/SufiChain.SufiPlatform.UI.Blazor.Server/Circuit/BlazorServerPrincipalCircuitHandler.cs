@@ -2,6 +2,7 @@ using System.Security.Claims;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Server.Circuits;
 using Volo.Abp.Security.Claims;
+using BlazorCircuit = Microsoft.AspNetCore.Components.Server.Circuits.Circuit;
 
 namespace SufiChain.SufiPlatform.UI.Blazor.Server.Circuit;
 
@@ -33,10 +34,20 @@ public class BlazorServerPrincipalCircuitHandler : CircuitHandler
     /// </summary>
     public override int Order => int.MinValue;
 
-    public override async Task OnCircuitOpenedAsync(Circuit circuit, CancellationToken cancellationToken)
+    public override Task OnCircuitOpenedAsync(BlazorCircuit circuit, CancellationToken cancellationToken)
     {
         _authenticationStateProvider.AuthenticationStateChanged += OnAuthenticationStateChanged;
-        await ApplyAsync(_authenticationStateProvider.GetAuthenticationStateAsync());
+        var pending = _authenticationStateProvider.GetAuthenticationStateAsync();
+        if (pending.IsCompletedSuccessfully)
+        {
+            // AsyncLocal set after this method yields does not flow back to the circuit host.
+            // The first root render runs after OnCircuitOpenedAsync returns, so the user has to
+            // be applied on this execution context before the first await.
+            Replace(pending.Result.User);
+            return Task.CompletedTask;
+        }
+
+        return ApplyAsync(pending);
     }
 
     public override Func<CircuitInboundActivityContext, Task> CreateInboundActivityHandler(
@@ -52,7 +63,7 @@ public class BlazorServerPrincipalCircuitHandler : CircuitHandler
         };
     }
 
-    public override Task OnCircuitClosedAsync(Circuit circuit, CancellationToken cancellationToken)
+    public override Task OnCircuitClosedAsync(BlazorCircuit circuit, CancellationToken cancellationToken)
     {
         _authenticationStateProvider.AuthenticationStateChanged -= OnAuthenticationStateChanged;
         Replace(null);
@@ -61,6 +72,12 @@ public class BlazorServerPrincipalCircuitHandler : CircuitHandler
 
     private void OnAuthenticationStateChanged(Task<AuthenticationState> task)
     {
+        if (task.IsCompletedSuccessfully)
+        {
+            Replace(task.Result.User);
+            return;
+        }
+
         _ = ApplyAsync(task);
     }
 
