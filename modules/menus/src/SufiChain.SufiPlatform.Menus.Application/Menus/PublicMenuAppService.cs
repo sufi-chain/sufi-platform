@@ -190,15 +190,15 @@ public class PublicMenuAppService : SufiApplicationService, IPublicMenuAppServic
         target.ParentId = source.ParentId;
         target.Name = source.Name;
         target.DisplayName = source.DisplayName;
+        target.DisplayNames = CopyMap(source.DisplayNames);
+        target.DisplayNameBases = CopyMap(source.DisplayNameBases);
         target.Slug = source.Slug;
         target.Description = source.Description;
         target.DisplayOrder = source.DisplayOrder;
         target.Kind = source.Kind;
         target.DisplayType = source.DisplayType;
         target.Url = source.Url;
-        target.CultureUrls = source.CultureUrls == null
-            ? null
-            : new Dictionary<string, string>(source.CultureUrls, StringComparer.OrdinalIgnoreCase);
+        target.CultureUrls = CopyMap(source.CultureUrls);
         target.LinkTarget = source.LinkTarget;
         target.TargetType = source.TargetType;
         target.TargetId = source.TargetId;
@@ -216,4 +216,9 @@ public class PublicMenuAppService : SufiApplicationService, IPublicMenuAppServic
         target.DeleterId = source.DeleterId;
         target.DeletionTime = source.DeletionTime;
     }
+
+    private static Dictionary<string, string>? CopyMap(Dictionary<string, string>? source) =>
+        source == null
+            ? null
+            : new Dictionary<string, string>(source, StringComparer.OrdinalIgnoreCase);
 }
