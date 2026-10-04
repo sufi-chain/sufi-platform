@@ -95,7 +95,8 @@ public class MenuItemAppService : SufiApplicationService, IMenuItemAppService
                 existingStored: null,
                 MenuDisplayNamePlanner.ItemKey(input.MenuId, item.Id),
                 input.DisplayNames,
-                item.SetDisplayName);
+                item.SetDisplayName,
+                (await _menuRepository.FindAsync(input.MenuId))?.ContextType);
         }
 
         await _menuManager.ValidateItemAsync(item);
@@ -115,7 +116,8 @@ public class MenuItemAppService : SufiApplicationService, IMenuItemAppService
                 item.DisplayName,
                 MenuDisplayNamePlanner.ItemKey(item.MenuId, item.Id),
                 input.DisplayNames,
-                item.SetDisplayName);
+                item.SetDisplayName,
+                (await _menuRepository.FindAsync(item.MenuId))?.ContextType);
         }
         else
         {
@@ -155,7 +157,9 @@ public class MenuItemAppService : SufiApplicationService, IMenuItemAppService
     protected virtual async Task<MenuItemDto> ToLabeledDtoAsync(MenuItem item, string? contextType)
     {
         var dto = item.ToDto();
-        dto.DisplayNames = await _labels.ReadAsync(item.DisplayName, item.Name, contextType);
+        var labels = await _labels.ReadAsync(item.DisplayName, item.Name, contextType);
+        dto.DisplayNames = labels.Values;
+        dto.DisplayNameBases = labels.BaseValues;
         return dto;
     }
 

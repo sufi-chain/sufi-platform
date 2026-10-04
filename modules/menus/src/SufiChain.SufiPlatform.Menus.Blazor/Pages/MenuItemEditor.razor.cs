@@ -42,6 +42,14 @@ public partial class MenuItemEditor : MenusComponentBase
     private string _targetIdText = string.Empty;
     private string _parentIdText = string.Empty;
     private Dictionary<string, string> _displayNames = new(StringComparer.OrdinalIgnoreCase);
+    private Dictionary<string, string> _displayNameBases = new(StringComparer.OrdinalIgnoreCase);
+    private static readonly Dictionary<string, object> KeyFieldAttributes = new()
+    {
+        ["dir"] = "ltr",
+        ["lang"] = "en"
+    };
+
+    private string LabelKeyText => _labelKey ?? string.Empty;
     private List<MultilingualCulture> _labelCultures = new();
     private MultilingualTextField? _labels;
     private string? _labelKey;
@@ -123,6 +131,7 @@ public partial class MenuItemEditor : MenusComponentBase
             _targetIdText = string.Empty;
             _parentIdText = parentId?.ToString() ?? string.Empty;
             _displayNames = EmptyNames();
+            _displayNameBases = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
             _labelKey = null;
             _labelBroken = false;
             _sameForAll = false;
@@ -163,7 +172,7 @@ public partial class MenuItemEditor : MenusComponentBase
         _targetIdText = item.TargetId?.ToString() ?? string.Empty;
         _parentIdText = item.ParentId?.ToString() ?? string.Empty;
         _parentOptions = BuildOptions(item.Id);
-        ApplyLoadedLabel(item.DisplayName, item.Name, item.DisplayNames);
+        ApplyLoadedLabel(item.DisplayName, item.Name, item.DisplayNames, item.DisplayNameBases);
         _ready = true;
     }, LoadingKeys.Load, LoadingBehavior.PageProgress);
 
@@ -181,13 +190,26 @@ public partial class MenuItemEditor : MenusComponentBase
         }
     }
 
-    private void ApplyLoadedLabel(string? stored, string? name, IReadOnlyDictionary<string, string>? displayNames)
+    private void ApplyLoadedLabel(
+        string? stored,
+        string? name,
+        IReadOnlyDictionary<string, string>? displayNames,
+        IReadOnlyDictionary<string, string>? baseValues)
     {
         _labelBroken = BusinessTextEditorStorage.IsPlaceholder(stored);
         _labelKey = BusinessLocalizationHelper.IsBusinessLocalizationKey(stored) && !_labelBroken
             ? stored!.Trim()
             : null;
         _displayNames = EmptyNames();
+        _displayNameBases = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        if (baseValues != null)
+        {
+            foreach (var pair in baseValues)
+            {
+                _displayNameBases[pair.Key] = pair.Value ?? string.Empty;
+            }
+        }
+
         if (displayNames == null)
         {
             return;
@@ -247,6 +269,15 @@ public partial class MenuItemEditor : MenusComponentBase
         if (_labels == null || !await _labels.ValidateAsync())
         {
             return;
+        }
+
+        if (string.IsNullOrWhiteSpace(_model.Name))
+        {
+            var defaultCulture = _labelCultures.FirstOrDefault(x => x.IsDefault)?.CultureName ?? "fa";
+            if (_displayNames.TryGetValue(defaultCulture, out var label) && !string.IsNullOrWhiteSpace(label))
+            {
+                _model.Name = label.Trim();
+            }
         }
 
         if (string.IsNullOrWhiteSpace(_model.Name))
@@ -340,6 +371,8 @@ public partial class MenuItemEditor : MenusComponentBase
         IsActive = _model.IsActive,
         IsVisible = _model.IsVisible
     };
+
+    private Task CopyLabelKeyAsync() => CopyTextAsync(_labelKey);
 
     private void GoBack() => NavigationManager.NavigateTo(ItemsRoute);
 

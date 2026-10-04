@@ -1,14 +1,19 @@
 using System.Globalization;
+using Microsoft.Extensions.Options;
+using Microsoft.JSInterop;
 using SufiChain.SufiPlatform.Data;
 using SufiChain.SufiPlatform.Menus.Localization;
 using SufiChain.SufiPlatform.Menus.Menus;
 using SufiChain.SufiPlatform.UI.Blazor;
+using Volo.Abp.Localization;
 
 namespace SufiChain.SufiPlatform.Menus.Blazor;
 
 public abstract class MenusComponentBase : SufiComponentBase
 {
     private IMenuAppService? _menuLabelAppService;
+    private IOptions<AbpLocalizationOptions>? _localizationOptions;
+    private IJSRuntime? _jsRuntime;
 
     protected string MenuDefaultCulture { get; private set; } = "fa";
 
@@ -79,15 +84,34 @@ public abstract class MenusComponentBase : SufiComponentBase
         }
 
         var resources = MenuLocalizationRegistry.GetReadResourceNames(menuKey, contextType);
+        var options = LazyGetRequiredService(ref _localizationOptions).Value;
         return MenuDisplayNamePlanner.ResolvePublicLabel(
             storedDisplayName,
             plainName,
             CultureInfo.CurrentUICulture.Name,
             MenuDefaultCulture,
-            culture => MenuDisplayNamePlanner.LookupCulture(
-                StringLocalizerFactory,
+            culture => MenuDisplayNamePlanner.LookupExact(
+                options,
                 resources,
                 storedDisplayName,
                 culture));
+    }
+
+    protected async Task CopyTextAsync(string? value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            return;
+        }
+
+        try
+        {
+            var js = LazyGetRequiredService(ref _jsRuntime);
+            await js.InvokeVoidAsync("navigator.clipboard.writeText", value);
+        }
+        catch (Exception)
+        {
+            // Clipboard access can be refused before the page is interactive.
+        }
     }
 }

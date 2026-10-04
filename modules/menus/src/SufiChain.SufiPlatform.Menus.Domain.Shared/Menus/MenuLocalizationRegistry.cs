@@ -76,4 +76,7 @@ public static class MenuLocalizationRegistry
 
         return names;
     }
+
+    public static IReadOnlyList<string> GetContextTypes() =>
+        ContextTypeResourceNames.Keys.ToArray();
 }

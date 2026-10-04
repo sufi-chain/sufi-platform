@@ -53,6 +53,17 @@
     "BusinessTextEditor:CultureTab": "Culture",
     "BusinessTextEditor:KeyPreview": "Localization key",
     "BusinessTextEditor:SaveRequired": "Display name is required.",
-    "BusinessTextEditor:DefaultCultureRequired": "Default culture translation is required."
-  ,"Hooshvare:SufiLocalization:Editor:DisplayName":"Localization Editor"}
+    "BusinessTextEditor:DefaultCultureRequired": "Default culture translation is required.",
+    "MultilingualTextField:Primary": "(primary)",
+    "MultilingualTextField:Untranslated": "Not translated",
+    "MultilingualTextField:Translated": "Translated",
+    "MultilingualTextField:MaxLength": "At most {0} characters.",
+    "MultilingualTextField:Required": "{0} label is required.",
+    "MultilingualTextField:LooksLikeKey": "This value looks like a system id. Enter the text visitors should see.",
+    "MultilingualTextField:Broken": "This item's label was not saved correctly. Enter it again.",
+    "MultilingualTextField:CulturesFailed": "The language list did not load. Only the default language is shown.",
+    "MultilingualTextField:EmptyFallback": "If left empty, “{0}” is shown",
+    "MultilingualTextField:ScriptWarning": "This text looks like another language.",
+    "MultilingualTextField:BaseText": "Back to the base text",
+    "Hooshvare:SufiLocalization:Editor:DisplayName": "Localization Editor"
 }

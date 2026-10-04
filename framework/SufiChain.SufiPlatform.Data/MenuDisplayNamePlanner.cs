@@ -1,5 +1,3 @@
-using System.Globalization;
-using Microsoft.Extensions.Localization;
 using Volo.Abp.Localization;
 
 namespace SufiChain.SufiPlatform.Data;
@@ -11,21 +9,11 @@ public static class MenuBusinessTexts
 {
     public const string ResourceName = "SufiMenus";
 
-    public const string DefaultCultureRequiredMessage = "عنوان فارسی الزامی است.";
+    public const string ErrorRequired = "required";
 
-    public const string LooksLikeKeyMessage = "این مقدار شبیه شناسهٔ سیستمی است؛ متن قابل نمایش وارد کنید.";
+    public const string ErrorLooksLikeKey = "looks-like-key";
 
-    public const string BrokenPlaceholderBanner = "عنوان این آیتم درست ذخیره نشده بود؛ لطفاً دوباره وارد کنید.";
-
-    public const string CulturesFailedMessage = "فهرست زبان‌ها بارگیری نشد؛ فعلاً فقط فارسی.";
-
-    public const string AdvancedSettingsLabel = "تنظیمات پیشرفته";
-
-    public const string SameForAllLabel = "یک متن برای همه زبان‌ها";
-
-    public const string KeyLabel = "شناسهٔ متن";
-
-    public const string ScriptWarningMessage = "به نظر می‌رسد این متن به زبان دیگری است.";
+    public const string ErrorTooLong = "too-long";
 }
 
 /// <summary>
@@ -61,7 +49,7 @@ public static class MenuDisplayNamePlanner
         var plan = new MenuDisplayNameWritePlan();
         if (displayNames == null)
         {
-            plan.ErrorMessage = MenuBusinessTexts.DefaultCultureRequiredMessage;
+            plan.ErrorCode = MenuBusinessTexts.ErrorRequired;
             return plan;
         }
 
@@ -98,13 +86,13 @@ public static class MenuDisplayNamePlanner
 
             if (normalized.Length > maxLength)
             {
-                plan.ErrorMessage ??= $"حداکثر {maxLength} نویسه.";
+                plan.ErrorCode ??= MenuBusinessTexts.ErrorTooLong;
                 continue;
             }
 
             if (LooksLikeSystemKey(normalized))
             {
-                plan.ErrorMessage ??= MenuBusinessTexts.LooksLikeKeyMessage;
+                plan.ErrorCode ??= MenuBusinessTexts.ErrorLooksLikeKey;
                 continue;
             }
 
@@ -114,12 +102,40 @@ public static class MenuDisplayNamePlanner
 
         if (!sawDefault || IsBlankLabel(defaultValue))
         {
-            plan.ErrorMessage = MenuBusinessTexts.DefaultCultureRequiredMessage;
+            plan.ErrorCode = MenuBusinessTexts.ErrorRequired;
             plan.Upserts.Clear();
             plan.Deletes.Clear();
         }
 
         return plan;
+    }
+
+    /// <summary>
+    /// A value that only repeats the seeded base is not stored. The shared row is removed
+    /// so the editor and the public site both read the base text.
+    /// </summary>
+    public static void ReleaseBaseCopies(MenuDisplayNameWritePlan plan, IReadOnlyDictionary<string, string>? baseValues)
+    {
+        if (baseValues == null || baseValues.Count == 0)
+        {
+            return;
+        }
+
+        foreach (var pair in plan.Upserts.ToList())
+        {
+            if (!baseValues.TryGetValue(pair.Key, out var baseValue)
+                || IsBlankLabel(baseValue)
+                || !string.Equals(pair.Value, baseValue.Trim(), StringComparison.Ordinal))
+            {
+                continue;
+            }
+
+            plan.Upserts.Remove(pair.Key);
+            if (!plan.Deletes.Exists(culture => string.Equals(culture, pair.Key, StringComparison.OrdinalIgnoreCase)))
+            {
+                plan.Deletes.Add(pair.Key);
+            }
+        }
     }
 
     public static MenuDisplayNameEditorState BuildEditorState(
@@ -236,49 +252,36 @@ public static class MenuDisplayNamePlanner
         return chain;
     }
 
-    public static string? LookupCulture(
-        IStringLocalizerFactory stringLocalizerFactory,
+    /// <summary>
+    /// Reads one culture from each resource. It does not use the string localizer, so a missing
+    /// culture is not replaced by that resource's default culture before the next resource is tried.
+    /// </summary>
+    public static string? LookupExact(
+        AbpLocalizationOptions localizationOptions,
         IEnumerable<string> resourceNames,
         string? key,
         string? culture)
     {
-        if (string.IsNullOrWhiteSpace(key) || string.IsNullOrWhiteSpace(culture))
+        if (localizationOptions == null || string.IsNullOrWhiteSpace(key) || string.IsNullOrWhiteSpace(culture))
         {
             return null;
         }
 
-        CultureInfo cultureInfo;
-        try
+        foreach (var resourceName in resourceNames)
         {
-            cultureInfo = CultureInfo.GetCultureInfo(culture);
-        }
-        catch (CultureNotFoundException)
-        {
-            return null;
-        }
-
-        using (CultureHelper.Use(cultureInfo, cultureInfo))
-        {
-            foreach (var resourceName in resourceNames)
+            if (string.IsNullOrWhiteSpace(resourceName)
+                || !localizationOptions.Resources.TryGetValue(resourceName, out var resource))
             {
-                if (string.IsNullOrWhiteSpace(resourceName))
-                {
-                    continue;
-                }
+                continue;
+            }
 
-                var localizer = stringLocalizerFactory.CreateByResourceNameOrNull(resourceName);
-                if (localizer == null)
+            foreach (var contributor in resource.Contributors)
+            {
+                var found = contributor.GetOrNull(culture, key);
+                if (found != null && IsDisplayableText(found.Value, key))
                 {
-                    continue;
+                    return found.Value.Trim();
                 }
-
-                var localized = localizer[key];
-                if (localized.ResourceNotFound || !IsDisplayableText(localized.Value, key))
-                {
-                    continue;
-                }
-
-                return localized.Value.Trim();
             }
         }
 
@@ -392,9 +395,9 @@ public sealed class MenuDisplayNameWritePlan
 
     public List<string> Deletes { get; } = new();
 
-    public string? ErrorMessage { get; set; }
+    public string? ErrorCode { get; set; }
 
-    public bool Succeeded => string.IsNullOrEmpty(ErrorMessage);
+    public bool Succeeded => string.IsNullOrEmpty(ErrorCode);
 }
 
 public sealed class MenuDisplayNameEditorState

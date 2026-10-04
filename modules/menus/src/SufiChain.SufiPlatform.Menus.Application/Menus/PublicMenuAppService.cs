@@ -137,6 +137,7 @@ public class PublicMenuAppService : SufiApplicationService, IPublicMenuAppServic
                 requestedCulture,
                 defaultCulture);
             copy.DisplayNames = null;
+            copy.DisplayNameBases = null;
             if (string.IsNullOrWhiteSpace(copy.DisplayName))
             {
                 continue;
@@ -163,6 +164,7 @@ public class PublicMenuAppService : SufiApplicationService, IPublicMenuAppServic
             requestedCulture,
             defaultCulture);
         copy.DisplayNames = null;
+        copy.DisplayNameBases = null;
         return copy;
     }
 

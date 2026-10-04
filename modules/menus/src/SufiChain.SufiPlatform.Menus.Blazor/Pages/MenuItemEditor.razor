@@ -12,6 +12,58 @@
                 <ChildContent>
             <SbStack Gap="5">
                 <SbStack Gap="3">
+                    <SbHeading Level="2" Size="5">@L["DisplayName"]</SbHeading>
+                    @if (!string.IsNullOrWhiteSpace(_saveError))
+                    {
+                        <SbText Color="SbColor.Danger">@_saveError</SbText>
+                    }
+                    <MultilingualTextField @ref="_labels"
+                                           Label="@L["DisplayName"]"
+                                           HelpText="@L["MenuLabel:Help"]"
+                                           Values="_displayNames"
+                                           ValuesChanged="OnDisplayNamesChanged"
+                                           BaseValues="_displayNameBases"
+                                           Cultures="_labelCultures"
+                                           CulturesFailed="_culturesFailed"
+                                           Required="true"
+                                           MaxLength="256"
+                                           FallbackText="@_model.Name"
+                                           SameForAll="_sameForAll"
+                                           ShowBrokenBanner="_labelBroken" />
+                    <details class="menu-label-advanced">
+                        <summary>@L["MenuLabel:Advanced"]</summary>
+                        <SbStack Gap="3" Class="menu-label-advanced__body">
+                            @if (!string.IsNullOrWhiteSpace(_labelKey))
+                            {
+                                <div class="menu-label-key">
+                                    <SbTextField TValue="string"
+                                                 Value="@LabelKeyText"
+                                                 ValueChanged="@(_ => Task.CompletedTask)"
+                                                 ValueExpression="@(() => LabelKeyText)"
+                                                 Label="@L["MenuLabel:Key"]"
+                                                 ReadOnly="true"
+                                                 AdditionalAttributes="@KeyFieldAttributes" />
+                                    <SbButton Type="button"
+                                              Variant="SbButtonVariant.Outline"
+                                              OnClick="CopyLabelKeyAsync">@L["MenuLabel:Copy"]</SbButton>
+                                </div>
+                            }
+                            <SbSwitch @bind-Value="_sameForAll" Label="@L["MenuLabel:SameForAll"]" />
+                            <SbTextField TValue="string"
+                                         Value="_model.Name"
+                                         ValueChanged="OnNameChangedAsync"
+                                         ValueExpression="@(() => _model.Name)"
+                                         Label="@L["MenuName"]" />
+                            <SbTextField TValue="string"
+                                         Value="@(_model.Slug ?? string.Empty)"
+                                         ValueChanged="OnSlugChangedAsync"
+                                         ValueExpression="@(() => _model.Slug!)"
+                                         Label="@L["Slug"]" />
+                        </SbStack>
+                    </details>
+                </SbStack>
+
+                <SbStack Gap="3">
                     <SbHeading Level="2" Size="5">@L["MenuItemSection:Link"]</SbHeading>
                     <div class="menu-item-editor__grid">
                         <SbSimpleSelect TValue="MenuItemKind"
@@ -58,54 +110,6 @@
                                     <SbSelectOption TValue="string" Value="@option.Id.ToString()">@option.Path</SbSelectOption>
                                 }
                             </SbSimpleSelect>
-                        </div>
-
-                        <SbTextField TValue="string"
-                                     Value="_model.Name"
-                                     ValueChanged="OnNameChangedAsync"
-                                     ValueExpression="@(() => _model.Name)"
-                                     Label="@L["MenuName"]"
-                                     Required="true" />
-
-                        <SbTextField TValue="string"
-                                     Value="@(_model.Slug ?? string.Empty)"
-                                     ValueChanged="OnSlugChangedAsync"
-                                     ValueExpression="@(() => _model.Slug!)"
-                                     Label="@L["Slug"]" />
-
-                        <div class="menu-item-editor__wide">
-                            @if (!string.IsNullOrWhiteSpace(_saveError))
-                            {
-                                <SbText Color="SbColor.Danger">@_saveError</SbText>
-                            }
-                            <MultilingualTextField @ref="_labels"
-                                                   Label="@L["DisplayName"]"
-                                                   HelpText="@L["MenuLabel:Help"]"
-                                                   Values="_displayNames"
-                                                   ValuesChanged="OnDisplayNamesChanged"
-                                                   Cultures="_labelCultures"
-                                                   CulturesFailed="_culturesFailed"
-                                                   Required="true"
-                                                   MaxLength="256"
-                                                   FallbackText="@_model.Name"
-                                                   SameForAll="_sameForAll"
-                                                   ShowBrokenBanner="_labelBroken" />
-                            <details class="menu-label-advanced">
-                                <summary>@L["MenuLabel:Advanced"]</summary>
-                                <div class="menu-label-advanced__body">
-                                    @if (!string.IsNullOrWhiteSpace(_labelKey))
-                                    {
-                                        <label>
-                                            @L["MenuLabel:Key"]
-                                            <input readonly dir="ltr" lang="en" value="@_labelKey" />
-                                        </label>
-                                    }
-                                    <label>
-                                        <input type="checkbox" @bind="_sameForAll" />
-                                        @L["MenuLabel:SameForAll"]
-                                    </label>
-                                </div>
-                            </details>
                         </div>
 
                         <div class="menu-item-editor__wide">
@@ -180,6 +184,16 @@ else if (_loadFailed)
 
     .menu-item-editor__wide {
         grid-column: 1 / -1;
+    }
+
+    .menu-label-key {
+        display: flex;
+        gap: 0.5rem;
+        align-items: end;
+    }
+
+    .menu-label-key .sb-text-field-wrapper {
+        flex: 1;
     }
 
     .menu-item-editor__footer {

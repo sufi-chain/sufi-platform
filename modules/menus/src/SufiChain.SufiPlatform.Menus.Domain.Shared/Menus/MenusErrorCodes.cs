@@ -15,4 +15,5 @@ public static class MenusErrorCodes
     public const string CannotMoveMenuItemAcrossMenus = Namespace + ":CannotMoveMenuItemAcrossMenus";
     public const string DisplayNameRequired = Namespace + ":DisplayNameRequired";
     public const string DisplayNameLooksLikeKey = Namespace + ":DisplayNameLooksLikeKey";
+    public const string DisplayNameTooLong = Namespace + ":DisplayNameTooLong";
 }

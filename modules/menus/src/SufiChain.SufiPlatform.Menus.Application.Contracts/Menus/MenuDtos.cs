@@ -12,6 +12,8 @@ public class MenuDto : FullAuditedEntityDto<Guid>
 
     public Dictionary<string, string>? DisplayNames { get; set; }
 
+    public Dictionary<string, string>? DisplayNameBases { get; set; }
+
     public string? Description { get; set; }
     public bool IsActive { get; set; }
 }

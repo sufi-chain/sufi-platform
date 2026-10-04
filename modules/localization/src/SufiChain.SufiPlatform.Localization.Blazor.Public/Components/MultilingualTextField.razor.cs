@@ -1,6 +1,10 @@
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Forms;
+using Microsoft.Extensions.Localization;
+using Microsoft.JSInterop;
 using SufiChain.SufiPlatform.Data;
 using SufiChain.SufiPlatform.Localization.Blazor.Public.Models;
+using SufiChain.SufiPlatform.Localization.Localization;
 
 namespace SufiChain.SufiPlatform.Localization.Blazor.Public.Components;
 
@@ -8,8 +12,17 @@ public partial class MultilingualTextField : ComponentBase
 {
     private readonly Dictionary<string, string> _warnings = new(StringComparer.OrdinalIgnoreCase);
     private readonly Dictionary<string, string> _errors = new(StringComparer.OrdinalIgnoreCase);
-    private ElementReference _defaultField;
+    private readonly Dictionary<string, RowState> _rows = new(StringComparer.OrdinalIgnoreCase);
+    private readonly string _instanceId = Guid.NewGuid().ToString("N");
+    private IJSObjectReference? _focusModule;
+    private ValidationMessageStore? _validationMessages;
     private bool _hasChanges;
+
+    [CascadingParameter] private EditContext? EditContext { get; set; }
+
+    [Inject] private IStringLocalizer<SufiLocalizationResource> Text { get; set; } = default!;
+
+    [Inject] private IJSRuntime Js { get; set; } = default!;
 
     [Parameter] public string? Label { get; set; }
 
@@ -18,6 +31,8 @@ public partial class MultilingualTextField : ComponentBase
     [Parameter] public Dictionary<string, string> Values { get; set; } = new(StringComparer.OrdinalIgnoreCase);
 
     [Parameter] public EventCallback<Dictionary<string, string>> ValuesChanged { get; set; }
+
+    [Parameter] public IReadOnlyDictionary<string, string>? BaseValues { get; set; }
 
     [Parameter] public IReadOnlyList<MultilingualCulture>? Cultures { get; set; }
 
@@ -41,18 +56,36 @@ public partial class MultilingualTextField : ComponentBase
 
     public IReadOnlyDictionary<string, string> CurrentValues => Values;
 
+    protected override void OnParametersSet()
+    {
+        if (Values == null)
+        {
+            return;
+        }
+
+        foreach (var pair in Values)
+        {
+            if (string.IsNullOrWhiteSpace(pair.Key) || !_rows.TryGetValue(pair.Key, out var state))
+            {
+                continue;
+            }
+
+            var incoming = pair.Value ?? string.Empty;
+            if (!string.Equals(state.Text, incoming, StringComparison.Ordinal))
+            {
+                state.Text = incoming;
+            }
+        }
+    }
+
     public async Task<bool> ValidateAsync()
     {
         _errors.Clear();
         var rows = VisibleRows();
         var defaultRow = rows.FirstOrDefault(x => x.IsDefault) ?? rows.FirstOrDefault();
-        if (Required && defaultRow != null)
+        if (Required && defaultRow != null && MenuDisplayNamePlanner.IsBlankLabel(ValueOf(defaultRow.CultureName)))
         {
-            var value = ValueOf(defaultRow.CultureName);
-            if (MenuDisplayNamePlanner.IsBlankLabel(value))
-            {
-                _errors[defaultRow.CultureName] = MenuBusinessTexts.DefaultCultureRequiredMessage;
-            }
+            _errors[defaultRow.CultureName] = T("MultilingualTextField:Required", defaultRow.DisplayName);
         }
 
         foreach (var row in rows)
@@ -65,37 +98,34 @@ public partial class MultilingualTextField : ComponentBase
 
             if (MenuDisplayNamePlanner.LooksLikeSystemKey(value))
             {
-                _errors[row.CultureName] = MenuBusinessTexts.LooksLikeKeyMessage;
+                _errors[row.CultureName] = T("MultilingualTextField:LooksLikeKey");
             }
             else if (value.Trim().Length > MaxLength)
             {
-                _errors[row.CultureName] = $"حداکثر {MaxLength} نویسه.";
+                _errors[row.CultureName] = T("MultilingualTextField:MaxLength", MaxLength);
             }
         }
 
+        PublishErrors();
         await InvokeAsync(StateHasChanged);
-        if (_errors.Count > 0)
+        if (_errors.Count == 0)
         {
-            try
-            {
-                await _defaultField.FocusAsync();
-            }
-            catch (Exception)
-            {
-                // Focus is best-effort when the field is not interactive yet.
-            }
-
-            return false;
+            return true;
         }
 
-        return true;
+        var firstInvalid = rows.FirstOrDefault(row => _errors.ContainsKey(row.CultureName)) ?? defaultRow;
+        if (firstInvalid != null)
+        {
+            await FocusRowAsync(RowId(firstInvalid));
+        }
+
+        return false;
     }
 
     public Dictionary<string, string> GetValuesForSave()
     {
         var result = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-        var rows = AllRows();
-        foreach (var row in rows)
+        foreach (var row in AllRows())
         {
             var value = SameForAll && !row.IsDefault
                 ? string.Empty
@@ -139,8 +169,25 @@ public partial class MultilingualTextField : ComponentBase
             .ToList();
     }
 
+    private RowState StateFor(MultilingualCulture culture)
+    {
+        if (_rows.TryGetValue(culture.CultureName, out var state))
+        {
+            return state;
+        }
+
+        state = new RowState(culture.CultureName) { Text = ValueOf(culture.CultureName) };
+        _rows[culture.CultureName] = state;
+        return state;
+    }
+
     private string ValueOf(string culture)
     {
+        if (_rows.TryGetValue(culture, out var state))
+        {
+            return state.Text ?? string.Empty;
+        }
+
         if (Values != null && Values.TryGetValue(culture, out var value) && value != null)
         {
             return value;
@@ -151,31 +198,64 @@ public partial class MultilingualTextField : ComponentBase
 
     private string PlaceholderFor(MultilingualCulture culture)
     {
-        if (!string.IsNullOrWhiteSpace(ValueOf(culture.CultureName)) || culture.IsDefault)
+        if (!MenuDisplayNamePlanner.IsBlankLabel(ValueOf(culture.CultureName)))
         {
             return string.Empty;
         }
 
-        var fallback = FallbackText;
+        var fallback = SuggestionText();
         if (MenuDisplayNamePlanner.IsBlankLabel(fallback))
         {
+            if (culture.IsDefault)
+            {
+                return string.Empty;
+            }
+
             var defaultRow = AllRows().FirstOrDefault(x => x.IsDefault);
             fallback = defaultRow == null ? null : ValueOf(defaultRow.CultureName);
         }
 
-        return MenuDisplayNamePlanner.IsBlankLabel(fallback)
-            ? string.Empty
-            : $"خالی بماند: «{fallback!.Trim()}» نمایش داده می‌شود";
+        if (MenuDisplayNamePlanner.IsBlankLabel(fallback) || MenuDisplayNamePlanner.LooksLikeSystemKey(fallback))
+        {
+            return string.Empty;
+        }
+
+        return culture.IsDefault
+            ? fallback!.Trim()
+            : T("MultilingualTextField:EmptyFallback", fallback!.Trim());
     }
 
-    private async Task OnValueChangedAsync(MultilingualCulture culture, ChangeEventArgs args)
+    private string? SuggestionText()
     {
+        if (MenuDisplayNamePlanner.IsBlankLabel(FallbackText) || MenuDisplayNamePlanner.LooksLikeSystemKey(FallbackText))
+        {
+            return null;
+        }
+
+        return FallbackText!.Trim();
+    }
+
+    private bool IsBase(MultilingualCulture culture)
+    {
+        if (BaseValues == null
+            || !BaseValues.TryGetValue(culture.CultureName, out var baseValue)
+            || MenuDisplayNamePlanner.IsBlankLabel(baseValue))
+        {
+            return false;
+        }
+
+        return string.Equals(ValueOf(culture.CultureName).Trim(), baseValue.Trim(), StringComparison.Ordinal);
+    }
+
+    private async Task OnValueChangedAsync(MultilingualCulture culture, RowState state, string? value)
+    {
+        var text = value ?? string.Empty;
+        state.Text = text;
         Values ??= new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-        var value = args.Value?.ToString() ?? string.Empty;
-        Values[culture.CultureName] = value;
+        Values[culture.CultureName] = text;
         _hasChanges = true;
-        _warnings[culture.CultureName] = ScriptWarning(culture, value);
-        if (_errors.ContainsKey(culture.CultureName) && !MenuDisplayNamePlanner.IsBlankLabel(value))
+        _warnings[culture.CultureName] = ScriptWarning(culture, text);
+        if (_errors.ContainsKey(culture.CultureName) && !MenuDisplayNamePlanner.IsBlankLabel(text))
         {
             _errors.Remove(culture.CultureName);
         }
@@ -183,7 +263,7 @@ public partial class MultilingualTextField : ComponentBase
         await ValuesChanged.InvokeAsync(Values);
     }
 
-    private static string ScriptWarning(MultilingualCulture culture, string value)
+    private string ScriptWarning(MultilingualCulture culture, string value)
     {
         if (MenuDisplayNamePlanner.IsBlankLabel(value))
         {
@@ -196,17 +276,81 @@ public partial class MultilingualTextField : ComponentBase
         var latinOnly = letters.Count > 0 && letters.All(ch => ch <= '\u024F');
         if ((primary is "en" or "es") && hasArabic)
         {
-            return MenuBusinessTexts.ScriptWarningMessage;
+            return T("MultilingualTextField:ScriptWarning");
         }
 
         if ((primary is "fa" or "ar") && latinOnly)
         {
-            return MenuBusinessTexts.ScriptWarningMessage;
+            return T("MultilingualTextField:ScriptWarning");
         }
 
         return string.Empty;
     }
 
+    private Dictionary<string, object> RowAttributes(MultilingualCulture culture) =>
+        new()
+        {
+            ["dir"] = culture.IsRtl ? "rtl" : "ltr",
+            ["lang"] = culture.CultureName,
+            ["maxlength"] = MaxLength.ToString()
+        };
+
+    private void PublishErrors()
+    {
+        if (EditContext == null)
+        {
+            return;
+        }
+
+        _validationMessages ??= new ValidationMessageStore(EditContext);
+        _validationMessages.Clear();
+        foreach (var row in AllRows())
+        {
+            if (!_errors.TryGetValue(row.CultureName, out var error))
+            {
+                continue;
+            }
+
+            _validationMessages.Add(new FieldIdentifier(StateFor(row), nameof(RowState.Text)), error);
+        }
+
+        EditContext.NotifyValidationStateChanged();
+    }
+
     private string RowId(MultilingualCulture culture) =>
-        $"mltf-{culture.CultureName}";
+        $"mltf-{_instanceId}-{culture.CultureName}";
+
+    private string ErrorId(MultilingualCulture culture) =>
+        $"{RowId(culture)}-error";
+
+    private string T(string name) => Text[name].Value;
+
+    private string T(string name, params object[] arguments) => Text[name, arguments].Value;
+
+    private async Task FocusRowAsync(string elementId)
+    {
+        try
+        {
+            _focusModule ??= await Js.InvokeAsync<IJSObjectReference>(
+                "import",
+                "./_content/SufiChain.SufiPlatform.Localization.Blazor.Public/multilingual-text-field.js");
+            await _focusModule.InvokeVoidAsync("focus", elementId);
+        }
+        catch (Exception)
+        {
+            // Focus is best-effort when the field is not interactive yet.
+        }
+    }
+
+    private sealed class RowState
+    {
+        public RowState(string cultureName)
+        {
+            CultureName = cultureName;
+        }
+
+        public string CultureName { get; }
+
+        public string Text { get; set; } = string.Empty;
+    }
 }

@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Localization;
 using SufiChain.SufiPlatform.Data;
 using SufiChain.SufiPlatform.Menus.Localization;
 using SufiChain.SufiPlatform.Menus.Menus;
@@ -128,7 +129,31 @@ public class MenuDisplayNameLocalizationTests
 
         source.ShouldContain("MultilingualTextField");
         source.ShouldContain("MenuLabel:Advanced");
+        source.ShouldContain("SbSwitch");
         source.ShouldContain("Values=\"_displayNames\"");
+        if (relativeFile.EndsWith("MenuItemEditor.razor", StringComparison.Ordinal))
+        {
+            source.IndexOf("MultilingualTextField", StringComparison.Ordinal)
+                .ShouldBeLessThan(source.IndexOf("MenuItemSection:Link", StringComparison.Ordinal));
+            source.IndexOf("MenuLabel:Advanced", StringComparison.Ordinal)
+                .ShouldBeLessThan(source.IndexOf("MenuName", StringComparison.Ordinal));
+            source.IndexOf("MenuName", StringComparison.Ordinal)
+                .ShouldBeLessThan(source.IndexOf("Slug", StringComparison.Ordinal));
+        }
+
+        if (relativeFile.EndsWith("MenuCreateModal.razor", StringComparison.Ordinal))
+        {
+            source.ShouldContain("SbSimpleSelect");
+            source.IndexOf("MenuLabel:Advanced", StringComparison.Ordinal)
+                .ShouldBeLessThan(source.IndexOf("ContextType", StringComparison.Ordinal));
+            source.ShouldNotContain("ContextTypeExample");
+        }
+
+        if (relativeFile.Contains("MenuEditModal.razor", StringComparison.Ordinal) || relativeFile.EndsWith("MenuItemEditor.razor", StringComparison.Ordinal))
+        {
+            source.ShouldContain("MenuLabel:Copy");
+            source.ShouldContain("ReadOnly=\"true\"");
+        }
         source.ShouldNotContain("BusinessLocalizationModeSwitch");
         source.ShouldNotContain("BusinessTextEditor");
         source.ShouldNotContain("LocalizationKey=\"_localizationKey\"");
@@ -213,7 +238,36 @@ public class MenuDisplayNameLocalizationTests
             "fa",
             256);
         rejected.Succeeded.ShouldBeFalse();
-        rejected.ErrorMessage.ShouldBe(MenuBusinessTexts.LooksLikeKeyMessage);
+        rejected.ErrorCode.ShouldBe(MenuBusinessTexts.ErrorLooksLikeKey);
+    }
+
+    [Fact]
+    public void Clearing_a_seeded_language_writes_nothing_and_keeps_the_base_text()
+    {
+        var plan = MenuDisplayNamePlanner.PlanWrite(
+            new Dictionary<string, string>
+            {
+                ["fa"] = "خانه",
+                ["en"] = "Home"
+            },
+            "fa",
+            256);
+
+        MenuDisplayNamePlanner.ReleaseBaseCopies(plan, new Dictionary<string, string> { ["en"] = "Home" });
+
+        plan.Succeeded.ShouldBeTrue();
+        plan.Upserts["fa"].ShouldBe("خانه");
+        plan.Upserts.ContainsKey("en").ShouldBeFalse();
+        plan.Deletes.ShouldContain("en");
+
+        const string key = "SeededMenu:public-default:Item:home:DisplayName";
+        var shown = MenuDisplayNamePlanner.ResolvePublicLabel(
+            key,
+            "خانه",
+            "en",
+            "fa",
+            culture => culture == "en" ? "Home" : culture == "fa" ? "خانه" : null);
+        shown.ShouldBe("Home");
     }
 
     [Fact]
@@ -303,6 +357,75 @@ public class MenuDisplayNameLocalizationTests
         fa.ShouldBe("خانه");
         cached.ShouldBe("SeededMenu:public-default:Item:home:DisplayName");
         MenuTreeCacheKeys.CreatePublicTreeCacheKey("Public", null, "Default").Split(':').ShouldNotContain("fa");
+    }
+
+    [Fact]
+    public void Exact_lookup_keeps_a_cleared_seeded_language_instead_of_the_default_text()
+    {
+        const string key = "SeededMenu:public-default:Item:home:DisplayName";
+        var options = new AbpLocalizationOptions();
+        var shared = options.Resources.Add<MenuBusinessTextResource>("fa");
+        shared.Contributors.Add(new CultureMapContributor(new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+        {
+            ["fa"] = "خانه"
+        }));
+
+        var seeded = options.Resources.Add<SeededMenuLookupResource>("fa");
+        seeded.Contributors.Add(new CultureMapContributor(new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+        {
+            ["fa"] = "خانه",
+            ["en"] = "Home"
+        }));
+
+        var resources = new[] { "SufiMenus", "SeededMenus" };
+        MenuDisplayNamePlanner.LookupExact(options, resources, key, "en").ShouldBe("Home");
+        MenuDisplayNamePlanner.LookupExact(options, resources, key, "fa").ShouldBe("خانه");
+
+        var label = MenuDisplayNamePlanner.ResolvePublicLabel(
+            key,
+            "خانه",
+            "en",
+            "fa",
+            culture => MenuDisplayNamePlanner.LookupExact(options, resources, key, culture));
+        label.ShouldBe("Home");
+    }
+
+    [LocalizationResourceName("SeededMenus")]
+    private sealed class SeededMenuLookupResource
+    {
+    }
+
+    private sealed class CultureMapContributor : ILocalizationResourceContributor
+    {
+        private readonly Dictionary<string, string> _values;
+
+        public CultureMapContributor(Dictionary<string, string> values)
+        {
+            _values = values;
+        }
+
+        public bool IsDynamic => false;
+
+        public void Initialize(LocalizationResourceInitializationContext context)
+        {
+        }
+
+        public LocalizedString? GetOrNull(string cultureName, string name)
+        {
+            return _values.TryGetValue(cultureName, out var value)
+                ? new LocalizedString(name, value)
+                : null;
+        }
+
+        public void Fill(string cultureName, Dictionary<string, LocalizedString> dictionary)
+        {
+        }
+
+        public Task FillAsync(string cultureName, Dictionary<string, LocalizedString> dictionary) =>
+            Task.CompletedTask;
+
+        public Task<IEnumerable<string>> GetSupportedCulturesAsync() =>
+            Task.FromResult<IEnumerable<string>>(_values.Keys);
     }
 
     private static string FindPlatformFile(string relativePath)

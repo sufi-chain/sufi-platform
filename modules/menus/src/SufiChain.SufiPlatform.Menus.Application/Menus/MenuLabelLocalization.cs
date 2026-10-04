@@ -2,6 +2,7 @@ using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Options;
 using SufiChain.SufiPlatform.Data;
 using SufiChain.SufiPlatform.Localization;
+using SufiChain.SufiPlatform.Menus.Localization;
 using Volo.Abp;
 using Volo.Abp.DependencyInjection;
 using Volo.Abp.Localization;
@@ -16,7 +17,7 @@ namespace SufiChain.SufiPlatform.Menus.Menus;
 public class MenuLabelLocalization : ITransientDependency
 {
     private readonly ILocalizationTextSeeder _seeder;
-    private readonly IStringLocalizerFactory _stringLocalizerFactory;
+    private readonly IStringLocalizer<SufiMenusResource> _localizer;
     private readonly ISettingProvider _settingProvider;
     private readonly IOptions<SufiDataSeedOptions> _seedOptions;
     private readonly IOptions<AbpLocalizationOptions> _localizationOptions;
@@ -24,14 +25,14 @@ public class MenuLabelLocalization : ITransientDependency
 
     public MenuLabelLocalization(
         ILocalizationTextSeeder seeder,
-        IStringLocalizerFactory stringLocalizerFactory,
+        IStringLocalizer<SufiMenusResource> localizer,
         ISettingProvider settingProvider,
         IOptions<SufiDataSeedOptions> seedOptions,
         IOptions<AbpLocalizationOptions> localizationOptions,
         ICurrentTenant currentTenant)
     {
         _seeder = seeder;
-        _stringLocalizerFactory = stringLocalizerFactory;
+        _localizer = localizer;
         _settingProvider = settingProvider;
         _seedOptions = seedOptions;
         _localizationOptions = localizationOptions;
@@ -76,7 +77,7 @@ public class MenuLabelLocalization : ITransientDependency
             .ToList();
     }
 
-    public virtual async Task<Dictionary<string, string>> ReadAsync(
+    public virtual async Task<MenuLabelReadResult> ReadAsync(
         string? storedDisplayName,
         string? plainName,
         string? contextType)
@@ -84,17 +85,32 @@ public class MenuLabelLocalization : ITransientDependency
         var cultures = await GetCulturesAsync();
         var defaultCulture = await GetDefaultCultureAsync();
         var loaded = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        var bases = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         if (BusinessLocalizationHelper.IsBusinessLocalizationKey(storedDisplayName)
             && !BusinessTextEditorStorage.IsPlaceholder(storedDisplayName))
         {
             var resources = ResourcesFor(storedDisplayName, contextType);
+            var sharedOnly = new[] { MenuLocalizationRegistry.SharedResourceName };
+            var seeded = resources
+                .Where(name => !string.Equals(name, MenuLocalizationRegistry.SharedResourceName, StringComparison.OrdinalIgnoreCase))
+                .ToList();
             foreach (var culture in cultures)
             {
-                var value = await ReadExactAsync(resources, storedDisplayName!, culture.CultureName);
-                if (!string.IsNullOrWhiteSpace(value))
+                var own = await ReadExactAsync(sharedOnly, storedDisplayName!, culture.CultureName);
+                if (MenuDisplayNamePlanner.IsDisplayableText(own, storedDisplayName))
                 {
-                    loaded[culture.CultureName] = value;
+                    loaded[culture.CultureName] = own!.Trim();
+                    continue;
                 }
+
+                var baseValue = await ReadExactAsync(seeded, storedDisplayName!, culture.CultureName);
+                if (!MenuDisplayNamePlanner.IsDisplayableText(baseValue, storedDisplayName))
+                {
+                    continue;
+                }
+
+                loaded[culture.CultureName] = baseValue!.Trim();
+                bases[culture.CultureName] = baseValue.Trim();
             }
         }
 
@@ -104,14 +120,19 @@ public class MenuLabelLocalization : ITransientDependency
             cultures.Select(x => x.CultureName),
             defaultCulture,
             culture => loaded.TryGetValue(culture, out var value) ? value : null);
-        return state.Values;
+        return new MenuLabelReadResult
+        {
+            Values = state.Values,
+            BaseValues = bases
+        };
     }
 
     public virtual async Task StoreAsync(
         string? existingStored,
         string generatedKey,
         IReadOnlyDictionary<string, string> displayNames,
-        Action<string> setDisplayName)
+        Action<string> setDisplayName,
+        string? contextType = null)
     {
         var key = MenuDisplayNamePlanner.ResolveStoredKey(existingStored, generatedKey);
         var plan = MenuDisplayNamePlanner.PlanWrite(
@@ -120,11 +141,16 @@ public class MenuLabelLocalization : ITransientDependency
             MenusConsts.MaxDisplayNameLength);
         if (!plan.Succeeded)
         {
-            var code = string.Equals(plan.ErrorMessage, MenuBusinessTexts.LooksLikeKeyMessage, StringComparison.Ordinal)
-                ? MenusErrorCodes.DisplayNameLooksLikeKey
-                : MenusErrorCodes.DisplayNameRequired;
-            throw new BusinessException(code, plan.ErrorMessage);
+            var code = plan.ErrorCode switch
+            {
+                MenuBusinessTexts.ErrorLooksLikeKey => MenusErrorCodes.DisplayNameLooksLikeKey,
+                MenuBusinessTexts.ErrorTooLong => MenusErrorCodes.DisplayNameTooLong,
+                _ => MenusErrorCodes.DisplayNameRequired
+            };
+            throw new BusinessException(code, await LocalizePlanErrorAsync(plan));
         }
+
+        MenuDisplayNamePlanner.ReleaseBaseCopies(plan, await ReadBaseValuesAsync(key, contextType));
 
         setDisplayName(key);
         var values = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
@@ -158,11 +184,62 @@ public class MenuLabelLocalization : ITransientDependency
             plainName,
             requestedCulture,
             defaultCulture,
-            culture => MenuDisplayNamePlanner.LookupCulture(
-                _stringLocalizerFactory,
+            culture => MenuDisplayNamePlanner.LookupExact(
+                _localizationOptions.Value,
                 resources,
                 storedDisplayName,
                 culture));
+    }
+
+    private async Task<string> LocalizePlanErrorAsync(MenuDisplayNameWritePlan plan)
+    {
+        if (plan.ErrorCode == MenuBusinessTexts.ErrorLooksLikeKey)
+        {
+            return _localizer["Sufi.Menus:DisplayNameLooksLikeKey"].Value;
+        }
+
+        if (plan.ErrorCode == MenuBusinessTexts.ErrorTooLong)
+        {
+            return _localizer["Sufi.Menus:DisplayNameTooLong", MenusConsts.MaxDisplayNameLength].Value;
+        }
+
+        var cultures = await GetCulturesAsync();
+        var language = cultures.FirstOrDefault(x => x.IsDefault)?.DisplayName;
+        if (string.IsNullOrWhiteSpace(language))
+        {
+            language = await GetDefaultCultureAsync();
+        }
+
+        return _localizer["Sufi.Menus:DisplayNameRequired", language].Value;
+    }
+
+    private async Task<Dictionary<string, string>> ReadBaseValuesAsync(string key, string? contextType)
+    {
+        var bases = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        if (!BusinessLocalizationHelper.IsBusinessLocalizationKey(key)
+            || BusinessTextEditorStorage.IsPlaceholder(key))
+        {
+            return bases;
+        }
+
+        var seeded = ResourcesFor(key, contextType)
+            .Where(name => !string.Equals(name, MenuLocalizationRegistry.SharedResourceName, StringComparison.OrdinalIgnoreCase))
+            .ToList();
+        if (seeded.Count == 0)
+        {
+            return bases;
+        }
+
+        foreach (var culture in await GetCulturesAsync())
+        {
+            var value = await ReadExactAsync(seeded, key, culture.CultureName);
+            if (MenuDisplayNamePlanner.IsDisplayableText(value, key))
+            {
+                bases[culture.CultureName] = value!.Trim();
+            }
+        }
+
+        return bases;
     }
 
     private async Task<string?> ReadExactAsync(IReadOnlyList<string> resources, string key, string culture)
@@ -244,4 +321,11 @@ public class MenuLabelLocalization : ITransientDependency
         || culture.StartsWith("ar", StringComparison.OrdinalIgnoreCase)
         || culture.StartsWith("he", StringComparison.OrdinalIgnoreCase)
         || culture.StartsWith("ur", StringComparison.OrdinalIgnoreCase);
+}
+
+public sealed class MenuLabelReadResult
+{
+    public Dictionary<string, string> Values { get; set; } = new(StringComparer.OrdinalIgnoreCase);
+
+    public Dictionary<string, string> BaseValues { get; set; } = new(StringComparer.OrdinalIgnoreCase);
 }

@@ -25,6 +25,14 @@ public partial class MenuEditModal : MenusComponentBase
     private UpdateMenuDto _model = new();
     private Guid _menuId;
     private Dictionary<string, string> _displayNames = new(StringComparer.OrdinalIgnoreCase);
+    private Dictionary<string, string> _displayNameBases = new(StringComparer.OrdinalIgnoreCase);
+    private static readonly Dictionary<string, object> KeyFieldAttributes = new()
+    {
+        ["dir"] = "ltr",
+        ["lang"] = "en"
+    };
+
+    private string LabelKeyText => _labelKey ?? string.Empty;
     private List<MultilingualCulture> _labelCultures = new();
     private MultilingualTextField? _labels;
     private string? _labelKey;
@@ -74,9 +82,18 @@ public partial class MenuEditModal : MenusComponentBase
             ? menu.DisplayName.Trim()
             : null;
         _displayNames = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        _displayNameBases = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         foreach (var culture in _labelCultures)
         {
             _displayNames[culture.CultureName] = string.Empty;
+        }
+
+        if (menu.DisplayNameBases != null)
+        {
+            foreach (var pair in menu.DisplayNameBases)
+            {
+                _displayNameBases[pair.Key] = pair.Value ?? string.Empty;
+            }
         }
 
         if (_displayNames.Count == 0)
@@ -94,6 +111,8 @@ public partial class MenuEditModal : MenusComponentBase
             _displayNames[pair.Key] = pair.Value ?? string.Empty;
         }
     }
+
+    private Task CopyLabelKeyAsync() => CopyTextAsync(_labelKey);
 
     private Task Hide() => SetOpenAsync(false);
 

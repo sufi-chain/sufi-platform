@@ -15,6 +15,7 @@
                                            HelpText="@L["MenuLabel:Help"]"
                                            Values="_displayNames"
                                            ValuesChanged="OnDisplayNamesChanged"
+                                           BaseValues="_displayNameBases"
                                            Cultures="_labelCultures"
                                            CulturesFailed="_culturesFailed"
                                            Required="true"
@@ -24,19 +25,24 @@
                                            ShowBrokenBanner="_labelBroken" />
                     <details class="menu-label-advanced">
                         <summary>@L["MenuLabel:Advanced"]</summary>
-                        <div class="menu-label-advanced__body">
+                        <SbStack Gap="3" Class="menu-label-advanced__body">
                             @if (!string.IsNullOrWhiteSpace(_labelKey))
                             {
-                                <label>
-                                    @L["MenuLabel:Key"]
-                                    <input readonly dir="ltr" lang="en" value="@_labelKey" />
-                                </label>
+                                <div class="menu-label-key">
+                                    <SbTextField TValue="string"
+                                                 Value="@LabelKeyText"
+                                                 ValueChanged="@(_ => Task.CompletedTask)"
+                                                 ValueExpression="@(() => LabelKeyText)"
+                                                 Label="@L["MenuLabel:Key"]"
+                                                 ReadOnly="true"
+                                                 AdditionalAttributes="@KeyFieldAttributes" />
+                                    <SbButton Type="button"
+                                              Variant="SbButtonVariant.Outline"
+                                              OnClick="CopyLabelKeyAsync">@L["MenuLabel:Copy"]</SbButton>
+                                </div>
                             }
-                            <label>
-                                <input type="checkbox" @bind="_sameForAll" />
-                                @L["MenuLabel:SameForAll"]
-                            </label>
-                        </div>
+                            <SbSwitch @bind-Value="_sameForAll" Label="@L["MenuLabel:SameForAll"]" />
+                        </SbStack>
                     </details>
 
                     <SbTextArea @bind-Value="_model.Description"

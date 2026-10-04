@@ -84,7 +84,8 @@ public class MenuAppService : SufiApplicationService, IMenuAppService
                 menu.DisplayName,
                 MenuDisplayNamePlanner.MenuKey(menu.Id),
                 input.DisplayNames,
-                menu.SetDisplayName);
+                menu.SetDisplayName,
+                input.ContextType);
         }
 
         await _menuRepository.InsertAsync(menu, autoSave: true);
@@ -101,7 +102,8 @@ public class MenuAppService : SufiApplicationService, IMenuAppService
                 menu.DisplayName,
                 MenuDisplayNamePlanner.MenuKey(menu.Id),
                 input.DisplayNames,
-                menu.SetDisplayName);
+                menu.SetDisplayName,
+                menu.ContextType);
         }
         else
         {
@@ -125,7 +127,9 @@ public class MenuAppService : SufiApplicationService, IMenuAppService
     protected virtual async Task<MenuDto> ToLabeledDtoAsync(Menu menu)
     {
         var dto = menu.ToDto();
-        dto.DisplayNames = await _labels.ReadAsync(menu.DisplayName, menu.Name, menu.ContextType);
+        var labels = await _labels.ReadAsync(menu.DisplayName, menu.Name, menu.ContextType);
+        dto.DisplayNames = labels.Values;
+        dto.DisplayNameBases = labels.BaseValues;
         return dto;
     }
 

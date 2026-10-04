@@ -13,14 +13,6 @@
                                  Label="@L["MenuName"]"
                                  Required="true" />
 
-                    <SbTextField TValue="string"
-                                 Value="_model.ContextType"
-                                 ValueChanged="OnContextTypeChangedAsync"
-                                 ValueExpression="@(() => _model.ContextType)"
-                                 Label="@L["ContextType"]"
-                                 Required="true"
-                                 Placeholder="@L["ContextTypeExample"]" />
-
                     @if (!string.IsNullOrWhiteSpace(_saveError))
                     {
                         <SbText Color="SbColor.Danger">@_saveError</SbText>
@@ -38,10 +30,17 @@
                                            SameForAll="_sameForAll" />
                     <details class="menu-label-advanced">
                         <summary>@L["MenuLabel:Advanced"]</summary>
-                        <label>
-                            <input type="checkbox" @bind="_sameForAll" />
-                            @L["MenuLabel:SameForAll"]
-                        </label>
+                        <SbStack Gap="3">
+                            <SbSwitch @bind-Value="_sameForAll" Label="@L["MenuLabel:SameForAll"]" />
+                            <SbSimpleSelect TValue="string"
+                                            @bind-Value="_model.ContextType"
+                                            Label="@L["ContextType"]">
+                                @foreach (var contextType in _contextTypes)
+                                {
+                                    <SbSelectOption TValue="string" Value="@contextType">@ResolveContextType(contextType)</SbSelectOption>
+                                }
+                            </SbSimpleSelect>
+                        </SbStack>
                     </details>
 
                     <SbTextField @bind-Value="_contextIdText"

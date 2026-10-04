@@ -12,63 +12,61 @@
     }
     @if (ShowBrokenBanner)
     {
-        <div class="mltf__banner" role="status">@MenuBusinessTexts.BrokenPlaceholderBanner</div>
+        <div class="mltf__banner" role="status">@T("MultilingualTextField:Broken")</div>
     }
     @if (CulturesFailed || Cultures == null || Cultures.Count == 0)
     {
-        <div class="mltf__note">@MenuBusinessTexts.CulturesFailedMessage</div>
+        <div class="mltf__note">@T("MultilingualTextField:CulturesFailed")</div>
     }
 
     @foreach (var culture in VisibleRows())
     {
         var cultureName = culture.CultureName;
         var row = culture;
-        var filled = !MenuDisplayNamePlanner.IsBlankLabel(ValueOf(cultureName));
+        var state = StateFor(row);
+        var filled = !MenuDisplayNamePlanner.IsBlankLabel(state.Text);
+        var invalid = _errors.ContainsKey(cultureName);
+        var rowRequired = row.IsDefault && Required;
         <div class="mltf__row">
             <label class="mltf__row-label" for="@RowId(row)">
                 <span>@row.DisplayName</span>
                 @if (row.IsDefault)
                 {
-                    <span> (اصلی)</span>
+                    <span> @T("MultilingualTextField:Primary")</span>
                     @if (Required)
                     {
                         <span class="mltf__required" aria-hidden="true">*</span>
                     }
                 }
             </label>
-            @if (row.IsDefault)
-            {
-                <input id="@RowId(row)"
-                       class="mltf__input"
-                       type="@(Multiline ? "text" : "text")"
-                       dir="@(row.IsRtl ? "rtl" : "ltr")"
-                       lang="@row.CultureName"
-                       maxlength="@MaxLength"
-                       disabled="@Disabled"
-                       aria-required="@(Required.ToString().ToLowerInvariant())"
-                       placeholder="@PlaceholderFor(row)"
-                       value="@ValueOf(cultureName)"
-                       @ref="_defaultField"
-                       @onchange="args => OnValueChangedAsync(row, args)" />
-            }
-            else
-            {
-                <input id="@RowId(row)"
-                       class="mltf__input"
-                       type="text"
-                       dir="@(row.IsRtl ? "rtl" : "ltr")"
-                       lang="@row.CultureName"
-                       maxlength="@MaxLength"
-                       disabled="@Disabled"
-                       aria-required="false"
-                       placeholder="@PlaceholderFor(row)"
-                       value="@ValueOf(cultureName)"
-                       @onchange="args => OnValueChangedAsync(row, args)" />
-            }
-            <span class="mltf__status">@(filled ? "✓" : "ترجمه نشده")</span>
+            <SbTextField TValue="string"
+                         Id="@RowId(row)"
+                         Value="@state.Text"
+                         ValueChanged="@(value => OnValueChangedAsync(row, state, value))"
+                         ValueExpression="@(() => state.Text)"
+                         Placeholder="@PlaceholderFor(row)"
+                         Disabled="@Disabled"
+                         Required="@rowRequired"
+                         AriaDescribedBy="@(invalid ? ErrorId(row) : null)"
+                         AdditionalAttributes="@RowAttributes(row)" />
+            <span class="mltf__status">
+                @if (IsBase(row))
+                {
+                    <span>@T("MultilingualTextField:BaseText")</span>
+                }
+                else if (filled)
+                {
+                    <span aria-hidden="true">✓</span>
+                    <span class="mltf__sr">@T("MultilingualTextField:Translated")</span>
+                }
+                else
+                {
+                    <span>@T("MultilingualTextField:Untranslated")</span>
+                }
+            </span>
             @if (_errors.TryGetValue(cultureName, out var error))
             {
-                <div class="mltf__error" id="@($"{RowId(row)}-error")">@error</div>
+                <div class="mltf__error" id="@ErrorId(row)">@error</div>
             }
             else if (_warnings.TryGetValue(cultureName, out var warning) && !string.IsNullOrWhiteSpace(warning))
             {
@@ -85,9 +83,19 @@
     .mltf__banner, .mltf__error { color: var(--sb-color-danger, #b91c1c); }
     .mltf__warning { color: var(--sb-color-warning, #a16207); font-size: 0.875rem; }
     .mltf__row { display: grid; grid-template-columns: minmax(7rem, 10rem) minmax(0, 1fr); gap: 0.25rem 0.75rem; align-items: center; }
-    .mltf__input { width: 100%; min-height: 2.5rem; line-height: 1.6; }
     .mltf__status, .mltf__error, .mltf__warning { grid-column: 2; }
     .mltf__required { margin-inline-start: 0.15rem; }
+    .mltf__sr {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        white-space: nowrap;
+        border: 0;
+    }
     @@media (max-width: 720px) {
         .mltf__row { grid-template-columns: 1fr; }
         .mltf__status, .mltf__error, .mltf__warning { grid-column: 1; }

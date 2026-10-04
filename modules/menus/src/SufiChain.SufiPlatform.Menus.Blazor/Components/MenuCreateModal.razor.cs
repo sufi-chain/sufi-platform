@@ -29,6 +29,7 @@ public partial class MenuCreateModal : MenusComponentBase
     private bool _culturesFailed;
     private bool _culturesRequested;
     private string? _saveError;
+    private List<string> _contextTypes = ["Public"];
 
     protected override async Task OnParametersSetAsync()
     {
@@ -44,7 +45,8 @@ public partial class MenuCreateModal : MenusComponentBase
         }
 
         _culturesRequested = true;
-        _model = new CreateMenuDto();
+        _contextTypes = ContextTypeOptions();
+        _model = new CreateMenuDto { ContextType = "Public" };
         _contextIdText = string.Empty;
         _sameForAll = false;
         _saveError = null;
@@ -96,10 +98,18 @@ public partial class MenuCreateModal : MenusComponentBase
         return Task.CompletedTask;
     }
 
-    private Task OnContextTypeChangedAsync(string value)
+    private static List<string> ContextTypeOptions()
     {
-        _model.ContextType = value;
-        return Task.CompletedTask;
+        var types = new List<string> { "Public", "SufiCMS", "SufiHelpDesk.KnowledgeBase.Project" };
+        foreach (var registered in MenuLocalizationRegistry.GetContextTypes())
+        {
+            if (!types.Any(type => string.Equals(type, registered, StringComparison.OrdinalIgnoreCase)))
+            {
+                types.Add(registered);
+            }
+        }
+
+        return types;
     }
 
     private Task OnDisplayNamesChanged(Dictionary<string, string> values)
