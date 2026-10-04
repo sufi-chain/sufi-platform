@@ -153,6 +153,15 @@ public class ChatAssistantAvailabilityCache_Tests
             null)));
         await cache.GetOrAddAsync(null, Factory);
         calls.ShouldBe(2);
+
+        await invalidator.HandleEventAsync(Changed(new Setting(
+            Guid.NewGuid(),
+            ChatSettingNames.Ai.ResponseWaitSeconds,
+            "45",
+            GlobalSettingValueProvider.ProviderName,
+            null)));
+        await cache.GetOrAddAsync(null, Factory);
+        calls.ShouldBe(3);
     }
 
     [Fact]
