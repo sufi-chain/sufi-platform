@@ -3,9 +3,13 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Logging;
 using SufiChain.SufiPlatform.SufiCom.Channels;
 using SufiChain.SufiPlatform.SufiCom.Channels.Telegram;
+using SufiChain.SufiPlatform.SufiCom.Chat.Application.Messages;
 using SufiChain.SufiPlatform.SufiCom.Chat.EntityFrameworkCore;
+using SufiChain.SufiPlatform.SufiCom.Chat.ETOs;
 using SufiChain.SufiPlatform.Settings;
 using SufiChain.SufiPlatform.Settings.EntityFrameworkCore;
 using SufiChain.SufiPlatform.Features;
@@ -62,6 +66,10 @@ public class SufiComChatApplicationTestModule : AbpModule
         });
 
         ChatTestServiceConfiguration.ConfigureTestServices(context);
+
+        // One open SQLite connection cannot serve the assistant turn queue, which
+        // continues on a background thread after SendAsync returns.
+        context.Services.Replace(ServiceDescriptor.Singleton<ChatAssistantTurnQueue, IdleChatAssistantTurnQueue>());
     }
 
     public override void OnApplicationShutdown(ApplicationShutdownContext context)
@@ -89,5 +97,21 @@ public class SufiComChatApplicationTestModule : AbpModule
         settingsContext.GetService<IRelationalDatabaseCreator>().CreateTables();
 
         return connection;
+    }
+}
+
+/// <summary>
+/// Drops assistant turns in the SQLite host so they do not lock the shared connection.
+/// Queue behavior is covered by <c>ChatAssistantTurnQueueTests</c>, which builds its own queue.
+/// </summary>
+internal sealed class IdleChatAssistantTurnQueue : ChatAssistantTurnQueue
+{
+    public IdleChatAssistantTurnQueue(IServiceScopeFactory scopeFactory, ILogger<ChatAssistantTurnQueue> logger)
+        : base(scopeFactory, logger)
+    {
+    }
+
+    public override void Enqueue(ChatMessageSentEto eventData)
+    {
     }
 }
