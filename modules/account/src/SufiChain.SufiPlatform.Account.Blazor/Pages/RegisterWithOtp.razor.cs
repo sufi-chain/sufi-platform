@@ -235,7 +235,15 @@ public partial class RegisterWithOtp
             if (!SelectedChannel.IsPhoneChannel() &&
                 await IdentityPhoneConfirmationRules.IsRequiredForRegistrationAsync(SettingProvider))
             {
-                Navigation.NavigateTo($"/account/confirm-phone?userId={registered.Id}", forceLoad: true);
+                if (string.IsNullOrWhiteSpace(registered.PhoneConfirmationToken))
+                {
+                    ErrorMessage = AccountL["ConfirmPhoneSessionInvalid"];
+                    return;
+                }
+
+                Navigation.NavigateTo(
+                    "/account/confirm-phone?token=" + Uri.EscapeDataString(registered.PhoneConfirmationToken),
+                    forceLoad: true);
                 return;
             }
 

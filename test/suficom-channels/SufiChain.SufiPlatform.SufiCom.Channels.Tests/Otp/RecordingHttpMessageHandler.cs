@@ -23,10 +23,24 @@ internal sealed class RecordingHttpMessageHandler : HttpMessageHandler
 
     public List<(HttpRequestMessage Request, string Body)> Requests { get; } = new();
 
+    public Exception? Fault { get; set; }
+
+    public bool WaitUntilCancelled { get; set; }
+
     protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
     {
         var body = request.Content == null ? string.Empty : await request.Content.ReadAsStringAsync(cancellationToken);
         Requests.Add((request, body));
+
+        if (WaitUntilCancelled)
+        {
+            await Task.Delay(Timeout.InfiniteTimeSpan, cancellationToken);
+        }
+
+        if (Fault != null)
+        {
+            throw Fault;
+        }
 
         return new HttpResponseMessage(_statusCode)
         {

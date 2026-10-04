@@ -68,7 +68,7 @@ public class HooshvareRagSearchPlannerTests
 
     [Fact]
 
-    public async Task Should_Skip_Search_When_Planner_Json_Is_Unparseable()
+    public async Task Should_Flag_Invalid_Plan_When_Planner_Json_Is_Unparseable()
 
     {
 
@@ -102,7 +102,59 @@ public class HooshvareRagSearchPlannerTests
 
         decision.SearchKb.ShouldBeFalse();
 
+        decision.InvalidPlan.ShouldBeTrue();
+
         decision.Memory.ShouldBe("Keep this");
+
+    }
+
+
+
+    [Theory]
+
+    [InlineData("""{"search_kb":"true","search_query":"reset password","memory":"Password reset."}""")]
+
+    [InlineData("""Here is the plan: {"SearchKb": true, "query": "reset password", "memory": "Password reset.",}""")]
+
+    [InlineData("```json\n{\"searchKb\":1,\"query\":\"reset password\",\"memory\":\"Password reset.\"}\n```")]
+
+    public async Task Should_Parse_Tolerant_Planner_Json(string content)
+
+    {
+
+        var chat = Substitute.For<ISufiAIChatService>();
+
+        chat.IsAvailableAsync(Arg.Any<CancellationToken>()).Returns(true);
+
+        chat.CompleteAsync(Arg.Any<SufiAIChatRequest>(), Arg.Any<CancellationToken>())
+
+            .Returns(new SufiAIChatResponse { Content = content });
+
+        var planner = new HooshvareRagSearchPlanner(chat, NullLogger<HooshvareRagSearchPlanner>.Instance);
+
+
+
+        var decision = await planner.DecideAsync(new HooshvareRagPlannerRequest
+
+        {
+
+            Input = new HooshvareRuntimeRequestDto { Message = "how do I reset a password?" },
+
+            ChatWorkspaceName = "default"
+
+        });
+
+
+
+        decision.Succeeded.ShouldBeTrue();
+
+        decision.InvalidPlan.ShouldBeFalse();
+
+        decision.SearchKb.ShouldBeTrue();
+
+        decision.Query.ShouldBe("reset password");
+
+        decision.Memory.ShouldBe("Password reset.");
 
     }
 

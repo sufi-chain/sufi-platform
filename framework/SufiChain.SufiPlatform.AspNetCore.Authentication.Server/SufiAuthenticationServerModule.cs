@@ -1,4 +1,5 @@
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using SufiChain.SufiPlatform.AspNetCore.Authentication;
 using SufiChain.SufiPlatform.Identity;
 using SufiChain.SufiPlatform.UI.Abstractions.Account;
@@ -31,6 +32,7 @@ public class SufiAuthenticationServerModule : AbpModule
         context.Services.AddMemoryCache();
         context.Services.AddSingleton<ILoginCompletionTokenStore, LoginCompletionTokenStore>();
         context.Services.AddSingleton<ITwoFactorPendingLoginStore, TwoFactorPendingLoginStore>();
+        context.Services.TryAddSingleton<IPhoneConfirmationSessionStore, NullPhoneConfirmationSessionStore>();
 
         // SufiAccountController is automatically discovered by MVC
         // Account/{action} routes are available before Blazor fallback

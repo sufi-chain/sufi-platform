@@ -11,6 +11,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\..\framework\SufiChain.SufiPlatform.AspNetCore\SufiChain.SufiPlatform.AspNetCore.csproj" />
     <ProjectReference Include="..\..\..\modules\file-manager\src\SufiChain.SufiPlatform.FileManager.Application\SufiChain.SufiPlatform.FileManager.Application.csproj" />
     <ProjectReference Include="..\..\..\modules\file-manager\src\SufiChain.SufiPlatform.FileManager.HttpApi\SufiChain.SufiPlatform.FileManager.HttpApi.csproj" />
     <ProjectReference Include="..\..\..\framework\SufiChain.SufiPlatform.BlobStoring.S3Provider\SufiChain.SufiPlatform.BlobStoring.S3Provider.csproj" />
