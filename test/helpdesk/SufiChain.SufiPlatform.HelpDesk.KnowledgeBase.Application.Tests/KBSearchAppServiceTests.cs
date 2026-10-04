@@ -6,6 +6,7 @@ using SufiChain.SufiPlatform.HelpDesk.KnowledgeBase.Articles;
 using SufiChain.SufiPlatform.HelpDesk.KnowledgeBase.Localization;
 using SufiChain.SufiPlatform.HelpDesk.KnowledgeBase.Repositories;
 using SufiChain.SufiPlatform.HelpDesk.KnowledgeBase.Search;
+using SufiChain.SufiPlatform.HelpDesk.Projects;
 using Volo.Abp.DependencyInjection;
 using Volo.Abp.MultiTenancy;
 using Volo.Abp.Timing;
@@ -133,18 +134,34 @@ public class KBSearchAppServiceTests
             repository.GetListWithTranslationsAsync(Arg.Any<CancellationToken>())
                 .Returns(articles.ToList());
 
+            var projects = Substitute.For<IHelpDeskProjectRepository>();
+            var projectList = articles
+                .Select(article => article.ProjectId)
+                .Distinct()
+                .Select(id =>
+                {
+                    var project = new HelpDeskProject(id, "Knowledge base", "kb-" + id.ToString("N")[..8]);
+                    project.SetIsKnowledgeBasePublic(true);
+                    return project;
+                })
+                .ToList();
+            projects.GetListAsync(Arg.Any<bool>(), Arg.Any<CancellationToken>()).Returns(projectList);
+
             return new Fixture
             {
                 Articles = repository,
-                Service = new TestableKBSearchAppService(repository, new EmptyDistributedCache())
+                Service = new TestableKBSearchAppService(repository, projects, new EmptyDistributedCache())
             };
         }
     }
 
     private sealed class TestableKBSearchAppService : KBSearchAppService
     {
-        public TestableKBSearchAppService(IKBArticleRepository articleRepository, IDistributedCache distributedCache)
-            : base(articleRepository, distributedCache)
+        public TestableKBSearchAppService(
+            IKBArticleRepository articleRepository,
+            IHelpDeskProjectRepository projectRepository,
+            IDistributedCache distributedCache)
+            : base(articleRepository, projectRepository, distributedCache)
         {
             var tenant = Substitute.For<ICurrentTenant>();
             tenant.Id.Returns((Guid?)null);
