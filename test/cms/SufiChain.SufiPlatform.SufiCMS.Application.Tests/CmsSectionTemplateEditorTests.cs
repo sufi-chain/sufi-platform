@@ -1,6 +1,7 @@
 using SufiChain.SufiPlatform.SufiCMS.Delivery;
 using SufiChain.SufiPlatform.SufiCMS.Pages;
 using Shouldly;
+using Volo.Abp;
 using Xunit;
 
 namespace SufiChain.SufiPlatform.SufiCMS;
@@ -49,6 +50,44 @@ public class CmsSectionTemplateEditorTests
         CmsDeliveryBuilder.SelectVariant(ownDraft, "fa", publishedOnly: false).ShouldNotBeNull();
         CmsEditorPageLookup.SelectEditorCulture(ownDraft.Variants.Select(v => v.Culture).ToList(), ownDraft.DefaultCulture, "en", null)
             .ShouldBe("fa");
+
+        CmsEditorPageLookup.CanCurrentTenantWrite(pageTenantId: null, currentTenantId: null).ShouldBeTrue();
+        CmsEditorPageLookup.CanCurrentTenantWrite(tenantId, tenantId).ShouldBeTrue();
+        CmsEditorPageLookup.CanCurrentTenantWrite(pageTenantId: null, tenantId).ShouldBeFalse();
+        CmsEditorPageLookup.CanCurrentTenantWrite(otherTenantId, tenantId).ShouldBeFalse();
+    }
+
+    [Fact]
+    public async Task Tenant_Read_Opens_A_Host_Template_And_Writes_Are_Refused()
+    {
+        var tenantId = Guid.Parse("22222222-2222-2222-2222-222222222222");
+        var otherTenantId = Guid.Parse("33333333-3333-3333-3333-333333333333");
+        var host = SectionTemplate("hero", tenantId: null);
+        var other = SectionTemplate("other", otherTenantId);
+
+        var writes = new TenantScopedPageAppService(tenantId, filtered: host, unfiltered: host);
+        await ShouldRefuse(writes.UpdateAsync(host.Id, new UpdatePageDto()));
+        await ShouldRefuse(writes.DeleteAsync(host.Id));
+        await ShouldRefuse(writes.PublishAsync(host.Id, new PublishPageDto()));
+        await ShouldRefuse(writes.AcquireLockAsync(host.Id));
+        writes.IgnoredTenantLookupCount.ShouldBe(0);
+
+        var reads = new TenantScopedPageAppService(tenantId, filtered: null, unfiltered: host);
+        var dto = await reads.GetAsync(host.Id);
+        dto.Id.ShouldBe(host.Id);
+        dto.TenantId.ShouldBeNull();
+        dto.IsSectionTemplate.ShouldBeTrue();
+        dto.Status.ShouldBe(PageStatus.Draft);
+        reads.IgnoredTenantLookupCount.ShouldBe(1);
+
+        var hidden = new TenantScopedPageAppService(tenantId, filtered: null, unfiltered: other);
+        await ShouldRefuse(hidden.GetAsync(other.Id));
+    }
+
+    private static async Task ShouldRefuse(Task operation)
+    {
+        var error = await Should.ThrowAsync<BusinessException>(operation);
+        error.Code.ShouldBe(CMSErrorCodes.PageNotFound);
     }
 
     private static Page SectionTemplate(string slug, Guid? tenantId)
@@ -85,5 +124,35 @@ public class CmsSectionTemplateEditorTests
         }
 
         throw new FileNotFoundException(relativePath);
+    }
+
+    private sealed class TenantScopedPageAppService : PageAppService
+    {
+        private readonly Guid? _tenantId;
+        private readonly Page? _filtered;
+        private readonly Page? _unfiltered;
+
+        public int IgnoredTenantLookupCount { get; private set; }
+
+        public TenantScopedPageAppService(Guid? tenantId, Page? filtered, Page? unfiltered)
+            : base(null!, null!, null!, null!, null!, null!, null!)
+        {
+            _tenantId = tenantId;
+            _filtered = filtered;
+            _unfiltered = unfiltered;
+        }
+
+        protected override Guid? CurrentTenantId => _tenantId;
+
+        protected override Task<Page?> FindPageAsync(Guid id)
+        {
+            return Task.FromResult(_filtered != null && _filtered.Id == id ? _filtered : null);
+        }
+
+        protected override Task<Page?> FindPageIgnoringTenantAsync(Guid id)
+        {
+            IgnoredTenantLookupCount++;
+            return Task.FromResult(_unfiltered != null && _unfiltered.Id == id ? _unfiltered : null);
+        }
     }
 }
