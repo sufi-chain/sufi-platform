@@ -25,7 +25,11 @@
                             <SbSelectOption TValue="MenuItemKind" Value="@MenuItemKind.Heading">@L["MenuItemKind:Heading"]</SbSelectOption>
                         </SbSimpleSelect>
 
-                        <SbTextField @bind-Value="_model.Url" Label="@L["Url"]" Type="url" />
+                        <SbTextField @bind-Value="_model.Url" Label="@L["Url"]" />
+
+                        <div class="menu-item-editor__wide">
+                            <SbTextArea @bind-Value="_cultureUrlsText" Label="@L["CultureUrls"]" Placeholder="@L["CultureUrlsPlaceholder"]" Rows="3" />
+                        </div>
 
                         <SbSimpleSelect TValue="MenuLinkTarget"
                                         @bind-Value="_model.LinkTarget"

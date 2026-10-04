@@ -39,6 +39,7 @@ public partial class MenuItemEditor : MenusComponentBase
     private CreateMenuItemDto _model = new();
     private string _displayOrderText = "0";
     private string _targetIdText = string.Empty;
+    private string _cultureUrlsText = string.Empty;
     private string _parentIdText = string.Empty;
     private BusinessTextEditorMode _displayNameMode = BusinessTextEditorMode.Literal;
     private string? _localizationResourceName;
@@ -118,6 +119,7 @@ public partial class MenuItemEditor : MenusComponentBase
             };
             _displayOrderText = "0";
             _targetIdText = string.Empty;
+            _cultureUrlsText = string.Empty;
             _parentIdText = parentId?.ToString() ?? string.Empty;
             _displayNameMode = string.Equals(_menuContextType, "Public", StringComparison.OrdinalIgnoreCase)
                 ? BusinessTextEditorMode.Localized
@@ -160,6 +162,7 @@ public partial class MenuItemEditor : MenusComponentBase
         };
         _displayOrderText = item.DisplayOrder.ToString();
         _targetIdText = item.TargetId?.ToString() ?? string.Empty;
+        _cultureUrlsText = MenuItemUrlRules.FormatCultureUrls(item.CultureUrls);
         _parentIdText = item.ParentId?.ToString() ?? string.Empty;
         _parentOptions = BuildOptions(item.Id);
         InitializeDisplayNameEditor(item);
@@ -261,6 +264,14 @@ public partial class MenuItemEditor : MenusComponentBase
             return;
         }
 
+        if (!MenuItemUrlRules.TryParseCultureUrls(_cultureUrlsText, out var cultureUrls))
+        {
+            await Message.ErrorAsync(L["Sufi.Menus:MenuItemInvalidUrl"]);
+            return;
+        }
+
+        _model.CultureUrls = cultureUrls;
+
         if (!int.TryParse(_displayOrderText, out var displayOrder))
         {
             await Message.ErrorAsync(L["DisplayOrderMustBeNumber"]);
@@ -322,6 +333,7 @@ public partial class MenuItemEditor : MenusComponentBase
         Kind = _model.Kind,
         DisplayType = _model.DisplayType,
         Url = _model.Url,
+        CultureUrls = _model.CultureUrls,
         LinkTarget = _model.LinkTarget,
         TargetType = _model.TargetType,
         TargetId = _model.TargetId,

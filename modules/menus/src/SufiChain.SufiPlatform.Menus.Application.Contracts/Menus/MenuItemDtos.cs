@@ -15,6 +15,7 @@ public class MenuItemDto : FullAuditedEntityDto<Guid>
     public MenuItemKind Kind { get; set; }
     public MenuItemDisplayType DisplayType { get; set; }
     public string? Url { get; set; }
+    public Dictionary<string, string>? CultureUrls { get; set; }
     public MenuLinkTarget LinkTarget { get; set; }
     public string? TargetType { get; set; }
     public Guid? TargetId { get; set; }
@@ -43,6 +44,7 @@ public class CreateMenuItemDto
     public MenuItemKind Kind { get; set; }
     public MenuItemDisplayType DisplayType { get; set; }
     public string? Url { get; set; }
+    public Dictionary<string, string>? CultureUrls { get; set; }
     public MenuLinkTarget LinkTarget { get; set; }
     public string? TargetType { get; set; }
     public Guid? TargetId { get; set; }
@@ -65,6 +67,7 @@ public class UpdateMenuItemDto
     public MenuItemKind Kind { get; set; }
     public MenuItemDisplayType DisplayType { get; set; }
     public string? Url { get; set; }
+    public Dictionary<string, string>? CultureUrls { get; set; }
     public MenuLinkTarget LinkTarget { get; set; }
     public string? TargetType { get; set; }
     public Guid? TargetId { get; set; }

@@ -72,8 +72,48 @@ public class MenuItem : FullAuditedAggregateRoot<Guid>, IMultiTenant
             throw new BusinessException(MenusErrorCodes.MenuItemInvalidUrl);
         }
 
-        Url = CheckLength(string.IsNullOrWhiteSpace(url) ? null : url.Trim(), MenusConsts.MaxUrlLength, nameof(url));
+        Url = NormalizeStoredUrl(url);
         LinkTarget = linkTarget;
+    }
+
+    /// <summary>
+    /// Optional per-culture URLs. Stored in the existing ExtraProperties bag under
+    /// <see cref="MenuItemUrlRules.CultureUrlsPropertyName"/>. An empty map clears them.
+    /// </summary>
+    public virtual void SetCultureUrls(IReadOnlyDictionary<string, string>? cultureUrls)
+    {
+        if (!MenuItemUrlRules.TryNormalizeCultureUrls(cultureUrls, out var normalized))
+        {
+            throw new BusinessException(MenusErrorCodes.MenuItemInvalidUrl);
+        }
+
+        var serialized = MenuItemUrlRules.SerializeCultureUrls(normalized);
+        if (serialized == null)
+        {
+            ExtraProperties.Remove(MenuItemUrlRules.CultureUrlsPropertyName);
+            return;
+        }
+
+        ExtraProperties[MenuItemUrlRules.CultureUrlsPropertyName] = serialized;
+    }
+
+    public virtual IReadOnlyDictionary<string, string> GetCultureUrls()
+    {
+        if (!ExtraProperties.TryGetValue(MenuItemUrlRules.CultureUrlsPropertyName, out var value) || value == null)
+        {
+            return new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        }
+
+        var text = value as string ?? value.ToString();
+        return MenuItemUrlRules.DeserializeCultureUrls(text);
+    }
+
+    public virtual string? ResolveUrl(string? culture) => MenuItemUrlRules.Resolve(Url, GetCultureUrls(), culture);
+
+    private string? NormalizeStoredUrl(string? url)
+    {
+        var normalized = MenuItemUrlRules.Normalize(url);
+        return CheckLength(normalized, MenusConsts.MaxUrlLength, nameof(url));
     }
     public virtual void SetTarget(string? targetType, Guid? targetId)
     {
