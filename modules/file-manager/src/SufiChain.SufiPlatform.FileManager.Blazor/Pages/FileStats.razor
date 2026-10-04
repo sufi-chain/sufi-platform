@@ -15,21 +15,19 @@
 <SbStack Direction="SbStackDirection.Column" Gap="4">
 
 	<!-- Statistics Dashboard -->
-	@if (!_statsReady)
-	{
-		<SbLoadingSkeleton Preset="SbLoadingSkeletonPreset.Kpi" Count="4" />
-	}
-	else if (_statsFailed)
-	{
-		<SbAlert Severity="SbAlertSeverity.Danger">
-			<SbStack Direction="SbStackDirection.Row" Gap="3" Align="SbAlign.Center" Wrap="true">
-				<span>@L["DataLoadFailedGeneric"]</span>
-				<SbButton Size="SbSize.Sm" Variant="SbButtonVariant.Outline" OnClick="@RefreshStats">@L["Retry"]</SbButton>
-			</SbStack>
-		</SbAlert>
-	}
-	else
-	{
+	<SbLoadingSkeleton Preset="SbLoadingSkeletonPreset.Kpi" Count="4" Busy="@(!_statsReady)">
+		<ChildContent>
+			@if (_statsFailed)
+			{
+				<SbAlert Severity="SbAlertSeverity.Danger">
+					<SbStack Direction="SbStackDirection.Row" Gap="3" Align="SbAlign.Center" Wrap="true">
+						<span>@L["DataLoadFailedGeneric"]</span>
+						<SbButton Size="SbSize.Sm" Variant="SbButtonVariant.Outline" OnClick="@RefreshStats">@L["Retry"]</SbButton>
+					</SbStack>
+				</SbAlert>
+			}
+			else if (_statsReady)
+			{
 		<SbStack Direction="SbStackDirection.Row" Gap="4" Wrap="true">
 			<SbStatCard Label="@L["TotalFiles"]" Value="@_statistics.TotalCount.ToString()" Class="flex-1">
 				<Icon><SbIcon Name="folder" Size="SbSize.Lg" Color="SbColor.Primary" /></Icon>
@@ -44,7 +42,9 @@
 				<Icon><SbIcon Name="folder" Size="SbSize.Lg" Color="SbColor.Warning" /></Icon>
 			</SbStatCard>
 		</SbStack>
-	}
+			}
+		</ChildContent>
+	</SbLoadingSkeleton>
 
 	<!-- File Browser -->
 	@* <FileBrowser @ref="_fileBrowserRef" /> *@

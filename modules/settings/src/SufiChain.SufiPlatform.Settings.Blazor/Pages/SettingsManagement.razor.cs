@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Components;
+using Microsoft.Extensions.Logging;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.Extensions.Options;
 using SufiChain.SufiPlatform.UI.Layout;
@@ -87,10 +88,11 @@ public partial class SettingsManagement : SettingsComponentBase
                     _selectedTabId = _groups.First().Id;
                 }
             }
-            catch
+            catch (Exception exception)
             {
                 _groupsLoadFailed = true;
                 _groups = new();
+                Logger.LogWarning(exception, "Settings groups could not be loaded.");
             }
             finally
             {

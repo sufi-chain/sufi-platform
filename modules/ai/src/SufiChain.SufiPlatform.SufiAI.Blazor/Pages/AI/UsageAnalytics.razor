@@ -33,11 +33,17 @@
 
 	@{
 		var analyticsBusy = _statistics != null && (IsOperationLoading(LoadingKeys.LoadStatistics) || IsOperationLoading(LoadingKeys.LoadUsageLogs));
+		var showAnalytics = (_selectedWorkspaceId.HasValue && _statistics != null)
+			|| !_workspacesResolved
+			|| (_selectedWorkspaceId.HasValue && !_statisticsFailed && _statistics == null);
 	}
-	<span class="sb-sr-only" role="status" aria-live="polite">@(analyticsBusy ? L["Loading"] : "")</span>
 
-	@if (_selectedWorkspaceId.HasValue && _statistics != null)
+	@if (showAnalytics)
 	{
+		<SbLoadingSkeleton Preset="SbLoadingSkeletonPreset.Kpi" Count="4" Busy="@(_statistics == null)">
+			<ChildContent>
+				@if (_statistics != null)
+				{
 		@if (analyticsBusy)
 		{
 			<SbText Variant="SbTextVariant.Caption" Color="SbColor.Muted" aria-hidden="true">@L["Loading"]</SbText>
@@ -47,15 +53,6 @@
 			<SbAlert Severity="SbAlertSeverity.Danger">
 				<SbStack Direction="SbStackDirection.Row" Gap="3" Align="SbAlign.Center" Wrap="true">
 					<span>@L["DataLoadFailedGeneric"]</span>
-					<SbButton Size="SbSize.Sm" Variant="SbButtonVariant.Outline" OnClick="@LoadDataAsync">@L["Retry"]</SbButton>
-				</SbStack>
-			</SbAlert>
-		}
-		@if (_logsFailed && VisibleUsageLogs.Count > 0)
-		{
-			<SbAlert Severity="SbAlertSeverity.Danger">
-				<SbStack Direction="SbStackDirection.Row" Gap="3" Align="SbAlign.Center" Wrap="true">
-					<span>@L["DataLoadFailed"]</span>
 					<SbButton Size="SbSize.Sm" Variant="SbButtonVariant.Outline" OnClick="@LoadDataAsync">@L["Retry"]</SbButton>
 				</SbStack>
 			</SbAlert>
@@ -390,14 +387,9 @@
 				</SbStack>
 			</ChildContent>
 		</SbCard>
-	}
-	else if (!_workspacesResolved || (_selectedWorkspaceId.HasValue && !_statisticsFailed && _statistics == null))
-	{
-		<SbCard>
-			<ChildContent>
-				<SbLoadingSkeleton Preset="SbLoadingSkeletonPreset.Kpi" Count="4" />
+				}
 			</ChildContent>
-		</SbCard>
+		</SbLoadingSkeleton>
 	}
 	else if (_workspacesFailed || _statisticsFailed)
 	{

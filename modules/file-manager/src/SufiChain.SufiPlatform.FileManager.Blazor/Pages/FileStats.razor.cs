@@ -89,13 +89,15 @@ public partial class FileStats : FileManagerComponentBase
             _recentLoaded = true;
             _recentFailed = false;
         }
-        catch (Exception)
+        catch (Exception exception)
         {
             _recentFailed = true;
             if (!_recentLoaded)
             {
                 _recentFiles = new();
             }
+
+            Logger.LogWarning(exception, "Recent files could not be loaded.");
         }
         finally
         {
@@ -118,13 +120,15 @@ public partial class FileStats : FileManagerComponentBase
             _structuresLoaded = true;
             _structuresFailed = false;
         }
-        catch (Exception)
+        catch (Exception exception)
         {
             _structuresFailed = true;
             if (!_structuresLoaded)
             {
                 _structures = new();
             }
+
+            Logger.LogWarning(exception, "File structures could not be loaded.");
         }
         finally
         {
@@ -152,9 +156,10 @@ public partial class FileStats : FileManagerComponentBase
             _statsLoaded = true;
             _statsFailed = false;
         }
-        catch (Exception)
+        catch (Exception exception)
         {
             _statsFailed = true;
+            Logger.LogWarning(exception, "File statistics could not be loaded.");
         }
         finally
         {

@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Components;
+using Microsoft.Extensions.Logging;
 using SufiChain.SufiPlatform.SufiAI.Blazor.Workspaces;
 using SufiChain.SufiPlatform.SufiAI.RAG;
 using SufiChain.SufiPlatform.SufiAI.Workspaces;
@@ -75,9 +76,10 @@ public partial class IndexingStatus : AIComponentBase
                 _workspacesFailed = false;
                 StateHasChanged();
             }
-            catch
+            catch (Exception exception)
             {
                 _workspacesFailed = true;
+                Logger.LogWarning(exception, "Indexing workspaces could not be loaded.");
             }
             finally
             {

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Microsoft.Extensions.Logging;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
@@ -71,9 +72,10 @@ public partial class UsageAnalytics : AIComponentBase
                     await LoadDataAsync();
                 }
             }
-            catch
+            catch (Exception exception)
             {
                 _workspacesFailed = true;
+                Logger.LogWarning(exception, "AI workspaces could not be loaded.");
             }
             finally
             {
@@ -86,16 +88,14 @@ public partial class UsageAnalytics : AIComponentBase
     {
         _selectedWorkspaceId = workspaceId;
         _routeFilter = AllRoutesFilter;
+        _statistics = null;
+        _statisticsFailed = false;
+        _logsFailed = false;
+        _usageLogs.Clear();
+        _guardrailStatus.Clear();
         if (_selectedWorkspaceId.HasValue)
         {
             await LoadDataAsync();
-        }
-        else
-        {
-            _statistics = null;
-            _usageLogs.Clear();
-            _guardrailStatus.Clear();
-            _routeFilter = AllRoutesFilter;
         }
     }
 
@@ -135,10 +135,11 @@ public partial class UsageAnalytics : AIComponentBase
             {
                 _statistics = await AIAppService.GetUsageStatisticsAsync(_selectedWorkspaceId.Value, startDate, endDate);
             }
-            catch
+            catch (Exception exception)
             {
                 _statisticsFailed = true;
                 LoadingStates.TryRemove(LoadingKeys.LoadUsageLogs, out _);
+                Logger.LogWarning(exception, "AI usage statistics could not be loaded.");
             }
         }, LoadingKeys.LoadStatistics);
 
@@ -156,9 +157,10 @@ public partial class UsageAnalytics : AIComponentBase
                 _usageLogs = logs.OrderByDescending(x => x.CreationTime).Take(100).ToList();
                 _logsFailed = false;
             }
-            catch
+            catch (Exception exception)
             {
                 _logsFailed = true;
+                Logger.LogWarning(exception, "AI usage logs could not be loaded.");
             }
         }, LoadingKeys.LoadUsageLogs);
 
@@ -166,9 +168,9 @@ public partial class UsageAnalytics : AIComponentBase
         {
             _guardrailStatus = await WorkspaceAppService.GetGuardrailStatusAsync(_selectedWorkspaceId.Value);
         }
-        catch
+        catch (Exception exception)
         {
-            // Keep the counters and logs that already loaded. Guardrails are secondary.
+            Logger.LogWarning(exception, "AI guardrail status could not be loaded.");
         }
     }
 
