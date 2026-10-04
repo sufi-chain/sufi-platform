@@ -38,6 +38,8 @@ public class AccountOtpAppService : SufiApplicationService, IAccountOtpAppServic
 
     protected ILoginCompletionTokenStore LoginCompletionTokenStore { get; }
 
+    protected IPhoneConfirmationSessionStore PhoneConfirmationSessions { get; }
+
     protected OtpResendCooldownGuard ResendCooldownGuard { get; }
 
     public AccountOtpAppService(
@@ -51,6 +53,7 @@ public class AccountOtpAppService : SufiApplicationService, IAccountOtpAppServic
         IOtpCodeStore otpCodeStore,
         ILocalEventBus localEventBus,
         ILoginCompletionTokenStore loginCompletionTokenStore,
+        IPhoneConfirmationSessionStore phoneConfirmationSessions,
         OtpResendCooldownGuard resendCooldownGuard)
     {
         UserManager = userManager;
@@ -63,6 +66,7 @@ public class AccountOtpAppService : SufiApplicationService, IAccountOtpAppServic
         OtpCodeStore = otpCodeStore;
         LocalEventBus = localEventBus;
         LoginCompletionTokenStore = loginCompletionTokenStore;
+        PhoneConfirmationSessions = phoneConfirmationSessions;
         ResendCooldownGuard = resendCooldownGuard;
     }
 
@@ -172,8 +176,20 @@ public class AccountOtpAppService : SufiApplicationService, IAccountOtpAppServic
     [AllowAnonymous]
     public virtual async Task<OtpSendResultDto> SendRegistrationOtpAsync(SendOtpInput input)
     {
-        await EnsureOtpRegistrationEnabledAsync();
         await ValidateCaptchaAsync(input, CaptchaPurpose.OtpSend);
+        return await SendRegistrationOtpCoreAsync(input);
+    }
+
+    /// <inheritdoc />
+    [RemoteService(false)]
+    public virtual Task<OtpSendResultDto> SendVerifiedRegistrationOtpAsync(SendOtpInput input)
+    {
+        return SendRegistrationOtpCoreAsync(input);
+    }
+
+    protected virtual async Task<OtpSendResultDto> SendRegistrationOtpCoreAsync(SendOtpInput input)
+    {
+        await EnsureOtpRegistrationEnabledAsync();
 
         var channel = await ChannelResolver.ResolveAsync(VerificationPurpose.OtpRegistration, input.Channel);
         var identifier = VerificationIdentifierHelper.NormalizeIdentifier(channel, input.Identifier);
@@ -234,7 +250,7 @@ public class AccountOtpAppService : SufiApplicationService, IAccountOtpAppServic
     }
 
     [AllowAnonymous]
-    public virtual async Task<IdentityUserDto> RegisterWithOtpAsync(RegisterWithOtpDto input)
+    public virtual async Task<AccountRegistrationResultDto> RegisterWithOtpAsync(RegisterWithOtpDto input)
     {
         await EnsureOtpRegistrationEnabledAsync();
 
@@ -295,7 +311,14 @@ public class AccountOtpAppService : SufiApplicationService, IAccountOtpAppServic
             ReturnUrlHash = input.ReturnUrlHash
         });
 
-        return UserMapper.Map(user);
+        var result = new AccountRegistrationResultDto();
+        UserMapper.Map(user, result);
+        if (!user.PhoneNumberConfirmed && PhoneConfirmationSessions.IsSupported)
+        {
+            result.PhoneConfirmationToken = await PhoneConfirmationSessions.CreateAsync(user.Id);
+        }
+
+        return result;
     }
 
     protected virtual async Task EnsureOtpLoginEnabledAsync()
