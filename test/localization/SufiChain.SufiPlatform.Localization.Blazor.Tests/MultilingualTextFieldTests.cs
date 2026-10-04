@@ -141,7 +141,8 @@ public class MultilingualTextFieldTests : BunitContext
         cut.FindAll("input").Count.ShouldBe(1);
         cut.Find("input").GetAttribute("lang").ShouldBe("fa");
         cut.Find("input").GetAttribute("dir").ShouldBe("rtl");
-        cut.Markup.ShouldContain("فهرست زبان‌ها بارگیری نشد؛ فعلاً فقط فارسی.");
+        cut.Markup.ShouldContain("فهرست زبان‌ها بارگیری نشد. فقط زبان پیش‌فرض نمایش داده می‌شود.");
+        cut.Markup.ShouldNotContain("فارسی.");
         cut.Markup.ShouldNotContain("انتخاب زبان");
     }
 
@@ -197,7 +198,7 @@ public class MultilingualTextFieldTests : BunitContext
             ["MultilingualTextField:Required"] = "عنوان {0} الزامی است.",
             ["MultilingualTextField:LooksLikeKey"] = "این مقدار شبیه شناسهٔ سیستمی است؛ متن قابل نمایش وارد کنید.",
             ["MultilingualTextField:Broken"] = "عنوان این آیتم درست ذخیره نشده بود؛ لطفاً دوباره وارد کنید.",
-            ["MultilingualTextField:CulturesFailed"] = "فهرست زبان‌ها بارگیری نشد؛ فعلاً فقط فارسی.",
+            ["MultilingualTextField:CulturesFailed"] = "فهرست زبان‌ها بارگیری نشد. فقط زبان پیش‌فرض نمایش داده می‌شود.",
             ["MultilingualTextField:EmptyFallback"] = "خالی بماند: «{0}» نمایش داده می‌شود",
             ["MultilingualTextField:ScriptWarning"] = "به نظر می‌رسد این متن به زبان دیگری است.",
             ["MultilingualTextField:BaseText"] = "بازگشت به متن پایه"
