@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Components;
+using Microsoft.Extensions.Logging;
 using SufiChain.SufiBlazor.Components;
 using SufiChain.SufiPlatform.FileManager.Blazor.Public.Services;
 using SufiChain.SufiPlatform.FileManager.Permissions;
@@ -27,6 +28,15 @@ public partial class FileStats : FileManagerComponentBase
    private List<FileStructureDto> _structures = new();
    private FileStatistics _statistics = new();
     private bool _canDelete;
+    private bool _statsReady;
+    private bool _statsFailed;
+    private bool _statsLoaded;
+    private bool _structuresReady;
+    private bool _structuresFailed;
+    private bool _structuresLoaded;
+    private bool _recentReady;
+    private bool _recentFailed;
+    private bool _recentLoaded;
 
     protected override void OnInitialized()
     {
@@ -63,6 +73,12 @@ public partial class FileStats : FileManagerComponentBase
 
     private async Task LoadRecentFiles()
     {
+        _recentFailed = false;
+        if (!_recentLoaded)
+        {
+            _recentReady = false;
+        }
+
         try
         {
             var result = await FileItemAppService.GetListAsync(new GetFileListInput
@@ -71,28 +87,64 @@ public partial class FileStats : FileManagerComponentBase
                 MaxResultCount = 10
             });
             _recentFiles = result.Items.ToList();
+            _recentLoaded = true;
+            _recentFailed = false;
         }
-        catch (Exception ex)
+        catch (Exception exception)
         {
-            await NotifyOperationFailedAsync(ex, "FailedToLoadFiles");
+            _recentFailed = true;
+            if (!_recentLoaded)
+            {
+                _recentFiles = new();
+            }
+
+            Logger.LogWarning(exception, "Recent files could not be loaded.");
+        }
+        finally
+        {
+            _recentReady = true;
         }
     }
 
     private async Task LoadStructures()
     {
+        _structuresFailed = false;
+        if (!_structuresLoaded)
+        {
+            _structuresReady = false;
+        }
+
         try
         {
             var result = await FileStructureAppService.GetListAsync(new PagedAndSortedResultRequestDto());
             _structures = result.Items.ToList();
+            _structuresLoaded = true;
+            _structuresFailed = false;
         }
-        catch (Exception ex)
+        catch (Exception exception)
         {
-            await NotifyOperationFailedAsync(ex, "FailedToLoadStructures");
+            _structuresFailed = true;
+            if (!_structuresLoaded)
+            {
+                _structures = new();
+            }
+
+            Logger.LogWarning(exception, "File structures could not be loaded.");
+        }
+        finally
+        {
+            _structuresReady = true;
         }
     }
 
     private async Task RefreshStats()
     {
+        _statsFailed = false;
+        if (!_statsLoaded)
+        {
+            _statsReady = false;
+        }
+
         try
         {
             var stats = await FileItemAppService.GetStatisticsAsync();
@@ -102,10 +154,17 @@ public partial class FileStats : FileManagerComponentBase
             _statistics.DocumentCount = (int)stats.DocumentCount;
             _statistics.AudioCount = (int)stats.AudioCount;
             _statistics.TotalSize = stats.TotalSize;
+            _statsLoaded = true;
+            _statsFailed = false;
         }
-        catch (Exception ex)
+        catch (Exception exception)
         {
-            await NotifyOperationFailedAsync(ex, "FailedToLoadStatistics");
+            _statsFailed = true;
+            Logger.LogWarning(exception, "File statistics could not be loaded.");
+        }
+        finally
+        {
+            _statsReady = true;
         }
     }
 
