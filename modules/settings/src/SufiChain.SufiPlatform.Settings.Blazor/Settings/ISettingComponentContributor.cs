@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -48,6 +49,15 @@ public class SettingComponentCreationContext
     /// </summary>
     public void Normalize()
     {
+        foreach (var duplicate in Groups.GroupBy(group => group.Order).Where(group => group.Count() > 1))
+        {
+            var ids = string.Join(", ", duplicate.Select(group => group.Id));
+            Trace.TraceWarning(
+                "Settings groups share Order {0}: {1}. Each group on a page needs a unique order.",
+                duplicate.Key,
+                ids);
+        }
+
         var orderedGroups = Groups.OrderBy(g => g.Order).ToList();
         Groups.Clear();
         Groups.AddRange(orderedGroups);

@@ -13,6 +13,9 @@ public partial class SufiSettingsSection : ComponentBase
     private bool _policyResolved;
     private bool _policyVisible;
     private bool _policyReadOnly;
+    private string? _resolvedPolicy;
+    private string? _resolvedReadOnlyPolicy;
+    private int _resolveVersion;
 
     [Inject]
     protected IAuthorizationService AuthorizationService { get; set; } = default!;
@@ -143,33 +146,53 @@ public partial class SufiSettingsSection : ComponentBase
 
     private bool EffectiveReadOnly => ReadOnly || _policyReadOnly;
 
-    protected override async Task OnParametersSetAsync()
+    protected override void OnParametersSet()
     {
         if (!HasPolicy)
         {
             _policyResolved = true;
             _policyVisible = true;
             _policyReadOnly = false;
+            _resolvedPolicy = Policy;
+            _resolvedReadOnlyPolicy = ReadOnlyPolicy;
             return;
         }
 
-        var canEdit = !string.IsNullOrWhiteSpace(Policy) && await AuthorizationService.IsGrantedAsync(Policy);
-        var canView = !string.IsNullOrWhiteSpace(ReadOnlyPolicy) && await AuthorizationService.IsGrantedAsync(ReadOnlyPolicy);
+        if (_policyResolved
+            && string.Equals(_resolvedPolicy, Policy, StringComparison.Ordinal)
+            && string.Equals(_resolvedReadOnlyPolicy, ReadOnlyPolicy, StringComparison.Ordinal))
+        {
+            return;
+        }
+
+        _policyResolved = false;
+        var version = ++_resolveVersion;
+        _ = ResolvePolicyAsync(version, Policy, ReadOnlyPolicy);
+    }
+
+    private async Task ResolvePolicyAsync(int version, string? policy, string? readOnlyPolicy)
+    {
+        var canEdit = !string.IsNullOrWhiteSpace(policy) && await AuthorizationService.IsGrantedAsync(policy).ConfigureAwait(false);
+        var canView = false;
+        if (!canEdit && !string.IsNullOrWhiteSpace(readOnlyPolicy))
+        {
+            canView = await AuthorizationService.IsGrantedAsync(readOnlyPolicy).ConfigureAwait(false);
+        }
+
+        if (version != _resolveVersion)
+        {
+            return;
+        }
 
         if (canEdit)
         {
             _policyVisible = true;
             _policyReadOnly = false;
         }
-        else if (canView || (string.IsNullOrWhiteSpace(Policy) && canView))
+        else if (canView)
         {
             _policyVisible = true;
             _policyReadOnly = true;
-        }
-        else if (string.IsNullOrWhiteSpace(Policy) && string.IsNullOrWhiteSpace(ReadOnlyPolicy))
-        {
-            _policyVisible = true;
-            _policyReadOnly = false;
         }
         else
         {
@@ -177,6 +200,9 @@ public partial class SufiSettingsSection : ComponentBase
             _policyReadOnly = false;
         }
 
+        _resolvedPolicy = policy;
+        _resolvedReadOnlyPolicy = readOnlyPolicy;
         _policyResolved = true;
+        await InvokeAsync(StateHasChanged);
     }
 }

@@ -6,6 +6,7 @@
                    Title="@Title"
                    Description="@Description"
                    Visible="@EffectiveVisible"
+                   Pending="@(HasPolicy && !_policyResolved)"
                    ReadOnly="@EffectiveReadOnly"
                    Disabled="@Disabled"
                    DisabledReason="@DisabledReason"
