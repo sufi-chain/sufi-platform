@@ -1,8 +1,8 @@
 using Microsoft.AspNetCore.Components;
-using SufiChain.SufiPlatform.Data;
 using SufiChain.SufiPlatform.Localization.Blazor.Public.Components;
 using SufiChain.SufiPlatform.Localization.Blazor.Public.Models;
 using SufiChain.SufiPlatform.Menus.Menus;
+using Volo.Abp;
 
 namespace SufiChain.SufiPlatform.Menus.Blazor.Components;
 
@@ -22,23 +22,66 @@ public partial class MenuCreateModal : MenusComponentBase
 
     private CreateMenuDto _model = new();
     private string _contextIdText = string.Empty;
-    private BusinessTextEditorMode _displayNameMode = BusinessTextEditorMode.Literal;
-    private string? _localizationResourceName;
-    private string? _localizationKey;
-    private string? _literalDisplayName;
-    private BusinessTextEditor? _displayNameEditor;
+    private Dictionary<string, string> _displayNames = new(StringComparer.OrdinalIgnoreCase);
+    private List<MultilingualCulture> _labelCultures = new();
+    private MultilingualTextField? _labels;
+    private bool _sameForAll;
+    private bool _culturesFailed;
+    private bool _culturesRequested;
+    private string? _saveError;
+    private List<string> _contextTypes = ["Public"];
 
-    protected override void OnParametersSet()
+    protected override async Task OnParametersSetAsync()
     {
-        if (Open)
+        if (!Open)
         {
-            _model = new CreateMenuDto();
-            _contextIdText = string.Empty;
-            _displayNameMode = BusinessTextEditorMode.Literal;
-            _literalDisplayName = string.Empty;
-            _localizationKey = null;
-            _localizationResourceName = null;
+            _culturesRequested = false;
+            return;
         }
+
+        if (_culturesRequested)
+        {
+            return;
+        }
+
+        _culturesRequested = true;
+        _contextTypes = ContextTypeOptions();
+        _model = new CreateMenuDto { ContextType = "Public" };
+        _contextIdText = string.Empty;
+        _sameForAll = false;
+        _saveError = null;
+        await LoadCulturesAsync();
+        _displayNames = EmptyNames();
+    }
+
+    private async Task LoadCulturesAsync()
+    {
+        try
+        {
+            _labelCultures = MenuLabelCultureMapper.Map(await MenuAppService.GetLabelCulturesAsync());
+            _culturesFailed = _labelCultures.Count == 0;
+        }
+        catch (Exception)
+        {
+            _labelCultures = new List<MultilingualCulture>();
+            _culturesFailed = true;
+        }
+    }
+
+    private Dictionary<string, string> EmptyNames()
+    {
+        var values = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        foreach (var culture in _labelCultures)
+        {
+            values[culture.CultureName] = string.Empty;
+        }
+
+        if (values.Count == 0)
+        {
+            values["fa"] = string.Empty;
+        }
+
+        return values;
     }
 
     private Task Hide() => SetOpenAsync(false);
@@ -52,50 +95,33 @@ public partial class MenuCreateModal : MenusComponentBase
     private Task OnNameChangedAsync(string value)
     {
         _model.Name = value;
-        UpdateLocalizationBinding();
         return Task.CompletedTask;
     }
 
-    private Task OnContextTypeChangedAsync(string value)
+    private static List<string> ContextTypeOptions()
     {
-        _model.ContextType = value;
-        _displayNameMode = string.Equals(_model.ContextType, "Public", StringComparison.OrdinalIgnoreCase)
-            ? BusinessTextEditorMode.Localized
-            : BusinessTextEditorMode.Literal;
-        UpdateLocalizationBinding();
-        return Task.CompletedTask;
-    }
-
-    private Task OnDisplayNameModeChangedAsync(BusinessTextEditorMode mode)
-    {
-        _displayNameMode = mode;
-        UpdateLocalizationBinding();
-        return Task.CompletedTask;
-    }
-
-    private Task OnLiteralDisplayNameChangedAsync(string? value)
-    {
-        _literalDisplayName = value;
-        return Task.CompletedTask;
-    }
-
-    private void UpdateLocalizationBinding()
-    {
-        var menuKey = MenuLocalizationKeyHelper.NormalizeMenuKey(_model.ContextType, _model.Name);
-        if (string.IsNullOrWhiteSpace(menuKey))
+        var types = new List<string> { "Public", "SufiCMS", "SufiHelpDesk.KnowledgeBase.Project" };
+        foreach (var registered in MenuLocalizationRegistry.GetContextTypes())
         {
-            _localizationKey = null;
-            _localizationResourceName = null;
-            return;
+            if (!types.Any(type => string.Equals(type, registered, StringComparison.OrdinalIgnoreCase)))
+            {
+                types.Add(registered);
+            }
         }
 
-        _localizationKey = BusinessLocalizationKeys.SeededMenuDisplayName(menuKey);
-        _localizationResourceName = MenuLocalizationRegistry.GetResourceName(menuKey, _model.ContextType);
+        return types;
+    }
+
+    private Task OnDisplayNamesChanged(Dictionary<string, string> values)
+    {
+        _displayNames = values;
+        return Task.CompletedTask;
     }
 
     private Task OnValidSubmitAsync() => ExecuteWithLoadingAsync(async () =>
     {
-        if (_displayNameEditor == null || !await _displayNameEditor.ValidateAsync())
+        _saveError = null;
+        if (_labels == null || !await _labels.ValidateAsync())
         {
             return;
         }
@@ -115,9 +141,18 @@ public partial class MenuCreateModal : MenusComponentBase
             _model.ContextId = null;
         }
 
-        _model.DisplayName = _displayNameEditor.GetStoredValue();
-        await MenuAppService.CreateAsync(_model);
-        await _displayNameEditor.SaveAsync();
+        _model.DisplayNames = _labels.GetValuesForSave();
+        _model.DisplayName = _model.Name;
+        try
+        {
+            await MenuAppService.CreateAsync(_model);
+        }
+        catch (Exception ex) when (ex is BusinessException or UserFriendlyException)
+        {
+            _saveError = string.IsNullOrWhiteSpace(ex.Message) ? L["Sufi.Menus:DisplayNameRequired"] : ex.Message;
+            return;
+        }
+
         await OnMenuCreated.InvokeAsync();
         await Hide();
     }, LoadingKeys.Create);

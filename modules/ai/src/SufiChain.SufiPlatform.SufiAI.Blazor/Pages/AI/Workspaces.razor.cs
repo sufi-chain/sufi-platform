@@ -141,6 +141,21 @@ public partial class Workspaces : AIComponentBase
             LoadingKeys.LoadWorkspaces);
     }
 
+    private async Task SetHostDefaultAsync(WorkspaceDto workspace)
+    {
+        if (workspace.IsDefault)
+        {
+            return;
+        }
+
+        await ExecuteWithLoadingAsync(async () =>
+        {
+            await WorkspaceAppService.SetHostDefaultAsync(workspace.Id);
+            await Message.SuccessAsync(L["HostDefaultWorkspaceSaved"]);
+            await (_gridRef?.RefreshDataAsync() ?? Task.CompletedTask);
+        }, LoadingKeys.LoadWorkspaces);
+    }
+
     private async Task ConvertToCustomAsync(WorkspaceDto workspace)
     {
         var confirmed = await Message.ConfirmAsync(

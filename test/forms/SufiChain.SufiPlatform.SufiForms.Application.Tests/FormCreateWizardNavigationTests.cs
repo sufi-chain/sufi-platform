@@ -38,9 +38,13 @@ public class FormCreateWizardNavigationTests
 
         var catalog = Substitute.For<IHooshvareCatalogAppService>();
 
+        var workspaceId = Guid.NewGuid();
+
         catalog.GetByKeyAsync(SufiFormsHooshvareKeys.FormCreator).Returns(new HooshvareCatalogItemDto
 
         {
+
+            Id = Guid.NewGuid(), WorkspaceId = workspaceId,
 
             AllowComposerAudio = audio, AllowComposerAttachment = attachments, AllowComposerEmoji = false
 
@@ -74,11 +78,49 @@ public class FormCreateWizardNavigationTests
 
         wizard.SessionId.ShouldBe(sessionId);
 
+        wizard.Settings!.WorkspaceId.ShouldBe(workspaceId);
+
         wizard.Capabilities!.CanRecordVoice.ShouldBe(audio && platformEnabled);
 
         wizard.Capabilities.CanAttachFiles.ShouldBe(attachments && platformEnabled);
 
         await creator.Received(1).CreateComposerSessionAsync();
+
+    }
+
+
+
+    [Fact]
+
+    public async Task Unbound_hooshvare_keeps_manual_creation_and_does_not_open_a_composer_session()
+
+    {
+
+        var catalog = Substitute.For<IHooshvareCatalogAppService>();
+
+        catalog.GetByKeyAsync(SufiFormsHooshvareKeys.FormCreator).Returns(new HooshvareCatalogItemDto
+
+        {
+
+            AllowComposerAudio = true, AllowComposerAttachment = true, WorkspaceId = Guid.Empty
+
+        });
+
+        var creator = Substitute.For<IFormCreatorAppService>();
+
+        var wizard = new TestWizard(creator, catalog);
+
+
+
+        await wizard.OpenAsync(true);
+
+
+
+        wizard.SessionId.ShouldBeNull();
+
+        wizard.Settings.ShouldBeNull();
+
+        await creator.DidNotReceive().CreateComposerSessionAsync();
 
     }
 

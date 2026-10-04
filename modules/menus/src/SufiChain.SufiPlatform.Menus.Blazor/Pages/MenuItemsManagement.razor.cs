@@ -39,6 +39,7 @@ public partial class MenuItemsManagement : MenusComponentBase
 
     protected override async Task OnInitializedAsync()
     {
+        await base.OnInitializedAsync();
         PageLayout.Title = L["Items"];
         await LoadMenuAsync();
         await LoadTreeAsync();

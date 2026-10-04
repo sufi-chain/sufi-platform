@@ -1,3 +1,6 @@
+using SufiChain.SufiPlatform.SufiAI.Hooshvare.Hooshvare;
+using SufiChain.SufiPlatform.SufiCom.Chat.AiUsage;
+using SufiChain.SufiPlatform.SufiCom.Chat.Hooshvare;
 using SufiChain.SufiPlatform.SufiCom.Chat.Messages;
 using SufiChain.SufiPlatform.SufiCom.Chat.Participants;
 using SufiChain.SufiPlatform.SufiCom.Chat.Sessions;
@@ -436,6 +439,43 @@ public class ChatSessionAppService_Tests : ChatApplicationTestBase<SufiComChatAp
                 MaxResultCount = 50
             });
             otherTenant.Items.ShouldNotContain(session => session.Id == tenantSessionId);
+        }
+    }
+
+    [Fact]
+    public async Task Should_Stamp_Creator_And_Workspace_When_Tenant_Claim_Is_Missing()
+    {
+        var assistantId = (await GetRequiredService<IHooshvareCatalogAppService>()
+            .GetByKeyAsync(ChatHooshvareKeys.PublicAssistant.Key)).Id;
+
+        using (CurrentTenant.Change(ChatTestData.TenantAId))
+        using (CurrentUser.Change(ChatTestData.UserAId))
+        {
+            var session = await _sessionAppService.CreateAsync(new CreateChatSessionInput
+            {
+                Title = "Tenant assistant",
+                AccessMode = AccessMode.PublicAuthenticated,
+                ConversationKind = ConversationKind.Assistant,
+                ChannelOrigin = ChannelOrigin.Web,
+                AssistantWorkspaceName = ChatTestData.DefaultWorkspaceName,
+                AssistantId = assistantId,
+                Origin = ChatSessionOrigin.Default
+            });
+
+            var stored = await _sessionRepository.GetAsync(session.Id);
+
+            stored.TenantId.ShouldBe(ChatTestData.TenantAId);
+            stored.CreatorId.ShouldBe(ChatTestData.UserAId);
+            stored.GetAssistantWorkspaceId().ShouldBe(TestHooshvareCatalogAppService.PublicAssistantWorkspaceId);
+            stored.GetAssistantWorkspaceName().ShouldBe(ChatTestData.DefaultWorkspaceName);
+            stored.IsExternallyOrchestrated().ShouldBeFalse();
+            stored.GetOrigin().ShouldBe(ChatSessionOrigin.Default);
+            stored.ExtraProperties[ChatSessionExtraPropertyKeys.OrchestrationMode]?.ToString()
+                .ShouldBe(ChatAssistantMetadata.InternalOrchestrationMode);
+            stored.ExtraProperties[ChatSessionExtraPropertyKeys.SessionOrigin]?.ToString()
+                .ShouldBe(nameof(ChatSessionOrigin.Default));
+            stored.ExtraProperties[ChatSessionExtraPropertyKeys.AssistantWorkspaceId]?.ToString()
+                .ShouldBe(TestHooshvareCatalogAppService.PublicAssistantWorkspaceId.ToString("D"));
         }
     }
 }

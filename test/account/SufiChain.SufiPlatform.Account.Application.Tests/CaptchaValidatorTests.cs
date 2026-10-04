@@ -68,4 +68,22 @@ public class CaptchaValidatorTests
         result.IsValid.ShouldBeFalse();
         await provider.Received(1).ValidateAsync(Arg.Any<CaptchaValidationContext>(), Arg.Any<CancellationToken>());
     }
+
+    [Fact]
+    public async Task Should_Ignore_Unreadable_Captcha_Flags()
+    {
+        var settings = Substitute.For<ISettingProvider>();
+        settings.GetOrNullAsync(IdentitySettingNames.Captcha.IsEnabled).Returns("yes");
+        settings.GetOrNullAsync(IdentitySettingNames.Captcha.RequiredOnLogin).Returns(string.Empty);
+        var resolver = Substitute.For<ICaptchaProviderResolver>();
+        var validator = new CaptchaValidator(settings, resolver);
+
+        var result = await validator.ValidateAsync(new CaptchaValidationContext
+        {
+            Purpose = CaptchaPurpose.Login
+        });
+
+        result.IsValid.ShouldBeTrue();
+        await resolver.DidNotReceive().ResolveAsync(Arg.Any<CancellationToken>());
+    }
 }

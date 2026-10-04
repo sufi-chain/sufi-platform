@@ -364,13 +364,24 @@ public class AvailableModelListComposerTests
 
     private static string FindSource(string relativePath)
     {
+        var normalized = relativePath.Replace('/', Path.DirectorySeparatorChar);
+        var candidates = new List<string> { normalized };
+        var nestedPrefix = "sufi-chain" + Path.DirectorySeparatorChar;
+        if (normalized.StartsWith(nestedPrefix, StringComparison.Ordinal))
+        {
+            candidates.Add(normalized[nestedPrefix.Length..]);
+        }
+
         var directory = new DirectoryInfo(AppContext.BaseDirectory);
         while (directory != null)
         {
-            var candidate = Path.Combine(directory.FullName, relativePath.Replace('/', Path.DirectorySeparatorChar));
-            if (File.Exists(candidate))
+            foreach (var relative in candidates)
             {
-                return candidate;
+                var candidate = Path.Combine(directory.FullName, relative);
+                if (File.Exists(candidate))
+                {
+                    return candidate;
+                }
             }
 
             directory = directory.Parent;

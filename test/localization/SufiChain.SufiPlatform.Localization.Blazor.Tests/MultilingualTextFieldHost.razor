@@ -1,0 +1,38 @@
+@namespace SufiChain.SufiPlatform.Localization.Blazor.Tests
+@using Microsoft.AspNetCore.Components.Forms
+@using SufiChain.SufiPlatform.Localization.Blazor.Public.Components
+@using SufiChain.SufiPlatform.Localization.Blazor.Public.Models
+
+<CascadingValue Value="EditContext" IsFixed="true">
+    <MultilingualTextField @ref="Field"
+                           Values="Values"
+                           Cultures="Cultures"
+                           Required="Required"
+                           FallbackText="@FallbackText"
+                           CulturesFailed="CulturesFailed"
+                           ShowBrokenBanner="ShowBrokenBanner"
+                           BaseValues="BaseValues"
+                           MaxLength="MaxLength" />
+</CascadingValue>
+
+@code {
+    public EditContext EditContext { get; } = new(new object());
+
+    public MultilingualTextField? Field { get; private set; }
+
+    [Parameter] public Dictionary<string, string> Values { get; set; } = new(StringComparer.OrdinalIgnoreCase);
+
+    [Parameter] public IReadOnlyList<MultilingualCulture>? Cultures { get; set; }
+
+    [Parameter] public bool Required { get; set; } = true;
+
+    [Parameter] public string? FallbackText { get; set; }
+
+    [Parameter] public bool CulturesFailed { get; set; }
+
+    [Parameter] public bool ShowBrokenBanner { get; set; }
+
+    [Parameter] public IReadOnlyDictionary<string, string>? BaseValues { get; set; }
+
+    [Parameter] public int MaxLength { get; set; } = 256;
+}
