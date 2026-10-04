@@ -176,11 +176,22 @@ public class MenuItemAppService : SufiApplicationService, IMenuItemAppService
     protected virtual void ApplyInput(MenuItem item, CreateMenuItemDto input)
     {
         item.SetDescription(input.Description); item.Reorder(input.DisplayOrder); item.SetKind(input.Kind); item.SetDisplayType(input.DisplayType); item.SetLink(input.Url, input.LinkTarget); item.SetTarget(input.TargetType, input.TargetId); item.SetIcon(input.Icon); item.SetCssClass(input.CssClass); item.SetPermissionName(input.PermissionName); item.SetComponentName(input.ComponentName); if (input.IsActive) item.Activate(); else item.Deactivate(); if (input.IsVisible) item.Show(); else item.Hide();
+        ApplyCultureUrls(item, input.CultureUrls);
     }
 
     protected virtual void ApplyInput(MenuItem item, UpdateMenuItemDto input)
     {
         item.SetDescription(input.Description); item.SetKind(input.Kind); item.SetDisplayType(input.DisplayType); item.SetLink(input.Url, input.LinkTarget); item.SetTarget(input.TargetType, input.TargetId); item.SetIcon(input.Icon); item.SetCssClass(input.CssClass); item.SetPermissionName(input.PermissionName); item.SetComponentName(input.ComponentName); if (input.IsActive) item.Activate(); else item.Deactivate(); if (input.IsVisible) item.Show(); else item.Hide();
+        ApplyCultureUrls(item, input.CultureUrls);
+    }
+
+    /// <summary>Null leaves stored overrides unchanged so older update callers do not wipe them.</summary>
+    private static void ApplyCultureUrls(MenuItem item, IReadOnlyDictionary<string, string>? cultureUrls)
+    {
+        if (cultureUrls != null)
+        {
+            item.SetCultureUrls(cultureUrls);
+        }
     }
 
     protected virtual IEnumerable<MenuItem> ApplyFilters(IEnumerable<MenuItem> query, GetMenuItemsInput input)

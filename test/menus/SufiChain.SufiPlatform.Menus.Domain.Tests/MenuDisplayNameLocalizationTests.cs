@@ -1,3 +1,4 @@
+using System.Text.Json;
 using Microsoft.Extensions.Localization;
 using SufiChain.SufiPlatform.Data;
 using SufiChain.SufiPlatform.Menus.Localization;
@@ -133,12 +134,20 @@ public class MenuDisplayNameLocalizationTests
         source.ShouldContain("Values=\"_displayNames\"");
         if (relativeFile.EndsWith("MenuItemEditor.razor", StringComparison.Ordinal))
         {
-            source.IndexOf("MultilingualTextField", StringComparison.Ordinal)
-                .ShouldBeLessThan(source.IndexOf("MenuItemSection:Link", StringComparison.Ordinal));
-            source.IndexOf("MenuLabel:Advanced", StringComparison.Ordinal)
-                .ShouldBeLessThan(source.IndexOf("MenuName", StringComparison.Ordinal));
+            var labels = source.IndexOf("MultilingualTextField", StringComparison.Ordinal);
+            var link = source.IndexOf("MenuItemSection:Link", StringComparison.Ordinal);
+            var display = source.IndexOf("MenuItemSection:Display", StringComparison.Ordinal);
+            var visibility = source.IndexOf("MenuItemSection:Visibility", StringComparison.Ordinal);
+            var titleAdvanced = source.IndexOf("MenuLabel:Advanced", StringComparison.Ordinal);
+            var linkAdvanced = source.IndexOf("MenuLink:Advanced", StringComparison.Ordinal);
+            labels.ShouldBeLessThan(link);
+            link.ShouldBeLessThan(display);
+            display.ShouldBeLessThan(visibility);
+            visibility.ShouldBeLessThan(titleAdvanced);
+            titleAdvanced.ShouldBeLessThan(source.IndexOf("MenuName", StringComparison.Ordinal));
             source.IndexOf("MenuName", StringComparison.Ordinal)
                 .ShouldBeLessThan(source.IndexOf("Slug", StringComparison.Ordinal));
+            titleAdvanced.ShouldBeLessThan(linkAdvanced);
         }
 
         if (relativeFile.EndsWith("MenuCreateModal.razor", StringComparison.Ordinal))
@@ -161,6 +170,68 @@ public class MenuDisplayNameLocalizationTests
         source.ShouldNotContain("LiteralValue=\"_literalDisplayName\"");
         source.ShouldNotContain("متن ثابت");
         source.ShouldNotContain("کلید چندزبانه");
+    }
+
+    [Fact]
+    public void Persian_title_panel_is_named_apart_from_the_link_panel()
+    {
+        var texts = ReadMenuTexts("fa.json");
+        texts["MenuLabel:Advanced"].ShouldBe("تنظیمات پیشرفتهٔ عنوان");
+        texts["MenuLink:Advanced"].ShouldBe("تنظیمات پیشرفته");
+        texts["MenuLabel:Advanced"].ShouldNotBe(texts["MenuLink:Advanced"]);
+    }
+
+    [Fact]
+    public void Item_editor_save_error_is_an_alert_and_uses_the_generic_fallback()
+    {
+        var markup = File.ReadAllText(FindPlatformFile(Path.Combine(
+            "modules",
+            "menus",
+            "src",
+            "SufiChain.SufiPlatform.Menus.Blazor",
+            "Pages",
+            "MenuItemEditor.razor")));
+        markup.ShouldContain("id=\"menu-item-save-error\" class=\"menu-item-editor__error\" role=\"alert\" tabindex=\"-1\"");
+
+        var submit = File.ReadAllText(FindPlatformFile(Path.Combine(
+            "modules",
+            "menus",
+            "src",
+            "SufiChain.SufiPlatform.Menus.Blazor",
+            "Pages",
+            "MenuItemEditor.razor.cs")));
+        submit.ShouldContain("L[\"MenuLink:SaveFailed\"]");
+        submit.ShouldNotContain("Sufi.Menus:DisplayNameRequired");
+        submit.ShouldContain("PublishSaveError()");
+
+        var links = File.ReadAllText(FindPlatformFile(Path.Combine(
+            "modules",
+            "menus",
+            "src",
+            "SufiChain.SufiPlatform.Menus.Blazor",
+            "Pages",
+            "MenuItemEditor.Links.cs")));
+        links.ShouldContain("L[\"MenuLink:SaveFailed\"]");
+        links.ShouldContain("_focusFieldId = \"menu-item-save-error\"");
+        links.ShouldContain("new MenuEditorError(message!, \"menu-item-save-error\")");
+    }
+
+    [Fact]
+    public void Culture_url_summary_names_the_address_and_the_language()
+    {
+        var texts = ReadMenuTexts("fa.json");
+        texts["MenuLink:CultureUrlSummary"].ShouldBe("نشانی ({0})");
+        string.Format(texts["MenuLink:CultureUrlSummary"], "English").ShouldBe("نشانی (English)");
+
+        var links = File.ReadAllText(FindPlatformFile(Path.Combine(
+            "modules",
+            "menus",
+            "src",
+            "SufiChain.SufiPlatform.Menus.Blazor",
+            "Pages",
+            "MenuItemEditor.Links.cs")));
+        links.ShouldContain("L[\"MenuLink:CultureUrlSummary\", CultureLabel");
+        links.ShouldContain("CultureUrlSummary(row.Culture)");
     }
 
     [Fact]
@@ -426,6 +497,26 @@ public class MenuDisplayNameLocalizationTests
 
         public Task<IEnumerable<string>> GetSupportedCulturesAsync() =>
             Task.FromResult<IEnumerable<string>>(_values.Keys);
+    }
+
+    private static Dictionary<string, string> ReadMenuTexts(string fileName)
+    {
+        var path = FindPlatformFile(Path.Combine(
+            "modules",
+            "menus",
+            "src",
+            "SufiChain.SufiPlatform.Menus.Domain.Shared",
+            "Localization",
+            "Menus",
+            fileName));
+        using var document = JsonDocument.Parse(File.ReadAllText(path));
+        var texts = new Dictionary<string, string>(StringComparer.Ordinal);
+        foreach (var property in document.RootElement.GetProperty("texts").EnumerateObject())
+        {
+            texts[property.Name] = property.Value.GetString() ?? string.Empty;
+        }
+
+        return texts;
     }
 
     private static string FindPlatformFile(string relativePath)
