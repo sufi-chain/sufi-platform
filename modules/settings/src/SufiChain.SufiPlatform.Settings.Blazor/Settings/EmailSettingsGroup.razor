@@ -1,19 +1,18 @@
 @namespace SufiChain.SufiPlatform.Settings.Blazor.Settings
 @inherits SettingsComponentBase
 
+<CascadingValue Value="SaveFieldErrors" IsFixed="false">
 <SbStack Gap="4">
     @if (IsOperationLoading(LoadingKeys.Load))
     {
-        <div class="text-center py-4">
-            <SbProgress Indeterminate="true" aria-label="@L["Loading"]" Type="SbProgressType.Circular" />
-        </div>
+        <SbLoadingSkeleton Preset="SbLoadingSkeletonPreset.Table" Count="5" />
     }
     else
     {
         <SbStack Gap="4">
             <!-- SMTP Server Settings -->
             <div>
-                <h3 class="mb-3">@L["SmtpServerSettings"]</h3>
+                <SbHeading Level="3" Size="6" Class="mb-3">@L["SmtpServerSettings"]</SbHeading>
                 <SbStack Gap="3">
                     <SbTextField @bind-Value="_settings.SmtpHost"
                                  dir="ltr"
@@ -37,7 +36,7 @@
             @if (!_settings.SmtpUseDefaultCredentials)
             {
                 <div>
-                    <h3 class="mb-3">@L["SmtpCredentials"]</h3>
+                    <SbHeading Level="3" Size="6" Class="mb-3">@L["SmtpCredentials"]</SbHeading>
                     <SbStack Gap="3">
                         <SbTextField @bind-Value="_settings.SmtpUserName" 
                                      Label="@L["SmtpUserName"]" />
@@ -54,7 +53,7 @@
 
             <!-- Default Sender -->
             <div>
-                <h3 class="mb-3">@L["DefaultSender"]</h3>
+                <SbHeading Level="3" Size="6" Class="mb-3">@L["DefaultSender"]</SbHeading>
                 <SbStack Gap="3">
                     <SbTextField @bind-Value="_settings.DefaultFromAddress"
                                  dir="ltr"
@@ -69,7 +68,7 @@
             </div>
 
             <div>
-                <h3 class="mb-3">@L["SendTestEmail"]</h3>
+                <SbHeading Level="3" Size="6" Class="mb-3">@L["SendTestEmail"]</SbHeading>
                 <SbStack Gap="3">
                     <SbTextField @bind-Value="_testEmailAddress"
                                  dir="ltr"
@@ -91,3 +90,4 @@
         </SbStack>
     }
 </SbStack>
+</CascadingValue>

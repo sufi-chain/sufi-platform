@@ -3,6 +3,7 @@
 @inherits FileManagerComponentBase
 @implements IEditableSettingGroup
 
+<CascadingValue Value="SaveFieldErrors" IsFixed="false">
 <SbStack Gap="4">
     @if (IsOperationLoading(LoadingKeys.Load))
     {
@@ -39,3 +40,4 @@
         </SbFormField>
     }
 </SbStack>
+</CascadingValue>

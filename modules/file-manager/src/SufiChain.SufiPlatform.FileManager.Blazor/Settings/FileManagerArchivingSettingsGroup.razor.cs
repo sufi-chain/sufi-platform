@@ -61,27 +61,25 @@ public partial class FileManagerArchivingSettingsGroup : FileManagerComponentBas
 
     public async Task SaveAsync()
     {
-        if (await TrySaveAsync())
+        await ExecuteWithLoadingAsync(async () =>
         {
+            await PersistAsync();
             await Notify.SuccessAsync(L["SettingsSavedSuccessfully"]);
-        }
-    }
-
-    public async Task<bool> TrySaveAsync()
-    {
-        var saved = await ExecuteWithLoadingAsync(async () =>
-        {
-            await SettingsAppService.UpdateArchivingSettingsAsync(_settings);
-            _edits.Capture();
-            return true;
         }, LoadingKeys.Save);
-
-        return saved == true;
     }
+
+    public Task<bool> TrySaveAsync() => TrySaveQuietlyAsync(PersistAsync, LoadingKeys.Save);
 
     public Task DiscardAsync()
     {
+        ClearSaveFieldErrors();
         _edits.Restore();
         return InvokeAsync(StateHasChanged);
+    }
+
+    private async Task PersistAsync()
+    {
+        await SettingsAppService.UpdateArchivingSettingsAsync(_settings);
+        _edits.Capture();
     }
 }

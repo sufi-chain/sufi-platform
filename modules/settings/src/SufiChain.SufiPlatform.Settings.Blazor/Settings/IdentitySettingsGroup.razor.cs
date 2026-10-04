@@ -128,29 +128,27 @@ public partial class IdentitySettingsGroup : SettingsComponentBase, IEditableSet
 
     public async Task SaveAsync()
     {
-        if (await TrySaveAsync())
+        await ExecuteWithLoadingAsync(async () =>
         {
+            await PersistAsync();
             await Notify.SuccessAsync(L["SettingsSavedSuccessfully"]);
-        }
-    }
-
-    public async Task<bool> TrySaveAsync()
-    {
-        var saved = await ExecuteWithLoadingAsync(async () =>
-        {
-            await IdentitySettingsAppService.UpdateAsync(BuildUpdateDto());
-            _settings = await IdentitySettingsAppService.GetAsync();
-            _edits.Capture();
-            return true;
         }, LoadingKeys.Save);
-
-        return saved == true;
     }
+
+    public Task<bool> TrySaveAsync() => TrySaveQuietlyAsync(PersistAsync, LoadingKeys.Save);
 
     public Task DiscardAsync()
     {
+        ClearSaveFieldErrors();
         _edits.Restore();
         return InvokeAsync(StateHasChanged);
+    }
+
+    private async Task PersistAsync()
+    {
+        await IdentitySettingsAppService.UpdateAsync(BuildUpdateDto());
+        _settings = await IdentitySettingsAppService.GetAsync();
+        _edits.Capture();
     }
 
     private UpdateIdentitySettingsDto BuildUpdateDto() => new()

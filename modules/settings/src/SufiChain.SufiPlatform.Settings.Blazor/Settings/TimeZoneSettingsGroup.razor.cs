@@ -68,31 +68,46 @@ public partial class TimeZoneSettingsGroup : SettingsComponentBase, IEditableSet
 
     public async Task SaveAsync()
     {
-        if (await TrySaveAsync())
+        await ExecuteWithLoadingAsync(async () =>
         {
+            if (!await PersistAsync())
+            {
+                return;
+            }
+
             await Notify.SuccessAsync(L["SettingsSavedSuccessfully"]);
-        }
+        }, LoadingKeys.Save);
     }
 
     public async Task<bool> TrySaveAsync()
     {
-        var saved = await ExecuteWithLoadingAsync(async () =>
+        if (string.IsNullOrEmpty(_selectedTimeZone))
         {
-            if (string.IsNullOrEmpty(_selectedTimeZone))
-            {
-                return false;
-            }
+            return false;
+        }
 
+        return await TrySaveQuietlyAsync(async () =>
+        {
             await TimeZoneSettingsAppService.UpdateAsync(new UpdateTimeZoneSettingsDto { TimeZone = _selectedTimeZone });
             _edits.Capture();
-            return true;
         }, LoadingKeys.Save);
+    }
 
-        return saved == true;
+    private async Task<bool> PersistAsync()
+    {
+        if (string.IsNullOrEmpty(_selectedTimeZone))
+        {
+            return false;
+        }
+
+        await TimeZoneSettingsAppService.UpdateAsync(new UpdateTimeZoneSettingsDto { TimeZone = _selectedTimeZone });
+        _edits.Capture();
+        return true;
     }
 
     public Task DiscardAsync()
     {
+        ClearSaveFieldErrors();
         _edits.Restore();
         return InvokeAsync(StateHasChanged);
     }

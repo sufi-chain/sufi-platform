@@ -70,26 +70,24 @@ public partial class EmailSettingsGroup : SettingsComponentBase, IEditableSettin
     /// </summary>
     public async Task SaveAsync()
     {
-        if (await TrySaveAsync())
-        {
-            await Notify.SuccessAsync(L["SettingsSavedSuccessfully"]);
-        }
-    }
-
-    public async Task<bool> TrySaveAsync()
-    {
-        var saved = await ExecuteWithLoadingAsync(async () =>
+        await ExecuteWithLoadingAsync(async () =>
         {
             await UpdateSettingsAsync();
             _edits.Capture();
-            return true;
+            await Notify.SuccessAsync(L["SettingsSavedSuccessfully"]);
         }, LoadingKeys.Save);
-
-        return saved == true;
     }
+
+    public Task<bool> TrySaveAsync() =>
+        TrySaveQuietlyAsync(async () =>
+        {
+            await UpdateSettingsAsync();
+            _edits.Capture();
+        }, LoadingKeys.Save);
 
     public Task DiscardAsync()
     {
+        ClearSaveFieldErrors();
         _edits.Restore();
         return InvokeAsync(StateHasChanged);
     }

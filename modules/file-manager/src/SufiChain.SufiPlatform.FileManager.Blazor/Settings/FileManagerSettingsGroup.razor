@@ -7,12 +7,12 @@
     @if (_hasGeneralSettingsPermission)
     {
         <section>
-            <h3 class="mb-3">@L["FileManagerGeneralSettings"]</h3>
+            <SbHeading Level="3" Size="6" Class="mb-3">@L["FileManagerGeneralSettings"]</SbHeading>
             <FileManagerGeneralSettingsGroup @ref="_generalSettingsGroup" />
         </section>
 
         <section>
-            <h3 class="mb-3">@L["FileManagerArchivingSettings"]</h3>
+            <SbHeading Level="3" Size="6" Class="mb-3">@L["FileManagerArchivingSettings"]</SbHeading>
             <FileManagerArchivingSettingsGroup @ref="_archivingSettingsGroup" />
         </section>
     }
@@ -20,7 +20,7 @@
     @if (_hasStorageSettingsPermission)
     {
         <section>
-            <h3 class="mb-3">@L["FileStorageSettings"]</h3>
+            <SbHeading Level="3" Size="6" Class="mb-3">@L["FileStorageSettings"]</SbHeading>
             <FileManagerStorageSettingsGroup @ref="_storageSettingsGroup" />
         </section>
     }

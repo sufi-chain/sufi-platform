@@ -7,7 +7,7 @@ namespace SufiChain.SufiPlatform.Settings.Blazor.Components;
 /// One settings group inside <c>SbSettingsLayout</c>.
 /// Save and discard stay on this section. A group that cannot report a save result fails closed.
 /// </summary>
-public partial class SettingsSectionHost : ComponentBase
+public partial class SettingsSectionHost : ComponentBase, IDisposable
 {
     private bool _dirty;
     private DynamicComponent? _component;
@@ -84,5 +84,14 @@ public partial class SettingsSectionHost : ComponentBase
 
         await _editor.DiscardAsync();
         _dirty = _editor.HasUnsavedChanges;
+    }
+
+    public void Dispose()
+    {
+        if (_editor != null)
+        {
+            _editor.EditStateChanged -= OnEditorChanged;
+            _editor = null;
+        }
     }
 }

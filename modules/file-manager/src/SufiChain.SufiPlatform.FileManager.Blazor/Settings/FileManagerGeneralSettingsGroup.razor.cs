@@ -65,32 +65,30 @@ public partial class FileManagerGeneralSettingsGroup : FileManagerComponentBase,
 
     public async Task SaveAsync()
     {
-        if (await TrySaveAsync())
+        await ExecuteWithLoadingAsync(async () =>
         {
+            await PersistAsync();
             await Notify.SuccessAsync(L["SettingsSavedSuccessfully"]);
-        }
-    }
-
-    public async Task<bool> TrySaveAsync()
-    {
-        var saved = await ExecuteWithLoadingAsync(async () =>
-        {
-            _settings.MaxFileSizeBytes = Math.Max(1, _maxFileSizeMegabytes) * BytesPerMegabyte;
-            _settings.AllowedImageExtensions = JoinList(_imageExtensions);
-            _settings.AllowedVideoExtensions = JoinList(_videoExtensions);
-            _settings.AllowedDocumentExtensions = JoinList(_documentExtensions);
-            await SettingsAppService.UpdateGeneralSettingsAsync(_settings);
-            _edits.Capture();
-            return true;
         }, LoadingKeys.Save);
-
-        return saved == true;
     }
+
+    public Task<bool> TrySaveAsync() => TrySaveQuietlyAsync(PersistAsync, LoadingKeys.Save);
 
     public Task DiscardAsync()
     {
+        ClearSaveFieldErrors();
         _edits.Restore();
         return InvokeAsync(StateHasChanged);
+    }
+
+    private async Task PersistAsync()
+    {
+        _settings.MaxFileSizeBytes = Math.Max(1, _maxFileSizeMegabytes) * BytesPerMegabyte;
+        _settings.AllowedImageExtensions = JoinList(_imageExtensions);
+        _settings.AllowedVideoExtensions = JoinList(_videoExtensions);
+        _settings.AllowedDocumentExtensions = JoinList(_documentExtensions);
+        await SettingsAppService.UpdateGeneralSettingsAsync(_settings);
+        _edits.Capture();
     }
 
     private GeneralEdit ReadEdit() => new()
