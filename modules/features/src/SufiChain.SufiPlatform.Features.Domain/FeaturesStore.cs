@@ -50,7 +50,7 @@ public class FeaturesStore : IFeaturesStore, ITransientDependency
             await FeatureValueRepository.UpdateAsync(featureValue, true);
         }
 
-        await Cache.SetAsync(CalculateCacheKey(name, providerName, providerKey), new FeatureValueCacheItem(featureValue?.Value), considerUow: true);
+        await WriteCacheAsync(CalculateCacheKey(name, providerName, providerKey), new FeatureValueCacheItem(featureValue.Value));
     }
 
     [UnitOfWork]
@@ -60,7 +60,7 @@ public class FeaturesStore : IFeaturesStore, ITransientDependency
         foreach (var featureValue in featureValues)
         {
             await FeatureValueRepository.DeleteAsync(featureValue, true);
-            await Cache.RemoveAsync(CalculateCacheKey(name, providerName, providerKey), considerUow: true);
+            await RemoveCacheAsync(CalculateCacheKey(name, providerName, providerKey));
         }
     }
 
@@ -110,7 +110,21 @@ public class FeaturesStore : IFeaturesStore, ITransientDependency
             }
         }
 
-        await Cache.SetManyAsync(cacheItems, considerUow: true);
+        await Cache.SetManyAsync(cacheItems, FeatureValueCachePolicy.Create(), considerUow: true);
+    }
+
+    protected virtual async Task WriteCacheAsync(string cacheKey, FeatureValueCacheItem cacheItem)
+    {
+        var options = FeatureValueCachePolicy.Create();
+        await Cache.RemoveAsync(cacheKey, considerUow: false);
+        await Cache.SetAsync(cacheKey, cacheItem, options, considerUow: false);
+        await Cache.SetAsync(cacheKey, cacheItem, options, considerUow: true);
+    }
+
+    protected virtual async Task RemoveCacheAsync(string cacheKey)
+    {
+        await Cache.RemoveAsync(cacheKey, considerUow: false);
+        await Cache.RemoveAsync(cacheKey, considerUow: true);
     }
 
     protected virtual string CalculateCacheKey(string name, string providerName, string providerKey)

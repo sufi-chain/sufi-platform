@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Volo.Abp.Caching;
 using Volo.Abp.DependencyInjection;
@@ -19,13 +21,30 @@ public class SettingCacheItemInvalidator :
 
     public virtual async Task HandleEventAsync(EntityChangedEventData<Setting> eventData)
     {
-        var cacheKey = CalculateCacheKey(
-            eventData.Entity.Name,
-            eventData.Entity.ProviderName,
-            eventData.Entity.ProviderKey
-        );
+        foreach (var cacheKey in EnumerateCacheKeys(
+                     eventData.Entity.Name,
+                     eventData.Entity.ProviderName,
+                     eventData.Entity.ProviderKey))
+        {
+            await Cache.RemoveAsync(cacheKey, considerUow: false);
+            await Cache.RemoveAsync(cacheKey, considerUow: true);
+        }
+    }
 
-        await Cache.RemoveAsync(cacheKey, considerUow: true);
+    protected virtual IEnumerable<string> EnumerateCacheKeys(string name, string? providerName, string? providerKey)
+    {
+        var alternateProviderKey = providerKey switch
+        {
+            null => string.Empty,
+            { Length: 0 } => null,
+            _ => providerKey
+        };
+
+        return new[]
+        {
+            CalculateCacheKey(name, providerName, providerKey),
+            CalculateCacheKey(name, providerName, alternateProviderKey)
+        }.Distinct();
     }
 
     protected virtual string CalculateCacheKey(string name, string? providerName, string? providerKey)
