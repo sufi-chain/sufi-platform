@@ -55,19 +55,29 @@ public class SettingComponentCreationContext
 }
 
 /// <summary>
-/// Represents a setting group displayed as a tab.
+/// Represents a setting group displayed as a settings section.
 /// </summary>
 public class SettingComponentGroup
 {
     /// <summary>
-    /// Unique identifier for the group.
+    /// Unique identifier for the group. Used as the <c>?section=</c> value.
     /// </summary>
     public string Id { get; set; } = default!;
 
     /// <summary>
-    /// Display name for the group tab.
+    /// Display name for the group.
     /// </summary>
     public string DisplayName { get; set; } = default!;
+
+    /// <summary>
+    /// Registered SufiIcons name for the settings rail.
+    /// </summary>
+    public required string Icon { get; set; }
+
+    /// <summary>
+    /// Optional one-line description under the section heading.
+    /// </summary>
+    public string? Description { get; set; }
 
     /// <summary>
     /// The component type to render for this group.
@@ -80,7 +90,7 @@ public class SettingComponentGroup
     public object? Parameter { get; set; }
 
     /// <summary>
-    /// Order of the group. Default is 1000.
+    /// Order of the group. Each group on a page needs a unique order. Default is 1000.
     /// </summary>
     public int Order { get; set; } = 1000;
 }
