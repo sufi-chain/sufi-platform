@@ -313,6 +313,8 @@
     "Sufi.Identity:VerificationChannelUnavailable": "The selected verification channel is not available. Configure communication providers or choose another channel.",
     "Sufi.Identity:PhoneNumberRequired": "A phone number is required for SMS or voice delivery. Add a phone number to your profile.",
     "Sufi.Identity:PhoneNumberNotConfirmed": "Your phone number must be confirmed before using SMS or voice delivery.",
+    "Sufi.Identity:PhoneNumberAlreadyConfirmed": "This phone number is already confirmed. Change it from your profile.",
+    "Sufi.Identity:PhoneConfirmationSessionInvalid": "This phone confirmation session is invalid or has expired. Start again from registration or sign-in.",
     "Sufi.Identity:AuthenticatorKeyStoreUnavailable": "Authenticator app setup is not available for this account. Please contact your administrator.",
     "Sufi.Identity:CaptchaValidationFailed": "The security check failed or expired. Please complete the new security check.",
     "Sufi.Identity:SelfRegistrationDisabled": "New account registration is currently disabled.",

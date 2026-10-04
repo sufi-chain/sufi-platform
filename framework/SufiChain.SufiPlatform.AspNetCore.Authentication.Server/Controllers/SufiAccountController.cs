@@ -272,7 +272,7 @@ public abstract class SufiAccountController : AbpController
         var settingProvider = HttpContext.RequestServices.GetRequiredService<ISettingProvider>();
         if (await IdentityPhoneConfirmationRules.IsRequiredForRegistrationAsync(settingProvider))
         {
-            return Redirect($"/account/confirm-phone?userId={user.Id}");
+            return await RedirectToPhoneConfirmationAsync(user);
         }
 
         await _signInManager.SignInAsync(user, isPersistent: true, externalLoginAuthSchema);
@@ -367,7 +367,7 @@ public abstract class SufiAccountController : AbpController
         if (await IdentityPhoneConfirmationRules.IsRequiredForRegistrationAsync(settingProvider) &&
             !user.PhoneNumberConfirmed)
         {
-            return Redirect($"/account/confirm-phone?userId={user.Id}");
+            return await RedirectToPhoneConfirmationAsync(user);
         }
 
         try
@@ -577,5 +577,17 @@ public abstract class SufiAccountController : AbpController
             Logger.LogError(ex, "Error resolving tenant name '{TenantName}' via ITenantStore", tenantName);
             return null;
         }
+    }
+
+    private async Task<IActionResult> RedirectToPhoneConfirmationAsync(IdentityUser user)
+    {
+        var sessions = LazyServiceProvider.LazyGetRequiredService<IPhoneConfirmationSessionStore>();
+        if (!sessions.IsSupported)
+        {
+            return Redirect("/account/login?error=PhoneConfirmationSessionInvalid");
+        }
+
+        var sessionToken = await sessions.CreateAsync(user.Id);
+        return Redirect("/account/confirm-phone?token=" + Uri.EscapeDataString(sessionToken));
     }
 }

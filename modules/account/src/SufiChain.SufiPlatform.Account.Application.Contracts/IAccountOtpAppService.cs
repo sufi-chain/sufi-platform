@@ -14,7 +14,13 @@ public interface IAccountOtpAppService : IApplicationService
 
     Task<OtpSendResultDto> SendRegistrationOtpAsync(SendOtpInput input);
 
+    /// <summary>
+    /// Sends a registration OTP after the caller has already checked captcha.
+    /// This method is not an HTTP endpoint. HTTP callers use <see cref="SendRegistrationOtpAsync"/>.
+    /// </summary>
+    Task<OtpSendResultDto> SendVerifiedRegistrationOtpAsync(SendOtpInput input);
+
     Task<VerifyRegistrationOtpResultDto> VerifyRegistrationOtpAsync(VerifyOtpInput input);
 
-    Task<IdentityUserDto> RegisterWithOtpAsync(RegisterWithOtpDto input);
+    Task<AccountRegistrationResultDto> RegisterWithOtpAsync(RegisterWithOtpDto input);
 }
