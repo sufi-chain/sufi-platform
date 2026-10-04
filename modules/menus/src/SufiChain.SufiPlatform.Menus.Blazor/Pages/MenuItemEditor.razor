@@ -42,46 +42,6 @@
                                            FallbackText="@_model.Name"
                                            SameForAll="_sameForAll"
                                            ShowBrokenBanner="_labelBroken" />
-                    <details @ref="_labelAdvancedRef" class="menu-label-advanced">
-                        <summary>@L["MenuLabel:Advanced"]</summary>
-                        <SbStack Gap="3" Class="menu-label-advanced__body">
-                            @if (!string.IsNullOrWhiteSpace(_labelKey))
-                            {
-                                <div class="menu-label-key">
-                                    <SbTextField TValue="string"
-                                                 Value="@LabelKeyText"
-                                                 ValueChanged="@(_ => Task.CompletedTask)"
-                                                 ValueExpression="@(() => LabelKeyText)"
-                                                 Label="@L["MenuLabel:Key"]"
-                                                 ReadOnly="true"
-                                                 AdditionalAttributes="@KeyFieldAttributes" />
-                                    <SbButton Type="button"
-                                              Variant="SbButtonVariant.Outline"
-                                              OnClick="CopyLabelKeyAsync">@L["MenuLabel:Copy"]</SbButton>
-                                </div>
-                            }
-                            <SbSwitch @bind-Value="_sameForAll" Label="@L["MenuLabel:SameForAll"]" />
-                            <div>
-                                <SbTextField TValue="string"
-                                             Value="_model.Name"
-                                             ValueChanged="OnNameChangedAsync"
-                                             ValueExpression="@(() => _model.Name)"
-                                             Id="menu-item-name"
-                                             Label="@L["MenuName"]"
-                                             AriaDescribedBy="@DescribedBy("menu-item-name", _nameError)" />
-                                @if (!string.IsNullOrEmpty(_nameError))
-                                {
-                                    <div id="menu-item-name-error" class="menu-item-editor__error" role="alert">@_nameError</div>
-                                }
-                            </div>
-                            <SbTextField TValue="string"
-                                         Value="@(_model.Slug ?? string.Empty)"
-                                         ValueChanged="OnSlugChangedAsync"
-                                         ValueExpression="@(() => _model.Slug!)"
-                                         Label="@L["Slug"]"
-                                         dir="ltr" />
-                        </SbStack>
-                    </details>
                 </SbStack>
 
                 <SbStack Gap="3">
@@ -195,6 +155,42 @@
                 <details @ref="_advancedRef" class="menu-item-editor__advanced">
                     <summary>@L["MenuLink:Advanced"]</summary>
                     <div class="menu-item-editor__grid">
+                        @if (!string.IsNullOrWhiteSpace(_labelKey))
+                        {
+                            <div class="menu-item-editor__wide menu-label-key">
+                                <SbTextField TValue="string"
+                                             Value="@LabelKeyText"
+                                             ValueChanged="@(_ => Task.CompletedTask)"
+                                             ValueExpression="@(() => LabelKeyText)"
+                                             Label="@L["MenuLabel:Key"]"
+                                             ReadOnly="true"
+                                             AdditionalAttributes="@KeyFieldAttributes" />
+                                <SbButton Type="button"
+                                          Variant="SbButtonVariant.Outline"
+                                          OnClick="CopyLabelKeyAsync">@L["MenuLabel:Copy"]</SbButton>
+                            </div>
+                        }
+                        <SbSwitch @bind-Value="_sameForAll" Label="@L["MenuLabel:SameForAll"]" />
+                        <div>
+                            <SbTextField TValue="string"
+                                         Value="_model.Name"
+                                         ValueChanged="OnNameChangedAsync"
+                                         ValueExpression="@(() => _model.Name)"
+                                         Id="menu-item-name"
+                                         Label="@L["MenuName"]"
+                                         AriaDescribedBy="@DescribedBy("menu-item-name", _nameError)" />
+                            @if (!string.IsNullOrEmpty(_nameError))
+                            {
+                                <div id="menu-item-name-error" class="menu-item-editor__error" role="alert">@_nameError</div>
+                            }
+                        </div>
+                        <SbTextField TValue="string"
+                                     Value="@(_model.Slug ?? string.Empty)"
+                                     ValueChanged="OnSlugChangedAsync"
+                                     ValueExpression="@(() => _model.Slug!)"
+                                     Id="menu-item-slug"
+                                     Label="@L["Slug"]"
+                                     dir="ltr" />
                         <SbSimpleSelect TValue="string"
                                         @bind-Value="_structuralKindText"
                                         Label="@L["MenuLink:ItemType"]">

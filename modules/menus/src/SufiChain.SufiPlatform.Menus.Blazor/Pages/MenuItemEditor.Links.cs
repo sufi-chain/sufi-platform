@@ -28,14 +28,12 @@ public partial class MenuItemEditor
     private readonly List<MenuEditorError> _errorFields = new();
     private string? _focusFieldId;
     private bool _openAdvancedOnRender;
-    private bool _openLabelAdvancedOnRender;
     private bool _linkTargetTouched;
     private string? _linkErrorFieldId;
     private string? _linkErrorLabel;
     private object? _linkErrorModel;
     private string? _linkErrorMember;
     private ElementReference _advancedRef;
-    private ElementReference _labelAdvancedRef;
     private EditContext? _submittedContext;
     private ValidationMessageStore? _validationMessages;
     private IJSObjectReference? _editorModule;
@@ -51,30 +49,20 @@ public partial class MenuItemEditor
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         await base.OnAfterRenderAsync(firstRender);
-        if (_openAdvancedOnRender || _openLabelAdvancedOnRender)
+        if (_openAdvancedOnRender)
         {
+            _openAdvancedOnRender = false;
             try
             {
                 _editorModule ??= await JsRuntime.InvokeAsync<IJSObjectReference>(
                     "import",
                     "./_content/SufiChain.SufiPlatform.Menus.Blazor/menu-item-editor.js");
-                if (_openLabelAdvancedOnRender)
-                {
-                    await _editorModule.InvokeVoidAsync("openDetails", _labelAdvancedRef);
-                }
-
-                if (_openAdvancedOnRender)
-                {
-                    await _editorModule.InvokeVoidAsync("openDetails", _advancedRef);
-                }
+                await _editorModule.InvokeVoidAsync("openDetails", _advancedRef);
             }
             catch (Exception)
             {
                 // The summary still names the errors when a panel cannot be opened from script.
             }
-
-            _openAdvancedOnRender = false;
-            _openLabelAdvancedOnRender = false;
         }
 
         if (string.IsNullOrEmpty(_focusFieldId))
@@ -130,8 +118,7 @@ public partial class MenuItemEditor
             _errorFields.Add(new MenuEditorError(CultureLabel(row.Culture), row.FieldId));
         }
 
-        _openAdvancedOnRender = HasAdvancedErrors();
-        _openLabelAdvancedOnRender = !string.IsNullOrEmpty(_nameError);
+        _openAdvancedOnRender = HasAdvancedErrors() || !string.IsNullOrEmpty(_nameError);
         _focusFieldId = displayNameFailed
             ? null
             : _errorFields.Select(field => field.FieldId).FirstOrDefault(id => !string.IsNullOrEmpty(id));
