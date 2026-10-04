@@ -1,3 +1,4 @@
+using System.Reflection;
 using NSubstitute;
 using Shouldly;
 using SufiChain.SufiPlatform.Menus.Menus;
@@ -125,6 +126,23 @@ public class PublicMenuAnonymousAccessTests
         menus.TreeLoads.ShouldBe(1);
     }
 
+    [Fact]
+    public async Task Anonymous_responses_drop_permission_items_and_identity_fields()
+    {
+        var menus = new LeakyPublicMenus([]);
+
+        var tree = await menus.GetTreeAsync("Public", null, "Default");
+        tree.Select(item => item.DisplayName).ShouldBe(["Home"]);
+        tree.Single().Children.ShouldBeEmpty();
+        (await menus.FindItemBySlugAsync("Public", null, "Default", "admin")).ShouldBeNull();
+        (await menus.FindItemBySlugAsync("Public", null, "Default", "home"))!.DisplayName.ShouldBe("Home");
+
+        foreach (var name in new[] { "TenantId", "PermissionName", "CreatorId", "LastModifierId", "DeleterId" })
+        {
+            typeof(PublicMenuItemDto).GetProperty(name, BindingFlags.Instance | BindingFlags.Public).ShouldBeNull();
+        }
+    }
+
     private sealed class StubVisibility : IPublicMenuContextVisibility
     {
         private readonly string _contextType;
@@ -151,6 +169,54 @@ public class PublicMenuAnonymousAccessTests
             }
 
             return Task.FromResult<bool?>(_visible);
+        }
+    }
+
+    private sealed class LeakyPublicMenus : PublicMenuAppService
+    {
+        public LeakyPublicMenus(IEnumerable<IPublicMenuContextVisibility> policies)
+            : base(Substitute.For<IMenuRepository>(), null!, null!, null!, null!, policies)
+        {
+        }
+
+        protected override Task<List<MenuItemTreeDto>> LoadTreeAsync(string contextType, Guid? contextId, string menuName)
+        {
+            var home = new MenuItemTreeDto
+            {
+                DisplayName = "Home",
+                TenantId = Guid.NewGuid(),
+                CreatorId = Guid.NewGuid()
+            };
+            var secret = new MenuItemTreeDto
+            {
+                DisplayName = "Admin",
+                PermissionName = "Menus.Manage",
+                TenantId = Guid.NewGuid(),
+                CreatorId = Guid.NewGuid()
+            };
+            secret.Children.Add(new MenuItemTreeDto { DisplayName = "Secret child", CreatorId = Guid.NewGuid() });
+            return Task.FromResult(new List<MenuItemTreeDto> { home, secret });
+        }
+
+        protected override Task<MenuItemDto?> LoadItemBySlugAsync(string contextType, Guid? contextId, string menuName, string slug)
+        {
+            if (slug == "admin")
+            {
+                return Task.FromResult<MenuItemDto?>(new MenuItemDto
+                {
+                    DisplayName = "Admin",
+                    PermissionName = "Menus.Manage",
+                    TenantId = Guid.NewGuid(),
+                    CreatorId = Guid.NewGuid()
+                });
+            }
+
+            return Task.FromResult<MenuItemDto?>(new MenuItemDto
+            {
+                DisplayName = "Home",
+                TenantId = Guid.NewGuid(),
+                CreatorId = Guid.NewGuid()
+            });
         }
     }
 
