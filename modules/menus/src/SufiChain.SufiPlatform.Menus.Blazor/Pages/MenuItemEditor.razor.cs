@@ -1,4 +1,7 @@
+using System.Linq;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Forms;
+using Microsoft.Extensions.Logging;
 using SufiChain.SufiPlatform.Data;
 using SufiChain.SufiPlatform.Localization.Blazor.Public.Components;
 using SufiChain.SufiPlatform.Localization.Blazor.Public.Models;
@@ -118,6 +121,12 @@ public partial class MenuItemEditor : MenusComponentBase
         _tree.AddRange(tree);
         _saveError = null;
 
+        await LoadLinkCulturesAsync();
+        if (version != _loadVersion)
+        {
+            return;
+        }
+
         if (isCreate)
         {
             _model = new CreateMenuItemDto
@@ -129,6 +138,7 @@ public partial class MenuItemEditor : MenusComponentBase
             };
             _displayOrderText = "0";
             _targetIdText = string.Empty;
+            ResetLinkEditor(null);
             _parentIdText = parentId?.ToString() ?? string.Empty;
             _displayNames = EmptyNames();
             _displayNameBases = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
@@ -158,6 +168,7 @@ public partial class MenuItemEditor : MenusComponentBase
             Kind = item.Kind,
             DisplayType = item.DisplayType,
             Url = item.Url,
+            CultureUrls = item.CultureUrls?.ToDictionary(pair => pair.Key, pair => pair.Value, StringComparer.OrdinalIgnoreCase),
             LinkTarget = item.LinkTarget,
             TargetType = item.TargetType,
             TargetId = item.TargetId,
@@ -170,6 +181,7 @@ public partial class MenuItemEditor : MenusComponentBase
         };
         _displayOrderText = item.DisplayOrder.ToString();
         _targetIdText = item.TargetId?.ToString() ?? string.Empty;
+        ResetLinkEditor(item);
         _parentIdText = item.ParentId?.ToString() ?? string.Empty;
         _parentOptions = BuildOptions(item.Id);
         ApplyLoadedLabel(item.DisplayName, item.Name, item.DisplayNames, item.DisplayNameBases);
@@ -183,8 +195,9 @@ public partial class MenuItemEditor : MenusComponentBase
             _labelCultures = MenuLabelCultureMapper.Map(await MenuAppService.GetLabelCulturesAsync());
             _culturesFailed = _labelCultures.Count == 0;
         }
-        catch (Exception)
+        catch (Exception exception)
         {
+            Logger.LogWarning(exception, "Could not load menu label cultures.");
             _labelCultures = new List<MultilingualCulture>();
             _culturesFailed = true;
         }
@@ -263,13 +276,17 @@ public partial class MenuItemEditor : MenusComponentBase
         return Task.CompletedTask;
     }
 
-    private Task OnValidSubmitAsync() => ExecuteWithLoadingAsync(async () =>
+    private Task OnValidSubmitAsync(EditContext context) => ExecuteWithLoadingAsync(async () =>
     {
         _saveError = null;
-        if (_labels == null || !await _labels.ValidateAsync())
-        {
-            return;
-        }
+        _submittedContext = context;
+        _nameError = null;
+        _displayOrderError = null;
+        _targetIdError = null;
+        _linkError = null;
+        _errorFields.Clear();
+        var displayNameOk = _labels != null && await _labels.ValidateAsync();
+        var invalid = !displayNameOk;
 
         if (string.IsNullOrWhiteSpace(_model.Name))
         {
@@ -282,23 +299,29 @@ public partial class MenuItemEditor : MenusComponentBase
 
         if (string.IsNullOrWhiteSpace(_model.Name))
         {
-            await Message.ErrorAsync(L["NameIsRequired"]);
-            return;
+            _nameError = L["NameIsRequired"];
+            invalid = true;
         }
 
-        if (!MenuItemUrlRules.IsAcceptable(_model.Kind, _model.Url))
+        if (!TryApplyLinkChoice())
         {
-            await Message.ErrorAsync(L["Sufi.Menus:MenuItemInvalidUrl"]);
-            return;
+            invalid = true;
         }
 
-        if (!int.TryParse(_displayOrderText, out var displayOrder))
+        if (!TryApplyCultureUrls())
         {
-            await Message.ErrorAsync(L["DisplayOrderMustBeNumber"]);
-            return;
+            invalid = true;
         }
 
-        _model.DisplayOrder = displayOrder;
+        if (!MenuItemUrlRules.TryParseDisplayOrder(_displayOrderText, out var displayOrder))
+        {
+            _displayOrderError = L["DisplayOrderMustBeNumber"];
+            invalid = true;
+        }
+        else
+        {
+            _model.DisplayOrder = displayOrder;
+        }
 
         if (string.IsNullOrWhiteSpace(_parentIdText))
         {
@@ -319,7 +342,13 @@ public partial class MenuItemEditor : MenusComponentBase
         }
         else
         {
-            await Message.ErrorAsync(L["Menus:MenuItemInvalidTarget"]);
+            _targetIdError = L["Menus:MenuItemInvalidTarget"];
+            invalid = true;
+        }
+
+        if (invalid)
+        {
+            PublishValidation(!displayNameOk);
             return;
         }
 
@@ -342,7 +371,8 @@ public partial class MenuItemEditor : MenusComponentBase
         }
         catch (Exception ex) when (ex is BusinessException or UserFriendlyException)
         {
-            _saveError = string.IsNullOrWhiteSpace(ex.Message) ? L["Sufi.Menus:DisplayNameRequired"] : ex.Message;
+            _saveError = string.IsNullOrWhiteSpace(ex.Message) ? L["MenuLink:SaveFailed"] : ex.Message;
+            PublishSaveError();
             return;
         }
 
@@ -361,6 +391,7 @@ public partial class MenuItemEditor : MenusComponentBase
         Kind = _model.Kind,
         DisplayType = _model.DisplayType,
         Url = _model.Url,
+        CultureUrls = _model.CultureUrls,
         LinkTarget = _model.LinkTarget,
         TargetType = _model.TargetType,
         TargetId = _model.TargetId,

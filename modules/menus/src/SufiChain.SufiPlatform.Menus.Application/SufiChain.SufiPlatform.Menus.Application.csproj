@@ -1,6 +1,9 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup><TargetFramework>net10.0</TargetFramework><Nullable>enable</Nullable><RootNamespace>SufiChain.SufiPlatform.Menus</RootNamespace></PropertyGroup>
   <ItemGroup>
+    <InternalsVisibleTo Include="SufiChain.SufiPlatform.Menus.Domain.Tests" />
+  </ItemGroup>
+  <ItemGroup>
     <ProjectReference Include="../../../../framework/SufiChain.SufiPlatform.Data/SufiChain.SufiPlatform.Data.csproj" />
     <PackageReference Include="Volo.Abp.Mapperly" Version="$(AbpVersion)" />
     <PackageReference Include="Volo.Abp.Caching" Version="$(AbpVersion)" />
