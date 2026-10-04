@@ -61,7 +61,7 @@
     "Sufi.Menus:DisplayNameLooksLikeKey": "Este valor parece un identificador del sistema. Escriba el texto que verán los visitantes.",
     "Sufi.Menus:DisplayNameTooLong": "Como máximo {0} caracteres.",
     "MenuLabel:Help": "El texto que ven los visitantes en el menú.",
-    "MenuLabel:Advanced": "Configuración avanzada",
+    "MenuLabel:Advanced": "Configuración avanzada del título",
     "MenuLabel:SameForAll": "Un texto para todos los idiomas",
     "MenuLabel:Key": "Identificador del texto",
     "MenuLabel:Broken": "La etiqueta de este elemento no se guardó correctamente. Vuelva a escribirla.",
