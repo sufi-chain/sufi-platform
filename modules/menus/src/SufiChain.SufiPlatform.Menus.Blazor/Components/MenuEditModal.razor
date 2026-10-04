@@ -14,10 +14,10 @@
 
                     <BusinessTextEditor @ref="_displayNameEditor"
                                         Label="@L["DisplayName"]"
-                                        ResourceName="_localizationResourceName"
-                                        LocalizationKey="_localizationKey"
-                                        Mode="_displayNameMode"
-                                        LiteralValue="_literalDisplayName"
+                                        ResourceName="@_localizationResourceName"
+                                        LocalizationKey="@_localizationKey"
+                                        Mode="@_displayNameMode"
+                                        LiteralValue="@_literalDisplayName"
                                         LiteralValueChanged="OnLiteralDisplayNameChangedAsync"
                                         Required="true" />
 

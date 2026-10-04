@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Components;
+using SufiChain.SufiPlatform.Data;
 using SufiChain.SufiPlatform.Localization.Blazor.Public.Models;
 using SufiChain.SufiPlatform.Localization.Dtos;
 
@@ -63,7 +64,7 @@ public partial class BusinessTextEditor
 
         if (Mode == BusinessTextEditorMode.Literal)
         {
-            if (string.IsNullOrWhiteSpace(LiteralValue))
+            if (string.IsNullOrWhiteSpace(LiteralValue) || BusinessTextEditorStorage.IsPlaceholder(LiteralValue))
             {
                 _validationMessage = L["BusinessTextEditor:SaveRequired"].Value ?? string.Empty;
                 await InvokeAsync(StateHasChanged);
@@ -73,7 +74,9 @@ public partial class BusinessTextEditor
             return true;
         }
 
-        if (string.IsNullOrWhiteSpace(ResourceName) || string.IsNullOrWhiteSpace(LocalizationKey))
+        if (string.IsNullOrWhiteSpace(ResourceName)
+            || BusinessTextEditorStorage.IsPlaceholder(ResourceName)
+            || !BusinessTextEditorStorage.HasLocalizationKey(LocalizationKey))
         {
             _validationMessage = L["BusinessTextEditor:SaveRequired"].Value ?? string.Empty;
             await InvokeAsync(StateHasChanged);
@@ -118,10 +121,12 @@ public partial class BusinessTextEditor
     {
         if (Mode == BusinessTextEditorMode.Literal)
         {
-            return LiteralValue?.Trim() ?? string.Empty;
+            return BusinessTextEditorStorage.StoreLiteral(LiteralValue);
         }
 
-        return LocalizationKey?.Trim() ?? string.Empty;
+        return BusinessTextEditorStorage.HasLocalizationKey(LocalizationKey)
+            ? BusinessTextEditorStorage.StoreLocalizationKey(LocalizationKey)
+            : string.Empty;
     }
 
     private async Task EnsureCulturesLoadedAsync()

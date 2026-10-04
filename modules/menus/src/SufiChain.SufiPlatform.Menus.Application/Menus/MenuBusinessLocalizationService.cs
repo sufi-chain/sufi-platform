@@ -13,39 +13,35 @@ public class MenuBusinessLocalizationService : ITransientDependency
         StringLocalizerFactory = stringLocalizerFactory;
     }
 
-    public virtual string ResolveMenuDisplayName(string? storedDisplayName, string? contextType = null)
+    public virtual string ResolveMenuDisplayName(string? storedDisplayName, string? contextType = null, string? plainName = null)
     {
-        return ResolveDisplayName(storedDisplayName, contextType);
+        return ResolveDisplayName(storedDisplayName, contextType, plainName);
     }
 
-    public virtual string ResolveMenuItemDisplayName(string? storedDisplayName, string? contextType = null)
+    public virtual string ResolveMenuItemDisplayName(string? storedDisplayName, string? contextType = null, string? plainName = null)
     {
-        return ResolveDisplayName(storedDisplayName, contextType);
+        return ResolveDisplayName(storedDisplayName, contextType, plainName);
     }
 
-    protected virtual string ResolveDisplayName(string? storedDisplayName, string? contextType)
+    protected virtual string ResolveDisplayName(string? storedDisplayName, string? contextType, string? plainName)
     {
-        if (string.IsNullOrWhiteSpace(storedDisplayName))
+        string? localized = null;
+        if (BusinessLocalizationHelper.IsBusinessLocalizationKey(storedDisplayName))
         {
-            return string.Empty;
+            string? menuKey = null;
+            if (BusinessLocalizationHelper.TryExtractSeededMenuKey(storedDisplayName!, out var extractedMenuKey))
+            {
+                menuKey = extractedMenuKey;
+            }
+
+            var resourceName = MenuLocalizationRegistry.GetResourceName(menuKey, contextType);
+            localized = BusinessLocalizationHelper.ResolveText(
+                StringLocalizerFactory,
+                resourceName,
+                storedDisplayName,
+                fallback: string.Empty);
         }
 
-        if (!BusinessLocalizationHelper.IsBusinessLocalizationKey(storedDisplayName))
-        {
-            return storedDisplayName;
-        }
-
-        string? menuKey = null;
-        if (BusinessLocalizationHelper.TryExtractSeededMenuKey(storedDisplayName, out var extractedMenuKey))
-        {
-            menuKey = extractedMenuKey;
-        }
-
-        var resourceName = MenuLocalizationRegistry.GetResourceName(menuKey, contextType);
-        return BusinessLocalizationHelper.ResolveText(
-            StringLocalizerFactory,
-            resourceName,
-            storedDisplayName,
-            storedDisplayName);
+        return BusinessTextEditorStorage.ResolveDisplayName(storedDisplayName, plainName, localized);
     }
 }

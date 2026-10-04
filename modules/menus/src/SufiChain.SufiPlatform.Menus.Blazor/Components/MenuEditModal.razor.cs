@@ -47,6 +47,15 @@ public partial class MenuEditModal : MenusComponentBase
 
     private void InitializeDisplayNameEditor(MenuDto menu)
     {
+        if (BusinessTextEditorStorage.IsPlaceholder(menu.DisplayName))
+        {
+            _displayNameMode = BusinessTextEditorMode.Literal;
+            _literalDisplayName = menu.Name;
+            _localizationKey = null;
+            _localizationResourceName = null;
+            return;
+        }
+
         if (BusinessLocalizationHelper.IsBusinessLocalizationKey(menu.DisplayName))
         {
             _displayNameMode = BusinessTextEditorMode.Localized;

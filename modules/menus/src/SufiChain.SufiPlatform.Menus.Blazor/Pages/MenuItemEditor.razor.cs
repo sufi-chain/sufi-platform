@@ -168,6 +168,14 @@ public partial class MenuItemEditor : MenusComponentBase
 
     private void InitializeDisplayNameEditor(MenuItemDto item)
     {
+        if (BusinessTextEditorStorage.IsPlaceholder(item.DisplayName))
+        {
+            _displayNameMode = BusinessTextEditorMode.Literal;
+            _literalDisplayName = item.Name;
+            _localizationKey = null;
+            return;
+        }
+
         if (BusinessLocalizationHelper.IsBusinessLocalizationKey(item.DisplayName))
         {
             _displayNameMode = BusinessTextEditorMode.Localized;

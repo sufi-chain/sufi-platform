@@ -12,27 +12,27 @@ public abstract class MenusComponentBase : SufiComponentBase
         LocalizationResource = typeof(SufiMenusResource);
     }
 
-    protected string ResolveMenuDisplayName(string? storedDisplayName, string? contextType = null)
+    protected string ResolveMenuDisplayName(string? storedDisplayName, string? contextType = null, string? plainName = null)
     {
-        return ResolveBusinessDisplayName(storedDisplayName, contextType);
+        return ResolveBusinessDisplayName(storedDisplayName, contextType, plainName);
     }
 
-    protected string ResolveMenuItemDisplayName(string? storedDisplayName, string? contextType = null)
+    protected string ResolveMenuItemDisplayName(string? storedDisplayName, string? contextType = null, string? plainName = null)
     {
-        return ResolveBusinessDisplayName(storedDisplayName, contextType);
+        return ResolveBusinessDisplayName(storedDisplayName, contextType, plainName);
     }
 
     protected string ResolveMenuDisplayName(MenuListDto menu) =>
-        ResolveMenuDisplayName(menu.DisplayName, menu.ContextType);
+        ResolveMenuDisplayName(menu.DisplayName, menu.ContextType, menu.Name);
 
     protected string ResolveMenuDisplayName(MenuDto menu) =>
-        ResolveMenuDisplayName(menu.DisplayName, menu.ContextType);
+        ResolveMenuDisplayName(menu.DisplayName, menu.ContextType, menu.Name);
 
     protected string ResolveMenuItemDisplayName(MenuItemDto item, string? contextType = null) =>
-        ResolveMenuItemDisplayName(item.DisplayName, contextType);
+        ResolveMenuItemDisplayName(item.DisplayName, contextType, item.Name);
 
     protected string ResolveMenuItemDisplayName(MenuItemTreeDto item, string? contextType = null) =>
-        ResolveMenuItemDisplayName(item.DisplayName, contextType);
+        ResolveMenuItemDisplayName(item.DisplayName, contextType, item.Name);
 
     protected string ResolveContextType(string? contextType)
     {
@@ -45,29 +45,25 @@ public abstract class MenusComponentBase : SufiComponentBase
         return localized.ResourceNotFound ? contextType : localized.Value ?? contextType;
     }
 
-    private string ResolveBusinessDisplayName(string? storedDisplayName, string? contextType)
+    private string ResolveBusinessDisplayName(string? storedDisplayName, string? contextType, string? plainName)
     {
-        if (string.IsNullOrWhiteSpace(storedDisplayName))
+        string? localized = null;
+        if (BusinessLocalizationHelper.IsBusinessLocalizationKey(storedDisplayName))
         {
-            return string.Empty;
+            string? menuKey = null;
+            if (BusinessLocalizationHelper.TryExtractSeededMenuKey(storedDisplayName!, out var extractedMenuKey))
+            {
+                menuKey = extractedMenuKey;
+            }
+
+            var resourceName = MenuLocalizationRegistry.GetResourceName(menuKey, contextType);
+            localized = BusinessLocalizationHelper.ResolveText(
+                StringLocalizerFactory,
+                resourceName,
+                storedDisplayName,
+                fallback: string.Empty);
         }
 
-        if (!BusinessLocalizationHelper.IsBusinessLocalizationKey(storedDisplayName))
-        {
-            return storedDisplayName;
-        }
-
-        string? menuKey = null;
-        if (BusinessLocalizationHelper.TryExtractSeededMenuKey(storedDisplayName, out var extractedMenuKey))
-        {
-            menuKey = extractedMenuKey;
-        }
-
-        var resourceName = MenuLocalizationRegistry.GetResourceName(menuKey, contextType);
-        return BusinessLocalizationHelper.ResolveText(
-            StringLocalizerFactory,
-            resourceName,
-            storedDisplayName,
-            storedDisplayName);
+        return BusinessTextEditorStorage.ResolveDisplayName(storedDisplayName, plainName, localized);
     }
 }
