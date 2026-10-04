@@ -364,7 +364,6 @@
     "Permission:OrganizationUnits.Delete": "Delete organization units",
     "Permission:OrganizationUnits.ManageMembers": "Manage organization unit members",
     "Permission:OrganizationUnits.ManageRoles": "Manage organization unit roles",
-    "Public": "Public",
     "Static": "Built-in"
   ,"Hooshvare:SufiIdentity:AdminAdvisor:DisplayName":"Identity Advisor"}
 }

@@ -366,7 +366,6 @@
     "Permission:OrganizationUnits.Delete": "حذف الوحدات التنظيمية",
     "Permission:OrganizationUnits.ManageMembers": "إدارة أعضاء الوحدات التنظيمية",
     "Permission:OrganizationUnits.ManageRoles": "إدارة أدوار الوحدات التنظيمية",
-    "Public": "عام",
-    "Static": "مضمّن"
+    "Static": "مدمج"
   }
 }

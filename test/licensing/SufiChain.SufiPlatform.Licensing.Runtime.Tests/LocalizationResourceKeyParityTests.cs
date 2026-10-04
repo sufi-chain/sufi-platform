@@ -36,16 +36,15 @@ public class LocalizationResourceKeyParityTests
 
     [Theory]
     [InlineData("sufi-platform/modules/tags/src/SufiChain.SufiPlatform.Tags.Domain.Shared/Localization/Tags", "DeleteTag", "Delete tag", "حذف برچسب", "حذف الوسم", "Eliminar etiqueta")]
-    [InlineData("sufi-platform/modules/identity/src/SufiChain.SufiPlatform.Identity.Domain.Shared/Localization/Identity", "Public", "Public", "عمومی", "عام", "Público")]
-    [InlineData("sufi-platform/modules/identity/src/SufiChain.SufiPlatform.Identity.Domain.Shared/Localization/Identity", "Static", "Built-in", "پیش\u200cساخته", "مضمّن", "Integrado")]
+    [InlineData("sufi-platform/modules/identity/src/SufiChain.SufiPlatform.Identity.Domain.Shared/Localization/Identity", "Static", "Built-in", "پیش\u200cساخته", "مدمج", "Integrado")]
     [InlineData("sufi-platform/modules/file-manager/src/SufiChain.SufiPlatform.FileManager.Domain.Shared/Localization/FileManager", "Statistics", "Statistics", "آمار", "الإحصاءات", "Estadísticas")]
     [InlineData("sufi-platform/modules/file-manager/src/SufiChain.SufiPlatform.FileManager.Domain.Shared/Localization/FileManager", "Images", "Images", "تصاویر", "الصور", "Imágenes")]
-    [InlineData("sufi-platform/modules/file-manager/src/SufiChain.SufiPlatform.FileManager.Domain.Shared/Localization/FileManager", "Videos", "Videos", "ویدیوها", "الفيديوهات", "Vídeos")]
+    [InlineData("sufi-platform/modules/file-manager/src/SufiChain.SufiPlatform.FileManager.Domain.Shared/Localization/FileManager", "Videos", "Videos", "ویدیوها", "مقاطع الفيديو", "Vídeos")]
     [InlineData("sufi-platform/modules/menus/src/SufiChain.SufiPlatform.Menus.Domain.Shared/Localization/Menus", "DeleteMenu", "Delete menu", "حذف منو", "حذف القائمة", "Eliminar menú")]
     [InlineData("sufi-platform/modules/localization/src/SufiChain.SufiPlatform.Localization.Domain.Shared/Localization/Localization", "SupportedCultures", "Supported languages", "زبان\u200cهای پشتیبانی\u200cشده", "اللغات المدعومة", "Idiomas admitidos")]
     [InlineData("pro-modules/helpdesk/src/SufiChain.SufiPlatform.HelpDesk.KnowledgeBase.Domain.Shared/Localization/KnowledgeBase", "Version", "Version", "نسخه", "الإصدار", "Versión")]
-    [InlineData("pro-modules/helpdesk/src/SufiChain.SufiPlatform.HelpDesk.KnowledgeBase.Domain.Shared/Localization/KnowledgeBase", "KnowledgeBase:Select", "Select", "انتخاب", "اختيار", "Seleccionar")]
-    [InlineData("pro-modules/helpdesk/src/SufiChain.SufiPlatform.HelpDesk.KnowledgeBase.Domain.Shared/Localization/KnowledgeBase", "Breadcrumb", "Breadcrumb", "مسیر صفحه", "مسار الصفحة", "Ruta de navegación")]
+    [InlineData("pro-modules/helpdesk/src/SufiChain.SufiPlatform.HelpDesk.KnowledgeBase.Domain.Shared/Localization/KnowledgeBase", "KnowledgeBase:Select", "Select", "انتخاب", "تحديد", "Seleccionar")]
+    [InlineData("pro-modules/helpdesk/src/SufiChain.SufiPlatform.HelpDesk.KnowledgeBase.Domain.Shared/Localization/KnowledgeBase", "Breadcrumb", "Breadcrumb", "مسیر صفحه", "مسار التنقل", "Ruta de navegación")]
     [InlineData("pro-modules/helpdesk/src/SufiChain.SufiPlatform.HelpDesk.KnowledgeBase.Domain.Shared/Localization/KnowledgeBase", "Updated", "Last updated", "آخرین به\u200cروزرسانی", "آخر تحديث", "Última actualización")]
     public void Raw_keys_exist_in_english_persian_arabic_and_spanish(
         string relativeDirectory,
@@ -87,12 +86,17 @@ public class LocalizationResourceKeyParityTests
         var knowledgeBase = File.ReadAllText(Path.Combine(root, "pro-modules/helpdesk/src/SufiChain.SufiPlatform.HelpDesk.KnowledgeBase.Domain.Shared/Localization/KnowledgeBase/fa.json".Replace('/', Path.DirectorySeparatorChar)));
         var ticketing = File.ReadAllText(Path.Combine(root, "pro-modules/helpdesk/src/SufiChain.SufiPlatform.HelpDesk.Ticketing.Domain.Shared/Localization/Ticketing/fa.json".Replace('/', Path.DirectorySeparatorChar)));
         var saas = File.ReadAllText(Path.Combine(root, "pro-modules/saas/src/SufiChain.SufiPlatform.SufiSaas.Domain.Shared/Localization/SufiSaas/fa.json".Replace('/', Path.DirectorySeparatorChar)));
+        var saasEnglish = File.ReadAllText(Path.Combine(root, "pro-modules/saas/src/SufiChain.SufiPlatform.SufiSaas.Domain.Shared/Localization/SufiSaas/en.json".Replace('/', Path.DirectorySeparatorChar)));
+        var roles = File.ReadAllText(Path.Combine(root, "sufi-platform/modules/identity/src/SufiChain.SufiPlatform.Identity.Blazor/Pages/RoleManagement.razor".Replace('/', Path.DirectorySeparatorChar)));
 
         contacts.ShouldNotContain("میز خدمت");
         hooshvare.ShouldNotContain("میز خدمت");
         knowledgeBase.ShouldNotContain("میز خدمت");
         ticketing.ShouldNotContain("میز کمک");
         saas.ShouldNotContain("Community Education");
+        saasEnglish.ShouldNotContain("Community Education");
+        saasEnglish.ShouldContain("Community Edition");
+        roles.ShouldContain("L[\"PublicRole\"]");
         Regex.IsMatch(hooshvare, "هوشوار(?!ه)").ShouldBeFalse();
         knowledgeBase.ShouldContain("راهنمای سکوی صوفی");
         saas.ShouldContain("نسخه\u0654 جامعه");

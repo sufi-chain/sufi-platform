@@ -379,7 +379,6 @@
     "Permission:OrganizationUnits.Delete": "حذف واحد سازمانی",
     "Permission:OrganizationUnits.ManageMembers": "مدیریت اعضای واحد سازمانی",
     "Permission:OrganizationUnits.ManageRoles": "مدیریت نقش‌های واحد سازمانی",
-    "Public": "عمومی",
     "Static": "پیش‌ساخته"
   ,"Hooshvare:SufiIdentity:AdminAdvisor:DisplayName":"مشاور هویت"}
 }

@@ -16,7 +16,6 @@
     "Tags:RelationHistoryLimit": "The relation history limit has been reached.",
     "Tags:RelationRetracted": "This relation has been retracted.",
     "Tags:TagAlreadyExists": "A tag with this name already exists.",
-    "Tags": "Tags Management",
     "Feature:SufiTags.Enable": "Tags Management",
     "Feature:SufiTags.Enable.Description": "Enable the Tags Management module for this edition.",
     "Feature:SufiTags.Tags": "Tags",
