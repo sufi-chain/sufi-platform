@@ -1,3 +1,4 @@
+using System.Linq;
 using Microsoft.AspNetCore.Components;
 using SufiChain.SufiPlatform.Data;
 using SufiChain.SufiPlatform.Localization.Blazor.Public.Components;
@@ -39,7 +40,6 @@ public partial class MenuItemEditor : MenusComponentBase
     private CreateMenuItemDto _model = new();
     private string _displayOrderText = "0";
     private string _targetIdText = string.Empty;
-    private string _cultureUrlsText = string.Empty;
     private string _parentIdText = string.Empty;
     private BusinessTextEditorMode _displayNameMode = BusinessTextEditorMode.Literal;
     private string? _localizationResourceName;
@@ -108,6 +108,12 @@ public partial class MenuItemEditor : MenusComponentBase
         _tree.Clear();
         _tree.AddRange(tree);
 
+        await LoadLinkCulturesAsync();
+        if (version != _loadVersion)
+        {
+            return;
+        }
+
         if (isCreate)
         {
             _model = new CreateMenuItemDto
@@ -119,7 +125,7 @@ public partial class MenuItemEditor : MenusComponentBase
             };
             _displayOrderText = "0";
             _targetIdText = string.Empty;
-            _cultureUrlsText = string.Empty;
+            ResetLinkEditor(null);
             _parentIdText = parentId?.ToString() ?? string.Empty;
             _displayNameMode = string.Equals(_menuContextType, "Public", StringComparison.OrdinalIgnoreCase)
                 ? BusinessTextEditorMode.Localized
@@ -150,6 +156,7 @@ public partial class MenuItemEditor : MenusComponentBase
             Kind = item.Kind,
             DisplayType = item.DisplayType,
             Url = item.Url,
+            CultureUrls = item.CultureUrls?.ToDictionary(pair => pair.Key, pair => pair.Value, StringComparer.OrdinalIgnoreCase),
             LinkTarget = item.LinkTarget,
             TargetType = item.TargetType,
             TargetId = item.TargetId,
@@ -162,7 +169,7 @@ public partial class MenuItemEditor : MenusComponentBase
         };
         _displayOrderText = item.DisplayOrder.ToString();
         _targetIdText = item.TargetId?.ToString() ?? string.Empty;
-        _cultureUrlsText = MenuItemUrlRules.FormatCultureUrls(item.CultureUrls);
+        ResetLinkEditor(item);
         _parentIdText = item.ParentId?.ToString() ?? string.Empty;
         _parentOptions = BuildOptions(item.Id);
         InitializeDisplayNameEditor(item);
@@ -252,33 +259,42 @@ public partial class MenuItemEditor : MenusComponentBase
             return;
         }
 
+        _nameError = null;
+        _displayOrderError = null;
+        _targetIdError = null;
+        _linkError = null;
+        var invalid = false;
+
         if (string.IsNullOrWhiteSpace(_model.Name))
         {
-            await Message.ErrorAsync(L["NameIsRequired"]);
-            return;
+            _nameError = L["NameIsRequired"];
+            invalid = true;
         }
 
-        if (!MenuItemUrlRules.IsAcceptable(_model.Kind, _model.Url))
+        if (!TryApplyLinkChoice())
         {
-            await Message.ErrorAsync(L["Sufi.Menus:MenuItemInvalidUrl"]);
-            return;
+            invalid = true;
         }
 
-        if (!MenuItemUrlRules.TryParseCultureUrls(_cultureUrlsText, out var cultureUrls))
+        if (!TryApplyCultureUrls())
         {
-            await Message.ErrorAsync(L["Sufi.Menus:MenuItemInvalidUrl"]);
-            return;
+            invalid = true;
         }
 
-        _model.CultureUrls = cultureUrls;
-
-        if (!int.TryParse(_displayOrderText, out var displayOrder))
+        if (!MenuItemUrlRules.TryParseDisplayOrder(_displayOrderText, out var displayOrder))
         {
-            await Message.ErrorAsync(L["DisplayOrderMustBeNumber"]);
-            return;
+            _displayOrderError = L["DisplayOrderMustBeNumber"];
+            invalid = true;
+        }
+        else
+        {
+            _model.DisplayOrder = displayOrder;
         }
 
-        _model.DisplayOrder = displayOrder;
+        if (invalid)
+        {
+            return;
+        }
 
         if (string.IsNullOrWhiteSpace(_parentIdText))
         {
@@ -299,7 +315,7 @@ public partial class MenuItemEditor : MenusComponentBase
         }
         else
         {
-            await Message.ErrorAsync(L["Menus:MenuItemInvalidTarget"]);
+            _targetIdError = L["Menus:MenuItemInvalidTarget"];
             return;
         }
 

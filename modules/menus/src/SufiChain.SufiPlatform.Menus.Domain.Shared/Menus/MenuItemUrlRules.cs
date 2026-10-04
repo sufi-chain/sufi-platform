@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Text;
 
 namespace SufiChain.SufiPlatform.Menus.Menus;
@@ -20,7 +21,12 @@ public static class MenuItemUrlRules
             return kind is not MenuItemKind.InternalRoute and not MenuItemKind.ExternalUrl;
         }
 
-        return Normalize(url) != null;
+        return kind switch
+        {
+            MenuItemKind.InternalRoute => IsInternalUrl(Normalize(url)),
+            MenuItemKind.ExternalUrl => IsExternal(Normalize(url)),
+            _ => Normalize(url) != null
+        };
     }
 
     public static string? Normalize(string? url)
@@ -109,6 +115,258 @@ public static class MenuItemUrlRules
             || normalizedUrl.StartsWith("tel:", StringComparison.OrdinalIgnoreCase);
     }
 
+    /// <summary>
+    /// A stored <c>#id</c> is rendered on the current culture path so <c>&lt;base href="/"&gt;</c>
+    /// does not send the visitor to the unprefixed root.
+    /// </summary>
+    public static string? ToPublicHref(string? url, string? culturePath)
+    {
+        var normalized = Normalize(url);
+        if (normalized == null)
+        {
+            return null;
+        }
+
+        if (normalized[0] != '#')
+        {
+            return normalized;
+        }
+
+        if (!IsSectionId(normalized.Substring(1)))
+        {
+            return null;
+        }
+
+        var path = string.IsNullOrWhiteSpace(culturePath) ? "/" : culturePath.Trim();
+        if (!path.StartsWith("/", StringComparison.Ordinal))
+        {
+            path = "/" + path;
+        }
+
+        if (path.Length > 1)
+        {
+            path = path.TrimEnd('/');
+        }
+
+        return path + normalized;
+    }
+
+    public static bool TryNormalizeSitePage(string? input, out string? url)
+    {
+        url = null;
+        if (string.IsNullOrWhiteSpace(input))
+        {
+            return false;
+        }
+
+        var value = input.Trim();
+        if (!value.StartsWith("/", StringComparison.Ordinal) || value.Contains('#'))
+        {
+            return false;
+        }
+
+        url = Normalize(value);
+        return IsInternalUrl(url);
+    }
+
+    public static bool TryNormalizeSection(bool currentPage, string? pagePath, string? sectionId, out string? url)
+    {
+        url = null;
+        var id = sectionId?.Trim() ?? string.Empty;
+        if (!IsSectionId(id))
+        {
+            return false;
+        }
+
+        if (currentPage || string.IsNullOrWhiteSpace(pagePath))
+        {
+            url = "#" + id;
+            return true;
+        }
+
+        var path = pagePath.Trim();
+        if (!TryNormalizeSitePage(path, out var page))
+        {
+            return false;
+        }
+
+        url = page + "#" + id;
+        return true;
+    }
+
+    public static bool TryNormalizeWebsite(string? input, out string? url)
+    {
+        url = null;
+        if (string.IsNullOrWhiteSpace(input))
+        {
+            return false;
+        }
+
+        var value = ToLatinDigits(input.Trim());
+        if (value.StartsWith("/", StringComparison.Ordinal)
+            || value.StartsWith("#", StringComparison.Ordinal)
+            || value.StartsWith("mailto:", StringComparison.OrdinalIgnoreCase)
+            || value.StartsWith("tel:", StringComparison.OrdinalIgnoreCase)
+            || value.StartsWith("javascript:", StringComparison.OrdinalIgnoreCase))
+        {
+            return false;
+        }
+
+        var candidate = value.Contains("://", StringComparison.Ordinal) ? value : "https://" + value;
+        url = Normalize(candidate);
+        return url != null && (url.StartsWith("https://", StringComparison.OrdinalIgnoreCase)
+            || url.StartsWith("http://", StringComparison.OrdinalIgnoreCase));
+    }
+
+    public static bool TryNormalizeEmail(string? input, out string? url)
+    {
+        url = null;
+        if (string.IsNullOrWhiteSpace(input))
+        {
+            return false;
+        }
+
+        var value = ToLatinDigits(input.Trim());
+        if (value.StartsWith("mailto:", StringComparison.OrdinalIgnoreCase))
+        {
+            value = value.Substring("mailto:".Length);
+        }
+
+        if (value.Length == 0 || value.IndexOf('@') <= 0 || value.IndexOf('@') != value.LastIndexOf('@'))
+        {
+            return false;
+        }
+
+        url = Normalize("mailto:" + value);
+        return url != null;
+    }
+
+    public static bool TryNormalizePhone(string? input, out string? url)
+    {
+        url = null;
+        if (string.IsNullOrWhiteSpace(input))
+        {
+            return false;
+        }
+
+        var value = ToLatinDigits(input.Trim());
+        if (value.StartsWith("tel:", StringComparison.OrdinalIgnoreCase))
+        {
+            value = value.Substring("tel:".Length);
+        }
+
+        var builder = new StringBuilder(value.Length);
+        var digits = 0;
+        foreach (var ch in value)
+        {
+            if (ch is >= '0' and <= '9')
+            {
+                builder.Append(ch);
+                digits++;
+                continue;
+            }
+
+            if (ch is '+' or '-' or '(' or ')' || char.IsWhiteSpace(ch))
+            {
+                if (!char.IsWhiteSpace(ch))
+                {
+                    builder.Append(ch);
+                }
+
+                continue;
+            }
+
+            return false;
+        }
+
+        if (digits < 3)
+        {
+            return false;
+        }
+
+        url = Normalize("tel:" + builder);
+        return url != null;
+    }
+
+    public static string? NormalizeCultureOverride(string? input)
+    {
+        if (string.IsNullOrWhiteSpace(input))
+        {
+            return null;
+        }
+
+        var value = input.Trim();
+        if (value[0] is '/' or '#')
+        {
+            return IsAcceptable(MenuItemKind.InternalRoute, value) ? Normalize(value) : null;
+        }
+
+        if (value.StartsWith("mailto:", StringComparison.OrdinalIgnoreCase)
+            || (value.IndexOf('@') > 0 && value.IndexOf("://", StringComparison.Ordinal) < 0))
+        {
+            return TryNormalizeEmail(value, out var email) ? email : null;
+        }
+
+        if (value.StartsWith("tel:", StringComparison.OrdinalIgnoreCase) || LooksLikePhone(value))
+        {
+            return TryNormalizePhone(value, out var phone) ? phone : null;
+        }
+
+        return TryNormalizeWebsite(value, out var website) ? website : null;
+    }
+
+    public static bool TryParseDisplayOrder(string? text, out int displayOrder)
+    {
+        displayOrder = 0;
+        if (string.IsNullOrWhiteSpace(text))
+        {
+            return false;
+        }
+
+        return int.TryParse(ToLatinDigits(text.Trim()), NumberStyles.Integer, CultureInfo.InvariantCulture, out displayOrder);
+    }
+
+    public static string ToLatinDigits(string value)
+    {
+        var builder = new StringBuilder(value.Length);
+        foreach (var ch in value)
+        {
+            if (ch is >= '\u06F0' and <= '\u06F9')
+            {
+                builder.Append((char)('0' + (ch - '\u06F0')));
+            }
+            else if (ch is >= '\u0660' and <= '\u0669')
+            {
+                builder.Append((char)('0' + (ch - '\u0660')));
+            }
+            else
+            {
+                builder.Append(ch);
+            }
+        }
+
+        return builder.ToString();
+    }
+
+    public static bool IsSectionId(string? id)
+    {
+        if (string.IsNullOrEmpty(id) || id![0] is < 'A' or > 'Z' and < 'a' or > 'z')
+        {
+            return false;
+        }
+
+        for (var i = 1; i < id.Length; i++)
+        {
+            var ch = id[i];
+            if (ch is (< 'A' or > 'Z') and (< 'a' or > 'z') and (< '0' or > '9') and not '_' and not '-')
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
     public static string? Resolve(string? defaultUrl, IReadOnlyDictionary<string, string>? cultureUrls, string? culture)
     {
         var selected = SelectOverride(cultureUrls, culture);
@@ -142,7 +400,7 @@ public static class MenuItemUrlRules
             }
 
             var culture = CanonicalCulture(pair.Key);
-            var url = Normalize(pair.Value);
+            var url = NormalizeCultureOverride(pair.Value);
             if (culture == null || url == null)
             {
                 normalized.Clear();
@@ -321,6 +579,49 @@ public static class MenuItemUrlRules
         }
 
         return null;
+    }
+
+    private static bool IsInternalUrl(string? normalized)
+    {
+        if (string.IsNullOrEmpty(normalized) || IsExternal(normalized))
+        {
+            return false;
+        }
+
+        if (normalized![0] == '#')
+        {
+            return IsSectionId(normalized.Substring(1));
+        }
+
+        if (normalized[0] != '/')
+        {
+            return false;
+        }
+
+        var hash = normalized.IndexOf('#');
+        return hash < 0 || IsSectionId(normalized.Substring(hash + 1));
+    }
+
+    private static bool LooksLikePhone(string value)
+    {
+        var digits = 0;
+        foreach (var ch in ToLatinDigits(value))
+        {
+            if (ch is >= '0' and <= '9')
+            {
+                digits++;
+                continue;
+            }
+
+            if (ch is '+' or '-' or '(' or ')' || char.IsWhiteSpace(ch))
+            {
+                continue;
+            }
+
+            return false;
+        }
+
+        return digits >= 3;
     }
 
     private static bool IsAllowedScheme(string scheme) =>

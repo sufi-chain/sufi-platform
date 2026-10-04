@@ -50,12 +50,12 @@ public class MenuItemUrlRulesTests
     [Theory]
     [InlineData(MenuItemKind.InternalRoute, "#top", true)]
     [InlineData(MenuItemKind.InternalRoute, "/docs", true)]
-    [InlineData(MenuItemKind.InternalRoute, "https://example.com", true)]
+    [InlineData(MenuItemKind.InternalRoute, "https://example.com", false)]
     [InlineData(MenuItemKind.InternalRoute, "javascript:alert(1)", false)]
     [InlineData(MenuItemKind.InternalRoute, null, false)]
     [InlineData(MenuItemKind.ExternalUrl, "mailto:user@example.com", true)]
     [InlineData(MenuItemKind.ExternalUrl, "tel:+1555", true)]
-    [InlineData(MenuItemKind.ExternalUrl, "/only-a-path", true)]
+    [InlineData(MenuItemKind.ExternalUrl, "/only-a-path", false)]
     [InlineData(MenuItemKind.ExternalUrl, null, false)]
     [InlineData(MenuItemKind.Container, null, true)]
     [InlineData(MenuItemKind.Container, "javascript:alert(1)", false)]
@@ -174,5 +174,86 @@ public class MenuItemUrlRulesTests
             item.SetCultureUrls(new Dictionary<string, string> { ["en"] = "javascript:alert(1)" }));
         cultureError.Code.ShouldBe(MenusErrorCodes.MenuItemInvalidUrl);
         item.GetCultureUrls()["en"].ShouldBe("/en/about");
+    }
+
+    [Theory]
+    [InlineData("#solve", "/fa", "/fa#solve")]
+    [InlineData("#solve", "/", "/#solve")]
+    [InlineData("#solve", "/ar", "/ar#solve")]
+    [InlineData("#solve", "/es", "/es#solve")]
+    [InlineData("#solve", "/fa/", "/fa#solve")]
+    [InlineData("/about#solve", "/fa", "/about#solve")]
+    [InlineData("https://example.com", "/fa", "https://example.com")]
+    public void ToPublicHref_Should_Place_Bare_Anchors_On_The_Culture_Path(string url, string culturePath, string expected)
+    {
+        MenuItemUrlRules.ToPublicHref(url, culturePath).ShouldBe(expected);
+    }
+
+    [Fact]
+    public void ToPublicHref_Should_Not_Ship_An_Invalid_Bare_Anchor()
+    {
+        MenuItemUrlRules.ToPublicHref("#", "/fa").ShouldBeNull();
+        MenuItemUrlRules.ToPublicHref("#1solve", "/fa").ShouldBeNull();
+    }
+
+    [Fact]
+    public void Website_Should_Add_Https_And_Reject_Internal_Or_Script_Urls()
+    {
+        MenuItemUrlRules.TryNormalizeWebsite("example.com", out var added).ShouldBeTrue();
+        added.ShouldBe("https://example.com");
+        MenuItemUrlRules.TryNormalizeWebsite("https://example.com/docs", out var kept).ShouldBeTrue();
+        kept.ShouldBe("https://example.com/docs");
+        MenuItemUrlRules.TryNormalizeWebsite("/x", out _).ShouldBeFalse();
+        MenuItemUrlRules.TryNormalizeWebsite("javascript:alert(1)", out _).ShouldBeFalse();
+        MenuItemUrlRules.IsAcceptable(MenuItemKind.InternalRoute, "https://example.com").ShouldBeFalse();
+        MenuItemUrlRules.IsAcceptable(MenuItemKind.ExternalUrl, "/x").ShouldBeFalse();
+    }
+
+    [Fact]
+    public void Email_And_Phone_Should_Store_Schemes_And_Latin_Digits()
+    {
+        MenuItemUrlRules.TryNormalizeEmail("user@example.com", out var email).ShouldBeTrue();
+        email.ShouldBe("mailto:user@example.com");
+        MenuItemUrlRules.TryNormalizePhone("۰۹۱۲۳۴۵۶۷۸۹", out var phone).ShouldBeTrue();
+        phone.ShouldBe("tel:09123456789");
+        MenuItemUrlRules.TryNormalizePhone("tel:+98 21", out var spaced).ShouldBeTrue();
+        spaced.ShouldBe("tel:+9821");
+        MenuItemUrlRules.IsAcceptable(MenuItemKind.ExternalUrl, email).ShouldBeTrue();
+        MenuItemUrlRules.IsAcceptable(MenuItemKind.InternalRoute, phone).ShouldBeFalse();
+    }
+
+    [Fact]
+    public void Section_Should_Store_A_Bare_Id_For_The_Current_Page()
+    {
+        MenuItemUrlRules.TryNormalizeSection(currentPage: true, pagePath: "/ignored", sectionId: "solve", out var current).ShouldBeTrue();
+        current.ShouldBe("#solve");
+        MenuItemUrlRules.TryNormalizeSection(currentPage: false, pagePath: "/about", sectionId: "solve", out var page).ShouldBeTrue();
+        page.ShouldBe("/about#solve");
+        MenuItemUrlRules.TryNormalizeSection(currentPage: true, pagePath: null, sectionId: "راه", out _).ShouldBeFalse();
+        MenuItemUrlRules.IsAcceptable(MenuItemKind.InternalRoute, "#solve").ShouldBeTrue();
+        MenuItemUrlRules.IsAcceptable(MenuItemKind.ExternalUrl, "#solve").ShouldBeFalse();
+    }
+
+    [Theory]
+    [InlineData("۱۰", 10)]
+    [InlineData("١٠", 10)]
+    [InlineData("10", 10)]
+    [InlineData("-3", -3)]
+    public void Display_Order_Should_Accept_Persian_Arabic_And_Latin_Digits(string text, int expected)
+    {
+        MenuItemUrlRules.TryParseDisplayOrder(text, out var value).ShouldBeTrue();
+        value.ShouldBe(expected);
+    }
+
+    [Fact]
+    public void Culture_Override_Should_Fall_Back_When_A_Culture_Has_No_Row()
+    {
+        var parsed = MenuItemUrlRules.TryNormalizeCultureUrls(
+            new Dictionary<string, string> { ["fa"] = "example.com" },
+            out var urls);
+        parsed.ShouldBeTrue();
+        urls["fa"].ShouldBe("https://example.com");
+        MenuItemUrlRules.Resolve("/about", urls, "en").ShouldBe("/about");
+        MenuItemUrlRules.Resolve("/about", urls, "fa").ShouldBe("https://example.com");
     }
 }
