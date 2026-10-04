@@ -12,6 +12,7 @@ using SufiChain.SufiPlatform.UI.Abstractions.Account;
 using SufiChain.SufiPlatform.UI.MultiTenancy;
 using Volo.Abp;
 using Volo.Abp.AspNetCore.Mvc;
+using Volo.Abp.Domain.Entities;
 using Volo.Abp.Settings;
 using Volo.Abp.MultiTenancy;
 using Volo.Abp.Security.Claims;
@@ -438,26 +439,46 @@ public abstract class SufiAccountController : AbpController
         [FromQuery] string? returnUrl)
     {
         returnUrl = NormalizeReturnUrl(returnUrl);
+        var sourceInfo = new IdentityLinkUserInfo(sourceLinkUserId, sourceLinkTenantId);
+        var targetInfo = new IdentityLinkUserInfo(targetLinkUserId, targetLinkTenantId);
+        var linkUserManager = HttpContext.RequestServices.GetRequiredService<IdentityLinkUserManager>();
 
         if (string.IsNullOrWhiteSpace(sourceLinkToken))
         {
+            RejectLinkLogin(sourceInfo, targetInfo, LinkLoginRejectionReasons.MissingToken);
             return Redirect($"/account/login?error=LinkLoginFailed&returnUrl={Uri.EscapeDataString(returnUrl)}");
         }
 
-        var linkUserManager = HttpContext.RequestServices.GetRequiredService<IdentityLinkUserManager>();
-        var sourceInfo = new IdentityLinkUserInfo(sourceLinkUserId, sourceLinkTenantId);
-        var targetInfo = new IdentityLinkUserInfo(targetLinkUserId, targetLinkTenantId);
-
-        if (!await linkUserManager.VerifyLinkTokenAsync(
+        bool tokenValid;
+        try
+        {
+            tokenValid = await linkUserManager.VerifyLinkTokenAsync(
                 sourceInfo,
                 sourceLinkToken,
-                LinkUserTokenProviderConsts.LinkUserLoginTokenPurpose))
+                LinkUserTokenProviderConsts.LinkUserLoginTokenPurpose);
+        }
+        catch (Exception ex) when (ex is EntityNotFoundException)
         {
+            RejectLinkLogin(sourceInfo, targetInfo, LinkLoginRejectionReasons.SourceUserNotFound);
+            return Redirect($"/account/login?error=LinkLoginFailed&returnUrl={Uri.EscapeDataString(returnUrl)}");
+        }
+        catch (Exception)
+        {
+            RejectLinkLogin(sourceInfo, targetInfo, LinkLoginRejectionReasons.TokenInvalid);
+            return Redirect($"/account/login?error=LinkLoginFailed&returnUrl={Uri.EscapeDataString(returnUrl)}");
+        }
+
+        if (!tokenValid)
+        {
+            var reason = await DescribeTokenFailureAsync(sourceInfo, sourceLinkToken);
+            RejectLinkLogin(sourceInfo, targetInfo, reason);
             return Redirect($"/account/login?error=LinkLoginFailed&returnUrl={Uri.EscapeDataString(returnUrl)}");
         }
 
         if (!await linkUserManager.IsLinkedAsync(sourceInfo, targetInfo))
         {
+            var reason = await linkUserManager.DescribeMissingDirectLinkAsync(sourceInfo, targetInfo);
+            RejectLinkLogin(sourceInfo, targetInfo, reason);
             return Redirect($"/account/login?error=LinkLoginFailed&returnUrl={Uri.EscapeDataString(returnUrl)}");
         }
 
@@ -469,6 +490,7 @@ public abstract class SufiAccountController : AbpController
             targetUser = await _userManager.FindByIdAsync(targetLinkUserId.ToString());
             if (targetUser == null)
             {
+                RejectLinkLogin(sourceInfo, targetInfo, LinkLoginRejectionReasons.TargetUserNotFound);
                 return Redirect($"/account/login?error=UserNotFound&returnUrl={Uri.EscapeDataString(returnUrl)}");
             }
 
@@ -481,6 +503,46 @@ public abstract class SufiAccountController : AbpController
             targetUser.UserName);
 
         return LocalRedirect(returnUrl);
+    }
+
+    protected virtual void RejectLinkLogin(
+        IdentityLinkUserInfo source,
+        IdentityLinkUserInfo target,
+        string reason)
+    {
+        LinkLoginRejectionLog.Write(
+            Logger,
+            reason,
+            source.UserId,
+            source.TenantId,
+            target.UserId,
+            target.TenantId);
+    }
+
+    protected virtual async Task<string> DescribeTokenFailureAsync(
+        IdentityLinkUserInfo source,
+        string sourceLinkToken)
+    {
+        var describer = HttpContext.RequestServices.GetService<ILinkLoginTokenFailureDescriber>();
+        if (describer == null)
+        {
+            return LinkLoginRejectionReasons.TokenInvalid;
+        }
+
+        try
+        {
+            var reason = await describer.DescribeAsync(
+                source,
+                sourceLinkToken,
+                LinkUserTokenProviderConsts.LinkUserLoginTokenPurpose);
+            return string.IsNullOrWhiteSpace(reason)
+                ? LinkLoginRejectionReasons.TokenInvalid
+                : reason;
+        }
+        catch (Exception)
+        {
+            return LinkLoginRejectionReasons.TokenInvalid;
+        }
     }
 
     /// <summary>

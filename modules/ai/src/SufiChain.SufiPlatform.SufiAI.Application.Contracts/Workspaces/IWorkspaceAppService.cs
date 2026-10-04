@@ -31,6 +31,8 @@ public interface IWorkspaceAppService : IApplicationService
     
     Task<WorkspaceDto> UpdateAsync(Guid id, UpdateWorkspaceDto input);
 
+    Task<WorkspaceDto> SetHostDefaultAsync(Guid id);
+
     Task<WorkspaceDto> UpdateGuardrailsAsync(Guid id, UpdateWorkspaceGuardrailsDto input);
 
     Task<List<WorkspaceGuardrailStatusDto>> GetGuardrailStatusAsync(Guid id);

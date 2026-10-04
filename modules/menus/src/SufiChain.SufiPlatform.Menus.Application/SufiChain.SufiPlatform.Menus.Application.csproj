@@ -7,6 +7,8 @@
     <ProjectReference Include="../../../../framework/SufiChain.SufiPlatform.Ddd.Application/SufiChain.SufiPlatform.Ddd.Application.csproj" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="../../../localization/src/SufiChain.SufiPlatform.Localization.Application.Contracts/SufiChain.SufiPlatform.Localization.Application.Contracts.csproj" />
+    <ProjectReference Include="../../../localization/src/SufiChain.SufiPlatform.Localization.Domain/SufiChain.SufiPlatform.Localization.Domain.csproj" />
     <ProjectReference Include="../SufiChain.SufiPlatform.Menus.Domain/SufiChain.SufiPlatform.Menus.Domain.csproj" />
     <ProjectReference Include="../SufiChain.SufiPlatform.Menus.Application.Contracts/SufiChain.SufiPlatform.Menus.Application.Contracts.csproj" />
     <ProjectReference Include="../../../../framework/SufiChain.SufiPlatform.Features/SufiChain.SufiPlatform.Features.csproj" />
