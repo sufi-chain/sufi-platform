@@ -19,7 +19,11 @@ public class SufiMenusDomainSharedModule : AbpModule
     public override void ConfigureServices(ServiceConfigurationContext context)
     {
         Configure<AbpVirtualFileSystemOptions>(options => options.FileSets.AddEmbedded<SufiMenusDomainSharedModule>());
-        Configure<AbpLocalizationOptions>(options => options.Resources.Add<SufiMenusResource>("en").AddBaseTypes(typeof(SufiValidationResource)).AddVirtualJson("/Localization/Menus"));
+        Configure<AbpLocalizationOptions>(options =>
+        {
+            options.Resources.Add<SufiMenusResource>("en").AddBaseTypes(typeof(SufiValidationResource)).AddVirtualJson("/Localization/Menus");
+            options.Resources.Add<MenuBusinessTextResource>("fa");
+        });
         Configure<AbpExceptionLocalizationOptions>(options => options.MapCodeNamespace(MenusErrorCodes.Namespace, typeof(SufiMenusResource)));
     }
 }

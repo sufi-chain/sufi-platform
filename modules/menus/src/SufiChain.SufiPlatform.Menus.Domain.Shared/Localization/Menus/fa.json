@@ -10,6 +10,8 @@
     "Menu:SufiMenus": "مدیریت منو",
     "Menu:SufiMenus.Menus": "منوها",
     "ContextType:Public": "عمومی",
+    "ContextType:SufiCMS": "مدیریت محتوا",
+    "ContextType:SufiHelpDesk.KnowledgeBase.Project": "پروژه پایگاه دانش",
     "ContextType:KnowledgeBase.Project": "پروژه پایگاه دانش",
     "DisplayNameLocalizationMode": "حالت نام نمایشی",
     "NameIsRequired": "نام الزامی است.",
@@ -40,6 +42,15 @@
     "MenuItemSection:Visibility": "نمایان بودن",
     "Save": "ذخیره",
     "Cancel": "انصراف",
-    "ContextTypeExample": "مثلاً Public"
+    "ContextTypeExample": "مثلاً Public",
+    "Sufi.Menus:DisplayNameRequired": "عنوان {0} الزامی است.",
+    "Sufi.Menus:DisplayNameLooksLikeKey": "این مقدار شبیه شناسهٔ سیستمی است؛ متن قابل نمایش وارد کنید.",
+    "Sufi.Menus:DisplayNameTooLong": "حداکثر {0} نویسه.",
+    "MenuLabel:Help": "همان متنی که بازدیدکننده در منو می‌بیند.",
+    "MenuLabel:Advanced": "تنظیمات پیشرفته",
+    "MenuLabel:SameForAll": "یک متن برای همه زبان‌ها",
+    "MenuLabel:Key": "شناسهٔ متن",
+    "MenuLabel:Broken": "عنوان این آیتم درست ذخیره نشده بود؛ لطفاً دوباره وارد کنید.",
+    "MenuLabel:Copy": "کپی"
   }
 }
