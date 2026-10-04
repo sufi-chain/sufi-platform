@@ -46,6 +46,7 @@ public static class ServiceCollectionExtensions
     {
         services.Replace(ServiceDescriptor.Singleton<IBlazorCircuitIdAccessor, BlazorServerCircuitIdAccessor>());
         services.AddScoped<CircuitHandler, SufiBlazorCircuitHandler>();
+        services.AddScoped<CircuitHandler, BlazorServerPrincipalCircuitHandler>();
         return services;
     }
 }

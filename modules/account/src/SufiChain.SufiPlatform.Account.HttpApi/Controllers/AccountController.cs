@@ -21,7 +21,7 @@ public class AccountController : SufiControllerBase, IAccountAppService
 
     [HttpPost]
     [Route("register")]
-    public virtual Task<IdentityUserDto> RegisterAsync(RegisterDto input)
+    public virtual Task<AccountRegistrationResultDto> RegisterAsync(RegisterDto input)
     {
         return _accountAppService.RegisterAsync(input);
     }
@@ -70,9 +70,9 @@ public class AccountController : SufiControllerBase, IAccountAppService
 
     [HttpGet]
     [Route("phone-confirmation-state")]
-    public virtual Task<PhoneConfirmationStateDto> GetPhoneConfirmationStateAsync(Guid userId)
+    public virtual Task<PhoneConfirmationStateDto> GetPhoneConfirmationStateAsync(string? sessionToken)
     {
-        return _accountAppService.GetPhoneConfirmationStateAsync(userId);
+        return _accountAppService.GetPhoneConfirmationStateAsync(sessionToken);
     }
 
     [HttpPost]

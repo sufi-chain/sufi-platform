@@ -8,6 +8,7 @@ using Volo.Abp.Data;
 using Volo.Abp.Guids;
 using Volo.Abp.MultiTenancy;
 using Volo.Abp.Security.Encryption;
+using Volo.Abp.Uow;
 
 namespace SufiChain.SufiPlatform.SufiAI.Data;
 
@@ -19,6 +20,7 @@ public class DefaultAiWorkspaceSeeder : IDefaultAiWorkspaceSeeder
     protected IGuidGenerator GuidGenerator { get; }
     protected ICurrentTenant CurrentTenant { get; }
     protected IDataFilter DataFilter { get; }
+    protected IUnitOfWorkManager UnitOfWorkManager { get; }
     protected IStringEncryptionService StringEncryptor { get; }
     protected AIOptions AIOptions { get; }
     protected ILogger<DefaultAiWorkspaceSeeder> Logger { get; }
@@ -30,6 +32,7 @@ public class DefaultAiWorkspaceSeeder : IDefaultAiWorkspaceSeeder
         IGuidGenerator guidGenerator,
         ICurrentTenant currentTenant,
         IDataFilter dataFilter,
+        IUnitOfWorkManager unitOfWorkManager,
         IStringEncryptionService stringEncryptor,
         IOptions<AIOptions> aiOptions,
         ILogger<DefaultAiWorkspaceSeeder> logger)
@@ -40,6 +43,7 @@ public class DefaultAiWorkspaceSeeder : IDefaultAiWorkspaceSeeder
         GuidGenerator = guidGenerator;
         CurrentTenant = currentTenant;
         DataFilter = dataFilter;
+        UnitOfWorkManager = unitOfWorkManager;
         StringEncryptor = stringEncryptor;
         AIOptions = aiOptions.Value;
         Logger = logger;
@@ -96,7 +100,13 @@ public class DefaultAiWorkspaceSeeder : IDefaultAiWorkspaceSeeder
         Workspace? hostWorkspace;
         using (CurrentTenant.Change(null))
         {
-            hostWorkspace = await WorkspaceRepository.FindByNameAsync(workspaceName, cancellationToken);
+            // Change(null) does not switch a unit of work that already opened the
+            // tenant SufiAI connection. A new unit of work reads the host database.
+            using (var uow = UnitOfWorkManager.Begin(requiresNew: true, isTransactional: false))
+            {
+                hostWorkspace = await WorkspaceRepository.FindByNameAsync(workspaceName, cancellationToken);
+                await uow.CompleteAsync(cancellationToken);
+            }
         }
 
         if (hostWorkspace == null)

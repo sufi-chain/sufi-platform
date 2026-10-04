@@ -272,7 +272,7 @@ public abstract class SufiAccountController : AbpController
         var settingProvider = HttpContext.RequestServices.GetRequiredService<ISettingProvider>();
         if (await IdentityPhoneConfirmationRules.IsRequiredForRegistrationAsync(settingProvider))
         {
-            return Redirect($"/account/confirm-phone?userId={user.Id}");
+            return await RedirectToPhoneConfirmationAsync(user);
         }
 
         await _signInManager.SignInAsync(user, isPersistent: true, externalLoginAuthSchema);
@@ -314,41 +314,88 @@ public abstract class SufiAccountController : AbpController
     {
         if (string.IsNullOrWhiteSpace(token))
         {
-            return Redirect($"/account/login?error=InvalidOrExpiredToken&returnUrl={Uri.EscapeDataString(NormalizeReturnUrl(returnUrl))}");
+            Logger.LogWarning("Complete login rejected. Reason {Reason}.", "InvalidOrExpiredToken");
+            return Redirect($"/account/login?error=LoginTokenExpired&returnUrl={Uri.EscapeDataString(NormalizeReturnUrl(returnUrl))}");
         }
 
         var consumed = await _tokenStore.ConsumeAsync(token, cancellationToken);
         if (consumed == null)
         {
-            return Redirect($"/account/login?error=InvalidOrExpiredToken&returnUrl={Uri.EscapeDataString(NormalizeReturnUrl(returnUrl))}");
+            Logger.LogWarning("Complete login rejected. Reason {Reason}.", "InvalidOrExpiredToken");
+            return Redirect($"/account/login?error=LoginTokenExpired&returnUrl={Uri.EscapeDataString(NormalizeReturnUrl(returnUrl))}");
         }
 
         var (userId, redirectUrl, rememberMe) = consumed.Value;
         var user = await _userManager.FindByIdAsync(userId.ToString());
         if (user == null)
         {
-            return Redirect($"/account/login?error=UserNotFound&returnUrl={Uri.EscapeDataString(NormalizeReturnUrl(returnUrl))}");
+            Logger.LogWarning("Complete login rejected. Reason {Reason} UserId {UserId}.", "UserNotFound", userId);
+            return Redirect($"/account/login?error=LoginTokenExpired&returnUrl={Uri.EscapeDataString(NormalizeReturnUrl(returnUrl))}");
+        }
+
+        if (!user.IsActive)
+        {
+            Logger.LogWarning("Complete login rejected. Reason {Reason} UserId {UserId}.", "Inactive", user.Id);
+            return Redirect($"/account/login?error=LoginAccountInactive&returnUrl={Uri.EscapeDataString(NormalizeReturnUrl(returnUrl))}");
         }
 
         if (!await _signInManager.CanSignInAsync(user))
         {
-            await _securityLogAppService.SaveLoginEventAsync(
-                IdentitySecurityLogIdentityConsts.Identity,
-                IdentitySecurityLogActionConsts.LoginNotAllowed,
-                user.UserName);
-            return Redirect($"/account/login?error=EmailConfirmationRequired&returnUrl={Uri.EscapeDataString(NormalizeReturnUrl(returnUrl))}");
+            var emailConfirmed = await _userManager.IsEmailConfirmedAsync(user);
+            var reason = emailConfirmed ? "LoginAccountInactive" : "EmailConfirmationRequired";
+            try
+            {
+                await _securityLogAppService.SaveLoginEventAsync(
+                    IdentitySecurityLogIdentityConsts.Identity,
+                    IdentitySecurityLogActionConsts.LoginNotAllowed,
+                    user.UserName);
+            }
+            catch (Exception ex)
+            {
+                Logger.LogWarning(
+                    ex,
+                    "Complete login security log was not saved. Reason {Reason} UserId {UserId}.",
+                    ex.GetType().Name,
+                    user.Id);
+            }
+
+            Logger.LogWarning("Complete login rejected. Reason {Reason} UserId {UserId}.", reason, user.Id);
+            return Redirect($"/account/login?error={reason}&returnUrl={Uri.EscapeDataString(NormalizeReturnUrl(returnUrl))}");
         }
 
         var settingProvider = HttpContext.RequestServices.GetRequiredService<ISettingProvider>();
         if (await IdentityPhoneConfirmationRules.IsRequiredForRegistrationAsync(settingProvider) &&
             !user.PhoneNumberConfirmed)
         {
-            return Redirect($"/account/confirm-phone?userId={user.Id}");
+            return await RedirectToPhoneConfirmationAsync(user);
         }
 
-        await _signInManager.SignInAsync(user, rememberMe);
+        try
+        {
+            await _signInManager.SignInAsync(user, rememberMe);
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(
+                ex,
+                "Complete login could not issue the cookie. Reason {Reason} UserId {UserId}.",
+                ex.GetType().Name,
+                user.Id);
+            return Redirect($"/account/login?error=LoginAccountStoreUnavailable&returnUrl={Uri.EscapeDataString(NormalizeReturnUrl(returnUrl))}");
+        }
 
-        await _securityLogAppService.SaveLoginEventAsync(IdentitySecurityLogIdentityConsts.Identity, IdentitySecurityLogActionConsts.LoginSucceeded, user.UserName);
+        try
+        {
+            await _securityLogAppService.SaveLoginEventAsync(IdentitySecurityLogIdentityConsts.Identity, IdentitySecurityLogActionConsts.LoginSucceeded, user.UserName);
+        }
+        catch (Exception ex)
+        {
+            Logger.LogWarning(
+                ex,
+                "Complete login security log was not saved. Reason {Reason} UserId {UserId}.",
+                ex.GetType().Name,
+                user.Id);
+        }
 
         var twoFactorAppService = HttpContext.RequestServices.GetService<IAccountTwoFactorAppService>();
         if (twoFactorAppService != null)
@@ -530,5 +577,17 @@ public abstract class SufiAccountController : AbpController
             Logger.LogError(ex, "Error resolving tenant name '{TenantName}' via ITenantStore", tenantName);
             return null;
         }
+    }
+
+    private async Task<IActionResult> RedirectToPhoneConfirmationAsync(IdentityUser user)
+    {
+        var sessions = LazyServiceProvider.LazyGetRequiredService<IPhoneConfirmationSessionStore>();
+        if (!sessions.IsSupported)
+        {
+            return Redirect("/account/login?error=PhoneConfirmationSessionInvalid");
+        }
+
+        var sessionToken = await sessions.CreateAsync(user.Id);
+        return Redirect("/account/confirm-phone?token=" + Uri.EscapeDataString(sessionToken));
     }
 }
