@@ -44,9 +44,17 @@ public class ProfileAppService : SufiApplicationService, IProfileAppService
 
         user.SetConcurrencyStampIfNotNull(input.ConcurrencyStamp);
 
+        input.UserName = input.UserName?.Trim();
+        input.Email = input.Email?.Trim();
+        input.Name = ProfileUpdateRules.NormalizeOptionalText(input.Name);
+        input.Surname = ProfileUpdateRules.NormalizeOptionalText(input.Surname);
+        input.PhoneNumber = ProfileUpdateRules.NormalizePhone(input.PhoneNumber);
+        ProfileUpdateRules.EnsurePhoneFits(input.PhoneNumber);
+
         // Each UserManager.Set* call updates the user. With AutoSaveChanges those updates
         // persist one at a time and the later save fails optimistic concurrency after the
-        // first field has already been written.
+        // first field has already been written. SetPhoneNumberAsync also rotates the
+        // security stamp, so an unchanged number must not call it.
         var previousAutoSave = UserStore.AutoSaveChanges;
         UserStore.AutoSaveChanges = false;
         try
@@ -61,18 +69,13 @@ public class ProfileAppService : SufiApplicationService, IProfileAppService
                 (await UserManager.SetEmailAsync(user, input.Email)).CheckErrors();
             }
 
-            if (string.IsNullOrWhiteSpace(user.PhoneNumber) && string.IsNullOrWhiteSpace(input.PhoneNumber))
-            {
-                input.PhoneNumber = user.PhoneNumber;
-            }
-
-            if (!string.Equals(user.PhoneNumber, input.PhoneNumber, StringComparison.InvariantCultureIgnoreCase))
+            if (!ProfileUpdateRules.SamePhone(user.PhoneNumber, input.PhoneNumber))
             {
                 (await UserManager.SetPhoneNumberAsync(user, input.PhoneNumber)).CheckErrors();
             }
 
-            user.Name = input.Name?.Trim();
-            user.Surname = input.Surname?.Trim();
+            user.Name = input.Name;
+            user.Surname = input.Surname;
 
             try
             {
@@ -178,8 +181,8 @@ public class ProfileAppService : SufiApplicationService, IProfileAppService
     {
         return string.Equals(user.UserName, input.UserName, StringComparison.OrdinalIgnoreCase)
                && string.Equals(user.Email, input.Email, StringComparison.OrdinalIgnoreCase)
-               && string.Equals(user.Name, input.Name?.Trim(), StringComparison.Ordinal)
-               && string.Equals(user.Surname, input.Surname?.Trim(), StringComparison.Ordinal)
-               && string.Equals(user.PhoneNumber ?? string.Empty, input.PhoneNumber ?? string.Empty, StringComparison.Ordinal);
+               && string.Equals(user.Name, input.Name, StringComparison.Ordinal)
+               && string.Equals(user.Surname, input.Surname, StringComparison.Ordinal)
+               && ProfileUpdateRules.SamePhone(user.PhoneNumber, input.PhoneNumber);
     }
 }

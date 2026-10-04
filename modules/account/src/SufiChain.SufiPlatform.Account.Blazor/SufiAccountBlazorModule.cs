@@ -44,5 +44,6 @@ public class SufiAccountBlazorModule : AbpModule
         // a real implementation (e.g. AuthenticationServerModule) which we must not override.
         context.Services.TryAddScoped<ILoginCompletionTokenStore, NullLoginCompletionTokenStore>();
         context.Services.TryAddScoped<ITwoFactorPendingLoginStore, NullTwoFactorPendingLoginStore>();
+        context.Services.TryAddSingleton<IPhoneConfirmationSessionStore, NullPhoneConfirmationSessionStore>();
     }
 }
