@@ -6,6 +6,8 @@ namespace SufiChain.SufiPlatform.Menus.Menus;
 public interface IMenuAppService : IApplicationService
 {
     Task<MenuDto> GetAsync(Guid id);
+
+    Task<List<MenuLabelCultureDto>> GetLabelCulturesAsync();
     Task<PagedResultDto<MenuListDto>> GetListAsync(GetMenusInput input);
     Task<MenuDto> GetByNameAsync(string contextType, Guid? contextId, string name);
     Task<MenuDto> CreateAsync(CreateMenuDto input);

@@ -17,6 +17,17 @@
     "MenuItemSection:Visibility": "Visibilidad",
     "Save": "Guardar",
     "Cancel": "Cancelar",
-    "ContextTypeExample": "p. ej. Public"
+    "ContextTypeExample": "p. ej. Public",
+    "ContextType:SufiCMS": "CMS",
+    "ContextType:SufiHelpDesk.KnowledgeBase.Project": "Proyecto de base de conocimiento",
+    "Sufi.Menus:DisplayNameRequired": "El título de {0} es obligatorio.",
+    "Sufi.Menus:DisplayNameLooksLikeKey": "Este valor parece un identificador del sistema. Escriba el texto que verán los visitantes.",
+    "Sufi.Menus:DisplayNameTooLong": "Como máximo {0} caracteres.",
+    "MenuLabel:Help": "El texto que ven los visitantes en el menú.",
+    "MenuLabel:Advanced": "Configuración avanzada",
+    "MenuLabel:SameForAll": "Un texto para todos los idiomas",
+    "MenuLabel:Key": "Identificador del texto",
+    "MenuLabel:Broken": "La etiqueta de este elemento no se guardó correctamente. Vuelva a escribirla.",
+    "MenuLabel:Copy": "Copiar"
   }
 }
