@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using SufiChain.SufiPlatform.BlobDatabase;
 using SufiChain.SufiPlatform.FileManager.FileItems;
 using SufiChain.SufiPlatform.FileManager.FileTypes;
 using Shouldly;
@@ -245,6 +246,32 @@ public class FileItemAppServiceTests : FileManagerApplicationTestBase<SufiFileMa
         // Assert
         confirmed.IsTemp.ShouldBeFalse();
         confirmed.BlobName.ShouldNotContain("temp");
+    }
+
+    [Fact]
+    public async Task Should_Keep_Uploaded_Bytes_After_The_Unit_Of_Work_Completes()
+    {
+        var bytes = CreateTestImageData();
+        var uploaded = await _fileItemAppService.UploadAsync(new UploadFileInput
+        {
+            FileName = "persist-after-refresh.png",
+            Content = bytes,
+            MimeType = "image/png",
+            AutoConfirm = true
+        });
+
+        var persisted = await WithUnitOfWorkAsync(async () =>
+        {
+            var item = await _fileItemAppService.GetAsync(uploaded.Id);
+            var containers = GetRequiredService<IDatabaseBlobContainerRepository>();
+            var container = await containers.FindAsync(FileItemBlobAccessService.GetContainerName(item.StructureKey));
+            container.ShouldNotBeNull();
+            var blob = await GetRequiredService<IDatabaseBlobRepository>().FindAsync(container.Id, item.BlobName);
+            blob.ShouldNotBeNull();
+            return blob.Content;
+        });
+
+        persisted.ShouldBe(bytes);
     }
 
     [Fact]

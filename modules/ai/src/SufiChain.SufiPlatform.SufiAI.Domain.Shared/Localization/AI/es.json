@@ -764,6 +764,9 @@
     "Assign": "Asignar",
 
     "AssignToTenant": "Asignar a inquilino",
+    "HostDefaultWorkspace": "Predeterminado",
+    "SetHostDefaultWorkspace": "Establecer como espacio de trabajo predeterminado del host",
+    "HostDefaultWorkspaceSaved": "Este espacio de trabajo es ahora el predeterminado del host.",
 
     "AssignToTenantHelp": "Crea una copia heredada de solo lectura de este espacio de trabajo del host en el inquilino seleccionado.",
 

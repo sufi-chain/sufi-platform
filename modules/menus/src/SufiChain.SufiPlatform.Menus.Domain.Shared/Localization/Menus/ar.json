@@ -17,6 +17,17 @@
     "MenuItemSection:Visibility": "الظهور",
     "Save": "حفظ",
     "Cancel": "إلغاء",
-    "ContextTypeExample": "مثال: Public"
+    "ContextTypeExample": "مثال: Public",
+    "ContextType:SufiCMS": "إدارة المحتوى",
+    "ContextType:SufiHelpDesk.KnowledgeBase.Project": "مشروع قاعدة المعرفة",
+    "Sufi.Menus:DisplayNameRequired": "عنوان {0} مطلوب.",
+    "Sufi.Menus:DisplayNameLooksLikeKey": "هذه القيمة تشبه معرّفًا نظاميًا. أدخل النص الذي يراه الزوار.",
+    "Sufi.Menus:DisplayNameTooLong": "بحد أقصى {0} حرفًا.",
+    "MenuLabel:Help": "النص الذي يراه الزائر في القائمة.",
+    "MenuLabel:Advanced": "إعدادات متقدمة",
+    "MenuLabel:SameForAll": "نص واحد لكل اللغات",
+    "MenuLabel:Key": "معرّف النص",
+    "MenuLabel:Broken": "لم يُحفظ عنوان هذا العنصر بشكل صحيح. أدخله مرة أخرى.",
+    "MenuLabel:Copy": "نسخ"
   }
 }

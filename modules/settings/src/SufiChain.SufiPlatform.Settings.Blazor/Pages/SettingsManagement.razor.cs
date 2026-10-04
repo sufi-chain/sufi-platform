@@ -1,7 +1,9 @@
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.Extensions.Options;
 using SufiChain.SufiPlatform.UI.Layout;
 using SufiChain.SufiPlatform.Settings.Blazor.Settings;
+using Volo.Abp.Security.Claims;
 
 namespace SufiChain.SufiPlatform.Settings.Blazor.Pages;
 
@@ -21,6 +23,8 @@ public partial class SettingsManagement : SettingsComponentBase
     [Inject] protected IPageLayout PageLayout { get; set; } = default!;
     [Inject] protected IOptions<SettingsComponentOptions> Options { get; set; } = default!;
     [Inject] protected IServiceProvider ServiceProvider { get; set; } = default!;
+    [Inject] protected AuthenticationStateProvider AuthenticationStateProvider { get; set; } = default!;
+    [Inject] protected ICurrentPrincipalAccessor PrincipalAccessor { get; set; } = default!;
 
     private List<SettingComponentGroup> _groups = new();
     private string? _selectedTabId;
@@ -46,18 +50,21 @@ public partial class SettingsManagement : SettingsComponentBase
 
     private Task LoadGroupsAsync() => ExecuteWithLoadingAsync(async () =>
     {
-        var context = new SettingComponentCreationContext(ServiceProvider);
-
-        foreach (var contributor in Options.Value.Contributors)
+        using (await SettingComponentAuthorizationScope.EnterAsync(AuthenticationStateProvider, PrincipalAccessor))
         {
-            if (await contributor.CheckPermissionsAsync(context))
-            {
-                await contributor.ConfigureAsync(context);
-            }
-        }
+            var context = new SettingComponentCreationContext(ServiceProvider);
 
-        context.Normalize();
-        _groups = context.Groups;
+            foreach (var contributor in Options.Value.Contributors)
+            {
+                if (await contributor.CheckPermissionsAsync(context))
+                {
+                    await contributor.ConfigureAsync(context);
+                }
+            }
+
+            context.Normalize();
+            _groups = context.Groups;
+        }
 
         // Select first tab if not already selected
         if (_groups.Count > 0 && string.IsNullOrEmpty(_selectedTabId))

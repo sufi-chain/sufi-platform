@@ -1,3 +1,4 @@
+using SufiChain.SufiPlatform.Menus.Menus;
 using Volo.Abp.Caching;
 
 namespace SufiChain.SufiPlatform.Menus.Caching;
@@ -11,18 +12,22 @@ namespace SufiChain.SufiPlatform.Menus.Caching;
 [CacheName("SufiMenuTrees")]
 public class MenuTreeCacheItem
 {
-    public const string TreePrefix = "t:";
-    public const string PublicTreePrefix = "pt:";
-    public const string PublicItemPrefix = "pi:";
+    public const string TreePrefix = MenuTreeCacheKeys.TreePrefix;
+    public const string PublicTreePrefix = MenuTreeCacheKeys.PublicTreePrefix;
+    public const string PublicItemPrefix = MenuTreeCacheKeys.PublicItemPrefix;
 
     public static string CreateTreeCacheKey(Guid menuId, bool publicOnly) =>
-        $"{TreePrefix}{menuId}:{publicOnly}";
+        MenuTreeCacheKeys.CreateTreeCacheKey(menuId, publicOnly);
 
+    /// <summary>
+    /// Public trees are cached before localization. The key has no culture.
+    /// Callers translate a copy after the read, so removing this one key clears every language.
+    /// </summary>
     public static string CreatePublicTreeCacheKey(string contextType, Guid? contextId, string menuName) =>
-        $"{PublicTreePrefix}{contextType}:{contextId ?? Guid.Empty}:{menuName}";
+        MenuTreeCacheKeys.CreatePublicTreeCacheKey(contextType, contextId, menuName);
 
     public static string CreatePublicItemCacheKey(string contextType, Guid? contextId, string menuName, string slug) =>
-        $"{PublicItemPrefix}{contextType}:{contextId ?? Guid.Empty}:{menuName}:{slug}";
+        MenuTreeCacheKeys.CreatePublicItemCacheKey(contextType, contextId, menuName, slug);
 
     public List<Menus.MenuItemTreeDto> Tree { get; set; } = new();
     public Menus.MenuItemDto? Item { get; set; }
