@@ -54,7 +54,7 @@ public class SettingsStore : ISettingsStore, ITransientDependency
             await SettingRepository.UpdateAsync(setting, true);
         }
 
-        await Cache.SetAsync(CalculateCacheKey(name, providerName, providerKey), new SettingCacheItem(setting?.Value), considerUow: true);
+        await WriteCacheAsync(CalculateCacheKey(name, providerName, providerKey), new SettingCacheItem(setting.Value));
     }
 
     public virtual async Task<List<SettingValue>> GetListAsync(string providerName, string providerKey)
@@ -74,7 +74,7 @@ public class SettingsStore : ISettingsStore, ITransientDependency
         if (setting != null)
         {
             await SettingRepository.DeleteAsync(setting, true);
-            await Cache.RemoveAsync(CalculateCacheKey(name, providerName, providerKey), considerUow: true);
+            await RemoveCacheAsync(CalculateCacheKey(name, providerName, providerKey));
         }
     }
 
@@ -124,7 +124,7 @@ public class SettingsStore : ISettingsStore, ITransientDependency
             }
         }
 
-        await Cache.SetManyAsync(cacheItems, considerUow: true);
+        await Cache.SetManyAsync(cacheItems, SettingValueCachePolicy.Create(), considerUow: true);
     }
 
     [UnitOfWork]
@@ -206,11 +206,25 @@ public class SettingsStore : ISettingsStore, ITransientDependency
             );
         }
 
-        await Cache.SetManyAsync(cacheItems, considerUow: true);
+        await Cache.SetManyAsync(cacheItems, SettingValueCachePolicy.Create(), considerUow: true);
 
         return cacheItems;
     }
 
+
+    protected virtual async Task WriteCacheAsync(string cacheKey, SettingCacheItem cacheItem)
+    {
+        var options = SettingValueCachePolicy.Create();
+        await Cache.RemoveAsync(cacheKey, considerUow: false);
+        await Cache.SetAsync(cacheKey, cacheItem, options, considerUow: false);
+        await Cache.SetAsync(cacheKey, cacheItem, options, considerUow: true);
+    }
+
+    protected virtual async Task RemoveCacheAsync(string cacheKey)
+    {
+        await Cache.RemoveAsync(cacheKey, considerUow: false);
+        await Cache.RemoveAsync(cacheKey, considerUow: true);
+    }
 
     protected virtual string CalculateCacheKey(string name, string providerName, string providerKey)
     {
