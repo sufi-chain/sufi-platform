@@ -301,7 +301,7 @@
 		}
 	}
 
-	private async Task<bool> TryRedirectToPhoneConfirmationAsync(IdentityUser user, bool useHttpContext)
+	private async Task<bool> TryRedirectToPhoneConfirmationAsync(SufiChain.SufiPlatform.Identity.IdentityUser user, bool useHttpContext)
 	{
 		if (!await IdentityPhoneConfirmationRules.IsRequiredForRegistrationAsync(SettingProvider) ||
 		    user.PhoneNumberConfirmed)
