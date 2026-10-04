@@ -221,7 +221,13 @@
 
     "LeaveEmptyToKeepCurrent": "Dejar vacío para mantener el valor actual",
 
-    "Loading": "Cargando",
+    "DataLoadFailed": "No se ha podido cargar la lista.",
+
+    "DataLoadFailedGeneric": "No se ha podido cargar la información.",
+
+    "Loading": "Cargando…",
+
+    "Retry": "Reintentar",
 
     "LoadingUsageData": "Cargando datos de uso...",
 
