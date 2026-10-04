@@ -11,27 +11,29 @@
         <SbProgress Indeterminate="true" aria-label="@L["Loading"]" Type="SbProgressType.Circular" />
     </SbStack>
 }
-else if (_profile != null)
+else if (Profile != null)
 {
-    <EditForm Model="_profile" OnValidSubmit="OnSaveAsync">
+    <EditForm Model="Profile" FormName="@ProfileFormName" OnValidSubmit="OnSaveAsync">
         <DataAnnotationsValidator />
 
         <SbStack Gap="3">
-            <SbTextField @bind-Value="_profile.UserName"
+            <SbTextField @bind-Value="Profile.UserName"
                          Label="@L["UserName"]"
                          Required="true" />
 
             <SbStack Wrap="true" Direction="SbStackDirection.Row" Gap="3">
-                <SbTextField @bind-Value="_profile.Name" Label="@L["Name"]" />
-                <SbTextField @bind-Value="_profile.Surname" Label="@L["Surname"]" />
+                <SbTextField @bind-Value="Profile.Name" Label="@L["Name"]" />
+                <SbTextField @bind-Value="Profile.Surname" Label="@L["Surname"]" />
             </SbStack>
 
-            <SbTextField @bind-Value="_profile.Email"
+            <SbTextField @bind-Value="Profile.Email"
                          Label="@L["Email"]"
                          Type="email"
                          Required="true" />
 
-            <SbTextField Type="tel" InputMode="tel" @bind-Value="_profile.PhoneNumber" Label="@L["PhoneNumber"]" />
+            <SbTextField Type="tel" InputMode="tel" @bind-Value="Profile.PhoneNumber" Label="@L["PhoneNumber"]" />
+
+            <InputText type="hidden" @bind-Value="Profile.ConcurrencyStamp" />
 
             @if (!string.IsNullOrEmpty(_successMessage))
             {
@@ -50,81 +52,4 @@ else if (_profile != null)
             </SbStack>
         </SbStack>
     </EditForm>
-}
-
-@code {
-    private ProfileDto? _profile;
-    private bool _loading = true;
-    private bool _saving;
-    private string? _successMessage;
-    private string? _errorMessage;
-
-    protected override async Task OnInitializedAsync()
-    {
-        try
-        {
-            _profile = await ProfileAppService.GetAsync();
-        }
-        finally
-        {
-            _loading = false;
-        }
-    }
-
-    private async Task OnSaveAsync()
-    {
-        if (_profile == null)
-        {
-            return;
-        }
-
-        _saving = true;
-        _successMessage = null;
-        _errorMessage = null;
-
-        try
-        {
-            var input = new UpdateProfileDto
-            {
-                UserName = _profile.UserName,
-                Name = _profile.Name,
-                Surname = _profile.Surname,
-                Email = _profile.Email,
-                PhoneNumber = _profile.PhoneNumber,
-                ConcurrencyStamp = _profile.ConcurrencyStamp
-            };
-
-            try
-            {
-                _profile.MapExtraPropertiesTo(input);
-            }
-            catch (Exception mapException)
-            {
-                Logger.LogWarning(mapException, "Profile extra properties were skipped on save.");
-            }
-
-            _profile = await ProfileAppService.UpdateAsync(input);
-            _successMessage = L["ProfileUpdatedSuccessfully"];
-        }
-        catch (Exception ex)
-        {
-            try
-            {
-                _errorMessage = AccountUiErrors.LocalizedFailure(
-                    Logger,
-                    AccountL,
-                    ex,
-                    "ProfileSaveFailed");
-            }
-            catch (Exception informException)
-            {
-                Logger.LogError(informException, "Profile save failed and the message could not be shown.");
-                _errorMessage = AccountL["ProfileSaveFailed"];
-            }
-        }
-        finally
-        {
-            _saving = false;
-        }
-    }
 }

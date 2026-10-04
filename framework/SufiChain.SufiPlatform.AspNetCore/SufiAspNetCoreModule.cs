@@ -6,6 +6,7 @@ using Microsoft.Extensions.Options;
 using SufiChain.SufiPlatform.AspNetCore.Auditing;
 using Volo.Abp.AspNetCore;
 using Volo.Abp.AspNetCore.Auditing;
+using Volo.Abp.AspNetCore.Uow;
 using Volo.Abp.Auditing;
 using Volo.Abp.Modularity;
 
@@ -31,6 +32,16 @@ public class SufiAspNetCoreModule : AbpModule
         // Exclude Blazor Server SignalR circuit from auditing to avoid OperationCanceledException
         // when the circuit is torn down during tenant switch (forceLoad) or page navigation.
         Configure<AbpAspNetCoreAuditingOptions>(options =>
+        {
+            options.IgnoredUrls.AddIfNotContains("/_blazor");
+        });
+
+        // AbpUnitOfWorkMiddleware skips only Razor endpoints that carry RootComponentMetadata.
+        // The interactive circuit is /_blazor and stays inside that middleware until the socket
+        // closes. One reserved unit of work then shares a DbContext across concurrent circuit
+        // calls (the structures page never leaves its loading state) and commits in-circuit
+        // saves only when the socket ends, so a refresh rolls them back.
+        Configure<AbpAspNetCoreUnitOfWorkOptions>(options =>
         {
             options.IgnoredUrls.AddIfNotContains("/_blazor");
         });
