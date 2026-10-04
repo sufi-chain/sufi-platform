@@ -28,6 +28,9 @@ public partial class ConfirmEmail : IDisposable
     protected ILoginCompletionTokenStore TokenStore { get; set; } = default!;
 
     [Inject]
+    protected IPhoneConfirmationSessionStore PhoneConfirmationSessions { get; set; } = default!;
+
+    [Inject]
     protected SignInManager<IdentityUser> SignInManager { get; set; } = default!;
 
     [Inject]
@@ -183,7 +186,16 @@ public partial class ConfirmEmail : IDisposable
             return false;
         }
 
-        Navigation.NavigateTo($"/account/confirm-phone?userId={user.Id}", forceLoad: true);
+        if (!PhoneConfirmationSessions.IsSupported)
+        {
+            ErrorMessage = AccountL["ConfirmPhoneSessionInvalid"];
+            return true;
+        }
+
+        var sessionToken = await PhoneConfirmationSessions.CreateAsync(user.Id);
+        Navigation.NavigateTo(
+            "/account/confirm-phone?token=" + Uri.EscapeDataString(sessionToken),
+            forceLoad: true);
         return true;
     }
 
