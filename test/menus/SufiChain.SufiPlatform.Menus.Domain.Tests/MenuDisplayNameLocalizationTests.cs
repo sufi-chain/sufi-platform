@@ -1,6 +1,8 @@
 using SufiChain.SufiPlatform.Data;
+using SufiChain.SufiPlatform.Menus.Localization;
 using SufiChain.SufiPlatform.Menus.Menus;
 using Shouldly;
+using Volo.Abp.Localization;
 using Xunit;
 
 namespace SufiChain.SufiPlatform.Menus;
@@ -124,12 +126,183 @@ public class MenuDisplayNameLocalizationTests
                 "SufiChain.SufiPlatform.Menus.Blazor",
                 relativeFile)));
 
-        source.ShouldContain("ResourceName=\"@_localizationResourceName\"");
-        source.ShouldContain("LocalizationKey=\"@_localizationKey\"");
-        source.ShouldContain("LiteralValue=\"@_literalDisplayName\"");
-        source.ShouldNotContain("ResourceName=\"_localizationResourceName\"");
+        source.ShouldContain("MultilingualTextField");
+        source.ShouldContain("MenuLabel:Advanced");
+        source.ShouldContain("Values=\"_displayNames\"");
+        source.ShouldNotContain("BusinessLocalizationModeSwitch");
+        source.ShouldNotContain("BusinessTextEditor");
         source.ShouldNotContain("LocalizationKey=\"_localizationKey\"");
+        source.ShouldNotContain("ResourceName=\"_localizationResourceName\"");
         source.ShouldNotContain("LiteralValue=\"_literalDisplayName\"");
+        source.ShouldNotContain("متن ثابت");
+        source.ShouldNotContain("کلید چندزبانه");
+    }
+
+    [Fact]
+    public void New_item_keys_use_the_item_id_and_stay_unique_for_the_same_slug()
+    {
+        var menuId = Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa");
+        var first = Guid.Parse("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb");
+        var second = Guid.Parse("cccccccc-cccc-cccc-cccc-cccccccccccc");
+
+        var firstKey = MenuDisplayNamePlanner.ItemKey(menuId, first);
+        var secondKey = MenuDisplayNamePlanner.ItemKey(menuId, second);
+
+        firstKey.ShouldBe($"SeededMenu:{menuId:N}:Item:{first:N}:DisplayName");
+        secondKey.ShouldNotBe(firstKey);
+        firstKey.ShouldNotContain("home");
+        MenuDisplayNamePlanner.ResolveStoredKey("خانه", firstKey).ShouldBe(firstKey);
+        MenuDisplayNamePlanner.ResolveStoredKey("_localizationKey", firstKey).ShouldBe(firstKey);
+    }
+
+    [Fact]
+    public void Seeded_item_key_is_kept()
+    {
+        const string seeded = "SeededMenu:public-default:Item:home:DisplayName";
+        var generated = MenuDisplayNamePlanner.ItemKey(Guid.NewGuid(), Guid.NewGuid());
+
+        MenuDisplayNamePlanner.ResolveStoredKey(seeded, generated).ShouldBe(seeded);
+    }
+
+    [Fact]
+    public void Shared_menu_resource_is_used_for_every_context()
+    {
+        LocalizationResourceNameAttribute.GetName(typeof(MenuBusinessTextResource)).ShouldBe(MenuBusinessTexts.ResourceName);
+        MenuLocalizationRegistry.SharedResourceName.ShouldBe("SufiMenus");
+        MenuLocalizationRegistry.GetReadResourceNames(null, "NotRegistered").ShouldBe(new[] { "SufiMenus" });
+
+        MenuLocalizationRegistry.RegisterContextType("SufiCMS", "SufiCMS");
+        var names = MenuLocalizationRegistry.GetReadResourceNames("public-default", "SufiCMS");
+        names[0].ShouldBe("SufiMenus");
+        names.ShouldContain("SufiCMS");
+    }
+
+    [Fact]
+    public void Write_plan_upserts_filled_cultures_and_deletes_emptied_ones()
+    {
+        var plan = MenuDisplayNamePlanner.PlanWrite(
+            new Dictionary<string, string>
+            {
+                ["fa"] = "علي",
+                ["en"] = "  ",
+                ["ar"] = "",
+                ["es"] = "Inicio"
+            },
+            "fa",
+            256);
+
+        plan.Succeeded.ShouldBeTrue();
+        plan.Upserts["fa"].ShouldBe("علی");
+        plan.Upserts["es"].ShouldBe("Inicio");
+        plan.Upserts.ContainsKey("en").ShouldBeFalse();
+        plan.Deletes.ShouldContain("en");
+        plan.Deletes.ShouldContain("ar");
+    }
+
+    [Fact]
+    public void Write_plan_keeps_zwnj_and_rejects_a_key_like_value()
+    {
+        var kept = MenuDisplayNamePlanner.PlanWrite(
+            new Dictionary<string, string> { ["fa"] = "می‌روم" },
+            "fa",
+            256);
+        kept.Upserts["fa"].ShouldBe("می‌روم");
+
+        var rejected = MenuDisplayNamePlanner.PlanWrite(
+            new Dictionary<string, string> { ["fa"] = "_localizationKey" },
+            "fa",
+            256);
+        rejected.Succeeded.ShouldBeFalse();
+        rejected.ErrorMessage.ShouldBe(MenuBusinessTexts.LooksLikeKeyMessage);
+    }
+
+    [Fact]
+    public void Editor_state_keeps_seeded_texts_and_clears_a_placeholder()
+    {
+        const string seeded = "SeededMenu:public-default:Item:home:DisplayName";
+        var cultures = new[] { "fa", "en", "ar", "es" };
+        var seededState = MenuDisplayNamePlanner.BuildEditorState(
+            seeded,
+            "خانه",
+            cultures,
+            "fa",
+            culture => culture switch
+            {
+                "fa" => "خانه",
+                "en" => "Home",
+                "ar" => "الرئيسية",
+                "es" => "Inicio",
+                _ => null
+            });
+
+        seededState.PreservedKey.ShouldBe(seeded);
+        seededState.Values["fa"].ShouldBe("خانه");
+        seededState.Values["en"].ShouldBe("Home");
+        seededState.Values["ar"].ShouldBe("الرئيسية");
+        seededState.Values["es"].ShouldBe("Inicio");
+
+        var broken = MenuDisplayNamePlanner.BuildEditorState("_localizationKey", "About", cultures, "fa", _ => "ignored");
+        broken.BrokenPlaceholder.ShouldBeTrue();
+        broken.Values.Values.ShouldAllBe(value => string.IsNullOrEmpty(value));
+        broken.Suggestion.ShouldBe("About");
+        broken.PreservedKey.ShouldBeNull();
+    }
+
+    [Fact]
+    public void Literal_label_opens_in_the_default_culture()
+    {
+        var state = MenuDisplayNamePlanner.BuildEditorState(
+            "فروشگاه",
+            "Shop",
+            new[] { "fa", "en" },
+            "fa",
+            _ => null);
+
+        state.PreservedKey.ShouldBeNull();
+        state.Values["fa"].ShouldBe("فروشگاه");
+        state.Values["en"].ShouldBe(string.Empty);
+    }
+
+    [Theory]
+    [InlineData("en")]
+    [InlineData("ar")]
+    [InlineData("es")]
+    [InlineData("fa")]
+    [InlineData("fa-IR")]
+    public void Public_fallback_uses_the_default_culture_and_never_the_key(string requested)
+    {
+        const string key = "SeededMenu:public-default:Item:home:DisplayName";
+        var label = MenuDisplayNamePlanner.ResolvePublicLabel(
+            key,
+            "Home",
+            requested,
+            "fa",
+            culture => culture is "fa" or "fa-IR" ? "خانه" : null);
+
+        label.ShouldBe("خانه");
+        label.ShouldNotStartWith("SeededMenu:");
+        label.ShouldNotStartWith("_");
+    }
+
+    [Fact]
+    public void Public_fallback_hides_when_the_name_is_missing_too()
+    {
+        const string key = "SeededMenu:public-default:Item:home:DisplayName";
+        MenuDisplayNamePlanner.ResolvePublicLabel(key, "  ", "en", "fa", _ => key).ShouldBe(string.Empty);
+        MenuDisplayNamePlanner.ResolvePublicLabel("_localizationKey", "About", "fa", "fa", _ => "خانه").ShouldBe("About");
+    }
+
+    [Fact]
+    public void Public_resolution_does_not_change_the_cached_key()
+    {
+        const string cached = "SeededMenu:public-default:Item:home:DisplayName";
+        var en = MenuDisplayNamePlanner.ResolvePublicLabel(cached, "Home", "en", "fa", culture => culture == "en" ? "Home" : "خانه");
+        var fa = MenuDisplayNamePlanner.ResolvePublicLabel(cached, "Home", "fa", "fa", culture => culture == "en" ? "Home" : "خانه");
+
+        en.ShouldBe("Home");
+        fa.ShouldBe("خانه");
+        cached.ShouldBe("SeededMenu:public-default:Item:home:DisplayName");
+        MenuTreeCacheKeys.CreatePublicTreeCacheKey("Public", null, "Default").Split(':').ShouldNotContain("fa");
     }
 
     private static string FindPlatformFile(string relativePath)

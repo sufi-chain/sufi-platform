@@ -16,23 +16,24 @@ public partial class BusinessTextEditor
     private string? _loadedLocalizationKey;
     private string _validationMessage = string.Empty;
 
-    [Parameter] public string? ResourceName { get; set; }
-    [Parameter] public string? LocalizationKey { get; set; }
-    [Parameter] public EventCallback<string?> LocalizationKeyChanged { get; set; }
+    [Parameter] public BusinessTextBinding? Binding { get; set; }
+    [Parameter] public EventCallback<BusinessTextBinding?> BindingChanged { get; set; }
     [Parameter] public BusinessTextEditorMode Mode { get; set; }
-    [Parameter] public string? LiteralValue { get; set; }
-    [Parameter] public EventCallback<string?> LiteralValueChanged { get; set; }
     [Parameter] public bool Required { get; set; }
     [Parameter] public bool Disabled { get; set; }
     [Parameter] public string? Label { get; set; }
 
-    protected override async Task OnInitializedAsync()
-    {
-        await EnsureCulturesLoadedAsync();
-    }
+    private string? ResourceName => Binding?.ResourceName;
+
+    private string? LocalizationKey => Binding?.Key;
+
+    private string? LiteralValue => Binding?.LiteralValue;
+
+    private string _literalValue = string.Empty;
 
     protected override async Task OnParametersSetAsync()
     {
+        _literalValue = Binding?.LiteralValue ?? string.Empty;
         if (Mode != BusinessTextEditorMode.Localized)
         {
             return;
@@ -200,7 +201,8 @@ public partial class BusinessTextEditor
 
     private async Task OnLiteralValueChangedAsync(string value)
     {
-        LiteralValue = value;
-        await LiteralValueChanged.InvokeAsync(value);
+        _literalValue = value;
+        Binding = new BusinessTextBinding(Binding?.ResourceName, Binding?.Key, value);
+        await BindingChanged.InvokeAsync(Binding);
     }
 }

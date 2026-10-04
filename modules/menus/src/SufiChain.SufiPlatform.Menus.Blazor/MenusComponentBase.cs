@@ -1,3 +1,4 @@
+using System.Globalization;
 using SufiChain.SufiPlatform.Data;
 using SufiChain.SufiPlatform.Menus.Localization;
 using SufiChain.SufiPlatform.Menus.Menus;
@@ -7,9 +8,32 @@ namespace SufiChain.SufiPlatform.Menus.Blazor;
 
 public abstract class MenusComponentBase : SufiComponentBase
 {
+    private IMenuAppService? _menuLabelAppService;
+
+    protected string MenuDefaultCulture { get; private set; } = "fa";
+
     protected MenusComponentBase()
     {
         LocalizationResource = typeof(SufiMenusResource);
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var cultures = await LazyGetRequiredService(ref _menuLabelAppService).GetLabelCulturesAsync();
+            var selected = cultures.FirstOrDefault(x => x.IsDefault);
+            if (!string.IsNullOrWhiteSpace(selected?.CultureName))
+            {
+                MenuDefaultCulture = selected.CultureName;
+            }
+        }
+        catch (Exception)
+        {
+            MenuDefaultCulture = "fa";
+        }
+
+        await base.OnInitializedAsync();
     }
 
     protected string ResolveMenuDisplayName(string? storedDisplayName, string? contextType = null, string? plainName = null)
@@ -47,23 +71,23 @@ public abstract class MenusComponentBase : SufiComponentBase
 
     private string ResolveBusinessDisplayName(string? storedDisplayName, string? contextType, string? plainName)
     {
-        string? localized = null;
-        if (BusinessLocalizationHelper.IsBusinessLocalizationKey(storedDisplayName))
+        string? menuKey = null;
+        if (!string.IsNullOrWhiteSpace(storedDisplayName)
+            && BusinessLocalizationHelper.TryExtractSeededMenuKey(storedDisplayName, out var extractedMenuKey))
         {
-            string? menuKey = null;
-            if (BusinessLocalizationHelper.TryExtractSeededMenuKey(storedDisplayName!, out var extractedMenuKey))
-            {
-                menuKey = extractedMenuKey;
-            }
-
-            var resourceName = MenuLocalizationRegistry.GetResourceName(menuKey, contextType);
-            localized = BusinessLocalizationHelper.ResolveText(
-                StringLocalizerFactory,
-                resourceName,
-                storedDisplayName,
-                fallback: string.Empty);
+            menuKey = extractedMenuKey;
         }
 
-        return BusinessTextEditorStorage.ResolveDisplayName(storedDisplayName, plainName, localized);
+        var resources = MenuLocalizationRegistry.GetReadResourceNames(menuKey, contextType);
+        return MenuDisplayNamePlanner.ResolvePublicLabel(
+            storedDisplayName,
+            plainName,
+            CultureInfo.CurrentUICulture.Name,
+            MenuDefaultCulture,
+            culture => MenuDisplayNamePlanner.LookupCulture(
+                StringLocalizerFactory,
+                resources,
+                storedDisplayName,
+                culture));
     }
 }

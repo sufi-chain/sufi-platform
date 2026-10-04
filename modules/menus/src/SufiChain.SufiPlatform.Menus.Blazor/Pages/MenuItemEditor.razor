@@ -74,22 +74,38 @@
                                      Label="@L["Slug"]" />
 
                         <div class="menu-item-editor__wide">
-                            <SbStack Gap="1">
-                                <SbText Weight="SbFontWeight.Medium">@L["DisplayNameLocalizationMode"]</SbText>
-                                <BusinessLocalizationModeSwitch Mode="_displayNameMode"
-                                                                ModeChanged="OnDisplayNameModeChangedAsync" />
-                            </SbStack>
-                        </div>
-
-                        <div class="menu-item-editor__wide">
-                            <BusinessTextEditor @ref="_displayNameEditor"
-                                                Label="@L["DisplayName"]"
-                                                ResourceName="@_localizationResourceName"
-                                                LocalizationKey="@_localizationKey"
-                                                Mode="@_displayNameMode"
-                                                LiteralValue="@_literalDisplayName"
-                                                LiteralValueChanged="OnLiteralDisplayNameChangedAsync"
-                                                Required="true" />
+                            @if (!string.IsNullOrWhiteSpace(_saveError))
+                            {
+                                <SbText Color="SbColor.Danger">@_saveError</SbText>
+                            }
+                            <MultilingualTextField @ref="_labels"
+                                                   Label="@L["DisplayName"]"
+                                                   HelpText="@L["MenuLabel:Help"]"
+                                                   Values="_displayNames"
+                                                   ValuesChanged="OnDisplayNamesChanged"
+                                                   Cultures="_labelCultures"
+                                                   CulturesFailed="_culturesFailed"
+                                                   Required="true"
+                                                   MaxLength="256"
+                                                   FallbackText="@_model.Name"
+                                                   SameForAll="_sameForAll"
+                                                   ShowBrokenBanner="_labelBroken" />
+                            <details class="menu-label-advanced">
+                                <summary>@L["MenuLabel:Advanced"]</summary>
+                                <div class="menu-label-advanced__body">
+                                    @if (!string.IsNullOrWhiteSpace(_labelKey))
+                                    {
+                                        <label>
+                                            @L["MenuLabel:Key"]
+                                            <input readonly dir="ltr" lang="en" value="@_labelKey" />
+                                        </label>
+                                    }
+                                    <label>
+                                        <input type="checkbox" @bind="_sameForAll" />
+                                        @L["MenuLabel:SameForAll"]
+                                    </label>
+                                </div>
+                            </details>
                         </div>
 
                         <div class="menu-item-editor__wide">

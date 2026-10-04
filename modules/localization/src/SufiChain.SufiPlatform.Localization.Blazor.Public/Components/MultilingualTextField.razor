@@ -1,0 +1,95 @@
+@namespace SufiChain.SufiPlatform.Localization.Blazor.Public.Components
+@using SufiChain.SufiPlatform.Data
+
+<div class="mltf">
+    @if (!string.IsNullOrWhiteSpace(Label))
+    {
+        <div class="mltf__label">@Label</div>
+    }
+    @if (!string.IsNullOrWhiteSpace(HelpText))
+    {
+        <div class="mltf__help">@HelpText</div>
+    }
+    @if (ShowBrokenBanner)
+    {
+        <div class="mltf__banner" role="status">@MenuBusinessTexts.BrokenPlaceholderBanner</div>
+    }
+    @if (CulturesFailed || Cultures == null || Cultures.Count == 0)
+    {
+        <div class="mltf__note">@MenuBusinessTexts.CulturesFailedMessage</div>
+    }
+
+    @foreach (var culture in VisibleRows())
+    {
+        var cultureName = culture.CultureName;
+        var row = culture;
+        var filled = !MenuDisplayNamePlanner.IsBlankLabel(ValueOf(cultureName));
+        <div class="mltf__row">
+            <label class="mltf__row-label" for="@RowId(row)">
+                <span>@row.DisplayName</span>
+                @if (row.IsDefault)
+                {
+                    <span> (اصلی)</span>
+                    @if (Required)
+                    {
+                        <span class="mltf__required" aria-hidden="true">*</span>
+                    }
+                }
+            </label>
+            @if (row.IsDefault)
+            {
+                <input id="@RowId(row)"
+                       class="mltf__input"
+                       type="@(Multiline ? "text" : "text")"
+                       dir="@(row.IsRtl ? "rtl" : "ltr")"
+                       lang="@row.CultureName"
+                       maxlength="@MaxLength"
+                       disabled="@Disabled"
+                       aria-required="@(Required.ToString().ToLowerInvariant())"
+                       placeholder="@PlaceholderFor(row)"
+                       value="@ValueOf(cultureName)"
+                       @ref="_defaultField"
+                       @onchange="args => OnValueChangedAsync(row, args)" />
+            }
+            else
+            {
+                <input id="@RowId(row)"
+                       class="mltf__input"
+                       type="text"
+                       dir="@(row.IsRtl ? "rtl" : "ltr")"
+                       lang="@row.CultureName"
+                       maxlength="@MaxLength"
+                       disabled="@Disabled"
+                       aria-required="false"
+                       placeholder="@PlaceholderFor(row)"
+                       value="@ValueOf(cultureName)"
+                       @onchange="args => OnValueChangedAsync(row, args)" />
+            }
+            <span class="mltf__status">@(filled ? "✓" : "ترجمه نشده")</span>
+            @if (_errors.TryGetValue(cultureName, out var error))
+            {
+                <div class="mltf__error" id="@($"{RowId(row)}-error")">@error</div>
+            }
+            else if (_warnings.TryGetValue(cultureName, out var warning) && !string.IsNullOrWhiteSpace(warning))
+            {
+                <div class="mltf__warning">@warning</div>
+            }
+        </div>
+    }
+</div>
+
+<style>
+    .mltf { display: flex; flex-direction: column; gap: 0.75rem; }
+    .mltf__label { font-weight: 600; }
+    .mltf__help, .mltf__note, .mltf__status { color: var(--sb-color-muted, #6b7280); font-size: 0.875rem; }
+    .mltf__banner, .mltf__error { color: var(--sb-color-danger, #b91c1c); }
+    .mltf__warning { color: var(--sb-color-warning, #a16207); font-size: 0.875rem; }
+    .mltf__row { display: grid; grid-template-columns: minmax(7rem, 10rem) minmax(0, 1fr); gap: 0.25rem 0.75rem; align-items: center; }
+    .mltf__input { width: 100%; min-height: 2.5rem; line-height: 1.6; }
+    .mltf__status, .mltf__error, .mltf__warning { grid-column: 2; }
+    .mltf__required { margin-inline-start: 0.15rem; }
+    @@media (max-width: 720px) {
+        .mltf__row { grid-template-columns: 1fr; }
+        .mltf__status, .mltf__error, .mltf__warning { grid-column: 1; }
+    }
+</style>

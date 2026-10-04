@@ -40,6 +40,13 @@
     "MenuItemSection:Visibility": "نمایان بودن",
     "Save": "ذخیره",
     "Cancel": "انصراف",
-    "ContextTypeExample": "مثلاً Public"
+    "ContextTypeExample": "مثلاً Public",
+    "Sufi.Menus:DisplayNameRequired": "عنوان فارسی الزامی است.",
+    "Sufi.Menus:DisplayNameLooksLikeKey": "این مقدار شبیه شناسهٔ سیستمی است؛ متن قابل نمایش وارد کنید.",
+    "MenuLabel:Help": "همان متنی که بازدیدکننده در منو می‌بیند.",
+    "MenuLabel:Advanced": "تنظیمات پیشرفته",
+    "MenuLabel:SameForAll": "یک متن برای همه زبان‌ها",
+    "MenuLabel:Key": "شناسهٔ متن",
+    "MenuLabel:Broken": "عنوان این آیتم درست ذخیره نشده بود؛ لطفاً دوباره وارد کنید."
   }
 }

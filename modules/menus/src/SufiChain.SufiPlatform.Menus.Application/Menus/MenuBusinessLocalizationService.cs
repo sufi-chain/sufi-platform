@@ -1,4 +1,4 @@
-using Microsoft.Extensions.Localization;
+using System.Globalization;
 using SufiChain.SufiPlatform.Data;
 using Volo.Abp.DependencyInjection;
 
@@ -6,42 +6,44 @@ namespace SufiChain.SufiPlatform.Menus.Menus;
 
 public class MenuBusinessLocalizationService : ITransientDependency
 {
-    protected IStringLocalizerFactory StringLocalizerFactory { get; }
+    private readonly MenuLabelLocalization _labels;
 
-    public MenuBusinessLocalizationService(IStringLocalizerFactory stringLocalizerFactory)
+    public MenuBusinessLocalizationService(MenuLabelLocalization labels)
     {
-        StringLocalizerFactory = stringLocalizerFactory;
+        _labels = labels;
     }
 
-    public virtual string ResolveMenuDisplayName(string? storedDisplayName, string? contextType = null, string? plainName = null)
+    public virtual string ResolveMenuDisplayName(
+        string? storedDisplayName,
+        string? contextType = null,
+        string? plainName = null,
+        string? requestedCulture = null,
+        string? defaultCulture = null)
     {
-        return ResolveDisplayName(storedDisplayName, contextType, plainName);
+        return Resolve(storedDisplayName, contextType, plainName, requestedCulture, defaultCulture);
     }
 
-    public virtual string ResolveMenuItemDisplayName(string? storedDisplayName, string? contextType = null, string? plainName = null)
+    public virtual string ResolveMenuItemDisplayName(
+        string? storedDisplayName,
+        string? contextType = null,
+        string? plainName = null,
+        string? requestedCulture = null,
+        string? defaultCulture = null)
     {
-        return ResolveDisplayName(storedDisplayName, contextType, plainName);
+        return Resolve(storedDisplayName, contextType, plainName, requestedCulture, defaultCulture);
     }
 
-    protected virtual string ResolveDisplayName(string? storedDisplayName, string? contextType, string? plainName)
+    private string Resolve(
+        string? storedDisplayName,
+        string? contextType,
+        string? plainName,
+        string? requestedCulture,
+        string? defaultCulture)
     {
-        string? localized = null;
-        if (BusinessLocalizationHelper.IsBusinessLocalizationKey(storedDisplayName))
-        {
-            string? menuKey = null;
-            if (BusinessLocalizationHelper.TryExtractSeededMenuKey(storedDisplayName!, out var extractedMenuKey))
-            {
-                menuKey = extractedMenuKey;
-            }
-
-            var resourceName = MenuLocalizationRegistry.GetResourceName(menuKey, contextType);
-            localized = BusinessLocalizationHelper.ResolveText(
-                StringLocalizerFactory,
-                resourceName,
-                storedDisplayName,
-                fallback: string.Empty);
-        }
-
-        return BusinessTextEditorStorage.ResolveDisplayName(storedDisplayName, plainName, localized);
+        var requested = string.IsNullOrWhiteSpace(requestedCulture)
+            ? CultureInfo.CurrentUICulture.Name
+            : requestedCulture;
+        var fallbackCulture = string.IsNullOrWhiteSpace(defaultCulture) ? "fa" : defaultCulture;
+        return _labels.Resolve(storedDisplayName, contextType, plainName, requested, fallbackCulture);
     }
 }

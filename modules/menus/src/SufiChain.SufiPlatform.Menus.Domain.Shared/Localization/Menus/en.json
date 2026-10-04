@@ -106,6 +106,13 @@
     "Hooshvare:SufiMenus:Designer:DisplayName": "Menu Designer",
     "Save": "Save",
     "Cancel": "Cancel",
-    "ContextTypeExample": "e.g. Public"
+    "ContextTypeExample": "e.g. Public",
+    "Sufi.Menus:DisplayNameRequired": "The default-language label is required.",
+    "Sufi.Menus:DisplayNameLooksLikeKey": "This value looks like a system id. Enter the text visitors should see.",
+    "MenuLabel:Help": "The text visitors see in the menu.",
+    "MenuLabel:Advanced": "Advanced settings",
+    "MenuLabel:SameForAll": "One text for every language",
+    "MenuLabel:Key": "Text id",
+    "MenuLabel:Broken": "This item's label was not saved correctly. Enter it again."
   }
 }

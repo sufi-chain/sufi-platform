@@ -1,3 +1,4 @@
+using System.Globalization;
 using Microsoft.AspNetCore.Authorization;
 using SufiChain.SufiPlatform.Menus.Caching;
 using SufiChain.SufiPlatform.Menus.Features;
@@ -14,17 +15,20 @@ public class PublicMenuAppService : SufiApplicationService, IPublicMenuAppServic
     private readonly IMenuRepository _menuRepository;
     private readonly IMenuItemRepository _menuItemRepository;
     private readonly MenuBusinessLocalizationService _businessLocalization;
+    private readonly MenuLabelLocalization _labels;
     private readonly IDistributedCache<MenuTreeCacheItem> _treeCache;
 
     public PublicMenuAppService(
         IMenuRepository menuRepository,
         IMenuItemRepository menuItemRepository,
         MenuBusinessLocalizationService businessLocalization,
+        MenuLabelLocalization labels,
         IDistributedCache<MenuTreeCacheItem> treeCache)
     {
         _menuRepository = menuRepository;
         _menuItemRepository = menuItemRepository;
         _businessLocalization = businessLocalization;
+        _labels = labels;
         _treeCache = treeCache;
     }
 
@@ -46,7 +50,7 @@ public class PublicMenuAppService : SufiApplicationService, IPublicMenuAppServic
             return new MenuTreeCacheItem { Tree = BuildTree(items, null) };
         });
 
-        return LocalizeTree(cached.Tree, contextType);
+        return await LocalizeTreeAsync(cached.Tree, contextType);
     }
 
     public virtual async Task<List<MenuItemTreeDto>?> GetTreeByIdAsync(Guid menuId)
@@ -80,7 +84,13 @@ public class PublicMenuAppService : SufiApplicationService, IPublicMenuAppServic
             return new MenuTreeCacheItem { Item = item.ToDto() };
         });
 
-        return cached.Item == null ? null : LocalizeItem(cached.Item, contextType);
+        if (cached.Item == null)
+        {
+            return null;
+        }
+
+        var localized = await LocalizeItemAsync(cached.Item, contextType);
+        return string.IsNullOrWhiteSpace(localized.DisplayName) ? null : localized;
     }
 
     protected virtual List<MenuItemTreeDto> BuildTree(List<MenuItem> items, Guid? parentId) =>
@@ -96,24 +106,63 @@ public class PublicMenuAppService : SufiApplicationService, IPublicMenuAppServic
             })
             .ToList();
 
-    protected virtual List<MenuItemTreeDto> LocalizeTree(List<MenuItemTreeDto> items, string contextType)
+    protected virtual async Task<List<MenuItemTreeDto>> LocalizeTreeAsync(List<MenuItemTreeDto> items, string contextType)
+    {
+        var defaultCulture = await _labels.GetDefaultCultureAsync();
+        var requestedCulture = CultureInfo.CurrentUICulture.Name;
+        return LocalizeTree(items, contextType, requestedCulture, defaultCulture);
+    }
+
+    protected virtual async Task<MenuItemDto> LocalizeItemAsync(MenuItemDto item, string contextType)
+    {
+        var defaultCulture = await _labels.GetDefaultCultureAsync();
+        var requestedCulture = CultureInfo.CurrentUICulture.Name;
+        return LocalizeItem(item, contextType, requestedCulture, defaultCulture);
+    }
+
+    protected virtual List<MenuItemTreeDto> LocalizeTree(
+        List<MenuItemTreeDto> items,
+        string contextType,
+        string requestedCulture,
+        string defaultCulture)
     {
         var localized = new List<MenuItemTreeDto>(items.Count);
         foreach (var item in items)
         {
             var copy = CopyTreeItem(item);
-            copy.DisplayName = _businessLocalization.ResolveMenuItemDisplayName(item.DisplayName, contextType, item.Name);
-            copy.Children = LocalizeTree(item.Children, contextType);
+            copy.DisplayName = _businessLocalization.ResolveMenuItemDisplayName(
+                item.DisplayName,
+                contextType,
+                item.Name,
+                requestedCulture,
+                defaultCulture);
+            copy.DisplayNames = null;
+            if (string.IsNullOrWhiteSpace(copy.DisplayName))
+            {
+                continue;
+            }
+
+            copy.Children = LocalizeTree(item.Children, contextType, requestedCulture, defaultCulture);
             localized.Add(copy);
         }
 
         return localized;
     }
 
-    protected virtual MenuItemDto LocalizeItem(MenuItemDto item, string contextType)
+    protected virtual MenuItemDto LocalizeItem(
+        MenuItemDto item,
+        string contextType,
+        string requestedCulture,
+        string defaultCulture)
     {
         var copy = CopyItem(item);
-        copy.DisplayName = _businessLocalization.ResolveMenuItemDisplayName(item.DisplayName, contextType, item.Name);
+        copy.DisplayName = _businessLocalization.ResolveMenuItemDisplayName(
+            item.DisplayName,
+            contextType,
+            item.Name,
+            requestedCulture,
+            defaultCulture);
+        copy.DisplayNames = null;
         return copy;
     }
 
