@@ -20,6 +20,7 @@ public partial class ConfirmEmail : IDisposable
 
     private readonly CancellationTokenSource _redirectCancellation = new();
     private int _redirectStarted;
+    private int _disposed;
 
     [Inject]
     protected IAccountAppService AccountAppService { get; set; } = default!;
@@ -201,6 +202,11 @@ public partial class ConfirmEmail : IDisposable
 
     public void Dispose()
     {
+        if (Interlocked.Exchange(ref _disposed, 1) != 0)
+        {
+            return;
+        }
+
         _redirectCancellation.Cancel();
         _redirectCancellation.Dispose();
     }
