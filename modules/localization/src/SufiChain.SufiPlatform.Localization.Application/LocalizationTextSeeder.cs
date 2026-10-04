@@ -95,6 +95,53 @@ public class LocalizationTextSeeder : ILocalizationTextSeeder, ITransientDepende
         }
     }
 
+    public virtual async Task ReplaceKeyValuesAsync(
+        string resourceName,
+        string key,
+        IReadOnlyDictionary<string, string> cultureValues,
+        Guid? tenantId = null,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(resourceName);
+        ArgumentException.ThrowIfNullOrWhiteSpace(key);
+
+        if (cultureValues.Count == 0)
+        {
+            return;
+        }
+
+        using (CurrentTenant.Change(tenantId))
+        {
+            foreach (var (cultureName, value) in cultureValues)
+            {
+                if (string.IsNullOrWhiteSpace(cultureName))
+                {
+                    continue;
+                }
+
+                var normalizedCulture = SeedCultureHelper.NormalizeCulture(cultureName)!;
+                if (string.IsNullOrWhiteSpace(value))
+                {
+                    var existing = await TextRepository.FindAsync(
+                        resourceName,
+                        normalizedCulture,
+                        key,
+                        cancellationToken: cancellationToken);
+                    if (existing == null)
+                    {
+                        continue;
+                    }
+
+                    await TextRepository.DeleteAsync(existing, autoSave: true, cancellationToken: cancellationToken);
+                    await CacheService.InvalidateAsync(resourceName, normalizedCulture);
+                    continue;
+                }
+
+                await UpsertSingleAsync(resourceName, normalizedCulture, key, value.Trim(), overwriteExisting: true, cancellationToken);
+            }
+        }
+    }
+
     public virtual async Task<string?> FindValueAsync(
         string resourceName,
         string cultureName,

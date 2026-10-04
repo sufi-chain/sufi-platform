@@ -10,9 +10,9 @@
     @if (Mode == BusinessTextEditorMode.Literal)
     {
         <SbTextField TValue="string"
-                     Value="@(LiteralValue ?? string.Empty)"
+                     Value="@_literalValue"
                      ValueChanged="OnLiteralValueChangedAsync"
-                     ValueExpression="@(() => LiteralValue!)"
+                     ValueExpression="@(() => _literalValue)"
                      Disabled="@Disabled"
                      Required="@Required" />
     }

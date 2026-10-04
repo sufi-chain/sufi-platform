@@ -433,6 +433,45 @@ public class WorkspaceAppService : SufiApplicationService, IWorkspaceAppService
     }
 
     [Authorize(AIPermissions.Workspaces.Edit)]
+    public async Task<WorkspaceDto> SetHostDefaultAsync(Guid id)
+    {
+        EnsureHost();
+        var workspace = await _workspaceRepository.GetAsync(id);
+        EnsureEditable(workspace);
+
+        var count = await _workspaceRepository.GetCountAsync();
+        var workspaces = count == 0
+            ? new List<Workspace>()
+            : await _workspaceRepository.GetListAsync(
+                skipCount: 0,
+                maxResultCount: count > int.MaxValue ? int.MaxValue : (int)count,
+                sorting: nameof(Workspace.Name));
+
+        foreach (var item in workspaces)
+        {
+            var shouldBeDefault = item.Id == workspace.Id;
+            if (shouldBeDefault == HostDefaultWorkspaceMarker.IsMarked(item))
+            {
+                continue;
+            }
+
+            if (shouldBeDefault)
+            {
+                HostDefaultWorkspaceMarker.Mark(item);
+            }
+            else
+            {
+                HostDefaultWorkspaceMarker.Clear(item);
+            }
+
+            await _workspaceRepository.UpdateAsync(item, autoSave: true);
+        }
+
+        var saved = await _workspaceRepository.GetAsync(id);
+        return ObjectMapper.Map<Workspace, WorkspaceDto>(saved);
+    }
+
+    [Authorize(AIPermissions.Workspaces.Edit)]
     public async Task<WorkspaceDto> UpdateAsync(Guid id, UpdateWorkspaceDto input)
     {
         var workspace = await _workspaceRepository.GetAsync(id, includeDetails: true);
