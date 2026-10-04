@@ -27,7 +27,7 @@
                     <SbHeading Level="2" Size="5">@L["DisplayName"]</SbHeading>
                     @if (!string.IsNullOrWhiteSpace(_saveError))
                     {
-                        <SbText Color="SbColor.Danger">@_saveError</SbText>
+                        <div id="menu-item-save-error" class="menu-item-editor__error" role="alert" tabindex="-1">@_saveError</div>
                     }
                     <MultilingualTextField @ref="_labels"
                                            Label="@L["DisplayName"]"
@@ -98,6 +98,11 @@
                             <div id="@(_linkErrorFieldId + "-error")" class="menu-item-editor__error" role="alert">@_linkError</div>
                         }
 
+                        @if (!string.IsNullOrEmpty(LinkPreview))
+                        {
+                            <p class="menu-item-editor__preview">@L["MenuLink:Preview"] <bdi dir="ltr">@LinkPreview</bdi></p>
+                        }
+
                         @if (_linkChoice != MenuLinkChoice.NoLink)
                         {
                             <SbSimpleSelect TValue="MenuLinkTarget"
@@ -152,8 +157,8 @@
                     </div>
                 </SbStack>
 
-                <details @ref="_advancedRef" class="menu-item-editor__advanced">
-                    <summary>@L["MenuLink:Advanced"]</summary>
+                <details @ref="_labelAdvancedRef" class="menu-item-editor__advanced">
+                    <summary>@L["MenuLabel:Advanced"]</summary>
                     <div class="menu-item-editor__grid">
                         @if (!string.IsNullOrWhiteSpace(_labelKey))
                         {
@@ -191,6 +196,12 @@
                                      Id="menu-item-slug"
                                      Label="@L["Slug"]"
                                      dir="ltr" />
+                    </div>
+                </details>
+
+                <details @ref="_advancedRef" class="menu-item-editor__advanced">
+                    <summary>@L["MenuLink:Advanced"]</summary>
+                    <div class="menu-item-editor__grid">
                         <SbSimpleSelect TValue="string"
                                         @bind-Value="_structuralKindText"
                                         Label="@L["MenuLink:ItemType"]">
@@ -306,6 +317,16 @@ else if (_loadFailed)
         color: var(--sb-color-danger, #b91c1c);
         font-size: 0.875rem;
         margin-top: 0.25rem;
+    }
+
+    .menu-item-editor__error:focus {
+        outline: 2px solid var(--sb-color-danger, #b91c1c);
+        outline-offset: 2px;
+    }
+
+    .menu-item-editor__preview {
+        margin: 0;
+        color: var(--sb-color-muted, #6b7280);
     }
 
     .menu-item-editor__advanced {

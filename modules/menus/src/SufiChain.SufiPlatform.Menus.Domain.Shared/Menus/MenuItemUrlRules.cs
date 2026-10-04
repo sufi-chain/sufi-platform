@@ -134,6 +134,7 @@ public static class MenuItemUrlRules
     /// (<c>/fa#id</c> from <c>/fa/...</c>, <c>/#id</c> when the path has no culture prefix).
     /// <paramref name="enabledCultures"/> limits which path prefix counts as a culture.
     /// When it is omitted, a 2–3 letter prefix is treated as a culture.
+    /// An empty list means the cultures could not be loaded, so a short prefix such as <c>kb</c> is not a culture.
     /// </summary>
     public static string? ToPublicHref(
         string? url,

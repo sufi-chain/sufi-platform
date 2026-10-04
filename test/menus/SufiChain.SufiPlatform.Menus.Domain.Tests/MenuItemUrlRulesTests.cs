@@ -200,6 +200,16 @@ public class MenuItemUrlRulesTests
     }
 
     [Fact]
+    public void ToPublicHref_Should_Not_Treat_A_Short_Prefix_As_Culture_When_Cultures_Failed_To_Load()
+    {
+        IReadOnlyCollection<string> none = Array.Empty<string>();
+        MenuItemUrlRules.IsCulturePrefix("kb", none).ShouldBeFalse();
+        MenuItemUrlRules.ToPublicHref("/#solve", "/kb", none).ShouldBe("/#solve");
+        MenuItemUrlRules.ToPublicHref("/#solve", "/kb/article", none).ShouldBe("/#solve");
+        MenuItemUrlRules.ToPublicHref("#solve", "/kb/article", none).ShouldBe("/kb/article#solve");
+    }
+
+    [Fact]
     public void ToPublicHref_Should_Treat_Only_Enabled_Cultures_As_A_Home_Prefix()
     {
         var enabled = new[] { "fa", "en" };

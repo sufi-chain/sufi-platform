@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
+using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop;
 using SufiChain.SufiPlatform.Localization;
 using SufiChain.SufiPlatform.Menus.Menus;
@@ -28,12 +29,14 @@ public partial class MenuItemEditor
     private readonly List<MenuEditorError> _errorFields = new();
     private string? _focusFieldId;
     private bool _openAdvancedOnRender;
+    private bool _openLabelAdvancedOnRender;
     private bool _linkTargetTouched;
     private string? _linkErrorFieldId;
     private string? _linkErrorLabel;
     private object? _linkErrorModel;
     private string? _linkErrorMember;
     private ElementReference _advancedRef;
+    private ElementReference _labelAdvancedRef;
     private EditContext? _submittedContext;
     private ValidationMessageStore? _validationMessages;
     private IJSObjectReference? _editorModule;
@@ -49,15 +52,26 @@ public partial class MenuItemEditor
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         await base.OnAfterRenderAsync(firstRender);
-        if (_openAdvancedOnRender)
+        if (_openAdvancedOnRender || _openLabelAdvancedOnRender)
         {
+            var openLinkAdvanced = _openAdvancedOnRender;
+            var openLabelAdvanced = _openLabelAdvancedOnRender;
             _openAdvancedOnRender = false;
+            _openLabelAdvancedOnRender = false;
             try
             {
                 _editorModule ??= await JsRuntime.InvokeAsync<IJSObjectReference>(
                     "import",
                     "./_content/SufiChain.SufiPlatform.Menus.Blazor/menu-item-editor.js");
-                await _editorModule.InvokeVoidAsync("openDetails", _advancedRef);
+                if (openLabelAdvanced)
+                {
+                    await _editorModule.InvokeVoidAsync("openDetails", _labelAdvancedRef);
+                }
+
+                if (openLinkAdvanced)
+                {
+                    await _editorModule.InvokeVoidAsync("openDetails", _advancedRef);
+                }
             }
             catch (Exception)
             {
@@ -115,10 +129,11 @@ public partial class MenuItemEditor
 
         foreach (var row in _cultureUrlRows.Where(row => !string.IsNullOrEmpty(row.Error)))
         {
-            _errorFields.Add(new MenuEditorError(CultureLabel(row.Culture), row.FieldId));
+            _errorFields.Add(new MenuEditorError(CultureUrlSummary(row.Culture), row.FieldId));
         }
 
-        _openAdvancedOnRender = HasAdvancedErrors() || !string.IsNullOrEmpty(_nameError);
+        _openAdvancedOnRender = HasAdvancedErrors();
+        _openLabelAdvancedOnRender = !string.IsNullOrEmpty(_nameError);
         _focusFieldId = displayNameFailed
             ? null
             : _errorFields.Select(field => field.FieldId).FirstOrDefault(id => !string.IsNullOrEmpty(id));
@@ -232,9 +247,9 @@ public partial class MenuItemEditor
                 return;
             }
         }
-        catch (Exception)
+        catch (Exception exception)
         {
-            // The link table still works with the built-in culture list when the editor cultures cannot be loaded.
+            Logger.LogWarning(exception, "Could not load menu link cultures.");
         }
 
         _linkCultures = FallbackCultures();
@@ -417,6 +432,66 @@ public partial class MenuItemEditor
 
         return valid;
     }
+
+    private void PublishSaveError()
+    {
+        var message = string.IsNullOrWhiteSpace(_saveError)
+            ? L["MenuLink:SaveFailed"].Value
+            : _saveError;
+        _saveError = message;
+        _errorFields.Clear();
+        _errorFields.Add(new MenuEditorError(message!, "menu-item-save-error"));
+        _focusFieldId = "menu-item-save-error";
+    }
+
+    private string? LinkPreview
+    {
+        get
+        {
+            if (!string.IsNullOrEmpty(_structuralKindText) || !TryPeekStoredUrl(out var stored) || stored == null)
+            {
+                return null;
+            }
+
+            if (_linkChoice == MenuLinkChoice.PageSection && _sectionPage == MenuSectionPage.HomePage)
+            {
+                var enabled = _linkCultures.Select(culture => culture.CultureName).ToArray();
+                return MenuItemUrlRules.ToPublicHref(stored, "/" + DefaultPreviewCulture(), enabled) ?? stored;
+            }
+
+            return stored;
+        }
+    }
+
+    private string DefaultPreviewCulture()
+    {
+        var named = _labelCultures.FirstOrDefault(culture => culture.IsDefault)?.CultureName
+            ?? _linkCultures.FirstOrDefault()?.CultureName;
+        return MenuItemUrlRules.CanonicalCulture(named) ?? "fa";
+    }
+
+    private bool TryPeekStoredUrl(out string? url)
+    {
+        url = null;
+        switch (_linkChoice)
+        {
+            case MenuLinkChoice.SitePage:
+                return MenuItemUrlRules.TryNormalizeSitePage(_pagePath, out url);
+            case MenuLinkChoice.PageSection:
+                return MenuItemUrlRules.TryNormalizeSection(_sectionPage, _sectionPagePath, _sectionId, out url);
+            case MenuLinkChoice.Website:
+                return MenuItemUrlRules.TryNormalizeWebsite(_websiteUrl, out url);
+            case MenuLinkChoice.Email:
+                return MenuItemUrlRules.TryNormalizeEmail(_email, out url);
+            case MenuLinkChoice.Phone:
+                return MenuItemUrlRules.TryNormalizePhone(_phone, out url);
+            default:
+                return false;
+        }
+    }
+
+    private string CultureUrlSummary(string? culture) =>
+        L["MenuLink:CultureUrlSummary", CultureLabel(culture)].Value;
 
     private string CultureLabel(string? culture)
     {

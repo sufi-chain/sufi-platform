@@ -1,6 +1,7 @@
 using System.Linq;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
+using Microsoft.Extensions.Logging;
 using SufiChain.SufiPlatform.Data;
 using SufiChain.SufiPlatform.Localization.Blazor.Public.Components;
 using SufiChain.SufiPlatform.Localization.Blazor.Public.Models;
@@ -194,8 +195,9 @@ public partial class MenuItemEditor : MenusComponentBase
             _labelCultures = MenuLabelCultureMapper.Map(await MenuAppService.GetLabelCulturesAsync());
             _culturesFailed = _labelCultures.Count == 0;
         }
-        catch (Exception)
+        catch (Exception exception)
         {
+            Logger.LogWarning(exception, "Could not load menu label cultures.");
             _labelCultures = new List<MultilingualCulture>();
             _culturesFailed = true;
         }
@@ -369,7 +371,8 @@ public partial class MenuItemEditor : MenusComponentBase
         }
         catch (Exception ex) when (ex is BusinessException or UserFriendlyException)
         {
-            _saveError = string.IsNullOrWhiteSpace(ex.Message) ? L["Sufi.Menus:DisplayNameRequired"] : ex.Message;
+            _saveError = string.IsNullOrWhiteSpace(ex.Message) ? L["MenuLink:SaveFailed"] : ex.Message;
+            PublishSaveError();
             return;
         }
 
