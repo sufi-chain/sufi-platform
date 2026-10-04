@@ -71,6 +71,7 @@
     "ViewTagLinks": "View links",
     "TagLinksFor": "Links for {0}",
     "NoTagLinksFound": "This tag is not linked to any entity.",
-    "UnassignTagLinkConfirmation": "Remove this tag from '{0}' ({1})?"
+    "UnassignTagLinkConfirmation": "Remove this tag from '{0}' ({1})?",
+    "DeleteTag": "Delete tag"
   ,"Hooshvare:SufiTags:Taxonomy:DisplayName":"Tag Taxonomy"}
 }

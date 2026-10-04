@@ -71,6 +71,7 @@
     "MultilingualTextField:EmptyFallback": "إذا تُرك فارغًا، يُعرض «{0}»",
     "MultilingualTextField:ScriptWarning": "يبدو أن هذا النص بلغة أخرى.",
     "MultilingualTextField:BaseText": "العودة إلى النص الأساسي",
-    "Hooshvare:SufiLocalization:Editor:DisplayName": "محرر الترجمة"
+    "Hooshvare:SufiLocalization:Editor:DisplayName": "محرر الترجمة",
+    "SupportedCultures": "اللغات المدعومة"
   }
 }

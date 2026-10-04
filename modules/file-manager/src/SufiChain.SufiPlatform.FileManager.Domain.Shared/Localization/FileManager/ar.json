@@ -603,6 +603,9 @@
     "FileNotAvailable": "الملف غير متاح",
     "LoadingAttachments": "جارٍ تحميل المرفقات…",
     "NoAttachments": "لا توجد مرفقات",
-    "TotalAttachments": "المجموع: {0} ملفات ({1})"
+    "TotalAttachments": "المجموع: {0} ملفات ({1})",
+    "Statistics": "الإحصاءات",
+    "Images": "الصور",
+    "Videos": "الفيديوهات"
   }
 }
