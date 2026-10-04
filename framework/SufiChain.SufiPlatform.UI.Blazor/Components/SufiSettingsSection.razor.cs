@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Components;
+using Microsoft.Extensions.Logging;
 using Volo.Abp.Authorization;
 
 namespace SufiChain.SufiPlatform.UI.Blazor.Components;
@@ -19,6 +20,9 @@ public partial class SufiSettingsSection : ComponentBase
 
     [Inject]
     protected IAuthorizationService AuthorizationService { get; set; } = default!;
+
+    [Inject]
+    protected ILogger<SufiSettingsSection> Logger { get; set; } = default!;
 
     /// <summary>
     /// Permission that grants an editable section. Without it, <see cref="ReadOnlyPolicy"/> can still show a view-only section.
@@ -172,11 +176,26 @@ public partial class SufiSettingsSection : ComponentBase
 
     private async Task ResolvePolicyAsync(int version, string? policy, string? readOnlyPolicy)
     {
-        var canEdit = !string.IsNullOrWhiteSpace(policy) && await AuthorizationService.IsGrantedAsync(policy).ConfigureAwait(false);
+        var canEdit = false;
         var canView = false;
-        if (!canEdit && !string.IsNullOrWhiteSpace(readOnlyPolicy))
+        try
         {
-            canView = await AuthorizationService.IsGrantedAsync(readOnlyPolicy).ConfigureAwait(false);
+            canEdit = !string.IsNullOrWhiteSpace(policy) && await AuthorizationService.IsGrantedAsync(policy);
+            if (!canEdit && !string.IsNullOrWhiteSpace(readOnlyPolicy))
+            {
+                canView = await AuthorizationService.IsGrantedAsync(readOnlyPolicy);
+            }
+        }
+        catch (Exception exception)
+        {
+            if (version != _resolveVersion)
+            {
+                return;
+            }
+
+            Logger.LogWarning(exception, "Settings section {SectionId} permission check failed.", Id);
+            canEdit = false;
+            canView = false;
         }
 
         if (version != _resolveVersion)

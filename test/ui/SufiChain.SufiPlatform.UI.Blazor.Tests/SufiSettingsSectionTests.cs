@@ -3,6 +3,7 @@ using System.Security.Claims;
 using Bunit;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using SufiChain.SufiBlazor.Components.Navigation;
 using SufiChain.SufiPlatform.Settings.Blazor.Settings;
 using SufiChain.SufiPlatform.UI.Blazor.Components;
@@ -15,10 +16,12 @@ namespace SufiChain.SufiPlatform.UI.Blazor.Tests;
 public class SufiSettingsSectionTests : BunitContext
 {
     private readonly RecordingAuthorizationService _authorization = new();
+    private readonly CaptureLogger _logger = new();
 
     public SufiSettingsSectionTests()
     {
         Services.AddSingleton<IAuthorizationService>(_authorization);
+        Services.AddSingleton<ILogger<SufiSettingsSection>>(_logger);
     }
 
     [Fact]
@@ -112,6 +115,24 @@ public class SufiSettingsSectionTests : BunitContext
         _authorization.Calls.Count.ShouldBe(calls);
     }
 
+    [Fact]
+    public void A_failing_permission_check_hides_the_section()
+    {
+        _authorization.Throw("Settings.Edit");
+
+        var cut = RenderSection(policy: "Settings.Edit", readOnlyPolicy: "Settings.View");
+
+        cut.WaitForAssertion(() =>
+        {
+            var section = cut.FindComponent<SbSettingsSection>().Instance;
+            section.Pending.ShouldBeFalse();
+            section.Visible.ShouldBeFalse();
+            section.ReadOnly.ShouldBeFalse();
+        });
+        _authorization.Calls.ShouldBe(new[] { "Settings.Edit" });
+        _logger.Warnings.ShouldContain(message => message.Contains("email", StringComparison.Ordinal));
+    }
+
     private IRenderedComponent<SufiSettingsSection> RenderSection(string? policy, string? readOnlyPolicy)
     {
         return Render<SufiSettingsSection>(parameters => parameters
@@ -131,6 +152,10 @@ public class SufiSettingsSectionTests : BunitContext
         public IServiceProvider ServiceProvider { get; } = new ServiceCollection().BuildServiceProvider();
 
         public List<string> Calls { get; } = new();
+
+        private readonly HashSet<string> _throws = new(StringComparer.Ordinal);
+
+        public void Throw(string policy) => _throws.Add(policy);
 
         public void Set(string policy, bool granted)
         {
@@ -152,12 +177,43 @@ public class SufiSettingsSectionTests : BunitContext
         public async Task<AuthorizationResult> AuthorizeAsync(ClaimsPrincipal user, object? resource, string policyName)
         {
             Calls.Add(policyName);
+            if (_throws.Contains(policyName))
+            {
+                throw new InvalidOperationException("permission check failed");
+            }
+
             if (!_gates.TryGetValue(policyName, out var gate))
             {
                 return AuthorizationResult.Failed();
             }
 
             return await gate.Task ? AuthorizationResult.Success() : AuthorizationResult.Failed();
+        }
+    }
+
+    private sealed class CaptureLogger : ILogger<SufiSettingsSection>
+    {
+        public List<string> Warnings { get; } = new();
+
+        public IDisposable BeginScope<TState>(TState state) where TState : notnull => NullScope.Instance;
+
+        public bool IsEnabled(LogLevel logLevel) => true;
+
+        public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter)
+        {
+            if (logLevel >= LogLevel.Warning)
+            {
+                Warnings.Add(formatter(state, exception));
+            }
+        }
+
+        private sealed class NullScope : IDisposable
+        {
+            public static readonly NullScope Instance = new();
+
+            public void Dispose()
+            {
+            }
         }
     }
 }
