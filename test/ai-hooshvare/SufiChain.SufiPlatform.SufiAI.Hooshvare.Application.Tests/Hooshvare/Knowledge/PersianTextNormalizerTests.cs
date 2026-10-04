@@ -47,6 +47,23 @@ public class PersianTextNormalizerTests
     {
         PersianTextNormalizer.Normalize(null).ShouldBe(string.Empty);
     }
+
+    [Fact]
+    public void Should_Strip_Arabic_Diacritics()
+    {
+        PersianTextNormalizer.Normalize("کِتَاب").ShouldBe("کتاب");
+        PersianTextNormalizer.Normalize("پُشتیبانی").ShouldBe("پشتیبانی");
+    }
+
+    [Fact]
+    public void Should_Fold_Search_Text_On_Both_Spellings()
+    {
+        PersianTextNormalizer.NormalizeForSearch("پشتيباني").ShouldBe("پشتیبانی");
+        PersianTextNormalizer.NormalizeForSearch("پشتیبانی").ShouldBe("پشتیبانی");
+        PersianTextNormalizer.NormalizeForSearch("مي\u200Cتوانيد").ShouldBe("میتوانید");
+        PersianTextNormalizer.NormalizeForSearch("کِتاب").ShouldBe("کتاب");
+        PersianTextNormalizer.NormalizeForSearch(null).ShouldBe(string.Empty);
+    }
 }
 
 public class HooshvareTextDecoderTests
