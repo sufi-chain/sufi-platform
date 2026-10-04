@@ -24,8 +24,11 @@ public partial class UsageAnalytics : AIComponentBase
     private IAIAppService? _aiAppService;
 
     private List<WorkspaceDto> _workspaces = new();
+    private bool _workspacesResolved;
+    private bool _workspacesFailed;
     private Guid? _selectedWorkspaceId;
     private UsageStatisticsDto? _statistics;
+    private bool _statisticsFailed;
     private List<AIUsageLogDto> _usageLogs = new();
     private List<WorkspaceGuardrailStatusDto> _guardrailStatus = new();
     private string _routeFilter = AllRoutesFilter;
@@ -34,6 +37,11 @@ public partial class UsageAnalytics : AIComponentBase
     private const string UnattributedRouteFilter = "unattributed";
 
     private SbDateRange? _dateRange = new(DateOnly.FromDateTime(DateTime.Now.AddDays(-30)), DateOnly.FromDateTime(DateTime.Now));
+
+    protected override void OnInitialized()
+    {
+        LoadingStates[LoadingKeys.LoadWorkspaces] = true;
+    }
 
     protected override async Task OnInitializedAsync()
     {
@@ -45,12 +53,25 @@ public partial class UsageAnalytics : AIComponentBase
     {
         await ExecuteWithLoadingAsync(async () =>
         {
-            _workspaces = await WorkspaceAppService.GetLookupAsync();
-
-            if (_workspaces.Any() && !_selectedWorkspaceId.HasValue)
+            try
             {
-                _selectedWorkspaceId = _workspaces.First().Id;
-                await LoadDataAsync();
+                _workspaces = await WorkspaceAppService.GetLookupAsync();
+                _workspacesFailed = false;
+
+                if (_workspaces.Any() && !_selectedWorkspaceId.HasValue)
+                {
+                    _selectedWorkspaceId = _workspaces.First().Id;
+                    await LoadDataAsync();
+                }
+            }
+            catch
+            {
+                _workspacesFailed = true;
+                throw;
+            }
+            finally
+            {
+                _workspacesResolved = true;
             }
         }, LoadingKeys.LoadWorkspaces);
     }
@@ -97,9 +118,19 @@ public partial class UsageAnalytics : AIComponentBase
         var startDate = _dateRange?.Start?.ToDateTime(TimeOnly.MinValue);
         var endDate = _dateRange?.End?.ToDateTime(TimeOnly.MaxValue);
 
+        _statistics = null;
+        _statisticsFailed = false;
         await ExecuteWithLoadingAsync(async () =>
         {
-            _statistics = await AIAppService.GetUsageStatisticsAsync(_selectedWorkspaceId.Value, startDate, endDate);
+            try
+            {
+                _statistics = await AIAppService.GetUsageStatisticsAsync(_selectedWorkspaceId.Value, startDate, endDate);
+            }
+            catch
+            {
+                _statisticsFailed = true;
+                throw;
+            }
         }, LoadingKeys.LoadStatistics);
 
         await ExecuteWithLoadingAsync(async () =>

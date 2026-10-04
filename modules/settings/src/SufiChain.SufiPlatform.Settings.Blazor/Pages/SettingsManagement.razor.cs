@@ -11,6 +11,7 @@ public partial class SettingsManagement : SettingsComponentBase
 {
     protected override void OnInitialized()
     {
+        LoadingStates[LoadingKeys.LoadGroups] = true;
         SetupPageLayout();
     }
 
@@ -27,6 +28,8 @@ public partial class SettingsManagement : SettingsComponentBase
     [Inject] protected ICurrentPrincipalAccessor PrincipalAccessor { get; set; } = default!;
 
     private List<SettingComponentGroup> _groups = new();
+    private bool _groupsResolved;
+    private bool _groupsLoadFailed;
     private string? _selectedTabId;
     private DynamicComponent? _currentComponentRef;
     private SettingComponentGroup? SelectedGroup => _groups.FirstOrDefault(group => group.Id == _selectedTabId);
@@ -50,26 +53,41 @@ public partial class SettingsManagement : SettingsComponentBase
 
     private Task LoadGroupsAsync() => ExecuteWithLoadingAsync(async () =>
     {
-        using (await SettingComponentAuthorizationScope.EnterAsync(AuthenticationStateProvider, PrincipalAccessor))
+        try
         {
-            var context = new SettingComponentCreationContext(ServiceProvider);
-
-            foreach (var contributor in Options.Value.Contributors)
+            using (await SettingComponentAuthorizationScope.EnterAsync(AuthenticationStateProvider, PrincipalAccessor))
             {
-                if (await contributor.CheckPermissionsAsync(context))
+                var context = new SettingComponentCreationContext(ServiceProvider);
+
+                foreach (var contributor in Options.Value.Contributors)
                 {
-                    await contributor.ConfigureAsync(context);
+                    if (await contributor.CheckPermissionsAsync(context))
+                    {
+                        await contributor.ConfigureAsync(context);
+                    }
                 }
+
+                context.Normalize();
+                _groups = context.Groups;
             }
 
-            context.Normalize();
-            _groups = context.Groups;
-        }
+            _groupsLoadFailed = false;
 
-        // Select first tab if not already selected
-        if (_groups.Count > 0 && string.IsNullOrEmpty(_selectedTabId))
+            // Select first tab if not already selected
+            if (_groups.Count > 0 && string.IsNullOrEmpty(_selectedTabId))
+            {
+                _selectedTabId = _groups.First().Id;
+            }
+        }
+        catch
         {
-            _selectedTabId = _groups.First().Id;
+            _groupsLoadFailed = true;
+            _groups = new();
+            throw;
+        }
+        finally
+        {
+            _groupsResolved = true;
         }
     }, LoadingKeys.LoadGroups);
 

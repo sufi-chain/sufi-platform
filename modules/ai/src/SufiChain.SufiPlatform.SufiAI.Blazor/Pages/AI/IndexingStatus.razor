@@ -12,7 +12,7 @@
 
 	<SbStack Direction="SbStackDirection.Column" Gap="4">
 
-		@if (!_availability.IsAvailable)
+		@if (_availabilityResolved && !_availability.IsAvailable)
 		{
 			<SbAlert Color="SbColor.Warning">
 				<strong>@L["RagUnavailable"]</strong><br />
@@ -27,7 +27,15 @@
 					   Loading="@IsOperationLoading(LoadingKeys.LoadWorkspaces)" />
 
 	<!-- Document Sources Grid -->
-	@if (_selectedWorkspaceId.HasValue)
+	@if (!_workspacesResolved)
+	{
+		<SbLoadingSkeleton Preset="SbLoadingSkeletonPreset.Table" Count="5" />
+	}
+	else if (_workspacesFailed)
+	{
+		<SbAlert Severity="SbAlertSeverity.Danger">@L["DataLoadFailed"]</SbAlert>
+	}
+	else if (_selectedWorkspaceId.HasValue)
 	{
 		<SbCard>
 			<ChildContent>

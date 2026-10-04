@@ -24,6 +24,7 @@
         "UserNotAllowedToAccessClient": "The logged in user is not allowed to access this client application.",
         "ConsentRequired": "Interactive user consent is required.",
         "Loading": "Loading...",
+        "DataLoadFailed": "The list could not be loaded. Refresh the page and try again.",
         "Authorizing": "Authorizing...",
         "Saving": "Saving...",
         "Processing": "Processing...",

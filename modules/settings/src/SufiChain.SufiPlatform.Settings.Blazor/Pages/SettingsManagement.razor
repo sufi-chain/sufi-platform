@@ -9,12 +9,13 @@
     <!-- Settings Content -->
     <SbCard>
         <ChildContent>
-            @if (IsOperationLoading(LoadingKeys.LoadGroups))
+            @if (IsOperationLoading(LoadingKeys.LoadGroups) || !_groupsResolved)
             {
-                <div class="p-5 text-center" role="status">
-                    <SbProgress Indeterminate="true" aria-label="@L["Loading"]" Type="SbProgressType.Circular" />
-                    <p class="mt-3 text-muted">@L["LoadingSettings"]</p>
-                </div>
+                <SbLoadingSkeleton Preset="SbLoadingSkeletonPreset.Table" Count="5" />
+            }
+            else if (_groupsLoadFailed)
+            {
+                <SbAlert Severity="SbAlertSeverity.Danger">@L["DataLoadFailed"]</SbAlert>
             }
             else if (_groups.Any())
             {

@@ -112,6 +112,7 @@
     "Latency": "Latency",
     "LeaveEmptyToKeepCurrent": "Leave empty to keep current value",
     "Loading": "Loading",
+    "DataLoadFailed": "The list could not be loaded. Refresh the page and try again.",
     "LoadingUsageData": "Loading usage data...",
     "MCPServers": "MCP Servers",
     "MaxResults": "Max Results",

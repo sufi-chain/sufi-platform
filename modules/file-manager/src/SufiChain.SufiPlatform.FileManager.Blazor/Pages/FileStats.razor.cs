@@ -27,6 +27,12 @@ public partial class FileStats : FileManagerComponentBase
    private List<FileStructureDto> _structures = new();
    private FileStatistics _statistics = new();
     private bool _canDelete;
+    private bool _statsReady;
+    private bool _statsFailed;
+    private bool _structuresReady;
+    private bool _structuresFailed;
+    private bool _recentReady;
+    private bool _recentFailed;
 
     protected override void OnInitialized()
     {
@@ -71,10 +77,17 @@ public partial class FileStats : FileManagerComponentBase
                 MaxResultCount = 10
             });
             _recentFiles = result.Items.ToList();
+            _recentFailed = false;
         }
         catch (Exception ex)
         {
+            _recentFailed = true;
+            _recentFiles = new();
             await NotifyOperationFailedAsync(ex, "FailedToLoadFiles");
+        }
+        finally
+        {
+            _recentReady = true;
         }
     }
 
@@ -84,10 +97,17 @@ public partial class FileStats : FileManagerComponentBase
         {
             var result = await FileStructureAppService.GetListAsync(new PagedAndSortedResultRequestDto());
             _structures = result.Items.ToList();
+            _structuresFailed = false;
         }
         catch (Exception ex)
         {
+            _structuresFailed = true;
+            _structures = new();
             await NotifyOperationFailedAsync(ex, "FailedToLoadStructures");
+        }
+        finally
+        {
+            _structuresReady = true;
         }
     }
 
@@ -102,10 +122,16 @@ public partial class FileStats : FileManagerComponentBase
             _statistics.DocumentCount = (int)stats.DocumentCount;
             _statistics.AudioCount = (int)stats.AudioCount;
             _statistics.TotalSize = stats.TotalSize;
+            _statsFailed = false;
         }
         catch (Exception ex)
         {
+            _statsFailed = true;
             await NotifyOperationFailedAsync(ex, "FailedToLoadStatistics");
+        }
+        finally
+        {
+            _statsReady = true;
         }
     }
 

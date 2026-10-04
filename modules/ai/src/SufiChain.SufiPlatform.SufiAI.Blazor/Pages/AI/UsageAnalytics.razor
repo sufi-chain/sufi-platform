@@ -362,18 +362,17 @@
 			</ChildContent>
 		</SbCard>
 	}
-	else if (_selectedWorkspaceId.HasValue)
+	else if (!_workspacesResolved || (_selectedWorkspaceId.HasValue && !_statisticsFailed))
 	{
 		<SbCard>
 			<ChildContent>
-				<SbStack Direction="SbStackDirection.Column" Gap="2" Align="SbAlign.Center" style="padding: 4rem 0;">
-					<SbProgress Indeterminate="true" style="width: 200px;" />
-					<SbText Variant="SbTextVariant.Body" Color="SbColor.Muted">
-						@L["LoadingUsageData"]
-					</SbText>
-				</SbStack>
+				<SbLoadingSkeleton Preset="SbLoadingSkeletonPreset.Kpi" Count="4" />
 			</ChildContent>
 		</SbCard>
+	}
+	else if (_workspacesFailed || _statisticsFailed)
+	{
+		<SbAlert Severity="SbAlertSeverity.Danger">@L["DataLoadFailed"]</SbAlert>
 	}
 	else
 	{

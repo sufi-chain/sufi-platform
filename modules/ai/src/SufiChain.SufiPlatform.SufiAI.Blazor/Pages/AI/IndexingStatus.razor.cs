@@ -29,9 +29,17 @@ public partial class IndexingStatus : AIComponentBase
     private long _totalCount;
 
     private List<WorkspaceDto> _workspaces = new();
+    private bool _workspacesResolved;
+    private bool _workspacesFailed;
+    private bool _availabilityResolved;
     private Guid? _selectedWorkspaceId;
     private List<DocumentSourceDto> _documentSources = new();
     private RagAvailabilityDto _availability = new();
+
+    protected override void OnInitialized()
+    {
+        LoadingStates[LoadingKeys.LoadWorkspaces] = true;
+    }
 
     protected override async Task OnInitializedAsync()
     {
@@ -48,14 +56,28 @@ public partial class IndexingStatus : AIComponentBase
     private async Task LoadAvailabilityAsync()
     {
         _availability = await RAGAppService.GetAvailabilityAsync();
+        _availabilityResolved = true;
     }
 
     private async Task LoadWorkspacesAsync()
     {
         await ExecuteWithLoadingAsync(async () =>
         {
-            _workspaces = await WorkspacePagedListLoader.LoadAllActiveAsync(WorkspaceAppService);
-            StateHasChanged();
+            try
+            {
+                _workspaces = await WorkspacePagedListLoader.LoadAllActiveAsync(WorkspaceAppService);
+                _workspacesFailed = false;
+                StateHasChanged();
+            }
+            catch
+            {
+                _workspacesFailed = true;
+                throw;
+            }
+            finally
+            {
+                _workspacesResolved = true;
+            }
         }, LoadingKeys.LoadWorkspaces);
     }
 

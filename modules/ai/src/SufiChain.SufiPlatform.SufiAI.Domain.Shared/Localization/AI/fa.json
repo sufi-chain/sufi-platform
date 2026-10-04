@@ -112,6 +112,7 @@
     "Latency": "تأخیر",
     "LeaveEmptyToKeepCurrent": "برای حفظ مقدار فعلی خالی بگذارید",
     "Loading": "در حال بارگذاری",
+    "DataLoadFailed": "فهرست بارگذاری نشد. صفحه را تازه‌سازی کنید و دوباره تلاش کنید.",
     "LoadingUsageData": "در حال بارگذاری داده‌های استفاده...",
     "MCPServers": "سرورهای MCP",
     "MaxResults": "حداکثر نتایج",
