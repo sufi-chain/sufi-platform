@@ -66,4 +66,5 @@
     "MultilingualTextField:ScriptWarning": "This text looks like another language.",
     "MultilingualTextField:BaseText": "Back to the base text",
     "Hooshvare:SufiLocalization:Editor:DisplayName": "Localization Editor"
+  }
 }
