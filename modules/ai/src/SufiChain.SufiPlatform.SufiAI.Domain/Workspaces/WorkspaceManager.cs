@@ -59,27 +59,7 @@ public class WorkspaceManager : DomainService
 
         foreach (var sourceConfiguration in source.ModelConfigurations)
         {
-            var clonedConfiguration = clone.AddModelConfiguration(
-                sourceConfiguration.CapabilityType,
-                sourceConfiguration.ModelId,
-                sourceConfiguration.ApiEndpoint,
-                sourceConfiguration.ApiKey,
-                sourceConfiguration.Priority,
-                sourceConfiguration.OpenAIApiMode,
-                sourceConfiguration.InputPrice,
-                sourceConfiguration.OutputPrice,
-                sourceConfiguration.Dimensions,
-                sourceConfiguration.DisplayName,
-                sourceConfiguration.IsUserSelectable,
-                sourceConfiguration.Description,
-                sourceConfiguration.MaxContextTokens,
-                sourceConfiguration.InputPriceUnit,
-                sourceConfiguration.OutputPriceUnit);
-
-            if (!sourceConfiguration.IsEnabled)
-            {
-                clonedConfiguration.Disable();
-            }
+            clone.CopyModelConfiguration(sourceConfiguration);
         }
 
         foreach (var sourceGuardrail in source.Guardrails)

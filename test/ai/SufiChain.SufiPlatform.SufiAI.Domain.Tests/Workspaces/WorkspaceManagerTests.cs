@@ -119,4 +119,50 @@ public class WorkspaceManagerTests : SufiAITestBase<SufiAIDomainTestModule>
             await _workspaceManager.ValidateNameAsync("new-name", workspace.Id);
         });
     }
+
+    [Fact]
+    public void CreateCopy_preserves_capability_flags_and_user_selectable()
+    {
+        var source = new Workspace(Guid.NewGuid(), "host-workspace", AIProviderType.OpenRouter, "openrouter/free");
+        source.UpdateConfiguration(
+            "openrouter/free",
+            "sk-host",
+            "https://or-gateway.sufichain.com/v1");
+        var chat = source.AddModelConfiguration(
+            AICapabilityType.ChatCompletion,
+            "openrouter/free",
+            apiEndpoint: "https://or-gateway.sufichain.com/v1",
+            priority: 0,
+            displayName: "Free",
+            isUserSelectable: true);
+        chat.SetChatCapabilities(
+            acceptsImageInput: true,
+            acceptsFileInput: true,
+            supportsReasoning: true,
+            reasoningEfforts: "low,medium,high",
+            defaultReasoningEffort: "medium",
+            capabilitySource: ModelCapabilitySource.LiveCatalog);
+        source.AddModelConfiguration(
+            AICapabilityType.AudioTranscription,
+            "nemotron-asr",
+            priority: 1,
+            isUserSelectable: false);
+
+        var clone = _workspaceManager.CreateCopy(source, "tenant-copy", Guid.NewGuid(), Guid.NewGuid());
+
+        var copiedChat = clone.ModelConfigurations.Single(item => item.ModelId == "openrouter/free");
+        copiedChat.Id.ShouldNotBe(chat.Id);
+        copiedChat.IsUserSelectable.ShouldBeTrue();
+        copiedChat.AcceptsImageInput.ShouldBe(true);
+        copiedChat.AcceptsFileInput.ShouldBe(true);
+        copiedChat.SupportsReasoning.ShouldBe(true);
+        copiedChat.ReasoningEfforts.ShouldBe("low,medium,high");
+        copiedChat.DefaultReasoningEffort.ShouldBe("medium");
+        copiedChat.CapabilitySource.ShouldBe(ModelCapabilitySource.LiveCatalog);
+
+        var copiedAudio = clone.ModelConfigurations.Single(item => item.CapabilityType == AICapabilityType.AudioTranscription);
+        copiedAudio.IsUserSelectable.ShouldBeFalse();
+        copiedAudio.AcceptsImageInput.ShouldBeNull();
+        copiedAudio.CapabilitySource.ShouldBeNull();
+    }
 }
