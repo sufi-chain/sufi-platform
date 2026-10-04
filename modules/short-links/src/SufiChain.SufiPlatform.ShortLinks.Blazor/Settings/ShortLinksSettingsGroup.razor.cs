@@ -5,8 +5,14 @@ using SufiChain.SufiPlatform.Settings.Localization;
 
 namespace SufiChain.SufiPlatform.ShortLinks.Blazor.Settings;
 
-public partial class ShortLinksSettingsGroup : ShortLinksComponentBase, ISaveableSettingGroup
+public partial class ShortLinksSettingsGroup : ShortLinksComponentBase, IEditableSettingGroup
 {
+    private readonly SettingGroupEditor<ShortLinksSettingsDto> _edits;
+
+    public ShortLinksSettingsGroup()
+    {
+        _edits = new SettingGroupEditor<ShortLinksSettingsDto>(() => _settings, value => _settings = value ?? new ShortLinksSettingsDto());
+    }
     private static class LoadingKeys
     {
         public const string Load = "load";
@@ -21,6 +27,20 @@ public partial class ShortLinksSettingsGroup : ShortLinksComponentBase, ISaveabl
 
     public bool IsSaving => IsOperationLoading(LoadingKeys.Save);
 
+    public bool HasUnsavedChanges => _edits.HasUnsavedChanges;
+
+    public event Action? EditStateChanged
+    {
+        add => _edits.Changed += value;
+        remove => _edits.Changed -= value;
+    }
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        base.OnAfterRender(firstRender);
+        _edits.Observe();
+    }
+
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         await base.OnAfterRenderAsync(firstRender);
@@ -34,12 +54,33 @@ public partial class ShortLinksSettingsGroup : ShortLinksComponentBase, ISaveabl
     private Task LoadAsync() => ExecuteWithLoadingAsync(async () =>
     {
         _settings = await SettingsAppService.GetAsync();
+        _edits.Capture();
     }, LoadingKeys.Load);
 
-    public Task SaveAsync() => ExecuteWithLoadingAsync(async () =>
+    public async Task SaveAsync()
     {
-        await SettingsAppService.UpdateAsync(_settings);
-        _settings = await SettingsAppService.GetAsync();
-        await Notify.SuccessAsync(SettingsLocalizer["SettingsSavedSuccessfully"]);
-    }, LoadingKeys.Save);
+        if (await TrySaveAsync())
+        {
+            await Notify.SuccessAsync(SettingsLocalizer["SettingsSavedSuccessfully"]);
+        }
+    }
+
+    public async Task<bool> TrySaveAsync()
+    {
+        var saved = await ExecuteWithLoadingAsync(async () =>
+        {
+            await SettingsAppService.UpdateAsync(_settings);
+            _settings = await SettingsAppService.GetAsync();
+            _edits.Capture();
+            return true;
+        }, LoadingKeys.Save);
+
+        return saved == true;
+    }
+
+    public Task DiscardAsync()
+    {
+        _edits.Restore();
+        return InvokeAsync(StateHasChanged);
+    }
 }

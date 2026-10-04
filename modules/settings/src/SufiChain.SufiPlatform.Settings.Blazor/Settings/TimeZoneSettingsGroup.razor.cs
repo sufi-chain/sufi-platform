@@ -11,8 +11,14 @@ namespace SufiChain.SufiPlatform.Settings.Blazor.Settings;
 /// Note: This component uses ITimeZoneSettingsAppService (Application Layer) for settings management.
 /// Tenant-specific settings should be managed through proper application services, not domain services.
 /// </summary>
-public partial class TimeZoneSettingsGroup : SettingsComponentBase, ISaveableSettingGroup
+public partial class TimeZoneSettingsGroup : SettingsComponentBase, IEditableSettingGroup
 {
+    private readonly SettingGroupEditor<TimeZoneEdit> _edits;
+
+    public TimeZoneSettingsGroup()
+    {
+        _edits = new SettingGroupEditor<TimeZoneEdit>(() => new TimeZoneEdit(_selectedTimeZone), value => _selectedTimeZone = value?.TimeZone);
+    }
 
     private static class LoadingKeys
     {
@@ -26,16 +32,26 @@ public partial class TimeZoneSettingsGroup : SettingsComponentBase, ISaveableSet
     private string? _selectedTimeZone;
     private List<NameValue> _timeZones = new();
 
-    /// <summary>
-    /// Gets a value indicating whether the save operation is currently in progress.
-    /// Implements ISaveableSettingGroup.IsSaving.
-    /// </summary>
     public bool IsSaving => IsOperationLoading(LoadingKeys.Save);
+
+    public bool HasUnsavedChanges => _edits.HasUnsavedChanges;
+
+    public event Action? EditStateChanged
+    {
+        add => _edits.Changed += value;
+        remove => _edits.Changed -= value;
+    }
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        base.OnAfterRender(firstRender);
+        _edits.Observe();
+    }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         await base.OnAfterRenderAsync(firstRender);
-        
+
         if (firstRender)
         {
             await LoadSettingsAsync();
@@ -44,33 +60,50 @@ public partial class TimeZoneSettingsGroup : SettingsComponentBase, ISaveableSet
 
     private Task LoadSettingsAsync() => ExecuteWithLoadingAsync(async () =>
     {
-        // Load available timezones and current setting using Application Service (proper DDD approach)
         _timeZones = await TimeZoneSettingsAppService.GetTimezonesAsync();
         var dto = await TimeZoneSettingsAppService.GetAsync();
         _selectedTimeZone = dto?.TimeZone;
+        _edits.Capture();
     }, LoadingKeys.Load);
 
-    /// <summary>
-    /// Saves the timezone settings.
-    /// Implements ISaveableSettingGroup.SaveAsync for centralized save from modal/page footer.
-    /// </summary>
-    public Task SaveAsync() => ExecuteWithLoadingAsync(async () =>
+    public async Task SaveAsync()
     {
-        if (!string.IsNullOrEmpty(_selectedTimeZone))
+        if (await TrySaveAsync())
         {
-            // Save settings using Application Service (proper DDD approach)
-            await TimeZoneSettingsAppService.UpdateAsync(new UpdateTimeZoneSettingsDto { TimeZone = _selectedTimeZone });
             await Notify.SuccessAsync(L["SettingsSavedSuccessfully"]);
         }
-    }, LoadingKeys.Save);
-    
+    }
+
+    public async Task<bool> TrySaveAsync()
+    {
+        var saved = await ExecuteWithLoadingAsync(async () =>
+        {
+            if (string.IsNullOrEmpty(_selectedTimeZone))
+            {
+                return false;
+            }
+
+            await TimeZoneSettingsAppService.UpdateAsync(new UpdateTimeZoneSettingsDto { TimeZone = _selectedTimeZone });
+            _edits.Capture();
+            return true;
+        }, LoadingKeys.Save);
+
+        return saved == true;
+    }
+
+    public Task DiscardAsync()
+    {
+        _edits.Restore();
+        return InvokeAsync(StateHasChanged);
+    }
+
     private string GetCurrentTimeInSelectedTimeZone()
     {
         if (string.IsNullOrEmpty(_selectedTimeZone))
         {
             return "-";
         }
-        
+
         try
         {
             var timeZone = TimeZoneInfo.FindSystemTimeZoneById(_selectedTimeZone);
@@ -80,5 +113,19 @@ public partial class TimeZoneSettingsGroup : SettingsComponentBase, ISaveableSet
         {
             return "-";
         }
+    }
+
+    private sealed class TimeZoneEdit
+    {
+        public TimeZoneEdit()
+        {
+        }
+
+        public TimeZoneEdit(string? timeZone)
+        {
+            TimeZone = timeZone;
+        }
+
+        public string? TimeZone { get; set; }
     }
 }

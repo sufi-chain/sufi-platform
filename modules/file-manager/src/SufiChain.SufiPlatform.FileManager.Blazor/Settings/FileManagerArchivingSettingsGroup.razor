@@ -1,9 +1,9 @@
 @namespace SufiChain.SufiPlatform.FileManager.Blazor.Settings
 @using SufiChain.SufiPlatform.Settings.Blazor.Settings
 @inherits FileManagerComponentBase
-@implements ISaveableSettingGroup
+@implements IEditableSettingGroup
 
-<SbStack Gap="4" class="p-4">
+<SbStack Gap="4">
     @if (IsOperationLoading(LoadingKeys.Load))
     {
         <div class="text-center py-4">
@@ -27,7 +27,7 @@
         </SbFormField>
 
         <SbFormField Label="@L["ArchivingSchedule"]" HelperText="@L["ArchivingScheduleHint"]">
-            <SbTextField @bind-Value="_settings.Schedule" />
+            <SbTextField @bind-Value="_settings.Schedule" dir="ltr" />
         </SbFormField>
 
         <SbFormField Label="@L["ArchiveAIFiles"]">
@@ -35,7 +35,7 @@
         </SbFormField>
 
         <SbFormField Label="@L["AIFilesRetentionDays"]" HelperText="@L["AIFilesRetentionDaysHint"]">
-            <SbTextField @bind-Value="@AIFilesRetentionDaysText" />
+            <SbTextField @bind-Value="@AIFilesRetentionDaysText" dir="ltr" />
         </SbFormField>
     }
 </SbStack>

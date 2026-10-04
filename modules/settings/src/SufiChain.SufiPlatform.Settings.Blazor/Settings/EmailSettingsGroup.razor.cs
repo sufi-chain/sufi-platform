@@ -1,3 +1,5 @@
+using SufiChain.SufiPlatform.Settings;
+
 namespace SufiChain.SufiPlatform.Settings.Blazor.Settings;
 
 /// <summary>
@@ -5,8 +7,14 @@ namespace SufiChain.SufiPlatform.Settings.Blazor.Settings;
 /// Note: This component uses IEmailSettingsAppService (Application Layer) for settings management.
 /// Tenant-specific settings should be managed through proper application services, not domain services.
 /// </summary>
-public partial class EmailSettingsGroup : SettingsComponentBase, ISaveableSettingGroup
+public partial class EmailSettingsGroup : SettingsComponentBase, IEditableSettingGroup
 {
+    private readonly SettingGroupEditor<EmailSettingsDto> _edits;
+
+    public EmailSettingsGroup()
+    {
+        _edits = new SettingGroupEditor<EmailSettingsDto>(() => _settings, value => _settings = value ?? new EmailSettingsDto());
+    }
 
     private static class LoadingKeys
     {
@@ -27,10 +35,24 @@ public partial class EmailSettingsGroup : SettingsComponentBase, ISaveableSettin
     /// </summary>
     public bool IsSaving => IsOperationLoading(LoadingKeys.Save);
 
+    public bool HasUnsavedChanges => _edits.HasUnsavedChanges;
+
+    public event Action? EditStateChanged
+    {
+        add => _edits.Changed += value;
+        remove => _edits.Changed -= value;
+    }
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        base.OnAfterRender(firstRender);
+        _edits.Observe();
+    }
+
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         await base.OnAfterRenderAsync(firstRender);
-        
+
         if (firstRender)
         {
             await LoadSettingsAsync();
@@ -39,23 +61,43 @@ public partial class EmailSettingsGroup : SettingsComponentBase, ISaveableSettin
 
     private Task LoadSettingsAsync() => ExecuteWithLoadingAsync(async () =>
     {
-        // Load settings for current context using Application Service (proper DDD approach)
         _settings = await EmailSettingsAppService.GetAsync();
+        _edits.Capture();
     }, LoadingKeys.Load);
 
     /// <summary>
-    /// Saves the email settings.
-    /// Implements ISaveableSettingGroup.SaveAsync for centralized save from modal/page footer.
+    /// Saves the email settings and shows the modal success toast.
     /// </summary>
-    public Task SaveAsync() => ExecuteWithLoadingAsync(async () =>
+    public async Task SaveAsync()
     {
-        await UpdateSettingsAsync();
-        await Notify.SuccessAsync(L["SettingsSavedSuccessfully"]);
-    }, LoadingKeys.Save);
+        if (await TrySaveAsync())
+        {
+            await Notify.SuccessAsync(L["SettingsSavedSuccessfully"]);
+        }
+    }
+
+    public async Task<bool> TrySaveAsync()
+    {
+        var saved = await ExecuteWithLoadingAsync(async () =>
+        {
+            await UpdateSettingsAsync();
+            _edits.Capture();
+            return true;
+        }, LoadingKeys.Save);
+
+        return saved == true;
+    }
+
+    public Task DiscardAsync()
+    {
+        _edits.Restore();
+        return InvokeAsync(StateHasChanged);
+    }
 
     private Task SendTestEmailAsync() => ExecuteWithLoadingAsync(async () =>
     {
         await UpdateSettingsAsync();
+        _edits.Capture();
         await EmailSettingsAppService.SendTestEmailAsync(new SendTestEmailInput
         {
             SenderEmailAddress = _settings.DefaultFromAddress ?? "",

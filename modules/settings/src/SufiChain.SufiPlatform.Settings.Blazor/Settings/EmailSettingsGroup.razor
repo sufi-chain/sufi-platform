@@ -1,7 +1,7 @@
 @namespace SufiChain.SufiPlatform.Settings.Blazor.Settings
 @inherits SettingsComponentBase
 
-<SbStack Gap="4" class="p-4">
+<SbStack Gap="4">
     @if (IsOperationLoading(LoadingKeys.Load))
     {
         <div class="text-center py-4">
@@ -13,9 +13,10 @@
         <SbStack Gap="4">
             <!-- SMTP Server Settings -->
             <div>
-                <h6 class="mb-3">@L["SmtpServerSettings"]</h6>
+                <h3 class="mb-3">@L["SmtpServerSettings"]</h3>
                 <SbStack Gap="3">
                     <SbTextField @bind-Value="_settings.SmtpHost"
+                                 dir="ltr"
                                  Label="@L["SmtpHost"]"
                                  Placeholder="@L["Placeholder:SmtpHost"]" />
                     <SbNumberField TValue="int"
@@ -36,7 +37,7 @@
             @if (!_settings.SmtpUseDefaultCredentials)
             {
                 <div>
-                    <h6 class="mb-3">@L["SmtpCredentials"]</h6>
+                    <h3 class="mb-3">@L["SmtpCredentials"]</h3>
                     <SbStack Gap="3">
                         <SbTextField @bind-Value="_settings.SmtpUserName" 
                                      Label="@L["SmtpUserName"]" />
@@ -44,7 +45,8 @@
                                      Label="@L["SmtpPassword"]"
                                      Type="password"
                                      AutoComplete="new-password" />
-                        <SbTextField @bind-Value="_settings.SmtpDomain" 
+                        <SbTextField @bind-Value="_settings.SmtpDomain"
+                                     dir="ltr"
                                      Label="@L["SmtpDomain"]" />
                     </SbStack>
                 </div>
@@ -52,9 +54,10 @@
 
             <!-- Default Sender -->
             <div>
-                <h6 class="mb-3">@L["DefaultSender"]</h6>
+                <h3 class="mb-3">@L["DefaultSender"]</h3>
                 <SbStack Gap="3">
-                    <SbTextField @bind-Value="_settings.DefaultFromAddress" 
+                    <SbTextField @bind-Value="_settings.DefaultFromAddress"
+                                 dir="ltr"
                                  Label="@L["DefaultFromAddress"]"
                                  Type="email"
                                  Placeholder="@L["Placeholder:DefaultFromAddress"]" />
@@ -66,9 +69,10 @@
             </div>
 
             <div>
-                <h6 class="mb-3">@L["SendTestEmail"]</h6>
+                <h3 class="mb-3">@L["SendTestEmail"]</h3>
                 <SbStack Gap="3">
                     <SbTextField @bind-Value="_testEmailAddress"
+                                 dir="ltr"
                                  Label="@L["TargetEmailAddress"]"
                                  Type="email"
                                  Placeholder="@L["Placeholder:TargetEmailAddress"]"

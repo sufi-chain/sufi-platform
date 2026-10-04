@@ -1,8 +1,8 @@
 @namespace SufiChain.SufiPlatform.ShortLinks.Blazor.Settings
 @inherits ShortLinksComponentBase
-@implements ISaveableSettingGroup
+@implements IEditableSettingGroup
 
-<SbStack Gap="4" class="p-4">
+<SbStack Gap="4">
     @if (IsOperationLoading(LoadingKeys.Load))
     {
         <div class="text-center py-4">
@@ -14,12 +14,12 @@
         <SbStack Gap="4">
             <SbFormField Label="@L["DisplayName:ShortLinks.BaseUrl"]"
                          HelperText="@L["Description:ShortLinks.BaseUrl"]">
-                <SbTextField @bind-Value="_settings.BaseUrl" Type="url" />
+                <SbTextField @bind-Value="_settings.BaseUrl" dir="ltr" Type="url" />
             </SbFormField>
 
             <SbFormField Label="@L["DisplayName:ShortLinks.ShortUrl.RedirectRoute"]"
                          HelperText="@L["Description:ShortLinks.ShortUrl.RedirectRoute"]">
-                <SbTextField @bind-Value="_settings.RedirectRoute" />
+                <SbTextField @bind-Value="_settings.RedirectRoute" dir="ltr" />
             </SbFormField>
 
             <SbFormField Label="@L["DisplayName:ShortLinks.ShortUrl.ShortCodeLength"]"

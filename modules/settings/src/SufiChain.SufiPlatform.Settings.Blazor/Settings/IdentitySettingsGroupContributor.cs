@@ -17,6 +17,7 @@ public class IdentitySettingsGroupContributor : ISettingComponentContributor
             DisplayName = l["IdentitySettings"],
             Icon = "user-cog",
             ComponentType = typeof(IdentitySettingsGroup),
+            Policy = SettingsPermissions.Identity,
             Order = 200
         });
 

@@ -1,12 +1,19 @@
 using Microsoft.Extensions.Localization;
 using SufiChain.SufiPlatform.Account;
+using SufiChain.SufiPlatform.Settings;
 using SufiChain.SufiPlatform.Account.Localization;
 using SufiChain.SufiPlatform.Identity.Localization;
 
 namespace SufiChain.SufiPlatform.Settings.Blazor.Settings;
 
-public partial class IdentitySettingsGroup : SettingsComponentBase, ISaveableSettingGroup
+public partial class IdentitySettingsGroup : SettingsComponentBase, IEditableSettingGroup
 {
+    private readonly SettingGroupEditor<IdentitySettingsDto> _edits;
+
+    public IdentitySettingsGroup()
+    {
+        _edits = new SettingGroupEditor<IdentitySettingsDto>(() => _settings, value => _settings = value ?? new IdentitySettingsDto());
+    }
     private const string SimpleCaptchaProvider = "Simple";
     private const string TurnstileCaptchaProvider = "Turnstile";
     private const string RecaptchaCaptchaProvider = "Recaptcha";
@@ -38,9 +45,16 @@ public partial class IdentitySettingsGroup : SettingsComponentBase, ISaveableSet
     private IStringLocalizer<SufiAccountResource>? _accountLocalizer;
 
     private IdentitySettingsDto _settings = new();
-    private int _activeTab;
 
     public bool IsSaving => IsOperationLoading(LoadingKeys.Save);
+
+    public bool HasUnsavedChanges => _edits.HasUnsavedChanges;
+
+    public event Action? EditStateChanged
+    {
+        add => _edits.Changed += value;
+        remove => _edits.Changed -= value;
+    }
 
     protected bool RequireConfirmedEmail
     {
@@ -73,6 +87,12 @@ public partial class IdentitySettingsGroup : SettingsComponentBase, ISaveableSet
         set => _settings.OtpDefaultChannel = value.ToString();
     }
 
+    protected override void OnAfterRender(bool firstRender)
+    {
+        base.OnAfterRender(firstRender);
+        _edits.Observe();
+    }
+
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         await base.OnAfterRenderAsync(firstRender);
@@ -103,15 +123,35 @@ public partial class IdentitySettingsGroup : SettingsComponentBase, ISaveableSet
     private Task LoadSettingsAsync() => ExecuteWithLoadingAsync(async () =>
     {
         _settings = await IdentitySettingsAppService.GetAsync();
+        _edits.Capture();
     }, LoadingKeys.Load);
 
-    public Task SaveAsync() => ExecuteWithLoadingAsync(async () =>
+    public async Task SaveAsync()
     {
-        await IdentitySettingsAppService.UpdateAsync(BuildUpdateDto());
+        if (await TrySaveAsync())
+        {
+            await Notify.SuccessAsync(L["SettingsSavedSuccessfully"]);
+        }
+    }
 
-        _settings = await IdentitySettingsAppService.GetAsync();
-        await Notify.SuccessAsync(L["SettingsSavedSuccessfully"]);
-    }, LoadingKeys.Save);
+    public async Task<bool> TrySaveAsync()
+    {
+        var saved = await ExecuteWithLoadingAsync(async () =>
+        {
+            await IdentitySettingsAppService.UpdateAsync(BuildUpdateDto());
+            _settings = await IdentitySettingsAppService.GetAsync();
+            _edits.Capture();
+            return true;
+        }, LoadingKeys.Save);
+
+        return saved == true;
+    }
+
+    public Task DiscardAsync()
+    {
+        _edits.Restore();
+        return InvokeAsync(StateHasChanged);
+    }
 
     private UpdateIdentitySettingsDto BuildUpdateDto() => new()
     {

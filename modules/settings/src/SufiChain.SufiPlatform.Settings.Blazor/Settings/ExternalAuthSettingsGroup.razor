@@ -1,7 +1,7 @@
 @namespace SufiChain.SufiPlatform.Settings.Blazor.Settings
 @inherits SettingsComponentBase
 
-<SbStack Gap="4" Class="p-4">
+<SbStack Gap="4">
     @if (IsOperationLoading(LoadingKeys.Load))
     {
         <SbProgress Indeterminate="true" aria-label="@L["LoadingSettings"]" Type="SbProgressType.Circular" />
@@ -15,12 +15,14 @@
         <SbCard>
             <ChildContent>
                 <SbStack Gap="3">
-                    <SbHeading Level="6">@L["ExternalAuth:Google"]</SbHeading>
+                    <h3>@L["ExternalAuth:Google"]</h3>
                     <SbSwitch @bind-Value="_settings.Google.Enabled" Label="@L["ExternalAuth:Enabled"]" />
                     <SbTextField @bind-Value="_settings.Google.ClientId"
+                                 dir="ltr"
                                  Label="@L["ExternalAuth:ClientId"]"
                                  AutoComplete="off" />
                     <SbTextField @bind-Value="_settings.Google.ClientSecret"
+                                 dir="ltr"
                                  Label="@(_settings.Google.HasClientSecret ? L["ExternalAuth:ClientSecretKeep"] : L["ExternalAuth:ClientSecret"])"
                                  Type="password"
                                  AutoComplete="new-password" />
@@ -31,12 +33,14 @@
         <SbCard>
             <ChildContent>
                 <SbStack Gap="3">
-                    <SbHeading Level="6">@L["ExternalAuth:Microsoft"]</SbHeading>
+                    <h3>@L["ExternalAuth:Microsoft"]</h3>
                     <SbSwitch @bind-Value="_settings.Microsoft.Enabled" Label="@L["ExternalAuth:Enabled"]" />
                     <SbTextField @bind-Value="_settings.Microsoft.ClientId"
+                                 dir="ltr"
                                  Label="@L["ExternalAuth:ClientId"]"
                                  AutoComplete="off" />
                     <SbTextField @bind-Value="_settings.Microsoft.ClientSecret"
+                                 dir="ltr"
                                  Label="@(_settings.Microsoft.HasClientSecret ? L["ExternalAuth:ClientSecretKeep"] : L["ExternalAuth:ClientSecret"])"
                                  Type="password"
                                  AutoComplete="new-password" />
@@ -47,12 +51,14 @@
         <SbCard>
             <ChildContent>
                 <SbStack Gap="3">
-                    <SbHeading Level="6">@L["ExternalAuth:GitHub"]</SbHeading>
+                    <h3>@L["ExternalAuth:GitHub"]</h3>
                     <SbSwitch @bind-Value="_settings.GitHub.Enabled" Label="@L["ExternalAuth:Enabled"]" />
                     <SbTextField @bind-Value="_settings.GitHub.ClientId"
+                                 dir="ltr"
                                  Label="@L["ExternalAuth:ClientId"]"
                                  AutoComplete="off" />
                     <SbTextField @bind-Value="_settings.GitHub.ClientSecret"
+                                 dir="ltr"
                                  Label="@(_settings.GitHub.HasClientSecret ? L["ExternalAuth:ClientSecretKeep"] : L["ExternalAuth:ClientSecret"])"
                                  Type="password"
                                  AutoComplete="new-password" />

@@ -1,32 +1,27 @@
 @namespace SufiChain.SufiPlatform.FileManager.Blazor.Settings
 @using SufiChain.SufiPlatform.Settings.Blazor.Settings
 @inherits FileManagerComponentBase
-@implements ISaveableSettingGroup
+@implements IEditableSettingGroup
 
-<SbStack Gap="4" class="p-4">
-    <SbTabs @bind-ActiveIndex="_activeTab">
-        @if (_hasGeneralSettingsPermission)
-        {
-            <SbTab Label="@L["FileManagerGeneralSettings"]">
-                <SbStack Gap="3" class="pt-3">
-                    <FileManagerGeneralSettingsGroup @ref="_generalSettingsGroup" />
-                </SbStack>
-            </SbTab>
+<SbStack Gap="5">
+    @if (_hasGeneralSettingsPermission)
+    {
+        <section>
+            <h3 class="mb-3">@L["FileManagerGeneralSettings"]</h3>
+            <FileManagerGeneralSettingsGroup @ref="_generalSettingsGroup" />
+        </section>
 
-            <SbTab Label="@L["FileManagerArchivingSettings"]">
-                <SbStack Gap="3" class="pt-3">
-                    <FileManagerArchivingSettingsGroup @ref="_archivingSettingsGroup" />
-                </SbStack>
-            </SbTab>
-        }
+        <section>
+            <h3 class="mb-3">@L["FileManagerArchivingSettings"]</h3>
+            <FileManagerArchivingSettingsGroup @ref="_archivingSettingsGroup" />
+        </section>
+    }
 
-        @if (_hasStorageSettingsPermission)
-        {
-            <SbTab Label="@L["FileStorageSettings"]">
-                <SbStack Gap="3" class="pt-3">
-                    <FileManagerStorageSettingsGroup @ref="_storageSettingsGroup" />
-                </SbStack>
-            </SbTab>
-        }
-    </SbTabs>
+    @if (_hasStorageSettingsPermission)
+    {
+        <section>
+            <h3 class="mb-3">@L["FileStorageSettings"]</h3>
+            <FileManagerStorageSettingsGroup @ref="_storageSettingsGroup" />
+        </section>
+    }
 </SbStack>

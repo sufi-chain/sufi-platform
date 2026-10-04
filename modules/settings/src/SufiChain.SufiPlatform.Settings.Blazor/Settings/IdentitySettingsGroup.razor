@@ -3,7 +3,7 @@
 @using SufiChain.SufiPlatform.Account
 @using SufiChain.SufiPlatform.Identity.Localization
 
-<SbStack Gap="4" class="p-4">
+<SbStack Gap="4">
     @if (IsOperationLoading(LoadingKeys.Load))
     {
         <div class="text-center py-4">
@@ -12,8 +12,8 @@
     }
     else
     {
-        <SbTabs @bind-ActiveIndex="_activeTab">
-            <SbTab Label="@L["IdentityTabSignup"]">
+            <section>
+            <h3>@L["IdentityTabSignup"]</h3>
                 <SbStack Gap="3" class="pt-3">
                     <div><SbCheckbox @bind-Value="_settings.EnableSelfRegistration" Label="@IdentityL["Setting:EnableSelfRegistration"]" /><SbText Variant="SbTextVariant.BodySmall" Color="SbColor.Muted">@IdentityL["SettingHint:EnableSelfRegistration"]</SbText></div>
                     <div><SbCheckbox @bind-Value="_settings.RequireEmailConfirmation" Disabled="@_settings.RequireConfirmedEmail" Label="@IdentityL["Setting:RequireEmailConfirmation"]" /><SbText Variant="SbTextVariant.BodySmall" Color="SbColor.Muted">@IdentityL["SettingHint:RequireEmailConfirmation"]</SbText></div>
@@ -21,9 +21,9 @@
                     <div><SbCheckbox @bind-Value="_settings.RequireConfirmedPhoneNumber" Disabled="@(!IsChannelAvailable(VerificationDeliveryChannel.Sms))" Label="@IdentityL["Setting:RequireConfirmedPhoneNumber"]" /><SbText Variant="SbTextVariant.BodySmall" Color="SbColor.Muted">@IdentityL["SettingHint:RequireConfirmedPhoneNumber"]</SbText></div>
                     <div><SbCheckbox @bind-Value="_settings.RequireUniqueEmail" Label="@IdentityL["Setting:RequireUniqueEmail"]" /><SbText Variant="SbTextVariant.BodySmall" Color="SbColor.Muted">@IdentityL["SettingHint:RequireUniqueEmail"]</SbText></div>
                 </SbStack>
-            </SbTab>
-
-            <SbTab Label="@L["IdentityTabPassword"]">
+            </section>
+            <section>
+            <h3>@L["IdentityTabPassword"]</h3>
                 <SbStack Gap="3" class="pt-3">
                     <SbNumberField TValue="int" @bind-Value="_settings.PasswordRequiredLength" Label="@IdentityL["Setting:PasswordRequiredLength"]" HelperText="@IdentityL["SettingHint:PasswordRequiredLength"]" />
                     <SbNumberField TValue="int" @bind-Value="_settings.PasswordRequiredUniqueChars" Label="@IdentityL["Setting:PasswordRequiredUniqueChars"]" HelperText="@IdentityL["SettingHint:PasswordRequiredUniqueChars"]" />
@@ -35,26 +35,26 @@
                     <div><SbCheckbox @bind-Value="_settings.PasswordDisallowEmail" Label="@IdentityL["Setting:PasswordDisallowEmail"]" /><SbText Variant="SbTextVariant.BodySmall" Color="SbColor.Muted">@IdentityL["SettingHint:PasswordDisallowEmail"]</SbText></div>
                     <SbNumberField TValue="int" @bind-Value="_settings.PasswordMinimumAgeMinutes" Label="@IdentityL["Setting:PasswordMinimumAgeMinutes"]" HelperText="@IdentityL["SettingHint:PasswordMinimumAgeMinutes"]" />
                 </SbStack>
-            </SbTab>
-
-            <SbTab Label="@L["IdentityTabLockout"]">
+            </section>
+            <section>
+            <h3>@L["IdentityTabLockout"]</h3>
                 <SbStack Gap="3" class="pt-3">
                     <div><SbCheckbox @bind-Value="_settings.LockoutAllowedForNewUsers" Label="@IdentityL["Setting:LockoutAllowedForNewUsers"]" /><SbText Variant="SbTextVariant.BodySmall" Color="SbColor.Muted">@IdentityL["SettingHint:LockoutAllowedForNewUsers"]</SbText></div>
                     <SbNumberField TValue="int" @bind-Value="_settings.LockoutMaxFailedAccessAttempts" Label="@IdentityL["Setting:LockoutMaxFailedAccessAttempts"]" HelperText="@IdentityL["SettingHint:LockoutMaxFailedAccessAttempts"]" />
                     <SbNumberField TValue="int" @bind-Value="_settings.LockoutDefaultLockoutTimeSpanMinutes" Label="@IdentityL["Setting:LockoutDefaultLockoutTimeSpanMinutes"]" HelperText="@IdentityL["SettingHint:LockoutDefaultLockoutTimeSpanMinutes"]" />
                 </SbStack>
-            </SbTab>
-
-            <SbTab Label="@L["IdentityTabTokens"]">
+            </section>
+            <section>
+            <h3>@L["IdentityTabTokens"]</h3>
                 <SbStack Gap="3" class="pt-3">
                     <SbNumberField TValue="int" @bind-Value="_settings.EmailConfirmationTokenLifespanHours" Label="@IdentityL["Setting:EmailConfirmationTokenLifespanHours"]" HelperText="@IdentityL["SettingHint:EmailConfirmationTokenLifespanHours"]" />
                     <SbNumberField TValue="int" @bind-Value="_settings.PasswordResetTokenLifespanHours" Label="@IdentityL["Setting:PasswordResetTokenLifespanHours"]" HelperText="@IdentityL["SettingHint:PasswordResetTokenLifespanHours"]" />
                     <SbNumberField TValue="int" @bind-Value="_settings.OtpTokenLifespanMinutes" Label="@IdentityL["Setting:OtpTokenLifespanMinutes"]" HelperText="@IdentityL["SettingHint:OtpTokenLifespanMinutes"]" />
                     <SbNumberField TValue="int" @bind-Value="_settings.OtpLength" Label="@IdentityL["Setting:OtpLength"]" HelperText="@IdentityL["SettingHint:OtpLength"]" />
                 </SbStack>
-            </SbTab>
-
-            <SbTab Label="@L["IdentityTabTwoFactor"]">
+            </section>
+            <section>
+            <h3>@L["IdentityTabTwoFactor"]</h3>
                 <SbStack Gap="3" class="pt-3">
                     <div><SbCheckbox @bind-Value="_settings.TwoFactorEnabled" Label="@IdentityL["Setting:TwoFactorEnabled"]" /><SbText Variant="SbTextVariant.BodySmall" Color="SbColor.Muted">@IdentityL["SettingHint:TwoFactorEnabled"]</SbText></div>
                     <div><SbCheckbox @bind-Value="_settings.TwoFactorIsRequired" Label="@IdentityL["Setting:TwoFactorIsRequired"]" /><SbText Variant="SbTextVariant.BodySmall" Color="SbColor.Muted">@IdentityL["SettingHint:TwoFactorIsRequired"]</SbText></div>
@@ -81,9 +81,9 @@
                     <div><SbCheckbox @bind-Value="_settings.TwoFactorAllowSmsChannel" Label="@GetChannelLabel(VerificationDeliveryChannel.Sms)" Disabled="@(!IsChannelAvailable(VerificationDeliveryChannel.Sms))" /><SbText Variant="SbTextVariant.BodySmall" Color="SbColor.Muted">@IdentityL["SettingHint:TwoFactorAllowSmsChannel"]</SbText></div>
                     <div><SbCheckbox @bind-Value="_settings.TwoFactorAllowVoiceChannel" Label="@GetChannelLabel(VerificationDeliveryChannel.Voice)" Disabled="@(!IsChannelAvailable(VerificationDeliveryChannel.Voice))" /><SbText Variant="SbTextVariant.BodySmall" Color="SbColor.Muted">@IdentityL["SettingHint:TwoFactorAllowVoiceChannel"]</SbText></div>
                 </SbStack>
-            </SbTab>
-
-            <SbTab Label="@L["IdentityTabOtp"]">
+            </section>
+            <section>
+            <h3>@L["IdentityTabOtp"]</h3>
                 <SbStack Gap="3" class="pt-3">
                     <div><SbCheckbox @bind-Value="_settings.OtpIsEnabled" Label="@IdentityL["Setting:OtpIsEnabled"]" /><SbText Variant="SbTextVariant.BodySmall" Color="SbColor.Muted">@IdentityL["SettingHint:OtpIsEnabled"]</SbText></div>
                     <div><SbCheckbox @bind-Value="_settings.OtpAllowLogin" Label="@IdentityL["Setting:OtpAllowLogin"]" /><SbText Variant="SbTextVariant.BodySmall" Color="SbColor.Muted">@IdentityL["SettingHint:OtpAllowLogin"]</SbText></div>
@@ -113,9 +113,9 @@
                     <SbNumberField TValue="int" @bind-Value="_settings.OtpResendMaxCooldownSeconds" Label="@IdentityL["Setting:OtpResendMaxCooldownSeconds"]" HelperText="@IdentityL["SettingHint:OtpResendMaxCooldownSeconds"]" />
                     <SbNumberField TValue="int" @bind-Value="_settings.OtpResendCounterResetHours" Label="@IdentityL["Setting:OtpResendCounterResetHours"]" HelperText="@IdentityL["SettingHint:OtpResendCounterResetHours"]" />
                 </SbStack>
-            </SbTab>
-
-            <SbTab Label="@L["IdentityTabCaptcha"]">
+            </section>
+            <section>
+            <h3>@L["IdentityTabCaptcha"]</h3>
                 <SbStack Gap="3" class="pt-3">
                     <div><SbCheckbox @bind-Value="_settings.CaptchaIsEnabled" Label="@IdentityL["Setting:CaptchaIsEnabled"]" /><SbText Variant="SbTextVariant.BodySmall" Color="SbColor.Muted">@IdentityL["SettingHint:CaptchaIsEnabled"]</SbText></div>
                     <SbSimpleSelect TValue="string"
@@ -172,7 +172,6 @@
                         <SbText Variant="SbTextVariant.BodySmall" Color="SbColor.Muted">@IdentityL["SettingHint:CaptchaRecaptchaVersion"]</SbText>
                     }
                 </SbStack>
-            </SbTab>
-        </SbTabs>
+            </section>
     }
 </SbStack>

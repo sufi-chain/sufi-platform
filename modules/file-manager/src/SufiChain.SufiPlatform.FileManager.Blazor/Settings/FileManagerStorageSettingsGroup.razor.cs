@@ -4,8 +4,14 @@ using SufiChain.SufiPlatform.Settings.Blazor.Settings;
 
 namespace SufiChain.SufiPlatform.FileManager.Blazor.Settings;
 
-public partial class FileManagerStorageSettingsGroup : FileManagerComponentBase, ISaveableSettingGroup
+public partial class FileManagerStorageSettingsGroup : FileManagerComponentBase, IEditableSettingGroup
 {
+    private readonly SettingGroupEditor<FileStructureStorageConfigDto> _edits;
+
+    public FileManagerStorageSettingsGroup()
+    {
+        _edits = new SettingGroupEditor<FileStructureStorageConfigDto>(() => _config, value => _config = value ?? new FileStructureStorageConfigDto());
+    }
     private static class LoadingKeys
     {
         public const string Load = "load";
@@ -27,6 +33,20 @@ public partial class FileManagerStorageSettingsGroup : FileManagerComponentBase,
 
     public bool IsSaving => IsOperationLoading(LoadingKeys.Save);
 
+    public bool HasUnsavedChanges => _edits.HasUnsavedChanges;
+
+    public event Action? EditStateChanged
+    {
+        add => _edits.Changed += value;
+        remove => _edits.Changed -= value;
+    }
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        base.OnAfterRender(firstRender);
+        _edits.Observe();
+    }
+
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         await base.OnAfterRenderAsync(firstRender);
@@ -39,13 +59,34 @@ public partial class FileManagerStorageSettingsGroup : FileManagerComponentBase,
     private Task LoadAsync() => ExecuteWithLoadingAsync(async () =>
     {
         _config = await StorageSettingsAppService.GetDefaultConfigAsync();
+        _edits.Capture();
     }, LoadingKeys.Load);
 
-    public Task SaveAsync() => ExecuteWithLoadingAsync(async () =>
+    public async Task SaveAsync()
     {
-        await StorageSettingsAppService.UpdateDefaultConfigAsync(_config);
-        await Notify.SuccessAsync(L["SettingsSavedSuccessfully"]);
-    }, LoadingKeys.Save);
+        if (await TrySaveAsync())
+        {
+            await Notify.SuccessAsync(L["SettingsSavedSuccessfully"]);
+        }
+    }
+
+    public async Task<bool> TrySaveAsync()
+    {
+        var saved = await ExecuteWithLoadingAsync(async () =>
+        {
+            await StorageSettingsAppService.UpdateDefaultConfigAsync(_config);
+            _edits.Capture();
+            return true;
+        }, LoadingKeys.Save);
+
+        return saved == true;
+    }
+
+    public Task DiscardAsync()
+    {
+        _edits.Restore();
+        return InvokeAsync(StateHasChanged);
+    }
 
     private Task TestConnectionAsync() => ExecuteWithLoadingAsync(async () =>
     {

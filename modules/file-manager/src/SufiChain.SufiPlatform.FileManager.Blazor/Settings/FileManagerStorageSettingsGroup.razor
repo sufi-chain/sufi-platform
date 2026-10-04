@@ -2,9 +2,9 @@
 @using SufiChain.SufiPlatform.FileManager.Storage
 @using SufiChain.SufiPlatform.Settings.Blazor.Settings
 @inherits FileManagerComponentBase
-@implements ISaveableSettingGroup
+@implements IEditableSettingGroup
 
-<SbStack Gap="4" class="p-4">
+<SbStack Gap="4">
     @if (IsOperationLoading(LoadingKeys.Load))
     {
         <div class="text-center py-4">
@@ -23,46 +23,46 @@
         @if (_config.StorageProvider == FileStructureStorageProvider.Database)
         {
             <SbFormField Label="@L["DatabaseConnectionString"]" HelperText="@L["DatabaseConnectionStringHint"]">
-                <SbTextField @bind-Value="_config.DatabaseConnectionString" Type="password" Placeholder="@L["LeaveEmptyForDefault"]" />
+                <SbTextField @bind-Value="_config.DatabaseConnectionString" dir="ltr" Type="password" Placeholder="@L["LeaveEmptyForDefault"]" />
             </SbFormField>
         }
         @if (_config.StorageProvider == FileStructureStorageProvider.FileSystem)
         {
             <SbFormField Label="@L["FileSystemBasePath"]">
-                <SbTextField @bind-Value="_config.FileSystemBasePath" Placeholder="@L["LeaveEmptyForStandardizedPath"]" />
+                <SbTextField @bind-Value="_config.FileSystemBasePath" dir="ltr" Placeholder="@L["LeaveEmptyForStandardizedPath"]" />
             </SbFormField>
         }
         @if (_config.StorageProvider == FileStructureStorageProvider.MinIO)
         {
             <SbFormField Label="@L["MinioEndPoint"]" Required>
-                <SbTextField @bind-Value="_config.MinioEndPoint" Placeholder="https://minio.example.com" />
+                <SbTextField @bind-Value="_config.MinioEndPoint" dir="ltr" Placeholder="https://minio.example.com" />
             </SbFormField>
             <SbFormField Label="@L["MinioAccessKey"]">
-                <SbTextField @bind-Value="_config.MinioAccessKey" Type="password" />
+                <SbTextField @bind-Value="_config.MinioAccessKey" dir="ltr" Type="password" />
             </SbFormField>
             <SbFormField Label="@L["MinioSecretKey"]">
-                <SbTextField @bind-Value="_config.MinioSecretKey" Type="password" />
+                <SbTextField @bind-Value="_config.MinioSecretKey" dir="ltr" Type="password" />
             </SbFormField>
             <SbFormField Label="@L["MinioBucketName"]" Required>
-                <SbTextField @bind-Value="_config.MinioBucketName" Placeholder="my-bucket" />
+                <SbTextField @bind-Value="_config.MinioBucketName" dir="ltr" Placeholder="my-bucket" />
             </SbFormField>
         }
         @if (_config.StorageProvider == FileStructureStorageProvider.S3Provider)
         {
             <SbFormField Label="@L["S3EndPoint"]">
-                <SbTextField @bind-Value="_config.S3EndPoint" Placeholder="@L["S3EndPointHint"]" />
+                <SbTextField @bind-Value="_config.S3EndPoint" dir="ltr" Placeholder="@L["S3EndPointHint"]" />
             </SbFormField>
             <SbFormField Label="@L["S3Region"]" Required>
-                <SbTextField @bind-Value="_config.S3Region" Placeholder="us-east-1" />
+                <SbTextField @bind-Value="_config.S3Region" dir="ltr" Placeholder="us-east-1" />
             </SbFormField>
             <SbFormField Label="@L["S3ContainerName"]" Required>
-                <SbTextField @bind-Value="_config.S3ContainerName" Placeholder="my-bucket" />
+                <SbTextField @bind-Value="_config.S3ContainerName" dir="ltr" Placeholder="my-bucket" />
             </SbFormField>
             <SbFormField Label="@L["S3AccessKeyId"]">
-                <SbTextField @bind-Value="_config.S3AccessKeyId" Type="password" />
+                <SbTextField @bind-Value="_config.S3AccessKeyId" dir="ltr" Type="password" />
             </SbFormField>
             <SbFormField Label="@L["S3SecretAccessKey"]">
-                <SbTextField @bind-Value="_config.S3SecretAccessKey" Type="password" />
+                <SbTextField @bind-Value="_config.S3SecretAccessKey" dir="ltr" Type="password" />
             </SbFormField>
         }
 

@@ -1,0 +1,14 @@
+@namespace SufiChain.SufiPlatform.Settings.Blazor.Components
+@using SufiChain.SufiPlatform.Settings.Blazor.Settings
+
+<SufiSettingsSection Id="@Group.Id"
+                     Label="@Group.DisplayName"
+                     Icon="@Group.Icon"
+                     Description="@Group.Description"
+                     Policy="@Group.Policy"
+                     IsDirty="@_dirty"
+                     IsDirtyChanged="SetDirty"
+                     OnSave="SaveAsync"
+                     OnDiscard="DiscardAsync">
+    <DynamicComponent @key="Group.Id" Type="@Group.ComponentType" Parameters="@_parameters" @ref="_component" />
+</SufiSettingsSection>

@@ -1,7 +1,7 @@
 @namespace SufiChain.SufiPlatform.Settings.Blazor.Settings
 @inherits SettingsComponentBase
 
-<SbStack Gap="4" class="p-4">
+<SbStack Gap="4">
     @if (IsOperationLoading(LoadingKeys.Load))
     {
         <div class="text-center py-4">
@@ -12,7 +12,7 @@
     {
         <SbStack Gap="4">
             <div>
-                <h6 class="mb-3">@L["TimeZoneConfiguration"]</h6>
+                <h3 class="mb-3">@L["TimeZoneConfiguration"]</h3>
                 <SbStack Gap="3">
                     <SbSimpleSelect TValue="string" 
                               Value="@_selectedTimeZone"
@@ -31,7 +31,7 @@
                     @if (!string.IsNullOrEmpty(_selectedTimeZone))
                     {
                         <SbAlert Severity="SbAlertSeverity.Info">
-                            <strong>@L["CurrentTimeZone"]:</strong> @_selectedTimeZone
+                            <strong>@L["CurrentTimeZone"]:</strong> <bdi dir="ltr">@_selectedTimeZone</bdi>
                             <br />
                             <small>@L["CurrentTime"]: @GetCurrentTimeInSelectedTimeZone()</small>
                         </SbAlert>
