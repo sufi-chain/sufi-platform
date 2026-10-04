@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Components;
+using Microsoft.Extensions.Logging;
 using SufiChain.SufiBlazor.Components;
 using SufiChain.SufiPlatform.FileManager.Blazor.Public.Services;
 using SufiChain.SufiPlatform.FileManager.Permissions;
