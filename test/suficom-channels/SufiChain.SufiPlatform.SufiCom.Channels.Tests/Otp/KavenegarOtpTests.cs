@@ -227,6 +227,46 @@ public class KavenegarOtpTests
         lookup.Timeouts.ShouldHaveSingleItem().ShouldBe(TimeSpan.FromSeconds(12));
     }
 
+    [Theory]
+    [InlineData("super-secret-key")]
+    [InlineData("Basic super-secret-key")]
+    public async Task Lookup_Should_Put_The_Api_Key_In_The_Path_And_Not_Add_Basic_Authorization(string apiKey)
+    {
+        var handler = new RecordingHttpMessageHandler(
+            """{"return":{"status":200,"message":"تایید شد"},"entries":[{"messageid":1,"status":5}]}""");
+        var client = new KavenegarVerifyLookupClient(new HttpClient(handler));
+
+        await client.LookupAsync(apiKey, "09121234567", "123456", "verify", KavenegarVerifyLookupClient.TypeSms);
+
+        var request = handler.Requests.ShouldHaveSingleItem().Request;
+        request.Headers.Contains("Authorization").ShouldBeFalse();
+        var escaped = Uri.EscapeDataString(apiKey);
+        request.RequestUri!.AbsolutePath.ShouldContain("/" + escaped + "/");
+        request.RequestUri.AbsolutePath.ShouldNotContain("Basic%20Basic");
+    }
+
+    [Fact]
+    public async Task Sms_Channel_Should_Log_The_Http_Status_And_Body_Without_The_Api_Key()
+    {
+        var handler = new RecordingHttpMessageHandler(
+            """{"return":{"status":418,"message":"credit super-secret-key 654321"},"entries":null}""",
+            HttpStatusCode.BadRequest);
+        var logger = new CapturingLogger<KavenegarSmsChannel>();
+        var channel = NewHttpChannel(handler, logger, "super-secret-key");
+
+        var result = await channel.SendOtpAsync(NewOtp(OtpPurposes.Login, "09121234567", "654321"));
+
+        result.Success.ShouldBeFalse();
+        result.StatusCode.ShouldBe(418);
+        var line = logger.Lines.ShouldHaveSingleItem();
+        line.ShouldContain("HttpStatus=400");
+        line.ShouldContain("ProviderStatus=418");
+        line.ShouldContain("credit");
+        line.ShouldNotContain("super-secret-key");
+        line.ShouldNotContain("654321");
+        line.ShouldNotContain("verify/lookup.json");
+    }
+
     private static KavenegarSmsChannel NewHttpChannel(
         RecordingHttpMessageHandler handler,
         CapturingLogger<KavenegarSmsChannel> logger,

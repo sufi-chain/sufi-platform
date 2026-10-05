@@ -59,6 +59,9 @@ public class SmsProviderConfigurationAppServiceTests : SufiComTestBase<SufiComAp
         saved.ExtraProperties["SenderNumber"].ShouldBe("1000");
         saved.HasStoredSensitiveSettings.ShouldBeTrue();
         saved.ExtraProperties.ContainsKey("ApiKey").ShouldBeFalse();
+
+        var storedKey = await _settingProvider.GetOrNullAsync(SufiComSettingNames.SmsChannel.Setting("ApiKey"));
+        storedKey.ShouldBe("test-key");
     }
 
     [Fact]
