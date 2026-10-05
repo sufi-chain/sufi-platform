@@ -14,5 +14,6 @@
     <PackageReference Include="xunit" Version="$(XunitVersion)" />
     <PackageReference Include="xunit.runner.visualstudio" Version="$(XunitRunnerVisualStudioVersion)" PrivateAssets="All" />
     <PackageReference Include="Shouldly" Version="$(ShouldlyVersion)" />
+    <PackageReference Include="NSubstitute" Version="$(NSubstituteVersion)" />
   </ItemGroup>
 </Project>

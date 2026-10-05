@@ -83,6 +83,51 @@ public static class OtpFailureMessages
         logger.LogError("{Provider} OTP request timed out.", provider);
     }
 
+    /// <summary>
+    /// Logs the HTTP status and response body for a rejected gateway call.
+    /// <paramref name="secrets"/> (API keys, tokens, OTP codes) are removed from the body first.
+    /// </summary>
+    public static void LogHttpFailure(
+        ILogger logger,
+        string provider,
+        int httpStatus,
+        int? providerStatus,
+        string? body,
+        params string?[] secrets)
+    {
+        logger.LogError(
+            "{Provider} gateway request failed. HttpStatus={HttpStatus} ProviderStatus={ProviderStatus} Body={Body}",
+            provider,
+            httpStatus,
+            providerStatus,
+            Redact(body, secrets));
+    }
+
+    public static string Redact(string? body, params string?[] secrets)
+    {
+        if (string.IsNullOrEmpty(body))
+        {
+            return string.Empty;
+        }
+
+        var text = body;
+        if (secrets != null)
+        {
+            foreach (var secret in secrets)
+            {
+                if (string.IsNullOrEmpty(secret) || secret.Length < 4)
+                {
+                    continue;
+                }
+
+                text = text.Replace(secret, "***", StringComparison.Ordinal);
+            }
+        }
+
+        const int maxLength = 800;
+        return text.Length <= maxLength ? text : text.Substring(0, maxLength);
+    }
+
     private static bool IsKey(string value)
     {
         return value.StartsWith("Communication:", StringComparison.Ordinal)
