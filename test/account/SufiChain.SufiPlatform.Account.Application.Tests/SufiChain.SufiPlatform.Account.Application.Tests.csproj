@@ -18,6 +18,8 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\modules\account\src\SufiChain.SufiPlatform.Account.Application\SufiChain.SufiPlatform.Account.Application.csproj" />
+    <ProjectReference Include="..\..\..\modules\account\src\SufiChain.SufiPlatform.Account.Blazor\SufiChain.SufiPlatform.Account.Blazor.csproj" />
+    <ProjectReference Include="..\..\..\framework\SufiChain.SufiPlatform.UI.Blazor\SufiChain.SufiPlatform.UI.Blazor.csproj" />
     <ProjectReference Include="..\..\..\modules\identity\src\SufiChain.SufiPlatform.Identity.AspNetCore\SufiChain.SufiPlatform.Identity.AspNetCore.csproj" />
   </ItemGroup>
 

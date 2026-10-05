@@ -13,6 +13,7 @@ using SufiChain.SufiBlazor.Components.Forms;
 using SufiChain.SufiPlatform.UI.Alerts;
 using SufiChain.SufiPlatform.UI.BlockUi;
 using SufiChain.SufiPlatform.UI.ExceptionHandling;
+using SufiChain.SufiPlatform.UI.Blazor.ExceptionHandling;
 using SufiChain.SufiPlatform.UI.Localization;
 using SufiChain.SufiPlatform.UI.Messages;
 using SufiChain.SufiPlatform.UI.MultiTenancy;
@@ -872,7 +873,7 @@ internal static class LoggerExtensions
 {
     public static void LogException(this ILogger logger, Exception exception)
     {
-        logger.LogError(exception, "An error occurred: {Message}", exception.Message);
+        SufiExceptionLog.LogError(logger, exception, "An error occurred");
     }
 }
 

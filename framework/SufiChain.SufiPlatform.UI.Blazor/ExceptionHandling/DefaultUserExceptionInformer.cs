@@ -470,7 +470,7 @@ public class DefaultUserExceptionInformer : IUserExceptionInformer
 
     protected virtual void LogException(UserExceptionInformerContext context)
     {
-        _logger.LogError(context.Exception, "User exception occurred: {Message}", context.Exception.Message);
+        SufiExceptionLog.LogError(_logger, context.Exception, "User exception occurred");
     }
 
     protected record ErrorInfo(string Message, string? Title, string? Details);
