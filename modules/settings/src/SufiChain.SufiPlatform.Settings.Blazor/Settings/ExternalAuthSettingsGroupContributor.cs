@@ -14,6 +14,7 @@ public class ExternalAuthSettingsGroupContributor : ISettingComponentContributor
         {
             Id = "external-auth",
             DisplayName = l["ExternalAuthSettings"],
+            Icon = "plug",
             ComponentType = typeof(ExternalAuthSettingsGroup),
             Order = 205
         });
