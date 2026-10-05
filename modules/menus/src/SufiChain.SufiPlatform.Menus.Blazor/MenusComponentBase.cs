@@ -1,38 +1,67 @@
+using System.Globalization;
+using Microsoft.Extensions.Options;
+using Microsoft.JSInterop;
 using SufiChain.SufiPlatform.Data;
 using SufiChain.SufiPlatform.Menus.Localization;
 using SufiChain.SufiPlatform.Menus.Menus;
 using SufiChain.SufiPlatform.UI.Blazor;
+using Volo.Abp.Localization;
 
 namespace SufiChain.SufiPlatform.Menus.Blazor;
 
 public abstract class MenusComponentBase : SufiComponentBase
 {
+    private IMenuAppService? _menuLabelAppService;
+    private IOptions<AbpLocalizationOptions>? _localizationOptions;
+    private IJSRuntime? _jsRuntime;
+
+    protected string MenuDefaultCulture { get; private set; } = "fa";
+
     protected MenusComponentBase()
     {
         LocalizationResource = typeof(SufiMenusResource);
     }
 
-    protected string ResolveMenuDisplayName(string? storedDisplayName, string? contextType = null)
+    protected override async Task OnInitializedAsync()
     {
-        return ResolveBusinessDisplayName(storedDisplayName, contextType);
+        try
+        {
+            var cultures = await LazyGetRequiredService(ref _menuLabelAppService).GetLabelCulturesAsync();
+            var selected = cultures.FirstOrDefault(x => x.IsDefault);
+            if (!string.IsNullOrWhiteSpace(selected?.CultureName))
+            {
+                MenuDefaultCulture = selected.CultureName;
+            }
+        }
+        catch (Exception)
+        {
+            MenuDefaultCulture = "fa";
+        }
+
+        await base.OnInitializedAsync();
     }
 
-    protected string ResolveMenuItemDisplayName(string? storedDisplayName, string? contextType = null)
+    protected string ResolveMenuDisplayName(string? storedDisplayName, string? contextType = null, string? plainName = null)
     {
-        return ResolveBusinessDisplayName(storedDisplayName, contextType);
+        return ResolveBusinessDisplayName(storedDisplayName, contextType, plainName);
+    }
+
+    protected string ResolveMenuItemDisplayName(string? storedDisplayName, string? contextType = null, string? plainName = null)
+    {
+        return ResolveBusinessDisplayName(storedDisplayName, contextType, plainName);
     }
 
     protected string ResolveMenuDisplayName(MenuListDto menu) =>
-        ResolveMenuDisplayName(menu.DisplayName, menu.ContextType);
+        ResolveMenuDisplayName(menu.DisplayName, menu.ContextType, menu.Name);
 
     protected string ResolveMenuDisplayName(MenuDto menu) =>
-        ResolveMenuDisplayName(menu.DisplayName, menu.ContextType);
+        ResolveMenuDisplayName(menu.DisplayName, menu.ContextType, menu.Name);
 
     protected string ResolveMenuItemDisplayName(MenuItemDto item, string? contextType = null) =>
-        ResolveMenuItemDisplayName(item.DisplayName, contextType);
+        ResolveMenuItemDisplayName(item.DisplayName, contextType, item.Name);
 
     protected string ResolveMenuItemDisplayName(MenuItemTreeDto item, string? contextType = null) =>
-        ResolveMenuItemDisplayName(item.DisplayName, contextType);
+        ResolveMenuItemDisplayName(item.DisplayName, contextType, item.Name);
 
     protected string ResolveContextType(string? contextType)
     {
@@ -45,29 +74,44 @@ public abstract class MenusComponentBase : SufiComponentBase
         return localized.ResourceNotFound ? contextType : localized.Value ?? contextType;
     }
 
-    private string ResolveBusinessDisplayName(string? storedDisplayName, string? contextType)
+    private string ResolveBusinessDisplayName(string? storedDisplayName, string? contextType, string? plainName)
     {
-        if (string.IsNullOrWhiteSpace(storedDisplayName))
-        {
-            return string.Empty;
-        }
-
-        if (!BusinessLocalizationHelper.IsBusinessLocalizationKey(storedDisplayName))
-        {
-            return storedDisplayName;
-        }
-
         string? menuKey = null;
-        if (BusinessLocalizationHelper.TryExtractSeededMenuKey(storedDisplayName, out var extractedMenuKey))
+        if (!string.IsNullOrWhiteSpace(storedDisplayName)
+            && BusinessLocalizationHelper.TryExtractSeededMenuKey(storedDisplayName, out var extractedMenuKey))
         {
             menuKey = extractedMenuKey;
         }
 
-        var resourceName = MenuLocalizationRegistry.GetResourceName(menuKey, contextType);
-        return BusinessLocalizationHelper.ResolveText(
-            StringLocalizerFactory,
-            resourceName,
+        var resources = MenuLocalizationRegistry.GetReadResourceNames(menuKey, contextType);
+        var options = LazyGetRequiredService(ref _localizationOptions).Value;
+        return MenuDisplayNamePlanner.ResolvePublicLabel(
             storedDisplayName,
-            storedDisplayName);
+            plainName,
+            CultureInfo.CurrentUICulture.Name,
+            MenuDefaultCulture,
+            culture => MenuDisplayNamePlanner.LookupExact(
+                options,
+                resources,
+                storedDisplayName,
+                culture));
+    }
+
+    protected async Task CopyTextAsync(string? value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            return;
+        }
+
+        try
+        {
+            var js = LazyGetRequiredService(ref _jsRuntime);
+            await js.InvokeVoidAsync("navigator.clipboard.writeText", value);
+        }
+        catch (Exception)
+        {
+            // Clipboard access can be refused before the page is interactive.
+        }
     }
 }

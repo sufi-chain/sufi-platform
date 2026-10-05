@@ -9,6 +9,8 @@ using Shouldly;
 using SufiChain.SufiPlatform.SufiAI.Workspaces;
 using Volo.Abp.DependencyInjection;
 using Volo.Abp.Guids;
+using Volo.Abp.MultiTenancy;
+using Volo.Abp.Uow;
 using Xunit;
 
 namespace SufiChain.SufiPlatform.SufiAI.Domain.Tests.AI;
@@ -192,6 +194,51 @@ public class AIUsageRecorderTests
         inserted[0].IsCostCalculated.ShouldBeTrue();
     }
 
+    [Fact]
+    public async Task RecordAsync_commits_under_the_caller_tenant_when_the_request_is_cancelled()
+    {
+        var tenantId = Guid.NewGuid();
+        var workspace = new Workspace(
+            Guid.NewGuid(),
+            "inherited-host",
+            AIProviderType.OpenAI,
+            "workspace-default");
+        var inserted = new List<AIUsageLog>();
+        CancellationToken? insertToken = null;
+        var repository = Substitute.For<IAIUsageLogRepository>();
+        repository.InsertAsync(Arg.Any<AIUsageLog>(), Arg.Any<bool>(), Arg.Any<CancellationToken>())
+            .Returns(call =>
+            {
+                insertToken = call.Arg<CancellationToken>();
+                var log = call.Arg<AIUsageLog>();
+                inserted.Add(log);
+                return log;
+            });
+
+        var currentTenant = Substitute.For<ICurrentTenant>();
+        currentTenant.Id.Returns(tenantId);
+        var unitOfWork = Substitute.For<IUnitOfWork>();
+        var unitOfWorkManager = Substitute.For<IUnitOfWorkManager>();
+        unitOfWorkManager
+            .Begin(Arg.Any<AbpUnitOfWorkOptions>(), true)
+            .Returns(unitOfWork);
+
+        var recorder = new TestableAIUsageRecorder(repository, unitOfWorkManager, currentTenant);
+        using var cancelled = new CancellationTokenSource();
+        cancelled.Cancel();
+
+        await recorder.RecordAsync(CreateRecord(workspace, workspace.AddModelConfiguration(
+            AICapabilityType.ChatCompletion,
+            "chat",
+            inputPrice: 1m,
+            outputPrice: 1m)), cancelled.Token);
+
+        inserted.Count.ShouldBe(1);
+        inserted[0].TenantId.ShouldBe(tenantId);
+        insertToken.ShouldBe(CancellationToken.None);
+        await unitOfWork.Received(1).CompleteAsync(CancellationToken.None);
+    }
+
     private static AIUsageRecord CreateRecord(Workspace workspace, AIModelConfiguration route)
     {
         return new AIUsageRecord
@@ -225,8 +272,11 @@ public class AIUsageRecorderTests
         {
         }
 
-        public TestableAIUsageRecorder(IAIUsageLogRepository repository)
-            : base(repository, NullLogger<AIUsageRecorder>.Instance)
+        public TestableAIUsageRecorder(
+            IAIUsageLogRepository repository,
+            IUnitOfWorkManager? unitOfWorkManager = null,
+            ICurrentTenant? currentTenant = null)
+            : base(repository, NullLogger<AIUsageRecorder>.Instance, unitOfWorkManager, currentTenant)
         {
             var lazy = Substitute.For<IAbpLazyServiceProvider>();
             lazy.LazyGetService(Arg.Any<IGuidGenerator>())

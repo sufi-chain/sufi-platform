@@ -125,6 +125,46 @@ public class IdentityLinkUserManager_Tests
     }
 
     [Fact]
+    public async Task DescribeMissingDirectLink_Should_Report_NotLinked_When_The_User_Has_No_Link()
+    {
+        var source = new IdentityLinkUserInfo(Guid.NewGuid());
+        var target = new IdentityLinkUserInfo(Guid.NewGuid(), Guid.NewGuid());
+
+        var reason = await _manager.DescribeMissingDirectLinkAsync(source, target);
+
+        reason.ShouldBe(LinkLoginRejectionReasons.NotLinked);
+    }
+
+    [Fact]
+    public async Task DescribeMissingDirectLink_Should_Report_TenantMismatch_When_The_User_Is_Linked_Elsewhere()
+    {
+        var source = new IdentityLinkUserInfo(Guid.NewGuid());
+        var linkedTenant = Guid.NewGuid();
+        var requestedTenant = Guid.NewGuid();
+        await _manager.LinkAsync(source, new IdentityLinkUserInfo(Guid.NewGuid(), linkedTenant));
+
+        var reason = await _manager.DescribeMissingDirectLinkAsync(
+            source,
+            new IdentityLinkUserInfo(Guid.NewGuid(), requestedTenant));
+
+        reason.ShouldBe(LinkLoginRejectionReasons.TenantMismatch);
+    }
+
+    [Fact]
+    public async Task DescribeMissingDirectLink_Should_Report_TenantMismatch_When_The_Tenant_User_Differs()
+    {
+        var tenantId = Guid.NewGuid();
+        var source = new IdentityLinkUserInfo(Guid.NewGuid());
+        await _manager.LinkAsync(source, new IdentityLinkUserInfo(Guid.NewGuid(), tenantId));
+
+        var reason = await _manager.DescribeMissingDirectLinkAsync(
+            source,
+            new IdentityLinkUserInfo(Guid.NewGuid(), tenantId));
+
+        reason.ShouldBe(LinkLoginRejectionReasons.TenantMismatch);
+    }
+
+    [Fact]
     public async Task GetListAsync_IncludeIndirect_Should_Walk_Graph()
     {
         var a = new IdentityLinkUserInfo(Guid.NewGuid());

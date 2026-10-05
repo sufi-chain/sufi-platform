@@ -15,6 +15,7 @@ public class IdentitySettingsGroupContributor : ISettingComponentContributor
         {
             Id = "identity",
             DisplayName = l["IdentitySettings"],
+            Icon = "user-cog",
             ComponentType = typeof(IdentitySettingsGroup),
             Order = 200
         });

@@ -45,6 +45,7 @@ public static class MenuMappingExtensions
         Kind = item.Kind,
         DisplayType = item.DisplayType,
         Url = item.Url,
+        CultureUrls = CopyCultureUrls(item),
         LinkTarget = item.LinkTarget,
         TargetType = item.TargetType,
         TargetId = item.TargetId,
@@ -77,6 +78,7 @@ public static class MenuMappingExtensions
         Kind = item.Kind,
         DisplayType = item.DisplayType,
         Url = item.Url,
+        CultureUrls = CopyCultureUrls(item),
         LinkTarget = item.LinkTarget,
         TargetType = item.TargetType,
         TargetId = item.TargetId,
@@ -94,4 +96,12 @@ public static class MenuMappingExtensions
         DeleterId = item.DeleterId,
         DeletionTime = item.DeletionTime
     };
+
+    private static Dictionary<string, string>? CopyCultureUrls(MenuItem item)
+    {
+        var urls = item.GetCultureUrls();
+        return urls.Count == 0
+            ? null
+            : new Dictionary<string, string>(urls, StringComparer.OrdinalIgnoreCase);
+    }
 }

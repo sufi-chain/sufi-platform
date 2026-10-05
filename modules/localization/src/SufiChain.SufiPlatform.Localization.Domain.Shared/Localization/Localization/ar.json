@@ -59,6 +59,18 @@
     "BusinessTextEditor:CultureTab": "الثقافة",
     "BusinessTextEditor:KeyPreview": "مفتاح الترجمة",
     "BusinessTextEditor:SaveRequired": "اسم العرض مطلوب.",
-    "BusinessTextEditor:DefaultCultureRequired": "ترجمة الثقافة الافتراضية مطلوبة."
+    "BusinessTextEditor:DefaultCultureRequired": "ترجمة الثقافة الافتراضية مطلوبة.",
+    "MultilingualTextField:Primary": "(الأساسية)",
+    "MultilingualTextField:Untranslated": "غير مترجم",
+    "MultilingualTextField:Translated": "مترجم",
+    "MultilingualTextField:MaxLength": "بحد أقصى {0} حرفًا.",
+    "MultilingualTextField:Required": "عنوان {0} مطلوب.",
+    "MultilingualTextField:LooksLikeKey": "هذه القيمة تشبه معرّفًا نظاميًا. أدخل النص الذي يراه الزوار.",
+    "MultilingualTextField:Broken": "لم يُحفظ عنوان هذا العنصر بشكل صحيح. أدخله مرة أخرى.",
+    "MultilingualTextField:CulturesFailed": "تعذر تحميل قائمة اللغات. تُعرض اللغة الافتراضية فقط.",
+    "MultilingualTextField:EmptyFallback": "إذا تُرك فارغًا، يُعرض «{0}»",
+    "MultilingualTextField:ScriptWarning": "يبدو أن هذا النص بلغة أخرى.",
+    "MultilingualTextField:BaseText": "العودة إلى النص الأساسي",
+    "Hooshvare:SufiLocalization:Editor:DisplayName": "محرر الترجمة"
   }
 }

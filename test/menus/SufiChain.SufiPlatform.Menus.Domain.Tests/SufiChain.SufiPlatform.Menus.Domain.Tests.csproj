@@ -6,7 +6,10 @@
     <IsTestProject>true</IsTestProject>
   </PropertyGroup>
   <ItemGroup>
+    <ProjectReference Include="../../../framework/SufiChain.SufiPlatform.Data/SufiChain.SufiPlatform.Data.csproj" />
+    <ProjectReference Include="../../../modules/menus/src/SufiChain.SufiPlatform.Menus.Domain.Shared/SufiChain.SufiPlatform.Menus.Domain.Shared.csproj" />
     <ProjectReference Include="../../../modules/menus/src/SufiChain.SufiPlatform.Menus.Domain/SufiChain.SufiPlatform.Menus.Domain.csproj" />
+    <ProjectReference Include="../../../modules/menus/src/SufiChain.SufiPlatform.Menus.Application/SufiChain.SufiPlatform.Menus.Application.csproj" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="$(MicrosoftNetTestSdkVersion)" />
     <PackageReference Include="xunit" Version="$(XunitVersion)" />
     <PackageReference Include="xunit.runner.visualstudio" Version="$(XunitRunnerVisualStudioVersion)" PrivateAssets="All" />

@@ -59,6 +59,18 @@
     "BusinessTextEditor:CultureTab": "Cultura",
     "BusinessTextEditor:KeyPreview": "Clave de localización",
     "BusinessTextEditor:SaveRequired": "El nombre para mostrar es obligatorio.",
-    "BusinessTextEditor:DefaultCultureRequired": "La traducción de la cultura predeterminada es obligatoria."
+    "BusinessTextEditor:DefaultCultureRequired": "La traducción de la cultura predeterminada es obligatoria.",
+    "MultilingualTextField:Primary": "(principal)",
+    "MultilingualTextField:Untranslated": "Sin traducir",
+    "MultilingualTextField:Translated": "Traducido",
+    "MultilingualTextField:MaxLength": "Como máximo {0} caracteres.",
+    "MultilingualTextField:Required": "El título de {0} es obligatorio.",
+    "MultilingualTextField:LooksLikeKey": "Este valor parece un identificador del sistema. Escriba el texto que verán los visitantes.",
+    "MultilingualTextField:Broken": "La etiqueta de este elemento no se guardó correctamente. Vuelva a escribirla.",
+    "MultilingualTextField:CulturesFailed": "No se cargó la lista de idiomas. Solo se muestra el idioma predeterminado.",
+    "MultilingualTextField:EmptyFallback": "Si se deja vacío, se muestra «{0}»",
+    "MultilingualTextField:ScriptWarning": "Este texto parece estar en otro idioma.",
+    "MultilingualTextField:BaseText": "Volver al texto base",
+    "Hooshvare:SufiLocalization:Editor:DisplayName": "Editor de localización"
   }
 }

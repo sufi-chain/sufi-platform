@@ -122,74 +122,42 @@ public class CmsHtmlAndStyleGuardTests
     }
 
     [Fact]
-    public void Share_Copies_Section_Theme_And_Keeps_The_Other_Language()
+    public void Share_Copies_Font_Face_Direction_And_Physical_Edges()
     {
         var edited = """
-            [data-cms-section="s-1"] {
-              background: var(--cms-color-surface);
-              font-size: 1.25rem;
-              font-family: Inter, sans-serif;
-              margin-left: 1rem;
-              margin-inline: 1rem;
-              --cms-color-primary: var(--cms-color-text);
-              --cms-font-family: Inter;
+            @font-face {
+              font-family: "Vazirmatn";
+              src: url("/fonts/vazirmatn.woff2") format("woff2");
+              unicode-range: U+0600-06FF;
             }
-            @font-face { font-family: Inter; src: url(inter.woff2); }
-            """;
-        var persian = """
-            [data-cms-section="s-1"] {
-              background: var(--cms-color-background);
-              font-family: Vazirmatn, sans-serif;
+            .hero {
+              font-family: "Vazirmatn", sans-serif;
               direction: rtl;
-              margin-left: 0;
-              margin-inline: 0;
-              --cms-font-family: Vazirmatn;
+              margin-left: 1rem;
+              margin-right: 2rem;
+              left: 0;
+              right: 4px;
+              text-align: right;
             }
-            @font-face { font-family: Vazirmatn; src: url(vazir.woff2); }
+            .hero::before { content: "سلام"; }
+            .hero::after { content: "مرحبا"; }
             """;
+        var truncated = ".hero { color: var(--cms-color-text); }";
 
-        var shared = CmsSharedPageAssets.Share(edited, persian);
-        shared.ShouldNotBeNull();
-        shared.ShouldContain("background: var(--cms-color-surface)");
-        shared.ShouldContain("font-size: 1.25rem");
-        shared.ShouldContain("margin-inline: 1rem");
-        shared.ShouldContain("--cms-color-primary: var(--cms-color-text)");
-        shared.ShouldContain("font-family: Vazirmatn, sans-serif");
+        var shared = CmsSharedPageAssets.Share(edited, truncated) ?? string.Empty;
+        shared.ShouldBe(edited);
+        shared.ShouldContain("@font-face");
+        shared.ShouldContain("font-family: \"Vazirmatn\"");
         shared.ShouldContain("direction: rtl");
-        shared.ShouldContain("margin-left: 0");
-        shared.ShouldContain("--cms-font-family: Vazirmatn");
-        shared.ShouldContain("vazir.woff2");
-        shared.ShouldNotContain("Inter");
-        shared.ShouldNotContain("margin-left: 1rem");
-        shared.ShouldNotContain("margin-inline: 0");
-        shared.ShouldNotContain("inter.woff2");
-        CmsSharedPageAssets.ChangesOtherCulture(edited, persian).ShouldBeTrue();
-    }
-
-    [Fact]
-    public void Share_Leaves_The_Other_Language_When_Only_Its_Font_Differs()
-    {
-        var edited = ".a { color: var(--cms-color-text); font-family: Inter; }";
-        var other = ".a { color: var(--cms-color-text); font-family: Vazirmatn; direction: rtl; }";
-        CmsSharedPageAssets.ChangesOtherCulture(edited, other).ShouldBeFalse();
-    }
-
-    [Fact]
-    public void Share_Copies_A_Direction_Selector_And_Drops_Shared_Rules()
-    {
-        var edited = ":dir(rtl) .a { padding-inline-start: 1rem; font-family: Vazirmatn; }";
-        var other = ".a { color: var(--cms-color-text); font-family: Vazirmatn; direction: rtl; }";
-        var shared = CmsSharedPageAssets.Share(edited, other);
-        shared.ShouldNotBeNull();
-        shared.ShouldContain(":dir(rtl)");
-        shared.ShouldContain("font-family: Vazirmatn");
-        shared.ShouldContain("direction: rtl");
-        shared.ShouldNotContain("color:");
-
-        var cleared = CmsSharedPageAssets.Share(null, other);
-        cleared.ShouldNotBeNull();
-        cleared.ShouldContain("font-family: Vazirmatn");
-        cleared.ShouldContain("direction: rtl");
-        cleared.ShouldNotContain("color:");
+        shared.ShouldContain("margin-left: 1rem");
+        shared.ShouldContain("margin-right: 2rem");
+        shared.ShouldContain("left: 0");
+        shared.ShouldContain("right: 4px");
+        shared.ShouldContain("سلام");
+        shared.ShouldContain("مرحبا");
+        CmsSharedPageAssets.ChangesOtherCulture(edited, truncated).ShouldBeTrue();
+        CmsSharedPageAssets.ChangesOtherCulture(edited, edited).ShouldBeFalse();
+        CmsSharedPageAssets.Share(null, truncated).ShouldBeNull();
+        CmsSharedPageAssets.Share("   ", truncated).ShouldBeNull();
     }
 }

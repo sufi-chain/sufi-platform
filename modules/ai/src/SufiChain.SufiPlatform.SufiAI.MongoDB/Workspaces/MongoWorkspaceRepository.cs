@@ -3,6 +3,7 @@ using MongoDB.Driver;
 using MongoDB.Driver.Linq;
 using Volo.Abp;
 using Volo.Abp.Data;
+using Volo.Abp.Domain.Entities;
 using Volo.Abp.Domain.Repositories.MongoDB;
 using Volo.Abp.MongoDB;
 using Volo.Abp.MultiTenancy;
@@ -12,9 +13,14 @@ namespace SufiChain.SufiPlatform.SufiAI.Workspaces;
 
 public class MongoWorkspaceRepository : MongoDbRepository<AIMongoDbContext, Workspace, Guid>, IWorkspaceRepository
 {
-    public MongoWorkspaceRepository(IMongoDbContextProvider<AIMongoDbContext> dbContextProvider)
+    private readonly IInheritedWorkspaceLiveView _liveView;
+
+    public MongoWorkspaceRepository(
+        IMongoDbContextProvider<AIMongoDbContext> dbContextProvider,
+        IInheritedWorkspaceLiveView liveView)
         : base(dbContextProvider)
     {
+        _liveView = liveView;
     }
 
     public override Task<IQueryable<Workspace>> GetQueryableAsync()
@@ -29,10 +35,50 @@ public class MongoWorkspaceRepository : MongoDbRepository<AIMongoDbContext, Work
         return await GetHostScopedQueryableAsync(cancellationToken, options);
     }
 
+    public override async Task<Workspace?> FindAsync(
+        Guid id,
+        bool includeDetails = true,
+        CancellationToken cancellationToken = default)
+    {
+        var workspace = await base.FindAsync(id, includeDetails, cancellationToken);
+        if (workspace == null)
+        {
+            return null;
+        }
+
+        return await _liveView.ApplyAsync(workspace, includeDetails, cancellationToken);
+    }
+
+    public override async Task<Workspace> UpdateAsync(
+        Workspace entity,
+        bool autoSave = false,
+        CancellationToken cancellationToken = default)
+    {
+        if (!InheritedWorkspaceLiveView.IsLiveView(entity))
+        {
+            return await base.UpdateAsync(entity, autoSave, cancellationToken);
+        }
+
+        var persisted = await base.FindAsync(entity.Id, includeDetails: true, cancellationToken);
+        if (persisted == null)
+        {
+            throw new EntityNotFoundException(typeof(Workspace), entity.Id);
+        }
+
+        persisted.CopyInheritedMutationFrom(entity);
+        return await base.UpdateAsync(persisted, autoSave, cancellationToken);
+    }
+
     public async Task<Workspace?> FindByNameAsync(string name, CancellationToken cancellationToken = default)
     {
         var queryable = await GetHostScopedQueryableAsync(cancellationToken);
-        return await queryable.FirstOrDefaultAsync(x => x.Name == name, cancellationToken);
+        var workspace = await queryable.FirstOrDefaultAsync(x => x.Name == name, cancellationToken);
+        if (workspace == null)
+        {
+            return null;
+        }
+
+        return await _liveView.ApplyAsync(workspace, includeDetails: true, cancellationToken);
     }
 
     public async Task<List<Workspace>> GetListAsync(
@@ -44,13 +90,14 @@ public class MongoWorkspaceRepository : MongoDbRepository<AIMongoDbContext, Work
     {
         var queryable = await GetHostScopedQueryableAsync(cancellationToken);
         
-        return await queryable
+        var workspaces = await queryable
             .WhereIf(!string.IsNullOrWhiteSpace(filter), 
                 x => x.Name.Contains(filter!) || x.Model.Contains(filter!))
             .OrderBy(sorting)
             .Skip(skipCount)
             .Take(maxResultCount)
             .ToListAsync(cancellationToken);
+        return await _liveView.ApplyAsync(workspaces, cancellationToken);
     }
 
     public async Task<long> GetCountAsync(string? filter = null, CancellationToken cancellationToken = default)

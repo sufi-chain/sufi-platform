@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -48,6 +49,15 @@ public class SettingComponentCreationContext
     /// </summary>
     public void Normalize()
     {
+        foreach (var duplicate in Groups.GroupBy(group => group.Order).Where(group => group.Count() > 1))
+        {
+            var ids = string.Join(", ", duplicate.Select(group => group.Id));
+            Trace.TraceWarning(
+                "Settings groups share Order {0}: {1}. Each group on a page needs a unique order.",
+                duplicate.Key,
+                ids);
+        }
+
         var orderedGroups = Groups.OrderBy(g => g.Order).ToList();
         Groups.Clear();
         Groups.AddRange(orderedGroups);
@@ -55,19 +65,29 @@ public class SettingComponentCreationContext
 }
 
 /// <summary>
-/// Represents a setting group displayed as a tab.
+/// Represents a setting group displayed as a settings section.
 /// </summary>
 public class SettingComponentGroup
 {
     /// <summary>
-    /// Unique identifier for the group.
+    /// Unique identifier for the group. Used as the <c>?section=</c> value.
     /// </summary>
     public string Id { get; set; } = default!;
 
     /// <summary>
-    /// Display name for the group tab.
+    /// Display name for the group.
     /// </summary>
     public string DisplayName { get; set; } = default!;
+
+    /// <summary>
+    /// Registered SufiIcons name for the settings rail.
+    /// </summary>
+    public required string Icon { get; set; }
+
+    /// <summary>
+    /// Optional one-line description under the section heading.
+    /// </summary>
+    public string? Description { get; set; }
 
     /// <summary>
     /// The component type to render for this group.
@@ -80,7 +100,7 @@ public class SettingComponentGroup
     public object? Parameter { get; set; }
 
     /// <summary>
-    /// Order of the group. Default is 1000.
+    /// Order of the group. Each group on a page needs a unique order. Default is 1000.
     /// </summary>
     public int Order { get; set; } = 1000;
 }

@@ -225,6 +225,131 @@ public class Workspace : FullAuditedAggregateRoot<Guid>, IMultiTenant
     }
 
     /// <summary>
+    /// Copies a route onto this workspace. A new id is used unless <paramref name="id"/> is set.
+    /// Capability flags and <see cref="AIModelConfiguration.IsUserSelectable"/> are copied with the route.
+    /// </summary>
+    public AIModelConfiguration CopyModelConfiguration(AIModelConfiguration source, Guid? id = null)
+    {
+        var config = new AIModelConfiguration(
+            id ?? Guid.NewGuid(),
+            Id,
+            source.CapabilityType,
+            source.ModelId,
+            source.Priority);
+        config.UpdateConfiguration(
+            source.ModelId,
+            source.ApiEndpoint,
+            source.ApiKey,
+            source.Priority,
+            source.OpenAIApiMode,
+            source.InputPrice,
+            source.OutputPrice,
+            source.Dimensions,
+            source.DisplayName,
+            source.IsUserSelectable,
+            source.Description,
+            source.MaxContextTokens,
+            source.InputPriceUnit,
+            source.OutputPriceUnit);
+        config.CopyChatCapabilitiesFrom(source);
+        if (!source.IsEnabled)
+        {
+            config.Disable();
+        }
+
+        _modelConfigurations.Add(config);
+        return config;
+    }
+
+    /// <summary>
+    /// In-memory read model of this inherited projection. Model routes, connection, and guardrails
+    /// come from the host source. Identity, name, and active state stay on the projection.
+    /// The result is not a persistent entity.
+    /// </summary>
+    public Workspace CreateLiveInheritedView(Workspace source)
+    {
+        if (!IsInherited || SourceWorkspaceId == null || AssignmentId == null)
+        {
+            return this;
+        }
+
+        var view = new Workspace(
+            Id,
+            Name,
+            source.Provider,
+            string.IsNullOrWhiteSpace(source.DefaultModel) ? DefaultModel : source.DefaultModel,
+            TenantId);
+        view.UpdateConfiguration(
+            string.IsNullOrWhiteSpace(source.DefaultModel) ? DefaultModel : source.DefaultModel,
+            source.ApiKey,
+            source.ApiBaseUrl,
+            source.InputCostPer1MTokens,
+            source.OutputCostPer1MTokens);
+        if (!IsActive)
+        {
+            view.Deactivate();
+        }
+
+        view.MarkAsInherited(SourceWorkspaceId.Value, AssignmentId.Value);
+        CopyAuditTo(view);
+
+        foreach (var guardrail in source.Guardrails)
+        {
+            view.SetGuardrail(guardrail.Period, guardrail.AmountUsd);
+        }
+
+        foreach (var configuration in source.ModelConfigurations)
+        {
+            view.CopyModelConfiguration(configuration, configuration.Id);
+        }
+
+        return view;
+    }
+
+    /// <summary>
+    /// Applies the few mutations a caller may make on a live inherited view
+    /// back onto the persistent projection. Model routes stay on the stored row.
+    /// </summary>
+    public void CopyInheritedMutationFrom(Workspace view)
+    {
+        if (IsActive != view.IsActive)
+        {
+            if (view.IsActive)
+            {
+                Activate();
+            }
+            else
+            {
+                Deactivate();
+            }
+        }
+
+        if (IsInherited && !view.IsInherited)
+        {
+            ClearInheritance();
+        }
+
+        if (IsDeleted != view.IsDeleted || DeleterId != view.DeleterId || DeletionTime != view.DeletionTime)
+        {
+            ObjectHelper.TrySetProperty(this, item => item.IsDeleted, () => view.IsDeleted);
+            ObjectHelper.TrySetProperty(this, item => item.DeleterId, () => view.DeleterId);
+            ObjectHelper.TrySetProperty(this, item => item.DeletionTime, () => view.DeletionTime);
+        }
+    }
+
+    private void CopyAuditTo(Workspace view)
+    {
+        ObjectHelper.TrySetProperty(view, item => item.CreationTime, () => CreationTime);
+        ObjectHelper.TrySetProperty(view, item => item.CreatorId, () => CreatorId);
+        ObjectHelper.TrySetProperty(view, item => item.LastModificationTime, () => LastModificationTime);
+        ObjectHelper.TrySetProperty(view, item => item.LastModifierId, () => LastModifierId);
+        ObjectHelper.TrySetProperty(view, item => item.IsDeleted, () => IsDeleted);
+        ObjectHelper.TrySetProperty(view, item => item.DeleterId, () => DeleterId);
+        ObjectHelper.TrySetProperty(view, item => item.DeletionTime, () => DeletionTime);
+        ObjectHelper.TrySetProperty(view, item => item.ConcurrencyStamp, () => ConcurrencyStamp);
+    }
+
+    /// <summary>
     /// Makes an enabled chat configuration the implicit workspace default.
     /// It becomes the lowest-priority enabled chat route, and <see cref="DefaultModel"/> is set to its model id.
     /// </summary>

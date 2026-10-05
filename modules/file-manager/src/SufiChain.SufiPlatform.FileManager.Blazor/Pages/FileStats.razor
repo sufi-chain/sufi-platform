@@ -15,20 +15,36 @@
 <SbStack Direction="SbStackDirection.Column" Gap="4">
 
 	<!-- Statistics Dashboard -->
-	<SbStack Direction="SbStackDirection.Row" Gap="4" Wrap="true">
-		<SbStatCard Label="@L["TotalFiles"]" Value="@_statistics.TotalCount.ToString()" Class="flex-1">
-			<Icon><SbIcon Name="folder" Size="SbSize.Lg" Color="SbColor.Primary" /></Icon>
-		</SbStatCard>
-		<SbStatCard Label="@L["Images"]" Value="@_statistics.ImageCount.ToString()" Class="flex-1">
-			<Icon><SbIcon Name="file" Size="SbSize.Lg" Color="SbColor.Success" /></Icon>
-		</SbStatCard>
-		<SbStatCard Label="@L["Videos"]" Value="@_statistics.VideoCount.ToString()" Class="flex-1">
-			<Icon><SbIcon Name="file" Size="SbSize.Lg" Color="SbColor.Info" /></Icon>
-		</SbStatCard>
-		<SbStatCard Label="@L["StorageUsed"]" Value="@FormatSize(_statistics.TotalSize)" Class="flex-1">
-			<Icon><SbIcon Name="folder" Size="SbSize.Lg" Color="SbColor.Warning" /></Icon>
-		</SbStatCard>
-	</SbStack>
+	<SbLoadingSkeleton Preset="SbLoadingSkeletonPreset.Kpi" Count="4" Busy="@(!_statsReady)">
+		<ChildContent>
+			@if (_statsFailed)
+			{
+				<SbAlert Severity="SbAlertSeverity.Danger">
+					<SbStack Direction="SbStackDirection.Row" Gap="3" Align="SbAlign.Center" Wrap="true">
+						<span>@L["DataLoadFailedGeneric"]</span>
+						<SbButton Size="SbSize.Sm" Variant="SbButtonVariant.Outline" OnClick="@RefreshStats">@L["Retry"]</SbButton>
+					</SbStack>
+				</SbAlert>
+			}
+			else if (_statsReady)
+			{
+		<SbStack Direction="SbStackDirection.Row" Gap="4" Wrap="true">
+			<SbStatCard Label="@L["TotalFiles"]" Value="@_statistics.TotalCount.ToString()" Class="flex-1">
+				<Icon><SbIcon Name="folder" Size="SbSize.Lg" Color="SbColor.Primary" /></Icon>
+			</SbStatCard>
+			<SbStatCard Label="@L["Images"]" Value="@_statistics.ImageCount.ToString()" Class="flex-1">
+				<Icon><SbIcon Name="file" Size="SbSize.Lg" Color="SbColor.Success" /></Icon>
+			</SbStatCard>
+			<SbStatCard Label="@L["Videos"]" Value="@_statistics.VideoCount.ToString()" Class="flex-1">
+				<Icon><SbIcon Name="file" Size="SbSize.Lg" Color="SbColor.Info" /></Icon>
+			</SbStatCard>
+			<SbStatCard Label="@L["StorageUsed"]" Value="@FormatSize(_statistics.TotalSize)" Class="flex-1">
+				<Icon><SbIcon Name="folder" Size="SbSize.Lg" Color="SbColor.Warning" /></Icon>
+			</SbStatCard>
+		</SbStack>
+			}
+		</ChildContent>
+	</SbLoadingSkeleton>
 
 	<!-- File Browser -->
 	@* <FileBrowser @ref="_fileBrowserRef" /> *@
@@ -44,7 +60,20 @@
 			</SbStack>
 		</Header>
 		<ChildContent>
-			@if (_structures.Any())
+			@if (!_structuresReady)
+			{
+				<SbLoadingSkeleton Preset="SbLoadingSkeletonPreset.Table" Count="4" Announce="false" />
+			}
+			else if (_structuresFailed)
+			{
+				<SbAlert Severity="SbAlertSeverity.Danger">
+					<SbStack Direction="SbStackDirection.Row" Gap="3" Align="SbAlign.Center" Wrap="true">
+						<span>@L["DataLoadFailed"]</span>
+						<SbButton Size="SbSize.Sm" Variant="SbButtonVariant.Outline" OnClick="@LoadStructures">@L["Retry"]</SbButton>
+					</SbStack>
+				</SbAlert>
+			}
+			else if (_structures.Any())
 			{
 				@* Desktop: table layout *@
 				<div class="file-structures-desktop">
@@ -139,7 +168,20 @@
 			<h5 class="m-0">@L["RecentActivity"]</h5>
 		</Header>
 		<ChildContent>
-		@if (_recentFiles.Any())
+		@if (!_recentReady)
+		{
+			<SbLoadingSkeleton Preset="SbLoadingSkeletonPreset.Table" Count="4" Announce="false" />
+		}
+		else if (_recentFailed)
+		{
+			<SbAlert Severity="SbAlertSeverity.Danger">
+				<SbStack Direction="SbStackDirection.Row" Gap="3" Align="SbAlign.Center" Wrap="true">
+					<span>@L["DataLoadFailed"]</span>
+					<SbButton Size="SbSize.Sm" Variant="SbButtonVariant.Outline" OnClick="@LoadRecentFiles">@L["Retry"]</SbButton>
+				</SbStack>
+			</SbAlert>
+		}
+		else if (_recentFiles.Any())
 		{
 			<SbTable TItem="FileItemDto" Items="@_recentFiles" Striped Hover>
 				<HeaderContent>
