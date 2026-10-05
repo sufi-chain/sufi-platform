@@ -1,7 +1,10 @@
+using System.Threading;
+using NSubstitute;
 using SufiChain.SufiPlatform.SufiCMS.Delivery;
 using SufiChain.SufiPlatform.SufiCMS.Pages;
 using Shouldly;
 using Volo.Abp;
+using Volo.Abp.MultiTenancy;
 using Xunit;
 
 namespace SufiChain.SufiPlatform.SufiCMS;
@@ -84,6 +87,44 @@ public class CmsSectionTemplateEditorTests
         await ShouldRefuse(hidden.GetAsync(other.Id));
     }
 
+    [Fact]
+    public async Task Tenant_Cannot_Save_Draft_Or_Lock_A_Host_Template()
+    {
+        var tenantId = Guid.Parse("22222222-2222-2222-2222-222222222222");
+        var host = SectionTemplate("hero", tenantId: null);
+        var originalHtml = host.Variants.Single().DraftHtml;
+        host.EditLockUserId.ShouldBeNull();
+
+        var repository = Substitute.For<IPageRepository>();
+        repository.FindAsync(host.Id, true, Arg.Any<CancellationToken>()).Returns(host);
+        var currentTenant = Substitute.For<ICurrentTenant>();
+        currentTenant.Id.Returns(tenantId);
+        var drafts = new CmsPageDraftService(
+            repository, null!, null!, null!, null!, null!, null!, null!, currentTenant, null!, null!);
+
+        await ShouldRefuse(drafts.GetVariantAsync(host.Id, "fa"));
+
+        var service = new TenantScopedPageAppService(tenantId, filtered: host, unfiltered: host, drafts);
+        await ShouldRefuse(service.SaveDraftAsync(host.Id, new SavePageDraftDto
+        {
+            Culture = "fa",
+            Title = "changed",
+            Html = "<section>changed</section>"
+        }));
+        await ShouldRefuse(service.UpdateAsync(host.Id, new UpdatePageDto
+        {
+            Slug = "changed",
+            IsSectionTemplate = true
+        }));
+        await ShouldRefuse(service.AcquireLockAsync(host.Id));
+
+        host.Variants.Single().DraftHtml.ShouldBe(originalHtml);
+        host.Slug.ShouldBe("hero");
+        host.EditLockUserId.ShouldBeNull();
+        service.IgnoredTenantLookupCount.ShouldBe(0);
+        await repository.DidNotReceiveWithAnyArgs().UpdateAsync(default!, default, default);
+    }
+
     private static async Task ShouldRefuse(Task operation)
     {
         var error = await Should.ThrowAsync<BusinessException>(operation);
@@ -134,8 +175,8 @@ public class CmsSectionTemplateEditorTests
 
         public int IgnoredTenantLookupCount { get; private set; }
 
-        public TenantScopedPageAppService(Guid? tenantId, Page? filtered, Page? unfiltered)
-            : base(null!, null!, null!, null!, null!, null!, null!)
+        public TenantScopedPageAppService(Guid? tenantId, Page? filtered, Page? unfiltered, CmsPageDraftService? drafts = null)
+            : base(null!, drafts!, null!, null!, null!, null!, null!)
         {
             _tenantId = tenantId;
             _filtered = filtered;
