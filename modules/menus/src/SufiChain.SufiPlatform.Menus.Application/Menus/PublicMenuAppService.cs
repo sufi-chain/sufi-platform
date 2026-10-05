@@ -17,22 +17,35 @@ public class PublicMenuAppService : SufiApplicationService, IPublicMenuAppServic
     private readonly MenuBusinessLocalizationService _businessLocalization;
     private readonly MenuLabelLocalization _labels;
     private readonly IDistributedCache<MenuTreeCacheItem> _treeCache;
+    private readonly PublicMenuAnonymousAccess _anonymousAccess;
 
     public PublicMenuAppService(
         IMenuRepository menuRepository,
         IMenuItemRepository menuItemRepository,
         MenuBusinessLocalizationService businessLocalization,
         MenuLabelLocalization labels,
-        IDistributedCache<MenuTreeCacheItem> treeCache)
+        IDistributedCache<MenuTreeCacheItem> treeCache,
+        IEnumerable<IPublicMenuContextVisibility>? contextVisibility = null)
     {
         _menuRepository = menuRepository;
         _menuItemRepository = menuItemRepository;
         _businessLocalization = businessLocalization;
         _labels = labels;
         _treeCache = treeCache;
+        _anonymousAccess = new PublicMenuAnonymousAccess(contextVisibility);
     }
 
-    public virtual async Task<List<MenuItemTreeDto>> GetTreeAsync(string contextType, Guid? contextId, string menuName)
+    public virtual async Task<List<PublicMenuItemTreeDto>> GetTreeAsync(string contextType, Guid? contextId, string menuName)
+    {
+        if (!await _anonymousAccess.AllowsAsync(contextType, contextId))
+        {
+            return [];
+        }
+
+        return PublicMenuPresentation.ToTree(await LoadTreeAsync(contextType, contextId, menuName));
+    }
+
+    protected virtual async Task<List<MenuItemTreeDto>> LoadTreeAsync(string contextType, Guid? contextId, string menuName)
     {
         var cacheKey = MenuTreeCacheItem.CreatePublicTreeCacheKey(contextType, contextId, menuName);
         var cached = await _treeCache.GetOrAddAsync(cacheKey, async () =>
@@ -44,7 +57,7 @@ public class PublicMenuAppService : SufiApplicationService, IPublicMenuAppServic
             }
 
             var items = (await _menuItemRepository.GetTreeItemsAsync(menu.Id, CurrentTenant.Id))
-                .Where(x => x.IsActive && x.IsVisible)
+                .Where(x => x.IsActive && x.IsVisible && string.IsNullOrWhiteSpace(x.PermissionName))
                 .ToList();
 
             return new MenuTreeCacheItem { Tree = BuildTree(items, null) };
@@ -53,7 +66,7 @@ public class PublicMenuAppService : SufiApplicationService, IPublicMenuAppServic
         return await LocalizeTreeAsync(cached.Tree, contextType);
     }
 
-    public virtual async Task<List<MenuItemTreeDto>?> GetTreeByIdAsync(Guid menuId)
+    public virtual async Task<List<PublicMenuItemTreeDto>?> GetTreeByIdAsync(Guid menuId)
     {
         var menu = await _menuRepository.FindAsync(menuId);
         if (menu == null || !menu.IsActive)
@@ -61,10 +74,25 @@ public class PublicMenuAppService : SufiApplicationService, IPublicMenuAppServic
             return null;
         }
 
+        if (!await _anonymousAccess.AllowsAsync(menu.ContextType, menu.ContextId))
+        {
+            return null;
+        }
+
         return await GetTreeAsync(menu.ContextType, menu.ContextId, menu.Name);
     }
 
-    public virtual async Task<MenuItemDto?> FindItemBySlugAsync(string contextType, Guid? contextId, string menuName, string slug)
+    public virtual async Task<PublicMenuItemDto?> FindItemBySlugAsync(string contextType, Guid? contextId, string menuName, string slug)
+    {
+        if (!await _anonymousAccess.AllowsAsync(contextType, contextId))
+        {
+            return null;
+        }
+
+        return PublicMenuPresentation.ToItem(await LoadItemBySlugAsync(contextType, contextId, menuName, slug));
+    }
+
+    protected virtual async Task<MenuItemDto?> LoadItemBySlugAsync(string contextType, Guid? contextId, string menuName, string slug)
     {
         var cacheKey = MenuTreeCacheItem.CreatePublicItemCacheKey(contextType, contextId, menuName, slug);
         var cached = await _treeCache.GetOrAddAsync(cacheKey, async () =>
@@ -76,7 +104,7 @@ public class PublicMenuAppService : SufiApplicationService, IPublicMenuAppServic
             }
 
             var item = await _menuItemRepository.FindBySlugAsync(menu.Id, slug, CurrentTenant.Id, includeDetails: false);
-            if (item is not { IsActive: true, IsVisible: true })
+            if (item is not { IsActive: true, IsVisible: true } || !string.IsNullOrWhiteSpace(item.PermissionName))
             {
                 return new MenuTreeCacheItem();
             }

@@ -13,8 +13,8 @@ public partial class MenuItemSelector
     [Parameter] public EventCallback<Guid?> SelectedItemIdChanged { get; set; }
     [Parameter] public bool AllowEmpty { get; set; } = true;
     [Parameter] public string Placeholder { get; set; } = "Select...";
-    protected List<MenuItemTreeDto> Items { get; set; } = [];
-    protected List<MenuItemTreeDto> FlattenedItems { get; set; } = [];
+    protected List<PublicMenuItemTreeDto> Items { get; set; } = [];
+    protected List<PublicMenuItemTreeDto> FlattenedItems { get; set; } = [];
     protected override async Task OnParametersSetAsync()
     {
         await base.OnParametersSetAsync();
@@ -26,7 +26,7 @@ public partial class MenuItemSelector
     }
     protected virtual Task OnChangedAsync(Guid? value)
         => SelectedItemIdChanged.InvokeAsync(value);
-    protected virtual IEnumerable<MenuItemTreeDto> Flatten(IEnumerable<MenuItemTreeDto> items)
+    protected virtual IEnumerable<PublicMenuItemTreeDto> Flatten(IEnumerable<PublicMenuItemTreeDto> items)
     {
         foreach (var item in items)
         {
