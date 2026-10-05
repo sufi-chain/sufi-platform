@@ -57,6 +57,7 @@ public class FanapMobileOtpTests
         request.Method.ShouldBe(HttpMethod.Post);
         request.RequestUri!.ToString().ShouldBe("https://mysms.fanapmobile.ir:3002/Otp");
         request.Headers.GetValues("Authorization").Single().ShouldBe("Basic auth-string");
+        request.Content!.Headers.ContentType!.MediaType.ShouldBe("application/json");
 
         using var json = JsonDocument.Parse(body);
         json.RootElement.GetProperty("sender").GetString().ShouldBe("98200");
@@ -159,6 +160,7 @@ public class FanapMobileOtpTests
     [Theory]
     [InlineData("09121234567")]
     [InlineData("+989121234567")]
+    [InlineData("00989121234567")]
     [InlineData("۰۰۹۸۹۱۲۱۲۳۴۵۶۷")]
     public async Task Channel_Should_Post_The_International_Number_With_Persian_Text(string phone)
     {
@@ -214,6 +216,123 @@ public class FanapMobileOtpTests
 
         handler.Requests.ShouldHaveSingleItem().Request.Headers.GetValues("Authorization").Single()
             .ShouldBe("Basic super-secret-key");
+    }
+
+    [Theory]
+    [InlineData("panel-token")]
+    [InlineData("Basic panel-token")]
+    [InlineData("basic panel-token")]
+    [InlineData("Basic  panel-token")]
+    [InlineData("Basic Basic panel-token")]
+    public async Task SendOtp_Should_Send_A_Single_Basic_Prefix(string configured)
+    {
+        var handler = new RecordingHttpMessageHandler("""{"status":0,"smsid":"sms-1"}""");
+        var client = new FanapMobileEsbClient(new HttpClient(handler));
+
+        await client.SendOtpAsync(
+            FanapMobileEsbClient.DefaultHost,
+            configured,
+            "98200",
+            "+989121234567",
+            "code",
+            "uid-1",
+            TimeSpan.FromSeconds(10));
+
+        handler.Requests.ShouldHaveSingleItem().Request.Headers.GetValues("Authorization").Single()
+            .ShouldBe("Basic panel-token");
+    }
+
+    [Theory]
+    [InlineData("user:pass")]
+    [InlineData("Basic user:pass")]
+    public async Task SendOtp_Should_Base64_Encode_Username_And_Password_Once(string configured)
+    {
+        var encoded = Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes("user:pass"));
+        var handler = new RecordingHttpMessageHandler("""{"status":0,"smsid":"sms-1"}""");
+        var client = new FanapMobileEsbClient(new HttpClient(handler));
+
+        await client.SendOtpAsync(
+            FanapMobileEsbClient.DefaultHost,
+            configured,
+            "98200",
+            "+989121234567",
+            "code",
+            "uid-1",
+            TimeSpan.FromSeconds(10));
+
+        handler.Requests.ShouldHaveSingleItem().Request.Headers.GetValues("Authorization").Single()
+            .ShouldBe("Basic " + encoded);
+    }
+
+    [Fact]
+    public async Task SendOtp_Should_Not_Encode_A_Panel_Token_That_Is_Already_Base64()
+    {
+        var encoded = Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes("user:pass"));
+        var handler = new RecordingHttpMessageHandler("""{"status":0,"smsid":"sms-1"}""");
+        var client = new FanapMobileEsbClient(new HttpClient(handler));
+
+        await client.SendOtpAsync(
+            FanapMobileEsbClient.DefaultHost,
+            "Basic " + encoded,
+            "98200",
+            "+989121234567",
+            "code",
+            "uid-1",
+            TimeSpan.FromSeconds(10));
+
+        handler.Requests.ShouldHaveSingleItem().Request.Headers.GetValues("Authorization").Single()
+            .ShouldBe("Basic " + encoded);
+    }
+
+    [Fact]
+    public void Parse_Should_Read_Status_And_SmsId_Ignoring_Case()
+    {
+        var result = FanapMobileEsbClient.Parse("""{"Status":0,"SmsId":"sms-9"}""", 200);
+
+        result.Success.ShouldBeTrue();
+        result.SmsId.ShouldBe("sms-9");
+    }
+
+    [Fact]
+    public async Task Channel_Should_Fold_A_Formatted_Otp_Sender()
+    {
+        var handler = new RecordingHttpMessageHandler("""{"status":0,"smsid":"sms-1"}""");
+        var channel = new FanapMobileSmsChannel(
+            NullLogger<FanapMobileSmsChannel>.Instance,
+            new FanapMobileEsbClient(new HttpClient(handler)));
+        channel.Configure(new Dictionary<string, string>
+        {
+            ["ApiKey"] = "panel-token",
+            ["SenderNumber"] = "+98 100",
+            [OtpProviderSettingKeys.SenderNumber] = "۹۸۲۰۰"
+        });
+
+        await channel.SendOtpAsync(NewOtp("09121234567", "654321"));
+
+        using var json = JsonDocument.Parse(handler.Requests.ShouldHaveSingleItem().Body);
+        json.RootElement.GetProperty("sender").GetString().ShouldBe("98200");
+        json.RootElement.GetProperty("recipient").GetString().ShouldBe("+989121234567");
+    }
+
+    [Fact]
+    public async Task Channel_Should_Log_The_Http_Status_And_Body_Without_Secrets()
+    {
+        var handler = new RecordingHttpMessageHandler(
+            """{"status":26,"detail":"rejected 654321 token super-secret-key"}""",
+            HttpStatusCode.Forbidden);
+        var logger = new CapturingLogger<FanapMobileSmsChannel>();
+        var channel = NewHttpChannel(handler, logger, "super-secret-key");
+
+        var result = await channel.SendOtpAsync(NewOtp("09121234567", "654321"));
+
+        result.Success.ShouldBeFalse();
+        result.StatusCode.ShouldBe(26);
+        var line = logger.Lines.ShouldHaveSingleItem();
+        line.ShouldContain("HttpStatus=403");
+        line.ShouldContain("ProviderStatus=26");
+        line.ShouldContain("rejected");
+        line.ShouldNotContain("super-secret-key");
+        line.ShouldNotContain("654321");
     }
 
     [Fact]

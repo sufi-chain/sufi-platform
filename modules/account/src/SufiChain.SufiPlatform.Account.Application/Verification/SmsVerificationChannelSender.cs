@@ -51,7 +51,10 @@ public class SmsVerificationChannelSender : IVerificationChannelSender, ITransie
         catch (Exception ex)
         {
             // Delivery failures are logged and audited, never surfaced: the caller must not learn whether the recipient exists.
-            Logger.LogError(ex, "Verification SMS for purpose {Purpose} could not be sent.", message.Purpose);
+            Logger.LogError(
+                "Verification SMS for purpose {Purpose} could not be sent. ExceptionType={ExceptionType}",
+                message.Purpose,
+                ex.GetType().Name);
         }
     }
 

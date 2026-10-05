@@ -12,7 +12,7 @@ public class PublicMenuController : SufiControllerBase, IPublicMenuAppService
 {
     private readonly IPublicMenuAppService _service;
     public PublicMenuController(IPublicMenuAppService service) => _service = service;
-    [HttpGet("tree")] public virtual Task<List<MenuItemTreeDto>> GetTreeAsync(string contextType, Guid? contextId, string menuName) => _service.GetTreeAsync(contextType, contextId, menuName);
-    [HttpGet("tree-by-id")] public virtual Task<List<MenuItemTreeDto>?> GetTreeByIdAsync(Guid menuId) => _service.GetTreeByIdAsync(menuId);
-    [HttpGet("item-by-slug")] public virtual Task<MenuItemDto?> FindItemBySlugAsync(string contextType, Guid? contextId, string menuName, string slug) => _service.FindItemBySlugAsync(contextType, contextId, menuName, slug);
+    [HttpGet("tree")] public virtual Task<List<PublicMenuItemTreeDto>> GetTreeAsync(string contextType, Guid? contextId, string menuName) => _service.GetTreeAsync(contextType, contextId, menuName);
+    [HttpGet("tree-by-id")] public virtual Task<List<PublicMenuItemTreeDto>?> GetTreeByIdAsync(Guid menuId) => _service.GetTreeByIdAsync(menuId);
+    [HttpGet("item-by-slug")] public virtual Task<PublicMenuItemDto?> FindItemBySlugAsync(string contextType, Guid? contextId, string menuName, string slug) => _service.FindItemBySlugAsync(contextType, contextId, menuName, slug);
 }
