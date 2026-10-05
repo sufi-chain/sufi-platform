@@ -590,6 +590,9 @@
     "FileNotAvailable": "فایل در دسترس نیست",
     "LoadingAttachments": "در حال بارگذاری پیوست‌ها…",
     "NoAttachments": "پیوستی وجود ندارد",
-    "TotalAttachments": "مجموع: {0} فایل ({1})"
+    "TotalAttachments": "مجموع: {0} فایل ({1})",
+    "Statistics": "آمار",
+    "Images": "تصاویر",
+    "Videos": "ویدیوها"
   }
 }

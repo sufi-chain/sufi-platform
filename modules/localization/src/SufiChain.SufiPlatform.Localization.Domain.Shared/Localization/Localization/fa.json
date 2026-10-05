@@ -65,6 +65,7 @@
     "MultilingualTextField:EmptyFallback": "خالی بماند: «{0}» نمایش داده می‌شود",
     "MultilingualTextField:ScriptWarning": "به نظر می‌رسد این متن به زبان دیگری است.",
     "MultilingualTextField:BaseText": "بازگشت به متن پایه",
-    "Hooshvare:SufiLocalization:Editor:DisplayName": "ویرایشگر بومی‌سازی"
+    "Hooshvare:SufiLocalization:Editor:DisplayName": "ویرایشگر بومی‌سازی",
+    "SupportedCultures": "زبان‌های پشتیبانی‌شده"
   }
 }
