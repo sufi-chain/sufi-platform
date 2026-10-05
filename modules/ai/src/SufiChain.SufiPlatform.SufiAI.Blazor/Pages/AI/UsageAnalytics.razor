@@ -101,15 +101,6 @@
 								@L["OpenModelConfigurations"]
 							</SbButton>
 						}
-						<SbText Variant="SbTextVariant.Caption" Color="SbColor.Muted">@L["UsageCostCaption"]</SbText>
-						@if (_selectedWorkspaceId.HasValue)
-						{
-							<SbButton Variant="SbButtonVariant.Outline"
-									  Size="SbSize.Sm"
-									  Href="@GetModelConfigurationsUrl(_selectedWorkspaceId.Value)">
-								@L["OpenModelConfigurations"]
-							</SbButton>
-						}
 					</SbStack>
 				</ChildContent>
 			</SbCard>
@@ -117,11 +108,11 @@
 			<SbCard style="flex: 1; min-width: 200px;">
 				<ChildContent>
 					<SbStack Direction="SbStackDirection.Column" Gap="2">
-							<SbText Variant="SbTextVariant.Caption" Color="SbColor.Muted">@L["TotalTokens"]</SbText>
-							<SbHeading Level="4">@_statistics.KnownTotalTokens.ToString("N0")</SbHeading>
-						</SbStack>
-					</ChildContent>
-				</SbCard>
+						<SbText Variant="SbTextVariant.Caption" Color="SbColor.Muted">@L["TotalTokens"]</SbText>
+						<SbHeading Level="4">@_statistics.KnownTotalTokens.ToString("N0")</SbHeading>
+					</SbStack>
+				</ChildContent>
+			</SbCard>
 
 			<SbCard style="flex: 1; min-width: 200px;">
 				<ChildContent>
@@ -132,23 +123,23 @@
 				</ChildContent>
 			</SbCard>
 
-				<SbCard style="flex: 1; min-width: 200px;">
-					<ChildContent>
-						<SbStack Direction="SbStackDirection.Column" Gap="2">
-							<SbText Variant="SbTextVariant.Caption" Color="SbColor.Muted">@L["SuccessRate"]</SbText>
-							<SbHeading Level="4">@GetSuccessRate()%</SbHeading>
-						</SbStack>
-					</ChildContent>
-				</SbCard>
+			<SbCard style="flex: 1; min-width: 200px;">
+				<ChildContent>
+					<SbStack Direction="SbStackDirection.Column" Gap="2">
+						<SbText Variant="SbTextVariant.Caption" Color="SbColor.Muted">@L["SuccessRate"]</SbText>
+						<SbHeading Level="4">@GetSuccessRate()%</SbHeading>
+					</SbStack>
+				</ChildContent>
+			</SbCard>
 
-				<SbCard style="flex: 1; min-width: 200px;">
-					<ChildContent>
-						<SbStack Direction="SbStackDirection.Column" Gap="2">
-							<SbText Variant="SbTextVariant.Caption" Color="SbColor.Muted">@L["UsageUnavailableRequests"]</SbText>
-							<SbHeading Level="4">@_statistics.UsageUnavailableRequests.ToString("N0")</SbHeading>
-						</SbStack>
-					</ChildContent>
-				</SbCard>
+			<SbCard style="flex: 1; min-width: 200px;">
+				<ChildContent>
+					<SbStack Direction="SbStackDirection.Column" Gap="2">
+						<SbText Variant="SbTextVariant.Caption" Color="SbColor.Muted">@L["UsageUnavailableRequests"]</SbText>
+						<SbHeading Level="4">@_statistics.UsageUnavailableRequests.ToString("N0")</SbHeading>
+					</SbStack>
+				</ChildContent>
+			</SbCard>
 			</SbStack>
 
 		<!-- Requests by Capability -->

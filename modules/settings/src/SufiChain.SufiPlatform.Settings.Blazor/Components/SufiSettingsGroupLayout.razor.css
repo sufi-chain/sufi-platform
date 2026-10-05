@@ -61,6 +61,10 @@
     overflow-wrap: anywhere;
 }
 
+.settings-body {
+    padding: 1rem 1.5rem 1.25rem;
+}
+
 .settings-heading {
     margin: 0;
     padding: 1.25rem 1.5rem;

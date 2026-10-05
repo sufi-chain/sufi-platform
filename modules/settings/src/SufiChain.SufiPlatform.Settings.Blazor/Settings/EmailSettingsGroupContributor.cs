@@ -21,6 +21,7 @@ public class EmailSettingsGroupContributor : ISettingComponentContributor
             DisplayName = l["EmailSettings"],
             Icon = "mail",
             ComponentType = typeof(EmailSettingsGroup),
+            Policy = SettingsPermissions.Emailing,
             Order = 100
         });
 

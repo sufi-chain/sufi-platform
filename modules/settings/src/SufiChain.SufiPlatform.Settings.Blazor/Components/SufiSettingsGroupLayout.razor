@@ -19,6 +19,8 @@
     </nav>
     <section id="@_contentId" class="settings-content" aria-labelledby="@_headingId">
         <h3 id="@_headingId" class="settings-heading">@(Groups.FirstOrDefault(group => group.Id == SelectedGroupId)?.DisplayName)</h3>
-        @ChildContent
+        <div class="settings-body">
+            @ChildContent
+        </div>
     </section>
 </div>
