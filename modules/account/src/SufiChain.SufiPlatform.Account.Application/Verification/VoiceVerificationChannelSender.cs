@@ -51,7 +51,10 @@ public class VoiceVerificationChannelSender : IVerificationChannelSender, ITrans
         catch (Exception ex)
         {
             // Delivery failures are logged and audited, never surfaced: the caller must not learn whether the recipient exists.
-            Logger.LogError(ex, "Verification call for purpose {Purpose} could not be placed.", message.Purpose);
+            Logger.LogError(
+                "Verification call for purpose {Purpose} could not be placed. ExceptionType={ExceptionType}",
+                message.Purpose,
+                ex.GetType().Name);
         }
     }
 

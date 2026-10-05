@@ -216,6 +216,42 @@ public class SmsIrOtpTests
         logger.Lines.ShouldAllBe(line => !line.Contains("super-secret-key") && !line.Contains("654321"));
     }
 
+    [Theory]
+    [InlineData("super-secret-key")]
+    [InlineData("Basic super-secret-key")]
+    public async Task Verify_Should_Send_The_Api_Key_Without_Adding_Basic_Authorization(string apiKey)
+    {
+        var handler = new RecordingHttpMessageHandler(
+            """{"status":1,"message":"موفق","data":{"messageId":1,"cost":1}}""");
+        var client = new SmsIrRestClient(new HttpClient(handler));
+
+        await client.VerifySendAsync(apiKey, "9121234567", 10, "Code", "1234");
+
+        var request = handler.Requests.ShouldHaveSingleItem().Request;
+        request.Headers.GetValues("x-api-key").Single().ShouldBe(apiKey);
+        request.Headers.Contains("Authorization").ShouldBeFalse();
+    }
+
+    [Fact]
+    public async Task Channel_Should_Log_The_Http_Status_And_Body_Without_The_Api_Key()
+    {
+        var handler = new RecordingHttpMessageHandler(
+            """{"status":0,"message":"rejected super-secret-key 654321","data":null}""",
+            HttpStatusCode.BadRequest);
+        var logger = new CapturingLogger<IdehPardazanSmsChannel>();
+        var channel = NewHttpChannel(handler, logger);
+
+        var result = await channel.SendOtpAsync(NewOtp(code: "654321"));
+
+        result.Success.ShouldBeFalse();
+        var line = logger.Lines.ShouldHaveSingleItem();
+        line.ShouldContain("HttpStatus=400");
+        line.ShouldContain("ProviderStatus=0");
+        line.ShouldContain("rejected");
+        line.ShouldNotContain("super-secret-key");
+        line.ShouldNotContain("654321");
+    }
+
     private static IdehPardazanSmsChannel NewHttpChannel(
         RecordingHttpMessageHandler handler,
         CapturingLogger<IdehPardazanSmsChannel> logger,
