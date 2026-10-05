@@ -250,6 +250,9 @@
     <Project Path="test/file-manager/SufiChain.SufiPlatform.FileManager.TestBase/SufiChain.SufiPlatform.FileManager.TestBase.csproj" />
   </Folder>
   <Folder Name="/Tests/ShortLinks/" />
+  <Folder Name="/Tests/UI/">
+    <Project Path="test/ui/SufiChain.SufiPlatform.UI.Blazor.Tests/SufiChain.SufiPlatform.UI.Blazor.Tests.csproj" />
+  </Folder>
   <Folder Name="/Tests/SmokeTest/">
     <Project Path="test/platform/SufiChain.SufiPlatform.BlazorBuildTest.Console/SufiChain.SufiPlatform.BlazorBuildTest.Console.csproj" />
     <Project Path="test/platform/SufiChain.SufiPlatform.SmokeTest.Console/SufiChain.SufiPlatform.SmokeTest.Console.csproj" />

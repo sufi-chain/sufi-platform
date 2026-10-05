@@ -17,6 +17,7 @@ public class FileManagerSettingsGroupContributor : ISettingComponentContributor
         {
             Id = "file-manager",
             DisplayName = l["Menu:SufiFileManager"],
+            Icon = "folder",
             ComponentType = typeof(FileManagerSettingsGroup),
             Order = 190
         });

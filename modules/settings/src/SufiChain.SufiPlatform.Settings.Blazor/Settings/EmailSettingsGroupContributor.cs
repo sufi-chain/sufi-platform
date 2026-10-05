@@ -19,6 +19,7 @@ public class EmailSettingsGroupContributor : ISettingComponentContributor
         {
             Id = "email",
             DisplayName = l["EmailSettings"],
+            Icon = "mail",
             ComponentType = typeof(EmailSettingsGroup),
             Order = 100
         });

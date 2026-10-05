@@ -17,6 +17,7 @@ public class ShortLinksSettingsGroupContributor : ISettingComponentContributor
         {
             Id = "short-links",
             DisplayName = l["ShortLinks"],
+            Icon = "link",
             ComponentType = typeof(ShortLinksSettingsGroup),
             Order = 210
         });

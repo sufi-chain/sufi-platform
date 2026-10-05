@@ -240,6 +240,9 @@ public class AIService : DomainService, IAIService, ITransientDependency
                     outputTokens = chunk.OutputTokens;
                     totalTokens = chunk.TotalTokens;
                     usageUnavailableReason = chunk.UsageUnavailableReason;
+                    // Callers (hooshvare stream, chat adapter) only see tokens on a yielded usage chunk.
+                    // This method still writes the single AIUsageLog in finally.
+                    yield return chunk;
                     continue;
                 }
 
