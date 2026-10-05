@@ -1,0 +1,32 @@
+---
+description: On this PC, sufi-platform dev is the default branch
+alwaysApply: true
+---
+
+# sufi-platform: dev is the default branch on this PC
+
+This rule is for `D:\Projects\SufiLabs\sufi-chain\sufi-platform` only. On this PC, start on `dev`. Do not start from `main`.
+
+- Small framework and module changes land directly on `dev`. Example: a one-file settings or account fix in this repository.
+- A long-running task or a long plan gets its own branch, cut from `dev`, and merges back to `dev` when it is done.
+- Commit this repository before updating the `sufi-platform` submodule pointer in `sufi-chain`.
+- `main` stays the integration branch. Do not commit, push, or open a PR onto `main` unless Pooria asks for that exact target.
+
+## When the request is unclear
+
+If a requested change has more than one reasonable meaning, stop and ask. Do not pick an interpretation and proceed.
+
+## Parallel work
+
+Parallel edits in this folder are allowed only when this repo is on `dev`. If the task also updates the parent pointer, `sufi-chain` must already be on `dev`. If either is on another branch, stop and ask before editing.
+
+## Several agents
+
+Different agents may work on different branches at the same time. Each agent needs its own git worktree or clone of `sufi-platform`. One folder is one branch. Two agents in `D:\Projects\SufiLabs\sufi-chain\sufi-platform` will overwrite each other if they switch branches.
+
+- The `dev` agent stays in `D:\Projects\SufiLabs\sufi-chain\sufi-platform`.
+- A long task gets its own worktree, on a branch cut from `dev`. Do not edit that branch from the `dev` folder.
+
+## Before a new branch
+
+A pull request into `dev`, or any task large enough to need its own branch, starts with a check. Stop if `dev` has uncommitted work. Report the files and wait. Do not branch, stash, or discard that work.
