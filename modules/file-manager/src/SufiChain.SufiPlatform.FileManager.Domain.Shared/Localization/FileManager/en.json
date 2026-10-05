@@ -611,6 +611,9 @@
     "FileNotAvailable": "File not available",
     "LoadingAttachments": "Loading attachments...",
     "NoAttachments": "No attachments",
-    "TotalAttachments": "Total: {0} files ({1})"
+    "TotalAttachments": "Total: {0} files ({1})",
+    "Statistics": "Statistics",
+    "Images": "Images",
+    "Videos": "Videos"
   }
 }

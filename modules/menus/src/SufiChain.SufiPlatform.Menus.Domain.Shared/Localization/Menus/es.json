@@ -65,6 +65,7 @@
     "MenuLabel:SameForAll": "Un texto para todos los idiomas",
     "MenuLabel:Key": "Identificador del texto",
     "MenuLabel:Broken": "La etiqueta de este elemento no se guardó correctamente. Vuelva a escribirla.",
-    "MenuLabel:Copy": "Copiar"
+    "MenuLabel:Copy": "Copiar",
+    "DeleteMenu": "Eliminar menú"
   }
 }

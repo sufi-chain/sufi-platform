@@ -71,6 +71,7 @@
     "MultilingualTextField:EmptyFallback": "Si se deja vacío, se muestra «{0}»",
     "MultilingualTextField:ScriptWarning": "Este texto parece estar en otro idioma.",
     "MultilingualTextField:BaseText": "Volver al texto base",
-    "Hooshvare:SufiLocalization:Editor:DisplayName": "Editor de localización"
+    "Hooshvare:SufiLocalization:Editor:DisplayName": "Editor de localización",
+    "SupportedCultures": "Idiomas admitidos"
   }
 }

@@ -603,6 +603,9 @@
     "FileNotAvailable": "Archivo no disponible",
     "LoadingAttachments": "Cargando archivos adjuntos…",
     "NoAttachments": "Sin archivos adjuntos",
-    "TotalAttachments": "Total: {0} archivos ({1})"
+    "TotalAttachments": "Total: {0} archivos ({1})",
+    "Statistics": "Estadísticas",
+    "Images": "Imágenes",
+    "Videos": "Vídeos"
   }
 }
