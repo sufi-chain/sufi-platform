@@ -1,5 +1,7 @@
+using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Reflection;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.DependencyInjection;
@@ -7,6 +9,7 @@ using Microsoft.JSInterop;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using SufiChain.SufiBlazor.Components.Forms;
 using SufiChain.SufiPlatform.UI.Alerts;
 using SufiChain.SufiPlatform.UI.BlockUi;
 using SufiChain.SufiPlatform.UI.ExceptionHandling;
@@ -62,6 +65,12 @@ public abstract class SufiComponentBase : OwningComponentBase, IHandleEvent
     private IBlockUiService? _blockUiService;
     private IUiPageProgressService? _pageProgressService;
     private IUserExceptionInformer? _userExceptionInformer;
+
+    /// <summary>
+    /// Member names from the last quiet save that failed validation.
+    /// Fields read this cascade and set <c>aria-invalid</c>.
+    /// </summary>
+    protected SbSaveFieldErrorSet SaveFieldErrors { get; private set; } = SbSaveFieldErrorSet.Empty;
 
     // ====== LOCALIZATION ======
 
@@ -441,6 +450,121 @@ public abstract class SufiComponentBase : OwningComponentBase, IHandleEvent
             LoadingStates.TryRemove(operationKey, out _);
             await InvokeStateHasChangedSafeAsync();
         }
+    }
+
+    /// <summary>
+    /// Saves one settings section without the error dialog.
+    /// A failure is logged and returns false. Validation member names are stored for
+    /// <c>aria-invalid</c>. The settings layout then shows one inline save-failed alert.
+    /// The modal save path keeps <see cref="ExecuteWithLoadingAsync(Func{Task}, string, LoadingBehavior)"/>.
+    /// </summary>
+    protected async Task<bool> TrySaveQuietlyAsync(Func<Task> save, string operationKey)
+    {
+        if (_isDisposed)
+        {
+            return false;
+        }
+
+        SaveFieldErrors = SbSaveFieldErrorSet.Empty;
+
+        try
+        {
+            LoadingStates[operationKey] = true;
+            await InvokeStateHasChangedSafeAsync();
+
+            using (EnterCascadedSettingsTenant())
+            {
+                await save();
+            }
+
+            return true;
+        }
+        catch (OperationCanceledException)
+        {
+            return false;
+        }
+        catch (HttpRequestException ex) when (ex.InnerException is OperationCanceledException or TaskCanceledException)
+        {
+            return false;
+        }
+        catch (ObjectDisposedException)
+        {
+            return false;
+        }
+        catch (Exception ex)
+        {
+            if (!_isDisposed)
+            {
+                try
+                {
+                    Logger.LogException(ex);
+                }
+                catch (Exception logException) when (IsIgnorableLifetimeException(logException))
+                {
+                }
+
+                var members = ReadValidationMembers(ex);
+                if (members.Count > 0)
+                {
+                    SaveFieldErrors = new SbSaveFieldErrorSet(members);
+                }
+            }
+
+            return false;
+        }
+        finally
+        {
+            LoadingStates.TryRemove(operationKey, out _);
+            await InvokeStateHasChangedSafeAsync();
+        }
+    }
+
+    /// <summary>
+    /// Clears field errors left by <see cref="TrySaveQuietlyAsync"/>.
+    /// </summary>
+    protected void ClearSaveFieldErrors()
+    {
+        SaveFieldErrors = SbSaveFieldErrorSet.Empty;
+    }
+
+    private static List<string> ReadValidationMembers(Exception exception)
+    {
+        var names = new List<string>();
+        var current = exception;
+        while (current != null)
+        {
+            if (string.Equals(current.GetType().Name, "AbpValidationException", StringComparison.Ordinal))
+            {
+                var errors = current.GetType().GetProperty("ValidationErrors")?.GetValue(current) as IEnumerable;
+                if (errors != null)
+                {
+                    foreach (var error in errors)
+                    {
+                        if (error == null)
+                        {
+                            continue;
+                        }
+
+                        if (error.GetType().GetProperty("MemberNames")?.GetValue(error) is not IEnumerable members)
+                        {
+                            continue;
+                        }
+
+                        foreach (var member in members)
+                        {
+                            if (member is string name && !string.IsNullOrWhiteSpace(name))
+                            {
+                                names.Add(name);
+                            }
+                        }
+                    }
+                }
+            }
+
+            current = current.InnerException;
+        }
+
+        return names;
     }
 
     /// <summary>

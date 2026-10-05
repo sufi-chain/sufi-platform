@@ -21,6 +21,7 @@ public class TimeZoneSettingsGroupContributor : ISettingComponentContributor
             DisplayName = l["TimeZoneSettings"],
             Icon = "clock",
             ComponentType = typeof(TimeZoneSettingsGroup),
+            Policy = SettingsPermissions.TimeZone,
             Order = 201
         });
 

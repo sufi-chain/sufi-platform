@@ -144,7 +144,7 @@
     "Remove": "إزالة",
     "OrganizationUnitRolesInfo": "الأدوار المعينة لهذه الوحدة التنظيمية سيرثها جميع الأعضاء.",
     "AssignRoles": "تعيين الأدوار",
-    "Loading": "جاري التحميل",
+    "Loading": "جارٍ التحميل…",
     "NoAvailableUsersFound": "لم يتم العثور على مستخدمين متاحين",
     "SelectedUsersCount": "تم تحديد {0} مستخدم(ين)",
     "AddSelected": "إضافة المحدد",

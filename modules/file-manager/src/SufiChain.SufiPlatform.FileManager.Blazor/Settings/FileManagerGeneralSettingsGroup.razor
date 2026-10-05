@@ -1,9 +1,10 @@
 @namespace SufiChain.SufiPlatform.FileManager.Blazor.Settings
 @using SufiChain.SufiPlatform.Settings.Blazor.Settings
 @inherits FileManagerComponentBase
-@implements ISaveableSettingGroup
+@implements IEditableSettingGroup
 
-<SbStack Gap="4" class="p-4">
+<CascadingValue Value="SaveFieldErrors" IsFixed="false">
+<SbStack Gap="4">
     @if (IsOperationLoading(LoadingKeys.Load))
     {
         <div class="text-center py-4">
@@ -63,3 +64,4 @@
         </SbFormField>
     }
 </SbStack>
+</CascadingValue>

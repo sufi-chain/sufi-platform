@@ -425,7 +425,7 @@
     "CopyToClipboard": "نسخ إلى الحافظة",
     "CopyToClipboardFailed": "فشل النسخ إلى الحافظة",
     "LinkCreated": "تم إنشاء الرابط",
-    "Loading": "جاري التحميل",
+    "Loading": "جارٍ التحميل…",
     "KeyRequired": "المفتاح مطلوب.",
     "DisplayNameRequired": "اسم العرض مطلوب.",
     "KeyFormatInvalid": "يجب أن يبدأ المفتاح بحرف أو رقم؛ حروف وأرقام وشرطات سفلية ونقاط فقط مسموح بها.",

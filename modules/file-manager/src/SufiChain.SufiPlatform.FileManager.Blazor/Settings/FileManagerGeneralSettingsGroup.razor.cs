@@ -4,8 +4,14 @@ using SufiChain.SufiPlatform.Settings.Blazor.Settings;
 
 namespace SufiChain.SufiPlatform.FileManager.Blazor.Settings;
 
-public partial class FileManagerGeneralSettingsGroup : FileManagerComponentBase, ISaveableSettingGroup
+public partial class FileManagerGeneralSettingsGroup : FileManagerComponentBase, IEditableSettingGroup
 {
+    private readonly SettingGroupEditor<GeneralEdit> _edits;
+
+    public FileManagerGeneralSettingsGroup()
+    {
+        _edits = new SettingGroupEditor<GeneralEdit>(ReadEdit, WriteEdit);
+    }
     private static class LoadingKeys
     {
         public const string Load = "load";
@@ -24,6 +30,20 @@ public partial class FileManagerGeneralSettingsGroup : FileManagerComponentBase,
 
     public bool IsSaving => IsOperationLoading(LoadingKeys.Save);
 
+    public bool HasUnsavedChanges => _edits.HasUnsavedChanges;
+
+    public event Action? EditStateChanged
+    {
+        add => _edits.Changed += value;
+        remove => _edits.Changed -= value;
+    }
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        base.OnAfterRender(firstRender);
+        _edits.Observe();
+    }
+
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         await base.OnAfterRenderAsync(firstRender);
@@ -40,17 +60,72 @@ public partial class FileManagerGeneralSettingsGroup : FileManagerComponentBase,
         _imageExtensions = SplitList(_settings.AllowedImageExtensions);
         _videoExtensions = SplitList(_settings.AllowedVideoExtensions);
         _documentExtensions = SplitList(_settings.AllowedDocumentExtensions);
+        _edits.Capture();
     }, LoadingKeys.Load);
 
-    public Task SaveAsync() => ExecuteWithLoadingAsync(async () =>
+    public async Task SaveAsync()
+    {
+        await ExecuteWithLoadingAsync(async () =>
+        {
+            await PersistAsync();
+            await Notify.SuccessAsync(L["SettingsSavedSuccessfully"]);
+        }, LoadingKeys.Save);
+    }
+
+    public Task<bool> TrySaveAsync() => TrySaveQuietlyAsync(PersistAsync, LoadingKeys.Save);
+
+    public Task DiscardAsync()
+    {
+        ClearSaveFieldErrors();
+        _edits.Restore();
+        return InvokeAsync(StateHasChanged);
+    }
+
+    private async Task PersistAsync()
     {
         _settings.MaxFileSizeBytes = Math.Max(1, _maxFileSizeMegabytes) * BytesPerMegabyte;
         _settings.AllowedImageExtensions = JoinList(_imageExtensions);
         _settings.AllowedVideoExtensions = JoinList(_videoExtensions);
         _settings.AllowedDocumentExtensions = JoinList(_documentExtensions);
         await SettingsAppService.UpdateGeneralSettingsAsync(_settings);
-        await Notify.SuccessAsync(L["SettingsSavedSuccessfully"]);
-    }, LoadingKeys.Save);
+        _edits.Capture();
+    }
+
+    private GeneralEdit ReadEdit() => new()
+    {
+        Settings = _settings,
+        MaxFileSizeMegabytes = _maxFileSizeMegabytes,
+        ImageExtensions = _imageExtensions.ToList(),
+        VideoExtensions = _videoExtensions.ToList(),
+        DocumentExtensions = _documentExtensions.ToList()
+    };
+
+    private void WriteEdit(GeneralEdit? value)
+    {
+        if (value == null)
+        {
+            return;
+        }
+
+        _settings = value.Settings ?? new FileManagerGeneralSettingsDto();
+        _maxFileSizeMegabytes = value.MaxFileSizeMegabytes;
+        _imageExtensions = value.ImageExtensions ?? [];
+        _videoExtensions = value.VideoExtensions ?? [];
+        _documentExtensions = value.DocumentExtensions ?? [];
+    }
+
+    private sealed class GeneralEdit
+    {
+        public FileManagerGeneralSettingsDto Settings { get; set; } = new();
+
+        public long MaxFileSizeMegabytes { get; set; }
+
+        public List<string> ImageExtensions { get; set; } = [];
+
+        public List<string> VideoExtensions { get; set; } = [];
+
+        public List<string> DocumentExtensions { get; set; } = [];
+    }
 
     private void OnImageExtensionsChanged(List<string> tags) => _imageExtensions = tags;
 
