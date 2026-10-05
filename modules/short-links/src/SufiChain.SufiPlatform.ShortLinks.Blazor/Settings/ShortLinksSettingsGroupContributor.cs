@@ -19,6 +19,7 @@ public class ShortLinksSettingsGroupContributor : ISettingComponentContributor
             DisplayName = l["ShortLinks"],
             Icon = "link",
             ComponentType = typeof(ShortLinksSettingsGroup),
+            Policy = ShortLinksPermissions.ShortLinks.Edit,
             Order = 210
         });
 

@@ -100,6 +100,13 @@ public class SettingComponentGroup
     public object? Parameter { get; set; }
 
     /// <summary>
+    /// Permission that must be granted before the section is shown.
+    /// A denied or failed check hides the section.
+    /// Null means the contributor already decided visibility, including an OR of several permissions.
+    /// </summary>
+    public string? Policy { get; set; }
+
+    /// <summary>
     /// Order of the group. Each group on a page needs a unique order. Default is 1000.
     /// </summary>
     public int Order { get; set; } = 1000;
@@ -130,4 +137,31 @@ public interface ISaveableSettingGroup
     /// Used to show loading state on the Save button.
     /// </summary>
     bool IsSaving { get; }
+}
+
+/// <summary>
+/// A setting group that reports unsaved edits and can restore the last saved values.
+/// The settings layout saves and discards one section at a time.
+/// </summary>
+public interface IEditableSettingGroup : ISaveableSettingGroup
+{
+    /// <summary>
+    /// True after the user changes a value and before the next successful save or discard.
+    /// </summary>
+    bool HasUnsavedChanges { get; }
+
+    /// <summary>
+    /// Raised when <see cref="HasUnsavedChanges"/> changes.
+    /// </summary>
+    event Action? EditStateChanged;
+
+    /// <summary>
+    /// Saves this section. Returns false when the save fails. Does not show a success toast.
+    /// </summary>
+    Task<bool> TrySaveAsync();
+
+    /// <summary>
+    /// Restores the last loaded or saved values.
+    /// </summary>
+    Task DiscardAsync();
 }

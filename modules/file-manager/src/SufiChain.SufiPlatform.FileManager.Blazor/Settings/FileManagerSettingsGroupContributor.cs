@@ -25,6 +25,11 @@ public class FileManagerSettingsGroupContributor : ISettingComponentContributor
         return Task.CompletedTask;
     }
 
+    /// <summary>
+    /// Visibility is the OR of general settings and storage settings.
+    /// The section therefore has no single <see cref="SettingComponentGroup.Policy"/>.
+    /// Each H3 still checks its own permission and is omitted when that check fails.
+    /// </summary>
     public async Task<bool> CheckPermissionsAsync(SettingComponentCreationContext context)
     {
         var authorizationService = context.GetRequiredService<IAuthorizationService>();
