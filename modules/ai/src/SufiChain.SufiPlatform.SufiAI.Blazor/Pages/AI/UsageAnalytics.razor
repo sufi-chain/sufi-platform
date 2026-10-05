@@ -31,8 +31,32 @@
 		</ChildContent>
 	</SbCard>
 
-	@if (_selectedWorkspaceId.HasValue && _statistics != null)
+	@{
+		var analyticsBusy = _statistics != null && (IsOperationLoading(LoadingKeys.LoadStatistics) || IsOperationLoading(LoadingKeys.LoadUsageLogs));
+		var showAnalytics = (_selectedWorkspaceId.HasValue && _statistics != null)
+			|| !_workspacesResolved
+			|| (_selectedWorkspaceId.HasValue && !_statisticsFailed && _statistics == null);
+	}
+
+	@if (showAnalytics)
 	{
+		<SbLoadingSkeleton Preset="SbLoadingSkeletonPreset.Kpi" Count="4" Busy="@(_statistics == null)">
+			<ChildContent>
+				@if (_statistics != null)
+				{
+		@if (analyticsBusy)
+		{
+			<SbText Variant="SbTextVariant.Caption" Color="SbColor.Muted" aria-hidden="true">@L["Loading"]</SbText>
+		}
+		@if (_statisticsFailed)
+		{
+			<SbAlert Severity="SbAlertSeverity.Danger">
+				<SbStack Direction="SbStackDirection.Row" Gap="3" Align="SbAlign.Center" Wrap="true">
+					<span>@L["DataLoadFailedGeneric"]</span>
+					<SbButton Size="SbSize.Sm" Variant="SbButtonVariant.Outline" OnClick="@LoadDataAsync">@L["Retry"]</SbButton>
+				</SbStack>
+			</SbAlert>
+		}
 		@if (_guardrailStatus.Count > 0)
 		{
 			<SbCard>
@@ -62,7 +86,7 @@
 		}
 
 		<!-- Statistics Cards -->
-		<SbStack Direction="SbStackDirection.Row" Gap="4" Wrap="true">
+		<SbStack Direction="SbStackDirection.Row" Gap="4" Wrap="true" aria-busy="@(analyticsBusy ? "true" : "false")">
 			<SbCard style="flex: 1; min-width: 200px;">
 				<ChildContent>
 					<SbStack Direction="SbStackDirection.Column" Gap="2">
@@ -243,6 +267,8 @@
 					<SbDataGrid TItem="AIUsageLogDto"
 								Items="@VisibleUsageLogs"
 								Loading="IsOperationLoading(LoadingKeys.LoadUsageLogs)"
+								LoadFailed="@_logsFailed"
+								OnLoadRetry="@LoadDataAsync"
 								Striped="true"
 								Hoverable="true"
 								KeySelector="@(item => item.Id.ToString())"
@@ -361,19 +387,18 @@
 				</SbStack>
 			</ChildContent>
 		</SbCard>
-	}
-	else if (_selectedWorkspaceId.HasValue)
-	{
-		<SbCard>
-			<ChildContent>
-				<SbStack Direction="SbStackDirection.Column" Gap="2" Align="SbAlign.Center" style="padding: 4rem 0;">
-					<SbProgress Indeterminate="true" style="width: 200px;" />
-					<SbText Variant="SbTextVariant.Body" Color="SbColor.Muted">
-						@L["LoadingUsageData"]
-					</SbText>
-				</SbStack>
+				}
 			</ChildContent>
-		</SbCard>
+		</SbLoadingSkeleton>
+	}
+	else if (_workspacesFailed || _statisticsFailed)
+	{
+		<SbAlert Severity="SbAlertSeverity.Danger">
+			<SbStack Direction="SbStackDirection.Row" Gap="3" Align="SbAlign.Center" Wrap="true">
+				<span>@L["DataLoadFailedGeneric"]</span>
+				<SbButton Size="SbSize.Sm" Variant="SbButtonVariant.Outline" OnClick="@RetryAnalyticsAsync">@L["Retry"]</SbButton>
+			</SbStack>
+		</SbAlert>
 	}
 	else
 	{

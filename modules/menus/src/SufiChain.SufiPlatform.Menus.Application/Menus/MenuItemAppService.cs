@@ -6,6 +6,7 @@ using SufiChain.SufiPlatform.Menus.Permissions;
 using Volo.Abp;
 using Volo.Abp.Caching;
 using SufiChain.SufiPlatform.Application.Services;
+using SufiChain.SufiPlatform.Data;
 using SufiChain.SufiPlatform.Features;
 
 namespace SufiChain.SufiPlatform.Menus.Menus;
@@ -19,22 +20,30 @@ public class MenuItemAppService : SufiApplicationService, IMenuItemAppService
     private readonly MenuManager _menuManager;
     private readonly IDistributedCache<MenuTreeCacheItem> _treeCache;
     private readonly IDistributedCache<MenuCacheItem> _menuCache;
+    private readonly MenuLabelLocalization _labels;
 
     public MenuItemAppService(
         IMenuRepository menuRepository,
         IMenuItemRepository menuItemRepository,
         MenuManager menuManager,
         IDistributedCache<MenuTreeCacheItem> treeCache,
-        IDistributedCache<MenuCacheItem> menuCache)
+        IDistributedCache<MenuCacheItem> menuCache,
+        MenuLabelLocalization labels)
     {
         _menuRepository = menuRepository;
         _menuItemRepository = menuItemRepository;
         _menuManager = menuManager;
         _treeCache = treeCache;
         _menuCache = menuCache;
+        _labels = labels;
     }
 
-    public virtual async Task<MenuItemDto> GetAsync(Guid id) => (await _menuItemRepository.GetAsync(id)).ToDto();
+    public virtual async Task<MenuItemDto> GetAsync(Guid id)
+    {
+        var item = await _menuItemRepository.GetAsync(id);
+        var menu = await _menuRepository.FindAsync(item.MenuId);
+        return await ToLabeledDtoAsync(item, menu?.ContextType);
+    }
 
     public virtual async Task<PagedResultDto<MenuItemDto>> GetListAsync(GetMenuItemsInput input)
     {
@@ -75,11 +84,25 @@ public class MenuItemAppService : SufiApplicationService, IMenuItemAppService
     [Authorize(MenusPermissions.Menus.ManageItems)]
     public virtual async Task<MenuItemDto> CreateAsync(CreateMenuItemDto input)
     {
-        var item = await _menuManager.CreateItemAsync(input.MenuId, input.Name, input.DisplayName, input.Slug, input.ParentId, CurrentTenant.Id);
+        var provisional = input.DisplayNames != null || string.IsNullOrWhiteSpace(input.DisplayName)
+            ? input.Name
+            : input.DisplayName;
+        var item = await _menuManager.CreateItemAsync(input.MenuId, input.Name, provisional, input.Slug, input.ParentId, CurrentTenant.Id);
         ApplyInput(item, input);
+        if (input.DisplayNames != null)
+        {
+            await _labels.StoreAsync(
+                existingStored: null,
+                MenuDisplayNamePlanner.ItemKey(input.MenuId, item.Id),
+                input.DisplayNames,
+                item.SetDisplayName,
+                (await _menuRepository.FindAsync(input.MenuId))?.ContextType);
+        }
+
         await _menuManager.ValidateItemAsync(item);
         await _menuItemRepository.InsertAsync(item, autoSave: true);
-        return item.ToDto();
+        var menu = await _menuRepository.FindAsync(item.MenuId);
+        return await ToLabeledDtoAsync(item, menu?.ContextType);
     }
 
     [Authorize(MenusPermissions.Menus.ManageItems)]
@@ -87,13 +110,27 @@ public class MenuItemAppService : SufiApplicationService, IMenuItemAppService
     {
         var item = await _menuItemRepository.GetAsync(id);
         item.SetName(input.Name);
-        item.SetDisplayName(input.DisplayName);
+        if (input.DisplayNames != null)
+        {
+            await _labels.StoreAsync(
+                item.DisplayName,
+                MenuDisplayNamePlanner.ItemKey(item.MenuId, item.Id),
+                input.DisplayNames,
+                item.SetDisplayName,
+                (await _menuRepository.FindAsync(item.MenuId))?.ContextType);
+        }
+        else
+        {
+            item.SetDisplayName(DisplayNameOrName(input.DisplayName, input.Name));
+        }
+
         if (!string.IsNullOrWhiteSpace(input.Slug) && !string.Equals(input.Slug, item.Slug, StringComparison.OrdinalIgnoreCase)) await _menuManager.ChangeItemSlugAsync(item, input.Slug);
         await _menuManager.MoveItemAsync(item, input.ParentId, input.DisplayOrder);
         ApplyInput(item, input);
         await _menuManager.ValidateItemAsync(item);
         await _menuItemRepository.UpdateAsync(item, autoSave: true);
-        return item.ToDto();
+        var menu = await _menuRepository.FindAsync(item.MenuId);
+        return await ToLabeledDtoAsync(item, menu?.ContextType);
     }
 
     [Authorize(MenusPermissions.Menus.ManageItems)]
@@ -117,14 +154,44 @@ public class MenuItemAppService : SufiApplicationService, IMenuItemAppService
         return item.ToDto();
     }
 
+    protected virtual async Task<MenuItemDto> ToLabeledDtoAsync(MenuItem item, string? contextType)
+    {
+        var dto = item.ToDto();
+        var labels = await _labels.ReadAsync(item.DisplayName, item.Name, contextType);
+        dto.DisplayNames = labels.Values;
+        dto.DisplayNameBases = labels.BaseValues;
+        return dto;
+    }
+
+    protected virtual string DisplayNameOrName(string? displayName, string name)
+    {
+        if (string.IsNullOrWhiteSpace(displayName) || BusinessTextEditorStorage.IsPlaceholder(displayName))
+        {
+            return string.IsNullOrWhiteSpace(name) ? displayName ?? string.Empty : name;
+        }
+
+        return displayName;
+    }
+
     protected virtual void ApplyInput(MenuItem item, CreateMenuItemDto input)
     {
         item.SetDescription(input.Description); item.Reorder(input.DisplayOrder); item.SetKind(input.Kind); item.SetDisplayType(input.DisplayType); item.SetLink(input.Url, input.LinkTarget); item.SetTarget(input.TargetType, input.TargetId); item.SetIcon(input.Icon); item.SetCssClass(input.CssClass); item.SetPermissionName(input.PermissionName); item.SetComponentName(input.ComponentName); if (input.IsActive) item.Activate(); else item.Deactivate(); if (input.IsVisible) item.Show(); else item.Hide();
+        ApplyCultureUrls(item, input.CultureUrls);
     }
 
     protected virtual void ApplyInput(MenuItem item, UpdateMenuItemDto input)
     {
         item.SetDescription(input.Description); item.SetKind(input.Kind); item.SetDisplayType(input.DisplayType); item.SetLink(input.Url, input.LinkTarget); item.SetTarget(input.TargetType, input.TargetId); item.SetIcon(input.Icon); item.SetCssClass(input.CssClass); item.SetPermissionName(input.PermissionName); item.SetComponentName(input.ComponentName); if (input.IsActive) item.Activate(); else item.Deactivate(); if (input.IsVisible) item.Show(); else item.Hide();
+        ApplyCultureUrls(item, input.CultureUrls);
+    }
+
+    /// <summary>Null leaves stored overrides unchanged so older update callers do not wipe them.</summary>
+    private static void ApplyCultureUrls(MenuItem item, IReadOnlyDictionary<string, string>? cultureUrls)
+    {
+        if (cultureUrls != null)
+        {
+            item.SetCultureUrls(cultureUrls);
+        }
     }
 
     protected virtual IEnumerable<MenuItem> ApplyFilters(IEnumerable<MenuItem> query, GetMenuItemsInput input)

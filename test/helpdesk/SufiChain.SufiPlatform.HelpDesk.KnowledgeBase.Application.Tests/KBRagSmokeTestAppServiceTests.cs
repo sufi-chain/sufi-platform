@@ -18,6 +18,8 @@ using SufiChain.SufiPlatform.SufiAI;
 
 using SufiChain.SufiPlatform.SufiAI.Hooshvare.Hooshvare;
 
+using Volo.Abp;
+
 using Volo.Abp.DependencyInjection;
 
 using Volo.Abp.Timing;
@@ -229,6 +231,74 @@ public class KBRagSmokeTestAppServiceTests
         KBRagSmokeTestAppService.SmokeTestMinSimilarity.ShouldBeLessThan(KBRagSmokeTestAppService.DefaultMinSimilarity);
 
         KBRagSmokeTestAppService.DefaultMinSimilarity.ShouldBe(0.35f);
+
+    }
+
+
+
+    [Fact]
+
+    public async Task Should_Report_Missing_Embeddings_Key_Instead_Of_Failing_Closed_As_Empty()
+
+    {
+
+        var fixture = Fixture.Create(storedChunkCount: 1, retrievableChunkCount: 1, searchHits: []);
+
+        fixture.Rag.IndexDocumentAsync(Arg.Any<SufiAIRagIndexDocumentRequest>(), Arg.Any<CancellationToken>())
+
+            .Returns(Task.FromException<SufiAIRagIndexDocumentResult>(
+
+                new BusinessException(HooshvareRagReasonCodes.EmbeddingsCredentialsMissing)
+
+                    .WithData("WorkspaceName", WorkspaceName)));
+
+
+
+        var result = await fixture.Service.RunAsync(fixture.ProjectId, fixture.Article.Id, "reset password");
+
+
+
+        result.IsReady.ShouldBeFalse();
+
+        result.ReasonCode.ShouldBe(HooshvareRagReasonCodes.EmbeddingsCredentialsMissing);
+
+        result.FailureReason.ShouldBe("KnowledgeBase:RagEmbeddingsCredentialsMissing");
+
+        await fixture.Rag.DidNotReceive().SearchAsync(Arg.Any<SufiAIRagSearchRequest>(), Arg.Any<CancellationToken>());
+
+    }
+
+
+
+    [Fact]
+
+    public async Task Should_Report_Missing_Embeddings_Model_When_Search_Cannot_Embed()
+
+    {
+
+        var fixture = Fixture.Create(storedChunkCount: 1, retrievableChunkCount: 1, searchHits: []);
+
+        fixture.Rag.SearchAsync(Arg.Any<SufiAIRagSearchRequest>(), Arg.Any<CancellationToken>())
+
+            .Returns(Task.FromException<SufiAIRagSearchResult>(
+
+                new BusinessException(HooshvareRagReasonCodes.EmbeddingsModelNotConfigured)
+
+                    .WithData("WorkspaceName", WorkspaceName)));
+
+
+
+        var result = await fixture.Service.RunAsync(fixture.ProjectId, fixture.Article.Id, "reset password");
+
+
+
+        result.IsReady.ShouldBeFalse();
+
+        result.ArticleIndexed.ShouldBeTrue();
+
+        result.ReasonCode.ShouldBe(HooshvareRagReasonCodes.EmbeddingsModelNotConfigured);
+
+        result.FailureReason.ShouldBe("KnowledgeBase:RagEmbeddingsModelNotConfigured");
 
     }
 

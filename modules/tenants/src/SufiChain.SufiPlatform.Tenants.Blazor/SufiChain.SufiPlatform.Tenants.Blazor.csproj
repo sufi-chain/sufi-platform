@@ -20,6 +20,7 @@
     <ProjectReference Include="../../../../framework/SufiChain.SufiPlatform.Authorization/SufiChain.SufiPlatform.Authorization.csproj" />
     <!-- Blazor Authorization -->
     <PackageReference Include="Microsoft.AspNetCore.Components.Authorization" Version="$(AspNetCoreVersion)" />
+    <PackageReference Include="Volo.Abp.Security" Version="$(AbpVersion)" />
   </ItemGroup>
 
 

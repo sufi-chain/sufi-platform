@@ -350,9 +350,16 @@ public class FileItemController : SufiControllerBase, IFileItemAppService
         var result = await _fileItemAppService.GetDownloadContentAsync(id, token);
         if (result.IsForbidden)
             return Forbid();
-        if (result.Content == null)
+        if (result.Content?.Content == null)
             return NotFound();
-        return File(result.Content.Content, result.Content.MimeType, result.Content.FileName);
+
+        var contentType = FileDownloadHeaders.NormalizeContentType(result.Content.MimeType);
+        if (!string.IsNullOrWhiteSpace(result.Content.FileName))
+        {
+            Response.Headers.ContentDisposition = FileDownloadHeaders.Attachment(result.Content.FileName);
+        }
+
+        return File(result.Content.Content, contentType);
     }
 
     [HttpGet]
@@ -363,9 +370,12 @@ public class FileItemController : SufiControllerBase, IFileItemAppService
         var result = await _fileItemAppService.GetStreamContentAsync(id, token);
         if (result.IsForbidden)
             return Forbid();
-        if (result.Content == null)
+        if (result.Content?.Stream == null)
             return NotFound();
-        return File(result.Content.Stream, result.Content.MimeType, enableRangeProcessing: true);
+        return File(
+            result.Content.Stream,
+            FileDownloadHeaders.NormalizeContentType(result.Content.MimeType),
+            enableRangeProcessing: true);
     }
 
     [HttpGet]
@@ -376,9 +386,9 @@ public class FileItemController : SufiControllerBase, IFileItemAppService
         var result = await _fileItemAppService.GetThumbnailContentAsync(id, token);
         if (result.IsForbidden)
             return Forbid();
-        if (result.Content == null)
+        if (result.Content?.Content == null)
             return NotFound("Thumbnail not available");
-        return File(result.Content.Content, result.Content.MimeType);
+        return File(result.Content.Content, FileDownloadHeaders.NormalizeContentType(result.Content.MimeType));
     }
 
     [HttpPut]

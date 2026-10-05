@@ -1,7 +1,10 @@
 using Microsoft.AspNetCore.Components;
+using Microsoft.Extensions.Logging;
+using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.Extensions.Options;
 using SufiChain.SufiPlatform.UI.Layout;
 using SufiChain.SufiPlatform.Settings.Blazor.Settings;
+using Volo.Abp.Security.Claims;
 
 namespace SufiChain.SufiPlatform.Settings.Blazor.Pages;
 
@@ -9,6 +12,7 @@ public partial class SettingsManagement : SettingsComponentBase
 {
     protected override void OnInitialized()
     {
+        LoadingStates[LoadingKeys.LoadGroups] = true;
         SetupPageLayout();
     }
 
@@ -21,8 +25,12 @@ public partial class SettingsManagement : SettingsComponentBase
     [Inject] protected IPageLayout PageLayout { get; set; } = default!;
     [Inject] protected IOptions<SettingsComponentOptions> Options { get; set; } = default!;
     [Inject] protected IServiceProvider ServiceProvider { get; set; } = default!;
+    [Inject] protected AuthenticationStateProvider AuthenticationStateProvider { get; set; } = default!;
+    [Inject] protected ICurrentPrincipalAccessor PrincipalAccessor { get; set; } = default!;
 
     private List<SettingComponentGroup> _groups = new();
+    private bool _groupsResolved;
+    private bool _groupsLoadFailed;
     private string? _selectedTabId;
     private DynamicComponent? _currentComponentRef;
     private SettingComponentGroup? SelectedGroup => _groups.FirstOrDefault(group => group.Id == _selectedTabId);
@@ -44,27 +52,54 @@ public partial class SettingsManagement : SettingsComponentBase
         // Breadcrumbs are auto-generated from menu hierarchy by the layout
     }
 
-    private Task LoadGroupsAsync() => ExecuteWithLoadingAsync(async () =>
+    private Task LoadGroupsAsync()
     {
-        var context = new SettingComponentCreationContext(ServiceProvider);
-
-        foreach (var contributor in Options.Value.Contributors)
+        _groupsLoadFailed = false;
+        if (_groups.Count == 0)
         {
-            if (await contributor.CheckPermissionsAsync(context))
+            _groupsResolved = false;
+        }
+
+        return ExecuteWithLoadingAsync(async () =>
+        {
+            try
             {
-                await contributor.ConfigureAsync(context);
+                using (await SettingComponentAuthorizationScope.EnterAsync(AuthenticationStateProvider, PrincipalAccessor))
+                {
+                    var context = new SettingComponentCreationContext(ServiceProvider);
+
+                    foreach (var contributor in Options.Value.Contributors)
+                    {
+                        if (await contributor.CheckPermissionsAsync(context))
+                        {
+                            await contributor.ConfigureAsync(context);
+                        }
+                    }
+
+                    context.Normalize();
+                    _groups = context.Groups;
+                }
+
+                _groupsLoadFailed = false;
+
+                // Select first tab if not already selected
+                if (_groups.Count > 0 && string.IsNullOrEmpty(_selectedTabId))
+                {
+                    _selectedTabId = _groups.First().Id;
+                }
             }
-        }
-
-        context.Normalize();
-        _groups = context.Groups;
-
-        // Select first tab if not already selected
-        if (_groups.Count > 0 && string.IsNullOrEmpty(_selectedTabId))
-        {
-            _selectedTabId = _groups.First().Id;
-        }
-    }, LoadingKeys.LoadGroups);
+            catch (Exception exception)
+            {
+                _groupsLoadFailed = true;
+                _groups = new();
+                Logger.LogWarning(exception, "Settings groups could not be loaded.");
+            }
+            finally
+            {
+                _groupsResolved = true;
+            }
+        }, LoadingKeys.LoadGroups);
+    }
 
     private void SelectGroup(string groupId)
     {

@@ -1,5 +1,6 @@
 using System.Linq;
 using Riok.Mapperly.Abstractions;
+using SufiChain.SufiPlatform.SufiAI.Data;
 using SufiChain.SufiPlatform.SufiAI.Workspaces;
 using Volo.Abp.Mapperly;
 using SufiChain.SufiPlatform.SufiAI;
@@ -14,6 +15,7 @@ public partial class WorkspaceToDtoMapper : MapperBase<Workspace, WorkspaceDto>
     [MapperIgnoreTarget(nameof(WorkspaceDto.Model))]
     [MapperIgnoreTarget(nameof(WorkspaceDto.ModelDisplayName))]
     [MapperIgnoreTarget(nameof(WorkspaceDto.DecisionsModelId))]
+    [MapperIgnoreTarget(nameof(WorkspaceDto.IsDefault))]
     public override partial WorkspaceDto Map(Workspace source);
 
     [MapperIgnoreTarget(nameof(WorkspaceDto.HasApiKey))]
@@ -21,6 +23,7 @@ public partial class WorkspaceToDtoMapper : MapperBase<Workspace, WorkspaceDto>
     [MapperIgnoreTarget(nameof(WorkspaceDto.Model))]
     [MapperIgnoreTarget(nameof(WorkspaceDto.ModelDisplayName))]
     [MapperIgnoreTarget(nameof(WorkspaceDto.DecisionsModelId))]
+    [MapperIgnoreTarget(nameof(WorkspaceDto.IsDefault))]
     public override partial void Map(Workspace source, WorkspaceDto destination);
 
     public override void AfterMap(Workspace source, WorkspaceDto destination)
@@ -29,6 +32,7 @@ public partial class WorkspaceToDtoMapper : MapperBase<Workspace, WorkspaceDto>
         destination.Model = source.Model;
         destination.ModelDisplayName = source.GetPrimaryConfiguration(AICapabilityType.ChatCompletion)?.DisplayName;
         destination.DecisionsModelId = source.GetPrimaryConfiguration(AICapabilityType.Decisions)?.ModelId;
+        destination.IsDefault = HostDefaultWorkspaceMarker.IsMarked(source);
         destination.Guardrails = source.Guardrails
             .Select(item => new WorkspaceGuardrailDto
             {

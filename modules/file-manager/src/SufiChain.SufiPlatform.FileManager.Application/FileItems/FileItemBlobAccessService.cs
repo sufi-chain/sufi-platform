@@ -222,7 +222,7 @@ public class FileItemBlobAccessService
             Content = new StreamContentDto
             {
                 Stream = stream,
-                MimeType = metadata.MimeType
+                MimeType = NormalizeMimeType(metadata.MimeType)
             }
         };
     }
@@ -299,7 +299,7 @@ public class FileItemBlobAccessService
                     Content = new FileContentDto
                     {
                         Content = blob,
-                        MimeType = metadata.MimeType,
+                        MimeType = NormalizeMimeType(metadata.MimeType),
                         FileName = metadata.OriginalName
                     }
                 };
@@ -323,72 +323,91 @@ public class FileItemBlobAccessService
             : FileStructureStorageConstants.ContainerNamePrefix + structureKey;
 
     /// <summary>
-    /// Resolves file metadata for download/stream/thumbnail: token → public access → authenticated.
-    /// Returns (null, true) when access is forbidden; (null, false) when not found; (metadata, false) when ok.
+    /// Resolves file metadata for download, stream, and thumbnail.
+    /// A matching access token wins, then a public structure, then an authenticated caller in the file's tenant.
+    /// Public structure access is checked for anonymous and authenticated callers.
+    /// Returns (null, false) when the item is missing or outside the caller's tenant.
+    /// Returns (null, true) when the item exists in the current tenant and the caller may not read it.
+    /// Uses <see cref="IFileItemRepository.FindAsync"/> so a missing item is an empty result, not an exception.
     /// </summary>
     protected virtual async Task<(FileStreamMetadataDto? metadata, bool isForbidden)> ResolveAccessMetadataAsync(Guid id, string? token)
     {
-        if (!string.IsNullOrWhiteSpace(token))
-        {
-            var meta = await GetStreamMetadataByTokenAsync(token);
-            return (meta, false);
-        }
-
-        if (!_currentUser.IsAuthenticated)
-        {
-            var publicMeta = await TryGetMetadataForPublicAccessAsync(id);
-            if (publicMeta == null)
-            {
-                return (null, true);
-            }
-
-            return (publicMeta, false);
-        }
-
-        var fileItem = await _fileItemRepository.GetAsync(id);
-        return (MapToStreamMetadata(fileItem), false);
-    }
-
-    protected virtual async Task<FileStreamMetadataDto?> GetStreamMetadataByTokenAsync(string token)
-    {
-        if (!_fileAccessTokenService.TryValidateToken(token, out var fileId))
-        {
-            return null;
-        }
-
-        FileItem? fileItem;
-        using (_dataFilter.Disable<IMultiTenant>())
-        {
-            fileItem = await _fileItemRepository.FindAsync(fileId);
-        }
-
+        var fileItem = await FindFileIgnoringTenantAsync(id);
         if (fileItem == null)
         {
-            return null;
+            return (null, false);
         }
 
-        return MapToStreamMetadata(fileItem);
+        if (TokenMatchesFile(id, token) || await IsPublicStructureAsync(fileItem))
+        {
+            return (MapToStreamMetadata(fileItem), false);
+        }
+
+        if (_currentUser.IsAuthenticated && IsInCurrentTenant(fileItem))
+        {
+            return (MapToStreamMetadata(fileItem), false);
+        }
+
+        if (IsInCurrentTenant(fileItem))
+        {
+            return (null, true);
+        }
+
+        return (null, false);
     }
 
-    protected virtual async Task<FileStreamMetadataDto?> TryGetMetadataForPublicAccessAsync(Guid id)
+    /// <summary>
+    /// A token authorizes only the file id it was issued for.
+    /// A token for a different id does not select that other file.
+    /// </summary>
+    protected virtual bool TokenMatchesFile(Guid id, string? token)
     {
-        FileItem? fileItem;
+        if (string.IsNullOrWhiteSpace(token))
+        {
+            return false;
+        }
+
+        return _fileAccessTokenService.TryValidateToken(token, out var fileId) && fileId == id;
+    }
+
+    protected virtual async Task<bool> IsPublicStructureAsync(FileItem fileItem)
+    {
+        if (string.IsNullOrEmpty(fileItem.StructureKey))
+        {
+            return false;
+        }
+
+        return await _structureCache.IsPublicAccessAsync(fileItem.StructureKey);
+    }
+
+    protected virtual async Task<FileItem?> FindFileIgnoringTenantAsync(Guid id)
+    {
         using (_dataFilter.Disable<IMultiTenant>())
         {
-            fileItem = await _fileItemRepository.FindAsync(id);
+            return await _fileItemRepository.FindAsync(id);
         }
+    }
 
-        if (fileItem == null || string.IsNullOrEmpty(fileItem.StructureKey))
+    protected virtual bool IsInCurrentTenant(FileItem fileItem)
+    {
+        if (_currentTenant.IsAvailable)
         {
-            return null;
+            return fileItem.TenantId == _currentTenant.Id;
         }
 
-        if (!await _structureCache.IsPublicAccessAsync(fileItem.StructureKey))
+        return fileItem.TenantId == null;
+    }
+
+    private const string DefaultContentType = "application/octet-stream";
+
+    private static string NormalizeMimeType(string? mimeType)
+    {
+        if (string.IsNullOrWhiteSpace(mimeType))
         {
-            return null;
+            return DefaultContentType;
         }
 
-        return MapToStreamMetadata(fileItem);
+        return mimeType.Trim();
     }
 
     private static FileStreamMetadataDto MapToStreamMetadata(FileItem fileItem) =>

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Microsoft.Extensions.Logging;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
@@ -24,8 +25,12 @@ public partial class UsageAnalytics : AIComponentBase
     private IAIAppService? _aiAppService;
 
     private List<WorkspaceDto> _workspaces = new();
+    private bool _workspacesResolved;
+    private bool _workspacesFailed;
     private Guid? _selectedWorkspaceId;
     private UsageStatisticsDto? _statistics;
+    private bool _statisticsFailed;
+    private bool _logsFailed;
     private List<AIUsageLogDto> _usageLogs = new();
     private List<WorkspaceGuardrailStatusDto> _guardrailStatus = new();
     private string _routeFilter = AllRoutesFilter;
@@ -35,22 +40,46 @@ public partial class UsageAnalytics : AIComponentBase
 
     private SbDateRange? _dateRange = new(DateOnly.FromDateTime(DateTime.Now.AddDays(-30)), DateOnly.FromDateTime(DateTime.Now));
 
+    protected override void OnInitialized()
+    {
+        LoadingStates[LoadingKeys.LoadWorkspaces] = true;
+    }
+
     protected override async Task OnInitializedAsync()
     {
         await base.OnInitializedAsync();
         await LoadWorkspacesAsync();
     }
 
-    private async Task LoadWorkspacesAsync()
+    private Task LoadWorkspacesAsync()
     {
-        await ExecuteWithLoadingAsync(async () =>
+        _workspacesFailed = false;
+        if (_workspaces.Count == 0)
         {
-            _workspaces = await WorkspaceAppService.GetLookupAsync();
+            _workspacesResolved = false;
+        }
 
-            if (_workspaces.Any() && !_selectedWorkspaceId.HasValue)
+        return ExecuteWithLoadingAsync(async () =>
+        {
+            try
             {
-                _selectedWorkspaceId = _workspaces.First().Id;
-                await LoadDataAsync();
+                _workspaces = await WorkspaceAppService.GetLookupAsync();
+                _workspacesFailed = false;
+
+                if (_workspaces.Any() && !_selectedWorkspaceId.HasValue)
+                {
+                    _selectedWorkspaceId = _workspaces.First().Id;
+                    await LoadDataAsync();
+                }
+            }
+            catch (Exception exception)
+            {
+                _workspacesFailed = true;
+                Logger.LogWarning(exception, "AI workspaces could not be loaded.");
+            }
+            finally
+            {
+                _workspacesResolved = true;
             }
         }, LoadingKeys.LoadWorkspaces);
     }
@@ -59,18 +88,18 @@ public partial class UsageAnalytics : AIComponentBase
     {
         _selectedWorkspaceId = workspaceId;
         _routeFilter = AllRoutesFilter;
+        _statistics = null;
+        _statisticsFailed = false;
+        _logsFailed = false;
+        _usageLogs.Clear();
+        _guardrailStatus.Clear();
         if (_selectedWorkspaceId.HasValue)
         {
             await LoadDataAsync();
         }
-        else
-        {
-            _statistics = null;
-            _usageLogs.Clear();
-            _guardrailStatus.Clear();
-            _routeFilter = AllRoutesFilter;
-        }
     }
+
+    private Task RetryAnalyticsAsync() => _workspacesFailed ? LoadWorkspacesAsync() : LoadDataAsync();
 
     private async Task RefreshDataAsync()
     {
@@ -97,19 +126,52 @@ public partial class UsageAnalytics : AIComponentBase
         var startDate = _dateRange?.Start?.ToDateTime(TimeOnly.MinValue);
         var endDate = _dateRange?.End?.ToDateTime(TimeOnly.MaxValue);
 
+        _statisticsFailed = false;
+        _logsFailed = false;
+        LoadingStates[LoadingKeys.LoadUsageLogs] = true;
         await ExecuteWithLoadingAsync(async () =>
         {
-            _statistics = await AIAppService.GetUsageStatisticsAsync(_selectedWorkspaceId.Value, startDate, endDate);
+            try
+            {
+                _statistics = await AIAppService.GetUsageStatisticsAsync(_selectedWorkspaceId.Value, startDate, endDate);
+            }
+            catch (Exception exception)
+            {
+                _statisticsFailed = true;
+                LoadingStates.TryRemove(LoadingKeys.LoadUsageLogs, out _);
+                Logger.LogWarning(exception, "AI usage statistics could not be loaded.");
+            }
         }, LoadingKeys.LoadStatistics);
 
+        if (_statisticsFailed || !_selectedWorkspaceId.HasValue)
+        {
+            LoadingStates.TryRemove(LoadingKeys.LoadUsageLogs, out _);
+            return;
+        }
+
         await ExecuteWithLoadingAsync(async () =>
         {
-            _usageLogs = await AIAppService.GetUsageLogsAsync(_selectedWorkspaceId.Value, startDate, endDate);
-            // Show most recent first
-            _usageLogs = _usageLogs.OrderByDescending(x => x.CreationTime).Take(100).ToList();
+            try
+            {
+                var logs = await AIAppService.GetUsageLogsAsync(_selectedWorkspaceId.Value, startDate, endDate);
+                _usageLogs = logs.OrderByDescending(x => x.CreationTime).Take(100).ToList();
+                _logsFailed = false;
+            }
+            catch (Exception exception)
+            {
+                _logsFailed = true;
+                Logger.LogWarning(exception, "AI usage logs could not be loaded.");
+            }
         }, LoadingKeys.LoadUsageLogs);
 
-        _guardrailStatus = await WorkspaceAppService.GetGuardrailStatusAsync(_selectedWorkspaceId.Value);
+        try
+        {
+            _guardrailStatus = await WorkspaceAppService.GetGuardrailStatusAsync(_selectedWorkspaceId.Value);
+        }
+        catch (Exception exception)
+        {
+            Logger.LogWarning(exception, "AI guardrail status could not be loaded.");
+        }
     }
 
     private static double GetGuardrailPercent(WorkspaceGuardrailStatusDto status)

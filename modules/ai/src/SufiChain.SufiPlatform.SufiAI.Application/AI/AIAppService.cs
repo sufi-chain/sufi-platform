@@ -9,6 +9,7 @@ using SufiChain.SufiPlatform.SufiAI;
 using SufiChain.SufiPlatform.SufiAI.Features;
 using SufiChain.SufiPlatform.SufiAI.Permissions;
 using SufiChain.SufiPlatform.SufiAI.Workspaces;
+using Volo.Abp.Domain.Entities;
 using Volo.Abp.Domain.Repositories;
 using Volo.Abp.Security.Encryption;
 using SufiChain.SufiPlatform.Application.Services;
@@ -257,8 +258,12 @@ public class AIAppService : SufiApplicationService, IAIAppService
     [RequiresFeature(SufiAIFeatures.Workspaces)]
     public async Task<List<AIModelConfigurationDto>> GetModelConfigurationsAsync(Guid workspaceId)
     {
-        var configurations = await _configurationRepository.GetByWorkspaceIdAsync(workspaceId);
-        return configurations.Select(c => AIModelConfigurationMapper.ToDto(c)).ToList();
+        var workspace = await _workspaceRepository.GetAsync(workspaceId, includeDetails: true);
+        return workspace.ModelConfigurations
+            .OrderBy(configuration => configuration.CapabilityType)
+            .ThenBy(configuration => configuration.Priority)
+            .Select(AIModelConfigurationMapper.ToDto)
+            .ToList();
     }
 
     [Authorize(AIPermissions.AI.ManageConfigurations)]
@@ -309,8 +314,7 @@ public class AIAppService : SufiApplicationService, IAIAppService
     [RequiresFeature(SufiAIFeatures.Workspaces)]
     public async Task<AIModelConfigurationDto> UpdateModelConfigurationAsync(Guid id, UpdateAIModelConfigurationDto input)
     {
-        var configuration = await _configurationRepository.GetAsync(id);
-        await EnsureWorkspaceEditableAsync(configuration.WorkspaceId);
+        var configuration = await GetEditableConfigurationAsync(id);
 
         var apiKeyToUpdate = input.ClearApiKey
             ? null
@@ -355,7 +359,7 @@ public class AIAppService : SufiApplicationService, IAIAppService
         Guid workspaceId;
         using (_configurationRepository.DisableTracking())
         {
-            var configuration = await _configurationRepository.GetAsync(id);
+            var configuration = await GetEditableConfigurationAsync(id);
             workspaceId = configuration.WorkspaceId;
         }
 
@@ -375,8 +379,7 @@ public class AIAppService : SufiApplicationService, IAIAppService
     [RequiresFeature(SufiAIFeatures.Workspaces)]
     public async Task DeleteModelConfigurationAsync(Guid id)
     {
-        var configuration = await _configurationRepository.GetAsync(id);
-        await EnsureWorkspaceEditableAsync(configuration.WorkspaceId);
+        var configuration = await GetEditableConfigurationAsync(id);
         if (await IsWorkspaceDefaultConfigurationAsync(configuration))
         {
             throw new BusinessException(AIErrorCodes.CannotDeleteWorkspaceDefault)
@@ -394,7 +397,7 @@ public class AIAppService : SufiApplicationService, IAIAppService
     public async Task<List<AIUsageLogDto>> GetUsageLogsAsync(Guid workspaceId, DateTime? startDate = null, DateTime? endDate = null)
     {
         var logs = await _usageLogRepository.GetByWorkspaceAsync(workspaceId, startDate, endDate);
-        var configurations = await _configurationRepository.GetByWorkspaceIdAsync(workspaceId);
+        var configurations = await GetWorkspaceModelConfigurationsAsync(workspaceId);
         var displayNames = configurations.ToDictionary(
             configuration => configuration.Id,
             configuration => string.IsNullOrWhiteSpace(configuration.DisplayName)
@@ -422,7 +425,7 @@ public class AIAppService : SufiApplicationService, IAIAppService
         var totalCost = await _usageLogRepository.GetTotalCostAsync(workspaceId, startDate, endDate);
         var totalTokens = await _usageLogRepository.GetTotalTokensAsync(workspaceId, startDate, endDate);
 
-        var configurations = await _configurationRepository.GetByWorkspaceIdAsync(workspaceId);
+        var configurations = await GetWorkspaceModelConfigurationsAsync(workspaceId);
         var displayNames = configurations.ToDictionary(
             configuration => configuration.Id,
             configuration => string.IsNullOrWhiteSpace(configuration.DisplayName)
@@ -496,9 +499,81 @@ public class AIAppService : SufiApplicationService, IAIAppService
             item.Id != configuration.Id && item.Priority < configuration.Priority);
     }
 
+    private async Task<IReadOnlyList<AIModelConfiguration>> GetWorkspaceModelConfigurationsAsync(Guid workspaceId)
+    {
+        var workspace = await _workspaceRepository.FindAsync(workspaceId, includeDetails: true);
+        return workspace?.ModelConfigurations ?? Array.Empty<AIModelConfiguration>();
+    }
+
+    private async Task<AIModelConfiguration> GetEditableConfigurationAsync(Guid id)
+    {
+        var configuration = await _configurationRepository.FindAsync(id);
+        if (configuration == null)
+        {
+            if (await IsInheritedModelAsync(id, sourceWorkspaceId: null))
+            {
+                throw InheritedWorkspaceReadOnly(id);
+            }
+
+            throw new EntityNotFoundException(typeof(AIModelConfiguration), id);
+        }
+
+        var workspace = await _workspaceRepository.FindAsync(configuration.WorkspaceId, includeDetails: false);
+        if (workspace?.IsInherited == true)
+        {
+            throw InheritedWorkspaceReadOnly(id, workspace.Id);
+        }
+
+        if (workspace == null)
+        {
+            // A dedicated tenant database does not contain the host route row.
+            // A shared database can still see it. Both stay read-only when that
+            // route belongs to a workspace inherited by the current tenant.
+            if (await IsInheritedModelAsync(id, configuration.WorkspaceId))
+            {
+                throw InheritedWorkspaceReadOnly(id, configuration.WorkspaceId);
+            }
+
+            throw new EntityNotFoundException(typeof(AIModelConfiguration), id);
+        }
+
+        return configuration;
+    }
+
+    private async Task<bool> IsInheritedModelAsync(Guid configurationId, Guid? sourceWorkspaceId)
+    {
+        if (CurrentTenant.Id == null)
+        {
+            return false;
+        }
+
+        var workspaces = await _workspaceRepository.GetListAsync(maxResultCount: int.MaxValue);
+        return workspaces.Any(workspace =>
+            workspace.IsInherited &&
+            ((sourceWorkspaceId.HasValue && workspace.SourceWorkspaceId == sourceWorkspaceId) ||
+             workspace.ModelConfigurations.Any(model => model.Id == configurationId)));
+    }
+
+    private static SufiChain.SufiPlatform.BusinessException InheritedWorkspaceReadOnly(Guid configurationId, Guid? workspaceId = null)
+    {
+        var exception = new SufiChain.SufiPlatform.BusinessException(AIErrorCodes.InheritedWorkspaceReadOnly);
+        exception.WithData("ModelConfigurationId", configurationId);
+        if (workspaceId.HasValue)
+        {
+            exception.WithData("WorkspaceId", workspaceId.Value);
+        }
+
+        return exception;
+    }
+
     private async Task EnsureWorkspaceEditableAsync(Guid workspaceId)
     {
-        var workspace = await _workspaceRepository.GetAsync(workspaceId);
+        var workspace = await _workspaceRepository.FindAsync(workspaceId, includeDetails: false);
+        if (workspace == null)
+        {
+            throw new EntityNotFoundException(typeof(Workspace), workspaceId);
+        }
+
         if (workspace.IsInherited)
         {
             throw new BusinessException(AIErrorCodes.InheritedWorkspaceReadOnly)

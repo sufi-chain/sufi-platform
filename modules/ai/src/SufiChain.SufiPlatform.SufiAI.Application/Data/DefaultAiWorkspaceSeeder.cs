@@ -8,6 +8,7 @@ using Volo.Abp.Data;
 using Volo.Abp.Guids;
 using Volo.Abp.MultiTenancy;
 using Volo.Abp.Security.Encryption;
+using Volo.Abp.Uow;
 
 namespace SufiChain.SufiPlatform.SufiAI.Data;
 
@@ -19,6 +20,7 @@ public class DefaultAiWorkspaceSeeder : IDefaultAiWorkspaceSeeder
     protected IGuidGenerator GuidGenerator { get; }
     protected ICurrentTenant CurrentTenant { get; }
     protected IDataFilter DataFilter { get; }
+    protected IUnitOfWorkManager UnitOfWorkManager { get; }
     protected IStringEncryptionService StringEncryptor { get; }
     protected AIOptions AIOptions { get; }
     protected ILogger<DefaultAiWorkspaceSeeder> Logger { get; }
@@ -30,6 +32,7 @@ public class DefaultAiWorkspaceSeeder : IDefaultAiWorkspaceSeeder
         IGuidGenerator guidGenerator,
         ICurrentTenant currentTenant,
         IDataFilter dataFilter,
+        IUnitOfWorkManager unitOfWorkManager,
         IStringEncryptionService stringEncryptor,
         IOptions<AIOptions> aiOptions,
         ILogger<DefaultAiWorkspaceSeeder> logger)
@@ -40,6 +43,7 @@ public class DefaultAiWorkspaceSeeder : IDefaultAiWorkspaceSeeder
         GuidGenerator = guidGenerator;
         CurrentTenant = currentTenant;
         DataFilter = dataFilter;
+        UnitOfWorkManager = unitOfWorkManager;
         StringEncryptor = stringEncryptor;
         AIOptions = aiOptions.Value;
         Logger = logger;
@@ -96,15 +100,21 @@ public class DefaultAiWorkspaceSeeder : IDefaultAiWorkspaceSeeder
         Workspace? hostWorkspace;
         using (CurrentTenant.Change(null))
         {
-            hostWorkspace = await WorkspaceRepository.FindByNameAsync(workspaceName, cancellationToken);
+            // Change(null) does not switch a unit of work that already opened the
+            // tenant SufiAI connection. A new unit of work reads the host database.
+            using (var uow = UnitOfWorkManager.Begin(requiresNew: true, isTransactional: false))
+            {
+                hostWorkspace = await FindHostDefaultWorkspaceAsync(workspaceName, tenantId, cancellationToken);
+                await uow.CompleteAsync(cancellationToken);
+            }
         }
 
         if (hostWorkspace == null)
         {
             Logger.LogWarning(
-                "Host default AI workspace '{WorkspaceName}' is missing; tenant {TenantId} cannot inherit it.",
-                workspaceName,
-                tenantId);
+                "Host default AI workspace is missing; tenant {TenantId} cannot inherit it. Mark a host workspace as the default in AI admin. The name '{WorkspaceName}' is only a fallback and does not match a renamed workspace.",
+                tenantId,
+                workspaceName);
             return null;
         }
 
@@ -147,7 +157,7 @@ public class DefaultAiWorkspaceSeeder : IDefaultAiWorkspaceSeeder
                 assignmentId,
                 targetId,
                 hostWorkspace.Id,
-                workspaceName,
+                hostWorkspace.Name,
                 cancellationToken);
 
             Logger.LogInformation(
@@ -188,6 +198,7 @@ public class DefaultAiWorkspaceSeeder : IDefaultAiWorkspaceSeeder
             seed.Provider,
             seed.Model,
             CurrentTenant.Id);
+        HostDefaultWorkspaceMarker.Mark(workspace);
 
         workspace.UpdateConfiguration(
             seed.Model,
@@ -242,9 +253,14 @@ public class DefaultAiWorkspaceSeeder : IDefaultAiWorkspaceSeeder
         }
 
         var preview = DefaultWorkspaceManagedFieldReconciler.Preview(existing, seed);
-        if (preview.HasChanges)
+        var markedDefault = existing.TenantId == null && HostDefaultWorkspaceMarker.MarkIfMissing(existing);
+        if (preview.HasChanges || markedDefault)
         {
-            DefaultWorkspaceManagedFieldReconciler.Apply(existing, seed, preview);
+            if (preview.HasChanges)
+            {
+                DefaultWorkspaceManagedFieldReconciler.Apply(existing, seed, preview);
+            }
+
             await WorkspaceRepository.UpdateAsync(existing, autoSave: true, cancellationToken);
             Logger.LogInformation(
                 "Reconciled managed default-workspace fields on '{WorkspaceName}' for tenant {TenantId}. Added capabilities: {Capabilities}.",
@@ -296,6 +312,64 @@ public class DefaultAiWorkspaceSeeder : IDefaultAiWorkspaceSeeder
             CurrentTenant.Id);
 
         return existing;
+    }
+
+    /// <summary>
+    /// Host lookup order: IsDefault extra property, then DefaultWorkspaceSeedVersion
+    /// (the renamed production workspace still has it), then the configured name.
+    /// A fallback match is stamped IsDefault and logged so the next tenant does not
+    /// depend on the name.
+    /// </summary>
+    protected virtual async Task<Workspace?> FindHostDefaultWorkspaceAsync(
+        string workspaceName,
+        Guid tenantId,
+        CancellationToken cancellationToken)
+    {
+        var listed = await ListCurrentWorkspacesAsync(cancellationToken);
+        var selected = HostDefaultWorkspaceMarker.Select(listed, workspaceName);
+        if (selected == null)
+        {
+            selected = await FindDefaultWorkspaceAsync(workspaceName, cancellationToken);
+        }
+
+        if (selected == null)
+        {
+            return null;
+        }
+
+        if (HostDefaultWorkspaceMarker.IsMarked(selected))
+        {
+            return selected;
+        }
+
+        var fallback = HostDefaultWorkspaceMarker.HasSeedVersion(selected)
+            ? "DefaultWorkspaceSeedVersion"
+            : "configured name '" + workspaceName + "'";
+        Logger.LogWarning(
+            "Host default AI workspace is not marked IsDefault. Tenant {TenantId} will inherit '{WorkspaceName}' ({WorkspaceId}) via {Fallback}. Mark this workspace as the default in AI admin so a later rename does not hide it.",
+            tenantId,
+            selected.Name,
+            selected.Id,
+            fallback);
+        HostDefaultWorkspaceMarker.Mark(selected);
+        await WorkspaceRepository.UpdateAsync(selected, autoSave: true, cancellationToken);
+        return selected;
+    }
+
+    protected virtual async Task<List<Workspace>> ListCurrentWorkspacesAsync(CancellationToken cancellationToken)
+    {
+        var count = await WorkspaceRepository.GetCountAsync(cancellationToken: cancellationToken);
+        if (count <= 0)
+        {
+            return new List<Workspace>();
+        }
+
+        var max = count > int.MaxValue ? int.MaxValue : (int)count;
+        return await WorkspaceRepository.GetListAsync(
+            skipCount: 0,
+            maxResultCount: max,
+            sorting: nameof(Workspace.Name),
+            cancellationToken: cancellationToken);
     }
 
     protected virtual void EnsureDefaultModelConfigurations(

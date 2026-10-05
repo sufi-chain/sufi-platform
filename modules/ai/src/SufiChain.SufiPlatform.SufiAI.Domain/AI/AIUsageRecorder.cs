@@ -1,6 +1,8 @@
 using Microsoft.Extensions.Logging;
 using SufiChain.SufiPlatform.SufiAI.Workspaces;
 using Volo.Abp.Domain.Services;
+using Volo.Abp.MultiTenancy;
+using Volo.Abp.Uow;
 
 namespace SufiChain.SufiPlatform.SufiAI;
 
@@ -11,28 +13,39 @@ public class AIUsageRecorder : DomainService, IAIUsageRecorder
 
     protected IAIUsageLogRepository UsageLogRepository { get; }
     protected ILogger<AIUsageRecorder> RecorderLogger { get; }
+    protected IUnitOfWorkManager? UsageUnitOfWorkManager { get; }
+    protected ICurrentTenant? UsageCurrentTenant { get; }
 
     public AIUsageRecorder(
         IAIUsageLogRepository usageLogRepository,
-        ILogger<AIUsageRecorder> logger)
+        ILogger<AIUsageRecorder> logger,
+        IUnitOfWorkManager? unitOfWorkManager = null,
+        ICurrentTenant? currentTenant = null)
     {
         UsageLogRepository = usageLogRepository;
         RecorderLogger = logger;
+        UsageUnitOfWorkManager = unitOfWorkManager;
+        UsageCurrentTenant = currentTenant;
     }
 
     public virtual async Task RecordAsync(AIUsageRecord record, CancellationToken cancellationToken = default)
     {
+        _ = cancellationToken;
         var configuration = record.Configuration;
         var workspace = configuration.Workspace;
         try
         {
+            // A host workspace used from a tenant must be visible to that tenant's analytics.
+            // Caller cancellation must not drop the row: streaming completes the ambient unit
+            // of work before this insert, and the request token is often already cancelled.
+            var tenantId = workspace.TenantId ?? UsageCurrentTenant?.Id;
             var log = new AIUsageLog(
                 GuidGenerator.Create(),
                 workspace.Id,
                 record.CapabilityType ?? configuration.CapabilityType,
                 record.ModelId ?? configuration.ModelId,
                 configuration.Provider,
-                workspace.TenantId);
+                tenantId);
 
             if (!configuration.IsFallback)
             {
@@ -67,7 +80,7 @@ public class AIUsageRecorder : DomainService, IAIUsageRecorder
                 log.RecordFailure(record.ErrorMessage ?? "Unknown error", record.LatencyMs);
             }
 
-            await UsageLogRepository.InsertAsync(log, cancellationToken: cancellationToken);
+            await InsertCommittedAsync(log);
         }
         catch (Exception ex)
         {
@@ -76,6 +89,21 @@ public class AIUsageRecorder : DomainService, IAIUsageRecorder
                 "Failed to log AI usage for workspace {WorkspaceName}",
                 workspace.Name);
         }
+    }
+
+    protected virtual async Task InsertCommittedAsync(AIUsageLog log)
+    {
+        if (UsageUnitOfWorkManager == null)
+        {
+            await UsageLogRepository.InsertAsync(log, autoSave: true, cancellationToken: CancellationToken.None);
+            return;
+        }
+
+        using var unitOfWork = UsageUnitOfWorkManager.Begin(
+            new AbpUnitOfWorkOptions { IsTransactional = false },
+            requiresNew: true);
+        await UsageLogRepository.InsertAsync(log, autoSave: true, cancellationToken: CancellationToken.None);
+        await unitOfWork.CompleteAsync(CancellationToken.None);
     }
 
     protected virtual CostCalculationResult CalculateCost(

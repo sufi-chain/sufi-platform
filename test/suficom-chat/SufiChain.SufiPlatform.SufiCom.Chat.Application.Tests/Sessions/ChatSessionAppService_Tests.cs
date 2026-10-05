@@ -1,3 +1,6 @@
+using SufiChain.SufiPlatform.SufiAI.Hooshvare.Hooshvare;
+using SufiChain.SufiPlatform.SufiCom.Chat.AiUsage;
+using SufiChain.SufiPlatform.SufiCom.Chat.Hooshvare;
 using SufiChain.SufiPlatform.SufiCom.Chat.Messages;
 using SufiChain.SufiPlatform.SufiCom.Chat.Participants;
 using SufiChain.SufiPlatform.SufiCom.Chat.Sessions;
@@ -329,5 +332,150 @@ public class ChatSessionAppService_Tests : ChatApplicationTestBase<SufiComChatAp
         });
 
         exception.Code.ShouldBe("Chat:AnonymousSessionLimitExceeded");
+    }
+
+    [Fact]
+    public async Task Admin_List_Includes_Another_Users_Assistant_And_Contextual_Sessions_And_Pages()
+    {
+        Guid assistantId;
+        Guid contextualId;
+        Guid directId;
+
+        using (CurrentUser.Change(ChatTestData.UserBId))
+        {
+            assistantId = (await _sessionAppService.CreateAsync(new CreateChatSessionInput
+            {
+                Title = "Other user assistant",
+                AccessMode = AccessMode.PublicAuthenticated,
+                ConversationKind = ConversationKind.Assistant,
+                Origin = ChatSessionOrigin.Default,
+                Participants =
+                {
+                    new AddChatParticipantInput
+                    {
+                        UserId = ChatTestData.UserBId,
+                        ParticipantKind = ChatMessageSenderKind.Visitor
+                    }
+                }
+            })).Id;
+
+            contextualId = (await _sessionAppService.CreateAsync(new CreateChatSessionInput
+            {
+                Title = "Contextual hooshvare",
+                AccessMode = AccessMode.Internal,
+                ConversationKind = ConversationKind.Assistant,
+                ChannelOrigin = ChannelOrigin.Admin,
+                Origin = ChatSessionOrigin.Contextual,
+                ExternalOrchestration = true,
+                Participants =
+                {
+                    new AddChatParticipantInput
+                    {
+                        UserId = ChatTestData.UserBId,
+                        ParticipantKind = ChatMessageSenderKind.Operator
+                    }
+                }
+            })).Id;
+
+            directId = (await _sessionAppService.CreateAsync(new CreateChatSessionInput
+            {
+                Title = "Direct",
+                AccessMode = AccessMode.PublicAuthenticated,
+                ConversationKind = ConversationKind.Direct
+            })).Id;
+        }
+
+        using (CurrentUser.Change(ChatTestData.UserAId))
+        {
+            var listed = await _sessionAppService.GetListAsync(new GetChatSessionListInput
+            {
+                SkipCount = 0,
+                MaxResultCount = 20
+            });
+
+            listed.Items.ShouldContain(session => session.Id == assistantId);
+            listed.Items.ShouldContain(session => session.Id == contextualId);
+            listed.Items.ShouldContain(session => session.Id == directId);
+
+            var page = await _sessionAppService.GetListAsync(new GetChatSessionListInput
+            {
+                SkipCount = 1,
+                MaxResultCount = 1
+            });
+
+            page.TotalCount.ShouldBeGreaterThanOrEqualTo(3);
+            page.Items.Count.ShouldBe(1);
+            listed.Items.Select(session => session.Id).ShouldContain(page.Items[0].Id);
+        }
+    }
+
+    [Fact]
+    public async Task Host_Admin_List_Includes_Tenant_Sessions_And_Tenant_Admin_Does_Not_See_The_Other_Tenant()
+    {
+        Guid tenantSessionId;
+
+        using (CurrentTenant.Change(ChatTestData.TenantAId))
+        using (CurrentUser.Change(ChatTestData.UserAId))
+        {
+            tenantSessionId = (await _sessionAppService.CreateAsync(new CreateChatSessionInput
+            {
+                Title = "Tenant assistant",
+                AccessMode = AccessMode.Internal,
+                ConversationKind = ConversationKind.Assistant,
+                Origin = ChatSessionOrigin.Contextual
+            })).Id;
+        }
+
+        var hostList = await _sessionAppService.GetListAsync(new GetChatSessionListInput
+        {
+            MaxResultCount = 50
+        });
+        hostList.Items.ShouldContain(session => session.Id == tenantSessionId);
+
+        using (CurrentTenant.Change(ChatTestData.TenantBId))
+        {
+            var otherTenant = await _sessionAppService.GetListAsync(new GetChatSessionListInput
+            {
+                MaxResultCount = 50
+            });
+            otherTenant.Items.ShouldNotContain(session => session.Id == tenantSessionId);
+        }
+    }
+
+    [Fact]
+    public async Task Should_Stamp_Creator_And_Workspace_When_Tenant_Claim_Is_Missing()
+    {
+        var assistantId = (await GetRequiredService<IHooshvareCatalogAppService>()
+            .GetByKeyAsync(ChatHooshvareKeys.PublicAssistant.Key)).Id;
+
+        using (CurrentTenant.Change(ChatTestData.TenantAId))
+        using (CurrentUser.Change(ChatTestData.UserAId))
+        {
+            var session = await _sessionAppService.CreateAsync(new CreateChatSessionInput
+            {
+                Title = "Tenant assistant",
+                AccessMode = AccessMode.PublicAuthenticated,
+                ConversationKind = ConversationKind.Assistant,
+                ChannelOrigin = ChannelOrigin.Web,
+                AssistantWorkspaceName = ChatTestData.DefaultWorkspaceName,
+                AssistantId = assistantId,
+                Origin = ChatSessionOrigin.Default
+            });
+
+            var stored = await _sessionRepository.GetAsync(session.Id);
+
+            stored.TenantId.ShouldBe(ChatTestData.TenantAId);
+            stored.CreatorId.ShouldBe(ChatTestData.UserAId);
+            stored.GetAssistantWorkspaceId().ShouldBe(TestHooshvareCatalogAppService.PublicAssistantWorkspaceId);
+            stored.GetAssistantWorkspaceName().ShouldBe(ChatTestData.DefaultWorkspaceName);
+            stored.IsExternallyOrchestrated().ShouldBeFalse();
+            stored.GetOrigin().ShouldBe(ChatSessionOrigin.Default);
+            stored.ExtraProperties[ChatSessionExtraPropertyKeys.OrchestrationMode]?.ToString()
+                .ShouldBe(ChatAssistantMetadata.InternalOrchestrationMode);
+            stored.ExtraProperties[ChatSessionExtraPropertyKeys.SessionOrigin]?.ToString()
+                .ShouldBe(nameof(ChatSessionOrigin.Default));
+            stored.ExtraProperties[ChatSessionExtraPropertyKeys.AssistantWorkspaceId]?.ToString()
+                .ShouldBe(TestHooshvareCatalogAppService.PublicAssistantWorkspaceId.ToString("D"));
+        }
     }
 }

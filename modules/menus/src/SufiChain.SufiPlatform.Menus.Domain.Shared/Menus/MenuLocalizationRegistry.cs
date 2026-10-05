@@ -5,6 +5,9 @@ namespace SufiChain.SufiPlatform.Menus.Menus;
 /// </summary>
 public static class MenuLocalizationRegistry
 {
+    /// <summary>Write target for menu labels. Matches <c>MenuBusinessTextResource</c>.</summary>
+    public const string SharedResourceName = "SufiMenus";
+
     private static readonly Dictionary<string, string> MenuKeyResourceNames =
         new(StringComparer.OrdinalIgnoreCase);
 
@@ -57,4 +60,23 @@ public static class MenuLocalizationRegistry
 
         return null;
     }
+
+    /// <summary>
+    /// Shared menu resource first, then the resource mapped for this menu key or context.
+    /// </summary>
+    public static IReadOnlyList<string> GetReadResourceNames(string? menuKey, string? contextType = null)
+    {
+        var names = new List<string> { SharedResourceName };
+        var mapped = GetResourceName(menuKey, contextType);
+        if (!string.IsNullOrWhiteSpace(mapped)
+            && !names.Contains(mapped, StringComparer.OrdinalIgnoreCase))
+        {
+            names.Add(mapped);
+        }
+
+        return names;
+    }
+
+    public static IReadOnlyList<string> GetContextTypes() =>
+        ContextTypeResourceNames.Keys.ToArray();
 }

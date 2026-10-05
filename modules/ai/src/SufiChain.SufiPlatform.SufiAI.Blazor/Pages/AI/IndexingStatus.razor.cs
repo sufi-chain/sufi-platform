@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Components;
+using Microsoft.Extensions.Logging;
 using SufiChain.SufiPlatform.SufiAI.Blazor.Workspaces;
 using SufiChain.SufiPlatform.SufiAI.RAG;
 using SufiChain.SufiPlatform.SufiAI.Workspaces;
@@ -29,9 +30,17 @@ public partial class IndexingStatus : AIComponentBase
     private long _totalCount;
 
     private List<WorkspaceDto> _workspaces = new();
+    private bool _workspacesResolved;
+    private bool _workspacesFailed;
+    private bool _availabilityResolved;
     private Guid? _selectedWorkspaceId;
     private List<DocumentSourceDto> _documentSources = new();
     private RagAvailabilityDto _availability = new();
+
+    protected override void OnInitialized()
+    {
+        LoadingStates[LoadingKeys.LoadWorkspaces] = true;
+    }
 
     protected override async Task OnInitializedAsync()
     {
@@ -48,14 +57,34 @@ public partial class IndexingStatus : AIComponentBase
     private async Task LoadAvailabilityAsync()
     {
         _availability = await RAGAppService.GetAvailabilityAsync();
+        _availabilityResolved = true;
     }
 
-    private async Task LoadWorkspacesAsync()
+    private Task LoadWorkspacesAsync()
     {
-        await ExecuteWithLoadingAsync(async () =>
+        _workspacesFailed = false;
+        if (_workspaces.Count == 0)
         {
-            _workspaces = await WorkspacePagedListLoader.LoadAllActiveAsync(WorkspaceAppService);
-            StateHasChanged();
+            _workspacesResolved = false;
+        }
+
+        return ExecuteWithLoadingAsync(async () =>
+        {
+            try
+            {
+                _workspaces = await WorkspacePagedListLoader.LoadAllActiveAsync(WorkspaceAppService);
+                _workspacesFailed = false;
+                StateHasChanged();
+            }
+            catch (Exception exception)
+            {
+                _workspacesFailed = true;
+                Logger.LogWarning(exception, "Indexing workspaces could not be loaded.");
+            }
+            finally
+            {
+                _workspacesResolved = true;
+            }
         }, LoadingKeys.LoadWorkspaces);
     }
 
