@@ -346,6 +346,7 @@
     "Permission:OrganizationUnits.Update": "Actualizar unidades organizativas",
     "Permission:OrganizationUnits.Delete": "Eliminar unidades organizativas",
     "Permission:OrganizationUnits.ManageMembers": "Administrar miembros de unidades organizativas",
-    "Permission:OrganizationUnits.ManageRoles": "Administrar roles de unidades organizativas"
+    "Permission:OrganizationUnits.ManageRoles": "Administrar roles de unidades organizativas",
+    "Static": "Integrado"
   }
 }
