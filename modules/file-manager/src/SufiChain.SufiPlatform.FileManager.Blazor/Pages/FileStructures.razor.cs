@@ -316,7 +316,6 @@ public partial class FileStructures : FileManagerComponentBase, IDisposable
     {
         if (_disposed) return;
         _disposed = true;
-        _cts.Cancel();
-        _cts.Dispose();
+        DisposeCancellationSource(_cts);
     }
 }

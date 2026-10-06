@@ -81,6 +81,7 @@ public partial class FileBrowser : FileManagerComponentBase, IDisposable
     private bool _uploadModalOpen = false;
     private SbConfirmDialog? _deleteConfirm;
     private readonly CancellationTokenSource _cts = new();
+    private int _disposeOnce;
 
 
     private int _currentPage = 1;
@@ -353,8 +354,12 @@ public partial class FileBrowser : FileManagerComponentBase, IDisposable
 
     public void Dispose()
     {
-        _cts.Cancel();
-        _cts.Dispose();
+        if (Interlocked.Exchange(ref _disposeOnce, 1) != 0)
+        {
+            return;
+        }
+
+        DisposeCancellationSource(_cts);
     }
 
     private enum ViewMode

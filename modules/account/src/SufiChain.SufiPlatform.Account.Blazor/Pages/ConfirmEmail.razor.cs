@@ -207,7 +207,20 @@ public partial class ConfirmEmail : IDisposable
             return;
         }
 
-        _redirectCancellation.Cancel();
-        _redirectCancellation.Dispose();
+        try
+        {
+            _redirectCancellation.Cancel();
+        }
+        catch (ObjectDisposedException)
+        {
+        }
+
+        try
+        {
+            _redirectCancellation.Dispose();
+        }
+        catch (ObjectDisposedException)
+        {
+        }
     }
 }

@@ -31,14 +31,90 @@ namespace SufiChain.SufiPlatform.UI.Blazor;
 public abstract class SufiComponentBase : OwningComponentBase, IHandleEvent
 {
     private readonly CancellationTokenSource _cts = new();
-    private bool _isDisposed;
+    private volatile bool _isDisposed;
     private bool _isInteractive;
+    private static readonly CancellationToken DisposedCancellationToken = new(canceled: true);
 
     /// <summary>
     /// Gets a cancellation token that is cancelled when the component is disposed.
     /// Use this token for async operations to properly cancel them on navigation.
+    /// After dispose the token stays readable and is cancelled. It does not throw
+    /// <see cref="ObjectDisposedException"/> when the circuit is already torn down.
     /// </summary>
-    protected CancellationToken ComponentCancellationToken => _cts.Token;
+    protected CancellationToken ComponentCancellationToken
+    {
+        get
+        {
+            if (_isDisposed)
+            {
+                return DisposedCancellationToken;
+            }
+
+            try
+            {
+                return _cts.Token;
+            }
+            catch (ObjectDisposedException)
+            {
+                return DisposedCancellationToken;
+            }
+        }
+    }
+
+    /// <summary>
+    /// Cancels and disposes a token source. A second call, or a source that is already
+    /// disposed, does not throw. Circuit teardown can dispose a component more than once.
+    /// </summary>
+    protected static void DisposeCancellationSource(CancellationTokenSource? source)
+    {
+        if (source is null)
+        {
+            return;
+        }
+
+        try
+        {
+            source.Cancel();
+        }
+        catch (ObjectDisposedException)
+        {
+        }
+
+        try
+        {
+            source.Dispose();
+        }
+        catch (ObjectDisposedException)
+        {
+        }
+    }
+
+    /// <summary>
+    /// Async form of <see cref="DisposeCancellationSource"/>.
+    /// </summary>
+    protected static async ValueTask DisposeCancellationSourceAsync(CancellationTokenSource? source)
+    {
+        if (source is null)
+        {
+            return;
+        }
+
+        try
+        {
+            await source.CancelAsync();
+        }
+        catch (ObjectDisposedException)
+        {
+        }
+
+        try
+        {
+            source.Dispose();
+        }
+        catch (ObjectDisposedException)
+        {
+        }
+    }
 
     /// <summary>
     /// Gets whether the component has been disposed.
@@ -838,15 +914,7 @@ public abstract class SufiComponentBase : OwningComponentBase, IHandleEvent
 
         if (disposing)
         {
-            try
-            {
-                _cts.Cancel();
-                _cts.Dispose();
-            }
-            catch
-            {
-                // Ignore disposal errors
-            }
+            DisposeCancellationSource(_cts);
         }
 
         base.Dispose(disposing);
