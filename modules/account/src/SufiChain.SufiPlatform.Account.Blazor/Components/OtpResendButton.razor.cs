@@ -103,13 +103,29 @@ public partial class OtpResendButton : ComponentBase, IDisposable
     {
         _timer?.Dispose();
         _timer = null;
-        _timerCts?.Dispose();
-        _timerCts = null;
+        var timerCts = Interlocked.Exchange(ref _timerCts, null);
+        if (timerCts is not null)
+        {
+            try
+            {
+                timerCts.Cancel();
+            }
+            catch (ObjectDisposedException)
+            {
+            }
+
+            try
+            {
+                timerCts.Dispose();
+            }
+            catch (ObjectDisposedException)
+            {
+            }
+        }
     }
 
     public void Dispose()
     {
-        _timerCts?.Cancel();
         StopTimer();
         GC.SuppressFinalize(this);
     }
