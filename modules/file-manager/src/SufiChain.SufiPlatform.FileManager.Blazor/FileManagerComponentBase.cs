@@ -58,10 +58,21 @@ public abstract class FileManagerComponentBase : SufiComponentBase
 
     protected string ResolveStructureDisplayName(string structureKey, string? storedKeyOrText = null)
     {
-        return ResolveStructureText(
-            structureKey,
-            storedKeyOrText ?? BusinessLocalizationKeys.FileStructureDisplayName(structureKey),
-            null);
+        var seededKey = BusinessLocalizationKeys.FileStructureDisplayName(structureKey);
+        if (!string.IsNullOrWhiteSpace(structureKey) &&
+            (string.IsNullOrWhiteSpace(storedKeyOrText) ||
+             !FileStructureLocalizationHelper.IsBusinessLocalizationKey(storedKeyOrText)))
+        {
+            var localized = ResolveStructureText(structureKey, seededKey, null);
+            if (!string.IsNullOrWhiteSpace(localized) &&
+                !string.Equals(localized, structureKey, StringComparison.Ordinal) &&
+                !string.Equals(localized, seededKey, StringComparison.Ordinal))
+            {
+                return localized;
+            }
+        }
+
+        return ResolveStructureText(structureKey, storedKeyOrText, null);
     }
 
     protected string ResolveFolderDisplayName(

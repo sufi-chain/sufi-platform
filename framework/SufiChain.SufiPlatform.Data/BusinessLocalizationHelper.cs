@@ -17,7 +17,8 @@ public static class BusinessLocalizationHelper
         "MCPToolType:",
         "InboxCategory:",
         "SeededMenu:",
-        "SeededCalendar:"
+        "SeededCalendar:",
+        "Media:"
     };
 
     public static bool IsBusinessLocalizationKey(string? value)

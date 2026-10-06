@@ -1,6 +1,7 @@
 using Microsoft.Extensions.Logging;
 using SufiChain.SufiPlatform.SufiCom;
 using SufiChain.SufiPlatform.SufiCom.Smtp;
+using Volo.Abp;
 
 namespace SufiChain.SufiPlatform.Settings;
 
@@ -77,11 +78,27 @@ public class EmailSettingsAppService : SettingsAppServiceBase, IEmailSettingsApp
         {
             await SendEmailByRegisteredSenderAsync(input);
         }
-        catch (Exception e)
+        catch (Exception exception)
         {
-            Logger.LogError(e, "Error sending test email.");
-            throw new ApplicationException(L["MailSendingFailed"]);
+            Logger.LogError(exception, "Error sending test email.");
+            var reason = DescribeMailFailure(exception);
+            throw new UserFriendlyException(
+                string.IsNullOrWhiteSpace(reason)
+                    ? L["MailSendingFailed"]
+                    : $"{L["MailSendingFailed"]} {reason}");
         }
+    }
+
+    protected virtual string DescribeMailFailure(Exception exception)
+    {
+        var message = exception.GetBaseException().Message?.Trim();
+        if (string.IsNullOrWhiteSpace(message))
+        {
+            return string.Empty;
+        }
+
+        const int maxLength = 240;
+        return message.Length <= maxLength ? message : message[..maxLength];
     }
 
     protected virtual async Task CheckFeatureAsync()
