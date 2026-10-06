@@ -59,6 +59,7 @@
     "DeleteRoleConfirmation": "هل أنت متأكد من حذف الدور '{0}'؟",
     "DeleteOUConfirmation": "هل أنت متأكد من حذف الوحدة التنظيمية '{0}'؟",
     "SignIn": "تسجيل الدخول",
+    "SignInLead": "ادخل إلى حسابك للمتابعة",
     "SignOut": "تسجيل الخروج",
     "Register": "التسجيل",
     "UsernameOrEmail": "اسم المستخدم أو البريد الإلكتروني",

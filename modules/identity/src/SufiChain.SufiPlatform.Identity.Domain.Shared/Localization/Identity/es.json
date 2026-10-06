@@ -55,6 +55,7 @@
     "DeleteRoleConfirmation": "¿Está seguro de que desea eliminar el rol '{0}'?",
     "DeleteOUConfirmation": "¿Está seguro de que desea eliminar la unidad organizativa '{0}'?",
     "SignIn": "Iniciar sesión",
+    "SignInLead": "Accede a tu cuenta para continuar",
     "SignOut": "Cerrar sesión",
     "Register": "Registrarse",
     "UsernameOrEmail": "Nombre de usuario o correo electrónico",

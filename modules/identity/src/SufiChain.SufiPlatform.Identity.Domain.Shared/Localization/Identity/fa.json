@@ -61,6 +61,7 @@
     "DeleteRoleConfirmation": "آیا از حذف نقش '{0}' اطمینان دارید؟",
     "DeleteOUConfirmation": "آیا از حذف واحد سازمانی '{0}' اطمینان دارید؟",
     "SignIn": "ورود",
+    "SignInLead": "برای ادامه به حساب خود وارد شوید",
     "SignOut": "خروج",
     "Register": "ثبت‌نام",
     "UsernameOrEmail": "نام کاربری یا ایمیل",

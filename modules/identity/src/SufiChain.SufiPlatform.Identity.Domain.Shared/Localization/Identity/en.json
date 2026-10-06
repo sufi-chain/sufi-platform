@@ -61,6 +61,7 @@
     "DeleteRoleConfirmation": "Are you sure you want to delete role '{0}'?",
     "DeleteOUConfirmation": "Are you sure you want to delete organization unit '{0}'?",
     "SignIn": "Sign In",
+    "SignInLead": "Access your account to continue",
     "SignOut": "Sign Out",
     "Register": "Register",
     "UsernameOrEmail": "Username or Email",
