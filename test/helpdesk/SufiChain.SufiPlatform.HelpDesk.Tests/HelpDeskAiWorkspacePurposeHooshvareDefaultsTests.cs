@@ -13,7 +13,6 @@ public class HelpDeskAiWorkspacePurposeHooshvareDefaultsTests
     [InlineData(HelpDeskAiWorkspacePurpose.RagIndexing, PlatformHooshvareKeys.HelpDeskKbArticleEditor)]
     [InlineData(HelpDeskAiWorkspacePurpose.LiveChat, PlatformHooshvareKeys.HelpDeskVisitorSupport)]
     [InlineData(HelpDeskAiWorkspacePurpose.Ticketing, PlatformHooshvareKeys.HelpDeskAgentReply)]
-    [InlineData(HelpDeskAiWorkspacePurpose.Summarization, PlatformHooshvareKeys.HelpDeskAgentReply)]
     [InlineData(HelpDeskAiWorkspacePurpose.ContentEditing, PlatformHooshvareKeys.HelpDeskKbArticleEditor)]
     public void Should_Map_Purpose_To_Expected_Hooshvare_Key(HelpDeskAiWorkspacePurpose purpose, string expectedKey)
     {
@@ -23,7 +22,6 @@ public class HelpDeskAiWorkspacePurposeHooshvareDefaultsTests
     [Fact]
     public void Should_Include_All_Purposes()
     {
-        // Summarization is not assigned per project; every other purpose is seeded and shown.
         HelpDeskAiWorkspacePurposeHooshvareDefaults.AllPurposes.ShouldBe(
         [
             HelpDeskAiWorkspacePurpose.Default,
@@ -32,8 +30,7 @@ public class HelpDeskAiWorkspacePurposeHooshvareDefaultsTests
             HelpDeskAiWorkspacePurpose.Ticketing,
             HelpDeskAiWorkspacePurpose.ContentEditing
         ]);
-        foreach (var purpose in Enum.GetValues<HelpDeskAiWorkspacePurpose>()
-                     .Where(purpose => purpose != HelpDeskAiWorkspacePurpose.Summarization))
+        foreach (var purpose in Enum.GetValues<HelpDeskAiWorkspacePurpose>())
         {
             HelpDeskAiWorkspacePurposeHooshvareDefaults.AllPurposes.ShouldContain(purpose);
         }
