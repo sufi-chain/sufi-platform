@@ -6,6 +6,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 using NSubstitute;
 using Shouldly;
 using SufiChain.SufiPlatform.SufiCom.Chat.Realtime;
+using Volo.Abp;
 using Volo.Abp.Users;
 using Volo.Abp.Uow;
 using Xunit;
@@ -65,7 +66,9 @@ public class HooshvareTurnHubTests
             Context = Substitute.For<HubCallerContext>(),
             Groups = Substitute.For<IGroupManager>()
         };
-        await Should.ThrowAsync<HubException>(() => hub.JoinHooshvareTurnGroupAsync(emptyTurn ? Guid.Empty : Guid.NewGuid()));
+        var exception = await Should.ThrowAsync<BusinessException>(() =>
+            hub.JoinHooshvareTurnGroupAsync(emptyTurn ? Guid.Empty : Guid.NewGuid()));
+        exception.Code.ShouldBe(ChatClientError.HubTurnAccessRequired);
         hub.Groups.ReceivedCalls().ShouldBeEmpty();
     }
 }
