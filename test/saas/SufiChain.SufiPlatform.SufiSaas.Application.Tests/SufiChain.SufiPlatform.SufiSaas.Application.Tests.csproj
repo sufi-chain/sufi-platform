@@ -6,7 +6,7 @@
     <IsTestProject>true</IsTestProject>
   </PropertyGroup>
   <ItemGroup>
-    <ProjectReference Include="../../../../pro-modules/saas/src/SufiChain.SufiPlatform.SufiSaas.Application/SufiChain.SufiPlatform.SufiSaas.Application.csproj" />
+    <ProjectReference Include="../../../../commercial-modules/sufi-saas/src/SufiChain.SufiPlatform.SufiSaas.Application/SufiChain.SufiPlatform.SufiSaas.Application.csproj" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="$(MicrosoftNetTestSdkVersion)" />
     <PackageReference Include="xunit" Version="$(XunitVersion)" />
     <PackageReference Include="xunit.runner.visualstudio" Version="$(XunitRunnerVisualStudioVersion)" PrivateAssets="All" />

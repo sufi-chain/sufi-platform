@@ -6,7 +6,7 @@
     <RootNamespace>SufiChain.SufiPlatform.Licensing</RootNamespace>
   </PropertyGroup>
   <ItemGroup>
-    <ProjectReference Include="../../../../pro-modules/licensing/src/SufiChain.SufiPlatform.Licensing.Runtime/SufiChain.SufiPlatform.Licensing.Runtime.csproj" />
+    <ProjectReference Include="../../../../commercial-modules/sufi-licensing/src/SufiChain.SufiPlatform.Licensing.Runtime/SufiChain.SufiPlatform.Licensing.Runtime.csproj" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.14.1" />
     <PackageReference Include="Shouldly" Version="4.3.0" />
     <PackageReference Include="xunit" Version="2.9.3" />

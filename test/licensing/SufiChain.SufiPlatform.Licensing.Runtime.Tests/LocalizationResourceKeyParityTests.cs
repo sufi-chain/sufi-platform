@@ -13,8 +13,8 @@ public class LocalizationResourceKeyParityTests
         "sufi-platform/modules/tags/src/SufiChain.SufiPlatform.Tags.Domain.Shared/Localization/Tags",
         "sufi-platform/modules/localization/src/SufiChain.SufiPlatform.Localization.Domain.Shared/Localization/Localization",
         "sufi-platform/framework/SufiChain.SufiPlatform.SufiCom/Localization/SufiComFramework",
-        "pro-modules/licensing/src/SufiChain.SufiPlatform.Licensing.Abstractions/Localization/Licensing",
-        "pro-modules/saas/src/SufiChain.SufiPlatform.SufiSaas.Domain.Shared/Localization/SufiSaas",
+        "commercial-modules/sufi-licensing/src/SufiChain.SufiPlatform.Licensing.Abstractions/Localization/Licensing",
+        "commercial-modules/sufi-saas/src/SufiChain.SufiPlatform.SufiSaas.Domain.Shared/Localization/SufiSaas",
         "pro-modules/dashboard/src/SufiChain.SufiPlatform.Dashboard.Domain.Shared/Localization/Dashboard",
         "pro-modules/crm/src/SufiChain.SufiPlatform.SufiCRM.Contacts.Domain.Shared/Localization/Contacts",
         "pro-modules/helpdesk/src/SufiChain.SufiPlatform.HelpDesk.KnowledgeBase.Domain.Shared/Localization/KnowledgeBase",
@@ -85,8 +85,8 @@ public class LocalizationResourceKeyParityTests
         var hooshvare = File.ReadAllText(Path.Combine(root, "pro-modules/ai-hooshvare/src/SufiChain.SufiPlatform.SufiAI.Hooshvare.Domain.Shared/Localization/SufiAIHooshvare/fa.json".Replace('/', Path.DirectorySeparatorChar)));
         var knowledgeBase = File.ReadAllText(Path.Combine(root, "pro-modules/helpdesk/src/SufiChain.SufiPlatform.HelpDesk.KnowledgeBase.Domain.Shared/Localization/KnowledgeBase/fa.json".Replace('/', Path.DirectorySeparatorChar)));
         var ticketing = File.ReadAllText(Path.Combine(root, "pro-modules/helpdesk/src/SufiChain.SufiPlatform.HelpDesk.Ticketing.Domain.Shared/Localization/Ticketing/fa.json".Replace('/', Path.DirectorySeparatorChar)));
-        var saas = File.ReadAllText(Path.Combine(root, "pro-modules/saas/src/SufiChain.SufiPlatform.SufiSaas.Domain.Shared/Localization/SufiSaas/fa.json".Replace('/', Path.DirectorySeparatorChar)));
-        var saasEnglish = File.ReadAllText(Path.Combine(root, "pro-modules/saas/src/SufiChain.SufiPlatform.SufiSaas.Domain.Shared/Localization/SufiSaas/en.json".Replace('/', Path.DirectorySeparatorChar)));
+        var saas = File.ReadAllText(Path.Combine(root, "commercial-modules/sufi-saas/src/SufiChain.SufiPlatform.SufiSaas.Domain.Shared/Localization/SufiSaas/fa.json".Replace('/', Path.DirectorySeparatorChar)));
+        var saasEnglish = File.ReadAllText(Path.Combine(root, "commercial-modules/sufi-saas/src/SufiChain.SufiPlatform.SufiSaas.Domain.Shared/Localization/SufiSaas/en.json".Replace('/', Path.DirectorySeparatorChar)));
         var roles = File.ReadAllText(Path.Combine(root, "sufi-platform/modules/identity/src/SufiChain.SufiPlatform.Identity.Blazor/Pages/RoleManagement.razor".Replace('/', Path.DirectorySeparatorChar)));
 
         contacts.ShouldNotContain("میز خدمت");
