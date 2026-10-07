@@ -72,6 +72,11 @@ public class FileItem : FullAuditedAggregateRoot<Guid>, IMultiTenant
     /// Thumbnail blob name if generated
     /// </summary>
     public string? ThumbnailBlobName { get; set; }
+
+    /// <summary>
+    /// Byte size of the generated thumbnail. Counted toward the storage quota.
+    /// </summary>
+    public long ThumbnailByteSize { get; set; }
     
     /// <summary>
     /// Associated entity type (e.g., "GoodGroup", "Store", "Article")

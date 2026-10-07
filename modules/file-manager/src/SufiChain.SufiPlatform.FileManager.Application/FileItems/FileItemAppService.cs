@@ -896,7 +896,7 @@ public partial class FileItemAppService : SufiApplicationService, IFileItemAppSe
             query = query.Where(x => x.TenantId == CurrentTenant.Id);
         }
 
-        var usedBytes = await AsyncExecuter.SumAsync(query, x => (long?)x.Size) ?? 0;
+        var usedBytes = await AsyncExecuter.SumAsync(query, x => (long?)(x.Size + x.ThumbnailByteSize)) ?? 0;
 
         var policy = await _storagePolicyProvider.GetAsync();
         var limitBytes = policy.MaxStorageBytes;
@@ -1516,6 +1516,7 @@ public partial class FileItemAppService : SufiApplicationService, IFileItemAppSe
                 "_thumb.webp");
 
             fileItem.ThumbnailBlobName = thumbnailBlobName;
+            fileItem.ThumbnailByteSize = thumbnailData.Length;
             return thumbnailData;
         }
         catch (Exception ex)
@@ -1525,6 +1526,7 @@ public partial class FileItemAppService : SufiApplicationService, IFileItemAppSe
                 "Thumbnail generation failed for {FileName}; continuing without thumbnail",
                 fileItem.OriginalName);
             fileItem.ThumbnailBlobName = null;
+            fileItem.ThumbnailByteSize = 0;
             return null;
         }
     }

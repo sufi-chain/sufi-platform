@@ -68,7 +68,7 @@ public class EfCoreFileItemRepository :
         var dbSet = await GetDbSetAsync();
         return await dbSet
             .Where(x => x.TenantId == tenantId)
-            .SumAsync(x => (long?)x.Size, cancellationToken) ?? 0;
+            .SumAsync(x => (long?)(x.Size + x.ThumbnailByteSize), cancellationToken) ?? 0;
     }
 
     public async Task<FileItem?> FindByBlobNameAsync(

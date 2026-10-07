@@ -82,7 +82,11 @@ public class MongoFileItemRepository :
             new BsonDocument("$group", new BsonDocument
             {
                 { "_id", BsonNull.Value },
-                { "TotalSize", new BsonDocument("$sum", "$Size") }
+                { "TotalSize", new BsonDocument("$sum", new BsonDocument("$add", new BsonArray
+                    {
+                        "$Size",
+                        new BsonDocument("$ifNull", new BsonArray { "$ThumbnailByteSize", 0 })
+                    })) }
             })
         };
 
