@@ -14,15 +14,37 @@ public class InvoiceTests
         invoice.ReplaceLines(
         [
             new(Guid.NewGuid(), invoice.Id, "Service", 2, 100, 10, null, null, 0),
-            new(Guid.NewGuid(), invoice.Id, "Discounted", 1, 50, 0, null, null, 1)
-        ]);
+            new(Guid.NewGuid(), invoice.Id, "Entered at zero", 1, 50, 0, null, null, 1)
+        ], vatEnabled: true, vatPercent: 10);
 
-        invoice.Issue(Guid.NewGuid(), Now);
+        invoice.Issue(Guid.NewGuid(), Now, vatEnabled: true, vatPercent: 10);
 
         invoice.Subtotal.ShouldBe(250);
-        invoice.TaxAmount.ShouldBe(20);
-        invoice.TotalAmount.ShouldBe(270);
+        invoice.TaxAmount.ShouldBe(25);
+        invoice.TotalAmount.ShouldBe(275);
+        invoice.VatEnabledAtIssue.ShouldBeTrue();
+        invoice.VatPercentAtIssue.ShouldBe(10);
+        invoice.LineItems.ShouldAllBe(line => line.TaxRate == 10 && line.TaxAmount == line.Subtotal * 10m / 100m);
         invoice.Status.ShouldBe(InvoiceStatus.Pending);
+    }
+
+    [Fact]
+    public void Issue_With_Vat_Disabled_Should_Clear_Line_Tax()
+    {
+        var invoice = CreateInvoice();
+        invoice.ReplaceLines(
+            [new(Guid.NewGuid(), invoice.Id, "Service", 1, 100, 10, null, null, 0)],
+            vatEnabled: false,
+            vatPercent: 10);
+
+        invoice.Issue(Guid.NewGuid(), Now, vatEnabled: false, vatPercent: 10);
+
+        invoice.TaxAmount.ShouldBe(0);
+        invoice.TotalAmount.ShouldBe(100);
+        invoice.VatEnabledAtIssue.ShouldBeFalse();
+        invoice.VatPercentAtIssue.ShouldBe(10);
+        invoice.LineItems.Single().TaxRate.ShouldBe(0);
+        invoice.LineItems.Single().TaxAmount.ShouldBe(0);
     }
 
     [Fact]
