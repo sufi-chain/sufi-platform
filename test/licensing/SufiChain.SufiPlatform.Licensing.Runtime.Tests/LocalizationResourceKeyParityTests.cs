@@ -66,8 +66,8 @@ public class LocalizationResourceKeyParityTests
     {
         var markup = File.ReadAllText(Path.Combine(
             FindWorkspaceRoot(),
-            "pro-modules",
-            "saas",
+            "commercial-modules",
+            "sufi-saas",
             "src",
             "SufiChain.SufiPlatform.SufiSaas.Blazor",
             "Pages",
@@ -139,8 +139,8 @@ public class LocalizationResourceKeyParityTests
         {
             var licensing = Path.Combine(
                 dir.FullName,
-                "pro-modules",
-                "licensing",
+                "commercial-modules",
+                "sufi-licensing",
                 "src",
                 "SufiChain.SufiPlatform.Licensing.Abstractions",
                 "Localization",
@@ -164,6 +164,6 @@ public class LocalizationResourceKeyParityTests
             dir = dir.Parent;
         }
 
-        throw new FileNotFoundException("Workspace root with sufi-platform and pro-modules was not found.");
+        throw new FileNotFoundException("Workspace root with sufi-platform and commercial licensing was not found.");
     }
 }

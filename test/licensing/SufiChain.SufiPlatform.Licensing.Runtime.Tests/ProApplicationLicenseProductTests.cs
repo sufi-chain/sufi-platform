@@ -24,12 +24,15 @@ public class ProApplicationLicenseProductTests
     {
         var root = FindProModulesRoot();
         var productMembers = ReadProductMembers(Path.Combine(
-            root,
-            "licensing",
+            Directory.GetParent(root)!.FullName,
+            "commercial-modules",
+            "sufi-licensing",
             "src",
             "SufiChain.SufiPlatform.Licensing.Abstractions",
             "LicenseProducts.cs"));
-        var projects = Directory.EnumerateFiles(root, "*.csproj", SearchOption.AllDirectories)
+        var projects = new[] { root, Path.Combine(Directory.GetParent(root)!.FullName, "commercial-modules") }
+            .Where(Directory.Exists)
+            .SelectMany(directory => Directory.EnumerateFiles(directory, "*.csproj", SearchOption.AllDirectories))
             .Select(Path.GetFullPath)
             .Where(path => !IsBuildOutput(path) && IsProApplicationProject(path))
             .OrderBy(path => path, StringComparer.Ordinal)
@@ -118,7 +121,14 @@ public class ProApplicationLicenseProductTests
              directory = directory.Parent)
         {
             var candidate = Path.Combine(directory.FullName, "pro-modules");
-            if (Directory.Exists(Path.Combine(candidate, "licensing")) &&
+            var licensing = Path.Combine(
+                directory.FullName,
+                "commercial-modules",
+                "sufi-licensing",
+                "src",
+                "SufiChain.SufiPlatform.Licensing.Abstractions",
+                "LicenseProducts.cs");
+            if (File.Exists(licensing) &&
                 Directory.Exists(Path.Combine(candidate, "finance")))
             {
                 return candidate;
