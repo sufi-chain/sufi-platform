@@ -105,6 +105,7 @@ public static class ChatTestServiceConfiguration
 
 
         context.Services.AddSingleton(_ => Substitute.For<IFileStorageIntegrationService>());
+        context.Services.AddSingleton(_ => Substitute.For<IFileStorageTrustedService>());
 
         var roleRepository = Substitute.For<IIdentityRoleRepository>();
 
