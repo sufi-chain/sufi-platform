@@ -40,4 +40,6 @@ public static class BusinessLocalizationKeys
     public static string SeededMenuItemDisplayName(string menuKey, string itemSlug) => $"SeededMenu:{menuKey}:Item:{itemSlug}:DisplayName";
 
     public static string SeededCalendarDisplayName(string calendarKey) => $"SeededCalendar:{calendarKey}:DisplayName";
+
+    public static string PlanDisplayName(string planCode) => $"Plan:{planCode}:DisplayName";
 }

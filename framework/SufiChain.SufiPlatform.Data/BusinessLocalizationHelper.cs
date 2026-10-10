@@ -18,7 +18,8 @@ public static class BusinessLocalizationHelper
         "InboxCategory:",
         "SeededMenu:",
         "SeededCalendar:",
-        "Media:"
+        "Media:",
+        "Plan:"
     };
 
     public static bool IsBusinessLocalizationKey(string? value)
