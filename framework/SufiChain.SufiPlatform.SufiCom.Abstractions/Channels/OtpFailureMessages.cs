@@ -22,6 +22,8 @@ public static class OtpFailureMessages
 
     public const string FanapRejected = "Communication:FanapOtpRejected";
 
+    public const string FanapSmsRejected = "Communication:FanapSmsRejected";
+
     public static string Format(string key, params object[] args)
     {
         if (args.Length == 0)
