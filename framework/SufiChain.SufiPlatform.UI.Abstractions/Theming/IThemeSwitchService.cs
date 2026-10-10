@@ -40,6 +40,11 @@ public interface IThemeSwitchService
     /// Gets the stored theme preference from browser storage.
     /// </summary>
     Task<ThemeMode> GetStoredThemeAsync();
+
+    /// <summary>
+    /// Seeds the resolved dark/light appearance from the server before browser storage is read.
+    /// </summary>
+    void SeedResolved(bool isDark);
 }
 
 /// <summary>
