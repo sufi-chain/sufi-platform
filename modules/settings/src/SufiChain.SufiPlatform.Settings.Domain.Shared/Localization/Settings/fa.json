@@ -72,6 +72,11 @@
     "ExternalAuth:Enabled": "فعال‌سازی این ارائه‌دهنده",
     "ExternalAuth:ClientId": "شناسه کلاینت",
     "ExternalAuth:ClientSecret": "راز کلاینت",
-    "ExternalAuth:ClientSecretKeep": "راز کلاینت (برای حفظ مقدار خالی بگذارید)"
+    "ExternalAuth:ClientSecretKeep": "راز کلاینت (برای حفظ مقدار خالی بگذارید)",
+    "Feature:SettingsGroup": "تنظیمات",
+    "Feature:SettingsEnable": "تنظیمات",
+    "Feature:SettingsEnableDescription": "این نسخه می‌تواند تنظیمات را مدیریت کند.",
+    "Feature:AllowChangingEmailSettings": "تنظیمات ایمیل",
+    "Feature:AllowChangingEmailSettingsDescription": "تغییر تنظیمات ایمیل مجاز است."
   }
 }

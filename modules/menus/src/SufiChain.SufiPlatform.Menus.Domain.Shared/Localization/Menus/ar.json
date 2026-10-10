@@ -66,6 +66,12 @@
     "MenuLabel:Key": "معرّف النص",
     "MenuLabel:Broken": "لم يُحفظ عنوان هذا العنصر بشكل صحيح. أدخله مرة أخرى.",
     "MenuLabel:Copy": "نسخ",
-    "DeleteMenu": "حذف القائمة"
+    "DeleteMenu": "حذف القائمة",
+    "Feature:SufiMenus.Enable": "القوائم",
+    "Feature:SufiMenus.Enable.Description": "تفعيل إدارة القوائم.",
+    "Feature:SufiMenus.Menus": "قوائم الإدارة",
+    "Feature:SufiMenus.Menus.Description": "السماح بتحرير القوائم وعناصرها.",
+    "Feature:SufiMenus.PublicMenus": "القوائم العامة",
+    "Feature:SufiMenus.PublicMenus.Description": "السماح للمواقع العامة بقراءة القوائم."
   }
 }

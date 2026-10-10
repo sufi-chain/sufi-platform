@@ -28,6 +28,12 @@
     "UnassignTagLinkConfirmation": "¿Quitar esta etiqueta de '{0}' ({1})?",
     "Unassign": "Desasignar",
     "TagUnassignedSuccessfully": "Etiqueta desasignada correctamente.",
-    "DeleteTag": "Eliminar etiqueta"
+    "DeleteTag": "Eliminar etiqueta",
+    "Feature:SufiTags.Enable": "Etiquetas",
+    "Feature:SufiTags.Enable.Description": "Activa la administración de etiquetas.",
+    "Feature:SufiTags.Tags": "Definiciones de etiquetas",
+    "Feature:SufiTags.Tags.Description": "Permite crear y editar etiquetas.",
+    "Feature:SufiTags.TagLinks": "Asignación de etiquetas",
+    "Feature:SufiTags.TagLinks.Description": "Permite asignar etiquetas a los registros."
   }
 }

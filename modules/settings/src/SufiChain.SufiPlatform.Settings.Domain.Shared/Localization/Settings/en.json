@@ -71,6 +71,11 @@
     "ExternalAuth:Enabled": "Enable this provider",
     "ExternalAuth:ClientId": "Client ID",
     "ExternalAuth:ClientSecret": "Client secret",
-    "ExternalAuth:ClientSecretKeep": "Client secret (leave blank to keep)"
+    "ExternalAuth:ClientSecretKeep": "Client secret (leave blank to keep)",
+    "Feature:SettingsGroup": "Settings",
+    "Feature:SettingsEnable": "Settings",
+    "Feature:SettingsEnableDescription": "Allow this edition to manage settings.",
+    "Feature:AllowChangingEmailSettings": "Email settings",
+    "Feature:AllowChangingEmailSettingsDescription": "Allow changing email settings."
   }
 }

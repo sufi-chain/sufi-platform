@@ -71,6 +71,11 @@
     "ExternalAuth:Enabled": "Activar este proveedor",
     "ExternalAuth:ClientId": "Id. de cliente",
     "ExternalAuth:ClientSecret": "Secreto de cliente",
-    "ExternalAuth:ClientSecretKeep": "Secreto de cliente (déjelo en blanco para conservar)"
+    "ExternalAuth:ClientSecretKeep": "Secreto de cliente (déjelo en blanco para conservar)",
+    "Feature:SettingsGroup": "Ajustes",
+    "Feature:SettingsEnable": "Ajustes",
+    "Feature:SettingsEnableDescription": "Esta edición puede administrar los ajustes.",
+    "Feature:AllowChangingEmailSettings": "Ajustes de correo",
+    "Feature:AllowChangingEmailSettingsDescription": "Permite cambiar los ajustes de correo."
   }
 }

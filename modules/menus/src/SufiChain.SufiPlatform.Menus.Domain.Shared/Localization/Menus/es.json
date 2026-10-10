@@ -66,6 +66,12 @@
     "MenuLabel:Key": "Identificador del texto",
     "MenuLabel:Broken": "La etiqueta de este elemento no se guardó correctamente. Vuelva a escribirla.",
     "MenuLabel:Copy": "Copiar",
-    "DeleteMenu": "Eliminar menú"
+    "DeleteMenu": "Eliminar menú",
+    "Feature:SufiMenus.Enable": "Menús",
+    "Feature:SufiMenus.Enable.Description": "Activa la administración de menús.",
+    "Feature:SufiMenus.Menus": "Menús de administración",
+    "Feature:SufiMenus.Menus.Description": "Permite editar menús y sus elementos.",
+    "Feature:SufiMenus.PublicMenus": "Menús públicos",
+    "Feature:SufiMenus.PublicMenus.Description": "Permite que los sitios públicos resuelvan menús."
   }
 }

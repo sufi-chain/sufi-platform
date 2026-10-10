@@ -28,6 +28,12 @@
     "UnassignTagLinkConfirmation": "إزالة هذا الوسم من '{0}' ({1})؟",
     "Unassign": "إلغاء الربط",
     "TagUnassignedSuccessfully": "تم إلغاء ربط الوسم بنجاح.",
-    "DeleteTag": "حذف الوسم"
+    "DeleteTag": "حذف الوسم",
+    "Feature:SufiTags.Enable": "الوسوم",
+    "Feature:SufiTags.Enable.Description": "تفعيل إدارة الوسوم.",
+    "Feature:SufiTags.Tags": "تعريفات الوسوم",
+    "Feature:SufiTags.Tags.Description": "السماح بإنشاء الوسوم وتحريرها.",
+    "Feature:SufiTags.TagLinks": "تعيين الوسوم",
+    "Feature:SufiTags.TagLinks.Description": "السماح بتعيين الوسوم للسجلات."
   }
 }

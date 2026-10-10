@@ -72,6 +72,11 @@
     "ExternalAuth:Enabled": "تفعيل هذا الموفر",
     "ExternalAuth:ClientId": "معرّف العميل",
     "ExternalAuth:ClientSecret": "سر العميل",
-    "ExternalAuth:ClientSecretKeep": "سر العميل (اتركه فارغاً للإبقاء)"
+    "ExternalAuth:ClientSecretKeep": "سر العميل (اتركه فارغاً للإبقاء)",
+    "Feature:SettingsGroup": "الإعدادات",
+    "Feature:SettingsEnable": "الإعدادات",
+    "Feature:SettingsEnableDescription": "تسمح هذه النسخة بإدارة الإعدادات.",
+    "Feature:AllowChangingEmailSettings": "إعدادات البريد",
+    "Feature:AllowChangingEmailSettingsDescription": "السماح بتغيير إعدادات البريد."
   }
 }
