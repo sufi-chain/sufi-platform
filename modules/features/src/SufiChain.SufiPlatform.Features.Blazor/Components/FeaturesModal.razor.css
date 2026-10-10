@@ -2,19 +2,25 @@
 
 .feature-management-layout {
     display: flex;
-    min-height: 400px;
+    height: min(32rem, calc(90vh - 18rem));
+    min-height: 16rem;
 }
 
 /* SbTabs vertical layout inside feature management */
 .feature-management-layout ::deep .feature-modal__tabs {
     flex: 1;
+    min-width: 0;
     min-height: 0;
+    height: 100%;
     overflow: hidden;
 }
 
 .feature-management-layout ::deep .sb-tabs__list {
-    width: 220px;
+    width: 14rem;
     flex-shrink: 0;
+    max-height: 100%;
+    overflow-y: auto;
+    overscroll-behavior: contain;
     background-color: var(--sb-bg-subtle, var(--sb-color-surface-variant));
 }
 
@@ -22,6 +28,8 @@
     justify-content: flex-start;
     width: 100%;
     text-align: start;
+    white-space: normal;
+    overflow-wrap: anywhere;
 }
 
 .feature-management-layout ::deep .sb-tabs__tab .group-count {
@@ -42,9 +50,12 @@
 
 .feature-management-layout ::deep .sb-tabs__panel {
     flex: 1;
+    min-width: 0;
     min-height: 0;
+    height: 100%;
     overflow-y: auto;
-    max-height: 400px;
+    overscroll-behavior: contain;
+    max-height: none;
     padding: 1rem;
     background-color: var(--sb-bg, var(--sb-color-surface));
 }
@@ -53,7 +64,9 @@
 @media (max-width: 767px) {
     .feature-management-layout {
         flex-direction: column;
-        min-height: 300px;
+        height: auto;
+        max-height: calc(90vh - 16rem);
+        min-height: 16rem;
     }
 
     .feature-management-layout ::deep .feature-modal__tabs {
@@ -94,7 +107,7 @@
 
     .feature-management-layout ::deep .sb-tabs__panel {
         flex: 1;
-        min-height: 0;
-        max-height: none;
+        min-height: 12rem;
+        max-height: calc(90vh - 22rem);
     }
 }
