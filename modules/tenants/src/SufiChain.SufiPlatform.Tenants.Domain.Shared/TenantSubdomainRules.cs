@@ -26,7 +26,7 @@ public static class TenantSubdomainRules
     /// <summary>
     /// Reserved platform and infrastructure subdomains that a tenant may never claim.
     /// </summary>
-    public static readonly IReadOnlySet<string> ReservedSubdomains = new HashSet<string>(
+    public static readonly ISet<string> ReservedSubdomains = new HashSet<string>(
         new[]
         {
             "console", "pc", "stage", "harbor", "www", "api", "gw", "admin",
