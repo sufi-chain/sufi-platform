@@ -17,6 +17,10 @@
                 <div><SbCheckbox @bind-Value="_settings.EnableSelfRegistration" Label="@IdentityL["Setting:EnableSelfRegistration"]" /><SbText Variant="SbTextVariant.BodySmall" Color="SbColor.Muted">@IdentityL["SettingHint:EnableSelfRegistration"]</SbText></div>
                 <div><SbCheckbox @bind-Value="_settings.RequireEmailConfirmation" Disabled="@_settings.RequireConfirmedEmail" Label="@IdentityL["Setting:RequireEmailConfirmation"]" /><SbText Variant="SbTextVariant.BodySmall" Color="SbColor.Muted">@IdentityL["SettingHint:RequireEmailConfirmation"]</SbText></div>
                 <div><SbCheckbox @bind-Value="RequireConfirmedEmail" Label="@IdentityL["Setting:RequireConfirmedEmail"]" /><SbText Variant="SbTextVariant.BodySmall" Color="SbColor.Muted">@IdentityL["SettingHint:RequireConfirmedEmail"]</SbText></div>
+                @if (RequireConfirmedEmail && !_settings.IsEmailChannelAvailable)
+                {
+                    <SbAlert Severity="SbAlertSeverity.Warning">@IdentityL["SettingWarning:RequireConfirmedEmailWithoutSmtp"]</SbAlert>
+                }
                 <div><SbCheckbox @bind-Value="_settings.RequireConfirmedPhoneNumber" Disabled="@(!IsChannelAvailable(VerificationDeliveryChannel.Sms))" Label="@IdentityL["Setting:RequireConfirmedPhoneNumber"]" /><SbText Variant="SbTextVariant.BodySmall" Color="SbColor.Muted">@IdentityL["SettingHint:RequireConfirmedPhoneNumber"]</SbText></div>
                 <div><SbCheckbox @bind-Value="_settings.RequireUniqueEmail" Label="@IdentityL["Setting:RequireUniqueEmail"]" /><SbText Variant="SbTextVariant.BodySmall" Color="SbColor.Muted">@IdentityL["SettingHint:RequireUniqueEmail"]</SbText></div>
             </SbStack>

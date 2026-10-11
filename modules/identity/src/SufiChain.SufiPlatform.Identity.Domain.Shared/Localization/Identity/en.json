@@ -250,6 +250,7 @@
     "SettingHint:RequireEmailConfirmation": "New users receive a confirmation link. They can still sign in before confirming, unless sign-in is blocked until the email is confirmed.",
     "SettingHint:RequireConfirmedAccount": "When on, sign-in is blocked until the account is confirmed.",
     "SettingHint:RequireConfirmedEmail": "Password and one-time-code sign-in stay blocked until the email address is confirmed. Turning this on also sends the confirmation email after sign-up.",
+    "SettingWarning:RequireConfirmedEmailWithoutSmtp": "No email provider (SMTP) is configured for this workspace, so users can never receive a confirmation email and will be locked out. Configure email first, or leave this option off.",
     "SettingHint:RequireConfirmedPhoneNumber": "Available only when an SMS provider is enabled in SufiCom. When on, registration asks for a phone number and confirms it with an SMS code. Existing sign-in stays available.",
     "SettingHint:RequireUniqueEmail": "When on, the same email address cannot be used by more than one user.",
     "SettingHint:PasswordRequiredLength": "Users must choose passwords with at least this many characters.",

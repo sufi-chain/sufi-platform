@@ -107,6 +107,7 @@ public class IdentitySettingsAppService : SettingsAppServiceBase, IIdentitySetti
         dto.AvailableChannels = ChannelAvailabilityChecker != null
             ? await ChannelAvailabilityChecker.GetAvailableChannelsAsync()
             : new List<VerificationDeliveryChannel> { VerificationDeliveryChannel.Email };
+        dto.IsEmailChannelAvailable = dto.AvailableChannels.Contains(VerificationDeliveryChannel.Email);
 
         return dto;
     }

@@ -125,4 +125,10 @@ public class IdentitySettingsDto
 
     public IReadOnlyList<VerificationDeliveryChannel> AvailableChannels { get; set; } =
         new List<VerificationDeliveryChannel>();
+
+    /// <summary>
+    /// True when an email/SMTP delivery channel is configured. When false, requiring a
+    /// confirmed email blocks sign-in on tenants that can never receive the confirmation email.
+    /// </summary>
+    public bool IsEmailChannelAvailable { get; set; }
 }
