@@ -81,6 +81,70 @@ public class PlanCrudWorkflowTests
     }
 
     [Fact]
+    public async Task Create_Should_Round_Trip_Monthly_And_Yearly_Prices()
+    {
+        var edition = new Edition(Guid.NewGuid(), "Pro", "Pro", "PRO", true);
+        var plans = Substitute.For<IPlanRepository>();
+        plans.FindByCodeAsync(Arg.Any<string>(), Arg.Any<CancellationToken>()).Returns((Plan?)null);
+        plans.InsertAsync(Arg.Any<Plan>(), Arg.Any<bool>(), Arg.Any<CancellationToken>())
+            .Returns(call => call.Arg<Plan>());
+        var service = NewService(plans, edition, hasSubscription: false);
+
+        var created = await service.CreateAsync(Input(edition.Id, "starter", isActive: true,
+            monthlyPrice: 2_900_000m, yearlyPrice: 29_000_000m));
+
+        created.MonthlyPrice.ShouldBe(2_900_000m);
+        created.MonthlyCurrencyCode.ShouldBe("USD");
+        created.YearlyPrice.ShouldBe(29_000_000m);
+        created.YearlyCurrencyCode.ShouldBe("USD");
+    }
+
+    [Fact]
+    public async Task Update_Should_Round_Trip_Monthly_And_Yearly_Prices()
+    {
+        var edition = new Edition(Guid.NewGuid(), "Pro", "Pro", "PRO", true);
+        var plan = new Plan(Guid.NewGuid(), "starter", "Plan:STARTER", edition.Id,
+            30, false, 10, false, 10m, "USD");
+        var plans = Substitute.For<IPlanRepository>();
+        plans.GetAsync(plan.Id).Returns(plan);
+        plans.FindByCodeAsync(Arg.Any<string>(), Arg.Any<CancellationToken>()).Returns((Plan?)null);
+        plans.UpdateAsync(Arg.Any<Plan>(), Arg.Any<bool>(), Arg.Any<CancellationToken>())
+            .Returns(call => call.Arg<Plan>());
+        var service = NewService(plans, edition, hasSubscription: false);
+
+        var updated = await service.UpdateAsync(plan.Id, Input(edition.Id, "starter", isActive: true,
+            monthlyPrice: 1_000_000m, yearlyPrice: 9_000_000m));
+
+        updated.MonthlyPrice.ShouldBe(1_000_000m);
+        updated.MonthlyCurrencyCode.ShouldBe("USD");
+        updated.YearlyPrice.ShouldBe(9_000_000m);
+        updated.YearlyCurrencyCode.ShouldBe("USD");
+    }
+
+    [Fact]
+    public async Task Update_Should_Clear_A_Period_Price_When_It_Is_Omitted()
+    {
+        var edition = new Edition(Guid.NewGuid(), "Pro", "Pro", "PRO", true);
+        var plan = new Plan(Guid.NewGuid(), "starter", "Plan:STARTER", edition.Id,
+            30, false, 10, false, 10m, "USD");
+        plan.SetMonthlyPricing(2_900_000m, "USD");
+        plan.SetYearlyPricing(29_000_000m, "USD");
+        var plans = Substitute.For<IPlanRepository>();
+        plans.GetAsync(plan.Id).Returns(plan);
+        plans.FindByCodeAsync(Arg.Any<string>(), Arg.Any<CancellationToken>()).Returns((Plan?)null);
+        plans.UpdateAsync(Arg.Any<Plan>(), Arg.Any<bool>(), Arg.Any<CancellationToken>())
+            .Returns(call => call.Arg<Plan>());
+        var service = NewService(plans, edition, hasSubscription: false);
+
+        var updated = await service.UpdateAsync(plan.Id, Input(edition.Id, "starter", isActive: true));
+
+        updated.MonthlyPrice.ShouldBeNull();
+        updated.MonthlyCurrencyCode.ShouldBeNull();
+        updated.YearlyPrice.ShouldBeNull();
+        updated.YearlyCurrencyCode.ShouldBeNull();
+    }
+
+    [Fact]
     public async Task Seed_Should_Not_Throw_And_Leaves_Paid_Plans_Inactive_When_Pricing_Config_Is_Missing()
     {
         var inserted = new List<Plan>();
@@ -253,13 +317,21 @@ public class PlanCrudWorkflowTests
         return service;
     }
 
-    private static CreateUpdatePlanDto Input(Guid editionId, string code, bool isActive, decimal price = 10m) => new()
+    private static CreateUpdatePlanDto Input(
+        Guid editionId,
+        string code,
+        bool isActive,
+        decimal price = 10m,
+        decimal? monthlyPrice = null,
+        decimal? yearlyPrice = null) => new()
     {
         Code = code,
         DisplayName = "Starter",
         EditionId = editionId,
         IsActive = isActive,
         Price = price,
-        CurrencyCode = "USD"
+        CurrencyCode = "USD",
+        MonthlyPrice = monthlyPrice,
+        YearlyPrice = yearlyPrice
     };
 }
