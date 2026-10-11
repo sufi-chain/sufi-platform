@@ -1,4 +1,5 @@
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Localization;
 using NSubstitute;
 using Shouldly;
 using SufiChain.SufiPlatform.Editions;
@@ -78,6 +79,7 @@ public class PlanCrudWorkflowTests
         var service = new PlanAppService(plans, editions, subscriptions);
         var services = new ServiceCollection();
         services.AddSingleton<IGuidGenerator>(SimpleGuidGenerator.Instance);
+        services.AddSingleton(Substitute.For<IStringLocalizerFactory>());
         service.LazyServiceProvider = new AbpLazyServiceProvider(services.BuildServiceProvider());
         return service;
     }

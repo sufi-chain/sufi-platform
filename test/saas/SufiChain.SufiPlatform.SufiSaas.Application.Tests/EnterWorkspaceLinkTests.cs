@@ -12,7 +12,6 @@ using NSubstitute;
 using Shouldly;
 using SufiChain.SufiPlatform.Features;
 using SufiChain.SufiPlatform.Identity;
-using SufiChain.SufiPlatform.SufiSaas.Billing;
 using SufiChain.SufiPlatform.SufiSaas.Licensing;
 using SufiChain.SufiPlatform.SufiSaas.Plans;
 using SufiChain.SufiPlatform.SufiSaas.Provisioning;
@@ -211,7 +210,6 @@ public class EnterWorkspaceLinkTests
             Substitute.For<IFeatureManager>(),
             Substitute.For<IFeatureDefinitionManager>(),
             Substitute.For<ISubscriptionRepository>(),
-            Substitute.For<ISubscriptionBillingGateway>(),
             licenseIssuer: null!,
             Substitute.For<IStringLocalizerFactory>())
         {
@@ -275,7 +273,6 @@ public class EnterWorkspaceLinkTests
             IFeatureManager featureManager,
             IFeatureDefinitionManager featureDefinitionManager,
             ISubscriptionRepository subscriptionRepository,
-            ISubscriptionBillingGateway billingGateway,
             SelfHostedLicenseIssuer licenseIssuer,
             IStringLocalizerFactory stringLocalizerFactory)
             : base(
@@ -296,7 +293,6 @@ public class EnterWorkspaceLinkTests
                 featureManager,
                 featureDefinitionManager,
                 subscriptionRepository,
-                billingGateway,
                 licenseIssuer,
                 stringLocalizerFactory)
         {
