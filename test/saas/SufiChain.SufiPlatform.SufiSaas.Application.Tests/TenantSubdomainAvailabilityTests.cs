@@ -95,6 +95,94 @@ public class TenantSubdomainAvailabilityTests
         dto.DatabaseName.ShouldContain("arian");
     }
 
+    [Fact]
+    public async Task Catalog_Should_Mark_An_Unpriced_Paid_Plan_As_PriceNotSet()
+    {
+        var harness = NewService();
+        // The seed represents an unpriced paid plan as allowUnpaidUse + price 0 + inactive.
+        var plan = NewPlan(
+            "growth",
+            Guid.NewGuid(),
+            billingPeriodDays: 30,
+            allowUnpaidUse: true,
+            sortOrder: 20,
+            isSelfServiceAvailable: true,
+            price: 0m);
+        plan.SetIsActive(false);
+        harness.Plans.GetListAsync(Arg.Any<bool>(), Arg.Any<System.Threading.CancellationToken>())
+            .Returns(new List<Plan> { plan });
+
+        var catalog = await harness.Service.GetOnboardingCatalogAsync();
+
+        var dto = catalog.Plans.Single(item => item.Code == "GROWTH");
+        dto.IsSelectable.ShouldBeFalse();
+        dto.UnavailableReason.ShouldBe(SufiSaasConsts.PlanUnavailableReasons.PriceNotSet);
+    }
+
+    [Fact]
+    public async Task Catalog_Should_Mark_A_Priced_Paid_Plan_As_HostUpgradeOnly()
+    {
+        var harness = NewService();
+        var plan = NewPlan(
+            "growth",
+            Guid.NewGuid(),
+            billingPeriodDays: 30,
+            allowUnpaidUse: false,
+            sortOrder: 20,
+            isSelfServiceAvailable: true,
+            price: 99m);
+        harness.Plans.GetListAsync(Arg.Any<bool>(), Arg.Any<System.Threading.CancellationToken>())
+            .Returns(new List<Plan> { plan });
+
+        var catalog = await harness.Service.GetOnboardingCatalogAsync();
+
+        var dto = catalog.Plans.Single(item => item.Code == "GROWTH");
+        dto.IsSelectable.ShouldBeFalse();
+        dto.UnavailableReason.ShouldBe(SufiSaasConsts.PlanUnavailableReasons.HostUpgradeOnly);
+    }
+
+    [Fact]
+    public async Task Catalog_Should_Keep_The_Unpriced_Trial_Selectable()
+    {
+        var harness = NewService();
+        var plan = NewPlan(
+            "demo",
+            Guid.NewGuid(),
+            billingPeriodDays: 7,
+            allowUnpaidUse: true,
+            sortOrder: 0,
+            isSelfServiceAvailable: true,
+            price: 0m);
+        harness.Plans.GetListAsync(Arg.Any<bool>(), Arg.Any<System.Threading.CancellationToken>())
+            .Returns(new List<Plan> { plan });
+
+        var catalog = await harness.Service.GetOnboardingCatalogAsync();
+
+        var dto = catalog.Plans.Single(item => item.Code == "DEMO");
+        dto.IsSelectable.ShouldBeTrue();
+        dto.UnavailableReason.ShouldBeNull();
+    }
+
+    private static Plan NewPlan(
+        string code,
+        Guid editionId,
+        int billingPeriodDays,
+        bool allowUnpaidUse,
+        int sortOrder,
+        bool isSelfServiceAvailable,
+        decimal price) =>
+        new(
+            Guid.NewGuid(),
+            code,
+            $"Plan:{code}",
+            editionId,
+            billingPeriodDays,
+            allowUnpaidUse,
+            sortOrder,
+            isSelfServiceAvailable,
+            price,
+            "USD");
+
     private static Tenant NewTenant(Guid id, string subdomain)
     {
         var flags = System.Reflection.BindingFlags.Instance |
@@ -123,6 +211,12 @@ public class TenantSubdomainAvailabilityTests
         var normalizer = Substitute.For<ITenantNormalizer>();
         normalizer.NormalizeName(Arg.Any<string>()).Returns("arian");
 
+        var featureManager = Substitute.For<IFeatureManager>();
+        featureManager.GetAllAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<bool>())
+            .Returns(new List<FeatureNameValue>());
+        var featureDefinitionManager = Substitute.For<IFeatureDefinitionManager>();
+        featureDefinitionManager.GetAllAsync().Returns(new List<FeatureDefinition>());
+
         var currentUser = Substitute.For<ICurrentUser>();
         currentUser.Id.Returns(Guid.NewGuid());
         var authorization = Substitute.For<IAbpAuthorizationService>();
@@ -142,6 +236,8 @@ public class TenantSubdomainAvailabilityTests
         services.AddSingleton(Substitute.For<ICurrentTenant>());
         services.AddSingleton<IAuthorizationService>(authorization);
         services.AddSingleton(authorization);
+        services.AddSingleton<Microsoft.Extensions.Options.IOptions<SufiSaasLicensingOptions>>(
+            Microsoft.Extensions.Options.Options.Create(new SufiSaasLicensingOptions()));
 
         var service = new ExposedTenantRequestAppService(
             requests,
@@ -161,8 +257,8 @@ public class TenantSubdomainAvailabilityTests
             Options.Create(new IdentityOptions()),
             new TenantDatabaseNameGenerator(Options.Create(new SufiSaasTenantDatabaseOptions())),
             normalizer,
-            Substitute.For<IFeatureManager>(),
-            Substitute.For<IFeatureDefinitionManager>(),
+            featureManager,
+            featureDefinitionManager,
             Substitute.For<ISubscriptionRepository>(),
             licenseIssuer: null!,
             Substitute.For<IStringLocalizerFactory>())
