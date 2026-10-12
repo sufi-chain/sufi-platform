@@ -272,6 +272,8 @@
     "WorkspaceNameRequired": "Workspace name is required",
     "WorkspaceRequired": "Workspace is required",
     "WorkspaceUpdatedSuccessfully": "Workspace updated successfully",
+    "DecisionsModelNotSaved": "The workspace was saved, but the decisions model was not kept. Reopen the workspace and check it.",
+    "WorkspaceUpdatedWithDecisions": "Workspace saved. Decisions model: {0}",
     "Workspaces": "Workspaces",
     "You": "You",
     "DateRange": "Date Range",

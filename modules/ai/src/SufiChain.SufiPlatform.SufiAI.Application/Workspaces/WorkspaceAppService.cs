@@ -993,7 +993,27 @@ public class WorkspaceAppService : SufiApplicationService, IWorkspaceAppService
             return;
         }
 
+        var previous = workspace.GetPrimaryConfiguration(AICapabilityType.Decisions);
+        var previousModelId = previous?.ModelId;
+        var previousWasEnabled = previous?.IsEnabled ?? false;
+
         workspace.SetDecisionsModel(decisionsModelId);
+
+        var current = workspace.GetPrimaryConfiguration(AICapabilityType.Decisions);
+        var currentModelId = current?.ModelId;
+        if (string.Equals(previousModelId, currentModelId, StringComparison.Ordinal) &&
+            previousWasEnabled == (current?.IsEnabled ?? false))
+        {
+            return;
+        }
+
+        Logger.LogInformation(
+            "Decisions model route changed. WorkspaceId: {WorkspaceId}, PreviousModelId: {PreviousModelId}, PreviousEnabled: {PreviousEnabled}, ModelId: {ModelId}, Enabled: {Enabled}",
+            workspace.Id,
+            previousModelId,
+            previousWasEnabled,
+            currentModelId,
+            current?.IsEnabled ?? false);
     }
 
     private async Task<OpenAIApiMode> ResolveConnectionTestApiModeAsync(

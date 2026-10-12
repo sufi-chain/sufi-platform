@@ -10,6 +10,7 @@
     <ProjectReference Include="..\SufiChain.SufiPlatform.SufiAI.TestBase\SufiChain.SufiPlatform.SufiAI.TestBase.csproj" />
     <ProjectReference Include="..\..\..\modules\ai\src\SufiChain.SufiPlatform.SufiAI.Application\SufiChain.SufiPlatform.SufiAI.Application.csproj" />
     <ProjectReference Include="..\..\..\modules\ai\src\SufiChain.SufiPlatform.SufiAI.EntityFrameworkCore\SufiChain.SufiPlatform.SufiAI.EntityFrameworkCore.csproj" />
+    <ProjectReference Include="..\..\..\modules\ai\src\SufiChain.SufiPlatform.SufiAI.Provider.OpenRouter\SufiChain.SufiPlatform.SufiAI.Provider.OpenRouter.csproj" />
   </ItemGroup>
 
   <ItemGroup>

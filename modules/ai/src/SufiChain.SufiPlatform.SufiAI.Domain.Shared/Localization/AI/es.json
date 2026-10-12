@@ -483,6 +483,10 @@
 
     "WorkspaceUpdatedSuccessfully": "Espacio de trabajo actualizado exitosamente",
 
+    "DecisionsModelNotSaved": "El espacio de trabajo se guardó, pero el modelo de decisiones no se conservó. Vuelve a abrir el espacio de trabajo y verifícalo.",
+
+    "WorkspaceUpdatedWithDecisions": "Espacio de trabajo guardado. Modelo de decisiones: {0}",
+
     "Workspaces": "Espacios de Trabajo",
 
     "You": "Tú",

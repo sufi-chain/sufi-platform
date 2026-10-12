@@ -255,6 +255,8 @@
     "WorkspaceNamePlaceholder": "مثلاً production-gpt4",
     "WorkspaceRequired": "فضای کاری الزامی است",
     "WorkspaceUpdatedSuccessfully": "فضای کاری با موفقیت به‌روزرسانی شد",
+    "DecisionsModelNotSaved": "فضا ذخیره شد، اما مدل تصمیم نگه داشته نشد. فضا را باز کنید و بررسی کنید.",
+    "WorkspaceUpdatedWithDecisions": "فضا ذخیره شد. مدل تصمیم: {0}",
     "Workspaces": "فضاهای کاری",
     "You": "شما",
     "DateRange": "بازه تاریخ",

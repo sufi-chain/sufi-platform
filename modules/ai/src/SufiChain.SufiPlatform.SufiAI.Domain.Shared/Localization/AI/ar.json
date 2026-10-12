@@ -254,6 +254,8 @@
     "WorkspaceNamePlaceholder": "مثل production-gpt4",
     "WorkspaceRequired": "مساحة العمل مطلوبة",
     "WorkspaceUpdatedSuccessfully": "تم تحديث مساحة العمل بنجاح",
+    "DecisionsModelNotSaved": "تم حفظ مساحة العمل، لكن نموذج القرارات لم يُحتفظ به. أعد فتح مساحة العمل وتحقق منه.",
+    "WorkspaceUpdatedWithDecisions": "تم حفظ مساحة العمل. نموذج القرارات: {0}",
     "Workspaces": "مساحات العمل",
     "You": "أنت",
     "DateRange": "نطاق التاريخ",

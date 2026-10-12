@@ -327,11 +327,30 @@ public partial class WorkspaceEditor : AIComponentBase
 
         await ExecuteWithLoadingAsync(async () =>
         {
-            await WorkspaceAppService.UpdateAsync(workspaceId, model);
+            var result = await WorkspaceAppService.UpdateAsync(workspaceId, model);
             await WorkspaceAppService.UpdateGuardrailsAsync(
                 workspaceId,
                 new UpdateWorkspaceGuardrailsDto { Items = guardrailItems });
-            await Message.SuccessAsync(L["WorkspaceUpdatedSuccessfully"]);
+
+            var decisionsKept = WorkspaceDecisionsCheck.IsKept(
+                model.DecisionsModelId,
+                result.DecisionsModelId);
+
+            if (SelectedProfile?.SupportsDecisions == true && !decisionsKept)
+            {
+                await Message.WarnAsync(L["DecisionsModelNotSaved"]);
+                return;
+            }
+
+            if (decisionsKept && !string.IsNullOrWhiteSpace(result.DecisionsModelId))
+            {
+                await Message.SuccessAsync(L["WorkspaceUpdatedWithDecisions", result.DecisionsModelId]);
+            }
+            else
+            {
+                await Message.SuccessAsync(L["WorkspaceUpdatedSuccessfully"]);
+            }
+
             Cancel();
         }, LoadingKeys.UpdateWorkspace);
     }
