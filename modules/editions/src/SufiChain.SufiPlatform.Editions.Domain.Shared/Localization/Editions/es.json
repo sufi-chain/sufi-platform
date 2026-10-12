@@ -1,0 +1,30 @@
+{
+  "culture": "es",
+  "texts": {
+    "Menu:Editions": "Ediciones",
+    "Editions": "Ediciones",
+    "EditionName": "Nombre",
+    "EditionDisplayName": "Nombre para mostrar",
+    "EditionCode": "Código",
+    "EditionIsActive": "Activo",
+    "NewEdition": "Nueva edición",
+    "EditEdition": "Editar edición",
+    "EditionFeatures": "Características de la edición",
+    "Permission:Editions": "Ediciones",
+    "Permission:Editions.Editions": "Administración de ediciones",
+    "Permission:Editions.Editions.Create": "Crear",
+    "Permission:Editions.Editions.Update": "Actualizar",
+    "Permission:Editions.Editions.Delete": "Eliminar",
+    "Permission:Editions.Editions.ManageFeatures": "Administrar características",
+    "SufiEditions:EditionNameAlreadyExists": "Ya existe una edición con este nombre.",
+    "SufiEditions:EditionCodeAlreadyExists": "Ya existe una edición con este código.",
+    "Actions": "Acciones",
+    "Active": "Activo",
+    "Inactive": "Inactivo",
+    "Cancel": "Cancelar",
+    "Save": "Guardar",
+    "Delete": "Eliminar",
+    "ConfirmDeleteEdition": "¿Seguro que desea eliminar esta edición?",
+    "NoEditions": "Aún no hay ediciones"
+  }
+}

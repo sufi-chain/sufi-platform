@@ -1,0 +1,30 @@
+{
+  "culture": "ar",
+  "texts": {
+    "Menu:Editions": "الإصدارات",
+    "Editions": "الإصدارات",
+    "EditionName": "الاسم",
+    "EditionDisplayName": "اسم العرض",
+    "EditionCode": "الرمز",
+    "EditionIsActive": "نشط",
+    "NewEdition": "إصدار جديد",
+    "EditEdition": "تحرير الإصدار",
+    "EditionFeatures": "ميزات الإصدار",
+    "Permission:Editions": "الإصدارات",
+    "Permission:Editions.Editions": "إدارة الإصدارات",
+    "Permission:Editions.Editions.Create": "إنشاء",
+    "Permission:Editions.Editions.Update": "تحديث",
+    "Permission:Editions.Editions.Delete": "حذف",
+    "Permission:Editions.Editions.ManageFeatures": "إدارة الميزات",
+    "SufiEditions:EditionNameAlreadyExists": "يوجد إصدار بهذا الاسم بالفعل.",
+    "SufiEditions:EditionCodeAlreadyExists": "يوجد إصدار بهذا الرمز بالفعل.",
+    "Actions": "إجراءات",
+    "Active": "نشط",
+    "Inactive": "غير نشط",
+    "Cancel": "إلغاء",
+    "Save": "حفظ",
+    "Delete": "حذف",
+    "ConfirmDeleteEdition": "هل أنت متأكد من حذف هذا الإصدار؟",
+    "NoEditions": "لا توجد إصدارات بعد"
+  }
+}
