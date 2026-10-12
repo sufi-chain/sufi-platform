@@ -135,13 +135,17 @@
 
     "Default": "Predeterminado",
 
-    "SetAsWorkspaceDefault": "Establecer como predeterminado del espacio de trabajo",
+    "SetAsWorkspaceDefault": "Establecer como predeterminado",
 
-    "SetAsWorkspaceDefaultConfirmation": "¿Establecer \"{0}\" como el modelo predeterminado de este espacio de trabajo? Los chats que no elijan una ruta lo usarán.",
+    "SetAsWorkspaceDefaultConfirmation": "¿Establecer \"{0}\" como predeterminado para esta capacidad?",
 
-    "WorkspaceDefault": "Predeterminado del espacio de trabajo",
+    "WorkspaceDefault": "Predeterminado",
 
-    "WorkspaceDefaultUpdated": "Este modelo ahora es el predeterminado del espacio de trabajo.",
+    "WorkspaceDefaultUpdated": "Este modelo ahora es el predeterminado de su capacidad.",
+
+    "MoveUp": "Subir",
+
+    "MoveDown": "Bajar",
 
     "Delete": "Eliminar",
 

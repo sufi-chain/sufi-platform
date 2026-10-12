@@ -29,6 +29,7 @@ public partial class ModelConfigurationsPage : AIComponentBase
         public const string LoadConfigurations = "load-configurations";
         public const string DeleteConfiguration = "delete-configuration";
         public const string SetWorkspaceDefault = "set-workspace-default";
+        public const string MoveConfiguration = "move-configuration";
     }
 
     [Parameter]
@@ -225,26 +226,48 @@ public partial class ModelConfigurationsPage : AIComponentBase
         Navigation.NavigateTo($"/panel/admin/ai/workspaces/{WorkspaceId}/model-configurations/{configuration.Id}");
     }
 
-    private bool IsWorkspaceDefault(AIModelConfigurationDto configuration)
+    private static bool IsWorkspaceDefault(AIModelConfigurationDto configuration) =>
+        configuration.IsDefault;
+
+    private bool CanSetWorkspaceDefault(AIModelConfigurationDto configuration) =>
+        !_readOnly
+        && configuration.IsEnabled
+        && !configuration.IsDefault;
+
+    private bool CanDelete(AIModelConfigurationDto configuration)
     {
-        if (!configuration.IsEnabled || configuration.CapabilityType != AICapabilityType.ChatCompletion)
+        if (_readOnly)
         {
             return false;
         }
 
-        return !_configurations.Any(item =>
+        if (!configuration.IsEnabled)
+        {
+            return true;
+        }
+
+        return _configurations.Any(item =>
             item.Id != configuration.Id
-            && item.IsEnabled
-            && item.CapabilityType == AICapabilityType.ChatCompletion
-            && item.Priority < configuration.Priority);
+            && item.CapabilityType == configuration.CapabilityType
+            && item.IsEnabled);
     }
 
-    private bool CanSetWorkspaceDefault(AIModelConfigurationDto configuration)
+    private bool CanMoveUp(AIModelConfigurationDto configuration) =>
+        !_readOnly && configuration.Priority > 0;
+
+    private bool CanMoveDown(AIModelConfigurationDto configuration)
     {
-        return !_readOnly
-            && configuration.IsEnabled
-            && configuration.CapabilityType == AICapabilityType.ChatCompletion
-            && !IsWorkspaceDefault(configuration);
+        if (_readOnly)
+        {
+            return false;
+        }
+
+        var maxPriority = _configurations
+            .Where(item => item.CapabilityType == configuration.CapabilityType)
+            .Select(item => item.Priority)
+            .DefaultIfEmpty(-1)
+            .Max();
+        return configuration.Priority < maxPriority;
     }
 
     private async Task SetWorkspaceDefaultAsync(AIModelConfigurationDto configuration)
@@ -264,15 +287,63 @@ public partial class ModelConfigurationsPage : AIComponentBase
 
         await ExecuteWithLoadingAsync(async () =>
         {
-            await AIAppService.SetWorkspaceDefaultModelConfigurationAsync(configuration.Id);
-            await Message.SuccessAsync(L["WorkspaceDefaultUpdated"]);
-            await ReloadConfigurationsAsync();
+            try
+            {
+                await AIAppService.SetWorkspaceDefaultModelConfigurationAsync(
+                    configuration.Id,
+                    new ModelConfigurationConcurrencyDto { ConcurrencyStamp = configuration.ConcurrencyStamp });
+                await Message.SuccessAsync(L["WorkspaceDefaultUpdated"]);
+                await ReloadConfigurationsAsync();
+            }
+            catch (Exception exception) when (IsRouteListChanged(exception))
+            {
+                await Message.WarnAsync(L["ModelRouteListChanged"]);
+                await ReloadConfigurationsAsync();
+            }
         }, LoadingKeys.SetWorkspaceDefault);
     }
 
+    private async Task MoveConfigurationAsync(AIModelConfigurationDto configuration, int position)
+    {
+        if (_readOnly)
+        {
+            return;
+        }
+
+        await ExecuteWithLoadingAsync(async () =>
+        {
+            try
+            {
+                await AIAppService.MoveModelConfigurationAsync(
+                    configuration.Id,
+                    new MoveAIModelConfigurationDto
+                    {
+                        Position = position,
+                        ConcurrencyStamp = configuration.ConcurrencyStamp
+                    });
+                await ReloadConfigurationsAsync();
+            }
+            catch (Exception exception) when (IsRouteListChanged(exception))
+            {
+                await Message.WarnAsync(L["ModelRouteListChanged"]);
+                await ReloadConfigurationsAsync();
+            }
+        }, LoadingKeys.MoveConfiguration);
+    }
+
+    private Task MoveUpAsync(AIModelConfigurationDto configuration) =>
+        CanMoveUp(configuration)
+            ? MoveConfigurationAsync(configuration, configuration.Priority - 1)
+            : Task.CompletedTask;
+
+    private Task MoveDownAsync(AIModelConfigurationDto configuration) =>
+        CanMoveDown(configuration)
+            ? MoveConfigurationAsync(configuration, configuration.Priority + 1)
+            : Task.CompletedTask;
+
     private async Task DeleteConfigurationAsync(AIModelConfigurationDto configuration)
     {
-        if (_readOnly || IsWorkspaceDefault(configuration))
+        if (!CanDelete(configuration))
         {
             return;
         }
@@ -285,9 +356,19 @@ public partial class ModelConfigurationsPage : AIComponentBase
 
         await ExecuteWithLoadingAsync(async () =>
         {
-            await AIAppService.DeleteModelConfigurationAsync(configuration.Id);
-            await Message.SuccessAsync(L["ConfigurationDeleted"]);
-            await ReloadConfigurationsAsync();
+            try
+            {
+                await AIAppService.DeleteModelConfigurationAsync(
+                    configuration.Id,
+                    new ModelConfigurationConcurrencyDto { ConcurrencyStamp = configuration.ConcurrencyStamp });
+                await Message.SuccessAsync(L["ConfigurationDeleted"]);
+                await ReloadConfigurationsAsync();
+            }
+            catch (Exception exception) when (IsRouteListChanged(exception))
+            {
+                await Message.WarnAsync(L["ModelRouteListChanged"]);
+                await ReloadConfigurationsAsync();
+            }
         }, LoadingKeys.DeleteConfiguration);
     }
 
@@ -297,6 +378,20 @@ public partial class ModelConfigurationsPage : AIComponentBase
         {
             _configurations = await AIAppService.GetModelConfigurationsAsync(WorkspaceId);
         }, LoadingKeys.LoadConfigurations);
+    }
+
+    private static bool IsRouteListChanged(Exception exception)
+    {
+        for (var current = exception; current != null; current = current.InnerException)
+        {
+            if (current.GetType().Name.Contains("UserFriendlyException", StringComparison.Ordinal)
+                && current.Message.Contains("reload", StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private SbColor GetCapabilityColor(AICapabilityType capabilityType)

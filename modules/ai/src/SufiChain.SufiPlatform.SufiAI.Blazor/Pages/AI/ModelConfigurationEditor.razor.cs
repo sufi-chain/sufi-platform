@@ -349,7 +349,7 @@ public partial class ModelConfigurationEditor : AIComponentBase
                 InputPriceUnit = _editing.InputPriceUnit,
                 OutputPrice = _editing.OutputPrice,
                 OutputPriceUnit = _editing.OutputPriceUnit,
-                Priority = _editing.Priority,
+                ConcurrencyStamp = _editing.ConcurrencyStamp,
                 Dimensions = _editing.Dimensions,
                 AcceptsImageInput = _editing.AcceptsImageInput,
                 AcceptsFileInput = _editing.AcceptsFileInput,
@@ -375,7 +375,6 @@ public partial class ModelConfigurationEditor : AIComponentBase
             {
                 WorkspaceId = WorkspaceId,
                 CapabilityType = AICapabilityType.ChatCompletion,
-                Priority = 0,
                 OpenAIApiMode = OpenAIApiMode.ChatCompletions,
                 MaxContextTokens = AIModelConfigurationConsts.DefaultMaxContextTokens
             };
@@ -668,13 +667,8 @@ public partial class ModelConfigurationEditor : AIComponentBase
             return;
         }
 
-        if (_model.Priority < 0)
-        {
-            await Message.ErrorAsync(L["PriorityMustBeNumber"]);
-            return;
-        }
-
         _model.WorkspaceId = WorkspaceId;
+        _model.Priority = null;
         if (!ShowsUserSelectable)
         {
             _model.IsUserSelectable = false;
@@ -714,7 +708,7 @@ public partial class ModelConfigurationEditor : AIComponentBase
                     InputPriceUnit = _model.InputPriceUnit,
                     OutputPrice = _showOutputPrice ? _model.OutputPrice : null,
                     OutputPriceUnit = _model.OutputPriceUnit,
-                    Priority = _model.Priority,
+                    ConcurrencyStamp = _editing.ConcurrencyStamp,
                     Dimensions = _model.Dimensions,
                     AcceptsImageInput = _model.AcceptsImageInput,
                     AcceptsFileInput = _model.AcceptsFileInput,

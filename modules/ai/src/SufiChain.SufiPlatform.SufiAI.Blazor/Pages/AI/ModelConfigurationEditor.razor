@@ -244,16 +244,9 @@
 
 			<section class="model-configuration-editor__section" aria-labelledby="model-configuration-limits">
 				<SbHeading Level="2" id="model-configuration-limits">@L["Limits"]</SbHeading>
-				<SbGrid Columns="1" ColumnsMd="2" Gap="4">
-					<SbNumberField TNumber="int"
-								   @bind-Value="_model.Priority"
-								   Label="@L["Priority"]"
-								   Min="0"
-								   Step="1"
-								   Placeholder="0" />
-
-					@if (ShowsUserSelectable)
-					{
+				@if (ShowsUserSelectable)
+				{
+					<SbGrid Columns="1" ColumnsMd="2" Gap="4">
 						<SbNumberField TNumber="int"
 									   @bind-Value="MaxContextTokensValue"
 									   Label="@L["MaxContextTokens"]"
@@ -261,8 +254,8 @@
 									   Step="1"
 									   Placeholder="200000"
 									   HelperText="@L["MaxContextTokensHelp"]" />
-					}
-				</SbGrid>
+					</SbGrid>
+				}
 
 				@if (ShowsEmbeddingDimensions)
 				{

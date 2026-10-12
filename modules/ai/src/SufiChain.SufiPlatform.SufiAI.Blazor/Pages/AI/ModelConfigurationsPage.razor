@@ -57,7 +57,7 @@
                         ShowColumnChooser="true"
                         SelectionMode="SbSelectionMode.MultipleRows">
 					<ChildContent>
-						<SbColumn TItem="AIModelConfigurationDto" Title="@L["Actions"]" MinWidth="148px" Sortable="false">
+						<SbColumn TItem="AIModelConfigurationDto" Title="@L["Actions"]" MinWidth="200px" Sortable="false">
 							<CellTemplate Context="cellContext">
 								<SbStack Wrap="true" Direction="SbStackDirection.Row" Gap="1">
 									@if (!_readOnly)
@@ -71,6 +71,30 @@
 												</SbIconButton>
 											</SbTooltip>
 										</AuthorizeView>
+										@if (CanMoveUp(cellContext.Item))
+										{
+											<AuthorizeView Policy="@AIPermissions.AI.ManageConfigurations">
+												<SbTooltip Text="@L["MoveUp"]">
+													<SbIconButton Size="SbSize.Sm"
+																  AriaLabel="@L["MoveUp"]"
+																  OnClick="@(() => MoveUpAsync(cellContext.Item))">
+														<Icon><SbIcon Name="arrow-up" Size="SbSize.Sm" /></Icon>
+													</SbIconButton>
+												</SbTooltip>
+											</AuthorizeView>
+										}
+										@if (CanMoveDown(cellContext.Item))
+										{
+											<AuthorizeView Policy="@AIPermissions.AI.ManageConfigurations">
+												<SbTooltip Text="@L["MoveDown"]">
+													<SbIconButton Size="SbSize.Sm"
+																  AriaLabel="@L["MoveDown"]"
+																  OnClick="@(() => MoveDownAsync(cellContext.Item))">
+														<Icon><SbIcon Name="arrow-down" Size="SbSize.Sm" /></Icon>
+													</SbIconButton>
+												</SbTooltip>
+											</AuthorizeView>
+										}
 										@if (CanSetWorkspaceDefault(cellContext.Item))
 										{
 											<AuthorizeView Policy="@AIPermissions.AI.ManageConfigurations">
@@ -84,7 +108,7 @@
 												</SbTooltip>
 											</AuthorizeView>
 										}
-										@if (!IsWorkspaceDefault(cellContext.Item))
+										@if (CanDelete(cellContext.Item))
 										{
 											<AuthorizeView Policy="@AIPermissions.AI.ManageConfigurations">
 												<SbTooltip Text="@L["Delete"]">
@@ -119,7 +143,7 @@
 										@if (IsWorkspaceDefault(cellContext.Item))
 										{
 											<SbChip Color="SbColor.Warning" Size="SbSize.Sm">
-												@L["WorkspaceDefault"]
+												@L["Default"]
 											</SbChip>
 										}
 									</SbStack>
