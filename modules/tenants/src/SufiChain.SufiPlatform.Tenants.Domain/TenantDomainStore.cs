@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Volo.Abp;
 using Volo.Abp.Caching;
 using Volo.Abp.DependencyInjection;
 using Volo.Abp.MultiTenancy;
@@ -27,6 +28,23 @@ public class TenantDomainStore : ITenantDomainStore, ITransientDependency
     public virtual async Task<string?> FindTenantNameByHostAsync(string host)
     {
         var normalizedHost = TenantDomainName.NormalizeHost(host);
+        var cacheItem = await GetOrBuildCacheItemAsync();
+
+        return cacheItem.HostToTenantName.TryGetValue(normalizedHost, out var tenantName)
+            ? tenantName
+            : null;
+    }
+
+    public virtual async Task<string?> FindPrimaryHostAsync(Guid tenantId)
+    {
+        var cacheItem = await GetOrBuildCacheItemAsync();
+        return cacheItem.TenantIdToPrimaryHost.TryGetValue(tenantId, out var host)
+            ? host
+            : null;
+    }
+
+    protected virtual async Task<TenantDomainMapCacheItem> GetOrBuildCacheItemAsync()
+    {
         var cacheItem = await Cache.GetAsync(TenantDomainMapCacheItem.CacheKey, considerUow: true);
         if (cacheItem == null)
         {
@@ -34,9 +52,7 @@ public class TenantDomainStore : ITenantDomainStore, ITransientDependency
             await Cache.SetAsync(TenantDomainMapCacheItem.CacheKey, cacheItem, considerUow: true);
         }
 
-        return cacheItem.HostToTenantName.TryGetValue(normalizedHost, out var tenantName)
-            ? tenantName
-            : null;
+        return cacheItem;
     }
 
     protected virtual async Task<TenantDomainMapCacheItem> BuildCacheItemAsync()
@@ -47,16 +63,34 @@ public class TenantDomainStore : ITenantDomainStore, ITransientDependency
             tenants = await TenantRepository.GetListAsync(includeDetails: true);
         }
 
+        var hostToTenantName = tenants
+            .SelectMany(tenant => tenant.Domains
+                .Where(domain => domain.IsActive && domain.IsVerified)
+                .Select(domain => new { domain.Host, tenant.Name }))
+            .ToDictionary(
+                entry => entry.Host,
+                entry => entry.Name,
+                StringComparer.OrdinalIgnoreCase);
+
+        var tenantIdToPrimaryHost = new Dictionary<Guid, string>();
+        foreach (var tenant in tenants)
+        {
+            var primary = tenant.Domains
+                .Where(domain => domain.IsActive && domain.IsVerified)
+                .OrderBy(domain => domain.Type == TenantDomainType.Custom ? 0 : 1)
+                .ThenBy(domain => domain.CreationTime)
+                .Select(domain => domain.Host)
+                .FirstOrDefault();
+            if (!primary.IsNullOrWhiteSpace())
+            {
+                tenantIdToPrimaryHost[tenant.Id] = primary!;
+            }
+        }
+
         return new TenantDomainMapCacheItem
         {
-            HostToTenantName = tenants
-                .SelectMany(tenant => tenant.Domains
-                    .Where(domain => domain.IsActive && domain.IsVerified)
-                    .Select(domain => new { domain.Host, tenant.Name }))
-                .ToDictionary(
-                    entry => entry.Host,
-                    entry => entry.Name,
-                    StringComparer.OrdinalIgnoreCase)
+            HostToTenantName = hostToTenantName,
+            TenantIdToPrimaryHost = tenantIdToPrimaryHost
         };
     }
 }

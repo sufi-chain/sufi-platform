@@ -12,4 +12,6 @@ public class TenantDomainMapCacheItem
 
     public Dictionary<string, string> HostToTenantName { get; set; } =
         new(StringComparer.OrdinalIgnoreCase);
+
+    public Dictionary<Guid, string> TenantIdToPrimaryHost { get; set; } = new();
 }
