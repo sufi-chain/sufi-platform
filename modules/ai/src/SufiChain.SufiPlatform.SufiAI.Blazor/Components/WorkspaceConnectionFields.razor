@@ -46,8 +46,8 @@
 	<SbTextField @bind-Value="Draft.ApiKey"
 				 Label="@L["ApiKey"]"
 				 Type="password"
-				 Placeholder="@(ShowSavedKeyHint ? L["LeaveEmptyToKeepCurrent"].Value : null)"
-				 HelperText="@(ShowSavedKeyHint ? L["SavedApiKeyKeptHint"].Value : null)"
+				 Placeholder="@ApiKeyPlaceholder"
+				 HelperText="@ApiKeyHelperText"
 				 Disabled="@ReadOnly" />
 
 	<SbSelect TItem="OpenAIModelDto"

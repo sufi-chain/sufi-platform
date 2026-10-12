@@ -514,6 +514,7 @@
     "ModelsNotLoaded": "Los modelos aún no se han cargado.",
     "NoMatchingModels": "Ningún modelo coincide con esa búsqueda.",
     "SavedApiKeyKeptHint": "La clave guardada se conserva. Sustitúyela si este proveedor usa otra cuenta.",
+    "NoSavedApiKeyHint": "No key may be saved for this workspace. Enter it to load models.",
     "ProviderEndpointDefault": "Dirección predeterminada del proveedor.",
     "ProviderEndpointRequired": "Este proveedor necesita una dirección base.",
     "ProviderEndpointCustom": "Dirección personalizada. Cambiar de proveedor la sustituye.",

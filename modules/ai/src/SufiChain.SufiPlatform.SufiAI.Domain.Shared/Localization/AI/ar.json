@@ -274,6 +274,7 @@
     "ModelsNotLoaded": "لم تُحمَّل النماذج بعد.",
     "NoMatchingModels": "لا يوجد نموذج يطابق هذا البحث.",
     "SavedApiKeyKeptHint": "يُحفظ المفتاح المخزّن. استبدله إذا كان هذا المزوّد يستخدم حساباً آخر.",
+    "NoSavedApiKeyHint": "No key may be saved for this workspace. Enter it to load models.",
     "ProviderEndpointDefault": "عنوان المزوّد الافتراضي.",
     "ProviderEndpointRequired": "هذا المزوّد يحتاج إلى عنوان أساسي.",
     "ProviderEndpointCustom": "عنوان مخصص. يتبدل عند تغيير المزوّد.",

@@ -37,7 +37,8 @@
 											   DecisionModels="_decisionModels"
 											   ModelsLoaded="_modelsLoaded"
 											   ReadOnly="IsReadOnly"
-											   ShowSavedKeyHint="IsEdit"
+											   ShowSavedKeyHint="IsEdit && _workspace?.HasApiKey == true"
+										   ShowNoSavedKeyHint="IsEdit && _workspace?.HasApiKey != true"
 											   LoadingModels="IsOperationLoading(LoadingKeys.LoadModels)"
 											   LoadModels="LoadModelsAsync"
 											   ProviderReset="OnProviderReset" />

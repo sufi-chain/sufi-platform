@@ -394,7 +394,11 @@ public partial class WorkspaceEditor : AIComponentBase
     {
         if (!IsEdit && string.IsNullOrWhiteSpace(_draft.ApiKey))
         {
-            await Notify.ErrorAsync(L["ApiKeyRequiredForModelList"]);
+            if (announce)
+            {
+                await Notify.ErrorAsync(L["ApiKeyRequiredForModelList"]);
+            }
+
             return;
         }
 
@@ -416,7 +420,14 @@ public partial class WorkspaceEditor : AIComponentBase
             }
             catch (Exception ex)
             {
-                await Notify.ErrorAsync(ex.Message);
+                _availableModels = new List<OpenAIModelDto>();
+                _decisionModels = new List<OpenAIModelDto>();
+                _modelsLoaded = false;
+                if (announce)
+                {
+                    await Notify.ErrorAsync(ex.Message);
+                }
+
                 return;
             }
 

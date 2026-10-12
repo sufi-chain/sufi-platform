@@ -342,6 +342,7 @@
     "ModelsNotLoaded": "Models are not loaded yet.",
     "NoMatchingModels": "No model matches that search.",
     "SavedApiKeyKeptHint": "Saved key kept. Replace it if this provider uses a different account.",
+    "NoSavedApiKeyHint": "No key may be saved for this workspace. Enter it to load models.",
     "ProviderEndpointDefault": "Provider default.",
     "ProviderEndpointRequired": "This provider needs a base URL.",
     "ProviderEndpointCustom": "Custom endpoint. Switching provider replaces it.",

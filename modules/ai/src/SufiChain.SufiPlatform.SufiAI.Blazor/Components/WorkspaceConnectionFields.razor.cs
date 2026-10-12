@@ -30,6 +30,9 @@ public partial class WorkspaceConnectionFields : AIComponentBase
     public bool ShowSavedKeyHint { get; set; }
 
     [Parameter]
+    public bool ShowNoSavedKeyHint { get; set; }
+
+    [Parameter]
     public bool LoadingModels { get; set; }
 
     [Parameter]
@@ -44,6 +47,14 @@ public partial class WorkspaceConnectionFields : AIComponentBase
     private bool RequiresBaseUrl => SelectedProfile?.RequiresExplicitBaseUrl == true;
 
     private string? ChatValue => string.IsNullOrWhiteSpace(Draft.Model) ? null : Draft.Model;
+
+    private string? ApiKeyPlaceholder =>
+        ShowSavedKeyHint ? L["LeaveEmptyToKeepCurrent"].Value : null;
+
+    private string? ApiKeyHelperText =>
+        ShowSavedKeyHint ? L["SavedApiKeyKeptHint"].Value
+        : ShowNoSavedKeyHint ? L["NoSavedApiKeyHint"].Value
+        : null;
 
     private IReadOnlyList<OpenAIModelDto> ChatModels =>
         WorkspaceConnectionDraft.WithCurrent(AvailableModels, Draft.Model, Draft.ModelDisplayName);

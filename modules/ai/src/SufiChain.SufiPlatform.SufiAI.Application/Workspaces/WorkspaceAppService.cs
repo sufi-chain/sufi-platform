@@ -13,9 +13,11 @@ using SufiChain.SufiPlatform.SufiAI.Catalog;
 using SufiChain.SufiPlatform.SufiAI.Configuration;
 using SufiChain.SufiPlatform.SufiAI.Data;
 using SufiChain.SufiPlatform.SufiAI.Features;
+using SufiChain.SufiPlatform.SufiAI.Localization;
 using SufiChain.SufiPlatform.SufiAI.Permissions;
 using SufiChain.SufiPlatform.Tenants;
 using Volo.Abp;
+using Volo.Abp.Authorization;
 using Volo.Abp.Caching;
 using Volo.Abp.Data;
 using Volo.Abp.MultiTenancy;
@@ -95,6 +97,8 @@ public class WorkspaceAppService : SufiApplicationService, IWorkspaceAppService
         _aiOptions = aiOptions.Value;
         _workspaceUsageCheckers = workspaceUsageCheckers;
         _defaultAiWorkspaceSeeder = defaultAiWorkspaceSeeder;
+
+        LocalizationResource = typeof(AIResource);
     }
 
     public Task<List<AiProviderProfileDto>> GetProviderProfilesAsync()
@@ -610,7 +614,8 @@ public class WorkspaceAppService : SufiApplicationService, IWorkspaceAppService
             input.WorkspaceId,
             input.ModelConfigurationId,
             input.ApiKey,
-            input.ApiBaseUrl);
+            input.ApiBaseUrl,
+            input.CapabilityType);
 
         if (string.IsNullOrWhiteSpace(credentials.ApiKey))
         {
@@ -830,7 +835,8 @@ public class WorkspaceAppService : SufiApplicationService, IWorkspaceAppService
             input.WorkspaceId,
             input.ModelConfigurationId,
             input.ApiKey,
-            input.ApiBaseUrl);
+            input.ApiBaseUrl,
+            input.CapabilityType);
 
         if (string.IsNullOrWhiteSpace(credentials.ApiKey))
         {
@@ -875,7 +881,8 @@ public class WorkspaceAppService : SufiApplicationService, IWorkspaceAppService
         Guid? workspaceId,
         Guid? modelConfigurationId,
         string? apiKey,
-        string? apiBaseUrl)
+        string? apiBaseUrl,
+        AICapabilityType capabilityType)
     {
         SufiChain.SufiPlatform.SufiAI.AIModelConfiguration? modelConfiguration = null;
         if (modelConfigurationId.HasValue)
@@ -887,7 +894,7 @@ public class WorkspaceAppService : SufiApplicationService, IWorkspaceAppService
         Workspace? workspace = null;
         if (workspaceId.HasValue)
         {
-            workspace = await _workspaceRepository.GetAsync(workspaceId.Value);
+            workspace = await _workspaceRepository.GetAsync(workspaceId.Value, includeDetails: true);
         }
 
         var provider = workspace?.Provider ?? AIProviderType.OpenAI;
@@ -913,7 +920,7 @@ public class WorkspaceAppService : SufiApplicationService, IWorkspaceAppService
         {
             if (string.IsNullOrWhiteSpace(resolvedKey))
             {
-                resolvedKey = DecryptStoredApiKey(workspace.ApiKey);
+                resolvedKey = await ResolveSavedWorkspaceApiKeyAsync(workspace, capabilityType);
             }
 
             if (string.IsNullOrWhiteSpace(resolvedBaseUrl))
@@ -923,6 +930,46 @@ public class WorkspaceAppService : SufiApplicationService, IWorkspaceAppService
         }
 
         return (resolvedKey, NormalizeBaseUrl(resolvedBaseUrl, provider), provider);
+    }
+
+    /// <summary>
+    /// Resolves the key the same way chat does when no key was typed: the primary
+    /// configuration's key for the capability, then the ChatCompletion configuration's key,
+    /// then the workspace key, all decrypted. The saved key is a credential, so the caller
+    /// must be allowed to manage workspaces or model configurations.
+    /// </summary>
+    private async Task<string?> ResolveSavedWorkspaceApiKeyAsync(
+        Workspace workspace,
+        AICapabilityType capabilityType)
+    {
+        var capabilityKey = _runtimeConfigurationResolver.Resolve(workspace, capabilityType).ApiKey;
+        if (string.IsNullOrWhiteSpace(capabilityKey))
+        {
+            capabilityKey = capabilityType == AICapabilityType.ChatCompletion
+                ? null
+                : _runtimeConfigurationResolver.Resolve(workspace, AICapabilityType.ChatCompletion).ApiKey;
+        }
+
+        if (string.IsNullOrWhiteSpace(capabilityKey))
+        {
+            return null;
+        }
+
+        await EnsureSavedKeyAccessAsync();
+        return capabilityKey;
+    }
+
+    private async Task EnsureSavedKeyAccessAsync()
+    {
+        if (await AuthorizationService.IsGrantedAsync(AIPermissions.Workspaces.Edit) ||
+            await AuthorizationService.IsGrantedAsync(AIPermissions.AI.ManageConfigurations))
+        {
+            return;
+        }
+
+        throw new AbpAuthorizationException(
+            "Loading models with the saved workspace key requires one of these permissions: "
+            + AIPermissions.Workspaces.Edit + ", " + AIPermissions.AI.ManageConfigurations + ".");
     }
 
     private static string? FirstNonWhiteSpace(params string?[] values)
@@ -936,24 +983,6 @@ public class WorkspaceAppService : SufiApplicationService, IWorkspaceAppService
         }
 
         return null;
-    }
-
-    private string? DecryptStoredApiKey(string? encryptedApiKey)
-    {
-        if (string.IsNullOrWhiteSpace(encryptedApiKey))
-        {
-            return null;
-        }
-
-        try
-        {
-            var decrypted = _stringEncryptor.Decrypt(encryptedApiKey);
-            return string.IsNullOrWhiteSpace(decrypted) ? null : decrypted;
-        }
-        catch
-        {
-            return encryptedApiKey;
-        }
     }
 
     private void ApplyDecisionsModel(Workspace workspace, AIProviderType provider, string? decisionsModelId)
