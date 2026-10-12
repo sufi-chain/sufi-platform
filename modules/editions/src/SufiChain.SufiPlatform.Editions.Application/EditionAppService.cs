@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.Extensions.Options;
 using SufiChain.SufiPlatform.Application.Dtos;
 using SufiChain.SufiPlatform.Application.Services;
 using Volo.Abp.Domain.Repositories;
@@ -13,11 +14,16 @@ public class EditionAppService : SufiApplicationService, IEditionAppService
 {
     protected IEditionRepository EditionRepository { get; }
     protected EditionManager EditionManager { get; }
+    protected SufiEditionsOptions EditionsOptions { get; }
 
-    public EditionAppService(IEditionRepository editionRepository, EditionManager editionManager)
+    public EditionAppService(
+        IEditionRepository editionRepository,
+        EditionManager editionManager,
+        IOptions<SufiEditionsOptions> editionsOptions)
     {
         EditionRepository = editionRepository;
         EditionManager = editionManager;
+        EditionsOptions = editionsOptions.Value;
     }
 
     public virtual async Task<EditionDto> GetAsync(Guid id)
@@ -75,11 +81,16 @@ public class EditionAppService : SufiApplicationService, IEditionAppService
 
     protected virtual EditionDto MapToDto(Edition edition)
     {
+        var storedDisplayName = edition.DisplayName;
         return new EditionDto
         {
             Id = edition.Id,
             Name = edition.Name,
-            DisplayName = edition.DisplayName,
+            DisplayName = storedDisplayName,
+            LocalizedDisplayName = EditionDisplayNameLocalization.Resolve(
+                StringLocalizerFactory,
+                EditionsOptions.DisplayNameResources,
+                storedDisplayName),
             Code = edition.Code,
             IsActive = edition.IsActive,
             ConcurrencyStamp = edition.ConcurrencyStamp

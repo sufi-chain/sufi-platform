@@ -11,6 +11,11 @@ public class EditionDto : ExtensibleEntityDto<Guid>, IHasConcurrencyStamp
 
     public string DisplayName { get; set; } = string.Empty;
 
+    /// <summary>
+    /// Culture-resolved label for UI. <see cref="DisplayName"/> stays the stored value (plain text or key).
+    /// </summary>
+    public string LocalizedDisplayName { get; set; } = string.Empty;
+
     public string Code { get; set; } = string.Empty;
 
     public bool IsActive { get; set; }

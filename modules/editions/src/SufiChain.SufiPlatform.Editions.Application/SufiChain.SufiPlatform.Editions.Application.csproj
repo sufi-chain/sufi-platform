@@ -5,8 +5,12 @@
     <RootNamespace>SufiChain.SufiPlatform.Editions</RootNamespace>
   </PropertyGroup>
   <ItemGroup>
+    <InternalsVisibleTo Include="SufiChain.SufiPlatform.Editions.Domain.Tests" />
+  </ItemGroup>
+  <ItemGroup>
     <PackageReference Include="Volo.Abp.Mapperly" Version="$(AbpVersion)" />
     <ProjectReference Include="../../../../framework/SufiChain.SufiPlatform.Ddd.Application/SufiChain.SufiPlatform.Ddd.Application.csproj" />
+    <ProjectReference Include="../../../../framework/SufiChain.SufiPlatform.Data/SufiChain.SufiPlatform.Data.csproj" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="../SufiChain.SufiPlatform.Editions.Domain/SufiChain.SufiPlatform.Editions.Domain.csproj" />

@@ -124,7 +124,7 @@ public partial class Editions
 
     private Task ShowEditionFeatures(EditionDto edition)
     {
-        return _featuresModal.OpenAsync(EditionFeatureProviderName, edition.Id.ToString(), edition.DisplayName);
+        return _featuresModal.OpenAsync(EditionFeatureProviderName, edition.Id.ToString(), edition.LocalizedDisplayName);
     }
 
     private sealed class EditionFormModel

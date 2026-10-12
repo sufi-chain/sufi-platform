@@ -7,9 +7,13 @@
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="../../../modules/editions/src/SufiChain.SufiPlatform.Editions.Domain/SufiChain.SufiPlatform.Editions.Domain.csproj" />
+    <ProjectReference Include="../../../modules/editions/src/SufiChain.SufiPlatform.Editions.Application/SufiChain.SufiPlatform.Editions.Application.csproj" />
+    <ProjectReference Include="../../../modules/editions/src/SufiChain.SufiPlatform.Editions.Application.Contracts/SufiChain.SufiPlatform.Editions.Application.Contracts.csproj" />
+
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="$(MicrosoftNetTestSdkVersion)" />
     <PackageReference Include="xunit" Version="$(XunitVersion)" />
     <PackageReference Include="xunit.runner.visualstudio" Version="$(XunitRunnerVisualStudioVersion)" PrivateAssets="All" />
     <PackageReference Include="Shouldly" Version="$(ShouldlyVersion)" />
+    <PackageReference Include="NSubstitute" Version="$(NSubstituteVersion)" />
   </ItemGroup>
 </Project>
