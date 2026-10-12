@@ -343,6 +343,36 @@ public class WorkspaceTests : SufiAITestBase<SufiAIDomainTestModule>
         workspace.GetPrimaryConfiguration(AICapabilityType.ChatCompletion)!.Id.ShouldBe(first.Id);
     }
 
+    [Fact]
+    public void NormalizeRoutePriorities_heals_ties_gaps_and_keeps_enabled_winner()
+    {
+        var workspace = CreateWorkspace();
+        var early = workspace.AddModelConfiguration(AICapabilityType.ChatCompletion, "early");
+        var mid = workspace.AddModelConfiguration(AICapabilityType.ChatCompletion, "mid");
+        var late = workspace.AddModelConfiguration(AICapabilityType.ChatCompletion, "late");
+
+        ObjectHelper.TrySetProperty(early, item => item.CreationTime, () => new DateTime(2020, 1, 1));
+        ObjectHelper.TrySetProperty(mid, item => item.CreationTime, () => new DateTime(2020, 1, 2));
+        ObjectHelper.TrySetProperty(late, item => item.CreationTime, () => new DateTime(2020, 1, 3));
+
+        early.SetPriority(5);
+        mid.SetPriority(5);
+        late.SetPriority(-3);
+
+        var winnerBefore = workspace.GetPrimaryConfiguration(AICapabilityType.ChatCompletion)!.Id;
+        winnerBefore.ShouldBe(late.Id);
+
+        workspace.NormalizeRoutePriorities().ShouldBeTrue();
+
+        var ordered = workspace.ModelConfigurations
+            .Where(route => route.CapabilityType == AICapabilityType.ChatCompletion)
+            .OrderBy(route => route.Priority)
+            .ToList();
+        ordered.Select(route => route.Priority).ShouldBe(new[] { 0, 1, 2 });
+        ordered[0].Id.ShouldBe(late.Id);
+        workspace.NormalizeRoutePriorities().ShouldBeFalse();
+    }
+
     private static Workspace CreateWorkspace() =>
         new(Guid.NewGuid(), "route-order", AIProviderType.OpenAI, "fallback-model");
 }

@@ -484,6 +484,49 @@ public class Workspace : FullAuditedAggregateRoot<Guid>, IMultiTenant
     }
 
     /// <summary>
+    /// Rewrites every capability group to contiguous <c>0..n-1</c>.
+    /// The current enabled primary (lowest <see cref="AIModelConfiguration.Priority"/>,
+    /// then <c>CreationTime</c>, then <c>Id</c>) stays at position 0.
+    /// </summary>
+    /// <returns><c>true</c> when any route priority changed.</returns>
+    public bool NormalizeRoutePriorities()
+    {
+        var changed = false;
+        var capabilities = _modelConfigurations
+            .Select(configuration => configuration.CapabilityType)
+            .Distinct()
+            .ToList();
+
+        foreach (var capability in capabilities)
+        {
+            var before = _modelConfigurations
+                .Where(configuration => configuration.CapabilityType == capability)
+                .ToDictionary(configuration => configuration.Id, configuration => configuration.Priority);
+
+            var primary = GetPrimaryConfiguration(capability);
+            if (primary != null)
+            {
+                Resequence(capability, primary.Id, requestedPosition: 0);
+            }
+            else
+            {
+                Resequence(capability);
+            }
+
+            foreach (var configuration in _modelConfigurations.Where(item => item.CapabilityType == capability))
+            {
+                if (before[configuration.Id] != configuration.Priority)
+                {
+                    changed = true;
+                    break;
+                }
+            }
+        }
+
+        return changed;
+    }
+
+    /// <summary>
     /// Rewrites priorities for one capability group to contiguous <c>0..n-1</c>.
     /// Enabled and disabled routes share the sequence. When <paramref name="movedId"/> is set,
     /// that route is placed at the clamped <paramref name="requestedPosition"/> (null = append).
