@@ -9,7 +9,7 @@
 		<ChildContent>@L["BackToWorkspaces"]</ChildContent>
 	</SbButton>
 	<AuthorizeView Policy="@AIPermissions.AI.ManageConfigurations">
-		<SbButton Color="SbColor.Primary" OnClick="@OpenCreatePage" Disabled="@(_workspace == null || _readOnly)">
+		<SbButton Color="SbColor.Primary" OnClick="@OpenCreatePage" Disabled="@(!CanCreateConfiguration)">
 			<StartIcon><SbIcon Name="plus" /></StartIcon>
 			<ChildContent>@L["NewModelConfiguration"]</ChildContent>
 		</SbButton>
@@ -17,11 +17,24 @@
 </SufiPageToolbar>
 
 <SbStack Direction="SbStackDirection.Column" Gap="4">
-	@if (_workspace == null && !IsOperationLoading(LoadingKeys.LoadWorkspace))
+	@if (_loadState is LoadState.NotStarted or LoadState.Loading)
+	{
+		<p role="status">@L["Loading"]</p>
+	}
+	else if (_loadState == LoadState.NotFound)
 	{
 		<SbAlert Color="SbColor.Warning">@L["WorkspaceRequired"]</SbAlert>
 	}
-	else
+	else if (_loadState == LoadState.Failed)
+	{
+		<SbAlert Severity="SbAlertSeverity.Danger">
+			<SbStack Direction="SbStackDirection.Row" Gap="3" Align="SbAlign.Center" Wrap="true">
+				<span>@L["DataLoadFailedGeneric"]</span>
+				<SbButton Size="SbSize.Sm" Variant="SbButtonVariant.Outline" OnClick="@RetryLoadAsync">@L["Retry"]</SbButton>
+			</SbStack>
+		</SbAlert>
+	}
+	else if (_loadState == LoadState.Loaded)
 	{
 		@if (_workspace?.IsInherited == true)
 		{

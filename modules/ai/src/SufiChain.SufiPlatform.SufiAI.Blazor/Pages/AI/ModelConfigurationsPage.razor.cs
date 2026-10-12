@@ -4,6 +4,7 @@ using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
+using Microsoft.Extensions.Logging;
 using SufiChain.SufiPlatform.SufiAI;
 using SufiChain.SufiPlatform.SufiAI.Workspaces;
 using SufiChain.SufiPlatform.UI.Layout;
@@ -13,6 +14,15 @@ namespace SufiChain.SufiPlatform.SufiAI.Blazor.Pages.AI;
 
 public partial class ModelConfigurationsPage : AIComponentBase
 {
+    private enum LoadState
+    {
+        NotStarted,
+        Loading,
+        Loaded,
+        NotFound,
+        Failed
+    }
+
     private static class LoadingKeys
     {
         public const string LoadWorkspace = "load-workspace";
@@ -37,6 +47,11 @@ public partial class ModelConfigurationsPage : AIComponentBase
     private List<AIModelConfigurationDto> _configurations = new();
     private bool _readOnly;
     private Guid _loadedWorkspaceId;
+    private LoadState _loadState = LoadState.NotStarted;
+    private int _loadVersion;
+
+    private bool CanCreateConfiguration =>
+        _loadState == LoadState.Loaded && _workspace != null && !_readOnly;
 
     protected override void OnInitialized()
     {
@@ -45,7 +60,7 @@ public partial class ModelConfigurationsPage : AIComponentBase
 
     protected override async Task OnParametersSetAsync()
     {
-        if (!IsInteractive || WorkspaceId == _loadedWorkspaceId)
+        if (!IsInteractive || SameLoad())
         {
             return;
         }
@@ -62,28 +77,127 @@ public partial class ModelConfigurationsPage : AIComponentBase
         }
     }
 
+    private bool SameLoad() =>
+        _loadState == LoadState.Loaded && WorkspaceId == _loadedWorkspaceId;
+
     private async Task LoadAsync()
     {
+        if (SameLoad())
+        {
+            return;
+        }
+
+        var version = ++_loadVersion;
         var workspaceId = WorkspaceId;
+        _loadState = LoadState.Loading;
+        _workspace = null;
+        _configurations = new List<AIModelConfigurationDto>();
+        _readOnly = false;
+
+        if (workspaceId == Guid.Empty)
+        {
+            _loadState = LoadState.NotFound;
+            return;
+        }
+
         await ExecuteWithLoadingAsync(async () =>
         {
-            _workspace = await WorkspaceAppService.GetAsync(workspaceId);
+            if (version != _loadVersion)
+            {
+                return;
+            }
+
+            try
+            {
+                _workspace = await WorkspaceAppService.GetAsync(workspaceId);
+            }
+            catch (OperationCanceledException exception)
+            {
+                Logger.LogWarning(
+                    exception,
+                    "Model configurations workspace load was canceled. WorkspaceId: {WorkspaceId}",
+                    workspaceId);
+                throw;
+            }
+            catch (Exception exception) when (IsEntityNotFound(exception))
+            {
+                if (version != _loadVersion)
+                {
+                    return;
+                }
+
+                _workspace = null;
+                _loadState = LoadState.NotFound;
+                return;
+            }
+            catch (Exception exception)
+            {
+                if (version != _loadVersion)
+                {
+                    return;
+                }
+
+                Logger.LogWarning(
+                    exception,
+                    "Model configurations workspace load failed. WorkspaceId: {WorkspaceId}",
+                    workspaceId);
+                _workspace = null;
+                _loadState = LoadState.Failed;
+                return;
+            }
+
+            if (version != _loadVersion || _workspace == null)
+            {
+                return;
+            }
+
             _readOnly = _workspace.IsInherited;
             PageLayout.Title = string.IsNullOrWhiteSpace(_workspace.Name)
                 ? L["ModelConfigurations"]
                 : $"{L["ModelConfigurations"]} — {_workspace.Name}";
-        }, LoadingKeys.LoadWorkspace);
 
-        await LoadConfigurationsAsync();
-        _loadedWorkspaceId = workspaceId;
+            try
+            {
+                _configurations = await AIAppService.GetModelConfigurationsAsync(workspaceId);
+            }
+            catch (OperationCanceledException exception)
+            {
+                Logger.LogWarning(
+                    exception,
+                    "Model configurations list load was canceled. WorkspaceId: {WorkspaceId}",
+                    workspaceId);
+                throw;
+            }
+            catch (Exception exception)
+            {
+                if (version != _loadVersion)
+                {
+                    return;
+                }
+
+                Logger.LogWarning(
+                    exception,
+                    "Model configurations list load failed. WorkspaceId: {WorkspaceId}",
+                    workspaceId);
+                _loadState = LoadState.Failed;
+                return;
+            }
+
+            if (version != _loadVersion)
+            {
+                return;
+            }
+
+            _loadState = LoadState.Loaded;
+            _loadedWorkspaceId = workspaceId;
+        }, LoadingKeys.LoadWorkspace);
     }
 
-    private async Task LoadConfigurationsAsync()
+    private Task RetryLoadAsync()
     {
-        await ExecuteWithLoadingAsync(async () =>
-        {
-            _configurations = await AIAppService.GetModelConfigurationsAsync(WorkspaceId);
-        }, LoadingKeys.LoadConfigurations);
+        _loadedWorkspaceId = Guid.Empty;
+        _loadState = LoadState.NotStarted;
+        return LoadAsync();
     }
 
     private void BackToWorkspaces()
@@ -93,7 +207,7 @@ public partial class ModelConfigurationsPage : AIComponentBase
 
     private void OpenCreatePage()
     {
-        if (_readOnly || _workspace == null)
+        if (!CanCreateConfiguration)
         {
             return;
         }
@@ -152,7 +266,7 @@ public partial class ModelConfigurationsPage : AIComponentBase
         {
             await AIAppService.SetWorkspaceDefaultModelConfigurationAsync(configuration.Id);
             await Message.SuccessAsync(L["WorkspaceDefaultUpdated"]);
-            await LoadConfigurationsAsync();
+            await ReloadConfigurationsAsync();
         }, LoadingKeys.SetWorkspaceDefault);
     }
 
@@ -173,8 +287,16 @@ public partial class ModelConfigurationsPage : AIComponentBase
         {
             await AIAppService.DeleteModelConfigurationAsync(configuration.Id);
             await Message.SuccessAsync(L["ConfigurationDeleted"]);
-            await LoadConfigurationsAsync();
+            await ReloadConfigurationsAsync();
         }, LoadingKeys.DeleteConfiguration);
+    }
+
+    private async Task ReloadConfigurationsAsync()
+    {
+        await ExecuteWithLoadingAsync(async () =>
+        {
+            _configurations = await AIAppService.GetModelConfigurationsAsync(WorkspaceId);
+        }, LoadingKeys.LoadConfigurations);
     }
 
     private SbColor GetCapabilityColor(AICapabilityType capabilityType)
@@ -252,5 +374,18 @@ public partial class ModelConfigurationsPage : AIComponentBase
         }
 
         return string.Join(" · ", parts);
+    }
+
+    private static bool IsEntityNotFound(Exception exception)
+    {
+        for (var current = exception; current != null; current = current.InnerException)
+        {
+            if (string.Equals(current.GetType().Name, "EntityNotFoundException", StringComparison.Ordinal))
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 }
