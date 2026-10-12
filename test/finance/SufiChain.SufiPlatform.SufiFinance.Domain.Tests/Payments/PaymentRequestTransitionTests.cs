@@ -38,5 +38,5 @@ public class PaymentRequestTransitionTests
     }
 
     private static PaymentRequest NewPayment(decimal amount) =>
-        new(Guid.NewGuid(), null, null, 1001, amount, "USD", Guid.NewGuid(), "virtual", "callback-token", DateTime.UtcNow.AddHours(1));
+        new(Guid.NewGuid(), null, null, 1001, amount, "USD", Guid.NewGuid(), "virtual", "callback-token", "https://pay.example", DateTime.UtcNow.AddHours(1));
 }
