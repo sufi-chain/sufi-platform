@@ -137,6 +137,13 @@ public class AIModelConfigurationDto : Application.Dtos.EntityDto<Guid>
     public bool HasApiKey { get; set; }
     public bool IsEnabled { get; set; }
     public int Priority { get; set; }
+
+    /// <summary>True when this route is enabled at position 0 for its capability.</summary>
+    public bool IsDefault { get; set; }
+
+    /// <summary>Workspace concurrency stamp for optimistic UI updates.</summary>
+    public string? ConcurrencyStamp { get; set; }
+
     public int MaxContextTokens { get; set; }
     public decimal? InputPrice { get; set; }
     public AIPriceUnit InputPriceUnit { get; set; }
@@ -165,7 +172,11 @@ public class CreateAIModelConfigurationDto
     public AIPriceUnit InputPriceUnit { get; set; }
     public decimal? OutputPrice { get; set; }
     public AIPriceUnit OutputPriceUnit { get; set; }
-    public int Priority { get; set; }
+
+    /// <summary>Requested position in the capability sequence. Null appends.</summary>
+    public int? Priority { get; set; }
+
+    public string? ConcurrencyStamp { get; set; }
     public OpenAIApiMode OpenAIApiMode { get; set; } = OpenAIApiMode.ChatCompletions;
     public int MaxContextTokens { get; set; } = 200000;
     public int? Dimensions { get; set; }
@@ -195,7 +206,11 @@ public class UpdateAIModelConfigurationDto
     public AIPriceUnit InputPriceUnit { get; set; }
     public decimal? OutputPrice { get; set; }
     public AIPriceUnit OutputPriceUnit { get; set; }
-    public int Priority { get; set; }
+
+    /// <summary>Requested position. Null keeps the current position.</summary>
+    public int? Priority { get; set; }
+
+    public string? ConcurrencyStamp { get; set; }
     public int? Dimensions { get; set; }
     public bool? AcceptsImageInput { get; set; }
     public bool? AcceptsFileInput { get; set; }
@@ -203,6 +218,17 @@ public class UpdateAIModelConfigurationDto
     public string? ReasoningEfforts { get; set; }
     public string? DefaultReasoningEffort { get; set; }
     public ModelCapabilitySource? CapabilitySource { get; set; }
+}
+
+public class MoveAIModelConfigurationDto
+{
+    public int Position { get; set; }
+    public string? ConcurrencyStamp { get; set; }
+}
+
+public class ModelConfigurationConcurrencyDto
+{
+    public string? ConcurrencyStamp { get; set; }
 }
 
 // Usage Log DTOs

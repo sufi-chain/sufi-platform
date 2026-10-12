@@ -860,6 +860,7 @@
     "AI:WorkspaceDefaultRequiresEnabledConfiguration": "Habilite esta configuración de modelo antes de establecerla como predeterminada del espacio de trabajo.",
 
     "AI:CannotDeleteWorkspaceDefault": "El predeterminado del espacio de trabajo no se puede eliminar. Establezca primero otro modelo de chat como predeterminado.",
+    "ModelRouteListChanged": "La lista cambió; vuelva a cargar.",
 
     "RouteUnavailable:WorkspaceInactive": "Este espacio de trabajo no está activo.",
 

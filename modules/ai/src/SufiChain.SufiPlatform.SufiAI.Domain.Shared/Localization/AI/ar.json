@@ -464,6 +464,7 @@
     "AI:WorkspaceDefaultRequiresChatCompletion": "يمكن لنموذج المحادثة فقط أن يكون الافتراضي لمساحة العمل.",
     "AI:WorkspaceDefaultRequiresEnabledConfiguration": "فعّل تكوين النموذج قبل تعيينه كافتراضي لمساحة العمل.",
     "AI:CannotDeleteWorkspaceDefault": "لا يمكن حذف الافتراضي لمساحة العمل. عيّن نموذج محادثة آخر كافتراضي أولاً.",
+    "ModelRouteListChanged": "تغيرت القائمة؛ أعد التحميل.",
     "RouteUnavailable:WorkspaceInactive": "مساحة العمل هذه غير نشطة.",
     "RouteUnavailable:ModelNotConfigured": "هذا المسار لا يحتوي على نموذج مهيأ.",
     "RouteUnavailable:CredentialsMissing": "هذا المسار يفتقد بيانات اعتماد واجهة برمجة التطبيقات.",

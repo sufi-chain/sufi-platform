@@ -7,8 +7,10 @@ using Microsoft.AspNetCore.Authorization;
 using Riok.Mapperly.Abstractions;
 using SufiChain.SufiPlatform.SufiAI;
 using SufiChain.SufiPlatform.SufiAI.Features;
+using SufiChain.SufiPlatform.SufiAI.Localization;
 using SufiChain.SufiPlatform.SufiAI.Permissions;
 using SufiChain.SufiPlatform.SufiAI.Workspaces;
+using Volo.Abp.Data;
 using Volo.Abp.Domain.Entities;
 using Volo.Abp.Domain.Repositories;
 using Volo.Abp.Security.Encryption;
@@ -53,6 +55,7 @@ public class AIAppService : SufiApplicationService, IAIAppService
         _workspaceRepository = workspaceRepository;
         _workspaceSyncService = workspaceSyncService;
         _workspaceGuardrailService = workspaceGuardrailService;
+        LocalizationResource = typeof(AIResource);
     }
 
     [Authorize(AIPermissions.AI.Audio)]
@@ -262,7 +265,9 @@ public class AIAppService : SufiApplicationService, IAIAppService
         return workspace.ModelConfigurations
             .OrderBy(configuration => configuration.CapabilityType)
             .ThenBy(configuration => configuration.Priority)
-            .Select(AIModelConfigurationMapper.ToDto)
+            .ThenBy(configuration => configuration.CreationTime)
+            .ThenBy(configuration => configuration.Id)
+            .Select(configuration => AIModelConfigurationMapper.ToDto(configuration, workspace.ConcurrencyStamp))
             .ToList();
     }
 
@@ -270,22 +275,16 @@ public class AIAppService : SufiApplicationService, IAIAppService
     [RequiresFeature(SufiAIFeatures.Workspaces)]
     public async Task<AIModelConfigurationDto> CreateModelConfigurationAsync(CreateAIModelConfigurationDto input)
     {
-        await EnsureWorkspaceEditableAsync(input.WorkspaceId);
+        var workspace = await GetEditableWorkspaceWithDetailsAsync(input.WorkspaceId);
+        EnsureConcurrencyStamp(workspace, input.ConcurrencyStamp);
 
-        var configuration = new AIModelConfiguration(
-            GuidGenerator.Create(),
-            input.WorkspaceId,
+        var configuration = workspace.AddModelConfiguration(
             input.CapabilityType,
-            input.ModelId,
-            input.Priority
-        );
-
-        configuration.UpdateConfiguration(
             input.ModelId,
             input.ApiEndpoint,
             EncryptApiKey(input.ApiKey),
             input.Priority,
-            OpenAIApiMode.ChatCompletions,
+            input.OpenAIApiMode,
             input.InputPrice,
             input.OutputPrice,
             input.Dimensions,
@@ -294,8 +293,7 @@ public class AIAppService : SufiApplicationService, IAIAppService
             input.Description,
             AIModelConfiguration.NormalizeMaxContextTokens(input.MaxContextTokens),
             input.InputPriceUnit,
-            input.OutputPriceUnit
-        );
+            input.OutputPriceUnit);
         configuration.SetChatCapabilities(
             input.AcceptsImageInput,
             input.AcceptsFileInput,
@@ -304,17 +302,18 @@ public class AIAppService : SufiApplicationService, IAIAppService
             input.DefaultReasoningEffort,
             input.CapabilitySource);
 
-        await _configurationRepository.InsertAsync(configuration);
-        await ClearWorkspaceRuntimeCacheAsync(input.WorkspaceId);
+        await SaveWorkspaceRoutesAsync(workspace);
+        await ClearWorkspaceRuntimeCacheAsync(workspace.Id);
 
-        return AIModelConfigurationMapper.ToDto(configuration);
+        return AIModelConfigurationMapper.ToDto(configuration, workspace.ConcurrencyStamp);
     }
 
     [Authorize(AIPermissions.AI.ManageConfigurations)]
     [RequiresFeature(SufiAIFeatures.Workspaces)]
     public async Task<AIModelConfigurationDto> UpdateModelConfigurationAsync(Guid id, UpdateAIModelConfigurationDto input)
     {
-        var configuration = await GetEditableConfigurationAsync(id);
+        var (workspace, configuration) = await GetEditableWorkspaceConfigurationAsync(id);
+        EnsureConcurrencyStamp(workspace, input.ConcurrencyStamp);
 
         var apiKeyToUpdate = input.ClearApiKey
             ? null
@@ -326,8 +325,8 @@ public class AIAppService : SufiApplicationService, IAIAppService
             input.ModelId,
             input.ApiEndpoint,
             apiKeyToUpdate,
-            input.Priority,
-            OpenAIApiMode.ChatCompletions,
+            configuration.Priority,
+            input.OpenAIApiMode,
             input.InputPrice,
             input.OutputPrice,
             input.Dimensions,
@@ -336,8 +335,7 @@ public class AIAppService : SufiApplicationService, IAIAppService
             input.Description,
             AIModelConfiguration.NormalizeMaxContextTokens(input.MaxContextTokens),
             input.InputPriceUnit,
-            input.OutputPriceUnit
-        );
+            input.OutputPriceUnit);
         configuration.SetChatCapabilities(
             input.AcceptsImageInput,
             input.AcceptsFileInput,
@@ -346,50 +344,51 @@ public class AIAppService : SufiApplicationService, IAIAppService
             input.DefaultReasoningEffort,
             input.CapabilitySource);
 
-        await _configurationRepository.UpdateAsync(configuration);
-        await ClearWorkspaceRuntimeCacheAsync(configuration.WorkspaceId);
+        if (input.Priority.HasValue && input.Priority.Value != configuration.Priority)
+        {
+            workspace.MoveModelConfiguration(id, input.Priority.Value);
+        }
 
-        return AIModelConfigurationMapper.ToDto(configuration);
+        await SaveWorkspaceRoutesAsync(workspace);
+        await ClearWorkspaceRuntimeCacheAsync(workspace.Id);
+
+        return AIModelConfigurationMapper.ToDto(configuration, workspace.ConcurrencyStamp);
     }
 
     [Authorize(AIPermissions.AI.ManageConfigurations)]
     [RequiresFeature(SufiAIFeatures.Workspaces)]
-    public async Task SetWorkspaceDefaultModelConfigurationAsync(Guid id)
+    public async Task SetWorkspaceDefaultModelConfigurationAsync(Guid id, ModelConfigurationConcurrencyDto? input = null)
     {
-        Guid workspaceId;
-        using (_configurationRepository.DisableTracking())
-        {
-            var configuration = await GetEditableConfigurationAsync(id);
-            workspaceId = configuration.WorkspaceId;
-        }
-
-        var workspace = await _workspaceRepository.GetAsync(workspaceId, includeDetails: true);
-        if (workspace.IsInherited)
-        {
-            throw new BusinessException(AIErrorCodes.InheritedWorkspaceReadOnly)
-                .WithData("WorkspaceId", workspaceId);
-        }
+        var (workspace, _) = await GetEditableWorkspaceConfigurationAsync(id);
+        EnsureConcurrencyStamp(workspace, input?.ConcurrencyStamp);
 
         workspace.SetDefaultModelConfiguration(id);
-        await _workspaceRepository.UpdateAsync(workspace, autoSave: true);
+        await SaveWorkspaceRoutesAsync(workspace);
         await _workspaceSyncService.ClearWorkspaceCache(workspace.Name);
     }
 
     [Authorize(AIPermissions.AI.ManageConfigurations)]
     [RequiresFeature(SufiAIFeatures.Workspaces)]
-    public async Task DeleteModelConfigurationAsync(Guid id)
+    public async Task DeleteModelConfigurationAsync(Guid id, ModelConfigurationConcurrencyDto? input = null)
     {
-        var configuration = await GetEditableConfigurationAsync(id);
-        if (await IsWorkspaceDefaultConfigurationAsync(configuration))
-        {
-            throw new BusinessException(AIErrorCodes.CannotDeleteWorkspaceDefault)
-                .WithData("ModelConfigurationId", configuration.Id)
-                .WithData("ModelId", configuration.ModelId);
-        }
+        var (workspace, _) = await GetEditableWorkspaceConfigurationAsync(id);
+        EnsureConcurrencyStamp(workspace, input?.ConcurrencyStamp);
 
-        var workspaceId = configuration.WorkspaceId;
-        await _configurationRepository.DeleteAsync(id);
-        await ClearWorkspaceRuntimeCacheAsync(workspaceId);
+        workspace.RemoveModelConfiguration(id);
+        await SaveWorkspaceRoutesAsync(workspace);
+        await ClearWorkspaceRuntimeCacheAsync(workspace.Id);
+    }
+
+    [Authorize(AIPermissions.AI.ManageConfigurations)]
+    [RequiresFeature(SufiAIFeatures.Workspaces)]
+    public async Task MoveModelConfigurationAsync(Guid id, MoveAIModelConfigurationDto input)
+    {
+        var (workspace, _) = await GetEditableWorkspaceConfigurationAsync(id);
+        EnsureConcurrencyStamp(workspace, input.ConcurrencyStamp);
+
+        workspace.MoveModelConfiguration(id, input.Position);
+        await SaveWorkspaceRoutesAsync(workspace);
+        await ClearWorkspaceRuntimeCacheAsync(workspace.Id);
     }
 
     [Authorize(AIPermissions.AI.ViewUsage)]
@@ -485,30 +484,38 @@ public class AIAppService : SufiApplicationService, IAIAppService
         return _stringEncryptor.Encrypt(apiKey);
     }
 
-    private async Task<bool> IsWorkspaceDefaultConfigurationAsync(AIModelConfiguration configuration)
-    {
-        if (!configuration.IsEnabled || configuration.CapabilityType != AICapabilityType.ChatCompletion)
-        {
-            return false;
-        }
-
-        var enabledChatRoutes = await _configurationRepository.GetEnabledByCapabilityAsync(
-            configuration.WorkspaceId,
-            AICapabilityType.ChatCompletion);
-        return !enabledChatRoutes.Any(item =>
-            item.Id != configuration.Id && item.Priority < configuration.Priority);
-    }
-
     private async Task<IReadOnlyList<AIModelConfiguration>> GetWorkspaceModelConfigurationsAsync(Guid workspaceId)
     {
         var workspace = await _workspaceRepository.FindAsync(workspaceId, includeDetails: true);
         return workspace?.ModelConfigurations ?? Array.Empty<AIModelConfiguration>();
     }
 
-    private async Task<AIModelConfiguration> GetEditableConfigurationAsync(Guid id)
+    private async Task<Workspace> GetEditableWorkspaceWithDetailsAsync(Guid workspaceId)
     {
-        var configuration = await _configurationRepository.FindAsync(id);
-        if (configuration == null)
+        var workspace = await _workspaceRepository.FindAsync(workspaceId, includeDetails: true);
+        if (workspace == null)
+        {
+            throw new EntityNotFoundException(typeof(Workspace), workspaceId);
+        }
+
+        if (workspace.IsInherited)
+        {
+            throw new BusinessException(AIErrorCodes.InheritedWorkspaceReadOnly)
+                .WithData("WorkspaceId", workspaceId);
+        }
+
+        return workspace;
+    }
+
+    private async Task<(Workspace Workspace, AIModelConfiguration Configuration)> GetEditableWorkspaceConfigurationAsync(Guid id)
+    {
+        AIModelConfiguration? lookup;
+        using (_configurationRepository.DisableTracking())
+        {
+            lookup = await _configurationRepository.FindAsync(id);
+        }
+
+        if (lookup == null)
         {
             if (await IsInheritedModelAsync(id, sourceWorkspaceId: null))
             {
@@ -518,7 +525,7 @@ public class AIAppService : SufiApplicationService, IAIAppService
             throw new EntityNotFoundException(typeof(AIModelConfiguration), id);
         }
 
-        var workspace = await _workspaceRepository.FindAsync(configuration.WorkspaceId, includeDetails: false);
+        var workspace = await _workspaceRepository.FindAsync(lookup.WorkspaceId, includeDetails: true);
         if (workspace?.IsInherited == true)
         {
             throw InheritedWorkspaceReadOnly(id, workspace.Id);
@@ -529,15 +536,46 @@ public class AIAppService : SufiApplicationService, IAIAppService
             // A dedicated tenant database does not contain the host route row.
             // A shared database can still see it. Both stay read-only when that
             // route belongs to a workspace inherited by the current tenant.
-            if (await IsInheritedModelAsync(id, configuration.WorkspaceId))
+            if (await IsInheritedModelAsync(id, lookup.WorkspaceId))
             {
-                throw InheritedWorkspaceReadOnly(id, configuration.WorkspaceId);
+                throw InheritedWorkspaceReadOnly(id, lookup.WorkspaceId);
             }
 
             throw new EntityNotFoundException(typeof(AIModelConfiguration), id);
         }
 
-        return configuration;
+        var configuration = workspace.ModelConfigurations.FirstOrDefault(item => item.Id == id);
+        if (configuration == null)
+        {
+            throw new EntityNotFoundException(typeof(AIModelConfiguration), id);
+        }
+
+        return (workspace, configuration);
+    }
+
+    private void EnsureConcurrencyStamp(Workspace workspace, string? concurrencyStamp)
+    {
+        if (string.IsNullOrWhiteSpace(concurrencyStamp))
+        {
+            return;
+        }
+
+        if (!string.Equals(workspace.ConcurrencyStamp, concurrencyStamp, StringComparison.Ordinal))
+        {
+            throw new UserFriendlyException(L["ModelRouteListChanged"]);
+        }
+    }
+
+    private async Task SaveWorkspaceRoutesAsync(Workspace workspace)
+    {
+        try
+        {
+            await _workspaceRepository.UpdateAsync(workspace, autoSave: true);
+        }
+        catch (AbpDbConcurrencyException)
+        {
+            throw new UserFriendlyException(L["ModelRouteListChanged"]);
+        }
     }
 
     private async Task<bool> IsInheritedModelAsync(Guid configurationId, Guid? sourceWorkspaceId)
@@ -566,21 +604,6 @@ public class AIAppService : SufiApplicationService, IAIAppService
         return exception;
     }
 
-    private async Task EnsureWorkspaceEditableAsync(Guid workspaceId)
-    {
-        var workspace = await _workspaceRepository.FindAsync(workspaceId, includeDetails: false);
-        if (workspace == null)
-        {
-            throw new EntityNotFoundException(typeof(Workspace), workspaceId);
-        }
-
-        if (workspace.IsInherited)
-        {
-            throw new BusinessException(AIErrorCodes.InheritedWorkspaceReadOnly)
-                .WithData("WorkspaceId", workspaceId);
-        }
-    }
-
     private async Task ClearWorkspaceRuntimeCacheAsync(Guid workspaceId)
     {
         var workspace = await _workspaceRepository.FindAsync(workspaceId);
@@ -597,7 +620,7 @@ public class AIAppService : SufiApplicationService, IAIAppService
 [Mapper]
 public static partial class AIModelConfigurationMapper
 {
-    public static AIModelConfigurationDto ToDto(AIModelConfiguration entity)
+    public static AIModelConfigurationDto ToDto(AIModelConfiguration entity, string? concurrencyStamp = null)
     {
         return new AIModelConfigurationDto
         {
@@ -612,6 +635,8 @@ public static partial class AIModelConfigurationMapper
             HasApiKey = !string.IsNullOrWhiteSpace(entity.ApiKey),
             IsEnabled = entity.IsEnabled,
             Priority = entity.Priority,
+            IsDefault = entity.IsEnabled && entity.Priority == 0,
+            ConcurrencyStamp = concurrencyStamp,
             OpenAIApiMode = entity.OpenAIApiMode,
             MaxContextTokens = AIModelConfiguration.NormalizeMaxContextTokens(entity.MaxContextTokens),
             InputPrice = entity.InputPrice,

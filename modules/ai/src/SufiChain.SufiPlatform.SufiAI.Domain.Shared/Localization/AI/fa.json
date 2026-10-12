@@ -492,6 +492,7 @@
     "AI:WorkspaceDefaultRequiresChatCompletion": "فقط یک مدل گفتگو می‌تواند پیش‌فرض فضای کاری باشد.",
     "AI:WorkspaceDefaultRequiresEnabledConfiguration": "پیش از تنظیم به‌عنوان پیش‌فرض فضای کاری، این پیکربندی مدل را فعال کنید.",
     "AI:CannotDeleteWorkspaceDefault": "پیش‌فرض فضای کاری را نمی‌توان حذف کرد. ابتدا یک مدل گفتگوی دیگر را به‌عنوان پیش‌فرض تنظیم کنید.",
+    "ModelRouteListChanged": "فهرست تغییر کرده است؛ دوباره بارگذاری کنید.",
     "RouteUnavailable:WorkspaceInactive": "این فضای کاری فعال نیست.",
     "RouteUnavailable:ModelNotConfigured": "این مسیر مدل پیکربندی‌شده ندارد.",
     "RouteUnavailable:CredentialsMissing": "این مسیر کلید API ندارد.",

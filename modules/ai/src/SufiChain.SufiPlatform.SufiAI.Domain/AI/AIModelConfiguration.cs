@@ -243,6 +243,8 @@ public class AIModelConfiguration : AuditedEntity<Guid>
 
     public void SetPriority(int priority) => Priority = priority;
 
+    public void SetCapabilityType(AICapabilityType capabilityType) => CapabilityType = capabilityType;
+
    private static void ValidatePricing(decimal? value, string parameterName)
    {
        if (value < 0)

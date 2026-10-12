@@ -512,6 +512,7 @@
     "AI:WorkspaceDefaultRequiresChatCompletion": "Only a chat model can be the workspace default.",
     "AI:WorkspaceDefaultRequiresEnabledConfiguration": "Enable this model configuration before setting it as the workspace default.",
     "AI:CannotDeleteWorkspaceDefault": "The workspace default cannot be deleted. Set another chat model as the default first.",
+    "ModelRouteListChanged": "The list changed; reload.",
     "RouteUnavailable:WorkspaceInactive": "This workspace is not active.",
     "RouteUnavailable:ModelNotConfigured": "This route has no model configured.",
     "RouteUnavailable:CredentialsMissing": "This route is missing API credentials.",

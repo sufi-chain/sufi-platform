@@ -57,6 +57,8 @@ public class OpenRouterSystemOneDecisionClient : ISystemOneDecisionClient, ITran
             var route = workspace.ModelConfigurations
                 .Where(item => item.CapabilityType == AICapabilityType.Decisions && item.IsEnabled)
                 .OrderBy(item => item.Priority)
+                .ThenBy(item => item.CreationTime)
+                .ThenBy(item => item.Id)
                 .FirstOrDefault();
             if (route == null || string.IsNullOrWhiteSpace(route.ModelId))
             {

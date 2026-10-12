@@ -67,7 +67,6 @@ public static class DefaultWorkspaceManagedFieldReconciler
                 modelId.Trim(),
                 apiEndpoint: null,
                 apiKey: null,
-                priority: 0,
                 openAIApiMode: OpenAIApiMode.ChatCompletions,
                 dimensions: dimensions,
                 maxContextTokens: AIModelConfiguration.DefaultMaxContextTokens);

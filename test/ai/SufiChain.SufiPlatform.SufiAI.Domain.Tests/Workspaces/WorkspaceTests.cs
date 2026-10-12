@@ -1,6 +1,8 @@
 using System;
+using System.Linq;
 using Shouldly;
 using SufiChain.SufiPlatform.SufiAI.Workspaces;
+using Volo.Abp;
 using Xunit;
 using SufiChain.SufiPlatform.SufiAI;
 
@@ -179,4 +181,168 @@ public class WorkspaceTests : SufiAITestBase<SufiAIDomainTestModule>
         configuration.MaxContextTokens.ShouldBe(AIModelConfiguration.DefaultMaxContextTokens);
         AIModelConfiguration.NormalizeMaxContextTokens(0).ShouldBe(AIModelConfiguration.DefaultMaxContextTokens);
     }
+
+    [Fact]
+    public void Append_assigns_contiguous_priorities()
+    {
+        var workspace = CreateWorkspace();
+        var first = workspace.AddModelConfiguration(AICapabilityType.ChatCompletion, "model-a");
+        var second = workspace.AddModelConfiguration(AICapabilityType.ChatCompletion, "model-b");
+
+        first.Priority.ShouldBe(0);
+        second.Priority.ShouldBe(1);
+        workspace.GetPrimaryConfiguration(AICapabilityType.ChatCompletion)!.Id.ShouldBe(first.Id);
+    }
+
+    [Fact]
+    public void Insert_at_zero_collides_and_shifts_existing()
+    {
+        var workspace = CreateWorkspace();
+        var first = workspace.AddModelConfiguration(AICapabilityType.ChatCompletion, "model-a");
+        var inserted = workspace.AddModelConfiguration(
+            AICapabilityType.ChatCompletion,
+            "model-b",
+            priority: 0);
+
+        inserted.Priority.ShouldBe(0);
+        first.Priority.ShouldBe(1);
+        workspace.GetPrimaryConfiguration(AICapabilityType.ChatCompletion)!.Id.ShouldBe(inserted.Id);
+    }
+
+    [Fact]
+    public void Move_clamps_and_rewrites_priorities()
+    {
+        var workspace = CreateWorkspace();
+        var a = workspace.AddModelConfiguration(AICapabilityType.ChatCompletion, "a");
+        var b = workspace.AddModelConfiguration(AICapabilityType.ChatCompletion, "b");
+        var c = workspace.AddModelConfiguration(AICapabilityType.ChatCompletion, "c");
+
+        workspace.MoveModelConfiguration(c.Id, position: 0);
+
+        c.Priority.ShouldBe(0);
+        a.Priority.ShouldBe(1);
+        b.Priority.ShouldBe(2);
+
+        workspace.MoveModelConfiguration(c.Id, position: 99);
+        c.Priority.ShouldBe(2);
+    }
+
+    [Fact]
+    public void Remove_closes_the_priority_gap()
+    {
+        var workspace = CreateWorkspace();
+        var a = workspace.AddModelConfiguration(AICapabilityType.ChatCompletion, "a");
+        var b = workspace.AddModelConfiguration(AICapabilityType.ChatCompletion, "b");
+        var c = workspace.AddModelConfiguration(AICapabilityType.ChatCompletion, "c");
+
+        workspace.RemoveModelConfiguration(b.Id);
+
+        workspace.ModelConfigurations.Count(route => route.CapabilityType == AICapabilityType.ChatCompletion)
+            .ShouldBe(2);
+        a.Priority.ShouldBe(0);
+        c.Priority.ShouldBe(1);
+    }
+
+    [Theory]
+    [InlineData(AICapabilityType.ChatCompletion)]
+    [InlineData(AICapabilityType.Embeddings)]
+    [InlineData(AICapabilityType.Decisions)]
+    public void Set_default_moves_to_zero_for_any_capability_without_negatives(
+        AICapabilityType capability)
+    {
+        var workspace = CreateWorkspace();
+        var first = workspace.AddModelConfiguration(capability, "first");
+        var second = workspace.AddModelConfiguration(capability, "second");
+
+        workspace.SetDefaultModelConfiguration(second.Id);
+
+        second.Priority.ShouldBe(0);
+        first.Priority.ShouldBe(1);
+        second.Priority.ShouldBeGreaterThanOrEqualTo(0);
+        first.Priority.ShouldBeGreaterThanOrEqualTo(0);
+        workspace.GetPrimaryConfiguration(capability)!.Id.ShouldBe(second.Id);
+
+        if (capability == AICapabilityType.ChatCompletion)
+        {
+            workspace.DefaultModel.ShouldBe("second");
+        }
+    }
+
+    [Fact]
+    public void Change_capability_resequences_both_groups()
+    {
+        var workspace = CreateWorkspace();
+        var chatA = workspace.AddModelConfiguration(AICapabilityType.ChatCompletion, "chat-a");
+        var chatB = workspace.AddModelConfiguration(AICapabilityType.ChatCompletion, "chat-b");
+        var embed = workspace.AddModelConfiguration(AICapabilityType.Embeddings, "embed-a");
+
+        workspace.ChangeCapability(chatB.Id, AICapabilityType.Embeddings);
+
+        chatA.Priority.ShouldBe(0);
+        workspace.ModelConfigurations
+            .Count(route => route.CapabilityType == AICapabilityType.ChatCompletion)
+            .ShouldBe(1);
+
+        embed.Priority.ShouldBe(0);
+        chatB.CapabilityType.ShouldBe(AICapabilityType.Embeddings);
+        chatB.Priority.ShouldBe(1);
+    }
+
+    [Fact]
+    public void Seeded_tie_gap_and_negative_heal_on_next_mutate()
+    {
+        var workspace = CreateWorkspace();
+        var early = workspace.AddModelConfiguration(AICapabilityType.ChatCompletion, "early");
+        var mid = workspace.AddModelConfiguration(AICapabilityType.ChatCompletion, "mid");
+        var late = workspace.AddModelConfiguration(AICapabilityType.ChatCompletion, "late");
+
+        ObjectHelper.TrySetProperty(early, item => item.CreationTime, () => new DateTime(2020, 1, 1));
+        ObjectHelper.TrySetProperty(mid, item => item.CreationTime, () => new DateTime(2020, 1, 2));
+        ObjectHelper.TrySetProperty(late, item => item.CreationTime, () => new DateTime(2020, 1, 3));
+
+        early.SetPriority(5);
+        mid.SetPriority(5);
+        late.SetPriority(-3);
+
+        workspace.MoveModelConfiguration(late.Id, position: 1);
+
+        var ordered = workspace.ModelConfigurations
+            .Where(route => route.CapabilityType == AICapabilityType.ChatCompletion)
+            .OrderBy(route => route.Priority)
+            .ToList();
+        ordered.Select(route => route.Priority).ShouldBe(new[] { 0, 1, 2 });
+        ordered.ShouldAllBe(route => route.Priority >= 0);
+    }
+
+    [Fact]
+    public void Removing_the_only_enabled_default_is_rejected()
+    {
+        var workspace = CreateWorkspace();
+        var only = workspace.AddModelConfiguration(AICapabilityType.ChatCompletion, "only");
+
+        var exception = Should.Throw<global::Volo.Abp.BusinessException>(() =>
+            workspace.RemoveModelConfiguration(only.Id));
+        exception.Code.ShouldBe(AIErrorCodes.CannotDeleteWorkspaceDefault);
+
+        exception = Should.Throw<global::Volo.Abp.BusinessException>(() =>
+            workspace.DisableModelConfiguration(only.Id));
+        exception.Code.ShouldBe(AIErrorCodes.CannotDeleteWorkspaceDefault);
+    }
+
+    [Fact]
+    public void Disabled_routes_share_the_capability_sequence()
+    {
+        var workspace = CreateWorkspace();
+        var first = workspace.AddModelConfiguration(AICapabilityType.ChatCompletion, "first");
+        var second = workspace.AddModelConfiguration(AICapabilityType.ChatCompletion, "second");
+        workspace.DisableModelConfiguration(second.Id);
+
+        first.Priority.ShouldBe(0);
+        second.Priority.ShouldBe(1);
+        second.IsEnabled.ShouldBeFalse();
+        workspace.GetPrimaryConfiguration(AICapabilityType.ChatCompletion)!.Id.ShouldBe(first.Id);
+    }
+
+    private static Workspace CreateWorkspace() =>
+        new(Guid.NewGuid(), "route-order", AIProviderType.OpenAI, "fallback-model");
 }

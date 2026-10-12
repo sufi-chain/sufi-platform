@@ -29,6 +29,8 @@ public class EfCoreAIModelConfigurationRepository
             .Where(c => c.WorkspaceId == workspaceId)
             .OrderBy(c => c.CapabilityType)
             .ThenBy(c => c.Priority)
+            .ThenBy(c => c.CreationTime)
+            .ThenBy(c => c.Id)
             .ToListAsync(cancellationToken);
     }
 
@@ -43,6 +45,8 @@ public class EfCoreAIModelConfigurationRepository
                      && c.CapabilityType == capabilityType 
                      && c.IsEnabled)
             .OrderBy(c => c.Priority)
+            .ThenBy(c => c.CreationTime)
+            .ThenBy(c => c.Id)
             .ToListAsync(cancellationToken);
     }
 
@@ -57,6 +61,8 @@ public class EfCoreAIModelConfigurationRepository
                      && c.CapabilityType == capabilityType 
                      && c.IsEnabled)
             .OrderBy(c => c.Priority)
+            .ThenBy(c => c.CreationTime)
+            .ThenBy(c => c.Id)
             .FirstOrDefaultAsync(cancellationToken);
     }
 }

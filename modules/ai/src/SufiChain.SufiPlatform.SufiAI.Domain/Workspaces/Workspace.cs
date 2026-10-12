@@ -175,14 +175,16 @@ public class Workspace : FullAuditedAggregateRoot<Guid>, IMultiTenant
     }
     
     /// <summary>
-    /// Add a model configuration for a specific capability
+    /// Adds a model configuration for a specific capability.
+    /// <paramref name="priority"/> is the requested position in that capability's sequence
+    /// (<c>null</c> appends). Priorities are rewritten to contiguous <c>0..n-1</c>.
     /// </summary>
     public AIModelConfiguration AddModelConfiguration(
         AICapabilityType capabilityType,
         string modelId,
         string? apiEndpoint = null,
         string? apiKey = null,
-        int priority = 0,
+        int? priority = null,
         OpenAIApiMode openAIApiMode = OpenAIApiMode.ChatCompletions,
         decimal? inputPrice = null,
         decimal? outputPrice = null,
@@ -195,12 +197,13 @@ public class Workspace : FullAuditedAggregateRoot<Guid>, IMultiTenant
         AIPriceUnit? outputPriceUnit = null
     )
     {
+        var temporaryPriority = priority ?? int.MaxValue;
         var config = new AIModelConfiguration(
             Guid.NewGuid(),
             Id,
             capabilityType,
             modelId,
-            priority
+            temporaryPriority
         );
         var priceDefaults = CatalogPriceQuote.Default(capabilityType);
 
@@ -208,7 +211,7 @@ public class Workspace : FullAuditedAggregateRoot<Guid>, IMultiTenant
             modelId,
             apiEndpoint,
             apiKey,
-            priority,
+            temporaryPriority,
             openAIApiMode,
             inputPrice,
             outputPrice,
@@ -219,8 +222,9 @@ public class Workspace : FullAuditedAggregateRoot<Guid>, IMultiTenant
             maxContextTokens,
             inputPriceUnit ?? priceDefaults.InputUnit,
             outputPriceUnit ?? priceDefaults.OutputUnit);
-        
+
         _modelConfigurations.Add(config);
+        Resequence(capabilityType, config.Id, priority);
         return config;
     }
 
@@ -258,7 +262,63 @@ public class Workspace : FullAuditedAggregateRoot<Guid>, IMultiTenant
         }
 
         _modelConfigurations.Add(config);
+        Resequence(source.CapabilityType, config.Id, source.Priority);
         return config;
+    }
+
+    /// <summary>
+    /// Moves a route to <paramref name="position"/> within its capability group (clamped).
+    /// </summary>
+    public void MoveModelConfiguration(Guid configurationId, int position)
+    {
+        var configuration = RequireModelConfiguration(configurationId);
+        Resequence(configuration.CapabilityType, configuration.Id, position);
+    }
+
+    /// <summary>
+    /// Removes a route and closes the priority gap for its capability group.
+    /// </summary>
+    public void RemoveModelConfiguration(Guid configurationId)
+    {
+        var configuration = RequireModelConfiguration(configurationId);
+        EnsureCanRemoveOrDisable(configuration);
+        var capability = configuration.CapabilityType;
+        _modelConfigurations.Remove(configuration);
+        Resequence(capability);
+    }
+
+    /// <summary>
+    /// Moves a route to another capability group and re-sequences both groups.
+    /// </summary>
+    public void ChangeCapability(Guid configurationId, AICapabilityType newCapability)
+    {
+        var configuration = RequireModelConfiguration(configurationId);
+        if (configuration.CapabilityType == newCapability)
+        {
+            return;
+        }
+
+        var previousCapability = configuration.CapabilityType;
+        EnsureCanRemoveOrDisable(configuration);
+        configuration.SetCapabilityType(newCapability);
+        Resequence(previousCapability);
+        Resequence(newCapability, configuration.Id, requestedPosition: null);
+    }
+
+    /// <summary>
+    /// Disables a route. Rejects disabling the only enabled route at position 0.
+    /// </summary>
+    public void DisableModelConfiguration(Guid configurationId)
+    {
+        var configuration = RequireModelConfiguration(configurationId);
+        if (!configuration.IsEnabled)
+        {
+            return;
+        }
+
+        EnsureCanRemoveOrDisable(configuration);
+        configuration.Disable();
+        Resequence(configuration.CapabilityType);
     }
 
     /// <summary>
@@ -350,23 +410,12 @@ public class Workspace : FullAuditedAggregateRoot<Guid>, IMultiTenant
     }
 
     /// <summary>
-    /// Makes an enabled chat configuration the implicit workspace default.
-    /// It becomes the lowest-priority enabled chat route, and <see cref="DefaultModel"/> is set to its model id.
+    /// Makes an enabled configuration the default for its capability (position 0).
+    /// For chat, also syncs <see cref="DefaultModel"/>.
     /// </summary>
     public void SetDefaultModelConfiguration(Guid configurationId)
     {
-        var configuration = _modelConfigurations.FirstOrDefault(item => item.Id == configurationId);
-        if (configuration == null)
-        {
-            throw new BusinessException(AIErrorCodes.ModelConfigurationNotFound)
-                .WithData("ModelConfigurationId", configurationId);
-        }
-
-        if (configuration.CapabilityType != AICapabilityType.ChatCompletion)
-        {
-            throw new BusinessException(AIErrorCodes.WorkspaceDefaultRequiresChatCompletion)
-                .WithData("CapabilityType", configuration.CapabilityType.ToString());
-        }
+        var configuration = RequireModelConfiguration(configurationId);
 
         if (!configuration.IsEnabled)
         {
@@ -374,44 +423,20 @@ public class Workspace : FullAuditedAggregateRoot<Guid>, IMultiTenant
                 .WithData("ModelConfigurationId", configurationId);
         }
 
-        var peers = _modelConfigurations
-            .Where(item =>
-                item.Id != configuration.Id &&
-                item.CapabilityType == AICapabilityType.ChatCompletion &&
-                item.IsEnabled)
-            .OrderBy(item => item.Priority)
-            .ThenBy(item => item.Id)
-            .ToList();
-
-        if (peers.Count > 0 && configuration.Priority >= peers[0].Priority)
-        {
-            if (peers[0].Priority == int.MinValue)
-            {
-                configuration.SetPriority(0);
-                var nextPriority = 1;
-                foreach (var peer in peers)
-                {
-                    peer.SetPriority(nextPriority);
-                    nextPriority++;
-                }
-            }
-            else
-            {
-                configuration.SetPriority(peers[0].Priority - 1);
-            }
-        }
-
-        DefaultModel = configuration.ModelId;
+        Resequence(configuration.CapabilityType, configuration.Id, requestedPosition: 0);
+        SyncChatDefaultModel();
     }
 
     /// <summary>
-    /// Get the primary (highest priority) configuration for a capability
+    /// Get the primary (highest priority) enabled configuration for a capability.
     /// </summary>
     public AIModelConfiguration? GetPrimaryConfiguration(AICapabilityType capabilityType)
     {
         return _modelConfigurations
             .Where(c => c.CapabilityType == capabilityType && c.IsEnabled)
             .OrderBy(c => c.Priority)
+            .ThenBy(c => c.CreationTime)
+            .ThenBy(c => c.Id)
             .FirstOrDefault();
     }
 
@@ -456,6 +481,111 @@ public class Workspace : FullAuditedAggregateRoot<Guid>, IMultiTenant
     {
         var guardrail = _guardrails.FirstOrDefault(x => x.Period == period);
         if (guardrail != null) _guardrails.Remove(guardrail);
+    }
+
+    /// <summary>
+    /// Rewrites priorities for one capability group to contiguous <c>0..n-1</c>.
+    /// Enabled and disabled routes share the sequence. When <paramref name="movedId"/> is set,
+    /// that route is placed at the clamped <paramref name="requestedPosition"/> (null = append).
+    /// </summary>
+    private void Resequence(
+        AICapabilityType capability,
+        Guid? movedId = null,
+        int? requestedPosition = null)
+    {
+        var group = _modelConfigurations
+            .Where(configuration => configuration.CapabilityType == capability)
+            .ToList();
+        if (group.Count == 0)
+        {
+            return;
+        }
+
+        List<AIModelConfiguration> ordered;
+        if (movedId is { } id)
+        {
+            var moved = group.FirstOrDefault(configuration => configuration.Id == id);
+            var others = group
+                .Where(configuration => configuration.Id != id)
+                .OrderBy(configuration => configuration.Priority)
+                .ThenBy(configuration => configuration.CreationTime)
+                .ThenBy(configuration => configuration.Id)
+                .ToList();
+
+            if (moved == null)
+            {
+                ordered = others;
+            }
+            else
+            {
+                var position = requestedPosition.HasValue
+                    ? Math.Clamp(requestedPosition.Value, 0, others.Count)
+                    : others.Count;
+                others.Insert(position, moved);
+                ordered = others;
+            }
+        }
+        else
+        {
+            ordered = group
+                .OrderBy(configuration => configuration.Priority)
+                .ThenBy(configuration => configuration.CreationTime)
+                .ThenBy(configuration => configuration.Id)
+                .ToList();
+        }
+
+        for (var index = 0; index < ordered.Count; index++)
+        {
+            ordered[index].SetPriority(index);
+        }
+    }
+
+    private AIModelConfiguration RequireModelConfiguration(Guid configurationId)
+    {
+        var configuration = _modelConfigurations.FirstOrDefault(item => item.Id == configurationId);
+        if (configuration == null)
+        {
+            throw new BusinessException(AIErrorCodes.ModelConfigurationNotFound)
+                .WithData("ModelConfigurationId", configurationId);
+        }
+
+        return configuration;
+    }
+
+    /// <summary>
+    /// Rejects removing or disabling the only enabled route at position 0 for its capability.
+    /// </summary>
+    private void EnsureCanRemoveOrDisable(AIModelConfiguration configuration)
+    {
+        if (!configuration.IsEnabled)
+        {
+            return;
+        }
+
+        var enabledPeers = _modelConfigurations
+            .Where(item =>
+                item.CapabilityType == configuration.CapabilityType &&
+                item.IsEnabled)
+            .OrderBy(item => item.Priority)
+            .ThenBy(item => item.CreationTime)
+            .ThenBy(item => item.Id)
+            .ToList();
+
+        if (enabledPeers.Count == 1 && enabledPeers[0].Id == configuration.Id)
+        {
+            throw new BusinessException(AIErrorCodes.CannotDeleteWorkspaceDefault)
+                .WithData("ModelConfigurationId", configuration.Id)
+                .WithData("ModelId", configuration.ModelId);
+        }
+    }
+
+    private void SyncChatDefaultModel()
+    {
+        var primary = GetPrimaryConfiguration(AICapabilityType.ChatCompletion);
+        if (primary != null)
+        {
+            DefaultModel = primary.ModelId;
+        }
     }
 
     private static void ValidatePricing(decimal? value, string parameterName)

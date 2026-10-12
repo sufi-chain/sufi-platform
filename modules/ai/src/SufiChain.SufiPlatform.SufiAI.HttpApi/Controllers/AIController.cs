@@ -77,15 +77,21 @@ public class AIAppController : AIController, IAIAppService
     }
 
     [HttpDelete("model-configurations/{id}")]
-    public virtual Task DeleteModelConfigurationAsync(Guid id)
+    public virtual Task DeleteModelConfigurationAsync(Guid id, [FromBody] ModelConfigurationConcurrencyDto? input = null)
     {
-        return _aiAppService.DeleteModelConfigurationAsync(id);
+        return _aiAppService.DeleteModelConfigurationAsync(id, input);
     }
 
     [HttpPost("model-configurations/{id}/workspace-default")]
-    public virtual Task SetWorkspaceDefaultModelConfigurationAsync(Guid id)
+    public virtual Task SetWorkspaceDefaultModelConfigurationAsync(Guid id, [FromBody] ModelConfigurationConcurrencyDto? input = null)
     {
-        return _aiAppService.SetWorkspaceDefaultModelConfigurationAsync(id);
+        return _aiAppService.SetWorkspaceDefaultModelConfigurationAsync(id, input);
+    }
+
+    [HttpPost("model-configurations/{id}/move")]
+    public virtual Task MoveModelConfigurationAsync(Guid id, MoveAIModelConfigurationDto input)
+    {
+        return _aiAppService.MoveModelConfigurationAsync(id, input);
     }
 
     [HttpGet("workspaces/{workspaceId}/usage-logs")]

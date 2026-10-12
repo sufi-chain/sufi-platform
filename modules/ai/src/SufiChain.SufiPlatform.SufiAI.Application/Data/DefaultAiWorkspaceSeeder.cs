@@ -402,7 +402,6 @@ public class DefaultAiWorkspaceSeeder : IDefaultAiWorkspaceSeeder
                 modelId,
                 apiEndpoint: seed.ApiBaseUrl,
                 apiKey: null,
-                priority: 0,
                 openAIApiMode: OpenAIApiMode.ChatCompletions,
                 dimensions: dimensions,
                 maxContextTokens: AIModelConfiguration.DefaultMaxContextTokens);

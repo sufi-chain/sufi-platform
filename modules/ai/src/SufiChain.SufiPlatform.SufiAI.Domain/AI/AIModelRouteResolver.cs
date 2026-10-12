@@ -102,6 +102,8 @@ public class AIModelRouteResolver : IAIModelRouteResolver
                 configuration.IsUserSelectable &&
                 (allowlist == null || allowlist.Contains(configuration.Id)))
             .OrderBy(configuration => configuration.Priority)
+            .ThenBy(configuration => configuration.CreationTime)
+            .ThenBy(configuration => configuration.Id)
             .Select(configuration => RuntimeConfigurationResolver.Resolve(
                 workspace,
                 capabilityType,
