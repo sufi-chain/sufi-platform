@@ -94,6 +94,7 @@ public class PaymentRequestTests
             Guid.NewGuid(),
             "Virtual",
             "callback-token",
+            "https://pay.example",
             DateTime.UtcNow.AddMinutes(15));
     }
 }
