@@ -1,3 +1,4 @@
+using System.Globalization;
 using SufiChain.SufiPlatform.UI.Layout;
 using SufiChain.SufiPlatform.UI.Navigation;
 
@@ -11,8 +12,9 @@ public class DefaultBreadcrumbService : IBreadcrumbService
 {
     private readonly IMenuManager _menuManager;
     
-    // Cache menu to avoid repeated loading
+    // Cache menu per UI culture so localized DisplayName values stay correct.
     private ApplicationMenu? _cachedMenu;
+    private string? _cachedCulture;
     private readonly SemaphoreSlim _cacheLock = new(1, 1);
 
     public DefaultBreadcrumbService(IMenuManager menuManager)
@@ -149,20 +151,29 @@ public class DefaultBreadcrumbService : IBreadcrumbService
     }
 
     /// <summary>
-    /// Gets the menu, using cache if available.
+    /// Gets the menu, using a culture-scoped cache when available.
     /// </summary>
     private async Task<ApplicationMenu?> GetMenuAsync()
     {
-        if (_cachedMenu != null)
+        var culture = CultureInfo.CurrentUICulture.Name;
+        if (_cachedMenu != null &&
+            string.Equals(_cachedCulture, culture, StringComparison.Ordinal))
+        {
             return _cachedMenu;
+        }
 
         await _cacheLock.WaitAsync();
         try
         {
-            if (_cachedMenu != null)
+            culture = CultureInfo.CurrentUICulture.Name;
+            if (_cachedMenu != null &&
+                string.Equals(_cachedCulture, culture, StringComparison.Ordinal))
+            {
                 return _cachedMenu;
+            }
 
             _cachedMenu = await _menuManager.GetMainMenuAsync();
+            _cachedCulture = culture;
             return _cachedMenu;
         }
         finally
