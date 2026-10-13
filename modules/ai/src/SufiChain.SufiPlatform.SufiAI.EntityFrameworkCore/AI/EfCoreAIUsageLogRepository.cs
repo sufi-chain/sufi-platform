@@ -75,4 +75,36 @@ public class EfCoreAIUsageLogRepository
 
         return await query.SumAsync(l => (long)(l.TotalTokens ?? 0), cancellationToken);
     }
+
+    public async Task<List<AIUsageLog>> GetUnchargedSharedAsync(
+        Guid tenantId,
+        int maxResultCount,
+        CancellationToken cancellationToken = default)
+    {
+        var dbSet = await GetDbSetAsync();
+        var query = dbSet.Where(l =>
+                l.IsSharedWorkspaceUsage &&
+                l.CreditChargedAt == null);
+        return await query
+            .OrderBy(l => l.CreationTime)
+            .Take(maxResultCount)
+            .ToListAsync(cancellationToken);
+    }
+
+    public async Task MarkChargedAsync(
+        IEnumerable<AIUsageLog> logs,
+        Guid batchId,
+        DateTime chargedAt,
+        CancellationToken cancellationToken = default)
+    {
+        var dbSet = await GetDbSetAsync();
+        var ids = logs.Select(l => l.Id).ToList();
+        var entries = await dbSet
+            .Where(l => ids.Contains(l.Id))
+            .ToListAsync(cancellationToken);
+        foreach (var entry in entries)
+        {
+            entry.MarkCreditCharged(batchId, chargedAt);
+        }
+    }
 }

@@ -16,7 +16,7 @@ public interface IAIUsageLogRepository : IRepository<AIUsageLog, Guid>
         DateTime? startDate = null,
         DateTime? endDate = null,
         CancellationToken cancellationToken = default);
-    
+
     /// <summary>
     /// Get total cost for a workspace within a date range
     /// </summary>
@@ -25,7 +25,7 @@ public interface IAIUsageLogRepository : IRepository<AIUsageLog, Guid>
         DateTime? startDate = null,
         DateTime? endDate = null,
         CancellationToken cancellationToken = default);
-    
+
     /// <summary>
     /// Get total tokens used for a workspace within a date range
     /// </summary>
@@ -33,5 +33,23 @@ public interface IAIUsageLogRepository : IRepository<AIUsageLog, Guid>
         Guid workspaceId,
         DateTime? startDate = null,
         DateTime? endDate = null,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Uncharged shared-workspace usage logs for a tenant, ordered by creation time.
+    /// Used by the AI Credit batch charger (A7).
+    /// </summary>
+    Task<List<AIUsageLog>> GetUnchargedSharedAsync(
+        Guid tenantId,
+        int maxResultCount,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Mark a batch of logs as charged at the given time.
+    /// </summary>
+    Task MarkChargedAsync(
+        IEnumerable<AIUsageLog> logs,
+        Guid batchId,
+        DateTime chargedAt,
         CancellationToken cancellationToken = default);
 }

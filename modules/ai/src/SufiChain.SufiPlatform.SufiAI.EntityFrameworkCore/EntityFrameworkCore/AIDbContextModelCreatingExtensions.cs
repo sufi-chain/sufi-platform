@@ -189,6 +189,12 @@ public static class AIDbContextModelCreatingExtensions
             b.Property(x => x.FileId);
             b.Property(x => x.FileUrl).HasMaxLength(2048);
 
+            // AI Credit charge tracking (A7)
+            b.Property(x => x.IsSharedWorkspaceUsage).IsRequired();
+            b.Property(x => x.CreditChargedAt);
+            b.Property(x => x.CreditChargeBatchId);
+            b.HasIndex(x => new { x.TenantId, x.IsSharedWorkspaceUsage, x.CreditChargedAt });
+
             b.HasIndex(x => new { x.WorkspaceId, x.CreationTime });
             b.HasIndex(x => new { x.WorkspaceId, x.ModelConfigurationId, x.CreationTime });
             b.HasIndex(x => x.TenantId);

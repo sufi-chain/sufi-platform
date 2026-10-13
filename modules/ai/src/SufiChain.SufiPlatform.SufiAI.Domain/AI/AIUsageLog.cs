@@ -4,169 +4,82 @@ using Volo.Abp.MultiTenancy;
 
 namespace SufiChain.SufiPlatform.SufiAI;
 
-/// <summary>
-/// Tracks usage, cost, and performance metrics for AI API calls.
-/// Used for billing, monitoring, and optimization.
-/// </summary>
 public class AIUsageLog : CreationAuditedEntity<Guid>, IMultiTenant
 {
     public Guid? TenantId { get; protected set; }
-    
-    /// <summary>
-    /// The workspace that made this API call
-    /// </summary>
     public Guid WorkspaceId { get; protected set; }
-
-    /// <summary>
-    /// The model route that served this call, when the request used a stored configuration.
-    /// Null for workspace default-model fallback.
-    /// </summary>
     public Guid? ModelConfigurationId { get; protected set; }
-    
-    /// <summary>
-    /// The capability type used (Chat, Audio, Vision, etc.)
-    /// </summary>
     public AICapabilityType CapabilityType { get; protected set; }
-    
-    /// <summary>
-    /// The specific model used (e.g., "gpt-4", "whisper-1")
-    /// </summary>
     public string ModelId { get; protected set; } = string.Empty;
-    
-    /// <summary>
-    /// The AI provider (OpenAI, Azure, etc.)
-    /// </summary>
     public AIProviderType Provider { get; protected set; }
-    
-    /// <summary>
-    /// Number of input tokens consumed
-    /// </summary>
     public int? InputTokens { get; protected set; }
-    
-    /// <summary>
-    /// Number of output tokens generated
-    /// </summary>
     public int? OutputTokens { get; protected set; }
-    
-    /// <summary>
-    /// Total tokens (input + output)
-    /// </summary>
     public int? TotalTokens { get; protected set; }
-
-    /// <summary>Audio seconds used when the route is priced per minute or per hour.</summary>
     public decimal? AudioSeconds { get; protected set; }
-
-    /// <summary>Input characters used when the route is priced per million characters.</summary>
     public int? CharacterCount { get; protected set; }
-
-    /// <summary>Images used when the route is priced per image.</summary>
     public int? ImageCount { get; protected set; }
 
+    // A7: shared-usage charge tracking
+    public bool IsSharedWorkspaceUsage { get; private set; }
+    public DateTime? CreditChargedAt { get; private set; }
+    public Guid? CreditChargeBatchId { get; private set; }
+
+    public void MarkCreditCharged(Guid batchId, DateTime at)
+    {
+        CreditChargedAt = at;
+        CreditChargeBatchId = batchId;
+    }
+
     public bool HasTokenUsage { get; protected set; }
-
     public string? UsageUnavailableReason { get; protected set; }
-    
-    /// <summary>
-    /// Estimated cost in USD (calculated based on model pricing)
-    /// </summary>
     public decimal EstimatedCost { get; protected set; }
-
     public bool IsCostCalculated { get; protected set; }
-
     public string? CostCalculationNote { get; protected set; }
-    
-    /// <summary>
-    /// API call latency in milliseconds
-    /// </summary>
     public long LatencyMs { get; protected set; }
-    
-    /// <summary>
-    /// Whether the API call succeeded
-    /// </summary>
     public bool IsSuccess { get; protected set; }
-    
-    /// <summary>
-    /// Error message if the call failed
-    /// </summary>
     public string? ErrorMessage { get; protected set; }
-    
-    /// <summary>
-    /// File ID from File-Manager (for audio/image uploads)
-    /// </summary>
     public Guid? FileId { get; protected set; }
-    
-    /// <summary>
-    /// File URL for accessing the uploaded file
-    /// </summary>
     public string? FileUrl { get; protected set; }
-    
+
     protected AIUsageLog() { }
-    
-    public AIUsageLog(
-        Guid id,
-        Guid workspaceId,
-        AICapabilityType capabilityType,
-        string modelId,
-        AIProviderType provider,
-        Guid? tenantId = null
-    ) : base(id)
+
+    public AIUsageLog(Guid id, Guid workspaceId, AICapabilityType capabilityType, string modelId, AIProviderType provider, Guid? tenantId = null) : base(id)
     {
         WorkspaceId = workspaceId;
         CapabilityType = capabilityType;
         ModelId = modelId;
         Provider = provider;
         TenantId = tenantId;
+        IsSharedWorkspaceUsage = tenantId == null; // null tenant = shared/host workspace
         IsSuccess = true;
     }
 
-    public void SetModelConfigurationId(Guid? modelConfigurationId)
-    {
-        ModelConfigurationId = modelConfigurationId;
-    }
-    
-    public void RecordSuccess(
-        int? inputTokens,
-        int? outputTokens,
-        long latencyMs,
-        decimal estimatedCost,
-        int? totalTokens = null,
-        bool isCostCalculated = false,
-        string? usageUnavailableReason = null,
-        string? costCalculationNote = null,
-        decimal? audioSeconds = null,
-        int? characterCount = null,
-        int? imageCount = null
-    )
+    public void SetModelConfigurationId(Guid? modelConfigurationId) => ModelConfigurationId = modelConfigurationId;
+
+    public void RecordSuccess(int? inputTokens, int? outputTokens, long latencyMs, decimal estimatedCost, int? totalTokens = null, bool isCostCalculated = false, string? usageUnavailableReason = null, string? costCalculationNote = null, decimal? audioSeconds = null, int? characterCount = null, int? imageCount = null)
     {
         InputTokens = inputTokens;
         OutputTokens = outputTokens;
-        TotalTokens = totalTokens ?? (inputTokens.HasValue || outputTokens.HasValue
-            ? (inputTokens ?? 0) + (outputTokens ?? 0)
-            : null);
+        TotalTokens = totalTokens ?? (inputTokens.HasValue || outputTokens.HasValue ? (inputTokens ?? 0) + (outputTokens ?? 0) : null);
         AudioSeconds = audioSeconds;
         CharacterCount = characterCount;
         ImageCount = imageCount;
         HasTokenUsage = InputTokens.HasValue || OutputTokens.HasValue || TotalTokens.HasValue;
-        UsageUnavailableReason = HasTokenUsage || isCostCalculated
-            ? null
-            : usageUnavailableReason ?? "ProviderDidNotReturnUsage";
+        UsageUnavailableReason = HasTokenUsage || isCostCalculated ? null : usageUnavailableReason ?? "ProviderDidNotReturnUsage";
         LatencyMs = latencyMs;
         EstimatedCost = estimatedCost;
         IsCostCalculated = isCostCalculated;
         CostCalculationNote = costCalculationNote;
         IsSuccess = true;
     }
-    
-    public void RecordFailure(
-        string errorMessage,
-        long latencyMs
-    )
+
+    public void RecordFailure(string errorMessage, long latencyMs)
     {
         ErrorMessage = errorMessage;
         LatencyMs = latencyMs;
         IsSuccess = false;
     }
-    
+
     public void SetFileInfo(Guid fileId, string fileUrl)
     {
         FileId = fileId;
