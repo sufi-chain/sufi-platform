@@ -7,6 +7,10 @@
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="../../../../commercial-modules/sufi-saas/src/SufiChain.SufiPlatform.SufiSaas.Application/SufiChain.SufiPlatform.SufiSaas.Application.csproj" />
+    <ProjectReference Include="../../../../commercial-modules/sufi-saas/src/SufiChain.SufiPlatform.SufiSaas.Finance/SufiChain.SufiPlatform.SufiSaas.Finance.csproj" />
+    <ProjectReference Include="../../../../pro-modules/finance/src/SufiChain.SufiPlatform.SufiFinance.Wallets.Domain/SufiChain.SufiPlatform.SufiFinance.Wallets.Domain.csproj" />
+    <ProjectReference Include="../../../../pro-modules/finance/src/SufiChain.SufiPlatform.SufiFinance.Domain.Shared/SufiChain.SufiPlatform.SufiFinance.Domain.Shared.csproj" />
+
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="$(MicrosoftNetTestSdkVersion)" />
     <PackageReference Include="xunit" Version="$(XunitVersion)" />
     <PackageReference Include="xunit.runner.visualstudio" Version="$(XunitRunnerVisualStudioVersion)" PrivateAssets="All" />
