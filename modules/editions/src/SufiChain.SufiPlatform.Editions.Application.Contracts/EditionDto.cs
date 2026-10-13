@@ -20,6 +20,12 @@ public class EditionDto : ExtensibleEntityDto<Guid>, IHasConcurrencyStamp
 
     public bool IsActive { get; set; }
 
+    /// <summary>
+    /// Filled by <see cref="IEditionDtoContributor"/> implementations (for example SufiSaas).
+    /// Null when no contributor attached a price.
+    /// </summary>
+    public EditionPriceSummary? PriceSummary { get; set; }
+
     public string ConcurrencyStamp { get; set; } = string.Empty;
 }
 

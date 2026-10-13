@@ -61,18 +61,22 @@ public partial class Editions
 
     private void ShowEditModal(EditionDto edition)
     {
-        _form = new EditionFormModel
+        _form = MapToForm(edition);
+        _editingId = edition.Id;
+        _concurrencyStamp = edition.ConcurrencyStamp;
+        _showEdit = true;
+        _showCreate = false;
+    }
+
+    /// <summary>Exposed for Active-toggle regression tests (#193).</summary>
+    internal static EditionFormModel MapToForm(EditionDto edition) =>
+        new()
         {
             Name = edition.Name,
             DisplayName = edition.DisplayName,
             Code = edition.Code,
             IsActive = edition.IsActive
         };
-        _editingId = edition.Id;
-        _concurrencyStamp = edition.ConcurrencyStamp;
-        _showEdit = true;
-        _showCreate = false;
-    }
 
     private void CloseModal()
     {
@@ -127,7 +131,7 @@ public partial class Editions
         return _featuresModal.OpenAsync(EditionFeatureProviderName, edition.Id.ToString(), edition.LocalizedDisplayName);
     }
 
-    private sealed class EditionFormModel
+    internal sealed class EditionFormModel
     {
         public string Name { get; set; } = string.Empty;
         public string DisplayName { get; set; } = string.Empty;

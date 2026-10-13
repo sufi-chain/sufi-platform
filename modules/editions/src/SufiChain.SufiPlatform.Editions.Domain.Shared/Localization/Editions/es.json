@@ -6,6 +6,8 @@
     "EditionName": "Nombre",
     "EditionDisplayName": "Nombre para mostrar",
     "EditionCode": "Código",
+    "EditionPrice": "Precio",
+    "PriceNotSet": "Precio no definido",
     "EditionIsActive": "Activo",
     "NewEdition": "Nueva edición",
     "EditEdition": "Editar edición",

@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
@@ -15,20 +16,23 @@ public class EditionAppService : SufiApplicationService, IEditionAppService
     protected IEditionRepository EditionRepository { get; }
     protected EditionManager EditionManager { get; }
     protected SufiEditionsOptions EditionsOptions { get; }
+    protected IEnumerable<IEditionDtoContributor> DtoContributors { get; }
 
     public EditionAppService(
         IEditionRepository editionRepository,
         EditionManager editionManager,
-        IOptions<SufiEditionsOptions> editionsOptions)
+        IOptions<SufiEditionsOptions> editionsOptions,
+        IEnumerable<IEditionDtoContributor> dtoContributors)
     {
         EditionRepository = editionRepository;
         EditionManager = editionManager;
         EditionsOptions = editionsOptions.Value;
+        DtoContributors = dtoContributors;
     }
 
     public virtual async Task<EditionDto> GetAsync(Guid id)
     {
-        return MapToDto(await EditionRepository.GetAsync(id));
+        return await MapToDtoAsync(await EditionRepository.GetAsync(id));
     }
 
     public virtual async Task<PagedResultDto<EditionDto>> GetListAsync(GetEditionsInput input)
@@ -49,7 +53,9 @@ public class EditionAppService : SufiApplicationService, IEditionAppService
             .Take(input.MaxResultCount);
 
         var items = await AsyncExecuter.ToListAsync(query);
-        return new PagedResultDto<EditionDto>(totalCount, items.Select(MapToDto).ToList());
+        var dtos = items.Select(MapToDto).ToList();
+        await ContributeAsync(dtos);
+        return new PagedResultDto<EditionDto>(totalCount, dtos);
     }
 
     [Authorize(EditionsPermissions.Editions.Create)]
@@ -57,7 +63,7 @@ public class EditionAppService : SufiApplicationService, IEditionAppService
     {
         var edition = await EditionManager.CreateAsync(input.Name, input.DisplayName, input.Code, input.IsActive);
         await EditionRepository.InsertAsync(edition, autoSave: true);
-        return MapToDto(edition);
+        return await MapToDtoAsync(edition);
     }
 
     [Authorize(EditionsPermissions.Editions.Update)]
@@ -70,13 +76,20 @@ public class EditionAppService : SufiApplicationService, IEditionAppService
         edition.SetDisplayName(input.DisplayName);
         edition.SetIsActive(input.IsActive);
         await EditionRepository.UpdateAsync(edition, autoSave: true);
-        return MapToDto(edition);
+        return await MapToDtoAsync(edition);
     }
 
     [Authorize(EditionsPermissions.Editions.Delete)]
     public virtual async Task DeleteAsync(Guid id)
     {
         await EditionRepository.DeleteAsync(id, autoSave: true);
+    }
+
+    protected virtual async Task<EditionDto> MapToDtoAsync(Edition edition)
+    {
+        var dto = MapToDto(edition);
+        await ContributeAsync([dto]);
+        return dto;
     }
 
     protected virtual EditionDto MapToDto(Edition edition)
@@ -95,5 +108,13 @@ public class EditionAppService : SufiApplicationService, IEditionAppService
             IsActive = edition.IsActive,
             ConcurrencyStamp = edition.ConcurrencyStamp
         };
+    }
+
+    protected virtual async Task ContributeAsync(IReadOnlyList<EditionDto> editions)
+    {
+        foreach (var contributor in DtoContributors)
+        {
+            await contributor.ContributeAsync(editions);
+        }
     }
 }

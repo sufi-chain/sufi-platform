@@ -6,6 +6,8 @@
     "EditionName": "نام",
     "EditionDisplayName": "نام نمایشی",
     "EditionCode": "کد",
+    "EditionPrice": "قیمت",
+    "PriceNotSet": "قیمت تعیین نشده",
     "EditionIsActive": "فعال",
     "NewEdition": "نسخه جدید",
     "EditEdition": "ویرایش نسخه",

@@ -111,7 +111,8 @@ public class EditionDisplayNameLocalizationTests
         var service = new EditionAppService(
             repository,
             Substitute.For<EditionManager>(Substitute.For<IEditionRepository>()),
-            options);
+            options,
+            Array.Empty<IEditionDtoContributor>());
 
         var services = new ServiceCollection();
         services.AddSingleton<IStringLocalizerFactory>(new FakeLocalizerFactory(translations));

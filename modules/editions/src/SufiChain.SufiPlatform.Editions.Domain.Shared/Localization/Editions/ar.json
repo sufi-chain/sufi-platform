@@ -6,6 +6,8 @@
     "EditionName": "الاسم",
     "EditionDisplayName": "اسم العرض",
     "EditionCode": "الرمز",
+    "EditionPrice": "السعر",
+    "PriceNotSet": "السعر غير محدد",
     "EditionIsActive": "نشط",
     "NewEdition": "إصدار جديد",
     "EditEdition": "تحرير الإصدار",

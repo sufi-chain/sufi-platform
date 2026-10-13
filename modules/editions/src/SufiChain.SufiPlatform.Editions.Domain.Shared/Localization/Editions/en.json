@@ -6,6 +6,8 @@
     "EditionName": "Name",
     "EditionDisplayName": "Display name",
     "EditionCode": "Code",
+    "EditionPrice": "Price",
+    "PriceNotSet": "Price not set",
     "EditionIsActive": "Active",
     "NewEdition": "New edition",
     "EditEdition": "Edit edition",

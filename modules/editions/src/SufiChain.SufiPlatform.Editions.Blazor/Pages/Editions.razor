@@ -71,6 +71,20 @@
                             <SbChip Color="SbColor.Secondary" Size="SbSize.Sm">@ctx.Item.Code</SbChip>
                         </CellTemplate>
                     </SbColumn>
+                    <SbColumn TItem="EditionDto" Title="@L["EditionPrice"]" MinWidth="160px" Sortable="false" Filterable="false">
+                        <CellTemplate Context="ctx">
+                            @{
+                                var priceText = EditionPriceDisplay.Resolve(ctx.Item.PriceSummary, L["PriceNotSet"]);
+                            }
+                            @if (priceText != null)
+                            {
+                                <SbText Variant="SbTextVariant.BodySmall"
+                                        Color="@(ctx.Item.PriceSummary is { IsPriced: true } ? SbColor.Default : SbColor.Muted)">
+                                    @priceText
+                                </SbText>
+                            }
+                        </CellTemplate>
+                    </SbColumn>
                     <SbColumn TItem="EditionDto" Field="IsActive" Title="@L["EditionIsActive"]" MinWidth="120px" Align="SbColumnAlign.Center" Filterable="true" Sortable="true">
                         <CellTemplate Context="ctx">
                             @if (ctx.Item.IsActive)
