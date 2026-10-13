@@ -10,12 +10,12 @@ using Volo.Abp.EntityFrameworkCore;
 
 namespace SufiChain.SufiPlatform.SufiAI;
 
-public class EfCoreAIUsageLogRepository 
-    : EfCoreRepository<IAIDbContext, AIUsageLog, Guid>, 
+public class EfCoreAIUsageLogRepository
+    : EfCoreRepository<IAIDbContext, AIUsageLog, Guid>,
       IAIUsageLogRepository
 {
     public EfCoreAIUsageLogRepository(
-        IDbContextProvider<IAIDbContext> dbContextProvider) 
+        IDbContextProvider<IAIDbContext> dbContextProvider)
         : base(dbContextProvider)
     {
     }
@@ -83,9 +83,30 @@ public class EfCoreAIUsageLogRepository
     {
         var dbSet = await GetDbSetAsync();
         var query = dbSet.Where(l =>
-                l.IsSharedWorkspaceUsage &&
-                l.CreditChargedAt == null);
+            l.IsSharedWorkspaceUsage &&
+            l.IsSuccess &&
+            l.CreditChargedAt == null &&
+            l.TenantId == tenantId);
         return await query
+            .OrderBy(l => l.CreationTime)
+            .Take(maxResultCount)
+            .ToListAsync(cancellationToken);
+    }
+
+    /// <summary>
+    /// Host worker entry: all uncharged successful shared logs (any tenant), oldest first.
+    /// </summary>
+    public async Task<List<AIUsageLog>> GetUnchargedSharedAllAsync(
+        int maxResultCount,
+        CancellationToken cancellationToken = default)
+    {
+        var dbSet = await GetDbSetAsync();
+        return await dbSet
+            .Where(l =>
+                l.IsSharedWorkspaceUsage &&
+                l.IsSuccess &&
+                l.CreditChargedAt == null &&
+                l.TenantId != null)
             .OrderBy(l => l.CreationTime)
             .Take(maxResultCount)
             .ToListAsync(cancellationToken);

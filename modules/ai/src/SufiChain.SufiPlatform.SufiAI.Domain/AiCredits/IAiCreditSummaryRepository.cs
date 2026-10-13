@@ -2,14 +2,14 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using Volo.Abp.Domain.Repositories;
+using Volo.Abp.DependencyInjection;
 
 namespace SufiChain.SufiPlatform.SufiAI.AiCredits;
 
 /// <summary>
-/// Repository for AI credit summary (used for UI display).
+/// Read model for AI credit summary (used for UI display). Not a persisted aggregate repository.
 /// </summary>
-public interface IAiCreditSummaryRepository : IRepository
+public interface IAiCreditSummaryRepository : ITransientDependency
 {
     /// <summary>
     /// Gets the credit summary for a tenant over a date range.

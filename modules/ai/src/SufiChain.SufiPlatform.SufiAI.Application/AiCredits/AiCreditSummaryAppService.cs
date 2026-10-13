@@ -3,9 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using SufiChain.SufiPlatform.SufiAI;
 using SufiChain.SufiPlatform.SufiAI.AiCredits;
-using Volo.Abp;
 using Volo.Abp.Application.Services;
 
 namespace SufiChain.SufiPlatform.SufiAI.Application.AiCredits;
@@ -25,73 +23,52 @@ public class AiCreditSummaryAppService : ApplicationService, IAiCreditSummaryApp
         DateTime? periodEnd = null,
         CancellationToken cancellationToken = default)
     {
-        var summary = await _summaryRepository.GetSummaryAsync(
-            tenantId ?? CurrentTenant.Id.GetValueOrDefault(),
-            periodStart,
-            periodEnd,
-            cancellationToken);
-
-        if (summary == null)
+        var id = tenantId ?? CurrentTenant.Id;
+        if (!id.HasValue || id == Guid.Empty)
         {
             return null;
         }
 
-        return new AiCreditSummaryDto
-        {
-            TenantId = summary.TenantId,
-            PeriodStart = summary.PeriodStart,
-            PeriodEnd = summary.PeriodEnd,
-            IncludedCredits = summary.IncludedCredits,
-            IncludedUsed = summary.IncludedUsed,
-            PurchasedRemaining = summary.PurchasedRemaining,
-            PurchasedUsed = summary.PurchasedUsed,
-        };
+        var summary = await _summaryRepository.GetSummaryAsync(
+            id.Value,
+            periodStart,
+            periodEnd,
+            cancellationToken);
+
+        return summary == null ? null : Map(summary);
     }
 
     public async Task<List<AiCreditSummaryDto>> GetAllAsync(
         CancellationToken cancellationToken = default)
     {
-        var summaries = await _summaryRepository.GetAllSummaryAsync(
-            cancellationToken);
-
-        return summaries.Select(s => new AiCreditSummaryDto
-        {
-            TenantId = s.TenantId,
-            PeriodStart = s.PeriodStart,
-            PeriodEnd = s.PeriodEnd,
-            IncludedCredits = s.IncludedCredits,
-            IncludedUsed = s.IncludedUsed,
-            PurchasedRemaining = s.PurchasedRemaining,
-            PurchasedUsed = s.PurchasedUsed,
-        }).ToList();
+        var summaries = await _summaryRepository.GetAllSummaryAsync(cancellationToken);
+        return summaries.Select(Map).ToList();
     }
 
-    public async Task<decimal> ConvertTomanToRialAsync(
+    public Task<decimal> ConvertTomanToRialAsync(
         decimal tomanAmount,
         CancellationToken cancellationToken = default)
     {
-        await Task.Yield();
-        // 1 Toman = 10 RIAL in the SufiChain system (local IRR pricing)
-        // Convert using the project's default currency: IRR → RIAL factor
-        return tomanAmount * 10m;
+        _ = cancellationToken;
+        return Task.FromResult(tomanAmount * 10m);
     }
 
-    public async Task<string> GetThresholdLevelAsync(
+    public Task<string> GetThresholdLevelAsync(
         AiCreditSummaryDto summary,
         CancellationToken cancellationToken = default)
     {
-        await Task.Yield();
-
-        if (summary.AtLimit)
-        {
-            return "critical";
-        }
-
-        if (summary.AtThreshold)
-        {
-            return "warning";
-        }
-
-        return "none";
+        _ = cancellationToken;
+        return Task.FromResult(summary.ThresholdLevel);
     }
+
+    private static AiCreditSummaryDto Map(AICreditSummary summary) => new()
+    {
+        TenantId = summary.TenantId,
+        PeriodStart = summary.PeriodStart,
+        PeriodEnd = summary.PeriodEnd,
+        IncludedCredits = summary.IncludedCredits,
+        IncludedUsed = summary.IncludedUsed,
+        PurchasedRemaining = summary.PurchasedRemaining,
+        PurchasedUsed = summary.PurchasedUsed
+    };
 }

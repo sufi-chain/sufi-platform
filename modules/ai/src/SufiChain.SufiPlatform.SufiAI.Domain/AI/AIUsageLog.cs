@@ -43,14 +43,21 @@ public class AIUsageLog : CreationAuditedEntity<Guid>, IMultiTenant
 
     protected AIUsageLog() { }
 
-    public AIUsageLog(Guid id, Guid workspaceId, AICapabilityType capabilityType, string modelId, AIProviderType provider, Guid? tenantId = null) : base(id)
+    public AIUsageLog(
+        Guid id,
+        Guid workspaceId,
+        AICapabilityType capabilityType,
+        string modelId,
+        AIProviderType provider,
+        Guid? tenantId = null,
+        bool isSharedWorkspaceUsage = false) : base(id)
     {
         WorkspaceId = workspaceId;
         CapabilityType = capabilityType;
         ModelId = modelId;
         Provider = provider;
         TenantId = tenantId;
-        IsSharedWorkspaceUsage = tenantId == null; // null tenant = shared/host workspace
+        IsSharedWorkspaceUsage = isSharedWorkspaceUsage;
         IsSuccess = true;
     }
 

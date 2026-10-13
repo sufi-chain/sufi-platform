@@ -6,6 +6,7 @@ using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using SufiChain.SufiPlatform.SufiAI.AiCredits;
 using SufiChain.SufiPlatform.SufiAI.Features;
 using SufiChain.SufiPlatform.SufiAI.Workspaces;
 using Volo.Abp;
@@ -30,6 +31,7 @@ public class AIService : DomainService, IAIService, ITransientDependency
     private readonly IEnumerable<IAiProviderProfile> _profiles;
     private readonly IModelEndpointLookup _endpointLookup;
     private readonly IFeatureChecker _featureChecker;
+    private readonly IAICreditGate _creditGate;
     private readonly ILogger<AIService> _logger;
 
     public AIService(
@@ -40,6 +42,7 @@ public class AIService : DomainService, IAIService, ITransientDependency
         IEnumerable<IAiProviderProfile> profiles,
         IModelEndpointLookup endpointLookup,
         IFeatureChecker featureChecker,
+        IAICreditGate creditGate,
         ILogger<AIService> logger)
     {
         _workspaceRepository = workspaceRepository;
@@ -49,6 +52,7 @@ public class AIService : DomainService, IAIService, ITransientDependency
         _profiles = profiles;
         _endpointLookup = endpointLookup;
         _featureChecker = featureChecker;
+        _creditGate = creditGate;
         _logger = logger;
     }
 
@@ -617,6 +621,7 @@ public class AIService : DomainService, IAIService, ITransientDependency
             selection,
             cancellationToken);
         _runtimeConfigurationResolver.EnsureReady(resolved);
+        await _creditGate.EnsureAccessAsync(resolved.Workspace, cancellationToken);
         var workspace = resolved.Workspace;
         var configuration = resolved.ToRequestModelConfiguration();
         if (capabilityType is AICapabilityType.ChatCompletion or AICapabilityType.VisionAnalysis)

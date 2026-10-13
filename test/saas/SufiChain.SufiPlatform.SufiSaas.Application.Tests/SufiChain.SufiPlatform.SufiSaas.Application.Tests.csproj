@@ -11,7 +11,10 @@
     <ProjectReference Include="../../../../pro-modules/finance/src/SufiChain.SufiPlatform.SufiFinance.Invoicing.Domain/SufiChain.SufiPlatform.SufiFinance.Invoicing.Domain.csproj" />
     <ProjectReference Include="../../../../pro-modules/finance/src/SufiChain.SufiPlatform.SufiFinance.Wallets.Domain/SufiChain.SufiPlatform.SufiFinance.Wallets.Domain.csproj" />
     <ProjectReference Include="../../../../pro-modules/finance/src/SufiChain.SufiPlatform.SufiFinance.Domain.Shared/SufiChain.SufiPlatform.SufiFinance.Domain.Shared.csproj" />
+    <ProjectReference Include="../../../../sufi-platform/modules/ai/src/SufiChain.SufiPlatform.SufiAI.Domain/SufiChain.SufiPlatform.SufiAI.Domain.csproj" />
+    <ProjectReference Include="../../../../sufi-platform/modules/ai/src/SufiChain.SufiPlatform.SufiAI.Application.Contracts/SufiChain.SufiPlatform.SufiAI.Application.Contracts.csproj" />
 
+    <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="10.0.9" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="$(MicrosoftNetTestSdkVersion)" />
     <PackageReference Include="xunit" Version="$(XunitVersion)" />
     <PackageReference Include="xunit.runner.visualstudio" Version="$(XunitRunnerVisualStudioVersion)" PrivateAssets="All" />

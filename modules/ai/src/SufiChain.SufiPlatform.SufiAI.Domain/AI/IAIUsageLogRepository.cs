@@ -45,6 +45,13 @@ public interface IAIUsageLogRepository : IRepository<AIUsageLog, Guid>
         CancellationToken cancellationToken = default);
 
     /// <summary>
+    /// Uncharged successful shared logs for any tenant (host worker batch).
+    /// </summary>
+    Task<List<AIUsageLog>> GetUnchargedSharedAllAsync(
+        int maxResultCount,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// Mark a batch of logs as charged at the given time.
     /// </summary>
     Task MarkChargedAsync(

@@ -69,4 +69,5 @@ public static class AIErrorCodes
     public const string ReasoningNotSupported = "AI:ReasoningNotSupported";
     public const string ReasoningEffortNotAllowed = "AI:ReasoningEffortNotAllowed";
     public const string PdfNotSupportedByToolTurn = "AI:PdfNotSupportedByToolTurn";
+    public const string AICreditsExhausted = "SufiAI:AICreditsExhausted";
 }

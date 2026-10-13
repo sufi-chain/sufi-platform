@@ -39,13 +39,17 @@ public class AIUsageRecorder : DomainService, IAIUsageRecorder
             // Caller cancellation must not drop the row: streaming completes the ambient unit
             // of work before this insert, and the request token is often already cancelled.
             var tenantId = workspace.TenantId ?? UsageCurrentTenant?.Id;
+            // Shared = host-owned or inherited workspace consumed by a tenant (billable to that tenant).
+            var isShared = tenantId.HasValue &&
+                           (workspace.TenantId == null || workspace.IsInherited);
             var log = new AIUsageLog(
                 GuidGenerator.Create(),
                 workspace.Id,
                 record.CapabilityType ?? configuration.CapabilityType,
                 record.ModelId ?? configuration.ModelId,
                 configuration.Provider,
-                tenantId);
+                tenantId,
+                isSharedWorkspaceUsage: isShared);
 
             if (!configuration.IsFallback)
             {
