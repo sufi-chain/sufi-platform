@@ -54,14 +54,7 @@ public class AIUsageRecorder : DomainService, IAIUsageRecorder
 
             if (record.IsSuccess)
             {
-                var cost = CalculateCost(
-                    configuration,
-                    record.InputTokens,
-                    record.OutputTokens,
-                    record.TotalTokens,
-                    record.AudioSeconds,
-                    record.CharacterCount,
-                    record.ImageCount);
+                var cost = ResolveCost(record, configuration);
                 log.RecordSuccess(
                     record.InputTokens,
                     record.OutputTokens,
@@ -104,6 +97,35 @@ public class AIUsageRecorder : DomainService, IAIUsageRecorder
             requiresNew: true);
         await UsageLogRepository.InsertAsync(log, autoSave: true, cancellationToken: CancellationToken.None);
         await unitOfWork.CompleteAsync(CancellationToken.None);
+    }
+
+    protected virtual CostCalculationResult ResolveCost(
+        AIUsageRecord record,
+        WorkspaceRuntimeConfiguration configuration)
+    {
+        if (record.ReportedCost.HasValue)
+        {
+            return new CostCalculationResult(record.ReportedCost.Value, true, null);
+        }
+
+        var cost = CalculateCost(
+            configuration,
+            record.InputTokens,
+            record.OutputTokens,
+            record.TotalTokens,
+            record.AudioSeconds,
+            record.CharacterCount,
+            record.ImageCount);
+
+        if (!cost.IsCostCalculated &&
+            (record.CapabilityType ?? configuration.CapabilityType) == AICapabilityType.Decisions)
+        {
+            RecorderLogger.LogWarning(
+                "Decisions usage for workspace {WorkspaceName} has no reported cost and no route price; recording 0.",
+                configuration.Workspace.Name);
+        }
+
+        return cost;
     }
 
     protected virtual CostCalculationResult CalculateCost(

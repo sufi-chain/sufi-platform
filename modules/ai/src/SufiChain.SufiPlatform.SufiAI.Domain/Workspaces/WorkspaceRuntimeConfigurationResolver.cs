@@ -131,14 +131,16 @@ public class WorkspaceRuntimeConfigurationResolver : DomainService, IWorkspaceRu
             InputPrice = FirstPrice(
                 configuration?.InputPrice,
                 workspace.InputCostPer1MTokens,
-                configuration == null || configuration.InputPriceUnit == AIPriceUnit.PerMillionTokens),
+                inheritWorkspace: capabilityType != AICapabilityType.Decisions &&
+                    (configuration == null || configuration.InputPriceUnit == AIPriceUnit.PerMillionTokens)),
             InputPriceUnit = configuration?.InputPriceUnit ?? AIPriceUnit.PerMillionTokens,
             OutputPrice = FirstPrice(
                 configuration?.OutputPrice,
                 workspace.OutputCostPer1MTokens,
-                configuration == null ||
-                (configuration.InputPriceUnit == AIPriceUnit.PerMillionTokens &&
-                 configuration.OutputPriceUnit == AIPriceUnit.PerMillionTokens)),
+                inheritWorkspace: capabilityType != AICapabilityType.Decisions &&
+                    (configuration == null ||
+                     (configuration.InputPriceUnit == AIPriceUnit.PerMillionTokens &&
+                      configuration.OutputPriceUnit == AIPriceUnit.PerMillionTokens))),
             OutputPriceUnit = configuration?.OutputPriceUnit ?? AIPriceUnit.PerMillionTokens,
             IsFallback = configuration == null && isConfigured,
             ModelConfigurationId = configuration?.Id,

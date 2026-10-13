@@ -35,4 +35,10 @@ public sealed class AIUsageRecord
     public bool IsSuccess { get; init; }
 
     public string? ErrorMessage { get; init; }
+
+    /// <summary>
+    /// Provider-reported USD cost (for example Jev <c>usage.cost</c>). When set, the usage row
+    /// stores this value and skips token × route-price math.
+    /// </summary>
+    public decimal? ReportedCost { get; init; }
 }

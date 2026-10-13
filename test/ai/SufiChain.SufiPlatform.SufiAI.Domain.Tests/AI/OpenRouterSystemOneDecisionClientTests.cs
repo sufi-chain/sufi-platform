@@ -47,6 +47,7 @@ public class OpenRouterSystemOneDecisionClientTests
         recorded.Configuration.ModelConfigurationId.ShouldBe(route.Id);
         recorded.Configuration.InputPrice.ShouldBe(0.042m);
         recorded.Configuration.OutputPrice.ShouldBeNull();
+        recorded.ReportedCost.ShouldBe(0.000019992m);
         handler.LastUri!.AbsolutePath.ShouldBe("/api/v1/systemone");
     }
 

@@ -265,6 +265,53 @@ public class AIUsageRecorderTests
         };
     }
 
+    [Fact]
+    public async Task Reported_cost_wins_over_token_price_math()
+    {
+        var repository = Substitute.For<IAIUsageLogRepository>();
+        AIUsageLog? saved = null;
+        repository.InsertAsync(Arg.Do<AIUsageLog>(log => saved = log), Arg.Any<bool>(), Arg.Any<CancellationToken>())
+            .Returns(call => Task.FromResult(call.Arg<AIUsageLog>()));
+
+        var workspace = new Workspace(Guid.NewGuid(), "cost-tests", AIProviderType.OpenRouter, "chat");
+        workspace.UpdateConfiguration("chat", "sk", "https://openrouter.ai/api/v1", inputCostPer1MTokens: 1m);
+        var route = workspace.AddModelConfiguration(
+            AICapabilityType.Decisions,
+            "typesafe/jev-1.13",
+            apiKey: "sk-route",
+            inputPrice: 10m);
+        var configuration = new WorkspaceRuntimeConfiguration
+        {
+            Workspace = workspace,
+            ModelConfiguration = route,
+            CapabilityType = AICapabilityType.Decisions,
+            Provider = AIProviderType.OpenRouter,
+            ModelId = route.ModelId,
+            InputPrice = route.InputPrice,
+            InputPriceUnit = AIPriceUnit.PerMillionTokens,
+            ModelConfigurationId = route.Id,
+            IsConfigured = true,
+            IsReady = true
+        };
+
+        var recorder = new TestableAIUsageRecorder(repository);
+        await recorder.RecordAsync(new AIUsageRecord
+        {
+            Configuration = configuration,
+            CapabilityType = AICapabilityType.Decisions,
+            InputTokens = 1000,
+            OutputTokens = 100,
+            TotalTokens = 1100,
+            ReportedCost = 0.00002m,
+            LatencyMs = 12,
+            IsSuccess = true
+        });
+
+        saved.ShouldNotBeNull();
+        saved!.EstimatedCost.ShouldBe(0.00002m);
+        saved.IsCostCalculated.ShouldBeTrue();
+    }
+
     private sealed class TestableAIUsageRecorder : AIUsageRecorder
     {
         public TestableAIUsageRecorder()

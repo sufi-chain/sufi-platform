@@ -98,15 +98,17 @@ public class OpenRouterSystemOneDecisionClient : ISystemOneDecisionClient, ITran
                     route.ModelId,
                     (int)response.StatusCode,
                     Trim(body));
-                await RecordAsync(resolved, stopwatch.ElapsedMilliseconds, false, "SystemOneRequestFailed", null, null, cancellationToken);
+                await RecordAsync(resolved, stopwatch.ElapsedMilliseconds, false, "SystemOneRequestFailed", null, null, null, cancellationToken);
                 return null;
             }
 
-            var usage = ReadUsage(body);
             var parsed = TryParse(body);
-            if (parsed == null && usage.InputTokens == null && usage.OutputTokens == null)
+            var usage = ReadUsage(body);
+            var inputTokens = parsed?.InputTokens ?? usage.InputTokens;
+            var outputTokens = parsed?.OutputTokens ?? usage.OutputTokens;
+            if (parsed == null && inputTokens == null && outputTokens == null)
             {
-                await RecordAsync(resolved, stopwatch.ElapsedMilliseconds, false, "SystemOneResponseUnreadable", null, null, cancellationToken);
+                await RecordAsync(resolved, stopwatch.ElapsedMilliseconds, false, "SystemOneResponseUnreadable", null, null, null, cancellationToken);
                 return null;
             }
 
@@ -115,8 +117,9 @@ public class OpenRouterSystemOneDecisionClient : ISystemOneDecisionClient, ITran
                 stopwatch.ElapsedMilliseconds,
                 true,
                 null,
-                usage.InputTokens,
-                usage.OutputTokens,
+                inputTokens,
+                outputTokens,
+                parsed?.Cost,
                 cancellationToken);
             return parsed;
         }
@@ -125,7 +128,7 @@ public class OpenRouterSystemOneDecisionClient : ISystemOneDecisionClient, ITran
             if (sent && resolved != null)
             {
                 stopwatch.Stop();
-                await RecordAsync(resolved, stopwatch.ElapsedMilliseconds, false, "SystemOneRequestFailed", null, null, cancellationToken);
+                await RecordAsync(resolved, stopwatch.ElapsedMilliseconds, false, "SystemOneRequestFailed", null, null, null, cancellationToken);
             }
 
             _logger.LogWarning(ex, "System One request is unavailable.");
@@ -140,6 +143,7 @@ public class OpenRouterSystemOneDecisionClient : ISystemOneDecisionClient, ITran
         string? errorMessage,
         int? inputTokens,
         int? outputTokens,
+        decimal? reportedCost,
         CancellationToken cancellationToken)
     {
         return _usage.RecordAsync(
@@ -157,7 +161,8 @@ public class OpenRouterSystemOneDecisionClient : ISystemOneDecisionClient, ITran
                     : AIUsageRecorder.UsageUnavailable,
                 LatencyMs = latencyMs,
                 IsSuccess = isSuccess,
-                ErrorMessage = errorMessage
+                ErrorMessage = errorMessage,
+                ReportedCost = reportedCost
             },
             cancellationToken);
     }
