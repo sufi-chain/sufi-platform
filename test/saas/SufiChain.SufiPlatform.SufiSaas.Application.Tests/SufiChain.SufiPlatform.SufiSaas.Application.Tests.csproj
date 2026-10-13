@@ -8,6 +8,7 @@
   <ItemGroup>
     <ProjectReference Include="../../../../commercial-modules/sufi-saas/src/SufiChain.SufiPlatform.SufiSaas.Application/SufiChain.SufiPlatform.SufiSaas.Application.csproj" />
     <ProjectReference Include="../../../../commercial-modules/sufi-saas/src/SufiChain.SufiPlatform.SufiSaas.Finance/SufiChain.SufiPlatform.SufiSaas.Finance.csproj" />
+    <ProjectReference Include="../../../../pro-modules/finance/src/SufiChain.SufiPlatform.SufiFinance.Invoicing.Domain/SufiChain.SufiPlatform.SufiFinance.Invoicing.Domain.csproj" />
     <ProjectReference Include="../../../../pro-modules/finance/src/SufiChain.SufiPlatform.SufiFinance.Wallets.Domain/SufiChain.SufiPlatform.SufiFinance.Wallets.Domain.csproj" />
     <ProjectReference Include="../../../../pro-modules/finance/src/SufiChain.SufiPlatform.SufiFinance.Domain.Shared/SufiChain.SufiPlatform.SufiFinance.Domain.Shared.csproj" />
 
