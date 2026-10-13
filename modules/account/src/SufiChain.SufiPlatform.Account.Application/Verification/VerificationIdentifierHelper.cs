@@ -177,8 +177,52 @@ public static class VerificationIdentifierHelper
             ? NormalizeEmail(identifier)
             : NormalizePhone(identifier);
 
+    public static string MaskIdentifier(VerificationDeliveryChannel channel, string identifier)
+    {
+        if (string.IsNullOrWhiteSpace(identifier))
+        {
+            return "***";
+        }
+
+        if (channel == VerificationDeliveryChannel.Email || identifier.Contains('@', StringComparison.Ordinal))
+        {
+            return MaskEmail(identifier.Trim());
+        }
+
+        return MaskPhone(NormalizePhone(identifier));
+    }
+
     public static string GetTwoFactorTokenProvider(VerificationDeliveryChannel channel) =>
         channel == VerificationDeliveryChannel.Email
             ? TwoFactorProviderNames.Email
             : TwoFactorProviderNames.Phone;
+
+    private static string MaskEmail(string email)
+    {
+        var at = email.IndexOf('@');
+        if (at <= 0 || at == email.Length - 1)
+        {
+            return "***";
+        }
+
+        var local = email[..at];
+        var domain = email[(at + 1)..];
+        var head = local.Length > 0 ? local[0].ToString() : string.Empty;
+        return head + "***@" + domain;
+    }
+
+    private static string MaskPhone(string phone)
+    {
+        if (phone.Length <= 6)
+        {
+            return "***";
+        }
+
+        if (phone.Length <= 10)
+        {
+            return phone[..2] + "***" + phone[^2..];
+        }
+
+        return phone[..6] + "***" + phone[^4..];
+    }
 }

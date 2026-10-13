@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Logging;
 using SufiChain.SufiPlatform.Account.Otp;
 using SufiChain.SufiPlatform.Captcha;
 using SufiChain.SufiPlatform.Identity;
@@ -111,13 +112,27 @@ public class AccountOtpAppService : SufiApplicationService, IAccountOtpAppServic
             UserManager, UserRepository, channel, input.Identifier);
         if (user == null)
         {
+            LogOtpNotSent(VerificationPurpose.OtpLogin, "NoUser", channel, identifier);
             return result;
         }
 
         if (channel.IsPhoneChannel())
         {
-            await VerificationIdentifierHelper.EnsurePhoneReadyForDeliveryAsync(
-                user, UserManager, SettingProvider, channel);
+            try
+            {
+                await VerificationIdentifierHelper.EnsurePhoneReadyForDeliveryAsync(
+                    user, UserManager, SettingProvider, channel);
+            }
+            catch (BusinessException ex) when (
+                ex.Code == IdentitySecurityErrorCodes.PhoneNumberRequired ||
+                ex.Code == IdentitySecurityErrorCodes.PhoneNumberNotConfirmed)
+            {
+                var reason = ex.Code == IdentitySecurityErrorCodes.PhoneNumberRequired
+                    ? "NoPhone"
+                    : "PhoneNotConfirmed";
+                LogOtpNotSent(VerificationPurpose.OtpLogin, reason, channel, identifier);
+                throw;
+            }
         }
 
         var code = await GenerateAndStoreOtpAsync(VerificationPurpose.OtpLogin, channel, identifier, user.Id);
@@ -465,6 +480,20 @@ public class AccountOtpAppService : SufiApplicationService, IAccountOtpAppServic
     protected static string GenerateNumericCode(int length)
     {
         return OtpCodeGenerator.Generate(length);
+    }
+
+    protected virtual void LogOtpNotSent(
+        VerificationPurpose purpose,
+        string reason,
+        VerificationDeliveryChannel channel,
+        string identifier)
+    {
+        Logger.LogInformation(
+            "OTP {Purpose} not sent: {Reason} for {Channel} {MaskedIdentifier}",
+            purpose,
+            reason,
+            channel,
+            VerificationIdentifierHelper.MaskIdentifier(channel, identifier));
     }
 
 }
