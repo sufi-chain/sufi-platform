@@ -62,11 +62,7 @@ public class OpenRouterMcpToolDecisionGate : IMcpToolDecisionGate, ITransientDep
         {
             if (!result.Answers.TryGetValue(name, out var answer))
             {
-                return null;
-            }
-
-            if (SystemOneDecisionResult.IsClearNo(answer))
-            {
+                // Missing answer: fail open for this question and keep checking the rest.
                 continue;
             }
 
@@ -75,7 +71,7 @@ public class OpenRouterMcpToolDecisionGate : IMcpToolDecisionGate, ITransientDep
                 return "The decisions model blocked this tool call: " + name;
             }
 
-            return null;
+            // Clear no or unsure: allow this question and keep checking the rest.
         }
 
         return null;
