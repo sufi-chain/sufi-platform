@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
 using SufiChain.SufiPlatform.Account.Localization;
+using SufiChain.SufiPlatform.Account.Otp;
 using SufiChain.SufiPlatform.Identity;
 using SufiChain.SufiPlatform.Identity.Localization;
 using Volo.Abp.Settings;
@@ -138,7 +139,7 @@ public partial class RegisterWithOtp
 
             ResendAvailableAt = AccountUiErrors.ToResendAvailableAt(result);
             Step = 2;
-            SuccessMessage = AccountL["OtpCodeSent"];
+            SuccessMessage = AccountL[OtpMessageKeys.CodeSent(SelectedChannel)];
         }
         catch (Exception ex)
         {

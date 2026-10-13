@@ -91,6 +91,8 @@
     "OtpCode": "Verification code",
     "OtpCodePlaceholder": "Enter code",
     "OtpCodeSent": "If an account exists for that email, a verification code has been sent.",
+    "OtpCodeSentEmail": "If an account with this email exists, a verification code has been sent.",
+    "OtpCodeSentPhone": "If an account with this mobile number exists, a verification code has been sent.",
     "VerifyOtpCode": "Verify code",
     "OtpVerifiedContinueRegistration": "Email verified. Complete your registration below.",
     "OtpLoginDisabled": "Passwordless sign-in is not enabled.",

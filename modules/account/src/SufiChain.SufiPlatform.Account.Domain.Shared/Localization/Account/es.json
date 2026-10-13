@@ -90,6 +90,8 @@
     "OtpCode": "Código de verificación",
     "OtpCodePlaceholder": "Ingrese el código",
     "OtpCodeSent": "Si existe una cuenta para ese correo, se ha enviado un código de verificación.",
+    "OtpCodeSentEmail": "Si existe una cuenta con este correo, se ha enviado un código de verificación.",
+    "OtpCodeSentPhone": "Si existe una cuenta con este número, se ha enviado un código de verificación.",
     "VerifyOtpCode": "Verificar código",
     "OtpVerifiedContinueRegistration": "Correo verificado. Complete su registro a continuación.",
     "OtpLoginDisabled": "El inicio de sesión sin contraseña no está habilitado.",

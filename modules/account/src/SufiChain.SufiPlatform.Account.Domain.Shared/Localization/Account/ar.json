@@ -90,6 +90,8 @@
     "OtpCode": "رمز التحقق",
     "OtpCodePlaceholder": "أدخل الرمز",
     "OtpCodeSent": "إذا كان هناك حساب لهذا البريد، فقد تم إرسال رمز التحقق.",
+    "OtpCodeSentEmail": "إذا كان هناك حساب لهذا البريد، فقد تم إرسال رمز التحقق.",
+    "OtpCodeSentPhone": "إذا كان هناك حساب بهذا الرقم، فقد تم إرسال رمز التحقق.",
     "VerifyOtpCode": "تحقق من الرمز",
     "OtpVerifiedContinueRegistration": "تم التحقق من البريد. أكمل التسجيل أدناه.",
     "OtpLoginDisabled": "تسجيل الدخول بدون كلمة مرور غير مفعل.",

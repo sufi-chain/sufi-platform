@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
 using SufiChain.SufiPlatform.Account.Localization;
+using SufiChain.SufiPlatform.Account.Otp;
 using SufiChain.SufiPlatform.Identity.Localization;
 
 namespace SufiChain.SufiPlatform.Account.Blazor.Pages;
@@ -137,7 +138,7 @@ public partial class LoginWithOtp
 
             ResendAvailableAt = AccountUiErrors.ToResendAvailableAt(result);
             CodeSent = true;
-            SuccessMessage = AccountL["OtpCodeSent"];
+            SuccessMessage = AccountL[OtpMessageKeys.CodeSent(SelectedChannel)];
         }
         catch (Exception ex)
         {
