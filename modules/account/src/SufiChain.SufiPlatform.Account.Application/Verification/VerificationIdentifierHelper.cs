@@ -1,9 +1,12 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using SufiChain.SufiPlatform.Identity;
 using SufiChain.SufiPlatform.Identity.Settings;
+using SufiChain.SufiPlatform.SufiCom.Channels;
 using Volo.Abp;
 using Volo.Abp.Settings;
 
@@ -20,13 +23,19 @@ public static class VerificationIdentifierHelper
 
     public static string NormalizePhone(string phone)
     {
-        var trimmed = phone.Trim();
-        if (trimmed.StartsWith('+'))
+        var national = IranianMobileNumber.ToNationalNumber(phone);
+        if (national != null)
         {
-            return "+" + NonDigitRegex.Replace(trimmed[1..], string.Empty);
+            return "+98" + national;
         }
 
-        return NonDigitRegex.Replace(trimmed, string.Empty);
+        var folded = FoldDigits(phone.Trim());
+        if (folded.StartsWith('+'))
+        {
+            return "+" + NonDigitRegex.Replace(folded[1..], string.Empty);
+        }
+
+        return NonDigitRegex.Replace(folded, string.Empty);
     }
 
     public static async Task<string> ResolveRecipientAsync(
@@ -97,13 +106,70 @@ public static class VerificationIdentifierHelper
         IIdentityUserRepository userRepository,
         string normalizedPhone)
     {
-        var candidates = await userRepository.GetListAsync(
-            phoneNumber: normalizedPhone,
-            maxResultCount: 10);
+        var canonical = NormalizePhone(normalizedPhone);
+        var seen = new HashSet<Guid>();
 
-        return candidates.FirstOrDefault(user =>
-            !string.IsNullOrWhiteSpace(user.PhoneNumber) &&
-            string.Equals(NormalizePhone(user.PhoneNumber), normalizedPhone, StringComparison.Ordinal));
+        foreach (var variant in PhoneLookupVariants(canonical))
+        {
+            var candidates = await userRepository.GetListAsync(
+                phoneNumber: variant,
+                maxResultCount: 10);
+
+            foreach (var user in candidates)
+            {
+                if (!seen.Add(user.Id) || string.IsNullOrWhiteSpace(user.PhoneNumber))
+                {
+                    continue;
+                }
+
+                if (string.Equals(NormalizePhone(user.PhoneNumber), canonical, StringComparison.Ordinal))
+                {
+                    return user;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    public static IReadOnlyList<string> PhoneLookupVariants(string phone)
+    {
+        var national = IranianMobileNumber.ToNationalNumber(phone);
+        if (national == null)
+        {
+            return [NormalizePhone(phone)];
+        }
+
+        return
+        [
+            "+98" + national,
+            "0" + national,
+            national,
+            "0098" + national,
+            "98" + national
+        ];
+    }
+
+    private static string FoldDigits(string value)
+    {
+        var builder = new StringBuilder(value.Length);
+        foreach (var ch in value)
+        {
+            if (ch >= '\u06F0' && ch <= '\u06F9')
+            {
+                builder.Append((char)('0' + (ch - '\u06F0')));
+            }
+            else if (ch >= '\u0660' && ch <= '\u0669')
+            {
+                builder.Append((char)('0' + (ch - '\u0660')));
+            }
+            else
+            {
+                builder.Append(ch);
+            }
+        }
+
+        return builder.ToString();
     }
 
     public static string NormalizeIdentifier(VerificationDeliveryChannel channel, string identifier) =>
