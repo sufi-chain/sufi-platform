@@ -1,3 +1,4 @@
+using System.Globalization;
 using Microsoft.AspNetCore.Authorization;
 using SufiChain.SufiPlatform.Application.Dtos;
 using SufiChain.SufiPlatform.Menus.Caching;
@@ -21,6 +22,7 @@ public class MenuItemAppService : SufiApplicationService, IMenuItemAppService
     private readonly IDistributedCache<MenuTreeCacheItem> _treeCache;
     private readonly IDistributedCache<MenuCacheItem> _menuCache;
     private readonly MenuLabelLocalization _labels;
+    private readonly MenuBusinessLocalizationService _businessLocalization;
 
     public MenuItemAppService(
         IMenuRepository menuRepository,
@@ -28,7 +30,8 @@ public class MenuItemAppService : SufiApplicationService, IMenuItemAppService
         MenuManager menuManager,
         IDistributedCache<MenuTreeCacheItem> treeCache,
         IDistributedCache<MenuCacheItem> menuCache,
-        MenuLabelLocalization labels)
+        MenuLabelLocalization labels,
+        MenuBusinessLocalizationService businessLocalization)
     {
         _menuRepository = menuRepository;
         _menuItemRepository = menuItemRepository;
@@ -36,6 +39,7 @@ public class MenuItemAppService : SufiApplicationService, IMenuItemAppService
         _treeCache = treeCache;
         _menuCache = menuCache;
         _labels = labels;
+        _businessLocalization = businessLocalization;
     }
 
     public virtual async Task<MenuItemDto> GetAsync(Guid id)
@@ -51,7 +55,10 @@ public class MenuItemAppService : SufiApplicationService, IMenuItemAppService
         var query = ApplyFilters(items.AsEnumerable(), input);
         query = ApplySorting(query, input.Sorting);
         var total = query.LongCount();
-        var result = query.Skip(input.SkipCount).Take(input.MaxResultCount).Select(x => x.ToDto()).ToList();
+        var page = query.Skip(input.SkipCount).Take(input.MaxResultCount).Select(x => x.ToDto()).ToList();
+        var menu = await _menuRepository.FindAsync(input.MenuId);
+        var contextType = menu?.ContextType ?? string.Empty;
+        var result = await LocalizeItemsAsync(page, contextType);
         return new PagedResultDto<MenuItemDto>(total, result);
     }
 
@@ -66,7 +73,9 @@ public class MenuItemAppService : SufiApplicationService, IMenuItemAppService
             return new MenuTreeCacheItem { Tree = BuildTree(query, null) };
         });
 
-        return cached.Tree;
+        var menu = await _menuRepository.FindAsync(menuId);
+        var contextType = menu?.ContextType ?? string.Empty;
+        return await LocalizeTreeAsync(cached.Tree, contextType);
     }
 
     public virtual async Task<MenuItemDto?> FindBySlugAsync(Guid menuId, string slug)
@@ -216,6 +225,67 @@ public class MenuItemAppService : SufiApplicationService, IMenuItemAppService
     };
 
     protected virtual List<MenuItemTreeDto> BuildTree(List<MenuItem> items, Guid? parentId) => items.Where(x => x.ParentId == parentId).OrderBy(x => x.DisplayOrder).ThenBy(x => x.DisplayName).Select(x => { var dto = x.ToTreeDto(); dto.Children = BuildTree(items, x.Id); return dto; }).ToList();
+
+    protected virtual async Task<List<MenuItemTreeDto>> LocalizeTreeAsync(List<MenuItemTreeDto> items, string contextType)
+    {
+        var defaultCulture = await _labels.GetDefaultCultureAsync();
+        var requestedCulture = CultureInfo.CurrentUICulture.Name;
+        return LocalizeTree(items, contextType, requestedCulture, defaultCulture);
+    }
+
+    protected virtual async Task<List<MenuItemDto>> LocalizeItemsAsync(List<MenuItemDto> items, string contextType)
+    {
+        var defaultCulture = await _labels.GetDefaultCultureAsync();
+        var requestedCulture = CultureInfo.CurrentUICulture.Name;
+        return items
+            .Select(item => LocalizeItem(item, contextType, requestedCulture, defaultCulture))
+            .ToList();
+    }
+
+    protected virtual List<MenuItemTreeDto> LocalizeTree(
+        List<MenuItemTreeDto> items,
+        string contextType,
+        string requestedCulture,
+        string defaultCulture)
+    {
+        var localized = new List<MenuItemTreeDto>(items.Count);
+        foreach (var item in items)
+        {
+            var copy = new MenuItemTreeDto();
+            PublicMenuAppService.CopyItem(item, copy);
+            copy.DisplayName = _businessLocalization.ResolveMenuItemDisplayName(
+                item.DisplayName,
+                contextType,
+                item.Name,
+                requestedCulture,
+                defaultCulture);
+            copy.DisplayNames = null;
+            copy.DisplayNameBases = null;
+            copy.Children = LocalizeTree(item.Children, contextType, requestedCulture, defaultCulture);
+            localized.Add(copy);
+        }
+
+        return localized;
+    }
+
+    protected virtual MenuItemDto LocalizeItem(
+        MenuItemDto item,
+        string contextType,
+        string requestedCulture,
+        string defaultCulture)
+    {
+        var copy = new MenuItemDto();
+        PublicMenuAppService.CopyItem(item, copy);
+        copy.DisplayName = _businessLocalization.ResolveMenuItemDisplayName(
+            item.DisplayName,
+            contextType,
+            item.Name,
+            requestedCulture,
+            defaultCulture);
+        copy.DisplayNames = null;
+        copy.DisplayNameBases = null;
+        return copy;
+    }
 
     protected virtual async Task<Guid> ResolveMenuIdAsync(GetMenuTreeInput input)
     {
