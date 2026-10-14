@@ -47,7 +47,8 @@ public class CatalogModelEndpointLookup : IModelEndpointLookup, ITransientDepend
             var entry = await _catalog.FindAsync(modelId, catalogName, cancellationToken);
             return entry?.SupportedEndpoints ?? (IReadOnlyList<string>)Array.Empty<string>();
         }
-        catch (Exception exception) when (exception is not OperationCanceledException)
+        catch (Exception exception) when (exception is not OperationCanceledException ||
+                                          !cancellationToken.IsCancellationRequested)
         {
             _logger.LogWarning(
                 exception,

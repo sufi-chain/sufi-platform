@@ -74,7 +74,7 @@ public class OpenRouterModelCatalogSource : IModelCatalogProvider, ITransientDep
             var json = await response.Content.ReadAsStringAsync(cancellationToken);
             return ParseList(json);
         }
-        catch (Exception ex) when (ex is not OperationCanceledException)
+        catch (Exception ex) when (ex is not OperationCanceledException || !cancellationToken.IsCancellationRequested)
         {
             _logger.LogWarning(ex, "Model catalog list is unavailable. Path={Path}, Url={Url}.", query, requestUri);
             return null;
@@ -188,7 +188,7 @@ public class OpenRouterModelCatalogSource : IModelCatalogProvider, ITransientDep
                 ? new ModelCatalogLookup { Status = ModelCatalogLookupStatus.Unknown }
                 : new ModelCatalogLookup { Status = ModelCatalogLookupStatus.Found, Entry = entry };
         }
-        catch (Exception ex) when (ex is not OperationCanceledException)
+        catch (Exception ex) when (ex is not OperationCanceledException || !cancellationToken.IsCancellationRequested)
         {
             _logger.LogWarning(ex, "Model catalog lookup is unavailable.");
             return new ModelCatalogLookup { Status = ModelCatalogLookupStatus.Unavailable };

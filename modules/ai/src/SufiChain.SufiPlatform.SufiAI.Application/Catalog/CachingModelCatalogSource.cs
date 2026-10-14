@@ -61,7 +61,7 @@ public class CachingModelCatalogSource : IModelCatalogSource, ITransientDependen
 
             return item.Models;
         }
-        catch (Exception ex) when (ex is not OperationCanceledException)
+        catch (Exception ex) when (ex is not OperationCanceledException || !cancellationToken.IsCancellationRequested)
         {
             _logger.LogWarning(ex, "Model catalog cache fill failed.");
             return null;
