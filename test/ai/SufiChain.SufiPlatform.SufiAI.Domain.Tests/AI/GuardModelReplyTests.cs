@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using Shouldly;
 using SufiChain.SufiPlatform.SufiAI;
 using Xunit;
@@ -24,5 +25,15 @@ public class GuardModelReplyTests
     public void Ordinary_replies_do_not_match(string? content)
     {
         GuardModelReply.IsVerdict(content).ShouldBeFalse();
+    }
+
+    [Fact]
+    public void Large_ordinary_reply_does_not_match_and_finishes_quickly()
+    {
+        var content = "User Safety: safe. " + new string('a', 10_000);
+        var sw = Stopwatch.StartNew();
+        GuardModelReply.IsVerdict(content).ShouldBeFalse();
+        sw.Stop();
+        sw.ElapsedMilliseconds.ShouldBeLessThan(100);
     }
 }
