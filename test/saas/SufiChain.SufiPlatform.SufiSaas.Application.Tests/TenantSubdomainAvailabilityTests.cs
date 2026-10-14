@@ -49,7 +49,10 @@ public class TenantSubdomainAvailabilityTests
     public async Task CheckAvailability_Should_Report_Taken_When_An_Active_Request_Reserves_It()
     {
         var harness = NewService();
-        harness.Requests.IsSubdomainInActiveRequestAsync("arian", Arg.Any<System.Threading.CancellationToken>())
+        harness.Requests.IsSubdomainInActiveRequestAsync(
+            "arian",
+            Arg.Any<Guid?>(),
+            Arg.Any<System.Threading.CancellationToken>())
             .Returns(true);
 
         var result = await harness.Service.CheckSubdomainAvailabilityAsync("arian");
@@ -76,7 +79,10 @@ public class TenantSubdomainAvailabilityTests
     public async Task Map_Should_Preview_The_Database_Name_From_The_Subdomain_Not_The_Display_Name()
     {
         var harness = NewService();
-        harness.Requests.IsSubdomainInActiveRequestAsync(Arg.Any<string>(), Arg.Any<System.Threading.CancellationToken>())
+        harness.Requests.IsSubdomainInActiveRequestAsync(
+            Arg.Any<string>(),
+            Arg.Any<Guid?>(),
+            Arg.Any<System.Threading.CancellationToken>())
             .Returns(false);
         harness.Tenants.FindByPrimarySubdomainAsync("arian", false, Arg.Any<System.Threading.CancellationToken>())
             .Returns((Tenant?)null);
@@ -202,7 +208,10 @@ public class TenantSubdomainAvailabilityTests
     private static Harness NewService()
     {
         var requests = Substitute.For<ITenantRequestRepository>();
-        requests.IsSubdomainInActiveRequestAsync(Arg.Any<string>(), Arg.Any<System.Threading.CancellationToken>())
+        requests.IsSubdomainInActiveRequestAsync(
+            Arg.Any<string>(),
+            Arg.Any<Guid?>(),
+            Arg.Any<System.Threading.CancellationToken>())
             .Returns(false);
         var plans = Substitute.For<IPlanRepository>();
         var tenants = Substitute.For<ITenantRepository>();
