@@ -173,5 +173,37 @@ public class TenantProvisioningSafeDefaultsTests
 
         public void ExposePrepareTenantAdminForFirstSignIn(IdentityUser tenantAdmin) =>
             PrepareTenantAdminForFirstSignIn(tenantAdmin);
+
+        public void ExposeSetUnifiedTenantConnectionStrings(Tenant tenant) =>
+            SetUnifiedTenantConnectionStrings(tenant);
+    }
+
+    [Fact]
+    public void SetUnifiedTenantConnectionStrings_Should_Not_Write_Per_Module_Rows()
+    {
+        var tenant = CreateTenant(Guid.NewGuid(), "touristpanel", "TOURISTPANEL");
+        tenant.SetDefaultConnectionString("Host=tenant-default");
+
+        NewJob(Substitute.For<ISettingManager>())
+            .ExposeSetUnifiedTenantConnectionStrings(tenant);
+
+        tenant.FindDefaultConnectionString().ShouldBe("Host=tenant-default");
+        tenant.FindConnectionString("SufiHelpDesk").ShouldBeNull();
+        tenant.FindConnectionString("SufiHelpDeskKnowledgeBase").ShouldBeNull();
+        tenant.FindConnectionString("SufiHelpDeskTicketing").ShouldBeNull();
+        tenant.FindConnectionString("SufiHelpDeskLiveChat").ShouldBeNull();
+        tenant.FindConnectionString("SufiAI").ShouldBeNull();
+        tenant.ConnectionStrings.Count.ShouldBe(1);
+    }
+
+    private static Tenant CreateTenant(Guid id, string name, string normalizedName)
+    {
+        var ctor = typeof(Tenant).GetConstructor(
+            System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic,
+            binder: null,
+            types: [typeof(Guid), typeof(string), typeof(string)],
+            modifiers: null);
+        ctor.ShouldNotBeNull();
+        return (Tenant)ctor.Invoke([id, name, normalizedName]);
     }
 }
