@@ -122,9 +122,13 @@ public class AiCreditSummaryAppService : ApplicationService, IAiCreditSummaryApp
         TenantId = summary.TenantId,
         PeriodStart = summary.PeriodStart,
         PeriodEnd = summary.PeriodEnd,
-        IncludedCredits = summary.IncludedCredits,
-        IncludedUsed = summary.IncludedUsed,
-        PurchasedRemaining = summary.PurchasedRemaining,
-        PurchasedUsed = summary.PurchasedUsed
+        IncludedCredits = RoundAiCredit(summary.IncludedCredits),
+        IncludedUsed = RoundAiCredit(summary.IncludedUsed),
+        PurchasedRemaining = RoundAiCredit(summary.PurchasedRemaining),
+        PurchasedUsed = RoundAiCredit(summary.PurchasedUsed)
     };
+
+    /// <summary>AIC is stored and shown with 2 decimals (half-away-from-zero).</summary>
+    private static decimal RoundAiCredit(decimal value) =>
+        decimal.Round(value, 2, MidpointRounding.AwayFromZero);
 }

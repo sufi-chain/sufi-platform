@@ -54,6 +54,37 @@ public class AiCreditWalletServiceTests
         after.Purchased.ShouldBe(-1m);
     }
 
+    [Theory]
+    [InlineData(0.004, 0.00)]
+    [InlineData(0.005, 0.01)]
+    [InlineData(1.235, 1.24)]
+    public async Task ChargeUsage_rounds_to_two_decimals_half_away_from_zero(
+        decimal raw,
+        decimal expectedCharge)
+    {
+        var (service, wallets) = CreateService();
+        await service.CreditPurchasedAsync(TenantId, 10m, "buy-seed");
+
+        await service.ChargeUsageAsync(TenantId, raw, "usage-round");
+
+        var balance = await service.GetBalanceAsync(TenantId);
+        balance.Purchased.ShouldBe(10m - expectedCharge);
+
+        if (expectedCharge == 0m)
+        {
+            wallets.SelectMany(w => w.Entries)
+                .Count(e => e.SourceType == SufiSaasConsts.AiCredit.UsageSource)
+                .ShouldBe(0);
+        }
+        else
+        {
+            wallets.SelectMany(w => w.Entries)
+                .Where(e => e.SourceType == SufiSaasConsts.AiCredit.UsageSource)
+                .Sum(e => e.Amount)
+                .ShouldBe(expectedCharge);
+        }
+    }
+
     [Fact]
     public async Task Expiry_zeroes_included_only()
     {
