@@ -363,6 +363,8 @@
     "Permission:SufiAI.FunctionCalling": "فراخوانی تابع",
     "Permission:SufiAI.ManageConfigurations": "مدیریت پیکربندی‌ها",
     "Permission:SufiAI.ViewUsage": "مشاهده مصرف",
+    "Permission:SufiAI.AiCredits": "اعتبار هوش مصنوعی",
+    "Permission:SufiAI.AiCredits.ViewAll": "مشاهده اعتبار هوش مصنوعی همه مستأجرها",
     "InputCostPer1MTokens": "هزینه ورودی / ۱ میلیون توکن",
     "RouteInputPrice": "قیمت ورودی",
     "RouteOutputPrice": "قیمت خروجی",
