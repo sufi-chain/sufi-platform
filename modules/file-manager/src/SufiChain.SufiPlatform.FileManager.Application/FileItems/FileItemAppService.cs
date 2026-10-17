@@ -975,7 +975,20 @@ public partial class FileItemAppService : SufiApplicationService, IFileItemAppSe
     public async Task<string> GetTemporaryAccessUrlAsync(Guid id, int durationMinutes)
     {
         var fileItem = await _fileItemRepository.GetAsync(id);
-        return await _blobAccessService.GetTemporaryAccessUrlAsync(fileItem, durationMinutes);
+        // Quick Share returns a signed /s/{token} link with expiry and revoke, never the raw download URL (sufi-chain#436).
+        return LazyServiceProvider.LazyGetRequiredService<FileShareLinkService>().CreateUrl(fileItem, durationMinutes);
+    }
+
+    [Authorize(FileManagerPermissions.FileItems.Update)]
+    public async Task RevokeTemporaryAccessUrlsAsync(Guid id)
+    {
+        await LazyServiceProvider.LazyGetRequiredService<FileShareLinkService>().RevokeAsync(id);
+    }
+
+    [AllowAnonymous]
+    public Task<FileShareContentResultDto> GetSharedContentAsync(string token)
+    {
+        return LazyServiceProvider.LazyGetRequiredService<FileShareLinkService>().ResolveAsync(token);
     }
 
     private static string GetContainerName(string? structureKey) =>

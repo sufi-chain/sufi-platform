@@ -484,6 +484,18 @@ public class FileItemController : SufiControllerBase, IFileItemAppService
         return _fileItemAppService.GetTemporaryAccessUrlAsync(id, durationMinutes);
     }
 
+    [HttpPost]
+    [Route("{id:guid}/temporary-access-url/revoke")]
+    public virtual Task RevokeTemporaryAccessUrlsAsync(Guid id)
+    {
+        return _fileItemAppService.RevokeTemporaryAccessUrlsAsync(id);
+    }
+
+    [NonAction]
+    public virtual Task<FileShareContentResultDto> GetSharedContentAsync(string token)
+    {
+        return _fileItemAppService.GetSharedContentAsync(token);
+    }
 
     [NonAction]
     Task<FileItemDto> IFileItemAppService.UploadStreamAsync(UploadFileStreamInput input)

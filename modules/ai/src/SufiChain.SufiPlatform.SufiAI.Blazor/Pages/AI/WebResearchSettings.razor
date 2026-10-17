@@ -8,14 +8,14 @@
     {
         @if (_canEdit)
         {
-            <SbButton Type="submit" form="web-research-settings-form" Color="SbColor.Primary" Loading="@_busy" Disabled="@_busy">
+            <SbButton Type="button" Color="SbColor.Primary" Loading="@_busy" Disabled="@(_busy || !RendererInfo.IsInteractive)" OnClick="SubmitAsync">
                 <StartIcon><SbIcon Name="save" /></StartIcon>
                 <ChildContent>@L["Save"]</ChildContent>
             </SbButton>
         }
         @if (_canTest)
         {
-            <SbButton Variant="SbButtonVariant.Outline" OnClick="TestAsync" Disabled="@_busy" aria-describedby="web-research-test-help">
+            <SbButton Variant="SbButtonVariant.Outline" OnClick="TestAsync" Disabled="@(_busy || !RendererInfo.IsInteractive)" aria-describedby="web-research-test-help">
                 <ChildContent>@L["WebResearchTestConnection"]</ChildContent>
             </SbButton>
         }
@@ -40,10 +40,10 @@
     </header>
     @if (_model != null)
     {
-        <EditForm id="web-research-settings-form" Model="_model" OnValidSubmit="SaveAsync" OnInvalidSubmit="ShowAdvancedErrors">
+        <EditForm @ref="_form" id="web-research-settings-form" Model="_model" OnValidSubmit="SaveAsync" OnInvalidSubmit="ShowAdvancedErrors">
             <DataAnnotationsValidator />
             <ValidationSummary />
-            <fieldset disabled="@(_busy || !_canEdit)" class="web-research-fields">
+            <fieldset disabled="@(_busy || !_canEdit || !RendererInfo.IsInteractive)" class="web-research-fields">
                 <section class="web-research-section" aria-labelledby="research-connection">
                     <h2 id="research-connection">@L["WebResearchConnectionSection"]</h2>
                     <SbCheckbox @bind-Value="_model.Enabled" Label="@L["WebResearchEnabled"]" />

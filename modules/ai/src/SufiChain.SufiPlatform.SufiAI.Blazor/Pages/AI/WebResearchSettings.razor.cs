@@ -11,6 +11,21 @@ public partial class WebResearchSettings
     private bool _busy, _canEdit, _canTest;
     private bool _advancedOpen, _loadFailed;
     private int _validationVersion;
+    private Microsoft.AspNetCore.Components.Forms.EditForm? _form;
+
+    /// <summary>
+    /// sufi-chain#340 (G-162): the toolbar Save used to be a native submit button for the form.
+    /// Clicking it (or pressing Enter) before the circuit was interactive made the browser POST
+    /// /panel/admin/ai/web-research, which Blazor answers with HTTP 400. Save is now a plain
+    /// button that validates and saves over the circuit, and the form is disabled until interactive.
+    /// </summary>
+    private async Task SubmitAsync()
+    {
+        var editContext = _form?.EditContext;
+        if (editContext == null) return;
+        if (editContext.Validate()) await SaveAsync();
+        else ShowAdvancedErrors();
+    }
 
     private void ShowAdvancedErrors()
     {
