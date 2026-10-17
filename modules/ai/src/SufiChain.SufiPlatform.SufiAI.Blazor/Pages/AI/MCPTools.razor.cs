@@ -60,7 +60,7 @@ public partial class MCPTools
         {
             Logger.LogWarning(ex, "MCP tools page catalog load failed");
             _tools = new List<MCPToolDto>();
-            _catalogLoadError = ex.Message;
+            _catalogLoadError = UserExceptionInformer.GetLocalizedMessage(ex);
         }
         finally
         {
@@ -89,7 +89,7 @@ public partial class MCPTools
         catch (Exception ex)
         {
             Logger.LogWarning(ex, "MCP tools refresh failed");
-            _catalogLoadError = ex.Message;
+            _catalogLoadError = UserExceptionInformer.GetLocalizedMessage(ex);
         }
         finally
         {

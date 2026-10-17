@@ -149,7 +149,7 @@ public partial class MenuEditModal : MenusComponentBase
         }
         catch (Exception ex) when (ex is BusinessException or UserFriendlyException)
         {
-            _saveError = string.IsNullOrWhiteSpace(ex.Message) ? L["Sufi.Menus:DisplayNameRequired"] : ex.Message;
+            _saveError = UserExceptionInformer.GetLocalizedMessage(ex);
             return;
         }
 

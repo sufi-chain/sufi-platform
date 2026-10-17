@@ -58,6 +58,8 @@ public class QuietSettingsSaveTests : BunitContext
             Calls++;
             return Task.CompletedTask;
         }
+
+        public string GetLocalizedMessage(Exception exception) => exception.Message;
     }
 
     private sealed class QuietSaveLocalizer : IStringLocalizer<SufiBlazorResource>
@@ -71,6 +73,9 @@ public class QuietSettingsSaveTests : BunitContext
     }
 }
 
+/// <summary>
+/// Stub named AbpValidationException so SufiComponentBase.TrySaveQuietlyAsync can detect it by type name.
+/// </summary>
 sealed class AbpValidationException : Exception
 {
     public IReadOnlyList<MemberError> ValidationErrors { get; } =

@@ -19,6 +19,8 @@
     "NetworkError": "Se produjo un error de red. Compruebe su conexión e inténtelo de nuevo.",
     "OperationCancelled": "La operación fue cancelada.",
     "Unauthorized": "No tiene autorización para realizar esta acción.",
+    "EntityNotFound": "No se encontró el elemento solicitado.",
+    "DefaultErrorMessageWithReference": "Se produjo un error. Referencia: {0}",
     "UserNotLoggedIn": "El usuario no ha iniciado sesión.",
     "UserNotAllowedToSignIn": "El usuario no tiene permitido iniciar sesión.",
     "UserNotAllowedToAccessClient": "El usuario autenticado no tiene permitido acceder a esta aplicación cliente.",

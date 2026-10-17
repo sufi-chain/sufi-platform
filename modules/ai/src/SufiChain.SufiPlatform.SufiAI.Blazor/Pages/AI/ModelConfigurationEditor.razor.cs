@@ -800,7 +800,7 @@ public partial class ModelConfigurationEditor : AIComponentBase
             catch (Exception ex)
             {
                 _modelsLoaded = true;
-                await Notify.ErrorAsync(ex.Message);
+                await HandleErrorAsync(ex);
                 return;
             }
 

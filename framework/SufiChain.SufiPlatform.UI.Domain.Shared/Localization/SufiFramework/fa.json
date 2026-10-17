@@ -19,6 +19,8 @@
     "NetworkError": "یک خطای شبکه رخ داد. لطفاً اتصال خود را بررسی کرده و دوباره تلاش کنید.",
     "OperationCancelled": "عملیات لغو شد.",
     "Unauthorized": "شما مجاز به انجام این عمل نیستید.",
+    "EntityNotFound": "مورد درخواستی یافت نشد.",
+    "DefaultErrorMessageWithReference": "خطایی رخ داد. شناسه پیگیری: {0}",
     "UserNotLoggedIn": "کاربر وارد نشده است.",
     "UserNotAllowedToSignIn": "کاربر مجاز به ورود نیست.",
     "UserNotAllowedToAccessClient": "کاربر وارد شده مجاز به دسترسی به این برنامه نیست.",

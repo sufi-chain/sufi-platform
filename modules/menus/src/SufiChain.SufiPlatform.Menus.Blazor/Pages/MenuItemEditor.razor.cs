@@ -371,7 +371,7 @@ public partial class MenuItemEditor : MenusComponentBase
         }
         catch (Exception ex) when (ex is BusinessException or UserFriendlyException)
         {
-            _saveError = string.IsNullOrWhiteSpace(ex.Message) ? L["MenuLink:SaveFailed"] : ex.Message;
+            _saveError = UserExceptionInformer.GetLocalizedMessage(ex);
             PublishSaveError();
             return;
         }

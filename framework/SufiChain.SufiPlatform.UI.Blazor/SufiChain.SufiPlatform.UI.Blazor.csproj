@@ -20,6 +20,8 @@
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="$(AspNetCoreVersion)" />
     <PackageReference Include="Microsoft.Extensions.Options" Version="$(AspNetCoreVersion)" />
     <PackageReference Include="Volo.Abp.Localization" Version="$(AbpVersion)" />
+    <PackageReference Include="Volo.Abp.ExceptionHandling" Version="$(AbpVersion)" />
+    <PackageReference Include="Volo.Abp.Authorization" Version="$(AbpVersion)" />
 
   </ItemGroup>
 
