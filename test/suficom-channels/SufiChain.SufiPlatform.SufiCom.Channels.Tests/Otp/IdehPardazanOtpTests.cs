@@ -13,7 +13,7 @@ using Xunit;
 
 namespace SufiChain.SufiPlatform.SufiCom.Channels.Otp;
 
-public class SmsIrOtpTests
+public class IdehPardazanOtpTests
 {
     [Fact]
     public async Task Verify_Should_Post_Template_And_Code_With_The_Api_Key_Header()

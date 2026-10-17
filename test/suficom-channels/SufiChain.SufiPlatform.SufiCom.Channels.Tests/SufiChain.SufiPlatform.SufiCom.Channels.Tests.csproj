@@ -8,11 +8,9 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\framework\SufiChain.SufiPlatform.SufiCom.Abstractions\SufiChain.SufiPlatform.SufiCom.Abstractions.csproj" />
-    <ProjectReference Include="..\..\..\..\pro-modules\suficom\channels\src\SufiChain.SufiPlatform.SufiCom.Channels.Email\SufiChain.SufiPlatform.SufiCom.Channels.Email.csproj" />
-    <ProjectReference Include="..\..\..\..\pro-modules\suficom\channels\src\SufiChain.SufiPlatform.SufiCom.Channels\SufiChain.SufiPlatform.SufiCom.Channels.csproj" />
-    <ProjectReference Include="..\..\..\..\pro-modules\suficom\channels\src\SufiChain.SufiPlatform.SufiCom.Channels.Sms.Kavenegar\SufiChain.SufiPlatform.SufiCom.Channels.Sms.Kavenegar.csproj" />
-    <ProjectReference Include="..\..\..\..\pro-modules\suficom\channels\src\SufiChain.SufiPlatform.SufiCom.Channels.Sms.IdehPardazan\SufiChain.SufiPlatform.SufiCom.Channels.Sms.IdehPardazan.csproj" />
-    <ProjectReference Include="..\..\..\..\pro-modules\suficom\channels\src\SufiChain.SufiPlatform.SufiCom.Channels.Sms.FanapMobile\SufiChain.SufiPlatform.SufiCom.Channels.Sms.FanapMobile.csproj" />
+    <ProjectReference Include="..\..\..\modules\suficom-channels\src\SufiChain.SufiPlatform.SufiCom.Channels.Sms.Kavenegar\SufiChain.SufiPlatform.SufiCom.Channels.Sms.Kavenegar.csproj" />
+    <ProjectReference Include="..\..\..\modules\suficom-channels\src\SufiChain.SufiPlatform.SufiCom.Channels.Sms.IdehPardazan\SufiChain.SufiPlatform.SufiCom.Channels.Sms.IdehPardazan.csproj" />
+    <ProjectReference Include="..\..\..\modules\suficom-channels\src\SufiChain.SufiPlatform.SufiCom.Channels.Voice.Kavenegar\SufiChain.SufiPlatform.SufiCom.Channels.Voice.Kavenegar.csproj" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.14.1" />
     <PackageReference Include="Shouldly" Version="4.3.0" />
     <PackageReference Include="xunit" Version="2.9.3" />

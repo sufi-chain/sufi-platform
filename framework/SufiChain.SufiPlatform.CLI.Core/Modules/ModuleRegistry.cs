@@ -163,6 +163,38 @@ public class ModuleRegistry
 
         Register(new ModuleDefinition
         {
+            Key = "suficom-channels-otp",
+            DisplayName = "SMS/OTP providers (Kavenegar, IdehPardazan)",
+            NuGetPackagePrefix = "SufiChain.SufiPlatform.SufiCom.Channels",
+            Category = ModuleCategory.Infrastructure,
+            IsCore = true,
+            Description = "Open-source SMS and voice OTP providers (Kavenegar and IdehPardazan / SMS.ir)",
+            ApplicableHosts = new[] { HostType.WebApp, HostType.HttpApi, HostType.Web },
+            Bindings =
+            [
+                new ModuleBinding
+                {
+                    IntegrationPoint = ModuleIntegrationPoint.BackendHost,
+                    PackageId = "SufiChain.SufiPlatform.SufiCom.Channels.Sms.Kavenegar",
+                    ModuleType = "SufiChain.SufiPlatform.SufiCom.Channels.Sms.Kavenegar.SufiComChannelsSmsKavenegarModule"
+                },
+                new ModuleBinding
+                {
+                    IntegrationPoint = ModuleIntegrationPoint.BackendHost,
+                    PackageId = "SufiChain.SufiPlatform.SufiCom.Channels.Sms.IdehPardazan",
+                    ModuleType = "SufiChain.SufiPlatform.SufiCom.Channels.Sms.IdehPardazan.SufiComChannelsSmsIdehPardazanModule"
+                },
+                new ModuleBinding
+                {
+                    IntegrationPoint = ModuleIntegrationPoint.BackendHost,
+                    PackageId = "SufiChain.SufiPlatform.SufiCom.Channels.Voice.Kavenegar",
+                    ModuleType = "SufiChain.SufiPlatform.SufiCom.Channels.Voice.Kavenegar.SufiComChannelsVoiceKavenegarModule"
+                }
+            ]
+        });
+
+        Register(new ModuleDefinition
+        {
             Key = "short-links",
             DisplayName = "Short Link Generator",
             NuGetPackagePrefix = "SufiChain.SufiPlatform.ShortLinks",

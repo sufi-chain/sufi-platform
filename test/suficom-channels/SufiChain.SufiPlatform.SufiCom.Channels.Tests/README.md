@@ -1,19 +1,23 @@
 ---
 title: SufiChain.SufiPlatform.SufiCom.Channels.Tests
 type: project-readme
-area: pro-module
+area: platform
 status: active
 source_path: "sufi-platform/test/suficom-channels/SufiChain.SufiPlatform.SufiCom.Channels.Tests/SufiChain.SufiPlatform.SufiCom.Channels.Tests.csproj"
 tags:
   - project
   - ai-kb
-  - kb/area/pro-module
+  - kb/area/platform
 ---
 
 # SufiChain.SufiPlatform.SufiCom.Channels.Tests
 
-This README describes the `SufiChain.SufiPlatform.SufiCom.Channels.Tests` project.
-The project source is `sufi-platform/test/suficom-channels/SufiChain.SufiPlatform.SufiCom.Channels.Tests/SufiChain.SufiPlatform.SufiCom.Channels.Tests.csproj`.
+Public (OSS) channel tests for Kavenegar SMS + Voice and IdehPardazan (SMS.ir).
+Project references stay inside `sufi-platform` only (Abstractionsions + the three OSS providers).
+
+The private commercial SMS OTP provider lives under `commercial-modules/sufi-channels-*`.
+Email connector tests live in
+`pro-modules/suficom/channels/test/SufiChain.SufiPlatform.SufiCom.Channels.Email.Tests`.
 
 ## Project metadata
 
@@ -21,12 +25,22 @@ The project source is `sufi-platform/test/suficom-channels/SufiChain.SufiPlatfor
 | --- | --- |
 | Project file | `sufi-platform/test/suficom-channels/SufiChain.SufiPlatform.SufiCom.Channels.Tests/SufiChain.SufiPlatform.SufiCom.Channels.Tests.csproj` |
 | Target framework(s) | `net10.0` |
-| Project references | ../../../../../sufi-platform/framework/SufiChain.SufiPlatform.SufiCom.Abstractions/SufiChain.SufiPlatform.SufiCom.Abstractions.csproj,../../src/SufiChain.SufiPlatform.SufiCom.Channels.Email/SufiChain.SufiPlatform.SufiCom.Channels.Email.csproj ../../src/SufiChain.SufiPlatform.SufiCom.Channels/SufiChain.SufiPlatform.SufiCom.Channels.csproj |
+| Project references | Abstractions; Sms.Kavenegar; Sms.IdehPardazan; Voice.Kavenegar |
 
-## Developer wiki
+## No-pro guard
 
-[Open the canonical developer wiki](../../../../documents/developer-wiki/SufiPlatform/ProModules/00-Pro Modules Overview.md).
+Run from the `sufi-platform` root (or any cwd):
+
+```bash
+bash checks/no-pro-references.sh
+```
+
+There is no checks/ job in `.github/workflows` yet (only `publish-nuget.yml`), so this script is the
+local/CI gate for the OSS OTP surface until a workflow step is added.
 
 ## Validation
 
-Build and test status is **not verified** by this README. Follow the workspace validation rules before reporting a successful build or test.
+```bash
+dotnet test test/suficom-channels/SufiChain.SufiPlatform.SufiCom.Channels.Tests -c Release
+bash checks/no-pro-references.sh
+```

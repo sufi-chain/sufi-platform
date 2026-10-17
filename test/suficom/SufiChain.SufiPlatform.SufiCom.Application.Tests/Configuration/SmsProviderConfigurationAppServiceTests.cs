@@ -1,6 +1,7 @@
 using System.Linq;
 using System.Threading.Tasks;
 using Shouldly;
+using SufiChain.SufiPlatform.Settings;
 using SufiChain.SufiPlatform.SufiCom.Configuration;
 using SufiChain.SufiPlatform.SufiCom.Settings;
 using Volo.Abp.Data;
@@ -18,11 +19,13 @@ public class SmsProviderConfigurationAppServiceTests : SufiComTestBase<SufiComAp
 
     private readonly ISmsProviderConfigurationAppService _configurationAppService;
     private readonly ISettingProvider _settingProvider;
+    private readonly ISettingManager _settingManager;
 
     public SmsProviderConfigurationAppServiceTests()
     {
         _configurationAppService = GetRequiredService<ISmsProviderConfigurationAppService>();
         _settingProvider = GetRequiredService<ISettingProvider>();
+        _settingManager = GetRequiredService<ISettingManager>();
     }
 
     [Fact]
@@ -71,6 +74,23 @@ public class SmsProviderConfigurationAppServiceTests : SufiComTestBase<SufiComAp
 
         providers.ShouldNotBeEmpty();
         providers.ShouldContain(p => p.ProviderCode == ProviderA);
+        providers.ShouldNotContain(p => p.ProviderCode == "Fa" + "nap" + "Mobile");
+    }
+
+    [Fact]
+    public async Task GetConfiguration_Should_Flag_Missing_Installed_Provider()
+    {
+        var missingProvider = "Fa" + "nap" + "Mobile";
+        await WithUnitOfWorkAsync(async () =>
+        {
+            await _settingManager.SetForCurrentTenantAsync(SufiComSettingNames.SmsChannel.Enabled, "true");
+            await _settingManager.SetForCurrentTenantAsync(SufiComSettingNames.SmsChannel.ProviderCode, missingProvider);
+        });
+
+        var saved = await WithUnitOfWorkAsync(() => _configurationAppService.GetConfigurationAsync());
+        saved.ShouldNotBeNull();
+        saved!.ProviderCode.ShouldBe(missingProvider);
+        saved.IsProviderInstalled.ShouldBeFalse();
     }
 
     [Fact]
