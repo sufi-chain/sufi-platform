@@ -11,7 +11,7 @@ public class AiCreditCurrencyAndOverdraftTests
     private static readonly DateTime Now = new(2026, 10, 13, 12, 0, 0, DateTimeKind.Utc);
 
     [Fact]
-    public void AIC_currency_has_precision_six_and_usd_base_unit()
+    public void AIC_currency_has_precision_two_usd_base_and_away_from_zero()
     {
         var currency = new Currency(
             Guid.NewGuid(),
@@ -19,12 +19,14 @@ public class AiCreditCurrencyAndOverdraftTests
             SufiFinanceCurrencyCodes.Aic,
             "AI Credit",
             "cr",
-            6,
+            2,
+            CurrencyRoundingMode.AwayFromZero,
             baseUnitCode: SufiFinanceCurrencyCodes.Usd,
             baseUnitRatio: 1m);
 
         currency.Code.ShouldBe("AIC");
-        currency.Precision.ShouldBe(6);
+        currency.Precision.ShouldBe(2);
+        currency.RoundingMode.ShouldBe(CurrencyRoundingMode.AwayFromZero);
         currency.Symbol.ShouldBe("cr");
         currency.BaseUnitCode.ShouldBe("USD");
         currency.BaseUnitRatio.ShouldBe(1m);
