@@ -201,6 +201,11 @@
     <Project Path="modules/short-links/src/SufiChain.SufiPlatform.ShortLinks.HttpApi/SufiChain.SufiPlatform.ShortLinks.HttpApi.csproj" />
     <Project Path="modules/short-links/src/SufiChain.SufiPlatform.ShortLinks.MongoDB/SufiChain.SufiPlatform.ShortLinks.MongoDB.csproj" />
   </Folder>
+  <Folder Name="/Modules/SufiComChannels/">
+    <Project Path="modules/suficom-channels/src/SufiChain.SufiPlatform.SufiCom.Channels.Sms.IdehPardazan/SufiChain.SufiPlatform.SufiCom.Channels.Sms.IdehPardazan.csproj" />
+    <Project Path="modules/suficom-channels/src/SufiChain.SufiPlatform.SufiCom.Channels.Sms.Kavenegar/SufiChain.SufiPlatform.SufiCom.Channels.Sms.Kavenegar.csproj" />
+    <Project Path="modules/suficom-channels/src/SufiChain.SufiPlatform.SufiCom.Channels.Voice.Kavenegar/SufiChain.SufiPlatform.SufiCom.Channels.Voice.Kavenegar.csproj" />
+  </Folder>
   <Folder Name="/Modules/Tagss/">
     <Project Path="modules/tags/src/SufiChain.SufiPlatform.Tags.Application.Contracts/SufiChain.SufiPlatform.Tags.Application.Contracts.csproj" />
     <Project Path="modules/tags/src/SufiChain.SufiPlatform.Tags.Application/SufiChain.SufiPlatform.Tags.Application.csproj" />
