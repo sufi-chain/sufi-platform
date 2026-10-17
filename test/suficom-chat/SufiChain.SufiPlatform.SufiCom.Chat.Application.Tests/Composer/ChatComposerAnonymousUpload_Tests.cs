@@ -61,7 +61,8 @@ public class ChatComposerAnonymousUpload_Tests : ChatApplicationTestBase<SufiCom
                 SessionId = session.Id,
                 FileName = "note.txt",
                 MimeType = "text/plain",
-                Content = [1, 2, 3, 4]
+                Content = [1, 2, 3, 4],
+                AnonymousVisitorId = ChatTestData.AnonymousVisitorId
             });
         }
 
@@ -87,7 +88,8 @@ public class ChatComposerAnonymousUpload_Tests : ChatApplicationTestBase<SufiCom
                 title: null,
                 AccessMode.PublicAuthenticated,
                 ConversationKind.Direct,
-                ChannelOrigin.Widget));
+                ChannelOrigin.Widget),
+            participantToken: "visitor-token");
 
         await Should.ThrowAsync<AbpAuthorizationException>(() => service.UploadAsync(
             new ChatComposerUploadInput
@@ -95,7 +97,37 @@ public class ChatComposerAnonymousUpload_Tests : ChatApplicationTestBase<SufiCom
                 SessionId = sessionId,
                 FileName = "note.txt",
                 MimeType = "text/plain",
-                Content = [1, 2, 3, 4]
+                Content = [1, 2, 3, 4],
+                AnonymousVisitorId = "visitor-token"
+            }));
+
+        await storage.DidNotReceive().UploadAsync(Arg.Any<FileUploadRequest>());
+    }
+
+    [Fact]
+    public async Task Anonymous_upload_is_denied_without_the_owning_visitor_token()
+    {
+        var sessionId = Guid.NewGuid();
+        var storage = Substitute.For<IFileStorageTrustedService>();
+        var service = ChatComposerUploadPolicyHarness.Create(
+            storage,
+            new ChatSession(
+                sessionId,
+                tenantId: null,
+                title: null,
+                AccessMode.PublicAnonymous,
+                ConversationKind.Support,
+                ChannelOrigin.Widget),
+            participantToken: "owner-token");
+
+        await Should.ThrowAsync<AbpAuthorizationException>(() => service.UploadAsync(
+            new ChatComposerUploadInput
+            {
+                SessionId = sessionId,
+                FileName = "note.txt",
+                MimeType = "text/plain",
+                Content = [1, 2, 3, 4],
+                AnonymousVisitorId = "wrong-token"
             }));
 
         await storage.DidNotReceive().UploadAsync(Arg.Any<FileUploadRequest>());
@@ -156,14 +188,16 @@ public class ChatComposerUploadPolicy_Tests
                 title: null,
                 AccessMode.PublicAnonymous,
                 ConversationKind.Support,
-                ChannelOrigin.Widget));
+                ChannelOrigin.Widget),
+            participantToken: "visitor-token");
 
         var uploaded = await service.UploadAsync(new ChatComposerUploadInput
         {
             SessionId = sessionId,
             FileName = "note.txt",
             MimeType = "text/plain",
-            Content = [1, 2, 3, 4]
+            Content = [1, 2, 3, 4],
+            AnonymousVisitorId = "visitor-token"
         });
 
         uploaded.FileName.ShouldBe("note.txt");
@@ -175,7 +209,10 @@ public class ChatComposerUploadPolicy_Tests
 
 internal static class ChatComposerUploadPolicyHarness
 {
-    public static ChatComposerUploadAppService Create(IFileStorageTrustedService storage, ChatSession session)
+    public static ChatComposerUploadAppService Create(
+        IFileStorageTrustedService storage,
+        ChatSession session,
+        string? participantToken = null)
     {
         var sessions = Substitute.For<IChatSessionRepository>();
         sessions.FindAsync(session.Id, Arg.Any<bool>(), Arg.Any<CancellationToken>()).Returns(session);
@@ -187,7 +224,12 @@ internal static class ChatComposerUploadPolicyHarness
                 Arg.Any<Guid?>(),
                 Arg.Any<string?>(),
                 Arg.Any<CancellationToken>())
-            .Returns(false);
+            .Returns(call =>
+            {
+                var token = call.ArgAt<string?>(2);
+                return !string.IsNullOrWhiteSpace(participantToken) &&
+                       string.Equals(token, participantToken, StringComparison.Ordinal);
+            });
 
         var features = Substitute.For<IFeatureChecker>();
         features.IsEnabledAsync(ChatFeatures.Attachments).Returns(true);
