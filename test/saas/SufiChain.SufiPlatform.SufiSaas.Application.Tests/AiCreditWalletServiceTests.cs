@@ -69,6 +69,17 @@ public class AiCreditWalletServiceTests
         balance.Purchased.ShouldBe(50m);
     }
 
+    [Fact]
+    public async Task GetBalance_without_wallets_returns_zeros_and_does_not_insert()
+    {
+        var (service, wallets) = CreateService();
+
+        var balance = await service.GetBalanceAsync(TenantId);
+
+        balance.ShouldBe((0m, 0m, 0m));
+        wallets.ShouldBeEmpty();
+    }
+
     private static (AiCreditWalletService Service, List<Wallet> Wallets) CreateService()
     {
         var wallets = new List<Wallet>();

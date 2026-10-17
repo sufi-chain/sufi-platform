@@ -337,6 +337,8 @@
     "Permission:SufiAI.FunctionCalling": "استدعاء الدوال",
     "Permission:SufiAI.ManageConfigurations": "إدارة الإعدادات",
     "Permission:SufiAI.ViewUsage": "عرض الاستخدام",
+    "Permission:SufiAI.AiCredits": "اعتمادات الذكاء الاصطناعي",
+    "Permission:SufiAI.AiCredits.ViewAll": "عرض اعتمادات الذكاء الاصطناعي لجميع المستأجرين",
     "InputCostPer1MTokens": "تكلفة الإدخال / مليون رمز",
     "OutputCostPer1MTokens": "تكلفة الإخراج / مليون رمز",
     "RouteInputPrice": "سعر الإدخال",
