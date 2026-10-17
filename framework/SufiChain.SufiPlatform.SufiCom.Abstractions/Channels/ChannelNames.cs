@@ -14,7 +14,6 @@ public static class ChannelNames
     /// </summary>
     public const string TelegramUser = "TelegramUser";
     public const string SmsKavenegar = "Sms.Kavenegar";
-    public const string SmsFanapMobile = "Sms.FanapMobile";
     public const string SmsIdehPardazan = "Sms.IdehPardazan";
     public const string VoiceKavenegar = "Voice.Kavenegar";
 }

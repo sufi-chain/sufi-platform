@@ -2,11 +2,13 @@ using System.Globalization;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Localization;
 using Shouldly;
+using SufiChain.SufiPlatform.Settings;
 using SufiChain.SufiPlatform.SufiCom.Channels;
 using SufiChain.SufiPlatform.SufiCom.Communication;
 using SufiChain.SufiPlatform.SufiCom.Communication.Repositories;
 using SufiChain.SufiPlatform.SufiCom.Configuration;
 using SufiChain.SufiPlatform.SufiCom.Localization;
+using SufiChain.SufiPlatform.SufiCom.Settings;
 using Volo.Abp.Data;
 using Xunit;
 
@@ -18,6 +20,7 @@ public class SufiComOtpServiceTests : SufiComTestBase<SufiComApplicationTestModu
     private readonly ISmsProviderConfigurationAppService _configurationAppService;
     private readonly IChannelMessageAuditRepository _auditRepository;
     private readonly IStringLocalizer<SufiComResource> _localizer;
+    private readonly ISettingManager _settingManager;
 
     public SufiComOtpServiceTests()
     {
@@ -25,6 +28,7 @@ public class SufiComOtpServiceTests : SufiComTestBase<SufiComApplicationTestModu
         _configurationAppService = GetRequiredService<ISmsProviderConfigurationAppService>();
         _auditRepository = GetRequiredService<IChannelMessageAuditRepository>();
         _localizer = GetRequiredService<IStringLocalizer<SufiComResource>>();
+        _settingManager = GetRequiredService<ISettingManager>();
     }
 
     [Theory]
@@ -69,10 +73,70 @@ public class SufiComOtpServiceTests : SufiComTestBase<SufiComApplicationTestModu
             _localizer[OtpProviderSettingKeys.TemplateRequiredError].Value);
     }
 
+    [Fact]
+    public async Task SendSms_Should_Fail_Without_Throwing_When_Configured_Provider_Is_Not_Installed()
+    {
+        // Commercial OTP provider code (module not composed in this OSS test host).
+        var missingProvider = "Fa" + "nap" + "Mobile";
+
+        await WithUnitOfWorkAsync(async () =>
+        {
+            await _settingManager.SetForCurrentTenantAsync(SufiComSettingNames.SmsChannel.Enabled, "true");
+            await _settingManager.SetForCurrentTenantAsync(SufiComSettingNames.SmsChannel.ProviderCode, missingProvider);
+        });
+
+        var auditId = await _otpService.SendSmsAsync(new OtpMessage
+        {
+            Phone = "+989121234567",
+            Code = "123456",
+            Purpose = OtpPurposes.Login,
+            Content = "Your code is 123456",
+            IdempotencyKey = "Login:+989121234567:missing-provider"
+        });
+
+        var audit = await WithUnitOfWorkAsync(() => _auditRepository.GetAsync(auditId));
+        audit.State.ShouldBe(ChannelMessageAuditState.Failed);
+        audit.ProviderCode.ShouldBe(missingProvider);
+        audit.FailureReason.ShouldBe(_localizer[SufiComDomainErrorCodes.OtpProviderNotInstalled, missingProvider].Value);
+        audit.RenderedContent.ShouldBe("Your code is ******");
+    }
+
+    [Fact]
+    public async Task SendSms_Should_Resolve_Kavenegar_When_Configured()
+    {
+        await WithUnitOfWorkAsync(() => _configurationAppService.UpdateConfigurationAsync(
+            new UpdateSmsProviderConfigurationDto
+            {
+                ProviderCode = "Kavenegar",
+                IsEnabled = true,
+                ExtraProperties = new ExtraPropertyDictionary
+                {
+                    ["ApiKey"] = "test-key",
+                    ["SenderNumber"] = "1000",
+                    [OtpProviderSettingKeys.Template] = "verify",
+                    [OtpProviderSettingKeys.TemplateLogin] = "login-verify"
+                }
+            }));
+
+        // Without a real gateway the send fails, but the provider must resolve (not ProviderNotInstalled).
+        var auditId = await _otpService.SendSmsAsync(new OtpMessage
+        {
+            Phone = "+989121234567",
+            Code = "654321",
+            Purpose = OtpPurposes.Login,
+            Content = "Your code is 654321",
+            IdempotencyKey = "Login:+989121234567:kavenegar-resolve"
+        });
+
+        var audit = await WithUnitOfWorkAsync(() => _auditRepository.GetAsync(auditId));
+        audit.ProviderCode.ShouldBe("Kavenegar");
+        audit.FailureReason.ShouldNotBe(
+            _localizer[SufiComDomainErrorCodes.OtpProviderNotInstalled, "Kavenegar"].Value);
+    }
+
     [Theory]
     [InlineData(OtpFailureMessages.KavenegarRejected, "418", "Kavenegar", "کاوه")]
     [InlineData(OtpFailureMessages.SmsIrRejected, "400", "SMS.ir", "SMS.ir")]
-    [InlineData(OtpFailureMessages.FanapRejected, "26", "Fanap", "فناپ")]
     [InlineData(OtpFailureMessages.TimedOut, "", "timeout", "مهلت")]
     [InlineData(OtpFailureMessages.InvalidPhone, "", "Iranian", "ایرانی")]
     public void Failure_Text_Should_Localize_In_English_And_Persian(

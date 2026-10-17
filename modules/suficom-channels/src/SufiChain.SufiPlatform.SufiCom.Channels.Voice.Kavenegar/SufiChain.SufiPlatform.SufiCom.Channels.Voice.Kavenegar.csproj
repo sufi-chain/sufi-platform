@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <RootNamespace>SufiChain.SufiPlatform.SufiCom.Channels.Voice.Kavenegar</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\..\framework\SufiChain.SufiPlatform.SufiCom.Abstractions\SufiChain.SufiPlatform.SufiCom.Abstractions.csproj" />
+    <ProjectReference Include="..\SufiChain.SufiPlatform.SufiCom.Channels.Sms.Kavenegar\SufiChain.SufiPlatform.SufiCom.Channels.Sms.Kavenegar.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="KavenegarDotNetCore" Version="$(KavenegarVersion)" />
+  </ItemGroup>
+</Project>

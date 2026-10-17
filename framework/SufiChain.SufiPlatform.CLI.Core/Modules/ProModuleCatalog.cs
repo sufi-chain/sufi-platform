@@ -160,10 +160,6 @@ internal static class ProModuleCatalog
                 B(ModuleIntegrationPoint.BackendHost, "SufiChain.SufiPlatform.SufiCom.Channels", "SufiChain.SufiPlatform.SufiCom.Channels.SufiComChannelsModule"),
                 B(ModuleIntegrationPoint.BackendHost, "SufiChain.SufiPlatform.SufiCom.Channels.Email", "SufiChain.SufiPlatform.SufiCom.Channels.Email.SufiComChannelsEmailModule"),
                 B(ModuleIntegrationPoint.BackendHost, "SufiChain.SufiPlatform.SufiCom.Channels.Telegram", "SufiChain.SufiPlatform.SufiCom.Channels.Telegram.SufiComChannelsTelegramModule"),
-                B(ModuleIntegrationPoint.BackendHost, "SufiChain.SufiPlatform.SufiCom.Channels.Sms.Kavenegar", "SufiChain.SufiPlatform.SufiCom.Channels.Sms.Kavenegar.SufiComChannelsSmsKavenegarModule"),
-                B(ModuleIntegrationPoint.BackendHost, "SufiChain.SufiPlatform.SufiCom.Channels.Sms.IdehPardazan", "SufiChain.SufiPlatform.SufiCom.Channels.Sms.IdehPardazan.SufiComChannelsSmsIdehPardazanModule"),
-                B(ModuleIntegrationPoint.BackendHost, "SufiChain.SufiPlatform.SufiCom.Channels.Sms.FanapMobile", "SufiChain.SufiPlatform.SufiCom.Channels.Sms.FanapMobile.SufiComChannelsSmsFanapMobileModule"),
-                B(ModuleIntegrationPoint.BackendHost, "SufiChain.SufiPlatform.SufiCom.Channels.Voice.Kavenegar", "SufiChain.SufiPlatform.SufiCom.Channels.Voice.Kavenegar.SufiComChannelsVoiceKavenegarModule"),
                 B(ModuleIntegrationPoint.DbMigrator, "SufiChain.SufiPlatform.SufiCom.Application", "SufiChain.SufiPlatform.SufiCom.SufiComApplicationModule")
             ]);
 
