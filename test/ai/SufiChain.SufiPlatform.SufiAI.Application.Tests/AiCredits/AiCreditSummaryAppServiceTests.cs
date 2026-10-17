@@ -114,6 +114,29 @@ public class AiCreditSummaryAppServiceTests
         one.PurchasedRemaining.ShouldBe(3m);
     }
 
+    [Fact]
+    public async Task Summary_DTO_rounds_amounts_to_two_decimals()
+    {
+        var fixture = Fixture.ForTenant(TenantA, grantViewAll: false);
+        fixture.Repository.GetSummaryAsync(TenantA, null, null, Arg.Any<CancellationToken>())
+            .Returns(new AICreditSummary
+            {
+                TenantId = TenantA,
+                IncludedCredits = 10.004m,
+                IncludedUsed = 1.005m,
+                PurchasedRemaining = 2.235m,
+                PurchasedUsed = 0.004m
+            });
+
+        var result = await fixture.Service.GetAsync();
+
+        result.ShouldNotBeNull();
+        result!.IncludedCredits.ShouldBe(10.00m);
+        result.IncludedUsed.ShouldBe(1.01m);
+        result.PurchasedRemaining.ShouldBe(2.24m);
+        result.PurchasedUsed.ShouldBe(0.00m);
+    }
+
     private sealed class Fixture
     {
         public IAiCreditSummaryRepository Repository { get; }
