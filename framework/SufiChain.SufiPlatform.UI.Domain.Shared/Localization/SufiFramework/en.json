@@ -19,6 +19,8 @@
         "NetworkError": "A network error occurred. Please check your connection and try again.",
         "OperationCancelled": "The operation was cancelled.",
         "Unauthorized": "You are not authorized to perform this action.",
+        "EntityNotFound": "The requested item was not found.",
+        "DefaultErrorMessageWithReference": "An error occurred. Reference: {0}",
         "UserNotLoggedIn": "The user is not logged in.",
         "UserNotAllowedToSignIn": "The user is not allowed to sign in.",
         "UserNotAllowedToAccessClient": "The logged in user is not allowed to access this client application.",

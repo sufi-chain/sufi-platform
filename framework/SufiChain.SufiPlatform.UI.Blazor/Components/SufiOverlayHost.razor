@@ -1,7 +1,6 @@
 @namespace SufiChain.SufiPlatform.UI.Blazor.Components
 @using Microsoft.Extensions.Localization
 @using Microsoft.Extensions.Logging
-@using System.Text
 @using SufiChain.SufiPlatform.UI.Blazor.Messages
 @using SufiChain.SufiPlatform.UI.Blazor.Circuit
 @using SufiChain.SufiPlatform.UI.Blazor.Notifications
@@ -98,9 +97,9 @@
             <div class="sb-confirm-dialog__content">
                 @if (!string.IsNullOrEmpty(_messageRequest.Title))
                 {
-                    <h3 class="sb-confirm-dialog__title">@NormalizeDialogText(_messageRequest.Title)</h3>
+                    <h3 class="sb-confirm-dialog__title" dir="auto">@_messageRequest.Title</h3>
                 }
-                <p class="sb-confirm-dialog__message">@NormalizeDialogText(_messageRequest.Message)</p>
+                <p class="sb-confirm-dialog__message" dir="auto">@_messageRequest.Message</p>
             </div>
             
             <div class="sb-confirm-dialog__actions">
@@ -510,42 +509,6 @@
         UiMessageType.Success => "success",
         _ => "info"
     };
-
-    private static string NormalizeDialogText(string? text)
-    {
-        if (string.IsNullOrWhiteSpace(text) || !LooksLikeLocalizationKey(text))
-        {
-            return text ?? string.Empty;
-        }
-
-        var key = text[(text.LastIndexOf(':') + 1)..];
-        var builder = new StringBuilder(key.Length + 8);
-        for (var i = 0; i < key.Length; i++)
-        {
-            var current = key[i];
-            if (i > 0 && char.IsUpper(current) && !char.IsWhiteSpace(key[i - 1]))
-            {
-                builder.Append(' ');
-            }
-
-            builder.Append(current);
-        }
-
-        return builder.ToString();
-    }
-
-    private static bool LooksLikeLocalizationKey(string text)
-    {
-        if (text.Any(char.IsWhiteSpace) || !text.Contains(':', StringComparison.Ordinal))
-        {
-            return false;
-        }
-
-        var key = text[(text.LastIndexOf(':') + 1)..];
-        return key.Length > 0 &&
-               key.Any(char.IsUpper) &&
-               key.All(ch => char.IsLetterOrDigit(ch) || ch is '_' or '-' or '.');
-    }
 
     private SbColor GetMessageButtonColor() => _messageRequest?.Type switch
     {
