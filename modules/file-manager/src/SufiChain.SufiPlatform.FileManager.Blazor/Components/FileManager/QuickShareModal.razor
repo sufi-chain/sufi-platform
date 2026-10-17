@@ -36,6 +36,7 @@
                                 Id="quick-share-link"
                                 @bind-Value="_generatedUrl"
                                 ReadOnly="true"
+                                dir="ltr"
                                 Style="width: 100%"
                                 Class="fm-quick-share-link-input">
                         <EndAdornment>
@@ -56,6 +57,10 @@
     </ChildContent>
     <Footer>
         <SbStack Direction="SbStackDirection.Row" Gap="2" Justify="SbJustify.End">
+            @if (FileId.HasValue)
+            {
+                <SbButton Color="SbColor.Danger" Variant="SbButtonVariant.Outline" OnClick="@RevokeLinks" Disabled="@_loading">@L["RevokeShareLinks"]</SbButton>
+            }
             <SbButton Color="SbColor.Default" OnClick="@Close">@L["Cancel"]</SbButton>
             <SbButton Color="SbColor.Primary" OnClick="@CreateLink" Disabled="@_loading">
                 @(_loading ? L["Loading"] + "..." : L["CreateLink"])</SbButton>
@@ -110,6 +115,28 @@
         {
             _generatedUrl = await FileItemAppService.GetTemporaryAccessUrlAsync(FileId.Value, minutes);
             await Notify.SuccessAsync(L["LinkCreated"]);
+        }
+        catch (Exception ex)
+        {
+            await NotifyOperationFailedAsync(ex, "FailedToCreateShareLink");
+        }
+        finally
+        {
+            _loading = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task RevokeLinks()
+    {
+        if (!FileId.HasValue) return;
+        _loading = true;
+        StateHasChanged();
+        try
+        {
+            await FileItemAppService.RevokeTemporaryAccessUrlsAsync(FileId.Value);
+            _generatedUrl = "";
+            await Notify.SuccessAsync(L["ShareLinksRevoked"]);
         }
         catch (Exception ex)
         {
