@@ -434,7 +434,7 @@ public partial class HooshvareRuntimeRagWorkspaceTests
 
     [Fact]
 
-    public async Task Should_Throw_UnboundRagProject_When_Requested_Project_Is_Not_Bound()
+    public async Task Should_Skip_Rag_Without_Throwing_When_Requested_Project_Is_Not_Bound()
 
     {
 
@@ -462,13 +462,9 @@ public partial class HooshvareRuntimeRagWorkspaceTests
 
 
 
-        var exception = await Should.ThrowAsync<BusinessException>(
+        await Should.NotThrowAsync(
 
-            () => fixture.Orchestrator.PrepareRequestAsync(fixture.Definition, input));
-
-
-
-        exception.Code.ShouldBe("SufiAIHooshvare:UnboundRagProject");
+            () => fixture.Orchestrator.PrepareRequestAsync(fixture.Definition, input)); // sufi-chain#341: answer without KB search
 
         await fixture.Rag.DidNotReceive().SearchAsync(Arg.Any<SufiAIRagSearchRequest>(), Arg.Any<CancellationToken>());
 
@@ -482,7 +478,7 @@ public partial class HooshvareRuntimeRagWorkspaceTests
 
     [Fact]
 
-    public async Task Should_Throw_RagProjectBindingRequired_When_Hooshvare_Has_No_Bindings()
+    public async Task Should_Skip_Rag_Without_Throwing_When_Hooshvare_Has_No_Bindings()
 
     {
 
@@ -500,13 +496,9 @@ public partial class HooshvareRuntimeRagWorkspaceTests
 
 
 
-        var exception = await Should.ThrowAsync<BusinessException>(
+        await Should.NotThrowAsync(
 
-            () => fixture.Orchestrator.PrepareRequestAsync(fixture.Definition, input));
-
-
-
-        exception.Code.ShouldBe("SufiAIHooshvare:RagProjectBindingRequired");
+            () => fixture.Orchestrator.PrepareRequestAsync(fixture.Definition, input)); // sufi-chain#341: answer without KB search
 
         await fixture.Rag.DidNotReceive().SearchAsync(Arg.Any<SufiAIRagSearchRequest>(), Arg.Any<CancellationToken>());
 
