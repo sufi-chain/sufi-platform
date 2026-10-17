@@ -416,6 +416,8 @@
     "Permission:SufiAI.FunctionCalling": "Function calling",
     "Permission:SufiAI.ManageConfigurations": "Manage configurations",
     "Permission:SufiAI.ViewUsage": "View usage",
+    "Permission:SufiAI.AiCredits": "AI Credits",
+    "Permission:SufiAI.AiCredits.ViewAll": "View all tenant AI Credits",
     "RagUnavailable": "RAG is disabled until Qdrant or Pgvector is configured.",
     "RagUnavailableDescription": "Configure a production vector store to enable document indexing and semantic search.",
     "RagProvider:None": "Not configured",

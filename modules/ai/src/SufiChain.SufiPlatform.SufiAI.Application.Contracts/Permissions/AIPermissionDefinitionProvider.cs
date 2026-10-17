@@ -1,6 +1,7 @@
 using SufiChain.SufiPlatform.SufiAI.Localization;
 using Volo.Abp.Authorization.Permissions;
 using Volo.Abp.Localization;
+using Volo.Abp.MultiTenancy;
 
 namespace SufiChain.SufiPlatform.SufiAI.Permissions;
 
@@ -61,6 +62,15 @@ public class AIPermissionDefinitionProvider : PermissionDefinitionProvider
         aiPermission.AddChild(AIPermissions.AI.FunctionCalling, L("Permission:SufiAI.FunctionCalling"));
         aiPermission.AddChild(AIPermissions.AI.ManageConfigurations, L("Permission:SufiAI.ManageConfigurations"));
         aiPermission.AddChild(AIPermissions.AI.ViewUsage, L("Permission:SufiAI.ViewUsage"));
+
+        var aiCredits = AIGroup.AddPermission(
+            AIPermissions.AiCredits.Default,
+            L("Permission:SufiAI.AiCredits"),
+            multiTenancySide: MultiTenancySides.Host);
+        aiCredits.AddChild(
+            AIPermissions.AiCredits.ViewAll,
+            L("Permission:SufiAI.AiCredits.ViewAll"),
+            multiTenancySide: MultiTenancySides.Host);
     }
 
     private static LocalizableString L(string name)

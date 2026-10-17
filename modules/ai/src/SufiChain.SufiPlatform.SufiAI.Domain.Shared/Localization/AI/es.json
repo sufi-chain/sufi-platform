@@ -636,6 +636,8 @@
     "Permission:SufiAI.ManageConfigurations": "Administrar configuraciones",
 
     "Permission:SufiAI.ViewUsage": "Ver uso",
+    "Permission:SufiAI.AiCredits": "Créditos de IA",
+    "Permission:SufiAI.AiCredits.ViewAll": "Ver créditos de IA de todos los inquilinos",
 
     "InputCostPer1MTokens": "Costo de entrada / 1 millón de tokens",
 

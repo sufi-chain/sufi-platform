@@ -52,4 +52,10 @@ public static class AIPermissions
         public const string ManageConfigurations = Default + ".ManageConfigurations";
         public const string ViewUsage = Default + ".ViewUsage";
     }
+
+    public static class AiCredits
+    {
+        public const string Default = GroupName + ".AiCredits";
+        public const string ViewAll = Default + ".ViewAll";
+    }
 }
