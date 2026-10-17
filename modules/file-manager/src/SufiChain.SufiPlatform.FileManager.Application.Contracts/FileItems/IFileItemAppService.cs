@@ -81,6 +81,12 @@ public interface IFileItemAppService : IApplicationService
     /// <param name="durationMinutes">Validity in minutes (1–10080 = 1 min–7 days).</param>
     Task<string> GetTemporaryAccessUrlAsync(Guid id, int durationMinutes);
 
+    /// <summary>Revokes every Quick Share link issued for the file (sufi-chain#436).</summary>
+    Task RevokeTemporaryAccessUrlsAsync(Guid id);
+
+    /// <summary>Resolves a Quick Share token anonymously; checks signature, expiry, tenant and revoke.</summary>
+    Task<FileShareContentResultDto> GetSharedContentAsync(string token);
+
     /// <summary>
     /// Confirm temporary uploaded file (move from temp to permanent storage)
     /// </summary>
