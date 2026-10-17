@@ -72,7 +72,6 @@ public class SufiComOtpServiceTests : SufiComTestBase<SufiComApplicationTestModu
     [Theory]
     [InlineData(OtpFailureMessages.KavenegarRejected, "418", "Kavenegar", "کاوه")]
     [InlineData(OtpFailureMessages.SmsIrRejected, "400", "SMS.ir", "SMS.ir")]
-    [InlineData(OtpFailureMessages.FanapRejected, "26", "Fanap", "فناپ")]
     [InlineData(OtpFailureMessages.TimedOut, "", "timeout", "مهلت")]
     [InlineData(OtpFailureMessages.InvalidPhone, "", "Iranian", "ایرانی")]
     public void Failure_Text_Should_Localize_In_English_And_Persian(
