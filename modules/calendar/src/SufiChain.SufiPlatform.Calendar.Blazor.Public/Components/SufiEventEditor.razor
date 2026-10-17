@@ -104,6 +104,13 @@
         </SbStack>
     }
 
+    @if (_loadFailed)
+    {
+        <SbStack Align="SbAlign.Center" Justify="SbJustify.Center" Gap="2" role="alert">
+            <SbText>@L["EventEditorLoadFailed"]</SbText>
+            <SbButton Variant="SbButtonVariant.Outline" OnClick="RetryLoadAsync">@L["EventEditorRetry"]</SbButton>
+        </SbStack>
+    }
     <div class="sufi-event-editor-page__footer">
         <SbStack Direction="SbStackDirection.Row" Gap="2" Align="SbAlign.Center" Justify="SbJustify.SpaceBetween" Wrap="true">
             <div>

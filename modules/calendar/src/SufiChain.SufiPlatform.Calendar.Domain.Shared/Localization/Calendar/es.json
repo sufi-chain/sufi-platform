@@ -1,6 +1,8 @@
 {
   "culture": "es",
   "texts": {
+    "EventEditorLoadFailed": "No se pudo cargar el formulario del evento.",
+    "EventEditorRetry": "Reintentar",
     "Calendar": "Calendario",
     "EmailSender:DisplayName": "Calendario",
     "Permission:SufiCalendar": "Calendario",

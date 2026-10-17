@@ -1,6 +1,8 @@
 {
   "culture": "ar",
   "texts": {
+    "EventEditorLoadFailed": "تعذّر تحميل نموذج الحدث.",
+    "EventEditorRetry": "إعادة المحاولة",
     "Calendar": "التقويم",
     "EmailSender:DisplayName": "التقويم",
     "Permission:SufiCalendar": "التقويم",

@@ -1,6 +1,8 @@
 {
   "culture": "en",
   "texts": {
+    "EventEditorLoadFailed": "The event form could not be loaded.",
+    "EventEditorRetry": "Retry",
     "Calendar": "Calendar",
     "EmailSender:DisplayName": "Calendar",
     "Permission:SufiCalendar": "Calendar",
