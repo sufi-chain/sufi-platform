@@ -1,0 +1,7 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/SufiChain.SufiPlatform.SufiCom.Channels.Sms.Kavenegar/SufiChain.SufiPlatform.SufiCom.Channels.Sms.Kavenegar.csproj" />
+    <Project Path="src/SufiChain.SufiPlatform.SufiCom.Channels.Sms.IdehPardazan/SufiChain.SufiPlatform.SufiCom.Channels.Sms.IdehPardazan.csproj" />
+    <Project Path="src/SufiChain.SufiPlatform.SufiCom.Channels.Voice.Kavenegar/SufiChain.SufiPlatform.SufiCom.Channels.Voice.Kavenegar.csproj" />
+  </Folder>
+</Solution>
