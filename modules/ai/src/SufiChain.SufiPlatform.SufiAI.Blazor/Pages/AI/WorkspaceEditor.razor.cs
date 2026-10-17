@@ -444,7 +444,7 @@ public partial class WorkspaceEditor : AIComponentBase
                 _modelsLoaded = false;
                 if (announce)
                 {
-                    await Notify.ErrorAsync(ex.Message);
+                    await HandleErrorAsync(ex);
                 }
 
                 return;

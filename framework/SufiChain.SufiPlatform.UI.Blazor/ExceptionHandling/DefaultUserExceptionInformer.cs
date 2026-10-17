@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Diagnostics;
 using System.Reflection;
 using System.Text;
 using Microsoft.Extensions.Localization;
@@ -8,13 +9,21 @@ using Microsoft.Extensions.Options;
 using SufiChain.SufiPlatform.UI.ExceptionHandling;
 using SufiChain.SufiPlatform.UI.Localization;
 using SufiChain.SufiPlatform.UI.Messages;
+using Volo.Abp;
+using Volo.Abp.AspNetCore.ExceptionHandling;
+using Volo.Abp.Authorization;
+using Volo.Abp.Domain.Entities;
+using Volo.Abp.ExceptionHandling;
+using Volo.Abp.Http;
 using Volo.Abp.Localization.ExceptionHandling;
+using Volo.Abp.Validation;
 
 namespace SufiChain.SufiPlatform.UI.Blazor.ExceptionHandling;
 
 /// <summary>
 /// Default implementation of IUserExceptionInformer that shows exceptions using the message service.
-/// Includes special handling for ABP Framework exceptions.
+/// Builds user-facing text through ABP's <see cref="IExceptionToErrorInfoConverter"/> (or an equivalent
+/// mapping) and never surfaces raw technical exception messages to end users.
 /// </summary>
 public class DefaultUserExceptionInformer : IUserExceptionInformer
 {
@@ -22,6 +31,7 @@ public class DefaultUserExceptionInformer : IUserExceptionInformer
     private readonly IStringLocalizer<SufiFrameworkResource> _localizer;
     private readonly IStringLocalizerFactory? _stringLocalizerFactory;
     private readonly AbpExceptionLocalizationOptions? _exceptionLocalizationOptions;
+    private readonly IExceptionToErrorInfoConverter? _exceptionToErrorInfoConverter;
     private readonly ILogger<DefaultUserExceptionInformer> _logger;
 
     public DefaultUserExceptionInformer(
@@ -29,18 +39,19 @@ public class DefaultUserExceptionInformer : IUserExceptionInformer
         IStringLocalizer<SufiFrameworkResource> localizer,
         IStringLocalizerFactory? stringLocalizerFactory = null,
         IOptions<AbpExceptionLocalizationOptions>? exceptionLocalizationOptions = null,
+        IExceptionToErrorInfoConverter? exceptionToErrorInfoConverter = null,
         ILogger<DefaultUserExceptionInformer>? logger = null)
     {
         _messageService = messageService;
         _localizer = localizer;
         _stringLocalizerFactory = stringLocalizerFactory;
         _exceptionLocalizationOptions = exceptionLocalizationOptions?.Value;
+        _exceptionToErrorInfoConverter = exceptionToErrorInfoConverter;
         _logger = logger ?? NullLogger<DefaultUserExceptionInformer>.Instance;
     }
 
     public void Inform(UserExceptionInformerContext context)
     {
-        // Fire and forget for sync version
         _ = InformAsync(context);
     }
 
@@ -67,261 +78,337 @@ public class DefaultUserExceptionInformer : IUserExceptionInformer
         }
     }
 
+    public string GetLocalizedMessage(Exception exception)
+    {
+        return GetErrorInfo(new UserExceptionInformerContext(exception)).Message;
+    }
+
     protected virtual ErrorInfo GetErrorInfo(UserExceptionInformerContext context)
     {
-        var exception = context.Exception;
+        var exception = Unwrap(context.Exception);
 
-        // Try to extract ABP error info first
-        var abpErrorInfo = TryGetAbpErrorInfo(exception);
-        if (abpErrorInfo != null)
+        if (!string.IsNullOrWhiteSpace(context.CustomMessage))
         {
-            return abpErrorInfo;
+            return new ErrorInfo(
+                context.CustomMessage!,
+                context.Title ?? _localizer["Error"],
+                context.ShowDetails ? context.Exception.ToString() : null);
         }
 
-        // Fall back to default handling
-        var message = context.CustomMessage ?? GetUserFriendlyMessage(exception);
-        var title = context.Title ?? _localizer["Error"];
-        var details = context.ShowDetails ? exception.ToString() : null;
-
-        return new ErrorInfo(message, title, details);
-    }
-
-    /// <summary>
-    /// Attempts to extract error info from ABP exceptions using reflection.
-    /// This allows handling ABP exceptions without requiring a direct dependency on ABP packages.
-    /// </summary>
-    protected virtual ErrorInfo? TryGetAbpErrorInfo(Exception exception)
-    {
-        var exceptionType = exception.GetType();
-        var typeName = exceptionType.FullName ?? exceptionType.Name;
-
-        // Handle Volo.Abp.Http.Client.AbpRemoteCallException
-        if (typeName.Contains("AbpRemoteCallException") || 
-            typeName.Contains("AbpHttpClientException"))
+        // Prefer ABP's converter when registered; post-process so authz / unmapped business /
+        // generic exceptions never leak raw Message text.
+        if (_exceptionToErrorInfoConverter != null)
         {
-            return ExtractAbpRemoteCallExceptionInfo(exception);
-        }
-
-        // Handle Volo.Abp.AbpValidationException
-        if (typeName.Contains("AbpValidationException"))
-        {
-            return ExtractAbpValidationExceptionInfo(exception);
-        }
-
-        // Handle Volo.Abp.UserFriendlyException and IUserFriendlyException
-        if (typeName.Contains("UserFriendlyException") || 
-            exceptionType.GetInterfaces().Any(i => i.Name == "IUserFriendlyException"))
-        {
-            return new ErrorInfo(exception.Message, _localizer["Error"], null);
-        }
-
-        // Handle Volo.Abp.BusinessException and IBusinessException
-        if (typeName.Contains("BusinessException") ||
-            exceptionType.GetInterfaces().Any(i => i.Name == "IBusinessException"))
-        {
-            return ExtractAbpBusinessExceptionInfo(exception);
-        }
-
-        return null;
-    }
-
-    /// <summary>
-    /// Extracts error info from AbpRemoteCallException which contains RemoteServiceErrorInfo.
-    /// </summary>
-    private ErrorInfo ExtractAbpRemoteCallExceptionInfo(Exception exception)
-    {
-        try
-        {
-            // Try to get the Error property which is of type RemoteServiceErrorInfo
-            var errorProperty = exception.GetType().GetProperty("Error");
-            if (errorProperty != null)
-            {
-                var errorInfo = errorProperty.GetValue(exception);
-                if (errorInfo != null)
+            var remote = _exceptionToErrorInfoConverter.Convert(
+                exception,
+                options =>
                 {
-                    return ExtractRemoteServiceErrorInfo(errorInfo);
-                }
-            }
-        }
-        catch (Exception ex)
-        {
-            _logger.LogDebug(ex, "Failed to extract ABP remote call exception info");
-        }
-
-        // Fallback to exception message
-        return new ErrorInfo(exception.Message, _localizer["Error"], null);
-    }
-
-    /// <summary>
-    /// Extracts error info from RemoteServiceErrorInfo object.
-    /// </summary>
-    private ErrorInfo ExtractRemoteServiceErrorInfo(object errorInfo)
-    {
-        var errorType = errorInfo.GetType();
-
-        var code = GetPropertyValue<string>(errorInfo, "Code");
-
-        // Get Message
-        var message = NormalizeMessage(GetPropertyValue<string>(errorInfo, "Message"), code);
-
-        // Get Details
-        var details = GetPropertyValue<string>(errorInfo, "Details");
-
-        var title = _localizer["Error"];
-
-        // Get ValidationErrors
-        var validationErrors = GetPropertyValue<IEnumerable>(errorInfo, "ValidationErrors");
-        if (validationErrors != null)
-        {
-            var validationMessages = ExtractValidationMessages(validationErrors);
-            if (!string.IsNullOrEmpty(validationMessages))
+                    options.SendExceptionsDetailsToClients = false;
+                    options.SendStackTraceToClients = false;
+                });
+            var mapped = MapFromRemoteServiceError(exception, remote, context);
+            if (mapped != null)
             {
-                // If we have validation errors, show them as the details
-                details = validationMessages;
+                return mapped;
             }
         }
 
-        return new ErrorInfo(message, title, details);
+        return BuildEquivalentErrorInfo(exception, context);
     }
 
     /// <summary>
-    /// Extracts error info from AbpValidationException.
+    /// Maps a converter result (or builds an equivalent) for known exception kinds.
     /// </summary>
-    private ErrorInfo ExtractAbpValidationExceptionInfo(Exception exception)
+    protected virtual ErrorInfo? MapFromRemoteServiceError(
+        Exception exception,
+        RemoteServiceErrorInfo remote,
+        UserExceptionInformerContext context)
     {
-        try
+        if (IsAuthorizationException(exception))
         {
-            // Try to get ValidationErrors property
-            var validationErrorsProperty = exception.GetType().GetProperty("ValidationErrors");
-            if (validationErrorsProperty != null)
+            return CreateAuthorizationError();
+        }
+
+        if (IsEntityNotFoundException(exception))
+        {
+            return CreateEntityNotFoundError();
+        }
+
+        if (IsValidationException(exception))
+        {
+            return CreateValidationError(exception, remote);
+        }
+
+        if (IsUserFriendlyException(exception))
+        {
+            var message = FirstNonEmpty(remote.Message, exception.Message);
+            if (IsGenericExceptionMessage(message) || LooksLikeLocalizationKey(message))
             {
-                var validationErrors = validationErrorsProperty.GetValue(exception) as IEnumerable;
-                if (validationErrors != null)
-                {
-                    var messages = new StringBuilder();
-                    foreach (var error in validationErrors)
-                    {
-                        // ValidationResult has ErrorMessage and MemberNames
-                        var errorMessage = GetPropertyValue<string>(error, "ErrorMessage");
-                        if (!string.IsNullOrEmpty(errorMessage))
-                        {
-                            messages.AppendLine($"• {errorMessage}");
-                        }
-                    }
-
-                    if (messages.Length > 0)
-                    {
-                        return new ErrorInfo(
-                            _localizer["PleaseCorrectErrors"],
-                            _localizer["ValidationError"],
-                            messages.ToString().TrimEnd());
-                    }
-                }
+                return CreateGenericError(exception);
             }
+
+            return new ErrorInfo(message!, _localizer["Error"], remote.Details);
         }
-        catch (Exception ex)
+
+        if (IsBusinessException(exception))
         {
-            _logger.LogDebug(ex, "Failed to extract ABP validation exception info");
+            return CreateBusinessError(exception);
         }
 
-        return new ErrorInfo(exception.Message, _localizer["ValidationError"], null);
-    }
-
-    /// <summary>
-    /// Extracts error info from BusinessException.
-    /// </summary>
-    private ErrorInfo ExtractAbpBusinessExceptionInfo(Exception exception)
-    {
-        var details = GetPropertyValue<string>(exception, "Details");
-        var code = GetPropertyValue<string>(exception, "Code");
-
-        return new ErrorInfo(
-            NormalizeMessage(exception.Message, code, exception.Data),
-            _localizer["Error"],
-            details);
-    }
-
-    /// <summary>
-    /// Extracts validation messages from a collection of RemoteServiceValidationErrorInfo objects.
-    /// </summary>
-    private string ExtractValidationMessages(IEnumerable validationErrors)
-    {
-        var messages = new StringBuilder();
-
-        foreach (var error in validationErrors)
-        {
-            if (error == null) continue;
-
-            // RemoteServiceValidationErrorInfo has Message and Members properties
-            var errorMessage = GetPropertyValue<string>(error, "Message");
-            var members = GetPropertyValue<string[]>(error, "Members");
-
-            if (!string.IsNullOrEmpty(errorMessage))
-            {
-                if (members != null && members.Length > 0)
-                {
-                    messages.AppendLine($"• {string.Join(", ", members)}: {errorMessage}");
-                }
-                else
-                {
-                    messages.AppendLine($"• {errorMessage}");
-                }
-            }
-        }
-
-        return messages.ToString().TrimEnd();
-    }
-
-    /// <summary>
-    /// Gets a property value from an object using reflection.
-    /// </summary>
-    private static T? GetPropertyValue<T>(object obj, string propertyName)
-    {
-        try
-        {
-            var property = obj.GetType().GetProperty(propertyName, 
-                BindingFlags.Public | BindingFlags.Instance);
-            
-            if (property != null)
-            {
-                var value = property.GetValue(obj);
-                if (value is T typedValue)
-                {
-                    return typedValue;
-                }
-            }
-        }
-        catch
-        {
-            // Ignore reflection errors
-        }
-
-        return default;
-    }
-
-    protected virtual string GetUserFriendlyMessage(Exception exception)
-    {
         if (IsConcurrencyException(exception))
         {
-            var concurrencyMessage = _stringLocalizerFactory?
-                .Create(typeof(SufiExceptionHandlingResource))["AbpDbConcurrencyErrorMessage"];
-            if (concurrencyMessage is { ResourceNotFound: false })
+            return CreateConcurrencyError();
+        }
+
+        if (exception is HttpRequestException)
+        {
+            return new ErrorInfo(_localizer["NetworkError"], _localizer["Error"], null);
+        }
+
+        if (exception is TaskCanceledException or OperationCanceledException)
+        {
+            return new ErrorInfo(_localizer["OperationCancelled"], _localizer["Error"], null);
+        }
+
+        if (exception is UnauthorizedAccessException)
+        {
+            return CreateAuthorizationError();
+        }
+
+        // Converter fallback for remotes / unknowns: never pass through raw exception.Message.
+        var converted = remote.Message;
+        if (string.IsNullOrWhiteSpace(converted) ||
+            IsGenericExceptionMessage(converted) ||
+            string.Equals(converted, exception.Message, StringComparison.Ordinal) ||
+            LooksLikeLocalizationKey(converted))
+        {
+            return CreateGenericError(exception);
+        }
+
+        return new ErrorInfo(
+            converted,
+            context.Title ?? _localizer["Error"],
+            context.ShowDetails ? context.Exception.ToString() : remote.Details);
+    }
+
+    protected virtual ErrorInfo BuildEquivalentErrorInfo(
+        Exception exception,
+        UserExceptionInformerContext context)
+    {
+        if (IsAuthorizationException(exception))
+        {
+            return CreateAuthorizationError();
+        }
+
+        if (IsEntityNotFoundException(exception))
+        {
+            return CreateEntityNotFoundError();
+        }
+
+        if (IsValidationException(exception))
+        {
+            return CreateValidationError(exception, remote: null);
+        }
+
+        if (IsUserFriendlyException(exception))
+        {
+            if (IsGenericExceptionMessage(exception.Message) || LooksLikeLocalizationKey(exception.Message))
             {
-                return concurrencyMessage.Value;
+                return CreateGenericError(exception);
+            }
+
+            var details = GetPropertyValue<string>(exception, "Details");
+            return new ErrorInfo(exception.Message, _localizer["Error"], details);
+        }
+
+        if (IsBusinessException(exception))
+        {
+            return CreateBusinessError(exception);
+        }
+
+        if (IsConcurrencyException(exception))
+        {
+            return CreateConcurrencyError();
+        }
+
+        // Remote call: try to extract RemoteServiceErrorInfo without leaking raw messages.
+        var typeName = exception.GetType().FullName ?? exception.GetType().Name;
+        if (typeName.Contains("AbpRemoteCallException", StringComparison.Ordinal) ||
+            typeName.Contains("AbpHttpClientException", StringComparison.Ordinal))
+        {
+            var remote = TryExtractRemoteServiceErrorInfo(exception);
+            if (remote != null)
+            {
+                return MapFromRemoteServiceError(exception, remote, context)
+                       ?? CreateGenericError(exception);
             }
         }
 
-        // Handle common exception types with user-friendly messages
-        return exception switch
+        if (exception is HttpRequestException)
         {
-            HttpRequestException => _localizer["NetworkError"],
-            TaskCanceledException => _localizer["OperationCancelled"],
-            OperationCanceledException => _localizer["OperationCancelled"],
-            UnauthorizedAccessException => _localizer["Unauthorized"],
-            InvalidOperationException ex => ex.Message,
-            ArgumentException ex => ex.Message,
-            _ => exception.Message // Show the actual message instead of generic text
-        };
+            return new ErrorInfo(_localizer["NetworkError"], _localizer["Error"], null);
+        }
+
+        if (exception is TaskCanceledException or OperationCanceledException)
+        {
+            return new ErrorInfo(_localizer["OperationCancelled"], _localizer["Error"], null);
+        }
+
+        if (exception is UnauthorizedAccessException)
+        {
+            return CreateAuthorizationError();
+        }
+
+        return CreateGenericError(exception);
+    }
+
+    private ErrorInfo CreateAuthorizationError()
+    {
+        var handling = _stringLocalizerFactory?.Create(typeof(SufiExceptionHandlingResource));
+        var message = handling?["DefaultErrorMessage403Detail"];
+        if (message is { ResourceNotFound: false } && !string.IsNullOrWhiteSpace(message.Value))
+        {
+            return new ErrorInfo(message.Value, _localizer["Unauthorized"], null);
+        }
+
+        return new ErrorInfo(_localizer["Unauthorized"], _localizer["Error"], null);
+    }
+
+    private ErrorInfo CreateEntityNotFoundError()
+    {
+        return new ErrorInfo(_localizer["EntityNotFound"], _localizer["Error"], null);
+    }
+
+    private ErrorInfo CreateValidationError(Exception exception, RemoteServiceErrorInfo? remote)
+    {
+        var details = remote?.Details;
+        if (string.IsNullOrWhiteSpace(details) && remote?.ValidationErrors is { Length: > 0 })
+        {
+            details = FormatRemoteValidationErrors(remote.ValidationErrors);
+        }
+
+        if (string.IsNullOrWhiteSpace(details) && exception is IHasValidationErrors hasErrors)
+        {
+            details = FormatValidationResults(hasErrors);
+        }
+
+        if (string.IsNullOrWhiteSpace(details))
+        {
+            details = ExtractAbpValidationExceptionDetails(exception);
+        }
+
+        return new ErrorInfo(
+            _localizer["PleaseCorrectErrors"],
+            _localizer["ValidationError"],
+            string.IsNullOrWhiteSpace(details) ? null : details);
+    }
+
+    private ErrorInfo CreateBusinessError(Exception exception)
+    {
+        var code = (exception as IHasErrorCode)?.Code
+                   ?? GetPropertyValue<string>(exception, "Code");
+        var localized = LocalizeErrorCode(code, exception.Data);
+        if (!string.IsNullOrWhiteSpace(localized))
+        {
+            var details = (exception as IHasErrorDetails)?.Details
+                          ?? GetPropertyValue<string>(exception, "Details");
+            return new ErrorInfo(localized, _localizer["Error"], details);
+        }
+
+        if (!string.IsNullOrWhiteSpace(code))
+        {
+            _logger.LogWarning(
+                "Unmapped business exception code shown as generic message. Code={Code}",
+                code);
+        }
+        else
+        {
+            _logger.LogWarning(exception, "Business exception without a localizable code.");
+        }
+
+        return new ErrorInfo(_localizer["AnErrorOccurred"], _localizer["Error"], null);
+    }
+
+    private ErrorInfo CreateConcurrencyError()
+    {
+        var concurrencyMessage = _stringLocalizerFactory?
+            .Create(typeof(SufiExceptionHandlingResource))["AbpDbConcurrencyErrorMessage"];
+        if (concurrencyMessage is { ResourceNotFound: false })
+        {
+            return new ErrorInfo(concurrencyMessage.Value, _localizer["Error"], null);
+        }
+
+        return CreateGenericError(new InvalidOperationException("concurrency"));
+    }
+
+    private ErrorInfo CreateGenericError(Exception exception)
+    {
+        var correlationId = ResolveCorrelationId();
+        _logger.LogError(
+            exception,
+            "Unhandled UI exception mapped to a generic user message. CorrelationId={CorrelationId}",
+            correlationId);
+
+        return new ErrorInfo(
+            _localizer["DefaultErrorMessageWithReference", correlationId],
+            _localizer["Error"],
+            null);
+    }
+
+    private static string ResolveCorrelationId()
+    {
+        var activityId = Activity.Current?.Id;
+        if (!string.IsNullOrWhiteSpace(activityId))
+        {
+            return activityId!;
+        }
+
+        return Guid.NewGuid().ToString("N")[..12];
+    }
+
+    private static Exception Unwrap(Exception exception)
+    {
+        if (exception is AggregateException { InnerException: { } inner } &&
+            (IsAuthorizationException(inner) ||
+             IsEntityNotFoundException(inner) ||
+             IsValidationException(inner) ||
+             IsBusinessException(inner) ||
+             IsUserFriendlyException(inner)))
+        {
+            return inner;
+        }
+
+        return exception;
+    }
+
+    private static bool IsAuthorizationException(Exception exception)
+    {
+        return exception is AbpAuthorizationException ||
+               exception.GetType().Name.Contains("AbpAuthorizationException", StringComparison.Ordinal);
+    }
+
+    private static bool IsEntityNotFoundException(Exception exception)
+    {
+        return exception is EntityNotFoundException ||
+               string.Equals(exception.GetType().Name, "EntityNotFoundException", StringComparison.Ordinal);
+    }
+
+    private static bool IsValidationException(Exception exception)
+    {
+        return exception is IHasValidationErrors ||
+               exception.GetType().Name.Contains("AbpValidationException", StringComparison.Ordinal);
+    }
+
+    private static bool IsUserFriendlyException(Exception exception)
+    {
+        return exception is IUserFriendlyException ||
+               exception.GetType().Name.Contains("UserFriendlyException", StringComparison.Ordinal);
+    }
+
+    private static bool IsBusinessException(Exception exception)
+    {
+        return exception is IBusinessException ||
+               exception.GetType().Name.Contains("BusinessException", StringComparison.Ordinal);
     }
 
     private static bool IsConcurrencyException(Exception exception)
@@ -338,50 +425,130 @@ public class DefaultUserExceptionInformer : IUserExceptionInformer
         return false;
     }
 
-    private string NormalizeMessage(string? message, string? errorCode = null, IDictionary? data = null)
+    private RemoteServiceErrorInfo? TryExtractRemoteServiceErrorInfo(Exception exception)
     {
-        var localizedMessage = LocalizeErrorCode(errorCode, data);
-        if (!string.IsNullOrWhiteSpace(localizedMessage))
+        try
         {
-            return localizedMessage;
+            var errorProperty = exception.GetType().GetProperty("Error");
+            var errorInfo = errorProperty?.GetValue(exception);
+            if (errorInfo is RemoteServiceErrorInfo typed)
+            {
+                return typed;
+            }
+
+            if (errorInfo == null)
+            {
+                return null;
+            }
+
+            return new RemoteServiceErrorInfo(
+                GetPropertyValue<string>(errorInfo, "Message"),
+                GetPropertyValue<string>(errorInfo, "Details"),
+                GetPropertyValue<string>(errorInfo, "Code"));
         }
-
-        var dataError = GetDataString(data, "Error", "Message", "Details");
-        if (!string.IsNullOrWhiteSpace(dataError))
+        catch (Exception ex)
         {
-            return dataError;
-        }
-
-        if (IsGenericExceptionMessage(message))
-        {
-            return _localizer["DefaultErrorMessage"];
-        }
-
-        return NormalizeKeyLikeMessage(message!);
-    }
-
-    private static string? GetDataString(IDictionary? data, params string[] keys)
-    {
-        if (data == null || data.Count == 0)
-        {
+            _logger.LogDebug(ex, "Failed to extract ABP remote call exception info");
             return null;
         }
+    }
 
-        foreach (var key in keys)
+    private static string? FormatRemoteValidationErrors(RemoteServiceValidationErrorInfo[] errors)
+    {
+        var messages = new StringBuilder();
+        foreach (var error in errors)
         {
-            if (!data.Contains(key))
+            if (string.IsNullOrWhiteSpace(error.Message))
             {
                 continue;
             }
 
-            var value = data[key]?.ToString();
-            if (!string.IsNullOrWhiteSpace(value) && !IsGenericExceptionMessage(value))
+            if (error.Members is { Length: > 0 })
             {
-                return value;
+                messages.AppendLine($"• {string.Join(", ", error.Members)}: {error.Message}");
+            }
+            else
+            {
+                messages.AppendLine($"• {error.Message}");
             }
         }
 
-        return null;
+        var text = messages.ToString().TrimEnd();
+        return string.IsNullOrWhiteSpace(text) ? null : text;
+    }
+
+    private static string? FormatValidationResults(IHasValidationErrors validationException)
+    {
+        var messages = new StringBuilder();
+        foreach (var error in validationException.ValidationErrors)
+        {
+            if (string.IsNullOrWhiteSpace(error.ErrorMessage))
+            {
+                continue;
+            }
+
+            messages.AppendLine($"• {error.ErrorMessage}");
+        }
+
+        var text = messages.ToString().TrimEnd();
+        return string.IsNullOrWhiteSpace(text) ? null : text;
+    }
+
+    private string? ExtractAbpValidationExceptionDetails(Exception exception)
+    {
+        try
+        {
+            var validationErrorsProperty = exception.GetType().GetProperty("ValidationErrors");
+            if (validationErrorsProperty?.GetValue(exception) is not IEnumerable validationErrors)
+            {
+                return null;
+            }
+
+            var messages = new StringBuilder();
+            foreach (var error in validationErrors)
+            {
+                var errorMessage = GetPropertyValue<string>(error, "ErrorMessage")
+                                   ?? GetPropertyValue<string>(error, "Message");
+                if (!string.IsNullOrEmpty(errorMessage))
+                {
+                    messages.AppendLine($"• {errorMessage}");
+                }
+            }
+
+            var text = messages.ToString().TrimEnd();
+            return string.IsNullOrWhiteSpace(text) ? null : text;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogDebug(ex, "Failed to extract ABP validation exception info");
+            return null;
+        }
+    }
+
+    private static T? GetPropertyValue<T>(object? obj, string propertyName)
+    {
+        if (obj == null)
+        {
+            return default;
+        }
+
+        try
+        {
+            var property = obj.GetType().GetProperty(
+                propertyName,
+                BindingFlags.Public | BindingFlags.Instance);
+
+            if (property?.GetValue(obj) is T typedValue)
+            {
+                return typedValue;
+            }
+        }
+        catch
+        {
+            // Ignore reflection errors
+        }
+
+        return default;
     }
 
     private static bool IsGenericExceptionMessage(string? message)
@@ -427,37 +594,14 @@ public class DefaultUserExceptionInformer : IUserExceptionInformer
         return value;
     }
 
-    private static string NormalizeKeyLikeMessage(string message)
+    /// <summary>
+    /// Detects Namespace:PascalCaseKey-shaped strings. Never convert these into English words.
+    /// </summary>
+    private static bool LooksLikeLocalizationKey(string? message)
     {
-        if (!LooksLikeLocalizationKey(message))
-        {
-            return message;
-        }
-
-        var key = message[(message.LastIndexOf(':') + 1)..];
-        if (string.IsNullOrWhiteSpace(key))
-        {
-            return message;
-        }
-
-        var builder = new StringBuilder(key.Length + 8);
-        for (var i = 0; i < key.Length; i++)
-        {
-            var current = key[i];
-            if (i > 0 && char.IsUpper(current) && !char.IsWhiteSpace(key[i - 1]))
-            {
-                builder.Append(' ');
-            }
-
-            builder.Append(current);
-        }
-
-        return builder.ToString();
-    }
-
-    private static bool LooksLikeLocalizationKey(string message)
-    {
-        if (message.Any(char.IsWhiteSpace) || !message.Contains(':', StringComparison.Ordinal))
+        if (string.IsNullOrWhiteSpace(message) ||
+            message.Any(char.IsWhiteSpace) ||
+            !message.Contains(':', StringComparison.Ordinal))
         {
             return false;
         }
@@ -466,6 +610,19 @@ public class DefaultUserExceptionInformer : IUserExceptionInformer
         return key.Length > 0 &&
                key.Any(char.IsUpper) &&
                key.All(ch => char.IsLetterOrDigit(ch) || ch is '_' or '-' or '.');
+    }
+
+    private static string? FirstNonEmpty(params string?[] values)
+    {
+        foreach (var value in values)
+        {
+            if (!string.IsNullOrWhiteSpace(value))
+            {
+                return value;
+            }
+        }
+
+        return null;
     }
 
     protected virtual void LogException(UserExceptionInformerContext context)
