@@ -29,6 +29,8 @@ public class SufiAIDomainSharedModule : AbpModule
         Configure<AbpExceptionLocalizationOptions>(options =>
         {
             options.MapCodeNamespace("AI", typeof(AIResource));
+            // AIErrorCodes use the SufiAI: prefix (e.g. SufiAI:AICreditsExhausted, sufi-chain#413).
+            options.MapCodeNamespace("SufiAI", typeof(AIResource));
         });
     }
 }

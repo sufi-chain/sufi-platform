@@ -1,6 +1,7 @@
 {
   "culture": "en",
   "texts": {
+    "SufiAI:AICreditsExhausted": "Your workspace has used all of its AI credits. Buy more credits or wait for next month's credits to keep using shared AI.",
     "AI:KnowledgeReviewInvalid": "The knowledge review is stale or its transition is invalid.",
     "AI:KnowledgeReviewDenied": "The knowledge proposal cannot be created or reviewed with the current identity, permission or evidence.",
     "AI:ApiBaseUrlRequired": "API base URL is required for {Provider} provider in workspace '{WorkspaceName}'.",

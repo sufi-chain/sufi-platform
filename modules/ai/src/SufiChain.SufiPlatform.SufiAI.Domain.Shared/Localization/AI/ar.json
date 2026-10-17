@@ -1,6 +1,7 @@
 {
   "culture": "ar",
   "texts": {
+    "SufiAI:AICreditsExhausted": "Your workspace has used all of its AI credits. Buy more credits or wait for next month's credits to keep using shared AI.",
     "AI:KnowledgeReviewInvalid": "مراجعة المعرفة قديمة أو أن انتقال حالتها غير صالح.",
     "AI:KnowledgeReviewDenied": "لا يمكن إنشاء مقترح المعرفة أو مراجعته بالهوية أو الإذن أو الدليل الحالي.",
     "AI:ApiBaseUrlRequired": "عنوان URL الأساسي لواجهة برمجة التطبيقات مطلوب لمزود {Provider} في مساحة العمل '{WorkspaceName}'.",
