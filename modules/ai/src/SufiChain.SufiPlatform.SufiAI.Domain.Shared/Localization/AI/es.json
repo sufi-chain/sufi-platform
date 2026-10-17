@@ -4,6 +4,7 @@
 
   "texts": {
 
+    "SufiAI:AICreditsExhausted": "Your workspace has used all of its AI credits. Buy more credits or wait for next month's credits to keep using shared AI.",
     "AI:GuardModelReply": "El modelo seleccionado devolvió un veredicto de seguridad en lugar de una respuesta. Elija un modelo de chat para este espacio de trabajo e inténtelo de nuevo.",
     "AI:KnowledgeReviewInvalid": "La revisión de conocimiento está desactualizada o su cambio de estado no es válido.",
 

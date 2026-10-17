@@ -1,6 +1,7 @@
 {
   "culture": "fa",
   "texts": {
+    "SufiAI:AICreditsExhausted": "اعتبار هوش مصنوعی این فضای کاری تمام شده است. برای ادامه، اعتبار بخرید یا منتظر اعتبار ماه بعد بمانید.",
     "AI:KnowledgeReviewInvalid": "بازبینی دانش قدیمی است یا تغییر وضعیت آن معتبر نیست.",
     "AI:KnowledgeReviewDenied": "پیشنهاد دانش با هویت، مجوز یا شواهد فعلی قابل ایجاد یا بازبینی نیست.",
     "AI:ApiBaseUrlRequired": "آدرس پایه API برای ارائه‌دهنده {Provider} در فضای کاری '{WorkspaceName}' الزامی است.",
