@@ -1,3 +1,5 @@
+using System;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -170,12 +172,54 @@ public class FileStructureDataSeedContributor : IDataSeedContributor, ITransient
 
     private async Task EnsureStaticStructurePropertiesAsync(FileStructure structure, FileStructureConfig config)
     {
-        if (!config.IsStatic || structure.IsPublicAccess == config.IsPublicAccess)
+        if (!SyncStaticStructureRules(structure, config))
         {
             return;
         }
 
-        structure.IsPublicAccess = config.IsPublicAccess;
         await _fileStructureRepository.UpdateAsync(structure, autoSave: true);
+        _logger.LogInformation("Updated static file structure '{StructureKey}' to the code-defined rules.", config.Key);
+    }
+
+    /// <summary>
+    /// sufi-chain#479: static (code-owned) structures follow the code on every seed. Before this, only
+    /// IsPublicAccess was synced, so a row seeded by an older build kept an outdated MIME list forever
+    /// (for example "General" without text/plain, which made every .txt upload fail with 400).
+    /// Returns true when the entity changed.
+    /// </summary>
+    public static bool SyncStaticStructureRules(FileStructure structure, FileStructureConfig config)
+    {
+        if (!config.IsStatic)
+        {
+            return false;
+        }
+
+        var changed = false;
+
+        if (structure.IsPublicAccess != config.IsPublicAccess)
+        {
+            structure.IsPublicAccess = config.IsPublicAccess;
+            changed = true;
+        }
+
+        if (structure.AllowedFileTypes != config.AllowedFileTypes)
+        {
+            structure.AllowedFileTypes = config.AllowedFileTypes;
+            changed = true;
+        }
+
+        if (config.AllowedExtensions != null && !string.Equals(structure.AllowedExtensions, config.AllowedExtensions, StringComparison.Ordinal))
+        {
+            structure.AllowedExtensions = config.AllowedExtensions;
+            changed = true;
+        }
+
+        if (config.AllowedMimeTypes != null && !string.Equals(structure.AllowedMimeTypes, config.AllowedMimeTypes, StringComparison.Ordinal))
+        {
+            structure.AllowedMimeTypes = config.AllowedMimeTypes;
+            changed = true;
+        }
+
+        return changed;
     }
 }

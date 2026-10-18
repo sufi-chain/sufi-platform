@@ -238,8 +238,12 @@ public partial class FileUploader : FileManagerComponentBase, IDisposable
     public void OnUploadProgress(int fileIndex, int progress)
     {
         if (_disposed || fileIndex < 0 || fileIndex >= _uploadingFiles.Count) return;
-        _uploadingFiles[fileIndex].Progress = progress;
-        _uploadingFiles[fileIndex].StatusMessage = progress >= 100 ? L["UploadCompleted"].Value! : L["Uploading"].Value!;
+        var file = _uploadingFiles[fileIndex];
+        // sufi-chain#479: progress events are fire-and-forget and can arrive after the result. Once a file
+        // has a result, ignore them; and 100% only means the bytes were sent, not that the server accepted them.
+        if (file.HasError || file.IsCompleted) return;
+        file.Progress = progress;
+        file.StatusMessage = progress >= 100 ? L["Processing"].Value! : L["Uploading"].Value!;
         InvokeAsync(StateHasChanged);
     }
 
@@ -270,18 +274,19 @@ public partial class FileUploader : FileManagerComponentBase, IDisposable
                 Logger.LogWarning(exception, "File upload response JSON could not be parsed.");
                 uploadingFile.HasError = true;
                 uploadingFile.ErrorMessage = L["UploadFailed"];
-                uploadingFile.StatusMessage = uploadingFile.ErrorMessage;
-                await Message.ErrorAsync(L["UploadFailed"]);
+                uploadingFile.StatusMessage = null;
             }
         }
         else
         {
+            // sufi-chain#479: one failure surface (the row's alert) with the server's reason when it gave one.
             uploadingFile.HasError = true;
+            uploadingFile.IsCompleted = false;
             uploadingFile.Progress = 0;
             Logger.LogWarning("File upload failed: {Error}", result.Error);
-            uploadingFile.ErrorMessage = L["UploadFailed"];
-            uploadingFile.StatusMessage = uploadingFile.ErrorMessage;
-            await Message.ErrorAsync(L["UploadFailed"]);
+            var reason = GetUploadRejectionReason(result.Error);
+            uploadingFile.ErrorMessage = reason == null ? L["UploadFailed"] : L["UploadRejected", reason];
+            uploadingFile.StatusMessage = null;
             await OnUploadError.InvokeAsync(uploadingFile.ErrorMessage);
         }
 
@@ -298,6 +303,20 @@ public partial class FileUploader : FileManagerComponentBase, IDisposable
             }
             catch { /* ignore */ }
         }
+    }
+
+    /// <summary>
+    /// The server's rejection reason (e.g. "File type 'x' is not allowed"), or null when the error is only a
+    /// bare status or empty, in which case the generic localized message is shown.
+    /// </summary>
+    internal static string? GetUploadRejectionReason(string? error)
+    {
+        if (string.IsNullOrWhiteSpace(error))
+            return null;
+        var trimmed = error.Trim();
+        if (trimmed.StartsWith("Upload failed with status", StringComparison.OrdinalIgnoreCase))
+            return null;
+        return trimmed.Length > 300 ? trimmed[..300] : trimmed;
     }
 
     private void CancelUpload(UploadingFile file)
