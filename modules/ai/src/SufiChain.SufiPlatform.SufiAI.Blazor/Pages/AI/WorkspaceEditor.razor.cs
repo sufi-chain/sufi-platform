@@ -4,6 +4,7 @@ using SufiChain.SufiPlatform.SufiAI;
 using SufiChain.SufiPlatform.SufiAI.Blazor.Components;
 using SufiChain.SufiPlatform.SufiAI.Permissions;
 using SufiChain.SufiPlatform.SufiAI.Workspaces;
+using SufiChain.SufiPlatform.UI.Blazor.Layout;
 using SufiChain.SufiPlatform.UI.Layout;
 using SufiChain.SufiPlatform.SufiAI.Blazor;
 
@@ -556,5 +557,24 @@ public partial class WorkspaceEditor : AIComponentBase
         }
 
         return false;
+    }
+
+    private EntityBreadcrumbTracker? _entityBreadcrumb;
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        base.OnAfterRender(firstRender);
+        (_entityBreadcrumb ??= new EntityBreadcrumbTracker(PageLayout, a => InvokeAsync(a))).Set(_workspace?.Name);
+    }
+
+    protected override void Dispose(bool disposing)
+    {
+        if (disposing)
+        {
+            _entityBreadcrumb?.Dispose();
+            _entityBreadcrumb = null;
+        }
+
+        base.Dispose(disposing);
     }
 }
