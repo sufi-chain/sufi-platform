@@ -15,6 +15,12 @@ public class DefaultPageLayout : IPageLayout
     private string? _subtitle;
     private object? _toolbarContent;
 
+    public DefaultPageLayout()
+    {
+        // Let the layout re-render when a page adds or replaces breadcrumbs after the first render.
+        BreadcrumbItems.CollectionChanged += (_, _) => OnPropertyChanged(nameof(BreadcrumbItems));
+    }
+
     /// <inheritdoc/>
     public string? Title
     {
