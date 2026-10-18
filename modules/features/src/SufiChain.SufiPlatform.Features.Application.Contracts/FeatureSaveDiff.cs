@@ -14,8 +14,8 @@ public static class FeatureSaveDiff
         IEnumerable<KeyValuePair<string, string?>> edited,
         IReadOnlyDictionary<string, string?> saved)
     {
-        ArgumentNullException.ThrowIfNull(edited);
-        ArgumentNullException.ThrowIfNull(saved);
+        if (edited == null) throw new ArgumentNullException(nameof(edited));
+        if (saved == null) throw new ArgumentNullException(nameof(saved));
 
         var changed = new List<UpdateFeatureDto>();
         var seen = new HashSet<string>(StringComparer.Ordinal);
