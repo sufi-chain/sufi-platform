@@ -584,6 +584,10 @@
 
     "NoWorkspacesAvailable": "No hay espacios de trabajo disponibles",
 
+    "UsageAnalyticsFeatureDisabled": "El análisis de uso de IA no está habilitado para este espacio de trabajo.",
+
+    "SharedPlatformWorkspace": "Espacio de trabajo compartido de la plataforma",
+
     "WorkspaceNameRequired": "El nombre del espacio de trabajo es obligatorio",
 
     "InheritWorkspace": "Heredar espacio de trabajo",

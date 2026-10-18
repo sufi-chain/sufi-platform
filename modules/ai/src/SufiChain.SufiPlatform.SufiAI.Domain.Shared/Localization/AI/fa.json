@@ -337,6 +337,8 @@
     "Feature:SufiAI.FileManagerIntegration": "یکپارچگی هوش مصنوعی با مدیر فایل",
     "Feature:SufiAI.FileManagerIntegration.Description": "یکپارچگی فایل‌های تولیدشده و پردازش‌شده توسط هوش مصنوعی با مدیر فایل را مجاز می‌کند.",
     "NoWorkspacesAvailable": "هیچ فضای کاری موجود نیست",
+    "UsageAnalyticsFeatureDisabled": "تحلیل مصرف هوش مصنوعی برای این فضای کاری فعال نیست.",
+    "SharedPlatformWorkspace": "فضای کاری مشترک پلتفرم",
     "WorkspaceNameRequired": "نام فضای کاری الزامی است",
     "InheritWorkspace": "ارث‌بری فضای کاری",
     "Override": "بازنویسی",

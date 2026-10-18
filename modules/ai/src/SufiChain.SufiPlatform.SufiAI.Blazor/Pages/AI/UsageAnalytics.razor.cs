@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using SufiChain.SufiPlatform.SufiAI;
 using SufiChain.SufiPlatform.SufiAI.Permissions;
+using SufiChain.SufiPlatform.SufiAI.Features;
 using SufiChain.SufiPlatform.SufiAI.Workspaces;
 using SufiChain.SufiPlatform.Application.Dtos;
 using SufiChain.SufiBlazor.Utilities.DateUtils;
@@ -23,6 +24,12 @@ public partial class UsageAnalytics : AIComponentBase
 
     private IAIAppService AIAppService => LazyGetRequiredService(ref _aiAppService);
     private IAIAppService? _aiAppService;
+
+    [Microsoft.AspNetCore.Components.Inject]
+    protected Volo.Abp.Features.IFeatureChecker FeatureChecker { get; set; } = default!;
+
+    /// <summary>sufi-chain#411: true when AI or usage analytics is off; the page shows a notice instead of a load error.</summary>
+    private bool _featureDisabled;
 
     private List<WorkspaceDto> _workspaces = new();
     private bool _workspacesResolved;
@@ -48,6 +55,14 @@ public partial class UsageAnalytics : AIComponentBase
     protected override async Task OnInitializedAsync()
     {
         await base.OnInitializedAsync();
+        if (!await FeatureChecker.IsEnabledAsync(SufiAIFeatures.Enable)
+            || !await FeatureChecker.IsEnabledAsync(SufiAIFeatures.UsageAnalytics))
+        {
+            _featureDisabled = true;
+            LoadingStates.TryRemove(LoadingKeys.LoadWorkspaces, out _);
+            return;
+        }
+
         await LoadWorkspacesAsync();
     }
 

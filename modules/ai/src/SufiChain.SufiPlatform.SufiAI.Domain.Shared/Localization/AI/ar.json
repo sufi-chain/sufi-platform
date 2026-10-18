@@ -311,6 +311,8 @@
     "Feature:SufiAI.FileManagerIntegration": "تكامل الذكاء الاصطناعي مع مدير الملفات",
     "Feature:SufiAI.FileManagerIntegration.Description": "السماح بدمج الملفات التي ينشئها ويعالجها الذكاء الاصطناعي مع مدير الملفات.",
     "NoWorkspacesAvailable": "لا توجد مساحات عمل متاحة",
+    "UsageAnalyticsFeatureDisabled": "تحليلات استخدام الذكاء الاصطناعي غير مفعّلة لمساحة العمل هذه.",
+    "SharedPlatformWorkspace": "مساحة عمل المنصة المشتركة",
     "WorkspaceNameRequired": "اسم مساحة العمل مطلوب",
     "InheritWorkspace": "وراثة مساحة العمل",
     "Override": "تجاوز",

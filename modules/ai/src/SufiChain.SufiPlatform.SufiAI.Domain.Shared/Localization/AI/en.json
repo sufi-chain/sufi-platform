@@ -161,6 +161,8 @@
     "NoConfigurationsFound": "No model configurations found for this workspace",
     "NoMessagesYet": "No messages yet",
     "NoWorkspacesAvailable": "No workspaces available",
+    "UsageAnalyticsFeatureDisabled": "AI usage analytics is not enabled for this workspace.",
+    "SharedPlatformWorkspace": "Shared platform workspace",
     "NoResultsFound": "No results found",
     "Pending": "Pending",
     "Priority": "Priority",

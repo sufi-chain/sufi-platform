@@ -39,7 +39,7 @@ else if (UseCompactChips)
 							Color="@GetProviderColor(workspace.Provider)"
 							Size="SbSize.Sm" />
 				</StartIcon>
-				<ChildContent>@workspace.Name</ChildContent>
+				<ChildContent>@GetWorkspaceDisplayName(workspace)</ChildContent>
 			</SbChip>
 		}
 	</SbStack>
