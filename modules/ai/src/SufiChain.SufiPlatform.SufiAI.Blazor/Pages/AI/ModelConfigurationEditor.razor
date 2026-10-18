@@ -105,6 +105,8 @@
 				<SbSelect TItem="OpenAIModelDto"
 						  TValue="string"
 						  Items="SelectableModels"
+						  Virtualize="true"
+						  ClientFilterDebounceMs="150"
 						  Value="@ModelSelectValue"
 						  ValueChanged="OnModelIdChanged"
 						  TextField="WorkspaceConnectionDraft.SearchText"
