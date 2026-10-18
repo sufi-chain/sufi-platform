@@ -223,13 +223,15 @@ public class FileStructureBuilder
         if (_config.AllowedFileTypes.HasFlag(FileType.Document))
         {
             extensions.AddRange(new[] { "pdf", "doc", "docx", "xls", "xlsx", "ppt", "pptx", "txt" });
-            mimeTypes.AddRange(new[] { "application/pdf", "application/msword", "application/vnd.openxmlformats-officedocument.wordprocessingml.document", "application/vnd.ms-excel", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
+            mimeTypes.AddRange(new[] { "application/pdf", "application/msword", "application/vnd.openxmlformats-officedocument.wordprocessingml.document", "application/vnd.ms-excel", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                // sufi-chain#479: every allowed document extension needs its MIME type, or uploads of .txt/.ppt/.pptx get 400.
+                "application/vnd.ms-powerpoint", "application/vnd.openxmlformats-officedocument.presentationml.presentation", "text/plain" });
         }
 
         if (_config.AllowedFileTypes.HasFlag(FileType.Audio))
         {
             extensions.AddRange(new[] { "mp3", "wav", "ogg", "flac" });
-            mimeTypes.AddRange(new[] { "audio/mpeg", "audio/wav", "audio/ogg", "audio/flac" });
+            mimeTypes.AddRange(new[] { "audio/mpeg", "audio/wav", "audio/ogg", "audio/flac", "audio/x-wav", "audio/wave", "audio/mp3", "audio/x-flac" });
         }
 
         _config.AllowedExtensions = string.Join(",", extensions.Distinct());

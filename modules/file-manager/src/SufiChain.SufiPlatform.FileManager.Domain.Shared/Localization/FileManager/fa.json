@@ -140,6 +140,8 @@
     "ImageUploadedSuccessfully": "تصویر با موفقیت آپلود شد",
     "ImageRemoved": "تصویر حذف شد",
     "UploadFailed": "آپلود انجام نشد. دوباره تلاش کنید.",
+    "Processing": "در حال پردازش…",
+    "UploadRejected": "بارگذاری پذیرفته نشد: {0}",
     "OperationFailed": "عملیات فایل انجام نشد.",
     "StorageConnectionFailed": "آزمایش اتصال ذخیره‌سازی ناموفق بود.",
     "FailedToRemoveImage": "حذف تصویر انجام نشد. دوباره تلاش کنید.",

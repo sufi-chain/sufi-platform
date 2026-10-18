@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -80,6 +81,51 @@ public class FileUploadValidationSecurityTests
         var result = await sut.ValidateUploadAsync("photo.png", "image/png", StructureKey, 64);
 
         result.IsValid.ShouldBeTrue();
+    }
+
+    // sufi-chain#479: the default "General" structure must accept every extension it lists.
+    [Theory]
+    [InlineData("notes.txt", "text/plain")]
+    [InlineData("report.pdf", "application/pdf")]
+    [InlineData("photo.png", "image/png")]
+    [InlineData("slides.pptx", "application/vnd.openxmlformats-officedocument.presentationml.presentation")]
+    [InlineData("old.ppt", "application/vnd.ms-powerpoint")]
+    [InlineData("sound.wav", "audio/x-wav")]
+    public async Task ValidateUpload_Should_Accept_Common_Files_In_Default_General_Structure(string fileName, string mimeType)
+    {
+        var general = new FileManagerOptions().AddDefaultStructures().Structures.Single(s => s.Key == FileStructureKeys.General);
+        var sut = CreateSut(general.AllowedExtensions, general.AllowedMimeTypes, general.MaxFileSize);
+
+        var result = await sut.ValidateUploadAsync(fileName, mimeType, StructureKey, 2 * 1024 * 1024);
+
+        result.IsValid.ShouldBeTrue(result.ErrorMessage);
+    }
+
+    [Fact]
+    public async Task ValidateUpload_Should_Reject_Type_Not_In_Default_General_Structure()
+    {
+        var general = new FileManagerOptions().AddDefaultStructures().Structures.Single(s => s.Key == FileStructureKeys.General);
+        var sut = CreateSut(general.AllowedExtensions, general.AllowedMimeTypes, general.MaxFileSize);
+
+        var result = await sut.ValidateUploadAsync("archive.zip", "application/zip", StructureKey, 64);
+
+        result.IsValid.ShouldBeFalse();
+        result.ErrorMessage.ShouldContain("not allowed");
+    }
+
+    [Fact]
+    public void Seed_Should_Refresh_Outdated_Static_Structure_Rules()
+    {
+        var general = new FileManagerOptions().AddDefaultStructures().Structures.Single(s => s.Key == FileStructureKeys.General);
+        var stale = new FileStructure(Guid.NewGuid(), general.Key, general.Key, general.AllowedFileTypes,
+            general.AllowedExtensions, "image/png,application/pdf", general.MaxFileSize)
+        {
+            IsPublicAccess = general.IsPublicAccess
+        };
+
+        SufiChain.SufiPlatform.FileManager.Data.FileStructureDataSeedContributor.SyncStaticStructureRules(stale, general).ShouldBeTrue();
+        stale.AllowedMimeTypes.ShouldBe(general.AllowedMimeTypes);
+        SufiChain.SufiPlatform.FileManager.Data.FileStructureDataSeedContributor.SyncStaticStructureRules(stale, general).ShouldBeFalse();
     }
 
     private static FileItemAppService CreateSut(

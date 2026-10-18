@@ -154,6 +154,8 @@
     "ImageUploadedSuccessfully": "Imagen subida correctamente",
     "ImageRemoved": "Imagen eliminada",
     "UploadFailed": "Error al subir. Inténtelo de nuevo.",
+    "Processing": "Procesando…",
+    "UploadRejected": "Carga rechazada: {0}",
     "FailedToRemoveImage": "No se pudo eliminar la imagen. Inténtelo de nuevo.",
     "FileSizeExceedsMaximum": "El tamaño del archivo supera el tamaño máximo permitido de {0} MB",
     "OnlyImageFilesAllowed": "Solo se permiten archivos de imagen",

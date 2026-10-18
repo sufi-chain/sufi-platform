@@ -155,6 +155,8 @@
     "ImageUploadedSuccessfully": "تم رفع الصورة بنجاح",
     "ImageRemoved": "تم إزالة الصورة",
     "UploadFailed": "فشل الرفع. حاول مرة أخرى.",
+    "Processing": "جارٍ المعالجة…",
+    "UploadRejected": "تم رفض الرفع: {0}",
     "FailedToRemoveImage": "تعذر إزالة الصورة. حاول مرة أخرى.",
     "FileSizeExceedsMaximum": "حجم الملف يتجاوز الحد الأقصى المسموح به {0} ميجابايت",
     "OnlyImageFilesAllowed": "يُسمح فقط بملفات الصور",
