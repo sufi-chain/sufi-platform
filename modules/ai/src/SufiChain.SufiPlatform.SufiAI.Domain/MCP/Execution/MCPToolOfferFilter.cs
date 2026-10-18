@@ -15,11 +15,15 @@ public static class MCPToolOfferFilter
         AgentCallContext? call,
         IPermissionChecker? permissionChecker)
     {
+        if (AnonymousRefusal(tool, call) is not null)
+        {
+            return false;
+        }
+
         if (tool is not IMCPToolAccessRequirement requirement)
         {
             return true;
         }
-
         var needsUser = requirement.RequiresAuthentication || requirement.RequiresPermission;
         if (!needsUser)
         {
@@ -42,5 +46,21 @@ public static class MCPToolOfferFilter
         }
 
         return await permissionChecker.IsGrantedAsync(call.Principal, requirement.PermissionName);
+    }
+
+    /// <summary>
+    /// sufi-chain#384 slice 4: an anonymous (or unbound) caller may only use allowlisted tools.
+    /// Returns the refusal code, or null when the call may proceed. External tools carry no allowlist yet.
+    /// </summary>
+    public static string? AnonymousRefusal(IMCPTool tool, AgentCallContext? call)
+    {
+        if (call is not null && !call.IsAnonymous)
+        {
+            return null;
+        }
+
+        return tool is IMCPToolAccessRequirement { AllowsAnonymous: true }
+            ? null
+            : AgentCallErrorCodes.AnonymousNotAllowed;
     }
 }

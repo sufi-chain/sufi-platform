@@ -32,7 +32,7 @@ public class InternalMCPTool : IMCPTool, IMCPToolAccessRequirement
     private readonly string? _permissionName;
     private readonly bool _requiresPermission;
     private readonly bool _requiresAuthentication;
-    
+    private readonly bool _allowsAnonymous;
     public string Name { get; }
     public string Description { get; }
     public string ParameterSchema { get; }
@@ -48,7 +48,8 @@ public class InternalMCPTool : IMCPTool, IMCPToolAccessRequirement
         IServiceProvider serviceProvider,
         string? permissionName = null,
         bool requiresPermission = false,
-        bool requiresAuthentication = false)
+        bool requiresAuthentication = false,
+        bool allowsAnonymous = false)
     {
         Name = name;
         Description = description;
@@ -61,6 +62,7 @@ public class InternalMCPTool : IMCPTool, IMCPToolAccessRequirement
         _permissionName = string.IsNullOrWhiteSpace(permissionName) ? null : permissionName;
         _requiresPermission = requiresPermission || _permissionName is not null;
         _requiresAuthentication = requiresAuthentication;
+        _allowsAnonymous = allowsAnonymous;
     }
 
     /// <summary>Permission the bound user must hold, from <c>SufiAiMcpToolAttribute.PermissionName</c>.</summary>
@@ -70,7 +72,8 @@ public class InternalMCPTool : IMCPTool, IMCPToolAccessRequirement
     public bool RequiresPermission => _requiresPermission;
     /// <summary>True when the tool needs a signed-in user (service or method <c>[Authorize]</c>).</summary>
     public bool RequiresAuthentication => _requiresAuthentication;
-    
+    /// <summary>True when anonymous turns may run this tool (sufi-chain#384 slice 4).</summary>
+    public bool AllowsAnonymous => _allowsAnonymous;
     public async Task<MCPToolExecutionResult> ExecuteAsync(
         WorkspaceContext context,
         Dictionary<string, object?> parameters,
@@ -85,6 +88,11 @@ public class InternalMCPTool : IMCPTool, IMCPToolAccessRequirement
         }
 
         var call = context.CallContext!;
+        if (call.IsAnonymous && !_allowsAnonymous)
+        {
+            // sufi-chain#384 slice 4: anonymous turns run only allowlisted tools.
+            return MCPToolExecutionResult.CreateFailure(AgentCallErrorCodes.AnonymousNotAllowed);
+        }
         using var scope = _serviceProvider.CreateScope();
         var scoped = scope.ServiceProvider;
         var currentTenant = scoped.GetService<ICurrentTenant>();

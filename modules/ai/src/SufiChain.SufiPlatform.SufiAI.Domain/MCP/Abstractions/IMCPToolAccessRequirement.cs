@@ -14,4 +14,10 @@ public interface IMCPToolAccessRequirement
 
     /// <summary>True when the tool needs a signed-in user (e.g. <c>[Authorize]</c> without a policy).</summary>
     bool RequiresAuthentication { get; }
+
+    /// <summary>
+    /// True when anonymous turns may be offered and run this tool: <c>Public</c> + <c>ReadOnly</c>, or an
+    /// explicit <c>[SufiAiMcpPublicWrite]</c> allowlist entry (sufi-chain#384 slice 4).
+    /// </summary>
+    bool AllowsAnonymous { get; }
 }

@@ -105,7 +105,8 @@ public class ReflectionToolDiscoveryService : IInternalToolDiscoveryService, ISi
                                 _serviceProvider,
                                 access.PermissionName,
                                 attribute.RequiresPermission,
-                                access.RequiresAuthentication
+                                access.RequiresAuthentication,
+                                AllowsAnonymous(method)
                             );
                             
                             tools.Add(tool);
@@ -177,6 +178,16 @@ public class ReflectionToolDiscoveryService : IInternalToolDiscoveryService, ISi
 
         var policy = authorize.Select(a => a.Policy).FirstOrDefault(p => !string.IsNullOrWhiteSpace(p));
         return (string.IsNullOrWhiteSpace(declaredPermission) ? policy : declaredPermission, true);
+    }
+
+    /// <summary>
+    /// sufi-chain#384 slice 4: anonymous allowlist = <c>Public</c> + <c>ReadOnly</c>, or <c>[SufiAiMcpPublicWrite]</c>.
+    /// </summary>
+    public static bool AllowsAnonymous(MethodInfo method)
+    {
+        var tool = method.GetCustomAttribute<SufiAiMcpToolAttribute>();
+        return (tool is { Public: true, ReadOnly: true })
+            || method.GetCustomAttribute<SufiAiMcpPublicWriteAttribute>() is not null;
     }
 
     private sealed record ToolAttributeInfo(string Name, string Description, string? PermissionName, bool RequiresPermission);

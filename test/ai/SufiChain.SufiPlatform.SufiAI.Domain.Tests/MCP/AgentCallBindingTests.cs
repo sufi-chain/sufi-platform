@@ -144,7 +144,7 @@ public class AgentCallBindingTests
         using var h = new Harness();
         using (h.Principals.Change(Principal(Mallory, TenantA)))
         {
-            var result = await h.Tool().ExecuteAsync(
+            var result = await h.Tool(allowsAnonymous: true).ExecuteAsync(
                 new WorkspaceContext { CallContext = AgentCallContext.Anonymous(TenantA) }, new());
             result.Success.ShouldBeTrue(result.ErrorMessage);
         }
@@ -259,10 +259,10 @@ public class AgentCallBindingTests
         public ICurrentTenant Tenant { get; }
         public ICurrentPrincipalAccessor Principals { get; }
 
-        public InternalMCPTool Tool(string? permission = null, bool requiresPermission = false) =>
+        public InternalMCPTool Tool(string? permission = null, bool requiresPermission = false, bool allowsAnonymous = false) =>
             new("demo.run", "Demo", "{}", typeof(ProbeService),
                 typeof(ProbeService).GetMethod(nameof(ProbeService.RunAsync))!,
-                _services, permission, requiresPermission);
+                _services, permission, requiresPermission, allowsAnonymous: allowsAnonymous);
 
         public void Dispose() => _services.Dispose();
     }
