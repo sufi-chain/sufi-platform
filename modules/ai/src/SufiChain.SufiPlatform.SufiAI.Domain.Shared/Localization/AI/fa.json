@@ -477,6 +477,7 @@
     "ViewWorkspace": "مشاهده فضای کاری",
     "AI:WorkspaceGuardrailExceeded": "این فضای کاری به سقف مصرف {Period} رسیده است (${LimitUsd}). مصرف‌شده: ${UsedUsd}.",
     "AI:InheritedWorkspaceReadOnly": "فضاهای کاری ارث‌برده و مدل‌هایشان فقط خواندنی هستند. ویرایش و حذف آن‌ها ممکن نیست.",
+    "AI:InheritedWorkspaceCopyBlocked": "فضای کاری ارث‌برده را نمی‌توان کپی کرد یا به اختصاصی تبدیل کرد، چون از اتصال و کلید API پلتفرم استفاده می‌کند. یک فضای کاری تازه بسازید و کلید API خودتان را وارد کنید.",
     "AI:WorkspaceInUse": "این فضای کاری را نمی‌توان حذف کرد چون هنوز استفاده می‌شود ({Details}). ابتدا رابطه‌های فعال را منتقل یا حذف کنید.",
     "WorkspaceUsage:Hooshvare": "{0} هوشواره",
     "WorkspaceUsage:Assignment": "{0} اختصاص فعال",

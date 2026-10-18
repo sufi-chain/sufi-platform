@@ -19,7 +19,6 @@ public partial class WorkspaceEditor : AIComponentBase
         public const string UpdateWorkspace = "update-workspace";
         public const string TestConnection = "test-connection";
         public const string LoadModels = "load-models";
-        public const string ConvertWorkspace = "convert-workspace";
     }
 
     [Parameter]
@@ -354,31 +353,6 @@ public partial class WorkspaceEditor : AIComponentBase
 
             Cancel();
         }, LoadingKeys.UpdateWorkspace);
-    }
-
-    private async Task ConvertToCustomAsync()
-    {
-        if (_workspace == null)
-        {
-            return;
-        }
-
-        var confirmed = await Message.ConfirmAsync(
-            L["ConvertToCustomConfirmation", _workspace.Name],
-            L["AreYouSure"]);
-
-        if (!confirmed)
-        {
-            return;
-        }
-
-        var workspaceId = _workspace.Id;
-        await ExecuteWithLoadingAsync(async () =>
-        {
-            await WorkspaceAppService.ConvertToCustomAsync(workspaceId);
-            await Message.SuccessAsync(L["WorkspaceConvertedSuccessfully"]);
-            Cancel();
-        }, LoadingKeys.ConvertWorkspace);
     }
 
     private async Task TestConnectionAsync()

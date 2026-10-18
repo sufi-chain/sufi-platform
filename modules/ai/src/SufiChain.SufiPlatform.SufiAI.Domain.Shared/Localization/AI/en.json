@@ -497,6 +497,7 @@
     "ViewWorkspace": "View workspace",
     "AI:WorkspaceGuardrailExceeded": "This workspace has reached its {Period} usage limit (${LimitUsd}). Used: ${UsedUsd}.",
     "AI:InheritedWorkspaceReadOnly": "Inherited workspaces and their models are read-only. You cannot edit or delete them.",
+    "AI:InheritedWorkspaceCopyBlocked": "Inherited workspaces can't be cloned or converted to custom, because they use the platform's connection and API key. Create a new workspace and enter your own API key.",
     "AI:WorkspaceInUse": "This workspace cannot be deleted because it is still in use ({Details}). Move or remove the active relations first.",
     "WorkspaceUsage:Hooshvare": "{0} hooshvare(s)",
     "WorkspaceUsage:Assignment": "{0} active assignment(s)",

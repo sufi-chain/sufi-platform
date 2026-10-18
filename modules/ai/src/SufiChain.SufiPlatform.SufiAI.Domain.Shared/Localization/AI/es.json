@@ -829,7 +829,8 @@
 
     "AI:WorkspaceGuardrailExceeded": "Este espacio de trabajo alcanzó su límite de uso de {Period} (${LimitUsd}). Usado: ${UsedUsd}.",
 
-    "AI:InheritedWorkspaceReadOnly": "Los espacios de trabajo heredados son de solo lectura. Conviértelo en personalizado para editarlo.",
+    "AI:InheritedWorkspaceReadOnly": "Los espacios de trabajo heredados son de solo lectura. Crea un espacio de trabajo nuevo para editar la configuración.",
+    "AI:InheritedWorkspaceCopyBlocked": "Los espacios de trabajo heredados no se pueden clonar ni convertir en personalizados, porque usan la conexión y la clave API de la plataforma. Crea un espacio de trabajo nuevo e introduce tu propia clave API.",
     "AI:WorkspaceInUse": "No se puede eliminar este espacio de trabajo porque todavía está en uso ({Details}). Mueva o elimine primero las relaciones activas.",
     "WorkspaceUsage:Hooshvare": "{0} hooshvare(s)",
     "WorkspaceUsage:Assignment": "{0} asignación(es) activa(s)",

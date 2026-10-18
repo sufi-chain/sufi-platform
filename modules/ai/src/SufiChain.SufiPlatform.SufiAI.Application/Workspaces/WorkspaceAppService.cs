@@ -255,6 +255,7 @@ public class WorkspaceAppService : SufiApplicationService, IWorkspaceAppService
     public async Task<WorkspaceDto> CloneAsync(Guid id, CloneWorkspaceDto input)
     {
         var source = await _workspaceRepository.GetAsync(id, includeDetails: true);
+        EnsureNotInheritedCopy(source);
         await _workspaceManager.ValidateNameAsync(input.Name);
 
         var clone = _workspaceManager.CreateCopy(source, input.Name, CurrentTenant.Id);
@@ -272,16 +273,9 @@ public class WorkspaceAppService : SufiApplicationService, IWorkspaceAppService
                 .WithData("WorkspaceId", id);
         }
 
-        var assignmentId = workspace.AssignmentId;
-        workspace.ClearInheritance();
-        await _workspaceRepository.UpdateAsync(workspace, autoSave: true);
-        await _workspaceSyncService.ClearWorkspaceCache(workspace.Name);
-
-        if (assignmentId.HasValue)
-        {
-            await _inheritedWorkspaceProjectionSynchronizer.DeactivateHostAssignmentAsync(assignmentId.Value);
-        }
-
+        // #499: converting kept the host ApiKey and route keys in an editable tenant workspace.
+        // The endpoint is removed in #498; until then it always refuses inherited workspaces.
+        EnsureNotInheritedCopy(workspace);
         return ObjectMapper.Map<Workspace, WorkspaceDto>(workspace);
     }
 
@@ -587,6 +581,15 @@ public class WorkspaceAppService : SufiApplicationService, IWorkspaceAppService
         if (workspace.IsInherited)
         {
             throw new BusinessException(AIErrorCodes.InheritedWorkspaceReadOnly)
+                .WithData("WorkspaceId", workspace.Id);
+        }
+    }
+
+    private static void EnsureNotInheritedCopy(Workspace workspace)
+    {
+        if (workspace.IsInherited)
+        {
+            throw new BusinessException(AIErrorCodes.InheritedWorkspaceCopyBlocked)
                 .WithData("WorkspaceId", workspace.Id);
         }
     }
