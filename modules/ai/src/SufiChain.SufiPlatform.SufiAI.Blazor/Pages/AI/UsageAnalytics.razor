@@ -1,7 +1,7 @@
 @namespace SufiChain.SufiPlatform.SufiAI.Blazor.Pages.AI
 @page "/panel/admin/ai/usage-analytics"
+@* sufi-chain#411: «مشاهده مصرف» (ViewUsage) alone opens this page. *@
 @attribute [Authorize(Policy = AIPermissions.AI.ViewUsage)]
-@attribute [Authorize(Policy = AIPermissions.Workspaces.Default)]
 @inherits AIComponentBase
 @using SufiChain.SufiPlatform.SufiAI;
 <SufiPageToolbar>
@@ -11,6 +11,13 @@
 	</SbButton>
 </SufiPageToolbar>
 
+@if (_featureDisabled)
+{
+	@* sufi-chain#411: the feature is off for this workspace; the server refuses the usage calls too. *@
+	<SbAlert Severity="SbAlertSeverity.Info">@L["UsageAnalyticsFeatureDisabled"]</SbAlert>
+}
+else
+{
 <SbStack Direction="SbStackDirection.Column" Gap="4">
 
 	<!-- Workspace Selection -->
@@ -406,3 +413,4 @@
 	}
 
 </SbStack>
+}

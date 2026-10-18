@@ -125,10 +125,14 @@
 		var group = node.Group;
 		var tabId = GetNormalizedGroupName(group.Name);
 		var isActive = _selectedTabId == tabId;
-		var (grantedCount, totalCount) = GetSubtreeCounts(node);
-		var hasGrants = grantedCount > 0;
 		var hasChildren = node.Children.Count > 0;
 		var isSectionOnly = node.IsSectionOnly;
+		// sufi-chain#414: a clickable tab counts only its own permissions, the same numbers its panel shows.
+		// A section-only heading has no panel, so it keeps the subtree total. Highlighting still follows the subtree.
+		var (subtreeGranted, subtreeTotal) = GetSubtreeCounts(node);
+		var grantedCount = isSectionOnly ? subtreeGranted : GetGrantedCount(group);
+		var totalCount = isSectionOnly ? subtreeTotal : group.Permissions.Count;
+		var hasGrants = subtreeGranted > 0;
 
 		<div class="permission-nav__branch @(hasChildren ? "permission-nav__branch--parent" : null)">
 			@if (isSectionOnly)

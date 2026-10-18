@@ -18,6 +18,7 @@ using SufiChain.SufiPlatform.Application.Services;
 using SufiChain.SufiPlatform.SufiAI.Storage;
 using SufiChain.SufiPlatform.Features;
 using Volo.Abp;
+using Volo.Abp.Authorization.Permissions;
 
 namespace SufiChain.SufiPlatform.SufiAI;
 
@@ -34,6 +35,8 @@ public class AIAppService : SufiApplicationService, IAIAppService
     private readonly IWorkspaceRepository _workspaceRepository;
     private readonly WorkspaceSyncService _workspaceSyncService;
     private readonly IWorkspaceGuardrailService _workspaceGuardrailService;
+
+    protected IPermissionChecker PermissionChecker => LazyServiceProvider.LazyGetRequiredService<IPermissionChecker>();
 
     public AIAppService(
         IAIService aiService,
@@ -391,10 +394,12 @@ public class AIAppService : SufiApplicationService, IAIAppService
         await ClearWorkspaceRuntimeCacheAsync(workspace.Id);
     }
 
-    [Authorize(AIPermissions.AI.ViewUsage)]
+    // sufi-chain#411: «مشاهده مصرف» (ViewUsage) alone grants usage analytics; the class-level AI.Default is not required.
+    [AllowAnonymous]
     [RequiresFeature(SufiAIFeatures.UsageAnalytics)]
     public async Task<List<AIUsageLogDto>> GetUsageLogsAsync(Guid workspaceId, DateTime? startDate = null, DateTime? endDate = null)
     {
+        await AIUsageAccess.CheckCanViewUsageAsync(PermissionChecker);
         var logs = await _usageLogRepository.GetByWorkspaceAsync(workspaceId, startDate, endDate);
         var configurations = await GetWorkspaceModelConfigurationsAsync(workspaceId);
         var displayNames = configurations.ToDictionary(
@@ -416,10 +421,12 @@ public class AIAppService : SufiApplicationService, IAIAppService
         }).ToList();
     }
 
-    [Authorize(AIPermissions.AI.ViewUsage)]
+    // sufi-chain#411: see GetUsageLogsAsync.
+    [AllowAnonymous]
     [RequiresFeature(SufiAIFeatures.UsageAnalytics)]
     public async Task<UsageStatisticsDto> GetUsageStatisticsAsync(Guid workspaceId, DateTime? startDate = null, DateTime? endDate = null)
     {
+        await AIUsageAccess.CheckCanViewUsageAsync(PermissionChecker);
         var logs = await _usageLogRepository.GetByWorkspaceAsync(workspaceId, startDate, endDate);
         var totalCost = await _usageLogRepository.GetTotalCostAsync(workspaceId, startDate, endDate);
         var totalTokens = await _usageLogRepository.GetTotalTokensAsync(workspaceId, startDate, endDate);

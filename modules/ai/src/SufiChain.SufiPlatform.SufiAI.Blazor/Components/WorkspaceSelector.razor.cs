@@ -82,8 +82,15 @@ public partial class WorkspaceSelector : AIComponentBase
 
     private string GetWorkspaceOptionText(WorkspaceDto workspace)
     {
-        return $"{workspace.Name} · {GetProviderDisplayName(workspace.Provider)} · {workspace.Model}";
+        return $"{GetWorkspaceDisplayName(workspace)} · {GetProviderDisplayName(workspace.Provider)} · {workspace.Model}";
     }
+
+    /// <summary>
+    /// sufi-chain#413/#414: a tenant must not see the host's own name for a workspace it inherits
+    /// (for example «زیرساخت صوفی»), so inherited workspaces show a neutral, localized label.
+    /// </summary>
+    private string GetWorkspaceDisplayName(WorkspaceDto workspace) =>
+        workspace.IsInherited ? L["SharedPlatformWorkspace"] : workspace.Name;
 
     private async Task OnSelectChangedAsync(Guid? workspaceId)
     {

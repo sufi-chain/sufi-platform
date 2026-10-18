@@ -18,6 +18,7 @@ using SufiChain.SufiPlatform.SufiAI.Permissions;
 using SufiChain.SufiPlatform.Tenants;
 using Volo.Abp;
 using Volo.Abp.Authorization;
+using Volo.Abp.Authorization.Permissions;
 using Volo.Abp.Caching;
 using Volo.Abp.Data;
 using Volo.Abp.MultiTenancy;
@@ -52,6 +53,8 @@ public class WorkspaceAppService : SufiApplicationService, IWorkspaceAppService
     private readonly AIOptions _aiOptions;
     private readonly IEnumerable<IAiWorkspaceUsageChecker> _workspaceUsageCheckers;
     private readonly IDefaultAiWorkspaceSeeder _defaultAiWorkspaceSeeder;
+
+    protected IPermissionChecker PermissionChecker => LazyServiceProvider.LazyGetRequiredService<IPermissionChecker>();
 
     public WorkspaceAppService(
         IWorkspaceRepository workspaceRepository,
@@ -135,8 +138,11 @@ public class WorkspaceAppService : SufiApplicationService, IWorkspaceAppService
         );
     }
 
+    // sufi-chain#411: the usage analytics page lists workspaces for «مشاهده مصرف» holders too.
+    [AllowAnonymous]
     public async Task<List<WorkspaceDto>> GetLookupAsync()
     {
+        await AIUsageAccess.CheckCanListWorkspacesAsync(PermissionChecker);
         await _inheritedWorkspaceProjectionSynchronizer.EnsureCurrentTenantAsync();
         await EnsureHostDefaultWorkspaceWhenNoneExistAsync();
         var workspaces = await _workspaceRepository.GetListAsync(
@@ -528,9 +534,11 @@ public class WorkspaceAppService : SufiApplicationService, IWorkspaceAppService
         return ObjectMapper.Map<Workspace, WorkspaceDto>(workspace);
     }
 
-    [Authorize(AIPermissions.Workspaces.Default)]
+    // sufi-chain#411: shown on usage analytics, so «مشاهده مصرف» is enough.
+    [AllowAnonymous]
     public async Task<List<WorkspaceGuardrailStatusDto>> GetGuardrailStatusAsync(Guid id)
     {
+        await AIUsageAccess.CheckCanListWorkspacesAsync(PermissionChecker);
         await _inheritedWorkspaceProjectionSynchronizer.EnsureCurrentTenantAsync();
         return await _workspaceGuardrailService.GetStatusAsync(id);
     }

@@ -78,9 +78,7 @@ public class AIMenuContributor : IMenuContributor
                 url: "/panel/admin/ai/usage-analytics",
                 icon: "chart-bar",
                 order: 4
-            ).RequirePermissions(
-                AIPermissions.AI.ViewUsage,
-                AIPermissions.Workspaces.Default));
+            ).RequirePermissions(AIPermissions.AI.ViewUsage)); // sufi-chain#411: ViewUsage alone
         }
 
         if (await featureChecker.IsEnabledAsync(SufiAIFeatures.RAG))
