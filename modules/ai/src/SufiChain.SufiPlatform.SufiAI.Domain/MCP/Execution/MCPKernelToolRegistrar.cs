@@ -3,7 +3,9 @@ using System.Diagnostics;
 using System.Text.Json;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
+using Microsoft.Extensions.DependencyInjection;
 using SufiChain.SufiPlatform.SufiAI.MCP.Abstractions;
+using Volo.Abp.Authorization.Permissions;
 using Volo.Abp.DependencyInjection;
 using Volo.Abp.MultiTenancy;
 using Volo.Abp.Security.Claims;
@@ -20,14 +22,17 @@ public class MCPKernelToolRegistrar : IMCPKernelToolRegistrar, ITransientDepende
     private readonly ILogger<MCPKernelToolRegistrar> _logger;
     private readonly ICurrentTenant? _currentTenant;
     private readonly ICurrentPrincipalAccessor? _principalAccessor;
+    private readonly IServiceProvider? _serviceProvider;
 
     public MCPKernelToolRegistrar(
         IMCPToolRegistry toolRegistry,
         IEnumerable<IMcpToolDecisionGate> gates,
         ILogger<MCPKernelToolRegistrar> logger,
         ICurrentTenant? currentTenant = null,
-        ICurrentPrincipalAccessor? principalAccessor = null)
+        ICurrentPrincipalAccessor? principalAccessor = null,
+        IServiceProvider? serviceProvider = null)
     {
+        _serviceProvider = serviceProvider;
         _currentTenant = currentTenant;
         _principalAccessor = principalAccessor;
         _toolRegistry = toolRegistry;
@@ -55,7 +60,26 @@ public class MCPKernelToolRegistrar : IMCPKernelToolRegistrar, ITransientDepende
 
         var resolution = await _toolRegistry.ResolveAsync(allowedToolNames, cancellationToken);
 
-        foreach (var tool in resolution.Tools)
+        // sufi-chain#384 slice 3: offer only the tools the bound caller may run, so a hidden tool never
+        // reaches the model's tool list. Execution re-checks in InternalMCPTool.
+        var permissionChecker = _serviceProvider?.GetService<IPermissionChecker>();
+        var offered = new List<IMCPTool>(resolution.Tools.Count);
+        foreach (var candidate in resolution.Tools)
+        {
+            if (await MCPToolOfferFilter.IsOfferedAsync(candidate, context.CallContext, permissionChecker))
+            {
+                offered.Add(candidate);
+            }
+            else
+            {
+                _logger.LogDebug(
+                    "MCP tool {ToolName} not offered: the bound caller lacks access (workspace {WorkspaceName}).",
+                    candidate.Name,
+                    context.WorkspaceName);
+            }
+        }
+
+        foreach (var tool in offered)
         {
             var pluginName = ToKernelPluginName(tool.Name);
             if (kernel.Plugins.Any(plugin => plugin.Name == pluginName))
