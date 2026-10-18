@@ -600,7 +600,8 @@
 
     "WorkspaceNameRequired": "El nombre del espacio de trabajo es obligatorio",
 
-    "InheritWorkspace": "Heredar espacio de trabajo",
+    "InheritWorkspace": "Del espacio de trabajo",
+    "RouteOwnConnection": "Conexión propia",
 
     "Override": "Propia",
 
