@@ -26,13 +26,13 @@ public class FormCreatorMcpBindingTests
         using var services = new ServiceCollection().AddSingleton(new FormDesignerMcpAppService(forms)).BuildServiceProvider();
         var method = typeof(FormDesignerMcpAppService).GetMethod(nameof(FormDesignerMcpAppService.CreateDefinitionAsync))!;
         var tool = new InternalMCPTool("forms.create_definition", "Build draft", "{}",
-            typeof(FormDesignerMcpAppService), method, services);
+            typeof(FormDesignerMcpAppService), method, services, allowsAnonymous: true);
         using var scope = confirmed ? new FormCreatorBuildScope(null) : null;
         using var input = JsonDocument.Parse(confirmed
             ? InputJson.Replace("\\\"placeholder\\\"", "\\\"unsupportedOption\\\"")
             : InputJson);
 
-        var result = await tool.ExecuteAsync(new WorkspaceContext { CallContext = AgentCallContext.Anonymous() }, new() { ["input"] = input.RootElement });
+        var result = await tool.ExecuteAsync(new WorkspaceContext { CallContext = AgentCallContext.Anonymous() /* sufi-chain#384: tool allowlisted for anonymous to exercise the pipeline */ }, new() { ["input"] = input.RootElement });
 
         result.Success.ShouldBeFalse();
         result.ErrorMessage.ShouldBe(confirmed
@@ -47,8 +47,8 @@ public class FormCreatorMcpBindingTests
     {
         using var services = new ServiceCollection().AddSingleton<InvalidInputService>().BuildServiceProvider();
         var method = typeof(InvalidInputService).GetMethod(nameof(InvalidInputService.InvokeAsync))!;
-        var tool = new InternalMCPTool("validation-test", "Validate", "{}", typeof(InvalidInputService), method, services);
-        var result = await tool.ExecuteAsync(new WorkspaceContext { CallContext = AgentCallContext.Anonymous() }, new());
+        var tool = new InternalMCPTool("validation-test", "Validate", "{}", typeof(InvalidInputService), method, services, allowsAnonymous: true);
+        var result = await tool.ExecuteAsync(new WorkspaceContext { CallContext = AgentCallContext.Anonymous() /* sufi-chain#384: tool allowlisted for anonymous to exercise the pipeline */ }, new());
         result.Success.ShouldBeFalse();
         result.ErrorMessage.ShouldContain("input.Name");
         result.ErrorMessage.ShouldContain("Name is required");
@@ -107,10 +107,10 @@ public class FormCreatorMcpBindingTests
         using var services = new ServiceCollection().AddSingleton(new FormDesignerMcpAppService(forms)).BuildServiceProvider();
         var method = typeof(FormDesignerMcpAppService).GetMethod(nameof(FormDesignerMcpAppService.CreateDefinitionAsync))!;
         var tool = new InternalMCPTool("forms.create_definition", "Build draft",
-            new JsonSchemaGenerator().GenerateSchema(method), typeof(FormDesignerMcpAppService), method, services);
+            new JsonSchemaGenerator().GenerateSchema(method), typeof(FormDesignerMcpAppService), method, services, allowsAnonymous: true);
         using var scope = new FormCreatorBuildScope(null);
         using var input = JsonDocument.Parse(InputJson);
-        var result = await tool.ExecuteAsync(new WorkspaceContext { CallContext = AgentCallContext.Anonymous() }, new() { ["input"] = input.RootElement });
+        var result = await tool.ExecuteAsync(new WorkspaceContext { CallContext = AgentCallContext.Anonymous() /* sufi-chain#384: tool allowlisted for anonymous to exercise the pipeline */ }, new() { ["input"] = input.RootElement });
         result.Success.ShouldBeTrue(result.ErrorMessage);
         scope.Definition.ShouldNotBeNull();
         scope.Definition!.Fields[0].Name.ShouldBe("email");
