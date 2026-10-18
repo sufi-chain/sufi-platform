@@ -76,19 +76,30 @@ public class SufiMultiTenantConnectionStringResolverTests
         (await resolver.ResolveAsync("Default")).ShouldBe(HostDefault);
     }
 
-    [Fact]
-    public async Task Tenant_Without_Connection_Strings_Should_Not_Fall_Back_To_Host_Module_String()
+    [Theory]
+    [InlineData("SufiHelpDeskKnowledgeBase", HostKnowledgeBase)]
+    [InlineData("SufiHelpDesk", HostHelpDesk)]
+    [InlineData("Default", HostDefault)]
+    [InlineData(null, HostDefault)]
+    public async Task Tenant_Without_Connection_Strings_Should_Use_Host_Resolution(string? connectionName, string expected)
     {
-        var tenantId = Guid.NewGuid();
+        // 8.3 behaviour: a tenant without its own database shares the host database (TenantId filter).
+        var resolver = CreateResolver(Guid.NewGuid(), tenantConnectionStrings: new ConnectionStrings());
+
+        (await resolver.ResolveAsync(connectionName)).ShouldBe(expected);
+    }
+
+    [Fact]
+    public async Task Tenant_With_Only_Module_Row_Should_Use_Row_For_That_Name_And_Host_For_Others()
+    {
+        const string tenantKb = "Host=tenant-kb-only";
         var resolver = CreateResolver(
-            tenantId,
-            tenantConnectionStrings: new ConnectionStrings());
+            Guid.NewGuid(),
+            tenantConnectionStrings: new ConnectionStrings { ["SufiHelpDeskKnowledgeBase"] = tenantKb });
 
-        var error = await Should.ThrowAsync<AbpException>(() =>
-            resolver.ResolveAsync("SufiHelpDeskKnowledgeBase"));
-
-        error.Message.ShouldContain(tenantId.ToString("D"));
-        error.Message.ShouldContain("connection string");
+        (await resolver.ResolveAsync("SufiHelpDeskKnowledgeBase")).ShouldBe(tenantKb);
+        (await resolver.ResolveAsync("SufiHelpDesk")).ShouldBe(HostHelpDesk);
+        (await resolver.ResolveAsync("Default")).ShouldBe(HostDefault);
     }
 
     private static SufiMultiTenantConnectionStringResolver CreateResolver(

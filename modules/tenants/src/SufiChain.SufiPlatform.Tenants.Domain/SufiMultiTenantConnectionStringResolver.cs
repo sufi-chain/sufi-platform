@@ -13,7 +13,9 @@ namespace SufiChain.SufiPlatform.Tenants;
 /// Database-per-tenant connection resolution.
 /// When a tenant is current, every named connection resolves to that tenant's
 /// explicit row for the name, otherwise the tenant's Default. Host module-specific
-/// connection strings are never used for a tenant.
+/// connection strings are never used for a tenant that has a Default.
+/// A tenant without a Default (and without a row for the name) uses host resolution,
+/// i.e. the shared host database with the TenantId filter, as in 8.3.
 /// </summary>
 [Dependency(ReplaceServices = true)]
 [ExposeServices(typeof(IConnectionStringResolver), typeof(MultiTenantConnectionStringResolver))]
@@ -38,7 +40,8 @@ public class SufiMultiTenantConnectionStringResolver : MultiTenantConnectionStri
         }
 
         var tenant = await FindTenantConfigurationAsync(_currentTenant.Id.Value);
-        return ResolveForTenant(tenant, _currentTenant.Id.Value, connectionStringName);
+        return ResolveForTenant(tenant, connectionStringName)
+            ?? await base.ResolveAsync(connectionStringName);
     }
 
     [Obsolete("Use ResolveAsync method.")]
@@ -50,48 +53,34 @@ public class SufiMultiTenantConnectionStringResolver : MultiTenantConnectionStri
         }
 
         var tenant = FindTenantConfiguration(_currentTenant.Id.Value);
-        return ResolveForTenant(tenant, _currentTenant.Id.Value, connectionStringName);
+        return ResolveForTenant(tenant, connectionStringName)
+            ?? base.Resolve(connectionStringName);
     }
 
-    private static string ResolveForTenant(
+    /// <returns>The tenant's connection string, or <c>null</c> to use host resolution.</returns>
+    internal static string? ResolveForTenant(
         TenantConfiguration? tenant,
-        Guid tenantId,
         string? connectionStringName)
     {
         if (tenant?.ConnectionStrings == null || tenant.ConnectionStrings.Count == 0)
         {
-            throw new AbpException(
-                $"Tenant '{tenantId:D}' has no connection strings. Database-per-tenant requires a Default connection string.");
+            return null;
         }
 
         var tenantDefault = tenant.ConnectionStrings.Default;
         var requestingDefault = connectionStringName.IsNullOrWhiteSpace()
             || connectionStringName == ConnectionStrings.DefaultConnectionStringName;
 
-        if (requestingDefault)
+        if (!requestingDefault)
         {
-            if (tenantDefault.IsNullOrWhiteSpace())
+            var named = tenant.ConnectionStrings.GetOrDefault(connectionStringName!);
+            if (!named.IsNullOrWhiteSpace())
             {
-                throw new AbpException(
-                    $"Tenant '{tenantId:D}' has no Default connection string.");
+                return named!;
             }
-
-            return tenantDefault!;
         }
 
-        var named = tenant.ConnectionStrings.GetOrDefault(connectionStringName!);
-        if (!named.IsNullOrWhiteSpace())
-        {
-            return named!;
-        }
-
-        if (tenantDefault.IsNullOrWhiteSpace())
-        {
-            throw new AbpException(
-                $"Tenant '{tenantId:D}' has no connection string for '{connectionStringName}' and no Default fallback.");
-        }
-
-        // Never fall back to the host's module-specific connection string.
-        return tenantDefault!;
+        // Never fall back to the host's module-specific connection string when the tenant has a Default.
+        return tenantDefault.IsNullOrWhiteSpace() ? null : tenantDefault!;
     }
 }
