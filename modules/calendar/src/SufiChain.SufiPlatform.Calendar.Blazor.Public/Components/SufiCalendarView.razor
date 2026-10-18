@@ -131,6 +131,71 @@
                     </div>
                 </div>
             }
+            else if (View == SufiCalendarViewMode.Week)
+            {
+                <div class="sufi-calendar-view__week" role="grid" aria-label="@L["CalendarView:Week"]">
+                    <div class="sufi-calendar-view__week-row sufi-calendar-view__week-row--head" role="row">
+                        <span class="sufi-calendar-view__week-hour" aria-hidden="true"></span>
+                        @for (var i = 0; i < _days.Count; i++)
+                        {
+                            var headDay = _days[i];
+                            <span class="@GetWeekHeadClass(headDay)" role="columnheader">
+                                <span>@(i < _dayNames.Length ? _dayNames[i] : string.Empty)</span>
+                                <strong>@SbCalendarHelper.GetDayOfMonth(headDay, _culture)</strong>
+                            </span>
+                        }
+                    </div>
+                    <div class="sufi-calendar-view__week-row sufi-calendar-view__week-row--all-day" role="row">
+                        <span class="sufi-calendar-view__week-hour">@L["AllDay"]</span>
+                        @foreach (var day in _days)
+                        {
+                            var allDayCell = day;
+                            <span class="sufi-calendar-view__week-cell" role="gridcell">
+                                @foreach (var occurrence in GetAllDayOccurrences(allDayCell))
+                                {
+                                    <span class="sufi-calendar-view__week-event"
+                                          style="@GetEventStyle(occurrence)"
+                                          role="button"
+                                          tabindex="0"
+                                          @onclick="@(() => SelectEventAsync(occurrence))">@occurrence.Title</span>
+                                }
+                            </span>
+                        }
+                    </div>
+                    <div class="sufi-calendar-view__week-body">
+                        @foreach (var hour in DayTimelineHours)
+                        {
+                            var rowHour = hour;
+                            <div class="sufi-calendar-view__week-row" role="row">
+                                <span class="sufi-calendar-view__week-hour">@FormatHour(rowHour)</span>
+                                @foreach (var day in _days)
+                                {
+                                    var slotDay = day;
+                                    <span class="sufi-calendar-view__week-cell sufi-calendar-view__week-slot"
+                                          role="gridcell"
+                                          tabindex="0"
+                                          @onclick="@(() => SelectDayHourSlotAsync(slotDay, rowHour))"
+                                          @onkeydown="@((KeyboardEventArgs e) => HandleWeekSlotKeyDownAsync(e, slotDay, rowHour))">
+                                        @foreach (var occurrence in GetOccurrencesForDayHour(slotDay, rowHour))
+                                        {
+                                            <span class="sufi-calendar-view__week-event"
+                                                  style="@GetEventStyle(occurrence)"
+                                                  role="button"
+                                                  tabindex="0"
+                                                  title="@FormatTimeRange(occurrence)"
+                                                  @onclick="@(() => SelectEventAsync(occurrence))"
+                                                  @onclick:stopPropagation="true">
+                                                <strong>@FormatTimeRange(occurrence)</strong>
+                                                <span>@occurrence.Title</span>
+                                            </span>
+                                        }
+                                    </span>
+                                }
+                            </div>
+                        }
+                    </div>
+                </div>
+            }
             else
             {
                 <div class="sufi-calendar-view__day-names">

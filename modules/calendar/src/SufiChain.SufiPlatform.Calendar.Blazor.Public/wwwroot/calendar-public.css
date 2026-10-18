@@ -840,3 +840,19 @@
         grid-template-columns: 1fr;
     }
 }
+
+/* Week time grid (sufi-chain#394 SCR-16) */
+.sufi-calendar-view__week { display: flex; flex-direction: column; overflow-x: auto; }
+.sufi-calendar-view__week-row { display: grid; grid-template-columns: 3.5rem repeat(7, minmax(5.5rem, 1fr)); min-width: 42rem; }
+.sufi-calendar-view__week-row--head { position: sticky; top: 0; z-index: 1; background: var(--sb-surface, inherit); border-bottom: 1px solid var(--sb-border, rgba(127,127,127,.25)); }
+.sufi-calendar-view__week-row--all-day { border-bottom: 1px solid var(--sb-border, rgba(127,127,127,.25)); min-height: 2rem; }
+.sufi-calendar-view__week-body { max-height: 65vh; overflow-y: auto; min-width: 42rem; }
+.sufi-calendar-view__week-head-cell { display: flex; flex-direction: column; align-items: center; padding: .25rem; font-size: .8rem; }
+.sufi-calendar-view__week-head-cell--today strong { color: var(--sb-primary, currentColor); }
+.sufi-calendar-view__week-hour { font-size: .75rem; opacity: .7; padding: .25rem; text-align: center; }
+.sufi-calendar-view__week-cell { min-height: 2.75rem; border-inline-start: 1px solid var(--sb-border, rgba(127,127,127,.18)); border-bottom: 1px solid var(--sb-border, rgba(127,127,127,.12)); padding: 2px; display: flex; flex-direction: column; gap: 2px; }
+.sufi-calendar-view__week-slot { cursor: pointer; }
+.sufi-calendar-view__week-slot:hover, .sufi-calendar-view__week-slot:focus-visible { background: rgba(127,127,127,.08); outline: none; }
+.sufi-calendar-view__week-event { display: flex; flex-direction: column; font-size: .72rem; line-height: 1.2; padding: 2px 4px; border-radius: 4px; overflow: hidden; cursor: pointer; }
+.sufi-calendar-view__title { min-width: 10rem; text-align: center; }
+.sufi-calendar-view__mode-bar { flex-shrink: 0; margin-inline-start: auto; }
