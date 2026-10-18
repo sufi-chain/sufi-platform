@@ -227,9 +227,12 @@ public partial class SufiCalendarView : CalendarPublicComponentBase
         _eventsPopoverCalendarId = null;
     }
 
-    protected virtual async Task SelectHourSlotAsync(int hour)
+    protected virtual Task SelectHourSlotAsync(int hour) => SelectDayHourSlotAsync(Date.Date, hour);
+
+    /// <summary>Week time grid slot (sufi-chain#394 SCR-16).</summary>
+    protected virtual async Task SelectDayHourSlotAsync(DateTime day, int hour)
     {
-        var localStart = Date.Date.AddHours(hour);
+        var localStart = day.Date.AddHours(hour);
         var startUtc = ToUtc(localStart);
         await OnSlotSelect.InvokeAsync(new SufiCalendarSlotSelectArgs(startUtc, startUtc.AddHours(1), CalendarIds));
     }
@@ -269,10 +272,12 @@ public partial class SufiCalendarView : CalendarPublicComponentBase
         return $"{start.ToString("HH:mm", _culture)} - {end.ToString("HH:mm", _culture)}";
     }
 
-    protected virtual IEnumerable<EventOccurrenceDto> GetAllDayOccurrences()
+    protected virtual IEnumerable<EventOccurrenceDto> GetAllDayOccurrences() => GetAllDayOccurrences(Date.Date);
+
+    protected virtual IEnumerable<EventOccurrenceDto> GetAllDayOccurrences(DateTime day)
     {
         var timeZone = ResolveTimeZone();
-        var dayStart = Date.Date;
+        var dayStart = day.Date;
         var dayEnd = dayStart.AddDays(1);
 
         return _visibleOccurrences.Where(occurrence =>
@@ -287,10 +292,12 @@ public partial class SufiCalendarView : CalendarPublicComponentBase
         });
     }
 
-    protected virtual IEnumerable<EventOccurrenceDto> GetOccurrencesForHour(int hour)
+    protected virtual IEnumerable<EventOccurrenceDto> GetOccurrencesForHour(int hour) => GetOccurrencesForDayHour(Date.Date, hour);
+
+    protected virtual IEnumerable<EventOccurrenceDto> GetOccurrencesForDayHour(DateTime day, int hour)
     {
         var timeZone = ResolveTimeZone();
-        var dayStart = Date.Date;
+        var dayStart = day.Date;
         var hourStart = dayStart.AddHours(hour);
         var hourEnd = hourStart.AddHours(1);
 
@@ -519,4 +526,16 @@ public partial class SufiCalendarView : CalendarPublicComponentBase
     }
 
     protected sealed record DayCalendarEventGroup(Guid CalendarId, string? Color, IReadOnlyList<EventOccurrenceDto> Occurrences);
-}
+
+    protected virtual string GetWeekHeadClass(DateTime day) =>
+        day.Date == GetTodayLocalDate()
+            ? "sufi-calendar-view__week-head-cell sufi-calendar-view__week-head-cell--today"
+            : "sufi-calendar-view__week-head-cell";
+
+    protected virtual async Task HandleWeekSlotKeyDownAsync(KeyboardEventArgs e, DateTime day, int hour)
+    {
+        if (e.Key is "Enter" or " ")
+        {
+            await SelectDayHourSlotAsync(day, hour);
+        }
+    }}

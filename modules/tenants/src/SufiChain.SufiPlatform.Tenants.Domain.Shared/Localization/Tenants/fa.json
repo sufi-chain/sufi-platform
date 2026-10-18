@@ -17,7 +17,7 @@
     "EditTenant": "ویرایش مستاجر",
     "DeleteTenant": "حذف مستاجر",
     "TenantCreatedSuccessfully": "مستاجر با موفقیت ایجاد شد",
-    "TenantUpdatedSuccessfully": "مستاجر با موفقیت بروزرسانی شد",
+    "TenantUpdatedSuccessfully": "مستاجر با موفقیت به‌روزرسانی شد",
     "TenantDeletedSuccessfully": "مستاجر با موفقیت حذف شد",
     "DeleteTenantConfirmation": "آیا از حذف مستاجر '{0}' اطمینان دارید؟",
     "ConnectionStrings": "رشته‌های اتصال",
