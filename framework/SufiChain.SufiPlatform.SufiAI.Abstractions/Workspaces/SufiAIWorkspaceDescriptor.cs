@@ -36,6 +36,11 @@ public class SufiAIWorkspaceDescriptor
     public bool IsActive { get; set; }
 
     /// <summary>
+    /// Workspace-level web search gate. False disables web search for every consumer of the workspace.
+    /// </summary>
+    public bool UseWebSearch { get; set; } = true;
+
+    /// <summary>
     /// Whether the workspace is fully configured and ready to serve requests
     /// (e.g. has a model and credentials), without exposing the configuration itself.
     /// </summary>

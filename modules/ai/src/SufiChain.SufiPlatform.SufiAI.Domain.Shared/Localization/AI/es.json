@@ -889,6 +889,10 @@
 
     "WorkspaceCostFallbackHelp": "Solo reserva. Defina el precio por ruta en Configuraciones de modelo. Ambos vacíos registran $0, no uso gratuito.",
 
+    "WorkspaceAllowWebSearch": "Permitir búsqueda web",
+
+    "WorkspaceAllowWebSearchHelp": "Si está desactivado, ningún asistente de este espacio de trabajo puede buscar en la web, aunque su propia opción esté activada.",
+
     "RoutePriceWinsHelp": "El precio de la ruta prevalece. Déjelo vacío para heredar el valor del espacio de trabajo. Ambos vacíos registran $0.",
 
     "RoutePricingSection": "Precio de la ruta",

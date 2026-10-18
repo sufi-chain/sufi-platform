@@ -323,8 +323,8 @@ public partial class ModelConfigurationEditor : AIComponentBase
         }
     }
 
-    private static bool UsesWorkspaceConnection(AIModelConfigurationDto configuration) =>
-        string.IsNullOrWhiteSpace(configuration.ApiEndpoint) && !configuration.HasApiKey;
+    private bool UsesWorkspaceConnection(AIModelConfigurationDto configuration) =>
+        WorkspaceConnectionMatcher.UsesWorkspaceConnection(configuration.ApiEndpoint, configuration.HasApiKey, _workspace?.ApiBaseUrl);
 
     private void ResetForm()
     {

@@ -148,4 +148,9 @@
 					 HelperText="@L["WorkspaceCostFallbackHelp"]"
 					 Disabled="@ReadOnly" />
 	</SbGrid>
+
+	<SbCheckbox @bind-Value="Draft.UseWebSearch"
+				Label="@L["WorkspaceAllowWebSearch"]"
+				Disabled="@ReadOnly" />
+	<SbText Variant="SbTextVariant.Caption" Color="SbColor.Muted">@L["WorkspaceAllowWebSearchHelp"]</SbText>
 </SbStack>

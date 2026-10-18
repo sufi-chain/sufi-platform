@@ -115,6 +115,7 @@ public class SufiAIWorkspaceCatalogAdapter :
             DisplayName = workspace.Name,
             Model = chat.ModelId,
             IsActive = workspace.IsActive,
+            UseWebSearch = workspace.UseWebSearch,
             IsReady = chat.IsReady,
             IsInherited = workspace.IsInherited,
             Capabilities = MapCapabilities(results),

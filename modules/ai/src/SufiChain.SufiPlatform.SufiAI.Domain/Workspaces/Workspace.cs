@@ -32,6 +32,11 @@ public class Workspace : FullAuditedAggregateRoot<Guid>, IMultiTenant
     public bool IsActive { get; protected set; }
 
     /// <summary>
+    /// Workspace-level gate for web search. When false, no Hooshvare in this workspace may use web search.
+    /// </summary>
+    public bool UseWebSearch { get; protected set; } = true;
+
+    /// <summary>
     /// Collection of AI model configurations for different capabilities.
     /// Replaces the single Model property to support multi-modal AI.
     /// </summary>
@@ -345,6 +350,7 @@ public class Workspace : FullAuditedAggregateRoot<Guid>, IMultiTenant
             source.ApiBaseUrl,
             source.InputCostPer1MTokens,
             source.OutputCostPer1MTokens);
+        view.SetUseWebSearch(source.UseWebSearch);
         if (!IsActive)
         {
             view.Deactivate();
@@ -439,6 +445,8 @@ public class Workspace : FullAuditedAggregateRoot<Guid>, IMultiTenant
             .ThenBy(c => c.Id)
             .FirstOrDefault();
     }
+
+    public void SetUseWebSearch(bool useWebSearch) => UseWebSearch = useWebSearch;
 
     public void Activate() => IsActive = true;
     public void Deactivate() => IsActive = false;
