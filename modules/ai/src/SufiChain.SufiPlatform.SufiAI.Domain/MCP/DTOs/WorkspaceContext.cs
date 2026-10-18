@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 
 namespace SufiChain.SufiPlatform.SufiAI.MCP.Abstractions;
 
@@ -26,4 +27,10 @@ public class WorkspaceContext
     /// Additional metadata for tool execution.
     /// </summary>
     public Dictionary<string, object?>? Metadata { get; set; }
+
+    /// <summary>
+    /// Verified identity the call runs for (sufi-chain#384). Internal tools refuse to run without it,
+    /// and run under it rather than the ambient principal.
+    /// </summary>
+    public AgentCallContext? CallContext { get; set; }
 }

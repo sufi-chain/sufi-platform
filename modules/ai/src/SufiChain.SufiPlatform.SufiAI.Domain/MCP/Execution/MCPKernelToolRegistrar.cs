@@ -5,6 +5,8 @@ using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using SufiChain.SufiPlatform.SufiAI.MCP.Abstractions;
 using Volo.Abp.DependencyInjection;
+using Volo.Abp.MultiTenancy;
+using Volo.Abp.Security.Claims;
 
 namespace SufiChain.SufiPlatform.SufiAI.MCP.Execution;
 
@@ -16,12 +18,18 @@ public class MCPKernelToolRegistrar : IMCPKernelToolRegistrar, ITransientDepende
     private readonly IMCPToolRegistry _toolRegistry;
     private readonly IEnumerable<IMcpToolDecisionGate> _gates;
     private readonly ILogger<MCPKernelToolRegistrar> _logger;
+    private readonly ICurrentTenant? _currentTenant;
+    private readonly ICurrentPrincipalAccessor? _principalAccessor;
 
     public MCPKernelToolRegistrar(
         IMCPToolRegistry toolRegistry,
         IEnumerable<IMcpToolDecisionGate> gates,
-        ILogger<MCPKernelToolRegistrar> logger)
+        ILogger<MCPKernelToolRegistrar> logger,
+        ICurrentTenant? currentTenant = null,
+        ICurrentPrincipalAccessor? principalAccessor = null)
     {
+        _currentTenant = currentTenant;
+        _principalAccessor = principalAccessor;
         _toolRegistry = toolRegistry;
         _gates = gates;
         _logger = logger;
@@ -36,6 +44,13 @@ public class MCPKernelToolRegistrar : IMCPKernelToolRegistrar, ITransientDepende
         if (allowedToolNames.Count == 0)
         {
             return;
+        }
+
+        // sufi-chain#384: bind the turn's identity once, at registration (the turn entry point),
+        // so every tool call in this kernel runs for this user even if the ambient principal changes later.
+        if (context.CallContext is null && _currentTenant is not null && _principalAccessor is not null)
+        {
+            context.CallContext = AgentCallContext.Capture(_currentTenant, _principalAccessor);
         }
 
         var resolution = await _toolRegistry.ResolveAsync(allowedToolNames, cancellationToken);

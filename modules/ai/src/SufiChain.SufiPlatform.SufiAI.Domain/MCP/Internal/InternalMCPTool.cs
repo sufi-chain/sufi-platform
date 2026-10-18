@@ -9,13 +9,19 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using SufiChain.SufiPlatform.SufiAI.MCP.Abstractions;
 using Volo.Abp;
+using Volo.Abp.Authorization.Permissions;
 using Volo.Abp.DependencyInjection;
+using Volo.Abp.MultiTenancy;
+using Volo.Abp.Security.Claims;
 using Volo.Abp.Validation;
 
 namespace SufiChain.SufiPlatform.SufiAI.MCP.Internal;
 
 /// <summary>
 /// Wrapper for internal ApplicationService methods marked with [SufiAiMcpTool].
+/// This is the tool-dispatch point for internal tools (sufi-chain#384): every call needs an
+/// <see cref="AgentCallContext"/>, runs in a new DI scope under that tenant and principal, and is
+/// permission-checked against the bound user before the method runs.
 /// </summary>
 public class InternalMCPTool : IMCPTool
 {
@@ -23,6 +29,8 @@ public class InternalMCPTool : IMCPTool
     private readonly MethodInfo _method;
     private readonly IServiceProvider _serviceProvider;
     private readonly MethodParameterBinder _parameterBinder;
+    private readonly string? _permissionName;
+    private readonly bool _requiresPermission;
     
     public string Name { get; }
     public string Description { get; }
@@ -36,7 +44,9 @@ public class InternalMCPTool : IMCPTool
         string parameterSchema,
         Type serviceType,
         MethodInfo method,
-        IServiceProvider serviceProvider)
+        IServiceProvider serviceProvider,
+        string? permissionName = null,
+        bool requiresPermission = false)
     {
         Name = name;
         Description = description;
@@ -46,7 +56,15 @@ public class InternalMCPTool : IMCPTool
         _serviceProvider = serviceProvider;
         _parameterBinder = new MethodParameterBinder();
         Source = serviceType.Name;
+        _permissionName = string.IsNullOrWhiteSpace(permissionName) ? null : permissionName;
+        _requiresPermission = requiresPermission || _permissionName is not null;
     }
+
+    /// <summary>Permission the bound user must hold, from <c>SufiAiMcpToolAttribute.PermissionName</c>.</summary>
+    public string? PermissionName => _permissionName;
+
+    /// <summary>True when the tool declares a permission requirement.</summary>
+    public bool RequiresPermission => _requiresPermission;
     
     public async Task<MCPToolExecutionResult> ExecuteAsync(
         WorkspaceContext context,
@@ -55,10 +73,37 @@ public class InternalMCPTool : IMCPTool
     {
         var stopwatch = Stopwatch.StartNew();
         
+        var refusal = AgentCallBinding.Validate(context);
+        if (refusal is not null)
+        {
+            return MCPToolExecutionResult.CreateFailure(refusal);
+        }
+
+        var call = context.CallContext!;
+        using var scope = _serviceProvider.CreateScope();
+        var scoped = scope.ServiceProvider;
+        var currentTenant = scoped.GetService<ICurrentTenant>();
+        var principalAccessor = scoped.GetService<ICurrentPrincipalAccessor>();
+        if ((currentTenant is null || principalAccessor is null)
+            && (!call.IsAnonymous || call.TenantId is not null || _requiresPermission))
+        {
+            // Without ABP identity services the call can't be bound, so fail closed.
+            return MCPToolExecutionResult.CreateFailure(AgentCallErrorCodes.IdentityServicesMissing);
+        }
+
+        using var tenantChange = currentTenant?.Change(call.TenantId);
+        using var principalChange = principalAccessor?.Change(call.Principal);
+
         try
         {
-            // Resolve service from DI
-            var service = _serviceProvider.GetRequiredService(_serviceType);
+            var permissionRefusal = await CheckPermissionAsync(scoped, call);
+            if (permissionRefusal is not null)
+            {
+                return MCPToolExecutionResult.CreateFailure(permissionRefusal);
+            }
+
+            // Resolve the service inside the bound scope, never from the root provider.
+            var service = scoped.GetRequiredService(_serviceType);
             
             // Bind parameters
             var boundArgs = _parameterBinder.BindParameters(_method, parameters);
@@ -121,5 +166,32 @@ public class InternalMCPTool : IMCPTool
                 innerException.ToString()
             );
         }
+    }
+
+    private async Task<string?> CheckPermissionAsync(IServiceProvider scoped, AgentCallContext call)
+    {
+        if (!_requiresPermission)
+        {
+            return null;
+        }
+
+        if (call.IsAnonymous)
+        {
+            return AgentCallErrorCodes.AnonymousNotAllowed;
+        }
+
+        if (_permissionName is null)
+        {
+            // RequiresPermission without a name can't be checked; refuse rather than guess.
+            return AgentCallErrorCodes.PermissionNotDeclared;
+        }
+
+        var checker = scoped.GetService<IPermissionChecker>();
+        if (checker is null || !await checker.IsGrantedAsync(call.Principal, _permissionName))
+        {
+            return AgentCallErrorCodes.PermissionDenied;
+        }
+
+        return null;
     }
 }

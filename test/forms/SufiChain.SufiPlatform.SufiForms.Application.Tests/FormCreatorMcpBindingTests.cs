@@ -32,7 +32,7 @@ public class FormCreatorMcpBindingTests
             ? InputJson.Replace("\\\"placeholder\\\"", "\\\"unsupportedOption\\\"")
             : InputJson);
 
-        var result = await tool.ExecuteAsync(new WorkspaceContext(), new() { ["input"] = input.RootElement });
+        var result = await tool.ExecuteAsync(new WorkspaceContext { CallContext = AgentCallContext.Anonymous() }, new() { ["input"] = input.RootElement });
 
         result.Success.ShouldBeFalse();
         result.ErrorMessage.ShouldBe(confirmed
@@ -48,7 +48,7 @@ public class FormCreatorMcpBindingTests
         using var services = new ServiceCollection().AddSingleton<InvalidInputService>().BuildServiceProvider();
         var method = typeof(InvalidInputService).GetMethod(nameof(InvalidInputService.InvokeAsync))!;
         var tool = new InternalMCPTool("validation-test", "Validate", "{}", typeof(InvalidInputService), method, services);
-        var result = await tool.ExecuteAsync(new WorkspaceContext(), new());
+        var result = await tool.ExecuteAsync(new WorkspaceContext { CallContext = AgentCallContext.Anonymous() }, new());
         result.Success.ShouldBeFalse();
         result.ErrorMessage.ShouldContain("input.Name");
         result.ErrorMessage.ShouldContain("Name is required");
@@ -110,7 +110,7 @@ public class FormCreatorMcpBindingTests
             new JsonSchemaGenerator().GenerateSchema(method), typeof(FormDesignerMcpAppService), method, services);
         using var scope = new FormCreatorBuildScope(null);
         using var input = JsonDocument.Parse(InputJson);
-        var result = await tool.ExecuteAsync(new WorkspaceContext(), new() { ["input"] = input.RootElement });
+        var result = await tool.ExecuteAsync(new WorkspaceContext { CallContext = AgentCallContext.Anonymous() }, new() { ["input"] = input.RootElement });
         result.Success.ShouldBeTrue(result.ErrorMessage);
         scope.Definition.ShouldNotBeNull();
         scope.Definition!.Fields[0].Name.ShouldBe("email");

@@ -39,18 +39,32 @@ public class SufiAIToolAdapter : ISufiAITool
             WorkspaceName = context.WorkspaceName,
             TenantId = context.TenantId,
             UserId = context.UserId,
-            Metadata = context.Metadata
+            Metadata = context.Metadata,
+            // The bound identity rides in metadata across the abstractions boundary (sufi-chain#384).
+            CallContext = context.Metadata is { } metadata
+                          && metadata.TryGetValue(AgentCallContext.MetadataKey, out var call)
+                ? call as AgentCallContext
+                : null
         };
     }
 
     public static SufiAIToolExecutionContext MapContext(WorkspaceContext context)
     {
+        Dictionary<string, object?>? metadata = context.Metadata;
+        if (context.CallContext is not null)
+        {
+            metadata = metadata is null
+                ? new Dictionary<string, object?>()
+                : new Dictionary<string, object?>(metadata);
+            metadata[AgentCallContext.MetadataKey] = context.CallContext;
+        }
+
         return new SufiAIToolExecutionContext
         {
             WorkspaceName = context.WorkspaceName,
             TenantId = context.TenantId,
             UserId = context.UserId,
-            Metadata = context.Metadata
+            Metadata = metadata
         };
     }
 

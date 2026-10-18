@@ -100,7 +100,9 @@ public class ReflectionToolDiscoveryService : IInternalToolDiscoveryService, ISi
                                 schema,
                                 type,
                                 method,
-                                _serviceProvider
+                                _serviceProvider,
+                                attribute.PermissionName,
+                                attribute.RequiresPermission
                             );
                             
                             tools.Add(tool);
@@ -144,8 +146,8 @@ public class ReflectionToolDiscoveryService : IInternalToolDiscoveryService, ISi
     private static ToolAttributeInfo GetToolAttribute(MethodInfo method)
     {
         var attribute = method.GetCustomAttribute<SufiAiMcpToolAttribute>()!;
-        return new ToolAttributeInfo(attribute.Name, attribute.Description);
+        return new ToolAttributeInfo(attribute.Name, attribute.Description, attribute.PermissionName, attribute.RequiresPermission);
     }
 
-    private sealed record ToolAttributeInfo(string Name, string Description);
+    private sealed record ToolAttributeInfo(string Name, string Description, string? PermissionName, bool RequiresPermission);
 }
