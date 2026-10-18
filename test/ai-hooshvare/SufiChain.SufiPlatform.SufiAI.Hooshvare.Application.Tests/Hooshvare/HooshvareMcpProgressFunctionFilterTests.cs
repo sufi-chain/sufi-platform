@@ -164,7 +164,14 @@ public class HooshvareMcpProgressFunctionFilterTests
             Array.Empty<IMcpToolDecisionGate>(),
             NullLogger<MCPKernelToolRegistrar>.Instance);
 
-        await registrar.RegisterToolsAsync(kernel, new WorkspaceContext { WorkspaceName = "test" }, [toolName]);
+        // sufi-chain#384 slice 4: tools are offered only to a bound caller; anonymous turns get only allowlisted tools.
+        var userId = Guid.NewGuid();
+        var principal = new System.Security.Claims.ClaimsPrincipal(new System.Security.Claims.ClaimsIdentity(
+            new[] { new System.Security.Claims.Claim(Volo.Abp.Security.Claims.AbpClaimTypes.UserId, userId.ToString()) }, "test"));
+        await registrar.RegisterToolsAsync(
+            kernel,
+            new WorkspaceContext { WorkspaceName = "test", CallContext = AgentCallContext.ForUser(null, userId, principal) },
+            [toolName]);
 
         return (kernel, kernel.Plugins.Single().Single(), progress);
     }
