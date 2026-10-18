@@ -42,13 +42,16 @@
 										<Icon><SbIcon Name="@(cellContext.Item.IsInherited ? "eye" : "edit")" /></Icon>
 									</SbIconButton>
 								</AuthorizeView>
-								<AuthorizeView Policy="@AIPermissions.Workspaces.Create">
-									<SbIconButton Size="SbSize.Sm"
-												  AriaLabel="@L["Clone"]"
-												  OnClick="@(() => OpenCloneModal(cellContext.Item))">
-										<Icon><SbIcon Name="copy" /></Icon>
-									</SbIconButton>
-								</AuthorizeView>
+								@if (!cellContext.Item.IsInherited)
+								{
+									<AuthorizeView Policy="@AIPermissions.Workspaces.Create">
+										<SbIconButton Size="SbSize.Sm"
+													  AriaLabel="@L["Clone"]"
+													  OnClick="@(() => OpenCloneModal(cellContext.Item))">
+											<Icon><SbIcon Name="copy" /></Icon>
+										</SbIconButton>
+									</AuthorizeView>
+								}
 								@if (IsHost && !cellContext.Item.IsInherited)
 								{
 									<AuthorizeView Policy="@AIPermissions.Workspaces.Edit">
@@ -64,16 +67,6 @@
 													  AriaLabel="@L["AssignToTenant"]"
 													  OnClick="@(() => OpenAssignModal(cellContext.Item))">
 											<Icon><SbIcon Name="share" /></Icon>
-										</SbIconButton>
-									</AuthorizeView>
-								}
-								@if (cellContext.Item.IsInherited)
-								{
-									<AuthorizeView Policy="@AIPermissions.Workspaces.Edit">
-										<SbIconButton Size="SbSize.Sm"
-													  AriaLabel="@L["ConvertToCustom"]"
-													  OnClick="@(() => ConvertToCustomAsync(cellContext.Item))">
-											<Icon><SbIcon Name="unlock" /></Icon>
 										</SbIconButton>
 									</AuthorizeView>
 								}

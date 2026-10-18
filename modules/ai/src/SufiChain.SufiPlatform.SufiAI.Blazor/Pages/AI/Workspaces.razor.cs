@@ -16,7 +16,6 @@ public partial class Workspaces : AIComponentBase
     {
         public const string LoadWorkspaces = "load-workspaces";
         public const string DeleteWorkspace = "delete-workspace";
-        public const string ConvertWorkspace = "convert-workspace";
     }
 
     [Inject] protected IPageLayout PageLayout { get; set; } = default!;
@@ -154,25 +153,6 @@ public partial class Workspaces : AIComponentBase
             await Message.SuccessAsync(L["HostDefaultWorkspaceSaved"]);
             await (_gridRef?.RefreshDataAsync() ?? Task.CompletedTask);
         }, LoadingKeys.LoadWorkspaces);
-    }
-
-    private async Task ConvertToCustomAsync(WorkspaceDto workspace)
-    {
-        var confirmed = await Message.ConfirmAsync(
-            L["ConvertToCustomConfirmation", workspace.Name],
-            L["AreYouSure"]);
-
-        if (!confirmed)
-        {
-            return;
-        }
-
-        await ExecuteWithLoadingAsync(async () =>
-        {
-            await WorkspaceAppService.ConvertToCustomAsync(workspace.Id);
-            await Message.SuccessAsync(L["WorkspaceConvertedSuccessfully"]);
-            await (_gridRef?.RefreshDataAsync() ?? Task.CompletedTask);
-        }, LoadingKeys.ConvertWorkspace);
     }
 
     private async Task DeleteWorkspaceAsync(WorkspaceDto workspace)

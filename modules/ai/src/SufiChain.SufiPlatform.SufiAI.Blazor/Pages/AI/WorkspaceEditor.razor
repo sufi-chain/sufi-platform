@@ -23,13 +23,6 @@
 						<SbAlert Severity="SbAlertSeverity.Info">
 							@L["InheritedWorkspaceReadOnly"]
 						</SbAlert>
-						<AuthorizeView Policy="@AIPermissions.Workspaces.Edit">
-							<SbButton Color="SbColor.Primary"
-									  OnClick="@ConvertToCustomAsync"
-									  Loading="IsOperationLoading(LoadingKeys.ConvertWorkspace)">
-								@L["ConvertToCustom"]
-							</SbButton>
-						</AuthorizeView>
 					}
 					<WorkspaceConnectionFields Draft="_draft"
 											   Profiles="_profiles"
