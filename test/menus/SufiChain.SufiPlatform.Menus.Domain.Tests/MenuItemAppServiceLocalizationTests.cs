@@ -74,7 +74,7 @@ public class MenuItemAppServiceLocalizationTests
 
         source.ShouldContain("MenuItemAppService.GetAsync(item.Id)");
         source.ShouldContain("DisplayNames = stored.DisplayNames");
-        source.ShouldContain("DisplayName = stored.DisplayName");
+        source.ShouldContain("DisplayName = ResolveEditableDisplayName(stored.DisplayName");
     }
 
     private static string FindRepoFile(string relativePath, bool underPlatform = true)
