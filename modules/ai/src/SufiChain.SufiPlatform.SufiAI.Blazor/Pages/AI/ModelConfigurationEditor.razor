@@ -20,6 +20,11 @@
 			<SbAlert Severity="SbAlertSeverity.Info">@L["InheritedWorkspaceReadOnly"]</SbAlert>
 		}
 
+		@if (!string.IsNullOrEmpty(_formError))
+		{
+			<SbAlert Severity="SbAlertSeverity.Danger" role="alert">@_formError</SbAlert>
+		}
+
 		<fieldset class="model-configuration-editor__fields" disabled="@_readOnly">
 			<section class="model-configuration-editor__section" aria-labelledby="model-configuration-connection">
 				<SbHeading Level="2" id="model-configuration-connection">@L["ConnectionSettings"]</SbHeading>
@@ -282,7 +287,7 @@
 
 	<div class="model-configuration-editor__footer">
 		<SbStack Wrap="true" Direction="SbStackDirection.Row" Gap="2" Justify="SbJustify.End">
-			<SbButton Variant="SbButtonVariant.Outline" OnClick="@Cancel">@L["Cancel"]</SbButton>
+			<SbButton Variant="SbButtonVariant.Outline" OnClick="@Cancel">@L["EditorLeave"]</SbButton>
 			@if (_ready)
 			{
 				<SbButton Color="SbColor.Primary"

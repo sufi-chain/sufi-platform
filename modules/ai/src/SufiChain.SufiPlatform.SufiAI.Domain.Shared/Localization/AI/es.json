@@ -108,7 +108,7 @@
 
     "Complete": "Completar",
 
-    "ConfigurationCreated": "Configuración del modelo creada exitosamente",
+    "ConfigurationCreated": "Configuración del modelo creada.",
 
     "ConfigurationDeleted": "Configuración del modelo eliminada exitosamente",
 
@@ -116,7 +116,8 @@
 
     "ConfigurationEnabled": "Configuración del modelo habilitada",
 
-    "ConfigurationUpdated": "Configuración del modelo actualizada exitosamente",
+    "ConfigurationUpdated": "Configuración del modelo guardada.",
+    "EditorLeave": "Cancelar",
 
     "ConnectionTestFailed": "Prueba de conexión fallida",
 
