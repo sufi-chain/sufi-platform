@@ -66,7 +66,7 @@ public class TenantManager : DomainService, ITenantManager
         var existingTenant = await TenantRepository.FindByDatabaseNameAsync(databaseName);
         if (existingTenant != null && existingTenant.Id != tenant.Id)
         {
-            throw new BusinessException("TenantManagement:DuplicateDatabaseName")
+            throw new BusinessException(TenantsErrorCodes.DuplicateDatabaseName)
                 .WithData("DatabaseName", databaseName);
         }
 
@@ -85,7 +85,7 @@ public class TenantManager : DomainService, ITenantManager
         var existingSubdomainTenant = await TenantRepository.FindByPrimarySubdomainAsync(normalizedSubdomain);
         if (existingSubdomainTenant != null && existingSubdomainTenant.Id != tenant.Id)
         {
-            throw new BusinessException("TenantManagement:DuplicatePrimarySubdomain")
+            throw new BusinessException(TenantsErrorCodes.DuplicatePrimarySubdomain)
                 .WithData("PrimarySubdomain", normalizedSubdomain);
         }
 
@@ -104,7 +104,7 @@ public class TenantManager : DomainService, ITenantManager
             var existingDomainTenant = await TenantRepository.FindByDomainHostAsync(domain.Host);
             if (existingDomainTenant != null && existingDomainTenant.Id != tenant.Id)
             {
-                throw new BusinessException("TenantManagement:DuplicateDomainHost")
+                throw new BusinessException(TenantsErrorCodes.DuplicateDomainHost)
                     .WithData("Host", domain.Host);
             }
         }

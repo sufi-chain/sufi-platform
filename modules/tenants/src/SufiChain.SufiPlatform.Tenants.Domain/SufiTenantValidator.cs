@@ -1,5 +1,6 @@
 using System;
 using System.Threading.Tasks;
+using Volo.Abp;
 
 namespace SufiChain.SufiPlatform.Tenants;
 
@@ -27,7 +28,10 @@ public class SufiTenantValidator : ITenantValidator
         var owner = await TenantRepository.FindByNameAsync(tenant.NormalizedName);
         if (owner != null && owner.Id != tenant.Id)
         {
-            throw new InvalidOperationException($"Duplicate tenant name: {tenant.NormalizedName}");
+            // sufi-chain#441: a coded, localized business error (was InvalidOperationException, shown as
+            // the generic "internal error" modal).
+            throw new BusinessException(TenantsErrorCodes.DuplicateTenantName)
+                .WithData("Name", tenant.Name);
         }
     }
 }

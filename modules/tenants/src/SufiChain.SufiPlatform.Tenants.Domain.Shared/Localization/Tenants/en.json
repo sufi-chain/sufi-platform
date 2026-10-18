@@ -1,6 +1,12 @@
 {
   "culture": "en",
   "texts": {
+    "TenantManagement:DuplicateTenantName": "A tenant named '{Name}' already exists. Choose another name.",
+    "TenantManagement:DuplicateDatabaseName": "The database name '{DatabaseName}' is already used by another tenant.",
+    "TenantManagement:DuplicatePrimarySubdomain": "The subdomain '{PrimarySubdomain}' is already used by another tenant.",
+    "TenantManagement:DuplicateDomainHost": "The domain '{Host}' is already used by another tenant.",
+    "TenantManagement:DatabaseNameIsImmutable": "The database name can't be changed after it's set.",
+    "TenantManagement:UnverifiedCustomDomainCanNotBeActive": "A custom domain must be verified before it can be activated.",
     "Menu:Tenants": "Tenant Management",
     "Menu:Tenants": "Tenants",
     "Tenants": "Tenants",

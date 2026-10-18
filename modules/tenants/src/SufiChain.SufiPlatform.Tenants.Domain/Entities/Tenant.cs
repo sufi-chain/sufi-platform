@@ -129,7 +129,7 @@ public class Tenant : FullAuditedAggregateRoot<Guid>, IHasEntityVersion
         if (!DatabaseName.IsNullOrWhiteSpace() &&
             !string.Equals(DatabaseName, databaseName, StringComparison.Ordinal))
         {
-            throw new BusinessException("TenantManagement:DatabaseNameIsImmutable");
+            throw new BusinessException(TenantsErrorCodes.DatabaseNameIsImmutable);
         }
 
         DatabaseName = databaseName;

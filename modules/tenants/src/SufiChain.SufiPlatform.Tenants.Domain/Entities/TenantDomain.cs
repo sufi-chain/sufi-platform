@@ -39,7 +39,7 @@ public class TenantDomain : AuditedEntity<Guid>
     {
         if (Type == TenantDomainType.Custom && isActive && !isVerified)
         {
-            throw new BusinessException("TenantManagement:UnverifiedCustomDomainCanNotBeActive")
+            throw new BusinessException(TenantsErrorCodes.UnverifiedCustomDomainCanNotBeActive)
                 .WithData("Host", Host);
         }
 
