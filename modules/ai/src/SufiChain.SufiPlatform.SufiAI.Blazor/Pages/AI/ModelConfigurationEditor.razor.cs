@@ -36,6 +36,7 @@ public partial class ModelConfigurationEditor : AIComponentBase
     private bool _isEditMode;
     private bool _hasStoredApiKey;
     private bool _useWorkspaceConnection = true;
+    private string? _formError;
     private bool _ready;
     private bool _notFound;
     private bool _readOnly;
@@ -650,6 +651,7 @@ public partial class ModelConfigurationEditor : AIComponentBase
 
     private async Task SaveConfigurationAsync()
     {
+        _formError = null;
         if (_readOnly)
         {
             return;
@@ -657,13 +659,13 @@ public partial class ModelConfigurationEditor : AIComponentBase
 
         if (WorkspaceId == Guid.Empty)
         {
-            await Message.ErrorAsync(L["WorkspaceRequired"]);
+            _formError = L["WorkspaceRequired"];
             return;
         }
 
         if (string.IsNullOrWhiteSpace(_model.ModelId))
         {
-            await Message.ErrorAsync(L["ModelIdRequired"]);
+            _formError = L["ModelIdRequired"];
             return;
         }
 
@@ -718,12 +720,12 @@ public partial class ModelConfigurationEditor : AIComponentBase
                     CapabilitySource = _model.CapabilitySource
                 };
                 await AIAppService.UpdateModelConfigurationAsync(_editing.Id, updateDto);
-                await Message.SuccessAsync(L["ConfigurationUpdated"]);
+                await Notify.SuccessAsync(L["ConfigurationUpdated"]);
             }
             else
             {
                 await AIAppService.CreateModelConfigurationAsync(_model);
-                await Message.SuccessAsync(L["ConfigurationCreated"]);
+                await Notify.SuccessAsync(L["ConfigurationCreated"]);
             }
 
             Cancel();
@@ -739,13 +741,13 @@ public partial class ModelConfigurationEditor : AIComponentBase
 
         if (WorkspaceId == Guid.Empty)
         {
-            await Message.ErrorAsync(L["WorkspaceRequired"]);
+            _formError = L["WorkspaceRequired"];
             return;
         }
 
         if (string.IsNullOrWhiteSpace(_model.ModelId))
         {
-            await Message.ErrorAsync(L["ModelIdRequired"]);
+            _formError = L["ModelIdRequired"];
             return;
         }
 
@@ -909,13 +911,13 @@ public partial class ModelConfigurationEditor : AIComponentBase
     {
         if (_inputPriceSpecified && _inputPriceValue < 0)
         {
-            _ = Message.ErrorAsync(L["InputPriceMustBeNonNegative"]);
+            _formError = L["InputPriceMustBeNonNegative"];
             return false;
         }
 
         if (_showOutputPrice && _outputPriceSpecified && _outputPriceValue < 0)
         {
-            _ = Message.ErrorAsync(L["OutputPriceMustBeNonNegative"]);
+            _formError = L["OutputPriceMustBeNonNegative"];
             return false;
         }
 
