@@ -1,6 +1,12 @@
 {
   "culture": "ar",
   "texts": {
+    "TenantManagement:DuplicateTenantName": "يوجد مستأجر باسم '{Name}' بالفعل. اختر اسمًا آخر.",
+    "TenantManagement:DuplicateDatabaseName": "اسم قاعدة البيانات '{DatabaseName}' مستخدم من قبل مستأجر آخر.",
+    "TenantManagement:DuplicatePrimarySubdomain": "النطاق الفرعي '{PrimarySubdomain}' مستخدم من قبل مستأجر آخر.",
+    "TenantManagement:DuplicateDomainHost": "النطاق '{Host}' مستخدم من قبل مستأجر آخر.",
+    "TenantManagement:DatabaseNameIsImmutable": "لا يمكن تغيير اسم قاعدة البيانات بعد تعيينه.",
+    "TenantManagement:UnverifiedCustomDomainCanNotBeActive": "يجب التحقق من النطاق المخصص قبل تفعيله.",
     "Menu:Tenants": "إدارة المستأجرين",
     "Menu:Tenants": "المستأجرين",
     "Tenants": "المستأجرين",

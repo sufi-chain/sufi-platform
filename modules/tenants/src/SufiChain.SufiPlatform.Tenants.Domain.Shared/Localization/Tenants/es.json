@@ -1,6 +1,12 @@
 {
   "culture": "es",
   "texts": {
+    "TenantManagement:DuplicateTenantName": "Ya existe un inquilino llamado '{Name}'. Elige otro nombre.",
+    "TenantManagement:DuplicateDatabaseName": "El nombre de base de datos '{DatabaseName}' ya lo usa otro inquilino.",
+    "TenantManagement:DuplicatePrimarySubdomain": "El subdominio '{PrimarySubdomain}' ya lo usa otro inquilino.",
+    "TenantManagement:DuplicateDomainHost": "El dominio '{Host}' ya lo usa otro inquilino.",
+    "TenantManagement:DatabaseNameIsImmutable": "El nombre de la base de datos no se puede cambiar una vez definido.",
+    "TenantManagement:UnverifiedCustomDomainCanNotBeActive": "Un dominio personalizado debe verificarse antes de activarse.",
     "Menu:Tenants": "Gestión de tenants",
     "Menu:Tenants": "Inquilinos",
     "Tenants": "Inquilinos",

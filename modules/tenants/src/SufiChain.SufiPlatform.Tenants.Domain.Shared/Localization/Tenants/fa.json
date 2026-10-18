@@ -1,6 +1,12 @@
 {
   "culture": "fa",
   "texts": {
+    "TenantManagement:DuplicateTenantName": "فضای کاری‌ای با نام «{Name}» از قبل وجود دارد. نام دیگری انتخاب کنید.",
+    "TenantManagement:DuplicateDatabaseName": "نام پایگاه داده «{DatabaseName}» را فضای کاری دیگری استفاده می‌کند.",
+    "TenantManagement:DuplicatePrimarySubdomain": "زیردامنه «{PrimarySubdomain}» را فضای کاری دیگری استفاده می‌کند.",
+    "TenantManagement:DuplicateDomainHost": "دامنه «{Host}» را فضای کاری دیگری استفاده می‌کند.",
+    "TenantManagement:DatabaseNameIsImmutable": "نام پایگاه داده پس از تعیین قابل تغییر نیست.",
+    "TenantManagement:UnverifiedCustomDomainCanNotBeActive": "دامنه اختصاصی پیش از فعال‌سازی باید تأیید شود.",
     "Menu:Tenants": "مدیریت مستاجرین",
     "Menu:Tenants": "مستاجرین",
     "Tenants": "مستاجرین",

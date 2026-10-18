@@ -34,6 +34,7 @@ public class SufiTenantsDomainSharedModule : AbpModule
         Configure<AbpExceptionLocalizationOptions>(options =>
         {
             options.MapCodeNamespace("SufiChain.SufiPlatform.Tenants", typeof(SufiTenantsResource));
+            options.MapCodeNamespace(TenantsErrorCodes.Namespace, typeof(SufiTenantsResource));
         });
     }
 }
