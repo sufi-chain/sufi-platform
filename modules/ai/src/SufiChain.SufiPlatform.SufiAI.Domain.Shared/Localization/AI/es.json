@@ -76,9 +76,9 @@
 
     "ApiKey": "Clave API",
 
-    "ApiKeyHelperText": "Dejar vacío para usar la clave API del espacio de trabajo",
+    "ApiKeyHelperText": "La clave propia de esta ruta.",
 
-    "ApiKeyPlaceholder": "Dejar vacío para usar la clave API del espacio de trabajo",
+    "ApiKeyPlaceholder": "p. ej. sk-…",
 
     "AreYouSure": "¿Está seguro?",
 
@@ -121,7 +121,7 @@
 
     "ConnectionTestFailed": "Prueba de conexión fallida",
 
-    "ConnectionTestSuccessful": "Prueba de conexión exitosa",
+    "ConnectionTestSuccessful": "La conexión funciona.",
 
     "Cost": "Costo",
 
@@ -301,7 +301,7 @@
 
     "ModelIdRequired": "Se requiere el ID del modelo",
 
-    "ModelConfigurationOverrideHint": "Esta capacidad usa su propio endpoint y/o clave API. Pruebe la conexión aquí: la prueba de conexión del workspace solo verifica el chat contra el endpoint del workspace.",
+    "ModelConfigurationOverrideHint": "Esta ruta tiene su propio endpoint o clave. Pruébala aquí; la prueba del espacio de trabajo no comprueba esta conexión.",
 
     "Name": "Nombre",
 
@@ -419,6 +419,15 @@
     "WorkspaceChat:ReplyFailed": "La respuesta falló",
 
     "TestConnection": "Probar Conexión",
+    "TestThisConnection": "Probar esta conexión",
+    "TestWorkspaceConnection": "Probar la conexión del espacio de trabajo",
+    "CustomConnectionEmpty": "Introduce un endpoint o una clave API para la conexión propia, o elige «Usar la conexión del espacio de trabajo».",
+    "RouteKeyStoredHelp": "Hay una clave guardada. Introduce una nueva para sustituirla.",
+    "OpenWorkspaceSettings": "Abrir ajustes del espacio de trabajo",
+    "WorkspaceKeyMissing": "Clave API: no configurada en el espacio de trabajo",
+    "WorkspaceKeyStored": "Clave API: guardada en el espacio de trabajo",
+    "WorkspaceEndpointDefault": "Endpoint: el predeterminado del proveedor",
+    "WorkspaceEndpointLine": "Endpoint: {0}",
 
     "Text": "Texto",
 

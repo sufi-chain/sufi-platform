@@ -227,17 +227,24 @@ public partial class ModelConfigurationEditor : AIComponentBase
     private string EmbeddingDimensionsPlaceholder =>
         EmbeddingModelDefaults.GetDimensions(_model.ModelId).ToString();
 
-    private bool ShowsEndpointOverrideHint =>
-        !string.IsNullOrWhiteSpace(_model.ApiEndpoint);
+    private bool _customConnectionError;
+    private string? _testError;
 
-    private string ApiKeyPlaceholder =>
-        _isEditMode && _hasStoredApiKey
-            ? L["LeaveEmptyToKeepCurrent"]
-            : L["ApiKeyPlaceholder"];
+    private string WorkspaceSettingsUrl => $"/panel/admin/ai/workspaces/{WorkspaceId}/edit";
+
+    /// <summary>Custom mode: shown when the route has its own endpoint or key (typed or stored).</summary>
+    private bool ShowsEndpointOverrideHint => CustomConnectionHasEndpointOrKey;
+
+    private bool CustomConnectionHasEndpointOrKey =>
+        !string.IsNullOrWhiteSpace(_model.ApiEndpoint)
+        || !string.IsNullOrWhiteSpace(_model.ApiKey)
+        || (_isEditMode && _hasStoredApiKey);
+
+    private string ApiKeyPlaceholder => L["ApiKeyPlaceholder"];
 
     private string ApiKeyHelperText =>
         _isEditMode && _hasStoredApiKey
-            ? L["LeaveEmptyToKeepCurrent"]
+            ? L["RouteKeyStoredHelp"]
             : L["ApiKeyHelperText"];
 
     protected override async Task OnParametersSetAsync()
@@ -653,6 +660,7 @@ public partial class ModelConfigurationEditor : AIComponentBase
     private async Task SaveConfigurationAsync()
     {
         _formError = null;
+        _customConnectionError = false;
         if (_readOnly)
         {
             return;
@@ -684,6 +692,12 @@ public partial class ModelConfigurationEditor : AIComponentBase
         }
         else
         {
+            _customConnectionError = !CustomConnectionHasEndpointOrKey;
+            if (_customConnectionError)
+            {
+                return;
+            }
+
             _model.ApiEndpoint = string.IsNullOrWhiteSpace(_model.ApiEndpoint) ? null : _model.ApiEndpoint.Trim();
         }
 
@@ -757,21 +771,37 @@ public partial class ModelConfigurationEditor : AIComponentBase
             return;
         }
 
+        _testError = null;
         await ExecuteWithLoadingAsync(async () =>
         {
-            await WorkspaceAppService.TestConnectionAsync(new TestWorkspaceConnectionInput
+            try
             {
-                WorkspaceId = WorkspaceId,
-                ModelConfigurationId = ConnectionConfigurationId,
-                CapabilityType = _model.CapabilityType,
-                Model = _model.ModelId,
-                ApiKey = ConnectionApiKey,
-                ApiBaseUrl = ConnectionBaseUrl,
-                OpenAIApiMode = _model.OpenAIApiMode
-            });
+                await WorkspaceAppService.TestConnectionAsync(new TestWorkspaceConnectionInput
+                {
+                    WorkspaceId = WorkspaceId,
+                    ModelConfigurationId = ConnectionConfigurationId,
+                    CapabilityType = _model.CapabilityType,
+                    Model = _model.ModelId,
+                    ApiKey = ConnectionApiKey,
+                    ApiBaseUrl = ConnectionBaseUrl,
+                    OpenAIApiMode = _model.OpenAIApiMode
+                });
+            }
+            catch (Exception ex) when (ex is not OperationCanceledException and not ObjectDisposedException)
+            {
+                // G-160 / G-146: inline under the button, server reason only, never a raw exception or modal.
+                _testError = ConnectionTestErrorText(ex);
+                return;
+            }
+
             await Notify.SuccessAsync(L["ConnectionTestSuccessful"]);
         }, LoadingKeys.TestConnection);
     }
+
+    private string ConnectionTestErrorText(Exception exception) =>
+        exception is Volo.Abp.IUserFriendlyException && !string.IsNullOrWhiteSpace(exception.Message)
+            ? exception.Message
+            : L["ConnectionTestFailed"];
 
     private Task LoadModelsAsync() => LoadModelsAsync(announce: true);
 

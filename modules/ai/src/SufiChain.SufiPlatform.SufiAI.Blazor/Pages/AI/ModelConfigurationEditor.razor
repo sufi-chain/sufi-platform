@@ -74,9 +74,34 @@
 
 				@if (_useWorkspaceConnection)
 				{
-					<SbText Variant="SbTextVariant.BodySmall" Color="SbColor.Muted">
-						@L["WorkspaceConnectionSummary"]
-					</SbText>
+					<SbStack Gap="1" Class="model-configuration-editor__workspace-connection" data-testid="workspace-connection-block">
+						<SbText Variant="SbTextVariant.BodySmall" Color="SbColor.Muted">
+							@L["WorkspaceConnectionSummary"]
+						</SbText>
+						<SbText Variant="SbTextVariant.BodySmall">
+							@if (string.IsNullOrWhiteSpace(_workspace?.ApiBaseUrl))
+							{
+								@L["WorkspaceEndpointDefault"]
+							}
+							else
+							{
+								@L["WorkspaceEndpointLine", string.Empty]<bdi dir="ltr" class="model-configuration-editor__ltr">@_workspace!.ApiBaseUrl</bdi>
+							}
+						</SbText>
+						@if (_workspace?.HasApiKey == true)
+						{
+							<SbText Variant="SbTextVariant.BodySmall">
+								@L["WorkspaceKeyStored"] <bdi dir="ltr" aria-hidden="true">••••</bdi>
+							</SbText>
+						}
+						else
+						{
+							<SbText Variant="SbTextVariant.BodySmall" Color="SbColor.Danger" role="alert">
+								@L["WorkspaceKeyMissing"]
+								<a href="@WorkspaceSettingsUrl">@L["OpenWorkspaceSettings"]</a>
+							</SbText>
+						}
+					</SbStack>
 				}
 				else
 				{
@@ -94,11 +119,17 @@
 									 Placeholder="@L["ApiEndpointPlaceholder"]"
 									 HelperText="@L["ApiEndpointHelperText"]" />
 
-						<SbTextField @bind-Value="_model.ApiKey"
-									 Label="@L["ApiKey"]"
-									 Placeholder="@ApiKeyPlaceholder"
-									 HelperText="@ApiKeyHelperText"
-									 Type="password" />
+						<div class="model-configuration-editor__api-key" data-field="api-key">
+							<SbTextField @bind-Value="_model.ApiKey"
+										 Label="@L["ApiKey"]"
+										 Placeholder="@ApiKeyPlaceholder"
+										 HelperText="@ApiKeyHelperText"
+										 Type="password" />
+							@if (_customConnectionError)
+							{
+								<SbText Variant="SbTextVariant.Caption" Color="SbColor.Danger" role="alert">@L["CustomConnectionEmpty"]</SbText>
+							}
+						</div>
 					</SbGrid>
 				}
 
@@ -214,8 +245,12 @@
 				<SbButton Variant="SbButtonVariant.Outline"
 						  OnClick="@TestConnectionAsync"
 						  Loading="IsOperationLoading(LoadingKeys.TestConnection)">
-					@L["TestConnection"]
+					@(_useWorkspaceConnection ? L["TestWorkspaceConnection"] : L["TestThisConnection"])
 				</SbButton>
+				@if (!string.IsNullOrEmpty(_testError))
+				{
+					<SbText Variant="SbTextVariant.Caption" Color="SbColor.Danger" role="alert" data-testid="connection-test-error">@_testError</SbText>
+				}
 			</section>
 
 			<section class="model-configuration-editor__section" aria-labelledby="model-configuration-pricing">
