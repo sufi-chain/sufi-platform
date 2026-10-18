@@ -150,6 +150,8 @@ public class AiCreditGrantTests
             ],
             vatEnabled: false,
             vatPercent: 0m);
+        invoice.Issue(Guid.NewGuid(), PeriodStart);
+        invoice.RecordWalletPayment(Guid.NewGuid(), Guid.NewGuid(), "pay-aic-1", PeriodStart, Guid.NewGuid());
         return invoice;
     }
 
