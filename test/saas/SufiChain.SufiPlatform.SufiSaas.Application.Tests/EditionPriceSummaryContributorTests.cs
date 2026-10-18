@@ -15,18 +15,22 @@ public class EditionPriceSummaryContributorTests
     {
         var pricedEditionId = Guid.Parse("11111111-1111-1111-1111-111111111111");
         var unpricedEditionId = Guid.Parse("22222222-2222-2222-2222-222222222222");
-        var priced = new Plan(Guid.NewGuid(), "GROWTH", "Growth", pricedEditionId, price: 1_000_000m, currencyCode: "IRR");
+        var priced = new Plan(Guid.NewGuid(), "GROWTH", "Growth", pricedEditionId, price: 29m, currencyCode: "USD");
+        priced.SetMonthlyPricing(1_000_000m, "IRR");
+        var legacyOnlyEditionId = Guid.Parse("33333333-3333-3333-3333-333333333333");
+        var legacyOnly = new Plan(Guid.NewGuid(), "SCALE", "Scale", legacyOnlyEditionId, price: 99m, currencyCode: "USD");
         var unpriced = new Plan(Guid.NewGuid(), "STARTER", "Starter", unpricedEditionId, price: 0m, currencyCode: "IRR", allowUnpaidUse: true);
 
         var plans = Substitute.For<IPlanRepository>();
-        plans.GetListAsync(Arg.Any<bool>(), Arg.Any<CancellationToken>()).Returns([priced, unpriced]);
+        plans.GetListAsync(Arg.Any<bool>(), Arg.Any<CancellationToken>()).Returns([priced, unpriced, legacyOnly]);
 
         var contributor = new SaasEditionPriceSummaryContributor(plans);
         var dtos = new List<EditionsEditionDto>
         {
             new() { Id = pricedEditionId, Code = "GROWTH" },
             new() { Id = unpricedEditionId, Code = "STARTER" },
-            new() { Id = Guid.NewGuid(), Code = "ORPHAN" }
+            new() { Id = Guid.NewGuid(), Code = "ORPHAN" },
+            new() { Id = legacyOnlyEditionId, Code = "SCALE" }
         };
 
         await contributor.ContributeAsync(dtos);
@@ -40,5 +44,9 @@ public class EditionPriceSummaryContributorTests
         dtos[1].PriceSummary!.IsPriced.ShouldBeFalse();
 
         dtos[2].PriceSummary.ShouldBeNull();
+
+        // #193 G-84: a legacy USD price alone is not shown as the edition price.
+        dtos[3].PriceSummary.ShouldNotBeNull();
+        dtos[3].PriceSummary!.IsPriced.ShouldBeFalse();
     }
 }

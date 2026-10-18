@@ -61,8 +61,12 @@
                     <SbColumn TItem="EditionDto" Field="Name" Title="@L["EditionName"]" Sortable="true" Filterable="true">
                         <CellTemplate Context="ctx">
                             <SbStack Direction="SbStackDirection.Column" Gap="0">
-                                <SbText Variant="SbTextVariant.BodySmall" Weight="SbFontWeight.Medium">@ctx.Item.Name</SbText>
-                                <SbText Variant="SbTextVariant.Caption" Color="SbColor.Muted">@ctx.Item.LocalizedDisplayName</SbText>
+                                @* #193 G-86: the readable name leads; the internal name is secondary and hidden when identical. *@
+                                <SbText Variant="SbTextVariant.BodySmall" Weight="SbFontWeight.Medium">@(string.IsNullOrWhiteSpace(ctx.Item.LocalizedDisplayName) ? ctx.Item.Name : ctx.Item.LocalizedDisplayName)</SbText>
+                                @if (!string.IsNullOrWhiteSpace(ctx.Item.LocalizedDisplayName) && !string.Equals(ctx.Item.LocalizedDisplayName, ctx.Item.Name, StringComparison.OrdinalIgnoreCase))
+                                {
+                                    <SbText Variant="SbTextVariant.Caption" Color="SbColor.Muted">@ctx.Item.Name</SbText>
+                                }
                             </SbStack>
                         </CellTemplate>
                     </SbColumn>
@@ -76,13 +80,10 @@
                             @{
                                 var priceText = EditionPriceDisplay.Resolve(ctx.Item.PriceSummary, L["PriceNotSet"]);
                             }
-                            @if (priceText != null)
-                            {
-                                <SbText Variant="SbTextVariant.BodySmall"
-                                        Color="@(ctx.Item.PriceSummary is { IsPriced: true } ? SbColor.Default : SbColor.Muted)">
-                                    @priceText
-                                </SbText>
-                            }
+                            <SbText Variant="SbTextVariant.BodySmall"
+                                    Color="@(ctx.Item.PriceSummary is { IsPriced: true } ? SbColor.Default : SbColor.Muted)">
+                                @priceText
+                            </SbText>
                         </CellTemplate>
                     </SbColumn>
                     <SbColumn TItem="EditionDto" Field="IsActive" Title="@L["EditionIsActive"]" MinWidth="120px" Align="SbColumnAlign.Center" Filterable="true" Sortable="true">
