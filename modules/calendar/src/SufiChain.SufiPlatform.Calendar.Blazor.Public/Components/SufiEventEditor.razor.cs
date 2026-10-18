@@ -91,6 +91,12 @@ public partial class SufiEventEditor : CalendarPublicComponentBase
         }
     }
 
+    protected virtual async Task RetryLoadAsync()
+    {
+        _loadKey = null;
+        await OnParametersSetAsync();
+    }
+
     protected virtual Task LeaveAsync()
     {
         NavigationManager.NavigateTo(CalendarPageRoutes.ResolveReturnUrl(ReturnUrl, CalendarPageRoutes.CurrentLocation(NavigationManager)));
@@ -333,7 +339,7 @@ public partial class SufiEventEditor : CalendarPublicComponentBase
 
     private TimeZoneInfo ResolveTimeZone()
     {
-        return TimeZoneInfo.FindSystemTimeZoneById(string.IsNullOrWhiteSpace(_model.TimeZoneId) ? TimeZoneId : _model.TimeZoneId);
+        return CalendarTimeZoneResolver.Resolve(_model.TimeZoneId, TimeZoneId);
     }
 
     private void SyncRecurrenceFields()

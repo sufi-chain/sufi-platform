@@ -1,6 +1,8 @@
 {
   "culture": "fa",
   "texts": {
+    "EventEditorLoadFailed": "فرم رویداد بارگذاری نشد.",
+    "EventEditorRetry": "تلاش دوباره",
     "Calendar": "تقویم",
     "EmailSender:DisplayName": "تقویم",
     "Permission:SufiCalendar": "تقویم",
