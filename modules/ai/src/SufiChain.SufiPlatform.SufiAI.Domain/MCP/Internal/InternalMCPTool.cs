@@ -23,7 +23,7 @@ namespace SufiChain.SufiPlatform.SufiAI.MCP.Internal;
 /// <see cref="AgentCallContext"/>, runs in a new DI scope under that tenant and principal, and is
 /// permission-checked against the bound user before the method runs.
 /// </summary>
-public class InternalMCPTool : IMCPTool
+public class InternalMCPTool : IMCPTool, IMCPToolAccessRequirement
 {
     private readonly Type _serviceType;
     private readonly MethodInfo _method;
@@ -31,6 +31,7 @@ public class InternalMCPTool : IMCPTool
     private readonly MethodParameterBinder _parameterBinder;
     private readonly string? _permissionName;
     private readonly bool _requiresPermission;
+    private readonly bool _requiresAuthentication;
     
     public string Name { get; }
     public string Description { get; }
@@ -46,7 +47,8 @@ public class InternalMCPTool : IMCPTool
         MethodInfo method,
         IServiceProvider serviceProvider,
         string? permissionName = null,
-        bool requiresPermission = false)
+        bool requiresPermission = false,
+        bool requiresAuthentication = false)
     {
         Name = name;
         Description = description;
@@ -58,6 +60,7 @@ public class InternalMCPTool : IMCPTool
         Source = serviceType.Name;
         _permissionName = string.IsNullOrWhiteSpace(permissionName) ? null : permissionName;
         _requiresPermission = requiresPermission || _permissionName is not null;
+        _requiresAuthentication = requiresAuthentication;
     }
 
     /// <summary>Permission the bound user must hold, from <c>SufiAiMcpToolAttribute.PermissionName</c>.</summary>
@@ -65,6 +68,8 @@ public class InternalMCPTool : IMCPTool
 
     /// <summary>True when the tool declares a permission requirement.</summary>
     public bool RequiresPermission => _requiresPermission;
+    /// <summary>True when the tool needs a signed-in user (service or method <c>[Authorize]</c>).</summary>
+    public bool RequiresAuthentication => _requiresAuthentication;
     
     public async Task<MCPToolExecutionResult> ExecuteAsync(
         WorkspaceContext context,
@@ -85,7 +90,7 @@ public class InternalMCPTool : IMCPTool
         var currentTenant = scoped.GetService<ICurrentTenant>();
         var principalAccessor = scoped.GetService<ICurrentPrincipalAccessor>();
         if ((currentTenant is null || principalAccessor is null)
-            && (!call.IsAnonymous || call.TenantId is not null || _requiresPermission))
+            && (!call.IsAnonymous || call.TenantId is not null || _requiresPermission || _requiresAuthentication))
         {
             // Without ABP identity services the call can't be bound, so fail closed.
             return MCPToolExecutionResult.CreateFailure(AgentCallErrorCodes.IdentityServicesMissing);
@@ -170,7 +175,7 @@ public class InternalMCPTool : IMCPTool
 
     private async Task<string?> CheckPermissionAsync(IServiceProvider scoped, AgentCallContext call)
     {
-        if (!_requiresPermission)
+        if (!_requiresPermission && !_requiresAuthentication)
         {
             return null;
         }
@@ -178,6 +183,11 @@ public class InternalMCPTool : IMCPTool
         if (call.IsAnonymous)
         {
             return AgentCallErrorCodes.AnonymousNotAllowed;
+        }
+
+        if (!_requiresPermission)
+        {
+            return null;
         }
 
         if (_permissionName is null)

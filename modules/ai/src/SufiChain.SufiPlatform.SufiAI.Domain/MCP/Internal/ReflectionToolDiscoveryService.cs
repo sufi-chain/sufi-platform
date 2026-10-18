@@ -1,4 +1,5 @@
 using System.Reflection;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Logging;
 using SufiChain.SufiPlatform.SufiAI;
 using SufiChain.SufiPlatform.SufiAI.MCP.Abstractions;
@@ -89,6 +90,7 @@ public class ReflectionToolDiscoveryService : IInternalToolDiscoveryService, ISi
                     foreach (var method in methods)
                     {
                         var attribute = GetToolAttribute(method);
+                        var access = GetAccessRequirement(type, method, attribute.PermissionName);
                         
                         try
                         {
@@ -101,8 +103,9 @@ public class ReflectionToolDiscoveryService : IInternalToolDiscoveryService, ISi
                                 type,
                                 method,
                                 _serviceProvider,
-                                attribute.PermissionName,
-                                attribute.RequiresPermission
+                                access.PermissionName,
+                                attribute.RequiresPermission,
+                                access.RequiresAuthentication
                             );
                             
                             tools.Add(tool);
@@ -147,6 +150,33 @@ public class ReflectionToolDiscoveryService : IInternalToolDiscoveryService, ISi
     {
         var attribute = method.GetCustomAttribute<SufiAiMcpToolAttribute>()!;
         return new ToolAttributeInfo(attribute.Name, attribute.Description, attribute.PermissionName, attribute.RequiresPermission);
+    }
+
+    /// <summary>
+    /// sufi-chain#384 slice 3: fold <c>[Authorize]</c> on the service or method into the tool's access
+    /// requirement. An explicit <c>PermissionName</c> wins; otherwise an <c>[Authorize(policy)]</c> policy is
+    /// used as the permission (ABP permissions are policies). <c>[AllowAnonymous]</c> on the method clears it.
+    /// </summary>
+    public static (string? PermissionName, bool RequiresAuthentication) GetAccessRequirement(
+        Type serviceType,
+        MethodInfo method,
+        string? declaredPermission)
+    {
+        if (method.GetCustomAttribute<AllowAnonymousAttribute>(inherit: true) is not null)
+        {
+            return (declaredPermission, false);
+        }
+
+        var authorize = method.GetCustomAttributes<AuthorizeAttribute>(inherit: true)
+            .Concat(serviceType.GetCustomAttributes<AuthorizeAttribute>(inherit: true))
+            .ToList();
+        if (authorize.Count == 0)
+        {
+            return (declaredPermission, false);
+        }
+
+        var policy = authorize.Select(a => a.Policy).FirstOrDefault(p => !string.IsNullOrWhiteSpace(p));
+        return (string.IsNullOrWhiteSpace(declaredPermission) ? policy : declaredPermission, true);
     }
 
     private sealed record ToolAttributeInfo(string Name, string Description, string? PermissionName, bool RequiresPermission);
