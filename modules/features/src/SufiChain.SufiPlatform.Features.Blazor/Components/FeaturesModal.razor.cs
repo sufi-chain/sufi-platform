@@ -39,6 +39,7 @@ public partial class FeaturesModal
     private Dictionary<string, bool> _toggleValues = new();
     private Dictionary<string, string?> _textValues = new();
     private Dictionary<string, string?> _selectValues = new();
+    private Dictionary<string, string?> _savedValues = new(StringComparer.Ordinal);
 
     private string? _selectedTabId;
     private string _searchText = string.Empty;
@@ -103,6 +104,7 @@ public partial class FeaturesModal
                 }
             }
 
+            SnapshotSavedValues();
             NormalizeFeatureGroups();
         }, LoadingKeys.LoadFeatures);
 
@@ -403,44 +405,47 @@ public partial class FeaturesModal
 
     private Task SaveAsync() => ExecuteWithLoadingAsync(async () =>
     {
-        var features = new List<UpdateFeatureDto>();
+        // Only changed features go to the server. Sending every feature wrote one row and raised one
+        // change event (cache invalidation, assistant availability) per feature, which kept the save
+        // running long enough that the dialog showed only the connecting bar (Refs #414).
+        var features = FeatureSaveDiff.Changed(
+            _allGroups.SelectMany(group => group.Features)
+                .Select(feature => new KeyValuePair<string, string?>(feature.Name, GetEditedValue(feature))),
+            _savedValues);
 
-        foreach (var group in _allGroups)
+        if (features.Count > 0)
         {
-            foreach (var feature in group.Features)
+            await FeatureAppService.UpdateAsync(_providerName, _providerKey, new UpdateFeaturesDto
             {
-                string? value;
-
-                if (IsToggleFeature(feature))
-                {
-                    value = _toggleValues.GetValueOrDefault(feature.Name) ? "true" : "false";
-                }
-                else if (IsSelectionFeature(feature))
-                {
-                    value = _selectValues.GetValueOrDefault(feature.Name);
-                }
-                else
-                {
-                    value = _textValues.GetValueOrDefault(feature.Name);
-                }
-
-                features.Add(new UpdateFeatureDto
-                {
-                    Name = feature.Name,
-                    Value = value
-                });
-            }
+                Features = features
+            });
         }
-
-        await FeatureAppService.UpdateAsync(_providerName, _providerKey, new UpdateFeaturesDto
-        {
-            Features = features
-        });
 
         await Notify.SuccessAsync(L["FeaturesSavedSuccessfully"]);
         await OnFeaturesSaved.InvokeAsync();
         await HideAsync();
     }, LoadingKeys.SaveFeatures);
+
+    private string? GetEditedValue(FeatureDto feature)
+    {
+        if (IsToggleFeature(feature))
+        {
+            return _toggleValues.GetValueOrDefault(feature.Name) ? "true" : "false";
+        }
+
+        return IsSelectionFeature(feature)
+            ? _selectValues.GetValueOrDefault(feature.Name)
+            : _textValues.GetValueOrDefault(feature.Name);
+    }
+
+    private void SnapshotSavedValues()
+    {
+        _savedValues = new Dictionary<string, string?>(StringComparer.Ordinal);
+        foreach (var feature in _allGroups.SelectMany(group => group.Features))
+        {
+            _savedValues.TryAdd(feature.Name, GetEditedValue(feature));
+        }
+    }
 
     private async Task ResetToDefaultAsync()
     {
@@ -483,6 +488,7 @@ public partial class FeaturesModal
                 }
             }
 
+            SnapshotSavedValues();
             NormalizeFeatureGroups();
         }, LoadingKeys.ResetFeatures);
     }
