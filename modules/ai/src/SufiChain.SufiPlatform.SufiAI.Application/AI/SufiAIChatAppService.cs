@@ -213,7 +213,10 @@ public class SufiAIChatAppService : SufiApplicationService, ISufiAIChatAppServic
         {
             WorkspaceName = workspaceName,
             TenantId = CurrentTenant.Id,
-            UserId = CurrentUser.Id
+            UserId = CurrentUser.Id,
+            CallContext = AgentCallContext.Capture(
+                CurrentTenant,
+                LazyServiceProvider.LazyGetRequiredService<Volo.Abp.Security.Claims.ICurrentPrincipalAccessor>())
         };
     }
 

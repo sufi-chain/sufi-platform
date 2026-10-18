@@ -12,6 +12,8 @@ using Volo.Abp;
 using Volo.Abp.DependencyInjection;
 using SufiChain.SufiPlatform.Features;
 using Volo.Abp.Users;
+using Volo.Abp.MultiTenancy;
+using Volo.Abp.Security.Claims;
 
 namespace SufiChain.SufiPlatform.SufiAI.MCP.Execution;
 
@@ -27,6 +29,8 @@ public class MCPToolExecutionManager : IMCPToolExecutor, ITransientDependency
     private readonly IFeatureChecker _featureChecker;
     private readonly IEnumerable<IMcpToolDecisionGate> _gates;
     private readonly ILogger<MCPToolExecutionManager> _logger;
+    private readonly ICurrentTenant? _currentTenant;
+    private readonly ICurrentPrincipalAccessor? _principalAccessor;
     
     public MCPToolExecutionManager(
         IMCPToolRegistry toolRegistry,
@@ -34,8 +38,12 @@ public class MCPToolExecutionManager : IMCPToolExecutor, ITransientDependency
         ICurrentUser currentUser,
         IFeatureChecker featureChecker,
         IEnumerable<IMcpToolDecisionGate> gates,
-        ILogger<MCPToolExecutionManager> logger)
+        ILogger<MCPToolExecutionManager> logger,
+        ICurrentTenant? currentTenant = null,
+        ICurrentPrincipalAccessor? principalAccessor = null)
     {
+        _currentTenant = currentTenant;
+        _principalAccessor = principalAccessor;
         _toolRegistry = toolRegistry;
         _workspaceRepository = workspaceRepository;
         _currentUser = currentUser;
@@ -73,7 +81,10 @@ public class MCPToolExecutionManager : IMCPToolExecutor, ITransientDependency
         {
             WorkspaceName = workspaceName,
             TenantId = workspace.TenantId,
-            UserId = _currentUser.Id
+            UserId = _currentUser.Id,
+            CallContext = _currentTenant is not null && _principalAccessor is not null
+                ? AgentCallContext.Capture(_currentTenant, _principalAccessor)
+                : null
         };
         
         return await ExecuteAsync(tool, context, parameters, cancellationToken);
