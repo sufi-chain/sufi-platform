@@ -1,4 +1,5 @@
 using System.Globalization;
+using SufiChain.SufiPlatform.Localization;
 
 namespace SufiChain.SufiPlatform.Editions;
 
@@ -8,23 +9,14 @@ namespace SufiChain.SufiPlatform.Editions;
 public static class EditionPriceDisplay
 {
     /// <summary>
-    /// Returns a formatted amount, the localized "price not set" key marker, or null when
-    /// no contributor attached a summary.
+    /// Returns the amount with two decimals and its currency, or the localized "price not set" text.
+    /// An edition without a summary (no plan attached) also shows "price not set" so the cell is never empty.
     /// </summary>
-    public static string? Resolve(EditionPriceSummary? summary, string priceNotSetText)
+    public static string Resolve(EditionPriceSummary? summary, string priceNotSetText, CultureInfo? culture = null)
     {
-        if (summary is null)
+        if (summary is { IsPriced: true, Amount: { } amount })
         {
-            return null;
-        }
-
-        if (summary.IsPriced && summary.Amount is { } amount)
-        {
-            var formatted = amount.ToString("N0", CultureInfo.InvariantCulture);
-            var currency = summary.CurrencyCode ?? string.Empty;
-            return string.IsNullOrWhiteSpace(currency)
-                ? formatted
-                : $"{formatted} {currency}";
+            return SufiMoneyFormat.Format(amount, summary.CurrencyCode, culture);
         }
 
         return priceNotSetText;
