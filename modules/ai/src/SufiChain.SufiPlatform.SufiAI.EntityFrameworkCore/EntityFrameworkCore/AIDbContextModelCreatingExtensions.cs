@@ -77,6 +77,7 @@ public static class AIDbContextModelCreatingExtensions
             b.Property(x => x.InputCostPer1MTokens).HasPrecision(18, 8);
             b.Property(x => x.OutputCostPer1MTokens).HasPrecision(18, 8);
             b.Property(x => x.IsActive).IsRequired();
+            b.Property(x => x.UseWebSearch).IsRequired();
             b.Property(x => x.IsInherited).IsRequired();
             b.Property(x => x.SourceWorkspaceId);
             b.Property(x => x.AssignmentId);

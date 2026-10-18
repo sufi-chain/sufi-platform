@@ -528,6 +528,8 @@
     "DefaultChatModel": "Default chat model (fallback)",
     "DefaultChatModelHelp": "Used when a request does not select a chat route. User-selectable routes are managed on the model configurations page.",
     "WorkspaceCostFallbackHelp": "Fallback only. Set per-route price on Model configurations. Empty both sides records $0, not free usage.",
+    "WorkspaceAllowWebSearch": "Allow web search",
+    "WorkspaceAllowWebSearchHelp": "When off, no assistant in this workspace can search the web, even if its own setting is on.",
     "RoutePriceWinsHelp": "Route price wins. Leave empty to inherit the workspace fallback. Empty both sides records $0.",
     "RoutePricingSection": "Route price",
     "Pricing": "Pricing",

@@ -34,4 +34,6 @@ public class UpdateWorkspaceDto
     public decimal? OutputCostPer1MTokens { get; set; }
     
     public bool IsActive { get; set; } = true;
+
+    public bool UseWebSearch { get; set; } = true;
 }

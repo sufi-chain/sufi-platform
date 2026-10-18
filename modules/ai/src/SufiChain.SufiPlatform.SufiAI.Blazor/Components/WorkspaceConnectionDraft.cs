@@ -24,6 +24,8 @@ public sealed class WorkspaceConnectionDraft
 
     public string OutputCostText { get; set; } = string.Empty;
 
+    public bool UseWebSearch { get; set; } = true;
+
     public static WorkspaceConnectionDraft ForCreate() => new();
 
     public static WorkspaceConnectionDraft From(WorkspaceDto workspace)
@@ -36,6 +38,7 @@ public sealed class WorkspaceConnectionDraft
             ModelDisplayName = workspace.ModelDisplayName,
             DecisionsModelId = workspace.DecisionsModelId,
             ApiBaseUrl = workspace.ApiBaseUrl,
+            UseWebSearch = workspace.UseWebSearch,
             InputCostText = workspace.InputCostPer1MTokens?.ToString(CultureInfo.InvariantCulture) ?? string.Empty,
             OutputCostText = workspace.OutputCostPer1MTokens?.ToString(CultureInfo.InvariantCulture) ?? string.Empty
         };
@@ -79,7 +82,8 @@ public sealed class WorkspaceConnectionDraft
             ApiKey = ApiKey,
             ApiBaseUrl = ApiBaseUrl,
             InputCostPer1MTokens = inputCost,
-            OutputCostPer1MTokens = outputCost
+            OutputCostPer1MTokens = outputCost,
+            UseWebSearch = UseWebSearch
         };
     }
 
@@ -96,7 +100,8 @@ public sealed class WorkspaceConnectionDraft
             ApiBaseUrl = ApiBaseUrl,
             InputCostPer1MTokens = inputCost,
             OutputCostPer1MTokens = outputCost,
-            IsActive = isActive
+            IsActive = isActive,
+            UseWebSearch = UseWebSearch
         };
     }
 

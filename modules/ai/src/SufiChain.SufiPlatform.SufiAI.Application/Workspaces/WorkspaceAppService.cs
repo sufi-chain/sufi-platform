@@ -237,6 +237,7 @@ public class WorkspaceAppService : SufiApplicationService, IWorkspaceAppService
         );
 
         workspace.UpdatePrimaryChatConfiguration(input.Model, input.ApiBaseUrl, input.ModelDisplayName);
+        workspace.SetUseWebSearch(input.UseWebSearch);
         ApplyDecisionsModel(workspace, input.Provider, input.DecisionsModelId);
         ApplyGuardrails(workspace, input.Guardrails);
         await _workspaceRepository.InsertAsync(workspace, autoSave: true);
@@ -502,6 +503,8 @@ public class WorkspaceAppService : SufiApplicationService, IWorkspaceAppService
             input.ApiBaseUrl,
             input.ModelDisplayName);
         ApplyDecisionsModel(workspace, input.Provider, input.DecisionsModelId);
+
+        workspace.SetUseWebSearch(input.UseWebSearch);
 
         if (input.IsActive)
             workspace.Activate();

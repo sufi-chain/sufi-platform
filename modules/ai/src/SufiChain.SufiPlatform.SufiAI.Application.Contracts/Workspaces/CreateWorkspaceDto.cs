@@ -35,4 +35,6 @@ public class CreateWorkspaceDto
     public decimal? OutputCostPer1MTokens { get; set; }
 
     public List<WorkspaceGuardrailDto> Guardrails { get; set; } = new();
+
+    public bool UseWebSearch { get; set; } = true;
 }
