@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel;
+using SufiChain.SufiPlatform.SufiAI;
 using NSubstitute;
 using Shouldly;
 using SufiChain.SufiPlatform.SufiAI.MCP.Abstractions;
@@ -37,19 +38,64 @@ public class ToolOfferFilterTests
         var aliceTools = await h.OfferedAsync(AgentCallContext.ForUser(TenantA, Alice, Principal(Alice)));
         var bobTools = await h.OfferedAsync(AgentCallContext.ForUser(TenantA, Bob, Principal(Bob)));
 
-        aliceTools.ShouldBe(new[] { "MCP_demo_read", "MCP_demo_signedin", "MCP_demo_write" }, ignoreOrder: true);
-        bobTools.ShouldBe(new[] { "MCP_demo_read", "MCP_demo_signedin" }, ignoreOrder: true);
+        aliceTools.ShouldBe(new[] { "MCP_demo_read", "MCP_demo_signedin", "MCP_demo_write", "MCP_demo_public" }, ignoreOrder: true);
+        bobTools.ShouldBe(new[] { "MCP_demo_read", "MCP_demo_signedin", "MCP_demo_public" }, ignoreOrder: true);
     }
 
     [Fact]
-    public async Task Anonymous_turn_is_offered_only_tools_without_requirements()
+    public async Task Anonymous_turn_is_offered_only_allowlisted_tools()
     {
         using var h = new Harness();
         h.Permissions.IsGrantedAsync(Arg.Any<ClaimsPrincipal?>(), Arg.Any<string>()).Returns(true);
+        var external = Substitute.For<IMCPTool>();
+        external.Name.Returns("external.srv.ping");
+        external.ParameterSchema.Returns("{}");
+        h.Tools.Add(external);
 
         var offered = await h.OfferedAsync(AgentCallContext.Anonymous(TenantA));
 
-        offered.ShouldBe(new[] { "MCP_demo_read" });
+        // slice 4: demo.read has no requirement but is not allowlisted; the external tool has no allowlist.
+        offered.ShouldBe(new[] { "MCP_demo_public" });
+    }
+
+    [Fact]
+    public async Task Forced_anonymous_call_to_an_unmarked_tool_is_refused()
+    {
+        using var h = new Harness();
+        var anon = new WorkspaceContext { CallContext = AgentCallContext.Anonymous(TenantA) };
+
+        (await h.Tools[0].ExecuteAsync(anon, new())).ErrorMessage.ShouldBe(AgentCallErrorCodes.AnonymousNotAllowed);
+        (await h.Tools[3].ExecuteAsync(anon, new())).Success.ShouldBeTrue();
+
+        var external = Substitute.For<IMCPTool>();
+        MCPToolOfferFilter.AnonymousRefusal(external, anon.CallContext).ShouldBe(AgentCallErrorCodes.AnonymousNotAllowed);
+        MCPToolOfferFilter.AnonymousRefusal(external, null).ShouldBe(AgentCallErrorCodes.AnonymousNotAllowed);
+    }
+
+    [Fact]
+    public void Anonymous_allowlist_is_public_read_only_or_explicit_public_write()
+    {
+        var t = typeof(AllowlistService);
+        ReflectionToolDiscoveryService.AllowsAnonymous(t.GetMethod(nameof(AllowlistService.PublicRead))!).ShouldBeTrue();
+        ReflectionToolDiscoveryService.AllowsAnonymous(t.GetMethod(nameof(AllowlistService.ReadOnlyOnly))!).ShouldBeFalse();
+        ReflectionToolDiscoveryService.AllowsAnonymous(t.GetMethod(nameof(AllowlistService.PublicWrite))!).ShouldBeTrue();
+        ReflectionToolDiscoveryService.AllowsAnonymous(t.GetMethod(nameof(AllowlistService.PublicNotReadOnly))!).ShouldBeFalse();
+    }
+
+    public sealed class AllowlistService
+    {
+        [SufiAiMcpTool("a.public_read", "x", Public = true, ReadOnly = true)]
+        public Task<string> PublicRead() => Task.FromResult("ok");
+
+        [SufiAiMcpTool("a.read_only", "x", ReadOnly = true)]
+        public Task<string> ReadOnlyOnly() => Task.FromResult("ok");
+
+        [SufiAiMcpPublicWrite]
+        [SufiAiMcpTool("a.public_write", "x")]
+        public Task<string> PublicWrite() => Task.FromResult("ok");
+
+        [SufiAiMcpTool("a.public_not_read_only", "x", Public = true)]
+        public Task<string> PublicNotReadOnly() => Task.FromResult("ok");
     }
 
     [Fact]
@@ -127,7 +173,9 @@ public class ToolOfferFilterTests
                 new InternalMCPTool("demo.read", "Read", "{}", typeof(PlainService), run, _services),
                 new InternalMCPTool("demo.signedin", "Signed in", "{}", typeof(PlainService), run, _services,
                     requiresAuthentication: true),
-                new InternalMCPTool("demo.write", "Write", "{}", typeof(PlainService), run, _services, Write)
+                new InternalMCPTool("demo.write", "Write", "{}", typeof(PlainService), run, _services, Write),
+                new InternalMCPTool("demo.public", "Public", "{}", typeof(PlainService), run, _services,
+                    allowsAnonymous: true)
             };
         }
 

@@ -105,6 +105,12 @@ public class MCPToolExecutionManager : IMCPToolExecutor, ITransientDependency
             context.WorkspaceName
         );
         
+        var anonymousRefusal = MCPToolOfferFilter.AnonymousRefusal(tool, context.CallContext);
+        if (anonymousRefusal is not null)
+        {
+            return MCPToolExecutionResult.CreateFailure(anonymousRefusal);
+        }
+
         try
         {
             foreach (var gate in _gates)

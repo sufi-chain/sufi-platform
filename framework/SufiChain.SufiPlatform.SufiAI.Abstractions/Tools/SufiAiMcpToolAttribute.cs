@@ -40,6 +40,12 @@ public class SufiAiMcpToolAttribute : Attribute
     public bool ReadOnly { get; set; }
 
     /// <summary>
+    /// The tool is safe for the public. Together with <see cref="ReadOnly"/> it may be offered to and run by
+    /// anonymous turns (LiveChat visitors, public chat). Anonymous turns get nothing else unless the method is
+    /// also marked <see cref="SufiAiMcpPublicWriteAttribute"/>.
+    /// </summary>
+    public bool Public { get; set; }
+    /// <summary>
     /// Creates the attribute.
     /// </summary>
     public SufiAiMcpToolAttribute(string name, string description)
