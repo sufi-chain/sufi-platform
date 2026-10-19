@@ -182,8 +182,9 @@ public class InternalMCPTool : IMCPTool, IMCPToolAccessRequirement, IMCPToolEffe
             if (innerException is Volo.Abp.BusinessException business && !string.IsNullOrWhiteSpace(business.Code))
             {
                 // Default business-exception messages omit the code. Preserve the domain
-                // failure for tool callers without exposing exception data or stack traces.
-                return MCPToolExecutionResult.CreateFailure(business.Code);
+                // failure for tool callers without exposing stack traces, and add the module's
+                // actionable text so the model can correct the call (sufi-chain#340).
+                return MCPToolExecutionResult.CreateFailure(DescribeBusinessError(scoped, business));
             }
             
             return MCPToolExecutionResult.CreateFailure(
@@ -191,6 +192,44 @@ public class InternalMCPTool : IMCPTool, IMCPToolAccessRequirement, IMCPToolEffe
                 innerException.ToString()
             );
         }
+    }
+
+    /// <summary>
+    /// sufi-chain#340: the bare code first (logs and callers match on it), then the first registered
+    /// <see cref="IMcpToolErrorDescriber"/> text. Exception data reaches only the describer, never the model directly.
+    /// </summary>
+    internal static string DescribeBusinessError(IServiceProvider services, Volo.Abp.BusinessException business)
+    {
+        var code = business.Code!;
+        var data = new Dictionary<string, object?>(StringComparer.Ordinal);
+        foreach (var key in business.Data.Keys)
+        {
+            if (key is string name)
+            {
+                data[name] = business.Data[key];
+            }
+        }
+
+        foreach (var describer in services.GetServices<IMcpToolErrorDescriber>())
+        {
+            string? text;
+            try
+            {
+                text = describer.Describe(code, data);
+            }
+            catch (Exception)
+            {
+                // A broken describer must not hide the error code from the model.
+                continue;
+            }
+
+            if (!string.IsNullOrWhiteSpace(text))
+            {
+                return code + ": " + text.Trim();
+            }
+        }
+
+        return code;
     }
 
     private async Task<string?> CheckPermissionAsync(IServiceProvider scoped, AgentCallContext call)

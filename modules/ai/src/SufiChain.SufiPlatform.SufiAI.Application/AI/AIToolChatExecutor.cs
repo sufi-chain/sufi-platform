@@ -129,7 +129,7 @@ public class AIToolChatExecutor : IAIToolChatExecutor, ITransientDependency
                 Logger.LogWarning(
                     "AI tool turn hit the time limit. MaxTurnSeconds={MaxTurnSeconds}, ElapsedMs={ElapsedMs}",
                     ToolLoopOptions.MaxTurnSeconds, stopwatch.ElapsedMilliseconds);
-                return await LimitReachedAsync(request, stopwatch.ElapsedMilliseconds, cancellationToken);
+                return await LimitReachedAsync(request, stopwatch.ElapsedMilliseconds, AIToolLoopFinishReasons.TimeLimit, cancellationToken);
             }
             stopwatch.Stop();
 
@@ -138,7 +138,7 @@ public class AIToolChatExecutor : IAIToolChatExecutor, ITransientDependency
                 Logger.LogWarning(
                     "AI tool turn hit the tool-round limit. MaxToolRounds={MaxToolRounds}, ElapsedMs={ElapsedMs}",
                     ToolLoopOptions.MaxToolRounds, stopwatch.ElapsedMilliseconds);
-                return await LimitReachedAsync(request, stopwatch.ElapsedMilliseconds, cancellationToken);
+                return await LimitReachedAsync(request, stopwatch.ElapsedMilliseconds, AIToolLoopFinishReasons.ToolRoundLimit, cancellationToken);
             }
 
             var usage = SemanticKernelChatTokenUsageExtractor.Extract(response);
@@ -197,10 +197,14 @@ public class AIToolChatExecutor : IAIToolChatExecutor, ITransientDependency
         }
     }
 
-    /// <summary>sufi-chain#340: the turn ends with a visible message instead of looping or hanging.</summary>
+    /// <summary>
+    /// sufi-chain#340: the turn ends with a visible message instead of looping or hanging. The reply carries
+    /// <paramref name="finishReason"/> (<see cref="AIToolLoopFinishReasons"/>) so the turn is not logged as a success.
+    /// </summary>
     protected virtual async Task<AIToolChatExecutionResult> LimitReachedAsync(
         AIToolChatExecutionRequest request,
         long latencyMs,
+        string finishReason,
         CancellationToken cancellationToken)
     {
         await TryRecordAsync(
@@ -219,7 +223,11 @@ public class AIToolChatExecutor : IAIToolChatExecutor, ITransientDependency
 
         return new AIToolChatExecutionResult
         {
-            Response = new Microsoft.SemanticKernel.ChatMessageContent(AuthorRole.Assistant, text) { ModelId = request.Configuration.ModelId },
+            Response = new Microsoft.SemanticKernel.ChatMessageContent(
+                AuthorRole.Assistant,
+                text,
+                modelId: request.Configuration.ModelId,
+                metadata: new Dictionary<string, object?> { ["FinishReason"] = finishReason }),
             Usage = new SufiAITokenUsage(),
             LatencyMs = latencyMs,
             Configuration = request.Configuration
