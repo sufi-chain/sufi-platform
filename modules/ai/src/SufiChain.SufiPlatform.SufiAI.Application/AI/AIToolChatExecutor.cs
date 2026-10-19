@@ -1,5 +1,8 @@
 using System.Diagnostics;
+using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+using SufiChain.SufiPlatform.SufiAI.Localization;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
@@ -18,14 +21,20 @@ public class AIToolChatExecutor : IAIToolChatExecutor, ITransientDependency
     protected IWorkspaceGuardrailService WorkspaceGuardrailService { get; }
     protected IAIUsageRecorder UsageRecorder { get; }
     protected ILogger<AIToolChatExecutor> Logger { get; }
+    protected AIToolLoopOptions ToolLoopOptions { get; }
+    protected IStringLocalizer<AIResource>? Localizer { get; }
 
     public AIToolChatExecutor(
         IWorkspaceRuntimeConfigurationResolver runtimeConfigurationResolver,
         WorkspaceSyncService workspaceSyncService,
         IWorkspaceGuardrailService workspaceGuardrailService,
         IAIUsageRecorder usageRecorder,
-        ILogger<AIToolChatExecutor>? logger = null)
+        ILogger<AIToolChatExecutor>? logger = null,
+        IOptions<AIToolLoopOptions>? toolLoopOptions = null,
+        IStringLocalizer<AIResource>? localizer = null)
     {
+        ToolLoopOptions = toolLoopOptions?.Value ?? new AIToolLoopOptions();
+        Localizer = localizer;
         RuntimeConfigurationResolver = runtimeConfigurationResolver;
         WorkspaceSyncService = workspaceSyncService;
         WorkspaceGuardrailService = workspaceGuardrailService;
@@ -96,18 +105,44 @@ public class AIToolChatExecutor : IAIToolChatExecutor, ITransientDependency
                 jsonSchemaIsStrict: true);
             executionSettings = settings;
         }
+        // sufi-chain#340: bound the turn by tool rounds and wall-clock time, ending with a visible message.
+        var maxDuration = TimeSpan.FromSeconds(Math.Max(1, ToolLoopOptions.MaxTurnSeconds));
+        var loopLimit = new AIToolLoopLimitFilter(ToolLoopOptions.MaxToolRounds, maxDuration);
+        kernel.AutoFunctionInvocationFilters.Add(loopLimit);
+        using var turnTimeout = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        turnTimeout.CancelAfter(maxDuration);
         var stopwatch = Stopwatch.StartNew();
         try
         {
-            var response = request.BufferStreamingResponse
-                ? await AIStreamingChatResponseReader.ReadAsync(chatService.GetStreamingChatMessageContentsAsync(
-                    request.History, executionSettings, kernel, cancellationToken), cancellationToken)
-                : await chatService.GetChatMessageContentAsync(
-                    request.History, executionSettings, kernel, cancellationToken);
+            Microsoft.SemanticKernel.ChatMessageContent response;
+            try
+            {
+                response = request.BufferStreamingResponse
+                    ? await AIStreamingChatResponseReader.ReadAsync(chatService.GetStreamingChatMessageContentsAsync(
+                        request.History, executionSettings, kernel, turnTimeout.Token), turnTimeout.Token)
+                    : await chatService.GetChatMessageContentAsync(
+                        request.History, executionSettings, kernel, turnTimeout.Token);
+            }
+            catch (OperationCanceledException) when (turnTimeout.IsCancellationRequested && !cancellationToken.IsCancellationRequested)
+            {
+                stopwatch.Stop();
+                Logger.LogWarning(
+                    "AI tool turn hit the time limit. MaxTurnSeconds={MaxTurnSeconds}, ElapsedMs={ElapsedMs}",
+                    ToolLoopOptions.MaxTurnSeconds, stopwatch.ElapsedMilliseconds);
+                return await LimitReachedAsync(request, stopwatch.ElapsedMilliseconds, cancellationToken);
+            }
             stopwatch.Stop();
 
+            if (loopLimit.LimitReached)
+            {
+                Logger.LogWarning(
+                    "AI tool turn hit the tool-round limit. MaxToolRounds={MaxToolRounds}, ElapsedMs={ElapsedMs}",
+                    ToolLoopOptions.MaxToolRounds, stopwatch.ElapsedMilliseconds);
+                return await LimitReachedAsync(request, stopwatch.ElapsedMilliseconds, cancellationToken);
+            }
+
             var usage = SemanticKernelChatTokenUsageExtractor.Extract(response);
-            await RecordAsync(
+            await TryRecordAsync(
                 request.Configuration,
                 response.ModelId,
                 usage,
@@ -150,7 +185,7 @@ public class AIToolChatExecutor : IAIToolChatExecutor, ITransientDependency
                 "AI tool turn failed. BufferedStream={BufferedStream}, ToolCalls={ToolCalls}, ToolResults={ToolResults}, UnmatchedResults={UnmatchedResults}, PendingCalls={PendingCalls}, ElapsedMs={ElapsedMs}, ExceptionType={ExceptionType}, CallerCancelled={CallerCancelled}",
                 request.BufferStreamingResponse, callCount, resultCount, unmatchedResults, pendingCalls.Count,
                 stopwatch.ElapsedMilliseconds, exception.GetType().Name, cancellationToken.IsCancellationRequested);
-            await RecordAsync(
+            await TryRecordAsync(
                 request.Configuration,
                 request.Configuration.ModelId,
                 usage: new SufiAITokenUsage(),
@@ -159,6 +194,55 @@ public class AIToolChatExecutor : IAIToolChatExecutor, ITransientDependency
                 errorMessage: exception.Message,
                 cancellationToken);
             throw;
+        }
+    }
+
+    /// <summary>sufi-chain#340: the turn ends with a visible message instead of looping or hanging.</summary>
+    protected virtual async Task<AIToolChatExecutionResult> LimitReachedAsync(
+        AIToolChatExecutionRequest request,
+        long latencyMs,
+        CancellationToken cancellationToken)
+    {
+        await TryRecordAsync(
+            request.Configuration,
+            request.Configuration.ModelId,
+            new SufiAITokenUsage(),
+            latencyMs,
+            isSuccess: false,
+            errorMessage: AIErrorCodes.ToolLoopLimitReached,
+            cancellationToken);
+        var text = Localizer?[AIErrorCodes.ToolLoopLimitReached].Value;
+        if (string.IsNullOrWhiteSpace(text) || text == AIErrorCodes.ToolLoopLimitReached)
+        {
+            text = "This took too long, so I stopped. Any changes already shown are kept. Try a smaller request.";
+        }
+
+        return new AIToolChatExecutionResult
+        {
+            Response = new Microsoft.SemanticKernel.ChatMessageContent(AuthorRole.Assistant, text) { ModelId = request.Configuration.ModelId },
+            Usage = new SufiAITokenUsage(),
+            LatencyMs = latencyMs,
+            Configuration = request.Configuration
+        };
+    }
+
+    /// <summary>Recording usage must never fail the turn (sufi-chain#340).</summary>
+    protected virtual async Task TryRecordAsync(
+        WorkspaceRuntimeConfiguration configuration,
+        string? modelId,
+        SufiAITokenUsage usage,
+        long latencyMs,
+        bool isSuccess,
+        string? errorMessage = null,
+        CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            await RecordAsync(configuration, modelId, usage, latencyMs, isSuccess, errorMessage, cancellationToken);
+        }
+        catch (Exception exception)
+        {
+            Logger.LogWarning(exception, "AI usage could not be recorded for this tool turn.");
         }
     }
 
