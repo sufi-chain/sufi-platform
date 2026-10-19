@@ -7,6 +7,7 @@
     "AI:ApiBaseUrlRequired": "آدرس پایه API برای ارائه‌دهنده {Provider} در فضای کاری '{WorkspaceName}' الزامی است.",
     "AI:ApiKeyRequired": "کلید API برای ارائه‌دهنده {Provider} در فضای کاری '{WorkspaceName}' الزامی است.",
     "AI:GuardModelReply": "مدل انتخاب‌شده به‌جای پاسخ، یک نتیجه ارزیابی ایمنی برگرداند. برای این فضای کاری یک مدل گفتگو انتخاب کنید و دوباره تلاش کنید.",
+    "AI:ToolLoopLimitReached": "این کار بیش از حد طول کشید و متوقف شد. تغییراتی که نمایش داده شده‌اند حفظ می‌شوند. درخواست کوچک‌تری را امتحان کنید.",
     "AI:ProviderRequestFailed": "ارائه‌دهنده هوش مصنوعی نتوانست درخواست را تکمیل کند (HTTP {StatusCode}). لطفاً کمی بعد دوباره تلاش کنید.",
     "AI:UnsupportedProvider": "ارائه‌دهنده هوش مصنوعی '{Provider}' پشتیبانی نمی‌شود.",
     "AI:ProviderNotSupported": "ارائه‌دهنده هوش مصنوعی '{Provider}' برای فضای کاری '{WorkspaceName}' ثبت نشده است.",

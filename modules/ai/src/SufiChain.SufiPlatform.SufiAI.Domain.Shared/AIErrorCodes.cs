@@ -33,6 +33,7 @@ public static class AIErrorCodes
     public const string MCPHttpTransportNotImplemented = "AI:MCPHttpTransportNotImplemented";
 
     public const string GuardModelReply = "AI:GuardModelReply";
+    public const string ToolLoopLimitReached = "AI:ToolLoopLimitReached";
     public const string ProviderRequestFailed = "AI:ProviderRequestFailed";
     public const string ApiKeyRequired = "AI:ApiKeyRequired";
     public const string NoModelConfigured = "AI:NoModelConfigured";
