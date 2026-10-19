@@ -90,7 +90,7 @@ public class FileItemController : SufiControllerBase, IFileItemAppService
             // Validate mime/extension/size against structure without throwing (avoids app service exception)
             var validation = await _fileItemAppService.ValidateUploadAsync(file.FileName, ResolveContentType(file), request.StructureKey, file.Length);
             if (!validation.IsValid)
-                return BadRequest(new { error = new { message = validation.ErrorMessage } });
+                return BadRequest(new { error = new { message = UploadValidationMessages.Localize(L, validation) } });
 
             // Determine threshold for streaming vs in-memory processing
             var streamingThreshold = (long)_options.MaxInMemoryFileSizeMB * 1024 * 1024;
@@ -175,7 +175,7 @@ public class FileItemController : SufiControllerBase, IFileItemAppService
         {
             var validation = await _fileItemAppService.ValidateUploadAsync(file.FileName, ResolveContentType(file), request.StructureKey, file.Length);
             if (!validation.IsValid)
-                return BadRequest(new { error = new { message = validation.ErrorMessage } });
+                return BadRequest(new { error = new { message = UploadValidationMessages.Localize(L, validation) } });
 
             // Always use streaming for this endpoint
             var streamInput = new UploadFileStreamInput

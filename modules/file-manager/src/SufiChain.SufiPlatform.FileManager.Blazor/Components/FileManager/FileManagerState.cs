@@ -106,6 +106,13 @@ public class FileManagerState
     public bool CanGoBack => HistoryIndex > 0;
 
     /// <summary>
+    /// Mirrors the File Manager's navigate-up handler (sufi-chain#479: at a top-level structure folder the Up button was
+    /// enabled but did nothing).
+    /// </summary>
+    public bool CanGoUp => Contents?.ParentFolder != null ||
+                           (SourceMode == FileExplorerSourceMode.BlobPath && CurrentPath != "/");
+
+    /// <summary>
     /// Check if can go forward in history
     /// </summary>
     public bool CanGoForward => HistoryIndex < History.Count - 1;
