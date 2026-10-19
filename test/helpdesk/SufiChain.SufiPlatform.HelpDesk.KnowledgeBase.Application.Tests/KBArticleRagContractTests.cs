@@ -183,11 +183,12 @@ public class KBArticleRagContractTests
     }
 
     [Fact]
-    public void Rag_Options_Should_Default_To_Public_Only_Indexing()
+    public void Rag_Options_Should_Index_Internal_Articles_By_Default()
     {
+        // sufi-chain#341: internal articles are indexed; retrieval filters them by audience.
         var options = new KnowledgeBaseRagOptions();
 
-        options.PublicOnlyIndexing.ShouldBeTrue();
+        options.PublicOnlyIndexing.ShouldBeFalse();
         options.PublicArticlePathTemplate.ShouldContain("{slug}");
     }
 }
