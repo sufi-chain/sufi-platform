@@ -23,7 +23,7 @@ namespace SufiChain.SufiPlatform.SufiAI.MCP.Internal;
 /// <see cref="AgentCallContext"/>, runs in a new DI scope under that tenant and principal, and is
 /// permission-checked against the bound user before the method runs.
 /// </summary>
-public class InternalMCPTool : IMCPTool, IMCPToolAccessRequirement
+public class InternalMCPTool : IMCPTool, IMCPToolAccessRequirement, IMCPToolEffect
 {
     private readonly Type _serviceType;
     private readonly MethodInfo _method;
@@ -33,6 +33,7 @@ public class InternalMCPTool : IMCPTool, IMCPToolAccessRequirement
     private readonly bool _requiresPermission;
     private readonly bool _requiresAuthentication;
     private readonly bool _allowsAnonymous;
+    private readonly bool _isReadOnly;
     public string Name { get; }
     public string Description { get; }
     public string ParameterSchema { get; }
@@ -49,7 +50,8 @@ public class InternalMCPTool : IMCPTool, IMCPToolAccessRequirement
         string? permissionName = null,
         bool requiresPermission = false,
         bool requiresAuthentication = false,
-        bool allowsAnonymous = false)
+        bool allowsAnonymous = false,
+        bool isReadOnly = false)
     {
         Name = name;
         Description = description;
@@ -63,7 +65,11 @@ public class InternalMCPTool : IMCPTool, IMCPToolAccessRequirement
         _requiresPermission = requiresPermission || _permissionName is not null;
         _requiresAuthentication = requiresAuthentication;
         _allowsAnonymous = allowsAnonymous;
+        _isReadOnly = isReadOnly;
     }
+
+    /// <summary>True only when the method is explicitly marked <c>SufiAiMcpTool.ReadOnly</c> (sufi-chain#384 slice 5).</summary>
+    public bool IsReadOnly => _isReadOnly;
 
     /// <summary>Permission the bound user must hold, from <c>SufiAiMcpToolAttribute.PermissionName</c>.</summary>
     public string? PermissionName => _permissionName;
@@ -92,6 +98,12 @@ public class InternalMCPTool : IMCPTool, IMCPToolAccessRequirement
         {
             // sufi-chain#384 slice 4: anonymous turns run only allowlisted tools.
             return MCPToolExecutionResult.CreateFailure(AgentCallErrorCodes.AnonymousNotAllowed);
+        }
+
+        if (call.AgentScope == AgentToolScope.ReadOnly && !_isReadOnly)
+        {
+            // sufi-chain#384 slice 5: a read-only agent can't run a tool not explicitly marked read-only.
+            return MCPToolExecutionResult.CreateFailure(AgentCallErrorCodes.AgentScopeReadOnly);
         }
         using var scope = _serviceProvider.CreateScope();
         var scoped = scope.ServiceProvider;

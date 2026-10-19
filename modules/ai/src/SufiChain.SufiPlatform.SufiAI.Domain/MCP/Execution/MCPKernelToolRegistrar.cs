@@ -95,7 +95,8 @@ public class MCPKernelToolRegistrar : IMCPKernelToolRegistrar, ITransientDepende
                         .ToDictionary(argument => argument.Key, argument => argument.Value);
 
                     var parameterKeys = string.Join(",", parameters.Keys.OrderBy(key => key, StringComparer.Ordinal));
-                    var anonymousRefusal = MCPToolOfferFilter.AnonymousRefusal(tool, context.CallContext);
+                    var anonymousRefusal = MCPToolOfferFilter.AnonymousRefusal(tool, context.CallContext)
+                        ?? MCPToolOfferFilter.ScopeRefusal(tool, context.CallContext);
                     if (anonymousRefusal is not null)
                     {
                         return anonymousRefusal;

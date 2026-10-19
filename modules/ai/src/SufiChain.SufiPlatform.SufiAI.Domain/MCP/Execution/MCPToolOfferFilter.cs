@@ -1,4 +1,4 @@
-﻿using System.Threading.Tasks;
+using System.Threading.Tasks;
 using SufiChain.SufiPlatform.SufiAI.MCP.Abstractions;
 using Volo.Abp.Authorization.Permissions;
 
@@ -15,7 +15,7 @@ public static class MCPToolOfferFilter
         AgentCallContext? call,
         IPermissionChecker? permissionChecker)
     {
-        if (AnonymousRefusal(tool, call) is not null)
+        if (AnonymousRefusal(tool, call) is not null || ScopeRefusal(tool, call) is not null)
         {
             return false;
         }
@@ -52,6 +52,22 @@ public static class MCPToolOfferFilter
     /// sufi-chain#384 slice 4: an anonymous (or unbound) caller may only use allowlisted tools.
     /// Returns the refusal code, or null when the call may proceed. External tools carry no allowlist yet.
     /// </summary>
+    /// <summary>
+    /// sufi-chain#384 slice 5: a read-only agent may only use tools explicitly marked read-only. Unmarked and
+    /// external tools count as write (interim rule pending #138). Returns the refusal code, or null.
+    /// </summary>
+    public static string? ScopeRefusal(IMCPTool tool, AgentCallContext? call)
+    {
+        if (call?.AgentScope != AgentToolScope.ReadOnly)
+        {
+            return null;
+        }
+
+        return tool is IMCPToolEffect { IsReadOnly: true }
+            ? null
+            : AgentCallErrorCodes.AgentScopeReadOnly;
+    }
+
     public static string? AnonymousRefusal(IMCPTool tool, AgentCallContext? call)
     {
         if (call is not null && !call.IsAnonymous)

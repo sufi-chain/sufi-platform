@@ -106,7 +106,8 @@ public class ReflectionToolDiscoveryService : IInternalToolDiscoveryService, ISi
                                 access.PermissionName,
                                 attribute.RequiresPermission,
                                 access.RequiresAuthentication,
-                                AllowsAnonymous(method)
+                                AllowsAnonymous(method),
+                                IsReadOnly(method)
                             );
                             
                             tools.Add(tool);
@@ -189,6 +190,10 @@ public class ReflectionToolDiscoveryService : IInternalToolDiscoveryService, ISi
         return (tool is { Public: true, ReadOnly: true })
             || method.GetCustomAttribute<SufiAiMcpPublicWriteAttribute>() is not null;
     }
+
+    /// <summary>sufi-chain#384 slice 5: read-only only when explicitly marked; unmarked counts as write.</summary>
+    public static bool IsReadOnly(MethodInfo method) =>
+        method.GetCustomAttribute<SufiAiMcpToolAttribute>() is { ReadOnly: true };
 
     private sealed record ToolAttributeInfo(string Name, string Description, string? PermissionName, bool RequiresPermission);
 }

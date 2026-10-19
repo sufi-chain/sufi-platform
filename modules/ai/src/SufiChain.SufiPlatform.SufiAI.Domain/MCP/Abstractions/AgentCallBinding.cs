@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Volo.Abp.Security.Claims;
 
 namespace SufiChain.SufiPlatform.SufiAI.MCP.Abstractions;
@@ -14,6 +14,7 @@ public static class AgentCallErrorCodes
     public const string AnonymousNotAllowed = "SufiAI:AgentToolAnonymousNotAllowed";
     public const string PermissionNotDeclared = "SufiAI:AgentToolPermissionNotDeclared";
     public const string IdentityServicesMissing = "SufiAI:AgentCallIdentityServicesMissing";
+    public const string AgentScopeReadOnly = "SufiAI:AgentToolScopeReadOnly";
 }
 
 /// <summary>
