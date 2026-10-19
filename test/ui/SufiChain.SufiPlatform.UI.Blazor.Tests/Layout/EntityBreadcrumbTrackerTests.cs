@@ -21,12 +21,12 @@ public class EntityBreadcrumbTrackerTests
 
         layout.BreadcrumbItems.Add(new BreadcrumbItem("AI", "/ai"));
         layout.BreadcrumbItems.Add(new BreadcrumbItem("Model configurations", "/ai/models"));
-        await SettleAsync();
+        await WaitUntilAsync(() => layout.BreadcrumbItems.Count == 3);
         layout.BreadcrumbItems.Select(x => x.Text).ShouldBe(new[] { "AI", "Model configurations", "gpt-4o" });
 
         layout.Reset();
         layout.BreadcrumbItems.Add(new BreadcrumbItem("AI", "/ai"));
-        await SettleAsync();
+        await WaitUntilAsync(() => layout.BreadcrumbItems.Count == 2);
         layout.BreadcrumbItems.Select(x => x.Text).ShouldBe(new[] { "AI", "gpt-4o" });
     }
 
@@ -59,11 +59,14 @@ public class EntityBreadcrumbTrackerTests
         changes.ShouldBeGreaterThan(0);
     }
 
-    private static async Task SettleAsync()
+    // Polls instead of a fixed 500 ms settle: the tracker re-appends asynchronously and a loaded CI runner can take longer.
+    private static async Task WaitUntilAsync(System.Func<bool> condition, int timeoutMs = 5000)
     {
-        for (var i = 0; i < 20; i++)
+        var waited = 0;
+        while (!condition() && waited < timeoutMs)
         {
             await Task.Delay(25);
+            waited += 25;
         }
     }
 }
