@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Linq;
 using System.Security.Claims;
 using Volo.Abp.MultiTenancy;
@@ -17,13 +17,24 @@ public sealed class AgentCallContext
     /// <summary>Key used when the context travels through <c>Metadata</c> dictionaries (adapters).</summary>
     public const string MetadataKey = "SufiAI.AgentCallContext";
 
-    private AgentCallContext(Guid? tenantId, Guid? userId, string? sessionId, ClaimsPrincipal principal)
+    private AgentCallContext(Guid? tenantId, Guid? userId, string? sessionId, ClaimsPrincipal principal, AgentToolScope? agentScope = null)
     {
         TenantId = tenantId;
         UserId = userId;
         SessionId = sessionId;
         Principal = principal;
+        AgentScope = agentScope;
     }
+
+    /// <summary>
+    /// sufi-chain#384 slice 5: the agent's level. Null means the agent acts with the user's own permissions.
+    /// A level only narrows the user's permissions (effective = user âˆ© agent).
+    /// </summary>
+    public AgentToolScope? AgentScope { get; }
+
+    /// <summary>The same bound identity with the agent's level applied.</summary>
+    public AgentCallContext WithAgentScope(AgentToolScope? agentScope) =>
+        new(TenantId, UserId, SessionId, Principal, agentScope);
 
     /// <summary>Tenant the call is bound to (null for host).</summary>
     public Guid? TenantId { get; }
