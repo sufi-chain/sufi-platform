@@ -57,6 +57,7 @@ public class ToolLoopLimitTests
         result.Response.Content.ShouldBe(Fallback);
         calls().ShouldBe(3);
         handler.Requests.ShouldBeLessThanOrEqualTo(4);
+        result.FinishReason.ShouldBe(AIToolLoopFinishReasons.ToolRoundLimit); // logged as a tool limit, not Success
     }
 
     [Fact]
@@ -72,6 +73,7 @@ public class ToolLoopLimitTests
 
         stopwatch.Elapsed.ShouldBeLessThan(TimeSpan.FromSeconds(15));
         result.Response.Content.ShouldBe(Fallback);
+        result.FinishReason.ShouldBe(AIToolLoopFinishReasons.TimeLimit); // logged as a timeout, not Success
         await recorder.Received(1).RecordAsync(
             Arg.Is<AIUsageRecord>(r => !r.IsSuccess && r.ErrorMessage == AIErrorCodes.ToolLoopLimitReached),
             Arg.Any<CancellationToken>());
