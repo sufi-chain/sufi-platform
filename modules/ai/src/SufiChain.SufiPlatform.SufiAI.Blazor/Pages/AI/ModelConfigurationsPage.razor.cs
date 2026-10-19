@@ -424,7 +424,30 @@ public partial class ModelConfigurationsPage : AIComponentBase
             return unit == AIPriceUnit.PerMillionTokens ? L["InheritWorkspace"] : L["NotPriced"];
         }
 
-        return value.Value.ToString("0.####", CultureInfo.InvariantCulture) + " " + PriceSuffix(unit);
+        return ToUiDigits(value.Value.ToString("0.####", CultureInfo.InvariantCulture)) + " " + PriceSuffix(unit);
+    }
+
+    /// <summary>G-154: «۲۶۲٬۱۴۴» in fa (Persian digits, Arabic thousands separator), invariant grouping elsewhere.</summary>
+    private static string FormatTokenCount(long value) =>
+        ToUiDigits(value.ToString("#,0", CultureInfo.InvariantCulture));
+
+    private static bool IsPersianUi =>
+        CultureInfo.CurrentUICulture.TwoLetterISOLanguageName == "fa";
+
+    private static string ToUiDigits(string text)
+    {
+        if (!IsPersianUi)
+        {
+            return text;
+        }
+
+        return string.Concat(text.Select(c => c switch
+        {
+            >= '0' and <= '9' => (char)('\u06F0' + (c - '0')),
+            ',' => '\u066C',
+            '.' => '\u066B',
+            _ => c
+        }));
     }
 
     private string FormatOutputPrice(AIModelConfigurationDto route)

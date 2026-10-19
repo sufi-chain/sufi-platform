@@ -57,7 +57,7 @@
                         ShowColumnChooser="true"
                         SelectionMode="SbSelectionMode.MultipleRows">
 					<ChildContent>
-						<SbColumn TItem="AIModelConfigurationDto" Title="@L["Actions"]" MinWidth="200px" Sortable="false">
+						<SbColumn TItem="AIModelConfigurationDto" Title="@L["Actions"]" MinWidth="200px" Sortable="false" Freeze="SbColumnFreeze.Start">
 							<CellTemplate Context="cellContext">
 								<SbStack Wrap="true" Direction="SbStackDirection.Row" Gap="1">
 									@if (!_readOnly)
@@ -165,9 +165,13 @@
 							<CellTemplate Context="cellContext">
 								@if (!string.IsNullOrEmpty(cellContext.Item.ApiEndpoint))
 								{
-									<SbText Variant="SbTextVariant.BodySmall">
-										@cellContext.Item.ApiEndpoint
-									</SbText>
+									<SbStack Direction="SbStackDirection.Row" Gap="1" Align="SbAlign.Center">
+										<span dir="ltr"
+											  class="model-configurations__endpoint"
+											  title="@cellContext.Item.ApiEndpoint"
+											  style="unicode-bidi: isolate; font-family: var(--sb-font-family-mono, monospace); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 16rem; display: inline-block; font-size: .8125rem;">@cellContext.Item.ApiEndpoint</span>
+										<SbChip Size="SbSize.Sm">@L["RouteOwnConnection"]</SbChip>
+									</SbStack>
 								}
 								else
 								{
@@ -191,21 +195,21 @@
 								</SbChip>
 							</CellTemplate>
 						</SbColumn>
-						<SbColumn TItem="AIModelConfigurationDto" Field="MaxContextTokens" Title="@L["MaxContextTokens"]" MinWidth="120px" Filterable="true" Sortable="true">
+						<SbColumn TItem="AIModelConfigurationDto" Field="MaxContextTokens" Title="@L["MaxContextTokens"]" MinWidth="120px" Visible="false" Filterable="true" Sortable="true">
 							<CellTemplate Context="cellContext">
 								<SbText Variant="SbTextVariant.BodySmall">
-									@cellContext.Item.MaxContextTokens.ToString("N0")
+									@FormatTokenCount(cellContext.Item.MaxContextTokens)
 								</SbText>
 							</CellTemplate>
 						</SbColumn>
-						<SbColumn TItem="AIModelConfigurationDto" Title="@L["RouteInputPrice"]" MinWidth="160px">
+						<SbColumn TItem="AIModelConfigurationDto" Title="@L["RouteInputPrice"]" MinWidth="160px" Visible="false">
 							<CellTemplate Context="cellContext">
 								<SbText Variant="SbTextVariant.BodySmall" Color="@(cellContext.Item.InputPrice.HasValue ? SbColor.Default : SbColor.Muted)">
 									@FormatRoutePrice(cellContext.Item.InputPrice, cellContext.Item.InputPriceUnit)
 								</SbText>
 							</CellTemplate>
 						</SbColumn>
-						<SbColumn TItem="AIModelConfigurationDto" Title="@L["RouteOutputPrice"]" MinWidth="160px">
+						<SbColumn TItem="AIModelConfigurationDto" Title="@L["RouteOutputPrice"]" MinWidth="160px" Visible="false">
 							<CellTemplate Context="cellContext">
 								<SbText Variant="SbTextVariant.BodySmall" Color="@(cellContext.Item.OutputPrice.HasValue ? SbColor.Default : SbColor.Muted)">
 									@FormatOutputPrice(cellContext.Item)
