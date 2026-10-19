@@ -111,6 +111,9 @@ public class FileUploadValidationSecurityTests
 
         result.IsValid.ShouldBeFalse();
         result.ErrorMessage.ShouldContain("not allowed");
+        // sufi-chain#479: the endpoint localizes this key instead of sending the English text to the fa UI.
+        result.ErrorKey.ShouldBe("FileTypeNotAllowed");
+        result.ErrorArgs.ShouldBe(new object[] { "application/zip" });
     }
 
     [Fact]

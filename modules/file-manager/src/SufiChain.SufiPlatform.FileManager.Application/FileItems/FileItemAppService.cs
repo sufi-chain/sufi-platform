@@ -127,7 +127,7 @@ public partial class FileItemAppService : SufiApplicationService, IFileItemAppSe
             .Where(x => !string.IsNullOrEmpty(x))
             .ToList();
         if (allowedMimeTypes.Any() && !allowedMimeTypes.Contains(mimeType.ToLowerInvariant()))
-            return new UploadValidationResult { IsValid = false, ErrorMessage = $"File type '{mimeType}' is not allowed" };
+            return UploadValidationResult.Invalid($"File type '{mimeType}' is not allowed", "FileTypeNotAllowed", mimeType);
 
         var extension = Path.GetExtension(fileName).TrimStart('.').ToLowerInvariant();
         var allowedExtensions = (structure.AllowedExtensions ?? "")
@@ -136,10 +136,17 @@ public partial class FileItemAppService : SufiApplicationService, IFileItemAppSe
             .Where(x => !string.IsNullOrEmpty(x))
             .ToList();
         if (allowedExtensions.Any() && !allowedExtensions.Contains(extension))
-            return new UploadValidationResult { IsValid = false, ErrorMessage = $"File extension '.{extension}' is not allowed. Allowed types: {structure.AllowedExtensions}" };
+            return UploadValidationResult.Invalid(
+                $"File extension '.{extension}' is not allowed. Allowed types: {structure.AllowedExtensions}",
+                "FileExtensionNotAllowed",
+                extension,
+                structure.AllowedExtensions ?? string.Empty);
 
         if (fileSize > structure.MaxFileSize)
-            return new UploadValidationResult { IsValid = false, ErrorMessage = $"File size exceeds maximum allowed size of {structure.MaxFileSize / (1024 * 1024)}MB" };
+            return UploadValidationResult.Invalid(
+                $"File size exceeds maximum allowed size of {structure.MaxFileSize / (1024 * 1024)}MB",
+                "FileSizeExceedsMaximum",
+                structure.MaxFileSize / (1024 * 1024));
 
         return new UploadValidationResult { IsValid = true };
     }
@@ -164,6 +171,13 @@ public partial class FileItemAppService : SufiApplicationService, IFileItemAppSe
         }
 
         var created = await _folderAppService.GetOrCreateFolderByPathAsync(normalizedPath);
+        if (!UploadFolderStructureRule.Accepts(created?.StructureKey, structureKey))
+        {
+            // sufi-chain#479: a file stored under another structure's folder is never listed there (the listing
+            // filters by the folder's structure), so the upload answered 200 and the file vanished.
+            throw new UserFriendlyException(L["UploadFolderStructureMismatch"]);
+        }
+
         return created?.Id;
     }
 
@@ -1323,20 +1337,15 @@ public partial class FileItemAppService : SufiApplicationService, IFileItemAppSe
     {
         if (!FilePathSecurity.IsSafeUploadFileName(fileName))
         {
-            return new UploadValidationResult
-            {
-                IsValid = false,
-                ErrorMessage = "The file name is not allowed."
-            };
+            return UploadValidationResult.Invalid("The file name is not allowed.", "FileNameNotAllowed");
         }
 
         if (FilePathSecurity.IsBlockedExtension(fileName))
         {
-            return new UploadValidationResult
-            {
-                IsValid = false,
-                ErrorMessage = $"File extension '{Path.GetExtension(fileName)}' is not allowed."
-            };
+            return UploadValidationResult.Invalid(
+                $"File extension '{Path.GetExtension(fileName)}' is not allowed.",
+                "FileExtensionBlocked",
+                Path.GetExtension(fileName));
         }
 
         return new UploadValidationResult { IsValid = true };

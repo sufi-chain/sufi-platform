@@ -124,16 +124,22 @@ export async function uploadFilesFromInput(inputId, apiBaseUrl, metadata, access
     const files = Array.from(input.files);
     const fileInfos = files.map(f => ({ name: f.name, size: f.size }));
 
+    // sufi-chain#479: .NET answers with the id of this batch's first row. Report each file by that stable row id,
+    // not by its position in this batch, so results never land on an earlier row. Components that return
+    // nothing keep the old position-based indexes.
+    let firstRowId;
     try {
-        await dotNetRef.invokeMethodAsync('OnFilesSelected', fileInfos);
+        firstRowId = await dotNetRef.invokeMethodAsync('OnFilesSelected', fileInfos);
     } catch (err) {
         return;
     }
+    const rowBase = Number.isInteger(firstRowId) && firstRowId >= 0 ? firstRowId : 0;
 
     for (let i = 0; i < files.length; i++) {
-        const result = await uploadFile(files[i], apiBaseUrl, metadata, accessToken, dotNetRef, i);
+        const rowId = rowBase + i;
+        const result = await uploadFile(files[i], apiBaseUrl, metadata, accessToken, dotNetRef, rowId);
         try {
-            await dotNetRef.invokeMethodAsync('OnUploadComplete', i, result);
+            await dotNetRef.invokeMethodAsync('OnUploadComplete', rowId, result);
         } catch (e) {
             // Component may be disposed
         }
