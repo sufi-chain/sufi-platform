@@ -17,7 +17,7 @@
 				<SbIconButton Color="SbColor.Default" Size="SbSize.Sm" Disabled="@(!State.CanGoForward)" OnClick="@OnNavigateForward" Title="@L["Forward"]" AriaLabel="@L["Forward"]">
 					<Icon><SbIcon Name="arrow-right" /></Icon>
 				</SbIconButton>
-					<SbIconButton Color="SbColor.Default" Size="SbSize.Sm" Disabled="@(State.CurrentFolderId == null && State.CurrentPath == "/")" OnClick="@OnNavigateUp" Title="@L["Up"]" AriaLabel="@L["Up"]">
+					<SbIconButton Color="SbColor.Default" Size="SbSize.Sm" Disabled="@(!State.CanGoUp)" OnClick="@OnNavigateUp" Title="@L["Up"]" AriaLabel="@L["Up"]">
 					<Icon><SbIcon Name="arrow-up" /></Icon>
 				</SbIconButton>
 
@@ -134,7 +134,7 @@
 					<ChildContent>
 						<SbMenuItem OnClick="@OnNavigateBack"><SbIcon Name="arrow-left" Class="me-2" />@L["Back"]</SbMenuItem>
 						<SbMenuItem OnClick="@OnNavigateForward"><SbIcon Name="arrow-right" Class="me-2" />@L["Forward"]</SbMenuItem>
-						<SbMenuItem OnClick="@OnNavigateUp"><SbIcon Name="arrow-up" Class="me-2" />@L["Up"]</SbMenuItem>
+						<SbMenuItem OnClick="@OnNavigateUp" Disabled="@(!State.CanGoUp)"><SbIcon Name="arrow-up" Class="me-2" />@L["Up"]</SbMenuItem>
 						<SbMenuItem OnClick="@OnRefresh"><SbIcon Name="refresh" Class="me-2" />@L["Refresh"]</SbMenuItem>
 						<SbMenuItem OnClick="@OnTogglePropertiesPanel"><SbIcon Name="info" Class="me-2" />@L["PropertiesPanel"]</SbMenuItem>
 						<div class="fm-menu-divider"></div>

@@ -9,6 +9,7 @@ using SufiChain.SufiPlatform.FileManager.Blazor.Services;
 using SufiChain.SufiPlatform.FileManager.FileItems;
 using SufiChain.SufiPlatform.FileManager.FileStructures;
 using SufiChain.SufiPlatform.FileManager.Localization;
+using SufiChain.SufiPlatform.FileManager.Uploads;
 using SufiChain.SufiPlatform.UI.Blazor;
 using SufiChain.SufiPlatform.Application.Dtos;
 
@@ -62,10 +63,13 @@ public partial class FileUploader : FileManagerComponentBase, IDisposable
     private FileStructureDto? _structure;
     private StorageQuotaDto? _storageQuota;
     private bool _isDragging = false;
-    private List<UploadingFile> _uploadingFiles = new();
+    private readonly UploadRowTracker<UploadingFile> _rows = new();
+    private IReadOnlyList<UploadingFile> _uploadingFiles => _rows.Rows;
     private List<FileItemDto> _uploadedFiles = new();
     private List<FileStructureDto> _availableStructures = new();
-    private string? _selectedStructureKey;
+    private readonly UploaderStructureKeyState _structureKeyState = new();
+    private string? _selectedStructureKey => _structureKeyState.Selected;
+    private bool _structureLoaded;
     private string _userFolderPath = "";
     private bool _settingsOpen;
     private readonly string _fileInputId = $"fileUploader-fileInput-{Guid.NewGuid():N}";
@@ -77,10 +81,14 @@ public partial class FileUploader : FileManagerComponentBase, IDisposable
     private DotNetObjectReference<FileUploader>? _dotNetRef;
     private bool _changeHandlerRegistered;
 
-    protected override void OnInitialized()
+    protected override async Task OnParametersSetAsync()
     {
-        // Set initial structure key - use provided key or default to "General"
-        _selectedStructureKey = StructureKey ?? FileStructureKeys.General;
+        // sufi-chain#479: follow the parent's StructureKey on every render, not only the first; the File Manager
+        // keeps this uploader mounted and changes the key as the user moves between structure folders.
+        if (_structureKeyState.ApplyParameter(StructureKey) && _structureLoaded)
+        {
+            await LoadStructureAsync(_selectedStructureKey);
+        }
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -117,6 +125,7 @@ public partial class FileUploader : FileManagerComponentBase, IDisposable
 
             // Load structure
             await LoadStructureAsync(_selectedStructureKey);
+            _structureLoaded = true;
 
             if (ShowStorageQuota)
             {
@@ -156,8 +165,8 @@ public partial class FileUploader : FileManagerComponentBase, IDisposable
 
     private async Task OnStructureChanged(string? newStructureKey)
     {
-        _selectedStructureKey = newStructureKey;
-        await LoadStructureAsync(newStructureKey);
+        _structureKeyState.Select(newStructureKey);
+        await LoadStructureAsync(_selectedStructureKey);
         StateHasChanged();
     }
 
@@ -206,11 +215,13 @@ public partial class FileUploader : FileManagerComponentBase, IDisposable
     /// <summary>
     /// Called by JS with selected file infos before upload starts. Populates _uploadingFiles.
     /// </summary>
+    /// <returns>The id of the batch's first row; JS reports each file as that id plus its position (sufi-chain#479).</returns>
     [JSInvokable]
-    public void OnFilesSelected(JsFileInfo[] fileInfos)
+    public int OnFilesSelected(JsFileInfo[] fileInfos)
     {
-        if (_disposed || fileInfos == null) return;
+        if (_disposed || fileInfos == null) return -1;
         var maxAllowedSize = _structure?.MaxFileSize ?? 100 * 1024 * 1024;
+        var batch = new List<UploadingFile>();
         foreach (var info in fileInfos)
         {
             var uploadingFile = new UploadingFile
@@ -226,19 +237,22 @@ public partial class FileUploader : FileManagerComponentBase, IDisposable
                 uploadingFile.HasError = true;
                 uploadingFile.ErrorMessage = L["FileSizeExceedsMaximumDetail", FormatFileSize(info.Size), FormatFileSize(maxAllowedSize)].Value;
             }
-            _uploadingFiles.Add(uploadingFile);
+            batch.Add(uploadingFile);
         }
+        var firstRowId = _rows.AddBatch(batch);
         InvokeAsync(StateHasChanged);
+        return firstRowId;
     }
 
     /// <summary>
     /// Called by JS with progress for a file (index, 0-100).
     /// </summary>
     [JSInvokable]
-    public void OnUploadProgress(int fileIndex, int progress)
+    public void OnUploadProgress(int rowId, int progress)
     {
-        if (_disposed || fileIndex < 0 || fileIndex >= _uploadingFiles.Count) return;
-        var file = _uploadingFiles[fileIndex];
+        if (_disposed) return;
+        var file = _rows.Find(rowId);
+        if (file == null) return;
         // sufi-chain#479: progress events are fire-and-forget and can arrive after the result. Once a file
         // has a result, ignore them; and 100% only means the bytes were sent, not that the server accepted them.
         if (file.HasError || file.IsCompleted) return;
@@ -251,10 +265,11 @@ public partial class FileUploader : FileManagerComponentBase, IDisposable
     /// Called by JS when a single file upload completes (success or error).
     /// </summary>
     [JSInvokable]
-    public async Task OnUploadComplete(int fileIndex, JsUploadResult result)
+    public async Task OnUploadComplete(int rowId, JsUploadResult result)
     {
-        if (_disposed || fileIndex < 0 || fileIndex >= _uploadingFiles.Count) return;
-        var uploadingFile = _uploadingFiles[fileIndex];
+        if (_disposed) return;
+        var uploadingFile = _rows.Find(rowId);
+        if (uploadingFile == null) return;
         if (result.Success && result.Data.HasValue)
         {
             try
@@ -321,7 +336,7 @@ public partial class FileUploader : FileManagerComponentBase, IDisposable
 
     private void CancelUpload(UploadingFile file)
     {
-        _uploadingFiles.Remove(file);
+        _rows.Remove(file);
     }
 
     private string GetAcceptedFileTypes()
@@ -345,17 +360,8 @@ public partial class FileUploader : FileManagerComponentBase, IDisposable
 
     private string FormatFileSize(long bytes)
     {
-        if (bytes == 0) return "0 B";
-        
-        string[] sizes = { "B", "KB", "MB", "GB" };
-        double len = bytes;
-        int order = 0;
-        while (len >= 1024 && order < sizes.Length - 1)
-        {
-            order++;
-            len = len / 1024;
-        }
-        return $"{len:0.##} {sizes[order]}";
+        // sufi-chain#479: localized unit and Persian digits in fa («۱۰۰ مگابایت»).
+        return FileSizeText.Format(bytes, (unitKey, number) => L[unitKey, number].Value!);
     }
 
     private async Task RemoveUploadingFileAfterDelayAsync(UploadingFile uploadingFile)
@@ -369,7 +375,7 @@ public partial class FileUploader : FileManagerComponentBase, IDisposable
                 {
                     if (!_disposed)
                     {
-                        _uploadingFiles.Remove(uploadingFile);
+                        _rows.Remove(uploadingFile);
                         StateHasChanged();
                     }
                 });

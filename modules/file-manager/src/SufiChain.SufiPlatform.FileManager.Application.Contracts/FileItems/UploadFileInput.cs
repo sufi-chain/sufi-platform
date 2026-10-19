@@ -142,5 +142,26 @@ public class DeleteManyFileItemsInput
 public class UploadValidationResult
 {
     public bool IsValid { get; set; }
+
+    /// <summary>English reason, kept for logs and callers that do not localize.</summary>
     public string? ErrorMessage { get; set; }
+
+    /// <summary>
+    /// SufiFileManager localization key for <see cref="ErrorMessage"/> (sufi-chain#479), so the upload endpoint
+    /// can answer in the user's language instead of English.
+    /// </summary>
+    public string? ErrorKey { get; set; }
+
+    public object[] ErrorArgs { get; set; } = [];
+
+    public static UploadValidationResult Invalid(string errorMessage, string errorKey, params object[] errorArgs)
+    {
+        return new UploadValidationResult
+        {
+            IsValid = false,
+            ErrorMessage = errorMessage,
+            ErrorKey = errorKey,
+            ErrorArgs = errorArgs
+        };
+    }
 }
