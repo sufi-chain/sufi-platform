@@ -89,11 +89,6 @@ public partial class FileStructures : FileManagerComponentBase, IDisposable
         }
     }
 
-    private void OnSearchChanged(ChangeEventArgs e)
-    {
-        _searchTerm = e.Value?.ToString() ?? "";
-    }
-
     private void OpenCreatePage()
     {
         NavigationManager.NavigateTo(FileStructureWizard.ListRoute + "/new");
