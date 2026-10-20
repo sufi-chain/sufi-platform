@@ -39,7 +39,7 @@
 	<!-- Search Box -->
 	<SbStack Wrap="true" Direction="SbStackDirection.Row" Justify="SbJustify.Start" Align="SbAlign.Center">
 		<div style="min-width: 200px; width: min(100%, 300px);">
-			<SbTextField Placeholder="@L["SearchStructures"]" @bind-Value="@_searchTerm" @oninput="OnSearchChanged">
+			<SbTextField Placeholder="@L["SearchStructures"]" @bind-Value="@_searchTerm">
 				<StartAdornment><SbIcon Name="search" /></StartAdornment>
 			</SbTextField>
 		</div>
