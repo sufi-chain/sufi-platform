@@ -110,14 +110,16 @@ public class UploadEndpointContractTests
         var bytes = System.Text.Encoding.UTF8.GetBytes(content);
         var stream = new MemoryStream(bytes);
 
-        // The five-argument FormFile constructor leaves Headers null, so assigning ContentType throws a
-        // NullReferenceException. Pass headers explicitly (the six-argument overload) so ContentType is set.
-        var headers = new HeaderDictionary
+        // The only FormFile constructor leaves Headers null, and the ContentType setter writes into that
+        // dictionary, so assigning ContentType directly throws a NullReferenceException. Seed Headers first.
+        var file = new FormFile(stream, 0, bytes.Length, "File", fileName)
         {
-            ["Content-Disposition"] = $"form-data; name=\"File\"; filename=\"{fileName}\"",
-            ["Content-Type"] = contentType
+            Headers = new HeaderDictionary()
         };
 
-        return new FormFile(stream, 0, bytes.Length, "File", fileName, headers);
+        file.ContentDisposition = $"form-data; name=\"File\"; filename=\"{fileName}\"";
+        file.ContentType = contentType;
+
+        return file;
     }
 }
