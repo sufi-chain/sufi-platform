@@ -7,6 +7,7 @@ using SufiChain.SufiPlatform.SufiAI.Workspaces;
 using Volo.Abp;
 using Volo.Abp.Data;
 using Volo.Abp.MultiTenancy;
+using Volo.Abp.Security.Encryption;
 using Xunit;
 
 namespace SufiChain.SufiPlatform.SufiAI.Application.Tests.Workspaces;
@@ -20,6 +21,7 @@ public class InheritedWorkspaceCopyBlockTests : SufiAITestBase<SufiAIApplication
     private readonly IWorkspaceAssignmentRepository _assignmentRepository;
     private readonly IInheritedWorkspaceProjectionSynchronizer _synchronizer;
     private readonly ICurrentTenant _currentTenant;
+    private readonly IStringEncryptionService _stringEncryptor;
 
     public InheritedWorkspaceCopyBlockTests()
     {
@@ -28,6 +30,7 @@ public class InheritedWorkspaceCopyBlockTests : SufiAITestBase<SufiAIApplication
         _assignmentRepository = GetRequiredService<IWorkspaceAssignmentRepository>();
         _synchronizer = GetRequiredService<IInheritedWorkspaceProjectionSynchronizer>();
         _currentTenant = GetRequiredService<ICurrentTenant>();
+        _stringEncryptor = GetRequiredService<IStringEncryptionService>();
     }
 
     [Fact]
@@ -100,13 +103,17 @@ public class InheritedWorkspaceCopyBlockTests : SufiAITestBase<SufiAIApplication
             clone.Name.ShouldBe("tenant-own-copy-" + suffix);
             clone.IsInherited.ShouldBeFalse();
 
-            // The copy carries the tenant's own key, never a host key.
+            // The copy carries the tenant's own key, never a host key. Workspace.ApiKey is
+            // encrypted at rest by WorkspaceAppService.EncryptApiKey, so assert on the
+            // decrypted value and confirm the copy did not keep the plaintext.
             await WithUnitOfWorkAsync(async () =>
             {
                 var workspaces = await _workspaceRepository.GetListAsync(includeDetails: false);
                 var copy = workspaces.Single(workspace => workspace.Name == "tenant-own-copy-" + suffix);
-                copy.ApiKey.ShouldBe("sk-tenant");
-                copy.ApiKey.ShouldNotBe("sk-host");
+
+                copy.ApiKey.ShouldNotBe("sk-tenant");
+                _stringEncryptor.Decrypt(copy.ApiKey).ShouldBe("sk-tenant");
+                _stringEncryptor.Decrypt(copy.ApiKey).ShouldNotBe("sk-host");
             });
         }
     }
