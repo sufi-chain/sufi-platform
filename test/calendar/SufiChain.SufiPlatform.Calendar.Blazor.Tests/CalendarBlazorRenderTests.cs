@@ -103,7 +103,7 @@ public abstract class CalendarBlazorTestContext : BunitContext
     }
 }
 
-internal sealed class KeyLocalizer : IStringLocalizer
+internal class KeyLocalizer : IStringLocalizer
 {
     public LocalizedString this[string name] => new(name, name, resourceNotFound: false);
 
