@@ -243,6 +243,7 @@
   </Folder>
   <Folder Name="/Tests/Calendar/">
     <Project Path="test/calendar/SufiChain.SufiPlatform.Calendar.Application.Tests/SufiChain.SufiPlatform.Calendar.Application.Tests.csproj" />
+    <Project Path="test/calendar/SufiChain.SufiPlatform.Calendar.Blazor.Tests/SufiChain.SufiPlatform.Calendar.Blazor.Tests.csproj" />
     <Project Path="test/calendar/SufiChain.SufiPlatform.Calendar.Domain.Tests/SufiChain.SufiPlatform.Calendar.Domain.Tests.csproj" />
     <Project Path="test/calendar/SufiChain.SufiPlatform.Calendar.EntityFrameworkCore.Tests/SufiChain.SufiPlatform.Calendar.EntityFrameworkCore.Tests.csproj" />
     <Project Path="test/calendar/SufiChain.SufiPlatform.Calendar.MongoDB.Tests/SufiChain.SufiPlatform.Calendar.MongoDB.Tests.csproj" />

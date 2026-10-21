@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk.Razor">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+    <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
+    <DisableFody>true</DisableFody>
+    <RootNamespace>SufiChain.SufiPlatform.Calendar.Blazor.Tests</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\modules\calendar\src\SufiChain.SufiPlatform.Calendar.Blazor\SufiChain.SufiPlatform.Calendar.Blazor.csproj" />
+    <ProjectReference Include="..\..\..\modules\calendar\src\SufiChain.SufiPlatform.Calendar.Blazor.Public\SufiChain.SufiPlatform.Calendar.Blazor.Public.csproj" />
+    <PackageReference Include="bunit" Version="$(BunitVersion)" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="$(MicrosoftNetTestSdkVersion)" />
+    <PackageReference Include="xunit" Version="$(XunitVersion)" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="$(XunitRunnerVisualStudioVersion)" PrivateAssets="All" />
+    <PackageReference Include="Shouldly" Version="$(ShouldlyVersion)" />
+    <PackageReference Include="NSubstitute" Version="$(NSubstituteVersion)" />
+  </ItemGroup>
+</Project>
