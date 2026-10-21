@@ -2,6 +2,7 @@ using System.Globalization;
 using Bunit;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Localization;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using NSubstitute;
 using Shouldly;
@@ -90,7 +91,7 @@ public abstract class CalendarBlazorTestContext : BunitContext
     {
         Services.AddSingleton<IStringLocalizerFactory>(new KeyLocalizerFactory());
         Services.AddSingleton(typeof(IStringLocalizer<>), typeof(KeyLocalizer<>));
-        Services.AddSingleton<ILoggerFactory>(NullLoggerFactory.Instance);
+        Services.AddSingleton(typeof(ILoggerFactory), NullLoggerFactory.Instance);
         Services.AddSingleton(Substitute.For<ICalendarEventAppService>());
         Services.AddSingleton(Substitute.For<IAvailabilityCalendarAppService>());
     }
