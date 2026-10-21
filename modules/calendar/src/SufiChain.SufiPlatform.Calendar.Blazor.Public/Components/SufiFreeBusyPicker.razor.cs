@@ -88,7 +88,7 @@ public partial class SufiFreeBusyPicker : CalendarPublicComponentBase
 
     private TimeZoneInfo ResolveTimeZone()
     {
-        return TimeZoneInfo.FindSystemTimeZoneById(TimeZoneId);
+        return CalendarTimeZoneResolver.Resolve(TimeZoneId);
     }
 
     private static class LoadingKeys
