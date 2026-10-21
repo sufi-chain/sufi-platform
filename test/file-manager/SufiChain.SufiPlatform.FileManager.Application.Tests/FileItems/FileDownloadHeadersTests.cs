@@ -123,6 +123,39 @@ public class FileDownloadHeadersTests
     }
 
     [Fact]
+    public async Task Download_refuses_an_anonymous_caller_on_a_private_file()
+    {
+        // sufi-chain#436: the raw /download route is AllowAnonymous only so a signed token can pass;
+        // with no token and no session the app service reports IsForbidden and the route must not leak bytes.
+        var harness = CreateController();
+        var id = Guid.NewGuid();
+        harness.AppService.GetDownloadContentAsync(id, null)
+            .Returns(new FileContentResultDto { IsForbidden = true });
+
+        var result = await harness.Controller.DownloadAsync(id, token: null);
+
+        result.ShouldBeOfType<ForbidResult>();
+        harness.HttpContext.Response.Headers.ContentDisposition.ToString().ShouldBeNullOrWhiteSpace();
+    }
+
+    [Fact]
+    public async Task Download_passes_the_token_through_so_a_valid_share_link_still_works()
+    {
+        var harness = CreateController();
+        var id = Guid.NewGuid();
+        harness.AppService.GetDownloadContentAsync(id, "signed-share-token")
+            .Returns(new FileContentResultDto
+            {
+                Content = new FileContentDto { Content = new byte[] { 7 }, MimeType = "text/plain", FileName = "note.txt" }
+            });
+
+        var result = await harness.Controller.DownloadAsync(id, "signed-share-token");
+
+        result.ShouldBeOfType<FileContentResult>().FileContents.ShouldBe(new byte[] { 7 });
+        await harness.AppService.Received(1).GetDownloadContentAsync(id, "signed-share-token");
+    }
+
+    [Fact]
     public async Task Stream_and_thumbnail_fall_back_when_the_content_type_is_missing()
     {
         var harness = CreateController();
