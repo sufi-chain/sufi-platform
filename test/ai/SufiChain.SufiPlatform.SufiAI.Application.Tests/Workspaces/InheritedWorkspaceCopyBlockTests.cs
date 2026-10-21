@@ -99,6 +99,15 @@ public class InheritedWorkspaceCopyBlockTests : SufiAITestBase<SufiAIApplication
             clone.Id.ShouldNotBe(own.Id);
             clone.Name.ShouldBe("tenant-own-copy-" + suffix);
             clone.IsInherited.ShouldBeFalse();
+
+            // The copy carries the tenant's own key, never a host key.
+            await WithUnitOfWorkAsync(async () =>
+            {
+                var workspaces = await _workspaceRepository.GetListAsync(includeDetails: false);
+                var copy = workspaces.Single(workspace => workspace.Name == "tenant-own-copy-" + suffix);
+                copy.ApiKey.ShouldBe("sk-tenant");
+                copy.ApiKey.ShouldNotBe("sk-host");
+            });
         }
     }
 
