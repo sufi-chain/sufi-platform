@@ -102,9 +102,6 @@ public partial class CalendarToolbarWidget : CalendarPublicComponentBase
 
     protected virtual TimeZoneInfo ResolveCalendarTimeZone()
     {
-        var timeZoneId = PersonalCalendar?.TimeZoneId;
-        return string.IsNullOrWhiteSpace(timeZoneId)
-            ? TimeZoneInfo.Local
-            : TimeZoneInfo.FindSystemTimeZoneById(timeZoneId);
+        return CalendarTimeZoneResolver.Resolve(PersonalCalendar?.TimeZoneId);
     }
 }

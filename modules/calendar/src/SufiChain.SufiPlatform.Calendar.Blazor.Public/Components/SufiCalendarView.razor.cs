@@ -522,7 +522,9 @@ public partial class SufiCalendarView : CalendarPublicComponentBase
 
     private TimeZoneInfo ResolveTimeZone()
     {
-        return TimeZoneInfo.FindSystemTimeZoneById(TimeZoneId);
+        // A browser-supplied IANA id (or a calendar row written on another host) must not take the
+        // whole week/day grid down: fall back instead of throwing (sufi-chain#394).
+        return CalendarTimeZoneResolver.Resolve(TimeZoneId);
     }
 
     protected sealed record DayCalendarEventGroup(Guid CalendarId, string? Color, IReadOnlyList<EventOccurrenceDto> Occurrences);
