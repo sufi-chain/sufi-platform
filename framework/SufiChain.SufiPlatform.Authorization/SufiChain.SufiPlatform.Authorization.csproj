@@ -14,6 +14,7 @@
 
   <ItemGroup>
     <PackageReference Include="Volo.Abp.Authorization" Version="$(AbpVersion)"/>
+    <PackageReference Include="Volo.Abp.Features" Version="$(AbpVersion)"/>
     <PackageReference Include="Volo.Abp.Security" Version="$(AbpVersion)"/>
   </ItemGroup>
 

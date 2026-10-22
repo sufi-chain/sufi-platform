@@ -24,6 +24,7 @@
     "Permission:Features": "Feature management",
     "Permission:Features.Features": "Features",
     "Permission:Features.ManageHostFeatures": "Manage host features",
-    "Permission:Features.ManageTenantFeatures": "Manage tenant features"
+    "Permission:Features.ManageTenantFeatures": "Manage tenant features",
+    "FeatureCountTitle": "{0} of {1} features set"
   }
 }
