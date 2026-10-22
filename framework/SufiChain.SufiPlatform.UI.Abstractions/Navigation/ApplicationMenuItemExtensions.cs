@@ -21,6 +21,11 @@ public static class ApplicationMenuItemExtensions
     public const string IsDividerKey = "IsDivider";
 
     /// <summary>
+    /// Key for storing required features in CustomData.
+    /// </summary>
+    public const string RequiredFeaturesKey = "RequiredFeatures";
+
+    /// <summary>
     /// Marks this menu item as requiring specific permissions.
     /// The menu item will only be shown if the user has all specified permissions.
     /// </summary>
@@ -92,5 +97,39 @@ public static class ApplicationMenuItemExtensions
     public static bool IsDivider(this ApplicationMenuItem item)
     {
         return item.CustomData.TryGetValue(IsDividerKey, out var value) && value is true;
+    }
+
+    /// <summary>
+    /// Marks this menu item as requiring specific features to be enabled.
+    /// The menu item is only shown when every named feature is enabled in the
+    /// current provider scope (host edition, tenant override, ...).
+    /// </summary>
+    public static ApplicationMenuItem RequireFeatures(this ApplicationMenuItem item, params string[] features)
+    {
+        if (features.Length > 0)
+        {
+            item.CustomData[RequiredFeaturesKey] = features;
+        }
+        return item;
+    }
+
+    /// <summary>
+    /// Gets the required features for this menu item.
+    /// </summary>
+    public static string[] GetRequiredFeatures(this ApplicationMenuItem item)
+    {
+        if (item.CustomData.TryGetValue(RequiredFeaturesKey, out var value) && value is string[] features)
+        {
+            return features;
+        }
+        return Array.Empty<string>();
+    }
+
+    /// <summary>
+    /// Checks if this menu item has any required features.
+    /// </summary>
+    public static bool HasRequiredFeatures(this ApplicationMenuItem item)
+    {
+        return item.CustomData.ContainsKey(RequiredFeaturesKey);
     }
 }

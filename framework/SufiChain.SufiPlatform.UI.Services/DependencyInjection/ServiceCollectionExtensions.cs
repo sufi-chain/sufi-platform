@@ -3,6 +3,7 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using SufiChain.SufiPlatform.UI.Alerts;
 using SufiChain.SufiPlatform.UI.Authorization;
 using SufiChain.SufiPlatform.UI.Bundling;
+using SufiChain.SufiPlatform.UI.Features;
 using SufiChain.SufiPlatform.UI.Layout;
 using SufiChain.SufiPlatform.UI.LayoutHooks;
 using SufiChain.SufiPlatform.UI.Localization;
@@ -11,6 +12,7 @@ using SufiChain.SufiPlatform.UI.PageToolbars;
 using SufiChain.SufiPlatform.UI.Services.Alerts;
 using SufiChain.SufiPlatform.UI.Services.Authorization;
 using SufiChain.SufiPlatform.UI.Services.Bundling;
+using SufiChain.SufiPlatform.UI.Services.Features;
 using SufiChain.SufiPlatform.UI.Services.Layout;
 using SufiChain.SufiPlatform.UI.Services.LayoutHooks;
 using SufiChain.SufiPlatform.UI.Services.Localization;
@@ -69,6 +71,10 @@ public static class ServiceCollectionExtensions
 
         // Authorization (default: always allow, replace with a product-specific implementation for real authorization)
         services.TryAddScoped<ISufiPermissionChecker, AlwaysAllowPermissionChecker>();
+
+        // Features (default: always enabled, replace with an ABP-backed implementation when
+        // edition/tenant feature values must hide menus and close routes)
+        services.TryAddScoped<ISufiFeatureChecker, AlwaysEnabledFeatureChecker>();
 
         // Current user (default: anonymous; replace in an authentication-specific UI package if needed)
         services.TryAddScoped<ICurrentUserAccessor, DefaultCurrentUserAccessor>();

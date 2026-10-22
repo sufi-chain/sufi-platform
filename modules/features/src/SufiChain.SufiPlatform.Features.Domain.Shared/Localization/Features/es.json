@@ -24,6 +24,7 @@
     "Permission:Features": "Gestión de características",
     "Permission:Features.Features": "Características",
     "Permission:Features.ManageHostFeatures": "Administrar características del host",
-    "Permission:Features.ManageTenantFeatures": "Administrar características del tenant"
+    "Permission:Features.ManageTenantFeatures": "Administrar características del tenant",
+    "FeatureCountTitle": "{0} de {1} caractersticas definidas"
   }
 }

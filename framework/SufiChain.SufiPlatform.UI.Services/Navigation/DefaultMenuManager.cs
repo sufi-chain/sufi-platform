@@ -1,6 +1,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using SufiChain.SufiPlatform.UI.Authorization;
+using SufiChain.SufiPlatform.UI.Features;
 using SufiChain.SufiPlatform.UI.Navigation;
 using SufiChain.SufiPlatform.UI.Users;
 using NavigationApplicationMenu = SufiChain.SufiPlatform.UI.Navigation.ApplicationMenu;
@@ -14,24 +15,27 @@ namespace SufiChain.SufiPlatform.UI.Services.Navigation;
 
 /// <summary>
 /// Default implementation of IMenuManager.
-/// Supports permission-based filtering of menu items.
+/// Supports permission and feature based filtering of menu items.
 /// </summary>
 public class DefaultMenuManager : NavigationIMenuManager
 {
     private readonly System.IServiceProvider _serviceProvider;
     private readonly SufiNavigationOptions _options;
     private readonly ISufiPermissionChecker _permissionChecker;
+    private readonly ISufiFeatureChecker _featureChecker;
     private readonly ICurrentUserAccessor _currentUser;
 
     public DefaultMenuManager(
         System.IServiceProvider serviceProvider,
         IOptions<SufiNavigationOptions> options,
         ISufiPermissionChecker permissionChecker,
+        ISufiFeatureChecker featureChecker,
         ICurrentUserAccessor currentUser)
     {
         _serviceProvider = serviceProvider;
         _options = options.Value;
         _permissionChecker = permissionChecker;
+        _featureChecker = featureChecker;
         _currentUser = currentUser;
     }
 
@@ -51,8 +55,8 @@ public class DefaultMenuManager : NavigationIMenuManager
             await contributor.ConfigureMenuAsync(context);
         }
 
-        // Check permissions and remove unauthorized items
-        await CheckPermissionsAsync(menu);
+        // Check permissions and features, then remove unauthorized/unavailable items
+        await CheckAccessAsync(menu);
 
         // Normalize menu items (remove empty, sort by order)
         NormalizeMenu(menu);
@@ -67,9 +71,9 @@ public class DefaultMenuManager : NavigationIMenuManager
     }
 
     /// <summary>
-    /// Checks permissions for all menu items and removes unauthorized ones.
+    /// Checks permissions and features for all menu items and removes unavailable ones.
     /// </summary>
-    private async Task CheckPermissionsAsync(NavigationApplicationMenu menu)
+    private async Task CheckAccessAsync(NavigationApplicationMenu menu)
     {
         var allMenuItems = new List<NavigationApplicationMenuItem>();
         CollectAllMenuItems(menu, allMenuItems);
@@ -88,10 +92,19 @@ public class DefaultMenuManager : NavigationIMenuManager
             ? new Dictionary<string, bool>(StringComparer.Ordinal)
             : await _permissionChecker.IsGrantedAsync(permissionNames);
 
+        var featureNames = allMenuItems
+            .SelectMany(GetFeatureNames)
+            .Distinct(StringComparer.Ordinal)
+            .ToList();
+
+        var featureResults = featureNames.Count == 0
+            ? new Dictionary<string, bool>(StringComparer.Ordinal)
+            : await _featureChecker.IsEnabledAsync(featureNames);
+
         var toBeDeleted = new HashSet<NavigationApplicationMenuItem>();
         foreach (var item in allMenuItems)
         {
-            if (ShouldRemoveMenuItem(item, permissionResults))
+            if (ShouldRemoveMenuItem(item, permissionResults, featureResults))
             {
                 toBeDeleted.Add(item);
             }
@@ -105,7 +118,8 @@ public class DefaultMenuManager : NavigationIMenuManager
 
     private bool ShouldRemoveMenuItem(
         NavigationApplicationMenuItem item,
-        Dictionary<string, bool> permissionResults)
+        Dictionary<string, bool> permissionResults,
+        Dictionary<string, bool> featureResults)
     {
         if (item.IsAuthenticationRequired() && !_currentUser.IsAuthenticated)
         {
@@ -128,6 +142,14 @@ public class DefaultMenuManager : NavigationIMenuManager
             }
         }
 
+        foreach (var feature in item.GetRequiredFeatures())
+        {
+            if (!featureResults.TryGetValue(feature, out var isEnabled) || !isEnabled)
+            {
+                return true;
+            }
+        }
+
         return false;
     }
 
@@ -141,6 +163,14 @@ public class DefaultMenuManager : NavigationIMenuManager
         foreach (var permission in item.GetRequiredPermissions())
         {
             yield return permission;
+        }
+    }
+
+    private static IEnumerable<string> GetFeatureNames(NavigationApplicationMenuItem item)
+    {
+        foreach (var feature in item.GetRequiredFeatures())
+        {
+            yield return feature;
         }
     }
 

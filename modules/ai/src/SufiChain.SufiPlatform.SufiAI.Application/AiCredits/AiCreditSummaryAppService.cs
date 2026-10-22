@@ -5,9 +5,11 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using SufiChain.SufiPlatform.SufiAI.AiCredits;
+using SufiChain.SufiPlatform.SufiAI.Features;
 using SufiChain.SufiPlatform.SufiAI.Permissions;
 using Volo.Abp.Application.Services;
 using Volo.Abp.Authorization;
+using Volo.Abp.Features;
 
 namespace SufiChain.SufiPlatform.SufiAI.Application.AiCredits;
 
@@ -17,7 +19,11 @@ namespace SufiChain.SufiPlatform.SufiAI.Application.AiCredits;
 /// <c>api/app/ai-credit-summary</c>: GET get, get-all). The composition Blazor
 /// host calls this in-process; the AI demo host also creates conventional controllers.
 /// </summary>
+// sufi-chain#490: AI Credits only exist while AI is enabled. With the feature off the
+// interceptor throws AbpAuthorizationException, so the tenant summary calls are refused
+// instead of silently returning a balance for a capability the edition does not have.
 [Authorize]
+[RequiresFeature(SufiAIFeatures.Enable)]
 public class AiCreditSummaryAppService : ApplicationService, IAiCreditSummaryAppService
 {
     private readonly IAiCreditSummaryRepository _summaryRepository;

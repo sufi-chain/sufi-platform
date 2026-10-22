@@ -35,11 +35,16 @@
 						@foreach (var group in _groups)
 						{
 							var tabId = GetNormalizedGroupName(group.Name);
-							var enabledCount = GetEnabledCount(group);
+							// sufi-chain#490: the tab counter must describe the same items the panel lists.
+							// The panel renders every feature in the group (toggle checkboxes plus the
+							// free-text/selection limits), so the badge shows "set / listed" rather than only
+							// the enabled toggles. Mirrors PermissionsModal's granted/total tab counter (#414).
+							var setCount = GetSetFeatureCount(group);
+							var totalCount = GetFeatureCount(group);
 
 							<SbTab @key="group.Name" Id="@tabId" Label="@group.DisplayName">
 								<Badge>
-									<span class="group-count">(@enabledCount)</span>
+									<span class="group-count" title="@L["FeatureCountTitle", setCount, totalCount]">(@setCount/@totalCount)</span>
 								</Badge>
 								<ChildContent>
 									<SbStack Gap="2">

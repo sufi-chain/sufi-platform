@@ -27,6 +27,7 @@
     "Permission:Features": "مدیریت ویژگی‌ها",
     "Permission:Features.Features": "ویژگی‌ها",
     "Permission:Features.ManageHostFeatures": "مدیریت ویژگی‌های میزبان",
-    "Permission:Features.ManageTenantFeatures": "مدیریت ویژگی‌های مستأجر"
+    "Permission:Features.ManageTenantFeatures": "مدیریت ویژگی‌های مستأجر",
+    "FeatureCountTitle": "{0} از {1} ویژگی تنظیم شده"
   }
 }

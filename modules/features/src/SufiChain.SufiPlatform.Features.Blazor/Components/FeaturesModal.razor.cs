@@ -251,6 +251,38 @@ public partial class FeaturesModal
             .Count(f => _toggleValues.GetValueOrDefault(f.Name));
     }
 
+    /// <summary>
+    /// sufi-chain#490: the «میز پشتیبانی» tab lists every feature in the group (toggle
+    /// checkboxes plus the free-text/selection limits), so the counter must be over the same
+    /// items rather than only the toggles. It shows how many of the listed features are set.
+    /// </summary>
+    private int GetFeatureCount(FeatureGroupDto group)
+    {
+        return group.Features.Count;
+    }
+
+    /// <summary>
+    /// Number of the group's listed features that currently carry a value (toggle on, a selected
+    /// option, or any free text). Used together with <see cref="GetFeatureCount"/> so the tab badge
+    /// matches the items the panel lists.
+    /// </summary>
+    private int GetSetFeatureCount(FeatureGroupDto group)
+    {
+        return group.Features.Count(IsFeatureSet);
+    }
+
+    private bool IsFeatureSet(FeatureDto feature)
+    {
+        if (IsToggleFeature(feature))
+        {
+            return _toggleValues.GetValueOrDefault(feature.Name);
+        }
+
+        return IsSelectionFeature(feature)
+            ? !string.IsNullOrWhiteSpace(_selectValues.GetValueOrDefault(feature.Name))
+            : !string.IsNullOrWhiteSpace(_textValues.GetValueOrDefault(feature.Name));
+    }
+
     private void FilterFeatureGroups()
     {
         if (string.IsNullOrWhiteSpace(_searchText))
