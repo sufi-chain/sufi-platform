@@ -8,16 +8,32 @@ public class ConfigurableAiService : ISufiAIChatService, ISingletonDependency
 {
     public string ResponseContent { get; set; } = "Suggested operator reply";
 
+    /// <summary>9.4 (sufi-chain#340): tests set this to prove a slow model is not cut off.</summary>
+    public TimeSpan CompleteDelay { get; set; }
+
+    /// <summary>Runs after <see cref="CompleteDelay"/> and before the reply, on the caller token.</summary>
+    public Func<CancellationToken, Task>? BeforeComplete { get; set; }
+
     public Task<bool> IsAvailableAsync(CancellationToken cancellationToken = default)
     {
         return Task.FromResult(true);
     }
 
-    public Task<SufiAIChatResponse> CompleteAsync(
+    public async Task<SufiAIChatResponse> CompleteAsync(
         SufiAIChatRequest request,
         CancellationToken cancellationToken = default)
     {
-        return Task.FromResult(new SufiAIChatResponse
+        if (CompleteDelay > TimeSpan.Zero)
+        {
+            await Task.Delay(CompleteDelay, cancellationToken);
+        }
+
+        if (BeforeComplete != null)
+        {
+            await BeforeComplete(cancellationToken);
+        }
+
+        return new SufiAIChatResponse
         {
             Content = ResponseContent,
             ModelId = "test-model",
@@ -27,7 +43,7 @@ public class ConfigurableAiService : ISufiAIChatService, ISingletonDependency
                 OutputTokens = 10,
                 TotalTokens = 15
             }
-        });
+        };
     }
 
     public IAsyncEnumerable<SufiAIChatStreamChunk> StreamAsync(

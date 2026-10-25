@@ -161,23 +161,30 @@ public class TicketAiAppServiceTests
     }
 
     [Fact]
-    public async Task SuggestReply_Times_Out_Instead_Of_Waiting_For_The_Provider()
+    public async Task SuggestReply_Completes_When_The_Provider_Is_Slow()
     {
-        var fixture = new AppFixture(fastTimeout: true);
-        fixture.PurposeReady(Guid.NewGuid());
+        // 9.4 (sufi-chain#340): the old 60s cutoff cancelled a slow provider and returned AiTimedOut.
+        // The turn now ends only on the caller token (abort / circuit close / shutdown).
+        var fixture = new AppFixture();
+        var purposeId = Guid.NewGuid();
+        fixture.PurposeReady(purposeId);
         fixture.Runtime.SendAsync(Arg.Any<HooshvareRuntimeRequestDto>(), Arg.Any<CancellationToken>())
-            .Returns(call => NeverAsync(call.Arg<CancellationToken>()));
+            .Returns(async call =>
+            {
+                await Task.Delay(TimeSpan.FromSeconds(2), call.Arg<CancellationToken>()); // longer than the removed fast test cutoff
+                return new HooshvareRuntimeResultDto { Message = "slow but complete" };
+            });
 
         var result = await fixture.Ai.SuggestReplyAsync(fixture.Ticket.Id);
 
-        result.Available.ShouldBeFalse();
-        result.UnavailableReasonCode.ShouldBe(TicketingErrorCodes.AiTimedOut);
+        result.Available.ShouldBeTrue();
+        result.Suggestion.ShouldBe("slow but complete");
     }
 
     [Fact]
     public async Task SuggestReply_Propagates_Caller_Cancellation()
     {
-        var fixture = new AppFixture(fastTimeout: true);
+        var fixture = new AppFixture();
         fixture.PurposeReady(Guid.NewGuid());
         fixture.Runtime.SendAsync(Arg.Any<HooshvareRuntimeRequestDto>(), Arg.Any<CancellationToken>())
             .Returns(call => NeverAsync(call.Arg<CancellationToken>()));
@@ -237,18 +244,40 @@ public class TicketAiAppServiceTests
     }
 
     [Fact]
-    public async Task KbDraft_Times_Out_With_A_Specific_Error()
+    public async Task KbDraft_Completes_When_The_Provider_Is_Slow()
     {
-        var fixture = new AppFixture(fastTimeout: true);
+        // 9.4 (sufi-chain#340): no fixed send deadline — a slow provider finishes rather than AiTimedOut.
+        var fixture = new AppFixture();
+        var purposeId = Guid.NewGuid();
+        fixture.ResolveTicket();
+        fixture.PurposeReady(purposeId);
+        fixture.Runtime.SendAsync(Arg.Any<HooshvareRuntimeRequestDto>(), Arg.Any<CancellationToken>())
+            .Returns(async call =>
+            {
+                await Task.Delay(TimeSpan.FromSeconds(2), call.Arg<CancellationToken>());
+                return new HooshvareRuntimeResultDto { Message = "## Slow Resolution" };
+            });
+
+        var result = await fixture.Drafts.CreateKbDraftFromTicketAsync(
+            new CreateKbDraftFromTicketInput { TicketId = fixture.Ticket.Id, ProjectId = fixture.ProjectId });
+
+        result.Content.ShouldBe("## Slow Resolution");
+    }
+
+    [Fact]
+    public async Task KbDraft_Propagates_Caller_Cancellation()
+    {
+        var fixture = new AppFixture();
         fixture.ResolveTicket();
         fixture.PurposeReady(Guid.NewGuid());
         fixture.Runtime.SendAsync(Arg.Any<HooshvareRuntimeRequestDto>(), Arg.Any<CancellationToken>())
             .Returns(call => NeverAsync(call.Arg<CancellationToken>()));
+        using var cts = new CancellationTokenSource();
+        cts.Cancel();
 
-        var exception = await Should.ThrowAsync<BusinessException>(() => fixture.Drafts.CreateKbDraftFromTicketAsync(
-            new CreateKbDraftFromTicketInput { TicketId = fixture.Ticket.Id, ProjectId = fixture.ProjectId }));
-
-        exception.Code.ShouldBe(TicketingErrorCodes.AiTimedOut);
+        await Should.ThrowAsync<OperationCanceledException>(() => fixture.Drafts.CreateKbDraftFromTicketAsync(
+            new CreateKbDraftFromTicketInput { TicketId = fixture.Ticket.Id, ProjectId = fixture.ProjectId },
+            cts.Token));
     }
 
     private static async Task<HooshvareRuntimeResultDto> NeverAsync(CancellationToken cancellationToken)
@@ -298,7 +327,7 @@ public class TicketAiAppServiceTests
         public TicketAiAppService Ai { get; }
         public TicketKbDraftAppService Drafts { get; }
 
-        public AppFixture(bool fastTimeout = false)
+        public AppFixture()
         {
             Ticket = new Ticket(
                 Guid.NewGuid(),
@@ -331,12 +360,8 @@ public class TicketAiAppServiceTests
             var provider = services.BuildServiceProvider();
             var lazy = new AbpLazyServiceProvider(provider);
 
-            Ai = fastTimeout
-                ? new FastTimeoutTicketAiAppService(Tickets, Runtime, Keys, selector)
-                : new TicketAiAppService(Tickets, Runtime, Keys, selector);
-            Drafts = fastTimeout
-                ? new FastTimeoutTicketKbDraftAppService(Tickets, Substitute.For<Volo.Abp.EventBus.Distributed.IDistributedEventBus>(), Runtime, selector)
-                : new TicketKbDraftAppService(Tickets, Substitute.For<Volo.Abp.EventBus.Distributed.IDistributedEventBus>(), Runtime, selector);
+            Ai = new TicketAiAppService(Tickets, Runtime, Keys, selector);
+            Drafts = new TicketKbDraftAppService(Tickets, Substitute.For<Volo.Abp.EventBus.Distributed.IDistributedEventBus>(), Runtime, selector);
             Ai.LazyServiceProvider = lazy;
             Drafts.LazyServiceProvider = lazy;
         }
@@ -371,33 +396,5 @@ public class TicketAiAppServiceTests
             Runtime.SendAsync(Arg.Any<HooshvareRuntimeRequestDto>(), Arg.Any<CancellationToken>())
                 .Returns(new HooshvareRuntimeResultDto { Message = message });
         }
-    }
-
-    private sealed class FastTimeoutTicketAiAppService : TicketAiAppService
-    {
-        public FastTimeoutTicketAiAppService(
-            ITicketRepository ticketRepository,
-            IHooshvareRuntimeAppService hooshvareRuntime,
-            IPlatformHooshvareResolver hooshvareResolver,
-            TicketAiHooshvareSelector hooshvareSelector)
-            : base(ticketRepository, hooshvareRuntime, hooshvareResolver, hooshvareSelector)
-        {
-        }
-
-        protected override TimeSpan SendTimeout => TimeSpan.FromMilliseconds(50);
-    }
-
-    private sealed class FastTimeoutTicketKbDraftAppService : TicketKbDraftAppService
-    {
-        public FastTimeoutTicketKbDraftAppService(
-            ITicketRepository ticketRepository,
-            Volo.Abp.EventBus.Distributed.IDistributedEventBus distributedEventBus,
-            IHooshvareRuntimeAppService hooshvareRuntime,
-            TicketAiHooshvareSelector hooshvareSelector)
-            : base(ticketRepository, distributedEventBus, hooshvareRuntime, hooshvareSelector)
-        {
-        }
-
-        protected override TimeSpan SendTimeout => TimeSpan.FromMilliseconds(50);
     }
 }
