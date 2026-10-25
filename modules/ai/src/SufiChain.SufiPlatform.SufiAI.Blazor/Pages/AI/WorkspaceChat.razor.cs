@@ -468,17 +468,19 @@ public partial class WorkspaceChat : AIComponentBase
         await SaveAnonymousTranscriptAsync();
     }
 
-    private static readonly TimeSpan ChatReplyTimeout = TimeSpan.FromSeconds(60);
-
     private async Task<string> ReadChatReplyAsync(
         SufiAISendChatMessageInput input,
         Guid? sessionId,
         Func<string, Task> onPreview)
     {
-        using var timeout = new CancellationTokenSource(ChatReplyTimeout);
+        // 9.4 (sufi-chain#340): the fixed 60s ChatReplyTimeout is removed. A slow model may take as long as
+        // it needs; the turn ends only when the circuit closes (component disposal cancels
+        // ComponentCancellationToken), the request is aborted, or the app shuts down. The linked source is
+        // also the seam a Stop control can cancel later.
+        using var turn = CancellationTokenSource.CreateLinkedTokenSource(ComponentCancellationToken);
         try
         {
-            var response = await ChatAppService.SendMessageAsync(input, timeout.Token);
+            var response = await ChatAppService.SendMessageAsync(input, turn.Token);
             var text = response.Message ?? string.Empty;
             if (text.Length > 0)
             {
@@ -487,12 +489,11 @@ public partial class WorkspaceChat : AIComponentBase
 
             return text;
         }
-        catch (Exception exception) when (timeout.IsCancellationRequested)
+        catch (OperationCanceledException) when (turn.IsCancellationRequested)
         {
             MessengerState.IsWaitingForAiResponse = false;
-            Logger.LogWarning(
-                exception,
-                "Workspace chat reply timed out. SessionId={SessionId}",
+            Logger.LogInformation(
+                "Workspace chat reply was cancelled with the circuit or request. SessionId={SessionId}",
                 sessionId);
             return string.Empty;
         }

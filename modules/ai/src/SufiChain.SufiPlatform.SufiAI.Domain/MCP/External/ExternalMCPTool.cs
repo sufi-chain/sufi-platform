@@ -9,10 +9,11 @@ namespace SufiChain.SufiPlatform.SufiAI.MCP.External;
 
 /// <summary>
 /// Wrapper for external MCP server tools.
+/// 9.4 (sufi-chain#340): the old fixed 30s execution cutoff is gone. A tool call inside a turn is cancelled
+/// only through the turn's own token (user Stop, session/circuit close, or shutdown).
 /// </summary>
 public class ExternalMCPTool : IMCPTool
 {
-    private static readonly TimeSpan ExecutionTimeout = TimeSpan.FromSeconds(30);
     private readonly IMCPTransportClient _client;
     private readonly Guid _serverId;
     private readonly string _remoteName;
@@ -50,12 +51,10 @@ public class ExternalMCPTool : IMCPTool
         
         try
         {
-            using var timeoutSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-            timeoutSource.CancelAfter(ExecutionTimeout);
-            var result = await _client.CallToolAsync(_remoteName, parameters, timeoutSource.Token);
-            
+            var result = await _client.CallToolAsync(_remoteName, parameters, cancellationToken);
+
             stopwatch.Stop();
-            
+
             if (result.Success)
             {
                 return MCPToolExecutionResult.CreateSuccess(result.Result, stopwatch.ElapsedMilliseconds);
@@ -64,6 +63,12 @@ public class ExternalMCPTool : IMCPTool
             {
                 return MCPToolExecutionResult.CreateFailure(result.ErrorMessage ?? "Unknown error");
             }
+        }
+        catch (OperationCanceledException)
+        {
+            // Preserve cancellation semantics (ABP use-cancellation-tokens skill): the turn's token is the
+            // only cancellation source here, so rethrow instead of hiding it as a tool failure.
+            throw;
         }
         catch (Exception ex)
         {

@@ -105,17 +105,54 @@ public class OpenRouterSystemOneDecisionClientTests
         recorded.Configuration.ModelConfigurationId.ShouldBe(route.Id);
     }
 
+    [Fact]
+    public async Task Outbound_decision_POST_has_no_fixed_timeout_and_honours_the_caller_token()
+    {
+        // 9.4 (sufi-chain#340): the CreateClient() default (100s) used to cut slow decision POSTs.
+        // The client must carry Timeout.InfiniteTimeSpan, and the caller token must reach SendAsync.
+        using var handler = new DelayedHandler(TimeSpan.FromMilliseconds(300), HttpStatusCode.OK, "{}");
+        var workspace = CreateWorkspace();
+        var route = workspace.AddModelConfiguration(
+            AICapabilityType.Decisions,
+            "typesafe/jev-1.13",
+            apiKey: "sk-route");
+        HttpClient? created = null;
+        var client = CreateClient(handler, workspace, route, _ => { }, captureClient: c => created = c);
+
+        // The delay is shorter than the old 100s default but proves the request completes without a timer
+        // cutting it: the only token is the caller's, and no OperationCanceledException is raised from a timeout.
+        using var callerCts = new CancellationTokenSource();
+        await client.TryDecideAsync(Request(workspace.Id), callerCts.Token);
+        created.ShouldNotBeNull();
+        created.Timeout.ShouldBe(Timeout.InfiniteTimeSpan);
+
+        // A cancelled caller cancels the in-flight POST promptly.
+        using var cancelling = new CancellationTokenSource(TimeSpan.FromMilliseconds(50));
+        await Should.ThrowAsync<TaskCanceledException>(async () =>
+        {
+            using var slow = new DelayedHandler(TimeSpan.FromSeconds(30), HttpStatusCode.OK, "{}");
+            var c2 = CreateClient(slow, workspace, route, _ => { });
+            await c2.TryDecideAsync(Request(workspace.Id), cancelling.Token);
+        });
+    }
+
     private static OpenRouterSystemOneDecisionClient CreateClient(
-        StatusHandler handler,
+        HttpMessageHandler handler,
         Workspace workspace,
         AIModelConfiguration route,
-        Action<AIUsageRecord> capture)
+        Action<AIUsageRecord> capture,
+        Action<HttpClient>? captureClient = null)
     {
         var workspaces = Substitute.For<IWorkspaceRepository>();
         workspaces.FindAsync(workspace.Id, Arg.Any<bool>(), Arg.Any<CancellationToken>()).Returns(workspace);
 
         var factory = Substitute.For<IHttpClientFactory>();
-        factory.CreateClient().Returns(_ => new HttpClient(handler));
+        factory.CreateClient().Returns(_ =>
+        {
+            var httpClient = new HttpClient(handler);
+            captureClient?.Invoke(httpClient);
+            return httpClient;
+        });
 
         var credentials = Substitute.For<IAICredentialResolver>();
         credentials.DecryptApiKey(Arg.Any<string?>()).Returns(call => call.Arg<string?>());
@@ -189,6 +226,30 @@ public class OpenRouterSystemOneDecisionClientTests
             {
                 Content = new StringContent(_body, Encoding.UTF8, "application/json")
             });
+        }
+    }
+
+    /// <summary>A provider that answers only after a delay, like a slow decision model.</summary>
+    private sealed class DelayedHandler : HttpMessageHandler
+    {
+        private readonly TimeSpan _delay;
+        private readonly HttpStatusCode _status;
+        private readonly string _body;
+
+        public DelayedHandler(TimeSpan delay, HttpStatusCode status, string body)
+        {
+            _delay = delay;
+            _status = status;
+            _body = body;
+        }
+
+        protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+        {
+            await Task.Delay(_delay, cancellationToken);
+            return new HttpResponseMessage(_status)
+            {
+                Content = new StringContent(_body, Encoding.UTF8, "application/json")
+            };
         }
     }
 }
