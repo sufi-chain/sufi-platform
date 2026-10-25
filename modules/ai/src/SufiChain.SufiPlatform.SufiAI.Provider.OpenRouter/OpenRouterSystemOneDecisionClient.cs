@@ -88,7 +88,12 @@ public class OpenRouterSystemOneDecisionClient : ISystemOneDecisionClient, ITran
             message.Headers.Authorization = new AuthenticationHeaderValue("Bearer", apiKey);
             stopwatch.Restart();
             sent = true;
-            using var response = await _httpClientFactory.CreateClient().SendAsync(message, cancellationToken);
+            // 9.4 (sufi-chain#340): no fixed cutoff on the outbound AI POST. The factory default (100s)
+            // would cancel a slow decision. The caller's token (user Stop, session close, shutdown) is the
+            // only cancellation source.
+            var decisionClient = _httpClientFactory.CreateClient();
+            decisionClient.Timeout = Timeout.InfiniteTimeSpan;
+            using var response = await decisionClient.SendAsync(message, cancellationToken);
             stopwatch.Stop();
             var body = await response.Content.ReadAsStringAsync(cancellationToken);
             if (!response.IsSuccessStatusCode)

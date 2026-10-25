@@ -8,7 +8,11 @@ namespace SufiChain.SufiPlatform.SufiAI;
 /// </summary>
 public static class AIToolLoopFinishReasons
 {
-    /// <summary>The turn hit <c>AIToolLoopOptions.MaxTurnSeconds</c>.</summary>
+    /// <summary>
+    /// Legacy: the turn hit the old <c>MaxTurnSeconds</c> wall-clock cutoff. 9.4 removed that cutoff (a turn is
+    /// cancelled only by the user, session close, or shutdown), so nothing sets this any more. The constant and
+    /// its status mapping stay so already-persisted rows and sibling repos keep compiling.
+    /// </summary>
     public const string TimeLimit = "time_limit";
 
     /// <summary>The turn hit <c>AIToolLoopOptions.MaxToolRounds</c>.</summary>

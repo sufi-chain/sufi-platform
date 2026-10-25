@@ -11,6 +11,7 @@ using OpenAI.Chat;
 using SufiChain.SufiPlatform.SufiAI.Workspaces;
 using Volo.Abp;
 using Volo.Abp.DependencyInjection;
+using Volo.Abp.Threading;
 
 namespace SufiChain.SufiPlatform.SufiAI;
 
@@ -23,6 +24,7 @@ public class AIToolChatExecutor : IAIToolChatExecutor, ITransientDependency
     protected ILogger<AIToolChatExecutor> Logger { get; }
     protected AIToolLoopOptions ToolLoopOptions { get; }
     protected IStringLocalizer<AIResource>? Localizer { get; }
+    protected ICancellationTokenProvider CancellationTokenProvider { get; }
 
     public AIToolChatExecutor(
         IWorkspaceRuntimeConfigurationResolver runtimeConfigurationResolver,
@@ -31,7 +33,8 @@ public class AIToolChatExecutor : IAIToolChatExecutor, ITransientDependency
         IAIUsageRecorder usageRecorder,
         ILogger<AIToolChatExecutor>? logger = null,
         IOptions<AIToolLoopOptions>? toolLoopOptions = null,
-        IStringLocalizer<AIResource>? localizer = null)
+        IStringLocalizer<AIResource>? localizer = null,
+        ICancellationTokenProvider? cancellationTokenProvider = null)
     {
         ToolLoopOptions = toolLoopOptions?.Value ?? new AIToolLoopOptions();
         Localizer = localizer;
@@ -40,6 +43,9 @@ public class AIToolChatExecutor : IAIToolChatExecutor, ITransientDependency
         WorkspaceGuardrailService = workspaceGuardrailService;
         UsageRecorder = usageRecorder;
         Logger = logger ?? NullLogger<AIToolChatExecutor>.Instance;
+        // 9.4 (sufi-chain#340): callers that pass no explicit token (the tools and playground paths)
+        // still observe the ambient HTTP request-abort token (ABP use-cancellation-tokens skill).
+        CancellationTokenProvider = cancellationTokenProvider ?? NullCancellationTokenProvider.Instance;
     }
 
     public virtual async Task<AIPreparedKernel> PrepareKernelAsync(
@@ -78,6 +84,11 @@ public class AIToolChatExecutor : IAIToolChatExecutor, ITransientDependency
         AIToolChatExecutionRequest request,
         CancellationToken cancellationToken = default)
     {
+        // 9.4 (sufi-chain#340): no wall-clock timer cancels this turn. A supplied token (user Stop, session
+        // close) wins; a default token falls back to the ambient provider — HttpContext.RequestAborted on
+        // abort, circuit close, or after the shutdown grace period the host aborts in-flight requests — so
+        // cancellation reaches the model call and every tool execution below (ABP use-cancellation-tokens).
+        cancellationToken = CancellationTokenProvider.FallbackToProvider(cancellationToken);
         var kernel = request.Kernel;
         if (kernel == null)
         {
@@ -105,32 +116,20 @@ public class AIToolChatExecutor : IAIToolChatExecutor, ITransientDependency
                 jsonSchemaIsStrict: true);
             executionSettings = settings;
         }
-        // sufi-chain#340: bound the turn by tool rounds and wall-clock time, ending with a visible message.
-        var maxDuration = TimeSpan.FromSeconds(Math.Max(1, ToolLoopOptions.MaxTurnSeconds));
-        var loopLimit = new AIToolLoopLimitFilter(ToolLoopOptions.MaxToolRounds, maxDuration);
+        // sufi-chain#340: bound the turn by tool rounds (a loop guard). 9.4 removed the wall-clock cutoff:
+        // a slow model may take as long as it needs. The turn ends only when the caller token (user Stop,
+        // HTTP abort, circuit close, shutdown) is cancelled, or the round budget is spent.
+        var loopLimit = new AIToolLoopLimitFilter(ToolLoopOptions.MaxToolRounds);
         kernel.AutoFunctionInvocationFilters.Add(loopLimit);
-        using var turnTimeout = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-        turnTimeout.CancelAfter(maxDuration);
         var stopwatch = Stopwatch.StartNew();
         try
         {
             Microsoft.SemanticKernel.ChatMessageContent response;
-            try
-            {
-                response = request.BufferStreamingResponse
-                    ? await AIStreamingChatResponseReader.ReadAsync(chatService.GetStreamingChatMessageContentsAsync(
-                        request.History, executionSettings, kernel, turnTimeout.Token), turnTimeout.Token)
-                    : await chatService.GetChatMessageContentAsync(
-                        request.History, executionSettings, kernel, turnTimeout.Token);
-            }
-            catch (OperationCanceledException) when (turnTimeout.IsCancellationRequested && !cancellationToken.IsCancellationRequested)
-            {
-                stopwatch.Stop();
-                Logger.LogWarning(
-                    "AI tool turn hit the time limit. MaxTurnSeconds={MaxTurnSeconds}, ElapsedMs={ElapsedMs}",
-                    ToolLoopOptions.MaxTurnSeconds, stopwatch.ElapsedMilliseconds);
-                return await LimitReachedAsync(request, stopwatch.ElapsedMilliseconds, AIToolLoopFinishReasons.TimeLimit, cancellationToken);
-            }
+            response = request.BufferStreamingResponse
+                ? await AIStreamingChatResponseReader.ReadAsync(chatService.GetStreamingChatMessageContentsAsync(
+                    request.History, executionSettings, kernel, cancellationToken), cancellationToken)
+                : await chatService.GetChatMessageContentAsync(
+                    request.History, executionSettings, kernel, cancellationToken);
             stopwatch.Stop();
 
             if (loopLimit.LimitReached)

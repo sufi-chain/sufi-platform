@@ -10,9 +10,15 @@ namespace SufiChain.SufiPlatform.SufiAI;
 public class AITransportOptionsTests
 {
     [Fact]
-    public void Default_and_host_override_allow_long_model_requests()
+    public void Default_is_no_time_limit_for_model_requests()
     {
-        Assert.Equal(TimeSpan.FromMinutes(15), new AITransportOptions().GetRequestTimeout());
+        // 9.4 (sufi-chain#340): the default must not cut off a slow model. Only a caller token ends a turn.
+        Assert.Equal(Timeout.InfiniteTimeSpan, new AITransportOptions().GetRequestTimeout());
+    }
+
+    [Fact]
+    public void Host_override_still_sets_an_explicit_deadline()
+    {
         var configuration = new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string, string?>
         {
             ["SufiAI:Transport:RequestTimeoutSeconds"] = "1200"
@@ -26,7 +32,6 @@ public class AITransportOptionsTests
 
     [Theory]
     [InlineData(-1)]
-    [InlineData(0)]
     [InlineData(3601)]
     public void Invalid_timeout_does_not_silently_disable_the_request_deadline(int seconds)
     {
