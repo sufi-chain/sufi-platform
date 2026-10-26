@@ -370,6 +370,7 @@
     "Permission:MCPTools": "ابزارهای MCP",
     "Permission:Execute": "اجرا",
     "Permission:MCPServers": "سرورهای MCP",
+    "Permission:McpAudit": "ممیزی فراخوانی ابزارهای MCP",
     "Permission:SufiAI": "زیرساخت هوش مصنوعی",
     "Permission:SufiAI.Chat": "چت",
     "Permission:SufiAI.Audio": "صوت",

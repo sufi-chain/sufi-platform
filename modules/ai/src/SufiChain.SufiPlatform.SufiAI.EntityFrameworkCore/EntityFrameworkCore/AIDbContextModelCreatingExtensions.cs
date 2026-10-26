@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Volo.Abp;
 using Volo.Abp.EntityFrameworkCore.Modeling;
 using SufiChain.SufiPlatform.SufiAI.Workspaces;
+using SufiChain.SufiPlatform.SufiAI.MCP.Audit;
 using SufiChain.SufiPlatform.SufiAI.MCP.Entities;
 using SufiChain.SufiPlatform.SufiAI;
 using SufiChain.SufiPlatform.SufiAI.RAG;
@@ -238,6 +239,31 @@ public static class AIDbContextModelCreatingExtensions
 
             b.HasIndex(x => x.TenantId);
             b.HasIndex(x => new { x.TenantId, x.WorkspaceName, x.SourceName }).IsUnique();
+        });
+
+        builder.Entity<McpToolCallAuditLog>(b =>
+        {
+            b.ToTable(SufiAIDbProperties.DbTablePrefix + "McpToolCallAuditLogs", SufiAIDbProperties.DbSchema);
+
+            b.ConfigureByConvention();
+            b.ConfigureMultiTenant();
+
+            b.Property(x => x.ToolName).IsRequired().HasMaxLength(McpToolCallAuditLog.ToolNameMaxLength);
+            b.Property(x => x.ToolType).IsRequired();
+            b.Property(x => x.IsReadOnly).IsRequired();
+            b.Property(x => x.SessionId).HasMaxLength(McpToolCallAuditLog.SessionIdMaxLength);
+            b.Property(x => x.ArgumentsSummary).HasMaxLength(McpToolCallAuditLog.ArgumentsSummaryMaxLength);
+            b.Property(x => x.Decision).IsRequired();
+            b.Property(x => x.DecisionReason).HasMaxLength(McpToolCallAuditLog.DecisionReasonMaxLength);
+            b.Property(x => x.ResultStatus).IsRequired();
+            b.Property(x => x.DurationMs).IsRequired();
+            b.Property(x => x.CorrelationId).HasMaxLength(McpToolCallAuditLog.CorrelationIdMaxLength);
+
+            b.HasIndex(x => new { x.TenantId, x.CreationTime });
+            b.HasIndex(x => new { x.TenantId, x.ToolName, x.CreationTime });
+            b.HasIndex(x => new { x.TenantId, x.UserId, x.CreationTime });
+            b.HasIndex(x => new { x.TenantId, x.Decision, x.CreationTime });
+            b.HasIndex(x => x.UserId);
         });
     }
 }

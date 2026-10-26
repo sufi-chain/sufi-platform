@@ -344,6 +344,7 @@
     "Permission:MCPTools": "أدوات MCP",
     "Permission:Execute": "تنفيذ",
     "Permission:MCPServers": "خوادم MCP",
+    "Permission:McpAudit": "تدقيق استدعاء أدوات MCP",
     "Permission:SufiAI": "الذكاء الاصطناعي",
     "Permission:SufiAI.Chat": "المحادثة",
     "Permission:SufiAI.Audio": "الصوت",

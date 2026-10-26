@@ -10,6 +10,7 @@ using Microsoft.Extensions.Logging;
 using SufiChain.SufiPlatform.SufiAI;
 using SufiChain.SufiPlatform.SufiAI.Adapters;
 using SufiChain.SufiPlatform.SufiAI.MCP.Abstractions;
+using SufiChain.SufiPlatform.SufiAI.MCP.Audit;
 using SufiChain.SufiPlatform.SufiAI.MCP.Cache;
 using SufiChain.SufiPlatform.SufiAI.MCP.Entities;
 using SufiChain.SufiPlatform.SufiAI.MCP.External;
@@ -36,6 +37,7 @@ public class MCPToolRegistry : IMCPToolRegistry, ISingletonDependency
     private readonly IServiceProvider _serviceProvider;
     private readonly ILoggerFactory _loggerFactory;
     private readonly ILogger<MCPToolRegistry> _logger;
+    private readonly IMcpToolCallAuditor? _auditor;
     private readonly Dictionary<Guid, IMCPTransportClient> _activeClients = new();
     private readonly SemaphoreSlim _lock = new(1, 1);
 
@@ -46,7 +48,8 @@ public class MCPToolRegistry : IMCPToolRegistry, ISingletonDependency
         IHttpClientFactory httpClientFactory,
         IServiceProvider serviceProvider,
         ILoggerFactory loggerFactory,
-        ILogger<MCPToolRegistry> logger)
+        ILogger<MCPToolRegistry> logger,
+        IMcpToolCallAuditor? auditor = null)
     {
         _catalogCache = catalogCache;
         _internalToolDiscovery = internalToolDiscovery;
@@ -55,6 +58,7 @@ public class MCPToolRegistry : IMCPToolRegistry, ISingletonDependency
         _serviceProvider = serviceProvider;
         _loggerFactory = loggerFactory;
         _logger = logger;
+        _auditor = auditor;
     }
 
     public async Task<List<IMCPTool>> GetInternalToolsAsync(CancellationToken cancellationToken = default)
@@ -286,7 +290,8 @@ public class MCPToolRegistry : IMCPToolRegistry, ISingletonDependency
             server.Id,
             server.Name,
             definition.Name,
-            client)).ToList();
+            client,
+            _auditor)).ToList();
         _logger.LogDebug("LoadExternalToolsAsync {Key} returned {Count} tools in {Elapsed}ms",
             server.Key, tools.Count, step.ElapsedMilliseconds);
         return tools;

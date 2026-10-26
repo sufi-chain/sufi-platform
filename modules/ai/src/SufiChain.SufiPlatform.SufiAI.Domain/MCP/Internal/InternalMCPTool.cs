@@ -8,6 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using SufiChain.SufiPlatform.SufiAI.MCP.Abstractions;
+using SufiChain.SufiPlatform.SufiAI.MCP.Audit;
 using Volo.Abp;
 using Volo.Abp.Authorization.Permissions;
 using Volo.Abp.DependencyInjection;
@@ -90,20 +91,20 @@ public class InternalMCPTool : IMCPTool, IMCPToolAccessRequirement, IMCPToolEffe
         var refusal = AgentCallBinding.Validate(context);
         if (refusal is not null)
         {
-            return MCPToolExecutionResult.CreateFailure(refusal);
+            return await AuditedAsync(MCPToolExecutionResult.CreateFailure(refusal), context, parameters);
         }
 
         var call = context.CallContext!;
         if (call.IsAnonymous && !_allowsAnonymous)
         {
             // sufi-chain#384 slice 4: anonymous turns run only allowlisted tools.
-            return MCPToolExecutionResult.CreateFailure(AgentCallErrorCodes.AnonymousNotAllowed);
+            return await AuditedAsync(MCPToolExecutionResult.CreateFailure(AgentCallErrorCodes.AnonymousNotAllowed), context, parameters);
         }
 
         if (call.AgentScope == AgentToolScope.ReadOnly && !_isReadOnly)
         {
             // sufi-chain#384 slice 5: a read-only agent can't run a tool not explicitly marked read-only.
-            return MCPToolExecutionResult.CreateFailure(AgentCallErrorCodes.AgentScopeReadOnly);
+            return await AuditedAsync(MCPToolExecutionResult.CreateFailure(AgentCallErrorCodes.AgentScopeReadOnly), context, parameters);
         }
         using var scope = _serviceProvider.CreateScope();
         var scoped = scope.ServiceProvider;
@@ -113,7 +114,7 @@ public class InternalMCPTool : IMCPTool, IMCPToolAccessRequirement, IMCPToolEffe
             && (!call.IsAnonymous || call.TenantId is not null || _requiresPermission || _requiresAuthentication))
         {
             // Without ABP identity services the call can't be bound, so fail closed.
-            return MCPToolExecutionResult.CreateFailure(AgentCallErrorCodes.IdentityServicesMissing);
+            return await AuditedAsync(MCPToolExecutionResult.CreateFailure(AgentCallErrorCodes.IdentityServicesMissing), context, parameters);
         }
 
         using var tenantChange = currentTenant?.Change(call.TenantId);
@@ -124,7 +125,7 @@ public class InternalMCPTool : IMCPTool, IMCPToolAccessRequirement, IMCPToolEffe
             var permissionRefusal = await CheckPermissionAsync(scoped, call);
             if (permissionRefusal is not null)
             {
-                return MCPToolExecutionResult.CreateFailure(permissionRefusal);
+                return await AuditedAsync(MCPToolExecutionResult.CreateFailure(permissionRefusal), context, parameters);
             }
 
             // Resolve the service inside the bound scope, never from the root provider.
@@ -165,7 +166,14 @@ public class InternalMCPTool : IMCPTool, IMCPToolAccessRequirement, IMCPToolEffe
             
             stopwatch.Stop();
             
-            return MCPToolExecutionResult.CreateSuccess(result, stopwatch.ElapsedMilliseconds);
+            return await AuditedAsync(MCPToolExecutionResult.CreateSuccess(result, stopwatch.ElapsedMilliseconds), context, parameters);
+        }
+        catch (OperationCanceledException)
+        {
+            // sufi-chain#384 slice 6a: a cancelled call is audited as Cancelled and rethrown so the turn's
+            // cancellation semantics are preserved.
+            await RecordCancelledAsync(context, parameters, stopwatch.ElapsedMilliseconds);
+            throw;
         }
         catch (Exception ex)
         {
@@ -176,7 +184,7 @@ public class InternalMCPTool : IMCPTool, IMCPToolAccessRequirement, IMCPToolEffe
             {
                 var errors = validation.ValidationErrors.Take(12)
                     .Select(error => $"{string.Join(", ", error.MemberNames)}: {error.ErrorMessage}");
-                return MCPToolExecutionResult.CreateFailure("Invalid tool arguments. " + string.Join("; ", errors));
+                return await AuditedAsync(MCPToolExecutionResult.CreateFailure("Invalid tool arguments. " + string.Join("; ", errors)), context, parameters);
             }
 
             if (innerException is Volo.Abp.BusinessException business && !string.IsNullOrWhiteSpace(business.Code))
@@ -184,14 +192,37 @@ public class InternalMCPTool : IMCPTool, IMCPToolAccessRequirement, IMCPToolEffe
                 // Default business-exception messages omit the code. Preserve the domain
                 // failure for tool callers without exposing stack traces, and add the module's
                 // actionable text so the model can correct the call (sufi-chain#340).
-                return MCPToolExecutionResult.CreateFailure(DescribeBusinessError(scoped, business));
+                return await AuditedAsync(MCPToolExecutionResult.CreateFailure(DescribeBusinessError(scoped, business)), context, parameters);
             }
             
-            return MCPToolExecutionResult.CreateFailure(
+            return await AuditedAsync(MCPToolExecutionResult.CreateFailure(
                 innerException.Message,
                 innerException.ToString()
-            );
+            ), context, parameters);
         }
+    }
+
+    /// <summary>
+    /// sufi-chain#384 slice 6a: one audit row per call. The row is written for allowed, denied and
+    /// cancelled calls alike; a refused call is classified as Denied by its refusal code.
+    /// </summary>
+    private async Task<MCPToolExecutionResult> AuditedAsync(
+        MCPToolExecutionResult result,
+        WorkspaceContext context,
+        Dictionary<string, object?> parameters)
+    {
+        var auditor = _serviceProvider.GetService<IMcpToolCallAuditor>();
+        await McpToolCallAudit.RecordDispatchedAsync(auditor, this, context, parameters, result, result.ExecutionTimeMs);
+        return result;
+    }
+
+    private async Task RecordCancelledAsync(
+        WorkspaceContext context,
+        Dictionary<string, object?> parameters,
+        long durationMs)
+    {
+        var auditor = _serviceProvider.GetService<IMcpToolCallAuditor>();
+        await McpToolCallAudit.RecordCancelledAsync(auditor, this, context, parameters, durationMs);
     }
 
     /// <summary>
