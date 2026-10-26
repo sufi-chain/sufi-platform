@@ -423,6 +423,7 @@
     "Permission:MCPTools": "MCP Tools",
     "Permission:Execute": "Execute",
     "Permission:MCPServers": "MCP Servers",
+    "Permission:McpAudit": "MCP Tool Call Audit",
     "Permission:SufiAI": "AI Infrastructure",
     "Permission:SufiAI.Chat": "Chat",
     "Permission:SufiAI.Audio": "Audio",

@@ -17,14 +17,24 @@ public sealed class AgentCallContext
     /// <summary>Key used when the context travels through <c>Metadata</c> dictionaries (adapters).</summary>
     public const string MetadataKey = "SufiAI.AgentCallContext";
 
-    private AgentCallContext(Guid? tenantId, Guid? userId, string? sessionId, ClaimsPrincipal principal, AgentToolScope? agentScope = null)
+    private AgentCallContext(
+        Guid? tenantId,
+        Guid? userId,
+        string? sessionId,
+        ClaimsPrincipal principal,
+        AgentToolScope? agentScope = null,
+        Guid? hooshvareId = null)
     {
         TenantId = tenantId;
         UserId = userId;
         SessionId = sessionId;
         Principal = principal;
         AgentScope = agentScope;
+        HooshvareId = hooshvareId;
     }
+
+    /// <summary>Hooshvare the turn came from, when the turn entry point knew it (audit rows carry it).</summary>
+    public Guid? HooshvareId { get; }
 
     /// <summary>
     /// sufi-chain#384 slice 5: the agent's level. Null means the agent acts with the user's own permissions.
@@ -34,7 +44,11 @@ public sealed class AgentCallContext
 
     /// <summary>The same bound identity with the agent's level applied.</summary>
     public AgentCallContext WithAgentScope(AgentToolScope? agentScope) =>
-        new(TenantId, UserId, SessionId, Principal, agentScope);
+        new(TenantId, UserId, SessionId, Principal, agentScope, HooshvareId);
+
+    /// <summary>The same bound identity carrying the Hooshvare the turn came from.</summary>
+    public AgentCallContext WithHooshvare(Guid? hooshvareId) =>
+        new(TenantId, UserId, SessionId, Principal, AgentScope, hooshvareId);
 
     /// <summary>Tenant the call is bound to (null for host).</summary>
     public Guid? TenantId { get; }
@@ -64,9 +78,9 @@ public sealed class AgentCallContext
     }
 
     /// <summary>An anonymous turn in a tenant: an empty principal, no user.</summary>
-    public static AgentCallContext Anonymous(Guid? tenantId = null, string? sessionId = null)
+    public static AgentCallContext Anonymous(Guid? tenantId = null, string? sessionId = null, Guid? hooshvareId = null)
     {
-        return new AgentCallContext(tenantId, null, sessionId, new ClaimsPrincipal(new ClaimsIdentity()));
+        return new AgentCallContext(tenantId, null, sessionId, new ClaimsPrincipal(new ClaimsIdentity()), hooshvareId: hooshvareId);
     }
 
     /// <summary>
@@ -76,7 +90,8 @@ public sealed class AgentCallContext
     public static AgentCallContext Capture(
         ICurrentTenant currentTenant,
         ICurrentPrincipalAccessor principalAccessor,
-        string? sessionId = null)
+        string? sessionId = null,
+        Guid? hooshvareId = null)
     {
         ArgumentNullException.ThrowIfNull(currentTenant);
         ArgumentNullException.ThrowIfNull(principalAccessor);
@@ -85,10 +100,10 @@ public sealed class AgentCallContext
         var userId = ReadGuidClaim(principal, AbpClaimTypes.UserId);
         if (principal is null || userId is null)
         {
-            return Anonymous(currentTenant.Id, sessionId);
+            return Anonymous(currentTenant.Id, sessionId, hooshvareId);
         }
 
-        return new AgentCallContext(currentTenant.Id, userId, sessionId, principal);
+        return new AgentCallContext(currentTenant.Id, userId, sessionId, principal, agentScope: null, hooshvareId);
     }
 
     internal static Guid? ReadGuidClaim(ClaimsPrincipal? principal, string claimType)

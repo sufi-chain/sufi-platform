@@ -5,6 +5,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Microsoft.Extensions.DependencyInjection;
 using SufiChain.SufiPlatform.SufiAI.MCP.Abstractions;
+using SufiChain.SufiPlatform.SufiAI.MCP.Audit;
 using Volo.Abp.Authorization.Permissions;
 using Volo.Abp.DependencyInjection;
 using Volo.Abp.MultiTenancy;
@@ -23,6 +24,7 @@ public class MCPKernelToolRegistrar : IMCPKernelToolRegistrar, ITransientDepende
     private readonly ICurrentTenant? _currentTenant;
     private readonly ICurrentPrincipalAccessor? _principalAccessor;
     private readonly IServiceProvider? _serviceProvider;
+    private readonly IMcpToolCallAuditor? _auditor;
 
     public MCPKernelToolRegistrar(
         IMCPToolRegistry toolRegistry,
@@ -30,7 +32,8 @@ public class MCPKernelToolRegistrar : IMCPKernelToolRegistrar, ITransientDepende
         ILogger<MCPKernelToolRegistrar> logger,
         ICurrentTenant? currentTenant = null,
         ICurrentPrincipalAccessor? principalAccessor = null,
-        IServiceProvider? serviceProvider = null)
+        IServiceProvider? serviceProvider = null,
+        IMcpToolCallAuditor? auditor = null)
     {
         _serviceProvider = serviceProvider;
         _currentTenant = currentTenant;
@@ -38,6 +41,7 @@ public class MCPKernelToolRegistrar : IMCPKernelToolRegistrar, ITransientDepende
         _toolRegistry = toolRegistry;
         _gates = gates;
         _logger = logger;
+        _auditor = auditor;
     }
 
     public virtual async Task RegisterToolsAsync(
@@ -99,6 +103,9 @@ public class MCPKernelToolRegistrar : IMCPKernelToolRegistrar, ITransientDepende
                         ?? MCPToolOfferFilter.ScopeRefusal(tool, context.CallContext);
                     if (anonymousRefusal is not null)
                     {
+                        // sufi-chain#384 slice 6a: refused calls are audited too; the tool never runs.
+                        await McpToolCallAudit.RecordRefusedAsync(
+                            _auditor, tool, context, parameters, McpToolCallDecision.Denied, anonymousRefusal);
                         return anonymousRefusal;
                     }
 
@@ -111,6 +118,8 @@ public class MCPKernelToolRegistrar : IMCPKernelToolRegistrar, ITransientDepende
                                 "MCP tool {ToolName} was blocked before execution in workspace {WorkspaceName}.",
                                 tool.Name,
                                 context.WorkspaceName);
+                            await McpToolCallAudit.RecordRefusedAsync(
+                                _auditor, tool, context, parameters, McpToolCallDecision.NeedsApproval, blockReason);
                             return blockReason;
                         }
                     }

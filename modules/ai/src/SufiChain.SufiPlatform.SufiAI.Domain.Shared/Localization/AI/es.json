@@ -637,6 +637,7 @@
     "Permission:Execute": "Ejecutar",
 
     "Permission:MCPServers": "Servidores MCP",
+    "Permission:McpAudit": "Auditoría de llamadas a herramientas MCP",
 
     "Permission:SufiAI": "IA",
 

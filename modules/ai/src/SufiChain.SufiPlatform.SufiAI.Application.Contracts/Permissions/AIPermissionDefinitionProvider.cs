@@ -55,6 +55,13 @@ public class AIPermissionDefinitionProvider : PermissionDefinitionProvider
         mcpServersPermission.AddChild(AIPermissions.MCPServers.Create, L("Permission:Create")).RequireFeatures(SufiAIFeatures.Enable);
         mcpServersPermission.AddChild(AIPermissions.MCPServers.Edit, L("Permission:Edit")).RequireFeatures(SufiAIFeatures.Enable);
         mcpServersPermission.AddChild(AIPermissions.MCPServers.Delete, L("Permission:Delete")).RequireFeatures(SufiAIFeatures.Enable);
+
+        // sufi-chain#384 slice 6a: the tool-call audit trail is its own permission so it can be granted
+        // to an auditor without handing over MCP server management.
+        AIGroup.AddPermission(
+            AIPermissions.McpAudit.Default,
+            L("Permission:McpAudit")
+        ).RequireFeatures(SufiAIFeatures.Enable);
         
         var aiPermission = AIGroup.AddPermission(
             AIPermissions.AI.Default,

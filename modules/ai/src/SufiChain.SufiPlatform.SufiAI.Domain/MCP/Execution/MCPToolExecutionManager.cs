@@ -7,6 +7,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using SufiChain.SufiPlatform.SufiAI.Features;
 using SufiChain.SufiPlatform.SufiAI.MCP.Abstractions;
+using SufiChain.SufiPlatform.SufiAI.MCP.Audit;
 using SufiChain.SufiPlatform.SufiAI.Workspaces;
 using Volo.Abp;
 using Volo.Abp.DependencyInjection;
@@ -31,6 +32,7 @@ public class MCPToolExecutionManager : IMCPToolExecutor, ITransientDependency
     private readonly ILogger<MCPToolExecutionManager> _logger;
     private readonly ICurrentTenant? _currentTenant;
     private readonly ICurrentPrincipalAccessor? _principalAccessor;
+    private readonly IMcpToolCallAuditor? _auditor;
     
     public MCPToolExecutionManager(
         IMCPToolRegistry toolRegistry,
@@ -40,7 +42,8 @@ public class MCPToolExecutionManager : IMCPToolExecutor, ITransientDependency
         IEnumerable<IMcpToolDecisionGate> gates,
         ILogger<MCPToolExecutionManager> logger,
         ICurrentTenant? currentTenant = null,
-        ICurrentPrincipalAccessor? principalAccessor = null)
+        ICurrentPrincipalAccessor? principalAccessor = null,
+        IMcpToolCallAuditor? auditor = null)
     {
         _currentTenant = currentTenant;
         _principalAccessor = principalAccessor;
@@ -50,6 +53,7 @@ public class MCPToolExecutionManager : IMCPToolExecutor, ITransientDependency
         _featureChecker = featureChecker;
         _gates = gates;
         _logger = logger;
+        _auditor = auditor;
     }
     
     public async Task<MCPToolExecutionResult> ExecuteAsync(
@@ -109,6 +113,9 @@ public class MCPToolExecutionManager : IMCPToolExecutor, ITransientDependency
             ?? MCPToolOfferFilter.ScopeRefusal(tool, context.CallContext);
         if (anonymousRefusal is not null)
         {
+            // sufi-chain#384 slice 6a: a refused call is audited too, and the tool is never reached.
+            await McpToolCallAudit.RecordRefusedAsync(
+                _auditor, tool, context, parameters, McpToolCallDecision.Denied, anonymousRefusal);
             return MCPToolExecutionResult.CreateFailure(anonymousRefusal);
         }
 
@@ -119,6 +126,8 @@ public class MCPToolExecutionManager : IMCPToolExecutor, ITransientDependency
                 var blockReason = await gate.GetBlockReasonAsync(context, tool.Name, parameters, cancellationToken);
                 if (!string.IsNullOrWhiteSpace(blockReason))
                 {
+                    await McpToolCallAudit.RecordRefusedAsync(
+                        _auditor, tool, context, parameters, McpToolCallDecision.NeedsApproval, blockReason);
                     return MCPToolExecutionResult.CreateFailure(blockReason);
                 }
             }

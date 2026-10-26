@@ -38,6 +38,12 @@ public static class AIPermissions
         public const string Edit = Default + ".Edit";
         public const string Delete = Default + ".Delete";
     }
+
+    public static class McpAudit
+    {
+        /// <summary>sufi-chain#384 slice 6a: read the tool/MCP call audit trail.</summary>
+        public const string Default = GroupName + ".McpAudit";
+    }
     
     public static class AI
     {
