@@ -47,6 +47,10 @@ public class SufiAIDomainModule : AbpModule
         context.Services.AddSingleton<IMCPToolRegistry, MCPToolRegistry>();
         context.Services.AddTransient<IMCPToolExecutor, MCPToolExecutionManager>();
         context.Services.AddTransient<IMCPCatalogCache, MCPCatalogCache>();
+        // sufi-chain#384 slice 6a: the auditor resolves this from its own scope, so without an explicit
+        // registration every audit row silently lost its correlation id (no ITransientDependency on the
+        // class because it needs the resolving scope's IServiceProvider, not the root provider).
+        context.Services.AddTransient<MCP.Audit.IMcpAuditCorrelationProvider, MCP.Audit.McpAuditCorrelationProvider>();
         
         // Register file storage service (conditional based on File-Manager availability)
         ConfigureFileStorage(context);
