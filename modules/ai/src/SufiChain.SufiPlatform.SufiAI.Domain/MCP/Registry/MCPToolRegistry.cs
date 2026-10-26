@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
@@ -11,6 +10,7 @@ using SufiChain.SufiPlatform.SufiAI;
 using SufiChain.SufiPlatform.SufiAI.Adapters;
 using SufiChain.SufiPlatform.SufiAI.MCP.Abstractions;
 using SufiChain.SufiPlatform.SufiAI.MCP.Audit;
+using SufiChain.SufiPlatform.SufiAI.MCP.Auth;
 using SufiChain.SufiPlatform.SufiAI.MCP.Cache;
 using SufiChain.SufiPlatform.SufiAI.MCP.Entities;
 using SufiChain.SufiPlatform.SufiAI.MCP.External;
@@ -33,32 +33,36 @@ public class MCPToolRegistry : IMCPToolRegistry, ISingletonDependency
     private readonly IMCPCatalogCache _catalogCache;
     private readonly IInternalToolDiscoveryService _internalToolDiscovery;
     private readonly IMCPServerRepository _serverRepository;
-    private readonly IHttpClientFactory _httpClientFactory;
     private readonly IServiceProvider _serviceProvider;
-    private readonly ILoggerFactory _loggerFactory;
     private readonly ILogger<MCPToolRegistry> _logger;
     private readonly IMcpToolCallAuditor? _auditor;
-    private readonly Dictionary<Guid, IMCPTransportClient> _activeClients = new();
-    private readonly SemaphoreSlim _lock = new(1, 1);
+
+    /// <summary>
+    /// sufi-chain#384 slice 6b: owns the transport clients, so a <c>UserScoped</c> server is never handed a
+    /// client that was dialled for another user. Resolved lazily from the root provider because the
+    /// registry itself is a singleton.
+    /// </summary>
+    private readonly IMCPTransportClientProvider? _clientProvider;
+
+    private IMCPTransportClientProvider ClientProvider =>
+        _clientProvider ?? _serviceProvider.GetRequiredService<IMCPTransportClientProvider>();
 
     public MCPToolRegistry(
         IMCPCatalogCache catalogCache,
         IInternalToolDiscoveryService internalToolDiscovery,
         IMCPServerRepository serverRepository,
-        IHttpClientFactory httpClientFactory,
         IServiceProvider serviceProvider,
-        ILoggerFactory loggerFactory,
         ILogger<MCPToolRegistry> logger,
-        IMcpToolCallAuditor? auditor = null)
+        IMcpToolCallAuditor? auditor = null,
+        IMCPTransportClientProvider? clientProvider = null)
     {
         _catalogCache = catalogCache;
         _internalToolDiscovery = internalToolDiscovery;
         _serverRepository = serverRepository;
-        _httpClientFactory = httpClientFactory;
         _serviceProvider = serviceProvider;
-        _loggerFactory = loggerFactory;
         _logger = logger;
         _auditor = auditor;
+        _clientProvider = clientProvider;
     }
 
     public async Task<List<IMCPTool>> GetInternalToolsAsync(CancellationToken cancellationToken = default)
@@ -232,12 +236,9 @@ public class MCPToolRegistry : IMCPToolRegistry, ISingletonDependency
         CancellationToken cancellationToken = default)
     {
         var step = Stopwatch.StartNew();
-        IMCPTransportClient? client = null;
         try
         {
-            client = CreateClient(server);
-            await client.ConnectAsync(cancellationToken);
-            var connected = client.IsConnected;
+            var connected = await ClientProvider.TestConnectionAsync(server, cancellationToken);
             _logger.LogDebug("TestServerConnectionAsync {Key} -> {Result} in {Elapsed}ms",
                 server.Key, connected, step.ElapsedMilliseconds);
             return (connected, connected ? null : "Connection failed");
@@ -247,32 +248,12 @@ public class MCPToolRegistry : IMCPToolRegistry, ISingletonDependency
             _logger.LogWarning(exception, "TestServerConnectionAsync failed for {Key} after {Elapsed}ms", server.Key, step.ElapsedMilliseconds);
             return (false, exception.Message);
         }
-        finally
-        {
-            if (client != null)
-            {
-                await client.DisconnectAsync(cancellationToken);
-                client.Dispose();
-            }
-        }
     }
 
-    private async Task DisconnectAllClientsAsync(CancellationToken cancellationToken)
+    private Task DisconnectAllClientsAsync(CancellationToken cancellationToken)
     {
-        await _lock.WaitAsync(cancellationToken);
-        try
-        {
-            foreach (var client in _activeClients.Values)
-            {
-                await client.DisconnectAsync(cancellationToken);
-                client.Dispose();
-            }
-            _activeClients.Clear();
-        }
-        finally
-        {
-            _lock.Release();
-        }
+        // sufi-chain#384 slice 6b: the provider owns the clients, including the per-call user-scoped ones.
+        return ClientProvider.DisconnectAllAsync(cancellationToken);
     }
 
     private async Task<List<IMCPTool>> LoadExternalToolsAsync(MCPServer server, CancellationToken cancellationToken)
@@ -281,68 +262,20 @@ public class MCPToolRegistry : IMCPToolRegistry, ISingletonDependency
         using var timeoutSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
         timeoutSource.CancelAfter(ExternalDiscoveryTimeout);
 
-        var client = await GetOrCreateClientAsync(server, timeoutSource.Token);
-        var definitions = await client.ListToolsAsync(timeoutSource.Token);
+        // Discovery is identity-free: a UserScoped server is listed without a token and is only dialled
+        // with a user's token when a tool actually executes.
+        var definitions = await ClientProvider.ListToolsAsync(server, timeoutSource.Token);
         var tools = definitions.Select(definition => (IMCPTool)new ExternalMCPTool(
             $"{ExternalPrefix}{server.Key}.{definition.Name}",
             definition.Description,
             definition.ParameterSchema,
-            server.Id,
-            server.Name,
+            server,
             definition.Name,
-            client,
+            ClientProvider,
             _auditor)).ToList();
         _logger.LogDebug("LoadExternalToolsAsync {Key} returned {Count} tools in {Elapsed}ms",
             server.Key, tools.Count, step.ElapsedMilliseconds);
         return tools;
-    }
-
-    private async Task<IMCPTransportClient> GetOrCreateClientAsync(MCPServer server, CancellationToken cancellationToken)
-    {
-        var step = Stopwatch.StartNew();
-        if (_activeClients.TryGetValue(server.Id, out var existing) && existing.IsConnected)
-        {
-            _logger.LogDebug("GetOrCreateClientAsync {Key}: reused live client in {Elapsed}ms", server.Key, step.ElapsedMilliseconds);
-            return existing;
-        }
-
-        await _lock.WaitAsync(cancellationToken);
-        try
-        {
-            if (_activeClients.TryGetValue(server.Id, out existing) && existing.IsConnected)
-            {
-                return existing;
-            }
-
-            var client = CreateClient(server);
-            await client.ConnectAsync(cancellationToken);
-            _activeClients[server.Id] = client;
-            _logger.LogDebug("GetOrCreateClientAsync {Key}: created+connected new client in {Elapsed}ms", server.Key, step.ElapsedMilliseconds);
-            return client;
-        }
-        finally
-        {
-            _lock.Release();
-        }
-    }
-
-    private IMCPTransportClient CreateClient(MCPServer server)
-    {
-        return server.TransportType switch
-        {
-            MCPTransportType.STDIO => new StdioTransportClient(
-                Check.NotNullOrWhiteSpace(server.Command, nameof(server.Command)),
-                string.IsNullOrWhiteSpace(server.ArgumentsJson)
-                    ? Array.Empty<string>()
-                    : JsonSerializer.Deserialize<string[]>(server.ArgumentsJson) ?? Array.Empty<string>(),
-                _loggerFactory.CreateLogger<StdioTransportClient>()),
-            MCPTransportType.SSE => new SSETransportClient(
-                Check.NotNullOrWhiteSpace(server.Endpoint, nameof(server.Endpoint)),
-                _httpClientFactory.CreateClient(),
-                _loggerFactory.CreateLogger<SSETransportClient>()),
-            MCPTransportType.HTTP => throw new BusinessException(AIErrorCodes.MCPHttpTransportNotImplemented),
-            _ => throw new BusinessException(AIErrorCodes.InvalidProviderConfiguration)
-        };
     }
 
     private static List<IMCPTool> EnsureUnique(IEnumerable<IMCPTool> tools, string scope)

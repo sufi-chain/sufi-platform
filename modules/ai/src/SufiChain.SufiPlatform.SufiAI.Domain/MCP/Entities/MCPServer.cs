@@ -60,7 +60,15 @@ public class MCPServer : FullAuditedAggregateRoot<Guid>, IMultiTenant
     /// Last connection error message.
     /// </summary>
     public string? LastConnectionError { get; protected set; }
-    
+
+    /// <summary>
+    /// sufi-chain#384 slice 6b: who the server's credential belongs to. Defaults to
+    /// <see cref="MCPBindingMode.TenantLevel"/> so every pre-existing row keeps its behaviour.
+    /// A <see cref="MCPBindingMode.UserScoped"/> server receives a short-lived token per user and never
+    /// shares a transport client between users.
+    /// </summary>
+    public MCPBindingMode BindingMode { get; protected set; } = MCPBindingMode.TenantLevel;
+
     protected MCPServer() { }
     
     public MCPServer(
@@ -76,6 +84,25 @@ public class MCPServer : FullAuditedAggregateRoot<Guid>, IMultiTenant
         TransportType = transportType;
         TenantId = tenantId;
         IsEnabled = true;
+    }
+
+    /// <summary>
+    /// sufi-chain#384 slice 6b: sets who the server acts for.
+    /// A <see cref="MCPBindingMode.UserScoped"/> server cannot run over STDIO: STDIO has no header or
+    /// credential channel we are willing to inject, so the per-user token could not reach it. The
+    /// combination is rejected here rather than failing at call time.
+    /// </summary>
+    public void SetBindingMode(MCPBindingMode bindingMode)
+    {
+        if (bindingMode == MCPBindingMode.UserScoped && TransportType == MCPTransportType.STDIO)
+        {
+            throw new BusinessException(AIErrorCodes.MCPUserScopedStdioNotSupported)
+                .WithData("Key", Key)
+                .WithData("TransportType", TransportType)
+                .WithData("BindingMode", bindingMode);
+        }
+
+        BindingMode = bindingMode;
     }
 
     private void SetKey(string key)

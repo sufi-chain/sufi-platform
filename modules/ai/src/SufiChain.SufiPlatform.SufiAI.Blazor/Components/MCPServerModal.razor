@@ -30,6 +30,19 @@
 						<SbSelectOption TValue="string" Value="@("HTTP")">@L["MCPTransport:HTTP"]</SbSelectOption>
                     </SbSimpleSelect>
                 </SbFormField>
+
+                @if (UserScopedAvailable)
+                {
+                    <SbFormField Label="@L["MCPBindingMode"]">
+                        <SbSimpleSelect TValue="string"
+                                        Value="_bindingMode"
+                                        ValueChanged="@OnBindingModeChanged">
+                            <SbSelectOption TValue="string" Value="@("TenantLevel")">@L["MCPBindingMode:TenantLevel"]</SbSelectOption>
+                            <SbSelectOption TValue="string" Value="@("UserScoped")">@L["MCPBindingMode:UserScoped"]</SbSelectOption>
+                        </SbSimpleSelect>
+                        <SbText Variant="SbTextVariant.Caption" Color="SbColor.Muted">@L["MCPBindingModeHint"]</SbText>
+                    </SbFormField>
+                }
                 
                 @if (_transportType == "STDIO")
                 {

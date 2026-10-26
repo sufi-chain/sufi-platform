@@ -24,7 +24,13 @@ public class SufiAIToolExecutorAdapter : ISufiAIToolExecutor, ITransientDependen
         Dictionary<string, object?> parameters,
         CancellationToken cancellationToken = default)
     {
-        var result = await ToolExecutor.ExecuteAsync(workspaceName, toolName, parameters, cancellationToken);
+        // The ISufiAIToolExecutor contract carries no session id, so the call context captures none here.
+        var result = await ToolExecutor.ExecuteAsync(
+            workspaceName,
+            toolName,
+            parameters,
+            sessionId: null,
+            cancellationToken: cancellationToken);
         return SufiAIToolAdapter.MapResult(result);
     }
 

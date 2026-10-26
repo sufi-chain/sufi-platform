@@ -61,9 +61,14 @@ public class SSETransportClient : IMCPTransportClient
         return Task.CompletedTask;
     }
     
-    public async Task<List<MCPServerToolDefinition>> ListToolsAsync(CancellationToken cancellationToken = default)
+    public async Task<List<MCPServerToolDefinition>> ListToolsAsync(
+        CancellationToken cancellationToken = default,
+        string? bearerToken = null)
     {
-        var response = await _httpClient.GetAsync($"{_endpoint}/tools", cancellationToken);
+        using var request = new HttpRequestMessage(HttpMethod.Get, $"{_endpoint}/tools");
+        ApplyBearerToken(request, bearerToken);
+
+        var response = await _httpClient.SendAsync(request, cancellationToken);
         response.EnsureSuccessStatusCode();
         
         var content = await response.Content.ReadAsStringAsync(cancellationToken);
@@ -92,7 +97,8 @@ public class SSETransportClient : IMCPTransportClient
     public async Task<MCPServerToolResult> CallToolAsync(
         string toolName,
         Dictionary<string, object?> parameters,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default,
+        string? bearerToken = null)
     {
         var request = new
         {
@@ -105,7 +111,13 @@ public class SSETransportClient : IMCPTransportClient
         
         try
         {
-            var response = await _httpClient.PostAsync($"{_endpoint}/tools/call", content, cancellationToken);
+            using var httpRequest = new HttpRequestMessage(HttpMethod.Post, $"{_endpoint}/tools/call")
+            {
+                Content = content
+            };
+            ApplyBearerToken(httpRequest, bearerToken);
+
+            var response = await _httpClient.SendAsync(httpRequest, cancellationToken);
             response.EnsureSuccessStatusCode();
             
             var responseContent = await response.Content.ReadAsStringAsync(cancellationToken);
@@ -125,6 +137,20 @@ public class SSETransportClient : IMCPTransportClient
                 ErrorMessage = McpSanitizedError.FromException(ex, requestId: null).ToClientMessage()
             };
         }
+    }
+
+    /// <summary>
+    /// sufi-chain#384 slice 6b: attaches the short-lived per-user token for a <c>UserScoped</c> server.
+    /// A tenant-level server passes null and keeps sending unauthenticated requests exactly as before.
+    /// </summary>
+    private static void ApplyBearerToken(HttpRequestMessage request, string? bearerToken)
+    {
+        if (string.IsNullOrWhiteSpace(bearerToken))
+        {
+            return;
+        }
+
+        request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", bearerToken);
     }
     
     public void Dispose()

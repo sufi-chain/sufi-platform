@@ -24,4 +24,10 @@ public class CreateMCPServerDto
     
     [StringLength(2048)]
     public string? ArgumentsJson { get; set; }
+
+    /// <summary>
+    /// sufi-chain#384 slice 6b: <c>TenantLevel</c> (default) or <c>UserScoped</c>. UserScoped is rejected
+    /// with STDIO.
+    /// </summary>
+    public string BindingMode { get; set; } = "TenantLevel";
 }

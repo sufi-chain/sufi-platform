@@ -85,7 +85,8 @@ public class MCPToolAppService : SufiApplicationService, IMCPToolAppService
         var result = await _toolExecutor.ExecuteAsync(
             request.WorkspaceName,
             request.ToolName,
-            request.Parameters
+            request.Parameters,
+            sessionId: request.SessionId
         );
         
         return new MCPToolExecutionResultDto

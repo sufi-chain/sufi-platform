@@ -31,6 +31,9 @@ public static class AIErrorCodes
     public const string MCPToolPermissionDenied = "AI:MCPToolPermissionDenied";
     public const string MCPDuplicateToolName = "AI:MCPDuplicateToolName";
     public const string MCPHttpTransportNotImplemented = "AI:MCPHttpTransportNotImplemented";
+    public const string MCPUserScopedStdioNotSupported = "AI:MCPUserScopedStdioNotSupported";
+    public const string MCPUserScopedRequiresUser = "AI:MCPUserScopedRequiresUser";
+    public const string MCPUserTokenNotPermitted = "AI:MCPUserTokenNotPermitted";
 
     public const string GuardModelReply = "AI:GuardModelReply";
     public const string ToolLoopLimitReached = "AI:ToolLoopLimitReached";

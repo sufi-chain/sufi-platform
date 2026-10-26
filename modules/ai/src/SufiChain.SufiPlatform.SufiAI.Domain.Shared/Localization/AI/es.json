@@ -345,6 +345,10 @@
     "MCPTransport:STDIO": "Entrada estándar (STDIO)",
     "MCPTransport:SSE": "Eventos enviados por el servidor (SSE)",
     "MCPTransport:HTTP": "HTTP",
+    "MCPBindingMode": "Vinculación",
+    "MCPBindingMode:TenantLevel": "Nivel de inquilino (una conexión por inquilino)",
+    "MCPBindingMode:UserScoped": "Por usuario (token efímero propio de cada usuario)",
+    "MCPBindingModeHint": "Los servidores por usuario reciben un token efímero del usuario autenticado en cada llamada y nunca comparten la conexión entre usuarios. No disponible sobre STDIO.",
     "Decisions": "Decisiones",
     "DecisionsModelNone": "Sin modelo de decisiones",
 

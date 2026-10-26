@@ -60,6 +60,7 @@ public class MCPToolExecutionManager : IMCPToolExecutor, ITransientDependency
         string workspaceName,
         string toolName,
         Dictionary<string, object?> parameters,
+        string? sessionId = null,
         CancellationToken cancellationToken = default)
     {
         await CheckFeatureAsync();
@@ -87,7 +88,7 @@ public class MCPToolExecutionManager : IMCPToolExecutor, ITransientDependency
             TenantId = workspace.TenantId,
             UserId = _currentUser.Id,
             CallContext = _currentTenant is not null && _principalAccessor is not null
-                ? AgentCallContext.Capture(_currentTenant, _principalAccessor)
+                ? AgentCallContext.Capture(_currentTenant, _principalAccessor, sessionId)
                 : null
         };
         

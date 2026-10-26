@@ -1,16 +1,18 @@
 using System;
 using System.Collections.Generic;
-using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
 using NSubstitute;
 using Shouldly;
+using SufiChain.SufiPlatform.SufiAI;
 using SufiChain.SufiPlatform.SufiAI.MCP.Abstractions;
 using SufiChain.SufiPlatform.SufiAI.MCP.Cache;
 using SufiChain.SufiPlatform.SufiAI.MCP.Entities;
+using SufiChain.SufiPlatform.SufiAI.MCP.External;
 using SufiChain.SufiPlatform.SufiAI.MCP.Registry;
+using Volo.Abp;
 using Xunit;
 
 namespace SufiChain.SufiPlatform.SufiAI.Domain.Tests.MCP;
@@ -70,13 +72,25 @@ public class MCPToolRegistryPersistTests
         discovery.DiscoverToolsAsync(Arg.Any<CancellationToken>())
             .Returns(new List<IMCPTool>());
 
+        // sufi-chain#384 slice 6b: the registry no longer owns transport clients; the provider does.
+        // The HTTP transport is still unimplemented, so the provider is what fails the hot path now.
+        var clientProvider = Substitute.For<IMCPTransportClientProvider>();
+        clientProvider
+            .TestConnectionAsync(Arg.Any<MCPServer>(), Arg.Any<CancellationToken>())
+            .Returns(Task.FromException<bool>(
+                new BusinessException(AIErrorCodes.MCPHttpTransportNotImplemented)));
+        clientProvider
+            .ListToolsAsync(Arg.Any<MCPServer>(), Arg.Any<CancellationToken>())
+            .Returns(Task.FromException<List<MCPServerToolDefinition>>(
+                new BusinessException(AIErrorCodes.MCPHttpTransportNotImplemented)));
+
         return new MCPToolRegistry(
             Substitute.For<IMCPCatalogCache>(),
             discovery,
             serverRepository,
-            Substitute.For<IHttpClientFactory>(),
             new ServiceCollection().BuildServiceProvider(),
-            NullLoggerFactory.Instance,
-            NullLogger<MCPToolRegistry>.Instance);
+            NullLogger<MCPToolRegistry>.Instance,
+            auditor: null,
+            clientProvider: clientProvider);
     }
 }

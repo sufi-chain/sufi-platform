@@ -8,8 +8,10 @@ using Volo.Abp.Domain;
 using Volo.Abp.Modularity;
 using SufiChain.SufiPlatform.SufiAI;
 using SufiChain.SufiPlatform.SufiAI.MCP.Abstractions;
+using SufiChain.SufiPlatform.SufiAI.MCP.Auth;
 using SufiChain.SufiPlatform.SufiAI.MCP.Cache;
 using SufiChain.SufiPlatform.SufiAI.MCP.Execution;
+using SufiChain.SufiPlatform.SufiAI.MCP.External;
 using SufiChain.SufiPlatform.SufiAI.MCP.Internal;
 using SufiChain.SufiPlatform.SufiAI.MCP.Registry;
 using SufiChain.SufiPlatform.SufiAI.RAG;
@@ -29,6 +31,8 @@ public class SufiAIDomainModule : AbpModule
     public override void ConfigureServices(ServiceConfigurationContext context)
     {
         Configure<AITransportOptions>(context.Services.GetConfiguration().GetSection(AITransportOptions.SectionName));
+        // sufi-chain#384 slice 6b: lifetime and protector purpose for the per-user external MCP token.
+        Configure<McpUserTokenOptions>(context.Services.GetConfiguration().GetSection(McpUserTokenOptions.SectionName));
         context.Services.AddTransient<Web.IWebSearchService, Web.SearXngWebSearchService>();
         context.Services.AddTransient<Web.IWebContentFetcher, Web.WebContentFetcher>();
         // Register RAG service
@@ -36,6 +40,10 @@ public class SufiAIDomainModule : AbpModule
         
         // Register MCP services (explicit registration to ensure they're available)
         context.Services.AddSingleton<IInternalToolDiscoveryService, ReflectionToolDiscoveryService>();
+        // sufi-chain#384 slice 6b: the client provider owns the transport clients so a UserScoped server
+        // never shares a client between two users. Set before the registry so the registry is not asked to
+        // resolve it from the root provider at runtime.
+        context.Services.AddSingleton<IMCPTransportClientProvider, MCPTransportClientProvider>();
         context.Services.AddSingleton<IMCPToolRegistry, MCPToolRegistry>();
         context.Services.AddTransient<IMCPToolExecutor, MCPToolExecutionManager>();
         context.Services.AddTransient<IMCPCatalogCache, MCPCatalogCache>();
