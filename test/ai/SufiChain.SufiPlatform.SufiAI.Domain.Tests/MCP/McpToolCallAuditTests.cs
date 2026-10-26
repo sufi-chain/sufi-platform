@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
@@ -249,6 +250,47 @@ public class McpToolCallAuditTests
             new());
 
         result.Success.ShouldBeTrue(result.ErrorMessage);
+    }
+
+    [Fact]
+    public void The_auditor_correlation_provider_is_registered_for_the_scope()
+    {
+        // sufi-chain#384 slice 6a: the auditor resolves this from its own scope. Without an explicit
+        // registration the row still wrote, but CorrelationId was silently null on every call.
+        var services = new ServiceCollection();
+        services.AddTransient<IMcpAuditCorrelationProvider, McpAuditCorrelationProvider>();
+
+        using var provider = services.BuildServiceProvider();
+
+        provider.GetService<IMcpAuditCorrelationProvider>().ShouldNotBeNull();
+    }
+
+    [Fact]
+    public void The_domain_module_registers_the_auditor_correlation_provider()
+    {
+        var module = ReadSource(
+            "modules/ai/src/SufiChain.SufiPlatform.SufiAI.Domain/SufiAIDomainModule.cs");
+
+        module.ShouldContain(
+            "AddTransient<MCP.Audit.IMcpAuditCorrelationProvider, MCP.Audit.McpAuditCorrelationProvider>",
+            Case.Sensitive);
+    }
+
+    private static string ReadSource(string relative)
+    {
+        var dir = new DirectoryInfo(AppContext.BaseDirectory);
+        while (dir != null)
+        {
+            var candidate = Path.Combine(dir.FullName, relative.Replace('/', Path.DirectorySeparatorChar));
+            if (File.Exists(candidate))
+            {
+                return File.ReadAllText(candidate);
+            }
+
+            dir = dir.Parent;
+        }
+
+        throw new FileNotFoundException(relative);
     }
 
     private static McpToolCallAuditor Auditor(IMcpToolCallAuditLogRepository repository)
