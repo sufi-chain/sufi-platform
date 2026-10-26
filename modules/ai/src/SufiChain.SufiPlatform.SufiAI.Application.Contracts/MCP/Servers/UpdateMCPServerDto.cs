@@ -16,4 +16,10 @@ public class UpdateMCPServerDto
     
     [StringLength(2048)]
     public string? ArgumentsJson { get; set; }
+
+    /// <summary>
+    /// sufi-chain#384 slice 6b: <c>TenantLevel</c> or <c>UserScoped</c>. Null keeps the stored value, so a
+    /// caller that omits the field can never silently downgrade a user-scoped server.
+    /// </summary>
+    public string? BindingMode { get; set; }
 }

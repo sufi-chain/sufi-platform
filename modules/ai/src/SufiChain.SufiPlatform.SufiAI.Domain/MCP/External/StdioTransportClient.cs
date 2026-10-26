@@ -142,7 +142,14 @@ public class StdioTransportClient : IMCPTransportClient
         TerminateProcess();
     }
 
-    public async Task<List<MCPServerToolDefinition>> ListToolsAsync(CancellationToken cancellationToken = default)
+    /// <summary>
+    /// sufi-chain#384 slice 6b: STDIO has no credential channel, so a user-scoped token can never be
+    /// delivered here. The domain refuses to pair <c>UserScoped</c> with STDIO, and any token that did
+    /// arrive is deliberately ignored instead of being silently injected into the process environment.
+    /// </summary>
+    public async Task<List<MCPServerToolDefinition>> ListToolsAsync(
+        CancellationToken cancellationToken = default,
+        string? bearerToken = null)
     {
         var response = await SendJsonRpcRequestAsync("tools/list", new { }, cancellationToken);
 
@@ -169,7 +176,8 @@ public class StdioTransportClient : IMCPTransportClient
     public async Task<MCPServerToolResult> CallToolAsync(
         string toolName,
         Dictionary<string, object?> parameters,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default,
+        string? bearerToken = null)
     {
         var request = new
         {

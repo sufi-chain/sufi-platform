@@ -12,10 +12,15 @@ public interface IMCPToolExecutor
     /// <summary>
     /// Execute a tool by name with parameters in a workspace context.
     /// </summary>
+    /// <param name="sessionId">
+    /// sufi-chain#384 slice 6b: conversation the call belongs to, when the caller knows it. It is carried on
+    /// the bound call context so audit rows and per-user external MCP tokens name the conversation.
+    /// </param>
     Task<MCPToolExecutionResult> ExecuteAsync(
         string workspaceName,
         string toolName,
         Dictionary<string, object?> parameters,
+        string? sessionId = null,
         CancellationToken cancellationToken = default);
     
     /// <summary>

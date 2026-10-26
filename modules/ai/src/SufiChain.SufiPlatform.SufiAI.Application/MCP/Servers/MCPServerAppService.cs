@@ -69,7 +69,10 @@ public class MCPServerAppService : SufiApplicationService, IMCPServerAppService
             transportType,
             CurrentTenant.Id
         );
-        
+
+        // #384 slice 6b: the binding mode is validated by the domain (UserScoped + STDIO is refused).
+        server.SetBindingMode(ParseBindingMode(input.BindingMode));
+
         if (transportType == MCPTransportType.STDIO)
         {
             server.ConfigureStdio(input.Command!, input.ArgumentsJson);
@@ -90,7 +93,15 @@ public class MCPServerAppService : SufiApplicationService, IMCPServerAppService
         var server = await _repository.GetAsync(id);
         
         server.SetName(input.Name);
-        
+
+        // #384 slice 6b: applied before the transport config so a UserScoped+STDIO combination is refused
+        // with the domain error rather than after the endpoint was rewritten. A null value keeps the stored
+        // mode, so an update that omits the field cannot silently downgrade a user-scoped server.
+        if (!string.IsNullOrWhiteSpace(input.BindingMode))
+        {
+            server.SetBindingMode(ParseBindingMode(input.BindingMode));
+        }
+
         if (server.TransportType == MCPTransportType.STDIO)
         {
             server.ConfigureStdio(input.Command!, input.ArgumentsJson);
@@ -181,6 +192,7 @@ public class MCPServerAppService : SufiApplicationService, IMCPServerAppService
             Command = server.Command,
             ArgumentsJson = server.ArgumentsJson,
             IsEnabled = server.IsEnabled,
+            BindingMode = server.BindingMode.ToString(),
             LastConnectedAt = server.LastConnectedAt,
             LastConnectionError = server.LastConnectionError,
             CreationTime = server.CreationTime,
@@ -188,5 +200,26 @@ public class MCPServerAppService : SufiApplicationService, IMCPServerAppService
             LastModificationTime = server.LastModificationTime,
             LastModifierId = server.LastModifierId
         };
+    }
+
+    /// <summary>
+    /// #384 slice 6b: parses the incoming binding mode. An unknown value is refused instead of silently
+    /// falling back to TenantLevel, so a typo cannot downgrade a user-scoped server.
+    /// </summary>
+    private static MCPBindingMode ParseBindingMode(string? value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            return MCPBindingMode.TenantLevel;
+        }
+
+        if (!Enum.TryParse<MCPBindingMode>(value, ignoreCase: true, out var mode)
+            || !Enum.IsDefined(mode))
+        {
+            throw new BusinessException(AIErrorCodes.InvalidProviderConfiguration)
+                .WithData("BindingMode", value);
+        }
+
+        return mode;
     }
 }

@@ -5,6 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using SufiChain.SufiPlatform.SufiAI.MCP.Abstractions;
 using SufiChain.SufiPlatform.SufiAI.MCP.Audit;
+using SufiChain.SufiPlatform.SufiAI.MCP.Entities;
 
 namespace SufiChain.SufiPlatform.SufiAI.MCP.External;
 
@@ -13,11 +14,14 @@ namespace SufiChain.SufiPlatform.SufiAI.MCP.External;
 /// 9.4 (sufi-chain#340): the old fixed 30s execution cutoff is gone. A tool call inside a turn is cancelled
 /// only through the turn's own token (user Stop, session/circuit close, or shutdown).
 /// 9.5 (sufi-chain#384 slice 6a): every call writes one audit row through <see cref="IMcpToolCallAuditor"/>.
+/// 9.5 (sufi-chain#384 slice 6b): the transport client is acquired per call from
+/// <see cref="IMCPTransportClientProvider"/>, so a <c>UserScoped</c> server is dialled with the calling
+/// user's short-lived token and no client is ever shared between two users.
 /// </summary>
 public class ExternalMCPTool : IMCPTool, IMCPToolEffect
 {
-    private readonly IMCPTransportClient _client;
-    private readonly Guid _serverId;
+    private readonly IMCPTransportClientProvider _clientProvider;
+    private readonly MCPServer _server;
     private readonly string _remoteName;
     private readonly IMcpToolCallAuditor? _auditor;
 
@@ -37,19 +41,18 @@ public class ExternalMCPTool : IMCPTool, IMCPToolEffect
         string name,
         string description,
         string parameterSchema,
-        Guid serverId,
-        string serverName,
+        MCPServer server,
         string remoteName,
-        IMCPTransportClient client,
+        IMCPTransportClientProvider clientProvider,
         IMcpToolCallAuditor? auditor = null)
     {
         Name = name;
         Description = description;
         ParameterSchema = parameterSchema;
-        _serverId = serverId;
+        _server = server;
         _remoteName = remoteName;
-        Source = serverName;
-        _client = client;
+        _clientProvider = clientProvider;
+        Source = server.Name;
         _auditor = auditor;
     }
 
@@ -60,9 +63,28 @@ public class ExternalMCPTool : IMCPTool, IMCPToolEffect
     {
         var stopwatch = Stopwatch.StartNew();
 
+        MCPClientLease lease;
         try
         {
-            var result = await _client.CallToolAsync(_remoteName, parameters, cancellationToken);
+            // sufi-chain#384 slice 6b: identity is resolved here, at call time. A UserScoped server with no
+            // signed-in user is refused by the provider and never dialled.
+            lease = await _clientProvider.AcquireAsync(_server, context?.CallContext, cancellationToken);
+        }
+        catch (Exception ex)
+        {
+            stopwatch.Stop();
+            var failure = MCPToolExecutionResult.CreateFailure(ex.Message, ex.ToString());
+            await McpToolCallAudit.RecordDispatchedAsync(_auditor, this, context, parameters, failure, stopwatch.ElapsedMilliseconds);
+            return failure;
+        }
+
+        try
+        {
+            var result = await lease.Client.CallToolAsync(
+                _remoteName,
+                parameters,
+                cancellationToken,
+                lease.BearerToken);
 
             stopwatch.Stop();
 
@@ -93,6 +115,10 @@ public class ExternalMCPTool : IMCPTool, IMCPToolEffect
             var failure = MCPToolExecutionResult.CreateFailure(ex.Message, ex.ToString());
             await McpToolCallAudit.RecordDispatchedAsync(_auditor, this, context, parameters, failure, stopwatch.ElapsedMilliseconds);
             return failure;
+        }
+        finally
+        {
+            await _clientProvider.ReleaseAsync(lease, CancellationToken.None);
         }
     }
 }

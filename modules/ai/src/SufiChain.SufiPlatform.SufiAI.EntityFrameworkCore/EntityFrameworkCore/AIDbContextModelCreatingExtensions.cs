@@ -220,6 +220,10 @@ public static class AIDbContextModelCreatingExtensions
             b.Property(x => x.IsEnabled).IsRequired();
             b.Property(x => x.LastConnectionError).HasMaxLength(1024);
 
+            // sufi-chain#384 slice 6b: who the server's credential belongs to. Stored as int so the
+            // TenantLevel=0 default matches every pre-existing row without a data fix.
+            b.Property(x => x.BindingMode).IsRequired().HasDefaultValue(MCPBindingMode.TenantLevel);
+
             b.HasIndex(x => new { x.TenantId, x.Key }).IsUnique();
             b.HasIndex(x => x.IsEnabled);
         });

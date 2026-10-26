@@ -16,6 +16,7 @@
     <PackageReference Include="Microsoft.SemanticKernel" Version="$(MicrosoftSemanticKernelVersion)" />
     <PackageReference Include="Microsoft.SemanticKernel.Connectors.OpenAI" Version="$(MicrosoftSemanticKernelConnectorsOpenAIVersion)" />
     <PackageReference Include="Microsoft.Extensions.Http" Version="$(AspNetCoreVersion)" />
+    <PackageReference Include="Microsoft.AspNetCore.DataProtection" Version="$(AspNetCoreVersion)" />
     <ProjectReference Include="..\..\..\..\framework\SufiChain.SufiPlatform.SufiAI.Abstractions\SufiChain.SufiPlatform.SufiAI.Abstractions.csproj" />
     <ProjectReference Include="..\..\..\file-manager\src\SufiChain.SufiPlatform.FileManager.Domain\SufiChain.SufiPlatform.FileManager.Domain.csproj" />
     <ProjectReference Include="..\..\..\file-manager\src\SufiChain.SufiPlatform.FileManager.Domain.Shared\SufiChain.SufiPlatform.FileManager.Domain.Shared.csproj" />
