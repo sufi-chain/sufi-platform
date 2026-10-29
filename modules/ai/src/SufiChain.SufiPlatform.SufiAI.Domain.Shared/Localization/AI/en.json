@@ -9,6 +9,7 @@
     "AI:GuardModelReply": "The selected model returned a safety verdict instead of an answer. Choose a chat model for this workspace and try again.",
     "AI:ToolLoopLimitReached": "This took too long, so I stopped. Any changes already shown are kept. Try a smaller request.",
     "AI:ProviderRequestFailed": "The AI provider could not complete the request (HTTP {StatusCode}). Please try again in a moment.",
+    "AI:ProviderRequestFailedBrief": "The AI provider could not complete the request. Please try again in a moment.",
     "AI:UnsupportedProvider": "AI provider '{Provider}' is not supported.",
     "AI:ProviderNotSupported": "AI provider '{Provider}' is not registered for workspace '{WorkspaceName}'.",
     "AI:CapabilityNotSupported": "AI provider '{Provider}' does not support {CapabilityType} for workspace '{WorkspaceName}'.",

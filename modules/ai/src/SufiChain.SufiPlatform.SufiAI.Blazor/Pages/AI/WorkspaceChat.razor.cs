@@ -31,6 +31,8 @@ public partial class WorkspaceChat : AIComponentBase
     private bool _workspacesLoadStarted;
     private bool _savedMode = true;
     private bool _sending;
+    private bool _replyCancelledByUser;
+    private CancellationTokenSource? _turnCancellation;
     private bool _hasTranscriptionRoute;
     private Guid? _modelConfigurationId;
     private string? _reasoningEffort;
@@ -262,6 +264,7 @@ public partial class WorkspaceChat : AIComponentBase
         }
 
         _sending = true;
+        _replyCancelledByUser = false;
         MessengerState.IsSendingMessage = true;
         try
         {
@@ -387,20 +390,36 @@ public partial class WorkspaceChat : AIComponentBase
         if (reply.Length == 0)
         {
             MessengerState.NotifyStateChanged();
-            await Message.ErrorAsync(L["WorkspaceChat:ReplyFailed"]);
+            if (!_replyCancelledByUser)
+            {
+                await Message.ErrorAsync(L["WorkspaceChat:ReplyFailed"]);
+            }
+
             return;
         }
 
-        var assistantMessage = await MessageAppService.SendAsync(new SendChatMessageInput
-        {
-            SessionId = sessionId,
-            Body = reply.ToString(),
-            SenderKind = ChatMessageSenderKind.Assistant,
-            ModelConfigurationId = _modelConfigurationId,
-            ReasoningEffort = _reasoningEffort
-        });
-        MessengerState.AddMessageIfMissing(assistantMessage);
+        await SaveAssistantReplyAsync(sessionId, reply.ToString());
         await LoadSavedSessionsAsync();
+    }
+
+    /// <summary>
+    /// sufi-chain#551: the chat body column is 16000 characters. A longer reply is stored in order as
+    /// several messages so the validation dialog does not drop it, and a reload shows every part.
+    /// </summary>
+    private async Task SaveAssistantReplyAsync(Guid sessionId, string reply)
+    {
+        foreach (var part in ChatMessageBodySplitter.Split(reply))
+        {
+            var assistantMessage = await MessageAppService.SendAsync(new SendChatMessageInput
+            {
+                SessionId = sessionId,
+                Body = part,
+                SenderKind = ChatMessageSenderKind.Assistant,
+                ModelConfigurationId = _modelConfigurationId,
+                ReasoningEffort = _reasoningEffort
+            });
+            MessengerState.AddMessageIfMissing(assistantMessage);
+        }
     }
 
     private async Task SendAnonymousAsync(string body)
@@ -452,7 +471,10 @@ public partial class WorkspaceChat : AIComponentBase
 
         if (reply.Length == 0)
         {
-            await Message.ErrorAsync(L["WorkspaceChat:ReplyFailed"]);
+            if (!_replyCancelledByUser)
+            {
+                await Message.ErrorAsync(L["WorkspaceChat:ReplyFailed"]);
+            }
         }
         else
         {
@@ -473,11 +495,10 @@ public partial class WorkspaceChat : AIComponentBase
         Guid? sessionId,
         Func<string, Task> onPreview)
     {
-        // 9.4 (sufi-chain#340): the fixed 60s ChatReplyTimeout is removed. A slow model may take as long as
-        // it needs; the turn ends only when the circuit closes (component disposal cancels
-        // ComponentCancellationToken), the request is aborted, or the app shuts down. The linked source is
-        // also the seam a Stop control can cancel later.
-        using var turn = CancellationTokenSource.CreateLinkedTokenSource(ComponentCancellationToken);
+        // sufi-chain#551: no timer. The turn ends when the user presses Stop, the circuit closes, or the app shuts down.
+        _turnCancellation?.Dispose();
+        _turnCancellation = CancellationTokenSource.CreateLinkedTokenSource(ComponentCancellationToken);
+        var turn = _turnCancellation;
         try
         {
             var response = await ChatAppService.SendMessageAsync(input, turn.Token);
@@ -491,10 +512,16 @@ public partial class WorkspaceChat : AIComponentBase
         }
         catch (OperationCanceledException) when (turn.IsCancellationRequested)
         {
+            if (!ComponentCancellationToken.IsCancellationRequested)
+            {
+                _replyCancelledByUser = true;
+            }
+
             MessengerState.IsWaitingForAiResponse = false;
             Logger.LogInformation(
-                "Workspace chat reply was cancelled with the circuit or request. SessionId={SessionId}",
-                sessionId);
+                "Workspace chat reply was cancelled. SessionId={SessionId} UserStop={UserStop}",
+                sessionId,
+                _replyCancelledByUser);
             return string.Empty;
         }
         catch (Exception exception) when (exception is Volo.Abp.BusinessException or AbpAuthorizationException)
@@ -517,6 +544,30 @@ public partial class WorkspaceChat : AIComponentBase
                 sessionId);
             return string.Empty;
         }
+        finally
+        {
+            if (ReferenceEquals(_turnCancellation, turn))
+            {
+                _turnCancellation = null;
+            }
+
+            turn.Dispose();
+        }
+    }
+
+    /// <summary>sufi-chain#551: Stop cancels the in-flight model call. It does not start a timer.</summary>
+    private Task StopTurnAsync()
+    {
+        _replyCancelledByUser = true;
+        try
+        {
+            _turnCancellation?.Cancel();
+        }
+        catch (ObjectDisposedException)
+        {
+        }
+
+        return Task.CompletedTask;
     }
 
     private async Task<List<SufiAIChatAttachmentInput>> BuildAttachmentsAsync(IReadOnlyList<Guid> fileIds)

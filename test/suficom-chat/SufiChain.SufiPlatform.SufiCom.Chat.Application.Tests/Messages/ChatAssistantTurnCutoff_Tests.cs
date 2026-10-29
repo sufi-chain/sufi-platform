@@ -5,6 +5,7 @@ using SufiChain.SufiPlatform.SufiCom.Chat.Participants;
 using SufiChain.SufiPlatform.SufiCom.Chat.Sessions;
 using SufiChain.SufiPlatform.SufiCom.Chat.Supports;
 using Shouldly;
+using SufiChain.SufiPlatform.Settings;
 using Volo.Abp.Threading;
 using Volo.Abp.Uow;
 using Xunit;
@@ -45,6 +46,7 @@ public class ChatAssistantTurnCutoff_Tests : ChatApplicationTestBase<SufiComChat
         _ai.CompleteDelay = TimeSpan.FromSeconds(2);
         try
         {
+            await ChatTestSettingHelper.SetAiPolicyAsync(GetRequiredService<ISettingManager>());
             var session = await CreateAssistantSessionAsync();
             var userMessage = await InsertVisitorMessageAsync(session.Id, "hello");
 
@@ -68,6 +70,7 @@ public class ChatAssistantTurnCutoff_Tests : ChatApplicationTestBase<SufiComChat
         var previous = _ai.BeforeComplete;
         try
         {
+            await ChatTestSettingHelper.SetAiPolicyAsync(GetRequiredService<ISettingManager>());
             var session = await CreateAssistantSessionAsync();
             var userMessage = await InsertVisitorMessageAsync(session.Id, "hello");
             using var caller = new CancellationTokenSource();
@@ -92,6 +95,7 @@ public class ChatAssistantTurnCutoff_Tests : ChatApplicationTestBase<SufiComChat
         var previous = _ai.BeforeComplete;
         try
         {
+            await ChatTestSettingHelper.SetAiPolicyAsync(GetRequiredService<ISettingManager>());
             var session = await CreateAssistantSessionAsync();
             var userMessage = await InsertVisitorMessageAsync(session.Id, "hello");
             _ai.ResponseContent = "late reply";

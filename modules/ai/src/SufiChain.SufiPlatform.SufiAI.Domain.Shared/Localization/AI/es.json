@@ -7,6 +7,8 @@
     "SufiAI:AICreditsExhausted": "Your workspace has used all of its AI credits. Buy more credits or wait for next month's credits to keep using shared AI.",
     "AI:GuardModelReply": "El modelo seleccionado devolvió un veredicto de seguridad en lugar de una respuesta. Elija un modelo de chat para este espacio de trabajo e inténtelo de nuevo.",
     "AI:ToolLoopLimitReached": "Esto tardó demasiado y se detuvo. Los cambios ya mostrados se conservan. Prueba con una solicitud más pequeña.",
+    "AI:ProviderRequestFailed": "El proveedor de IA no pudo completar la solicitud (HTTP {StatusCode}). Inténtelo de nuevo en un momento.",
+    "AI:ProviderRequestFailedBrief": "El proveedor de IA no pudo completar la solicitud. Inténtelo de nuevo en un momento.",
     "AI:KnowledgeReviewInvalid": "La revisión de conocimiento está desactualizada o su cambio de estado no es válido.",
 
     "AI:KnowledgeReviewDenied": "La propuesta de conocimiento no puede crearse ni revisarse con la identidad, el permiso o la evidencia actuales.",

@@ -38,6 +38,9 @@ public static class AIErrorCodes
     public const string GuardModelReply = "AI:GuardModelReply";
     public const string ToolLoopLimitReached = "AI:ToolLoopLimitReached";
     public const string ProviderRequestFailed = "AI:ProviderRequestFailed";
+
+    /// <summary>Usage-log text for <see cref="ProviderRequestFailed"/> when the status code was not stored.</summary>
+    public const string ProviderRequestFailedBrief = "AI:ProviderRequestFailedBrief";
     public const string ApiKeyRequired = "AI:ApiKeyRequired";
     public const string NoModelConfigured = "AI:NoModelConfigured";
     public const string ProviderNotSupported = "AI:ProviderNotSupported";

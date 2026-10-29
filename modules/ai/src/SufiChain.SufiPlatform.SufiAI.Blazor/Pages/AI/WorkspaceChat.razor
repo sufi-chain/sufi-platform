@@ -19,6 +19,7 @@
                         OnNewAssistantSession="StartNewSavedChatAsync"
                         OnSessionSelected="OnSessionSelectedAsync"
                         OnSendMessage="OnSendAsync"
+                        OnStop="StopTurnAsync"
                         Class="workspace-chat-page__shell">
         <ListHeader>
             <div class="workspace-chat-page__list-header">
@@ -79,6 +80,7 @@
                                   DraftMessage="@_anonymousDraft"
                                   DraftMessageChanged="OnAnonymousDraftChangedAsync"
                                   OnSend="OnSendAsync"
+                                  OnStop="StopTurnAsync"
                                   IsDisabled="@_sending"
                                   IsSending="@_sending"
                                   HideEmoji="true"
@@ -103,6 +105,7 @@
                                   DraftMessage="@MessengerState.DraftMessage"
                                   DraftMessageChanged="OnSavedDraftChangedAsync"
                                   OnSend="OnSendAsync"
+                                  OnStop="StopTurnAsync"
                                   IsDisabled="@_sending"
                                   IsSending="@_sending"
                                   HideEmoji="true"

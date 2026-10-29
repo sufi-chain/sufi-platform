@@ -9,6 +9,7 @@
     "AI:GuardModelReply": "أعاد النموذج المحدد حكمًا يتعلق بالسلامة بدلًا من إجابة. اختر نموذج محادثة لمساحة العمل هذه وحاول مرة أخرى.",
     "AI:ToolLoopLimitReached": "استغرق هذا وقتًا طويلًا جدًا فتوقفت. التغييرات المعروضة محفوظة. جرّب طلبًا أصغر.",
     "AI:ProviderRequestFailed": "تعذّر على مزود الذكاء الاصطناعي إكمال الطلب (HTTP {StatusCode}). يرجى المحاولة مرة أخرى بعد لحظات.",
+    "AI:ProviderRequestFailedBrief": "تعذّر على مزود الذكاء الاصطناعي إكمال الطلب. يرجى المحاولة مرة أخرى بعد لحظات.",
     "AI:UnsupportedProvider": "مزود الذكاء الاصطناعي '{Provider}' غير مدعوم.",
     "AI:ProviderNotSupported": "مزود الذكاء الاصطناعي '{Provider}' غير مسجل لمساحة العمل '{WorkspaceName}'.",
     "AI:CapabilityNotSupported": "مزود الذكاء الاصطناعي '{Provider}' لا يدعم {CapabilityType} لمساحة العمل '{WorkspaceName}'.",
