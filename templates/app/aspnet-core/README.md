@@ -58,7 +58,7 @@ etc/docker/
 3. CLI installs the default full production module profile from published NuGet packages
 4. CLI applies `--exclude-modules` or `--no-default-modules` reductions and resolves dependencies
 5. CLI selects `docker-compose.efcore-postgresql.yml.template`, renames to `docker-compose.yml`
-6. CLI deletes other docker-compose files
+6. CLI deletes other docker-compose files. The selected file keeps an optional `cms-public` service on profile `public` (`ghcr.io/sufi-chain/sufi-cms-public`). It stays off until `docker compose --profile public up -d`.
 7. CLI prompts: "Generate Initial migration? (Y/n)"
 8. If yes, runs: `dotnet ef migrations add Initial`
 9. CLI prompts: "Run DbMigrator? (Y/n)"
