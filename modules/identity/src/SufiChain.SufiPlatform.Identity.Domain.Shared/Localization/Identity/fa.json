@@ -177,6 +177,7 @@
     "NoPermissionsFound": "مجوزی یافت نشد",
     "SaveWithoutAnyPermissionsWarningMessage": "هیچ مجوزی اعطا نخواهد شد. آیا مطمئن هستید که می‌خواهید ذخیره کنید؟",
     "PermissionsSavedSuccessfully": "مجوزها با موفقیت ذخیره شدند",
+    "UnsavedPermissionChanges": "تغییرات مجوزها ذخیره نشده است. بدون ذخیره کردن بسته شود؟",
     "CreateRole": "ایجاد نقش",
     "DefaultRoleForNewUsers": "نقش پیش‌فرض برای کاربران جدید",
     "PublicRole": "نقش عمومی",

@@ -45,6 +45,7 @@ public partial class FeaturesModal
     private string _searchText = string.Empty;
     private bool _selectAllDisabled;
     private bool _isClosing;
+    private bool _confirmingClose;
 
     private string SearchText
     {
@@ -73,6 +74,10 @@ public partial class FeaturesModal
         _entityDisplayName = entityDisplayName ?? L["Features"];
         _searchText = string.Empty;
         _selectedTabId = null;
+        _allGroups = new List<FeatureGroupDto>();
+        _groups = new List<FeatureGroupDto>();
+        _isOpen = true;
+        await InvokeAsync(StateHasChanged);
 
         await ExecuteWithLoadingAsync(async () =>
         {
@@ -107,9 +112,6 @@ public partial class FeaturesModal
             SnapshotSavedValues();
             NormalizeFeatureGroups();
         }, LoadingKeys.LoadFeatures);
-
-        _isOpen = true;
-        StateHasChanged();
     }
 
     private void NormalizeFeatureGroups(bool checkDisabledFeatures = true)
@@ -409,10 +411,63 @@ public partial class FeaturesModal
 
     private async Task OnDialogOpenChanged(bool open)
     {
-        if (!open)
+        if (open)
         {
-            await HideAsync();
+            _isOpen = true;
+            return;
         }
+
+        if (!await ConfirmDiscardAsync())
+        {
+            _isOpen = true;
+            await InvokeAsync(StateHasChanged);
+            return;
+        }
+
+        await HideAsync();
+    }
+
+    private async Task RequestCloseAsync()
+    {
+        if (!await ConfirmDiscardAsync())
+        {
+            return;
+        }
+
+        await HideAsync();
+    }
+
+    private async Task<bool> ConfirmDiscardAsync()
+    {
+        if (!HasUnsavedChanges() || _confirmingClose)
+        {
+            return true;
+        }
+
+        _confirmingClose = true;
+        try
+        {
+            return await Message.ConfirmAsync(L["UnsavedFeatureChanges"]);
+        }
+        finally
+        {
+            _confirmingClose = false;
+        }
+    }
+
+    private bool HasUnsavedChanges()
+    {
+        foreach (var feature in _allGroups.SelectMany(group => group.Features))
+        {
+            var current = GetEditedValue(feature);
+            _savedValues.TryGetValue(feature.Name, out var saved);
+            if (!string.Equals(current, saved, StringComparison.Ordinal))
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private Task HideAsync()

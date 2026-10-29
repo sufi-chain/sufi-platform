@@ -2,7 +2,24 @@
 @using SufiChain.SufiPlatform.Features
 @inherits FeaturesComponentBase
 
-<SbDialog Open="_isOpen" OpenChanged="OnDialogOpenChanged" OnCloseButtonClick="HideAsync" Size="SbDialogSize.Xl" Title="@($"{L["Features"]} - {_entityDisplayName}")">
+<style>
+    dialog.features-dialog .sb-dialog__body {
+        overscroll-behavior: contain;
+    }
+
+    @@media (max-width: 768px) {
+        dialog.features-dialog,
+        dialog.features-dialog .sb-dialog__container {
+            width: 100vw;
+            max-width: 100vw;
+            height: 100dvh;
+            max-height: 100dvh;
+            margin: 0;
+            border-radius: 0;
+        }
+    }
+</style>
+<SbDialog Open="_isOpen" OpenChanged="OnDialogOpenChanged" CloseOnBackdropClick="true" Size="SbDialogSize.Xl" Title="@($"{L["Features"]} - {_entityDisplayName}")" Class="features-dialog">
 	<ChildContent>
 		<SbStack Gap="3">
 			@* Search and Select All Row *@
@@ -137,7 +154,7 @@
 				@L["ResetToDefault"]
 			</SbButton>
 			<SbStack Wrap="true" Direction="SbStackDirection.Row" Gap="2">
-				<SbButton Variant="SbButtonVariant.Outline" OnClick="HideAsync">@L["Cancel"]</SbButton>
+				<SbButton Variant="SbButtonVariant.Outline" OnClick="RequestCloseAsync">@L["Cancel"]</SbButton>
 				<SbButton Color="SbColor.Primary"
 						  OnClick="@SaveAsync"
 						  Loading="IsOperationLoading(LoadingKeys.SaveFeatures)"

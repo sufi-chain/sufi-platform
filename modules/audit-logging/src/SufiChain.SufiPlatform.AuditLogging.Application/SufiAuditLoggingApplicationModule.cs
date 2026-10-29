@@ -1,6 +1,8 @@
 using Microsoft.Extensions.DependencyInjection;
 using Volo.Abp.Application;
 using SufiChain.SufiPlatform.AuditLogging;
+using SufiChain.SufiPlatform.Permissions;
+using SufiChain.SufiPlatform.Settings;
 using Volo.Abp.Mapperly;
 using Volo.Abp.Modularity;
 using SufiChain.SufiPlatform.Ddd;
@@ -11,7 +13,9 @@ namespace SufiChain.SufiPlatform.AuditLogging;
     typeof(SufiAuditLoggingApplicationContractsModule),
     typeof(SufiDddApplicationModule),
     typeof(AbpMapperlyModule),
-    typeof(SufiAuditLoggingDomainModule)
+    typeof(SufiAuditLoggingDomainModule),
+    typeof(SufiPermissionsDomainModule),
+    typeof(SufiSettingsDomainModule)
 )]
 public class SufiAuditLoggingApplicationModule : AbpModule
 {

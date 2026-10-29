@@ -6,6 +6,7 @@
     "Features": "الميزات",
     "Feature": "ميزة",
     "FeaturesSavedSuccessfully": "تم حفظ الميزات بنجاح",
+    "UnsavedFeatureChanges": "تغييرات الميزات غير محفوظة. هل تريد الإغلاق دون حفظ؟",
     "ManageFeatures": "إدارة الميزات",
     "ResetToDefault": "إعادة التعيين للافتراضي",
     "AllFeatures": "جميع الميزات",

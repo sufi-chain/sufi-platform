@@ -49,8 +49,17 @@
     }
 }
 
-.ou-layout-desktop ::deep .ou-tree-card {
-    width: 320px;
-    min-height: 500px;
-    flex-shrink: 0;
+.ou-split {
+    display: grid;
+    grid-template-columns: minmax(16rem, 22rem) minmax(0, 1fr);
+    gap: var(--sb-space-4, 1rem);
+    align-items: stretch;
+    width: 100%;
+}
+
+.ou-layout-desktop ::deep .ou-tree-card,
+.ou-split > :last-child {
+    min-width: 0;
+    min-height: 32rem;
+    height: 100%;
 }

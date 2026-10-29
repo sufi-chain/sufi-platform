@@ -60,6 +60,7 @@
         "Administration": "مدیریت",
         "Permission:AuditLogging": "ثبت ممیزی",
         "Permission:AuditLogs": "مشاهده گزارش‌های ممیزی",
+        "Permission:AuditLogs.ViewAll": "مشاهده گزارش ممیزی همه کاربران",
         "Permission:EntityChanges": "مشاهده تغییرات موجودیت",
         "Placeholder:DurationExample": "0",
         "IdLabel": "شناسه",

@@ -147,10 +147,12 @@ public class MongoAuditLogRepository : MongoDbRepository<IAuditLoggingMongoDbCon
     public virtual async Task<Dictionary<DateTime, double>> GetAverageExecutionDurationPerDayAsync(
         DateTime startDate,
         DateTime endDate,
+        Guid? userId = null,
         CancellationToken cancellationToken = default)
     {
         var result = await (await GetQueryableAsync(cancellationToken))
             .Where(a => a.ExecutionTime < endDate.AddDays(1) && a.ExecutionTime > startDate)
+            .WhereIf(userId.HasValue, a => a.UserId == userId)
             .OrderBy(t => t.ExecutionTime)
             .GroupBy(t => new {
                 t.ExecutionTime.Year,
@@ -191,9 +193,10 @@ public class MongoAuditLogRepository : MongoDbRepository<IAuditLoggingMongoDbCon
         string entityId = null,
         string entityTypeFullName = null,
         bool includeDetails = false,
+        Guid? userId = null,
         CancellationToken cancellationToken = default)
     {
-        var query = await GetEntityChangeListQueryAsync(auditLogId, startTime, endTime, changeType, entityId, entityTypeFullName, cancellationToken);
+        var query = await GetEntityChangeListQueryAsync(auditLogId, startTime, endTime, changeType, entityId, entityTypeFullName, userId, cancellationToken);
 
         return await query
             .OrderBy(sorting.IsNullOrWhiteSpace() ? (nameof(EntityChange.ChangeTime) + " DESC") : sorting)
@@ -208,9 +211,10 @@ public class MongoAuditLogRepository : MongoDbRepository<IAuditLoggingMongoDbCon
         EntityChangeType? changeType = null,
         string entityId = null,
         string entityTypeFullName = null,
+        Guid? userId = null,
         CancellationToken cancellationToken = default)
     {
-        var query = await GetEntityChangeListQueryAsync(auditLogId, startTime, endTime, changeType, entityId, entityTypeFullName, cancellationToken);
+        var query = await GetEntityChangeListQueryAsync(auditLogId, startTime, endTime, changeType, entityId, entityTypeFullName, userId, cancellationToken);
 
         var count = await query.LongCountAsync(GetCancellationToken(cancellationToken));
 
@@ -235,9 +239,11 @@ public class MongoAuditLogRepository : MongoDbRepository<IAuditLoggingMongoDbCon
     public virtual async Task<List<EntityChangeWithUsername>> GetEntityChangesWithUsernameAsync(
         string entityId,
         string entityTypeFullName,
+        Guid? userId = null,
         CancellationToken cancellationToken = default)
     {
         var auditLogs = await (await GetQueryableAsync(cancellationToken))
+                        .WhereIf(userId.HasValue, x => x.UserId == userId)
                         .Where(x => x.EntityChanges.Any(y => y.EntityId == entityId && y.EntityTypeFullName == entityTypeFullName))
                         .OrderByDescending(x => x.ExecutionTime)
                         .ToListAsync(GetCancellationToken(cancellationToken));
@@ -257,9 +263,11 @@ public class MongoAuditLogRepository : MongoDbRepository<IAuditLoggingMongoDbCon
         EntityChangeType? changeType = null,
         string entityId = null,
         string entityTypeFullName = null,
+        Guid? userId = null,
         CancellationToken cancellationToken = default)
     {
         return (await GetQueryableAsync(cancellationToken))
+                .WhereIf(userId.HasValue, x => x.UserId == userId)
                 .SelectMany(x => x.EntityChanges)
                 .WhereIf(auditLogId.HasValue, e => e.Id == auditLogId)
                 .WhereIf(startTime.HasValue, e => e.ChangeTime >= startTime)

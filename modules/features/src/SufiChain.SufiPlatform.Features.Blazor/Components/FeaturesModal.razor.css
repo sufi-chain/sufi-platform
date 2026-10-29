@@ -2,7 +2,6 @@
 
 .feature-management-layout {
     display: flex;
-    height: min(32rem, calc(90vh - 18rem));
     min-height: 16rem;
 }
 
@@ -10,17 +9,13 @@
 .feature-management-layout ::deep .feature-modal__tabs {
     flex: 1;
     min-width: 0;
-    min-height: 0;
-    height: 100%;
-    overflow: hidden;
+    overflow: visible;
 }
 
 .feature-management-layout ::deep .sb-tabs__list {
     width: 14rem;
     flex-shrink: 0;
-    max-height: 100%;
-    overflow-y: auto;
-    overscroll-behavior: contain;
+    overflow: visible;
     background-color: var(--sb-bg-subtle, var(--sb-color-surface-variant));
 }
 
@@ -51,22 +46,19 @@
 .feature-management-layout ::deep .sb-tabs__panel {
     flex: 1;
     min-width: 0;
-    min-height: 0;
-    height: 100%;
-    overflow-y: auto;
-    overscroll-behavior: contain;
+    overflow: visible;
     max-height: none;
     padding: 1rem;
     background-color: var(--sb-bg, var(--sb-color-surface));
 }
 
 /* Mobile: horizontal scrollable tab header, content always visible below */
-@media (max-width: 767px) {
+@media (max-width: 768px) {
     .feature-management-layout {
         flex-direction: column;
         height: auto;
-        max-height: calc(90vh - 16rem);
-        min-height: 16rem;
+        max-height: none;
+        min-height: 0;
     }
 
     .feature-management-layout ::deep .feature-modal__tabs {
@@ -76,23 +68,20 @@
     .feature-management-layout ::deep .sb-tabs__list {
         display: flex;
         flex-direction: row;
-        flex-wrap: nowrap;
-        overflow-x: auto;
-        overflow-y: hidden;
+        flex-wrap: wrap;
+        overflow: visible;
         width: 100%;
         min-width: 0;
         flex-shrink: 0;
         border-inline-end: none;
         border-block-end: 1px solid var(--sb-border-color, var(--sb-color-border));
-        -webkit-overflow-scrolling: touch;
-        scrollbar-width: thin;
     }
 
     .feature-management-layout ::deep .sb-tabs__tab {
-        flex-shrink: 0;
+        flex: 1 1 8rem;
         width: auto;
-        min-width: max-content;
-        white-space: nowrap;
+        min-width: 0;
+        white-space: normal;
     }
 
     /* Mobile: active indicator at bottom (horizontal tabs) */
@@ -107,7 +96,8 @@
 
     .feature-management-layout ::deep .sb-tabs__panel {
         flex: 1;
-        min-height: 12rem;
-        max-height: calc(90vh - 22rem);
+        min-height: 0;
+        max-height: none;
+        overflow: visible;
     }
 }

@@ -147,10 +147,12 @@ public class EfCoreAuditLogRepository : EfCoreRepository<IAuditLoggingDbContext,
     public virtual async Task<Dictionary<DateTime, double>> GetAverageExecutionDurationPerDayAsync(
         DateTime startDate,
         DateTime endDate,
+        Guid? userId = null,
         CancellationToken cancellationToken = default)
     {
         var result = await (await GetDbSetAsync()).AsNoTracking()
             .Where(a => a.ExecutionTime < endDate.AddDays(1) && a.ExecutionTime > startDate)
+            .WhereIf(userId.HasValue, a => a.UserId == userId)
             .OrderBy(t => t.ExecutionTime)
             .GroupBy(t => new { t.ExecutionTime.Date })
             .Select(g => new { Day = g.Min(t => t.ExecutionTime), avgExecutionTime = g.Average(t => t.ExecutionDuration) })
@@ -194,9 +196,10 @@ public class EfCoreAuditLogRepository : EfCoreRepository<IAuditLoggingDbContext,
         string entityId = null,
         string entityTypeFullName = null,
         bool includeDetails = false,
+        Guid? userId = null,
         CancellationToken cancellationToken = default)
     {
-        var query = await GetEntityChangeListQueryAsync(auditLogId, startTime, endTime, changeType, entityId, entityTypeFullName, includeDetails);
+        var query = await GetEntityChangeListQueryAsync(auditLogId, startTime, endTime, changeType, entityId, entityTypeFullName, includeDetails, userId);
 
         return await query.OrderBy(sorting.IsNullOrWhiteSpace() ? (nameof(EntityChange.ChangeTime) + " DESC") : sorting)
             .PageBy(skipCount, maxResultCount)
@@ -210,9 +213,10 @@ public class EfCoreAuditLogRepository : EfCoreRepository<IAuditLoggingDbContext,
         EntityChangeType? changeType = null,
         string entityId = null,
         string entityTypeFullName = null,
+        Guid? userId = null,
         CancellationToken cancellationToken = default)
     {
-        var query = await GetEntityChangeListQueryAsync(auditLogId, startTime, endTime, changeType, entityId, entityTypeFullName);
+        var query = await GetEntityChangeListQueryAsync(auditLogId, startTime, endTime, changeType, entityId, entityTypeFullName, userId: userId);
 
         var totalCount = await query.LongCountAsync(GetCancellationToken(cancellationToken));
 
@@ -236,6 +240,7 @@ public class EfCoreAuditLogRepository : EfCoreRepository<IAuditLoggingDbContext,
     public virtual async Task<List<EntityChangeWithUsername>> GetEntityChangesWithUsernameAsync(
         string entityId,
         string entityTypeFullName,
+        Guid? userId = null,
         CancellationToken cancellationToken = default)
     {
         var dbContext = await GetDbContextAsync();
@@ -247,6 +252,7 @@ public class EfCoreAuditLogRepository : EfCoreRepository<IAuditLoggingDbContext,
 
         return await (from e in query
                       join auditLog in dbContext.AuditLogs on e.AuditLogId equals auditLog.Id
+                      where userId == null || auditLog.UserId == userId
                       select new EntityChangeWithUsername { EntityChange = e, UserName = auditLog.UserName })
                     .OrderByDescending(x => x.EntityChange.ChangeTime).ToListAsync(GetCancellationToken(cancellationToken));
     }
@@ -258,12 +264,19 @@ public class EfCoreAuditLogRepository : EfCoreRepository<IAuditLoggingDbContext,
         EntityChangeType? changeType = null,
         string entityId = null,
         string entityTypeFullName = null,
-        bool includeDetails = false)
+        bool includeDetails = false,
+        Guid? userId = null)
     {
-        return (await GetDbContextAsync())
+        var dbContext = await GetDbContextAsync();
+        var auditLogIds = userId.HasValue
+            ? dbContext.Set<AuditLog>().AsNoTracking().Where(a => a.UserId == userId).Select(a => a.Id)
+            : null;
+
+        return dbContext
             .Set<EntityChange>()
             .AsNoTracking()
             .IncludeDetails(includeDetails)
+            .WhereIf(userId.HasValue, e => auditLogIds!.Contains(e.AuditLogId))
             .WhereIf(auditLogId.HasValue, e => e.AuditLogId == auditLogId)
             .WhereIf(startTime.HasValue, e => e.ChangeTime >= startTime)
             .WhereIf(endTime.HasValue, e => e.ChangeTime <= endTime)

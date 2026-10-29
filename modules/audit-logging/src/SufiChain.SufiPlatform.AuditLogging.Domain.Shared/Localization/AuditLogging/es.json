@@ -50,6 +50,7 @@
     "IpAddress": "Dirección Ip",
     "Permission:AuditLogging": "Registros de auditoría",
     "Permission:AuditLogs": "Registros de auditoría",
+    "Permission:AuditLogs.ViewAll": "Ver los registros de auditoría de todos",
     "Permission:EntityChanges": "Ver cambios de entidad",
     "Placeholder:DurationExample": "0",
     "IdLabel": "ID",

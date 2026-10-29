@@ -32,6 +32,8 @@ public partial class PermissionsModal : IdentityComponentBase
     private string? _selectedTabId;
     private string _searchText = string.Empty;
     private bool _selectAllDisabled;
+    private bool _isDirty;
+    private bool _confirmingClose;
 
     private sealed class PermissionGroupNavNode
     {
@@ -72,6 +74,13 @@ public partial class PermissionsModal : IdentityComponentBase
         _providerKey = providerKey;
         _searchText = string.Empty;
         _selectedTabId = null;
+        _isDirty = false;
+        _entityDisplayName = entityDisplayName ?? string.Empty;
+        _groups = new List<PermissionGroupDto>();
+        _allGroups = new List<PermissionGroupDto>();
+        _navRoots = new List<PermissionGroupNavNode>();
+        _isOpen = true;
+        await InvokeAsync(StateHasChanged);
 
         await ExecuteWithLoadingAsync(async () =>
         {
@@ -82,9 +91,6 @@ public partial class PermissionsModal : IdentityComponentBase
 
             NormalizePermissionGroups();
         }, LoadingKeys.LoadPermissions);
-
-        _isOpen = true;
-        StateHasChanged();
     }
 
     private void NormalizePermissionGroups(bool checkDisabledPermissions = true)
@@ -494,6 +500,7 @@ public partial class PermissionsModal : IdentityComponentBase
         // Reset search to show all groups
         _searchText = string.Empty;
         _groups = _allGroups.ToList();
+        _isDirty = true;
         NormalizePermissionGroups(checkDisabledPermissions: false);
     }
 
@@ -507,12 +514,14 @@ public partial class PermissionsModal : IdentityComponentBase
             }
         }
 
+        _isDirty = true;
         StateHasChanged();
     }
 
     private void OnPermissionChanged(bool value, PermissionGroupDto group, PermissionGrantInfoDto permission)
     {
         permission.IsGranted = value;
+        _isDirty = true;
 
         if (value)
         {
@@ -557,9 +566,56 @@ public partial class PermissionsModal : IdentityComponentBase
         }
     }
 
+    private async Task OnOpenChangedAsync(bool open)
+    {
+        if (open)
+        {
+            _isOpen = true;
+            return;
+        }
+
+        if (!await ConfirmDiscardAsync())
+        {
+            _isOpen = true;
+            await InvokeAsync(StateHasChanged);
+            return;
+        }
+
+        Hide();
+    }
+
+    private async Task RequestCloseAsync()
+    {
+        if (!await ConfirmDiscardAsync())
+        {
+            return;
+        }
+
+        Hide();
+    }
+
+    private async Task<bool> ConfirmDiscardAsync()
+    {
+        if (!_isDirty || _confirmingClose)
+        {
+            return true;
+        }
+
+        _confirmingClose = true;
+        try
+        {
+            return await Message.ConfirmAsync(L["UnsavedPermissionChanges"]);
+        }
+        finally
+        {
+            _confirmingClose = false;
+        }
+    }
+
     private void Hide()
     {
         _selectedTabId = null;
+        _isDirty = false;
         _isOpen = false;
         StateHasChanged();
     }
