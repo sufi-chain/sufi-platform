@@ -78,7 +78,7 @@ services:
   # Optional slim public host. It is off unless you pass: docker compose --profile public up -d
   cms-public:
     profiles: ["public"]
-    image: ghcr.io/sufi-chain/sufi-cms-public:${SUFI_CMS_PUBLIC_TAG:-dev}
+    image: harbor.sufichain.com/sufi-platform/cms-public:${SUFI_CMS_PUBLIC_TAG:-dev}
     container_name: sufiplatform-layered-cms-public
     environment:
       ASPNETCORE_ENVIRONMENT: Production
