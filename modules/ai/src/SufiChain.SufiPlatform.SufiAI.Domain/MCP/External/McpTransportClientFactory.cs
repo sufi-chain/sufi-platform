@@ -16,12 +16,14 @@ public static class McpTransportClientFactory
     public static IMCPTransportClient Create(
         MCPServer server,
         IHttpClientFactory httpClientFactory,
-        ILoggerFactory loggerFactory)
+        ILoggerFactory loggerFactory,
+        AITransportOptions? transportOptions = null)
     {
         ArgumentNullException.ThrowIfNull(server);
         ArgumentNullException.ThrowIfNull(httpClientFactory);
         ArgumentNullException.ThrowIfNull(loggerFactory);
 
+        var requestTimeout = (transportOptions ?? new AITransportOptions()).GetRequestTimeout();
         return server.TransportType switch
         {
             MCPTransportType.STDIO => new StdioTransportClient(
@@ -31,11 +33,13 @@ public static class McpTransportClientFactory
             MCPTransportType.SSE => new SSETransportClient(
                 Check.NotNullOrWhiteSpace(server.Endpoint, nameof(server.Endpoint)),
                 httpClientFactory.CreateClient(),
-                loggerFactory.CreateLogger<SSETransportClient>()),
+                loggerFactory.CreateLogger<SSETransportClient>(),
+                requestTimeout),
             MCPTransportType.HTTP => new StreamableHttpTransportClient(
                 Check.NotNullOrWhiteSpace(server.Endpoint, nameof(server.Endpoint)),
                 httpClientFactory.CreateClient(),
-                loggerFactory.CreateLogger<StreamableHttpTransportClient>()),
+                loggerFactory.CreateLogger<StreamableHttpTransportClient>(),
+                requestTimeout),
             _ => throw new BusinessException(AIErrorCodes.InvalidProviderConfiguration)
                 .WithData("TransportType", server.TransportType)
         };

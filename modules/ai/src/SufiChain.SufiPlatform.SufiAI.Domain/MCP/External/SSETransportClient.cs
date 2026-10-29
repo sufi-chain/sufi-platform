@@ -28,8 +28,9 @@ public sealed class SSETransportClient : McpRemoteTransportClient
     public SSETransportClient(
         string endpoint,
         HttpClient httpClient,
-        ILogger<SSETransportClient> logger)
-        : base(endpoint, logger)
+        ILogger<SSETransportClient> logger,
+        TimeSpan? requestTimeout = null)
+        : base(endpoint, logger, requestTimeout)
     {
         _httpClient = httpClient;
         // The GET stays open for the life of the session. Per-request cancellation is separate.
@@ -51,20 +52,20 @@ public sealed class SSETransportClient : McpRemoteTransportClient
         }
         catch (Exception ex) when (ex is not BusinessException and not OperationCanceledException)
         {
-            await DisconnectCoreAsync();
+            await DisconnectCoreAsync(cancellationToken);
             Logger.LogError(ex, "Failed to connect to MCP server: {Endpoint}", Endpoint);
             throw Connection(ex.Message, ex);
         }
         catch
         {
-            await DisconnectCoreAsync();
+            await DisconnectCoreAsync(cancellationToken);
             throw;
         }
     }
 
     public override Task DisconnectAsync(CancellationToken cancellationToken = default)
     {
-        return DisconnectCoreAsync();
+        return DisconnectCoreAsync(cancellationToken);
     }
 
     public override void Dispose()
@@ -198,16 +199,10 @@ public sealed class SSETransportClient : McpRemoteTransportClient
         var stream = await response.Content.ReadAsStreamAsync(cancellationToken);
         _readTask = ReadLoopAsync(stream, _lifetime.Token);
 
-        using var wait = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-        wait.CancelAfter(RequestTimeout);
-        try
-        {
-            _postEndpoint = await _endpointSource.Task.WaitAsync(wait.Token);
-        }
-        catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
-        {
-            throw Connection($"Timed out waiting for the MCP SSE endpoint event from {Endpoint}.");
-        }
+        _postEndpoint = await WithRequestDeadlineAsync(
+            cancellationToken,
+            token => _endpointSource.Task.WaitAsync(token),
+            $"Timed out waiting for the MCP SSE endpoint event from {Endpoint}.");
     }
 
     private async Task ReadLoopAsync(Stream stream, CancellationToken cancellationToken)
@@ -294,11 +289,23 @@ public sealed class SSETransportClient : McpRemoteTransportClient
             return false;
         }
 
+        if (!SameOrigin(EndpointUri, resolved))
+        {
+            error = "MCP server sent an SSE endpoint on a different origin than "
+                + $"{EndpointUri.GetLeftPart(UriPartial.Authority)}: '{resolved}'.";
+            return false;
+        }
+
         uri = resolved;
         return true;
     }
 
-    private async Task DisconnectCoreAsync()
+    private static bool SameOrigin(Uri configured, Uri resolved) =>
+        string.Equals(configured.Scheme, resolved.Scheme, StringComparison.OrdinalIgnoreCase)
+        && string.Equals(configured.Host, resolved.Host, StringComparison.OrdinalIgnoreCase)
+        && configured.Port == resolved.Port;
+
+    private async Task DisconnectCoreAsync(CancellationToken cancellationToken = default)
     {
         _initialized = false;
         _postEndpoint = null;
@@ -319,7 +326,7 @@ public sealed class SSETransportClient : McpRemoteTransportClient
         {
             try
             {
-                await _readTask.WaitAsync(TimeSpan.FromSeconds(2));
+                await _readTask.WaitAsync(cancellationToken);
             }
             catch (Exception ex)
             {

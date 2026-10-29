@@ -21,10 +21,12 @@ public sealed class StreamableHttpTransportClient : McpRemoteTransportClient
     public StreamableHttpTransportClient(
         string endpoint,
         HttpClient httpClient,
-        ILogger<StreamableHttpTransportClient> logger)
-        : base(endpoint, logger)
+        ILogger<StreamableHttpTransportClient> logger,
+        TimeSpan? requestTimeout = null)
+        : base(endpoint, logger, requestTimeout)
     {
         _httpClient = httpClient;
+        _httpClient.Timeout = RequestTimeout;
     }
 
     public override MCPTransportType TransportType => MCPTransportType.HTTP;

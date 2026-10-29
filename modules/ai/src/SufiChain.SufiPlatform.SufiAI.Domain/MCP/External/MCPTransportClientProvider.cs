@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+using SufiChain.SufiPlatform.SufiAI;
 using SufiChain.SufiPlatform.SufiAI.MCP.Abstractions;
 using SufiChain.SufiPlatform.SufiAI.MCP.Auth;
 using SufiChain.SufiPlatform.SufiAI.MCP.Entities;
@@ -34,6 +36,7 @@ public class MCPTransportClientProvider : IMCPTransportClientProvider, ISingleto
     private readonly ILoggerFactory _loggerFactory;
     private readonly ILogger<MCPTransportClientProvider> _logger;
     private readonly IMcpUserTokenService? _userTokenService;
+    private readonly AITransportOptions _transportOptions;
 
     // TenantLevel only. Keyed by server id, which is already tenant-scoped in the database.
     private readonly Dictionary<Guid, IMCPTransportClient> _sharedClients = new();
@@ -43,12 +46,14 @@ public class MCPTransportClientProvider : IMCPTransportClientProvider, ISingleto
         IHttpClientFactory httpClientFactory,
         ILoggerFactory loggerFactory,
         ILogger<MCPTransportClientProvider> logger,
-        IMcpUserTokenService? userTokenService = null)
+        IMcpUserTokenService? userTokenService = null,
+        IOptions<AITransportOptions>? transportOptions = null)
     {
         _httpClientFactory = httpClientFactory;
         _loggerFactory = loggerFactory;
         _logger = logger;
         _userTokenService = userTokenService;
+        _transportOptions = transportOptions?.Value ?? new AITransportOptions();
     }
 
     public async Task<MCPClientLease> AcquireAsync(
@@ -265,6 +270,6 @@ public class MCPTransportClientProvider : IMCPTransportClientProvider, ISingleto
     /// </summary>
     protected virtual IMCPTransportClient CreateClient(MCPServer server)
     {
-        return McpTransportClientFactory.Create(server, _httpClientFactory, _loggerFactory);
+        return McpTransportClientFactory.Create(server, _httpClientFactory, _loggerFactory, _transportOptions);
     }
 }

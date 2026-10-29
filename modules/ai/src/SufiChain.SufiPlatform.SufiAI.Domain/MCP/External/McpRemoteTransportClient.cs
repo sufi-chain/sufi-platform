@@ -14,12 +14,12 @@ namespace SufiChain.SufiPlatform.SufiAI.MCP.External;
 /// </summary>
 public abstract class McpRemoteTransportClient : IMCPTransportClient
 {
-    protected static readonly TimeSpan RequestTimeout = TimeSpan.FromSeconds(30);
-
     private int _nextId;
 
-    protected McpRemoteTransportClient(string endpoint, ILogger logger)
+    protected McpRemoteTransportClient(string endpoint, ILogger logger, TimeSpan? requestTimeout = null)
     {
+        var timeout = requestTimeout.GetValueOrDefault(Timeout.InfiniteTimeSpan);
+        RequestTimeout = timeout <= TimeSpan.Zero ? Timeout.InfiniteTimeSpan : timeout;
         Endpoint = Check.NotNullOrWhiteSpace(endpoint, nameof(endpoint));
         Logger = logger;
 
@@ -41,6 +41,12 @@ public abstract class McpRemoteTransportClient : IMCPTransportClient
     protected Uri EndpointUri { get; }
 
     protected ILogger Logger { get; }
+
+    /// <summary>
+    /// Deadline from <see cref="AITransportOptions"/>. <see cref="Timeout.InfiniteTimeSpan"/> means the
+    /// call ends only when the caller's cancellation token is cancelled.
+    /// </summary>
+    protected TimeSpan RequestTimeout { get; }
 
     protected string NegotiatedProtocolVersion { get; private set; } = McpJsonRpc.RequestedProtocolVersion;
 
@@ -182,36 +188,64 @@ public abstract class McpRemoteTransportClient : IMCPTransportClient
         CancellationToken cancellationToken,
         string? bearerToken);
 
-    private async Task<JsonElement> RequestAsync(
+    private Task<JsonElement> RequestAsync(
         string method,
         object? parameters,
         CancellationToken cancellationToken,
         string? bearerToken)
     {
+        return WithRequestDeadlineAsync(
+            cancellationToken,
+            token => SendRequestAsync(method, parameters, token, bearerToken),
+            $"Timed out waiting for MCP {method} from {Endpoint}.");
+    }
+
+    private Task NotifyAsync(string method, CancellationToken cancellationToken, string? bearerToken)
+    {
+        return WithRequestDeadlineAsync(
+            cancellationToken,
+            token => SendNotificationAsync(method, token, bearerToken),
+            $"Timed out waiting for MCP {method} from {Endpoint}.");
+    }
+
+    /// <summary>
+    /// Applies <see cref="RequestTimeout"/> when the host configured one. Otherwise the caller token is the only deadline.
+    /// </summary>
+    protected async Task<T> WithRequestDeadlineAsync<T>(
+        CancellationToken cancellationToken,
+        Func<CancellationToken, Task<T>> action,
+        string timeoutMessage)
+    {
+        if (RequestTimeout == Timeout.InfiniteTimeSpan)
+        {
+            return await action(cancellationToken);
+        }
+
         using var linked = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
         linked.CancelAfter(RequestTimeout);
         try
         {
-            return await SendRequestAsync(method, parameters, linked.Token, bearerToken);
+            return await action(linked.Token);
         }
         catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
         {
-            throw Connection($"Timed out waiting for MCP {method} from {Endpoint}.");
+            throw Connection(timeoutMessage);
         }
     }
 
-    private async Task NotifyAsync(string method, CancellationToken cancellationToken, string? bearerToken)
+    protected Task WithRequestDeadlineAsync(
+        CancellationToken cancellationToken,
+        Func<CancellationToken, Task> action,
+        string timeoutMessage)
     {
-        using var linked = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-        linked.CancelAfter(RequestTimeout);
-        try
-        {
-            await SendNotificationAsync(method, linked.Token, bearerToken);
-        }
-        catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
-        {
-            throw Connection($"Timed out waiting for MCP {method} from {Endpoint}.");
-        }
+        return WithRequestDeadlineAsync(
+            cancellationToken,
+            async token =>
+            {
+                await action(token);
+                return true;
+            },
+            timeoutMessage);
     }
 
     private int NextId() => Interlocked.Increment(ref _nextId);

@@ -98,6 +98,50 @@ public class McpStandardTransportTests
     }
 
     [Fact]
+    public async Task Sse_accepts_an_absolute_endpoint_on_the_configured_origin()
+    {
+        var handler = new LegacySsePeer
+        {
+            EndpointEvent = "http://mcp.test/messages?sessionId=abc"
+        };
+        using var http = new HttpClient(handler, disposeHandler: false);
+        using var client = new SSETransportClient(
+            "http://mcp.test/sse",
+            http,
+            NullLogger<SSETransportClient>.Instance);
+
+        await client.ConnectAsync();
+        var tools = await client.ListToolsAsync(CancellationToken.None, "user-token");
+        await client.DisconnectAsync();
+
+        tools.ShouldContain(tool => tool.Name == "ping");
+        var posts = handler.Calls.Where(call => call.Method == "POST").ToList();
+        posts.ShouldNotBeEmpty();
+        posts.ShouldAllBe(call => call.Path == "/messages?sessionId=abc");
+    }
+
+    [Theory]
+    [InlineData("https://evil.example/steal")]
+    [InlineData("http://mcp.test:9/messages")]
+    [InlineData("https://mcp.test/messages?sessionId=abc")]
+    public async Task Sse_rejects_an_endpoint_event_that_leaves_the_configured_origin(string endpointEvent)
+    {
+        var handler = new LegacySsePeer { EndpointEvent = endpointEvent };
+        using var http = new HttpClient(handler, disposeHandler: false);
+        using var client = new SSETransportClient(
+            "http://mcp.test/sse",
+            http,
+            NullLogger<SSETransportClient>.Instance);
+
+        var error = await Should.ThrowAsync<global::Volo.Abp.BusinessException>(() => client.ConnectAsync());
+
+        error.Message.ShouldContain(endpointEvent);
+        error.Message.ShouldContain("different origin");
+        handler.Calls.ShouldAllBe(call => call.Method == "GET" && call.Authorization == null);
+        handler.Calls.ShouldNotContain(call => call.Method == "POST");
+    }
+
+    [Fact]
     public async Task Provider_connects_over_both_transports()
     {
         var httpPeer = new StreamableHttpPeer();
@@ -344,6 +388,8 @@ public class McpStandardTransportTests
 
         public string? FailureBody { get; init; }
 
+        public string EndpointEvent { get; init; } = "/messages?sessionId=abc";
+
         private PushStream? _stream;
 
         protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
@@ -366,7 +412,7 @@ public class McpStandardTransportTests
                 }
 
                 _stream = new PushStream();
-                _stream.Enqueue("event: endpoint\ndata: /messages?sessionId=abc\n\n");
+                _stream.Enqueue("event: endpoint\ndata: " + EndpointEvent + "\n\n");
                 var content = new StreamContent(_stream);
                 content.Headers.ContentType = new MediaTypeHeaderValue("text/event-stream");
                 return new HttpResponseMessage(HttpStatusCode.OK)
