@@ -6,6 +6,7 @@
     "Features": "Características",
     "Feature": "Característica",
     "FeaturesSavedSuccessfully": "Características guardadas correctamente",
+    "UnsavedFeatureChanges": "Los cambios de características no están guardados. ¿Cerrar sin guardar?",
     "ManageFeatures": "Administrar características",
     "ResetToDefault": "Restablecen a los predeterminados",
     "AllFeatures": "Todas las características",

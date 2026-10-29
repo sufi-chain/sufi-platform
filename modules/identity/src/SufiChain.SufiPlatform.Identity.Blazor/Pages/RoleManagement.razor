@@ -26,6 +26,14 @@
 					</StartAdornment>
 				</SbTextField>
 
+				@if (!_rowActionsReady)
+				{
+					<SbStack Justify="SbJustify.Center" Align="SbAlign.Center" Class="p-8" aria-busy="true">
+						<SbProgress Indeterminate="true" aria-label="@L["Loading"]" Type="SbProgressType.Circular" />
+					</SbStack>
+				}
+				else
+				{
 				<SbDataGrid TItem="IdentityRoleDto"
 							@ref="_gridRef"
 							ItemsProvider="LoadRolesDataAsync"
@@ -40,29 +48,31 @@
                         ShowFilterRow="true"
                         ShowColumnChooser="true"
                         SelectionMode="SbSelectionMode.MultipleRows">
-					<SbColumn TItem="IdentityRoleDto" Title="@L["Actions"]" MinWidth="152px" Sortable="false">
+					<SbColumn TItem="IdentityRoleDto" Title="@L["Actions"]" MinWidth="168px" Sortable="false">
 						<CellTemplate Context="cellContext">
-							<SbStack Wrap="true" Direction="SbStackDirection.Row" Gap="1">
-								<AuthorizeView Policy="@SufiChain.SufiPlatform.Identity.IdentityPermissions.Roles.Update" Context="authContext">
+							<SbStack Direction="SbStackDirection.Row" Gap="1" Class="identity-row-actions">
+								@if (_canUpdateRole)
+								{
 									<SbTooltip Text="@L["Edit"]"><SbIconButton Size="SbSize.Sm" AriaLabel="@L["Edit"]"
 												  OnClick="@(() => ShowEditModal(cellContext.Item))">
 										<Icon><SbIcon Name="edit" Size="SbSize.Sm" /></Icon>
 									</SbIconButton></SbTooltip>
-								</AuthorizeView>
-								@if (_hasManagePermissionsPermission)
+								}
+								@if (_canManagePermissions)
 								{
 									<SbTooltip Text="@L["Permissions"]"><SbIconButton Size="SbSize.Sm" AriaLabel="@L["Permissions"]"
 												  OnClick="@(async () => await ShowPermissionModalAsync(cellContext.Item))">
 										<Icon><SbIcon Name="shield" Size="SbSize.Sm" /></Icon>
 									</SbIconButton></SbTooltip>
 								}
-								<AuthorizeView Policy="@SufiChain.SufiPlatform.Identity.IdentityPermissions.Roles.Delete" Context="authContext2">
+								@if (_canDeleteRole)
+								{
 									<SbTooltip Text="@L["Delete"]"><SbIconButton Size="SbSize.Sm" Color="SbColor.Danger" AriaLabel="@L["Delete"]"
 												  Disabled="@cellContext.Item.IsStatic"
 												  OnClick="@(() => DeleteRoleAsync(cellContext.Item))">
 										<Icon><SbIcon Name="trash" Size="SbSize.Sm" /></Icon>
 									</SbIconButton></SbTooltip>
-								</AuthorizeView>
+								}
 							</SbStack>
 						</CellTemplate>
 					</SbColumn>
@@ -86,6 +96,7 @@
 						</CellTemplate>
 					</SbColumn>
 				</SbDataGrid>
+				}
 			</SbStack>
 		</ChildContent>
 	</SbCard>

@@ -6,6 +6,7 @@
     "Features": "Features",
     "Feature": "Feature",
     "FeaturesSavedSuccessfully": "Features saved successfully",
+    "UnsavedFeatureChanges": "Feature changes are not saved. Close without saving?",
     "ManageFeatures": "Manage Features",
     "ResetToDefault": "Reset to Default",
     "AllFeatures": "All Features",

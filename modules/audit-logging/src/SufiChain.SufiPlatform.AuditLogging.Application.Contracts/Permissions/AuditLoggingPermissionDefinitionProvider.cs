@@ -15,9 +15,13 @@ public class AuditLoggingPermissionDefinitionProvider : PermissionDefinitionProv
             AuditLoggingPermissions.GroupName,
             L("Permission:AuditLogging"));
 
-        auditLoggingGroup.AddPermission(
+        var auditLogs = auditLoggingGroup.AddPermission(
             AuditLoggingPermissions.AuditLogs.Default,
             L("Permission:AuditLogs"));
+
+        auditLogs.AddChild(
+            AuditLoggingPermissions.AuditLogs.ViewAll,
+            L("Permission:AuditLogs.ViewAll"));
 
         auditLoggingGroup.AddPermission(
             AuditLoggingPermissions.EntityChanges.Default,

@@ -1,6 +1,9 @@
 {
   "culture": "fa",
   "texts": {
-    "MaxResultCountExceededExceptionMessage": "{0} نمیتواند بیشتر از {1}! باشد. مقدار {2} را افزایش دهید.{3} در سمت سرور."
+    "MaxResultCountExceededExceptionMessage": "{0} نمیتواند بیشتر از {1}! باشد. مقدار {2} را افزایش دهید.{3} در سمت سرور.",
+    "Permission:CacheManagement": "مدیریت حافظهٔ نهان",
+    "Permission:CacheManagement.Manage": "مدیریت ابطال حافظهٔ نهان",
+    "CacheManagement:UnknownCache": "حافظهٔ نهان ناشناخته: {0}"
   }
 }

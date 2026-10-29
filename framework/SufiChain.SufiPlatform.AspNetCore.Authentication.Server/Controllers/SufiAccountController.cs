@@ -99,11 +99,10 @@ public abstract class SufiAccountController : AbpController
         }
 
         var userName = User.Identity?.Name;
+        await EndSharedBrowserSessionAsync(userName);
 
         if (_options.UseOidcClientFlow)
         {
-            await _securityLogAppService.SaveLoginEventAsync(IdentitySecurityLogIdentityConsts.Identity, IdentitySecurityLogActionConsts.Logout, userName);
-            // Tiered: sign out of cookie + OIDC (triggers redirect to IdP logout endpoint)
             await HttpContext.SignOutAsync(_options.CookieScheme);
             return SignOut(
                 new AuthenticationProperties
@@ -113,10 +112,52 @@ public abstract class SufiAccountController : AbpController
                 _options.OidcChallengeScheme);
         }
 
-        await _securityLogAppService.SaveLoginEventAsync(IdentitySecurityLogIdentityConsts.Identity, IdentitySecurityLogActionConsts.Logout, userName);
-        // Non-tiered / AuthServer: sign out of ASP.NET Core Identity cookie
-        await _signInManager.SignOutAsync();
         return LocalRedirect(returnUrl);
+    }
+
+    /// <summary>
+    /// Drops the cookie session for this browser, including a remembered sign-in,
+    /// and rotates the security stamp so another tab cannot keep the same user.
+    /// A failed security log must not leave the session in place.
+    /// </summary>
+    private async Task EndSharedBrowserSessionAsync(string? userName)
+    {
+        Response.Headers.CacheControl = "no-store, no-cache, must-revalidate";
+        Response.Headers["Clear-Site-Data"] = "\"cookies\"";
+
+        var userId = _userManager.GetUserId(User);
+        if (!string.IsNullOrEmpty(userId))
+        {
+            try
+            {
+                var user = await _userManager.FindByIdAsync(userId);
+                if (user != null)
+                {
+                    await _userManager.UpdateSecurityStampAsync(user);
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.LogWarning(ex, "Logout security stamp was not rotated.");
+            }
+        }
+
+        try
+        {
+            await _securityLogAppService.SaveLoginEventAsync(
+                IdentitySecurityLogIdentityConsts.Identity,
+                IdentitySecurityLogActionConsts.Logout,
+                userName);
+        }
+        catch (Exception ex)
+        {
+            Logger.LogWarning(ex, "Logout security log was not saved.");
+        }
+
+        await _signInManager.SignOutAsync();
+        await HttpContext.SignOutAsync(IdentityConstants.ApplicationScheme);
+        await HttpContext.SignOutAsync(IdentityConstants.ExternalScheme);
+        await HttpContext.SignOutAsync(IdentityConstants.TwoFactorUserIdScheme);
     }
 
     /// <summary>

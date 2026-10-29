@@ -162,6 +162,7 @@
     "NoPermissionsFound": "No permissions found",
     "SaveWithoutAnyPermissionsWarningMessage": "No permissions will be granted. Are you sure you want to save?",
     "PermissionsSavedSuccessfully": "Permissions saved successfully",
+    "UnsavedPermissionChanges": "Permission changes are not saved. Close without saving?",
     "CreateRole": "Create Role",
     "DefaultRoleForNewUsers": "Default role for new users",
     "PublicRole": "Public role",

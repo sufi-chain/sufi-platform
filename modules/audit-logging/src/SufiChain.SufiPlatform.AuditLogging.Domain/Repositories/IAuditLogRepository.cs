@@ -51,6 +51,7 @@ public interface IAuditLogRepository : IRepository<AuditLog, Guid>
     Task<Dictionary<DateTime, double>> GetAverageExecutionDurationPerDayAsync(
         DateTime startDate,
         DateTime endDate,
+        Guid? userId = null,
         CancellationToken cancellationToken = default);
 
     Task<EntityChange> GetEntityChange(Guid entityChangeId, CancellationToken cancellationToken = default);
@@ -66,6 +67,7 @@ public interface IAuditLogRepository : IRepository<AuditLog, Guid>
         string entityId = null,
         string entityTypeFullName = null,
         bool includeDetails = false,
+        Guid? userId = null,
         CancellationToken cancellationToken = default);
 
     Task<long> GetEntityChangeCountAsync(
@@ -75,9 +77,14 @@ public interface IAuditLogRepository : IRepository<AuditLog, Guid>
         EntityChangeType? changeType = null,
         string entityId = null,
         string entityTypeFullName = null,
+        Guid? userId = null,
         CancellationToken cancellationToken = default);
 
     Task<EntityChangeWithUsername> GetEntityChangeWithUsernameAsync(Guid entityChangeId, CancellationToken cancellationToken = default);
 
-    Task<List<EntityChangeWithUsername>> GetEntityChangesWithUsernameAsync(string entityId, string entityTypeFullName, CancellationToken cancellationToken = default);
+    Task<List<EntityChangeWithUsername>> GetEntityChangesWithUsernameAsync(
+        string entityId,
+        string entityTypeFullName,
+        Guid? userId = null,
+        CancellationToken cancellationToken = default);
 }

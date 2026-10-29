@@ -166,6 +166,7 @@
     "NoPermissionsFound": "لم يتم العثور على صلاحيات",
     "SaveWithoutAnyPermissionsWarningMessage": "لن يتم منح أي صلاحيات. هل أنت متأكد من الحفظ؟",
     "PermissionsSavedSuccessfully": "تم حفظ الصلاحيات بنجاح",
+    "UnsavedPermissionChanges": "تغييرات الأذونات غير محفوظة. هل تريد الإغلاق دون حفظ؟",
     "CreateRole": "إنشاء دور",
     "DefaultRoleForNewUsers": "الدور الافتراضي للمستخدمين الجدد",
     "PublicRole": "دور عام",

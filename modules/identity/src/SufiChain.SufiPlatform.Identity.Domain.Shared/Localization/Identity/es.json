@@ -147,6 +147,7 @@
     "NoPermissionsFound": "No se encontraron permisos",
     "SaveWithoutAnyPermissionsWarningMessage": "No se concederá ningún permiso. ¿Está seguro de que desea guardar?",
     "PermissionsSavedSuccessfully": "Permisos guardados correctamente",
+    "UnsavedPermissionChanges": "Los cambios de permisos no están guardados. ¿Cerrar sin guardar?",
     "CreateRole": "Crear rol",
     "DefaultRoleForNewUsers": "Rol predeterminado para nuevos usuarios",
     "PublicRole": "Rol público",

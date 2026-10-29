@@ -13,6 +13,7 @@ public static class AuditLoggingPermissions
     public static class AuditLogs
     {
         public const string Default = GroupName + ".AuditLogs";
+        public const string ViewAll = Default + ".ViewAll";
     }
 
     public static class EntityChanges

@@ -28,6 +28,7 @@ public partial class OrganizationUnitManagement : IdentityComponentBase
 
     // Tree data
     private List<OrganizationUnitDto> _organizationUnits = new();
+    private bool _treeLoaded;
     private OrganizationUnitDto? _selectedUnit;
     private OrganizationUnitDto? _selectedUnitDetails;
 
@@ -83,16 +84,23 @@ public partial class OrganizationUnitManagement : IdentityComponentBase
 
     private Task LoadTreeAsync() => ExecuteWithLoadingAsync(async () =>
     {
-        _organizationUnits = await OrganizationUnitAppService.GetTreeAsync();
-        
-        // Re-select if previously selected unit still exists
-        if (_selectedUnit != null)
+        try
         {
-            _selectedUnit = FindUnitInTree(_selectedUnit.Id, _organizationUnits);
+            _organizationUnits = await OrganizationUnitAppService.GetTreeAsync();
+
+            // Re-select if previously selected unit still exists
             if (_selectedUnit != null)
             {
-                await LoadUnitDetailsAsync();
+                _selectedUnit = FindUnitInTree(_selectedUnit.Id, _organizationUnits);
+                if (_selectedUnit != null)
+                {
+                    await LoadUnitDetailsAsync();
+                }
             }
+        }
+        finally
+        {
+            _treeLoaded = true;
         }
     }, LoadingKeys.LoadTree);
 

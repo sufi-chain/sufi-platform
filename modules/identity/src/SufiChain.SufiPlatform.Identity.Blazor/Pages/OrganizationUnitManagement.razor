@@ -21,7 +21,7 @@
 
 	<!-- Desktop: Split view (tree left, details right). Hidden on mobile. -->
 	<div class="ou-layout ou-layout-desktop">
-		<SbStack Wrap="true" Direction="SbStackDirection.Row" Gap="4">
+		<div class="ou-split">
 
 			<!-- Left Panel: Tree View -->
 			<SbCard Class="ou-tree-card">
@@ -34,9 +34,9 @@
 					</SbStack>
 				</Header>
 				<ChildContent>
-					@if (IsOperationLoading(LoadingKeys.LoadTree))
+					@if (!_treeLoaded || IsOperationLoading(LoadingKeys.LoadTree))
 					{
-						<SbStack Justify="SbJustify.Center" Align="SbAlign.Center" Class="p-8">
+						<SbStack Justify="SbJustify.Center" Align="SbAlign.Center" Class="p-8" aria-busy="true">
 							<SbProgress Indeterminate="true" aria-label="@L["Loading"]" Type="SbProgressType.Circular" />
 						</SbStack>
 					}
@@ -104,6 +104,14 @@
 						</SbStack>
 					</Header>
 					<ChildContent>
+						@if (IsOperationLoading(LoadingKeys.LoadDetails) && _selectedUnitDetails == null)
+						{
+							<SbStack Justify="SbJustify.Center" Align="SbAlign.Center" Class="p-8" aria-busy="true">
+								<SbProgress Indeterminate="true" aria-label="@L["Loading"]" Type="SbProgressType.Circular" />
+							</SbStack>
+						}
+						else
+						{
 						<SbTabs @bind-ActiveIndex="_activeTab">
 							<!-- Overview Tab -->
 							<SbTab Label="@L["Overview"]">
@@ -235,10 +243,11 @@
 								</SbStack>
 							</SbTab>
 						</SbTabs>
+						}
 					</ChildContent>
 				</SbCard>
 			}
-		</SbStack>
+		</div>
 	</div>
 
 	<!-- Mobile: Master-detail (tree or details full-width, with back button when viewing details). Hidden on desktop. -->
@@ -255,9 +264,9 @@
 					</SbStack>
 				</Header>
 				<ChildContent>
-					@if (IsOperationLoading(LoadingKeys.LoadTree))
+					@if (!_treeLoaded || IsOperationLoading(LoadingKeys.LoadTree))
 					{
-						<SbStack Justify="SbJustify.Center" Align="SbAlign.Center" Class="p-8">
+						<SbStack Justify="SbJustify.Center" Align="SbAlign.Center" Class="p-8" aria-busy="true">
 							<SbProgress Indeterminate="true" aria-label="@L["Loading"]" Type="SbProgressType.Circular" />
 						</SbStack>
 					}

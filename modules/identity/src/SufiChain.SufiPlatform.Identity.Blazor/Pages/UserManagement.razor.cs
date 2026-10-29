@@ -34,7 +34,10 @@ public partial class UserManagement : IdentityComponentBase
 
     // Permission management
     private PermissionsModal? _permissionManagementModal;
-    private bool _hasManagePermissionsPermission;
+    private bool _rowActionsReady;
+    private bool _canUpdateUser;
+    private bool _canManagePermissions;
+    private bool _canDeleteUser;
 
     protected override void OnInitialized()
     {
@@ -47,7 +50,12 @@ public partial class UserManagement : IdentityComponentBase
         
         if (firstRender)
         {
-            _hasManagePermissionsPermission = await IsGrantedAsync(IdentityPermissions.Users.ManagePermissions);
+            _canUpdateUser = await IsGrantedAsync(IdentityPermissions.Users.Update);
+            _canManagePermissions = await IsGrantedAsync(IdentityPermissions.Users.ManagePermissions);
+            _canDeleteUser = await IsGrantedAsync(IdentityPermissions.Users.Delete);
+            _rowActionsReady = true;
+            await InvokeAsync(StateHasChanged);
+
             await RefreshGridAsync();
         }
     }

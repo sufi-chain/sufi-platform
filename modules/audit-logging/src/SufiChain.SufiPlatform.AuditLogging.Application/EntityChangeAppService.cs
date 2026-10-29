@@ -4,6 +4,7 @@ using SufiChain.SufiPlatform.AuditLogging.Permissions;
 using SufiChain.SufiPlatform.Application.Dtos;
 using SufiChain.SufiPlatform.Application.Services;
 using SufiChain.SufiPlatform.AuditLogging;
+using Volo.Abp.Domain.Entities;
 
 namespace SufiChain.SufiPlatform.AuditLogging;
 
@@ -22,13 +23,15 @@ public class EntityChangeAppService : SufiApplicationService, IEntityChangeAppSe
 
     public virtual async Task<PagedResultDto<EntityChangeListItemDto>> GetListAsync(GetEntityChangeListInput input)
     {
+        var userId = await RestrictedUserIdAsync();
         var totalCount = await _auditLogRepository.GetEntityChangeCountAsync(
             auditLogId: input.AuditLogId,
             startTime: input.StartTime,
             endTime: input.EndTime,
             changeType: input.ChangeType,
             entityId: input.EntityId,
-            entityTypeFullName: input.EntityTypeFullName
+            entityTypeFullName: input.EntityTypeFullName,
+            userId: userId
         );
 
         var entityChanges = await _auditLogRepository.GetEntityChangeListAsync(
@@ -41,7 +44,8 @@ public class EntityChangeAppService : SufiApplicationService, IEntityChangeAppSe
             changeType: input.ChangeType,
             entityId: input.EntityId,
             entityTypeFullName: input.EntityTypeFullName,
-            includeDetails: input.IncludeDetails
+            includeDetails: input.IncludeDetails,
+            userId: userId
         );
 
         // Get usernames for each entity change
@@ -58,6 +62,12 @@ public class EntityChangeAppService : SufiApplicationService, IEntityChangeAppSe
     public virtual async Task<EntityChangeDto> GetAsync(Guid id)
     {
         var entityChange = await _auditLogRepository.GetEntityChange(id);
+        var auditLog = await _auditLogRepository.FindAsync(entityChange.AuditLogId);
+        if (auditLog == null || !AuditLogViewerScope.CanReadEntry(await CanViewOtherUsersAsync(), CurrentUser.Id, auditLog.UserId))
+        {
+            throw new EntityNotFoundException(typeof(EntityChange), id);
+        }
+
         return ObjectMapper.Map<EntityChange, EntityChangeDto>(entityChange);
     }
 
@@ -65,7 +75,27 @@ public class EntityChangeAppService : SufiApplicationService, IEntityChangeAppSe
         string entityId, 
         string entityTypeFullName)
     {
-        var entityChanges = await _auditLogRepository.GetEntityChangesWithUsernameAsync(entityId, entityTypeFullName);
+        var entityChanges = await _auditLogRepository.GetEntityChangesWithUsernameAsync(
+            entityId,
+            entityTypeFullName,
+            await RestrictedUserIdAsync());
         return ObjectMapper.Map<List<EntityChangeWithUsername>, List<EntityChangeListItemDto>>(entityChanges);
+    }
+
+    protected virtual async Task<Guid?> RestrictedUserIdAsync()
+    {
+        if (await CanViewOtherUsersAsync())
+        {
+            return null;
+        }
+
+        return AuditLogViewerScope.EffectiveUserId(false, CurrentUser.Id, null);
+    }
+
+    protected virtual async Task<bool> CanViewOtherUsersAsync()
+    {
+        return AuditLogViewerScope.CanViewOtherUsers(
+            CurrentUser.IsInRole(AuditLogViewerScope.AdminRoleName),
+            await AuthorizationService.IsGrantedAsync(AuditLoggingPermissions.AuditLogs.ViewAll));
     }
 }
