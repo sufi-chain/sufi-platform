@@ -35,6 +35,27 @@ services:
       - mycompanyname-myprojectname-network
     restart: "no"
 
+
+  # Optional slim public host. It is off unless you pass: docker compose --profile public up -d
+  cms-public:
+    profiles: ["public"]
+    image: harbor.sufichain.com/sufi-platform/cms-public:${SUFI_CMS_PUBLIC_TAG:-dev}
+    container_name: mycompanyname-myprojectname-cms-public
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ASPNETCORE_URLS: http://+:8080
+      SufiCmsPublic__DeliveryBaseUrl: ${SUFI_CMS_PUBLIC_DELIVERY_URL:-http://host.docker.internal:8080}
+      SufiCmsPublic__ConsoleBaseUrl: ${SUFI_CMS_PUBLIC_CONSOLE_URL:-http://host.docker.internal:8080}
+      SufiCmsPublic__FormsApiBaseUrl: ${SUFI_CMS_PUBLIC_FORMS_URL:-http://host.docker.internal:8080}
+      SufiCmsPublic__CanonicalOrigin: ${SUFI_CMS_PUBLIC_CANONICAL_ORIGIN:-}
+      SufiCmsPublic__ReadToken: ${SUFI_CMS_PUBLIC_READ_TOKEN:-}
+      SufiCmsPublic__WebhookSecret: ${SUFI_CMS_PUBLIC_WEBHOOK_SECRET:-}
+    ports:
+      - "8096:8080"
+    networks:
+      - mycompanyname-myprojectname-network
+    restart: unless-stopped
+
 volumes:
   mariadb_data:
     name: mycompanyname_myprojectname_mariadb_data
