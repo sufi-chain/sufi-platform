@@ -18,6 +18,7 @@
     <ProjectReference Include="../../../../framework/SufiChain.SufiPlatform.Ddd.Application/SufiChain.SufiPlatform.Ddd.Application.csproj" />
     <PackageReference Include="Volo.Abp.Mapperly" Version="$(AbpVersion)" />
     <ProjectReference Include="../SufiChain.SufiPlatform.AuditLogging.Domain/SufiChain.SufiPlatform.AuditLogging.Domain.csproj" />
+    <ProjectReference Include="../../../permissions/src/SufiChain.SufiPlatform.Permissions.Domain/SufiChain.SufiPlatform.Permissions.Domain.csproj" />
   </ItemGroup>
 
   <ItemGroup>

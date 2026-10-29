@@ -116,31 +116,14 @@ public abstract class SufiAccountController : AbpController
     }
 
     /// <summary>
-    /// Drops the cookie session for this browser, including a remembered sign-in,
-    /// and rotates the security stamp so another tab cannot keep the same user.
-    /// A failed security log must not leave the session in place.
+    /// Drops the cookie session for this browser, including a remembered sign-in.
+    /// The security stamp stays put, so other devices keep their sessions.
+    /// A failed security log must not leave this browser's session in place.
     /// </summary>
     private async Task EndSharedBrowserSessionAsync(string? userName)
     {
         Response.Headers.CacheControl = "no-store, no-cache, must-revalidate";
         Response.Headers["Clear-Site-Data"] = "\"cookies\"";
-
-        var userId = _userManager.GetUserId(User);
-        if (!string.IsNullOrEmpty(userId))
-        {
-            try
-            {
-                var user = await _userManager.FindByIdAsync(userId);
-                if (user != null)
-                {
-                    await _userManager.UpdateSecurityStampAsync(user);
-                }
-            }
-            catch (Exception ex)
-            {
-                Logger.LogWarning(ex, "Logout security stamp was not rotated.");
-            }
-        }
 
         try
         {
