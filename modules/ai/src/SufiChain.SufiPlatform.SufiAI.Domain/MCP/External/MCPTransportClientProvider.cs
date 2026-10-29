@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -199,17 +198,60 @@ public class MCPTransportClientProvider : IMCPTransportClientProvider, ISingleto
         await _lock.WaitAsync(cancellationToken);
         try
         {
-            if (_sharedClients.TryGetValue(server.Id, out existing) && existing.IsConnected)
+            if (_sharedClients.TryGetValue(server.Id, out existing))
             {
-                return existing;
+                if (existing.IsConnected)
+                {
+                    return existing;
+                }
+
+                _sharedClients.Remove(server.Id);
+                existing.Dispose();
             }
 
             var client = CreateClient(server);
-            await client.ConnectAsync(cancellationToken);
+            try
+            {
+                await client.ConnectAsync(cancellationToken);
+            }
+            catch
+            {
+                client.Dispose();
+                throw;
+            }
+
             _sharedClients[server.Id] = client;
 
             _logger.LogDebug("Created and connected a shared MCP client for server {Key}", server.Key);
             return client;
+        }
+        finally
+        {
+            _lock.Release();
+        }
+    }
+
+    /// <inheritdoc />
+    public async Task EvictAsync(Guid serverId, CancellationToken cancellationToken = default)
+    {
+        await _lock.WaitAsync(cancellationToken);
+        try
+        {
+            if (!_sharedClients.Remove(serverId, out var client))
+            {
+                return;
+            }
+
+            try
+            {
+                await client.DisconnectAsync(cancellationToken);
+            }
+            catch (Exception exception)
+            {
+                _logger.LogDebug(exception, "Error disconnecting MCP server {ServerId} after its configuration changed", serverId);
+            }
+
+            client.Dispose();
         }
         finally
         {
@@ -223,20 +265,6 @@ public class MCPTransportClientProvider : IMCPTransportClientProvider, ISingleto
     /// </summary>
     protected virtual IMCPTransportClient CreateClient(MCPServer server)
     {
-        return server.TransportType switch
-        {
-            MCPTransportType.STDIO => new StdioTransportClient(
-                Check.NotNullOrWhiteSpace(server.Command, nameof(server.Command)),
-                string.IsNullOrWhiteSpace(server.ArgumentsJson)
-                    ? Array.Empty<string>()
-                    : JsonSerializer.Deserialize<string[]>(server.ArgumentsJson) ?? Array.Empty<string>(),
-                _loggerFactory.CreateLogger<StdioTransportClient>()),
-            MCPTransportType.SSE => new SSETransportClient(
-                Check.NotNullOrWhiteSpace(server.Endpoint, nameof(server.Endpoint)),
-                _httpClientFactory.CreateClient(),
-                _loggerFactory.CreateLogger<SSETransportClient>()),
-            MCPTransportType.HTTP => throw new BusinessException(AIErrorCodes.MCPHttpTransportNotImplemented),
-            _ => throw new BusinessException(AIErrorCodes.InvalidProviderConfiguration)
-        };
+        return McpTransportClientFactory.Create(server, _httpClientFactory, _loggerFactory);
     }
 }

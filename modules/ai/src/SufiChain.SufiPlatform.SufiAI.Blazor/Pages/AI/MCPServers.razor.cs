@@ -82,17 +82,18 @@ public partial class MCPServers
         await ExecuteWithLoadingAsync(async () =>
         {
             var success = await MCPServerAppService.TestConnectionAsync(server.Id);
-            
+            await LoadServersAsync();
+
             if (success)
             {
                 await Message.SuccessAsync(L["ConnectionTestSuccessful"]);
+                return;
             }
-            else
-            {
-                await Message.ErrorAsync(L["ConnectionTestFailed"]);
-            }
-            
-            await LoadServersAsync();
+
+            var detail = _servers.FirstOrDefault(item => item.Id == server.Id)?.LastConnectionError;
+            await Message.ErrorAsync(string.IsNullOrWhiteSpace(detail)
+                ? L["ConnectionTestFailed"]
+                : $"{L["ConnectionTestFailed"]}: {detail}");
         }, $"{LoadingKeys.TestConnection}-{server.Id}");
     }
     

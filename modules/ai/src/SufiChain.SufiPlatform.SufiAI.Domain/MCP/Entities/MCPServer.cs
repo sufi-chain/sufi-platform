@@ -145,6 +145,64 @@ public class MCPServer : FullAuditedAggregateRoot<Guid>, IMultiTenant
     
     public void Disable() => IsEnabled = false;
     
+    /// <summary>
+    /// sufi-chain#557: replaces the transport, binding, and the settings that belong to that transport.
+    /// The final combination is checked before anything is written, so a rejected edit leaves the
+    /// stored server unchanged. User-scoped HTTP can become tenant STDIO, and STDIO can become a
+    /// user-scoped HTTP server; user-scoped STDIO stays refused.
+    /// </summary>
+    public void ApplyConfiguration(
+        MCPTransportType transportType,
+        MCPBindingMode bindingMode,
+        string? endpoint,
+        string? command,
+        string? argumentsJson)
+    {
+        if (bindingMode == MCPBindingMode.UserScoped && transportType == MCPTransportType.STDIO)
+        {
+            throw new BusinessException(AIErrorCodes.MCPUserScopedStdioNotSupported)
+                .WithData("Key", Key)
+                .WithData("TransportType", transportType)
+                .WithData("BindingMode", bindingMode);
+        }
+
+        if (transportType == MCPTransportType.STDIO)
+        {
+            if (string.IsNullOrWhiteSpace(command))
+            {
+                throw new BusinessException(AIErrorCodes.InvalidProviderConfiguration)
+                    .WithData("Error", "STDIO server is missing command");
+            }
+        }
+        else if (string.IsNullOrWhiteSpace(endpoint))
+        {
+            throw new BusinessException(AIErrorCodes.InvalidProviderConfiguration)
+                .WithData("Error", $"{transportType} server is missing endpoint");
+        }
+
+        // Leave STDIO before applying a user-scoped binding, and drop a user-scoped binding
+        // before entering STDIO. The intermediate pair would be rejected by SetBindingMode.
+        if (transportType != MCPTransportType.STDIO && TransportType == MCPTransportType.STDIO)
+        {
+            SetTransport(transportType);
+            SetBindingMode(bindingMode);
+        }
+        else
+        {
+            SetBindingMode(bindingMode);
+            SetTransport(transportType);
+        }
+
+        if (transportType == MCPTransportType.STDIO)
+        {
+            ConfigureStdio(command!, argumentsJson);
+        }
+        else
+        {
+            ConfigureHttpEndpoint(endpoint!);
+        }
+    }
+
     public void UpdateLastConnection(bool success, string? errorMessage = null)
     {
         if (success)
@@ -154,7 +212,30 @@ public class MCPServer : FullAuditedAggregateRoot<Guid>, IMultiTenant
         }
         else
         {
-            LastConnectionError = errorMessage;
+            LastConnectionError = errorMessage is { Length: > MaxConnectionErrorLength }
+                ? errorMessage[..MaxConnectionErrorLength]
+                : errorMessage;
+        }
+    }
+
+    private const int MaxConnectionErrorLength = 1024;
+
+    private void SetTransport(MCPTransportType transportType)
+    {
+        if (transportType == TransportType)
+        {
+            return;
+        }
+
+        TransportType = transportType;
+        if (transportType == MCPTransportType.STDIO)
+        {
+            Endpoint = null;
+        }
+        else
+        {
+            Command = null;
+            ArgumentsJson = null;
         }
     }
 }

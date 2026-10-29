@@ -68,4 +68,10 @@ public interface IMCPTransportClientProvider
 
     /// <summary>Drops every cached tenant-level client (registry refresh).</summary>
     Task DisconnectAllAsync(CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Drops the cached tenant-level client for one server. The next call dials again, so an edited
+    /// transport or endpoint is not served by the previous connection.
+    /// </summary>
+    Task EvictAsync(Guid serverId, CancellationToken cancellationToken = default);
 }

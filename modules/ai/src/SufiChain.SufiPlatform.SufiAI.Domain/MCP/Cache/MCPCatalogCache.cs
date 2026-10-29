@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
@@ -305,21 +304,7 @@ public class MCPCatalogCache : IMCPCatalogCache, ITransientDependency
 
     private IMCPTransportClient CreateClient(MCPServer server)
     {
-        return server.TransportType switch
-        {
-            MCPTransportType.STDIO => new StdioTransportClient(
-                Check.NotNullOrWhiteSpace(server.Command, nameof(server.Command)),
-                string.IsNullOrWhiteSpace(server.ArgumentsJson)
-                    ? Array.Empty<string>()
-                    : JsonSerializer.Deserialize<string[]>(server.ArgumentsJson) ?? Array.Empty<string>(),
-                _loggerFactory.CreateLogger<StdioTransportClient>()),
-            MCPTransportType.SSE => new SSETransportClient(
-                Check.NotNullOrWhiteSpace(server.Endpoint, nameof(server.Endpoint)),
-                _httpClientFactory.CreateClient(),
-                _loggerFactory.CreateLogger<SSETransportClient>()),
-            MCPTransportType.HTTP => throw new BusinessException(AIErrorCodes.MCPHttpTransportNotImplemented),
-            _ => throw new BusinessException(AIErrorCodes.InvalidProviderConfiguration)
-        };
+        return McpTransportClientFactory.Create(server, _httpClientFactory, _loggerFactory);
     }
 
     private static MCPToolDescriptor ToDescriptor(IMCPTool tool) => new()

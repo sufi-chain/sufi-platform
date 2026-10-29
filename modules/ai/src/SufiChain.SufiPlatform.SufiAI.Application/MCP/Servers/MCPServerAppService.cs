@@ -8,6 +8,7 @@ using SufiChain.SufiPlatform.SufiAI.Features;
 using SufiChain.SufiPlatform.SufiAI.MCP.Abstractions;
 using SufiChain.SufiPlatform.SufiAI.MCP.Cache;
 using SufiChain.SufiPlatform.SufiAI.MCP.Entities;
+using SufiChain.SufiPlatform.SufiAI.MCP.External;
 using SufiChain.SufiPlatform.SufiAI.MCP.Servers;
 using SufiChain.SufiPlatform.SufiAI.Permissions;
 using Volo.Abp;
@@ -25,17 +26,20 @@ public class MCPServerAppService : SufiApplicationService, IMCPServerAppService
     private readonly IRepository<MCPServer, Guid> _repository;
     private readonly IMCPToolRegistry _toolRegistry;
     private readonly IMCPCatalogCache _catalogCache;
+    private readonly IMCPTransportClientProvider _clientProvider;
     
     public MCPServerAppService(
         IMCPServerRepository serverRepository,
         IRepository<MCPServer, Guid> repository,
         IMCPToolRegistry toolRegistry,
-        IMCPCatalogCache catalogCache)
+        IMCPCatalogCache catalogCache,
+        IMCPTransportClientProvider clientProvider)
     {
         _serverRepository = serverRepository;
         _repository = repository;
         _toolRegistry = toolRegistry;
         _catalogCache = catalogCache;
+        _clientProvider = clientProvider;
     }
     
     public async Task<List<MCPServerDto>> GetListAsync()
@@ -60,7 +64,7 @@ public class MCPServerAppService : SufiApplicationService, IMCPServerAppService
                 .WithData("Key", input.Key);
         }
         
-        var transportType = Enum.Parse<MCPTransportType>(input.TransportType, ignoreCase: true);
+        var transportType = ParseTransport(input.TransportType);
         
         var server = new MCPServer(
             GuidGenerator.Create(),
@@ -91,29 +95,28 @@ public class MCPServerAppService : SufiApplicationService, IMCPServerAppService
     public async Task<MCPServerDto> UpdateAsync(Guid id, UpdateMCPServerDto input)
     {
         var server = await _repository.GetAsync(id);
-        
+        var before = ConnectionSnapshot.From(server);
+
         server.SetName(input.Name);
 
-        // #384 slice 6b: applied before the transport config so a UserScoped+STDIO combination is refused
-        // with the domain error rather than after the endpoint was rewritten. A null value keeps the stored
-        // mode, so an update that omits the field cannot silently downgrade a user-scoped server.
-        if (!string.IsNullOrWhiteSpace(input.BindingMode))
-        {
-            server.SetBindingMode(ParseBindingMode(input.BindingMode));
-        }
+        // A null transport or binding keeps the stored value, so an older caller cannot silently
+        // downgrade a user-scoped server or switch its transport.
+        var transport = string.IsNullOrWhiteSpace(input.TransportType)
+            ? server.TransportType
+            : ParseTransport(input.TransportType);
+        var binding = string.IsNullOrWhiteSpace(input.BindingMode)
+            ? server.BindingMode
+            : ParseBindingMode(input.BindingMode);
 
-        if (server.TransportType == MCPTransportType.STDIO)
-        {
-            server.ConfigureStdio(input.Command!, input.ArgumentsJson);
-        }
-        else
-        {
-            server.ConfigureHttpEndpoint(input.Endpoint!);
-        }
-        
+        server.ApplyConfiguration(transport, binding, input.Endpoint, input.Command, input.ArgumentsJson);
+
         await _repository.UpdateAsync(server);
         await _catalogCache.InvalidateAsync();
-        
+        if (before.ConnectionChanged(server))
+        {
+            await _clientProvider.EvictAsync(server.Id);
+        }
+
         return MapToDto(server);
     }
     
@@ -151,14 +154,6 @@ public class MCPServerAppService : SufiApplicationService, IMCPServerAppService
             return false;
         }
 
-        // HTTP transport is not implemented; STDIO/SSE require command or endpoint.
-        if (server.TransportType == MCPTransportType.HTTP)
-        {
-            server.UpdateLastConnection(false, "HTTP transport is not supported");
-            await _repository.UpdateAsync(server);
-            return false;
-        }
-
         if (server.TransportType == MCPTransportType.STDIO && string.IsNullOrWhiteSpace(server.Command))
         {
             server.UpdateLastConnection(false, "STDIO server is missing command");
@@ -166,9 +161,9 @@ public class MCPServerAppService : SufiApplicationService, IMCPServerAppService
             return false;
         }
 
-        if (server.TransportType == MCPTransportType.SSE && string.IsNullOrWhiteSpace(server.Endpoint))
+        if (server.TransportType != MCPTransportType.STDIO && string.IsNullOrWhiteSpace(server.Endpoint))
         {
-            server.UpdateLastConnection(false, "SSE server is missing endpoint");
+            server.UpdateLastConnection(false, $"{server.TransportType} server is missing endpoint");
             await _repository.UpdateAsync(server);
             return false;
         }
@@ -202,6 +197,19 @@ public class MCPServerAppService : SufiApplicationService, IMCPServerAppService
         };
     }
 
+    private static MCPTransportType ParseTransport(string? value)
+    {
+        if (string.IsNullOrWhiteSpace(value)
+            || !Enum.TryParse<MCPTransportType>(value, ignoreCase: true, out var transport)
+            || !Enum.IsDefined(transport))
+        {
+            throw new BusinessException(AIErrorCodes.InvalidProviderConfiguration)
+                .WithData("TransportType", value ?? string.Empty);
+        }
+
+        return transport;
+    }
+
     /// <summary>
     /// #384 slice 6b: parses the incoming binding mode. An unknown value is refused instead of silently
     /// falling back to TenantLevel, so a typo cannot downgrade a user-scoped server.
@@ -221,5 +229,27 @@ public class MCPServerAppService : SufiApplicationService, IMCPServerAppService
         }
 
         return mode;
+    }
+
+    private readonly record struct ConnectionSnapshot(
+        MCPTransportType TransportType,
+        MCPBindingMode BindingMode,
+        string? Endpoint,
+        string? Command,
+        string? ArgumentsJson)
+    {
+        public static ConnectionSnapshot From(MCPServer server) => new(
+            server.TransportType,
+            server.BindingMode,
+            server.Endpoint,
+            server.Command,
+            server.ArgumentsJson);
+
+        public bool ConnectionChanged(MCPServer server) =>
+            TransportType != server.TransportType
+            || BindingMode != server.BindingMode
+            || !string.Equals(Endpoint, server.Endpoint, StringComparison.Ordinal)
+            || !string.Equals(Command, server.Command, StringComparison.Ordinal)
+            || !string.Equals(ArgumentsJson, server.ArgumentsJson, StringComparison.Ordinal);
     }
 }
