@@ -34,6 +34,12 @@ public partial class TimeZoneSettingsGroup : SettingsComponentBase, IEditableSet
 
     public bool IsSaving => IsOperationLoading(LoadingKeys.Save);
 
+    protected override void OnInitialized()
+    {
+        // The first paint is before OnAfterRenderAsync starts the read (#584).
+        LoadingStates[LoadingKeys.Load] = true;
+    }
+
     public bool HasUnsavedChanges => _edits.HasUnsavedChanges;
 
     public event Action? EditStateChanged

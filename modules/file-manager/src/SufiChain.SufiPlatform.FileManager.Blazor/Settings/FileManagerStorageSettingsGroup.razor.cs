@@ -41,6 +41,12 @@ public partial class FileManagerStorageSettingsGroup : FileManagerComponentBase,
         remove => _edits.Changed -= value;
     }
 
+    protected override void OnInitialized()
+    {
+        // The first paint is before OnAfterRenderAsync starts the read (#584).
+        LoadingStates[LoadingKeys.Load] = true;
+    }
+
     protected override void OnAfterRender(bool firstRender)
     {
         base.OnAfterRender(firstRender);
