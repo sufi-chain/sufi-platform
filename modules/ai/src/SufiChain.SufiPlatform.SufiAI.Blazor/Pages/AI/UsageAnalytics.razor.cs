@@ -310,13 +310,28 @@ public partial class UsageAnalytics : AIComponentBase
             return L["UnknownError"];
         }
 
+        if (AiUsageErrorText.IsUnfilledProviderStatus(errorMessage))
+        {
+            return LocalizedProviderFailure();
+        }
+
         var localized = L[errorMessage];
         if (!localized.ResourceNotFound && !string.Equals(localized.Value, errorMessage, StringComparison.Ordinal))
         {
-            return localized.Value;
+            return AiUsageErrorText.IsUnfilledProviderStatus(localized.Value)
+                ? LocalizedProviderFailure()
+                : localized.Value;
         }
 
         return errorMessage;
+    }
+
+    private string LocalizedProviderFailure()
+    {
+        var brief = L[AIErrorCodes.ProviderRequestFailedBrief];
+        return brief.ResourceNotFound || string.Equals(brief.Value, AIErrorCodes.ProviderRequestFailedBrief, StringComparison.Ordinal)
+            ? L["UnknownError"]
+            : brief.Value;
     }
 
     private static string GetModelConfigurationsUrl(Guid workspaceId) =>
