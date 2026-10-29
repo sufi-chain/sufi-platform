@@ -188,11 +188,12 @@ public class MCPToolRegistry : IMCPToolRegistry, ISingletonDependency
             }
             catch (Exception exception)
             {
-                server.UpdateLastConnection(false, exception.Message);
+                var cause = McpConnectionError.Describe(exception);
+                server.UpdateLastConnection(false, cause);
                 await _serverRepository.UpdateAsync(server, autoSave: true);
                 foreach (var name in group)
                 {
-                    result.Diagnostics.Add(Diagnostic(name, "ConnectionFailed", exception.Message));
+                    result.Diagnostics.Add(Diagnostic(name, "ConnectionFailed", cause));
                 }
                 _logger.LogWarning(exception, "ResolveAsync failed to connect MCP server {Key} after {Elapsed}ms", group.Key, serverStep.ElapsedMilliseconds);
             }
@@ -245,8 +246,9 @@ public class MCPToolRegistry : IMCPToolRegistry, ISingletonDependency
         }
         catch (Exception exception)
         {
+            var cause = McpConnectionError.Describe(exception);
             _logger.LogWarning(exception, "TestServerConnectionAsync failed for {Key} after {Elapsed}ms", server.Key, step.ElapsedMilliseconds);
-            return (false, exception.Message);
+            return (false, cause);
         }
     }
 

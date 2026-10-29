@@ -39,6 +39,8 @@ public class MCPToolRegistryPersistTests
         await registry.ResolveAsync(new[] { "external.demo-server.ping" });
 
         server.LastConnectionError.ShouldNotBeNull();
+        server.LastConnectionError.ShouldNotContain("Exception of type");
+        server.LastConnectionError.ShouldContain(AIErrorCodes.MCPHttpTransportNotImplemented);
         await serverRepository.Received(1).UpdateAsync(
             server,
             autoSave: true,
@@ -73,7 +75,8 @@ public class MCPToolRegistryPersistTests
             .Returns(new List<IMCPTool>());
 
         // sufi-chain#384 slice 6b: the registry no longer owns transport clients; the provider does.
-        // The HTTP transport is still unimplemented, so the provider is what fails the hot path now.
+        // This substitute stands in for a transport failure. The real HTTP and SSE handshakes are covered
+        // by McpStandardTransportTests.
         var clientProvider = Substitute.For<IMCPTransportClientProvider>();
         clientProvider
             .TestConnectionAsync(Arg.Any<MCPServer>(), Arg.Any<CancellationToken>())

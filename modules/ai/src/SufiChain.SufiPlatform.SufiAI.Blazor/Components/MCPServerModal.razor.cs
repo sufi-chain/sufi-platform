@@ -106,6 +106,7 @@ public partial class MCPServerModal
                 var input = new UpdateMCPServerDto
                 {
                     Name = _name,
+                    TransportType = _transportType,
                     Endpoint = _endpoint,
                     Command = _command,
                     ArgumentsJson = ArgumentsJsonForSave(),

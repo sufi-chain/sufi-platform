@@ -23,8 +23,7 @@
                 <SbFormField Label="@L["TransportType"]" Required="true">
                     <SbSimpleSelect TValue="string"
                               Value="_transportType"
-                              ValueChanged="@OnTransportTypeChanged"
-                              Disabled="@(Server != null)">
+                              ValueChanged="@OnTransportTypeChanged">
 						<SbSelectOption TValue="string" Value="@("STDIO")">@L["MCPTransport:STDIO"]</SbSelectOption>
 						<SbSelectOption TValue="string" Value="@("SSE")">@L["MCPTransport:SSE"]</SbSelectOption>
 						<SbSelectOption TValue="string" Value="@("HTTP")">@L["MCPTransport:HTTP"]</SbSelectOption>

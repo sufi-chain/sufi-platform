@@ -2,12 +2,13 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Caching.Distributed;
+using Microsoft.Extensions.Options;
+using SufiChain.SufiPlatform.SufiAI;
 using SufiChain.SufiPlatform.SufiAI.Adapters;
 using SufiChain.SufiPlatform.SufiAI.MCP.Abstractions;
 using SufiChain.SufiPlatform.SufiAI.MCP.Entities;
@@ -42,6 +43,7 @@ public class MCPCatalogCache : IMCPCatalogCache, ITransientDependency
     private readonly IServiceScopeFactory _serviceScopeFactory;
     private readonly ILoggerFactory _loggerFactory;
     private readonly ILogger<MCPCatalogCache> _logger;
+    private readonly AITransportOptions _transportOptions;
     private static readonly SemaphoreSlim RebuildLock = new(1, 1);
     private static int _backgroundRebuildGate;
 
@@ -53,7 +55,8 @@ public class MCPCatalogCache : IMCPCatalogCache, ITransientDependency
         IServiceProvider serviceProvider,
         IServiceScopeFactory serviceScopeFactory,
         ILoggerFactory loggerFactory,
-        ILogger<MCPCatalogCache> logger)
+        ILogger<MCPCatalogCache> logger,
+        IOptions<AITransportOptions>? transportOptions = null)
     {
         _cache = cache;
         _internalToolDiscovery = internalToolDiscovery;
@@ -63,6 +66,7 @@ public class MCPCatalogCache : IMCPCatalogCache, ITransientDependency
         _serviceScopeFactory = serviceScopeFactory;
         _loggerFactory = loggerFactory;
         _logger = logger;
+        _transportOptions = transportOptions?.Value ?? new AITransportOptions();
     }
 
     public async Task<MCPCatalogCacheItem> GetCatalogAsync(CancellationToken cancellationToken = default)
@@ -305,21 +309,7 @@ public class MCPCatalogCache : IMCPCatalogCache, ITransientDependency
 
     private IMCPTransportClient CreateClient(MCPServer server)
     {
-        return server.TransportType switch
-        {
-            MCPTransportType.STDIO => new StdioTransportClient(
-                Check.NotNullOrWhiteSpace(server.Command, nameof(server.Command)),
-                string.IsNullOrWhiteSpace(server.ArgumentsJson)
-                    ? Array.Empty<string>()
-                    : JsonSerializer.Deserialize<string[]>(server.ArgumentsJson) ?? Array.Empty<string>(),
-                _loggerFactory.CreateLogger<StdioTransportClient>()),
-            MCPTransportType.SSE => new SSETransportClient(
-                Check.NotNullOrWhiteSpace(server.Endpoint, nameof(server.Endpoint)),
-                _httpClientFactory.CreateClient(),
-                _loggerFactory.CreateLogger<SSETransportClient>()),
-            MCPTransportType.HTTP => throw new BusinessException(AIErrorCodes.MCPHttpTransportNotImplemented),
-            _ => throw new BusinessException(AIErrorCodes.InvalidProviderConfiguration)
-        };
+        return McpTransportClientFactory.Create(server, _httpClientFactory, _loggerFactory, _transportOptions);
     }
 
     private static MCPToolDescriptor ToDescriptor(IMCPTool tool) => new()

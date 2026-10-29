@@ -22,4 +22,9 @@ public class UpdateMCPServerDto
     /// caller that omits the field can never silently downgrade a user-scoped server.
     /// </summary>
     public string? BindingMode { get; set; }
+
+    /// <summary>
+    /// sufi-chain#557: <c>STDIO</c>, <c>SSE</c>, or <c>HTTP</c>. Null keeps the stored transport.
+    /// </summary>
+    public string? TransportType { get; set; }
 }
