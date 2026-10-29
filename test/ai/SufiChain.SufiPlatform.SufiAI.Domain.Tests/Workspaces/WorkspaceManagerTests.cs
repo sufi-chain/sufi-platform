@@ -165,4 +165,43 @@ public class WorkspaceManagerTests : SufiAITestBase<SufiAIDomainTestModule>
         copiedAudio.AcceptsImageInput.ShouldBeNull();
         copiedAudio.CapabilitySource.ShouldBeNull();
     }
+
+    [Fact]
+    public void CreateInheritedShell_keeps_the_name_and_leaves_host_keys_on_the_source()
+    {
+        var source = new Workspace(Guid.NewGuid(), "زیرساخت صوفی", AIProviderType.OpenRouter, "openrouter/free");
+        source.UpdateConfiguration(
+            "openrouter/free",
+            "sk-host",
+            "https://or-gateway.sufichain.com/v1",
+            inputCostPer1MTokens: 1.5m,
+            outputCostPer1MTokens: 2.5m);
+        source.SetUseWebSearch(false);
+        source.AddModelConfiguration(
+            AICapabilityType.ChatCompletion,
+            "openrouter/free",
+            apiEndpoint: "https://or-gateway.sufichain.com/v1",
+            apiKey: "sk-route",
+            priority: 0,
+            isUserSelectable: true);
+        source.SetGuardrail(WorkspaceGuardrailPeriod.Daily, 3m);
+
+        var tenantId = Guid.NewGuid();
+        var shellId = Guid.NewGuid();
+        var shell = _workspaceManager.CreateInheritedShell(source, source.Name, tenantId, shellId);
+
+        shell.Id.ShouldBe(shellId);
+        shell.TenantId.ShouldBe(tenantId);
+        shell.Name.ShouldBe("زیرساخت صوفی");
+        shell.Provider.ShouldBe(AIProviderType.OpenRouter);
+        shell.DefaultModel.ShouldBe("openrouter/free");
+        shell.UseWebSearch.ShouldBeFalse();
+        shell.ApiKey.ShouldBeNull();
+        shell.ApiBaseUrl.ShouldBeNull();
+        shell.InputCostPer1MTokens.ShouldBeNull();
+        shell.OutputCostPer1MTokens.ShouldBeNull();
+        shell.ModelConfigurations.ShouldBeEmpty();
+        shell.Guardrails.ShouldBeEmpty();
+        shell.IsInherited.ShouldBeFalse();
+    }
 }

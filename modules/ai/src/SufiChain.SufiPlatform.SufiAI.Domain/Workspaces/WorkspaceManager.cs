@@ -69,4 +69,25 @@ public class WorkspaceManager : DomainService
 
         return clone;
     }
+
+    /// <summary>
+    /// Tenant shell for a host workspace. The shell keeps identity only.
+    /// Keys, endpoints, routes, and guardrails stay on the host and are read through the live view.
+    /// </summary>
+    public Workspace CreateInheritedShell(Workspace source, string name, Guid tenantId, Guid id)
+    {
+        var shell = new Workspace(
+            id,
+            name,
+            source.Provider,
+            source.DefaultModel,
+            tenantId);
+        shell.SetUseWebSearch(source.UseWebSearch);
+        if (!source.IsActive)
+        {
+            shell.Deactivate();
+        }
+
+        return shell;
+    }
 }

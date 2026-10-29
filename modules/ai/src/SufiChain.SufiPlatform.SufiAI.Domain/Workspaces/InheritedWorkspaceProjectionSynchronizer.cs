@@ -3,6 +3,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Volo.Abp.Data;
 using Volo.Abp.DependencyInjection;
+using Volo.Abp.Domain.Repositories;
 using Volo.Abp.MultiTenancy;
 using Volo.Abp.Uow;
 
@@ -109,18 +110,18 @@ public class InheritedWorkspaceProjectionSynchronizer :
                     return existing;
                 }
 
-                var name = await _workspaceManager.ResolveUniqueNameAsync(
-                    string.IsNullOrWhiteSpace(preferredName) ? template.Name : preferredName.Trim());
-                var copy = _workspaceManager.CreateCopy(template, name, tenantId, targetWorkspaceId);
-                copy.MarkAsInherited(sourceWorkspaceId, assignmentId);
-                await _workspaceRepository.InsertAsync(copy, autoSave: true, cancellationToken);
+                var name = string.IsNullOrWhiteSpace(preferredName) ? template.Name : preferredName.Trim();
+                await _workspaceManager.ValidateNameAsync(name);
+                var shell = _workspaceManager.CreateInheritedShell(template, name, tenantId, targetWorkspaceId);
+                shell.MarkAsInherited(sourceWorkspaceId, assignmentId);
+                await _workspaceRepository.InsertAsync(shell, autoSave: true, cancellationToken);
                 await uow.CompleteAsync();
-                return copy;
+                return shell;
             }
         }
     }
 
-    public virtual async Task DeactivateTenantProjectionAsync(
+    public virtual async Task DeleteTenantProjectionAsync(
         Guid tenantId,
         Guid targetWorkspaceId,
         CancellationToken cancellationToken = default)
@@ -129,14 +130,15 @@ public class InheritedWorkspaceProjectionSynchronizer :
         {
             using (var uow = _unitOfWorkManager.Begin(requiresNew: true, isTransactional: true))
             {
+                // The live view is a second instance of the same id. Load the stored shell
+                // and delete that instance so the context does not track both.
                 var workspace = await _workspaceRepository.FindAsync(
                     targetWorkspaceId,
                     includeDetails: false,
                     cancellationToken: cancellationToken);
-                if (workspace is { IsInherited: true, IsActive: true })
+                if (workspace is { IsInherited: true })
                 {
-                    workspace.Deactivate();
-                    await _workspaceRepository.UpdateAsync(workspace, autoSave: true, cancellationToken);
+                    await _workspaceRepository.HardDeleteAsync(workspace, autoSave: true, cancellationToken);
                 }
 
                 await uow.CompleteAsync();

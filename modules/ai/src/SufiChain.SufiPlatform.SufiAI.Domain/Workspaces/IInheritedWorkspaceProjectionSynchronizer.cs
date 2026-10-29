@@ -17,7 +17,11 @@ public interface IInheritedWorkspaceProjectionSynchronizer
         string? preferredName,
         CancellationToken cancellationToken = default);
 
-    Task DeactivateTenantProjectionAsync(
+    /// <summary>
+    /// Removes the tenant shell for an unassigned host workspace.
+    /// The host assignment row stays as an inactive tombstone.
+    /// </summary>
+    Task DeleteTenantProjectionAsync(
         Guid tenantId,
         Guid targetWorkspaceId,
         CancellationToken cancellationToken = default);

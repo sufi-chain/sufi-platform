@@ -98,13 +98,53 @@ public class DefaultAiWorkspaceSeeder : IDefaultAiWorkspaceSeeder
         }
 
         Workspace? hostWorkspace;
+        Guid assignmentId = Guid.Empty;
+        Guid targetId = Guid.Empty;
         using (CurrentTenant.Change(null))
         {
             // Change(null) does not switch a unit of work that already opened the
-            // tenant SufiAI connection. A new unit of work reads the host database.
+            // tenant SufiAI connection. The host workspace and the assignment row
+            // (TenantId = the subject tenant) both live in the host database.
             using (var uow = UnitOfWorkManager.Begin(requiresNew: true, isTransactional: false))
             {
                 hostWorkspace = await FindHostDefaultWorkspaceAsync(workspaceName, tenantId, cancellationToken);
+                if (hostWorkspace != null)
+                {
+                    WorkspaceAssignment? assignment;
+                    using (DataFilter.Disable<IMultiTenant>())
+                    {
+                        assignment = await WorkspaceAssignmentRepository.FindAsync(
+                            tenantId,
+                            hostWorkspace.Id,
+                            cancellationToken);
+                    }
+
+                    assignmentId = assignment?.Id ?? GuidGenerator.Create();
+                    targetId = assignment is { IsActive: true }
+                        ? assignment.TargetWorkspaceId
+                        : GuidGenerator.Create();
+
+                    if (assignment == null)
+                    {
+                        using (DataFilter.Disable<IMultiTenant>())
+                        {
+                            await WorkspaceAssignmentRepository.InsertAsync(
+                                new WorkspaceAssignment(assignmentId, tenantId, hostWorkspace.Id, targetId),
+                                autoSave: true,
+                                cancellationToken);
+                        }
+                    }
+                    else if (!assignment.IsActive || assignment.TargetWorkspaceId != targetId)
+                    {
+                        assignment.ReplaceTarget(targetId);
+                        assignment.Activate();
+                        using (DataFilter.Disable<IMultiTenant>())
+                        {
+                            await WorkspaceAssignmentRepository.UpdateAsync(assignment, autoSave: true, cancellationToken);
+                        }
+                    }
+                }
+
                 await uow.CompleteAsync(cancellationToken);
             }
         }
@@ -116,37 +156,6 @@ public class DefaultAiWorkspaceSeeder : IDefaultAiWorkspaceSeeder
                 tenantId,
                 workspaceName);
             return null;
-        }
-
-        WorkspaceAssignment? assignment;
-        using (DataFilter.Disable<IMultiTenant>())
-        {
-            assignment = await WorkspaceAssignmentRepository.FindAsync(
-                tenantId,
-                hostWorkspace.Id,
-                cancellationToken);
-        }
-
-        var assignmentId = assignment?.Id ?? GuidGenerator.Create();
-        var targetId = assignment is { IsActive: true }
-            ? assignment.TargetWorkspaceId
-            : GuidGenerator.Create();
-
-        if (assignment == null)
-        {
-            await WorkspaceAssignmentRepository.InsertAsync(
-                new WorkspaceAssignment(assignmentId, tenantId, hostWorkspace.Id, targetId),
-                autoSave: true,
-                cancellationToken);
-        }
-        else if (!assignment.IsActive || assignment.TargetWorkspaceId != targetId)
-        {
-            assignment.ReplaceTarget(targetId);
-            assignment.Activate();
-            using (DataFilter.Disable<IMultiTenant>())
-            {
-                await WorkspaceAssignmentRepository.UpdateAsync(assignment, autoSave: true, cancellationToken);
-            }
         }
 
         try

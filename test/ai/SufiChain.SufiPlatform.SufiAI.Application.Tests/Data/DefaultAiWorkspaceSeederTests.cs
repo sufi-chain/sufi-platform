@@ -198,10 +198,20 @@ public class DefaultAiWorkspaceSeederTests
         repository.UpdateAsync(Arg.Any<Workspace>(), Arg.Any<bool>(), Arg.Any<CancellationToken>())
             .Returns(callInfo => callInfo.Arg<Workspace>());
 
+        var currentTenant = CreateCurrentTenant(tenantId);
+        Guid? tenantDuringAssignmentWrite = tenantId;
         assignments.FindAsync(tenantId, hostWorkspaceId, Arg.Any<CancellationToken>())
-            .Returns((WorkspaceAssignment?)null);
+            .Returns(_ =>
+            {
+                tenantDuringAssignmentWrite = currentTenant.Id;
+                return (WorkspaceAssignment?)null;
+            });
         assignments.InsertAsync(Arg.Any<WorkspaceAssignment>(), Arg.Any<bool>(), Arg.Any<CancellationToken>())
-            .Returns(callInfo => callInfo.Arg<WorkspaceAssignment>());
+            .Returns(callInfo =>
+            {
+                tenantDuringAssignmentWrite = currentTenant.Id;
+                return callInfo.Arg<WorkspaceAssignment>();
+            });
 
         synchronizer.CreateTenantProjectionAsync(
                 hostWorkspace,
@@ -224,11 +234,13 @@ public class DefaultAiWorkspaceSeederTests
             tenantId,
             assignments,
             synchronizer,
-            unitOfWorkManager);
+            unitOfWorkManager,
+            currentTenant);
 
         var workspaceId = await seeder.EnsureDefaultWorkspaceAsync();
 
         workspaceId.ShouldBe(projectionId);
+        tenantDuringAssignmentWrite.ShouldBeNull();
         await repository.DidNotReceive()
             .InsertAsync(Arg.Any<Workspace>(), Arg.Any<bool>(), Arg.Any<CancellationToken>());
         await synchronizer.Received(1).EnsureCurrentTenantAsync(Arg.Any<CancellationToken>());
@@ -328,20 +340,13 @@ public class DefaultAiWorkspaceSeederTests
         Guid? tenantId = null,
         IWorkspaceAssignmentRepository? assignments = null,
         IInheritedWorkspaceProjectionSynchronizer? synchronizer = null,
-        IUnitOfWorkManager? unitOfWorkManager = null)
+        IUnitOfWorkManager? unitOfWorkManager = null,
+        ICurrentTenant? currentTenant = null)
     {
         var guidGenerator = Substitute.For<IGuidGenerator>();
         guidGenerator.Create().Returns(_ => Guid.NewGuid());
 
-        var currentTenant = Substitute.For<ICurrentTenant>();
-        currentTenant.Id.Returns(tenantId);
-        currentTenant.Change(Arg.Any<Guid?>())
-            .Returns(ci =>
-            {
-                var previous = currentTenant.Id;
-                currentTenant.Id.Returns(ci.Arg<Guid?>());
-                return new DisposeAction(() => currentTenant.Id.Returns(previous));
-            });
+        currentTenant ??= CreateCurrentTenant(tenantId);
 
         var dataFilter = Substitute.For<IDataFilter>();
         dataFilter.Disable<ISoftDelete>().Returns(new DisposeAction(() => { }));
@@ -370,6 +375,20 @@ public class DefaultAiWorkspaceSeederTests
                 DefaultWorkspace = seedOptions
             }),
             NullLogger<DefaultAiWorkspaceSeeder>.Instance);
+    }
+
+    private static ICurrentTenant CreateCurrentTenant(Guid? tenantId)
+    {
+        var currentTenant = Substitute.For<ICurrentTenant>();
+        currentTenant.Id.Returns(tenantId);
+        currentTenant.Change(Arg.Any<Guid?>())
+            .Returns(ci =>
+            {
+                var previous = currentTenant.Id;
+                currentTenant.Id.Returns(ci.Arg<Guid?>());
+                return new DisposeAction(() => currentTenant.Id.Returns(previous));
+            });
+        return currentTenant;
     }
 
     private sealed class DisposeAction : IDisposable

@@ -404,7 +404,7 @@ public class WorkspaceAppService : SufiApplicationService, IWorkspaceAppService
 
         if (assignment.TenantId.HasValue)
         {
-            await _inheritedWorkspaceProjectionSynchronizer.DeactivateTenantProjectionAsync(
+            await _inheritedWorkspaceProjectionSynchronizer.DeleteTenantProjectionAsync(
                 assignment.TenantId.Value,
                 assignment.TargetWorkspaceId);
         }
