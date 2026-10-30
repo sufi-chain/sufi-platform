@@ -9,14 +9,12 @@
 
   <PropertyGroup>
     <PackageId>SufiChain.SufiPlatform.SufiAI.Hooshvare.Abstractions</PackageId>
-    <Description>Sufi Platform AI Hooshvares abstractions — registry integration service, invocation ETOs, HooshvareKind, and seed contracts for cross-module consumers.</Description>
+    <Description>Sufi Platform AI Hooshvares abstractions — registry integration service, HooshvareKind, and seed contracts for cross-module consumers.</Description>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="Volo.Abp.Core" Version="$(AbpVersion)" />
-    <PackageReference Include="Volo.Abp.EventBus" Version="$(AbpVersion)" />
     <PackageReference Include="Volo.Abp.Ddd.Application.Contracts" Version="$(AbpVersion)" />
-    <ProjectReference Include="../SufiChain.SufiPlatform.EventBus.Abstractions/SufiChain.SufiPlatform.EventBus.Abstractions.csproj" />
     <ProjectReference Include="../SufiChain.SufiPlatform.Ddd.Application.Contracts/SufiChain.SufiPlatform.Ddd.Application.Contracts.csproj" />
   </ItemGroup>
 

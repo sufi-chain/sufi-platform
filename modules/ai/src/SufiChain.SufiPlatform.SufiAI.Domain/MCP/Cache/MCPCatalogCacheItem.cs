@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using SufiChain.SufiPlatform.SufiAI;
 using SufiChain.SufiPlatform.SufiAI.MCP.Abstractions;
 using Volo.Abp.Caching;
 
@@ -21,6 +22,9 @@ public class MCPToolDescriptor
     public string ParameterSchema { get; set; } = "{}";
     public MCPToolType ToolType { get; set; }
     public string Source { get; set; } = string.Empty;
+
+    /// <summary>Resolved effect. A missing cache value stays write (fail closed).</summary>
+    public AgentActionEffect Effect { get; set; } = AgentActionEffect.Write;
 }
 
 public class MCPServerSnapshot

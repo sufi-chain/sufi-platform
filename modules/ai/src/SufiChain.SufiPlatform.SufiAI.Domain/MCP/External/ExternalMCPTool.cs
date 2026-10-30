@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
+using SufiChain.SufiPlatform.SufiAI;
 using SufiChain.SufiPlatform.SufiAI.MCP.Abstractions;
 using SufiChain.SufiPlatform.SufiAI.MCP.Audit;
 using SufiChain.SufiPlatform.SufiAI.MCP.Entities;
@@ -33,9 +34,12 @@ public class ExternalMCPTool : IMCPTool, IMCPToolEffect
 
     /// <summary>
     /// External tools carry no declared effect yet (sufi-chain#384 slice 7 / #138), so under the interim
-    /// rule they count as write.
+    /// rule they count as write (sufi-chain#312).
     /// </summary>
-    public bool IsReadOnly => false;
+    public AgentActionEffect Effect => AgentActionEffect.Write;
+
+    /// <inheritdoc />
+    public bool IsReadOnly => Effect == AgentActionEffect.Read;
 
     public ExternalMCPTool(
         string name,

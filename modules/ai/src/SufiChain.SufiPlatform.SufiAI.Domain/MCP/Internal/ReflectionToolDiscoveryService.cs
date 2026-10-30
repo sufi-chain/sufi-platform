@@ -90,7 +90,19 @@ public class ReflectionToolDiscoveryService : IInternalToolDiscoveryService, ISi
                     foreach (var method in methods)
                     {
                         var attribute = GetToolAttribute(method);
+                        var declared = method.GetCustomAttribute<SufiAiMcpToolAttribute>()!;
                         var access = GetAccessRequirement(type, method, attribute.PermissionName);
+
+                        if (!declared.TryGetEffect(out var effect, out var refusal))
+                        {
+                            _logger.LogWarning(
+                                "Not registering MCP tool {ToolName} from {ServiceType}.{MethodName}: {Reason}",
+                                attribute.Name,
+                                type.Name,
+                                method.Name,
+                                refusal);
+                            continue;
+                        }
                         
                         try
                         {
@@ -107,7 +119,8 @@ public class ReflectionToolDiscoveryService : IInternalToolDiscoveryService, ISi
                                 attribute.RequiresPermission,
                                 access.RequiresAuthentication,
                                 AllowsAnonymous(method),
-                                IsReadOnly(method)
+                                effect == AgentActionEffect.Read,
+                                effect
                             );
                             
                             tools.Add(tool);
@@ -182,18 +195,27 @@ public class ReflectionToolDiscoveryService : IInternalToolDiscoveryService, ISi
     }
 
     /// <summary>
-    /// sufi-chain#384 slice 4: anonymous allowlist = <c>Public</c> + <c>ReadOnly</c>, or <c>[SufiAiMcpPublicWrite]</c>.
+    /// sufi-chain#384 slice 4: anonymous allowlist = public and <see cref="AgentActionEffect.Read"/>,
+    /// or <c>[SufiAiMcpPublicWrite]</c>. A conflicting effect is not allowlisted.
     /// </summary>
     public static bool AllowsAnonymous(MethodInfo method)
     {
         var tool = method.GetCustomAttribute<SufiAiMcpToolAttribute>();
-        return (tool is { Public: true, ReadOnly: true })
-            || method.GetCustomAttribute<SufiAiMcpPublicWriteAttribute>() is not null;
+        if (method.GetCustomAttribute<SufiAiMcpPublicWriteAttribute>() is not null)
+        {
+            return true;
+        }
+
+        return tool is { Public: true }
+            && tool.TryGetEffect(out var effect, out _)
+            && effect == AgentActionEffect.Read;
     }
 
-    /// <summary>sufi-chain#384 slice 5: read-only only when explicitly marked; unmarked counts as write.</summary>
+    /// <summary>sufi-chain#312: read-only only when the resolved effect is Read. Unmarked counts as write.</summary>
     public static bool IsReadOnly(MethodInfo method) =>
-        method.GetCustomAttribute<SufiAiMcpToolAttribute>() is { ReadOnly: true };
+        method.GetCustomAttribute<SufiAiMcpToolAttribute>() is { } tool
+        && tool.TryGetEffect(out var effect, out _)
+        && effect == AgentActionEffect.Read;
 
     private sealed record ToolAttributeInfo(string Name, string Description, string? PermissionName, bool RequiresPermission);
 }

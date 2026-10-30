@@ -261,7 +261,8 @@ public class MCPCatalogCache : IMCPCatalogCache, ITransientDependency
                         Description = definition.Description,
                         ParameterSchema = definition.ParameterSchema,
                         ToolType = MCPToolType.External,
-                        Source = server.Name
+                        Source = server.Name,
+                        Effect = AgentActionEffect.Write
                     });
                 }
 
@@ -318,7 +319,11 @@ public class MCPCatalogCache : IMCPCatalogCache, ITransientDependency
         Description = tool.Description,
         ParameterSchema = tool.ParameterSchema,
         ToolType = tool.ToolType,
-        Source = tool.Source
+        Source = tool.Source,
+        Effect = tool is IMCPToolEffect declared
+            && declared.Effect is AgentActionEffect.Read or AgentActionEffect.Write
+            ? declared.Effect
+            : AgentActionEffect.Write
     };
 
     private static void EnsureUnique(List<MCPToolDescriptor> tools, string scope)

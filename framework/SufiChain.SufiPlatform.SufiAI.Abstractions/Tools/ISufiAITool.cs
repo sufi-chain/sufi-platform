@@ -32,6 +32,13 @@ public interface ISufiAITool
     string Source { get; }
 
     /// <summary>
+    /// What the tool does to data. Defaults to <see cref="AgentActionEffect.Write"/> so a tool that
+    /// does not say is fail-closed (sufi-chain#312). Attribute-discovered tools resolve
+    /// <see cref="SufiAiMcpToolAttribute.Effect"/> at registration.
+    /// </summary>
+    AgentActionEffect Effect => AgentActionEffect.Write;
+
+    /// <summary>
     /// Executes the tool with the given parameters in a workspace context.
     /// Write-capable tools must enforce their module's permissions.
     /// </summary>

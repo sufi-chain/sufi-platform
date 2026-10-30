@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
+using SufiChain.SufiPlatform.SufiAI;
 using SufiChain.SufiPlatform.SufiAI.Features;
 using SufiChain.SufiPlatform.SufiAI.MCP.Abstractions;
 using SufiChain.SufiPlatform.SufiAI.MCP.Tools;
@@ -76,7 +77,11 @@ public class MCPToolAppService : SufiApplicationService, IMCPToolAppService
             Description = tool.Description,
             ParameterSchema = includeParameterSchema ? tool.ParameterSchema : string.Empty,
             ToolType = tool.ToolType.ToString(),
-            Source = tool.Source
+            Source = tool.Source,
+            Effect = tool is IMCPToolEffect declared
+                && declared.Effect is AgentActionEffect.Read or AgentActionEffect.Write
+                ? declared.Effect.ToString()
+                : AgentActionEffect.Write.ToString()
         };
     }
     
