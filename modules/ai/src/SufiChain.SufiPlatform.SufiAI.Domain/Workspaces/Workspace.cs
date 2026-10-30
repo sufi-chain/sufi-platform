@@ -446,6 +446,19 @@ public class Workspace : FullAuditedAggregateRoot<Guid>, IMultiTenant
             .FirstOrDefault();
     }
 
+    /// <summary>
+    /// The next enabled route after the one in use. Chat failover uses this model on the same workspace.
+    /// </summary>
+    public AIModelConfiguration? GetSecondaryConfiguration(AICapabilityType capabilityType, Guid? exceptId)
+    {
+        return _modelConfigurations
+            .Where(c => c.CapabilityType == capabilityType && c.IsEnabled && c.Id != exceptId)
+            .OrderBy(c => c.Priority)
+            .ThenBy(c => c.CreationTime)
+            .ThenBy(c => c.Id)
+            .FirstOrDefault();
+    }
+
     public void SetUseWebSearch(bool useWebSearch) => UseWebSearch = useWebSearch;
 
     public void Activate() => IsActive = true;

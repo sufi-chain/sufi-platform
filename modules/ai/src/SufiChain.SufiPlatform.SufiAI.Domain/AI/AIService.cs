@@ -33,6 +33,7 @@ public class AIService : DomainService, IAIService, ITransientDependency
     private readonly IFeatureChecker _featureChecker;
     private readonly IAICreditGate _creditGate;
     private readonly ILogger<AIService> _logger;
+    private readonly LlmChatGateway _chatGateway;
 
     public AIService(
         IWorkspaceRepository workspaceRepository,
@@ -43,7 +44,8 @@ public class AIService : DomainService, IAIService, ITransientDependency
         IModelEndpointLookup endpointLookup,
         IFeatureChecker featureChecker,
         IAICreditGate creditGate,
-        ILogger<AIService> logger)
+        ILogger<AIService> logger,
+        LlmChatGateway chatGateway)
     {
         _workspaceRepository = workspaceRepository;
         _runtimeConfigurationResolver = runtimeConfigurationResolver;
@@ -54,6 +56,7 @@ public class AIService : DomainService, IAIService, ITransientDependency
         _featureChecker = featureChecker;
         _creditGate = creditGate;
         _logger = logger;
+        _chatGateway = chatGateway;
     }
 
     public async Task<ChatCompletionResponse> SendChatMessageAsync(
@@ -83,7 +86,7 @@ public class AIService : DomainService, IAIService, ITransientDependency
                 configuration.ModelId,
                 AICapabilityType.ChatCompletion);
 
-            var response = await provider.SendChatMessageAsync(workspace, configuration, request, cancellationToken);
+            var response = await SendChatThroughGatewayAsync(workspace, configuration, provider, request, cancellationToken);
             if (GuardModelReply.IsVerdict(response.Content))
             {
                 stopwatch.Stop();
@@ -106,7 +109,7 @@ public class AIService : DomainService, IAIService, ITransientDependency
                     cancellationToken: cancellationToken);
 
                 stopwatch.Restart();
-                response = await provider.SendChatMessageAsync(workspace, configuration, request, cancellationToken);
+                response = await SendChatThroughGatewayAsync(workspace, configuration, provider, request, cancellationToken);
                 stopwatch.Stop();
                 if (GuardModelReply.IsVerdict(response.Content))
                 {
@@ -206,7 +209,9 @@ public class AIService : DomainService, IAIService, ITransientDependency
         var hasError = false;
         var errorMessage = string.Empty;
 
-        var stream = provider.StreamChatMessageAsync(workspace, configuration, request, cancellationToken);
+        var stream = _chatGateway.StreamAsync(
+            ChatInvocation(workspace, configuration, provider, request),
+            cancellationToken);
         var enumerator = stream.GetAsyncEnumerator(cancellationToken);
         string? upstreamModel = null;
 
@@ -790,5 +795,49 @@ public class AIService : DomainService, IAIService, ITransientDependency
         }
 
         return message;
+    }
+
+    private Task<ChatCompletionResponse> SendChatThroughGatewayAsync(
+        Workspace workspace,
+        AIModelConfiguration configuration,
+        IAIProvider provider,
+        ChatCompletionRequest request,
+        CancellationToken cancellationToken)
+    {
+        return _chatGateway.SendAsync(ChatInvocation(workspace, configuration, provider, request), cancellationToken);
+    }
+
+    /// <summary>
+    /// Primary route plus the next enabled chat model on the same workspace.
+    /// A second workspace is not stored on the runtime configuration.
+    /// </summary>
+    private LlmGatewayInvocation ChatInvocation(
+        Workspace workspace,
+        AIModelConfiguration configuration,
+        IAIProvider provider,
+        ChatCompletionRequest request)
+    {
+        var secondary = workspace.GetSecondaryConfiguration(AICapabilityType.ChatCompletion, configuration.Id);
+        return new LlmGatewayInvocation
+        {
+            PrimaryCircuitKey = CircuitKey(workspace, configuration.ModelId),
+            FallbackCircuitKey = secondary == null ? null : CircuitKey(workspace, secondary.ModelId),
+            PrimaryModelId = configuration.ModelId,
+            FallbackModelId = secondary?.ModelId,
+            Primary = ct => provider.SendChatMessageAsync(workspace, configuration, request, ct),
+            Fallback = secondary == null
+                ? null
+                : ct => provider.SendChatMessageAsync(workspace, secondary, request, ct),
+            PrimaryStream = ct => provider.StreamChatMessageAsync(workspace, configuration, request, ct),
+            FallbackStream = secondary == null
+                ? null
+                : ct => provider.StreamChatMessageAsync(workspace, secondary, request, ct)
+        };
+    }
+
+    private string CircuitKey(Workspace workspace, string modelId)
+    {
+        var tenant = CurrentTenant.Id?.ToString("N") ?? "host";
+        return tenant + ":" + workspace.Provider + ":" + workspace.Name + ":" + modelId;
     }
 }

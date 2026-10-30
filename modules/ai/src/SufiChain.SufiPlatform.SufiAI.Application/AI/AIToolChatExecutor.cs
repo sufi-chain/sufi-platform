@@ -25,6 +25,7 @@ public class AIToolChatExecutor : IAIToolChatExecutor, ITransientDependency
     protected AIToolLoopOptions ToolLoopOptions { get; }
     protected IStringLocalizer<AIResource>? Localizer { get; }
     protected ICancellationTokenProvider CancellationTokenProvider { get; }
+    protected ILlmGatewayPolicyReader? GatewayPolicy { get; }
 
     public AIToolChatExecutor(
         IWorkspaceRuntimeConfigurationResolver runtimeConfigurationResolver,
@@ -34,7 +35,8 @@ public class AIToolChatExecutor : IAIToolChatExecutor, ITransientDependency
         ILogger<AIToolChatExecutor>? logger = null,
         IOptions<AIToolLoopOptions>? toolLoopOptions = null,
         IStringLocalizer<AIResource>? localizer = null,
-        ICancellationTokenProvider? cancellationTokenProvider = null)
+        ICancellationTokenProvider? cancellationTokenProvider = null,
+        ILlmGatewayPolicyReader? gatewayPolicy = null)
     {
         ToolLoopOptions = toolLoopOptions?.Value ?? new AIToolLoopOptions();
         Localizer = localizer;
@@ -46,6 +48,7 @@ public class AIToolChatExecutor : IAIToolChatExecutor, ITransientDependency
         // 9.4 (sufi-chain#340): callers that pass no explicit token (the tools and playground paths)
         // still observe the ambient HTTP request-abort token (ABP use-cancellation-tokens skill).
         CancellationTokenProvider = cancellationTokenProvider ?? NullCancellationTokenProvider.Instance;
+        GatewayPolicy = gatewayPolicy;
     }
 
     public virtual async Task<AIPreparedKernel> PrepareKernelAsync(
@@ -89,6 +92,24 @@ public class AIToolChatExecutor : IAIToolChatExecutor, ITransientDependency
         // abort, circuit close, or after the shutdown grace period the host aborts in-flight requests — so
         // cancellation reaches the model call and every tool execution below (ABP use-cancellation-tokens).
         cancellationToken = CancellationTokenProvider.FallbackToProvider(cancellationToken);
+        var callerToken = cancellationToken;
+        var maxRounds = ToolLoopOptions.MaxToolRounds;
+        var maxTurnSeconds = ToolLoopOptions.MaxTurnSeconds;
+        if (GatewayPolicy != null)
+        {
+            var policy = await GatewayPolicy.GetAsync(callerToken);
+            maxRounds = policy.MaxToolRounds;
+            maxTurnSeconds = policy.MaxTurnSeconds;
+        }
+
+        CancellationTokenSource? turnTimeout = null;
+        if (maxTurnSeconds > 0)
+        {
+            turnTimeout = CancellationTokenSource.CreateLinkedTokenSource(callerToken);
+            turnTimeout.CancelAfter(TimeSpan.FromSeconds(maxTurnSeconds));
+            cancellationToken = turnTimeout.Token;
+        }
+
         var kernel = request.Kernel;
         if (kernel == null)
         {
@@ -119,7 +140,7 @@ public class AIToolChatExecutor : IAIToolChatExecutor, ITransientDependency
         // sufi-chain#340: bound the turn by tool rounds (a loop guard). 9.4 removed the wall-clock cutoff:
         // a slow model may take as long as it needs. The turn ends only when the caller token (user Stop,
         // HTTP abort, circuit close, shutdown) is cancelled, or the round budget is spent.
-        var loopLimit = new AIToolLoopLimitFilter(ToolLoopOptions.MaxToolRounds);
+        var loopLimit = new AIToolLoopLimitFilter(maxRounds);
         kernel.AutoFunctionInvocationFilters.Add(loopLimit);
         var stopwatch = Stopwatch.StartNew();
         try
@@ -136,7 +157,7 @@ public class AIToolChatExecutor : IAIToolChatExecutor, ITransientDependency
             {
                 Logger.LogWarning(
                     "AI tool turn hit the tool-round limit. MaxToolRounds={MaxToolRounds}, ElapsedMs={ElapsedMs}",
-                    ToolLoopOptions.MaxToolRounds, stopwatch.ElapsedMilliseconds);
+                    maxRounds, stopwatch.ElapsedMilliseconds);
                 return await LimitReachedAsync(request, stopwatch.ElapsedMilliseconds, AIToolLoopFinishReasons.ToolRoundLimit, cancellationToken);
             }
 
@@ -156,6 +177,14 @@ public class AIToolChatExecutor : IAIToolChatExecutor, ITransientDependency
                 LatencyMs = stopwatch.ElapsedMilliseconds,
                 Configuration = request.Configuration
             };
+        }
+        catch (OperationCanceledException) when (turnTimeout is { IsCancellationRequested: true } && !callerToken.IsCancellationRequested)
+        {
+            stopwatch.Stop();
+            Logger.LogWarning(
+                "AI tool turn hit the turn timeout. MaxTurnSeconds={MaxTurnSeconds}, ElapsedMs={ElapsedMs}",
+                maxTurnSeconds, stopwatch.ElapsedMilliseconds);
+            return await LimitReachedAsync(request, stopwatch.ElapsedMilliseconds, AIToolLoopFinishReasons.TimeLimit, callerToken);
         }
         catch (Exception exception) when (exception is not BusinessException)
         {
@@ -190,9 +219,13 @@ public class AIToolChatExecutor : IAIToolChatExecutor, ITransientDependency
                 usage: new SufiAITokenUsage(),
                 stopwatch.ElapsedMilliseconds,
                 isSuccess: false,
-                errorMessage: exception.Message,
-                cancellationToken);
+                errorMessage: LlmCallFailure.LooksSensitive(exception.Message) ? exception.GetType().Name : exception.Message,
+                callerToken);
             throw;
+        }
+        finally
+        {
+            turnTimeout?.Dispose();
         }
     }
 
