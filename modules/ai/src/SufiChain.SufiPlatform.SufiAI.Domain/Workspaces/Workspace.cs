@@ -451,6 +451,19 @@ public class Workspace : FullAuditedAggregateRoot<Guid>, IMultiTenant
     public void Activate() => IsActive = true;
     public void Deactivate() => IsActive = false;
 
+    /// <summary>
+    /// Drops provider credentials. An inherited projection reads the host workspace
+    /// at runtime and must not keep a copy of the host key.
+    /// </summary>
+    public void ClearStoredCredentials()
+    {
+        ApiKey = null;
+        foreach (var configuration in _modelConfigurations)
+        {
+            configuration.ClearApiKey();
+        }
+    }
+
     public void MarkAsInherited(Guid sourceWorkspaceId, Guid assignmentId)
     {
         if (TenantId == null)

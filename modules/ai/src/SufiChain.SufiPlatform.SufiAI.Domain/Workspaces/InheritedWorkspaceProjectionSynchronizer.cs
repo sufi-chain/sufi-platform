@@ -3,6 +3,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Volo.Abp.Data;
 using Volo.Abp.DependencyInjection;
+using Volo.Abp.Domain.Repositories;
 using Volo.Abp.MultiTenancy;
 using Volo.Abp.Uow;
 
@@ -112,6 +113,9 @@ public class InheritedWorkspaceProjectionSynchronizer :
                 var name = await _workspaceManager.ResolveUniqueNameAsync(
                     string.IsNullOrWhiteSpace(preferredName) ? template.Name : preferredName.Trim());
                 var copy = _workspaceManager.CreateCopy(template, name, tenantId, targetWorkspaceId);
+                // The tenant row is a pointer. Host API keys stay on the host workspace
+                // and are read through the live view.
+                copy.ClearStoredCredentials();
                 copy.MarkAsInherited(sourceWorkspaceId, assignmentId);
                 await _workspaceRepository.InsertAsync(copy, autoSave: true, cancellationToken);
                 await uow.CompleteAsync();
@@ -129,14 +133,14 @@ public class InheritedWorkspaceProjectionSynchronizer :
         {
             using (var uow = _unitOfWorkManager.Begin(requiresNew: true, isTransactional: true))
             {
+                // includeDetails false skips the live view, so this is the stored row.
                 var workspace = await _workspaceRepository.FindAsync(
                     targetWorkspaceId,
                     includeDetails: false,
                     cancellationToken: cancellationToken);
-                if (workspace is { IsInherited: true, IsActive: true })
+                if (workspace is { IsInherited: true })
                 {
-                    workspace.Deactivate();
-                    await _workspaceRepository.UpdateAsync(workspace, autoSave: true, cancellationToken);
+                    await _workspaceRepository.HardDeleteAsync(workspace, autoSave: true, cancellationToken);
                 }
 
                 await uow.CompleteAsync();

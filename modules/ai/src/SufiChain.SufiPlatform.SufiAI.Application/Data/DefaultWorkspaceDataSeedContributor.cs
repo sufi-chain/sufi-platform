@@ -28,16 +28,23 @@ public class DefaultWorkspaceDataSeedContributor : IDataSeedContributor, ITransi
 
     public virtual async Task SeedAsync(DataSeedContext context)
     {
-        using (CurrentTenant.Change(context?.TenantId))
+        // Host (TenantId null) or the tenant named on the seed context. A tenant that is
+        // only ambient must not become a host seed or a tenant projection.
+        if (context.TenantId == null && CurrentTenant.Id != null)
         {
-            var workspaceId = await DefaultAiWorkspaceSeeder.EnsureDefaultWorkspaceAsync();
-            if (workspaceId.HasValue)
-            {
-                Logger.LogDebug(
-                    "Default AI workspace is ready with ID {WorkspaceId} for tenant {TenantId}.",
-                    workspaceId.Value,
-                    context?.TenantId);
-            }
+            Logger.LogDebug(
+                "Skipping default AI workspace seed. Tenant {TenantId} is ambient and the seed context did not name it.",
+                CurrentTenant.Id);
+            return;
+        }
+
+        var workspaceId = await DefaultAiWorkspaceSeeder.EnsureDefaultWorkspaceAsync(context.TenantId);
+        if (workspaceId.HasValue)
+        {
+            Logger.LogDebug(
+                "Default AI workspace is ready with ID {WorkspaceId} for tenant {TenantId}.",
+                workspaceId.Value,
+                context.TenantId);
         }
     }
 }

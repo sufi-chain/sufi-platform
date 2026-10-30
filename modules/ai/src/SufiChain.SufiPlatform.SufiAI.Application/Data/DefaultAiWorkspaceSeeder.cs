@@ -49,7 +49,28 @@ public class DefaultAiWorkspaceSeeder : IDefaultAiWorkspaceSeeder
         Logger = logger;
     }
 
-    public virtual async Task<Guid?> EnsureDefaultWorkspaceAsync(CancellationToken cancellationToken = default)
+    public virtual Task<Guid?> EnsureDefaultWorkspaceAsync(CancellationToken cancellationToken = default)
+    {
+        if (CurrentTenant.Id.HasValue)
+        {
+            Logger.LogDebug(
+                "Skipping default AI workspace seed. Tenant {TenantId} is ambient. Pass the tenant id explicitly to seed it.",
+                CurrentTenant.Id);
+            return Task.FromResult<Guid?>(null);
+        }
+
+        return EnsureDefaultWorkspaceCoreAsync(cancellationToken);
+    }
+
+    public virtual async Task<Guid?> EnsureDefaultWorkspaceAsync(Guid? tenantId, CancellationToken cancellationToken = default)
+    {
+        using (CurrentTenant.Change(tenantId))
+        {
+            return await EnsureDefaultWorkspaceCoreAsync(cancellationToken);
+        }
+    }
+
+    protected virtual async Task<Guid?> EnsureDefaultWorkspaceCoreAsync(CancellationToken cancellationToken = default)
     {
         if (!AIOptions.SeedDefaultWorkspace)
         {

@@ -4,6 +4,8 @@ using System.Threading.Tasks;
 using Shouldly;
 using SufiChain.SufiPlatform.SufiAI.Workspaces;
 using Volo.Abp;
+using Volo.Abp.Data;
+using Volo.Abp.Domain.Entities;
 using Volo.Abp.MultiTenancy;
 using Xunit;
 
@@ -143,12 +145,19 @@ public class InheritedWorkspaceLiveViewTests : SufiAITestBase<SufiAIApplicationT
 
         using (_currentTenant.Change(tenantId))
         {
-            var projection = await _workspaceAppService.GetAsync(projectionId);
-            projection.IsInherited.ShouldBeTrue();
-            projection.IsActive.ShouldBeFalse();
+            await Should.ThrowAsync<EntityNotFoundException>(() => _workspaceAppService.GetAsync(projectionId));
+        }
 
-            var stillThere = await _aiAppService.GetModelConfigurationsAsync(projectionId);
-            stillThere.ShouldContain(item => item.ModelId == "nvidia/nemotron-3.5-lightning:free");
+        using (GetRequiredService<IDataFilter>().Disable<IMultiTenant>())
+        using (GetRequiredService<IDataFilter>().Disable<ISoftDelete>())
+        {
+            await WithUnitOfWorkAsync(async () =>
+            {
+                var gone = await _workspaceRepository.FindAsync(projectionId, includeDetails: false);
+                gone.ShouldBeNull();
+                var assignment = await _assignmentRepository.GetAsync(assignmentId);
+                assignment.IsActive.ShouldBeFalse();
+            });
         }
 
         using (_currentTenant.Change(null))
