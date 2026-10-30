@@ -23,6 +23,13 @@ public class SufiAIToolAdapter : ISufiAITool
 
     public string Source => InnerTool.Source;
 
+    /// <summary>The inner tool's effect, or write when the inner tool does not declare one (sufi-chain#312).</summary>
+    public AgentActionEffect Effect =>
+        InnerTool is IMCPToolEffect declared
+        && declared.Effect is AgentActionEffect.Read or AgentActionEffect.Write
+            ? declared.Effect
+            : AgentActionEffect.Write;
+
     public virtual async Task<SufiAIToolExecutionResult> ExecuteAsync(
         SufiAIToolExecutionContext context,
         Dictionary<string, object?> parameters,
@@ -95,7 +102,7 @@ public class SufiAIToolAdapter : ISufiAITool
     }
 }
 
-public class McpToolAdapter : IMCPTool
+public class McpToolAdapter : IMCPTool, IMCPToolEffect
 {
     protected ISufiAITool InnerTool { get; }
 
@@ -113,6 +120,15 @@ public class McpToolAdapter : IMCPTool
     public MCPToolType ToolType => MCPToolType.Internal;
 
     public string Source => InnerTool.Source;
+
+    /// <summary>The inner tool's effect, which defaults to write (sufi-chain#312).</summary>
+    public AgentActionEffect Effect =>
+        InnerTool.Effect is AgentActionEffect.Read or AgentActionEffect.Write
+            ? InnerTool.Effect
+            : AgentActionEffect.Write;
+
+    /// <inheritdoc />
+    public bool IsReadOnly => Effect == AgentActionEffect.Read;
 
     public virtual async Task<MCPToolExecutionResult> ExecuteAsync(
         WorkspaceContext context,

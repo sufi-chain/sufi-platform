@@ -7,6 +7,7 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
+using SufiChain.SufiPlatform.SufiAI;
 using SufiChain.SufiPlatform.SufiAI.MCP.Abstractions;
 using SufiChain.SufiPlatform.SufiAI.MCP.Audit;
 using Volo.Abp;
@@ -34,7 +35,7 @@ public class InternalMCPTool : IMCPTool, IMCPToolAccessRequirement, IMCPToolEffe
     private readonly bool _requiresPermission;
     private readonly bool _requiresAuthentication;
     private readonly bool _allowsAnonymous;
-    private readonly bool _isReadOnly;
+    private readonly AgentActionEffect _effect;
     public string Name { get; }
     public string Description { get; }
     public string ParameterSchema { get; }
@@ -52,7 +53,8 @@ public class InternalMCPTool : IMCPTool, IMCPToolAccessRequirement, IMCPToolEffe
         bool requiresPermission = false,
         bool requiresAuthentication = false,
         bool allowsAnonymous = false,
-        bool isReadOnly = false)
+        bool isReadOnly = false,
+        AgentActionEffect? effect = null)
     {
         Name = name;
         Description = description;
@@ -66,11 +68,16 @@ public class InternalMCPTool : IMCPTool, IMCPToolAccessRequirement, IMCPToolEffe
         _requiresPermission = requiresPermission || _permissionName is not null;
         _requiresAuthentication = requiresAuthentication;
         _allowsAnonymous = allowsAnonymous;
-        _isReadOnly = isReadOnly;
+        _effect = effect is AgentActionEffect.Read or AgentActionEffect.Write
+            ? effect.Value
+            : (isReadOnly ? AgentActionEffect.Read : AgentActionEffect.Write);
     }
 
-    /// <summary>True only when the method is explicitly marked <c>SufiAiMcpTool.ReadOnly</c> (sufi-chain#384 slice 5).</summary>
-    public bool IsReadOnly => _isReadOnly;
+    /// <summary>Resolved effect (sufi-chain#312). An explicit effect wins; otherwise the read-only flag decides.</summary>
+    public AgentActionEffect Effect => _effect;
+
+    /// <summary>True only when <see cref="Effect"/> is <see cref="AgentActionEffect.Read"/>.</summary>
+    public bool IsReadOnly => _effect == AgentActionEffect.Read;
 
     /// <summary>Permission the bound user must hold, from <c>SufiAiMcpToolAttribute.PermissionName</c>.</summary>
     public string? PermissionName => _permissionName;
@@ -101,7 +108,7 @@ public class InternalMCPTool : IMCPTool, IMCPToolAccessRequirement, IMCPToolEffe
             return await AuditedAsync(MCPToolExecutionResult.CreateFailure(AgentCallErrorCodes.AnonymousNotAllowed), context, parameters);
         }
 
-        if (call.AgentScope == AgentToolScope.ReadOnly && !_isReadOnly)
+        if (call.AgentScope == AgentToolScope.ReadOnly && !IsReadOnly)
         {
             // sufi-chain#384 slice 5: a read-only agent can't run a tool not explicitly marked read-only.
             return await AuditedAsync(MCPToolExecutionResult.CreateFailure(AgentCallErrorCodes.AgentScopeReadOnly), context, parameters);

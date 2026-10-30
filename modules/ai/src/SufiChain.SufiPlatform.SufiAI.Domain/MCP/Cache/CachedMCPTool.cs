@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using SufiChain.SufiPlatform.SufiAI;
 using SufiChain.SufiPlatform.SufiAI.MCP.Abstractions;
 using Volo.Abp;
 
@@ -11,7 +12,7 @@ namespace SufiChain.SufiPlatform.SufiAI.MCP.Cache;
 /// transport I/O. Execution must go through <see cref="IMCPToolRegistry.ResolveAsync"/> to obtain
 /// an executable tool instance.
 /// </summary>
-public class CachedMCPTool : IMCPTool
+public class CachedMCPTool : IMCPTool, IMCPToolEffect
 {
     public CachedMCPTool(MCPToolDescriptor descriptor)
     {
@@ -20,6 +21,9 @@ public class CachedMCPTool : IMCPTool
         ParameterSchema = descriptor.ParameterSchema;
         ToolType = descriptor.ToolType;
         Source = descriptor.Source;
+        Effect = descriptor.Effect is AgentActionEffect.Read or AgentActionEffect.Write
+            ? descriptor.Effect
+            : AgentActionEffect.Write;
     }
 
     public string Name { get; }
@@ -27,6 +31,8 @@ public class CachedMCPTool : IMCPTool
     public string ParameterSchema { get; }
     public MCPToolType ToolType { get; }
     public string Source { get; }
+    public AgentActionEffect Effect { get; }
+    public bool IsReadOnly => Effect == AgentActionEffect.Read;
 
     public Task<MCPToolExecutionResult> ExecuteAsync(
         WorkspaceContext context,

@@ -4,6 +4,7 @@ using System.Text.Json;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Microsoft.Extensions.DependencyInjection;
+using SufiChain.SufiPlatform.SufiAI;
 using SufiChain.SufiPlatform.SufiAI.MCP.Abstractions;
 using SufiChain.SufiPlatform.SufiAI.MCP.Audit;
 using Volo.Abp.Authorization.Permissions;
@@ -17,6 +18,9 @@ public class MCPKernelToolRegistrar : IMCPKernelToolRegistrar, ITransientDepende
 {
     /// <summary>Original registry name, before conversion to Semantic Kernel identifiers.</summary>
     public const string ToolNameMetadataKey = "SufiAI.MCP.ToolName";
+
+    /// <summary>Resolved <see cref="AgentActionEffect"/> stored on the kernel function (sufi-chain#312).</summary>
+    public const string EffectMetadataKey = "SufiAI.MCP.Effect";
 
     private readonly IMCPToolRegistry _toolRegistry;
     private readonly IEnumerable<IMcpToolDecisionGate> _gates;
@@ -83,11 +87,37 @@ public class MCPKernelToolRegistrar : IMCPKernelToolRegistrar, ITransientDepende
             }
         }
 
+        var registeredNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         foreach (var tool in offered)
         {
+            var refusal = GetRegistrationRefusal(tool);
+            if (refusal is not null)
+            {
+                _logger.LogWarning(
+                    "MCP tool {ToolName} was not registered in workspace {WorkspaceName}: {Reason}",
+                    tool.Name,
+                    context.WorkspaceName,
+                    refusal);
+                continue;
+            }
+
+            if (!registeredNames.Add(tool.Name))
+            {
+                _logger.LogWarning(
+                    "MCP tool {ToolName} was not registered in workspace {WorkspaceName}: a tool with this name is already registered for the turn.",
+                    tool.Name,
+                    context.WorkspaceName);
+                continue;
+            }
+
             var pluginName = ToKernelPluginName(tool.Name);
             if (kernel.Plugins.Any(plugin => plugin.Name == pluginName))
             {
+                _logger.LogWarning(
+                    "MCP tool {ToolName} was not registered in workspace {WorkspaceName}: its kernel name {PluginName} is already in use.",
+                    tool.Name,
+                    context.WorkspaceName,
+                    pluginName);
                 continue;
             }
 
@@ -177,12 +207,37 @@ public class MCPKernelToolRegistrar : IMCPKernelToolRegistrar, ITransientDepende
                     AdditionalMetadata = new ReadOnlyDictionary<string, object?>(
                         new Dictionary<string, object?>
                         {
-                            [ToolNameMetadataKey] = tool.Name
+                            [ToolNameMetadataKey] = tool.Name,
+                            [EffectMetadataKey] = (tool as IMCPToolEffect)?.Effect ?? AgentActionEffect.Write
                         })
                 });
 
             kernel.Plugins.AddFromFunctions(pluginName, new[] { function });
         }
+    }
+
+    /// <summary>
+    /// sufi-chain#312 / #314: a tool is registered only when it has a name and a known effect.
+    /// Tools that do not declare an effect are refused (fail closed). Returns the refusal, or null.
+    /// </summary>
+    public static string? GetRegistrationRefusal(IMCPTool tool)
+    {
+        if (tool is null || string.IsNullOrWhiteSpace(tool.Name))
+        {
+            return "A tool name is required.";
+        }
+
+        if (tool is not IMCPToolEffect declared)
+        {
+            return "A tool must declare an effect.";
+        }
+
+        if (declared.Effect is not (AgentActionEffect.Read or AgentActionEffect.Write))
+        {
+            return "The tool effect is not Read or Write.";
+        }
+
+        return null;
     }
 
     private static List<KernelParameterMetadata> CreateParameterMetadata(string parameterSchema)
