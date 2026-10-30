@@ -154,6 +154,11 @@ public class AIModelConfiguration : AuditedEntity<Guid>
         Dimensions = dimensions;
    }
 
+    public void ClearApiKey()
+    {
+        ApiKey = null;
+    }
+
     public void SetChatCapabilities(
         bool? acceptsImageInput,
         bool? acceptsFileInput,

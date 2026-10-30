@@ -154,7 +154,7 @@ public class DefaultAiWorkspaceSeederTests
             },
             tenantId);
 
-        var workspaceId = await seeder.EnsureDefaultWorkspaceAsync();
+        var workspaceId = await seeder.EnsureDefaultWorkspaceAsync(tenantId);
 
         workspaceId.ShouldBe(existing.Id);
         existing.ModelConfigurations.Count.ShouldBe(1);
@@ -226,7 +226,7 @@ public class DefaultAiWorkspaceSeederTests
             synchronizer,
             unitOfWorkManager);
 
-        var workspaceId = await seeder.EnsureDefaultWorkspaceAsync();
+        var workspaceId = await seeder.EnsureDefaultWorkspaceAsync(tenantId);
 
         workspaceId.ShouldBe(projectionId);
         await repository.DidNotReceive()
@@ -304,12 +304,133 @@ public class DefaultAiWorkspaceSeederTests
             synchronizer,
             unitOfWorkManager);
 
-        var workspaceId = await seeder.EnsureDefaultWorkspaceAsync();
+        var workspaceId = await seeder.EnsureDefaultWorkspaceAsync(tenantId);
 
         workspaceId.ShouldBe(projectionId);
         HostDefaultWorkspaceMarker.IsMarked(hostWorkspace).ShouldBeTrue();
         await repository.DidNotReceive()
             .InsertAsync(Arg.Any<Workspace>(), Arg.Any<bool>(), Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task Parameterless_seed_skips_an_ambient_tenant()
+    {
+        var repository = Substitute.For<IWorkspaceRepository>();
+        var synchronizer = Substitute.For<IInheritedWorkspaceProjectionSynchronizer>();
+        var seeder = CreateSeeder(
+            repository,
+            new DefaultWorkspaceSeedOptions { Model = "seed-chat" },
+            tenantId: Guid.NewGuid(),
+            synchronizer: synchronizer);
+
+        var workspaceId = await seeder.EnsureDefaultWorkspaceAsync();
+
+        workspaceId.ShouldBeNull();
+        await repository.DidNotReceiveWithAnyArgs().FindByNameAsync(default!, default);
+        await repository.DidNotReceiveWithAnyArgs().InsertAsync(default!, default, default);
+        await synchronizer.DidNotReceiveWithAnyArgs().CreateTenantProjectionAsync(
+            default!, default, default, default, default, default, default);
+    }
+
+    [Fact]
+    public async Task Explicit_tenant_seeds_that_tenant_when_another_tenant_is_ambient()
+    {
+        var ambientTenantId = Guid.NewGuid();
+        var explicitTenantId = Guid.NewGuid();
+        var hostWorkspaceId = Guid.NewGuid();
+        var projectionId = Guid.NewGuid();
+        var repository = Substitute.For<IWorkspaceRepository>();
+        var assignments = Substitute.For<IWorkspaceAssignmentRepository>();
+        var synchronizer = Substitute.For<IInheritedWorkspaceProjectionSynchronizer>();
+        var hostWorkspace = new Workspace(
+            hostWorkspaceId,
+            AIWorkspaceNames.Default,
+            AIProviderType.OpenAI,
+            "host-model");
+        var projection = new Workspace(
+            projectionId,
+            AIWorkspaceNames.Default,
+            AIProviderType.OpenAI,
+            "host-model",
+            explicitTenantId);
+        projection.MarkAsInherited(hostWorkspaceId, Guid.NewGuid());
+
+        repository.FindByNameAsync(AIWorkspaceNames.Default, Arg.Any<CancellationToken>())
+            .Returns(
+                (Workspace?)null,
+                (Workspace?)null,
+                (Workspace?)null,
+                (Workspace?)null,
+                hostWorkspace);
+        repository.UpdateAsync(Arg.Any<Workspace>(), Arg.Any<bool>(), Arg.Any<CancellationToken>())
+            .Returns(callInfo => callInfo.Arg<Workspace>());
+        assignments.FindAsync(explicitTenantId, hostWorkspaceId, Arg.Any<CancellationToken>())
+            .Returns((WorkspaceAssignment?)null);
+        assignments.InsertAsync(Arg.Any<WorkspaceAssignment>(), Arg.Any<bool>(), Arg.Any<CancellationToken>())
+            .Returns(callInfo => callInfo.Arg<WorkspaceAssignment>());
+        synchronizer.CreateTenantProjectionAsync(
+                hostWorkspace,
+                explicitTenantId,
+                Arg.Any<Guid>(),
+                Arg.Any<Guid>(),
+                hostWorkspaceId,
+                AIWorkspaceNames.Default,
+                Arg.Any<CancellationToken>())
+            .Returns(projection);
+
+        var unitOfWork = Substitute.For<IUnitOfWork>();
+        unitOfWork.CompleteAsync(Arg.Any<CancellationToken>()).Returns(Task.CompletedTask);
+        var unitOfWorkManager = Substitute.For<IUnitOfWorkManager>();
+        unitOfWorkManager.Begin(Arg.Any<AbpUnitOfWorkOptions>(), Arg.Any<bool>()).Returns(unitOfWork);
+
+        var seeder = CreateSeeder(
+            repository,
+            new DefaultWorkspaceSeedOptions { Model = "seed-chat" },
+            ambientTenantId,
+            assignments,
+            synchronizer,
+            unitOfWorkManager);
+
+        var workspaceId = await seeder.EnsureDefaultWorkspaceAsync(explicitTenantId);
+
+        workspaceId.ShouldBe(projectionId);
+        await assignments.Received(1).FindAsync(explicitTenantId, hostWorkspaceId, Arg.Any<CancellationToken>());
+        await assignments.DidNotReceive().FindAsync(ambientTenantId, Arg.Any<Guid>(), Arg.Any<CancellationToken>());
+        await synchronizer.Received(1).CreateTenantProjectionAsync(
+            hostWorkspace,
+            explicitTenantId,
+            Arg.Any<Guid>(),
+            Arg.Any<Guid>(),
+            hostWorkspaceId,
+            AIWorkspaceNames.Default,
+            Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task Explicit_host_seed_ignores_an_ambient_tenant()
+    {
+        var repository = Substitute.For<IWorkspaceRepository>();
+        Workspace? inserted = null;
+        repository.FindByNameAsync(AIWorkspaceNames.Default, Arg.Any<CancellationToken>())
+            .Returns((Workspace?)null);
+        repository.InsertAsync(
+                Arg.Do<Workspace>(workspace => inserted = workspace),
+                Arg.Any<bool>(),
+                Arg.Any<CancellationToken>())
+            .Returns(callInfo => callInfo.Arg<Workspace>());
+        var synchronizer = Substitute.For<IInheritedWorkspaceProjectionSynchronizer>();
+        var seeder = CreateSeeder(
+            repository,
+            new DefaultWorkspaceSeedOptions { Model = "seed-chat" },
+            tenantId: Guid.NewGuid(),
+            synchronizer: synchronizer);
+
+        var workspaceId = await seeder.EnsureDefaultWorkspaceAsync((Guid?)null);
+
+        workspaceId.ShouldBe(inserted!.Id);
+        inserted.TenantId.ShouldBeNull();
+        await synchronizer.DidNotReceiveWithAnyArgs().CreateTenantProjectionAsync(
+            default!, default, default, default, default, default, default);
     }
 
     [Fact]
@@ -379,5 +500,60 @@ public class DefaultAiWorkspaceSeederTests
         public DisposeAction(Action action) => _action = action;
 
         public void Dispose() => _action();
+    }
+}
+
+public class DefaultWorkspaceDataSeedContributorTests
+{
+    [Fact]
+    public async Task Seed_skips_a_host_context_while_a_tenant_is_ambient()
+    {
+        var tenantId = Guid.NewGuid();
+        var seeder = Substitute.For<IDefaultAiWorkspaceSeeder>();
+        var contributor = new DefaultWorkspaceDataSeedContributor(
+            seeder,
+            CurrentTenant(tenantId),
+            NullLogger<DefaultWorkspaceDataSeedContributor>.Instance);
+
+        await contributor.SeedAsync(new DataSeedContext(null));
+
+        await seeder.DidNotReceive().EnsureDefaultWorkspaceAsync(Arg.Any<Guid?>(), Arg.Any<CancellationToken>());
+        await seeder.DidNotReceive().EnsureDefaultWorkspaceAsync(Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task Seed_runs_for_an_explicit_host_context()
+    {
+        var seeder = Substitute.For<IDefaultAiWorkspaceSeeder>();
+        var contributor = new DefaultWorkspaceDataSeedContributor(
+            seeder,
+            CurrentTenant(null),
+            NullLogger<DefaultWorkspaceDataSeedContributor>.Instance);
+
+        await contributor.SeedAsync(new DataSeedContext(null));
+
+        await seeder.Received(1).EnsureDefaultWorkspaceAsync((Guid?)null, Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task Seed_runs_for_an_explicit_tenant_context()
+    {
+        var tenantId = Guid.NewGuid();
+        var seeder = Substitute.For<IDefaultAiWorkspaceSeeder>();
+        var contributor = new DefaultWorkspaceDataSeedContributor(
+            seeder,
+            CurrentTenant(null),
+            NullLogger<DefaultWorkspaceDataSeedContributor>.Instance);
+
+        await contributor.SeedAsync(new DataSeedContext(tenantId));
+
+        await seeder.Received(1).EnsureDefaultWorkspaceAsync(tenantId, Arg.Any<CancellationToken>());
+    }
+
+    private static ICurrentTenant CurrentTenant(Guid? tenantId)
+    {
+        var currentTenant = Substitute.For<ICurrentTenant>();
+        currentTenant.Id.Returns(tenantId);
+        return currentTenant;
     }
 }
