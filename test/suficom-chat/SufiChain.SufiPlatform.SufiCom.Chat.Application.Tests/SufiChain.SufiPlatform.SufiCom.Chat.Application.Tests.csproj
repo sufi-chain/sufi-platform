@@ -12,6 +12,7 @@
     <ProjectReference Include="..\..\..\..\pro-modules\suficom\channels\src\SufiChain.SufiPlatform.SufiCom.Channels\SufiChain.SufiPlatform.SufiCom.Channels.csproj" />
     <ProjectReference Include="..\..\..\..\pro-modules\suficom\channels\src\SufiChain.SufiPlatform.SufiCom.Channels.Telegram\SufiChain.SufiPlatform.SufiCom.Channels.Telegram.csproj" />
     <ProjectReference Include="..\..\..\..\pro-modules\suficom\src\SufiChain.SufiPlatform.SufiCom.Application\SufiChain.SufiPlatform.SufiCom.Application.csproj" />
+    <ProjectReference Include="..\..\..\..\pro-modules\ai-hooshvare\src\SufiChain.SufiPlatform.SufiAI.Hooshvare.Domain\SufiChain.SufiPlatform.SufiAI.Hooshvare.Domain.csproj" />
     <ProjectReference Include="..\..\..\..\pro-modules\suficom\chat\src\SufiChain.SufiPlatform.SufiCom.Chat.EntityFrameworkCore\SufiChain.SufiPlatform.SufiCom.Chat.EntityFrameworkCore.csproj" />
     <ProjectReference Include="..\..\..\modules\settings\src\SufiChain.SufiPlatform.Settings.EntityFrameworkCore\SufiChain.SufiPlatform.Settings.EntityFrameworkCore.csproj" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.14.1" />

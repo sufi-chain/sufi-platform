@@ -1,3 +1,5 @@
+using System.Linq.Expressions;
+
 using Microsoft.Extensions.DependencyInjection;
 
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -8,7 +10,11 @@ using NSubstitute;
 
 using SufiChain.SufiPlatform.SufiCom.Application.Connections;
 
+using SufiChain.SufiPlatform.SufiCom.BusinessChannels;
+
 using SufiChain.SufiPlatform.SufiCom.Connections;
+
+using Volo.Abp.Domain.Repositories;
 
 using SufiChain.SufiPlatform.SufiCom.Chat.AiUsage;
 
@@ -20,7 +26,11 @@ using SufiChain.SufiPlatform.SufiCom.Chat.Usage;
 
 using SufiChain.SufiPlatform.SufiAI;
 
+using SufiChain.SufiPlatform.SufiAI.Hooshvare.Agents;
+
 using SufiChain.SufiPlatform.SufiAI.Hooshvare.Hooshvare;
+
+using Volo.Abp.Domain.Entities;
 
 using SufiChain.SufiPlatform.Features;
 
@@ -47,6 +57,14 @@ public static class ChatTestServiceConfiguration
     public static void ConfigureTestServices(ServiceConfigurationContext context)
 
     {
+
+        // Chat sessions read channel names. These fixtures do not host the SufiCom database,
+        // so an empty channel store keeps the repository that #644 added resolvable.
+        context.Services.Replace(ServiceDescriptor.Singleton(EmptyRepository<Channel>()));
+        // Assistant turns activate the hooshvare orchestrator. The chat fixtures do not host its database.
+        context.Services.Replace(ServiceDescriptor.Singleton(EmptyRepository<AgentRun>()));
+        context.Services.Replace(ServiceDescriptor.Singleton(EmptyRepository<AgentHooshvareAddition>()));
+        context.Services.Replace(ServiceDescriptor.Singleton(Substitute.For<IHooshvareDefinitionRepository>()));
 
         context.Services.AddSingleton<ConfigurableFeatureChecker>();
 
@@ -158,6 +176,19 @@ public static class ChatTestServiceConfiguration
 
             sp.GetRequiredService<ConfigurableAiService>()));
 
+    }
+
+    private static IRepository<TEntity, Guid> EmptyRepository<TEntity>()
+        where TEntity : class, IEntity<Guid>
+    {
+        var repository = Substitute.For<IRepository<TEntity, Guid>>();
+        repository
+            .FindAsync(Arg.Any<Guid>(), Arg.Any<bool>(), Arg.Any<CancellationToken>())
+            .Returns(Task.FromResult<TEntity>(null!));
+        repository
+            .GetListAsync(Arg.Any<Expression<Func<TEntity, bool>>>(), Arg.Any<bool>(), Arg.Any<CancellationToken>())
+            .Returns(Task.FromResult(new List<TEntity>()));
+        return repository;
     }
 
 }
