@@ -62,6 +62,25 @@ Used by usage analytics when operations are logged.
 | Is enabled | Active flag |
 | Metadata JSON | Headers, env vars, auth |
 
+## LLM gateway (tenant settings)
+
+Chat completions retry only inside `LlmChatGateway`. The OpenAI client stays at `maxRetries: 0`. Each name below is an ABP setting. A tenant value replaces the host default. The prefix is `SufiAI.LlmGateway.`.
+
+| Setting | Default | Meaning |
+|---------|---------|---------|
+| MaxAttempts | 4 | Tries per call, clamped to 3–5. Only 429, 5xx, timeouts, and connection resets are retried. |
+| BaseDelayMs | 200 | Full-jitter base. The wait is `random(0, min(cap, base * 2^attempt))`. |
+| MaxDelayMs | 8000 | Cap for that jitter. A `Retry-After` value is used instead of the jitter. |
+| RetryBudgetPercent | 10 | About this percent of requests may be retries. |
+| BreakerErrorRatePercent | 50 | Opens the provider/workspace/model breaker when the recent window reaches this error rate. |
+| BreakerMinimumSamples | 4 | Samples required before the breaker can open. |
+| BreakerWindow | 8 | How many recent outcomes the error rate uses. |
+| BreakerOpenSeconds | 30 | Open period. The next call is one half-open probe. |
+| MaxToolRounds | 10 | Tool-call rounds in one turn. |
+| MaxTurnSeconds | 120 | Wall-clock bound for a tool turn. 0 does not start a timer. |
+
+4xx, content-filter, and validation failures are not retried. Failover uses the next enabled chat model on the same workspace. A stream fails over only before the first text chunk. After that the client receives finish reason `interrupted` and the tool call is not replayed.
+
 ## Module-level options
 
 | Setting | Location | Default |

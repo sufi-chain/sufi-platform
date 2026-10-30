@@ -3,14 +3,17 @@ using Microsoft.SemanticKernel;
 namespace SufiChain.SufiPlatform.SufiAI;
 
 /// <summary>
-/// sufi-chain#340: bounds one tool-calling turn so it can't loop without an answer. 9.4: the turn has no
-/// wall-clock cutoff — a slow model may run as long as it needs. Only the user (Stop), the session or circuit
-/// closing, or app shutdown end a turn, through the caller's CancellationToken.
+/// sufi-chain#340: bounds one tool-calling turn so it can't loop without an answer.
+/// <see cref="MaxTurnSeconds"/> 0 keeps the 9.4 behavior: only the caller token ends a slow turn.
+/// sufi-chain#311: the tenant setting <c>SufiAI.LlmGateway.MaxTurnSeconds</c> supplies a timeout when it is above 0.
 /// </summary>
 public class AIToolLoopOptions
 {
     /// <summary>Most model requests in one turn that may run tools. The default of 128 auto-invoke attempts is far too many.</summary>
     public int MaxToolRounds { get; set; } = 10;
+
+    /// <summary>Wall-clock seconds for one tool turn. 0 does not start a timer.</summary>
+    public int MaxTurnSeconds { get; set; }
 }
 
 /// <summary>

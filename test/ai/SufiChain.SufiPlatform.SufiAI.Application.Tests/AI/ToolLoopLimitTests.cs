@@ -83,6 +83,23 @@ public class ToolLoopLimitTests
     }
 
     [Fact]
+    public async Task A_configured_turn_timeout_stops_the_tool_loop_with_the_limit_message()
+    {
+        using var handler = new LoopingModel(slowAfterFirst: TimeSpan.FromSeconds(30));
+        var (kernel, _) = CreateKernel(handler);
+        var recorder = Substitute.For<IAIUsageRecorder>();
+
+        var result = await Executor(recorder, new AIToolLoopOptions { MaxTurnSeconds = 1 })
+            .ExecuteAsync(Request(kernel));
+
+        result.Response.Content.ShouldBe(Fallback);
+        result.FinishReason.ShouldBe(AIToolLoopFinishReasons.TimeLimit);
+        await recorder.DidNotReceive().RecordAsync(
+            Arg.Is<AIUsageRecord>(r => r.IsSuccess),
+            Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
     public async Task Caller_cancellation_is_still_a_cancellation_not_a_limit_message()
     {
         using var handler = new LoopingModel(slowAfterFirst: TimeSpan.FromSeconds(30));
