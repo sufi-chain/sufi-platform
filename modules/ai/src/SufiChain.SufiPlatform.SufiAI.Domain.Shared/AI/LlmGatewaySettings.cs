@@ -29,6 +29,9 @@ public static class LlmGatewaySettings
 
     /// <summary>Per-turn timeout in seconds. 0 keeps the turn open until the caller cancels it.</summary>
     public const string MaxTurnSeconds = Prefix + "MaxTurnSeconds";
+
+    /// <summary>No built-in turn timer. A positive host or tenant value opts in.</summary>
+    public const int DefaultMaxTurnSeconds = 0;
 }
 
 /// <summary>Finish reason for a stream that died after the client already received text.</summary>

@@ -27,7 +27,7 @@ public sealed class LlmGatewayPolicy
 
     public int MaxToolRounds { get; init; } = 10;
 
-    public int MaxTurnSeconds { get; init; } = 120;
+    public int MaxTurnSeconds { get; init; } = LlmGatewaySettings.DefaultMaxTurnSeconds;
 
     public int ClampAttempts() => Math.Clamp(MaxAttempts, 3, 5);
 
@@ -52,7 +52,7 @@ public class LlmGatewaySettingDefinitionProvider : SettingDefinitionProvider
         Add(context, LlmGatewaySettings.BreakerWindow, "8");
         Add(context, LlmGatewaySettings.BreakerOpenSeconds, "30");
         Add(context, LlmGatewaySettings.MaxToolRounds, "10");
-        Add(context, LlmGatewaySettings.MaxTurnSeconds, "120");
+        Add(context, LlmGatewaySettings.MaxTurnSeconds, LlmGatewaySettings.DefaultMaxTurnSeconds.ToString(CultureInfo.InvariantCulture));
     }
 
     private static void Add(ISettingDefinitionContext context, string name, string value)
@@ -89,7 +89,7 @@ public class LlmGatewayPolicyReader : ILlmGatewayPolicyReader, ITransientDepende
             BreakerWindow = await Number(LlmGatewaySettings.BreakerWindow, 8, 1, 100),
             BreakerOpen = TimeSpan.FromSeconds(await Number(LlmGatewaySettings.BreakerOpenSeconds, 30, 1, 3_600)),
             MaxToolRounds = await Number(LlmGatewaySettings.MaxToolRounds, 10, 1, 50),
-            MaxTurnSeconds = await Number(LlmGatewaySettings.MaxTurnSeconds, 120, 0, 3_600)
+            MaxTurnSeconds = await Number(LlmGatewaySettings.MaxTurnSeconds, LlmGatewaySettings.DefaultMaxTurnSeconds, 0, 3_600)
         };
     }
 

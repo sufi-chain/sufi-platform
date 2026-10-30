@@ -77,7 +77,7 @@ Chat completions retry only inside `LlmChatGateway`. The OpenAI client stays at 
 | BreakerWindow | 8 | How many recent outcomes the error rate uses. |
 | BreakerOpenSeconds | 30 | Open period. The next call is one half-open probe. |
 | MaxToolRounds | 10 | Tool-call rounds in one turn. |
-| MaxTurnSeconds | 120 | Wall-clock bound for a tool turn. 0 does not start a timer. |
+| MaxTurnSeconds | 0 | Wall-clock bound for a tool turn. 0 does not start a timer. A positive value is opt-in. |
 
 4xx, content-filter, and validation failures are not retried. Failover uses the next enabled chat model on the same workspace. A stream fails over only before the first text chunk. After that the client receives finish reason `interrupted` and the tool call is not replayed.
 
