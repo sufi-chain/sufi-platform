@@ -17,10 +17,10 @@ public class AIPermissionDefinitionProvider : PermissionDefinitionProvider
         // The feature state checker sits on each permission (not just the group) because ABP checks a
         // child permission on its own. With the feature off the permissions read as not granted, so the
         // AI menus/pages close and [Authorize]-guarded AI app services refuse calls.
-        var webSettings = AIGroup.AddPermission("SufiAI.WebSearchSettings.Default", L("WebResearchSettings"))
+        var webSettings = AIGroup.AddPermission(AIPermissions.WebSearchSettings.Default, L("WebResearchSettings"))
             .RequireFeatures(SufiAIFeatures.Enable);
-        webSettings.AddChild("SufiAI.WebSearchSettings.Update", L("Permission:Edit")).RequireFeatures(SufiAIFeatures.Enable);
-        webSettings.AddChild("SufiAI.WebSearchSettings.Test", L("WebResearchTestConnection")).RequireFeatures(SufiAIFeatures.Enable);
+        webSettings.AddChild(AIPermissions.WebSearchSettings.Update, L("Permission:Edit")).RequireFeatures(SufiAIFeatures.Enable);
+        webSettings.AddChild(AIPermissions.WebSearchSettings.Test, L("WebResearchTestConnection")).RequireFeatures(SufiAIFeatures.Enable);
         var workspacesPermission = AIGroup.AddPermission(
             AIPermissions.Workspaces.Default, 
             L("Permission:Workspaces")

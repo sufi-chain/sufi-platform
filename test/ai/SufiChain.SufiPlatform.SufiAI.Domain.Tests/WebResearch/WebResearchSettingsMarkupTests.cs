@@ -29,7 +29,7 @@ public class WebResearchSettingsMarkupTests
         var page = ReadPage();
         Assert.DoesNotContain("Type=\"submit\"", page);
         Assert.DoesNotContain("form=\"web-research-settings-form\"", page);
-        Assert.Contains("OnClick=\"SubmitAsync\"", page);
+        Assert.DoesNotContain("OnValidSubmit", page);
     }
 
     [Fact]
@@ -37,6 +37,6 @@ public class WebResearchSettingsMarkupTests
     {
         var page = ReadPage();
         Assert.Contains("!_canEdit || !RendererInfo.IsInteractive", page);
-        Assert.Contains("Disabled=\"@(_busy || !RendererInfo.IsInteractive)\" OnClick=\"SubmitAsync\"", page);
+        Assert.Contains("Disabled=\"@(_busy || !RendererInfo.IsInteractive)\" aria-describedby=\"web-research-test-help\"", page);
     }
 }

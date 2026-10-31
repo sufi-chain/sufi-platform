@@ -1,0 +1,4 @@
+@page "/panel/admin/ai/web-research"
+@using SufiChain.SufiPlatform.SufiAI.Permissions
+@attribute [Authorize(Policy = AIPermissions.WebSearchSettings.Default)]
+@inherits AIComponentBase

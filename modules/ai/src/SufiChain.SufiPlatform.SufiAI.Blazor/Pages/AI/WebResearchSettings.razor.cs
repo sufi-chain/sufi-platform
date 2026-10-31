@@ -1,11 +1,21 @@
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Authorization;
 using System.Text.Json;
+using SufiChain.SufiPlatform.Settings.Blazor.Settings;
+using SufiChain.SufiPlatform.SufiAI.Permissions;
 
 namespace SufiChain.SufiPlatform.SufiAI.Blazor.Pages.AI;
 
-public partial class WebResearchSettings
+public partial class WebResearchSettings : IEditableSettingGroup
 {
+    private readonly SettingGroupEditor<UpdateWebResearchSettingsInput> _edits;
+    private bool _loaded;
+
+    public WebResearchSettings()
+    {
+        _edits = new SettingGroupEditor<UpdateWebResearchSettingsInput>(() => _model, value => _model = value);
+    }
+
     [Inject] private IWebResearchSettingsAppService SettingsService { get; set; } = default!;
     private UpdateWebResearchSettingsInput? _model;
     private bool _busy, _canEdit, _canTest;
@@ -13,18 +23,56 @@ public partial class WebResearchSettings
     private int _validationVersion;
     private Microsoft.AspNetCore.Components.Forms.EditForm? _form;
 
-    /// <summary>
-    /// sufi-chain#340 (G-162): the toolbar Save used to be a native submit button for the form.
-    /// Clicking it (or pressing Enter) before the circuit was interactive made the browser POST
-    /// /panel/admin/ai/web-research, which Blazor answers with HTTP 400. Save is now a plain
-    /// button that validates and saves over the circuit, and the form is disabled until interactive.
-    /// </summary>
-    private async Task SubmitAsync()
+    public bool IsSaving => _busy;
+
+    public bool HasUnsavedChanges => _edits.HasUnsavedChanges;
+
+    public event Action? EditStateChanged
     {
+        add => _edits.Changed += value;
+        remove => _edits.Changed -= value;
+    }
+
+    /// <summary>
+    /// sufi-chain#340 (G-162): save stays on the settings shell, not a native submit button.
+    /// A native submit posted the page URL and Blazor answered HTTP 400.
+    /// The form stays disabled until the circuit is interactive.
+    /// </summary>
+    public async Task SaveAsync()
+    {
+        if (await TrySaveAsync())
+        {
+            await Message.SuccessAsync(L["WebResearchSaved"]);
+        }
+    }
+
+    public async Task<bool> TrySaveAsync()
+    {
+        if (!_loaded || _model == null || !_edits.HasUnsavedChanges)
+        {
+            return true;
+        }
+
+        if (!_canEdit)
+        {
+            return false;
+        }
+
         var editContext = _form?.EditContext;
-        if (editContext == null) return;
-        if (editContext.Validate()) await SaveAsync();
-        else ShowAdvancedErrors();
+        if (editContext != null && !editContext.Validate())
+        {
+            ShowAdvancedErrors();
+            return false;
+        }
+
+        return await TrySaveQuietlyAsync(PersistAsync, "save");
+    }
+
+    public Task DiscardAsync()
+    {
+        ClearSaveFieldErrors();
+        _edits.Restore();
+        return InvokeAsync(StateHasChanged);
     }
 
     private void ShowAdvancedErrors()
@@ -35,25 +83,49 @@ public partial class WebResearchSettings
 
     protected override async Task OnInitializedAsync()
     {
-        _canEdit = await AuthorizationService.IsGrantedAsync("SufiAI.WebSearchSettings.Update");
-        _canTest = await AuthorizationService.IsGrantedAsync("SufiAI.WebSearchSettings.Test");
+        _canEdit = await AuthorizationService.IsGrantedAsync(AIPermissions.WebSearchSettings.Update);
+        _canTest = await AuthorizationService.IsGrantedAsync(AIPermissions.WebSearchSettings.Test);
         await LoadAsync();
+    }
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        base.OnAfterRender(firstRender);
+        _edits.Observe();
     }
 
     private async Task LoadAsync()
     {
         _loadFailed = false;
-        try { _model = JsonSerializer.Deserialize<UpdateWebResearchSettingsInput>(JsonSerializer.Serialize(await SettingsService.GetAsync())); }
+        try
+        {
+            _model = JsonSerializer.Deserialize<UpdateWebResearchSettingsInput>(JsonSerializer.Serialize(await SettingsService.GetAsync()));
+            _loaded = _model != null;
+            if (_loaded)
+            {
+                _edits.Capture();
+            }
+        }
         catch (Exception ex) { _loadFailed = true; await HandleErrorAsync(ex); }
     }
 
-    private async Task SaveAsync()
+    private async Task PersistAsync()
     {
-        if (_model == null || _busy || !_canEdit) return;
+        if (_model == null)
+        {
+            return;
+        }
+
         _busy = true;
-        try { await SettingsService.UpdateAsync(_model); await LoadAsync(); await Message.SuccessAsync(L["WebResearchSaved"]); }
-        catch (Exception ex) { await HandleErrorAsync(ex); }
-        finally { _busy = false; }
+        try
+        {
+            await SettingsService.UpdateAsync(_model);
+            await LoadAsync();
+        }
+        finally
+        {
+            _busy = false;
+        }
     }
 
     private async Task TestAsync()

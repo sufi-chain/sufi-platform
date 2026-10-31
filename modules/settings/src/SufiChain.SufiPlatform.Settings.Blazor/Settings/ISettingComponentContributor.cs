@@ -107,6 +107,12 @@ public class SettingComponentGroup
     public string? Policy { get; set; }
 
     /// <summary>
+    /// View-only section. The shared save bar stays hidden.
+    /// Use this when the caller can open the section but a separate permission is required to save.
+    /// </summary>
+    public bool ReadOnly { get; set; }
+
+    /// <summary>
     /// Order of the group. Each group on a page needs a unique order. Default is 1000.
     /// </summary>
     public int Order { get; set; } = 1000;

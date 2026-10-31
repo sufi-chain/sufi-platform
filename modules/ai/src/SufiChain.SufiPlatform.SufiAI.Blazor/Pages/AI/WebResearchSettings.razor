@@ -1,46 +1,29 @@
 @namespace SufiChain.SufiPlatform.SufiAI.Blazor.Pages.AI
-@page "/panel/admin/ai/web-research"
-@attribute [Authorize(Policy = "SufiAI.WebSearchSettings.Default")]
+@using SufiChain.SufiPlatform.SufiAI.Permissions
+@attribute [Authorize(Policy = AIPermissions.WebSearchSettings.Default)]
 @inherits AIComponentBase
-
-<SufiPageToolbar>
-    @if (_model != null)
-    {
-        @if (_canEdit)
-        {
-            <SbButton Type="button" Color="SbColor.Primary" Loading="@_busy" Disabled="@(_busy || !RendererInfo.IsInteractive)" OnClick="SubmitAsync">
-                <StartIcon><SbIcon Name="save" /></StartIcon>
-                <ChildContent>@L["Save"]</ChildContent>
-            </SbButton>
-        }
-        @if (_canTest)
-        {
-            <SbButton Variant="SbButtonVariant.Outline" OnClick="TestAsync" Disabled="@(_busy || !RendererInfo.IsInteractive)" aria-describedby="web-research-test-help">
-                <ChildContent>@L["WebResearchTestConnection"]</ChildContent>
-            </SbButton>
-        }
-    }
-    else if (_loadFailed)
-    {
-        <SbButton Variant="SbButtonVariant.Outline" OnClick="LoadAsync">
-            <StartIcon><SbIcon Name="refresh" /></StartIcon>
-            <ChildContent>@L["Refresh"]</ChildContent>
-        </SbButton>
-    }
-</SufiPageToolbar>
 
 <div class="web-research-settings">
     <header class="web-research-heading">
-        <h1>@L["WebResearchSettings"]</h1>
         <p>@L["WebResearchSetupHint"]</p>
         @if (_model != null && _canTest)
         {
+            <SbButton Type="button" Variant="SbButtonVariant.Outline" OnClick="TestAsync" Disabled="@(_busy || !RendererInfo.IsInteractive)" aria-describedby="web-research-test-help">
+                <ChildContent>@L["WebResearchTestConnection"]</ChildContent>
+            </SbButton>
             <p id="web-research-test-help">@L["WebResearchTestSaved"]</p>
+        }
+        else if (_loadFailed)
+        {
+            <SbButton Type="button" Variant="SbButtonVariant.Outline" OnClick="LoadAsync">
+                <StartIcon><SbIcon Name="refresh" /></StartIcon>
+                <ChildContent>@L["Refresh"]</ChildContent>
+            </SbButton>
         }
     </header>
     @if (_model != null)
     {
-        <EditForm @ref="_form" id="web-research-settings-form" Model="_model" OnValidSubmit="SaveAsync" OnInvalidSubmit="ShowAdvancedErrors">
+        <EditForm @ref="_form" id="web-research-settings-form" Model="_model" OnInvalidSubmit="ShowAdvancedErrors">
             <DataAnnotationsValidator />
             <ValidationSummary />
             <fieldset disabled="@(_busy || !_canEdit || !RendererInfo.IsInteractive)" class="web-research-fields">
