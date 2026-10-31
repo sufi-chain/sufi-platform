@@ -63,6 +63,10 @@ public partial class SettingsSectionHost : ComponentBase, IDisposable
         return Task.CompletedTask;
     }
 
+    private Func<Task<bool>>? SaveHandler => Group.ReadOnly ? null : new Func<Task<bool>>(SaveAsync);
+
+    private Func<Task>? DiscardHandler => Group.ReadOnly ? null : new Func<Task>(DiscardAsync);
+
     private async Task<bool> SaveAsync()
     {
         if (_component?.Instance is not IEditableSettingGroup editor)
