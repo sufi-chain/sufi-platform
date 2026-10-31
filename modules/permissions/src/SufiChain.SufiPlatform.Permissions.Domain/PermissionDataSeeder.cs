@@ -36,14 +36,18 @@ public class PermissionDataSeeder : IPermissionDataSeeder, ITransientDependency
         {
             using (PermissionGrantRepository.DisableTracking())
             {
-                var names = grantedPermissions.ToArray();
+                var names = grantedPermissions.Distinct(StringComparer.Ordinal).ToArray();
                 var existsPermissionGrants = (await PermissionGrantRepository.GetListAsync(names, providerName, providerKey)).Select(x => x.Name).ToList();
                 var permissions = names.Except(existsPermissionGrants).Select(permissionName => new PermissionGrant(GuidGenerator.Create(), permissionName, providerName, providerKey, tenantId)).ToList();
                 if (!permissions.Any())
                 {
                     return;
                 }
-                await PermissionGrantRepository.InsertManyAsync(permissions);
+
+                // Flush now. Another contributor in the same unit of work can grant the same
+                // name, and this query does not see unsaved rows. A host grant has a null
+                // tenant id, which SQL Server does not treat as a duplicate. A tenant id does.
+                await PermissionGrantRepository.InsertManyAsync(permissions, autoSave: true);
             }
         }
     }
