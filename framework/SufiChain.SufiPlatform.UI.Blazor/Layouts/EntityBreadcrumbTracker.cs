@@ -35,30 +35,28 @@ public sealed class EntityBreadcrumbTracker : IDisposable
     }
 
     // ObservableCollection forbids changes inside CollectionChanged, so re-apply after the event.
+    // A yielded continuation would resume on a single-threaded test context that is blocked
+    // waiting for the crumb, so the no-dispatch path queues the thread pool instead.
     private void OnBreadcrumbsChanged(object? sender, NotifyCollectionChangedEventArgs e)
     {
-        if (!_applying)
-        {
-            _ = ApplyLaterAsync();
-        }
-    }
-
-    private async Task ApplyLaterAsync()
-    {
-        await Task.Yield();
-        if (_disposed)
+        if (_applying)
         {
             return;
         }
 
         if (_dispatch != null)
         {
-            await _dispatch(Apply);
+            _ = _dispatch(Apply);
+            return;
         }
-        else
+
+        ThreadPool.UnsafeQueueUserWorkItem(_ =>
         {
-            Apply();
-        }
+            if (!_disposed)
+            {
+                Apply();
+            }
+        }, null);
     }
 
     private void Apply()
