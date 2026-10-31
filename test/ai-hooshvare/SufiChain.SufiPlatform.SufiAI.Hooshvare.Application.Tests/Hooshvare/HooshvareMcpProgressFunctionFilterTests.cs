@@ -3,6 +3,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel;
 using NSubstitute;
 using Shouldly;
+using SufiChain.SufiPlatform.SufiAI;
 using SufiChain.SufiPlatform.SufiAI.MCP.Abstractions;
 using SufiChain.SufiPlatform.SufiAI.MCP.Execution;
 using Xunit;
@@ -145,10 +146,14 @@ public class HooshvareMcpProgressFunctionFilterTests
     private static async Task<(Kernel Kernel, KernelFunction Function, List<HooshvareTurnProgressDto> Progress)>
         RegisterToolAsync(string toolName, bool fails = false)
     {
-        var tool = Substitute.For<IMCPTool>();
+        // Registration refuses a tool that does not declare Read or Write.
+        var tool = Substitute.For<IMCPTool, IMCPToolEffect>();
         tool.Name.Returns(toolName);
         tool.Description.Returns("Test tool");
         tool.ParameterSchema.Returns("{\"type\":\"object\",\"properties\":{}}");
+        var declared = (IMCPToolEffect)tool;
+        declared.Effect.Returns(AgentActionEffect.Write);
+        declared.IsReadOnly.Returns(false);
         tool.ExecuteAsync(Arg.Any<WorkspaceContext>(), Arg.Any<Dictionary<string, object?>>(),
                 Arg.Any<CancellationToken>())
             .Returns(_ => fails
