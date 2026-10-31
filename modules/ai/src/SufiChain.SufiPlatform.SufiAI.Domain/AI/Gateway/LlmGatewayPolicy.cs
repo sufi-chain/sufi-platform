@@ -58,14 +58,15 @@ public class LlmGatewaySettingDefinitionProvider : SettingDefinitionProvider
     private static void Add(ISettingDefinitionContext context, string name, string value)
     {
         var setting = new SettingDefinition(name, value, isVisibleToClients: false);
+        setting.Providers.Add(DefaultValueSettingValueProvider.ProviderName);
+        setting.Providers.Add(ConfigurationSettingValueProvider.ProviderName);
         setting.Providers.Add(GlobalSettingValueProvider.ProviderName);
-        setting.Providers.Add(TenantSettingValueProvider.ProviderName);
         context.Add(setting);
     }
 }
 
 /// <summary>
-/// Reads <see cref="LlmGatewaySettings"/> for the current tenant. ABP applies the tenant override.
+/// Reads the host <see cref="LlmGatewaySettings"/>. Tenant values are not stored.
 /// </summary>
 public class LlmGatewayPolicyReader : ILlmGatewayPolicyReader, ITransientDependency
 {
