@@ -72,6 +72,11 @@
     "MultilingualTextField:ScriptWarning": "Este texto parece estar en otro idioma.",
     "MultilingualTextField:BaseText": "Volver al texto base",
     "Hooshvare:SufiLocalization:Editor:DisplayName": "Editor de localización",
-    "SupportedCultures": "Idiomas admitidos"
+    "SupportedCultures": "Idiomas admitidos",
+    "Permission:SufiLocalization.Settings": "Ajustes de localización",
+    "Settings:Localization": "Localización",
+    "Settings:Localization:Hint": "La cultura predeterminada del producto. El persa es el valor por defecto.",
+    "Settings:Localization:DefaultCulture": "Cultura predeterminada",
+    "Settings:Localization:DefaultCulture:Hint": "Como fa o fa-IR. Primero persa, de derecha a izquierda."
   }
 }

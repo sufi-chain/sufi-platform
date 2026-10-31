@@ -617,6 +617,7 @@
     "TotalAttachments": "المجموع: {0} ملفات ({1})",
     "Statistics": "الإحصاءات",
     "Images": "الصور",
-    "Videos": "مقاطع الفيديو"
+    "Videos": "مقاطع الفيديو",
+    "Permission:FileManagerArchivingSettings": "إعدادات أرشفة الملفات"
   }
 }

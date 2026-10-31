@@ -20,6 +20,11 @@ public static class TagsPermissions
         public const string Delete = Default + ".Delete";
     }
 
+    public static class Settings
+    {
+        public const string Manage = GroupName + ".Settings";
+    }
+
     public static class TagLinks
     {
         public const string Default = GroupName + ".TagLinks";

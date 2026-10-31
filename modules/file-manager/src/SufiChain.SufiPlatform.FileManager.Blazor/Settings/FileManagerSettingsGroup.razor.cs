@@ -9,18 +9,15 @@ public partial class FileManagerSettingsGroup : FileManagerComponentBase, IEdita
 
     private FileManagerGeneralSettingsGroup? _generalSettingsGroup;
     private FileManagerStorageSettingsGroup? _storageSettingsGroup;
-    private FileManagerArchivingSettingsGroup? _archivingSettingsGroup;
     private bool _hasGeneralSettingsPermission;
     private bool _hasStorageSettingsPermission;
 
     public bool IsSaving =>
         _generalSettingsGroup?.IsSaving == true ||
-        _storageSettingsGroup?.IsSaving == true ||
-        _archivingSettingsGroup?.IsSaving == true;
+        _storageSettingsGroup?.IsSaving == true;
 
     public bool HasUnsavedChanges =>
         _generalSettingsGroup?.HasUnsavedChanges == true ||
-        _archivingSettingsGroup?.HasUnsavedChanges == true ||
         _storageSettingsGroup?.HasUnsavedChanges == true;
 
     public event Action? EditStateChanged;
@@ -37,7 +34,6 @@ public partial class FileManagerSettingsGroup : FileManagerComponentBase, IEdita
     {
         base.OnAfterRender(firstRender);
         Watch(_generalSettingsGroup);
-        Watch(_archivingSettingsGroup);
         Watch(_storageSettingsGroup);
     }
 
@@ -46,11 +42,6 @@ public partial class FileManagerSettingsGroup : FileManagerComponentBase, IEdita
         if (_generalSettingsGroup != null)
         {
             await _generalSettingsGroup.SaveAsync();
-        }
-
-        if (_archivingSettingsGroup != null)
-        {
-            await _archivingSettingsGroup.SaveAsync();
         }
 
         if (_storageSettingsGroup != null)
@@ -63,7 +54,6 @@ public partial class FileManagerSettingsGroup : FileManagerComponentBase, IEdita
     {
         var saved = true;
         saved &= await TrySaveChildAsync(_generalSettingsGroup);
-        saved &= await TrySaveChildAsync(_archivingSettingsGroup);
         saved &= await TrySaveChildAsync(_storageSettingsGroup);
         return saved;
     }
@@ -73,11 +63,6 @@ public partial class FileManagerSettingsGroup : FileManagerComponentBase, IEdita
         if (_generalSettingsGroup != null)
         {
             await _generalSettingsGroup.DiscardAsync();
-        }
-
-        if (_archivingSettingsGroup != null)
-        {
-            await _archivingSettingsGroup.DiscardAsync();
         }
 
         if (_storageSettingsGroup != null)

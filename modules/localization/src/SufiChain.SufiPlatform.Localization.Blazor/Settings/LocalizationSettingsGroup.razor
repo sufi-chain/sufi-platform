@@ -1,0 +1,23 @@
+@namespace SufiChain.SufiPlatform.Localization.Blazor.Settings
+@using SufiChain.SufiPlatform.Settings.Blazor.Settings
+@using SufiChain.SufiBlazor.Components.Feedback
+@using SufiChain.SufiBlazor.Components.Forms
+@using SufiChain.SufiBlazor.Components.Layout
+@using SufiChain.SufiPlatform.Localization.Settings
+@inherits LocalizationComponentBase
+@implements IEditableSettingGroup
+
+<CascadingValue Value="SaveFieldErrors" IsFixed="false">
+    <SbStack Gap="4">
+        @if (IsOperationLoading(LoadingKeys.Load))
+        {
+            <div class="text-center py-4">
+                <SbProgress Indeterminate="true" aria-label="@L["Loading"]" Type="SbProgressType.Circular" />
+            </div>
+        }
+        else
+        {
+            <SbTextField @bind-Value="_settings.DefaultCulture" Label="@L["Settings:Localization:DefaultCulture"]" dir="ltr" HelperText="@L["Settings:Localization:DefaultCulture:Hint"]" />
+        }
+    </SbStack>
+</CascadingValue>

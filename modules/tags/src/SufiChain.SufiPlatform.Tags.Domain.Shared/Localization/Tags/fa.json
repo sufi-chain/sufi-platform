@@ -72,5 +72,12 @@
     "Actions": "عملیات",
     "Created": "تاریخ ایجاد",
     "DeleteTag": "حذف برچسب"
-  ,"Hooshvare:SufiTags:Taxonomy:DisplayName":"رده‌بندی برچسب"}
+  ,"Hooshvare:SufiTags:Taxonomy:DisplayName":"رده‌بندی برچسب",
+    "Permission:SufiTags.Settings": "تنظیمات برچسب‌ها",
+    "Settings:Tags": "برچسب‌ها",
+    "Settings:Tags:Hint": "سقف تعداد و طول نام برچسب.",
+    "Settings:Tags:MaxPerEntity": "بیشینه برچسب برای هر موجودیت",
+    "Settings:Tags:MaxNameLength": "بیشینه طول نام",
+    "Settings:Tags:MaxNameLength:Hint": "از ۱ تا ۶۴، هم‌اندازه ستون نام."
+}
 }

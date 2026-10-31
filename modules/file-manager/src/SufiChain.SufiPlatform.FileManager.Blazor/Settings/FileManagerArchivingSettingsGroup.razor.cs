@@ -18,7 +18,7 @@ public partial class FileManagerArchivingSettingsGroup : FileManagerComponentBas
         public const string Save = "save";
     }
 
-    [Inject] private IFileManagerSettingsAppService SettingsAppService { get; set; } = default!;
+    [Inject] private IFileArchivingSettingsAppService SettingsAppService { get; set; } = default!;
 
     private FileManagerArchivingSettingsDto _settings = new();
 
@@ -61,7 +61,7 @@ public partial class FileManagerArchivingSettingsGroup : FileManagerComponentBas
 
     private Task LoadAsync() => ExecuteWithLoadingAsync(async () =>
     {
-        _settings = await SettingsAppService.GetArchivingSettingsAsync();
+        _settings = await SettingsAppService.GetAsync();
         _edits.Capture();
     }, LoadingKeys.Load);
 
@@ -85,7 +85,7 @@ public partial class FileManagerArchivingSettingsGroup : FileManagerComponentBas
 
     private async Task PersistAsync()
     {
-        await SettingsAppService.UpdateArchivingSettingsAsync(_settings);
+        await SettingsAppService.UpdateAsync(_settings);
         _edits.Capture();
     }
 }

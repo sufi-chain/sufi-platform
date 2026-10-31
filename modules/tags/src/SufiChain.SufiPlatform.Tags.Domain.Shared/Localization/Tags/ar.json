@@ -34,6 +34,12 @@
     "Feature:SufiTags.Tags": "تعريفات الوسوم",
     "Feature:SufiTags.Tags.Description": "السماح بإنشاء الوسوم وتحريرها.",
     "Feature:SufiTags.TagLinks": "تعيين الوسوم",
-    "Feature:SufiTags.TagLinks.Description": "السماح بتعيين الوسوم للسجلات."
+    "Feature:SufiTags.TagLinks.Description": "السماح بتعيين الوسوم للسجلات.",
+    "Permission:SufiTags.Settings": "إعدادات الوسوم",
+    "Settings:Tags": "الوسوم",
+    "Settings:Tags:Hint": "عدد الوسوم المسموح وطول الاسم.",
+    "Settings:Tags:MaxPerEntity": "الحد الأقصى للوسوم لكل كيان",
+    "Settings:Tags:MaxNameLength": "الحد الأقصى لطول الاسم",
+    "Settings:Tags:MaxNameLength:Hint": "من 1 إلى 64، وهو طول عمود الاسم."
   }
 }

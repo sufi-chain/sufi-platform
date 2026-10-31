@@ -9,7 +9,7 @@ using Volo.Abp.Settings;
 namespace SufiChain.SufiPlatform.FileManager.Settings;
 
 /// <summary>
-/// Manages File Manager general and archiving settings.
+/// Manages File Manager general settings. Archiving has its own application service.
 /// </summary>
 [RequiresFeature(SufiFileManagerFeatures.Enable)]
 [Authorize(FileManagerPermissions.Settings.Default)]
@@ -59,31 +59,5 @@ public class FileManagerSettingsAppService : SufiApplicationService, IFileManage
         await SettingManager.SetForTenantOrGlobalAsync(CurrentTenant.Id, FileManagerSettings.MaxImageHeight, input.MaxImageHeight.ToString());
         await SettingManager.SetForTenantOrGlobalAsync(CurrentTenant.Id, FileManagerSettings.AutoDeleteTempMediaAfterDays, input.AutoDeleteTempMediaAfterDays.ToString());
         await SettingManager.SetForTenantOrGlobalAsync(CurrentTenant.Id, FileManagerSettings.EnableDuplicateDetection, input.EnableDuplicateDetection.ToString());
-    }
-
-    public virtual async Task<FileManagerArchivingSettingsDto> GetArchivingSettingsAsync()
-    {
-        var aiRetentionDaysStr = await SettingProvider.GetOrNullAsync(FileArchivingSettings.AIFilesRetentionDays);
-
-        return new FileManagerArchivingSettingsDto
-        {
-            Enabled = await SettingProvider.GetAsync<bool>(FileArchivingSettings.Enabled),
-            RetentionDays = await SettingProvider.GetAsync<int>(FileArchivingSettings.RetentionDays),
-            BatchSize = await SettingProvider.GetAsync<int>(FileArchivingSettings.BatchSize),
-            Schedule = await SettingProvider.GetOrNullAsync(FileArchivingSettings.Schedule) ?? "0 2 * * *",
-            ArchiveAIFiles = await SettingProvider.GetAsync<bool>(FileArchivingSettings.ArchiveAIFiles),
-            AIFilesRetentionDays = string.IsNullOrWhiteSpace(aiRetentionDaysStr) ? null : int.Parse(aiRetentionDaysStr)
-        };
-    }
-
-    public virtual async Task UpdateArchivingSettingsAsync(FileManagerArchivingSettingsDto input)
-    {
-        await SettingManager.SetForTenantOrGlobalAsync(CurrentTenant.Id, FileArchivingSettings.Enabled, input.Enabled.ToString());
-        await SettingManager.SetForTenantOrGlobalAsync(CurrentTenant.Id, FileArchivingSettings.RetentionDays, input.RetentionDays.ToString());
-        await SettingManager.SetForTenantOrGlobalAsync(CurrentTenant.Id, FileArchivingSettings.BatchSize, input.BatchSize.ToString());
-        await SettingManager.SetForTenantOrGlobalAsync(CurrentTenant.Id, FileArchivingSettings.Schedule, input.Schedule);
-        await SettingManager.SetForTenantOrGlobalAsync(CurrentTenant.Id, FileArchivingSettings.ArchiveAIFiles, input.ArchiveAIFiles.ToString());
-        await SettingManager.SetForTenantOrGlobalAsync(CurrentTenant.Id, FileArchivingSettings.AIFilesRetentionDays,
-            input.AIFilesRetentionDays?.ToString());
     }
 }

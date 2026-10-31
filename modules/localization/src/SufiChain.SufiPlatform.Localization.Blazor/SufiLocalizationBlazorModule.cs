@@ -1,5 +1,8 @@
 using Microsoft.Extensions.DependencyInjection;
 using SufiChain.SufiPlatform.Localization.Blazor.Menus;
+using SufiChain.SufiPlatform.Localization.Blazor.Settings;
+using SufiChain.SufiPlatform.Settings.Blazor;
+using SufiChain.SufiPlatform.Settings.Blazor.Settings;
 using SufiChain.SufiPlatform.UI.Navigation;
 using SufiChain.SufiPlatform.UI.Routing;
 using Volo.Abp.Modularity;
@@ -7,7 +10,8 @@ using Volo.Abp.Modularity;
 namespace SufiChain.SufiPlatform.Localization.Blazor;
 
 [DependsOn(
-    typeof(SufiLocalizationApplicationContractsModule)
+    typeof(SufiLocalizationApplicationContractsModule),
+    typeof(SufiSettingsBlazorModule)
 )]
 public class SufiLocalizationBlazorModule : AbpModule
 {
@@ -23,6 +27,11 @@ public class SufiLocalizationBlazorModule : AbpModule
         Configure<SufiNavigationOptions>(options =>
         {
             options.MenuContributors.Add(new LocalizationMenuContributor());
+        });
+
+        Configure<SettingsComponentOptions>(options =>
+        {
+            options.Contributors.Add(new LocalizationSettingsGroupContributor());
         });
     }
 }

@@ -617,6 +617,7 @@
     "TotalAttachments": "Total: {0} archivos ({1})",
     "Statistics": "Estadísticas",
     "Images": "Imágenes",
-    "Videos": "Vídeos"
+    "Videos": "Vídeos",
+    "Permission:FileManagerArchivingSettings": "Ajustes de archivado de archivos"
   }
 }

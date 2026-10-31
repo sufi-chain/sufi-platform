@@ -56,6 +56,7 @@ public class SufiFileManagerBlazorModule : AbpModule
         Configure<SettingsComponentOptions>(options =>
         {
             options.Contributors.Add(new FileManagerSettingsGroupContributor());
+            options.Contributors.Add(new FileArchivingSettingsGroupContributor());
         });
     }
 }
