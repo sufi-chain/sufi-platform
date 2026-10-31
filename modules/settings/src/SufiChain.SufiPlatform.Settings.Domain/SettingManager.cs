@@ -1,3 +1,4 @@
+using Volo.Abp;
 using Volo.Abp.DependencyInjection;
 using Volo.Abp.MultiTenancy;
 using Volo.Abp.Settings;
@@ -96,6 +97,13 @@ public class SettingManager : ISettingManager, ITransientDependency
     protected virtual async Task<string?> GetOrNullInternalAsync(string name, string providerName, string? providerKey, bool fallback)
     {
         var setting = await SettingDefinitionManager.GetAsync(name);
+        if (!IsProviderAllowed(setting, providerName))
+        {
+            return fallback
+                ? await SettingProvider.GetOrNullAsync(name)
+                : null;
+        }
+
         var value = await SettingsStore.GetOrNullAsync(name, providerName, providerKey);
         if (!fallback || value != null)
         {
@@ -110,6 +118,11 @@ public class SettingManager : ISettingManager, ITransientDependency
     protected virtual async Task SetInternalAsync(string name, string? value, string providerName, string? providerKey)
     {
         var setting = await SettingDefinitionManager.GetAsync(name);
+        if (!IsProviderAllowed(setting, providerName))
+        {
+            throw new AbpException(
+                $"Setting '{setting.Name}' cannot be stored with the '{providerName}' provider. Allowed providers: {string.Join(", ", setting.Providers)}.");
+        }
 
         if (value == null)
         {
@@ -123,5 +136,10 @@ public class SettingManager : ISettingManager, ITransientDependency
         }
 
         await SettingsStore.SetAsync(setting.Name, value, providerName, providerKey);
+    }
+
+    protected virtual bool IsProviderAllowed(SettingDefinition setting, string providerName)
+    {
+        return setting.Providers.Count == 0 || setting.Providers.Contains(providerName);
     }
 }
