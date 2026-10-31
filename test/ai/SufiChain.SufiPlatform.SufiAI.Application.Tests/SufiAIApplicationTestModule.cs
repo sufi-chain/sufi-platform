@@ -6,6 +6,7 @@ using SufiChain.SufiPlatform.SufiAI.Catalog;
 using SufiChain.SufiPlatform.SufiAI.Provider.OpenRouter;
 using Volo.Abp.BlobStoring;
 using Volo.Abp.Modularity;
+using Volo.Abp.Settings;
 
 namespace SufiChain.SufiPlatform.SufiAI;
 
@@ -24,5 +25,10 @@ public class SufiAIApplicationTestModule : AbpModule
         context.Services.Replace(
             ServiceDescriptor.Transient<IAIHooshvareModelSelectionPolicyProvider, TestHooshvareModelSelectionPolicyProvider>());
         context.Services.TryAddSingleton(Substitute.For<IBlobContainer>());
+        // This host has no settings database. The settings domain module replaces ABP's null
+        // stores with implementations that need those repositories.
+        context.Services.Replace(
+            ServiceDescriptor.Singleton<IDynamicSettingDefinitionStore, NullDynamicSettingDefinitionStore>());
+        context.Services.Replace(ServiceDescriptor.Transient<ISettingStore, NullSettingStore>());
     }
 }

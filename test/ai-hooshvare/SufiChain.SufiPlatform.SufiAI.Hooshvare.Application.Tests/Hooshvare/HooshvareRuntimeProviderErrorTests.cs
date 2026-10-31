@@ -1,3 +1,4 @@
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using NSubstitute;
@@ -7,7 +8,9 @@ using SufiChain.SufiPlatform.SufiAI.Hooshvare.Agents;
 using SufiChain.SufiPlatform.SufiAI.MCP.Abstractions;
 using SufiChain.SufiPlatform.SufiAI.Workspaces;
 using Volo.Abp;
+using Volo.Abp.DependencyInjection;
 using Volo.Abp.Domain.Repositories;
+using Volo.Abp.Features;
 using Xunit;
 
 namespace SufiChain.SufiPlatform.SufiAI.Hooshvare.Hooshvare;
@@ -118,6 +121,11 @@ public class HooshvareRuntimeProviderErrorTests
                 Substitute.For<IHooshvareSessionMemoryStore>(),
                 NullLogger<HooshvareRuntimeAppService>.Instance)
         {
+            var features = Substitute.For<IFeatureChecker>();
+            features.GetOrNullAsync(Arg.Any<string>()).Returns(Task.FromResult<string>(null!));
+            var services = new ServiceCollection();
+            services.AddSingleton(features);
+            LazyServiceProvider = new AbpLazyServiceProvider(services.BuildServiceProvider());
         }
 
         protected override Task<HooshvareDefinition> GetEnabledDefinitionAsync(Guid id)
