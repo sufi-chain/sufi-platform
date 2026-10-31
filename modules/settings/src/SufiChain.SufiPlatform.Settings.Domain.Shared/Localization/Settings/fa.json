@@ -60,6 +60,7 @@
     "IdentityAllowedChannels": "کانال‌های مجاز ارسال",
     "Permission:Identity": "تنظیمات هویت",
     "Permission:Settings": "مدیریت تنظیمات",
+    "Permission:SettingsPage": "صفحه تنظیمات",
     "Permission:Emailing": "ایمیل",
     "Permission:EmailingTest": "آزمایش ایمیل",
     "Permission:TimeZone": "منطقه زمانی",

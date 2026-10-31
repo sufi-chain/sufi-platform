@@ -12,11 +12,12 @@ public class SettingsPermissionDefinitionProvider : PermissionDefinitionProvider
             SettingsPermissions.GroupName,
             L("Permission:Settings"));
 
-        group.AddPermission(SettingsPermissions.Emailing, L("Permission:Emailing"))
+        var page = group.AddPermission(SettingsPermissions.Settings, L("Permission:SettingsPage"));
+        page.AddChild(SettingsPermissions.Emailing, L("Permission:Emailing"))
             .AddChild(SettingsPermissions.EmailingTest, L("Permission:EmailingTest"));
-        group.AddPermission(SettingsPermissions.TimeZone, L("Permission:TimeZone"));
-        group.AddPermission(SettingsPermissions.Identity, L("Permission:Identity"));
-        group.AddPermission(SettingsPermissions.ExternalAuth, L("Permission:ExternalAuth"));
+        page.AddChild(SettingsPermissions.TimeZone, L("Permission:TimeZone"));
+        page.AddChild(SettingsPermissions.Identity, L("Permission:Identity"));
+        page.AddChild(SettingsPermissions.ExternalAuth, L("Permission:ExternalAuth"));
     }
 
     private static LocalizableString L(string name)

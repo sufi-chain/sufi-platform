@@ -21,18 +21,13 @@ public class SettingsMenuContributor : IMenuContributor
         var l = context.GetLocalizer<SufiSettingsResource>();
         var administration = context.Menu.GetAdministration();
 
-        // Show settings menu if user has permission to any setting group
         administration.AddItem(new ApplicationMenuItem(
             SettingsMenuNames.GroupName,
             l["Settings"],
             url: "/panel/admin/settings",
             icon: "settings",
             order: 100
-        ).RequirePermissions(
-            SettingsPermissions.Emailing,
-            SettingsPermissions.TimeZone,
-            SettingsPermissions.Identity,
-            SettingsPermissions.ExternalAuth));
+        ).RequirePermissions(SettingsPermissions.Settings));
 
         return Task.CompletedTask;
     }

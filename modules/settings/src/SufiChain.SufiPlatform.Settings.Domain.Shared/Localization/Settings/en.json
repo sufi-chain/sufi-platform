@@ -59,6 +59,7 @@
     "IdentityAllowedChannels": "Allowed delivery channels",
     "Permission:Identity": "Identity settings",
     "Permission:Settings": "Setting management",
+    "Permission:SettingsPage": "Settings page",
     "Permission:Emailing": "Emailing",
     "Permission:EmailingTest": "Emailing test",
     "Permission:TimeZone": "Time zone",
