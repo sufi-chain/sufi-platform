@@ -31,6 +31,9 @@ public interface ILlmDelay
     Task WaitAsync(TimeSpan delay, CancellationToken cancellationToken);
 }
 
+// ABP exposes an interface only when the class name ends with the interface name.
+// LlmTaskDelay does not end with LlmDelay, so ILlmDelay would never be registered.
+[ExposeServices(typeof(ILlmDelay))]
 public class LlmTaskDelay : ILlmDelay, ISingletonDependency
 {
     public Task WaitAsync(TimeSpan delay, CancellationToken cancellationToken)
@@ -44,6 +47,8 @@ public interface ILlmJitter
     double NextUnit();
 }
 
+// LlmRandomJitter does not end with LlmJitter, so the same exposure rule skips ILlmJitter.
+[ExposeServices(typeof(ILlmJitter))]
 public class LlmRandomJitter : ILlmJitter, ISingletonDependency
 {
     public double NextUnit() => Random.Shared.NextDouble();
