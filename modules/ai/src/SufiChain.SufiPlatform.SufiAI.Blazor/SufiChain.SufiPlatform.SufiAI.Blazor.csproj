@@ -17,6 +17,7 @@
   <ItemGroup>
     <!-- Sufi Framework (transitively provides SufiChain.SufiPlatform.UI.Abstractions and SufiChain.SufiBlazor) -->
     <ProjectReference Include="..\..\..\..\framework\SufiChain.SufiPlatform.UI.Blazor\SufiChain.SufiPlatform.UI.Blazor.csproj" />
+    <ProjectReference Include="..\..\..\settings\src\SufiChain.SufiPlatform.Settings.Blazor\SufiChain.SufiPlatform.Settings.Blazor.csproj" />
     <ProjectReference Include="..\..\..\..\framework\SufiChain.SufiPlatform.Data\SufiChain.SufiPlatform.Data.csproj" />
     <!-- Sufi AI Domain.Shared for localization -->
     <ProjectReference Include="..\SufiChain.SufiPlatform.SufiAI.Domain.Shared\SufiChain.SufiPlatform.SufiAI.Domain.Shared.csproj" />

@@ -6,9 +6,10 @@
                      Icon="@Group.Icon"
                      Description="@Group.Description"
                      Policy="@Group.Policy"
+                     ReadOnly="@Group.ReadOnly"
                      IsDirty="@_dirty"
                      IsDirtyChanged="SetDirty"
-                     OnSave="SaveAsync"
-                     OnDiscard="DiscardAsync">
+                     OnSave="@SaveHandler"
+                     OnDiscard="@DiscardHandler">
     <DynamicComponent @key="Group.Id" Type="@Group.ComponentType" Parameters="@_parameters" @ref="_component" />
 </SufiSettingsSection>

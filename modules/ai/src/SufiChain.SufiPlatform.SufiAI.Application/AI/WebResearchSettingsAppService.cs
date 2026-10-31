@@ -4,13 +4,14 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using SufiChain.SufiPlatform.Application.Services;
 using SufiChain.SufiPlatform.Settings;
+using SufiChain.SufiPlatform.SufiAI.Permissions;
 using SufiChain.SufiPlatform.SufiAI.Web;
 using Volo.Abp;
 using Volo.Abp.Auditing;
 
 namespace SufiChain.SufiPlatform.SufiAI;
 
-[Authorize("SufiAI.WebSearchSettings.Default")]
+[Authorize(AIPermissions.WebSearchSettings.Default)]
 public class WebResearchSettingsAppService(
     WebResearchOptionsProvider optionsProvider, ISettingManager manager,
     IWebSearchService search) : SufiApplicationService, IWebResearchSettingsAppService
@@ -29,7 +30,7 @@ public class WebResearchSettingsAppService(
         };
     }
 
-    [Authorize("SufiAI.WebSearchSettings.Update")]
+    [Authorize(AIPermissions.WebSearchSettings.Update)]
     [DisableAuditing]
     public virtual async Task UpdateAsync(UpdateWebResearchSettingsInput input)
     {
@@ -54,7 +55,7 @@ public class WebResearchSettingsAppService(
                 Convert.ToString(typeof(WebResearchSettingsDto).GetProperty(name)!.GetValue(input), CultureInfo.InvariantCulture)!);
     }
 
-    [Authorize("SufiAI.WebSearchSettings.Test")]
+    [Authorize(AIPermissions.WebSearchSettings.Test)]
     public virtual async Task<WebResearchConnectionDto> TestAsync()
     {
         try

@@ -110,6 +110,11 @@ public class SettingComponentGroup
     /// Order of the group. Each group on a page needs a unique order. Default is 1000.
     /// </summary>
     public int Order { get; set; } = 1000;
+
+    /// <summary>
+    /// View-only section. A list of links has nothing to save.
+    /// </summary>
+    public bool ReadOnly { get; set; }
 }
 
 /// <summary>
