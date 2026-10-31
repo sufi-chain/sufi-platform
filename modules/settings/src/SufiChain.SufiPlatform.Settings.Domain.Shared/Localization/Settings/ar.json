@@ -60,6 +60,7 @@
     "IdentityAllowedChannels": "قنوات الإرسال المسموحة",
     "Permission:Identity": "إعدادات الهوية",
     "Permission:Settings": "إدارة الإعدادات",
+    "Permission:SettingsPage": "صفحة الإعدادات",
     "Permission:Emailing": "البريد الإلكتروني",
     "Permission:EmailingTest": "اختبار البريد الإلكتروني",
     "Permission:TimeZone": "المنطقة الزمنية",

@@ -1,7 +1,9 @@
 using System.ComponentModel.DataAnnotations;
 using System.Threading.Tasks;
 using Shouldly;
+using SufiChain.SufiPlatform.SufiCom;
 using SufiChain.SufiPlatform.SufiCom.Configuration;
+using SufiChain.SufiPlatform.SufiCom.Settings;
 using Volo.Abp;
 using Volo.Abp.DependencyInjection;
 using Xunit;
@@ -38,15 +40,30 @@ public class EmailChannelConfigurationAppServiceTests : SufiComTestBase<SufiComA
             DefaultFromAddress = "support@example.com",
             SmtpHost = "smtp.example.com",
             SmtpPort = 587,
-            SmtpUseSsl = true
+            SmtpUseSsl = true,
+            ReplyToAddress = "reply@example.com"
         };
 
         await WithUnitOfWorkAsync(() => _configurationAppService.UpdateAsync(input));
 
         var result = await _configurationAppService.GetAsync();
         result.Enabled.ShouldBeTrue();
-        result.UsePlatformSmtp.ShouldBeFalse();
-        result.SmtpHost.ShouldBe("smtp.example.com");
+        result.UsePlatformSmtp.ShouldBeTrue();
+        result.ReplyToAddress.ShouldBe("reply@example.com");
+        result.SmtpHost.ShouldNotBe("smtp.example.com");
+    }
+
+    [Fact]
+    public async Task Email_channel_does_not_define_a_second_smtp_path()
+    {
+        var definitions = await GetRequiredService<Volo.Abp.Settings.ISettingDefinitionManager>().GetAllAsync();
+
+        definitions.ShouldContain(definition => definition.Name == SufiComSettingNames.EmailChannel.Enabled);
+        definitions.ShouldContain(definition => definition.Name == SufiComSettingNames.EmailChannel.ReplyToAddress);
+        definitions.ShouldNotContain(definition => definition.Name == SufiComSettingNames.EmailChannel.UsePlatformSmtp);
+        definitions.ShouldNotContain(definition => definition.Name == SufiComSettingNames.EmailChannel.SmtpHost);
+        definitions.ShouldNotContain(definition => definition.Name == SufiComSettingNames.EmailChannel.SmtpPassword);
+        definitions.ShouldContain(definition => definition.Name == SufiComSenderSettingNames.Email.SmtpHost);
     }
 
     [Fact]
@@ -78,30 +95,22 @@ public class EmailChannelConfigurationAppServiceTests : SufiComTestBase<SufiComA
     }
 
     [Fact]
-    public void Should_Reject_Invalid_From_Address_For_Enabled_Connector_Override()
+    public void Should_Ignore_Connector_Smtp_Override_Fields()
     {
         var input = new UpdateEmailChannelConfigurationInput
         {
             Enabled = true,
             UsePlatformSmtp = false,
             DefaultFromAddress = "not-an-email",
-            SmtpHost = "smtp.example.com",
-            SmtpPort = 587
+            SmtpHost = string.Empty,
+            SmtpPort = 0
         };
-        var validationResults = new List<ValidationResult>();
 
-        Validator.TryValidateObject(
-            input,
-            new ValidationContext(input),
-            validationResults,
-            true).ShouldBeFalse();
-
-        validationResults.ShouldContain(result =>
-            result.MemberNames.Contains(nameof(input.DefaultFromAddress)));
+        Validator.TryValidateObject(input, new ValidationContext(input), [], true).ShouldBeTrue();
     }
 
     [Fact]
-    public void Should_Require_Complete_Enabled_Connector_Override()
+    public void Should_Require_Inbound_Fields_When_Inbound_Is_Enabled()
     {
         var input = new UpdateEmailChannelConfigurationInput
         {
@@ -119,8 +128,8 @@ public class EmailChannelConfigurationAppServiceTests : SufiComTestBase<SufiComA
             true).ShouldBeFalse();
 
         validationResults.ShouldContain(result => result.MemberNames.Contains(nameof(input.InboundHost)));
-        validationResults.ShouldContain(result => result.MemberNames.Contains(nameof(input.SmtpHost)));
-        validationResults.ShouldContain(result => result.MemberNames.Contains(nameof(input.DefaultFromAddress)));
+        validationResults.ShouldNotContain(result => result.MemberNames.Contains(nameof(input.SmtpHost)));
+        validationResults.ShouldNotContain(result => result.MemberNames.Contains(nameof(input.DefaultFromAddress)));
     }
 
     [Fact]

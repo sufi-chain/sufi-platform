@@ -1,6 +1,6 @@
 @namespace SufiChain.SufiPlatform.Settings.Blazor.Pages
 @page "/panel/admin/settings"
-@attribute [Authorize]
+@attribute [Authorize(SettingsPermissions.Settings)]
 @inherits SettingsComponentBase
 
 <SufiPageToolbar />
