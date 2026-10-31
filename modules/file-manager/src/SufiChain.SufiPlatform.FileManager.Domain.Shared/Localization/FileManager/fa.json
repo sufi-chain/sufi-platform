@@ -606,6 +606,7 @@
     "TotalAttachments": "مجموع: {0} فایل ({1})",
     "Statistics": "آمار",
     "Images": "تصاویر",
-    "Videos": "ویدیوها"
+    "Videos": "ویدیوها",
+    "Permission:FileManagerArchivingSettings": "تنظیمات بایگانی پرونده"
   }
 }

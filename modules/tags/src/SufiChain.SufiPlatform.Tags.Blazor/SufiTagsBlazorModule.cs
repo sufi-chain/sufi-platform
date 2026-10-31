@@ -1,4 +1,7 @@
+using SufiChain.SufiPlatform.Settings.Blazor;
+using SufiChain.SufiPlatform.Settings.Blazor.Settings;
 using SufiChain.SufiPlatform.Tags.Blazor.Menus;
+using SufiChain.SufiPlatform.Tags.Blazor.Settings;
 using SufiChain.SufiPlatform.UI.Navigation;
 using SufiChain.SufiPlatform.UI.Routing;
 using Volo.Abp.Modularity;
@@ -10,7 +13,8 @@ namespace SufiChain.SufiPlatform.Tags.Blazor;
 /// Provides Tag management and TagLink inspector pages.
 /// </summary>
 [DependsOn(
-    typeof(SufiTagsApplicationContractsModule)
+    typeof(SufiTagsApplicationContractsModule),
+    typeof(SufiSettingsBlazorModule)
 )]
 public class SufiTagsBlazorModule : AbpModule
 {
@@ -26,6 +30,11 @@ public class SufiTagsBlazorModule : AbpModule
         Configure<SufiNavigationOptions>(options =>
         {
             options.MenuContributors.Add(new TagsMenuContributor());
+        });
+
+        Configure<SettingsComponentOptions>(options =>
+        {
+            options.Contributors.Add(new TagsSettingsGroupContributor());
         });
     }
 }

@@ -66,6 +66,11 @@
     "MultilingualTextField:ScriptWarning": "This text looks like another language.",
     "MultilingualTextField:BaseText": "Back to the base text",
     "Hooshvare:SufiLocalization:Editor:DisplayName": "Localization Editor",
-    "SupportedCultures": "Supported languages"
+    "SupportedCultures": "Supported languages",
+    "Permission:SufiLocalization.Settings": "Localization settings",
+    "Settings:Localization": "Localization",
+    "Settings:Localization:Hint": "The product default culture. Persian is the default.",
+    "Settings:Localization:DefaultCulture": "Default culture",
+    "Settings:Localization:DefaultCulture:Hint": "Such as fa or fa-IR. Persian-first, right to left."
   }
 }

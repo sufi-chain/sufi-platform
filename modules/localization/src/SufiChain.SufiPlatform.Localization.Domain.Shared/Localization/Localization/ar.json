@@ -72,6 +72,11 @@
     "MultilingualTextField:ScriptWarning": "يبدو أن هذا النص بلغة أخرى.",
     "MultilingualTextField:BaseText": "العودة إلى النص الأساسي",
     "Hooshvare:SufiLocalization:Editor:DisplayName": "محرر الترجمة",
-    "SupportedCultures": "اللغات المدعومة"
+    "SupportedCultures": "اللغات المدعومة",
+    "Permission:SufiLocalization.Settings": "إعدادات التوطين",
+    "Settings:Localization": "التوطين",
+    "Settings:Localization:Hint": "ثقافة المنتج الافتراضية. الفارسية هي الافتراضية.",
+    "Settings:Localization:DefaultCulture": "الثقافة الافتراضية",
+    "Settings:Localization:DefaultCulture:Hint": "مثل fa أو fa-IR. البداية بالفارسية ومن اليمين إلى اليسار."
   }
 }

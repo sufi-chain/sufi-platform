@@ -22,6 +22,7 @@ public class FileManagerPermissionDefinitionProvider : PermissionDefinitionProvi
 
         FileManagerGroup.AddPermission(FileManagerPermissions.Settings.Default, L("Permission:FileManagerSettings"));
         FileManagerGroup.AddPermission(FileManagerPermissions.StorageSettings.Manage, L("Permission:FileManagerStorageSettings"));
+        FileManagerGroup.AddPermission(FileManagerPermissions.ArchivingSettings.Manage, L("Permission:FileManagerArchivingSettings"));
     }
 
     private static LocalizableString L(string name)

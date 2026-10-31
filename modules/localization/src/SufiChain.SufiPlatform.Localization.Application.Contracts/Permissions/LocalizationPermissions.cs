@@ -16,6 +16,11 @@ public static class LocalizationPermissions
         public const string Export = Default + ".Export";
     }
 
+    public static class Settings
+    {
+        public const string Manage = GroupName + ".Settings";
+    }
+
     public static class Resources
     {
         public const string Default = GroupName + ".Resources";

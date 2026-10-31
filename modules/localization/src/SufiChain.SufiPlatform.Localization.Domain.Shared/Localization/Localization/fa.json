@@ -66,6 +66,11 @@
     "MultilingualTextField:ScriptWarning": "به نظر می‌رسد این متن به زبان دیگری است.",
     "MultilingualTextField:BaseText": "بازگشت به متن پایه",
     "Hooshvare:SufiLocalization:Editor:DisplayName": "ویرایشگر بومی‌سازی",
-    "SupportedCultures": "زبان‌های پشتیبانی‌شده"
+    "SupportedCultures": "زبان‌های پشتیبانی‌شده",
+    "Permission:SufiLocalization.Settings": "تنظیمات بومی‌سازی",
+    "Settings:Localization": "بومی‌سازی",
+    "Settings:Localization:Hint": "فرهنگ پیش‌فرض محصول. فارسی پیش‌فرض است.",
+    "Settings:Localization:DefaultCulture": "فرهنگ پیش‌فرض",
+    "Settings:Localization:DefaultCulture:Hint": "مانند fa یا fa-IR. راست‌به‌چپ با فارسی آغاز می‌شود."
   }
 }

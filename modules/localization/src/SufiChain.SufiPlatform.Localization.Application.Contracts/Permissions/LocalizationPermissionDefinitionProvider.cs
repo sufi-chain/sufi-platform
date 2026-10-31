@@ -43,6 +43,10 @@ public class LocalizationPermissionDefinitionProvider : PermissionDefinitionProv
         resourcesPermission.AddChild(
             LocalizationPermissions.Resources.Delete,
             L("Permission:LocalizationResources"));
+
+        localizationGroup.AddPermission(
+            LocalizationPermissions.Settings.Manage,
+            L("Permission:SufiLocalization.Settings"));
     }
 
     private static LocalizableString L(string name)

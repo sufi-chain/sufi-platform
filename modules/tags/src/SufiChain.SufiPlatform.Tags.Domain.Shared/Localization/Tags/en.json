@@ -72,5 +72,12 @@
     "NoTagLinksFound": "This tag is not linked to any entity.",
     "UnassignTagLinkConfirmation": "Remove this tag from '{0}' ({1})?",
     "DeleteTag": "Delete tag"
-  ,"Hooshvare:SufiTags:Taxonomy:DisplayName":"Tag Taxonomy"}
+  ,"Hooshvare:SufiTags:Taxonomy:DisplayName":"Tag Taxonomy",
+    "Permission:SufiTags.Settings": "Tag settings",
+    "Settings:Tags": "Tags",
+    "Settings:Tags:Hint": "How many tags an entity can have, and how long a name can be.",
+    "Settings:Tags:MaxPerEntity": "Maximum tags per entity",
+    "Settings:Tags:MaxNameLength": "Maximum name length",
+    "Settings:Tags:MaxNameLength:Hint": "From 1 to 64, the size of the name column."
+}
 }

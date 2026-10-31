@@ -19,6 +19,7 @@
     <ProjectReference Include="..\SufiChain.SufiPlatform.Localization.Application.Contracts\SufiChain.SufiPlatform.Localization.Application.Contracts.csproj" />
     <ProjectReference Include="..\SufiChain.SufiPlatform.Localization.Domain\SufiChain.SufiPlatform.Localization.Domain.csproj" />
     <ProjectReference Include="..\..\..\..\..\pro-modules\ai-hooshvare\src\SufiChain.SufiPlatform.SufiAI.Hooshvare.Application\SufiChain.SufiPlatform.SufiAI.Hooshvare.Application.csproj" />
-  </ItemGroup>
+      <ProjectReference Include="..\..\..\settings\src\SufiChain.SufiPlatform.Settings.Domain\SufiChain.SufiPlatform.Settings.Domain.csproj" />
+</ItemGroup>
 
 </Project>

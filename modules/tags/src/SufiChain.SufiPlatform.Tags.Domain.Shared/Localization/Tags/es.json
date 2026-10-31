@@ -34,6 +34,12 @@
     "Feature:SufiTags.Tags": "Definiciones de etiquetas",
     "Feature:SufiTags.Tags.Description": "Permite crear y editar etiquetas.",
     "Feature:SufiTags.TagLinks": "Asignación de etiquetas",
-    "Feature:SufiTags.TagLinks.Description": "Permite asignar etiquetas a los registros."
+    "Feature:SufiTags.TagLinks.Description": "Permite asignar etiquetas a los registros.",
+    "Permission:SufiTags.Settings": "Ajustes de etiquetas",
+    "Settings:Tags": "Etiquetas",
+    "Settings:Tags:Hint": "Cuántas etiquetas puede tener una entidad y cuánto puede medir el nombre.",
+    "Settings:Tags:MaxPerEntity": "Máximo de etiquetas por entidad",
+    "Settings:Tags:MaxNameLength": "Longitud máxima del nombre",
+    "Settings:Tags:MaxNameLength:Hint": "De 1 a 64, el tamaño de la columna del nombre."
   }
 }

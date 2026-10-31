@@ -19,7 +19,8 @@
     <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="$(MicrosoftAspNetCoreComponentsWebVersion)" />
     <!-- Blazor Authorization -->
     <PackageReference Include="Microsoft.AspNetCore.Components.Authorization" Version="$(AspNetCoreVersion)" />
-  </ItemGroup>
+      <ProjectReference Include="..\..\..\settings\src\SufiChain.SufiPlatform.Settings.Blazor\SufiChain.SufiPlatform.Settings.Blazor.csproj" />
+</ItemGroup>
 
   <ItemGroup>
     <!-- Sufi Framework (transitively provides SufiChain.SufiPlatform.UI.Abstractions and SufiChain.SufiBlazor) -->

@@ -32,6 +32,11 @@ public static class FileManagerPermissions
         public const string Manage = GroupName + ".StorageSettings";
     }
 
+    public static class ArchivingSettings
+    {
+        public const string Manage = GroupName + ".ArchivingSettings";
+    }
+
     public static string[] GetAll()
     {
         return ReflectionHelper.GetPublicConstantsRecursively(typeof(FileManagerPermissions));

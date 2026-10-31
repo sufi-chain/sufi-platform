@@ -23,6 +23,8 @@ public class TagsPermissionDefinitionProvider : PermissionDefinitionProvider
         var tagLinks = group.AddPermission(TagsPermissions.TagLinks.Default, L("Permission:SufiTags.TagLinks"));
         tagLinks.AddChild(TagsPermissions.TagLinks.Assign, L("Permission:SufiTags.TagLinks"));
         tagLinks.AddChild(TagsPermissions.TagLinks.Unassign, L("Permission:SufiTags.TagLinks"));
+
+        group.AddPermission(TagsPermissions.Settings.Manage, L("Permission:SufiTags.Settings"));
     }
 
     private static LocalizableString L(string name)

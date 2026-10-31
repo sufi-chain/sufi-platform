@@ -1,0 +1,24 @@
+@namespace SufiChain.SufiPlatform.Tags.Blazor.Settings
+@using SufiChain.SufiPlatform.Settings.Blazor.Settings
+@using SufiChain.SufiBlazor.Components.Feedback
+@using SufiChain.SufiBlazor.Components.Forms
+@using SufiChain.SufiBlazor.Components.Layout
+@using SufiChain.SufiPlatform.Tags.Settings
+@inherits TagsComponentBase
+@implements IEditableSettingGroup
+
+<CascadingValue Value="SaveFieldErrors" IsFixed="false">
+    <SbStack Gap="4">
+        @if (IsOperationLoading(LoadingKeys.Load))
+        {
+            <div class="text-center py-4">
+                <SbProgress Indeterminate="true" aria-label="@L["Loading"]" Type="SbProgressType.Circular" />
+            </div>
+        }
+        else
+        {
+            <SbNumberField TNumber="int" @bind-Value="_settings.MaxTagsPerEntity" Label="@L["Settings:Tags:MaxPerEntity"]" />
+            <SbNumberField TNumber="int" @bind-Value="_settings.MaxTagNameLength" Label="@L["Settings:Tags:MaxNameLength"]" HelperText="@L["Settings:Tags:MaxNameLength:Hint"]" />
+        }
+    </SbStack>
+</CascadingValue>

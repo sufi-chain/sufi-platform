@@ -1,8 +1,8 @@
 namespace SufiChain.SufiPlatform.SufiAI;
 
 /// <summary>
-/// Tenant-aware settings for the chat-completion gateway (sufi-chain#311).
-/// Values are read through ABP settings, so a tenant override replaces the host default.
+/// Host settings for the chat-completion gateway (sufi-chain#311).
+/// Stored only at host scope. A tenant does not override them.
 /// </summary>
 public static class LlmGatewaySettings
 {
@@ -30,7 +30,7 @@ public static class LlmGatewaySettings
     /// <summary>Per-turn timeout in seconds. 0 keeps the turn open until the caller cancels it.</summary>
     public const string MaxTurnSeconds = Prefix + "MaxTurnSeconds";
 
-    /// <summary>No built-in turn timer. A positive host or tenant value opts in.</summary>
+    /// <summary>No built-in turn timer. A positive host value opts in.</summary>
     public const int DefaultMaxTurnSeconds = 0;
 }
 
