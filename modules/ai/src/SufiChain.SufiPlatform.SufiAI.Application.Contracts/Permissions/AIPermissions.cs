@@ -64,4 +64,11 @@ public static class AIPermissions
         public const string Default = GroupName + ".AiCredits";
         public const string ViewAll = Default + ".ViewAll";
     }
+
+    public static class WebSearchSettings
+    {
+        public const string Default = GroupName + ".WebSearchSettings";
+        public const string Update = Default + ".Update";
+        public const string Test = Default + ".Test";
+    }
 }

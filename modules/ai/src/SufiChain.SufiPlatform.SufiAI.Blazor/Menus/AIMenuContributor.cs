@@ -1,6 +1,8 @@
 using Microsoft.Extensions.DependencyInjection;
 using SufiChain.SufiPlatform.SufiAI.Features;
 using SufiChain.SufiPlatform.SufiAI.Localization;
+using SufiChain.SufiPlatform.Settings.Blazor.Settings;
+using SufiChain.SufiPlatform.SufiAI.Blazor.Settings;
 using SufiChain.SufiPlatform.SufiAI.Permissions;
 using SufiChain.SufiPlatform.UI.Navigation;
 using SufiChain.SufiPlatform.Features;
@@ -45,8 +47,8 @@ public class AIMenuContributor : IMenuContributor
         }
 
         aiMenu.AddItem(new ApplicationMenuItem("SufiAI.WebResearch", l["WebResearchSettings"],
-            url: "/panel/admin/ai/web-research", icon: "search", order: 8)
-            .RequirePermissions("SufiAI.WebSearchSettings.Default"));
+            url: SettingsSectionLink.For(WebResearchSettingsSection.Id), icon: "search", order: 8)
+            .RequirePermissions(AIPermissions.WebSearchSettings.Default));
 
         if (await featureChecker.IsEnabledAsync(SufiAIFeatures.Workspaces))
         {

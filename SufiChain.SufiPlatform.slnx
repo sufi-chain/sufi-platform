@@ -238,6 +238,7 @@
   <Folder Name="/Tests/" />
   <Folder Name="/Tests/AI/">
     <Project Path="test/ai/SufiChain.SufiPlatform.SufiAI.Application.Tests/SufiChain.SufiPlatform.SufiAI.Application.Tests.csproj" />
+    <Project Path="test/ai/SufiChain.SufiPlatform.SufiAI.Blazor.Tests/SufiChain.SufiPlatform.SufiAI.Blazor.Tests.csproj" />
     <Project Path="test/ai/SufiChain.SufiPlatform.SufiAI.Domain.Tests/SufiChain.SufiPlatform.SufiAI.Domain.Tests.csproj" />
     <Project Path="test/ai/SufiChain.SufiPlatform.SufiAI.TestBase/SufiChain.SufiPlatform.SufiAI.TestBase.csproj" />
   </Folder>
