@@ -13,7 +13,7 @@
             @foreach (var item in PageLayout.BreadcrumbItems)
             {
                 var isLast = item == PageLayout.BreadcrumbItems.Last();
-                <li class="breadcrumb-item @(isLast ? "active" : "")" @(isLast ? "aria-current=page" : "")>
+                <li class="breadcrumb-item @(isLast ? "active" : null)" aria-current="@(isLast ? "page" : null)">
                     @if (!string.IsNullOrEmpty(item.Url) && !isLast)
                     {
                         <a href="@item.Url">
