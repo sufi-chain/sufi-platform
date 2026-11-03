@@ -310,6 +310,7 @@ public class AvailableModelListComposerTests
         workspaceSource.ShouldContain("OpenRouterModelCatalogSource.ModelsUri");
         workspaceSource.ShouldContain("workspace.ApiBaseUrl");
         workerSource.ShouldContain("IModelCatalogSource");
+        workerSource.ShouldContain("SharedWorkspaceRoutePriceReview");
     }
 
     [Fact]
