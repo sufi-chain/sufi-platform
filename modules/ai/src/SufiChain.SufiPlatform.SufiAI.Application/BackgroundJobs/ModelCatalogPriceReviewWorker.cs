@@ -1,7 +1,10 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using SufiChain.SufiPlatform.SufiAI;
 using SufiChain.SufiPlatform.SufiAI.Catalog;
+using SufiChain.SufiPlatform.SufiAI.Configuration;
+using SufiChain.SufiPlatform.SufiAI.Data;
 using SufiChain.SufiPlatform.SufiAI.Workspaces;
 using SufiChain.SufiPlatform.Tenants;
 using Volo.Abp.BackgroundWorkers;
@@ -27,13 +30,21 @@ public class ModelCatalogPriceReviewWorker : AsyncPeriodicBackgroundWorkerBase
             var catalog = scope.ServiceProvider.GetRequiredService<IModelCatalogSource>();
             var markup = scope.ServiceProvider.GetRequiredService<HostPriceMarkup>();
             var percent = await markup.GetPercentAsync();
+            var schedule = await scope.ServiceProvider.GetRequiredService<ISharedWorkspaceRoutePriceSource>().GetAsync();
+            var configuredName = scope.ServiceProvider.GetRequiredService<IOptions<AIOptions>>().Value.DefaultWorkspace?.Name;
             var currentTenant = scope.ServiceProvider.GetRequiredService<ICurrentTenant>();
             var tenantRepository = scope.ServiceProvider.GetService<ITenantRepository>();
             var updated = 0;
 
             using (currentTenant.Change(null))
             {
-                updated += await ReviewCurrentTenantAsync(scope.ServiceProvider, catalog, percent, workerContext.CancellationToken);
+                updated += await ReviewCurrentTenantAsync(
+                    scope.ServiceProvider,
+                    catalog,
+                    percent,
+                    schedule,
+                    configuredName,
+                    workerContext.CancellationToken);
             }
 
             if (tenantRepository != null)
@@ -45,7 +56,13 @@ public class ModelCatalogPriceReviewWorker : AsyncPeriodicBackgroundWorkerBase
                     {
                         using (currentTenant.Change(tenant.Id))
                         {
-                            updated += await ReviewCurrentTenantAsync(scope.ServiceProvider, catalog, percent, workerContext.CancellationToken);
+                            updated += await ReviewCurrentTenantAsync(
+                                scope.ServiceProvider,
+                                catalog,
+                                percent,
+                                schedule,
+                                configuredName,
+                                workerContext.CancellationToken);
                         }
                     }
                     catch (Exception ex)
@@ -67,6 +84,8 @@ public class ModelCatalogPriceReviewWorker : AsyncPeriodicBackgroundWorkerBase
         IServiceProvider serviceProvider,
         IModelCatalogSource catalog,
         decimal percent,
+        SharedWorkspaceRoutePriceSchedule schedule,
+        string? configuredName,
         CancellationToken cancellationToken)
     {
         var workspaceRepository = serviceProvider.GetRequiredService<IWorkspaceRepository>();
@@ -78,6 +97,9 @@ public class ModelCatalogPriceReviewWorker : AsyncPeriodicBackgroundWorkerBase
             ? new List<Workspace>()
             : await workspaceRepository.GetListAsync(maxResultCount: (int)Math.Min(count, int.MaxValue));
         var catalogs = new Dictionary<string, IReadOnlyList<ModelCatalogEntry>?>(StringComparer.OrdinalIgnoreCase);
+        var sharedId = HostDefaultWorkspaceMarker.Select(
+            workspaces.Where(workspace => workspace.TenantId == null && !workspace.IsInherited).ToList(),
+            configuredName)?.Id;
         var updated = 0;
         using var unitOfWork = unitOfWorkManager.Begin(requiresNew: true);
         foreach (var workspace in workspaces)
@@ -94,9 +116,11 @@ public class ModelCatalogPriceReviewWorker : AsyncPeriodicBackgroundWorkerBase
             }
 
             var routes = await repository.GetByWorkspaceIdAsync(workspace.Id);
+            var floorWorkspace = sharedId == workspace.Id && workspace.TenantId == null && !workspace.IsInherited;
             foreach (var route in routes)
             {
-                if (!ModelCatalogPriceReview.TryGetReplacement(route, models, percent, out var quote))
+                SharedWorkspaceRoutePriceFloor? floor = floorWorkspace ? schedule.For(route.CapabilityType) : null;
+                if (!SharedWorkspaceRoutePriceReview.TryGetReplacement(route, models, percent, floor, out var quote))
                 {
                     continue;
                 }
