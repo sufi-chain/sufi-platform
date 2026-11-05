@@ -57,8 +57,10 @@ public static class ServiceCollectionExtensions
         services.TryAddScoped<ILocalStorageService, BrowserLocalStorageService>();
         services.TryAddScoped<ISessionStorageService, BrowserSessionStorageService>();
 
-        // Register timing services
+        // Register timing services. IClock stays UTC for storage.
+        // Display reads Abp.Timing.TimeZone through IUserTimeZoneDisplay.
         services.TryAddSingleton<IClock, DefaultClock>();
+        services.TryAddTransient<IUserTimeZoneDisplay, UserTimeZoneDisplay>();
 
         // Register multi-tenancy services
         services.TryAddScoped<ICurrentTenant, DefaultCurrentTenant>();

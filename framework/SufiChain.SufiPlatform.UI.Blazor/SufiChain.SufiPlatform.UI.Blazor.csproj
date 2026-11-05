@@ -22,6 +22,7 @@
     <PackageReference Include="Volo.Abp.Localization" Version="$(AbpVersion)" />
     <PackageReference Include="Volo.Abp.ExceptionHandling" Version="$(AbpVersion)" />
     <PackageReference Include="Volo.Abp.Authorization" Version="$(AbpVersion)" />
+    <PackageReference Include="Volo.Abp.Settings" Version="$(AbpVersion)" />
 
   </ItemGroup>
 
@@ -38,6 +39,8 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\modules\calendar\src\SufiChain.SufiPlatform.Calendar.Domain.Shared\SufiChain.SufiPlatform.Calendar.Domain.Shared.csproj" />
+    <ProjectReference Include="..\..\modules\settings\src\SufiChain.SufiPlatform.Settings.Domain.Shared\SufiChain.SufiPlatform.Settings.Domain.Shared.csproj" />
     <ProjectReference Include="..\SufiChain.SufiPlatform.Authorization\SufiChain.SufiPlatform.Authorization.csproj" />
     <ProjectReference Include="..\SufiChain.SufiPlatform.AspNetCore.Authentication.Abstractions\SufiChain.SufiPlatform.AspNetCore.Authentication.Abstractions.csproj" />
     <ProjectReference Include="..\SufiChain.SufiPlatform.UI.Abstractions\SufiChain.SufiPlatform.UI.Abstractions.csproj" />
