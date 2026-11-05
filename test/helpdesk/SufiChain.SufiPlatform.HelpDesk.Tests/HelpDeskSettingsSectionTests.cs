@@ -34,6 +34,24 @@ public class HelpDeskSettingsSectionTests
         store.Get(HelpDeskSettings.DefaultAiHooshvareId).ShouldBeNull();
         store.Get(HelpDeskSettings.TicketNumberSequenceStart).ShouldBe("4");
         store.Get(HelpDeskSettings.LiveChatAllowOperatorSendDuringAiMode).ShouldBe("false");
+        store.Get(HelpDeskSettings.KnowledgeBasePublishingRequireApproval).ShouldBe("false");
+    }
+
+    [Fact]
+    public async Task Update_stores_knowledge_base_publication_approval()
+    {
+        var store = new SectionMemorySettings();
+        var service = Host(new HelpDeskSettingsAppService(store, store));
+
+        await service.UpdateAsync(new HelpDeskSettingsDto
+        {
+            TicketNumberPrefix = "HD-",
+            TicketNumberSequenceStart = 1,
+            KnowledgeBasePublishingRequireApproval = true
+        });
+
+        store.Get(HelpDeskSettings.KnowledgeBasePublishingRequireApproval).ShouldBe("true");
+        (await service.GetAsync()).KnowledgeBasePublishingRequireApproval.ShouldBeTrue();
     }
 
     [Fact]
