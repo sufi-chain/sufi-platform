@@ -14,7 +14,11 @@
                                 Calendars="@Calendars" />
         }
 
-        @if (SelectedCalendarId == Guid.Empty)
+        @if (LoadFailed)
+        {
+            <SbAlert Severity="SbAlertSeverity.Warning">@L["CalendarLoadFailed"]</SbAlert>
+        }
+        else if (SelectedCalendarId == Guid.Empty)
         {
             <SbAlert Severity="SbAlertSeverity.Info">@L["NoCalendarsFound"]</SbAlert>
         }
@@ -76,7 +80,11 @@ else
         </Header>
         <ChildContent>
             <SbStack Direction="SbStackDirection.Column" Gap="3" Class="sufi-calendar-scheduler">
-                @if (SelectedCalendarId == Guid.Empty)
+                @if (LoadFailed)
+                {
+                    <SbAlert Severity="SbAlertSeverity.Warning">@L["CalendarLoadFailed"]</SbAlert>
+                }
+                else if (SelectedCalendarId == Guid.Empty)
                 {
                     <SbAlert Severity="SbAlertSeverity.Info">@L["NoCalendarsFound"]</SbAlert>
                 }

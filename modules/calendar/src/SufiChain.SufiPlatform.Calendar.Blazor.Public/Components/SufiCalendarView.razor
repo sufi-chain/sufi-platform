@@ -57,7 +57,11 @@
         </Header>
 
         <ChildContent>
-            @if (_isLoading)
+            @if (_loadFailed)
+            {
+                <SbAlert Severity="SbAlertSeverity.Warning">@L["CalendarLoadFailed"]</SbAlert>
+            }
+            else if (_isLoading)
             {
                 <div class="sufi-calendar-view__empty">@L["Loading"]</div>
             }
