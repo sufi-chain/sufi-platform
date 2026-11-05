@@ -47,18 +47,74 @@ public class HooshvareHostWorkspaceFallbackTests
     }
 
     [Fact]
-    public async Task Resolve_Should_Not_Fall_Back_To_The_Host_Workspace_For_A_Tenant()
+    public async Task Resolve_Should_Inherit_The_Host_Default_When_A_Tenant_Cannot_See_The_Bound_Workspace()
     {
+        var tenantId = Guid.NewGuid();
+        var inheritedId = Guid.NewGuid();
+        var catalog = Substitute.For<ISufiAIWorkspaceCatalog>();
+        catalog.FindByIdAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>())
+            .Returns((SufiAIWorkspaceDescriptor?)null);
+        catalog.FindByIdAsync(inheritedId, Arg.Any<CancellationToken>())
+            .Returns(new SufiAIWorkspaceDescriptor
+            {
+                Id = inheritedId,
+                Name = "Inherited default",
+                IsActive = true,
+                IsReady = true,
+                IsInherited = true
+            });
+
+        var seeder = Substitute.For<IDefaultAiWorkspaceSeeder>();
+        seeder.EnsureDefaultWorkspaceAsync(tenantId, Arg.Any<CancellationToken>()).Returns(inheritedId);
+        var resolver = CreateResolver(catalog, seeder, tenantId);
+
+        var binding = await resolver.ResolveAsync(Guid.NewGuid());
+
+        binding.WorkspaceId.ShouldBe(inheritedId);
+        binding.WorkspaceName.ShouldBe("Inherited default");
+        await seeder.Received(1).EnsureDefaultWorkspaceAsync(tenantId, Arg.Any<CancellationToken>());
+        await seeder.DidNotReceive().EnsureDefaultWorkspaceAsync(Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task Resolve_Should_Keep_A_Tenant_Workspace_The_Tenant_Can_Already_See()
+    {
+        var tenantId = Guid.NewGuid();
+        var ownId = Guid.NewGuid();
+        var catalog = Substitute.For<ISufiAIWorkspaceCatalog>();
+        catalog.FindByIdAsync(ownId, Arg.Any<CancellationToken>())
+            .Returns(new SufiAIWorkspaceDescriptor
+            {
+                Id = ownId,
+                Name = "Tenant workspace",
+                IsActive = true,
+                IsReady = true
+            });
+        var seeder = Substitute.For<IDefaultAiWorkspaceSeeder>();
+        var resolver = CreateResolver(catalog, seeder, tenantId);
+
+        var binding = await resolver.ResolveAsync(ownId);
+
+        binding.WorkspaceId.ShouldBe(ownId);
+        binding.WorkspaceName.ShouldBe("Tenant workspace");
+        await seeder.DidNotReceive().EnsureDefaultWorkspaceAsync(Arg.Any<Guid?>(), Arg.Any<CancellationToken>());
+        await seeder.DidNotReceive().EnsureDefaultWorkspaceAsync(Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task Resolve_Should_Fail_When_A_Tenant_Has_No_Inherited_Host_Default()
+    {
+        var tenantId = Guid.NewGuid();
         var catalog = Substitute.For<ISufiAIWorkspaceCatalog>();
         catalog.FindByIdAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>())
             .Returns((SufiAIWorkspaceDescriptor?)null);
         var seeder = Substitute.For<IDefaultAiWorkspaceSeeder>();
-        var resolver = CreateResolver(catalog, seeder, tenantId: Guid.NewGuid());
+        seeder.EnsureDefaultWorkspaceAsync(tenantId, Arg.Any<CancellationToken>()).Returns((Guid?)null);
+        var resolver = CreateResolver(catalog, seeder, tenantId);
 
         var exception = await Should.ThrowAsync<BusinessException>(() => resolver.ResolveAsync(Guid.NewGuid()));
 
         exception.Code.ShouldBe(AIHooshvareErrorCodes.WorkspaceNotFound);
-        await seeder.DidNotReceive().EnsureDefaultWorkspaceAsync(Arg.Any<CancellationToken>());
     }
 
     [Fact]

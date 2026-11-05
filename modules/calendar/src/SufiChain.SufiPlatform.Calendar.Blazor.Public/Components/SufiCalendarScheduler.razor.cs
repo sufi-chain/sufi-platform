@@ -1,5 +1,6 @@
 using System.Globalization;
 using Microsoft.AspNetCore.Components;
+using Microsoft.Extensions.Logging;
 using SufiChain.SufiPlatform.Calendar.Availability;
 using SufiChain.SufiPlatform.Calendar.Blazor.Public;
 using SufiChain.SufiPlatform.Calendar.Calendars;
@@ -64,6 +65,7 @@ public partial class SufiCalendarScheduler : CalendarPublicComponentBase
     public RenderFragment? ToolbarExtra { get; set; }
 
     protected List<CalendarLookupDto> CalendarOptions { get; set; } = new();
+    protected bool LoadFailed { get; set; }
     protected string SelectedTimeZoneId { get; set; } = TimeZoneInfo.Local.Id;
     protected SufiCalendarViewMode View { get; set; } = SufiCalendarViewMode.Month;
     protected DateTime Date { get; set; } = DateTime.Today;
@@ -88,7 +90,16 @@ public partial class SufiCalendarScheduler : CalendarPublicComponentBase
 
         if (CalendarOptions.Count == 0)
         {
-            await LoadCalendarsAsync();
+            try
+            {
+                await LoadCalendarsAsync();
+                LoadFailed = false;
+            }
+            catch (Exception exception)
+            {
+                LoadFailed = true;
+                Logger.LogWarning(exception, "Calendar scheduler could not load calendars.");
+            }
         }
         else
         {

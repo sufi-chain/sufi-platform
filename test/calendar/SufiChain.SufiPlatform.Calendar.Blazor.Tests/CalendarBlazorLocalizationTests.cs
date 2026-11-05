@@ -15,6 +15,9 @@ public class CalendarBlazorLocalizationTests
     [Theory]
     [InlineData("EventEditorLoadFailed")]
     [InlineData("EventEditorRetry")]
+    [InlineData("InvalidTimeRange")]
+    [InlineData("DeleteNotAllowed")]
+    [InlineData("CalendarLoadFailed")]
     public void Event_Editor_Recovery_Keys_Exist_In_Every_Culture(string key)
     {
         foreach (var culture in Cultures)

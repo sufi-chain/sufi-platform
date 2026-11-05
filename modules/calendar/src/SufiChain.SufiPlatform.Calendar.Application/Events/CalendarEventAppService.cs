@@ -1,7 +1,13 @@
+using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.Extensions.Localization;
 using Volo.Abp;
+using Volo.Abp.Authorization;
+using Volo.Abp.Validation;
 using SufiChain.SufiPlatform.Application.Dtos;
 using SufiChain.SufiPlatform.Application.Services;
 using SufiChain.SufiPlatform.Calendar.Calendars;
+using SufiChain.SufiPlatform.Calendar.Localization;
 using SufiChain.SufiPlatform.Calendar.Permissions;
 using SufiChain.SufiPlatform.Calendar.Scheduling;
 using Volo.Abp.Linq;
@@ -67,6 +73,7 @@ public class CalendarEventAppService : SufiApplicationService, ICalendarEventApp
     public virtual async Task<CalendarEventDto> CreateAsync(CreateUpdateCalendarEventDto input)
     {
         await CheckPolicyAsync(CalendarPermissions.Events.Create);
+        EnsureTimeRange(input);
         await EnsureCanSeeCalendarAsync(input.CalendarId);
 
         var calendarEvent = new CalendarEvent(
@@ -101,6 +108,7 @@ public class CalendarEventAppService : SufiApplicationService, ICalendarEventApp
     public virtual async Task<CalendarEventDto> UpdateAsync(Guid id, CreateUpdateCalendarEventDto input)
     {
         await CheckPolicyAsync(CalendarPermissions.Events.Update);
+        EnsureTimeRange(input);
 
         var calendarEvent = await _eventRepository.GetAsync(id, includeDetails: true);
         await EnsureCanSeeCalendarAsync(calendarEvent.CalendarId);
@@ -131,9 +139,18 @@ public class CalendarEventAppService : SufiApplicationService, ICalendarEventApp
 
     public virtual async Task DeleteAsync(Guid id)
     {
-        await CheckPolicyAsync(CalendarPermissions.Events.Delete);
         var calendarEvent = await _eventRepository.GetAsync(id);
         await EnsureCanSeeCalendarAsync(calendarEvent.CalendarId);
+        var calendar = await _calendarRepository.GetAsync(calendarEvent.CalendarId);
+        var isOwner = CalendarEventDeleteAccess.IsOwner(
+            CurrentUser.Id,
+            calendarEvent.CreatorId,
+            calendar.OwnerUserId);
+        if (!isOwner)
+        {
+            await EnsureDeletePermissionAsync();
+        }
+
         calendarEvent.NotifyChanged();
         await _eventRepository.DeleteAsync(calendarEvent, autoSave: true);
         await _occurrenceCache.RemoveAsync(calendarEvent.CalendarId, calendarEvent.TenantId);
@@ -337,6 +354,40 @@ public class CalendarEventAppService : SufiApplicationService, ICalendarEventApp
     {
         var visibleCalendarIds = await GetVisibleCalendarIdsAsync();
         return query.Where(x => visibleCalendarIds.Contains(x.CalendarId));
+    }
+
+    /// <summary>
+    /// End must be after start. The message is the Calendar resource text so the UI
+    /// shows a localized validation error instead of a raw exception.
+    /// </summary>
+    protected virtual void EnsureTimeRange(CreateUpdateCalendarEventDto input)
+    {
+        if (input.EndUtc > input.StartUtc)
+        {
+            return;
+        }
+
+        var message = LazyServiceProvider
+            .LazyGetRequiredService<IStringLocalizer<CalendarResource>>()["InvalidTimeRange"]
+            .Value;
+        throw new AbpValidationException(message, new List<ValidationResult>
+        {
+            new(message, new[] { nameof(CreateUpdateCalendarEventDto.StartUtc), nameof(CreateUpdateCalendarEventDto.EndUtc) })
+        });
+    }
+
+    /// <summary>
+    /// A missing delete permission becomes a business error. The UI localizes the code
+    /// and does not show <see cref="AbpAuthorizationException"/>.
+    /// </summary>
+    protected virtual async Task EnsureDeletePermissionAsync()
+    {
+        if (await AuthorizationService.IsGrantedAsync(CalendarPermissions.Events.Delete))
+        {
+            return;
+        }
+
+        throw new BusinessException(CalendarErrorCodes.DeleteNotAllowed);
     }
 
     protected virtual async Task EnsureCanSeeCalendarAsync(Guid calendarId)

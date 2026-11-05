@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
+using Microsoft.Extensions.Logging;
 using SufiChain.SufiPlatform.Calendar.Availability;
 using SufiChain.SufiPlatform.Calendar.Calendars;
 using SufiChain.SufiPlatform.Calendar.Events;
@@ -59,6 +60,7 @@ public partial class SufiCalendarView : CalendarPublicComponentBase
     private string[] _dayNames = Array.Empty<string>();
     private CultureInfo _culture = CultureInfo.CurrentUICulture;
     private bool _isLoading;
+    private bool _loadFailed;
     private int _loadVersion;
     private string? _lastLoadKey;
     private DateTime? _eventsPopoverDay;
@@ -438,65 +440,86 @@ public partial class SufiCalendarView : CalendarPublicComponentBase
         }
 
         _isLoading = true;
-        var rangeStart = DateOnly.FromDateTime(_days.Min().Date);
-        var rangeEnd = DateOnly.FromDateTime(_days.Max().Date);
-        var fromUtc = ToUtc(_days.Min().Date);
-        var toUtc = ToUtc(_days.Max().Date.AddDays(1));
-
-        var items = new List<EventOccurrenceDto>();
-        var closed = new HashSet<DateOnly>();
-        foreach (var calendarId in CalendarIds.Distinct())
+        _loadFailed = false;
+        try
         {
-            var result = await CalendarEventAppService.GetOccurrencesAsync(calendarId, new GetOccurrencesInput
+            var rangeStart = DateOnly.FromDateTime(_days.Min().Date);
+            var rangeEnd = DateOnly.FromDateTime(_days.Max().Date);
+            var fromUtc = ToUtc(_days.Min().Date);
+            var toUtc = ToUtc(_days.Max().Date.AddDays(1));
+
+            var items = new List<EventOccurrenceDto>();
+            var closed = new HashSet<DateOnly>();
+            foreach (var calendarId in CalendarIds.Distinct())
             {
-                FromUtc = fromUtc,
-                ToUtc = toUtc
-            });
+                var result = await CalendarEventAppService.GetOccurrencesAsync(calendarId, new GetOccurrencesInput
+                {
+                    FromUtc = fromUtc,
+                    ToUtc = toUtc
+                });
+
+                if (version != _loadVersion)
+                {
+                    return;
+                }
+
+                items.AddRange(result.Items);
+
+                var exceptions = await AvailabilityCalendarAppService.GetEffectiveExceptionsAsync(calendarId);
+                if (version != _loadVersion)
+                {
+                    return;
+                }
+
+                foreach (var exception in exceptions.Items)
+                {
+                    if (exception.Kind != CalendarExceptionKind.Closed)
+                    {
+                        continue;
+                    }
+
+                    var closedDate = DateOnly.FromDateTime(exception.Date.Date);
+                    if (closedDate >= rangeStart && closedDate <= rangeEnd)
+                    {
+                        closed.Add(closedDate);
+                    }
+                }
+            }
 
             if (version != _loadVersion)
             {
                 return;
             }
 
-            items.AddRange(result.Items);
+            items.Sort((left, right) => left.StartUtc.CompareTo(right.StartUtc));
+            _visibleOccurrences.Clear();
+            _visibleOccurrences.AddRange(items);
+            _closedDays.Clear();
+            foreach (var day in closed)
+            {
+                _closedDays.Add(day);
+            }
 
-            var exceptions = await AvailabilityCalendarAppService.GetEffectiveExceptionsAsync(calendarId);
+            _lastLoadKey = loadKey;
+            _isLoading = false;
+        }
+        catch (Exception exception)
+        {
             if (version != _loadVersion)
             {
                 return;
             }
 
-            foreach (var exception in exceptions.Items)
-            {
-                if (exception.Kind != CalendarExceptionKind.Closed)
-                {
-                    continue;
-                }
-
-                var closedDate = DateOnly.FromDateTime(exception.Date.Date);
-                if (closedDate >= rangeStart && closedDate <= rangeEnd)
-                {
-                    closed.Add(closedDate);
-                }
-            }
+            FailOccurrenceLoad(exception);
         }
+    }
 
-        if (version != _loadVersion)
-        {
-            return;
-        }
-
-        items.Sort((left, right) => left.StartUtc.CompareTo(right.StartUtc));
-        _visibleOccurrences.Clear();
-        _visibleOccurrences.AddRange(items);
-        _closedDays.Clear();
-        foreach (var day in closed)
-        {
-            _closedDays.Add(day);
-        }
-
-        _lastLoadKey = loadKey;
+    private void FailOccurrenceLoad(Exception exception)
+    {
+        _loadFailed = true;
         _isLoading = false;
+        _visibleOccurrences.Clear();
+        Logger.LogWarning(exception, "Calendar view could not load events.");
     }
 
     private DateTime ToUtc(DateTime local)

@@ -3,6 +3,7 @@ namespace SufiChain.SufiPlatform.Calendar;
 public static class CalendarErrorCodes
 {
     public const string InvalidTimeRange = "Calendar:InvalidTimeRange";
+    public const string DeleteNotAllowed = "Calendar:DeleteNotAllowed";
     public const string OverlappingWorkingHours = "Calendar:OverlappingWorkingHours";
     public const string OverlappingExceptionHours = "Calendar:OverlappingExceptionHours";
     public const string InheritanceCycleDetected = "Calendar:InheritanceCycleDetected";

@@ -12,6 +12,7 @@
     <PackageReference Include="Volo.Abp.EntityFrameworkCore.Sqlite" Version="$(AbpVersion)" />
     <ProjectReference Include="..\SufiChain.SufiPlatform.Calendar.TestBase\SufiChain.SufiPlatform.Calendar.TestBase.csproj" />
     <ProjectReference Include="..\..\..\modules\calendar\src\SufiChain.SufiPlatform.Calendar.Application\SufiChain.SufiPlatform.Calendar.Application.csproj" />
+    <ProjectReference Include="..\..\..\modules\calendar\src\SufiChain.SufiPlatform.Calendar.AI\SufiChain.SufiPlatform.Calendar.AI.csproj" />
     <ProjectReference Include="..\..\..\modules\calendar\src\SufiChain.SufiPlatform.Calendar.EntityFrameworkCore\SufiChain.SufiPlatform.Calendar.EntityFrameworkCore.csproj" />
   </ItemGroup>
 </Project>
