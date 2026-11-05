@@ -46,8 +46,11 @@ public class AgentCallBindingTests
         {
             var result = await h.Tool().ExecuteAsync(new WorkspaceContext { CallContext = call }, new());
             result.Success.ShouldBeTrue(result.ErrorMessage);
+            h.Probe.SawAgentCall.ShouldBeTrue();
+            h.Probe.AgentUser.ShouldBe(Alice);
         }
 
+        AgentCallAmbient.Current.ShouldBeNull();
         h.Probe.SeenTenant.ShouldBe(TenantA);
         h.Probe.SeenUser.ShouldBe(Alice);
     }
@@ -223,6 +226,8 @@ public class AgentCallBindingTests
             _log.SeenTenant = _tenant.Id;
             var user = _principals.Principal?.FindFirst(AbpClaimTypes.UserId)?.Value;
             _log.SeenUser = Guid.TryParse(user, out var id) ? id : null;
+            _log.SawAgentCall = AgentCallAmbient.Current != null;
+            _log.AgentUser = AgentCallAmbient.Current?.UserId;
             return Task.FromResult("ok");
         }
     }
@@ -232,6 +237,8 @@ public class AgentCallBindingTests
         public int Calls { get; set; }
         public Guid? SeenTenant { get; set; }
         public Guid? SeenUser { get; set; }
+        public bool SawAgentCall { get; set; }
+        public Guid? AgentUser { get; set; }
     }
 
     private sealed class Harness : IDisposable

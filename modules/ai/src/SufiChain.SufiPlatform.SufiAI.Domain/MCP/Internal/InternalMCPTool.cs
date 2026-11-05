@@ -151,23 +151,26 @@ public class InternalMCPTool : IMCPTool, IMCPToolAccessRequirement, IMCPToolEffe
                 }
             }
             
-            // Invoke method
-            var result = _method.Invoke(service, boundArgs);
-            
-            // Handle async methods
-            if (result is Task task)
+            // Invoke method. The ambient lasts only for this call, including its await,
+            // so application services can tell an agent turn from a human request (sufi-chain#580).
+            object? result;
+            using (AgentCallAmbient.Begin(call))
             {
-                await task;
-                
-                // Extract result from Task<T>
-                if (task.GetType().IsGenericType)
+                result = _method.Invoke(service, boundArgs);
+
+                if (result is Task task)
                 {
-                    var resultProperty = task.GetType().GetProperty("Result");
-                    result = resultProperty?.GetValue(task);
-                }
-                else
-                {
-                    result = null; // Task (non-generic) returns void
+                    await task;
+
+                    if (task.GetType().IsGenericType)
+                    {
+                        var resultProperty = task.GetType().GetProperty("Result");
+                        result = resultProperty?.GetValue(task);
+                    }
+                    else
+                    {
+                        result = null;
+                    }
                 }
             }
             
