@@ -494,7 +494,7 @@
     "WorkspaceDeleteConfirmationMessage": "¿Está seguro de que desea eliminar el espacio de trabajo '{0}'?",
 
     "WorkspaceDeletedSuccessfully": "Espacio de trabajo eliminado exitosamente",
-
+    "WorkspacesEmpty": "Aún no hay espacios de trabajo de IA. Cree uno o asigne un espacio del host a este inquilino.",
     "WorkspaceIsRequired": "Se requiere el espacio de trabajo",
 
     "WorkspaceName": "Nombre del Espacio de Trabajo",

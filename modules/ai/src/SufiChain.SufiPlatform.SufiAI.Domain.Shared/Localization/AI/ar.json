@@ -268,6 +268,7 @@
     "WorkspaceDeleteConfirmation": "هل أنت متأكد من أنك تريد حذف مساحة العمل '{0}'؟",
     "WorkspaceDeleteConfirmationMessage": "هل أنت متأكد من أنك تريد حذف مساحة العمل '{0}'؟",
     "WorkspaceDeletedSuccessfully": "تم حذف مساحة العمل بنجاح",
+    "WorkspacesEmpty": "لا توجد مساحات عمل للذكاء الاصطناعي بعد. أنشئ واحدة أو عيّن مساحة مضيف لهذا المستأجر.",
     "WorkspaceIsRequired": "مساحة العمل مطلوبة",
     "WorkspaceName": "اسم مساحة العمل",
     "WorkspaceNamePlaceholder": "مثل production-gpt4",
