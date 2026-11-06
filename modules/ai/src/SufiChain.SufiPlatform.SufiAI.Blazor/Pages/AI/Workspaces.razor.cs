@@ -26,6 +26,7 @@ public partial class Workspaces : AIComponentBase
     private int _pageIndex = 0;
     private int _pageSize = 20;
     private long _totalCount;
+    private bool _workspacesLoadFailed;
 
     private bool _showCloneModal;
     private Guid? _cloneWorkspaceId;
@@ -74,12 +75,32 @@ public partial class Workspaces : AIComponentBase
         {
             var result = await WorkspaceAppService.GetListAsync(input);
             _totalCount = result.TotalCount;
+            _workspacesLoadFailed = false;
             return new SbDataResponse<WorkspaceDto>(result.Items, result.TotalCount);
         }
         catch (ObjectDisposedException)
         {
             return new SbDataResponse<WorkspaceDto>(Array.Empty<WorkspaceDto>(), _totalCount);
         }
+        catch (OperationCanceledException)
+        {
+            return new SbDataResponse<WorkspaceDto>(Array.Empty<WorkspaceDto>(), _totalCount);
+        }
+        catch (Exception exception)
+        {
+            _workspacesLoadFailed = true;
+            _totalCount = 0;
+            await HandleErrorAsync(exception);
+            return new SbDataResponse<WorkspaceDto>(Array.Empty<WorkspaceDto>(), 0);
+        }
+    }
+
+    private async Task RetryLoadWorkspacesAsync()
+    {
+        _workspacesLoadFailed = false;
+        await ExecuteWithLoadingAsync(
+            () => _gridRef?.RefreshDataAsync() ?? Task.CompletedTask,
+            LoadingKeys.LoadWorkspaces);
     }
 
     private async Task OnPageIndexChangedAsync(int pageIndex)

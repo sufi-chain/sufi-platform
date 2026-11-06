@@ -21,6 +21,8 @@
 						@ref="_gridRef"
 						ItemsProvider="LoadWorkspacesDataAsync"
 						Loading="IsOperationLoading(LoadingKeys.LoadWorkspaces)"
+						LoadFailed="_workspacesLoadFailed"
+						OnLoadRetry="RetryLoadWorkspacesAsync"
 						Striped="true"
 						Hoverable="true"
 						PageIndex="_pageIndex"
@@ -31,7 +33,8 @@
 						KeySelector="@(item => item.Id.ToString())"
                         ShowFilterRow="true"
                         ShowColumnChooser="true"
-                        SelectionMode="SbSelectionMode.MultipleRows">
+                        SelectionMode="SbSelectionMode.MultipleRows"
+                        EmptyText="@L["WorkspacesEmpty"]">
 						<SbColumn TItem="WorkspaceDto" Title="@L["Actions"]" MinWidth="220px">
 						<CellTemplate Context="cellContext">
 							<SbStack Wrap="true" Direction="SbStackDirection.Row" Gap="1">

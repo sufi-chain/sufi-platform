@@ -287,6 +287,7 @@
     "WorkspaceDeleteConfirmation": "Are you sure you want to delete workspace '{0}'?",
     "WorkspaceDeleteConfirmationMessage": "Are you sure you want to delete workspace '{0}'?",
     "WorkspaceDeletedSuccessfully": "Workspace deleted successfully",
+    "WorkspacesEmpty": "No AI workspaces yet. Create one or assign a host workspace to this tenant.",
     "WorkspaceIsRequired": "Workspace is required",
     "WorkspaceName": "Workspace Name",
     "WorkspaceNamePlaceholder": "e.g., production-gpt4",

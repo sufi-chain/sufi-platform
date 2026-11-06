@@ -269,6 +269,7 @@
     "WorkspaceDeleteConfirmation": "آیا مطمئن هستید که می‌خواهید فضای کاری '{0}' را حذف کنید؟",
     "WorkspaceDeleteConfirmationMessage": "آیا مطمئن هستید که می‌خواهید فضای کاری '{0}' را حذف کنید؟",
     "WorkspaceDeletedSuccessfully": "فضای کاری با موفقیت حذف شد",
+    "WorkspacesEmpty": "هنوز فضای کاری هوش مصنوعی نیست. یکی بسازید یا یک فضای کاری میزبان را به این مستأجر اختصاص دهید.",
     "WorkspaceIsRequired": "فضای کاری الزامی است",
     "WorkspaceName": "نام فضای کاری",
     "WorkspaceNamePlaceholder": "مثلاً production-gpt4",
