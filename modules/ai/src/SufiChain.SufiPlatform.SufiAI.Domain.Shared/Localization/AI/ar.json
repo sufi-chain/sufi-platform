@@ -227,6 +227,7 @@
     "WorkspaceChat:NoSelectableChatRoutes": "لا تتوفر نماذج محادثة",
     "WorkspaceChat:ModelSelectorNeedMoreRoutes": "أضف نموذج محادثة آخر قابلاً للاختيار",
     "WorkspaceChat:ReplyFailed": "فشل الرد",
+    "WorkspaceChat:RetrySave": "إعادة حفظ الرد",
     "TestConnection": "اختبار الاتصال",
     "TestThisConnection": "اختبار هذا الاتصال",
     "TestWorkspaceConnection": "اختبار اتصال مساحة العمل",

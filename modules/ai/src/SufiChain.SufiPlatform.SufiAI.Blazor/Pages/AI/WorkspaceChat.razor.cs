@@ -55,6 +55,7 @@ public partial class WorkspaceChat : AIComponentBase
     [Inject] protected IChatAssistantTranscriptWriter AssistantTranscripts { get; set; } = default!;
 
     private readonly AssistantTranscriptAttempt _assistantSave = new();
+    private FailedAssistantSave? _failedAssistantSave;
 
     [Inject] protected IChatComposerCapabilitiesAppService ComposerCapabilitiesAppService { get; set; } = default!;
 
@@ -290,6 +291,7 @@ public partial class WorkspaceChat : AIComponentBase
 
         _sending = true;
         _replyCancelledByUser = false;
+        AbandonAssistantTurn();
         MessengerState.IsSendingMessage = true;
         try
         {
@@ -459,17 +461,47 @@ public partial class WorkspaceChat : AIComponentBase
 
     internal void BindSelectedSession(Guid sessionId)
     {
+        if (_failedAssistantSave is not null && _failedAssistantSave.SessionId != sessionId)
+        {
+            _failedAssistantSave = null;
+        }
+
         _assistantSave.LeaveSession(sessionId);
     }
 
     internal void AbandonAssistantTurn()
     {
+        _failedAssistantSave = null;
         _assistantSave.LeaveSession(Guid.Empty);
     }
 
-    internal async Task<IReadOnlyList<ChatMessageDto>> RetryFailedAssistantSaveAsync(Guid sessionId, Guid userTurnId, string reply)
+    private async Task RetryFailedAssistantSaveFromUiAsync()
     {
-        return await SaveAssistantTurnAsync(sessionId, userTurnId, reply, retry: true);
+        if (_failedAssistantSave is not { } failed || _sending)
+        {
+            return;
+        }
+
+        _sending = true;
+        MessengerState.IsSendingMessage = true;
+        try
+        {
+            await SaveAssistantTurnAsync(failed.SessionId, failed.UserTurnId, failed.Reply, retry: true);
+            await LoadSavedSessionsAsync();
+        }
+        catch (Exception exception)
+        {
+            if (!IsDisposed)
+            {
+                await HandleErrorAsync(exception);
+            }
+        }
+        finally
+        {
+            _sending = false;
+            MessengerState.IsSendingMessage = false;
+            MessengerState.NotifyStateChanged();
+        }
     }
 
     private async Task<IReadOnlyList<ChatMessageDto>> SaveAssistantTurnAsync(
@@ -491,6 +523,7 @@ public partial class WorkspaceChat : AIComponentBase
                 ReasoningEffort = _reasoningEffort,
                 OperationId = operationId
             });
+            _failedAssistantSave = null;
             MarkAssistantDeliveryStored();
             foreach (var assistantMessage in stored)
             {
@@ -501,10 +534,13 @@ public partial class WorkspaceChat : AIComponentBase
         }
         catch
         {
+            _failedAssistantSave = new FailedAssistantSave(sessionId, userTurnId, reply);
             MarkAssistantDeliveryFailed();
             throw;
         }
     }
+
+    private sealed record FailedAssistantSave(Guid SessionId, Guid UserTurnId, string Reply);
 
     private async Task SendAnonymousAsync(string body)
     {

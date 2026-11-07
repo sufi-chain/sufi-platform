@@ -4,6 +4,12 @@
 @inherits AIComponentBase
 
 <div class="workspace-chat-page">
+    @if (_failedAssistantSave is not null)
+    {
+        <button type="button" class="workspace-chat-page__retry" @onclick="RetryFailedAssistantSaveFromUiAsync">
+            @L["WorkspaceChat:RetrySave"]
+        </button>
+    }
     <ChatMessengerShell State="MessengerState"
                         ShowContextPanel="false"
                         ShowComposer="@HasSelectedSession"
