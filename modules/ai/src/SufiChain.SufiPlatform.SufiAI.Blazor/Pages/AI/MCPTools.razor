@@ -65,6 +65,35 @@
                             </SbChip>
                         </CellTemplate>
                     </SbColumn>
+                    <SbColumn TItem="MCPToolDto" Title="@L["MCPToolEffect"]" MinWidth="180px" Sortable="false">
+                        <CellTemplate Context="cellContext">
+                            @if (cellContext.Item.ToolType == "External" && _canManageEffects)
+                            {
+                                <SbStack Direction="SbStackDirection.Column" Gap="1">
+                                    <SbSimpleSelect TValue="string"
+                                                    Value="@cellContext.Item.Effect"
+                                                    ValueChanged="@(value => SetEffectAsync(cellContext.Item, value))">
+                                        <SbSelectOption TValue="string" Value="@("Read")">@L["AgentActionEffect:Read"]</SbSelectOption>
+                                        <SbSelectOption TValue="string" Value="@("Write")">@L["AgentActionEffect:Write"]</SbSelectOption>
+                                    </SbSimpleSelect>
+                                    @if (cellContext.Item.ReadOnlyHint == true && cellContext.Item.Effect != "Read")
+                                    {
+                                        <SbText Variant="SbTextVariant.Caption" Color="SbColor.Muted">@L["MCPReadOnlyHintIgnored"]</SbText>
+                                    }
+                                </SbStack>
+                            }
+                            else
+                            {
+                                <SbStack Direction="SbStackDirection.Column" Gap="0">
+                                    <SbChip Size="SbSize.Sm">@cellContext.Item.Effect</SbChip>
+                                    @if (cellContext.Item.ReadOnlyHint == true && cellContext.Item.Effect != "Read")
+                                    {
+                                        <SbText Variant="SbTextVariant.Caption" Color="SbColor.Muted">@L["MCPReadOnlyHintIgnored"]</SbText>
+                                    }
+                                </SbStack>
+                            }
+                        </CellTemplate>
+                    </SbColumn>
                     <SbColumn TItem="MCPToolDto" Field="Source" Title="@L["Source"]" MinWidth="200px" Filterable="true" Sortable="true">
                         <CellTemplate Context="cellContext">
                             <SbText Variant="SbTextVariant.BodySmall">

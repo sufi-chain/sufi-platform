@@ -11,6 +11,12 @@ public class MCPServerDto : FullAuditedEntityDto<Guid>
     public string? Endpoint { get; set; }
     public string? Command { get; set; }
     public string? ArgumentsJson { get; set; }
+
+    /// <summary>
+    /// Names of stdio environment variables stored for this server. Values are not returned.
+    /// </summary>
+    public List<string> EnvironmentKeys { get; set; } = new();
+
     public bool IsEnabled { get; set; }
 
     /// <summary>

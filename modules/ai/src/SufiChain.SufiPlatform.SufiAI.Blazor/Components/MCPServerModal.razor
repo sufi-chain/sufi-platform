@@ -58,6 +58,27 @@
                                       MinHeight="120px"
                                       WordWrap="true" />
                     </SbFormField>
+
+                    @if (_environmentKeys.Count > 0)
+                    {
+                        <SbFormField Label="@L["MCPEnvironmentKeys"]">
+                            <SbStack Direction="SbStackDirection.Row" Gap="1" Wrap="true">
+                                @foreach (var key in _environmentKeys)
+                                {
+                                    <SbChip Size="SbSize.Sm">@key</SbChip>
+                                }
+                            </SbStack>
+                        </SbFormField>
+                    }
+
+                    <SbFormField Label="@L["MCPEnvironment"]">
+                        <SbCodeEditor @bind-Value="_environmentJson"
+                                      Language="SbCodeLanguage.Json"
+                                      Placeholder='{"PROVIDER_TOKEN":""}'
+                                      MinHeight="120px"
+                                      WordWrap="true" />
+                        <SbText Variant="SbTextVariant.Caption" Color="SbColor.Muted">@L["MCPEnvironmentHint"]</SbText>
+                    </SbFormField>
                 }
                 else
                 {

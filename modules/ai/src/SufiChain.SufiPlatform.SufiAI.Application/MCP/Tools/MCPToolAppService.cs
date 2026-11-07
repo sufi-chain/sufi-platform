@@ -5,11 +5,15 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using SufiChain.SufiPlatform.SufiAI;
 using SufiChain.SufiPlatform.SufiAI.Features;
+using SufiChain.SufiPlatform.SufiAI.MCP;
 using SufiChain.SufiPlatform.SufiAI.MCP.Abstractions;
+using SufiChain.SufiPlatform.SufiAI.MCP.Cache;
+using SufiChain.SufiPlatform.SufiAI.MCP.Entities;
 using SufiChain.SufiPlatform.SufiAI.MCP.Tools;
 using SufiChain.SufiPlatform.SufiAI.Permissions;
 using SufiChain.SufiPlatform.Application.Services;
 using SufiChain.SufiPlatform.Features;
+using Volo.Abp;
 
 namespace SufiChain.SufiPlatform.SufiAI.Application.MCP.Tools;
 
@@ -19,13 +23,19 @@ public class MCPToolAppService : SufiApplicationService, IMCPToolAppService
 {
     private readonly IMCPToolRegistry _toolRegistry;
     private readonly IMCPToolExecutor _toolExecutor;
+    private readonly IMCPServerRepository _serverRepository;
+    private readonly IMCPCatalogCache _catalogCache;
     
     public MCPToolAppService(
         IMCPToolRegistry toolRegistry,
-        IMCPToolExecutor toolExecutor)
+        IMCPToolExecutor toolExecutor,
+        IMCPServerRepository serverRepository,
+        IMCPCatalogCache catalogCache)
     {
         _toolRegistry = toolRegistry;
         _toolExecutor = toolExecutor;
+        _serverRepository = serverRepository;
+        _catalogCache = catalogCache;
     }
     
     public async Task<List<MCPToolDto>> GetCatalogAsync()
@@ -81,8 +91,38 @@ public class MCPToolAppService : SufiApplicationService, IMCPToolAppService
             Effect = tool is IMCPToolEffect declared
                 && declared.Effect is AgentActionEffect.Read or AgentActionEffect.Write
                 ? declared.Effect.ToString()
-                : AgentActionEffect.Write.ToString()
+                : AgentActionEffect.Write.ToString(),
+            ReadOnlyHint = tool is IMCPToolCatalogAnnotation annotation ? annotation.ReadOnlyHint : null,
+            EffectIsAdminSet = tool is IMCPToolCatalogAnnotation marked && marked.EffectIsAdminSet
         };
+    }
+
+    [Authorize(AIPermissions.MCPTools.Manage)]
+    public async Task SetEffectAsync(SetMcpToolEffectDto input)
+    {
+        if (!McpExternalToolName.TrySplit(input.ToolName, out var serverKey, out var remoteName))
+        {
+            throw new BusinessException(AIErrorCodes.InvalidProviderConfiguration)
+                .WithData("Error", "Only an external tool can have an admin effect. Use external.<serverKey>.<toolName>.");
+        }
+
+        if (!Enum.TryParse<AgentActionEffect>(input.Effect, ignoreCase: true, out var effect)
+            || effect is not (AgentActionEffect.Read or AgentActionEffect.Write))
+        {
+            throw new BusinessException(AIErrorCodes.InvalidProviderConfiguration)
+                .WithData("Error", "Tool effect must be Read or Write.");
+        }
+
+        var server = await _serverRepository.FindByKeyAsync(serverKey);
+        if (server is null)
+        {
+            throw new BusinessException(AIErrorCodes.InvalidProviderConfiguration)
+                .WithData("Error", $"MCP server '{serverKey}' is not visible to the current tenant.");
+        }
+
+        server.SetAdminToolEffect(remoteName, effect);
+        await _serverRepository.UpdateAsync(server, autoSave: true);
+        await _catalogCache.InvalidateAsync();
     }
     
     public async Task<MCPToolExecutionResultDto> ExecuteToolAsync(MCPToolExecutionRequestDto request)

@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 using SufiChain.SufiPlatform.SufiAI.MCP.Servers;
@@ -24,6 +25,8 @@ public partial class MCPServerModal
     private string? _endpoint;
     private string? _command;
     private string _argumentsJson = string.Empty;
+    private string _environmentJson = string.Empty;
+    private List<string> _environmentKeys = new();
 
     // sufi-chain#384 slice 6b: TenantLevel (default) or UserScoped.
     private string _bindingMode = "TenantLevel";
@@ -62,6 +65,8 @@ public partial class MCPServerModal
             _endpoint = Server.Endpoint;
             _command = Server.Command;
             _argumentsJson = Server.ArgumentsJson ?? string.Empty;
+            _environmentJson = string.Empty;
+            _environmentKeys = Server.EnvironmentKeys ?? new List<string>();
             _bindingMode = string.IsNullOrWhiteSpace(Server.BindingMode) ? "TenantLevel" : Server.BindingMode;
         }
         else
@@ -96,7 +101,8 @@ public partial class MCPServerModal
                     Endpoint = _endpoint,
                     Command = _command,
                     ArgumentsJson = ArgumentsJsonForSave(),
-                    BindingMode = EffectiveBindingMode
+                    BindingMode = EffectiveBindingMode,
+                    EnvironmentJson = EnvironmentJsonForSave()
                 };
                 
                 await MCPServerAppService.CreateAsync(input);
@@ -110,7 +116,8 @@ public partial class MCPServerModal
                     Endpoint = _endpoint,
                     Command = _command,
                     ArgumentsJson = ArgumentsJsonForSave(),
-                    BindingMode = EffectiveBindingMode
+                    BindingMode = EffectiveBindingMode,
+                    EnvironmentJson = EnvironmentJsonForSave()
                 };
                 
                 await MCPServerAppService.UpdateAsync(Server.Id, input);
@@ -146,6 +153,8 @@ public partial class MCPServerModal
         _endpoint = null;
         _command = null;
         _argumentsJson = string.Empty;
+        _environmentJson = string.Empty;
+        _environmentKeys = new List<string>();
         _bindingMode = "TenantLevel";
     }
 
@@ -154,4 +163,10 @@ public partial class MCPServerModal
 
     private string? ArgumentsJsonForSave() =>
         string.IsNullOrWhiteSpace(_argumentsJson) ? null : _argumentsJson;
+
+    /// <summary>Blank keeps the stored names on edit and stores nothing on create.</summary>
+    private string? EnvironmentJsonForSave() =>
+        _transportType == "STDIO" && !string.IsNullOrWhiteSpace(_environmentJson)
+            ? _environmentJson
+            : null;
 }

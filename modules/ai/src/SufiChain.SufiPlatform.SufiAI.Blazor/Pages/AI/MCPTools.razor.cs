@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using SufiChain.SufiPlatform.SufiAI.MCP.Tools;
+using SufiChain.SufiPlatform.SufiAI.Permissions;
 
 namespace SufiChain.SufiPlatform.SufiAI.Blazor.Pages.AI;
 
@@ -17,6 +18,7 @@ public partial class MCPTools
     {
         public const string LoadTools = nameof(LoadTools);
         public const string LoadSchema = nameof(LoadSchema);
+        public const string SetEffect = nameof(SetEffect);
     }
 
     [Inject] private IServiceScopeFactory ServiceScopeFactory { get; set; } = default!;
@@ -25,7 +27,14 @@ public partial class MCPTools
     private bool _schemaDialogOpen;
     private MCPToolDto? _selectedTool;
     private bool _toolsLoadStarted;
+    private bool _canManageEffects;
     private string? _catalogLoadError;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+        _canManageEffects = await IsGrantedAsync(AIPermissions.MCPTools.Manage);
+    }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -118,6 +127,24 @@ public partial class MCPTools
             Logger.LogWarning("MCP catalog load timed out after {Timeout}s", CatalogLoadTimeout.TotalSeconds);
             return new List<MCPToolDto>();
         }
+    }
+
+    private async Task SetEffectAsync(MCPToolDto tool, string effect)
+    {
+        if (string.IsNullOrWhiteSpace(effect) || string.Equals(tool.Effect, effect, StringComparison.Ordinal))
+        {
+            return;
+        }
+
+        await ExecuteWithLoadingAsync(async () =>
+        {
+            await MCPToolAppService.SetEffectAsync(new SetMcpToolEffectDto
+            {
+                ToolName = tool.Name,
+                Effect = effect
+            });
+            await LoadToolsAsync();
+        }, $"{LoadingKeys.SetEffect}-{tool.Name}");
     }
 
     private async Task ViewToolSchemaAsync(MCPToolDto tool)
