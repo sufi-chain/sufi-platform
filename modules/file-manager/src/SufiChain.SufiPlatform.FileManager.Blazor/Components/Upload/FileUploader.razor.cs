@@ -5,6 +5,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop;
 using SufiChain.SufiBlazor.Components.Feedback;
+using SufiChain.SufiBlazor.Components.Forms;
 using SufiChain.SufiPlatform.FileManager.Blazor.Services;
 using SufiChain.SufiPlatform.FileManager.FileItems;
 using SufiChain.SufiPlatform.FileManager.FileStructures;
@@ -339,12 +340,17 @@ public partial class FileUploader : FileManagerComponentBase, IDisposable
         _rows.Remove(file);
     }
 
+    /// <summary>
+    /// HTML accept tokens are comma-separated. A space-separated dotted list is one token, and the
+    /// Windows picker then hides files such as request-1.png. The dialog's uppercase label is not the cause.
+    /// A missing structure stays <c>*/*</c>. An empty extension list stays empty, so this does not invent an all-files filter.
+    /// </summary>
     private string GetAcceptedFileTypes()
     {
         if (_structure == null)
             return "*/*";
 
-        return _structure.AllowedExtensions.Replace(',', ' ');
+        return HtmlFileAccept.Normalize(_structure.AllowedExtensions);
     }
 
     private IEnumerable<string> GetAllowedExtensions()

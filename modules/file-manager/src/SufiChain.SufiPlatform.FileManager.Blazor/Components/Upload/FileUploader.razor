@@ -1,4 +1,5 @@
 @namespace SufiChain.SufiPlatform.FileManager.Blazor.Components.Upload
+@using SufiChain.SufiPlatform.FileManager.Blazor.Public.Components.Upload
 @implements IDisposable
 @inherits FileManagerComponentBase
 
@@ -70,11 +71,10 @@
 					<SbIcon Name="folder" /> @L["BrowseFiles"]
 				</label>
 
-				<input type="file"
-					   id="@_fileInputId"
-					   class="d-none"
-					   multiple="@(AllowMultiple ? "multiple" : null)"
-					   accept="@GetAcceptedFileTypes()" />
+				<NativeFileInput Id="@_fileInputId"
+								 CssClass="d-none"
+								 Multiple="@AllowMultiple"
+								 Accept="@GetAcceptedFileTypes()" />
 
 				@if (_structure != null)
 				{

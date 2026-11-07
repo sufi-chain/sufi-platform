@@ -1,4 +1,5 @@
 @namespace SufiChain.SufiPlatform.FileManager.Blazor.Components.Upload
+@using SufiChain.SufiPlatform.FileManager.Blazor.Public.Components.Upload
 @inherits FileManagerComponentBase
 @implements IDisposable
 
@@ -45,10 +46,9 @@
             }
         </div>
 
-        <input type="file"
-               id="@_fileInputId"
-               class="d-none"
-               accept="image/*" />
+        <NativeFileInput Id="@_fileInputId"
+                         CssClass="d-none"
+                         Accept="image/*" />
     </SbCard>
 
     @if (_isUploading)

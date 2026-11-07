@@ -23,11 +23,10 @@
     }
 
     @* Native input — not Blazor InputFile — so bytes never travel over the circuit. *@
-    <input type="file"
-           id="@_fileInputId"
-           class="d-none"
-           multiple="@(AllowMultiple ? "multiple" : null)"
-           accept="@Accept" />
+    <NativeFileInput Id="@_fileInputId"
+                     CssClass="d-none"
+                     Multiple="@AllowMultiple"
+                     Accept="@Accept" />
 
     @if (_errors.Any())
     {

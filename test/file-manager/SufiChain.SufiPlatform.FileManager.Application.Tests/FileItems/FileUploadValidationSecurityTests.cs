@@ -73,6 +73,61 @@ public class FileUploadValidationSecurityTests
         result.ErrorMessage.ShouldContain("size");
     }
 
+    [Theory]
+    [InlineData("request-1.png", "image/png")]
+    [InlineData("request-2.PNG", "IMAGE/PNG")]
+    [InlineData("result.jpg", "image/jpeg")]
+    [InlineData("PHOTO.JPEG", "image/jpeg")]
+    [InlineData("anim.GIF", "image/gif")]
+    [InlineData("hero.webp", "image/webp")]
+    [InlineData("pic.avif", "image/avif")]
+    [InlineData("favicon.ICO", "image/vnd.microsoft.icon")]
+    public async Task ValidateUpload_Should_Accept_Dotted_CmsMedia_Extensions_In_Any_Case(string fileName, string mimeType)
+    {
+        var sut = CreateSut(
+            ".jpg,.jpeg,.png,.gif,.webp,.avif,.svg,.ico",
+            "image/jpeg,image/png,image/gif,image/webp,image/avif,image/svg+xml,image/x-icon,image/vnd.microsoft.icon");
+
+        var result = await sut.ValidateUploadAsync(fileName, mimeType, StructureKey, 64);
+
+        result.IsValid.ShouldBeTrue(result.ErrorMessage);
+    }
+
+    [Fact]
+    public async Task ValidateUpload_Should_Still_Block_Svg_When_The_Structure_Lists_It()
+    {
+        var sut = CreateSut(".svg,.png", "image/svg+xml,image/png");
+
+        var result = await sut.ValidateUploadAsync("logo.svg", "image/svg+xml", StructureKey, 64);
+
+        result.IsValid.ShouldBeFalse();
+        result.ErrorKey.ShouldBe("FileExtensionBlocked");
+    }
+
+    [Fact]
+    public async Task ValidateUpload_Should_Accept_Zip_When_The_Structure_Allows_Archives()
+    {
+        var sut = CreateSut("zip,7z,rar,pdf", "application/zip,application/x-7z-compressed,application/vnd.rar,application/pdf");
+
+        var zip = await sut.ValidateUploadAsync("bundle.ZIP", "application/zip", StructureKey, 64);
+        var sevenZip = await sut.ValidateUploadAsync("notes.7z", "application/x-7z-compressed", StructureKey, 64);
+        var pdf = await sut.ValidateUploadAsync("report.pdf", "application/pdf", StructureKey, 64);
+
+        zip.IsValid.ShouldBeTrue(zip.ErrorMessage);
+        sevenZip.IsValid.ShouldBeTrue(sevenZip.ErrorMessage);
+        pdf.IsValid.ShouldBeTrue(pdf.ErrorMessage);
+    }
+
+    [Fact]
+    public async Task ValidateUpload_Should_Reject_Exe_When_The_Extension_List_Uses_Leading_Dots()
+    {
+        var sut = CreateSut(".png,.jpg", "image/png,image/jpeg");
+
+        var result = await sut.ValidateUploadAsync("malware.exe", "image/png", StructureKey, 64);
+
+        result.IsValid.ShouldBeFalse();
+    }
+
     [Fact]
     public async Task ValidateUpload_Should_Accept_Allowed_Image()
     {

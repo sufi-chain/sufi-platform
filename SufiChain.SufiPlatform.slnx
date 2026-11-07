@@ -252,6 +252,7 @@
   </Folder>
   <Folder Name="/Tests/FileManager/">
     <Project Path="test/file-manager/SufiChain.SufiPlatform.FileManager.Application.Tests/SufiChain.SufiPlatform.FileManager.Application.Tests.csproj" />
+    <Project Path="test/file-manager/SufiChain.SufiPlatform.FileManager.Blazor.Tests/SufiChain.SufiPlatform.FileManager.Blazor.Tests.csproj" />
     <Project Path="test/file-manager/SufiChain.SufiPlatform.FileManager.Domain.Tests/SufiChain.SufiPlatform.FileManager.Domain.Tests.csproj" />
     <Project Path="test/file-manager/SufiChain.SufiPlatform.FileManager.EntityFrameworkCore.Tests/SufiChain.SufiPlatform.FileManager.EntityFrameworkCore.Tests.csproj" />
     <Project Path="test/file-manager/SufiChain.SufiPlatform.FileManager.TestBase/SufiChain.SufiPlatform.FileManager.TestBase.csproj" />
