@@ -6,8 +6,10 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using SufiChain.SufiPlatform.SufiAI;
 using SufiChain.SufiPlatform.SufiAI.Adapters;
+using SufiChain.SufiPlatform.SufiAI.MCP;
 using SufiChain.SufiPlatform.SufiAI.MCP.Abstractions;
 using SufiChain.SufiPlatform.SufiAI.MCP.Audit;
 using SufiChain.SufiPlatform.SufiAI.MCP.Auth;
@@ -28,7 +30,6 @@ namespace SufiChain.SufiPlatform.SufiAI.MCP.Registry;
 public class MCPToolRegistry : IMCPToolRegistry, ISingletonDependency
 {
     private const string ExternalPrefix = "external.";
-    private static readonly TimeSpan ExternalDiscoveryTimeout = TimeSpan.FromSeconds(15);
 
     private readonly IMCPCatalogCache _catalogCache;
     private readonly IInternalToolDiscoveryService _internalToolDiscovery;
@@ -36,6 +37,7 @@ public class MCPToolRegistry : IMCPToolRegistry, ISingletonDependency
     private readonly IServiceProvider _serviceProvider;
     private readonly ILogger<MCPToolRegistry> _logger;
     private readonly IMcpToolCallAuditor? _auditor;
+    private readonly AITransportOptions _transportOptions;
 
     /// <summary>
     /// sufi-chain#384 slice 6b: owns the transport clients, so a <c>UserScoped</c> server is never handed a
@@ -54,7 +56,8 @@ public class MCPToolRegistry : IMCPToolRegistry, ISingletonDependency
         IServiceProvider serviceProvider,
         ILogger<MCPToolRegistry> logger,
         IMcpToolCallAuditor? auditor = null,
-        IMCPTransportClientProvider? clientProvider = null)
+        IMCPTransportClientProvider? clientProvider = null,
+        IOptions<AITransportOptions>? transportOptions = null)
     {
         _catalogCache = catalogCache;
         _internalToolDiscovery = internalToolDiscovery;
@@ -63,6 +66,7 @@ public class MCPToolRegistry : IMCPToolRegistry, ISingletonDependency
         _logger = logger;
         _auditor = auditor;
         _clientProvider = clientProvider;
+        _transportOptions = transportOptions?.Value ?? new AITransportOptions();
     }
 
     public async Task<List<IMCPTool>> GetInternalToolsAsync(CancellationToken cancellationToken = default)
@@ -261,20 +265,36 @@ public class MCPToolRegistry : IMCPToolRegistry, ISingletonDependency
     private async Task<List<IMCPTool>> LoadExternalToolsAsync(MCPServer server, CancellationToken cancellationToken)
     {
         var step = Stopwatch.StartNew();
-        using var timeoutSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-        timeoutSource.CancelAfter(ExternalDiscoveryTimeout);
+        using var timeoutSource = McpDiscoveryDeadline.Create(cancellationToken, _transportOptions.GetRequestTimeout());
 
         // Discovery is identity-free: a UserScoped server is listed without a token and is only dialled
         // with a user's token when a tool actually executes.
-        var definitions = await ClientProvider.ListToolsAsync(server, timeoutSource.Token);
-        var tools = definitions.Select(definition => (IMCPTool)new ExternalMCPTool(
-            $"{ExternalPrefix}{server.Key}.{definition.Name}",
-            definition.Description,
-            definition.ParameterSchema,
-            server,
-            definition.Name,
-            ClientProvider,
-            _auditor)).ToList();
+        List<MCPServerToolDefinition> definitions;
+        try
+        {
+            definitions = await ClientProvider.ListToolsAsync(server, timeoutSource.Token);
+        }
+        catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
+        {
+            throw new BusinessException(AIErrorCodes.MCPServerConnectionFailed)
+                .WithData("Error", "Timed out waiting for MCP tool discovery.");
+        }
+
+        var tools = definitions.Select(definition =>
+        {
+            var adminEffect = server.FindAdminToolEffect(definition.Name);
+            return (IMCPTool)new ExternalMCPTool(
+                $"{ExternalPrefix}{server.Key}.{definition.Name}",
+                definition.Description,
+                definition.ParameterSchema,
+                server,
+                definition.Name,
+                ClientProvider,
+                _auditor,
+                McpToolEffectPolicy.Resolve(adminEffect),
+                definition.ReadOnlyHint,
+                adminEffect is not null);
+        }).ToList();
         _logger.LogDebug("LoadExternalToolsAsync {Key} returned {Count} tools in {Elapsed}ms",
             server.Key, tools.Count, step.ElapsedMilliseconds);
         return tools;

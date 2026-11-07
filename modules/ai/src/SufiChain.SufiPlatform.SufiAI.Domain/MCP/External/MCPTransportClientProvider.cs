@@ -10,6 +10,7 @@ using SufiChain.SufiPlatform.SufiAI.MCP.Auth;
 using SufiChain.SufiPlatform.SufiAI.MCP.Entities;
 using Volo.Abp;
 using Volo.Abp.DependencyInjection;
+using Volo.Abp.Security.Encryption;
 
 namespace SufiChain.SufiPlatform.SufiAI.MCP.External;
 
@@ -36,6 +37,7 @@ public class MCPTransportClientProvider : IMCPTransportClientProvider, ISingleto
     private readonly ILoggerFactory _loggerFactory;
     private readonly ILogger<MCPTransportClientProvider> _logger;
     private readonly IMcpUserTokenService? _userTokenService;
+    private readonly IStringEncryptionService? _stringEncryption;
     private readonly AITransportOptions _transportOptions;
 
     // TenantLevel only. Keyed by server id, which is already tenant-scoped in the database.
@@ -47,13 +49,15 @@ public class MCPTransportClientProvider : IMCPTransportClientProvider, ISingleto
         ILoggerFactory loggerFactory,
         ILogger<MCPTransportClientProvider> logger,
         IMcpUserTokenService? userTokenService = null,
-        IOptions<AITransportOptions>? transportOptions = null)
+        IOptions<AITransportOptions>? transportOptions = null,
+        IStringEncryptionService? stringEncryption = null)
     {
         _httpClientFactory = httpClientFactory;
         _loggerFactory = loggerFactory;
         _logger = logger;
         _userTokenService = userTokenService;
         _transportOptions = transportOptions?.Value ?? new AITransportOptions();
+        _stringEncryption = stringEncryption;
     }
 
     public async Task<MCPClientLease> AcquireAsync(
@@ -270,6 +274,11 @@ public class MCPTransportClientProvider : IMCPTransportClientProvider, ISingleto
     /// </summary>
     protected virtual IMCPTransportClient CreateClient(MCPServer server)
     {
-        return McpTransportClientFactory.Create(server, _httpClientFactory, _loggerFactory, _transportOptions);
+        return McpTransportClientFactory.Create(
+            server,
+            _httpClientFactory,
+            _loggerFactory,
+            _transportOptions,
+            _stringEncryption);
     }
 }
