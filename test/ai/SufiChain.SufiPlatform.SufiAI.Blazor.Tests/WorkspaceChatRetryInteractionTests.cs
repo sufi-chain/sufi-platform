@@ -81,6 +81,13 @@ public class WorkspaceChatRetryInteractionTests : BunitContext
                 parameters.Get(component => component.OnSessionSelected).InvokeAsync(_otherSessionId)));
             builder.AddContent(7, "Switch");
             builder.CloseElement();
+
+            builder.OpenElement(8, "button");
+            builder.AddAttribute(9, "class", "clear-session");
+            builder.AddAttribute(10, "onclick", EventCallback.Factory.Create(this, () =>
+                parameters.Get(component => component.OnNewAssistantSession).InvokeAsync()));
+            builder.AddContent(11, "Clear");
+            builder.CloseElement();
         });
     }
 
@@ -138,6 +145,47 @@ public class WorkspaceChatRetryInteractionTests : BunitContext
         Assert.Equal(1, _transcripts.Calls);
     }
 
+    [Theory]
+    [InlineData(false, false)]
+    [InlineData(true, false)]
+    [InlineData(false, true)]
+    [InlineData(true, true)]
+    public async Task A_late_retry_does_not_append_messages_or_restore_the_button(bool clearSession, bool reject)
+    {
+        var cut = Render<WorkspaceChat>();
+        Set(cut.Instance, "_workspaceId", (Guid?)Guid.NewGuid());
+        Set(cut.Instance, "_workspaceName", "workspace");
+        Set(cut.Instance, "_selectedRoute", new AIModelRouteDto { IsReady = true, IsUserSelectable = true });
+        var state = (ChatMessengerState)Get(cut.Instance, "_messengerState")!;
+        state.SelectedSessionId = _sessionId;
+        _transcripts.RetryGate = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+        _transcripts.RetryEntered = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+        _transcripts.RejectRetry = reject;
+
+        await cut.Find(".send-turn").ClickAsync();
+        cut.WaitForAssertion(() => Assert.NotNull(cut.Find(".workspace-chat-page__retry")));
+
+        var retry = cut.Find(".workspace-chat-page__retry").ClickAsync();
+        await _transcripts.RetryEntered.Task;
+        if (clearSession)
+        {
+            await cut.Find(".clear-session").ClickAsync();
+        }
+        else
+        {
+            await cut.Find(".switch-session").ClickAsync();
+        }
+
+        _transcripts.RetryGate.SetResult(true);
+        await retry;
+
+        cut.WaitForAssertion(() => Assert.Throws<ElementNotFoundException>(() => cut.Find(".workspace-chat-page__retry")));
+        var saved = (ChatMessengerState)Get(cut.Instance, "_messengerState")!;
+        Assert.DoesNotContain(saved.Messages, message => message.Id == RecordingTranscripts.LateAssistantId);
+        Assert.Equal(1, _messages.Sends);
+        Assert.Equal(1, _chat.Calls);
+    }
+
     private static void Set(WorkspaceChat page, string fieldName, object? value)
     {
         typeof(WorkspaceChat).GetField(fieldName, BindingFlags.Instance | BindingFlags.NonPublic)!
@@ -165,7 +213,15 @@ public class WorkspaceChatRetryInteractionTests : BunitContext
 
         public List<Guid> SessionIds { get; } = new();
 
-        public Task<List<ChatMessageDto>> SaveForCurrentUserAsync(SendAssistantTranscriptInput input)
+        public static readonly Guid LateAssistantId = Guid.Parse("dddddddd-dddd-dddd-dddd-dddddddddddd");
+
+        public TaskCompletionSource<bool>? RetryGate { get; set; }
+
+        public TaskCompletionSource<bool>? RetryEntered { get; set; }
+
+        public bool RejectRetry { get; set; }
+
+        public async Task<List<ChatMessageDto>> SaveForCurrentUserAsync(SendAssistantTranscriptInput input)
         {
             Calls++;
             OperationIds.Add(input.OperationId);
@@ -175,16 +231,27 @@ public class WorkspaceChatRetryInteractionTests : BunitContext
                 throw new InvalidOperationException("delivery failed");
             }
 
-            return Task.FromResult(new List<ChatMessageDto>
+            if (RetryGate != null)
+            {
+                RetryEntered?.TrySetResult(true);
+                await RetryGate.Task;
+            }
+
+            if (RejectRetry)
+            {
+                throw new InvalidOperationException("retry failed");
+            }
+
+            return new List<ChatMessageDto>
             {
                 new()
                 {
-                    Id = Guid.NewGuid(),
+                    Id = LateAssistantId,
                     SessionId = input.SessionId,
                     Body = input.Body,
                     SenderKind = ChatMessageSenderKind.Assistant
                 }
-            });
+            };
         }
     }
 

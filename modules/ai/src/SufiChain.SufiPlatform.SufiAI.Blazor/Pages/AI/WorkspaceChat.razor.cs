@@ -56,6 +56,7 @@ public partial class WorkspaceChat : AIComponentBase
 
     private readonly AssistantTranscriptAttempt _assistantSave = new();
     private FailedAssistantSave? _failedAssistantSave;
+    private int _assistantAttemptGeneration;
 
     [Inject] protected IChatComposerCapabilitiesAppService ComposerCapabilitiesAppService { get; set; } = default!;
 
@@ -461,6 +462,11 @@ public partial class WorkspaceChat : AIComponentBase
 
     internal void BindSelectedSession(Guid sessionId)
     {
+        if (MessengerState.SelectedSessionId != sessionId)
+        {
+            AbandonAssistantAttempt();
+        }
+
         if (_failedAssistantSave is not null && _failedAssistantSave.SessionId != sessionId)
         {
             _failedAssistantSave = null;
@@ -473,6 +479,18 @@ public partial class WorkspaceChat : AIComponentBase
     {
         _failedAssistantSave = null;
         _assistantSave.LeaveSession(Guid.Empty);
+        AbandonAssistantAttempt();
+    }
+
+    private void AbandonAssistantAttempt()
+    {
+        _assistantAttemptGeneration++;
+    }
+
+    private bool IsCurrentAssistantAttempt(int generation, Guid sessionId)
+    {
+        return generation == _assistantAttemptGeneration
+            && MessengerState.SelectedSessionId == sessionId;
     }
 
     private async Task RetryFailedAssistantSaveFromUiAsync()
@@ -510,6 +528,7 @@ public partial class WorkspaceChat : AIComponentBase
         string reply,
         bool retry)
     {
+        var generation = _assistantAttemptGeneration;
         var operationId = retry
             ? OperationIdForRetry(sessionId, userTurnId)
             : OperationIdForSave(sessionId, userTurnId, reply);
@@ -523,6 +542,11 @@ public partial class WorkspaceChat : AIComponentBase
                 ReasoningEffort = _reasoningEffort,
                 OperationId = operationId
             });
+            if (!IsCurrentAssistantAttempt(generation, sessionId))
+            {
+                return stored;
+            }
+
             _failedAssistantSave = null;
             MarkAssistantDeliveryStored();
             foreach (var assistantMessage in stored)
@@ -534,8 +558,12 @@ public partial class WorkspaceChat : AIComponentBase
         }
         catch
         {
-            _failedAssistantSave = new FailedAssistantSave(sessionId, userTurnId, reply);
-            MarkAssistantDeliveryFailed();
+            if (IsCurrentAssistantAttempt(generation, sessionId))
+            {
+                _failedAssistantSave = new FailedAssistantSave(sessionId, userTurnId, reply);
+                MarkAssistantDeliveryFailed();
+            }
+
             throw;
         }
     }
