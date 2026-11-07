@@ -40,7 +40,7 @@ public class AssistantTranscriptPersistenceTests : ChatApplicationTestBase<SufiC
         var body = new string('a', ChatConsts.MaxMessageBodyLength) + " \n";
         var sessionId = await CreateSessionAsync();
 
-        var stored = await GetRequiredService<IChatMessageAppService>().SendAssistantTranscriptAsync(
+        var stored = await GetRequiredService<IChatAssistantTranscriptWriter>().SaveForCurrentUserAsync(
             new SendAssistantTranscriptInput
             {
                 SessionId = sessionId,
@@ -58,7 +58,7 @@ public class AssistantTranscriptPersistenceTests : ChatApplicationTestBase<SufiC
         var sessionId = await CreateSessionAsync();
 
         await Should.ThrowAsync<Exception>(() =>
-            GetRequiredService<IChatMessageAppService>().SendAssistantTranscriptAsync(
+            GetRequiredService<IChatAssistantTranscriptWriter>().SaveForCurrentUserAsync(
                 new SendAssistantTranscriptInput
                 {
                     SessionId = sessionId,
@@ -92,7 +92,7 @@ public class AssistantTranscriptPersistenceTests : ChatApplicationTestBase<SufiC
         var sessionId = await CreateSessionAsync();
         var marker = new ExtraPropertyDictionary { ["helpdesk.kb.proposal"] = "draft" };
 
-        await GetRequiredService<IChatMessageAppService>().SendAssistantTranscriptAsync(
+        await GetRequiredService<IChatAssistantTranscriptWriter>().SaveForCurrentUserAsync(
             new SendAssistantTranscriptInput
             {
                 SessionId = sessionId,
@@ -128,7 +128,7 @@ public class AssistantTranscriptPersistenceTests : ChatApplicationTestBase<SufiC
     private async Task<List<ChatMessage>> ReloadMatchesAsync(string body)
     {
         var sessionId = await CreateSessionAsync();
-        await GetRequiredService<IChatMessageAppService>().SendAssistantTranscriptAsync(
+        await GetRequiredService<IChatAssistantTranscriptWriter>().SaveForCurrentUserAsync(
             new SendAssistantTranscriptInput
             {
                 SessionId = sessionId,
@@ -219,7 +219,10 @@ public class AssistantTranscriptRollbackTests : ChatApplicationTestBase<Assistan
         var body = new string('a', ChatConsts.MaxMessageBodyLength) + "b";
 
         await Should.ThrowAsync<InvalidOperationException>(() =>
-            GetRequiredService<ChatMessageManager>().SaveAssistantTranscriptAsync(session.Id, body));
+            GetRequiredService<ChatMessageManager>().SaveAssistantTranscriptAsync(
+                session.Id,
+                body,
+                isAuthorizedOperator: true));
 
         using var uow = GetRequiredService<IUnitOfWorkManager>().Begin(requiresNew: true);
         var count = await GetRequiredService<IChatMessageRepository>().GetCountBySessionAsync(session.Id, includeInternal: true);

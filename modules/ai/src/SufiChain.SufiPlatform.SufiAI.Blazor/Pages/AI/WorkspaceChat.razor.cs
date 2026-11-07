@@ -52,6 +52,8 @@ public partial class WorkspaceChat : AIComponentBase
 
     [Inject] protected IChatMessageAppService MessageAppService { get; set; } = default!;
 
+    [Inject] protected IChatAssistantTranscriptWriter AssistantTranscripts { get; set; } = default!;
+
     [Inject] protected IChatComposerCapabilitiesAppService ComposerCapabilitiesAppService { get; set; } = default!;
 
     [Inject] protected ISessionStorageService SessionStorage { get; set; } = default!;
@@ -425,7 +427,7 @@ public partial class WorkspaceChat : AIComponentBase
     /// </summary>
     private async Task SaveAssistantReplyAsync(Guid sessionId, string reply)
     {
-        var stored = await MessageAppService.SendAssistantTranscriptAsync(new SendAssistantTranscriptInput
+        var stored = await AssistantTranscripts.SaveForCurrentUserAsync(new SendAssistantTranscriptInput
         {
             SessionId = sessionId,
             Body = reply,
