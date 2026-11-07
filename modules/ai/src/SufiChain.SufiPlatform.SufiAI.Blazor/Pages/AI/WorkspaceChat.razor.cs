@@ -432,7 +432,8 @@ public partial class WorkspaceChat : AIComponentBase
             SessionId = sessionId,
             Body = reply,
             ModelConfigurationId = _modelConfigurationId,
-            ReasoningEffort = _reasoningEffort
+            ReasoningEffort = _reasoningEffort,
+            OperationId = Guid.NewGuid()
         });
         foreach (var assistantMessage in stored)
         {

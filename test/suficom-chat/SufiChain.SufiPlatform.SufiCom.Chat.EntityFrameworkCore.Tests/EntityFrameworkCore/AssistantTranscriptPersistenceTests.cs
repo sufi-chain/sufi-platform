@@ -222,6 +222,7 @@ public class AssistantTranscriptRollbackTests : ChatApplicationTestBase<Assistan
             GetRequiredService<ChatMessageManager>().SaveAssistantTranscriptAsync(
                 session.Id,
                 body,
+                Guid.NewGuid(),
                 isAuthorizedOperator: true));
 
         using var uow = GetRequiredService<IUnitOfWorkManager>().Begin(requiresNew: true);
