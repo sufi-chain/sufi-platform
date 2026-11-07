@@ -420,21 +420,20 @@ public partial class WorkspaceChat : AIComponentBase
     }
 
     /// <summary>
-    /// sufi-chain#551: the chat body column is 16000 characters. A longer reply is stored in order as
-    /// several messages so the validation dialog does not drop it, and a reload shows every part.
+    /// sufi-chain#551: the chat body column is 16000 characters. The server stores a longer reply
+    /// as ordered parts in one transaction, and a reload shows every part including boundary spaces.
     /// </summary>
     private async Task SaveAssistantReplyAsync(Guid sessionId, string reply)
     {
-        foreach (var part in ChatMessageBodySplitter.Split(reply))
+        var stored = await MessageAppService.SendAssistantTranscriptAsync(new SendAssistantTranscriptInput
         {
-            var assistantMessage = await MessageAppService.SendAsync(new SendChatMessageInput
-            {
-                SessionId = sessionId,
-                Body = part,
-                SenderKind = ChatMessageSenderKind.Assistant,
-                ModelConfigurationId = _modelConfigurationId,
-                ReasoningEffort = _reasoningEffort
-            });
+            SessionId = sessionId,
+            Body = reply,
+            ModelConfigurationId = _modelConfigurationId,
+            ReasoningEffort = _reasoningEffort
+        });
+        foreach (var assistantMessage in stored)
+        {
             MessengerState.AddMessageIfMissing(assistantMessage);
         }
     }

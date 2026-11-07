@@ -20,7 +20,8 @@ public class WorkspaceChatStopMarkupTests
         Assert.Contains("StopTurnAsync", code);
         Assert.Contains("MessengerState.StateChanged += OnMessengerStateChanged", code);
         Assert.Contains("SelectSession(session.Id)", code);
-        Assert.Contains("ChatMessageBodySplitter", code);
+        Assert.Contains("SendAssistantTranscriptAsync", code);
+        Assert.Contains("ShowComposer=\"@HasSelectedSession\"", page);
         Assert.DoesNotContain("TimeSpan.FromSeconds", code);
         Assert.DoesNotContain("ChatReplyTimeout", code);
     }
