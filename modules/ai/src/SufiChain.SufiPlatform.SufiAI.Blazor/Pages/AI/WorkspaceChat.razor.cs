@@ -98,7 +98,24 @@ public partial class WorkspaceChat : AIComponentBase
 
     protected override void OnInitialized()
     {
+        MessengerState.StateChanged += OnMessengerStateChanged;
         PageLayout.Title = L["WorkspaceChat"];
+    }
+
+    protected override void Dispose(bool disposing)
+    {
+        MessengerState.StateChanged -= OnMessengerStateChanged;
+        base.Dispose(disposing);
+    }
+
+    private void OnMessengerStateChanged()
+    {
+        if (IsDisposed)
+        {
+            return;
+        }
+
+        _ = InvokeAsync(StateHasChanged);
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -322,8 +339,8 @@ public partial class WorkspaceChat : AIComponentBase
                     : new List<AddChatParticipantInput>()
             });
             MessengerState.SelectedSession = session;
-            MessengerState.SelectedSessionId = session.Id;
             MessengerState.Sessions.Insert(0, ToListItem(session));
+            MessengerState.SelectSession(session.Id);
             created = true;
         }
 
