@@ -192,7 +192,8 @@ public class AssistantTranscriptBindingModuleTests : ChatApplicationTestBase<Ass
         })).Id;
         var attempt = new AssistantTranscriptAttempt();
         var body = "recover this reply";
-        var operationId = attempt.ForReply(body);
+        var turnId = Guid.NewGuid();
+        var operationId = attempt.BeginTurn(sessionId, turnId);
         var writer = GetRequiredService<IChatAssistantTranscriptWriter>();
 
         await Should.ThrowAsync<InvalidOperationException>(() => writer.SaveForCurrentUserAsync(new SendAssistantTranscriptInput
@@ -201,7 +202,8 @@ public class AssistantTranscriptBindingModuleTests : ChatApplicationTestBase<Ass
             Body = body,
             OperationId = operationId
         }));
-        attempt.ForReply(body).ShouldBe(operationId);
+        attempt.NoteFailure();
+        attempt.RetryFailedTurn(sessionId, turnId).ShouldBe(operationId);
         (await GetRequiredService<IChatUsageCounterRepository>().GetCountAsync(
             null,
             $"Session:{sessionId:D}:Messages",
@@ -212,7 +214,7 @@ public class AssistantTranscriptBindingModuleTests : ChatApplicationTestBase<Ass
         {
             SessionId = sessionId,
             Body = body,
-            OperationId = attempt.ForReply(body)
+            OperationId = attempt.RetryFailedTurn(sessionId, turnId)
         });
 
         stored.Count.ShouldBe(1);
@@ -222,7 +224,7 @@ public class AssistantTranscriptBindingModuleTests : ChatApplicationTestBase<Ass
             ChatUsageCounterPeriod.Session,
             DateTime.MinValue)).ShouldBe(1);
         attempt.Complete();
-        attempt.ForReply(body).ShouldNotBe(operationId);
+        attempt.BeginTurn(sessionId, Guid.NewGuid()).ShouldNotBe(operationId);
     }
 
     [Fact]

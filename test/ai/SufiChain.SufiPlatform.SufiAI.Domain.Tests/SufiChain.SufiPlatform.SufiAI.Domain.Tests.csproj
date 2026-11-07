@@ -11,6 +11,7 @@
     <ProjectReference Include="..\..\..\modules\ai\src\SufiChain.SufiPlatform.SufiAI.Domain\SufiChain.SufiPlatform.SufiAI.Domain.csproj" />
     <ProjectReference Include="..\..\..\modules\ai\src\SufiChain.SufiPlatform.SufiAI.Provider.OpenRouter\SufiChain.SufiPlatform.SufiAI.Provider.OpenRouter.csproj" />
     <ProjectReference Include="..\..\..\modules\ai\src\SufiChain.SufiPlatform.SufiAI.Qdrant\SufiChain.SufiPlatform.SufiAI.Qdrant.csproj" />
+    <ProjectReference Include="..\..\..\modules\ai\src\SufiChain.SufiPlatform.SufiAI.Blazor\SufiChain.SufiPlatform.SufiAI.Blazor.csproj" />
   </ItemGroup>
 
   <ItemGroup>

@@ -8,6 +8,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <InternalsVisibleTo Include="SufiChain.SufiPlatform.SufiAI.Domain.Tests" />
+  </ItemGroup>
+
+  <ItemGroup>
     <!-- Resolve version conflict with SufiBlazor -->
     <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="$(MicrosoftAspNetCoreComponentsWebVersion)" />
     <!-- Blazor Authorization -->
