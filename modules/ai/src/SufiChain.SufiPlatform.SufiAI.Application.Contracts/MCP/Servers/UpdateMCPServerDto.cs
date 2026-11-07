@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using Volo.Abp.Auditing;
 
 namespace SufiChain.SufiPlatform.SufiAI.MCP.Servers;
 
@@ -21,7 +22,9 @@ public class UpdateMCPServerDto
     /// JSON object of environment names to values. Null keeps the stored map.
     /// An empty string value removes that name. <c>{}</c> clears the map.
     /// Values are encrypted and are never written back to this DTO.
+    /// Auditing skips this property so the plaintext is not stored in the action parameters.
     /// </summary>
+    [DisableAuditing]
     [StringLength(8192)]
     public string? EnvironmentJson { get; set; }
 

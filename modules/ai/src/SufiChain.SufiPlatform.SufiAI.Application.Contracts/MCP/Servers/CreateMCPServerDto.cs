@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using Volo.Abp.Auditing;
 
 namespace SufiChain.SufiPlatform.SufiAI.MCP.Servers;
 
@@ -29,7 +30,9 @@ public class CreateMCPServerDto
     /// JSON object of environment names to values for a STDIO server.
     /// Values are encrypted and are not returned. They are not command arguments.
     /// Null or blank stores nothing. <c>{}</c> clears stored values.
+    /// Auditing skips this property so the plaintext is not stored in the action parameters.
     /// </summary>
+    [DisableAuditing]
     [StringLength(8192)]
     public string? EnvironmentJson { get; set; }
 
