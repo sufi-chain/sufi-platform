@@ -54,6 +54,8 @@ public partial class WorkspaceChat : AIComponentBase
 
     [Inject] protected IChatAssistantTranscriptWriter AssistantTranscripts { get; set; } = default!;
 
+    private readonly AssistantTranscriptAttempt _assistantSave = new();
+
     [Inject] protected IChatComposerCapabilitiesAppService ComposerCapabilitiesAppService { get; set; } = default!;
 
     [Inject] protected ISessionStorageService SessionStorage { get; set; } = default!;
@@ -427,14 +429,16 @@ public partial class WorkspaceChat : AIComponentBase
     /// </summary>
     private async Task SaveAssistantReplyAsync(Guid sessionId, string reply)
     {
+        var operationId = _assistantSave.ForReply(reply);
         var stored = await AssistantTranscripts.SaveForCurrentUserAsync(new SendAssistantTranscriptInput
         {
             SessionId = sessionId,
             Body = reply,
             ModelConfigurationId = _modelConfigurationId,
             ReasoningEffort = _reasoningEffort,
-            OperationId = Guid.NewGuid()
+            OperationId = operationId
         });
+        _assistantSave.Complete();
         foreach (var assistantMessage in stored)
         {
             MessengerState.AddMessageIfMissing(assistantMessage);

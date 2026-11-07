@@ -254,10 +254,23 @@ public class ProbingChatUsageGuard : IChatUsageGuard
         ChatMessageSenderKind sender,
         int attachmentCount = 0,
         long attachmentBytes = 0,
+        CancellationToken ct = default,
+        bool joinAmbientUnitOfWork = false)
+    {
+        _probe.ThrowIf(ChatMessageManager.EffectUsage);
+        await _inner.RecordMessageSentAsync(sessionId, sender, attachmentCount, attachmentBytes, ct, joinAmbientUnitOfWork);
+        _probe.RecordUsage();
+    }
+
+    public async Task RecordAssistantPartOnceAsync(
+        Guid operationId,
+        int partIndex,
+        Guid sessionId,
+        ChatMessageSenderKind sender,
         CancellationToken ct = default)
     {
         _probe.ThrowIf(ChatMessageManager.EffectUsage);
-        await _inner.RecordMessageSentAsync(sessionId, sender, attachmentCount, attachmentBytes, ct);
+        await _inner.RecordAssistantPartOnceAsync(operationId, partIndex, sessionId, sender, ct);
         _probe.RecordUsage();
     }
 
