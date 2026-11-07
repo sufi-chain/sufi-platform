@@ -10,4 +10,10 @@ public class MCPToolDto
 
     /// <summary>Resolved effect name: Read or Write (sufi-chain#312). Missing values are Write.</summary>
     public string Effect { get; set; } = "Write";
+
+    /// <summary>Catalog <c>readOnlyHint</c>. It does not select <see cref="Effect"/>.</summary>
+    public bool? ReadOnlyHint { get; set; }
+
+    /// <summary>True when an admin stored <see cref="Effect"/>.</summary>
+    public bool EffectIsAdminSet { get; set; }
 }

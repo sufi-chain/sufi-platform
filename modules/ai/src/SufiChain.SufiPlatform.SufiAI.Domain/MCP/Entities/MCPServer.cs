@@ -1,8 +1,12 @@
 using System;
+using System.Collections.Generic;
+using System.Text.Json;
 using Volo.Abp;
+using Volo.Abp.Data;
 using Volo.Abp.Domain.Entities.Auditing;
 using Volo.Abp.MultiTenancy;
 using SufiChain.SufiPlatform.SufiAI.MCP.Abstractions;
+using SufiChain.SufiPlatform.SufiAI;
 
 namespace SufiChain.SufiPlatform.SufiAI.MCP.Entities;
 
@@ -200,6 +204,64 @@ public class MCPServer : FullAuditedAggregateRoot<Guid>, IMultiTenant
         else
         {
             ConfigureHttpEndpoint(endpoint!);
+        }
+    }
+
+    /// <summary>
+    /// sufi-chain#557: stores an admin Read or Write decision for one remote tool.
+    /// The catalog readOnlyHint is not stored here and cannot select the effect.
+    /// </summary>
+    public void SetAdminToolEffect(string remoteName, AgentActionEffect effect)
+    {
+        if (string.IsNullOrWhiteSpace(remoteName))
+        {
+            throw new BusinessException(AIErrorCodes.InvalidProviderConfiguration)
+                .WithData("Error", "Tool effect requires the remote tool name.");
+        }
+
+        if (effect is not (AgentActionEffect.Read or AgentActionEffect.Write))
+        {
+            throw new BusinessException(AIErrorCodes.InvalidProviderConfiguration)
+                .WithData("Error", "Tool effect must be Read or Write.");
+        }
+
+        var effects = ReadAdminToolEffects();
+        effects[remoteName] = effect.ToString();
+        this.SetProperty(AdminToolEffectsProperty, JsonSerializer.Serialize(effects));
+    }
+
+    /// <summary>The stored admin effect, or null when the admin has not chosen one.</summary>
+    public AgentActionEffect? FindAdminToolEffect(string remoteName)
+    {
+        if (string.IsNullOrWhiteSpace(remoteName) || !ReadAdminToolEffects().TryGetValue(remoteName, out var text))
+        {
+            return null;
+        }
+
+        return Enum.TryParse<AgentActionEffect>(text, out var effect)
+            && effect is AgentActionEffect.Read or AgentActionEffect.Write
+            ? effect
+            : null;
+    }
+
+    public const string AdminToolEffectsProperty = "McpToolEffects";
+
+    private Dictionary<string, string> ReadAdminToolEffects()
+    {
+        var json = this.GetProperty<string>(AdminToolEffectsProperty);
+        if (string.IsNullOrWhiteSpace(json))
+        {
+            return new Dictionary<string, string>(StringComparer.Ordinal);
+        }
+
+        try
+        {
+            return JsonSerializer.Deserialize<Dictionary<string, string>>(json)
+                ?? new Dictionary<string, string>(StringComparer.Ordinal);
+        }
+        catch (JsonException)
+        {
+            return new Dictionary<string, string>(StringComparer.Ordinal);
         }
     }
 

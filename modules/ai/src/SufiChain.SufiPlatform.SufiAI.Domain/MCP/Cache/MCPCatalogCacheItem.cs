@@ -23,8 +23,14 @@ public class MCPToolDescriptor
     public MCPToolType ToolType { get; set; }
     public string Source { get; set; } = string.Empty;
 
-    /// <summary>Resolved effect. A missing cache value stays write (fail closed).</summary>
+    /// <summary>Resolved admin effect. A missing cache value stays write (fail closed).</summary>
     public AgentActionEffect Effect { get; set; } = AgentActionEffect.Write;
+
+    /// <summary>Catalog annotation. It does not select <see cref="Effect"/>.</summary>
+    public bool? ReadOnlyHint { get; set; }
+
+    /// <summary>True when an admin stored Read or Write for this remote tool.</summary>
+    public bool EffectIsAdminSet { get; set; }
 }
 
 public class MCPServerSnapshot

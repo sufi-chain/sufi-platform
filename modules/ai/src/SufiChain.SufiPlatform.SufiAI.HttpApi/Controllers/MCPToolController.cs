@@ -46,4 +46,10 @@ public class MCPToolController : AIController, IMCPToolAppService
     {
         return _mcpToolAppService.RefreshToolRegistryAsync();
     }
+
+    [HttpPut("effect")]
+    public virtual Task SetEffectAsync(SetMcpToolEffectDto input)
+    {
+        return _mcpToolAppService.SetEffectAsync(input);
+    }
 }

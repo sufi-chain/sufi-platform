@@ -10,12 +10,14 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using SufiChain.SufiPlatform.SufiAI;
 using SufiChain.SufiPlatform.SufiAI.Adapters;
+using SufiChain.SufiPlatform.SufiAI.MCP;
 using SufiChain.SufiPlatform.SufiAI.MCP.Abstractions;
 using SufiChain.SufiPlatform.SufiAI.MCP.Entities;
 using SufiChain.SufiPlatform.SufiAI.MCP.External;
 using Volo.Abp;
 using Volo.Abp.Caching;
 using Volo.Abp.DependencyInjection;
+using Volo.Abp.Security.Encryption;
 
 namespace SufiChain.SufiPlatform.SufiAI.MCP.Cache;
 
@@ -28,7 +30,6 @@ namespace SufiChain.SufiPlatform.SufiAI.MCP.Cache;
 public class MCPCatalogCache : IMCPCatalogCache, ITransientDependency
 {
     private const string ExternalPrefix = "external.";
-    private static readonly TimeSpan ExternalDiscoveryTimeout = TimeSpan.FromSeconds(15);
     private static readonly TimeSpan CacheAbsoluteLifetime = TimeSpan.FromDays(7);
     private static readonly TimeSpan CacheRebuildLockTimeout = TimeSpan.FromSeconds(60);
     private static readonly TimeSpan CacheMissLockWait = TimeSpan.FromSeconds(2);
@@ -44,6 +45,7 @@ public class MCPCatalogCache : IMCPCatalogCache, ITransientDependency
     private readonly ILoggerFactory _loggerFactory;
     private readonly ILogger<MCPCatalogCache> _logger;
     private readonly AITransportOptions _transportOptions;
+    private readonly IStringEncryptionService? _stringEncryption;
     private static readonly SemaphoreSlim RebuildLock = new(1, 1);
     private static int _backgroundRebuildGate;
 
@@ -56,7 +58,8 @@ public class MCPCatalogCache : IMCPCatalogCache, ITransientDependency
         IServiceScopeFactory serviceScopeFactory,
         ILoggerFactory loggerFactory,
         ILogger<MCPCatalogCache> logger,
-        IOptions<AITransportOptions>? transportOptions = null)
+        IOptions<AITransportOptions>? transportOptions = null,
+        IStringEncryptionService? stringEncryption = null)
     {
         _cache = cache;
         _internalToolDiscovery = internalToolDiscovery;
@@ -67,6 +70,7 @@ public class MCPCatalogCache : IMCPCatalogCache, ITransientDependency
         _loggerFactory = loggerFactory;
         _logger = logger;
         _transportOptions = transportOptions?.Value ?? new AITransportOptions();
+        _stringEncryption = stringEncryption;
     }
 
     public async Task<MCPCatalogCacheItem> GetCatalogAsync(CancellationToken cancellationToken = default)
@@ -249,12 +253,14 @@ public class MCPCatalogCache : IMCPCatalogCache, ITransientDependency
             var perServer = Stopwatch.StartNew();
             try
             {
-                using var timeoutSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-                timeoutSource.CancelAfter(ExternalDiscoveryTimeout);
+                using var timeoutSource = McpDiscoveryDeadline.Create(
+                    cancellationToken,
+                    _transportOptions.GetRequestTimeout());
 
                 var definitions = await ListServerToolsAsync(server, timeoutSource.Token);
                 foreach (var definition in definitions)
                 {
+                    var adminEffect = server.FindAdminToolEffect(definition.Name);
                     tools.Add(new MCPToolDescriptor
                     {
                         Name = $"{ExternalPrefix}{server.Key}.{definition.Name}",
@@ -262,7 +268,9 @@ public class MCPCatalogCache : IMCPCatalogCache, ITransientDependency
                         ParameterSchema = definition.ParameterSchema,
                         ToolType = MCPToolType.External,
                         Source = server.Name,
-                        Effect = AgentActionEffect.Write
+                        Effect = McpToolEffectPolicy.Resolve(adminEffect),
+                        ReadOnlyHint = definition.ReadOnlyHint,
+                        EffectIsAdminSet = adminEffect is not null
                     });
                 }
 
@@ -310,7 +318,12 @@ public class MCPCatalogCache : IMCPCatalogCache, ITransientDependency
 
     private IMCPTransportClient CreateClient(MCPServer server)
     {
-        return McpTransportClientFactory.Create(server, _httpClientFactory, _loggerFactory, _transportOptions);
+        return McpTransportClientFactory.Create(
+            server,
+            _httpClientFactory,
+            _loggerFactory,
+            _transportOptions,
+            _stringEncryption);
     }
 
     private static MCPToolDescriptor ToDescriptor(IMCPTool tool) => new()

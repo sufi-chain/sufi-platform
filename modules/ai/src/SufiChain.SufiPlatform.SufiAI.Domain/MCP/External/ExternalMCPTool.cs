@@ -19,7 +19,7 @@ namespace SufiChain.SufiPlatform.SufiAI.MCP.External;
 /// <see cref="IMCPTransportClientProvider"/>, so a <c>UserScoped</c> server is dialled with the calling
 /// user's short-lived token and no client is ever shared between two users.
 /// </summary>
-public class ExternalMCPTool : IMCPTool, IMCPToolEffect
+public class ExternalMCPTool : IMCPTool, IMCPToolEffect, IMCPToolCatalogAnnotation
 {
     private readonly IMCPTransportClientProvider _clientProvider;
     private readonly MCPServer _server;
@@ -33,13 +33,16 @@ public class ExternalMCPTool : IMCPTool, IMCPToolEffect
     public string Source { get; }
 
     /// <summary>
-    /// External tools carry no declared effect yet (sufi-chain#384 slice 7 / #138), so under the interim
-    /// rule they count as write (sufi-chain#312).
+    /// sufi-chain#557: Read only when an admin stored Read. A catalog readOnlyHint is not enough.
     /// </summary>
-    public AgentActionEffect Effect => AgentActionEffect.Write;
+    public AgentActionEffect Effect { get; }
 
     /// <inheritdoc />
     public bool IsReadOnly => Effect == AgentActionEffect.Read;
+
+    public bool? ReadOnlyHint { get; }
+
+    public bool EffectIsAdminSet { get; }
 
     public ExternalMCPTool(
         string name,
@@ -48,7 +51,10 @@ public class ExternalMCPTool : IMCPTool, IMCPToolEffect
         MCPServer server,
         string remoteName,
         IMCPTransportClientProvider clientProvider,
-        IMcpToolCallAuditor? auditor = null)
+        IMcpToolCallAuditor? auditor = null,
+        AgentActionEffect effect = AgentActionEffect.Write,
+        bool? readOnlyHint = null,
+        bool effectIsAdminSet = false)
     {
         Name = name;
         Description = description;
@@ -58,6 +64,11 @@ public class ExternalMCPTool : IMCPTool, IMCPToolEffect
         _clientProvider = clientProvider;
         Source = server.Name;
         _auditor = auditor;
+        Effect = effect is AgentActionEffect.Read or AgentActionEffect.Write
+            ? effect
+            : AgentActionEffect.Write;
+        ReadOnlyHint = readOnlyHint;
+        EffectIsAdminSet = effectIsAdminSet;
     }
 
     public async Task<MCPToolExecutionResult> ExecuteAsync(

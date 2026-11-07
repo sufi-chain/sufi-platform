@@ -105,8 +105,8 @@ Document sources are registered by consuming modules at startup via `IRAGService
 **Permissions:** view `AI.MCPServers.Default`; create/edit/delete as named
 
 1. Select or filter by workspace.
-2. **New MCP server** — name, transport (STDIO, SSE, HTTP), command/arguments or endpoint, metadata JSON.
-3. **Test connection** on a row (icon button) — verifies connectivity; shows success/error message.
+2. **New MCP server** — name, transport (STDIO, SSE, HTTP; editable later), command/arguments or endpoint. STDIO can store an environment JSON object. Values are encrypted, are not shown again, and are not placed in the arguments. A per-user binding sends a short-lived bearer token on HTTP and SSE and is refused for STDIO.
+3. **Test connection** on a row (icon button) — verifies connectivity. The row's error column shows the upstream cause.
 4. Enable/disable without deleting.
 
 ## Browsing MCP tools
@@ -114,9 +114,10 @@ Document sources are registered by consuming modules at startup via `IRAGService
 **Path:** `/admin/ai/mcp-tools`
 
 1. Select a workspace.
-2. Browse internal and external tools (name, description, type, source).
+2. Browse internal and external tools (name, description, type, source, effect).
 3. **View schema** opens parameter JSON schema.
-4. Tool **execution** is available through `IMCPToolAppService.ExecuteToolAsync` (API), not the admin UI yet.
+4. For an external tool, an admin with `AI.MCPTools.Manage` can set the effect to Read or Write. The catalog `readOnlyHint` is shown and is not applied on its own. Until an admin sets Read, the effect stays Write.
+5. Tool **execution** is available through `IMCPToolAppService.ExecuteToolAsync` (API), not the admin UI yet.
 
 ## Typical validation flow
 
