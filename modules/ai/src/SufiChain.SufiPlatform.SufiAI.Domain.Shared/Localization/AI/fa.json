@@ -228,6 +228,7 @@
     "WorkspaceChat:NoSelectableChatRoutes": "مدل گفتگویی در دسترس نیست",
     "WorkspaceChat:ModelSelectorNeedMoreRoutes": "برای انتخاب، یک مدل گفتگوی قابل انتخاب دیگر اضافه کنید",
     "WorkspaceChat:ReplyFailed": "پاسخ ناموفق بود",
+    "WorkspaceChat:RetrySave": "ذخیرهٔ دوبارهٔ پاسخ",
     "TestConnection": "آزمایش اتصال",
     "TestThisConnection": "آزمایش این اتصال",
     "TestWorkspaceConnection": "آزمایش اتصال فضای کاری",

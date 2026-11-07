@@ -231,6 +231,7 @@
     "WorkspaceChat:NoSelectableChatRoutes": "No chat models are available",
     "WorkspaceChat:ModelSelectorNeedMoreRoutes": "Add another selectable chat model to choose one",
     "WorkspaceChat:ReplyFailed": "The reply failed",
+    "WorkspaceChat:RetrySave": "Save the reply again",
     "TestConnection": "Test Connection",
     "TestThisConnection": "Test this connection",
     "TestWorkspaceConnection": "Test workspace connection",

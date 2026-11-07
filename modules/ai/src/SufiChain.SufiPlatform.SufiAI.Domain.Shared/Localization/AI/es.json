@@ -424,6 +424,7 @@
     "WorkspaceChat:NoSelectableChatRoutes": "No hay modelos de chat disponibles",
     "WorkspaceChat:ModelSelectorNeedMoreRoutes": "Añade otro modelo de chat seleccionable para poder elegir",
     "WorkspaceChat:ReplyFailed": "La respuesta falló",
+    "WorkspaceChat:RetrySave": "Reintentar guardar la respuesta",
 
     "TestConnection": "Probar Conexión",
     "TestThisConnection": "Probar esta conexión",

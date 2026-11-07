@@ -18,7 +18,17 @@ public class WorkspaceChatStopMarkupTests
 
         Assert.Contains("OnStop=\"StopTurnAsync\"", page);
         Assert.Contains("StopTurnAsync", code);
-        Assert.Contains("ChatMessageBodySplitter", code);
+        Assert.Contains("MessengerState.StateChanged += OnMessengerStateChanged", code);
+        Assert.Contains("SelectSession(session.Id)", code);
+        Assert.Contains("SaveForCurrentUserAsync", code);
+        Assert.Contains("SaveAssistantReplyAsync(sessionId, userMessage.Id, reply.ToString())", code);
+        Assert.Contains("OperationIdForSave(sessionId, userTurnId, reply)", code);
+        Assert.Contains("BindSelectedSession(sessionId)", code);
+        Assert.Contains("RetryFailedAssistantSaveFromUiAsync", code);
+        Assert.Contains("workspace-chat-page__retry", page);
+        Assert.DoesNotContain("ForReply", code);
+        Assert.DoesNotContain("OperationId = Guid.NewGuid()", code);
+        Assert.Contains("ShowComposer=\"@HasSelectedSession\"", page);
         Assert.DoesNotContain("TimeSpan.FromSeconds", code);
         Assert.DoesNotContain("ChatReplyTimeout", code);
     }
