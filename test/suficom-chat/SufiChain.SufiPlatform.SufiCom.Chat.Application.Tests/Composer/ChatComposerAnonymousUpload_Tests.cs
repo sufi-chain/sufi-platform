@@ -7,6 +7,7 @@ using SufiChain.SufiPlatform.FileManager;
 using SufiChain.SufiPlatform.SufiAI;
 using SufiChain.SufiPlatform.SufiCom.Chat.ETOs;
 using SufiChain.SufiPlatform.SufiCom.Chat.Features;
+using SufiChain.SufiPlatform.SufiCom.Chat.Usage;
 using SufiChain.SufiPlatform.SufiCom.Chat.Messages;
 using SufiChain.SufiPlatform.SufiCom.Chat.Participants;
 using SufiChain.SufiPlatform.SufiCom.Chat.Sessions;
@@ -205,6 +206,64 @@ public class ChatComposerUploadPolicy_Tests
             file.EntityId == sessionId &&
             file.StructureKey == ChatFileStructureKeys.Attachments));
     }
+
+    [Fact]
+    public async Task Anonymous_transcribe_does_not_call_the_provider()
+    {
+        var audio = Substitute.For<ISufiAIAudioService>();
+        var sessionId = Guid.NewGuid();
+        var service = ChatComposerUploadPolicyHarness.Create(
+            Substitute.For<IFileStorageTrustedService>(),
+            new ChatSession(
+                sessionId,
+                tenantId: null,
+                title: null,
+                AccessMode.PublicAnonymous,
+                ConversationKind.Assistant,
+                ChannelOrigin.Web),
+            audio: audio);
+
+        var exception = await Should.ThrowAsync<Volo.Abp.BusinessException>(() => service.TranscribeAsync(
+            new ChatComposerTranscribeInput
+            {
+                SessionId = sessionId,
+                FileName = "voice.webm",
+                MimeType = "audio/webm",
+                Content = [1, 2, 3, 4]
+            }));
+
+        exception.Code.ShouldBe(ChatErrorCodes.VoiceMessagesDisabled);
+        await audio.DidNotReceiveWithAnyArgs().TranscribeAsync(default!, default);
+    }
+
+    [Fact]
+    public async Task A_signed_in_stranger_cannot_transcribe_or_call_the_provider()
+    {
+        var audio = Substitute.For<ISufiAIAudioService>();
+        var sessionId = Guid.NewGuid();
+        var service = ChatComposerUploadPolicyHarness.Create(
+            Substitute.For<IFileStorageTrustedService>(),
+            new ChatSession(
+                sessionId,
+                tenantId: null,
+                title: null,
+                AccessMode.Internal,
+                ConversationKind.Assistant,
+                ChannelOrigin.Web),
+            authenticatedUserId: ChatTestData.UserCId,
+            audio: audio);
+
+        await Should.ThrowAsync<AbpAuthorizationException>(() => service.TranscribeAsync(
+            new ChatComposerTranscribeInput
+            {
+                SessionId = sessionId,
+                FileName = "voice.webm",
+                MimeType = "audio/webm",
+                Content = [1, 2, 3, 4]
+            }));
+
+        await audio.DidNotReceiveWithAnyArgs().TranscribeAsync(default!, default);
+    }
 }
 
 internal static class ChatComposerUploadPolicyHarness
@@ -212,7 +271,9 @@ internal static class ChatComposerUploadPolicyHarness
     public static ChatComposerUploadAppService Create(
         IFileStorageTrustedService storage,
         ChatSession session,
-        string? participantToken = null)
+        string? participantToken = null,
+        Guid? authenticatedUserId = null,
+        ISufiAIAudioService? audio = null)
     {
         var sessions = Substitute.For<IChatSessionRepository>();
         sessions.FindAsync(session.Id, Arg.Any<bool>(), Arg.Any<CancellationToken>()).Returns(session);
@@ -238,8 +299,8 @@ internal static class ChatComposerUploadPolicyHarness
         settings.GetOrNullAsync(Arg.Any<string>()).Returns("true");
 
         var user = Substitute.For<ICurrentUser>();
-        user.Id.Returns((Guid?)null);
-        user.IsAuthenticated.Returns(false);
+        user.Id.Returns(authenticatedUserId);
+        user.IsAuthenticated.Returns(authenticatedUserId.HasValue);
 
         var authorization = Substitute.For<IAbpAuthorizationService>();
         authorization.CurrentPrincipal.Returns(new ClaimsPrincipal(new ClaimsIdentity()));
@@ -256,6 +317,9 @@ internal static class ChatComposerUploadPolicyHarness
         bus.PublishAsync(Arg.Any<ChatAttachmentUploadedEto>(), Arg.Any<bool>(), Arg.Any<bool>())
             .Returns(Task.CompletedTask);
 
+        var enablement = Substitute.For<IChatAiEnablement>();
+        enablement.IsInvocationAllowedAsync(Arg.Any<CancellationToken>()).Returns(true);
+
         var lazy = Substitute.For<IAbpLazyServiceProvider>();
         lazy.LazyGetRequiredService<ISettingProvider>().Returns(settings);
         lazy.LazyGetRequiredService<ICurrentUser>().Returns(user);
@@ -270,7 +334,8 @@ internal static class ChatComposerUploadPolicyHarness
             participants,
             features,
             bus,
-            Substitute.For<ISufiAIAudioService>())
+            audio ?? Substitute.For<ISufiAIAudioService>(),
+            enablement)
         {
             LazyServiceProvider = lazy
         };

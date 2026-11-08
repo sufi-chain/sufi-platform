@@ -1,5 +1,6 @@
 using SufiChain.SufiPlatform.SufiCom.Chat.Supports;
 using SufiChain.SufiPlatform.SufiCom.Chat.Usage;
+using SufiChain.SufiPlatform.Settings;
 using Shouldly;
 using Xunit;
 
@@ -23,6 +24,7 @@ public class ChatWalletResolver_Tests : ChatApplicationTestBase<SufiComChatAppli
     [Fact]
     public async Task Should_Use_Replaced_Wallet_Resolver()
     {
+        await ChatTestSettingHelper.SetAiPolicyAsync(GetRequiredService<ISettingManager>());
         var testResolver = GetRequiredService<TestChatUsageWalletResolver>();
         testResolver.Context = new ChatUsageWalletContext
         {
