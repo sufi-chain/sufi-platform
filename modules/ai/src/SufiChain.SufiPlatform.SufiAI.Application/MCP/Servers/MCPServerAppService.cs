@@ -1,10 +1,12 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using SufiChain.SufiPlatform.SufiAI;
 using SufiChain.SufiPlatform.SufiAI.Features;
+using SufiChain.SufiPlatform.SufiAI.MCP;
 using SufiChain.SufiPlatform.SufiAI.MCP.Abstractions;
 using SufiChain.SufiPlatform.SufiAI.MCP.Cache;
 using SufiChain.SufiPlatform.SufiAI.MCP.Entities;
@@ -14,6 +16,7 @@ using SufiChain.SufiPlatform.SufiAI.Permissions;
 using Volo.Abp;
 using SufiChain.SufiPlatform.Application.Services;
 using Volo.Abp.Domain.Repositories;
+using Volo.Abp.Security.Encryption;
 using SufiChain.SufiPlatform.Features;
 
 namespace SufiChain.SufiPlatform.SufiAI.Application.MCP.Servers;
@@ -27,19 +30,22 @@ public class MCPServerAppService : SufiApplicationService, IMCPServerAppService
     private readonly IMCPToolRegistry _toolRegistry;
     private readonly IMCPCatalogCache _catalogCache;
     private readonly IMCPTransportClientProvider _clientProvider;
+    private readonly IStringEncryptionService _stringEncryption;
     
     public MCPServerAppService(
         IMCPServerRepository serverRepository,
         IRepository<MCPServer, Guid> repository,
         IMCPToolRegistry toolRegistry,
         IMCPCatalogCache catalogCache,
-        IMCPTransportClientProvider clientProvider)
+        IMCPTransportClientProvider clientProvider,
+        IStringEncryptionService stringEncryption)
     {
         _serverRepository = serverRepository;
         _repository = repository;
         _toolRegistry = toolRegistry;
         _catalogCache = catalogCache;
         _clientProvider = clientProvider;
+        _stringEncryption = stringEncryption;
     }
     
     public async Task<List<MCPServerDto>> GetListAsync()
@@ -85,6 +91,8 @@ public class MCPServerAppService : SufiApplicationService, IMCPServerAppService
         {
             server.ConfigureHttpEndpoint(input.Endpoint!);
         }
+
+        McpServerEnvironment.Apply(server, _stringEncryption, ParseEnvironment(input.EnvironmentJson, keepWhenBlank: false));
         
         await _repository.InsertAsync(server);
         await _catalogCache.InvalidateAsync();
@@ -109,6 +117,7 @@ public class MCPServerAppService : SufiApplicationService, IMCPServerAppService
             : ParseBindingMode(input.BindingMode);
 
         server.ApplyConfiguration(transport, binding, input.Endpoint, input.Command, input.ArgumentsJson);
+        McpServerEnvironment.Apply(server, _stringEncryption, ParseEnvironment(input.EnvironmentJson, keepWhenBlank: true));
 
         await _repository.UpdateAsync(server);
         await _catalogCache.InvalidateAsync();
@@ -186,6 +195,7 @@ public class MCPServerAppService : SufiApplicationService, IMCPServerAppService
             Endpoint = server.Endpoint,
             Command = server.Command,
             ArgumentsJson = server.ArgumentsJson,
+            EnvironmentKeys = McpServerEnvironment.KeyNames(server).ToList(),
             IsEnabled = server.IsEnabled,
             BindingMode = server.BindingMode.ToString(),
             LastConnectedAt = server.LastConnectedAt,
@@ -229,6 +239,52 @@ public class MCPServerAppService : SufiApplicationService, IMCPServerAppService
         }
 
         return mode;
+    }
+
+    /// <summary>
+    /// Parses an environment object. Values are not included in errors.
+    /// Blank input keeps the stored map on update and stores nothing on create.
+    /// <c>{}</c> clears the map.
+    /// </summary>
+    private static IReadOnlyDictionary<string, string?>? ParseEnvironment(string? json, bool keepWhenBlank)
+    {
+        if (string.IsNullOrWhiteSpace(json))
+        {
+            return keepWhenBlank ? null : new Dictionary<string, string?>();
+        }
+
+        try
+        {
+            using var document = JsonDocument.Parse(json);
+            if (document.RootElement.ValueKind != JsonValueKind.Object)
+            {
+                throw new BusinessException(AIErrorCodes.InvalidProviderConfiguration)
+                    .WithData("Error", "MCP environment JSON must be an object of names to values.");
+            }
+
+            var updates = new Dictionary<string, string?>(StringComparer.Ordinal);
+            foreach (var property in document.RootElement.EnumerateObject())
+            {
+                updates[property.Name] = property.Value.ValueKind switch
+                {
+                    JsonValueKind.String => property.Value.GetString(),
+                    JsonValueKind.Null => null,
+                    _ => null
+                };
+                if (property.Value.ValueKind is not (JsonValueKind.String or JsonValueKind.Null))
+                {
+                    throw new BusinessException(AIErrorCodes.InvalidProviderConfiguration)
+                        .WithData("Error", "MCP environment values must be strings.");
+                }
+            }
+
+            return updates;
+        }
+        catch (JsonException)
+        {
+            throw new BusinessException(AIErrorCodes.InvalidProviderConfiguration)
+                .WithData("Error", "MCP environment JSON must be an object of names to values.");
+        }
     }
 
     private readonly record struct ConnectionSnapshot(

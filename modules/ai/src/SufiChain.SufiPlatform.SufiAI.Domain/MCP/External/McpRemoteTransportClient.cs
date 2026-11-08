@@ -133,12 +133,7 @@ public abstract class McpRemoteTransportClient : IMCPTransportClient
     {
         var result = await RequestAsync(
             "initialize",
-            new
-            {
-                protocolVersion = McpJsonRpc.RequestedProtocolVersion,
-                capabilities = new { },
-                clientInfo = new { name = "SufiAI", version = "1.0" }
-            },
+            McpJsonRpc.InitializeParams(),
             cancellationToken,
             bearerToken: null);
 

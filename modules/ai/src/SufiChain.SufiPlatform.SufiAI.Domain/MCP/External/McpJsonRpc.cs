@@ -14,6 +14,19 @@ internal static class McpJsonRpc
     public const string RequestedProtocolVersion = "2025-03-26";
     public const string SessionHeader = "Mcp-Session-Id";
     public const string ProtocolHeader = "MCP-Protocol-Version";
+    public const string ClientName = "SufiAI";
+    public const string ClientVersion = "1.0";
+
+    /// <summary>
+    /// MCP lifecycle params. <c>capabilities</c> and <c>clientInfo</c> are required by the spec;
+    /// a protocol version of <c>1.0</c> is not a supported revision.
+    /// </summary>
+    public static object InitializeParams() => new
+    {
+        protocolVersion = RequestedProtocolVersion,
+        capabilities = new { },
+        clientInfo = new { name = ClientName, version = ClientVersion }
+    };
 
     public static string CreateRequest(int id, string method, object? parameters)
     {
@@ -113,7 +126,9 @@ internal static class McpJsonRpc
                     : string.Empty,
                 ParameterSchema = tool.TryGetProperty("inputSchema", out var schema)
                     ? schema.GetRawText()
-                    : "{}"
+                    : "{}",
+                // Catalog annotation only. Callers must not treat this as the tool effect.
+                ReadOnlyHint = ReadReadOnlyHint(tool)
             });
         }
 
@@ -151,6 +166,19 @@ internal static class McpJsonRpc
 
         var snippet = body.Trim().ReplaceLineEndings(" ");
         return snippet.Length <= 300 ? snippet : snippet[..300];
+    }
+
+    private static bool? ReadReadOnlyHint(JsonElement tool)
+    {
+        if (!tool.TryGetProperty("annotations", out var annotations)
+            || annotations.ValueKind != JsonValueKind.Object
+            || !annotations.TryGetProperty("readOnlyHint", out var hint)
+            || (hint.ValueKind != JsonValueKind.True && hint.ValueKind != JsonValueKind.False))
+        {
+            return null;
+        }
+
+        return hint.GetBoolean();
     }
 
     private static string ReadError(JsonElement error)

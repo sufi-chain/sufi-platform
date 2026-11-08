@@ -22,4 +22,10 @@ public interface IMCPToolAppService : IApplicationService
     Task<MCPToolExecutionResultDto> ExecuteToolAsync(MCPToolExecutionRequestDto request);
     
     Task RefreshToolRegistryAsync();
+
+    /// <summary>
+    /// Stores an admin Read or Write decision for one external tool.
+    /// A catalog readOnlyHint cannot be saved as the effect.
+    /// </summary>
+    Task SetEffectAsync(SetMcpToolEffectDto input);
 }

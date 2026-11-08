@@ -1,9 +1,11 @@
 using System.Text.Json;
 using Microsoft.Extensions.Logging;
 using SufiChain.SufiPlatform.SufiAI;
+using SufiChain.SufiPlatform.SufiAI.MCP;
 using SufiChain.SufiPlatform.SufiAI.MCP.Abstractions;
 using SufiChain.SufiPlatform.SufiAI.MCP.Entities;
 using Volo.Abp;
+using Volo.Abp.Security.Encryption;
 
 namespace SufiChain.SufiPlatform.SufiAI.MCP.External;
 
@@ -17,7 +19,8 @@ public static class McpTransportClientFactory
         MCPServer server,
         IHttpClientFactory httpClientFactory,
         ILoggerFactory loggerFactory,
-        AITransportOptions? transportOptions = null)
+        AITransportOptions? transportOptions = null,
+        IStringEncryptionService? stringEncryption = null)
     {
         ArgumentNullException.ThrowIfNull(server);
         ArgumentNullException.ThrowIfNull(httpClientFactory);
@@ -29,7 +32,9 @@ public static class McpTransportClientFactory
             MCPTransportType.STDIO => new StdioTransportClient(
                 Check.NotNullOrWhiteSpace(server.Command, nameof(server.Command)),
                 ReadArguments(server.ArgumentsJson),
-                loggerFactory.CreateLogger<StdioTransportClient>()),
+                loggerFactory.CreateLogger<StdioTransportClient>(),
+                McpServerEnvironment.Decrypt(server, stringEncryption),
+                requestTimeout),
             MCPTransportType.SSE => new SSETransportClient(
                 Check.NotNullOrWhiteSpace(server.Endpoint, nameof(server.Endpoint)),
                 httpClientFactory.CreateClient(),

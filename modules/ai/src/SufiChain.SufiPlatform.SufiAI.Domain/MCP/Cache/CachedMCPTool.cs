@@ -12,7 +12,7 @@ namespace SufiChain.SufiPlatform.SufiAI.MCP.Cache;
 /// transport I/O. Execution must go through <see cref="IMCPToolRegistry.ResolveAsync"/> to obtain
 /// an executable tool instance.
 /// </summary>
-public class CachedMCPTool : IMCPTool, IMCPToolEffect
+public class CachedMCPTool : IMCPTool, IMCPToolEffect, IMCPToolCatalogAnnotation
 {
     public CachedMCPTool(MCPToolDescriptor descriptor)
     {
@@ -24,6 +24,8 @@ public class CachedMCPTool : IMCPTool, IMCPToolEffect
         Effect = descriptor.Effect is AgentActionEffect.Read or AgentActionEffect.Write
             ? descriptor.Effect
             : AgentActionEffect.Write;
+        ReadOnlyHint = descriptor.ReadOnlyHint;
+        EffectIsAdminSet = descriptor.EffectIsAdminSet;
     }
 
     public string Name { get; }
@@ -33,6 +35,8 @@ public class CachedMCPTool : IMCPTool, IMCPToolEffect
     public string Source { get; }
     public AgentActionEffect Effect { get; }
     public bool IsReadOnly => Effect == AgentActionEffect.Read;
+    public bool? ReadOnlyHint { get; }
+    public bool EffectIsAdminSet { get; }
 
     public Task<MCPToolExecutionResult> ExecuteAsync(
         WorkspaceContext context,
