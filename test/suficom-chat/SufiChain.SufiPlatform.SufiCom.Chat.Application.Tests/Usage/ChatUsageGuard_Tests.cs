@@ -1,4 +1,6 @@
 using SufiChain.SufiPlatform.SufiCom.Chat.ETOs;
+using SufiChain.SufiPlatform.SufiCom.Chat.Features;
+using SufiChain.SufiPlatform.SufiCom.Chat.Supports;
 using SufiChain.SufiPlatform.SufiCom.Chat.Usage;
 using SufiChain.SufiPlatform.Settings;
 using Shouldly;
@@ -188,5 +190,52 @@ public class ChatUsageGuard_Tests : ChatApplicationTestBase<SufiComChatApplicati
         var result = await _usageGuard.CheckCanInvokeAiAsync(Guid.NewGuid(), ChatAiOperationKind.AutoReply);
         result.IsAllowed.ShouldBeFalse();
         result.ReasonCode.ShouldBe("AiUnavailable");
+    }
+
+    [Fact]
+    public async Task Should_Deny_Ai_When_The_Feature_Is_Off()
+    {
+        var features = GetRequiredService<ConfigurableFeatureChecker>();
+        features.Disable(ChatFeatures.Ai.Enable);
+        try
+        {
+            await ChatTestSettingHelper.SetAiPolicyAsync(_settingManager, enabled: true);
+
+            var result = await _usageGuard.CheckCanInvokeAiAsync(Guid.NewGuid(), ChatAiOperationKind.AutoReply);
+            result.IsAllowed.ShouldBeFalse();
+            result.ReasonCode.ShouldBe("AiUnavailable");
+        }
+        finally
+        {
+            features.Enable(ChatFeatures.Ai.Enable);
+        }
+    }
+
+    [Fact]
+    public async Task Should_Not_Reserve_Or_Charge_When_Ai_Is_Disabled()
+    {
+        await ChatTestSettingHelper.SetAiPolicyAsync(_settingManager, enabled: false);
+        var wallets = GetRequiredService<TestChatUsageWalletResolver>();
+        var previous = wallets.Context;
+        wallets.Context = new ChatUsageWalletContext
+        {
+            WalletId = Guid.NewGuid(),
+            IsChargeRequired = true,
+            Currency = "USD"
+        };
+        try
+        {
+            var sessionId = Guid.NewGuid();
+            var exception = await Should.ThrowAsync<Volo.Abp.BusinessException>(() =>
+                _usageGuard.ReserveAiUsageAsync(sessionId, ChatAiOperationKind.AutoReply));
+
+            exception.Code.ShouldBe(ChatErrorCodes.AiUnavailable);
+            (await GetRequiredService<IChatAiUsageReservationRepository>().GetListAsync())
+                .ShouldNotContain(row => row.SessionId == sessionId);
+        }
+        finally
+        {
+            wallets.Context = previous;
+        }
     }
 }
