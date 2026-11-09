@@ -29,6 +29,7 @@ public class IranMcpSettingDefinitionProvider : SettingDefinitionProvider
         Add(context, IranMcpSettings.TokenVerifyMode, IranMcpSettings.DefaultTokenVerifyMode);
         Add(context, IranMcpSettings.TokenVerifyUrl, string.Empty);
         Add(context, IranMcpSettings.Environment, string.Empty);
+        Add(context, IranMcpSettings.AllowUpstreamExecution, IranMcpSettings.DefaultAllowUpstreamExecution);
     }
 
     private static void Add(ISettingDefinitionContext context, string name, string value)

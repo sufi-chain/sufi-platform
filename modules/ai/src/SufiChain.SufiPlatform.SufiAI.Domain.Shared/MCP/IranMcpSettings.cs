@@ -17,7 +17,14 @@ public static class IranMcpSettings
     /// <summary>Logical environment name used when deriving per-server ids.</summary>
     public const string Environment = Prefix + "Environment";
 
+    /// <summary>
+    /// When true, iran-mcp tools/call may execute upstream (maps to
+    /// <c>IRAN_MCP_ALLOW_UPSTREAM=1</c> on the gateway). Default false.
+    /// </summary>
+    public const string AllowUpstreamExecution = Prefix + "AllowUpstreamExecution";
+
     public const string DefaultTokenVerifyMode = "off";
+    public const string DefaultAllowUpstreamExecution = "false";
 }
 
 public enum IranMcpTokenVerifyMode

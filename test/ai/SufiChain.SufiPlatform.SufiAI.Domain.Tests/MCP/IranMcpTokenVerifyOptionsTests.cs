@@ -19,6 +19,7 @@ public class IranMcpTokenVerifyOptionsTests
 
         settings[IranMcpSettings.TokenVerifyMode].DefaultValue.ShouldBe("off");
         settings[IranMcpSettings.TokenVerifyUrl].DefaultValue.ShouldBe(string.Empty);
+        settings[IranMcpSettings.AllowUpstreamExecution].DefaultValue.ShouldBe("false");
         settings.Keys.ShouldContain(IranMcpSettings.Environment);
     }
 
