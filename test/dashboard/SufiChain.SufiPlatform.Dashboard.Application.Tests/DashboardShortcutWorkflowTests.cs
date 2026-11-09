@@ -9,7 +9,6 @@ using Volo.Abp.DependencyInjection;
 using Volo.Abp.Settings;
 using Volo.Abp.Users;
 using Xunit;
-using IAuthorizationService = Microsoft.AspNetCore.Authorization.IAuthorizationService;
 
 namespace SufiChain.SufiPlatform.Dashboard.Dashboard;
 
@@ -50,6 +49,29 @@ public class DashboardShortcutWorkflowTests
         error.Code.ShouldBe("SufiDashboard:NotAuthenticated");
     }
 
+    [Fact]
+    public async Task GetMyShortcuts_Should_Fail_Soft_When_The_Menu_Cannot_Load()
+    {
+        var menus = Substitute.For<IMenuManager>();
+        menus.GetAsync(StandardMenus.Main).Returns<Task<ApplicationMenu>>(_ =>
+            throw new InvalidOperationException("menu stall"));
+        var settings = Substitute.For<ISettingProvider>();
+        settings.GetOrNullAsync(Arg.Any<string>()).Returns((string?)null);
+        var service = new DashboardShortcutAppService(
+            menus,
+            settings,
+            Substitute.For<ISettingsStore>());
+        var currentUser = Substitute.For<ICurrentUser>();
+        currentUser.Id.Returns(Guid.NewGuid());
+        var services = new ServiceCollection();
+        services.AddSingleton(currentUser);
+        service.LazyServiceProvider = new AbpLazyServiceProvider(services.BuildServiceProvider());
+
+        var shortcuts = await service.GetMyShortcutsAsync();
+
+        shortcuts.ShouldBeEmpty();
+    }
+
     private static DashboardShortcutAppService NewService(
         ApplicationMenu menu,
         Guid? userId,
@@ -63,8 +85,7 @@ public class DashboardShortcutWorkflowTests
         var service = new DashboardShortcutAppService(
             menus,
             settings,
-            store,
-            Substitute.For<IAuthorizationService>());
+            store);
         var currentUser = Substitute.For<ICurrentUser>();
         currentUser.Id.Returns(userId);
         var services = new ServiceCollection();
