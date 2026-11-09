@@ -69,7 +69,8 @@ public class IranMcpServerDataSeedContributor : IDataSeedContributor, ITransient
 
     public virtual string ResolveEnvironment()
     {
-        var configured = _configuration[EnvironmentConfigKey];
+        var configured = _configuration[EnvironmentConfigKey]
+            ?? _configuration[IranMcpSettings.Environment];
         if (!string.IsNullOrWhiteSpace(configured))
         {
             return configured;

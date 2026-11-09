@@ -34,6 +34,7 @@ public static class AIErrorCodes
     public const string MCPUserScopedStdioNotSupported = "AI:MCPUserScopedStdioNotSupported";
     public const string MCPUserScopedRequiresUser = "AI:MCPUserScopedRequiresUser";
     public const string MCPUserTokenNotPermitted = "AI:MCPUserTokenNotPermitted";
+    public const string IranMcpTokenVerifyUrlRequired = "AI:IranMcpTokenVerifyUrlRequired";
 
     public const string GuardModelReply = "AI:GuardModelReply";
     public const string ToolLoopLimitReached = "AI:ToolLoopLimitReached";

@@ -439,7 +439,6 @@
     "Permission:Execute": "Execute",
     "Permission:MCPServers": "MCP Servers",
     "Permission:McpAudit": "MCP Tool Call Audit",
-    "Permission:SufiAI": "AI Infrastructure",
     "Permission:SufiAI.Chat": "Chat",
     "Permission:SufiAI.Audio": "Audio",
     "Permission:SufiAI.Vision": "Vision",
@@ -456,11 +455,9 @@
     "RagProvider:Pgvector": "Pgvector",
     "ConfigureMCPTools": "Configure MCP Tools",
     "MCPTools": "MCP Tools",
-    "Enabled": "Enabled",
     "SelectAll": "Select all",
     "ClearAll": "Clear all",
     "MCPToolsUpdatedSuccessfully": "MCP tools updated successfully",
-    "Type": "Type",
     "MCPToolType:Internal": "Internal",
     "MCPToolType:External": "External",
     "ServerKey": "Stable server key",
@@ -616,6 +613,10 @@
     "WebResearchAdvancedSection": "Advanced: timeouts and content limits",
     "WebResearchAdvancedHint": "Adjust these limits only when needed. Larger limits can increase response time and context usage.",
     "WebResearchWorking": "Working…",
-    "WebResearchLoading": "Loading web research settings…"
-  ,"Hooshvare:SufiAI:WorkspaceReadiness:DisplayName":"Workspace Readiness"}
+    "WebResearchLoading": "Loading web research settings…",
+    "Hooshvare:SufiAI:WorkspaceReadiness:DisplayName": "Workspace Readiness",
+    "AI:IranMcpTokenVerifyUrlRequired": "Token verification is required for Iran MCP, but the verify URL is not set. Set SufiAI.IranMcp.TokenVerifyUrl (or IRAN_MCP_TOKEN_VERIFY_URL).",
+    "Settings:SufiAI.IranMcp.TokenVerifyMode": "Iran MCP token verify mode",
+    "Settings:SufiAI.IranMcp.TokenVerifyUrl": "Iran MCP token verify URL"
+  }
 }

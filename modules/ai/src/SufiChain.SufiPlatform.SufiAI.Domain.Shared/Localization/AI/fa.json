@@ -386,7 +386,6 @@
     "Permission:Execute": "اجرا",
     "Permission:MCPServers": "سرورهای MCP",
     "Permission:McpAudit": "ممیزی فراخوانی ابزارهای MCP",
-    "Permission:SufiAI": "زیرساخت هوش مصنوعی",
     "Permission:SufiAI.Chat": "چت",
     "Permission:SufiAI.Audio": "صوت",
     "Permission:SufiAI.Vision": "بینایی",
@@ -431,11 +430,9 @@
     "AskToolEnabledQuestion": "سؤالی بپرسید که ممکن است به ابزار ثبت‌شده نیاز داشته باشد",
     "ConfigureMCPTools": "پیکربندی ابزارهای MCP",
     "MCPTools": "ابزارهای MCP",
-    "Enabled": "فعال",
     "SelectAll": "انتخاب همه",
     "ClearAll": "پاک کردن همه",
     "MCPToolsUpdatedSuccessfully": "ابزارهای MCP با موفقیت به‌روزرسانی شدند",
-    "Type": "نوع",
     "MCPToolType:Internal": "داخلی",
     "MCPToolType:External": "خارجی",
     "ServerKey": "کلید پایدار سرور",
@@ -596,6 +593,10 @@
     "WebResearchAdvancedSection": "پیشرفته: مهلت پاسخ و محدودیت محتوا",
     "WebResearchAdvancedHint": "این محدودیت‌ها را فقط در صورت نیاز تغییر دهید. مقادیر بیشتر می‌تواند زمان پاسخ و مصرف زمینه را افزایش دهد.",
     "WebResearchWorking": "در حال انجام…",
-    "WebResearchLoading": "در حال بارگذاری تنظیمات پژوهش وب…"
-  ,"Hooshvare:SufiAI:WorkspaceReadiness:DisplayName":"آمادگی فضای کاری"}
+    "WebResearchLoading": "در حال بارگذاری تنظیمات پژوهش وب…",
+    "Hooshvare:SufiAI:WorkspaceReadiness:DisplayName": "آمادگی فضای کاری",
+    "AI:IranMcpTokenVerifyUrlRequired": "تأیید توکن ایران‌ام‌سی‌پی الزامی است، اما نشانی تأیید تنظیم نشده است. SufiAI.IranMcp.TokenVerifyUrl یا IRAN_MCP_TOKEN_VERIFY_URL را تنظیم کنید.",
+    "Settings:SufiAI.IranMcp.TokenVerifyMode": "حالت تأیید توکن ایران‌ام‌سی‌پی",
+    "Settings:SufiAI.IranMcp.TokenVerifyUrl": "نشانی تأیید توکن ایران‌ام‌سی‌پی"
+  }
 }
