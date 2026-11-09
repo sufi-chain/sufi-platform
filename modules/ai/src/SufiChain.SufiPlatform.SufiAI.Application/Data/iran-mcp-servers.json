@@ -1,0 +1,313 @@
+{
+  "schemaVersion": 1,
+  "servers": [
+    {
+      "name": "snapp-mcp",
+      "title": "Snappfood & SnappMarket"
+    },
+    {
+      "name": "okala-mcp",
+      "title": "Okala"
+    },
+    {
+      "name": "tapsifood-mcp",
+      "title": "Tapsi Food"
+    },
+    {
+      "name": "digikala-mcp",
+      "title": "Digikala"
+    },
+    {
+      "name": "technolife-mcp",
+      "title": "Technolife"
+    },
+    {
+      "name": "masterkala-mcp",
+      "title": "MasterKala"
+    },
+    {
+      "name": "baneh-mcp",
+      "title": "Baneh"
+    },
+    {
+      "name": "torob-mcp",
+      "title": "Torob"
+    },
+    {
+      "name": "basalam-mcp",
+      "title": "Basalam"
+    },
+    {
+      "name": "emalls-ir-mcp",
+      "title": "Emalls Price Comparison"
+    },
+    {
+      "name": "mobile-ir-mcp",
+      "title": "Mobile.ir Phones"
+    },
+    {
+      "name": "zoomit-mcp",
+      "title": "Zoomit Products"
+    },
+    {
+      "name": "snappshop-mcp",
+      "title": "Snapp! Shop"
+    },
+    {
+      "name": "khanoumi-mcp",
+      "title": "Khanoumi"
+    },
+    {
+      "name": "asalbanoo-mcp",
+      "title": "Asal Banoo"
+    },
+    {
+      "name": "shopino-mcp",
+      "title": "Shopino"
+    },
+    {
+      "name": "banimode-mcp",
+      "title": "Banimode"
+    },
+    {
+      "name": "divar-mcp",
+      "title": "Divar"
+    },
+    {
+      "name": "sheypoor-mcp",
+      "title": "Sheypoor Classifieds"
+    },
+    {
+      "name": "bama-ir-mcp",
+      "title": "Bama Cars"
+    },
+    {
+      "name": "karnameh-mcp",
+      "title": "Karnameh Cars"
+    },
+    {
+      "name": "hamrah-mechanic-mcp",
+      "title": "Hamrah Mechanic Cars"
+    },
+    {
+      "name": "otaghak-mcp",
+      "title": "Otaghak"
+    },
+    {
+      "name": "jabama-mcp",
+      "title": "Jabama"
+    },
+    {
+      "name": "mrbilit-mcp",
+      "title": "MrBilit"
+    },
+    {
+      "name": "flytoday-mcp",
+      "title": "Flytoday"
+    },
+    {
+      "name": "alibaba-ir-mcp",
+      "title": "Alibaba Travel"
+    },
+    {
+      "name": "eghamat24-mcp",
+      "title": "Eghamat24 Hotels"
+    },
+    {
+      "name": "neshan-mcp",
+      "title": "Neshan Maps"
+    },
+    {
+      "name": "balad-mcp",
+      "title": "Balad Maps"
+    },
+    {
+      "name": "paziresh24-mcp",
+      "title": "Paziresh24"
+    },
+    {
+      "name": "doctoreto-mcp",
+      "title": "Doctoreto"
+    },
+    {
+      "name": "exiryab-mcp",
+      "title": "ExirYab"
+    },
+    {
+      "name": "darukade-mcp",
+      "title": "Darukade Pharmacy"
+    },
+    {
+      "name": "taaghche-mcp",
+      "title": "Taaghche"
+    },
+    {
+      "name": "fidibo-mcp",
+      "title": "Fidibo"
+    },
+    {
+      "name": "30book-mcp",
+      "title": "30book"
+    },
+    {
+      "name": "iranketab-mcp",
+      "title": "Iranketab Books"
+    },
+    {
+      "name": "maktabkhooneh-mcp",
+      "title": "Maktabkhooneh"
+    },
+    {
+      "name": "faradars-mcp",
+      "title": "Faradars Courses"
+    },
+    {
+      "name": "jobinja-mcp",
+      "title": "Jobinja Jobs"
+    },
+    {
+      "name": "jobvision-mcp",
+      "title": "Jobvision Jobs"
+    },
+    {
+      "name": "irantalent-mcp",
+      "title": "IranTalent Jobs"
+    },
+    {
+      "name": "quera-mcp",
+      "title": "Quera"
+    },
+    {
+      "name": "iran-jobs-mcp",
+      "title": "Iran Jobs (IranTalent + Jobinja + Jobvision)"
+    },
+    {
+      "name": "ponisha-mcp",
+      "title": "Ponisha Freelance"
+    },
+    {
+      "name": "karlancer-mcp",
+      "title": "Karlancer Freelance"
+    },
+    {
+      "name": "iran-apps-mcp",
+      "title": "Iran Apps"
+    },
+    {
+      "name": "iran-downloads-mcp",
+      "title": "Iran Software Downloads"
+    },
+    {
+      "name": "iran-cloud-status-mcp",
+      "title": "Iran Cloud Status"
+    },
+    {
+      "name": "tgju-mcp",
+      "title": "TGJU Prices"
+    },
+    {
+      "name": "iran-crypto-mcp",
+      "title": "Iran Crypto Exchanges"
+    },
+    {
+      "name": "milligold-mcp",
+      "title": "Milli.gold Prices"
+    },
+    {
+      "name": "iran-gold-mcp",
+      "title": "Iran Gold Prices"
+    },
+    {
+      "name": "tsetmc-mcp",
+      "title": "TSETMC Tehran Stock Exchange"
+    },
+    {
+      "name": "codal-mcp",
+      "title": "Codal (کدال) Disclosures"
+    },
+    {
+      "name": "ifb-mcp",
+      "title": "Iran Fara Bourse"
+    },
+    {
+      "name": "fipiran-mcp",
+      "title": "Fipiran Funds"
+    },
+    {
+      "name": "ime-mcp",
+      "title": "Iran Mercantile Exchange"
+    },
+    {
+      "name": "iran-brokers-mcp",
+      "title": "Iran Brokers Market Data"
+    },
+    {
+      "name": "cbi-mcp",
+      "title": "Central Bank of Iran"
+    },
+    {
+      "name": "amar-mcp",
+      "title": "Statistical Centre of Iran"
+    },
+    {
+      "name": "iran-news-mcp",
+      "title": "Iran News RSS"
+    },
+    {
+      "name": "varzesh3-mcp",
+      "title": "Varzesh3 Sports"
+    },
+    {
+      "name": "gamefa-mcp",
+      "title": "Gamefa"
+    },
+    {
+      "name": "iran-vod-mcp",
+      "title": "Filimo and Namava"
+    },
+    {
+      "name": "time-ir-mcp",
+      "title": "Time.ir Calendar"
+    },
+    {
+      "name": "iran-quake-mcp",
+      "title": "Iran Earthquakes"
+    },
+    {
+      "name": "qavanin-mcp",
+      "title": "Qavanin"
+    },
+    {
+      "name": "rrk-mcp",
+      "title": "Official Gazette of Iran"
+    },
+    {
+      "name": "iran-tax-mcp",
+      "title": "Iran Tax"
+    },
+    {
+      "name": "iran-insurance-mcp",
+      "title": "Iran Insurance (BimeBazar + Azki)"
+    },
+    {
+      "name": "rasmio-mcp",
+      "title": "Rasmio Company Registry"
+    },
+    {
+      "name": "payping-mcp",
+      "title": "PayPing"
+    },
+    {
+      "name": "bale-mcp",
+      "title": "Bale Bot"
+    },
+    {
+      "name": "pasavard-mcp",
+      "title": "Pasavard"
+    },
+    {
+      "name": "swapwallet-mcp",
+      "title": "SwapWallet"
+    }
+  ]
+}

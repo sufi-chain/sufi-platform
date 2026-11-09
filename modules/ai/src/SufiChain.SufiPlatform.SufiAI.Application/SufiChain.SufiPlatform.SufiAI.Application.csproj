@@ -27,4 +27,10 @@
   </ItemGroup>
 
   <ItemGroup><ProjectReference Include="..\..\..\settings\src\SufiChain.SufiPlatform.Settings.Domain\SufiChain.SufiPlatform.Settings.Domain.csproj" /></ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Data\iran-mcp-servers.json">
+      <LogicalName>SufiChain.SufiPlatform.SufiAI.Data.iran-mcp-servers.json</LogicalName>
+    </EmbeddedResource>
+  </ItemGroup>
 </Project>
