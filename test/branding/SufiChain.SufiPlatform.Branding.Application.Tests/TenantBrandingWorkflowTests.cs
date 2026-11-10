@@ -14,14 +14,41 @@ public class TenantBrandingWorkflowTests
     [Fact]
     public async Task Get_Should_Keep_SideMenu()
     {
-        var provider = Substitute.For<ISettingProvider>();
-        provider.GetOrNullAsync(Arg.Any<string>()).Returns((string?)null);
-        provider.GetOrNullAsync(BrandingSettings.PanelLayout).Returns("sidemenu");
+        var provider = SettingProvider(("sidemenu", BrandingSettings.PanelLayout));
         var service = new TenantBrandingAppService(provider, Substitute.For<SufiSettingManager>(), Substitute.For<ICurrentTenant>());
 
         var branding = await service.GetAsync();
 
         branding.PanelLayout.ShouldBe("SideMenu");
+        await provider.Received(1).GetAllAsync(Arg.Is<string[]>(names => names.Length == 9 && names.Contains(BrandingSettings.PanelLayout)));
+        await provider.DidNotReceive().GetOrNullAsync(Arg.Any<string>());
+    }
+
+    [Fact]
+    public async Task Get_reads_the_branding_region_in_one_batch()
+    {
+        var provider = SettingProvider(
+            ("Sufi", BrandingSettings.AppName),
+            ("#112233", BrandingSettings.ThemeColor));
+        var service = new TenantBrandingAppService(provider, Substitute.For<SufiSettingManager>(), Substitute.For<ICurrentTenant>());
+
+        var branding = await service.GetAsync();
+
+        branding.AppName.ShouldBe("Sufi");
+        branding.ThemeColor.ShouldBe("#112233");
+        branding.PanelLayout.ShouldBe("DualSidebar");
+        await provider.Received(1).GetAllAsync(Arg.Any<string[]>());
+    }
+
+    private static ISettingProvider SettingProvider(params (string Value, string Name)[] rows)
+    {
+        var provider = Substitute.For<ISettingProvider>();
+        provider.GetAllAsync(Arg.Any<string[]>()).Returns(call =>
+        {
+            var names = call.Arg<string[]>();
+            return names.Select(name => new SettingValue(name, rows.FirstOrDefault(row => row.Name == name).Value)).ToList();
+        });
+        return provider;
     }
 
     [Fact]
