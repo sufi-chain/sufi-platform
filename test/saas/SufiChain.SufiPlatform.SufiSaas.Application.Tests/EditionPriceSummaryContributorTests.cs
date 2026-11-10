@@ -1,3 +1,4 @@
+using System.Globalization;
 using NSubstitute;
 using Shouldly;
 using SufiChain.SufiPlatform.Editions;
@@ -45,8 +46,38 @@ public class EditionPriceSummaryContributorTests
 
         dtos[2].PriceSummary.ShouldBeNull();
 
-        // #193 G-84: a legacy USD price alone is not shown as the edition price.
+        // The editions list shows the plan base price when monthly and yearly are empty.
         dtos[3].PriceSummary.ShouldNotBeNull();
-        dtos[3].PriceSummary!.IsPriced.ShouldBeFalse();
+        dtos[3].PriceSummary!.IsPriced.ShouldBeTrue();
+        dtos[3].PriceSummary.Amount.ShouldBe(99m);
+        dtos[3].PriceSummary.CurrencyCode.ShouldBe("USD");
+        EditionPriceDisplay.Resolve(dtos[3].PriceSummary, "Price not set", CultureInfo.InvariantCulture)
+            .ShouldBe("99.00 USD");
+    }
+
+    [Fact]
+    public async Task Contributor_matches_a_plan_by_edition_code_when_the_id_was_recreated()
+    {
+        var storedEditionId = Guid.Parse("44444444-4444-4444-4444-444444444444");
+        var listedEditionId = Guid.Parse("55555555-5555-5555-5555-555555555555");
+        var plan = new Plan(Guid.NewGuid(), "GROWTH", "Growth", storedEditionId, price: 29m, currencyCode: "USD");
+        plan.SetMonthlyPricing(1_000_000m, "IRR");
+        var plans = Substitute.For<IPlanRepository>();
+        plans.GetListAsync(Arg.Any<bool>(), Arg.Any<CancellationToken>()).Returns([plan]);
+
+        var contributor = new SaasEditionPriceSummaryContributor(plans);
+        var dtos = new List<EditionsEditionDto>
+        {
+            new() { Id = listedEditionId, Code = "GROWTH" }
+        };
+
+        await contributor.ContributeAsync(dtos);
+
+        dtos[0].PriceSummary.ShouldNotBeNull();
+        dtos[0].PriceSummary!.IsPriced.ShouldBeTrue();
+        dtos[0].PriceSummary.Amount.ShouldBe(1_000_000m);
+        dtos[0].PriceSummary.CurrencyCode.ShouldBe("IRR");
+        EditionPriceDisplay.Resolve(dtos[0].PriceSummary, "Price not set", CultureInfo.InvariantCulture)
+            .ShouldBe("1,000,000.00 IRR");
     }
 }
