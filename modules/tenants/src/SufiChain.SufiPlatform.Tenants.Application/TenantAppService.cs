@@ -1,7 +1,9 @@
+using Microsoft.AspNetCore.Authorization;
 using SufiChain.SufiPlatform.Application.Dtos;
 
 namespace SufiChain.SufiPlatform.Tenants;
 
+[Authorize(TenantsPermissions.Tenants.Default)]
 public class TenantAppService : TenantsAppServiceBase, ITenantAppService
 {
     protected ITenantRepository TenantRepository { get; }
@@ -31,6 +33,7 @@ public class TenantAppService : TenantsAppServiceBase, ITenantAppService
         return new PagedResultDto<TenantDto>(count, tenants.Select(MapToDto).ToList());
     }
 
+    [Authorize(TenantsPermissions.Tenants.Create)]
     public virtual async Task<TenantDto> CreateAsync(TenantCreateDto input)
     {
         var tenant = await TenantManager.CreateAsync(input.Name);
@@ -41,6 +44,7 @@ public class TenantAppService : TenantsAppServiceBase, ITenantAppService
         return MapToDto(tenant);
     }
 
+    [Authorize(TenantsPermissions.Tenants.Update)]
     public virtual async Task<TenantDto> UpdateAsync(Guid id, TenantUpdateDto input)
     {
         var tenant = await TenantRepository.GetAsync(id, includeDetails: true);
@@ -53,17 +57,20 @@ public class TenantAppService : TenantsAppServiceBase, ITenantAppService
         return MapToDto(tenant);
     }
 
+    [Authorize(TenantsPermissions.Tenants.Delete)]
     public virtual async Task DeleteAsync(Guid id)
     {
         await TenantRepository.DeleteAsync(id, autoSave: true);
     }
 
+    [Authorize(TenantsPermissions.Tenants.ManageConnectionStrings)]
     public virtual async Task<string> GetDefaultConnectionStringAsync(Guid id)
     {
         var tenant = await TenantRepository.GetAsync(id);
         return tenant.FindDefaultConnectionString() ?? string.Empty;
     }
 
+    [Authorize(TenantsPermissions.Tenants.ManageConnectionStrings)]
     public virtual async Task UpdateDefaultConnectionStringAsync(Guid id, string defaultConnectionString)
     {
         var tenant = await TenantRepository.GetAsync(id);
@@ -71,6 +78,7 @@ public class TenantAppService : TenantsAppServiceBase, ITenantAppService
         await TenantRepository.UpdateAsync(tenant, autoSave: true);
     }
 
+    [Authorize(TenantsPermissions.Tenants.ManageConnectionStrings)]
     public virtual async Task DeleteDefaultConnectionStringAsync(Guid id)
     {
         var tenant = await TenantRepository.GetAsync(id);
