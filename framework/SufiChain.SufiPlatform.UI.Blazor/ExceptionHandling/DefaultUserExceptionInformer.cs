@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Diagnostics;
+using System.Globalization;
 using System.Reflection;
 using System.Text;
 using Microsoft.Extensions.Localization;
@@ -583,15 +584,51 @@ public class DefaultUserExceptionInformer : IUserExceptionInformer
         var value = localizedString.Value;
         if (data == null || data.Count == 0)
         {
+            return FillStatusCode(value, statusCode: null);
+        }
+
+        int? statusCode = null;
+        foreach (var key in data.Keys)
+        {
+            var name = key?.ToString();
+            if (string.IsNullOrEmpty(name))
+            {
+                continue;
+            }
+
+            var replacement = Convert.ToString(data[key], CultureInfo.InvariantCulture) ?? string.Empty;
+            value = value.Replace("{" + name + "}", replacement, StringComparison.OrdinalIgnoreCase);
+            if (statusCode is null &&
+                name.Equals("StatusCode", StringComparison.OrdinalIgnoreCase) &&
+                int.TryParse(replacement, NumberStyles.Integer, CultureInfo.InvariantCulture, out var parsed))
+            {
+                statusCode = parsed;
+            }
+        }
+
+        return FillStatusCode(value, statusCode);
+    }
+
+    /// <summary>
+    /// Named localization uses <c>{StatusCode}</c>. Fill it when the exception carries the code,
+    /// and drop the raw token when it does not, so the error modal never shows the placeholder.
+    /// </summary>
+    private static string FillStatusCode(string value, int? statusCode)
+    {
+        if (!value.Contains("{StatusCode}", StringComparison.OrdinalIgnoreCase))
+        {
             return value;
         }
 
-        foreach (var key in data.Keys)
+        if (statusCode is int code)
         {
-            value = value.Replace("{" + key + "}", data[key]?.ToString(), StringComparison.Ordinal);
+            return value.Replace("{StatusCode}", code.ToString(CultureInfo.InvariantCulture), StringComparison.OrdinalIgnoreCase);
         }
 
-        return value;
+        return value
+            .Replace(" (HTTP {StatusCode})", string.Empty, StringComparison.OrdinalIgnoreCase)
+            .Replace("(HTTP {StatusCode})", string.Empty, StringComparison.OrdinalIgnoreCase)
+            .Replace("{StatusCode}", string.Empty, StringComparison.OrdinalIgnoreCase);
     }
 
     /// <summary>

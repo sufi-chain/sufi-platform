@@ -32,7 +32,7 @@ public class HooshvareRuntimeProviderErrorTests
             PersistChatSession = false
         }));
 
-        error.Code.ShouldBe(AIErrorCodes.ProviderRequestFailed);
+        error.Code.ShouldBe(AIErrorCodes.ProviderRequestFailedBrief);
         error.InnerException.ShouldBeNull();
         error.Message.ShouldNotContain("https://");
         error.Message.ShouldNotContain("sk-live");

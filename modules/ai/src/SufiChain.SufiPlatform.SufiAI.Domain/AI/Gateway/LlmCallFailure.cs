@@ -110,18 +110,48 @@ public sealed class LlmCallFailure
 
     public static BusinessException Sanitize(Exception? exception)
     {
+        var status = ReadStatus(exception);
         if (exception is BusinessException business && IsUserSafe(business))
         {
+            if (status is int existing && !HasStatus(business))
+            {
+                business.WithData("StatusCode", existing);
+            }
+
             return business;
         }
 
-        var safe = new BusinessException(AIErrorCodes.ProviderRequestFailed);
-        if (exception is LlmProviderCallException call && call.StatusCode is int status)
+        var safe = new BusinessException(status is int
+            ? AIErrorCodes.ProviderRequestFailed
+            : AIErrorCodes.ProviderRequestFailedBrief);
+        if (status is int code)
         {
-            safe.WithData("StatusCode", status);
+            safe.WithData("StatusCode", code);
         }
 
         return safe;
+    }
+
+    private static int? ReadStatus(Exception? exception)
+    {
+        if (exception is LlmProviderCallException call)
+        {
+            return call.StatusCode;
+        }
+
+        if (exception is BusinessException business &&
+            business.Data.Contains("StatusCode") &&
+            int.TryParse(business.Data["StatusCode"]?.ToString(), out var parsed))
+        {
+            return parsed;
+        }
+
+        return null;
+    }
+
+    private static bool HasStatus(BusinessException business)
+    {
+        return business.Data.Contains("StatusCode") && business.Data["StatusCode"] != null;
     }
 
     private static LlmCallFailure FromStatus(

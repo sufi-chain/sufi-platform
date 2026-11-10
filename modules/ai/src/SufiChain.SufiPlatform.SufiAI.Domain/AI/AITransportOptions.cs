@@ -13,6 +13,12 @@ public class AITransportOptions
     /// <summary>0 means no limit (the default). Values 1..3600 set an explicit deadline.</summary>
     public int RequestTimeoutSeconds { get; set; } = 0;
 
+    /// <summary>
+    /// Interactive chat (the Free Models Router included) must not sit on Thinking until a
+    /// gateway eventually fails. When the host sets no transport deadline, chat still stops here.
+    /// </summary>
+    public const int DefaultChatRequestTimeoutSeconds = 20;
+
     public TimeSpan GetRequestTimeout()
     {
         if (RequestTimeoutSeconds == 0)
@@ -21,5 +27,17 @@ public class AITransportOptions
             throw new ArgumentOutOfRangeException(nameof(RequestTimeoutSeconds),
                 "AI request timeout must be 0 (no limit) or between 1 and 3600 seconds.");
         return TimeSpan.FromSeconds(RequestTimeoutSeconds);
+    }
+
+    /// <summary>
+    /// Chat uses the host deadline when one is set, otherwise <see cref="DefaultChatRequestTimeoutSeconds"/>.
+    /// Other model calls keep <see cref="GetRequestTimeout"/>.
+    /// </summary>
+    public TimeSpan GetChatRequestTimeout()
+    {
+        var configured = GetRequestTimeout();
+        return configured == Timeout.InfiniteTimeSpan
+            ? TimeSpan.FromSeconds(DefaultChatRequestTimeoutSeconds)
+            : configured;
     }
 }

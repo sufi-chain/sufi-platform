@@ -486,7 +486,7 @@ public class OpenAIProvider : IAIProvider, ITransientDependency
         ChatCompletionRequest request,
         CancellationToken cancellationToken)
     {
-        var httpClient = CreateHttpClient(workspace, configuration);
+        var httpClient = CreateChatHttpClient(workspace, configuration);
         var baseUrl = GetBaseUrl(workspace, configuration);
 
         var requestBody = new Dictionary<string, object?>
@@ -497,7 +497,7 @@ public class OpenAIProvider : IAIProvider, ITransientDependency
         };
         AddOptionalChatFields(requestBody, configuration, request);
 
-        var response = await httpClient.PostAsync($"{baseUrl}/chat/completions", CreateJsonContent(requestBody), cancellationToken);
+        var response = await PostChatAsync(httpClient, $"{baseUrl}/chat/completions", CreateJsonContent(requestBody), configuration.ModelId, cancellationToken);
         await EnsureProviderSuccessAsync(response, "chat/completions", configuration.ModelId, cancellationToken);
 
         var responseJson = await response.Content.ReadAsStringAsync(cancellationToken);
@@ -549,7 +549,7 @@ public class OpenAIProvider : IAIProvider, ITransientDependency
         ChatCompletionRequest request,
         [EnumeratorCancellation] CancellationToken cancellationToken)
     {
-        var httpClient = CreateHttpClient(workspace, configuration);
+        var httpClient = CreateChatHttpClient(workspace, configuration);
         var baseUrl = GetBaseUrl(workspace, configuration);
 
         var requestBody = new Dictionary<string, object?>
@@ -602,11 +602,11 @@ public class OpenAIProvider : IAIProvider, ITransientDependency
         ChatCompletionRequest request,
         CancellationToken cancellationToken)
     {
-        var httpClient = CreateHttpClient(workspace, configuration);
+        var httpClient = CreateChatHttpClient(workspace, configuration);
         var baseUrl = GetBaseUrl(workspace, configuration);
         var requestBody = BuildResponsesRequest(workspace, configuration, request, stream: false);
 
-        var response = await httpClient.PostAsync($"{baseUrl}/responses", CreateJsonContent(requestBody), cancellationToken);
+        var response = await PostChatAsync(httpClient, $"{baseUrl}/responses", CreateJsonContent(requestBody), configuration.ModelId, cancellationToken);
         await EnsureProviderSuccessAsync(response, "responses", configuration.ModelId, cancellationToken);
 
         var responseJson = await response.Content.ReadAsStringAsync(cancellationToken);
@@ -631,7 +631,7 @@ public class OpenAIProvider : IAIProvider, ITransientDependency
         ChatCompletionRequest request,
         [EnumeratorCancellation] CancellationToken cancellationToken)
     {
-        var httpClient = CreateHttpClient(workspace, configuration);
+        var httpClient = CreateChatHttpClient(workspace, configuration);
         var baseUrl = GetBaseUrl(workspace, configuration);
         var requestBody = BuildResponsesRequest(workspace, configuration, request, stream: true);
 
@@ -889,7 +889,15 @@ public class OpenAIProvider : IAIProvider, ITransientDependency
             Content = CreateJsonContent(requestBody)
         };
 
-        var response = await httpClient.SendAsync(httpRequest, HttpCompletionOption.ResponseHeadersRead, cancellationToken);
+        HttpResponseMessage response;
+        try
+        {
+            response = await httpClient.SendAsync(httpRequest, HttpCompletionOption.ResponseHeadersRead, cancellationToken);
+        }
+        catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
+        {
+            throw ChatTimedOut(url);
+        }
         await EnsureProviderSuccessAsync(response, url, "streaming", cancellationToken);
 
         await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken);
@@ -1282,6 +1290,40 @@ public class OpenAIProvider : IAIProvider, ITransientDependency
     private static string ToDataUrl(byte[] data, string format)
     {
         return $"data:image/{format};base64,{Convert.ToBase64String(data)}";
+    }
+
+    private HttpClient CreateChatHttpClient(Workspace workspace, AIModelConfiguration configuration)
+    {
+        var httpClient = CreateHttpClient(workspace, configuration);
+        httpClient.Timeout = _transportOptions.GetChatRequestTimeout();
+        return httpClient;
+    }
+
+    private async Task<HttpResponseMessage> PostChatAsync(
+        HttpClient httpClient,
+        string url,
+        HttpContent content,
+        string modelId,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            return await httpClient.PostAsync(url, content, cancellationToken);
+        }
+        catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
+        {
+            throw ChatTimedOut(modelId);
+        }
+    }
+
+    private BusinessException ChatTimedOut(string modelId)
+    {
+        var timeout = _transportOptions.GetChatRequestTimeout();
+        _logger.LogWarning(
+            "AI provider chat timed out before a response. Model={Model} TimeoutSeconds={TimeoutSeconds}",
+            modelId,
+            timeout.TotalSeconds);
+        return new BusinessException(AIErrorCodes.ProviderRequestFailedBrief);
     }
 
     private HttpClient CreateHttpClient(Workspace workspace, AIModelConfiguration configuration)

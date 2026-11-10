@@ -97,6 +97,31 @@ public class DefaultUserExceptionInformerTests
     }
 
     [Fact]
+    public void Provider_failure_fills_the_status_code_placeholder()
+    {
+        const string template = "The AI provider could not complete the request (HTTP {StatusCode}). Please try again in a moment.";
+        var informer = InformerFor("AI:ProviderRequestFailed", template);
+        var exception = new BusinessException("AI:ProviderRequestFailed").WithData("StatusCode", 502);
+
+        var message = informer.GetLocalizedMessage(exception);
+
+        message.ShouldBe("The AI provider could not complete the request (HTTP 502). Please try again in a moment.");
+        message.ShouldNotContain("{StatusCode}");
+    }
+
+    [Fact]
+    public void Provider_failure_without_a_status_does_not_show_the_placeholder()
+    {
+        const string template = "The AI provider could not complete the request (HTTP {StatusCode}). Please try again in a moment.";
+        var informer = InformerFor("AI:ProviderRequestFailed", template);
+
+        var message = informer.GetLocalizedMessage(new BusinessException("AI:ProviderRequestFailed"));
+
+        message.ShouldNotContain("{StatusCode}");
+        message.ShouldContain("could not complete the request");
+    }
+
+    [Fact]
     public void Unmapped_business_code_never_produces_english_words_from_the_key()
     {
         var message = CreateInformer()
@@ -154,6 +179,23 @@ public class DefaultUserExceptionInformerTests
             Arg.Is<string>(m => m.StartsWith("KEY:DefaultErrorMessageWithReference:", StringComparison.Ordinal)
                                 && !m.Contains("secret stack detail", StringComparison.Ordinal)),
             Arg.Any<string?>());
+    }
+
+    private DefaultUserExceptionInformer InformerFor(string code, string template)
+    {
+        var factory = Substitute.For<IStringLocalizerFactory>();
+        var resourceLocalizer = Substitute.For<IStringLocalizer>();
+        resourceLocalizer[code].Returns(new LocalizedString(code, template, resourceNotFound: false));
+        factory.Create(typeof(DemoResource)).Returns(resourceLocalizer);
+        var options = Options.Create(new AbpExceptionLocalizationOptions());
+        options.Value.MapCodeNamespace(code.Split(':')[0], typeof(DemoResource));
+        return new DefaultUserExceptionInformer(
+            _messages,
+            _localizer,
+            factory,
+            options,
+            exceptionToErrorInfoConverter: null,
+            _logger);
     }
 
     private DefaultUserExceptionInformer CreateInformer(
