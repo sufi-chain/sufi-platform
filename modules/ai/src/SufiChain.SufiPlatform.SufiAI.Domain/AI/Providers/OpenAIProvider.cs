@@ -1069,12 +1069,12 @@ public class OpenAIProvider : IAIProvider, ITransientDependency
             requestId,
             TrimForLog(responseBody));
 
-        throw new BusinessException(AIErrorCodes.ProviderRequestFailed)
+        throw new BusinessException(ProviderFailureKind.CodeFor(statusCode))
             .WithData("StatusCode", statusCode)
             .WithData("Operation", safeOperation)
             .WithData("ModelId", modelId)
             .WithData("RequestId", requestId ?? string.Empty)
-            .WithData("ProviderMessage", ShortProviderMessage(error.Message));
+            .WithData("ProviderMessage", SafeProviderMessage(error.Message));
     }
 
     private static string SanitizeOperation(string operation)
@@ -1246,12 +1246,13 @@ public class OpenAIProvider : IAIProvider, ITransientDependency
 
     private static string TrimForLog(string? value)
     {
-        if (string.IsNullOrWhiteSpace(value))
+        var redacted = LlmCallFailure.RedactSecrets(value);
+        if (string.IsNullOrWhiteSpace(redacted))
         {
             return string.Empty;
         }
 
-        return value.Length <= 2000 ? value : value[..2000];
+        return redacted.Length <= 2000 ? redacted : redacted[..2000];
     }
 
     private static string ShortProviderMessage(string? value)
@@ -1263,6 +1264,12 @@ public class OpenAIProvider : IAIProvider, ITransientDependency
 
         var text = value.Replace('\r', ' ').Replace('\n', ' ').Trim();
         return text.Length <= 300 ? text : text[..300];
+    }
+
+    private static string SafeProviderMessage(string? value)
+    {
+        var text = ShortProviderMessage(value);
+        return LlmCallFailure.LooksSensitive(text) ? string.Empty : text;
     }
 
     private static StringContent CreateJsonContent(object requestBody)

@@ -42,6 +42,15 @@ public static class AIErrorCodes
 
     /// <summary>Usage-log text for <see cref="ProviderRequestFailed"/> when the status code was not stored.</summary>
     public const string ProviderRequestFailedBrief = "AI:ProviderRequestFailedBrief";
+
+    /// <summary>The provider rejected the workspace credential (HTTP 401 or 403).</summary>
+    public const string ProviderAuthorizationFailed = "AI:ProviderAuthorizationFailed";
+
+    /// <summary>The provider asked the caller to slow down (HTTP 429).</summary>
+    public const string ProviderRateLimited = "AI:ProviderRateLimited";
+
+    /// <summary>The provider failed on its side (HTTP 5xx).</summary>
+    public const string ProviderUnavailable = "AI:ProviderUnavailable";
     public const string ApiKeyRequired = "AI:ApiKeyRequired";
     public const string NoModelConfigured = "AI:NoModelConfigured";
     public const string ProviderNotSupported = "AI:ProviderNotSupported";
