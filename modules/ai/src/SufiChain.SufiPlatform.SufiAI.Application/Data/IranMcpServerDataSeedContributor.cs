@@ -30,22 +30,26 @@ public class IranMcpServerDataSeedContributor : IDataSeedContributor, ITransient
         PropertyNameCaseInsensitive = true
     };
 
+    private static readonly string[] HostEnvironmentKeys =
+    [
+        "environment",
+        "DOTNET_ENVIRONMENT",
+        "ASPNETCORE_ENVIRONMENT"
+    ];
+
     private readonly IMCPServerRepository _servers;
     private readonly ICurrentTenant _currentTenant;
-    private readonly IHostEnvironment _hostEnvironment;
     private readonly IConfiguration _configuration;
     private readonly ILogger<IranMcpServerDataSeedContributor> _logger;
 
     public IranMcpServerDataSeedContributor(
         IMCPServerRepository servers,
         ICurrentTenant currentTenant,
-        IHostEnvironment hostEnvironment,
         IConfiguration configuration,
         ILogger<IranMcpServerDataSeedContributor> logger)
     {
         _servers = servers;
         _currentTenant = currentTenant;
-        _hostEnvironment = hostEnvironment;
         _configuration = configuration;
         _logger = logger;
     }
@@ -76,7 +80,19 @@ public class IranMcpServerDataSeedContributor : IDataSeedContributor, ITransient
             return configured;
         }
 
-        return _hostEnvironment.EnvironmentName;
+        // AbpApplicationFactory (the DbMigrator container) does not register
+        // IHostEnvironment. The configuration copied from the generic host already
+        // carries --environment, DOTNET_ENVIRONMENT, and ASPNETCORE_ENVIRONMENT.
+        foreach (var key in HostEnvironmentKeys)
+        {
+            var value = _configuration[key];
+            if (!string.IsNullOrWhiteSpace(value))
+            {
+                return value;
+            }
+        }
+
+        return Environments.Production;
     }
 
     public virtual IReadOnlyList<IranMcpServerEntry> LoadServers()
