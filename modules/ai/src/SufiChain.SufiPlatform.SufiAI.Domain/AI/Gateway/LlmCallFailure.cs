@@ -108,6 +108,30 @@ public sealed class LlmCallFailure
         return new LlmCallFailure { Exception = exception, IsTransient = false };
     }
 
+    public static string DescribeUsageFailure(Exception exception)
+    {
+        var status = ReadStatus(exception);
+        var reason = ReadProviderMessage(exception);
+        if (!string.IsNullOrWhiteSpace(reason))
+        {
+            return status is int code ? $"HTTP {code}: {reason}" : reason;
+        }
+
+        if (exception is BusinessException business && !string.IsNullOrWhiteSpace(business.Code))
+        {
+            return status is int code ? $"{business.Code} (HTTP {code})" : business.Code;
+        }
+
+        var message = exception.Message;
+        if (string.IsNullOrWhiteSpace(message)
+            || message.StartsWith("Exception of type '", StringComparison.Ordinal))
+        {
+            return exception.GetType().Name;
+        }
+
+        return message;
+    }
+
     public static BusinessException Sanitize(Exception? exception)
     {
         var status = ReadStatus(exception);
@@ -129,7 +153,29 @@ public sealed class LlmCallFailure
             safe.WithData("StatusCode", code);
         }
 
+        var reason = ReadProviderMessage(exception);
+        if (!string.IsNullOrWhiteSpace(reason))
+        {
+            safe.WithData("ProviderMessage", reason);
+        }
+
         return safe;
+    }
+
+    private static string? ReadProviderMessage(Exception? exception)
+    {
+        if (exception is not BusinessException business || !business.Data.Contains("ProviderMessage"))
+        {
+            return null;
+        }
+
+        var text = business.Data["ProviderMessage"]?.ToString();
+        if (string.IsNullOrWhiteSpace(text) || LooksSensitive(text))
+        {
+            return null;
+        }
+
+        return text.Length <= 300 ? text : text[..300];
     }
 
     private static int? ReadStatus(Exception? exception)

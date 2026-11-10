@@ -1073,7 +1073,8 @@ public class OpenAIProvider : IAIProvider, ITransientDependency
             .WithData("StatusCode", statusCode)
             .WithData("Operation", safeOperation)
             .WithData("ModelId", modelId)
-            .WithData("RequestId", requestId ?? string.Empty);
+            .WithData("RequestId", requestId ?? string.Empty)
+            .WithData("ProviderMessage", ShortProviderMessage(error.Message));
     }
 
     private static string SanitizeOperation(string operation)
@@ -1251,6 +1252,17 @@ public class OpenAIProvider : IAIProvider, ITransientDependency
         }
 
         return value.Length <= 2000 ? value : value[..2000];
+    }
+
+    private static string ShortProviderMessage(string? value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            return string.Empty;
+        }
+
+        var text = value.Replace('\r', ' ').Replace('\n', ' ').Trim();
+        return text.Length <= 300 ? text : text[..300];
     }
 
     private static StringContent CreateJsonContent(object requestBody)

@@ -110,6 +110,21 @@ public class DefaultUserExceptionInformerTests
     }
 
     [Fact]
+    public void Converter_supplied_provider_template_still_fills_the_status_code()
+    {
+        const string template = "The AI provider could not complete the request (HTTP {StatusCode}). Please try again in a moment.";
+        var converter = Substitute.For<IExceptionToErrorInfoConverter>();
+        converter.Convert(Arg.Any<Exception>(), Arg.Any<Action<AbpExceptionHandlingOptions>?>())
+            .Returns(new RemoteServiceErrorInfo(template));
+
+        var exception = new BusinessException("AI:ProviderRequestFailed").WithData("StatusCode", 400);
+        var message = CreateInformer(converter).GetLocalizedMessage(exception);
+
+        message.ShouldContain("400");
+        message.ShouldNotContain("{StatusCode}");
+    }
+
+    [Fact]
     public void Provider_failure_without_a_status_does_not_show_the_placeholder()
     {
         const string template = "The AI provider could not complete the request (HTTP {StatusCode}). Please try again in a moment.";

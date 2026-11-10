@@ -1,3 +1,4 @@
+using Volo.Abp;
 using Xunit;
 
 namespace SufiChain.SufiPlatform.SufiAI;
@@ -50,6 +51,24 @@ public class AiUsageErrorTextTests
         Assert.Equal(
             "The AI provider could not complete the request (HTTP 502). Please try again in a moment.",
             formatted);
+    }
+
+    [Fact]
+    public void Usage_failure_keeps_the_provider_reason_and_status()
+    {
+        var error = new BusinessException(AIErrorCodes.ProviderRequestFailed)
+            .WithData("StatusCode", 400)
+            .WithData("ProviderMessage", "reasoning is not supported");
+
+        Assert.Equal("HTTP 400: reasoning is not supported", LlmCallFailure.DescribeUsageFailure(error));
+    }
+
+    [Fact]
+    public void Usage_failure_without_a_reason_keeps_the_code_and_status()
+    {
+        var error = new BusinessException(AIErrorCodes.ProviderRequestFailed).WithData("StatusCode", 502);
+
+        Assert.Equal("AI:ProviderRequestFailed (HTTP 502)", LlmCallFailure.DescribeUsageFailure(error));
     }
 
     [Fact]

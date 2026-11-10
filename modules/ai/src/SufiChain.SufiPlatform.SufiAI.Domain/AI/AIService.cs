@@ -186,7 +186,7 @@ public class AIService : DomainService, IAIService, ITransientDependency
                 ProviderDidNotReturnUsage,
                 stopwatch.ElapsedMilliseconds,
                 isSuccess: false,
-                errorMessage: FormatLoggedError(ex),
+                errorMessage: LlmCallFailure.DescribeUsageFailure(ex),
                 cancellationToken: cancellationToken);
 
             throw;
@@ -227,7 +227,7 @@ public class AIService : DomainService, IAIService, ITransientDependency
                 catch (Exception ex)
                 {
                     hasError = true;
-                    errorMessage = FormatLoggedError(ex);
+                    errorMessage = LlmCallFailure.DescribeUsageFailure(ex);
                     _logger.LogError(ex, "Error during streaming chat completion");
                     throw;
                 }
@@ -328,7 +328,7 @@ public class AIService : DomainService, IAIService, ITransientDependency
                 ProviderDidNotReturnUsage,
                 stopwatch.ElapsedMilliseconds,
                 isSuccess: false,
-                errorMessage: FormatLoggedError(ex),
+                errorMessage: LlmCallFailure.DescribeUsageFailure(ex),
                 cancellationToken: cancellationToken);
 
             throw;
@@ -378,7 +378,7 @@ public class AIService : DomainService, IAIService, ITransientDependency
                 ProviderDidNotReturnUsage,
                 stopwatch.ElapsedMilliseconds,
                 isSuccess: false,
-                errorMessage: FormatLoggedError(ex),
+                errorMessage: LlmCallFailure.DescribeUsageFailure(ex),
                 cancellationToken: cancellationToken);
 
             throw;
@@ -427,7 +427,7 @@ public class AIService : DomainService, IAIService, ITransientDependency
                 ProviderDidNotReturnUsage,
                 stopwatch.ElapsedMilliseconds,
                 isSuccess: false,
-                errorMessage: FormatLoggedError(ex),
+                errorMessage: LlmCallFailure.DescribeUsageFailure(ex),
                 cancellationToken: cancellationToken);
 
             throw;
@@ -457,7 +457,7 @@ public class AIService : DomainService, IAIService, ITransientDependency
         {
             stopwatch.Stop();
             await LogUsageAsync(resolved, AICapabilityType.ImageGeneration, null, null, null,
-                UsageUnavailable, stopwatch.ElapsedMilliseconds, false, FormatLoggedError(ex), cancellationToken: cancellationToken);
+                UsageUnavailable, stopwatch.ElapsedMilliseconds, false, LlmCallFailure.DescribeUsageFailure(ex), cancellationToken: cancellationToken);
             throw;
         }
     }
@@ -508,7 +508,7 @@ public class AIService : DomainService, IAIService, ITransientDependency
                 ProviderDidNotReturnUsage,
                 stopwatch.ElapsedMilliseconds,
                 isSuccess: false,
-                errorMessage: FormatLoggedError(ex),
+                errorMessage: LlmCallFailure.DescribeUsageFailure(ex),
                 cancellationToken: cancellationToken);
 
             throw;
@@ -536,7 +536,7 @@ public class AIService : DomainService, IAIService, ITransientDependency
         {
             stopwatch.Stop();
             await LogUsageAsync(resolved, AICapabilityType.WebSearch, null, null, null,
-                UsageUnavailable, stopwatch.ElapsedMilliseconds, false, FormatLoggedError(ex), cancellationToken: cancellationToken);
+                UsageUnavailable, stopwatch.ElapsedMilliseconds, false, LlmCallFailure.DescribeUsageFailure(ex), cancellationToken: cancellationToken);
             throw;
         }
     }
@@ -562,7 +562,7 @@ public class AIService : DomainService, IAIService, ITransientDependency
         {
             stopwatch.Stop();
             await LogUsageAsync(resolved, AICapabilityType.WebFetch, null, null, null,
-                UsageUnavailable, stopwatch.ElapsedMilliseconds, false, FormatLoggedError(ex), cancellationToken: cancellationToken);
+                UsageUnavailable, stopwatch.ElapsedMilliseconds, false, LlmCallFailure.DescribeUsageFailure(ex), cancellationToken: cancellationToken);
             throw;
         }
     }
@@ -779,23 +779,6 @@ public class AIService : DomainService, IAIService, ITransientDependency
             cancellationToken);
     }
 
-    private static string FormatLoggedError(Exception exception)
-    {
-        if (exception is BusinessException businessException
-            && !string.IsNullOrWhiteSpace(businessException.Code))
-        {
-            return businessException.Code;
-        }
-
-        var message = exception.Message;
-        if (string.IsNullOrWhiteSpace(message)
-            || message.StartsWith("Exception of type '", StringComparison.Ordinal))
-        {
-            return exception.GetType().Name;
-        }
-
-        return message;
-    }
 
     private Task<ChatCompletionResponse> SendChatThroughGatewayAsync(
         Workspace workspace,

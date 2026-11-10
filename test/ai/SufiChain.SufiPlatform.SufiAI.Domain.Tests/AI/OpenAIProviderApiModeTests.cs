@@ -257,6 +257,63 @@ public class OpenAIProviderApiModeTests
     }
 
     [Fact]
+    public async Task Chat_completions_omit_reasoning_when_the_model_does_not_declare_it()
+    {
+        using var handler = new CapturingHandler("""{"choices":[{"message":{"content":"ok"},"finish_reason":"stop"}]}""");
+        var workspace = CreateWorkspace();
+        var route = workspace.AddModelConfiguration(AICapabilityType.ChatCompletion, "nvidia-model",
+            apiEndpoint: "https://api.example/v1", apiKey: "test-key");
+
+        await CreateProvider(handler).SendChatMessageAsync(workspace, route, new ChatCompletionRequest
+        {
+            ReasoningEffort = "high",
+            Messages = { new ChatMessage { Role = "user", Content = "hi" } }
+        });
+
+        handler.LastBody.ShouldNotBeNull();
+        handler.LastBody.ShouldNotContain("reasoning");
+    }
+
+    [Fact]
+    public async Task Chat_completions_map_an_undeclared_effort_onto_the_saved_default()
+    {
+        using var handler = new CapturingHandler("""{"choices":[{"message":{"content":"ok"},"finish_reason":"stop"}]}""");
+        var workspace = CreateWorkspace();
+        var route = workspace.AddModelConfiguration(AICapabilityType.ChatCompletion, "test-model",
+            apiEndpoint: "https://api.example/v1", apiKey: "test-key");
+        route.SetChatCapabilities(true, false, true, "low,medium", "medium", ModelCapabilitySource.ExternalCatalog);
+
+        await CreateProvider(handler).SendChatMessageAsync(workspace, route, new ChatCompletionRequest
+        {
+            ReasoningEffort = "high",
+            Messages = { new ChatMessage { Role = "user", Content = "hi" } }
+        });
+
+        handler.LastBody.ShouldContain("\"reasoning_effort\":\"medium\"");
+        handler.LastBody.ShouldNotContain("\"reasoning_effort\":\"high\"");
+    }
+
+    [Fact]
+    public async Task Provider_failure_records_the_upstream_reason()
+    {
+        using var handler = new CapturingHandler(
+            """{"error":{"message":"reasoning is not supported","type":"invalid_request_error"}}""",
+            HttpStatusCode.BadRequest);
+        var workspace = CreateWorkspace();
+        var route = workspace.AddModelConfiguration(AICapabilityType.ChatCompletion, "router",
+            apiEndpoint: "https://api.example/v1", apiKey: "test-key");
+
+        var exception = await Should.ThrowAsync<Volo.Abp.BusinessException>(() =>
+            CreateProvider(handler).SendChatMessageAsync(workspace, route, new ChatCompletionRequest
+            {
+                Messages = { new ChatMessage { Role = "user", Content = "hi" } }
+            }));
+
+        LlmCallFailure.DescribeUsageFailure(exception).ShouldBe("HTTP 400: reasoning is not supported");
+        exception.Data["StatusCode"].ShouldBe(400);
+    }
+
+    [Fact]
     public async Task Responses_send_input_file_and_reasoning_object()
     {
         using var handler = new CapturingHandler("""{"status":"completed","output_text":"ok"}""");
@@ -343,9 +400,12 @@ public class OpenAIProviderApiModeTests
     {
         private readonly string _responseJson;
 
-        public CapturingHandler(string responseJson)
+        private readonly HttpStatusCode _status;
+
+        public CapturingHandler(string responseJson, HttpStatusCode status = HttpStatusCode.OK)
         {
             _responseJson = responseJson;
+            _status = status;
         }
 
         public Uri? LastUri { get; private set; }
@@ -359,7 +419,7 @@ public class OpenAIProviderApiModeTests
             LastUri = request.RequestUri;
             LastContentType = request.Content?.Headers.ContentType?.ToString();
             LastBody = request.Content == null ? null : await request.Content.ReadAsStringAsync(cancellationToken);
-            return new HttpResponseMessage(HttpStatusCode.OK)
+            return new HttpResponseMessage(_status)
             {
                 Content = new StringContent(_responseJson, Encoding.UTF8, "application/json")
             };
