@@ -36,7 +36,7 @@ public class ShortLinksMenuContributor : IMenuContributor
             url: "/panel/admin/short-links",
             icon: "link",
             requiredPermissionName: ShortLinksPermissions.ShortLinks.Default
-        ));
+        ).RequireFeatures(SufiShortLinksFeatures.Enable, SufiShortLinksFeatures.ShortLinks));
 
         return;
     }

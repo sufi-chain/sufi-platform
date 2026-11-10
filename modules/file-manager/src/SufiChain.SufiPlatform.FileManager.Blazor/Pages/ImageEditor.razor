@@ -1,6 +1,7 @@
 @namespace SufiChain.SufiPlatform.FileManager.Blazor.Pages
 @page "/panel/admin/file-manager/assets/{AssetId:guid}/edit"
 @attribute [Authorize(FileManagerPermissions.FileItems.Default)]
+@attribute [RequiresFeature(SufiFileManagerFeatures.Enable, SufiFileManagerFeatures.FileItems)]
 @inherits FileManagerComponentBase
 
 @if (_assetLoading && _file == null)

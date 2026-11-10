@@ -1,5 +1,6 @@
 @page "/panel/admin/file-manager/archived"
 @attribute [Authorize(FileManagerPermissions.FileItems.Default)]
+@attribute [RequiresFeature(SufiFileManagerFeatures.Enable, SufiFileManagerFeatures.FileItems, SufiFileManagerFeatures.Archiving)]
 @inherits FileManagerComponentBase
 @inject IFileItemAppService FileItemAppService
 @inject IFileStructureAppService FileStructureAppService

@@ -38,6 +38,7 @@ public partial class FolderAccess
 
     protected override async Task OnInitializedAsync()
     {
+        await base.OnInitializedAsync();
         var tree = await FolderAppService.GetTreeAsync();
         _flatFolders = Flatten(tree).Where(n => n.Id.HasValue).ToList()!;
     }

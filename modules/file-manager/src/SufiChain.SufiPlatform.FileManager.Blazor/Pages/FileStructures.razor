@@ -4,6 +4,7 @@
 @using SufiChain.SufiPlatform.UI.Blazor
 @inherits FileManagerComponentBase
 @attribute [Authorize(FileManagerPermissions.FileStructures.Default)]
+@attribute [RequiresFeature(SufiFileManagerFeatures.Enable, SufiFileManagerFeatures.FileStructures)]
 
 <SufiPageToolbar>
 	<SbStack Wrap="true" Direction="SbStackDirection.Row" Gap="2">

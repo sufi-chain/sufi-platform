@@ -5,26 +5,51 @@ using Volo.Abp.Caching;
 using Volo.Abp.DependencyInjection;
 using Volo.Abp.Domain.Entities.Events;
 using Volo.Abp.EventBus;
+using Volo.Abp.EventBus.Distributed;
 
 namespace SufiChain.SufiPlatform.Features;
 
 public class FeatureValueCacheItemInvalidator :
     ILocalEventHandler<EntityChangedEventData<FeatureValue>>,
+    IDistributedEventHandler<FeatureValueChangedEto>,
     ITransientDependency
 {
     protected IDistributedCache<FeatureValueCacheItem> Cache { get; }
 
-    public FeatureValueCacheItemInvalidator(IDistributedCache<FeatureValueCacheItem> cache)
+    protected IDistributedEventBus DistributedEventBus { get; }
+
+    public FeatureValueCacheItemInvalidator(
+        IDistributedCache<FeatureValueCacheItem> cache,
+        IDistributedEventBus distributedEventBus)
     {
         Cache = cache;
+        DistributedEventBus = distributedEventBus;
     }
 
     public virtual async Task HandleEventAsync(EntityChangedEventData<FeatureValue> eventData)
     {
-        foreach (var cacheKey in EnumerateCacheKeys(
-                     eventData.Entity.Name,
-                     eventData.Entity.ProviderName,
-                     eventData.Entity.ProviderKey))
+        var name = eventData.Entity.Name;
+        var providerName = eventData.Entity.ProviderName;
+        var providerKey = eventData.Entity.ProviderKey;
+
+        await RemoveAsync(name, providerName, providerKey);
+
+        await DistributedEventBus.PublishAsync(new FeatureValueChangedEto
+        {
+            Name = name,
+            ProviderName = providerName,
+            ProviderKey = providerKey
+        });
+    }
+
+    public virtual Task HandleEventAsync(FeatureValueChangedEto eventData)
+    {
+        return RemoveAsync(eventData.Name, eventData.ProviderName, eventData.ProviderKey);
+    }
+
+    protected virtual async Task RemoveAsync(string name, string providerName, string? providerKey)
+    {
+        foreach (var cacheKey in EnumerateCacheKeys(name, providerName, providerKey))
         {
             await Cache.RemoveAsync(cacheKey, considerUow: false);
             await Cache.RemoveAsync(cacheKey, considerUow: true);

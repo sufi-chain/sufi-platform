@@ -1,3 +1,5 @@
+using System.Reflection;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using SufiChain.SufiPlatform.Data;
 using SufiChain.SufiPlatform.FileManager.Configuration;
@@ -5,6 +7,9 @@ using SufiChain.SufiPlatform.FileManager.FileStructures;
 using SufiChain.SufiPlatform.FileManager.FileTypes;
 using SufiChain.SufiPlatform.FileManager.Localization;
 using SufiChain.SufiPlatform.UI.Blazor;
+using Volo.Abp.Authorization;
+using AbpFeatureChecker = Volo.Abp.Features.IFeatureChecker;
+using RequiresFeatureAttribute = Volo.Abp.Features.RequiresFeatureAttribute;
 
 namespace SufiChain.SufiPlatform.FileManager.Blazor;
 
@@ -17,6 +22,43 @@ public abstract class FileManagerComponentBase : SufiComponentBase
     protected FileManagerComponentBase()
     {
         LocalizationResource = typeof(SufiFileManagerResource);
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await EnsureRequiredFeaturesAsync();
+        await base.OnInitializedAsync();
+    }
+
+    /// <summary>
+    /// Pages declare <see cref="RequiresFeatureAttribute"/>. The application-service interceptor
+    /// does not run for Blazor routes, so the page checks the same attribute before it loads.
+    /// </summary>
+    protected virtual async Task EnsureRequiredFeaturesAsync()
+    {
+        var features = GetType()
+            .GetCustomAttributes(inherit: true)
+            .OfType<RequiresFeatureAttribute>()
+            .SelectMany(attribute => attribute.Features)
+            .Where(name => !string.IsNullOrWhiteSpace(name))
+            .Distinct(StringComparer.Ordinal)
+            .ToArray();
+
+        if (features.Length == 0)
+        {
+            return;
+        }
+
+        var checker = ScopedServices.GetRequiredService<AbpFeatureChecker>();
+        var results = await checker.IsEnabledAsync(features);
+        foreach (var feature in features)
+        {
+            if (!results.TryGetValue(feature, out var enabled) || !enabled)
+            {
+                throw new AbpAuthorizationException(code: Volo.Abp.Features.AbpFeatureErrorCodes.FeatureIsNotEnabled)
+                    .WithData("FeatureName", feature);
+            }
+        }
     }
 
     protected async Task NotifyOperationFailedAsync(Exception exception, string localizationKey)

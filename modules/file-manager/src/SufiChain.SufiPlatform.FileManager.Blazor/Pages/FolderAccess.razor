@@ -4,6 +4,7 @@
 @using SufiChain.SufiPlatform.Users.Blazor.Public.Components
 @using SufiChain.SufiPlatform.Identity.Blazor.Public.Components
 @attribute [Authorize(FileManagerPermissions.FileItems.Update)]
+@attribute [RequiresFeature(SufiFileManagerFeatures.Enable, SufiFileManagerFeatures.FileItems)]
 @inherits FileManagerComponentBase
 
 <SbCard>
