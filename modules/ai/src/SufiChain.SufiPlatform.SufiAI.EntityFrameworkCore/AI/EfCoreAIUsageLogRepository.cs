@@ -5,8 +5,10 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using SufiChain.SufiPlatform.SufiAI.EntityFrameworkCore;
+using Volo.Abp.Data;
 using Volo.Abp.Domain.Repositories.EntityFrameworkCore;
 using Volo.Abp.EntityFrameworkCore;
+using Volo.Abp.MultiTenancy;
 
 namespace SufiChain.SufiPlatform.SufiAI;
 
@@ -95,21 +97,26 @@ public class EfCoreAIUsageLogRepository
 
     /// <summary>
     /// Host worker entry: all uncharged successful shared logs (any tenant), oldest first.
+    /// The host current-tenant filter would hide every tenant row, so the filter is off for this query.
+    /// A tenant with its own database is not in this result; the charge worker switches tenant and queries again.
     /// </summary>
     public async Task<List<AIUsageLog>> GetUnchargedSharedAllAsync(
         int maxResultCount,
         CancellationToken cancellationToken = default)
     {
-        var dbSet = await GetDbSetAsync();
-        return await dbSet
-            .Where(l =>
-                l.IsSharedWorkspaceUsage &&
-                l.IsSuccess &&
-                l.CreditChargedAt == null &&
-                l.TenantId != null)
-            .OrderBy(l => l.CreationTime)
-            .Take(maxResultCount)
-            .ToListAsync(cancellationToken);
+        using (DataFilter.Disable<IMultiTenant>())
+        {
+            var dbSet = await GetDbSetAsync();
+            return await dbSet
+                .Where(l =>
+                    l.IsSharedWorkspaceUsage &&
+                    l.IsSuccess &&
+                    l.CreditChargedAt == null &&
+                    l.TenantId != null)
+                .OrderBy(l => l.CreationTime)
+                .Take(maxResultCount)
+                .ToListAsync(cancellationToken);
+        }
     }
 
     public async Task MarkChargedAsync(
@@ -118,14 +125,18 @@ public class EfCoreAIUsageLogRepository
         DateTime chargedAt,
         CancellationToken cancellationToken = default)
     {
-        var dbSet = await GetDbSetAsync();
-        var ids = logs.Select(l => l.Id).ToList();
-        var entries = await dbSet
-            .Where(l => ids.Contains(l.Id))
-            .ToListAsync(cancellationToken);
-        foreach (var entry in entries)
+        // The host worker marks tenant rows. The tenant filter would otherwise match nothing.
+        using (DataFilter.Disable<IMultiTenant>())
         {
-            entry.MarkCreditCharged(batchId, chargedAt);
+            var dbSet = await GetDbSetAsync();
+            var ids = logs.Select(l => l.Id).ToList();
+            var entries = await dbSet
+                .Where(l => ids.Contains(l.Id))
+                .ToListAsync(cancellationToken);
+            foreach (var entry in entries)
+            {
+                entry.MarkCreditCharged(batchId, chargedAt);
+            }
         }
     }
 }
