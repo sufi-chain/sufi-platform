@@ -54,6 +54,15 @@ public partial class ModelConfigurationsPage : AIComponentBase
     private bool CanCreateConfiguration =>
         _loadState == LoadState.Loaded && _workspace != null && !_readOnly;
 
+    /// <summary>
+    /// Same rule as the route editor: a copied workspace URL without its own key is the workspace connection.
+    /// </summary>
+    private bool RouteUsesWorkspaceConnection(AIModelConfigurationDto configuration) =>
+        WorkspaceConnectionMatcher.UsesWorkspaceConnection(
+            configuration.ApiEndpoint,
+            configuration.HasApiKey,
+            _workspace?.ApiBaseUrl);
+
     protected override void OnInitialized()
     {
         PageLayout.Title = L["ModelConfigurations"];
