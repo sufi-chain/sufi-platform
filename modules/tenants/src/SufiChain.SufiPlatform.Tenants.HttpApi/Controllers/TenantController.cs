@@ -1,5 +1,6 @@
 using System;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SufiChain.SufiPlatform.Application.Dtos;
 using SufiChain.SufiPlatform.AspNetCore.Mvc.Controllers;
@@ -11,6 +12,7 @@ namespace SufiChain.SufiPlatform.Tenants.Controllers;
 [Area(TenantsRemoteServiceConsts.ModuleName)]
 [RemoteService(Name = TenantsRemoteServiceConsts.RemoteServiceName)]
 [Route("api/tenants/tenants")]
+[Authorize(TenantsPermissions.Tenants.Default)]
 public class TenantController : SufiControllerBase, ITenantAppService
 {
     private readonly ITenantAppService _tenantAppService;
@@ -34,6 +36,7 @@ public class TenantController : SufiControllerBase, ITenantAppService
     }
 
     [HttpPost]
+    [Authorize(TenantsPermissions.Tenants.Create)]
     public virtual Task<TenantDto> CreateAsync(TenantCreateDto input)
     {
         return _tenantAppService.CreateAsync(input);
@@ -41,6 +44,7 @@ public class TenantController : SufiControllerBase, ITenantAppService
 
     [HttpPut]
     [Route("{id}")]
+    [Authorize(TenantsPermissions.Tenants.Update)]
     public virtual Task<TenantDto> UpdateAsync(Guid id, TenantUpdateDto input)
     {
         return _tenantAppService.UpdateAsync(id, input);
@@ -48,6 +52,7 @@ public class TenantController : SufiControllerBase, ITenantAppService
 
     [HttpDelete]
     [Route("{id}")]
+    [Authorize(TenantsPermissions.Tenants.Delete)]
     public virtual Task DeleteAsync(Guid id)
     {
         return _tenantAppService.DeleteAsync(id);
@@ -55,6 +60,7 @@ public class TenantController : SufiControllerBase, ITenantAppService
 
     [HttpGet]
     [Route("{id}/default-connection-string")]
+    [Authorize(TenantsPermissions.Tenants.ManageConnectionStrings)]
     public virtual Task<string> GetDefaultConnectionStringAsync(Guid id)
     {
         return _tenantAppService.GetDefaultConnectionStringAsync(id);
@@ -62,6 +68,7 @@ public class TenantController : SufiControllerBase, ITenantAppService
 
     [HttpPut]
     [Route("{id}/default-connection-string")]
+    [Authorize(TenantsPermissions.Tenants.ManageConnectionStrings)]
     public virtual Task UpdateDefaultConnectionStringAsync(Guid id, string defaultConnectionString)
     {
         return _tenantAppService.UpdateDefaultConnectionStringAsync(id, defaultConnectionString);
@@ -69,6 +76,7 @@ public class TenantController : SufiControllerBase, ITenantAppService
 
     [HttpDelete]
     [Route("{id}/default-connection-string")]
+    [Authorize(TenantsPermissions.Tenants.ManageConnectionStrings)]
     public virtual Task DeleteDefaultConnectionStringAsync(Guid id)
     {
         return _tenantAppService.DeleteDefaultConnectionStringAsync(id);
