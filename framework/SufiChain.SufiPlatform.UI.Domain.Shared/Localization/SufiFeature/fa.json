@@ -5,6 +5,10 @@
     "NoFeatureFoundMessage": "هیچ ویژگی ای در دسترس نمی باشد.",
     "Permission:Features": "مدیریت ویژگی ها",
     "Permission:Features.ManageHostFeatures": "مدیریت ویژگی های میزبان",
-    "Volo.Abp.Features:InvalidFeatureValue": "{0} مقدار ویژگی صحیح نمی باشد!"
+    "Volo.Abp.Features:InvalidFeatureValue": "{0} مقدار ویژگی صحیح نمی باشد!",
+  
+    "Volo.Feature:010001": "ویژگی فعال نیست: {FeatureName}",
+    "Volo.Feature:010002": "ویژگی‌های لازم فعال نیستند. همه این ویژگی‌ها باید فعال باشند: {FeatureNames}",
+    "Volo.Feature:010003": "ویژگی‌های لازم فعال نیستند. دست‌کم یکی از این ویژگی‌ها باید فعال باشد: {FeatureNames}"
   }
 }

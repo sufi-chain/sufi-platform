@@ -598,6 +598,29 @@
     "Hooshvare:SufiAI:WorkspaceReadiness:DisplayName": "آمادگی فضای کاری",
     "AI:IranMcpTokenVerifyUrlRequired": "تأیید توکن ایران‌ام‌سی‌پی الزامی است، اما نشانی تأیید تنظیم نشده است. SufiAI.IranMcp.TokenVerifyUrl یا IRAN_MCP_TOKEN_VERIFY_URL را تنظیم کنید.",
     "Settings:SufiAI.IranMcp.TokenVerifyMode": "حالت تأیید توکن ایران‌ام‌سی‌پی",
-    "Settings:SufiAI.IranMcp.TokenVerifyUrl": "نشانی تأیید توکن ایران‌ام‌سی‌پی"
+    "Settings:SufiAI.IranMcp.TokenVerifyUrl": "نشانی تأیید توکن ایران‌ام‌سی‌پی",
+  
+    "AudioCapabilityDescription": "یک فایل صوتی را به متن رونویسی کنید.",
+    "CapabilityWorkbench": "میز کار قابلیت هوش مصنوعی",
+    "CapabilityWorkbenchDescription": "هر قابلیت هوش مصنوعی را در فضای کاری خودش با ورودی‌ها و تشخیص‌های خاص قابلیت آزمایش کنید.",
+    "EmbeddingCapabilityDescription": "یک بردار ایجاد کنید و ابعاد موثر آن را بررسی کنید.",
+    "EmbeddingDimensionsAutoHint": "برای استفاده از ابعاد خاص مدل شناسایی شده توسط backend، خالی بگذارید.",
+    "EmbeddingModelChangeWarning": "تغییر مدل تعبیه شده به یک فهرست مجدد کامل RAG نیاز دارد. بردارهای موجود را نمی توان به طور ایمن استفاده مجدد کرد.",
+    "ImageGenerationCapabilityDescription": "یک تصویر از یک اعلان ایجاد کنید.",
+    "InvalidOpenAIApiMode": "حالت OpenAI API نامعتبر است",
+    "Menu:MultiModalTest": "تست چند وجهی",
+    "PricingNotConfigured": "قیمت پیکربندی نشده است",
+    "ProviderDidNotReturnUsage": "ارائه دهنده استفاده را برنگرداند",
+    "RagProvider:None": "پیکربندی‌نشده",
+    "RagProvider:Pgvector": "Pgvector",
+    "RagProvider:Qdrant": "Qdrant",
+    "RagUnavailable": "تا زمانی که Qdrant یا Pgvector پیکربندی نشود، RAG غیرفعال است.",
+    "RagUnavailableDescription": "یک فروشگاه بردار تولید را برای فعال کردن نمایه سازی اسناد و جستجوی معنایی پیکربندی کنید.",
+    "TextToSpeechCapabilityDescription": "گفتار قابل پخش را از متن تولید کنید.",
+    "TokenUsageFromProviderOnly": "استفاده از رمز فقط از طریق فراداده استفاده از ارائه دهنده ثبت می شود",
+    "UsageUnavailable": "استفاده در دسترس نیست",
+    "UsageUnavailableRequests": "استفاده در دسترس نیست",
+    "VisionCapabilityDescription": "تجزیه و تحلیل یک تصویر با یک مدل با قابلیت دید.",
+    "[REDACTED]": "دستور سامانه"
   }
 }

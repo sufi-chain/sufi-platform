@@ -67,6 +67,8 @@
     "Search": "بحث",
     "Status": "الحالة",
     "ViewDetails": "عرض التفاصيل",
-    "Yes": "نعم"
+    "Yes": "نعم",
+  
+    "Hooshvare:SufiJobs:Investigator:DisplayName": "محقق وظائف"
   }
 }

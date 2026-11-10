@@ -368,6 +368,22 @@
     "Permission:OrganizationUnits.Delete": "حذف الوحدات التنظيمية",
     "Permission:OrganizationUnits.ManageMembers": "إدارة أعضاء الوحدات التنظيمية",
     "Permission:OrganizationUnits.ManageRoles": "إدارة أدوار الوحدات التنظيمية",
-    "Static": "مدمج"
+    "Static": "مدمج",
+  
+    "EmailAddressAttribute_Invalid": "الحقل {0} لا يمثل عنوان بريد إلكتروني صالح.",
+    "Hooshvare:SufiIdentity:AdminAdvisor:DisplayName": "مستشار الهوية",
+    "LoginAccountInactive": "هذا الحساب معطل. اطلب من المسؤول تفعيله.",
+    "LoginAccountStoreUnavailable": "تعذر فتح مخزن الحساب لمساحة العمل هذه. امسح تحديد مساحة العمل وحاول مرة أخرى.",
+    "LoginConcurrencyError": "تمت مقاطعة تسجيل الدخول بسبب التحديث المتزامن. حاول ثانية.",
+    "LoginExternalAccountOnly": "يستخدم هذا الحساب موفر تسجيل دخول خارجي. تواصل مع هذا المزود.",
+    "LoginLinkFailed": "لا يمكن إكمال ربط الحساب. قم بتسجيل الدخول مرة أخرى.",
+    "LoginPhoneConfirmationRequired": "قم بتأكيد رقم هاتفك قبل تسجيل الدخول.",
+    "LoginTenantMismatch": "لم يتم العثور على أي حساب باسم المستخدم هذا في مساحة العمل الحالية. امسح تحديد مساحة العمل، أو افتح عنوان المضيف، ثم حاول مرة أخرى.",
+    "LoginTokenExpired": "انتهت صلاحية محاولة تسجيل الدخول. حاول ثانية.",
+    "LoginUnexpectedError": "لا يمكن إكمال تسجيل الدخول. حاول ثانية.",
+    "RequiredAttribute_ValidationError": "الحقل {0} إجباري.",
+    "SettingWarning:RequireConfirmedEmailWithoutSmtp": "لم يتم تكوين أي موفر بريد إلكتروني (SMTP) لمساحة العمل هذه، لذا لا يمكن للمستخدمين تلقي رسالة تأكيد بالبريد الإلكتروني مطلقًا وسيتم إغلاقهم. قم بتكوين البريد الإلكتروني أولاً، أو اترك هذا الخيار معطلاً.",
+    "Sufi.Identity:PhoneConfirmationSessionInvalid": "جلسة تأكيد الهاتف هذه غير صالحة أو انتهت صلاحيتها. ابدأ مرة أخرى من التسجيل أو تسجيل الدخول.",
+    "Sufi.Identity:PhoneNumberAlreadyConfirmed": "تم تأكيد رقم الهاتف هذا بالفعل. قم بتغييره من ملفك الشخصي."
   }
 }

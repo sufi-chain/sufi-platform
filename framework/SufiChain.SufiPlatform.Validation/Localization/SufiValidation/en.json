@@ -34,6 +34,14 @@
     "ThisFieldMustBeAStringWithAMaximumLengthOf{0}": "This field must be at most '{0}' characters long.",
     "ThisFieldMustBeAStringWithAMinimumLengthOf{1}AndAMaximumLengthOf{0}": "This field must be at least {1} and at most {0} characters long.",
     "ThisFieldIsNotAValidFullyQualifiedHttpHttpsOrFtpUrl": "This field is not a valid fully-qualified http, https, or ftp URL.",
-    "ThisFieldIsInvalid.": "This field is invalid."
+    "ThisFieldIsInvalid.": "This field is invalid.",
+  
+    "ThisFieldMustBeAStringOrArrayTypeWithAMaximumLengthOf {0}": "This field must be at most '{0}' characters long.",
+    "ThisFieldMustBeAStringOrArrayTypeWithAMinimumLengthOf {0}": "This field must be at least '{0}' characters long.",
+    "ThisFieldMustBeAStringWithAMaximumLengthOf {0}": "This field must be a string with a maximum length of {0}.",
+    "ThisFieldMustBeAStringWithAMinimumLengthOf {1} AndAMaximumLengthOf {0}": "This field must be at least {1} and at most {0} characters long.",
+    "ThisFieldMustBeBetween {0} And {1}": "This field must be between {0} and {1}.",
+    "ThisFieldMustMatchTheRegularExpression {0}": "This field must match the regular expression '{0}'.",
+    "ThisFieldOnlyAcceptsFilesWithTheFollowingExtensions: {0}": "This field only accepts files with the following extensions: {0}"
   }
 }

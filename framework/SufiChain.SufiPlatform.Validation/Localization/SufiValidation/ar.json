@@ -34,6 +34,14 @@
     "ThisFieldMustBeAStringWithAMaximumLengthOf{0}": "هذا الحقل يجب أن يكون سلسلة أحرف طولها كحد أقصى {0}.",
     "ThisFieldMustBeAStringWithAMinimumLengthOf{1}AndAMaximumLengthOf{0}": "يجب أن يكون طول هذا الحقل بين {1} و {0} حرفًا.",
     "ThisFieldIsNotAValidFullyQualifiedHttpHttpsOrFtpUrl": "هذا الحقل ليس عنوانا URL صالحًا مؤهلاً بالكامل سواء كان عنوان http أو https أو ftp",
-    "ThisFieldIsInvalid.": "هذا الحقل غير صالح."
+    "ThisFieldIsInvalid.": "هذا الحقل غير صالح.",
+  
+    "ThisFieldMustBeAStringOrArrayTypeWithAMaximumLengthOf {0}": "يجب أن يكون هذا الحقل بطول أقصاه '{0}' حرفًا.",
+    "ThisFieldMustBeAStringOrArrayTypeWithAMinimumLengthOf {0}": "يجب ألا يقل طول هذا الحقل عن '{0}' حرفًا.",
+    "ThisFieldMustBeAStringWithAMaximumLengthOf {0}": "يجب أن يكون هذا الحقل عبارة عن سلسلة يبلغ الحد الأقصى لطولها {0}.",
+    "ThisFieldMustBeAStringWithAMinimumLengthOf {1} AndAMaximumLengthOf {0}": "يجب أن يكون طول هذا الحقل بين {1} و {0} حرفًا.",
+    "ThisFieldMustBeBetween {0} And {1}": "هذا الحقل يجب أن يكون بين {0} و {1}.",
+    "ThisFieldMustMatchTheRegularExpression {0}": "هذا الحقل يجب أن يتطابق مع التعبير النمطي '{0}'.",
+    "ThisFieldOnlyAcceptsFilesWithTheFollowingExtensions: {0}": "هذا الحقل يقبل الملفات ذات الامتدادات التالية فقط: {0}"
   }
 }

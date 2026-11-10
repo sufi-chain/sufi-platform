@@ -81,19 +81,21 @@
     "Description:ShortLinks.ShortUrl.CacheExpirationMinutes": "Número de minutos antes de que expiren los datos en caché de la URL corta",
     "DisplayName:ShortLinks.ShortUrl.DefaultExpirationDays": "Expiración predeterminada (días)",
     "Description:ShortLinks.ShortUrl.DefaultExpirationDays": "Número predeterminado de días antes de que expiren las URL cortas (si no se especifica)",
-    "Feature:SufiShortLinks.Analytics": "Short link analytics",
-    "Feature:SufiShortLinks.PublicRedirect": "Public redirect",
-    "Feature:SufiShortLinks.Analytics.Description": "Enable click tracking and analytics.",
-    "Feature:SufiShortLinks.PublicRedirect.Description": "Enable public short URL redirect resolution.",
-    "Feature:SufiShortLinks.Enable.Description": "Enable the Short Link Generator module for this edition.",
-    "Feature:SufiShortLinks.Enable": "Short Link Generator",
-    "Feature:SufiShortLinks.ShortLinks": "Short links",
-    "Feature:SufiShortLinks.ShortLinks.Description": "Enable short URL creation, management, and administration.",
+    "Feature:SufiShortLinks.Analytics": "Análisis de enlaces cortos",
+    "Feature:SufiShortLinks.PublicRedirect": "Redirección pública",
+    "Feature:SufiShortLinks.Analytics.Description": "Habilite el seguimiento de clics y el análisis.",
+    "Feature:SufiShortLinks.PublicRedirect.Description": "Habilite la resolución de redireccionamiento público corto URL.",
+    "Feature:SufiShortLinks.Enable.Description": "Habilite el módulo Generador de enlaces cortos para esta edición.",
+    "Feature:SufiShortLinks.Enable": "Generador de enlaces cortos",
+    "Feature:SufiShortLinks.ShortLinks": "Enlaces cortos",
+    "Feature:SufiShortLinks.ShortLinks.Description": "Habilite la creación, gestión y administración breves de URL.",
     "Cancel": "Cancelar",
     "Save": "Guardar",
     "Yes": "Sí",
     "No": "No",
     "SamplePageMessage": "Una página de ejemplo para el módulo Generador de enlaces cortos.",
-    "Redirecting": "Redirecting..."
+    "Redirecting": "Redirecting...",
+  
+    "Hooshvare:SufiShortLinks:Analytics:DisplayName": "Analíticas del enlace corto"
   }
 }

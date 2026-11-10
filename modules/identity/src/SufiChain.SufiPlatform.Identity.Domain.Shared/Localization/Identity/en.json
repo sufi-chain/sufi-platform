@@ -368,5 +368,21 @@
     "Permission:OrganizationUnits.ManageMembers": "Manage organization unit members",
     "Permission:OrganizationUnits.ManageRoles": "Manage organization unit roles",
     "Static": "Built-in"
-  ,"Hooshvare:SufiIdentity:AdminAdvisor:DisplayName":"Identity Advisor"}
+  ,"Hooshvare:SufiIdentity:AdminAdvisor:DisplayName":"Identity Advisor",
+  "Actions": "Actions",
+  "Active": "Active",
+  "Cancel": "Cancel",
+  "Clear": "Clear",
+  "Close": "Close",
+  "Create": "Create",
+  "Delete": "Delete",
+  "Edit": "Edit",
+  "Inactive": "Inactive",
+  "Loading": "Loading",
+  "Logout": "Log out",
+  "Refresh": "Refresh",
+  "Save": "Save",
+  "Search": "Search",
+  "Status": "Status"
+  }
 }

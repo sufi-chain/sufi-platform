@@ -34,6 +34,14 @@
     "ThisFieldMustBeAStringWithAMaximumLengthOf{0}": "Este campo debe ser una cadena con una longitud máxima de {0}.",
     "ThisFieldMustBeAStringWithAMinimumLengthOf{1}AndAMaximumLengthOf{0}": "Este campo debe ser una cadena con una longitud mínima de {1} y máxima de {0}.",
     "ThisFieldIsNotAValidFullyQualifiedHttpHttpsOrFtpUrl": "El campo no es una URL (http, https o ftp) valida.",
-    "ThisFieldIsInvalid.": "Este campo no es válido."
+    "ThisFieldIsInvalid.": "Este campo no es válido.",
+  
+    "ThisFieldMustBeAStringOrArrayTypeWithAMaximumLengthOf {0}": "Este campo debe tener como máximo '{0}' caracteres.",
+    "ThisFieldMustBeAStringOrArrayTypeWithAMinimumLengthOf {0}": "Este campo debe tener al menos '{0}' caracteres.",
+    "ThisFieldMustBeAStringWithAMaximumLengthOf {0}": "Este campo debe ser una cadena con una longitud máxima de {0}.",
+    "ThisFieldMustBeAStringWithAMinimumLengthOf {1} AndAMaximumLengthOf {0}": "Este campo debe ser una cadena con una longitud mínima de {1} y máxima de {0}.",
+    "ThisFieldMustBeBetween {0} And {1}": "Este campo debe estar entre {0} y {1}.",
+    "ThisFieldMustMatchTheRegularExpression {0}": "Este campo debe coincidir con la expresión regular '{0}'.",
+    "ThisFieldOnlyAcceptsFilesWithTheFollowingExtensions: {0}": "Este campo sólo acepta ficheros con las siguientes extensiones: {0}"
   }
 }

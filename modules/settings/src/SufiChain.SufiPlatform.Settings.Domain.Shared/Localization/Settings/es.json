@@ -77,6 +77,8 @@
     "Feature:SettingsEnable": "Ajustes",
     "Feature:SettingsEnableDescription": "Esta edición puede administrar los ajustes.",
     "Feature:AllowChangingEmailSettings": "Ajustes de correo",
-    "Feature:AllowChangingEmailSettingsDescription": "Permite cambiar los ajustes de correo."
+    "Feature:AllowChangingEmailSettingsDescription": "Permite cambiar los ajustes de correo.",
+  
+    "Actions": "Acciones"
   }
 }

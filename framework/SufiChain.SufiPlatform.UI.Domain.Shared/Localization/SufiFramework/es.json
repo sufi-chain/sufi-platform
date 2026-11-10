@@ -137,6 +137,30 @@
     "FooterContact": "Contáctenos",
     "FooterRelease": "Alfa / 2026",
     "SufiPlatform": "Plataforma Sufi",
-    "MadeInIran": "Hecho en Irán"
+    "MadeInIran": "Hecho en Irán",
+  
+    "Activate": "Activar",
+    "Add": "Agregar",
+    "Archive": "Archivo",
+    "Category": "Categoría",
+    "Deactivate": "Desactivar",
+    "Description": "Descripción",
+    "Disabled": "Deshabilitado",
+    "DisplayName": "Nombre para mostrar",
+    "Enabled": "Habilitado",
+    "Filter": "Filtro",
+    "Message": "Mensaje",
+    "Metadata": "Metadatos",
+    "None": "Ninguno",
+    "Parent": "Padre",
+    "Project": "Proyecto",
+    "Publish": "Publicar",
+    "Send": "Enviar",
+    "Slug": "Código",
+    "Tags": "Etiquetas",
+    "Title": "Título",
+    "Unpublish": "Despublicar",
+    "Views": "Vistas",
+    "Visibility": "Visibilidad"
   }
 }

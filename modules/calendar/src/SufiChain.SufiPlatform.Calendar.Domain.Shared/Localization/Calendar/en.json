@@ -160,6 +160,13 @@
     "Hooshvare:SufiCalendar:Assistant:Shortcut:FreeFriday": "Am I free on Friday afternoon?",
     "MCPTool:Module:Calendar": "Calendar",
     "SeededCalendar:host-hijri-shamsi:DisplayName": "Hijri Shamsi",
-    "SeededCalendar:host-hijri-shamsi-1405:DisplayName": "Hijri Shamsi"
+    "SeededCalendar:host-hijri-shamsi-1405:DisplayName": "Hijri Shamsi",
+  
+    "OrganizationUnitId": "Organization unit ID",
+    "OwnerId": "Owner ID",
+    "OwnerIdHelp": "Enter the related owner ID for the selected owner type.",
+    "ResourceId": "Resource ID",
+    "TenantId": "Tenant ID",
+    "UserId": "User ID"
   }
 }
