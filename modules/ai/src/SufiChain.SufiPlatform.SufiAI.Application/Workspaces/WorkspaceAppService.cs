@@ -138,7 +138,8 @@ public class WorkspaceAppService : SufiApplicationService, IWorkspaceAppService
         );
     }
 
-    // sufi-chain#411: the usage analytics page lists workspaces for «مشاهده مصرف» holders too.
+    // Chat and the analytics page both need the workspace names. The method checks the caller itself
+    // so a chat grant is enough and the class-level workspace permission is not.
     [AllowAnonymous]
     public async Task<List<WorkspaceDto>> GetLookupAsync()
     {
@@ -528,7 +529,6 @@ public class WorkspaceAppService : SufiApplicationService, IWorkspaceAppService
         return ObjectMapper.Map<Workspace, WorkspaceDto>(workspace);
     }
 
-    // sufi-chain#411: shown on usage analytics, so «مشاهده مصرف» is enough.
     [AllowAnonymous]
     public async Task<List<WorkspaceGuardrailStatusDto>> GetGuardrailStatusAsync(Guid id)
     {

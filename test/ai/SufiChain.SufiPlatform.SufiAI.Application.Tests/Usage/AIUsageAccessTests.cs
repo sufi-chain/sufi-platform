@@ -1,3 +1,4 @@
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -14,7 +15,7 @@ using Xunit;
 
 namespace SufiChain.SufiPlatform.SufiAI.Usage;
 
-/// <summary>sufi-chain#411 (411-4): «مشاهده مصرف» alone must open usage analytics.</summary>
+/// <summary>GEN-02: usage analytics is an admin AI permission. A chat grant does not open it.</summary>
 public class AIUsageAccessTests
 {
     private static IPermissionChecker Granting(params string[] granted)
@@ -25,12 +26,29 @@ public class AIUsageAccessTests
     }
 
     [Fact]
-    public async Task ViewUsage_alone_can_view_usage_and_list_workspaces()
+    public async Task Admin_ai_permission_can_view_usage_and_list_workspaces()
     {
-        var checker = Granting(AIPermissions.AI.ViewUsage);
+        var checker = Granting(AIPermissions.AI.Default);
 
         await AIUsageAccess.CheckCanViewUsageAsync(checker);
         await AIUsageAccess.CheckCanListWorkspacesAsync(checker);
+    }
+
+    [Fact]
+    public async Task ViewUsage_alone_cannot_open_usage_analytics()
+    {
+        var checker = Granting(AIPermissions.AI.ViewUsage);
+
+        await Should.ThrowAsync<AbpAuthorizationException>(() => AIUsageAccess.CheckCanViewUsageAsync(checker));
+    }
+
+    [Fact]
+    public async Task Chat_grant_lists_workspaces_but_cannot_view_usage()
+    {
+        var checker = Granting(AIPermissions.WorkspaceChat.Default);
+
+        await AIUsageAccess.CheckCanListWorkspacesAsync(checker);
+        await Should.ThrowAsync<AbpAuthorizationException>(() => AIUsageAccess.CheckCanViewUsageAsync(checker));
     }
 
     [Fact]
@@ -58,9 +76,8 @@ public class AIUsageAccessTests
     {
         var method = typeof(AIAppService).GetMethod(methodName)!;
 
-        // The class requires AI.Default; the method opts out and checks ViewUsage itself.
-        method.GetCustomAttribute<AllowAnonymousAttribute>().ShouldNotBeNull();
-        method.GetCustomAttributes<AuthorizeAttribute>().ShouldBeEmpty();
+        method.GetCustomAttribute<AllowAnonymousAttribute>().ShouldBeNull();
+        method.GetCustomAttributes<AuthorizeAttribute>().ShouldContain(attribute => attribute.Policy == AIPermissions.AI.Default);
         method.GetCustomAttribute<RequiresFeatureAttribute>()!.Features.ShouldContain(SufiAIFeatures.UsageAnalytics);
         typeof(AIAppService).GetCustomAttribute<RequiresFeatureAttribute>()!.Features.ShouldContain(SufiAIFeatures.Enable);
     }
@@ -74,6 +91,46 @@ public class AIUsageAccessTests
 
         method.GetCustomAttribute<AllowAnonymousAttribute>().ShouldNotBeNull();
         method.GetCustomAttributes<AuthorizeAttribute>().ShouldBeEmpty();
+    }
+
+    [Fact]
+    public void Usage_analytics_menu_and_page_require_the_admin_permission()
+    {
+        var menu = Read("modules/ai/src/SufiChain.SufiPlatform.SufiAI.Blazor/Menus/AIMenuContributor.cs");
+        var page = Read("modules/ai/src/SufiChain.SufiPlatform.SufiAI.Blazor/Pages/AI/UsageAnalytics.razor");
+        menu.ShouldContain("RequirePermissions(AIPermissions.AI.Default)");
+        menu.ShouldNotContain("RequirePermissions(AIPermissions.AI.ViewUsage)");
+        page.ShouldContain("[Authorize(Policy = AIPermissions.AI.Default)]");
+
+        foreach (var hooshvarePage in new[]
+        {
+            "pro-modules/ai-hooshvare/src/SufiChain.SufiPlatform.SufiAI.Hooshvare.Blazor/Pages/AI/Hooshvare/HooshvaresPage.razor",
+            "pro-modules/ai-hooshvare/src/SufiChain.SufiPlatform.SufiAI.Hooshvare.Blazor/Pages/AI/Hooshvare/HooshvareEditorPage.razor",
+            "pro-modules/ai-hooshvare/src/SufiChain.SufiPlatform.SufiAI.Hooshvare.Blazor/Pages/AI/Hooshvare/HooshvarePlaygroundPage.razor"
+        })
+        {
+            Read(hooshvarePage).ShouldContain("AIHooshvarePermissions.Default");
+        }
+
+        Read("pro-modules/ai-hooshvare/src/SufiChain.SufiPlatform.SufiAI.Hooshvare.Blazor/Menus/AIHooshvareMenuContributor.cs")
+            .ShouldContain("RequirePermissions(AIHooshvarePermissions.Default)");
+    }
+
+    private static string Read(string relative)
+    {
+        var dir = new DirectoryInfo(AppContext.BaseDirectory);
+        while (dir != null)
+        {
+            var candidate = Path.Combine(dir.FullName, relative);
+            if (File.Exists(candidate))
+            {
+                return File.ReadAllText(candidate);
+            }
+
+            dir = dir.Parent;
+        }
+
+        throw new FileNotFoundException(relative);
     }
 
     [Fact]

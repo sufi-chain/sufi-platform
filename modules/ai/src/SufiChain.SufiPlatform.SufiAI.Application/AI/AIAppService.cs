@@ -394,8 +394,7 @@ public class AIAppService : SufiApplicationService, IAIAppService
         await ClearWorkspaceRuntimeCacheAsync(workspace.Id);
     }
 
-    // sufi-chain#411: «مشاهده مصرف» (ViewUsage) alone grants usage analytics; the class-level AI.Default is not required.
-    [AllowAnonymous]
+    [Authorize(AIPermissions.AI.Default)]
     [RequiresFeature(SufiAIFeatures.UsageAnalytics)]
     public async Task<List<AIUsageLogDto>> GetUsageLogsAsync(Guid workspaceId, DateTime? startDate = null, DateTime? endDate = null)
     {
@@ -421,8 +420,7 @@ public class AIAppService : SufiApplicationService, IAIAppService
         }).ToList();
     }
 
-    // sufi-chain#411: see GetUsageLogsAsync.
-    [AllowAnonymous]
+    [Authorize(AIPermissions.AI.Default)]
     [RequiresFeature(SufiAIFeatures.UsageAnalytics)]
     public async Task<UsageStatisticsDto> GetUsageStatisticsAsync(Guid workspaceId, DateTime? startDate = null, DateTime? endDate = null)
     {
