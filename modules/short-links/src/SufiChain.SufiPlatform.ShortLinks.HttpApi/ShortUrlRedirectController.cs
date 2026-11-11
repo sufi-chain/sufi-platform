@@ -143,21 +143,24 @@ public class ShortUrlRedirectController : SufiControllerBase
 
         try
         {
-            // The redirect does not decide who counts. Owner and authenticated visits
-            // are clicks. The outbox handler increments ClickCount in the link tenant.
+            // Every visit counts, including anonymous. Run the handler in this request.
+            // Leaving it on the outbox kept ClickCount at 0 when the sender had not applied the row.
             var ipAddress = HttpContext.Connection.RemoteIpAddress?.ToString();
             var dedupSource = !string.IsNullOrWhiteSpace(token) ? token : ipAddress;
-            await _distributedEventBus.PublishAsync(new ShortUrlClickedEto
-            {
-                ShortUrlId = shortUrlId,
-                TenantId = CurrentTenant.Id,
-                ClickedAt = Clock.Now,
-                UserAgent = Request.Headers["User-Agent"].ToString(),
-                IpAddress = ipAddress,
-                Referrer = Request.Headers["Referer"].ToString(),
-                Token = token,
-                DedupKey = !string.IsNullOrWhiteSpace(dedupSource) ? $"{shortUrlId}:{dedupSource}" : null
-            });
+            await _distributedEventBus.PublishAsync(
+                new ShortUrlClickedEto
+                {
+                    ShortUrlId = shortUrlId,
+                    TenantId = CurrentTenant.Id,
+                    ClickedAt = Clock.Now,
+                    UserAgent = Request.Headers["User-Agent"].ToString(),
+                    IpAddress = ipAddress,
+                    Referrer = Request.Headers["Referer"].ToString(),
+                    Token = token,
+                    DedupKey = !string.IsNullOrWhiteSpace(dedupSource) ? $"{shortUrlId}:{dedupSource}" : null
+                },
+                onUnitOfWorkComplete: false,
+                useOutbox: false);
         }
         catch (Exception ex)
         {

@@ -4,8 +4,8 @@ using Volo.Abp.MultiTenancy;
 namespace SufiChain.SufiPlatform.ShortLinks;
 
 /// <summary>
-/// A successful public redirect. Every caller is counted, including the link owner
-/// and an authenticated user. The outbox delivers this after the redirect unit of work.
+/// A successful public redirect. Every caller is counted, including an anonymous
+/// visitor. The redirect publishes this in-process so ClickCount is stored before the response.
 /// </summary>
 public class ShortUrlClickedEto : IMultiTenant
 {
