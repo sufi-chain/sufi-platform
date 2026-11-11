@@ -65,6 +65,7 @@ public class EmailSettingsAppService : SettingsAppServiceBase, IEmailSettingsApp
     public virtual async Task UpdateAsync(UpdateEmailSettingsDto input)
     {
         await EnsureCanChangeEmailAsync();
+        EmailSettingsRules.RejectInvalidFromAddress(input.DefaultFromAddress, L["DefaultFromAddress:Invalid"]);
 
         await SettingManager.SetForTenantOrGlobalAsync(CurrentTenant.Id, SufiComSenderSettingNames.Email.SmtpHost, input.SmtpHost);
         await SettingManager.SetForTenantOrGlobalAsync(CurrentTenant.Id, SufiComSenderSettingNames.Email.SmtpPort, input.SmtpPort.ToString());

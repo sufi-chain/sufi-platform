@@ -73,3 +73,48 @@ public static class SettingsSectionLink
         return null;
     }
 }
+
+/// <summary>
+/// Old settings section ids that now live inside another section.
+/// <c>suficom</c> is the retention tab of Communications.
+/// </summary>
+public static class RetiredSettingsSections
+{
+    public const string SufiCom = "suficom";
+
+    public const string Communications = "communications";
+
+    public const string RetentionTab = "retention";
+
+    public static string? Redirect(string absoluteUri)
+    {
+        if (!string.Equals(ReadSection(absoluteUri), SufiCom, StringComparison.OrdinalIgnoreCase))
+        {
+            return null;
+        }
+
+        return SettingsSectionLink.Redirect(absoluteUri, Communications, RetentionTab);
+    }
+
+    private static string? ReadSection(string absoluteUri)
+    {
+        var query = new Uri(absoluteUri).Query.TrimStart('?');
+        if (query.Length == 0)
+        {
+            return null;
+        }
+
+        foreach (var part in query.Split('&', StringSplitOptions.RemoveEmptyEntries))
+        {
+            var pieces = part.Split('=', 2);
+            if (pieces.Length == 2
+                && Uri.UnescapeDataString(pieces[0]).Equals(SettingsSectionLink.SectionParameter, StringComparison.OrdinalIgnoreCase))
+            {
+                var section = Uri.UnescapeDataString(pieces[1]);
+                return string.IsNullOrWhiteSpace(section) ? null : section;
+            }
+        }
+
+        return null;
+    }
+}

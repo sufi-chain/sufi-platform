@@ -21,4 +21,15 @@ public class SettingsSectionLinkTests
         SettingsSectionLink.ReadTab("https://localhost/panel/admin/settings?section=communications&tab=voice")
             .ShouldBe("voice");
     }
+
+    [Fact]
+    public void Retired_suficom_section_opens_the_communications_retention_tab()
+    {
+        RetiredSettingsSections.Redirect("https://localhost/panel/admin/settings?section=email")
+            .ShouldBeNull();
+
+        RetiredSettingsSections.Redirect(
+                "https://localhost/panel/admin/settings?section=suficom&culture=fa&returnUrl=%2Fpanel")
+            .ShouldBe("/panel/admin/settings?section=communications&tab=retention&culture=fa&returnUrl=%2Fpanel");
+    }
 }

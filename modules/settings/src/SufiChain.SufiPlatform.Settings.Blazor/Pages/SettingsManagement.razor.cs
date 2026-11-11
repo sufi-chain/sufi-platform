@@ -15,8 +15,17 @@ public partial class SettingsManagement : SettingsComponentBase
         public const string LoadGroups = "load-groups";
     }
 
+    [Inject]
+    protected NavigationManager NavigationManager { get; set; } = default!;
+
     protected override void OnInitialized()
     {
+        var retired = RetiredSettingsSections.Redirect(NavigationManager.Uri);
+        if (retired != null)
+        {
+            NavigationManager.NavigateTo(retired, new NavigationOptions { ReplaceHistoryEntry = true });
+        }
+
         LoadingStates[LoadingKeys.LoadGroups] = true;
         SetupPageLayout();
     }

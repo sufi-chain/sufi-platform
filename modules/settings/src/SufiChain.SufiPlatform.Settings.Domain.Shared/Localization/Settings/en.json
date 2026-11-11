@@ -13,6 +13,7 @@
     "DefaultFromDisplayName": "Default From Display Name",
     "DefaultFromDisplayName:Hint": "Application name. Inbox titles start with this, then the feature name: SufiAPP - Account.",
     "DefaultFromAddress": "Default From Address",
+    "DefaultFromAddress:Invalid": "Default From Address is not a valid email address.",
     "SmtpHost": "SMTP Host",
     "SmtpPort": "SMTP Port",
     "SmtpUserName": "SMTP User Name",

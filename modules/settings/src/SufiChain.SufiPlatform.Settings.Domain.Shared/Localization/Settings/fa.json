@@ -13,6 +13,7 @@
     "DefaultFromDisplayName": "نام نمایشی پیش‌فرض فرستنده",
     "DefaultFromDisplayName:Hint": "نام برنامه. عنوان صندوق با این نام شروع می‌شود و بعد نام بخش می‌آید: SufiAPP - Account.",
     "DefaultFromAddress": "آدرس پیش‌فرض فرستنده",
+    "DefaultFromAddress:Invalid": "آدرس پیش‌فرض فرستنده یک ایمیل معتبر نیست.",
     "SmtpHost": "سرور SMTP",
     "SmtpPort": "پورت SMTP",
     "SmtpUserName": "نام کاربری SMTP",
