@@ -1,7 +1,9 @@
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Options;
 using NSubstitute;
 using Shouldly;
+using SufiChain.SufiPlatform.Account.Blazor.Pages;
 using SufiChain.SufiPlatform.Identity;
 using SufiChain.SufiPlatform.Identity.Settings;
 using Volo.Abp;
@@ -115,6 +117,30 @@ public class SelfRegistrationDisabledTests
         options.AllowRegistration.ShouldBe(selfRegistration);
     }
 
+    [Fact]
+    public void Login_query_error_localizes_a_known_identity_key()
+    {
+        var identity = new MapLocalizer(new Dictionary<string, string>
+        {
+            ["Sufi.Identity:SelfRegistrationDisabled"] = "New account registration is currently disabled.",
+            ["LoginUnexpectedError"] = "Sign-in could not be completed. Try again.",
+            ["Sufi.Identity:EmailConfirmationRequired"] = "Confirm your email before signing in."
+        });
+        var account = new MapLocalizer(new Dictionary<string, string>
+        {
+            ["ConfirmPhoneSessionInvalid"] = "The phone confirmation session is no longer valid."
+        });
+
+        LoginQueryErrors.Localize(IdentitySecurityErrorCodes.SelfRegistrationDisabled, identity, account)
+            .ShouldBe("New account registration is currently disabled.");
+        LoginQueryErrors.Localize("EmailConfirmationRequired", identity, account)
+            .ShouldBe("Confirm your email before signing in.");
+        LoginQueryErrors.Localize("ConfirmPhoneSessionInvalid", identity, account)
+            .ShouldBe("The phone confirmation session is no longer valid.");
+        LoginQueryErrors.Localize("not-a-known-key", identity, account)
+            .ShouldBe("Sign-in could not be completed. Try again.");
+    }
+
     [Theory]
     [InlineData("false", false)]
     [InlineData("False", false)]
@@ -139,6 +165,8 @@ public class SelfRegistrationDisabledTests
         var platformLogin = File.ReadAllText(Path.Combine(platform.FullName, "modules/account/src/SufiChain.SufiPlatform.Account.Blazor/Pages/Login.razor"));
         platformLogin.ShouldContain("private bool _selfRegistrationEnabled;");
         platformLogin.ShouldNotContain("_selfRegistrationEnabled = true");
+        platformLogin.ShouldContain("LoginQueryErrors.Localize(ErrorFromQuery, L, AccountL)");
+        platformLogin.ShouldNotContain("_ => ErrorFromQuery");
         File.ReadAllText(Path.Combine(chain.FullName, "hosts/SufiChane.SufiPlatform/src/SufiChane.SufiPlatform.Account.Blazor/Pages/Account/Register.razor"))
             .ShouldContain("IsSelfRegistrationEnabled");
         var hostLogin = File.ReadAllText(Path.Combine(chain.FullName, "hosts/SufiChane.SufiPlatform/src/SufiChane.SufiPlatform.Account.Blazor/Pages/Account/Login.razor"));
@@ -185,5 +213,25 @@ public class SelfRegistrationDisabledTests
         settings.GetOrNullAsync(Arg.Any<string>()).Returns((string?)null);
         settings.GetOrNullAsync(IdentitySettingNames.Registration.EnableSelfRegistration).Returns("false");
         return settings;
+    }
+
+    private sealed class MapLocalizer : IStringLocalizer
+    {
+        private readonly Dictionary<string, string> _values;
+
+        public MapLocalizer(Dictionary<string, string> values)
+        {
+            _values = values;
+        }
+
+        public LocalizedString this[string name] =>
+            _values.TryGetValue(name, out var value)
+                ? new LocalizedString(name, value, resourceNotFound: false)
+                : new LocalizedString(name, name, resourceNotFound: true);
+
+        public LocalizedString this[string name, params object[] arguments] => this[name];
+
+        public IEnumerable<LocalizedString> GetAllStrings(bool includeParentCultures) =>
+            _values.Select(pair => new LocalizedString(pair.Key, pair.Value, resourceNotFound: false));
     }
 }
