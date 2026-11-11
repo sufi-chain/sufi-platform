@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using SufiChain.SufiPlatform.Account.Otp;
 using SufiChain.SufiPlatform.Captcha;
@@ -115,7 +116,16 @@ public class AccountAppService : SufiApplicationService, IAccountAppService
         var user = await FindPasswordResetRecipientAsync(input.Email);
         if (user != null)
         {
-            await QueuePasswordResetDeliveryAsync(user, input);
+            try
+            {
+                await QueuePasswordResetDeliveryAsync(user, input);
+            }
+            catch (Exception exception)
+            {
+                // A queue failure must not become a 500 for a known address. The response stays
+                // the same success the unknown address returns, after the same floor.
+                LogPasswordResetQueueFailure(exception, user);
+            }
         }
 
         await HoldPasswordResetResponseAsync(started);
@@ -126,6 +136,14 @@ public class AccountAppService : SufiApplicationService, IAccountAppService
     /// part of this remains after the lookup, so the response time is not a side channel.
     /// </summary>
     protected virtual TimeSpan PasswordResetResponseFloor => TimeSpan.FromMilliseconds(300);
+
+    protected virtual void LogPasswordResetQueueFailure(Exception exception, IdentityUser user)
+    {
+        Logger.LogWarning(
+            exception,
+            "Password reset delivery could not be queued for user {UserId}.",
+            user.Id);
+    }
 
     protected virtual Task QueuePasswordResetDeliveryAsync(IdentityUser user, SendPasswordResetCodeDto input)
     {

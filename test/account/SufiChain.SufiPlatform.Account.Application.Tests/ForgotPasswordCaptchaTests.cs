@@ -66,6 +66,23 @@ public class ForgotPasswordCaptchaTests
     }
 
     [Fact]
+    public async Task A_queue_failure_for_a_known_address_still_returns_after_the_floor()
+    {
+        var floor = TimeSpan.FromMilliseconds(80);
+        var known = new ResetProbe(Valid: true, floor)
+        {
+            Recipient = new IdentityUser(Guid.NewGuid(), "known", "known@example.com", null),
+            FailQueue = true
+        };
+        var started = Stopwatch.GetTimestamp();
+        await known.SendPasswordResetCodeAsync(Request("known@example.com"));
+        Stopwatch.GetElapsedTime(started).ShouldBeGreaterThanOrEqualTo(floor);
+        known.Lookups.ShouldBe(1);
+        known.Queued.ShouldBe(0);
+        known.QueueFailures.ShouldBe(1);
+    }
+
+    [Fact]
     public void Only_a_captcha_failure_uses_the_captcha_message()
     {
         ForgotPasswordFeedback.IsCaptchaFailure(
@@ -131,6 +148,10 @@ public class ForgotPasswordCaptchaTests
 
         public IdentityUser? Recipient { get; set; }
 
+        public bool FailQueue { get; set; }
+
+        public int QueueFailures { get; private set; }
+
         private readonly TimeSpan? _floor;
 
         public ResetProbe(bool Valid, TimeSpan? floor = null)
@@ -153,10 +174,20 @@ public class ForgotPasswordCaptchaTests
 
         protected override Task QueuePasswordResetDeliveryAsync(IdentityUser user, SendPasswordResetCodeDto input)
         {
+            if (FailQueue)
+            {
+                throw new InvalidOperationException("queue down");
+            }
+
             Queued++;
             QueuedUserId = user.Id;
             QueuedEmail = input.Email;
             return Task.CompletedTask;
+        }
+
+        protected override void LogPasswordResetQueueFailure(Exception exception, IdentityUser user)
+        {
+            QueueFailures++;
         }
 
         protected override Task<IdentityUser?> FindPasswordResetRecipientAsync(string email)
