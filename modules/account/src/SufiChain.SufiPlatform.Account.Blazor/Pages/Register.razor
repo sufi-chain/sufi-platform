@@ -12,7 +12,11 @@
             <SbStack Gap="4" Align="SbAlign.Center">
                 <SbHeading Level="2">@L["Register"]</SbHeading>
 
-                @if (IsExternalLogin)
+                @if (!IsSelfRegistrationEnabled)
+                {
+                    <SbAlert Severity="SbAlertSeverity.Warning">@L["Sufi.Identity:SelfRegistrationDisabled"]</SbAlert>
+                }
+                else if (IsExternalLogin)
                 {
                     <form method="post" action="/Account/ExternalLoginConfirmation" class="w-full">
                         <AntiforgeryToken />
@@ -100,7 +104,7 @@
                     </form>
                 }
 
-                @if (!IsExternalLogin && ExternalSchemes.Count > 0)
+                @if (IsSelfRegistrationEnabled && !IsExternalLogin && ExternalSchemes.Count > 0)
                 {
                     <ExternalAuthButtons EnabledProviders="@ExternalSchemeNames"
                                          ReturnUrl="@(ReturnUrl ?? "/")"
@@ -108,7 +112,7 @@
                 }
 
                 <SbStack Gap="2" Align="SbAlign.Center">
-                    @if (IsOtpRegistrationEnabled)
+                    @if (IsSelfRegistrationEnabled && IsOtpRegistrationEnabled)
                     {
                         <SbLink Href="/account/register-otp">@AccountL["RegisterWithCode"]</SbLink>
                     }

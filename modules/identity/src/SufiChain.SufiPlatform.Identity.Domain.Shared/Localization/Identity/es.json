@@ -85,6 +85,8 @@
     "OrRegisterWith": "O registrarse con",
     "AuthenticationNotAvailable": "Autenticación no disponible. Recargue la página.",
     "PleaseEnterUsernameAndPassword": "Introduzca usuario y contraseña.",
+    "UsernameOrEmailRequired": "Introduzca el usuario o el correo.",
+    "PasswordRequired": "Introduzca la contraseña.",
     "ChooseUsername": "Elija un nombre de usuario",
     "EnterEmail": "Introduzca su correo electrónico",
     "CreatePassword": "Cree una contraseña",

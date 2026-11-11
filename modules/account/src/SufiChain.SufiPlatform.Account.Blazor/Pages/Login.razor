@@ -46,7 +46,7 @@
 			<input type="hidden" name="ReturnUrl" value="@ReturnUrl" />
 
 			<SbStack Gap="3">
-				<SbFormField Label="@L["UsernameOrEmail"]" InputId="UserNameOrEmail" Required="true">
+				<SbFormField Label="@L["UsernameOrEmail"]" InputId="UserNameOrEmail" Required="true" ErrorText="@UserNameError">
 					<SbTextField @bind-Value="Input.UserNameOrEmail"
 								 Id="UserNameOrEmail"
 								 Type="text"
@@ -55,7 +55,7 @@
 								 name="Input.UserNameOrEmail" />
 				</SbFormField>
 
-				<SbFormField Label="@L["Password"]" InputId="Password" Required="true">
+				<SbFormField Label="@L["Password"]" InputId="Password" Required="true" ErrorText="@PasswordError">
 					<SbTextField @bind-Value="Input.Password"
 								 Id="Password"
 								 Type="password"
@@ -91,10 +91,13 @@
 			{
 				<SbLink Href="@OtpLoginHref">@AccountL["SignInWithCode"]</SbLink>
 			}
-			<SbStack Direction="SbStackDirection.Row" Gap="1">
-				<SbText>@L["DontHaveAccount"]</SbText>
-				<SbLink Href="@RegisterHref">@L["Register"]</SbLink>
-			</SbStack>
+			@if (_selfRegistrationEnabled)
+			{
+				<SbStack Direction="SbStackDirection.Row" Gap="1">
+					<SbText>@L["DontHaveAccount"]</SbText>
+					<SbLink Href="@RegisterHref">@L["Register"]</SbLink>
+				</SbStack>
+			}
 		</SbStack>
 	</SbStack>
 </div>
@@ -134,8 +137,11 @@
 	public LoginInputModel Input { get; set; } = new();
 
 	private string? ErrorMessage { get; set; }
+	private string? UserNameError { get; set; }
+	private string? PasswordError { get; set; }
 	private IReadOnlyList<string> _externalProviderNames { get; set; } = Array.Empty<string>();
 	private bool _otpLoginEnabled;
+	private bool _selfRegistrationEnabled = true;
 
 	private static readonly HashSet<string> _nonExternalSchemes = new(StringComparer.OrdinalIgnoreCase)
 	{
@@ -162,6 +168,7 @@
 		_externalProviderNames = await ExternalAuthLoginProviderFilter.FilterEnabledAsync(candidateNames);
 		_otpLoginEnabled = await SettingProvider.IsTrueAsync(IdentitySettingNames.Otp.IsEnabled)
 			&& await SettingProvider.IsTrueAsync(IdentitySettingNames.Otp.AllowLogin);
+		_selfRegistrationEnabled = await IdentitySelfRegistrationRules.IsEnabledAsync(SettingProvider);
 	}
 
 	private async Task HandleLogin()
@@ -169,10 +176,12 @@
 		// Ensure Input is initialized (can be null on failed form binding)
 		Input ??= new LoginInputModel();
 
-		// Validate required fields
-		if (string.IsNullOrWhiteSpace(Input.UserNameOrEmail) || string.IsNullOrWhiteSpace(Input.Password))
+		var gaps = LoginFieldGaps.From(Input.UserNameOrEmail, Input.Password);
+		UserNameError = gaps.UserNameOrEmail ? L["UsernameOrEmailRequired"] : null;
+		PasswordError = gaps.Password ? L["PasswordRequired"] : null;
+		if (gaps.Any)
 		{
-			ErrorMessage = L["PleaseEnterUsernameAndPassword"];
+			ErrorMessage = null;
 			return;
 		}
 

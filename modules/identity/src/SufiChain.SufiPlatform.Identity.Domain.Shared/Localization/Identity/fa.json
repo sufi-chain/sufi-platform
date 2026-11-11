@@ -100,6 +100,8 @@
     "OrRegisterWith": "یا با ثبت‌نام کنید",
     "AuthenticationNotAvailable": "احراز هویت در دسترس نیست. لطفاً صفحه را دوباره بارگذاری کنید.",
     "PleaseEnterUsernameAndPassword": "لطفاً نام کاربری و رمز عبور را وارد کنید.",
+    "UsernameOrEmailRequired": "نام کاربری یا ایمیل را وارد کنید.",
+    "PasswordRequired": "رمز عبور را وارد کنید.",
     "ChooseUsername": "یک نام کاربری انتخاب کنید",
     "EnterEmail": "ایمیل خود را وارد کنید",
     "CreatePassword": "یک رمز عبور ایجاد کنید",

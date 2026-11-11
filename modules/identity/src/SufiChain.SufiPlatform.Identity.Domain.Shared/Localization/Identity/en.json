@@ -91,6 +91,8 @@
     "OrRegisterWith": "Or register with",
     "AuthenticationNotAvailable": "Authentication not available. Please reload the page.",
     "PleaseEnterUsernameAndPassword": "Please enter username and password.",
+    "UsernameOrEmailRequired": "Enter your username or email.",
+    "PasswordRequired": "Enter your password.",
     "ChooseUsername": "Choose a username",
     "EnterEmail": "Enter your email",
     "CreatePassword": "Create a password",

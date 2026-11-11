@@ -18,6 +18,7 @@ public partial class Editions
     private bool _showEdit;
     private bool _loading;
     private bool _saving;
+    private int _saveVersion;
     private Guid? _editingId;
     private string? _concurrencyStamp;
     private EditionFormModel _form = new();
@@ -80,12 +81,15 @@ public partial class Editions
 
     private void CloseModal()
     {
+        _saveVersion++;
+        _saving = false;
         _showCreate = false;
         _showEdit = false;
     }
 
     private async Task SaveAsync()
     {
+        var version = _saveVersion;
         _saving = true;
         try
         {
@@ -111,12 +115,29 @@ public partial class Editions
                 });
             }
 
+            if (version != _saveVersion)
+            {
+                return;
+            }
+
             CloseModal();
             await ReloadAsync();
         }
+        catch (Exception ex)
+        {
+            if (version != _saveVersion)
+            {
+                return;
+            }
+
+            await HandleErrorAsync(ex);
+        }
         finally
         {
-            _saving = false;
+            if (version == _saveVersion)
+            {
+                _saving = false;
+            }
         }
     }
 

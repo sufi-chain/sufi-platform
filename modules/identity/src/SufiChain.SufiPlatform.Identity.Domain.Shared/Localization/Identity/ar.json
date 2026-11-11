@@ -98,6 +98,8 @@
     "OrRegisterWith": "أو التسجيل باستخدام",
     "AuthenticationNotAvailable": "المصادقة غير متاحة. يرجى إعادة تحميل الصفحة.",
     "PleaseEnterUsernameAndPassword": "يرجى إدخال اسم المستخدم وكلمة المرور.",
+    "UsernameOrEmailRequired": "أدخل اسم المستخدم أو البريد الإلكتروني.",
+    "PasswordRequired": "أدخل كلمة المرور.",
     "ChooseUsername": "اختر اسم مستخدم",
     "EnterEmail": "أدخل بريدك الإلكتروني",
     "CreatePassword": "أنشئ كلمة مرور",

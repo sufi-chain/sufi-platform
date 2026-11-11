@@ -1,5 +1,6 @@
 using System;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Options;
 using SufiChain.SufiPlatform.Account.Otp;
@@ -51,14 +52,11 @@ public class AccountAppService : SufiApplicationService, IAccountAppService
         PhoneConfirmationSessions = phoneConfirmationSessions;
     }
 
+    [AllowAnonymous]
     public virtual async Task<AccountRegistrationResultDto> RegisterAsync(RegisterDto input)
     {
+        await IdentitySelfRegistrationRules.EnsureEnabledAsync(SettingProvider);
         await ValidateCaptchaAsync(input, CaptchaPurpose.Register);
-
-        if (!await SettingProvider.IsTrueAsync(IdentitySettingNames.Registration.EnableSelfRegistration))
-        {
-            throw new BusinessException(IdentitySecurityErrorCodes.SelfRegistrationDisabled);
-        }
 
         var requirePhoneConfirmation = await IdentityPhoneConfirmationRules.IsRequiredForRegistrationAsync(SettingProvider);
         if (requirePhoneConfirmation && string.IsNullOrWhiteSpace(input.PhoneNumber))
@@ -109,10 +107,11 @@ public class AccountAppService : SufiApplicationService, IAccountAppService
     {
         await ValidateCaptchaAsync(input, CaptchaPurpose.ForgotPassword);
 
-        var user = await UserManager.FindByEmailAsync(input.Email);
+        var user = await FindPasswordResetRecipientAsync(input.Email);
         if (user == null)
         {
-            throw new BusinessException(AccountErrorCodes.UserNotFoundWithEmail);
+            // Same completion as a known address. A distinct error would reveal which emails exist.
+            return;
         }
 
         var resetToken = await UserManager.GeneratePasswordResetTokenAsync(user);
@@ -388,6 +387,11 @@ public class AccountAppService : SufiApplicationService, IAccountAppService
         }
 
         return result;
+    }
+
+    protected virtual Task<IdentityUser?> FindPasswordResetRecipientAsync(string email)
+    {
+        return UserManager.FindByEmailAsync(email);
     }
 
     protected virtual async Task ValidateCaptchaAsync(CaptchaInputDto input, CaptchaPurpose purpose)

@@ -82,6 +82,8 @@ public partial class Register
     protected IReadOnlyList<string> ExternalSchemeNames =>
         ExternalSchemes.Select(scheme => scheme.Name).ToList();
 
+    protected bool IsSelfRegistrationEnabled { get; private set; } = true;
+
     protected bool IsOtpRegistrationEnabled { get; private set; }
 
     protected bool RequiresPhoneConfirmation { get; private set; }
@@ -112,8 +114,9 @@ public partial class Register
         var enabledNames = await ExternalAuthLoginProviderFilter.FilterEnabledAsync(namedSchemes.Select(scheme => scheme.Name));
         var enabled = new HashSet<string>(enabledNames, StringComparer.OrdinalIgnoreCase);
         ExternalSchemes = namedSchemes.Where(scheme => enabled.Contains(scheme.Name)).ToList();
-        IsOtpRegistrationEnabled =
-            await SettingProvider.IsTrueAsync(IdentitySettingNames.Otp.IsEnabled)
+        IsSelfRegistrationEnabled = await IdentitySelfRegistrationRules.IsEnabledAsync(SettingProvider);
+        IsOtpRegistrationEnabled = IsSelfRegistrationEnabled
+            && await SettingProvider.IsTrueAsync(IdentitySettingNames.Otp.IsEnabled)
             && await SettingProvider.IsTrueAsync(IdentitySettingNames.Otp.AllowRegistration);
         RequiresPhoneConfirmation = await IdentityPhoneConfirmationRules.IsRequiredForRegistrationAsync(SettingProvider);
     }
@@ -122,6 +125,12 @@ public partial class Register
     {
         if (IsSubmitting)
         {
+            return;
+        }
+
+        if (!IsSelfRegistrationEnabled)
+        {
+            ErrorMessage = L["Sufi.Identity:SelfRegistrationDisabled"];
             return;
         }
 

@@ -32,6 +32,8 @@ public partial class RegisterWithOtp
     [SupplyParameterFromQuery]
     public string? ReturnUrl { get; set; }
 
+    protected bool IsSelfRegistrationEnabled { get; private set; } = true;
+
     protected OtpOptionsDto? Options { get; set; }
 
     protected string Identifier { get; set; } = string.Empty;
@@ -81,8 +83,13 @@ public partial class RegisterWithOtp
 
     protected override async Task OnInitializedAsync()
     {
+        IsSelfRegistrationEnabled = await IdentitySelfRegistrationRules.IsEnabledAsync(SettingProvider);
         Options = await OtpAppService.GetOtpOptionsAsync();
-        if (Options is { IsEnabled: true, AllowRegistration: false })
+        if (!IsSelfRegistrationEnabled)
+        {
+            ErrorMessage = L["Sufi.Identity:SelfRegistrationDisabled"];
+        }
+        else if (Options is { IsEnabled: true, AllowRegistration: false })
         {
             ErrorMessage = AccountL["OtpRegistrationDisabled"];
         }
@@ -115,6 +122,12 @@ public partial class RegisterWithOtp
 
     protected virtual async Task OnSendCodeAsync()
     {
+        if (!IsSelfRegistrationEnabled)
+        {
+            ErrorMessage = L["Sufi.Identity:SelfRegistrationDisabled"];
+            return;
+        }
+
         if (string.IsNullOrWhiteSpace(Identifier))
         {
             ErrorMessage = L["PleaseEnterAllFields"];
@@ -171,6 +184,12 @@ public partial class RegisterWithOtp
 
     protected virtual async Task OnVerifyCodeAsync()
     {
+        if (!IsSelfRegistrationEnabled)
+        {
+            ErrorMessage = L["Sufi.Identity:SelfRegistrationDisabled"];
+            return;
+        }
+
         if (string.IsNullOrWhiteSpace(Identifier) || string.IsNullOrWhiteSpace(Code))
         {
             ErrorMessage = L["PleaseEnterAllFields"];
@@ -209,6 +228,12 @@ public partial class RegisterWithOtp
 
     protected virtual async Task OnRegisterAsync()
     {
+        if (!IsSelfRegistrationEnabled)
+        {
+            ErrorMessage = L["Sufi.Identity:SelfRegistrationDisabled"];
+            return;
+        }
+
         if (string.IsNullOrWhiteSpace(RegistrationToken) ||
             string.IsNullOrWhiteSpace(UserName) ||
             string.IsNullOrWhiteSpace(Password) ||
