@@ -11,6 +11,7 @@ public class IdentitySettingDefinitionProvider : SettingDefinitionProvider
     {
         context.Add(
             new SettingDefinition(IdentitySettingNames.Registration.EnableSelfRegistration, "true", L("Setting:EnableSelfRegistration")),
+            new SettingDefinition(SelfRegistrationPolicy.AbpSettingName, "true", L("Setting:EnableSelfRegistration")),
             new SettingDefinition(IdentitySettingNames.Registration.RequireEmailConfirmation, "false", L("Setting:RequireEmailConfirmation")),
             new SettingDefinition(IdentitySettingNames.Registration.RequireConfirmedAccount, "false", L("Setting:RequireConfirmedAccount")),
             new SettingDefinition(IdentitySettingNames.SignIn.RequireConfirmedEmail, "false", L("Setting:RequireConfirmedEmail")),

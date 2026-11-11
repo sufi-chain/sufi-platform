@@ -270,6 +270,10 @@ public class AccountOtpAppService : SufiApplicationService, IAccountOtpAppServic
     public virtual async Task<AccountRegistrationResultDto> RegisterWithOtpAsync(RegisterWithOtpDto input)
     {
         await EnsureOtpRegistrationEnabledAsync();
+        if (!await SelfRegistrationPolicy.IsEnabledAsync(SettingProvider))
+        {
+            throw new BusinessException(IdentitySecurityErrorCodes.SelfRegistrationDisabled);
+        }
 
         var verifiedIdentifier = await OtpCodeStore.ConsumeRegistrationTokenAsync(input.RegistrationToken);
         if (verifiedIdentifier == null)
@@ -345,6 +349,10 @@ public class AccountOtpAppService : SufiApplicationService, IAccountOtpAppServic
     protected virtual async Task EnsureOtpRegistrationEnabledAsync()
     {
         await IdentitySelfRegistrationRules.EnsureEnabledAsync(SettingProvider);
+        if (!await SelfRegistrationPolicy.IsEnabledAsync(SettingProvider))
+        {
+            throw new BusinessException(IdentitySecurityErrorCodes.SelfRegistrationDisabled);
+        }
 
         if (!await SettingProvider.IsTrueAsync(IdentitySettingNames.Otp.IsEnabled) ||
             !await SettingProvider.IsTrueAsync(IdentitySettingNames.Otp.AllowRegistration))

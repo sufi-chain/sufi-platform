@@ -15,6 +15,7 @@
                 @if (!IsSelfRegistrationEnabled)
                 {
                     <SbAlert Severity="SbAlertSeverity.Warning">@L["Sufi.Identity:SelfRegistrationDisabled"]</SbAlert>
+                    <SbLink Href="/account/login">@L["SignIn"]</SbLink>
                 }
                 else if (IsExternalLogin)
                 {

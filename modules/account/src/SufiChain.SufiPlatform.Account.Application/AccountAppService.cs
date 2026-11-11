@@ -59,6 +59,11 @@ public class AccountAppService : SufiApplicationService, IAccountAppService
     public virtual async Task<AccountRegistrationResultDto> RegisterAsync(RegisterDto input)
     {
         await IdentitySelfRegistrationRules.EnsureEnabledAsync(SettingProvider);
+        if (!await SelfRegistrationPolicy.IsEnabledAsync(SettingProvider))
+        {
+            throw new BusinessException(IdentitySecurityErrorCodes.SelfRegistrationDisabled);
+        }
+
         await ValidateCaptchaAsync(input, CaptchaPurpose.Register);
 
         var requirePhoneConfirmation = await IdentityPhoneConfirmationRules.IsRequiredForRegistrationAsync(SettingProvider);
