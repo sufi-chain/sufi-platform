@@ -36,7 +36,7 @@
                       Color="@(_showReload ? SbColor.Secondary : SbColor.Primary)"
                       Href="@ResolvedHomeUrl"
                       data-sufi-error-home="true">
-                @L["BackToHome"]
+                @HomeLabel
             </SbButton>
         </div>
     </div>
@@ -80,9 +80,16 @@
     [Parameter]
     public string? HomeUrl { get; set; }
 
+    /// <summary>
+    /// Label for the recovery link. When omitted, the link says Back to home.
+    /// </summary>
+    [Parameter]
+    public string? HomeText { get; set; }
+
     private bool _showReload => ShowReload ?? (StatusCode == 500);
     private bool _showGoBack => ShowGoBack ?? (StatusCode == 404);
     private string ResolvedHomeUrl => SufiErrorNavigation.ResolveHomeUrl(HomeUrl, Navigation.Uri);
+    private string HomeLabel => string.IsNullOrWhiteSpace(HomeText) ? L["BackToHome"].Value : HomeText!;
 
     private string GetIconName() => StatusCode switch
     {
