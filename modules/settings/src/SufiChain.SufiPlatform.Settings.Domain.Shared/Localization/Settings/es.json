@@ -8,6 +8,7 @@
     "SettingsSavedSuccessfully": "Configuración guardada correctamente",
     "GeneralSettings": "Configuración general",
     "EmailSettings": "Configuración de correo electrónico",
+    "EmailSettingsLockedByHost": "El correo y SMTP están bloqueados por el host.",
     "TimeZoneSettings": "Configuración de zona horaria",
     "DefaultFromDisplayName": "Nombre para mostrar predeterminado del remitente",
     "DefaultFromDisplayName:Hint": "Nombre de la aplicación. El título empieza por este nombre y luego el de la función: SufiAPP - Account.",

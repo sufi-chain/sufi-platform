@@ -1,4 +1,5 @@
 using SufiChain.SufiPlatform.Settings;
+using Volo.Abp.Features;
 
 namespace SufiChain.SufiPlatform.Settings.Blazor.Settings;
 
@@ -26,8 +27,12 @@ public partial class EmailSettingsGroup : SettingsComponentBase, IEditableSettin
     private IEmailSettingsAppService EmailSettingsAppService => LazyGetRequiredService(ref _emailSettingsAppService);
     private IEmailSettingsAppService? _emailSettingsAppService;
 
+    private IFeatureChecker FeatureChecker => LazyGetRequiredService(ref _featureChecker);
+    private IFeatureChecker? _featureChecker;
+
     private EmailSettingsDto _settings = new();
     private string _testEmailAddress = "";
+    private bool _lockedByHost;
 
     /// <summary>
     /// Gets a value indicating whether the save operation is currently in progress.
@@ -67,7 +72,21 @@ public partial class EmailSettingsGroup : SettingsComponentBase, IEditableSettin
 
     private Task LoadSettingsAsync() => ExecuteWithLoadingAsync(async () =>
     {
+        // The feature is already on the client. A locked tenant must not call the email
+        // endpoint: that call used to 500 and sat on the loading skeleton until it failed.
+        if (CurrentTenant.IsAvailable &&
+            !await FeatureChecker.IsEnabledAsync(SettingsFeatures.AllowChangingEmailSettings))
+        {
+            _lockedByHost = true;
+            _settings = new EmailSettingsDto { LockedByHost = true };
+            _edits.Capture();
+            return;
+        }
+
+        _lockedByHost = false;
         _settings = await EmailSettingsAppService.GetAsync();
+        _settings.SmtpPassword = null;
+        _lockedByHost = _settings.LockedByHost;
         _edits.Capture();
     }, LoadingKeys.Load);
 
@@ -76,6 +95,11 @@ public partial class EmailSettingsGroup : SettingsComponentBase, IEditableSettin
     /// </summary>
     public async Task SaveAsync()
     {
+        if (_lockedByHost)
+        {
+            return;
+        }
+
         await ExecuteWithLoadingAsync(async () =>
         {
             await UpdateSettingsAsync();
@@ -84,12 +108,19 @@ public partial class EmailSettingsGroup : SettingsComponentBase, IEditableSettin
         }, LoadingKeys.Save);
     }
 
-    public Task<bool> TrySaveAsync() =>
-        TrySaveQuietlyAsync(async () =>
+    public Task<bool> TrySaveAsync()
+    {
+        if (_lockedByHost)
+        {
+            return Task.FromResult(false);
+        }
+
+        return TrySaveQuietlyAsync(async () =>
         {
             await UpdateSettingsAsync();
             _edits.Capture();
         }, LoadingKeys.Save);
+    }
 
     public Task DiscardAsync()
     {

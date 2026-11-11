@@ -8,6 +8,7 @@
     "SettingsSavedSuccessfully": "تنظیمات با موفقیت ذخیره شد",
     "GeneralSettings": "تنظیمات عمومی",
     "EmailSettings": "تنظیمات ایمیل",
+    "EmailSettingsLockedByHost": "ایمیل و SMTP توسط میزبان قفل شده است.",
     "TimeZoneSettings": "تنظیمات منطقه زمانی",
     "DefaultFromDisplayName": "نام نمایشی پیش‌فرض فرستنده",
     "DefaultFromDisplayName:Hint": "نام برنامه. عنوان صندوق با این نام شروع می‌شود و بعد نام بخش می‌آید: SufiAPP - Account.",

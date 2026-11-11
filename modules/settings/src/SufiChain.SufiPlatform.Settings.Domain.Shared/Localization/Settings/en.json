@@ -8,6 +8,7 @@
     "SettingsSavedSuccessfully": "Settings saved successfully",
     "GeneralSettings": "General Settings",
     "EmailSettings": "Email Settings",
+    "EmailSettingsLockedByHost": "Email and SMTP are locked by the host.",
     "TimeZoneSettings": "Time Zone Settings",
     "DefaultFromDisplayName": "Default From Display Name",
     "DefaultFromDisplayName:Hint": "Application name. Inbox titles start with this, then the feature name: SufiAPP - Account.",

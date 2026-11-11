@@ -7,6 +7,14 @@
     {
         <SbLoadingSkeleton Preset="SbLoadingSkeletonPreset.Table" Count="5" />
     }
+    else if (_lockedByHost)
+    {
+        <div data-testid="email-settings-locked">
+            <SbAlert Severity="SbAlertSeverity.Info">
+                @L["EmailSettingsLockedByHost"]
+            </SbAlert>
+        </div>
+    }
     else
     {
         <SbStack Gap="4">
