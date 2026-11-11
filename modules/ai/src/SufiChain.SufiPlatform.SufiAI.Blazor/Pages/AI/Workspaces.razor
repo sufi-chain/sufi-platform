@@ -139,7 +139,7 @@
 				</SbColumn>
 				<SbColumn TItem="WorkspaceDto" Title="@L["CreationTime"]" MinWidth="160px">
 					<CellTemplate Context="cellContext">
-						@cellContext.Item.CreationTime.ToString("yyyy-MM-dd HH:mm")
+						<SufiUserTime Value="@cellContext.Item.CreationTime" Format="yyyy-MM-dd HH:mm" />
 					</CellTemplate>
 				</SbColumn>
 			</SbDataGrid>

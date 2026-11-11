@@ -102,7 +102,7 @@
                             @if (cellContext.Item.LastConnectedAt.HasValue)
                             {
                                 <SbText Variant="SbTextVariant.BodySmall">
-                                    @cellContext.Item.LastConnectedAt.Value.ToString("g")
+                                    <SufiUserTime Value="@cellContext.Item.LastConnectedAt" Format="g" />
                                 </SbText>
                             }
                             else

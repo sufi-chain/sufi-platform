@@ -38,12 +38,12 @@
                 }
                 
                 <dt>@L["Created"]</dt>
-                <dd>@file.CreationTime.ToString("yyyy-MM-dd HH:mm:ss")</dd>
+                <dd><SufiUserTime Value="@file.CreationTime" /></dd>
                 
                 @if (file.LastModificationTime.HasValue)
                 {
                     <dt>@L["Modified"]</dt>
-                    <dd>@file.LastModificationTime.Value.ToString("yyyy-MM-dd HH:mm:ss")</dd>
+                    <dd><SufiUserTime Value="@file.LastModificationTime" /></dd>
                 }
                 
                 <dt>@L["MimeType"]</dt>
@@ -91,7 +91,7 @@
                         <SbChip Color="SbColor.Warning" Size="SbSize.Sm">@L["Archived"]</SbChip>
                         @if (file.ArchivedAt.HasValue)
                         {
-                            <span class="text-muted ms-2">@file.ArchivedAt.Value.ToString("yyyy-MM-dd")</span>
+                            <span class="text-muted ms-2"><SufiUserTime Value="@file.ArchivedAt" Format="yyyy-MM-dd" /></span>
                         }
                     </dd>
                 }

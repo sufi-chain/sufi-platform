@@ -111,7 +111,7 @@
 						<td>
 							@if (file.ArchivedAt.HasValue)
 							{
-								@file.ArchivedAt.Value.ToString("yyyy-MM-dd HH:mm")
+								<SufiUserTime Value="@file.ArchivedAt" Format="yyyy-MM-dd HH:mm" />
 							}
 						</td>
 						<td>

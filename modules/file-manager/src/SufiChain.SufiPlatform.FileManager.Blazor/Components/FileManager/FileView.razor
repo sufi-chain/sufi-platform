@@ -194,7 +194,7 @@
                                 </td>
                                 <td class="fm-col-name">@GetFileDisplayName(file)</td>
                                 <td class="fm-col-status">@if (file.IsTemp) { <SbChip Color="SbColor.Warning" Size="SbSize.Sm">@L["Temporary"]</SbChip> } else { <span class="text-muted">-</span> }</td>
-                                <td class="fm-col-date">@file.CreationTime.ToString("yyyy-MM-dd HH:mm")</td>
+                                <td class="fm-col-date"><SufiUserTime Value="@file.CreationTime" Format="yyyy-MM-dd HH:mm" /></td>
                                 <td class="fm-col-type">@GetFileType(file)</td>
                                 <td class="fm-col-size">@FormatFileSize(file.Size)</td>
                             </tr>

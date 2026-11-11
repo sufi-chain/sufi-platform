@@ -180,7 +180,7 @@
                             </SbChip>
                         </td>
                         <td>@FormatFileSize(item.Size)</td>
-                        <td>@item.CreationTime.ToString("yyyy-MM-dd HH:mm")</td>
+                        <td><SufiUserTime Value="@item.CreationTime" Format="yyyy-MM-dd HH:mm" /></td>
                         <td>
                             <SbStack Direction="SbStackDirection.Row" Gap="1">
                                 <SbIconButton Color="SbColor.Info" Size="SbSize.Sm" OnClick="@(() => OpenPreview(item))" AriaLabel="@L["PreviewFile"]">

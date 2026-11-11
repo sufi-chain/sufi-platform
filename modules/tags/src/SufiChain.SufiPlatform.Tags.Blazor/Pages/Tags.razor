@@ -82,7 +82,7 @@
                     </SbColumn>
                     <SbColumn TItem="TagDto" Field="CreationTime" Title="@L["Created"]" Sortable="true" Filterable="true">
                         <CellTemplate Context="cellContext">
-                            @cellContext.Item.CreationTime.ToString("yyyy-MM-dd")
+                            <SufiUserTime Value="@cellContext.Item.CreationTime" Format="yyyy-MM-dd" />
                         </CellTemplate>
                     </SbColumn>
                 </SbDataGrid>

@@ -1,0 +1,41 @@
+@namespace SufiChain.SufiPlatform.UI.Blazor.Timing
+@inject IUserTimeZoneDisplay TimeZoneDisplay
+
+<bdi dir="ltr">@_text</bdi>
+
+@code {
+    public const string DefaultFormat = "yyyy-MM-dd HH:mm:ss";
+
+    [Parameter]
+    public DateTime? Value { get; set; }
+
+    [Parameter]
+    public string Format { get; set; } = DefaultFormat;
+
+    [Parameter]
+    public string Empty { get; set; } = "-";
+
+    private string _text = "-";
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (!Value.HasValue)
+        {
+            _text = Empty;
+            return;
+        }
+
+        TimeZoneInfo zone;
+        try
+        {
+            zone = await TimeZoneDisplay.GetAsync();
+        }
+        catch (Exception exception) when (exception is not OperationCanceledException)
+        {
+            zone = UserTimeZoneDisplay.DefaultZone;
+        }
+
+        var format = string.IsNullOrWhiteSpace(Format) ? DefaultFormat : Format;
+        _text = UserTimeZoneDisplay.Format(Value.Value, format, zone);
+    }
+}

@@ -165,12 +165,12 @@
 				</SbColumn>
 				<SbColumn TItem="BackgroundJobListItemDto" Title="@L["CreationTime"]" MinWidth="160px">
 					<CellTemplate Context="cellContext">
-						@cellContext.Item.CreationTime.ToString("yyyy-MM-dd HH:mm")
+						<SufiUserTime Value="@cellContext.Item.CreationTime" Format="yyyy-MM-dd HH:mm" />
 					</CellTemplate>
 				</SbColumn>
 				<SbColumn TItem="BackgroundJobListItemDto" Title="@L["NextTryTime"]" MinWidth="160px">
 					<CellTemplate Context="cellContext">
-						@(cellContext.Item.NextTryTime?.ToString("yyyy-MM-dd HH:mm") ?? "-")
+						<SufiUserTime Value="@cellContext.Item.NextTryTime" Format="yyyy-MM-dd HH:mm" />
 					</CellTemplate>
 				</SbColumn>
 				<SbColumn TItem="BackgroundJobListItemDto" Field="ApplicationName" Title="@L["Application"]" MinWidth="150px" Filterable="true" Sortable="true"/>

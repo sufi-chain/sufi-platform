@@ -210,10 +210,10 @@
                                             Placeholder="@L["EnterTagsPlaceholder"]" />
                             </SbFormField>
                             <div class="small text-muted">
-                                <span>@L["Created"]: @_editingFile.CreationTime.ToString("yyyy-MM-dd HH:mm")</span>
+                                <span>@L["Created"]: <SufiUserTime Value="@_editingFile.CreationTime" Format="yyyy-MM-dd HH:mm" /></span>
                                 @if (_editingFile.LastModificationTime.HasValue)
                                 {
-                                    <span><br />@L["Modified"]: @_editingFile.LastModificationTime.Value.ToString("yyyy-MM-dd HH:mm")</span>
+                                    <span><br />@L["Modified"]: <SufiUserTime Value="@_editingFile.LastModificationTime" Format="yyyy-MM-dd HH:mm" /></span>
                                 }
                                 @if (_editingFile.Width.HasValue && _editingFile.Height.HasValue)
                                 {

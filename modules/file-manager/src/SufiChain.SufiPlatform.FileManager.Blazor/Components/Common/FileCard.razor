@@ -38,7 +38,7 @@
                         }
                         <span>@FormatFileSize(FileItem.Size)</span>
                         <br />
-                        <span>@FileItem.CreationTime.ToString("g")</span>
+                        <span><SufiUserTime Value="@FileItem.CreationTime" Format="g" /></span>
                     </small>
                 }
             </div>
