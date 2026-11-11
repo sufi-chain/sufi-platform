@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Options;
 using NSubstitute;
@@ -31,14 +32,37 @@ public class ForgotPasswordCaptchaTests
         var unknown = new ResetProbe(Valid: true);
         await unknown.SendPasswordResetCodeAsync(Request("missing@example.com"));
         unknown.Lookups.ShouldBe(1);
+        unknown.Queued.ShouldBe(0);
 
         var known = new ResetProbe(Valid: true)
         {
             Recipient = new IdentityUser(Guid.NewGuid(), "known", "known@example.com", null)
         };
-        var exception = await Should.ThrowAsync<Exception>(() => known.SendPasswordResetCodeAsync(Request("known@example.com")));
-        (exception is BusinessException business && business.Code == AccountErrorCodes.UserNotFoundWithEmail).ShouldBeFalse();
+        await known.SendPasswordResetCodeAsync(Request("known@example.com"));
         known.Lookups.ShouldBe(1);
+        known.Queued.ShouldBe(1);
+        known.QueuedUserId.ShouldBe(known.Recipient.Id);
+        known.QueuedEmail.ShouldBe("known@example.com");
+    }
+
+    [Fact]
+    public async Task Known_and_unknown_addresses_both_wait_out_the_response_floor()
+    {
+        var floor = TimeSpan.FromMilliseconds(80);
+        var unknown = new ResetProbe(Valid: true, floor);
+        var unknownStarted = Stopwatch.GetTimestamp();
+        await unknown.SendPasswordResetCodeAsync(Request("missing@example.com"));
+        Stopwatch.GetElapsedTime(unknownStarted).ShouldBeGreaterThanOrEqualTo(floor);
+        unknown.Queued.ShouldBe(0);
+
+        var known = new ResetProbe(Valid: true, floor)
+        {
+            Recipient = new IdentityUser(Guid.NewGuid(), "known", "known@example.com", null)
+        };
+        var knownStarted = Stopwatch.GetTimestamp();
+        await known.SendPasswordResetCodeAsync(Request("known@example.com"));
+        Stopwatch.GetElapsedTime(knownStarted).ShouldBeGreaterThanOrEqualTo(floor);
+        known.Queued.ShouldBe(1);
     }
 
     [Fact]
@@ -99,9 +123,17 @@ public class ForgotPasswordCaptchaTests
     {
         public int Lookups { get; private set; }
 
+        public int Queued { get; private set; }
+
+        public Guid QueuedUserId { get; private set; }
+
+        public string? QueuedEmail { get; private set; }
+
         public IdentityUser? Recipient { get; set; }
 
-        public ResetProbe(bool Valid)
+        private readonly TimeSpan? _floor;
+
+        public ResetProbe(bool Valid, TimeSpan? floor = null)
             : base(
                 null!,
                 null!,
@@ -114,6 +146,17 @@ public class ForgotPasswordCaptchaTests
                 null!,
                 null!)
         {
+            _floor = floor;
+        }
+
+        protected override TimeSpan PasswordResetResponseFloor => _floor ?? TimeSpan.Zero;
+
+        protected override Task QueuePasswordResetDeliveryAsync(IdentityUser user, SendPasswordResetCodeDto input)
+        {
+            Queued++;
+            QueuedUserId = user.Id;
+            QueuedEmail = input.Email;
+            return Task.CompletedTask;
         }
 
         protected override Task<IdentityUser?> FindPasswordResetRecipientAsync(string email)

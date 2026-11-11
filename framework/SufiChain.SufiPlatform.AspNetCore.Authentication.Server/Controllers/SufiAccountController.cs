@@ -166,7 +166,7 @@ public abstract class SufiAccountController : AbpController
     /// Handles the callback from external login providers.
     /// If user exists with external login -> sign in and redirect.
     /// If user exists by email but no external login -> link and sign in.
-    /// If new user -> redirect to Register with IsExternalLogin.
+    /// If new user and self-registration is on -> redirect to Register. If it is off, send them to login.
     /// </summary>
     /// <param name="returnUrl">URL to return to after successful authentication.</param>
     /// <param name="remoteError">Error from the external provider, if any.</param>
@@ -213,32 +213,40 @@ public abstract class SufiAccountController : AbpController
         }
 
         var email = loginInfo.Principal.FindFirstValue(AbpClaimTypes.Email) ?? loginInfo.Principal.FindFirstValue(ClaimTypes.Email);
+        if (!string.IsNullOrWhiteSpace(email))
+        {
+            var user = await _userManager.FindByEmailAsync(email);
+            if (user != null)
+            {
+                if (await _userManager.FindByLoginAsync(loginInfo.LoginProvider, loginInfo.ProviderKey) == null)
+                {
+                    var addResult = await _userManager.AddLoginAsync(user, loginInfo);
+                    if (!addResult.Succeeded)
+                    {
+                        var errors = string.Join("; ", addResult.Errors.Select(e => e.Description));
+                        throw new UserFriendlyException($"Failed to link external login: {errors}");
+                    }
+                }
+
+                await _signInManager.SignInAsync(user, isPersistent: false);
+                await _securityLogAppService.SaveLoginEventAsync(IdentitySecurityLogIdentityConsts.IdentityExternal, IdentitySecurityLogActionConsts.LoginSucceeded, user.UserName);
+
+                return LocalRedirect(returnUrl);
+            }
+        }
+
+        if (!await IsSelfRegistrationEnabledAsync())
+        {
+            return RegistrationDisabledLogin(returnUrl);
+        }
+
         if (string.IsNullOrWhiteSpace(email))
         {
             return Redirect($"/account/register?isExternalLogin=true&externalLoginAuthSchema={Uri.EscapeDataString(loginInfo.LoginProvider)}&returnUrl={Uri.EscapeDataString(returnUrl)}");
         }
 
-        var user = await _userManager.FindByEmailAsync(email);
-        if (user == null)
-        {
-            var emailParam = !string.IsNullOrEmpty(email) ? $"&email={Uri.EscapeDataString(email)}" : "";
-            return Redirect($"/account/register?isExternalLogin=true&externalLoginAuthSchema={Uri.EscapeDataString(loginInfo.LoginProvider)}&returnUrl={Uri.EscapeDataString(returnUrl)}{emailParam}");
-        }
+        return Redirect($"/account/register?isExternalLogin=true&externalLoginAuthSchema={Uri.EscapeDataString(loginInfo.LoginProvider)}&returnUrl={Uri.EscapeDataString(returnUrl)}&email={Uri.EscapeDataString(email)}");
 
-        if (await _userManager.FindByLoginAsync(loginInfo.LoginProvider, loginInfo.ProviderKey) == null)
-        {
-            var addResult = await _userManager.AddLoginAsync(user, loginInfo);
-            if (!addResult.Succeeded)
-            {
-                var errors = string.Join("; ", addResult.Errors.Select(e => e.Description));
-                throw new UserFriendlyException($"Failed to link external login: {errors}");
-            }
-        }
-
-        await _signInManager.SignInAsync(user, isPersistent: false);
-        await _securityLogAppService.SaveLoginEventAsync(IdentitySecurityLogIdentityConsts.IdentityExternal, IdentitySecurityLogActionConsts.LoginSucceeded, user.UserName);
-
-        return LocalRedirect(returnUrl);
     }
 
     /// <summary>
@@ -275,7 +283,7 @@ public abstract class SufiAccountController : AbpController
         var settingProvider = HttpContext.RequestServices.GetRequiredService<ISettingProvider>();
         if (!await IdentitySelfRegistrationRules.IsEnabledAsync(settingProvider))
         {
-            return Redirect("/account/register");
+            return RegistrationDisabledLogin(returnUrl);
         }
 
         var user = new IdentityUser(GuidGenerator.Create(), userName.Trim(), emailAddress.Trim(), CurrentTenant.Id);
@@ -586,6 +594,18 @@ public abstract class SufiAccountController : AbpController
         returnUrl = NormalizeReturnUrl(returnUrl);
         await SetTenantCookieAsync(tenantId, tenantName);
         return LocalRedirect(returnUrl);
+    }
+
+    protected virtual async Task<bool> IsSelfRegistrationEnabledAsync()
+    {
+        var settingProvider = HttpContext.RequestServices.GetRequiredService<ISettingProvider>();
+        return await IdentitySelfRegistrationRules.IsEnabledAsync(settingProvider);
+    }
+
+    protected virtual IActionResult RegistrationDisabledLogin(string returnUrl)
+    {
+        return Redirect(
+            $"/account/login?error={Uri.EscapeDataString(IdentitySecurityErrorCodes.SelfRegistrationDisabled)}&returnUrl={Uri.EscapeDataString(returnUrl)}");
     }
 
     protected virtual string NormalizeReturnUrl(string? returnUrl)
