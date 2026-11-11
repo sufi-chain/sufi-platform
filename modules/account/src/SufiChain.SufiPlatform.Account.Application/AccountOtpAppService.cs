@@ -191,6 +191,7 @@ public class AccountOtpAppService : SufiApplicationService, IAccountOtpAppServic
     [AllowAnonymous]
     public virtual async Task<OtpSendResultDto> SendRegistrationOtpAsync(SendOtpInput input)
     {
+        await IdentitySelfRegistrationRules.EnsureEnabledAsync(SettingProvider);
         await ValidateCaptchaAsync(input, CaptchaPurpose.OtpSend);
         return await SendRegistrationOtpCoreAsync(input);
     }
@@ -269,11 +270,6 @@ public class AccountOtpAppService : SufiApplicationService, IAccountOtpAppServic
     {
         await EnsureOtpRegistrationEnabledAsync();
 
-        if (!await SettingProvider.IsTrueAsync(IdentitySettingNames.Registration.EnableSelfRegistration))
-        {
-            throw new BusinessException(IdentitySecurityErrorCodes.SelfRegistrationDisabled);
-        }
-
         var verifiedIdentifier = await OtpCodeStore.ConsumeRegistrationTokenAsync(input.RegistrationToken);
         if (verifiedIdentifier == null)
         {
@@ -347,6 +343,8 @@ public class AccountOtpAppService : SufiApplicationService, IAccountOtpAppServic
 
     protected virtual async Task EnsureOtpRegistrationEnabledAsync()
     {
+        await IdentitySelfRegistrationRules.EnsureEnabledAsync(SettingProvider);
+
         if (!await SettingProvider.IsTrueAsync(IdentitySettingNames.Otp.IsEnabled) ||
             !await SettingProvider.IsTrueAsync(IdentitySettingNames.Otp.AllowRegistration))
         {

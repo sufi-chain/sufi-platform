@@ -1,4 +1,5 @@
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Volo.Abp;
 using SufiChain.SufiPlatform.Account;
@@ -19,6 +20,7 @@ public class AccountController : SufiControllerBase, IAccountAppService
         _accountAppService = accountAppService;
     }
 
+    [AllowAnonymous]
     [HttpPost]
     [Route("register")]
     public virtual Task<AccountRegistrationResultDto> RegisterAsync(RegisterDto input)

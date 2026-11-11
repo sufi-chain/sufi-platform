@@ -36,6 +36,10 @@ public partial class ForgotPassword
 
     protected string? ErrorMessage { get; set; }
 
+    protected string? CaptchaError { get; set; }
+
+    protected int CaptchaResetVersion { get; set; }
+
     protected bool IsSubmitting { get; set; }
 
     protected virtual async Task OnSubmitAsync()
@@ -43,12 +47,14 @@ public partial class ForgotPassword
         if (string.IsNullOrWhiteSpace(Input.Email))
         {
             ErrorMessage = L["PleaseEnterAllFields"];
+            CaptchaError = null;
             return;
         }
 
         IsSubmitting = true;
         SuccessMessage = null;
         ErrorMessage = null;
+        CaptchaError = null;
 
         try
         {
@@ -63,6 +69,11 @@ public partial class ForgotPassword
             });
 
             SuccessMessage = AccountL["PasswordResetEmailSent"];
+        }
+        catch (Exception ex) when (ForgotPasswordFeedback.IsCaptchaFailure(ex))
+        {
+            CaptchaError = L[ForgotPasswordFeedback.CaptchaErrorKey];
+            CaptchaResetVersion++;
         }
         catch (Exception ex)
         {

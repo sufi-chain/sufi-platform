@@ -70,6 +70,11 @@
             }
         }
 
+        @if (!string.IsNullOrEmpty(ErrorText))
+        {
+            <div class="sb-form-field__error" id="CaptchaAnswer-error" role="alert">@ErrorText</div>
+        }
+
         <input type="text"
                name="website"
                tabindex="-1"

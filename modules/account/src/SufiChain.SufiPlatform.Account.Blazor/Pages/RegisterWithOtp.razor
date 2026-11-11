@@ -10,10 +10,17 @@
                 <SbHeading Level="2">@AccountL["RegisterWithOtp"]</SbHeading>
                 <SbText Color="SbColor.Muted">@AccountL["RegisterWithOtpInstructions"]</SbText>
 
-                @if (Options is { IsEnabled: false } or { AllowRegistration: false })
+                @if (!IsSelfRegistrationEnabled || Options is { IsEnabled: false } or { AllowRegistration: false })
                 {
                     <SbAlert Severity="SbAlertSeverity.Warning">@(ErrorMessage ?? AccountL["OtpRegistrationDisabled"])</SbAlert>
-                    <SbLink Href="/account/register">@L["Register"]</SbLink>
+                    @if (IsSelfRegistrationEnabled)
+                    {
+                        <SbLink Href="/account/register">@L["Register"]</SbLink>
+                    }
+                    else
+                    {
+                        <SbLink Href="/account/login">@L["SignIn"]</SbLink>
+                    }
                 }
                 else
                 {

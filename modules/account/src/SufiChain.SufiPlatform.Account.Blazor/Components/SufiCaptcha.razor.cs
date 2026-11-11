@@ -54,6 +54,9 @@ public partial class SufiCaptcha : ComponentBase, IAsyncDisposable
     [Parameter]
     public CaptchaPurpose Purpose { get; set; }
 
+    [Parameter]
+    public string? ErrorText { get; set; }
+
     protected CaptchaOptionsDto? Options { get; set; }
 
     protected CaptchaChallengeDto? Challenge { get; set; }

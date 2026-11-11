@@ -272,6 +272,12 @@ public abstract class SufiAccountController : AbpController
             return Redirect($"/account/register?isExternalLogin=true&externalLoginAuthSchema={Uri.EscapeDataString(externalLoginAuthSchema)}&returnUrl={Uri.EscapeDataString(returnUrl)}&error=EmailRequired");
         }
 
+        var settingProvider = HttpContext.RequestServices.GetRequiredService<ISettingProvider>();
+        if (!await IdentitySelfRegistrationRules.IsEnabledAsync(settingProvider))
+        {
+            return Redirect("/account/register");
+        }
+
         var user = new IdentityUser(GuidGenerator.Create(), userName.Trim(), emailAddress.Trim(), CurrentTenant.Id);
         var createResult = await _userManager.CreateAsync(user);
         if (!createResult.Succeeded)
@@ -294,7 +300,6 @@ public abstract class SufiAccountController : AbpController
             throw new UserFriendlyException($"Failed to link external login: {errors}");
         }
 
-        var settingProvider = HttpContext.RequestServices.GetRequiredService<ISettingProvider>();
         if (await IdentityPhoneConfirmationRules.IsRequiredForRegistrationAsync(settingProvider))
         {
             return await RedirectToPhoneConfirmationAsync(user);
