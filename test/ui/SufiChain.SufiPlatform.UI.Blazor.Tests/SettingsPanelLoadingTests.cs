@@ -24,7 +24,7 @@ public class SettingsPanelLoadingTests : BunitContext
     }
 
     [Fact]
-    public void Email_panel_keeps_the_placeholder_until_the_saved_port_arrives()
+    public async Task Email_panel_keeps_the_placeholder_until_the_saved_port_arrives()
     {
         var gate = new TaskCompletionSource<EmailSettingsDto>(TaskCreationOptions.RunContinuationsAsynchronously);
         var email = Substitute.For<IEmailSettingsAppService>();
@@ -32,9 +32,15 @@ public class SettingsPanelLoadingTests : BunitContext
         Services.AddSingleton(email);
 
         var cut = Render<EmailSettingsGroup>();
+        var timeout = TimeSpan.FromSeconds(5);
 
-        cut.Markup.ShouldContain("sb-loading-skeleton");
-        cut.FindAll("input[type=number]").Count.ShouldBe(0);
+        // The synchronous wait posts its check onto the renderer dispatcher and then blocks.
+        // On a busy CI runner that check never runs (count 0) before the one-second timer fires.
+        await cut.WaitForAssertionAsync(() =>
+        {
+            cut.Markup.ShouldContain("sb-loading-skeleton");
+            cut.FindAll("input[type=number]").Count.ShouldBe(0);
+        }, timeout);
 
         gate.SetResult(new EmailSettingsDto
         {
@@ -42,10 +48,11 @@ public class SettingsPanelLoadingTests : BunitContext
             SmtpPort = 587
         });
 
-        cut.WaitForAssertion(() =>
+        await cut.WaitForAssertionAsync(() =>
         {
+            cut.Markup.ShouldNotContain("sb-loading-skeleton");
             cut.Find("input[type=number]").GetAttribute("value").ShouldBe("587");
-        });
+        }, timeout);
     }
 
     [Fact]
