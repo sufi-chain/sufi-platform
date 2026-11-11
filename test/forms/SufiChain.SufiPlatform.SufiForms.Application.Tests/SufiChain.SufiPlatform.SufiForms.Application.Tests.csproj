@@ -8,6 +8,7 @@
   <ItemGroup>
     <ProjectReference Include="../../../../pro-modules/forms/src/SufiChain.SufiPlatform.SufiForms.Blazor/SufiChain.SufiPlatform.SufiForms.Blazor.csproj" />
     <ProjectReference Include="../../../../pro-modules/forms/src/SufiChain.SufiPlatform.SufiForms.Application/SufiChain.SufiPlatform.SufiForms.Application.csproj" />
+    <PackageReference Include="bunit" Version="$(BunitVersion)" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="$(MicrosoftNetTestSdkVersion)" />
     <PackageReference Include="NSubstitute" Version="$(NSubstituteVersion)" />
     <PackageReference Include="Shouldly" Version="$(ShouldlyVersion)" />
