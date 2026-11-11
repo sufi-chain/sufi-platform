@@ -548,7 +548,7 @@ public class FolderAppService : SufiApplicationService, IFolderAppService
         {
             if (!await CanDeleteOrphanStructureRootAsync(folder))
             {
-                throw new UserFriendlyException("Cannot delete system folders.");
+                throw new BusinessException(FileManagerErrorCodes.CannotDeleteSystemFolders);
             }
 
             await _structureRootCleanup.SoftDeleteAsync(folder, folder.StructureKey, folder.TenantId);

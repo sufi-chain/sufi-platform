@@ -382,7 +382,7 @@ public class FileManagerAppService : SufiApplicationService, IFileManagerAppServ
                     if (!await _structureRootCleanup.IsOrphanAsync(folder) ||
                         !(context.IsAdmin || context.IsHost))
                     {
-                        throw new UserFriendlyException("Cannot delete system folders.");
+                        throw new BusinessException(FileManagerErrorCodes.CannotDeleteSystemFolders);
                     }
 
                     await _structureRootCleanup.SoftDeleteAsync(folder, folder.StructureKey, folder.TenantId);
