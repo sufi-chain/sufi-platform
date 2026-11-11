@@ -539,6 +539,8 @@ public abstract class SufiComponentBase : OwningComponentBase, IHandleEvent
     /// Saves one settings section without the error dialog.
     /// A failure is logged and returns false. Validation member names are stored for
     /// <c>aria-invalid</c> and their messages are shown on the field and in the save alert.
+    /// The layout clears the shared notice before the save. This method does not clear it,
+    /// so a later sibling in the same save leaves a message that was already recorded.
     /// The modal save path keeps <see cref="ExecuteWithLoadingAsync(Func{Task}, string, LoadingBehavior)"/>.
     /// </summary>
     protected async Task<bool> TrySaveQuietlyAsync(Func<Task> save, string operationKey)
@@ -549,7 +551,6 @@ public abstract class SufiComponentBase : OwningComponentBase, IHandleEvent
         }
 
         SaveFieldErrors = SbSaveFieldErrorSet.Empty;
-        SettingsSaveNotice?.Clear();
 
         try
         {
