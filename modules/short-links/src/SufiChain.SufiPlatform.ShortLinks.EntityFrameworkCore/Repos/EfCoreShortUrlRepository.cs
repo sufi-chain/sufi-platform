@@ -49,13 +49,17 @@ public class EfCoreShortUrlRepository : EfCoreRepository<ISufiShortLinksDbContex
         Guid id,
         CancellationToken cancellationToken = default)
     {
-        var dbContext = await GetDbContextAsync();
-        var tableName = $"{SufiShortLinksDbProperties.DbTablePrefix}ShortUrls";
-        
-        var currentTime = _clock.Now;
+        var dbSet = await GetDbSetAsync();
+        var accessedAt = _clock.Now;
 
-        await dbContext.Database.ExecuteSqlInterpolatedAsync(
-            $"UPDATE {tableName} SET ClickCount = ClickCount + 1, LastAccessedAt = {currentTime} WHERE Id = {id}",
-            cancellationToken);
+        // One UPDATE. The table name is the mapped [SufiShortLinks.ShortUrls], not a
+        // SQL parameter, and ClickCount = ClickCount + 1 is atomic.
+        await dbSet
+            .Where(x => x.Id == id)
+            .ExecuteUpdateAsync(
+                setters => setters
+                    .SetProperty(x => x.ClickCount, x => x.ClickCount + 1)
+                    .SetProperty(x => x.LastAccessedAt, accessedAt),
+                cancellationToken);
     }
 }

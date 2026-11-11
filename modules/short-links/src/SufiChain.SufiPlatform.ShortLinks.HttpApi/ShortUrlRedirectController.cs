@@ -10,7 +10,7 @@ using SufiChain.SufiPlatform.ShortLinks.Features;
 using SufiChain.SufiPlatform.ShortLinks.Settings;
 using Volo.Abp;
 using Volo.Abp.Caching;
-using Volo.Abp.Domain.Repositories;
+using Volo.Abp.EventBus.Distributed;
 using Volo.Abp.Settings;
 
 namespace SufiChain.SufiPlatform.ShortLinks;
@@ -24,7 +24,7 @@ public class ShortUrlRedirectController : SufiControllerBase
 {
     private readonly IShortUrlRepository _repository;
     private readonly IDistributedCache<ShortUrlCacheItem> _cache;
-    private readonly IRepository<ShortUrlClick, Guid> _clickRepository;
+    private readonly IDistributedEventBus _distributedEventBus;
     private readonly IFeatureChecker _featureChecker;
     private readonly ISettingProvider _settingProvider;
     private readonly ShortLinksOptions _options;
@@ -32,14 +32,14 @@ public class ShortUrlRedirectController : SufiControllerBase
     public ShortUrlRedirectController(
         IShortUrlRepository repository,
         IDistributedCache<ShortUrlCacheItem> cache,
-        IRepository<ShortUrlClick, Guid> clickRepository,
+        IDistributedEventBus distributedEventBus,
         IFeatureChecker featureChecker,
         ISettingProvider settingProvider,
         IOptions<ShortLinksOptions> options)
     {
         _repository = repository;
         _cache = cache;
-        _clickRepository = clickRepository;
+        _distributedEventBus = distributedEventBus;
         _featureChecker = featureChecker;
         _settingProvider = settingProvider;
         _options = options.Value;
@@ -71,8 +71,7 @@ public class ShortUrlRedirectController : SufiControllerBase
             if (!IsValid(cached.ExpiresAt, cached.IsActive))
                 return RedirectToNotFound(baseKey, shortCode);
                 
-            // Track click asynchronously (fire and forget)
-            _ = TrackClickAsync(cached.Id, shortCode, incomingToken);
+            await TrackClickAsync(cached.Id, shortCode, incomingToken);
 
             return Redirect(ShortLinkRedirectHelper.AppendToken(cached.DestinationUrl, incomingToken));
         }
@@ -92,8 +91,7 @@ public class ShortUrlRedirectController : SufiControllerBase
             IsActive = shortUrl.IsActive
         });
         
-        // Track click asynchronously
-        _ = TrackClickAsync(shortUrl.Id, shortCode, incomingToken);
+        await TrackClickAsync(shortUrl.Id, shortCode, incomingToken);
 
         return Redirect(ShortLinkRedirectHelper.AppendToken(shortUrl.DestinationUrl, incomingToken));
     }
@@ -145,25 +143,21 @@ public class ShortUrlRedirectController : SufiControllerBase
 
         try
         {
-            // Increment click count
-            await _repository.IncrementClickCountAsync(shortUrlId);
-
+            // The redirect does not decide who counts. Owner and authenticated visits
+            // are clicks. The outbox handler increments ClickCount in the link tenant.
             var ipAddress = HttpContext.Connection.RemoteIpAddress?.ToString();
-            var dedupKey = !string.IsNullOrWhiteSpace(token) ? token : ipAddress;
-
-            // Record detailed analytics
-            var click = new ShortUrlClick(
-                GuidGenerator.Create(),
-                shortUrlId,
-                Clock.Now,
-                Request.Headers["User-Agent"].ToString(),
-                ipAddress,
-                Request.Headers["Referer"].ToString());
-
-            click.Token = token;
-            click.DedupKey = !string.IsNullOrWhiteSpace(dedupKey) ? $"{shortUrlId}:{dedupKey}" : null;
-
-            await _clickRepository.InsertAsync(click, autoSave: true);
+            var dedupSource = !string.IsNullOrWhiteSpace(token) ? token : ipAddress;
+            await _distributedEventBus.PublishAsync(new ShortUrlClickedEto
+            {
+                ShortUrlId = shortUrlId,
+                TenantId = CurrentTenant.Id,
+                ClickedAt = Clock.Now,
+                UserAgent = Request.Headers["User-Agent"].ToString(),
+                IpAddress = ipAddress,
+                Referrer = Request.Headers["Referer"].ToString(),
+                Token = token,
+                DedupKey = !string.IsNullOrWhiteSpace(dedupSource) ? $"{shortUrlId}:{dedupSource}" : null
+            });
         }
         catch (Exception ex)
         {
