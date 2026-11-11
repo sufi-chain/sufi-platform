@@ -1,6 +1,9 @@
 @namespace SufiChain.SufiPlatform.SufiAI.Blazor.Pages.AI
 @page "/panel/admin/ai/mcp-tools"
+@using SufiChain.SufiPlatform.Features
+@using SufiChain.SufiPlatform.SufiAI.Features
 @attribute [Authorize(Policy = AIPermissions.MCPTools.Default)]
+@attribute [RequiresFeature(SufiAIFeatures.Enable, SufiAIFeatures.MCP)]
 @inherits AIComponentBase
 
 <SufiPageToolbar>

@@ -10,6 +10,7 @@ using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using SufiChain.SufiBlazor.Components.Forms;
+using SufiChain.SufiBlazor.Components.Navigation;
 using SufiChain.SufiPlatform.UI.Alerts;
 using SufiChain.SufiPlatform.UI.BlockUi;
 using SufiChain.SufiPlatform.UI.ExceptionHandling;
@@ -147,6 +148,12 @@ public abstract class SufiComponentBase : OwningComponentBase, IHandleEvent
     /// Fields read this cascade and set <c>aria-invalid</c>.
     /// </summary>
     protected SbSaveFieldErrorSet SaveFieldErrors { get; private set; } = SbSaveFieldErrorSet.Empty;
+
+    /// <summary>
+    /// Set by <see cref="SbSettingsLayout"/> so a validation message can be appended to the save-failed alert.
+    /// </summary>
+    [CascadingParameter]
+    private SbSettingsSaveNotice? SettingsSaveNotice { get; set; }
 
     // ====== LOCALIZATION ======
 
@@ -531,7 +538,9 @@ public abstract class SufiComponentBase : OwningComponentBase, IHandleEvent
     /// <summary>
     /// Saves one settings section without the error dialog.
     /// A failure is logged and returns false. Validation member names are stored for
-    /// <c>aria-invalid</c>. The settings layout then shows one inline save-failed alert.
+    /// <c>aria-invalid</c> and their messages are shown on the field and in the save alert.
+    /// The layout clears the shared notice before the save. This method does not clear it,
+    /// so a later sibling in the same save leaves a message that was already recorded.
     /// The modal save path keeps <see cref="ExecuteWithLoadingAsync(Func{Task}, string, LoadingBehavior)"/>.
     /// </summary>
     protected async Task<bool> TrySaveQuietlyAsync(Func<Task> save, string operationKey)
@@ -579,10 +588,19 @@ public abstract class SufiComponentBase : OwningComponentBase, IHandleEvent
                 {
                 }
 
-                var members = ReadValidationMembers(ex);
-                if (members.Count > 0)
+                var details = ReadValidationDetails(ex);
+                if (details.Count > 0)
                 {
-                    SaveFieldErrors = new SbSaveFieldErrorSet(members);
+                    SaveFieldErrors = new SbSaveFieldErrorSet(details);
+                    var messages = details
+                        .Select(detail => detail.Message)
+                        .Where(message => !string.IsNullOrWhiteSpace(message))
+                        .Distinct(StringComparer.Ordinal)
+                        .ToList();
+                    if (messages.Count > 0 && SettingsSaveNotice != null)
+                    {
+                        SettingsSaveNotice.Detail = string.Join(" ", messages);
+                    }
                 }
             }
 
@@ -603,9 +621,9 @@ public abstract class SufiComponentBase : OwningComponentBase, IHandleEvent
         SaveFieldErrors = SbSaveFieldErrorSet.Empty;
     }
 
-    private static List<string> ReadValidationMembers(Exception exception)
+    private static List<(string Member, string? Message)> ReadValidationDetails(Exception exception)
     {
-        var names = new List<string>();
+        var details = new List<(string Member, string? Message)>();
         var current = exception;
         while (current != null)
         {
@@ -621,17 +639,30 @@ public abstract class SufiComponentBase : OwningComponentBase, IHandleEvent
                             continue;
                         }
 
+                        var message = error.GetType().GetProperty("ErrorMessage")?.GetValue(error) as string;
                         if (error.GetType().GetProperty("MemberNames")?.GetValue(error) is not IEnumerable members)
                         {
+                            if (!string.IsNullOrWhiteSpace(message))
+                            {
+                                details.Add((string.Empty, message));
+                            }
+
                             continue;
                         }
 
+                        var named = false;
                         foreach (var member in members)
                         {
                             if (member is string name && !string.IsNullOrWhiteSpace(name))
                             {
-                                names.Add(name);
+                                details.Add((name, message));
+                                named = true;
                             }
+                        }
+
+                        if (!named && !string.IsNullOrWhiteSpace(message))
+                        {
+                            details.Add((string.Empty, message));
                         }
                     }
                 }
@@ -640,7 +671,7 @@ public abstract class SufiComponentBase : OwningComponentBase, IHandleEvent
             current = current.InnerException;
         }
 
-        return names;
+        return details;
     }
 
     /// <summary>

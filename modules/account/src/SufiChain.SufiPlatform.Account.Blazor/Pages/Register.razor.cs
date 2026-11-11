@@ -114,7 +114,8 @@ public partial class Register
         var enabledNames = await ExternalAuthLoginProviderFilter.FilterEnabledAsync(namedSchemes.Select(scheme => scheme.Name));
         var enabled = new HashSet<string>(enabledNames, StringComparer.OrdinalIgnoreCase);
         ExternalSchemes = namedSchemes.Where(scheme => enabled.Contains(scheme.Name)).ToList();
-        IsSelfRegistrationEnabled = await IdentitySelfRegistrationRules.IsEnabledAsync(SettingProvider);
+        IsSelfRegistrationEnabled = await IdentitySelfRegistrationRules.IsEnabledAsync(SettingProvider)
+            && await SelfRegistrationPolicy.IsEnabledAsync(SettingProvider);
         IsOtpRegistrationEnabled = IsSelfRegistrationEnabled
             && await SettingProvider.IsTrueAsync(IdentitySettingNames.Otp.IsEnabled)
             && await SettingProvider.IsTrueAsync(IdentitySettingNames.Otp.AllowRegistration);
@@ -128,8 +129,10 @@ public partial class Register
             return;
         }
 
-        if (!IsSelfRegistrationEnabled)
+        if (!await IdentitySelfRegistrationRules.IsEnabledAsync(SettingProvider)
+            || !await SelfRegistrationPolicy.IsEnabledAsync(SettingProvider))
         {
+            IsSelfRegistrationEnabled = false;
             ErrorMessage = L["Sufi.Identity:SelfRegistrationDisabled"];
             return;
         }

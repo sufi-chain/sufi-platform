@@ -4,6 +4,8 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Logging;
 using SufiChain.SufiPlatform.Application.Services;
+using SufiChain.SufiPlatform.Features;
+using SufiChain.SufiPlatform.FileManager.Features;
 using SufiChain.SufiPlatform.FileManager.FileItems;
 using SufiChain.SufiPlatform.FileManager.Permissions;
 using Volo.Abp;
@@ -11,6 +13,7 @@ using Volo.Abp;
 namespace SufiChain.SufiPlatform.FileManager.FileMigration;
 
 [Authorize(FileManagerPermissions.StorageSettings.Manage)]
+[RequiresFeature(SufiFileManagerFeatures.Enable, SufiFileManagerFeatures.StorageSettings)]
 public class FileMigrationAppService : SufiApplicationService, IFileMigrationAppService
 {
     private readonly IFileItemRepository _fileItemRepository;

@@ -4,7 +4,6 @@ namespace SufiChain.SufiPlatform.Settings;
 
 public class UpdateEmailSettingsDto
 {
-    [EmailAddress]
     public string? DefaultFromAddress { get; set; }
     
     public string? DefaultFromDisplayName { get; set; }

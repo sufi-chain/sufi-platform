@@ -2,6 +2,7 @@
 @page "/panel/admin/file-manager/assets"
 @using SufiChain.SufiPlatform.FileManager.Blazor.Public.Services
 @attribute [Authorize(FileManagerPermissions.FileItems.Default)]
+@attribute [RequiresFeature(SufiFileManagerFeatures.Enable, SufiFileManagerFeatures.FileItems)]
 @inherits FileManagerComponentBase
 @implements IDisposable
 

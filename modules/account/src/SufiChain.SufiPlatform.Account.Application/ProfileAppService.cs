@@ -38,18 +38,18 @@ public class ProfileAppService : SufiApplicationService, IProfileAppService
 
     public virtual async Task<ProfileDto> UpdateAsync(UpdateProfileDto input)
     {
-        await IdentityOptions.SetAsync();
-
-        var user = await UserManager.GetByIdAsync(CurrentUser.GetId());
-
-        user.SetConcurrencyStampIfNotNull(input.ConcurrencyStamp);
-
         input.UserName = input.UserName?.Trim();
         input.Email = input.Email?.Trim();
         input.Name = ProfileUpdateRules.NormalizeOptionalText(input.Name);
         input.Surname = ProfileUpdateRules.NormalizeOptionalText(input.Surname);
         input.PhoneNumber = ProfileUpdateRules.NormalizePhone(input.PhoneNumber);
         ProfileUpdateRules.EnsurePhoneFits(input.PhoneNumber);
+
+        await IdentityOptions.SetAsync();
+
+        var user = await UserManager.GetByIdAsync(CurrentUser.GetId());
+
+        user.SetConcurrencyStampIfNotNull(input.ConcurrencyStamp);
 
         // Each UserManager.Set* call updates the user. With AutoSaveChanges those updates
         // persist one at a time and the later save fails optimistic concurrency after the

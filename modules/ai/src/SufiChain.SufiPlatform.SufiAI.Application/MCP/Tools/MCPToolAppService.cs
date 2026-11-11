@@ -17,7 +17,7 @@ using Volo.Abp;
 
 namespace SufiChain.SufiPlatform.SufiAI.Application.MCP.Tools;
 
-[RequiresFeature(SufiAIFeatures.Enable)]
+[RequiresFeature(SufiAIFeatures.Enable, SufiAIFeatures.MCP)]
 [Authorize(AIPermissions.MCPTools.Default)]
 public class MCPToolAppService : SufiApplicationService, IMCPToolAppService
 {

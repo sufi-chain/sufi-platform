@@ -21,7 +21,7 @@ using SufiChain.SufiPlatform.Features;
 
 namespace SufiChain.SufiPlatform.SufiAI.Application.MCP.Servers;
 
-[RequiresFeature(SufiAIFeatures.Enable)]
+[RequiresFeature(SufiAIFeatures.Enable, SufiAIFeatures.MCP)]
 [Authorize(AIPermissions.MCPServers.Default)]
 public class MCPServerAppService : SufiApplicationService, IMCPServerAppService
 {

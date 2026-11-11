@@ -1,5 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
 using SufiChain.SufiPlatform.SufiAI.Features;
+using Volo.Abp.MultiTenancy;
 using SufiChain.SufiPlatform.SufiAI.Localization;
 using SufiChain.SufiPlatform.Settings.Blazor.Settings;
 using SufiChain.SufiPlatform.SufiAI.Blazor.Settings;
@@ -46,9 +47,12 @@ public class AIMenuContributor : IMenuContributor
             context.Menu.AddItem(aiMenu);
         }
 
+        aiMenu.RequireFeatures(SufiAIFeatures.Enable);
+
         aiMenu.AddItem(new ApplicationMenuItem("SufiAI.WebResearch", l["WebResearchSettings"],
             url: SettingsSectionLink.For(WebResearchSettingsSection.Id), icon: "search", order: 8)
-            .RequirePermissions(AIPermissions.WebSearchSettings.Default));
+            .RequirePermissions(AIPermissions.WebSearchSettings.Default)
+            .RequireFeatures(SufiAIFeatures.Enable, SufiAIFeatures.WebSearch));
 
         if (await featureChecker.IsEnabledAsync(SufiAIFeatures.Workspaces))
         {
@@ -58,7 +62,8 @@ public class AIMenuContributor : IMenuContributor
                 url: "/panel/admin/ai/workspaces",
                 icon: "workspace",
                 order: -1
-            ).RequirePermissions(AIPermissions.Workspaces.Default));
+            ).RequirePermissions(AIPermissions.Workspaces.Default)
+            .RequireFeatures(SufiAIFeatures.Enable, SufiAIFeatures.Workspaces));
         }
 
         if (await featureChecker.IsEnabledAsync(SufiAIFeatures.Chat))
@@ -69,7 +74,8 @@ public class AIMenuContributor : IMenuContributor
                 url: "/panel/admin/ai/chat",
                 icon: "chat",
                 order: 0
-            ).RequirePermissions(AIPermissions.WorkspaceChat.Default));
+            ).RequirePermissions(AIPermissions.WorkspaceChat.Default)
+            .RequireFeatures(SufiAIFeatures.Enable, SufiAIFeatures.Chat));
         }
 
         if (await featureChecker.IsEnabledAsync(SufiAIFeatures.UsageAnalytics))
@@ -80,7 +86,8 @@ public class AIMenuContributor : IMenuContributor
                 url: "/panel/admin/ai/usage-analytics",
                 icon: "chart-bar",
                 order: 4
-            ).RequirePermissions(AIPermissions.AI.Default));
+            ).RequirePermissions(AIPermissions.AI.Default)
+            .RequireFeatures(SufiAIFeatures.Enable, SufiAIFeatures.UsageAnalytics));
         }
 
         if (await featureChecker.IsEnabledAsync(SufiAIFeatures.RAG))
@@ -90,7 +97,8 @@ public class AIMenuContributor : IMenuContributor
                 l["Menu:RAG"],
                 icon: "rag",
                 order: 5
-            ).RequirePermissions(AIPermissions.RAG.Default);
+            ).RequirePermissions(AIPermissions.RAG.Default)
+            .RequireFeatures(SufiAIFeatures.Enable, SufiAIFeatures.RAG);
 
             ragMenu.AddItem(new ApplicationMenuItem(
                 AIMenus.RAGSearch,
@@ -98,7 +106,8 @@ public class AIMenuContributor : IMenuContributor
                 url: "/panel/admin/ai/rag",
                 icon: "search",
                 order: 1
-            ).RequirePermissions(AIPermissions.RAG.Default));
+            ).RequirePermissions(AIPermissions.RAG.Default)
+            .RequireFeatures(SufiAIFeatures.Enable, SufiAIFeatures.RAG));
 
             ragMenu.AddItem(new ApplicationMenuItem(
                 AIMenus.IndexingStatus,
@@ -106,19 +115,24 @@ public class AIMenuContributor : IMenuContributor
                 url: "/panel/admin/ai/indexing-status",
                 icon: "activity",
                 order: 2
-            ).RequirePermissions(AIPermissions.RAG.Default));
+            ).RequirePermissions(AIPermissions.RAG.Default)
+            .RequireFeatures(SufiAIFeatures.Enable, SufiAIFeatures.RAG));
 
             aiMenu.AddItem(ragMenu);
         }
 
-        if (await featureChecker.IsEnabledAsync(SufiAIFeatures.MCP))
+        // Host administration only. A tenant circuit must not see MCP servers or tools,
+        // even when SufiAI.MCP is enabled for that edition.
+        var currentTenant = context.ServiceProvider.GetService<ICurrentTenant>();
+        if (currentTenant?.IsAvailable != true && await featureChecker.IsEnabledAsync(SufiAIFeatures.MCP))
         {
             var mcpMenu = new ApplicationMenuItem(
                 AIMenus.MCPGroup,
                 l["Menu:MCP"],
                 icon: "mcp",
                 order: 6
-            ).RequirePermissions(AIPermissions.MCPTools.Default);
+            ).RequirePermissions(AIPermissions.MCPTools.Default)
+            .RequireFeatures(SufiAIFeatures.Enable, SufiAIFeatures.MCP);
 
             mcpMenu.AddItem(new ApplicationMenuItem(
                 AIMenus.MCPTools,
@@ -126,7 +140,8 @@ public class AIMenuContributor : IMenuContributor
                 url: "/panel/admin/ai/mcp-tools",
                 icon: "wrench",
                 order: 1
-            ).RequirePermissions(AIPermissions.MCPTools.Default));
+            ).RequirePermissions(AIPermissions.MCPTools.Default)
+            .RequireFeatures(SufiAIFeatures.Enable, SufiAIFeatures.MCP));
 
             mcpMenu.AddItem(new ApplicationMenuItem(
                 AIMenus.MCPServers,
@@ -134,7 +149,8 @@ public class AIMenuContributor : IMenuContributor
                 url: "/panel/admin/ai/mcp-servers",
                 icon: "server",
                 order: 2
-            ).RequirePermissions(AIPermissions.MCPServers.Default));
+            ).RequirePermissions(AIPermissions.MCPServers.Default)
+            .RequireFeatures(SufiAIFeatures.Enable, SufiAIFeatures.MCP));
 
             aiMenu.AddItem(mcpMenu);
         }

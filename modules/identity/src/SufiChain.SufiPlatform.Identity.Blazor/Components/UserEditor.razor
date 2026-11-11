@@ -24,6 +24,11 @@
 											<SbTextField @bind-Value="Editor.UserName"
 														 Label="@L["Username"]"
 														 Required="true" />
+											<ValidationMessage For="@(() => Editor.UserName)" />
+											@if (_userNameError is not null)
+											{
+												<SbText Color="SbColor.Danger">@_userNameError</SbText>
+											}
 
 											@if (IsEdit)
 											{
@@ -40,12 +45,22 @@
 															 Type="password"
 															 AutoComplete="new-password"
 															 Required="true" />
+												<ValidationMessage For="@(() => _createModel.Password)" />
+												@if (_passwordError is not null)
+												{
+													<SbText Color="SbColor.Danger">@_passwordError</SbText>
+												}
 											}
 
 											<SbTextField @bind-Value="Editor.Email"
 														 Label="@L["Email"]"
 														 Type="email"
 														 Required="true" />
+											<ValidationMessage For="@(() => Editor.Email)" />
+											@if (_emailError is not null)
+											{
+												<SbText Color="SbColor.Danger">@_emailError</SbText>
+											}
 
 											<SbTextField Type="tel" InputMode="tel" @bind-Value="Editor.PhoneNumber" Label="@L["PhoneNumber"]" />
 										</SbGrid>

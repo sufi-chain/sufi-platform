@@ -115,10 +115,12 @@ public class IdentitySettingsAppService : SettingsAppServiceBase, IIdentitySetti
     public virtual async Task UpdateAsync(UpdateIdentitySettingsDto input)
     {
         await CheckFeatureAsync();
+        IdentitySettingsRules.Validate(input);
 
         var blockSignInUntilEmailConfirmed = input.RequireConfirmedEmail;
 
         await SetBoolAsync(IdentitySettingNames.Registration.EnableSelfRegistration, input.EnableSelfRegistration);
+        await SetBoolAsync(SelfRegistrationPolicy.AbpSettingName, input.EnableSelfRegistration);
         await SetBoolAsync(
             IdentitySettingNames.Registration.RequireEmailConfirmation,
             input.RequireEmailConfirmation || blockSignInUntilEmailConfirmed);

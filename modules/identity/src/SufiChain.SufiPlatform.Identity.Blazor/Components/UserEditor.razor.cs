@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Identity;
 using SufiChain.SufiPlatform.Identity;
 
 namespace SufiChain.SufiPlatform.Identity.Blazor.Components;
@@ -37,6 +38,9 @@ public partial class UserEditor : IdentityComponentBase
     private int _activeTab;
     private bool _ready;
     private bool _loadFailed;
+    private string? _userNameError;
+    private string? _emailError;
+    private string? _passwordError;
     private Guid? _loadedUserId;
 
     private bool IsEdit => UserId.HasValue;
@@ -123,19 +127,70 @@ public partial class UserEditor : IdentityComponentBase
             return;
         }
 
-        if (UserId is Guid userId)
+        _userNameError = null;
+        _emailError = null;
+        _passwordError = null;
+
+        try
         {
-            _updateModel.RoleNames = _selectedRoles.ToArray();
-            await UserAppService.UpdateAsync(userId, _updateModel);
-            await Notify.SuccessAsync(L["UserUpdatedSuccessfully"]);
+            if (UserId is Guid userId)
+            {
+                _updateModel.RoleNames = _selectedRoles.ToArray();
+                await UserAppService.UpdateAsync(userId, _updateModel);
+                await Notify.SuccessAsync(L["UserUpdatedSuccessfully"]);
+            }
+            else
+            {
+                _createModel.RoleNames = _selectedRoles.ToArray();
+                await UserAppService.CreateAsync(_createModel);
+                await Notify.SuccessAsync(L["UserCreatedSuccessfully"]);
+            }
         }
-        else
+        catch (AbpIdentityResultException exception)
         {
-            _createModel.RoleNames = _selectedRoles.ToArray();
-            await UserAppService.CreateAsync(_createModel);
-            await Notify.SuccessAsync(L["UserCreatedSuccessfully"]);
+            ApplyIdentityErrors(exception);
+            return;
         }
 
         NavigationManager.NavigateTo(UsersRoute);
     }, LoadingKeys.Save);
+
+    private void ApplyIdentityErrors(AbpIdentityResultException exception)
+    {
+        foreach (var error in exception.IdentityResult.Errors)
+        {
+            var message = LocalizeIdentityError(error);
+            var code = error.Code ?? string.Empty;
+            if (code.Contains("UserName", StringComparison.OrdinalIgnoreCase))
+            {
+                _userNameError = message;
+            }
+            else if (code.Contains("Email", StringComparison.OrdinalIgnoreCase))
+            {
+                _emailError = message;
+            }
+            else if (code.Contains("Password", StringComparison.OrdinalIgnoreCase))
+            {
+                _passwordError = message;
+            }
+            else
+            {
+                _userNameError ??= message;
+            }
+        }
+    }
+
+    private string LocalizeIdentityError(IdentityError error)
+    {
+        if (!string.IsNullOrWhiteSpace(error.Code))
+        {
+            var localized = L[$"IdentityError:{error.Code}"];
+            if (!localized.ResourceNotFound)
+            {
+                return localized.Value;
+            }
+        }
+
+        return error.Description;
+    }
 }

@@ -13,6 +13,7 @@ public class ProfileDto : ExtensibleObject, IHasConcurrencyStamp
 
     public string? Surname { get; set; }
 
+    [OptionalPhone]
     public string? PhoneNumber { get; set; }
 
     public bool IsExternal { get; set; }

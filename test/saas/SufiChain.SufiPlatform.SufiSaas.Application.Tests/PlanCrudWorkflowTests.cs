@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -41,6 +42,38 @@ public class PlanCrudWorkflowTests
         created.IsActive.ShouldBeTrue();
         created.EditionId.ShouldBe(edition.Id);
         created.Price.ShouldBe(10m);
+    }
+
+    [Fact]
+    public void Included_monthly_credits_range_rejects_a_negative()
+    {
+        var input = Input(Guid.NewGuid(), "starter", isActive: true);
+        input.IncludedMonthlyAiCredits = -1m;
+        var results = new List<ValidationResult>();
+
+        var valid = Validator.TryValidateObject(input, new ValidationContext(input), results, validateAllProperties: true);
+
+        valid.ShouldBeFalse();
+        results.ShouldContain(result => result.MemberNames.Contains(nameof(CreateUpdatePlanDto.IncludedMonthlyAiCredits)));
+
+        input.IncludedMonthlyAiCredits = 0m;
+        Validator.TryValidateObject(input, new ValidationContext(input), new List<ValidationResult>(), validateAllProperties: true)
+            .ShouldBeTrue();
+    }
+
+    [Fact]
+    public async Task Create_Should_Reject_Negative_Included_Credits()
+    {
+        var edition = new Edition(Guid.NewGuid(), "Pro", "Pro", "PRO", true);
+        var plans = Substitute.For<IPlanRepository>();
+        var service = NewService(plans, edition, hasSubscription: false);
+        var input = Input(edition.Id, "starter", isActive: true);
+        input.IncludedMonthlyAiCredits = -1m;
+
+        var error = await Should.ThrowAsync<BusinessException>(() => service.CreateAsync(input));
+
+        error.Code.ShouldBe(SufiSaasErrorCodes.InvalidIncludedAiCredits);
+        await plans.DidNotReceive().InsertAsync(Arg.Any<Plan>(), Arg.Any<bool>(), Arg.Any<CancellationToken>());
     }
 
     [Fact]

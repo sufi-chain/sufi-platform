@@ -62,6 +62,35 @@ public class AiFeatureGateTests
             .MultiTenancySide.ShouldBe(Volo.Abp.MultiTenancy.MultiTenancySides.Host);
     }
 
+    [Fact]
+    public void Mcp_admin_permissions_are_host_only_and_chat_stays_available_to_tenants()
+    {
+        var context = new PermissionDefinitionContext(
+            new ServiceCollection().BuildServiceProvider());
+
+        new AIPermissionDefinitionProvider().Define(context);
+
+        foreach (var name in new[]
+        {
+            AIPermissions.MCPTools.Default,
+            AIPermissions.MCPTools.Execute,
+            AIPermissions.MCPTools.Manage,
+            AIPermissions.MCPServers.Default,
+            AIPermissions.MCPServers.Create,
+            AIPermissions.MCPServers.Edit,
+            AIPermissions.MCPServers.Delete
+        })
+        {
+            var permission = context.GetPermissionOrNull(name);
+            permission.ShouldNotBeNull(name);
+            permission!.MultiTenancySide.ShouldBe(Volo.Abp.MultiTenancy.MultiTenancySides.Host);
+            FeatureNames(permission).ShouldContain(SufiAIFeatures.MCP);
+        }
+
+        context.GetPermissionOrNull(AIPermissions.AI.Chat)!
+            .MultiTenancySide.ShouldBe(Volo.Abp.MultiTenancy.MultiTenancySides.Both);
+    }
+
     private static string[] FeatureNames(AbpPermissionDefinition state)
     {
         return state.StateCheckers

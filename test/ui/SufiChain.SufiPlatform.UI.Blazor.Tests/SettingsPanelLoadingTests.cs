@@ -8,6 +8,7 @@ using SufiChain.SufiBlazor.Localization;
 using SufiChain.SufiPlatform.Settings;
 using SufiChain.SufiPlatform.Settings.Blazor.Settings;
 using SufiChain.SufiPlatform.UI.MultiTenancy;
+using Volo.Abp.Features;
 using Xunit;
 
 namespace SufiChain.SufiPlatform.UI.Blazor.Tests;
@@ -53,6 +54,37 @@ public class SettingsPanelLoadingTests : BunitContext
             cut.Markup.ShouldNotContain("sb-loading-skeleton");
             cut.Find("input[type=number]").GetAttribute("value").ShouldBe("587");
         }, timeout);
+
+        var saved = await cut.InvokeAsync(() => cut.Instance.TrySaveAsync());
+        saved.ShouldBeTrue();
+        await email.Received(1).UpdateAsync(Arg.Is<UpdateEmailSettingsDto>(dto =>
+            dto.SmtpHost == "smtp.example" &&
+            dto.SmtpPort == 587 &&
+            dto.SmtpPassword == null));
+    }
+
+    [Fact]
+    public async Task Tenant_email_section_shows_the_host_lock_without_calling_the_endpoint()
+    {
+        var tenant = Substitute.For<ICurrentTenant>();
+        tenant.IsAvailable.Returns(true);
+        tenant.Id.Returns(Guid.NewGuid());
+        Services.AddSingleton(tenant);
+        var features = Substitute.For<IFeatureChecker>();
+        features.IsEnabledAsync(SettingsFeatures.AllowChangingEmailSettings).Returns(false);
+        Services.AddSingleton(features);
+        var email = Substitute.For<IEmailSettingsAppService>();
+        Services.AddSingleton(email);
+
+        var cut = Render<EmailSettingsGroup>();
+
+        await cut.WaitForAssertionAsync(() =>
+        {
+            cut.Find("[data-testid='email-settings-locked']").TextContent
+                .ShouldContain("EmailSettingsLockedByHost");
+        }, TimeSpan.FromSeconds(5));
+        cut.FindAll("input").Count.ShouldBe(0);
+        await email.DidNotReceive().GetAsync();
     }
 
     [Fact]

@@ -1,5 +1,6 @@
 using NSubstitute;
 using Shouldly;
+using Volo.Abp.EventBus.Distributed;
 using Volo.Abp.Guids;
 using Xunit;
 
@@ -42,7 +43,7 @@ public class FeatureValueCacheInvalidationTests
     public async Task Changed_feature_is_removed_immediately_for_null_and_empty_provider_keys()
     {
         var cache = new RecordingDistributedCache<FeatureValueCacheItem>();
-        var invalidator = new FeatureValueCacheItemInvalidator(cache);
+        var invalidator = new FeatureValueCacheItemInvalidator(cache, Substitute.For<IDistributedEventBus>());
         var feature = new FeatureValue(Guid.NewGuid(), "Chat.Ai.Enable", "true", "G", null);
 
         await invalidator.HandleEventAsync(new Volo.Abp.Domain.Entities.Events.EntityChangedEventData<FeatureValue>(feature));
@@ -53,5 +54,47 @@ public class FeatureValueCacheInvalidationTests
         cache.Removes.Select(remove => remove.Key).ShouldContain(emptyKey);
         cache.Removes.ShouldContain(remove => !remove.ConsiderUow);
         cache.Removes.ShouldContain(remove => remove.ConsiderUow);
+    }
+
+    [Fact]
+    public async Task Local_change_publishes_a_distributed_event_for_every_host()
+    {
+        var cache = new RecordingDistributedCache<FeatureValueCacheItem>();
+        var eventBus = Substitute.For<IDistributedEventBus>();
+        var invalidator = new FeatureValueCacheItemInvalidator(cache, eventBus);
+        var tenantId = Guid.NewGuid().ToString();
+        var feature = new FeatureValue(Guid.NewGuid(), "SufiFileManager.Enable", "false", "T", tenantId);
+
+        await invalidator.HandleEventAsync(new Volo.Abp.Domain.Entities.Events.EntityChangedEventData<FeatureValue>(feature));
+
+        await eventBus.Received(1).PublishAsync(
+            Arg.Is<FeatureValueChangedEto>(published =>
+                published.Name == feature.Name &&
+                published.ProviderName == feature.ProviderName &&
+                published.ProviderKey == tenantId));
+    }
+
+    [Fact]
+    public async Task Distributed_event_drops_a_stale_value_on_another_host()
+    {
+        var tenantId = Guid.NewGuid().ToString();
+        var key = FeatureValueCacheItem.CalculateCacheKey("SufiFileManager.Enable", "T", tenantId);
+        var otherHost = new RecordingDistributedCache<FeatureValueCacheItem>();
+        await otherHost.SetAsync(key, new FeatureValueCacheItem("true"));
+
+        var invalidator = new FeatureValueCacheItemInvalidator(
+            otherHost,
+            Substitute.For<IDistributedEventBus>());
+
+        await invalidator.HandleEventAsync(new FeatureValueChangedEto
+        {
+            Name = "SufiFileManager.Enable",
+            ProviderName = "T",
+            ProviderKey = tenantId
+        });
+
+        (await otherHost.GetAsync(key)).ShouldBeNull();
+        otherHost.Removes.ShouldContain(remove => remove.Key == key && !remove.ConsiderUow);
+        otherHost.Removes.ShouldContain(remove => remove.Key == key && remove.ConsiderUow);
     }
 }

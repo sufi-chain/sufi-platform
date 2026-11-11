@@ -5,6 +5,7 @@
 @using SufiChain.SufiPlatform.UI.Blazor
 @inherits FileManagerComponentBase
 @attribute [Authorize(FileManagerPermissions.FileStructures.Default)]
+@attribute [RequiresFeature(SufiFileManagerFeatures.Enable, SufiFileManagerFeatures.FileStructures)]
 
 <SbStack Direction="SbStackDirection.Column" Gap="4">
 	@if (_loading)

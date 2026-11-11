@@ -4,6 +4,7 @@ using Microsoft.Extensions.Logging;
 using SufiChain.SufiPlatform.Account.Localization;
 using SufiChain.SufiPlatform.Account.Otp;
 using SufiChain.SufiPlatform.Identity;
+using SufiChain.SufiPlatform.Identity.Settings;
 using SufiChain.SufiPlatform.Identity.Localization;
 using Volo.Abp.Settings;
 
@@ -83,7 +84,14 @@ public partial class RegisterWithOtp
 
     protected override async Task OnInitializedAsync()
     {
-        IsSelfRegistrationEnabled = await IdentitySelfRegistrationRules.IsEnabledAsync(SettingProvider);
+        IsSelfRegistrationEnabled = await IdentitySelfRegistrationRules.IsEnabledAsync(SettingProvider)
+            && await SelfRegistrationPolicy.IsEnabledAsync(SettingProvider);
+        if (!IsSelfRegistrationEnabled)
+        {
+            ErrorMessage = L["Sufi.Identity:SelfRegistrationDisabled"];
+            return;
+        }
+
         Options = await OtpAppService.GetOtpOptionsAsync();
         if (!IsSelfRegistrationEnabled)
         {
@@ -228,8 +236,10 @@ public partial class RegisterWithOtp
 
     protected virtual async Task OnRegisterAsync()
     {
-        if (!IsSelfRegistrationEnabled)
+        if (!await IdentitySelfRegistrationRules.IsEnabledAsync(SettingProvider)
+            || !await SelfRegistrationPolicy.IsEnabledAsync(SettingProvider))
         {
+            IsSelfRegistrationEnabled = false;
             ErrorMessage = L["Sufi.Identity:SelfRegistrationDisabled"];
             return;
         }

@@ -28,23 +28,23 @@
         <section>
             <SbHeading Level="3" Size="6">@L["IdentityTabPassword"]</SbHeading>
             <SbStack Gap="3" class="pt-3">
-                <SbNumberField TValue="int" @bind-Value="_settings.PasswordRequiredLength" Label="@IdentityL["Setting:PasswordRequiredLength"]" HelperText="@IdentityL["SettingHint:PasswordRequiredLength"]" />
-                <SbNumberField TValue="int" @bind-Value="_settings.PasswordRequiredUniqueChars" Label="@IdentityL["Setting:PasswordRequiredUniqueChars"]" HelperText="@IdentityL["SettingHint:PasswordRequiredUniqueChars"]" />
+                <SbNumberField TValue="int" @bind-Value="_settings.PasswordRequiredLength" Min="6" Max="128" Label="@IdentityL["Setting:PasswordRequiredLength"]" HelperText="@IdentityL["SettingHint:PasswordRequiredLength"]" />
+                <SbNumberField TValue="int" @bind-Value="_settings.PasswordRequiredUniqueChars" Min="1" Max="128" Label="@IdentityL["Setting:PasswordRequiredUniqueChars"]" HelperText="@IdentityL["SettingHint:PasswordRequiredUniqueChars"]" />
                 <div><SbCheckbox @bind-Value="_settings.PasswordRequireDigit" Label="@IdentityL["Setting:PasswordRequireDigit"]" /><SbText Variant="SbTextVariant.BodySmall" Color="SbColor.Muted">@IdentityL["SettingHint:PasswordRequireDigit"]</SbText></div>
                 <div><SbCheckbox @bind-Value="_settings.PasswordRequireLowercase" Label="@IdentityL["Setting:PasswordRequireLowercase"]" /><SbText Variant="SbTextVariant.BodySmall" Color="SbColor.Muted">@IdentityL["SettingHint:PasswordRequireLowercase"]</SbText></div>
                 <div><SbCheckbox @bind-Value="_settings.PasswordRequireUppercase" Label="@IdentityL["Setting:PasswordRequireUppercase"]" /><SbText Variant="SbTextVariant.BodySmall" Color="SbColor.Muted">@IdentityL["SettingHint:PasswordRequireUppercase"]</SbText></div>
                 <div><SbCheckbox @bind-Value="_settings.PasswordRequireNonAlphanumeric" Label="@IdentityL["Setting:PasswordRequireNonAlphanumeric"]" /><SbText Variant="SbTextVariant.BodySmall" Color="SbColor.Muted">@IdentityL["SettingHint:PasswordRequireNonAlphanumeric"]</SbText></div>
                 <div><SbCheckbox @bind-Value="_settings.PasswordDisallowUsername" Label="@IdentityL["Setting:PasswordDisallowUsername"]" /><SbText Variant="SbTextVariant.BodySmall" Color="SbColor.Muted">@IdentityL["SettingHint:PasswordDisallowUsername"]</SbText></div>
                 <div><SbCheckbox @bind-Value="_settings.PasswordDisallowEmail" Label="@IdentityL["Setting:PasswordDisallowEmail"]" /><SbText Variant="SbTextVariant.BodySmall" Color="SbColor.Muted">@IdentityL["SettingHint:PasswordDisallowEmail"]</SbText></div>
-                <SbNumberField TValue="int" @bind-Value="_settings.PasswordMinimumAgeMinutes" Label="@IdentityL["Setting:PasswordMinimumAgeMinutes"]" HelperText="@IdentityL["SettingHint:PasswordMinimumAgeMinutes"]" />
+                <SbNumberField TValue="int" @bind-Value="_settings.PasswordMinimumAgeMinutes" Min="0" Max="525600" Label="@IdentityL["Setting:PasswordMinimumAgeMinutes"]" HelperText="@IdentityL["SettingHint:PasswordMinimumAgeMinutes"]" />
             </SbStack>
         </section>
         <section>
             <SbHeading Level="3" Size="6">@L["IdentityTabLockout"]</SbHeading>
             <SbStack Gap="3" class="pt-3">
                 <div><SbCheckbox @bind-Value="_settings.LockoutAllowedForNewUsers" Label="@IdentityL["Setting:LockoutAllowedForNewUsers"]" /><SbText Variant="SbTextVariant.BodySmall" Color="SbColor.Muted">@IdentityL["SettingHint:LockoutAllowedForNewUsers"]</SbText></div>
-                <SbNumberField TValue="int" @bind-Value="_settings.LockoutMaxFailedAccessAttempts" Label="@IdentityL["Setting:LockoutMaxFailedAccessAttempts"]" HelperText="@IdentityL["SettingHint:LockoutMaxFailedAccessAttempts"]" />
-                <SbNumberField TValue="int" @bind-Value="_settings.LockoutDefaultLockoutTimeSpanMinutes" Label="@IdentityL["Setting:LockoutDefaultLockoutTimeSpanMinutes"]" HelperText="@IdentityL["SettingHint:LockoutDefaultLockoutTimeSpanMinutes"]" />
+                <SbNumberField TValue="int" @bind-Value="_settings.LockoutMaxFailedAccessAttempts" Min="1" Max="100" Label="@IdentityL["Setting:LockoutMaxFailedAccessAttempts"]" HelperText="@IdentityL["SettingHint:LockoutMaxFailedAccessAttempts"]" />
+                <SbNumberField TValue="int" @bind-Value="_settings.LockoutDefaultLockoutTimeSpanMinutes" Min="1" Max="1440" Label="@IdentityL["Setting:LockoutDefaultLockoutTimeSpanMinutes"]" HelperText="@IdentityL["SettingHint:LockoutDefaultLockoutTimeSpanMinutes"]" />
             </SbStack>
         </section>
         <section>
@@ -53,7 +53,7 @@
                 <SbNumberField TValue="int" @bind-Value="_settings.EmailConfirmationTokenLifespanHours" Label="@IdentityL["Setting:EmailConfirmationTokenLifespanHours"]" HelperText="@IdentityL["SettingHint:EmailConfirmationTokenLifespanHours"]" />
                 <SbNumberField TValue="int" @bind-Value="_settings.PasswordResetTokenLifespanHours" Label="@IdentityL["Setting:PasswordResetTokenLifespanHours"]" HelperText="@IdentityL["SettingHint:PasswordResetTokenLifespanHours"]" />
                 <SbNumberField TValue="int" @bind-Value="_settings.OtpTokenLifespanMinutes" Label="@IdentityL["Setting:OtpTokenLifespanMinutes"]" HelperText="@IdentityL["SettingHint:OtpTokenLifespanMinutes"]" />
-                <SbNumberField TValue="int" @bind-Value="_settings.OtpLength" Label="@IdentityL["Setting:OtpLength"]" HelperText="@IdentityL["SettingHint:OtpLength"]" />
+                <SbNumberField TValue="int" @bind-Value="_settings.OtpLength" Min="4" Max="10" Label="@IdentityL["Setting:OtpLength"]" HelperText="@IdentityL["SettingHint:OtpLength"]" />
             </SbStack>
         </section>
         <section>

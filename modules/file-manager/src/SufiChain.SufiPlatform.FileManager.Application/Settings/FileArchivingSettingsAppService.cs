@@ -9,7 +9,7 @@ using Volo.Abp.Settings;
 namespace SufiChain.SufiPlatform.FileManager.Settings;
 
 /// <summary>Saves file-archiving settings. Storage settings stay on the file manager section.</summary>
-[RequiresFeature(SufiFileManagerFeatures.Enable)]
+[RequiresFeature(SufiFileManagerFeatures.Enable, SufiFileManagerFeatures.Archiving)]
 [Authorize(FileManagerPermissions.ArchivingSettings.Manage)]
 public class FileArchivingSettingsAppService : SufiApplicationService, IFileArchivingSettingsAppService
 {

@@ -1,6 +1,8 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SufiChain.SufiPlatform.SufiAI;
 using SufiChain.SufiPlatform.SufiAI.MCP.Tools;
+using SufiChain.SufiPlatform.SufiAI.Permissions;
 using Volo.Abp;
 
 namespace SufiChain.SufiPlatform.SufiAI.Controllers;
@@ -8,6 +10,7 @@ namespace SufiChain.SufiPlatform.SufiAI.Controllers;
 [Area(AIRemoteServiceConsts.ModuleName)]
 [RemoteService(Name = AIRemoteServiceConsts.RemoteServiceName)]
 [Route("api/ai/mcp/tools")]
+[Authorize(AIPermissions.MCPTools.Default)]
 public class MCPToolController : AIController, IMCPToolAppService
 {
     private readonly IMCPToolAppService _mcpToolAppService;

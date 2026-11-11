@@ -4,6 +4,7 @@ using Microsoft.Extensions.Logging;
 using SufiChain.SufiPlatform.Account;
 using SufiChain.SufiPlatform.Account.Blazor;
 using Volo.Abp.ObjectExtending;
+using Volo.Abp.Validation;
 
 namespace SufiChain.SufiPlatform.Account.Blazor.Components.Profile;
 
@@ -15,6 +16,7 @@ public partial class ProfileSettings
     private bool _saving;
     private string? _successMessage;
     private string? _errorMessage;
+    private string? _phoneError;
 
     [SupplyParameterFromForm(FormName = ProfileFormName)]
     private ProfileDto? Profile { get; set; }
@@ -38,6 +40,12 @@ public partial class ProfileSettings
         }
     }
 
+    private Task HandleSubmitAsync(EditContext context)
+    {
+        context.Validate();
+        return OnSaveAsync();
+    }
+
     private async Task OnSaveAsync()
     {
         if (Profile == null)
@@ -48,9 +56,16 @@ public partial class ProfileSettings
         _saving = true;
         _successMessage = null;
         _errorMessage = null;
+        _phoneError = null;
 
         try
         {
+            if (!OptionalPhoneAttribute.IsValidPhone(Profile.PhoneNumber))
+            {
+                _phoneError = AccountL["PhoneNumber:Invalid", L["PhoneNumber"]];
+                return;
+            }
+
             var input = new UpdateProfileDto
             {
                 UserName = Profile.UserName,
@@ -72,6 +87,11 @@ public partial class ProfileSettings
 
             Profile = await ProfileAppService.UpdateAsync(input);
             _successMessage = L["ProfileUpdatedSuccessfully"];
+        }
+        catch (AbpValidationException ex) when (ex.ValidationErrors.Any(error =>
+                     error.MemberNames.Contains(nameof(UpdateProfileDto.PhoneNumber))))
+        {
+            _phoneError = AccountL["PhoneNumber:Invalid", L["PhoneNumber"]];
         }
         catch (Exception ex)
         {

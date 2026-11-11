@@ -168,7 +168,8 @@
 		_externalProviderNames = await ExternalAuthLoginProviderFilter.FilterEnabledAsync(candidateNames);
 		_otpLoginEnabled = await SettingProvider.IsTrueAsync(IdentitySettingNames.Otp.IsEnabled)
 			&& await SettingProvider.IsTrueAsync(IdentitySettingNames.Otp.AllowLogin);
-		_selfRegistrationEnabled = await IdentitySelfRegistrationRules.IsEnabledAsync(SettingProvider);
+		_selfRegistrationEnabled = await IdentitySelfRegistrationRules.IsEnabledAsync(SettingProvider)
+			&& await SelfRegistrationPolicy.IsEnabledAsync(SettingProvider);
 	}
 
 	private async Task HandleLogin()
