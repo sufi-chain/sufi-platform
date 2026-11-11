@@ -52,10 +52,7 @@ public class IdentityUserAppService : SufiApplicationService, IIdentityUserAppSe
         // call UpdateAsync (an UPDATE); running them before the INSERT exists in the database throws
         // DbUpdateConcurrencyException ("expected to affect 1 row(s), but actually affected 0").
         var result = await UserManager.CreateAsync(user, input.Password, validatePassword: true);
-        if (!result.Succeeded)
-        {
-            throw new InvalidOperationException(string.Join("; ", result.Errors.Select(e => e.Description)));
-        }
+        result.CheckErrors();
 
         await UserManager.SetPhoneNumberAsync(user, input.PhoneNumber);
         await UserManager.SetLockoutEnabledAsync(user, input.LockoutEnabled);
@@ -63,10 +60,7 @@ public class IdentityUserAppService : SufiApplicationService, IIdentityUserAppSe
         if (input.RoleNames?.Any() == true)
         {
             result = await UserManager.SetRolesAsync(user, input.RoleNames);
-            if (!result.Succeeded)
-            {
-                throw new InvalidOperationException(string.Join("; ", result.Errors.Select(e => e.Description)));
-            }
+            result.CheckErrors();
         }
 
         return MapToDto(user);
@@ -93,17 +87,11 @@ public class IdentityUserAppService : SufiApplicationService, IIdentityUserAppSe
             {
                 var token = await UserManager.GeneratePasswordResetTokenAsync(user);
                 var passwordResult = await UserManager.ResetPasswordAsync(user, token, input.Password);
-                if (!passwordResult.Succeeded)
-                {
-                    throw new InvalidOperationException(string.Join("; ", passwordResult.Errors.Select(e => e.Description)));
-                }
+                passwordResult.CheckErrors();
             }
 
             var result = await UserManager.UpdateAsync(user);
-            if (!result.Succeeded)
-            {
-                throw new InvalidOperationException(string.Join("; ", result.Errors.Select(e => e.Description)));
-            }
+            result.CheckErrors();
 
             await CurrentUnitOfWork.SaveChangesAsync();
         }
@@ -115,10 +103,7 @@ public class IdentityUserAppService : SufiApplicationService, IIdentityUserAppSe
         if (input.RoleNames != null)
         {
             var roleResult = await UserManager.SetRolesAsync(user, input.RoleNames);
-            if (!roleResult.Succeeded)
-            {
-                throw new InvalidOperationException(string.Join("; ", roleResult.Errors.Select(e => e.Description)));
-            }
+            roleResult.CheckErrors();
         }
 
         return MapToDto(user);
@@ -128,10 +113,7 @@ public class IdentityUserAppService : SufiApplicationService, IIdentityUserAppSe
     {
         var user = await UserManager.GetByIdAsync(id);
         var result = await UserManager.DeleteAsync(user);
-        if (!result.Succeeded)
-        {
-            throw new InvalidOperationException(string.Join("; ", result.Errors.Select(e => e.Description)));
-        }
+        result.CheckErrors();
     }
 
     public virtual async Task<ListResultDto<IdentityRoleDto>> GetRolesAsync(Guid id)
@@ -150,10 +132,7 @@ public class IdentityUserAppService : SufiApplicationService, IIdentityUserAppSe
     {
         var user = await UserManager.GetByIdAsync(id);
         var result = await UserManager.SetRolesAsync(user, input.RoleNames);
-        if (!result.Succeeded)
-        {
-            throw new InvalidOperationException(string.Join("; ", result.Errors.Select(e => e.Description)));
-        }
+        result.CheckErrors();
     }
 
     public virtual async Task<IdentityUserDto> FindByUsernameAsync(string userName)

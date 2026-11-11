@@ -31,6 +31,8 @@
     <ProjectReference Include="..\..\..\..\framework\SufiChain.SufiPlatform.UI.Blazor\SufiChain.SufiPlatform.UI.Blazor.csproj" />
     <!-- Sufi Identity Domain.Shared for localization -->
     <ProjectReference Include="..\SufiChain.SufiPlatform.Identity.Domain.Shared\SufiChain.SufiPlatform.Identity.Domain.Shared.csproj" />
+    <!-- AbpIdentityResultException is the duplicate-username error the editor shows beside the field. -->
+    <ProjectReference Include="..\SufiChain.SufiPlatform.Identity.Domain\SufiChain.SufiPlatform.Identity.Domain.csproj" />
     <!-- Sufi Identity Application Contracts -->
     <ProjectReference Include="..\SufiChain.SufiPlatform.Identity.Application.Contracts\SufiChain.SufiPlatform.Identity.Application.Contracts.csproj" />
     <ProjectReference Include="..\..\..\users\src\SufiChain.SufiPlatform.Users.Blazor.Public\SufiChain.SufiPlatform.Users.Blazor.Public.csproj" />
