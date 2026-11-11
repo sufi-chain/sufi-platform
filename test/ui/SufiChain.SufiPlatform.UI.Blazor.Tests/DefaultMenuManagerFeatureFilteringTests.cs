@@ -69,6 +69,49 @@ public class DefaultMenuManagerFeatureFilteringTests
     }
 
     [Fact]
+    public async Task Icon_rail_zone_hides_when_the_user_has_no_visible_items()
+    {
+        var manager = BuildGranted(
+            granted: ["SufiAI.WorkspaceChat"],
+            menu =>
+            {
+                var zone = new ApplicationMenuItem("SufiAI", "Hooshvares", icon: "sparkles");
+                zone.AddItem(new ApplicationMenuItem("SufiAI.WorkspaceChat", "Chat", "/panel/admin/ai/chat")
+                    .RequirePermissions("SufiAI.WorkspaceChat"));
+                zone.AddItem(new ApplicationMenuItem("SufiAI.UsageAnalytics", "Usage", "/panel/admin/ai/usage-analytics")
+                    .RequirePermissions("SufiAI.AI"));
+                zone.AddItem(new ApplicationMenuItem("SufiAI.Hooshvare", "Hooshvares", "/panel/admin/ai/hooshvare")
+                    .RequirePermissions("SufiAI.Hooshvare"));
+                menu.AddItem(zone);
+            });
+
+        var plain = await manager.GetMainMenuAsync();
+        var zone = plain.Items.ShouldHaveSingleItem();
+        zone.Items.ShouldContain(item => item.Url == "/panel/admin/ai/chat");
+        zone.Items.ShouldNotContain(item => item.Url == "/panel/admin/ai/usage-analytics");
+        zone.Items.ShouldNotContain(item => item.Url == "/panel/admin/ai/hooshvare");
+
+        var noGrants = BuildGranted([], menu =>
+        {
+            var zone = new ApplicationMenuItem("SufiAI", "Hooshvares");
+            zone.AddItem(new ApplicationMenuItem("SufiAI.UsageAnalytics", "Usage", "/panel/admin/ai/usage-analytics")
+                .RequirePermissions("SufiAI.AI"));
+            menu.AddItem(zone);
+        });
+        (await noGrants.GetMainMenuAsync()).Items.ShouldNotContain(item => item.Name == "SufiAI");
+
+        var admin = BuildGranted(["SufiAI.AI"], menu =>
+        {
+            var zone = new ApplicationMenuItem("SufiAI", "Hooshvares");
+            zone.AddItem(new ApplicationMenuItem("SufiAI.UsageAnalytics", "Usage", "/panel/admin/ai/usage-analytics")
+                .RequirePermissions("SufiAI.AI"));
+            menu.AddItem(zone);
+        });
+        (await admin.GetMainMenuAsync()).Items.ShouldContain(item =>
+            item.Items.Any(child => child.Url == "/panel/admin/ai/usage-analytics"));
+    }
+
+    [Fact]
     public async Task Only_the_gated_leaf_is_pruned_when_the_parent_has_other_children()
     {
         var manager = Build(featureEnabled: false, menu =>
@@ -111,6 +154,38 @@ public class DefaultMenuManagerFeatureFilteringTests
         await featureChecker.Received(1).IsEnabledAsync(
             Arg.Is<IEnumerable<string>>(names =>
                 names.Contains(KnowledgeBaseFeature) && names.Contains(TicketingFeature)));
+    }
+
+    private static DefaultMenuManager BuildGranted(string[] granted, Action<ApplicationMenu> configure)
+    {
+        var featureChecker = Substitute.For<ISufiFeatureChecker>();
+        featureChecker.IsEnabledAsync(Arg.Any<string>()).Returns(Task.FromResult(true));
+        featureChecker.IsEnabledAsync(Arg.Any<IEnumerable<string>>())
+            .Returns(callInfo =>
+            {
+                var names = callInfo.Arg<IEnumerable<string>>();
+                return Task.FromResult(names.Distinct().ToDictionary(name => name, _ => true));
+            });
+
+        var options = new SufiNavigationOptions();
+        options.MenuContributors.Add(new TestMenuContributor(configure));
+        var permissionChecker = Substitute.For<ISufiPermissionChecker>();
+        permissionChecker.IsGrantedAsync(Arg.Any<string>())
+            .Returns(call => Task.FromResult(granted.Contains(call.Arg<string>())));
+        permissionChecker.IsGrantedAsync(Arg.Any<IEnumerable<string>>())
+            .Returns(callInfo =>
+            {
+                var names = callInfo.Arg<IEnumerable<string>>();
+                return Task.FromResult(names.Distinct().ToDictionary(name => name, name => granted.Contains(name)));
+            });
+        var currentUser = Substitute.For<ICurrentUserAccessor>();
+        currentUser.IsAuthenticated.Returns(true);
+        return new DefaultMenuManager(
+            new ServiceCollection().BuildServiceProvider(),
+            Options.Create(options),
+            permissionChecker,
+            featureChecker,
+            currentUser);
     }
 
     private static DefaultMenuManager Build(bool featureEnabled, Action<ApplicationMenu> configure)

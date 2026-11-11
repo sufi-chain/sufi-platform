@@ -607,6 +607,28 @@
     "Statistics": "آمار",
     "Images": "تصاویر",
     "Videos": "ویدیوها",
-    "Permission:FileManagerArchivingSettings": "تنظیمات بایگانی پرونده"
+    "Permission:FileManagerArchivingSettings": "تنظیمات بایگانی پرونده",
+  
+    "AIProcessedAudio": "این فایل صوتی توسط AI Infrastructure پردازش شده است",
+    "AIProcessedImage": "این تصویر توسط AI Infrastructure پردازش شده است",
+    "Demo:FileBrowserBasic": "SpFileBrowser",
+    "Demo:FileBrowserBasicDescription": "لیست فایل مسطح با جستجو، فیلتر بر اساس نوع، مرتب‌سازی، نماهای شبکه/فهرست، آپلود و حذف انبوه. بدون درخت پوشه - ایده آل برای فایل های دارای محدوده موجودیت (به عنوان مثال، تصاویر محصول) یا گالری فایل های ساده.",
+    "Demo:FileManagerFull": "چیدمان کامل",
+    "Demo:FileManagerFullDescription": "درخت پوشه، پانل خواص، و نمادهای بزرگ. بهترین گزینه برای کاربران قدرتمندی که به کنترل کامل بر ناوبری و انتخاب نیاز دارند.",
+    "Demo:FileManagerListView": "نمایش لیست",
+    "Demo:FileManagerListViewDescription": "چیدمان فهرست فشرده فایل ها را در یک لیست متراکم و قابل اسکن نمایش می دهد. برای مرور بسیاری از موارد خوب است.",
+    "Demo:FileManagerMinimal": "طرح حداقلی",
+    "Demo:FileManagerMinimalDescription": "بدون درخت، بدون پانل خواص. فقط نمای فایل و نوار ابزار. ایده آل برای انتخابگرهای جاسازی شده یا استفاده ساده فقط برای مرور.",
+    "Demo:FileManagerNoProperties": "بدون پنل خواص",
+    "Demo:FileManagerNoPropertiesDescription": "طرح‌بندی ساده‌تر بدون نوار کناری جزئیات انتخاب. روی مرور بدون ابرداده تمرکز کنید.",
+    "Demo:FileManagerNoTree": "بدون درخت پوشه",
+    "Demo:FileManagerNoTreeDescription": "نوار کناری پوشه را پنهان می کند. فضای بیشتر برای فایل ها از پودر سوخاری برای پیمایش استفاده کنید. هنگام جاسازی در طرح‌بندی‌های محدود مفید است.",
+    "Demo:FileManagerSmallIcons": "آیکون های کوچک",
+    "Demo:FileManagerSmallIconsDescription": "شبکه متراکم با تصاویر کوچکتر. با موارد بیشتری روی صفحه نمایش مطابقت دارد.",
+    "Menu:FileGallery": "گالری فایل",
+    "MigrateStructureFiles": "انتقال فایل ها به ارائه دهنده فعلی",
+    "MigrateStructureFilesResult": "{0} منتقل شد، {1} رد شد، {2} ناموفق بود.",
+    "Temporary": "موقت",
+    "ViewSource": "مشاهده منبع"
   }
 }

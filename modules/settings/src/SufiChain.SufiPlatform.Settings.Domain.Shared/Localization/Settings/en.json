@@ -77,6 +77,8 @@
     "Feature:SettingsEnable": "Settings",
     "Feature:SettingsEnableDescription": "Allow this edition to manage settings.",
     "Feature:AllowChangingEmailSettings": "Email settings",
-    "Feature:AllowChangingEmailSettingsDescription": "Allow changing email settings."
+    "Feature:AllowChangingEmailSettingsDescription": "Allow changing email settings.",
+  
+    "Actions": "Actions"
   }
 }

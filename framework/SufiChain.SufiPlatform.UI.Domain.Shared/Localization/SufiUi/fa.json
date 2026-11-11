@@ -56,6 +56,12 @@
     "Today": "امروز",
     "Apply": "درخواست دادن",
     "EntityActionsDisabledTooltip": "شما دسترسی به انجام هر گونه عملیات ندارید.",
-    "ResourcePermissions": "مجوزها"
+    "ResourcePermissions": "مجوزها",
+  
+    "AddNew": "افزودن جدید",
+    "CopiedToTheClipboard": "در کلیپ‌بورد کپی شد",
+    "InternetConnectionInfo": "عملیات انجام نشد. اتصال اینترنت در حال حاضر در دسترس نیست.",
+    "NotAssigned": "تخصیص‌نیافته",
+    "ProfilePicture": "تصویر نمایه"
   }
 }

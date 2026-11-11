@@ -24,7 +24,7 @@
     "TenantUpdatedSuccessfully": "Inquilino actualizado correctamente",
     "TenantDeletedSuccessfully": "Inquilino eliminado correctamente",
     "DeleteTenantConfirmation": "¿Está seguro de que desea eliminar el inquilino '{0}'?",
-    "ConnectionStrings": "Connection Strings",
+    "ConnectionStrings": "Cadenas de conexión",
     "ConnectionString": "Cadena de conexión",
     "DatabaseConnectionString": "Cadena de conexión de base de datos",
     "DatabaseConnectionStringDescription": "Dejar vacío para usar la cadena de conexión predeterminada",
@@ -56,6 +56,10 @@
     "Permission:Edit": "Editar",
     "Permission:Delete": "Eliminar",
     "Permission:ManageFeatures": "Administrar características",
-    "Permission:ManageConnectionStrings": "Administrar cadenas de conexión"
+    "Permission:ManageConnectionStrings": "Administrar cadenas de conexión",
+  
+    "Hooshvare:SufiTenants:Diagnostics:DisplayName": "Diagnóstico de inquilinos",
+    "TenantManagementHostOnly": "La administración de inquilinos es solo para anfitriones",
+    "TenantManagementHostOnlyMessage": "Esta página está disponible desde el espacio de trabajo del host, no desde un inquilino."
   }
 }

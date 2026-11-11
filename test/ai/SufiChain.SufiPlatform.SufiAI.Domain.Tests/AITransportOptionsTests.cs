@@ -30,6 +30,15 @@ public class AITransportOptionsTests
             provider.GetRequiredService<IOptions<AITransportOptions>>().Value.GetRequestTimeout());
     }
 
+    [Fact]
+    public void Chat_has_a_short_deadline_when_the_host_sets_no_transport_timeout()
+    {
+        Assert.Equal(TimeSpan.FromSeconds(AITransportOptions.DefaultChatRequestTimeoutSeconds),
+            new AITransportOptions().GetChatRequestTimeout());
+        Assert.Equal(TimeSpan.FromSeconds(45),
+            new AITransportOptions { RequestTimeoutSeconds = 45 }.GetChatRequestTimeout());
+    }
+
     [Theory]
     [InlineData(-1)]
     [InlineData(3601)]

@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using Shouldly;
+using SufiChain.SufiPlatform.SufiAI.Workspaces;
 using Xunit;
 
 namespace SufiChain.SufiPlatform.SufiAI;
@@ -19,7 +20,25 @@ public class ModelConfigurationsListSourceTests
         markup.ShouldContain("unicode-bidi: isolate");
         markup.ShouldContain("text-overflow: ellipsis");
         markup.ShouldContain("title=\"@cellContext.Item.ApiEndpoint\"");
-        markup.ShouldContain("L[\"RouteOwnConnection\"]");
+        markup.ShouldContain("RouteUsesWorkspaceConnection(cellContext.Item) ? L[\"InheritWorkspace\"] : L[\"RouteOwnConnection\"]");
+        Read(Page + ".razor.cs").ShouldContain("WorkspaceConnectionMatcher.UsesWorkspaceConnection");
+    }
+
+    [Fact]
+    public void List_connection_label_uses_the_editor_matcher()
+    {
+        WorkspaceConnectionMatcher.UsesWorkspaceConnection(
+            "https://gateway.example/v1/",
+            routeHasApiKey: false,
+            "https://gateway.example/v1").ShouldBeTrue();
+        WorkspaceConnectionMatcher.UsesWorkspaceConnection(
+            "https://other.example/v1",
+            routeHasApiKey: false,
+            "https://gateway.example/v1").ShouldBeFalse();
+        WorkspaceConnectionMatcher.UsesWorkspaceConnection(
+            "https://gateway.example/v1",
+            routeHasApiKey: true,
+            "https://gateway.example/v1").ShouldBeFalse();
     }
 
     [Fact]

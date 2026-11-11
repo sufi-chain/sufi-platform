@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -12,6 +13,12 @@ namespace SufiChain.SufiPlatform.Settings;
 
 public class SettingsStore : ISettingsStore, ITransientDependency
 {
+    /// <summary>
+    /// One fill at a time per provider. Parallel setting reads (the branding form used to fire one per key)
+    /// otherwise each miss loads and caches the whole catalog before any of them can see the others' writes.
+    /// </summary>
+    private static readonly ConcurrentDictionary<string, SemaphoreSlim> ProviderGates = new();
+
     protected IDistributedCache<SettingCacheItem> Cache { get; }
     protected ISettingDefinitionManager SettingDefinitionManager { get; }
     protected ISettingRepository SettingRepository { get; }
@@ -88,49 +95,40 @@ public class SettingsStore : ISettingsStore, ITransientDependency
             return cacheItem;
         }
 
-        cacheItem = new SettingCacheItem(null);
-
-        await SetCacheItemsAsync(providerName, providerKey, name, cacheItem);
-
-        return cacheItem;
-    }
-
-    private async Task SetCacheItemsAsync(
-        string providerName,
-        string providerKey,
-        string currentName,
-        SettingCacheItem currentCacheItem)
-    {
-        var settingDefinitions = await SettingDefinitionManager.GetAllAsync();
-        var settingsDictionary = (await SettingRepository.GetListAsync(providerName, providerKey))
-            .ToDictionary(s => s.Name, s => s.Value);
-
-        var cacheItems = new List<KeyValuePair<string, SettingCacheItem>>();
-
-        foreach (var settingDefinition in settingDefinitions)
+        var gate = ProviderGate(providerName, providerKey);
+        await gate.WaitAsync();
+        try
         {
-            var settingValue = settingsDictionary.GetOrDefault(settingDefinition.Name);
-
-            cacheItems.Add(
-                new KeyValuePair<string, SettingCacheItem>(
-                    CalculateCacheKey(settingDefinition.Name, providerName, providerKey),
-                    new SettingCacheItem(settingValue)
-                )
-            );
-
-            if (settingDefinition.Name == currentName)
+            cacheItem = await Cache.GetAsync(cacheKey, considerUow: true);
+            if (cacheItem != null)
             {
-                currentCacheItem.Value = settingValue;
+                return cacheItem;
             }
-        }
 
-        await Cache.SetManyAsync(cacheItems, SettingValueCachePolicy.Create(), considerUow: true);
+            // One row and one cache entry. Writing every definition here made the first settings
+            // read (and nine parallel branding reads) pay for the whole catalog.
+            var stored = await SettingRepository.GetListAsync(new[] { name }, providerName, providerKey);
+            var value = stored.Count == 0 ? null : stored[0].Value;
+            cacheItem = new SettingCacheItem(value!);
+            await Cache.SetAsync(cacheKey, cacheItem, SettingValueCachePolicy.Create(), considerUow: true);
+            return cacheItem;
+        }
+        finally
+        {
+            gate.Release();
+        }
     }
+
+    private static SemaphoreSlim ProviderGate(string providerName, string providerKey) =>
+        ProviderGates.GetOrAdd(providerName + "\n" + providerKey, _ => new SemaphoreSlim(1, 1));
 
     [UnitOfWork]
     public async Task<List<SettingValue>> GetListAsync(string[] names, string providerName, string providerKey)
     {
-        Check.NotNullOrEmpty(names, nameof(names));
+        if (names == null || names.Length == 0)
+        {
+            return new List<SettingValue>();
+        }
 
         providerKey = NormalizeProviderKey(providerKey);
 

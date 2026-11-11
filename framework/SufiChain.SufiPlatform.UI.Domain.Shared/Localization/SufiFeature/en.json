@@ -3,6 +3,12 @@
   "texts": {
     "Volo.Feature:010001": "Feature is not enabled: {FeatureName}",
     "Volo.Feature:010002": "Required features are not enabled. All of these features must be enabled: {FeatureNames}",
-    "Volo.Feature:010003": "Required features are not enabled. At least one of these features must be enabled: {FeatureNames}"
+    "Volo.Feature:010003": "Required features are not enabled. At least one of these features must be enabled: {FeatureNames}",
+  
+    "Features": "Features",
+    "NoFeatureFoundMessage": "No features are available.",
+    "Permission:Features": "Feature management",
+    "Permission:Features.ManageHostFeatures": "Manage host features",
+    "Volo.Abp.Features:InvalidFeatureValue": "{0} is not a valid feature value!"
   }
 }

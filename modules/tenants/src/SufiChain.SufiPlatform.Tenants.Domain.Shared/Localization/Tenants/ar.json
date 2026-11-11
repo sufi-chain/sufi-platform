@@ -56,6 +56,10 @@
     "Permission:Edit": "تعديل",
     "Permission:Delete": "حذف",
     "Permission:ManageFeatures": "إدارة الميزات",
-    "Permission:ManageConnectionStrings": "إدارة سلاسل الاتصال"
+    "Permission:ManageConnectionStrings": "إدارة سلاسل الاتصال",
+  
+    "Hooshvare:SufiTenants:Diagnostics:DisplayName": "تشخيص المستأجر",
+    "TenantManagementHostOnly": "إدارة المستأجر هي المضيف فقط",
+    "TenantManagementHostOnlyMessage": "تتوفر هذه الصفحة من مساحة العمل المضيفة، وليس من المستأجر."
   }
 }

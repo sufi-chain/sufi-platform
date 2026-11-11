@@ -57,6 +57,18 @@
     "EmptyValue": "-",
     "HttpMethodPost": "Crear",
     "HttpMethodDelete": "Eliminar",
-    "HttpMethodPatch": "Actualización parcial"
+    "HttpMethodPatch": "Actualización parcial",
+  
+    "Actions": "Acciones",
+    "Administration": "Administración",
+    "All": "Todos",
+    "Close": "Cerrar",
+    "Hooshvare:SufiAudit:Investigator:DisplayName": "Investigador de auditoría",
+    "No": "No",
+    "Refresh": "Actualizar",
+    "Search": "Buscar",
+    "Status": "Estado",
+    "ViewDetails": "Ver detalles",
+    "Yes": "Sí"
   }
 }

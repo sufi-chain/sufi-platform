@@ -9,6 +9,7 @@ using SufiChain.SufiPlatform.SufiAI.Permissions;
 using SufiChain.SufiPlatform.SufiAI.Features;
 using SufiChain.SufiPlatform.SufiAI.Workspaces;
 using SufiChain.SufiPlatform.Application.Dtos;
+using Volo.Abp.Authorization;
 using SufiChain.SufiBlazor.Utilities.DateUtils;
 
 namespace SufiChain.SufiPlatform.SufiAI.Blazor.Pages.AI;
@@ -87,7 +88,7 @@ public partial class UsageAnalytics : AIComponentBase
                     await LoadDataAsync();
                 }
             }
-            catch (Exception exception)
+            catch (Exception exception) when (exception is not AbpAuthorizationException)
             {
                 _workspacesFailed = true;
                 Logger.LogWarning(exception, "AI workspaces could not be loaded.");
@@ -150,7 +151,7 @@ public partial class UsageAnalytics : AIComponentBase
             {
                 _statistics = await AIAppService.GetUsageStatisticsAsync(_selectedWorkspaceId.Value, startDate, endDate);
             }
-            catch (Exception exception)
+            catch (Exception exception) when (exception is not AbpAuthorizationException)
             {
                 _statisticsFailed = true;
                 LoadingStates.TryRemove(LoadingKeys.LoadUsageLogs, out _);
@@ -172,7 +173,7 @@ public partial class UsageAnalytics : AIComponentBase
                 _usageLogs = logs.OrderByDescending(x => x.CreationTime).Take(100).ToList();
                 _logsFailed = false;
             }
-            catch (Exception exception)
+            catch (Exception exception) when (exception is not AbpAuthorizationException)
             {
                 _logsFailed = true;
                 Logger.LogWarning(exception, "AI usage logs could not be loaded.");

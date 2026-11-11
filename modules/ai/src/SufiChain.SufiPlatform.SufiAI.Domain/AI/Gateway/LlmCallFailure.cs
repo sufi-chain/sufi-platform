@@ -1,4 +1,5 @@
 using System.Net.Http;
+using System.Text.RegularExpressions;
 using Volo.Abp;
 
 namespace SufiChain.SufiPlatform.SufiAI;
@@ -108,20 +109,134 @@ public sealed class LlmCallFailure
         return new LlmCallFailure { Exception = exception, IsTransient = false };
     }
 
+    public static string DescribeUsageFailure(Exception exception)
+    {
+        var status = ReadStatus(exception);
+        var reason = ReadProviderMessage(exception);
+        if (!string.IsNullOrWhiteSpace(reason))
+        {
+            return status is int code ? $"HTTP {code}: {reason}" : reason;
+        }
+
+        if (exception is BusinessException business && !string.IsNullOrWhiteSpace(business.Code))
+        {
+            return status is int code ? $"{business.Code} (HTTP {code})" : business.Code;
+        }
+
+        var message = RedactSecrets(exception.Message);
+        if (string.IsNullOrWhiteSpace(message)
+            || LooksSensitive(message)
+            || message.StartsWith("Exception of type '", StringComparison.Ordinal))
+        {
+            return status is int http ? $"HTTP {http}" : exception.GetType().Name;
+        }
+
+        return status is int withStatus ? $"HTTP {withStatus}: {message}" : message;
+    }
+
     public static BusinessException Sanitize(Exception? exception)
     {
+        var status = ReadStatus(exception);
         if (exception is BusinessException business && IsUserSafe(business))
         {
+            if (ProviderFailureKind.IsGenericProviderFailure(business.Code))
+            {
+                var mapped = status is int ? ProviderFailureKind.CodeFor(status) : business.Code!;
+                return CopyProviderFailure(business, mapped, status);
+            }
+
+            if (status is int existing && !HasStatus(business))
+            {
+                business.WithData("StatusCode", existing);
+            }
+
             return business;
         }
 
-        var safe = new BusinessException(AIErrorCodes.ProviderRequestFailed);
-        if (exception is LlmProviderCallException call && call.StatusCode is int status)
+        var safe = new BusinessException(ProviderFailureKind.CodeFor(status));
+        if (status is int code)
         {
-            safe.WithData("StatusCode", status);
+            safe.WithData("StatusCode", code);
+        }
+
+        var reason = ReadProviderMessage(exception);
+        if (!string.IsNullOrWhiteSpace(reason))
+        {
+            safe.WithData("ProviderMessage", reason);
         }
 
         return safe;
+    }
+
+    /// <summary>
+    /// Removes credential material before a provider body is written to a log.
+    /// The usage row and the chat never receive the original text.
+    /// </summary>
+    public static string RedactSecrets(string? value)
+    {
+        if (string.IsNullOrEmpty(value))
+        {
+            return string.Empty;
+        }
+
+        var text = SecretKey.Replace(value, "[redacted]");
+        text = BearerToken.Replace(text, "Bearer [redacted]");
+        return ApiKeyField.Replace(text, "$1[redacted]");
+    }
+
+    private static BusinessException CopyProviderFailure(BusinessException business, string code, int? status)
+    {
+        var copy = new BusinessException(code);
+        if (status is int codeValue)
+        {
+            copy.WithData("StatusCode", codeValue);
+        }
+
+        var reason = ReadProviderMessage(business);
+        if (!string.IsNullOrWhiteSpace(reason))
+        {
+            copy.WithData("ProviderMessage", reason);
+        }
+
+        return copy;
+    }
+
+    private static string? ReadProviderMessage(Exception? exception)
+    {
+        if (exception is not BusinessException business || !business.Data.Contains("ProviderMessage"))
+        {
+            return null;
+        }
+
+        var text = business.Data["ProviderMessage"]?.ToString();
+        if (string.IsNullOrWhiteSpace(text) || LooksSensitive(text))
+        {
+            return null;
+        }
+
+        return text.Length <= 300 ? text : text[..300];
+    }
+
+    private static int? ReadStatus(Exception? exception)
+    {
+        if (exception is LlmProviderCallException call)
+        {
+            return call.StatusCode;
+        }
+
+        if (exception is BusinessException business &&
+            business.Data.Contains("StatusCode") &&
+            int.TryParse(business.Data["StatusCode"]?.ToString(), out var parsed))
+        {
+            return parsed;
+        }
+
+        return null;
+    }
+
+    private static bool HasStatus(BusinessException business)
+    {
+        return business.Data.Contains("StatusCode") && business.Data["StatusCode"] != null;
     }
 
     private static LlmCallFailure FromStatus(
@@ -211,6 +326,20 @@ public sealed class LlmCallFailure
                || text.Contains("sk-", StringComparison.OrdinalIgnoreCase)
                || text.Contains("api key", StringComparison.OrdinalIgnoreCase)
                || text.Contains("apikey", StringComparison.OrdinalIgnoreCase)
+               || text.Contains("api_key", StringComparison.OrdinalIgnoreCase)
+               || text.Contains("bearer ", StringComparison.OrdinalIgnoreCase)
                || text.Contains("stack trace", StringComparison.OrdinalIgnoreCase);
     }
+
+    private static readonly Regex SecretKey = new(
+        @"sk-[A-Za-z0-9_\-]{4,}",
+        RegexOptions.Compiled | RegexOptions.CultureInvariant);
+
+    private static readonly Regex BearerToken = new(
+        @"Bearer\s+\S+",
+        RegexOptions.Compiled | RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
+
+    private static readonly Regex ApiKeyField = new(
+        @"((?:api[_-]?key|authorization)""?\s*[:=]\s*""?)([^""\s,}]+)",
+        RegexOptions.Compiled | RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
 }

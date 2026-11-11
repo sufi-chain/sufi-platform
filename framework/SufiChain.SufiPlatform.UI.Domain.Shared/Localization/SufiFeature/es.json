@@ -3,6 +3,12 @@
   "texts": {
     "Volo.Feature:010001": "La función no está habilitada: {FeatureName}",
     "Volo.Feature:010002": "Las funciones necesarias no están habilitadas. Todas estas funciones deben estar habilitadas: {FeatureNames}",
-    "Volo.Feature:010003": "Las funciones necesarias no están habilitadas. Se debe habilitar al menos una de estas funciones: {FeatureNames}"
+    "Volo.Feature:010003": "Las funciones necesarias no están habilitadas. Se debe habilitar al menos una de estas funciones: {FeatureNames}",
+  
+    "Features": "Características",
+    "NoFeatureFoundMessage": "No hay funciones disponibles.",
+    "Permission:Features": "Gestión de características",
+    "Permission:Features.ManageHostFeatures": "Administrar características del host",
+    "Volo.Abp.Features:InvalidFeatureValue": "¡{0} no es un valor de característica válido!"
   }
 }

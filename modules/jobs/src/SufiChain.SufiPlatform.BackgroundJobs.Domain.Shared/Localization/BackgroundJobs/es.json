@@ -67,6 +67,8 @@
     "Search": "Buscar",
     "Status": "Estado",
     "ViewDetails": "Ver detalles",
-    "Yes": "Sí"
+    "Yes": "Sí",
+  
+    "Hooshvare:SufiJobs:Investigator:DisplayName": "Investigador de empleos"
   }
 }

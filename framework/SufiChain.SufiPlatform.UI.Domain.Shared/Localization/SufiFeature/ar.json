@@ -3,6 +3,12 @@
   "texts": {
     "Volo.Feature:010001": "لم يتم تمكين الميزة: {FeatureName}",
     "Volo.Feature:010002": "الميزات المطلوبة غير ممكّنة. يجب تمكين كل هذه الميزات: {FeatureNames}",
-    "Volo.Feature:010003": "الميزات المطلوبة غير ممكّنة. يجب تمكين واحدة على الأقل من هذه الميزات: {FeatureNames}"
+    "Volo.Feature:010003": "الميزات المطلوبة غير ممكّنة. يجب تمكين واحدة على الأقل من هذه الميزات: {FeatureNames}",
+  
+    "Features": "الميزات",
+    "NoFeatureFoundMessage": "لا توجد ميزات متوفرة.",
+    "Permission:Features": "إدارة الميزات",
+    "Permission:Features.ManageHostFeatures": "إدارة ميزات المضيف",
+    "Volo.Abp.Features:InvalidFeatureValue": "{0} ليست قيمة ميزة صالحة!"
   }
 }

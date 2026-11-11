@@ -1,6 +1,10 @@
 {
   "culture": "ar",
   "texts": {
-    "MaxResultCountExceededExceptionMessage": "لا يمكن أن يكون {0} أكثر من {1}! قم بزيادة{2}. {3} على الخادم للسماح بمزيد من النتائج."
+    "MaxResultCountExceededExceptionMessage": "لا يمكن أن يكون {0} أكثر من {1}! قم بزيادة{2}. {3} على الخادم للسماح بمزيد من النتائج.",
+  
+    "CacheManagement:UnknownCache": "ذاكرة تخزين مؤقت غير معروفة: {0}",
+    "Permission:CacheManagement": "إدارة ذاكرة التخزين المؤقت",
+    "Permission:CacheManagement.Manage": "إدارة عمليات إلغاء ذاكرة التخزين المؤقت"
   }
 }

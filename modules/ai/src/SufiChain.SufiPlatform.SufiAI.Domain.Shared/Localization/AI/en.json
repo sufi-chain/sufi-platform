@@ -11,6 +11,9 @@
     "AI:TextToolCallMarkupStripped": "I could not run that tool call from the model text, so I removed it and continued.",
     "AI:ProviderRequestFailed": "The AI provider could not complete the request (HTTP {StatusCode}). Please try again in a moment.",
     "AI:ProviderRequestFailedBrief": "The AI provider could not complete the request. Please try again in a moment.",
+    "AI:ProviderAuthorizationFailed": "AI provider authorization failed: check the workspace API key.",
+    "AI:ProviderRateLimited": "The AI provider is limiting requests. Wait a moment and try again.",
+    "AI:ProviderUnavailable": "The AI provider is unavailable right now. Try again in a moment.",
     "AI:UnsupportedProvider": "AI provider '{Provider}' is not supported.",
     "AI:ProviderNotSupported": "AI provider '{Provider}' is not registered for workspace '{WorkspaceName}'.",
     "AI:CapabilityNotSupported": "AI provider '{Provider}' does not support {CapabilityType} for workspace '{WorkspaceName}'.",
@@ -618,6 +621,9 @@
     "Hooshvare:SufiAI:WorkspaceReadiness:DisplayName": "Workspace Readiness",
     "AI:IranMcpTokenVerifyUrlRequired": "Token verification is required for Iran MCP, but the verify URL is not set. Set SufiAI.IranMcp.TokenVerifyUrl (or IRAN_MCP_TOKEN_VERIFY_URL).",
     "Settings:SufiAI.IranMcp.TokenVerifyMode": "Iran MCP token verify mode",
-    "Settings:SufiAI.IranMcp.TokenVerifyUrl": "Iran MCP token verify URL"
+    "Settings:SufiAI.IranMcp.TokenVerifyUrl": "Iran MCP token verify URL",
+  
+    "MultiModalTest": "Multimodal test",
+    "[REDACTED]": "System prompt"
   }
 }

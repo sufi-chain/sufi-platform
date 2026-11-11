@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Diagnostics;
+using System.Globalization;
 using System.Reflection;
 using System.Text;
 using Microsoft.Extensions.Localization;
@@ -139,6 +140,20 @@ public class DefaultUserExceptionInformer : IUserExceptionInformer
             return CreateValidationError(exception, remote);
         }
 
+        // The converter localizes AI:ProviderRequestFailed without the Data arguments, and a
+        // business exception is not user-friendly, so the branch below never sees that message.
+        // Fill {StatusCode} from the exception before any later generic fallback.
+        if (!string.IsNullOrEmpty(remote.Message) &&
+            remote.Message.Contains("{StatusCode}", StringComparison.OrdinalIgnoreCase))
+        {
+            var filled = ApplyExceptionData(remote.Message, exception);
+            if (!string.IsNullOrWhiteSpace(filled) &&
+                !filled.Contains("{StatusCode}", StringComparison.OrdinalIgnoreCase))
+            {
+                return new ErrorInfo(filled, _localizer["Error"], remote.Details);
+            }
+        }
+
         if (IsUserFriendlyException(exception))
         {
             var message = FirstNonEmpty(remote.Message, exception.Message);
@@ -147,6 +162,9 @@ public class DefaultUserExceptionInformer : IUserExceptionInformer
                 return CreateGenericError(exception);
             }
 
+            // ABP's converter localizes AI:ProviderRequestFailed without the Data arguments,
+            // so the modal receives the raw "{StatusCode}" token. Fill it from the exception.
+            message = ApplyExceptionData(message, exception);
             return new ErrorInfo(message!, _localizer["Error"], remote.Details);
         }
 
@@ -218,7 +236,7 @@ public class DefaultUserExceptionInformer : IUserExceptionInformer
             }
 
             var details = GetPropertyValue<string>(exception, "Details");
-            return new ErrorInfo(exception.Message, _localizer["Error"], details);
+            return new ErrorInfo(ApplyExceptionData(exception.Message, exception), _localizer["Error"], details);
         }
 
         if (IsBusinessException(exception))
@@ -558,6 +576,45 @@ public class DefaultUserExceptionInformer : IUserExceptionInformer
                 message.EndsWith("' was thrown.", StringComparison.Ordinal));
     }
 
+    private string ApplyExceptionData(string? message, Exception exception)
+    {
+        if (string.IsNullOrEmpty(message))
+        {
+            return message ?? string.Empty;
+        }
+
+        if (IsBusinessException(exception))
+        {
+            var code = (exception as IHasErrorCode)?.Code ?? GetPropertyValue<string>(exception, "Code");
+            var localized = LocalizeErrorCode(code, exception.Data);
+            if (!string.IsNullOrWhiteSpace(localized))
+            {
+                return localized;
+            }
+        }
+
+        return FillStatusCode(message, ReadStatusCode(exception.Data));
+    }
+
+    private static int? ReadStatusCode(IDictionary? data)
+    {
+        if (data == null)
+        {
+            return null;
+        }
+
+        foreach (var key in data.Keys)
+        {
+            if (key?.ToString()?.Equals("StatusCode", StringComparison.OrdinalIgnoreCase) == true &&
+                int.TryParse(Convert.ToString(data[key], CultureInfo.InvariantCulture), NumberStyles.Integer, CultureInfo.InvariantCulture, out var parsed))
+            {
+                return parsed;
+            }
+        }
+
+        return null;
+    }
+
     private string? LocalizeErrorCode(string? errorCode, IDictionary? data)
     {
         if (string.IsNullOrWhiteSpace(errorCode) ||
@@ -583,15 +640,51 @@ public class DefaultUserExceptionInformer : IUserExceptionInformer
         var value = localizedString.Value;
         if (data == null || data.Count == 0)
         {
+            return FillStatusCode(value, statusCode: null);
+        }
+
+        int? statusCode = null;
+        foreach (var key in data.Keys)
+        {
+            var name = key?.ToString();
+            if (string.IsNullOrEmpty(name))
+            {
+                continue;
+            }
+
+            var replacement = Convert.ToString(data[key], CultureInfo.InvariantCulture) ?? string.Empty;
+            value = value.Replace("{" + name + "}", replacement, StringComparison.OrdinalIgnoreCase);
+            if (statusCode is null &&
+                name.Equals("StatusCode", StringComparison.OrdinalIgnoreCase) &&
+                int.TryParse(replacement, NumberStyles.Integer, CultureInfo.InvariantCulture, out var parsed))
+            {
+                statusCode = parsed;
+            }
+        }
+
+        return FillStatusCode(value, statusCode);
+    }
+
+    /// <summary>
+    /// Named localization uses <c>{StatusCode}</c>. Fill it when the exception carries the code,
+    /// and drop the raw token when it does not, so the error modal never shows the placeholder.
+    /// </summary>
+    private static string FillStatusCode(string value, int? statusCode)
+    {
+        if (!value.Contains("{StatusCode}", StringComparison.OrdinalIgnoreCase))
+        {
             return value;
         }
 
-        foreach (var key in data.Keys)
+        if (statusCode is int code)
         {
-            value = value.Replace("{" + key + "}", data[key]?.ToString(), StringComparison.Ordinal);
+            return value.Replace("{StatusCode}", code.ToString(CultureInfo.InvariantCulture), StringComparison.OrdinalIgnoreCase);
         }
 
-        return value;
+        return value
+            .Replace(" (HTTP {StatusCode})", string.Empty, StringComparison.OrdinalIgnoreCase)
+            .Replace("(HTTP {StatusCode})", string.Empty, StringComparison.OrdinalIgnoreCase)
+            .Replace("{StatusCode}", string.Empty, StringComparison.OrdinalIgnoreCase);
     }
 
     /// <summary>

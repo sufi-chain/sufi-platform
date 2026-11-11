@@ -618,6 +618,17 @@
     "Statistics": "الإحصاءات",
     "Images": "الصور",
     "Videos": "مقاطع الفيديو",
-    "Permission:FileManagerArchivingSettings": "إعدادات أرشفة الملفات"
+    "Permission:FileManagerArchivingSettings": "إعدادات أرشفة الملفات",
+  
+    "AIProcessedAudio": "تمت معالجة هذا الملف الصوتي بواسطة AI Infrastructure",
+    "AIProcessedImage": "تمت معالجة هذه الصورة بواسطة AI Infrastructure",
+    "MigrateStructureFiles": "ترحيل الملفات إلى المزود الحالي",
+    "MigrateStructureFilesResult": "تم ترحيل {0}، وتم تخطي {1}، وفشل {2}.",
+    "OperationFailed": "لا يمكن إكمال عملية الملف.",
+    "RevokeShareLinks": "إبطال الروابط",
+    "ShareLinksRevoked": "تم إبطال كافة روابط المشاركة لهذا الملف",
+    "StorageConnectionFailed": "فشل اختبار اتصال التخزين.",
+    "Temporary": "مؤقت",
+    "ViewSource": "عرض المصدر"
   }
 }

@@ -32,7 +32,7 @@ public class HooshvareRuntimeProviderErrorTests
             PersistChatSession = false
         }));
 
-        error.Code.ShouldBe(AIErrorCodes.ProviderRequestFailed);
+        error.Code.ShouldBe(AIErrorCodes.ProviderRequestFailedBrief);
         error.InnerException.ShouldBeNull();
         error.Message.ShouldNotContain("https://");
         error.Message.ShouldNotContain("sk-live");
@@ -43,6 +43,34 @@ public class HooshvareRuntimeProviderErrorTests
             entry.Value?.ToString().ShouldNotContain("https://");
             entry.Value?.ToString().ShouldNotContain("sk-live");
         }
+    }
+
+    [Theory]
+    [InlineData(401, "AI:ProviderAuthorizationFailed")]
+    [InlineData(403, "AI:ProviderAuthorizationFailed")]
+    [InlineData(429, "AI:ProviderRateLimited")]
+    [InlineData(503, "AI:ProviderUnavailable")]
+    public void Provider_status_classes_replace_the_generic_failure(int status, string code)
+    {
+        var error = HooshvareProviderErrorSanitizer.Sanitize(
+            new BusinessException(AIErrorCodes.ProviderRequestFailed)
+                .WithData("StatusCode", status)
+                .WithData("ProviderMessage", "sk-live-secretvalue"));
+
+        error.Code.ShouldBe(code);
+        error.Data["StatusCode"].ShouldBe(status);
+        error.Data.Contains("ProviderMessage").ShouldBeFalse();
+        error.ToString().ShouldNotContain("sk-live");
+    }
+
+    [Fact]
+    public void A_client_error_keeps_the_status_placeholder_code()
+    {
+        var error = HooshvareProviderErrorSanitizer.Sanitize(
+            new BusinessException(AIErrorCodes.ProviderRequestFailed).WithData("StatusCode", 400));
+
+        error.Code.ShouldBe(AIErrorCodes.ProviderRequestFailed);
+        error.Data["StatusCode"].ShouldBe(400);
     }
 
     [Fact]

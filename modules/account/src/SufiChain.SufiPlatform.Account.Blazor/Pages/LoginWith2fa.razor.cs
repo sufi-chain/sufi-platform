@@ -75,23 +75,9 @@ public partial class LoginWith2fa
 
     protected override async Task OnInitializedAsync()
     {
-        UseInteractiveFlow = !string.IsNullOrWhiteSpace(PendingToken) && PendingLoginStore.IsSupported;
-
-        if (UseInteractiveFlow)
+        if (await MissingTwoFactorSessionAsync())
         {
-            var pending = await PendingLoginStore.GetAsync(PendingToken!);
-            if (pending == null)
-            {
-                ErrorMessage = AccountL["TwoFactorSessionExpired"];
-                return;
-            }
-
-            RememberMe = pending.Value.rememberMe;
-            ReturnUrl ??= pending.Value.returnUrl;
-        }
-        else if (await SignInManager.GetTwoFactorAuthenticationUserAsync() == null)
-        {
-            ErrorMessage = AccountL["TwoFactorSessionExpired"];
+            Navigation.NavigateTo(LoginWith2faEntry.LoginLocation(ReturnUrl), forceLoad: true);
             return;
         }
 
@@ -105,6 +91,33 @@ public partial class LoginWith2fa
         {
             SelectedCodeChannel = Options.AvailableCodeChannels.FirstOrDefault();
             SelectedProvider = GetProviderForChannel(SelectedCodeChannel);
+        }
+    }
+
+    private async Task<bool> MissingTwoFactorSessionAsync()
+    {
+        if (!string.IsNullOrWhiteSpace(PendingToken) && PendingLoginStore.IsSupported)
+        {
+            var pending = await PendingLoginStore.GetAsync(PendingToken!);
+            if (pending == null)
+            {
+                return true;
+            }
+
+            UseInteractiveFlow = true;
+            RememberMe = pending.Value.rememberMe;
+            ReturnUrl ??= pending.Value.returnUrl;
+            return false;
+        }
+
+        try
+        {
+            return await SignInManager.GetTwoFactorAuthenticationUserAsync() == null;
+        }
+        catch (Exception ex)
+        {
+            Logger.LogDebug(ex, "Two-factor session could not be read.");
+            return true;
         }
     }
 
