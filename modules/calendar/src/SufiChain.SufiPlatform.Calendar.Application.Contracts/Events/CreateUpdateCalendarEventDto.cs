@@ -20,9 +20,8 @@ public class CreateUpdateCalendarEventDto : IValidatableObject
 
     public bool IsAllDay { get; set; }
 
-    [Required]
     [StringLength(EventConsts.MaxTimeZoneIdLength)]
-    public string TimeZoneId { get; set; } = string.Empty;
+    public string? TimeZoneId { get; set; }
 
     [StringLength(EventConsts.MaxLocationLength)]
     public string? Location { get; set; }

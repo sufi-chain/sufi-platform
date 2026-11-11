@@ -122,6 +122,7 @@
     "OpenCalendar": "باز کردن تقویم",
     "VisibleCalendarsOnly": "فقط تقویم‌های قابل مشاهده برای شما نمایش داده می‌شود.",
     "AddReminder": "افزودن یادآور",
+    "CalendarActionFailed": "این کار انجام نشد.",
     "UserId": "شناسه کاربر",
     "OrganizationUnitId": "شناسه واحد سازمانی",
     "TenantId": "شناسه مستأجر",

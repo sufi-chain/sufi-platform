@@ -1,5 +1,6 @@
-using Volo.Abp;
+using SufiChain.SufiPlatform.Calendar;
 using SufiChain.SufiPlatform.Calendar.Events;
+using Volo.Abp;
 using Volo.Abp.DependencyInjection;
 
 namespace SufiChain.SufiPlatform.Calendar.Scheduling;
@@ -26,7 +27,7 @@ public class RecurrenceCalculator : ITransientDependency
     private static IReadOnlyList<EventOccurrence> ExpandRecurring(CalendarEvent calendarEvent, DateTime windowStartUtc, DateTime windowEndUtc)
     {
         var rule = calendarEvent.RecurrenceRule!;
-        var timeZone = TimeZoneInfo.FindSystemTimeZoneById(calendarEvent.TimeZoneId);
+        var timeZone = CalendarTimeZoneResolver.Resolve(calendarEvent.TimeZoneId, "UTC");
         var duration = calendarEvent.EndUtc - calendarEvent.StartUtc;
         var firstLocalStart = TimeZoneInfo.ConvertTimeFromUtc(calendarEvent.StartUtc, timeZone);
         var occurrences = new List<EventOccurrence>();

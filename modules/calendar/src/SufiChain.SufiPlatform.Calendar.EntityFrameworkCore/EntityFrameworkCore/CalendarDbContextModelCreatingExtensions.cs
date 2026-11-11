@@ -145,6 +145,11 @@ public static class CalendarDbContextModelCreatingExtensions
             b.ConfigureByConvention();
 
             b.Property(x => x.Channel).HasConversion<string>().HasMaxLength(32);
+            // SQL Server `time` is 00:00:00 through 23:59:59. A reminder is a negative offset
+            // (15 minutes before is -00:15:00) and may be up to 30 days, so store ticks.
+            b.Property(x => x.Offset)
+                .HasConversion(value => value.Ticks, ticks => TimeSpan.FromTicks(ticks))
+                .HasColumnType("bigint");
             b.HasIndex(x => x.EventId);
             b.HasIndex(x => x.AttendeeId);
             b.HasIndex(x => x.SentAtUtc);

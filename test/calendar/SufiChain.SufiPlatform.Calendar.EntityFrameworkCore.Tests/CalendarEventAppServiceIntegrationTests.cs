@@ -1,11 +1,13 @@
 using System.Globalization;
 using System.Security.Claims;
+using Microsoft.EntityFrameworkCore;
 using Shouldly;
 using SufiChain.SufiPlatform.Calendar.Calendars;
 using SufiChain.SufiPlatform.Calendar.Events;
 using Volo.Abp;
 using Volo.Abp.Authorization;
 using Volo.Abp.Data;
+using Volo.Abp.EntityFrameworkCore;
 using Volo.Abp.Security.Claims;
 using Volo.Abp.Validation;
 using Xunit;
@@ -178,6 +180,69 @@ public class CalendarEventAppServiceIntegrationTests : CalendarEntityFrameworkCo
             list.TotalCount.ShouldBe(1);
             list.Items.Single().CalendarId.ShouldBe(calendarA);
         }
+    }
+
+    [Theory]
+    [InlineData(-15)]
+    [InlineData(-10)]
+    [InlineData(-10 * 24 * 60)]
+    public async Task In_App_Reminder_Round_Trips_A_Negative_Offset(int minutes)
+    {
+        var calendarId = await CreateCalendarAsync();
+        var service = GetRequiredService<ICalendarEventAppService>();
+        var created = await service.CreateAsync(NewEvent(calendarId));
+        var offset = TimeSpan.FromMinutes(minutes);
+
+        var updated = await service.AddReminderAsync(created.Id, new CreateEventReminderDto
+        {
+            Offset = offset,
+            Channel = ReminderChannel.InApp
+        });
+
+        updated.Reminders.Single().Channel.ShouldBe(ReminderChannel.InApp);
+        updated.Reminders.Single().Offset.ShouldBe(offset);
+        await WithUnitOfWorkAsync(async () =>
+        {
+            var saved = await GetRequiredService<ICalendarEventRepository>().GetAsync(created.Id);
+            saved.Reminders.Single().Offset.ShouldBe(offset);
+            saved.Reminders.Single().Channel.ShouldBe(ReminderChannel.InApp);
+        });
+    }
+
+    [Fact]
+    public async Task Reminder_Offset_Column_Stores_Ticks()
+    {
+        await WithUnitOfWorkAsync(async () =>
+        {
+            var db = await GetRequiredService<IDbContextProvider<CalendarDbContext>>().GetDbContextAsync();
+            var property = db.Model.FindEntityType(typeof(EventReminder))!
+                .FindProperty(nameof(EventReminder.Offset))!;
+            property.GetColumnType().ShouldBe("bigint");
+        });
+    }
+
+    [Theory]
+    [InlineData("")]
+    [InlineData("   ")]
+    [InlineData("Not/AZone")]
+    [InlineData("Unspecified")]
+    public async Task Empty_Time_Zone_Falls_Back_To_Utc_When_The_Timing_Setting_Is_Unset(string requested)
+    {
+        var calendarId = await CreateCalendarAsync();
+        var input = NewEvent(calendarId);
+        input.TimeZoneId = requested;
+        var created = await GetRequiredService<ICalendarEventAppService>().CreateAsync(input);
+        created.TimeZoneId.ShouldBe(CalendarTimeZoneResolver.TryFind("UTC")!.Id);
+    }
+
+    [Fact]
+    public async Task Slot_Query_Utc_Is_Kept()
+    {
+        var calendarId = await CreateCalendarAsync();
+        var input = NewEvent(calendarId);
+        input.TimeZoneId = "UTC";
+        var created = await GetRequiredService<ICalendarEventAppService>().CreateAsync(input);
+        created.TimeZoneId.ShouldBe(CalendarTimeZoneResolver.TryFind("UTC")!.Id);
     }
 
     private async Task<Guid> CreateCalendarAsync(Guid? ownerUserId = null)

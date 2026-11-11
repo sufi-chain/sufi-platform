@@ -6,7 +6,9 @@ using Volo.Abp.Authorization;
 using Volo.Abp.Validation;
 using SufiChain.SufiPlatform.Application.Dtos;
 using SufiChain.SufiPlatform.Application.Services;
+using SufiChain.SufiPlatform.Calendar;
 using SufiChain.SufiPlatform.Calendar.Calendars;
+using Volo.Abp.Settings;
 using SufiChain.SufiPlatform.Calendar.Localization;
 using SufiChain.SufiPlatform.Calendar.Permissions;
 using SufiChain.SufiPlatform.Calendar.Scheduling;
@@ -74,6 +76,7 @@ public class CalendarEventAppService : SufiApplicationService, ICalendarEventApp
     {
         await CheckPolicyAsync(CalendarPermissions.Events.Create);
         EnsureTimeRange(input);
+        input.TimeZoneId = await ResolveTimeZoneIdAsync(input.TimeZoneId);
         await EnsureCanSeeCalendarAsync(input.CalendarId);
 
         var calendarEvent = new CalendarEvent(
@@ -109,6 +112,7 @@ public class CalendarEventAppService : SufiApplicationService, ICalendarEventApp
     {
         await CheckPolicyAsync(CalendarPermissions.Events.Update);
         EnsureTimeRange(input);
+        input.TimeZoneId = await ResolveTimeZoneIdAsync(input.TimeZoneId);
 
         var calendarEvent = await _eventRepository.GetAsync(id, includeDetails: true);
         await EnsureCanSeeCalendarAsync(calendarEvent.CalendarId);
@@ -354,6 +358,22 @@ public class CalendarEventAppService : SufiApplicationService, ICalendarEventApp
     {
         var visibleCalendarIds = await GetVisibleCalendarIdsAsync();
         return query.Where(x => visibleCalendarIds.Contains(x.CalendarId));
+    }
+
+    /// <summary>
+    /// An empty or unknown zone uses <see cref="CalendarTiming.SettingName"/> for the current user or tenant, then UTC.
+    /// A zone the host understands, including the slot query value UTC, is kept.
+    /// </summary>
+    protected virtual async Task<string> ResolveTimeZoneIdAsync(string? requested)
+    {
+        string? configured = null;
+        var settings = LazyServiceProvider.LazyGetService<ISettingProvider>();
+        if (settings != null)
+        {
+            configured = await settings.GetOrNullAsync(CalendarTiming.SettingName);
+        }
+
+        return CalendarTiming.ResolveId(requested, configured);
     }
 
     /// <summary>

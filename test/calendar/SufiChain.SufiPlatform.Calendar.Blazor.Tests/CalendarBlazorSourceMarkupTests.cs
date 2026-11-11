@@ -74,8 +74,12 @@ public class CalendarBlazorSourceMarkupTests
     {
         var code = Read(EventEditorCode);
 
-        code.ShouldContain("CalendarTimeZoneResolver.Resolve(_model.TimeZoneId, TimeZoneId)");
+        code.ShouldContain("CalendarTiming.ResolveId(KnownZone(_model.TimeZoneId, TimeZoneId), _configuredTimeZoneId)");
+        code.ShouldContain("CalendarTiming.SettingName");
         code.ShouldNotContain("TimeZoneInfo.FindSystemTimeZoneById");
+        Read(EventEditor).ShouldContain("<ErrorBoundary");
+        Read(EventEditor).ShouldContain("CalendarEditorFaultNotice");
+        code.ShouldContain("Notify.ErrorAsync(L[\"CalendarActionFailed\"])");
     }
 
     [Fact]
