@@ -57,7 +57,9 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IPageToolbarManager, DefaultPageToolbarManager>();
 
         // Layout
-        services.AddScoped<IPageLayout, DefaultPageLayout>();
+        services.AddScoped<DefaultPageLayout>();
+        services.AddScoped<IPageLayout>(sp => sp.GetRequiredService<DefaultPageLayout>());
+        services.AddScoped<IPageLayoutNavigation>(sp => sp.GetRequiredService<DefaultPageLayout>());
         services.AddScoped<IBreadcrumbService, DefaultBreadcrumbService>();
 
         // Alerts

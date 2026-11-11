@@ -9,16 +9,47 @@ namespace SufiChain.SufiPlatform.UI.Services.Layout;
 /// <summary>
 /// Default implementation of IPageLayout.
 /// </summary>
-public class DefaultPageLayout : IPageLayout
+public class DefaultPageLayout : IPageLayout, IPageLayoutNavigation
 {
     private string? _title;
     private string? _subtitle;
     private object? _toolbarContent;
+    private int _navigationGeneration;
+    private bool _navigationOpen;
+    private bool _suppressStamp;
+    private int _titleGeneration = int.MinValue;
+    private int _subtitleGeneration = int.MinValue;
+    private int _toolbarGeneration = int.MinValue;
+    private int _breadcrumbGeneration = int.MinValue;
 
     public DefaultPageLayout()
     {
         // Let the layout re-render when a page adds or replaces breadcrumbs after the first render.
-        BreadcrumbItems.CollectionChanged += (_, _) => OnPropertyChanged(nameof(BreadcrumbItems));
+        BreadcrumbItems.CollectionChanged += (_, _) =>
+        {
+            if (!_suppressStamp)
+            {
+                _breadcrumbGeneration = _navigationGeneration;
+            }
+
+            OnPropertyChanged(nameof(BreadcrumbItems));
+        };
+        ToolbarItems.CollectionChanged += (_, _) =>
+        {
+            if (!_suppressStamp)
+            {
+                _toolbarGeneration = _navigationGeneration;
+            }
+
+            OnPropertyChanged(nameof(ToolbarItems));
+        };
+    }
+
+    /// <inheritdoc/>
+    public void BeginNavigation()
+    {
+        _navigationGeneration++;
+        _navigationOpen = true;
     }
 
     /// <inheritdoc/>
@@ -27,6 +58,11 @@ public class DefaultPageLayout : IPageLayout
         get => _title;
         set
         {
+            if (!_suppressStamp)
+            {
+                _titleGeneration = _navigationGeneration;
+            }
+
             if (string.Equals(_title, value, StringComparison.Ordinal))
             {
                 return;
@@ -43,6 +79,11 @@ public class DefaultPageLayout : IPageLayout
         get => _subtitle;
         set
         {
+            if (!_suppressStamp)
+            {
+                _subtitleGeneration = _navigationGeneration;
+            }
+
             if (string.Equals(_subtitle, value, StringComparison.Ordinal))
             {
                 return;
@@ -65,6 +106,11 @@ public class DefaultPageLayout : IPageLayout
         get => _toolbarContent;
         set
         {
+            if (!_suppressStamp)
+            {
+                _toolbarGeneration = _navigationGeneration;
+            }
+
             // Always notify. Razor ChildContent is often the same delegate across parent
             // renders, while Disabled/Loading inside that fragment already changed.
             // Skipping a same-instance assign leaves the top bar on the first button state.
@@ -87,12 +133,45 @@ public class DefaultPageLayout : IPageLayout
     /// <inheritdoc/>
     public void Reset()
     {
-        //Console.WriteLine("[DefaultPageLayout] Reset() called");
-        Title = null;
-        Subtitle = null;
-        ToolbarContent = null;
-        BreadcrumbItems.Clear();
-        ToolbarItems.Clear();
-        //Console.WriteLine("[DefaultPageLayout] Reset() complete");
+        // The router renders the next page before the layout handles LocationChanged.
+        // Content stamped for the open navigation is the incoming page and must survive.
+        // A Reset with no open navigation still clears everything (explicit reset, tests).
+        var keepGeneration = _navigationOpen ? _navigationGeneration : int.MinValue;
+        _navigationOpen = false;
+        _suppressStamp = true;
+        try
+        {
+            if (_titleGeneration != keepGeneration)
+            {
+                _title = null;
+                _titleGeneration = int.MinValue;
+                OnPropertyChanged(nameof(Title));
+            }
+
+            if (_subtitleGeneration != keepGeneration)
+            {
+                _subtitle = null;
+                _subtitleGeneration = int.MinValue;
+                OnPropertyChanged(nameof(Subtitle));
+            }
+
+            if (_toolbarGeneration != keepGeneration)
+            {
+                _toolbarContent = null;
+                ToolbarItems.Clear();
+                _toolbarGeneration = int.MinValue;
+                OnPropertyChanged(nameof(ToolbarContent));
+            }
+
+            if (_breadcrumbGeneration != keepGeneration)
+            {
+                BreadcrumbItems.Clear();
+                _breadcrumbGeneration = int.MinValue;
+            }
+        }
+        finally
+        {
+            _suppressStamp = false;
+        }
     }
 }
