@@ -18,6 +18,7 @@ using Volo.Abp.DistributedLocking;
 using Volo.Abp.MultiTenancy;
 using Volo.Abp.Security.Encryption;
 using Volo.Abp.Timing;
+using Volo.Abp.Uow;
 using Xunit;
 using IdentityUser = SufiChain.SufiPlatform.Identity.IdentityUser;
 
@@ -116,7 +117,8 @@ public class TenantProvisioningSafeDefaultsTests
             Substitute.For<IClock>(),
             new ConfigurationBuilder().Build(),
             NullLogger<TenantProvisioningJob>.Instance,
-            settings);
+            settings,
+            Substitute.For<IUnitOfWorkManager>());
     }
 
     private sealed class ExposedTenantProvisioningJob : TenantProvisioningJob
@@ -142,7 +144,8 @@ public class TenantProvisioningSafeDefaultsTests
             IClock clock,
             IConfiguration configuration,
             Microsoft.Extensions.Logging.ILogger<TenantProvisioningJob> logger,
-            ISettingManager settingManager)
+            ISettingManager settingManager,
+            IUnitOfWorkManager unitOfWorkManager)
             : base(
                 tenantRequestRepository,
                 planRepository,
@@ -164,7 +167,8 @@ public class TenantProvisioningSafeDefaultsTests
                 clock,
                 configuration,
                 logger,
-                settingManager)
+                settingManager,
+                unitOfWorkManager)
         {
         }
 
@@ -176,6 +180,9 @@ public class TenantProvisioningSafeDefaultsTests
 
         public void ExposeSetUnifiedTenantConnectionStrings(Tenant tenant) =>
             SetUnifiedTenantConnectionStrings(tenant);
+
+        public Task<Tenant> ExposeEnsureTenantAsync(TenantRequest request, Guid editionId) =>
+            EnsureTenantAsync(request, editionId);
     }
 
     [Fact]
@@ -194,6 +201,56 @@ public class TenantProvisioningSafeDefaultsTests
         tenant.FindConnectionString("SufiHelpDeskLiveChat").ShouldBeNull();
         tenant.FindConnectionString("SufiAI").ShouldBeNull();
         tenant.ConnectionStrings.Count.ShouldBe(1);
+    }
+
+    [Fact]
+    public async Task Retry_adopts_an_existing_tenant_instead_of_creating_another()
+    {
+        var tenants = Substitute.For<ITenantRepository>();
+        var manager = Substitute.For<ITenantManager>();
+        var databases = Substitute.For<ITenantDatabaseProvisioner>();
+        databases.CreateDatabaseAsync(Arg.Any<string>()).Returns("Server=127.0.0.1;Database=adopted");
+        var existing = CreateTenant(Guid.NewGuid(), "acme", "ACME");
+        existing.SetDatabaseName("SufiClient_acme");
+        typeof(Tenant).GetProperty(nameof(Tenant.PrimarySubdomain))!
+            .SetValue(existing, "acme");
+        tenants.FindByPrimarySubdomainAsync("acme").Returns(existing);
+
+        var request = new TenantRequest(Guid.NewGuid(), Guid.NewGuid(), "acme", Guid.NewGuid(), "acme");
+        request.SetApprovedRouting("acme", null);
+        var job = new ExposedTenantProvisioningJob(
+            Substitute.For<ITenantRequestRepository>(),
+            Substitute.For<IPlanRepository>(),
+            Substitute.For<ISubscriptionRepository>(),
+            tenants,
+            manager,
+            databases,
+            new TenantDatabaseNameGenerator(Options.Create(new SufiSaasTenantDatabaseOptions())),
+            Substitute.For<IIdentityDataSeeder>(),
+            Substitute.For<IdentityLinkUserManager>(
+                Substitute.For<IIdentityLinkUserRepository>(),
+                null!,
+                Substitute.For<ICurrentTenant>()),
+            null!,
+            Array.Empty<Microsoft.AspNetCore.Identity.IPasswordValidator<IdentityUser>>(),
+            Options.Create(new Microsoft.AspNetCore.Identity.IdentityOptions()),
+            Substitute.For<ISubscriptionBillingGateway>(),
+            Substitute.For<ITenantProvisioningNotificationService>(),
+            Substitute.For<IStringEncryptionService>(),
+            Substitute.For<IAbpDistributedLock>(),
+            Substitute.For<ICurrentTenant>(),
+            Substitute.For<IClock>(),
+            new ConfigurationBuilder().Build(),
+            NullLogger<TenantProvisioningJob>.Instance,
+            Substitute.For<ISettingManager>(),
+            Substitute.For<IUnitOfWorkManager>());
+
+        var adopted = await job.ExposeEnsureTenantAsync(request, Guid.NewGuid());
+
+        adopted.Id.ShouldBe(existing.Id);
+        request.ProvisionedTenantId.ShouldBe(existing.Id);
+        request.DatabaseName.ShouldBe("SufiClient_acme");
+        await manager.DidNotReceive().CreateAsync(Arg.Any<string>());
     }
 
     private static Tenant CreateTenant(Guid id, string name, string normalizedName)
