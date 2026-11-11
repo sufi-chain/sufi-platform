@@ -9,10 +9,12 @@
                     <SbTextField @bind-Value="_model.Name"
                                  Label="@L["TagName"]"
                                  Required="true" />
+                    <SbFieldError For="@(() => _model.Name)" />
 
                     <SbTextField @bind-Value="_model.Scope"
                                  Label="@L["Scope"]"
                                  Required="true" />
+                    <SbFieldError For="@(() => _model.Scope)" />
 
                     <SbColorPicker @bind-Value="_model.Color"
                                    Label="@L["Color"]" />

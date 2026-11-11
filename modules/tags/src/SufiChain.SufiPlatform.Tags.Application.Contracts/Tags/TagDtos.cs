@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations;
 using SufiChain.SufiPlatform.Application.Dtos;
 
 namespace SufiChain.SufiPlatform.Tags.Tags;
@@ -11,15 +12,27 @@ public class TagDto : FullAuditedEntityDto<Guid>
 
 public class CreateTagDto
 {
+    [Required]
+    [StringLength(TagConsts.MaxNameLength, MinimumLength = 1)]
     public string Name { get; set; } = string.Empty;
+
+    [Required]
+    [StringLength(TagScopeConsts.MaxScopeLength, MinimumLength = 1)]
     public string Scope { get; set; } = string.Empty;
+
     public string? Color { get; set; }
 }
 
 public class UpdateTagDto
 {
+    [Required]
+    [StringLength(TagConsts.MaxNameLength, MinimumLength = 1)]
     public string Name { get; set; } = string.Empty;
+
+    [Required]
+    [StringLength(TagScopeConsts.MaxScopeLength, MinimumLength = 1)]
     public string Scope { get; set; } = string.Empty;
+
     public string? Color { get; set; }
 }
 
