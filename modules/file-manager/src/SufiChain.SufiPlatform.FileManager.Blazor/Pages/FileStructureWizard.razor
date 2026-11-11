@@ -34,9 +34,16 @@
 					</SbStep>
 					<SbStep Label="@L["CreateWizard:Identity"]" Description="@L["CreateWizard:IdentityDescription"]">
 						<SbStack Gap="4" Class="p-4">
-							@if (_wizardStep == 1)
+							@if (_wizardStep == 1 && _identityErrors.Count > 0)
 							{
-								<SbValidationSummary />
+								<div class="sb-validation-summary" role="alert">
+									<ul class="sb-validation-summary__list">
+										@foreach (var error in _identityErrors)
+										{
+											<li>@error</li>
+										}
+									</ul>
+								</div>
 							}
 							<SbFormField Label="@L["Key"]" Required Class="flex-1">
 								<SbTextField @bind-Value="@_editModel.Key" Placeholder="@L["KeyPlaceholder"]" Disabled="@(!IsCreate)" />

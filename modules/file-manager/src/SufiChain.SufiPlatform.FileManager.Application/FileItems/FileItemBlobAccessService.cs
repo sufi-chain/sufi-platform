@@ -144,7 +144,8 @@ public class FileItemBlobAccessService
 
         if (isS3 && entry is { IsPublicAccess: false } && !string.IsNullOrWhiteSpace(entry.BaseUrl))
         {
-            var validity = TimeSpan.FromMinutes(Math.Clamp(durationMinutes, 1, 10080));
+            FileShareDuration.Ensure(durationMinutes);
+            var validity = TimeSpan.FromMinutes(durationMinutes);
             var containerName = GetContainerName(fileItem.StructureKey);
             var presignedUrl = await _s3PresignedUrlProvider.GetPresignedDownloadUrlAsync(
                 containerName, fileItem.BlobName, fileItem.TenantId, validity);

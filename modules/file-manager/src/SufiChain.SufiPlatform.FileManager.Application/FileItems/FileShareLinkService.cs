@@ -42,11 +42,11 @@ public class FileShareLinkService : ITransientDependency
 
     public virtual string CreateUrl(FileItem fileItem, int durationMinutes)
     {
-        var minutes = Math.Clamp(durationMinutes, 1, 10080);
+        FileShareDuration.Ensure(durationMinutes);
         var token = FileShareTokens.Create(GetSecret(), new FileShareTokens.Payload(
             fileItem.Id,
             fileItem.TenantId,
-            DateTimeOffset.UtcNow.AddMinutes(minutes),
+            DateTimeOffset.UtcNow.AddMinutes(durationMinutes),
             GetVersion(fileItem)));
         var baseUrl = (_options.BaseUrl ?? "/").TrimEnd('/');
         return $"{baseUrl}/s/{token}";

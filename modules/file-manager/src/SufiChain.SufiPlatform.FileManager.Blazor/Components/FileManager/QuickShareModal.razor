@@ -1,3 +1,4 @@
+@using SufiChain.SufiPlatform.FileManager.FileItems
 @inject IFileItemAppService FileItemAppService
 @inject FileManagerJsInterop JsInterop
 @inherits FileManagerComponentBase
@@ -24,8 +25,13 @@
         </SbFormField>
         @if (_useCustom)
         {
-            <SbFormField Label="@L["ExpirationCustom"]">
-                <SbTextField TValue="int" Type="number" @bind-Value="_customMinutes" Placeholder="1-10080" />
+            <SbFormField Label="@L["ExpirationCustom"]" ErrorText="@CustomExpiryError">
+                <SbTextField TValue="int"
+                             Type="number"
+                             @bind-Value="_customMinutes"
+                             min="@FileShareExpiry.MinMinutes"
+                             max="@FileShareExpiry.MaxMinutes"
+                             Placeholder="@($"{FileShareExpiry.MinMinutes}-{FileShareExpiry.MaxMinutes}")" />
             </SbFormField>
         }
         @if (!string.IsNullOrEmpty(_generatedUrl))
@@ -62,7 +68,7 @@
                 <SbButton Color="SbColor.Danger" Variant="SbButtonVariant.Outline" OnClick="@RevokeLinks" Disabled="@_loading">@L["RevokeShareLinks"]</SbButton>
             }
             <SbButton Color="SbColor.Default" OnClick="@Close">@L["Cancel"]</SbButton>
-            <SbButton Color="SbColor.Primary" OnClick="@CreateLink" Disabled="@_loading">
+            <SbButton Color="SbColor.Primary" OnClick="@CreateLink" Disabled="@CreateDisabled">
                 @(_loading ? L["Loading"] + "..." : L["CreateLink"])</SbButton>
         </SbStack>
     </Footer>
@@ -84,7 +90,7 @@
         (360, "Expiration6Hours"),
         (1440, "Expiration1Day"),
         (4320, "Expiration3Days"),
-        (10080, "Expiration7Days")
+        (FileShareExpiry.MaxMinutes, "Expiration7Days")
     };
 
     protected override void OnParametersSet()
@@ -104,11 +110,17 @@
         _useCustom = false;
     }
 
+    private string? CustomExpiryError =>
+        _useCustom && !FileShareExpiry.IsInRange(_customMinutes)
+            ? L["ExpirationCustomRange", FileShareExpiry.MinMinutes, FileShareExpiry.MaxMinutes]
+            : null;
+
+    private bool CreateDisabled => _loading || (_useCustom && !FileShareExpiry.IsInRange(_customMinutes));
+
     private async Task CreateLink()
     {
-        if (!FileId.HasValue) return;
+        if (!FileId.HasValue || CreateDisabled) return;
         var minutes = _useCustom ? _customMinutes : _durationMinutes;
-        minutes = Math.Clamp(minutes, 1, 10080);
         _loading = true;
         StateHasChanged();
         try

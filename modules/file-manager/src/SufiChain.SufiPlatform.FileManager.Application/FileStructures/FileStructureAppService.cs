@@ -34,6 +34,7 @@ public class FileStructureAppService :
     private readonly IStructureStorageConfigEncryption _storageConfigEncryption;
     private readonly IFileFolderRepository _folderRepository;
     private readonly IDistributedCache<StructureCacheItem> _structureCache;
+    private readonly StructureRootFolderCleanup _structureRootCleanup;
 
     public FileStructureAppService(
         IFileStructureRepository structureRepository,
@@ -41,7 +42,8 @@ public class FileStructureAppService :
         IGuidGenerator guidGenerator,
         IStructureStorageConfigEncryption storageConfigEncryption,
         IFileFolderRepository folderRepository,
-        IDistributedCache<StructureCacheItem> structureCache)
+        IDistributedCache<StructureCacheItem> structureCache,
+        StructureRootFolderCleanup structureRootCleanup)
         : base(structureRepository)
     {
         LocalizationResource = typeof(SufiFileManagerResource);
@@ -51,6 +53,7 @@ public class FileStructureAppService :
         _storageConfigEncryption = storageConfigEncryption;
         _folderRepository = folderRepository;
         _structureCache = structureCache;
+        _structureRootCleanup = structureRootCleanup;
         
         //GetPolicyName = FileManagerPermissions.FileStructures.Default;
         //GetListPolicyName = FileManagerPermissions.FileStructures.Default;
@@ -93,10 +96,10 @@ public class FileStructureAppService :
             throw new UserFriendlyException(L["DisplayNameRequired"]);
         }
 
-        // Check if key already exists
         if (await ExistsAsync(input.Key))
         {
-            throw new UserFriendlyException($"File structure with key '{input.Key}' already exists");
+            throw new BusinessException(FileManagerErrorCodes.FileStructureAlreadyExists)
+                .WithData("Key", input.Key);
         }
 
         await CheckCreatePolicyAsync();
@@ -163,6 +166,16 @@ public class FileStructureAppService :
         {
             throw new BusinessException(FileManagerErrorCodes.CannotDeleteStaticStructure)
                 .WithData("Key", entity.Key);
+        }
+
+        var root = await _folderRepository.FindByPathAsync(GetStructureRootPath(entity.Key), CurrentTenant.Id);
+        if (root != null)
+        {
+            await _structureRootCleanup.SoftDeleteAsync(root, entity.Key, CurrentTenant.Id);
+        }
+        else
+        {
+            await _structureRootCleanup.SoftDeleteLooseFilesAsync(entity.Key, CurrentTenant.Id);
         }
 
         await base.DeleteAsync(id);

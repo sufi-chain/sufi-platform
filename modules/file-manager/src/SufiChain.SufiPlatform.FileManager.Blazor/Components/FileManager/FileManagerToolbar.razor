@@ -41,7 +41,7 @@
 					<Icon><SbIcon Name="paste" /></Icon>
 				</SbIconButton>
 
-				<SbIconButton Color="SbColor.Danger" Size="SbSize.Sm" Disabled="@(!State.HasSelection)" OnClick="@OnDelete" Title="@L["Delete"]" AriaLabel="@L["Delete"]">
+				<SbIconButton Color="SbColor.Danger" Size="SbSize.Sm" Disabled="@(!State.CanDeleteSelection)" OnClick="@OnDelete" Title="@L["Delete"]" AriaLabel="@L["Delete"]">
 					<Icon><SbIcon Name="trash" /></Icon>
 				</SbIconButton>
 
@@ -141,7 +141,7 @@
 						<SbMenuItem OnClick="@OnCut" Disabled="@(!State.HasSelection)"><SbIcon Name="cut" Class="me-2" />@L["Cut"]</SbMenuItem>
 						<SbMenuItem OnClick="@OnCopy" Disabled="@(!State.HasSelection)"><SbIcon Name="copy" Class="me-2" />@L["Copy"]</SbMenuItem>
 						<SbMenuItem OnClick="@OnPaste" Disabled="@(!State.CanPaste)"><SbIcon Name="paste" Class="me-2" />@L["Paste"]</SbMenuItem>
-						<SbMenuItem OnClick="@OnDelete" Disabled="@(!State.HasSelection)" Class="fm-menu-item--danger"><SbIcon Name="trash" Class="me-2" />@L["Delete"]</SbMenuItem>
+						<SbMenuItem OnClick="@OnDelete" Disabled="@(!State.CanDeleteSelection)" Class="fm-menu-item--danger"><SbIcon Name="trash" Class="me-2" />@L["Delete"]</SbMenuItem>
 						<div class="fm-menu-divider"></div>
 						<SbMenuItem OnClick="@_setLargeIconsHandler"><SbIcon Name="grid" Class="me-2" />@L["LargeIcons"]</SbMenuItem>
 						<SbMenuItem OnClick="@_setSmallIconsHandler"><SbIcon Name="grid" Class="me-2" Size="SbSize.Sm" />@L["SmallIcons"]</SbMenuItem>

@@ -36,6 +36,7 @@ public partial class FileStructureWizard : FileManagerComponentBase
     private bool _saving;
     private bool _testingConnection;
     private int _wizardStep;
+    private List<string> _identityErrors = new();
     private string? _loadKey;
     private EditContext? _editContext;
     private CreateUpdateFileStructureDto _editModel = new();
@@ -250,9 +251,23 @@ public partial class FileStructureWizard : FileManagerComponentBase
 
         if (_wizardStep == 1)
         {
+            _identityErrors = new List<string>();
             _editContext.Validate();
-            if (_editContext.GetValidationMessages().Any())
+            foreach (var message in _editContext.GetValidationMessages().Distinct())
             {
+                _identityErrors.Add(message == FileStructureKeyRules.FormatInvalid
+                    ? L[FileStructureKeyRules.FormatInvalid].Value
+                    : message);
+            }
+
+            if (_identityErrors.Count > 0)
+            {
+                return false;
+            }
+
+            if (IsCreate && await FileStructureAppService.ExistsAsync(_editModel.Key))
+            {
+                _identityErrors.Add(L["StructureKeyAlreadyExists", _editModel.Key].Value);
                 return false;
             }
 

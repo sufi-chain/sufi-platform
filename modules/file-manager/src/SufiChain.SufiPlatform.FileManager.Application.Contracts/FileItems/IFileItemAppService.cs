@@ -78,7 +78,7 @@ public interface IFileItemAppService : IApplicationService
     /// For other providers, returns standard token-based download URL.
     /// </summary>
     /// <param name="id">File item ID.</param>
-    /// <param name="durationMinutes">Validity in minutes (1–10080 = 1 min–7 days).</param>
+    /// <param name="durationMinutes">Validity in minutes (<see cref="FileShareExpiry.MinMinutes"/>–<see cref="FileShareExpiry.MaxMinutes"/>).</param>
     Task<string> GetTemporaryAccessUrlAsync(Guid id, int durationMinutes);
 
     /// <summary>Revokes every Quick Share link issued for the file (sufi-chain#436).</summary>
