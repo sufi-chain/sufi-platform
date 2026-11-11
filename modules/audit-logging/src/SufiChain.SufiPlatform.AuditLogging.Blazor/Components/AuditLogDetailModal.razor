@@ -18,7 +18,7 @@
                         <SbGrid Columns="1" ColumnsMd="3" Gap="4">
                             <div class="audit-detail-field">
                                 <span class="audit-detail-field__label">@L["ExecutionTime"]</span>
-                                <span class="audit-detail-field__value">@_auditLog.ExecutionTime.ToString("yyyy-MM-dd HH:mm:ss")</span>
+                                <span class="audit-detail-field__value"><SufiUserTime Value="@_auditLog.ExecutionTime" /></span>
                             </div>
                             <div class="audit-detail-field">
                                 <span class="audit-detail-field__label">@L["Duration"]</span>
@@ -121,7 +121,7 @@
                                             @action.ExecutionDuration ms
                                         </span>
                                     </td>
-                                    <td>@action.ExecutionTime.ToString("HH:mm:ss.fff")</td>
+                                    <td><SufiUserTime Value="@action.ExecutionTime" Format="HH:mm:ss.fff" /></td>
                                     <td>
                                         @if (!string.IsNullOrEmpty(action.Parameters))
                                         {
@@ -161,7 +161,7 @@
                                             </SbBadge>
                                             <strong>@GetEntityTypeName(entityChange.EntityTypeFullName)</strong>
                                             <span class="text-muted small">@L["IdLabel"]: @entityChange.EntityId</span>
-                                            <span class="text-muted small ms-auto">@entityChange.ChangeTime.ToString("HH:mm:ss.fff")</span>
+                                            <span class="text-muted small ms-auto"><SufiUserTime Value="@entityChange.ChangeTime" Format="HH:mm:ss.fff" /></span>
                                         </SbStack>
                                         
                                         @if (entityChange.PropertyChanges.Count > 0)

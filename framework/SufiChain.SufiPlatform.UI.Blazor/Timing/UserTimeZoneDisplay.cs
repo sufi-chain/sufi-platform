@@ -38,6 +38,7 @@ public class UserTimeZoneDisplay : IUserTimeZoneDisplay
     {
         try
         {
+            // ABP walks user, then tenant, then host/global for this setting.
             return Resolve(await _settingProvider.GetOrNullAsync(TimingSettingNames.TimeZone));
         }
         catch (Exception exception) when (exception is not OperationCanceledException)

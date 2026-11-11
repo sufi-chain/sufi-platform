@@ -89,7 +89,7 @@
                         SelectionMode="SbSelectionMode.MultipleRows">
 				<SbColumn TItem="SecurityLogListItemDto" Title="@L["Time"]" MinWidth="160px">
 					<CellTemplate Context="cellContext">
-						@cellContext.Item.CreationTime.ToString("yyyy-MM-dd HH:mm:ss")
+						<SufiUserTime Value="@cellContext.Item.CreationTime" />
 					</CellTemplate>
 				</SbColumn>
 				<SbColumn TItem="SecurityLogListItemDto" Field="Action" Title="@L["Action"]" MinWidth="180px" Filterable="true" Sortable="true">

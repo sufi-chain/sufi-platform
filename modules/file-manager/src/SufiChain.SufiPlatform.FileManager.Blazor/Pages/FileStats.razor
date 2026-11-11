@@ -230,7 +230,7 @@
 						}
 					</td>
 					<td>@(item.CreatorId?.ToString() ?? L["System"])</td>
-					<td>@item.CreationTime.ToString("yyyy-MM-dd HH:mm")</td>
+					<td><SufiUserTime Value="@item.CreationTime" Format="yyyy-MM-dd HH:mm" /></td>
 					<td>
 						<SbStack Direction="SbStackDirection.Row" Gap="1">
 							<SbIconButton Color="SbColor.Info" Size="SbSize.Sm" OnClick="@(() => ViewFile(item))" AriaLabel="@L["ViewFile"]">

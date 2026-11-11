@@ -276,7 +276,7 @@ else
 							<SbColumn TItem="AIUsageLogDto" Field="CreationTime" Title="@L["Time"]" MinWidth="160px" Filterable="true" Sortable="true">
 								<CellTemplate Context="cellContext">
 									<SbText Variant="SbTextVariant.BodySmall">
-										@cellContext.Item.CreationTime.ToString("yyyy-MM-dd HH:mm:ss")
+										<SufiUserTime Value="@cellContext.Item.CreationTime" />
 									</SbText>
 								</CellTemplate>
 							</SbColumn>

@@ -14,6 +14,17 @@ public class UserTimeZoneDisplayTests
     private static readonly DateTime Utc = new(2026, 10, 30, 17, 55, 0, DateTimeKind.Utc);
 
     [Theory]
+    [InlineData("Asia/Tehran", "07:15:59")]
+    [InlineData("Asia/Tokyo", "12:45:59")]
+    public void Stored_utc_audit_time_converts_with_the_saved_zone(string id, string expected)
+    {
+        var stored = new DateTime(2026, 6, 15, 3, 45, 59, DateTimeKind.Unspecified);
+
+        UserTimeZoneDisplay.Format(stored, "HH:mm:ss", UserTimeZoneDisplay.Resolve(id), CultureInfo.InvariantCulture)
+            .ShouldBe(expected);
+    }
+
+    [Theory]
     [InlineData("Asia/Tehran")]
     [InlineData("Iran Standard Time")]
     public void Configured_Tehran_ids_display_21_25(string id)

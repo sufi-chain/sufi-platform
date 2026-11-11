@@ -1,14 +1,12 @@
 @namespace SufiChain.SufiPlatform.UI.Blazor.Components
 @using Microsoft.AspNetCore.Components.Routing
 @using Microsoft.Extensions.Localization
-@using Microsoft.JSInterop
 @using SufiChain.SufiPlatform.UI.Localization
 @using SufiChain.SufiBlazor.Components
 @using SufiChain.SufiBlazor.Components.Actions
 @using SufiChain.SufiBlazor.Components.Common
 @using SufiChain.SufiBlazor.Components.Layout
 @inject NavigationManager Navigation
-@inject IJSRuntime JSRuntime
 @inject IStringLocalizer<SufiFrameworkResource> L
 
 <div class="sufi-error-page" role="alert">
@@ -21,7 +19,10 @@
         <div class="sufi-error-page__actions">
             @if (_showGoBack)
             {
-                <SbButton Variant="SbButtonVariant.Outline" Color="SbColor.Secondary" OnClick="GoBackAsync">
+                <SbButton Variant="SbButtonVariant.Outline"
+                          Color="SbColor.Secondary"
+                          Href="@ResolvedHomeUrl"
+                          data-sufi-history-back="true">
                     @L["GoBack"]
                 </SbButton>
             }
@@ -33,7 +34,8 @@
             }
             <SbButton Variant="@(_showReload ? SbButtonVariant.Outline : SbButtonVariant.Solid)"
                       Color="@(_showReload ? SbColor.Secondary : SbColor.Primary)"
-                      OnClick="GoHome">
+                      Href="@ResolvedHomeUrl"
+                      data-sufi-error-home="true">
                 @L["BackToHome"]
             </SbButton>
         </div>
@@ -71,8 +73,16 @@
     [Parameter]
     public bool? ShowGoBack { get; set; }
 
+    /// <summary>
+    /// Recovery URL when history cannot go back. Panel hosts pass /panel/dashboard.
+    /// When omitted, a /panel request falls back to the panel home and every other request to /.
+    /// </summary>
+    [Parameter]
+    public string? HomeUrl { get; set; }
+
     private bool _showReload => ShowReload ?? (StatusCode == 500);
     private bool _showGoBack => ShowGoBack ?? (StatusCode == 404);
+    private string ResolvedHomeUrl => SufiErrorNavigation.ResolveHomeUrl(HomeUrl, Navigation.Uri);
 
     private string GetIconName() => StatusCode switch
     {
@@ -90,25 +100,8 @@
         _ => SbColor.Secondary
     };
 
-    private void GoHome()
-    {
-        Navigation.NavigateTo("/", forceLoad: true);
-    }
-
     private void ReloadPage()
     {
         Navigation.NavigateTo(Navigation.Uri, forceLoad: true);
-    }
-
-    private async Task GoBackAsync()
-    {
-        try
-        {
-            await JSRuntime.InvokeVoidAsync("eval", "history.back()");
-        }
-        catch (JSException)
-        {
-            GoHome();
-        }
     }
 }

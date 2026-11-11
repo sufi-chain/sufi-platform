@@ -121,7 +121,7 @@
 						<CellTemplate Context="cellContext">
 							@if (cellContext.Item.LastIndexedAt.HasValue)
 							{
-								@cellContext.Item.LastIndexedAt.Value.ToString("yyyy-MM-dd HH:mm")
+								<SufiUserTime Value="@cellContext.Item.LastIndexedAt" Format="yyyy-MM-dd HH:mm" />
 							}
 							else
 							{

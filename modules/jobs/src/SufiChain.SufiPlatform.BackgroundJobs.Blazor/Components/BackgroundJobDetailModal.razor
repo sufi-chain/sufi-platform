@@ -64,15 +64,15 @@
                     <div class="job-detail-grid-3">
                         <div class="job-detail-item">
                             <span class="job-detail-item-label">@L["CreationTime"]</span>
-                            <span class="job-detail-item-value">@Job.CreationTime.ToString("yyyy-MM-dd HH:mm:ss")</span>
+                            <span class="job-detail-item-value"><SufiUserTime Value="@Job.CreationTime" /></span>
                         </div>
                         <div class="job-detail-item">
                             <span class="job-detail-item-label">@L["NextTryTime"]</span>
-                            <span class="job-detail-item-value">@(Job.NextTryTime?.ToString("yyyy-MM-dd HH:mm:ss") ?? "-")</span>
+                            <span class="job-detail-item-value"><SufiUserTime Value="@Job.NextTryTime" /></span>
                         </div>
                         <div class="job-detail-item">
                             <span class="job-detail-item-label">@L["LastTryTime"]</span>
-                            <span class="job-detail-item-value">@(Job.LastTryTime?.ToString("yyyy-MM-dd HH:mm:ss") ?? "-")</span>
+                            <span class="job-detail-item-value"><SufiUserTime Value="@Job.LastTryTime" /></span>
                         </div>
                     </div>
                 </div>

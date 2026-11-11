@@ -107,7 +107,7 @@
                             </SbChip>
                         </td>
                         <td>@FormatFileSize(item.Size)</td>
-                        <td>@item.CreationTime.ToString("g")</td>
+                        <td><SufiUserTime Value="@item.CreationTime" Format="g" /></td>
                         <td>
                             <SbStack Direction="SbStackDirection.Row" Gap="1">
                                 <SbIconButton Color="SbColor.Primary" Size="SbSize.Sm" OnClick="@(() => ViewFileItem(item))" AriaLabel="@L["PreviewFile"]">

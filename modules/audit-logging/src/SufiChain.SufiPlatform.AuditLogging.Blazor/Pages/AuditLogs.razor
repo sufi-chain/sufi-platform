@@ -101,7 +101,7 @@
 				</SbColumn>
 				<SbColumn TItem="AuditLogListItemDto" Title="@L["Time"]" MinWidth="160px">
 					<CellTemplate Context="cellContext">
-						@cellContext.Item.ExecutionTime.ToString("yyyy-MM-dd HH:mm:ss")
+						<SufiUserTime Value="@cellContext.Item.ExecutionTime" />
 					</CellTemplate>
 				</SbColumn>
 				<SbColumn TItem="AuditLogListItemDto" Field="UserName" Title="@L["User"]" MinWidth="120px" Filterable="true" Sortable="true"/>
