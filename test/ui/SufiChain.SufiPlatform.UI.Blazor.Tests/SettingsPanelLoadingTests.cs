@@ -84,7 +84,7 @@ public class SettingsPanelLoadingTests : BunitContext
                 .ShouldContain("EmailSettingsLockedByHost");
         }, TimeSpan.FromSeconds(5));
         cut.FindAll("input").Count.ShouldBe(0);
-        email.DidNotReceive().GetAsync();
+        await email.DidNotReceive().GetAsync();
     }
 
     [Fact]
