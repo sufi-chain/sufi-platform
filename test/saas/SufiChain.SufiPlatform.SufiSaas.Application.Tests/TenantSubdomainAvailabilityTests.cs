@@ -169,6 +169,42 @@ public class TenantSubdomainAvailabilityTests
         dto.UnavailableReason.ShouldBeNull();
     }
 
+    [Fact]
+    public async Task Catalog_reads_host_plans_and_keeps_a_nameless_feature()
+    {
+        var tenant = new RecordingTenant(Guid.NewGuid());
+        var harness = NewService(tenant);
+        Guid? tenantDuringRead = Guid.NewGuid();
+        var editionId = Guid.NewGuid();
+        var plan = NewPlan(
+            "demo",
+            editionId,
+            billingPeriodDays: 7,
+            allowUnpaidUse: true,
+            sortOrder: 0,
+            isSelfServiceAvailable: true,
+            price: 0m);
+        harness.Plans.GetListAsync(Arg.Any<bool>(), Arg.Any<System.Threading.CancellationToken>())
+            .Returns(_ =>
+            {
+                tenantDuringRead = tenant.Id;
+                return new List<Plan> { plan };
+            });
+        harness.Features.GetAllAsync(Arg.Any<string>(), editionId.ToString(), Arg.Any<bool>())
+            .Returns(new List<FeatureNameValue> { new("SufiAI.Enable", "true") });
+        var feature = new Volo.Abp.Features.FeatureDefinitionContext()
+            .AddGroup("SufiAI")
+            .AddFeature("SufiAI.Enable");
+        feature.GetType().GetField("_displayName", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)!
+            .SetValue(feature, null);
+        harness.Definitions.GetAllAsync().Returns(new List<FeatureDefinition> { new(feature) });
+
+        var catalog = await harness.Service.GetOnboardingCatalogAsync();
+
+        tenantDuringRead.ShouldBeNull();
+        catalog.Plans.Single().Features.Single().DisplayName.ShouldBe("SufiAI.Enable");
+    }
+
     private static Plan NewPlan(
         string code,
         Guid editionId,
@@ -205,7 +241,9 @@ public class TenantSubdomainAvailabilityTests
         return tenant;
     }
 
-    private static Harness NewService()
+    private static Harness NewService() => NewService(Substitute.For<ICurrentTenant>());
+
+    private static Harness NewService(ICurrentTenant currentTenant)
     {
         var requests = Substitute.For<ITenantRequestRepository>();
         requests.IsSubdomainInActiveRequestAsync(
@@ -242,7 +280,7 @@ public class TenantSubdomainAvailabilityTests
 
         var services = new ServiceCollection();
         services.AddSingleton(currentUser);
-        services.AddSingleton(Substitute.For<ICurrentTenant>());
+        services.AddSingleton(currentTenant);
         services.AddSingleton<IAuthorizationService>(authorization);
         services.AddSingleton(authorization);
         services.AddSingleton<Microsoft.Extensions.Options.IOptions<SufiSaasLicensingOptions>>(
@@ -275,7 +313,34 @@ public class TenantSubdomainAvailabilityTests
             LazyServiceProvider = new AbpLazyServiceProvider(services.BuildServiceProvider())
         };
 
-        return new Harness(service, requests, tenants, plans);
+        return new Harness(service, requests, tenants, plans, featureManager, featureDefinitionManager);
+    }
+
+    private sealed class RecordingTenant : ICurrentTenant
+    {
+        public RecordingTenant(Guid id) => Id = id;
+
+        public bool IsAvailable => Id.HasValue;
+
+        public Guid? Id { get; private set; }
+
+        public string? Name => null;
+
+        public IDisposable Change(Guid? id, string? name = null)
+        {
+            var previous = Id;
+            Id = id;
+            return new Restore(() => Id = previous);
+        }
+
+        private sealed class Restore : IDisposable
+        {
+            private readonly Action _restore;
+
+            public Restore(Action restore) => _restore = restore;
+
+            public void Dispose() => _restore();
+        }
     }
 
     private sealed class Harness
@@ -284,18 +349,24 @@ public class TenantSubdomainAvailabilityTests
             ExposedTenantRequestAppService service,
             ITenantRequestRepository requests,
             ITenantRepository tenants,
-            IPlanRepository plans)
+            IPlanRepository plans,
+            IFeatureManager features,
+            IFeatureDefinitionManager definitions)
         {
             Service = service;
             Requests = requests;
             Tenants = tenants;
             Plans = plans;
+            Features = features;
+            Definitions = definitions;
         }
 
         public ExposedTenantRequestAppService Service { get; }
         public ITenantRequestRepository Requests { get; }
         public ITenantRepository Tenants { get; }
         public IPlanRepository Plans { get; }
+        public IFeatureManager Features { get; }
+        public IFeatureDefinitionManager Definitions { get; }
     }
 
     private sealed class ExposedTenantRequestAppService : TenantRequestAppService
