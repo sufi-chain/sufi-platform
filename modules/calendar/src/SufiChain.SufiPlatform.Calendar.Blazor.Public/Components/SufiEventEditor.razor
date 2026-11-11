@@ -130,6 +130,9 @@
 </div>
     </ChildContent>
     <ErrorContent Context="error">
+        @{
+            RethrowUnhandledEditorFault(error);
+        }
         <CalendarEditorFaultNotice OnReported="RecoverEditorAsync" />
     </ErrorContent>
 </ErrorBoundary>

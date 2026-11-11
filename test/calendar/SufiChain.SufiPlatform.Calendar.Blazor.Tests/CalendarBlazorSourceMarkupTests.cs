@@ -78,8 +78,11 @@ public class CalendarBlazorSourceMarkupTests
         code.ShouldContain("CalendarTiming.SettingName");
         code.ShouldNotContain("TimeZoneInfo.FindSystemTimeZoneById");
         Read(EventEditor).ShouldContain("<ErrorBoundary");
+        Read(EventEditor).ShouldContain("RethrowUnhandledEditorFault(error)");
         Read(EventEditor).ShouldContain("CalendarEditorFaultNotice");
         code.ShouldContain("Notify.ErrorAsync(L[\"CalendarActionFailed\"])");
+        code.ShouldContain("exception is AbpAuthorizationException or NavigationException or OperationCanceledException");
+        code.ShouldContain("ExceptionDispatchInfo.Capture(exception).Throw()");
     }
 
     [Fact]

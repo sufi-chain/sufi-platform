@@ -1,9 +1,11 @@
+using System.Runtime.ExceptionServices;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.Logging;
 using SufiChain.SufiBlazor.Utilities.DateUtils;
 using SufiChain.SufiPlatform.Calendar.Blazor.Public;
 using SufiChain.SufiPlatform.Calendar.Events;
+using Volo.Abp.Authorization;
 using Volo.Abp.Settings;
 
 namespace SufiChain.SufiPlatform.Calendar.Blazor.Public.Components;
@@ -230,9 +232,30 @@ public partial class SufiEventEditor : CalendarPublicComponentBase
         }
         catch (Exception exception)
         {
+            if (IsFrameworkEditorFault(exception))
+            {
+                throw;
+            }
+
             Logger.LogWarning(exception, "Could not add a calendar reminder.");
             await Notify.ErrorAsync(L["CalendarActionFailed"]);
         }
+    }
+
+    /// <summary>
+    /// Authorization, navigation, and cancellation must reach the framework. A toast would swallow a redirect or a disposed circuit.
+    /// </summary>
+    protected static void RethrowUnhandledEditorFault(Exception exception)
+    {
+        if (IsFrameworkEditorFault(exception))
+        {
+            ExceptionDispatchInfo.Capture(exception).Throw();
+        }
+    }
+
+    private static bool IsFrameworkEditorFault(Exception exception)
+    {
+        return exception is AbpAuthorizationException or NavigationException or OperationCanceledException;
     }
 
     protected virtual Task RecoverEditorAsync()
