@@ -10,6 +10,42 @@ public class CalendarEventInvariantTests
 {
     private static readonly DateTime Start = new(2026, 9, 8, 9, 0, 0, DateTimeKind.Utc);
 
+    [Fact]
+    public void Should_Store_Utc_When_Time_Zone_Is_Missing()
+    {
+        var calendarEvent = CreateEvent();
+
+        Should.NotThrow(() => calendarEvent.SetTimeRange(Start, Start.AddHours(2), false, null));
+        Should.NotThrow(() => calendarEvent.SetTimeRange(Start, Start.AddHours(2), false, "  "));
+
+        calendarEvent.TimeZoneId.ShouldBe(TimeZoneInfo.Utc.Id);
+        calendarEvent.EndUtc.ShouldBe(Start.AddHours(2));
+    }
+
+    [Fact]
+    public void Should_Reject_Unknown_Time_Zone_Without_A_Framework_Exception()
+    {
+        var calendarEvent = CreateEvent();
+
+        var exception = Should.Throw<BusinessException>(() =>
+            calendarEvent.SetTimeRange(Start, Start.AddHours(2), false, "Not/AZone"));
+
+        exception.Code.ShouldBe(CalendarErrorCodes.InvalidTimeZone);
+        calendarEvent.TimeZoneId.ShouldBe("UTC");
+    }
+
+    [Fact]
+    public void Should_Reject_Recurrence_Interval_Below_One()
+    {
+        var calendarEvent = CreateEvent();
+
+        var exception = Should.Throw<BusinessException>(() =>
+            calendarEvent.SetRecurrence(Guid.NewGuid(), "FREQ=DAILY;INTERVAL=0"));
+
+        exception.Code.ShouldBe(CalendarErrorCodes.InvalidRecurrenceRule);
+        calendarEvent.RecurrenceRule.ShouldBeNull();
+    }
+
     [Theory]
     [InlineData(0)]
     [InlineData(-1)]

@@ -54,7 +54,7 @@ public class CalendarEvent : FullAuditedAggregateRoot<Guid>, IMultiTenant
         DateTime startUtc,
         DateTime endUtc,
         bool isAllDay,
-        string timeZoneId,
+        string? timeZoneId,
         EventStatus status = EventStatus.Confirmed,
         Guid? availabilityCalendarId = null,
         string? location = null,
@@ -79,20 +79,32 @@ public class CalendarEvent : FullAuditedAggregateRoot<Guid>, IMultiTenant
         Title = Check.NotNullOrWhiteSpace(title, nameof(title), EventConsts.MaxTitleLength);
     }
 
-    public virtual void SetTimeRange(DateTime startUtc, DateTime endUtc, bool isAllDay, string timeZoneId)
+    public virtual void SetTimeRange(DateTime startUtc, DateTime endUtc, bool isAllDay, string? timeZoneId)
     {
         if (endUtc <= startUtc)
         {
             throw new BusinessException(CalendarErrorCodes.InvalidTimeRange);
         }
 
-        Check.NotNullOrWhiteSpace(timeZoneId, nameof(timeZoneId), EventConsts.MaxTimeZoneIdLength);
-        _ = TimeZoneInfo.FindSystemTimeZoneById(timeZoneId);
+        // FindSystemTimeZoneById throws TimeZoneNotFoundException, which the host
+        // shows as an internal error. An empty selection is UTC here so it cannot
+        // throw. Create and update apply Abp.Timing.TimeZone (user, then tenant,
+        // then host) before calling this, so a blank selection keeps that zone.
+        var zone = CalendarTimeZoneResolver.TryFind(timeZoneId);
+        if (zone == null)
+        {
+            if (!string.IsNullOrWhiteSpace(timeZoneId))
+            {
+                throw new BusinessException(CalendarErrorCodes.InvalidTimeZone);
+            }
+
+            zone = TimeZoneInfo.Utc;
+        }
 
         StartUtc = DateTime.SpecifyKind(startUtc, DateTimeKind.Utc);
         EndUtc = DateTime.SpecifyKind(endUtc, DateTimeKind.Utc);
         IsAllDay = isAllDay;
-        TimeZoneId = timeZoneId;
+        TimeZoneId = zone.Id;
     }
 
     public virtual void SetDetails(string? location, string? description, string? color)

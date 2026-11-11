@@ -1,6 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Localization;
+using Microsoft.Extensions.Logging;
 using Volo.Abp;
 using Volo.Abp.Authorization;
 using Volo.Abp.Validation;
@@ -361,8 +362,10 @@ public class CalendarEventAppService : SufiApplicationService, ICalendarEventApp
     }
 
     /// <summary>
-    /// An empty or unknown zone uses <see cref="CalendarTiming.SettingName"/> for the current user or tenant, then UTC.
+    /// An empty or unknown zone uses <see cref="CalendarTiming.SettingName"/> (<c>Abp.Timing.TimeZone</c>).
+    /// ABP reads that setting for the current user, then the tenant, then the host. UTC is last.
     /// A zone the host understands, including the slot query value UTC, is kept.
+    /// A missing setting must not become an internal error.
     /// </summary>
     protected virtual async Task<string> ResolveTimeZoneIdAsync(string? requested)
     {
@@ -370,7 +373,14 @@ public class CalendarEventAppService : SufiApplicationService, ICalendarEventApp
         var settings = LazyServiceProvider.LazyGetService<ISettingProvider>();
         if (settings != null)
         {
-            configured = await settings.GetOrNullAsync(CalendarTiming.SettingName);
+            try
+            {
+                configured = await settings.GetOrNullAsync(CalendarTiming.SettingName);
+            }
+            catch (Exception exception) when (exception is not OperationCanceledException)
+            {
+                Logger.LogWarning(exception, "Could not read the ABP timing time zone.");
+            }
         }
 
         return CalendarTiming.ResolveId(requested, configured);

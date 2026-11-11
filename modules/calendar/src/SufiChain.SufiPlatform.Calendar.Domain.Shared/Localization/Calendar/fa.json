@@ -88,6 +88,8 @@
     "Available": "آزاد",
     "Loading": "در حال بارگذاری",
     "InvalidTimeRange": "بازه زمانی نامعتبر",
+    "InvalidRecurrenceInterval": "تکرار باید حداقل ۱ باشد.",
+    "InvalidReminderOffset": "دقیقه قبل باید حداقل ۰ و حداکثر ۳۰ روز باشد.",
     "DeleteNotAllowed": "فقط رویدادهای خودتان را می‌توانید حذف کنید.",
     "TitleRequired": "عنوان الزامی است.",
     "OverlappingWorkingHours": "ساعت‌های کاری یک روز نمی‌توانند همپوشانی داشته باشند.",

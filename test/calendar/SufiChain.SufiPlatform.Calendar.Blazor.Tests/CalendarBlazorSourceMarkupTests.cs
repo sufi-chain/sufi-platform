@@ -77,6 +77,10 @@ public class CalendarBlazorSourceMarkupTests
         code.ShouldContain("CalendarTiming.ResolveId(KnownZone(_model.TimeZoneId, TimeZoneId), _configuredTimeZoneId)");
         code.ShouldContain("CalendarTiming.SettingName");
         code.ShouldNotContain("TimeZoneInfo.FindSystemTimeZoneById");
+        code.ShouldContain("L[\"InvalidRecurrenceInterval\"]");
+        code.ShouldContain("L[\"InvalidReminderOffset\"]");
+        code.ShouldNotContain("interval <= 0 ? 1");
+        code.ShouldNotContain("Math.Clamp(_newReminderOffsetMinutes");
         Read(EventEditor).ShouldContain("<ErrorBoundary");
         Read(EventEditor).ShouldContain("RethrowUnhandledEditorFault(error)");
         Read(EventEditor).ShouldContain("CalendarEditorFaultNotice");

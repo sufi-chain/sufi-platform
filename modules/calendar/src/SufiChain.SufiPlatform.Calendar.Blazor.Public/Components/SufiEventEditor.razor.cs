@@ -129,6 +129,12 @@ public partial class SufiEventEditor : CalendarPublicComponentBase
             return;
         }
 
+        if (_recurrenceFrequency != RecurrenceFrequency.None && _recurrenceInterval < 1)
+        {
+            await Message.ErrorAsync(L["InvalidRecurrenceInterval"]);
+            return;
+        }
+
         if (!TryApplyDateTimeFields())
         {
             await Message.ErrorAsync(L["InvalidTimeRange"]);
@@ -172,7 +178,7 @@ public partial class SufiEventEditor : CalendarPublicComponentBase
 
     protected virtual Task OnRecurrenceIntervalChanged(int interval)
     {
-        _recurrenceInterval = interval <= 0 ? 1 : interval;
+        _recurrenceInterval = interval;
         ApplyRecurrenceRule();
         return Task.CompletedTask;
     }
@@ -220,12 +226,17 @@ public partial class SufiEventEditor : CalendarPublicComponentBase
             return;
         }
 
+        if (_newReminderOffsetMinutes < 0 || _newReminderOffsetMinutes > ReminderOffsetMinuteMax)
+        {
+            await Message.ErrorAsync(L["InvalidReminderOffset"]);
+            return;
+        }
+
         try
         {
-            var minutes = Math.Clamp(_newReminderOffsetMinutes, 0, ReminderOffsetMinuteMax);
             var updated = await CalendarEventAppService.AddReminderAsync(EventId.Value, new CreateEventReminderDto
             {
-                Offset = TimeSpan.FromMinutes(-minutes),
+                Offset = TimeSpan.FromMinutes(-_newReminderOffsetMinutes),
                 Channel = _newReminderChannel
             });
             _reminders = updated.Reminders.ToList();
@@ -385,8 +396,15 @@ public partial class SufiEventEditor : CalendarPublicComponentBase
 
         ApplyTimeZoneSelection();
         var timeZone = ResolveTimeZone();
-        _model.StartUtc = TimeZoneInfo.ConvertTimeToUtc(DateTime.SpecifyKind(startLocal, DateTimeKind.Unspecified), timeZone);
-        _model.EndUtc = TimeZoneInfo.ConvertTimeToUtc(DateTime.SpecifyKind(endLocal, DateTimeKind.Unspecified), timeZone);
+        try
+        {
+            _model.StartUtc = TimeZoneInfo.ConvertTimeToUtc(DateTime.SpecifyKind(startLocal, DateTimeKind.Unspecified), timeZone);
+            _model.EndUtc = TimeZoneInfo.ConvertTimeToUtc(DateTime.SpecifyKind(endLocal, DateTimeKind.Unspecified), timeZone);
+        }
+        catch (ArgumentException)
+        {
+            return false;
+        }
         _model.CalendarId = CalendarId == Guid.Empty ? _model.CalendarId : CalendarId;
         return true;
     }
@@ -460,7 +478,7 @@ public partial class SufiEventEditor : CalendarPublicComponentBase
 
         if (parts.TryGetValue("INTERVAL", out var intervalText) && int.TryParse(intervalText, out var interval))
         {
-            _recurrenceInterval = interval <= 0 ? 1 : interval;
+            _recurrenceInterval = interval;
         }
 
         if (parts.TryGetValue("COUNT", out var countText) && int.TryParse(countText, out var count))
