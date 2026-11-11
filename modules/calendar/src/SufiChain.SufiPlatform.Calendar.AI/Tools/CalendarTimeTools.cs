@@ -1,7 +1,9 @@
 using System.Globalization;
 using SufiChain.SufiPlatform.SufiAI;
+using SufiChain.SufiPlatform.Calendar;
 using SufiChain.SufiPlatform.Calendar.Availability;
 using SufiChain.SufiPlatform.Calendar.Calendars;
+using Volo.Abp.Settings;
 
 namespace SufiChain.SufiPlatform.Calendar.AI.Tools;
 
@@ -9,10 +11,14 @@ public class CalendarGetCurrentTimeTool : CalendarAIToolBase
 {
     private static readonly PersianCalendar PersianCalendar = new();
     private readonly IAvailabilityCalendarAppService _availabilityCalendarAppService;
+    private readonly ISettingProvider _settingProvider;
 
-    public CalendarGetCurrentTimeTool(IAvailabilityCalendarAppService availabilityCalendarAppService)
+    public CalendarGetCurrentTimeTool(
+        IAvailabilityCalendarAppService availabilityCalendarAppService,
+        ISettingProvider settingProvider)
     {
         _availabilityCalendarAppService = availabilityCalendarAppService;
+        _settingProvider = settingProvider;
     }
 
     public override string Name => CalendarAIToolNames.GetCurrentTime;
@@ -37,7 +43,7 @@ public class CalendarGetCurrentTimeTool : CalendarAIToolBase
         CancellationToken cancellationToken = default)
     {
         var resolvedTimeZoneId = await ResolveTimeZoneIdAsync(calendarId, timeZoneId, cancellationToken);
-        var timeZone = TimeZoneInfo.FindSystemTimeZoneById(resolvedTimeZoneId);
+        var timeZone = CalendarTimeZoneResolver.Resolve(resolvedTimeZoneId, "UTC");
         var utcNow = GetUtcNow();
         var localNow = TimeZoneInfo.ConvertTimeFromUtc(DateTime.SpecifyKind(utcNow, DateTimeKind.Utc), timeZone);
 
@@ -88,9 +94,8 @@ public class CalendarGetCurrentTimeTool : CalendarAIToolBase
         }
 
         var defaultCalendar = await GetDefaultCalendarAsync(cancellationToken);
-        return string.IsNullOrWhiteSpace(defaultCalendar?.TimeZoneId)
-            ? TimeZoneInfo.Local.Id
-            : defaultCalendar.TimeZoneId;
+        var configured = await _settingProvider.GetOrNullAsync(CalendarTiming.SettingName);
+        return CalendarTiming.ResolveId(defaultCalendar?.TimeZoneId, configured);
     }
 
     protected virtual async Task<CalendarDto?> GetDefaultCalendarAsync(CancellationToken cancellationToken)

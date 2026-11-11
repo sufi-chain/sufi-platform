@@ -1,3 +1,4 @@
+using SufiChain.SufiPlatform.Calendar;
 using SufiChain.SufiPlatform.Calendar.Calendars;
 using Volo.Abp.DependencyInjection;
 
@@ -216,7 +217,7 @@ public class BusinessCalendarCalculator : ITransientDependency
 
     protected virtual DateTime ToLocal(CalendarSnapshot snapshot, DateTime utcInstant)
     {
-        var timeZone = TimeZoneInfo.FindSystemTimeZoneById(snapshot.TimeZoneId);
+        var timeZone = CalendarTimeZoneResolver.Resolve(snapshot.TimeZoneId, "UTC");
         return TimeZoneInfo.ConvertTimeFromUtc(NormalizeUtc(utcInstant), timeZone);
     }
 

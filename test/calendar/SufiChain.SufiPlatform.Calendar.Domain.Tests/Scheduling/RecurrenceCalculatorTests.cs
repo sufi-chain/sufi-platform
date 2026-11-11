@@ -100,6 +100,19 @@ public class RecurrenceCalculatorTests
         });
     }
 
+    [Fact]
+    public void Empty_Time_Zone_Still_Expands()
+    {
+        var calendarEvent = CreateEvent(Utc(2026, 6, 8, 9), Utc(2026, 6, 8, 10));
+        typeof(CalendarEvent).GetProperty(nameof(CalendarEvent.TimeZoneId))!
+            .SetValue(calendarEvent, string.Empty);
+        calendarEvent.SetRecurrence(Guid.NewGuid(), "FREQ=DAILY;COUNT=2");
+
+        var occurrences = _calculator.Expand(calendarEvent, Utc(2026, 6, 8), Utc(2026, 6, 11));
+
+        occurrences.Count.ShouldBe(2);
+    }
+
     private static CalendarEvent CreateEvent(DateTime startUtc, DateTime endUtc, string timeZoneId = "UTC")
     {
         return new CalendarEvent(

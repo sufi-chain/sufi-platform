@@ -35,7 +35,7 @@ public partial class CalendarEventPageBase : CalendarPublicComponentBase
 
     protected DateTime? InitialEndUtc => TryParseUtc(EndQuery);
 
-    protected string TimeZoneId => string.IsNullOrWhiteSpace(TimeZoneQuery) ? TimeZoneInfo.Local.Id : TimeZoneQuery;
+    protected string TimeZoneId => TimeZoneQuery?.Trim() ?? string.Empty;
 
     protected override void OnParametersSet()
     {
