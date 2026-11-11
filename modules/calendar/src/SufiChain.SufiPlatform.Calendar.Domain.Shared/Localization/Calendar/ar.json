@@ -106,6 +106,7 @@
     "ReminderOffset": "دقائق قبل البدء",
     "ReminderChannel": "قناة التذكير",
     "AddReminder": "إضافة تذكير",
+    "CalendarActionFailed": "تعذر إكمال هذا الإجراء.",
     "UserId": "User ID",
     "OrganizationUnitId": "معرّف الوحدة التنظيمية",
     "TenantId": "معرّف المستأجر",

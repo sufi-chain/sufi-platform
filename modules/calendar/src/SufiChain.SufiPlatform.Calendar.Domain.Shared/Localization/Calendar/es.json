@@ -106,6 +106,7 @@
     "ReminderOffset": "Minutos antes",
     "ReminderChannel": "Canal de recordatorio",
     "AddReminder": "Agregar recordatorio",
+    "CalendarActionFailed": "No se pudo completar esa acción.",
     "UserId": "User ID",
     "OrganizationUnitId": "ID de la unidad organizativa",
     "TenantId": "ID del inquilino",

@@ -2,6 +2,8 @@
 @using SufiChain.SufiBlazor.Components.Navigation
 @inherits CalendarPublicComponentBase
 
+<ErrorBoundary @ref="_editorErrorBoundary">
+    <ChildContent>
 <div class="sufi-event-editor-page">
     @if (_ready)
     {
@@ -126,3 +128,8 @@
         </SbStack>
     </div>
 </div>
+    </ChildContent>
+    <ErrorContent Context="error">
+        <CalendarEditorFaultNotice OnReported="RecoverEditorAsync" />
+    </ErrorContent>
+</ErrorBoundary>

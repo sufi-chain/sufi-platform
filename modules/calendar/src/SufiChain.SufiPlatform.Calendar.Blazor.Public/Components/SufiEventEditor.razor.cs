@@ -1,7 +1,10 @@
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Web;
+using Microsoft.Extensions.Logging;
 using SufiChain.SufiBlazor.Utilities.DateUtils;
 using SufiChain.SufiPlatform.Calendar.Blazor.Public;
 using SufiChain.SufiPlatform.Calendar.Events;
+using Volo.Abp.Settings;
 
 namespace SufiChain.SufiPlatform.Calendar.Blazor.Public.Components;
 
@@ -14,6 +17,9 @@ public partial class SufiEventEditor : CalendarPublicComponentBase
 
     [Inject]
     protected NavigationManager NavigationManager { get; set; } = default!;
+
+    [Inject]
+    protected ISettingProvider SettingProvider { get; set; } = default!;
 
     [Parameter]
     public Guid? EventId { get; set; }
@@ -51,6 +57,10 @@ public partial class SufiEventEditor : CalendarPublicComponentBase
     private AttendeeRole _newAttendeeRole = AttendeeRole.Required;
     private int _newReminderOffsetMinutes = 15;
     private ReminderChannel _newReminderChannel = ReminderChannel.Email;
+    private string _configuredTimeZoneId = string.Empty;
+    private bool _configuredTimeZoneLoaded;
+    private int _editorFaults;
+    private ErrorBoundary? _editorErrorBoundary;
 
     protected IReadOnlyList<TimeZoneInfo> TimeZoneOptions { get; } = TimeZoneInfo.GetSystemTimeZones();
     protected IReadOnlyList<EventStatus> EventStatusOptions { get; } = Enum.GetValues<EventStatus>();
@@ -71,6 +81,7 @@ public partial class SufiEventEditor : CalendarPublicComponentBase
         _loadKey = key;
         _ready = false;
         _loadFailed = false;
+        await EnsureConfiguredTimeZoneAsync();
         try
         {
             if (EventId.HasValue)
@@ -207,13 +218,33 @@ public partial class SufiEventEditor : CalendarPublicComponentBase
             return;
         }
 
-        var minutes = Math.Clamp(_newReminderOffsetMinutes, 0, ReminderOffsetMinuteMax);
-        var updated = await CalendarEventAppService.AddReminderAsync(EventId.Value, new CreateEventReminderDto
+        try
         {
-            Offset = TimeSpan.FromMinutes(-minutes),
-            Channel = _newReminderChannel
-        });
-        _reminders = updated.Reminders.ToList();
+            var minutes = Math.Clamp(_newReminderOffsetMinutes, 0, ReminderOffsetMinuteMax);
+            var updated = await CalendarEventAppService.AddReminderAsync(EventId.Value, new CreateEventReminderDto
+            {
+                Offset = TimeSpan.FromMinutes(-minutes),
+                Channel = _newReminderChannel
+            });
+            _reminders = updated.Reminders.ToList();
+        }
+        catch (Exception exception)
+        {
+            Logger.LogWarning(exception, "Could not add a calendar reminder.");
+            await Notify.ErrorAsync(L["CalendarActionFailed"]);
+        }
+    }
+
+    protected virtual Task RecoverEditorAsync()
+    {
+        _editorFaults++;
+        if (_editorFaults > 1)
+        {
+            return Task.CompletedTask;
+        }
+
+        _editorErrorBoundary?.Recover();
+        return Task.CompletedTask;
     }
 
     protected virtual async Task RemoveReminderAsync(EventReminderDto reminder)
@@ -329,17 +360,57 @@ public partial class SufiEventEditor : CalendarPublicComponentBase
             return false;
         }
 
+        ApplyTimeZoneSelection();
         var timeZone = ResolveTimeZone();
         _model.StartUtc = TimeZoneInfo.ConvertTimeToUtc(DateTime.SpecifyKind(startLocal, DateTimeKind.Unspecified), timeZone);
         _model.EndUtc = TimeZoneInfo.ConvertTimeToUtc(DateTime.SpecifyKind(endLocal, DateTimeKind.Unspecified), timeZone);
         _model.CalendarId = CalendarId == Guid.Empty ? _model.CalendarId : CalendarId;
-        _model.TimeZoneId = string.IsNullOrWhiteSpace(_model.TimeZoneId) ? TimeZoneId : _model.TimeZoneId;
         return true;
+    }
+
+    private void ApplyTimeZoneSelection()
+    {
+        _model.TimeZoneId = CalendarTiming.ResolveId(KnownZone(_model.TimeZoneId, TimeZoneId), _configuredTimeZoneId);
+    }
+
+    private static string? KnownZone(string? selected, string? fromRequest)
+    {
+        if (CalendarTimeZoneResolver.TryFind(selected) != null)
+        {
+            return selected;
+        }
+
+        if (CalendarTimeZoneResolver.TryFind(fromRequest) != null)
+        {
+            return fromRequest;
+        }
+
+        return null;
+    }
+
+    private async Task EnsureConfiguredTimeZoneAsync()
+    {
+        if (_configuredTimeZoneLoaded)
+        {
+            return;
+        }
+
+        _configuredTimeZoneLoaded = true;
+        try
+        {
+            _configuredTimeZoneId = await SettingProvider.GetOrNullAsync(CalendarTiming.SettingName) ?? string.Empty;
+        }
+        catch (Exception exception)
+        {
+            Logger.LogWarning(exception, "Could not read the ABP timing time zone.");
+            _configuredTimeZoneId = string.Empty;
+        }
     }
 
     private TimeZoneInfo ResolveTimeZone()
     {
-        return CalendarTimeZoneResolver.Resolve(_model.TimeZoneId, TimeZoneId);
+        var id = CalendarTiming.ResolveId(KnownZone(_model.TimeZoneId, TimeZoneId), _configuredTimeZoneId);
+        return CalendarTimeZoneResolver.Resolve(id, "UTC");
     }
 
     private void SyncRecurrenceFields()
