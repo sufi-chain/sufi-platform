@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using SufiChain.SufiPlatform.FileManager.FileFolders;
 using SufiChain.SufiPlatform.FileManager.FileItems;
@@ -9,6 +10,7 @@ using SufiChain.SufiPlatform.FileManager.FileTypes;
 using Shouldly;
 using Volo.Abp;
 using Volo.Abp.Guids;
+using Volo.Abp.Security.Claims;
 using Xunit;
 
 namespace SufiChain.SufiPlatform.FileManager.Application.Tests.FileStructures;
@@ -37,25 +39,29 @@ public class FileStructureLifecycleTests : FileManagerApplicationTestBase<SufiFi
         var root = await WithUnitOfWorkAsync(() => _folders.FindByPathAsync("/QaLife01", null));
         root.ShouldNotBeNull();
 
+        var childId = _guids.Create();
         var fileId = _guids.Create();
-        await WithUnitOfWorkAsync(() => _files.InsertAsync(new FileItem(
-            fileId,
-            tenantId: null,
-            name: "note.txt",
-            originalName: "note.txt",
-            blobName: "qa-life-01.txt",
-            mimeType: "text/plain",
-            size: 4,
-            fileType: FileType.Document,
-            structureKey: "QaLife01")
+        var childFileId = _guids.Create();
+        await WithUnitOfWorkAsync(async () =>
         {
-            FolderId = root.Id
-        }, autoSave: true));
+            await _folders.InsertAsync(new FileFolder(
+                childId,
+                tenantId: null,
+                name: "child",
+                path: "/QaLife01/child",
+                type: FolderType.Custom,
+                parentId: root.Id,
+                structureKey: "QaLife01"), autoSave: true);
+            await _files.InsertAsync(File(fileId, "qa-life-01.txt", "QaLife01", root.Id), autoSave: true);
+            await _files.InsertAsync(File(childFileId, "qa-life-01-child.txt", "QaLife01", childId), autoSave: true);
+        });
 
         await _structures.DeleteAsync(created.Id);
 
         (await WithUnitOfWorkAsync(() => _folders.FindByPathAsync("/QaLife01", null))).ShouldBeNull();
+        (await WithUnitOfWorkAsync(() => _folders.FindAsync(childId))).ShouldBeNull();
         (await WithUnitOfWorkAsync(() => _files.FindAsync(fileId))).ShouldBeNull();
+        (await WithUnitOfWorkAsync(() => _files.FindAsync(childFileId))).ShouldBeNull();
         await Should.ThrowAsync<Exception>(() => _structures.GetAsync(created.Id));
     }
 
@@ -84,6 +90,45 @@ public class FileStructureLifecycleTests : FileManagerApplicationTestBase<SufiFi
         result.Success.ShouldBeTrue();
         result.FailedCount.ShouldBe(0);
         (await WithUnitOfWorkAsync(() => _folders.FindAsync(folderId))).ShouldBeNull();
+    }
+
+    [Fact]
+    public async Task A_non_admin_cannot_delete_an_orphaned_structure_root()
+    {
+        var folderId = _guids.Create();
+        await WithUnitOfWorkAsync(() => _folders.InsertAsync(new FileFolder(
+            folderId,
+            tenantId: null,
+            name: "QA B59 1111",
+            path: "/QaMember01",
+            type: FolderType.Structure,
+            structureKey: "QaMember01"), autoSave: true));
+
+        var member = new ClaimsPrincipal(new ClaimsIdentity(new[]
+        {
+            new Claim(AbpClaimTypes.UserId, _guids.Create().ToString()),
+            new Claim(AbpClaimTypes.UserName, "member"),
+            new Claim(AbpClaimTypes.TenantId, _guids.Create().ToString())
+        }, authenticationType: "test"));
+
+        using (GetRequiredService<ICurrentPrincipalAccessor>().Change(member))
+        {
+            var contents = await GetRequiredService<IFolderAppService>().GetContentsAsync(new GetFolderContentsInput());
+            contents.Folders.Single(folder => folder.Id == folderId).CanDelete.ShouldBeFalse();
+
+            var exception = await Should.ThrowAsync<BusinessException>(() =>
+                GetRequiredService<IFolderAppService>().DeleteAsync(folderId));
+            exception.Code.ShouldBe(FileManagerErrorCodes.CannotDeleteSystemFolders);
+
+            var bulk = await _fileManager.DeleteItemsAsync(new BulkDeleteInput
+            {
+                FolderIds = { folderId }
+            });
+            bulk.Success.ShouldBeFalse();
+            bulk.FailedCount.ShouldBe(1);
+        }
+
+        (await WithUnitOfWorkAsync(() => _folders.FindAsync(folderId))).ShouldNotBeNull();
     }
 
     [Fact]
@@ -116,6 +161,20 @@ public class FileStructureLifecycleTests : FileManagerApplicationTestBase<SufiFi
         exception.Code.ShouldBe(FileManagerErrorCodes.FileStructureAlreadyExists);
         exception.Data["Key"].ShouldBe("QaDup01");
     }
+
+    private static FileItem File(Guid id, string name, string structureKey, Guid folderId) => new(
+        id,
+        tenantId: null,
+        name: name,
+        originalName: name,
+        blobName: name,
+        mimeType: "text/plain",
+        size: 4,
+        fileType: FileType.Document,
+        structureKey: structureKey)
+    {
+        FolderId = folderId
+    };
 
     private static CreateUpdateFileStructureDto Structure(string key, string displayName) => new()
     {
@@ -159,16 +218,17 @@ public class FileStructureKeyMessageTests
     }
 
     [Theory]
-    [InlineData("en", "Key must start with a letter or digit")]
-    [InlineData("fa", "کلید باید با حرف یا رقم شروع شود")]
-    [InlineData("ar", "يجب أن يبدأ المفتاح بحرف أو رقم")]
-    [InlineData("es", "La clave debe comenzar con una letra o un dígito")]
-    public void KeyFormatInvalid_maps_in_every_culture(string culture, string expected)
+    [InlineData("en", "Key must start with a letter or digit", "Cannot delete system folders.")]
+    [InlineData("fa", "کلید باید با حرف یا رقم شروع شود", "امکان حذف پوشه‌های سیستمی وجود ندارد.")]
+    [InlineData("ar", "يجب أن يبدأ المفتاح بحرف أو رقم", "لا يمكن حذف مجلدات النظام.")]
+    [InlineData("es", "La clave debe comenzar con una letra o un dígito", "No se pueden eliminar las carpetas del sistema.")]
+    public void KeyFormatInvalid_maps_in_every_culture(string culture, string keyFormat, string systemFolder)
     {
         var json = File.ReadAllText(LocalizationFile(culture));
         json.ShouldContain($"\"{FileStructureKeyRules.FormatInvalid}\"");
-        json.ShouldContain(expected);
+        json.ShouldContain(keyFormat);
         json.ShouldContain("\"StructureKeyAlreadyExists\"");
+        json.ShouldContain($"\"{FileManagerErrorCodes.CannotDeleteSystemFolders}\": \"{systemFolder}\"");
     }
 
     [Fact]
