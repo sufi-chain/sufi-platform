@@ -1,6 +1,8 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SufiChain.SufiPlatform.SufiAI;
 using SufiChain.SufiPlatform.SufiAI.MCP.Servers;
+using SufiChain.SufiPlatform.SufiAI.Permissions;
 using Volo.Abp;
 
 namespace SufiChain.SufiPlatform.SufiAI.Controllers;
@@ -8,6 +10,7 @@ namespace SufiChain.SufiPlatform.SufiAI.Controllers;
 [Area(AIRemoteServiceConsts.ModuleName)]
 [RemoteService(Name = AIRemoteServiceConsts.RemoteServiceName)]
 [Route("api/ai/mcp/servers")]
+[Authorize(AIPermissions.MCPServers.Default)]
 public class MCPServerController : AIController, IMCPServerAppService
 {
     private readonly IMCPServerAppService _mcpServerAppService;

@@ -41,20 +41,38 @@ public class AIPermissionDefinitionProvider : PermissionDefinitionProvider
             L("Permission:WorkspaceChat")
         ).RequireFeatures(SufiAIFeatures.Enable);
         
+        // AGT-13: MCP administration is host-only. Tenant AI chat stays on SufiAI.AI.Chat.
         var mcpToolsPermission = AIGroup.AddPermission(
             AIPermissions.MCPTools.Default,
-            L("Permission:MCPTools")
-        ).RequireFeatures(SufiAIFeatures.Enable);
-        mcpToolsPermission.AddChild(AIPermissions.MCPTools.Execute, L("Permission:Execute")).RequireFeatures(SufiAIFeatures.Enable);
-        mcpToolsPermission.AddChild(AIPermissions.MCPTools.Manage, L("Permission:Manage")).RequireFeatures(SufiAIFeatures.Enable);
+            L("Permission:MCPTools"),
+            multiTenancySide: MultiTenancySides.Host
+        ).RequireFeatures(SufiAIFeatures.Enable, SufiAIFeatures.MCP);
+        mcpToolsPermission.AddChild(
+            AIPermissions.MCPTools.Execute,
+            L("Permission:Execute"),
+            multiTenancySide: MultiTenancySides.Host).RequireFeatures(SufiAIFeatures.Enable, SufiAIFeatures.MCP);
+        mcpToolsPermission.AddChild(
+            AIPermissions.MCPTools.Manage,
+            L("Permission:Manage"),
+            multiTenancySide: MultiTenancySides.Host).RequireFeatures(SufiAIFeatures.Enable, SufiAIFeatures.MCP);
         
         var mcpServersPermission = AIGroup.AddPermission(
             AIPermissions.MCPServers.Default,
-            L("Permission:MCPServers")
-        ).RequireFeatures(SufiAIFeatures.Enable);
-        mcpServersPermission.AddChild(AIPermissions.MCPServers.Create, L("Permission:Create")).RequireFeatures(SufiAIFeatures.Enable);
-        mcpServersPermission.AddChild(AIPermissions.MCPServers.Edit, L("Permission:Edit")).RequireFeatures(SufiAIFeatures.Enable);
-        mcpServersPermission.AddChild(AIPermissions.MCPServers.Delete, L("Permission:Delete")).RequireFeatures(SufiAIFeatures.Enable);
+            L("Permission:MCPServers"),
+            multiTenancySide: MultiTenancySides.Host
+        ).RequireFeatures(SufiAIFeatures.Enable, SufiAIFeatures.MCP);
+        mcpServersPermission.AddChild(
+            AIPermissions.MCPServers.Create,
+            L("Permission:Create"),
+            multiTenancySide: MultiTenancySides.Host).RequireFeatures(SufiAIFeatures.Enable, SufiAIFeatures.MCP);
+        mcpServersPermission.AddChild(
+            AIPermissions.MCPServers.Edit,
+            L("Permission:Edit"),
+            multiTenancySide: MultiTenancySides.Host).RequireFeatures(SufiAIFeatures.Enable, SufiAIFeatures.MCP);
+        mcpServersPermission.AddChild(
+            AIPermissions.MCPServers.Delete,
+            L("Permission:Delete"),
+            multiTenancySide: MultiTenancySides.Host).RequireFeatures(SufiAIFeatures.Enable, SufiAIFeatures.MCP);
 
         // sufi-chain#384 slice 6a: the tool-call audit trail is its own permission so it can be granted
         // to an auditor without handing over MCP server management.

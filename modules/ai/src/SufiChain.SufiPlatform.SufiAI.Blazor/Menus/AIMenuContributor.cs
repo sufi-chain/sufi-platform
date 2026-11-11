@@ -1,5 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
 using SufiChain.SufiPlatform.SufiAI.Features;
+using Volo.Abp.MultiTenancy;
 using SufiChain.SufiPlatform.SufiAI.Localization;
 using SufiChain.SufiPlatform.Settings.Blazor.Settings;
 using SufiChain.SufiPlatform.SufiAI.Blazor.Settings;
@@ -120,7 +121,10 @@ public class AIMenuContributor : IMenuContributor
             aiMenu.AddItem(ragMenu);
         }
 
-        if (await featureChecker.IsEnabledAsync(SufiAIFeatures.MCP))
+        // Host administration only. A tenant circuit must not see MCP servers or tools,
+        // even when SufiAI.MCP is enabled for that edition.
+        var currentTenant = context.ServiceProvider.GetService<ICurrentTenant>();
+        if (currentTenant?.IsAvailable != true && await featureChecker.IsEnabledAsync(SufiAIFeatures.MCP))
         {
             var mcpMenu = new ApplicationMenuItem(
                 AIMenus.MCPGroup,
