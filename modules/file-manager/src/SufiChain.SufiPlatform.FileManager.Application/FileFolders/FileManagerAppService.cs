@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Logging;
 using SufiChain.SufiPlatform.FileManager;
 using SufiChain.SufiPlatform.FileManager.Features;
+using SufiChain.SufiPlatform.FileManager.AccessControl;
 using SufiChain.SufiPlatform.FileManager.FileItems;
 using SufiChain.SufiPlatform.FileManager.Permissions;
 using SufiChain.SufiPlatform.Features;
@@ -32,6 +33,8 @@ public class FileManagerAppService : SufiApplicationService, IFileManagerAppServ
     private readonly IDistributedCache<ZipDownloadCacheItem> _zipDownloadCache;
     private readonly IStructureBlobContainerProvider _structureBlobContainerProvider;
     private readonly IFileStorageQuotaGuard _storageQuotaGuard;
+    private readonly StructureRootFolderCleanup _structureRootCleanup;
+    private readonly IUserFolderAccessContextProvider _accessContextProvider;
 
     private static readonly TimeSpan ZipDownloadTtl = TimeSpan.FromMinutes(15);
 
@@ -41,7 +44,9 @@ public class FileManagerAppService : SufiApplicationService, IFileManagerAppServ
         IDistributedCache<ClipboardStateDto> clipboardCache,
         IDistributedCache<ZipDownloadCacheItem> zipDownloadCache,
         IStructureBlobContainerProvider structureBlobContainerProvider,
-        IFileStorageQuotaGuard storageQuotaGuard)
+        IFileStorageQuotaGuard storageQuotaGuard,
+        StructureRootFolderCleanup structureRootCleanup,
+        IUserFolderAccessContextProvider accessContextProvider)
     {
         _folderRepository = folderRepository;
         _fileItemRepository = fileItemRepository;
@@ -49,6 +54,8 @@ public class FileManagerAppService : SufiApplicationService, IFileManagerAppServ
         _zipDownloadCache = zipDownloadCache;
         _structureBlobContainerProvider = structureBlobContainerProvider;
         _storageQuotaGuard = storageQuotaGuard;
+        _structureRootCleanup = structureRootCleanup;
+        _accessContextProvider = accessContextProvider;
         LocalizationResource = typeof(SufiChain.SufiPlatform.FileManager.Localization.SufiFileManagerResource);
     }
 
@@ -371,7 +378,16 @@ public class FileManagerAppService : SufiApplicationService, IFileManagerAppServ
 
                 if (folder.Type != FolderType.Custom)
                 {
-                    throw new UserFriendlyException("Cannot delete system folders.");
+                    var context = await _accessContextProvider.GetContextAsync();
+                    if (!await _structureRootCleanup.IsOrphanAsync(folder) ||
+                        !(context.IsAdmin || context.IsHost))
+                    {
+                        throw new UserFriendlyException("Cannot delete system folders.");
+                    }
+
+                    await _structureRootCleanup.SoftDeleteAsync(folder, folder.StructureKey, folder.TenantId);
+                    result.SuccessCount++;
+                    continue;
                 }
 
                 // Delete files in folder

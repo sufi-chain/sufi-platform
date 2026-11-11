@@ -303,16 +303,6 @@
 
         try
         {
-            if (_state.CurrentFolderId == null && _state.CurrentPath == "/" && _state.SourceMode == FileExplorerSourceMode.DirectoryMap)
-            {
-                var rootFolders = await FolderAppService.GetTreeAsync();
-                var firstRoot = rootFolders.FirstOrDefault();
-                if (firstRoot?.Id != null)
-                {
-                    _state.NavigateTo(firstRoot.Id, firstRoot.Path);
-                }
-            }
-
             var input = new GetFolderContentsInput
             {
                 FolderId = _state.CurrentFolderId,
@@ -566,7 +556,7 @@
 
     private void HandleDelete()
     {
-        if (!_state.HasSelection || _state.SourceMode == FileExplorerSourceMode.BlobPath) return;
+        if (!_state.CanDeleteSelection || _state.SourceMode == FileExplorerSourceMode.BlobPath) return;
         _deleteConfirm?.Show();
     }
 
@@ -646,7 +636,7 @@
 
     private void HandleContextMenu((double x, double y, Guid? fileId, Guid? folderId) args)
     {
-        _contextMenu?.Show(args.x, args.y, args.fileId, args.folderId);
+        _contextMenu?.Show(args.x, args.y, args.fileId, args.folderId, _state.CanDeleteSelection);
     }
 
     private async Task HandleContextMenuOpen()

@@ -493,6 +493,7 @@
     "KeyRequired": "Key is required.",
     "DisplayNameRequired": "Display name is required.",
     "KeyFormatInvalid": "Key must start with a letter or digit; only letters, digits, underscores, and dots are allowed.",
+    "StructureKeyAlreadyExists": "A structure with the key '{0}' already exists.",
     "Previous": "Previous",
     "Next": "Next",
     "CreateWizard:Introduction": "Introduction",

@@ -441,6 +441,7 @@
     "KeyRequired": "المفتاح مطلوب.",
     "DisplayNameRequired": "اسم العرض مطلوب.",
     "KeyFormatInvalid": "يجب أن يبدأ المفتاح بحرف أو رقم؛ حروف وأرقام وشرطات سفلية ونقاط فقط مسموح بها.",
+    "StructureKeyAlreadyExists": "يوجد هيكل بالمفتاح '{0}' بالفعل.",
     "Previous": "السابق",
     "Next": "التالي",
     "CreateWizard:Introduction": "مقدمة",

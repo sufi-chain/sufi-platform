@@ -430,6 +430,7 @@
     "KeyRequired": "کلید الزامی است.",
     "DisplayNameRequired": "نام نمایشی الزامی است.",
     "KeyFormatInvalid": "کلید باید با حرف یا رقم شروع شود؛ فقط حروف، ارقام، زیرخط و نقطه مجاز است.",
+    "StructureKeyAlreadyExists": "ساختاری با کلید «{0}» از قبل وجود دارد.",
     "Previous": "قبلی",
     "Next": "بعدی",
     "CreateWizard:Introduction": "معرفی",

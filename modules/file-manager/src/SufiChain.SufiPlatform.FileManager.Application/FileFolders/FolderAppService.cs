@@ -7,6 +7,7 @@ using SufiChain.SufiPlatform.FileManager.AccessControl;
 using SufiChain.SufiPlatform.FileManager;
 using SufiChain.SufiPlatform.FileManager.Features;
 using SufiChain.SufiPlatform.FileManager.FileItems;
+using SufiChain.SufiPlatform.FileManager.Localization;
 using SufiChain.SufiPlatform.FileManager.Permissions;
 using SufiChain.SufiPlatform.Features;
 using Volo.Abp;
@@ -27,17 +28,21 @@ public class FolderAppService : SufiApplicationService, IFolderAppService
    private readonly IFileItemRepository _fileItemRepository;
     private readonly IFolderAccessResolver _accessResolver;
     private readonly IUserFolderAccessContextProvider _accessContextProvider;
+    private readonly StructureRootFolderCleanup _structureRootCleanup;
 
    public FolderAppService(
        IFileFolderRepository folderRepository,
         IFileItemRepository fileItemRepository,
         IFolderAccessResolver accessResolver,
-        IUserFolderAccessContextProvider accessContextProvider)
+        IUserFolderAccessContextProvider accessContextProvider,
+        StructureRootFolderCleanup structureRootCleanup)
    {
        _folderRepository = folderRepository;
        _fileItemRepository = fileItemRepository;
         _accessResolver = accessResolver;
         _accessContextProvider = accessContextProvider;
+        _structureRootCleanup = structureRootCleanup;
+        LocalizationResource = typeof(SufiFileManagerResource);
    }
 
     #region Tree Operations
@@ -67,7 +72,8 @@ public class FolderAppService : SufiApplicationService, IFolderAppService
        var rootFolders = folders.Where(f => f.ParentId == null).ToList();
 
         var accessContext = await _accessContextProvider.GetContextAsync();
-        return BuildTreeNodes(rootFolders, folders, accessContext);
+        var existingKeys = await _structureRootCleanup.GetExistingKeysAsync();
+        return BuildTreeNodes(rootFolders, folders, accessContext, existingKeys);
    }
 
     public async Task<List<FolderTreeNodeDto>> GetChildrenAsync(Guid? parentId, string? parentPath = null)
@@ -164,11 +170,14 @@ public class FolderAppService : SufiApplicationService, IFolderAppService
         {
             result.CurrentFolder = await BuildFolderTreeNodeAsync(folder);
             
-            // Get parent
             if (folder.ParentId.HasValue)
             {
                 var parent = await _folderRepository.GetAsync(folder.ParentId.Value);
                 result.ParentFolder = await BuildFolderTreeNodeAsync(parent);
+            }
+            else
+            {
+                result.ParentFolder = VirtualRootNode();
             }
 
             // Build breadcrumbs
@@ -197,26 +206,20 @@ public class FolderAppService : SufiApplicationService, IFolderAppService
         else
         {
             var rootFolders = await _folderRepository.GetRootFoldersAsync(CurrentTenant.Id);
-            if (rootFolders.Count > 0)
+            result.CurrentFolder = VirtualRootNode();
+            result.Breadcrumbs = new List<BreadcrumbItemDto>
             {
-                var firstRoot = rootFolders.First();
-                result.CurrentFolder = await BuildFolderTreeNodeAsync(firstRoot);
-                result.Breadcrumbs = await BuildBreadcrumbsAsync(firstRoot);
-
-                var subfolders = await _folderRepository.GetChildrenAsync(firstRoot.Id);
-                foreach (var subfolder in subfolders)
+                new()
                 {
-                    result.Folders.Add(await BuildFolderTreeNodeAsync(subfolder));
+                    Name = result.CurrentFolder.Name,
+                    Path = "/",
+                    Icon = "building",
+                    IsCurrent = true
                 }
-
-                var structureKey = ResolveRequestedStructureKey(input.StructureKey, firstRoot);
-                var files = await GetFilesForFolderContentsAsync(
-                    firstRoot, structureKey, input.SkipCount, input.MaxResultCount, input.Sorting, input.Filter);
-                result.Files = ObjectMapper.Map<List<FileItem>, List<FileItemDto>>(files);
-                result.TotalFileCount = await GetFileCountForFolderContentsAsync(firstRoot, structureKey);
-                result.TotalFolderCount = result.Folders.Count;
-                result.TotalSize = result.Files.Sum(f => f.Size);
-                return result;
+            };
+            foreach (var rootFolder in rootFolders)
+            {
+                result.Folders.Add(await BuildFolderTreeNodeAsync(rootFolder));
             }
 
             result.Files = new List<FileItemDto>();
@@ -543,7 +546,13 @@ public class FolderAppService : SufiApplicationService, IFolderAppService
 
         if (folder.Type != FolderType.Custom)
         {
-            throw new UserFriendlyException("Cannot delete system folders.");
+            if (!await CanDeleteOrphanStructureRootAsync(folder))
+            {
+                throw new UserFriendlyException("Cannot delete system folders.");
+            }
+
+            await _structureRootCleanup.SoftDeleteAsync(folder, folder.StructureKey, folder.TenantId);
+            return;
         }
 
         var hasChildren = await _folderRepository.HasChildrenAsync(id);
@@ -850,13 +859,17 @@ public class FolderAppService : SufiApplicationService, IFolderAppService
 
     #region Private Helpers
 
-    private List<FolderTreeNodeDto> BuildTreeNodes(List<FileFolder> rootFolders, List<FileFolder> allFolders, FolderAccessContext? accessContext)
+    private List<FolderTreeNodeDto> BuildTreeNodes(
+        List<FileFolder> rootFolders,
+        List<FileFolder> allFolders,
+        FolderAccessContext? accessContext,
+        IReadOnlySet<string> existingStructureKeys)
     {
         var result = new List<FolderTreeNodeDto>();
 
         foreach (var folder in rootFolders.OrderBy(f => f.SortOrder).ThenBy(f => f.Name))
         {
-            var (canWrite, canDelete) = FastNodeAccess(folder, accessContext);
+            var (canWrite, canDelete) = FastNodeAccess(folder, accessContext, existingStructureKeys);
             var node = new FolderTreeNodeDto
             {
                 Id = folder.Id,
@@ -880,7 +893,7 @@ public class FolderAppService : SufiApplicationService, IFolderAppService
             {
                 node.HasChildren = true;
                 node.ChildFolderCount = children.Count;
-                node.Children = BuildTreeNodes(children, allFolders, accessContext);
+                node.Children = BuildTreeNodes(children, allFolders, accessContext, existingStructureKeys);
             }
 
             result.Add(node);
@@ -943,6 +956,17 @@ public class FolderAppService : SufiApplicationService, IFolderAppService
             {
                 break;
             }
+        }
+
+        if (breadcrumbs.Count == 0 || breadcrumbs[0].Path != "/")
+        {
+            breadcrumbs.Insert(0, new BreadcrumbItemDto
+            {
+                Name = VirtualRootNode().Name,
+                Path = "/",
+                Icon = "building",
+                IsCurrent = false
+            });
         }
 
         return breadcrumbs;
@@ -1136,15 +1160,16 @@ public class FolderAppService : SufiApplicationService, IFolderAppService
 
    /// <summary>
    /// Evaluates (CanWrite, CanDelete) for a folder node against the current user's
-   /// access context. Virtual/system folders are never deletable.
+   /// access context. System folders stay protected, except an orphaned structure root
+   /// whose structure no longer exists: an admin can delete that folder.
    /// </summary>
    private async Task<(bool CanWrite, bool CanDelete)> EvaluateNodeAccessAsync(FileFolder folder, FolderAccessContext context)
    {
-       // Virtual folders are never deletable.
        if (folder.Type != FolderType.Custom)
        {
            var canRead = await _accessResolver.HasPermissionAsync(folder, context, FolderPermissionLevel.Read);
-           return (canRead, false);
+           var canDeleteOrphan = await CanDeleteOrphanStructureRootAsync(folder);
+           return (canRead, canDeleteOrphan);
        }
 
        var canWrite = await _accessResolver.HasPermissionAsync(folder, context, FolderPermissionLevel.Write);
@@ -1159,7 +1184,10 @@ public class FolderAppService : SufiApplicationService, IFolderAppService
     /// when present. Non-fast-path users with unloaded permissions get (false, false)
     /// until the node is opened (lazy children use the async path).
     /// </summary>
-    private (bool CanWrite, bool CanDelete) FastNodeAccess(FileFolder folder, FolderAccessContext? context)
+    private (bool CanWrite, bool CanDelete) FastNodeAccess(
+        FileFolder folder,
+        FolderAccessContext? context,
+        IReadOnlySet<string> existingStructureKeys)
     {
         var isCustom = folder.Type == FolderType.Custom;
 
@@ -1168,10 +1196,19 @@ public class FolderAppService : SufiApplicationService, IFolderAppService
             return (false, false);
         }
 
+        var structureExists = !string.IsNullOrWhiteSpace(folder.StructureKey) &&
+                              existingStructureKeys.Contains(folder.StructureKey);
+        var orphanDeletable = OrphanStructureFolder.CanDelete(
+            folder.Type,
+            folder.ParentId,
+            folder.StructureKey,
+            structureExists,
+            context.IsAdmin || context.IsHost);
+
         // Host/admin/owner fast paths.
         if (context.IsHost || context.IsAdmin || folder.CreatorId == context.UserId)
         {
-            return (true, isCustom);
+            return (true, isCustom || orphanDeletable);
         }
 
         // Tenant isolation: a tenant user cannot access another tenant's folder.
@@ -1185,7 +1222,8 @@ public class FolderAppService : SufiApplicationService, IFolderAppService
         {
             var chain = new List<FileFolder> { folder };
             var canWrite = _accessResolver.HasPermission(chain, context, FolderPermissionLevel.Write);
-            var canDelete = isCustom && _accessResolver.HasPermission(chain, context, FolderPermissionLevel.Delete);
+            var canDelete = orphanDeletable ||
+                            (isCustom && _accessResolver.HasPermission(chain, context, FolderPermissionLevel.Delete));
             return (canWrite, canDelete);
         }
 
@@ -1237,6 +1275,28 @@ public class FolderAppService : SufiApplicationService, IFolderAppService
         FolderType.Custom => "folder",
         _ => "folder"
     };
+
+    private FolderTreeNodeDto VirtualRootNode() => new()
+    {
+        Name = L["Menu:AssetManager"],
+        Path = "/",
+        Type = FolderTypeDto.TenantRoot,
+        Icon = "building",
+        IsVirtual = true,
+        CanWrite = false,
+        CanDelete = false
+    };
+
+    private async Task<bool> CanDeleteOrphanStructureRootAsync(FileFolder folder)
+    {
+        var context = await _accessContextProvider.GetContextAsync();
+        if (!(context.IsAdmin || context.IsHost) || !await _structureRootCleanup.IsOrphanAsync(folder))
+        {
+            return false;
+        }
+
+        return true;
+    }
 
     private static string SanitizeFolderName(string name)
     {

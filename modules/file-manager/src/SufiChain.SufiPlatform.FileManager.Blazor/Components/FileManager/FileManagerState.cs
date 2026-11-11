@@ -96,6 +96,31 @@ public class FileManagerState
     public bool HasSelection => SelectedFiles.Count > 0 || SelectedFolders.Count > 0;
 
     /// <summary>
+    /// Selected files can be deleted. A selected folder can be deleted only when the server marked it CanDelete.
+    /// </summary>
+    public bool CanDeleteSelection
+    {
+        get
+        {
+            if (!HasSelection || Contents == null)
+            {
+                return false;
+            }
+
+            foreach (var folderId in SelectedFolders)
+            {
+                var folder = Contents.Folders.FirstOrDefault(item => item.Id == folderId);
+                if (folder == null || !folder.CanDelete)
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+    }
+
+    /// <summary>
     /// Get total selection count
     /// </summary>
     public int SelectionCount => SelectedFiles.Count + SelectedFolders.Count;

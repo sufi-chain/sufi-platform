@@ -441,6 +441,7 @@
     "KeyRequired": "La clave es obligatoria.",
     "DisplayNameRequired": "El nombre para mostrar es obligatorio.",
     "KeyFormatInvalid": "La clave debe comenzar con una letra o un dígito; solo se permiten letras, dígitos, guiones bajos y puntos.",
+    "StructureKeyAlreadyExists": "Ya existe una estructura con la clave '{0}'.",
     "Previous": "Anterior",
     "Next": "Siguiente",
     "CreateWizard:Introduction": "Introducción",

@@ -29,7 +29,7 @@
             @if (_hasSelection)
             {
                 <div class="fm-menu-divider"></div>
-                <div class="fm-menu-item" @onclick="@HandleDelete">
+                <div class="fm-menu-item @(_canDelete ? "" : "disabled")" @onclick="@HandleDelete">
                     <SbIcon Name="trash" />
                     <span>@L["Delete"]</span>
                     <span class="fm-shortcut">Del</span>
@@ -103,13 +103,15 @@
     private Guid? _folderId;
     private bool _hasSelection => _fileId.HasValue || _folderId.HasValue;
     private bool _isFile => _fileId.HasValue;
+    private bool _canDelete;
 
-    public void Show(double x, double y, Guid? fileId, Guid? folderId)
+    public void Show(double x, double y, Guid? fileId, Guid? folderId, bool canDelete)
     {
         _posX = x;
         _posY = y;
         _fileId = fileId;
         _folderId = folderId;
+        _canDelete = canDelete;
         _isVisible = true;
         StateHasChanged();
     }
@@ -147,6 +149,11 @@
 
     private async Task HandleDelete()
     {
+        if (!_canDelete)
+        {
+            return;
+        }
+
         Hide();
         await OnDelete.InvokeAsync();
     }
