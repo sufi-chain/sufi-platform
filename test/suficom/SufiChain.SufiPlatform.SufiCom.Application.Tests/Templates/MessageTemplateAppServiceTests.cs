@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Shouldly;
+using SufiChain.SufiPlatform.SufiCom;
 using SufiChain.SufiPlatform.SufiCom.Templates;
 using Volo.Abp;
 using Xunit;
@@ -90,5 +91,91 @@ public class MessageTemplateAppServiceTests : SufiComTestBase<SufiComApplication
         });
 
         preview.RenderedContent.ShouldContain("Bob");
+    }
+
+    [Fact]
+    public async Task Should_Preview_Unknown_Scriban_Variable_As_Blank_With_Diagnostic()
+    {
+        await WithUnitOfWorkAsync(async () =>
+        {
+            await _templateAppService.CreateAsync(new CreateMessageTemplateDto
+            {
+                TemplateKey = "Test.QaMissing",
+                Culture = "en",
+                Channel = MessageChannel.SMS,
+                Content = "Hello {{ qa_missing }}"
+            });
+        });
+
+        var stored = await _templateAppService.PreviewAsync(new RenderTemplateInput
+        {
+            TemplateKey = "Test.QaMissing",
+            Culture = "en",
+            Channel = MessageChannel.SMS
+        });
+
+        stored.RenderedContent.ShouldContain("Hello");
+        stored.RenderedContent.ShouldNotContain("qa_missing");
+        stored.MissingVariables.ShouldContain("qa_missing");
+
+        var withoutValue = await _templateAppService.PreviewAsync(new RenderTemplateInput
+        {
+            TemplateKey = "Test.QaMissing",
+            Culture = "en",
+            Channel = MessageChannel.Email,
+            ContentOverride = "Hello {{ qa_missing }}"
+        });
+
+        withoutValue.RenderedContent.ShouldContain("Hello");
+        withoutValue.RenderedContent.ShouldNotContain("qa_missing");
+        withoutValue.HasMissingVariables.ShouldBeTrue();
+        withoutValue.MissingVariables.ShouldContain("qa_missing");
+
+        var withValue = await _templateAppService.PreviewAsync(new RenderTemplateInput
+        {
+            TemplateKey = "Test.QaMissing",
+            Culture = "en",
+            Channel = MessageChannel.SMS,
+            ContentOverride = "Hello {{ qa_missing }}",
+            Data = new Dictionary<string, object> { ["qa_missing"] = "ready" }
+        });
+
+        withValue.RenderedContent.ShouldContain("ready");
+        withValue.MissingVariables.ShouldBeNull();
+    }
+
+    [Fact]
+    public async Task Should_Preview_Parse_Error_As_Business_Exception_With_Location()
+    {
+        var exception = await Should.ThrowAsync<BusinessException>(() =>
+            _templateAppService.PreviewAsync(new RenderTemplateInput
+            {
+                TemplateKey = "Test.QaParse",
+                Culture = "en",
+                Channel = MessageChannel.Voice,
+                ContentOverride = "{{ 1 + }}"
+            }));
+
+        exception.Code.ShouldBe(SufiComDomainErrorCodes.TemplateParseFailed);
+        exception.Data["Line"].ShouldBe(1);
+        exception.Data["Column"].ShouldBe(8);
+        exception.Data["Detail"].ToString().ShouldContain("binary expression");
+    }
+
+    [Fact]
+    public async Task Should_Preview_Runtime_Error_As_Business_Exception_With_Location()
+    {
+        var exception = await Should.ThrowAsync<BusinessException>(() =>
+            _templateAppService.PreviewAsync(new RenderTemplateInput
+            {
+                TemplateKey = "Test.QaRuntime",
+                Culture = "en",
+                Channel = MessageChannel.SMS,
+                ContentOverride = "Hello {{ qa missing }}"
+            }));
+
+        exception.Code.ShouldBe(SufiComDomainErrorCodes.TemplateParseFailed);
+        exception.Data["Line"].ShouldBe(1);
+        exception.Data["Column"].ShouldBe(10);
     }
 }
