@@ -431,6 +431,7 @@
     "Expiration3Days": "٣ أيام",
     "Expiration7Days": "٧ أيام",
     "ExpirationCustom": "مخصص",
+    "ExpirationCustomRange": "أدخل عدد الدقائق من {0} إلى {1}.",
     "CreateLink": "إنشاء رابط",
     "Link": "الرابط",
     "CopyToClipboard": "نسخ إلى الحافظة",

@@ -483,6 +483,7 @@
     "Expiration3Days": "3 days",
     "Expiration7Days": "7 days",
     "ExpirationCustom": "Custom",
+    "ExpirationCustomRange": "Enter a number of minutes from {0} to {1}.",
     "CreateLink": "Create Link",
     "Link": "Link",
     "CopyToClipboard": "Copy to clipboard",

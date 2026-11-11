@@ -16,6 +16,7 @@ using Volo.Abp.MultiTenancy;
 using Volo.Abp.Security.Encryption;
 using Volo.Abp.Timing;
 using Volo.Abp.Users;
+using Volo.Abp.Validation;
 using Xunit;
 
 namespace SufiChain.SufiPlatform.FileManager.Application.Tests.FileItems;
@@ -133,6 +134,86 @@ public class QuickShareLinkTests
         shared.Status.ShouldBe(FileShareLinkStatus.Invalid);
         shared.Content.ShouldBeNull();
         await fixture.Repository.DidNotReceive().FindAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>());
+    }
+
+    [Theory]
+    [InlineData(0)]
+    [InlineData(10081)]
+    public void Server_rejects_an_expiry_outside_one_minute_to_seven_days(int minutes)
+    {
+        var fixture = new ShareFixture();
+        var item = fixture.AddFile(Guid.NewGuid());
+
+        Should.Throw<AbpValidationException>(() => FileShareDuration.Ensure(minutes));
+        Should.Throw<AbpValidationException>(() => fixture.Service.CreateUrl(item, minutes));
+    }
+
+    [Theory]
+    [InlineData(1)]
+    [InlineData(10080)]
+    public void Server_accepts_the_expiry_bounds(int minutes)
+    {
+        var fixture = new ShareFixture();
+        var item = fixture.AddFile(Guid.NewGuid());
+
+        FileShareDuration.Ensure(minutes);
+        var url = fixture.Service.CreateUrl(item, minutes);
+
+        url.ShouldStartWith(BaseUrl + "s/");
+        FileShareExpiry.IsInRange(minutes).ShouldBeTrue();
+    }
+
+    [Theory]
+    [InlineData("en", "Enter a number of minutes from {0} to {1}.")]
+    [InlineData("fa", "تعداد دقیقه‌ها را از {0} تا {1} وارد کنید.")]
+    [InlineData("ar", "أدخل عدد الدقائق من {0} إلى {1}.")]
+    [InlineData("es", "Introduzca un número de minutos entre {0} y {1}.")]
+    public void Custom_expiry_message_is_localized(string culture, string text)
+    {
+        var json = File.ReadAllText(FileManagerJson(culture));
+        json.ShouldContain("\"ExpirationCustomRange\"");
+        json.ShouldContain(text);
+    }
+
+    [Fact]
+    public void Share_dialog_uses_the_shared_maximum_and_disables_create_when_custom_is_invalid()
+    {
+        var razor = File.ReadAllText(Path.Combine(
+            PlatformRoot().FullName,
+            "modules/file-manager/src/SufiChain.SufiPlatform.FileManager.Blazor/Components/FileManager/QuickShareModal.razor"));
+
+        razor.ShouldContain("max=\"@FileShareExpiry.MaxMinutes\"");
+        razor.ShouldContain("min=\"@FileShareExpiry.MinMinutes\"");
+        razor.ShouldContain("ErrorText=\"@CustomExpiryError\"");
+        razor.ShouldContain("Disabled=\"@CreateDisabled\"");
+        razor.ShouldContain("ExpirationCustomRange");
+        razor.ShouldNotContain("Math.Clamp");
+        FileShareExpiry.MaxMinutes.ShouldBe(10080);
+    }
+
+    private static string FileManagerJson(string culture)
+    {
+        return Path.Combine(
+            PlatformRoot().FullName,
+            "modules",
+            "file-manager",
+            "src",
+            "SufiChain.SufiPlatform.FileManager.Domain.Shared",
+            "Localization",
+            "FileManager",
+            culture + ".json");
+    }
+
+    private static DirectoryInfo PlatformRoot()
+    {
+        var dir = new DirectoryInfo(AppContext.BaseDirectory);
+        while (dir != null && !Directory.Exists(Path.Combine(dir.FullName, "modules", "file-manager")))
+        {
+            dir = dir.Parent;
+        }
+
+        dir.ShouldNotBeNull();
+        return dir;
     }
 
     private static string TokenOf(string url)

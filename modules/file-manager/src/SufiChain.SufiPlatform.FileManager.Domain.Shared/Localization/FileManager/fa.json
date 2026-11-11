@@ -420,6 +420,7 @@
     "Expiration3Days": "۳ روز",
     "Expiration7Days": "۷ روز",
     "ExpirationCustom": "سفارشی",
+    "ExpirationCustomRange": "تعداد دقیقه‌ها را از {0} تا {1} وارد کنید.",
     "CreateLink": "ایجاد لینک",
     "Link": "لینک",
     "CopyToClipboard": "کپی به کلیپبورد",

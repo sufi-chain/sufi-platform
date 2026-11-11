@@ -988,6 +988,7 @@ public partial class FileItemAppService : SufiApplicationService, IFileItemAppSe
     [Authorize(FileManagerPermissions.FileItems.Default)]
     public async Task<string> GetTemporaryAccessUrlAsync(Guid id, int durationMinutes)
     {
+        FileShareDuration.Ensure(durationMinutes);
         var fileItem = await _fileItemRepository.GetAsync(id);
         // Quick Share returns a signed /s/{token} link with expiry and revoke, never the raw download URL (sufi-chain#436).
         return LazyServiceProvider.LazyGetRequiredService<FileShareLinkService>().CreateUrl(fileItem, durationMinutes);
