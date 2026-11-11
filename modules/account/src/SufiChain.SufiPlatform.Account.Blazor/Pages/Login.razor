@@ -157,7 +157,7 @@
 			{
 				"EmailConfirmationRequired" => L["AccountNotActive"],
 				"PhoneConfirmationSessionInvalid" => AccountL["ConfirmPhoneSessionInvalid"],
-				_ => ErrorFromQuery
+				_ => LoginQueryErrors.Localize(ErrorFromQuery, L, AccountL)
 			};
 		}
 		// Get external login schemes (Google, Microsoft, Facebook, etc.) from host configuration
