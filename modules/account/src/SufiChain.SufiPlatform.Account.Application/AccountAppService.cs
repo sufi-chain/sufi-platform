@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -10,6 +11,7 @@ using SufiChain.SufiPlatform.Identity.Settings;
 using SufiChain.SufiPlatform.UI.Abstractions.Account;
 using Volo.Abp;
 using SufiChain.SufiPlatform.Application.Services;
+using Volo.Abp.BackgroundJobs;
 using Volo.Abp.EventBus.Local;
 using Volo.Abp.Settings;
 
@@ -107,25 +109,48 @@ public class AccountAppService : SufiApplicationService, IAccountAppService
     {
         await ValidateCaptchaAsync(input, CaptchaPurpose.ForgotPassword);
 
+        // Token generation and the reset email run after this method returns. A known address
+        // must not take longer than an unknown one, or the response time reveals which emails exist.
+        var started = Stopwatch.GetTimestamp();
         var user = await FindPasswordResetRecipientAsync(input.Email);
-        if (user == null)
+        if (user != null)
         {
-            // Same completion as a known address. A distinct error would reveal which emails exist.
-            return;
+            await QueuePasswordResetDeliveryAsync(user, input);
         }
 
-        var resetToken = await UserManager.GeneratePasswordResetTokenAsync(user);
+        await HoldPasswordResetResponseAsync(started);
+    }
 
-        await LocalEventBus.PublishAsync(new PasswordResetRequestedEvent
+    /// <summary>
+    /// Floor for a completed reset request. Both a known and an unknown address wait out whatever
+    /// part of this remains after the lookup, so the response time is not a side channel.
+    /// </summary>
+    protected virtual TimeSpan PasswordResetResponseFloor => TimeSpan.FromMilliseconds(300);
+
+    protected virtual Task QueuePasswordResetDeliveryAsync(IdentityUser user, SendPasswordResetCodeDto input)
+    {
+        return BackgroundJobManager.EnqueueAsync(new PasswordResetDeliveryArgs
         {
+            TenantId = CurrentTenant.Id,
             UserId = user.Id,
             Email = input.Email,
-            ResetToken = resetToken,
             AppName = input.AppName,
             ReturnUrl = input.ReturnUrl,
             ReturnUrlHash = input.ReturnUrlHash
         });
     }
+
+    protected virtual async Task HoldPasswordResetResponseAsync(long startedTimestamp)
+    {
+        while (Stopwatch.GetElapsedTime(startedTimestamp) < PasswordResetResponseFloor)
+        {
+            var remaining = PasswordResetResponseFloor - Stopwatch.GetElapsedTime(startedTimestamp);
+            await Task.Delay(remaining);
+        }
+    }
+
+    protected IBackgroundJobManager BackgroundJobManager =>
+        LazyServiceProvider.LazyGetRequiredService<IBackgroundJobManager>();
 
     public virtual async Task<bool> VerifyPasswordResetTokenAsync(VerifyPasswordResetTokenInput input)
     {

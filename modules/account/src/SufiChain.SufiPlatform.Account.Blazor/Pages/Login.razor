@@ -141,7 +141,7 @@
 	private string? PasswordError { get; set; }
 	private IReadOnlyList<string> _externalProviderNames { get; set; } = Array.Empty<string>();
 	private bool _otpLoginEnabled;
-	private bool _selfRegistrationEnabled = true;
+	private bool _selfRegistrationEnabled;
 
 	private static readonly HashSet<string> _nonExternalSchemes = new(StringComparer.OrdinalIgnoreCase)
 	{

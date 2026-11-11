@@ -77,6 +77,45 @@ public class SelfRegistrationDisabledTests
     }
 
     [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task Otp_options_allow_registration_only_when_self_registration_is_on(bool selfRegistration)
+    {
+        var settings = Substitute.For<ISettingProvider>();
+        settings.GetOrNullAsync(Arg.Any<string>()).Returns((string?)null);
+        settings.GetOrNullAsync(IdentitySettingNames.Otp.IsEnabled).Returns("true");
+        settings.GetOrNullAsync(IdentitySettingNames.Otp.AllowRegistration).Returns("true");
+        settings.GetOrNullAsync(IdentitySettingNames.Registration.EnableSelfRegistration)
+            .Returns(selfRegistration ? "true" : "false");
+
+        var channels = Substitute.For<IVerificationChannelAvailabilityChecker>();
+        channels.GetAvailableChannelsAsync()
+            .Returns(new[] { VerificationDeliveryChannel.Email });
+        var resolver = Substitute.For<IVerificationChannelResolver>();
+        resolver.ResolveAsync(Arg.Any<VerificationPurpose>(), Arg.Any<VerificationDeliveryChannel?>())
+            .Returns(VerificationDeliveryChannel.Email);
+
+        var service = new AccountOtpAppService(
+            null!,
+            null!,
+            null!,
+            settings,
+            null!,
+            resolver,
+            channels,
+            null!,
+            null!,
+            null!,
+            null!,
+            null!);
+
+        var options = await service.GetOtpOptionsAsync();
+
+        options.IsEnabled.ShouldBeTrue();
+        options.AllowRegistration.ShouldBe(selfRegistration);
+    }
+
+    [Theory]
     [InlineData("false", false)]
     [InlineData("False", false)]
     [InlineData(null, false)]
@@ -97,15 +136,24 @@ public class SelfRegistrationDisabledTests
         var chain = platform.Parent!;
         File.ReadAllText(Path.Combine(platform.FullName, "modules/account/src/SufiChain.SufiPlatform.Account.Blazor/Pages/Register.razor"))
             .ShouldContain("IsSelfRegistrationEnabled");
-        File.ReadAllText(Path.Combine(platform.FullName, "modules/account/src/SufiChain.SufiPlatform.Account.Blazor/Pages/Login.razor"))
-            .ShouldContain("_selfRegistrationEnabled");
+        var platformLogin = File.ReadAllText(Path.Combine(platform.FullName, "modules/account/src/SufiChain.SufiPlatform.Account.Blazor/Pages/Login.razor"));
+        platformLogin.ShouldContain("private bool _selfRegistrationEnabled;");
+        platformLogin.ShouldNotContain("_selfRegistrationEnabled = true");
         File.ReadAllText(Path.Combine(chain.FullName, "hosts/SufiChane.SufiPlatform/src/SufiChane.SufiPlatform.Account.Blazor/Pages/Account/Register.razor"))
             .ShouldContain("IsSelfRegistrationEnabled");
-        File.ReadAllText(Path.Combine(chain.FullName, "hosts/SufiChane.SufiPlatform/src/SufiChane.SufiPlatform.Account.Blazor/Pages/Account/Login.razor"))
-            .ShouldContain("_selfRegistrationEnabled");
+        var hostLogin = File.ReadAllText(Path.Combine(chain.FullName, "hosts/SufiChane.SufiPlatform/src/SufiChane.SufiPlatform.Account.Blazor/Pages/Account/Login.razor"));
+        hostLogin.ShouldContain("private bool _selfRegistrationEnabled;");
+        hostLogin.ShouldNotContain("_selfRegistrationEnabled = true");
         var external = File.ReadAllText(Path.Combine(
             platform.FullName,
             "framework/SufiChain.SufiPlatform.AspNetCore.Authentication.Server/Controllers/SufiAccountController.cs"));
+        var callback = external.IndexOf("ExternalLoginCallback", StringComparison.Ordinal);
+        var disabledLogin = external.IndexOf("RegistrationDisabledLogin", callback, StringComparison.Ordinal);
+        var registerRedirect = external.IndexOf("/account/register?isExternalLogin=true", callback, StringComparison.Ordinal);
+        disabledLogin.ShouldBeGreaterThan(callback);
+        disabledLogin.ShouldBeLessThan(registerRedirect);
+        external.ShouldContain("IdentitySecurityErrorCodes.SelfRegistrationDisabled");
+        external.ShouldNotContain("return Redirect(\"/account/register\")");
         var confirmation = external.IndexOf("ExternalLoginConfirmation", StringComparison.Ordinal);
         var create = external.IndexOf("_userManager.CreateAsync(user)", confirmation, StringComparison.Ordinal);
         external.LastIndexOf("IdentitySelfRegistrationRules.IsEnabledAsync", create, StringComparison.Ordinal)

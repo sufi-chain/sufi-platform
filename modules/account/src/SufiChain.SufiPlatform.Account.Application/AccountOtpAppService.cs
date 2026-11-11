@@ -86,7 +86,8 @@ public class AccountOtpAppService : SufiApplicationService, IAccountOtpAppServic
             IsEnabled = isEnabled,
             AllowLogin = isEnabled && await SettingProvider.IsTrueAsync(IdentitySettingNames.Otp.AllowLogin),
             AllowRegistration = isEnabled &&
-                                await SettingProvider.IsTrueAsync(IdentitySettingNames.Otp.AllowRegistration),
+                                await SettingProvider.IsTrueAsync(IdentitySettingNames.Otp.AllowRegistration) &&
+                                await IdentitySelfRegistrationRules.IsEnabledAsync(SettingProvider),
             DefaultChannel = defaultChannel,
             AvailableChannels = available
         };
