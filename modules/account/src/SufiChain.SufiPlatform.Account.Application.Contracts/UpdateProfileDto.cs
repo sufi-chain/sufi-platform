@@ -23,6 +23,7 @@ public class UpdateProfileDto : ExtensibleObject
 
     // Length is enforced on the normalized number in ProfileUpdateRules.
     // A formatted value is longer than the 16-character column and must not fail binding.
+    [OptionalPhone]
     public string? PhoneNumber { get; set; }
 
     public string? ConcurrencyStamp { get; set; }

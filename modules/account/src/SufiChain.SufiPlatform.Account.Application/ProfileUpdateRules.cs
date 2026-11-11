@@ -24,15 +24,16 @@ public static class ProfileUpdateRules
 
     public static string? NormalizePhone(string? value)
     {
-        if (string.IsNullOrWhiteSpace(value))
+        if (!TryNormalizePhone(value, out var normalized))
         {
-            return null;
-        }
-
-        var normalized = VerificationIdentifierHelper.NormalizePhone(value);
-        if (string.IsNullOrEmpty(normalized) || normalized == "+")
-        {
-            return null;
+            throw new AbpValidationException(
+                "The phone number is not valid.",
+                new List<ValidationResult>
+                {
+                    new(
+                        OptionalPhoneAttribute.ErrorMessageTemplate,
+                        new[] { nameof(UpdateProfileDto.PhoneNumber) })
+                });
         }
 
         return normalized;
@@ -40,7 +41,34 @@ public static class ProfileUpdateRules
 
     public static bool SamePhone(string? stored, string? submitted)
     {
-        return string.Equals(NormalizePhone(stored), NormalizePhone(submitted), StringComparison.Ordinal);
+        TryNormalizePhone(stored, out var left);
+        TryNormalizePhone(submitted, out var right);
+        return string.Equals(left, right, StringComparison.Ordinal);
+    }
+
+    private static bool TryNormalizePhone(string? value, out string? normalized)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            normalized = null;
+            return true;
+        }
+
+        if (!OptionalPhoneAttribute.IsValidPhone(value))
+        {
+            normalized = null;
+            return false;
+        }
+
+        var candidate = VerificationIdentifierHelper.NormalizePhone(value);
+        if (string.IsNullOrEmpty(candidate) || candidate == "+")
+        {
+            normalized = null;
+            return false;
+        }
+
+        normalized = candidate;
+        return true;
     }
 
     public static void EnsurePhoneFits(string? normalizedPhone)

@@ -13,7 +13,7 @@
 }
 else if (Profile != null)
 {
-    <EditForm Model="Profile" FormName="@ProfileFormName" OnValidSubmit="OnSaveAsync">
+    <EditForm Model="Profile" FormName="@ProfileFormName" OnSubmit="HandleSubmitAsync">
         <DataAnnotationsValidator />
 
         <SbStack Gap="3">
@@ -32,6 +32,10 @@ else if (Profile != null)
                          Required="true" />
 
             <SbTextField Type="tel" InputMode="tel" @bind-Value="Profile.PhoneNumber" Label="@L["PhoneNumber"]" />
+            @if (!string.IsNullOrEmpty(_phoneError))
+            {
+                <span class="sb-field-error">@_phoneError</span>
+            }
 
             <InputText type="hidden" @bind-Value="Profile.ConcurrencyStamp" />
 

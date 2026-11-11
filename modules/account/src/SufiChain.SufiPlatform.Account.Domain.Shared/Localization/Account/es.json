@@ -145,6 +145,7 @@
     "EmailConfirmationResendFailed": "No se pudo enviar el correo de confirmación. Inténtelo de nuevo.",
     "CaptchaLoadFailed": "No se pudo cargar el captcha. Actualice la página e inténtelo de nuevo.",
     "ProfileSaveFailed": "No se pudo guardar el perfil. Inténtelo de nuevo.",
+    "PhoneNumber:Invalid": "El campo {0} no es un número de teléfono válido.",
     "PasswordChangeFailed": "No se pudo cambiar la contraseña. Inténtelo de nuevo.",
     "LinkNewAccount": "Vincular cuenta nueva",
     "LinkAccountSignInHint": "Inicie sesión con la cuenta que desea vincular. El vínculo se completa después del inicio de sesión.",
