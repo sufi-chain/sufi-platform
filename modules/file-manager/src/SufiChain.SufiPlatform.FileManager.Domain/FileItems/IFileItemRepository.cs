@@ -30,8 +30,11 @@ public interface IFileItemRepository : IRepository<FileItem, Guid>
         Guid? tenantId = null,
         CancellationToken cancellationToken = default);
 
+    /// <summary>
+    /// Sum of file and thumbnail bytes for one tenant, or for the host when <paramref name="tenantId"/> is null.
+    /// </summary>
     Task<long> GetTotalSizeByTenantAsync(
-        Guid tenantId,
+        Guid? tenantId,
         CancellationToken cancellationToken = default);
 
     Task<FileItem?> FindByBlobNameAsync(
