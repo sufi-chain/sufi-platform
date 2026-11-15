@@ -15,13 +15,17 @@ public class TenantAppService : TenantsAppServiceBase, ITenantAppService
         TenantManager = tenantManager;
     }
 
+    [Authorize(TenantsPermissions.Tenants.Default)]
     public virtual async Task<TenantDto> GetAsync(Guid id)
     {
+        await CheckPolicyAsync(TenantsPermissions.Tenants.Default);
         return MapToDto(await TenantRepository.GetAsync(id, includeDetails: true));
     }
 
+    [Authorize(TenantsPermissions.Tenants.Default)]
     public virtual async Task<PagedResultDto<TenantDto>> GetListAsync(GetTenantsInput input)
     {
+        await CheckPolicyAsync(TenantsPermissions.Tenants.Default);
         var count = await TenantRepository.GetCountAsync(input.Filter);
         var tenants = await TenantRepository.GetListAsync(
             input.Sorting,
@@ -36,6 +40,7 @@ public class TenantAppService : TenantsAppServiceBase, ITenantAppService
     [Authorize(TenantsPermissions.Tenants.Create)]
     public virtual async Task<TenantDto> CreateAsync(TenantCreateDto input)
     {
+        await CheckPolicyAsync(TenantsPermissions.Tenants.Create);
         var tenant = await TenantManager.CreateAsync(input.Name);
         tenant.SetEditionId(input.EditionId);
         tenant.SetOwnerUserId(input.OwnerUserId);
@@ -47,6 +52,7 @@ public class TenantAppService : TenantsAppServiceBase, ITenantAppService
     [Authorize(TenantsPermissions.Tenants.Update)]
     public virtual async Task<TenantDto> UpdateAsync(Guid id, TenantUpdateDto input)
     {
+        await CheckPolicyAsync(TenantsPermissions.Tenants.Update);
         var tenant = await TenantRepository.GetAsync(id, includeDetails: true);
         tenant.ConcurrencyStamp = input.ConcurrencyStamp;
         await TenantManager.ChangeNameAsync(tenant, input.Name);
@@ -60,12 +66,14 @@ public class TenantAppService : TenantsAppServiceBase, ITenantAppService
     [Authorize(TenantsPermissions.Tenants.Delete)]
     public virtual async Task DeleteAsync(Guid id)
     {
+        await CheckPolicyAsync(TenantsPermissions.Tenants.Delete);
         await TenantRepository.DeleteAsync(id, autoSave: true);
     }
 
     [Authorize(TenantsPermissions.Tenants.ManageConnectionStrings)]
     public virtual async Task<string> GetDefaultConnectionStringAsync(Guid id)
     {
+        await CheckPolicyAsync(TenantsPermissions.Tenants.ManageConnectionStrings);
         var tenant = await TenantRepository.GetAsync(id);
         return tenant.FindDefaultConnectionString() ?? string.Empty;
     }
@@ -73,6 +81,7 @@ public class TenantAppService : TenantsAppServiceBase, ITenantAppService
     [Authorize(TenantsPermissions.Tenants.ManageConnectionStrings)]
     public virtual async Task UpdateDefaultConnectionStringAsync(Guid id, string defaultConnectionString)
     {
+        await CheckPolicyAsync(TenantsPermissions.Tenants.ManageConnectionStrings);
         var tenant = await TenantRepository.GetAsync(id);
         tenant.SetDefaultConnectionString(defaultConnectionString);
         await TenantRepository.UpdateAsync(tenant, autoSave: true);
@@ -81,6 +90,7 @@ public class TenantAppService : TenantsAppServiceBase, ITenantAppService
     [Authorize(TenantsPermissions.Tenants.ManageConnectionStrings)]
     public virtual async Task DeleteDefaultConnectionStringAsync(Guid id)
     {
+        await CheckPolicyAsync(TenantsPermissions.Tenants.ManageConnectionStrings);
         var tenant = await TenantRepository.GetAsync(id);
         tenant.RemoveDefaultConnectionString();
         await TenantRepository.UpdateAsync(tenant, autoSave: true);

@@ -24,12 +24,14 @@ public class TenantController : SufiControllerBase, ITenantAppService
 
     [HttpGet]
     [Route("{id}")]
+    [Authorize(TenantsPermissions.Tenants.Default)]
     public virtual Task<TenantDto> GetAsync(Guid id)
     {
         return _tenantAppService.GetAsync(id);
     }
 
     [HttpGet]
+    [Authorize(TenantsPermissions.Tenants.Default)]
     public virtual Task<PagedResultDto<TenantDto>> GetListAsync(GetTenantsInput input)
     {
         return _tenantAppService.GetListAsync(input);
