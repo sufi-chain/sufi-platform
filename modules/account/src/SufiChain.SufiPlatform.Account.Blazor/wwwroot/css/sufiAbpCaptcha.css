@@ -6,6 +6,8 @@
 }
 
 .sufi-abp-captcha-simple__question {
+    direction: ltr;
+    unicode-bidi: isolate;
     display: inline-flex;
     align-items: center;
     justify-content: center;

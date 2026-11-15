@@ -77,7 +77,14 @@ public partial class LoginWith2fa
     {
         if (await MissingTwoFactorSessionAsync())
         {
-            Navigation.NavigateTo(LoginWith2faEntry.LoginLocation(ReturnUrl), forceLoad: true);
+            var location = LoginWith2faEntry.LoginLocation(ReturnUrl);
+            if (HttpContext is { Response.HasStarted: false })
+            {
+                HttpContext.Response.Redirect(location);
+                return;
+            }
+
+            Navigation.NavigateTo(location, forceLoad: true);
             return;
         }
 
