@@ -62,7 +62,7 @@ public class EfCoreFileItemRepository :
     }
 
     public async Task<long> GetTotalSizeByTenantAsync(
-        Guid tenantId,
+        Guid? tenantId,
         CancellationToken cancellationToken = default)
     {
         var dbSet = await GetDbSetAsync();

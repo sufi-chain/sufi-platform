@@ -54,7 +54,7 @@ public partial class FileItemAppService : SufiApplicationService, IFileItemAppSe
     private readonly FileItemManager _fileItemManager;
     private readonly FileItemBlobAccessService _blobAccessService;
     private readonly IFileStorageQuotaGuard _storageQuotaGuard;
-    private readonly IFileManagerStoragePolicyProvider _storagePolicyProvider;
+    private readonly IFileStorageQuota _fileStorageQuota;
 
     public FileItemAppService(
         IFileItemRepository fileItemRepository,
@@ -75,7 +75,7 @@ public partial class FileItemAppService : SufiApplicationService, IFileItemAppSe
         FileItemManager fileItemManager,
         FileItemBlobAccessService blobAccessService,
         IFileStorageQuotaGuard storageQuotaGuard,
-        IFileManagerStoragePolicyProvider storagePolicyProvider)
+        IFileStorageQuota fileStorageQuota)
     {
         _fileItemRepository = fileItemRepository;
         _fileStructureRepository = fileStructureRepository;
@@ -95,7 +95,7 @@ public partial class FileItemAppService : SufiApplicationService, IFileItemAppSe
         _fileItemManager = fileItemManager;
         _blobAccessService = blobAccessService;
         _storageQuotaGuard = storageQuotaGuard;
-        _storagePolicyProvider = storagePolicyProvider;
+        _fileStorageQuota = fileStorageQuota;
     }
 
     [RemoteService(false)]
@@ -902,39 +902,8 @@ public partial class FileItemAppService : SufiApplicationService, IFileItemAppSe
     //[Authorize(FileManagerPermissions.FileItems.Default)]
     public async Task<StorageQuotaDto> GetStorageQuotaAsync()
     {
-        var query = await _fileItemRepository.GetQueryableAsync();
-        
-        // Filter by tenant
-        if (CurrentTenant.Id.HasValue)
-        {
-            query = query.Where(x => x.TenantId == CurrentTenant.Id);
-        }
-
-        var usedBytes = await AsyncExecuter.SumAsync(query, x => (long?)(x.Size + x.ThumbnailByteSize)) ?? 0;
-
-        var policy = await _storagePolicyProvider.GetAsync();
-        var limitBytes = policy.MaxStorageBytes;
-        var availableBytes = limitBytes > 0
-            ? Math.Max(0, limitBytes - usedBytes)
-            : long.MaxValue;
-        var usedMegabytes = usedBytes / (1024.0 * 1024.0);
-        var limitMegabytes = limitBytes / (1024.0 * 1024.0);
-
-        return new StorageQuotaDto
-        {
-            IsUnlimited = limitBytes == 0,
-            UsedBytes = usedBytes,
-            LimitBytes = limitBytes,
-            AvailableBytes = availableBytes,
-            UsedMB = usedMegabytes,
-            LimitMB = limitMegabytes,
-            AvailableMB = limitBytes > 0
-                ? availableBytes / (1024.0 * 1024.0)
-                : 0,
-            PercentageUsed = limitBytes > 0
-                ? Math.Min(100, usedBytes / (double)limitBytes * 100)
-                : 0
-        };
+        var snapshot = await _fileStorageQuota.GetAsync();
+        return snapshot.ToDto();
     }
 
     [Authorize(FileManagerPermissions.FileItems.Default)]
