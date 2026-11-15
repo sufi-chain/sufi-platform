@@ -13,6 +13,7 @@ using SufiChain.SufiPlatform.SufiAI.Catalog;
 using SufiChain.SufiPlatform.SufiAI.Configuration;
 using SufiChain.SufiPlatform.SufiAI.Data;
 using SufiChain.SufiPlatform.SufiAI.Features;
+using SufiChain.SufiPlatform.SufiAI.MCP.Entities;
 using SufiChain.SufiPlatform.SufiAI.Localization;
 using SufiChain.SufiPlatform.SufiAI.Permissions;
 using SufiChain.SufiPlatform.Tenants;
@@ -132,10 +133,9 @@ public class WorkspaceAppService : SufiApplicationService, IWorkspaceAppService
             sorting: input.Sorting ?? "Name"
         );
 
-        return new PagedResultDto<WorkspaceDto>(
-            totalCount,
-            ObjectMapper.Map<List<Workspace>, List<WorkspaceDto>>(workspaces)
-        );
+        var items = ObjectMapper.Map<List<Workspace>, List<WorkspaceDto>>(workspaces);
+        await ApplyListDisplayAsync(items);
+        return new PagedResultDto<WorkspaceDto>(totalCount, items);
     }
 
     // Chat and the analytics page both need the workspace names. The method checks the caller itself
@@ -150,7 +150,35 @@ public class WorkspaceAppService : SufiApplicationService, IWorkspaceAppService
             skipCount: 0,
             maxResultCount: int.MaxValue,
             sorting: "Name");
-        return ObjectMapper.Map<List<Workspace>, List<WorkspaceDto>>(workspaces);
+        var items = ObjectMapper.Map<List<Workspace>, List<WorkspaceDto>>(workspaces);
+        await ApplyListDisplayAsync(items);
+        return items;
+    }
+
+    private async Task ApplyListDisplayAsync(IList<WorkspaceDto> items)
+    {
+        if (items.Count == 0)
+        {
+            return;
+        }
+
+        var mcpCount = 0;
+        try
+        {
+            var servers = await LazyServiceProvider
+                .LazyGetRequiredService<IMCPServerRepository>()
+                .GetEnabledListAsync();
+            mcpCount = servers.Count;
+        }
+        catch (Exception exception)
+        {
+            Logger.LogDebug(exception, "Workspace list could not count enabled MCP servers.");
+        }
+
+        foreach (var item in items)
+        {
+            item.McpServerCount = mcpCount;
+        }
     }
 
     public async Task<WorkspaceDto> GetAsync(Guid id)

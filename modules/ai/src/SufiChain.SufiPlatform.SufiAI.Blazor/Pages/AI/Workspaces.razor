@@ -130,6 +130,18 @@
 							@FormatModelLabel(cellContext.Item)
 						</CellTemplate>
 					</SbColumn>
+					<SbColumn TItem="WorkspaceDto" Field="McpServerCount" Title="@L["McpCount"]" MinWidth="120px" Filterable="true" Sortable="true">
+						<CellTemplate Context="cellContext">
+							<SbText Variant="SbTextVariant.BodySmall">@cellContext.Item.McpServerCount</SbText>
+						</CellTemplate>
+					</SbColumn>
+					<SbColumn TItem="WorkspaceDto" Field="Temperature" Title="@L["Temperature"]" MinWidth="120px" Filterable="true" Sortable="true">
+						<CellTemplate Context="cellContext">
+							<SbText Variant="SbTextVariant.BodySmall">
+								@(cellContext.Item.Temperature?.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture) ?? "—")
+							</SbText>
+						</CellTemplate>
+					</SbColumn>
 						<SbColumn TItem="WorkspaceDto" Title="@L["Status"]" MinWidth="100px">
 					<CellTemplate Context="cellContext">
 						<SbBadge Color="@(cellContext.Item.IsActive ? SbColor.Success : SbColor.Default)">

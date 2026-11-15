@@ -15,6 +15,12 @@ public class WorkspaceDto : FullAuditedEntityDto<Guid>
     public decimal? OutputCostPer1MTokens { get; set; }
     public bool IsActive { get; set; }
 
+    /// <summary>Enabled MCP servers available to this workspace's tenant. Display only.</summary>
+    public int McpServerCount { get; set; }
+
+    /// <summary>Chat temperature when the workspace stores one. Null means the provider default.</summary>
+    public float? Temperature { get; set; }
+
     public bool UseWebSearch { get; set; } = true;
     public bool IsInherited { get; set; }
     public bool IsDefault { get; set; }

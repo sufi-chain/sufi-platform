@@ -121,7 +121,8 @@ public class AiUsageErrorTextTests
         Assert.Contains("\"AI:ProviderAuthorizationFailed\": \"" + authorization + "\"", json, StringComparison.Ordinal);
         Assert.Contains("\"AI:ProviderRateLimited\":", json, StringComparison.Ordinal);
         Assert.Contains("\"AI:ProviderUnavailable\":", json, StringComparison.Ordinal);
-        Assert.Contains("{StatusCode}", json, StringComparison.Ordinal);
+        Assert.DoesNotContain("{StatusCode}", json, StringComparison.Ordinal);
+        Assert.Contains("\"AI:ProviderRequestFailed\":", json, StringComparison.Ordinal);
     }
 
     private static string ReadLocalization(string culture)

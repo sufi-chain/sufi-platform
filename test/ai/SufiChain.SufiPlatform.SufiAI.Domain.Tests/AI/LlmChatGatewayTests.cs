@@ -74,6 +74,37 @@ public class LlmChatGatewayTests
     }
 
     [Fact]
+    public async Task A_cancelled_caller_stops_the_provider_call_and_does_not_fail_over()
+    {
+        var providerCalls = 0;
+        var fallbackCalls = 0;
+        using var stop = new CancellationTokenSource();
+        stop.Cancel();
+        var gateway = Gateway(new RecordingDelay());
+        var invocation = new LlmGatewayInvocation
+        {
+            PrimaryCircuitKey = "primary",
+            FallbackCircuitKey = "fallback",
+            PrimaryModelId = "openrouter/free",
+            Primary = ct =>
+            {
+                providerCalls++;
+                ct.ThrowIfCancellationRequested();
+                return Task.FromResult(new ChatCompletionResponse { Content = "should not return" });
+            },
+            Fallback = _ =>
+            {
+                fallbackCalls++;
+                return Task.FromResult(new ChatCompletionResponse { Content = "fallback" });
+            }
+        };
+
+        await Should.ThrowAsync<OperationCanceledException>(() => gateway.SendAsync(invocation, stop.Token));
+        providerCalls.ShouldBe(1);
+        fallbackCalls.ShouldBe(0);
+    }
+
+    [Fact]
     public async Task A_4xx_is_not_retried()
     {
         var calls = 0;

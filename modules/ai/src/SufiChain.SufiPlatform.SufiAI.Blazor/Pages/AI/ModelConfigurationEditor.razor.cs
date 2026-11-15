@@ -559,7 +559,8 @@ public partial class ModelConfigurationEditor : AIComponentBase
         {
             _model.DefaultReasoningEffort = ReasoningEffortSelection.ChooseDefault(
                 AllowedEfforts,
-                selected.DefaultReasoningEffort);
+                selected.DefaultReasoningEffort,
+                selected.Id);
         }
 
         if (filled && _model.CapabilitySource == null)
@@ -579,7 +580,7 @@ public partial class ModelConfigurationEditor : AIComponentBase
         }
 
         _model.ReasoningEfforts = string.Join(",", efforts);
-        _model.DefaultReasoningEffort = ReasoningEffortSelection.ChooseDefault(efforts, selected.DefaultReasoningEffort);
+        _model.DefaultReasoningEffort = ReasoningEffortSelection.ChooseDefault(efforts, selected.DefaultReasoningEffort, selected.Id);
     }
 
     private bool IsEffortAllowed(string effort) =>
@@ -608,7 +609,7 @@ public partial class ModelConfigurationEditor : AIComponentBase
         _model.CapabilitySource = ModelCapabilitySource.Manual;
         if (!IsEffortAllowed(_model.DefaultReasoningEffort ?? string.Empty))
         {
-            _model.DefaultReasoningEffort = ReasoningEffortSelection.ChooseDefault(allowed, providerDefault: null);
+            _model.DefaultReasoningEffort = ReasoningEffortSelection.ChooseDefault(allowed, providerDefault: null, modelId: _model.ModelId);
         }
     }
 

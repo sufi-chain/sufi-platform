@@ -44,14 +44,15 @@ public static class ChatRouteRequestGuard
             ? configuration.DefaultReasoningEffort
             : requested.Trim();
         var match = Match(allowed, chosen);
-        if (match != null)
+        var resolved = match ?? Match(allowed, configuration.DefaultReasoningEffort);
+        // NVIDIA and the free router reject High even when the catalog or a stale selector
+        // still names it. Medium (then low) is sent, or reasoning is omitted.
+        if (ReasoningEffortSelection.OmitsElevatedReasoning(configuration.ModelId))
         {
-            return match;
+            return ReasoningEffortSelection.SafeEffort(allowed, resolved);
         }
 
-        // The requested effort is not one this model declared. Use the declared default when
-        // that default is itself allowed; otherwise omit reasoning entirely.
-        return Match(allowed, configuration.DefaultReasoningEffort);
+        return resolved;
     }
 
     private static string? Match(IReadOnlyList<string> allowed, string? effort)

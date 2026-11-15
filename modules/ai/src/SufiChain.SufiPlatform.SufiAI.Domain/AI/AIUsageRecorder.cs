@@ -1,3 +1,4 @@
+using System.Linq;
 using Microsoft.Extensions.Logging;
 using SufiChain.SufiPlatform.SufiAI.Workspaces;
 using Volo.Abp.Domain.Services;
@@ -15,17 +16,20 @@ public class AIUsageRecorder : DomainService, IAIUsageRecorder
     protected ILogger<AIUsageRecorder> RecorderLogger { get; }
     protected IUnitOfWorkManager? UsageUnitOfWorkManager { get; }
     protected ICurrentTenant? UsageCurrentTenant { get; }
+    protected IEnumerable<IAiSharedUsageChargePublisher> UsageChargePublishers { get; }
 
     public AIUsageRecorder(
         IAIUsageLogRepository usageLogRepository,
         ILogger<AIUsageRecorder> logger,
         IUnitOfWorkManager? unitOfWorkManager = null,
-        ICurrentTenant? currentTenant = null)
+        ICurrentTenant? currentTenant = null,
+        IEnumerable<IAiSharedUsageChargePublisher>? usageChargePublishers = null)
     {
         UsageLogRepository = usageLogRepository;
         RecorderLogger = logger;
         UsageUnitOfWorkManager = unitOfWorkManager;
         UsageCurrentTenant = currentTenant;
+        UsageChargePublishers = usageChargePublishers ?? Array.Empty<IAiSharedUsageChargePublisher>();
     }
 
     public virtual async Task RecordAsync(AIUsageRecord record, CancellationToken cancellationToken = default)
@@ -78,6 +82,7 @@ public class AIUsageRecorder : DomainService, IAIUsageRecorder
             }
 
             await InsertCommittedAsync(log);
+            await NotifyChargeAsync(log);
         }
         catch (Exception ex)
         {
@@ -101,6 +106,38 @@ public class AIUsageRecorder : DomainService, IAIUsageRecorder
             requiresNew: true);
         await UsageLogRepository.InsertAsync(log, autoSave: true, cancellationToken: CancellationToken.None);
         await unitOfWork.CompleteAsync(CancellationToken.None);
+    }
+
+    /// <summary>
+    /// One debit per successful priced shared log. A missing publisher leaves the row for the sweep.
+    /// A charge failure does not drop the usage row that was just committed.
+    /// </summary>
+    protected virtual async Task NotifyChargeAsync(AIUsageLog log)
+    {
+        if (!log.IsSuccess
+            || !log.IsSharedWorkspaceUsage
+            || !log.IsCostCalculated
+            || log.EstimatedCost <= 0
+            || log.TenantId is not Guid tenantId
+            || !UsageChargePublishers.Any())
+        {
+            return;
+        }
+
+        foreach (var publisher in UsageChargePublishers)
+        {
+            try
+            {
+                await publisher.PublishAsync(log.Id, tenantId, log.EstimatedCost);
+            }
+            catch (Exception exception)
+            {
+                RecorderLogger.LogError(
+                    exception,
+                    "AI usage {UsageLogId} was recorded but the credit debit was not published.",
+                    log.Id);
+            }
+        }
     }
 
     protected virtual CostCalculationResult ResolveCost(
