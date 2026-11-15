@@ -309,18 +309,15 @@ public partial class WorkspaceModelSelector : AIComponentBase
             return null;
         }
 
-        if (!string.IsNullOrWhiteSpace(effort) && options.Contains(effort, StringComparer.OrdinalIgnoreCase))
+        if (!string.IsNullOrWhiteSpace(effort)
+            && options.Contains(effort, StringComparer.OrdinalIgnoreCase)
+            && !(ReasoningEffortSelection.OmitsElevatedReasoning(route?.ModelId)
+                 && ReasoningEffortSelection.IsElevated(effort)))
         {
             return options.First(option => string.Equals(option, effort, StringComparison.OrdinalIgnoreCase));
         }
 
-        if (!string.IsNullOrWhiteSpace(route?.DefaultReasoningEffort) &&
-            options.Contains(route.DefaultReasoningEffort, StringComparer.OrdinalIgnoreCase))
-        {
-            return route.DefaultReasoningEffort;
-        }
-
-        return options[0];
+        return ReasoningEffortSelection.ChooseDefault(options, route?.DefaultReasoningEffort, route?.ModelId);
     }
 
     private IReadOnlyList<string> EffortOptions => SplitEfforts(SelectedRoute);

@@ -326,7 +326,14 @@ else
 								<SbColumn TItem="AIUsageLogDto" Field="EstimatedCost" Title="@L["Cost"]" MinWidth="100px" Filterable="true" Sortable="true">
 									<CellTemplate Context="cellContext">
 										<SbStack Direction="SbStackDirection.Column" Gap="1">
-											<SbText Variant="SbTextVariant.BodySmall">$@cellContext.Item.EstimatedCost.ToString("F4")</SbText>
+											@if (!cellContext.Item.IsSuccess || !cellContext.Item.IsCostCalculated)
+											{
+												<SbText Variant="SbTextVariant.BodySmall" Color="SbColor.Muted">@L["UsageNotCharged"]</SbText>
+											}
+											else
+											{
+												<SbText Variant="SbTextVariant.BodySmall">$@cellContext.Item.EstimatedCost.ToString("F4")</SbText>
+											}
 											@if (cellContext.Item.CostCalculationNote == "PricingNotConfigured")
 											{
 												<SbChip Color="SbColor.Default" Size="SbSize.Sm">@L["PricingNotConfigured"]</SbChip>

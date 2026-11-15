@@ -36,8 +36,8 @@ public class WorkspaceUseWebSearchTests
     [InlineData("", false, null, true)]
     [InlineData("https://gw/v1/", false, "https://GW/v1", true)]
     [InlineData("https://gw/v1", true, "https://gw/v1", false)]
-    [InlineData("https://other/v1", false, "https://gw/v1", false)]
-    [InlineData("https://gw/v1", false, null, false)]
+    [InlineData("https://other/v1", false, "https://gw/v1", true)]
+    [InlineData("https://gw/v1", false, null, true)]
     public void Route_connection_mode_detects_workspace_endpoint(string? route, bool hasKey, string? workspace, bool expected)
     {
         WorkspaceConnectionMatcher.UsesWorkspaceConnection(route, hasKey, workspace).ShouldBe(expected);

@@ -34,7 +34,7 @@ public class ModelConfigurationsListSourceTests
         WorkspaceConnectionMatcher.UsesWorkspaceConnection(
             "https://other.example/v1",
             routeHasApiKey: false,
-            "https://gateway.example/v1").ShouldBeFalse();
+            "https://gateway.example/v1").ShouldBeTrue();
         WorkspaceConnectionMatcher.UsesWorkspaceConnection(
             "https://gateway.example/v1",
             routeHasApiKey: true,

@@ -266,6 +266,35 @@ public class AIUsageRecorderTests
     }
 
     [Fact]
+    public async Task A_priced_shared_usage_asks_for_one_debit()
+    {
+        var tenantId = Guid.NewGuid();
+        var workspace = new Workspace(Guid.NewGuid(), "host-shared", AIProviderType.OpenAI, "chat");
+        workspace.UpdateConfiguration("chat", "sk", "https://example/v1", inputCostPer1MTokens: 1_000_000m);
+        var route = workspace.AddModelConfiguration(
+            AICapabilityType.ChatCompletion,
+            "chat",
+            inputPrice: 1_000_000m,
+            outputPrice: 0m);
+        var repository = Substitute.For<IAIUsageLogRepository>();
+        repository.InsertAsync(Arg.Any<AIUsageLog>(), Arg.Any<bool>(), Arg.Any<CancellationToken>())
+            .Returns(call => Task.FromResult(call.Arg<AIUsageLog>()));
+        var publisher = new RecordingPublisher();
+        var currentTenant = Substitute.For<ICurrentTenant>();
+        currentTenant.Id.Returns(tenantId);
+        var recorder = new TestableAIUsageRecorder(
+            repository,
+            currentTenant: currentTenant,
+            publishers: new[] { publisher });
+
+        await recorder.RecordAsync(CreateRecord(workspace, route));
+
+        publisher.Calls.ShouldBe(1);
+        publisher.TenantId.ShouldBe(tenantId);
+        publisher.Cost.ShouldBe(10m);
+    }
+
+    [Fact]
     public async Task Reported_cost_wins_over_token_price_math()
     {
         var repository = Substitute.For<IAIUsageLogRepository>();
@@ -312,6 +341,23 @@ public class AIUsageRecorderTests
         saved.IsCostCalculated.ShouldBeTrue();
     }
 
+    private sealed class RecordingPublisher : IAiSharedUsageChargePublisher
+    {
+        public int Calls { get; private set; }
+
+        public Guid TenantId { get; private set; }
+
+        public decimal Cost { get; private set; }
+
+        public Task PublishAsync(Guid usageLogId, Guid tenantId, decimal estimatedCost, CancellationToken cancellationToken = default)
+        {
+            Calls++;
+            TenantId = tenantId;
+            Cost = estimatedCost;
+            return Task.CompletedTask;
+        }
+    }
+
     private sealed class TestableAIUsageRecorder : AIUsageRecorder
     {
         public TestableAIUsageRecorder()
@@ -322,8 +368,9 @@ public class AIUsageRecorderTests
         public TestableAIUsageRecorder(
             IAIUsageLogRepository repository,
             IUnitOfWorkManager? unitOfWorkManager = null,
-            ICurrentTenant? currentTenant = null)
-            : base(repository, NullLogger<AIUsageRecorder>.Instance, unitOfWorkManager, currentTenant)
+            ICurrentTenant? currentTenant = null,
+            IEnumerable<IAiSharedUsageChargePublisher>? publishers = null)
+            : base(repository, NullLogger<AIUsageRecorder>.Instance, unitOfWorkManager, currentTenant, publishers)
         {
             var lazy = Substitute.For<IAbpLazyServiceProvider>();
             lazy.LazyGetService(Arg.Any<IGuidGenerator>())

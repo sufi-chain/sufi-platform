@@ -15,6 +15,8 @@ public partial class WorkspaceToWorkspaceDtoMapper : MapperBase<Workspace, Works
     [MapperIgnoreTarget(nameof(WorkspaceDto.ModelDisplayName))]
     [MapperIgnoreTarget(nameof(WorkspaceDto.DecisionsModelId))]
     [MapperIgnoreTarget(nameof(WorkspaceDto.IsDefault))]
+    [MapperIgnoreTarget(nameof(WorkspaceDto.McpServerCount))]
+    [MapperIgnoreTarget(nameof(WorkspaceDto.Temperature))]
     public override partial WorkspaceDto Map(Workspace source);
 
     [MapperIgnoreTarget(nameof(WorkspaceDto.HasApiKey))]
@@ -23,6 +25,8 @@ public partial class WorkspaceToWorkspaceDtoMapper : MapperBase<Workspace, Works
     [MapperIgnoreTarget(nameof(WorkspaceDto.ModelDisplayName))]
     [MapperIgnoreTarget(nameof(WorkspaceDto.DecisionsModelId))]
     [MapperIgnoreTarget(nameof(WorkspaceDto.IsDefault))]
+    [MapperIgnoreTarget(nameof(WorkspaceDto.McpServerCount))]
+    [MapperIgnoreTarget(nameof(WorkspaceDto.Temperature))]
     public override partial void Map(Workspace source, WorkspaceDto destination);
 
     public override void AfterMap(Workspace source, WorkspaceDto destination)
