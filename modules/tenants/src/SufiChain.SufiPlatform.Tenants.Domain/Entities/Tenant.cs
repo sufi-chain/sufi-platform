@@ -144,6 +144,65 @@ public class Tenant : FullAuditedAggregateRoot<Guid>, IHasEntityVersion
         Domains.AddRange(domains);
     }
 
+    /// <summary>
+    /// Adds a verified, active custom domain, or marks an existing custom domain verified and active.
+    /// A generated domain with the same host is left unchanged.
+    /// </summary>
+    public virtual bool UpsertVerifiedCustomDomain(Guid id, string host)
+    {
+        var normalized = TenantDomainName.NormalizeHost(host);
+        var existing = Domains.FirstOrDefault(domain =>
+            string.Equals(domain.Host, normalized, StringComparison.OrdinalIgnoreCase));
+        if (existing != null)
+        {
+            if (existing.Type != TenantDomainType.Custom)
+            {
+                return false;
+            }
+
+            if (existing.IsVerified && existing.IsActive)
+            {
+                return false;
+            }
+
+            existing.SetStatus(true, true);
+            return true;
+        }
+
+        Domains.Add(new TenantDomain(id, Id, normalized, TenantDomainType.Custom, true, true));
+        return true;
+    }
+
+    /// <summary>Removes a custom domain. Generated domains stay.</summary>
+    public virtual bool RemoveCustomDomain(string host)
+    {
+        if (string.IsNullOrWhiteSpace(host))
+        {
+            return false;
+        }
+
+        string normalized;
+        try
+        {
+            normalized = TenantDomainName.NormalizeHost(host);
+        }
+        catch (ArgumentException)
+        {
+            return false;
+        }
+
+        var existing = Domains.FirstOrDefault(domain =>
+            domain.Type == TenantDomainType.Custom &&
+            string.Equals(domain.Host, normalized, StringComparison.OrdinalIgnoreCase));
+        if (existing == null)
+        {
+            return false;
+        }
+
+        Domains.Remove(existing);
+        return true;
+    }
+
     private static bool IsAsciiLetterOrDigit(char character)
     {
         return character is >= 'a' and <= 'z' or >= 'A' and <= 'Z' or >= '0' and <= '9';
