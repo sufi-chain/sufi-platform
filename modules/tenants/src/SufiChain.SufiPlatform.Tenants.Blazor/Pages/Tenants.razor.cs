@@ -48,7 +48,7 @@ public partial class Tenants : TenantsComponentBase
     {
         await base.OnAfterRenderAsync(firstRender);
         
-        if (firstRender)
+        if (firstRender && CurrentTenant.Id == null)
         {
             await RefreshGridAsync();
         }

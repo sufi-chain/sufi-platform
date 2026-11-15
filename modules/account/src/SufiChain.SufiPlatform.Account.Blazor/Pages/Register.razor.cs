@@ -82,7 +82,9 @@ public partial class Register
     protected IReadOnlyList<string> ExternalSchemeNames =>
         ExternalSchemes.Select(scheme => scheme.Name).ToList();
 
-    protected bool IsSelfRegistrationEnabled { get; private set; } = true;
+    protected bool IsSelfRegistrationEnabled { get; private set; }
+
+    protected bool IsRegistrationStateKnown { get; private set; }
 
     protected bool IsOtpRegistrationEnabled { get; private set; }
 
@@ -116,6 +118,7 @@ public partial class Register
         ExternalSchemes = namedSchemes.Where(scheme => enabled.Contains(scheme.Name)).ToList();
         IsSelfRegistrationEnabled = await IdentitySelfRegistrationRules.IsEnabledAsync(SettingProvider)
             && await SelfRegistrationPolicy.IsEnabledAsync(SettingProvider);
+        IsRegistrationStateKnown = true;
         IsOtpRegistrationEnabled = IsSelfRegistrationEnabled
             && await SettingProvider.IsTrueAsync(IdentitySettingNames.Otp.IsEnabled)
             && await SettingProvider.IsTrueAsync(IdentitySettingNames.Otp.AllowRegistration);

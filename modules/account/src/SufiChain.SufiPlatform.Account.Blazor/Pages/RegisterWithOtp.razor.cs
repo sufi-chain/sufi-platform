@@ -33,7 +33,9 @@ public partial class RegisterWithOtp
     [SupplyParameterFromQuery]
     public string? ReturnUrl { get; set; }
 
-    protected bool IsSelfRegistrationEnabled { get; private set; } = true;
+    protected bool IsSelfRegistrationEnabled { get; private set; }
+
+    protected bool IsRegistrationStateKnown { get; private set; }
 
     protected OtpOptionsDto? Options { get; set; }
 
@@ -86,6 +88,7 @@ public partial class RegisterWithOtp
     {
         IsSelfRegistrationEnabled = await IdentitySelfRegistrationRules.IsEnabledAsync(SettingProvider)
             && await SelfRegistrationPolicy.IsEnabledAsync(SettingProvider);
+        IsRegistrationStateKnown = true;
         if (!IsSelfRegistrationEnabled)
         {
             ErrorMessage = L["Sufi.Identity:SelfRegistrationDisabled"];

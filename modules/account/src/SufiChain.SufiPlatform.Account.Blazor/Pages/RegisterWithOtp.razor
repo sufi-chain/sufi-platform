@@ -10,7 +10,10 @@
                 <SbHeading Level="2">@AccountL["RegisterWithOtp"]</SbHeading>
                 <SbText Color="SbColor.Muted">@AccountL["RegisterWithOtpInstructions"]</SbText>
 
-                @if (!IsSelfRegistrationEnabled)
+                @if (!IsRegistrationStateKnown)
+                {
+                }
+                else if (!IsSelfRegistrationEnabled)
                 {
                     <SbAlert Severity="SbAlertSeverity.Warning">@(ErrorMessage ?? L["Sufi.Identity:SelfRegistrationDisabled"])</SbAlert>
                     <SbLink Href="/account/login">@L["SignIn"]</SbLink>
