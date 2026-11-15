@@ -43,10 +43,16 @@ public class TenantDomainStore : ITenantDomainStore, ITransientDependency
             : null;
     }
 
+    public virtual async Task<IReadOnlyList<TenantPublicHost>> ListPublicHostsAsync()
+    {
+        var cacheItem = await GetOrBuildCacheItemAsync();
+        return cacheItem.PublicHosts ?? new List<TenantPublicHost>();
+    }
+
     protected virtual async Task<TenantDomainMapCacheItem> GetOrBuildCacheItemAsync()
     {
         var cacheItem = await Cache.GetAsync(TenantDomainMapCacheItem.CacheKey, considerUow: true);
-        if (cacheItem == null)
+        if (cacheItem?.PublicHosts == null)
         {
             cacheItem = await BuildCacheItemAsync();
             await Cache.SetAsync(TenantDomainMapCacheItem.CacheKey, cacheItem, considerUow: true);
@@ -90,7 +96,19 @@ public class TenantDomainStore : ITenantDomainStore, ITransientDependency
         return new TenantDomainMapCacheItem
         {
             HostToTenantName = hostToTenantName,
-            TenantIdToPrimaryHost = tenantIdToPrimaryHost
+            TenantIdToPrimaryHost = tenantIdToPrimaryHost,
+            PublicHosts = tenants.Select(tenant => new TenantPublicHost
+            {
+                TenantId = tenant.Id,
+                Name = tenant.Name,
+                PrimarySubdomain = tenant.PrimarySubdomain,
+                NormalizedName = tenant.NormalizedName,
+                CustomHosts = tenant.Domains
+                    .Where(domain => domain.Type == TenantDomainType.Custom && domain.IsActive && domain.IsVerified)
+                    .Select(domain => domain.Host)
+                    .Distinct(StringComparer.OrdinalIgnoreCase)
+                    .ToList()
+            }).ToList()
         };
     }
 }

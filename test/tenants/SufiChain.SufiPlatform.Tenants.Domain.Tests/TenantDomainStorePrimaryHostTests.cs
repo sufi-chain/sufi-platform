@@ -63,6 +63,34 @@ public class TenantDomainStorePrimaryHostTests
     }
 
     [Fact]
+    public async Task Separate_database_custom_domain_stays_on_the_host_index()
+    {
+        var tenant = CreateTenant();
+        tenant.SetDefaultConnectionString("Server=tenant-db");
+        tenant.ConfigureRouting(
+            "acme",
+            [CreateDomain("acme.platform.test", TenantDomainType.Generated, isVerified: true, isActive: true)]);
+        tenant.UpsertVerifiedCustomDomain(Guid.NewGuid(), "sabp.ir").ShouldBeTrue();
+        tenant.UpsertVerifiedCustomDomain(Guid.NewGuid(), "sabp.ir").ShouldBeFalse();
+
+        var store = CreateStore(tenant);
+        (await store.FindTenantNameByHostAsync("sabp.ir")).ShouldBe("Acme");
+        (await store.FindTenantNameByHostAsync("acme.platform.test")).ShouldBe("Acme");
+        (await store.ListPublicHostsAsync()).Single().CustomHosts.ShouldBe(["sabp.ir"]);
+
+        tenant.Domains.Single(domain => domain.Host == "sabp.ir").SetStatus(false, false);
+        (await store.FindTenantNameByHostAsync("sabp.ir")).ShouldBeNull();
+        (await store.ListPublicHostsAsync()).Single().CustomHosts.ShouldBeEmpty();
+        (await store.FindTenantNameByHostAsync("acme.platform.test")).ShouldBe("Acme");
+
+        tenant.UpsertVerifiedCustomDomain(Guid.NewGuid(), "sabp.ir").ShouldBeTrue();
+        tenant.RemoveCustomDomain("acme.platform.test").ShouldBeFalse();
+        tenant.RemoveCustomDomain("sabp.ir").ShouldBeTrue();
+        (await store.FindTenantNameByHostAsync("sabp.ir")).ShouldBeNull();
+        (await store.FindTenantNameByHostAsync("acme.platform.test")).ShouldBe("Acme");
+    }
+
+    [Fact]
     public async Task Returns_null_when_tenant_has_no_eligible_domains()
     {
         var tenant = CreateTenant();
