@@ -12,7 +12,7 @@ namespace SufiChain.SufiPlatform.SufiSaas;
 public class EditionPriceSummaryContributorTests
 {
     [Fact]
-    public async Task Contributor_marks_unpriced_plans_and_formats_priced_ones()
+    public async Task Contributor_shows_zero_as_a_price_and_formats_priced_plans()
     {
         var pricedEditionId = Guid.Parse("11111111-1111-1111-1111-111111111111");
         var unpricedEditionId = Guid.Parse("22222222-2222-2222-2222-222222222222");
@@ -41,8 +41,13 @@ public class EditionPriceSummaryContributorTests
         dtos[0].PriceSummary.Amount.ShouldBe(1_000_000m);
         dtos[0].PriceSummary.CurrencyCode.ShouldBe("IRR");
 
+        // A stored 0 is a price. Only a missing plan (no summary) reads "price not set".
         dtos[1].PriceSummary.ShouldNotBeNull();
-        dtos[1].PriceSummary!.IsPriced.ShouldBeFalse();
+        dtos[1].PriceSummary!.IsPriced.ShouldBeTrue();
+        dtos[1].PriceSummary.Amount.ShouldBe(0m);
+        dtos[1].PriceSummary.CurrencyCode.ShouldBe("IRR");
+        EditionPriceDisplay.Resolve(dtos[1].PriceSummary, "Price not set", CultureInfo.InvariantCulture)
+            .ShouldBe("0.00 IRR");
 
         dtos[2].PriceSummary.ShouldBeNull();
 
