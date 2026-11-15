@@ -15,6 +15,7 @@ using SufiChain.SufiPlatform.FileManager.Storage;
 using Volo.Abp.BackgroundWorkers;
 using Volo.Abp.Settings;
 using Volo.Abp.Threading;
+using Volo.Abp.Uow;
 
 namespace SufiChain.SufiPlatform.FileManager.BackgroundJobs;
 
@@ -23,20 +24,18 @@ namespace SufiChain.SufiPlatform.FileManager.BackgroundJobs;
 /// </summary>
 public class TempFileCleanupWorker : AsyncPeriodicBackgroundWorkerBase
 {
-    private readonly IServiceScopeFactory _serviceScopeFactory;
-
     public TempFileCleanupWorker(
         AbpAsyncTimer timer,
         IServiceScopeFactory serviceScopeFactory)
         : base(timer, serviceScopeFactory)
     {
-        _serviceScopeFactory = serviceScopeFactory;
         Timer.Period = 1000 * 60 * 60 * 6;
     }
 
     protected override async Task DoWorkAsync(PeriodicBackgroundWorkerContext workerContext)
     {
-        var featureChecker = workerContext.ServiceProvider.GetRequiredService<IFeatureChecker>();
+        var serviceProvider = workerContext.ServiceProvider;
+        var featureChecker = serviceProvider.GetRequiredService<IFeatureChecker>();
         if (!await featureChecker.IsEnabledAsync(SufiFileManagerFeatures.Enable) ||
             !await featureChecker.IsEnabledAsync(SufiFileManagerFeatures.FileItems))
         {
@@ -48,46 +47,43 @@ public class TempFileCleanupWorker : AsyncPeriodicBackgroundWorkerBase
 
         try
         {
-            using var scope = _serviceScopeFactory.CreateScope();
-            var tenantRepository = scope.ServiceProvider.GetService<ITenantRepository>();
-            var currentTenant = scope.ServiceProvider.GetRequiredService<ICurrentTenant>();
+            var currentTenant = serviceProvider.GetRequiredService<ICurrentTenant>();
+            var tenantRepository = serviceProvider.GetService<ITenantRepository>();
+            var totalDeleted = 0;
+            var totalFailed = 0;
 
             if (tenantRepository != null)
             {
-                var totalDeleted = 0;
-                var totalFailed = 0;
-
+                List<Tenant> tenants;
                 using (currentTenant.Change(null))
                 {
-                    var (hostDeleted, hostFailed) = await CleanupTempFilesForCurrentContextAsync(scope.ServiceProvider);
+                    var (hostDeleted, hostFailed) = await CleanupTempFilesForCurrentContextAsync(serviceProvider);
                     totalDeleted += hostDeleted;
                     totalFailed += hostFailed;
+                    tenants = await tenantRepository.GetListAsync(includeDetails: false);
                 }
 
-                var tenants = await tenantRepository.GetListAsync(includeDetails: false);
                 foreach (var tenant in tenants)
                 {
                     using (currentTenant.Change(tenant.Id))
                     {
-                        var (deleted, failed) = await CleanupTempFilesForCurrentContextAsync(scope.ServiceProvider);
+                        var (deleted, failed) = await CleanupTempFilesForCurrentContextAsync(serviceProvider);
                         totalDeleted += deleted;
                         totalFailed += failed;
                     }
                 }
-
-                Logger.LogInformation(
-                    "Temporary file cleanup completed: {Deleted} deleted, {Failed} failed",
-                    totalDeleted,
-                    totalFailed);
             }
             else
             {
-                var (deleted, failed) = await CleanupTempFilesForCurrentContextAsync(scope.ServiceProvider);
-                Logger.LogInformation(
-                    "Temporary file cleanup completed: {Deleted} deleted, {Failed} failed",
-                    deleted,
-                    failed);
+                var (deleted, failed) = await CleanupTempFilesForCurrentContextAsync(serviceProvider);
+                totalDeleted += deleted;
+                totalFailed += failed;
             }
+
+            Logger.LogInformation(
+                "Temporary file cleanup completed: {Deleted} deleted, {Failed} failed",
+                totalDeleted,
+                totalFailed);
         }
         catch (Exception ex)
         {
@@ -97,6 +93,12 @@ public class TempFileCleanupWorker : AsyncPeriodicBackgroundWorkerBase
 
     private static async Task<(int Deleted, int Failed)> CleanupTempFilesForCurrentContextAsync(IServiceProvider serviceProvider)
     {
+        // The repository query must stay inside this unit of work. GetQueryableAsync
+        // joins the ambient unit of work; without one, the call completes and disposes
+        // the DbContext before the query is enumerated.
+        var unitOfWorkManager = serviceProvider.GetRequiredService<IUnitOfWorkManager>();
+        using var unitOfWork = unitOfWorkManager.Begin(requiresNew: true, isTransactional: false);
+
         var fileItemRepository = serviceProvider.GetRequiredService<IFileItemRepository>();
         var structureBlobContainerProvider = serviceProvider.GetRequiredService<IStructureBlobContainerProvider>();
         var dataFilter = serviceProvider.GetRequiredService<IDataFilter<IMultiTenant>>();
@@ -109,11 +111,11 @@ public class TempFileCleanupWorker : AsyncPeriodicBackgroundWorkerBase
         }
 
         var cutoffTime = DateTime.UtcNow.AddDays(-retentionDays);
-        var query = await fileItemRepository.GetQueryableAsync();
 
         List<FileItem> tempFileItems;
         using (dataFilter.Disable())
         {
+            var query = await fileItemRepository.GetQueryableAsync();
             tempFileItems = query
                 .Where(x => x.IsTemp && x.CreationTime < cutoffTime)
                 .ToList();
@@ -150,6 +152,7 @@ public class TempFileCleanupWorker : AsyncPeriodicBackgroundWorkerBase
             }
         }
 
+        await unitOfWork.CompleteAsync();
         return (deletedCount, failedCount);
     }
 }
