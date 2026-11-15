@@ -10,7 +10,7 @@ public static class LoginWith2faEntry
 {
     public static bool IsPage(PathString path)
     {
-        var value = path.Value ?? string.Empty;
+        var value = (path.Value ?? string.Empty).TrimEnd('/');
         return value.Equals("/account/login-2fa", StringComparison.OrdinalIgnoreCase)
             || value.EndsWith("/account/login-2fa", StringComparison.OrdinalIgnoreCase);
     }

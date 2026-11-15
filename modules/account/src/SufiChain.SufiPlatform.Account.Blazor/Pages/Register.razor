@@ -12,7 +12,10 @@
             <SbStack Gap="4" Align="SbAlign.Center">
                 <SbHeading Level="2">@L["Register"]</SbHeading>
 
-                @if (!IsSelfRegistrationEnabled)
+                @if (!IsRegistrationStateKnown)
+                {
+                }
+                else if (!IsSelfRegistrationEnabled)
                 {
                     <SbAlert Severity="SbAlertSeverity.Warning">@L["Sufi.Identity:SelfRegistrationDisabled"]</SbAlert>
                     <SbLink Href="/account/login">@L["SignIn"]</SbLink>

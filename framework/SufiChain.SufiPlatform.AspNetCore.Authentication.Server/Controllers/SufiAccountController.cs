@@ -8,6 +8,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using SufiChain.SufiPlatform.Account;
 using SufiChain.SufiPlatform.Identity;
+using SufiChain.SufiPlatform.Identity.Settings;
 using SufiChain.SufiPlatform.UI.Abstractions.Account;
 using SufiChain.SufiPlatform.UI.MultiTenancy;
 using Volo.Abp;
@@ -281,7 +282,8 @@ public abstract class SufiAccountController : AbpController
         }
 
         var settingProvider = HttpContext.RequestServices.GetRequiredService<ISettingProvider>();
-        if (!await IdentitySelfRegistrationRules.IsEnabledAsync(settingProvider))
+        if (!await IdentitySelfRegistrationRules.IsEnabledAsync(settingProvider)
+            || !await SelfRegistrationPolicy.IsEnabledAsync(settingProvider))
         {
             return RegistrationDisabledLogin(returnUrl);
         }
@@ -599,7 +601,8 @@ public abstract class SufiAccountController : AbpController
     protected virtual async Task<bool> IsSelfRegistrationEnabledAsync()
     {
         var settingProvider = HttpContext.RequestServices.GetRequiredService<ISettingProvider>();
-        return await IdentitySelfRegistrationRules.IsEnabledAsync(settingProvider);
+        return await IdentitySelfRegistrationRules.IsEnabledAsync(settingProvider)
+            && await SelfRegistrationPolicy.IsEnabledAsync(settingProvider);
     }
 
     protected virtual IActionResult RegistrationDisabledLogin(string returnUrl)

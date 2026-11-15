@@ -172,6 +172,8 @@ public class SelfRegistrationDisabledTests
         var hostLogin = File.ReadAllText(Path.Combine(chain.FullName, "hosts/SufiChane.SufiPlatform/src/SufiChane.SufiPlatform.Account.Blazor/Pages/Account/Login.razor"));
         hostLogin.ShouldContain("private bool _selfRegistrationEnabled;");
         hostLogin.ShouldNotContain("_selfRegistrationEnabled = true");
+        hostLogin.ShouldContain("SelfRegistrationPolicy.IsEnabledAsync");
+        hostLogin.ShouldContain("ErrorText=\"@CaptchaError\"");
         var external = File.ReadAllText(Path.Combine(
             platform.FullName,
             "framework/SufiChain.SufiPlatform.AspNetCore.Authentication.Server/Controllers/SufiAccountController.cs"));
@@ -193,6 +195,16 @@ public class SelfRegistrationDisabledTests
         saas.ShouldContain("[Authorize]");
         saas.ShouldContain("[Authorize(SufiSaasPermissions.TenantRequests.Create)]");
         saas.ShouldNotContain("AllowAnonymous");
+    }
+
+    [Fact]
+    public void Arithmetic_captcha_error_is_tied_to_the_answer_field()
+    {
+        var captcha = File.ReadAllText(Path.Combine(
+            PlatformRoot().FullName,
+            "modules/account/src/SufiChain.SufiPlatform.Account.Blazor/Components/SufiCaptcha.razor"));
+        captcha.ShouldContain("SbFormField InputId=\"CaptchaAnswer\" ErrorText=\"@ErrorText\"");
+        captcha.ShouldContain("dir=\"ltr\"");
     }
 
     private static DirectoryInfo PlatformRoot()

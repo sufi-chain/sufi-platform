@@ -79,6 +79,8 @@
     "Available": "Available",
     "Loading": "Loading",
     "InvalidTimeRange": "النطاق الزمني غير صالح",
+    "InvalidRecurrenceInterval": "يجب أن يكون التكرار 1 على الأقل.",
+    "InvalidReminderOffset": "يجب أن تكون الدقائق قبل الحدث 0 على الأقل ولا تتجاوز 30 يوماً.",
     "DeleteNotAllowed": "يمكنك حذف الأحداث التي تملكها فقط.",
     "OverlappingWorkingHours": "لا يمكن أن تتداخل ساعات العمل في نفس اليوم.",
     "OverlappingExceptionHours": "لا يمكن أن تتداخل ساعات الاستثناء.",

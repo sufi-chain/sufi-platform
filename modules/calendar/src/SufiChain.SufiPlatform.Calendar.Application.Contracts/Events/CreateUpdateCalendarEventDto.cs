@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using System.Globalization;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Localization;
 using SufiChain.SufiPlatform.Calendar.Localization;
@@ -47,15 +48,45 @@ public class CreateUpdateCalendarEventDto : IValidatableObject
 
     public ExtraPropertyDictionary ExtraProperties { get; set; } = new();
 
+    /// <summary>Repeat every must be at least 1. A missing INTERVAL stays the default of 1.</summary>
+    private static readonly RangeAttribute RecurrenceIntervalRange = new(1, int.MaxValue);
+
     public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
     {
-        if (EndUtc > StartUtc)
+        var localizer = validationContext.GetRequiredService<IStringLocalizer<CalendarResource>>();
+
+        if (EndUtc <= StartUtc)
         {
-            yield break;
+            var message = localizer["InvalidTimeRange"].Value;
+            yield return new ValidationResult(message, new[] { nameof(StartUtc), nameof(EndUtc) });
         }
 
-        var localizer = validationContext.GetRequiredService<IStringLocalizer<CalendarResource>>();
-        var message = localizer["InvalidTimeRange"].Value;
-        yield return new ValidationResult(message, new[] { nameof(StartUtc), nameof(EndUtc) });
+        if (HasInvalidRecurrenceInterval(RecurrenceRule))
+        {
+            var message = localizer["InvalidRecurrenceInterval"].Value;
+            yield return new ValidationResult(message, new[] { nameof(RecurrenceRule) });
+        }
+    }
+
+    private static bool HasInvalidRecurrenceInterval(string? rule)
+    {
+        if (string.IsNullOrWhiteSpace(rule))
+        {
+            return false;
+        }
+
+        foreach (var part in rule.Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+        {
+            var pieces = part.Split('=', 2, StringSplitOptions.TrimEntries);
+            if (pieces.Length != 2 || !pieces[0].Equals("INTERVAL", StringComparison.OrdinalIgnoreCase))
+            {
+                continue;
+            }
+
+            return !int.TryParse(pieces[1], NumberStyles.Integer, CultureInfo.InvariantCulture, out var interval)
+                || !RecurrenceIntervalRange.IsValid(interval);
+        }
+
+        return false;
     }
 }

@@ -21,13 +21,13 @@
         }
         else if (IsSimpleProvider && Challenge != null)
         {
-            <SbStack Gap="2">
+            <SbFormField InputId="CaptchaAnswer" ErrorText="@ErrorText">
                 <label class="sb-form-field__label" for="CaptchaAnswer">
                     @AccountL["CaptchaQuestion"]
                     <span class="sb-form-field__required" aria-hidden="true">*</span>
                 </label>
                 <div class="sufi-abp-captcha-simple">
-                    <span class="sufi-abp-captcha-simple__question" aria-hidden="true">@Challenge.Question</span>
+                    <span class="sufi-abp-captcha-simple__question" dir="ltr" aria-hidden="true">@Challenge.Question</span>
                     <SbTextField @bind-Value="CaptchaAnswerValue"
                                  @bind-Value:after="PublishCaptchaAnswerAsync"
                                  Id="CaptchaAnswer"
@@ -44,7 +44,7 @@
                         @AccountL["CaptchaRefresh"]
                     </SbButton>
                 </div>
-            </SbStack>
+            </SbFormField>
             <input type="hidden" name="CaptchaChallengeId" value="@CaptchaChallengeId" />
         }
         else if (IsTurnstileProvider)
@@ -70,7 +70,7 @@
             }
         }
 
-        @if (!string.IsNullOrEmpty(ErrorText))
+        @if (!string.IsNullOrEmpty(ErrorText) && !(IsSimpleProvider && Challenge != null))
         {
             <div class="sb-form-field__error" id="CaptchaAnswer-error" role="alert">@ErrorText</div>
         }
