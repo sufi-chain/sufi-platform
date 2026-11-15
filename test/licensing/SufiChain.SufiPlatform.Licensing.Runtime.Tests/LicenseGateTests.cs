@@ -168,6 +168,62 @@ public sealed class LicenseGateTests : IDisposable
     }
 
     [Fact]
+    public async Task Valid_lease_verifies_offline_and_anchors_grace_to_lease_expiry()
+    {
+        var confirmed = DateTimeOffset.UtcNow.AddDays(-10);
+        var lease = new LicenseLeaseService().Sign(new LicenseLease
+        {
+            LicenseId = "lic-1",
+            InstanceId = InstanceId,
+            ConfirmedAt = confirmed,
+            ExpiresAt = DateTimeOffset.UtcNow.AddDays(1)
+        }, _signingKey.ExportRSAPrivateKeyPem());
+        WriteDocument(Sign(ValidEntitlement()), lease);
+
+        var gate = CreateGate();
+
+        (await gate.CanWriteAsync(LicenseProducts.SufiCom)).ShouldBeTrue();
+        (await gate.GetEntitlementAsync()).BannerReason.ShouldBeNull();
+    }
+
+    [Fact]
+    public async Task Tampered_lease_denies_writes_without_a_live_call()
+    {
+        var lease = new LicenseLeaseService().Sign(new LicenseLease
+        {
+            LicenseId = "lic-1",
+            InstanceId = InstanceId,
+            ConfirmedAt = DateTimeOffset.UtcNow,
+            ExpiresAt = DateTimeOffset.UtcNow.AddDays(7)
+        }, _signingKey.ExportRSAPrivateKeyPem());
+        var pieces = lease.Split('.');
+        var signature = pieces[2].ToCharArray();
+        signature[0] = signature[0] == 'A' ? 'B' : 'A';
+        pieces[2] = new string(signature);
+        WriteDocument(Sign(ValidEntitlement()), string.Join('.', pieces));
+
+        (await CreateGate().CanWriteAsync(LicenseProducts.SufiCom)).ShouldBeFalse();
+    }
+
+    [Fact]
+    public async Task Expired_lease_denies_writes()
+    {
+        var lease = new LicenseLeaseService().Sign(new LicenseLease
+        {
+            LicenseId = "lic-1",
+            InstanceId = InstanceId,
+            ConfirmedAt = DateTimeOffset.UtcNow.AddDays(-10),
+            ExpiresAt = DateTimeOffset.UtcNow.AddDays(-1)
+        }, _signingKey.ExportRSAPrivateKeyPem());
+        WriteDocument(Sign(ValidEntitlement()), lease);
+
+        var entitlement = await CreateGate().GetEntitlementAsync();
+
+        entitlement.SignatureValid.ShouldBeTrue();
+        entitlement.BannerReason.ShouldBe("LicenseBanner:ReadOnly");
+    }
+
+    [Fact]
     public async Task ReplaceToken_writes_the_file_and_reloads()
     {
         var gate = CreateGate();
@@ -209,10 +265,16 @@ public sealed class LicenseGateTests : IDisposable
     private string Sign(LicenseEntitlement entitlement)
         => _tokens.Sign(entitlement, _signingKey.ExportRSAPrivateKeyPem());
 
-    private void WriteToken(string token)
+    private void WriteToken(string token) => WriteDocument(token, null);
+
+    private void WriteDocument(string token, string? lease)
     {
         Directory.CreateDirectory(_directory);
-        File.WriteAllText(LicensePath, JsonSerializer.Serialize(new LicenseFileDocument { Token = token }));
+        File.WriteAllText(LicensePath, JsonSerializer.Serialize(new LicenseFileDocument
+        {
+            Token = token,
+            Lease = lease
+        }));
     }
 
     private sealed class IssuerHost(bool isIssuer) : ILicenseIssuerHost
