@@ -237,6 +237,6 @@ public class FileUploadValidationSecurityTests
                 Substitute.For<Volo.Abp.Users.ICurrentUser>(),
                 Substitute.For<Volo.Abp.Data.IDataFilter>()),
             Substitute.For<IFileStorageQuotaGuard>(),
-            Substitute.For<IFileManagerStoragePolicyProvider>());
+            Substitute.For<IFileStorageQuota>());
     }
 }
