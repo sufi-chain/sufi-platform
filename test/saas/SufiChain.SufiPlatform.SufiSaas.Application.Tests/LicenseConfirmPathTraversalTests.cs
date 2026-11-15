@@ -1,4 +1,6 @@
+using System.Security.Cryptography;
 using System.Text.Json;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using NSubstitute;
@@ -20,6 +22,9 @@ public sealed class LicenseConfirmPathTraversalTests : IDisposable
     private readonly string _root;
     private readonly string _store;
     private readonly string _outside;
+    private readonly string _publicKeyPem;
+    private readonly IIssuedLicenseRepository _repository;
+    private readonly IClock _clock;
     private readonly SelfHostedLicenseIssuer _issuer;
     private readonly LicenseAppService _service;
 
@@ -32,8 +37,13 @@ public sealed class LicenseConfirmPathTraversalTests : IDisposable
         Directory.CreateDirectory(_outside);
         File.WriteAllText(Path.Combine(_root, "x.json"), SecretDocument("root-x"));
         File.WriteAllText(Path.Combine(_outside, "secret.json"), SecretDocument("outside-secret"));
-        _issuer = NewIssuer(_store);
-        _service = NewService(_issuer);
+        using var rsa = RSA.Create(2048);
+        _publicKeyPem = rsa.ExportSubjectPublicKeyInfoPem();
+        _repository = IssuedLicenseRepositoryDouble.Create();
+        _clock = Substitute.For<IClock>();
+        _clock.Now.Returns(new DateTime(2026, 10, 4, 0, 0, 0, DateTimeKind.Utc));
+        _issuer = NewIssuer(_store, rsa.ExportRSAPrivateKeyPem(), _publicKeyPem, _repository);
+        _service = NewService(_issuer, _clock);
     }
 
     public void Dispose()
@@ -122,9 +132,7 @@ public sealed class LicenseConfirmPathTraversalTests : IDisposable
         loaded.Token.ShouldBe("issued-token");
         loaded.LicenseId.ShouldBe(licenseId);
 
-        var storedPath = Path.Combine(_store, licenseId + ".json");
-        File.Exists(storedPath).ShouldBeTrue();
-        Path.GetDirectoryName(storedPath).ShouldBe(_store);
+        File.Exists(Path.Combine(_store, licenseId + ".json")).ShouldBeFalse();
 
         var response = await _service.ConfirmAsync(new ConfirmLicenseRequest
         {
@@ -137,6 +145,11 @@ public sealed class LicenseConfirmPathTraversalTests : IDisposable
 
         response.Accepted.ShouldBeTrue();
         response.Message.ShouldBeNull();
+        response.Lease.ShouldNotBeNullOrWhiteSpace();
+        var lease = new LicenseLeaseService(_clock).Validate(response.Lease, _publicKeyPem, "instance-1");
+        lease.LicenseId.ShouldBe(licenseId);
+        lease.ConfirmedAt.ShouldBe(new DateTimeOffset(new DateTime(2026, 10, 4, 0, 0, 0, DateTimeKind.Utc)));
+        lease.ExpiresAt.ToUnixTimeSeconds().ShouldBe(lease.ConfirmedAt.AddDays(7).ToUnixTimeSeconds());
 
         var confirmed = await _issuer.FindByLicenseIdAsync(licenseId);
         confirmed.ShouldNotBeNull();
@@ -147,7 +160,8 @@ public sealed class LicenseConfirmPathTraversalTests : IDisposable
         confirmed.LastInstanceId.ShouldBe("instance-1");
         confirmed.LastPlatformVersion.ShouldBe("0.1.0");
         confirmed.LastConfirmedAt.ShouldBe(new DateTimeOffset(new DateTime(2026, 10, 4, 0, 0, 0, DateTimeKind.Utc)));
-        Directory.GetFiles(_store, "*.json").Length.ShouldBe(1);
+        confirmed.LastLease.ShouldBe(response.Lease);
+        Directory.GetFiles(_store, "*.json").ShouldBeEmpty();
         Directory.GetFiles(_outside, "*.json").Select(Path.GetFileName).ShouldBe(new[] { "secret.json" });
     }
 
@@ -265,7 +279,7 @@ public sealed class LicenseConfirmPathTraversalTests : IDisposable
             LicenseId = licenseId,
             Token = "issued-token"
         });
-        var before = await File.ReadAllTextAsync(Path.Combine(_store, licenseId + ".json"));
+        var before = await _issuer.FindByLicenseIdAsync(licenseId);
 
         var response = await _service.ConfirmAsync(new ConfirmLicenseRequest
         {
@@ -274,7 +288,15 @@ public sealed class LicenseConfirmPathTraversalTests : IDisposable
         });
 
         response.Accepted.ShouldBeFalse();
-        (await File.ReadAllTextAsync(Path.Combine(_store, licenseId + ".json"))).ShouldBe(before);
+        response.Lease.ShouldBeNull();
+        var after = await _issuer.FindByLicenseIdAsync(licenseId);
+        after.ShouldNotBeNull();
+        before.ShouldNotBeNull();
+        after.Token.ShouldBe(before.Token);
+        after.LastUserCount.ShouldBe(0);
+        after.LastConfirmedAt.ShouldBeNull();
+        after.InstanceId.ShouldBeNull();
+        File.Exists(Path.Combine(_store, licenseId + ".json")).ShouldBeFalse();
     }
 
     [Fact]
@@ -335,23 +357,28 @@ public sealed class LicenseConfirmPathTraversalTests : IDisposable
         stored.LastConfirmedAt.ShouldBeNull();
     }
 
-    private static SelfHostedLicenseIssuer NewIssuer(string directory)
+    private static SelfHostedLicenseIssuer NewIssuer(
+        string directory,
+        string privateKeyPem,
+        string publicKeyPem,
+        IIssuedLicenseRepository repository)
     {
         return new SelfHostedLicenseIssuer(
-            null!,
+            new LicenseTokenService(),
             Options.Create(new SufiSaasLicensingOptions
             {
-                IssuedLicenseDirectory = directory
+                IssuedLicenseDirectory = directory,
+                PrivateKeyPem = privateKeyPem,
+                PublicKeyPem = publicKeyPem
             }),
-            null!,
+            new ConfigurationBuilder().Build(),
             Substitute.For<IClock>(),
-            SimpleGuidGenerator.Instance);
+            SimpleGuidGenerator.Instance,
+            licenses: repository);
     }
 
-    private static LicenseAppService NewService(SelfHostedLicenseIssuer issuer)
+    private static LicenseAppService NewService(SelfHostedLicenseIssuer issuer, IClock clock)
     {
-        IClock clock = Substitute.For<IClock>();
-        clock.Now.Returns(new DateTime(2026, 10, 4, 0, 0, 0, DateTimeKind.Utc));
         var services = new ServiceCollection();
         services.AddSingleton(clock);
         var service = new LicenseAppService(issuer);
