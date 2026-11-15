@@ -1,12 +1,9 @@
 using System;
-using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
 using SufiChain.SufiPlatform.FileManager.Features;
-using SufiChain.SufiPlatform.FileManager.Settings;
 using SufiChain.SufiPlatform.Features;
 using Volo.Abp.DependencyInjection;
-using Volo.Abp.Settings;
 
 namespace SufiChain.SufiPlatform.FileManager.Storage;
 
@@ -15,12 +12,14 @@ public class FileManagerStoragePolicyProvider :
     ITransientDependency
 {
     private readonly IFeatureChecker _featureChecker;
-    private readonly ISettingProvider _settingProvider;
+    private readonly IFileStorageQuota _fileStorageQuota;
 
-    public FileManagerStoragePolicyProvider(IFeatureChecker featureChecker, ISettingProvider settingProvider)
+    public FileManagerStoragePolicyProvider(
+        IFeatureChecker featureChecker,
+        IFileStorageQuota fileStorageQuota)
     {
         _featureChecker = featureChecker;
-        _settingProvider = settingProvider;
+        _fileStorageQuota = fileStorageQuota;
     }
 
     public virtual async Task<FileManagerStoragePolicy> GetAsync(
@@ -38,36 +37,10 @@ public class FileManagerStoragePolicyProvider :
             provider = FileStructureStorageProvider.Database;
         }
 
-        var maximumBytesValue = await _featureChecker.GetOrNullAsync(
-            SufiFileManagerFeatures.Storage.MaxBytes);
-        if (!long.TryParse(
-                maximumBytesValue,
-                NumberStyles.None,
-                CultureInfo.InvariantCulture,
-                out var entitlementBytes) ||
-            entitlementBytes < 0)
-        {
-            entitlementBytes = long.Parse(
-                SufiFileManagerFeatures.Storage.DefaultMaxBytes,
-                CultureInfo.InvariantCulture);
-        }
-
-        var quotaSetting = await _settingProvider.GetOrNullAsync(FileManagerSettings.StorageQuota);
-        long settingBytes = 0;
-        if (long.TryParse(quotaSetting, NumberStyles.None, CultureInfo.InvariantCulture, out var quotaMegabytes) &&
-            quotaMegabytes > 0)
-        {
-            settingBytes = quotaMegabytes * 1024L * 1024L;
-        }
-
-        var maximumBytes = entitlementBytes > 0 && settingBytes > 0
-            ? Math.Min(entitlementBytes, settingBytes)
-            : entitlementBytes > 0 ? entitlementBytes : settingBytes;
-
         return new FileManagerStoragePolicy
         {
             Provider = provider,
-            MaxStorageBytes = maximumBytes
+            MaxStorageBytes = await _fileStorageQuota.GetLimitBytesAsync(cancellationToken)
         };
     }
 }

@@ -63,20 +63,23 @@ public class MongoFileItemRepository :
     }
 
     public async Task<long> GetTotalSizeByTenantAsync(
-        Guid tenantId,
+        Guid? tenantId,
         CancellationToken cancellationToken = default)
     {
         // Use MongoDB aggregation pipeline for server-side sum calculation
         // This avoids loading all items into memory
         var collection = await GetCollectionAsync(cancellationToken);
-        
+        var tenantValue = tenantId.HasValue
+            ? (BsonValue)new BsonBinaryData(tenantId.Value, GuidRepresentation.Standard)
+            : BsonNull.Value;
+
         var pipeline = new BsonDocument[]
         {
-            // Match stage: filter by tenant. Temporary and archived files are billable
-            // because they still consume storage.
+            // Match stage: filter by tenant. A null tenant is the host. Temporary and
+            // archived files are billable because they still consume storage.
             new BsonDocument("$match", new BsonDocument
             {
-                { "TenantId", new BsonBinaryData(tenantId, GuidRepresentation.Standard) }
+                { "TenantId", tenantValue }
             }),
             // Group stage: sum all Size values
             new BsonDocument("$group", new BsonDocument

@@ -1,7 +1,6 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using SufiChain.SufiPlatform.FileManager.FileItems;
 using Volo.Abp;
 using Volo.Abp.DependencyInjection;
 using Volo.Abp.DistributedLocking;
@@ -14,19 +13,16 @@ public class FileStorageQuotaGuard : IFileStorageQuotaGuard, ITransientDependenc
     private static readonly TimeSpan LockTimeout = TimeSpan.FromSeconds(30);
 
     private readonly ICurrentTenant _currentTenant;
-    private readonly IFileItemRepository _fileItemRepository;
-    private readonly IFileManagerStoragePolicyProvider _storagePolicyProvider;
+    private readonly IFileStorageQuota _fileStorageQuota;
     private readonly IAbpDistributedLock _distributedLock;
 
     public FileStorageQuotaGuard(
         ICurrentTenant currentTenant,
-        IFileItemRepository fileItemRepository,
-        IFileManagerStoragePolicyProvider storagePolicyProvider,
+        IFileStorageQuota fileStorageQuota,
         IAbpDistributedLock distributedLock)
     {
         _currentTenant = currentTenant;
-        _fileItemRepository = fileItemRepository;
-        _storagePolicyProvider = storagePolicyProvider;
+        _fileStorageQuota = fileStorageQuota;
         _distributedLock = distributedLock;
     }
 
@@ -50,48 +46,54 @@ public class FileStorageQuotaGuard : IFileStorageQuotaGuard, ITransientDependenc
         Func<Task<TResult>> action,
         CancellationToken cancellationToken = default)
     {
-        if (positiveByteDelta <= 0 || !_currentTenant.Id.HasValue)
+        if (positiveByteDelta <= 0)
         {
             return await action();
         }
 
-        var tenantId = _currentTenant.Id.Value;
+        var scope = _currentTenant.Id?.ToString() ?? "host";
         await using var lockHandle = await _distributedLock.TryAcquireAsync(
-            $"SufiFileManager:StorageQuota:{tenantId}",
+            $"SufiFileManager:StorageQuota:{scope}",
             LockTimeout,
             cancellationToken);
 
         if (lockHandle == null)
         {
-            throw new BusinessException(FileManagerErrorCodes.StorageQuotaLockTimeout)
-                .WithData("TenantId", tenantId);
+            var timeout = new BusinessException(FileManagerErrorCodes.StorageQuotaLockTimeout);
+            if (_currentTenant.Id.HasValue)
+            {
+                timeout.WithData("TenantId", _currentTenant.Id.Value);
+            }
+
+            throw timeout;
         }
 
-        var policy = await _storagePolicyProvider.GetAsync(cancellationToken);
-        if (policy.MaxStorageBytes > 0)
+        var quota = await _fileStorageQuota.GetAsync(cancellationToken);
+        if (quota.LimitBytes > 0 &&
+            positiveByteDelta > quota.LimitBytes - quota.UsedBytes)
         {
-            var usedBytes = await _fileItemRepository.GetTotalSizeByTenantAsync(tenantId, cancellationToken);
-            if (positiveByteDelta > policy.MaxStorageBytes - usedBytes)
-            {
-                throw CreateQuotaException(
-                    tenantId,
-                    positiveByteDelta,
-                    usedBytes,
-                    policy.MaxStorageBytes);
-            }
+            throw CreateQuotaException(
+                _currentTenant.Id,
+                positiveByteDelta,
+                quota.UsedBytes,
+                quota.LimitBytes);
         }
 
         return await action();
     }
 
     private static BusinessException CreateQuotaException(
-        Guid tenantId,
+        Guid? tenantId,
         long requestedBytes,
         long usedBytes,
         long maximumBytes)
     {
         var exception = new BusinessException(FileManagerErrorCodes.StorageQuotaExceeded);
-        exception.WithData("TenantId", tenantId);
+        if (tenantId.HasValue)
+        {
+            exception.WithData("TenantId", tenantId.Value);
+        }
+
         exception.WithData("RequestedBytes", requestedBytes);
         exception.WithData("UsedBytes", usedBytes);
         exception.WithData("MaximumBytes", maximumBytes);

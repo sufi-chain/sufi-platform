@@ -97,4 +97,47 @@ public class FeatureValueCacheInvalidationTests
         otherHost.Removes.ShouldContain(remove => remove.Key == key && !remove.ConsiderUow);
         otherHost.Removes.ShouldContain(remove => remove.Key == key && remove.ConsiderUow);
     }
+
+    [Fact]
+    public async Task Host_storage_max_bytes_change_is_visible_without_a_manual_cache_clear()
+    {
+        const string featureName = "SufiFileManager.Storage.MaxBytes";
+        var rows = new List<FeatureValue>();
+        var repository = Substitute.For<IFeatureValueRepository>();
+        repository.GetListAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
+            .Returns(call => rows
+                .Where(row =>
+                    row.ProviderName == call.ArgAt<string>(0) &&
+                    row.ProviderKey == call.ArgAt<string>(1))
+                .ToList());
+
+        var definition = new FeatureDefinition(
+            new Volo.Abp.Features.FeatureDefinition(featureName, "100000000"));
+        var definitions = Substitute.For<IFeatureDefinitionManager>();
+        definitions.GetAllAsync().Returns(new List<FeatureDefinition> { definition });
+
+        var cache = new RecordingDistributedCache<FeatureValueCacheItem>();
+        var store = new FeaturesStore(
+            repository,
+            Substitute.For<IGuidGenerator>(),
+            cache,
+            definitions);
+        var invalidator = new FeatureValueCacheItemInvalidator(cache, Substitute.For<IDistributedEventBus>());
+
+        (await store.GetOrNullAsync(featureName, "T", null!)).ShouldBeNull();
+
+        var updated = new FeatureValue(
+            Guid.NewGuid(),
+            featureName,
+            "1073741824",
+            "T",
+            null);
+        rows.Add(updated);
+        await invalidator.HandleEventAsync(
+            new Volo.Abp.Domain.Entities.Events.EntityChangedEventData<FeatureValue>(updated));
+
+        (await store.GetOrNullAsync(featureName, "T", null!)).ShouldBe("1073741824");
+        cache.Removes.Select(remove => remove.Key).ShouldContain(
+            FeatureValueCacheItem.CalculateCacheKey(featureName, "T", null));
+    }
 }
