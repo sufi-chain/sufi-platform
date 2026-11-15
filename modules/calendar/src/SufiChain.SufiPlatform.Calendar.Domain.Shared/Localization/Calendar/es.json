@@ -79,6 +79,8 @@
     "Available": "Disponible",
     "Loading": "Cargando",
     "InvalidTimeRange": "Rango de tiempo no válido",
+    "InvalidRecurrenceInterval": "El intervalo de repetición debe ser como mínimo 1.",
+    "InvalidReminderOffset": "Los minutos de antelación deben ser como mínimo 0 y como máximo 30 días.",
     "DeleteNotAllowed": "Solo puede eliminar los eventos que le pertenecen.",
     "OverlappingWorkingHours": "Los horarios del mismo día no pueden superponerse.",
     "OverlappingExceptionHours": "Los horarios de excepción no pueden superponerse.",
