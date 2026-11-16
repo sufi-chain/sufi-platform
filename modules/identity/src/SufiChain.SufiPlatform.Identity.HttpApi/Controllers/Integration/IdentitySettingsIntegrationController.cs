@@ -1,4 +1,5 @@
 using Asp.Versioning;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SufiChain.SufiPlatform.AspNetCore.Mvc.Controllers;
 using SufiChain.SufiPlatform.Identity.Integration;
@@ -9,6 +10,7 @@ namespace SufiChain.SufiPlatform.Identity.Controllers.Integration;
 /// <summary>
 /// HTTP API for Identity settings IntegrationService.
 /// </summary>
+[Authorize]
 [RemoteService(Name = IdentityRemoteServiceConsts.RemoteServiceName)]
 [Area(IdentityRemoteServiceConsts.ModuleName)]
 [ControllerName("IdentitySettingsIntegration")]

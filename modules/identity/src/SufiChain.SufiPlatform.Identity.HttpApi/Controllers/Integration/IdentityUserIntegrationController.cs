@@ -1,7 +1,9 @@
 using Asp.Versioning;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SufiChain.SufiPlatform.Application.Dtos;
 using SufiChain.SufiPlatform.AspNetCore.Mvc.Controllers;
+using SufiChain.SufiPlatform.Identity;
 using SufiChain.SufiPlatform.Identity.Integration;
 using SufiChain.SufiPlatform.Users;
 using Volo.Abp;
@@ -9,6 +11,7 @@ using IdentityUserData = SufiChain.SufiPlatform.Identity.UserData;
 
 namespace SufiChain.SufiPlatform.Identity.Controllers.Integration;
 
+[Authorize(IdentityPermissions.UserLookup.Default)]
 [RemoteService(Name = IdentityRemoteServiceConsts.RemoteServiceName)]
 [Area(IdentityRemoteServiceConsts.ModuleName)]
 [ControllerName("UserIntegration")]

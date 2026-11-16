@@ -1,6 +1,8 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using SufiChain.SufiPlatform.Application.Dtos;
 using SufiChain.SufiPlatform.Application.Services;
+using Volo.Abp.Domain.Entities;
 
 namespace SufiChain.SufiPlatform.Identity;
 
@@ -23,11 +25,13 @@ public class IdentityUserAppService : SufiApplicationService, IIdentityUserAppSe
         UserStore = userStore;
     }
 
+    [Authorize(IdentityPermissions.Users.Default)]
     public virtual async Task<IdentityUserDto> GetAsync(Guid id)
     {
         return MapToDto(await UserRepository.GetAsync(id));
     }
 
+    [Authorize(IdentityPermissions.Users.Default)]
     public virtual async Task<PagedResultDto<IdentityUserDto>> GetListAsync(GetIdentityUsersInput input)
     {
         var count = await UserRepository.GetCountAsync(filter: input.Filter);
@@ -40,6 +44,7 @@ public class IdentityUserAppService : SufiApplicationService, IIdentityUserAppSe
         return new PagedResultDto<IdentityUserDto>(count, users.Select(MapToDto).ToList());
     }
 
+    [Authorize(IdentityPermissions.Users.Create)]
     public virtual async Task<IdentityUserDto> CreateAsync(IdentityUserCreateDto input)
     {
        var user = new IdentityUser(GuidGenerator.Create(), input.UserName, input.Email, CurrentTenant.Id)
@@ -67,6 +72,7 @@ public class IdentityUserAppService : SufiApplicationService, IIdentityUserAppSe
         return MapToDto(user);
     }
 
+    [Authorize(IdentityPermissions.Users.Update)]
     public virtual async Task<IdentityUserDto> UpdateAsync(Guid id, IdentityUserUpdateDto input)
     {
         var user = await UserManager.GetByIdAsync(id);
@@ -110,6 +116,7 @@ public class IdentityUserAppService : SufiApplicationService, IIdentityUserAppSe
         return MapToDto(user);
     }
 
+    [Authorize(IdentityPermissions.Users.Delete)]
     public virtual async Task DeleteAsync(Guid id)
     {
         var user = await UserManager.GetByIdAsync(id);
@@ -117,18 +124,21 @@ public class IdentityUserAppService : SufiApplicationService, IIdentityUserAppSe
         result.CheckErrors();
     }
 
+    [Authorize(IdentityPermissions.Users.Default)]
     public virtual async Task<ListResultDto<IdentityRoleDto>> GetRolesAsync(Guid id)
     {
         var roles = await UserRepository.GetRolesAsync(id);
         return new ListResultDto<IdentityRoleDto>(roles.Select(MapRoleToDto).ToList());
     }
 
+    [Authorize(IdentityPermissions.Users.Default)]
     public virtual async Task<ListResultDto<IdentityRoleDto>> GetAssignableRolesAsync()
     {
         var roles = await RoleRepository.GetListAsync();
         return new ListResultDto<IdentityRoleDto>(roles.Select(MapRoleToDto).ToList());
     }
 
+    [Authorize(IdentityPermissions.Users.Update)]
     public virtual async Task UpdateRolesAsync(Guid id, IdentityUserUpdateRolesDto input)
     {
         var user = await UserManager.GetByIdAsync(id);
@@ -136,23 +146,25 @@ public class IdentityUserAppService : SufiApplicationService, IIdentityUserAppSe
         result.CheckErrors();
     }
 
+    [Authorize(IdentityPermissions.Users.Default)]
     public virtual async Task<IdentityUserDto> FindByUsernameAsync(string userName)
     {
         var user = await UserRepository.FindByNormalizedUserNameAsync(userName.ToUpperInvariant());
         if (user == null)
         {
-            throw new InvalidOperationException($"User not found: {userName}");
+            throw new EntityNotFoundException(typeof(IdentityUser), userName);
         }
 
         return MapToDto(user);
     }
 
+    [Authorize(IdentityPermissions.Users.Default)]
     public virtual async Task<IdentityUserDto> FindByEmailAsync(string email)
     {
         var user = await UserRepository.FindByNormalizedEmailAsync(email.ToUpperInvariant());
         if (user == null)
         {
-            throw new InvalidOperationException($"User not found: {email}");
+            throw new EntityNotFoundException(typeof(IdentityUser), email);
         }
 
         return MapToDto(user);
