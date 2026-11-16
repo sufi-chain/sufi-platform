@@ -47,6 +47,51 @@ public class ThemeSwitchServiceTests
     }
 
     [Fact]
+    public async Task GetStoredThemeAsync_keeps_dark_seed_when_storage_is_empty()
+    {
+        var js = new RecordingJsRuntime
+        {
+            ThemeState = new SufiThemeJsState
+            {
+                Stored = "",
+                SystemDark = false,
+                IsLight = true
+            }
+        };
+        var service = new ThemeSwitchService(new InMemoryLocalStorage(), js);
+        service.SeedResolved(true);
+
+        await service.GetStoredThemeAsync();
+
+        js.ApplyCallCount.ShouldBe(0);
+        service.CurrentMode.ShouldBe(ThemeMode.Dark);
+        service.IsDarkMode.ShouldBeTrue();
+    }
+
+    [Fact]
+    public async Task GetStoredThemeAsync_applies_stored_dark_over_a_light_seed()
+    {
+        var js = new RecordingJsRuntime
+        {
+            ThemeState = new SufiThemeJsState
+            {
+                Stored = "\"Dark\"",
+                SystemDark = false,
+                IsLight = true
+            }
+        };
+        var service = new ThemeSwitchService(new InMemoryLocalStorage(), js);
+        service.SeedResolved(false);
+
+        await service.GetStoredThemeAsync();
+
+        js.ApplyCallCount.ShouldBe(1);
+        js.LastApplyIsLight.ShouldBe(false);
+        service.CurrentMode.ShouldBe(ThemeMode.Dark);
+        service.IsDarkMode.ShouldBeTrue();
+    }
+
+    [Fact]
     public async Task GetStoredThemeAsync_keeps_seed_when_js_is_unavailable()
     {
         var js = new RecordingJsRuntime { ThrowOnInvoke = true };
@@ -98,6 +143,7 @@ public class ThemeSwitchServiceTests
     private sealed class RecordingJsRuntime : IJSRuntime
     {
         public int ApplyCallCount { get; private set; }
+        public bool? LastApplyIsLight { get; private set; }
         public SufiThemeJsState? ThemeState { get; set; }
         public bool ThrowOnInvoke { get; set; }
 
@@ -117,6 +163,13 @@ public class ThemeSwitchServiceTests
                 return ValueTask.FromResult(value!);
             }
 
+            if (identifier == "sufiTheme.apply")
+            {
+                ApplyCallCount++;
+                LastApplyIsLight = args is { Length: > 0 } && args[0] is bool isLight && isLight;
+                return ValueTask.FromResult(default(TValue)!);
+            }
+
             throw new InvalidOperationException($"Unexpected invoke: {identifier}");
         }
 
@@ -133,6 +186,7 @@ public class ThemeSwitchServiceTests
             if (identifier == "sufiTheme.apply")
             {
                 ApplyCallCount++;
+                LastApplyIsLight = args is { Length: > 0 } && args[0] is bool isLight && isLight;
                 return ValueTask.CompletedTask;
             }
 
