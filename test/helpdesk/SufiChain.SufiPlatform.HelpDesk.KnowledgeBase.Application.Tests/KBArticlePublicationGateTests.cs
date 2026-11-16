@@ -132,7 +132,7 @@ public class KBArticlePublicationGateTests
     }
 
     [Fact]
-    public async Task With_approval_off_an_editor_edit_changes_the_public_page()
+    public async Task An_edit_of_a_published_article_stays_a_draft_until_publish()
     {
         var projectId = Guid.NewGuid();
         var project = PublicProject(projectId);
@@ -142,12 +142,80 @@ public class KBArticlePublicationGateTests
 
         var saved = await harness.Articles.UpdateAsync(article.Id, Edit("Edited title", "edited body", "live-article"));
 
-        saved.HasPendingPublication.ShouldBeFalse();
-        article.GetTranslation("en").Content.ShouldBe("edited body");
+        saved.HasPendingPublication.ShouldBeTrue();
+        saved.Title.ShouldBe("Edited title");
+        saved.Content.ShouldBe("edited body");
+        article.GetTranslation("en").Content.ShouldBe("live body");
+        article.GetTranslation("en").HasDraft().ShouldBeTrue();
+        article.Versions.ShouldBeEmpty();
 
         var page = await harness.Articles.GetBySlugAsync(projectId, "en", "live-article");
-        page.Content.ShouldBe("edited body");
-        page.Title.ShouldBe("Edited title");
+        page.Content.ShouldBe("live body");
+        page.Title.ShouldBe("Live title");
+        page.VersionNumber.ShouldBeNull();
+    }
+
+    [Fact]
+    public async Task Publish_appends_an_immutable_snapshot()
+    {
+        var projectId = Guid.NewGuid();
+        var article = Draft(projectId);
+        var harness = Harness.Create(projectId, canPublish: true);
+        harness.Bind(article);
+
+        await harness.Articles.PublishAsync(article.Id, new PublishKBArticleDto { CommitMessage = "release" });
+
+        var version = article.Versions.Single();
+        version.VersionNumber.ShouldBe(1);
+        version.Title.ShouldBe("Draft");
+        version.Content.ShouldBe("draft body");
+        version.AuthorName.ShouldBe("Ada Lovelace");
+        version.CreatedBy.ShouldBe(new Guid("11111111-1111-1111-1111-111111111111"));
+        version.PublishedTime.ShouldBe(new DateTime(2026, 11, 3, 12, 0, 0, DateTimeKind.Utc));
+        version.TenantId.ShouldBe(article.TenantId);
+        version.IsDraft.ShouldBeFalse();
+        version.IsPubliclyReadable().ShouldBeTrue();
+        version.GetType().GetProperty(nameof(KBArticleVersion.Title))!.SetMethod!.IsPublic.ShouldBeFalse();
+    }
+
+    [Fact]
+    public async Task Restore_appends_a_new_published_version()
+    {
+        var projectId = Guid.NewGuid();
+        var project = PublicProject(projectId);
+        var article = Published(projectId, "Live title", "live-article", "live body");
+        var older = new KBArticleVersion(
+            Guid.NewGuid(),
+            article.Id,
+            "en",
+            1,
+            "Old title",
+            "old body",
+            "release",
+            publishedTime: new DateTime(2026, 10, 1, 0, 0, 0, DateTimeKind.Utc),
+            tenantId: article.TenantId,
+            authorName: "Grace Hopper");
+        article.AddVersion(older);
+
+        var harness = Harness.Create(projectId, canPublish: true, approval: "false");
+        harness.Bind(article, project);
+        harness.Versions.FindByVersionNumberAsync(article.Id, 1, Arg.Any<string?>(), Arg.Any<CancellationToken>())
+            .Returns(older);
+
+        var restored = await harness.VersionService.RestoreAsync(article.Id, 1);
+
+        restored.VersionNumber.ShouldBe(2);
+        restored.Title.ShouldBe("Old title");
+        restored.Content.ShouldBe("old body");
+        restored.IsDraft.ShouldBeFalse();
+        restored.PublishedTime.ShouldBe(new DateTime(2026, 11, 3, 12, 0, 0, DateTimeKind.Utc));
+        article.GetTranslation("en").Content.ShouldBe("old body");
+        article.Versions.Count.ShouldBe(2);
+        article.Versions.OrderBy(version => version.VersionNumber).Last().VersionNumber.ShouldBe(2);
+
+        var page = await harness.Articles.GetBySlugAsync(projectId, "en", "live-article");
+        page.Content.ShouldBe("old body");
+        page.VersionNumber.ShouldBeNull();
     }
 
     [Fact]
@@ -481,11 +549,15 @@ public class KBArticlePublicationGateTests
             settings.GetOrNullAsync(HelpDeskSettings.KnowledgeBasePublishingRequireApproval).Returns(approval);
             var tenant = Substitute.For<ICurrentTenant>();
             tenant.Id.Returns(tenantId);
+            var currentUser = Substitute.For<ICurrentUser>();
+            currentUser.Id.Returns(new Guid("11111111-1111-1111-1111-111111111111"));
+            currentUser.Name.Returns("Ada");
+            currentUser.SurName.Returns("Lovelace");
 
             var services = new ServiceCollection();
             services.AddSingleton<IGuidGenerator>(SimpleGuidGenerator.Instance);
             services.AddSingleton(tenant);
-            services.AddSingleton(Substitute.For<ICurrentUser>());
+            services.AddSingleton(currentUser);
             services.AddSingleton(clock);
             services.AddSingleton(permissions);
             services.AddSingleton(settings);

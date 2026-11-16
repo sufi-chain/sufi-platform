@@ -64,13 +64,27 @@ public class KBArticleApplicationContractTests
     }
 
     [Fact]
-    public void Version_Restore_Should_Require_Edit_Permission()
+    public void Version_Restore_Should_Require_Restore_Permission()
     {
         var authorizeAttribute = typeof(KBArticleVersionAppService)
             .GetMethod(nameof(KBArticleVersionAppService.RestoreAsync))!
             .GetCustomAttribute<AuthorizeAttribute>();
 
         authorizeAttribute.ShouldNotBeNull();
-        authorizeAttribute.Policy.ShouldBe(KnowledgeBasePermissions.Articles.Edit);
+        authorizeAttribute.Policy.ShouldBe(KnowledgeBasePermissions.Articles.Restore);
+    }
+
+    [Theory]
+    [InlineData(nameof(KBArticleVersionAppService.GetVersionsAsync))]
+    [InlineData(nameof(KBArticleVersionAppService.GetVersionAsync))]
+    [InlineData(nameof(KBArticleVersionAppService.CompareVersionsAsync))]
+    public void Version_History_Should_Require_ViewHistory_Permission(string methodName)
+    {
+        var authorizeAttribute = typeof(KBArticleVersionAppService)
+            .GetMethod(methodName)!
+            .GetCustomAttribute<AuthorizeAttribute>();
+
+        authorizeAttribute.ShouldNotBeNull();
+        authorizeAttribute.Policy.ShouldBe(KnowledgeBasePermissions.Articles.ViewHistory);
     }
 }
