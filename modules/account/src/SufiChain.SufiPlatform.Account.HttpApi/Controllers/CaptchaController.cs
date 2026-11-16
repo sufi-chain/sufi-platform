@@ -1,10 +1,12 @@
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SufiChain.SufiPlatform.AspNetCore.Mvc.Controllers;
 using Volo.Abp;
 
 namespace SufiChain.SufiPlatform.Account.Controllers;
 
+[AllowAnonymous]
 [Area(AccountRemoteServiceConsts.ModuleName)]
 [RemoteService(Name = AccountRemoteServiceConsts.RemoteServiceName)]
 [Route("api/account/captcha")]
