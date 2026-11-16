@@ -899,7 +899,7 @@ public partial class FileItemAppService : SufiApplicationService, IFileItemAppSe
         return ObjectMapper.Map<FileItem, FileItemDto>(fileItem);
     }
 
-    //[Authorize(FileManagerPermissions.FileItems.Default)]
+    [Authorize(FileManagerPermissions.FileItems.Default)]
     public async Task<StorageQuotaDto> GetStorageQuotaAsync()
     {
         var snapshot = await _fileStorageQuota.GetAsync();

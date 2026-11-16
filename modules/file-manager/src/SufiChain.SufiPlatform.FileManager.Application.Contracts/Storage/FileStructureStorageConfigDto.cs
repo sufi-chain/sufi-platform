@@ -1,9 +1,12 @@
 namespace SufiChain.SufiPlatform.FileManager.Storage;
 
 /// <summary>
-/// DTO for creating/updating file structure storage configuration.
-/// Sensitive values (ConnectionString, AccessKey, SecretKey) should be encrypted before storing.
+/// Storage configuration for a file structure.
+/// Secret fields are write-only: a response returns the <c>Has*</c> flags and never the secret values.
 /// </summary>
+#if NET
+[System.Text.Json.Serialization.JsonConverter(typeof(FileStructureStorageConfigDtoConverter))]
+#endif
 public class FileStructureStorageConfigDto
 {
     /// <summary>
@@ -13,8 +16,11 @@ public class FileStructureStorageConfigDto
 
     /// <summary>
     /// Database connection string. Null = use default connection.
-    /// Encrypted when stored.
+    /// Write-only. Encrypted when stored.
     /// </summary>
+#if NET
+    [System.Text.Json.Serialization.JsonIgnore]
+#endif
     public string? DatabaseConnectionString { get; set; }
 
     /// <summary>
@@ -28,13 +34,19 @@ public class FileStructureStorageConfigDto
     public string? MinioEndPoint { get; set; }
 
     /// <summary>
-    /// MinIO access key. Encrypted when stored.
+    /// MinIO access key. Write-only. Encrypted when stored.
     /// </summary>
+#if NET
+    [System.Text.Json.Serialization.JsonIgnore]
+#endif
     public string? MinioAccessKey { get; set; }
 
     /// <summary>
-    /// MinIO secret key. Encrypted when stored.
+    /// MinIO secret key. Write-only. Encrypted when stored.
     /// </summary>
+#if NET
+    [System.Text.Json.Serialization.JsonIgnore]
+#endif
     public string? MinioSecretKey { get; set; }
 
     /// <summary>
@@ -69,13 +81,19 @@ public class FileStructureStorageConfigDto
     public string? S3Region { get; set; }
 
     /// <summary>
-    /// S3 access key. Encrypted when stored.
+    /// S3 access key. Write-only. Encrypted when stored.
     /// </summary>
+#if NET
+    [System.Text.Json.Serialization.JsonIgnore]
+#endif
     public string? S3AccessKeyId { get; set; }
 
     /// <summary>
-    /// S3 secret access key. Encrypted when stored.
+    /// S3 secret access key. Write-only. Encrypted when stored.
     /// </summary>
+#if NET
+    [System.Text.Json.Serialization.JsonIgnore]
+#endif
     public string? S3SecretAccessKey { get; set; }
 
     /// <summary>

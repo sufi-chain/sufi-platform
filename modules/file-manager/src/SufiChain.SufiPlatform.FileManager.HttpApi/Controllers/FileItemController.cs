@@ -11,6 +11,7 @@ using Microsoft.Extensions.Options;
 using SufiChain.SufiPlatform.FileManager.Configuration;
 using SufiChain.SufiPlatform.FileManager.Localization;
 using SufiChain.SufiPlatform.FileManager.FileItems;
+using SufiChain.SufiPlatform.FileManager.Permissions;
 using Volo.Abp;
 using SufiChain.SufiPlatform.Application.Dtos;
 using SufiChain.SufiPlatform.AspNetCore.Mvc.Controllers;
@@ -451,6 +452,7 @@ public class FileItemController : SufiControllerBase, IFileItemAppService
 
     [HttpGet]
     [Route("storage-quota")]
+    [Authorize(FileManagerPermissions.FileItems.Default)]
     public virtual Task<StorageQuotaDto> GetStorageQuotaAsync()
     {
         return _fileItemAppService.GetStorageQuotaAsync();
