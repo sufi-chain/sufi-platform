@@ -1,8 +1,10 @@
+using Microsoft.AspNetCore.Authorization;
 using SufiChain.SufiPlatform.Application.Dtos;
 using SufiChain.SufiPlatform.Application.Services;
 
 namespace SufiChain.SufiPlatform.Identity;
 
+[Authorize(IdentityPermissions.Roles.Default)]
 public class IdentityRoleAppService : SufiApplicationService, IIdentityRoleAppService
 {
     protected IIdentityRoleRepository RoleRepository { get; }
@@ -39,6 +41,7 @@ public class IdentityRoleAppService : SufiApplicationService, IIdentityRoleAppSe
         return MapToDto(await RoleRepository.GetAsync(id));
     }
 
+    [Authorize(IdentityPermissions.Roles.Create)]
     public virtual async Task<IdentityRoleDto> CreateAsync(IdentityRoleCreateDto input)
     {
         var role = new IdentityRole(GuidGenerator.Create(), input.Name, CurrentTenant.Id)
@@ -56,6 +59,7 @@ public class IdentityRoleAppService : SufiApplicationService, IIdentityRoleAppSe
         return MapToDto(role);
     }
 
+    [Authorize(IdentityPermissions.Roles.Update)]
     public virtual async Task<IdentityRoleDto> UpdateAsync(Guid id, IdentityRoleUpdateDto input)
     {
         var role = await RoleManager.GetByIdAsync(id);
@@ -73,6 +77,7 @@ public class IdentityRoleAppService : SufiApplicationService, IIdentityRoleAppSe
         return MapToDto(role);
     }
 
+    [Authorize(IdentityPermissions.Roles.Delete)]
     public virtual async Task DeleteAsync(Guid id)
     {
         var role = await RoleManager.GetByIdAsync(id);

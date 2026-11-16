@@ -1,14 +1,17 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SufiChain.SufiPlatform.FileManager.FileStructures;
+using SufiChain.SufiPlatform.FileManager.Permissions;
 using Volo.Abp;
 using SufiChain.SufiPlatform.Application.Dtos;
 using SufiChain.SufiPlatform.AspNetCore.Mvc.Controllers;
 
 namespace SufiChain.SufiPlatform.FileManager.Controllers;
 
+[Authorize(FileManagerPermissions.FileStructures.Default)]
 [Area(FileManagerRemoteServiceConsts.ModuleName)]
 [RemoteService(Name = FileManagerRemoteServiceConsts.RemoteServiceName)]
 [Route("api/file-manager/file-structures")]
@@ -49,6 +52,7 @@ public class FileStructureController : SufiControllerBase, IFileStructureAppServ
     }
 
     [HttpPost]
+    [Authorize(FileManagerPermissions.FileStructures.Create)]
     public virtual Task<FileStructureDto> CreateAsync(CreateUpdateFileStructureDto input)
     {
         return _fileStructureAppService.CreateAsync(input);
@@ -56,6 +60,7 @@ public class FileStructureController : SufiControllerBase, IFileStructureAppServ
 
     [HttpPut]
     [Route("{id}")]
+    [Authorize(FileManagerPermissions.FileStructures.Update)]
     public virtual Task<FileStructureDto> UpdateAsync(Guid id, CreateUpdateFileStructureDto input)
     {
         return _fileStructureAppService.UpdateAsync(id, input);
@@ -63,6 +68,7 @@ public class FileStructureController : SufiControllerBase, IFileStructureAppServ
 
     [HttpDelete]
     [Route("{id}")]
+    [Authorize(FileManagerPermissions.FileStructures.Delete)]
     public virtual Task DeleteAsync(Guid id)
     {
         return _fileStructureAppService.DeleteAsync(id);
@@ -84,6 +90,7 @@ public class FileStructureController : SufiControllerBase, IFileStructureAppServ
 
     [HttpPost]
     [Route("{id}/reset-to-default")]
+    [Authorize(FileManagerPermissions.FileStructures.Update)]
     public virtual Task<FileStructureDto> ResetToDefaultAsync(Guid id)
     {
         return _fileStructureAppService.ResetToDefaultAsync(id);

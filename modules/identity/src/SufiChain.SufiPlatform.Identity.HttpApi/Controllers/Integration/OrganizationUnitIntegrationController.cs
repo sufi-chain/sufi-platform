@@ -1,6 +1,8 @@
 using Asp.Versioning;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SufiChain.SufiPlatform.AspNetCore.Mvc.Controllers;
+using SufiChain.SufiPlatform.Identity;
 using SufiChain.SufiPlatform.Identity.Integration;
 using Volo.Abp;
 
@@ -9,6 +11,7 @@ namespace SufiChain.SufiPlatform.Identity.Controllers.Integration;
 /// <summary>
 /// HTTP API for organization unit IntegrationService.
 /// </summary>
+[Authorize(IdentityPermissions.OrganizationUnits.Default)]
 [RemoteService(Name = IdentityRemoteServiceConsts.RemoteServiceName)]
 [Area(IdentityRemoteServiceConsts.ModuleName)]
 [ControllerName("OrganizationUnitIntegration")]

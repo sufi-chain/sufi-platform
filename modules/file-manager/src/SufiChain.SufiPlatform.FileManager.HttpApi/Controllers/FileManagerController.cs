@@ -1,8 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SufiChain.SufiPlatform.FileManager.FileFolders;
+using SufiChain.SufiPlatform.FileManager.Permissions;
 using Volo.Abp;
 using SufiChain.SufiPlatform.AspNetCore.Mvc.Controllers;
 
@@ -45,6 +47,7 @@ public class FileManagerController : SufiControllerBase, IFileManagerAppService
 
     [HttpGet]
     [Route("clipboard")]
+    [Authorize(FileManagerPermissions.FileItems.Default)]
     public virtual Task<ClipboardStateDto> GetClipboardStateAsync()
     {
         return _fileManagerAppService.GetClipboardStateAsync();
@@ -52,6 +55,7 @@ public class FileManagerController : SufiControllerBase, IFileManagerAppService
 
     [HttpDelete]
     [Route("clipboard")]
+    [Authorize(FileManagerPermissions.FileItems.Update)]
     public virtual Task ClearClipboardAsync()
     {
         return _fileManagerAppService.ClearClipboardAsync();

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using SufiChain.SufiPlatform.FileManager.Configuration;
@@ -23,6 +24,7 @@ using Volo.Abp.ObjectExtending;
 
 namespace SufiChain.SufiPlatform.FileManager.FileStructures;
 
+[Authorize(FileManagerPermissions.FileStructures.Default)]
 [RequiresFeature(SufiFileManagerFeatures.Enable, SufiFileManagerFeatures.FileStructures)]
 public class FileStructureAppService : 
     SufiCrudAppService<FileStructure, FileStructureDto, Guid, PagedAndSortedResultRequestDto, CreateUpdateFileStructureDto, CreateUpdateFileStructureDto>,
@@ -55,8 +57,8 @@ public class FileStructureAppService :
         _structureCache = structureCache;
         _structureRootCleanup = structureRootCleanup;
         
-        //GetPolicyName = FileManagerPermissions.FileStructures.Default;
-        //GetListPolicyName = FileManagerPermissions.FileStructures.Default;
+        GetPolicyName = FileManagerPermissions.FileStructures.Default;
+        GetListPolicyName = FileManagerPermissions.FileStructures.Default;
         CreatePolicyName = FileManagerPermissions.FileStructures.Create;
         UpdatePolicyName = FileManagerPermissions.FileStructures.Update;
         DeletePolicyName = FileManagerPermissions.FileStructures.Delete;
@@ -84,6 +86,7 @@ public class FileStructureAppService :
         return await AsyncExecuter.AnyAsync(query.Where(x => x.Key == key));
     }
 
+    [Authorize(FileManagerPermissions.FileStructures.Create)]
     public override async Task<FileStructureDto> CreateAsync(CreateUpdateFileStructureDto input)
     {
         if (string.IsNullOrWhiteSpace(input.Key))
@@ -144,6 +147,7 @@ public class FileStructureAppService :
         return new SufiChain.SufiPlatform.Application.Dtos.PagedResultDto<FileStructureDto>(baseResult.TotalCount, baseResult.Items);
     }
 
+    [Authorize(FileManagerPermissions.FileStructures.Update)]
     public override async Task<FileStructureDto> UpdateAsync(Guid id, CreateUpdateFileStructureDto input)
     {
         await CheckUpdatePolicyAsync();
@@ -158,6 +162,7 @@ public class FileStructureAppService :
         return result;
     }
 
+    [Authorize(FileManagerPermissions.FileStructures.Delete)]
     public override async Task DeleteAsync(Guid id)
     {
         var entity = await _structureRepository.GetAsync(id);
@@ -201,6 +206,7 @@ public class FileStructureAppService :
         return Task.FromResult(defaults);
     }
 
+    [Authorize(FileManagerPermissions.FileStructures.Update)]
     public async Task<FileStructureDto> ResetToDefaultAsync(Guid id)
     {
         var structure = await _structureRepository.GetAsync(id);
@@ -534,6 +540,7 @@ public class FileStructureAppService :
             HasS3AccessKey = false,
             HasS3SecretKey = false
         };
+            RedactStorageSecrets(dto.StorageConfig);
             return;
         }
 
@@ -573,6 +580,21 @@ public class FileStructureAppService :
                 entity.HasProperty(FileStructureStorageConstants.S3SecretAccessKey) &&
                 !string.IsNullOrEmpty(entity.GetProperty<string?>(FileStructureStorageConstants.S3SecretAccessKey))
         };
+        RedactStorageSecrets(dto.StorageConfig);
+    }
+
+    private static void RedactStorageSecrets(FileStructureStorageConfigDto? config)
+    {
+        if (config == null)
+        {
+            return;
+        }
+
+        config.DatabaseConnectionString = null;
+        config.MinioAccessKey = null;
+        config.MinioSecretKey = null;
+        config.S3AccessKeyId = null;
+        config.S3SecretAccessKey = null;
     }
 
     private static FileStructureDefaultDto MapConfigToDefaultDto(FileStructureConfig config)

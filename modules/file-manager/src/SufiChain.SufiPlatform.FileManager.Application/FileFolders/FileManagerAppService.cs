@@ -200,12 +200,14 @@ public class FileManagerAppService : SufiApplicationService, IFileManagerAppServ
         return result;
     }
 
+    [Authorize(FileManagerPermissions.FileItems.Default)]
     public async Task<ClipboardStateDto> GetClipboardStateAsync()
     {
         var state = await _clipboardCache.GetAsync(GetClipboardCacheKey());
         return state ?? new ClipboardStateDto { HasContent = false, Operation = ClipboardOperation.None };
     }
 
+    [Authorize(FileManagerPermissions.FileItems.Update)]
     public async Task ClearClipboardAsync()
     {
         await _clipboardCache.RemoveAsync(GetClipboardCacheKey());

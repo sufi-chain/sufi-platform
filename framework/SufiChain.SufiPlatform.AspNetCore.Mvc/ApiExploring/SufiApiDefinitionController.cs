@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SufiChain.SufiPlatform.AspNetCore.Mvc.Controllers;
 using Volo.Abp;
@@ -5,6 +6,7 @@ using Volo.Abp.Http.Modeling;
 
 namespace SufiChain.SufiPlatform.AspNetCore.Mvc.ApiExploring;
 
+[AllowAnonymous]
 [Area("sufi-abp")]
 [RemoteService(Name = "sufi-abp")]
 [Route("api/sufi-abp/api-definition")]

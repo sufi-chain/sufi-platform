@@ -1,5 +1,6 @@
 using System;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Volo.Abp;
 using SufiChain.SufiPlatform.Application.Dtos;
@@ -10,6 +11,7 @@ namespace SufiChain.SufiPlatform.Identity.Controllers;
 
 [Area(IdentityRemoteServiceConsts.ModuleName)]
 [RemoteService(Name = IdentityRemoteServiceConsts.RemoteServiceName)]
+[Authorize(IdentityPermissions.Roles.Default)]
 [Route("api/identity/roles")]
 public class IdentityRoleController : SufiControllerBase, IIdentityRoleAppService
 {
@@ -41,6 +43,7 @@ public class IdentityRoleController : SufiControllerBase, IIdentityRoleAppServic
     }
 
     [HttpPost]
+    [Authorize(IdentityPermissions.Roles.Create)]
     public virtual Task<IdentityRoleDto> CreateAsync(IdentityRoleCreateDto input)
     {
         return _roleAppService.CreateAsync(input);
@@ -48,6 +51,7 @@ public class IdentityRoleController : SufiControllerBase, IIdentityRoleAppServic
 
     [HttpPut]
     [Route("{id}")]
+    [Authorize(IdentityPermissions.Roles.Update)]
     public virtual Task<IdentityRoleDto> UpdateAsync(Guid id, IdentityRoleUpdateDto input)
     {
         return _roleAppService.UpdateAsync(id, input);
@@ -55,6 +59,7 @@ public class IdentityRoleController : SufiControllerBase, IIdentityRoleAppServic
 
     [HttpDelete]
     [Route("{id}")]
+    [Authorize(IdentityPermissions.Roles.Delete)]
     public virtual Task DeleteAsync(Guid id)
     {
         return _roleAppService.DeleteAsync(id);
