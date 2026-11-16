@@ -19,6 +19,7 @@ public class ThemeSwitchService : IThemeSwitchService
     private bool _systemPrefersDark;
     private bool _initialized;
     private bool? _seededIsDark;
+    private int _writeGeneration;
 
     public ThemeMode CurrentMode => _currentMode;
     public bool IsPreferenceResolved => _initialized;
@@ -43,13 +44,18 @@ public class ThemeSwitchService : IThemeSwitchService
 
     public async Task SetThemeModeAsync(ThemeMode mode)
     {
+        var write = ++_writeGeneration;
         _currentMode = mode;
         _initialized = true;
         _seededIsDark = null;
 
         await _localStorage.SetItemAsync(StorageKey, mode.ToString());
+        if (write != _writeGeneration)
+        {
+            return;
+        }
 
-        await ApplyThemeToDomAsync(force: true);
+        await ApplyThemeToDomAsync(force: true, mode: mode);
 
         ThemeChanged?.Invoke(mode);
     }
@@ -75,29 +81,25 @@ public class ThemeSwitchService : IThemeSwitchService
         }
 
         var seededIsDark = _seededIsDark;
+        var seenWrite = _writeGeneration;
 
         try
         {
             var state = await _jsRuntime.InvokeAsync<SufiThemeJsState>("sufiTheme.getState");
+            if (seenWrite != _writeGeneration)
+            {
+                return _currentMode;
+            }
+
             _systemPrefersDark = state.SystemDark;
-
-            if (!string.IsNullOrEmpty(state.Stored)
-                && Enum.TryParse<ThemeMode>(state.Stored, ignoreCase: true, out var mode))
-            {
-                _currentMode = mode;
-            }
-            else
-            {
-                _currentMode = ThemeMode.System;
-            }
-
+            _currentMode = ResolveStoredMode(state.Stored, seededIsDark);
             _initialized = true;
 
             var resolvedIsDark = ResolveIsDark(_currentMode, _systemPrefersDark);
             var skipDomApply = seededIsDark is bool seed && seed == resolvedIsDark;
             if (!skipDomApply)
             {
-                await ApplyThemeToDomAsync(force: false, isLightOverride: state.IsLight);
+                await ApplyThemeToDomAsync(force: false, isLightOverride: !resolvedIsDark);
             }
         }
         catch
@@ -111,14 +113,32 @@ public class ThemeSwitchService : IThemeSwitchService
     private static bool ResolveIsDark(ThemeMode mode, bool systemPrefersDark) =>
         mode == ThemeMode.Dark || (mode == ThemeMode.System && systemPrefersDark);
 
-    private async Task ApplyThemeToDomAsync(bool force, bool? isLightOverride = null)
+    private static ThemeMode ResolveStoredMode(string? stored, bool? seededIsDark)
+    {
+        if (!string.IsNullOrWhiteSpace(stored)
+            && Enum.TryParse<ThemeMode>(stored.Trim().Trim('"'), ignoreCase: true, out var mode))
+        {
+            return mode;
+        }
+
+        // A request cookie already chose the appearance. Do not replace it with
+        // the operating-system preference when storage is empty or unreadable.
+        return seededIsDark switch
+        {
+            true => ThemeMode.Dark,
+            false => ThemeMode.Light,
+            _ => ThemeMode.System
+        };
+    }
+
+    private async Task ApplyThemeToDomAsync(bool force, bool? isLightOverride = null, ThemeMode? mode = null)
     {
         try
         {
             var isLight = isLightOverride ?? !IsDarkMode;
             try
             {
-                await _jsRuntime.InvokeVoidAsync("sufiTheme.apply", isLight, force);
+                await _jsRuntime.InvokeVoidAsync("sufiTheme.apply", isLight, force, mode?.ToString());
             }
             catch (JSException)
             {
