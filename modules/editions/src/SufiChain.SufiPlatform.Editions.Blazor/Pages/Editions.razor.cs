@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Components;
+using SufiChain.SufiPlatform.Editions;
 using SufiChain.SufiPlatform.Features;
 using SufiChain.SufiPlatform.Features.Blazor.Components;
 
@@ -11,6 +12,7 @@ public partial class Editions
 
     [Inject] protected IEditionAppService EditionAppService { get; set; } = default!;
     [Inject] protected new IAuthorizationService AuthorizationService { get; set; } = default!;
+    [Inject] protected IEnumerable<IEditionPriceSaver> PriceSavers { get; set; } = Array.Empty<IEditionPriceSaver>();
 
     private FeaturesModal _featuresModal = default!;
     private List<EditionDto>? _items;
@@ -19,6 +21,7 @@ public partial class Editions
     private bool _loading;
     private bool _saving;
     private int _saveVersion;
+    private string? _formError;
     private Guid? _editingId;
     private string? _concurrencyStamp;
     private EditionFormModel _form = new();
@@ -54,6 +57,7 @@ public partial class Editions
     private void ShowCreateModal()
     {
         _form = new EditionFormModel { IsActive = true };
+        _formError = null;
         _editingId = null;
         _concurrencyStamp = null;
         _showCreate = true;
@@ -63,6 +67,7 @@ public partial class Editions
     private void ShowEditModal(EditionDto edition)
     {
         _form = MapToForm(edition);
+        _formError = null;
         _editingId = edition.Id;
         _concurrencyStamp = edition.ConcurrencyStamp;
         _showEdit = true;
@@ -70,14 +75,54 @@ public partial class Editions
     }
 
     /// <summary>Exposed for Active-toggle regression tests (#193).</summary>
-    internal static EditionFormModel MapToForm(EditionDto edition) =>
-        new()
+    internal static EditionFormModel MapToForm(EditionDto edition)
+    {
+        var visible = EditionEditorValues.VisibleLabel(edition.LocalizedDisplayName, edition.DisplayName);
+        decimal price = 0m;
+        var currency = string.Empty;
+        if (edition.PriceSummary is { IsPriced: true, Amount: { } stored })
+        {
+            price = stored;
+            currency = edition.PriceSummary.CurrencyCode ?? string.Empty;
+        }
+
+        return new EditionFormModel
         {
             Name = edition.Name,
-            DisplayName = edition.DisplayName,
+            DisplayName = visible,
+            StoredDisplayName = edition.DisplayName,
+            InitialDisplayName = visible,
             Code = edition.Code,
-            IsActive = edition.IsActive
+            IsActive = edition.IsActive,
+            Price = price,
+            CurrencyCode = currency
         };
+    }
+
+    private string PriceHelper
+    {
+        get
+        {
+            if (EditionEditorValues.PriceNeedsCurrency(_form.Price, _form.CurrencyCode))
+            {
+                return L["EditionPriceCurrencyRequired"];
+            }
+
+            if (!EditionEditorValues.ShouldPersistPrice(_form.CurrencyCode))
+            {
+                return L["PriceNotSet"];
+            }
+
+            return EditionPriceDisplay.Resolve(
+                new EditionPriceSummary
+                {
+                    IsPriced = true,
+                    Amount = _form.Price,
+                    CurrencyCode = _form.CurrencyCode
+                },
+                L["PriceNotSet"]);
+        }
+    }
 
     private void CloseModal()
     {
@@ -89,30 +134,59 @@ public partial class Editions
 
     private async Task SaveAsync()
     {
+        if (EditionEditorValues.PriceNeedsCurrency(_form.Price, _form.CurrencyCode))
+        {
+            _formError = L["EditionPriceCurrencyRequired"];
+            return;
+        }
+
         var version = _saveVersion;
         _saving = true;
+        _formError = null;
+        var displayName = EditionEditorValues.DisplayNameToStore(
+            _form.DisplayName,
+            _form.InitialDisplayName,
+            _form.StoredDisplayName);
         try
         {
+            EditionDto? saved = null;
             if (_showCreate)
             {
-                await EditionAppService.CreateAsync(new EditionCreateDto
+                saved = await EditionAppService.CreateAsync(new EditionCreateDto
                 {
                     Name = _form.Name,
-                    DisplayName = _form.DisplayName,
+                    DisplayName = displayName,
                     Code = _form.Code,
                     IsActive = _form.IsActive
                 });
             }
             else if (_editingId.HasValue)
             {
-                await EditionAppService.UpdateAsync(_editingId.Value, new EditionUpdateDto
+                saved = await EditionAppService.UpdateAsync(_editingId.Value, new EditionUpdateDto
                 {
                     Name = _form.Name,
-                    DisplayName = _form.DisplayName,
+                    DisplayName = displayName,
                     Code = _form.Code,
                     IsActive = _form.IsActive,
                     ConcurrencyStamp = _concurrencyStamp ?? string.Empty
                 });
+            }
+
+            if (saved != null && EditionEditorValues.ShouldPersistPrice(_form.CurrencyCode))
+            {
+                var price = new EditionPriceSaveInput
+                {
+                    EditionId = saved.Id,
+                    Code = saved.Code,
+                    Name = saved.Name,
+                    DisplayName = saved.DisplayName,
+                    Amount = _form.Price,
+                    CurrencyCode = _form.CurrencyCode.Trim()
+                };
+                foreach (var saver in PriceSavers)
+                {
+                    await saver.SaveAsync(price);
+                }
             }
 
             if (version != _saveVersion)
@@ -156,7 +230,11 @@ public partial class Editions
     {
         public string Name { get; set; } = string.Empty;
         public string DisplayName { get; set; } = string.Empty;
+        public string StoredDisplayName { get; set; } = string.Empty;
+        public string InitialDisplayName { get; set; } = string.Empty;
         public string Code { get; set; } = string.Empty;
         public bool IsActive { get; set; } = true;
+        public decimal Price { get; set; }
+        public string CurrencyCode { get; set; } = string.Empty;
     }
 }
