@@ -35,6 +35,59 @@ public class ShortUrlManagerTests
         url.ShortCode.ShouldNotBeNullOrWhiteSpace();
     }
 
+    [Theory]
+    [InlineData("https://example.com/docs")]
+    [InlineData("http://example.com")]
+    [InlineData("  https://example.com/path?q=1  ")]
+    public async Task Create_Accepts_An_Absolute_Http_Url(string destination)
+    {
+        var manager = Manager(featuresEnabled: true);
+
+        var url = await manager.CreateAsync(destination, "CMS", DateTime.UtcNow.AddDays(1));
+
+        url.DestinationUrl.ShouldBe(destination.Trim());
+    }
+
+    [Theory]
+    [InlineData("javascript:alert(1)")]
+    [InlineData("data:text/html,hi")]
+    [InlineData("file:///tmp/secret")]
+    [InlineData("/relative")]
+    [InlineData("//evil.example")]
+    [InlineData("https:///missing-host")]
+    public async Task Create_Rejects_A_Non_Http_Destination(string destination)
+    {
+        var manager = Manager(featuresEnabled: true);
+
+        var error = await Should.ThrowAsync<BusinessException>(() =>
+            manager.CreateAsync(destination, "CMS"));
+        error.Code.ShouldBe(ShortLinksErrorCodes.InvalidDestinationUrl);
+    }
+
+    [Fact]
+    public void ChangeDestination_Rejects_A_Stored_Scheme_Change()
+    {
+        var manager = Manager(featuresEnabled: true);
+        var url = new ShortUrl(Guid.NewGuid(), "abc123", "https://example.com", "CMS");
+
+        var error = Should.Throw<BusinessException>(() =>
+            manager.ChangeDestination(url, "javascript:alert(1)"));
+
+        error.Code.ShouldBe(ShortLinksErrorCodes.InvalidDestinationUrl);
+        url.DestinationUrl.ShouldBe("https://example.com");
+    }
+
+    [Fact]
+    public void ChangeDestination_Stores_A_Trimmed_Https_Url()
+    {
+        var manager = Manager(featuresEnabled: true);
+        var url = new ShortUrl(Guid.NewGuid(), "abc123", "https://example.com", "CMS");
+
+        manager.ChangeDestination(url, " http://example.com/next ");
+
+        url.DestinationUrl.ShouldBe("http://example.com/next");
+    }
+
     [Fact]
     public async Task Create_Should_Reject_When_Short_Links_Are_Disabled()
     {
@@ -49,6 +102,21 @@ public class ShortUrlManagerTests
         var error = await Should.ThrowAsync<BusinessException>(() =>
             manager.CreateAsync("https://example.com", "CMS"));
         error.Code.ShouldBe($"Feature is disabled: {SufiShortLinksFeatures.Enable}");
+    }
+
+    private static ShortUrlManager Manager(bool featuresEnabled)
+    {
+        var repository = Substitute.For<IShortUrlRepository>();
+        repository.ShortCodeExistsAsync(Arg.Any<string>(), Arg.Any<CancellationToken>()).Returns(false);
+        var features = Substitute.For<IFeatureChecker>();
+        features.IsEnabledAsync(Arg.Any<string>()).Returns(featuresEnabled);
+        var manager = new ShortUrlManager(
+            repository,
+            Options.Create(new ShortLinksOptions()),
+            Substitute.For<ISettingProvider>(),
+            features);
+        manager.LazyServiceProvider = LazyGuids();
+        return manager;
     }
 
     private static IAbpLazyServiceProvider LazyGuids()

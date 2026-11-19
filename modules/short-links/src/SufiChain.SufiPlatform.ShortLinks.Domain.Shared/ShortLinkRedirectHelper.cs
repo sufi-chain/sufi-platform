@@ -31,6 +31,37 @@ public static class ShortLinkRedirectHelper
     /// Appends the incoming 'c' token to the destination unless the destination
     /// already contains it (templated destinations include '{InvitationToken}').
     /// </summary>
+    /// <summary>
+    /// A destination may be stored only when it is an absolute http or https URL.
+    /// Anything else, including a value already in the database, must not be followed.
+    /// </summary>
+    public static bool IsAbsoluteHttpUrl(string? destination)
+    {
+        if (string.IsNullOrWhiteSpace(destination))
+        {
+            return false;
+        }
+
+        var value = destination.Trim();
+        if (value.IndexOf('\r') >= 0 || value.IndexOf('\n') >= 0 || value.IndexOf('\0') >= 0)
+        {
+            return false;
+        }
+
+        if (!Uri.TryCreate(value, UriKind.Absolute, out var uri))
+        {
+            return false;
+        }
+
+        if (!string.Equals(uri.Scheme, Uri.UriSchemeHttp, StringComparison.OrdinalIgnoreCase) &&
+            !string.Equals(uri.Scheme, Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase))
+        {
+            return false;
+        }
+
+        return !string.IsNullOrEmpty(uri.Host);
+    }
+
     public static string AppendToken(string destination, string? token)
     {
         if (string.IsNullOrWhiteSpace(destination))

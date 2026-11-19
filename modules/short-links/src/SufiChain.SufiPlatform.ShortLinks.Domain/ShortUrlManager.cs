@@ -38,8 +38,8 @@ public class ShortUrlManager : DomainService
     {
         await CheckShortLinksFeatureAsync();
 
-        Check.NotNullOrWhiteSpace(destinationUrl, nameof(destinationUrl));
         Check.NotNullOrWhiteSpace(createdByModule, nameof(createdByModule));
+        var destination = NormalizeDestinationUrl(destinationUrl);
         
         var shortCode = await GenerateUniqueShortCodeAsync();
         var effectiveExpiration = await ResolveExpirationAsync(expiresAt);
@@ -47,10 +47,27 @@ public class ShortUrlManager : DomainService
         return new ShortUrl(
             GuidGenerator.Create(),
             shortCode,
-            destinationUrl,
+            destination,
             createdByModule,
             effectiveExpiration,
             description);
+    }
+
+    public virtual void ChangeDestination(ShortUrl shortUrl, string destinationUrl)
+    {
+        shortUrl.DestinationUrl = NormalizeDestinationUrl(destinationUrl);
+    }
+
+    public virtual string NormalizeDestinationUrl(string destinationUrl)
+    {
+        Check.NotNullOrWhiteSpace(destinationUrl, nameof(destinationUrl));
+        var destination = destinationUrl.Trim();
+        if (!ShortLinkRedirectHelper.IsAbsoluteHttpUrl(destination))
+        {
+            throw new BusinessException(ShortLinksErrorCodes.InvalidDestinationUrl);
+        }
+
+        return destination;
     }
     
     protected virtual async Task<string> GenerateUniqueShortCodeAsync()
