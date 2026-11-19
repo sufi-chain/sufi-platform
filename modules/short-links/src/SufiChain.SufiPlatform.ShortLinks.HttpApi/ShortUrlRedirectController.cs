@@ -61,6 +61,11 @@ public class ShortUrlRedirectController : SufiControllerBase
             return RedirectToNotFound(baseKey, shortCode);
         }
 
+        if (!ShortLinkRedirectHelper.IsAbsoluteHttpUrl(decision.Destination))
+        {
+            return NotFound();
+        }
+
         return Redirect(decision.Destination);
     }
 

@@ -137,7 +137,7 @@ public class ShortUrlAppService : SufiApplicationService, IShortUrlAppService
     {
         var shortUrl = await _repository.GetAsync(id);
         
-        shortUrl.DestinationUrl = input.DestinationUrl;
+        _manager.ChangeDestination(shortUrl, input.DestinationUrl);
         shortUrl.ExpiresAt = input.ExpiresAt;
         shortUrl.Description = input.Description;
         shortUrl.IsActive = input.IsActive;
