@@ -43,6 +43,9 @@ public static class AIErrorCodes
     /// <summary>Usage-log text for <see cref="ProviderRequestFailed"/> when the status code was not stored.</summary>
     public const string ProviderRequestFailedBrief = "AI:ProviderRequestFailedBrief";
 
+    /// <summary>The chat call stayed silent longer than the configured idle budget, or hit an opted-in total cap.</summary>
+    public const string ChatReplyTimedOut = "AI:ChatReplyTimedOut";
+
     /// <summary>The provider rejected the workspace credential (HTTP 401 or 403).</summary>
     public const string ProviderAuthorizationFailed = "AI:ProviderAuthorizationFailed";
 
