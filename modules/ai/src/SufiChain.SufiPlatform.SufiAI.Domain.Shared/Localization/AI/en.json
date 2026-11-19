@@ -11,6 +11,7 @@
     "AI:TextToolCallMarkupStripped": "I could not run that tool call from the model text, so I removed it and continued.",
     "AI:ProviderRequestFailed": "The AI provider could not complete the request. Please try again in a moment.",
     "AI:ProviderRequestFailedBrief": "The AI provider could not complete the request. Please try again in a moment.",
+    "AI:ChatReplyTimedOut": "The assistant stopped this reply because it went quiet for too long. Please try again.",
     "AI:ProviderAuthorizationFailed": "AI provider authorization failed: check the workspace API key.",
     "AI:ProviderRateLimited": "The AI provider is limiting requests. Wait a moment and try again.",
     "AI:ProviderUnavailable": "The AI provider is unavailable right now. Try again in a moment.",

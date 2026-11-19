@@ -889,23 +889,35 @@ public class OpenAIProvider : IAIProvider, ITransientDependency
             Content = CreateJsonContent(requestBody)
         };
 
+        using var idle = new LlmChatIdle(cancellationToken, _transportOptions.GetChatIdleTimeout());
         HttpResponseMessage response;
         try
         {
-            response = await httpClient.SendAsync(httpRequest, HttpCompletionOption.ResponseHeadersRead, cancellationToken);
+            response = await httpClient.SendAsync(httpRequest, HttpCompletionOption.ResponseHeadersRead, idle.Token);
         }
         catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
         {
             throw ChatTimedOut(url);
         }
         await EnsureProviderSuccessAsync(response, url, "streaming", cancellationToken);
+        idle.Arm();
 
         await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken);
         using var reader = new System.IO.StreamReader(stream);
 
         while (!cancellationToken.IsCancellationRequested)
         {
-            var line = await reader.ReadLineAsync(cancellationToken);
+            string? line;
+            try
+            {
+                line = await reader.ReadLineAsync(idle.Token);
+            }
+            catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
+            {
+                throw ChatTimedOut(url);
+            }
+
+            idle.Arm();
             if (line is null)
             {
                 break;
@@ -1314,6 +1326,7 @@ public class OpenAIProvider : IAIProvider, ITransientDependency
     private HttpClient CreateChatHttpClient(Workspace workspace, AIModelConfiguration configuration)
     {
         var httpClient = CreateHttpClient(workspace, configuration);
+        // Total cap only when the host set RequestTimeoutSeconds. Silence is a separate idle token.
         httpClient.Timeout = _transportOptions.GetChatRequestTimeout();
         return httpClient;
     }
@@ -1325,9 +1338,10 @@ public class OpenAIProvider : IAIProvider, ITransientDependency
         string modelId,
         CancellationToken cancellationToken)
     {
+        using var idle = new LlmChatIdle(cancellationToken, _transportOptions.GetChatIdleTimeout());
         try
         {
-            return await httpClient.PostAsync(url, content, cancellationToken);
+            return await httpClient.PostAsync(url, content, idle.Token);
         }
         catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
         {
@@ -1337,12 +1351,12 @@ public class OpenAIProvider : IAIProvider, ITransientDependency
 
     private BusinessException ChatTimedOut(string modelId)
     {
-        var timeout = _transportOptions.GetChatRequestTimeout();
+        var idle = _transportOptions.GetChatIdleTimeout();
         _logger.LogWarning(
-            "AI provider chat timed out before a response. Model={Model} TimeoutSeconds={TimeoutSeconds}",
+            "AI provider chat went quiet. Model={Model} IdleSeconds={IdleSeconds}",
             modelId,
-            timeout.TotalSeconds);
-        return new BusinessException(AIErrorCodes.ProviderRequestFailedBrief);
+            idle == Timeout.InfiniteTimeSpan ? 0 : idle.TotalSeconds);
+        return new BusinessException(AIErrorCodes.ChatReplyTimedOut);
     }
 
     private HttpClient CreateHttpClient(Workspace workspace, AIModelConfiguration configuration)

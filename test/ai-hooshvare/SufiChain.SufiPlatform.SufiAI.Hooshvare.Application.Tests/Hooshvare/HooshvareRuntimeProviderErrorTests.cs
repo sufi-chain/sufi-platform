@@ -64,6 +64,18 @@ public class HooshvareRuntimeProviderErrorTests
     }
 
     [Fact]
+    public void A_chat_idle_timeout_keeps_its_code()
+    {
+        var error = HooshvareProviderErrorSanitizer.Sanitize(
+            new Volo.Abp.BusinessException(AIErrorCodes.ChatReplyTimedOut));
+
+        error.Code.ShouldBe(AIErrorCodes.ChatReplyTimedOut);
+        error.ShouldBeOfType<SufiChain.SufiPlatform.BusinessException>();
+        error.InnerException.ShouldBeNull();
+        error.Message.ShouldNotContain("http://");
+    }
+
+    [Fact]
     public void A_client_error_keeps_the_status_placeholder_code()
     {
         var error = HooshvareProviderErrorSanitizer.Sanitize(
