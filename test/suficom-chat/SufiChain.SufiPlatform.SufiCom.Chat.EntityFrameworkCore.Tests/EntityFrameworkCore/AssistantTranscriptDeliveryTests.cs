@@ -289,6 +289,11 @@ public class ProbingChatUsageGuard : IChatUsageGuard
         return _inner.ReserveAiUsageAsync(sessionId, operation, ct);
     }
 
+    public Task<Guid> ReserveCompletedAiUsageAsync(Guid sessionId, ChatAiOperationKind operation, CancellationToken ct = default)
+    {
+        return _inner.ReserveCompletedAiUsageAsync(sessionId, operation, ct);
+    }
+
     public Task RecordAiUsageAsync(Guid reservationId, ChatAiUsageRecord record, CancellationToken ct = default)
     {
         return _inner.RecordAiUsageAsync(reservationId, record, ct);

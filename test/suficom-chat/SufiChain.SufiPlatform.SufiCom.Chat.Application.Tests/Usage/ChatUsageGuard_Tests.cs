@@ -5,6 +5,7 @@ using SufiChain.SufiPlatform.SufiCom.Chat.Supports;
 using SufiChain.SufiPlatform.SufiCom.Chat.Usage;
 using SufiChain.SufiPlatform.Settings;
 using Shouldly;
+using Volo.Abp.Timing;
 using Volo.Abp.EventBus;
 using Volo.Abp.EventBus.Distributed;
 using Xunit;
@@ -273,6 +274,60 @@ public class ChatUsageGuard_Tests : ChatApplicationTestBase<SufiComChatApplicati
         finally
         {
             await _settingManager.SetForTenantAsync(tenantId, ChatSettingNames.Ai.MaxTokensPerTenantPerDay, null);
+        }
+    }
+
+    [Fact]
+    public async Task A_completed_turn_is_still_recorded_after_the_daily_cap_is_used()
+    {
+        await ChatTestSettingHelper.SetAiPolicyAsync(_settingManager);
+        var tenantId = Guid.NewGuid();
+        await _settingManager.SetForTenantAsync(tenantId, ChatSettingNames.Ai.MaxTokensPerTenantPerDay, "10");
+        var sessionId = Guid.NewGuid();
+        using var tenant = CurrentTenant.Change(tenantId);
+        try
+        {
+            var first = await _usageGuard.ReserveAiUsageAsync(sessionId, ChatAiOperationKind.AutoReply);
+            await _usageGuard.RecordAiUsageAsync(first, new ChatAiUsageRecord { TotalTokens = 10 });
+
+            var completed = await _usageGuard.ReserveCompletedAiUsageAsync(sessionId, ChatAiOperationKind.Hooshvare);
+            await _usageGuard.RecordAiUsageAsync(completed, new ChatAiUsageRecord { TotalTokens = 4 });
+
+            var used = await GetRequiredService<IChatUsageCounterRepository>().GetTokenCountAsync(
+                tenantId,
+                ChatUsageGuard.TenantAiTokenCounterKey,
+                ChatUsageCounterPeriod.Day,
+                GetRequiredService<IClock>().Now.Date);
+            used.ShouldBe(14);
+
+            var next = await _usageGuard.CheckCanInvokeAiAsync(sessionId, ChatAiOperationKind.AutoReply);
+            next.IsAllowed.ShouldBeFalse();
+            next.ReasonCode.ShouldBe("AiTokenLimitExceeded");
+        }
+        finally
+        {
+            await _settingManager.SetForTenantAsync(tenantId, ChatSettingNames.Ai.MaxTokensPerTenantPerDay, null);
+        }
+    }
+
+    [Fact]
+    public async Task The_host_is_not_stopped_by_the_daily_token_cap()
+    {
+        await ChatTestSettingHelper.SetAiPolicyAsync(_settingManager);
+        await _settingManager.SetGlobalAsync(ChatSettingNames.Ai.MaxTokensPerTenantPerDay, "1");
+        var sessionId = Guid.NewGuid();
+        try
+        {
+            var reservationId = await _usageGuard.ReserveCompletedAiUsageAsync(sessionId, ChatAiOperationKind.AutoReply);
+            await _usageGuard.RecordAiUsageAsync(reservationId, new ChatAiUsageRecord { TotalTokens = 5 });
+
+            var result = await _usageGuard.CheckCanInvokeAiAsync(sessionId, ChatAiOperationKind.AutoReply);
+            result.IsAllowed.ShouldBeTrue();
+            await _usageGuard.ReserveAiUsageAsync(sessionId, ChatAiOperationKind.AutoReply);
+        }
+        finally
+        {
+            await _settingManager.SetGlobalAsync(ChatSettingNames.Ai.MaxTokensPerTenantPerDay, null);
         }
     }
 }

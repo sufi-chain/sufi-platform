@@ -25,6 +25,7 @@ using SufiChain.SufiPlatform.SufiCom.Chat.Contacts;
 
 using SufiChain.SufiPlatform.SufiCom.Chat.Supports;
 
+using SufiChain.SufiPlatform.SufiCom.Chat.Realtime;
 using SufiChain.SufiPlatform.SufiCom.Chat.Usage;
 
 using SufiChain.SufiPlatform.SufiAI;
@@ -72,6 +73,10 @@ public static class ChatTestServiceConfiguration
         context.Services.Replace(ServiceDescriptor.Singleton(EmptyRepository<AgentHooshvareAddition>()));
         context.Services.Replace(ServiceDescriptor.Singleton(Substitute.For<IHooshvareDefinitionRepository>()));
         context.Services.Replace(ServiceDescriptor.Transient<ChatAttachmentStructureEnsurer, SkippingChatAttachmentStructureEnsurer>());
+
+        context.Services.AddSingleton<RecordingChatRealtimeNotifier>();
+        context.Services.Replace(ServiceDescriptor.Singleton<IChatRealtimeNotifier>(sp =>
+            sp.GetRequiredService<RecordingChatRealtimeNotifier>()));
 
         context.Services.AddSingleton<ConfigurableFeatureChecker>();
 

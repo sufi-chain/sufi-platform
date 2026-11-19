@@ -1,4 +1,7 @@
+using Microsoft.Extensions.Localization;
 using SufiChain.SufiPlatform.Settings;
+using SufiChain.SufiPlatform.SufiCom.Chat.Realtime;
+using Volo.Abp.Domain.Repositories;
 using SufiChain.SufiPlatform.SufiAI.Features;
 using SufiChain.SufiPlatform.SufiAI.Hooshvare;
 using SufiChain.SufiPlatform.SufiAI.Hooshvare.Agents;
@@ -142,6 +145,149 @@ public class ChatAgentPlanEntitlement_Tests : ChatApplicationTestBase<SufiComCha
         {
             await _settings.SetForTenantAsync(tenantId, ChatSettingNames.Ai.MaxTokensPerTenantPerDay, null);
         }
+    }
+
+    [Fact]
+    public async Task An_existing_home_agent_binding_shows_the_localized_plan_error()
+    {
+        _catalog.Add(HomeAgent());
+        _features.Disable(SufiAiHooshvaresFeatures.Agents);
+        var notices = GetRequiredService<RecordingChatRealtimeNotifier>();
+        try
+        {
+            await PrepareAssistantAsync();
+            var session = await CreateAssistantSessionAsync();
+            await BindAssistantAsync(session.Id, HomeAgentId);
+            var userMessage = await InsertVisitorMessageAsync(session.Id, "hello");
+            notices.Messages.Clear();
+
+            await _handler.ProcessAsync(new ChatMessageSentEto
+            {
+                Id = Guid.Empty,
+                SessionId = session.Id,
+                MessageId = userMessage.Id,
+                SenderKind = ChatMessageSenderKind.Visitor,
+                SentAt = DateTime.UtcNow
+            });
+
+            var body = notices.Messages.Last(message => message.SessionId == session.Id).Body;
+            var expected = GetRequiredService<IStringLocalizer<AIHooshvareResource>>()[AIHooshvareErrorCodes.AgentNotInPlan].Value;
+            body.ShouldBe(expected);
+            body.ShouldNotBe(AIHooshvareErrorCodes.AgentNotInPlan);
+        }
+        finally
+        {
+            _features.Enable(SufiAiHooshvaresFeatures.Agents);
+            _catalog.Remove(HomeAgentId);
+        }
+    }
+
+    [Fact]
+    public async Task A_successful_agent_turn_records_hooshvare_tokens_once()
+    {
+        var agentId = Guid.Parse("c0a10000-0000-4000-8000-000000000011");
+        _catalog.Add(Agent(agentId));
+        _features.Enable(SufiAiHooshvaresFeatures.Agents);
+        var previous = _ai.BeforeComplete;
+        try
+        {
+            await PrepareAssistantAsync();
+            var session = await CreateAssistantSessionAsync();
+            await BindAssistantAsync(session.Id, agentId);
+            var userMessage = await InsertVisitorMessageAsync(session.Id, "hello");
+
+            await _handler.ProcessAsync(new ChatMessageSentEto
+            {
+                Id = Guid.Empty,
+                SessionId = session.Id,
+                MessageId = userMessage.Id,
+                SenderKind = ChatMessageSenderKind.Visitor,
+                SentAt = DateTime.UtcNow
+            });
+
+            var rows = await GetRequiredService<IRepository<ChatAiUsageReservation, Guid>>()
+                .GetListAsync(row => row.SessionId == session.Id);
+            var charged = rows.Where(row => row.OperationKind == ChatAiOperationKind.Hooshvare).ToList();
+            charged.Count.ShouldBe(1);
+            charged[0].TotalTokens.ShouldBe(15);
+            rows.ShouldNotContain(row => row.OperationKind == ChatAiOperationKind.AutoReply);
+        }
+        finally
+        {
+            _ai.BeforeComplete = previous;
+            _catalog.Remove(agentId);
+        }
+    }
+
+    [Fact]
+    public async Task A_failed_or_cancelled_agent_turn_is_not_charged()
+    {
+        var agentId = Guid.Parse("c0a10000-0000-4000-8000-000000000012");
+        _catalog.Add(Agent(agentId));
+        _features.Enable(SufiAiHooshvaresFeatures.Agents);
+        var previous = _ai.BeforeComplete;
+        try
+        {
+            await PrepareAssistantAsync();
+            await AssertNotChargedAsync(agentId, () => throw new InvalidOperationException("provider down"));
+            await AssertNotChargedAsync(agentId, () => throw new OperationCanceledException("stopped"));
+        }
+        finally
+        {
+            _ai.BeforeComplete = previous;
+            _catalog.Remove(agentId);
+        }
+    }
+
+    private async Task AssertNotChargedAsync(Guid agentId, Action fail)
+    {
+        var session = await CreateAssistantSessionAsync();
+        await BindAssistantAsync(session.Id, agentId);
+        var userMessage = await InsertVisitorMessageAsync(session.Id, "hello");
+        _ai.BeforeComplete = _ =>
+        {
+            fail();
+            return Task.CompletedTask;
+        };
+
+        await _handler.ProcessAsync(new ChatMessageSentEto
+        {
+            Id = Guid.Empty,
+            SessionId = session.Id,
+            MessageId = userMessage.Id,
+            SenderKind = ChatMessageSenderKind.Visitor,
+            SentAt = DateTime.UtcNow
+        });
+
+        var rows = await GetRequiredService<IRepository<ChatAiUsageReservation, Guid>>()
+            .GetListAsync(row => row.SessionId == session.Id);
+        rows.ShouldBeEmpty();
+    }
+
+    private async Task BindAssistantAsync(Guid sessionId, Guid assistantId)
+    {
+        var sessions = GetRequiredService<IChatSessionRepository>();
+        var session = await sessions.GetAsync(sessionId);
+        session.SetAssistantContext(null, ChatTestData.DefaultWorkspaceName, assistantId);
+        await sessions.UpdateAsync(session, autoSave: true);
+    }
+
+    private static HooshvareCatalogItemDto Agent(Guid id)
+    {
+        var agent = HomeAgent();
+        return new HooshvareCatalogItemDto
+        {
+            Id = id,
+            Key = "SufiComChat:ProductAgent",
+            SourceModule = agent.SourceModule,
+            DisplayName = "Product agent",
+            WorkspaceId = agent.WorkspaceId,
+            WorkspaceName = agent.WorkspaceName,
+            Kind = HooshvareKind.Agent,
+            Purpose = "Product",
+            IsPublic = false,
+            RequiredFeatureName = SufiAiHooshvaresFeatures.Agents
+        };
     }
 
     private async Task PrepareAssistantAsync()
