@@ -2,15 +2,12 @@ using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using SufiChain.SufiPlatform.AspNetCore.Mvc.Controllers;
 using SufiChain.SufiPlatform.Features;
 using SufiChain.SufiPlatform.ShortLinks.Features;
 using SufiChain.SufiPlatform.ShortLinks.Settings;
 using Volo.Abp;
-using Volo.Abp.Caching;
-using Volo.Abp.EventBus.Distributed;
 using Volo.Abp.Settings;
 
 namespace SufiChain.SufiPlatform.ShortLinks;
@@ -22,24 +19,18 @@ namespace SufiChain.SufiPlatform.ShortLinks;
 [Route("api/short-link/redirect")]
 public class ShortUrlRedirectController : SufiControllerBase
 {
-    private readonly IShortUrlRepository _repository;
-    private readonly IDistributedCache<ShortUrlCacheItem> _cache;
-    private readonly IDistributedEventBus _distributedEventBus;
+    private readonly IShortUrlPublicRedirector _redirector;
     private readonly IFeatureChecker _featureChecker;
     private readonly ISettingProvider _settingProvider;
     private readonly ShortLinksOptions _options;
     
     public ShortUrlRedirectController(
-        IShortUrlRepository repository,
-        IDistributedCache<ShortUrlCacheItem> cache,
-        IDistributedEventBus distributedEventBus,
+        IShortUrlPublicRedirector redirector,
         IFeatureChecker featureChecker,
         ISettingProvider settingProvider,
         IOptions<ShortLinksOptions> options)
     {
-        _repository = repository;
-        _cache = cache;
-        _distributedEventBus = distributedEventBus;
+        _redirector = redirector;
         _featureChecker = featureChecker;
         _settingProvider = settingProvider;
         _options = options.Value;
@@ -59,41 +50,23 @@ public class ShortUrlRedirectController : SufiControllerBase
         }
 
         var incomingToken = Request.Query.TryGetValue("c", out var c) ? c.ToString() : null;
-
-        // 1. Try cache first
-        var cacheKey = $"ShortUrl:Code:{shortCode}";
-        var cached = await _cache.GetAsync(cacheKey);
-        
-        ShortUrl? shortUrl = null;
-        
-        if (cached != null)
+        var decision = await _redirector.TryRedirectAsync(
+            shortCode,
+            incomingToken,
+            Request.Headers.UserAgent.ToString(),
+            HttpContext.Connection.RemoteIpAddress?.ToString(),
+            Request.Headers.Referer.ToString());
+        if (string.IsNullOrWhiteSpace(decision?.Destination))
         {
-            if (!IsValid(cached.ExpiresAt, cached.IsActive))
-                return RedirectToNotFound(baseKey, shortCode);
-                
-            await TrackClickAsync(cached.Id, shortCode, incomingToken);
-
-            return Redirect(ShortLinkRedirectHelper.AppendToken(cached.DestinationUrl, incomingToken));
-        }
-        
-        // 2. Fallback to database
-        shortUrl = await _repository.FindByShortCodeAsync(shortCode);
-        
-        if (shortUrl == null || !IsValid(shortUrl.ExpiresAt, shortUrl.IsActive))
             return RedirectToNotFound(baseKey, shortCode);
-        
-        // Cache for future requests
-        await _cache.SetAsync(cacheKey, new ShortUrlCacheItem
-        {
-            Id = shortUrl.Id,
-            DestinationUrl = shortUrl.DestinationUrl,
-            ExpiresAt = shortUrl.ExpiresAt,
-            IsActive = shortUrl.IsActive
-        });
-        
-        await TrackClickAsync(shortUrl.Id, shortCode, incomingToken);
+        }
 
-        return Redirect(ShortLinkRedirectHelper.AppendToken(shortUrl.DestinationUrl, incomingToken));
+        if (!ShortLinkRedirectHelper.IsAbsoluteHttpUrl(decision.Destination))
+        {
+            return NotFound();
+        }
+
+        return Redirect(decision.Destination);
     }
 
     private RedirectResult RedirectToNotFound(string baseKey, string shortCode)
@@ -102,13 +75,6 @@ public class ShortUrlRedirectController : SufiControllerBase
         return Redirect("/404?from=" + Uri.EscapeDataString(original));
     }
     
-    private bool IsValid(DateTime? expiresAt, bool isActive)
-    {
-        if (!isActive) return false;
-        if (expiresAt.HasValue && expiresAt < Clock.Now) return false;
-        return true;
-    }
-
     private async Task<bool> IsPublicRedirectEnabledAsync()
     {
         return await _featureChecker.IsEnabledAsync(SufiShortLinksFeatures.Enable) &&
@@ -132,39 +98,5 @@ public class ShortUrlRedirectController : SufiControllerBase
         }
 
         return ShortLinkRedirectHelper.NormalizeBaseKey(_options.RedirectRoute);
-    }
-
-    private async Task TrackClickAsync(Guid shortUrlId, string shortCode, string? token)
-    {
-        if (!await _featureChecker.IsEnabledAsync(SufiShortLinksFeatures.Analytics))
-        {
-            return;
-        }
-
-        try
-        {
-            // Every visit counts, including anonymous. Run the handler in this request.
-            // Leaving it on the outbox kept ClickCount at 0 when the sender had not applied the row.
-            var ipAddress = HttpContext.Connection.RemoteIpAddress?.ToString();
-            var dedupSource = !string.IsNullOrWhiteSpace(token) ? token : ipAddress;
-            await _distributedEventBus.PublishAsync(
-                new ShortUrlClickedEto
-                {
-                    ShortUrlId = shortUrlId,
-                    TenantId = CurrentTenant.Id,
-                    ClickedAt = Clock.Now,
-                    UserAgent = Request.Headers["User-Agent"].ToString(),
-                    IpAddress = ipAddress,
-                    Referrer = Request.Headers["Referer"].ToString(),
-                    Token = token,
-                    DedupKey = !string.IsNullOrWhiteSpace(dedupSource) ? $"{shortUrlId}:{dedupSource}" : null
-                },
-                onUnitOfWorkComplete: false,
-                useOutbox: false);
-        }
-        catch (Exception ex)
-        {
-            Logger.LogWarning(ex, $"Failed to track click for short URL: {shortCode}");
-        }
     }
 }

@@ -69,7 +69,7 @@
     "ShortLinks:ShortUrlNotFound": "نشانی کوتاه با کد '{ShortCode}' پیدا نشد",
     "ShortLinks:ShortCodeAlreadyExists": "کد کوتاه '{ShortCode}' از قبل وجود دارد",
     "ShortLinks:ShortUrlGenerationFailed": "پس از {Attempts} تلاش، تولید کد کوتاه یکتا ناموفق بود",
-    "ShortLinks:InvalidDestinationUrl": "نشانی مقصد نامعتبر است",
+    "ShortLinks:InvalidDestinationUrl": "نشانی مقصد باید یک نشانی مطلق http یا https باشد.",
     "ShortLinks:ShortUrlExpired": "این نشانی کوتاه منقضی شده است",
     "DisplayName:ShortLinks.BaseUrl": "نشانی پایه",
     "Description:ShortLinks.BaseUrl": "نشانی پایه برای تولید لینک‌های کوتاه کامل (مثلاً https://s.co/)",
