@@ -4,8 +4,10 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SufiChain.SufiPlatform.SufiAI;
+using SufiChain.SufiPlatform.SufiAI.Features;
 using SufiChain.SufiPlatform.SufiAI.MCP.Auth;
 using Volo.Abp;
+using Volo.Abp.Features;
 
 namespace SufiChain.SufiPlatform.SufiAI.Controllers;
 
@@ -28,10 +30,12 @@ namespace SufiChain.SufiPlatform.SufiAI.Controllers;
 public class McpUserTokenController : AIController
 {
     private readonly IMcpUserTokenService _userTokenService;
+    private readonly IFeatureChecker _featureChecker;
 
-    public McpUserTokenController(IMcpUserTokenService userTokenService)
+    public McpUserTokenController(IMcpUserTokenService userTokenService, IFeatureChecker featureChecker)
     {
         _userTokenService = userTokenService;
+        _featureChecker = featureChecker;
     }
 
     /// <summary>
@@ -39,9 +43,11 @@ public class McpUserTokenController : AIController
     /// refused rather than accepted for whatever server happened to ask.
     /// </summary>
     [HttpPost("verify")]
-    public virtual Task<VerifyMcpUserTokenResult> VerifyAsync(VerifyMcpUserTokenInput input)
+    public virtual async Task<VerifyMcpUserTokenResult> VerifyAsync(VerifyMcpUserTokenInput input)
     {
         ArgumentNullException.ThrowIfNull(input);
+        await _featureChecker.CheckEnabledAsync(SufiAIFeatures.Enable);
+        await _featureChecker.CheckEnabledAsync(SufiAIFeatures.MCP);
 
         var token = string.IsNullOrWhiteSpace(input.Token)
             ? ReadBearerToken()
@@ -51,14 +57,14 @@ public class McpUserTokenController : AIController
 
         if (payload is null)
         {
-            return Task.FromResult(new VerifyMcpUserTokenResult
+            return new VerifyMcpUserTokenResult
             {
                 IsValid = false,
                 Reason = "The token is expired, malformed, tampered with, or was minted for another server."
-            });
+            };
         }
 
-        return Task.FromResult(new VerifyMcpUserTokenResult
+        return new VerifyMcpUserTokenResult
         {
             IsValid = true,
             TenantId = payload.TenantId,
@@ -67,7 +73,7 @@ public class McpUserTokenController : AIController
             HooshvareId = payload.HooshvareId,
             AgentScope = payload.AgentScope,
             ExpiresAt = payload.ExpiresAt
-        });
+        };
     }
 
     private string? ReadBearerToken()

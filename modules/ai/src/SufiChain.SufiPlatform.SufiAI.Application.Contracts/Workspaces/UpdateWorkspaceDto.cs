@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using Volo.Abp.Auditing;
 
 namespace SufiChain.SufiPlatform.SufiAI.Workspaces;
 
@@ -21,6 +22,7 @@ public class UpdateWorkspaceDto
     [StringLength(256)]
     public string? DecisionsModelId { get; set; }
     
+    [DisableAuditing]
     [StringLength(512)]
     public string? ApiKey { get; set; }
     

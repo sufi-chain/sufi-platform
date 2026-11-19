@@ -8,6 +8,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="../../../../framework/SufiChain.SufiPlatform.Features/SufiChain.SufiPlatform.Features.csproj" />
     <ProjectReference Include="../../../../framework/SufiChain.SufiPlatform.SufiAI/SufiChain.SufiPlatform.SufiAI.csproj" />
     <ProjectReference Include="../../../../framework/SufiChain.SufiPlatform.AspNetCore.Mvc/SufiChain.SufiPlatform.AspNetCore.Mvc.csproj" />
   </ItemGroup>
