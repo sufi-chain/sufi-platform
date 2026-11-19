@@ -5,9 +5,9 @@ using Volo.Abp.EventBus;
 namespace SufiChain.SufiPlatform.Tenants;
 
 /// <summary>
-/// Published after a host creates a tenant. Property names match
-/// <c>IdentityDataSeedContributor</c> so the admin seed reads this payload.
-/// The password property is for the in-process seed only. Do not log this event.
+/// Published after a host creates a tenant. The distributed bus stores this
+/// event in the outbox. Do not put the admin password on it.
+/// <see cref="AdminPasswordPropertyName"/> is only the in-memory seed-context key.
 /// </summary>
 [Serializable]
 [EventName("SufiChain.SufiPlatform.Tenants.TenantCreated")]

@@ -64,9 +64,9 @@ public class TenantCreateAdminSeedTests
                 eto.Id == tenant.Id &&
                 eto.Name == "acme" &&
                 eto.Properties[TenantCreatedEto.AdminEmailPropertyName] == AdminEmail &&
-                eto.Properties[TenantCreatedEto.AdminPasswordPropertyName] == AdminPassword),
-            false,
-            false);
+                !eto.Properties.ContainsKey(TenantCreatedEto.AdminPasswordPropertyName)),
+            true,
+            true);
     }
 
     [Fact]
@@ -167,9 +167,8 @@ public class TenantCreateAdminSeedTests
             var current = new MutableCurrentTenant();
             Seeder = new RecordingDataSeeder(new IdentityDataSeedContributor(identity), current, Steps);
             Bus = Substitute.For<IDistributedEventBus>();
-            var handler = new TenantCreatedSchemaMigrationHandler(tenants, new[] { Migrator });
-            Bus.PublishAsync(Arg.Any<TenantCreatedEto>(), false, false)
-                .Returns(call => handler.HandleEventAsync(call.Arg<TenantCreatedEto>()));
+            Bus.PublishAsync(Arg.Any<TenantCreatedEto>(), true, true).Returns(Task.CompletedTask);
+            var dedicated = new TenantDedicatedSchemaMigrator(tenants, new[] { Migrator });
 
             var unitOfWork = Substitute.For<IUnitOfWork>();
             unitOfWork.SaveChangesAsync(Arg.Any<CancellationToken>()).Returns(Task.CompletedTask);
@@ -187,7 +186,7 @@ public class TenantCreateAdminSeedTests
             services.AddSingleton<ICurrentTenant>(current);
             services.AddSingleton(unitOfWorkManager);
             services.AddSingleton<IAuthorizationService>(authorization);
-            Service = new TenantAppService(tenants, manager, Seeder, Bus)
+            Service = new TenantAppService(tenants, manager, Seeder, Bus, dedicated)
             {
                 LazyServiceProvider = new AbpLazyServiceProvider(services.BuildServiceProvider())
             };
