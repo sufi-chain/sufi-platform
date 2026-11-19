@@ -131,7 +131,8 @@ public partial class QuickImageUploader : FileManagerComponentBase, IDisposable
             EntityId = EntityId,
             FolderPath = effectivePath,
             AutoConfirm = AutoConfirm,
-            Alt = null
+            Alt = null,
+            TenantId = CurrentTenant.Id?.ToString()
         };
         if (_dotNetRef != null)
             await JsInterop.UploadFilesFromInputAsync(_fileInputId, metadata, accessToken, _dotNetRef);

@@ -11,7 +11,7 @@ namespace SufiChain.SufiPlatform.FileManager.Blazor.Public.Services;
 public class PublicFileUploadJsInterop : IAsyncDisposable
 {
     private const string ModuleUrl =
-        "./_content/SufiChain.SufiPlatform.FileManager.Blazor.Public/js/public-file-uploader.js?v=public-upload-v1";
+        "./_content/SufiChain.SufiPlatform.FileManager.Blazor.Public/js/public-file-uploader.js?v=public-upload-v2";
 
     private readonly Lazy<Task<IJSObjectReference>> _moduleTask;
     private readonly IConfiguration _configuration;
@@ -94,6 +94,8 @@ public class PublicJsUploadMetadata
     public Guid? FolderId { get; set; }
     public bool AutoConfirm { get; set; }
     public string? Alt { get; set; }
+    /// <summary>Circuit tenant id, sent as the <c>__tenant</c> header on the upload XHR.</summary>
+    public string? TenantId { get; set; }
     /// <summary>When &gt; 0, oversized files are rejected client-side before HTTP upload.</summary>
     public long MaxFileSize { get; set; }
 }

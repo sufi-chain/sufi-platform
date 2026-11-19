@@ -77,6 +77,9 @@ export async function uploadFile(file, apiBaseUrl, metadata, accessToken, dotNet
             if (accessToken) {
                 xhr.setRequestHeader('Authorization', `Bearer ${accessToken}`);
             }
+            if (metadata && metadata.tenantId) {
+                xhr.setRequestHeader('__tenant', String(metadata.tenantId));
+            }
             xhr.withCredentials = true;
             xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
             xhr.send(formData);

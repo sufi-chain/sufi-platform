@@ -5,9 +5,10 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using SufiChain.SufiPlatform.Application.Dtos;
 using SufiChain.SufiPlatform.Application.Services;
-using SufiChain.SufiPlatform.Features;
 using SufiChain.SufiPlatform.SufiAI.Features;
 using SufiChain.SufiPlatform.SufiAI.Permissions;
+using Volo.Abp.Features;
+using RequiresFeatureAttribute = SufiChain.SufiPlatform.Features.RequiresFeatureAttribute;
 
 namespace SufiChain.SufiPlatform.SufiAI.MCP.Audit;
 
@@ -16,7 +17,7 @@ namespace SufiChain.SufiPlatform.SufiAI.MCP.Audit;
 /// Result rows are tenant-filtered by the ambient tenant through the repository's multi-tenant filter,
 /// exactly as the workspace list is.
 /// </summary>
-[RequiresFeature(SufiAIFeatures.Enable)]
+[RequiresFeature(SufiAIFeatures.Enable, SufiAIFeatures.MCP, RequiresAll = true)]
 [Authorize(AIPermissions.McpAudit.Default)]
 public class McpToolCallAuditAppService : SufiApplicationService, IMcpToolCallAuditAppService
 {
@@ -29,6 +30,9 @@ public class McpToolCallAuditAppService : SufiApplicationService, IMcpToolCallAu
 
     public async Task<PagedResultDto<McpToolCallAuditLogDto>> GetListAsync(GetMcpToolCallAuditLogsInput input)
     {
+        await FeatureChecker.CheckEnabledAsync(SufiAIFeatures.Enable);
+        await FeatureChecker.CheckEnabledAsync(SufiAIFeatures.MCP);
+
         var decision = ParseDecision(input.Decision);
         var maxResultCount = input.MaxResultCount <= 0 ? 100 : input.MaxResultCount;
         var skipCount = input.SkipCount < 0 ? 0 : input.SkipCount;

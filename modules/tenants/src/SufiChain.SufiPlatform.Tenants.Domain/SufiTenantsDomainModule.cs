@@ -1,6 +1,8 @@
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using SufiChain.SufiPlatform.Data;
 using SufiChain.SufiPlatform.ObjectExtending;
+using Volo.Abp.Data;
 using Volo.Abp.Domain.Entities.Events.Distributed;
 using Volo.Abp.Modularity;
 using Volo.Abp.ObjectExtending.Modularity;
@@ -34,6 +36,9 @@ public class SufiTenantsDomainModule : AbpModule
 
     public override void PostConfigureServices(ServiceConfigurationContext context)
     {
+        context.Services.Replace(ServiceDescriptor.Transient<IConnectionStringResolver, SufiMultiTenantConnectionStringResolver>());
+        context.Services.Replace(ServiceDescriptor.Transient<MultiTenantConnectionStringResolver, SufiMultiTenantConnectionStringResolver>());
+
         OneTimeRunner.Run(() =>
         {
             ModuleExtensionConfigurationHelper.ApplyEntityConfigurationToEntity(

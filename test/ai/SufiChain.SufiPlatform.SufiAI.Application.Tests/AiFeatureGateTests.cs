@@ -91,6 +91,20 @@ public class AiFeatureGateTests
             .MultiTenancySide.ShouldBe(Volo.Abp.MultiTenancy.MultiTenancySides.Both);
     }
 
+    [Fact]
+    public void Mcp_audit_requires_the_mcp_feature_and_stays_available_to_tenants()
+    {
+        var context = new PermissionDefinitionContext(
+            new ServiceCollection().BuildServiceProvider());
+
+        new AIPermissionDefinitionProvider().Define(context);
+
+        var permission = context.GetPermissionOrNull(AIPermissions.McpAudit.Default);
+        permission.ShouldNotBeNull();
+        permission!.MultiTenancySide.ShouldBe(Volo.Abp.MultiTenancy.MultiTenancySides.Both);
+        FeatureNames(permission).ShouldContain(SufiAIFeatures.MCP);
+    }
+
     private static string[] FeatureNames(AbpPermissionDefinition state)
     {
         return state.StateCheckers

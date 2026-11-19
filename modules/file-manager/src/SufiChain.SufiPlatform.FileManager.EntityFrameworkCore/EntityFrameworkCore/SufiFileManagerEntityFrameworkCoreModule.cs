@@ -33,8 +33,13 @@ public class SufiFileManagerEntityFrameworkCoreModule : AbpModule
             options.AddRepository<FileFolder, EfCoreFileFolderRepository>();
         });
 
-        context.Services.TryAddScoped<ISufiFileManagerDbContext>(serviceProvider =>
-            serviceProvider.GetRequiredService<FileManagerDbContext>());
+        // Transient so the first context built in a request cannot be reused after
+        // the tenant becomes current. The unit of work caches the instance it
+        // creates for the connection string it just resolved. A scoped registration
+        // pinned File Manager to the host SufiFileManager catalog when that first
+        // context was opened before the tenant switch, while FileItem.TenantId was
+        // still stamped with the tenant.
+        context.Services.Replace(ServiceDescriptor.Transient<ISufiFileManagerDbContext, FileManagerDbContext>());
 
         // Configure FileManagerContainer to use database blob storage.
         // Host can override by calling Configure<AbpBlobStoringOptions> again (e.g. UseFileSystem, UseAzure).
