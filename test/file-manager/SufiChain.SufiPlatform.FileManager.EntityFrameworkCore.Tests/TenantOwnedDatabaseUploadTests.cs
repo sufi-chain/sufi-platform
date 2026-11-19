@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
+using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
@@ -11,6 +13,7 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Options;
 using Shouldly;
 using SufiChain.SufiPlatform.BlobDatabase;
 using SufiChain.SufiPlatform.BlobDatabase.EntityFrameworkCore;
@@ -24,11 +27,13 @@ using Volo.Abp.Guids;
 using SufiChain.SufiPlatform.Localization;
 using SufiChain.SufiPlatform.Tenants;
 using Volo.Abp;
+using Volo.Abp.AspNetCore.MultiTenancy;
 using Volo.Abp.Data;
 using Volo.Abp.EntityFrameworkCore;
 using Volo.Abp.EntityFrameworkCore.Sqlite;
 using Volo.Abp.Modularity;
 using Volo.Abp.MultiTenancy;
+using Volo.Abp.Security.Claims;
 using Volo.Abp.Uow;
 using Xunit;
 
@@ -78,6 +83,55 @@ public class TenantOwnedDatabaseUploadTests : FileManagerTestBase<TenantOwnedDat
         CountRows(_paths.HostConnectionString, "FileItems").ShouldBe(1);
         CountRows(_paths.TenantConnectionString, "FileItems").ShouldBe(0);
         (await ListFolderAsync(_paths.SharedTenantId, uploaded.FolderId)).ShouldContain(file => file.Id == uploaded.Id);
+    }
+
+    [Fact]
+    public async Task Signed_In_Tenant_User_Ignores_Mismatched_Tenant_Header()
+    {
+        var resolvers = GetRequiredService<IOptions<AbpTenantResolveOptions>>().Value.TenantResolvers;
+        resolvers.Select(resolver => resolver.Name).ShouldBe(new[] { "CurrentUser", "Header" });
+
+        var resolved = await ResolveAsSignedInUserAsync(_paths.OwnedTenantId, headerTenantId: _paths.SharedTenantId);
+        resolved.AppliedResolvers.ShouldBe(new[] { "CurrentUser" });
+        Guid.TryParse(resolved.TenantIdOrName, out var tenantId).ShouldBeTrue();
+        tenantId.ShouldBe(_paths.OwnedTenantId);
+
+        var before = CountRows(_paths.TenantConnectionString, "FileItems");
+        var uploaded = await UploadAsync(tenantId, "mismatched-header.txt", openHostContextFirst: false);
+
+        CountRows(_paths.TenantConnectionString, "FileItems").ShouldBe(before + 1);
+        CountRows(_paths.HostConnectionString, "FileItems").ShouldBe(0);
+        (await ListFolderAsync(_paths.OwnedTenantId, uploaded.FolderId)).ShouldContain(file => file.Id == uploaded.Id);
+    }
+
+    /// <summary>
+    /// CurrentUser is registered ahead of the <c>__tenant</c> header, and it sets Handled for an
+    /// authenticated user. The header names a different tenant that shares the host catalog.
+    /// </summary>
+    private async Task<TenantResolveResult> ResolveAsSignedInUserAsync(Guid signedInTenantId, Guid headerTenantId)
+    {
+        var principal = new ClaimsPrincipal(new ClaimsIdentity(
+            new[]
+            {
+                new Claim(AbpClaimTypes.UserId, Guid.NewGuid().ToString()),
+                new Claim(AbpClaimTypes.TenantId, signedInTenantId.ToString())
+            },
+            authenticationType: "test"));
+        var httpContext = new DefaultHttpContext();
+        httpContext.Request.Headers["__tenant"] = headerTenantId.ToString();
+        var httpContextAccessor = GetRequiredService<IHttpContextAccessor>();
+        httpContextAccessor.HttpContext = httpContext;
+        try
+        {
+            using (GetRequiredService<ICurrentPrincipalAccessor>().Change(principal))
+            {
+                return await GetRequiredService<ITenantResolver>().ResolveTenantIdOrNameAsync();
+            }
+        }
+        finally
+        {
+            httpContextAccessor.HttpContext = null;
+        }
     }
 
     private async Task<FileItemDto> UploadAsync(Guid tenantId, string fileName, bool openHostContextFirst)
@@ -266,11 +320,20 @@ public class TenantOwnedDatabaseUploadModule : AbpModule
         });
 
         context.Services.Replace(ServiceDescriptor.Singleton<ILocalizationTextSeeder, NullLocalizationTextSeeder>());
+        context.Services.AddHttpContextAccessor();
     }
 
     public override void PostConfigureServices(ServiceConfigurationContext context)
     {
         context.Services.Replace(ServiceDescriptor.Transient<ITenantStore, UploadTenantStore>());
+        // Domain contributors miss an API host. CurrentUser then stops the pipeline, so a
+        // mismatched __tenant header cannot select another catalog for a signed-in user.
+        Configure<AbpTenantResolveOptions>(options =>
+        {
+            options.TenantResolvers.Clear();
+            options.TenantResolvers.Add(new CurrentUserTenantResolveContributor());
+            options.TenantResolvers.Add(new HeaderTenantResolveContributor());
+        });
     }
 
     public override void OnApplicationShutdown(ApplicationShutdownContext context)
