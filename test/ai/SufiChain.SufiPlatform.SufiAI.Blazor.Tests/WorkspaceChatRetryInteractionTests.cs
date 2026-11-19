@@ -21,6 +21,7 @@ using SufiChain.SufiPlatform.SufiCom.Chat.Sessions;
 using SufiChain.SufiPlatform.UI.ExceptionHandling;
 using SufiChain.SufiPlatform.UI.Layout;
 using SufiChain.SufiPlatform.UI.PageToolbars;
+using Volo.Abp;
 using Xunit;
 
 namespace SufiChain.SufiPlatform.SufiAI.Blazor.Tests;
@@ -88,6 +89,28 @@ public class WorkspaceChatRetryInteractionTests : BunitContext
                 parameters.Get(component => component.OnNewAssistantSession).InvokeAsync()));
             builder.AddContent(11, "Clear");
             builder.CloseElement();
+
+            var state = parameters.Get(component => component.State);
+            builder.OpenElement(12, "div");
+            builder.AddAttribute(13, "class", "assistant-bubbles");
+            if (state != null)
+            {
+                foreach (var message in state.Messages)
+                {
+                    if (message.SenderKind != ChatMessageSenderKind.Assistant ||
+                        string.IsNullOrWhiteSpace(message.Body))
+                    {
+                        continue;
+                    }
+
+                    builder.OpenElement(14, "p");
+                    builder.AddAttribute(15, "class", "assistant-bubble");
+                    builder.AddContent(16, message.Body);
+                    builder.CloseElement();
+                }
+            }
+
+            builder.CloseElement();
         });
     }
 
@@ -122,6 +145,27 @@ public class WorkspaceChatRetryInteractionTests : BunitContext
         Assert.Equal(sessionId, _transcripts.SessionIds.Distinct().Single());
         var saved = (ChatMessengerState)Get(cut.Instance, "_messengerState")!;
         Assert.Contains(saved.Messages, message => message.SenderKind == ChatMessageSenderKind.Assistant);
+    }
+
+    [Fact]
+    public async Task A_failed_turn_shows_the_localized_provider_error_in_the_bubble()
+    {
+        _chat.SendFailure = new BusinessException(AIErrorCodes.ProviderAuthorizationFailed);
+        var cut = Render<WorkspaceChat>();
+        Set(cut.Instance, "_workspaceId", (Guid?)Guid.NewGuid());
+        Set(cut.Instance, "_workspaceName", "workspace");
+        Set(cut.Instance, "_selectedRoute", new AIModelRouteDto { IsReady = true, IsUserSelectable = true });
+        var state = (ChatMessengerState)Get(cut.Instance, "_messengerState")!;
+        state.SelectedSessionId = _sessionId;
+
+        await cut.Find(".send-turn").ClickAsync();
+
+        cut.WaitForAssertion(() => Assert.Contains(AIErrorCodes.ProviderAuthorizationFailed, cut.Find(".assistant-bubbles").TextContent));
+        var saved = (ChatMessengerState)Get(cut.Instance, "_messengerState")!;
+        var assistant = Assert.Single(saved.Messages, message => message.SenderKind == ChatMessageSenderKind.Assistant);
+        Assert.False(string.IsNullOrWhiteSpace(assistant.Body));
+        Assert.Equal(AIErrorCodes.ProviderAuthorizationFailed, assistant.Body);
+        Assert.False(saved.IsWaitingForAiResponse);
     }
 
     [Fact]
@@ -287,9 +331,16 @@ public class WorkspaceChatRetryInteractionTests : BunitContext
     {
         public int Calls { get; private set; }
 
+        public Exception? SendFailure { get; set; }
+
         public Task<SufiAIChatResponseDto> SendMessageAsync(SufiAISendChatMessageInput input, CancellationToken cancellationToken = default)
         {
             Calls++;
+            if (SendFailure != null)
+            {
+                throw SendFailure;
+            }
+
             return Task.FromResult(new SufiAIChatResponseDto { Message = "same reply" });
         }
 
