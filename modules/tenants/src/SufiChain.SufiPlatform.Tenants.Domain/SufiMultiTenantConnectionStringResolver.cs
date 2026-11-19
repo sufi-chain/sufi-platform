@@ -16,6 +16,8 @@ namespace SufiChain.SufiPlatform.Tenants;
 /// connection strings are never used for a tenant that has a Default.
 /// A tenant without a Default (and without a row for the name) uses host resolution,
 /// i.e. the shared host database with the TenantId filter, as in 8.3.
+/// Connection-string names match without case, so a stored "default" still wins
+/// over the host's named catalog.
 /// </summary>
 [Dependency(ReplaceServices = true)]
 [ExposeServices(typeof(IConnectionStringResolver), typeof(MultiTenantConnectionStringResolver))]
@@ -62,25 +64,48 @@ public class SufiMultiTenantConnectionStringResolver : MultiTenantConnectionStri
         TenantConfiguration? tenant,
         string? connectionStringName)
     {
-        if (tenant?.ConnectionStrings == null || tenant.ConnectionStrings.Count == 0)
+        var connectionStrings = tenant?.ConnectionStrings;
+        if (connectionStrings == null || connectionStrings.Count == 0)
         {
             return null;
         }
 
-        var tenantDefault = tenant.ConnectionStrings.Default;
+        var tenantDefault = FindConnectionString(connectionStrings, ConnectionStrings.DefaultConnectionStringName);
         var requestingDefault = connectionStringName.IsNullOrWhiteSpace()
-            || connectionStringName == ConnectionStrings.DefaultConnectionStringName;
+            || string.Equals(
+                connectionStringName,
+                ConnectionStrings.DefaultConnectionStringName,
+                StringComparison.OrdinalIgnoreCase);
 
         if (!requestingDefault)
         {
-            var named = tenant.ConnectionStrings.GetOrDefault(connectionStringName!);
+            var named = FindConnectionString(connectionStrings, connectionStringName!);
             if (!named.IsNullOrWhiteSpace())
             {
-                return named!;
+                return named;
             }
         }
 
         // Never fall back to the host's module-specific connection string when the tenant has a Default.
-        return tenantDefault.IsNullOrWhiteSpace() ? null : tenantDefault!;
+        return tenantDefault.IsNullOrWhiteSpace() ? null : tenantDefault;
+    }
+
+    private static string? FindConnectionString(ConnectionStrings connectionStrings, string name)
+    {
+        if (connectionStrings.TryGetValue(name, out var exact) && !exact.IsNullOrWhiteSpace())
+        {
+            return exact;
+        }
+
+        foreach (var pair in connectionStrings)
+        {
+            if (string.Equals(pair.Key, name, StringComparison.OrdinalIgnoreCase)
+                && !pair.Value.IsNullOrWhiteSpace())
+            {
+                return pair.Value;
+            }
+        }
+
+        return null;
     }
 }

@@ -94,6 +94,12 @@ export async function uploadFile(file, apiBaseUrl, metadata, accessToken, dotNet
             if (accessToken) {
                 xhr.setRequestHeader('Authorization', `Bearer ${accessToken}`);
             }
+
+            // The circuit's tenant is not on this XHR. Domain resolution still wins
+            // when the host matches; this header covers a platform host or a remote API origin.
+            if (metadata && metadata.tenantId) {
+                xhr.setRequestHeader('__tenant', String(metadata.tenantId));
+            }
             
             // Include credentials for cookie-based auth (same-origin only)
             xhr.withCredentials = true;

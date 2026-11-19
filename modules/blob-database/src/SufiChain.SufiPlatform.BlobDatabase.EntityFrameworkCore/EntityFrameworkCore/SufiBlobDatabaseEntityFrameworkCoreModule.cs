@@ -1,4 +1,5 @@
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using SufiChain.SufiPlatform.BlobDatabase;
 using Volo.Abp.Data;
 using Volo.Abp.EntityFrameworkCore;
@@ -19,6 +20,11 @@ public class SufiBlobDatabaseEntityFrameworkCoreModule : AbpModule
             options.AddRepository<DatabaseBlobContainer, EfCoreDatabaseBlobContainerRepository>();
             options.AddRepository<DatabaseBlob, EfCoreDatabaseBlobRepository>();
         });
+
+        // Same lifetime rule as File Manager: the upload stores bytes through this
+        // context, and a scoped instance opened on the host catalog would keep them
+        // there after the tenant is current.
+        context.Services.Replace(ServiceDescriptor.Transient<ISufiBlobDatabaseDbContext, SufiBlobDatabaseDbContext>());
 
         Configure<AbpDbConnectionOptions>(options =>
         {

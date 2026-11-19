@@ -175,7 +175,8 @@ public partial class PublicFileUploader
             EntityId = EntityId,
             FolderPath = string.IsNullOrWhiteSpace(FolderPath) ? null : FolderPath.Trim(),
             AutoConfirm = AutoConfirm,
-            MaxFileSize = MaxFileSize
+            MaxFileSize = MaxFileSize,
+            TenantId = CurrentTenant.Id?.ToString()
         };
 
         await JsInterop.UploadFilesFromInputAsync(_fileInputId, metadata, accessToken: null, _dotNetRef);
