@@ -13,7 +13,7 @@ public class ChatAssistantTurnUsageWriter_Tests
     {
         var reservationId = Guid.NewGuid();
         var guard = Substitute.For<IChatUsageGuard>();
-        guard.ReserveAiUsageAsync(Arg.Any<Guid>(), ChatAiOperationKind.AutoReply, Arg.Any<CancellationToken>())
+        guard.ReserveCompletedAiUsageAsync(Arg.Any<Guid>(), ChatAiOperationKind.AutoReply, Arg.Any<CancellationToken>())
             .Returns(reservationId);
 
         var writer = new ChatAssistantTurnUsageWriter(guard, NullLogger<ChatAssistantTurnUsageWriter>.Instance);
@@ -21,7 +21,7 @@ public class ChatAssistantTurnUsageWriter_Tests
 
         await writer.TryRecordAutoReplyAsync(sessionId, 11, 7, 18, "openai", "support");
 
-        await guard.Received(1).ReserveAiUsageAsync(sessionId, ChatAiOperationKind.AutoReply, Arg.Any<CancellationToken>());
+        await guard.Received(1).ReserveCompletedAiUsageAsync(sessionId, ChatAiOperationKind.AutoReply, Arg.Any<CancellationToken>());
         await guard.Received(1).RecordAiUsageAsync(
             reservationId,
             Arg.Is<ChatAiUsageRecord>(record =>
@@ -37,7 +37,7 @@ public class ChatAssistantTurnUsageWriter_Tests
     public async Task Recording_failure_does_not_escape()
     {
         var guard = Substitute.For<IChatUsageGuard>();
-        guard.ReserveAiUsageAsync(Arg.Any<Guid>(), Arg.Any<ChatAiOperationKind>(), Arg.Any<CancellationToken>())
+        guard.ReserveCompletedAiUsageAsync(Arg.Any<Guid>(), Arg.Any<ChatAiOperationKind>(), Arg.Any<CancellationToken>())
             .Returns<Guid>(_ => throw new InvalidOperationException("usage store unavailable"));
 
         var writer = new ChatAssistantTurnUsageWriter(guard, NullLogger<ChatAssistantTurnUsageWriter>.Instance);
