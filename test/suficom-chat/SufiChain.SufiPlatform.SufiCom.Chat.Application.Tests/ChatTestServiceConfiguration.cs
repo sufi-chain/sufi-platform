@@ -5,6 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Options;
 
 using NSubstitute;
 
@@ -17,6 +18,8 @@ using SufiChain.SufiPlatform.SufiCom.Connections;
 using Volo.Abp.Domain.Repositories;
 
 using SufiChain.SufiPlatform.SufiCom.Chat.AiUsage;
+using SufiChain.SufiPlatform.SufiCom.Chat.Configuration;
+using SufiChain.SufiPlatform.SufiCom.Chat.Data;
 
 using SufiChain.SufiPlatform.SufiCom.Chat.Contacts;
 
@@ -35,12 +38,15 @@ using Volo.Abp.Domain.Entities;
 using SufiChain.SufiPlatform.Features;
 
 using SufiChain.SufiPlatform.FileManager;
+using SufiChain.SufiPlatform.FileManager.Configuration;
+using SufiChain.SufiPlatform.FileManager.FileStructures;
 
 using SufiChain.SufiPlatform.Identity;
 
 using SufiChain.SufiPlatform.Identity.Integration;
 
 using Volo.Abp.DependencyInjection;
+using Volo.Abp.Guids;
 
 using Volo.Abp.Modularity;
 
@@ -65,6 +71,7 @@ public static class ChatTestServiceConfiguration
         context.Services.Replace(ServiceDescriptor.Singleton(EmptyRepository<AgentRun>()));
         context.Services.Replace(ServiceDescriptor.Singleton(EmptyRepository<AgentHooshvareAddition>()));
         context.Services.Replace(ServiceDescriptor.Singleton(Substitute.For<IHooshvareDefinitionRepository>()));
+        context.Services.Replace(ServiceDescriptor.Transient<ChatAttachmentStructureEnsurer, SkippingChatAttachmentStructureEnsurer>());
 
         context.Services.AddSingleton<ConfigurableFeatureChecker>();
 
@@ -191,5 +198,24 @@ public static class ChatTestServiceConfiguration
         return repository;
     }
 
+}
+
+/// <summary>
+/// Chat application fixtures do not host the FileManager database. Upload tests still
+/// resolve the ensurer, and this stand-in keeps that resolve from opening a second store.
+/// </summary>
+internal sealed class SkippingChatAttachmentStructureEnsurer : ChatAttachmentStructureEnsurer
+{
+    public SkippingChatAttachmentStructureEnsurer()
+        : base(
+            Substitute.For<IFileStructureRepository>(),
+            Substitute.For<IGuidGenerator>(),
+            Options.Create(new ChatOptions()),
+            Options.Create(new FileManagerOptions()),
+            NullLogger<ChatAttachmentStructureEnsurer>.Instance)
+    {
+    }
+
+    public override Task EnsureAsync(CancellationToken cancellationToken = default) => Task.CompletedTask;
 }
 
