@@ -31,12 +31,19 @@ public class AITransportOptionsTests
     }
 
     [Fact]
-    public void Chat_has_a_short_deadline_when_the_host_sets_no_transport_timeout()
+    public void Chat_has_no_hard_coded_total_cap_and_a_configurable_idle_budget()
     {
-        Assert.Equal(TimeSpan.FromSeconds(AITransportOptions.DefaultChatRequestTimeoutSeconds),
-            new AITransportOptions().GetChatRequestTimeout());
+        var options = new AITransportOptions();
+        Assert.Equal(Timeout.InfiniteTimeSpan, options.GetChatRequestTimeout());
+        Assert.Equal(TimeSpan.FromSeconds(AITransportOptions.DefaultChatIdleTimeoutSeconds), options.GetChatIdleTimeout());
+        Assert.True(AITransportOptions.DefaultChatIdleTimeoutSeconds > 60);
+
         Assert.Equal(TimeSpan.FromSeconds(45),
             new AITransportOptions { RequestTimeoutSeconds = 45 }.GetChatRequestTimeout());
+        Assert.Equal(Timeout.InfiniteTimeSpan,
+            new AITransportOptions { ChatIdleTimeoutSeconds = 0 }.GetChatIdleTimeout());
+        Assert.Equal(TimeSpan.FromSeconds(120),
+            new AITransportOptions { ChatIdleTimeoutSeconds = 120 }.GetChatIdleTimeout());
     }
 
     [Theory]

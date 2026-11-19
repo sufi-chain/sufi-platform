@@ -3,6 +3,7 @@ using SufiChain.SufiPlatform.SufiCom.Chat.Application.Messages;
 using SufiChain.SufiPlatform.SufiCom.Chat.ETOs;
 using SufiChain.SufiPlatform.SufiCom.Chat.Participants;
 using SufiChain.SufiPlatform.SufiCom.Chat.Sessions;
+using SufiChain.SufiPlatform.SufiCom.Chat.Settings;
 using SufiChain.SufiPlatform.SufiCom.Chat.Supports;
 using Shouldly;
 using SufiChain.SufiPlatform.Settings;
@@ -61,6 +62,58 @@ public class ChatAssistantTurnCutoff_Tests : ChatApplicationTestBase<SufiComChat
             _ai.ResponseContent = previousContent;
             _ai.CompleteDelay = previousDelay;
             _ai.BeforeComplete = null;
+        }
+    }
+
+    [Fact]
+    public async Task A_provider_slower_than_sixty_seconds_is_stored()
+    {
+        var previousContent = _ai.ResponseContent;
+        var previousDelay = _ai.CompleteDelay;
+        _ai.ResponseContent = "long reply";
+        _ai.CompleteDelay = TimeSpan.FromSeconds(61);
+        try
+        {
+            await ChatTestSettingHelper.SetAiPolicyAsync(GetRequiredService<ISettingManager>());
+            await GetRequiredService<ISettingManager>().SetGlobalAsync(ChatSettingNames.Ai.TurnTimeoutSeconds, "0");
+            var session = await CreateAssistantSessionAsync();
+            var userMessage = await InsertVisitorMessageAsync(session.Id, "take your time");
+
+            await _handler.ProcessAsync(EventFor(session.Id, userMessage.Id));
+
+            var messages = await _messageRepository.GetListBySessionAsync(session.Id, includeInternal: false);
+            messages.ShouldContain(message =>
+                message.SenderKind == ChatMessageSenderKind.Assistant && message.Body == "long reply");
+        }
+        finally
+        {
+            _ai.ResponseContent = previousContent;
+            _ai.CompleteDelay = previousDelay;
+            _ai.BeforeComplete = null;
+        }
+    }
+
+    [Fact]
+    public async Task A_configured_one_second_turn_cap_does_not_store_the_late_reply()
+    {
+        var previousDelay = _ai.CompleteDelay;
+        _ai.CompleteDelay = TimeSpan.FromSeconds(3);
+        try
+        {
+            await ChatTestSettingHelper.SetAiPolicyAsync(GetRequiredService<ISettingManager>());
+            await GetRequiredService<ISettingManager>().SetGlobalAsync(ChatSettingNames.Ai.TurnTimeoutSeconds, "1");
+            var session = await CreateAssistantSessionAsync();
+            var userMessage = await InsertVisitorMessageAsync(session.Id, "too slow");
+
+            await _handler.ProcessAsync(EventFor(session.Id, userMessage.Id));
+
+            var messages = await _messageRepository.GetListBySessionAsync(session.Id, includeInternal: false);
+            messages.ShouldNotContain(message => message.SenderKind == ChatMessageSenderKind.Assistant);
+        }
+        finally
+        {
+            _ai.CompleteDelay = previousDelay;
+            await GetRequiredService<ISettingManager>().SetGlobalAsync(ChatSettingNames.Ai.TurnTimeoutSeconds, "0");
         }
     }
 
