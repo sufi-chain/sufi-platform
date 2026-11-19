@@ -72,7 +72,28 @@ public class EditionDisplayNameLocalizationTests
             });
 
         dto.DisplayName.ShouldBe(stored);
-        dto.LocalizedDisplayName.ShouldBe(stored);
+        dto.LocalizedDisplayName.ShouldBe("Unknown");
+        dto.LocalizedDisplayName.ShouldNotContain("Plan:");
+    }
+
+    [Fact]
+    public void Present_humanizes_a_plan_key_and_keeps_plain_text()
+    {
+        EditionDisplayNameLocalization.Present("Plan:GROWTH:DisplayName").ShouldBe("Growth");
+        EditionDisplayNameLocalization.Present("رشد").ShouldBe("رشد");
+    }
+
+    [Fact]
+    public void Unchanged_localized_label_keeps_the_stored_key()
+    {
+        EditionEditorValues.DisplayNameToStore("Growth", "Growth", "Plan:GROWTH:DisplayName")
+            .ShouldBe("Plan:GROWTH:DisplayName");
+        EditionEditorValues.DisplayNameToStore("Growth plus", "Growth", "Plan:GROWTH:DisplayName")
+            .ShouldBe("Growth plus");
+        EditionEditorValues.PriceNeedsCurrency(12m, " ").ShouldBeTrue();
+        EditionEditorValues.PriceNeedsCurrency(0m, "").ShouldBeFalse();
+        EditionEditorValues.ShouldPersistPrice("usd").ShouldBeTrue();
+        EditionEditorValues.ShouldPersistPrice("  ").ShouldBeFalse();
     }
 
     [Fact]
