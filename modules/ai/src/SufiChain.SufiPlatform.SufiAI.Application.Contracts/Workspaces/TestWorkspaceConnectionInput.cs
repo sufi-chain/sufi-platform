@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using Volo.Abp.Auditing;
 
 namespace SufiChain.SufiPlatform.SufiAI.Workspaces;
 
@@ -20,6 +21,7 @@ public class TestWorkspaceConnectionInput
     [StringLength(256)]
     public string Model { get; set; } = string.Empty;
 
+    [DisableAuditing]
     [StringLength(512)]
     public string? ApiKey { get; set; }
 
