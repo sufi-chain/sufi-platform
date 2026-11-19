@@ -69,7 +69,7 @@
     "ShortLinks:ShortUrlNotFound": "Short URL with code '{ShortCode}' was not found",
     "ShortLinks:ShortCodeAlreadyExists": "Short code '{ShortCode}' already exists",
     "ShortLinks:ShortUrlGenerationFailed": "Failed to generate unique short code after {Attempts} attempts",
-    "ShortLinks:InvalidDestinationUrl": "The destination URL is invalid",
+    "ShortLinks:InvalidDestinationUrl": "The destination must be an absolute http or https URL.",
     "ShortLinks:ShortUrlExpired": "This short URL has expired",
     "DisplayName:ShortLinks.BaseUrl": "Base URL",
     "Description:ShortLinks.BaseUrl": "The base URL used to generate full short links (e.g., https://s.co/)",
