@@ -32,6 +32,12 @@ internal static class EditionDisplayNameLocalization
             }
         }
 
-        return fallback;
+        return Present(fallback);
     }
+
+    /// <summary>
+    /// A stored <c>Plan:GROWTH:DisplayName</c> key is not a label. When no resource has
+    /// text for it, show the plan token (<c>Growth</c>) instead of the raw key.
+    /// </summary>
+    public static string Present(string? value) => EditionEditorValues.VisibleLabel(value, value);
 }
