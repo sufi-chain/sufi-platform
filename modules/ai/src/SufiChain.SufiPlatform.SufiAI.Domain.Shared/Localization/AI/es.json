@@ -7,6 +7,7 @@
     "AI:TextToolCallMarkupStripped": "No pude ejecutar esa llamada de herramienta desde el texto del modelo, así que la eliminé y continué.",
     "AI:ProviderRequestFailed": "El proveedor de IA no pudo completar la solicitud. Inténtelo de nuevo en un momento.",
     "AI:ProviderRequestFailedBrief": "El proveedor de IA no pudo completar la solicitud. Inténtelo de nuevo en un momento.",
+    "AI:ChatReplyTimedOut": "El asistente detuvo esta respuesta porque dejó de enviar texto durante demasiado tiempo. Inténtelo de nuevo.",
     "AI:ProviderAuthorizationFailed": "Falló la autorización del proveedor de IA: compruebe la clave de API del espacio de trabajo.",
     "AI:ProviderRateLimited": "El proveedor de IA está limitando las solicitudes. Espere un momento e inténtelo de nuevo.",
     "AI:ProviderUnavailable": "El proveedor de IA no está disponible en este momento. Inténtelo de nuevo en un momento.",
