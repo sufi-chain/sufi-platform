@@ -257,7 +257,10 @@
     <Project Path="test/file-manager/SufiChain.SufiPlatform.FileManager.EntityFrameworkCore.Tests/SufiChain.SufiPlatform.FileManager.EntityFrameworkCore.Tests.csproj" />
     <Project Path="test/file-manager/SufiChain.SufiPlatform.FileManager.TestBase/SufiChain.SufiPlatform.FileManager.TestBase.csproj" />
   </Folder>
-  <Folder Name="/Tests/ShortLinks/" />
+  <Folder Name="/Tests/ShortLinks/">
+    <Project Path="test/short-links/SufiChain.SufiPlatform.ShortLinks.Domain.Tests/SufiChain.SufiPlatform.ShortLinks.Domain.Tests.csproj" />
+    <Project Path="test/short-links/SufiChain.SufiPlatform.ShortLinks.EntityFrameworkCore.Tests/SufiChain.SufiPlatform.ShortLinks.EntityFrameworkCore.Tests.csproj" />
+  </Folder>
   <Folder Name="/Tests/UI/">
     <Project Path="test/ui/SufiChain.SufiPlatform.UI.Blazor.Tests/SufiChain.SufiPlatform.UI.Blazor.Tests.csproj" />
   </Folder>

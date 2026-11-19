@@ -30,6 +30,7 @@ public class ShortUrlAppService : SufiApplicationService, IShortUrlAppService
     private readonly IDistributedCache<ShortUrlCacheItem> _cache;
     private readonly ShortLinksOptions _options;
     private readonly ISettingProvider _settingProvider;
+    private readonly ShortLinkPublicUrlResolver _publicUrls;
     
     public ShortUrlAppService(
         IShortUrlRepository repository,
@@ -37,7 +38,8 @@ public class ShortUrlAppService : SufiApplicationService, IShortUrlAppService
         ShortUrlManager manager,
         IDistributedCache<ShortUrlCacheItem> cache,
         IOptions<ShortLinksOptions> options,
-        ISettingProvider settingProvider)
+        ISettingProvider settingProvider,
+        ShortLinkPublicUrlResolver publicUrls)
     {
         _repository = repository;
         _clickRepository = clickRepository;
@@ -45,6 +47,7 @@ public class ShortUrlAppService : SufiApplicationService, IShortUrlAppService
         _cache = cache;
         _options = options.Value;
         _settingProvider = settingProvider;
+        _publicUrls = publicUrls;
     }
     
     [Authorize(ShortLinksPermissions.ShortLinks.Create)]
@@ -190,6 +193,7 @@ public class ShortUrlAppService : SufiApplicationService, IShortUrlAppService
             new ShortUrlCacheItem
             {
                 Id = shortUrl.Id,
+                TenantId = shortUrl.TenantId,
                 DestinationUrl = shortUrl.DestinationUrl,
                 ExpiresAt = shortUrl.ExpiresAt,
                 IsActive = shortUrl.IsActive
@@ -200,7 +204,8 @@ public class ShortUrlAppService : SufiApplicationService, IShortUrlAppService
             });
     }
     
-    private string GetCacheKey(string shortCode) => $"ShortUrl:Code:{shortCode}";
+    private string GetCacheKey(string shortCode) =>
+        "ShortUrl:Code:" + (CurrentTenant.Id?.ToString("N") ?? "host") + ":" + shortCode;
     
     private async Task<int> GetCacheExpirationMinutesAsync()
     {
@@ -213,45 +218,10 @@ public class ShortUrlAppService : SufiApplicationService, IShortUrlAppService
         return _options.CacheExpirationMinutes;
     }
     
-    private async Task<string> GetBaseUrlAsync()
-    {
-        var value = await _settingProvider.GetOrNullAsync(ShortLinksSettings.BaseUrl);
-        if (!string.IsNullOrWhiteSpace(value))
-        {
-            return value;
-        }
-        
-        return _options.BaseUrl;
-    }
-    
-    private async Task<string> GetRedirectRouteAsync()
-    {
-        var value = await _settingProvider.GetOrNullAsync(ShortLinksSettings.ShortUrl.RedirectRoute);
-        if (!string.IsNullOrWhiteSpace(value))
-        {
-            return ShortLinkRedirectHelper.NormalizeBaseKey(value);
-        }
-        
-        return ShortLinkRedirectHelper.NormalizeBaseKey(_options.RedirectRoute);
-    }
-    
     private async Task<ShortUrlDto> MapToDtoAsync(ShortUrl shortUrl)
     {
         var dto = ObjectMapper.Map<ShortUrl, ShortUrlDto>(shortUrl);
-        
-        var baseUrl = await GetBaseUrlAsync();
-        var redirectRoute = await GetRedirectRouteAsync();
-        
-        if (!string.IsNullOrWhiteSpace(baseUrl))
-        {
-            var normalizedBase = baseUrl.TrimEnd('/');
-            dto.FullShortUrl = $"{normalizedBase}/{redirectRoute}/{shortUrl.ShortCode}";
-        }
-        else
-        {
-            dto.FullShortUrl = shortUrl.ShortCode;
-        }
-        
+        dto.FullShortUrl = await _publicUrls.GetAsync(shortUrl.ShortCode);
         return dto;
     }
 
