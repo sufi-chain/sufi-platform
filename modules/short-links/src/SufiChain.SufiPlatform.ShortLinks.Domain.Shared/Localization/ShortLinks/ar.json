@@ -69,7 +69,7 @@
     "ShortLinks:ShortUrlNotFound": "Short URL with code '{ShortCode}' was not found",
     "ShortLinks:ShortCodeAlreadyExists": "الرمز القصير \"{ShortCode}\" موجود بالفعل",
     "ShortLinks:ShortUrlGenerationFailed": "فشل إنشاء رمز قصير فريد بعد محاولات {Attempts}",
-    "ShortLinks:InvalidDestinationUrl": "الوجهة URL غير صالحة",
+    "ShortLinks:InvalidDestinationUrl": "يجب أن يكون عنوان الوجهة عنواناً مطلقاً ببروتوكول http أو https.",
     "ShortLinks:ShortUrlExpired": "انتهت صلاحية URL القصير هذا",
     "DisplayName:ShortLinks.BaseUrl": "الرابط الأساسي",
     "Description:ShortLinks.BaseUrl": "الرابط الأساسي المستخدم لإنشاء الروابط القصيرة الكاملة (على سبيل المثال، https://s.co/)",
