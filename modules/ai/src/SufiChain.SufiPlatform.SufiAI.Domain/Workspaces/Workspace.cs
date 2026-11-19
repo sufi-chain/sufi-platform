@@ -238,8 +238,12 @@ public class Workspace : FullAuditedAggregateRoot<Guid>, IMultiTenant
     /// <summary>
     /// Copies a route onto this workspace. A new id is used unless <paramref name="id"/> is set.
     /// Capability flags and <see cref="AIModelConfiguration.IsUserSelectable"/> are copied with the route.
+    /// Pass <paramref name="includeCredentials"/> false to leave the route key empty.
     /// </summary>
-    public AIModelConfiguration CopyModelConfiguration(AIModelConfiguration source, Guid? id = null)
+    public AIModelConfiguration CopyModelConfiguration(
+        AIModelConfiguration source,
+        Guid? id = null,
+        bool includeCredentials = true)
     {
         var config = new AIModelConfiguration(
             id ?? Guid.NewGuid(),
@@ -250,7 +254,7 @@ public class Workspace : FullAuditedAggregateRoot<Guid>, IMultiTenant
         config.UpdateConfiguration(
             source.ModelId,
             source.ApiEndpoint,
-            source.ApiKey,
+            includeCredentials ? source.ApiKey : null,
             source.Priority,
             source.OpenAIApiMode,
             source.InputPrice,
@@ -330,7 +334,8 @@ public class Workspace : FullAuditedAggregateRoot<Guid>, IMultiTenant
 
     /// <summary>
     /// In-memory read model of this inherited projection. Model routes, connection, and guardrails
-    /// come from the host source. Identity, name, and active state stay on the projection.
+    /// come from the host source. Identity and name stay on the projection.
+    /// The view is active only when both the projection and the host source are active.
     /// The result is not a persistent entity.
     /// </summary>
     public Workspace CreateLiveInheritedView(Workspace source)
@@ -353,7 +358,7 @@ public class Workspace : FullAuditedAggregateRoot<Guid>, IMultiTenant
             source.InputCostPer1MTokens,
             source.OutputCostPer1MTokens);
         view.SetUseWebSearch(source.UseWebSearch);
-        if (!IsActive)
+        if (!source.IsActive || !IsActive)
         {
             view.Deactivate();
         }

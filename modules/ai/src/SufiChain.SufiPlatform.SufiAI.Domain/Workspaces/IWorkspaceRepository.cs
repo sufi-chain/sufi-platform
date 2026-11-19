@@ -15,4 +15,10 @@ public interface IWorkspaceRepository : IRepository<Workspace, Guid>
     );
     
     Task<long> GetCountAsync(string? filter = null, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Stored inherited rows, including soft-deleted ones when the caller disables that filter.
+    /// Does not project the host source. Used to blank copied secrets.
+    /// </summary>
+    Task<List<Workspace>> ListInheritedStoredAsync(CancellationToken cancellationToken = default);
 }

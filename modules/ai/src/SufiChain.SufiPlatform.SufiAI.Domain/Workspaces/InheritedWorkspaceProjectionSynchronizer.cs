@@ -112,7 +112,12 @@ public class InheritedWorkspaceProjectionSynchronizer :
 
                 var name = await _workspaceManager.ResolveUniqueNameAsync(
                     string.IsNullOrWhiteSpace(preferredName) ? template.Name : preferredName.Trim());
-                var copy = _workspaceManager.CreateCopy(template, name, tenantId, targetWorkspaceId);
+                var copy = _workspaceManager.CreateCopy(
+                    template,
+                    name,
+                    tenantId,
+                    targetWorkspaceId,
+                    includeCredentials: false);
                 // The tenant row is a pointer. Host API keys stay on the host workspace
                 // and are read through the live view.
                 copy.ClearStoredCredentials();

@@ -939,11 +939,30 @@ public class WorkspaceAppService : SufiApplicationService, IWorkspaceAppService
             workspace = await _workspaceRepository.GetAsync(workspaceId.Value, includeDetails: true);
         }
 
+        if (workspace is { IsInherited: true })
+        {
+            InheritedWorkspaceLiveView.EnsureUsable(workspace);
+        }
+
         var provider = workspace?.Provider ?? AIProviderType.OpenAI;
         var resolvedKey = apiKey;
         var resolvedBaseUrl = apiBaseUrl;
         if (modelConfiguration != null && workspace != null)
         {
+            if (workspace.IsInherited)
+            {
+                var liveRoute = workspace.ModelConfigurations.FirstOrDefault(item => item.Id == modelConfiguration.Id)
+                    ?? InheritedWorkspaceRouteMatcher.Match(workspace, modelConfiguration);
+                if (liveRoute == null)
+                {
+                    throw new BusinessException(AIErrorCodes.ModelRouteNotFound)
+                        .WithData("ModelConfigurationId", modelConfiguration.Id)
+                        .WithData("WorkspaceId", workspace.Id);
+                }
+
+                modelConfiguration = liveRoute;
+            }
+
             var resolved = _runtimeConfigurationResolver.Resolve(
                 workspace,
                 modelConfiguration.CapabilityType,

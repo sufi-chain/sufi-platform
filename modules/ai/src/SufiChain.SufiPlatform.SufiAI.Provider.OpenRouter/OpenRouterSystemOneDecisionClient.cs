@@ -5,6 +5,7 @@ using System.Text.Json;
 using Microsoft.Extensions.Logging;
 using SufiChain.SufiPlatform.SufiAI;
 using SufiChain.SufiPlatform.SufiAI.Workspaces;
+using Volo.Abp;
 using Volo.Abp.DependencyInjection;
 
 namespace SufiChain.SufiPlatform.SufiAI.Provider.OpenRouter;
@@ -52,6 +53,11 @@ public class OpenRouterSystemOneDecisionClient : ISystemOneDecisionClient, ITran
             if (workspace == null || workspace.Provider != AIProviderType.OpenRouter)
             {
                 return null;
+            }
+
+            if (workspace.IsInherited)
+            {
+                InheritedWorkspaceLiveView.EnsureUsable(workspace);
             }
 
             var route = workspace.ModelConfigurations
@@ -130,6 +136,14 @@ public class OpenRouterSystemOneDecisionClient : ISystemOneDecisionClient, ITran
         }
         catch (Exception ex) when (ex is not OperationCanceledException)
         {
+            if (ex is Volo.Abp.BusinessException business &&
+                (business.Code == AIErrorCodes.InheritedWorkspaceSourceUnavailable ||
+                 business.Code == AIErrorCodes.InheritedWorkspaceSourceInactive ||
+                 business.Code == AIErrorCodes.WorkspaceNotActive))
+            {
+                throw;
+            }
+
             if (sent && resolved != null)
             {
                 stopwatch.Stop();

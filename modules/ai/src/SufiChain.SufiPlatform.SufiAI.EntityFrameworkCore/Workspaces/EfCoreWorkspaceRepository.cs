@@ -121,6 +121,16 @@ public class EfCoreWorkspaceRepository : EfCoreRepository<IAIDbContext, Workspac
         return await _liveView.ApplyAsync(workspaces, cancellationToken);
     }
 
+    public async Task<List<Workspace>> ListInheritedStoredAsync(CancellationToken cancellationToken = default)
+    {
+        using (_liveView.Suppress())
+        {
+            return await (await WithDetailsAsync())
+                .Where(workspace => workspace.IsInherited)
+                .ToListAsync(cancellationToken);
+        }
+    }
+
     public async Task<long> GetCountAsync(string? filter = null, CancellationToken cancellationToken = default)
     {
         var query = await GetQueryableAsync();

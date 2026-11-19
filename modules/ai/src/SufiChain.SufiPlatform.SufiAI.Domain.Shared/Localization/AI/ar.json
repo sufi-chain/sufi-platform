@@ -480,6 +480,8 @@
     "AI:WorkspaceGuardrailExceeded": "بلغت مساحة العمل هذه حد الاستخدام للفترة {Period} (${LimitUsd}). المستخدم: ${UsedUsd}.",
     "AI:InheritedWorkspaceReadOnly": "مساحات العمل الموروثة للقراءة فقط. أنشئ مساحة عمل جديدة لتعديل الإعدادات.",
     "AI:InheritedWorkspaceCopyBlocked": "لا يمكن نسخ مساحات العمل الموروثة أو تحويلها إلى مخصصة، لأنها تستخدم اتصال المنصة ومفتاح API الخاص بها. أنشئ مساحة عمل جديدة وأدخل مفتاح API الخاص بك.",
+    "AI:InheritedWorkspaceSourceUnavailable": "مساحة عمل الذكاء الاصطناعي المشتركة '{WorkspaceName}' لم تعد متاحة على المنصة. اطلب من المسؤول تعيينها مرة أخرى.",
+    "AI:InheritedWorkspaceSourceInactive": "مساحة عمل الذكاء الاصطناعي المشتركة '{WorkspaceName}' متوقفة على المنصة. اطلب من المسؤول إعادة تشغيل مساحة عمل المضيف.",
     "AI:WorkspaceInUse": "لا يمكن حذف مساحة العمل هذه لأنها ما زالت مستخدمة ({Details}). انقل العلاقات النشطة أو أزلها أولاً.",
     "WorkspaceUsage:Hooshvare": "{0} hooshvare",
     "WorkspaceUsage:Assignment": "{0} تعيين نشط",
