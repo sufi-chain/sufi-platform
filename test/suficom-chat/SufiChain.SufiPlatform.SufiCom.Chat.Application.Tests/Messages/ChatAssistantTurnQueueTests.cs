@@ -172,6 +172,35 @@ public class ChatAssistantTurnQueueTests
             CultureInfo.CurrentUICulture = previousUiCulture;
         }
     }
+
+    [Fact]
+    public async Task Enqueue_prefers_the_culture_stored_on_the_event()
+    {
+        var seen = new TaskCompletionSource<string>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var processor = Substitute.For<IChatAssistantTurnProcessor>();
+        processor.ProcessAsync(Arg.Any<ChatMessageSentEto>()).Returns(_ =>
+        {
+            seen.SetResult(CultureInfo.CurrentUICulture.Name);
+            return Task.CompletedTask;
+        });
+
+        var services = new ServiceCollection();
+        services.AddScoped(_ => processor);
+        using var provider = services.BuildServiceProvider();
+        var queue = new ChatAssistantTurnQueue(
+            provider.GetRequiredService<IServiceScopeFactory>(),
+            NullLogger<ChatAssistantTurnQueue>.Instance);
+
+        queue.Enqueue(new ChatMessageSentEto
+        {
+            SessionId = Guid.NewGuid(),
+            MessageId = Guid.NewGuid(),
+            UiCulture = "fa"
+        });
+
+        var name = await seen.Task.WaitAsync(TimeSpan.FromSeconds(2));
+        name.ShouldBe("fa");
+    }
 }
 
 public class ChatAssistantTurnProcessorRegistrationTests : ChatTestBase<SufiComChatApplicationTestModule>
