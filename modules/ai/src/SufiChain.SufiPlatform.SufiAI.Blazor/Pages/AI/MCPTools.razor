@@ -3,7 +3,7 @@
 @using SufiChain.SufiPlatform.Features
 @using SufiChain.SufiPlatform.SufiAI.Features
 @attribute [Authorize(Policy = AIPermissions.MCPTools.Default)]
-@attribute [RequiresFeature(SufiAIFeatures.Enable, SufiAIFeatures.MCP)]
+@attribute [RequiresFeature(SufiAIFeatures.Enable, SufiAIFeatures.MCP, RequiresAll = true)]
 @inherits AIComponentBase
 
 <SufiPageToolbar>
