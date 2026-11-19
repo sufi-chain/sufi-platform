@@ -6,6 +6,9 @@
         <SbForm @ref="_formRef" Model="_model" OnValidSubmit="OnValidSubmitAsync">
             <ChildContent>
                 <SbStack Gap="3" Class="pb-4">
+                    <SbText Variant="SbTextVariant.Caption" Color="SbColor.Muted" data-testid="create-tenant-record">
+                        @L["CreateTenantRecordHint"]
+                    </SbText>
                     <SbTextField @bind-Value="_model.Name" 
                                  Label="@L["TenantName"]" 
                                  Required="true" />

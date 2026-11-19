@@ -62,7 +62,7 @@
                         <CellTemplate Context="ctx">
                             <SbStack Direction="SbStackDirection.Column" Gap="0">
                                 @* #193 G-86: the readable name leads; the internal name is secondary and hidden when identical. *@
-                                <SbText Variant="SbTextVariant.BodySmall" Weight="SbFontWeight.Medium">@(string.IsNullOrWhiteSpace(ctx.Item.LocalizedDisplayName) ? ctx.Item.Name : ctx.Item.LocalizedDisplayName)</SbText>
+                                <SbText Variant="SbTextVariant.BodySmall" Weight="SbFontWeight.Medium">@EditionEditorValues.VisibleLabel(ctx.Item.LocalizedDisplayName, ctx.Item.Name)</SbText>
                                 @if (!string.IsNullOrWhiteSpace(ctx.Item.LocalizedDisplayName) && !string.Equals(ctx.Item.LocalizedDisplayName, ctx.Item.Name, StringComparison.OrdinalIgnoreCase))
                                 {
                                     <SbText Variant="SbTextVariant.Caption" Color="SbColor.Muted">@ctx.Item.Name</SbText>
@@ -119,11 +119,28 @@
                          Required="true" />
             <SbTextField TValue="string"
                          @bind-Value="_form.DisplayName"
-                         Label="@L["EditionDisplayName"]" />
+                         Label="@L["EditionDisplayName"]"
+                         Required="true" />
             <SbTextField TValue="string"
                          @bind-Value="_form.Code"
                          Label="@L["EditionCode"]" />
+            @if (_showEdit)
+            {
+                <SbNumberField TNumber="decimal"
+                               @bind-Value="_form.Price"
+                               Label="@L["EditionPrice"]"
+                               Min="0"
+                               HelperText="@PriceHelper" />
+                <SbTextField TValue="string"
+                             @bind-Value="_form.CurrencyCode"
+                             Label="@L["EditionPriceCurrency"]"
+                             HelperText="@L["EditionPriceHint"]" />
+            }
             <SbSwitch @bind-Value="_form.IsActive" Label="@L["EditionIsActive"]" />
+            @if (!string.IsNullOrWhiteSpace(_formError))
+            {
+                <SbAlert Severity="SbAlertSeverity.Danger">@_formError</SbAlert>
+            }
         </SbStack>
     </ChildContent>
     <Footer>
