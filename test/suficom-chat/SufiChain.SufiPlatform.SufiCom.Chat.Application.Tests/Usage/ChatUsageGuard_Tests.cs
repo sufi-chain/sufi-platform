@@ -1,5 +1,6 @@
 using SufiChain.SufiPlatform.SufiCom.Chat.ETOs;
 using SufiChain.SufiPlatform.SufiCom.Chat.Features;
+using SufiChain.SufiPlatform.SufiCom.Chat.Settings;
 using SufiChain.SufiPlatform.SufiCom.Chat.Supports;
 using SufiChain.SufiPlatform.SufiCom.Chat.Usage;
 using SufiChain.SufiPlatform.Settings;
@@ -236,6 +237,42 @@ public class ChatUsageGuard_Tests : ChatApplicationTestBase<SufiComChatApplicati
         finally
         {
             wallets.Context = previous;
+        }
+    }
+
+    [Fact]
+    public async Task Should_Deny_Agent_Turn_When_The_Daily_Token_Quota_Is_Used()
+    {
+        await ChatTestSettingHelper.SetAiPolicyAsync(_settingManager);
+        var tenantId = Guid.NewGuid();
+        await _settingManager.SetForTenantAsync(tenantId, ChatSettingNames.Ai.MaxTokensPerTenantPerDay, "10");
+        var sessionId = Guid.NewGuid();
+        using var tenant = CurrentTenant.Change(tenantId);
+        try
+        {
+            var policy = await GetRequiredService<IChatUsagePolicyResolver>().ResolveAiAsync();
+            policy.MaxTokensPerTenantPerDay.ShouldBe(10);
+
+            var reservationId = await _usageGuard.ReserveAiUsageAsync(sessionId, ChatAiOperationKind.Hooshvare);
+            await _usageGuard.RecordAiUsageAsync(reservationId, new ChatAiUsageRecord
+            {
+                PromptTokens = 4,
+                CompletionTokens = 6,
+                TotalTokens = 10
+            });
+
+            var result = await _usageGuard.CheckCanInvokeAiAsync(sessionId, ChatAiOperationKind.Hooshvare);
+            result.IsAllowed.ShouldBeFalse();
+            result.ReasonCode.ShouldBe("AiTokenLimitExceeded");
+            result.LocalizationKey.ShouldBe(ChatErrorCodes.AiTokenLimitExceeded);
+
+            var exception = await Should.ThrowAsync<Volo.Abp.BusinessException>(() =>
+                _usageGuard.ReserveAiUsageAsync(Guid.NewGuid(), ChatAiOperationKind.AutoReply));
+            exception.Code.ShouldBe(ChatErrorCodes.AiTokenLimitExceeded);
+        }
+        finally
+        {
+            await _settingManager.SetForTenantAsync(tenantId, ChatSettingNames.Ai.MaxTokensPerTenantPerDay, null);
         }
     }
 }
