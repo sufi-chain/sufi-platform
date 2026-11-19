@@ -79,6 +79,22 @@ public class OpenRouterMcpToolDecisionGateTests
     }
 
     [Fact]
+    public async Task A_failed_decisions_call_allows_the_tool()
+    {
+        var workspaces = Substitute.For<IWorkspaceRepository>();
+        workspaces.FindByNameAsync("demo", Arg.Any<CancellationToken>())
+            .Returns(new Workspace(Guid.NewGuid(), "demo", AIProviderType.OpenRouter, "model"));
+        var client = Substitute.For<ISystemOneDecisionClient>();
+        client.TryDecideAsync(Arg.Any<SystemOneDecisionRequest>(), Arg.Any<CancellationToken>())
+            .Returns(Task.FromException<SystemOneDecisionResult?>(new HttpRequestException("SystemOneRequestFailed")));
+        var gate = new OpenRouterMcpToolDecisionGate(client, workspaces);
+
+        var reason = await gate.GetBlockReasonAsync(Context(), "read", new Dictionary<string, object?>());
+
+        reason.ShouldBeNull();
+    }
+
+    [Fact]
     public async Task Workspace_not_found_allows_without_calling_client()
     {
         var workspaces = Substitute.For<IWorkspaceRepository>();

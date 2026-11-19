@@ -1,4 +1,3 @@
-using System.Text;
 using System.Text.Json;
 using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.Logging;
@@ -27,7 +26,9 @@ public partial class WorkspaceChat : AIComponentBase
     private List<WorkspaceDto> _workspaces = new();
     private Guid? _workspaceId;
     private string _workspaceName = string.Empty;
-    private bool _loadingWorkspaces;
+    private bool _loadingWorkspaces = true;
+
+    private string? _turnFailureNotice;
     private bool _workspacesLoadStarted;
     private bool _savedMode = true;
     private bool _sending;
@@ -411,22 +412,27 @@ public partial class WorkspaceChat : AIComponentBase
             MessengerState.NotifyStateChanged();
             return Task.CompletedTask;
         });
-        var reply = new StringBuilder(replyText);
 
-        MessengerState.Messages.RemoveAll(message => message.Id == preview.Id);
         MessengerState.IsWaitingForAiResponse = false;
-        if (reply.Length == 0)
+        if (replyText.Length == 0)
         {
-            MessengerState.NotifyStateChanged();
             if (!_replyCancelledByUser)
             {
-                await Message.ErrorAsync(L["WorkspaceChat:ReplyFailed"]);
+                preview.Body = TurnFailureText();
+                MessengerState.AddMessageIfMissing(preview);
             }
 
+            MessengerState.NotifyStateChanged();
             return;
         }
 
-        await SaveAssistantReplyAsync(sessionId, userMessage.Id, reply.ToString());
+        var stored = await SaveAssistantReplyAsync(sessionId, userMessage.Id, replyText);
+        if (stored.Count > 0)
+        {
+            MessengerState.Messages.RemoveAll(message => message.Id == preview.Id);
+        }
+
+        MessengerState.NotifyStateChanged();
         await LoadSavedSessionsAsync();
     }
 
@@ -434,7 +440,7 @@ public partial class WorkspaceChat : AIComponentBase
     /// sufi-chain#551: the chat body column is 16000 characters. The server stores a longer reply
     /// as ordered parts in one transaction, and a reload shows every part including boundary spaces.
     /// </summary>
-    private Task SaveAssistantReplyAsync(Guid sessionId, Guid userTurnId, string reply)
+    private Task<IReadOnlyList<ChatMessageDto>> SaveAssistantReplyAsync(Guid sessionId, Guid userTurnId, string reply)
     {
         return SaveAssistantTurnAsync(sessionId, userTurnId, reply, retry: false);
     }
@@ -613,29 +619,53 @@ public partial class WorkspaceChat : AIComponentBase
 
             await InvokeAsync(StateHasChanged);
         });
-        var reply = new StringBuilder(replyText);
 
-        _anonymousMessages.RemoveAll(message => message.Id == preview.Id);
-
-        if (reply.Length == 0)
+        MessengerState.IsWaitingForAiResponse = false;
+        if (replyText.Length == 0)
         {
             if (!_replyCancelledByUser)
             {
-                await Message.ErrorAsync(L["WorkspaceChat:ReplyFailed"]);
+                preview.Body = TurnFailureText();
+                if (_anonymousMessages.All(message => message.Id != preview.Id))
+                {
+                    _anonymousMessages.Add(preview);
+                }
             }
         }
-        else
+        else if (_anonymousMessages.All(message => message.Id != preview.Id))
         {
-            _anonymousMessages.Add(new ChatMessageDto
-            {
-                Id = Guid.NewGuid(),
-                Body = reply.ToString(),
-                SenderKind = ChatMessageSenderKind.Assistant,
-                CreationTime = DateTime.UtcNow
-            });
+            preview.Body = replyText;
+            _anonymousMessages.Add(preview);
         }
 
+        await InvokeAsync(StateHasChanged);
         await SaveAnonymousTranscriptAsync();
+    }
+
+    private string TurnFailureText()
+    {
+        if (!string.IsNullOrWhiteSpace(_turnFailureNotice))
+        {
+            return _turnFailureNotice;
+        }
+
+        var fallback = L["WorkspaceChat:ReplyFailed"];
+        return string.IsNullOrWhiteSpace(fallback.Value) ? "WorkspaceChat:ReplyFailed" : fallback.Value;
+    }
+
+    private string DescribeTurnFailure(Exception exception)
+    {
+        if (exception is Volo.Abp.BusinessException business && !string.IsNullOrWhiteSpace(business.Code))
+        {
+            var localized = L[business.Code];
+            if (!localized.ResourceNotFound && !string.IsNullOrWhiteSpace(localized.Value))
+            {
+                return localized.Value;
+            }
+        }
+
+        var fallback = L["WorkspaceChat:ReplyFailed"];
+        return string.IsNullOrWhiteSpace(fallback.Value) ? "WorkspaceChat:ReplyFailed" : fallback.Value;
     }
 
     private async Task<string> ReadChatReplyAsync(
@@ -644,6 +674,7 @@ public partial class WorkspaceChat : AIComponentBase
         Func<string, Task> onPreview)
     {
         // sufi-chain#551: no timer. The turn ends when the user presses Stop, the circuit closes, or the app shuts down.
+        _turnFailureNotice = null;
         _turnCancellation?.Dispose();
         _turnCancellation = CancellationTokenSource.CreateLinkedTokenSource(ComponentCancellationToken);
         var turn = _turnCancellation;
@@ -672,20 +703,10 @@ public partial class WorkspaceChat : AIComponentBase
                 _replyCancelledByUser);
             return string.Empty;
         }
-        catch (Exception exception) when (exception is Volo.Abp.BusinessException or AbpAuthorizationException)
-        {
-            // Actionable errors (for example a localized business error or missing permission)
-            // go to the page error handler instead of the generic "reply failed" message.
-            MessengerState.IsWaitingForAiResponse = false;
-            Logger.LogWarning(
-                exception,
-                "Workspace chat reply rejected. SessionId={SessionId}",
-                sessionId);
-            throw;
-        }
         catch (Exception exception)
         {
             MessengerState.IsWaitingForAiResponse = false;
+            _turnFailureNotice = DescribeTurnFailure(exception);
             Logger.LogWarning(
                 exception,
                 "Workspace chat reply failed. SessionId={SessionId}",

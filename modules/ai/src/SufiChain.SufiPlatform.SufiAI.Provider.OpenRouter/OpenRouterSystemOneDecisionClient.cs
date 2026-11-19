@@ -103,7 +103,7 @@ public class OpenRouterSystemOneDecisionClient : ISystemOneDecisionClient, ITran
                     route.ModelId,
                     (int)response.StatusCode,
                     Trim(body));
-                await RecordAsync(resolved, stopwatch.ElapsedMilliseconds, false, "SystemOneRequestFailed", null, null, null, cancellationToken);
+                await RecordSafeAsync(resolved, stopwatch.ElapsedMilliseconds, false, "SystemOneRequestFailed", null, null, null, cancellationToken);
                 return null;
             }
 
@@ -113,11 +113,11 @@ public class OpenRouterSystemOneDecisionClient : ISystemOneDecisionClient, ITran
             var outputTokens = parsed?.OutputTokens ?? usage.OutputTokens;
             if (parsed == null && inputTokens == null && outputTokens == null)
             {
-                await RecordAsync(resolved, stopwatch.ElapsedMilliseconds, false, "SystemOneResponseUnreadable", null, null, null, cancellationToken);
+                await RecordSafeAsync(resolved, stopwatch.ElapsedMilliseconds, false, "SystemOneResponseUnreadable", null, null, null, cancellationToken);
                 return null;
             }
 
-            await RecordAsync(
+            await RecordSafeAsync(
                 resolved,
                 stopwatch.ElapsedMilliseconds,
                 true,
@@ -133,11 +133,39 @@ public class OpenRouterSystemOneDecisionClient : ISystemOneDecisionClient, ITran
             if (sent && resolved != null)
             {
                 stopwatch.Stop();
-                await RecordAsync(resolved, stopwatch.ElapsedMilliseconds, false, "SystemOneRequestFailed", null, null, null, cancellationToken);
+                await RecordSafeAsync(resolved, stopwatch.ElapsedMilliseconds, false, "SystemOneRequestFailed", null, null, null, cancellationToken);
             }
 
             _logger.LogWarning(ex, "System One request is unavailable.");
             return null;
+        }
+    }
+
+    private async Task RecordSafeAsync(
+        WorkspaceRuntimeConfiguration resolved,
+        long latencyMs,
+        bool isSuccess,
+        string? errorMessage,
+        int? inputTokens,
+        int? outputTokens,
+        decimal? reportedCost,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            await RecordAsync(
+                resolved,
+                latencyMs,
+                isSuccess,
+                errorMessage,
+                inputTokens,
+                outputTokens,
+                reportedCost,
+                cancellationToken);
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            _logger.LogWarning(ex, "System One usage could not be recorded.");
         }
     }
 

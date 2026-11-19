@@ -29,7 +29,10 @@ public class OpenRouterMcpToolDecisionGate : IMcpToolDecisionGate, ITransientDep
             return null;
         }
 
-        var result = await _client.TryDecideAsync(new SystemOneDecisionRequest
+        SystemOneDecisionResult? result;
+        try
+        {
+            result = await _client.TryDecideAsync(new SystemOneDecisionRequest
         {
             WorkspaceId = workspace.Id,
             State = new
@@ -53,6 +56,17 @@ public class OpenRouterMcpToolDecisionGate : IMcpToolDecisionGate, ITransientDep
                     "The call does not send untrusted input to an external system.")
             }
         }, cancellationToken);
+        }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
+        catch (Exception)
+        {
+            // A failed Decisions call must not block the tool or the reply. Fail open.
+            return null;
+        }
+
         if (result == null)
         {
             return null;

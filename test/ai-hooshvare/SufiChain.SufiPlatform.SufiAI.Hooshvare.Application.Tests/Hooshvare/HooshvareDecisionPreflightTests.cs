@@ -108,6 +108,28 @@ public class HooshvareDecisionPreflightTests
         result.ChatRouteId.ShouldBeNull();
     }
 
+    [Fact]
+    public async Task A_failed_decisions_call_leaves_the_default_route()
+    {
+        var routeA = Guid.NewGuid();
+        var routeB = Guid.NewGuid();
+        var client = Substitute.For<ISystemOneDecisionClient>();
+        client.TryDecideAsync(Arg.Any<SystemOneDecisionRequest>(), Arg.Any<CancellationToken>())
+            .Returns(Task.FromException<SystemOneDecisionResult?>(new HttpRequestException("SystemOneRequestFailed")));
+        var preflight = new HooshvareDecisionPreflight([client]);
+
+        var result = await preflight.TryAsync(
+            Guid.NewGuid(),
+            Definition(allowSelection: true),
+            new HooshvareRuntimeRequestDto { Message = "hi" },
+            new HooshvareRuntimeOptions { UseRag = true },
+            [routeA, routeB]);
+
+        result.ChatRouteId.ShouldBeNull();
+        result.SearchKb.ShouldBeNull();
+        result.WebRequired.ShouldBeNull();
+    }
+
     private static HooshvareDefinition Definition(bool allowSelection)
     {
         var definition = new HooshvareDefinition(

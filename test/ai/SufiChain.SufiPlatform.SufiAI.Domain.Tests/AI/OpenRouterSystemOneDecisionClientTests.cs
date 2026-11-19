@@ -106,6 +106,27 @@ public class OpenRouterSystemOneDecisionClientTests
     }
 
     [Fact]
+    public async Task A_usage_log_failure_does_not_escape_the_decision_call()
+    {
+        using var handler = new StatusHandler(HttpStatusCode.Unauthorized, "{}");
+        var workspace = CreateWorkspace();
+        var route = workspace.AddModelConfiguration(
+            AICapabilityType.Decisions,
+            "inception/mercury-decide",
+            apiKey: "sk-route");
+        var client = CreateClient(
+            handler,
+            workspace,
+            route,
+            _ => { },
+            usageThrows: true);
+
+        var result = await client.TryDecideAsync(Request(workspace.Id));
+
+        result.ShouldBeNull();
+    }
+
+    [Fact]
     public async Task Outbound_decision_POST_has_no_fixed_timeout_and_honours_the_caller_token()
     {
         // 9.4 (sufi-chain#340): the CreateClient() default (100s) used to cut slow decision POSTs.
@@ -141,7 +162,8 @@ public class OpenRouterSystemOneDecisionClientTests
         Workspace workspace,
         AIModelConfiguration route,
         Action<AIUsageRecord> capture,
-        Action<HttpClient>? captureClient = null)
+        Action<HttpClient>? captureClient = null,
+        bool usageThrows = false)
     {
         var workspaces = Substitute.For<IWorkspaceRepository>();
         workspaces.FindAsync(workspace.Id, Arg.Any<bool>(), Arg.Any<CancellationToken>()).Returns(workspace);
@@ -175,7 +197,16 @@ public class OpenRouterSystemOneDecisionClientTests
         });
 
         var usage = Substitute.For<IAIUsageRecorder>();
-        usage.RecordAsync(Arg.Do<AIUsageRecord>(capture), Arg.Any<CancellationToken>()).Returns(Task.CompletedTask);
+        if (usageThrows)
+        {
+            usage.RecordAsync(Arg.Do<AIUsageRecord>(capture), Arg.Any<CancellationToken>())
+                .Returns(Task.FromException(new InvalidOperationException("usage log failed")));
+        }
+        else
+        {
+            usage.RecordAsync(Arg.Do<AIUsageRecord>(capture), Arg.Any<CancellationToken>())
+                .Returns(Task.CompletedTask);
+        }
 
         return new OpenRouterSystemOneDecisionClient(
             workspaces,
