@@ -130,6 +130,40 @@ public class CalendarEventAppServiceIntegrationTests : CalendarEntityFrameworkCo
     }
 
     [Fact]
+    public async Task Should_Reject_An_Empty_Title_And_A_Zero_Recurrence_Interval()
+    {
+        var calendarId = await CreateCalendarAsync();
+        var service = GetRequiredService<ICalendarEventAppService>();
+        var previousCulture = CultureInfo.CurrentCulture;
+        var previousUiCulture = CultureInfo.CurrentUICulture;
+        CultureInfo.CurrentCulture = CultureInfo.GetCultureInfo("en");
+        CultureInfo.CurrentUICulture = CultureInfo.CurrentCulture;
+        try
+        {
+            var emptyTitle = NewEvent(calendarId);
+            emptyTitle.Title = "";
+            var titleError = await Should.ThrowAsync<AbpValidationException>(() => service.CreateAsync(emptyTitle));
+            titleError.ValidationErrors.ShouldContain(item =>
+                item.MemberNames.Contains(nameof(CreateUpdateCalendarEventDto.Title)));
+
+            var zeroInterval = NewEvent(calendarId);
+            zeroInterval.RecurrenceRule = "FREQ=DAILY;INTERVAL=0";
+            var intervalError = await Should.ThrowAsync<AbpValidationException>(() => service.CreateAsync(zeroInterval));
+            intervalError.ValidationErrors.ShouldContain(item =>
+                item.ErrorMessage == "Repeat every must be at least 1." &&
+                item.MemberNames.Contains(nameof(CreateUpdateCalendarEventDto.RecurrenceRule)));
+        }
+        finally
+        {
+            CultureInfo.CurrentCulture = previousCulture;
+            CultureInfo.CurrentUICulture = previousUiCulture;
+        }
+
+        await WithUnitOfWorkAsync(async () =>
+            (await GetRequiredService<ICalendarEventRepository>().GetCountAsync()).ShouldBe(0));
+    }
+
+    [Fact]
     public async Task Event_Owner_Can_Delete_Their_Own_Event()
     {
         var ownerId = Guid.NewGuid();

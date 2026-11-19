@@ -195,13 +195,10 @@ public partial class SufiEventEditor : CalendarPublicComponentBase
     protected virtual Task OnRecurrenceIntervalChanged(int interval)
     {
         _recurrenceInterval = interval;
-        if (_recurrenceFrequency != RecurrenceFrequency.None && interval < 1)
-        {
-            _intervalError = L["InvalidRecurrenceInterval"].Value;
-            return Task.CompletedTask;
-        }
-
-        _intervalError = null;
+        _intervalError = _recurrenceFrequency != RecurrenceFrequency.None && interval < 1
+            ? L["InvalidRecurrenceInterval"].Value
+            : null;
+        // Write the typed interval. Skipping this left the previous INTERVAL=1 in the field.
         ApplyRecurrenceRule();
         return Task.CompletedTask;
     }
@@ -515,11 +512,6 @@ public partial class SufiEventEditor : CalendarPublicComponentBase
         if (_recurrenceFrequency == RecurrenceFrequency.None)
         {
             _model.RecurrenceRule = null;
-            return;
-        }
-
-        if (_recurrenceInterval < 1)
-        {
             return;
         }
 
