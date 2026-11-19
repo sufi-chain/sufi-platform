@@ -79,8 +79,9 @@ public class WorkspaceSyncService : ITransientDependency
 
         var workspace = await GetWorkspaceAsync(workspaceName, cancellationToken);
         var embedderConfiguration = await _embedderResolver.ResolveAsync(workspace, cancellationToken);
-        var stamp = await GetEmbedderStampAsync(workspace.Name, cancellationToken);
-        var cacheKey = BuildEmbeddingCacheKey(workspace.Id, embedderConfiguration.ConfigurationId);
+        var canonicalId = InheritedWorkspaceLiveView.CanonicalCacheId(workspace);
+        var stamp = await GetEmbedderStampAsync(canonicalId, cancellationToken);
+        var cacheKey = BuildEmbeddingCacheKey(canonicalId, embedderConfiguration.ConfigurationId);
 
         if (TryGetValidGenerator(cacheKey, stamp, out var cached))
         {
@@ -95,7 +96,7 @@ public class WorkspaceSyncService : ITransientDependency
         await EmbeddingConstructionLock.WaitAsync(cancellationToken);
         try
         {
-            stamp = await GetEmbedderStampAsync(workspace.Name, cancellationToken);
+            stamp = await GetEmbedderStampAsync(canonicalId, cancellationToken);
             if (TryGetValidGenerator(cacheKey, stamp, out cached))
             {
                 return cached;
@@ -114,7 +115,7 @@ public class WorkspaceSyncService : ITransientDependency
             {
                 Generator = embeddingGenerator,
                 Stamp = stamp,
-                WorkspaceName = workspace.Name
+                CanonicalId = canonicalId
             });
             return embeddingGenerator;
         }
@@ -126,37 +127,60 @@ public class WorkspaceSyncService : ITransientDependency
 
     /// <summary>
     /// Invalidates cached embedding generators for a workspace across processes.
+    /// Inherited projections share the host source id, so a host edit drops every tenant.
     /// </summary>
     public async Task ClearWorkspaceCache(string workspaceName)
     {
-        await _embedderStampCache.SetAsync(
-            workspaceName,
-            new WorkspaceEmbedderCacheStamp { Stamp = Guid.NewGuid().ToString("N") });
+        var canonicalId = await ResolveCanonicalCacheIdAsync(workspaceName);
+        if (canonicalId == null)
+        {
+            _logger.LogDebug("Embedder cache clear skipped. Workspace {WorkspaceName} was not found.", workspaceName);
+            return;
+        }
 
-        RemoveLocalGenerators(workspaceName);
+        await SetEmbedderStampAsync(canonicalId, Guid.NewGuid().ToString("N"));
+        RemoveLocalGenerators(canonicalId);
         _logger.LogInformation("Cleared embedder cache for workspace {WorkspaceName}", workspaceName);
     }
 
-    private async Task<string> GetEmbedderStampAsync(string workspaceName, CancellationToken cancellationToken)
+    private async Task<string?> ResolveCanonicalCacheIdAsync(string workspaceName)
     {
-        var item = await _embedderStampCache.GetAsync(workspaceName, token: cancellationToken);
-        if (item != null && !string.IsNullOrWhiteSpace(item.Stamp))
-        {
-            return item.Stamp;
-        }
-
-        var stamp = Guid.NewGuid().ToString("N");
-        await _embedderStampCache.SetAsync(
-            workspaceName,
-            new WorkspaceEmbedderCacheStamp { Stamp = stamp },
-            token: cancellationToken);
-        return stamp;
+        var workspace = await _workspaceRepository.FindByNameAsync(workspaceName);
+        return workspace == null ? null : InheritedWorkspaceLiveView.CanonicalCacheId(workspace);
     }
 
-    private string BuildEmbeddingCacheKey(Guid workspaceId, Guid configurationId)
+    private async Task<string> GetEmbedderStampAsync(string canonicalId, CancellationToken cancellationToken)
     {
-        var tenantKey = _currentTenant.Id?.ToString("N") ?? "host";
-        return $"{tenantKey}:{workspaceId:N}:{configurationId:N}";
+        using (_currentTenant.Change(null))
+        {
+            var item = await _embedderStampCache.GetAsync(canonicalId, token: cancellationToken);
+            if (item != null && !string.IsNullOrWhiteSpace(item.Stamp))
+            {
+                return item.Stamp;
+            }
+
+            var stamp = Guid.NewGuid().ToString("N");
+            await _embedderStampCache.SetAsync(
+                canonicalId,
+                new WorkspaceEmbedderCacheStamp { Stamp = stamp },
+                token: cancellationToken);
+            return stamp;
+        }
+    }
+
+    private async Task SetEmbedderStampAsync(string canonicalId, string stamp)
+    {
+        using (_currentTenant.Change(null))
+        {
+            await _embedderStampCache.SetAsync(
+                canonicalId,
+                new WorkspaceEmbedderCacheStamp { Stamp = stamp });
+        }
+    }
+
+    private static string BuildEmbeddingCacheKey(string canonicalId, Guid configurationId)
+    {
+        return canonicalId + ":" + configurationId.ToString("N");
     }
 
     private static bool TryGetValidGenerator(
@@ -185,13 +209,13 @@ public class WorkspaceSyncService : ITransientDependency
         EmbeddingGenerators[cacheKey] = next;
     }
 
-    private void RemoveLocalGenerators(string workspaceName)
+    private static void RemoveLocalGenerators(string canonicalId)
     {
-        var tenantPrefix = (_currentTenant.Id?.ToString("N") ?? "host") + ":";
+        var prefix = canonicalId + ":";
         foreach (var pair in EmbeddingGenerators)
         {
-            if (!pair.Key.StartsWith(tenantPrefix, StringComparison.Ordinal) ||
-                !string.Equals(pair.Value.WorkspaceName, workspaceName, StringComparison.Ordinal))
+            if (!pair.Key.StartsWith(prefix, StringComparison.Ordinal) &&
+                !string.Equals(pair.Value.CanonicalId, canonicalId, StringComparison.Ordinal))
             {
                 continue;
             }
@@ -219,6 +243,7 @@ public class WorkspaceSyncService : ITransientDependency
                 .WithData("WorkspaceName", workspaceName);
         }
 
+        InheritedWorkspaceLiveView.EnsureUsable(workspace);
         if (!workspace.IsActive)
         {
             _logger.LogDebug(
@@ -258,6 +283,6 @@ public class WorkspaceSyncService : ITransientDependency
     {
         public required IEmbeddingGenerator<string, Embedding<float>> Generator { get; init; }
         public required string Stamp { get; init; }
-        public required string WorkspaceName { get; init; }
+        public required string CanonicalId { get; init; }
     }
 }

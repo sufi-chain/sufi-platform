@@ -100,6 +100,15 @@ public class MongoWorkspaceRepository : MongoDbRepository<AIMongoDbContext, Work
         return await _liveView.ApplyAsync(workspaces, cancellationToken);
     }
 
+    public async Task<List<Workspace>> ListInheritedStoredAsync(CancellationToken cancellationToken = default)
+    {
+        using (_liveView.Suppress())
+        {
+            var queryable = await GetHostScopedQueryableAsync(cancellationToken);
+            return await queryable.Where(workspace => workspace.IsInherited).ToListAsync(cancellationToken);
+        }
+    }
+
     public async Task<long> GetCountAsync(string? filter = null, CancellationToken cancellationToken = default)
     {
         var queryable = await GetHostScopedQueryableAsync(cancellationToken);

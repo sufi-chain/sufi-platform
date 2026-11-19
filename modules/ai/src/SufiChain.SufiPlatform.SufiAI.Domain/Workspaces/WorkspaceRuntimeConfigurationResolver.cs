@@ -218,6 +218,10 @@ public class WorkspaceRuntimeConfigurationResolver : DomainService, IWorkspaceRu
     {
         var exception = resolved.FailureCode switch
         {
+            WorkspaceRuntimeFailureCodes.InheritedSourceMissing =>
+                new BusinessException(AIErrorCodes.InheritedWorkspaceSourceUnavailable),
+            WorkspaceRuntimeFailureCodes.InheritedSourceInactive =>
+                new BusinessException(AIErrorCodes.InheritedWorkspaceSourceInactive),
             WorkspaceRuntimeFailureCodes.WorkspaceInactive =>
                 new BusinessException(AIErrorCodes.WorkspaceNotActive),
             WorkspaceRuntimeFailureCodes.ModelNotConfigured =>
@@ -262,6 +266,16 @@ public class WorkspaceRuntimeConfigurationResolver : DomainService, IWorkspaceRu
         string? effectiveApiEndpoint,
         string? effectiveApiKey)
     {
+        if (InheritedWorkspaceLiveView.IsSourceMissing(workspace))
+        {
+            return WorkspaceRuntimeFailureCodes.InheritedSourceMissing;
+        }
+
+        if (InheritedWorkspaceLiveView.IsSourceInactive(workspace))
+        {
+            return WorkspaceRuntimeFailureCodes.InheritedSourceInactive;
+        }
+
         if (!workspace.IsActive)
         {
             return WorkspaceRuntimeFailureCodes.WorkspaceInactive;

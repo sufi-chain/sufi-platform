@@ -64,6 +64,8 @@ public static class AIErrorCodes
     public const string WorkspaceGuardrailExceeded = "AI:WorkspaceGuardrailExceeded";
     public const string InheritedWorkspaceReadOnly = "AI:InheritedWorkspaceReadOnly";
     public const string InheritedWorkspaceCopyBlocked = "AI:InheritedWorkspaceCopyBlocked";
+    public const string InheritedWorkspaceSourceUnavailable = "AI:InheritedWorkspaceSourceUnavailable";
+    public const string InheritedWorkspaceSourceInactive = "AI:InheritedWorkspaceSourceInactive";
     public const string InheritedWorkspaceMustBelongToTenant = "AI:InheritedWorkspaceMustBelongToTenant";
     public const string WorkspaceAssignmentHostOnly = "AI:WorkspaceAssignmentHostOnly";
     public const string TenantRequired = "AI:TenantRequired";

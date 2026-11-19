@@ -3,6 +3,8 @@ namespace SufiChain.SufiPlatform.SufiAI.Workspaces;
 public static class WorkspaceRuntimeFailureCodes
 {
     public const string WorkspaceInactive = "WorkspaceInactive";
+    public const string InheritedSourceMissing = "InheritedSourceMissing";
+    public const string InheritedSourceInactive = "InheritedSourceInactive";
     public const string ModelNotConfigured = "ModelNotConfigured";
     public const string CredentialsMissing = "CredentialsMissing";
     public const string EndpointInvalid = "EndpointInvalid";
