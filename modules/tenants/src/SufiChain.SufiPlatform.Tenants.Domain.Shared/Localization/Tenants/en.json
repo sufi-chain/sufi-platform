@@ -20,6 +20,7 @@
     "TenantAdminEmail": "Admin Email Address",
     "TenantAdminPassword": "Admin Password",
     "CreateTenant": "Create Tenant",
+    "CreateTenantRecordHint": "This dialog creates the tenant record in one step. Tenant name, admin email, and admin password are required. Subdomain and workspace provisioning stay on the five-step Request workspace wizard.",
     "EditTenant": "Edit Tenant",
     "DeleteTenant": "Delete Tenant",
     "TenantCreatedSuccessfully": "Tenant created successfully",
