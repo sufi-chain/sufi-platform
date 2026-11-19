@@ -18,6 +18,7 @@ public class SufiMultiTenantConnectionStringResolverTests
     private const string HostKnowledgeBase = "Host=host-kb";
     private const string HostTicketing = "Host=host-ticketing";
     private const string HostLiveChat = "Host=host-livechat";
+    private const string HostFileManager = "Host=host-file-manager";
     private const string TenantDefault = "Host=tenant-default";
 
     [Theory]
@@ -26,6 +27,7 @@ public class SufiMultiTenantConnectionStringResolverTests
     [InlineData("SufiHelpDeskTicketing")]
     [InlineData("SufiHelpDeskLiveChat")]
     [InlineData("SufiAI")]
+    [InlineData("SufiFileManager")]
     [InlineData("Default")]
     public async Task Tenant_With_Only_Default_Should_Resolve_Every_Name_To_Tenant_Database(string connectionName)
     {
@@ -73,13 +75,29 @@ public class SufiMultiTenantConnectionStringResolverTests
         (await resolver.ResolveAsync("SufiHelpDesk")).ShouldBe(HostHelpDesk);
         (await resolver.ResolveAsync("SufiHelpDeskTicketing")).ShouldBe(HostTicketing);
         (await resolver.ResolveAsync("SufiHelpDeskLiveChat")).ShouldBe(HostLiveChat);
+        (await resolver.ResolveAsync("SufiFileManager")).ShouldBe(HostFileManager);
         (await resolver.ResolveAsync("Default")).ShouldBe(HostDefault);
+    }
+
+    [Fact]
+    public async Task Tenant_Default_Key_Is_Matched_Without_Case()
+    {
+        var resolver = CreateResolver(
+            Guid.NewGuid(),
+            tenantConnectionStrings: new ConnectionStrings
+            {
+                ["default"] = TenantDefault
+            });
+
+        (await resolver.ResolveAsync("SufiFileManager")).ShouldBe(TenantDefault);
+        (await resolver.ResolveAsync("Default")).ShouldBe(TenantDefault);
     }
 
     [Theory]
     [InlineData("SufiHelpDeskKnowledgeBase", HostKnowledgeBase)]
     [InlineData("SufiHelpDesk", HostHelpDesk)]
     [InlineData("Default", HostDefault)]
+    [InlineData("SufiFileManager", HostFileManager)]
     [InlineData(null, HostDefault)]
     public async Task Tenant_Without_Connection_Strings_Should_Use_Host_Resolution(string? connectionName, string expected)
     {
@@ -112,6 +130,7 @@ public class SufiMultiTenantConnectionStringResolverTests
         options.ConnectionStrings["SufiHelpDeskKnowledgeBase"] = HostKnowledgeBase;
         options.ConnectionStrings["SufiHelpDeskTicketing"] = HostTicketing;
         options.ConnectionStrings["SufiHelpDeskLiveChat"] = HostLiveChat;
+        options.ConnectionStrings["SufiFileManager"] = HostFileManager;
 
         var monitor = Substitute.For<IOptionsMonitor<AbpDbConnectionOptions>>();
         monitor.CurrentValue.Returns(options);

@@ -9,10 +9,14 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="$(MicrosoftNetTestSdkVersion)" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Proxies" Version="$(MicrosoftEntityFrameworkCoreVersion)" />
     <ProjectReference Include="..\..\..\modules\file-manager\src\SufiChain.SufiPlatform.FileManager.EntityFrameworkCore\SufiChain.SufiPlatform.FileManager.EntityFrameworkCore.csproj" />
+    <ProjectReference Include="..\..\..\modules\file-manager\src\SufiChain.SufiPlatform.FileManager.HttpApi\SufiChain.SufiPlatform.FileManager.HttpApi.csproj" />
+    <ProjectReference Include="..\..\..\modules\tenants\src\SufiChain.SufiPlatform.Tenants.Domain\SufiChain.SufiPlatform.Tenants.Domain.csproj" />
     <ProjectReference Include="..\SufiChain.SufiPlatform.FileManager.Application.Tests\SufiChain.SufiPlatform.FileManager.Application.Tests.csproj" />
+    <PackageReference Include="Volo.Abp.AspNetCore.MultiTenancy" Version="$(AbpVersion)" />
     <PackageReference Include="Volo.Abp.EntityFrameworkCore.Sqlite" Version="$(AbpVersion)" />
     <PackageReference Include="xunit" Version="$(XunitVersion)" />
     <PackageReference Include="xunit.runner.visualstudio" Version="$(XunitRunnerVisualStudioVersion)" PrivateAssets="All" />
