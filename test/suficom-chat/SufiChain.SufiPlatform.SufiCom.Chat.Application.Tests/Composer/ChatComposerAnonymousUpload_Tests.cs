@@ -5,6 +5,7 @@ using Shouldly;
 using SufiChain.SufiPlatform.Features;
 using SufiChain.SufiPlatform.FileManager;
 using SufiChain.SufiPlatform.SufiAI;
+using SufiChain.SufiPlatform.SufiCom.Chat.Data;
 using SufiChain.SufiPlatform.SufiCom.Chat.ETOs;
 using SufiChain.SufiPlatform.SufiCom.Chat.Features;
 using SufiChain.SufiPlatform.SufiCom.Chat.Usage;
@@ -327,6 +328,8 @@ internal static class ChatComposerUploadPolicyHarness
         lazy.LazyGetRequiredService<ICurrentTenant>().Returns(tenant);
         lazy.LazyGetRequiredService<IGuidGenerator>().Returns(guids);
         lazy.LazyGetRequiredService<IClock>().Returns(clock);
+        lazy.LazyGetRequiredService<ChatAttachmentStructureEnsurer>()
+            .Returns(new SkippingChatAttachmentStructureEnsurer());
 
         return new ChatComposerUploadAppService(
             storage,
