@@ -12,17 +12,20 @@ public class TenantAppService : TenantsAppServiceBase, ITenantAppService
     protected ITenantManager TenantManager { get; }
     protected IDataSeeder DataSeeder { get; }
     protected IDistributedEventBus DistributedEventBus { get; }
+    protected TenantDedicatedSchemaMigrator DedicatedSchemaMigrator { get; }
 
     public TenantAppService(
         ITenantRepository tenantRepository,
         ITenantManager tenantManager,
         IDataSeeder dataSeeder,
-        IDistributedEventBus distributedEventBus)
+        IDistributedEventBus distributedEventBus,
+        TenantDedicatedSchemaMigrator dedicatedSchemaMigrator)
     {
         TenantRepository = tenantRepository;
         TenantManager = tenantManager;
         DataSeeder = dataSeeder;
         DistributedEventBus = distributedEventBus;
+        DedicatedSchemaMigrator = dedicatedSchemaMigrator;
     }
 
     [Authorize(TenantsPermissions.Tenants.Default)]
@@ -58,21 +61,9 @@ public class TenantAppService : TenantsAppServiceBase, ITenantAppService
         await TenantRepository.InsertAsync(tenant, autoSave: true);
         await CurrentUnitOfWork.SaveChangesAsync();
 
-        // Inline, and not via the outbox, so a dedicated connection string is migrated
-        // before the admin user is written and the password is not stored.
-        await DistributedEventBus.PublishAsync(
-            new TenantCreatedEto
-            {
-                Id = tenant.Id,
-                Name = tenant.Name,
-                Properties =
-                {
-                    [TenantCreatedEto.AdminEmailPropertyName] = input.AdminEmailAddress,
-                    [TenantCreatedEto.AdminPasswordPropertyName] = input.AdminPassword
-                }
-            },
-            onUnitOfWorkComplete: false,
-            useOutbox: false);
+        // The outbox delivers TenantCreatedEto after this unit of work. Migrate a
+        // dedicated database first so the admin seed writes into that database.
+        await DedicatedSchemaMigrator.MigrateAsync(tenant.Id);
 
         using (CurrentTenant.Change(tenant.Id, tenant.Name))
         {
@@ -81,6 +72,19 @@ public class TenantAppService : TenantsAppServiceBase, ITenantAppService
                     .WithProperty(TenantCreatedEto.AdminEmailPropertyName, input.AdminEmailAddress)
                     .WithProperty(TenantCreatedEto.AdminPasswordPropertyName, input.AdminPassword));
         }
+
+        // Default publish flags: the host outbox stores this event. The password
+        // stays on the seed context above and is not a property of the event.
+        await DistributedEventBus.PublishAsync(
+            new TenantCreatedEto
+            {
+                Id = tenant.Id,
+                Name = tenant.Name,
+                Properties =
+                {
+                    [TenantCreatedEto.AdminEmailPropertyName] = input.AdminEmailAddress
+                }
+            });
 
         return MapToDto(tenant);
     }
