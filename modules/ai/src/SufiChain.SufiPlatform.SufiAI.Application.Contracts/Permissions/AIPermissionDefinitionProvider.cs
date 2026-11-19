@@ -79,7 +79,7 @@ public class AIPermissionDefinitionProvider : PermissionDefinitionProvider
         AIGroup.AddPermission(
             AIPermissions.McpAudit.Default,
             L("Permission:McpAudit")
-        ).RequireFeatures(SufiAIFeatures.Enable);
+        ).RequireFeatures(SufiAIFeatures.Enable, SufiAIFeatures.MCP);
         
         var aiPermission = AIGroup.AddPermission(
             AIPermissions.AI.Default,

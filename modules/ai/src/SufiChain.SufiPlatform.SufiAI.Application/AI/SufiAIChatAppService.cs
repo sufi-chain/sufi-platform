@@ -90,7 +90,7 @@ public class SufiAIChatAppService : SufiApplicationService, ISufiAIChatAppServic
         }
     }
 
-    [RequiresFeature(SufiAIFeatures.Chat, SufiAIFeatures.MCP)]
+    [RequiresFeature(SufiAIFeatures.Chat, SufiAIFeatures.MCP, RequiresAll = true)]
     [Authorize(AIPermissions.MCPTools.Execute)]
     public virtual async Task<SufiAIChatResponseDto> SendMessageWithToolsAsync(SufiAISendChatMessageInput input)
     {
