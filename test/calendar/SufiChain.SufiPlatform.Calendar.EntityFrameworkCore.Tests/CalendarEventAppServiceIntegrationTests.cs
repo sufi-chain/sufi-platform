@@ -97,8 +97,8 @@ public class CalendarEventAppServiceIntegrationTests : CalendarEntityFrameworkCo
     }
 
     [Theory]
-    [InlineData(0, "en", "Invalid time range")]
-    [InlineData(-1, "fa", "بازه زمانی نامعتبر")]
+    [InlineData(0, "en", "The end must be after the start.")]
+    [InlineData(-1, "fa", "پایان باید بعد از شروع باشد.")]
     public async Task Should_Reject_Nonpositive_Duration_With_A_Localized_Validation_Error(int hours, string culture, string message)
     {
         var calendarId = await CreateCalendarAsync();

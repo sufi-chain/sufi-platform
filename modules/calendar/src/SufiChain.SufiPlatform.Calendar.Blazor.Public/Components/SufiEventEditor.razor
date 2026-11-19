@@ -13,9 +13,17 @@
                 <SbTab Label="@L["General"]">
                     <div class="sufi-event-editor">
                         <SbTextField @bind-Value="_model.Title" Label="@L["Title"]" />
+                        @if (!string.IsNullOrEmpty(_titleError))
+                        {
+                            <div class="sb-text-field__error" role="alert">@_titleError</div>
+                        }
                         <SbDateRangePicker Value="@_dateRange" ValueChanged="OnDateRangeChanged" Label="@L["Date"]" />
                         <SbTimePicker @bind-Value="_startTime" Label="@L["StartTime"]" Clearable="false" />
                         <SbTimePicker @bind-Value="_endTime" Label="@L["EndTime"]" Clearable="false" />
+                        @if (!string.IsNullOrEmpty(_timeRangeError))
+                        {
+                            <div class="sb-text-field__error" role="alert">@_timeRangeError</div>
+                        }
                         <SbCheckbox @bind-Value="_model.IsAllDay" Label="@L["AllDay"]" />
                         <SbSimpleSelect TValue="string" @bind-Value="_model.TimeZoneId" Label="@L["TimeZone"]" Searchable="true" Placeholder="@L["SelectTimeZone"]">
                             @foreach (var timeZone in TimeZoneOptions)
@@ -44,7 +52,11 @@
                         </SbSimpleSelect>
                         @if (_recurrenceFrequency != RecurrenceFrequency.None)
                         {
-                            <SbNumberField TNumber="int" Value="_recurrenceInterval" ValueChanged="OnRecurrenceIntervalChanged" Min="1" Label="@L["RecurrenceInterval"]" />
+                            <SbNumberField TNumber="int" Value="_recurrenceInterval" ValueChanged="OnRecurrenceIntervalChanged" ClampToMinMax="false" Label="@L["RecurrenceInterval"]" />
+                            @if (!string.IsNullOrEmpty(_intervalError))
+                            {
+                                <div class="sb-text-field__error" role="alert">@_intervalError</div>
+                            }
                             <SbNumberField TNumber="int" Value="_recurrenceCount" ValueChanged="OnRecurrenceCountChanged" Min="0" Label="@L["RecurrenceCount"]" />
                         }
                         <SbTextField @bind-Value="_model.RecurrenceRule" Label="@L["RecurrenceRule"]" />

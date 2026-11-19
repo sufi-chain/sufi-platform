@@ -87,7 +87,7 @@
     "NoAvailableSlots": "زمان آزادی وجود ندارد",
     "Available": "آزاد",
     "Loading": "در حال بارگذاری",
-    "InvalidTimeRange": "بازه زمانی نامعتبر",
+    "InvalidTimeRange": "پایان باید بعد از شروع باشد.",
     "InvalidRecurrenceInterval": "تکرار باید حداقل ۱ باشد.",
     "InvalidReminderOffset": "دقیقه قبل باید حداقل ۰ و حداکثر ۳۰ روز باشد.",
     "DeleteNotAllowed": "فقط رویدادهای خودتان را می‌توانید حذف کنید.",

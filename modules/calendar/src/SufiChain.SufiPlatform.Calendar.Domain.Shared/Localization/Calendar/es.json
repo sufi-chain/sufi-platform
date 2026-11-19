@@ -78,7 +78,7 @@
     "NoAvailableSlots": "No hay horarios disponibles",
     "Available": "Disponible",
     "Loading": "Cargando",
-    "InvalidTimeRange": "Rango de tiempo no válido",
+    "InvalidTimeRange": "El final debe ser posterior al inicio.",
     "InvalidRecurrenceInterval": "El intervalo de repetición debe ser como mínimo 1.",
     "InvalidReminderOffset": "Los minutos de antelación deben ser como mínimo 0 y como máximo 30 días.",
     "DeleteNotAllowed": "Solo puede eliminar los eventos que le pertenecen.",
