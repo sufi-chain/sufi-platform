@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using SufiChain.SufiPlatform.SufiAI;
 using Volo.Abp;
+using Volo.Abp.Auditing;
 using Volo.Abp.Domain.Entities.Auditing;
 using Volo.Abp.MultiTenancy;
 
@@ -25,6 +26,7 @@ public class Workspace : FullAuditedAggregateRoot<Guid>, IMultiTenant
     /// </summary>
     public string DefaultModel { get; protected set; } = string.Empty;
     
+    [DisableAuditing]
     public string? ApiKey { get; protected set; }
     public string? ApiBaseUrl { get; protected set; }
     public decimal? InputCostPer1MTokens { get; protected set; }
