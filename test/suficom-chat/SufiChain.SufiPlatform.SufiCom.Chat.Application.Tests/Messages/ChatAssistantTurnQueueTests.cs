@@ -1,3 +1,4 @@
+using System.Globalization;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
 using NSubstitute;
@@ -130,6 +131,46 @@ public class ChatAssistantTurnQueueTests
 
         await done.Task.WaitAsync(TimeSpan.FromSeconds(2));
         seen.ShouldBe(new[] { originalMessageId });
+    }
+
+    [Fact]
+    public async Task Enqueue_keeps_the_sender_ui_culture_on_the_background_turn()
+    {
+        var seen = new TaskCompletionSource<string>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var processor = Substitute.For<IChatAssistantTurnProcessor>();
+        processor.ProcessAsync(Arg.Any<ChatMessageSentEto>()).Returns(_ =>
+        {
+            seen.SetResult(CultureInfo.CurrentUICulture.Name);
+            return Task.CompletedTask;
+        });
+
+        var services = new ServiceCollection();
+        services.AddScoped(_ => processor);
+        using var provider = services.BuildServiceProvider();
+        var queue = new ChatAssistantTurnQueue(
+            provider.GetRequiredService<IServiceScopeFactory>(),
+            NullLogger<ChatAssistantTurnQueue>.Instance);
+
+        var fa = CultureInfo.GetCultureInfo("fa");
+        var previousCulture = CultureInfo.CurrentCulture;
+        var previousUiCulture = CultureInfo.CurrentUICulture;
+        CultureInfo.CurrentCulture = fa;
+        CultureInfo.CurrentUICulture = fa;
+        try
+        {
+            queue.Enqueue(new ChatMessageSentEto
+            {
+                SessionId = Guid.NewGuid(),
+                MessageId = Guid.NewGuid()
+            });
+            var name = await seen.Task.WaitAsync(TimeSpan.FromSeconds(2));
+            name.ShouldBe("fa");
+        }
+        finally
+        {
+            CultureInfo.CurrentCulture = previousCulture;
+            CultureInfo.CurrentUICulture = previousUiCulture;
+        }
     }
 }
 
