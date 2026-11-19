@@ -37,7 +37,28 @@ public class McpAdminMenuTests
         Find(menu, AIMenus.MCPTools).ShouldNotBeNull();
     }
 
-    private static async Task<ApplicationMenu> BuildMenuAsync(Guid? tenantId)
+    [Fact]
+    public async Task Host_admin_does_not_see_mcp_when_the_feature_is_off()
+    {
+        var menu = await BuildMenuAsync(tenantId: null, mcpEnabled: false);
+
+        Find(menu, AIMenus.WorkspaceChat).ShouldNotBeNull();
+        Find(menu, AIMenus.MCPGroup).ShouldBeNull();
+        Find(menu, AIMenus.MCPServers).ShouldBeNull();
+        Find(menu, AIMenus.MCPTools).ShouldBeNull();
+    }
+
+    [Fact]
+    public async Task Tenant_admin_does_not_see_mcp_when_the_feature_is_off()
+    {
+        var menu = await BuildMenuAsync(tenantId: Guid.NewGuid(), mcpEnabled: false);
+
+        Find(menu, AIMenus.MCPGroup).ShouldBeNull();
+        Find(menu, AIMenus.MCPServers).ShouldBeNull();
+        Find(menu, AIMenus.MCPTools).ShouldBeNull();
+    }
+
+    private static Task<ApplicationMenu> BuildMenuAsync(Guid? tenantId, bool mcpEnabled = true)
     {
         var options = new SufiNavigationOptions();
         options.MenuContributors.Add(new AIMenuContributor());
@@ -45,7 +66,7 @@ public class McpAdminMenuTests
         {
             [SufiAIFeatures.Enable] = true,
             [SufiAIFeatures.Chat] = true,
-            [SufiAIFeatures.MCP] = true
+            [SufiAIFeatures.MCP] = mcpEnabled
         };
 
         var services = new ServiceCollection();
@@ -60,7 +81,7 @@ public class McpAdminMenuTests
             new MapSufiFeatureChecker(features),
             new AuthenticatedUser(tenantId));
 
-        return await manager.GetMainMenuAsync();
+        return manager.GetMainMenuAsync();
     }
 
     private static ApplicationMenuItem? Find(ApplicationMenu menu, string name)

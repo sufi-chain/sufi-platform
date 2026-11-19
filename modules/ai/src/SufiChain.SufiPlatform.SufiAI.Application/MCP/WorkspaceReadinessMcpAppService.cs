@@ -2,6 +2,8 @@ using System.Linq;
 using Microsoft.AspNetCore.Authorization;
 using SufiChain.SufiPlatform.Application.Dtos;
 using SufiChain.SufiPlatform.Application.Services;
+using SufiChain.SufiPlatform.Features;
+using SufiChain.SufiPlatform.SufiAI.Features;
 using SufiChain.SufiPlatform.SufiAI.Hooshvare;
 using SufiChain.SufiPlatform.SufiAI.MCP.Tools;
 using SufiChain.SufiPlatform.SufiAI.Permissions;
@@ -11,6 +13,7 @@ using SufiChain.SufiPlatform.SufiAI.Workspaces;
 namespace SufiChain.SufiPlatform.SufiAI.Mcp;
 
 [Authorize]
+[RequiresFeature(SufiAIFeatures.Enable, SufiAIFeatures.MCP, RequiresAll = true)]
 public class WorkspaceReadinessMcpAppService : SufiApplicationService
 {
     private const int MaxResults = 50;
