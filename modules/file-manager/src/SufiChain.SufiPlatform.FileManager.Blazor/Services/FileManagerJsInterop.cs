@@ -20,7 +20,7 @@ public class FileManagerJsInterop : IAsyncDisposable
     public FileManagerJsInterop(IJSRuntime jsRuntime, IConfiguration configuration)
     {
         _moduleTask = new(() => jsRuntime.InvokeAsync<IJSObjectReference>(
-            "import", "./_content/SufiChain.SufiPlatform.FileManager.Blazor/js/sufi-file-manager.js?v=file-manager-upload-v1").AsTask());
+            "import", "./_content/SufiChain.SufiPlatform.FileManager.Blazor/js/sufi-file-manager.js?v=file-manager-upload-v2").AsTask());
         _configuration = configuration;
     }
 
@@ -237,6 +237,12 @@ public class JsUploadMetadata
     public Guid? FolderId { get; set; }
     public bool AutoConfirm { get; set; }
     public string? Alt { get; set; }
+
+    /// <summary>
+    /// Tenant id of the circuit that started the upload. The XHR does not inherit
+    /// the circuit's <c>ICurrentTenant</c>, so the request sends it as <c>__tenant</c>.
+    /// </summary>
+    public string? TenantId { get; set; }
 }
 
 /// <summary>
