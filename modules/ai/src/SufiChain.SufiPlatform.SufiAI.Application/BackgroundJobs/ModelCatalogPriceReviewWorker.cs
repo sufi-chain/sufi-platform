@@ -115,6 +115,11 @@ public class ModelCatalogPriceReviewWorker : AsyncPeriodicBackgroundWorkerBase
                 }
             }
 
+            if (workspace.IsInherited)
+            {
+                continue;
+            }
+
             var routes = await repository.GetByWorkspaceIdAsync(workspace.Id);
             var floorWorkspace = sharedId == workspace.Id && workspace.TenantId == null && !workspace.IsInherited;
             foreach (var route in routes)

@@ -4,6 +4,8 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using Microsoft.Extensions.DependencyInjection;
+using SufiChain.SufiPlatform.SufiAI;
+using Volo.Abp;
 using Volo.Abp.DependencyInjection;
 using Volo.Abp.Data;
 using Volo.Abp.MultiTenancy;
@@ -15,6 +17,18 @@ public class InheritedWorkspaceLiveView : IInheritedWorkspaceLiveView, ITransien
 {
     private static readonly AsyncLocal<int> SuppressDepth = new();
     private static readonly ConditionalWeakTable<Workspace, object> LiveViews = new();
+    private static readonly ConditionalWeakTable<Workspace, SourceState> ResolutionStates = new();
+
+    private enum SourceKind
+    {
+        Missing,
+        Inactive
+    }
+
+    private sealed class SourceState
+    {
+        public SourceKind Kind { get; init; }
+    }
 
     private readonly IServiceProvider _serviceProvider;
     private readonly ICurrentTenant _currentTenant;
@@ -36,6 +50,54 @@ public class InheritedWorkspaceLiveView : IInheritedWorkspaceLiveView, ITransien
     public static bool IsLiveView(Workspace workspace)
     {
         return LiveViews.TryGetValue(workspace, out _);
+    }
+
+    public static bool IsSourceMissing(Workspace workspace)
+    {
+        return ResolutionStates.TryGetValue(workspace, out var state) && state.Kind == SourceKind.Missing;
+    }
+
+    public static bool IsSourceInactive(Workspace workspace)
+    {
+        return ResolutionStates.TryGetValue(workspace, out var state) && state.Kind == SourceKind.Inactive;
+    }
+
+    /// <summary>
+    /// Inherited use must read the host source. A raw tenant copy, a missing source,
+    /// or an inactive source fails closed and never returns the copied key.
+    /// A projection the tenant turned off stays the ordinary inactive-workspace error.
+    /// </summary>
+    public static void EnsureUsable(Workspace workspace)
+    {
+        if (workspace.IsInherited && !IsLiveView(workspace))
+        {
+            throw Unavailable(workspace);
+        }
+
+        if (IsSourceMissing(workspace))
+        {
+            throw Unavailable(workspace);
+        }
+
+        if (IsSourceInactive(workspace))
+        {
+            throw Inactive(workspace);
+        }
+
+        if (workspace.IsInherited && !workspace.IsActive)
+        {
+            throw new BusinessException(AIErrorCodes.WorkspaceNotActive)
+                .WithData("WorkspaceName", workspace.Name)
+                .WithData("WorkspaceId", workspace.Id);
+        }
+    }
+
+    public static string CanonicalCacheId(Workspace workspace)
+    {
+        var id = workspace.IsInherited && workspace.SourceWorkspaceId is Guid sourceId
+            ? sourceId
+            : workspace.Id;
+        return id.ToString("N");
     }
 
     public IDisposable Suppress()
@@ -127,8 +189,13 @@ public class InheritedWorkspaceLiveView : IInheritedWorkspaceLiveView, ITransien
                 foreach (var projection in projections)
                 {
                     if (projection.SourceWorkspaceId is not Guid sourceId ||
-                        !sources.TryGetValue(sourceId, out var source))
+                        !sources.TryGetValue(sourceId, out var source) ||
+                        source.IsDeleted)
                     {
+                        var shell = CreateUnavailableShell(projection);
+                        LiveViews.TryAdd(shell, new object());
+                        ResolutionStates.TryAdd(shell, new SourceState { Kind = SourceKind.Missing });
+                        views[projection.Id] = shell;
                         continue;
                     }
 
@@ -136,6 +203,11 @@ public class InheritedWorkspaceLiveView : IInheritedWorkspaceLiveView, ITransien
                     if (!ReferenceEquals(view, projection))
                     {
                         LiveViews.TryAdd(view, new object());
+                        if (!source.IsActive)
+                        {
+                            ResolutionStates.TryAdd(view, new SourceState { Kind = SourceKind.Inactive });
+                        }
+
                         views[projection.Id] = view;
                     }
                 }
@@ -148,6 +220,35 @@ public class InheritedWorkspaceLiveView : IInheritedWorkspaceLiveView, ITransien
                 SuppressDepth.Value--;
             }
         }
+    }
+
+    private static Workspace CreateUnavailableShell(Workspace projection)
+    {
+        var model = string.IsNullOrWhiteSpace(projection.DefaultModel) ? "unavailable" : projection.DefaultModel;
+        var shell = new Workspace(projection.Id, projection.Name, projection.Provider, model, projection.TenantId);
+        shell.UpdateConfiguration(model, apiKey: null, apiBaseUrl: null);
+        shell.Deactivate();
+        shell.ClearStoredCredentials();
+        if (projection.TenantId != null && projection.SourceWorkspaceId is Guid sourceId)
+        {
+            shell.MarkAsInherited(sourceId, projection.AssignmentId ?? Guid.Empty);
+        }
+
+        return shell;
+    }
+
+    private static BusinessException Unavailable(Workspace workspace)
+    {
+        return new BusinessException(AIErrorCodes.InheritedWorkspaceSourceUnavailable)
+            .WithData("WorkspaceName", workspace.Name)
+            .WithData("WorkspaceId", workspace.Id);
+    }
+
+    private static BusinessException Inactive(Workspace workspace)
+    {
+        return new BusinessException(AIErrorCodes.InheritedWorkspaceSourceInactive)
+            .WithData("WorkspaceName", workspace.Name)
+            .WithData("WorkspaceId", workspace.Id);
     }
 
     private sealed class SuppressScope : IDisposable

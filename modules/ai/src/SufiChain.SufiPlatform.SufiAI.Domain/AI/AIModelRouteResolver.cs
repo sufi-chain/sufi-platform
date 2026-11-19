@@ -45,6 +45,8 @@ public class AIModelRouteResolver : IAIModelRouteResolver
                 .WithData("WorkspaceId", workspaceId);
         }
 
+        InheritedWorkspaceLiveView.EnsureUsable(workspace);
+
         if (selection.ModelConfigurationId is not Guid modelConfigurationId)
         {
             return ForceChatCompletionsWhenTools(
@@ -56,10 +58,13 @@ public class AIModelRouteResolver : IAIModelRouteResolver
             .FirstOrDefault(item => item.Id == modelConfigurationId);
         if (configuration == null)
         {
-            configuration = await ConfigurationRepository.FindAsync(
+            var stored = await ConfigurationRepository.FindAsync(
                 modelConfigurationId,
                 includeDetails: true,
                 cancellationToken: cancellationToken);
+            configuration = workspace.IsInherited && stored != null && stored.WorkspaceId == workspace.Id
+                ? InheritedWorkspaceRouteMatcher.Match(workspace, stored)
+                : stored;
         }
 
         return ForceChatCompletionsWhenTools(
@@ -151,8 +156,9 @@ public class AIModelRouteResolver : IAIModelRouteResolver
             throw CreateNotSelectable(configuration, NotUserSelectableRule);
         }
 
-        if (selection.AllowedModelConfigurationIds is { Count: > 0 } &&
-            !selection.AllowedModelConfigurationIds.Contains(configuration.Id))
+        if (selection.AllowedModelConfigurationIds is { Count: > 0 } allowed &&
+            !allowed.Contains(configuration.Id) &&
+            !allowed.Contains(modelConfigurationId))
         {
             throw new BusinessException(AIErrorCodes.ModelRouteNotAllowedForHooshvare)
                 .WithData("ModelConfigurationId", configuration.Id)

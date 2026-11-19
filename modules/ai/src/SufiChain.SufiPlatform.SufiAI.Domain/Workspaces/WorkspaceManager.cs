@@ -36,8 +36,17 @@ public class WorkspaceManager : DomainService
         return $"{desired}-{Guid.NewGuid().ToString("N")[..8]}";
     }
 
-    public Workspace CreateCopy(Workspace source, string name, Guid? tenantId, Guid? id = null)
+    public Workspace CreateCopy(
+        Workspace source,
+        string name,
+        Guid? tenantId,
+        Guid? id = null,
+        bool includeCredentials = true)
     {
+        // An inherited projection or its live view must never carry the host key into a new row.
+        var keepSecrets = includeCredentials
+            && !source.IsInherited
+            && !InheritedWorkspaceLiveView.IsLiveView(source);
         var clone = new Workspace(
             id ?? GuidGenerator.Create(),
             name,
@@ -47,7 +56,7 @@ public class WorkspaceManager : DomainService
 
         clone.UpdateConfiguration(
             source.DefaultModel,
-            source.ApiKey,
+            keepSecrets ? source.ApiKey : null,
             source.ApiBaseUrl,
             source.InputCostPer1MTokens,
             source.OutputCostPer1MTokens);
@@ -59,7 +68,7 @@ public class WorkspaceManager : DomainService
 
         foreach (var sourceConfiguration in source.ModelConfigurations)
         {
-            clone.CopyModelConfiguration(sourceConfiguration);
+            clone.CopyModelConfiguration(sourceConfiguration, includeCredentials: keepSecrets);
         }
 
         foreach (var sourceGuardrail in source.Guardrails)

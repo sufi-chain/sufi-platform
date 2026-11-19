@@ -8,14 +8,14 @@ namespace SufiChain.SufiPlatform.SufiAI.Workspaces;
 
 public class WorkspaceEmbedderResolver : IWorkspaceEmbedderResolver, ITransientDependency
 {
-    protected IAIModelConfigurationRepository ConfigurationRepository { get; }
+    protected IInheritedWorkspaceLiveView LiveView { get; }
     protected IAICredentialResolver CredentialResolver { get; }
 
     public WorkspaceEmbedderResolver(
-        IAIModelConfigurationRepository configurationRepository,
+        IInheritedWorkspaceLiveView liveView,
         IAICredentialResolver credentialResolver)
     {
-        ConfigurationRepository = configurationRepository;
+        LiveView = liveView;
         CredentialResolver = credentialResolver;
     }
 
@@ -23,16 +23,19 @@ public class WorkspaceEmbedderResolver : IWorkspaceEmbedderResolver, ITransientD
         Workspace workspace,
         CancellationToken cancellationToken = default)
     {
-        var configuration = await ConfigurationRepository.GetPrimaryConfigurationAsync(
-            workspace.Id,
-            AICapabilityType.Embeddings,
-            cancellationToken);
+        var resolved = workspace.IsInherited && !InheritedWorkspaceLiveView.IsLiveView(workspace)
+            ? await LiveView.ApplyAsync(workspace, includeDetails: true, cancellationToken)
+            : workspace;
+        InheritedWorkspaceLiveView.EnsureUsable(resolved);
 
+        var configuration = resolved.GetPrimaryConfiguration(AICapabilityType.Embeddings);
         if (configuration == null)
         {
             throw new BusinessException(AIErrorCodes.EmbeddingsModelNotConfigured)
-                .WithData("WorkspaceName", workspace.Name);
+                .WithData("WorkspaceName", resolved.Name);
         }
+
+        workspace = resolved;
 
         var apiKey = CredentialResolver.DecryptApiKey(configuration.ApiKey)
             ?? CredentialResolver.DecryptApiKey(workspace.ApiKey);
