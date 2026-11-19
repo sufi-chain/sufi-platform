@@ -160,5 +160,16 @@ public class TestHooshvareCatalogAppService : IHooshvareCatalogAppService
 
     }
 
+    public void Add(HooshvareCatalogItemDto item)
+    {
+        _items.RemoveAll(existing => existing.Id == item.Id);
+        _items.Add(item);
+    }
+
+    public void Remove(Guid id)
+    {
+        _items.RemoveAll(existing => existing.Id == id);
+    }
+
 }
 
