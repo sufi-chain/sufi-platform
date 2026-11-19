@@ -49,6 +49,9 @@ public partial class SufiEventEditor : CalendarPublicComponentBase
     private bool _ready;
     private bool _loadFailed;
     private int _activeTab;
+    private string? _titleError;
+    private string? _intervalError;
+    private string? _timeRangeError;
     private RecurrenceFrequency _recurrenceFrequency;
     private int _recurrenceInterval = 1;
     private int _recurrenceCount;
@@ -123,21 +126,34 @@ public partial class SufiEventEditor : CalendarPublicComponentBase
 
     protected virtual async Task SaveAsync()
     {
+        _titleError = null;
+        _intervalError = null;
+        _timeRangeError = null;
+
         if (string.IsNullOrWhiteSpace(_model.Title))
         {
-            await Message.ErrorAsync(L["TitleRequired"]);
+            var titleRequired = L["TitleRequired"];
+            _titleError = titleRequired.Value;
+            _activeTab = 0;
+            await Message.ErrorAsync(titleRequired);
             return;
         }
 
         if (_recurrenceFrequency != RecurrenceFrequency.None && _recurrenceInterval < 1)
         {
-            await Message.ErrorAsync(L["InvalidRecurrenceInterval"]);
+            var intervalMessage = L["InvalidRecurrenceInterval"];
+            _intervalError = intervalMessage.Value;
+            _activeTab = 1;
+            await Message.ErrorAsync(intervalMessage);
             return;
         }
 
         if (!TryApplyDateTimeFields())
         {
-            await Message.ErrorAsync(L["InvalidTimeRange"]);
+            var timeRangeMessage = L["InvalidTimeRange"];
+            _timeRangeError = timeRangeMessage.Value;
+            _activeTab = 0;
+            await Message.ErrorAsync(timeRangeMessage);
             return;
         }
 
@@ -179,6 +195,13 @@ public partial class SufiEventEditor : CalendarPublicComponentBase
     protected virtual Task OnRecurrenceIntervalChanged(int interval)
     {
         _recurrenceInterval = interval;
+        if (_recurrenceFrequency != RecurrenceFrequency.None && interval < 1)
+        {
+            _intervalError = L["InvalidRecurrenceInterval"].Value;
+            return Task.CompletedTask;
+        }
+
+        _intervalError = null;
         ApplyRecurrenceRule();
         return Task.CompletedTask;
     }
@@ -492,6 +515,11 @@ public partial class SufiEventEditor : CalendarPublicComponentBase
         if (_recurrenceFrequency == RecurrenceFrequency.None)
         {
             _model.RecurrenceRule = null;
+            return;
+        }
+
+        if (_recurrenceInterval < 1)
+        {
             return;
         }
 

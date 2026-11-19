@@ -87,7 +87,7 @@
     "NoAvailableSlots": "No available slots",
     "Available": "Available",
     "Loading": "Loading",
-    "InvalidTimeRange": "Invalid time range",
+    "InvalidTimeRange": "The end must be after the start.",
     "InvalidRecurrenceInterval": "Repeat every must be at least 1.",
     "InvalidReminderOffset": "Minutes before must be at least 0 and no more than 30 days.",
     "DeleteNotAllowed": "You can only delete events you own.",
