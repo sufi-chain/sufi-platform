@@ -1,5 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using SufiChain.SufiPlatform.Application.Dtos;
+using Volo.Abp.Data;
+using Volo.Abp.EventBus.Distributed;
 
 namespace SufiChain.SufiPlatform.Tenants;
 
@@ -8,11 +10,19 @@ public class TenantAppService : TenantsAppServiceBase, ITenantAppService
 {
     protected ITenantRepository TenantRepository { get; }
     protected ITenantManager TenantManager { get; }
+    protected IDataSeeder DataSeeder { get; }
+    protected IDistributedEventBus DistributedEventBus { get; }
 
-    public TenantAppService(ITenantRepository tenantRepository, ITenantManager tenantManager)
+    public TenantAppService(
+        ITenantRepository tenantRepository,
+        ITenantManager tenantManager,
+        IDataSeeder dataSeeder,
+        IDistributedEventBus distributedEventBus)
     {
         TenantRepository = tenantRepository;
         TenantManager = tenantManager;
+        DataSeeder = dataSeeder;
+        DistributedEventBus = distributedEventBus;
     }
 
     [Authorize(TenantsPermissions.Tenants.Default)]
@@ -46,6 +56,32 @@ public class TenantAppService : TenantsAppServiceBase, ITenantAppService
         tenant.SetOwnerUserId(input.OwnerUserId);
         await ConfigureRoutingAsync(tenant, input);
         await TenantRepository.InsertAsync(tenant, autoSave: true);
+        await CurrentUnitOfWork.SaveChangesAsync();
+
+        // Inline, and not via the outbox, so a dedicated connection string is migrated
+        // before the admin user is written and the password is not stored.
+        await DistributedEventBus.PublishAsync(
+            new TenantCreatedEto
+            {
+                Id = tenant.Id,
+                Name = tenant.Name,
+                Properties =
+                {
+                    [TenantCreatedEto.AdminEmailPropertyName] = input.AdminEmailAddress,
+                    [TenantCreatedEto.AdminPasswordPropertyName] = input.AdminPassword
+                }
+            },
+            onUnitOfWorkComplete: false,
+            useOutbox: false);
+
+        using (CurrentTenant.Change(tenant.Id, tenant.Name))
+        {
+            await DataSeeder.SeedAsync(
+                new DataSeedContext(tenant.Id)
+                    .WithProperty(TenantCreatedEto.AdminEmailPropertyName, input.AdminEmailAddress)
+                    .WithProperty(TenantCreatedEto.AdminPasswordPropertyName, input.AdminPassword));
+        }
+
         return MapToDto(tenant);
     }
 

@@ -6,7 +6,6 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using NSubstitute;
 using Shouldly;
-using Volo.Abp;
 using Xunit;
 
 namespace SufiChain.SufiPlatform.Tenants;
@@ -22,7 +21,7 @@ public class TenantErrorLocalizationTests
         repository.FindByNameAsync("DEMO").Returns(existing);
         var validator = new SufiTenantValidator(repository);
 
-        var ex = await Should.ThrowAsync<BusinessException>(() => validator.ValidateAsync(new Tenant(Guid.NewGuid(), "Demo", "DEMO")));
+        var ex = await Should.ThrowAsync<Volo.Abp.BusinessException>(() => validator.ValidateAsync(new Tenant(Guid.NewGuid(), "Demo", "DEMO")));
 
         ex.Code.ShouldBe(TenantsErrorCodes.DuplicateTenantName);
         ex.Data["Name"].ShouldBe("Demo");

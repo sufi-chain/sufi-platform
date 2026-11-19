@@ -18,7 +18,7 @@
     "TenantAdminEmail": "Dirección de correo del administrador",
     "TenantAdminPassword": "Contraseña del administrador",
     "CreateTenant": "Crear inquilino",
-    "CreateTenantRecordHint": "Este cuadro crea el registro del inquilino en un solo paso. El nombre, el correo del administrador y la contraseña son obligatorios. El subdominio y el aprovisionamiento siguen en el asistente de cinco pasos Solicitar espacio de trabajo.",
+    "CreateTenantRecordHint": "Este cuadro crea el inquilino y su usuario administrador en un solo paso. El nombre, el correo del administrador y la contraseña son obligatorios. El administrador inicia sesión con ese correo y esa contraseña. El subdominio y el aprovisionamiento siguen en el asistente de cinco pasos Solicitar espacio de trabajo.",
     "EditTenant": "Editar inquilino",
     "DeleteTenant": "Eliminar inquilino",
     "TenantCreatedSuccessfully": "Inquilino creado correctamente",
