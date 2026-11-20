@@ -8,6 +8,7 @@ using SufiChain.SufiPlatform.SufiAI.Hooshvare.Features;
 using SufiChain.SufiPlatform.SufiAI.Hooshvare.Hooshvare;
 using SufiChain.SufiPlatform.SufiAI.MCP.Abstractions;
 using SufiChain.SufiPlatform.SufiAI.Workspaces;
+using SufiChain.SufiPlatform.SufiCom.Chat;
 using SufiChain.SufiPlatform.SufiCom.Chat.Integration;
 using SufiChain.SufiPlatform.SufiCom.Chat.Usage;
 using Volo.Abp;
@@ -75,11 +76,151 @@ public class AgentPlanEntryTests
         error.Code.ShouldBe(AIHooshvareErrorCodes.AgentNotInPlan);
     }
 
-    private static ChatAgentTurnEntitlement Entitlement(bool enabled)
+    [Fact]
+    public async Task Live_agent_start_rejects_when_over_quota()
+    {
+        var guard = Substitute.For<IChatUsageGuard>();
+        guard.CheckCanInvokeAiAsync(Arg.Any<Guid>(), ChatAiOperationKind.Hooshvare, Arg.Any<CancellationToken>())
+            .Returns(ChatUsageCheckResult.Denied("AiTokenLimitExceeded", "Chat:AiTokenLimitExceeded"));
+
+        var coordinator = new LiveAgentRunCoordinator(
+            Substitute.For<IRepository<AgentRun, Guid>>(),
+            Substitute.For<Volo.Abp.Features.IFeatureChecker>(),
+            null!,
+            null!,
+            Substitute.For<Volo.Abp.BackgroundJobs.IBackgroundJobManager>(),
+            Substitute.For<Volo.Abp.MultiTenancy.ICurrentTenant>(),
+            Substitute.For<Volo.Abp.Users.ICurrentUser>(),
+            SimpleGuidGenerator.Instance,
+            Substitute.For<Volo.Abp.Timing.IClock>(),
+            Entitlement(enabled: true, guard));
+
+        var error = await Should.ThrowAsync<BusinessException>(() =>
+            coordinator.BeginAsync("SufiComChat:HomeAgent", Guid.NewGuid(), "hello"));
+
+        error.Code.ShouldBe("Chat:AiTokenLimitExceeded");
+        await guard.DidNotReceiveWithAnyArgs().ReserveCompletedAiUsageAsync(default, default, default);
+    }
+
+    [Fact]
+    public async Task Live_agent_record_turn_reserves_and_records_when_outer_gate_did_not()
+    {
+        var reservationId = Guid.NewGuid();
+        var sessionId = Guid.NewGuid();
+        var guard = Substitute.For<IChatUsageGuard>();
+        guard.CheckCanInvokeAiAsync(Arg.Any<Guid>(), ChatAiOperationKind.Hooshvare, Arg.Any<CancellationToken>())
+            .Returns(ChatUsageCheckResult.Allowed());
+        guard.ReserveCompletedAiUsageAsync(sessionId, ChatAiOperationKind.Hooshvare, Arg.Any<CancellationToken>())
+            .Returns(reservationId);
+
+        var features = Substitute.For<Volo.Abp.Features.IFeatureChecker>();
+        features.IsEnabledAsync(SufiAiHooshvaresFeatures.Agents).Returns(true);
+
+        var writer = new RecordingMemoryWriter();
+        var coordinator = new LiveAgentRunCoordinator(
+            Substitute.For<IRepository<AgentRun, Guid>>(),
+            features,
+            null!,
+            writer,
+            Substitute.For<Volo.Abp.BackgroundJobs.IBackgroundJobManager>(),
+            Substitute.For<Volo.Abp.MultiTenancy.ICurrentTenant>(),
+            Substitute.For<Volo.Abp.Users.ICurrentUser>(),
+            SimpleGuidGenerator.Instance,
+            Substitute.For<Volo.Abp.Timing.IClock>(),
+            Entitlement(enabled: true, guard));
+
+        await coordinator.RecordTurnAsync(new LiveAgentTurn
+        {
+            SessionId = sessionId,
+            UserMessage = "hi",
+            AssistantMessage = "hello",
+            WorkspaceName = "support",
+            InputTokens = 2,
+            OutputTokens = 3,
+            TotalTokens = 5,
+            ProviderName = "openai"
+        });
+
+        await guard.Received(1).ReserveCompletedAiUsageAsync(sessionId, ChatAiOperationKind.Hooshvare, Arg.Any<CancellationToken>());
+        await guard.Received(1).RecordAiUsageAsync(
+            reservationId,
+            Arg.Is<ChatAiUsageRecord>(record =>
+                record.PromptTokens == 2 &&
+                record.CompletionTokens == 3 &&
+                record.TotalTokens == 5 &&
+                record.ProviderName == "openai" &&
+                record.WorkspaceName == "support"),
+            Arg.Any<CancellationToken>());
+        writer.Episodes.ShouldBe(1);
+    }
+
+    [Fact]
+    public async Task Live_agent_record_turn_skips_metering_when_outer_gate_records()
+    {
+        var guard = Substitute.For<IChatUsageGuard>();
+        var features = Substitute.For<Volo.Abp.Features.IFeatureChecker>();
+        features.IsEnabledAsync(SufiAiHooshvaresFeatures.Agents).Returns(true);
+
+        var writer = new RecordingMemoryWriter();
+        var coordinator = new LiveAgentRunCoordinator(
+            Substitute.For<IRepository<AgentRun, Guid>>(),
+            features,
+            null!,
+            writer,
+            Substitute.For<Volo.Abp.BackgroundJobs.IBackgroundJobManager>(),
+            Substitute.For<Volo.Abp.MultiTenancy.ICurrentTenant>(),
+            Substitute.For<Volo.Abp.Users.ICurrentUser>(),
+            SimpleGuidGenerator.Instance,
+            Substitute.For<Volo.Abp.Timing.IClock>(),
+            Entitlement(enabled: true, guard));
+
+        using (ChatAgentTurnRecording.SuppressInner())
+        {
+            await coordinator.RecordTurnAsync(new LiveAgentTurn
+            {
+                SessionId = Guid.NewGuid(),
+                UserMessage = "hi",
+                AssistantMessage = "hello"
+            });
+        }
+
+        await guard.DidNotReceiveWithAnyArgs().ReserveCompletedAiUsageAsync(default, default, default);
+        writer.Episodes.ShouldBe(1);
+    }
+
+    private sealed class RecordingMemoryWriter : AgentMemoryWriter
+    {
+        public int Episodes { get; private set; }
+
+        public RecordingMemoryWriter()
+            : base(
+                Substitute.For<IRepository<AgentSemanticFactRecord, Guid>>(),
+                Substitute.For<IRepository<AgentEpisodicMemoryRecord, Guid>>(),
+                Substitute.For<IRepository<AgentRunSharedMemoryRecord, Guid>>(),
+                Substitute.For<Volo.Abp.MultiTenancy.ICurrentTenant>(),
+                SimpleGuidGenerator.Instance,
+                Substitute.For<Volo.Abp.Timing.IClock>())
+        {
+        }
+
+        public override Task WriteEpisodeAsync(
+            Guid? tenantId,
+            AgentMemorySubject subject,
+            string sourceKind,
+            string sourceId,
+            string excerpt,
+            CancellationToken cancellationToken = default)
+        {
+            Episodes++;
+            return Task.CompletedTask;
+        }
+    }
+
+    private static ChatAgentTurnEntitlement Entitlement(bool enabled, IChatUsageGuard? guard = null)
     {
         var features = Substitute.For<FeatureChecker>();
         features.IsEnabledAsync(Arg.Any<string>()).Returns(enabled);
-        return new ChatAgentTurnEntitlement(features, Substitute.For<IChatUsageGuard>());
+        return new ChatAgentTurnEntitlement(features, guard ?? Substitute.For<IChatUsageGuard>());
     }
 
     private sealed class GatedPlayground : HooshvarePlaygroundAppService
