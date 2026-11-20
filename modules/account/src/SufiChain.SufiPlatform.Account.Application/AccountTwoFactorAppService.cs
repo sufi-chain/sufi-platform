@@ -281,6 +281,10 @@ public class AccountTwoFactorAppService : SufiApplicationService, IAccountTwoFac
         };
     }
 
+    /// <summary>
+    /// Called after <c>SignInAsync</c> (authenticated). Must not be anonymous — SEC-20 sweep.
+    /// </summary>
+    [Authorize]
     public virtual async Task<string?> GetPostLoginRedirectUrlAsync(Guid userId, string? returnUrl)
     {
         var user = await UserManager.FindByIdAsync(userId.ToString());

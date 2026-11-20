@@ -1,5 +1,6 @@
 using System;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SufiChain.SufiPlatform.AspNetCore.Mvc.Controllers;
 using Volo.Abp;
@@ -75,6 +76,7 @@ public class AccountTwoFactorController : SufiControllerBase, IAccountTwoFactorA
         return _twoFactorAppService.CompleteTwoFactorLoginAsync(input);
     }
 
+    [Authorize]
     [HttpGet]
     [Route("post-login-redirect")]
     public virtual Task<string?> GetPostLoginRedirectUrlAsync([FromQuery] Guid userId, [FromQuery] string? returnUrl)
