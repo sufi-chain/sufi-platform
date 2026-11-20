@@ -144,6 +144,8 @@ public class CalendarEventAppService : SufiApplicationService, ICalendarEventApp
 
     public virtual async Task DeleteAsync(Guid id)
     {
+        // Auth before load: anonymous callers must get 401/403, not a repository 500.
+        await CheckPolicyAsync(CalendarPermissions.Events.Default);
         var calendarEvent = await _eventRepository.GetAsync(id);
         await EnsureCanSeeCalendarAsync(calendarEvent.CalendarId);
         var calendar = await _calendarRepository.GetAsync(calendarEvent.CalendarId);
