@@ -87,20 +87,28 @@ public class McpStdioHandshakeAndPolicyTests
     public async Task Streamable_http_gateway_fronts_the_stdio_fixture()
     {
         var transcript = Path.Combine(Path.GetTempPath(), "mcp-557-" + Guid.NewGuid().ToString("N") + ".log");
-        using var gateway = StartGateway(transcript);
-        using var http = new HttpClient();
-        using var client = new StreamableHttpTransportClient(
-            $"http://127.0.0.1:{gateway.Port}/mcp",
-            http,
-            Microsoft.Extensions.Logging.Abstractions.NullLogger<StreamableHttpTransportClient>.Instance);
+        var gateway = StartGateway(transcript);
+        try
+        {
+            using var http = new HttpClient();
+            using var client = new StreamableHttpTransportClient(
+                $"http://127.0.0.1:{gateway.Port}/mcp",
+                http,
+                Microsoft.Extensions.Logging.Abstractions.NullLogger<StreamableHttpTransportClient>.Instance);
 
-        await client.ConnectAsync();
-        var tools = await client.ListToolsAsync(CancellationToken.None, "user-token");
-        var result = await client.CallToolAsync("write_note", new Dictionary<string, object?> { ["text"] = "hi" });
-        await client.DisconnectAsync();
+            await client.ConnectAsync();
+            var tools = await client.ListToolsAsync(CancellationToken.None, "user-token");
+            var result = await client.CallToolAsync("write_note", new Dictionary<string, object?> { ["text"] = "hi" });
+            await client.DisconnectAsync();
 
-        tools.ShouldContain(tool => tool.Name == "echo_env" && tool.ReadOnlyHint == true);
-        JsonSerializer.Serialize(result.Result).ShouldContain("wrote");
+            tools.ShouldContain(tool => tool.Name == "echo_env" && tool.ReadOnlyHint == true);
+            JsonSerializer.Serialize(result.Result).ShouldContain("wrote");
+        }
+        finally
+        {
+            // Kill the fixture before reading the log — Windows locks the open write handle.
+            gateway.Dispose();
+        }
 
         var calls = File.ReadAllLines(transcript).Select(line => JsonDocument.Parse(line)).ToList();
         calls.ShouldAllBe(call => call.RootElement.GetProperty("path").GetString() == "/mcp");

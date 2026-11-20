@@ -21,7 +21,7 @@ public class WorkspaceChatStopMarkupTests
         Assert.Contains("MessengerState.StateChanged += OnMessengerStateChanged", code);
         Assert.Contains("SelectSession(session.Id)", code);
         Assert.Contains("SaveForCurrentUserAsync", code);
-        Assert.Contains("SaveAssistantReplyAsync(sessionId, userMessage.Id, reply.ToString())", code);
+        Assert.Contains("SaveAssistantReplyAsync(sessionId, userMessage.Id, replyText)", code);
         Assert.Contains("OperationIdForSave(sessionId, userTurnId, reply)", code);
         Assert.Contains("BindSelectedSession(sessionId)", code);
         Assert.Contains("RetryFailedAssistantSaveFromUiAsync", code);
