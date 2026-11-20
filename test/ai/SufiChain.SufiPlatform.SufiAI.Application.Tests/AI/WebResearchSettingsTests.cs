@@ -1,10 +1,13 @@
 using System;
 using System.Text.Json;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
 using NSubstitute;
 using SufiChain.SufiPlatform.Settings;
 using SufiChain.SufiPlatform.SufiAI.Web;
 using Volo.Abp;
+using Volo.Abp.DependencyInjection;
+using Volo.Abp.MultiTenancy;
 using Volo.Abp.Settings;
 using Xunit;
 
@@ -57,5 +60,64 @@ public class WebResearchSettingsTests
         Assert.Equal(5, options.MaxSearchResults);
         Assert.Equal(3, options.MaxPagesToFetch);
         Assert.Equal(30_000, options.MaxTotalContextCharacters);
+    }
+
+    /// <summary>
+    /// SET-35: Web research is intentionally tenant-overridable (Global + Tenant providers).
+    /// A tenant save must call SetForTenantOrGlobalAsync with the tenant id, not the host/global scope.
+    /// </summary>
+    [Fact]
+    public async Task Tenant_update_writes_tenant_scope_and_does_not_write_global()
+    {
+        var tenantId = Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa");
+        var provider = Substitute.For<WebResearchOptionsProvider>(Substitute.For<ISettingProvider>());
+        provider.GetAsync().Returns(new WebResearchOptions
+        {
+            Enabled = false,
+            Endpoint = "https://search.internal",
+            Token = "host-token"
+        });
+        var manager = Substitute.For<ISettingManager>();
+        var service = CreateService(provider, manager, tenantId);
+
+        await service.UpdateAsync(new UpdateWebResearchSettingsInput
+        {
+            Enabled = true,
+            Endpoint = "https://search.internal",
+            AuthorizationBearerToken = "tenant-token",
+            SafeSearch = 1,
+            SearchTimeoutSeconds = 8,
+            FetchTimeoutSeconds = 8,
+            MaxSearchResults = 5,
+            MaxPagesToFetch = 3,
+            MaxPageBytes = 1_048_576,
+            MaxExtractedCharactersPerPage = 12_000,
+            MaxTotalContextCharacters = 30_000
+        });
+
+        await manager.Received().SetForTenantOrGlobalAsync(tenantId, WebResearchSettings.Enabled, "True");
+        await manager.Received().SetForTenantOrGlobalAsync(tenantId, WebResearchSettings.Endpoint, "https://search.internal");
+        await manager.Received().SetForTenantOrGlobalAsync(tenantId, WebResearchSettings.Token, "tenant-token");
+        await manager.DidNotReceive().SetForTenantOrGlobalAsync(
+            Arg.Is<Guid?>(id => id == null),
+            Arg.Any<string>(),
+            Arg.Any<string?>());
+        await manager.DidNotReceive().SetGlobalAsync(Arg.Any<string>(), Arg.Any<string?>());
+    }
+
+    private static WebResearchSettingsAppService CreateService(
+        WebResearchOptionsProvider provider,
+        ISettingManager manager,
+        Guid? tenantId)
+    {
+        var current = Substitute.For<ICurrentTenant>();
+        current.Id.Returns(tenantId);
+        current.IsAvailable.Returns(tenantId.HasValue);
+
+        var services = new ServiceCollection();
+        services.AddSingleton(current);
+        var service = new WebResearchSettingsAppService(provider, manager, Substitute.For<IWebSearchService>());
+        service.LazyServiceProvider = new AbpLazyServiceProvider(services.BuildServiceProvider());
+        return service;
     }
 }
