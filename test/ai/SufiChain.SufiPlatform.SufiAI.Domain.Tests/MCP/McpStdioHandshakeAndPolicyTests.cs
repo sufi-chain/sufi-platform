@@ -102,6 +102,8 @@ public class McpStdioHandshakeAndPolicyTests
         tools.ShouldContain(tool => tool.Name == "echo_env" && tool.ReadOnlyHint == true);
         JsonSerializer.Serialize(result.Result).ShouldContain("wrote");
 
+        // Dispose the gateway before reading so Windows releases the transcript lock.
+        gateway.Dispose();
         var calls = File.ReadAllLines(transcript).Select(line => JsonDocument.Parse(line)).ToList();
         calls.ShouldAllBe(call => call.RootElement.GetProperty("path").GetString() == "/mcp");
         var initialize = calls.Single(call => call.RootElement.GetProperty("body").GetString()!.Contains("\"method\":\"initialize\"", StringComparison.Ordinal));
