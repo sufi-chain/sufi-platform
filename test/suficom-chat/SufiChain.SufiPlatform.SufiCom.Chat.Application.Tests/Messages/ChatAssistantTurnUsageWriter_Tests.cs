@@ -1,5 +1,6 @@
 using Microsoft.Extensions.Logging.Abstractions;
 using NSubstitute;
+using Shouldly;
 using SufiChain.SufiPlatform.SufiCom.Chat.Application.Messages;
 using SufiChain.SufiPlatform.SufiCom.Chat.Usage;
 using Xunit;
@@ -34,11 +35,44 @@ public class ChatAssistantTurnUsageWriter_Tests
     }
 
     [Fact]
+    public async Task Reserve_exception_retries_and_still_records_the_turn()
+    {
+        var reservationId = Guid.NewGuid();
+        var guard = Substitute.For<IChatUsageGuard>();
+        var calls = 0;
+        guard.ReserveCompletedAiUsageAsync(Arg.Any<Guid>(), ChatAiOperationKind.AutoReply, Arg.Any<CancellationToken>())
+            .Returns(_ =>
+            {
+                calls++;
+                if (calls == 1)
+                {
+                    throw new InvalidOperationException("transient reserve failure");
+                }
+
+                return reservationId;
+            });
+
+        var writer = new ChatAssistantTurnUsageWriter(guard, NullLogger<ChatAssistantTurnUsageWriter>.Instance);
+        var sessionId = Guid.NewGuid();
+
+        await writer.TryRecordAutoReplyAsync(sessionId, 3, 2, 5, "openai", "support");
+
+        calls.ShouldBe(2);
+        await guard.Received(1).RecordAiUsageAsync(
+            reservationId,
+            Arg.Is<ChatAiUsageRecord>(record => record.TotalTokens == 5),
+            Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
     public async Task Recording_failure_does_not_escape()
     {
+        var reservationId = Guid.NewGuid();
         var guard = Substitute.For<IChatUsageGuard>();
         guard.ReserveCompletedAiUsageAsync(Arg.Any<Guid>(), Arg.Any<ChatAiOperationKind>(), Arg.Any<CancellationToken>())
-            .Returns<Guid>(_ => throw new InvalidOperationException("usage store unavailable"));
+            .Returns(reservationId);
+        guard.RecordAiUsageAsync(Arg.Any<Guid>(), Arg.Any<ChatAiUsageRecord>(), Arg.Any<CancellationToken>())
+            .Returns<Task>(_ => throw new InvalidOperationException("usage store unavailable"));
 
         var writer = new ChatAssistantTurnUsageWriter(guard, NullLogger<ChatAssistantTurnUsageWriter>.Instance);
 
