@@ -281,6 +281,11 @@ public class AccountTwoFactorAppService : SufiApplicationService, IAccountTwoFac
         };
     }
 
+    /// <summary>
+    /// Called after <c>SignInAsync</c> on the login page. Must stay authenticated so an
+    /// anonymous HTTP probe cannot run user lookup and return 500 on a null redirect.
+    /// </summary>
+    [Authorize]
     public virtual async Task<string?> GetPostLoginRedirectUrlAsync(Guid userId, string? returnUrl)
     {
         var user = await UserManager.FindByIdAsync(userId.ToString());
