@@ -31,7 +31,7 @@ public class EmailChannelConfigurationAppServiceTests : SufiComTestBase<SufiComA
     }
 
     [Fact]
-    public async Task Should_Update_Configuration()
+    public async Task Should_Update_Configuration_With_Channel_Smtp()
     {
         var input = new UpdateEmailChannelConfigurationInput
         {
@@ -41,6 +41,8 @@ public class EmailChannelConfigurationAppServiceTests : SufiComTestBase<SufiComA
             SmtpHost = "smtp.example.com",
             SmtpPort = 587,
             SmtpUseSsl = true,
+            SmtpUserName = "support@example.com",
+            SmtpPassword = "smtp-secret",
             ReplyToAddress = "reply@example.com"
         };
 
@@ -48,21 +50,26 @@ public class EmailChannelConfigurationAppServiceTests : SufiComTestBase<SufiComA
 
         var result = await _configurationAppService.GetAsync();
         result.Enabled.ShouldBeTrue();
-        result.UsePlatformSmtp.ShouldBeTrue();
+        result.UsePlatformSmtp.ShouldBeFalse();
         result.ReplyToAddress.ShouldBe("reply@example.com");
-        result.SmtpHost.ShouldNotBe("smtp.example.com");
+        result.SmtpHost.ShouldBe("smtp.example.com");
+        result.SmtpPort.ShouldBe(587);
+        result.DefaultFromAddress.ShouldBe("support@example.com");
+        result.HasSmtpPassword.ShouldBeTrue();
+        result.EffectiveSmtpHost.ShouldBe("smtp.example.com");
     }
 
     [Fact]
-    public async Task Email_channel_does_not_define_a_second_smtp_path()
+    public async Task Email_channel_defines_optional_smtp_settings()
     {
         var definitions = await GetRequiredService<Volo.Abp.Settings.ISettingDefinitionManager>().GetAllAsync();
 
         definitions.ShouldContain(definition => definition.Name == SufiComSettingNames.EmailChannel.Enabled);
         definitions.ShouldContain(definition => definition.Name == SufiComSettingNames.EmailChannel.ReplyToAddress);
-        definitions.ShouldNotContain(definition => definition.Name == SufiComSettingNames.EmailChannel.UsePlatformSmtp);
-        definitions.ShouldNotContain(definition => definition.Name == SufiComSettingNames.EmailChannel.SmtpHost);
-        definitions.ShouldNotContain(definition => definition.Name == SufiComSettingNames.EmailChannel.SmtpPassword);
+        definitions.ShouldContain(definition => definition.Name == SufiComSettingNames.EmailChannel.UsePlatformSmtp);
+        definitions.ShouldContain(definition => definition.Name == SufiComSettingNames.EmailChannel.SmtpHost);
+        definitions.ShouldContain(definition => definition.Name == SufiComSettingNames.EmailChannel.SmtpPassword);
+        definitions.ShouldContain(definition => definition.Name == SufiComSettingNames.TicketEmailChannel.InboundProtocol);
         definitions.ShouldContain(definition => definition.Name == SufiComSenderSettingNames.Email.SmtpHost);
     }
 
@@ -95,7 +102,7 @@ public class EmailChannelConfigurationAppServiceTests : SufiComTestBase<SufiComA
     }
 
     [Fact]
-    public void Should_Ignore_Connector_Smtp_Override_Fields()
+    public void Should_Require_Channel_Smtp_Fields_When_Override_Is_On()
     {
         var input = new UpdateEmailChannelConfigurationInput
         {
@@ -105,8 +112,13 @@ public class EmailChannelConfigurationAppServiceTests : SufiComTestBase<SufiComA
             SmtpHost = string.Empty,
             SmtpPort = 0
         };
+        var validationResults = new List<ValidationResult>();
 
-        Validator.TryValidateObject(input, new ValidationContext(input), [], true).ShouldBeTrue();
+        Validator.TryValidateObject(input, new ValidationContext(input), validationResults, true).ShouldBeFalse();
+
+        validationResults.ShouldContain(result => result.MemberNames.Contains(nameof(input.DefaultFromAddress)));
+        validationResults.ShouldContain(result => result.MemberNames.Contains(nameof(input.SmtpHost)));
+        validationResults.ShouldContain(result => result.MemberNames.Contains(nameof(input.SmtpPort)));
     }
 
     [Fact]
@@ -116,7 +128,7 @@ public class EmailChannelConfigurationAppServiceTests : SufiComTestBase<SufiComA
         {
             Enabled = true,
             InboundEnabled = true,
-            UsePlatformSmtp = false,
+            UsePlatformSmtp = true,
             InboundProtocol = InboundEmailProtocol.Imap
         };
         var validationResults = new List<ValidationResult>();
@@ -200,6 +212,29 @@ public class EmailChannelConfigurationAppServiceTests : SufiComTestBase<SufiComA
         result.InboundProtocol.ShouldBe(InboundEmailProtocol.Imap);
         result.InboundHost.ShouldBe("imap.example.com");
         result.HasInboundPassword.ShouldBeTrue();
+    }
+
+    [Fact]
+    public async Task Should_Update_Pop3_Inbound_Configuration()
+    {
+        var input = new UpdateEmailChannelConfigurationInput
+        {
+            Enabled = true,
+            InboundEnabled = true,
+            InboundProtocol = InboundEmailProtocol.Pop3,
+            InboundHost = "pop.example.com",
+            InboundPort = 995,
+            InboundUseSsl = true,
+            InboundUserName = "tickets@example.com",
+            InboundPassword = "pop-secret"
+        };
+
+        await WithUnitOfWorkAsync(() => _configurationAppService.UpdateAsync(input));
+
+        var result = await _configurationAppService.GetAsync();
+        result.InboundProtocol.ShouldBe(InboundEmailProtocol.Pop3);
+        result.InboundHost.ShouldBe("pop.example.com");
+        result.InboundPort.ShouldBe(995);
     }
 }
 
