@@ -598,7 +598,6 @@
     "AI:IranMcpTokenVerifyUrlRequired": "التحقق من الرمز مطلوب لـ Iran MCP، لكن عنوان التحقق غير مضبوط. عيّن SufiAI.IranMcp.TokenVerifyUrl أو IRAN_MCP_TOKEN_VERIFY_URL.",
     "Settings:SufiAI.IranMcp.TokenVerifyMode": "وضع التحقق من رمز Iran MCP",
     "Settings:SufiAI.IranMcp.TokenVerifyUrl": "عنوان التحقق من رمز Iran MCP",
-  
     "ApiKeyRequiredForModelList": "مطلوب مفتاح API لتحميل النماذج.",
     "AudioCapabilityDescription": "نسخ ملف صوتي إلى نص.",
     "CapabilityWorkbench": "منضدة عمل قدرات الذكاء الاصطناعي",
@@ -629,6 +628,7 @@
     "TokenUsageFromProviderOnly": "يتم تسجيل استخدام الرمز المميز فقط من البيانات التعريفية لاستخدام الموفر",
     "UsageUnavailable": "الاستخدام غير متاح",
     "UsageUnavailableRequests": "الاستخدام غير متاح",
-    "VisionCapabilityDescription": "تحليل الصورة باستخدام نموذج قادر على الرؤية."
+    "VisionCapabilityDescription": "تحليل الصورة باستخدام نموذج قادر على الرؤية.",
+    "AI:WebResearchHostOnly": "إعدادات البحث على الويب متاحة على المضيف فقط. يستخدم المستأجرون تكوين بحث المضيف."
   }
 }

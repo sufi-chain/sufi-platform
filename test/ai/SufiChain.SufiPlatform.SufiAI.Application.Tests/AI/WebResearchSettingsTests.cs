@@ -18,9 +18,11 @@ public class WebResearchSettingsTests
     [Fact]
     public async Task Settings_response_never_contains_stored_secret()
     {
-        var provider = Substitute.For<WebResearchOptionsProvider>(Substitute.For<ISettingProvider>());
+        var provider = Substitute.For<WebResearchOptionsProvider>(
+            Substitute.For<ISettingProvider>(),
+            Substitute.For<ICurrentTenant>());
         provider.GetAsync().Returns(new WebResearchOptions { Token = "private-test-token", Endpoint = "https://search.internal" });
-        var service = new WebResearchSettingsAppService(provider, Substitute.For<ISettingManager>(), Substitute.For<IWebSearchService>());
+        var service = CreateService(provider, Substitute.For<ISettingManager>(), tenantId: null);
         var response = await service.GetAsync();
         Assert.True(response.HasStoredToken);
         Assert.DoesNotContain("private-test-token", JsonSerializer.Serialize(response));
@@ -29,10 +31,12 @@ public class WebResearchSettingsTests
     [Fact]
     public async Task Endpoint_change_cannot_forward_inherited_credential()
     {
-        var provider = Substitute.For<WebResearchOptionsProvider>(Substitute.For<ISettingProvider>());
+        var provider = Substitute.For<WebResearchOptionsProvider>(
+            Substitute.For<ISettingProvider>(),
+            Substitute.For<ICurrentTenant>());
         provider.GetAsync().Returns(new WebResearchOptions { Token = "private-test-token", Endpoint = "https://original.internal" });
         var manager = Substitute.For<ISettingManager>();
-        var service = new WebResearchSettingsAppService(provider, manager, Substitute.For<IWebSearchService>());
+        var service = CreateService(provider, manager, tenantId: null);
         var error = await Assert.ThrowsAsync<BusinessException>(() => service.UpdateAsync(new() { Endpoint = "https://other.internal" }));
         Assert.Equal("AI:WebResearchTokenRequiredForEndpointChange", error.Code);
         Assert.Empty(manager.ReceivedCalls());
@@ -45,8 +49,10 @@ public class WebResearchSettingsTests
     public async Task Invalid_endpoint_is_rejected_before_any_setting_changes(string endpoint)
     {
         var manager = Substitute.For<ISettingManager>();
-        var provider = Substitute.For<WebResearchOptionsProvider>(Substitute.For<ISettingProvider>());
-        var service = new WebResearchSettingsAppService(provider, manager, Substitute.For<IWebSearchService>());
+        var provider = Substitute.For<WebResearchOptionsProvider>(
+            Substitute.For<ISettingProvider>(),
+            Substitute.For<ICurrentTenant>());
+        var service = CreateService(provider, manager, tenantId: null);
         await Assert.ThrowsAsync<BusinessException>(() => service.UpdateAsync(new() { Enabled = true, Endpoint = endpoint }));
         Assert.Empty(manager.ReceivedCalls());
     }
@@ -54,7 +60,9 @@ public class WebResearchSettingsTests
     [Fact]
     public async Task Missing_settings_use_disabled_bounded_defaults()
     {
-        var provider = new WebResearchOptionsProvider(Substitute.For<ISettingProvider>());
+        var current = Substitute.For<ICurrentTenant>();
+        current.Change(null).Returns(Substitute.For<IDisposable>());
+        var provider = new WebResearchOptionsProvider(Substitute.For<ISettingProvider>(), current);
         var options = await provider.GetAsync();
         Assert.False(options.Enabled);
         Assert.Equal(5, options.MaxSearchResults);
@@ -62,15 +70,40 @@ public class WebResearchSettingsTests
         Assert.Equal(30_000, options.MaxTotalContextCharacters);
     }
 
-    /// <summary>
-    /// SET-35: Web research is intentionally tenant-overridable (Global + Tenant providers).
-    /// A tenant save must call SetForTenantOrGlobalAsync with the tenant id, not the host/global scope.
-    /// </summary>
     [Fact]
-    public async Task Tenant_update_writes_tenant_scope_and_does_not_write_global()
+    public async Task Tenant_get_update_and_test_are_rejected_without_writing()
     {
         var tenantId = Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa");
-        var provider = Substitute.For<WebResearchOptionsProvider>(Substitute.For<ISettingProvider>());
+        var provider = Substitute.For<WebResearchOptionsProvider>(
+            Substitute.For<ISettingProvider>(),
+            Substitute.For<ICurrentTenant>());
+        var manager = Substitute.For<ISettingManager>();
+        var search = Substitute.For<IWebSearchService>();
+        var service = CreateService(provider, manager, tenantId, search);
+
+        var getError = await Assert.ThrowsAsync<BusinessException>(() => service.GetAsync());
+        var updateError = await Assert.ThrowsAsync<BusinessException>(() => service.UpdateAsync(new()
+        {
+            Enabled = true,
+            Endpoint = "https://search.internal",
+            AuthorizationBearerToken = "tenant-token"
+        }));
+        var testError = await Assert.ThrowsAsync<BusinessException>(() => service.TestAsync());
+
+        Assert.Equal("AI:WebResearchHostOnly", getError.Code);
+        Assert.Equal("AI:WebResearchHostOnly", updateError.Code);
+        Assert.Equal("AI:WebResearchHostOnly", testError.Code);
+        Assert.DoesNotContain("tenant-token", getError.Code + updateError.Code + testError.Code);
+        Assert.Empty(manager.ReceivedCalls());
+        Assert.Empty(search.ReceivedCalls());
+    }
+
+    [Fact]
+    public async Task Host_update_writes_global_scope_only()
+    {
+        var provider = Substitute.For<WebResearchOptionsProvider>(
+            Substitute.For<ISettingProvider>(),
+            Substitute.For<ICurrentTenant>());
         provider.GetAsync().Returns(new WebResearchOptions
         {
             Enabled = false,
@@ -78,13 +111,13 @@ public class WebResearchSettingsTests
             Token = "host-token"
         });
         var manager = Substitute.For<ISettingManager>();
-        var service = CreateService(provider, manager, tenantId);
+        var service = CreateService(provider, manager, tenantId: null);
 
         await service.UpdateAsync(new UpdateWebResearchSettingsInput
         {
             Enabled = true,
             Endpoint = "https://search.internal",
-            AuthorizationBearerToken = "tenant-token",
+            AuthorizationBearerToken = "new-host-token",
             SafeSearch = 1,
             SearchTimeoutSeconds = 8,
             FetchTimeoutSeconds = 8,
@@ -95,20 +128,53 @@ public class WebResearchSettingsTests
             MaxTotalContextCharacters = 30_000
         });
 
-        await manager.Received().SetForTenantOrGlobalAsync(tenantId, WebResearchSettings.Enabled, "True");
-        await manager.Received().SetForTenantOrGlobalAsync(tenantId, WebResearchSettings.Endpoint, "https://search.internal");
-        await manager.Received().SetForTenantOrGlobalAsync(tenantId, WebResearchSettings.Token, "tenant-token");
+        await manager.Received().SetGlobalAsync(WebResearchSettings.Enabled, "True");
+        await manager.Received().SetGlobalAsync(WebResearchSettings.Endpoint, "https://search.internal");
+        await manager.Received().SetGlobalAsync(WebResearchSettings.Token, "new-host-token");
         await manager.DidNotReceive().SetForTenantOrGlobalAsync(
-            Arg.Is<Guid?>(id => id == null),
+            Arg.Any<Guid?>(),
             Arg.Any<string>(),
             Arg.Any<string?>());
-        await manager.DidNotReceive().SetGlobalAsync(Arg.Any<string>(), Arg.Any<string?>());
+    }
+
+    [Fact]
+    public async Task Options_provider_reads_under_host_scope_even_when_tenant_is_current()
+    {
+        var tenantId = Guid.Parse("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb");
+        var settings = Substitute.For<ISettingProvider>();
+        settings.GetOrNullAsync(WebResearchSettings.Endpoint).Returns("https://host-search.internal");
+        settings.GetOrNullAsync(WebResearchSettings.Token).Returns("host-only-token");
+        settings.GetOrNullAsync(WebResearchSettings.Enabled).Returns("true");
+
+        var current = Substitute.For<ICurrentTenant>();
+        current.Id.Returns(tenantId);
+        current.IsAvailable.Returns(true);
+        current.Change(null).Returns(Substitute.For<IDisposable>());
+
+        var options = await new WebResearchOptionsProvider(settings, current).GetAsync();
+
+        Assert.Equal("https://host-search.internal", options.Endpoint);
+        Assert.Equal("host-only-token", options.Token);
+        current.Received().Change(null);
+    }
+
+    [Fact]
+    public void Setting_definitions_are_global_only()
+    {
+        var context = new FakeSettingDefinitionContext();
+        new WebResearchSettingDefinitionProvider().Define(context);
+        Assert.All(context.Definitions, definition =>
+        {
+            Assert.Contains(GlobalSettingValueProvider.ProviderName, definition.Providers);
+            Assert.DoesNotContain(TenantSettingValueProvider.ProviderName, definition.Providers);
+        });
     }
 
     private static WebResearchSettingsAppService CreateService(
         WebResearchOptionsProvider provider,
         ISettingManager manager,
-        Guid? tenantId)
+        Guid? tenantId,
+        IWebSearchService? search = null)
     {
         var current = Substitute.For<ICurrentTenant>();
         current.Id.Returns(tenantId);
@@ -116,8 +182,20 @@ public class WebResearchSettingsTests
 
         var services = new ServiceCollection();
         services.AddSingleton(current);
-        var service = new WebResearchSettingsAppService(provider, manager, Substitute.For<IWebSearchService>());
+        var service = new WebResearchSettingsAppService(provider, manager, search ?? Substitute.For<IWebSearchService>());
         service.LazyServiceProvider = new AbpLazyServiceProvider(services.BuildServiceProvider());
         return service;
+    }
+
+    private sealed class FakeSettingDefinitionContext : ISettingDefinitionContext
+    {
+        public List<SettingDefinition> Definitions { get; } = [];
+
+        public void Add(params SettingDefinition[] definitions) => Definitions.AddRange(definitions);
+
+        public SettingDefinition? GetOrNull(string name) =>
+            Definitions.Find(definition => definition.Name == name);
+
+        public IReadOnlyList<SettingDefinition> GetAll() => Definitions;
     }
 }

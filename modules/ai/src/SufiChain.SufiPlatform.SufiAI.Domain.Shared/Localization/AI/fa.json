@@ -607,7 +607,6 @@
     "AI:IranMcpTokenVerifyUrlRequired": "تأیید توکن ایران‌ام‌سی‌پی الزامی است، اما نشانی تأیید تنظیم نشده است. SufiAI.IranMcp.TokenVerifyUrl یا IRAN_MCP_TOKEN_VERIFY_URL را تنظیم کنید.",
     "Settings:SufiAI.IranMcp.TokenVerifyMode": "حالت تأیید توکن ایران‌ام‌سی‌پی",
     "Settings:SufiAI.IranMcp.TokenVerifyUrl": "نشانی تأیید توکن ایران‌ام‌سی‌پی",
-  
     "AudioCapabilityDescription": "یک فایل صوتی را به متن رونویسی کنید.",
     "CapabilityWorkbench": "میز کار قابلیت هوش مصنوعی",
     "CapabilityWorkbenchDescription": "هر قابلیت هوش مصنوعی را در فضای کاری خودش با ورودی‌ها و تشخیص‌های خاص قابلیت آزمایش کنید.",
@@ -629,6 +628,7 @@
     "UsageUnavailable": "استفاده در دسترس نیست",
     "UsageUnavailableRequests": "استفاده در دسترس نیست",
     "VisionCapabilityDescription": "تجزیه و تحلیل یک تصویر با یک مدل با قابلیت دید.",
-    "[REDACTED]": "دستور سامانه"
+    "[REDACTED]": "دستور سامانه",
+    "AI:WebResearchHostOnly": "تنظیمات پژوهش وب فقط در میزبان در دسترس است. مستأجران از پیکربندی جستجوی میزبان استفاده می‌کنند."
   }
 }

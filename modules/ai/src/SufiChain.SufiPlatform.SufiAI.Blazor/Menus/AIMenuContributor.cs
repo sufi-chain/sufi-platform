@@ -49,10 +49,14 @@ public class AIMenuContributor : IMenuContributor
 
         aiMenu.RequireFeatures(SufiAIFeatures.Enable);
 
-        aiMenu.AddItem(new ApplicationMenuItem("SufiAI.WebResearch", l["WebResearchSettings"],
-            url: SettingsSectionLink.For(WebResearchSettingsSection.Id), icon: "search", order: 8)
-            .RequirePermissions(AIPermissions.WebSearchSettings.Default)
-            .RequireFeatures(SufiAIFeatures.Enable, SufiAIFeatures.WebSearch));
+        // SET-35: Web research settings are host-only (endpoint + bearer).
+        if (context.ServiceProvider.GetService<ICurrentTenant>()?.IsAvailable != true)
+        {
+            aiMenu.AddItem(new ApplicationMenuItem("SufiAI.WebResearch", l["WebResearchSettings"],
+                url: SettingsSectionLink.For(WebResearchSettingsSection.Id), icon: "search", order: 8)
+                .RequirePermissions(AIPermissions.WebSearchSettings.Default)
+                .RequireFeatures(SufiAIFeatures.Enable, SufiAIFeatures.WebSearch));
+        }
 
         if (await featureChecker.IsEnabledAsync(SufiAIFeatures.Workspaces))
         {

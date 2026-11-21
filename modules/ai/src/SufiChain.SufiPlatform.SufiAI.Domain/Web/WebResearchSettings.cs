@@ -2,6 +2,7 @@ using System;
 using System.Globalization;
 using System.Threading.Tasks;
 using Volo.Abp.DependencyInjection;
+using Volo.Abp.MultiTenancy;
 using Volo.Abp.Settings;
 
 namespace SufiChain.SufiPlatform.SufiAI.Web;
@@ -32,8 +33,8 @@ public class WebResearchSettingDefinitionProvider : SettingDefinitionProvider
     private static void Add(ISettingDefinitionContext context, string name, string value, bool encrypted = false)
     {
         var setting = new SettingDefinition(name, value, isVisibleToClients: false, isEncrypted: encrypted);
+        // Host-only (SET-35). Leftover tenant rows must not be read.
         setting.Providers.Add(GlobalSettingValueProvider.ProviderName);
-        setting.Providers.Add(TenantSettingValueProvider.ProviderName);
         context.Add(setting);
     }
 }
@@ -53,22 +54,31 @@ public sealed class WebResearchOptions
     public int MaxTotalContextCharacters { get; set; } = 30_000;
 }
 
-public class WebResearchOptionsProvider(ISettingProvider settings) : ITransientDependency
+public class WebResearchOptionsProvider(
+    ISettingProvider settings,
+    ICurrentTenant currentTenant) : ITransientDependency
 {
-    public virtual async Task<WebResearchOptions> GetAsync() => new()
+    public virtual async Task<WebResearchOptions> GetAsync()
     {
-        Enabled = bool.TryParse(await settings.GetOrNullAsync(WebResearchSettings.Enabled), out var enabled) && enabled,
-        Endpoint = await settings.GetOrNullAsync(WebResearchSettings.Endpoint) ?? "",
-        Token = await settings.GetOrNullAsync(WebResearchSettings.Token),
-        SafeSearch = await Number("SafeSearch", 1, 0, 2),
-        SearchTimeoutSeconds = await Number("SearchTimeoutSeconds", 8, 2, 30),
-        FetchTimeoutSeconds = await Number("FetchTimeoutSeconds", 8, 2, 30),
-        MaxSearchResults = await Number("MaxSearchResults", 5, 1, 10),
-        MaxPagesToFetch = await Number("MaxPagesToFetch", 3, 0, 5),
-        MaxPageBytes = await Number("MaxPageBytes", 1_048_576, 1024, 5_242_880),
-        MaxExtractedCharactersPerPage = await Number("MaxExtractedCharactersPerPage", 12_000, 100, 24_000),
-        MaxTotalContextCharacters = await Number("MaxTotalContextCharacters", 30_000, 1000, 60_000)
-    };
+        // Always resolve the host/global value, even inside a tenant circuit.
+        using (currentTenant.Change(null))
+        {
+            return new WebResearchOptions
+            {
+                Enabled = bool.TryParse(await settings.GetOrNullAsync(WebResearchSettings.Enabled), out var enabled) && enabled,
+                Endpoint = await settings.GetOrNullAsync(WebResearchSettings.Endpoint) ?? "",
+                Token = await settings.GetOrNullAsync(WebResearchSettings.Token),
+                SafeSearch = await Number("SafeSearch", 1, 0, 2),
+                SearchTimeoutSeconds = await Number("SearchTimeoutSeconds", 8, 2, 30),
+                FetchTimeoutSeconds = await Number("FetchTimeoutSeconds", 8, 2, 30),
+                MaxSearchResults = await Number("MaxSearchResults", 5, 1, 10),
+                MaxPagesToFetch = await Number("MaxPagesToFetch", 3, 0, 5),
+                MaxPageBytes = await Number("MaxPageBytes", 1_048_576, 1024, 5_242_880),
+                MaxExtractedCharactersPerPage = await Number("MaxExtractedCharactersPerPage", 12_000, 100, 24_000),
+                MaxTotalContextCharacters = await Number("MaxTotalContextCharacters", 30_000, 1000, 60_000)
+            };
+        }
+    }
 
     private async Task<int> Number(string name, int fallback, int min, int max) =>
         Math.Clamp(int.TryParse(await settings.GetOrNullAsync(WebResearchSettings.Prefix + name),

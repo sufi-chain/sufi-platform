@@ -627,8 +627,8 @@
     "AI:IranMcpTokenVerifyUrlRequired": "Token verification is required for Iran MCP, but the verify URL is not set. Set SufiAI.IranMcp.TokenVerifyUrl (or IRAN_MCP_TOKEN_VERIFY_URL).",
     "Settings:SufiAI.IranMcp.TokenVerifyMode": "Iran MCP token verify mode",
     "Settings:SufiAI.IranMcp.TokenVerifyUrl": "Iran MCP token verify URL",
-  
     "MultiModalTest": "Multimodal test",
-    "[REDACTED]": "System prompt"
+    "[REDACTED]": "System prompt",
+    "AI:WebResearchHostOnly": "Web research settings are available only on the host. Tenants use the host search configuration."
   }
 }

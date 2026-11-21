@@ -5,6 +5,7 @@ using SufiChain.SufiPlatform.Settings.Blazor.Settings;
 using SufiChain.SufiPlatform.SufiAI.Blazor.Pages.AI;
 using SufiChain.SufiPlatform.SufiAI.Localization;
 using SufiChain.SufiPlatform.SufiAI.Permissions;
+using Volo.Abp.MultiTenancy;
 
 namespace SufiChain.SufiPlatform.SufiAI.Blazor.Settings;
 
@@ -12,6 +13,11 @@ public class WebResearchSettingsGroupContributor : ISettingComponentContributor
 {
     public async Task ConfigureAsync(SettingComponentCreationContext context)
     {
+        if (!IsHost(context))
+        {
+            return;
+        }
+
         var l = context.GetRequiredService<IStringLocalizer<AIResource>>();
         var authorizationService = context.GetRequiredService<IAuthorizationService>();
         var canEdit = await authorizationService.IsGrantedAsync(AIPermissions.WebSearchSettings.Update);
@@ -31,7 +37,18 @@ public class WebResearchSettingsGroupContributor : ISettingComponentContributor
 
     public async Task<bool> CheckPermissionsAsync(SettingComponentCreationContext context)
     {
+        if (!IsHost(context))
+        {
+            return false;
+        }
+
         var authorizationService = context.GetRequiredService<IAuthorizationService>();
         return await authorizationService.IsGrantedAsync(AIPermissions.WebSearchSettings.Default);
+    }
+
+    private static bool IsHost(SettingComponentCreationContext context)
+    {
+        var currentTenant = context.GetRequiredService<ICurrentTenant>();
+        return currentTenant.IsAvailable != true;
     }
 }

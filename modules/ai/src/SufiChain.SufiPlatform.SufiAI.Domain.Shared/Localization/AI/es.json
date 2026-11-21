@@ -598,7 +598,6 @@
     "AI:IranMcpTokenVerifyUrlRequired": "La verificación de token es obligatoria para Iran MCP, pero la URL de verificación no está configurada. Configure SufiAI.IranMcp.TokenVerifyUrl o IRAN_MCP_TOKEN_VERIFY_URL.",
     "Settings:SufiAI.IranMcp.TokenVerifyMode": "Modo de verificación de token de Iran MCP",
     "Settings:SufiAI.IranMcp.TokenVerifyUrl": "URL de verificación de token de Iran MCP",
-  
     "ApiKeyRequiredForModelList": "Se requiere la clave API para cargar modelos.",
     "AudioCapabilityDescription": "Transcribe un archivo de audio a texto.",
     "CapabilityWorkbench": "Banco de trabajo de capacidad de IA",
@@ -629,6 +628,7 @@
     "TokenUsageFromProviderOnly": "El uso del token se registra únicamente a partir de los metadatos de uso del proveedor.",
     "UsageUnavailable": "Uso no disponible",
     "UsageUnavailableRequests": "Uso no disponible",
-    "VisionCapabilityDescription": "Analice una imagen con un modelo con capacidad de visión."
+    "VisionCapabilityDescription": "Analice una imagen con un modelo con capacidad de visión.",
+    "AI:WebResearchHostOnly": "La configuración de investigación web solo está disponible en el host. Los inquilinos usan la configuración de búsqueda del host."
   }
 }

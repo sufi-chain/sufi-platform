@@ -5,6 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Localization;
 using Volo.Abp.Authorization;
 using Volo.Abp.DependencyInjection;
+using Volo.Abp.MultiTenancy;
 using SufiChain.SufiPlatform.Settings.Blazor.Settings;
 using SufiChain.SufiPlatform.SufiAI.Blazor.Pages.AI;
 using SufiChain.SufiPlatform.SufiAI.Blazor.Settings;
@@ -21,6 +22,13 @@ public class WebResearchSettingsSectionTests
     public async Task Web_research_section_stays_hidden_without_the_view_permission()
     {
         var groups = await LoadAsync(canView: false, canUpdate: false);
+        groups.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public async Task Web_research_section_stays_hidden_for_tenants()
+    {
+        var groups = await LoadAsync(canView: true, canUpdate: true, tenantId: Guid.NewGuid());
         groups.ShouldBeEmpty();
     }
 
@@ -56,7 +64,10 @@ public class WebResearchSettingsSectionTests
                 "Localization", "AI", culture + ".json"));
             texts.ShouldContainKey("WebResearchSettings");
             texts.ShouldContainKey("WebResearchSetupHint");
+            texts.ShouldContainKey("AI:WebResearchHostOnly");
             texts["WebResearchSettings"].ShouldNotBeNullOrWhiteSpace();
+            texts["AI:WebResearchHostOnly"].ShouldNotBeNullOrWhiteSpace();
+            texts["AI:WebResearchHostOnly"].ShouldNotContain("token", Case.Insensitive);
         }
     }
 
@@ -72,7 +83,10 @@ public class WebResearchSettingsSectionTests
             .ShouldContain("@page \"/panel/admin/ai/web-research\"");
     }
 
-    private static async Task<IReadOnlyList<SettingComponentGroup>> LoadAsync(bool canView, bool canUpdate)
+    private static async Task<IReadOnlyList<SettingComponentGroup>> LoadAsync(
+        bool canView,
+        bool canUpdate,
+        Guid? tenantId = null)
     {
         var granted = new List<string>();
         if (canView)
@@ -85,9 +99,11 @@ public class WebResearchSettingsSectionTests
             granted.Add(AIPermissions.WebSearchSettings.Update);
         }
 
+        var currentTenant = new FixedTenant(tenantId);
         var services = new ServiceCollection();
         services.AddSingleton<IAuthorizationService>(new GrantList(granted));
         services.AddSingleton<IStringLocalizer<AIResource>, KeyLocalizer<AIResource>>();
+        services.AddSingleton<ICurrentTenant>(currentTenant);
         return await SettingsGroupCatalog.LoadAsync(
             [new WebResearchSettingsGroupContributor()],
             services.BuildServiceProvider());
@@ -170,5 +186,20 @@ public class WebResearchSettingsSectionTests
         public LocalizedString this[string name, params object[] arguments] => new(name, name);
 
         public IEnumerable<LocalizedString> GetAllStrings(bool includeParentCultures) => [];
+    }
+
+    private sealed class FixedTenant(Guid? id) : ICurrentTenant
+    {
+        public bool IsAvailable => id.HasValue;
+        public Guid? Id => id;
+        public string? Name => id.HasValue ? "tenant" : null;
+        public IDisposable Change(Guid? id, string? name = null) => new Noop();
+
+        private sealed class Noop : IDisposable
+        {
+            public void Dispose()
+            {
+            }
+        }
     }
 }

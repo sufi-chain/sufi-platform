@@ -18,6 +18,7 @@ public class WebResearchSettingsAppService(
 {
     public virtual async Task<WebResearchSettingsDto> GetAsync()
     {
+        EnsureHost();
         var options = await optionsProvider.GetAsync();
         return new WebResearchSettingsDto
         {
@@ -34,6 +35,7 @@ public class WebResearchSettingsAppService(
     [DisableAuditing]
     public virtual async Task UpdateAsync(UpdateWebResearchSettingsInput input)
     {
+        EnsureHost();
         input.Endpoint = input.Endpoint?.Trim() ?? "";
         if ((input.Enabled || !string.IsNullOrWhiteSpace(input.Endpoint)) &&
             (!Uri.TryCreate(input.Endpoint, UriKind.Absolute, out var endpoint) || endpoint.Scheme != "https" ||
@@ -58,6 +60,7 @@ public class WebResearchSettingsAppService(
     [Authorize(AIPermissions.WebSearchSettings.Test)]
     public virtual async Task<WebResearchConnectionDto> TestAsync()
     {
+        EnsureHost();
         try
         {
             var result = await search.SearchAsync(new WebSearchRequest { Query = "SearXNG", MaxResults = 1 }, await optionsProvider.GetAsync());
@@ -66,5 +69,13 @@ public class WebResearchSettingsAppService(
         catch (WebResearchException ex) { return new() { FailureCode = ex.Code }; }
     }
 
-    private Task Set(string name, string value) => manager.SetForTenantOrGlobalAsync(CurrentTenant.Id, name, value);
+    private void EnsureHost()
+    {
+        if (CurrentTenant.Id.HasValue)
+        {
+            throw new BusinessException("AI:WebResearchHostOnly");
+        }
+    }
+
+    private Task Set(string name, string value) => manager.SetGlobalAsync(name, value);
 }
