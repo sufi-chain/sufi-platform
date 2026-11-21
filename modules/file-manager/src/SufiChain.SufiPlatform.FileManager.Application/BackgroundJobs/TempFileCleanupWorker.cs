@@ -34,8 +34,8 @@ public class TempFileCleanupWorker : AsyncPeriodicBackgroundWorkerBase
 
     protected override async Task DoWorkAsync(PeriodicBackgroundWorkerContext workerContext)
     {
-        var serviceProvider = workerContext.ServiceProvider;
-        var featureChecker = serviceProvider.GetRequiredService<IFeatureChecker>();
+        var root = workerContext.ServiceProvider;
+        var featureChecker = root.GetRequiredService<IFeatureChecker>();
         if (!await featureChecker.IsEnabledAsync(SufiFileManagerFeatures.Enable) ||
             !await featureChecker.IsEnabledAsync(SufiFileManagerFeatures.FileItems))
         {
@@ -47,37 +47,54 @@ public class TempFileCleanupWorker : AsyncPeriodicBackgroundWorkerBase
 
         try
         {
-            var currentTenant = serviceProvider.GetRequiredService<ICurrentTenant>();
-            var tenantRepository = serviceProvider.GetService<ITenantRepository>();
             var totalDeleted = 0;
             var totalFailed = 0;
 
-            if (tenantRepository != null)
+            var tenantRepositoryAvailable = root.GetService<ITenantRepository>() != null;
+            if (tenantRepositoryAvailable)
             {
                 List<Tenant> tenants;
-                using (currentTenant.Change(null))
+                using (var hostScope = ServiceScopeFactory.CreateScope())
                 {
-                    var (hostDeleted, hostFailed) = await CleanupTempFilesForCurrentContextAsync(serviceProvider);
-                    totalDeleted += hostDeleted;
-                    totalFailed += hostFailed;
-                    tenants = await tenantRepository.GetListAsync(includeDetails: false);
+                    var hostProvider = hostScope.ServiceProvider;
+                    var currentTenant = hostProvider.GetRequiredService<ICurrentTenant>();
+                    using (currentTenant.Change(null))
+                    {
+                        tenants = await hostProvider
+                            .GetRequiredService<ITenantRepository>()
+                            .GetListAsync(includeDetails: false);
+                        var (hostDeleted, hostFailed) =
+                            await CleanupTempFilesForCurrentContextAsync(hostProvider);
+                        totalDeleted += hostDeleted;
+                        totalFailed += hostFailed;
+                    }
                 }
 
                 foreach (var tenant in tenants)
                 {
-                    using (currentTenant.Change(tenant.Id))
+                    using (var tenantScope = ServiceScopeFactory.CreateScope())
                     {
-                        var (deleted, failed) = await CleanupTempFilesForCurrentContextAsync(serviceProvider);
-                        totalDeleted += deleted;
-                        totalFailed += failed;
+                        var tenantProvider = tenantScope.ServiceProvider;
+                        var currentTenant = tenantProvider.GetRequiredService<ICurrentTenant>();
+                        using (currentTenant.Change(tenant.Id))
+                        {
+                            var (deleted, failed) =
+                                await CleanupTempFilesForCurrentContextAsync(tenantProvider);
+                            totalDeleted += deleted;
+                            totalFailed += failed;
+                        }
                     }
                 }
             }
             else
             {
-                var (deleted, failed) = await CleanupTempFilesForCurrentContextAsync(serviceProvider);
-                totalDeleted += deleted;
-                totalFailed += failed;
+                using (var scope = ServiceScopeFactory.CreateScope())
+                {
+                    var (deleted, failed) =
+                        await CleanupTempFilesForCurrentContextAsync(scope.ServiceProvider);
+                    totalDeleted += deleted;
+                    totalFailed += failed;
+                }
             }
 
             Logger.LogInformation(
@@ -91,11 +108,12 @@ public class TempFileCleanupWorker : AsyncPeriodicBackgroundWorkerBase
         }
     }
 
-    private static async Task<(int Deleted, int Failed)> CleanupTempFilesForCurrentContextAsync(IServiceProvider serviceProvider)
+    protected virtual async Task<(int Deleted, int Failed)> CleanupTempFilesForCurrentContextAsync(
+        IServiceProvider serviceProvider)
     {
-        // The repository query must stay inside this unit of work. GetQueryableAsync
-        // joins the ambient unit of work; without one, the call completes and disposes
-        // the DbContext before the query is enumerated.
+        // Each host/tenant pass must own this unit of work and its DbContext. Reusing the
+        // worker-tick ServiceProvider across tenants disposed FileManagerDbContext after the
+        // first CompleteAsync (SMK-17).
         var unitOfWorkManager = serviceProvider.GetRequiredService<IUnitOfWorkManager>();
         using var unitOfWork = unitOfWorkManager.Begin(requiresNew: true, isTransactional: false);
 
@@ -116,9 +134,8 @@ public class TempFileCleanupWorker : AsyncPeriodicBackgroundWorkerBase
         using (dataFilter.Disable())
         {
             var query = await fileItemRepository.GetQueryableAsync();
-            tempFileItems = query
-                .Where(x => x.IsTemp && x.CreationTime < cutoffTime)
-                .ToList();
+            tempFileItems = await fileItemRepository.AsyncExecuter.ToListAsync(
+                query.Where(x => x.IsTemp && x.CreationTime < cutoffTime));
         }
 
         int deletedCount = 0;
