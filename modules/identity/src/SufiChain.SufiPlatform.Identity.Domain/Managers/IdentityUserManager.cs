@@ -288,6 +288,33 @@ public class IdentityUserManager : UserManager<IdentityUser>, IDomainService
         return sanitized.IsNullOrWhiteSpace() ? "user" : sanitized;
     }
 
+    public override async Task<IdentityResult> ChangePasswordAsync(
+        IdentityUser user,
+        string currentPassword,
+        string newPassword)
+    {
+        var result = await base.ChangePasswordAsync(user, currentPassword, newPassword);
+        if (!result.Succeeded)
+        {
+            return result;
+        }
+
+        IdentityPasswordChange.MarkChanged(user);
+        return await UpdateAsync(user);
+    }
+
+    public override async Task<IdentityResult> AddPasswordAsync(IdentityUser user, string password)
+    {
+        var result = await base.AddPasswordAsync(user, password);
+        if (!result.Succeeded)
+        {
+            return result;
+        }
+
+        IdentityPasswordChange.MarkChanged(user);
+        return await UpdateAsync(user);
+    }
+
     public virtual async Task<IdentityResult> ChangePasswordAsync(
         IdentityUser user,
         string newPassword)
@@ -298,7 +325,7 @@ public class IdentityUserManager : UserManager<IdentityUser>, IDomainService
             return result;
         }
 
-        user.SetLastPasswordChangeTime(DateTimeOffset.UtcNow);
+        IdentityPasswordChange.MarkChanged(user);
 
         return await UpdateAsync(user);
     }
@@ -313,8 +340,7 @@ public class IdentityUserManager : UserManager<IdentityUser>, IDomainService
             return result;
         }
 
-        user.SetLastPasswordChangeTime(DateTimeOffset.UtcNow);
-        user.SetShouldChangePasswordOnNextLogin(false);
+        IdentityPasswordChange.MarkChanged(user);
 
         return await UpdateAsync(user);
     }

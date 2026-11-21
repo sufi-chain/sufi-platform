@@ -447,18 +447,17 @@ public abstract class SufiAccountController : AbpController
             }
         }
 
-        var target = !string.IsNullOrEmpty(redirectUrl) && Url.IsLocalUrl(redirectUrl)
+        var tokenRedirectUrl = !string.IsNullOrEmpty(redirectUrl) && Url.IsLocalUrl(redirectUrl)
             ? redirectUrl
             : DefaultAuthenticatedReturnPath;
-        if (user.ShouldChangePasswordOnNextLogin)
+        if (IsRootPath(tokenRedirectUrl))
         {
-            return Redirect("/panel/portal/profile?tab=password");
+            tokenRedirectUrl = DefaultAuthenticatedReturnPath;
         }
 
-        if (IsRootPath(target))
-        {
-            target = DefaultAuthenticatedReturnPath;
-        }
+        var target = PostLoginReturnUrl.Resolve(
+            tokenRedirectUrl,
+            forcePasswordChange: user.ShouldChangePasswordOnNextLogin);
 
         return Redirect(target);
     }
