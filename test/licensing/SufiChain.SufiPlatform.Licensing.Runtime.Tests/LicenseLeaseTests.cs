@@ -16,7 +16,8 @@ public sealed class LicenseLeaseTests : IDisposable
     [Fact]
     public void Valid_lease_verifies_offline_with_the_public_key()
     {
-        var confirmed = new DateTimeOffset(2026, 11, 15, 8, 0, 0, TimeSpan.Zero);
+        // ConfirmedAt is stored as unix seconds, so the anchor is whole seconds and stays inside the lease window.
+        var confirmed = DateTimeOffset.FromUnixTimeSeconds(DateTimeOffset.UtcNow.ToUnixTimeSeconds());
         var signed = _leases.Sign(new LicenseLease
         {
             LicenseId = "abc",
