@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using NSubstitute;
 using SufiChain.SufiPlatform.SufiAI.Web;
 using SufiChain.SufiPlatform.SufiAI.Hooshvare.Hooshvare;
+using Volo.Abp.MultiTenancy;
 using Volo.Abp.Settings;
 using Xunit;
 
@@ -116,7 +117,10 @@ public class WebResearchTests
 
     private static HooshvareWebResearchService Create(IWebSearchService search, IWebContentFetcher fetcher, WebResearchOptions options)
     {
-        var provider = Substitute.For<WebResearchOptionsProvider>(Substitute.For<ISettingProvider>());
+        // SET-35 reads host settings while the current tenant is null (host).
+        var provider = Substitute.For<WebResearchOptionsProvider>(
+            Substitute.For<ISettingProvider>(),
+            Substitute.For<ICurrentTenant>());
         provider.GetAsync().Returns(options);
         var progress = Substitute.For<IHooshvareTurnProgressReporter>();
         progress.ReportAsync(Arg.Any<HooshvareTurnProgressDto>(), Arg.Any<CancellationToken>()).Returns(Task.CompletedTask);
