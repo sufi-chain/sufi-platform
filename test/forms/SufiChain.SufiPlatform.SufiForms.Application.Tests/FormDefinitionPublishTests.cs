@@ -28,6 +28,18 @@ public class FormDefinitionPublishTests
     }
 
     [Fact]
+    public void Unpublish_requires_SufiForms_Forms_Publish()
+    {
+        var authorize = typeof(FormDefinitionAppService)
+            .GetMethod(nameof(FormDefinitionAppService.UnpublishAsync))!
+            .GetCustomAttribute<AuthorizeAttribute>();
+
+        authorize.ShouldNotBeNull();
+        authorize.Policy.ShouldBe(SufiFormsPermissions.Forms.Publish);
+        authorize.Policy.ShouldNotBe(SufiFormsPermissions.Forms.Edit);
+    }
+
+    [Fact]
     public async Task Draft_record_save_is_blocked_until_the_definition_is_published()
     {
         var records = new FormRecordManager { LazyServiceProvider = LazyGuids() };
