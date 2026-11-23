@@ -52,7 +52,7 @@ public class EmailSettingsAppService : SettingsAppServiceBase, IEmailSettingsApp
         return new EmailSettingsDto
         {
             SmtpHost = Value(SufiComSenderSettingNames.Email.SmtpHost),
-            SmtpPort = ToInt32(Value(SufiComSenderSettingNames.Email.SmtpPort)),
+            SmtpPort = DisplayPort(ToInt32(Value(SufiComSenderSettingNames.Email.SmtpPort))),
             SmtpUserName = Value(SufiComSenderSettingNames.Email.SmtpUserName),
             SmtpDomain = Value(SufiComSenderSettingNames.Email.SmtpDomain),
             SmtpEnableSsl = ToBoolean(Value(SufiComSenderSettingNames.Email.SmtpEnableSsl)),
@@ -65,6 +65,11 @@ public class EmailSettingsAppService : SettingsAppServiceBase, IEmailSettingsApp
     public virtual async Task UpdateAsync(UpdateEmailSettingsDto input)
     {
         await EnsureCanChangeEmailAsync();
+        EmailSettingsRules.RejectIncompleteSmtp(
+            input.SmtpHost,
+            input.SmtpPort,
+            L["SmtpHost:Required"],
+            L["SmtpPort:Invalid"]);
         EmailSettingsRules.RejectInvalidFromAddress(input.DefaultFromAddress, L["DefaultFromAddress:Invalid"]);
 
         await SettingManager.SetForTenantOrGlobalAsync(CurrentTenant.Id, SufiComSenderSettingNames.Email.SmtpHost, input.SmtpHost);
@@ -149,6 +154,12 @@ public class EmailSettingsAppService : SettingsAppServiceBase, IEmailSettingsApp
     {
         return int.TryParse(value, out var result) ? result : 0;
     }
+
+    /// <summary>
+    /// An unset port used to render as 0. The form shows the submission default until the user changes it.
+    /// </summary>
+    protected virtual int DisplayPort(int port) =>
+        port is >= 1 and <= 65535 ? port : EmailSettingsRules.DefaultSmtpPort;
 
     protected virtual bool ToBoolean(string? value)
     {

@@ -4,6 +4,7 @@ using SufiChain.SufiPlatform.Branding.Branding;
 using SufiChain.SufiPlatform.Branding.Settings;
 using Volo.Abp.MultiTenancy;
 using Volo.Abp.Settings;
+using Volo.Abp.Validation;
 using SufiSettingManager = SufiChain.SufiPlatform.Settings.ISettingManager;
 using Xunit;
 
@@ -62,5 +63,27 @@ public class TenantBrandingWorkflowTests
 
         await manager.Received(1).SetForTenantOrGlobalAsync(tenant.Id, BrandingSettings.PanelLayout, "DualSidebar");
         await manager.Received(1).SetForTenantOrGlobalAsync(tenant.Id, BrandingSettings.AppName, "Sufi");
+    }
+
+    [Theory]
+    [InlineData("#abc")]
+    [InlineData("#A1B2C3")]
+    [InlineData(null)]
+    public void Hex_theme_colours_are_accepted(string? color)
+    {
+        Should.NotThrow(() => BrandingThemeColor.RejectInvalid(color, "ThemeColor:Invalid"));
+    }
+
+    [Theory]
+    [InlineData("zzz")]
+    [InlineData("#zzz")]
+    [InlineData("#12")]
+    public void Other_theme_colours_are_rejected(string color)
+    {
+        var exception = Should.Throw<AbpValidationException>(() => BrandingThemeColor.RejectInvalid(color, "ThemeColor:Invalid"));
+
+        exception.ValidationErrors.ShouldContain(error =>
+            error.MemberNames.Contains(nameof(UpdateTenantBrandingDto.ThemeColor))
+            && error.ErrorMessage == "ThemeColor:Invalid");
     }
 }

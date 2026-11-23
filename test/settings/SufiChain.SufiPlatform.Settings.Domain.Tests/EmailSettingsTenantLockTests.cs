@@ -129,6 +129,40 @@ public class EmailSettingsTenantLockTests
             address);
     }
 
+    [Fact]
+    public async Task Host_rejects_an_empty_smtp_host_and_a_port_outside_1_to_65535()
+    {
+        var manager = Substitute.For<ISettingManager>();
+        var service = Create(Substitute.For<ISettingProvider>(), manager, tenant: false, allowEmailChanges: false);
+
+        var exception = await Should.ThrowAsync<AbpValidationException>(() => service.UpdateAsync(new UpdateEmailSettingsDto
+        {
+            SmtpHost = "  ",
+            SmtpPort = 0
+        }));
+
+        exception.ValidationErrors.ShouldContain(error =>
+            error.MemberNames.Contains(nameof(UpdateEmailSettingsDto.SmtpHost))
+            && error.ErrorMessage == "SmtpHost:Required");
+        exception.ValidationErrors.ShouldContain(error =>
+            error.MemberNames.Contains(nameof(UpdateEmailSettingsDto.SmtpPort))
+            && error.ErrorMessage == "SmtpPort:Invalid");
+        await manager.DidNotReceive().SetForTenantOrGlobalAsync(Arg.Any<Guid?>(), Arg.Any<string>(), Arg.Any<string?>());
+    }
+
+    [Fact]
+    public async Task Host_load_shows_the_default_port_when_none_is_stored()
+    {
+        var provider = Substitute.For<ISettingProvider>();
+        provider.GetAllAsync(Arg.Any<string[]>()).Returns(call =>
+            call.Arg<string[]>().Select(name => new SettingValue(name, "")).ToList());
+        var service = Create(provider, Substitute.For<ISettingManager>(), tenant: false, allowEmailChanges: false);
+
+        var result = await service.GetAsync();
+
+        result.SmtpPort.ShouldBe(EmailSettingsRules.DefaultSmtpPort);
+    }
+
     private static EmailSettingsAppService Create(
         ISettingProvider provider,
         ISettingManager manager,

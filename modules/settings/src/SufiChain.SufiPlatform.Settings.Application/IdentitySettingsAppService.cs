@@ -116,6 +116,14 @@ public class IdentitySettingsAppService : SettingsAppServiceBase, IIdentitySetti
     {
         await CheckFeatureAsync();
         IdentitySettingsRules.Validate(input);
+        IdentitySettingsRules.RequireExternalCaptchaKeys(
+            input,
+            await GetStringAsync(IdentitySettingNames.Captcha.Turnstile.SecretKey),
+            await GetStringAsync(IdentitySettingNames.Captcha.Recaptcha.SecretKey),
+            L["CaptchaTurnstileSiteKey:Required"],
+            L["CaptchaTurnstileSecretKey:Required"],
+            L["CaptchaRecaptchaSiteKey:Required"],
+            L["CaptchaRecaptchaSecretKey:Required"]);
 
         var blockSignInUntilEmailConfirmed = input.RequireConfirmedEmail;
 

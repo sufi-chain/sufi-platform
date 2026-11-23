@@ -32,6 +32,40 @@ public static class IdentitySettingsRules
         }
     }
 
+    public static void RequireExternalCaptchaKeys(
+        IdentitySettingsDto input,
+        string? storedTurnstileSecret,
+        string? storedRecaptchaSecret,
+        string turnstileSiteMessage,
+        string turnstileSecretMessage,
+        string recaptchaSiteMessage,
+        string recaptchaSecretMessage)
+    {
+        var results = new List<ValidationResult>();
+        if (IsProvider(input.CaptchaProvider, "Turnstile"))
+        {
+            RequireText(results, input.CaptchaTurnstileSiteKey, nameof(input.CaptchaTurnstileSiteKey), turnstileSiteMessage);
+            if (string.IsNullOrWhiteSpace(input.CaptchaTurnstileSecretKey) && string.IsNullOrWhiteSpace(storedTurnstileSecret))
+            {
+                results.Add(new ValidationResult(turnstileSecretMessage, [nameof(input.CaptchaTurnstileSecretKey)]));
+            }
+        }
+
+        if (IsProvider(input.CaptchaProvider, "Recaptcha"))
+        {
+            RequireText(results, input.CaptchaRecaptchaSiteKey, nameof(input.CaptchaRecaptchaSiteKey), recaptchaSiteMessage);
+            if (string.IsNullOrWhiteSpace(input.CaptchaRecaptchaSecretKey) && string.IsNullOrWhiteSpace(storedRecaptchaSecret))
+            {
+                results.Add(new ValidationResult(recaptchaSecretMessage, [nameof(input.CaptchaRecaptchaSecretKey)]));
+            }
+        }
+
+        if (results.Count > 0)
+        {
+            throw new AbpValidationException(results);
+        }
+    }
+
     private static void RequireRange(List<ValidationResult> results, int value, int min, int max, string member)
     {
         if (value < min || value > max)
@@ -39,4 +73,15 @@ public static class IdentitySettingsRules
             results.Add(new ValidationResult($"{member} must be between {min} and {max}.", new[] { member }));
         }
     }
+
+    private static void RequireText(List<ValidationResult> results, string? value, string member, string message)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            results.Add(new ValidationResult(message, [member]));
+        }
+    }
+
+    private static bool IsProvider(string? provider, string name) =>
+        string.Equals(provider, name, StringComparison.OrdinalIgnoreCase);
 }

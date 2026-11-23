@@ -35,4 +35,36 @@ public class IdentitySettingsRulesTests
         exception.ValidationErrors.ShouldContain(error =>
             error.MemberNames.Contains(nameof(input.LockoutMaxFailedAccessAttempts)));
     }
+
+    [Fact]
+    public void Turnstile_without_keys_is_rejected_and_a_stored_secret_can_stay_blank()
+    {
+        var missing = new IdentitySettingsDto { CaptchaProvider = "Turnstile" };
+
+        var exception = Should.Throw<AbpValidationException>(() => IdentitySettingsRules.RequireExternalCaptchaKeys(
+            missing,
+            storedTurnstileSecret: null,
+            storedRecaptchaSecret: null,
+            "site",
+            "secret",
+            "rsite",
+            "rsecret"));
+
+        exception.ValidationErrors.ShouldContain(error => error.MemberNames.Contains(nameof(missing.CaptchaTurnstileSiteKey)));
+        exception.ValidationErrors.ShouldContain(error => error.MemberNames.Contains(nameof(missing.CaptchaTurnstileSecretKey)));
+
+        var kept = new IdentitySettingsDto
+        {
+            CaptchaProvider = "Turnstile",
+            CaptchaTurnstileSiteKey = "site-key"
+        };
+        Should.NotThrow(() => IdentitySettingsRules.RequireExternalCaptchaKeys(
+            kept,
+            storedTurnstileSecret: "already-stored",
+            storedRecaptchaSecret: null,
+            "site",
+            "secret",
+            "rsite",
+            "rsecret"));
+    }
 }
