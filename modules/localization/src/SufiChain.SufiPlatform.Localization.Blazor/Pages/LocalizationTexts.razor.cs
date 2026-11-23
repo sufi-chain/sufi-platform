@@ -130,7 +130,9 @@ public partial class LocalizationTexts : LocalizationComponentBase
         {
             ResourceName = _selectedResource!,
             CultureName = _selectedCulture!,
-            KeyFilter = _keyFilter,
+            KeyFilter = request.GetFilterValue("Key") ?? _keyFilter,
+            ValueFilter = request.GetFilterValue("Value"),
+            BaseValueFilter = request.GetFilterValue("BaseValue"),
             SkipCount = Math.Max(0, request.PageIndex * request.PageSize),
             MaxResultCount = request.PageSize
         };
@@ -148,7 +150,8 @@ public partial class LocalizationTexts : LocalizationComponentBase
         {
             ResourceName = _selectedResource,
             CultureName = _selectedCulture,
-            KeyFilter = _keyFilter,
+            KeyFilter = request.GetFilterValue("Key") ?? _keyFilter,
+            ValueFilter = request.GetFilterValue("Value"),
             SkipCount = Math.Max(0, request.PageIndex * request.PageSize),
             MaxResultCount = request.PageSize
         };

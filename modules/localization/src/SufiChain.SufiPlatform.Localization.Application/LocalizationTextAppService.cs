@@ -347,6 +347,17 @@ public class LocalizationTextAppService : SufiApplicationService, ILocalizationT
             filtered = filtered.Where(t => t.Key.Contains(input.KeyFilter, StringComparison.OrdinalIgnoreCase));
         }
 
+        if (!string.IsNullOrWhiteSpace(input.ValueFilter))
+        {
+            filtered = filtered.Where(t => LocalizationTextValueFilter.Matches(t, input.ValueFilter));
+        }
+
+        if (!string.IsNullOrWhiteSpace(input.BaseValueFilter))
+        {
+            filtered = filtered.Where(t =>
+                LocalizationTextValueFilter.Contains(t.BaseValue, input.BaseValueFilter));
+        }
+
         if (input.OnlyOverridden)
         {
             filtered = filtered.Where(t => t.IsOverride);

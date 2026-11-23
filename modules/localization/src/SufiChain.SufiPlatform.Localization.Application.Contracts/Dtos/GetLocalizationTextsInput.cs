@@ -21,6 +21,11 @@ public class GetMergedLocalizationTextsInput : PagedAndSortedResultRequestDto
     public string CultureName { get; set; } = default!;
 
     public string? KeyFilter { get; set; }
+
+    public string? ValueFilter { get; set; }
+
+    public string? BaseValueFilter { get; set; }
+
     public bool OnlyOverridden { get; set; }
 }
 
