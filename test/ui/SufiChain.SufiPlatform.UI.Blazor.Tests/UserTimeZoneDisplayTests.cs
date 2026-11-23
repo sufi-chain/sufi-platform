@@ -59,8 +59,11 @@ public class UserTimeZoneDisplayTests
     public void Unspecified_kind_is_stored_utc()
     {
         var unspecified = new DateTime(2026, 10, 30, 17, 55, 0, DateTimeKind.Unspecified);
-        UserTimeZoneDisplay.Format(unspecified, "yyyy-MM-dd HH:mm", UserTimeZoneDisplay.DefaultZone, CultureInfo.InvariantCulture)
+        var zone = UserTimeZoneDisplay.DefaultZone;
+        UserTimeZoneDisplay.Format(unspecified, "yyyy-MM-dd HH:mm", zone, CultureInfo.InvariantCulture)
             .ShouldBe("2026-10-30 21:25");
+        UserTimeZoneDisplay.FormatWithZone(unspecified, "HH:mm", zone, CultureInfo.InvariantCulture)
+            .ShouldBe($"21:25 ({zone.Id})");
     }
 
     [Fact]

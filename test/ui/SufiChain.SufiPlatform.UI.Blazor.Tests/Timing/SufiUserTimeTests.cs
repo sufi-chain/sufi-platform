@@ -32,6 +32,8 @@ public class SufiUserTimeTests : BunitContext
         var time = cut.Find("bdi");
         time.TextContent.ShouldBe(expected);
         time.GetAttribute("dir").ShouldBe("ltr");
+        time.GetAttribute("title").ShouldBe(UserTimeZoneDisplay.Resolve(id).Id);
+        time.GetAttribute("aria-label").ShouldBe($"{expected} ({UserTimeZoneDisplay.Resolve(id).Id})");
     }
 
     [Fact]

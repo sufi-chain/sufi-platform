@@ -1,7 +1,7 @@
 @namespace SufiChain.SufiPlatform.UI.Blazor.Timing
 @inject IUserTimeZoneDisplay TimeZoneDisplay
 
-<bdi dir="ltr">@_text</bdi>
+<bdi dir="ltr" title="@_zoneLabel" aria-label="@_ariaLabel">@_text</bdi>
 
 @code {
     public const string DefaultFormat = "yyyy-MM-dd HH:mm:ss";
@@ -16,12 +16,15 @@
     public string Empty { get; set; } = "-";
 
     private string _text = "-";
+    private string _zoneLabel = UserTimeZoneDisplay.DefaultTimeZoneId;
+    private string _ariaLabel = "-";
 
     protected override async Task OnParametersSetAsync()
     {
         if (!Value.HasValue)
         {
             _text = Empty;
+            _ariaLabel = Empty;
             return;
         }
 
@@ -36,6 +39,8 @@
         }
 
         var format = string.IsNullOrWhiteSpace(Format) ? DefaultFormat : Format;
+        _zoneLabel = zone.Id;
         _text = UserTimeZoneDisplay.Format(Value.Value, format, zone);
+        _ariaLabel = $"{_text} ({_zoneLabel})";
     }
 }

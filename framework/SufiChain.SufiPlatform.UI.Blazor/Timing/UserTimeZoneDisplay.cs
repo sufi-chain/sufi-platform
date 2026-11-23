@@ -81,6 +81,11 @@ public class UserTimeZoneDisplay : IUserTimeZoneDisplay
         return culture == null ? display.ToString(format) : display.ToString(format, culture);
     }
 
+    public static string FormatWithZone(DateTime value, string format, TimeZoneInfo zone, CultureInfo? culture = null)
+    {
+        return $"{Format(value, format, zone, culture)} ({zone.Id})";
+    }
+
     public static async Task<TimeZoneInfo> LoadAsync(IServiceProvider services)
     {
         var display = services.GetService<IUserTimeZoneDisplay>();
