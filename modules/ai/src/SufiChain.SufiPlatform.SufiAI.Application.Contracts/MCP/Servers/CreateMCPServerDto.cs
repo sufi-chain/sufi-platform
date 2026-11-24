@@ -1,9 +1,12 @@
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using SufiChain.SufiPlatform.SufiAI;
+using SufiChain.SufiPlatform.SufiAI.MCP;
 using Volo.Abp.Auditing;
 
 namespace SufiChain.SufiPlatform.SufiAI.MCP.Servers;
 
-public class CreateMCPServerDto
+public class CreateMCPServerDto : IValidatableObject
 {
     [Required]
     [StringLength(128)]
@@ -41,4 +44,15 @@ public class CreateMCPServerDto
     /// with STDIO.
     /// </summary>
     public string BindingMode { get; set; } = "TenantLevel";
+
+    public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+    {
+        if (McpServerAdminRules.RequiresEndpoint(TransportType)
+            && !McpServerAdminRules.IsAbsoluteHttpUrl(Endpoint))
+        {
+            yield return new ValidationResult(
+                AIErrorCodes.MCPEndpointInvalid,
+                new[] { nameof(Endpoint) });
+        }
+    }
 }

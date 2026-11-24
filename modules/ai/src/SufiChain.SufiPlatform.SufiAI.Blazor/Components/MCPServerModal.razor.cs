@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
+using SufiChain.SufiPlatform.SufiAI.MCP;
 using SufiChain.SufiPlatform.SufiAI.MCP.Servers;
 using SufiChain.SufiPlatform.UI.Blazor;
 
@@ -30,6 +31,7 @@ public partial class MCPServerModal
 
     // sufi-chain#384 slice 6b: TenantLevel (default) or UserScoped.
     private string _bindingMode = "TenantLevel";
+    private string? _endpointError;
 
     /// <summary>
     /// A user-scoped server receives a per-user token, which STDIO has no channel for. The domain rejects
@@ -77,6 +79,8 @@ public partial class MCPServerModal
     
     private async Task SaveAsync()
     {
+        _endpointError = null;
+
         if (string.IsNullOrWhiteSpace(_name))
         {
             await Message.ErrorAsync(L["NameIsRequired"]);
@@ -86,6 +90,13 @@ public partial class MCPServerModal
         if (Server == null && string.IsNullOrWhiteSpace(_key))
         {
             await Message.ErrorAsync(L["ServerKeyIsRequired"]);
+            return;
+        }
+
+        if (McpServerAdminRules.RequiresEndpoint(_transportType)
+            && !McpServerAdminRules.IsAbsoluteHttpUrl(_endpoint))
+        {
+            _endpointError = L["AI:MCPEndpointInvalid"];
             return;
         }
         
@@ -156,6 +167,7 @@ public partial class MCPServerModal
         _environmentJson = string.Empty;
         _environmentKeys = new List<string>();
         _bindingMode = "TenantLevel";
+        _endpointError = null;
     }
 
     /// <summary>STDIO can never be user-scoped, so the form always saves it as tenant-level.</summary>

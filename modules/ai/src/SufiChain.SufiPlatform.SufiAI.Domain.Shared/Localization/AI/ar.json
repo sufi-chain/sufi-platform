@@ -629,6 +629,8 @@
     "UsageUnavailable": "الاستخدام غير متاح",
     "UsageUnavailableRequests": "الاستخدام غير متاح",
     "VisionCapabilityDescription": "تحليل الصورة باستخدام نموذج قادر على الرؤية.",
-    "AI:WebResearchHostOnly": "إعدادات البحث على الويب متاحة على المضيف فقط. يستخدم المستأجرون تكوين بحث المضيف."
+    "AI:WebResearchHostOnly": "إعدادات البحث على الويب متاحة على المضيف فقط. يستخدم المستأجرون تكوين بحث المضيف.",
+    "AI:MCPServerNameAlreadyExists": "يوجد بالفعل خادم MCP بهذا الاسم.",
+    "AI:MCPEndpointInvalid": "يجب أن تكون نقطة النهاية عنواناً مطلقاً يبدأ بـ http أو https."
   }
 }

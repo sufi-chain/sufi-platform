@@ -87,6 +87,10 @@
                                      Type="url"
                                      Placeholder="https://mcp-server.example.com"
                                      FullWidth="true" />
+                        @if (!string.IsNullOrEmpty(_endpointError))
+                        {
+                            <SbText Variant="SbTextVariant.Caption" Color="SbColor.Danger">@_endpointError</SbText>
+                        }
                     </SbFormField>
                 }
                 

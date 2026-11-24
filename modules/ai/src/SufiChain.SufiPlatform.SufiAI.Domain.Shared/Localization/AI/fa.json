@@ -629,6 +629,8 @@
     "UsageUnavailableRequests": "استفاده در دسترس نیست",
     "VisionCapabilityDescription": "تجزیه و تحلیل یک تصویر با یک مدل با قابلیت دید.",
     "[REDACTED]": "دستور سامانه",
-    "AI:WebResearchHostOnly": "تنظیمات پژوهش وب فقط در میزبان در دسترس است. مستأجران از پیکربندی جستجوی میزبان استفاده می‌کنند."
+    "AI:WebResearchHostOnly": "تنظیمات پژوهش وب فقط در میزبان در دسترس است. مستأجران از پیکربندی جستجوی میزبان استفاده می‌کنند.",
+    "AI:MCPServerNameAlreadyExists": "سرور MCP با این نام از قبل وجود دارد.",
+    "AI:MCPEndpointInvalid": "نشانی باید یک نشانی مطلق http یا https باشد."
   }
 }

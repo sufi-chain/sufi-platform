@@ -69,7 +69,10 @@ public class MCPServerAppService : SufiApplicationService, IMCPServerAppService
             throw new BusinessException("AI:MCPServerKeyAlreadyExists")
                 .WithData("Key", input.Key);
         }
-        
+
+        await RejectDuplicateNameAsync(currentId: null, input.Name);
+        RejectInvalidEndpoint(input.TransportType, input.Endpoint);
+
         var transportType = ParseTransport(input.TransportType);
         
         var server = new MCPServer(
@@ -104,6 +107,12 @@ public class MCPServerAppService : SufiApplicationService, IMCPServerAppService
     {
         var server = await _repository.GetAsync(id);
         var before = ConnectionSnapshot.From(server);
+
+        await RejectDuplicateNameAsync(server.Id, input.Name);
+        var transportName = string.IsNullOrWhiteSpace(input.TransportType)
+            ? server.TransportType.ToString()
+            : input.TransportType;
+        RejectInvalidEndpoint(transportName, input.Endpoint);
 
         server.SetName(input.Name);
 
@@ -239,6 +248,29 @@ public class MCPServerAppService : SufiApplicationService, IMCPServerAppService
         }
 
         return mode;
+    }
+
+    private async Task RejectDuplicateNameAsync(Guid? currentId, string name)
+    {
+        var servers = await _serverRepository.GetListAsync();
+        if (McpServerAdminRules.IsDuplicateName(
+            servers.Select(server => (server.Id, server.Name)),
+            currentId,
+            name))
+        {
+            throw new BusinessException(AIErrorCodes.MCPServerNameAlreadyExists)
+                .WithData("Name", name.Trim());
+        }
+    }
+
+    private static void RejectInvalidEndpoint(string? transportType, string? endpoint)
+    {
+        if (McpServerAdminRules.RequiresEndpoint(transportType)
+            && !McpServerAdminRules.IsAbsoluteHttpUrl(endpoint))
+        {
+            throw new BusinessException(AIErrorCodes.MCPEndpointInvalid)
+                .WithData("Endpoint", endpoint ?? string.Empty);
+        }
     }
 
     /// <summary>

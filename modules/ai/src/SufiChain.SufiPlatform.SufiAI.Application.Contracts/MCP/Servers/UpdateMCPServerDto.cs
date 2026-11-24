@@ -1,9 +1,12 @@
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using SufiChain.SufiPlatform.SufiAI;
+using SufiChain.SufiPlatform.SufiAI.MCP;
 using Volo.Abp.Auditing;
 
 namespace SufiChain.SufiPlatform.SufiAI.MCP.Servers;
 
-public class UpdateMCPServerDto
+public class UpdateMCPServerDto : IValidatableObject
 {
     [Required]
     [StringLength(128)]
@@ -38,4 +41,15 @@ public class UpdateMCPServerDto
     /// sufi-chain#557: <c>STDIO</c>, <c>SSE</c>, or <c>HTTP</c>. Null keeps the stored transport.
     /// </summary>
     public string? TransportType { get; set; }
+
+    public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+    {
+        if (McpServerAdminRules.RequiresEndpoint(TransportType)
+            && !McpServerAdminRules.IsAbsoluteHttpUrl(Endpoint))
+        {
+            yield return new ValidationResult(
+                AIErrorCodes.MCPEndpointInvalid,
+                new[] { nameof(Endpoint) });
+        }
+    }
 }
