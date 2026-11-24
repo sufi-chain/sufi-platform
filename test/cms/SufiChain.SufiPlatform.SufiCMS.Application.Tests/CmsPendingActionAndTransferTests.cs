@@ -65,6 +65,25 @@ public class CmsPendingActionAndTransferTests
     }
 
     [Fact]
+    public void Reject_Leaves_A_SectionPatch_No_Longer_Pending()
+    {
+        var now = new DateTime(2026, 9, 23, 12, 0, 0, DateTimeKind.Utc);
+        var action = new CmsPendingAction(
+            Guid.NewGuid(),
+            CmsPendingActionKind.SectionPatch,
+            "Rewrite section",
+            "{}",
+            Guid.NewGuid(),
+            null,
+            now.AddMinutes(10));
+
+        action.Status.ShouldBe(CmsPendingActionStatus.Pending);
+        action.Reject(now);
+        action.Status.ShouldBe(CmsPendingActionStatus.Rejected);
+        action.Status.ShouldNotBe(CmsPendingActionStatus.Pending);
+    }
+
+    [Fact]
     public void Confirm_Then_Confirm_Again_Is_Rejected()
     {
         var now = new DateTime(2026, 9, 23, 12, 0, 0, DateTimeKind.Utc);
