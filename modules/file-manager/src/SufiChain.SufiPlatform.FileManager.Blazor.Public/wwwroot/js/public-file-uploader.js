@@ -107,6 +107,7 @@ export async function uploadFilesFromInput(inputId, apiBaseUrl, metadata, access
     }
 
     const maxFileSize = metadata && metadata.maxFileSize ? Number(metadata.maxFileSize) : 0;
+    const accept = metadata && metadata.accept ? String(metadata.accept) : '';
 
     for (let i = 0; i < files.length; i++) {
         if (maxFileSize > 0 && files[i].size > maxFileSize) {
@@ -114,6 +115,18 @@ export async function uploadFilesFromInput(inputId, apiBaseUrl, metadata, access
                 await dotNetRef.invokeMethodAsync('OnUploadComplete', i, {
                     success: false,
                     error: `File exceeds the maximum size.`
+                });
+            } catch {
+                // Component may be disposed
+            }
+            continue;
+        }
+
+        if (accept && !fileMatchesAccept(files[i], accept)) {
+            try {
+                await dotNetRef.invokeMethodAsync('OnUploadComplete', i, {
+                    success: false,
+                    error: `File type is not allowed.`
                 });
             } catch {
                 // Component may be disposed
@@ -130,6 +143,20 @@ export async function uploadFilesFromInput(inputId, apiBaseUrl, metadata, access
     }
 
     input.value = '';
+}
+
+function fileMatchesAccept(file, accept) {
+    const tokens = String(accept).split(',').map(token => token.trim().toLowerCase()).filter(Boolean);
+    if (tokens.length === 0) return true;
+    const name = (file.name || '').toLowerCase();
+    const type = (file.type || '').toLowerCase();
+    const dot = name.lastIndexOf('.');
+    const extension = dot >= 0 ? name.slice(dot) : '';
+    return tokens.some(token => {
+        if (token.startsWith('.')) return extension === token;
+        if (token.endsWith('/*')) return type.startsWith(token.slice(0, -1));
+        return type === token;
+    });
 }
 
 export function triggerFileInput(elementId) {

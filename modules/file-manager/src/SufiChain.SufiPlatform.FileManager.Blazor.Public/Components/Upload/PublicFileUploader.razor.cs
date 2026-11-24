@@ -176,6 +176,7 @@ public partial class PublicFileUploader
             FolderPath = string.IsNullOrWhiteSpace(FolderPath) ? null : FolderPath.Trim(),
             AutoConfirm = AutoConfirm,
             MaxFileSize = MaxFileSize,
+            Accept = Accept,
             TenantId = CurrentTenant.Id?.ToString()
         };
 
@@ -215,6 +216,12 @@ public partial class PublicFileUploader
                 selected.ErrorMessage = $"File '{info.Name}' exceeds the maximum size of {FormatFileSize(MaxFileSize)}.";
                 _errors.Add(selected.ErrorMessage);
             }
+            else if (!PublicUploadAccept.IsAllowed(Accept, info.Name, info.Type))
+            {
+                selected.HasError = true;
+                selected.ErrorMessage = L["FileTypeNotAllowed", info.Name].Value;
+                _errors.Add(selected.ErrorMessage);
+            }
             else
             {
                 selected.IsUploading = true;
@@ -222,6 +229,12 @@ public partial class PublicFileUploader
             }
 
             _selectedFiles.Add(selected);
+        }
+
+        _expectedCompletions = _selectedFiles.Count(file => file.IsUploading);
+        if (_errors.Count > 0 && _expectedCompletions == 0)
+        {
+            _ = InvokeAsync(() => UploadFailed.InvokeAsync(_errors[0]));
         }
 
         _ = InvokeAsync(StateHasChanged);
@@ -254,6 +267,11 @@ public partial class PublicFileUploader
         }
 
         var selectedFile = _selectedFiles[fileIndex];
+        if (selectedFile.HasError)
+        {
+            return;
+        }
+
         selectedFile.IsUploading = false;
         _receivedCompletions++;
 
@@ -306,8 +324,7 @@ public partial class PublicFileUploader
             // Compact / immediate-picker mode: clear progress after parent receives files.
             if (!ShowDropZone)
             {
-                _selectedFiles.Clear();
-                _errors.Clear();
+                _selectedFiles.RemoveAll(file => !file.HasError);
                 await InvokeAsync(StateHasChanged);
             }
         }

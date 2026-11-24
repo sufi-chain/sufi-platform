@@ -98,6 +98,9 @@ public class PublicJsUploadMetadata
     public string? TenantId { get; set; }
     /// <summary>When &gt; 0, oversized files are rejected client-side before HTTP upload.</summary>
     public long MaxFileSize { get; set; }
+
+    /// <summary>HTML accept list. Empty allows every type the structure already permits.</summary>
+    public string? Accept { get; set; }
 }
 
 public class PublicJsFileInfo
