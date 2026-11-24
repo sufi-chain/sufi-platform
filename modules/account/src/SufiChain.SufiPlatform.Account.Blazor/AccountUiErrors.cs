@@ -2,15 +2,17 @@ using System.Globalization;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
 using SufiChain.SufiPlatform.Account.Blazor.Components;
+using SufiChain.SufiPlatform.Account.Blazor.Pages;
 using SufiChain.SufiPlatform.Account.Localization;
 using SufiChain.SufiPlatform.Identity;
 using Volo.Abp.ExceptionHandling;
 
 namespace SufiChain.SufiPlatform.Account.Blazor;
 
-internal static class AccountUiErrors
+public static class AccountUiErrors
 {
     private const string CooldownSecondsKey = "seconds";
+    public const string OtpCaptchaFailedKey = "OtpCaptchaFailed";
 
     public static string LocalizedFailure(
         ILogger logger,
@@ -18,7 +20,16 @@ internal static class AccountUiErrors
         Exception exception,
         string localizationKey)
     {
-        logger.LogError(exception, "Account UI operation failed ({Key}).", localizationKey);
+        var code = exception is IHasErrorCode hasCode ? hasCode.Code : null;
+        if (string.IsNullOrWhiteSpace(code))
+        {
+            logger.LogError(exception, "Account UI operation failed ({Key}).", localizationKey);
+        }
+        else
+        {
+            logger.LogError(exception, "Account UI operation failed ({Key}). Code={Code}.", localizationKey, code);
+        }
+
         return accountL[localizationKey];
     }
 
@@ -40,7 +51,11 @@ internal static class AccountUiErrors
         }
 
         resendAvailableAt = null;
-        return LocalizedFailure(logger, accountL, exception, localizationKey);
+        var key = exception is IHasErrorCode { Code: var code } &&
+                  string.Equals(code, ForgotPasswordFeedback.CaptchaErrorKey, StringComparison.Ordinal)
+            ? OtpCaptchaFailedKey
+            : localizationKey;
+        return LocalizedFailure(logger, accountL, exception, key);
     }
 
     public static bool TryGetResendCooldownSeconds(Exception exception, out int seconds)

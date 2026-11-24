@@ -138,6 +138,7 @@
     "TwoFactorVerifyFailed": "La verificación de dos factores falló. Revise el código e inténtelo de nuevo.",
     "TwoFactorActionFailed": "No se pudo completar la acción de dos factores. Inténtelo de nuevo.",
     "OtpSendFailed": "No se pudo enviar el código de un solo uso. Inténtelo de nuevo.",
+    "OtpCaptchaFailed": "La comprobación de seguridad falló o expiró. Complete una nueva comprobación.",
     "ResendOtpCode": "Reenviar código",
     "ResendOtpCodeIn": "Reenviar código en {0}",
     "OtpResendCooldownWait": "Espere {0} antes de solicitar otro código.",

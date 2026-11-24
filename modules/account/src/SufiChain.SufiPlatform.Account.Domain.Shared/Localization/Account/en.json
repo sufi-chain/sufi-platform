@@ -139,6 +139,7 @@
     "TwoFactorVerifyFailed": "Two-factor verification failed. Please check the code and try again.",
     "TwoFactorActionFailed": "The two-factor action could not be completed. Please try again.",
     "OtpSendFailed": "The one-time code could not be sent. Please try again.",
+    "OtpCaptchaFailed": "The security check failed or expired. Please complete the new security check.",
     "ResendOtpCode": "Resend code",
     "ResendOtpCodeIn": "Resend code in {0}",
     "OtpResendCooldownWait": "Please wait {0} before requesting another code.",
