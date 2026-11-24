@@ -866,7 +866,7 @@ public class WorkspaceAppService : SufiApplicationService, IWorkspaceAppService
         return AvailableModelListComposer.Compose(workspaceModels, catalog, capabilityType, markupPercent);
     }
 
-    public async Task TestConnectionAsync(TestWorkspaceConnectionInput input)
+    public async Task TestConnectionAsync(TestWorkspaceConnectionInput input, CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrWhiteSpace(input.Model))
         {
@@ -893,13 +893,13 @@ public class WorkspaceAppService : SufiApplicationService, IWorkspaceAppService
             input.CapabilityType,
             apiMode);
 
-        using var response = await _httpClientFactory.CreateClient().SendAsync(request);
+        using var response = await _httpClientFactory.CreateClient().SendAsync(request, cancellationToken);
         if (response.IsSuccessStatusCode)
         {
             return;
         }
 
-        var responseBody = await response.Content.ReadAsStringAsync();
+        var responseBody = await response.Content.ReadAsStringAsync(cancellationToken);
         var error = ParseProviderError(responseBody);
         var requestId = ReadRequestId(response, error);
         Logger.LogWarning(

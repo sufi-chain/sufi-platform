@@ -121,9 +121,9 @@ public class WorkspaceController : AIController, IWorkspaceAppService
     }
 
     [HttpPost("test-connection")]
-    public virtual Task TestConnectionAsync(TestWorkspaceConnectionInput input)
+    public virtual Task TestConnectionAsync(TestWorkspaceConnectionInput input, CancellationToken cancellationToken = default)
     {
-        return _workspaceAppService.TestConnectionAsync(input);
+        return _workspaceAppService.TestConnectionAsync(input, cancellationToken);
     }
 
     [HttpDelete("{id}")]

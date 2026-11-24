@@ -1,4 +1,6 @@
 using System.Globalization;
+using System.Net.Http;
+using System.Threading;
 using Microsoft.AspNetCore.Components;
 using SufiChain.SufiPlatform.SufiAI;
 using SufiChain.SufiPlatform.SufiAI.Blazor.Components;
@@ -367,18 +369,41 @@ public partial class WorkspaceEditor : AIComponentBase
             return;
         }
 
+        // 20 seconds. A cancelled or unreachable ping must still show a notice; the loading
+        // helper swallows those exceptions for other callers.
         await ExecuteWithLoadingAsync(async () =>
         {
-            await WorkspaceAppService.TestConnectionAsync(new TestWorkspaceConnectionInput
+            using var timeout = new CancellationTokenSource(WorkspaceConnectionTestNotice.Timeout);
+            using var linked = CancellationTokenSource.CreateLinkedTokenSource(timeout.Token, ComponentCancellationToken);
+            try
             {
-                WorkspaceId = IsEdit ? WorkspaceId : null,
-                Model = _draft.Model,
-                ApiKey = _draft.ApiKey,
-                ApiBaseUrl = _draft.ApiBaseUrl,
-                Provider = _draft.Provider,
-                OpenAIApiMode = OpenAIApiMode.ChatCompletions
-            });
-            await Notify.SuccessAsync(L["ConnectionTestSuccessful"]);
+                await WorkspaceAppService.TestConnectionAsync(new TestWorkspaceConnectionInput
+                {
+                    WorkspaceId = IsEdit ? WorkspaceId : null,
+                    Model = _draft.Model,
+                    ApiKey = _draft.ApiKey,
+                    ApiBaseUrl = _draft.ApiBaseUrl,
+                    Provider = _draft.Provider,
+                    OpenAIApiMode = OpenAIApiMode.ChatCompletions
+                }, linked.Token);
+                await Notify.SuccessAsync(L[WorkspaceConnectionTestNotice.Success]);
+            }
+            catch (Exception ex)
+            {
+                var key = WorkspaceConnectionTestNotice.For(ex, timeout.IsCancellationRequested);
+                if (key == null)
+                {
+                    throw;
+                }
+
+                if (key == WorkspaceConnectionTestNotice.Unreachable)
+                {
+                    await Notify.ErrorAsync(L[key]);
+                    return;
+                }
+
+                await Notify.WarnAsync(L[key]);
+            }
         }, LoadingKeys.TestConnection);
     }
 

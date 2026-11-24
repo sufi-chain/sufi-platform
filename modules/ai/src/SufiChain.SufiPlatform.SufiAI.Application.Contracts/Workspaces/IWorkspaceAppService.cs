@@ -39,7 +39,7 @@ public interface IWorkspaceAppService : IApplicationService
 
     Task<List<OpenAIModelDto>> GetAvailableModelsAsync(GetOpenAIModelsInput input);
 
-    Task TestConnectionAsync(TestWorkspaceConnectionInput input);
+    Task TestConnectionAsync(TestWorkspaceConnectionInput input, CancellationToken cancellationToken = default);
 
     Task DeleteAsync(Guid id);
 }
