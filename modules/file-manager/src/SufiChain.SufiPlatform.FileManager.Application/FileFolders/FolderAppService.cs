@@ -226,6 +226,7 @@ public class FolderAppService : SufiApplicationService, IFolderAppService
             result.TotalFileCount = 0;
         }
 
+        FolderNameFilter.Apply(result, input.Filter);
         result.TotalFolderCount = result.Folders.Count;
         result.TotalSize = result.Files.Sum(f => f.Size);
 
@@ -322,6 +323,7 @@ public class FolderAppService : SufiApplicationService, IFolderAppService
                 .Take(input.MaxResultCount)
                 .ToList());
         result.TotalFileCount = directFiles.Count;
+        FolderNameFilter.Apply(result, input.Filter);
         result.TotalFolderCount = result.Folders.Count;
         result.TotalSize = result.Files.Sum(f => f.Size);
         return result;

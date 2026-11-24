@@ -4,6 +4,7 @@
 @inject IFileItemAppService FileItemAppService
 @inject IFileItemUrlProvider FileItemUrlProvider
 @inject NavigationManager NavigationManager
+@inject ILocalStorageService LocalStorage
 @inherits FileManagerComponentBase
 
 <div class="file-manager @Class">
@@ -277,8 +278,9 @@
 
     protected override async Task OnInitializedAsync()
     {
-        _state.ViewMode = InitialViewMode;
-        _state.NavigateTo(null, "/");
+        _state.ViewMode = await ReadStoredViewModeAsync();
+        var folderId = await ReadStoredFolderIdAsync();
+        _state.NavigateTo(folderId, "/");
         await RefreshAsync();
         await LoadClipboardState();
     }
@@ -316,6 +318,7 @@
             };
 
             _state.Contents = await FolderAppService.GetContentsAsync(input);
+            await PersistFolderAsync(_state.CurrentFolderId);
         }
         catch (Exception ex)
         {
@@ -615,10 +618,58 @@
         }
     }
 
-    private void HandleViewModeChanged(FileViewMode mode)
+    private async Task HandleViewModeChanged(FileViewMode mode)
     {
         _state.ViewMode = mode;
+        await PersistAsync(StorageKey("ViewMode"), mode.ToString());
         StateHasChanged();
+    }
+
+    private async Task<FileViewMode> ReadStoredViewModeAsync()
+    {
+        var stored = await ReadAsync(StorageKey("ViewMode"));
+        return Enum.TryParse<FileViewMode>(stored, out var mode) ? mode : InitialViewMode;
+    }
+
+    private async Task<Guid?> ReadStoredFolderIdAsync()
+    {
+        var stored = await ReadAsync(StorageKey("FolderId"));
+        return Guid.TryParse(stored, out var folderId) ? folderId : null;
+    }
+
+    private Task PersistFolderAsync(Guid? folderId)
+    {
+        return PersistAsync(StorageKey("FolderId"), folderId?.ToString() ?? string.Empty);
+    }
+
+    private string StorageKey(string name)
+    {
+        var scope = string.IsNullOrWhiteSpace(StructureKey) ? "default" : StructureKey.Trim();
+        return "SufiFileManager." + scope + "." + name;
+    }
+
+    private async Task<string?> ReadAsync(string key)
+    {
+        try
+        {
+            return await LocalStorage.GetItemAsync(key);
+        }
+        catch (Exception)
+        {
+            return null;
+        }
+    }
+
+    private async Task PersistAsync(string key, string value)
+    {
+        try
+        {
+            await LocalStorage.SetItemAsync(key, value);
+        }
+        catch (Exception)
+        {
+            // Prerender and tests have no browser storage. The in-memory view still changes.
+        }
     }
 
     private async Task HandleSourceModeChanged(FileExplorerSourceMode mode)

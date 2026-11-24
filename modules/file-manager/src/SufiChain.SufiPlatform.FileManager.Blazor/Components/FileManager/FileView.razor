@@ -120,7 +120,22 @@
                              @oncontextmenu:preventDefault
                              @oncontextmenu:stopPropagation>
                             <span style="@GetFolderIconStyle(folder)"><SbIcon Name="@GetFolderIconName(folder)" /></span>
-                            <span class="fm-list-name">@GetFolderDisplayName(folder)</span>
+                            <span class="fm-list-name">
+                                @if (State.IsRenaming && State.RenamingItemId == folder.Id)
+                                {
+                                    <SbTextField TValue="string"
+                                                 Class="fm-rename-input"
+                                                 aria-label="@L["Rename"]"
+                                                 @bind-Value="_renameText"
+                                                 @onblur="@(() => FinishRename(folder.Id!.Value, true))"
+                                                 @onkeyup="@((KeyboardEventArgs e) => HandleRenameKeyUp(e, folder.Id!.Value, true))"
+                                                 autofocus />
+                                }
+                                else
+                                {
+                                    @GetFolderDisplayName(folder)
+                                }
+                            </span>
                         </div>
                     }
                     @foreach (var file in State.Contents.Files)
@@ -133,7 +148,22 @@
                              @oncontextmenu:preventDefault
                              @oncontextmenu:stopPropagation>
                             <SbIcon Name="@GetFileIconName(file)" />
-                            <span class="fm-list-name">@GetFileDisplayName(file)</span>
+                            <span class="fm-list-name">
+                                @if (State.IsRenaming && State.RenamingItemId == file.Id)
+                                {
+                                    <SbTextField TValue="string"
+                                                 Class="fm-rename-input"
+                                                 aria-label="@L["Rename"]"
+                                                 @bind-Value="_renameText"
+                                                 @onblur="@(() => FinishRename(file.Id, false))"
+                                                 @onkeyup="@((KeyboardEventArgs e) => HandleRenameKeyUp(e, file.Id, false))"
+                                                 autofocus />
+                                }
+                                else
+                                {
+                                    @GetFileDisplayName(file)
+                                }
+                            </span>
                             @if (file.IsTemp) { <SbChip Color="SbColor.Warning" Size="SbSize.Sm" Class="ms-1">@L["Temporary"]</SbChip> }
                         </div>
                     }
@@ -173,7 +203,22 @@
                                 <td class="fm-col-icon">
                                     <span style="@GetFolderIconStyle(folder)"><SbIcon Name="@GetFolderIconName(folder)" /></span>
                                 </td>
-                                <td class="fm-col-name">@GetFolderDisplayName(folder)</td>
+                                <td class="fm-col-name">
+                                    @if (State.IsRenaming && State.RenamingItemId == folder.Id)
+                                    {
+                                        <SbTextField TValue="string"
+                                                     Class="fm-rename-input"
+                                                     aria-label="@L["Rename"]"
+                                                     @bind-Value="_renameText"
+                                                     @onblur="@(() => FinishRename(folder.Id!.Value, true))"
+                                                     @onkeyup="@((KeyboardEventArgs e) => HandleRenameKeyUp(e, folder.Id!.Value, true))"
+                                                     autofocus />
+                                    }
+                                    else
+                                    {
+                                        @GetFolderDisplayName(folder)
+                                    }
+                                </td>
                                 <td class="fm-col-status">-</td>
                                 <td class="fm-col-date">-</td>
                                 <td class="fm-col-type">@L["Folder"]</td>
@@ -192,7 +237,22 @@
                                 <td class="fm-col-icon">
                                     <SbIcon Name="@GetFileIconName(file)" />
                                 </td>
-                                <td class="fm-col-name">@GetFileDisplayName(file)</td>
+                                <td class="fm-col-name">
+                                    @if (State.IsRenaming && State.RenamingItemId == file.Id)
+                                    {
+                                        <SbTextField TValue="string"
+                                                     Class="fm-rename-input"
+                                                     aria-label="@L["Rename"]"
+                                                     @bind-Value="_renameText"
+                                                     @onblur="@(() => FinishRename(file.Id, false))"
+                                                     @onkeyup="@((KeyboardEventArgs e) => HandleRenameKeyUp(e, file.Id, false))"
+                                                     autofocus />
+                                    }
+                                    else
+                                    {
+                                        @GetFileDisplayName(file)
+                                    }
+                                </td>
                                 <td class="fm-col-status">@if (file.IsTemp) { <SbChip Color="SbColor.Warning" Size="SbSize.Sm">@L["Temporary"]</SbChip> } else { <span class="text-muted">-</span> }</td>
                                 <td class="fm-col-date"><SufiUserTime Value="@file.CreationTime" Format="yyyy-MM-dd HH:mm" /></td>
                                 <td class="fm-col-type">@GetFileType(file)</td>
