@@ -9,6 +9,7 @@ public static class ProviderFailureKind
     public static string CodeFor(int? status) => status switch
     {
         401 or 403 => AIErrorCodes.ProviderAuthorizationFailed,
+        410 => AIErrorCodes.EmbeddingModelRetired,
         429 => AIErrorCodes.ProviderRateLimited,
         >= 500 and <= 599 => AIErrorCodes.ProviderUnavailable,
         not null => AIErrorCodes.ProviderRequestFailed,

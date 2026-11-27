@@ -1,5 +1,6 @@
 using System.Net.Http;
 using System.Text.RegularExpressions;
+using SufiChain.SufiPlatform.SufiAI.Workspaces;
 using Volo.Abp;
 
 namespace SufiChain.SufiPlatform.SufiAI;
@@ -137,6 +138,16 @@ public sealed class LlmCallFailure
     public static BusinessException Sanitize(Exception? exception)
     {
         var status = ReadStatus(exception);
+        var retired = EmbeddingProviderFailures.AsRetiredBusinessException(
+            status,
+            ReadProviderMessage(exception) ?? exception?.Message,
+            ReadData(exception, "ModelId"),
+            EmbeddingProviderFailures.CapabilityChat);
+        if (retired != null)
+        {
+            return retired;
+        }
+
         if (exception is BusinessException business && IsUserSafe(business))
         {
             if (ProviderFailureKind.IsGenericProviderFailure(business.Code))
@@ -199,6 +210,16 @@ public sealed class LlmCallFailure
         }
 
         return copy;
+    }
+
+    private static string? ReadData(Exception? exception, string key)
+    {
+        if (exception is not BusinessException business || !business.Data.Contains(key))
+        {
+            return null;
+        }
+
+        return business.Data[key]?.ToString();
     }
 
     private static string? ReadProviderMessage(Exception? exception)

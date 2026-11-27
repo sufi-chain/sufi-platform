@@ -61,6 +61,53 @@ public class EmbeddingProviderFailureTests
         EmbeddingProviderFailures.ResolveDimensions("custom-embed", 768).ShouldBe(768);
     }
 
+    [Fact]
+    public void ChatClient_OpenRouterNoEndpoints_ThrowsRetiredModel_Chat()
+    {
+        var error = LlmCallFailure.Sanitize(new LlmProviderCallException(
+            "No endpoints found for cohere/north-mini-code:free",
+            statusCode: 404));
+
+        error.Code.ShouldBe(AIErrorCodes.EmbeddingModelRetired);
+        error.Data["Capability"].ShouldBe(EmbeddingProviderFailures.CapabilityChat);
+        error.Message.ShouldNotContain("No endpoints found");
+    }
+
+    [Fact]
+    public void ChatClient_404ModelNotFound_ThrowsRetiredModel_Chat()
+    {
+        var error = LlmCallFailure.Sanitize(new Volo.Abp.BusinessException(AIErrorCodes.ProviderRequestFailed)
+            .WithData("StatusCode", 404)
+            .WithData("ProviderMessage", "model not found")
+            .WithData("ModelId", "retired-chat"));
+
+        error.Code.ShouldBe(AIErrorCodes.EmbeddingModelRetired);
+        error.Data["Model"].ShouldBe("retired-chat");
+        error.Data.Contains("ProviderMessage").ShouldBeFalse();
+    }
+
+    [Fact]
+    public void ChatClient_429_IsNotRetired()
+    {
+        var error = LlmCallFailure.Sanitize(new LlmProviderCallException("slow down", statusCode: 429));
+        error.Code.ShouldBe(AIErrorCodes.ProviderRateLimited);
+    }
+
+    [Fact]
+    public void DecisionClient_RetiredModel_ThrowsRetiredModel_Decision()
+    {
+        var error = EmbeddingProviderFailures.AsRetiredBusinessException(
+            410,
+            "end of life",
+            "decision-model",
+            EmbeddingProviderFailures.CapabilityDecision);
+
+        error.ShouldNotBeNull();
+        error!.Code.ShouldBe(AIErrorCodes.EmbeddingModelRetired);
+        error.Data["Capability"].ShouldBe(EmbeddingProviderFailures.CapabilityDecision);
+        error.Message.ShouldNotContain("end of life");
+    }
+
     [Theory]
     [InlineData(429, "rate limit")]
     [InlineData(404, "gateway timeout")]

@@ -38,6 +38,23 @@ public static class EmbeddingProviderFailures
             || body.Contains("no provider serves", StringComparison.OrdinalIgnoreCase);
     }
 
+    public static Volo.Abp.BusinessException? AsRetiredBusinessException(
+        int? statusCode,
+        string? body,
+        string? model,
+        string capability)
+    {
+        if (statusCode is not int status || !IsRetired(status, body))
+        {
+            return null;
+        }
+
+        return new Volo.Abp.BusinessException(AIErrorCodes.EmbeddingModelRetired)
+            .WithData("Model", model ?? string.Empty)
+            .WithData("Capability", capability)
+            .WithData("StatusCode", status);
+    }
+
     public static string SafeMessage(string model, string capability) =>
         $"The {capability} model '{model}' was retired by the provider. Choose a new model in Workspace model configurations, then re-index.";
 

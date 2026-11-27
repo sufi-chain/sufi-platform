@@ -104,10 +104,21 @@ public class OpenRouterSystemOneDecisionClient : ISystemOneDecisionClient, ITran
             var body = await response.Content.ReadAsStringAsync(cancellationToken);
             if (!response.IsSuccessStatusCode)
             {
+                var statusCode = (int)response.StatusCode;
+                if (EmbeddingProviderFailures.IsRetired(statusCode, body))
+                {
+                    _logger.LogWarning(
+                        "System One model was retired. Model={Model}, Status={StatusCode}",
+                        route.ModelId,
+                        statusCode);
+                    await RecordSafeAsync(resolved, stopwatch.ElapsedMilliseconds, false, AIErrorCodes.EmbeddingModelRetired, null, null, null, cancellationToken);
+                    throw new EmbeddingModelRetiredException(route.ModelId, EmbeddingProviderFailures.CapabilityDecision);
+                }
+
                 _logger.LogWarning(
                     "System One request failed. Model={Model}, Status={StatusCode}, Body={Body}",
                     route.ModelId,
-                    (int)response.StatusCode,
+                    statusCode,
                     Trim(body));
                 await RecordSafeAsync(resolved, stopwatch.ElapsedMilliseconds, false, "SystemOneRequestFailed", null, null, null, cancellationToken);
                 return null;
