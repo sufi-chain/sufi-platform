@@ -35,6 +35,8 @@
     "AI:DocumentSourceNotFound": "No se encontró la fuente de documentos '{SourceName}'.",
     "AI:DocumentIndexingFailed": "Falló la indexación de documentos para el espacio de trabajo '{WorkspaceName}' (fuente '{SourceName}'): {Error}",
     "AI:EmbeddingGenerationFailed": "Falló la generación de embeddings para el espacio de trabajo '{WorkspaceName}' (fuente '{SourceName}'): {Error}",
+    "AI:EmbeddingModelRetired": "El proveedor retiró el modelo {Capability} '{Model}'. Elija un modelo nuevo en la configuración del espacio de trabajo y vuelva a indexar.",
+    "AI:EmbeddingDimensionsRequired": "Indique el tamaño del vector del modelo de embeddings '{Model}' antes de indexar. El modelo no está en la lista conocida.",
     "AI:VectorStoreWriteFailed": "Falló al guardar embeddings en el vector store para el espacio de trabajo '{WorkspaceName}' (fuente '{SourceName}'): {Error}",
     "AI:VectorSearchFailed": "Falló la búsqueda vectorial para el espacio de trabajo '{WorkspaceName}': {Error}",
     "Actions": "Acciones",

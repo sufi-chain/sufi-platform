@@ -56,8 +56,9 @@ public class WorkspaceEmbedderResolver : IWorkspaceEmbedderResolver, ITransientD
             Model = configuration.ModelId,
             ApiKey = apiKey,
             ApiBaseUrl = apiBaseUrl,
-            Dimensions = configuration.Dimensions
-                ?? EmbeddingModelDefaults.GetDimensions(configuration.ModelId),
+            Dimensions = EmbeddingProviderFailures.ResolveDimensions(
+                configuration.ModelId,
+                configuration.Dimensions),
             MaxInputTokens = EmbeddingModelDefaults.GetMaxInputTokens(configuration.ModelId),
             EncodingFormat = EmbeddingModelDefaults.GetEncodingFormat(configuration.ModelId, apiBaseUrl),
             SupportsDimensionsParameter = !EmbeddingModelDefaults.RequiresCustomTransport(

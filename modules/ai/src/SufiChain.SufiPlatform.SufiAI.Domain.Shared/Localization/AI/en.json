@@ -35,6 +35,8 @@
     "AI:DocumentSourceNotFound": "Document source '{SourceName}' was not found.",
     "AI:DocumentIndexingFailed": "Document indexing failed for workspace '{WorkspaceName}' (source '{SourceName}'): {Error}",
     "AI:EmbeddingGenerationFailed": "Embedding generation failed for workspace '{WorkspaceName}' (source '{SourceName}'): {Error}",
+    "AI:EmbeddingModelRetired": "The {Capability} model '{Model}' was retired by the provider. Choose a new model in Workspace model configurations, then re-index.",
+    "AI:EmbeddingDimensionsRequired": "Set the vector size for embedding model '{Model}' before indexing. The model is not in the known list.",
     "AI:VectorStoreWriteFailed": "Saving embeddings to the vector store failed for workspace '{WorkspaceName}' (source '{SourceName}'): {Error}",
     "AI:VectorSearchFailed": "Vector search failed for workspace '{WorkspaceName}': {Error}",
     "Actions": "Actions",

@@ -19,6 +19,16 @@ namespace SufiChain.SufiPlatform.SufiAI.Workspaces;
 /// </summary>
 public static class WorkspaceConfigurationHelper
 {
+    internal static Task GenerateEmbeddingsForTestsAsync(
+        HttpMessageHandler handler,
+        string model,
+        IEnumerable<string> values,
+        CancellationToken cancellationToken = default)
+    {
+        using var generator = new CompatibleEmbeddingGenerator(handler, model);
+        return generator.GenerateAsync(values, cancellationToken: cancellationToken);
+    }
+
     public static void ConfigureKernel(
         IKernelBuilder builder,
         WorkspaceRuntimeConfiguration configuration,
@@ -149,6 +159,16 @@ public static class WorkspaceConfigurationHelper
             _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", apiKey);
         }
 
+        internal CompatibleEmbeddingGenerator(HttpMessageHandler handler, string model)
+        {
+            _model = model;
+            _httpClient.Dispose();
+            _httpClient = new HttpClient(handler, disposeHandler: false)
+            {
+                BaseAddress = new Uri("https://embeddings.test/")
+            };
+        }
+
         public async Task<GeneratedEmbeddings<Embedding<float>>> GenerateAsync(
             IEnumerable<string> values,
             EmbeddingGenerationOptions? options = null,
@@ -173,8 +193,14 @@ public static class WorkspaceConfigurationHelper
             var body = await response.Content.ReadAsStringAsync(cancellationToken);
             if (!response.IsSuccessStatusCode)
             {
+                var statusCode = (int)response.StatusCode;
+                if (EmbeddingProviderFailures.IsRetired(statusCode, body))
+                {
+                    throw new EmbeddingModelRetiredException(_model, EmbeddingProviderFailures.CapabilityEmbedding);
+                }
+
                 throw new InvalidOperationException(
-                    $"Embedding provider returned HTTP {(int)response.StatusCode}: {body}");
+                    $"Embedding provider returned HTTP {statusCode}: {body}");
             }
 
             using var document = JsonDocument.Parse(body);

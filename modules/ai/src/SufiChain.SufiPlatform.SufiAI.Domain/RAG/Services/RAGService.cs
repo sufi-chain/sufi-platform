@@ -98,7 +98,15 @@ public class RAGService : DomainService, IRAGService
 
         var embeddingGenerator = await _syncService.GetOrCreateEmbeddingGeneratorAsync(workspaceName, cancellationToken);
         var queryText = EmbeddingInputGuard.FitToBudget(query, vectorStoreContext.MaxInputTokens);
-        var embeddings = await embeddingGenerator.GenerateAsync(new[] { queryText }, cancellationToken: cancellationToken);
+        GeneratedEmbeddings<Embedding<float>> embeddings;
+        try
+        {
+            embeddings = await embeddingGenerator.GenerateAsync(new[] { queryText }, cancellationToken: cancellationToken);
+        }
+        catch (Exception exception) when (FindRetired(exception) is not null)
+        {
+            throw CreateIndexingBusinessException("GenerateEmbeddings", workspaceName, sourceName ?? string.Empty, exception);
+        }
         var queryEmbedding = embeddings.First().Vector.ToArray();
 
         var vectorStoreProvider = GetVectorStoreProvider(vectorStoreContext.Type);
@@ -656,20 +664,48 @@ public class RAGService : DomainService, IRAGService
         Exception exception)
     {
         var detail = ResolveExceptionDetail(exception);
-        var code = phase switch
+        var retired = FindRetired(exception);
+        var code = retired != null
+            ? AIErrorCodes.EmbeddingModelRetired
+            : phase switch
+            {
+                "GenerateEmbeddings" => AIErrorCodes.EmbeddingGenerationFailed,
+                "StoreEmbeddings" => AIErrorCodes.VectorStoreWriteFailed,
+                _ => AIErrorCodes.DocumentIndexingFailed
+            };
+        if (retired != null)
         {
-            "GenerateEmbeddings" => AIErrorCodes.EmbeddingGenerationFailed,
-            "StoreEmbeddings" => AIErrorCodes.VectorStoreWriteFailed,
-            _ => AIErrorCodes.DocumentIndexingFailed
-        };
+            detail = retired.Message;
+        }
 
         var businessException = new BusinessException(code, detail, innerException: exception);
+        if (retired != null)
+        {
+            businessException
+                .WithData("Model", retired.Model)
+                .WithData("Capability", retired.Capability);
+        }
         businessException
             .WithData("WorkspaceName", workspaceName)
             .WithData("SourceName", sourceName)
             .WithData("Phase", phase)
             .WithData("Error", detail);
         return businessException;
+    }
+
+    private static EmbeddingModelRetiredException? FindRetired(Exception exception)
+    {
+        if (exception is EmbeddingModelRetiredException retired)
+        {
+            return retired;
+        }
+
+        if (exception is AggregateException aggregate)
+        {
+            return aggregate.Flatten().InnerExceptions.Select(FindRetired).FirstOrDefault(match => match != null);
+        }
+
+        return exception.InnerException == null ? null : FindRetired(exception.InnerException);
     }
 
     private static string ResolveExceptionDetail(Exception exception)

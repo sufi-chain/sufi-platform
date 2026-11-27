@@ -18,6 +18,12 @@ public static class AIErrorCodes
     public const string DocumentSourceNotFound = "AI:DocumentSourceNotFound";
     public const string DocumentIndexingFailed = "AI:DocumentIndexingFailed";
     public const string EmbeddingGenerationFailed = "AI:EmbeddingGenerationFailed";
+
+    /// <summary>The provider retired or no longer serves this model. Data: Model, Capability.</summary>
+    public const string EmbeddingModelRetired = "AI:EmbeddingModelRetired";
+
+    /// <summary>An unknown embedding model has no configured vector size. Data: Model.</summary>
+    public const string EmbeddingDimensionsRequired = "AI:EmbeddingDimensionsRequired";
     public const string VectorStoreWriteFailed = "AI:VectorStoreWriteFailed";
     public const string VectorSearchFailed = "AI:VectorSearchFailed";
     

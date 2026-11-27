@@ -35,6 +35,8 @@
     "AI:DocumentSourceNotFound": "مصدر المستند '{SourceName}' غير موجود.",
     "AI:DocumentIndexingFailed": "فشلت فهرسة المستندات لمساحة العمل '{WorkspaceName}' (المصدر '{SourceName}'): {Error}",
     "AI:EmbeddingGenerationFailed": "فشل توليد التضمين لمساحة العمل '{WorkspaceName}' (المصدر '{SourceName}'): {Error}",
+    "AI:EmbeddingModelRetired": "أوقف المزود نموذج {Capability} «{Model}». اختر نموذجاً جديداً في إعدادات مساحة العمل ثم أعد الفهرسة.",
+    "AI:EmbeddingDimensionsRequired": "عيّن حجم المتجه لنموذج التضمين «{Model}» قبل الفهرسة. النموذج غير موجود في القائمة المعروفة.",
     "AI:VectorStoreWriteFailed": "فشل حفظ التضمينات في مخزن المتجهات لمساحة العمل '{WorkspaceName}' (المصدر '{SourceName}'): {Error}",
     "AI:VectorSearchFailed": "فشل البحث المتجهي لمساحة العمل '{WorkspaceName}': {Error}",
     "Actions": "الإجراءات",

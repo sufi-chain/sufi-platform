@@ -35,6 +35,8 @@
     "AI:DocumentSourceNotFound": "منبع سند '{SourceName}' یافت نشد.",
     "AI:DocumentIndexingFailed": "ایندکس‌گذاری اسناد برای فضای کاری '{WorkspaceName}' (منبع '{SourceName}') ناموفق بود: {Error}",
     "AI:EmbeddingGenerationFailed": "تولید embedding برای فضای کاری '{WorkspaceName}' (منبع '{SourceName}') ناموفق بود: {Error}",
+    "AI:EmbeddingModelRetired": "مدل {Capability} با شناسهٔ «{Model}» از سوی ارائه‌دهنده بازنشسته شده است. در فضای کاری یک مدل تازه انتخاب کنید و نمایه‌سازی را دوباره اجرا کنید.",
+    "AI:EmbeddingDimensionsRequired": "اندازهٔ بردار مدل تعبیهٔ «{Model}» را پیش از نمایه‌سازی وارد کنید. این مدل در فهرست مدل‌های شناخته‌شده نیست.",
     "AI:VectorStoreWriteFailed": "ذخیره embedding در vector store برای فضای کاری '{WorkspaceName}' (منبع '{SourceName}') ناموفق بود: {Error}",
     "AI:VectorSearchFailed": "جستجوی برداری برای فضای کاری '{WorkspaceName}' ناموفق بود: {Error}",
     "Actions": "عملیات‌ها",
