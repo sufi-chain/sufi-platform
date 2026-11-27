@@ -1,8 +1,10 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Options;
 using SufiChain.SufiPlatform.Application.Dtos;
 using SufiChain.SufiPlatform.Application.Services;
 using Volo.Abp.Domain.Entities;
+using Volo.Abp.Options;
 
 namespace SufiChain.SufiPlatform.Identity;
 
@@ -47,6 +49,8 @@ public class IdentityUserAppService : SufiApplicationService, IIdentityUserAppSe
     [Authorize(IdentityPermissions.Users.Create)]
     public virtual async Task<IdentityUserDto> CreateAsync(IdentityUserCreateDto input)
     {
+        await LazyServiceProvider.LazyGetRequiredService<IOptions<IdentityOptions>>().SetAsync();
+
        var user = new IdentityUser(GuidGenerator.Create(), input.UserName, input.Email, CurrentTenant.Id)
        {
            Name = input.Name,
@@ -75,6 +79,8 @@ public class IdentityUserAppService : SufiApplicationService, IIdentityUserAppSe
     [Authorize(IdentityPermissions.Users.Update)]
     public virtual async Task<IdentityUserDto> UpdateAsync(Guid id, IdentityUserUpdateDto input)
     {
+        await LazyServiceProvider.LazyGetRequiredService<IOptions<IdentityOptions>>().SetAsync();
+
         var user = await UserManager.GetByIdAsync(id);
         user.ConcurrencyStamp = input.ConcurrencyStamp;
 

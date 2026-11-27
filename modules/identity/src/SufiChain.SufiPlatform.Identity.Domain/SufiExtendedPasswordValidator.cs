@@ -5,6 +5,7 @@ using Volo.Abp.Settings;
 
 namespace SufiChain.SufiPlatform.Identity;
 
+[DisableConventionalRegistration]
 public class SufiExtendedPasswordValidator : IPasswordValidator<IdentityUser>, ITransientDependency
 {
     protected ISettingProvider SettingProvider { get; }

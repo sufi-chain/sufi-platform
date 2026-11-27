@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using SufiChain.SufiPlatform.Account.Otp;
 using SufiChain.SufiPlatform.Captcha;
 using SufiChain.SufiPlatform.Identity;
@@ -13,6 +14,7 @@ using SufiChain.SufiPlatform.UI.Abstractions.Account;
 using Volo.Abp;
 using SufiChain.SufiPlatform.Application.Services;
 using Volo.Abp.EventBus.Local;
+using Volo.Abp.Options;
 using Volo.Abp.Settings;
 
 namespace SufiChain.SufiPlatform.Account;
@@ -302,6 +304,7 @@ public class AccountOtpAppService : SufiApplicationService, IAccountOtpAppServic
             email,
             CurrentTenant.Id);
 
+        await LazyServiceProvider.LazyGetRequiredService<IOptions<IdentityOptions>>().SetAsync();
         (await UserManager.CreateAsync(user, input.Password)).CheckErrors();
         await UserManager.SetEmailAsync(user, email);
 

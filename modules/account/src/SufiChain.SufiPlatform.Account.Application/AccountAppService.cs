@@ -11,6 +11,7 @@ using SufiChain.SufiPlatform.Identity;
 using SufiChain.SufiPlatform.Identity.Settings;
 using SufiChain.SufiPlatform.UI.Abstractions.Account;
 using Volo.Abp;
+using Volo.Abp.Options;
 using SufiChain.SufiPlatform.Application.Services;
 using Volo.Abp.BackgroundJobs;
 using Volo.Abp.EventBus.Local;
@@ -79,6 +80,7 @@ public class AccountAppService : SufiApplicationService, IAccountAppService
             CurrentTenant.Id
         );
 
+        await IdentityOptions.SetAsync();
         (await UserManager.CreateAsync(user, input.Password)).CheckErrors();
 
         await UserManager.SetEmailAsync(user, input.EmailAddress);
@@ -193,6 +195,7 @@ public class AccountAppService : SufiApplicationService, IAccountAppService
 
     public virtual async Task ResetPasswordAsync(ResetPasswordDto input)
     {
+        await IdentityOptions.SetAsync();
         var user = await UserRepository.GetAsync(input.UserId);
 
         (await UserManager.ResetPasswordAsync(user, input.ResetToken, input.Password))

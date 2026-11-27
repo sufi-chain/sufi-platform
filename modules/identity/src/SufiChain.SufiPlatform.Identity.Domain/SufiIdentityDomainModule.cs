@@ -56,6 +56,8 @@ public class SufiIdentityDomainModule : AbpModule
                 options.User.RequireUniqueEmail = true;
             })
             .AddRoles<IdentityRole>()
+            // AddIdentityCore registers PasswordValidator once. The Sufi validator is not
+            // conventionally registered, so this adds it beside that built-in validator.
             .AddPasswordValidator<SufiExtendedPasswordValidator>();
 
         context.Services.AddObjectAccessor(identityBuilder);

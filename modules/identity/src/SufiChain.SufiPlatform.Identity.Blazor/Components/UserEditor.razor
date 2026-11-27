@@ -37,6 +37,10 @@
 															 Type="password"
 															 AutoComplete="new-password"
 															 Placeholder="@L["LeaveEmptyToKeepCurrentPassword"]" />
+												@if (_passwordError is not null)
+												{
+													<SbText Color="SbColor.Danger">@_passwordError</SbText>
+												}
 											}
 											else
 											{
