@@ -18,9 +18,9 @@ public class RAGController : AIController, IRAGAppService
     }
 
     [HttpGet("document-sources")]
-    public virtual Task<List<DocumentSourceDto>> GetDocumentSourcesAsync()
+    public virtual Task<List<DocumentSourceDto>> GetDocumentSourcesAsync(string? workspaceName = null)
     {
-        return _ragAppService.GetDocumentSourcesAsync();
+        return _ragAppService.GetDocumentSourcesAsync(workspaceName);
     }
 
     [HttpGet("availability")]

@@ -23,22 +23,25 @@ public class RAGAppService : SufiApplicationService, IRAGAppService
         return ObjectMapper.Map<RagAvailability, RagAvailabilityDto>(availability);
     }
 
-    public async Task<List<DocumentSourceDto>> GetDocumentSourcesAsync()
+    public async Task<List<DocumentSourceDto>> GetDocumentSourcesAsync(string? workspaceName = null)
     {
         var sources = _ragService.GetDocumentSources();
-        
+
         var result = new List<DocumentSourceDto>();
         foreach (var source in sources)
         {
             var count = await source.GetTotalCountAsync();
-            result.Add(new DocumentSourceDto
+            IndexingStatus? status = null;
+            if (!string.IsNullOrWhiteSpace(workspaceName))
             {
-                SourceName = source.SourceName,
-                DocumentCount = count,
-                LastIndexedAt = null // Will be tracked in future
-            });
+                status = await _ragService.GetIndexingStatusAsync(workspaceName, source.SourceName);
+            }
+
+            var dto = new DocumentSourceDto();
+            DocumentSourceStatus.Apply(dto, source.SourceName, count, status);
+            result.Add(dto);
         }
-        
+
         return result;
     }
 

@@ -10,6 +10,8 @@ public class DocumentSourceDto
     public IndexingStatusType Status { get; set; }
     public int? Progress { get; set; }
     public string? ErrorMessage { get; set; }
+
+    public string RequestName => string.IsNullOrWhiteSpace(Name) ? SourceName : Name;
 }
 
 public enum IndexingStatusType { Pending, Indexing, Complete, Failed }

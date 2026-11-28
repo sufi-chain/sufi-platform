@@ -115,7 +115,8 @@ public partial class IndexingStatus : AIComponentBase
             return new SbDataResponse<DocumentSourceDto>(new List<DocumentSourceDto>(), 0);
         }
 
-        _documentSources = await RAGAppService.GetDocumentSourcesAsync();
+        var workspaceName = _workspaces.FirstOrDefault(item => item.Id == _selectedWorkspaceId.Value)?.Name;
+        _documentSources = await RAGAppService.GetDocumentSourcesAsync(workspaceName);
         _totalCount = _documentSources.Count;
         
         var pagedSources = _documentSources
@@ -171,7 +172,7 @@ public partial class IndexingStatus : AIComponentBase
 
         await ExecuteWithLoadingAsync(async () =>
         {
-            await RAGAppService.StartIndexingAsync(workspace.Name, source.Name);
+            await RAGAppService.StartIndexingAsync(workspace.Name, source.RequestName);
             await Message.SuccessAsync(L["IndexingStartedSuccessfully"]);
             if (_gridRef != null)
             {
