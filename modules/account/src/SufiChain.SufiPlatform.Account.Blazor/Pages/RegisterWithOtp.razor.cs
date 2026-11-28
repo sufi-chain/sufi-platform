@@ -84,31 +84,33 @@ public partial class RegisterWithOtp
 
     protected DateTimeOffset? ResendAvailableAt { get; set; }
 
+    protected bool ShowPasswordlessForm =>
+        IsRegistrationStateKnown && RegisterOtpStartup.ShowsForm(
+            new RegisterOtpStartup.Result(IsSelfRegistrationEnabled, Options, false));
+
     protected override async Task OnInitializedAsync()
     {
-        IsSelfRegistrationEnabled = await IdentitySelfRegistrationRules.IsEnabledAsync(SettingProvider)
-            && await SelfRegistrationPolicy.IsEnabledAsync(SettingProvider);
+        var loaded = await RegisterOtpStartup.LoadAsync(
+            async () => await IdentitySelfRegistrationRules.IsEnabledAsync(SettingProvider)
+                && await SelfRegistrationPolicy.IsEnabledAsync(SettingProvider),
+            () => OtpAppService.GetOtpOptionsAsync(),
+            ex => Logger.LogWarning(ex, "Passwordless registration options could not be loaded."));
+        IsSelfRegistrationEnabled = loaded.SelfRegistrationEnabled;
+        Options = loaded.Options;
         IsRegistrationStateKnown = true;
-        if (!IsSelfRegistrationEnabled)
+        if (!loaded.SelfRegistrationEnabled)
         {
             ErrorMessage = L["Sufi.Identity:SelfRegistrationDisabled"];
             return;
         }
 
-        Options = await OtpAppService.GetOtpOptionsAsync();
-        if (!IsSelfRegistrationEnabled)
-        {
-            ErrorMessage = L["Sufi.Identity:SelfRegistrationDisabled"];
-        }
-        else if (Options is { IsEnabled: true, AllowRegistration: false })
+        if (!RegisterOtpStartup.ShowsForm(loaded))
         {
             ErrorMessage = AccountL["OtpRegistrationDisabled"];
+            return;
         }
 
-        if (Options is { IsEnabled: true })
-        {
-            SelectedChannel = Options.DefaultChannel;
-        }
+        SelectedChannel = Options!.DefaultChannel;
     }
 
     protected virtual string GetChannelLabel(VerificationDeliveryChannel channel) => channel switch

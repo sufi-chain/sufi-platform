@@ -13,12 +13,12 @@
                 @if (!IsRegistrationStateKnown)
                 {
                 }
-                else if (!IsSelfRegistrationEnabled)
+                else if (!ShowPasswordlessForm && !IsSelfRegistrationEnabled)
                 {
                     <SbAlert Severity="SbAlertSeverity.Warning">@(ErrorMessage ?? L["Sufi.Identity:SelfRegistrationDisabled"])</SbAlert>
                     <SbLink Href="/account/login">@L["SignIn"]</SbLink>
                 }
-                else if (Options is { IsEnabled: false } or { AllowRegistration: false })
+                else if (!ShowPasswordlessForm)
                 {
                     <SbAlert Severity="SbAlertSeverity.Warning">@(ErrorMessage ?? AccountL["OtpRegistrationDisabled"])</SbAlert>
                     @if (IsSelfRegistrationEnabled)
