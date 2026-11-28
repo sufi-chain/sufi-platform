@@ -211,8 +211,29 @@ public partial class FeaturesModal
 
     private bool AreAllToggleFeaturesEnabled(FeatureGroupDto group)
     {
-        var toggleFeatures = group.Features.Where(IsToggleFeature);
-        return toggleFeatures.All(f => _toggleValues.GetValueOrDefault(f.Name));
+        var toggleFeatures = group.Features.Where(IsToggleFeature).ToList();
+        return toggleFeatures.Count == 0
+            || FeatureToggleCheck.FromCounts(EnabledToggleCount(toggleFeatures), toggleFeatures.Count) == FeatureToggleCheckState.On;
+    }
+
+    private bool IsGroupIndeterminate(FeatureGroupDto group)
+    {
+        var toggleFeatures = group.Features.Where(IsToggleFeature).ToList();
+        return FeatureToggleCheck.FromCounts(EnabledToggleCount(toggleFeatures), toggleFeatures.Count) == FeatureToggleCheckState.Indeterminate;
+    }
+
+    private bool EnableAllIndeterminate
+    {
+        get
+        {
+            var toggleFeatures = _allGroups.SelectMany(x => x.Features).Where(IsToggleFeature).ToList();
+            return FeatureToggleCheck.FromCounts(EnabledToggleCount(toggleFeatures), toggleFeatures.Count) == FeatureToggleCheckState.Indeterminate;
+        }
+    }
+
+    private int EnabledToggleCount(IEnumerable<FeatureDto> features)
+    {
+        return features.Count(feature => _toggleValues.GetValueOrDefault(feature.Name));
     }
 
     private string GetFeatureDisplayName(FeatureDto feature)
@@ -241,10 +262,15 @@ public partial class FeaturesModal
         return () => _textValues[featureName];
     }
 
-    private bool EnableAll => _allGroups
-        .SelectMany(x => x.Features)
-        .Where(IsToggleFeature)
-        .All(f => _toggleValues.GetValueOrDefault(f.Name));
+    private bool EnableAll
+    {
+        get
+        {
+            var toggleFeatures = _allGroups.SelectMany(x => x.Features).Where(IsToggleFeature).ToList();
+            return toggleFeatures.Count == 0
+                || FeatureToggleCheck.FromCounts(EnabledToggleCount(toggleFeatures), toggleFeatures.Count) == FeatureToggleCheckState.On;
+        }
+    }
 
     private int GetEnabledCount(FeatureGroupDto group)
     {

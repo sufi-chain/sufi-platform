@@ -32,6 +32,7 @@
 					<StartAdornment><SbIcon Name="search" /></StartAdornment>
 				</SbTextField>
 				<SbCheckbox Value="@EnableAll"
+							Indeterminate="@EnableAllIndeterminate"
 							ValueChanged="OnEnableAllChanged"
 							Disabled="@_selectAllDisabled"
 							Label="@L["SelectAllInAllTabs"]" />
@@ -69,6 +70,7 @@
 										@if (HasToggleFeatures(group))
 										{
 											<SbCheckbox Value="@(AreAllToggleFeaturesEnabled(group))"
+														Indeterminate="@IsGroupIndeterminate(group)"
 														ValueChanged="@(v => OnGroupEnableAllChanged(v, group))"
 														Disabled="@(IsFeatureGroupDisabled(group))"
 														Label="@L["SelectAllInThisTab"]" />
