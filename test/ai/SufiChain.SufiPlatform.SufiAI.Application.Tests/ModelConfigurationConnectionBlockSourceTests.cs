@@ -64,6 +64,17 @@ public class ModelConfigurationConnectionBlockSourceTests
         json.ShouldNotContain("برای استفاده از کلید API فضای کاری خالی بگذارید");
     }
 
+    [Fact]
+    public void ModelConfigurationEditor_InheritedWorkspace_ReadOnlyHint_NoSave()
+    {
+        var markup = Read(Editor + ".razor");
+        var code = Read(Editor + ".razor.cs");
+        markup.ShouldContain("L[\"ModelRouteInheritedFromHost\"]");
+        markup.ShouldContain("_ready && !_readOnly");
+        code.ShouldContain("WorkspaceId = WorkspaceId");
+        code.ShouldContain("ModelConfigurationChangedReload");
+    }
+
     private static string Read(string relative)
     {
         var dir = new DirectoryInfo(AppContext.BaseDirectory);

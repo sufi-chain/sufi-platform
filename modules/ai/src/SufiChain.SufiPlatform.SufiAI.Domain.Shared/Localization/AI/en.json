@@ -494,6 +494,8 @@
     "GuardrailAmountMustBeNonNegative": "Guardrail amount must be a non-negative number.",
     "InheritedReadOnly": "Inherited (read-only)",
     "InheritedWorkspaceReadOnly": "Inherited workspaces and their models are read-only. You cannot edit or delete them.",
+    "ModelRouteInheritedFromHost": "Inherited from the host; ask the host admin to change it.",
+    "ModelConfigurationChangedReload": "This route changed or is not available. Reload the page.",
     "Guardrail:Daily": "Daily USD limit",
     "Guardrail:Weekly": "Weekly USD limit",
     "Guardrail:Monthly": "Monthly USD limit",

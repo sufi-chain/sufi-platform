@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Server.Circuits;
 using Shouldly;
 using SufiChain.SufiPlatform.UI.Blazor.Server.Circuit;
+using Volo.Abp.MultiTenancy;
 using Volo.Abp.Security.Claims;
 using Xunit;
 
@@ -16,7 +17,7 @@ public class BlazorServerPrincipalCircuitHandlerTests
     {
         var user = AuthenticatedUser();
         var accessor = new RecordingPrincipalAccessor();
-        var handler = new BlazorServerPrincipalCircuitHandler(new FixedAuthenticationStateProvider(user), accessor);
+        var handler = CreateHandler(user, accessor, new RecordingCurrentTenant());
 
         await handler.OnCircuitOpenedAsync(null!, CancellationToken.None);
 
@@ -35,7 +36,7 @@ public class BlazorServerPrincipalCircuitHandlerTests
     {
         var user = AuthenticatedUser();
         var accessor = new RecordingPrincipalAccessor();
-        var handler = new BlazorServerPrincipalCircuitHandler(new FixedAuthenticationStateProvider(user), accessor);
+        var handler = CreateHandler(user, accessor, new RecordingCurrentTenant());
         var sawUser = false;
 
         var dispatch = handler.CreateInboundActivityHandler(_ =>
@@ -55,11 +56,41 @@ public class BlazorServerPrincipalCircuitHandlerTests
     [Fact]
     public void Handler_runs_before_other_circuit_handlers()
     {
-        var handler = new BlazorServerPrincipalCircuitHandler(
-            new FixedAuthenticationStateProvider(AuthenticatedUser()),
-            new RecordingPrincipalAccessor());
+        var handler = CreateHandler(AuthenticatedUser(), new RecordingPrincipalAccessor(), new RecordingCurrentTenant());
 
         handler.Order.ShouldBe(int.MinValue);
+    }
+
+    [Fact]
+    public async Task UpdateModelConfiguration_FromCircuitEvent_KeepsTenant()
+    {
+        var tenantId = Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa");
+        var user = AuthenticatedUser(tenantId);
+        var tenant = new RecordingCurrentTenant();
+        var handler = CreateHandler(user, new RecordingPrincipalAccessor(), tenant);
+        Guid? seen = Guid.NewGuid();
+
+        var dispatch = handler.CreateInboundActivityHandler(_ =>
+        {
+            seen = tenant.Id;
+            return Task.CompletedTask;
+        });
+
+        await dispatch(CreateInboundContext());
+
+        seen.ShouldBe(tenantId);
+        tenant.Id.ShouldBeNull();
+    }
+
+    private static BlazorServerPrincipalCircuitHandler CreateHandler(
+        ClaimsPrincipal user,
+        RecordingPrincipalAccessor accessor,
+        RecordingCurrentTenant tenant)
+    {
+        return new BlazorServerPrincipalCircuitHandler(
+            new FixedAuthenticationStateProvider(user),
+            accessor,
+            tenant);
     }
 
     private static CircuitInboundActivityContext CreateInboundContext()
@@ -72,12 +103,47 @@ public class BlazorServerPrincipalCircuitHandlerTests
         return (CircuitInboundActivityContext)constructor!.Invoke([(Func<Task>)(() => Task.CompletedTask), null]);
     }
 
-    private static ClaimsPrincipal AuthenticatedUser()
+    private static ClaimsPrincipal AuthenticatedUser(Guid? tenantId = null)
     {
-        var identity = new ClaimsIdentity(
-            [new Claim(ClaimTypes.Name, "admin")],
-            authenticationType: "Test");
-        return new ClaimsPrincipal(identity);
+        var claims = new List<Claim> { new(ClaimTypes.Name, "admin") };
+        if (tenantId.HasValue)
+        {
+            claims.Add(new Claim(AbpClaimTypes.TenantId, tenantId.Value.ToString()));
+        }
+
+        return new ClaimsPrincipal(new ClaimsIdentity(claims, authenticationType: "Test"));
+    }
+
+    private sealed class RecordingCurrentTenant : ICurrentTenant
+    {
+        private readonly AsyncLocal<Guid?> _current = new();
+
+        public bool IsAvailable => Id.HasValue;
+
+        public Guid? Id => _current.Value;
+
+        public string? Name => null;
+
+        public IDisposable Change(Guid? id, string? name = null)
+        {
+            var parent = _current.Value;
+            _current.Value = id;
+            return new Scope(this, parent);
+        }
+
+        private sealed class Scope : IDisposable
+        {
+            private readonly RecordingCurrentTenant _tenant;
+            private readonly Guid? _parent;
+
+            public Scope(RecordingCurrentTenant tenant, Guid? parent)
+            {
+                _tenant = tenant;
+                _parent = parent;
+            }
+
+            public void Dispose() => _tenant._current.Value = _parent;
+        }
     }
 
     private sealed class FixedAuthenticationStateProvider : AuthenticationStateProvider

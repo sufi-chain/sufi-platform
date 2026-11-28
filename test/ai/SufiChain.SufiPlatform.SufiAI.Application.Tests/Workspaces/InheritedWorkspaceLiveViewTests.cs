@@ -167,6 +167,73 @@ public class InheritedWorkspaceLiveViewTests : SufiAITestBase<SufiAIApplicationT
         }
     }
 
+    [Fact]
+    public async Task UpdateModelConfiguration_DedicatedTenant_OwnRoute_ReadsTenantDb_Succeeds()
+    {
+        var tenantId = Guid.NewGuid();
+        var workspaceId = Guid.NewGuid();
+        Guid modelId;
+        using (_currentTenant.Change(tenantId))
+        {
+            modelId = await WithUnitOfWorkAsync(async () =>
+            {
+                var workspace = new Workspace(
+                    workspaceId,
+                    "tenant-own-" + workspaceId.ToString("N")[..8],
+                    AIProviderType.OpenRouter,
+                    "openrouter/free",
+                    tenantId);
+                var model = workspace.AddModelConfiguration(
+                    AICapabilityType.Embeddings,
+                    "nvidia/nemotron-3-embed-1b",
+                    apiEndpoint: "https://or-gateway.sufichain.com/v1",
+                    priority: 0,
+                    displayName: "Embed");
+                await _workspaceRepository.InsertAsync(workspace, autoSave: true);
+                return model.Id;
+            });
+
+            var updated = await _aiAppService.UpdateModelConfigurationAsync(modelId, new UpdateAIModelConfigurationDto
+            {
+                WorkspaceId = workspaceId,
+                ModelId = "nvidia/nemotron-3.5-embed-1b:free",
+                DisplayName = "Nemotron 3.5"
+            });
+
+            updated.ModelId.ShouldBe("nvidia/nemotron-3.5-embed-1b:free");
+            updated.WorkspaceId.ShouldBe(workspaceId);
+        }
+    }
+
+    [Fact]
+    public async Task UpdateModelConfiguration_InheritedWorkspace_HostRouteId_ThrowsInheritedReadOnly_NotEntityNotFound()
+    {
+        var tenantId = Guid.NewGuid();
+        var assignmentId = Guid.NewGuid();
+        var projectionId = Guid.NewGuid();
+        var host = await InsertHostWorkspaceAsync();
+        using (_currentTenant.Change(null))
+        {
+            await WithUnitOfWorkAsync(() => _assignmentRepository.InsertAsync(
+                new WorkspaceAssignment(assignmentId, tenantId, host.WorkspaceId, projectionId),
+                autoSave: true));
+            var source = await _workspaceRepository.GetAsync(host.WorkspaceId, includeDetails: true);
+            await _synchronizer.CreateTenantProjectionAsync(
+                source, tenantId, assignmentId, projectionId, host.WorkspaceId, source.Name);
+        }
+
+        using (_currentTenant.Change(tenantId))
+        {
+            var error = await Should.ThrowAsync<BusinessException>(() =>
+                _aiAppService.UpdateModelConfigurationAsync(host.ChatModelId, new UpdateAIModelConfigurationDto
+                {
+                    WorkspaceId = projectionId,
+                    ModelId = "changed-on-tenant"
+                }));
+            error.Code.ShouldBe(AIErrorCodes.InheritedWorkspaceReadOnly);
+        }
+    }
+
     private async Task<(Guid WorkspaceId, Guid ChatModelId)> InsertHostWorkspaceAsync()
     {
         var workspaceId = Guid.NewGuid();

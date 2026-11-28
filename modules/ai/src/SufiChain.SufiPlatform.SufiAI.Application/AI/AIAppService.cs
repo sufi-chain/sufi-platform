@@ -315,7 +315,7 @@ public class AIAppService : SufiApplicationService, IAIAppService
     [RequiresFeature(SufiAIFeatures.Workspaces)]
     public async Task<AIModelConfigurationDto> UpdateModelConfigurationAsync(Guid id, UpdateAIModelConfigurationDto input)
     {
-        var (workspace, configuration) = await GetEditableWorkspaceConfigurationAsync(id);
+        var (workspace, configuration) = await GetEditableWorkspaceConfigurationAsync(id, input.WorkspaceId);
         EnsureConcurrencyStamp(workspace, input.ConcurrencyStamp);
 
         var apiKeyToUpdate = input.ClearApiKey
@@ -512,8 +512,37 @@ public class AIAppService : SufiApplicationService, IAIAppService
         return workspace;
     }
 
-    private async Task<(Workspace Workspace, AIModelConfiguration Configuration)> GetEditableWorkspaceConfigurationAsync(Guid id)
+    private async Task<(Workspace Workspace, AIModelConfiguration Configuration)> GetEditableWorkspaceConfigurationAsync(
+        Guid id,
+        Guid workspaceId = default)
     {
+        if (workspaceId != Guid.Empty)
+        {
+            var editorWorkspace = await _workspaceRepository.FindAsync(workspaceId, includeDetails: true);
+            if (editorWorkspace == null)
+            {
+                throw new EntityNotFoundException(typeof(Workspace), workspaceId);
+            }
+
+            if (editorWorkspace.IsInherited)
+            {
+                throw InheritedWorkspaceReadOnly(id, editorWorkspace.Id);
+            }
+
+            var editorConfiguration = editorWorkspace.ModelConfigurations.FirstOrDefault(item => item.Id == id);
+            if (editorConfiguration == null)
+            {
+                if (await IsInheritedModelAsync(id, editorWorkspace.Id))
+                {
+                    throw InheritedWorkspaceReadOnly(id, editorWorkspace.Id);
+                }
+
+                throw new EntityNotFoundException(typeof(AIModelConfiguration), id);
+            }
+
+            return (editorWorkspace, editorConfiguration);
+        }
+
         AIModelConfiguration? lookup;
         using (_configurationRepository.DisableTracking())
         {

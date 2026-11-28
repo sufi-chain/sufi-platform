@@ -190,6 +190,9 @@ public class CreateAIModelConfigurationDto
 
 public class UpdateAIModelConfigurationDto
 {
+    /// <summary>Workspace the editor loaded. The save reads the route from this aggregate.</summary>
+    public Guid WorkspaceId { get; set; }
+
     public string ModelId { get; set; } = string.Empty;
     public string? DisplayName { get; set; }
     public string? Description { get; set; }

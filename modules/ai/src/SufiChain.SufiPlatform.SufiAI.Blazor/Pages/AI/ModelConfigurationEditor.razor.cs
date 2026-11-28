@@ -726,6 +726,7 @@ public partial class ModelConfigurationEditor : AIComponentBase
                     InputPriceUnit = _model.InputPriceUnit,
                     OutputPrice = _showOutputPrice ? _model.OutputPrice : null,
                     OutputPriceUnit = _model.OutputPriceUnit,
+                    WorkspaceId = WorkspaceId,
                     ConcurrencyStamp = _editing.ConcurrencyStamp,
                     Dimensions = _model.Dimensions,
                     AcceptsImageInput = _model.AcceptsImageInput,
@@ -735,7 +736,16 @@ public partial class ModelConfigurationEditor : AIComponentBase
                     DefaultReasoningEffort = _model.DefaultReasoningEffort,
                     CapabilitySource = _model.CapabilitySource
                 };
-                await AIAppService.UpdateModelConfigurationAsync(_editing.Id, updateDto);
+                try
+                {
+                    await AIAppService.UpdateModelConfigurationAsync(_editing.Id, updateDto);
+                }
+                catch (Volo.Abp.Domain.Entities.EntityNotFoundException)
+                {
+                    _formError = L["ModelConfigurationChangedReload"];
+                    return;
+                }
+
                 await Notify.SuccessAsync(L["ConfigurationUpdated"]);
             }
             else

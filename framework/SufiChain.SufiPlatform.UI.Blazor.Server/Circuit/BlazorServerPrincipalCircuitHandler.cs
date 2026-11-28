@@ -1,6 +1,7 @@
 using System.Security.Claims;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Server.Circuits;
+using Volo.Abp.MultiTenancy;
 using Volo.Abp.Security.Claims;
 using BlazorCircuit = Microsoft.AspNetCore.Components.Server.Circuits.Circuit;
 
@@ -17,15 +18,19 @@ public class BlazorServerPrincipalCircuitHandler : CircuitHandler
 {
     private readonly AuthenticationStateProvider _authenticationStateProvider;
     private readonly ICurrentPrincipalAccessor _principalAccessor;
+    private readonly ICurrentTenant _currentTenant;
     private readonly object _gate = new();
     private IDisposable? _circuitPrincipal;
+    private IDisposable? _circuitTenant;
 
     public BlazorServerPrincipalCircuitHandler(
         AuthenticationStateProvider authenticationStateProvider,
-        ICurrentPrincipalAccessor principalAccessor)
+        ICurrentPrincipalAccessor principalAccessor,
+        ICurrentTenant currentTenant)
     {
         _authenticationStateProvider = authenticationStateProvider;
         _principalAccessor = principalAccessor;
+        _currentTenant = currentTenant;
     }
 
     /// <summary>
@@ -57,6 +62,7 @@ public class BlazorServerPrincipalCircuitHandler : CircuitHandler
         {
             var state = await _authenticationStateProvider.GetAuthenticationStateAsync();
             using (_principalAccessor.Change(state.User))
+            using (_currentTenant.Change(ReadTenantId(state.User)))
             {
                 await next(context);
             }
@@ -99,7 +105,15 @@ public class BlazorServerPrincipalCircuitHandler : CircuitHandler
         lock (_gate)
         {
             _circuitPrincipal?.Dispose();
+            _circuitTenant?.Dispose();
             _circuitPrincipal = principal == null ? null : _principalAccessor.Change(principal);
+            _circuitTenant = principal == null ? null : _currentTenant.Change(ReadTenantId(principal));
         }
+    }
+
+    private static Guid? ReadTenantId(ClaimsPrincipal principal)
+    {
+        var value = principal.FindFirst(AbpClaimTypes.TenantId)?.Value;
+        return Guid.TryParse(value, out var tenantId) ? tenantId : null;
     }
 }

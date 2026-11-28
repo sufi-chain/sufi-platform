@@ -474,6 +474,8 @@
     "GuardrailAmountMustBeNonNegative": "مبلغ سقف مصرف باید عددی نامنفی باشد.",
     "InheritedReadOnly": "ارث‌برده‌شده (فقط خواندنی)",
     "InheritedWorkspaceReadOnly": "فضاهای کاری ارث‌برده و مدل‌هایشان فقط خواندنی هستند. ویرایش و حذف آن‌ها ممکن نیست.",
+    "ModelRouteInheritedFromHost": "این مسیر از میزبان به ارث رسیده است؛ برای تغییر به مدیر میزبان بگویید.",
+    "ModelConfigurationChangedReload": "این مسیر تغییر کرده یا در دسترس نیست. صفحه را دوباره بارگذاری کنید.",
     "Guardrail:Daily": "سقف روزانه (دلار)",
     "Guardrail:Weekly": "سقف هفتگی (دلار)",
     "Guardrail:Monthly": "سقف ماهانه (دلار)",

@@ -17,7 +17,7 @@
 	{
 		@if (_readOnly)
 		{
-			<SbAlert Severity="SbAlertSeverity.Info">@L["InheritedWorkspaceReadOnly"]</SbAlert>
+			<SbAlert Severity="SbAlertSeverity.Info">@L["ModelRouteInheritedFromHost"]</SbAlert>
 		}
 
 		@if (!string.IsNullOrEmpty(_formError))
@@ -325,7 +325,7 @@
 	<div class="model-configuration-editor__footer">
 		<SbStack Wrap="true" Direction="SbStackDirection.Row" Gap="2" Justify="SbJustify.End">
 			<SbButton Variant="SbButtonVariant.Outline" OnClick="@Cancel">@L["EditorLeave"]</SbButton>
-			@if (_ready)
+			@if (_ready && !_readOnly)
 			{
 				<SbButton Color="SbColor.Primary"
 						  OnClick="@SaveConfigurationAsync"

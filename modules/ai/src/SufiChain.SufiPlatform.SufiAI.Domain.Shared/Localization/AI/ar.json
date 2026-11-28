@@ -446,6 +446,8 @@
     "GuardrailAmountMustBeNonNegative": "يجب أن يكون مبلغ الحد رقماً غير سالب.",
     "InheritedReadOnly": "موروث (للقراءة فقط)",
     "InheritedWorkspaceReadOnly": "مساحات العمل الموروثة للقراءة فقط. أنشئ مساحة عمل مخصصة لتعديل الإعدادات أو الحدود.",
+    "ModelRouteInheritedFromHost": "هذا المسار موروث من المضيف؛ اطلب من مدير المضيف تغييره.",
+    "ModelConfigurationChangedReload": "تغيّر هذا المسار أو لم يعد متاحًا. أعد تحميل الصفحة.",
     "Guardrail:Daily": "الحد اليومي بالدولار",
     "Guardrail:Weekly": "الحد الأسبوعي بالدولار",
     "Guardrail:Monthly": "الحد الشهري بالدولار",

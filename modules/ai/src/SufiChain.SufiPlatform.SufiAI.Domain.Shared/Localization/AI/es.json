@@ -446,6 +446,8 @@
     "GuardrailAmountMustBeNonNegative": "El importe del límite debe ser un número no negativo.",
     "InheritedReadOnly": "Heredado (solo lectura)",
     "InheritedWorkspaceReadOnly": "Los espacios de trabajo heredados son de solo lectura. Crea uno personalizado para editar la configuración o los límites.",
+    "ModelRouteInheritedFromHost": "Heredado del host; pide al administrador del host que lo cambie.",
+    "ModelConfigurationChangedReload": "Esta ruta cambió o ya no está disponible. Vuelve a cargar la página.",
     "Guardrail:Daily": "Límite diario en USD",
     "Guardrail:Weekly": "Límite semanal en USD",
     "Guardrail:Monthly": "Límite mensual en USD",
