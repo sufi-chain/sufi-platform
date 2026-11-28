@@ -122,24 +122,27 @@
 										  OnClick="@(() => ShowDetailModal(cellContext.Item))">
 								<Icon><SbIcon Name="eye" /></Icon>
 							</SbIconButton>
-							@if (cellContext.Item.IsAbandoned)
+							@if (BackgroundJobActionVisibility.ShowRetry(_canRetry, cellContext.Item.IsAbandoned))
 							{
 								<SbIconButton Size="SbSize.Sm" Color="SbColor.Success" AriaLabel="@L["Retry"]"
 											  OnClick="@(() => RetryJobAsync(cellContext.Item))">
 									<Icon><SbIcon Name="refresh" /></Icon>
 								</SbIconButton>
 							}
-							else
+							else if (BackgroundJobActionVisibility.ShowAbandon(_canRetry, cellContext.Item.IsAbandoned))
 							{
 								<SbIconButton Size="SbSize.Sm" Color="SbColor.Warning" AriaLabel="@L["Abandon"]"
 											  OnClick="@(() => ShowAbandonConfirm(cellContext.Item))">
 									<Icon><SbIcon Name="ban" /></Icon>
 								</SbIconButton>
 							}
-							<SbIconButton Size="SbSize.Sm" Color="SbColor.Danger" AriaLabel="@L["Delete"]"
-										  OnClick="@(() => ShowDeleteConfirm(cellContext.Item))">
-								<Icon><SbIcon Name="trash" /></Icon>
-							</SbIconButton>
+							@if (BackgroundJobActionVisibility.ShowDelete(_canDelete))
+							{
+								<SbIconButton Size="SbSize.Sm" Color="SbColor.Danger" AriaLabel="@L["Delete"]"
+											  OnClick="@(() => ShowDeleteConfirm(cellContext.Item))">
+									<Icon><SbIcon Name="trash" /></Icon>
+								</SbIconButton>
+							}
 						</SbStack>
 					</CellTemplate>
 				</SbColumn>
@@ -182,6 +185,8 @@
 
 <BackgroundJobDetailModal @bind-Open="_showDetailModal" Job="_selectedJob" />
 
+@if (BackgroundJobActionVisibility.ShowDelete(_canDelete))
+{
 <SbConfirmDialog @ref="_deleteConfirm"
 				 Title="@L["ConfirmDelete"]"
 				 Message="@L["DeleteJobConfirmation", _jobToDelete?.JobName ?? ""]"
@@ -199,7 +204,10 @@
 		}
 	</ChildContent>
 </SbConfirmDialog>
+}
 
+@if (_canRetry)
+{
 <SbConfirmDialog @ref="_abandonConfirm"
 				 Title="@L["ConfirmAbandon"]"
 				 Message="@L["AbandonJobConfirmation", _jobToAbandon?.JobName ?? ""]"
@@ -217,6 +225,7 @@
 		}
 	</ChildContent>
 </SbConfirmDialog>
+}
 <ReadOnlyHooshvareDrawer HooshvareKey="@JobsInvestigatorHooshvareKeys.Key"
 						 Title="@L["Hooshvare:SufiJobs:Investigator:DisplayName"]"
 						 ContextProvider="BuildHooshvareContext" />

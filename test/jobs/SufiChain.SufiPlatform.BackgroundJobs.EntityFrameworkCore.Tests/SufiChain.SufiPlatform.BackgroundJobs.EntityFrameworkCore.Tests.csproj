@@ -7,6 +7,7 @@
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="../../../modules/jobs/src/SufiChain.SufiPlatform.BackgroundJobs.EntityFrameworkCore/SufiChain.SufiPlatform.BackgroundJobs.EntityFrameworkCore.csproj" />
+    <ProjectReference Include="../../../modules/jobs/src/SufiChain.SufiPlatform.BackgroundJobs.Application.Contracts/SufiChain.SufiPlatform.BackgroundJobs.Application.Contracts.csproj" />
     <PackageReference Include="Volo.Abp.Autofac" Version="$(AbpVersion)" />
     <PackageReference Include="Volo.Abp.TestBase" Version="$(AbpVersion)" />
     <PackageReference Include="Volo.Abp.EntityFrameworkCore.Sqlite" Version="$(AbpVersion)" />
