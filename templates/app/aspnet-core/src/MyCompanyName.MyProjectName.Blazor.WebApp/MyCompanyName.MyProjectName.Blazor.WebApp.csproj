@@ -77,6 +77,7 @@
     <ProjectReference Include="..\..\..\..\..\modules\calendar\src\SufiChain.SufiPlatform.Calendar.Blazor.Public\SufiChain.SufiPlatform.Calendar.Blazor.Public.csproj" />
     <ProjectReference Include="..\..\..\..\..\modules\calendar\src\SufiChain.SufiPlatform.Calendar.AI\SufiChain.SufiPlatform.Calendar.AI.csproj" />
     <ProjectReference Include="..\..\..\..\..\modules\calendar\src\SufiChain.SufiPlatform.Calendar.Application\SufiChain.SufiPlatform.Calendar.Application.csproj" />
+    <ProjectReference Include="..\..\..\..\..\modules\calendar\src\SufiChain.SufiPlatform.Calendar.Assistant\SufiChain.SufiPlatform.Calendar.Assistant.csproj" />
     <ProjectReference Include="..\..\..\..\..\modules\calendar\src\SufiChain.SufiPlatform.Calendar.HttpApi\SufiChain.SufiPlatform.Calendar.HttpApi.csproj" />
     <!-- Short Link Generator (UI, Server, Application, HttpApi) -->
     <ProjectReference Include="..\..\..\..\..\modules\short-links\src\SufiChain.SufiPlatform.ShortLinks.Blazor\SufiChain.SufiPlatform.ShortLinks.Blazor.csproj" />

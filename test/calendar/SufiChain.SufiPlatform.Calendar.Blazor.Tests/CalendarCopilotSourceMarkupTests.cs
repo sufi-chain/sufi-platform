@@ -38,6 +38,8 @@ public class CalendarCopilotSourceMarkupTests
         start.ShouldBeGreaterThanOrEqualTo(0);
         end.ShouldBeGreaterThan(start);
         var permissionCheck = code[start..end];
+        permissionCheck.ShouldContain("CalendarFeatures.Assistant");
+        permissionCheck.ShouldContain("LicenseProducts.Calendar");
         permissionCheck.ShouldNotContain("CreateAsync");
         permissionCheck.ShouldNotContain("ChatSessionAppService");
     }

@@ -150,6 +150,8 @@
     "CalendarHooshvare:ReplyFailed": "تعذّر على هوشواره التقويم الرد. يرجى المحاولة مرة أخرى.",
     "CalendarHooshvare:Unauthorized": "ليست لديك صلاحية الوصول إلى هوشواره التقويم.",
     "CalendarHooshvare:LoadFailed": "تعذّر تحميل هوشواره التقويم. يرجى المحاولة مرة أخرى.",
+    "Feature:SufiCalendar.Assistant": "هوشواره التقويم",
+    "Feature:SufiCalendar.Assistant.Description": "هوشواره التقويم لهذا التقويم.",
     "CalendarHooshvare:Shortcut:DayAgenda": "كيف يبدو يومي؟",
     "CalendarHooshvare:Shortcut:FreeSlot": "ابحث عن موعد فارغ لمدة 30 دقيقة هذا الأسبوع",
     "CalendarHooshvare:Shortcut:ScheduleTomorrow": "جدولة اجتماع غدًا الساعة 10 صباحًا",

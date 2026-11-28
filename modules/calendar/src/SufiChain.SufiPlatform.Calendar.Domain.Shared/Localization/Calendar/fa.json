@@ -166,6 +166,8 @@
     "CalendarHooshvare:ReplyFailed": "هوشوارهٔ تقویم نتوانست پاسخ دهد. لطفاً دوباره تلاش کنید.",
     "CalendarHooshvare:Unauthorized": "به هوشوارهٔ تقویم دسترسی ندارید.",
     "CalendarHooshvare:LoadFailed": "هوشوارهٔ تقویم بارگذاری نشد. لطفاً دوباره تلاش کنید.",
+    "Feature:SufiCalendar.Assistant": "هوشوارهٔ تقویم",
+    "Feature:SufiCalendar.Assistant.Description": "هوشوارهٔ تقویم برای این تقویم.",
     "CalendarHooshvare:Shortcut:DayAgenda": "امروز چه جلساتی دارم؟",
     "CalendarHooshvare:Shortcut:FreeSlot": "یک زمان خالی ۳۰ دقیقه‌ای این هفته پیدا کن",
     "CalendarHooshvare:Shortcut:ScheduleTomorrow": "فردا ساعت ۱۰ یک جلسه تنظیم کن",

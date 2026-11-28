@@ -150,6 +150,8 @@
     "CalendarHooshvare:ReplyFailed": "El hooshvare de calendario no pudo responder. Inténtalo de nuevo.",
     "CalendarHooshvare:Unauthorized": "No tienes acceso al hooshvare de calendario.",
     "CalendarHooshvare:LoadFailed": "No se pudo cargar el hooshvare de calendario. Inténtalo de nuevo.",
+    "Feature:SufiCalendar.Assistant": "hooshvare de calendario",
+    "Feature:SufiCalendar.Assistant.Description": "hooshvare de calendario para este calendario.",
     "CalendarHooshvare:Shortcut:DayAgenda": "¿Cómo se ve mi día?",
     "CalendarHooshvare:Shortcut:FreeSlot": "Encuentra un espacio libre de 30 minutos esta semana",
     "CalendarHooshvare:Shortcut:ScheduleTomorrow": "Programa una reunión mañana a las 10",

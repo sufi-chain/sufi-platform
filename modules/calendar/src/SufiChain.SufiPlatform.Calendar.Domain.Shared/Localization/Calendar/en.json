@@ -161,6 +161,8 @@
     "CalendarHooshvare:ReplyFailed": "The Calendar hooshvare could not reply. Please try again.",
     "CalendarHooshvare:Unauthorized": "You do not have access to the Calendar hooshvare.",
     "CalendarHooshvare:LoadFailed": "The Calendar hooshvare could not be loaded. Please try again.",
+    "Feature:SufiCalendar.Assistant": "Calendar hooshvare",
+    "Feature:SufiCalendar.Assistant.Description": "Calendar hooshvare for this calendar.",
     "CalendarHooshvare:Shortcut:DayAgenda": "What does my day look like?",
     "CalendarHooshvare:Shortcut:FreeSlot": "Find a free 30 minute slot this week",
     "CalendarHooshvare:Shortcut:ScheduleTomorrow": "Schedule a meeting tomorrow at 10am",

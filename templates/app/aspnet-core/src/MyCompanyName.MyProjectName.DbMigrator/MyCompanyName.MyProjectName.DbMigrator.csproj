@@ -53,6 +53,7 @@
     <ProjectReference Include="..\..\..\..\..\modules\localization\src\SufiChain.SufiPlatform.Localization.MongoDB\SufiChain.SufiPlatform.Localization.MongoDB.csproj" />
     <!-- </TEMPLATE-REMOVE> -->
     <ProjectReference Include="..\..\..\..\..\modules\short-links\src\SufiChain.SufiPlatform.ShortLinks.Application\SufiChain.SufiPlatform.ShortLinks.Application.csproj" />
+    <ProjectReference Include="..\..\..\..\..\modules\calendar\src\SufiChain.SufiPlatform.Calendar.Assistant\SufiChain.SufiPlatform.Calendar.Assistant.csproj" />
     <ProjectReference Include="..\..\..\..\..\modules\ai\src\SufiChain.SufiPlatform.SufiAI.Application\SufiChain.SufiPlatform.SufiAI.Application.csproj" />
     <!-- <TEMPLATE-REMOVE IF-NOT="db:efcore"> -->
     <ProjectReference Include="..\..\..\..\..\modules\short-links\src\SufiChain.SufiPlatform.ShortLinks.EntityFrameworkCore\SufiChain.SufiPlatform.ShortLinks.EntityFrameworkCore.csproj" />

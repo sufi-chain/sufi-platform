@@ -211,6 +211,7 @@ namespace MyCompanyName.MyProjectName;
     typeof(SufiCalendarBlazorPublicModule),
     typeof(SufiCalendarAIModule),
     typeof(SufiCalendarApplicationModule),
+    typeof(SufiCalendarAssistantModule),
     typeof(SufiCalendarHttpApiModule),
     // =========================================================================
     // Short Link Generator
