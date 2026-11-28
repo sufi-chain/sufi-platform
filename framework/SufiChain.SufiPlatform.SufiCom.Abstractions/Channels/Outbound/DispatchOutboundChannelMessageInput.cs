@@ -43,4 +43,11 @@ public class DispatchOutboundChannelMessageInput
     /// metadata; defaults to false so single-account channels (Email) are unaffected.
     /// </summary>
     public bool IsFirstContact { get; set; }
+
+    /// <summary>
+    /// Conversation title shown in the outbound email body and subject.
+    /// The original inbound subject for an email session.
+    /// </summary>
+    [StringLength(ChannelConsts.MaxTitleLength)]
+    public string? SessionTitle { get; set; }
 }
