@@ -313,21 +313,25 @@ public class TicketAiAppServiceTests
     }
 
     [Fact]
-    public async Task KbDraft_Propagates_Caller_Cancellation()
+    public async Task KbDraft_Ignores_Caller_Cancellation_After_Confirm()
     {
         var fixture = new AppFixture();
         fixture.ResolveTicket();
         fixture.PurposeReady(Guid.NewGuid());
         fixture.Keys.TryGetRuntimeIdByKeyAsync(HelpDeskKbDraftHooshvareKeys.Key, Arg.Any<CancellationToken>())
             .Returns(Guid.NewGuid());
-        fixture.Runtime.SendAsync(Arg.Any<HooshvareRuntimeRequestDto>(), Arg.Any<CancellationToken>())
-            .Returns(call => NeverAsync(call.Arg<CancellationToken>()));
+        fixture.Runtime.SendAsync(
+                Arg.Any<HooshvareRuntimeRequestDto>(),
+                Arg.Is<CancellationToken>(token => !token.IsCancellationRequested))
+            .Returns(new HooshvareRuntimeResultDto { Message = "## Still drafted" });
         using var cts = new CancellationTokenSource();
-        cts.Cancel();
+        await cts.CancelAsync();
 
-        await Should.ThrowAsync<OperationCanceledException>(() => fixture.Drafts.CreateKbDraftFromTicketAsync(
+        var result = await fixture.Drafts.CreateKbDraftFromTicketAsync(
             new CreateKbDraftFromTicketInput { TicketId = fixture.Ticket.Id, ProjectId = fixture.ProjectId },
-            cts.Token));
+            cts.Token);
+
+        result.Content.ShouldBe("## Still drafted");
     }
 
     private static async Task<HooshvareRuntimeResultDto> NeverAsync(CancellationToken cancellationToken)
