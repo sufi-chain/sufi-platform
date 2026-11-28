@@ -25,7 +25,7 @@ public class IdentityMenuContributor : IMenuContributor
             IdentityMenuNames.GroupName,
             l["Menu:Identity"],
             icon: "users"
-        ).RequirePermissions(SufiChain.SufiPlatform.Identity.IdentityPermissions.Users.Default);
+        );
 
         administration.AddItem(identityMenu);
 
@@ -55,7 +55,7 @@ public class IdentityMenuContributor : IMenuContributor
             l["Menu:SecurityLogs"],
             url: "/panel/admin/identity/security-logs",
             icon: "shield-alert"
-        ).RequirePermissions(SufiChain.SufiPlatform.Identity.IdentityPermissions.Users.Default));
+        ).RequirePermissions(IdentityPermissions.SecurityLogs.Default));
 
         return Task.CompletedTask;
     }

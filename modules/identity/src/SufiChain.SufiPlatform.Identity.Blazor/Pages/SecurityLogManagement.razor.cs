@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Components;
+using Volo.Abp.Authorization;
 using SufiChain.SufiBlazor.Components;
 using SufiChain.SufiPlatform.Identity.Dtos;
 using SufiChain.SufiPlatform.UI.Blazor.Timing;
@@ -79,21 +80,29 @@ public partial class SecurityLogManagement : IdentityComponentBase
 
     private async Task<SbDataResponse<SecurityLogListItemDto>> LoadSecurityLogsDataAsync(SbDataRequest request)
     {
-        var result = await SecurityLogAppService.GetListAsync(new GetSecurityLogListInput
+        try
         {
-            StartTime = _startDate is { } start ? UserTimeZoneDisplay.WallStartToUtc(start, _userZone) : null,
-            EndTime = _endDate is { } end ? UserTimeZoneDisplay.WallEndToUtc(end, _userZone) : null,
-            UserName = request.GetFilterValue("UserName") ?? _userName,
-            Action = request.GetFilterValue("Action") ?? _action,
-            ClientIpAddress = request.GetFilterValue("ClientIpAddress") ?? _clientIpAddress,
-            ApplicationName = request.GetFilterValue("ApplicationName") ?? _applicationName,
-            SkipCount = Math.Max(0, request.PageIndex * request.PageSize),
-            MaxResultCount = request.PageSize,
-            Sorting = "CreationTime DESC"
-        });
+            var result = await SecurityLogAppService.GetListAsync(new GetSecurityLogListInput
+            {
+                StartTime = _startDate is { } start ? UserTimeZoneDisplay.WallStartToUtc(start, _userZone) : null,
+                EndTime = _endDate is { } end ? UserTimeZoneDisplay.WallEndToUtc(end, _userZone) : null,
+                UserName = request.GetFilterValue("UserName") ?? _userName,
+                Action = request.GetFilterValue("Action") ?? _action,
+                ClientIpAddress = request.GetFilterValue("ClientIpAddress") ?? _clientIpAddress,
+                ApplicationName = request.GetFilterValue("ApplicationName") ?? _applicationName,
+                SkipCount = Math.Max(0, request.PageIndex * request.PageSize),
+                MaxResultCount = request.PageSize,
+                Sorting = "CreationTime DESC"
+            });
 
-        _totalCount = result.TotalCount;
-        return new SbDataResponse<SecurityLogListItemDto>(result.Items, result.TotalCount);
+            _totalCount = result.TotalCount;
+            return new SbDataResponse<SecurityLogListItemDto>(result.Items, result.TotalCount);
+        }
+        catch (AbpAuthorizationException)
+        {
+            _totalCount = 0;
+            return new SbDataResponse<SecurityLogListItemDto>([], 0);
+        }
     }
 
     private Task RefreshGridAsync()
