@@ -1,8 +1,14 @@
+using System.Reflection;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using NSubstitute;
 
 using Shouldly;
 
 using SufiChain.SufiPlatform.SufiForms.Blazor.Components;
+using SufiChain.SufiPlatform.SufiForms.Forms.Dtos;
+using Microsoft.Extensions.Localization;
+using SufiChain.SufiPlatform.UI.Messages;
 
 using SufiChain.SufiPlatform.SufiForms.Hooshvare;
 
@@ -302,7 +308,61 @@ public class FormCreateWizardNavigationTests
 
 
 
-    private sealed class TestWizard : FormCreateWizard
+    [Fact]
+    public async Task Building_state_clears_when_the_build_does_not_return()
+    {
+        var service = Substitute.For<IFormCreatorAppService>();
+        service.BuildAsync(Arg.Any<FormCreatorBuildInput>())
+            .Returns(new TaskCompletionSource<FormDefinitionDto>().Task);
+        var wizard = new TimeoutWizard(service);
+
+        await wizard.BuildAsync();
+
+        wizard.CurrentStep.ShouldBe(1);
+        wizard.IsBusy.ShouldBeFalse();
+        await wizard.Errors.Received(1).ErrorAsync(Arg.Any<string>());
+    }
+
+    private sealed class TimeoutWizard : TestWizard
+    {
+        public IUiMessageService Errors { get; } = Substitute.For<IUiMessageService>();
+
+        public TimeoutWizard(IFormCreatorAppService service) : base(service)
+        {
+            SetPrivate("_messageService", Errors);
+            SetPrivate("_logger", NullLogger<FormCreateWizard>.Instance);
+            SetPrivate("_localizer", PassThroughLocalizer.Instance);
+        }
+
+        private void SetPrivate(string name, object value)
+        {
+            for (var type = GetType(); type != null; type = type.BaseType)
+            {
+                var field = type.GetField(name, BindingFlags.Instance | BindingFlags.NonPublic);
+                if (field == null) continue;
+                field.SetValue(this, value);
+                return;
+            }
+        }
+
+        public bool IsBusy => Busy;
+
+        public Task BuildAsync() => base.BuildAsync();
+
+        protected override TimeSpan BuildClientTimeout => TimeSpan.FromMilliseconds(40);
+
+        protected override Task StartProgressAsync() => Task.CompletedTask;
+    }
+
+    private sealed class PassThroughLocalizer : IStringLocalizer
+    {
+        public static readonly PassThroughLocalizer Instance = new();
+        public LocalizedString this[string name] => new(name, name, resourceNotFound: false);
+        public LocalizedString this[string name, params object[] arguments] => new(name, name, resourceNotFound: false);
+        public IEnumerable<LocalizedString> GetAllStrings(bool includeParentCultures) => [];
+    }
+
+    private class TestWizard : FormCreateWizard
 
     {
 
