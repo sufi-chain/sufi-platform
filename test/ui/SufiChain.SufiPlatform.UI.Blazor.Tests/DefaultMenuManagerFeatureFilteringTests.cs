@@ -156,7 +156,7 @@ public class DefaultMenuManagerFeatureFilteringTests
                 names.Contains(KnowledgeBaseFeature) && names.Contains(TicketingFeature)));
     }
 
-    private static DefaultMenuManager BuildGranted(string[] granted, Action<ApplicationMenu> configure)
+    public static DefaultMenuManager BuildGranted(string[] granted, Action<ApplicationMenu> configure)
     {
         var featureChecker = Substitute.For<ISufiFeatureChecker>();
         featureChecker.IsEnabledAsync(Arg.Any<string>()).Returns(Task.FromResult(true));
