@@ -363,4 +363,20 @@ public class IdentityUserManager : UserManager<IdentityUser>, IDomainService
         var stamp = await UpdateSecurityStampAsync(user);
         return stamp.Succeeded ? IdentityResult.Success : stamp;
     }
+
+    public override async Task<IdentityResult> ConfirmEmailAsync(IdentityUser user, string token)
+    {
+        if (user.EmailConfirmed)
+        {
+            return IdentityResult.Failed(ErrorDescriber.InvalidToken());
+        }
+
+        var result = await base.ConfirmEmailAsync(user, token);
+        if (!result.Succeeded)
+        {
+            return result;
+        }
+
+        return await UpdateSecurityStampAsync(user);
+    }
 }

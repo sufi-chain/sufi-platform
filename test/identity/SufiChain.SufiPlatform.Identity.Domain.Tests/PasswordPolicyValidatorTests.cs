@@ -86,6 +86,24 @@ public class PasswordPolicyValidatorTests
         stamp.ShouldBeGreaterThan(assign);
     }
 
+    [Fact]
+    public void ConfirmEmail_SameToken_FailsTheSecondTime_AndDoesNotSignIn()
+    {
+        var manager = Read("SufiChain.SufiPlatform.Identity.Domain", "Managers/IdentityUserManager.cs");
+        var confirm = manager.IndexOf("ConfirmEmailAsync", StringComparison.Ordinal);
+        manager.IndexOf("EmailConfirmed", confirm, StringComparison.Ordinal).ShouldBeGreaterThan(confirm);
+        manager.IndexOf("UpdateSecurityStampAsync", confirm, StringComparison.Ordinal).ShouldBeGreaterThan(confirm);
+
+        var account = Read("SufiChain.SufiPlatform.Account.Application", "AccountAppService.cs");
+        var verify = account.IndexOf("VerifyEmailConfirmationTokenAsync", StringComparison.Ordinal);
+        account.IndexOf("user.EmailConfirmed", verify, StringComparison.Ordinal).ShouldBeGreaterThan(verify);
+
+        var page = ReadUnder("modules", "account", "src", "SufiChain.SufiPlatform.Account.Blazor", "Pages", "ConfirmEmail.razor.cs");
+        var invalid = page.IndexOf("if (!isValid)", StringComparison.Ordinal);
+        var signIn = page.IndexOf("ContinueAfterConfirmationAsync", invalid, StringComparison.Ordinal);
+        page.IndexOf("if (!IsSuccess)", invalid, StringComparison.Ordinal).ShouldBeLessThan(signIn);
+    }
+
     private static async Task<IdentityResult> ValidateAsync(string password, Action<IdentityOptions>? configure = null)
     {
         var options = new IdentityOptions();
@@ -174,6 +192,23 @@ public class PasswordPolicyValidatorTests
         }
 
         throw new FileNotFoundException(file);
+    }
+
+    private static string ReadUnder(params string[] parts)
+    {
+        var dir = new DirectoryInfo(AppContext.BaseDirectory);
+        while (dir != null)
+        {
+            var path = Path.Combine(new[] { dir.FullName }.Concat(parts).ToArray());
+            if (File.Exists(path))
+            {
+                return File.ReadAllText(path);
+            }
+
+            dir = dir.Parent;
+        }
+
+        throw new FileNotFoundException(parts[^1]);
     }
 
     private sealed class EmptySettings : ISettingProvider

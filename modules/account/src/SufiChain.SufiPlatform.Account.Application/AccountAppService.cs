@@ -324,7 +324,7 @@ public class AccountAppService : SufiApplicationService, IAccountAppService
     public virtual async Task<bool> VerifyEmailConfirmationTokenAsync(VerifyEmailConfirmationTokenInput input)
     {
         var user = await UserRepository.FindAsync(input.UserId);
-        if (user == null)
+        if (user == null || user.EmailConfirmed)
         {
             return false;
         }
