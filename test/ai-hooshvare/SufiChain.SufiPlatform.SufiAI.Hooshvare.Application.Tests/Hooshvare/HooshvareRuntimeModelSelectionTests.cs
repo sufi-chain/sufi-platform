@@ -232,13 +232,36 @@ public class HooshvareRuntimeModelSelectionTests
 
 
 
+    [Fact]
+    public async Task AgentKind_NoToolCallingModel_Throws_And_Does_Not_Return_A_Plain_Chat_Request()
+    {
+        var (definition, _, orchestrator) = CreateOrchestrator(
+            useMcpTools: true,
+            kind: HooshvareKind.Agent,
+            rejectToolCalling: true);
+        var input = new HooshvareRuntimeRequestDto
+        {
+            HooshvareId = definition.Id,
+            Message = "Reply with OK."
+        };
+
+        var exception = await Should.ThrowAsync<BusinessException>(
+            () => orchestrator.PrepareRequestAsync(definition, input));
+
+        exception.Code.ShouldBe(SufiChain.SufiPlatform.SufiCom.Chat.ChatErrorCodes.AgentNeedsToolCallingModel);
+    }
+
     private static (HooshvareDefinition Definition, IWorkspaceRuntimeConfigurationResolver RuntimeResolver, HooshvareRuntimeOrchestrator Orchestrator) CreateOrchestrator(
 
         bool useMcpTools,
 
         bool allowUserModelSelection = false,
 
-        IReadOnlyCollection<Guid>? allowedModelConfigurationIds = null)
+        IReadOnlyCollection<Guid>? allowedModelConfigurationIds = null,
+
+        HooshvareKind kind = HooshvareKind.Assistant,
+
+        bool rejectToolCalling = false)
 
     {
 
@@ -252,7 +275,7 @@ public class HooshvareRuntimeModelSelectionTests
 
             "Test assistant",
 
-            HooshvareKind.Assistant,
+            kind,
 
             "Assistant",
 
@@ -357,6 +380,18 @@ public class HooshvareRuntimeModelSelectionTests
                 };
 
             });
+
+        if (rejectToolCalling)
+
+        {
+
+            runtimeResolver
+
+                .When(item => item.EnsureReady(Arg.Any<WorkspaceRuntimeConfiguration>(), true))
+
+                .Do(_ => throw new SufiChain.SufiPlatform.BusinessException(AIErrorCodes.McpProviderNotSupported));
+
+        }
 
 
 

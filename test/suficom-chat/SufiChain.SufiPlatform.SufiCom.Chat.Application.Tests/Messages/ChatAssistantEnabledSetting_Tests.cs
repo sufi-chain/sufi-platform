@@ -9,6 +9,7 @@ using SufiChain.SufiPlatform.SufiCom.Chat.Participants;
 using SufiChain.SufiPlatform.SufiCom.Chat.Sessions;
 using SufiChain.SufiPlatform.SufiCom.Chat.Settings;
 using SufiChain.SufiPlatform.SufiCom.Chat.Supports;
+using SufiChain.SufiPlatform.SufiCom.Chat.Realtime;
 using SufiChain.SufiPlatform.SufiCom.Chat.Usage;
 using Shouldly;
 using SufiChain.SufiPlatform.Settings;
@@ -299,6 +300,85 @@ public class ChatAssistantEnabledSetting_Tests : ChatApplicationTestBase<SufiCom
         finally
         {
             _ai.BeforeComplete = previous;
+        }
+    }
+
+    [Fact]
+    public async Task When_ai_is_off_an_assistant_session_gets_one_availability_notice_and_no_model_call()
+    {
+        var realtime = GetRequiredService<RecordingChatRealtimeNotifier>();
+        realtime.Messages.Clear();
+        var called = 0;
+        var previous = _ai.BeforeComplete;
+        _ai.BeforeComplete = _ =>
+        {
+            called++;
+            return Task.CompletedTask;
+        };
+        try
+        {
+            await ChatTestSettingHelper.SetAiPolicyAsync(_settingManager, enabled: false);
+            var session = await CreateAssistantSessionAsync();
+            var userMessage = await InsertVisitorMessageAsync(session.Id, "hello");
+
+            await _handler.ProcessAsync(EventFor(session.Id, userMessage.Id, tenantId: null));
+
+            called.ShouldBe(0);
+            realtime.Messages.Count.ShouldBe(1);
+            realtime.Messages[0].SenderKind.ShouldBe(ChatMessageSenderKind.Assistant);
+            realtime.Messages[0].ExtraProperties[ChatMessageExtraPropertyKeys.EphemeralNotice].ShouldBe(true);
+            var stored = await _messageRepository.GetListBySessionAsync(session.Id, includeInternal: false);
+            stored.ShouldNotContain(message => message.SenderKind == ChatMessageSenderKind.Assistant);
+            (await _reservations.GetListAsync()).ShouldNotContain(row => row.SessionId == session.Id);
+        }
+        finally
+        {
+            _ai.BeforeComplete = previous;
+            realtime.Messages.Clear();
+        }
+    }
+
+    [Fact]
+    public async Task When_ai_is_off_a_non_assistant_session_gets_no_notice()
+    {
+        var realtime = GetRequiredService<RecordingChatRealtimeNotifier>();
+        realtime.Messages.Clear();
+        try
+        {
+            await ChatTestSettingHelper.SetAiPolicyAsync(_settingManager, enabled: false);
+            ChatSessionDto session;
+            using (CurrentUser.Change(ChatTestData.UserAId))
+            {
+                session = await _sessionAppService.CreateAsync(new CreateChatSessionInput
+                {
+                    Title = "Direct",
+                    AccessMode = AccessMode.Internal,
+                    ConversationKind = ConversationKind.Direct,
+                    ChannelOrigin = ChannelOrigin.Web,
+                    Participants =
+                    {
+                        new AddChatParticipantInput
+                        {
+                            UserId = ChatTestData.UserAId,
+                            ParticipantKind = ChatMessageSenderKind.Visitor
+                        },
+                        new AddChatParticipantInput
+                        {
+                            UserId = ChatTestData.UserBId,
+                            ParticipantKind = ChatMessageSenderKind.Visitor
+                        }
+                    }
+                });
+            }
+
+            var userMessage = await InsertVisitorMessageAsync(session.Id, "hello");
+            await _handler.ProcessAsync(EventFor(session.Id, userMessage.Id, tenantId: null));
+
+            realtime.Messages.ShouldBeEmpty();
+        }
+        finally
+        {
+            realtime.Messages.Clear();
         }
     }
 
