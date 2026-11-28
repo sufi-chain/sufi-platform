@@ -47,4 +47,20 @@ public class SufiUserTimeTests : BunitContext
         cut.Find("bdi").TextContent.ShouldBe("-");
         display.DidNotReceive().GetAsync();
     }
+
+    [Fact]
+    public void ShowZone_appends_the_zone_id_and_stays_off_by_default()
+    {
+        var display = Substitute.For<IUserTimeZoneDisplay>();
+        display.GetAsync().Returns(UserTimeZoneDisplay.Resolve("Asia/Tehran"));
+        Services.AddSingleton(display);
+
+        var hidden = Render<SufiUserTime>(parameters => parameters.Add(component => component.Value, StoredUtc));
+        hidden.Find("bdi").TextContent.ShouldBe("2026-06-15 07:15:59");
+
+        var shown = Render<SufiUserTime>(parameters => parameters
+            .Add(component => component.Value, StoredUtc)
+            .Add(component => component.ShowZone, true));
+        shown.Find("bdi").TextContent.ShouldBe("2026-06-15 07:15:59 (Asia/Tehran)");
+    }
 }

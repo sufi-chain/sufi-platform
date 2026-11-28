@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Components;
 using SufiChain.SufiBlazor.Components;
 using SufiChain.SufiPlatform.Identity.Dtos;
+using SufiChain.SufiPlatform.UI.Blazor.Timing;
 using SufiChain.SufiPlatform.UI.Layout;
 using SufiChain.SufiBlazor.Components.Data;
 using SufiChain.SufiBlazor.Contracts.Data;
@@ -17,6 +18,9 @@ public partial class SecurityLogManagement : IdentityComponentBase
 
     [Inject] protected IPageLayout PageLayout { get; set; } = default!;
     [Inject] protected IIdentitySecurityLogAppService SecurityLogAppService { get; set; } = default!;
+    [Inject] protected IUserTimeZoneDisplay UserTimeZoneDisplayService { get; set; } = default!;
+
+    private TimeZoneInfo _userZone = UserTimeZoneDisplay.DefaultZone;
 
     private SbDataGrid<SecurityLogListItemDto>? _gridRef;
     private int _pageIndex = 0;
@@ -31,11 +35,30 @@ public partial class SecurityLogManagement : IdentityComponentBase
     private string? _clientIpAddress;
     private string? _applicationName;
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
         SetupPageLayout();
-        _startDate = DateOnly.FromDateTime(DateTime.Today.AddDays(-7));
-        _endDate = DateOnly.FromDateTime(DateTime.Today);
+        await LoadUserZoneAsync();
+        ApplyDefaultRange();
+    }
+
+    private async Task LoadUserZoneAsync()
+    {
+        try
+        {
+            _userZone = await UserTimeZoneDisplayService.GetAsync();
+        }
+        catch (Exception exception) when (exception is not OperationCanceledException)
+        {
+            _userZone = UserTimeZoneDisplay.DefaultZone;
+        }
+    }
+
+    private void ApplyDefaultRange()
+    {
+        var today = UserTimeZoneDisplay.Today(DateTime.UtcNow, _userZone);
+        _startDate = today.AddDays(-7);
+        _endDate = today;
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -58,8 +81,8 @@ public partial class SecurityLogManagement : IdentityComponentBase
     {
         var result = await SecurityLogAppService.GetListAsync(new GetSecurityLogListInput
         {
-            StartTime = _startDate?.ToDateTime(TimeOnly.MinValue),
-            EndTime = _endDate?.ToDateTime(TimeOnly.MaxValue),
+            StartTime = _startDate is { } start ? UserTimeZoneDisplay.WallStartToUtc(start, _userZone) : null,
+            EndTime = _endDate is { } end ? UserTimeZoneDisplay.WallEndToUtc(end, _userZone) : null,
             UserName = request.GetFilterValue("UserName") ?? _userName,
             Action = request.GetFilterValue("Action") ?? _action,
             ClientIpAddress = request.GetFilterValue("ClientIpAddress") ?? _clientIpAddress,
@@ -94,8 +117,7 @@ public partial class SecurityLogManagement : IdentityComponentBase
 
     private async Task ClearFiltersAsync()
     {
-        _startDate = DateOnly.FromDateTime(DateTime.Today.AddDays(-7));
-        _endDate = DateOnly.FromDateTime(DateTime.Today);
+        ApplyDefaultRange();
         _userName = null;
         _action = null;
         _clientIpAddress = null;

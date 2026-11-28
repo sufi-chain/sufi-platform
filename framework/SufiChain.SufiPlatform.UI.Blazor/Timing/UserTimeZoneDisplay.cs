@@ -86,6 +86,28 @@ public class UserTimeZoneDisplay : IUserTimeZoneDisplay
         return $"{Format(value, format, zone, culture)} ({zone.Id})";
     }
 
+    /// <summary>
+    /// The calendar date of <paramref name="utcNow"/> in <paramref name="zone"/>.
+    /// </summary>
+    public static DateOnly Today(DateTime utcNow, TimeZoneInfo zone) =>
+        DateOnly.FromDateTime(ToDisplayTime(utcNow, zone).Date);
+
+    /// <summary>
+    /// Start of a wall-clock day, as UTC, for a query bound.
+    /// </summary>
+    public static DateTime WallStartToUtc(DateOnly day, TimeZoneInfo zone) =>
+        TimeZoneInfo.ConvertTimeToUtc(
+            DateTime.SpecifyKind(day.ToDateTime(TimeOnly.MinValue), DateTimeKind.Unspecified),
+            zone);
+
+    /// <summary>
+    /// End of a wall-clock day, as UTC, for a query bound.
+    /// </summary>
+    public static DateTime WallEndToUtc(DateOnly day, TimeZoneInfo zone) =>
+        TimeZoneInfo.ConvertTimeToUtc(
+            DateTime.SpecifyKind(day.ToDateTime(TimeOnly.MaxValue), DateTimeKind.Unspecified),
+            zone);
+
     public static async Task<TimeZoneInfo> LoadAsync(IServiceProvider services)
     {
         var display = services.GetService<IUserTimeZoneDisplay>();

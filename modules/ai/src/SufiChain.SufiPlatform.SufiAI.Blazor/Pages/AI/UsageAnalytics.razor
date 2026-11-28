@@ -276,11 +276,11 @@ else
 							<SbColumn TItem="AIUsageLogDto" Field="CreationTime" Title="@L["Time"]" MinWidth="160px" Filterable="true" Sortable="true">
 								<CellTemplate Context="cellContext">
 									<SbText Variant="SbTextVariant.BodySmall">
-										<SufiUserTime Value="@cellContext.Item.CreationTime" />
+										<SufiUserTime Value="@cellContext.Item.CreationTime" ShowZone="true" />
 									</SbText>
 								</CellTemplate>
 							</SbColumn>
-							<SbColumn TItem="AIUsageLogDto" Field="CapabilityType" Title="@L["Capability"]" MinWidth="150px" Filterable="true" Sortable="true">
+							<SbColumn TItem="AIUsageLogDto" Field="CapabilityType" Title="@L["Capability"]" MinWidth="150px" Filterable="true" Sortable="true" FilterItems="@CapabilityFilters">
 								<CellTemplate Context="cellContext">
 									<SbChip Size="SbSize.Sm">@FormatCapability(cellContext.Item.CapabilityType)</SbChip>
 								</CellTemplate>

@@ -10,6 +10,8 @@ using SufiChain.SufiPlatform.SufiAI.Features;
 using SufiChain.SufiPlatform.SufiAI.Workspaces;
 using SufiChain.SufiPlatform.Application.Dtos;
 using Volo.Abp.Authorization;
+using SufiChain.SufiBlazor.Components.Data;
+using SufiChain.SufiBlazor.Contracts.Data;
 using SufiChain.SufiBlazor.Utilities.DateUtils;
 
 namespace SufiChain.SufiPlatform.SufiAI.Blazor.Pages.AI;
@@ -293,6 +295,11 @@ public partial class UsageAnalytics : AIComponentBase
 
         return string.IsNullOrWhiteSpace(log.RouteDisplayName) ? log.ModelId : log.RouteDisplayName;
     }
+
+    private IReadOnlyList<SbFilterOption> CapabilityFilters =>
+        Enum.GetValues<AICapabilityType>()
+            .Select(item => new SbFilterOption(item.ToString(), FormatCapability(item)))
+            .ToArray();
 
     private string FormatCapability(AICapabilityType capabilityType)
     {

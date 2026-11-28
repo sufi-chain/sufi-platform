@@ -98,4 +98,19 @@ public class UserTimeZoneDisplayTests
 
         UserTimeZoneDisplay.Format(Utc, "HH:mm", zone, CultureInfo.InvariantCulture).ShouldBe("21:25");
     }
+
+    [Fact]
+    public void Tehran_today_at_0138_includes_the_previous_utc_evening()
+    {
+        var utc = new DateTime(2026, 11, 27, 22, 8, 0, DateTimeKind.Utc);
+        var zone = UserTimeZoneDisplay.Resolve("Asia/Tehran");
+        var today = UserTimeZoneDisplay.Today(utc, zone);
+        today.ShouldBe(new DateOnly(2026, 11, 28));
+
+        var start = UserTimeZoneDisplay.WallStartToUtc(today.AddDays(-7), zone);
+        var end = UserTimeZoneDisplay.WallEndToUtc(today, zone);
+        start.ShouldBeLessThanOrEqualTo(utc);
+        end.ShouldBeGreaterThanOrEqualTo(utc);
+        UserTimeZoneDisplay.WallStartToUtc(today, zone).ShouldBeLessThanOrEqualTo(utc);
+    }
 }

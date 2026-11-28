@@ -1,7 +1,7 @@
 @namespace SufiChain.SufiPlatform.UI.Blazor.Timing
 @inject IUserTimeZoneDisplay TimeZoneDisplay
 
-<bdi dir="ltr" title="@_zoneLabel" aria-label="@_ariaLabel">@_text</bdi>
+<bdi dir="ltr" title="@_zoneLabel" aria-label="@_ariaLabel">@_text@_zoneSuffix</bdi>
 
 @code {
     public const string DefaultFormat = "yyyy-MM-dd HH:mm:ss";
@@ -15,7 +15,14 @@
     [Parameter]
     public string Empty { get; set; } = "-";
 
+    /// <summary>
+    /// When true, the visible text includes the same "(Asia/Tehran)" suffix as <see cref="UserTimeZoneDisplay.FormatWithZone"/>.
+    /// </summary>
+    [Parameter]
+    public bool ShowZone { get; set; }
+
     private string _text = "-";
+    private string _zoneSuffix = "";
     private string _zoneLabel = UserTimeZoneDisplay.DefaultTimeZoneId;
     private string _ariaLabel = "-";
 
@@ -24,6 +31,7 @@
         if (!Value.HasValue)
         {
             _text = Empty;
+            _zoneSuffix = "";
             _ariaLabel = Empty;
             return;
         }
@@ -41,6 +49,7 @@
         var format = string.IsNullOrWhiteSpace(Format) ? DefaultFormat : Format;
         _zoneLabel = zone.Id;
         _text = UserTimeZoneDisplay.Format(Value.Value, format, zone);
+        _zoneSuffix = ShowZone ? $" ({_zoneLabel})" : "";
         _ariaLabel = $"{_text} ({_zoneLabel})";
     }
 }
