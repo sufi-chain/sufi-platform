@@ -44,6 +44,16 @@ public static class CalendarDbContextModelCreatingExtensions
             b.HasIndex(x => new { x.CalendarId, x.ParentCalendarId }).IsUnique();
         });
 
+        builder.Entity<CalendarShare>(b =>
+        {
+            b.ToTable(SufiCalendarDbProperties.DbTablePrefix + "CalendarShares", SufiCalendarDbProperties.DbSchema);
+            b.ConfigureByConvention();
+
+            b.HasIndex(x => x.CalendarId);
+            b.HasIndex(x => x.UserId);
+            b.HasIndex(x => new { x.CalendarId, x.UserId }).IsUnique();
+        });
+
         builder.Entity<WorkingHourRule>(b =>
         {
             b.ToTable(SufiCalendarDbProperties.DbTablePrefix + "WorkingHourRules", SufiCalendarDbProperties.DbSchema);

@@ -18,6 +18,7 @@ public class AvailabilityCalendarAppService : SufiApplicationService, IAvailabil
     private readonly ICalendarSnapshotProvider _snapshotProvider;
     private readonly BusinessCalendarCalculator _businessCalendarCalculator;
     private readonly CalendarBusinessLocalizationService _businessLocalization;
+    private readonly CalendarShareGuard _shareGuard;
 
     public AvailabilityCalendarAppService(
         ICalendarRepository calendarRepository,
@@ -25,7 +26,8 @@ public class AvailabilityCalendarAppService : SufiApplicationService, IAvailabil
         IAsyncQueryableExecuter asyncExecuter,
         ICalendarSnapshotProvider snapshotProvider,
         BusinessCalendarCalculator businessCalendarCalculator,
-        CalendarBusinessLocalizationService businessLocalization)
+        CalendarBusinessLocalizationService businessLocalization,
+        CalendarShareGuard shareGuard)
     {
         _calendarRepository = calendarRepository;
         _calendarManager = calendarManager;
@@ -33,6 +35,7 @@ public class AvailabilityCalendarAppService : SufiApplicationService, IAvailabil
         _snapshotProvider = snapshotProvider;
         _businessCalendarCalculator = businessCalendarCalculator;
         _businessLocalization = businessLocalization;
+        _shareGuard = shareGuard;
     }
 
     public virtual async Task<CalendarDto> GetAsync(Guid id)
@@ -47,7 +50,7 @@ public class AvailabilityCalendarAppService : SufiApplicationService, IAvailabil
         await CheckPolicyAsync(CalendarPermissions.Calendars.Default);
 
         var query = await _calendarRepository.WithDetailsAsync();
-        query = ApplyVisibilityFilter(query);
+        query = await ApplyVisibilityFilterAsync(query);
         query = ApplyFilter(query, input);
         query = ApplySorting(query, input.Sorting);
         var totalCount = await _asyncExecuter.CountAsync(query);
@@ -60,7 +63,7 @@ public class AvailabilityCalendarAppService : SufiApplicationService, IAvailabil
         await CheckPolicyAsync(CalendarPermissions.Calendars.Default);
 
         var query = await _calendarRepository.GetQueryableAsync();
-        query = ApplyVisibilityFilter(query);
+        query = await ApplyVisibilityFilterAsync(query);
         if (kind.HasValue)
         {
             query = query.Where(x => x.Kind == kind.Value);
@@ -120,7 +123,7 @@ public class AvailabilityCalendarAppService : SufiApplicationService, IAvailabil
         await EnsureCanAccessPortalCalendarsAsync();
 
         var query = await _calendarRepository.GetQueryableAsync();
-        query = ApplyVisibilityFilter(query);
+        query = await ApplyVisibilityFilterAsync(query);
 
         var items = await _asyncExecuter.ToListAsync(query);
         return new ListResultDto<CalendarLookupDto>(items.Select(ToLookupDto).ToList());
@@ -140,7 +143,7 @@ public class AvailabilityCalendarAppService : SufiApplicationService, IAvailabil
             x.Kind == CalendarKind.Public &&
             x.OwnerUserId.HasValue &&
             organizationUnitIds.Contains(x.OwnerUserId.Value));
-        query = ApplyVisibilityFilter(query);
+        query = await ApplyVisibilityFilterAsync(query);
 
         var items = await _asyncExecuter.ToListAsync(query);
         return new ListResultDto<CalendarLookupDto>(items.Select(ToLookupDto).ToList());
@@ -170,8 +173,8 @@ public class AvailabilityCalendarAppService : SufiApplicationService, IAvailabil
     public virtual async Task<CalendarDto> UpdateAsync(Guid id, CreateUpdateCalendarDto input)
     {
         await CheckPolicyAsync(CalendarPermissions.Calendars.Update);
-
         var calendar = await _calendarRepository.GetAsync(id, includeDetails: true);
+        await _shareGuard.EnsureCanEditAsync(calendar);
         calendar.SetName(ResolveNameForPersist(calendar.Name, input.Name));
         calendar.SetKind(input.Kind);
         calendar.SetTimeZone(input.TimeZoneId);
@@ -191,6 +194,7 @@ public class AvailabilityCalendarAppService : SufiApplicationService, IAvailabil
     {
         await CheckPolicyAsync(CalendarPermissions.Calendars.Delete);
         var calendar = await _calendarRepository.GetAsync(id, includeDetails: true);
+        await _shareGuard.EnsureCanEditAsync(calendar);
         calendar.NotifyChanged();
         await _calendarRepository.DeleteAsync(calendar, autoSave: true);
     }
@@ -207,6 +211,7 @@ public class AvailabilityCalendarAppService : SufiApplicationService, IAvailabil
         await CheckPolicyAsync(CalendarPermissions.Calendars.ManageHours);
 
         var calendar = await _calendarRepository.GetAsync(calendarId, includeDetails: true);
+        await _shareGuard.EnsureCanEditAsync(calendar);
         var rules = input.Select((x, index) => new WorkingHourRule(
             GuidGenerator.Create(),
             calendar.Id,
@@ -256,6 +261,7 @@ public class AvailabilityCalendarAppService : SufiApplicationService, IAvailabil
         await CheckPolicyAsync(CalendarPermissions.Calendars.ManageExceptions);
 
         var calendar = await _calendarRepository.GetAsync(calendarId, includeDetails: true);
+        await _shareGuard.EnsureCanEditAsync(calendar);
         var exceptions = input.Select(x => new CalendarException(
             GuidGenerator.Create(),
             calendar.Id,
@@ -299,6 +305,7 @@ public class AvailabilityCalendarAppService : SufiApplicationService, IAvailabil
     {
         await CheckPolicyAsync(CalendarPermissions.Calendars.Update);
         var calendar = await _calendarRepository.GetAsync(calendarId, includeDetails: true);
+        await _shareGuard.EnsureCanEditAsync(calendar);
         var parentCalendar = await _calendarRepository.GetAsync(input.ParentCalendarId, includeDetails: true);
         await _calendarManager.AddInheritanceAsync(calendar, parentCalendar, input.IsInheritedByDefault);
         await _calendarRepository.UpdateAsync(calendar, autoSave: true);
@@ -309,6 +316,7 @@ public class AvailabilityCalendarAppService : SufiApplicationService, IAvailabil
     {
         await CheckPolicyAsync(CalendarPermissions.Calendars.Update);
         var calendar = await _calendarRepository.GetAsync(calendarId, includeDetails: true);
+        await _shareGuard.EnsureCanEditAsync(calendar);
         await _calendarManager.UpdateInheritanceAsync(calendar, parentCalendarId, input.IsInheritedByDefault);
         await _calendarRepository.UpdateAsync(calendar, autoSave: true);
 
@@ -332,6 +340,7 @@ public class AvailabilityCalendarAppService : SufiApplicationService, IAvailabil
     {
         await CheckPolicyAsync(CalendarPermissions.Calendars.Update);
         var calendar = await _calendarRepository.GetAsync(calendarId, includeDetails: true);
+        await _shareGuard.EnsureCanEditAsync(calendar);
         await _calendarManager.RemoveInheritanceAsync(calendar, parentCalendarId);
         await _calendarRepository.UpdateAsync(calendar, autoSave: true);
     }
@@ -342,7 +351,7 @@ public class AvailabilityCalendarAppService : SufiApplicationService, IAvailabil
         await GetVisibleCalendarAsync(calendarId);
 
         var query = await _calendarRepository.WithDetailsAsync();
-        query = ApplyVisibilityFilter(query);
+        query = await ApplyVisibilityFilterAsync(query);
         var calendars = await _asyncExecuter.ToListAsync(query);
 
         var existingParentIds = calendars
@@ -461,21 +470,24 @@ public class AvailabilityCalendarAppService : SufiApplicationService, IAvailabil
         return ordered ?? query.OrderBy(x => x.Name).ThenBy(x => x.Id);
     }
 
-    protected virtual IQueryable<Calendars.Calendar> ApplyVisibilityFilter(IQueryable<Calendars.Calendar> query)
+    protected virtual async Task<IQueryable<Calendars.Calendar>> ApplyVisibilityFilterAsync(IQueryable<Calendars.Calendar> query)
     {
         var userId = CurrentUser.Id;
+        var sharedCalendarIds = await _shareGuard.GetSharedCalendarIdsAsync();
 
         return query.Where(x =>
             x.Kind == CalendarKind.Default ||
             x.Kind == CalendarKind.Public ||
             !x.OwnerUserId.HasValue ||
-            (userId.HasValue && x.OwnerUserId == userId.Value));
+            (userId.HasValue && x.OwnerUserId == userId.Value) ||
+            sharedCalendarIds.Contains(x.Id));
     }
 
     protected virtual async Task<Calendars.Calendar> GetVisibleCalendarAsync(Guid id, bool includeDetails = false)
     {
         var calendar = await _calendarRepository.GetAsync(id, includeDetails: includeDetails);
-        if (!CanSeeCalendar(calendar))
+        var sharedCalendarIds = await _shareGuard.GetSharedCalendarIdsAsync();
+        if (!CanSeeCalendar(calendar) && !sharedCalendarIds.Contains(calendar.Id))
         {
             throw new BusinessException(CalendarErrorCodes.CalendarNotAccessible);
         }

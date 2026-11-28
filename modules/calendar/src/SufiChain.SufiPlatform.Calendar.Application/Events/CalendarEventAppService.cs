@@ -24,19 +24,22 @@ public class CalendarEventAppService : SufiApplicationService, ICalendarEventApp
     private readonly ICalendarRepository _calendarRepository;
     private readonly IAsyncQueryableExecuter _asyncExecuter;
     private readonly ICalendarOccurrenceExpansionCache _occurrenceCache;
+    private readonly CalendarShareGuard _shareGuard;
 
     public CalendarEventAppService(
         ICalendarEventRepository eventRepository,
         ICalendarEventService calendarEventService,
         ICalendarRepository calendarRepository,
         IAsyncQueryableExecuter asyncExecuter,
-        ICalendarOccurrenceExpansionCache occurrenceCache)
+        ICalendarOccurrenceExpansionCache occurrenceCache,
+        CalendarShareGuard shareGuard)
     {
         _eventRepository = eventRepository;
         _calendarEventService = calendarEventService;
         _calendarRepository = calendarRepository;
         _asyncExecuter = asyncExecuter;
         _occurrenceCache = occurrenceCache;
+        _shareGuard = shareGuard;
     }
 
     public virtual async Task<CalendarEventDto> GetAsync(Guid id)
@@ -78,7 +81,7 @@ public class CalendarEventAppService : SufiApplicationService, ICalendarEventApp
         await CheckPolicyAsync(CalendarPermissions.Events.Create);
         EnsureTimeRange(input);
         input.TimeZoneId = await ResolveTimeZoneIdAsync(input.TimeZoneId);
-        await EnsureCanSeeCalendarAsync(input.CalendarId);
+        await EnsureCanEditCalendarAsync(input.CalendarId);
 
         var calendarEvent = new CalendarEvent(
             GuidGenerator.Create(),
@@ -137,8 +140,8 @@ public class CalendarEventAppService : SufiApplicationService, ICalendarEventApp
         input.TimeZoneId = await ResolveTimeZoneIdAsync(input.TimeZoneId);
 
         var calendarEvent = await _eventRepository.GetAsync(id, includeDetails: true);
-        await EnsureCanSeeCalendarAsync(calendarEvent.CalendarId);
-        await EnsureCanSeeCalendarAsync(input.CalendarId);
+        await EnsureCanEditCalendarAsync(calendarEvent.CalendarId);
+        await EnsureCanEditCalendarAsync(input.CalendarId);
         calendarEvent.SetTitle(input.Title);
         calendarEvent.SetTimeRange(input.StartUtc, input.EndUtc, input.IsAllDay, input.TimeZoneId);
         calendarEvent.SetStatus(input.Status);
@@ -168,7 +171,7 @@ public class CalendarEventAppService : SufiApplicationService, ICalendarEventApp
         // Auth before load: anonymous callers must get 401/403, not a repository 500.
         await CheckPolicyAsync(CalendarPermissions.Events.Default);
         var calendarEvent = await _eventRepository.GetAsync(id);
-        await EnsureCanSeeCalendarAsync(calendarEvent.CalendarId);
+        await EnsureCanEditCalendarAsync(calendarEvent.CalendarId);
         var calendar = await _calendarRepository.GetAsync(calendarEvent.CalendarId);
         var isOwner = CalendarEventDeleteAccess.IsOwner(
             CurrentUser.Id,
@@ -243,7 +246,7 @@ public class CalendarEventAppService : SufiApplicationService, ICalendarEventApp
     {
         await CheckPolicyAsync(CalendarPermissions.Events.Update);
         var calendarEvent = await _eventRepository.GetAsync(id, includeDetails: true);
-        await EnsureCanSeeCalendarAsync(calendarEvent.CalendarId);
+        await EnsureCanEditCalendarAsync(calendarEvent.CalendarId);
         calendarEvent.SetRecurrence(calendarEvent.RecurrenceRule?.Id ?? GuidGenerator.Create(), recurrenceRule);
         await _eventRepository.UpdateAsync(calendarEvent, autoSave: true);
         return CalendarEventDtoMapper.ToDto(calendarEvent);
@@ -253,7 +256,7 @@ public class CalendarEventAppService : SufiApplicationService, ICalendarEventApp
     {
         await CheckPolicyAsync(CalendarPermissions.Events.Update);
         var calendarEvent = await _eventRepository.GetAsync(id, includeDetails: true);
-        await EnsureCanSeeCalendarAsync(calendarEvent.CalendarId);
+        await EnsureCanEditCalendarAsync(calendarEvent.CalendarId);
         calendarEvent.ClearRecurrence();
         await _eventRepository.UpdateAsync(calendarEvent, autoSave: true);
         return CalendarEventDtoMapper.ToDto(calendarEvent);
@@ -263,7 +266,7 @@ public class CalendarEventAppService : SufiApplicationService, ICalendarEventApp
     {
         await CheckPolicyAsync(CalendarPermissions.Events.Update);
         var calendarEvent = await _eventRepository.GetAsync(id, includeDetails: true);
-        await EnsureCanSeeCalendarAsync(calendarEvent.CalendarId);
+        await EnsureCanEditCalendarAsync(calendarEvent.CalendarId);
         calendarEvent.MoveOccurrence(GuidGenerator.Create(), input.OriginalStartUtc, input.MovedStartUtc, input.MovedEndUtc, input.ThisAndFollowing);
         await _eventRepository.UpdateAsync(calendarEvent, autoSave: true);
         return CalendarEventDtoMapper.ToDto(calendarEvent);
@@ -273,7 +276,7 @@ public class CalendarEventAppService : SufiApplicationService, ICalendarEventApp
     {
         await CheckPolicyAsync(CalendarPermissions.Events.Update);
         var calendarEvent = await _eventRepository.GetAsync(id, includeDetails: true);
-        await EnsureCanSeeCalendarAsync(calendarEvent.CalendarId);
+        await EnsureCanEditCalendarAsync(calendarEvent.CalendarId);
         calendarEvent.CancelOccurrence(GuidGenerator.Create(), input.OriginalStartUtc, input.ThisAndFollowing);
         await _eventRepository.UpdateAsync(calendarEvent, autoSave: true);
         return CalendarEventDtoMapper.ToDto(calendarEvent);
@@ -283,7 +286,7 @@ public class CalendarEventAppService : SufiApplicationService, ICalendarEventApp
     {
         await CheckPolicyAsync(CalendarPermissions.Events.ManageAttendees);
         var calendarEvent = await _eventRepository.GetAsync(id, includeDetails: true);
-        await EnsureCanSeeCalendarAsync(calendarEvent.CalendarId);
+        await EnsureCanEditCalendarAsync(calendarEvent.CalendarId);
         calendarEvent.AddAttendee(new EventAttendee(GuidGenerator.Create(), id, input.UserId, input.Email, input.DisplayName, input.Role));
         await _eventRepository.UpdateAsync(calendarEvent, autoSave: true);
         return CalendarEventDtoMapper.ToDto(calendarEvent);
@@ -293,7 +296,7 @@ public class CalendarEventAppService : SufiApplicationService, ICalendarEventApp
     {
         await CheckPolicyAsync(CalendarPermissions.Events.ManageAttendees);
         var calendarEvent = await _eventRepository.GetAsync(id, includeDetails: true);
-        await EnsureCanSeeCalendarAsync(calendarEvent.CalendarId);
+        await EnsureCanEditCalendarAsync(calendarEvent.CalendarId);
         calendarEvent.RemoveAttendee(attendeeId);
         await _eventRepository.UpdateAsync(calendarEvent, autoSave: true);
         return CalendarEventDtoMapper.ToDto(calendarEvent);
@@ -303,7 +306,7 @@ public class CalendarEventAppService : SufiApplicationService, ICalendarEventApp
     {
         await CheckPolicyAsync(CalendarPermissions.Events.Default);
         var calendarEvent = await _eventRepository.GetAsync(id, includeDetails: true);
-        await EnsureCanSeeCalendarAsync(calendarEvent.CalendarId);
+        await EnsureCanEditCalendarAsync(calendarEvent.CalendarId);
         calendarEvent.SetRsvp(attendeeId, rsvpStatus);
         await _eventRepository.UpdateAsync(calendarEvent, autoSave: true);
         return CalendarEventDtoMapper.ToDto(calendarEvent);
@@ -313,7 +316,7 @@ public class CalendarEventAppService : SufiApplicationService, ICalendarEventApp
     {
         await CheckPolicyAsync(CalendarPermissions.Events.Update);
         var calendarEvent = await _eventRepository.GetAsync(id, includeDetails: true);
-        await EnsureCanSeeCalendarAsync(calendarEvent.CalendarId);
+        await EnsureCanEditCalendarAsync(calendarEvent.CalendarId);
         calendarEvent.AddReminder(new EventReminder(GuidGenerator.Create(), id, input.Offset, input.Channel, input.AttendeeId));
         await _eventRepository.UpdateAsync(calendarEvent, autoSave: true);
         return CalendarEventDtoMapper.ToDto(calendarEvent);
@@ -323,7 +326,7 @@ public class CalendarEventAppService : SufiApplicationService, ICalendarEventApp
     {
         await CheckPolicyAsync(CalendarPermissions.Events.Update);
         var calendarEvent = await _eventRepository.GetAsync(id, includeDetails: true);
-        await EnsureCanSeeCalendarAsync(calendarEvent.CalendarId);
+        await EnsureCanEditCalendarAsync(calendarEvent.CalendarId);
         calendarEvent.RemoveReminder(reminderId);
         await _eventRepository.UpdateAsync(calendarEvent, autoSave: true);
         return CalendarEventDtoMapper.ToDto(calendarEvent);
@@ -443,10 +446,18 @@ public class CalendarEventAppService : SufiApplicationService, ICalendarEventApp
         throw new BusinessException(CalendarErrorCodes.DeleteNotAllowed);
     }
 
+    protected virtual async Task EnsureCanEditCalendarAsync(Guid calendarId)
+    {
+        await EnsureCanSeeCalendarAsync(calendarId);
+        var calendar = await _calendarRepository.GetAsync(calendarId);
+        await _shareGuard.EnsureCanEditAsync(calendar);
+    }
+
     protected virtual async Task EnsureCanSeeCalendarAsync(Guid calendarId)
     {
         var query = await _calendarRepository.GetQueryableAsync();
-        var canSee = await _asyncExecuter.AnyAsync(GetVisibleCalendarQuery(query).Where(x => x.Id == calendarId));
+        var sharedCalendarIds = await _shareGuard.GetSharedCalendarIdsAsync();
+        var canSee = await _asyncExecuter.AnyAsync(GetVisibleCalendarQuery(query, sharedCalendarIds).Where(x => x.Id == calendarId));
         if (!canSee)
         {
             throw new BusinessException(CalendarErrorCodes.CalendarNotAccessible);
@@ -456,10 +467,13 @@ public class CalendarEventAppService : SufiApplicationService, ICalendarEventApp
     protected virtual async Task<List<Guid>> GetVisibleCalendarIdsAsync()
     {
         var query = await _calendarRepository.GetQueryableAsync();
-        return await _asyncExecuter.ToListAsync(GetVisibleCalendarQuery(query).Select(x => x.Id));
+        var sharedCalendarIds = await _shareGuard.GetSharedCalendarIdsAsync();
+        return await _asyncExecuter.ToListAsync(GetVisibleCalendarQuery(query, sharedCalendarIds).Select(x => x.Id));
     }
 
-    protected virtual IQueryable<Calendars.Calendar> GetVisibleCalendarQuery(IQueryable<Calendars.Calendar> query)
+    protected virtual IQueryable<Calendars.Calendar> GetVisibleCalendarQuery(
+        IQueryable<Calendars.Calendar> query,
+        IReadOnlyCollection<Guid> sharedCalendarIds)
     {
         var userId = CurrentUser.Id;
 
@@ -467,7 +481,8 @@ public class CalendarEventAppService : SufiApplicationService, ICalendarEventApp
             x.Kind == CalendarKind.Default ||
             x.Kind == CalendarKind.Public ||
             !x.OwnerUserId.HasValue ||
-            (userId.HasValue && x.OwnerUserId == userId.Value));
+            (userId.HasValue && x.OwnerUserId == userId.Value) ||
+            sharedCalendarIds.Contains(x.Id));
     }
 
     protected virtual void CopyExtraProperties(IDictionary<string, object?> source, IDictionary<string, object?> target)

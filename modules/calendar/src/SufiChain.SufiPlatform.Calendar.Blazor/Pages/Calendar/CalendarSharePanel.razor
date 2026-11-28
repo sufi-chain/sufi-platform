@@ -1,0 +1,32 @@
+@namespace SufiChain.SufiPlatform.Calendar.Blazor.Pages.Calendar
+@using SufiChain.SufiPlatform.Calendar.Calendars
+@inherits CalendarComponentBase
+
+<SbStack Gap="3">
+    @if (_shares.Count == 0)
+    {
+        <SbText>@L["NoShares"]</SbText>
+    }
+    else
+    {
+        @foreach (var share in _shares)
+        {
+            <SbStack Direction="SbStackDirection.Row" Align="SbAlign.Center" Justify="SbJustify.SpaceBetween">
+                <SbText>@share.UserId</SbText>
+                <SbButton Variant="SbButtonVariant.Outline" OnClick="@(() => RevokeAsync(share))">
+                    <ChildContent>@L["RevokeShare"]</ChildContent>
+                </SbButton>
+            </SbStack>
+        }
+    }
+    <SbStack Direction="SbStackDirection.Row" Align="SbAlign.Center" Gap="2">
+        <SbTextField @bind-Value="_userIdText" Label="@L["ShareUserId"]" />
+        <SbButton Color="SbColor.Primary" OnClick="GrantAsync">
+            <ChildContent>@L["GrantShare"]</ChildContent>
+        </SbButton>
+    </SbStack>
+    @if (!string.IsNullOrEmpty(_error))
+    {
+        <SbAlert Severity="SbAlertSeverity.Warning">@_error</SbAlert>
+    }
+</SbStack>

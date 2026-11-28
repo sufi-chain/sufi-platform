@@ -14,6 +14,8 @@ public class CalendarMongoDbContext : AbpMongoDbContext, ICalendarMongoDbContext
 
     public IMongoCollection<CalendarEvent> CalendarEvents => Collection<CalendarEvent>();
 
+    public IMongoCollection<CalendarShare> CalendarShares => Collection<CalendarShare>();
+
     protected override void CreateModel(IMongoModelBuilder modelBuilder)
     {
         base.CreateModel(modelBuilder);

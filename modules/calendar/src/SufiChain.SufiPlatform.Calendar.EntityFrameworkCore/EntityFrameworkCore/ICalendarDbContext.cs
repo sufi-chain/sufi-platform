@@ -18,6 +18,8 @@ public interface ICalendarDbContext : IEfCoreDbContext
 
     DbSet<CalendarInheritance> CalendarInheritances { get; }
 
+    DbSet<CalendarShare> CalendarShares { get; }
+
     DbSet<CalendarEvent> CalendarEvents { get; }
 
     DbSet<EventOccurrenceException> EventOccurrenceExceptions { get; }
