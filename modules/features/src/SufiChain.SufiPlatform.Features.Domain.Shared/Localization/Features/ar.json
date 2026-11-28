@@ -29,6 +29,9 @@
     "Permission:Features.Features": "الميزات",
     "Permission:Features.ManageHostFeatures": "إدارة ميزات المضيف",
     "Permission:Features.ManageTenantFeatures": "إدارة ميزات المستأجر",
-    "FeatureCountTitle": "{0} من {1} ميزة مُعدّة"
+    "FeatureCountTitle": "{0} من {1} ميزة مُعدّة",
+    "HostFeaturesTitle": "ميزات المضيف",
+    "TenantFeaturesTitle": "ميزات {0}",
+    "HostFeaturesDoNotApplyToTenants": "تنطبق هذه القيم على المضيف فقط، ولا تنطبق على المستأجرين."
   }
 }
