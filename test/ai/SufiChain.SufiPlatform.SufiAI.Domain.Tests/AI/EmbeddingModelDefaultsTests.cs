@@ -35,6 +35,8 @@ public class EmbeddingModelDefaultsTests
     [InlineData("openai/text-embedding-ada-002", 1536)]
     [InlineData("openai/text-embedding-3-large", 3072)]
     [InlineData("openai/text-embedding-3-large:batch", 3072)]
+    [InlineData("nvidia/nemotron-3.5-embed-8b:free", 4096)]
+    [InlineData("nvidia/nemotron-3.5-embed-1b:free", 2048)]
     [InlineData("openrouter/nvidia/nemotron-3-embed-1b:free", 2048)]
     [InlineData("nvidia/nemotron-3-embed-1b:free", 2048)]
     [InlineData("nvidia/llama-nemotron-embed-vl-1b-v2:free", 2048)]
