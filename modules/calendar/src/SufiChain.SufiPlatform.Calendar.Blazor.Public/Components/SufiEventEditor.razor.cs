@@ -3,8 +3,10 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.Logging;
 using SufiChain.SufiBlazor.Utilities.DateUtils;
+using SufiChain.SufiPlatform.Calendar.Availability;
 using SufiChain.SufiPlatform.Calendar.Blazor.Public;
 using SufiChain.SufiPlatform.Calendar.Events;
+using Volo.Abp;
 using Volo.Abp.Authorization;
 using Volo.Abp.Settings;
 
@@ -16,6 +18,9 @@ public partial class SufiEventEditor : CalendarPublicComponentBase
 
     [Inject]
     protected ICalendarEventAppService CalendarEventAppService { get; set; } = default!;
+
+    [Inject]
+    protected IAvailabilityCalendarAppService AvailabilityCalendarAppService { get; set; } = default!;
 
     [Inject]
     protected NavigationManager NavigationManager { get; set; } = default!;
@@ -157,15 +162,61 @@ public partial class SufiEventEditor : CalendarPublicComponentBase
             return;
         }
 
+        if (!EventId.HasValue)
+        {
+            var personal = await AvailabilityCalendarAppService.GetOrCreateMyPersonalCalendarAsync();
+            var requested = CalendarId != Guid.Empty ? CalendarId : _model.CalendarId;
+            _model.CalendarId = CalendarNewEventCalendar.Resolve(requested, personal.Id);
+            if (CalendarNewEventCalendar.RequiresSelection(_model.CalendarId))
+            {
+                await Message.ErrorAsync(L["CalendarNotAccessible"]);
+                return;
+            }
+        }
+
         await ExecuteWithLoadingAsync(async () =>
         {
-            var saved = EventId.HasValue
-                ? await CalendarEventAppService.UpdateAsync(EventId.Value, _model)
-                : await CalendarEventAppService.CreateAsync(_model);
+            if (!EventId.HasValue)
+            {
+                _model.Attendees = _attendees.Select(attendee => new CreateEventAttendeeDto
+                {
+                    UserId = attendee.UserId,
+                    Email = attendee.Email,
+                    DisplayName = attendee.DisplayName,
+                    Role = attendee.Role
+                }).ToList();
+                _model.Reminders = _reminders.Select(reminder => new CreateEventReminderDto
+                {
+                    Offset = reminder.Offset,
+                    Channel = reminder.Channel
+                }).ToList();
+            }
+
+            var creating = !EventId.HasValue;
+            CalendarEventDto saved;
+            try
+            {
+                saved = creating
+                    ? await CalendarEventAppService.CreateAsync(_model)
+                    : await CalendarEventAppService.UpdateAsync(EventId!.Value, _model);
+            }
+            catch (BusinessException exception) when (exception.Code == CalendarErrorCodes.CalendarNotAccessible)
+            {
+                await Message.ErrorAsync(L["CalendarNotAccessible"]);
+                return;
+            }
+            await Message.SuccessAsync(L["SavedSuccessfully"]);
+            if (creating)
+            {
+                NavigationManager.NavigateTo(CalendarPageRoutes.CreatedEventUrl(
+                    CalendarPageRoutes.CurrentLocation(NavigationManager),
+                    saved.Id));
+                return;
+            }
+
             EventId = saved.Id;
             _attendees = saved.Attendees.ToList();
             _reminders = saved.Reminders.ToList();
-            await Message.SuccessAsync(L["SavedSuccessfully"]);
             await LeaveAsync();
         }, LoadingKeys.Save);
     }
@@ -212,8 +263,23 @@ public partial class SufiEventEditor : CalendarPublicComponentBase
 
     protected virtual async Task AddAttendeeAsync()
     {
-        if (!EventId.HasValue || string.IsNullOrWhiteSpace(_newAttendeeDisplayName))
+        if (string.IsNullOrWhiteSpace(_newAttendeeDisplayName))
         {
+            return;
+        }
+
+        if (!EventId.HasValue)
+        {
+            _attendees.Add(new EventAttendeeDto
+            {
+                Id = Guid.NewGuid(),
+                DisplayName = _newAttendeeDisplayName.Trim(),
+                Email = string.IsNullOrWhiteSpace(_newAttendeeEmail) ? null : _newAttendeeEmail.Trim(),
+                Role = _newAttendeeRole,
+                RsvpStatus = RsvpStatus.NeedsAction
+            });
+            _newAttendeeDisplayName = string.Empty;
+            _newAttendeeEmail = null;
             return;
         }
 
@@ -232,6 +298,7 @@ public partial class SufiEventEditor : CalendarPublicComponentBase
     {
         if (!EventId.HasValue)
         {
+            _attendees.RemoveAll(item => item.Id == attendee.Id);
             return;
         }
 
@@ -241,14 +308,21 @@ public partial class SufiEventEditor : CalendarPublicComponentBase
 
     protected virtual async Task AddReminderAsync()
     {
-        if (!EventId.HasValue)
-        {
-            return;
-        }
-
         if (_newReminderOffsetMinutes < 0 || _newReminderOffsetMinutes > ReminderOffsetMinuteMax)
         {
             await Message.ErrorAsync(L["InvalidReminderOffset"]);
+            return;
+        }
+
+        if (!EventId.HasValue)
+        {
+            _reminders.Add(new EventReminderDto
+            {
+                Id = Guid.NewGuid(),
+                Offset = TimeSpan.FromMinutes(-_newReminderOffsetMinutes),
+                Channel = _newReminderChannel
+            });
+            ResetNewReminderInputs();
             return;
         }
 
@@ -260,6 +334,7 @@ public partial class SufiEventEditor : CalendarPublicComponentBase
                 Channel = _newReminderChannel
             });
             _reminders = updated.Reminders.ToList();
+            ResetNewReminderInputs();
         }
         catch (Exception exception)
         {
@@ -301,10 +376,17 @@ public partial class SufiEventEditor : CalendarPublicComponentBase
         return Task.CompletedTask;
     }
 
+    private void ResetNewReminderInputs()
+    {
+        _newReminderOffsetMinutes = 15;
+        _newReminderChannel = ReminderChannel.Email;
+    }
+
     protected virtual async Task RemoveReminderAsync(EventReminderDto reminder)
     {
         if (!EventId.HasValue)
         {
+            _reminders.RemoveAll(item => item.Id == reminder.Id);
             return;
         }
 

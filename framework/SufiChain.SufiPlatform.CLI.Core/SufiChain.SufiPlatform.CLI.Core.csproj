@@ -14,4 +14,8 @@
     <Description>Core template-building engine for Sufi Platform CLI. Reusable from CLI or web apps.</Description>
   </PropertyGroup>
 
+  <ItemGroup>
+    <InternalsVisibleTo Include="SufiChain.SufiPlatform.CLI.Core.Tests" />
+  </ItemGroup>
+
 </Project>

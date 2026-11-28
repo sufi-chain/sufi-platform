@@ -40,6 +40,7 @@ namespace MyCompanyName.MyProjectName.DbMigrator;
     typeof(SufiLocalizationApplicationModule),
     typeof(SufiShortLinksApplicationModule),
     typeof(SufiCalendarApplicationModule),
+    typeof(SufiCalendarAssistantModule),
     typeof(SufiAccountApplicationModule),
     typeof(SufiFeaturesApplicationModule),
     typeof(SufiPermissionsApplicationModule),

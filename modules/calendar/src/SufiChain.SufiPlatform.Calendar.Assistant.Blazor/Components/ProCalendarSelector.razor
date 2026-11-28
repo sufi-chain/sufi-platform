@@ -1,0 +1,83 @@
+@namespace SufiChain.SufiPlatform.Calendar.Hooshvare.Blazor.Components
+@inherits CalendarHooshvareComponentBase
+
+<div class="pro-calendar-selector">
+    @if (!IsLoaded)
+    {
+        <div class="pro-calendar-selector__skeleton">
+            <SbSkeleton Variant="SbSkeletonVariant.Rectangular" Height="2.75rem" />
+        </div>
+    }
+    else if (CalendarOptions.Count == 0)
+    {
+        <SbAlert Severity="SbAlertSeverity.Info">@L["NoCalendarsFound"]</SbAlert>
+    }
+    else
+    {
+        <SbPopover @bind-Open="IsOpen"
+                   Placement="SbPlacement.BottomStart"
+                   Class="pro-calendar-selector__popover"
+                   FlipPreferredHeight="360">
+            <AnchorContent>
+                <SbButton Type="button"
+                          Variant="SbButtonVariant.Ghost"
+                          Color="SbColor.Default"
+                          Class="@($"pro-calendar-selector__trigger {(IsOpen ? "pro-calendar-selector__trigger--open" : null)}")"
+                          aria-haspopup="listbox"
+                          aria-expanded="@(IsOpen ? "true" : "false")"
+                          aria-label="@TriggerLabel"
+                          title="@TriggerLabel"
+                          Disabled="@Disabled"
+                          OnClick="ToggleAsync">
+                    <span class="pro-calendar-selector__swatch" style="@GetSwatchStyle(SelectedCalendar)"></span>
+                    <span class="pro-calendar-selector__copy">
+                        <span class="pro-calendar-selector__name">@(SelectedCalendar?.Name ?? L["Calendar"].Value)</span>
+                    </span>
+                    <span class="pro-calendar-selector__chevron" aria-hidden="true">
+                        <SbIcon Name="@(IsOpen ? "chevron-up" : "chevron-down")" Size="SbSize.Sm" />
+                    </span>
+                </SbButton>
+            </AnchorContent>
+            <ChildContent>
+                <div class="pro-calendar-selector__panel" role="listbox" aria-label="@L["Calendar"]">
+                    <div class="pro-calendar-selector__panel-header">
+                        <SbText Variant="SbTextVariant.Overline" Color="SbColor.Muted">@L["Calendar"]</SbText>
+                        <SbText Variant="SbTextVariant.Caption" Color="SbColor.Muted">@CalendarOptions.Count</SbText>
+                    </div>
+                    <div class="pro-calendar-selector__list">
+                        @foreach (var calendar in CalendarOptions)
+                        {
+                            var isSelected = calendar.Id == SelectedCalendarId;
+                            <SbButton Type="button"
+                                      Variant="SbButtonVariant.Ghost"
+                                      Color="SbColor.Default"
+                                      role="option"
+                                      aria-selected="@(isSelected ? "true" : "false")"
+                                      Class="@($"pro-calendar-selector__option {(isSelected ? "pro-calendar-selector__option--selected" : null)}")"
+                                      OnClick="@(() => SelectAsync(calendar))">
+                                <span class="pro-calendar-selector__swatch" style="@GetSwatchStyle(calendar)"></span>
+                                <span class="pro-calendar-selector__option-copy">
+                                    <span class="pro-calendar-selector__option-name">@calendar.Name</span>
+                                    <span class="pro-calendar-selector__option-meta">
+                                        @L[$"Enum:CalendarKind:{calendar.Kind}"]
+                                        @if (!string.IsNullOrWhiteSpace(calendar.TimeZoneId))
+                                        {
+                                            <span class="pro-calendar-selector__dot" aria-hidden="true">·</span>
+                                            <span>@calendar.TimeZoneId</span>
+                                        }
+                                    </span>
+                                </span>
+                                @if (isSelected)
+                                {
+                                    <span class="pro-calendar-selector__check" aria-hidden="true">
+                                        <SbIcon Name="check" Size="SbSize.Sm" />
+                                    </span>
+                                }
+                            </SbButton>
+                        }
+                    </div>
+                </div>
+            </ChildContent>
+        </SbPopover>
+    }
+</div>

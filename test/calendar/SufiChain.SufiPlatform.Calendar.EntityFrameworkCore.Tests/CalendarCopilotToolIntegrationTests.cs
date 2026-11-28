@@ -41,12 +41,13 @@ public class CalendarCopilotToolIntegrationTests : CalendarEntityFrameworkCoreTe
             "Planning",
             CreatedStart,
             CreatedEnd,
-            timeZoneId: "UTC");
+            timeZoneId: "UTC",
+            confirmed: true);
         created.Id.ShouldNotBe(Guid.Empty);
         created.StartUtc.ShouldBe(CreatedStart);
         created.EndUtc.ShouldBe(CreatedEnd);
 
-        var moved = await move.MoveEventAsync(created.Id, MovedStart, MovedEnd);
+        var moved = await move.MoveEventAsync(created.Id, MovedStart, MovedEnd, confirmed: true);
         moved.Title.ShouldBe("Planning");
         moved.StartUtc.ShouldBe(MovedStart);
         moved.EndUtc.ShouldBe(MovedEnd);

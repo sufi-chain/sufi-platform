@@ -62,7 +62,7 @@
                         <SbTextField @bind-Value="_model.RecurrenceRule" Label="@L["RecurrenceRule"]" />
                     </SbStack>
                 </SbTab>
-                <SbTab Label="@L["Attendees"]" Disabled="@(!EventId.HasValue)">
+                <SbTab Label="@L["Attendees"]">
                     <SbStack Gap="3">
                         @foreach (var attendee in _attendees)
                         {
@@ -84,7 +84,7 @@
                         <SbButton Variant="SbButtonVariant.Outline" OnClick="AddAttendeeAsync">@L["AddAttendee"]</SbButton>
                     </SbStack>
                 </SbTab>
-                <SbTab Label="@L["Reminders"]" Disabled="@(!EventId.HasValue)">
+                <SbTab Label="@L["Reminders"]">
                     <SbStack Gap="3">
                         @foreach (var reminder in _reminders)
                         {
@@ -94,6 +94,7 @@
                                 <SbIconButton Color="SbColor.Danger" OnClick="@(() => RemoveReminderAsync(reminder))" AriaLabel="@L["Delete"]"><Icon><SbIcon Name="trash" /></Icon></SbIconButton>
                             </SbStack>
                         }
+                        <SbText Tag="h3">@L["AddAReminder"]</SbText>
                         <SbNumberField TNumber="int"
                                        @bind-Value="_newReminderOffsetMinutes"
                                        Min="0"

@@ -155,6 +155,42 @@ public class CalendarBlazorSourceMarkupTests
         css.ShouldContain("grid-template-columns: 3.5rem repeat(7, minmax(5.5rem, 1fr))");
     }
 
+    [Fact]
+    public void EventEditor_AfterAddReminder_InputsReset()
+    {
+        var markup = Normalized(Read(EventEditor));
+        var code = Read(EventEditorCode);
+
+        markup.ShouldContain("L[\"AddAReminder\"]");
+        markup.ShouldNotContain("Disabled=\"@(!EventId.HasValue)\"");
+        code.ShouldContain("ResetNewReminderInputs()");
+        code.ShouldContain("_newReminderOffsetMinutes = 15");
+        code.ShouldContain("_newReminderChannel = ReminderChannel.Email");
+    }
+
+    [Fact]
+    public void EventEditor_NewEvent_CanAddReminderBeforeSave()
+    {
+        var code = Read(EventEditorCode);
+        var view = Read(CalendarViewCode);
+
+        code.ShouldContain("_model.Reminders = _reminders.Select");
+        code.ShouldContain("if (!EventId.HasValue)");
+        view.ShouldContain("CalendarMonthSlot.ForDay");
+        view.ShouldNotContain("startUtc.AddDays(1)");
+    }
+
+    [Fact]
+    public void CreateEvent_LeavesTheNewEventPage()
+    {
+        var code = Read(EventEditorCode);
+        var routes = Read(BlazorPublic + "/CalendarPageRoutes.cs");
+
+        code.ShouldContain("CalendarPageRoutes.CreatedEventUrl");
+        code.ShouldContain("if (creating)");
+        routes.ShouldContain("/events/new");
+    }
+
     private static string Read(string relative)
     {
         for (var directory = new DirectoryInfo(AppContext.BaseDirectory); directory != null; directory = directory.Parent)

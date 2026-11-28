@@ -5,6 +5,7 @@ using Shouldly;
 using SufiChain.SufiPlatform.Calendar.Calendars;
 using SufiChain.SufiPlatform.Calendar.Events;
 using Volo.Abp;
+using Volo.Abp.Auditing;
 using Volo.Abp.Authorization;
 using Volo.Abp.Data;
 using Volo.Abp.EntityFrameworkCore;
@@ -277,6 +278,87 @@ public class CalendarEventAppServiceIntegrationTests : CalendarEntityFrameworkCo
         input.TimeZoneId = "UTC";
         var created = await GetRequiredService<ICalendarEventAppService>().CreateAsync(input);
         created.TimeZoneId.ShouldBe(CalendarTimeZoneResolver.TryFind("UTC")!.Id);
+    }
+
+    [Fact]
+    public async Task SearchEvents_AfterSoftDelete_DoesNotReturnTheEvent()
+    {
+        var calendarId = await CreateCalendarAsync();
+        var service = GetRequiredService<ICalendarEventAppService>();
+        var created = await service.CreateAsync(NewEvent(calendarId));
+        await service.DeleteAsync(created.Id);
+
+        var tool = new AI.Tools.CalendarSearchEventsTool(
+            service,
+            new SingleCalendarCatalog(calendarId, "Team calendar"),
+            Microsoft.Extensions.Logging.Abstractions.NullLogger<AI.Tools.CalendarSearchEventsTool>.Instance);
+        var live = await tool.SearchEventsAsync();
+        var json = System.Text.Json.JsonSerializer.Serialize(live);
+
+        json.ShouldNotContain(created.Id.ToString());
+        json.ShouldNotContain("Planning");
+    }
+
+    [Fact]
+    public async Task CalendarEvent_SoftDelete_SetsDeletionFields_StatusUnchanged()
+    {
+        var ownerId = Guid.NewGuid();
+        var calendarId = await CreateCalendarAsync(ownerId);
+        var accessor = GetRequiredService<ICurrentPrincipalAccessor>();
+        Guid eventId;
+        using (accessor.Change(Principal(ownerId)))
+        {
+            var service = GetRequiredService<ICalendarEventAppService>();
+            eventId = (await service.CreateAsync(NewEvent(calendarId))).Id;
+            await service.DeleteAsync(eventId);
+        }
+
+        await WithUnitOfWorkAsync(async () =>
+        {
+            using (GetRequiredService<IDataFilter>().Disable<ISoftDelete>())
+            {
+                var deleted = await GetRequiredService<ICalendarEventRepository>().GetAsync(eventId);
+                deleted.IsDeleted.ShouldBeTrue();
+                deleted.DeletionTime.ShouldNotBeNull();
+                deleted.DeleterId.ShouldBe(ownerId);
+                deleted.Status.ShouldBe(EventStatus.Confirmed);
+            }
+        });
+    }
+
+    [Fact]
+    public async Task CalendarEvent_SoftDelete_WritesAuditOrEntityChange()
+    {
+        var ownerId = Guid.NewGuid();
+        var calendarId = await CreateCalendarAsync(ownerId);
+        var accessor = GetRequiredService<ICurrentPrincipalAccessor>();
+        var auditing = GetRequiredService<IAuditingManager>();
+        using (accessor.Change(Principal(ownerId)))
+        using (var saveHandle = auditing.BeginScope())
+        {
+            var service = GetRequiredService<ICalendarEventAppService>();
+            var eventId = (await service.CreateAsync(NewEvent(calendarId))).Id;
+            await service.DeleteAsync(eventId);
+            await saveHandle.SaveAsync();
+
+            auditing.Current.ShouldNotBeNull();
+            auditing.Current!.Log.EntityChanges.ShouldContain(change =>
+                change.EntityId == eventId.ToString()
+                && change.ChangeType == EntityChangeType.Deleted);
+        }
+    }
+
+    private sealed class SingleCalendarCatalog : ICalendarCatalogIntegrationService
+    {
+        private readonly CalendarLookupDto _calendar;
+
+        public SingleCalendarCatalog(Guid id, string name)
+        {
+            _calendar = new CalendarLookupDto { Id = id, Name = name, Kind = CalendarKind.Public };
+        }
+
+        public Task<List<CalendarLookupDto>> GetVisibleCalendarsAsync(string? filter = null) =>
+            Task.FromResult(new List<CalendarLookupDto> { _calendar });
     }
 
     private async Task<Guid> CreateCalendarAsync(Guid? ownerUserId = null)

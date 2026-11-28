@@ -21,5 +21,10 @@ public static class CalendarMongoDbContextExtensions
         {
             b.CollectionName = SufiCalendarDbProperties.DbTablePrefix + "Events";
         });
+
+        builder.Entity<CalendarShare>(b =>
+        {
+            b.CollectionName = SufiCalendarDbProperties.DbTablePrefix + "CalendarShares";
+        });
     }
 }

@@ -1,4 +1,7 @@
+using SufiChain.SufiPlatform.Calendar.Events;
 using SufiChain.SufiPlatform.Users;
+using Volo.Abp;
+using Volo.Abp.Auditing;
 using Volo.Abp.Modularity;
 using Volo.Abp.Domain;
 
@@ -13,4 +16,15 @@ namespace SufiChain.SufiPlatform.Calendar;
 )]
 public class SufiCalendarDomainModule : AbpModule
 {
+    public override void ConfigureServices(ServiceConfigurationContext context)
+    {
+        Configure<AbpAuditingOptions>(options =>
+        {
+            options.IsEnabled = true;
+            options.EntityHistorySelectors.Add(
+                new NamedTypeSelector(
+                    "SufiCalendar.CalendarEvent",
+                    type => type == typeof(CalendarEvent)));
+        });
+    }
 }

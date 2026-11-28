@@ -8,6 +8,7 @@ public static class CalendarErrorCodes
     public const string OverlappingExceptionHours = "Calendar:OverlappingExceptionHours";
     public const string InheritanceCycleDetected = "Calendar:InheritanceCycleDetected";
     public const string CalendarNotAccessible = "Calendar:CalendarNotAccessible";
+    public const string CalendarShareReadOnly = "Calendar:CalendarShareReadOnly";
     public const string UserRequired = "Calendar:UserRequired";
     public const string CalendarCannotInheritItself = "Calendar:CalendarCannotInheritItself";
     public const string InheritanceExceedsOneLevel = "Calendar:InheritanceExceedsOneLevel";

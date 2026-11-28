@@ -7,4 +7,5 @@ public sealed record EventReminderDispatchItem(
     EventReminder Reminder,
     EventOccurrence Occurrence,
     EventAttendee? Attendee,
-    DateTime DueAtUtc);
+    DateTime DueAtUtc,
+    bool Skip = false);

@@ -1,4 +1,6 @@
+using SufiChain.SufiPlatform.Calendar.Reminders;
 using Volo.Abp;
+using Volo.Abp.Data;
 using Volo.Abp.Domain.Entities.Auditing;
 
 using Volo.Abp.MultiTenancy;
@@ -214,6 +216,12 @@ public class CalendarEvent : FullAuditedAggregateRoot<Guid>, IMultiTenant
     {
         Reminders.RemoveAll(x => x.Id == reminderId);
         AddDistributedEvent(new CalendarEventChangedEto(Id, CalendarId, TenantId));
+    }
+
+    public virtual void MarkReminderSkipped(EventReminder reminder, DateTime skippedAtUtc, string reason)
+    {
+        reminder.MarkSkipped(skippedAtUtc);
+        this.SetProperty(CalendarReminderSkip.Key(reminder.Id), reason);
     }
 
     public virtual void SetRecurrence(Guid recurrenceRuleId, string rule)

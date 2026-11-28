@@ -1,0 +1,66 @@
+@page "/panel/portal/calendar"
+@page "/panel/portal/calendar/mobile"
+@page "/panel/portal/calendar-pro"
+@page "/panel/portal/calendar-pro/mobile"
+@inherits CalendarHooshvarePageBase
+
+<div class="calendar-hooshvare-page @(IsMobileWorkspacePage ? "calendar-hooshvare-page--workspace" : null)">
+    <SufiPageToolbar>
+        <SbButton Color="SbColor.Primary" Variant="SbButtonVariant.Outline" OnClick="RefreshAsync">
+            <StartIcon><SbIcon Name="refresh" Size="SbSize.Sm" /></StartIcon>
+            <ChildContent>@L["Refresh"]</ChildContent>
+        </SbButton>
+    </SufiPageToolbar>
+
+    <SbStack Direction="SbStackDirection.Column" Gap="4">
+        <SufiCalendarScheduler @ref="CalendarScheduler"
+                               Inline="true"
+                               AllowCalendarSelection="false"
+                               ShowCalendarSelectInHeader="false"
+                               SelectedCalendarId="@SelectedCalendarId"
+                               SelectedCalendarIdChanged="OnSelectedCalendarIdChangedAsync"
+                               AllowEventEditing="true"
+                               InitialCalendarId="PersonalCalendarId"
+                               InitialDate="DateTime.Today"
+                               EventSaved="OnEventChangedAsync">
+            <ToolbarExtra>
+                <ProCalendarSelector @ref="CalendarSelector"
+                                     SelectedCalendarId="@SelectedCalendarId"
+                                     SelectedCalendarIdChanged="OnSelectedCalendarIdChangedAsync"
+                                     InitialCalendarId="PersonalCalendarId" />
+            </ToolbarExtra>
+        </SufiCalendarScheduler>
+    </SbStack>
+
+    @if (CanUseHooshvare)
+    {
+        <HooshvareChatWidget Open="@IsHooshvareOpen"
+                           OpenChanged="@OnHooshvareOpenChangedAsync"
+                           Title="@HooshvareDisplayName"
+                           State="@MessengerState"
+                           ComposerSessionId="@MessengerState.SelectedSessionId"
+                           HasActiveConversation="@HasActiveAssistantSession"
+                           ConversationTitle="@HooshvareDisplayName"
+                           ShowSessionStateControls="true"
+                           PersistChatSession="true"
+                           IsAvailable="@IsAssistantAvailable"
+                           ShowLauncherWhenUnavailable="true"
+                           UnavailableMessage="@(IsAssistantAvailable ? null : L["CalendarHooshvare:Unavailable"].Value)"
+                           ConfiguredWorkspaceName="@AssistantAvailability?.DefaultWorkspaceName"
+                           ShortcutPrompts="@EffectiveShortcutPrompts"
+                           HooshvareKey="@AssistantHooshvareKey"
+                           OnShortcutSelected="@OnShortcutSelectedAsync"
+                           OnSendMessage="@OnSendMessageAsync"
+                           HooshvareId="@(_calendarAssistantRuntimeId ?? Guid.Empty)"
+                           WorkspaceId="@(_calendarWorkspaceId ?? Guid.Empty)"
+                           AllowUserModelSelection="@_allowUserModelSelection"
+                           AllowComposerEmoji="@_allowComposerEmoji"
+                           AllowComposerAudio="@_allowComposerAudio"
+                           AllowComposerAttachment="@_allowComposerAttachment"
+                           ShowContextUsage="@_allowComposerContext"
+                           ModelConfigurationId="@_modelConfigurationId"
+                           ModelConfigurationIdChanged="@OnModelConfigurationIdChangedAsync"
+                           SignInUrl="@GetSignInUrl()"
+                           LauncherAriaLabel="@L["CalendarHooshvare:OpenAssistant"]" />
+    }
+</div>

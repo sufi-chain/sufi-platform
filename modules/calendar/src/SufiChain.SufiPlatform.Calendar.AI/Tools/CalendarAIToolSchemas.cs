@@ -44,7 +44,8 @@ public static class CalendarAIToolSchemas
             "description": { "type": "string" },
             "availabilityCalendarId": { "type": "string", "format": "uuid" },
             "sourceType": { "type": "string" },
-            "sourceId": { "type": "string" }
+            "sourceId": { "type": "string" },
+            "confirmed": { "type": "boolean", "description": "True only after the user explicitly approves this create. The first call must omit it or set false and returns a preview without writing." }
           },
           "required": [ "calendarId", "title", "startUtc", "endUtc" ]
         }
@@ -69,7 +70,8 @@ public static class CalendarAIToolSchemas
           "properties": {
             "eventId": { "type": "string", "format": "uuid", "description": "Existing non-recurring event id from calendar.search_events or a previous tool result. Do not guess." },
             "movedStartUtc": { "type": "string", "format": "date-time", "description": "New start time in UTC, converted from the user's requested local time using the event or calendar timezone." },
-            "movedEndUtc": { "type": "string", "format": "date-time", "description": "New end time in UTC. Preserve the existing duration unless the user asks for a different end time or duration." }
+            "movedEndUtc": { "type": "string", "format": "date-time", "description": "New end time in UTC. Preserve the existing duration unless the user asks for a different end time or duration." },
+            "confirmed": { "type": "boolean", "description": "True only after the user explicitly approves this move. The first call must omit it or set false and returns the event id and new times without writing." }
           },
           "required": [ "eventId", "movedStartUtc", "movedEndUtc" ]
         }
@@ -79,7 +81,8 @@ public static class CalendarAIToolSchemas
         {
           "type": "object",
           "properties": {
-            "eventId": { "type": "string", "format": "uuid", "description": "Existing event id from calendar.search_events or a previous tool result. Do not guess." }
+            "eventId": { "type": "string", "format": "uuid", "description": "Existing event id from calendar.search_events or a previous tool result. Do not guess." },
+            "confirmed": { "type": "boolean", "description": "True only after the user explicitly approves this cancel. The first call must omit it or set false and returns a preview without writing." }
           },
           "required": [ "eventId" ]
         }
@@ -93,7 +96,8 @@ public static class CalendarAIToolSchemas
             "originalStartUtc": { "type": "string", "format": "date-time" },
             "movedStartUtc": { "type": "string", "format": "date-time" },
             "movedEndUtc": { "type": "string", "format": "date-time" },
-            "thisAndFollowing": { "type": "boolean" }
+            "thisAndFollowing": { "type": "boolean" },
+            "confirmed": { "type": "boolean", "description": "True only after the user explicitly approves this occurrence move. The first call must omit it or set false and returns a preview without writing." }
           },
           "required": [ "eventId", "originalStartUtc", "movedStartUtc", "movedEndUtc" ]
         }
@@ -105,7 +109,8 @@ public static class CalendarAIToolSchemas
           "properties": {
             "eventId": { "type": "string", "format": "uuid" },
             "originalStartUtc": { "type": "string", "format": "date-time" },
-            "thisAndFollowing": { "type": "boolean" }
+            "thisAndFollowing": { "type": "boolean" },
+            "confirmed": { "type": "boolean", "description": "True only after the user explicitly approves this occurrence cancel. The first call must omit it or set false and returns a preview without writing." }
           },
           "required": [ "eventId", "originalStartUtc" ]
         }

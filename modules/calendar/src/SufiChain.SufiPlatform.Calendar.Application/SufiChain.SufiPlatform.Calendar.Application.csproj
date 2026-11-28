@@ -11,8 +11,10 @@
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="../../../../framework/SufiChain.SufiPlatform.Ddd.Application/SufiChain.SufiPlatform.Ddd.Application.csproj" />
+    <PackageReference Include="Volo.Abp.BackgroundWorkers" Version="$(AbpVersion)" />
     <PackageReference Include="Volo.Abp.Caching" Version="$(AbpVersion)" />
     <PackageReference Include="Volo.Abp.MultiTenancy" Version="$(AbpVersion)" />
+    <ProjectReference Include="../../../../framework/SufiChain.SufiPlatform.SufiCom.Abstractions/SufiChain.SufiPlatform.SufiCom.Abstractions.csproj" />
     <ProjectReference Include="../../../../framework/SufiChain.SufiPlatform.SufiCom/SufiChain.SufiPlatform.SufiCom.csproj" />
     <ProjectReference Include="../../../../framework/SufiChain.SufiPlatform.Data/SufiChain.SufiPlatform.Data.csproj" />
     <ProjectReference Include="../../../../modules/localization/src/SufiChain.SufiPlatform.Localization.Application.Contracts/SufiChain.SufiPlatform.Localization.Application.Contracts.csproj" />

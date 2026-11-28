@@ -13,4 +13,6 @@ public interface ICalendarMongoDbContext : IAbpMongoDbContext
     IMongoCollection<Calendars.Calendar> Calendars { get; }
 
     IMongoCollection<CalendarEvent> CalendarEvents { get; }
+
+    IMongoCollection<CalendarShare> CalendarShares { get; }
 }
