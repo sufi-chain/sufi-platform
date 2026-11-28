@@ -15,6 +15,7 @@ using Volo.Abp;
 using Volo.Abp.AspNetCore.Mvc;
 using Volo.Abp.Domain.Entities;
 using Volo.Abp.Settings;
+using Volo.Abp.Uow;
 using Volo.Abp.MultiTenancy;
 using Volo.Abp.Security.Claims;
 using IdentityUser = SufiChain.SufiPlatform.Identity.IdentityUser;
@@ -126,23 +127,36 @@ public abstract class SufiAccountController : AbpController
         Response.Headers.CacheControl = "no-store, no-cache, must-revalidate";
         Response.Headers["Clear-Site-Data"] = "\"cookies\"";
 
-        try
+        await LogoutSession.RunAsync(
+            () => SaveLogoutLogIsolatedAsync(userName),
+            () => _signInManager.SignOutAsync(),
+            [
+                () => HttpContext.SignOutAsync(IdentityConstants.ApplicationScheme),
+                () => HttpContext.SignOutAsync(IdentityConstants.ExternalScheme),
+                () => HttpContext.SignOutAsync(IdentityConstants.TwoFactorUserIdScheme)
+            ],
+            ex => Logger.LogWarning(ex, "A logout step failed and was skipped."));
+    }
+
+    private async Task SaveLogoutLogIsolatedAsync(string? userName)
+    {
+        var uowManager = LazyServiceProvider.LazyGetService<IUnitOfWorkManager>();
+        if (uowManager == null)
         {
-            await _securityLogAppService.SaveLoginEventAsync(
-                IdentitySecurityLogIdentityConsts.Identity,
-                IdentitySecurityLogActionConsts.Logout,
-                userName);
-        }
-        catch (Exception ex)
-        {
-            Logger.LogWarning(ex, "Logout security log was not saved.");
+            await SaveLogoutLogAsync(userName);
+            return;
         }
 
-        await _signInManager.SignOutAsync();
-        await HttpContext.SignOutAsync(IdentityConstants.ApplicationScheme);
-        await HttpContext.SignOutAsync(IdentityConstants.ExternalScheme);
-        await HttpContext.SignOutAsync(IdentityConstants.TwoFactorUserIdScheme);
+        using var uow = uowManager.Begin(requiresNew: true, isTransactional: true);
+        await SaveLogoutLogAsync(userName);
+        await uow.CompleteAsync();
     }
+
+    private Task SaveLogoutLogAsync(string? userName) =>
+        _securityLogAppService.SaveLoginEventAsync(
+            IdentitySecurityLogIdentityConsts.Identity,
+            IdentitySecurityLogActionConsts.Logout,
+            userName);
 
     /// <summary>
     /// Initiates external login challenge (Google, Microsoft, Facebook, etc.).
