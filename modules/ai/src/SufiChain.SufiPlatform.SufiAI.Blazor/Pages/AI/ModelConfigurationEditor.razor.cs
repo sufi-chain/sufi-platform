@@ -128,6 +128,7 @@ public partial class ModelConfigurationEditor : AIComponentBase
             AICapabilityType.ImageGeneration => "ImageGeneration",
             AICapabilityType.WebSearch => "WebSearch",
             AICapabilityType.WebFetch => "WebFetch",
+            AICapabilityType.Decisions => "Enum:AICapabilityType.Decisions",
             _ => "Capability"
         }];
 

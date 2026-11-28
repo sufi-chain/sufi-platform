@@ -361,7 +361,7 @@ else
 								<CellTemplate Context="cellContext">
 									@if (!string.IsNullOrEmpty(cellContext.Item.ErrorMessage))
 									{
-										<SbText Variant="SbTextVariant.BodySmall" Color="SbColor.Danger">
+										<SbText Variant="SbTextVariant.BodySmall" Color="SbColor.Danger" title="@cellContext.Item.ErrorMessage">
 											@FormatUsageError(cellContext.Item.ErrorMessage)
 										</SbText>
 									}

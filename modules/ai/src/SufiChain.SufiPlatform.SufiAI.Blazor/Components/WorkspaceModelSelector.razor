@@ -137,6 +137,12 @@ else if (ShouldRenderPicker)
             </SbSelect>
     </div>
 }
+else if (_catalogLoaded && WorkspaceId != Guid.Empty && _routes.Count(route => route.IsUserSelectable) == 1)
+{
+    <SbText Variant="SbTextVariant.Caption" Color="SbColor.Muted">
+        @L["WorkspaceChat:ModelSelectorSingleRoute"]
+    </SbText>
+}
 else if (ShowCatalogHints && _catalogLoaded && WorkspaceId != Guid.Empty && !_routes.Any(route => route.IsReady))
 {
     <SbText Variant="SbTextVariant.Caption" Color="SbColor.Muted">

@@ -419,7 +419,7 @@ public partial class ModelConfigurationsPage : AIComponentBase
 
     private string FormatCapability(AICapabilityType capabilityType)
     {
-        var key = capabilityType.ToString();
+        var key = AiUsageErrorText.CapabilityKey(capabilityType);
         var localized = L[key];
         return localized.ResourceNotFound || string.Equals(localized.Value, key, StringComparison.Ordinal)
             ? key
