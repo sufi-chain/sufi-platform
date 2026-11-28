@@ -4,6 +4,7 @@ using Microsoft.Extensions.Logging;
 using NSubstitute;
 using Shouldly;
 using SufiChain.SufiPlatform.SufiAI.Hooshvare.Hooshvare;
+using SufiChain.SufiPlatform.SufiForms.Data;
 using SufiChain.SufiPlatform.SufiForms.Hooshvare;
 using SufiChain.SufiPlatform.SufiForms.Enums;
 using SufiChain.SufiPlatform.SufiForms.Forms;
@@ -436,10 +437,67 @@ public class FormCreatorTests
         deniedScope.Definition.ShouldBeNull();
     }
 
+    [Fact]
+    public void SeedPrompt_DoesNotContainVerbatimConversationalReplyExample()
+    {
+        foreach (var prompt in FormCreatorHooshvareSeedTexts.Texts.SystemPrompt.Values)
+        {
+            prompt.ShouldNotContain("conversational reply");
+        }
+    }
+
+    [Fact]
+    public async Task Converse_DoesNotSurfaceExamplePlaceholderAsBubble()
+    {
+        var runtime = Substitute.For<IHooshvareRuntimeAppService>();
+        runtime.SendAsync(Arg.Any<HooshvareRuntimeRequestDto>(), Arg.Any<CancellationToken>())
+            .Returns(new HooshvareRuntimeResultDto
+            {
+                Message = "{\"message\":\"conversational reply\",\"proposal\":null}"
+            });
+        var error = await Should.ThrowAsync<BusinessException>(() =>
+            new AuthorizedCreator(runtime, Substitute.For<IFormDefinitionAppService>())
+                .ConverseAsync(new() { Message = "What form do you need?" }));
+        error.Code.ShouldBe("SufiForms:CreatorInvalidReply");
+    }
+
+    [Fact]
+    public async Task BuildAsync_WhenToolNotCalled_ThrowsCreatorNoDefinition_NoPersist()
+    {
+        var forms = Substitute.For<IFormDefinitionAppService>();
+        var runtime = Substitute.For<IHooshvareRuntimeAppService>();
+        runtime.SendAsync(Arg.Any<HooshvareRuntimeRequestDto>(), Arg.Any<CancellationToken>())
+            .Returns(new HooshvareRuntimeResultDto { Message = "I did not call the tool" });
+        var error = await Should.ThrowAsync<BusinessException>(() =>
+            new AuthorizedCreator(runtime, forms).BuildAsync(new() { Confirmed = true, Proposal = "Approved requirements" }));
+        error.Code.ShouldBe("SufiForms:CreatorNoDefinition");
+        await forms.DidNotReceiveWithAnyArgs().CreateAsync(default!);
+        await forms.DidNotReceiveWithAnyArgs().UpdateAsync(default, default!);
+    }
+
+    [Fact]
+    public async Task BuildAsync_WhenRuntimeHangs_TimesOut()
+    {
+        var forms = Substitute.For<IFormDefinitionAppService>();
+        var runtime = Substitute.For<IHooshvareRuntimeAppService>();
+        runtime.SendAsync(Arg.Any<HooshvareRuntimeRequestDto>(), Arg.Any<CancellationToken>())
+            .Returns(call => new TaskCompletionSource<HooshvareRuntimeResultDto>().Task);
+        var error = await Should.ThrowAsync<BusinessException>(() =>
+            new FastTimeoutCreator(runtime, forms).BuildAsync(new() { Confirmed = true, Proposal = "Approved requirements" }));
+        error.Code.ShouldBe("SufiForms:CreatorResponseTimedOut");
+        await forms.DidNotReceiveWithAnyArgs().CreateAsync(default!);
+    }
+
     // These tests isolate orchestration and tool boundaries. Host permission interception needs integration validation.
-    private sealed class AuthorizedCreator(IHooshvareRuntimeAppService runtime, IFormDefinitionAppService forms)
+    private class AuthorizedCreator(IHooshvareRuntimeAppService runtime, IFormDefinitionAppService forms)
         : FormCreatorAppService(Substitute.For<IPlatformHooshvareResolver>(), runtime, forms)
     {
         protected override Task CheckOperationAsync(Guid? id) => Task.CompletedTask;
+    }
+
+    private sealed class FastTimeoutCreator(IHooshvareRuntimeAppService runtime, IFormDefinitionAppService forms)
+        : AuthorizedCreator(runtime, forms)
+    {
+        protected override TimeSpan CreatorRuntimeTimeout => TimeSpan.FromMilliseconds(40);
     }
 }

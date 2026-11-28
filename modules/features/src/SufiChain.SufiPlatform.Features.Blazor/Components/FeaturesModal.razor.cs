@@ -66,6 +66,10 @@ public partial class FeaturesModal
     /// <param name="providerName">The provider name ("T" for tenants)</param>
     /// <param name="providerKey">The provider key (tenant ID or null for host)</param>
     /// <param name="entityDisplayName">Display name for the entity (optional)</param>
+    private string DialogTitle => string.IsNullOrEmpty(_providerKey)
+        ? L["HostFeaturesTitle"]
+        : L["TenantFeaturesTitle", _entityDisplayName];
+
     public async Task OpenAsync(string providerName, string? providerKey, string? entityDisplayName = null)
     {
         _isClosing = false;

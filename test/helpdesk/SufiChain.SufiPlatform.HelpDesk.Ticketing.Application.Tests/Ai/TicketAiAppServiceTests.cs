@@ -23,13 +23,56 @@ namespace SufiChain.SufiPlatform.HelpDesk.Ticketing;
 public class TicketAiAppServiceTests
 {
     [Fact]
+    public async Task SelectAsync_KbDraftKey_WinsOverProjectTicketingAgentReply()
+    {
+        var fixture = new SelectorFixture();
+        var purposeId = Guid.NewGuid();
+        var draftId = Guid.NewGuid();
+        fixture.PurposeReady(purposeId);
+        fixture.Keys.TryGetRuntimeIdByKeyAsync(HelpDeskKbDraftHooshvareKeys.Key, Arg.Any<CancellationToken>())
+            .Returns(draftId);
+
+        var selection = await fixture.Selector.SelectAsync(fixture.ProjectId, HelpDeskKbDraftHooshvareKeys.Key);
+
+        selection.HooshvareId.ShouldBe(draftId);
+        selection.HooshvareId.ShouldNotBe(purposeId);
+    }
+
+    [Fact]
+    public async Task SelectAsync_AgentReplyKey_UsesProjectTicketingHooshvare()
+    {
+        var fixture = new SelectorFixture();
+        var purposeId = Guid.NewGuid();
+        fixture.PurposeReady(purposeId);
+
+        var selection = await fixture.Selector.SelectAsync(fixture.ProjectId, HelpDeskAgentReplyHooshvareKeys.Key);
+
+        selection.HooshvareId.ShouldBe(purposeId);
+        await fixture.Keys.DidNotReceive().TryGetRuntimeIdByKeyAsync(Arg.Any<string>(), Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task SelectAsync_MissingKbDraftKey_UnavailableOrDocumentedFallback()
+    {
+        var fixture = new SelectorFixture();
+        fixture.Purpose(HelpDeskAiBindingReadiness.MissingAssignment);
+        fixture.Keys.TryGetRuntimeIdByKeyAsync(HelpDeskKbDraftHooshvareKeys.Key, Arg.Any<CancellationToken>())
+            .Returns(Guid.Empty);
+
+        var selection = await fixture.Selector.SelectAsync(fixture.ProjectId, HelpDeskKbDraftHooshvareKeys.Key);
+
+        selection.IsReady.ShouldBeFalse();
+        selection.UnavailableReasonCode.ShouldBe(TicketingErrorCodes.AiMissingAssignment);
+    }
+
+    [Fact]
     public async Task Selector_Uses_Ticketing_Purpose_And_Does_Not_Query_The_Key()
     {
         var fixture = new SelectorFixture();
         var purposeId = Guid.NewGuid();
         fixture.PurposeReady(purposeId);
 
-        var selection = await fixture.Selector.SelectAsync(fixture.ProjectId, HelpDeskTicketTriageHooshvareKeys.Key);
+        var selection = await fixture.Selector.SelectAsync(fixture.ProjectId, HelpDeskAgentReplyHooshvareKeys.Key);
 
         selection.IsReady.ShouldBeTrue();
         selection.HooshvareId.ShouldBe(purposeId);
@@ -209,12 +252,15 @@ public class TicketAiAppServiceTests
     }
 
     [Fact]
-    public async Task KbDraft_Uses_The_Ticketing_Purpose_Hooshvare()
+    public async Task CreateKbDraftFromTicket_UsesKbDraftHooshvare_NotAgentReply()
     {
         var fixture = new AppFixture();
         var purposeId = Guid.NewGuid();
+        var draftId = Guid.NewGuid();
         fixture.ResolveTicket();
         fixture.PurposeReady(purposeId);
+        fixture.Keys.TryGetRuntimeIdByKeyAsync(HelpDeskKbDraftHooshvareKeys.Key, Arg.Any<CancellationToken>())
+            .Returns(draftId);
         fixture.RuntimeReturns("## Resolution");
 
         var result = await fixture.Drafts.CreateKbDraftFromTicketAsync(new CreateKbDraftFromTicketInput
@@ -225,7 +271,7 @@ public class TicketAiAppServiceTests
 
         result.Content.ShouldBe("## Resolution");
         await fixture.Runtime.Received(1).SendAsync(
-            Arg.Is<HooshvareRuntimeRequestDto>(request => request.HooshvareId == purposeId),
+            Arg.Is<HooshvareRuntimeRequestDto>(request => request.HooshvareId == draftId),
             Arg.Any<CancellationToken>());
     }
 
@@ -251,6 +297,8 @@ public class TicketAiAppServiceTests
         var purposeId = Guid.NewGuid();
         fixture.ResolveTicket();
         fixture.PurposeReady(purposeId);
+        fixture.Keys.TryGetRuntimeIdByKeyAsync(HelpDeskKbDraftHooshvareKeys.Key, Arg.Any<CancellationToken>())
+            .Returns(Guid.NewGuid());
         fixture.Runtime.SendAsync(Arg.Any<HooshvareRuntimeRequestDto>(), Arg.Any<CancellationToken>())
             .Returns(async call =>
             {
@@ -265,19 +313,25 @@ public class TicketAiAppServiceTests
     }
 
     [Fact]
-    public async Task KbDraft_Propagates_Caller_Cancellation()
+    public async Task KbDraft_Ignores_Caller_Cancellation_After_Confirm()
     {
         var fixture = new AppFixture();
         fixture.ResolveTicket();
         fixture.PurposeReady(Guid.NewGuid());
-        fixture.Runtime.SendAsync(Arg.Any<HooshvareRuntimeRequestDto>(), Arg.Any<CancellationToken>())
-            .Returns(call => NeverAsync(call.Arg<CancellationToken>()));
+        fixture.Keys.TryGetRuntimeIdByKeyAsync(HelpDeskKbDraftHooshvareKeys.Key, Arg.Any<CancellationToken>())
+            .Returns(Guid.NewGuid());
+        fixture.Runtime.SendAsync(
+                Arg.Any<HooshvareRuntimeRequestDto>(),
+                Arg.Is<CancellationToken>(token => !token.IsCancellationRequested))
+            .Returns(new HooshvareRuntimeResultDto { Message = "## Still drafted" });
         using var cts = new CancellationTokenSource();
-        cts.Cancel();
+        await cts.CancelAsync();
 
-        await Should.ThrowAsync<OperationCanceledException>(() => fixture.Drafts.CreateKbDraftFromTicketAsync(
+        var result = await fixture.Drafts.CreateKbDraftFromTicketAsync(
             new CreateKbDraftFromTicketInput { TicketId = fixture.Ticket.Id, ProjectId = fixture.ProjectId },
-            cts.Token));
+            cts.Token);
+
+        result.Content.ShouldBe("## Still drafted");
     }
 
     private static async Task<HooshvareRuntimeResultDto> NeverAsync(CancellationToken cancellationToken)

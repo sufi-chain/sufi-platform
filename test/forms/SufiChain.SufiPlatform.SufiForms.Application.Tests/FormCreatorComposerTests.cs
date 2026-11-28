@@ -156,7 +156,7 @@ public class FormCreatorComposerTests
 
             request.MessageContentParts[1].DataUrl == "data:image/png;base64,AQID" &&
 
-            request.ConversationHistory[0].ContentParts.Count == 2), default);
+            request.ConversationHistory[0].ContentParts.Count == 2), Arg.Any<CancellationToken>());
 
     }
 
@@ -204,7 +204,7 @@ public class FormCreatorComposerTests
 
         await service.Runtime.Received(1).SendAsync(Arg.Is<HooshvareRuntimeRequestDto>(request =>
 
-            request.Message == "Requirements\nInclude an email field"), default);
+            request.Message == "Requirements\nInclude an email field"), Arg.Any<CancellationToken>());
 
     }
 
@@ -250,7 +250,7 @@ public class FormCreatorComposerTests
 
             Runtime = runtime;
 
-            runtime.SendAsync(Arg.Any<HooshvareRuntimeRequestDto>(), default)
+            runtime.SendAsync(Arg.Any<HooshvareRuntimeRequestDto>(), Arg.Any<CancellationToken>())
 
                 .Returns(new HooshvareRuntimeResultDto { Message = "{\"message\":\"Ready\",\"proposal\":null}" });
 

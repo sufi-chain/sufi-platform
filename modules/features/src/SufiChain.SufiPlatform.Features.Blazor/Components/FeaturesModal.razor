@@ -19,9 +19,13 @@
         }
     }
 </style>
-<SbDialog Open="_isOpen" OpenChanged="OnDialogOpenChanged" CloseOnBackdropClick="true" Size="SbDialogSize.Xl" Title="@($"{L["Features"]} - {_entityDisplayName}")" Class="features-dialog">
+<SbDialog Open="_isOpen" OpenChanged="OnDialogOpenChanged" CloseOnBackdropClick="true" Size="SbDialogSize.Xl" Title="@DialogTitle" Class="features-dialog">
 	<ChildContent>
 		<SbStack Gap="3">
+			@if (string.IsNullOrEmpty(_providerKey))
+			{
+				<SbAlert Severity="SbAlertSeverity.Info">@L["HostFeaturesDoNotApplyToTenants"]</SbAlert>
+			}
 			@* Search and Select All Row *@
 			<SbStack Direction="SbStackDirection.Column" DirectionSm="SbStackDirection.Row"
 					 Align="SbAlign.Stretch" AlignMd="SbAlign.Center" Gap="3">
