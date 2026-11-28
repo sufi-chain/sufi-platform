@@ -94,6 +94,7 @@
 
 										<div class="@itemClass" style="--permission-depth: @depth">
 											<SbCheckbox Value="@permission.IsGranted"
+														Indeterminate="@IsPermissionMixed(group, permission)"
 														ValueChanged="@(v => OnPermissionChanged(v, group, permission))"
 														Disabled="@isDisabled"
 														Label="@permission.DisplayName" />
