@@ -27,7 +27,7 @@
                     <span class="sb-form-field__required" aria-hidden="true">*</span>
                 </label>
                 <div class="sufi-abp-captcha-simple">
-                    <span class="sufi-abp-captcha-simple__question" dir="ltr" aria-hidden="true">@Challenge.Question</span>
+                    <span class="sufi-abp-captcha-simple__question" dir="ltr" aria-hidden="true">@ShownQuestion</span>
                     <SbTextField @bind-Value="CaptchaAnswerValue"
                                  @bind-Value:after="PublishCaptchaAnswerAsync"
                                  Id="CaptchaAnswer"
