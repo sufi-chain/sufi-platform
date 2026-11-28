@@ -20,6 +20,8 @@ public class TenantDto : ExtensibleEntityDto<Guid>, IHasConcurrencyStamp
     public List<TenantDomainDto> Domains { get; set; } = [];
 
     public string ConcurrencyStamp { get; set; } = null!;
+
+    public bool IsActive { get; set; }
 }
 
 public class TenantDomainDto

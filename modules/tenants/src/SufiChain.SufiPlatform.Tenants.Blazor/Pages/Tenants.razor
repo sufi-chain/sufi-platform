@@ -94,6 +94,11 @@ else
 						</CellTemplate>
 					</SbColumn>
 					<SbColumn TItem="TenantDto" Field="Name" Title="@L["TenantName"]" Sortable="true" Filterable="true"/>
+					<SbColumn TItem="TenantDto" Title="@L["Status"]" Sortable="false" Filterable="false">
+						<CellTemplate Context="statusContext">
+							@(statusContext.Item.IsActive ? L["Active"] : L["Inactive"])
+						</CellTemplate>
+					</SbColumn>
 				</SbDataGrid>
 			</SbStack>
 		</ChildContent>

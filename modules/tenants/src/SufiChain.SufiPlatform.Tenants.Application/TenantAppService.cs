@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Authorization;
 using SufiChain.SufiPlatform.Application.Dtos;
+using Volo.Abp.Caching;
 using Volo.Abp.Data;
+using Volo.Abp.MultiTenancy;
 using Volo.Abp.EventBus.Distributed;
 
 namespace SufiChain.SufiPlatform.Tenants;
@@ -110,6 +112,43 @@ public class TenantAppService : TenantsAppServiceBase, ITenantAppService
         await TenantRepository.DeleteAsync(id, autoSave: true);
     }
 
+    [Authorize(TenantsPermissions.Tenants.Update)]
+    public virtual async Task ActivateAsync(Guid id)
+    {
+        await SetActiveAsync(id, active: true);
+    }
+
+    [Authorize(TenantsPermissions.Tenants.Update)]
+    public virtual async Task DeactivateAsync(Guid id)
+    {
+        await SetActiveAsync(id, active: false);
+    }
+
+    protected virtual async Task SetActiveAsync(Guid id, bool active)
+    {
+        await CheckPolicyAsync(TenantsPermissions.Tenants.Update);
+        var tenant = await TenantRepository.GetAsync(id);
+        if (active)
+        {
+            tenant.Activate();
+        }
+        else
+        {
+            tenant.Deactivate();
+        }
+
+        await TenantRepository.UpdateAsync(tenant, autoSave: true);
+        var cache = LazyServiceProvider.LazyGetRequiredService<IDistributedCache<TenantConfigurationCacheItem>>();
+        await cache.RemoveManyAsync(
+            new[]
+            {
+                TenantConfigurationCacheItem.CalculateCacheKey(tenant.Id, null),
+                TenantConfigurationCacheItem.CalculateCacheKey(null, tenant.NormalizedName),
+                TenantConfigurationCacheItem.CalculateCacheKey(tenant.Id, tenant.NormalizedName),
+            },
+            considerUow: true);
+    }
+
     [Authorize(TenantsPermissions.Tenants.ManageConnectionStrings)]
     public virtual async Task<string> GetDefaultConnectionStringAsync(Guid id)
     {
@@ -146,6 +185,7 @@ public class TenantAppService : TenantsAppServiceBase, ITenantAppService
             OwnerUserId = tenant.OwnerUserId,
             DatabaseName = tenant.DatabaseName,
             PrimarySubdomain = tenant.PrimarySubdomain,
+            IsActive = tenant.IsActive,
             Domains = tenant.Domains.Select(domain => new TenantDomainDto
             {
                 Id = domain.Id,

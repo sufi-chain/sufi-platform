@@ -30,6 +30,7 @@ public static class SufiTenantsDbContextModelCreatingExtensions
             b.Property(t => t.OwnerUserId);
             b.Property(t => t.DatabaseName).HasMaxLength(TenantConsts.MaxDatabaseNameLength);
             b.Property(t => t.PrimarySubdomain).HasMaxLength(TenantConsts.MaxSubdomainLength);
+            b.Property(t => t.IsActive).IsRequired().HasDefaultValue(true);
 
             b.HasMany(u => u.ConnectionStrings).WithOne().HasForeignKey(uc => uc.TenantId).IsRequired();
             b.HasMany(u => u.Domains).WithOne().HasForeignKey(domain => domain.TenantId).IsRequired();

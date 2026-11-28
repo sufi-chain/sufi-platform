@@ -62,7 +62,12 @@
     "Permission:ManageFeatures": "إدارة الميزات",
     "Permission:ManageConnectionStrings": "إدارة سلاسل الاتصال",
   
-    "Hooshvare:SufiTenants:Diagnostics:DisplayName": "تشخيص المستأجر",
+  "Status": "الحالة",
+"Active": "نشط",
+"Inactive": "غير نشط",
+"ActivateTenantConfirmation": "تفعيل المستأجر '{0}'؟ سيتمكن مستخدموه من تسجيل الدخول مرة أخرى.",
+"DeactivateTenantConfirmation": "إيقاف المستأجر '{0}'؟ لن يتمكن مستخدموه من تسجيل الدخول. تبقى وحدة المضيف متاحة.",
+  "Hooshvare:SufiTenants:Diagnostics:DisplayName": "تشخيص المستأجر",
     "TenantManagementHostOnly": "إدارة المستأجر هي المضيف فقط",
     "TenantManagementHostOnlyMessage": "تتوفر هذه الصفحة من مساحة العمل المضيفة، وليس من المستأجر."
   }
