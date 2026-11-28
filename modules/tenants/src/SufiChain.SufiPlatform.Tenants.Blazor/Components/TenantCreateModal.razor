@@ -3,23 +3,23 @@
 
 <SbDialog Open="@Open" OpenChanged="@SetOpenAsync" Size="SbDialogSize.Md" Title="@L["CreateTenant"]">
     <ChildContent>
-        <SbForm @ref="_formRef" Model="_model" OnValidSubmit="OnValidSubmitAsync">
+        <SbForm @ref="_formRef" Model="_model" OnValidSubmit="OnValidSubmitAsync" OnInvalidSubmit="OnInvalidSubmitAsync">
             <ChildContent>
                 <SbStack Gap="3" Class="pb-4">
                     <SbText Variant="SbTextVariant.Caption" Color="SbColor.Muted" data-testid="create-tenant-record">
                         @L["CreateTenantRecordHint"]
                     </SbText>
-                    <SbTextField @bind-Value="_model.Name" 
-                                 Label="@L["TenantName"]" 
+                    <SbTextField @ref="_nameField" @bind-Value="_model.Name"
+                                 Label="@L["TenantName"]"
                                  Required="true" />
 
-                    <SbTextField @bind-Value="_model.AdminEmailAddress" 
-                                 Label="@L["AdminEmailAddress"]" 
+                    <SbTextField @ref="_emailField" @bind-Value="_model.AdminEmailAddress"
+                                 Label="@L["AdminEmailAddress"]"
                                  Type="email"
                                  Required="true" />
 
-                    <SbTextField @bind-Value="_model.AdminPassword" 
-                                 Label="@L["AdminPassword"]" 
+                    <SbTextField @ref="_passwordField" @bind-Value="_model.AdminPassword"
+                                 Label="@L["AdminPassword"]"
                                  Type="password"
                                  AutoComplete="new-password"
                                  Required="true" />
