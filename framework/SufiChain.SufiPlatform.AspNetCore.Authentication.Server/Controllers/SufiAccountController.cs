@@ -413,6 +413,18 @@ public abstract class SufiAccountController : AbpController
         try
         {
             await _signInManager.SignInAsync(user, LoginCookiePersistence.Create(rememberMe));
+            var cultureCookie = HttpContext.RequestServices.GetService<ILoginCultureCookieWriter>();
+            if (cultureCookie != null)
+            {
+                try
+                {
+                    await cultureCookie.AppendForUserAsync(HttpContext, user.Id);
+                }
+                catch (Exception exception)
+                {
+                    Logger.LogWarning(exception, "Saved language was not written to the culture cookie.");
+                }
+            }
         }
         catch (Exception ex)
         {
