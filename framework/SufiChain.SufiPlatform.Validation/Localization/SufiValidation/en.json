@@ -54,6 +54,9 @@
     "Field:UserName": "User name",
     "Field:Email": "Email",
     "Field:Password": "Password",
-    "Field:RoleName": "Role name"
+    "Field:RoleName": "Role name",
+    "Field:TenantName": "Tenant Name",
+    "Field:AdminEmailAddress": "Admin Email Address",
+    "Field:AdminPassword": "Admin Password"
   }
 }

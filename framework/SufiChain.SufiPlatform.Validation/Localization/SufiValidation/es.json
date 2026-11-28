@@ -54,6 +54,9 @@
     "Field:UserName": "Nombre de usuario",
     "Field:Email": "Correo electrónico",
     "Field:Password": "Contraseña",
-    "Field:RoleName": "Nombre del rol"
+    "Field:RoleName": "Nombre del rol",
+    "Field:TenantName": "Nombre del inquilino",
+    "Field:AdminEmailAddress": "Dirección de correo del administrador",
+    "Field:AdminPassword": "Contraseña del administrador"
   }
 }

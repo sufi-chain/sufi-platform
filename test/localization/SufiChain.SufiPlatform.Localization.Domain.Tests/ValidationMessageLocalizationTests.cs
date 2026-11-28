@@ -96,6 +96,80 @@ public class ValidationMessageLocalizationTests
     }
 
     [Fact]
+    public void TenantCreateDto_Required_UsesLocalizedLabel_Fa()
+    {
+        ReadValidation("fa.json").ShouldContain("\"Field:AdminEmailAddress\": \"آدرس ایمیل مدیر\"");
+        var localizer = new MapLocalizer(
+            ("The {0} field is required.", "فیلد {0} الزامی است."),
+            ("Field:AdminEmailAddress", "آدرس ایمیل مدیر"),
+            ("Field:AdminPassword", "رمز عبور مدیر"),
+            ("Field:TenantName", "نام مستاجر"));
+        var message = ValidationMessageTemplates.Format(
+            localizer,
+            new RequiredAttribute(),
+            ValidationMessageTemplates.LocalizeDisplayName(localizer, "Field:AdminEmailAddress"));
+        message.ShouldBe("فیلد آدرس ایمیل مدیر الزامی است.");
+        message.ShouldNotContain("AdminEmailAddress");
+    }
+
+    [Fact]
+    public void TenantCreateDto_Required_UsesLocalizedLabel_En()
+    {
+        ReadValidation("en.json").ShouldContain("\"Field:TenantName\": \"Tenant Name\"");
+        ReadValidation("en.json").ShouldContain("\"Field:AdminPassword\": \"Admin Password\"");
+        var source = ReadRepoFile(
+            "modules", "tenants", "src",
+            "SufiChain.SufiPlatform.Tenants.Application.Contracts",
+            "TenantCreateDto.cs");
+        source.ShouldContain("[Display(Name = \"Field:AdminEmailAddress\")]");
+        source.ShouldContain("[Display(Name = \"Field:AdminPassword\")]");
+        ReadRepoFile(
+            "modules", "tenants", "src",
+            "SufiChain.SufiPlatform.Tenants.Application.Contracts",
+            "TenantCreateOrUpdateDtoBase.cs").ShouldContain("[Display(Name = \"Field:TenantName\")]");
+    }
+
+    [Fact]
+    public void TenantCreate_EmptySubmit_NoRawPropertyNames()
+    {
+        var localizer = new MapLocalizer(
+            ("The {0} field is required.", "The {0} field is required."),
+            ("Field:AdminEmailAddress", "Admin Email Address"),
+            ("Field:AdminPassword", "Admin Password"),
+            ("Field:TenantName", "Tenant Name"));
+        foreach (var key in new[] { "Field:TenantName", "Field:AdminEmailAddress", "Field:AdminPassword" })
+        {
+            var message = ValidationMessageTemplates.Format(
+                localizer,
+                new RequiredAttribute(),
+                ValidationMessageTemplates.LocalizeDisplayName(localizer, key));
+            message.ShouldNotContain("AdminEmailAddress");
+            message.ShouldNotContain("AdminPassword");
+            message.ShouldNotContain("Field:");
+        }
+    }
+
+    private static string ReadValidation(string fileName) =>
+        ReadRepoFile("framework", "SufiChain.SufiPlatform.Validation", "Localization", "SufiValidation", fileName);
+
+    private static string ReadRepoFile(params string[] parts)
+    {
+        var dir = new DirectoryInfo(AppContext.BaseDirectory);
+        while (dir != null)
+        {
+            var candidate = Path.Combine(new[] { dir.FullName }.Concat(parts).ToArray());
+            if (File.Exists(candidate))
+            {
+                return File.ReadAllText(candidate);
+            }
+
+            dir = dir.Parent;
+        }
+
+        throw new FileNotFoundException(string.Join('/', parts));
+    }
+
+    [Fact]
     public void Unknown_display_name_stays_the_raw_property_name()
     {
         var localizer = new MapLocalizer(("The {0} field is required.", "فیلد {0} الزامی است."));

@@ -54,6 +54,9 @@
     "Field:UserName": "نام کاربری",
     "Field:Email": "ایمیل",
     "Field:Password": "رمز عبور",
-    "Field:RoleName": "نام نقش"
+    "Field:RoleName": "نام نقش",
+    "Field:TenantName": "نام مستاجر",
+    "Field:AdminEmailAddress": "آدرس ایمیل مدیر",
+    "Field:AdminPassword": "رمز عبور مدیر"
   }
 }

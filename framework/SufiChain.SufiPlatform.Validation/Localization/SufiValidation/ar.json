@@ -54,6 +54,9 @@
     "Field:UserName": "اسم المستخدم",
     "Field:Email": "البريد الإلكتروني",
     "Field:Password": "كلمة المرور",
-    "Field:RoleName": "اسم الدور"
+    "Field:RoleName": "اسم الدور",
+    "Field:TenantName": "اسم المستأجر",
+    "Field:AdminEmailAddress": "بريد المدير الإلكتروني",
+    "Field:AdminPassword": "كلمة مرور المدير"
   }
 }
