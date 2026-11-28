@@ -11,5 +11,5 @@ public static class CalendarAssistantChrome
 {
     public static bool ShowsChrome(bool featureEnabled) => featureEnabled;
 
-    public static bool RewritesPortalRoute(bool featureEnabled) => featureEnabled;
+    public static bool RewritesPortalRoute(bool featureEnabled) => false;
 }

@@ -6,13 +6,12 @@ using Volo.Abp.Features;
 namespace SufiChain.SufiPlatform.Calendar.Hooshvare.Blazor.Menus;
 
 /// <summary>
-/// Aligns the portal calendar menu URL with the Hooshvare page when the host redirects
-/// /panel/portal/calendar → /panel/portal/calendar-pro.
+/// Leaves the portal calendar menu on /panel/portal/calendar. The assistant page owns that route.
 /// </summary>
 public class CalendarHooshvareMenuContributor : IMenuContributor
 {
     public const string PortalCalendarMenuName = "SufiCalendar.Portal";
-    public const string PortalCalendarProUrl = "/panel/portal/calendar-pro";
+    public const string PortalCalendarUrl = "/panel/portal/calendar";
 
     public async Task ConfigureMenuAsync(MenuConfigurationContext context)
     {
@@ -31,7 +30,7 @@ public class CalendarHooshvareMenuContributor : IMenuContributor
         var portalCalendar = context.Menu.GetMenuItem(PortalCalendarMenuName);
         if (portalCalendar != null)
         {
-            portalCalendar.Url = PortalCalendarProUrl;
+            portalCalendar.Url = PortalCalendarUrl;
         }
     }
 }

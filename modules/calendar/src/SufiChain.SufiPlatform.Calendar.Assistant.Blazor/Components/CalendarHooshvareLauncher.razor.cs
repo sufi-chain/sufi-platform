@@ -28,7 +28,7 @@ public partial class CalendarHooshvareLauncher : CalendarHooshvareComponentBase
 
     protected virtual Task OpenAssistantAsync()
     {
-        NavigationManager.NavigateTo("/panel/portal/calendar-pro");
+        NavigationManager.NavigateTo("/panel/portal/calendar");
         return Task.CompletedTask;
     }
 }

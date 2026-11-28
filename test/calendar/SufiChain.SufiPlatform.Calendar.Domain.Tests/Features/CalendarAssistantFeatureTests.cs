@@ -28,9 +28,9 @@ public class CalendarAssistantFeatureTests
     }
 
     [Fact]
-    public void Feature_on_keeps_the_portal_rewrite_until_the_canonical_route_lands()
+    public void Feature_on_keeps_the_canonical_portal_route()
     {
         CalendarAssistantChrome.ShowsChrome(true).ShouldBeTrue();
-        CalendarAssistantChrome.RewritesPortalRoute(true).ShouldBeTrue();
+        CalendarAssistantChrome.RewritesPortalRoute(true).ShouldBeFalse();
     }
 }

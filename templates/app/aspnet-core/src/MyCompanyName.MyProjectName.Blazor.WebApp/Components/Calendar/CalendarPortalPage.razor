@@ -1,0 +1,5 @@
+@page "/panel/portal/calendar"
+@using SufiChain.SufiPlatform.Calendar.Blazor.Public.Pages
+@attribute [Microsoft.AspNetCore.Authorization.Authorize(SufiChain.SufiPlatform.Calendar.Permissions.CalendarPermissions.Events.Default)]
+
+<CalendarPage />

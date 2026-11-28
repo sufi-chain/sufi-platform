@@ -145,7 +145,7 @@
         "MobileShortcut:Home": "Home",
         "MobileShortcut:ChatInbox": "Chat inbox",
         "MobileShortcut:NotificationInbox": "Notification inbox",
-        "MobileShortcut:CalendarPro": "Calendar Pro",
+        "MobileShortcut:Calendar": "Calendar",
         "PwaInstallTitle": "Install the app",
         "PwaInstallDescription": "Open your workspace from your home screen or desktop.",
         "PwaInstallAction": "Install app",

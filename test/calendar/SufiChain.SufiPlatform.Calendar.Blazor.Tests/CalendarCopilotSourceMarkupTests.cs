@@ -54,8 +54,20 @@ public class CalendarCopilotSourceMarkupTests
         shim.ShouldContain("typeof(SufiCalendarAssistantBlazorModule)");
         assistant.ShouldContain("AdditionalAssemblies.Add(typeof(SufiCalendarAssistantBlazorModule).Assembly)");
         assistant.ShouldContain("new CalendarHooshvareMenuContributor()");
-        page.ShouldContain("/panel/portal/calendar-pro");
-        page.ShouldContain("/panel/portal/calendar-pro/mobile");
+        page.ShouldContain("@page \"/panel/portal/calendar\"");
+        page.ShouldContain("@page \"/panel/portal/calendar/mobile\"");
+        page.ShouldContain("@page \"/panel/portal/calendar-pro\"");
+        page.ShouldContain("@page \"/panel/portal/calendar-pro/mobile\"");
+
+        var portal = Read("modules/calendar/src/SufiChain.SufiPlatform.Calendar.Blazor.Public/Pages/CalendarPage.razor");
+        portal.ShouldNotContain("@page \"/panel/portal/calendar\"");
+
+        var host = Read("hosts/SufiChane.SufiPlatform/src/SufiChane.SufiPlatform.Blazor.WebApp/SufiPlatformPanelCompositionModule.cs");
+        host.ShouldContain("From = \"/panel/portal/calendar-pro\"");
+        host.ShouldContain("To = \"/panel/portal/calendar\"");
+        host.ShouldNotContain("To = \"/panel/portal/calendar-pro\"");
+        host.ShouldContain("\"SufiPlatform.Calendar\"");
+        host.ShouldContain("\"/panel/portal/calendar/mobile\"");
     }
 
     private static string Read(string relative)
