@@ -4,11 +4,15 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using SufiChain.SufiPlatform.BlobStoring.S3Provider;
+using SufiChain.SufiPlatform.FileManager.AccessControl;
 using SufiChain.SufiPlatform.FileManager.Caching;
 using SufiChain.SufiPlatform.FileManager.Configuration;
+using SufiChain.SufiPlatform.FileManager.FileFolders;
 using SufiChain.SufiPlatform.FileManager.FileStructures;
+using SufiChain.SufiPlatform.FileManager.Permissions;
 using SufiChain.SufiPlatform.FileManager.Storage;
 using Volo.Abp;
+using Volo.Abp.Authorization.Permissions;
 using Volo.Abp.Data;
 using Volo.Abp.MultiTenancy;
 using Volo.Abp.Security.Claims;
@@ -33,6 +37,10 @@ public class FileItemBlobAccessService
     private readonly ICurrentTenant _currentTenant;
     private readonly ICurrentUser _currentUser;
     private readonly IDataFilter _dataFilter;
+    private readonly IPermissionChecker _permissionChecker;
+    private readonly IFolderAccessResolver _folderAccessResolver;
+    private readonly IUserFolderAccessContextProvider _folderAccessContextProvider;
+    private readonly IFileFolderRepository _folderRepository;
 
     public FileItemBlobAccessService(
         IFileItemRepository fileItemRepository,
@@ -45,7 +53,11 @@ public class FileItemBlobAccessService
         ILogger<FileItemBlobAccessService> logger,
         ICurrentTenant currentTenant,
         ICurrentUser currentUser,
-        IDataFilter dataFilter)
+        IDataFilter dataFilter,
+        IPermissionChecker permissionChecker,
+        IFolderAccessResolver folderAccessResolver,
+        IUserFolderAccessContextProvider folderAccessContextProvider,
+        IFileFolderRepository folderRepository)
     {
         _fileItemRepository = fileItemRepository;
         _structureCache = structureCache;
@@ -58,6 +70,10 @@ public class FileItemBlobAccessService
         _currentTenant = currentTenant;
         _currentUser = currentUser;
         _dataFilter = dataFilter;
+        _permissionChecker = permissionChecker;
+        _folderAccessResolver = folderAccessResolver;
+        _folderAccessContextProvider = folderAccessContextProvider;
+        _folderRepository = folderRepository;
     }
 
     public virtual async Task<string> GetDownloadUrlAsync(FileItem fileItem)
@@ -325,7 +341,7 @@ public class FileItemBlobAccessService
 
     /// <summary>
     /// Resolves file metadata for download, stream, and thumbnail.
-    /// A matching access token wins, then a public structure, then an authenticated caller in the file's tenant.
+    /// A matching access token wins, then a public structure, then a signed-in caller who holds file permission and folder read.
     /// Public structure access is checked for anonymous and authenticated callers.
     /// Returns (null, false) when the item is missing or outside the caller's tenant.
     /// Returns (null, true) when the item exists in the current tenant and the caller may not read it.
@@ -344,7 +360,7 @@ public class FileItemBlobAccessService
             return (MapToStreamMetadata(fileItem), false);
         }
 
-        if (_currentUser.IsAuthenticated && IsInCurrentTenant(fileItem))
+        if (_currentUser.IsAuthenticated && IsInCurrentTenant(fileItem) && await CanReadPrivateFileAsync(fileItem))
         {
             return (MapToStreamMetadata(fileItem), false);
         }
@@ -361,6 +377,28 @@ public class FileItemBlobAccessService
     /// A token authorizes only the file id it was issued for.
     /// A token for a different id does not select that other file.
     /// </summary>
+    protected virtual async Task<bool> CanReadPrivateFileAsync(FileItem fileItem)
+    {
+        if (!await _permissionChecker.IsGrantedAsync(FileManagerPermissions.FileItems.Default))
+        {
+            return false;
+        }
+
+        if (!fileItem.FolderId.HasValue)
+        {
+            return true;
+        }
+
+        var folder = await _folderRepository.GetWithPermissionsAsync(fileItem.FolderId.Value);
+        if (folder == null)
+        {
+            return false;
+        }
+
+        var context = await _folderAccessContextProvider.GetContextAsync();
+        return await _folderAccessResolver.HasPermissionAsync(folder, context, FolderPermissionLevel.Read);
+    }
+
     protected virtual bool TokenMatchesFile(Guid id, string? token)
     {
         if (string.IsNullOrWhiteSpace(token))

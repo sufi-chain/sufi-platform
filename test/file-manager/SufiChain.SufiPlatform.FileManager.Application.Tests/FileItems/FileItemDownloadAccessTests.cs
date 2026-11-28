@@ -9,7 +9,11 @@ using Shouldly;
 using SufiChain.SufiPlatform.BlobStoring.S3Provider;
 using SufiChain.SufiPlatform.FileManager.Caching;
 using SufiChain.SufiPlatform.FileManager.Configuration;
+using SufiChain.SufiPlatform.FileManager.AccessControl;
+using SufiChain.SufiPlatform.FileManager.FileFolders;
 using SufiChain.SufiPlatform.FileManager.FileItems;
+using SufiChain.SufiPlatform.FileManager.Permissions;
+using Volo.Abp.Authorization.Permissions;
 using SufiChain.SufiPlatform.FileManager.FileTypes;
 using SufiChain.SufiPlatform.FileManager.Storage;
 using Volo.Abp.BlobStoring;
@@ -81,12 +85,68 @@ public class FileItemDownloadAccessTests
     }
 
     [Fact]
+    public async Task Authenticated_caller_without_file_permission_cannot_download_a_private_file()
+    {
+        var tenantId = Guid.NewGuid();
+        var fixture = new DownloadAccessFixture(_bytes);
+        fixture.UseTenant(tenantId);
+        fixture.CurrentUser.IsAuthenticated.Returns(true);
+        var fileId = Guid.NewGuid();
+        fixture.AddFile(fileId, tenantId, "private-docs", isPublic: false, mimeType: "application/pdf", originalName: "notes.pdf");
+
+        var result = await fixture.Service.GetDownloadContentAsync(fileId, token: null);
+
+        result.IsForbidden.ShouldBeTrue();
+        result.Content.ShouldBeNull();
+    }
+
+    [Fact]
+    public async Task Authenticated_caller_with_permission_but_no_folder_read_cannot_download()
+    {
+        var tenantId = Guid.NewGuid();
+        var fixture = new DownloadAccessFixture(_bytes);
+        fixture.UseTenant(tenantId);
+        fixture.CurrentUser.IsAuthenticated.Returns(true);
+        fixture.GrantFilePermission();
+        var fileId = Guid.NewGuid();
+        var folderId = Guid.NewGuid();
+        fixture.AddFile(fileId, tenantId, "private-docs", isPublic: false, mimeType: "application/pdf", originalName: "notes.pdf", folderId: folderId);
+        fixture.AllowFolderRead(folderId, allowed: false);
+
+        var result = await fixture.Service.GetDownloadContentAsync(fileId, token: null);
+
+        result.IsForbidden.ShouldBeTrue();
+        result.Content.ShouldBeNull();
+    }
+
+    [Fact]
+    public async Task Authenticated_caller_with_permission_and_folder_read_can_download()
+    {
+        var tenantId = Guid.NewGuid();
+        var fixture = new DownloadAccessFixture(_bytes);
+        fixture.UseTenant(tenantId);
+        fixture.CurrentUser.IsAuthenticated.Returns(true);
+        fixture.GrantFilePermission();
+        var fileId = Guid.NewGuid();
+        var folderId = Guid.NewGuid();
+        fixture.AddFile(fileId, tenantId, "private-docs", isPublic: false, mimeType: "application/pdf", originalName: "notes.pdf", folderId: folderId);
+        fixture.AllowFolderRead(folderId, allowed: true);
+
+        var result = await fixture.Service.GetDownloadContentAsync(fileId, token: null);
+
+        result.IsForbidden.ShouldBeFalse();
+        result.Content.ShouldNotBeNull();
+        result.Content.Content.ShouldBe(_bytes);
+    }
+
+    [Fact]
     public async Task Authenticated_caller_can_download_a_private_file_in_the_current_tenant()
     {
         var tenantId = Guid.NewGuid();
         var fixture = new DownloadAccessFixture(_bytes);
         fixture.UseTenant(tenantId);
         fixture.CurrentUser.IsAuthenticated.Returns(true);
+        fixture.GrantFilePermission();
         var fileId = Guid.NewGuid();
         fixture.AddFile(fileId, tenantId, "private-docs", isPublic: false, mimeType: "application/pdf", originalName: "notes.pdf");
 
@@ -193,6 +253,11 @@ public class FileItemDownloadAccessTests
             CurrentTenant = Substitute.For<ICurrentTenant>();
             CurrentUser = Substitute.For<ICurrentUser>();
             DataFilter = Substitute.For<IDataFilter>();
+            PermissionChecker = Substitute.For<IPermissionChecker>();
+            FolderAccess = Substitute.For<IFolderAccessResolver>();
+            AccessContext = Substitute.For<IUserFolderAccessContextProvider>();
+            Folders = Substitute.For<IFileFolderRepository>();
+            PermissionChecker.IsGrantedAsync(Arg.Any<string>()).Returns(false);
             BlobContainer = Substitute.For<IBlobContainer>();
 
             DataFilter.Disable<IMultiTenant>().Returns(Substitute.For<IDisposable>());
@@ -217,7 +282,11 @@ public class FileItemDownloadAccessTests
                 NullLogger<FileItemBlobAccessService>.Instance,
                 CurrentTenant,
                 CurrentUser,
-                DataFilter);
+                DataFilter,
+                PermissionChecker,
+                FolderAccess,
+                AccessContext,
+                Folders);
         }
 
         public IFileItemRepository Repository { get; }
@@ -227,6 +296,23 @@ public class FileItemDownloadAccessTests
         public ICurrentTenant CurrentTenant { get; }
         public ICurrentUser CurrentUser { get; }
         public IDataFilter DataFilter { get; }
+        public IPermissionChecker PermissionChecker { get; }
+        public IFolderAccessResolver FolderAccess { get; }
+        public IUserFolderAccessContextProvider AccessContext { get; }
+        public IFileFolderRepository Folders { get; }
+
+        public void GrantFilePermission()
+        {
+            PermissionChecker.IsGrantedAsync(FileManagerPermissions.FileItems.Default).Returns(true);
+        }
+
+        public void AllowFolderRead(Guid folderId, bool allowed)
+        {
+            var folder = new FileFolder(folderId, null, "docs", "/docs", FolderType.Custom);
+            Folders.GetWithPermissionsAsync(folderId, Arg.Any<CancellationToken>()).Returns(folder);
+            FolderAccess.HasPermissionAsync(folder, Arg.Any<FolderAccessContext>(), FolderPermissionLevel.Read, Arg.Any<CancellationToken>())
+                .Returns(allowed);
+        }
         public IBlobContainer BlobContainer { get; }
         public FileItemBlobAccessService Service { get; }
 
@@ -243,7 +329,8 @@ public class FileItemDownloadAccessTests
             bool isPublic,
             string? mimeType,
             string originalName,
-            string? blobName = null)
+            string? blobName = null,
+            Guid? folderId = null)
         {
             var item = new FileItem(
                 id,
@@ -254,7 +341,10 @@ public class FileItemDownloadAccessTests
                 string.IsNullOrWhiteSpace(mimeType) ? "application/octet-stream" : mimeType,
                 3,
                 FileType.Document,
-                structureKey);
+                structureKey)
+            {
+                FolderId = folderId
+            };
             if (mimeType == null || string.IsNullOrWhiteSpace(mimeType))
             {
                 item.MimeType = mimeType!;
