@@ -33,6 +33,14 @@
                     <SbColumn TItem="MCPServerDto" Title="@L["Actions"]" MinWidth="184px" Sortable="false">
                         <CellTemplate Context="cellContext">
                             <SbStack Wrap="true" Direction="SbStackDirection.Row" Gap="1">
+                                <SbTooltip Text="@L["SyncTools"]">
+                                    <SbIconButton Size="SbSize.Sm"
+                                                  AriaLabel="@L["SyncTools"]"
+                                                  OnClick="@(() => SyncToolsAsync(cellContext.Item))"
+                                                  Loading="@IsOperationLoading($"{LoadingKeys.SyncTools}-{cellContext.Item.Id}")">
+                                        <Icon><SbIcon Name="download" Size="SbSize.Sm" /></Icon>
+                                    </SbIconButton>
+                                </SbTooltip>
                                 <SbTooltip Text="@L["TestConnection"]">
                                     <SbIconButton Size="SbSize.Sm"
                                                   AriaLabel="@L["TestConnection"]"
@@ -78,6 +86,9 @@
                                 </SbText>
                                 <SbText Variant="SbTextVariant.Caption" Color="SbColor.Muted">
                                     external.@cellContext.Item.Key.*
+                                </SbText>
+                                <SbText Variant="SbTextVariant.Caption">
+                                    @ToolStatus(cellContext.Item)
                                 </SbText>
                             </SbStack>
                         </CellTemplate>

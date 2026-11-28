@@ -63,8 +63,14 @@ public class MCPServerController : AIController, IMCPServerAppService
     }
 
     [HttpPost("{id}/test-connection")]
-    public virtual Task<bool> TestConnectionAsync(Guid id)
+    public virtual Task<McpConnectionTestResult> TestConnectionAsync(Guid id)
     {
         return _mcpServerAppService.TestConnectionAsync(id);
+    }
+
+    [HttpPost("{id}/refresh-tools")]
+    public virtual Task<McpConnectionTestResult> RefreshServerToolsAsync(Guid id)
+    {
+        return _mcpServerAppService.RefreshServerToolsAsync(id);
     }
 }

@@ -121,6 +121,25 @@ public class MCPCatalogCache : IMCPCatalogCache, ITransientDependency
         await _cache.RemoveAsync(nameof(MCPCatalogCacheItem), token: cancellationToken);
     }
 
+    public async Task ReplaceServerToolsAsync(
+        string serverKey,
+        IReadOnlyList<MCPToolDescriptor> tools,
+        CancellationToken cancellationToken = default)
+    {
+        var item = await _cache.GetAsync(nameof(MCPCatalogCacheItem), token: cancellationToken)
+            ?? new MCPCatalogCacheItem();
+        item.ExternalTools = McpCatalogServerSync.Apply(item.ExternalTools, serverKey, connectionSucceeded: true, tools);
+        item.BuiltAtUtc = DateTime.UtcNow;
+        await _cache.SetAsync(
+            nameof(MCPCatalogCacheItem),
+            item,
+            new DistributedCacheEntryOptions
+            {
+                AbsoluteExpiration = DateTimeOffset.UtcNow.Add(CacheAbsoluteLifetime)
+            },
+            token: cancellationToken);
+    }
+
     public async Task RebuildAsync(CancellationToken cancellationToken = default)
     {
         var acquired = await RebuildLock.WaitAsync(CacheRebuildLockTimeout, cancellationToken);
