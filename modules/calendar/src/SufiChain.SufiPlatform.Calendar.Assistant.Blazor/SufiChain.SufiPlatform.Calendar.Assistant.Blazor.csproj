@@ -15,6 +15,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\SufiChain.SufiPlatform.Calendar.Assistant\SufiChain.SufiPlatform.Calendar.Assistant.csproj" />
+    <ProjectReference Include="..\SufiChain.SufiPlatform.Calendar.AI\SufiChain.SufiPlatform.Calendar.AI.csproj" />
     <ProjectReference Include="..\SufiChain.SufiPlatform.Calendar.Blazor.Public\SufiChain.SufiPlatform.Calendar.Blazor.Public.csproj" />
     <ProjectReference Include="..\..\..\..\..\commercial-modules\sufi-licensing\src\SufiChain.SufiPlatform.Licensing.Runtime\SufiChain.SufiPlatform.Licensing.Runtime.csproj" />
     <ProjectReference Include="..\..\..\..\..\pro-modules\calendar-hooshvare\src\SufiChain.SufiPlatform.Calendar.Hooshvare.Domain.Shared\SufiChain.SufiPlatform.Calendar.Hooshvare.Domain.Shared.csproj" />

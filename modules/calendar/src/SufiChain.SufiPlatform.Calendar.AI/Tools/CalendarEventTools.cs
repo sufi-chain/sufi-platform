@@ -41,6 +41,7 @@ public class CalendarCreateEventTool : CalendarAIToolBase
             input.AvailabilityCalendarId,
             input.SourceType,
             input.SourceId,
+            input.Confirmed,
             cancellationToken));
     }
 
@@ -57,8 +58,14 @@ public class CalendarCreateEventTool : CalendarAIToolBase
         Guid? availabilityCalendarId = null,
         string? sourceType = null,
         string? sourceId = null,
+        bool confirmed = false,
         CancellationToken cancellationToken = default)
     {
+        if (!confirmed)
+        {
+            return CalendarAIEventResult.Preview(Guid.Empty, calendarId, title, startUtc, endUtc, "create");
+        }
+
         var result = await _calendarEventAppService.CreateAsync(new CreateUpdateCalendarEventDto
         {
             CalendarId = calendarId,
@@ -238,7 +245,7 @@ public class CalendarMoveEventTool : CalendarAIToolBase
         CancellationToken cancellationToken = default)
     {
         var input = ReadInput<CalendarAIMoveEventInput>(parameters);
-        return await SuccessAsync(await MoveEventAsync(input.EventId, input.MovedStartUtc, input.MovedEndUtc, cancellationToken));
+        return await SuccessAsync(await MoveEventAsync(input.EventId, input.MovedStartUtc, input.MovedEndUtc, input.Confirmed, cancellationToken));
     }
 
     [SufiAiMcpTool(CalendarAIToolNames.MoveEvent, "Moves a normal non-recurring calendar event only when eventId is known from tool results, not guesses. Users may ask in Farsi; when they do, interpret Farsi relative-date words and report dates in the Jalali calendar unless the user asks otherwise. If the user identifies the event by title or conversation, first call calendar.search_events. Before interpreting relative dates or next working-day requests, call calendar.get_current_time. Preserve title, timezone, calendar, status, and other details; preserve the original duration unless the user asks otherwise. Convert requested local move time to UTC using the event or calendar timezone. Report success only from the returned event.", Effect = AgentActionEffect.Write)]
@@ -246,9 +253,21 @@ public class CalendarMoveEventTool : CalendarAIToolBase
         Guid eventId,
         DateTime movedStartUtc,
         DateTime movedEndUtc,
+        bool confirmed = false,
         CancellationToken cancellationToken = default)
     {
         var existing = await _calendarEventAppService.GetAsync(eventId);
+        if (!confirmed)
+        {
+            return CalendarAIEventResult.Preview(
+                existing.Id,
+                existing.CalendarId,
+                existing.Title,
+                movedStartUtc,
+                movedEndUtc,
+                "move");
+        }
+
         var result = await _calendarEventAppService.UpdateAsync(eventId, new CreateUpdateCalendarEventDto
         {
             CalendarId = existing.CalendarId,
@@ -295,15 +314,27 @@ public class CalendarCancelEventTool : CalendarAIToolBase
         CancellationToken cancellationToken = default)
     {
         var input = ReadInput<CalendarAICancelEventInput>(parameters);
-        return await SuccessAsync(await CancelEventAsync(input.EventId, cancellationToken));
+        return await SuccessAsync(await CancelEventAsync(input.EventId, input.Confirmed, cancellationToken));
     }
 
     [SufiAiMcpTool(CalendarAIToolNames.CancelEvent, "Cancels a normal calendar event by setting its status to Cancelled only when eventId is known from tool results, not guesses. If the user identifies the event by title or conversation, first call calendar.search_events. If the user asks to reschedule, create or move the replacement only after this tool returns success. Report success only from returned tool data.", Effect = AgentActionEffect.Write)]
     public virtual async Task<CalendarAIEventResult> CancelEventAsync(
         Guid eventId,
+        bool confirmed = false,
         CancellationToken cancellationToken = default)
     {
         var existing = await _calendarEventAppService.GetAsync(eventId);
+        if (!confirmed)
+        {
+            return CalendarAIEventResult.Preview(
+                existing.Id,
+                existing.CalendarId,
+                existing.Title,
+                existing.StartUtc,
+                existing.EndUtc,
+                "cancel");
+        }
+
         var result = await _calendarEventAppService.UpdateAsync(eventId, new CreateUpdateCalendarEventDto
         {
             CalendarId = existing.CalendarId,
@@ -356,6 +387,7 @@ public class CalendarMoveOccurrenceTool : CalendarAIToolBase
             input.MovedStartUtc,
             input.MovedEndUtc,
             input.ThisAndFollowing,
+            input.Confirmed,
             cancellationToken));
     }
 
@@ -366,8 +398,21 @@ public class CalendarMoveOccurrenceTool : CalendarAIToolBase
         DateTime movedStartUtc,
         DateTime movedEndUtc,
         bool thisAndFollowing = false,
+        bool confirmed = false,
         CancellationToken cancellationToken = default)
     {
+        var existing = await _calendarEventAppService.GetAsync(eventId);
+        if (!confirmed)
+        {
+            return CalendarAIEventResult.Preview(
+                existing.Id,
+                existing.CalendarId,
+                existing.Title,
+                movedStartUtc,
+                movedEndUtc,
+                "move-occurrence");
+        }
+
         var result = await _calendarEventAppService.MoveOccurrenceAsync(eventId, new MoveOccurrenceDto
         {
             OriginalStartUtc = originalStartUtc,
@@ -407,6 +452,7 @@ public class CalendarCancelOccurrenceTool : CalendarAIToolBase
             input.EventId,
             input.OriginalStartUtc,
             input.ThisAndFollowing,
+            input.Confirmed,
             cancellationToken));
     }
 
@@ -415,8 +461,21 @@ public class CalendarCancelOccurrenceTool : CalendarAIToolBase
         Guid eventId,
         DateTime originalStartUtc,
         bool thisAndFollowing = false,
+        bool confirmed = false,
         CancellationToken cancellationToken = default)
     {
+        var existing = await _calendarEventAppService.GetAsync(eventId);
+        if (!confirmed)
+        {
+            return CalendarAIEventResult.Preview(
+                existing.Id,
+                existing.CalendarId,
+                existing.Title,
+                existing.StartUtc,
+                existing.EndUtc,
+                "cancel-occurrence");
+        }
+
         var result = await _calendarEventAppService.CancelOccurrenceAsync(eventId, new CancelOccurrenceDto
         {
             OriginalStartUtc = originalStartUtc,

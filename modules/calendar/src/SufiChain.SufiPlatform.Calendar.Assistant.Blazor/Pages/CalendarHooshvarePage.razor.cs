@@ -12,6 +12,8 @@ using SufiChain.SufiPlatform.SufiAI.Hooshvare.Permissions;
 
 using SufiChain.SufiPlatform.SufiAI.Hooshvare.Blazor.Public.Components;
 
+using SufiChain.SufiPlatform.Calendar.AI;
+
 using SufiChain.SufiPlatform.Calendar.Availability;
 
 using SufiChain.SufiPlatform.Calendar.Calendars;
@@ -1055,11 +1057,31 @@ public partial class CalendarHooshvarePageBase : CalendarHooshvareComponentBase,
 
 
 
+        if (!CalendarAssistantThinking.ShowsLateReplyAfterHint())
+
+        {
+
+            return Task.CompletedTask;
+
+        }
+
+
+
         if (!MessengerState.ApplyIncomingMessage(message, MessengerState.SelectedSessionId))
 
         {
 
             return Task.CompletedTask;
+
+        }
+
+
+
+        if (message.SenderKind == ChatMessageSenderKind.Assistant)
+
+        {
+
+            MessengerState.CompleteAiResponseWait();
 
         }
 
@@ -1086,6 +1108,18 @@ public partial class CalendarHooshvarePageBase : CalendarHooshvareComponentBase,
 
 
         MessengerState.ApplyAssistantProgress(progress);
+
+        if (CalendarAssistantThinking.ClearsWhenStreamEnds(progress.Stage, progress.Status)
+
+            || CalendarAssistantThinking.ClearsWhenConfirmationShows(progress.Stage, progress.Status))
+
+        {
+
+            MessengerState.CompleteAiResponseWait();
+
+        }
+
+
 
         return InvokeAsync(StateHasChanged);
 

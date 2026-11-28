@@ -39,6 +39,8 @@ public class CalendarAICreateEventInput
     public string? SourceType { get; set; }
 
     public string? SourceId { get; set; }
+
+    public bool Confirmed { get; set; }
 }
 
 public class CalendarAISearchEventsInput
@@ -61,11 +63,15 @@ public class CalendarAIMoveEventInput
     public DateTime MovedStartUtc { get; set; }
 
     public DateTime MovedEndUtc { get; set; }
+
+    public bool Confirmed { get; set; }
 }
 
 public class CalendarAICancelEventInput
 {
     public Guid EventId { get; set; }
+
+    public bool Confirmed { get; set; }
 }
 
 public class CalendarAIMoveOccurrenceInput
@@ -79,6 +85,8 @@ public class CalendarAIMoveOccurrenceInput
     public DateTime MovedEndUtc { get; set; }
 
     public bool ThisAndFollowing { get; set; }
+
+    public bool Confirmed { get; set; }
 }
 
 public class CalendarAICancelOccurrenceInput
@@ -88,6 +96,8 @@ public class CalendarAICancelOccurrenceInput
     public DateTime OriginalStartUtc { get; set; }
 
     public bool ThisAndFollowing { get; set; }
+
+    public bool Confirmed { get; set; }
 }
 
 public class CalendarAITestAvailabilityInput
@@ -129,6 +139,30 @@ public class CalendarAIEventResult
     public string Status { get; set; } = string.Empty;
 
     public string? Location { get; set; }
+
+    public bool RequiresConfirmation { get; set; }
+
+    public string? ConfirmationSummary { get; set; }
+
+    public static CalendarAIEventResult Preview(
+        Guid id,
+        Guid calendarId,
+        string title,
+        DateTime startUtc,
+        DateTime endUtc,
+        string summary)
+    {
+        return new CalendarAIEventResult
+        {
+            Id = id,
+            CalendarId = calendarId,
+            Title = title,
+            StartUtc = startUtc,
+            EndUtc = endUtc,
+            RequiresConfirmation = true,
+            ConfirmationSummary = summary
+        };
+    }
 
     public static CalendarAIEventResult From(CalendarEventDto dto)
     {
