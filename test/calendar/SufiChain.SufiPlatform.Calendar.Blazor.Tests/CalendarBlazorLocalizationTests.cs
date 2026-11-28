@@ -18,6 +18,8 @@ public class CalendarBlazorLocalizationTests
     [InlineData("InvalidTimeRange")]
     [InlineData("DeleteNotAllowed")]
     [InlineData("CalendarLoadFailed")]
+    [InlineData("CalendarHooshvare:Unauthorized")]
+    [InlineData("CalendarHooshvare:LoadFailed")]
     public void Event_Editor_Recovery_Keys_Exist_In_Every_Culture(string key)
     {
         foreach (var culture in Cultures)

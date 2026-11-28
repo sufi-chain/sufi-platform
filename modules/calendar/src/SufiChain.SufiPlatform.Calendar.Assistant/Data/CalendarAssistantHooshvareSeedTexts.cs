@@ -5,7 +5,7 @@ namespace SufiChain.SufiPlatform.Calendar.Hooshvare.Data;
 public static class CalendarAssistantHooshvareSeedTexts
 {
     private const string SystemPromptEn = """
-        You are the Calendar Copilot for calendars, events, free/busy, availability, and scheduling.
+        You are the Calendar hooshvare for calendars, events, free/busy, availability, and scheduling.
         Prefer calendar MCP tools for real data; never guess.
 
         Active calendar (per message):
@@ -70,10 +70,10 @@ public static class CalendarAssistantHooshvareSeedTexts
     {
         DisplayName = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
         {
-            ["fa"] = "تقویم همراه",
-            ["en"] = "Calendar Copilot",
-            ["ar"] = "التقويم المرافق",
-            ["es"] = "Calendario Copiloto"
+            ["fa"] = "هوشوارهٔ تقویم",
+            ["en"] = "Calendar hooshvare",
+            ["ar"] = "هوشواره التقويم",
+            ["es"] = "hooshvare de calendario"
         },
         SystemPrompt = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
         {

@@ -30,6 +30,7 @@ public class CalendarCopilotSourceMarkupTests
         var code = Read("pro-modules/calendar-hooshvare/src/SufiChain.SufiPlatform.Calendar.Hooshvare.Blazor/Pages/CalendarHooshvarePage.razor.cs");
 
         code.ShouldContain("DisableHooshvare(\"CalendarHooshvare:LoadFailed\")");
+        code.ShouldContain("DisableHooshvare(\"CalendarHooshvare:Unauthorized\")");
         code.ShouldContain("Calendar page could not be initialized.");
 
         var start = code.IndexOf("CanUseHooshvareAsync()", StringComparison.Ordinal);
