@@ -59,7 +59,14 @@
         </EmptyTemplate>
         <EmptySelection>
             <div class="workspace-chat-home">
-                @if (!_workspaceId.HasValue)
+                @if (WorkspaceChatEmptyState.ShowLoading(_loadingWorkspaces, _workspaces.Count, _workspaceId.HasValue))
+                {
+                    <div class="workspace-chat-home__greeting" role="status">
+                        <SbSkeleton Variant="SbSkeletonVariant.Text" Width="max(180px, 40%)" />
+                        <SbText Variant="SbTextVariant.Caption" Color="SbColor.Muted">@L["Loading"]</SbText>
+                    </div>
+                }
+                else if (WorkspaceChatEmptyState.ShowChooseWorkspace(_loadingWorkspaces, _workspaces.Count, _workspaceId.HasValue))
                 {
                     <div class="workspace-chat-home__greeting">
                         <SbHeading Level="5">@L["WorkspaceChat:SelectWorkspace"]</SbHeading>
