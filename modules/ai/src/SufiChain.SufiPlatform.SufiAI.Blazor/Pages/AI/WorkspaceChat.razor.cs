@@ -70,6 +70,10 @@ public partial class WorkspaceChat : AIComponentBase
 
     protected ChatMessengerState MessengerState => _messengerState;
 
+    private decimal _contextPercent => ContextBudget.Percent(
+        MessengerState.Messages.Sum(item => (item.Body?.Length ?? 0) / 4),
+        200_000);
+
     protected bool HasSelectedSession => _savedMode && MessengerState.SelectedSessionId.HasValue;
 
     protected bool CanStartSavedChat => _savedMode && HasSelectedSession;
@@ -282,6 +286,12 @@ public partial class WorkspaceChat : AIComponentBase
     {
         if (_sending || _workspaceId == null || string.IsNullOrWhiteSpace(_workspaceName) || string.IsNullOrWhiteSpace(request.Body))
         {
+            return;
+        }
+
+        if (ContextBudget.BlocksSend(ContextBudget.State(_contextPercent)))
+        {
+            await Message.WarnAsync(L["WorkspaceChat:ContextHardStop"]);
             return;
         }
 
