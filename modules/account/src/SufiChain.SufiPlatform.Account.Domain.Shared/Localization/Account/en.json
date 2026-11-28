@@ -123,6 +123,7 @@
     "SufiAccount:ExternalUserCannotChangePassword": "External users cannot change their password here.",
     "Menu:Dashboard": "Dashboard",
     "Menu:LinkedAccounts": "Linked accounts",
+    "BackToHost": "Back to host",
     "LinkedAccounts": "Linked accounts",
     "LinkedAccountsEmpty": "No linked accounts yet.",
     "LinkedAccountsLoadFailed": "Could not load linked accounts.",

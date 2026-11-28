@@ -122,6 +122,7 @@
     "SufiAccount:ExternalUserCannotChangePassword": "Los usuarios de inicio de sesión externo no pueden cambiar la contraseña aquí.",
     "Menu:Dashboard": "Panel",
     "Menu:LinkedAccounts": "Cuentas vinculadas",
+    "BackToHost": "Volver al anfitrión",
     "LinkedAccounts": "Cuentas vinculadas",
     "LinkedAccountsEmpty": "Aún no hay cuentas vinculadas.",
     "LinkedAccountsLoadFailed": "No se pudieron cargar las cuentas vinculadas.",
