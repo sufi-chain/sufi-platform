@@ -384,6 +384,7 @@
     "SelectOrganizationUnit": "Seleccionar unidad organizativa",
     "SelectRole": "Seleccionar rol",
     "SettingWarning:RequireConfirmedEmailWithoutSmtp": "No hay ningún proveedor de correo electrónico (SMTP) configurado para este espacio de trabajo, por lo que los usuarios nunca podrán recibir un correo electrónico de confirmación y quedarán bloqueados. Primero configure el correo electrónico o deje esta opción desactivada.",
+    "SettingWarning:OtpLoginDefaultSmsWithoutSms": "El inicio de sesión OTP está activado y el canal predeterminado es SMS, pero el envío de SMS está desactivado o no está configurado. Los usuarios no recibirán el código. Active el envío de SMS o elija otro canal predeterminado.",
     "Status": "Estado",
     "Sufi.Identity:PhoneConfirmationSessionInvalid": "Esta sesión de confirmación telefónica no es válida o ha caducado. Comience de nuevo desde el registro o el inicio de sesión.",
     "Sufi.Identity:PhoneNumberAlreadyConfirmed": "Este número de teléfono ya está confirmado. Cámbialo desde tu perfil."

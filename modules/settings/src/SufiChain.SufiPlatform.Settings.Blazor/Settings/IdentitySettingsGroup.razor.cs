@@ -3,6 +3,7 @@ using SufiChain.SufiPlatform.Account;
 using SufiChain.SufiPlatform.Settings;
 using SufiChain.SufiPlatform.Account.Localization;
 using SufiChain.SufiPlatform.Identity.Localization;
+using SufiChain.SufiPlatform.Identity.Settings;
 
 namespace SufiChain.SufiPlatform.Settings.Blazor.Settings;
 
@@ -113,6 +114,12 @@ public partial class IdentitySettingsGroup : SettingsComponentBase, IEditableSet
     {
         return _settings.AvailableChannels.Contains(channel);
     }
+
+    protected bool ShowOtpSmsWarning => IdentitySettingsWarnings.OtpLoginDefaultsToUnavailableSms(
+        _settings.OtpIsEnabled,
+        _settings.OtpAllowLogin,
+        _settings.OtpDefaultChannel,
+        IsChannelAvailable(VerificationDeliveryChannel.Sms));
 
     protected virtual string GetChannelLabel(VerificationDeliveryChannel channel) => channel switch
     {

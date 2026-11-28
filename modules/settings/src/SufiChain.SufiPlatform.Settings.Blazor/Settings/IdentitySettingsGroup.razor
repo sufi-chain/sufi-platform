@@ -104,6 +104,10 @@
                     }
                 </SbSimpleSelect>
                 <SbText Variant="SbTextVariant.BodySmall" Color="SbColor.Muted">@IdentityL["SettingHint:OtpDefaultChannel"]</SbText>
+                @if (ShowOtpSmsWarning)
+                {
+                    <SbAlert Severity="SbAlertSeverity.Warning">@IdentityL["SettingWarning:OtpLoginDefaultSmsWithoutSms"]</SbAlert>
+                }
                 <SbText Variant="SbTextVariant.BodySmall" Color="SbColor.Muted">@L["IdentityAllowedChannels"]</SbText>
                 <div><SbCheckbox @bind-Value="_settings.OtpAllowEmailChannel" Label="@GetChannelLabel(VerificationDeliveryChannel.Email)" Disabled="@(!IsChannelAvailable(VerificationDeliveryChannel.Email))" /><SbText Variant="SbTextVariant.BodySmall" Color="SbColor.Muted">@IdentityL["SettingHint:OtpAllowEmailChannel"]</SbText></div>
                 <div><SbCheckbox @bind-Value="_settings.OtpAllowSmsChannel" Label="@GetChannelLabel(VerificationDeliveryChannel.Sms)" Disabled="@(!IsChannelAvailable(VerificationDeliveryChannel.Sms))" /><SbText Variant="SbTextVariant.BodySmall" Color="SbColor.Muted">@IdentityL["SettingHint:OtpAllowSmsChannel"]</SbText></div>
