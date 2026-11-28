@@ -1,4 +1,6 @@
+using System.Threading;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Web;
 using SufiChain.SufiPlatform.Identity.Blazor.Components;
 using SufiChain.SufiPlatform.UI.Layout;
 using SufiChain.SufiPlatform.Identity;
@@ -28,6 +30,13 @@ public partial class UserManagement : IdentityComponentBase
 
     private SbDataGrid<IdentityUserDto>? _gridRef;
     private string? _filter;
+    private string? _filterDraft;
+    private string? FilterDraft
+    {
+        get => _filterDraft;
+        set => _ = OnFilterDraftChanged(value);
+    }
+    private CancellationTokenSource? _filterDelay;
     private int _pageIndex = 0;
     private int _pageSize = 10;
     private long _totalCount;
@@ -38,6 +47,49 @@ public partial class UserManagement : IdentityComponentBase
     private bool _canUpdateUser;
     private bool _canManagePermissions;
     private bool _canDeleteUser;
+
+    private async Task OnFilterDraftChanged(string? value)
+    {
+        _filterDraft = value;
+        if (UserSearchDebounce.ApplyImmediately(null, value))
+        {
+            _filterDelay?.Cancel();
+            await ApplyFilterAsync(value);
+            return;
+        }
+
+        _filterDelay?.Cancel();
+        var delay = new CancellationTokenSource();
+        _filterDelay = delay;
+        try
+        {
+            await Task.Delay(UserSearchDebounce.DelayMs, delay.Token);
+            await ApplyFilterAsync(value);
+        }
+        catch (OperationCanceledException)
+        {
+        }
+    }
+
+    private async Task OnFilterKeyDown(KeyboardEventArgs args)
+    {
+        if (!UserSearchDebounce.ApplyImmediately(args.Key, _filterDraft))
+        {
+            return;
+        }
+
+        _filterDelay?.Cancel();
+        await ApplyFilterAsync(_filterDraft);
+    }
+
+    private async Task ApplyFilterAsync(string? value)
+    {
+        _filter = string.IsNullOrEmpty(value) ? null : value;
+        if (_gridRef != null)
+        {
+            await _gridRef.RefreshDataAsync();
+        }
+    }
 
     protected override void OnInitialized()
     {
