@@ -26,6 +26,15 @@ public class LeftoverLocalizationTests
     }
 
     [Fact]
+    public void UserManagement_SearchBox_HasAccessibleName()
+    {
+        var page = File.ReadAllText(Find(
+            "modules/identity/src/SufiChain.SufiPlatform.Identity.Blazor/Pages/UserManagement.razor"));
+        page.ShouldContain("AriaLabel=\"@L[\"SearchUsers\"]\"");
+        page.ShouldContain("Placeholder=\"@L[\"SearchUsers\"]\"");
+    }
+
+    [Fact]
     public void RoleManagement_Fa_DefaultBadgeIsLocalized()
     {
         var fa = File.ReadAllText(Find("modules/identity/src/SufiChain.SufiPlatform.Identity.Domain.Shared/Localization/Identity/fa.json"));
