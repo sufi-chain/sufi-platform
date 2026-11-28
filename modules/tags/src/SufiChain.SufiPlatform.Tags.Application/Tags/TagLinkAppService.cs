@@ -53,11 +53,7 @@ public class TagLinkAppService : SufiApplicationService, ITagLinkAppService
 
         var policy = await _policyProvider.GetAsync();
         var existingLinks = await _tagLinkRepository.GetListByEntityAsync(input.EntityType, input.EntityId, CurrentTenant.Id);
-        if (existingLinks.Count >= policy.MaxTagsPerEntity)
-        {
-            throw new BusinessException(TagsErrorCodes.MaxTagsPerEntityExceeded)
-                .WithData("MaxTagsPerEntity", policy.MaxTagsPerEntity);
-        }
+        TagPickerLimit.EnsureRoom(existingLinks.Count, policy.MaxTagsPerEntity);
 
         var link = new TagLink(GuidGenerator.Create(), input.TagId, input.EntityType, input.EntityId, CurrentTenant.Id);
         await _tagLinkRepository.InsertAsync(link, autoSave: true);

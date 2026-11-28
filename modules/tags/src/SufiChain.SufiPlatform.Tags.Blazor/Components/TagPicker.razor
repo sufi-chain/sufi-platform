@@ -11,7 +11,7 @@
                    AllowCreate="@AllowCreate"
                    MinLength="0"
                    MaxResults="20"
-                   MaxTags="MaxTags"
+                   MaxTags="EffectiveMaxTags"
                    Label="@Label"
                    Placeholder="@Placeholder"
                    Disabled="Disabled"
@@ -19,3 +19,7 @@
                    Required="Required"
                    Class="Class"
                    Style="Style" />
+@if (AtTagLimit)
+{
+    <small class="text-muted">@L["Tags:MaxTagsPerEntityExceeded"]</small>
+}
