@@ -386,6 +386,8 @@
     "RequiredAttribute_ValidationError": "الحقل {0} إجباري.",
     "SettingWarning:RequireConfirmedEmailWithoutSmtp": "لم يتم تكوين أي موفر بريد إلكتروني (SMTP) لمساحة العمل هذه، لذا لا يمكن للمستخدمين تلقي رسالة تأكيد بالبريد الإلكتروني مطلقًا وسيتم إغلاقهم. قم بتكوين البريد الإلكتروني أولاً، أو اترك هذا الخيار معطلاً.",
     "SettingWarning:OtpLoginDefaultSmsWithoutSms": "تسجيل الدخول برمز لمرة واحدة مفعّل والقناة الافتراضية هي الرسائل القصيرة، لكن إرسال الرسائل القصيرة متوقف أو غير مهيأ. لن يتلقى المستخدمون الرمز. فعّل إرسال الرسائل القصيرة أو اختر قناة افتراضية أخرى.",
+    "SettingWarning:RequireConfirmedEmailUnconfirmedUsers": "{0} حسابات موجودة لم تؤكد بريدها الإلكتروني. تشغيل هذا الخيار يمنعها من تسجيل الدخول بكلمة المرور أو رمز لمرة واحدة.",
+    "SettingWarning:RequireConfirmedEmailCurrentAdmin": "حسابك لم يؤكد بريده الإلكتروني. تشغيل هذا الخيار يقفل حسابك.",
     "Sufi.Identity:PhoneConfirmationSessionInvalid": "جلسة تأكيد الهاتف هذه غير صالحة أو انتهت صلاحيتها. ابدأ مرة أخرى من التسجيل أو تسجيل الدخول.",
     "Sufi.Identity:PhoneNumberAlreadyConfirmed": "تم تأكيد رقم الهاتف هذا بالفعل. قم بتغييره من ملفك الشخصي."
   }

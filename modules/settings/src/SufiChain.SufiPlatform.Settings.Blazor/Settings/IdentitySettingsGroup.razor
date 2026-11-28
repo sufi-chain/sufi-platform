@@ -21,6 +21,14 @@
                 {
                     <SbAlert Severity="SbAlertSeverity.Warning">@IdentityL["SettingWarning:RequireConfirmedEmailWithoutSmtp"]</SbAlert>
                 }
+                @if (ShowUnconfirmedLockoutWarning)
+                {
+                    <SbAlert Severity="SbAlertSeverity.Warning">@IdentityL["SettingWarning:RequireConfirmedEmailUnconfirmedUsers", _settings.UnconfirmedUserCount]</SbAlert>
+                }
+                @if (ShowCurrentAdminLockoutWarning)
+                {
+                    <SbAlert Severity="SbAlertSeverity.Warning">@IdentityL["SettingWarning:RequireConfirmedEmailCurrentAdmin"]</SbAlert>
+                }
                 <div><SbCheckbox @bind-Value="_settings.RequireConfirmedPhoneNumber" Disabled="@(!IsChannelAvailable(VerificationDeliveryChannel.Sms))" Label="@IdentityL["Setting:RequireConfirmedPhoneNumber"]" /><SbText Variant="SbTextVariant.BodySmall" Color="SbColor.Muted">@IdentityL["SettingHint:RequireConfirmedPhoneNumber"]</SbText></div>
                 <div><SbCheckbox @bind-Value="_settings.RequireUniqueEmail" Label="@IdentityL["Setting:RequireUniqueEmail"]" /><SbText Variant="SbTextVariant.BodySmall" Color="SbColor.Muted">@IdentityL["SettingHint:RequireUniqueEmail"]</SbText></div>
             </SbStack>

@@ -131,4 +131,8 @@ public class IdentitySettingsDto
     /// confirmed email blocks sign-in on tenants that can never receive the confirmation email.
     /// </summary>
     public bool IsEmailChannelAvailable { get; set; }
+
+    public int UnconfirmedUserCount { get; set; }
+
+    public bool CurrentUserEmailUnconfirmed { get; set; }
 }

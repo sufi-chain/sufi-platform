@@ -115,6 +115,16 @@ public partial class IdentitySettingsGroup : SettingsComponentBase, IEditableSet
         return _settings.AvailableChannels.Contains(channel);
     }
 
+    protected bool ShowUnconfirmedLockoutWarning =>
+        IdentitySettingsWarnings.RequireConfirmedEmailLocksOutUnconfirmed(
+            _settings.RequireConfirmedEmail,
+            _settings.UnconfirmedUserCount);
+
+    protected bool ShowCurrentAdminLockoutWarning =>
+        IdentitySettingsWarnings.RequireConfirmedEmailLocksOutCurrentAdmin(
+            _settings.RequireConfirmedEmail,
+            _settings.CurrentUserEmailUnconfirmed);
+
     protected bool ShowOtpSmsWarning => IdentitySettingsWarnings.OtpLoginDefaultsToUnavailableSms(
         _settings.OtpIsEnabled,
         _settings.OtpAllowLogin,
