@@ -109,6 +109,14 @@ public class IdentitySettingsAppService : SettingsAppServiceBase, IIdentitySetti
             : new List<VerificationDeliveryChannel> { VerificationDeliveryChannel.Email };
         dto.IsEmailChannelAvailable = dto.AvailableChannels.Contains(VerificationDeliveryChannel.Email);
 
+        var unconfirmed = LazyServiceProvider.LazyGetService<IUnconfirmedAccountLookup>();
+        if (unconfirmed != null)
+        {
+            var notice = await unconfirmed.GetAsync();
+            dto.UnconfirmedUserCount = notice.Count;
+            dto.CurrentUserEmailUnconfirmed = notice.CurrentUserUnconfirmed;
+        }
+
         return dto;
     }
 

@@ -8,12 +8,15 @@ using Volo.Abp.Validation;
 
 namespace SufiChain.SufiPlatform.Account.Blazor.Components.Profile;
 
-public partial class ProfileSettings
+public partial class ProfileSettings : IDisposable
 {
     public const string ProfileFormName = "account-profile";
 
+    private const string SavedProfileKey = "account-profile-saved";
+
     private bool _loading = true;
     private bool _saving;
+    private bool _savedThisRender;
     private string? _successMessage;
     private string? _errorMessage;
     private string? _phoneError;
@@ -21,8 +24,34 @@ public partial class ProfileSettings
     [SupplyParameterFromForm(FormName = ProfileFormName)]
     private ProfileDto? Profile { get; set; }
 
+    [Inject]
+    private PersistentComponentState PersistentState { get; set; } = default!;
+
+    private PersistingComponentStateSubscription? _persist;
+
+    protected override void OnInitialized()
+    {
+        _persist = PersistentState.RegisterOnPersisting(() =>
+        {
+            if (_savedThisRender && Profile != null)
+            {
+                PersistentState.PersistAsJson(SavedProfileKey, Profile);
+            }
+
+            return Task.CompletedTask;
+        });
+    }
+
     protected override async Task OnInitializedAsync()
     {
+        if (PersistentState.TryTakeFromJson<ProfileDto>(SavedProfileKey, out var saved))
+        {
+            Profile = ProfileSaveBinding.Shown(saved, null);
+            _successMessage = L["ProfileUpdatedSuccessfully"];
+            _loading = false;
+            return;
+        }
+
         if (Profile != null && !string.IsNullOrWhiteSpace(Profile.UserName))
         {
             _loading = false;
@@ -32,7 +61,7 @@ public partial class ProfileSettings
 
         try
         {
-            Profile = await ProfileAppService.GetAsync();
+            Profile = ProfileSaveBinding.Shown(null, await ProfileAppService.GetAsync());
         }
         finally
         {
@@ -85,7 +114,8 @@ public partial class ProfileSettings
                 Logger.LogWarning(mapException, "Profile extra properties were skipped on save.");
             }
 
-            Profile = await ProfileAppService.UpdateAsync(input);
+            Profile = ProfileSaveBinding.Shown(await ProfileAppService.UpdateAsync(input), null);
+            _savedThisRender = true;
             _successMessage = L["ProfileUpdatedSuccessfully"];
         }
         catch (AbpValidationException ex) when (ex.ValidationErrors.Any(error =>
@@ -114,4 +144,6 @@ public partial class ProfileSettings
             _saving = false;
         }
     }
+
+    public void Dispose() => _persist?.Dispose();
 }

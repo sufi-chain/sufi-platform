@@ -24,6 +24,7 @@
     "CreatedByModule": "Creado por módulo",
     "FullShortUrl": "URL corta completa",
     "CreatedAt": "Creado el",
+    "Expired": "Caducado",
     "UpdatedAt": "Actualizado el",
     "Filter": "Filtro",
     "SearchByCodeOrUrl": "Buscar por código o URL...",

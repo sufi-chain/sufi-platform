@@ -88,6 +88,11 @@ public partial class SufiCaptcha : ComponentBase, IAsyncDisposable
 
     protected string CaptchaAnswerValue { get; set; } = string.Empty;
 
+    protected string ShownQuestion =>
+        string.Equals(System.Globalization.CultureInfo.CurrentUICulture.TwoLetterISOLanguageName, "fa", StringComparison.OrdinalIgnoreCase)
+            ? SufiChain.SufiPlatform.Captcha.CaptchaDigits.ToPersian(Challenge?.Question)
+            : Challenge?.Question ?? string.Empty;
+
     protected override async Task OnParametersSetAsync()
     {
         CaptchaAnswerValue = CaptchaAnswer ?? string.Empty;
@@ -162,7 +167,8 @@ public partial class SufiCaptcha : ComponentBase, IAsyncDisposable
 
     protected virtual async Task PublishCaptchaAnswerAsync()
     {
-        CaptchaAnswer = string.IsNullOrEmpty(CaptchaAnswerValue) ? null : CaptchaAnswerValue;
+        var normalized = SufiChain.SufiPlatform.Captcha.CaptchaDigits.Normalize(CaptchaAnswerValue);
+        CaptchaAnswer = string.IsNullOrEmpty(normalized) ? null : normalized;
         await CaptchaAnswerChanged.InvokeAsync(CaptchaAnswer);
     }
 

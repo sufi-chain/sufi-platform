@@ -66,7 +66,7 @@ public class MCPServerAppService : SufiApplicationService, IMCPServerAppService
         var existing = await _serverRepository.FindByKeyAsync(input.Key);
         if (existing != null)
         {
-            throw new BusinessException("AI:MCPServerKeyAlreadyExists")
+            throw new BusinessException(AIErrorCodes.MCPServerKeyAlreadyExists)
                 .WithData("Key", input.Key);
         }
 
@@ -160,7 +160,7 @@ public class MCPServerAppService : SufiApplicationService, IMCPServerAppService
         await _catalogCache.InvalidateAsync();
     }
     
-    public async Task<bool> TestConnectionAsync(Guid id)
+    public async Task<McpConnectionTestResult> TestConnectionAsync(Guid id)
     {
         var server = await _repository.GetAsync(id);
 
@@ -169,28 +169,71 @@ public class MCPServerAppService : SufiApplicationService, IMCPServerAppService
         {
             server.UpdateLastConnection(false, "Server is disabled");
             await _repository.UpdateAsync(server);
-            return false;
+            return new McpConnectionTestResult();
         }
 
         if (server.TransportType == MCPTransportType.STDIO && string.IsNullOrWhiteSpace(server.Command))
         {
             server.UpdateLastConnection(false, "STDIO server is missing command");
             await _repository.UpdateAsync(server);
-            return false;
+            return new McpConnectionTestResult();
         }
 
         if (server.TransportType != MCPTransportType.STDIO && string.IsNullOrWhiteSpace(server.Endpoint))
         {
             server.UpdateLastConnection(false, $"{server.TransportType} server is missing endpoint");
             await _repository.UpdateAsync(server);
-            return false;
+            return new McpConnectionTestResult();
         }
 
         // Lightweight connect via registry transport clients (not cached for test).
         var (success, errorMessage) = await _toolRegistry.TestServerConnectionAsync(server);
         server.UpdateLastConnection(success, errorMessage);
         await _repository.UpdateAsync(server);
-        return success;
+        if (!success)
+        {
+            return new McpConnectionTestResult();
+        }
+
+        return await RefreshServerToolsAsync(id);
+    }
+
+    public async Task<McpConnectionTestResult> RefreshServerToolsAsync(Guid id)
+    {
+        var server = await _repository.GetAsync(id);
+        if (!server.IsEnabled)
+        {
+            return new McpConnectionTestResult();
+        }
+
+        List<MCPServerToolDefinition> definitions;
+        try
+        {
+            definitions = await _clientProvider.ListToolsAsync(server);
+        }
+        catch (Exception)
+        {
+            return new McpConnectionTestResult();
+        }
+
+        var descriptors = definitions.Select(definition =>
+        {
+            var adminEffect = server.FindAdminToolEffect(definition.Name);
+            return new MCPToolDescriptor
+            {
+                Name = $"external.{server.Key}.{definition.Name}",
+                Description = definition.Description,
+                ParameterSchema = definition.ParameterSchema,
+                ToolType = MCPToolType.External,
+                Source = server.Name,
+                Effect = McpToolEffectPolicy.Resolve(adminEffect),
+                ReadOnlyHint = definition.ReadOnlyHint,
+                EffectIsAdminSet = adminEffect is not null
+            };
+        }).ToList();
+
+        await _catalogCache.ReplaceServerToolsAsync(server.Key, descriptors);
+        return new McpConnectionTestResult { Success = true, ToolCount = descriptors.Count };
     }
     
     private MCPServerDto MapToDto(MCPServer server)

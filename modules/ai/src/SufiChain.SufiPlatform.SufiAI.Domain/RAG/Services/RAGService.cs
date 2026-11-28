@@ -103,21 +103,28 @@ public class RAGService : DomainService, IRAGService
         {
             embeddings = await embeddingGenerator.GenerateAsync(new[] { queryText }, cancellationToken: cancellationToken);
         }
-        catch (Exception exception) when (FindRetired(exception) is not null)
+        catch (Exception exception) when (exception is not OperationCanceledException and not BusinessException)
         {
-            throw CreateIndexingBusinessException("GenerateEmbeddings", workspaceName, sourceName ?? string.Empty, exception);
+            Logger.LogWarning(exception, "RAG query embedding failed. WorkspaceName={WorkspaceName}", workspaceName);
+            throw RagSearchFailures.ToBusinessException(exception, "GenerateEmbeddings", workspaceName, sourceName);
         }
+
         var queryEmbedding = embeddings.First().Vector.ToArray();
-
         var vectorStoreProvider = GetVectorStoreProvider(vectorStoreContext.Type);
-
-        return await vectorStoreProvider.SearchSimilarAsync(
-            vectorStoreContext,
-            queryEmbedding,
-            maxResults,
-            minSimilarity ?? 0.7f,
-            cancellationToken
-        );
+        try
+        {
+            return await vectorStoreProvider.SearchSimilarAsync(
+                vectorStoreContext,
+                queryEmbedding,
+                maxResults,
+                minSimilarity ?? 0.7f,
+                cancellationToken);
+        }
+        catch (Exception exception) when (exception is not OperationCanceledException and not BusinessException)
+        {
+            Logger.LogWarning(exception, "RAG vector search failed. WorkspaceName={WorkspaceName}", workspaceName);
+            throw RagSearchFailures.ToBusinessException(exception, "VectorSearch", workspaceName, sourceName);
+        }
     }
 
     public async Task IndexDocumentsAsync(

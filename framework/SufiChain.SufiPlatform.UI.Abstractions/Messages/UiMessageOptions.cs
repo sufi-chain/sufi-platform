@@ -34,4 +34,9 @@ public class UiMessageOptions
     /// Whether the dialog can be closed by clicking outside or pressing escape.
     /// </summary>
     public bool CloseOnBackdropClick { get; set; } = false;
+
+    /// <summary>
+    /// When true, a success message stays a modal dialog. The default is a toast.
+    /// </summary>
+    public bool Blocking { get; set; }
 }

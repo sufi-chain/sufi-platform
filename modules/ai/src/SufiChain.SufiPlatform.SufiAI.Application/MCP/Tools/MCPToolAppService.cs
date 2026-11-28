@@ -87,7 +87,8 @@ public class MCPToolAppService : SufiApplicationService, IMCPToolAppService
             Description = tool.Description,
             ParameterSchema = includeParameterSchema ? tool.ParameterSchema : string.Empty,
             ToolType = tool.ToolType.ToString(),
-            Source = tool.Source,
+            Source = McpToolSourceText.Format(tool.Source, tool.Name),
+            ServerKey = McpExternalToolName.TrySplit(tool.Name, out var serverKey, out _) ? serverKey : string.Empty,
             Effect = tool is IMCPToolEffect declared
                 && declared.Effect is AgentActionEffect.Read or AgentActionEffect.Write
                 ? declared.Effect.ToString()

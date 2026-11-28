@@ -8,6 +8,9 @@ public class MCPToolDto
     public string ToolType { get; set; } = string.Empty;
     public string Source { get; set; } = string.Empty;
 
+    /// <summary>External server key parsed from <c>external.&lt;key&gt;.&lt;tool&gt;</c>. Empty for internal tools.</summary>
+    public string ServerKey { get; set; } = string.Empty;
+
     /// <summary>Resolved effect name: Read or Write (sufi-chain#312). Missing values are Write.</summary>
     public string Effect { get; set; } = "Write";
 

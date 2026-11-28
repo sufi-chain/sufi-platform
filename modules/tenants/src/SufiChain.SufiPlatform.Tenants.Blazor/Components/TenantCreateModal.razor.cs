@@ -1,8 +1,9 @@
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Forms;
 using SufiChain.SufiBlazor.Components.Forms;
+using SufiChain.SufiPlatform.Tenants;
 using SufiChain.SufiPlatform.Tenants.Localization;
 using SufiChain.SufiPlatform.UI.Blazor;
-using SufiChain.SufiPlatform.Tenants;
 
 namespace SufiChain.SufiPlatform.Tenants.Blazor.Components;
 
@@ -22,6 +23,9 @@ public partial class TenantCreateModal : TenantsComponentBase
     [Parameter] public EventCallback OnTenantCreated { get; set; }
 
     private SbForm? _formRef;
+    private SbTextField<string>? _nameField;
+    private SbTextField<string>? _emailField;
+    private SbTextField<string>? _passwordField;
     private TenantCreateDto _model = new();
 
     protected override void OnParametersSet()
@@ -41,6 +45,21 @@ public partial class TenantCreateModal : TenantsComponentBase
     {
         Open = open;
         await OpenChanged.InvokeAsync(open);
+    }
+
+    private async Task OnInvalidSubmitAsync(EditContext _)
+    {
+        var field = TenantCreateFocus.FirstInvalid(_model);
+        var target = field switch
+        {
+            "AdminEmailAddress" => _emailField,
+            "AdminPassword" => _passwordField,
+            _ => _nameField
+        };
+        if (target != null)
+        {
+            await target.FocusAsync();
+        }
     }
 
     private Task OnValidSubmitAsync() => ExecuteWithLoadingAsync(async () =>

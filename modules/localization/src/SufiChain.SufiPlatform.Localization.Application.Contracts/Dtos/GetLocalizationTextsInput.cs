@@ -9,6 +9,10 @@ public class GetLocalizationTextsInput : PagedAndSortedResultRequestDto
     public string? CultureName { get; set; }
     public string? KeyFilter { get; set; }
     public string? ValueFilter { get; set; }
+
+    /// <summary>Toolbar term matched against key or value.</summary>
+    public string? Search { get; set; }
+
     public bool ShowMissingOnly { get; set; }
 }
 
@@ -23,6 +27,9 @@ public class GetMergedLocalizationTextsInput : PagedAndSortedResultRequestDto
     public string? KeyFilter { get; set; }
 
     public string? ValueFilter { get; set; }
+
+    /// <summary>Toolbar term matched against key, value, or base value.</summary>
+    public string? Search { get; set; }
 
     public string? BaseValueFilter { get; set; }
 

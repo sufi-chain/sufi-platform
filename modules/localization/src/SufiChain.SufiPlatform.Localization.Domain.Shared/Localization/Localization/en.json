@@ -21,6 +21,7 @@
     "DefaultCulture": "Default Culture",
     "IsEnabled": "Enabled",
     "Filter": "Filter",
+    "SearchKeyOrValue": "Search key or value",
     "Import": "Import",
     "Export": "Export",
     "SelectResource": "Select Resource",

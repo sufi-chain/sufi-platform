@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -12,4 +13,12 @@ public interface IMCPCatalogCache
     Task<MCPCatalogCacheItem> GetCatalogAsync(CancellationToken cancellationToken = default);
     Task RebuildAsync(CancellationToken cancellationToken = default);
     Task InvalidateAsync(CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Replaces the cached tools of one server. Other servers stay as they are.
+    /// </summary>
+    Task ReplaceServerToolsAsync(
+        string serverKey,
+        IReadOnlyList<MCPToolDescriptor> tools,
+        CancellationToken cancellationToken = default);
 }

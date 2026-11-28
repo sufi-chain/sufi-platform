@@ -18,8 +18,10 @@
 	<SbCard>
 		<ChildContent>
 			<SbStack Gap="4">
-				<SbTextField @bind-Value="_filter"
+				<SbTextField @bind-Value="FilterDraft"
+							 OnKeyDown="OnFilterKeyDown"
 							 Placeholder="@L["SearchUsers"]"
+							 AriaLabel="@L["SearchUsers"]"
 							 Clearable="true">
 					<StartAdornment>
 						<SbIcon Name="search" />

@@ -49,12 +49,26 @@ public class DefaultBreadcrumbService : IBreadcrumbService
             return breadcrumbs;
         }
 
+        var collapsed = new List<ApplicationMenuItem>();
         foreach (var item in trail)
         {
-            var isLast = item == trail[^1];
+            if (collapsed.Count > 0
+                && string.Equals(collapsed[^1].DisplayName?.Trim(), item.DisplayName?.Trim(), StringComparison.OrdinalIgnoreCase))
+            {
+                continue;
+            }
+
+            collapsed.Add(item);
+        }
+
+        foreach (var item in collapsed)
+        {
+            var isLast = item == collapsed[^1];
+            var score = MatchScore(item.Url, path);
+            var keepLink = !isLast || (score > 0 && score < int.MaxValue);
             breadcrumbs.Add(new BreadcrumbItem(
                 item.DisplayName,
-                isLast ? null : item.Url,
+                keepLink ? item.Url : null,
                 item.Icon
             ));
         }

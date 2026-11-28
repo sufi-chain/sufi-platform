@@ -12,6 +12,7 @@
 @using SufiChain.SufiPlatform.UI.Progression
 @using SufiChain.SufiPlatform.UI.Localization
 @using SufiChain.SufiBlazor.Components
+@using SufiChain.SufiBlazor.Components.Overlays
 @using SufiChain.SufiBlazor.Components.Actions
 @using SufiChain.SufiBlazor.Components.Common
 @using SufiChain.SufiBlazor.Components.Feedback
@@ -370,7 +371,7 @@
             _confirmPendingShow = false;
             try
             {
-                await JSRuntime.InvokeVoidAsync("SufiBlazor.dialog.showModal", _confirmDialogRef);
+                await DialogInterop.InvokeAsync(JSRuntime, "SufiBlazor.dialog.showModal", _confirmDialogRef);
             }
             catch (JSException)
             {
@@ -382,7 +383,7 @@
             _messagePendingShow = false;
             try
             {
-                await JSRuntime.InvokeVoidAsync("SufiBlazor.dialog.showModal", _messageDialogRef);
+                await DialogInterop.InvokeAsync(JSRuntime, "SufiBlazor.dialog.showModal", _messageDialogRef);
             }
             catch (JSException)
             {
@@ -396,11 +397,11 @@
         {
             if (toastCount > 0)
             {
-                await JSRuntime.InvokeVoidAsync("SufiBlazor.popover.show", _toastHostRef);
+                await DialogInterop.InvokeAsync(JSRuntime, "SufiBlazor.popover.show", _toastHostRef);
             }
             else
             {
-                await JSRuntime.InvokeVoidAsync("SufiBlazor.popover.hide", _toastHostRef);
+                await DialogInterop.InvokeAsync(JSRuntime, "SufiBlazor.popover.hide", _toastHostRef);
             }
         }
         catch (JSException)
@@ -441,7 +442,7 @@
     {
         try
         {
-            await JSRuntime.InvokeVoidAsync("SufiBlazor.dialog.close", _confirmDialogRef);
+            await DialogInterop.InvokeAsync(JSRuntime, "SufiBlazor.dialog.close", _confirmDialogRef);
         }
         catch (JSException) { /* Ignore if prerender or disconnected */ }
         _showConfirm = false;
@@ -452,7 +453,7 @@
     {
         try
         {
-            await JSRuntime.InvokeVoidAsync("SufiBlazor.dialog.close", _confirmDialogRef);
+            await DialogInterop.InvokeAsync(JSRuntime, "SufiBlazor.dialog.close", _confirmDialogRef);
         }
         catch (JSException) { /* Ignore if prerender or disconnected */ }
         _showConfirm = false;
@@ -487,7 +488,7 @@
     {
         try
         {
-            await JSRuntime.InvokeVoidAsync("SufiBlazor.dialog.close", _messageDialogRef);
+            await DialogInterop.InvokeAsync(JSRuntime, "SufiBlazor.dialog.close", _messageDialogRef);
         }
         catch (JSException) { /* Ignore if prerender or disconnected */ }
         _showMessage = false;

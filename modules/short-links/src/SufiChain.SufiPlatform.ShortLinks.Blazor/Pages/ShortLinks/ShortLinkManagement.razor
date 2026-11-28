@@ -1,6 +1,7 @@
 @namespace SufiChain.SufiPlatform.ShortLinks.Blazor.Pages.ShortLinks
 @page "/panel/admin/short-links"
 @using SufiChain.SufiPlatform.UI.Blazor.Components
+@using SufiChain.SufiPlatform.UI.Blazor.Timing
 @attribute [Authorize(ShortLinksPermissions.ShortLinks.Default)]
 @inherits ShortLinkManagementBase
 
@@ -140,15 +141,32 @@
                         </CellTemplate>
                     </SbColumn>
 
-                    <SbColumn TItem="ShortUrlDto" Field="IsActive" Title="@L["IsActive"]" Sortable="true" MinWidth="120px" Filterable="true">
+                    <SbColumn TItem="ShortUrlDto" Field="IsActive" Title="@L["IsActive"]" Sortable="true" MinWidth="140px" Filterable="true">
                         <CellTemplate Context="cellContext">
-                            <SbBadge Color="@(cellContext.Item.IsActive ? SbColor.Success : SbColor.Secondary)">
-                                @(cellContext.Item.IsActive ? L["Yes"] : L["No"])
-                            </SbBadge>
+                            @if (ShowExpired(cellContext.Item))
+                            {
+                                <SbBadge Color="SbColor.Warning">@L["Expired"]</SbBadge>
+                            }
+                            else
+                            {
+                                <SbBadge Color="@(cellContext.Item.IsActive ? SbColor.Success : SbColor.Secondary)">
+                                    @(cellContext.Item.IsActive ? L["Yes"] : L["No"])
+                                </SbBadge>
+                            }
                         </CellTemplate>
                     </SbColumn>
 
-                    <SbColumn TItem="ShortUrlDto" Field="CreationTime" Title="@L["CreatedAt"]" Sortable="true" MinWidth="180px" Format="yyyy-MM-dd HH:mm" Filterable="true"/>
+                    <SbColumn TItem="ShortUrlDto" Field="ExpiresAt" Title="@L["ExpiresAt"]" Sortable="true" MinWidth="180px">
+                        <CellTemplate Context="cellContext">
+                            <SufiUserTime Value="cellContext.Item.ExpiresAt" Format="yyyy-MM-dd HH:mm" ShowZone="true" />
+                        </CellTemplate>
+                    </SbColumn>
+
+                    <SbColumn TItem="ShortUrlDto" Field="CreationTime" Title="@L["CreatedAt"]" Sortable="true" MinWidth="180px">
+                        <CellTemplate Context="cellContext">
+                            <SufiUserTime Value="cellContext.Item.CreationTime" Format="yyyy-MM-dd HH:mm" ShowZone="true" />
+                        </CellTemplate>
+                    </SbColumn>
                 </ChildContent>
             </SbDataGrid>
         </ChildContent>
@@ -161,7 +179,7 @@
             <SbStack Gap="3">
                 <SbTextField @bind-Value="NewEntity.DestinationUrl" Label="@L["DestinationUrl"]" Type="url" Placeholder="@L["EnterDestinationUrl"]" Required="true" />
                 <SbTextArea @bind-Value="NewEntity.Description" Label="@L["Description"]" Rows="3" HelperText="@L["DescriptionHelp"]" />
-                <SbDatePicker Value="NewEntityExpiresAt" ValueChanged="OnNewEntityExpiresAtChanged" Label="@L["ExpiresAt"]" Placeholder="@L["ExpiresAt"]" />
+                <SbDatePicker Value="NewEntityExpiresAt" ValueChanged="OnNewEntityExpiresAtChanged" Min="ExpiryMinDate" Label="@L["ExpiresAt"]" Placeholder="@L["ExpiresAt"]" />
                 <SbTextField @bind-Value="NewEntity.CreatedByModule" Label="@L["CreatedByModule"]" />
             </SbStack>
         </SbForm>
@@ -181,7 +199,7 @@
                 <SbTextField @bind-Value="EditingEntityDto.ShortCode" Label="@L["ShortCode"]" ReadOnly="true" />
                 <SbTextField @bind-Value="EditingEntity.DestinationUrl" Label="@L["DestinationUrl"]" Type="url" Required="true" />
                 <SbTextArea @bind-Value="EditingEntity.Description" Label="@L["Description"]" Rows="3" HelperText="@L["DescriptionHelp"]" />
-                <SbDatePicker Value="EditingEntityExpiresAt" ValueChanged="OnEditingEntityExpiresAtChanged" Label="@L["ExpiresAt"]" Placeholder="@L["ExpiresAt"]" />
+                <SbDatePicker Value="EditingEntityExpiresAt" ValueChanged="OnEditingEntityExpiresAtChanged" Min="ExpiryMinDate" Label="@L["ExpiresAt"]" Placeholder="@L["ExpiresAt"]" />
                 <SbCheckbox @bind-Value="EditingEntity.IsActive" Label="@L["IsActive"]" />
             </SbStack>
         </SbForm>

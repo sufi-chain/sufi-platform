@@ -73,6 +73,8 @@ public partial class Register
     [SupplyParameterFromForm]
     public RegisterInputModel Input { get; set; } = new();
 
+    public string? ConfirmPassword { get; set; }
+
     protected string? ErrorMessage { get; set; }
 
     protected bool IsSubmitting { get; set; }
@@ -145,9 +147,17 @@ public partial class Register
         if (string.IsNullOrWhiteSpace(Input.UserName) ||
             string.IsNullOrWhiteSpace(Input.EmailAddress) ||
             string.IsNullOrWhiteSpace(Input.Password) ||
+            string.IsNullOrWhiteSpace(ConfirmPassword) ||
             (RequiresPhoneConfirmation && string.IsNullOrWhiteSpace(Input.PhoneNumber)))
         {
             ErrorMessage = L["PleaseEnterAllFields"];
+            return;
+        }
+
+        var formError = RegisterFormCheck.Error(Input.EmailAddress, Input.Password, ConfirmPassword);
+        if (formError != null)
+        {
+            ErrorMessage = L[formError];
             return;
         }
 

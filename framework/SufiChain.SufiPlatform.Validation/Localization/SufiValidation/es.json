@@ -35,13 +35,28 @@
     "ThisFieldMustBeAStringWithAMinimumLengthOf{1}AndAMaximumLengthOf{0}": "Este campo debe ser una cadena con una longitud mínima de {1} y máxima de {0}.",
     "ThisFieldIsNotAValidFullyQualifiedHttpHttpsOrFtpUrl": "El campo no es una URL (http, https o ftp) valida.",
     "ThisFieldIsInvalid.": "Este campo no es válido.",
-  
     "ThisFieldMustBeAStringOrArrayTypeWithAMaximumLengthOf {0}": "Este campo debe tener como máximo '{0}' caracteres.",
     "ThisFieldMustBeAStringOrArrayTypeWithAMinimumLengthOf {0}": "Este campo debe tener al menos '{0}' caracteres.",
     "ThisFieldMustBeAStringWithAMaximumLengthOf {0}": "Este campo debe ser una cadena con una longitud máxima de {0}.",
     "ThisFieldMustBeAStringWithAMinimumLengthOf {1} AndAMaximumLengthOf {0}": "Este campo debe ser una cadena con una longitud mínima de {1} y máxima de {0}.",
     "ThisFieldMustBeBetween {0} And {1}": "Este campo debe estar entre {0} y {1}.",
     "ThisFieldMustMatchTheRegularExpression {0}": "Este campo debe coincidir con la expresión regular '{0}'.",
-    "ThisFieldOnlyAcceptsFilesWithTheFollowingExtensions: {0}": "Este campo sólo acepta ficheros con las siguientes extensiones: {0}"
+    "ThisFieldOnlyAcceptsFilesWithTheFollowingExtensions: {0}": "Este campo sólo acepta ficheros con las siguientes extensiones: {0}",
+    "Field:CurrentPassword": "Contraseña actual",
+    "Field:NewPassword": "Contraseña nueva",
+    "Field:ConfirmPassword": "Confirmar contraseña",
+    "Field:SenderEmailAddress": "Correo del remitente",
+    "Field:TargetEmailAddress": "Correo de destino",
+    "Field:Subject": "Asunto",
+    "Field:EditionName": "Nombre",
+    "Field:EditionDisplayName": "Nombre para mostrar",
+    "Field:EditionCode": "Código",
+    "Field:UserName": "Nombre de usuario",
+    "Field:Email": "Correo electrónico",
+    "Field:Password": "Contraseña",
+    "Field:RoleName": "Nombre del rol",
+    "Field:TenantName": "Nombre del inquilino",
+    "Field:AdminEmailAddress": "Dirección de correo del administrador",
+    "Field:AdminPassword": "Contraseña del administrador"
   }
 }

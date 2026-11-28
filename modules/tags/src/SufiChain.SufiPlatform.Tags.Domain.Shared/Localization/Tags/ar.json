@@ -79,6 +79,7 @@
     "TagUpdatedSuccessfully": "تم تحديث العلامة بنجاح.",
     "Tags:MaxTagNameLengthExceeded": "يتجاوز اسم العلامة الحد الأقصى المسموح به للطول.",
     "Tags:MaxTagsPerEntityExceeded": "تم الوصول إلى الحد الأقصى لعدد العلامات لكل كيان.",
-    "Tags:TagAlreadyExists": "هناك علامة بهذا الاسم موجودة بالفعل."
+    "Tags:TagAlreadyExists": "هناك علامة بهذا الاسم موجودة بالفعل.",
+    "Cancel": "إلغاء"
   }
 }

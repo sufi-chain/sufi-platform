@@ -14,9 +14,12 @@ public partial class MCPServers
         public const string ToggleServer = nameof(ToggleServer);
         public const string DeleteServer = nameof(DeleteServer);
         public const string TestConnection = nameof(TestConnection);
+        public const string SyncTools = nameof(SyncTools);
     }
     
     private List<MCPServerDto> _servers = new();
+    private readonly Dictionary<Guid, int> _toolCounts = new();
+    private Guid? _discoveringServerId;
     private bool _modalOpen;
     private MCPServerDto? _editingServer;
     private bool _serversLoadStarted;
@@ -77,14 +80,34 @@ public partial class MCPServers
         }, LoadingKeys.ToggleServer);
     }
 
+    private string ToolStatus(MCPServerDto server)
+    {
+        if (_discoveringServerId == server.Id)
+        {
+            return L["DiscoveringTools"];
+        }
+
+        return _toolCounts.TryGetValue(server.Id, out var count)
+            ? string.Format(System.Globalization.CultureInfo.CurrentCulture, L["McpToolCount"], count)
+            : string.Empty;
+    }
+
+    private async Task SyncToolsAsync(MCPServerDto server)
+    {
+        await ExecuteWithLoadingAsync(async () =>
+        {
+            await RememberToolsAsync(server, () => MCPServerAppService.RefreshServerToolsAsync(server.Id));
+        }, $"{LoadingKeys.SyncTools}-{server.Id}");
+    }
+
     private async Task TestConnectionAsync(MCPServerDto server)
     {
         await ExecuteWithLoadingAsync(async () =>
         {
-            var success = await MCPServerAppService.TestConnectionAsync(server.Id);
+            var result = await RememberToolsAsync(server, () => MCPServerAppService.TestConnectionAsync(server.Id));
             await LoadServersAsync();
 
-            if (success)
+            if (result.Success)
             {
                 await Message.SuccessAsync(L["ConnectionTestSuccessful"]);
                 return;
@@ -95,6 +118,28 @@ public partial class MCPServers
                 ? L["ConnectionTestFailed"]
                 : $"{L["ConnectionTestFailed"]}: {detail}");
         }, $"{LoadingKeys.TestConnection}-{server.Id}");
+    }
+
+    private async Task<McpConnectionTestResult> RememberToolsAsync(
+        MCPServerDto server,
+        Func<Task<McpConnectionTestResult>> call)
+    {
+        _discoveringServerId = server.Id;
+        await InvokeAsync(StateHasChanged);
+        try
+        {
+            var result = await call();
+            if (result.Success)
+            {
+                _toolCounts[server.Id] = result.ToolCount;
+            }
+
+            return result;
+        }
+        finally
+        {
+            _discoveringServerId = null;
+        }
     }
     
     private async Task DeleteServerAsync(MCPServerDto server)

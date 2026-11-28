@@ -33,14 +33,17 @@ public class EditionCreateDto
 {
     [Required]
     [StringLength(EditionConsts.MaxNameLength)]
+    [Display(Name = "Field:EditionName")]
     public string Name { get; set; } = string.Empty;
 
     [Required]
     [StringLength(EditionConsts.MaxDisplayNameLength)]
+    [Display(Name = "Field:EditionDisplayName")]
     public string DisplayName { get; set; } = string.Empty;
 
     [Required]
     [StringLength(EditionConsts.MaxCodeLength)]
+    [Display(Name = "Field:EditionCode")]
     public string Code { get; set; } = string.Empty;
 
     public bool IsActive { get; set; } = true;
@@ -50,14 +53,17 @@ public class EditionUpdateDto : IHasConcurrencyStamp
 {
     [Required]
     [StringLength(EditionConsts.MaxNameLength)]
+    [Display(Name = "Field:EditionName")]
     public string Name { get; set; } = string.Empty;
 
     [Required]
     [StringLength(EditionConsts.MaxDisplayNameLength)]
+    [Display(Name = "Field:EditionDisplayName")]
     public string DisplayName { get; set; } = string.Empty;
 
     [Required]
     [StringLength(EditionConsts.MaxCodeLength)]
+    [Display(Name = "Field:EditionCode")]
     public string Code { get; set; } = string.Empty;
 
     public bool IsActive { get; set; } = true;

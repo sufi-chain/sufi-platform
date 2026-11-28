@@ -4,6 +4,7 @@ using SufiChain.SufiPlatform.Calendar.Calendars;
 using SufiChain.SufiPlatform.Calendar.Events;
 using SufiChain.SufiPlatform.Calendar.Permissions;
 using SufiChain.SufiBlazor.Utilities.DateUtils;
+using SufiChain.SufiPlatform.UI.Blazor.Timing;
 using System.Globalization;
 
 namespace SufiChain.SufiPlatform.Calendar.Blazor.Public.Components;
@@ -19,6 +20,11 @@ public partial class CalendarToolbarWidget : CalendarPublicComponentBase
     [Inject]
     protected NavigationManager NavigationManager { get; set; } = default!;
 
+    [Inject]
+    protected IUserTimeZoneDisplay UserTimeZoneDisplayService { get; set; } = default!;
+
+    private TimeZoneInfo _userZone = UserTimeZoneDisplay.DefaultZone;
+
     protected bool IsOpen { get; set; }
 
     protected bool CanUseCalendar { get; set; }
@@ -27,11 +33,20 @@ public partial class CalendarToolbarWidget : CalendarPublicComponentBase
 
     protected CalendarDto? PersonalCalendar { get; set; }
 
-    protected string CurrentDateTimeText => FormatDateTime(GetCalendarNow());
+    protected string CurrentDateTimeText =>
+        CalendarToolbarClock.FormatNow(DateTimeOffset.UtcNow, PersonalCalendar?.TimeZoneId, _userZone.Id, CultureInfo.CurrentUICulture);
 
     protected override async Task OnInitializedAsync()
     {
         CanUseCalendar = await IsGrantedAsync(CalendarPermissions.Events.Default);
+        try
+        {
+            _userZone = await UserTimeZoneDisplayService.GetAsync();
+        }
+        catch (Exception exception) when (exception is not OperationCanceledException)
+        {
+            _userZone = UserTimeZoneDisplay.DefaultZone;
+        }
     }
 
     protected virtual async Task ToggleMenuAsync()
@@ -102,6 +117,26 @@ public partial class CalendarToolbarWidget : CalendarPublicComponentBase
 
     protected virtual TimeZoneInfo ResolveCalendarTimeZone()
     {
-        return CalendarTimeZoneResolver.Resolve(PersonalCalendar?.TimeZoneId);
+        return CalendarToolbarClock.Resolve(PersonalCalendar?.TimeZoneId, _userZone.Id);
+    }
+}
+
+public static class CalendarToolbarClock
+{
+    public static TimeZoneInfo Resolve(string? calendarZoneId, string? userZoneId) =>
+        CalendarTimeZoneResolver.Resolve(calendarZoneId, string.IsNullOrWhiteSpace(userZoneId)
+            ? UserTimeZoneDisplay.DefaultTimeZoneId
+            : userZoneId);
+
+    public static string FormatNow(DateTimeOffset utcNow, string? calendarZoneId, string? userZoneId, CultureInfo culture)
+    {
+        var zone = Resolve(calendarZoneId, userZoneId);
+        var local = TimeZoneInfo.ConvertTime(utcNow, zone).DateTime;
+        return SbCalendarHelper.FormatDate(local, null, culture)
+            + " "
+            + local.ToString("HH:mm", culture)
+            + " ("
+            + zone.Id
+            + ")";
     }
 }

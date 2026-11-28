@@ -6,6 +6,7 @@ using SufiChain.SufiPlatform.AuditLogging.Dtos;
 using SufiChain.SufiPlatform.AuditLogging.Hooshvare;
 using SufiChain.SufiPlatform.AuditLogging.Localization;
 using SufiChain.SufiPlatform.UI.Blazor;
+using SufiChain.SufiPlatform.UI.Blazor.Timing;
 using SufiChain.SufiPlatform.UI.Layout;
 
 namespace SufiChain.SufiPlatform.AuditLogging.Blazor.Pages;
@@ -18,6 +19,9 @@ public partial class AuditLogs : AuditLoggingComponentBase
     }
 
     [Inject] protected IPageLayout PageLayout { get; set; } = default!;
+    [Inject] protected IUserTimeZoneDisplay UserTimeZoneDisplayService { get; set; } = default!;
+
+    private TimeZoneInfo _userZone = UserTimeZoneDisplay.DefaultZone;
     
     private IAuditLogAppService AuditLogAppService => LazyGetRequiredService(ref _auditLogAppService);
     private IAuditLogAppService? _auditLogAppService;
@@ -52,12 +56,30 @@ public partial class AuditLogs : AuditLoggingComponentBase
     private bool _showDetailModal;
     private Guid? _selectedAuditLogId;
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
         SetupPageLayout();
-        // Default to last 30 days to ensure records are visible
-        _startDate = DateOnly.FromDateTime(DateTime.UtcNow.AddDays(-30));
-        _endDate = DateOnly.FromDateTime(DateTime.UtcNow.AddDays(1)); // Include today fully in UTC
+        await LoadUserZoneAsync();
+        ApplyDefaultRange();
+    }
+
+    private async Task LoadUserZoneAsync()
+    {
+        try
+        {
+            _userZone = await UserTimeZoneDisplayService.GetAsync();
+        }
+        catch (Exception exception) when (exception is not OperationCanceledException)
+        {
+            _userZone = UserTimeZoneDisplay.DefaultZone;
+        }
+    }
+
+    private void ApplyDefaultRange()
+    {
+        var today = UserTimeZoneDisplay.Today(DateTime.UtcNow, _userZone);
+        _startDate = today.AddDays(-30);
+        _endDate = today;
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -86,12 +108,8 @@ public partial class AuditLogs : AuditLoggingComponentBase
     {
         var input = new GetAuditLogListInput
         {
-            StartTime = _startDate.HasValue
-                ? DateTime.SpecifyKind(_startDate.Value.ToDateTime(TimeOnly.MinValue), DateTimeKind.Utc)
-                : null,
-            EndTime = _endDate.HasValue
-                ? DateTime.SpecifyKind(_endDate.Value.ToDateTime(TimeOnly.MaxValue), DateTimeKind.Utc)
-                : null,
+            StartTime = _startDate is { } start ? UserTimeZoneDisplay.WallStartToUtc(start, _userZone) : null,
+            EndTime = _endDate is { } end ? UserTimeZoneDisplay.WallEndToUtc(end, _userZone) : null,
             UserName = request.GetFilterValue("UserName") ?? (string.IsNullOrWhiteSpace(_userName) ? null : _userName),
             HttpMethod = _httpMethod,
             Url = request.GetFilterValue("Url") ?? (string.IsNullOrWhiteSpace(_url) ? null : _url),
@@ -130,8 +148,7 @@ public partial class AuditLogs : AuditLoggingComponentBase
 
     private async Task ClearFiltersAsync()
     {
-        _startDate = DateOnly.FromDateTime(DateTime.UtcNow.AddDays(-30));
-        _endDate = DateOnly.FromDateTime(DateTime.UtcNow.AddDays(1));
+        ApplyDefaultRange();
         _userName = null;
         _httpMethod = null;
         _url = null;

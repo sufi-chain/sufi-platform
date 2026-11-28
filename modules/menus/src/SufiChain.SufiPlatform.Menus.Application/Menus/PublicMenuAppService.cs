@@ -4,6 +4,7 @@ using SufiChain.SufiPlatform.Menus.Caching;
 using SufiChain.SufiPlatform.Menus.Features;
 using SufiChain.SufiPlatform.Application.Services;
 using SufiChain.SufiPlatform.Features;
+using Volo.Abp.Authorization.Permissions;
 using Volo.Abp.Caching;
 
 namespace SufiChain.SufiPlatform.Menus.Menus;
@@ -17,6 +18,7 @@ public class PublicMenuAppService : SufiApplicationService, IPublicMenuAppServic
     private readonly MenuBusinessLocalizationService _businessLocalization;
     private readonly MenuLabelLocalization _labels;
     private readonly IDistributedCache<MenuTreeCacheItem> _treeCache;
+    private readonly IPermissionChecker? _permissionChecker;
     private readonly PublicMenuAnonymousAccess _anonymousAccess;
 
     public PublicMenuAppService(
@@ -25,13 +27,15 @@ public class PublicMenuAppService : SufiApplicationService, IPublicMenuAppServic
         MenuBusinessLocalizationService businessLocalization,
         MenuLabelLocalization labels,
         IDistributedCache<MenuTreeCacheItem> treeCache,
-        IEnumerable<IPublicMenuContextVisibility>? contextVisibility = null)
+        IEnumerable<IPublicMenuContextVisibility>? contextVisibility = null,
+        IPermissionChecker? permissionChecker = null)
     {
         _menuRepository = menuRepository;
         _menuItemRepository = menuItemRepository;
         _businessLocalization = businessLocalization;
         _labels = labels;
         _treeCache = treeCache;
+        _permissionChecker = permissionChecker;
         _anonymousAccess = new PublicMenuAnonymousAccess(contextVisibility);
     }
 
@@ -42,7 +46,8 @@ public class PublicMenuAppService : SufiApplicationService, IPublicMenuAppServic
             return [];
         }
 
-        return PublicMenuPresentation.ToTree(await LoadTreeAsync(contextType, contextId, menuName));
+        var tree = await LoadTreeAsync(contextType, contextId, menuName);
+        return PublicMenuPresentation.ToTree(tree, await GrantedPermissionsAsync(tree));
     }
 
     protected virtual async Task<List<MenuItemTreeDto>> LoadTreeAsync(string contextType, Guid? contextId, string menuName)
@@ -57,7 +62,7 @@ public class PublicMenuAppService : SufiApplicationService, IPublicMenuAppServic
             }
 
             var items = (await _menuItemRepository.GetTreeItemsAsync(menu.Id, CurrentTenant.Id))
-                .Where(x => x.IsActive && x.IsVisible && string.IsNullOrWhiteSpace(x.PermissionName))
+                .Where(IncludeInSharedPublicCache)
                 .ToList();
 
             return new MenuTreeCacheItem { Tree = BuildTree(items, null) };
@@ -89,7 +94,11 @@ public class PublicMenuAppService : SufiApplicationService, IPublicMenuAppServic
             return null;
         }
 
-        return PublicMenuPresentation.ToItem(await LoadItemBySlugAsync(contextType, contextId, menuName, slug));
+        var item = await LoadItemBySlugAsync(contextType, contextId, menuName, slug);
+        var granted = item == null
+            ? null
+            : await GrantedPermissionsAsync([new MenuItemTreeDto { PermissionName = item.PermissionName }]);
+        return PublicMenuPresentation.ToItem(item, granted);
     }
 
     protected virtual async Task<MenuItemDto?> LoadItemBySlugAsync(string contextType, Guid? contextId, string menuName, string slug)
@@ -104,7 +113,7 @@ public class PublicMenuAppService : SufiApplicationService, IPublicMenuAppServic
             }
 
             var item = await _menuItemRepository.FindBySlugAsync(menu.Id, slug, CurrentTenant.Id, includeDetails: false);
-            if (item is not { IsActive: true, IsVisible: true } || !string.IsNullOrWhiteSpace(item.PermissionName))
+            if (!IncludeInSharedPublicCache(item))
             {
                 return new MenuTreeCacheItem();
             }
@@ -119,6 +128,31 @@ public class PublicMenuAppService : SufiApplicationService, IPublicMenuAppServic
 
         var localized = await LocalizeItemAsync(cached.Item, contextType);
         return string.IsNullOrWhiteSpace(localized.DisplayName) ? null : localized;
+    }
+
+    internal static bool IncludeInSharedPublicCache(MenuItem item) =>
+        item.IsActive && item.IsVisible;
+
+    protected virtual bool IsCallerAuthenticated() =>
+        _permissionChecker != null && LazyServiceProvider != null && CurrentUser.IsAuthenticated;
+
+    protected virtual async Task<ISet<string>?> GrantedPermissionsAsync(IEnumerable<MenuItemTreeDto> tree)
+    {
+        if (!IsCallerAuthenticated() || _permissionChecker == null)
+        {
+            return null;
+        }
+
+        var granted = new HashSet<string>(StringComparer.Ordinal);
+        foreach (var name in PublicMenuPresentation.PermissionNames(tree))
+        {
+            if (await _permissionChecker.IsGrantedAsync(name))
+            {
+                granted.Add(name);
+            }
+        }
+
+        return granted;
     }
 
     protected virtual List<MenuItemTreeDto> BuildTree(List<MenuItem> items, Guid? parentId) =>

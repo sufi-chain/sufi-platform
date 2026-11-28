@@ -21,5 +21,7 @@ public interface IMCPServerAppService : IApplicationService
     
     Task DisableAsync(Guid id);
     
-    Task<bool> TestConnectionAsync(Guid id);
+    Task<McpConnectionTestResult> TestConnectionAsync(Guid id);
+
+    Task<McpConnectionTestResult> RefreshServerToolsAsync(Guid id);
 }

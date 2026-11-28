@@ -31,6 +31,7 @@ public static class AIErrorCodes
     public const string MCPToolNotFound = "AI:MCPToolNotFound";
     public const string MCPToolExecutionFailed = "AI:MCPToolExecutionFailed";
     public const string MCPServerNotFound = "AI:MCPServerNotFound";
+    public const string MCPServerKeyAlreadyExists = "AI:MCPServerKeyAlreadyExists";
     public const string MCPServerNameAlreadyExists = "AI:MCPServerNameAlreadyExists";
     public const string MCPEndpointInvalid = "AI:MCPEndpointInvalid";
     public const string MCPServerConnectionFailed = "AI:MCPServerConnectionFailed";

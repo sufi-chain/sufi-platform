@@ -9,6 +9,7 @@ public abstract class TenantCreateOrUpdateDtoBase : ExtensibleObject
 {
     [Required]
     [MaxLength(64)]
+    [Display(Name = "Field:TenantName")]
     public virtual string Name { get; set; } = null!;
 
     public virtual Guid? EditionId { get; set; }

@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
 using SufiChain.SufiPlatform.Account.Localization;
+using SufiChain.SufiPlatform.Account;
 using SufiChain.SufiPlatform.Identity.Localization;
 
 namespace SufiChain.SufiPlatform.Account.Blazor.Pages;
@@ -40,6 +41,8 @@ public partial class EmailConfirmationSent
 
     protected bool IsSubmitting { get; set; }
 
+    protected int CaptchaGeneration { get; set; }
+
     protected override void OnInitialized()
     {
         ResendEmail = Email ?? string.Empty;
@@ -73,11 +76,19 @@ public partial class EmailConfirmationSent
         }
         catch (Exception ex)
         {
+            var code = ex is Volo.Abp.ExceptionHandling.IHasErrorCode hasCode ? hasCode.Code : null;
             ErrorMessage = AccountUiErrors.LocalizedFailure(
                 Logger,
                 AccountL,
                 ex,
-                "EmailConfirmationResendFailed");
+                EmailConfirmationResend.MessageKey(code));
+            if (EmailConfirmationResend.NeedsFreshCaptcha(code))
+            {
+                CaptchaChallengeId = null;
+                CaptchaAnswer = null;
+                CaptchaToken = null;
+                CaptchaGeneration++;
+            }
         }
         finally
         {

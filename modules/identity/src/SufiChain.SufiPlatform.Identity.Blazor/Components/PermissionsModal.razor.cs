@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Components;
+using SufiChain.SufiPlatform.Identity;
 using SufiChain.SufiPlatform.Identity.Localization;
 using SufiChain.SufiPlatform.UI.Blazor;
 using SufiChain.SufiPlatform.Permissions;
@@ -520,21 +521,39 @@ public partial class PermissionsModal : IdentityComponentBase
 
     private void OnPermissionChanged(bool value, PermissionGroupDto group, PermissionGrantInfoDto permission)
     {
-        permission.IsGranted = value;
+        var nodes = ToNodes(group);
+        var node = nodes.First(item => item.Name == permission.Name);
+        PermissionTreeGrant.Apply(value, node, nodes);
+        WriteNodes(group, nodes);
         _isDirty = true;
-
-        if (value)
-        {
-            // Grant parent permissions recursively
-            GrantParentPermissions(group, permission);
-        }
-        else
-        {
-            // Revoke child permissions recursively
-            RevokeChildPermissions(group, permission);
-        }
-
         StateHasChanged();
+    }
+
+    private bool IsPermissionMixed(PermissionGroupDto group, PermissionGrantInfoDto permission)
+    {
+        var nodes = ToNodes(group);
+        var node = nodes.First(item => item.Name == permission.Name);
+        return PermissionTreeGrant.IsMixed(node, nodes);
+    }
+
+    private List<PermissionTreeGrant.Node> ToNodes(PermissionGroupDto group)
+    {
+        return group.Permissions.Select(item => new PermissionTreeGrant.Node
+        {
+            Name = item.Name,
+            ParentName = item.ParentName,
+            IsGranted = item.IsGranted,
+            Disabled = IsPermissionDisabled(item)
+        }).ToList();
+    }
+
+    private static void WriteNodes(PermissionGroupDto group, IReadOnlyList<PermissionTreeGrant.Node> nodes)
+    {
+        foreach (var node in nodes)
+        {
+            var permission = group.Permissions.First(item => item.Name == node.Name);
+            permission.IsGranted = node.IsGranted;
+        }
     }
 
     private void GrantParentPermissions(PermissionGroupDto group, PermissionGrantInfoDto permission)

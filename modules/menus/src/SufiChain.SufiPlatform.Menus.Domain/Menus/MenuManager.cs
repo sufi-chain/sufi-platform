@@ -55,7 +55,34 @@ public class MenuManager : DomainService
         await CheckMenusFeatureAsync();
 
         await EnsureNoCircularReferenceAsync(item, parentId, item.TenantId);
-        item.Move(parentId, displayOrder);
+        var previousParent = item.ParentId;
+        item.SetParent(parentId);
+        var all = await _menuItemRepository.GetTreeItemsAsync(item.MenuId, item.TenantId);
+        all.RemoveAll(sibling => sibling.Id == item.Id);
+        all.Add(item);
+
+        await WriteSiblingOrderAsync(all, item, parentId, displayOrder);
+        if (previousParent != parentId)
+        {
+            await WriteSiblingOrderAsync(all, moved: null, previousParent, targetIndex: 0);
+        }
+    }
+
+    private async Task WriteSiblingOrderAsync(List<MenuItem> all, MenuItem? moved, Guid? parentId, int targetIndex)
+    {
+        var group = all.Where(sibling => sibling.ParentId == parentId).ToList();
+        if (moved != null && group.All(sibling => sibling.Id != moved.Id))
+        {
+            group.Add(moved);
+        }
+
+        var placed = moved == null
+            ? MenuSiblingOrder.Normalize(group)
+            : MenuSiblingOrder.Place(group, moved.Id, targetIndex);
+        foreach (var sibling in placed)
+        {
+            await _menuItemRepository.UpdateAsync(sibling, autoSave: true);
+        }
     }
 
     public virtual Task ValidateItemAsync(MenuItem item)

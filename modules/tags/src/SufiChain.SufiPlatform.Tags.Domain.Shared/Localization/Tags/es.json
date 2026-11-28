@@ -79,6 +79,7 @@
     "TagUpdatedSuccessfully": "Etiqueta actualizada correctamente.",
     "Tags:MaxTagNameLengthExceeded": "El nombre de la etiqueta supera la longitud máxima permitida.",
     "Tags:MaxTagsPerEntityExceeded": "Se ha alcanzado el número máximo de etiquetas por entidad.",
-    "Tags:TagAlreadyExists": "Ya existe una etiqueta con este nombre."
+    "Tags:TagAlreadyExists": "Ya existe una etiqueta con este nombre.",
+    "Cancel": "Cancelar"
   }
 }

@@ -36,6 +36,31 @@ public class LocalizationTextValueFilterTests
         LocalizationTextValueFilter.Matches(row, "پرامپت").ShouldBeFalse();
     }
 
+    [Fact]
+    public void Zwnj_and_plain_forms_match_either_way_and_empty_does_not()
+    {
+        LocalizationTextValueFilter.Contains("گفت‌وگو", "گفتگو").ShouldBeTrue();
+        LocalizationTextValueFilter.Contains("گفتگو", "گفت‌وگو").ShouldBeTrue();
+        LocalizationTextValueFilter.Contains("Hello", "hello").ShouldBeTrue();
+        LocalizationTextValueFilter.Contains(null, "گفتگو").ShouldBeFalse();
+        LocalizationTextValueFilter.Contains("گفت‌وگو", "").ShouldBeFalse();
+    }
+
+    [Fact]
+    public void Search_matches_a_Persian_value_and_still_matches_the_key()
+    {
+        var row = new LocalizationTextWithBaseValueDto
+        {
+            Key = "Ai:Conversation",
+            Value = "گفت‌وگو",
+            BaseValue = "Conversation"
+        };
+
+        LocalizationTextValueFilter.MatchesSearch(row, "گفتگو").ShouldBeTrue();
+        LocalizationTextValueFilter.MatchesSearch(row, "conversation").ShouldBeTrue();
+        LocalizationTextValueFilter.MatchesSearch(row, "missing").ShouldBeFalse();
+    }
+
     private static LocalizationTextWithBaseValueDto Row(string key, string value) =>
         new() { Key = key, Value = value };
 }

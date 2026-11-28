@@ -115,6 +115,22 @@ public partial class UserEditor : IdentityComponentBase
         }
     }
 
+    private async Task SaveFromToolbarAsync()
+    {
+        if (!_ready || IsOperationLoading(LoadingKeys.Save))
+        {
+            return;
+        }
+
+        var context = new Microsoft.AspNetCore.Components.Forms.EditContext(FormModel);
+        if (!context.Validate())
+        {
+            return;
+        }
+
+        await SaveAsync();
+    }
+
     private void Cancel()
     {
         NavigationManager.NavigateTo(UsersRoute);

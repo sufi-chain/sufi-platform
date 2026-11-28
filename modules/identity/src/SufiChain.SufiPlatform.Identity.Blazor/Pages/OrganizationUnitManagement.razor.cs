@@ -53,6 +53,7 @@ public partial class OrganizationUnitManagement : IdentityComponentBase
     // Modals
     private bool _showCreateModal;
     private Guid? _createParentId;
+    private string? _createParentName;
     private bool _showEditModal;
     private bool _showMemberPickerModal;
     private bool _showRolePickerModal;
@@ -152,12 +153,14 @@ public partial class OrganizationUnitManagement : IdentityComponentBase
     private void ShowCreateRootModal()
     {
         _createParentId = null;
+        _createParentName = null;
         _showCreateModal = true;
     }
 
     private void ShowCreateChildModal()
     {
         _createParentId = _selectedUnit?.Id;
+        _createParentName = _selectedUnit?.DisplayName;
         _showCreateModal = true;
     }
 

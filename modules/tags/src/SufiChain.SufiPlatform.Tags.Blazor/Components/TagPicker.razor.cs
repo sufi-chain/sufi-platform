@@ -1,4 +1,6 @@
 using Microsoft.AspNetCore.Components;
+using Microsoft.Extensions.Logging;
+using SufiChain.SufiPlatform.Tags.Settings;
 using SufiChain.SufiPlatform.Tags.Tags;
 
 namespace SufiChain.SufiPlatform.Tags.Blazor.Components;
@@ -10,6 +12,9 @@ public partial class TagPicker : TagsComponentBase
 {
     private ITagAppService TagAppService => LazyGetRequiredService(ref _tagAppService);
     private ITagAppService? _tagAppService;
+    private ITagsPolicyProvider PolicyProvider => LazyGetRequiredService(ref _policyProvider);
+    private ITagsPolicyProvider? _policyProvider;
+    private int? _policyMax;
 
     [Parameter]
     public string Scope { get; set; } = string.Empty;
@@ -52,6 +57,29 @@ public partial class TagPicker : TagsComponentBase
 
     [Parameter]
     public string? Style { get; set; }
+
+    protected int? EffectiveMaxTags => TagPickerLimit.Resolve(MaxTags, _policyMax);
+
+    protected bool AtTagLimit => TagPickerLimit.BlocksAnother(SelectedItems.Count, EffectiveMaxTags);
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+        if (MaxTags.HasValue)
+        {
+            return;
+        }
+
+        try
+        {
+            var policy = await PolicyProvider.GetAsync();
+            _policyMax = policy.MaxTagsPerEntity;
+        }
+        catch (Exception exception)
+        {
+            Logger.LogWarning(exception, "Tag picker could not load MaxTagsPerEntity. The server limit still applies.");
+        }
+    }
 
     protected virtual Task<IEnumerable<TagDto>> ResolveSearchAsync(string filter)
     {

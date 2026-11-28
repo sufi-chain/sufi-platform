@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Components.Web;
 using SufiChain.SufiBlazor.Components;
 using SufiChain.SufiBlazor.Components.Overlays;
 using SufiChain.SufiPlatform.BackgroundJobs.Dtos;
+using SufiChain.SufiPlatform.BackgroundJobs.Permissions;
 using SufiChain.SufiPlatform.BackgroundJobs.Hooshvare;
 using SufiChain.SufiPlatform.UI.Layout;
 using SufiChain.SufiBlazor.Components.Data;
@@ -29,6 +30,8 @@ public partial class BackgroundJobsManagement : BackgroundJobsComponentBase
     private int _pageIndex = 0;
     private int _pageSize = 20;
     private long _totalCount;
+    private bool _canRetry;
+    private bool _canDelete;
 
     // Filters
     private string? _jobName;
@@ -65,9 +68,12 @@ public partial class BackgroundJobsManagement : BackgroundJobsComponentBase
     private SbConfirmDialog? _abandonConfirm;
     private BackgroundJobListItemDto? _jobToAbandon;
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
+        await base.OnInitializedAsync();
         SetupPageLayout();
+        _canRetry = await IsGrantedAsync(BackgroundJobsPermissions.BackgroundJobs.Retry);
+        _canDelete = await IsGrantedAsync(BackgroundJobsPermissions.BackgroundJobs.Delete);
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)

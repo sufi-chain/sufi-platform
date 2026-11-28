@@ -26,7 +26,8 @@
                                          AutoComplete="email"
                                          name="ResendEmail" />
                         </SbFormField>
-                        <SufiCaptcha @bind-CaptchaChallengeId="CaptchaChallengeId"
+                        <SufiCaptcha @key="CaptchaGeneration"
+                                     @bind-CaptchaChallengeId="CaptchaChallengeId"
                                      @bind-CaptchaAnswer="CaptchaAnswer"
                                      @bind-CaptchaToken="CaptchaToken"
                                      Purpose="CaptchaPurpose.EmailConfirmationResend" />

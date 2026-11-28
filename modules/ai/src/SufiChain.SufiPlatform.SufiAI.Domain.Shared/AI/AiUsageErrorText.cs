@@ -9,6 +9,12 @@ namespace SufiChain.SufiPlatform.SufiAI;
 /// </summary>
 public static class AiUsageErrorText
 {
+    public static string CapabilityKey(AICapabilityType type) =>
+        "Enum:AICapabilityType." + type;
+
+    public static bool IsKnownCode(string? error) =>
+        string.Equals(error, "SystemOneRequestFailed", StringComparison.Ordinal);
+
     public static bool IsUnfilledProviderStatus(string? text)
     {
         if (string.IsNullOrWhiteSpace(text))

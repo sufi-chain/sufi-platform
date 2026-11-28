@@ -1,6 +1,6 @@
 @namespace SufiChain.SufiPlatform.Identity.Blazor.Pages
 @page "/panel/admin/identity/security-logs"
-@attribute [Authorize(Policy = SufiChain.SufiPlatform.Identity.IdentityPermissions.Users.Default)]
+@attribute [Authorize(Policy = SufiChain.SufiPlatform.Identity.IdentityPermissions.SecurityLogs.Default)]
 @inherits IdentityComponentBase
 
 <SufiPageToolbar>
@@ -89,7 +89,7 @@
                         SelectionMode="SbSelectionMode.MultipleRows">
 				<SbColumn TItem="SecurityLogListItemDto" Title="@L["Time"]" MinWidth="160px">
 					<CellTemplate Context="cellContext">
-						<SufiUserTime Value="@cellContext.Item.CreationTime" />
+						<SufiUserTime Value="@cellContext.Item.CreationTime" ShowZone="true" />
 					</CellTemplate>
 				</SbColumn>
 				<SbColumn TItem="SecurityLogListItemDto" Field="Action" Title="@L["Action"]" MinWidth="180px" Filterable="true" Sortable="true">

@@ -8,9 +8,9 @@ public static class PublicMenuPresentation
     public static bool IsAnonymous(MenuItemDto? item) =>
         item != null && string.IsNullOrWhiteSpace(item.PermissionName);
 
-    public static PublicMenuItemDto? ToItem(MenuItemDto? item)
+    public static PublicMenuItemDto? ToItem(MenuItemDto? item, ISet<string>? granted = null)
     {
-        if (!IsAnonymous(item) || item == null)
+        if (item == null || !IsVisible(item, granted))
         {
             return null;
         }
@@ -20,23 +20,58 @@ public static class PublicMenuPresentation
         return copy;
     }
 
-    public static List<PublicMenuItemTreeDto> ToTree(IEnumerable<MenuItemTreeDto> items)
+    public static List<PublicMenuItemTreeDto> ToTree(IEnumerable<MenuItemTreeDto> items, ISet<string>? granted = null)
     {
         var result = new List<PublicMenuItemTreeDto>();
         foreach (var item in items)
         {
-            if (!IsAnonymous(item))
+            if (!IsVisible(item, granted))
             {
                 continue;
             }
 
             var copy = new PublicMenuItemTreeDto();
             Copy(item, copy);
-            copy.Children = ToTree(item.Children);
+            copy.Children = ToTree(item.Children, granted);
             result.Add(copy);
         }
 
         return result;
+    }
+
+    public static bool IsVisible(MenuItemDto? item, ISet<string>? granted)
+    {
+        if (item == null)
+        {
+            return false;
+        }
+
+        if (string.IsNullOrWhiteSpace(item.PermissionName))
+        {
+            return true;
+        }
+
+        return granted != null && granted.Contains(item.PermissionName);
+    }
+
+    public static HashSet<string> PermissionNames(IEnumerable<MenuItemTreeDto> items)
+    {
+        var names = new HashSet<string>(StringComparer.Ordinal);
+        Collect(items, names);
+        return names;
+    }
+
+    private static void Collect(IEnumerable<MenuItemTreeDto> items, HashSet<string> names)
+    {
+        foreach (var item in items)
+        {
+            if (!string.IsNullOrWhiteSpace(item.PermissionName))
+            {
+                names.Add(item.PermissionName);
+            }
+
+            Collect(item.Children, names);
+        }
     }
 
     private static void Copy(MenuItemDto source, PublicMenuItemDto target)

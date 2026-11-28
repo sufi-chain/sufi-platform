@@ -276,11 +276,11 @@ else
 							<SbColumn TItem="AIUsageLogDto" Field="CreationTime" Title="@L["Time"]" MinWidth="160px" Filterable="true" Sortable="true">
 								<CellTemplate Context="cellContext">
 									<SbText Variant="SbTextVariant.BodySmall">
-										<SufiUserTime Value="@cellContext.Item.CreationTime" />
+										<SufiUserTime Value="@cellContext.Item.CreationTime" ShowZone="true" />
 									</SbText>
 								</CellTemplate>
 							</SbColumn>
-							<SbColumn TItem="AIUsageLogDto" Field="CapabilityType" Title="@L["Capability"]" MinWidth="150px" Filterable="true" Sortable="true">
+							<SbColumn TItem="AIUsageLogDto" Field="CapabilityType" Title="@L["Capability"]" MinWidth="150px" Filterable="true" Sortable="true" FilterItems="@CapabilityFilters">
 								<CellTemplate Context="cellContext">
 									<SbChip Size="SbSize.Sm">@FormatCapability(cellContext.Item.CapabilityType)</SbChip>
 								</CellTemplate>
@@ -350,7 +350,7 @@ else
 									<SbText Variant="SbTextVariant.BodySmall">@cellContext.Item.LatencyMs ms</SbText>
 								</CellTemplate>
 							</SbColumn>
-							<SbColumn TItem="AIUsageLogDto" Field="IsSuccess" Title="@L["Status"]" MinWidth="100px" Filterable="true" Sortable="true">
+							<SbColumn TItem="AIUsageLogDto" Field="IsSuccess" Title="@L["Status"]" MinWidth="100px" Filterable="true" Sortable="true" FilterItems="@StatusFilters">
 								<CellTemplate Context="cellContext">
 									<SbChip Color="@(cellContext.Item.IsSuccess ? SbColor.Success : SbColor.Danger)" Size="SbSize.Sm">
 										@(cellContext.Item.IsSuccess ? L["Success"] : L["Failed"])
@@ -361,7 +361,7 @@ else
 								<CellTemplate Context="cellContext">
 									@if (!string.IsNullOrEmpty(cellContext.Item.ErrorMessage))
 									{
-										<SbText Variant="SbTextVariant.BodySmall" Color="SbColor.Danger">
+										<SbText Variant="SbTextVariant.BodySmall" Color="SbColor.Danger" title="@cellContext.Item.ErrorMessage">
 											@FormatUsageError(cellContext.Item.ErrorMessage)
 										</SbText>
 									}

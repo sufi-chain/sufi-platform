@@ -3,6 +3,7 @@ using SufiChain.SufiPlatform.Account;
 using SufiChain.SufiPlatform.Settings;
 using SufiChain.SufiPlatform.Account.Localization;
 using SufiChain.SufiPlatform.Identity.Localization;
+using SufiChain.SufiPlatform.Identity.Settings;
 
 namespace SufiChain.SufiPlatform.Settings.Blazor.Settings;
 
@@ -114,6 +115,22 @@ public partial class IdentitySettingsGroup : SettingsComponentBase, IEditableSet
         return _settings.AvailableChannels.Contains(channel);
     }
 
+    protected bool ShowUnconfirmedLockoutWarning =>
+        IdentitySettingsWarnings.RequireConfirmedEmailLocksOutUnconfirmed(
+            _settings.RequireConfirmedEmail,
+            _settings.UnconfirmedUserCount);
+
+    protected bool ShowCurrentAdminLockoutWarning =>
+        IdentitySettingsWarnings.RequireConfirmedEmailLocksOutCurrentAdmin(
+            _settings.RequireConfirmedEmail,
+            _settings.CurrentUserEmailUnconfirmed);
+
+    protected bool ShowOtpSmsWarning => IdentitySettingsWarnings.OtpLoginDefaultsToUnavailableSms(
+        _settings.OtpIsEnabled,
+        _settings.OtpAllowLogin,
+        _settings.OtpDefaultChannel,
+        IsChannelAvailable(VerificationDeliveryChannel.Sms));
+
     protected virtual string GetChannelLabel(VerificationDeliveryChannel channel) => channel switch
     {
         VerificationDeliveryChannel.Sms => AccountL["ChannelSms"],
@@ -134,11 +151,10 @@ public partial class IdentitySettingsGroup : SettingsComponentBase, IEditableSet
 
     public async Task SaveAsync()
     {
-        await ExecuteWithLoadingAsync(async () =>
+        if (await TrySaveAsync())
         {
-            await PersistAsync();
             await Notify.SuccessAsync(L["SettingsSavedSuccessfully"]);
-        }, LoadingKeys.Save);
+        }
     }
 
     public Task<bool> TrySaveAsync() => TrySaveQuietlyAsync(PersistAsync, LoadingKeys.Save);

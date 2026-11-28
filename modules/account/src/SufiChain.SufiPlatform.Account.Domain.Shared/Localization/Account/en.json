@@ -145,6 +145,7 @@
     "OtpResendCooldownWait": "Please wait {0} before requesting another code.",
     "OtpVerifyFailed": "The one-time code could not be verified. Please try again.",
     "EmailConfirmationResendFailed": "The confirmation email could not be sent. Please try again.",
+    "EmailConfirmationCaptchaFailed": "The security check failed or expired. Please complete the new security check.",
     "CaptchaLoadFailed": "The captcha challenge could not be loaded. Please refresh and try again.",
     "ProfileSaveFailed": "The profile could not be saved. Please try again.",
     "PhoneNumber:Invalid": "The {0} field is not a valid phone number.",

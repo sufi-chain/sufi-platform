@@ -86,6 +86,39 @@ public class HooshvareContextUsageBuilderTests
         usage.Segments.Count.ShouldBe(1);
     }
 
+    [Fact]
+    public async Task Builder_At70_SetsWarning()
+    {
+        var usage = await UsageAt(7000);
+        usage.WarningState.ShouldBe("Warning");
+        usage.SummarizationRecommended.ShouldBeFalse();
+    }
+
+    [Fact]
+    public async Task Builder_At85_SetsSummarizeAndRecommended()
+    {
+        var usage = await UsageAt(8500);
+        usage.WarningState.ShouldBe("Summarize");
+        usage.SummarizationRecommended.ShouldBeTrue();
+        usage.SummarizationRequired.ShouldBeFalse();
+    }
+
+    [Fact]
+    public async Task Builder_At95_SetsHardStopAndRequired()
+    {
+        var usage = await UsageAt(9500);
+        usage.WarningState.ShouldBe("HardStop");
+        usage.SummarizationRequired.ShouldBeTrue();
+    }
+
+    private static async Task<HooshvareContextUsageDto> UsageAt(int tokens)
+    {
+        var session = CreateSession();
+        var turn = CreateTurn(session, DateTime.UtcNow);
+        return await BuildUsageAsync(session, [turn],
+            [CreateSegment(session.Id, turn.Id, HooshvareContextSegmentKeys.Conversation, tokens, 30)]);
+    }
+
     private static Task<HooshvareContextUsageDto> BuildUsageAsync(
         HooshvareContextSession session,
         List<HooshvareContextTurn> turns,

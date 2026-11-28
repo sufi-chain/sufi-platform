@@ -28,7 +28,8 @@ public class LocalizedAttributeValidationResultProvider : DefaultAttributeValida
             return ValidationResult.Success;
         }
 
-        var message = ValidationMessageTemplates.Format(_localizer, validationAttribute, validationContext.DisplayName);
+        var displayName = ValidationMessageTemplates.LocalizeDisplayName(_localizer, validationContext.DisplayName);
+        var message = ValidationMessageTemplates.Format(_localizer, validationAttribute, displayName);
         return new ValidationResult(message, validationContext.MemberName == null ? null : new[] { validationContext.MemberName });
     }
 }
@@ -37,8 +38,27 @@ public static class ValidationMessageTemplates
 {
     public const string Required = "The {0} field is required.";
 
+    public static string LocalizeDisplayName(IStringLocalizer localizer, string? displayName)
+    {
+        if (string.IsNullOrWhiteSpace(displayName))
+        {
+            return displayName ?? string.Empty;
+        }
+
+        var localized = localizer[displayName];
+        return localized.ResourceNotFound ? displayName : localized.Value;
+    }
+
     public static string Format(IStringLocalizer localizer, ValidationAttribute attribute, string displayName)
     {
+        if (attribute is CompareAttribute compare && IsDefaultCompareMessage(attribute.ErrorMessage))
+        {
+            var other = string.IsNullOrWhiteSpace(compare.OtherPropertyDisplayName)
+                ? compare.OtherProperty
+                : compare.OtherPropertyDisplayName;
+            return Format(localizer, "'{0}' and '{1}' do not match.", displayName, LocalizeDisplayName(localizer, other));
+        }
+
         if (!string.IsNullOrEmpty(attribute.ErrorMessage))
         {
             return attribute.FormatErrorMessage(displayName);
@@ -90,4 +110,7 @@ public static class ValidationMessageTemplates
         var template = localized.ResourceNotFound ? key : localized.Value;
         return string.Format(CultureInfo.CurrentCulture, template, args);
     }
+
+    private static bool IsDefaultCompareMessage(string? errorMessage) =>
+        string.IsNullOrEmpty(errorMessage) || errorMessage == "'{0}' and '{1}' do not match.";
 }

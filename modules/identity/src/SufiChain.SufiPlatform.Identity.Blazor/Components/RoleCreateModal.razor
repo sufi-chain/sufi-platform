@@ -3,7 +3,7 @@
 
 <SbDialog Open="@Open" OpenChanged="@SetOpenAsync" Size="SbDialogSize.Md" Title="@L["CreateRole"]">
     <ChildContent>
-        <SbForm Model="_model" OnValidSubmit="OnValidSubmitAsync">
+        <SbForm id="role-create-form" Model="_model" OnValidSubmit="OnValidSubmitAsync">
             <SbStack Gap="3">
                 <SbTextField @bind-Value="_model.Name" 
                              Label="@L["RoleName"]" 
@@ -21,7 +21,7 @@
     <Footer>
         <SbStack Wrap="true" Direction="SbStackDirection.Row" Gap="2" Justify="SbJustify.End">
             <SbButton Variant="SbButtonVariant.Outline" OnClick="Hide">@L["Cancel"]</SbButton>
-            <SbButton Color="SbColor.Primary" Loading="IsOperationLoading(LoadingKeys.Create)" OnClick="OnValidSubmitAsync">@L["Create"]</SbButton>
+            <SbButton Type="submit" form="role-create-form" Color="SbColor.Primary" Loading="IsOperationLoading(LoadingKeys.Create)">@L["Create"]</SbButton>
         </SbStack>
     </Footer>
 </SbDialog>

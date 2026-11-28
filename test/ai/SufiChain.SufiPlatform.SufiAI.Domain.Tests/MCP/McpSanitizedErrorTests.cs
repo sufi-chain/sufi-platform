@@ -31,4 +31,26 @@ public class McpSanitizedErrorTests
         sanitized.ShouldContain("[redacted]");
         sanitized.ShouldContain("Auth failed");
     }
+
+    [Fact]
+    public void Connection_error_drops_html_secrets_and_keyed_urls()
+    {
+        var summary = McpSanitizedError.SummarizeConnection(
+            "HTTP 405 Method Not Allowed\nAuthorization: Bearer sk-test-000\nhttps://user:secret@mcp.example/path?token=test-token-unknown\n<!doctype html><html><body>nope</body></html>");
+
+        summary.ShouldStartWith("HTTP 405 Method Not Allowed");
+        summary.ShouldContain("did not answer as an MCP server");
+        summary.Length.ShouldBeLessThanOrEqualTo(McpSanitizedError.ConnectionSummaryMaxLength);
+        summary.ShouldNotContain("doctype");
+        summary.ShouldNotContain("sk-test");
+        summary.ShouldNotContain("test-token-unknown");
+        summary.ShouldNotContain("secret@");
+        summary.ShouldNotContain("/path");
+
+        var keyed = McpSanitizedError.SummarizeConnection(
+            "Could not connect to https://user:secret@mcp.example/path?token=test-token-unknown");
+        keyed.ShouldContain("https://mcp.example");
+        keyed.ShouldNotContain("test-token-unknown");
+        keyed.ShouldNotContain("secret@");
+    }
 }

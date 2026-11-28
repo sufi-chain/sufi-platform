@@ -62,7 +62,16 @@ public class MenuItem : FullAuditedAggregateRoot<Guid>, IMultiTenant
         SetParent(parentId);
         Reorder(displayOrder);
     }
-    public virtual void Reorder(int displayOrder) => DisplayOrder = displayOrder;
+    public virtual void Reorder(int displayOrder)
+    {
+        if (displayOrder < 0)
+        {
+            throw new BusinessException(MenusErrorCodes.MenuItemInvalidTarget)
+                .WithData("DisplayOrder", displayOrder);
+        }
+
+        DisplayOrder = displayOrder;
+    }
     public virtual void SetKind(MenuItemKind kind) => Kind = kind;
     public virtual void SetDisplayType(MenuItemDisplayType displayType) => DisplayType = displayType;
     public virtual void SetLink(string? url, MenuLinkTarget linkTarget)

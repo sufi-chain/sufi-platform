@@ -11,7 +11,7 @@ namespace SufiChain.SufiPlatform.SufiAI.MCP.Registry;
 /// </summary>
 internal static class McpConnectionError
 {
-    public const int MaxLength = 1024;
+    public const int MaxLength = McpSanitizedError.ConnectionSummaryMaxLength;
 
     public static string Describe(Exception exception)
     {
@@ -72,7 +72,7 @@ internal static class McpConnectionError
 
     private static string Limit(string message)
     {
-        var sanitized = McpSanitizedError.Sanitize(message);
+        var sanitized = McpSanitizedError.SummarizeConnection(message);
         return sanitized.Length <= MaxLength ? sanitized : sanitized[..MaxLength];
     }
 }

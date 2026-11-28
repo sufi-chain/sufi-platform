@@ -47,6 +47,8 @@ public static class EmbeddingModelDefaults
         ("gemini-embedding-001", 3072),
         ("pplx-embed-v1-4b", 2560),
         ("pplx-embed-v1-0.6b", 1024),
+        ("nemotron-3.5-embed-8b", 4096),
+        ("nemotron-3.5-embed-1b", 2048),
         ("nemotron-3-embed-1b", 2048),
         ("llama-nemotron-embed-vl-1b-v2", 2048),
         ("codestral-embed-2505", 1536),

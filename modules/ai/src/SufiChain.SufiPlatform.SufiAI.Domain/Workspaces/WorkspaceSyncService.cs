@@ -81,7 +81,11 @@ public class WorkspaceSyncService : ITransientDependency
         var embedderConfiguration = await _embedderResolver.ResolveAsync(workspace, cancellationToken);
         var canonicalId = InheritedWorkspaceLiveView.CanonicalCacheId(workspace);
         var stamp = await GetEmbedderStampAsync(canonicalId, cancellationToken);
-        var cacheKey = BuildEmbeddingCacheKey(canonicalId, embedderConfiguration.ConfigurationId);
+        var cacheKey = EmbedderGeneratorCacheKey.Build(
+            canonicalId,
+            embedderConfiguration.ConfigurationId,
+            embedderConfiguration.Model,
+            embedderConfiguration.Dimensions);
 
         if (TryGetValidGenerator(cacheKey, stamp, out var cached))
         {
@@ -176,11 +180,6 @@ public class WorkspaceSyncService : ITransientDependency
                 canonicalId,
                 new WorkspaceEmbedderCacheStamp { Stamp = stamp });
         }
-    }
-
-    private static string BuildEmbeddingCacheKey(string canonicalId, Guid configurationId)
-    {
-        return canonicalId + ":" + configurationId.ToString("N");
     }
 
     private static bool TryGetValidGenerator(

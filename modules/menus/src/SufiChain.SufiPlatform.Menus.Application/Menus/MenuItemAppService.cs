@@ -110,6 +110,10 @@ public class MenuItemAppService : SufiApplicationService, IMenuItemAppService
 
         await _menuManager.ValidateItemAsync(item);
         await _menuItemRepository.InsertAsync(item, autoSave: true);
+        await _menuManager.MoveItemAsync(
+            item,
+            item.ParentId,
+            input.DisplayOrder > 0 ? input.DisplayOrder : int.MaxValue);
         var menu = await _menuRepository.FindAsync(item.MenuId);
         return await ToLabeledDtoAsync(item, menu?.ContextType);
     }
@@ -158,8 +162,7 @@ public class MenuItemAppService : SufiApplicationService, IMenuItemAppService
     public virtual async Task<MenuItemDto> ReorderAsync(Guid id, int displayOrder)
     {
         var item = await _menuItemRepository.GetAsync(id);
-        item.Reorder(displayOrder);
-        await _menuItemRepository.UpdateAsync(item, autoSave: true);
+        await _menuManager.MoveItemAsync(item, item.ParentId, displayOrder);
         return item.ToDto();
     }
 
@@ -184,7 +187,7 @@ public class MenuItemAppService : SufiApplicationService, IMenuItemAppService
 
     protected virtual void ApplyInput(MenuItem item, CreateMenuItemDto input)
     {
-        item.SetDescription(input.Description); item.Reorder(input.DisplayOrder); item.SetKind(input.Kind); item.SetDisplayType(input.DisplayType); item.SetLink(input.Url, input.LinkTarget); item.SetTarget(input.TargetType, input.TargetId); item.SetIcon(input.Icon); item.SetCssClass(input.CssClass); item.SetPermissionName(input.PermissionName); item.SetComponentName(input.ComponentName); if (input.IsActive) item.Activate(); else item.Deactivate(); if (input.IsVisible) item.Show(); else item.Hide();
+        item.SetDescription(input.Description); if (input.DisplayOrder > 0) item.Reorder(input.DisplayOrder); item.SetKind(input.Kind); item.SetDisplayType(input.DisplayType); item.SetLink(input.Url, input.LinkTarget); item.SetTarget(input.TargetType, input.TargetId); item.SetIcon(input.Icon); item.SetCssClass(input.CssClass); item.SetPermissionName(input.PermissionName); item.SetComponentName(input.ComponentName); if (input.IsActive) item.Activate(); else item.Deactivate(); if (input.IsVisible) item.Show(); else item.Hide();
         ApplyCultureUrls(item, input.CultureUrls);
     }
 

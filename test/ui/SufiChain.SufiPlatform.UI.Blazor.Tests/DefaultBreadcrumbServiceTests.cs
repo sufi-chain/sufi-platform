@@ -83,6 +83,82 @@ public class DefaultBreadcrumbServiceTests
         await menuManager.Received(2).GetMainMenuAsync();
     }
 
+    [Fact]
+    public async Task DefaultBreadcrumbService_GroupAndChildSameName_CollapsedToOne()
+    {
+        var menu = new ApplicationMenu("Main");
+        var group = new ApplicationMenuItem("Hooshvares", "هوشواره‌ها", url: "/panel/admin/ai");
+        group.AddItem(new ApplicationMenuItem("HooshvareList", "هوشواره‌ها", url: "/panel/admin/ai/hooshvare"));
+        menu.AddItem(group);
+
+        var service = new DefaultBreadcrumbService(Menu(menu));
+        var crumbs = await service.GetBreadcrumbsForUrlAsync("/panel/admin/ai/hooshvare");
+        crumbs.Count.ShouldBe(1);
+        crumbs[0].Text.ShouldBe("هوشواره‌ها");
+    }
+
+    [Fact]
+    public async Task DefaultBreadcrumbService_DetailUrl_ListCrumbIsLinked()
+    {
+        var menu = new ApplicationMenu("Main");
+        menu.AddItem(new ApplicationMenuItem("Tickets", "تیکت‌ها", url: "/panel/admin/helpdesk/tickets"));
+        var service = new DefaultBreadcrumbService(Menu(menu));
+        var crumbs = await service.GetBreadcrumbsForUrlAsync("/panel/admin/helpdesk/tickets/hd-1");
+        crumbs.ShouldHaveSingleItem().Url.ShouldBe("/panel/admin/helpdesk/tickets");
+    }
+
+    [Fact]
+    public void Layout_NavigateToUnmatchedUrl_ClearsOldTrail()
+    {
+        var layout = File.ReadAllText(Find("independent-projects/sufi-theme/src/SufiChain.SufiTheme.Blazor/Layouts/SufiLayoutBase.cs"));
+        var start = layout.IndexOf("private void OnLocationChanged", StringComparison.Ordinal);
+        var block = layout[start..(start + 500)];
+        block.ShouldContain("BreadcrumbItems.Clear()");
+    }
+
+    [Fact]
+    public void TicketDetail_SetsEntityCrumbAndTitle_NumberAndSubject()
+    {
+        var source = File.ReadAllText(Find("pro-modules/helpdesk/src/SufiChain.SufiPlatform.HelpDesk.Ticketing.Blazor/Pages/Tickets/TicketDetail.razor.cs"));
+        source.ShouldContain("EntityBreadcrumbTracker");
+        source.ShouldContain("—");
+    }
+
+    [Fact]
+    public void HooshvareEditor_SetsEntityCrumbAndTitle()
+    {
+        var source = File.ReadAllText(Find("pro-modules/ai-hooshvare/src/SufiChain.SufiPlatform.SufiAI.Hooshvare.Blazor/Pages/AI/Hooshvare/HooshvareEditorPage.razor.cs"));
+        source.ShouldContain("EntityBreadcrumbTracker");
+        source.ShouldContain("_editDisplayName.Trim()");
+    }
+
+    [Fact]
+    public void ProjectSettings_SetsEntityCrumb()
+    {
+        var source = File.ReadAllText(Find("pro-modules/helpdesk/src/SufiChain.SufiPlatform.HelpDesk.Blazor/Pages/Projects/ProjectSettings.razor.cs"));
+        source.ShouldContain("EntityBreadcrumbTracker");
+        source.ShouldContain("_project?.Name");
+    }
+
+    private static IMenuManager Menu(ApplicationMenu menu)
+    {
+        var manager = Substitute.For<IMenuManager>();
+        manager.GetMainMenuAsync().Returns(menu);
+        return manager;
+    }
+
+    private static string Find(string relative)
+    {
+        var dir = new DirectoryInfo(AppContext.BaseDirectory);
+        while (dir != null && !File.Exists(Path.Combine(dir.FullName, relative)))
+        {
+            dir = dir.Parent;
+        }
+
+        dir.ShouldNotBeNull();
+        return Path.Combine(dir!.FullName, relative);
+    }
+
     private static ApplicationMenu BuildMenu(string editionsDisplayName)
     {
         var menu = new ApplicationMenu("Main");

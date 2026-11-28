@@ -56,13 +56,14 @@ public class LocalizationTextAppService : SufiApplicationService, ILocalizationT
             return new PagedResultDto<LocalizationTextDto>(0, new List<LocalizationTextDto>());
         }
 
+        var search = !string.IsNullOrWhiteSpace(input.Search);
         var items = await _textRepository.GetPagedListAsync(
             input.ResourceName,
             input.CultureName,
             input.KeyFilter,
             input.ValueFilter,
-            hasResourceName ? skipCount : 0,
-            hasResourceName ? input.MaxResultCount : int.MaxValue,
+            search || !hasResourceName ? 0 : skipCount,
+            search || !hasResourceName ? int.MaxValue : input.MaxResultCount,
             input.Sorting);
 
         if (!hasResourceName)
@@ -72,7 +73,16 @@ public class LocalizationTextAppService : SufiApplicationService, ILocalizationT
                 .ToList();
         }
 
-        var totalCount = !hasResourceName
+        if (search)
+        {
+            items = items
+                .Where(item =>
+                    LocalizationTextValueFilter.Contains(item.Key, input.Search!)
+                    || LocalizationTextValueFilter.Contains(item.Value, input.Search!))
+                .ToList();
+        }
+
+        var totalCount = search || !hasResourceName
             ? items.Count
             : await _textRepository.GetCountAsync(
                 input.ResourceName,
@@ -80,7 +90,7 @@ public class LocalizationTextAppService : SufiApplicationService, ILocalizationT
                 input.KeyFilter,
                 input.ValueFilter);
 
-        if (!hasResourceName)
+        if (search || !hasResourceName)
         {
             items = items
                 .Skip(skipCount)
@@ -342,9 +352,14 @@ public class LocalizationTextAppService : SufiApplicationService, ILocalizationT
         // Apply filters
         var filtered = allMerged.AsEnumerable();
 
+        if (!string.IsNullOrWhiteSpace(input.Search))
+        {
+            filtered = filtered.Where(t => LocalizationTextValueFilter.MatchesSearch(t, input.Search));
+        }
+
         if (!string.IsNullOrWhiteSpace(input.KeyFilter))
         {
-            filtered = filtered.Where(t => t.Key.Contains(input.KeyFilter, StringComparison.OrdinalIgnoreCase));
+            filtered = filtered.Where(t => LocalizationTextValueFilter.Contains(t.Key, input.KeyFilter));
         }
 
         if (!string.IsNullOrWhiteSpace(input.ValueFilter))

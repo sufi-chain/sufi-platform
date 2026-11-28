@@ -24,6 +24,7 @@
     "CreatedByModule": "Created By Module",
     "FullShortUrl": "Full Short URL",
     "CreatedAt": "Created At",
+    "Expired": "Expired",
     "UpdatedAt": "Updated At",
     "Filter": "Filter",
     "SearchByCodeOrUrl": "Search by code or URL...",
