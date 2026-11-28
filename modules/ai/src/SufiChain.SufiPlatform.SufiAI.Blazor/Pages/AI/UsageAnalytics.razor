@@ -350,7 +350,7 @@ else
 									<SbText Variant="SbTextVariant.BodySmall">@cellContext.Item.LatencyMs ms</SbText>
 								</CellTemplate>
 							</SbColumn>
-							<SbColumn TItem="AIUsageLogDto" Field="IsSuccess" Title="@L["Status"]" MinWidth="100px" Filterable="true" Sortable="true">
+							<SbColumn TItem="AIUsageLogDto" Field="IsSuccess" Title="@L["Status"]" MinWidth="100px" Filterable="true" Sortable="true" FilterItems="@StatusFilters">
 								<CellTemplate Context="cellContext">
 									<SbChip Color="@(cellContext.Item.IsSuccess ? SbColor.Success : SbColor.Danger)" Size="SbSize.Sm">
 										@(cellContext.Item.IsSuccess ? L["Success"] : L["Failed"])

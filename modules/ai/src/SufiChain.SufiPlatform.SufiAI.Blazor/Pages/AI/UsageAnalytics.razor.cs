@@ -296,6 +296,9 @@ public partial class UsageAnalytics : AIComponentBase
         return string.IsNullOrWhiteSpace(log.RouteDisplayName) ? log.ModelId : log.RouteDisplayName;
     }
 
+    private IReadOnlyList<SbFilterOption> StatusFilters =>
+        UsageStatusFilter.Options(key => L[key].Value);
+
     private IReadOnlyList<SbFilterOption> CapabilityFilters =>
         Enum.GetValues<AICapabilityType>()
             .Select(item => new SbFilterOption(item.ToString(), FormatCapability(item)))
