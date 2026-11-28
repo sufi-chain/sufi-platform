@@ -27,7 +27,7 @@ public class CalendarCopilotSourceMarkupTests
     [Fact]
     public void Calendar_Page_Hides_A_Load_Failure_And_Does_Not_Open_A_Session_While_Checking_Access()
     {
-        var code = Read("pro-modules/calendar-hooshvare/src/SufiChain.SufiPlatform.Calendar.Hooshvare.Blazor/Pages/CalendarHooshvarePage.razor.cs");
+        var code = Read("modules/calendar/src/SufiChain.SufiPlatform.Calendar.Assistant.Blazor/Pages/CalendarHooshvarePage.razor.cs");
 
         code.ShouldContain("DisableHooshvare(\"CalendarHooshvare:LoadFailed\")");
         code.ShouldContain("DisableHooshvare(\"CalendarHooshvare:Unauthorized\")");
@@ -42,6 +42,20 @@ public class CalendarCopilotSourceMarkupTests
         permissionCheck.ShouldContain("LicenseProducts.Calendar");
         permissionCheck.ShouldNotContain("CreateAsync");
         permissionCheck.ShouldNotContain("ChatSessionAppService");
+    }
+
+    [Fact]
+    public void Shim_Still_Registers_The_Assistant_Router_And_Menu()
+    {
+        var shim = Read("pro-modules/calendar-hooshvare/src/SufiChain.SufiPlatform.Calendar.Hooshvare.Blazor/CalendarHooshvareBlazorModule.cs");
+        var assistant = Read("modules/calendar/src/SufiChain.SufiPlatform.Calendar.Assistant.Blazor/SufiCalendarAssistantBlazorModule.cs");
+        var page = Read("modules/calendar/src/SufiChain.SufiPlatform.Calendar.Assistant.Blazor/Pages/CalendarHooshvarePage.razor");
+
+        shim.ShouldContain("typeof(SufiCalendarAssistantBlazorModule)");
+        assistant.ShouldContain("AdditionalAssemblies.Add(typeof(SufiCalendarAssistantBlazorModule).Assembly)");
+        assistant.ShouldContain("new CalendarHooshvareMenuContributor()");
+        page.ShouldContain("/panel/portal/calendar-pro");
+        page.ShouldContain("/panel/portal/calendar-pro/mobile");
     }
 
     private static string Read(string relative)

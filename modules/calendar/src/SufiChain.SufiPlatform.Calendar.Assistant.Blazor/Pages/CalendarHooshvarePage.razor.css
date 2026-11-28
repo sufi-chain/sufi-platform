@@ -1,0 +1,15 @@
+.calendar-hooshvare-page {
+    position: relative;
+    width: 100%;
+    min-width: 0;
+}
+
+.calendar-hooshvare-page--workspace {
+    box-sizing: border-box;
+    min-height: 100%;
+    padding:
+        var(--sb-space-3, 0.75rem)
+        max(var(--sb-space-3, 0.75rem), env(safe-area-inset-right, 0px))
+        max(var(--sb-space-3, 0.75rem), env(safe-area-inset-bottom, 0px))
+        max(var(--sb-space-3, 0.75rem), env(safe-area-inset-left, 0px));
+}

@@ -1,0 +1,11 @@
+@inherits CalendarHooshvareComponentBase
+
+@if (CanUseCalendar)
+{
+    <SbButton Variant="SbButtonVariant.Ghost"
+              Size="SbSize.Sm"
+              OnClick="OpenAssistantAsync"
+              title="@L["CalendarHooshvare:OpenAssistant"]">
+        <SbIcon Name="sparkles" Size="SbSize.Md" />
+    </SbButton>
+}

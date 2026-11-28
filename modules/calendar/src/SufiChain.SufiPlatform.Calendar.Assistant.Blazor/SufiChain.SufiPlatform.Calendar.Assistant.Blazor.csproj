@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk.Razor">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <RootNamespace>SufiChain.SufiPlatform.Calendar.Hooshvare.Blazor</RootNamespace>
+    <PackageId>SufiChain.SufiPlatform.Calendar.Assistant.Blazor</PackageId>
+    <Description>Calendar hooshvare page, selector, and launcher inside the Calendar module.</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="$(MicrosoftAspNetCoreComponentsWebVersion)" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.Authorization" Version="$(AspNetCoreVersion)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\SufiChain.SufiPlatform.Calendar.Assistant\SufiChain.SufiPlatform.Calendar.Assistant.csproj" />
+    <ProjectReference Include="..\SufiChain.SufiPlatform.Calendar.Blazor.Public\SufiChain.SufiPlatform.Calendar.Blazor.Public.csproj" />
+    <ProjectReference Include="..\..\..\..\..\commercial-modules\sufi-licensing\src\SufiChain.SufiPlatform.Licensing.Runtime\SufiChain.SufiPlatform.Licensing.Runtime.csproj" />
+    <ProjectReference Include="..\..\..\..\..\pro-modules\calendar-hooshvare\src\SufiChain.SufiPlatform.Calendar.Hooshvare.Domain.Shared\SufiChain.SufiPlatform.Calendar.Hooshvare.Domain.Shared.csproj" />
+    <ProjectReference Include="..\..\..\..\..\pro-modules\ai-hooshvare\src\SufiChain.SufiPlatform.SufiAI.Hooshvare.Domain.Shared\SufiChain.SufiPlatform.SufiAI.Hooshvare.Domain.Shared.csproj" />
+    <ProjectReference Include="..\..\..\..\..\pro-modules\ai-hooshvare\src\SufiChain.SufiPlatform.SufiAI.Hooshvare.Blazor.Public\SufiChain.SufiPlatform.SufiAI.Hooshvare.Blazor.Public.csproj" />
+  </ItemGroup>
+</Project>
