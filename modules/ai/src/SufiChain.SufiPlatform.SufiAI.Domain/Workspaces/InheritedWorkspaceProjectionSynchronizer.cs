@@ -106,6 +106,13 @@ public class InheritedWorkspaceProjectionSynchronizer :
                     cancellationToken: cancellationToken);
                 if (existing != null)
                 {
+                    if (!existing.IsInherited)
+                    {
+                        existing.MarkAsInherited(sourceWorkspaceId, assignmentId);
+                        existing.ClearStoredCredentials();
+                        await _workspaceRepository.UpdateAsync(existing, autoSave: true, cancellationToken);
+                    }
+
                     await uow.CompleteAsync();
                     return existing;
                 }
@@ -145,7 +152,8 @@ public class InheritedWorkspaceProjectionSynchronizer :
                     cancellationToken: cancellationToken);
                 if (workspace is { IsInherited: true })
                 {
-                    await _workspaceRepository.HardDeleteAsync(workspace, autoSave: true, cancellationToken);
+                    workspace.ClearInheritance();
+                    await _workspaceRepository.UpdateAsync(workspace, autoSave: true, cancellationToken);
                 }
 
                 await uow.CompleteAsync();

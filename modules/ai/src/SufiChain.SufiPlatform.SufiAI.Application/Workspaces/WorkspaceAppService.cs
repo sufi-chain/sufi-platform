@@ -340,9 +340,7 @@ public class WorkspaceAppService : SufiApplicationService, IWorkspaceAppService
         }
 
         var assignmentId = existing?.Id ?? GuidGenerator.Create();
-        var targetId = existing is { IsActive: true }
-            ? existing.TargetWorkspaceId
-            : GuidGenerator.Create();
+        var targetId = existing?.TargetWorkspaceId ?? GuidGenerator.Create();
         var targetName = string.IsNullOrWhiteSpace(input.Name) ? source.Name : input.Name.Trim();
 
         if (existing == null)
@@ -351,9 +349,8 @@ public class WorkspaceAppService : SufiApplicationService, IWorkspaceAppService
                 new WorkspaceAssignment(assignmentId, input.TenantId, source.Id, targetId),
                 autoSave: true);
         }
-        else if (!existing.IsActive || existing.TargetWorkspaceId != targetId)
+        else if (!existing.IsActive)
         {
-            existing.ReplaceTarget(targetId);
             existing.Activate();
             using (DataFilter.Disable<IMultiTenant>())
             {

@@ -118,7 +118,7 @@ public class InheritedWorkspaceProjectionContractTests : SufiAITestBase<SufiAIAp
     }
 
     [Fact]
-    public async Task Unassign_deletes_the_projected_workspace_and_its_routes()
+    public async Task Unassign_keeps_the_projected_workspace_and_stops_inheriting()
     {
         var tenantId = Guid.NewGuid();
         var assignmentId = Guid.NewGuid();
@@ -164,16 +164,18 @@ public class InheritedWorkspaceProjectionContractTests : SufiAITestBase<SufiAIAp
         }
 
         using (_currentTenant.Change(tenantId))
+        using (_liveView.Suppress())
         {
-            await Should.ThrowAsync<EntityNotFoundException>(() => _workspaceAppService.GetAsync(projectionId));
+            var kept = await _workspaceAppService.GetAsync(projectionId);
+            kept.Id.ShouldBe(projectionId);
+            kept.IsInherited.ShouldBeFalse();
         }
 
         await WithUnitOfWorkAsync(async () =>
         {
             var db = (DbContext)await GetRequiredService<IDbContextProvider<IAIDbContext>>().GetDbContextAsync();
-            (await db.Set<Workspace>().IgnoreQueryFilters().CountAsync(workspace => workspace.Id == projectionId)).ShouldBe(0);
-            (await db.Set<AIModelConfiguration>().IgnoreQueryFilters().CountAsync(route => route.WorkspaceId == projectionId)).ShouldBe(0);
-            (await db.Set<WorkspaceGuardrail>().IgnoreQueryFilters().CountAsync(guardrail => guardrail.WorkspaceId == projectionId)).ShouldBe(0);
+            (await db.Set<Workspace>().IgnoreQueryFilters().CountAsync(workspace => workspace.Id == projectionId)).ShouldBe(1);
+            (await db.Set<AIModelConfiguration>().IgnoreQueryFilters().CountAsync(route => route.WorkspaceId == projectionId)).ShouldBeGreaterThan(0);
         });
 
         using (GetRequiredService<IDataFilter>().Disable<IMultiTenant>())

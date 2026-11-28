@@ -145,16 +145,18 @@ public class InheritedWorkspaceLiveViewTests : SufiAITestBase<SufiAIApplicationT
 
         using (_currentTenant.Change(tenantId))
         {
-            await Should.ThrowAsync<EntityNotFoundException>(() => _workspaceAppService.GetAsync(projectionId));
+            var kept = await _workspaceAppService.GetAsync(projectionId);
+            kept.Id.ShouldBe(projectionId);
+            kept.IsInherited.ShouldBeFalse();
         }
 
         using (GetRequiredService<IDataFilter>().Disable<IMultiTenant>())
-        using (GetRequiredService<IDataFilter>().Disable<ISoftDelete>())
         {
             await WithUnitOfWorkAsync(async () =>
             {
-                var gone = await _workspaceRepository.FindAsync(projectionId, includeDetails: false);
-                gone.ShouldBeNull();
+                var kept = await _workspaceRepository.FindAsync(projectionId, includeDetails: false);
+                kept.ShouldNotBeNull();
+                kept!.IsInherited.ShouldBeFalse();
                 var assignment = await _assignmentRepository.GetAsync(assignmentId);
                 assignment.IsActive.ShouldBeFalse();
             });
@@ -232,6 +234,162 @@ public class InheritedWorkspaceLiveViewTests : SufiAITestBase<SufiAIApplicationT
                 }));
             error.Code.ShouldBe(AIErrorCodes.InheritedWorkspaceReadOnly);
         }
+    }
+
+    [Fact]
+    public async Task DeactivateAssignment_KeepsOrReusesTenantProjection_HooshvaresStayBound()
+    {
+        var (tenantId, assignmentId, projectionId, _) = await AssignHostWorkspaceAsync();
+
+        using (_currentTenant.Change(null))
+        {
+            await _workspaceAppService.DeactivateAssignmentAsync(assignmentId);
+        }
+
+        using (_currentTenant.Change(tenantId))
+        {
+            var kept = await _workspaceAppService.GetAsync(projectionId);
+            kept.Id.ShouldBe(projectionId);
+            kept.IsInherited.ShouldBeFalse();
+        }
+    }
+
+    [Fact]
+    public async Task UnassignThenAssign_DoesNotMintANewTargetIdOrRebindIsAutomatic()
+    {
+        var (tenantId, assignmentId, projectionId, host) = await AssignHostWorkspaceAsync();
+
+        using (_currentTenant.Change(null))
+        {
+            await _workspaceAppService.DeactivateAssignmentAsync(assignmentId);
+            using (GetRequiredService<IDataFilter>().Disable<IMultiTenant>())
+            {
+                await WithUnitOfWorkAsync(async () =>
+                {
+                    var assignment = await _assignmentRepository.GetAsync(assignmentId);
+                    assignment.TargetWorkspaceId.ShouldBe(projectionId);
+                    assignment.Activate();
+                    await _assignmentRepository.UpdateAsync(assignment, autoSave: true);
+                });
+            }
+
+            var source = await _workspaceRepository.GetAsync(host.WorkspaceId, includeDetails: true);
+            var reassigned = await _synchronizer.CreateTenantProjectionAsync(
+                source,
+                tenantId,
+                assignmentId,
+                projectionId,
+                host.WorkspaceId,
+                source.Name);
+            reassigned.Id.ShouldBe(projectionId);
+            reassigned.IsInherited.ShouldBeTrue();
+        }
+    }
+
+    [Fact]
+    public async Task FreshOrReattachedInheritedProjection_HasReadyChatRoutesFromHostLiveView()
+    {
+        var (tenantId, assignmentId, projectionId, host) = await AssignHostWorkspaceAsync();
+
+        using (_currentTenant.Change(null))
+        {
+            await _workspaceAppService.DeactivateAssignmentAsync(assignmentId);
+            var source = await _workspaceRepository.GetAsync(host.WorkspaceId, includeDetails: true);
+            await _synchronizer.CreateTenantProjectionAsync(
+                source,
+                tenantId,
+                assignmentId,
+                projectionId,
+                host.WorkspaceId,
+                source.Name);
+        }
+
+        using (_currentTenant.Change(tenantId))
+        {
+            var routes = await _aiAppService.GetModelConfigurationsAsync(projectionId);
+            routes.ShouldContain(route => route.Id == host.ChatModelId && route.IsUserSelectable);
+        }
+    }
+
+    [Fact]
+    public async Task ReuseSameProjection_DoesNotClearAllowlists()
+    {
+        var (tenantId, assignmentId, projectionId, host) = await AssignHostWorkspaceAsync();
+
+        using (_currentTenant.Change(null))
+        {
+            await _workspaceAppService.DeactivateAssignmentAsync(assignmentId);
+            var source = await _workspaceRepository.GetAsync(host.WorkspaceId, includeDetails: true);
+            await _synchronizer.CreateTenantProjectionAsync(
+                source,
+                tenantId,
+                assignmentId,
+                projectionId,
+                host.WorkspaceId,
+                source.Name);
+        }
+
+        using (_currentTenant.Change(tenantId))
+        {
+            var route = (await _aiAppService.GetModelConfigurationsAsync(projectionId))
+                .Single(item => item.Id == host.ChatModelId);
+            route.IsUserSelectable.ShouldBeTrue();
+        }
+    }
+
+    [Theory]
+    [InlineData("en", "The tenant keeps its copy")]
+    [InlineData("fa", "کپی مستأجر باقی می‌ماند")]
+    public void DeactivateConfirmation_MatchesBehavior(string culture, string phrase)
+    {
+        var dir = new DirectoryInfo(AppContext.BaseDirectory);
+        while (dir != null)
+        {
+            var path = Path.Combine(
+                dir.FullName,
+                "sufi-platform",
+                "modules",
+                "ai",
+                "src",
+                "SufiChain.SufiPlatform.SufiAI.Domain.Shared",
+                "Localization",
+                "AI",
+                culture + ".json");
+            if (File.Exists(path))
+            {
+                File.ReadAllText(path).ShouldContain(phrase);
+                return;
+            }
+
+            dir = dir.Parent;
+        }
+
+        throw new FileNotFoundException(culture + ".json");
+    }
+
+    private async Task<(Guid TenantId, Guid AssignmentId, Guid ProjectionId, (Guid WorkspaceId, Guid ChatModelId) Host)> AssignHostWorkspaceAsync()
+    {
+        var tenantId = Guid.NewGuid();
+        var assignmentId = Guid.NewGuid();
+        var projectionId = Guid.NewGuid();
+        var host = await InsertHostWorkspaceAsync();
+
+        using (_currentTenant.Change(null))
+        {
+            await WithUnitOfWorkAsync(() => _assignmentRepository.InsertAsync(
+                new WorkspaceAssignment(assignmentId, tenantId, host.WorkspaceId, projectionId),
+                autoSave: true));
+            var source = await _workspaceRepository.GetAsync(host.WorkspaceId, includeDetails: true);
+            await _synchronizer.CreateTenantProjectionAsync(
+                source,
+                tenantId,
+                assignmentId,
+                projectionId,
+                host.WorkspaceId,
+                source.Name);
+        }
+
+        return (tenantId, assignmentId, projectionId, host);
     }
 
     private async Task<(Guid WorkspaceId, Guid ChatModelId)> InsertHostWorkspaceAsync()
