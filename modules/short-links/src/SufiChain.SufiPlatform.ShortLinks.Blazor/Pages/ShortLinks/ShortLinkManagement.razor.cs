@@ -12,6 +12,7 @@ using SufiChain.SufiPlatform.ShortLinks.Hooshvare;
 using SufiChain.SufiPlatform.ShortLinks.Permissions;
 using SufiChain.SufiBlazor.Contracts.Data;
 using Microsoft.AspNetCore.Authorization;
+using SufiChain.SufiPlatform.UI.Blazor.Timing;
 using SufiChain.SufiPlatform.UI.Layout;
 
 namespace SufiChain.SufiPlatform.ShortLinks.Blazor.Pages.ShortLinks;
@@ -26,6 +27,11 @@ public partial class ShortLinkManagementBase : ShortLinksComponentBase
     [Inject] protected IShortUrlAppService ShortUrlAppService { get; set; } = null!;
     [Inject] protected IJSRuntime JsRuntime { get; set; } = null!;
     [Inject] protected IPageLayout PageLayout { get; set; } = default!;
+    [Inject] protected IUserTimeZoneDisplay UserTimeZoneDisplayService { get; set; } = default!;
+
+    protected TimeZoneInfo UserZone { get; private set; } = UserTimeZoneDisplay.DefaultZone;
+
+    protected DateOnly ExpiryMinDate => UserTimeZoneDisplay.Today(DateTime.UtcNow, UserZone);
 
     protected SbDataGrid<ShortUrlDto>? _gridRef;
     protected int TotalCount { get; set; }
@@ -52,19 +58,42 @@ public partial class ShortLinkManagementBase : ShortLinksComponentBase
 
     protected DateOnly? NewEntityExpiresAt
     {
-        get => NewEntity.ExpiresAt.HasValue ? DateOnly.FromDateTime(NewEntity.ExpiresAt.Value) : null;
-        set => NewEntity.ExpiresAt = value?.ToDateTime(TimeOnly.MinValue);
+        get => ToWallDate(NewEntity.ExpiresAt);
+        set => NewEntity.ExpiresAt = ToUtcEnd(value);
     }
 
     protected DateOnly? EditingEntityExpiresAt
     {
-        get => EditingEntity.ExpiresAt.HasValue ? DateOnly.FromDateTime(EditingEntity.ExpiresAt.Value) : null;
-        set => EditingEntity.ExpiresAt = value?.ToDateTime(TimeOnly.MinValue);
+        get => ToWallDate(EditingEntity.ExpiresAt);
+        set => EditingEntity.ExpiresAt = ToUtcEnd(value);
     }
+
+    protected bool ShowExpired(ShortUrlDto item) => ShortLinkExpiry.IsExpired(item.ExpiresAt, DateTime.UtcNow);
+
+    private DateOnly? ToWallDate(DateTime? stored) =>
+        stored is { } utc
+            ? DateOnly.FromDateTime(UserTimeZoneDisplay.ToDisplayTime(utc, UserZone))
+            : null;
+
+    private DateTime? ToUtcEnd(DateOnly? day) =>
+        day is { } value ? UserTimeZoneDisplay.WallEndToUtc(value, UserZone) : null;
 
     protected override async Task OnInitializedAsync()
     {
         SetupPageLayout();
+        try
+        {
+            UserZone = await UserTimeZoneDisplayService.GetAsync();
+        }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
+        catch (Exception)
+        {
+            UserZone = UserTimeZoneDisplay.DefaultZone;
+        }
+
         await SetPermissionsAsync();
         await base.OnInitializedAsync();
     }

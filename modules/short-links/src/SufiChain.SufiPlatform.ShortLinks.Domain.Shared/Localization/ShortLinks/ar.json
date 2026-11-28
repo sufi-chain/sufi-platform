@@ -24,6 +24,7 @@
     "CreatedByModule": "تم إنشاؤها بواسطة الوحدة النمطية",
     "FullShortUrl": "كامل قصير URL",
     "CreatedAt": "وقت الإنشاء",
+    "Expired": "منتهية",
     "UpdatedAt": "تم التحديث في",
     "Filter": "Filter",
     "SearchByCodeOrUrl": "البحث عن طريق الكود أو URL...",

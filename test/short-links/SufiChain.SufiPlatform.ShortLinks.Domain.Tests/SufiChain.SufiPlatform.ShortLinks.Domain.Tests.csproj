@@ -7,6 +7,7 @@
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="../../../modules/short-links/src/SufiChain.SufiPlatform.ShortLinks.Domain/SufiChain.SufiPlatform.ShortLinks.Domain.csproj" />
+    <ProjectReference Include="../../../framework/SufiChain.SufiPlatform.UI.Blazor/SufiChain.SufiPlatform.UI.Blazor.csproj" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="$(MicrosoftNetTestSdkVersion)" />
     <PackageReference Include="xunit" Version="$(XunitVersion)" />
     <PackageReference Include="xunit.runner.visualstudio" Version="$(XunitRunnerVisualStudioVersion)" PrivateAssets="All" />
