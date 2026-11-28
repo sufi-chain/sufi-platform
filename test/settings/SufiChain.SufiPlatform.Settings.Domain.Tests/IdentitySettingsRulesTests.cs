@@ -67,4 +67,39 @@ public class IdentitySettingsRulesTests
             "rsite",
             "rsecret"));
     }
+
+    [Fact]
+    public async Task IdentitySettings_EmptyTurnstileKeys_Save_ShowsFieldErrors_NoUnhandledException()
+    {
+        var missing = new IdentitySettingsDto { CaptchaProvider = "Turnstile" };
+        var saved = await HandledSettingsSave.RunAsync(() =>
+        {
+            IdentitySettingsRules.RequireExternalCaptchaKeys(missing, null, null, "site", "secret", "rsite", "rsecret");
+            return Task.CompletedTask;
+        });
+
+        saved.ShouldBeFalse();
+    }
+
+    [Fact]
+    public async Task IdentitySettings_ValidSave_Persists()
+    {
+        var kept = new IdentitySettingsDto
+        {
+            CaptchaProvider = "Turnstile",
+            CaptchaTurnstileSiteKey = "site-key",
+            CaptchaTurnstileSecretKey = "secret-key"
+        };
+        var persisted = false;
+        var saved = await HandledSettingsSave.RunAsync(() =>
+        {
+            IdentitySettingsRules.RequireExternalCaptchaKeys(kept, null, null, "site", "secret", "rsite", "rsecret");
+            persisted = true;
+            return Task.CompletedTask;
+        });
+
+        saved.ShouldBeTrue();
+        persisted.ShouldBeTrue();
+        HandledSettingsSave.IsValidation(new InvalidOperationException("boom")).ShouldBeFalse();
+    }
 }

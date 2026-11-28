@@ -151,11 +151,10 @@ public partial class IdentitySettingsGroup : SettingsComponentBase, IEditableSet
 
     public async Task SaveAsync()
     {
-        await ExecuteWithLoadingAsync(async () =>
+        if (await TrySaveAsync())
         {
-            await PersistAsync();
             await Notify.SuccessAsync(L["SettingsSavedSuccessfully"]);
-        }, LoadingKeys.Save);
+        }
     }
 
     public Task<bool> TrySaveAsync() => TrySaveQuietlyAsync(PersistAsync, LoadingKeys.Save);
