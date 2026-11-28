@@ -3,8 +3,10 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.Logging;
 using SufiChain.SufiBlazor.Utilities.DateUtils;
+using SufiChain.SufiPlatform.Calendar.Availability;
 using SufiChain.SufiPlatform.Calendar.Blazor.Public;
 using SufiChain.SufiPlatform.Calendar.Events;
+using Volo.Abp;
 using Volo.Abp.Authorization;
 using Volo.Abp.Settings;
 
@@ -16,6 +18,9 @@ public partial class SufiEventEditor : CalendarPublicComponentBase
 
     [Inject]
     protected ICalendarEventAppService CalendarEventAppService { get; set; } = default!;
+
+    [Inject]
+    protected IAvailabilityCalendarAppService AvailabilityCalendarAppService { get; set; } = default!;
 
     [Inject]
     protected NavigationManager NavigationManager { get; set; } = default!;
@@ -157,6 +162,18 @@ public partial class SufiEventEditor : CalendarPublicComponentBase
             return;
         }
 
+        if (!EventId.HasValue)
+        {
+            var personal = await AvailabilityCalendarAppService.GetOrCreateMyPersonalCalendarAsync();
+            var requested = CalendarId != Guid.Empty ? CalendarId : _model.CalendarId;
+            _model.CalendarId = CalendarNewEventCalendar.Resolve(requested, personal.Id);
+            if (CalendarNewEventCalendar.RequiresSelection(_model.CalendarId))
+            {
+                await Message.ErrorAsync(L["CalendarNotAccessible"]);
+                return;
+            }
+        }
+
         await ExecuteWithLoadingAsync(async () =>
         {
             if (!EventId.HasValue)
@@ -176,9 +193,18 @@ public partial class SufiEventEditor : CalendarPublicComponentBase
             }
 
             var creating = !EventId.HasValue;
-            var saved = creating
-                ? await CalendarEventAppService.CreateAsync(_model)
-                : await CalendarEventAppService.UpdateAsync(EventId!.Value, _model);
+            CalendarEventDto saved;
+            try
+            {
+                saved = creating
+                    ? await CalendarEventAppService.CreateAsync(_model)
+                    : await CalendarEventAppService.UpdateAsync(EventId!.Value, _model);
+            }
+            catch (BusinessException exception) when (exception.Code == CalendarErrorCodes.CalendarNotAccessible)
+            {
+                await Message.ErrorAsync(L["CalendarNotAccessible"]);
+                return;
+            }
             await Message.SuccessAsync(L["SavedSuccessfully"]);
             if (creating)
             {

@@ -87,7 +87,7 @@
     "InheritanceCycleDetected": "Un calendario no puede heredar de sí mismo, directa o indirectamente.",
     "CalendarCannotInheritItself": "Un calendario no puede heredar de sí mismo.",
     "InheritanceExceedsOneLevel": "La herencia se limita a un nivel; este calendario padre ya hereda de otro calendario.",
-    "CalendarNotAccessible": "No tienes acceso a este calendario.",
+    "CalendarNotAccessible": "ليست لديك صلاحية الوصول إلى هذا التقويم.",
     "UserRequired": "Se requiere un usuario autenticado.",
     "BusinessHours": "ساعات العمل",
     "Scheduler": "Scheduler",
