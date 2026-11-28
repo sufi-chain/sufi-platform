@@ -11,6 +11,7 @@
                     <SbTextField @bind-Value="_name" 
                                  Placeholder="@L["EnterServerName"]"
                                  FullWidth="true" />
+                    <McpServerDuplicateNotice Field="Name" Text="@_nameError" />
                 </SbFormField>
 
                 <SbFormField Label="@L["ServerKey"]" Required="true">
@@ -18,6 +19,7 @@
                                  Placeholder="@L["EnterServerKey"]"
                                  FullWidth="true"
                                  Disabled="@(Server != null)" />
+                    <McpServerDuplicateNotice Field="Key" Text="@_keyError" />
                 </SbFormField>
                 
                 <SbFormField Label="@L["TransportType"]" Required="true">

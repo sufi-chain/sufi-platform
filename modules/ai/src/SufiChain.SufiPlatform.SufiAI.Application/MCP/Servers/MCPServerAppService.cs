@@ -66,7 +66,7 @@ public class MCPServerAppService : SufiApplicationService, IMCPServerAppService
         var existing = await _serverRepository.FindByKeyAsync(input.Key);
         if (existing != null)
         {
-            throw new BusinessException("AI:MCPServerKeyAlreadyExists")
+            throw new BusinessException(AIErrorCodes.MCPServerKeyAlreadyExists)
                 .WithData("Key", input.Key);
         }
 

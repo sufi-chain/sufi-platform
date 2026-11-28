@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Components;
 using SufiChain.SufiPlatform.SufiAI.MCP;
 using SufiChain.SufiPlatform.SufiAI.MCP.Servers;
 using SufiChain.SufiPlatform.UI.Blazor;
+using Volo.Abp;
 
 namespace SufiChain.SufiPlatform.SufiAI.Blazor.Components;
 
@@ -32,6 +33,8 @@ public partial class MCPServerModal
     // sufi-chain#384 slice 6b: TenantLevel (default) or UserScoped.
     private string _bindingMode = "TenantLevel";
     private string? _endpointError;
+    private string? _keyError;
+    private string? _nameError;
 
     /// <summary>
     /// A user-scoped server receives a per-user token, which STDIO has no channel for. The domain rejects
@@ -80,6 +83,8 @@ public partial class MCPServerModal
     private async Task SaveAsync()
     {
         _endpointError = null;
+        _keyError = null;
+        _nameError = null;
 
         if (string.IsNullOrWhiteSpace(_name))
         {
@@ -116,7 +121,7 @@ public partial class MCPServerModal
                     EnvironmentJson = EnvironmentJsonForSave()
                 };
                 
-                await MCPServerAppService.CreateAsync(input);
+                await SaveServerAsync(() => MCPServerAppService.CreateAsync(input));
             }
             else
             {
@@ -131,12 +136,34 @@ public partial class MCPServerModal
                     EnvironmentJson = EnvironmentJsonForSave()
                 };
                 
-                await MCPServerAppService.UpdateAsync(Server.Id, input);
+                await SaveServerAsync(() => MCPServerAppService.UpdateAsync(Server.Id, input));
             }
-            
-            await OnSaved.InvokeAsync();
-            await CloseAsync();
         });
+    }
+
+    private async Task SaveServerAsync(Func<Task> save)
+    {
+        try
+        {
+            await save();
+        }
+        catch (BusinessException exception) when (McpServerDuplicateFields.Field(exception.Code) != null)
+        {
+            var text = L[exception.Code!].Value;
+            if (McpServerDuplicateFields.Field(exception.Code) == McpServerDuplicateFields.Key)
+            {
+                _keyError = text;
+            }
+            else
+            {
+                _nameError = text;
+            }
+
+            return;
+        }
+
+        await OnSaved.InvokeAsync();
+        await CloseAsync();
     }
     
     private async Task CancelAsync()

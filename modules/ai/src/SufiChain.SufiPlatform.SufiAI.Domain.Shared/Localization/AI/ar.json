@@ -638,6 +638,7 @@
     "VisionCapabilityDescription": "تحليل الصورة باستخدام نموذج قادر على الرؤية.",
     "AI:WebResearchHostOnly": "إعدادات البحث على الويب متاحة على المضيف فقط. يستخدم المستأجرون تكوين بحث المضيف.",
     "AI:MCPServerNameAlreadyExists": "يوجد بالفعل خادم MCP بهذا الاسم.",
+    "AI:MCPServerKeyAlreadyExists": "يوجد بالفعل خادم MCP بهذا المفتاح.",
     "AI:MCPEndpointInvalid": "يجب أن تكون نقطة النهاية عنواناً مطلقاً يبدأ بـ http أو https."
   }
 }

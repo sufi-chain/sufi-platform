@@ -638,6 +638,7 @@
     "[REDACTED]": "System prompt",
     "AI:WebResearchHostOnly": "Web research settings are available only on the host. Tenants use the host search configuration.",
     "AI:MCPServerNameAlreadyExists": "An MCP server with this name already exists.",
+    "AI:MCPServerKeyAlreadyExists": "An MCP server with this key already exists.",
     "AI:MCPEndpointInvalid": "Endpoint must be an absolute http or https URL."
   }
 }

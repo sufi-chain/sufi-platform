@@ -638,6 +638,7 @@
     "VisionCapabilityDescription": "Analice una imagen con un modelo con capacidad de visión.",
     "AI:WebResearchHostOnly": "La configuración de investigación web solo está disponible en el host. Los inquilinos usan la configuración de búsqueda del host.",
     "AI:MCPServerNameAlreadyExists": "Ya existe un servidor MCP con este nombre.",
+    "AI:MCPServerKeyAlreadyExists": "Ya existe un servidor MCP con esta clave.",
     "AI:MCPEndpointInvalid": "El endpoint debe ser una URL absoluta http o https."
   }
 }
