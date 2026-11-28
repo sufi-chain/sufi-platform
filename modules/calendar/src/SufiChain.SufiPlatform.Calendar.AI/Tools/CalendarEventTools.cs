@@ -1,4 +1,5 @@
 using SufiChain.SufiPlatform.SufiAI;
+using Microsoft.Extensions.Logging;
 using SufiChain.SufiPlatform.Calendar.Calendars;
 using SufiChain.SufiPlatform.Calendar.Events;
 using Volo.Abp.Data;
@@ -81,13 +82,16 @@ public class CalendarSearchEventsTool : CalendarAIToolBase
 {
     private readonly ICalendarEventAppService _calendarEventAppService;
     private readonly ICalendarCatalogIntegrationService _calendarCatalog;
+    private readonly ILogger<CalendarSearchEventsTool> _logger;
 
     public CalendarSearchEventsTool(
         ICalendarEventAppService calendarEventAppService,
-        ICalendarCatalogIntegrationService calendarCatalog)
+        ICalendarCatalogIntegrationService calendarCatalog,
+        ILogger<CalendarSearchEventsTool> logger)
     {
         _calendarEventAppService = calendarEventAppService;
         _calendarCatalog = calendarCatalog;
+        _logger = logger;
     }
 
     public override string Name => CalendarAIToolNames.SearchEvents;
@@ -138,7 +142,7 @@ public class CalendarSearchEventsTool : CalendarAIToolBase
                 calendarEvent.Title.Contains(titleContains, StringComparison.OrdinalIgnoreCase));
         }
 
-        return events.Select(calendarEvent =>
+        var live = events.Select(calendarEvent =>
         {
             calendarsById.TryGetValue(calendarEvent.CalendarId, out var source);
             var visibilityRelation = CalendarEventAvailabilitySemantics.GetVisibilityRelation(
@@ -167,6 +171,16 @@ public class CalendarSearchEventsTool : CalendarAIToolBase
                 AvailabilityRole = CalendarEventAvailabilitySemantics.GetAvailabilityRole(kind)
             };
         }).ToList();
+
+        _logger.LogInformation(
+            "calendar.search_events post-filter live set count {Count}: {Events}",
+            live.Count,
+            string.Join(
+                "; ",
+                live.Select(item =>
+                    $"{item.Id}|{item.Title}|{item.StartUtc:o}|{item.EndUtc:o}|{item.CalendarId}|{item.CalendarName}")));
+
+        return live;
     }
 
     private static HashSet<Guid> CollectInheritedCalendarIds(

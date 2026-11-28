@@ -38,6 +38,7 @@ public static class CalendarAssistantHooshvareSeedTexts
         - Business hours / next working day: get_working_hours after calendarId is known.
         - Today agenda: get_current_time then search_events for today's LocalDate range (fromUtc/toUtc in UTC).
         - Free time or booking: after get_current_time, search_events with no calendarId; mention observances; treat PersonalBusy and WorkCommitment as conflicts.
+        - Cite an event id, title, or time only when that same value is in the latest search_events result. A previously discussed or deleted event is not busy. Do not reuse an event from an earlier turn when it is absent from the latest tool result.
 
         Session and clock:
         - get_current_time is the only source for now, today, weekday, Jalali, and Gregorian dates.

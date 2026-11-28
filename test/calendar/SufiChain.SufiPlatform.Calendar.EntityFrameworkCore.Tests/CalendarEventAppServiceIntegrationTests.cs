@@ -279,6 +279,38 @@ public class CalendarEventAppServiceIntegrationTests : CalendarEntityFrameworkCo
         created.TimeZoneId.ShouldBe(CalendarTimeZoneResolver.TryFind("UTC")!.Id);
     }
 
+    [Fact]
+    public async Task SearchEvents_AfterSoftDelete_DoesNotReturnTheEvent()
+    {
+        var calendarId = await CreateCalendarAsync();
+        var service = GetRequiredService<ICalendarEventAppService>();
+        var created = await service.CreateAsync(NewEvent(calendarId));
+        await service.DeleteAsync(created.Id);
+
+        var tool = new AI.Tools.CalendarSearchEventsTool(
+            service,
+            new SingleCalendarCatalog(calendarId, "Team calendar"),
+            Microsoft.Extensions.Logging.Abstractions.NullLogger<AI.Tools.CalendarSearchEventsTool>.Instance);
+        var live = await tool.SearchEventsAsync();
+        var json = System.Text.Json.JsonSerializer.Serialize(live);
+
+        json.ShouldNotContain(created.Id.ToString());
+        json.ShouldNotContain("Planning");
+    }
+
+    private sealed class SingleCalendarCatalog : ICalendarCatalogIntegrationService
+    {
+        private readonly CalendarLookupDto _calendar;
+
+        public SingleCalendarCatalog(Guid id, string name)
+        {
+            _calendar = new CalendarLookupDto { Id = id, Name = name, Kind = CalendarKind.Public };
+        }
+
+        public Task<List<CalendarLookupDto>> GetVisibleCalendarsAsync(string? filter = null) =>
+            Task.FromResult(new List<CalendarLookupDto> { _calendar });
+    }
+
     private async Task<Guid> CreateCalendarAsync(Guid? ownerUserId = null)
     {
         var id = Guid.NewGuid();

@@ -11,7 +11,7 @@ namespace SufiChain.SufiPlatform.Calendar.Hooshvare.Hooshvare
 
         public const string LocalizationResourceName = PlatformHooshvareKeys.LocalizationResources.Calendar;
 
-        public const int EntityVersion = 1;
+        public const int EntityVersion = 2;
 
         public static readonly string[] ShortcutIds =
         [
