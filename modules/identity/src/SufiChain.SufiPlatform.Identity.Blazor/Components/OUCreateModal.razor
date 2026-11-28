@@ -10,7 +10,7 @@
                              Required="true"
                              Placeholder="@L["EnterDisplayName"]" />
 
-                @if (ParentId.HasValue)
+                @if (ShowParentAlert)
                 {
                     <SbAlert Severity="SbAlertSeverity.Info">
                         @L["CreatingSubUnitUnder", _parentDisplayName]

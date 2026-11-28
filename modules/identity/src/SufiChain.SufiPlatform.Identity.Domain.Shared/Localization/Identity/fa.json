@@ -168,7 +168,7 @@
     "AssignSelected": "اختصاص انتخاب‌شده‌ها",
     "CreateOrganizationUnit": "ایجاد واحد سازمانی",
     "EnterDisplayName": "نام نمایشی را وارد کنید",
-    "CreatingSubUnitUnder": "ایجاد زیرمجموعه تحت '{0}'",
+    "CreatingSubUnitUnder": "ایجاد زیرمجموعه در «{0}»",
     "LoadingPermissions": "در حال بارگذاری مجوزها...",
     "SearchPermissions": "جستجوی مجوزها...",
     "SelectAllInAllTabs": "انتخاب همه",

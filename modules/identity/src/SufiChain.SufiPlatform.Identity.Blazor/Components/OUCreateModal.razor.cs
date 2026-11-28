@@ -20,33 +20,28 @@ public partial class OUCreateModal : IdentityComponentBase
     [Parameter] public bool Open { get; set; }
     [Parameter] public EventCallback<bool> OpenChanged { get; set; }
     [Parameter] public Guid? ParentId { get; set; }
+    [Parameter] public string? ParentDisplayName { get; set; }
     [Parameter] public EventCallback OnCreated { get; set; }
 
     private CreateOrganizationUnitDto _model = new();
     private string _parentDisplayName = string.Empty;
+    private bool _wasOpen;
 
-    protected override async Task OnParametersSetAsync()
+    protected bool ShowParentAlert => OuCreateDialogState.ShowParentAlert(ParentId, _parentDisplayName);
+
+    protected override void OnParametersSet()
     {
+        if (OuCreateDialogState.ShouldResetModel(_wasOpen, Open))
+        {
+            _model = new CreateOrganizationUnitDto { ParentId = ParentId };
+        }
+
         if (Open)
         {
-            _model = new CreateOrganizationUnitDto
-            {
-                ParentId = ParentId
-            };
-
-            if (ParentId.HasValue)
-            {
-                try
-                {
-                    var parent = await OrganizationUnitAppService.GetAsync(ParentId.Value);
-                    _parentDisplayName = parent.DisplayName;
-                }
-                catch
-                {
-                    _parentDisplayName = string.Empty;
-                }
-            }
+            _parentDisplayName = ParentDisplayName ?? string.Empty;
         }
+
+        _wasOpen = Open;
     }
 
     private Task Hide()
