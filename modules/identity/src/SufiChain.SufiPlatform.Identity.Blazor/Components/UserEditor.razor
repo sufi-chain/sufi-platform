@@ -1,6 +1,15 @@
 @namespace SufiChain.SufiPlatform.Identity.Blazor.Components
 @inherits IdentityComponentBase
 
+<SufiPageToolbar>
+	<SbButton Color="SbColor.Primary"
+			  Type="button"
+			  OnClick="SaveFromToolbarAsync"
+			  Disabled="@(!_ready)"
+			  Loading="IsOperationLoading(LoadingKeys.Save)">@L["Save"]</SbButton>
+	<SbButton Variant="SbButtonVariant.Outline" Type="button" OnClick="Cancel">@L["Cancel"]</SbButton>
+</SufiPageToolbar>
+
 <div class="user-editor">
 	<SbForm Class="user-editor__form" Model="@FormModel" OnValidSubmit="SaveAsync">
 		<ChildContent>
