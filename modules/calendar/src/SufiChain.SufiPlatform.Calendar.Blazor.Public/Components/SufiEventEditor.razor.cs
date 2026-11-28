@@ -175,13 +175,22 @@ public partial class SufiEventEditor : CalendarPublicComponentBase
                 }).ToList();
             }
 
-            var saved = EventId.HasValue
-                ? await CalendarEventAppService.UpdateAsync(EventId.Value, _model)
-                : await CalendarEventAppService.CreateAsync(_model);
+            var creating = !EventId.HasValue;
+            var saved = creating
+                ? await CalendarEventAppService.CreateAsync(_model)
+                : await CalendarEventAppService.UpdateAsync(EventId!.Value, _model);
+            await Message.SuccessAsync(L["SavedSuccessfully"]);
+            if (creating)
+            {
+                NavigationManager.NavigateTo(CalendarPageRoutes.CreatedEventUrl(
+                    CalendarPageRoutes.CurrentLocation(NavigationManager),
+                    saved.Id));
+                return;
+            }
+
             EventId = saved.Id;
             _attendees = saved.Attendees.ToList();
             _reminders = saved.Reminders.ToList();
-            await Message.SuccessAsync(L["SavedSuccessfully"]);
             await LeaveAsync();
         }, LoadingKeys.Save);
     }

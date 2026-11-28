@@ -53,9 +53,20 @@ public static class CalendarPageRoutes
             return false;
         }
 
-        return !url.StartsWith("//", StringComparison.Ordinal)
-            && !url.Contains("://", StringComparison.Ordinal)
-            && !url.Contains('\\')
-            && !url.Contains("..", StringComparison.Ordinal);
+        if (url.StartsWith("//", StringComparison.Ordinal)
+            || url.Contains("://", StringComparison.Ordinal)
+            || url.Contains('\\')
+            || url.Contains("..", StringComparison.Ordinal))
+        {
+            return false;
+        }
+
+        var path = url.Split('?', '#')[0].TrimEnd('/');
+        return !path.EndsWith("/events/new", StringComparison.OrdinalIgnoreCase);
+    }
+
+    public static string CreatedEventUrl(string currentLocation, Guid eventId)
+    {
+        return ResolveEditorPrefix(currentLocation) + "/events/" + eventId.ToString("D");
     }
 }

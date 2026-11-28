@@ -180,6 +180,17 @@ public class CalendarBlazorSourceMarkupTests
         view.ShouldNotContain("startUtc.AddDays(1)");
     }
 
+    [Fact]
+    public void CreateEvent_LeavesTheNewEventPage()
+    {
+        var code = Read(EventEditorCode);
+        var routes = Read(BlazorPublic + "/CalendarPageRoutes.cs");
+
+        code.ShouldContain("CalendarPageRoutes.CreatedEventUrl");
+        code.ShouldContain("if (creating)");
+        routes.ShouldContain("/events/new");
+    }
+
     private static string Read(string relative)
     {
         for (var directory = new DirectoryInfo(AppContext.BaseDirectory); directory != null; directory = directory.Parent)
