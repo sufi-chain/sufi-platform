@@ -147,8 +147,11 @@ public class FolderPermissionDto
 {
    public Guid? Id { get; set; }
    public Guid? UserId { get; set; }
+   public string? UserName { get; set; }
    public Guid? RoleId { get; set; }
+   public string? RoleName { get; set; }
     public Guid? OrganizationUnitId { get; set; }
+    public string? OrganizationUnitName { get; set; }
    public FolderPermissionLevelDto Level { get; set; }
    public bool InheritToChildren { get; set; } = true;
 }

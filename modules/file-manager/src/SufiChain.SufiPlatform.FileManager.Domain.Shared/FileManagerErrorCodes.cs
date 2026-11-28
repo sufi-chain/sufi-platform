@@ -16,6 +16,7 @@ public static class FileManagerErrorCodes
     public const string CannotMoveFolderIntoItself = "SufiChain.SufiPlatform.FileManager:010007";
     public const string CannotMoveFolderIntoDescendant = "SufiChain.SufiPlatform.FileManager:010008";
     public const string CannotShareSystemFolders = "SufiChain.SufiPlatform.FileManager:010009";
+    public const string FolderGrantPrincipalNotFound = "SufiChain.SufiPlatform.FileManager:010010";
     
     // File errors (020xxx)
     public const string NoFileProvided = "SufiChain.SufiPlatform.FileManager:020001";

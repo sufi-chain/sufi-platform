@@ -29,19 +29,22 @@ public class FolderAppService : SufiApplicationService, IFolderAppService
     private readonly IFolderAccessResolver _accessResolver;
     private readonly IUserFolderAccessContextProvider _accessContextProvider;
     private readonly StructureRootFolderCleanup _structureRootCleanup;
+    private readonly IFolderGrantPrincipalStore _principalStore;
 
    public FolderAppService(
        IFileFolderRepository folderRepository,
         IFileItemRepository fileItemRepository,
         IFolderAccessResolver accessResolver,
         IUserFolderAccessContextProvider accessContextProvider,
-        StructureRootFolderCleanup structureRootCleanup)
+        StructureRootFolderCleanup structureRootCleanup,
+        IFolderGrantPrincipalStore principalStore)
    {
        _folderRepository = folderRepository;
        _fileItemRepository = fileItemRepository;
         _accessResolver = accessResolver;
         _accessContextProvider = accessContextProvider;
         _structureRootCleanup = structureRootCleanup;
+        _principalStore = principalStore;
         LocalizationResource = typeof(SufiFileManagerResource);
    }
 
@@ -707,7 +710,10 @@ public class FolderAppService : SufiApplicationService, IFolderAppService
        var folder = await _folderRepository.GetWithPermissionsAsync(folderId)
            ?? throw new UserFriendlyException("Folder not found.");
 
-        var permissions = input.Permissions.Select(permDto => new FolderPermission(
+        var requested = input.Permissions ?? new List<FolderPermissionDto>();
+        await EnsureGrantPrincipalsExistAsync(requested);
+
+        var permissions = requested.Select(permDto => new FolderPermission(
             GuidGenerator.Create(),
             folderId,
             MapPermissionLevel(permDto.Level),
@@ -728,7 +734,7 @@ public class FolderAppService : SufiApplicationService, IFolderAppService
         var folder = await _folderRepository.GetWithPermissionsAsync(folderId)
             ?? throw new UserFriendlyException("Folder not found.");
 
-       return folder.Permissions.Select(p => new FolderPermissionDto
+       var permissions = folder.Permissions.Select(p => new FolderPermissionDto
        {
            Id = p.Id,
            UserId = p.UserId,
@@ -737,6 +743,49 @@ public class FolderAppService : SufiApplicationService, IFolderAppService
            Level = MapPermissionLevelDto(p.Level),
            InheritToChildren = p.InheritToChildren
        }).ToList();
+
+        await _principalStore.PopulateAsync(permissions);
+        return permissions;
+   }
+
+    private async Task EnsureGrantPrincipalsExistAsync(IReadOnlyList<FolderPermissionDto> permissions)
+    {
+        foreach (var permission in permissions)
+        {
+            var principalCount = 0;
+
+            if (permission.UserId.HasValue)
+            {
+                principalCount++;
+                if (!await _principalStore.UserExistsAsync(permission.UserId.Value))
+                {
+                    throw new BusinessException(FileManagerErrorCodes.FolderGrantPrincipalNotFound);
+                }
+            }
+
+            if (permission.RoleId.HasValue)
+            {
+                principalCount++;
+                if (!await _principalStore.RoleExistsAsync(permission.RoleId.Value))
+                {
+                    throw new BusinessException(FileManagerErrorCodes.FolderGrantPrincipalNotFound);
+                }
+            }
+
+            if (permission.OrganizationUnitId.HasValue)
+            {
+                principalCount++;
+                if (!await _principalStore.OrganizationUnitExistsAsync(permission.OrganizationUnitId.Value))
+                {
+                    throw new BusinessException(FileManagerErrorCodes.FolderGrantPrincipalNotFound);
+                }
+            }
+
+            if (principalCount != 1)
+            {
+                throw new BusinessException(FileManagerErrorCodes.FolderGrantPrincipalNotFound);
+            }
+        }
     }
 
    public async Task<bool> HasPermissionAsync(Guid folderId, FolderPermissionLevelDto level)

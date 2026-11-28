@@ -6,12 +6,15 @@ using Microsoft.Extensions.Options;
 using NSubstitute;
 using Shouldly;
 using SufiChain.SufiPlatform.BlobStoring.S3Provider;
+using SufiChain.SufiPlatform.FileManager.AccessControl;
 using SufiChain.SufiPlatform.FileManager.Caching;
 using SufiChain.SufiPlatform.FileManager.Configuration;
+using SufiChain.SufiPlatform.FileManager.FileFolders;
 using SufiChain.SufiPlatform.FileManager.FileItems;
 using SufiChain.SufiPlatform.FileManager.FileTypes;
 using SufiChain.SufiPlatform.FileManager.Integration;
 using SufiChain.SufiPlatform.FileManager.Storage;
+using Volo.Abp.Authorization.Permissions;
 using Volo.Abp.Data;
 using Volo.Abp.MultiTenancy;
 using Volo.Abp.Users;
@@ -130,6 +133,10 @@ public class FileStorageIntegrationServiceTests
             Substitute.For<ILogger<FileItemBlobAccessService>>(),
             Substitute.For<ICurrentTenant>(),
             Substitute.For<ICurrentUser>(),
-            Substitute.For<IDataFilter>());
+            Substitute.For<IDataFilter>(),
+            Substitute.For<IPermissionChecker>(),
+            Substitute.For<IFolderAccessResolver>(),
+            Substitute.For<IUserFolderAccessContextProvider>(),
+            Substitute.For<IFileFolderRepository>());
     }
 }

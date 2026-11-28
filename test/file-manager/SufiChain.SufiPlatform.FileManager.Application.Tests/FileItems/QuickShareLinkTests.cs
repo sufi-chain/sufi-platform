@@ -6,11 +6,14 @@ using Microsoft.Extensions.Options;
 using NSubstitute;
 using Shouldly;
 using SufiChain.SufiPlatform.BlobStoring.S3Provider;
+using SufiChain.SufiPlatform.FileManager.AccessControl;
 using SufiChain.SufiPlatform.FileManager.Caching;
 using SufiChain.SufiPlatform.FileManager.Configuration;
+using SufiChain.SufiPlatform.FileManager.FileFolders;
 using SufiChain.SufiPlatform.FileManager.FileItems;
 using SufiChain.SufiPlatform.FileManager.FileTypes;
 using SufiChain.SufiPlatform.FileManager.Storage;
+using Volo.Abp.Authorization.Permissions;
 using Volo.Abp.Data;
 using Volo.Abp.MultiTenancy;
 using Volo.Abp.Security.Encryption;
@@ -249,7 +252,11 @@ public class QuickShareLinkTests
                 NullLogger<FileItemBlobAccessService>.Instance,
                 CurrentTenant,
                 Substitute.For<ICurrentUser>(),
-                DataFilter);
+                DataFilter,
+                Substitute.For<IPermissionChecker>(),
+                Substitute.For<IFolderAccessResolver>(),
+                Substitute.For<IUserFolderAccessContextProvider>(),
+                Substitute.For<IFileFolderRepository>());
 
             DataFilter.Disable<IMultiTenant>().Returns(Substitute.For<IDisposable>());
             CurrentTenant.Change(Arg.Any<Guid?>()).Returns(Substitute.For<IDisposable>());

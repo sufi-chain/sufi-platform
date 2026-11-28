@@ -16,6 +16,7 @@ using SufiChain.SufiPlatform.FileManager.FileStructures;
 using SufiChain.SufiPlatform.FileManager.FileTypes;
 using SufiChain.SufiPlatform.FileManager.Processing;
 using SufiChain.SufiPlatform.FileManager.Storage;
+using Volo.Abp.Authorization.Permissions;
 using Volo.Abp.Settings;
 using Xunit;
 
@@ -235,7 +236,11 @@ public class FileUploadValidationSecurityTests
                 Substitute.For<ILogger<FileItemBlobAccessService>>(),
                 Substitute.For<Volo.Abp.MultiTenancy.ICurrentTenant>(),
                 Substitute.For<Volo.Abp.Users.ICurrentUser>(),
-                Substitute.For<Volo.Abp.Data.IDataFilter>()),
+                Substitute.For<Volo.Abp.Data.IDataFilter>(),
+                Substitute.For<IPermissionChecker>(),
+                Substitute.For<IFolderAccessResolver>(),
+                Substitute.For<IUserFolderAccessContextProvider>(),
+                Substitute.For<IFileFolderRepository>()),
             Substitute.For<IFileStorageQuotaGuard>(),
             Substitute.For<IFileStorageQuota>());
     }

@@ -1,7 +1,9 @@
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using SufiChain.SufiPlatform.Data;
 using Volo.Abp.Application;
 using Volo.Abp.Mapperly;
+using SufiChain.SufiPlatform.FileManager.AccessControl;
 using SufiChain.SufiPlatform.Identity;
 using SufiChain.SufiPlatform.Identity.Integration;
 using Volo.Abp.Modularity;
@@ -26,5 +28,8 @@ public class SufiIdentityApplicationModule : AbpModule
         context.Services.AddTransient<IIdentityUserIntegrationService, IdentityUserIntegrationService>();
         context.Services.AddTransient<IOrganizationUnitIntegrationService, OrganizationUnitIntegrationService>();
         context.Services.AddTransient<IIdentitySettingsIntegrationService, IdentitySettingsIntegrationService>();
+
+        context.Services.Replace(ServiceDescriptor.Scoped<IRoleNameToIdResolver, IdentityRoleNameToIdResolver>());
+        context.Services.Replace(ServiceDescriptor.Transient<IFolderGrantPrincipalStore, IdentityFolderGrantPrincipalStore>());
     }
 }

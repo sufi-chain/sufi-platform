@@ -13,6 +13,7 @@
     <ProjectReference Include="../../../modules/file-manager/src/SufiChain.SufiPlatform.FileManager.Blazor/SufiChain.SufiPlatform.FileManager.Blazor.csproj" />
     <ProjectReference Include="../../../modules/file-manager/src/SufiChain.SufiPlatform.FileManager.Blazor.Public/SufiChain.SufiPlatform.FileManager.Blazor.Public.csproj" />
     <PackageReference Include="bunit" Version="$(BunitVersion)" />
+    <PackageReference Include="NSubstitute" Version="$(NSubstituteVersion)" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="$(MicrosoftNetTestSdkVersion)" />
     <PackageReference Include="xunit" Version="$(XunitVersion)" />
     <PackageReference Include="xunit.runner.visualstudio" Version="$(XunitRunnerVisualStudioVersion)" PrivateAssets="All" />

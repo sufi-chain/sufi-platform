@@ -78,8 +78,13 @@ public partial class FolderAccess
         return Task.CompletedTask;
     }
 
-    private Task OnPrincipalIdChangedAsync(Guid? principalId)
+    private Task OnPrincipalIdChangedAsync(FolderGrantType source, Guid? principalId)
     {
+        if (_addGrant.GrantType != source)
+        {
+            return Task.CompletedTask;
+        }
+
         _addGrant.PrincipalId = principalId;
         return Task.CompletedTask;
     }
@@ -173,6 +178,37 @@ public partial class FolderAccess
     };
 
     private string PrincipalLabel => GrantTypeLabel(_addGrant.GrantType);
+
+    private string PrincipalText(FolderPermissionDto permission)
+    {
+        if (permission.RoleId.HasValue)
+        {
+            return $"{L["FolderAccess:Role"]}: {DisplayPrincipal(permission.RoleName, permission.RoleId)}";
+        }
+
+        if (permission.OrganizationUnitId.HasValue)
+        {
+            return $"{L["FolderAccess:OrganizationUnit"]}: {DisplayPrincipal(permission.OrganizationUnitName, permission.OrganizationUnitId)}";
+        }
+
+        if (permission.UserId.HasValue)
+        {
+            return $"{L["FolderAccess:User"]}: {DisplayPrincipal(permission.UserName, permission.UserId)}";
+        }
+
+        return "—";
+    }
+
+    private static string DisplayPrincipal(string? name, Guid? id)
+    {
+        return string.IsNullOrWhiteSpace(name) ? id?.ToString() ?? "—" : name;
+    }
+
+    private static string PrincipalTooltip(FolderPermissionDto permission)
+    {
+        var id = permission.RoleId ?? permission.OrganizationUnitId ?? permission.UserId;
+        return id?.ToString() ?? string.Empty;
+    }
 
     private string LevelLabel(FolderPermissionLevelDto level) => level switch
     {

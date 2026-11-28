@@ -52,6 +52,28 @@ public class FileItemDownloadAccessTests
     }
 
     [Fact]
+    public async Task RoleGrant_DoesNotAffect_PublicStructureAnonymousDownload()
+    {
+        var fixture = new DownloadAccessFixture(_bytes);
+        fixture.CurrentUser.IsAuthenticated.Returns(false);
+        var folderId = Guid.NewGuid();
+        var fileId = Guid.NewGuid();
+        fixture.AddFile(fileId, tenantId: null, structureKey: "cms-public", isPublic: true, mimeType: "image/png", originalName: "photo.png", folderId: folderId);
+        fixture.AllowFolderRead(folderId, allowed: false);
+
+        var result = await fixture.Service.GetDownloadContentAsync(fileId, token: null);
+
+        result.IsForbidden.ShouldBeFalse();
+        result.Content.ShouldNotBeNull();
+        result.Content.Content.ShouldBe(_bytes);
+        await fixture.FolderAccess.DidNotReceive().HasPermissionAsync(
+            Arg.Any<FileFolder>(),
+            Arg.Any<FolderAccessContext>(),
+            Arg.Any<FolderPermissionLevel>(),
+            Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
     public async Task Anonymous_caller_can_download_a_public_file()
     {
         var fixture = new DownloadAccessFixture(_bytes);

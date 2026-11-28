@@ -44,17 +44,17 @@
                         {
                             case FolderGrantType.User:
                                 <SufiUserSelect UserId="@_addGrant.PrincipalId"
-                                                UserIdChanged="@OnPrincipalIdChangedAsync"
+                                                UserIdChanged="@(id => OnPrincipalIdChangedAsync(FolderGrantType.User, id))"
                                                 Label="@PrincipalLabel" />
                                 break;
                             case FolderGrantType.Role:
                                 <SufiRoleSelect RoleId="@_addGrant.PrincipalId"
-                                                RoleIdChanged="@OnPrincipalIdChangedAsync"
+                                                RoleIdChanged="@(id => OnPrincipalIdChangedAsync(FolderGrantType.Role, id))"
                                                 Label="@PrincipalLabel" />
                                 break;
                             case FolderGrantType.OrganizationUnit:
                                 <SufiOrganizationUnitSelect OrganizationUnitId="@_addGrant.PrincipalId"
-                                                            OrganizationUnitIdChanged="@OnPrincipalIdChangedAsync"
+                                                            OrganizationUnitIdChanged="@(id => OnPrincipalIdChangedAsync(FolderGrantType.OrganizationUnit, id))"
                                                             Label="@PrincipalLabel" />
                                 break;
                         }
@@ -87,18 +87,14 @@
                 <SbTable TItem="FolderPermissionDto" Items="@_permissions" Hover>
                     <HeaderContent>
                         <tr>
-                            <th>@L["FolderAccess:User"]</th>
-                            <th>@L["FolderAccess:Role"]</th>
-                            <th>@L["FolderAccess:OrganizationUnit"]</th>
+                            <th>@L["FolderAccess:Principal"]</th>
                             <th>@L["FolderAccess:Level"]</th>
                             <th>@L["FolderAccess:InheritToChildren"]</th>
                             <th></th>
                         </tr>
                     </HeaderContent>
                     <RowTemplate Context="perm">
-                        <td><code>@(perm.UserId?.ToString() ?? "—")</code></td>
-                        <td><code>@(perm.RoleId?.ToString() ?? "—")</code></td>
-                        <td><code>@(perm.OrganizationUnitId?.ToString() ?? "—")</code></td>
+                        <td><span title="@PrincipalTooltip(perm)">@PrincipalText(perm)</span></td>
                         <td>@LevelLabel(perm.Level)</td>
                         <td>@(perm.InheritToChildren ? "✓" : "—")</td>
                         <td>

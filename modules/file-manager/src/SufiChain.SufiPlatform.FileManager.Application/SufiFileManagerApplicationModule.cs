@@ -18,6 +18,7 @@ using SufiChain.SufiPlatform.FileManager.Storage;
 using Volo.Abp;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using SufiChain.SufiPlatform.Ddd;
+using SufiChain.SufiPlatform.FileManager.AccessControl;
 
 namespace SufiChain.SufiPlatform.FileManager;
 
@@ -56,6 +57,9 @@ public class SufiFileManagerApplicationModule : AbpModule
 
         context.Services.Replace(
             ServiceDescriptor.Transient<IBlobContainerConfigurationProvider, StructureBlobContainerConfigurationProvider>());
+
+        context.Services.TryAddTransient<IRoleNameToIdResolver, NullRoleNameToIdResolver>();
+        context.Services.TryAddTransient<IFolderGrantPrincipalStore, NullFolderGrantPrincipalStore>();
     }
 
     public override async Task OnApplicationInitializationAsync(ApplicationInitializationContext context)
