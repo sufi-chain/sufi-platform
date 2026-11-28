@@ -75,6 +75,20 @@ public class UserTimeZoneDisplay : IUserTimeZoneDisplay
         return TimeZoneInfo.ConvertTimeFromUtc(utc, zone);
     }
 
+    /// <summary>
+    /// The last millisecond of <paramref name="day"/> in <paramref name="zone"/>, stored as UTC.
+    /// A picked date stays valid through that local day. V99 (short-link expiry) uses the same instant.
+    /// </summary>
+    public static DateTime EndOfLocalDayAsUtc(DateOnly day, TimeZoneInfo zone)
+    {
+        var local = DateTime.SpecifyKind(day.ToDateTime(new TimeOnly(23, 59, 59, 999)), DateTimeKind.Unspecified);
+        return DateTime.SpecifyKind(TimeZoneInfo.ConvertTimeToUtc(local, zone), DateTimeKind.Utc);
+    }
+
+    /// <summary>The calendar day of a stored instant in <paramref name="zone"/>.</summary>
+    public static DateOnly LocalDate(DateTime value, TimeZoneInfo zone) =>
+        DateOnly.FromDateTime(ToDisplayTime(value, zone));
+
     public static string Format(DateTime value, string format, TimeZoneInfo zone, CultureInfo? culture = null)
     {
         var display = ToDisplayTime(value, zone);
