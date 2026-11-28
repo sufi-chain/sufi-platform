@@ -9,7 +9,7 @@ using Volo.Abp.UI.Navigation.Urls;
 
 namespace SufiChain.SufiPlatform.ShortLinks;
 
-public class ShortLinkPublicUrlResolver : ITransientDependency
+public class ShortLinkPublicUrlResolver : IShortLinkPublicOriginResolver, ITransientDependency
 {
     private readonly IOptions<AppUrlOptions> _appUrls;
     private readonly IConfiguration _configuration;
@@ -28,7 +28,7 @@ public class ShortLinkPublicUrlResolver : ITransientDependency
         _domains = domains;
     }
 
-    public virtual async Task<string> GetAsync(string shortCode)
+    public virtual async Task<string?> GetOriginAsync()
     {
         string? tenantHost = null;
         string? tenantSubdomain = null;
@@ -43,12 +43,16 @@ public class ShortLinkPublicUrlResolver : ITransientDependency
         }
 
         var publicRoot = _appUrls.Value.Applications[ShortLinkPublicUrl.PublicApplicationName]?.RootUrl;
-        var origin = ShortLinkPublicUrl.ResolveOrigin(
+        return ShortLinkPublicUrl.ResolveOrigin(
             publicRoot,
             _configuration["App:PublicHostUrl"],
             _configuration["OpenIddict:Applications:SufiPlatform_PublicHost:RootUrl"],
             tenantHost,
             tenantSubdomain);
-        return ShortLinkPublicUrl.Build(origin, shortCode);
+    }
+
+    public virtual async Task<string> GetAsync(string shortCode)
+    {
+        return ShortLinkPublicUrl.Build(await GetOriginAsync(), shortCode);
     }
 }
