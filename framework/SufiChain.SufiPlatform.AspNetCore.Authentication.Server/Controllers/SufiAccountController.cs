@@ -412,7 +412,7 @@ public abstract class SufiAccountController : AbpController
 
         try
         {
-            await _signInManager.SignInAsync(user, rememberMe);
+            await _signInManager.SignInAsync(user, LoginCookiePersistence.Create(rememberMe));
         }
         catch (Exception ex)
         {
