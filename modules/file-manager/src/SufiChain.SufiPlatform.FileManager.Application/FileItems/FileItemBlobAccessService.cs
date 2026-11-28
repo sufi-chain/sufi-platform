@@ -85,8 +85,7 @@ public class FileItemBlobAccessService
         }
 
         var entry = await _structureCache.GetAsync(fileItem.StructureKey);
-        var baseUrl = _options.BaseUrl ?? "/";
-        var path = $"{baseUrl.TrimEnd('/')}/api/file-manager/file-items/{fileItem.Id}/download";
+        var path = FileItemApiLink.Build(_options.BaseUrl, $"/api/file-manager/file-items/{fileItem.Id}/download");
         var url = entry?.IsPublicAccess == true
             ? path
             : AppendAccessTokenIfConfigured(path, fileItem.Id);
@@ -112,8 +111,7 @@ public class FileItemBlobAccessService
         }
 
         var entry = await _structureCache.GetAsync(fileItem.StructureKey);
-        var baseUrl = _options.BaseUrl ?? "/";
-        var path = $"{baseUrl.TrimEnd('/')}/api/file-manager/file-items/{fileItem.Id}/thumbnail";
+        var path = FileItemApiLink.Build(_options.BaseUrl, $"/api/file-manager/file-items/{fileItem.Id}/thumbnail");
         var url = entry?.IsPublicAccess == true
             ? path
             : AppendAccessTokenIfConfigured(path, fileItem.Id);
@@ -134,8 +132,7 @@ public class FileItemBlobAccessService
         }
 
         var entry = await _structureCache.GetAsync(fileItem.StructureKey);
-        var baseUrl = _options.BaseUrl ?? "/";
-        var path = $"{baseUrl.TrimEnd('/')}/api/file-manager/file-items/{fileItem.Id}/stream";
+        var path = FileItemApiLink.Build(_options.BaseUrl, $"/api/file-manager/file-items/{fileItem.Id}/stream");
         var url = entry?.IsPublicAccess == true
             ? path
             : AppendAccessTokenIfConfigured(path, fileItem.Id);
