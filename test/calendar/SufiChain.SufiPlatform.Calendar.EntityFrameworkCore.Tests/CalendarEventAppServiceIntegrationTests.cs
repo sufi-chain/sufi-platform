@@ -5,6 +5,7 @@ using Shouldly;
 using SufiChain.SufiPlatform.Calendar.Calendars;
 using SufiChain.SufiPlatform.Calendar.Events;
 using Volo.Abp;
+using Volo.Abp.Auditing;
 using Volo.Abp.Authorization;
 using Volo.Abp.Data;
 using Volo.Abp.EntityFrameworkCore;
@@ -296,6 +297,55 @@ public class CalendarEventAppServiceIntegrationTests : CalendarEntityFrameworkCo
 
         json.ShouldNotContain(created.Id.ToString());
         json.ShouldNotContain("Planning");
+    }
+
+    [Fact]
+    public async Task CalendarEvent_SoftDelete_SetsDeletionFields_StatusUnchanged()
+    {
+        var ownerId = Guid.NewGuid();
+        var calendarId = await CreateCalendarAsync(ownerId);
+        var accessor = GetRequiredService<ICurrentPrincipalAccessor>();
+        Guid eventId;
+        using (accessor.Change(Principal(ownerId)))
+        {
+            var service = GetRequiredService<ICalendarEventAppService>();
+            eventId = (await service.CreateAsync(NewEvent(calendarId))).Id;
+            await service.DeleteAsync(eventId);
+        }
+
+        await WithUnitOfWorkAsync(async () =>
+        {
+            using (GetRequiredService<IDataFilter>().Disable<ISoftDelete>())
+            {
+                var deleted = await GetRequiredService<ICalendarEventRepository>().GetAsync(eventId);
+                deleted.IsDeleted.ShouldBeTrue();
+                deleted.DeletionTime.ShouldNotBeNull();
+                deleted.DeleterId.ShouldBe(ownerId);
+                deleted.Status.ShouldBe(EventStatus.Confirmed);
+            }
+        });
+    }
+
+    [Fact]
+    public async Task CalendarEvent_SoftDelete_WritesAuditOrEntityChange()
+    {
+        var ownerId = Guid.NewGuid();
+        var calendarId = await CreateCalendarAsync(ownerId);
+        var accessor = GetRequiredService<ICurrentPrincipalAccessor>();
+        var auditing = GetRequiredService<IAuditingManager>();
+        using (accessor.Change(Principal(ownerId)))
+        using (var saveHandle = auditing.BeginScope())
+        {
+            var service = GetRequiredService<ICalendarEventAppService>();
+            var eventId = (await service.CreateAsync(NewEvent(calendarId))).Id;
+            await service.DeleteAsync(eventId);
+            await saveHandle.SaveAsync();
+
+            auditing.Current.ShouldNotBeNull();
+            auditing.Current!.Log.EntityChanges.ShouldContain(change =>
+                change.EntityId == eventId.ToString()
+                && change.ChangeType == EntityChangeType.Deleted);
+        }
     }
 
     private sealed class SingleCalendarCatalog : ICalendarCatalogIntegrationService
