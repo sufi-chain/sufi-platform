@@ -26,7 +26,7 @@ public partial class LocalizationTexts : LocalizationComponentBase
     private List<string> _cultureNames = new();
     private string? _selectedResource;
     private string? _selectedCulture;
-    private string? _keyFilter;
+    private string? _search;
 
     // Pagination state (SbDataGrid uses 0-based PageIndex)
     private int _pageIndex = 0;
@@ -130,7 +130,8 @@ public partial class LocalizationTexts : LocalizationComponentBase
         {
             ResourceName = _selectedResource!,
             CultureName = _selectedCulture!,
-            KeyFilter = request.GetFilterValue("Key") ?? _keyFilter,
+            Search = _search,
+            KeyFilter = request.GetFilterValue("Key"),
             ValueFilter = request.GetFilterValue("Value"),
             BaseValueFilter = request.GetFilterValue("BaseValue"),
             SkipCount = Math.Max(0, request.PageIndex * request.PageSize),
@@ -150,7 +151,8 @@ public partial class LocalizationTexts : LocalizationComponentBase
         {
             ResourceName = _selectedResource,
             CultureName = _selectedCulture,
-            KeyFilter = request.GetFilterValue("Key") ?? _keyFilter,
+            Search = _search,
+            KeyFilter = request.GetFilterValue("Key"),
             ValueFilter = request.GetFilterValue("Value"),
             SkipCount = Math.Max(0, request.PageIndex * request.PageSize),
             MaxResultCount = request.PageSize
@@ -188,7 +190,7 @@ public partial class LocalizationTexts : LocalizationComponentBase
     {
         _selectedResource = null;
         _selectedCulture = null;
-        _keyFilter = null;
+        _search = null;
         _pageIndex = 0;
         StateHasChanged();
     }
@@ -321,9 +323,9 @@ public partial class LocalizationTexts : LocalizationComponentBase
             context[LocalizationEditorHooshvareKeys.Context.TargetCulture] = _selectedCulture;
         }
 
-        if (!string.IsNullOrWhiteSpace(_keyFilter))
+        if (!string.IsNullOrWhiteSpace(_search))
         {
-            context[LocalizationEditorHooshvareKeys.Context.Key] = _keyFilter;
+            context[LocalizationEditorHooshvareKeys.Context.Key] = _search;
         }
         else if (_showEditDialog && !string.IsNullOrWhiteSpace(_editingItem.Key))
         {
