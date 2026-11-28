@@ -18,7 +18,7 @@ public class SufiComSettingDefinitionProvider : SettingDefinitionProvider
             ),
             new SettingDefinition(
                 SufiComSenderSettingNames.Email.DefaultFromDisplayName,
-                "Application",
+                "Sufi Platform",
                 L("DisplayName:SufiCom.Email.DefaultFromDisplayName"),
                 L("Description:SufiCom.Email.DefaultFromDisplayName"),
                 isVisibleToClients: false
