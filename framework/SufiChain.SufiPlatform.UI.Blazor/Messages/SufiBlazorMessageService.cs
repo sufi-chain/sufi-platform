@@ -3,6 +3,7 @@ using Microsoft.Extensions.Logging;
 using System.Collections.Concurrent;
 using SufiChain.SufiPlatform.UI.Blazor.Circuit;
 using SufiChain.SufiPlatform.UI.Messages;
+using SufiChain.SufiPlatform.UI.Notifications;
 
 namespace SufiChain.SufiPlatform.UI.Blazor.Messages;
 
@@ -15,13 +16,16 @@ public class SufiBlazorMessageService : IUiMessageService
     private readonly ConcurrentDictionary<string, List<MessageRequest>> _pendingMessagesByCircuit = new();
     private readonly ILogger<SufiBlazorMessageService>? _logger;
     private readonly IBlazorCircuitIdAccessor? _circuitIdAccessor;
+    private readonly IUiNotificationService? _notifications;
 
     public SufiBlazorMessageService(
         ILogger<SufiBlazorMessageService>? logger = null,
-        IBlazorCircuitIdAccessor? circuitIdAccessor = null)
+        IBlazorCircuitIdAccessor? circuitIdAccessor = null,
+        IUiNotificationService? notifications = null)
     {
         _logger = logger;
         _circuitIdAccessor = circuitIdAccessor;
+        _notifications = notifications;
     }
 
     /// <summary>
@@ -121,6 +125,14 @@ public class SufiBlazorMessageService : IUiMessageService
 
     public async Task SuccessAsync(string message, string? title = null, Action<UiMessageOptions>? options = null)
     {
+        var opts = new UiMessageOptions();
+        options?.Invoke(opts);
+        if (!opts.Blocking && _notifications != null)
+        {
+            await _notifications.SuccessAsync(message, title);
+            return;
+        }
+
         await ShowMessageAsync(UiMessageType.Success, message, title, options);
     }
 
