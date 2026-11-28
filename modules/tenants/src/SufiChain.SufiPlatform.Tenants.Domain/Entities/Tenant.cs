@@ -5,6 +5,7 @@ using JetBrains.Annotations;
 using Volo.Abp;
 using Volo.Abp.Auditing;
 using Volo.Abp.Domain.Entities.Auditing;
+using Volo.Abp.MultiTenancy;
 
 namespace SufiChain.SufiPlatform.Tenants;
 
@@ -73,6 +74,8 @@ public class Tenant : FullAuditedAggregateRoot<Guid>, IHasEntityVersion
         {
             ConnectionStrings.Add(new TenantConnectionString(Id, name, connectionString));
         }
+
+        AddLocalEvent(new TenantChangedEvent(Id, NormalizedName));
     }
 
     public virtual void RemoveDefaultConnectionString()
@@ -87,6 +90,7 @@ public class Tenant : FullAuditedAggregateRoot<Guid>, IHasEntityVersion
         if (tenantConnectionString != null)
         {
             ConnectionStrings.Remove(tenantConnectionString);
+            AddLocalEvent(new TenantChangedEvent(Id, NormalizedName));
         }
     }
 

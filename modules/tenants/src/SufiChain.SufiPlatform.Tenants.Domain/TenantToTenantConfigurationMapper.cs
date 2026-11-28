@@ -30,5 +30,8 @@ public partial class TenantToTenantConfigurationMapper : MapperBase<Tenant, Tena
                 destination.ConnectionStrings[connectionString.Name] = connectionString.Value;
             }
         }
+
+        destination.ConnectionStrings ??= new ConnectionStrings();
+        SufiTenantIsolation.Stamp(destination.ConnectionStrings, source.DatabaseName);
     }
 }

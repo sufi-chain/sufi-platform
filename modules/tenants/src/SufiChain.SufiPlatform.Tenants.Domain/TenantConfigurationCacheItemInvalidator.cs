@@ -24,11 +24,6 @@ public class TenantConfigurationCacheItemInvalidator :
 
     public virtual async Task HandleEventAsync(EntityChangedEventData<Tenant> eventData)
     {
-        if (eventData is EntityCreatedEventData<Tenant>)
-        {
-            return;
-        }
-
         await ClearCacheAsync(eventData.Entity.Id, eventData.Entity.NormalizedName);
     }
 

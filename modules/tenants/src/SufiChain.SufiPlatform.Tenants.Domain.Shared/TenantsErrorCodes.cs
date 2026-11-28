@@ -19,4 +19,10 @@ public static class TenantsErrorCodes
     public const string DatabaseNameIsImmutable = Namespace + ":DatabaseNameIsImmutable";
 
     public const string UnverifiedCustomDomainCanNotBeActive = Namespace + ":UnverifiedCustomDomainCanNotBeActive";
+
+    public const string TenantUnavailable = Namespace + ":TenantUnavailable";
+
+    public const string TenantDatabaseNotProvisioned = Namespace + ":TenantDatabaseNotProvisioned";
+
+    public const string DedicatedTenantHostWrite = Namespace + ":DedicatedTenantHostWrite";
 }

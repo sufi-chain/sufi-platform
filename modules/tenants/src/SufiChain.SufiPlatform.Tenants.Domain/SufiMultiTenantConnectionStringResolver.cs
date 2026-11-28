@@ -1,6 +1,8 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Volo.Abp;
 using Volo.Abp.Data;
@@ -14,8 +16,9 @@ namespace SufiChain.SufiPlatform.Tenants;
 /// When a tenant is current, every named connection resolves to that tenant's
 /// explicit row for the name, otherwise the tenant's Default. Host module-specific
 /// connection strings are never used for a tenant that has a Default.
-/// A tenant without a Default (and without a row for the name) uses host resolution,
-/// i.e. the shared host database with the TenantId filter, as in 8.3.
+/// A shared tenant (no database name) without a Default uses host resolution.
+/// A dedicated tenant (database name set) without a Default throws.
+/// A missing tenant configuration throws. Neither case writes to the host database.
 /// Connection-string names match without case, so a stored "default" still wins
 /// over the host's named catalog.
 /// </summary>
@@ -24,6 +27,7 @@ namespace SufiChain.SufiPlatform.Tenants;
 public class SufiMultiTenantConnectionStringResolver : MultiTenantConnectionStringResolver
 {
     private readonly ICurrentTenant _currentTenant;
+    private readonly ILogger<SufiMultiTenantConnectionStringResolver> _logger;
 
     public SufiMultiTenantConnectionStringResolver(
         IOptionsMonitor<AbpDbConnectionOptions> options,
@@ -32,6 +36,8 @@ public class SufiMultiTenantConnectionStringResolver : MultiTenantConnectionStri
         : base(options, currentTenant, serviceProvider)
     {
         _currentTenant = currentTenant;
+        _logger = serviceProvider.GetService<ILogger<SufiMultiTenantConnectionStringResolver>>()
+            ?? NullLogger<SufiMultiTenantConnectionStringResolver>.Instance;
     }
 
     public override async Task<string> ResolveAsync(string? connectionStringName = null)
@@ -41,9 +47,31 @@ public class SufiMultiTenantConnectionStringResolver : MultiTenantConnectionStri
             return await base.ResolveAsync(connectionStringName);
         }
 
-        var tenant = await FindTenantConfigurationAsync(_currentTenant.Id.Value);
-        return ResolveForTenant(tenant, connectionStringName)
-            ?? await base.ResolveAsync(connectionStringName);
+        var tenantId = _currentTenant.Id.Value;
+        var tenant = await FindTenantConfigurationAsync(tenantId);
+        if (tenant == null)
+        {
+            throw new BusinessException(TenantsErrorCodes.TenantUnavailable)
+                .WithData("TenantId", tenantId);
+        }
+
+        var resolved = ResolveForTenant(tenant, connectionStringName);
+        if (resolved != null)
+        {
+            return resolved;
+        }
+
+        if (SufiTenantIsolation.IsDedicated(tenant))
+        {
+            throw new BusinessException(TenantsErrorCodes.TenantDatabaseNotProvisioned)
+                .WithData("TenantId", tenantId);
+        }
+
+        _logger.LogWarning(
+            "Tenant {TenantId} has no connection string for {ConnectionStringName}; using the host database.",
+            tenantId,
+            connectionStringName ?? ConnectionStrings.DefaultConnectionStringName);
+        return await base.ResolveAsync(connectionStringName);
     }
 
     [Obsolete("Use ResolveAsync method.")]
@@ -54,9 +82,31 @@ public class SufiMultiTenantConnectionStringResolver : MultiTenantConnectionStri
             return base.Resolve(connectionStringName);
         }
 
-        var tenant = FindTenantConfiguration(_currentTenant.Id.Value);
-        return ResolveForTenant(tenant, connectionStringName)
-            ?? base.Resolve(connectionStringName);
+        var tenantId = _currentTenant.Id.Value;
+        var tenant = FindTenantConfiguration(tenantId);
+        if (tenant == null)
+        {
+            throw new BusinessException(TenantsErrorCodes.TenantUnavailable)
+                .WithData("TenantId", tenantId);
+        }
+
+        var resolved = ResolveForTenant(tenant, connectionStringName);
+        if (resolved != null)
+        {
+            return resolved;
+        }
+
+        if (SufiTenantIsolation.IsDedicated(tenant))
+        {
+            throw new BusinessException(TenantsErrorCodes.TenantDatabaseNotProvisioned)
+                .WithData("TenantId", tenantId);
+        }
+
+        _logger.LogWarning(
+            "Tenant {TenantId} has no connection string for {ConnectionStringName}; using the host database.",
+            tenantId,
+            connectionStringName ?? ConnectionStrings.DefaultConnectionStringName);
+        return base.Resolve(connectionStringName);
     }
 
     /// <returns>The tenant's connection string, or <c>null</c> to use host resolution.</returns>
@@ -68,6 +118,11 @@ public class SufiMultiTenantConnectionStringResolver : MultiTenantConnectionStri
         if (connectionStrings == null || connectionStrings.Count == 0)
         {
             return null;
+        }
+
+        if (string.Equals(connectionStringName, SufiTenantIsolation.DatabaseNameKey, StringComparison.OrdinalIgnoreCase))
+        {
+            connectionStringName = null;
         }
 
         var tenantDefault = FindConnectionString(connectionStrings, ConnectionStrings.DefaultConnectionStringName);
@@ -99,6 +154,11 @@ public class SufiMultiTenantConnectionStringResolver : MultiTenantConnectionStri
 
         foreach (var pair in connectionStrings)
         {
+            if (string.Equals(pair.Key, SufiTenantIsolation.DatabaseNameKey, StringComparison.OrdinalIgnoreCase))
+            {
+                continue;
+            }
+
             if (string.Equals(pair.Key, name, StringComparison.OrdinalIgnoreCase)
                 && !pair.Value.IsNullOrWhiteSpace())
             {

@@ -73,7 +73,7 @@ public class TenantStore : ITenantStore, ITransientDependency
             using (CurrentTenant.Change(null)) //TODO: No need this if we can implement to define host side (or tenant-independent) entities!
             {
                 var tenant = await TenantRepository.FindAsync(id.Value);
-                return await SetCacheAsync(cacheKey, tenant);
+                return await SetCacheAsync(cacheKey, tenant, cacheNull: false);
             }
         }
 
@@ -89,11 +89,21 @@ public class TenantStore : ITenantStore, ITransientDependency
         throw new BusinessException("Both id and normalizedName can't be invalid.");
     }
 
-    protected virtual async Task<TenantConfigurationCacheItem> SetCacheAsync(string cacheKey, [CanBeNull] Tenant tenant)
+    protected virtual async Task<TenantConfigurationCacheItem> SetCacheAsync(
+        string cacheKey,
+        [CanBeNull] Tenant tenant,
+        bool cacheNull = true)
     {
         var tenantConfiguration = tenant != null ? ObjectMapper.Map<Tenant, TenantConfiguration>(tenant) : null;
         var cacheItem = new TenantConfigurationCacheItem(tenantConfiguration);
-        await Cache.SetAsync(cacheKey, cacheItem, considerUow: true);
+        var dedicatedWithoutDefault = tenant != null
+            && !tenant.DatabaseName.IsNullOrWhiteSpace()
+            && tenant.FindDefaultConnectionString().IsNullOrWhiteSpace();
+        if ((tenant == null && cacheNull) || (tenant != null && !dedicatedWithoutDefault))
+        {
+            await Cache.SetAsync(cacheKey, cacheItem, considerUow: true);
+        }
+
         return cacheItem;
     }
 

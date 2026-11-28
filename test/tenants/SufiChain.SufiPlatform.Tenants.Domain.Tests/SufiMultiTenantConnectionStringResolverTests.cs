@@ -108,6 +108,64 @@ public class SufiMultiTenantConnectionStringResolverTests
     }
 
     [Fact]
+    public async Task Resolver_TenantWithDefault_NoModuleRow_NeverReturnsHostModuleString()
+    {
+        var resolver = CreateResolver(
+            Guid.NewGuid(),
+            tenantConnectionStrings: new ConnectionStrings
+            {
+                [ConnectionStrings.DefaultConnectionStringName] = TenantDefault
+            });
+
+        (await resolver.ResolveAsync("SufiHelpDesk")).ShouldBe(TenantDefault);
+        (await resolver.ResolveAsync("SufiFileManager")).ShouldBe(TenantDefault);
+    }
+
+    [Fact]
+    public async Task Resolver_TenantConfigNotFound_Throws()
+    {
+        var resolver = CreateResolver(Guid.NewGuid(), tenantConnectionStrings: null, tenantFound: false);
+
+        var error = await Should.ThrowAsync<Volo.Abp.BusinessException>(() => resolver.ResolveAsync("SufiHelpDesk"));
+        error.Code.ShouldBe(TenantsErrorCodes.TenantUnavailable);
+    }
+
+    [Fact]
+    public async Task Resolver_DedicatedTenantWithoutDefault_Throws()
+    {
+        var strings = new ConnectionStrings
+        {
+            [SufiTenantIsolation.DatabaseNameKey] = "DemoDb"
+        };
+        var resolver = CreateResolver(Guid.NewGuid(), strings);
+
+        var error = await Should.ThrowAsync<Volo.Abp.BusinessException>(() => resolver.ResolveAsync("SufiFileManager"));
+        error.Code.ShouldBe(TenantsErrorCodes.TenantDatabaseNotProvisioned);
+    }
+
+    [Fact]
+    public async Task Resolver_SharedTenant_UsesHost()
+    {
+        var resolver = CreateResolver(Guid.NewGuid(), tenantConnectionStrings: new ConnectionStrings());
+
+        (await resolver.ResolveAsync("SufiFileManager")).ShouldBe(HostFileManager);
+    }
+
+    [Fact]
+    public async Task Resolver_DedicatedTenant_WithDefault_IgnoresHostModuleString()
+    {
+        var strings = new ConnectionStrings
+        {
+            [ConnectionStrings.DefaultConnectionStringName] = TenantDefault,
+            [SufiTenantIsolation.DatabaseNameKey] = "DemoDb"
+        };
+        var resolver = CreateResolver(Guid.NewGuid(), strings);
+
+        (await resolver.ResolveAsync("SufiHelpDesk")).ShouldBe(TenantDefault);
+        (await resolver.ResolveAsync(SufiTenantIsolation.DatabaseNameKey)).ShouldBe(TenantDefault);
+    }
+
+    [Fact]
     public async Task Tenant_With_Only_Module_Row_Should_Use_Row_For_That_Name_And_Host_For_Others()
     {
         const string tenantKb = "Host=tenant-kb-only";
@@ -122,7 +180,8 @@ public class SufiMultiTenantConnectionStringResolverTests
 
     private static SufiMultiTenantConnectionStringResolver CreateResolver(
         Guid? tenantId,
-        ConnectionStrings? tenantConnectionStrings)
+        ConnectionStrings? tenantConnectionStrings,
+        bool tenantFound = true)
     {
         var options = new AbpDbConnectionOptions();
         options.ConnectionStrings.Default = HostDefault;
@@ -139,7 +198,7 @@ public class SufiMultiTenantConnectionStringResolverTests
         currentTenant.Id.Returns(tenantId);
 
         var tenantStore = Substitute.For<ITenantStore>();
-        if (tenantId.HasValue)
+        if (tenantId.HasValue && tenantFound)
         {
             var configuration = new TenantConfiguration(tenantId.Value, "touristpanel")
             {
