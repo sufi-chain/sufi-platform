@@ -34,6 +34,75 @@ public class ValidationMessageLocalizationTests
     }
 
     [Fact]
+    public void Compare_MinLength_and_Email_use_the_Persian_template_and_a_localized_name()
+    {
+        var localizer = new MapLocalizer(
+            ("'{0}' and '{1}' do not match.", "'{0}' و '{1}' مطابقت ندارند."),
+            ("The field {0} must be a string or array type with a minimum length of '{1}'.", "فیلد {0} باید حداقل '{1}' نویسه باشد."),
+            ("The {0} field is not a valid e-mail address.", "فیلد {0} یک نشانی ایمیل معتبر نیست."),
+            ("Field:NewPassword", "رمز عبور جدید"),
+            ("Field:TargetEmailAddress", "نشانی ایمیل گیرنده"));
+
+        var compare = ValidationMessageTemplates.Format(
+            localizer,
+            new CompareAttribute("NewPassword"),
+            ValidationMessageTemplates.LocalizeDisplayName(localizer, "Field:NewPassword"));
+        compare.ShouldContain("مطابقت ندارند");
+        compare.ShouldContain("رمز عبور جدید");
+
+        var minLength = ValidationMessageTemplates.Format(
+            localizer,
+            new MinLengthAttribute(6),
+            "رمز عبور جدید");
+        minLength.ShouldContain("حداقل");
+        minLength.ShouldContain("6");
+
+        var email = ValidationMessageTemplates.Format(
+            localizer,
+            new EmailAddressAttribute(),
+            ValidationMessageTemplates.LocalizeDisplayName(localizer, "Field:TargetEmailAddress"));
+        email.ShouldContain("نشانی ایمیل گیرنده");
+        email.ShouldNotContain("TargetEmailAddress");
+    }
+
+    [Fact]
+    public void Role_create_submits_through_the_form()
+    {
+        var dir = new DirectoryInfo(AppContext.BaseDirectory);
+        while (dir != null)
+        {
+            var candidate = Path.Combine(
+                dir.FullName,
+                "modules",
+                "identity",
+                "src",
+                "SufiChain.SufiPlatform.Identity.Blazor",
+                "Components",
+                "RoleCreateModal.razor");
+            if (File.Exists(candidate))
+            {
+                var markup = File.ReadAllText(candidate);
+                markup.ShouldContain("id=\"role-create-form\"");
+                markup.ShouldContain("form=\"role-create-form\"");
+                markup.ShouldContain("Type=\"submit\"");
+                markup.ShouldNotContain("OnClick=\"OnValidSubmitAsync\"");
+                return;
+            }
+
+            dir = dir.Parent;
+        }
+
+        throw new FileNotFoundException("RoleCreateModal.razor was not found from the test output directory.");
+    }
+
+    [Fact]
+    public void Unknown_display_name_stays_the_raw_property_name()
+    {
+        var localizer = new MapLocalizer(("The {0} field is required.", "فیلد {0} الزامی است."));
+        ValidationMessageTemplates.LocalizeDisplayName(localizer, "AdminPassword").ShouldBe("AdminPassword");
+    }
+
+    [Fact]
     public void Finance_fa_labels_cash_flow_and_fx_gain_loss()
     {
         var fa = ReadFinanceFa();

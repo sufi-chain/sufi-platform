@@ -7,7 +7,7 @@ public class IdentityRoleCreateOrUpdateDtoBase : ExtensibleObject
 {
     [Required]
     [StringLength(256)]
-    [Display(Name = "RoleName")]
+    [Display(Name = "Field:RoleName")]
     public string Name { get; set; } = string.Empty;
 
     public bool IsDefault { get; set; }
