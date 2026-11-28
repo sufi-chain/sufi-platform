@@ -66,6 +66,7 @@ public class EfCoreFileFolderRepository :
         }
 
         return await query
+            .Include(x => x.Permissions)
             .OrderBy(x => x.SortOrder)
             .ThenBy(x => x.Name)
             .ToListAsync(cancellationToken);
@@ -78,6 +79,7 @@ public class EfCoreFileFolderRepository :
     {
         var dbSet = await GetDbSetAsync();
         return await dbSet
+            .Include(x => x.Permissions)
             .FirstOrDefaultAsync(x => x.Path == path && x.TenantId == tenantId, cancellationToken);
     }
 

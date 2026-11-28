@@ -14,6 +14,7 @@ using SufiChain.SufiPlatform.FileManager.FileStructures;
 using SufiChain.SufiPlatform.Identity;
 using SufiChain.SufiPlatform.Identity.Integration;
 using Volo.Abp;
+using Volo.Abp.Authorization.Permissions;
 using Volo.Abp.DependencyInjection;
 using Volo.Abp.Guids;
 using Volo.Abp.MultiTenancy;
@@ -128,7 +129,8 @@ public class FolderRoleGrantTests
                 folders,
                 Substitute.For<IFileItemRepository>(),
                 Substitute.For<IFileStructureRepository>()),
-            store)
+            store,
+            Substitute.For<IPermissionChecker>())
         {
             LazyServiceProvider = LazyGuids()
         };

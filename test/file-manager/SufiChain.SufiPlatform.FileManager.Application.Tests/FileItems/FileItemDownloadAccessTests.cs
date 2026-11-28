@@ -74,6 +74,21 @@ public class FileItemDownloadAccessTests
     }
 
     [Fact]
+    public async Task PublicStructure_FileStillDownloadsAnonymously_AfterListingFilter()
+    {
+        var fixture = new DownloadAccessFixture(_bytes);
+        fixture.CurrentUser.IsAuthenticated.Returns(false);
+        var fileId = Guid.NewGuid();
+        fixture.AddFile(fileId, tenantId: null, structureKey: "cms-public", isPublic: true, mimeType: "image/png", originalName: "photo.png");
+
+        var result = await fixture.Service.GetDownloadContentAsync(fileId, token: null);
+
+        result.IsForbidden.ShouldBeFalse();
+        result.Content.ShouldNotBeNull();
+        result.Content.Content.ShouldBe(_bytes);
+    }
+
+    [Fact]
     public async Task Anonymous_caller_can_download_a_public_file()
     {
         var fixture = new DownloadAccessFixture(_bytes);

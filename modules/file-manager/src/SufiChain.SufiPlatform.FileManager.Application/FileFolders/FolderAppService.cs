@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using SufiChain.SufiPlatform.FileManager.AccessControl;
+using Volo.Abp.Authorization.Permissions;
 using SufiChain.SufiPlatform.FileManager;
 using SufiChain.SufiPlatform.FileManager.Features;
 using SufiChain.SufiPlatform.FileManager.FileItems;
@@ -21,6 +22,7 @@ namespace SufiChain.SufiPlatform.FileManager.FileFolders;
 /// <summary>
 /// Application service for folder management
 /// </summary>
+[Authorize(FileManagerPermissions.FileItems.Default)]
 [RequiresFeature(SufiFileManagerFeatures.Enable, SufiFileManagerFeatures.FileItems)]
 public class FolderAppService : SufiApplicationService, IFolderAppService
 {
@@ -30,6 +32,7 @@ public class FolderAppService : SufiApplicationService, IFolderAppService
     private readonly IUserFolderAccessContextProvider _accessContextProvider;
     private readonly StructureRootFolderCleanup _structureRootCleanup;
     private readonly IFolderGrantPrincipalStore _principalStore;
+    private readonly IPermissionChecker _permissionChecker;
 
    public FolderAppService(
        IFileFolderRepository folderRepository,
@@ -37,7 +40,8 @@ public class FolderAppService : SufiApplicationService, IFolderAppService
         IFolderAccessResolver accessResolver,
         IUserFolderAccessContextProvider accessContextProvider,
         StructureRootFolderCleanup structureRootCleanup,
-        IFolderGrantPrincipalStore principalStore)
+        IFolderGrantPrincipalStore principalStore,
+        IPermissionChecker permissionChecker)
    {
        _folderRepository = folderRepository;
        _fileItemRepository = fileItemRepository;
@@ -45,6 +49,7 @@ public class FolderAppService : SufiApplicationService, IFolderAppService
         _accessContextProvider = accessContextProvider;
         _structureRootCleanup = structureRootCleanup;
         _principalStore = principalStore;
+        _permissionChecker = permissionChecker;
         LocalizationResource = typeof(SufiFileManagerResource);
    }
 
@@ -52,6 +57,8 @@ public class FolderAppService : SufiApplicationService, IFolderAppService
 
     public async Task<List<FolderTreeNodeDto>> GetTreeAsync(Guid? tenantId = null)
     {
+        await EnsureFileItemsDefaultAsync();
+
         // Only host can request another tenant's tree; tenant users must use their own tree.
         Guid? effectiveTenantId;
         if (tenantId.HasValue && CurrentTenant.Id != tenantId)
@@ -72,71 +79,60 @@ public class FolderAppService : SufiApplicationService, IFolderAppService
             effectiveTenantId,
             includeShared: true);
 
-       var rootFolders = folders.Where(f => f.ParentId == null).ToList();
-
         var accessContext = await _accessContextProvider.GetContextAsync();
+        var plan = FolderVisibility.Build(folders, accessContext, _accessResolver);
+        var rootFolders = folders.Where(f => f.ParentId == null && plan.Shows(f.Id)).ToList();
         var existingKeys = await _structureRootCleanup.GetExistingKeysAsync();
-        return BuildTreeNodes(rootFolders, folders, accessContext, existingKeys);
+        return BuildTreeNodes(rootFolders, folders, accessContext, existingKeys, plan);
    }
 
     public async Task<List<FolderTreeNodeDto>> GetChildrenAsync(Guid? parentId, string? parentPath = null)
     {
-        List<FileFolder> children;
+        await EnsureFileItemsDefaultAsync();
+        var folders = await _folderRepository.GetFolderTreeAsync(CurrentTenant.Id, includeShared: true);
+        var accessContext = await _accessContextProvider.GetContextAsync();
+        var plan = FolderVisibility.Build(folders, accessContext, _accessResolver);
+        var byId = folders.ToDictionary(folder => folder.Id);
 
-        if (parentId.HasValue)
+        Guid? parent = parentId;
+        if (!parent.HasValue && !string.IsNullOrEmpty(parentPath))
         {
-            children = await _folderRepository.GetChildrenAsync(parentId.Value);
-        }
-        else if (!string.IsNullOrEmpty(parentPath))
-        {
-            var parent = await _folderRepository.FindByPathAsync(parentPath, CurrentTenant.Id);
-            if (parent == null)
+            var match = folders.FirstOrDefault(folder =>
+                string.Equals(folder.Path, parentPath, StringComparison.OrdinalIgnoreCase));
+            if (match == null || !plan.Shows(match.Id))
             {
                 return new List<FolderTreeNodeDto>();
             }
-            children = await _folderRepository.GetChildrenAsync(parent.Id);
+
+            parent = match.Id;
         }
-        else
+        else if (parent.HasValue && (!byId.ContainsKey(parent.Value) || !plan.Shows(parent.Value)))
         {
-            children = await _folderRepository.GetRootFoldersAsync(CurrentTenant.Id);
+            throw new AbpAuthorizationException();
         }
 
-       var result = new List<FolderTreeNodeDto>();
-        var accessContext = await _accessContextProvider.GetContextAsync();
-       foreach (var child in children)
-       {
-           var hasChildren = await _folderRepository.HasChildrenAsync(child.Id);
-           var fileCount = await GetFileCountForFolderContentsAsync(child, child.StructureKey ?? ResolveStructureKey(child));
-            var (canWrite, canDelete) = await EvaluateNodeAccessAsync(child, accessContext);
-
-           result.Add(new FolderTreeNodeDto
-           {
-               Id = child.Id,
-               Name = child.Name,
-               LocalizationResourceName = GetLocalizationResourceName(child),
-               Path = child.Path,
-               ParentId = child.ParentId,
-               Type = MapFolderType(child.Type),
-               Icon = child.Icon ?? GetDefaultIcon(child.Type),
-               Color = child.Color,
-               HasChildren = hasChildren,
-               FileCount = fileCount,
-               IsVirtual = child.Type != FolderType.Custom,
-               StructureKey = child.StructureKey,
-               TenantId = child.TenantId,
-               IsShared = child.IsShared,
-                CanWrite = canWrite,
-                CanDelete = canDelete
-           });
-       }
+        var children = folders.Where(folder =>
+            folder.ParentId == parent && plan.Shows(folder.Id)).ToList();
+        var result = new List<FolderTreeNodeDto>();
+        foreach (var child in children)
+        {
+            result.Add(await ToListedNodeAsync(child, plan, accessContext, byId));
+        }
 
         return result;
     }
 
     public async Task<FolderContentsDto> GetContentsAsync(GetFolderContentsInput input)
     {
+        await EnsureFileItemsDefaultAsync();
+        var folders = await _folderRepository.GetFolderTreeAsync(CurrentTenant.Id, includeShared: true);
+        var accessContext = await _accessContextProvider.GetContextAsync();
+        var plan = FolderVisibility.Build(folders, accessContext, _accessResolver);
+        var byId = folders.ToDictionary(folder => folder.Id);
+
         if (input.SourceMode == FileExplorerSourceMode.BlobPath)
         {
+            EnsureBlobPathAllowed(input, folders, accessContext, plan, byId);
             return await GetBlobPathContentsAsync(input);
         }
 
@@ -144,7 +140,7 @@ public class FolderAppService : SufiApplicationService, IFolderAppService
 
         if (input.FolderId.HasValue)
         {
-            folder = await _folderRepository.FindAsync(input.FolderId.Value);
+            byId.TryGetValue(input.FolderId.Value, out folder);
             if (folder != null &&
                 folder.TenantId != CurrentTenant.Id &&
                 !(folder.IsShared && CurrentTenant.Id.HasValue &&
@@ -155,46 +151,42 @@ public class FolderAppService : SufiApplicationService, IFolderAppService
         }
         else if (!string.IsNullOrEmpty(input.VirtualPath))
         {
-            folder = await _folderRepository.FindByPathAsync(input.VirtualPath, CurrentTenant.Id);
+            folder = folders.FirstOrDefault(candidate =>
+                string.Equals(candidate.Path, input.VirtualPath, StringComparison.OrdinalIgnoreCase));
         }
 
         var result = new FolderContentsDto();
 
-        // Never fall back to the tenant root when a caller supplied an unknown or
-        // unauthorized folder id. That behavior made a cross-tenant folder probe
-        // look like a successful root listing and could mix structure results.
         if (input.FolderId.HasValue && folder == null)
         {
             return result;
         }
 
-        // Build current folder info
+        if (folder != null && !plan.CanRead(folder.Id))
+        {
+            throw new AbpAuthorizationException();
+        }
+
         if (folder != null)
         {
-            result.CurrentFolder = await BuildFolderTreeNodeAsync(folder);
-            
-            if (folder.ParentId.HasValue)
+            result.CurrentFolder = await ToListedNodeAsync(folder, plan, accessContext, byId);
+
+            if (folder.ParentId.HasValue && byId.TryGetValue(folder.ParentId.Value, out var parent))
             {
-                var parent = await _folderRepository.GetAsync(folder.ParentId.Value);
-                result.ParentFolder = await BuildFolderTreeNodeAsync(parent);
+                result.ParentFolder = await ToListedNodeAsync(parent, plan, accessContext, byId);
             }
             else
             {
                 result.ParentFolder = VirtualRootNode();
             }
 
-            // Build breadcrumbs
             result.Breadcrumbs = await BuildBreadcrumbsAsync(folder);
 
-            // Get subfolders
-            var subfolders = await _folderRepository.GetChildrenAsync(folder.Id);
-            foreach (var subfolder in subfolders)
+            foreach (var subfolder in folders.Where(candidate => candidate.ParentId == folder.Id && plan.Shows(candidate.Id)))
             {
-                result.Folders.Add(await BuildFolderTreeNodeAsync(subfolder));
+                result.Folders.Add(await ToListedNodeAsync(subfolder, plan, accessContext, byId));
             }
 
-            // Get files in folder. Structure roots also surface structure-scoped uploads
-            // that were stored with FolderId=null (e.g. Chat/Ticket integrations).
             var structureKey = ResolveRequestedStructureKey(input.StructureKey, folder);
             if (!string.IsNullOrWhiteSpace(input.StructureKey) &&
                 string.IsNullOrWhiteSpace(structureKey))
@@ -208,7 +200,6 @@ public class FolderAppService : SufiApplicationService, IFolderAppService
         }
         else
         {
-            var rootFolders = await _folderRepository.GetRootFoldersAsync(CurrentTenant.Id);
             result.CurrentFolder = VirtualRootNode();
             result.Breadcrumbs = new List<BreadcrumbItemDto>
             {
@@ -220,9 +211,9 @@ public class FolderAppService : SufiApplicationService, IFolderAppService
                     IsCurrent = true
                 }
             };
-            foreach (var rootFolder in rootFolders)
+            foreach (var rootFolder in folders.Where(candidate => candidate.ParentId == null && plan.Shows(candidate.Id)))
             {
-                result.Folders.Add(await BuildFolderTreeNodeAsync(rootFolder));
+                result.Folders.Add(await ToListedNodeAsync(rootFolder, plan, accessContext, byId));
             }
 
             result.Files = new List<FileItemDto>();
@@ -399,14 +390,33 @@ public class FolderAppService : SufiApplicationService, IFolderAppService
 
     public async Task<FileFolderDto> GetAsync(Guid id)
     {
+        await EnsureFileItemsDefaultAsync();
+        var plan = await LoadPlanAsync();
+        if (!plan.Shows(id))
+        {
+            throw new AbpAuthorizationException();
+        }
+
         var folder = await _folderRepository.GetAsync(id);
         return ObjectMapper.Map<FileFolder, FileFolderDto>(folder);
     }
 
     public async Task<FileFolderDto?> GetByPathAsync(string path)
     {
+        await EnsureFileItemsDefaultAsync();
         var folder = await _folderRepository.FindByPathAsync(path, CurrentTenant.Id);
-        return folder != null ? ObjectMapper.Map<FileFolder, FileFolderDto>(folder) : null;
+        if (folder == null)
+        {
+            return null;
+        }
+
+        var plan = await LoadPlanAsync();
+        if (!plan.Shows(folder.Id))
+        {
+            throw new AbpAuthorizationException();
+        }
+
+        return ObjectMapper.Map<FileFolder, FileFolderDto>(folder);
     }
 
     public async Task<FileFolderDto?> GetOrCreateFolderByPathAsync(string path)
@@ -421,6 +431,11 @@ public class FolderAppService : SufiApplicationService, IFolderAppService
         var segments = normalized.Split('/', StringSplitOptions.RemoveEmptyEntries);
         if (segments.Length == 0)
             return null;
+
+        await EnsureGrantedAsync(FileManagerPermissions.FileItems.Create);
+        var folders = await _folderRepository.GetFolderTreeAsync(CurrentTenant.Id, includeShared: true);
+        var accessContext = await _accessContextProvider.GetContextAsync();
+        var byId = folders.ToDictionary(folder => folder.Id);
 
         string currentPath = "";
         FileFolder? currentFolder = null;
@@ -438,7 +453,14 @@ public class FolderAppService : SufiApplicationService, IFolderAppService
             {
                 currentFolder = existing;
                 currentPath = fullPath;
+                byId[existing.Id] = existing;
                 continue;
+            }
+
+            if (currentFolder != null &&
+                !FolderVisibility.CanWrite(FolderVisibility.Chain(currentFolder, byId), accessContext, _accessResolver))
+            {
+                throw new AbpAuthorizationException();
             }
 
             var createInput = new CreateFolderInput
@@ -731,8 +753,27 @@ public class FolderAppService : SufiApplicationService, IFolderAppService
 
     public async Task<List<FolderPermissionDto>> GetPermissionsAsync(Guid folderId)
     {
-        var folder = await _folderRepository.GetWithPermissionsAsync(folderId)
+        await EnsureGrantedAsync(FileManagerPermissions.FileItems.Update);
+        var folders = await _folderRepository.GetFolderTreeAsync(CurrentTenant.Id, includeShared: true);
+        var folder = folders.FirstOrDefault(candidate => candidate.Id == folderId)
+            ?? await _folderRepository.GetWithPermissionsAsync(folderId)
             ?? throw new UserFriendlyException("Folder not found.");
+        if (folder.Permissions == null || folder.Permissions.Count == 0)
+        {
+            var withPermissions = await _folderRepository.GetWithPermissionsAsync(folderId);
+            if (withPermissions != null)
+            {
+                folder = withPermissions;
+            }
+        }
+
+        var accessContext = await _accessContextProvider.GetContextAsync();
+        var byId = folders.ToDictionary(candidate => candidate.Id);
+        byId[folder.Id] = folder;
+        if (!FolderVisibility.CanShare(FolderVisibility.Chain(folder, byId), accessContext, _accessResolver))
+        {
+            throw new AbpAuthorizationException();
+        }
 
        var permissions = folder.Permissions.Select(p => new FolderPermissionDto
        {
@@ -790,6 +831,7 @@ public class FolderAppService : SufiApplicationService, IFolderAppService
 
    public async Task<bool> HasPermissionAsync(Guid folderId, FolderPermissionLevelDto level)
    {
+        await EnsureFileItemsDefaultAsync();
         var folder = await _folderRepository.GetWithPermissionsAsync(folderId);
         if (folder == null)
         {
@@ -832,17 +874,21 @@ public class FolderAppService : SufiApplicationService, IFolderAppService
 
     public async Task<List<FolderTreeNodeDto>> GetSharedFoldersAsync()
     {
+        await EnsureFileItemsDefaultAsync();
         if (!CurrentTenant.Id.HasValue)
         {
             return new List<FolderTreeNodeDto>();
         }
 
-        var sharedFolders = await _folderRepository.GetSharedFoldersAsync(CurrentTenant.Id.Value);
+        var folders = await _folderRepository.GetFolderTreeAsync(CurrentTenant.Id, includeShared: true);
+        var accessContext = await _accessContextProvider.GetContextAsync();
+        var plan = FolderVisibility.Build(folders, accessContext, _accessResolver);
+        var byId = folders.ToDictionary(folder => folder.Id);
         var result = new List<FolderTreeNodeDto>();
 
-        foreach (var folder in sharedFolders)
+        foreach (var folder in folders.Where(candidate => candidate.IsShared && plan.Shows(candidate.Id)))
         {
-            result.Add(await BuildFolderTreeNodeAsync(folder));
+            result.Add(await ToListedNodeAsync(folder, plan, accessContext, byId));
         }
 
         return result;
@@ -854,15 +900,26 @@ public class FolderAppService : SufiApplicationService, IFolderAppService
 
     public async Task<FolderStatisticsDto> GetStatisticsAsync(Guid? folderId, string? path = null)
     {
+        await EnsureFileItemsDefaultAsync();
+        var folders = await _folderRepository.GetFolderTreeAsync(CurrentTenant.Id, includeShared: true);
+        var accessContext = await _accessContextProvider.GetContextAsync();
+        var plan = FolderVisibility.Build(folders, accessContext, _accessResolver);
+
         FileFolder? folder = null;
 
         if (folderId.HasValue)
         {
-            folder = await _folderRepository.GetAsync(folderId.Value);
+            folder = folders.FirstOrDefault(candidate => candidate.Id == folderId.Value);
         }
         else if (!string.IsNullOrEmpty(path))
         {
-            folder = await _folderRepository.FindByPathAsync(path, CurrentTenant.Id);
+            folder = folders.FirstOrDefault(candidate =>
+                string.Equals(candidate.Path, path, StringComparison.OrdinalIgnoreCase));
+        }
+
+        if (folder != null && !plan.CanRead(folder.Id))
+        {
+            throw new AbpAuthorizationException();
         }
 
         var stats = new FolderStatisticsDto
@@ -910,17 +967,118 @@ public class FolderAppService : SufiApplicationService, IFolderAppService
 
     #region Private Helpers
 
+    private async Task EnsureFileItemsDefaultAsync()
+    {
+        await EnsureGrantedAsync(FileManagerPermissions.FileItems.Default);
+    }
+
+    private async Task EnsureGrantedAsync(string permission)
+    {
+        if (!await _permissionChecker.IsGrantedAsync(permission))
+        {
+            throw new AbpAuthorizationException();
+        }
+    }
+
+    private async Task<FolderVisibility.Plan> LoadPlanAsync()
+    {
+        var folders = await _folderRepository.GetFolderTreeAsync(CurrentTenant.Id, includeShared: true);
+        var accessContext = await _accessContextProvider.GetContextAsync();
+        return FolderVisibility.Build(folders, accessContext, _accessResolver);
+    }
+
+    private void EnsureBlobPathAllowed(
+        GetFolderContentsInput input,
+        IReadOnlyList<FileFolder> folders,
+        FolderAccessContext context,
+        FolderVisibility.Plan plan,
+        IReadOnlyDictionary<Guid, FileFolder> byId)
+    {
+        if (context.IsHost || context.IsAdmin)
+        {
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(input.StructureKey))
+        {
+            throw new AbpAuthorizationException();
+        }
+
+        var root = folders.FirstOrDefault(folder =>
+            string.Equals(folder.StructureKey, input.StructureKey, StringComparison.OrdinalIgnoreCase) &&
+            (folder.ParentId == null || folder.Type == FolderType.Structure));
+        if (root == null ||
+            !FolderVisibility.CanRead(FolderVisibility.Chain(root, byId), context, _accessResolver))
+        {
+            throw new AbpAuthorizationException();
+        }
+    }
+
+    private async Task<FolderTreeNodeDto> ToListedNodeAsync(
+        FileFolder folder,
+        FolderVisibility.Plan plan,
+        FolderAccessContext accessContext,
+        IReadOnlyDictionary<Guid, FileFolder> byId)
+    {
+        var nameOnly = plan.NameOnly(folder.Id);
+        var visibleChildren = 0;
+        foreach (var candidate in byId.Values)
+        {
+            if (candidate.ParentId == folder.Id && plan.Shows(candidate.Id))
+            {
+                visibleChildren++;
+            }
+        }
+
+        var (canWrite, canDelete) = nameOnly
+            ? (false, false)
+            : await EvaluateNodeAccessAsync(folder, accessContext);
+        var fileCount = nameOnly
+            ? 0
+            : await GetFileCountForFolderContentsAsync(folder, folder.StructureKey ?? ResolveStructureKey(folder));
+
+        return new FolderTreeNodeDto
+        {
+            Id = folder.Id,
+            Name = folder.Name,
+            LocalizationResourceName = GetLocalizationResourceName(folder),
+            Path = folder.Path,
+            ParentId = folder.ParentId,
+            Type = MapFolderType(folder.Type),
+            Icon = folder.Icon ?? GetDefaultIcon(folder.Type),
+            Color = folder.Color,
+            HasChildren = visibleChildren > 0,
+            ChildFolderCount = visibleChildren,
+            FileCount = fileCount,
+            IsVirtual = folder.Type != FolderType.Custom,
+            StructureKey = folder.StructureKey,
+            TenantId = folder.TenantId,
+            IsShared = folder.IsShared,
+            CanWrite = canWrite,
+            CanDelete = canDelete
+        };
+    }
+
     private List<FolderTreeNodeDto> BuildTreeNodes(
         List<FileFolder> rootFolders,
         List<FileFolder> allFolders,
         FolderAccessContext? accessContext,
-        IReadOnlySet<string> existingStructureKeys)
+        IReadOnlySet<string> existingStructureKeys,
+        FolderVisibility.Plan plan)
     {
         var result = new List<FolderTreeNodeDto>();
 
         foreach (var folder in rootFolders.OrderBy(f => f.SortOrder).ThenBy(f => f.Name))
         {
-            var (canWrite, canDelete) = FastNodeAccess(folder, accessContext, existingStructureKeys);
+            if (!plan.Shows(folder.Id))
+            {
+                continue;
+            }
+
+            var nameOnly = plan.NameOnly(folder.Id);
+            var (canWrite, canDelete) = nameOnly
+                ? (false, false)
+                : FastNodeAccess(folder, accessContext, existingStructureKeys);
             var node = new FolderTreeNodeDto
             {
                 Id = folder.Id,
@@ -938,20 +1096,24 @@ public class FolderAppService : SufiApplicationService, IFolderAppService
                 CanWrite = canWrite,
                 CanDelete = canDelete
             };
+            if (nameOnly)
+            {
+                node.FileCount = 0;
+            }
 
-            var children = allFolders.Where(f => f.ParentId == folder.Id).ToList();
-            if (children.Any())
+            var children = allFolders.Where(f => f.ParentId == folder.Id && plan.Shows(f.Id)).ToList();
+            if (children.Count > 0)
             {
                 node.HasChildren = true;
                 node.ChildFolderCount = children.Count;
-                node.Children = BuildTreeNodes(children, allFolders, accessContext, existingStructureKeys);
+                node.Children = BuildTreeNodes(children, allFolders, accessContext, existingStructureKeys, plan);
             }
 
             result.Add(node);
         }
 
         return result;
-   }
+    }
 
    private async Task<FolderTreeNodeDto> BuildFolderTreeNodeAsync(FileFolder folder)
    {
