@@ -124,6 +124,7 @@
     "OpenCalendar": "Open calendar",
     "VisibleCalendarsOnly": "Only calendars visible to you are shown.",
     "AddReminder": "Add reminder",
+    "AddAReminder": "Add a reminder",
     "Reminder:EmailSubject": "Reminder: {0}",
     "Reminder:EmailBody": "{0}\nStarts at: {1}\nLocation: {2}",
     "Reminder:InAppTitle": "Reminder: {0}",

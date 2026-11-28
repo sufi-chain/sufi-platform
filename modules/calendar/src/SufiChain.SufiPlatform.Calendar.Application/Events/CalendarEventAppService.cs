@@ -103,6 +103,27 @@ public class CalendarEventAppService : SufiApplicationService, ICalendarEventApp
             calendarEvent.SetRecurrence(GuidGenerator.Create(), input.RecurrenceRule);
         }
 
+        foreach (var attendee in input.Attendees)
+        {
+            calendarEvent.AddAttendee(new EventAttendee(
+                GuidGenerator.Create(),
+                calendarEvent.Id,
+                attendee.UserId,
+                attendee.Email,
+                attendee.DisplayName,
+                attendee.Role));
+        }
+
+        foreach (var reminder in input.Reminders)
+        {
+            calendarEvent.AddReminder(new EventReminder(
+                GuidGenerator.Create(),
+                calendarEvent.Id,
+                reminder.Offset,
+                reminder.Channel,
+                reminder.AttendeeId));
+        }
+
         calendarEvent.NotifyChanged();
         await _eventRepository.InsertAsync(calendarEvent, autoSave: true);
         await _occurrenceCache.RemoveAsync(calendarEvent.CalendarId, calendarEvent.TenantId);

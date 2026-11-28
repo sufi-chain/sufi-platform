@@ -159,6 +159,22 @@ public partial class SufiEventEditor : CalendarPublicComponentBase
 
         await ExecuteWithLoadingAsync(async () =>
         {
+            if (!EventId.HasValue)
+            {
+                _model.Attendees = _attendees.Select(attendee => new CreateEventAttendeeDto
+                {
+                    UserId = attendee.UserId,
+                    Email = attendee.Email,
+                    DisplayName = attendee.DisplayName,
+                    Role = attendee.Role
+                }).ToList();
+                _model.Reminders = _reminders.Select(reminder => new CreateEventReminderDto
+                {
+                    Offset = reminder.Offset,
+                    Channel = reminder.Channel
+                }).ToList();
+            }
+
             var saved = EventId.HasValue
                 ? await CalendarEventAppService.UpdateAsync(EventId.Value, _model)
                 : await CalendarEventAppService.CreateAsync(_model);
@@ -212,8 +228,23 @@ public partial class SufiEventEditor : CalendarPublicComponentBase
 
     protected virtual async Task AddAttendeeAsync()
     {
-        if (!EventId.HasValue || string.IsNullOrWhiteSpace(_newAttendeeDisplayName))
+        if (string.IsNullOrWhiteSpace(_newAttendeeDisplayName))
         {
+            return;
+        }
+
+        if (!EventId.HasValue)
+        {
+            _attendees.Add(new EventAttendeeDto
+            {
+                Id = Guid.NewGuid(),
+                DisplayName = _newAttendeeDisplayName.Trim(),
+                Email = string.IsNullOrWhiteSpace(_newAttendeeEmail) ? null : _newAttendeeEmail.Trim(),
+                Role = _newAttendeeRole,
+                RsvpStatus = RsvpStatus.NeedsAction
+            });
+            _newAttendeeDisplayName = string.Empty;
+            _newAttendeeEmail = null;
             return;
         }
 
@@ -232,6 +263,7 @@ public partial class SufiEventEditor : CalendarPublicComponentBase
     {
         if (!EventId.HasValue)
         {
+            _attendees.RemoveAll(item => item.Id == attendee.Id);
             return;
         }
 
@@ -241,14 +273,21 @@ public partial class SufiEventEditor : CalendarPublicComponentBase
 
     protected virtual async Task AddReminderAsync()
     {
-        if (!EventId.HasValue)
-        {
-            return;
-        }
-
         if (_newReminderOffsetMinutes < 0 || _newReminderOffsetMinutes > ReminderOffsetMinuteMax)
         {
             await Message.ErrorAsync(L["InvalidReminderOffset"]);
+            return;
+        }
+
+        if (!EventId.HasValue)
+        {
+            _reminders.Add(new EventReminderDto
+            {
+                Id = Guid.NewGuid(),
+                Offset = TimeSpan.FromMinutes(-_newReminderOffsetMinutes),
+                Channel = _newReminderChannel
+            });
+            ResetNewReminderInputs();
             return;
         }
 
@@ -260,6 +299,7 @@ public partial class SufiEventEditor : CalendarPublicComponentBase
                 Channel = _newReminderChannel
             });
             _reminders = updated.Reminders.ToList();
+            ResetNewReminderInputs();
         }
         catch (Exception exception)
         {
@@ -301,10 +341,17 @@ public partial class SufiEventEditor : CalendarPublicComponentBase
         return Task.CompletedTask;
     }
 
+    private void ResetNewReminderInputs()
+    {
+        _newReminderOffsetMinutes = 15;
+        _newReminderChannel = ReminderChannel.Email;
+    }
+
     protected virtual async Task RemoveReminderAsync(EventReminderDto reminder)
     {
         if (!EventId.HasValue)
         {
+            _reminders.RemoveAll(item => item.Id == reminder.Id);
             return;
         }
 

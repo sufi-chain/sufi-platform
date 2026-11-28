@@ -124,6 +124,7 @@
     "OpenCalendar": "باز کردن تقویم",
     "VisibleCalendarsOnly": "فقط تقویم‌های قابل مشاهده برای شما نمایش داده می‌شود.",
     "AddReminder": "افزودن یادآور",
+    "AddAReminder": "یک یادآور اضافه کنید",
     "Reminder:EmailSubject": "یادآوری: {0}",
     "Reminder:EmailBody": "{0}\nشروع: {1}\nمکان: {2}",
     "Reminder:InAppTitle": "یادآوری: {0}",

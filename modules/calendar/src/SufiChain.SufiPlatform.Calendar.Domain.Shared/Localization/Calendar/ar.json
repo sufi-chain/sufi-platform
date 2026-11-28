@@ -108,6 +108,7 @@
     "ReminderOffset": "دقائق قبل البدء",
     "ReminderChannel": "قناة التذكير",
     "AddReminder": "إضافة تذكير",
+    "AddAReminder": "إضافة تذكير",
     "Reminder:EmailSubject": "تذكير: {0}",
     "Reminder:EmailBody": "{0}\nالبداية: {1}\nالمكان: {2}",
     "Reminder:InAppTitle": "تذكير: {0}",

@@ -48,6 +48,10 @@ public class CreateUpdateCalendarEventDto : IValidatableObject
 
     public ExtraPropertyDictionary ExtraProperties { get; set; } = new();
 
+    public List<CreateEventAttendeeDto> Attendees { get; set; } = new();
+
+    public List<CreateEventReminderDto> Reminders { get; set; } = new();
+
     /// <summary>Repeat every must be at least 1. A missing INTERVAL stays the default of 1.</summary>
     private static readonly RangeAttribute RecurrenceIntervalRange = new(1, int.MaxValue);
 

@@ -4,6 +4,7 @@ using Microsoft.Extensions.Logging;
 using SufiChain.SufiPlatform.Calendar.Availability;
 using SufiChain.SufiPlatform.Calendar.Calendars;
 using SufiChain.SufiPlatform.Calendar.Events;
+using SufiChain.SufiPlatform.Calendar.Scheduling;
 using SufiChain.SufiBlazor.Utilities.DateUtils;
 using System.Globalization;
 
@@ -139,8 +140,10 @@ public partial class SufiCalendarView : CalendarPublicComponentBase
     protected virtual async Task SelectSlotAsync(DateTime localDay)
     {
         CloseEventsPopover();
-        var startUtc = TimeZoneInfo.ConvertTimeToUtc(DateTime.SpecifyKind(localDay.Date, DateTimeKind.Unspecified), ResolveTimeZone());
-        await OnSlotSelect.InvokeAsync(new SufiCalendarSlotSelectArgs(startUtc, startUtc.AddDays(1), CalendarIds));
+        var zone = ResolveTimeZone();
+        var nowLocal = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, zone);
+        var slot = CalendarMonthSlot.ForDay(localDay, nowLocal, zone);
+        await OnSlotSelect.InvokeAsync(new SufiCalendarSlotSelectArgs(slot.StartUtc, slot.EndUtc, CalendarIds));
     }
 
     protected bool IsDayEventsPopoverOpen(DateTime day) =>

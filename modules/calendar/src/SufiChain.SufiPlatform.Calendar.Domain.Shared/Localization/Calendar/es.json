@@ -108,6 +108,7 @@
     "ReminderOffset": "Minutos antes",
     "ReminderChannel": "Canal de recordatorio",
     "AddReminder": "Agregar recordatorio",
+    "AddAReminder": "Añadir un recordatorio",
     "Reminder:EmailSubject": "Recordatorio: {0}",
     "Reminder:EmailBody": "{0}\nEmpieza: {1}\nLugar: {2}",
     "Reminder:InAppTitle": "Recordatorio: {0}",
