@@ -43,6 +43,15 @@ public class EventReminder : Entity<Guid>
         SentAtUtc = DateTime.SpecifyKind(sentAtUtc, DateTimeKind.Utc);
     }
 
+    /// <summary>
+    /// Consumes a reminder that will not be delivered. <see cref="SentAtUtc"/> is set so the
+    /// unsent query stops reloading the event. The skip reason is stored on the parent event.
+    /// </summary>
+    public virtual void MarkSkipped(DateTime skippedAtUtc)
+    {
+        SentAtUtc = DateTime.SpecifyKind(skippedAtUtc, DateTimeKind.Utc);
+    }
+
     public virtual void ResetDispatch()
     {
         SentAtUtc = null;

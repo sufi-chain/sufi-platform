@@ -1,7 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using SufiChain.SufiPlatform.Calendar.Events;
 using SufiChain.SufiPlatform.Calendar.Reminders;
-using SufiChain.SufiPlatform.Calendar.Scheduling;
 using SufiChain.SufiPlatform.Calendar.EntityFrameworkCore;
 using Volo.Abp.Domain.Repositories.EntityFrameworkCore;
 using Volo.Abp.EntityFrameworkCore;
@@ -47,7 +46,12 @@ public class EfCoreCalendarEventRepository : EfCoreRepository<ICalendarDbContext
             .ToListAsync(cancellationToken);
     }
 
-    public virtual async Task<List<EventReminderDispatchItem>> GetDueRemindersAsync(DateTime nowUtc, CancellationToken cancellationToken = default)
+    public virtual Task<List<EventReminderDispatchItem>> GetDueRemindersAsync(DateTime nowUtc, CancellationToken cancellationToken = default)
+    {
+        return GetDueRemindersAsync(nowUtc, TimeSpan.FromMinutes(CalendarReminderSettings.DefaultCatchUpMinutes), cancellationToken);
+    }
+
+    public virtual async Task<List<EventReminderDispatchItem>> GetDueRemindersAsync(DateTime nowUtc, TimeSpan catchUp, CancellationToken cancellationToken = default)
     {
         var dbSet = await GetDbSetAsync();
         var events = await dbSet
@@ -58,34 +62,6 @@ public class EfCoreCalendarEventRepository : EfCoreRepository<ICalendarDbContext
             .Where(x => x.Reminders.Any(r => r.SentAtUtc == null))
             .ToListAsync(cancellationToken);
 
-        return BuildDueReminderItems(events, nowUtc);
-    }
-
-    private static List<EventReminderDispatchItem> BuildDueReminderItems(IEnumerable<CalendarEvent> events, DateTime nowUtc)
-    {
-        var calculator = new RecurrenceCalculator();
-        var items = new List<EventReminderDispatchItem>();
-        foreach (var calendarEvent in events)
-        {
-            foreach (var reminder in calendarEvent.Reminders.Where(x => x.SentAtUtc == null))
-            {
-                var targetStartUtc = nowUtc.Subtract(reminder.Offset);
-                var from = targetStartUtc.AddMinutes(-1);
-                var to = targetStartUtc.AddMinutes(1);
-                foreach (var occurrence in calculator.Expand(calendarEvent, from, to))
-                {
-                    var dueAtUtc = occurrence.StartUtc.Add(reminder.Offset);
-                    if (dueAtUtc <= nowUtc)
-                    {
-                        var attendee = reminder.AttendeeId.HasValue
-                            ? calendarEvent.Attendees.FirstOrDefault(x => x.Id == reminder.AttendeeId.Value)
-                            : calendarEvent.Attendees.FirstOrDefault(x => x.Role == AttendeeRole.Organizer) ?? calendarEvent.Attendees.FirstOrDefault();
-                        items.Add(new EventReminderDispatchItem(calendarEvent, reminder, occurrence, attendee, dueAtUtc));
-                    }
-                }
-            }
-        }
-
-        return items;
+        return ReminderDispatchPlanner.Select(events, nowUtc, catchUp);
     }
 }

@@ -9,5 +9,7 @@ public interface ICalendarEventRepository : IRepository<CalendarEvent, Guid>
 
     Task<List<EventReminderDispatchItem>> GetDueRemindersAsync(DateTime nowUtc, CancellationToken cancellationToken = default);
 
+    Task<List<EventReminderDispatchItem>> GetDueRemindersAsync(DateTime nowUtc, TimeSpan catchUp, CancellationToken cancellationToken = default);
+
     Task<List<CalendarEvent>> GetListBySourceAsync(string sourceType, string sourceId, CancellationToken cancellationToken = default);
 }
