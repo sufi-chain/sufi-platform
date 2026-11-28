@@ -360,6 +360,7 @@ public class IdentityUserManager : UserManager<IdentityUser>, IDomainService
         }
 
         user.PasswordHash = PasswordHasher.HashPassword(user, newPassword);
-        return IdentityResult.Success;
+        var stamp = await UpdateSecurityStampAsync(user);
+        return stamp.Succeeded ? IdentityResult.Success : stamp;
     }
 }

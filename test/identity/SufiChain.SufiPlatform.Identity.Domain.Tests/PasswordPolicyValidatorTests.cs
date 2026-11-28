@@ -75,6 +75,17 @@ public class PasswordPolicyValidatorTests
         module.ShouldContain("AddPasswordValidator<SufiExtendedPasswordValidator>()");
     }
 
+    [Fact]
+    public void ResetPassword_RotatesSecurityStamp()
+    {
+        var manager = Read("SufiChain.SufiPlatform.Identity.Domain", "Managers/IdentityUserManager.cs");
+        var hash = manager.IndexOf("UpdatePasswordHash", StringComparison.Ordinal);
+        var stamp = manager.IndexOf("UpdateSecurityStampAsync", hash, StringComparison.Ordinal);
+        var assign = manager.IndexOf("PasswordHash = PasswordHasher.HashPassword", hash, StringComparison.Ordinal);
+        assign.ShouldBeGreaterThan(hash);
+        stamp.ShouldBeGreaterThan(assign);
+    }
+
     private static async Task<IdentityResult> ValidateAsync(string password, Action<IdentityOptions>? configure = null)
     {
         var options = new IdentityOptions();
