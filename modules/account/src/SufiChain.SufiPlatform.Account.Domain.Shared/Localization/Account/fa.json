@@ -123,6 +123,7 @@
     "SufiAccount:ExternalUserCannotChangePassword": "کاربران ورود خارجی نمی‌توانند رمز عبور را از اینجا تغییر دهند.",
     "Menu:Dashboard": "داشبورد",
     "Menu:LinkedAccounts": "حساب‌های پیوندی",
+    "BackToHost": "بازگشت به میزبان",
     "LinkedAccounts": "حساب‌های پیوندی",
     "LinkedAccountsEmpty": "هنوز حساب پیوندی وجود ندارد.",
     "LinkedAccountsLoadFailed": "بارگذاری حساب‌های پیوندی ممکن نشد.",

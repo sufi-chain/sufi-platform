@@ -10,6 +10,7 @@
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="../../../framework/SufiChain.SufiPlatform.UI.Blazor/SufiChain.SufiPlatform.UI.Blazor.csproj" />
+    <ProjectReference Include="../../../modules/tenants/src/SufiChain.SufiPlatform.Tenants.Blazor/SufiChain.SufiPlatform.Tenants.Blazor.csproj" />
     <ProjectReference Include="../../../modules/settings/src/SufiChain.SufiPlatform.Settings.Blazor/SufiChain.SufiPlatform.Settings.Blazor.csproj" />
     <PackageReference Include="bunit" Version="$(BunitVersion)" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="$(MicrosoftNetTestSdkVersion)" />

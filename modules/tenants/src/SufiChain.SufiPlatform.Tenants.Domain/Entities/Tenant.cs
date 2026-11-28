@@ -25,6 +25,13 @@ public class Tenant : FullAuditedAggregateRoot<Guid>, IHasEntityVersion
 
     public virtual int EntityVersion { get; protected set; }
 
+    /// <summary>
+    /// Host-controlled sign-in flag. New tenants start active. An inactive tenant
+    /// is resolved with <c>TenantConfiguration.IsActive</c> false, which ABP refuses
+    /// at sign-in. The host console has no tenant and stays available.
+    /// </summary>
+    public virtual bool IsActive { get; protected set; }
+
     public virtual List<TenantConnectionString> ConnectionStrings { get; protected set; }
 
     public virtual List<TenantDomain> Domains { get; protected set; }
@@ -33,6 +40,7 @@ public class Tenant : FullAuditedAggregateRoot<Guid>, IHasEntityVersion
     {
         ConnectionStrings = new List<TenantConnectionString>();
         Domains = new List<TenantDomain>();
+        IsActive = true;
     }
 
     protected internal Tenant(Guid id, [NotNull] string name, [CanBeNull] string normalizedName)
@@ -43,6 +51,29 @@ public class Tenant : FullAuditedAggregateRoot<Guid>, IHasEntityVersion
 
         ConnectionStrings = new List<TenantConnectionString>();
         Domains = new List<TenantDomain>();
+        IsActive = true;
+    }
+
+    public virtual void Activate()
+    {
+        if (IsActive)
+        {
+            return;
+        }
+
+        IsActive = true;
+        AddLocalEvent(new TenantChangedEvent(Id, NormalizedName));
+    }
+
+    public virtual void Deactivate()
+    {
+        if (!IsActive)
+        {
+            return;
+        }
+
+        IsActive = false;
+        AddLocalEvent(new TenantChangedEvent(Id, NormalizedName));
     }
 
     [CanBeNull]

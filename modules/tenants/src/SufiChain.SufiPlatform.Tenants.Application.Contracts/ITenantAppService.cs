@@ -12,4 +12,8 @@ public interface ITenantAppService : ISufiCrudAppService<TenantDto, Guid, GetTen
     Task UpdateDefaultConnectionStringAsync(Guid id, string defaultConnectionString);
 
     Task DeleteDefaultConnectionStringAsync(Guid id);
+
+    Task ActivateAsync(Guid id);
+
+    Task DeactivateAsync(Guid id);
 }

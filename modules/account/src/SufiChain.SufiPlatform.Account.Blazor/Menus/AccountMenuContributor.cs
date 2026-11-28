@@ -1,6 +1,8 @@
+using Microsoft.Extensions.DependencyInjection;
 using SufiChain.SufiPlatform.Account.Localization;
 using SufiChain.SufiPlatform.Identity.Localization;
 using SufiChain.SufiPlatform.UI.Navigation;
+using Volo.Abp.Users;
 
 namespace SufiChain.SufiPlatform.Account.Blazor.Menus;
 
@@ -50,6 +52,21 @@ public class AccountMenuContributor : IMenuContributor
             icon: "home",
             order: 10
         ));
+
+        var currentUser = context.ServiceProvider.GetService<ICurrentUser>();
+        if (currentUser != null &&
+            LinkedHostSession.IsReturnToHostAvailable(
+                currentUser.FindClaim(LinkedHostSession.SourceUserIdClaim)?.Value,
+                currentUser.FindClaim(LinkedHostSession.SourceIsHostClaim)?.Value))
+        {
+            context.Menu.AddItem(new ApplicationMenuItem(
+                AccountMenuNames.BackToHost,
+                accountL["BackToHost"],
+                url: "/account/back-to-host",
+                icon: "corner-up-left",
+                order: 20
+            ));
+        }
 
         context.Menu.AddItem(new ApplicationMenuItem(
             AccountMenuNames.ProfileDivider,
@@ -113,4 +130,5 @@ public static class AccountMenuNames
     public const string TwoFactor = GroupName + ".TwoFactor";
     public const string LinkedAccounts = GroupName + ".LinkedAccounts";
     public const string Logout = GroupName + ".Logout";
+    public const string BackToHost = GroupName + ".BackToHost";
 }

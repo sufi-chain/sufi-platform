@@ -9,6 +9,9 @@
                     <SbTextField @bind-Value="_model.Name"
                                  Label="@L["TenantName"]"
                                  Required="true" />
+                    <SbSwitch Value="_active"
+                              ValueChanged="OnActiveChangedAsync"
+                              Label="@L["IsActive"]" />
                 </SbStack>
             </ChildContent>
             <FooterContent>

@@ -62,6 +62,11 @@
     "Permission:Edit": "Edit",
     "Permission:Delete": "Delete",
     "Permission:ManageFeatures": "Manage features",
-    "Permission:ManageConnectionStrings": "Manage connection strings"
-  ,"Hooshvare:SufiTenants:Diagnostics:DisplayName":"Tenant Diagnostics"}
+    "Permission:ManageConnectionStrings": "Manage connection strings",
+    "Status": "Status",
+    "Active": "Active",
+    "Inactive": "Inactive",
+    "ActivateTenantConfirmation": "Activate tenant '{0}'? Its users can sign in again.",
+    "DeactivateTenantConfirmation": "Deactivate tenant '{0}'? Its users cannot sign in. The host console stays available.",
+    "Hooshvare:SufiTenants:Diagnostics:DisplayName": "Tenant Diagnostics"}
 }

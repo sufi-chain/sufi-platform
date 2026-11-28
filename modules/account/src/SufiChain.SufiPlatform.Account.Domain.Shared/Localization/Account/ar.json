@@ -122,6 +122,7 @@
     "SufiAccount:ExternalUserCannotChangePassword": "لا يمكن لمستخدمي تسجيل الدخول الخارجي تغيير كلمة المرور من هنا.",
     "Menu:Dashboard": "لوحة التحكم",
     "Menu:LinkedAccounts": "الحسابات المرتبطة",
+    "BackToHost": "العودة إلى المضيف",
     "LinkedAccounts": "الحسابات المرتبطة",
     "LinkedAccountsEmpty": "لا توجد حسابات مرتبطة بعد.",
     "LinkedAccountsLoadFailed": "تعذر تحميل الحسابات المرتبطة.",

@@ -83,4 +83,20 @@ public class TenantController : SufiControllerBase, ITenantAppService
     {
         return _tenantAppService.DeleteDefaultConnectionStringAsync(id);
     }
+
+    [HttpPost]
+    [Route("{id}/activate")]
+    [Authorize(TenantsPermissions.Tenants.Update)]
+    public virtual Task ActivateAsync(Guid id)
+    {
+        return _tenantAppService.ActivateAsync(id);
+    }
+
+    [HttpPost]
+    [Route("{id}/deactivate")]
+    [Authorize(TenantsPermissions.Tenants.Update)]
+    public virtual Task DeactivateAsync(Guid id)
+    {
+        return _tenantAppService.DeactivateAsync(id);
+    }
 }

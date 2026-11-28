@@ -23,6 +23,7 @@ public partial class TenantEditModal : TenantsComponentBase
 
     private TenantUpdateDto _model = new();
     private Guid _tenantId;
+    private bool _active;
 
     protected override void OnParametersSet()
     {
@@ -34,7 +35,37 @@ public partial class TenantEditModal : TenantsComponentBase
                 Name = Tenant.Name,
                 ConcurrencyStamp = Tenant.ConcurrencyStamp
             };
+            _active = Tenant.IsActive;
         }
+    }
+
+    private async Task OnActiveChangedAsync(bool active)
+    {
+        if (active == _active || Tenant == null)
+        {
+            return;
+        }
+
+        var confirmed = await Message.ConfirmAsync(
+            active
+                ? L["ActivateTenantConfirmation", Tenant.Name]
+                : L["DeactivateTenantConfirmation", Tenant.Name]);
+        if (!confirmed)
+        {
+            return;
+        }
+
+        if (active)
+        {
+            await TenantAppService.ActivateAsync(_tenantId);
+        }
+        else
+        {
+            await TenantAppService.DeactivateAsync(_tenantId);
+        }
+
+        _active = active;
+        await OnTenantUpdated.InvokeAsync();
     }
 
     private Task Hide()

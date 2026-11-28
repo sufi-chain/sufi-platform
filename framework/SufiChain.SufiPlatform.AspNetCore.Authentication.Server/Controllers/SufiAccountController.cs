@@ -532,7 +532,14 @@ public abstract class SufiAccountController : AbpController
                 return Redirect($"/account/login?error=UserNotFound&returnUrl={Uri.EscapeDataString(returnUrl)}");
             }
 
-            await _signInManager.SignInAsync(targetUser, isPersistent: false);
+            var principal = await _signInManager.CreateUserPrincipalAsync(targetUser);
+            if (!sourceLinkTenantId.HasValue && principal.Identity is ClaimsIdentity linkIdentity)
+            {
+                linkIdentity.AddClaim(new Claim(LinkedHostSession.SourceUserIdClaim, sourceLinkUserId.ToString("D")));
+                linkIdentity.AddClaim(new Claim(LinkedHostSession.SourceIsHostClaim, "true"));
+            }
+
+            await HttpContext.SignInAsync(_signInManager.AuthenticationScheme, principal);
         }
 
         await _securityLogAppService.SaveLoginEventAsync(
@@ -541,6 +548,33 @@ public abstract class SufiAccountController : AbpController
             targetUser.UserName);
 
         return LocalRedirect(returnUrl);
+    }
+
+    [HttpGet]
+    [Route("/account/back-to-host")]
+    public async Task<IActionResult> BackToHost()
+    {
+        if (!LinkedHostSession.IsReturnToHostAvailable(
+                User.FindFirst(LinkedHostSession.SourceUserIdClaim)?.Value,
+                User.FindFirst(LinkedHostSession.SourceIsHostClaim)?.Value))
+        {
+            return Redirect(DefaultAuthenticatedReturnPath);
+        }
+
+        var sourceUserId = User.FindFirst(LinkedHostSession.SourceUserIdClaim)!.Value;
+        await SetTenantCookieAsync(null, tenantName: null);
+        using (CurrentTenant.Change(null))
+        {
+            var hostUser = await _userManager.FindByIdAsync(sourceUserId);
+            if (hostUser == null)
+            {
+                return Redirect("/account/login");
+            }
+
+            await _signInManager.SignInAsync(hostUser, isPersistent: false);
+        }
+
+        return LocalRedirect(DefaultAuthenticatedReturnPath);
     }
 
     protected virtual void RejectLinkLogin(
