@@ -172,6 +172,7 @@
     "CreateRole": "إنشاء دور",
     "DefaultRoleForNewUsers": "الدور الافتراضي للمستخدمين الجدد",
     "PublicRole": "دور عام",
+    "Default": "افتراضي",
     "CreateUser": "إنشاء مستخدم",
     "UserInformation": "معلومات المستخدم",
     "StartDate": "تاريخ البدء",

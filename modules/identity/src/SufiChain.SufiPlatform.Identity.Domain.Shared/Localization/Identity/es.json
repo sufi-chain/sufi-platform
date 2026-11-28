@@ -153,6 +153,7 @@
     "CreateRole": "Crear rol",
     "DefaultRoleForNewUsers": "Rol predeterminado para nuevos usuarios",
     "PublicRole": "Rol público",
+    "Default": "Predeterminado",
     "CreateUser": "Crear usuario",
     "UserInformation": "Información de usuario",
     "LeaveEmptyToKeepCurrentPassword": "Dejar vacío para conservar la contraseña actual",

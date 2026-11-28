@@ -168,6 +168,7 @@
     "CreateRole": "Create Role",
     "DefaultRoleForNewUsers": "Default role for new users",
     "PublicRole": "Public role",
+    "Default": "Default",
     "CreateUser": "Create User",
     "UserInformation": "User Information",
     "LeaveEmptyToKeepCurrentPassword": "Leave empty to keep current password",

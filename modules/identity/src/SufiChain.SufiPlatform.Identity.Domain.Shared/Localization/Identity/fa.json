@@ -182,6 +182,7 @@
     "UnsavedPermissionChanges": "تغییرات مجوزها ذخیره نشده است. بدون ذخیره کردن بسته شود؟",
     "CreateRole": "ایجاد نقش",
     "DefaultRoleForNewUsers": "نقش پیش‌فرض برای کاربران جدید",
+    "Default": "پیش‌فرض",
     "PublicRole": "نقش عمومی",
     "CreateUser": "ایجاد کاربر",
     "UserInformation": "اطلاعات کاربر",
